@@ -1,0 +1,422 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html><head><title>Predicting Genes with AUGUSTUS</title>
+<link rel="stylesheet" type="text/css" href="augustus.css">
+<script src="tutorial.js" type="text/javascript"></script>
+</head><body>
+<font size=-1>
+Navigate to <a href="index.html">Lab Session on AUGUSTUS</a>. 
+<a href="scipio.html">Using Scipio</a>.
+<a href="training.html">Training AUGUSTUS</a>.
+<a href="ppx.html">AUGUSTUS-PPX</a>.
+</font>
+<div align="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
+
+<h1>Predicting Genes with AUGUSTUS</h1>
+
+This tutorial describes various typical settings for predicting genes with AUGUSTUS.
+
+<h2 id="abinitiopred">1. PREDICT GENES AB INITIO</h2>
+
+<i>Ab initio</i> prediction means that no other input is used than the target genome itself.
+Below, you will find examples of predictions that use evidence (hints), here we
+use none.
+
+<span class="assignment">Predict the genes in the range 7,000,001-7,500,000 of chr2R of <i>D. melanogaster</i></span>. Use the FASTA format file <a href="data/chr2R.fa"><tt>chr2R.fa</tt></a>, which includes the whole chromosome 2R.
+<span class="assignment">To shorten this test run</span> (or when running several
+jobs in parallel) you should <span class="assignment">specify a subrange</span> of the
+input sequence using the parameters 
+<tt>--predictionStart</tt> and <tt>--predictionEnd</tt>.
+
+<pre class="code">augustus --species=fly --predictionStart=7000001 --predictionEnd=7500000 chr2R.fa > augustus.abinitio.gff   # takes ~1m</pre>
+
+In this example, I am using the <tt>fly</tt> parameters for comparability whith
+predictions below. Of course, the self-trained <tt>bug</tt> parameters also work.
+
+The output file <span class="result"><tt>augustus.abinitio.gff</tt></span> now contains 
+the predicted gene structures in GFF format with additional comments (lines starting with #).
+
+<pre class="code">
+# This output was generated with AUGUSTUS (version 2.5).
+...
+# start gene g1
+chr2R AUGUSTUS   gene        7007533 7010935 0.02  - .  g1
+chr2R AUGUSTUS   transcript  7007533 7010935 0.02  - .  g1.t1
+chr2R AUGUSTUS   tts         7007533 7007533 .     - .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   exon        7007533 7008630 .     - .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   stop_codon  7007610 7007612 .     - 0  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   intron      7008631 7008694 1     - .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   intron      7008812 7008865 0.88  - .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   intron      7009192 7009251 0.95  - .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   CDS         7007610 7008630 1     - 1  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   CDS         7008695 7008811 0.88  - 1  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   exon        7008695 7008811 .     - .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   CDS         7008866 7009191 0.99  - 0  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   exon        7008866 7009191 .     - .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   CDS         7009252 7009353 0.95  - 0  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   exon        7009252 7009429 .     - .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   start_codon 7009351 7009353 .     - 0  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   exon        7010820 7010935 .     - .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   tss         7010935 7010935 .     - .  transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MNTLSSARSVAIYVGPVRSSRSASVLAHEQAKSSITEEHKTYDEIPRPNKFKFMRAFMPGGEFQNASITEYTSAMRKR
+# YGDIYVMPGMFGRKDWVTTFNTKDIEMVFRNEGIWPRRDGLDSIVYFREHVRPDVYGEVQGLVASQNEAWGKLRSAINPIFMQPRGLRMYYEPLSNIN
+# NEFIERIKEIRDPKTLEVPEDFTDEISRLVFESLGLVAFDRQMGLIRKNRDNSDALTLFQTSRDIFRLTFKLDIQPSMWKIISTPTYRKMKRTLNDSL
+# NVAQKMLKENQDALEKRRQAGEKINSNSMLERLMEIDPKVAVIMSLDILFAGVDATATLLSAVLLCLSKHPDKQAKLREELLSIMPTKDSLLNEENMK
+# DMPYLRAVIKETLRYYPNGLGTMRTCQNDVILSGYRVPKGTTVLLGSNVLMKEATYYPRPDEFLPERWLRDPETGKKMQVSPFTFLPFGFGPRMCIGK
+# RVVDLEMETTVAKLIRNFHVEFNRDASRPFKTMFVMEPAITFPFKFTDIEQ]
+# end gene g1
+...
+</pre>
+
+For a description of the GFF format see <a href="http://www.sanger.ac.uk/resources/software/gff/spec.html">the GFF definition at the Sanger Centre</a>.<br><br>
+
+If you also want the protein sequences you can retrieve them with
+<pre class="code">getAnnoFasta.pl augustus.abinitio.gff</pre>
+which extracts the peptide sequences into a file <span class="result"><tt>augustus.abinitio.aa</tt></span>:
+
+<pre class="code">
+>g1.t1
+MNKLNLVLITEEHKTYDEIPRPNKFKFMRAFMPGGEFQNASITEYTSAMRKRYGDIYVMPGMFGRKDWVTTFNTKDIEMVFRNEGIWPRRDGLDSIVYFR
+EHVRPDVYGEVQGLVASQNEAWGKLRSAINPIFMQPRGLRMYYEPLSNINNEFIERIKEIRDPKTLEVPEDFTDEISRLVFESLGLVAFDRQMGLIRKNR
+DNSDALTLFQTSRDIFRLTFKLDIQPSMWKIISTPTYRKMKRTLNDSLNVAQKMLKENQDALEKRRQAGEKINSNSMLERLMEIDPKVAVIMSLDILFAG
+VDATATLLSAVLLCLSKHPDKQAKLREELLSIMPTKDSLLNEENMKDMPYLRAVIKETLRYYPNGLGTMRTCQNDVILSGYRVPKGTTVLLGSNVLMKEA
+TYYPRPDEFLPERWLRDPETGKKMQVSPFTFLPFGFGPRMCIGKRVVDLEMETTVAKLIRNFHVEFNRDASRPFKTMFVMEPAITFPFKFTDIEQ
+>g2.t1
+MRHRNKGAVKRKGPSAGAEQEQELKKPKSEFSNGFKRYITEEHKTYDEIPRPNKFKFMRAFMPGGEFQNASITEYTSAMRKRYGDIYVMPGMFGRKDWVT
+...
+</pre>
+
+
+<h2 id="customtrack">2. MAKE A CUSTOM GENE PREDICTION TRACK ON THE UCSC GENOME BROWSER</h2>
+
+In order to visually inspect our results and to compare with the FlyBase annotation we will
+now make a custom track of the gene structures in <span class="result"><tt>augustus.abinitio.gff</tt></span>. We need to create a few header lines in the custom track file which we can either do manually with an editor or like below on the command line (cut and paste).
+
+<pre class="code">
+echo -e "browser position chr2R:7000000-7050000\n\
+browser hide multiz15way bdtnpChipper\n\
+track name=abinitio description=\"Augustus ab initio predictions\" db=dm3 visibility=3" > abinitio.browser
+grep -P "AUGUSTUS\tCDS" augustus.abinitio.gff >> abinitio.browser
+</pre>
+With the <tt>grep</tt> command we just filtered out the lines that specify the coding exon coordinates.<br>
+
+The resulting file <span class="result"><tt>abinitio.browser</tt></span> is now in UCSC custom track format and looks like this:
+<pre class="code">
+browser position chr2R:7000000-7050000
+browser hide multiz15way bdtnpChipper
+track name=abinitio description="Augustus ab initio predictions" db=dm3 visibility=3
+chr2R   AUGUSTUS   CDS  7007610 7008630 1     -   1  transcript_id "g1.t1"; gene_id "g1";
+chr2R   AUGUSTUS   CDS  7008695 7008811 0.88  -   1  transcript_id "g1.t1"; gene_id "g1";
+chr2R   AUGUSTUS   CDS  7008866 7009191 0.99  -   0  transcript_id "g1.t1"; gene_id "g1";
+chr2R   AUGUSTUS   CDS  7009252 7009353 0.95  -   0  transcript_id "g1.t1"; gene_id "g1";
+chr2R   AUGUSTUS   CDS  7011376 7012396 1     -   1  transcript_id "g2.t1"; gene_id "g2";
+chr2R   AUGUSTUS   CDS  7012461 7012577 0.92  -   1  transcript_id "g2.t1"; gene_id "g2";
+chr2R   AUGUSTUS   CDS  7012632 7012957 0.99  -   0  transcript_id "g2.t1"; gene_id "g2";
+...
+</pre>
+
+<p>Now upload this file as a custom track on the UCSC genome browser.</p>
+
+<a href="javascript:onoff('aibr')" class="dlink"><span id="aibr" title="aibrd" class="dcross">[+]</span>
+<span class="dtitle">How again?</span></a> <br>
+<div id="aibrd" class="details" style="display:none;"> 
+<ol>
+<li><span class="assignment">open the <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3" target="_blank">browser for <i>Drosophila melanogaster</i></a>,</span></li> 
+<li> <span class="assignment">click on "add custom tracks" or "manage custom tracks"</span>,</li>
+<li> <span class="assignment">upload the file <tt>abinitio.browser</tt></span> and
+<li> <span class="assignment">click on the link in the column "Pos" in the table
+of custom tracks</tt></span>. 
+</ol>
+</div><br>
+
+The lazy ones can look at the result by clicking this link to a previously
+<a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://augustus.gobics.de/tutorial/customtracks/abinitio.browser" target="_blank">prepared custom track</a>.
+
+<h2 id="prephints">3. PREPARE HINTS</h2>
+
+<p>Hints are extrinsic evidence about the location and struture of genes in
+a particular GFF format. When predicting genes AUGUSTUS can incorporate these hints,
+which will change the likelihood of gene structures candidates. It will tend to 
+predict gene structures that are in agreement with the hints. </p>
+
+<h4>Sources of Hints</h4>
+<table>
+<tr>
+<td>ESTs or mRNAs</td>
+<td>transcriptome reads, long enough to span several exons (454, Sanger)</td>
+</tr>
+<tr>
+<td>RNA-Seq</td>
+<td>high coverage short read transcriptome sequences (Illumina, SOLiD)</td>
+</tr>
+<tr>
+<td>genomic conservation </td>
+<td></td>
+</tr>
+<tr>
+<td>MSMS</td>
+<td></td>
+</tr>
+</table>
+
+<p> Below, we will practice the preparation of hints from ESTs or mRNA
+(<a href="#hest">3.1</a>) and from RNA-Seq (<a href="#hrnaseq">3.2</a>).
+</p>
+
+<h3 id="hest">3.1 From ESTs</h2>
+As an example, we will use a set of 8458 ESTs which map to 
+chr2R:7000000-8000000 of of <i>Drosophila</i>: <a href="data/est.chr2R.7M-8M.fa">est.chr2R.7M-8M.fa</a>.
+
+<p><span class="assignment">Align the ESTs against chr2R</span> using BLAT.</p>
+<pre class="code">
+blat -noHead chr2R.fa est.chr2R.7M-8M.fa est.psl # takes ~3m
+</pre>
+This creates an alignment file <span class="result"><tt>est.psl</tt></span>
+in <a href="http://genome.ucsc.edu/FAQ/FAQformat.html#format2">PSL format</a>:
+
+<pre class="code" style="font-size:small">
+440 5 0  2  0  0  1   1281 - gi|1703783  447  0  447 chr2R  21146708  7776697 7778425 2   197,250,    0,197,     7776697,7778175,
+494 3 0  1  0  0  2   65   + gi|1703784  498  0  498 chr2R  21146708  7775550 7776113 3   452,12,34,  0,452,464,x 7775550,7776003,7776079,
+...
+</pre>
+
+However, typically some ESTs align well to very many places in the genome. BLAT also
+includes short local alignments starting from 30bp. For this reason, we further 
+<span class="assignment">filter the alignments</span>:
+
+<pre class="code">cat est.psl | filterPSL.pl --best --minCover=80 > est.f.psl</pre>
+
+<span class="result"><tt>est.f.psl</tt></span> now only contains for each query
+the best alginment(s) and that only if it covers at least 80% of the query length.
+This reduces the number of alignments:
+<pre class="code">
+wc -l est.psl est.f.psl
+# 10487 est.psl
+# 8606 est.f.psl
+</pre>
+
+We can have a look at those EST alignments by <span class="assignment">creating another custom browser track</span>:
+
+<pre class="code">
+echo -e "browser position chr2R:7000000-7050000\n\
+track name=ESTs description=\"EST alignments\" db=dm3 visibility=4" > ests.browser
+cat est.f.psl >> ests.browser
+gzip ests.browser
+</pre>
+
+<p>You can now <span class="assignment">upload <span class="result"><tt>ests.browser.gz</tt></span> as another custom track</span> or <span class="assignment">click on this <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://augustus.gobics.de/tutorial/customtracks/ests.browser.gz" target="_blank">prepared custom track</a></span></p>
+
+Next, <span class="assignment">generate hints from the EST alignments</span>:
+
+<pre class="code">blat2hints.pl --nomult --in=est.f.psl --out=hints.est.gff</pre>
+The script <tt>blat2hints.pl</tt> identifies the positions of likely introns,
+exons and exonic regions (termed <i>exonpart</i> or <i>ep</i>) from the alignments.
+The file <span class="result"><tt>hints.est.gff</tt></span> now contains these hints sorted by third column. However, they are internally grouped by the the group name following grp= in the last column. An example group of hints may look like this.<br>
+E.g.
+
+<pre class="code">grep 15058069 hints.est.gff</pre>
+yields
+<pre class="code">
+chr2R   b2h     ep      7559574 7559803 0   .   .    grp=gi|15058069;pri=4;src=E
+chr2R   b2h     ep      7560550 7560814 0   .   .    grp=gi|15058069;pri=4;src=E
+chr2R   b2h     exon    7560222 7560347 0   .   .    grp=gi|15058069;pri=4;src=E
+chr2R   b2h     intron  7559804 7560221 0   .   .    grp=gi|15058069;pri=4;src=E
+chr2R   b2h     intron  7560348 7560549 0   .   .    grp=gi|15058069;pri=4;src=E
+</pre>
+
+
+<h3 id="hrnaseq">3.2 From RNA-Seq</h2>
+
+Massive amounts of (short) transcriptome reads from next generation sequencing
+methods like Illumina first need to be aligned to the genome. Recently, a large
+number of short read aligners was developed. For the sake of this tutorial we will
+assume that we have already aligned the reads to the genome and that we have 
+two files:
+
+<ol>
+<li>The file <a href="data/chr2R.7M-8M.wig"><tt>chr2R.7M-8M.wig</tt></a> contains a coverage graph, that contains for each base in the window chr2R:7000000-8000000 the number of 
+reads alignments that cover the position. The UCSC group has a <a href="http://genome.ucsc.edu/FAQ/FAQformat.html#format6">description of the wiggle format (.wig)</a>.</li>
+<li>The file <a href="data/hints.rnaseq.intron.gff"><tt>hints.rnaseq.intron.gff</tt></a>
+contains likely intron positions, inferred from gaps in the query of the read alignments. Together with the intron boundaries the multiplicity (mult) is reported, which
+counts the number of alignments that support the given intron candidate, if there is more than one.</li>
+</ol>
+
+In this <a href="http://augustus.gobics.de/binaries/readme.rnaseq.html">readme
+about AUGUSTUS in the RGASP assessment</a> a method is described that would produce two such files. TopHat is a spliced read mapper for RNA-Seq that also produces 
+a coverage grap and reports introns with their multiplicity.
+ 
+<p>
+<span class="assignment">Upload the file <tt>chr2R.7M-8M.wig</tt> as a UCSC custom track</span> (<tt>gzip</tt>ing would speed up upload) or <span class="assignment">click on this <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://augustus.gobics.de/tutorial/customtracks/chr2R.7M-8M.wig.gz" target="_blank">prepared custom track</a></span>.</p>
+
+<p><span class="assignment">Generate hints about exonic regions from the coverage graph</span> (wig file):
+
+<pre class="code">
+cat chr2R.7M-8M.wig | wig2hints.pl --width=10 --margin=10 --minthresh=2 --minscore=4 \
+ --src=W --type=ep --radius=4.5 > hints.rnaseq.ep.gff
+</pre>
+
+The resulting <span class="result"><tt>hints.rnaseq.ep.gff</tt></span> now 
+contains hints in a GFF format that <tt>augustus</tt> understands:
+
+<pre class="code">
+chr2R   w2h   ep    7007551 7007560 5.300   .    .    src=W;mult=5;
+chr2R   w2h   ep    7007561 7007570 7.400   .    .    src=W;mult=7;
+chr2R   w2h   ep    7007571 7007580 9.700   .    .    src=W;mult=9;
+chr2R   w2h   ep    7007581 7007590 10.200  .    .    src=W;mult=10;
+</pre>
+
+Again, at the end of the column, the multiplicity (mult) contains the
+average coverage in the given interval. <tt>augustus</tt> will consider each
+such line evidence that the sequence interval is <i>part of an exon</i> (ep=exonpart).
+
+<h3 id="concath">3.3 Concatenate all Hints</h2>
+
+Now, <span class="assignment">join the hints from all sources</span> into one file:
+<pre class="code">cat hints.est.gff hints.rnaseq.intron.gff hints.rnaseq.ep.gff > hints.gff</pre>
+
+<span class="result"><tt>hints.gff</tt></span> now contains the exon, intron and exonpart hints from ESTs as well as the intron and exonpart hints from RNA-Seq.
+
+<h2 id="extr">4. SET HINT PARAMETERS</h2>
+
+The strength of the influence of the hints can be adjusted with a few parameters 
+from no influence (ab initio) up to the point where they should be trusted
+completely and "anchor" the gene structure. These parameters are stored in an
+extrinsic configuration file.
+The folder <tt>config/extrinsic</tt> of the AUGUSTUS package contains a
+few examples.
+
+<p>Start by <span class="assignment">copying another extrinsic configuration file</span>:</p>
+
+<pre class="code">cp $AUGUSTUS_CONFIG_PATH/extrinsic/extrinsic.M.RM.E.W.cfg extrinsic.bug.cfg</pre>
+
+Now <span class="assignment">edit <tt class="result">extrinsic.bug.cfg</tt></span> so that the 
+non-comment lines are like this. Alternatively, you may just copy that file from
+the result files and edit some of the bold numbers below.
+
+<pre class="code">
+[SOURCES]
+M E W
+
+[SOURCE-PARAMETERS]
+
+[GENERAL]
+      start        1        1  M    1  1e+100  E 1    1    W 1    1
+       stop        1        1  M    1  1e+100  E 1    1    W 1    1
+        tss        1        1  M    1  1e+100  E 1    1    W 1    1
+        tts        1        1  M    1  1e+100  E 1    1    W 1    1
+        ass        1        1  M    1  1e+100  E 1    1    W 1    1
+        dss        1        1  M    1  1e+100  E 1    1    W 1    1
+   exonpart        1     <span style="font-weight:bold;color:red">.997</span>  M    1  1e+100  E 1    <span style="font-weight:bold;color:darkgreen">1e2</span>  W 1    <span style="font-weight:bold;color:darkgreen">1.05</span>
+       exon        1        1  M    1  1e+100  E 1    <span style="font-weight:bold;color:darkgreen">1e4</span>  W 1    1
+ intronpart        1        1  M    1  1e+100  E 1    1    W 1    1
+     intron        1       <span style="font-weight:bold;color:red">.3</span>  M    1  1e+100  E 1    <span style="font-weight:bold;color:darkgreen">1e6</span>  W 1    1
+    CDSpart        1  1 <span style="font-weight:bold;color:red">0.985</span>  M    1  1e+100  E 1    1	   W 1    1
+        CDS        1        1  M    1  1e+100  E 1    1    W 1    1
+    UTRpart        1    1 <span style="font-weight:bold;color:red">.96</span>  M    1  1e+100  E 1    1    W 1    1
+        UTR        1        1  M    1  1e+100  E 1    1    W 1    1
+     irpart        1        1  M    1  1e+100  E 1    1    W 1    1
+nonexonpart        1        1  M    1  1e+100  E 1    1    W 1    1
+  genicpart        1        1  M    1  1e+100  E 1    1    W 1    1
+</pre>
+
+The bold green numbers specify the <i>bonus</i> that a gene structure candidate gets
+for being compatible with a hint of that type and source. 
+
+<p>For example, the <span style="font-weight:bold;color:darkgreen">1e6</span> in the intron row after the source letter E means that for each intron hint from
+ESTs (src=E), gene structures that have an intron
+with both boundaries given as in the hint are rewarded by a factor of 1 million
+relatively to gene structures disregarding the intron hint.</p>
+
+<p>The <span style="font-weight:bold;color:darkgreen">1.05</span> in the exonpart row after the letter W specifies that for each exonpart hint in the RNA-Seq hints file
+(src=W), every gene structure that has an exon including the range of the hint gets 
+a relative bonus factor 1.05 <i>per multiplicity</i>.</p>
+
+<p>The red numbers mean a punishment (malus) for gene structures with unsupported
+features. For example, the <span style="font-weight:bold;color:red">.3</span> in
+the intron row means that every intron candidate
+<i>that has no intron hints supporting it</i> is punished by multiplying its relative probability with the factor 0.3. If you decrease this number even
+more (say from .3 to .001) then fewer introns unsupported by spliced transcriptome 
+reads should be predicted. This would likely decrease the false positive intron rate, but also more true unsupported introns would be missed.
+</p>
+
+For more information look at into one of the extrinsic.cfg files.
+
+
+<h2 id="predh">5. PREDICT GENES USING HINTS</h2>
+
+
+<span class="assignment">Predict the genes in the range 7,000,001-7,500,000 of chr2R of <i>D. melanogaster</i> using evidence from <tt>hints.gff</tt></span>. 
+
+<pre class="code">augustus --species=fly --predictionStart=7000001 --predictionEnd=7500000 chr2R.fa \
+ --extrinsicCfgFile=extrinsic.bug.cfg --hintsfile=hints.gff > augustus.hints.gff # takes ~9m</pre>
+
+<p>The species <tt>fly</tt> contains UTR parameters, which we didn't have the time to 
+train for <tt>bug</tt>. When using RNA-Seq as hints it is better to use a model
+with UTRs, as a significant fraction of reads map to UTRs. It is also possible
+to use <tt>bug</tt> here, though.</p>
+
+The output <span class="result"><tt>augustus.hints.gff</tt></span> now looks like that
+
+<pre class="code">
+# This output was generated with AUGUSTUS (version 2.5).
+...
+# start gene g1
+chr2R AUGUSTUS   gene        7007533 7009385 0.2 -  .  g1
+chr2R AUGUSTUS   transcript  7007533 7009385 0.2 -  .  g1.t1
+chr2R AUGUSTUS   tts         7007533 7007533 .   -  .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   exon        7007533 7008630 .   -  .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   stop_codon  7007610 7007612 .   -  0  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   intron      7008631 7008694 1   -  .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   intron      7008812 7008865 1   -  .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   intron      7009192 7009251 1   -  .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   CDS         7007610 7008630 1   -  1  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   CDS         7008695 7008811 1   -  1  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   exon        7008695 7008811 .   -  .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   CDS         7008866 7009191 1   -  0  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   exon        7008866 7009191 .   -  .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   CDS         7009252 7009353 0.94-  0  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   exon        7009252 7009385 .   -  .  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   start_codon 7009351 7009353 .   -  0  transcript_id "g1.t1"; gene_id "g1";
+chr2R AUGUSTUS   tss         7009385 7009385 .   -  .  transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MNTLSSARSVAIYVGPVRSSRSASVLAHEQAKSSITEEHKTYDEIPRPNKFKFMRAFMPGGEFQNASITEYTSAMRKR
+# YGDIYVMPGMFGRKDWVTTFNTKDIEMVFRNEGIWPRRDGLDSIVYFREHVRPDVYGEVQGLVASQNEAWGKLRSAINPIFMQPRGLRMYYEPLSNIN
+# NEFIERIKEIRDPKTLEVPEDFTDEISRLVFESLGLVAFDRQMGLIRKNRDNSDALTLFQTSRDIFRLTFKLDIQPSMWKIISTPTYRKMKRTLNDSL
+# NVAQKMLKENQDALEKRRQAGEKINSNSMLERLMEIDPKVAVIMSLDILFAGVDATATLLSAVLLCLSKHPDKQAKLREELLSIMPTKDSLLNEENMK
+# DMPYLRAVIKETLRYYPNGLGTMRTCQNDVILSGYRVPKGTTVLLGSNVLMKEATYYPRPDEFLPERWLRDPETGKKMQVSPFTFLPFGFGPRMCIGK
+# RVVDLEMETTVAKLIRNFHVEFNRDASRPFKTMFVMEPAITFPFKFTDIEQ]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 100
+# CDS exons: 4/4
+#      E:   4 
+#      W:   4 
+# CDS introns: 3/3
+#      E:   3 
+# 5'UTR exons and introns: 1/1
+#      E:   1 
+# 3'UTR exons and introns: 1/1
+#      W:   1 
+# hint groups fully obeyed: 137
+#      E:   4 (gi|15542574,SRR023546.8642467/1)
+#      W: 133 
+# incompatible hint groups: 18
+#      E:  18 (gi|13769068,gi|4203815,gi|15543927,gi|38623822,gi|15539951,gi|14693753,gi|14699170,...)
+# end gene g1
+...
+</pre>
+
+<p>After each predicted transcript a little statistics follows about the support and
+compatibility of this transcript with the hints. Note, that AUGUSTUS now predicts alternative
+splice forms (ending e.g. in .t2).</p>
+
+
+Finally, <span class="assignment">make another custom track with the predictions using hints</span>:
+<pre class="code">
+echo -e "browser position chr2R:7299000-7318000\n\
+track name=withhints description=\"Augustus predictions using hints\" db=dm3 visibility=3" > withhints.browser
+grep -P "AUGUSTUS\t(CDS|exon)" augustus.hints.gff >> withhints.browser
+</pre>
+In the last line we are filering out from the predictions just the lines specifying exons and CDS. The additional exon lines identify the UTR (if you used <tt>fly</tt>)
+by subtracting the CDS ranges.
+
+<p>Again, you may also just click on this like to a <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://augustus.gobics.de/tutorial/customtracks/withhints.browser" target="_blank">prepared custom track</a> with the preditions.</p>
+
+</body></html>

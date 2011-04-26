@@ -1,0 +1,228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html><head><title>Scipio</title>
+<link rel="stylesheet" type="text/css" href="augustus.css">
+<script src="tutorial.js" type="text/javascript"></script>
+</head><body>
+<font size=-1>
+Navigate to <a href="index.html">Lab Session on AUGUSTUS</a>. 
+<a href="scipio.html">Using Scipio</a>
+<a href="training.html">Training AUGUSTUS</a>.
+<a href="prediction.html">Predicting Genes</a>.
+<a href="ppx.html">AUGUSTUS-PPX</a>.
+</font>
+<div align="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
+
+<h1>Using Scipio to create a (training) set of gene structures</h1>
+
+<p>In the case where a genome and protein sequences from the same or very closely related species are given, 
+<a href="http://www.webscipio.org/">Scipio</a> can be used to construct the gene structure from the sequences.
+Scipio uses <a href="http://users.soe.ucsc.edu/~kent/">BLAT</a> to align the protein sequences against the genome
+and then determines the exact boundaries of the exons, and adds small exons that were not found by BLAT.<br>
+</p>
+
+<a href="javascript:onoff('do')" class="dlink"><span id="do" title="dod" class="dcross">[+]</span>
+<span class="dtitle">Installing Scipio...</span></a> <br>
+<div id="dod" class="details" style="display:none;">
+<span class="assignment">Download Scipio</span> from <a href="http://www.webscipio.org/webscipio/download_scipio">
+http://www.webscipio.org/webscipio/download_scipio</a>.<br>
+Scipio requires that BLAT and the yaml perl module YAML.pm is installed.<br>
+<span class="assignment">Download and install <a href="http://hgwdev.cse.ucsc.edu/~kent/exe/linux/">BLAT</a>.</span><br>
+On UBUNTU linux <span class="assignment">install <tt>libyaml-perl</tt></span> doing
+<pre class="code">sudo apt-get install libyaml-perl</pre>
+</div>
+
+
+<a href="javascript:onoff('da')" class="dlink"><span id="da" title="dad" class="dcross">[+]</span>
+<span class="dtitle">Some comments about when to use Scipio...</span></a> <br>
+<div id="dad" class="details" style="display:none;">
+Scipio is post-processing spliced alignments from BLAT. It is therefore suitable only for cases in which the input protein sequences are expected to be fairly similar to 
+the proteins encoded by the genome (e.g. >90% similarity). One use case is the migration of gene structures from one assembly to another assembly. Another use case
+is the identification of exon coordinates for protein of the same species as the genome when the gene structures (GFF) is not available (anymore). A third use case
+is the mapping of protein sequences from a related known species to a new species, e.g. from human to Orangutan. Scipio is well-suited for draft assemblies with short
+contigs, as it is assemblying alignments of proteins where different fragments match different contigs.
+</div><br>
+
+<h2>1. Run Scipio</h2>
+
+As example input we use data from 5 mega bases of the <i>Drosophila</i> genome.
+We first <span class="assignment">create symbolic links</span> to have aliases to the file names with intuitive names
+<pre class="code">ln -s chr2R.2M-7M.fa genome.fa
+ln -s chr2R.2M-7M.aa proteins.aa
+</pre>
+(The first two megabases at the chromosome tip were not taken because they are highly repetitive.)<br><br>
+
+<span class="assignment">Run Scipio:</span>
+<pre class="code">scipio.1.4.pl --blat_output=prot.vs.genome.psl genome.fa proteins.aa > scipio.yaml   # takes ~7m
+</pre> 
+The option <tt>--blat_output=prot.vs.genome.psl</tt> means that the time-consuming protein-to-dna alignments are stored, in case
+one wants to rerun Scipio with other parameters.
+
+The file <tt class="result">scipio.yaml</tt> now contains for each protein alignment details, in particular also the exact sequence coordinates we
+require. (Protein BLAT resolves exon boundaries at best up the accuracy of complete amino acids, which is not enough for 
+creating a training set of gene structures.)<br><br>
+
+<span class="assignment">Extract a GFF file from the yaml output</span> and <span class="assignment">convert the GFF output</span> to one suitable for further processing
+<pre class="code">cat scipio.yaml | yaml2gff.1.4.pl > scipio.scipiogff
+scipiogff2gff.pl --in=scipio.scipiogff --out=scipio.gff
+</pre>
+
+The command 
+<pre class="code">cat scipio.yaml | yaml2log.1.4.pl > scipio.log</pre>
+creates a log file that can be examined to see for each protein whether a perfect alignment was found (status: complete).<br><br>
+
+The file <span class="result"><tt>scipio.gff</tt></span> should now look like this
+<pre class="code">
+chr2R   Scipio  CDS     900562  900621  1.000   +       0       transcript_id "392"
+chr2R   Scipio  CDS     904518  904880  1.000   +       0       transcript_id "392"
+chr2R   Scipio  CDS     904940  905131  1.000   +       0       transcript_id "392"
+chr2R   Scipio  CDS     905195  905263  1.000   +       0       transcript_id "392"
+chr2R   Scipio  CDS     3595076 3596041 1.000   +       0       transcript_id "2517"
+...
+</pre>
+
+<h3> 1.1 Optional: visualize gene structures</h3>
+<p>We will check what the gene structures constructed above "look like" using the
+<a href="http://genome.ucsc.edu">UCSC Genome Browser</a>. This is here possible as
+the UCSC Genome Browser holds <i>Drosophila</i>
+assembly dm3. In general, you will have to set up your own browser (e.g. 
+<a href="http://gmod.org/wiki/GBrowse">GBrowse</a>).</p>
+
+<span class="assignment">Prepare a custom track file</span>
+<pre class="code">
+echo -e "browser position chr2R:3000000-3200000\n\
+browser hide multiz15way bdtnpChipper\n\
+track name=scipio description=\"training and test genes\"\
+ db=dm3 offset=2000000 visibility=3" > scipio.browser
+cat scipio.gff >> scipio.browser
+gzip -c scipio.browser > scipio.browser.gz
+</pre>
+
+The file <span class="result"><tt>scipio.browser</tt> and its packed version
+<tt>scipio.browser.gz</tt></span> will now look like this
+<pre class="code">
+browser position chr2R:3000000-3200000
+browser hide multiz15way bdtnpChipper
+track name=scipio description="training and test genes" db=dm3 offset=2000000 visibility=2
+chr2R   Scipio  CDS     900562  900621  1.000   +       0       transcript_id "392"
+chr2R   Scipio  CDS     904518  904880  1.000   +       0       transcript_id "392"
+chr2R   Scipio  CDS     904940  905131  1.000   +       0       transcript_id "392"
+chr2R   Scipio  CDS     905195  905263  1.000   +       0       transcript_id "392"
+chr2R   Scipio  CDS     3595076 3596041 1.000   +       0       transcript_id "2517"
+...
+</pre>
+
+This is a format that the UCSC Genome Browser understands. The first three lines tell it
+which region to display first (chr2R:3000000-3200000), to hide the tracks multiz15way and
+bdtnpChipper (we don't need to look at them), the track name (scipio) a header
+for the track, the assembly it refers to (dm3), that the Browser needs to add 2,000,000 to the coordinates because our example genome starts after 2 mega bases only (offset=2000000) and that the display mode should be "full" (visibility=2).
+
+<ol>
+<li><span class="assignment">open the <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3" target="_blank">browser for <i>Drosophila melanogaster</i></a>,</span></li> 
+<li> <span class="assignment">click on "add custom tracks" or "manage custom tracks"</span>,</li>
+<li> <span class="assignment">upload the file <tt>scipio.browser.gz</tt></span> and
+<li> <span class="assignment">click on the link in the column "Pos" in the table
+of custom tracks</tt></span>. 
+</ol>
+
+The lazy ones can look at the results by clicking this link to a previously
+<a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://augustus.gobics.de/tutorial/customtracks/scipio.browser.gz" target="_blank">prepared custom track</a>.
+
+<p>
+The UCSC Genome Browser group has an excellent <a href="http://genome.ucsc.edu/goldenPath/help/hgTracksHelp.html#CustomTracks">help page for setting up UCSC custom tracks</a>.</p>
+
+<h2>2. Convert GFF file to Genbank format file</h2>
+
+The training program <tt>etraining</tt> of the AUGUSTUS package requires input in the form of Genbank format,
+that includes both the genomic sequences and the sequence coordinates of the coding regions CDS and optionally
+of the UTR. In  many cases the coordinates of the gene structures are available in 
+<a href="http://www.sanger.ac.uk/resources/software/gff/spec.html">GFF</a> format or 
+<a href="http://mblab.wustl.edu/GTF22.html">GTF format</a>.
+The tool <tt>gff2gbSmallDNA.pl</tt> that comes with AUGUSTUS can be used to <span class="assignment">convert</span> files in some <span class="assignment">GFF</span> formats or
+GTF <span class="assignment">to Genbank format</span>:<br>
+
+<pre class="code">gff2gbSmallDNA.pl scipio.gff genome.fa 1000 genes.raw.gb</pre>
+
+This command takes each gene in <tt>scipio.gff</tt> together with 1000 bp flanking intergenic region upstream
+and downstream of the gene and creates a LOCUS in Genbank format.<br><br>
+
+<a href="javascript:onoff('if')" class="dlink"><span id="if" title="ifd" class="dcross">[+]</span>
+<span class="dtitle">Input format of gff2gbSmallDNA.pl...</span></a> <br>
+<div id="ifd" class="details" style="display:none;">
+The last column (column 9) of the GFF input file is used to group exons of the same transcript together. For an example
+see the <tt>scipio.gff</tt> from above. In GTF format this is based on whether they agree on the <tt>transcript_id</tt> field. 
+If the last column contains the string <tt>Parent=</tt> (as in GFF3) then this is used for grouping. If no grouping 
+from the standard formats is detected then the whole 9th column is used for grouping exons to genes.
+It is possible to convert genes just containing the coding regions (CDS in the third column) but also 
+to convert <b>genes including UTR annotation</b> (keyword UTR or exon) in the third column.
+
+It is also possible to restrict output using lists of gene names to include or exclude:
+<pre class="code">Usage: gff2gbSmallDNA.pl gff-file seq-file max-size-of-gene-flanking-DNA output-file [options]
+options:
+--bad=badfile    Specify a file with gene names. All except these are included in the output.
+--good=goodfile  Specify a file with gene names. Only these genes are included in the output.
+--overlap        Overlap filtering turned off.
+</pre>
+</div><br>
+
+<a href="javascript:onoff('fr')" class="dlink"><span id="fr" title="frd" class="dcross">[+]</span>
+<span class="dtitle">Size of flanking regions...</span></a> <br>
+<div id="frd" class="details" style="display:none;">
+
+The flanking regions upstream and downstream of each gene are used to train non-coding DNA content, i.e. estimate <i>k</i>-mer 
+frequencies in these regions. When two neighboring genes in the gff file are closer to each other
+than 2*<tt>max-size-of-gene-flanking-DNA</tt>, then then flanking region is decreased such that half of the intergenic
+region between the two genes is included in each locus. This avoids to some extend to have overlapping non-coding regions for training
+and to include genes in the "intergenic" region.
+The choice of the parameter <tt>max-size-of-gene-flanking-DNA</tt> is important for several reasons.
+<ul>
+<li> The flanking region should be large enough to allow a prepresentative estimate of non coding regions.
+When the GFF file only contains CDS, then part of the flanking regions are UTR and may not be representative of
+intergenic region (e.g. CpG islands in vertebrates).</li>
+<li>Usually the gff file is not complete and genes are missing from it. In that case the flanking regions may contain genic regions
+of genes that are missing in the gff file. Apart from the bias on <i>k</i>-mer frequencies this will yield a bad specificity when
+these loci are used for assessing accuracy.
+<li>A small flanking region may lead to an overestimation of gene level sensitivity if it is used for assessing accuracy. Generally,
+gene finders may be more accurate on sequences that contain exactly one locus and only little flanking regions.
+</li>
+<li>A large flanking region may increase the running time of <tt>optimize_augustus.pl</tt> substantially.</li>
+</li>
+</ul>
+A compromise between above conflicting aims needs to be sought.
+</div>
+
+<p>The file <tt>genes.raw.gb</tt> now contains training genes in the right format. However, some fraction of them may
+be problematic with respect to AUGUSTUS training. They may contain genes with <b>nonconsensus splice sites, missing start codons,
+missing stop codons, in-frame stop codons</b>. To avoid warning messages later and because genes with these features are partially
+ignored anyways, we <span class="assignment">remove these problematic locis</span> from <tt>genes.raw.gb</tt>:
+
+<pre class="code">etraining --species=generic --stopCodonExcludedFromCDS=true genes.raw.gb 2> train.err
+</pre>
+<tt>etraining</tt> complains about and reports problematic genes. The option --stopCodonExcludedFromCDS
+determines whether in the input Genbank file the stop codon is considered to be part of the CDS or not. This 
+is sometimes the case and sometimes not. When the GFF stems from other sources than Scipio this may have to be set to <tt>false</tt>
+rather than to <tt>true</tt>. We <span class="assignment">write the error messages into a file</span> <tt>train.err</tt> which looks like this:
+
+<pre class="code" style="font-size:small">
+gene 186 transcr. 1 in sequence chr2R_549753-555284: Initial exon has length < 3!
+gene 461 transcr. 1 in sequence chr2R_1034318-1036751: Initial Exon doesn't begin with start codon.
+gene 567 transcr. 1 in sequence chr2R_1198437-1201521: Initial Exon doesn't begin with start codon.
+gene 4537 transcr. 1 in sequence chr2R_1354359-1361857: Initial Exon doesn't begin with start codon.
+gene 4783 transcr. 1 in sequence chr2R_1669860-1673241: Terminal exon doesn't end in stop codon. Variable stopCodonExcludedFromCDS set right?
+gene 5161 transcr. 1 in sequence chr2R_2043765-2046183: Single exon gene doesn't begin with atg codon but with ccc
+gene 6319 transcr. 1 in sequence chr2R_3734070-3735386: Initial Exon doesn't begin with start codon.
+gene 3577 transcr. 1 in sequence chr2R_4767472-4770826: Initial Exon doesn't begin with start codon.
+</pre>
+
+</p>
+We can now <span class="assignment">filter out the problematic genes</span>, e.g. by issuing
+<pre class="code">
+cat train.err | perl -pe 's/.*in sequence (\S+): .*/$1/' > badgenes.lst
+filterGenes.pl badgenes.lst genes.raw.gb > genes.gb
+grep -c "LOCUS" genes.raw.gb genes.gb
+# genes.raw.gb:594
+# genes.gb:586
+</pre>
+Here, <tt>badgenes.lst</tt> ist a file with gene names that were reportet in <tt>train.err</tt>.<br><br>
+<span class="result"><tt>genes.gb</tt> now contains 586 loci with one "unproblematic" gene each.</span>
+
+</body></html>

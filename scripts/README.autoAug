@@ -1,0 +1,283 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                                %
+%     Pipeline for training and running the gene finder AUGUSTUS automatically   %
+%                                                                                %
+%     Xin Xing, Ralph Krimmel, Mario Stanke                                      %
+%     University of Goettingen                                                   %
+%     Contact: Mario Stanke, mario@gobics.de                                     %
+%                                                                                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ 1. Introduction
+ 2. System Overview
+ 3. Software Components
+ 4. Installation and Configuration
+ 5. Typical Usage
+ 6. Command Line Arguments
+ 7. Component Scripts
+    a. autoAugPred.pl
+    b. autoAugTrain.pl
+
+
+
+		1. Introduction
+		---------------
+
+The purpose of this pipeline script is to run the AUGUSTUS training process and gene
+prediction algorithm automatically on a given eukaryotic genome with
+available cDNA evidence. The complete process contains the following steps.
+These are encapsulated in this automatic training pipeline.
+
+-- Construct an initial training set of genes (protein coding regions thereof), e.g. using PASA
+-- Train AUGUSTUS to predict coding regions (i.e. without Untranslated Regions (UTR)) using the initial training set. 
+-- Predict coding regions of genes in your genome (both ab initio and using hints from cDNA)
+-- Train the UTR model of AUGUSTUS using EST-supported genes and EST alignments.
+-- Predict genes including UTRs in your genome using hints from cDNA.
+
+The first step is optional and can be replaced by preparing your own training set of genes. For a schema of the
+pipeline look at the poster in the doc folder. 
+
+TIP: Please manually/visually check the results of the pipeline, e.g. by loading them into a browser.
+     The pipeline outputs files for tracks on a GBrowse. 
+
+WARNING: Please do not assume that you get the best possible results from a fully automatic pipeline.
+         Eykaryotic gene prediction is still a complex craft and some beasts are just different.
+
+		2. System Overview
+		------------------
+
+This program runs on a UNIX/LINUX-based architecture and involves 
+components written in Perl and C++. Results of the training-set generating step (PASA) are stored 
+primarily within a MySQL database. The whole pipeline can take in the order of 10 CPU days on a
+medium complete genome, so please be patient and consider using a compute cluster.
+If you happen to have a Sun Grid Engine available you can configure the pipeline to run in parallel
+and completely automatically. If you are using another cluster, the job scripts will be created and you 
+can then submit them manuall using your batch job submission system.
+
+		3. Software Components
+		-----------------------------------
+
+AUGUSTUS: Download from http://augustus.gobics.de/
+
+BLAT:     You get Jim Kent's alignment program at http://users.soe.ucsc.edu/~kent/src/
+          Also install pslCDnaFilter which is part of the Jim Kent src tree
+          (http://hgwdev.cse.ucsc.edu/~kent/src/unzipped/hg/pslCDnaFilter/).
+
+PASA:     Download the Program to Assemble Spliced Alignments from 
+          Sourceforge: http://sourceforge.net/projects/pasa
+          You do not need PASA if you already have a training set of genes for your species.
+
+SCIPIO:   Install SCIPIO if you have training genes in the form of protein sequences.
+	  SCIPIO can then find their gene structures in the genome. Most users will not need this.
+	  http://www.webscipio.org/
+
+
+		4. Installation and Configuration
+		---------------------------------
+
+Install the required components according to their documentation.
+Make sure you have set the environment variables AUGUSTUS_CONFIG_PATH and those for
+PASA. That means for example lines such as
+export AUGUSTUS_CONFIG_PATH=/home/mario/augustus/config
+export PASAHOME=/home/mario/PASA
+shall be written in your startup script (like ~/.bashrc). Furthermore, 
+all scripts of AUGUSTUS and PASA shall be executable. For 
+details see the documentations of AUGUSTUS and PASA.
+
+If you use PASA with GMAP instead of BLAT then please note that PASA is curently not fully compatible
+with GMAP versions after the version from 2007-09-28. If you use a newer GMAP version then remove
+the "-S" option in the PASA script scripts/process_GMAP_alignments.pl so it says:
+gmap_setup -D gmap_db_dir -d $genome_db $genome_db
+
+Furthermore, if you are using a cluster, AUGUSTUS should be installed there as well. The 
+path to "augustus" should also be concated to the "PATH" in your cluster.  
+
+In case you are using a Sun Grid Engine and you want to use the option "noninteractive" (see section 6.),
+configure your ssh so that you can login on the cluster without having to type a password.
+
+Make sure to include the augustus/scripts directory in your PATH environment variable!
+There is test data in augustus/examples/autoAug for testing this pipeline. I recommend you
+test the installation on this small set first to quickly detect possible installation problems.
+
+
+
+		5. Typical Usage
+		----------------
+
+First create a new directory to store all files created by the pipeline.
+
+Situation 1:
+
+You already have a set of training genes (e.g. constructed from ESTs using PASA).
+The way you run the pipeline depends on whether you want to use a compute cluster
+to run the prediction jobs in parallel or whether you want to run it on a single PC.
+The easiest but slower way is to run everything sequentially in one command, e.g.
+
+>autoAug.pl -g genome.fa -t traingenes.gff --species=yourSpecies --cdna=cdna.fa -v  --singleCPU --useexisting
+
+traingenes.gff is the set of training gene structures in GFF format (e.g. as produced by PASA).
+Alternatively you can use -t traingenes.gb if you have a training set
+in Genbank format. This has the advantage that the training genes can be based
+on a different DNA sequence than genome.fa.
+cdna.fa is a fasta format file with all available cDNA sequences (ESTs, 454 transcripts, mRNA).
+In a first test run we recommend to use the option --optrounds=0 to skip the
+optimization, which usually takes most time. 
+
+If you have a compute cluster you can remove the option --singleCPU from above
+command. In that case the program flow is interrupted at certain times so you
+can submit the jobs on your cluster. Simply follow the output prompts. If your
+SGE cluster happens to be set as in section 4 you can also use conveniently
+
+>autoAug.pl -g genome.fa -t traingenes.gff --species=yourSpecies --cdna=cdna.fa -v --noninteractive
+
+Note: For this pipeline you only need a training set with coding regions, even
+if you want AUGUSTUS to predict the UTRs. It will construct a training set of
+UTRs from EST alignments.
+
+Situation 2:
+
+You can just input a cDNA sequence file in FASTA format, and let PASA extract
+a training set of genes. You need to install PASA for this separately.
+
+>autoAug.pl -g genome.fa --species=yourSpecies -c cdna.fa -v -v --pasa --useexisting
+
+Then follow the output prompts. If your cluster is set as in section 4 you can also use the option --noninteractive.
+
+
+
+		6. Command Line Arguments
+		-------------------------
+
+The program supports file name arguments with absolute path (i.e. file name begin with "/") as well as with
+relative path (beginning with "..", "~" etc.).
+The keywords (such as genome) can be abbreviated (e.g. "ge") to the extend that they are still unique.
+
+--genome=genomeFile 
+  genomeFile is a file in Fasta format with the genome assembly
+
+--trainingset=trainingfile    
+  trainingfile is a file with training genes in Genbank format, GFF format or protein FASTA format
+  
+
+--species=sname 
+  sname is species name. This is used to identify the parameter set later. The program will check if a
+  directory 'sname' already exists under $AUGUSTUS_CONFIG_PATH/species/.
+  If there is one, the program will be aborted unless you specify --useexisting.
+
+--cdna=cdna.fa
+  cdna.fa is a cdna sequence file in the FASTA format (typically EST sequences or 454)
+
+--pasa
+  This argument swithes the PASA function on for creating a training set of genes from the cDNA, default: off.
+
+--hints=hintsfile
+  hintsfile is a file with extrinsic evicence about the location and structure of genes, see documentation of AUGUSTUS.
+
+--estali=estfile
+  cDNA alignments in PSL format (as generated by BLAT and GMAP) are used to construct UTRs
+
+--noutr
+  use this if you do not want predictions of untranslated regions and want to safe a bunch of time
+  However, note that usually the predictions for the coding regions are better with UTRs turned on, because
+  typical EST alignments at the transcript ends can be better "interpreted" by AUGUSTUS.
+
+--verbose=n
+  verbosity level 0, 1, 2, 3. Default: 2. You can also use a shortcut: "-v", "-v -v" or "-v -v -v" 
+
+--workingdir=/path/to/wd/
+  In the working directory results and temporary files are stored. Default: current working directory
+
+--noninteractive
+  switch it on to avoid manual operation in cluster, it works only if you use a SUN GRID ENGINE cluster
+
+--clustername=cname
+  set you SUN GRID ENGINE cluster name by using --noninteractive. Default: fe
+
+
+
+                7. Component Scripts
+                ------------------------------------
+
+autoAug.pl uses two the two scripts autoAugTrain.pl and autoAugPred.pl for training and prediction subtasks that
+are important steps of their own.
+
+a. autoAugPred.pl predict genes with AUGUSTUS on genomes
+
+Once parameters for a species have been trained, you can use this script to (re)predict genes on your genome,
+e.g. when you have new data.
+
+
+Usage:
+
+autoAugPred.pl [OPTIONS] --genome=genome.fa --species=sname
+autoAugPred.pl [OPTIONS] --genome=genome.fa --species=sname --hints=hintsfile 
+
+--genome=genome.fa             
+  FASTA file with DNA sequences for training
+
+--species=sname                
+  species name as used by AUGUSTUS
+
+--hints=hintsfile             
+  run AUGUSTUS using extrinsic information from hintsfile
+
+--noninteractive               
+  for SGE users, who have configurated openssh key
+  with this option one can run AUGUSTUS automatically
+
+--utr                          
+  switch on prediction of untranslated regions. Off by default.
+
+--hints=hintsfile              
+run AUGUSTUS with hintsfile
+
+--verbose                  
+  the verbosity level
+
+--remote=clustername           
+  works only by using --noninteractive, specify the SGE cluster name for noninteractive, default by "fe"
+
+
+b. autoAugTrain.pl: train AUGUSTUS automatically
+
+
+Usage:
+
+autoAugTrain.pl [OPTIONS] --species=sname --trainingset=training.gb
+autoAugTrain.pl [OPTIONS] --species=sname --genome=genome.fa --trainingset=genes.gff
+autoAugTrain.pl [OPTIONS] --species=sname --genome=genome.fa --trainingset=proteins.fa
+autoAugTrain.pl [OPTIONS] --species=sname --genome=genome.fa --species=sname --utr --estali=cdna.psl --aug=augustus.gff
+
+--species=sname                
+  species name as used by AUGUSTUS
+
+--trainingset=genes.gb      
+  genes.gb is a file with training genes a Genbank format. For examples for the exact format look at 
+  the files in http://augustus.gobics.de/datasets/
+
+--trainingset=genes.gff     
+  genes.gff is a file with training genes in GFF format
+
+--trainingset=proteins.fa
+  proteins.fa is a file with protein sequences from the target species or a very close relative
+  You can use this when the structures 'got lost' or you changed the assembly.
+
+--genome=genome.fa             
+  fasta file with DNA sequences for training
+  genome.fa should include the corresponding
+  sequences in this case
+
+--est=cdna.f.psl               
+  EST alignments are used to guess the UTR and its end point.
+
+--utr                          
+  Switch it on to train AUGUSTUS with untranslated regions. Off by default
+
+--flanking_DNA=length          
+  flanking_DNA length, default:4000
+
+
+--verbose                      
+  verbosity level of the program,  default 
+  level: 1, max level: 3
+

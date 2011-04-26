@@ -1,0 +1,6 @@
+positionWD=<YOUR_POSITION_WD>
+autoTrainDir=<AUTO_TRAIN_DIR>
+autoAugDir_abinitio=<AUTO_AUG_DIR_ABINITIO>
+autoAugDir_hints=<AUTO_AUG_DIR_HINTS>
+autoAugDir_utr=<AUTO_AUG_DIR_UTR>
+pasaDir=<PASA_DIR>

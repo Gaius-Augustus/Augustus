@@ -1,0 +1,68 @@
+#!/bin/bash
+# check if all files for utr-training are there before train with  utr-modell
+
+workDir=$1
+
+# check if augustus.gff and augustus.gtf exist, make augustus.gtf if it's possible and necessary
+
+cd ${workDir}/predictions/hints.E.1
+
+if [ ! -f augustus.gff ] 
+
+then 
+	echo "Can not find the file ${workDir}/predictions/hints.E.1/augustus.gff"
+	exit 1
+
+elif [ ! -f augustus.gtf ]
+
+then
+	grep AUGUSTUS augustus.gff > augustus.gtf
+fi
+
+# check if ${workDir}/seq/genome.fa exists
+
+cd ${workDir}
+
+cd ${workDir}/seq
+
+if [ ! -f genome.fa ]
+
+then 
+    echo "Can not find the file ${workDir}/seq/genome.fa."
+    exit 2
+fi
+
+# check if cdna.f.psl exists
+
+cd ${workDir}/cdna/alignments
+
+if [ ! -f cdna.f.psl ]
+
+then
+	echo "Can not find the file ${workDir}/cdna/alignments/cdna.f.psl"
+	exit 3
+fi
+
+# check if training.gb.train.test and training.gb.onlytrain exist
+
+cd ${workDir}/training
+
+if [ ! -f training.gb.train.test ]
+	
+then 
+	echo "Can not find ${workDir}/training/training.gb.train.test"
+	exit 4
+
+elif [ ! -f training.gb.onlytrain ]
+
+then
+	echo "Can not find ${workDir}/training/training.gb.onlytrain"
+	exit 5
+fi
+
+# if no error, exit with 6
+
+exit 6
+
+		
+	

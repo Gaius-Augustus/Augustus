@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html><head><title></title>
+<link rel="stylesheet" type="text/css" href="augustus.css">
+<script src="tutorial.js" type="text/javascript"></script>
+</head><body>
+<font size=-1>
+Navigate to 
+<a href="scipio.html">Using Scipio</a>.
+<a href="training.html">Training AUGUSTUS</a>.
+<a href="prediction.html">Predicting Genes</a>.
+<a href="ppx.html">AUGUSTUS-PPX</a>.
+</font>
+<h1>Lab Session on Gene Prediction with <a href="http://augustus.gobics.de">AUGUSTUS</a></h1>
+<h2><a href="http://www.molecularevolution.org">Workshop on Comparative Genomics</a>, Jan. 14th 2011, <a href="http://www.math-inf.uni-greifswald.de/mathe/index.php/mitarbeiter/382-prof-dr-mario-stanke">Mario Stanke</a></h2>
+
+In this lab session we practice the most common Bioinformatics steps when predicting the protein-coding genes in
+a eukaryotic genome with <a href="http://augustus.gobics.de">AUGUSTUS</a>. We will assume the case of a "new"
+genome, for which AUGUSTUS has not been trained before, but will use well-studied species as examples because
+example data is readily available and visualization is easier.
+
+<h4>Styles</h4>
+<p><span class="assignment">Assignments are in this color</span>. The lazy ones may go through very
+fast through this tutorial by just reading these assignments and cutting and pasting the commands
+that follow them (more or less).</p>
+<p>
+<span class="result">Results are in this color</span>.<br></p>
+<p>
+<a href="javascript:onoff('explain')" class="dlink"><span id="explain" title="explaind" class="dcross">[+]</span>
+<span class="dtitle">Details are hidden...</span></a> <br>
+<div id="explaind" class="details" style="display:none;">
+You don't have to read this. If you get bored with the speed of the tutorial then you can read these details boxes.
+</div></p>
+<h3>Example Data</h3>
+
+All example files are in the <a href="data/" target="_blank">data directory</a>. We recommend
+you work directly in this directory.
+
+<h4><i>Drosophila melanogaster</i> (Exercises 1-5)</h4>
+<ul>
+<li> <a href="data/chr2R.fa"><tt>chr2R.fa</tt></a>: chromosome 2R of assembly dm3 of the genome of the fruit fly</li>
+<li><a href="data/chr2R.2M-7M.fa"><tt>chr2R.2M-7M.fa</tt></a>: 5 megabases 2,000,001-7,000,000
+of chromosome 2R.<br>
+</li>
+<li><a href="data/chr2R.2M-7M.aa"><tt>chr2R.2M-7M.aa</tt></a>: amino acid sequences of 1117 flybase genes from the same 5Mb</li>
+<li><a href="data/est.chr2R.7M-8M.fa"><tt>est.chr2R.7M-8M.fa</tt></a>: a set of 8458 ESTs
+which map to chr2R:7000000-8000000
+</li>
+<li><a href="data/chr2R.7M-8M.wig"><tt>chr2R.7M-8M.wig</tt></a>: coverage from RNA-Seq in chr2R:7000000-8000000</li>
+<li><a href="data/hints.rnaseq.intron.gff"><tt>hints.rnaseq.intron.gff</tt></a>: likely intron positions inferred from RNA-Seq alignments</li>
+</ul>
+
+<h4>Human (Exercises 6)</h4>
+<ul>
+<li> <a href="data/chr3.42M.fa"><tt>chr3.42M.fa</tt></a>, <a href="data/chr5.124M.fa"><tt>chr5.124M.fa</tt></a>, <a href="data/chr4.103M.fa"><tt>chr4.103M.fa</tt></a>: 2 mega bases each of the human genome (hg19)</li>
+<li>
+<a href="data/PF00225_seed.txt"><tt>PF00225_seed.txt</tt></a>,
+<a href="data/PF00225_full.txt"><tt>PF00225_full.txt</tt></a>,
+<a href="data/PF00171_seed.txt"><tt>PF00171_seed.txt</tt></a>, 
+<a href="data/PF00171_full.txt"><tt>PF00171_full.txt</tt></a>: multiple sequence alignments
+of two protein families in FASTA format</li>
+</ul>
+
+
+<h3>For Cheaters: <span class="result">Result Files</span></h3>
+You can use the <a href="results/" target="_blank">files in the results directory</a> to catch on if you are behind or to compare your results.
+
+<br>
+
+<h3>Exercise 1: <span class="assignment">Compile a Training Set</span></h3>
+There are several typical <a href="training.html#trainoptions">options for creating a training set</a>
+to estimate the parameters of gene finders. We will here go through option 4: 
+<p style="margin-left:50px">
+<i>Spliced alignments of protein sequences</i>
+</p>
+We assume that we have a set of protein sequences of the same or a very closely related species and will use <a href="http://www.webscipio.org/">Scipio</a> to infer the gene structures.<br>
+<ol>
+<li><span class="assignment">Follow the tutorial on <a href="scipio.html">"Using Scipio to create a training set"</a></span>
+and create a training set <tt>genes.gb</tt>.
+<li><span class="assignment">Partition <tt>genes.gb</tt></span> into a training set and a holdout test setas described in <a href="training.html#split">1.2 Split gene structure set...</a>.
+</ol>
+<h3>Exercise 2: <span class="assignment">Train the Coding Regions of AUGUSTUS</span></h3>
+Let's name our species "<tt>bug</tt>". Pretending that there was not already a parameters set of AUGUSTUS for
+<i>Drosophila</i> (named "<tt>fly</tt>"), we will estimate the parameters from the training set.
+<ol>
+<li> <span class="assignment">Create a meta parameters file</span> for <tt>bug</tt> as described in <a href="training.html#meta">2. CREATE A META PARAMETERS FILE...</a>
+<li> <span class="assignment">Estimate the parameters</span> using your training set as described in <a href="training.html#etraining">3. MAKE AN INITIAL TRAINING</a>
+</ol>
+
+<h3>Exercise 3: <span class="assignment"><i>Ab Initio</i> Predict Genes in the Genome</span></h3>
+
+<ol>
+<li> <span class="assignment">Predict the protein-coding parts of the genes</span>
+in a sample sequence of <i>Drosophila melanogaster</i> as described in 
+<a href="prediction.html#abinitiopred">1. PREDICT GENES AB INITIO</a>.
+<li> <span class="assignment">Visualize your predicted genes</span> as decribed in <a href="prediction.html#customtrack">2. MAKE A CUSTOM GENE PREDICTION TRACK...</a>.
+</ol>
+
+<h3>Exercise 4: <span class="assignment">Prepare hints</span></h3>
+
+Construct extrinsic evidence about genes from transcriptome data (ESTs and RNA-Seq) following
+the intructions in <a href="prediction.html#prephints">3. PREPARE HINTS</a>.
+
+<h3>Exercise 5: <span class="assignment">Predict Genes Using Hints</span></h3>
+Structurally annotate an example sequence from Drosophila based on the hints from exercise 4 by
+<ol>
+<li><span class="assignment"><a href="prediction.html#extr">setting the hint parameters</a></span>
+<li><span class="assignment"><a href="prediction.html#predh">predicting genes using hints</a></span>
+</ol>
+
+<h3>Exercise 6: <span class="assignment">Identify Members of a Protein Family</span></h3>
+Use the new PPX-Extension of AUGUSTUS to find the gene structures 
+based on a multiple alignment of a protein family as described in 
+<a href="ppx.html">AUGUSTUS-PPX</a>.
+
+</body></html>

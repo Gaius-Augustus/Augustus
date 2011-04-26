@@ -1,0 +1,181 @@
+List of changes from version 2.5 to 2.5.5 (until March 2nd, 2011)
+     - added a tutorial
+     - bugfixes, in particular one that caused a crash on Mac OS
+     - new species verticillium, honeybee, butterfly
+     - option --noprediction=1 to score input gene structures
+     - adjust autoAug.pl to new PASA version
+List of changes from version 2.4 to 2.5 (until Nov 13th, 2010)
+     - first release of protein profile extension (PPX)
+     - scripts added for PPX:
+       msa2prfl.pl: converts MSAs in FASTA/CLUSTAL format to protein profiles to use with AUGUSTUS
+       block2prfl.pl: converts BLOCKS database flat file to protein profile
+       del_from_prfl.pl: manually delete blocks from profile
+     - executables added for PPX: 
+       prepareAlign: eliminates gap-rich sequences from FASTA MSA
+       fastBlockSearch: performs a preliminary profile search to determine regions for gene prediction
+     - PPX-specific new parameters are:
+       /ProteinModel/allow_truncated: allows profile hits in right-truncated genes
+       /ProteinModel/block[part]_threshold_{sens,spec}: set model specificity/sensitivity
+       /ProteinModel/weight: set weighting of protein model vs. ab-initio model
+     - PPX is introduced and can be used with parameter --proteinprofile
+     - new species pneumocystis (fungus), user contributed by Marco Pagni
+List of changes from version 2.3.1 to 2.4 (until July 27, 2010)
+     - improved human parameter set: roughly 13 percent points better on CDS exon level
+     - improved fly paramter set
+     - added new species 'lamprey', contributed by Falk Hildebrand and Shigehiro Kuraku
+     - added new species Leishmania tarentolae, Trichinella spiralis
+     - added maize5 parameter set, better than 'maize' and with UTR model
+     - the GC content parameter class is now chosen locally, instead of using a constant
+       GC constant for each sequence or sequence chunk, performance improvement in human
+     - bugfix in aln2wig that caused a segmentation fault
+     - bugfix in etraining when using alternative translation tables
+     - introduce local splice site malus, that is effective when neighboring region has exonic evidence
+     - bugfix in etraining that concerns the weighting of training examples
+       the fix increases e.g. in C.elegans accuracy by 1.5 percent points on the exon level
+       and 4.2 percent points on the gene level
+     - added new script gtf2gff to convert gtf output (e.g. from Augustus) to gff3
+       or to switch between the two UTR representations (explicit UTR vs exon)
+     - added script intron2exex.pl for iterative RNA-Seq alignments
+     - option --pairbed to filterPSL.pl for creating genicpart hints from read pairing information
+     - allow to tie intergenic content model to intron content model with tieIgenicIntron in training
+     - bugfix: intron/igenic content model was partially trained from UTR regions
+     - fixed a bug that occurred when a sequence contained nothing but N's
+     - fixed bug in intronmodel training that occurs when UTRs are turned on
+     - fixed pasa to polyA hints bugs in autoAug.pl
+List of changes from version 2.2 to version 2.3 (until November 1st, 2009):
+     - added capability and documentation for incorporating RNA-Seq
+     - added aln2wig program which summarizes psl and shrimp format to wig
+     - speed up script makeUtrTrainingSet.pl
+     - hints can now have a mult=n feature in the last column to specify multiplicity=copy number
+     - added local malus for punishing unevenly supported exon candidates
+     - gff2gbSmallDNA.pl now allows for gff3 input
+     - getAnnoFasta.pl now also prints coding sequence and mRNA derived from genome sequence
+     - script polyA2hints.pl for hints from polyA position file
+     - updated blat2hints: for intron hints from RNA-Seq and for transcript termini
+     - parameter /IntronModel/dss_consensus_gc_prob now allows gc-ag introns also in absense of hints
+     - autoAug pipeline now includes polyA hints from PASA
+     - parameter allow_hinted_splicesites allows other non-standard splice sites, such as ac-at
+     - bugfixes (in particular in response to MAC users compilation problems)
+
+List of changes from version 2.1 to version 2.2 (until June 26th, 2009):
+     - release of the autoAug*.pl scripts for automatic training and prediction for new genomes
+     - new genemodel 'intronless' for prokaryotes and eukaryotes withouth introns
+
+List of changes from version 2.0.3 to version 2.1 (until March 11th, 2009):
+     - updated species: Chlamydomonas reinhardtii
+     - new species: Acyrthosiphon pisum (pea aphid)
+     - packaged more scripts that are useful for training 
+     - new hint type genicpart = nonirpart
+     - introduce fuzzyness in dss and ass hints
+     - reduced memory usage
+     - allow other poly(A) signal consensus than aataaa
+     - fixed some format violations when outputting gff3
+     - allow general alternative codon to amino acid translation tables (parameter translation_table)
+
+List of changes from version 2.0.2 to version 2.0.3 (until March 13th, 2008):
+     - new species: Chlamydomonas reinhardtii (green algae)
+     - new species: Nasonia vitripennis (wasp)
+     - new species: Solanum lycopersicum (tomato) 
+     - new species: Amphimedon queenslandica (sponge)
+     - in fasta headers (">") the name is considered only to go up to the first white space
+
+List of changes from version 2.0.1 to version 2.0.2 (until May 30th, 2007):
+
+     - a gene can now be truncated in the middle of an exon or an intron.
+       This is helpful when many genes are only partially sequenced, e.g. when searching genes/exons
+       in the raw DNA reads.
+     - Augustus retrained for Arabidopsis thaliana, Galdieria sulphuraria and Caenorhabditis elegans.
+     - fixed bug that no spliced 5'UTR was predicted on the reverse strand except at sequence boundaries
+     - optimize_augustus.pl now also allows to automatically optimize the transition matrix
+     - fixed bug. before some hints were ignored when the contig was shorter than 2000bp
+     - option --uniqueGeneId=true adds the sequence name to the gene name
+ 
+List of changes from version 2.0 to version 2.0.1 (until January 30th, 2007):
+     - genemodel=complete works now with UTR
+     - added several scripts for generating hints (from blat, retrogenes, transmap, exoniphy) and
+     for creating cluster jobs
+     - fixed bug with intronpart hints upvaluing a few non-intron bases in UTR
+     - can now combine --genemodel=complete with UTR predictions
+     - fixed crash that occurred when a genbank file had annotation with negative coordinates.
+     - fixed problem with toxoplasma UTR transition matrix (added the 4 extra UTR intron states)
+     - fixed problem with galdieria UTR model (TTSMOTIF was missing)
+
+List of changes from version 1.8.2 to version 2.0 (until January 8th, 2007):
+
+     - predict 5'UTR and 3'UTR including introns (available for human, galdieria, toxoplasma,
+     caenorhabditis)
+     - evidence-based alternative transcripts
+     - new types of hints: tss, tts, CDS, CDSpart, UTR, UTRpart, irpart, nonexonpart
+     - hints can be summarized to groups
+     - hints can have a priority
+     - long input sequence is split taking hints into account
+     - 32 new fungi species
+     - output in gff3 format possible
+     - speed improvement by 12% (comparison operator)
+     - a subwindow for predictions can be specified
+     - subdirectory structure of config directory
+     - new species: toxoplasma gondii
+
+List of changes from version 1.8 to version 1.8.2 (until March 10th, 2006):
+
+     - new species: Zea mays (maize)
+     - Species parameters contributed by Jason Stajich: Caenorhabditis
+       elegans, Saccharomyces cerevisiae, Ustilago maydis, Phanerochaete
+       chrysosporium, Neurospora crassa, Histoplasma capsulatum, Fusarium
+       graminearium, Cryptococcus neoformans, Aspergillus nidulans
+
+List of changes from version 1.7 to version 1.8 (until January 18th, 2006):
+
+     - new species: Schistosoma mansoni, Tetrahymena thermophila, Galdieria sulphuraria
+     - enabled non-standard set of stop codons (in Tetrahymena thermophila TAG and TAA are coding)
+     - frequencies of the 3 stop codons configurable
+     - option: AUGUSTUS_CONFIG_PATH can be set on the command line
+     - some filtering of the Viterbi prediction with respect to posterior probabilities 
+
+List of changes from version 1.6 to version 1.7 (until October 5th, 2005):
+
+     - automatized training for new species
+     - alternative transcripts
+     - posterior probability of exons, introns, transcripts and genes is reported
+     - fixed bug that predicted splice sites just outside the sequence boundaries
+     - added the option of outputing the predicted coding sequence
+
+List of changes from version 1.5 to version 1.6 (until August 3rd, 2005):
+
+     - The source code is now freely available (Artistic Licence).
+     - New species: Tribolium castaneum, Aedes aegypti, Coprinus cinereus
+     - Bugfix: Wrong interpretation of reading frame for reverse strand exon hints.
+     - Training of hints possible with nested genes.
+     - Renaming StateType 'single' to 'singleG' to avoid compilation conflicts on some machines
+     - Bugfix: Exon hints and exonpart hints including the stop codon were missed for reverse terminal or reverse single exons.
+     - Changed output format to gtf. Includes a (redundant) transcript_id now.
+     - Check consistency of hints with the sequence and output warnings for inconsistencies.
+     - Bugfix: Rare bug in aSSProb that caused Viterbi to get stuck.
+     - Bugfix: Check sequence bounds, when probing for a splice site. Bug had caused a segmentation fault.
+
+List of changes from version 1.4 to version 1.5 (until 12/04):
+
+     - New species: Brugia malayi.
+     - Training can now take sequences with multiple genes on both strands.
+     - The use of hints has been documented.
+
+List of changes from version 1.3 to version 1.4 (after 06/04):
+
+     - New species: Arabidopsis Thaliana.
+     - More standard, user friendly program call. No need to specify a configuration file anymore.
+     - Fixed bug for the emission probabilities of exonpart pitchfork hints in exons which are supported
+       by exonpart hints. Now AUGUSTUS has an incentive to predict an exon which is as small as possible even
+       when an exonpart hint supports it.
+     - Fixed rare bug with exon state at end of DNA.
+     - Optimized meta parameters for human.
+
+List of changes from version 1.2 to version 1.3:
+
+     - avoid predicting exons with in-frame stop codons at the splice sites
+     - accuracy of extrinsic information can now be checked on multi-gene sequences
+
+List of changes from version 1.0 to version 1.2:
+
+     - Added reference information to the text output.
+     - Bugfix: The last line of an input file which contains no newline at the end was
+       read twice.

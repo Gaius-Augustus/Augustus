@@ -1,0 +1,271 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE>AUGUSTUS incorporating RNA-Seq</TITLE>
+	<META NAME="CREATED" CONTENT="20091030;11483000">
+	<META NAME="CHANGED" CONTENT="20091031;17041400">
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1 ALIGN=CENTER>Incorporating RNA-Seq into AUGUSTUS</H1>
+<P ALIGN=CENTER><BR><BR>
+</P>
+<P STYLE="margin-bottom: 0in">This document describes a method for
+structurally annotating a genome based on massive cDNA sequencing
+(RNA-Seq). The guide below is a description of the method we
+developed for and applied in the RNA-Seq based Genome Annotation
+Assessment Project (<A HREF="http://www.sanger.ac.uk/PostGenomics/encode/RGASP.html">rGASP</A>).
+It was applied to a variety of data types, such as from Illumina and
+SOLiD, for read lengths between 33bp and 75bp, single and paired-end
+reads, stranded and unstranded reads, on human, Drosophila and
+C.elegans. We therefore expect this to be generally applicable to
+other projects with some parameter adjustments. The general approach
+is to generate hints for Augustus from the RNA-Seq, which can be used together
+with hints from other sources if available (like from an existing
+gene models, ESTs, protein or genomic conservation, MS/MS). The
+approach outlined below is preliminary, and certainly can be improved
+upon, e.g. by adding more information from the RNA-Seq in the form of
+hints. Also, it is just one way to translate RNA-Seq information to
+gene structure hints and you can adjust it for your processed data if you have
+already a mapping or assembly of reads.
+For example, if you choose to first
+assemble RNA-Seq reads to contigs, you may just just treat them as
+other larger transcript fragments such as ESTs and use
+BLAT/GMAP+blat2hints.pl to generate the hints. 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4><B>1.
+Align RNA-Seq Reads to Genome</B></FONT></FONT></P>
+<P STYLE="margin-bottom: 0in">For species with many multi-exon genes
+(most species), we found that <I>spliced reads are by far most
+valuable</I>. Spliced reads are reads that span an exon-exon boundary
+and therefore delineate a complete intron. It is therefore important
+to chose an alignment method that recovers as many true spliced reads
+as possible. 
+</P>
+<P STYLE="margin-bottom: 0in"><B>1.1 Illumina:</B></P>
+
+<P STYLE="margin-bottom: 0in">In lack of a better program, we chose
+to use the program BLAT, which is not customized for NGS reads (Next
+Generation Sequencing), but found more introns than Tophat 1.0.11. However,
+it is straightforward to adjust this pipeline to Bowtie/Tophat input,
+because Tophat produces results in the same or similar format (wig
+file and intron list including multiplicities).</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">blat
+-noHead -stepSize=5 -minIdentity=93 genome.masked.fa rnaseq.fa
+ali.psl</FONT></P>
+<P STYLE="margin-bottom: 0in">Then filter alignments for alignment
+quality, uniqueness and pairedness, if applicable.</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">cat
+ali.psl | filterPSL.pl --uniq --paired &gt; ali.f.psl</FONT></P>
+<P STYLE="margin-bottom: 0in">This filter requires by default a
+minimum coverage of 80% of the read length and a minimum percent
+identity of 92%.</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">--uniq</FONT>
+makes the filter script keep only alignments, which are 1) the best
+alignment for that read and 2) unique in the sense that all other
+alignments of that read have a score that is at most 0.96
+(uniquethresh) the score of the best. The rationale behind stringent
+filtering is that self-similarity of the genome or of transcripts in
+particular may otherwise yield many false positive alignments. False
+positive alignments can be a greater problem to Augustus as false
+negative alignments, the later may frequently be corrected by the ab
+initio model aided by neighboring alignments.</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">--paired</FONT>
+is another filter that only applies to paired-end reads. It requires
+that two reads from the same read-pair (when the read names end in
+.f,.r or /1,/2) are on opposite strands, on the same genomic contig
+and at most maxintronlen (default: 500000) apart from each other.</P>
+<P STYLE="margin-bottom: 0in">For single-end reads just run</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">cat
+ali.psl | filterPSL.pl --uniq &gt; ali.f.psl</FONT></P>
+<P STYLE="margin-bottom: 0in">Repeatmasking alone usually does not filter out
+  repetitions of DNA to the extend that RNA-Seq read mapping become
+  unambiguous or false positive. From our experience it can happen that even with the stringent
+  --unique filtering reads map to a likely wrong place in the genome. This is
+  frequently a region that is not a gene but shows high genomic similarity to
+  another region with a gene. You may therefore consider increasing the
+  stringency of the filtering by removing hits from regions that are repeated
+  similarly in the genome (and are not repeatmasked nonetheless). We chose to
+  remove hints that overlap a self-chain alignment of the UCSC Genome Browser.</P><P STYLE="margin-bottom: 0in">
+Sort alignments by target sequence and
+within target sequence by position for further processing 
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">cat
+ali.f.psl | sort -n -k 16,16 | sort -s -k 14,14 &gt; ali.fs.psl</FONT></P>
+<P STYLE="margin-bottom: 0in"><B>1.2 SOLiD:</B></P>
+<P STYLE="margin-bottom: 0in">Color-space reads cannot be aligned
+with BLAT. Therefore we chose SHRIMP, e.g. in the case of 36bp reads
+we ran 
+</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">rmapper-cs
+-s 111110011111 -n 2 -t 4 -o 5 -r 36 rnaseq.cfasta genome.masked.fa &gt;
+shrimp.out</FONT></P>
+<P STYLE="margin-bottom: 0in">sorted the output</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">cat
+shrimp.out | grep -P &quot;^&gt;&quot; | perl -ne 'split /\t/; print
+if ($_[1] !</FONT>~ /_/)' | sort -k 1,1 &gt; shrimp.s.out</P>
+<P STYLE="margin-bottom: 0in">and then filtered with</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">cat
+shrimp.s.out | filterShrimp.pl --minScore=320 --uniq --uniqthresh=0.9
+&gt; shrimp.f.out</FONT></P>
+<P STYLE="margin-bottom: 0in">Finally, also sort by target sequence
+(chromosome):</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">sort -k
+2,2 shrimp.f.out &gt; shrimp.fs.out</FONT></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4><B>2.
+Generate Hints from Alignments</B></FONT></FONT></P>
+<P STYLE="margin-bottom: 0in">We currently generate two types of
+hints from the RNA-Seq alignments, <I>exonpart</I> and <I>intron</I>
+hints. Intron hints are more important but can currently not be
+generated by all NGS mapping programs: Most of them perform
+no spliced alignment. 
+</P>
+<P STYLE="margin-bottom: 0in"><B>1.2 <I>exonpart</I> hints and wiggle
+track</B></P>
+<P STYLE="margin-bottom: 0in">Each exonpart hint specifies an
+interval that is likely to be exonic. We take the local coverage
+depth into account. For the purpose of <I>exonpart</I> hint generation and
+visualization we first summarize the alignments to a coverage depth
+function in wiggle format. Wiggle format (<a href="http://genome.ucsc.edu/goldenPath/help/wiggle.html">.wig</a>) is a format of the
+UCSC Genome Browser.</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">aln2wig
+-f ali.fs.psl &gt; cov.wig</FONT></P>
+<P STYLE="margin-bottom: 0in">This command works both for Illumina
+and SOLiD reads. For SOLiD you replace <FONT FACE="Courier, monospace">ali.fs.psl</FONT>
+with <FONT FACE="Courier, monospace">shrimp.fs.out. </FONT>If you
+have <I>stranded</I> reads, you should generate two wig tracks, e.g.
+<FONT FACE="Courier, monospace">plus.wig</FONT> and <FONT FACE="Courier, monospace">minus.wig
+</FONT>and treat them separately below. The corresponding hints
+should then have the strand column set. This will help Augustus to
+determine the strand of a gene fragment.</P>
+<P STYLE="margin-bottom: 0in">Now generate the exonpart hints with</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">cat
+cov.wig | wig2hints.pl --width=10 --margin=10 --minthresh=2
+--minscore=4 --prune=0.1 --src=W
+--type=ep --UCSC=unstranded.track --radius=4.5 --pri=4 --strand=&quot;.&quot;
+&gt; hints.ep.gff</FONT></P>
+<P STYLE="margin-bottom: 0in">or adjust this command line accordingly
+when you have a stranded wig file. This command generates for each
+coverage island a sequence of adjacent 20bp <I>exonpart</I> hints
+(exonpart = ep) and also stores the average coverage depth in each
+such window as a means to adjust the weight of the evidence later.</P>
+<P STYLE="margin-bottom: 0in"><B>1.2 <I>intron</I> hints</B></P>
+<P STYLE="margin-bottom: 0in">Evidence about introns is collected
+from spliced alignments. The crucial data is the exact intron
+boundaries and the multiplicity of the intron, i.e. the absolute
+number of reads that span the intron.</P>
+<P STYLE="margin-bottom: 0in; font-style: normal"><FONT FACE="Courier, monospace">blat2hints.pl
+--intronsonly --in=ali.fs.psl --out=hints.introns.gff</FONT></P>
+<P STYLE="margin-bottom: 0in">If you chose a different approach,
+produce an output format like this for the intron hints:</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">chr1 b2h intron
+    14800 14877 0 . . mult=47;src=E</FONT></P>
+<P STYLE="margin-bottom: 0in">In this tab-separated format the
+14800th base of sequence <I>chr1 </I><SPAN STYLE="font-style: normal">is
+the first base of the intron, 14877 is the last, 47 is the
+multiplicity of the intron and E is the source identifier for
+setting the bonus of this evidence source below. The strand of an
+intron will be determined automatically by Augustus.</SPAN></P>
+<P STYLE="margin-bottom: 0in"><B>1.3 joined hints</B></P>
+<P STYLE="margin-bottom: 0in">Concatenate all hints:</P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">cat
+<SPAN STYLE="font-style: normal">hints.introns.gff hints.ep.gff
+[hints.other.gff] &gt; hints.gff</SPAN></FONT></P>
+<P STYLE="margin-bottom: 0in; font-style: normal">The
+optional hints.other.gff may contain hints from other evidence
+sources. It may be preferable for efficiency to split the hints file
+by chromosome.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-top: 0.17in"><FONT FACE="Albany, sans-serif"><FONT SIZE=4><B>3.
+Run Augustus</B></FONT></FONT></P>
+<P STYLE="margin-bottom: 0in"><B>3.1 Set hint parameters</B></P>
+<P STYLE="margin-bottom: 0in">Adjust the file extrinsic.cfg that
+holds the hint parameters. Start by copying the file
+config/extrinsic/extrinsic.M.RM.E.W.cfg. In the example above the
+relevant, non-neutral lines could look like this:</P>
+
+<pre><code>
+[SOURCES]
+M RM E W
+
+exonpart    1   .992    M 1 1e+100 RM 1 1    E 1 1   W 1 1.005
+intron      1   .34     M 1 1e+100 RM 1 1    E 1 1e5 W 1 1
+CDSpart     1   1 0.985 M 1 1e+100 RM 1 1    E 1 1   W 1 1
+UTRpart     1   1 0.985 M 1 1e+100 RM 1 1    E 1 1   W 1 1
+nonexonpart 1   1       M 1 1e+100 RM 1 1.01 E 1 1   W 1 1
+</code>
+</pre>
+
+<P STYLE="margin-bottom: 0in">The <I>exonpart</I> malus of .992 means
+a weak penalty factor for every predicted exonic base that is not
+supported by any <I>exonpart</I> hints. The <I>exonpart</I> bonus for hints of
+source W of 1.005 mean that gene structures get this bonus factor for
+every <I>exonpart</I> hint of multiplicity 1 that is completely included in an
+exon. Introns that are not supported by any <I>intron</I> hint are
+penalized by .34, and introns that are supported by RNA-Seq hints are
+rewarded by a factor of 100,000. The <FONT FACE="Times New Roman,serif">0.985</FONT> are <FONT FACE="Times New Roman, serif"><I><SPAN STYLE="font-weight: normal">local</SPAN></I></FONT>
+malus factors. The concept of a local malus was recently introduced to
+account for different levels of missing information, that becomes
+more important with with higher general coverage of RNA-Seq. Like the (normal)
+  malus, the local malus also applies to exonic bases that are unsupported by
+hints. In contract to the normal malus, the <I>local</I>
+malus only applies to exons, that are well-supported at some region and not
+supported at another region of the same exon. The following picture
+illustrates a typical case where the local malus applies.</P>
+<BR>
+<P STYLE="margin-bottom: 0in">
+<IMG SRC="exonlocalmalus.png" NAME="graphics1" ALIGN=LEFT HSPACE=20 WIDTH=600 BORDER=0>
+This UTR exon candidate is very unevenly supported by RNA-Seq coverage and therefore likely to be too
+long. For every base that is not covered by any exonpart hint a local UTRpart malus
+factor of 0.985 is applied in addition to the normal exonpart malus
+of 0.992.</P>
+<BR clear=left>
+<BR>
+The nonexonpart bonus of the RM source in this case is for
+incorporating hints from repeat masking (src=RM). Augustus is run on
+unmasked sequence with the repeat mask intervals given as nonexonpart
+hints. In this regions, introns and intergenic regions are rewarded by
+1.01 for each base.
+<P STYLE="margin-bottom: 0in">Above parameters have to be seen as an
+example. The optimal values will depend on various parameters,
+including</P>
+<P STYLE="margin-bottom: 0in">1) Amount of RNA-Seq and percentage of
+genes expressed in the library. The more transcripts are expressed
+and covered by RNA-Seq the stronger the malus can be. In the extreme
+(hypothetical) case, all exonic bases are covered with RNA-Seq and
+unsupported predicted exonic regions can be punished hard.</P>
+<P STYLE="margin-bottom: 0in">2) The stringency of filtering. If, for
+some other reason, you have chosen to include more than one
+hit of a read or you allow best alignments also when they are
+ambiguous, then you may get a significant false positive rate of
+hints and you may have to reduce bonus factors significantly.</P>
+<P STYLE="margin-bottom: 0in">3) Alignment method.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>3.2 Run Augustus</B></P>
+<P STYLE="margin-bottom: 0in"><FONT FACE="Courier, monospace">augustus
+--species=human --UTR=on --extrinsicCfgFile=extrinsic.cfg
+--alternatives-from-evidence=true --hintsfile=hints.gff	--allow_hinted_splicesites=atac</FONT></P>
+<P STYLE="margin-bottom: 0in">We recommend switching the UTR flag to
+"on" because RNA-Seq covers UTR as well. With <FONT FACE="Courier, monospace">--UTR=off</FONT>,
+the exonpart hints would be (mis)interpreted to be hints for coding
+parts of exons. <FONT FACE="Courier, monospace">--allow_hinted_splicesites=atac</FONT>
+allows Augustus to predict the (rare) introns that start with AT and
+end with AC in addition to the GT-AG and GC-AG introns that are
+allowed by default. <FONT FACE="Courier, monospace">--alternatives-from-evidence=true</FONT>
+turns on the prediction of alternative splicing. For this,<I> intron</I>
+hints are in particular informative, as <I>exonpart</I> hints alone
+will (if unstranded) not yield alternative transcripts.</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P ALIGN=RIGHT STYLE="margin-bottom: 0in"><A HREF="mailto:mstanke@gwdg.de">Mario
+Stanke</A>, 10/30/2009</P>
+</BODY>
+</HTML>

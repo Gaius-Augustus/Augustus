@@ -1,0 +1,8 @@
+HS04636	mario	exonpart	500	506	.	-	.	source=M
+HS04636	mario	exon	966	1017	.	+	0	source=P
+HS04636	AGRIPPA	start	966	968	6.3e-239	+	0	gb|AAA35803.1 source=P
+HS04636	AGRIPPA	dss	2199	2199	1.3e-216	+	.	gb|AAA35803.1 source=E
+HS04636	mario	stop	7631	7633	.	+	0	source=M
+HS08198	AGRIPPA	intronpart	2000	2000	0	+	.	ref|NP_000597.1 source=M
+HS08198	AGRIPPA	ass	757	757	1.4e-52	+	.	ref|NP_000597.1 source=E
+HS08198	AGRIPPA	tts	2000	2000	1.4e-52	+	.	ref|NP_000597.1 source=M

@@ -1,0 +1,530 @@
+#
+# transition probabilities and initial probabilities for the overall HMM 
+# galdieria version
+# number of states
+71
+#
+# Transition probabilities of the Generalised Hidden-Markov Model
+# Date: 18.01.2007
+
+# Initial probabilities (a priori probs for a state ending at a
+# certain position, e.g. the position before the first nucleotide in
+# the sequence
+# only non-zero probabilities
+[Initial]
+# number of states where a start is possible
+71
+# state prob statename
+0   .788    # start intergenic region
+1   .001    # single Exon
+2   .001    # initial Exon win 0
+3   .001    # initial Exon win 1
+4   .001    # initial Exon win 2
+5   .001    # internal Exon win 0
+6   .001    # internal Exon win 1
+7   .001    # internal Exon win 2
+8   .001    # terminal exon
+9   .001    # lessD0 Intron win 0
+10  .001    # 
+11  .001    # 
+12  .01     # geometric0 Intron win 0
+13  .001    # 
+14  .001    # 
+15  .001    # 
+16  .001    # 
+17  .01     # geometric1 Intron win 1
+18  .001    # 
+19  .001    # 
+20  .001    # 
+21  .001    # 
+22  .01     # geometric2 Intron win 2
+23  .001    # 
+24  .012    # 5' UTR single exon
+25  .001    # 5' UTR initial exon
+26  .02     # 5' UTR intron single base
+27  .0      # 5' UTR intron variable length
+28  .001    # 5' UTR internal exon
+29  .006    # 5' UTR terminal exon
+30  .024    # 3' UTR single exon
+31  .000    # 3' UTR initial exon
+32  .000    # 3' UTR intron single base
+33  .0      # 3' UTR intron variable length
+34  .000    # 3' UTR internal exon
+35  .000    # 3' UTR terminal exon
+36  .001    # reverse single Exon
+37  .001    # reverse initial Exon
+38  .001    # reverse internal Exon win 0
+39  .001    # reverse internal Exon win 1
+40  .001    # reverse internal Exon win 2
+41  .001    # reverse terminal exon win 0
+42  .001    # reverse terminal exon win 1
+43  .001    # reverse terminal exon win 2
+44  .001    # reverse lessD0 Intron win 0
+45  .001    # reverse 
+46  .001    # reverse 
+47  .01     # reverse geometric0 Intron win 0
+48  .001    # reverse 
+49  .001    # reverse 
+50  .001    # reverse 
+51  .001    # reverse 
+52  .01     # reverse geometric1 Intron win 1
+53  .001    # reverse 
+54  .001    # reverse 
+55  .001    # reverse 
+56  .001    # reverse 
+57  .01     # reverse geometric2 Intron win 2
+58  .001    # reverse
+59  .001    # reverse 5' UTR single exon
+60  .001    # reverse 5' UTR initial exon
+61  .02     # reverse 5' UTR intron single base
+62  .0      # reverse 5' UTR intron variable length
+63  .001    # reverse 5' UTR internal exon
+64  .001    # reverse 5' UTR terminal exon
+65  .024    # reverse 3' UTR single exon
+66  .000    # reverse 3' UTR initial exon
+67  .000    # reverse 3' UTR intron single base
+68  .0      # reverse 3' UTR intron variable length
+69  .000    # reverse 3' UTR internal exon
+70  .000    # reverse 3' UTR terminal exon
+
+
+
+# Terminal probabilities (a priori probs for a state ending at
+# the last position.
+# only non-zero probabilities neccessary
+[Terminal]
+# number of states where terminating is possible
+71
+# state prob statename
+0  .76     # start intergenic region
+1  .003    # single Exon
+2  .001    # initial Exon win 0
+3  .001    # initial Exon win 1
+4  .001    # initial Exon win 2
+5  .001    # internal Exon win 0
+6  .001    # internal Exon win 1
+7  .001    # internal Exon win 2
+8  .003    # terminal exon
+9  .001    # lessD0 Intron win 0
+10 .001    # 
+11 .001    # 
+12 .009    # geometric0 Intron win 0
+13 .001    # 
+14 .001    # 
+15 .001    # 
+16 .001    # 
+17 .009    # geometric1 Intron win 1
+18 .001    # 
+19 .001    # 
+20 .001    # 
+21 .001    # 
+22 .009    # geometric2 Intron win 2
+23 .001    # 
+24 .001    # 5' UTR single exon
+25 .001    # 5' UTR initial exon
+26 .02     # 5' UTR intron single base
+27 .0      # 5' UTR intron variable length
+28 .001    # 5' UTR internal exon
+29 .001    # 5' UTR terminal exon
+30 .042    # 3' UTR single exon
+31 .000    # 3' UTR initial exon
+32 .0      # 3' UTR intron single base
+33 .0      # 3' UTR intron variable length
+34 .000    # 3' UTR internal exon
+35 .000    # 3' UTR terminal exon
+36 .003    # reverse single Exon
+37 .003    # reverse initial Exon
+38 .001    # reverse internal Exon win 0
+39 .001    # reverse internal Exon win 1
+40 .001    # reverse internal Exon win 2
+41 .001    # reverse terminal exon win 0
+42 .001    # reverse terminal exon win 1
+43 .001    # reverse terminal exon win 2
+44 .001    # reverse lessD0 Intron win 0
+45 .001    # reverse 
+46 .001    # reverse 
+47 .009    # reverse geometric0 Intron win 0
+48 .001    # reverse 
+49 .001    # reverse 
+50 .001    # reverse 
+51 .001    # reverse 
+52 .009    # reverse geometric1 Intron win 1
+53 .001    # reverse 
+54 .001    # reverse 
+55 .001    # reverse 
+56 .001    # reverse 
+57 .009    # reverse geometric2 Intron win 2
+58 .001    # reverse
+59 .012    # reverse 5' UTR single exon
+60 .004    # reverse 5' UTR initial exon
+61 .02     # reverse 5' UTR intron single base
+62 .0      # reverse 5' UTR intron variable length
+63 .003    # reverse 5' UTR internal exon
+64 .001    # reverse 5' UTR terminal exon
+65 .001    # reverse 3' UTR single exon
+66 .001    # reverse 3' UTR initial exon
+67 .01     # reverse 3' UTR intron single base
+68 .0      # reverse 3' UTR intron variable length
+69 .001    # reverse 3' UTR internal exon
+70 .001    # reverse 3' UTR terminal exon
+
+#
+# Transition probabilities
+# only non-zero probabilities
+[Transition]
+#           -----  Igenic region  -----
+# intergenic region
+0 0     .998
+# 5' UTR single exon
+0 24	.0009
+# 5' UTR initial exon
+0 25    .0001
+# reverse 3' UTR single exon
+0 65	.00098
+# reverse 3' UTR terminal exon
+0 70    .00002
+#           -----  Single Exon  -----
+# intergenic region
+#1 0	1.0
+# 3' UTR single exon
+1 30      0.98
+# 3' UTR initial exon
+1 31      0.02
+#           -----  Initial Exon 0  -----
+# longdss0 Intron
+2 10	1.0
+#           -----  Initial Exon 1  -----
+# longdss1 Intron
+3 15	1.0
+#           -----  Initial Exon 2  -----
+# longdss2 Intron
+4 20	1.0
+#           -----  Internal Exon 0  -----
+# longdss0 Intron
+5 10	   1.0
+#           -----  Internal Exon 1  -----
+# longdss1 Intron
+6 15	   1.0
+#           -----  Internal Exon 2  -----
+# longdss2 Intron
+7 20	   1.0
+#           -----  Terminal Exon  -----
+# 3' UTR single exon
+8 30      0.98
+# 3' UTR initial exon
+8 31      0.02
+#           -----  lessD0 Intron 0  -----
+# longass0
+9 13	   1.0
+#           -----  longdss0 Intron 0    -----
+# lessD0
+10 9	.5
+# equalD0
+10 11	.5
+#           -----  equalD0 Intron 0    -----
+# geometric0
+11 12	1.0
+#           -----  geometric0 Intron 0  -----
+# geometric0 intron
+12 12	     .9997447
+# longass0
+12 13	     .0002553
+#           -----  longass0 Intron 0     -----
+# internal exon 0, 45% of all internal exons 
+13 5	   .2
+# internal exon 1, 33% of all internal exons 
+13 6	   .2
+# internal exon 2, 22% of all internal exons 
+13 7	   .2
+# terminal exon
+13 8	   .4
+#           -----  lessD1 Intron 1  -----
+# longass1
+14 18	   1.0
+#           -----  longdss1 Intron 1    -----
+# lessD1
+15 14      .5
+# equalD1
+15 16      .5
+#           -----  equalD1 Intron 1    -----
+# geometric1
+16 17      1.0
+#           -----  geometric1 Intron 1  -----
+# geometric1 intron
+17 17	     .9997447
+# longass1
+17 18	     .0002553
+#           -----  longass1 Intron 1  -----
+# internal exon 0, 45% of all internal exons 
+18 5	   .2
+# internal exon 1, 33% of all internal exons 
+18 6	   .2
+# internal exon 2, 22% of all internal exons
+18 7	   .2
+# terminal exon
+18 8	   .4
+#           -----  lessD2 Intron 2  -----
+# longass2
+19 23	   1.0
+#           -----  longdss2 Intron 2    -----
+# lessD2
+20 19      .5
+# equalD2
+20 21      .5
+#           -----  equalD2 Intron 2    -----
+# geometric0
+21 22      1.0
+#           -----  geometric2 Intron 2  -----
+# geometric2 intron
+22 22	     .9997447
+# longass2
+22 23	     .0002553
+#           -----  longass2 Intron 2     -----
+# internal exon 0, 45% of all internal exons 
+23 5	   .2
+# internal exon 1, 33% of all internal exons 
+23 6	   .2
+# internal exon 2, 22% of all internal exons 
+23 7	   .2
+# terminal exon
+23 8	   .4
+#           -----  5' UTR single exon  -----
+# single
+24 1     .18
+# initial exon 0
+24 2     .28
+# initial exon 1
+24 3     .28
+# initial exon 2
+24 4     .26
+#           -----  5' UTR initial exon  -----
+# 5' UTR intron single base
+25 26    1.0
+# 5' UTR intron variable length
+25 27    1.0
+#           -----  5' UTR intron single base -----
+# 5' UTR intron
+26 26    .98
+# 5' UTR internal exon
+26 28    .0
+# 5' UTR terminal exon
+26 29    .02
+#           -----  5' UTR intron variable length ----
+# 5' UTR internal exon
+27 28    .0
+# 5' UTR terminal exon
+27 29    1.0
+#           -----  5' UTR internal exon  -----
+# 5' UTR intron single base
+28 26   1.0
+# 5' UTR intron variable length
+28 27   1.0
+#           -----  5' UTR terminal exon  -----
+# single
+29 1     .18
+# initial exon 0
+29 2     .28
+# initial exon 1
+29 3     .28
+# initial exon 2
+29 4     .26
+#           -----  3' UTR single exon  -----
+# intergenic region
+30 0     1.0
+#           -----  3' UTR initial exon  -----
+# 3' UTR intron single base
+31 32    1.0
+# 3' UTR intron variable length
+31 33    1.0
+#           -----  3' UTR intron  single base -----
+# 3' UTR intron single base
+32 32    .98
+# 3' UTR internal exon
+32 34    .0
+# 3' UTR terminal exon
+32 35    .02
+#           -----  3' UTR intron variable length -----
+# 3' UTR internal exon
+33 34    .0
+# 3' UTR terminal exon
+33 35    1.0
+#           -----  3' UTR internal exon  -----
+# 3' UTR intron single base
+34 32    1.0
+# 3' UTR intron variable length
+34 33    1.0
+#           -----  3' UTR terminal exon  -----
+# intergenic region
+35 0     1.0
+#
+# ------------------------ reverse strand --------------------------
+#
+#           -----  reverse Single Exon  -----
+# reverse 5' UTR single exon
+36 59	 .9
+# reverse 5' UTR terminal exon
+36 64    .1
+#           -----  reverse Initial Exon   -----
+# reverse 5' UTR single exon
+37 59	 .9
+# reverse 5' UTR terminal exon
+37 64    .1
+#           -----  reverse Internal Exon 0  -----
+# reverse longass0
+38 48	   1.0
+#           -----  reverse Internal Exon 1  -----
+# reverse longass1
+39 53	   1.0
+#           -----  reverse Internal Exon 2  -----
+# reverse longass2
+40 58	   1.0
+#           -----  reverse Terminal Exon  0  -----
+# reverse longass0 
+41 48	   1.0
+#           -----  reverse Terminal Exon  1 -----
+# reverse longass1
+42 53	   1.0
+#           -----  reverse Terminal Exon  2  -----
+# reverse longass2 
+43 58	   1.0
+#           -----  reverse lessD0 Intron 0  -----
+# longdss0
+44 45	   1.0
+#           -----  reverse longdss0 Intron 0    -----
+# reverse internal exon 0, 45% of all internal exons 
+45 38	   .2
+# reverse internal exon 1, 33% of all internal exons 
+45 39	   .2
+# reverse internal exon 2, 22% of all internal exons 
+45 40	   .2
+# reverse initial exon
+45 37	   .4
+#           -----  reverse equalD0 Intron 0    -----
+# reverse geometric0
+46 47	1.0
+#           -----  reverse geometric0 Intron 0  -----
+# reverse geometric0 intron
+47 47	     .9997447
+# reverse longdss0
+47 45	     .0002553
+#           -----  reverse longass0 Intron 0     -----
+# reverse intron equalD0
+48 46	   .5
+# reverse intron lessD0
+48 44	   .5
+#           -----  reverse lessD1 Intron 1  -----
+# longdss1
+49 50	   1.0
+#           -----  reverse longdss1 Intron 1    -----
+# reverse internal exon 0, 45% of all internal exons 
+50 38	   .2
+# reverse internal exon 1, 33% of all internal exons 
+50 39	   .2
+# reverse internal exon 2, 22% of all internal exons 
+50 40	   .2
+# reverse initial exon
+50 37	   .4
+#           -----  reverse equalD1 Intron 1    -----
+# reverse geometric1
+51 52	1.0
+#           -----  reverse geometric1 Intron 1  -----
+# reverse geometric1 intron
+52 52	     .9997447
+# reverse longdss1
+52 50	     .0002553
+#           -----  reverse longass1 Intron 1     -----
+# reverse intron equalD1
+53 51	   .5
+# reverse intron lessD1
+53 49 	   .5
+#           -----  reverse lessD2 Intron 2  -----
+# longdss2
+54 55	   1.0
+#           -----  reverse longdss2 Intron 2    -----
+# reverse internal exon 0, 45% of all internal exons 
+55 38	   .2
+# reverse internal exon 1, 33% of all internal exons 
+55 39	   .2
+# reverse internal exon 2, 22% of all internal exons 
+55 40	   .2
+# reverse initial exon
+55 37	   .4
+#           -----  reverse equalD2 Intron 2    -----
+# reverse geometric2
+56 57	1.0
+#           -----  reverse geometric2 Intron 2  -----
+# reverse geometric2 intron
+57 57      .9997447
+# reverse longdss2
+57 55	   .0002553
+#           -----  reverse longass2 Intron 2     -----
+# reverse intron equalD2
+58 56	   .5
+# reverse intron lessD2
+58 54	   .5
+#           -----  reverse 5' UTR single exon  -----
+59 0      1.0
+#           -----  reverse 5' UTR initial exon  -----
+60 0      1.0
+#           -----  reverse 5' UTR intron single base -----
+# reverse 5' UTR intron
+61 61     .98
+# reverse 5' UTR internal exon
+61 63     .0
+# reverse 5' UTR initial exon
+61 60     .02
+#           -----  reverse 5' UTR intron variable length -----
+# reverse 5' UTR internal exon
+62 63     .0
+# reverse 5' UTR initial exon
+62 60     1.0
+#           -----  reverse 5' UTR internal exon  -----
+# revserse 5' UTR intron single base
+63 61     1.0
+# revserse 5' UTR intron variable length
+63 62     1.0
+#           -----  reverse 5' UTR terminal exon  -----
+# revserse 5' UTR intron single base
+64 61      1.0
+# revserse 5' UTR intron variable length
+64 62      1.0
+#           -----  reverse 3' UTR single exon  -----
+# reverse single exon
+65 36	  .18
+# reverse terminal exon 0
+65 41     .28
+# reverse terminal exon 1
+65 42     .28
+# reverse terminal exon 2
+65 43     .26
+#           -----  reverse 3' UTR initial exon  -----
+# reverse single exon
+66 36	  .18
+# reverse terminal exon 0
+66 41     .28
+# reverse terminal exon 1
+66 42     .28
+# reverse terminal exon 2
+66 43     .26
+#           -----  reverse 3' UTR intron single base -----
+# reverse 3' UTR intron
+67 67     .99
+# reverse 3' UTR internal exon
+67 69     .0
+# reverse 3' UTR initial exon
+67 66     .01
+#           -----  reverse 3' UTR intron variable length -----
+# reverse 3' UTR internal exon
+68 69     .0
+# reverse 3' UTR initial exon
+68 66     1.0
+#           -----  reverse 3' UTR internal exon  -----
+# reverse 3' intron single base
+69 67     1.0
+# reverse 3' intron variable length
+69 68     1.0
+#           -----  reverse 3' UTR terminal exon  -----
+# reverse 3' intron single base
+70 67     1.0
+# reverse 3' intron variable length
+70 68     1.0

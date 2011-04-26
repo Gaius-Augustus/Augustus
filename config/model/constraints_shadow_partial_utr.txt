@@ -1,0 +1,96 @@
+#
+# This is a constraints file for the transition matrix file
+# trans_shadow_partial_utr.pbl.
+#
+# This configuration file can be used when optimizing the transition matrix parameters
+# for a new species or setting. It is an argument to
+# optimize_augustus.pl when run in the transition matrix optimization
+# mode, e.g. 
+#
+# optimize_augustus.pl --species=myspecies
+# --opt_trans_matrix=/path/augustus/config/species/myspecies/myspecies_trans_shadow_partial_utr.pbl
+# --matrix_constraints=constraints_shadow_partial_utr.txt train.gb
+#
+# Mario Stanke (23.4.2007)
+#
+#
+# --------------------------------------------------------------------
+# This is a list of states that should be tried to be optimized. For
+# the state numbers see the corresponding states file 'states_shadow_utr.cfg'.
+# States not in this list are simply skipped by optimize_augustus.pl.
+# Use a list with one state number per line or use the keyword 'all.
+# The order determines the order in which the optimization cycles
+# through the states.
+#
+[TRY]
+0  # intergenic region
+1  # single exon (CDS)
+8  # terminal exon (CDS)
+13 # ass 0
+18 # ass 1
+23 # ass 2
+24 # 5' UTR single exon
+26 # 5' UTR intron single base
+32 # 3' UTR intron single base
+65 # reverse 3' UTR single exon
+66 # reverse 3' UTR initial exon
+# the following states tune the overall frequency of exons (if not normed)
+2  # initial exon 0
+3  # initial exon 1
+4  # initial exon 2
+5  # internal exon 0
+# --------------------------------------------------------------------
+# This is a list of states s, such that the transition probabilities
+# out of s are normed:
+#
+# M[s][0] + M[s][1] + ... + M[s][71] = const. 
+#
+# The constant is computed from the original
+# trans_shadow_partial_utr.pbl file. It is 1.0 with few exceptions.
+# For unnormed states the M[s][.] values don't form a probability
+# distribution anymore. If you don't care -- AUGUSTUS doesn't.
+# Use a list with one state number per line or use the keyword 'all.
+#
+[NORMED]
+0
+1
+8
+13
+18
+23
+24
+26
+32
+36
+# --------------------------------------------------------------------
+# This section is for seting constraints between transition probabilities,
+# such as suggested by symmetry such as strand symmetry (or by treating transitions in
+# all reading frames the same). Theoretically, i.e. with infinite and
+# representative traininig data, this should not be neccessary. However, in the real finite
+# world this is a little safeguard against overfitting.
+#
+[BINDINGS]
+(0,24)+(0,25)=(0,65)+(0,70)     # - the same frequency of genes on both strands
+(1,31)=(8,31)                   # - same freq. of spliced 3'UTR after single CDS or multi CDS gene
+(13,8)=(18,8)                   # - Prob. of terminating 
+(18,8)=(23,8)                   # CDS is independent
+(13,8)=(23,8)                   # of reading frame.
+(24,1)=(29,1)                   # - reading frame 
+(24,2)=(29,2)                   # and multi/single CDS
+(24,3)=(29,3)                   # independent of
+(24,4)=(29,4)                   # spliced/unspliced 5' UTR
+(2,10)=(3,15)                   # - equal exit
+(3,15)=(4,20)                   # probs out of initial
+(2,10)=(4,20)                   # exons for the three frames
+(5,10)=(6,15)                   # - equal exit
+(5,10)=(7,20)                   # probs out of internal exons for the three frames
+(5,10)=(38,48)                  # and
+(5,10)=(39,53)                  # for  
+(5,10)=(40,58)                  # the both strands
+(36,59)=(37,59)                 # - same ratio of spliced/unspliced 5'UTR after single CDS or multi CDS gene
+# the Markov chain of phases of successive introns should
+# be the time-reversed chain for the reverse strand
+MC(((55,40),(55,38),(55,39)),((45,40),(45,38),(45,39)),((50,40),(50,38),(50,39)))=reverse(MC(((13,5),(13,6),(13,7)),((18,5),(18,6),(18,7)),((23,5),(23,6),(23,7)))
+#(26,28)/(26,29)=(27,28)/(27,29) # same ratio of terminal/internal for transitions out of 5' UTR intron
+#(32,34)/(32,35)=(33,34)/(33,35) # same ratio of terminal/internal for transitions out of 5' UTR intron
+#(0,24)/(0,25)=(36,59)/(36/64)   # same ratio of spliced/unspliced 5'UTR on both strands

@@ -1,0 +1,230 @@
+li {padding-bottom: 1ex;}
+
+
+body {
+	background: rgb(192, 233, 255);
+	color:black;
+	font-family: 'Bitstream Vera Sans','Microsoft Sans Serif',sans-serif;
+        min-width: 50em;
+	max-width: 70em;
+	
+}
+
+div.errors {
+    background: #fff3f3;
+    border: 1px solid red;
+    color: #cc0000;
+    margin: 10px 0 5px 0;
+    padding: 5px 0 5px 0;
+}
+div.errors ul {
+    list-style: none;
+    padding: 0;	
+}
+div.errors li {
+	background: url(../images/skin/exclamation.png) 8px 0% no-repeat;
+    line-height: 16px;
+    padding-left: 30px;
+}
+
+td.errors select {
+    border: 1px solid red;
+}
+td.errors input {
+    border: 1px solid red;
+}
+
+#headline {
+	font-family: 'Bitstream Vera Sans','Microsoft Sans Serif',sans-serif;
+	font-size:medium;
+	font-weight:bold;
+	vertical-align:top;
+	text-align:center;
+	margin-top:0pt;
+	margin-left:0pt;
+}
+
+#headline a:link {
+	font-family: 'Bitstream Vera Sans','Microsoft Sans Serif',sans-serif;
+	text-decoration: none;
+	color: white;
+	background: inherit;
+}
+
+#headline a:visited {
+	font-family: 'Bitstream Vera Sans','Microsoft Sans Serif',sans-serif;
+	text-decoration: none;
+	color: white;
+	background: inherit;
+}
+
+#headline a:hover {
+	font-family: 'Bitstream Vera Sans','Microsoft Sans Serif',sans-serif;
+	text-decoration: none;
+	color: #c0e9ff;
+	background: inherit;
+}
+
+#headline a:active {
+	font-family: 'Bitstream Vera Sans','Microsoft Sans Serif',sans-serif;
+	text-decoration: none;
+	color: #c8e4f8;
+	background: inherit;
+}
+
+#headline a:focus {
+	font-family: 'Bitstream Vera Sans','Microsoft Sans Serif',sans-serif;
+	text-decoration: none;
+	color: #c8e4f8;
+	background: inherit;
+}
+
+
+div#headline {
+	background: rgb(32, 64, 128);
+	color: white;
+}
+
+
+h1.title {
+        text-align:left;
+	margin: 0.3em 0.3em 1pt 0.3em;
+        padding: 0.3em 0.7em;	
+	font-size: 300%;
+	font-weight: bold;
+}
+
+span.menu{
+	margin-top:5px;
+	padding-top:5px;
+	color:yellow;
+}
+
+span.subtitle {
+	font-size: 66%;
+}
+
+div.main {
+        font-size:1em;
+        color:black;       
+        margin: 1em;
+	margin-bottom: 0.5em;
+	text-align:justify;		
+}
+
+div.list  {      
+      
+        margin: 0.3em 0.1em;
+	margin-bottom: 0.3em;
+        padding: 0.5em 0.5em;
+	padding-bottom: 0.0em;
+	
+}
+
+div.menu {
+	padding-top: 1em;
+	width: 1em;
+	height: 80%;
+	float: right;
+	color: rgb(32, 64, 128);
+	background: rgb(192, 233, 255);
+}
+
+img {
+	border: none;
+}
+
+.llist{
+padding-top: 1em;
+padding-bottom: 0.5em;
+}
+
+.example{
+background-color: white;
+padding-top: 1em;
+padding-left: 1em;
+padding-right: 1em;
+padding-bottom: 0.8em;
+color: black;
+font-family: monospace;
+}
+.error {
+        margin: 2ex;
+        padding-left: 1em;
+	border-style: hidden;
+	border-left-style: double;
+        border-color: #f00;
+        color: #aa0505;
+}
+
+.warning {
+        margin: 2ex;
+        padding-left: 1em;
+        border-style: hidden;
+        border-left-style: double;
+        border-color: #ffa500;
+        color: #aa0505;
+}
+
+a.doclink {
+	text-decoration: none;
+	color: black;
+	background: transparent;
+}
+a:link {
+        color:#204080;
+        text-decoration:none;
+}
+
+a:visited {
+        text-decoration:none;
+}
+a:hover {
+        text-decoration:underline;
+}
+
+
+
+table>caption {
+	font-weight: bold;
+}
+
+#appnav {
+ background:  #204080;
+padding: 1pt;
+}
+#appnav ul
+{
+margin: 0;
+padding: 0;
+list-style-type: none;
+padding-left: 0.1em;
+text-align: left;
+}
+
+#appnav ul li { display: inline; }
+
+#appnav ul li a
+{
+text-decoration: none;
+padding: .2pt 0.5em;
+margin:5pt;
+color: #fff;
+background-color: #204080;
+}
+
+#appnav ul li a:hover
+{
+color: #fff;
+background-color: #369;
+}
+
+.message {
+    background: #f3f8fc url(../images/skin/information.png) 8px 50% no-repeat;
+    border: 1px solid #b2d1ff;
+    color: #006dba;
+    margin: 10px 0 5px 0;
+    padding: 5px 5px 5px 30px
+}
+
+

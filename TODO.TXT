@@ -1,0 +1,72 @@
+mailing list for updates:
+Jennifer Wortman, TIGR
+"Mustapha Larbaoui" <ml6@sanger.ac.uk>
+"Uffe Hellsten" <uhellsten@lbl.gov>
+"Uwe Hilgert" <hilgert@cshl.edu>
+Robert S Muldowney <muldowney@aesop.rutgers.edu>
+Michael Deyholos <deyholos@ualberta.ca>
+"Hideaki Sugawara" <hsugawar2010@gmail.com>
+"Mr Akira Ohyama" <akr@insilicobiology.co.jp>
+
+
+try performance of noInFrameStop=true
+
+website:
+mention known problem with stop codon around introns.
+
+fix synchstate (has to refer either to a) the stateType or to b) stateIndex):
+problems:
+case a)
+ we can have multiple synch states, implying a few changes in namgene.cc
+case b)
+ class State does not store the state index, so it is impossible in
+ NAMGene::tryFindCutEndPoint to find out if the State st refers to a synch
+ state
+ 
+
+- fix "Error in addGene"
+
+fix posterior prob > 1 (with hints)
+
+- multiply intron states to get rid of stop codons split by introns
+
+- why gives human HMM training worse CDS results when training with UTRs?
+
+#####################################################
+# replace Viterbi by parse of best expected accuracy
+#####################################################
+
+Idea: Suppose the posterior probability of the parses given the input data were true estimates.
+Viterbi is not the best choice as the reporte parse, e.g.
+ 
+Suppose those three parses were the only ones contributing significantly to the overall prob.
+
+      >-----------------------------> 30%
+         >--------------------------> 30%
+         (no exon)                    40%
+
+Viterbi would report no exon. However, a large region has 60% prob of being coding. Better to chose the second parse.
+Possible Approach:
+  Map (sub)states to labels.
+  Sample sufficiently often parses according the the posterior prob.
+  Make another dynamic programming pass to find parse to find parse with highest expected accuracy according to empirical posterior distribution of parses.
+  (Gross et. al use maximum expected number of correct labels along sequence.)
+
+Koennte auch Spezifitaet erhoehen, z.B.
+
+ >----   ----  ----> >-->  30%
+    >-   ----  ----> >-->  30%
+         <--<   <-----<    40%
+
+Exon Level:
+Parse 3 (Viterbi) haette eine erwartete Spezifitaet von 40%.
+Parse 2 haette eine erwartete Spezifitaet von 30% x 3/4 + 30% x 1 + 40% x 0 = 52.5%
+
+Gen Level:
+Parse 3 (Viterbi) haette eine erwartete Spezifitaet von 40%.
+Parse 2 haette eine erwartete Spezifitaet von 30% x 1/2 + 30% x 1 + 40% x 0 = 45%
+
+
+####################################################
+#                      CRF
+####################################################

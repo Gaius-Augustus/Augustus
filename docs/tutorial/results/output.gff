@@ -1,0 +1,124 @@
+##gff-version 3
+# This output was generated with AUGUSTUS (version 2.5).
+# AUGUSTUS is a gene prediction tool for eukaryotes written by Mario Stanke (mario.stanke@uni-greifswald.de)
+# and Oliver Keller (keller@cs.uni-goettingen.de).
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+# No extrinsic information on sequences given.
+# Initialising the parameters ...
+# Using protein profile unknown
+# --[8..1336]--> unknown_A (9) <--[16..88]--> unknown_B (7) <--[19..46]--> unknown_D (8) <--[0..1]--> unknown_E (10) <--[2..42]--> unknown_F (10) <--[9..128]--> unknown_G (11) <--[16..74]--> unknown_H (16) <--[9..54]--> unknown_I (8) <--[8..29]--> unknown_J (13) <--[8..42]--> unknown_K (15) <--[1..3]--> unknown_L (12) <--[6..15]--> unknown_M (13) <----
+# human version. Use default transition matrix.
+# Looks like ../data/chr4.103M.fa is in fasta format.
+# We have hints for 0 sequences and for 0 of the sequences in the input set.
+#
+# ----- prediction on sequence number 1 (length = 60001, name = chr4) -----
+#
+# Predicted genes for sequence number 1 on both strands
+# start gene g1
+chr4	AUGUSTUS	gene	1070225	1119477	1	-	.	ID=g1
+chr4	AUGUSTUS	transcript	1070225	1119477	.	-	.	ID=g1.t1;Parent=g1
+chr4	AUGUSTUS	stop_codon	1070225	1070227	.	-	0	Parent=g1.t1
+chr4	AUGUSTUS	CDS	1070225	1070566	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1072377	1072535	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1079458	1079616	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1079772	1080044	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1080168	1080482	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1081783	1081937	.	-	2	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1082244	1082409	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1082493	1082615	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1084295	1084414	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1095894	1096061	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1097118	1097206	.	-	2	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1098057	1098204	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1101469	1101627	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1102495	1102614	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1103920	1104049	.	-	1	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1104359	1104446	.	-	2	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1106968	1107019	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1115387	1115452	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1115532	1115599	.	-	2	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1115761	1115842	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1116272	1116391	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1117078	1117196	.	-	2	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1117321	1117410	.	-	2	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1117917	1118008	.	-	1	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	CDS	1119422	1119477	.	-	0	ID=g1.t1.cds;Parent=g1.t1
+chr4	AUGUSTUS	start_codon	1119475	1119477	.	-	0	Parent=g1.t1
+chr4	AUGUSTUS	protein_match	1102591	1102614	3.08	-	0	ID=pp.g1.t1.unknown_M;Target=unknown_M 6 13;Target_start=316;
+chr4	AUGUSTUS	protein_match	1103920	1103934	2.19	-	0	ID=pp.g1.t1.unknown_M;Target=unknown_M 1 5;Target_start=316;
+chr4	AUGUSTUS	protein_match	1103953	1103988	4.85	-	0	ID=pp.g1.t1.unknown_L;Target=unknown_L 1 12;Target_start=298;
+chr4	AUGUSTUS	protein_match	1103992	1104036	8.38	-	0	ID=pp.g1.t1.unknown_K;Target=unknown_K 1 15;Target_start=282;
+chr4	AUGUSTUS	protein_match	1104376	1104414	3.96	-	0	ID=pp.g1.t1.unknown_J;Target=unknown_J 1 13;Target_start=259;
+chr4	AUGUSTUS	protein_match	1106993	1107016	9.22	-	0	ID=pp.g1.t1.unknown_I;Target=unknown_I 1 8;Target_start=232;
+chr4	AUGUSTUS	protein_match	1115568	1115599	3.74	-	2	ID=pp.g1.t1.unknown_H;Target=unknown_H 6 16;Target_start=181;
+chr4	AUGUSTUS	protein_match	1115761	1115776	1.96	-	0	ID=pp.g1.t1.unknown_H;Target=unknown_H 1 6;Target_start=181;
+chr4	AUGUSTUS	protein_match	1116320	1116352	7.34	-	0	ID=pp.g1.t1.unknown_G;Target=unknown_G 1 11;Target_start=132;
+chr4	AUGUSTUS	protein_match	1117093	1117122	5.11	-	0	ID=pp.g1.t1.unknown_F;Target=unknown_F 1 10;Target_start=104;
+chr4	AUGUSTUS	protein_match	1117147	1117176	9.44	-	0	ID=pp.g1.t1.unknown_E;Target=unknown_E 1 10;Target_start=86;
+chr4	AUGUSTUS	protein_match	1117177	1117196	9.28	-	2	ID=pp.g1.t1.unknown_D;Target=unknown_D 2 8;Target_start=78;
+chr4	AUGUSTUS	protein_match	1117321	1117324	13.8	-	0	ID=pp.g1.t1.unknown_D;Target=unknown_D 1 2;Target_start=78;
+chr4	AUGUSTUS	protein_match	1117400	1117410	7.4	-	2	ID=pp.g1.t1.unknown_B;Target=unknown_B 4 7;Target_start=46;
+chr4	AUGUSTUS	protein_match	1117917	1117926	5.9	-	0	ID=pp.g1.t1.unknown_B;Target=unknown_B 1 4;Target_start=46;
+chr4	AUGUSTUS	protein_match	1118005	1118008	7.54	-	1	ID=pp.g1.t1.unknown_A;Target=unknown_A 8 9;Target_start=11;
+chr4	AUGUSTUS	protein_match	1119422	1119444	6.1	-	0	ID=pp.g1.t1.unknown_A;Target=unknown_A 1 8;Target_start=11;
+chr4	AUGUSTUS	interblock_region	1070225	1070566	.	-	0	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1072377	1072535	.	-	0	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1079458	1079616	.	-	0	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1079772	1080044	.	-	0	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1080168	1080482	.	-	0	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1081783	1081937	.	-	2	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1082244	1082409	.	-	0	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1082493	1082615	.	-	0	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1084295	1084414	.	-	0	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1095894	1096061	.	-	0	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1097118	1097206	.	-	2	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1098057	1098204	.	-	0	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1101469	1101627	.	-	0	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1102495	1102590	.	-	0	ID=pp.g1.t1.iBR12
+chr4	AUGUSTUS	interblock_region	1103935	1103952	.	-	0	ID=pp.g1.t1.iBR11
+chr4	AUGUSTUS	interblock_region	1103989	1103991	.	-	0	ID=pp.g1.t1.iBR10
+chr4	AUGUSTUS	interblock_region	1104037	1104049	.	-	1	ID=pp.g1.t1.iBR9
+chr4	AUGUSTUS	interblock_region	1104359	1104375	.	-	0	ID=pp.g1.t1.iBR9
+chr4	AUGUSTUS	interblock_region	1104415	1104446	.	-	2	ID=pp.g1.t1.iBR8
+chr4	AUGUSTUS	interblock_region	1106968	1106992	.	-	0	ID=pp.g1.t1.iBR8
+chr4	AUGUSTUS	interblock_region	1107017	1107019	.	-	0	ID=pp.g1.t1.iBR7
+chr4	AUGUSTUS	interblock_region	1115387	1115452	.	-	0	ID=pp.g1.t1.iBR7
+chr4	AUGUSTUS	interblock_region	1115532	1115567	.	-	0	ID=pp.g1.t1.iBR7
+chr4	AUGUSTUS	interblock_region	1115777	1115842	.	-	0	ID=pp.g1.t1.iBR6
+chr4	AUGUSTUS	interblock_region	1116272	1116319	.	-	0	ID=pp.g1.t1.iBR6
+chr4	AUGUSTUS	interblock_region	1116353	1116391	.	-	0	ID=pp.g1.t1.iBR5
+chr4	AUGUSTUS	interblock_region	1117078	1117092	.	-	0	ID=pp.g1.t1.iBR5
+chr4	AUGUSTUS	interblock_region	1117123	1117146	.	-	0	ID=pp.g1.t1.iBR4
+chr4	AUGUSTUS	interblock_region	1117325	1117399	.	-	0	ID=pp.g1.t1.iBR2
+chr4	AUGUSTUS	interblock_region	1117927	1118004	.	-	0	ID=pp.g1.t1.iBR1
+chr4	AUGUSTUS	interblock_region	1119445	1119477	.	-	0	ID=pp.g1.t1.iBR0
+# protein sequence = [MAEEGAVAVCVRVRPLNSREESLGETAQVYWKTDNNVIYQVDGSKSFNFDRVFHGNETTKNVYEEIAAPIIDSAIQGY
+# NGTIFAYGQTASGKTYTMMGSEDHLGVIPRAIHDIFQKIKKFPDREFLLRVSYMEIYNETITDLLCGTQKMKPLIIREDVNRNVYVADLTEEVVYTSE
+# MALKWITKGEKSRHYGETKMNQRSSRSHTIFRMILESREKGEPSNCEGSVKVSHLNLVDLAGSERAAQTGAAGVRLKEGCNINRSLFILGQVIKKLSD
+# GQVGGFINYRDSKLTRILQNSLGGNAKTRIICTITPVSFDETLTALQFASTAKYMKNTPYVNEVSTDEALLKRYRKEIMDLKKQLEEVSLETRAQAME
+# KDQLAQLLEEKDLLQKVQNEKIENLTRMLVTSSSLTLQQELKAKRKRRVTWCLGKINKMKNSNYADQFNIPTNITTKTHKLSINLLREIDESVCSESD
+# VFSNTLDTLSEIEWNPATKLLNQENIESELNSLRADYDNLVLDYEQLRTEKEEMELKLKEKNDLDEFEALERKTKKDQENELSSKVELLREKEDQIKK
+# LQEYIDSQKLENIKMDLSYSLESIEDPKQMKQTLFDAETVALDAKRESAFLRSENLELKEKMKELATTYKQMENDIQLYQSQLEAKKKMQVDLEKELQ
+# SAFNEITKLTSLIDGKVPKDLLCNLELEGKITDLQKELNKEVEENEALREEVILLSELKSLPSEVERLRKEIQDKSEELHIITSEKDKLFSEVVHKES
+# RVQGLLEEIGKTKDDLATTQSNYKSTDQEFQNFKTLHMDFEQKYKMVLEENERMNQEIVNLSKEAQKFDSSLGALKTELSYKTQELQEKTREVQERLN
+# EMEQLKEQLENRDSTLQTVEREKTLITEKLQQTLEEVKTLTQEKDDLKQLQESLQIERDQLKSDIHDTVNMNIDTQEQLRNALESLKQHQETINTLKS
+# KISEEVSRNLHMEENTGETKDEFQQKTIENQEELRLLGDELKKQQEIVAQEKNHAIKKEGELSRTCDRLAEVEEKLKEKSQQLQEKQQQLLNVQEEMS
+# EMQKKINEIENLKNELKNKELTLEHMETERLELAQKLNENYEEVKSITKERKVLKELQKSFETERDHLRGYIREIEATVSYTLFLHLLSVSFKI]
+# sequence of block unknown_M   316 [LTALQFASTAKYM] 329
+# sequence of block unknown_L   298 [NAKTRIICTITP] 310
+# sequence of block unknown_K   282 [YRDSKLTRILQNSLG] 297
+# sequence of block unknown_J   259 [RSLFILGQVIKKL] 272
+# sequence of block unknown_I   232 [LVDLAGSE] 240
+# sequence of block unknown_H   181 [ITKGEKSRHYGETKMN] 197
+# sequence of block unknown_G   132 [EIYNETITDLL] 143
+# sequence of block unknown_F   104 [VIPRAIHDIF] 114
+# sequence of block unknown_E    86 [QTASGKTYTM] 96
+# sequence of block unknown_D    78 [NGTIFAYG] 86
+# sequence of block unknown_B    46 [FNFDRVF] 53
+# sequence of block unknown_A    11 [RVRPLNSRE] 20
+# end gene g1
+###
+# command line:
+# augustus --optCfgFile=../data/ppx.cfg --predictionStart=1070000 --predictionEnd=1130000 --proteinprofile=../results/PF00225_seed.prfl ../data/chr4.103M.fa

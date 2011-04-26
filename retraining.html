@@ -1,0 +1,237 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+</head>
+<body>
+<font size=+3><center><b>Retraining AUGUSTUS</b></center></font><br>
+
+This manual is intended for those who want to retrain on their own ab initio AUGUSTUS for another species.
+Please do not rely on this manual and the scripts and programs. Check what they do on your data! This document is work in progress.
+If you want us to retrain AUGUSTUS for your species, please contact me through mstanke@gwdg.de.
+
+<p><font size=+2><b>1. COMPILE A SET OF TRAINING AND TEST GENES</b></font><br>
+You will need a set of sequences with bona fide gene structures. Currently,
+only the coding parts of the gene are important (plus a short window upstream).
+Generally, the more genes you have the better. So far I haven't tried
+it with less than 200 genes for training. Make also sure that in particular
+the number of multi-exon genes is large. These are needed to train the
+introns. Needless to say, the gene structures of these genes should be
+as accurate as possible. However, it is not <i>necessary</i> that they
+are 100% correct, neither does the annotation have to be necessarily complete.
+It is more imporant that the start codon is correctly annotated than that
+the stop codon is correctly annotated. Your set of annotated sequences
+should be <b>non-redundant</b>. If in two different sequences genes with
+an almost identical annoated amino acid sequence is annotated then delete
+one of them. (My criterion is: No two genes in the set are more than 70% identical on the amino acid level.)
+The non-redundancy is very important for avoiding overfitting. This is of course also very important if you want to test the accuracy
+on a test set. Each sequence can contain one or more genes, the genes can
+be on either strand. However, the genes must not overlap, and only one
+transcript per gene is allowed. Store the sequences together with
+their annotation in a simple <b>genbank format</b>. For the exact format
+that the training program can read in look as an example at one of the training genbank
+files at the augustus web server: <a href="http://augustus.gobics.de/datasets/">http://augustus.gobics.de/datasets/</a>
+<p>Randomly <b>split </b>the set of annotated sequences in a <b>training
+and a test set</b>. Lets call these two files myspecies.train.gb and myspecies.test.gb.
+In order for the test accuracy to be statistically meaningful the test
+set should also be large enough (100-200 genes). Your script that splits
+the large genbank file into these two should really split the set randomly!
+Do not just take the first and the last part of the file as then the test
+set is unlikely to be representative. The script 'randomSplit.pl' in the
+scripts directory does it correctly. In addition to the complete genes you may specify a set of <a href="#ss">splice
+site sequences </a>that should be used for training.
+
+<p> Options for compiling a set of gene structures:
+<ul>
+<li>Genbank
+<li>Spliced alignments of ESTs against the assembled genomic sequence. e.g. PASA
+<li>Spliced alignments of protein sequences of a related species against the assembled genomic sequence, e.g. GeneWise
+<li>Data from a related species
+<li>Iterate retraining with predicted genes
+</ul>
+<p><font size=-1>NOT ENOUGH TRAINING DATA OR ONLY CODING SEQUENCES AVAILABLE
+<p>In case you want to train for species X but do not have
+enough training data for X you may consider the following 'artificial monster
+gene trick'. This trick allows you to train the coding content models using one species 
+and the signals models and length distributions of another species.
+You need enough (200-300 genes) training data from another
+species Y which is similar to X especially in intron and exon length distributions
+and signal patterns. You take all the coding sequences you have for X (or
+a species with a very similar coding content), exclude the start and stop
+codons and concatenate these. Let s be that sequence. Then you create an
+artifial genomic sequence g like this:
+<br>
+<p>...non-coding sequence from X... ATG sssssssssssssssss
+TAA ...non-coding sequence from X...<br>
+(n copies of s)
+<p>Then you add this monster gene sequence g and all the
+available training data from X to your training set from sequence Y and
+train AUGUSTUS with this extended training set. AUGUSTUS will train the
+intron and exon length istributions, splice site patterns, translation start patterns, branch
+point regions, etc. from species Y and X, weighted by the occurrences of
+these signals or lengths, respecively. If n is large enough the amount
+of coding sequences in g will outweight the amount of coding sequences
+in Y, so augustus uses approximately the coding content of species X. If
+s is too short, then n should not be very large as this would overfit the
+model to the sequences in s.</font>
+<p><a NAME="meta"></a>
+<p><font size=+2><b>2. CREATE A META PARAMETERS FILE FOR YOUR SPECIES</b></font><br>
+<p> I call the parameters like the size of the window of the splice site models and the order of the Markov model 
+<i>meta parameters</i>.
+Say, you want to train AUGUSTUS for a species called 'myspecies'.
+Copy the parameter file generic_parameters.cfg to myspecies_parameters.cfg and copy the file generic_weightmatrix.cfg to myspecies_weightmatrix.
+Then adjust myspecies_parameters.cfg according to the comments in this file.
+
+<p><a NAME="ss"></a>The optional file with the filename given by /IntronModel/splicefile
+may contain a list of sequence windows of known splice sites.
+<br>The format is as in the following example.
+<br>--------example begin-------
+<br>dss gccgagaactccgctcgttctgtgcgttctcctgtcccaggtagggaagaggggctgccgggcgcgctctgcgccccgtttc
+<br>dss cgtgattgtcggggggaaagacatccagggctccttgcaggtaacacatctgtttgagataacttgggttcaaggaggacat
+<br>dss agagaatcagagacagcctttcccaagagatgttggcaaggtaagtcagacaaacagcaaatgacaaaaacatgtttttatg
+<br>dss cattgtcactgttgtgtcacctgcgctgctggaccgagaggtgagctgaaaagaataccactttctttttcacgagaataga
+<br>dss tgacaaaaatgatcactcaccaaaattcaccaagaaagaggtaaacccctgtgccaaacaccaaccaccactgtggtcacag
+<br>ass gttagtatgcttctttaattttttttctccctgaaattataggaaccagatgttaaaaaattagaagaccaacttcaaggcg
+<br>ass --------------------------ggctttgtctttgcagaatttatagagcggcagcacgcaaagaacaggtattacta
+<br>ass gattccttgtgattagcctctcttgctccttttctccaccagcaaagtcgaccaagaaattatcaacattatgcaggatcgg
+<br>ass aaccgtagtaaacagcatgaatcgtgttttgtttttgaacagaccactggccttgtgggattggctgtgtgcaatactcctc
+<br>------example end--------
+<p>dss: donor (=5') splice site. 40 letters + gt + 40 letters
+<br>ass: donor (=3') splice site. 40 letters + ag + 40 letters
+<br>use '-' for unknown characters
+<br><br>
+
+<font size=+0><b>myspecies_weightmatrix.txt</b></font><br>
+Changes in myspecies_weightmatrix.txt are often not necessary. If you do not want to mess with this, 
+also leave /Constant/decomp_num_steps as it is (=1). This section describes the meaning of the meta parameter <i>/Constant/decomp_num_steps</i>
+and the matrix in the file myspecies_weightmatrix.txt. For some species it makes sense to let the model 
+parameters depend on the average frequencies of the 4 bases in the query sequence. For example, in human, the GC content stays 
+consistently above or below average over long sequence stretches (isochores). AUGUSTUS can use for each piece of the query sequence 
+(at most maxDNAPieceSize=200kb by default) different parameters that are adjusted to the base composition of this piece. 
+I describe here only the dependency on the GC content. /Constant/decomp_num_steps is the number of different levels of GC 
+content that is taken into account, i.e. AUGUSTUS uses /Constant/decomp_num_steps different sets of parameters, each for a different GC content. 
+Values between 1 and 10 are useful. The GC content ranges between /Constant/gc_range_min and /Constant/gc_range_max. These parameters can be set in 
+the meta parameters file. Given a target GC content, each sequence in the training set is weighted depending on how similar its GC content 
+is to the target GC content. It gets an integer weight between 1 and 10. The weight is the higher, the closer the GC content 
+of the training sequence is to the target GC content. The two non-zero numbers in the middle of the 4x4 Matrix in myspecies_weightmatrix.txt 
+(default: 200) determine the influence of the deviation in GC content. 
+A high value (like 300) means that mostly training sequences with a very similar GC 
+content to the target GC content are taken into account. The advantage is that the training is more specific to the target GC content. 
+The disadvantage of a high value is that this effectively reduces the size of the training set. 
+A low value (like 150) means that all training sequences are taken into account, except 
+that training sequences with a similar GC content are weighed somewhat stronger. 
+
+<p><font size=+2><b>3. RUN THE SCRIPT optimize_augustus.pl</b></font><br>
+<i>Please check for updates on this part of the documentation.</i>
+<p>This script optimizes the prediction accuracy by adjusting the meta parameters in 
+the myspecies_parameters.cfg file. The script used the programs augustus and etraining. They must be in the $PATH.
+You need to tell optimize_augustus.pl, which metaparameters it should optimize. Do this by adjusting the file
+config/generic_metapars.cfg. (You may also make a copy of it and then use the command line parameter 
+--metapars=nameofmycopy to the script optimize_augustus.pl.)<br>
+Run
+
+<p><b><font face="Courier New,Courier">scripts/optimize_augustus.pl --species=myspecies myspecies.train.gb</font></b>
+<p>
+In an evaluation step this script does the following 10 fold cross validation.
+It splits the set myspecies.train.gb randomly into 10 sets (buckets) of &plusmn;1 equal size. Then takes 9 of the 10 
+sets for training and the other one for evaluating the prediction accuracy using the annotation of the genbank file.
+The 10 possible buckets for evaluating are rotated and each case the other sequences are used for training.
+It computes a single target value that is subject to optimization. 
+The target is a a weighted average of the sensitivities and specificities on the
+base, exon and gene level. (Feel free to change the weighing to your preferences in the function 'sub gettarget'.)
+<p>
+For a meta parameter the script repeats above evaluation step for different values of the meta parameter. 
+If it finds an improvement in the target value it adjusts the value of the meta parameter in 
+your myspecies_parameters.cfg file. It tries new values for the parameter until it finds
+no more improvement. Then it optimizes the next meta parameter. When it has optimized all meta parameters once, 
+it repeats with the first meta parameter. It does at most 5 rounds of optimizations, but stops earlier if 
+no improvements are found. This script probably has to run over night. When it is done your 
+myspecies_parameters.cfg will hopefully have well suited meta parameters for your species and your training set.
+<p>
+After optimize_augustus.pl has finished you have to train AUGUSTUS with the metaparameters it has found.
+
+<p><b><font face="Courier New,Courier">etraining --species=myspecies myspecies.train.gb</font></b>
+
+<p>If you have a test set, you can now check the prediction accuracy
+on this test set by running
+<p><b><font face="Courier New,Courier">augustus --species=myspecies myspecies.test.gb</font></b>
+<p>The end of the output will then contain a summary of the accuracy of
+the prediction. If the gene level sensitivity is below 20% it is likely
+that the training set is not large enough, that it doesn't have a good 
+quality or that the species is somehow 'special'.
+<br>If you succeeded in creating a good AUGUSTUS version for your
+species I would be very interested in your results. If possible please
+share your results and give me your myspecies_parameters.cfg and the test
+and training set.
+
+<p><font size=+2><b>4. SPECIAL CASE: ORGANISM WITH DIFFERENT GENETIC CODE</b></font><br>
+<p> AUGUSTUS can be told to use a different <a href="http://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi?mode=c">translation table</a>,
+in particular one with a different set of stop codons.
+This is useful for a small number of species such as <i>Tetrahymena thermophilia</i>, in which some codons translate 
+to a different amino acid than usual. If you train AUGUSTUS for such a species set the variable <i>translation_table</i>
+in the parameter file of your species. Further, adjust the stop codon probabilities in the same config file. E.g. say<br><br>
+translation_table 6<br>
+/Constant/amberprob             0      # Prob(stop codon = tag), if 0 tag is assumed to code for amino acid<br>
+/Constant/ochreprob             0      # Prob(stop codon = taa), if 0 taa is assumed to code for amino acid<br>
+/Constant/opalprob              1      # Prob(stop codon = tga), if 0 tga is assumed to code for amino acid<br><br>
+
+in the case of <i>Tetrahymena</i>, where taa and tag are coding for glutamine (Q).
+
+
+Choose the translation table number accoding to this table. translation_table=1 is 
+the default value and the standard with stop codons taa, tga, tag. If you have a species with the standard genetic code you don't have to do anything.
+In case your species' code is not covered by this table send us a note with the string of 64 one-letter amino acid codes in the codon order below.
+<br><br>
+
+<table border="1" rules="groups">
+<colgroup>
+ <col width="7*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*">
+<col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*">
+<col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*">
+<col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*"><col width="1*">
+</colgroup>
+<thead>
+<tr>
+<td>translation&nbsp;</td>
+<td>a</td><td>a</td><td>a</td><td>a</td><td>a</td><td>a</td><td>a</td><td>a</td><td>a</td><td>a</td><td>a</td><td>a</td><td>a</td><td>a</td><td>a</td><td>a</td>
+<td>c</td><td>c</td><td>c</td><td>c</td><td>c</td><td>c</td><td>c</td><td>c</td><td>c</td><td>c</td><td>c</td><td>c</td><td>c</td><td>c</td><td>c</td><td>c</td>
+<td>g</td><td>g</td><td>g</td><td>g</td><td>g</td><td>g</td><td>g</td><td>g</td><td>g</td><td>g</td><td>g</td><td>g</td><td>g</td><td>g</td><td>g</td><td>g</td>
+<td>t</td><td>t</td><td>t</td><td>t</td><td>t</td><td>t</td><td>t</td><td>t</td><td>t</td><td>t</td><td>t</td><td>t</td><td>t</td><td>t</td><td>t</td><td>t</td>
+</tr>
+<tr>
+<td>table</td>
+<td>a</td><td>a</td><td>a</td><td>a</td><td>c</td><td>c</td><td>c</td><td>c</td><td>g</td><td>g</td><td>g</td><td>g</td><td>t</td><td>t</td><td>t</td><td>t</td>
+<td>a</td><td>a</td><td>a</td><td>a</td><td>c</td><td>c</td><td>c</td><td>c</td><td>g</td><td>g</td><td>g</td><td>g</td><td>t</td><td>t</td><td>t</td><td>t</td>
+<td>a</td><td>a</td><td>a</td><td>a</td><td>c</td><td>c</td><td>c</td><td>c</td><td>g</td><td>g</td><td>g</td><td>g</td><td>t</td><td>t</td><td>t</td><td>t</td>
+<td>a</td><td>a</td><td>a</td><td>a</td><td>c</td><td>c</td><td>c</td><td>c</td><td>g</td><td>g</td><td>g</td><td>g</td><td>t</td><td>t</td><td>t</td><td>t</td>
+</tr>
+<tr>
+<td>number</td>
+<td>a</td><td>c</td><td>g</td><td>t</td><td>a</td><td>c</td><td>g</td><td>t</td><td>a</td><td>c</td><td>g</td><td>t</td><td>a</td><td>c</td><td>g</td><td>t</td>
+<td>a</td><td>c</td><td>g</td><td>t</td><td>a</td><td>c</td><td>g</td><td>t</td><td>a</td><td>c</td><td>g</td><td>t</td><td>a</td><td>c</td><td>g</td><td>t</td>
+<td>a</td><td>c</td><td>g</td><td>t</td><td>a</td><td>c</td><td>g</td><td>t</td><td>a</td><td>c</td><td>g</td><td>t</td><td>a</td><td>c</td><td>g</td><td>t</td>
+<td>a</td><td>c</td><td>g</td><td>t</td><td>a</td><td>c</td><td>g</td><td>t</td><td>a</td><td>c</td><td>g</td><td>t</td><td>a</td><td>c</td><td>g</td><td>t</td>
+</tr>
+</thead>
+<tbody>
+<tr><td><b>1</b></td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>R</TD><TD>S</TD><TD>R</TD><TD>S</TD><TD>I</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><td>*</td><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td> 2</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><td>*</td><TD>S</TD><td>*</td><TD>S</TD><TD>M</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>W</TD><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td> 3</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>R</TD><TD>S</TD><TD>R</TD><TD>S</TD><TD>M</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>W</TD><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td> 4</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>R</TD><TD>S</TD><TD>R</TD><TD>S</TD><TD>I</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>W</TD><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td> 5</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>M</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>W</TD><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td> 6</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>R</TD><TD>S</TD><TD>R</TD><TD>S</TD><TD>I</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>Q</TD><TD>Y</TD><TD>Q</TD><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><td>*</td><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td> 9</td><TD>N</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>I</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>W</TD><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td>10</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>R</TD><TD>S</TD><TD>R</TD><TD>S</TD><TD>I</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>C</TD><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td>11</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>R</TD><TD>S</TD><TD>R</TD><TD>S</TD><TD>I</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><td>*</td><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td>12</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>R</TD><TD>S</TD><TD>R</TD><TD>S</TD><TD>I</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>S</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><td>*</td><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td>13</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>G</TD><TD>S</TD><TD>G</TD><TD>S</TD><TD>M</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>W</TD><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td>14</td><TD>N</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>I</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>Y</TD><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>W</TD><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td>15</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>R</TD><TD>S</TD><TD>R</TD><TD>S</TD><TD>I</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><TD>Q</TD><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><td>*</td><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td>16</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>R</TD><TD>S</TD><TD>R</TD><TD>S</TD><TD>I</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><TD>L</TD><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><td>*</td><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td>21</td><TD>N</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>M</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>W</TD><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td>22</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>R</TD><TD>S</TD><TD>R</TD><TD>S</TD><TD>I</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><TD>L</TD><TD>Y</TD><td>*</td><TD>S</TD><TD>S</TD><TD>S</TD><td>*</td><TD>C</TD><TD>W</TD><TD>C</TD><TD>L</TD><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+<tr><td>23</td><TD>K</TD><TD>N</TD><TD>K</TD><TD>N</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>T</TD><TD>R</TD><TD>S</TD><TD>R</TD><TD>S</TD><TD>I</TD><TD>I</TD><TD>M</TD><TD>I</TD><TD>Q</TD><TD>H</TD><TD>Q</TD><TD>H</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>P</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>R</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>L</TD><TD>E</TD><TD>D</TD><TD>E</TD><TD>D</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>A</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>G</TD><TD>V</TD><TD>V</TD><TD>V</TD><TD>V</TD><td>*</td><TD>Y</TD><td>*</td><TD>Y</TD><TD>S</TD><TD>S</TD><TD>S</TD><TD>S</TD><td>*</td><TD>C</TD><TD>W</TD><TD>C</TD><td>*</td><TD>F</TD><TD>L</TD><TD>F</TD></tr>
+</tbody>
+</table>
+
+</body>
+</html>

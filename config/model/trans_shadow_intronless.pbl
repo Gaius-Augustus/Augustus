@@ -1,0 +1,49 @@
+#
+# Transition probabilities and initial Probabilities for the overall HMM 
+#
+# number of states
+3
+#
+# Transition probabilities of the Generalised Hidden-Markov Model
+# Date: 10.06.2009
+
+# Initial probabilities (a priori probs for a state ending at a
+# certain position, e.g. the position before the first nucleotide in
+# the sequence or the last position.
+# only non-zero probabilities
+[Initial]
+# number of states where a start is possible
+3
+# state prob statename
+0   .98    # intergenic region
+1   .01    # single Exon
+2   .01    # reverse single Exon
+
+# Terminal probabilities (a priori probs for a state ending at
+# the last position.
+# only non-zero probabilities neccessary
+[Terminal]
+# number of states where terminating is possible
+3
+# state prob statename
+0   .98    # intergenic region
+1   .01    # single Exon
+2   .01    # reverse single Exon
+
+#
+# Transition probabilities 
+# only non-zero probabilities
+[Transition]
+#           -----  Igenic region  -----
+# intergenic region
+0 0     .99998
+# single
+0 1	.00001
+# reverse single exon
+0 2	.00001
+#           -----  Single Exon  -----
+# Intergenic region
+1 0	1.0
+#           -----  reverse Single Exon  -----
+# Intergenic region
+2 0	1.0

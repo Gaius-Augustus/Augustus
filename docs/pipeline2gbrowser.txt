@@ -1,0 +1,41 @@
+# internal documentation on how to set up a 
+# Gbrowse in Goettingen
+# to display predictions from the AUGUSTUS pipeline
+# Mario, 12.6.2009
+
+ssh mario@gbrowse-web
+
+cd /srv/apache2/conf/gbrowse.conf
+su
+touch /srv/apache2/conf/gbrowse.conf/chlorella.vulgaris.conf
+chown mario:webservd chlorella.vulgaris.conf
+exit
+
+# adjust config file with editor
+xemacs -nw chlorella.vulgaris.conf
+
+# for flatfiles with tracks:
+mkdir /srv/apache2/htdocs/gbrowse/databases/chlorella.vulgaris
+
+scp -C /c1/scratch/mario/chlorella.vulgaris/chlorella.vulgaris21814/gbrowse/* mario@gbrowse-web:/srv/apache2/htdocs/gbrowse/databases/chlorella.vulgaris/
+
+follow docu in GBROWSE tutorial:
+19. Setting up a MySQL database
+
+mysql -uroot -p
+create database chlorella_vulgaris;
+# beware: do not use a '.' in the database name
+grant all privileges on chlorella_vulgaris.* to mario@localhost;
+grant select on chlorella_vulgaris.* to nobody@localhost;
+quit
+
+# load into database
+# first clean database (-c)
+bp_load_gff.pl -c -d chlorella_vulgaris
+
+cd /srv/apache2/htdocs/gbrowse/databases/chlorella.vulgaris/
+bp_load_gff.pl -d chlorella_vulgaris *.gbrowse *.fa *.gff
+
+# then surf on 
+http://gbrowse.gobics.de/cgi-bin/gbrowse/chlorella.vulgaris/
+

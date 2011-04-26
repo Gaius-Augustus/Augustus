@@ -1,0 +1,7 @@
+HSACKI10	mario	start	182	184	0	+	.	source=M
+HSACKI10	mario	stop	3058	3060	0	+	.	source=M
+HSACKI10	mario	dss	4211	4211	0	+	.	source=M
+HSACKI10	mario	ass	5804	5804	0	+	.	source=M
+HSACKI10	mario	exonpart	5900	6000	0	+	.	source=M
+HSACKI10	mario	exon	6194	6316	0	-	0	source=M
+HSACKI10	mario	intronpart	5000	5100	0	+	.	source=M

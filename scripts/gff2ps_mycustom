@@ -1,0 +1,76 @@
+########################################
+##   DEFAULT CUSTOM FILE FOR GFF2PS   ##
+########################################
+##
+## User Name: mario
+##   Created: 2002/08/27 at 17:40:14
+##
+#
+# L ######PAGE LAYOUT & PROGRAM OPTIONS######
+#
+strand_show_reverse=on
+strand_show_independent=off
+blocks_x_page=1
+show_grid=off
+show_page_numbers=off
+show_inner_scale=top
+#show_date=off
+#show_time=off
+default_scale_width=0.5cm
+minor_tickmarks_num=1
+default_track_width=0.5cm
+default_track_spacing_width=0.1cm
+position_label_scale=1
+left_source_label_width=2cm
+#margin_lower=4cm
+#
+# F ############GENOMIC FEATURES############
+#
+gene::show_feature=on
+gene::feature_color=red
+transcript::show_feature=off
+cds::show_feature=off
+cds::shape=box
+cds::feature_color=red
+cds::layer=1
+initial::show_feature=on
+initial::shape=arrow_end
+terminal::shape=arrow_head
+single::shape=right_single
+exonpart::shape=box
+exonpart::feature_color=blue
+#exon::shape=box
+#exon::feature_color=blue
+#dss::shape=star
+#ass::shape=star
+intron::shape=box
+intron::feature_color=verylightyellow
+intron::show_feature=on
+start_codon::show_feature=off
+start_codon::shape=down_triangle
+start_codon::feature_color=red
+stop_codon::show_feature=off
+stop_codon::shape=up_triangle
+stop_codon::feature_color=red
+fragment::shape=box
+fragment::feature_color=blue
+fragment::shape=box
+fragment::feature_color=blue
+/.*/::show_feature_positions=on
+/intron/::show_feature_positions=off
+/.*/::fill_shape_mode=1_color
+#/.*/::feature_color=darkgrey
+
+
+#
+# G ############GROUP FEATURES##############
+#
+/.*/::show_group_positions=off
+#/g/::group_line=off
+#
+# S ############SOURCE FEATURES#############
+#
+/.*/::source_line=none
+#/.*/::unfold_grouped_ungrouped=on
+#/.*/::unfold_grouped_line=off
+#/.*/::unfold_ungrouped_line=off
