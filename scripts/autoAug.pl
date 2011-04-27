@@ -562,9 +562,9 @@ sub construct_training_set{
     print "3 Set value of \"stopCodonExcludedFromCDS\" in generic_parameters.cfg to \"true\"\n" if ($verbose>=3);
     
     # first try with etraining
-    print "3 mv $trainDir/pasa/trainingSetComplete.gb $trainDir/training/trainingSetComplete.gb\n";   
-    $cmdString="mv $trainDir/pasa/trainingSetComplete.gb $trainDir/training/trainingSetComplete.gb";
-    system("$cmdString")==0 or die("\nfailed to move trainingSetComplete.gb to $trainDir/training\n");
+  #  print "3 mv $trainDir/pasa/trainingSetComplete.gb $trainDir/training/trainingSetComplete.gb\n";   
+  #  $cmdString="mv $trainDir/pasa/trainingSetComplete.gb $trainDir/training/trainingSetComplete.gb";
+   # system("$cmdString")==0 or die("\nfailed to move trainingSetComplete.gb to $trainDir/training\n");
     print "3 cd $trainDir/training\n" if ($verbose>=3);
     chdir "$trainDir/training" or die ("Could not change directory to $trainDir/training\n");
     $cmdString="etraining --species=generic trainingSetComplete.gb 1>train.out 2>train.err";
