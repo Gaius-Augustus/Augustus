@@ -7,7 +7,7 @@
 
 class TrainingController {
    // need to adjust the output dir to whatever working dir! This is where uploaded files and results will be saved.
-   def output_dir = "/c1/project/augustus/data" // should be something in home of webserver user and augustus frontend user. Directory will be copied from webserver user to augustus frontend user.
+   def output_dir = "/data/www/augtrain/webdata" // should be something in home of webserver user and augustus frontend user. Directory will be copied from webserver user to augustus frontend user.
    // this log File contains the "process log", what was happening with which job when.
    def logFile = new File("${output_dir}/augustus-training.log")
    // this log File contains the "database" (not identical with the grails database and simply for logging purpose)

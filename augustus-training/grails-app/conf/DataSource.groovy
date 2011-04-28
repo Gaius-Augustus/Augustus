@@ -14,7 +14,7 @@ environments {
 	development {
 		dataSource {
 			dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-			url = "jdbc:hsqldb:file:/c1/project/augustus/test/devDB;shutdown=true"
+			url = "jdbc:hsqldb:file:/data/www/augtrain/DB;shutdown=true"
 		}
 	}
 	test {
