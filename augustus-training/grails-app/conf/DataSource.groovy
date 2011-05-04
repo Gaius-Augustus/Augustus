@@ -1,8 +1,4 @@
 dataSource {
-	pooled = true
-	driverClassName = "org.hsqldb.jdbcDriver"
-	username = "sa"
-	password = ""
 }
 hibernate {
     cache.use_second_level_cache=true
@@ -13,20 +9,61 @@ hibernate {
 environments {
 	development {
 		dataSource {
-			dbCreate = "create-drop" // one of 'create', 'create-drop','update'
-			url = "jdbc:hsqldb:file:/data/www/augtrain/DB;shutdown=true"
+			pooled = true
+			dbCreate = "create-drop" 
+			url = "jdbc:mysql://localhost/augtraindev "
+                        driverClassName = "com.mysql.jdbc.Driver"
+                        username = "grails1"
+                        password = "9M6T5kgU"
+                        properties {
+                                   maxActive = 100
+                                   maxIdle = 25
+                                   minIdle = 5
+                                   initialSize = 5
+                                   minEvictableIdleTimeMillis = 60000
+                                   timeBetweenEvictionRunsMillis = 60000
+                                   maxWait = 10000
+                       }
+
+
 		}
 	}
 	test {
 		dataSource {
+			pooled = true
 			dbCreate = "update"
-			url = "jdbc:hsqldb:mem:testDb"
+			url = "jdbc:mysql://localhost/augtraintest"
+                        driverClassName = "com.mysql.jdbc.Driver"
+                        username = "grails1"
+                        password = "9M6T5kgU"
+                        properties {
+                                   maxActive = 100
+                                   maxIdle = 25
+                                   minIdle = 5
+                                   initialSize = 5
+                                   minEvictableIdleTimeMillis = 60000
+                                   timeBetweenEvictionRunsMillis = 60000
+                                   maxWait = 10000
+                       }
 		}
 	}
 	production {
 		dataSource {
+			poold = true
 			dbCreate = "update"
-			url = "jdbc:hsqldb:file:prodDb;shutdown=true"
+			url = "jdbc:mysql://localhost/augtrainprod"
+                        driverClassName = "com.mysql.jdbc.Driver"
+                        username = "grails1"
+                        password = "9M6T5kgU"
+                        properties {
+                                   maxActive = 100
+                                   maxIdle = 25
+                                   minIdle = 5
+                                   initialSize = 5
+                                   minEvictableIdleTimeMillis = 60000
+                                   timeBetweenEvictionRunsMillis = 60000
+                                   maxWait = 10000
+                        }                       
 		}
 	}
 }
