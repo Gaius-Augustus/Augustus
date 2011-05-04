@@ -1,0 +1,95 @@
+/*******************************************************************************
+ Navigation ueber dem Banner
+*******************************************************************************/ 
+div#navigation_oben
+ { 
+  width: auto;
+  color: #555566; 
+  font-size: 64%; 
+  line-height: 131%; 
+  padding: 3px 0px 3px 15%;
+  margin: 0px 0px 0px 10px;
+  white-space: nowrap;  
+ }
+
+div#navigation_oben a
+ {
+  color: #006699;  
+  font-style: normal; 
+  font-weight: bold; 
+  text-decoration: none;
+ }
+
+div#navigation_oben a:link    { color: #006699; text-decoration: none; }
+div#navigation_oben a:visited { color: #006699; text-decoration: none; }
+div#navigation_oben a:hover   { color: #006699; text-decoration: none; }
+div#navigation_oben a:active  { color: #006699; text-decoration: none; background-color: #E6E9EC; }
+div#navigation_oben a:hover   { color: #006699; text-decoration: none; background-color: #E6E9EC; }
+
+
+
+/*******************************************************************************
+ Banner   
+*******************************************************************************/
+div#banner {
+margin: 0 0 1em;
+width: 100%;
+background-color: #E6E9EC;
+border: 1px; border-color:#ffffff; border-style: solid;
+height:120px;
+}
+
+div#banner_links{
+width: 15%;
+height:auto;
+text-align:left;
+float:left;
+}
+
+div#banner_mitte{
+width:auto;
+height:auto;
+text-align:middle;
+float:left;
+}
+
+div#banner_rechts{
+width:15%;
+height:auto;
+text-align:right;
+float:right;
+}
+div#bannertitel1 
+{
+padding: 40px 0px 0px 7px;
+font-size: 1.0em;
+color: #555566;
+font-weight: normal;  
+}
+div#bannertitel2 
+{
+padding: 15px 0px 0px 7px;
+color: #2B5BBC;
+font-size: 1.5em;
+text-transform: none;
+font-weight: normal;  
+}
+  
+/*******************************************************************************
+ Wegweisernavigation, Brotkruemelnavigation margin: 5px 0px 18px 0px;
+*******************************************************************************/
+div#wegweiser
+ {
+  color: #555566;  
+  font-size: 70%; 
+  
+  padding: 3px 0px 3px 20px; 
+  border-top: 1px dotted #999999;
+  border-bottom: 1px dotted #999999;
+ }
+ 
+div#wegweiser a         { color: #006699; text-decoration: none; font-weight: bold; }
+div#wegweiser a:link    { color: #006699; text-decoration: none; }
+div#wegweiser a:visited { color: #006699; text-decoration: none; }
+div#wegweiser a:hover   { color: #006699; text-decoration: none; background-color: #E6E9EC; }
+div#wegweiser a:active  { color: #006699; text-decoration: none; }

@@ -1,0 +1,52 @@
+/*******************************************************************************
+ Start: Hauptmenue (linke Seite) 
+*******************************************************************************/
+div#linke_spalte ul.menu
+ {
+  list-style: none;
+  width: auto;
+  margin: 0px 0px 20px 0px; 
+ }
+
+div#linke_spalte ul.menu li { display: inline; }
+
+/***** erste Ebene ************************************************************/
+div#linke_spalte ul.menu li a 
+ { 
+  display: block; 
+  color: #006699; 
+  font-size: 70%;
+  padding: 3px 0px 3px 20px; 
+  min-height: 1em; 
+  font-weight:bold; 
+  text-decoration: none; 
+  border-bottom: 1px dotted #999999;
+ }
+ 
+div#linke_spalte ul.menu li a:link    { color: #006699; text-decoration: none; }
+div#linke_spalte ul.menu li a:visited { color: #006699; text-decoration: none; }
+div#linke_spalte ul.menu li a:hover   { color: #006699; text-decoration: none; background-color: #E6E9EC; }
+div#linke_spalte ul.menu li a:active  { color: #006699; text-decoration: none; }
+
+div#linke_spalte ul.menu li#current a { background: url(../bilder/frames/arrow.png) center left no-repeat; color: #006699; }
+div#linke_spalte ul.menu li#current li a { background: none; }
+
+/***** zweite Ebene ***********************************************************/
+div#linke_spalte ul.menu ul
+ {
+  width: auto;
+ } 
+ 
+div#linke_spalte ul.menu ul a { 
+padding: 3px 0px 3px 30px; 
+font-weight: normal; }
+
+/***** dritte Ebene ***********************************************************/
+div#linke_spalte ul.menu ul ul
+ {
+  width: auto;
+ } 
+ 
+div#linke_spalte ul.menu ul ul a { 
+padding: 3px 0px 3px 40px; 
+font-weight: normal; }

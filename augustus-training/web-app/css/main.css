@@ -1,0 +1,143 @@
+@import url("screen_grundgeruest.css");
+@import url("screen_kopfbereich.css"); 
+@import url("screen_koerper_linke_spalte.css"); 
+@import url("screen_koerper_mittel_spalte.css"); 
+@import url("screen_koerper_rechte_spalte.css"); 
+@import url("screen_fussbereich.css"); 
+
+
+
+
+/*******************************************************************************
+ Allgemeine Gestaltungseinstellungen
+*******************************************************************************/ 
+html *
+ {
+  padding: 0;
+  margin: 0;
+ }
+
+body 
+ {
+  background: #ffffff;
+  color: #000000;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 100.01%;
+ }
+
+
+ 
+ 
+ 
+ 
+/*******************************************************************************
+ Standardklassen, globale Klassen
+*******************************************************************************/ 
+.beendeFluss { clear: both; }
+.unsichtbar { display: none; }
+
+/******************* Anpassung TinyMCE im Frontend ****************************/
+.mceToolbarTop *      { float:left; }
+.mceToolbarTop select { width:auto !important; }
+.mceToolbarTop option { float:none; }  
+
+
+
+a img { border: 0; }
+
+h5.ueberschrift_spezial 
+ {
+  padding: 0px 0px 0px 2px;
+  color: #555566;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-weight: bold;  
+  margin: 0;
+ }
+
+
+ 
+/*******************************************************************************
+ Weitere Klassen, eingefügt am 11.04.2011
+*******************************************************************************/ 
+
+#slide1 {
+}
+#slide2 {
+}
+#slide3 {
+}
+#slide4 {
+}
+
+#quote {
+        background: #222222;
+        color: #ffffff;
+        padding: 10px;
+        margin: 20px;
+	margin-right: 45px;
+        border: 10px solid #E6E9EC;
+}
+
+
+/*
+        ### Tabellen-Ausgabe-Vorlesungsverzeichnis ###
+*/
+
+form.form table,
+td.maske table,
+table.currentLectures
+{
+        border: 1px solid #6495ed;
+        border-collapse: collapse;
+}
+
+
+td.maske {
+        background: #FFFFFF;
+        font-size: 100%;
+        color: #000000;
+        font-weight: normal;
+}
+
+th.mod {
+        vertical-align: middle;
+        white-space: nowrap;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        padding-left: 5px;
+        padding-right: 5px;
+        text-align: center;
+        border-right: none;
+        border-bottom: 1px solid #6495ed;
+        border-left: none;
+        background: #E6E9EC;
+}
+
+td.mod_n {
+        border-bottom: 1px solid #6495ed;
+        background: #f5f5dc;
+        vertical-align: middle;
+        padding-left: 10px;
+        padding-right: 5px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+}
+
+td.mod_n_odd {
+        background: #f5f5dc;
+        padding-left: 5px;
+        padding-right: 5px;
+        padding-top: 10px;
+        padding-bottom: 5px;
+        vertical-align: top;
+}
+
+td.mod_n_even {
+        background: #f0ffff;
+        padding-left: 5px;
+        padding-right: 5px;
+        padding-top: 10px;
+        padding-bottom: 5px;
+        vertical-align: top;
+}
