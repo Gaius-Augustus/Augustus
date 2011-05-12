@@ -1,283 +1,291 @@
+/*******************************************************************************
+ Allgemeine Gestaltungseinstellungen
+*******************************************************************************/ 
+html *
+ {
+  padding: 0;
+  margin: 0;
+ }
+
+body 
+ {
+  background: #ffffff;
+  color: #000000;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 100.01%;
+ }
+
+div.errors {
+    background: #fff3f3;
+    border: 1px solid red;
+    color: #cc0000;
+    margin: 10px 0 5px 0;
+    padding: 5px 0 5px 0;
+}
+div.errors ul {
+    list-style: none;
+    padding: 0;
+}
+div.errors li {
+        background: url(../images/skin/exclamation.png) 8px 0% no-repeat;
+    line-height: 16px;
+    padding-left: 30px;
+}
+
+td.errors select {
+    border: 1px solid red;
+}
+td.errors input {
+    border: 1px solid red;
+}
+
+img {
+        border: none;
+}
+
+.message {
+    background: #f3f8fc url(../images/skin/information.png) 8px 50% no-repeat;
+    border: 1px solid #b2d1ff;
+    color: #006dba;
+    margin: 10px 0 5px 0;
+    padding: 5px 5px 5px 30px
+}
+
+.example{
+background-color: white;
+padding-top: 1em;
+padding-left: 1em;
+padding-right: 1em;
+padding-bottom: 0.8em;
+color: black;
+font-family: monospace;
+}
+.error {
+        margin: 2ex;
+        padding-left: 1em;
+        border-style: hidden;
+        border-left-style: double;
+        border-color: #f00;
+        color: #aa0505;
+}
+
+.warning {
+        margin: 2ex;
+	padding-left: 1em;
+        border-style: hidden;
+        border-left-style: double;
+        border-color: #ffa500;
+	color: #aa0505;
+}
+
+div.main {
+        font-size:1em;
+        color:black;
+        margin: 1em;
+	margin-bottom: 0.5em;
+	width:  610px;
+        text-align:justify;
+}
+
+/* DIALOG */
+
+.dialog table {
+    padding: 5px 0;
+}
+
+.prop {
+    padding: 5px;
+}
+.prop .name {
+    text-align: left;
+    width: 15%;
+    white-space: nowrap;
+}
+.prop .value {
+    text-align: left;
+    width: 85%;
+}
+/**********
+div.main {
+        font-size:1em;
+	color:black;
+        margin-left: 1em;
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+	min-width: 68em;
+        max-width: 68em;
+        text-align:justify;
+}
+**********/
+ 
+/*******************************************************************************
+ Standardklassen, globale Klassen
+*******************************************************************************/ 
+.beendeFluss { clear: both; }
+.unsichtbar { display: none; }
+
+/******************* Anpassung TinyMCE im Frontend ****************************/
+.mceToolbarTop *      { float:left; }
+.mceToolbarTop select { width:auto !important; }
+.mceToolbarTop option { float:none; }  
 
 
-@import url("screen_fussbereich.css"); 
+
+a img { border: 0; }
+
+h5.ueberschrift_spezial 
+ {
+  padding: 0px 0px 0px 2px;
+  color: #555566;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-weight: bold;  
+  margin: 0;
+ }
 
 
+ 
+/*******************************************************************************
+ Weitere Klassen, eingefÃ¼gt am 11.04.2011
+*******************************************************************************/ 
 
+#slide1 {
+}
+#slide2 {
+}
+#slide3 {
+}
+#slide4 {
+}
+
+#quote {
+        background: #222222;
+        color: #ffffff;
+        padding: 10px;
+        margin: 20px;
+	margin-right: 45px;
+        border: 10px solid #E6E9EC;
+}
+
+
+/*
+        ### Tabellen-Ausgabe-Vorlesungsverzeichnis ###
+*/
+
+form.form table,
+td.maske table,
+table.currentLectures
+{
+        border: 1px solid #6495ed;
+        border-collapse: collapse;
+}
+
+
+td.maske {
+        background: #FFFFFF;
+        font-size: 100%;
+        color: #000000;
+        font-weight: normal;
+}
+
+th.mod {
+        vertical-align: middle;
+        white-space: nowrap;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        padding-left: 5px;
+        padding-right: 5px;
+        text-align: center;
+        border-right: none;
+        border-bottom: 1px solid #6495ed;
+        border-left: none;
+        background: #E6E9EC;
+}
+
+td.mod_n {
+        border-bottom: 1px solid #6495ed;
+        background: #f5f5dc;
+        vertical-align: middle;
+        padding-left: 10px;
+        padding-right: 5px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+}
+
+td.mod_n_odd {
+        background: #f5f5dc;
+        padding-left: 5px;
+        padding-right: 5px;
+        padding-top: 10px;
+        padding-bottom: 5px;
+        vertical-align: top;
+}
+
+td.mod_n_even {
+        background: #f0ffff;
+        padding-left: 5px;
+        padding-right: 5px;
+        padding-top: 10px;
+        padding-bottom: 5px;
+        vertical-align: top;
+}
 
 /*******************************************************************************
- Start: Hauptmenue (linke Seite) 
-*******************************************************************************/
-div#linke_spalte ul.menu
+ Grundgeruest der Webseite 
+*******************************************************************************/ 
+div#koerper
  {
-  list-style: none;
-  width: auto;
-  margin: 0px 0px 20px 0px; 
+  width: 1000px;
  }
 
-div#linke_spalte ul.menu li { display: inline; }
-
-/***** erste Ebene ************************************************************/
-div#linke_spalte ul.menu li a 
- { 
-  display: block; 
-  color: #006699; 
-  font-size: 70%;
-  padding: 3px 0px 3px 20px; 
-  min-height: 1em; 
-  font-weight:bold; 
-  text-decoration: none; 
-  border-bottom: 1px dotted #999999;
+div#linke_spalte
+ {
+  float: left; 
+  width: 155px;
+  margin: 10px 8px 100% 0px;
  }
  
-div#linke_spalte ul.menu li a:link    { color: #006699; text-decoration: none; }
-div#linke_spalte ul.menu li a:visited { color: #006699; text-decoration: none; }
-div#linke_spalte ul.menu li a:hover   { color: #006699; text-decoration: none; background-color: #E6E9EC; }
-div#linke_spalte ul.menu li a:active  { color: #006699; text-decoration: none; }
-
-div#linke_spalte ul.menu li#current a { background: url(../bilder/frames/arrow.png) center left no-repeat; color: #006699; }
-div#linke_spalte ul.menu li#current li a { background: none; }
-
-/***** zweite Ebene ***********************************************************/
-div#linke_spalte ul.menu ul
+div#rechte_spalte  
  {
-  width: auto;
- } 
- 
-div#linke_spalte ul.menu ul a { 
-padding: 3px 0px 3px 30px; 
-font-weight: normal; }
-
-/***** dritte Ebene ***********************************************************/
-div#linke_spalte ul.menu ul ul
- {
-  width: auto;
- } 
- 
-div#linke_spalte ul.menu ul ul a {
-padding: 3px 0px 3px 40px; 
-font-weight: normal; }
+  float: left;
+  width: 165px;
+  margin: 10px 0px 0px 8px;
+ }
 
 div#mittel_spalte
  {
-  font-size: 0.7em;
- }
-
-
-/*******************************************************************************
- Standard-Elemente
-*******************************************************************************/ 
-div#mittel_spalte a
- {
-  color: #006699;
-  text-decoration: none;
-  font-weight: bold;
- }
-
-div#mittel_spalte a:link    { color: #006699; text-decoration: none; }
-div#mittel_spalte a:visited { color: #006699; text-decoration: none; }
-div#mittel_spalte a:hover   { color: #006699; text-decoration: none; }
-div#mittel_spalte a:active  { color: #006699; text-decoration: none; }
-
-div#mittel_spalte p { margin: 8px 0px 8px 0px; line-height: 1.3em; }
- 
-div#mittel_spalte table { margin: 8px 0px 0px 0px; }
- 
-div#mittel_spalte h1 { font-size: 1.4em; }
-div#mittel_spalte h2 { font-size: 1.2em; }
-div#mittel_spalte h3 { font-size: 1.0em; }
-div#mittel_spalte h4 { font-size: 1.0em; }
-div#mittel_spalte h5 { font-size: 1.0em; }
-div#mittel_spalte h6 { font-size: 1.0em; }
- 
-div#mittel_spalte ol
- {
-  margin-left: 2.0em; /***list-style-position: inside;**/
-  padding-top: 3px;
- }
-
-div#mittel_spalte ul, ol
- {
-  margin-left: 2em; /***list-style-position: inside;**/
-  padding-top: 3px;
- }
- 
-div#mittel_spalte ul ul 
- {
-  margin-left: 20px;
- } 
- 
-div#mittel_spalte ul li
- {
-  line-height: 1.4em;
- } 
-div#mittel_spalte blockquote
- {
-  margin-left:1em;
- }
-
-/*******************************************************************************
- Joomla-Beitraege
-*******************************************************************************/  
-div#mittel_spalte .contentpaneopen h1 { }
-div#mittel_spalte .contentpaneopen h2 { }
-div#mittel_spalte .contentpaneopen h3 { }
-div#mittel_spalte .contentpaneopen h4 { }
-
-div#mittel_spalte .contentheading {
-  font-size: 1.4em;
-  font-weight: bold;
-  line-height: 1.3em;
-  color:#006699;
-}
-div#mittel_spalte .contentpaneopen {
-  
-}
-
-
-
-/*******************************************************************************
- Liste mit Pfeilen
-*******************************************************************************/
-ul.pfeilliste 
- {
-  list-style-image: url(../bilder/frames/quick_pfeil.gif);
- }
-
-ul.pfeilliste li 
- {
-  padding-top: 3px;
- }
-
-
-
-/*******************************************************************************
- Aktuelles - Startseite
-*******************************************************************************/
-div#mittel_spalte table.gk_news_show_table
- { 
-  width: 63%;
-}
-
-div#mittel_spalte table tr.gk_news_show_tablerow { margin-bottom: 0px;  }
-
-div#mittel_spalte .gk_news_show_news_info {
-  border-top: 1px dotted #999999;
-  letter-spacing: .1em;
-  color: #555566;
-  font-size: 70%;
-  padding: 2px 0px 0px 0px;
-  text-transform: uppercase;
-  font-weight: bold;
-  line-height: 1.36em
-}
-
-div#mittel_spalte .gk_news_show_news_header { }
-
-div#mittel_spalte .gk_news_show_news_text { clear: both; }
-
-div#rechte_spalte
- {
-  font-size: 0.7em;
- }
-
-/*******************************************************************************
- Standardelemente in der rechten Spalte
-*******************************************************************************/  
-div#rechte_spalte a
- {
-  color: #006699;
-  text-decoration: none;
-  font-weight: bold;
-  background: url(../bilder/frames/quick_pfeil.gif) top left no-repeat;
-  padding: 2px 0px 10px 10px;
- }
-
-div#rechte_spalte a:link    { color: #006699; text-decoration: none; }
-div#rechte_spalte a:visited { color: #006699; text-decoration: none; }
-div#rechte_spalte a:hover   { color: #006699; text-decoration: none;  }
-div#rechte_spalte a:active  { color: #006699; text-decoration: none; } 
- 
-div#rechte_spalte p { margin: 8px 0px 8px 0px; }
-  
-div#rechte_spalte table { margin: 8px 0px 8px 0px; } 
- 
- 
- 
-/*******************************************************************************
- DIV-Container mit Linie unten - urspr. genutzt f. Kontakt
-*******************************************************************************/   
-div#rechte_spalte div.linien_div
- {
-  margin: 0px 0px 20px 0px;
-  border-bottom: 1px dotted #999999; 
-  padding: 0px 0px 7px 0px;
- } 
- 
- 
-/*******************************************************************************
- DIV-Container 
-*******************************************************************************/   
-div#rechte_spalte h5.ueberschrift_spezial
- {
-  padding: 0px 0px 1px 0px;
-  border-bottom: 1px dotted #999999; 
-  margin: 0px 0px 15px 0px;
- } 
-/*******************************************************************************
- Schriftgroessenanpassung
-*******************************************************************************/  
-div#schriftgroesse
- {
-  margin: 4px 0px 25px 0px;
- } 
- 
- 
-/*******************************************************************************
- Suche
-*******************************************************************************/   
-div#rechte_spalte input#mod_search_searchword
- {
-  border: 1px  solid #cccccc;
   float: left;
+  width: 660px;
+  margin: 0px 0px 0px 0px;
  }
  
-div#rechte_spalte input.searchbutton
+/***** Start: Grundgeruest im Fussbereich *************************************/ 
+div#fuss
  {
-  float: left;
-  border: 1px solid #cccccc;
+  width: 100%;
+  clear: both;
+  border-top: 10px solid #E6E9EC;
+  padding: 5px 0px 5px 0px;
  } 
-
-div#rechte_spalte ul.erweiterte_suche
- {
-  list-style: none;
- }
  
-div#rechte_spalte ul.erweiterte_suche li { display: inline; }
-
-div#rechte_spalte ul.erweiterte_suche li a 
+div#fuss_links 
  {
-  display: block;
-  margin: 10px 0px 10px 0px;
-  border-bottom: 1px dotted #999999;
- } 
- /*******************************************************************************
- Start: Zufallsbild
-*******************************************************************************/
-div.zufallsbild_kopf 
- {
-  letter-spacing: 0.1em;
-  color: #555566;
-  font-size: 100%;
-  text-transform: uppercase;
-  font-weight: bold;
-  text-align: left;
-  padding: 40px 0px 10px 0px;  
+  float: left; 
+  width: 15%;
+  margin: 0px 10px 0px 0px;
  }
 
-div.zufallsbild_koerper
+ div#fuss_mitte
+  {
+  float: left; 
+  width: auto;   
+  }
+
+div#fuss_rechts 
  {
-  padding: 0px 0px 0px 0px;
+  float: right; 
+  width: 15%;
+  margin: 0px 0px 0px 10px;
  }
 
 /*******************************************************************************
@@ -376,199 +384,284 @@ div#wegweiser a:visited { color: #006699; text-decoration: none; }
 div#wegweiser a:hover   { color: #006699; text-decoration: none; background-color: #E6E9EC; }
 div#wegweiser a:active  { color: #006699; text-decoration: none; }
 
-
-
 /*******************************************************************************
- Grundgeruest der Webseite 
-*******************************************************************************/ 
-div#koerper
+ Start: Hauptmenue (linke Seite) 
+*******************************************************************************/
+div#linke_spalte ul.menu
  {
-  width: 980px;
+  list-style: none;
+  width: auto;
+  margin: 0px 0px 20px 0px; 
  }
 
-div#linke_spalte
- {
-  float: left; 
-  width: 155px;
-  margin: 10px 8px 100% 0px;
+div#linke_spalte ul.menu li { display: inline; }
+
+/***** erste Ebene ************************************************************/
+div#linke_spalte ul.menu li a 
+ { 
+  display: block; 
+  color: #006699; 
+  font-size: 70%;
+  padding: 3px 0px 3px 20px; 
+  min-height: 1em; 
+  font-weight:bold; 
+  text-decoration: none; 
+  border-bottom: 1px dotted #999999;
  }
  
-div#rechte_spalte  
+div#linke_spalte ul.menu li a:link    { color: #006699; text-decoration: none; }
+div#linke_spalte ul.menu li a:visited { color: #006699; text-decoration: none; }
+div#linke_spalte ul.menu li a:hover   { color: #006699; text-decoration: none; background-color: #E6E9EC; }
+div#linke_spalte ul.menu li a:active  { color: #006699; text-decoration: none; }
+
+div#linke_spalte ul.menu li#current a { background: url(../bilder/frames/arrow.png) center left no-repeat; color: #006699; }
+div#linke_spalte ul.menu li#current li a { background: none; }
+
+/***** zweite Ebene ***********************************************************/
+div#linke_spalte ul.menu ul
  {
-  float: left;
-  width: 165px;
-  margin: 10px 0px 0px 8px;
- }
+  width: auto;
+ } 
+ 
+div#linke_spalte ul.menu ul a { 
+padding: 3px 0px 3px 30px; 
+font-weight: normal; }
+
+/***** dritte Ebene ***********************************************************/
+div#linke_spalte ul.menu ul ul
+ {
+  width: auto;
+ } 
+ 
+div#linke_spalte ul.menu ul ul a { 
+padding: 3px 0px 3px 40px; 
+font-weight: normal; }
 
 div#mittel_spalte
  {
-  float: left;
-  width: 635px;
-  margin: 0px 0px 0px 0px;
+  font-size: 0.7em;
+ }
+
+
+/*******************************************************************************
+ Standard-Elemente
+*******************************************************************************/ 
+div#mittel_spalte a
+ {
+  color: #006699;
+  text-decoration: none;
+  font-weight: bold;
+ }
+
+div#mittel_spalte a:link    { color: #006699; text-decoration: none; }
+div#mittel_spalte a:visited { color: #006699; text-decoration: none; }
+div#mittel_spalte a:hover   { color: #006699; text-decoration: none; }
+div#mittel_spalte a:active  { color: #006699; text-decoration: none; }
+
+div#mittel_spalte p { margin: 8px 0px 8px 0px; line-height: 1.3em; }
+ 
+div#mittel_spalte table { margin: 8px 0px 0px 0px; }
+ 
+div#mittel_spalte h1 { font-size: 1.4em; }
+div#mittel_spalte h2 { font-size: 1.2em; }
+div#mittel_spalte h3 { font-size: 1.0em; }
+div#mittel_spalte h4 { font-size: 1.0em; }
+div#mittel_spalte h5 { font-size: 1.0em; }
+div#mittel_spalte h6 { font-size: 1.0em; }
+ 
+div#mittel_spalte ol
+ {
+  margin-left: 2.0em; /***list-style-position: inside;**/
+  padding-top: 3px;
+ }
+
+div#mittel_spalte ul, ol
+ {
+  margin-left: 2em; /***list-style-position: inside;**/
+  padding-top: 3px;
  }
  
-/***** Start: Grundgeruest im Fussbereich *************************************/ 
-div#fuss
+div#mittel_spalte ul ul 
  {
-  width: 100%;
-  clear: both;
-  border-top: 10px solid #E6E9EC;
-  padding: 5px 0px 5px 0px;
+  margin-left: 20px;
  } 
  
-div#fuss_links 
+div#mittel_spalte ul li 
  {
-  float: left; 
-  width: 15%;
-  margin: 0px 10px 0px 0px;
- }
-
- div#fuss_mitte
-  {
-  float: left; 
-  width: auto;   
-  }
-
-div#fuss_rechts 
+  line-height: 1.4em;
+ } 
+div#mittel_spalte blockquote
  {
-  float: right; 
-  width: 15%;
-  margin: 0px 0px 0px 10px;
+  margin-left:1em;
  }
 
 /*******************************************************************************
- Allgemeine Gestaltungseinstellungen
-*******************************************************************************/ 
-html *
- {
-  padding: 0;
-  margin: 0;
- }
+ Joomla-Beitraege
+*******************************************************************************/  
+div#mittel_spalte .contentpaneopen h1 { }
+div#mittel_spalte .contentpaneopen h2 { }
+div#mittel_spalte .contentpaneopen h3 { }
+div#mittel_spalte .contentpaneopen h4 { }
 
-body 
- {
-  background: #ffffff;
-  color: #000000;
-  font-family: Verdana, Arial, Helvetica, sans-serif;
-  font-size: 100.01%;
- }
+div#mittel_spalte .contentheading {
+  font-size: 1.4em;
+  font-weight: bold;
+  line-height: 1.3em;
+  color:#006699;
+}
+div#mittel_spalte .contentpaneopen {
+  
+}
 
 
- 
- 
- 
- 
+
 /*******************************************************************************
- Standardklassen, globale Klassen
-*******************************************************************************/ 
-.beendeFluss { clear: both; }
-.unsichtbar { display: none; }
-
-/******************* Anpassung TinyMCE im Frontend ****************************/
-.mceToolbarTop *      { float:left; }
-.mceToolbarTop select { width:auto !important; }
-.mceToolbarTop option { float:none; }  
-
-
-
-a img { border: 0; }
-
-h5.ueberschrift_spezial 
+ Liste mit Pfeilen
+*******************************************************************************/
+ul.pfeilliste 
  {
-  padding: 0px 0px 0px 2px;
-  color: #555566;
+  list-style-image: url(../images/quick_pfeil.gif);
+ }
+
+ul.pfeilliste li 
+ {
+  padding-top: 3px;
+ }
+
+
+
+/*******************************************************************************
+ Aktuelles - Startseite
+*******************************************************************************/
+div#mittel_spalte table.gk_news_show_table
+ { 
+  width: 63%;
+ }
+
+div#mittel_spalte table tr.gk_news_show_tablerow { margin-bottom: 0px;  }
+
+div#mittel_spalte .gk_news_show_news_info {
+  border-top: 1px dotted #999999;
   letter-spacing: .1em;
+  color: #555566;
+  font-size: 70%;
+  padding: 2px 0px 0px 0px;
   text-transform: uppercase;
-  font-weight: bold;  
-  margin: 0;
+  font-weight: bold;
+  line-height: 1.36em
+}
+
+div#mittel_spalte .gk_news_show_news_header { }
+
+div#mittel_spalte .gk_news_show_news_text { clear: both; }
+
+div#rechte_spalte
+ {
+  font-size: 0.7em;
  }
 
+/*******************************************************************************
+ Standardelemente in der rechten Spalte
+*******************************************************************************/  
+div#rechte_spalte a
+ {
+  color: #006699;
+  text-decoration: none;
+  font-weight: bold;
+  background: url(../images/quick_pfeil.gif) top left no-repeat;
+  padding: 2px 0px 10px 10px;
+ }
 
+div#rechte_spalte a:link    { color: #006699; text-decoration: none; }
+div#rechte_spalte a:visited { color: #006699; text-decoration: none; }
+div#rechte_spalte a:hover   { color: #006699; text-decoration: none;  }
+div#rechte_spalte a:active  { color: #006699; text-decoration: none; } 
+ 
+div#rechte_spalte p { margin: 8px 0px 8px 0px; }
+  
+div#rechte_spalte table { margin: 8px 0px 8px 0px; } 
+ 
+ 
  
 /*******************************************************************************
- Weitere Klassen, eingefügt am 11.04.2011
-*******************************************************************************/ 
+ DIV-Container mit Linie unten - urspr. genutzt f. Kontakt
+*******************************************************************************/   
+div#rechte_spalte div.linien_div
+ {
+  margin: 0px 0px 20px 0px;
+  border-bottom: 1px dotted #999999; 
+  padding: 0px 0px 7px 0px;
+ } 
+ 
+ 
+/*******************************************************************************
+ DIV-Container 
+*******************************************************************************/   
+div#rechte_spalte h5.ueberschrift_spezial
+ {
+  padding: 0px 0px 1px 0px;
+  border-bottom: 1px dotted #999999; 
+  margin: 0px 0px 15px 0px;
+ } 
 
-#slide1 {
-}
-#slide2 {
-}
-#slide3 {
-}
-#slide4 {
-}
+ 
+ 
 
-#quote {
-        background: #222222;
-        color: #ffffff;
-        padding: 10px;
-        margin: 20px;
-	margin-right: 45px;
-        border: 10px solid #E6E9EC;
-}
+/*******************************************************************************
+ Schriftgroessenanpassung
+*******************************************************************************/  
+div#schriftgroesse
+ {
+  margin: 4px 0px 25px 0px;
+ } 
+ 
+ 
+/*******************************************************************************
+ Suche
+*******************************************************************************/   
+div#rechte_spalte input#mod_search_searchword
+ {
+  border: 1px  solid #cccccc;
+  float: left;
+ }
+ 
+div#rechte_spalte input.searchbutton
+ {
+  float: left;
+  border: 1px solid #cccccc;
+ } 
 
+div#rechte_spalte ul.erweiterte_suche
+ {
+  list-style: none;
+ }
+ 
+div#rechte_spalte ul.erweiterte_suche li { display: inline; }
 
-/*
-        ### Tabellen-Ausgabe-Vorlesungsverzeichnis ###
-*/
+div#rechte_spalte ul.erweiterte_suche li a 
+ {
+  display: block;
+  margin: 10px 0px 10px 0px;
+  border-bottom: 1px dotted #999999;
+ } 
+ /*******************************************************************************
+ Start: Zufallsbild
+*******************************************************************************/
+div.zufallsbild_kopf 
+ {
+  letter-spacing: 0.1em;
+  color: #555566;
+  font-size: 100%;
+  text-transform: uppercase;
+  font-weight: bold;
+  text-align: left;
+  padding: 40px 0px 10px 0px;  
+ }
 
-form.form table,
-td.maske table,
-table.currentLectures
-{
-        border: 1px solid #6495ed;
-        border-collapse: collapse;
-}
-
-
-td.maske {
-        background: #FFFFFF;
-        font-size: 100%;
-        color: #000000;
-        font-weight: normal;
-}
-
-th.mod {
-        vertical-align: middle;
-        white-space: nowrap;
-        padding-top: 2px;
-        padding-bottom: 2px;
-        padding-left: 5px;
-        padding-right: 5px;
-        text-align: center;
-        border-right: none;
-        border-bottom: 1px solid #6495ed;
-        border-left: none;
-        background: #E6E9EC;
-}
-
-td.mod_n {
-        border-bottom: 1px solid #6495ed;
-        background: #f5f5dc;
-        vertical-align: middle;
-        padding-left: 10px;
-        padding-right: 5px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-}
-
-td.mod_n_odd {
-        background: #f5f5dc;
-        padding-left: 5px;
-        padding-right: 5px;
-        padding-top: 10px;
-        padding-bottom: 5px;
-        vertical-align: top;
-}
-
-td.mod_n_even {
-        background: #f0ffff;
-        padding-left: 5px;
-        padding-right: 5px;
-        padding-top: 10px;
-        padding-bottom: 5px;
-        vertical-align: top;
-}
+div.zufallsbild_koerper
+ {
+  padding: 0px 0px 0px 0px;
+ } 
 
 div#fuss
  {
