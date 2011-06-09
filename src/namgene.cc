@@ -1245,6 +1245,7 @@ Double NAMGene::getPathEmiProb(StatePath *path, const char *dna, SequenceFeature
 	curstate->prob = emi;
 	if (curstate->begin >= countStart && curstate->end <= countEnd){ // fragment lies completely in count region
 	    pathemi *= emi;
+	    //cout << "emi " << curstate->begin << " " <<  curstate->end << " " << emi << endl;
 	} else if (!(curstate->end < countStart || curstate->begin > countEnd)){
 	    // nontrivial overlap, only count a fraction corresponding to the overlap
 	    int ovlp = ((curstate->end > countEnd)? countEnd : curstate->end) -
@@ -1495,6 +1496,7 @@ void NAMGene::setPathAndProb(AnnoSequence *annoseq, FeatureCollection &extrinsic
     annoseq->anno->path = StatePath::getInducedStatePath(annoseq->anno->genes, annoseq->length);
     SequenceFeatureCollection &sfc = extrinsicFeatures.getSequenceFeatureCollection(annoseq->seqname);
     sfc.prepare(annoseq, false);
+    sfc.computeHintedSites(annoseq->sequence);
     sfc.prepareLocalMalus(annoseq->sequence);
     prepareModels(annoseq->sequence, annoseq->length, stateMap);
     annoseq->anno->emiProb = getPathEmiProb(&(*(annoseq->anno->path)), &(*(annoseq->sequence)), sfc);
