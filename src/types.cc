@@ -322,6 +322,11 @@ bool containsJustNonNucs(const char *dna, int dnalen){
     return !haveNuc;
 }
 
+bool isNuc(const char *dna){
+    char c = toupper(*dna);
+    return (c == 'A' || c == 'C' || c == 'G' || c == 'T');
+}
+
 /*
  * expand the ~ to the $Home directory
  */

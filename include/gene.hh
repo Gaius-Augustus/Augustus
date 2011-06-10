@@ -311,6 +311,7 @@ public:
     void printProteinSeq(AnnoSequence *annoseq) const;
     void printBlockSequences(AnnoSequence *annoseq) const;
     void printEvidence();
+    void truncateMaskedUTR(AnnoSequence *annoseq);
 
     static void init();
     static list<Gene> *filterGenePrediction(list<Gene> *gl, const char *seq, Strand strand, bool noInFrameStop, double minmeanexonintronprob=0.0, double minexonintronprob=0.0);
@@ -423,7 +424,7 @@ list<AltGene> *reverseGeneList(list<AltGene> *altGeneList, int endpos);
 list<AltGene>* groupTranscriptsToGenes(list<Gene> *transcripts);
  
 void reverseGeneSequence(Gene* &seq, int endpos);
-
+void postProcessGenes(list<AltGene> *genes, AnnoSequence *annoseq);
 
 
 class Annotation {

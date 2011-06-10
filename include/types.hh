@@ -663,6 +663,7 @@ inline StateType requalDIntron(int frame){
 
 int howOftenOccursIt(const char* haystack, const char* needle, const char* endhaystack=NULL);
 bool containsJustNonNucs(const char *dna, int dnalen);
+bool isNuc(const char *dna);
 
 /*TEMP for allowing state path to end in the middle of an exon
 inline Double cumulativeTailProb (vector<Double> dist, int n){

@@ -718,6 +718,7 @@ list<AltGene> *NAMGene::getStepGenes(AnnoSequence *annoseq, SequenceFeatureColle
     }
     genes = sfc.joinGenesFromPredRuns(results, maxtracks, uniqueCDS);
     // TODO: delete results 
+    postProcessGenes(genes, annoseq); // truncate masked UTRs
     return genes;
 }
 
