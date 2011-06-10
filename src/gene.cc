@@ -3096,13 +3096,13 @@ void reverseGeneSequence(Gene* &seq, int endpos){
 /*
  * Gene::postProcessGenes
  * postprocess predicted genes
- * currently only trunkate hard-masked regions at ends of UTR
+ * currently only truncate hard-masked regions at ends of UTR
  */
 void postProcessGenes(list<AltGene> *genes, AnnoSequence *annoseq){
     if (!genes || !annoseq)
 	return;
     try {
-	if (Properties::getBoolProperty("trunkateMaskedUTRs")){
+	if (Properties::getBoolProperty("truncateMaskedUTRs")){
 	    for (list<AltGene>::iterator agit = genes->begin(); agit != genes->end(); ++agit){
 		for (list<Gene*>::iterator git = agit->transcripts.begin(); git != agit->transcripts.end(); ++git){
 		    (*git)->truncateMaskedUTR(annoseq);
@@ -3114,31 +3114,31 @@ void postProcessGenes(list<AltGene> *genes, AnnoSequence *annoseq){
 
 void Gene::truncateMaskedUTR(AnnoSequence *annoseq){
     if (utr5exons && strand == plusstrand && complete5utr){
-	complete5utr = false;
 	while (utr5exons->begin <= utr5exons->end && !isNuc(annoseq->sequence + utr5exons->begin)){
 	    utr5exons->begin++;
 	    transstart = utr5exons->begin;
+	    complete5utr = false;
 	}
     }
     if (utr3exons && strand == minusstrand && complete3utr){
-	complete3utr = false;
 	while (utr3exons->begin <= utr3exons->end && !isNuc(annoseq->sequence + utr3exons->begin)){
 	    utr3exons->begin++;
 	    transstart = utr3exons->begin;
+	    complete3utr = false;
 	}
     }
     if (utr5exons && strand == minusstrand && complete5utr){
-	complete5utr = false;
 	while (utr5exons->end >= utr5exons->begin && !isNuc(annoseq->sequence + utr5exons->end)){
 	    utr5exons->end--;
 	    transend = utr5exons->end;
+	    complete5utr = false;
 	}
     }
     if (utr3exons && strand == plusstrand && complete3utr){
-	complete3utr = false;
 	while (utr3exons->end >= utr3exons->begin && !isNuc(annoseq->sequence + utr3exons->end)){
 	    utr3exons->end--;
 	    transend = utr3exons->end;
+	    complete3utr = false;
 	}
     } 
 }
