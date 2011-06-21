@@ -42,12 +42,12 @@ LINE: while($line = <HINTS>){
     $siteB = substr($fasta_hash{$gff[0]}, ($gff[4]-2), 2);
     $given = $siteA.$siteB;
     if($given =~ m/$splice/){
-	print $line;
+	print $gff[0]."\t".$gff[1]."\t".$gff[2]."\t".$gff[3]."\t".$gff[4]."\t".$gff[5]."\t+\t".$gff[7]."\t".$gff[8]."\n";
     }else{
 	$given = reverse $given;
 	$given =~ tr/ACGTacgt/TGCAtgca/;
 	if($given =~ m/$splice/){
-	    print $line;
+	    print $gff[0]."\t".$gff[1]."\t".$gff[2]."\t".$gff[3]."\t".$gff[4]."\t".$gff[5]."\t-\t".$gff[7]."\t".$gff[8]."\n";
 	}
     }
 }
