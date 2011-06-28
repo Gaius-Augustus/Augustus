@@ -439,7 +439,7 @@ sub dirBuilder{
     $mainDir = "$position/autoAugPred_hints" if(!$utr && $hints);
     $mainDir = "$position/autoAugPred_hints_utr" if($utr && $hints);
     $mainDir = "$position/autoAugPred_utr" if($utr && !$hints);
-    if (-d $mainDir && !$useexisting){
+    if (-d $mainDir && !$useexisting && !$continue){
 	print STDERR "$mainDir already exists. Please rename or start with --useexisting.";
 	exit(1);
     }
