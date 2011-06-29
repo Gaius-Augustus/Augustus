@@ -457,9 +457,10 @@ GBFeature::GBFeature(const char *pos) throw( GBError ){
 	complete_r = false;
 	joinstrm.get( c );
       }
-      joinstrm >> eend >> c;  // format:  'Numer..Number,' 
+      
+      joinstrm >> eend >> c;  // format:  'Numer..Number,'
       if (ebegin < 1 || eend < 1)
-	throw ProjectError("Wrong format for coordinates.");
+	throw ProjectError(string("Wrong format for coordinates: ") + join);
       exon->begin = ebegin - 1; // correct for the fact that indices
       exon->end   = eend - 1;   // start with 0 in the c++ sequence
       exon->next = 0;
@@ -476,7 +477,8 @@ GBFeature::GBFeature(const char *pos) throw( GBError ){
       }    
       exon_old = exon;
     }
-  } catch (...) {
+  } catch (ProjectError e) {
+    cerr << "Constructing GenBank feature: " << e.getMessage() << endl;
     throw GBError("GBFeature constructor:Format error when reading genbank format.");
   }
 }
@@ -676,7 +678,6 @@ Boolean GBSplitter::gotoEnd( ){
 
 Boolean GBSplitter::findPositions( GBPositions& pos ) throw( GBError ){
     int fposb, fpose;
-    
     fposb = ifstrm.tellg();
     if( !gotoEnd( ) )
         return false;
