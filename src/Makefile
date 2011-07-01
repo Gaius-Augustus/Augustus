@@ -12,7 +12,7 @@ INCLS	= -I../include -I.
 LIBS	= # -lcwd
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
- intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o
+ intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
 PROGR	= augustus etraining consensusFinder curve2hints fastBlockSearch prepareAlign
@@ -499,6 +499,11 @@ commontrain.o : \
 	../include/lldouble.hh \
 	../include/types.hh \
 	commontrain.cc
+
+mea.o : \
+	../include/mea.hh \
+	../include/gene.hh \
+	mea.cc
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

@@ -26,6 +26,7 @@
 #include "motif.hh"
 #include "gene.hh"
 #include "projectio.hh"  // for comment, goto_line_after
+#include "mea.hh"
 
 // standard C/C++ includes
 #include <iomanip>  // for setprecision
@@ -86,6 +87,13 @@ NAMGene::NAMGene() {
   } catch (...) {
     show_progress = false;
   }
+
+  try {
+      mea_prediction = Properties::getBoolProperty("mea");
+  } catch (...) {
+    mea_prediction = false;
+  }
+
 
   // Read in protein profile
   try {
@@ -743,6 +751,8 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   Gene *genes = NULL, *g;
   StatePath *viterbiPath;
   StatePath *condensedViterbiPath;
+  list<Gene> *MEAtranscripts = NULL;
+
 
   // compute the viterbi and forward table, main work done here
   viterbiAndForward(dna, profileModel);
@@ -841,9 +851,13 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
     } // for i<sampleiterations
     if (show_progress)
 	cerr << endl;
-
+    
+    if(mea_prediction)
+     MEAtranscripts = getMEAtranscripts(sampledGeneStructures, sampleiterations, strlen( dna ));
+    
+     
     alltranscripts->sort();
-   
+ 
     // now remove multiple copies and increase apostprob instead
     for(geneit1 = alltranscripts->begin(); geneit1 != alltranscripts->end();){
       geneit2 = geneit1;
@@ -874,7 +888,11 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
       geneit1->normPostProb(sampleiterations); // +1 wegen Viterbipfad
     }
   } // if (sampleiterations>1)
-   
+
+  // determine transcripts with maximum expected accuracy criterion
+  if(mea_prediction)
+    list<Gene> *MEAtranscripts2 = getMEAtranscripts(alltranscripts, strlen( dna ));
+  
   /*
    * filter transcripts by probabilities, strand
    */
@@ -884,6 +902,11 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   /*
    * filter transcripts by maximum track number
    */
+
+  if(MEAtranscripts != NULL){
+    filteredTranscripts = MEAtranscripts;
+  }
+  
   agl = groupTranscriptsToGenes(filteredTranscripts);
   
   if (sampleiterations>1) {
@@ -921,6 +944,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   }
   delete [] sampledGeneStructures;
   delete condensedViterbiPath;
+ 
 #ifdef DEBUG
   cerr << "At the end of findGenes: average load is " << viterbi.load() << ",\n"
        << "                                used are " << viterbi.used_load() << " of " << statecount << " states.\n";
