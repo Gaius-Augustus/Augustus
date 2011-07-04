@@ -25,7 +25,7 @@
 #include <map>
 
 
-#define NUMPARNAMES 170
+#define NUMPARNAMES 171
 
 #define GENEMODEL_KEY "genemodel"
 #define SINGLESTRAND_KEY "singlestrand"
