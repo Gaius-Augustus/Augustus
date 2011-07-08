@@ -123,13 +123,13 @@ while (<BLAT>) {
 	    if ($oldformat){
 		print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tTarget $source:$qname ", ($q[$i]+1), " ", ($q[$i]+$b[$i]),"\n";
 	    } else {
-		print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tID=m$id;Name=$qname ", ($q[$i]+1), " ", ($q[$i]+$b[$i]),"\n";	
+		print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tID=m$id;Name=$qname;Target=$qname ", ($q[$i]+1), " ", ($q[$i]+$b[$i]),"\n";	
 	    }
 	} else {
 	    if ($oldformat){
 		print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tTarget $source:$qname ", ($qsize+1-($q[$i]+$b[$i])), " ",($qsize-$q[$i]) ,"\n";
 	    } else {
-		print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tID=m$id;Name=$qname ", ($qsize+1-($q[$i]+$b[$i])), " ",($qsize-$q[$i]) ,"\n";
+		print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tID=m$id;Name=$qname;Target=$qname ", ($qsize+1-($q[$i]+$b[$i])), " ",($qsize-$q[$i]) ,"\n";
 	    }
 	}
     }
