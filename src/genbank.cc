@@ -461,6 +461,8 @@ GBFeature::GBFeature(const char *pos) throw( GBError ){
       joinstrm >> eend >> c;  // format:  'Numer..Number,'
       if (ebegin < 1 || eend < 1)
 	throw ProjectError(string("Wrong format for coordinates: ") + join);
+      if (ebegin > eend)
+	throw ProjectError(string("Feature begins after it ends: ") + join);
       exon->begin = ebegin - 1; // correct for the fact that indices
       exon->end   = eend - 1;   // start with 0 in the c++ sequence
       exon->next = 0;
