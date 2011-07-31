@@ -287,6 +287,7 @@ public:
     static Boolean tieIgenicIntron; // whether to tie igenic model parameters to intron model parameters, i.e. use just one content model, that of the intron
     static Boolean proteinOutput;
     static Boolean codSeqOutput;
+    static Boolean contentmodels; // whether to use content models, default: true
 };
 
 

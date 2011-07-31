@@ -162,15 +162,18 @@ void IGenicModel::readAllParameters(){
 	  istrm >> goto_line_after( "[P_ls]" );
 	  for( int i = 0; i <= k; i++ ){
             istrm >> comment >> l >> comment;
-            GCPls[idx][i].assign( POWER4TOTHE(l+1), 0.0 );
+	    int size = POWER4TOTHE(l+1);
+            GCPls[idx][i].assign( size, 0.0 );
 	    Seq2Int s2i(i+1);
-	    for( int j = 0; j < GCPls[idx][i].size(); j++ ) {
+	    for( int j = 0; j < size; j++ ) {
 	      istrm >> comment;
 	      int pn = s2i.read(istrm);
 	      if (pn != j)
 		throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
 				   " at P_ls, pattern " + s2i.INV(pn));
 	      istrm >> GCPls[idx][i][j];
+	      if (!Constant::contentmodels)
+		  GCPls[idx][i][j] = 1.0/size; // use uniform distribution
             }
 	  }
 	
@@ -193,6 +196,8 @@ void IGenicModel::readAllParameters(){
 		    throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
 				       " at EMISSION, pattern " + s2i.INV(pn));
 		istrm >> GCemiprobs[idx].probs[j];
+		if (!Constant::contentmodels)
+		    GCemiprobs[idx].probs[j] = 0.25; // use uniform distribution
 	    }
 	  }
 	}// end for idx loop

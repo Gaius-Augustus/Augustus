@@ -76,6 +76,7 @@ bool Constant::dss_gc_allowed = false;
 Boolean Constant::tieIgenicIntron = true;
 Boolean Constant::proteinOutput = true;
 Boolean Constant::codSeqOutput = false;
+Boolean Constant::contentmodels = true;
 
 
 bool inCRFTraining = false;
@@ -292,6 +293,7 @@ void Constant::init(){
     Properties::assignProperty("tieIgenicIntron", tieIgenicIntron);
     Properties::assignProperty("protein", proteinOutput);
     Properties::assignProperty("codingseq", codSeqOutput);
+    Properties::assignProperty("contentmodels", contentmodels);
 }
 
 int howOftenOccursIt(const char* haystack, const char* needle, const char *endhaystack){
@@ -416,38 +418,3 @@ char *getRandomDNA(int len) {
 // 	}
 //     return chisq;
 // }
-
-// int branchPointPosition(char *seq, int asspos) {
-//     static double branchprofile_highgc[7][4]=
-// 	{{.15,.36,.24,.25}, {.15,.38,.22,.25}, {0,.88,0,.12}, 
-// 	 {0,.05,0,.95}, {.16,.31,.51,.02}, {1,0,0,0}, {.07,.56,.12,.25}};
-//     int i, putpos = 0, numpos=0;
-//     if (asspos < 54)
-// 	return 0; // not enough sequence
-//     double maxprob(0.0), prob;
-//     Seq2Int s2i(1);
-//     for (i=-50; i<-10; i++) {
-// 	prob = 1.0;
-// 	for (int j=0; j<7; j++) {
-// 	    try {
-// 		prob *= branchprofile_highgc[j][s2i(seq+asspos+i-5+j)];
-// 	    } catch (...) {
-// 		prob *= .25;
-// 	    }
-// 	}
-// 	if (prob>0)
-// 	    numpos++;
-// 	if (prob > maxprob){
-// 	    maxprob = prob;
-// 	    putpos = i;
-// 	}
-//     }
-//     /*
-//     char buf[8];
-//     strncpy(buf, seq+asspos+putpos-5, 7);
-//     buf[7]='\0';
-//     cerr << "putpos = " << putpos << "\tprob = " << maxprob << "\t" << buf << " moeglich: "
-//     << numpos << endl;*/
-//     return putpos;
-// }
-

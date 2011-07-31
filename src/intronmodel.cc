@@ -411,6 +411,8 @@ void IntronModel::readAllParameters(){
             istrm >> comment; // comment is needed here
 	    int pn = s2i.read(istrm);
             istrm >> GCemiprobs[idx].probs[pn];
+	    if (!Constant::contentmodels)
+		GCemiprobs[idx].probs[pn] = 0.25; // use uniform distribution
 	  }
 	  
 	  istrm >> goto_line_after( "[ASSMOTIF]" );

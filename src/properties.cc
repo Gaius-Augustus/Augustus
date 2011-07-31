@@ -73,6 +73,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/Constant/tis_maxbinsize",
 "/Constant/trans_init_window",
 "/Constant/tss_upwindow_size",
+"contentmodels",
 "CRF",
 "CRF_N",
 "CRF_TRAIN",

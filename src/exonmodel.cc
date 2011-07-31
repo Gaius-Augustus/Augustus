@@ -405,6 +405,7 @@ void ExonModel::init() {
  * ===[ ExonModel::readProbabilities ]====================================
  */
 void ExonModel::readProbabilities(int parIndex) {
+    exit(1);
     if( parIndex == lastParIndex )
 	return;
     
@@ -657,6 +658,8 @@ void ExonModel::readAllParameters(){
 	  istrm >> GCPls[idx][l][0][j]
 		>> GCPls[idx][l][1][j]
 		>> GCPls[idx][l][2][j];
+	  if (!Constant::contentmodels)
+	      GCPls[idx][l][0][j] = GCPls[idx][l][1][j] = GCPls[idx][l][2][j] = 1.0/size; // use uniform distribution
 	}
       }
 
@@ -709,6 +712,8 @@ void ExonModel::readAllParameters(){
 	  istrm >> GCemiprobs[idx].probs[0][i]
 		>> GCemiprobs[idx].probs[1][i]
 		>> GCemiprobs[idx].probs[2][i];
+	  if (!Constant::contentmodels)
+	      GCemiprobs[idx].probs[0][i] = GCemiprobs[idx].probs[1][i] = GCemiprobs[idx].probs[2][i] = .25;
 	}
       }
 	

@@ -302,7 +302,11 @@ important parameters:
 --noprediction=true/false
   If true and input is in genbank format, no prediction is made. Useful for getting the annotated protein sequences.
 
-
+--contentmodels=on/off
+  If 'off' the content models are disabled (all emissions uniformly 1/4). The content models are; coding region Markov chain
+  (emiprobs), initial k-mers in coding region (Pls), intron and intergenic regin Markov chain. This option is intended for
+  special applications that require judging gene structures from the signal models only, e.g. for predicting the effect of
+  SNPs or mutations on splicing. For all typical gene predictions, this should be true. Default: on
 
 
 For example you may type
