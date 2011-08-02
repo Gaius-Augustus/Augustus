@@ -504,7 +504,6 @@ commontrain.o : \
 mea.o : \
 	../include/mea.hh \
 	../include/gene.hh \
-	../include/graph.hh \
 	mea.cc
 
 
