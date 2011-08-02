@@ -852,8 +852,8 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
     if (show_progress)
 	cerr << endl;
     
-    if(mea_prediction)
-     MEAtranscripts = getMEAtranscripts(sampledGeneStructures, sampleiterations, strlen( dna ));
+    /*    if(mea_prediction)
+	  MEAtranscripts = getMEAtranscripts(sampledGeneStructures, sampleiterations, strlen( dna )); */
     
      
     alltranscripts->sort();
@@ -891,7 +891,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
 
   // determine transcripts with maximum expected accuracy criterion
   if(mea_prediction)
-    list<Gene> *MEAtranscripts2 = getMEAtranscripts(alltranscripts, strlen( dna ));
+    MEAtranscripts = getMEAtranscripts(alltranscripts, strlen( dna ));
   
   /*
    * filter transcripts by probabilities, strand

@@ -340,6 +340,7 @@ namgene.o : \
 	../include/hints.hh \
 	../include/lldouble.hh \
 	../include/matrix.hh \
+	../include/mea.hh \
 	../include/motif.hh \
 	../include/namgene.hh \
 	../include/pp_hitseq.hh \
@@ -503,7 +504,9 @@ commontrain.o : \
 mea.o : \
 	../include/mea.hh \
 	../include/gene.hh \
+	../include/graph.hh \
 	mea.cc
+
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

@@ -1,7 +1,7 @@
 #include "mea.hh"
 #include "evaluation.hh"
 
-#include<iostream>
+#include <iostream>
 
 using namespace std;
 list<Gene>* getMEAtranscripts(Gene **sampledGeneStructures, int n, int strlength){
@@ -52,36 +52,50 @@ list<Gene>* getMEAtranscripts(list<Gene> *alltranscripts, int strlength){
 
   cout<<"!!! entering MEA with alltranscripts"<<endl<<"---------------------------------------"<<endl;
 
+  bool utr;
+  try {
+    utr = Properties::getBoolProperty("UTR");
+  } catch (...) {
+    utr = false;
+  }
+
   list<Gene> *MEAtranscripts = alltranscripts;
+  
+/*
+  list<Status> stateList;
 
   list<Gene>::iterator it;
 
-  for(it=MEAtranscripts->begin();it!=MEAtranscripts->end();it++){
+  int noExons, noIntrons, noUTR;
+  noExons = noIntrons = noUTR = 0;
 
-    cout<<"****************************"<<endl;
-    for(State *ex=it->exons; ex!=NULL; ex=ex->next){
-      cout<<"EXONS:  number of samples: "<<ex->sampleCount<<"\t apost.prob: "<<ex->apostprob<<"\t interval: "<<ex->begin<<" : "<<ex->end<<endl;
+  for(it=alltranscripts->begin();it!=alltranscripts->end();it++){
+   
+    addToList(it->exons,"exons",noExons,stateList);
+    addToList(it->introns,"introns",noIntrons,stateList);
+    if(utr){
+      addToList(it->utr5exons,"UTR",noUTR,stateList);
+      addToList(it->utr3exons,"UTR",noUTR,stateList);
+      addToList(it->utr5introns,"UTR",noUTR,stateList);
+      addToList(it->utr3introns,"UTR",noUTR,stateList);
     }
-    for(State *in=it->introns; in!=NULL; in=in->next){
-    cout<<"INTRONS:  number of samples: "<<in->sampleCount<<"\t apost.prob: "<<in->apostprob<<"\t intervall: "<<in->begin<<" : "<<in->end<<endl;
-    }
-    cout<<"GENE: "<<it->id<<"\t aposteriori prob: "<<it->apostprob<<"\t Interval: "<<it->transstart<<"-"<<it->codingstart<<"-"<<it->codingend<<"-"<<it->transend;
-        
-    if(it->complete){
-      cout<<"\t coding region complete";
-    }
-    if(it->viterbi){
-      cout<<"\t viterbi gene";
-    }
-    if(it->strand == plusstrand){
-      cout<<"\t+++";
-    }
-    cout<<endl;
   }
   
+  list<Status>::iterator da;
+  for(da=stateList.begin();da!=stateList.end();da++){
+    cout<<da->statename<<"\t"<<da->begin<<"\t"<<da->end<<"\t"<<da->score;
+    cout<<endl;
+  }
+  */
+  //build Graph
+  //find shortest path
+
+
   return MEAtranscripts;
   
 } 
+
+
 
 Gene* listToGene(list<Gene> *genelist){
 
@@ -104,3 +118,13 @@ list<Gene>* geneToList(Gene * genes){
   }
   return genelist;  
 }
+
+/*void addToList(State *st, string name, int &noStates, list<Status> &slist){
+
+  for(State *state=st; state!=NULL; state=state->next){
+
+    Status someState(name, state->begin, state->end, (double)state->apostprob, state);
+    slist.push_back(someState);
+    noStates++;
+  }
+  }*/
