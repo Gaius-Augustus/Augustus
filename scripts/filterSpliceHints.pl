@@ -8,16 +8,16 @@
 
 # Katharina Hoff, 9.6.2011
 
-my $usage = "filerIntrons.pl genome.fa hints.gff > out.gff\n";
+my $usage = "filerIntrons.pl genome.fa hints.gff splice-pattern> out.gff\n\nThe most typical splice pattern should be GCAT! Sometimes, GCAG is also used.\n";
 
-if (@ARGV != 2) {
+if (@ARGV != 3) {
     print $usage;
     exit;
 }
 
 my $genome = $ARGV[0];
 my $hints = $ARGV[1];
-my $splice = "GTAG";
+my $splice = $ARGV[2];
 
 open (FASTA, $genome) or die ("\n\ncould not open file $genome!\n");
 LINE: while ($line = <FASTA>){
