@@ -441,7 +441,7 @@ void CRF::onlineLargeMarginTraining(Parameters* parameters, vector<AnnoSequence*
 		/*
 		 * correct path
 		 */
-		correctPath = StatePath::getInducedStatePath(as->anno->genes, as->length);
+		correctPath = StatePath::getInducedStatePath(as->anno->genes, as->length, false);
 		//condensedCorrectPath = StatePath::condenseStatePath(correctPath);
 		//condensedCorrectPath->print();
 		if (round < 4)
@@ -703,7 +703,7 @@ void CRF::improvedIterativeScaling(Parameters* parameters, vector<AnnoSequence*>
              * this is done simultaneously because viterbi/forward/ automatically initializes for getPathEmiProb
              */
             if (round == 1 || feasible[i]){
-                correctPath = StatePath::getInducedStatePath(as->anno->genes, as->length);
+                correctPath = StatePath::getInducedStatePath(as->anno->genes, as->length, false);
                 //condensedCorrectPath = StatePath::condenseStatePath(correctPath);
                 //cout << "correctPath:" << endl; condensedCorrectPath->print();
                 parameters->resetCounts();

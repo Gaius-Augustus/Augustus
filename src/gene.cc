@@ -660,7 +660,7 @@ Gene* StatePath::projectOntoGeneSequence(const char *genenames){
  * a path that backtranslates through projectOntoGeneSequence to the original list of genes.
  */
 
-StatePath* StatePath::getInducedStatePath(Gene *genelist, int dnalen){
+StatePath* StatePath::getInducedStatePath(Gene *genelist, int dnalen, bool printErrors){
     StatePath *path = new StatePath();
     path->intron_d = IntronModel::getD();
     int endOfPred = 0;
@@ -774,13 +774,13 @@ StatePath* StatePath::getInducedStatePath(Gene *genelist, int dnalen){
 		end = exon->end + (onFStrand? 0 : Constant::trans_init_window);
 		frame = mod3(frame + (onFStrand? exon->length() : -exon->length()));
 		if (onFStrand){
-		    /* removed because training sequences may be faulty
-		    if (frame != 0){
-			cerr << "Error in sequence: " << path->seqname << endl;
+		    if (frame != 0 && printErrors){
+			cerr << "Reading frame error in sequence: " << path->seqname << endl;
 			throw ProjectError("Assertion failed in StatePath::getInducedStatePath (forward)");
-			}*/
+		    }
 		} else {
-		    if (frame != 2)
+		    if (frame != 2 && printErrors)
+		        cerr << "Reading frame error in sequence: " << path->seqname << endl;
 			throw ProjectError("Assertion failed in StatePath::getInducedStatePath (reverse)");
 		}
 		path->push(new State(endOfPred+1, end, onFStrand? terminal : rinitial));

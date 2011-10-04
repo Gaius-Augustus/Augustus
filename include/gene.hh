@@ -195,7 +195,7 @@ public:
     void print();
     static StatePath* condenseStatePath(StatePath *oldpath);
     Gene* projectOntoGeneSequence(const char *genenames);
-    static StatePath* getInducedStatePath(Gene *genelist, int dnalen);
+    static StatePath* getInducedStatePath(Gene *genelist, int dnalen, bool printErrors=true);
     void reverse();
     bool operator== (const StatePath &other) const;
     bool operator< (const StatePath &other) const;
