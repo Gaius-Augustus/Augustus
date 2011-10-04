@@ -152,6 +152,7 @@ public:
   void computeStairs(const char* dna);
   int *idx; // GC content class index for each position of dna
   const char *dna; // just a pointer, to check whether update is necessary
+  int n; // dna length
 private:
   int GCwinsize;
 };

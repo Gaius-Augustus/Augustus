@@ -773,16 +773,8 @@ StatePath* StatePath::getInducedStatePath(Gene *genelist, int dnalen, bool print
 		// terminal or rinitial exon
 		end = exon->end + (onFStrand? 0 : Constant::trans_init_window);
 		frame = mod3(frame + (onFStrand? exon->length() : -exon->length()));
-		if (onFStrand){
-		    if (frame != 0 && printErrors){
-			cerr << "Reading frame error in sequence: " << path->seqname << endl;
-			throw ProjectError("Assertion failed in StatePath::getInducedStatePath (forward)");
-		    }
-		} else {
-		    if (frame != 2 && printErrors)
-		        cerr << "Reading frame error in sequence: " << path->seqname << endl;
-			throw ProjectError("Assertion failed in StatePath::getInducedStatePath (reverse)");
-		}
+		if (((onFStrand && frame != 0) || (!onFStrand && frame != 2) ) && printErrors)
+		       throw ProjectError(string("StatePath::getInducedStatePath reading frame error in sequence ") + path->seqname );
 		path->push(new State(endOfPred+1, end, onFStrand? terminal : rinitial));
 		endOfPred = end;
 	    }

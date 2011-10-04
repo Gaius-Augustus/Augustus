@@ -1262,8 +1262,8 @@ Double NAMGene::getPathEmiProb(StatePath *path, const char *dna, SequenceFeature
     }
     for (curstate = path->first; curstate != NULL; curstate = curstate->next){
 	stateidx = getStateIndex(curstate->type);
-	if (cs.idx[curstate->end] != curGCIdx) {
-          curGCIdx = cs.idx[curstate->end];
+	if (cs.idx[(curstate->end < cs.n)? curstate->end : cs.n-1] != curGCIdx) {// some states, e.g. exons, may extend past the sequence end
+          curGCIdx = cs.idx[(curstate->end < cs.n)? curstate->end : cs.n-1];
           initAlgorithms(curGCIdx); // update GC content dependent parameters
 	}
 	emi = states[stateidx]->emiProbUnderModel(curstate->begin, curstate->end);

@@ -490,7 +490,7 @@ ContentStairs::ContentStairs(){
 
 void ContentStairs::computeStairs(const char* dna){
   ContentDecomposition cd;
-  int n = strlen(dna);
+  n = strlen(dna);
   this->dna = dna; // keep only the pointer
   int totterywin = 200; // to smooth out when GC content teeter-totters between two classes
   if (idx)
