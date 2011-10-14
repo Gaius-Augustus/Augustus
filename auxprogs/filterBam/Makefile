@@ -5,7 +5,7 @@
 #	b) libbamtools.a and lz library are used during the linking process
 #
 # 	Created: 28-September-2011
-#	Last modified: 4-October-2011
+#	Last modified: 14-October-2011
 
 # Variable definition
 HOME = .
@@ -14,7 +14,7 @@ INCLUDES = $(BAMTOOLS)/include
 LIBS = $(BAMTOOLS)/lib/libbamtools.a -lz
 SOURCES = filterBam.cc 
 OBJECTS = $(SOURCES:.cc=.o)
-CFLAGS = -g
+CFLAGS = -g -std=c++0x # -std=c++0x is required for support of unordered maps
 #LINK.cc = g++
 
 # Recipe(s)
