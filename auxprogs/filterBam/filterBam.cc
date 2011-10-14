@@ -1,7 +1,7 @@
 /*	Filters the coverage of a BAM alignment file
 
 	Created: 28-September-2011
-	Last modified: 4-October-2011
+	Last modified: 14-October-2011
 */ 
 
 #include <api/BamReader.h>
@@ -18,49 +18,48 @@
 #include <stdlib.h>
 #include <iomanip> 
 #include <boost/lexical_cast.hpp>
+#include <unordered_map>
 
 // Default options
+#define HELP  0
 #define MAXINTRONLEN  500000
 #define MININTRONLEN  35
 #define MAXSORTESTEST  100000 
 #define MINID  92
 #define MINCOVER  80
+#define INSERTLIMIT 10
 #define UNIQTHRESH  0.96 
-#define UNIQ  0
-#define NOINTRONS  0
-#define BEST  0
 #define COMMONGENEFILE
 #define PAIRBEDFILE
 #define PAIRED  0
+#define UNIQ  0
+#define NOINTRONS  0
+#define BEST  0
 #define VERBOSE  0
-#define INSERTLIMIT 10
-#define HELP  0
 
 using namespace BamTools;
 using namespace std;
 
 // Definition of global variables
-static const char *optString = "xictunbcdpvl:h?";
+static const char *optString = "abcdefghijklmnv:h?";
 extern int opterr; // Display error if opterr=0
 
 struct globalOptions_t {
+	int help;
 	int maxintronlen;
 	int minintronlen;
 	int maxSortesTest; 
 	int minId;
 	int minCover;
+	int insertLimit;
 	float uniqthresh;
-	int uniq;
-	bool nointrons;
-	int best;
 	string commongenefile;
 	string pairbedfile;
-	int paired;
-	int verbose;
-	int help;
-  	int insertLimit;
-	string qnamestems; 
-	string cmdline;
+	bool paired;
+	bool uniq;
+	bool nointrons;
+	bool best;
+	bool verbose;  	
 };
 
 globalOptions_t initOptions(int argc, char *argv[]);
@@ -68,18 +67,20 @@ globalOptions_t initOptions(int argc, char *argv[]);
 // longOpts array
 static const struct option longOpts[] = {
     { "help", no_argument, NULL, 'h' },
-    { "maxintronlen", required_argument, NULL, 'x' },
-    { "minId", required_argument, NULL, 'i' },
-    { "minCover", required_argument, NULL, 'c' },
-    { "uniqthresh", required_argument, NULL, 't' },
-    { "uniq", required_argument, NULL, 'u' },
-    { "nointrons", no_argument, NULL, 'n' },
-    { "best", required_argument, NULL, 'b' },
-    { "commongenefile", required_argument, NULL, 'g' },
-    { "pairbedfile", required_argument, NULL, 'd' },
-    { "paired", required_argument, NULL, 'p' },
-    { "verbose", required_argument, NULL, 'v' },
-	{ "insertLimit", required_argument, NULL, 'l'},
+    { "maxintronlen", required_argument, NULL, 'a' },
+	{ "minintronlen", required_argument, NULL, 'b' },
+	{ "maxSortesTest", required_argument, NULL, 'c' },
+  	{ "minId", required_argument, NULL, 'd' },
+    { "minCover", required_argument, NULL, 'e' },
+	{ "insertLimit", required_argument, NULL, 'f' },
+    { "uniqthresh", required_argument, NULL, 'g' }, 	// 'h' option is for "help" 
+    { "commongenefile", required_argument, NULL, 'i' }, // 'h' option is for "help"
+    { "pairbedfile", required_argument, NULL, 'j' },
+    { "paired", no_argument, NULL, 'k' },
+    { "uniq", no_argument, NULL, 'l' },
+    { "nointrons", no_argument, NULL, 'm' },
+    { "best", no_argument, NULL, 'n' },
+    { "verbose", no_argument, NULL, 'v' },
     { NULL, no_argument, NULL, 0 }
 };
 
@@ -87,30 +88,44 @@ static const struct option longOpts[] = {
 // Display usage when --help
 void displayUsage(int argc, char *argv[])
 {
-	cout << "USAGE: available options are" << endl;
-  	cout << "---------------------" << endl;
-	cout <<  "Usage: " << argv[0] << " in.bam out.bam\n";
+	cout <<  " Usage: " << argv[0] << " in.bam out.bam\n";
+  	cout <<  "--------------------------------------------------" << endl;
+	cout <<  " Available options are                            " << endl;
+  	cout <<  "--------------------------------------------------" << endl;
 	cout <<  "  PREREQUISITE: Does BAM need to be sorted??\n";
 	cout <<  "                	   If so, sort with samtools\n";
-	cout <<  "  if option 'paired' is used then it expects .f,.r or /1,/2 suffixes of mate pairs\n";
-	cout <<  "  \n";
-	cout <<  "  options:\n";
-	cout <<  "  --pairbed=s        file name of pairedness coverage:\n";
-	cout <<  "                     a .bed format file in which for each position the number of filtered\n";
-	cout <<  "                     read pairs is reported that contain the position in or between the reads\n";
-	cout <<  "  --minId=n          minimal percentage of identity (default 92)\n";
-	cout <<  "  --minCover=n       minimal percentage of coverage of the query read (default 80)\n";
-	cout <<  "  --uniq             take only best match and only, when second best is much worse (default false)\n";
-	cout <<  "  --uniqthresh       threshold % for uniq, second best must be at most this fraction of best (default .96)\n";
-	cout <<  "  --best             output all best matches that satisfy minId and minCover\n";
-	cout <<  "  --commongenefile=s file name in which to write cases where one read maps to several different genes\n";
-	cout <<  "  --nointrons        do not allow longer gaps (for RNA-RNA alignments)\n";
-	cout <<  "  --paired           require that paired reads are on opposite strands of same target(default false)\n";
-	cout <<  "  --maxintronlen=n   maximal separation of paired reads (default 500000\n";
-	cout <<  "  --verbose          output debugging info (default false)\n";
-	cout << "help            : --h or --help" << endl;
-    exit(EXIT_FAILURE);
+  	cout <<  "--------------------------------------------------" << endl;
+	cout <<  "  --help             display this menu" << endl;
+	cout <<  "  --maxintronlen=n   maximal separation of paired reads (default " << MAXINTRONLEN << ")" << endl;
+	cout <<  "  --minintronlen=n   minimal     ''     ''   ''    ''   (default " << MININTRONLEN << ")" << endl;
+	cout <<  "  --maxSortesTest=n  maximal sortedness (default " << MAXSORTESTEST << ")" << endl;
+	cout <<  "  --minId=n          minimal percentage of identity (default " << MINID << ")" << endl;
+	cout <<  "  --minCover=n       minimal percentage of coverage of the query read (default " << 
+			 	MINCOVER << ")" << endl;
+	cout <<  "  --insertlimit=n    maximum assumed size of inserts (default " << INSERTLIMIT << ")" << endl;
+	cout <<  "  --uniqthresh=n     threshold % for uniq, second best must be at most this" << endl;
+	cout <<  "                     fraction of best (default " << UNIQTHRESH << ") " << endl;
+	cout <<  "  --commongenefile=s file name in which to write cases where one read maps to \n" <<
+	         "                     several different genes" << endl;
+	cout <<  "  --pairbedfile=s    file name of pairedness coverage:" << endl;
+	cout <<  "                     options:"  << endl;
+	cout <<  "	\t\t a .bed format file in which for each position the number of" << endl;
+	cout <<  "	\t\t filtered read pairs is reported that contain the position in" << endl; 
+	cout <<  "  \t\t\t or between the reads" << endl;
+	cout <<  "  --paired           require that paired reads are on opposite strands of same target" << endl;
+	cout <<  "  \t\t     (default " << PAIRED << ")" << endl;
+	cout <<  "                     NOTE: " << endl;
+	cout <<  "	\t\t if option 'paired' is used then it expects .f,.r or /1,/2" << endl; 
+	cout <<  "	\t\t suffixes of mate pairs" << endl;
+	cout <<  "  --uniq             take only best match and only, when second best is much worse (default " << 
+			 	UNIQ << ")" << endl;
+	cout <<  "  --nointrons        do not allow longer gaps -for RNA-RNA alignments- (default " << 
+				NOINTRONS << endl; 
+	cout <<  "  --best             output all best matches that satisfy minId and minCover (default " << 
+				BEST << ")" << endl;
+	cout <<  "  --verbose          output debugging info (default " << VERBOSE << ")" << endl;
 }
+
 
 // Options initialisation
 globalOptions_t initOptions(int argc, char *argv[])
@@ -121,75 +136,80 @@ globalOptions_t initOptions(int argc, char *argv[])
 	// Display usage if only ./program is provided
 	if (argc==1)
 	  {
-		displayUsage(argc, argv);
+		displayUsage(argc, argv);    
+		exit(EXIT_FAILURE);
 	  }
 
-    // Initialize globalOptions 
+    // Initialize globalOptions with default values
+	globalOptions.help = HELP;
 	globalOptions.maxintronlen = MAXINTRONLEN;
 	globalOptions.minintronlen = MININTRONLEN;
 	globalOptions.maxSortesTest = MAXSORTESTEST; 
 	globalOptions.minId = MINID;
 	globalOptions.minCover = MINCOVER;
+	globalOptions.insertLimit = INSERTLIMIT;
 	globalOptions.uniqthresh = UNIQTHRESH; 
-	globalOptions.uniq = UNIQ;
-	globalOptions.nointrons = NOINTRONS;
-	globalOptions.best = BEST;
 	globalOptions.commongenefile = "";
 	globalOptions.pairbedfile = "";
 	globalOptions.paired = PAIRED;
+	globalOptions.uniq = UNIQ;
+	globalOptions.nointrons = NOINTRONS;
+	globalOptions.best = BEST;
 	globalOptions.verbose = VERBOSE;
-	globalOptions.help = HELP;
-	globalOptions.insertLimit = INSERTLIMIT;
-	globalOptions.qnamestems = ""; 
-	globalOptions.cmdline = " ";
 
 	// Capturing options
 	opt = getopt_long_only(argc, argv, optString, longOpts, &longIndex);
 	// Scanning through options
     while( opt != -1 ) {
         switch( opt ) {                
-            case 'x':
+            case 'a':
 			  	globalOptions.maxintronlen = atoi(optarg);
                 break;
-			case 'i':
+            case 'b':
+			  	globalOptions.minintronlen = atoi(optarg);
+                break;
+            case 'c':
+			  	globalOptions.maxSortesTest = atoi(optarg);
+                break;
+			case 'd':
 			  	globalOptions.minId = atoi(optarg);
 				break;
-			case 'c':
+			case 'e':
 			  	globalOptions.minCover = atoi(optarg);
 			    break;
-			case 't':
+            case 'f':
+			  	globalOptions.insertLimit = atoi(optarg);
+                break;
+			case 'g':
 			  	globalOptions.uniqthresh = atof(optarg);
 			    break;
-			case 'u':
-			  	globalOptions.uniq = atoi(optarg);
-			    break;
-			case 'n':
-			  	globalOptions.nointrons = 1;
-			    break;
-			case 'b':
-			  	globalOptions.uniqthresh = atoi(optarg);
-			    break;
-			case 'g':
+			case 'i':
 			  	globalOptions.commongenefile = optarg;
 			    break;
-			case 'd':
+			case 'j':
 			  	globalOptions.pairbedfile = optarg;
 			    break;
-			case 'p':
-			  	globalOptions.paired = atoi(optarg);
-			    break;
-			case 'v':
-			  	globalOptions.verbose = atoi(optarg);
+			case 'k':
+			  	globalOptions.paired = 1;
 			    break;
 			case 'l':
-			  	globalOptions.insertLimit = atoi(optarg);
+			  	globalOptions.uniq = 1;
+			    break;
+			case 'm':
+			  	globalOptions.nointrons = 1;
+			    break;
+			case 'n':
+			  	globalOptions.best = 1;
+			    break;
+			case 'v':
+			  	globalOptions.verbose = 1;
 			    break;
 
 			case 'h':   // fall-through is intentional
             case '?':
 			  	displayUsage(argc, argv);
-                break;
-               
+    			exit(EXIT_FAILURE);
+                // break;              
             default:
 			  	// N.B. You won't actually get here
                 break;
@@ -281,13 +301,26 @@ int main(int argc, char *argv[])
   BamReader reader;
   BamWriter writer;
   BamAlignment al;
-  time_t tStart, tEnd, tElapsed; 
+  unordered_map<string, int> qNameStems;
+  unordered_map<string, int>::iterator it;
+  time_t tStart;
+  time_t tEnd;
+  time_t tElapsed; 
   vector<CigarOp> cigar;
   char cigarType;
-  uint32_t cigarLength, qLength, RefID, editDistance;
-  string qName, rName;
-  int cigarSize, sumMandI;
-  float coverage, percid;
+  uint32_t cigarLength;
+  uint32_t qLength;
+  uint32_t RefID;
+  uint32_t editDistance;
+  string rName;
+  string qName;
+  string qNameStem = ""; 
+  string oldqNameStem = "";
+  string qSuffix;
+  int cigarSize;
+  int sumMandI;
+  float coverage;
+  float percid;
   int32_t InsertSize;  // InsertSize = qBaseInsert+tBaseInsert, in some cases
   // Counters
   int outIntrons = 0;
@@ -302,7 +335,9 @@ int main(int argc, char *argv[])
   int minId = globalOptions.minId;
   int insertLimit = globalOptions.insertLimit;
   bool nointrons = globalOptions.nointrons;
-  
+  bool paired = globalOptions.paired;
+  int maxSortesTest = globalOptions.maxSortesTest;
+
   // Starting timer
   tStart = time(NULL);    
 
@@ -335,6 +370,38 @@ int main(int argc, char *argv[])
 	  	{
 			printf("\rProcessed line: %d", line);
 	  	}
+
+		/////////////////////////////////////////////////////////////////
+		//     Checking of file pairedness STARTS here 
+ 		/////////////////////////////////////////////////////////////////
+	  	qName = al.Name;
+	  	qNameStem = qName; 
+		
+		if (paired)
+		  {	
+			qNameStem = qName.substr(0, qName.find("/"));
+			qSuffix = qName.substr(qName.find("/")+1, qName.length());	
+		  } 
+
+		// Printing info
+		printf("%s, %s, %s, %s\n", qName.c_str(), qNameStem.c_str(), qSuffix.c_str(), oldqNameStem.c_str());
+ 		
+		// Verifying file is sorted in ascending order
+		if (oldqNameStem.compare("") && oldqNameStem.compare(qNameStem))   
+		  { 
+			// Checking whether 10th field is sorted in ascending order
+			if (line <= maxSortesTest && qNameStems[qNameStem])   
+			  {
+				cerr << "Input file not sorted by query name!" << qNameStem.c_str() << 
+				  " occurred previously. Set LC_ALL=C and sort -k 10,10" << endl; 	
+				exit(1);
+			  }		  	
+			// 	Calling of: "processQuery() if (@qali);" goes here
+		  }  // end outer if
+		/////////////////////////////////////////////////////////////////
+		//     Checking of file pairedness continues here 
+ 		/////////////////////////////////////////////////////////////////
+
 
 		// Fetching alignment information
  		cigar = al.CigarData;
@@ -374,6 +441,19 @@ int main(int argc, char *argv[])
 			outIntrons++;
 			goto nextAlignment;
 		  }
+
+		/////////////////////////////////////////////////////////////////
+		//     Checking of file pairedness continues here 
+		/////////////////////////////////////////////////////////////////
+		oldqNameStem = qNameStem;
+		if (line <= maxSortesTest)
+		  {
+			qNameStems[qNameStem] = 1;
+		  }
+		/////////////////////////////////////////////////////////////////
+		//     Checking of file pairedness ENDS here 
+		/////////////////////////////////////////////////////////////////
+
 	
 		// Save in case all criteria was satisfied
 		writer.SaveAlignment(al);
@@ -391,6 +471,7 @@ int main(int argc, char *argv[])
 	  }
 
 	// Displaying command line
+	cout << "Cmd line: " << endl;
 	for (int it=0; it<argc;it++)
 	  {
 		cout << argv[it] << " ";
