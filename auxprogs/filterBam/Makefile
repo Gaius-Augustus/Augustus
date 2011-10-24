@@ -5,7 +5,7 @@
 #	b) libbamtools.a and lz library are used during the linking process
 #
 # 	Created: 28-September-2011
-#	Last modified: 14-October-2011
+#	Last modified: 24-October-2011
 
 # Variable definition
 HOME = .

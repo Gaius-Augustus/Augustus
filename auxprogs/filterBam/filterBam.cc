@@ -1,7 +1,7 @@
 /*	Filters the coverage of a BAM alignment file
 
 	Created: 28-September-2011
-	Last modified: 14-October-2011
+	Last modified: 24-October-2011
 */ 
 
 #include <api/BamReader.h>
