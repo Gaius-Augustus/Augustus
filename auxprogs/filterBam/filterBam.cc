@@ -19,6 +19,7 @@
 #include <iomanip> 
 #include <boost/lexical_cast.hpp>
 #include <unordered_map>
+#define QALISIZE 8
 
 // Default options
 #define HELP  0
@@ -316,7 +317,11 @@ int main(int argc, char *argv[])
   string qName;
   string qNameStem = ""; 
   string oldqNameStem = "";
+  // Qali variables
   string qSuffix;
+  bool strand;
+  int rstart, rend;
+  std::stringstream ss_rstart, ss_rend, ss_percid, ss_coverage;
   int cigarSize;
   int sumMandI;
   float coverage;
@@ -396,10 +401,10 @@ int main(int argc, char *argv[])
 				  " occurred previously. Set LC_ALL=C and sort -k 10,10" << endl; 	
 				exit(1);
 			  }		  	
-			// 	Calling of: "processQuery() if (@qali);" goes here
+			/* 	Calling of: "processQuery() if (@qali);" goes here */
 		  }  // end outer if
 		/////////////////////////////////////////////////////////////////
-		//     Checking of file pairedness continues here 
+		//     Checking of file pairedness continues in next section 
  		/////////////////////////////////////////////////////////////////
 
 
@@ -442,6 +447,13 @@ int main(int argc, char *argv[])
 			goto nextAlignment;
 		  }
 
+
+     	/* push @qali, [$_, $targetname, $qsuffix, $strand, $tstart, $tend, $percid, $coverage]; 
+		   Generating array of strings to do equivalent to: */
+		ss_rstart << rstart; ss_rend << rend; ss_percid << percid; ss_coverage << coverage;
+		string qali[QALISIZE] = {rName, qNameStem, qSuffix, (char*)strand, ss_rstart.str(), 
+								 ss_rend.str(), ss_percid.str(), ss_coverage.str()};
+
 		/////////////////////////////////////////////////////////////////
 		//     Checking of file pairedness continues here 
 		/////////////////////////////////////////////////////////////////
@@ -460,6 +472,9 @@ int main(int argc, char *argv[])
 
 	} // end while	
   
+	/* 	Calling of: "processQuery() if ($qnamestem ne "");" goes here */
+
+
 	// Displaying results to STDOUT
 	cout <<  "\n        filtered:" << endl;
 	cout <<  "----------------:" << endl;
