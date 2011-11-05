@@ -581,6 +581,7 @@ int main(int argc, char *argv[])
 		ss_rstart.str(""); ss_rend.str(""); ss_percid.str(""); ss_coverage.str(""); // clear strings
    		QaliArray.push(qali);
    		L.push_back(QaliArray); 
+		L.sort();
 
 		/////////////////////////////////////////////////////////////////
 		//     Checking of file pairedness continues here 
