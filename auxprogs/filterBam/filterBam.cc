@@ -1,7 +1,7 @@
 /*	Filters the coverage of a BAM alignment file
 
 	Created: 28-September-2011
-	Last modified: 24-October-2011
+	Last modified: 5-November-2011
 */ 
 
 #include <api/BamReader.h>
@@ -19,7 +19,9 @@
 #include <iomanip> 
 #include <boost/lexical_cast.hpp>
 #include <unordered_map>
+#include <list>
 #define QALISIZE 8
+#define LIMIT 8
 
 // Default options
 #define HELP  0
@@ -292,6 +294,127 @@ int sumDandIOperations(vector<CigarOp> cigar, string printFlag)
 }
 
 
+// Class definition 
+class Qali
+{
+  friend ostream &operator<<(ostream &, const Qali &);
+
+   public:
+   	  string name[LIMIT];
+      Qali();
+      Qali(const Qali &);
+  	  Qali(string *message);
+      ~Qali(){};
+ 	  void push(string name[LIMIT]);
+      Qali &operator=(const Qali &rhs);
+      int operator==(const Qali &rhs) const;
+      int operator<(const Qali &rhs) const;
+};
+
+
+// Constructor
+Qali::Qali()   
+{
+  for (int it=0; it<LIMIT; it++)
+	{
+	  name[it] = "";
+	}
+}
+
+// Constructor through string array
+Qali::Qali(string *message)
+{
+  for (int it=0; it<LIMIT; it++)
+	{
+	  name[it] = *(message+it);
+	}
+ 
+}
+
+// Copy constructor to handle pass by value.
+Qali::Qali(const Qali &copyin)   
+{           
+  for (int it=0; it<LIMIT; it++)
+	{
+	  this->name[it] = copyin.name[it];                
+	}
+}
+
+// push method
+void Qali::push(string name[LIMIT])
+{
+  for (int it=0; it<LIMIT; it++)
+	{
+  	this->name[it] = name[it];
+	}
+}
+
+// Ostream operator
+ostream &operator<<(ostream &output, const Qali &qali)
+{
+  for (int it=0; it<LIMIT; it++)
+	{
+	  output << qali.name[it] << ' ';
+	}
+  output << endl;	
+   return output;
+}
+
+// Assignment operator
+Qali& Qali::operator=(const Qali &rhs)
+{
+  for (int it=0; it<LIMIT; it++)
+	{
+	  this->name[it] = rhs.name[it];
+	}
+   return *this;
+}
+
+// Equality comparison operator
+int Qali::operator==(const Qali &rhs) const
+{
+  int it = 0;
+  while (it < LIMIT)
+	{
+   	if( this->name[it] != rhs.name[it]) 
+	  {return 0;}
+	it++;
+	}	  
+   return 1;
+}
+
+// This function is required for built-in STL list functions like sort
+int Qali::operator<(const Qali &rhs) const
+{
+   if( this->name[1] == rhs.name[1] && this->name[4] <  rhs.name[4] ) return 1;
+   if( this->name[1] <  rhs.name[1] ) return 1;
+   return 0;
+}
+
+void printList(list<Qali> someList)
+{
+  list<Qali>::iterator it = someList.begin();
+  cout << " ";
+  for (it; it != someList.end(); it++)
+	{
+	  cout << *it << " ";
+	}
+}
+
+void printFormattedList(list<Qali> someList)
+{
+  list<Qali>::iterator it = someList.begin();
+  int jit;
+  for (it; it != someList.end(); it++)
+	{
+	  cout << "\t[ ";
+	  for (jit=0; jit<LIMIT; jit++)
+		{
+		  cout << (*it).name[jit] << " ";
+		}
+	  cout << " ]," << endl;
+	}
+}
 
 
 int main(int argc, char *argv[])
@@ -332,7 +455,9 @@ int main(int argc, char *argv[])
   int outMinId = 0;
   int outMinCover = 0;
   int line = 0;
-
+  // Qali array
+  list<Qali> L; 
+  Qali QaliArray; 
   // Initialising options
   struct globalOptions_t globalOptions;
   globalOptions = initOptions(argc, argv);
@@ -453,6 +578,9 @@ int main(int argc, char *argv[])
 		ss_rstart << rstart; ss_rend << rend; ss_percid << percid; ss_coverage << coverage;
 		string qali[QALISIZE] = {rName, qNameStem, qSuffix, (char*)strand, ss_rstart.str(), 
 								 ss_rend.str(), ss_percid.str(), ss_coverage.str()};
+		ss_rstart.str(""); ss_rend.str(""); ss_percid.str(""); ss_coverage.str(""); // clear strings
+   		QaliArray.push(qali);
+   		L.push_back(QaliArray); 
 
 		/////////////////////////////////////////////////////////////////
 		//     Checking of file pairedness continues here 
