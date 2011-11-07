@@ -7,7 +7,7 @@ Robert S Muldowney <muldowney@aesop.rutgers.edu>
 Michael Deyholos <deyholos@ualberta.ca>
 "Hideaki Sugawara" <hsugawar2010@gmail.com>
 "Mr Akira Ohyama" <akr@insilicobiology.co.jp>
-
+"BGI automatic annotation pipeline" <liugeng@genomics.cn>
 
 try performance of noInFrameStop=true
 

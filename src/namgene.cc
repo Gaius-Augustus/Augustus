@@ -27,6 +27,7 @@
 #include "gene.hh"
 #include "projectio.hh"  // for comment, goto_line_after
 #include "mea.hh"
+#include "exoncand.hh"
 
 // standard C/C++ includes
 #include <iomanip>  // for setprecision
@@ -164,6 +165,9 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
   StateModel::setPP(useProfile ? profileModel : NULL);  
   int progress, oldprogress=0;
 
+  // temporarily for development
+  if (Constant::exoncand)
+      getExonCands(dna);
   /*
    * Determine the length of the DNA sequence under consideration
    * and form the forward matrix

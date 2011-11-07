@@ -77,6 +77,7 @@ Boolean Constant::tieIgenicIntron = true;
 Boolean Constant::proteinOutput = true;
 Boolean Constant::codSeqOutput = false;
 Boolean Constant::contentmodels = true;
+Boolean Constant::exoncand = false;
 
 
 bool inCRFTraining = false;
@@ -294,6 +295,7 @@ void Constant::init(){
     Properties::assignProperty("protein", proteinOutput);
     Properties::assignProperty("codingseq", codSeqOutput);
     Properties::assignProperty("contentmodels", contentmodels);
+    Properties::assignProperty("exoncand", exoncand);
 }
 
 int howOftenOccursIt(const char* haystack, const char* needle, const char *endhaystack){
