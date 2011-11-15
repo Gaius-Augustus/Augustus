@@ -1,7 +1,7 @@
 /*	Filters the coverage of a BAM alignment file
- 
+
 	Created: 28-September-2011
-	Last modified: 15-November-2011
+	Last modified: 14-November-2011
 */ 
 
 #include <api/BamReader.h>
@@ -9,21 +9,29 @@
 #include <api/BamAlignment.h> 
 #include <iostream>
 #include <vector>
-#include <string> 
-#include <stdio.h> 
+#include <string>
+#include <stdio.h>
 #include <stdexcept>
 #include <time.h>
 #include <getopt.h> 
 #include <sstream>
 #include <stdlib.h>
-#include <iomanip>  
+#include <iomanip> 
 #include <boost/lexical_cast.hpp>
 #include <unordered_map>
+
+// Default options
+int help = 0;
+int maxintronlen = 500000;
+int minintronlen = 35;
+int minId = 92;
+int minCover = 80;
+int insertLimit = 10;
+bool nointrons = false;
 
 using namespace BamTools;
 using namespace std;
 
-// Function definition
 string bool_cast(const bool b) {
     ostringstream ss;
     ss << boolalpha << b;
@@ -35,42 +43,35 @@ string getReferenceName(vector<RefData> refData, int RefID);
 int printElapsedTime(int tEnd, int tStart);
 
 
-// Variable and structure definition
-int help = 0;
-int maxintronlen = 500000;
-int minintronlen = 35;
-int maxSortesTest = 100000;
-int minId = 92;
-int minCover = 80;
-int insertLimit = 10;
-float uniqthresh = 0.96;
-bool paired = false;
-bool uniq = false;
-bool nointrons = false;
-bool verbose = false;
-static const char *optString = "abdefm:h?";
+// Definition of global variables
+static const char *optString = "abcdefghijklmnv:h?";
 extern int opterr; // Display error if opterr=0
-// Options structure
+
 struct globalOptions_t {
 	int help;
 	int maxintronlen;
 	int minintronlen;
+	int maxSortesTest; 
 	int minId;
 	int minCover;
 	int insertLimit;
+	float uniqthresh;
+	bool paired;
+	bool uniq;
 	bool nointrons;
+	bool verbose;  	
 };
 
 // longOpts array
 static const struct option longOpts[] = {
-    { "help", 			no_argument, 	   NULL, 'h' },
-    { "maxintronlen", 	required_argument, NULL, 'a' },
-	{ "minintronlen", 	required_argument, NULL, 'b' },
-  	{ "minId", 			required_argument, NULL, 'd' },
-    { "minCover", 		required_argument, NULL, 'e' },
-	{ "insertLimit", 	required_argument, NULL, 'f' },
-    { "nointrons", 		no_argument, 	   NULL, 'm' },
-    { NULL, 			no_argument, 	   NULL, 0 }
+    { "help", no_argument, NULL, 'h' },
+    { "maxintronlen", required_argument, NULL, 'a' },
+	{ "minintronlen", required_argument, NULL, 'b' },
+  	{ "minId", required_argument, NULL, 'd' },
+    { "minCover", required_argument, NULL, 'e' },
+	{ "insertLimit", required_argument, NULL, 'f' },
+    { "nointrons", no_argument, NULL, 'm' },
+    { NULL, no_argument, NULL, 0 }
 };
 
 
@@ -78,21 +79,22 @@ static const struct option longOpts[] = {
 void displayUsage(int argc, char *argv[])
 {
 	cout <<  " Usage: " << argv[0] << " in.bam out.bam\n";
-  	cout <<  "--------------------------------------------------" << endl;
-	cout <<  " Available options are                            " << endl;
-  	cout <<  "--------------------------------------------------" << endl;
-	cout <<  "  NOTE: 			   								" << endl;
-	cout <<  "  The present version of this filter works with sorted and unsorted BAM files\n" << endl;
-  	cout <<  "--------------------------------------------------" << endl;
+  	cout <<  "-----------------------------------------------------------------------------------" << endl;
+	cout <<  " Available options are                                                             " << endl;
+  	cout <<  "-----------------------------------------------------------------------------------" << endl;
+	cout <<  "  NOTE: 			   								                                 " << endl;
+	cout <<  "  The present version of this filter works with sorted and unsorted BAM files\n"     << endl;
+  	cout <<  "-----------------------------------------------------------------------------------" << endl;
 	cout <<  "  --help             display this menu" << endl;
 	cout <<  "  --maxintronlen=n   maximal separation of paired reads (default " << maxintronlen << ")" << endl;
 	cout <<  "  --minintronlen=n   minimal     ''     ''   ''    ''   (default " << minintronlen << ")" << endl;
 	cout <<  "  --minId=n          minimal percentage of identity (default " << minId << ")" << endl;
 	cout <<  "  --minCover=n       minimal percentage of coverage of the query read (default " << 
 			 	minCover << ")" << endl;
-	cout <<  "  --insertlimit=n    maximum assumed size of inserts (default " << insertLimit << ")" << endl;
+	cout <<  "  --insertLimit=n    maximum assumed size of inserts (default " << insertLimit << ")" << endl;
 	cout <<  "  --nointrons        do not allow longer gaps -for RNA-RNA alignments- (default " << 
 				nointrons << endl; 
+	cout << endl;
 }
 
 
@@ -125,7 +127,7 @@ globalOptions_t initOptions(int argc, char *argv[])
         switch( opt ) {                
             case 'a'	:	globalOptions.maxintronlen = atoi(optarg);	break;
             case 'b'	:	globalOptions.minintronlen = atoi(optarg);	break;
-			case 'd'	:	globalOptions.minId = atoi(optarg);			break;
+  			case 'd'	:	globalOptions.minId = atoi(optarg);			break;
 			case 'e'	:	globalOptions.minCover = atoi(optarg);		break;
             case 'f'	:	globalOptions.insertLimit = atoi(optarg);	break;
 			case 'm'	:	globalOptions.nointrons = 1;			    break;
@@ -181,10 +183,6 @@ int main(int argc, char *argv[])
   int minId = globalOptions.minId;
   int insertLimit = globalOptions.insertLimit;
   bool nointrons = globalOptions.nointrons;
-  cout << "Selected coverage is: " << minCover << endl;
-  cout << "Selected minId is: " << minId << endl;
-  cout << "Selected insertLimit is: " << insertLimit << endl;
-  cout << "Selected nointrons is: " << nointrons << endl;
 
   // Starting timer
   tStart = time(NULL);    
