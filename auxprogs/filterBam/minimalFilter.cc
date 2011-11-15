@@ -1,5 +1,5 @@
 /*	Filters the coverage of a BAM alignment file
-
+ 
 	Created: 28-September-2011
 	Last modified: 14-November-2011
 */ 
@@ -9,35 +9,21 @@
 #include <api/BamAlignment.h> 
 #include <iostream>
 #include <vector>
-#include <string>
-#include <stdio.h>
+#include <string> 
+#include <stdio.h> 
 #include <stdexcept>
 #include <time.h>
 #include <getopt.h> 
 #include <sstream>
 #include <stdlib.h>
-#include <iomanip> 
+#include <iomanip>  
 #include <boost/lexical_cast.hpp>
 #include <unordered_map>
-
-// Default options
-#define HELP  0
-#define MAXINTRONLEN  500000
-#define MININTRONLEN  35
-#define MAXSORTESTEST  100000 
-#define MINID  92
-#define MINCOVER  80
-#define INSERTLIMIT 10
-#define UNIQTHRESH  0.96 
-#define PAIRED  0
-#define UNIQ  0
-#define NOINTRONS  0
-#define VERBOSE  0
-
 
 using namespace BamTools;
 using namespace std;
 
+// Function definition
 string bool_cast(const bool b) {
     ostringstream ss;
     ss << boolalpha << b;
@@ -49,10 +35,22 @@ string getReferenceName(vector<RefData> refData, int RefID);
 int printElapsedTime(int tEnd, int tStart);
 
 
-// Definition of global variables
+// Variable and structure definition
+int help = 0;
+int maxintronlen = 500000;
+int minintronlen = 35;
+int maxSortesTest = 100000;
+int minId = 92;
+int minCover = 80;
+int insertLimit = 10;
+float uniqthresh = 0.96;
+bool paired = false;
+bool uniq = false;
+bool nointrons = false;
+bool verbose = false;
 static const char *optString = "abcdefghijklmnv:h?";
 extern int opterr; // Display error if opterr=0
-
+// Options structure
 struct globalOptions_t {
 	int help;
 	int maxintronlen;
@@ -70,19 +68,19 @@ struct globalOptions_t {
 
 // longOpts array
 static const struct option longOpts[] = {
-    { "help", no_argument, NULL, 'h' },
-    { "maxintronlen", required_argument, NULL, 'a' },
-	{ "minintronlen", required_argument, NULL, 'b' },
-	{ "maxSortesTest", required_argument, NULL, 'c' },
-  	{ "minId", required_argument, NULL, 'd' },
-    { "minCover", required_argument, NULL, 'e' },
-	{ "insertLimit", required_argument, NULL, 'f' },
-    { "uniqthresh", required_argument, NULL, 'g' }, 	 
-    { "paired", no_argument, NULL, 'k' },
-    { "uniq", no_argument, NULL, 'l' },
-    { "nointrons", no_argument, NULL, 'm' },
-    { "verbose", no_argument, NULL, 'v' },
-    { NULL, no_argument, NULL, 0 }
+    { "help", 			no_argument, 	   NULL, 'h' },
+    { "maxintronlen", 	required_argument, NULL, 'a' },
+	{ "minintronlen", 	required_argument, NULL, 'b' },
+	{ "maxSortesTest", 	required_argument, NULL, 'c' },
+  	{ "minId", 			required_argument, NULL, 'd' },
+    { "minCover", 		required_argument, NULL, 'e' },
+	{ "insertLimit", 	required_argument, NULL, 'f' },
+    { "uniqthresh", 	required_argument, NULL, 'g' }, 	 
+    { "paired", 		no_argument, 	   NULL, 'k' },
+    { "uniq", 			no_argument, 	   NULL, 'l' },
+    { "nointrons", 		no_argument, 	   NULL, 'm' },
+    { "verbose", 		no_argument, 	   NULL, 'v' },
+    { NULL, 			no_argument, 	   NULL, 0 }
 };
 
 
@@ -97,28 +95,28 @@ void displayUsage(int argc, char *argv[])
 	cout <<  "  The present version of this filter works with sorted and unsorted BAM files\n" << endl;
   	cout <<  "--------------------------------------------------" << endl;
 	cout <<  "  --help             display this menu" << endl;
-	cout <<  "  --maxintronlen=n   maximal separation of paired reads (default " << MAXINTRONLEN << ")" << endl;
-	cout <<  "  --minintronlen=n   minimal     ''     ''   ''    ''   (default " << MININTRONLEN << ")" << endl;
-	cout <<  "  --maxSortesTest=n  maximal sortedness (default " << MAXSORTESTEST << ")" << endl;
-	cout <<  "  --minId=n          minimal percentage of identity (default " << MINID << ")" << endl;
+	cout <<  "  --maxintronlen=n   maximal separation of paired reads (default " << maxintronlen << ")" << endl;
+	cout <<  "  --minintronlen=n   minimal     ''     ''   ''    ''   (default " << minintronlen << ")" << endl;
+	cout <<  "  --maxSortesTest=n  maximal sortedness (default " << maxSortesTest << ")" << endl;
+	cout <<  "  --minId=n          minimal percentage of identity (default " << minId << ")" << endl;
 	cout <<  "  --minCover=n       minimal percentage of coverage of the query read (default " << 
-			 	MINCOVER << ")" << endl;
-	cout <<  "  --insertlimit=n    maximum assumed size of inserts (default " << INSERTLIMIT << ")" << endl;
+			 	minCover << ")" << endl;
+	cout <<  "  --insertlimit=n    maximum assumed size of inserts (default " << insertLimit << ")" << endl;
 	cout <<  "  --uniqthresh=n     threshold % for uniq, second best must be at most this" << endl;
-	cout <<  "                     fraction of best (default " << UNIQTHRESH << ") " << endl;
+	cout <<  "                     fraction of best (default " << uniqthresh << ") " << endl;
 	cout <<  "	\t\t a .bed format file in which for each position the number of" << endl;
 	cout <<  "	\t\t filtered read pairs is reported that contain the position in" << endl; 
 	cout <<  "  \t\t\t or between the reads" << endl;
 	cout <<  "  --paired           require that paired reads are on opposite strands of same target" << endl;
-	cout <<  "  \t\t     (default " << PAIRED << ")" << endl;
+	cout <<  "  \t\t     (default " << paired << ")" << endl;
 	cout <<  "                     NOTE: " << endl;
 	cout <<  "	\t\t if option 'paired' is used then it expects .f,.r or /1,/2" << endl; 
 	cout <<  "	\t\t suffixes of mate pairs" << endl;
 	cout <<  "  --uniq             take only best match and only, when second best is much worse (default " << 
-			 	UNIQ << ")" << endl;
+			 	uniq << ")" << endl;
 	cout <<  "  --nointrons        do not allow longer gaps -for RNA-RNA alignments- (default " << 
-				NOINTRONS << endl; 
-	cout <<  "  --verbose          output debugging info (default " << VERBOSE << ")" << endl;
+				nointrons << endl; 
+	cout <<  "  --verbose          output debugging info (default " << verbose << ")" << endl;
 }
 
 
@@ -136,18 +134,18 @@ globalOptions_t initOptions(int argc, char *argv[])
 	  }
 
     // Initialize globalOptions with default values
-	globalOptions.help = HELP;
-	globalOptions.maxintronlen = MAXINTRONLEN;
-	globalOptions.minintronlen = MININTRONLEN;
-	globalOptions.maxSortesTest = MAXSORTESTEST; 
-	globalOptions.minId = MINID;
-	globalOptions.minCover = MINCOVER;
-	globalOptions.insertLimit = INSERTLIMIT;
-	globalOptions.uniqthresh = UNIQTHRESH; 
-	globalOptions.paired = PAIRED;
-	globalOptions.uniq = UNIQ;
-	globalOptions.nointrons = NOINTRONS;
-	globalOptions.verbose = VERBOSE;
+	globalOptions.help = help;
+	globalOptions.maxintronlen = maxintronlen;
+	globalOptions.minintronlen = minintronlen;
+	globalOptions.maxSortesTest = maxSortesTest; 
+	globalOptions.minId = minId;
+	globalOptions.minCover = minCover;
+	globalOptions.insertLimit = insertLimit;
+	globalOptions.uniqthresh = uniqthresh; 
+	globalOptions.paired = paired;
+	globalOptions.uniq = uniq;
+	globalOptions.nointrons = nointrons;
+	globalOptions.verbose = verbose;
 
 	// Capturing options
 	opt = getopt_long_only(argc, argv, optString, longOpts, &longIndex);
