@@ -1,0 +1,86 @@
+% Simply run PDFLATEX filter.tex
+\documentclass[11pt]{article}
+% Default margins are too wide all the way around. I reset them here
+\setlength{\topmargin}{-.5in}
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{.125in}
+\setlength{\textwidth}{6.25in}
+\setlength{\topmargin}{-.5in}
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{.125in}
+\setlength{\textwidth}{6.25in} 
+ 
+\begin{document}  
+\title{Filtering read alignments in BAM format} 
+\author{Tonatiuh Pe\~{n}a-Centeno \\
+University of Greifswald}
+\renewcommand{\today}{15 November, 2011}
+\maketitle
+\abstract{This is a description of the implementation of filterBam, a software that 
+filters out SAM alignment reads by the following criteria: coverage, percentage identity and, 
+if requested, insert length.}
+
+\section{NOTES:} 
+This document makes reference to the SAM/BAM format specification of \cite{heng09}.
+
+\section{Bamtools}
+Bamtools is a C++ wrapper API of the more well-known Samtools software. The latest version of Bamools 
+is 2.0 and is available on the website 
+	\begin{center}
+		https://github.com/pezmaster31/bamtools/downloads
+	\end{center}
+\item 
+
+
+\section{Compilation}
+Make sure to link with the ``-lz'' and ``-libbamtools.a'' flags on; where -lz refers to the ZLIB library, 
+and libbamtools.a to the static bamtools library included in the software distribution. An example of 
+how to compile and link follows: \\
+
+\begin{flushleft}
+\begin{enumerate}
+	\item	g++ -I\textbf{\$BAMTOOLS}/include   -g   -std=c++0x  -c filterBam.cc -o filterBam.o \\
+	\item	g++     -g -std=c++0x  filterBam.o -o filterBam \textbf{\$BAMTOOLS}/lib/libbamtools.a -lz  \\
+\end{enumerate}
+\end{flushleft}
+\vphantom{Nothing}
+where \textbf{\$BAMTOOLS} is the path where Bamtools was installed.
+
+Note that the flag ``-std=c++0'' has been used given that some of the functionalities of the filter require 
+some of the newest features of GNU's g++ compiler. This and future versions of the software have been tested 
+on Ubuntu's g++ version 4.4.3.
+
+\section{Coverage, percent of identity and insert length}
+The coverage is computed as the sum of the alignment matches (sequence matches or mismatches) and 
+the insertions to the reference. Both figures, alignment matches and insertions to the reference, correspond 
+to CIGAR string operations $M$ and $I$, respectively. Thus the following is done 
+
+\begin{equation}
+	\mathrm{coverage} = \frac{\sum\mathrm{CIGAR}\left(M,I\right)}{qLength}
+\end{equation}
+
+An approximation to the percentage of identity is given by computing the query length and subtracting the 
+so-called edit distance to the reference (tag ``NM'' in SAM jargon), i.e.
+
+\begin{equation}
+	\mathrm{percId} = \frac{qLength - \mathrm{Tag}(NM)}{qLength}
+\end{equation}
+
+The length of inserts is estimated by summing CIGAR operations ``M'' and ``I'', which correspond to alingment 
+matches and deletions from the reference. In other words, we do the following
+
+\begin{equation}
+	\mathrm{InsertSize} = \frac{\sum\mathrm{CIGAR}\left(D,I\right)}{qLength}
+\end{equation}
+
+
+\begin{thebibliography}{99}
+\bibitem{heng09} Heng Li, Bob Handsaker, Alec Wysoker, Tim Fennell, Jue Ruan, Nils Homer, Gabor Math, 
+Goncalo Abecasis, Richard Durbin and 1000 Genome Project Data Processing Subgroup 
+{\bf The Sequence Alignment/Map format and SAMtools}, 
+Bioinformatics Applications Note Vol. 25 No. 16, 2009, pp. 2078-2079.
+\end{thebibliography}
+
+\bibliographystyle{abbrvnat}
+
+\end{document}
