@@ -35,20 +35,28 @@ is 2.0 and is available on the website
 \section{Compilation}
 Make sure to link with the ``-lz'' and ``-libbamtools.a'' flags on; where -lz refers to the ZLIB library, 
 and libbamtools.a to the static bamtools library included in the software distribution. An example of 
-how to compile and link follows: \\
+how to compile and link follows: 
 
-\begin{flushleft}
 \begin{enumerate}
-	\item	g++ -I\textbf{\$BAMTOOLS}/include   -g   -std=c++0x  -c filterBam.cc -o filterBam.o \\
-	\item	g++     -g -std=c++0x  filterBam.o -o filterBam \textbf{\$BAMTOOLS}/lib/libbamtools.a -lz  \\
-\end{enumerate}
+\begin{flushleft}
+	\item	
+		g++ -I\textbf{\$BAMTOOLS}/include   -g   -std=c++0x  -c filterBam.cc -o filterBam.o \\
+	\item	g++     -g -std=c++0x  filterBam.o -o filterBam \textbf{\$BAMTOOLS}/lib/libbamtools.a -lz  
 \end{flushleft}
+\end{enumerate}
 \vphantom{Nothing}
 where \textbf{\$BAMTOOLS} is the path where Bamtools was installed.
 
 Note that the flag ``-std=c++0'' has been used given that some of the functionalities of the filter require 
 some of the newest features of GNU's g++ compiler. This and future versions of the software have been tested 
 on Ubuntu's g++ version 4.4.3.
+
+\section{How to run}
+A run that will let pass most, if not all, readings: 
+\begin{flushleft}
+./filterBam input.bam output.bam --minCover 0 --minId 0  --insertLimit 10000000 --nointrons
+\end{flushleft}
+\textbf{Note:} that all options are provided at the very end.
 
 \section{Coverage, percent of identity and insert length}
 The coverage is computed as the sum of the alignment matches (sequence matches or mismatches) and 
