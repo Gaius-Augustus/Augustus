@@ -289,6 +289,7 @@ public:
     static Boolean proteinOutput;
     static Boolean codSeqOutput;
     static Boolean contentmodels; // whether to use content models, default: true
+    static Integer min_intron_len; // minimal intron length (for hints)
 };
 
 

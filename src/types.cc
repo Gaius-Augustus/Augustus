@@ -78,7 +78,7 @@ Boolean Constant::proteinOutput = true;
 Boolean Constant::codSeqOutput = false;
 Boolean Constant::contentmodels = true;
 Boolean Constant::exoncand = false;
-
+Integer Constant::min_intron_len = 39;
 
 bool inCRFTraining = false;
 
@@ -296,6 +296,7 @@ void Constant::init(){
     Properties::assignProperty("codingseq", codSeqOutput);
     Properties::assignProperty("contentmodels", contentmodels);
     Properties::assignProperty("exoncand", exoncand);
+    Properties::assignProperty("min_intron_len", min_intron_len);
 }
 
 int howOftenOccursIt(const char* haystack, const char* needle, const char *endhaystack){

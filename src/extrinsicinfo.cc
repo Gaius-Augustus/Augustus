@@ -491,7 +491,7 @@ void SequenceFeatureCollection::checkGroupConsistency(AnnoSequence *seq){
 		    plusPossible = false;
 		if (hint->start >= 0 &&  hint->end < len) {
 		    if (hint->type == intronF) {
-			if (hint->end < hint->start + 39-1) {// minimal intron length is 39
+		        if (hint->end < hint->start + Constant::min_intron_len-1) {// default minimal intron length is 39
 			    messages << "# Error: intron hint is too short." << endl << "# " << *hint << endl;
 			    groupOK = false;
 			}
