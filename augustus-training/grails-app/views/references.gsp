@@ -57,7 +57,7 @@
          <li><a href="index.gsp"><span>Introduction</span></a></li>
          <li><g:link controller="training" action="create"><span>Submitt Training</span></g:link></li>
          <li><g:link controller="prediction" action="create"><span>Submitt Prediction</span></g:link></li>
-         <li><a href="../help.gsp"><span>Help</span></a></li>
+         <li><a href="help.gsp"><span>Help</span></a></li>
          <li id="current"><a href="references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
