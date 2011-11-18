@@ -56,7 +56,7 @@
          <li><a href="../index.gsp"><span>Introduction</span></a></li>
          <li><g:link controller="training" action="create"><span>Submitt Training</span></g:link></li>
          <li><g:link controller="prediction" action="create"><span>Submitt Prediction</span></g:link></li>
-         <li><g:link controller="help" action="list"><span>Help</span></g:link></li>
+         <li><a href="../help.gsp"><span>Help</span></a></li>
          <li><a href="../references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
@@ -81,7 +81,7 @@
                 <li>stage 4: finished
                 <li>stage 5: error
             </ul>
-            For more details, see <g:link controller="help" action="list" fragment="job_status">Help</g:link>
+            For more details, see <a href="../help.gsp#job_status">Help</a>
             </g:if>
             
 

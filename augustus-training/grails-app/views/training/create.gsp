@@ -1,5 +1,4 @@
 
-
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -61,7 +60,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
          <li><a href="../index.gsp"><span>Introduction</span></a></li>
          <li id="current"><g:link controller="training" action="create"><span>Submitt Training</span></g:link></li>
          <li><g:link controller="prediction" action="create"><span>Submitt Prediction</span></g:link></li>
-         <li><g:link controller="help" action="list"><span>Help</span></g:link></li>
+         <li><a href="../help.gsp"><span>Help</span></a></li>
          <li><a href="../references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
@@ -105,7 +104,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                                     <label for="email_adress">E-mail</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:trainingInstance,field:'email_adress','errors')}">
-                                    <input type="text" id="email_adress" name="email_adress" value="${fieldValue(bean:trainingInstance,field:'email_adress')}"/> &nbsp; <g:link controller="help" action="list" fragment="email"><small>Help</small></g:link>
+                                    <input type="text" id="email_adress" name="email_adress" value="${fieldValue(bean:trainingInstance,field:'email_adress')}"/> &nbsp; <a href="../help.gsp#email"><small>Help</small></a>
                                 </td> 
                             </tr> 
                         
@@ -114,20 +113,19 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                                     <label for="project_name">Species name</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:trainingInstance,field:'project_name','errors')}">
-                                    <input type="text" maxlength="30" id="project_name" name="project_name" value="${fieldValue(bean:trainingInstance,field:'project_name')}"/> &nbsp; <g:link controller="help" action="list" fragment="species_name"><small>Help</small></g:link>
+                                    <input type="text" maxlength="30" id="project_name" name="project_name" value="${fieldValue(bean:trainingInstance,field:'project_name')}"/> &nbsp; <a href="../help.gsp#species_name"><small>Help</small></a>
                                 </td>
                             </tr>
                           </tbody> 
                       </table>
                       
-                      <p>There are two options for sequence file transfer:<br>You may <b>either</b> upload data files from your computer <b>or</b> specify web links. &nbsp; <g:link controller="help" action="list" fragment="upload_link"><small>Help</small></g:link></p>
-                     
+                      <p>There are two options for sequence file transfer:<br>You may <b>either</b> upload data files from your computer <b>or</b> specify web links. &nbsp; <a href="../help.gsp#upload_link"><small>Help</small></a></p>
                       <br>
                       <table>
                          <tbody>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="GenomeFile"><b>Genome file</b>&nbsp; <g:link controller="help" action="list" fragment="genome_file"><small>Help</small></g:link></label>
+                                    <label for="GenomeFile"><b>Genome file</b>&nbsp; <a href="../help.gsp#genome_file"><small>Help</small></a></label>
                                 </td>
 				<td valign="top">
 				</td>
@@ -152,12 +150,12 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                           </tbody>
                         </table>
                         <br>
-                        You need to specify <b>at least one</b> of the following files: <g:link controller="help" action="list" fragment="which_files"><small>Help</small></g:link><br><br>
+                        You need to specify <b>at least one</b> of the following files: <a href="../help.gsp#which_fiiles"><small>Help</small></a><br><br>
                         <table>
                           <tbody>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="EstFile"><b>cDNA file</b> &nbsp; <g:link controller="help" action="list" fragment="cDNA"><small>Help</small></g:link></label>
+                                    <label for="EstFile"><b>cDNA file</b> &nbsp; <a href="../help.gsp#cDNA"><small>Help</small></a></label>
                                 </td>
                                 <td valign="top">
                                 </td>
@@ -182,7 +180,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			    <tr class="prop"><td><br></td><td></td></tr>
                             <tr class="prop">
                                 <td valign="top" class="name">
-				  <label for="ProteinFile"><b>Protein file</b> &nbsp; <g:link controller="help" action="list" fragment="protein"><small>Help</small></g:link></label>
+				  <label for="ProteinFile"><b>Protein file</b> &nbsp; <a href="../help.gsp#protein"><small>Help</small></a></label>
                                 </td>
                                 <td valign="top">
                                                       </td>
@@ -207,7 +205,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			    <tr class="prop"><td><br></td><td></td></tr>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="struct_file"><b>Training gene structure file</b> &nbsp; <g:link controller="help" action="list" fragment="structure"><small>Help</small></g:link></label>
+                                    <label for="struct_file"><b>Training gene structure file</b> &nbsp; <a href="../help.gsp#structure"><small>Help</small></a></label>
                                 </td>
 				<td valign="top"></td>
 			    </tr>
