@@ -57,7 +57,7 @@
          <li><a href="../index.gsp"><span>Introduction</span></a></li>
          <li><g:link controller="training" action="create"><span>Submitt Training</span></g:link></li>
          <li id="current"><g:link controller="prediction" action="create"><span>Submitt Prediction</span></g:link></li>
-         <li><g:link controller="help" action="list"><span>Help</span></g:link></li>
+         <li><a href="../help.gsp"><span>Help</span></a></li>
          <li><a href="../references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
@@ -100,13 +100,13 @@
                                     <label for="email_adress">E-mail</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'email_adress','errors')}">
-                                    <input type="text" id="email_adress" name="email_adress" value="${fieldValue(bean:predictionInstance,field:'email_adress')}"/> &nbsp; <g:link controller="help" action="list" fragment="email"><small>Help</small></g:link>
+                                    <input type="text" id="email_adress" name="email_adress" value="${fieldValue(bean:predictionInstance,field:'email_adress')}"/> &nbsp; <a href="../help.gsp#email"><small>Help</small></a>
                                 </td> 
                                 </tr>
                           </tbody> 
                       </table>
                       <br>
-                      You must <b>either</b> upload a *.tar.gz archive with AUGUSTUS species parameters from your computer <b>or</b> specify a project identifier: &nbsp; <g:link controller="help" action="list" fragment="which_files_pred"><small>Help</small></g:link>
+                      You must <b>either</b> upload a *.tar.gz archive with AUGUSTUS species parameters from your computer <b>or</b> specify a project identifier: &nbsp; <a href="../help.gsp#which_files_pred"><small>Help</small></a>
                       <br>
                       <br>
                       <table>
@@ -119,7 +119,7 @@
                                 </td>
 		  	     </tr> 
                             <tr class="prop">
-                                <td valitn="top">Upload an archive file: &nbsp; <g:link controller="help" action="list" fragment="archive"><small>Help</small></g:link>
+                                <td valitn="top">Upload an archive file: &nbsp; <a href="../help.gsp#archive"><small>Help</small></a>
                                 </td>
                                 <td valitn="top">
                                     <input type="file" id="ArchiveFile" name="ArchiveFile"/></label>
@@ -133,21 +133,21 @@
                                     <label for="project_id">specify a project identifier:</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'project_id','errors')}">
-                                    <input type="text" id="project_id" name="augustus_project_id" value="${fieldValue(bean:predictionInstance,field:'project_id')}"/> <g:link controller="help" action="list" fragment="project_id"><small>Help</small></g:link>
+                                    <input type="text" id="project_id" name="augustus_project_id" value="${fieldValue(bean:predictionInstance,field:'project_id')}"/> <a href="../help.gsp#project_id"><small>Help</small></a>
 
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                     <br>
-                      You must <b>either</b> upload a genome file from your computer <b>or</b> specify a web link to a genome file: &nbsp; <g:link controller="help" action="list" fragment="upload_link"><small>Help</small></g:link>
+                      You must <b>either</b> upload a genome file from your computer <b>or</b> specify a web link to a genome file: &nbsp; <a href="../help.gsp#upload_link"><small>Help</small></a>
                       <br>
                       <br>
                       <table>
                          <tbody>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="GenomeFile"><b>Genome file</b>&nbsp; <g:link controller="help" action="list" fragment="genome_file"><small>Help</small></g:link></label>
+                                    <label for="GenomeFile"><b>Genome file</b>&nbsp; <a href="../help.gsp#genome_file"><small>Help</small></a></label>
                                 </td>
                                 <td valign="top">
                                 </td>
@@ -172,12 +172,12 @@
                           </tbody>
                         </table>
                         <br>
-                        You may (optionally) also specify one or several of the following files that contain external evidence for protein coding genes: <g:link controller="help" action="list" fragment="which_files"><small>Help</small></g:link><br><br>
+                        You may (optionally) also specify one or several of the following files that contain external evidence for protein coding genes: <a href="../help.gsp#which_files"><small>Help</small></a><br><br>
                         <table>
                           <tbody>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="EstFile"><b>cDNA file</b> &nbsp; <g:link controller="help" action="list" fragment="cDNA"><small>Help</small></g:link></label>
+                                    <label for="EstFile"><b>cDNA file</b> &nbsp; <a href="../help.gsp#cDNA"><small>Help</small></a></label>
                                 </td>
                                 <td valign="top">
                                 </td>
@@ -202,7 +202,7 @@
                             <tr class="prop"><td><br></td><td></td></tr>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                  <label for="hint_file"><b>Hints file</b> &nbsp; <g:link controller="help" action="list" fragment="structure"><small>Help</small></g:link></label>
+                                  <label for="hint_file"><b>Hints file</b> &nbsp; <a href="../help.gsp#structure"><small>Help</small></a></label>
                                 </td>
                                 <td valign="top">
                                                       </td>
@@ -216,8 +216,7 @@
                         </tbody>
                     </table>
                     <br>
-                    <g:checkBox name="utr" value="${false}" /> predict UTRs <g:link controller="help" action="list" fragment="utr"><small>Help</small></g:link>
-
+                    <g:checkBox name="utr" value="${false}" /> predict UTRs <a href="../help.gsp#utr"><small>Help</small></a>
                     <br><br>
                 </div>
                 <div class="buttons">
