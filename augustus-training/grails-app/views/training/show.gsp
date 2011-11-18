@@ -83,8 +83,8 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
             
             Your job is in stage <g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '0'|| fieldValue(bean:trainingInstance, field:'job_status') == '1'}">1</g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '2'}">2</g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '3'}">3</g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '4'}">4</g:if>.<br><br>Explannation:
             <ul>
-                <li>stage 1: submitted to webserver but not to cluster, yet
-                <li>stage 2: submitted to cluster and waiting for execution
+                <li>stage 1: submitted to webserver but not to grid, yet
+                <li>stage 2: submitted to grid and waiting for execution
                 <li>stage 3: calculating
                 <li>stage 4: finished
                 <li>stage 5: error

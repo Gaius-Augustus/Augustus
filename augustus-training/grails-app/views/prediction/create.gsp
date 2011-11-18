@@ -4,23 +4,68 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <meta name="layout" content="main" />
-        <title>Create Prediction</title>         
+        <title>Create Prediction</title>
+    <script type="text/javascript" src="js/md_stylechanger.js"></script>         
     </head>
     <body>
-        <div class="headline" id="headline">
-                <h1 class="title" id="title"><a href="create.gsp:" id="applink" name="applink">AUGUSTUS</a> <span class="subtitle" id="subtitle">[Prediction Submission]</span></h1>
-         </div>
-         <div id="appnav">
-             <ul>
-                 <li><a href="../index.gsp" >Introduction</a></li>
-                 <li><g:link controller="training" action="create">Training Submission</g:link></li>
-                 <li><g:link controller="prediction" action="create">Prediction Submission</g:link></li>
-                 <li><g:link controller="help" action="list">Help</g:link></li>
-                 <li><a href="../references.gsp">Links & References</a></li>
-                 <li><a href="http://gobics.de/department/" title="Our department's homepage">Department</a></li>
-             </ul>
-         </div>
-        <div class="body">
+
+<!-- ***** Start: Kopfbereich ********************************************// -->
+<p class="unsichtbar">
+  <a href="#inhalt" title="Directly to Contents">Directly to Contents</a>
+</p>
+<div id="navigation_oben">
+  <a name="seitenanfang"></a>
+  <table width="100%" border="0" cellpadding="0" cellspacing="1">
+    <tr>
+      <td nowrap="nowrap">
+        <a href="http://www.uni-greifswald.de" target="_blank" class="mainleveltop_" >University of Greifswald</a><span class="mainleveltop_">&nbsp;|&nbsp; </span><a href="http://www.mnf.uni-greifswald.de/" target="_blank" class="mainleveltop_" >Faculty</a><span class="mainleveltop_">&nbsp;|&nbsp; </span><a href="http://www.math-inf.uni-greifswald.de/" target="_blank" class="mainleveltop_" >Institute</a><span class="mainleveltop_">&nbsp;|&nbsp;</span><a href="http://bioinf.uni-greifswald.de/" target="_blank" class="mainleveltop_">Bioinformatics Group</a>
+      </td>
+    </tr>
+  </table>
+</div>
+<div id="banner">
+   <div id="banner_links">
+       <a href="http://www.math-inf.uni-greifswald.de/mathe/index.php" title="Institut f&uuml;r Mathematik und Informatik"><img src="../images/header.gif" alt="Directly to home" /> </a>
+   </div>
+   <div id="banner_mitte">
+      <div id="bannertitel1">
+        Bioinformatics Web Server
+      </div>
+      <div id="bannertitel2">
+        AUGUSTUS Training
+      </div>
+   </div>
+   <div id="banner_rechts">
+     <a href="http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167" title="Voderberg-Doppelspirale">
+     <img src="../images/spirale.gif" align="left" />
+     </a>
+   </div>
+</div>
+
+<div id="wegweiser">
+  Navigation for: &nbsp; &nbsp;<span class="breadcrumbs pathway">
+    Submitt Prediction</span>
+
+  <div class="beendeFluss"></div>
+</div>
+<!-- ***** Ende: Kopfbereich *********************************************// -->
+<!-- ***** Start: Koerper ************************************************// -->
+<div id="koerper">
+
+  <div id="linke_spalte">
+     <ul class="menu">
+         <li><a href="../index.gsp"><span>Introduction</span></a></li>
+         <li><g:link controller="training" action="create"><span>Submitt Training</span></g:link></li>
+         <li id="current"><g:link controller="prediction" action="create"><span>Submitt Prediction</span></g:link></li>
+         <li><g:link controller="help" action="list"><span>Help</span></g:link></li>
+         <li><a href="../references.gsp"><span>Links & References</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
+     </ul>
+  </div>
+
+
+  <div id="mittel_spalte">
             <g:if test="${flash.message}">
             <div class="message">${flash.message}</div>
             </g:if>
@@ -36,8 +81,18 @@
             </g:if>
             <div class="main" id="main">
             <g:uploadForm action="commit" method="post" >
-            <fieldset><legend><b>Data Input for running AUGUSTUS with pre-trained parameters</b></legend><p>
+            <fieldset><legend>
+                <table class="contentpaneopen">
+                  <tr>
+                    <td class="contentheading" width="100%">
+                      
+                        <g:link controller="training" action="create">Data Input for Running AUGUSTUS</g:link>
+                    </td>
+                  </tr>
+                </table>
+              </legend><p>
                 <div class="dialog">
+		    <p>Please use this form to submitt your data for running AUGUSTUS on new genomic data with already available pre-trained parameters.</p>
                     <table>
                         <tbody>
                                 <tr class="prop">
@@ -58,19 +113,30 @@
                          <tbody>
                              <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="ArchiveFile">Parameter Archive</label>
+                                    <label for="ArchiveFile"><b>Augustus parameters</b></label>
                                 </td>
                                 <td valitn="top">
-                                    <input type="file" id="ArchiveFile" name="ArchiveFile"/> &nbsp; <g:link controller="help" action="list" fragment="archive"><small>Help</small></g:link>
                                 </td>
-                                <td>&nbsp;<b>or</b>&nbsp;</td>
+		  	     </tr> 
+                            <tr class="prop">
+                                <td valitn="top">Upload an archive file: &nbsp; <g:link controller="help" action="list" fragment="archive"><small>Help</small></g:link>
+                                </td>
+                                <td valitn="top">
+                                    <input type="file" id="ArchiveFile" name="ArchiveFile"/></label>
+                                </td>
+                            </tr>
+                            <tr class="prop">
+                                <td>&nbsp;<b>or</b>&nbsp;</td><td></td>
+                            </tr>
+                            <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="genome_ftp_link">project identifier</label>
+                                    <label for="project_id">specify a project identifier:</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'project_id','errors')}">
-                                    <input type="text" id="project_id" name="project_id" value="${fieldValue(bean:predictionInstance,field:'project_id')}"/> &nbsp; <g:link controller="help" action="list" fragment="project_id"><small>Help</small></g:link>
+                                    <input type="text" id="project_id" name="augustus_project_id" value="${fieldValue(bean:predictionInstance,field:'project_id')}"/> <g:link controller="help" action="list" fragment="project_id"><small>Help</small></g:link>
+
                                 </td>
-                            </tr> 
+                            </tr>
                         </tbody>
                     </table>
                     <br>
@@ -81,55 +147,72 @@
                          <tbody>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="GenomeFile"><b>Genome file</b></label>
+                                    <label for="GenomeFile"><b>Genome file</b>&nbsp; <g:link controller="help" action="list" fragment="genome_file"><small>Help</small></g:link></label>
                                 </td>
+                                <td valign="top">
+                                </td>
+                            </tr>
+                            <tr class="prop">
+                                <td valitn="top">Upload a file:</td>
                                 <td valitn="top">
                                     <input type="file" id="GenomeFile" name="GenomeFile"/>
                                 </td>
-                                <td>&nbsp;<b>or</b>&nbsp;</td>
+                            </tr>
+                            <tr class="prop">
+                                <td>&nbsp;<b>or</b>&nbsp;</td><td></td>
+                            </tr>
+                            <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="genome_ftp_link">web link to genome file</label>
+                                    <label for="genome_ftp_link">specify web link to genome file:</label>
                                 </td>
-                                <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'genome_ftp_link','errors')}">
-                                    <input type="text" id="genome_ftp_link" name="genome_ftp_link" value="${fieldValue(bean:predictionInstance,field:'genome_ftp_link')}"/> &nbsp; <g:link controller="help" action="list" fragment="genome_file"><small>Help</small></g:link>
+                                <td valign="top" class="value ${hasErrors(bean:trainingInstance,field:'genome_ftp_link','errors')}">
+                                    <input type="text" id="genome_ftp_link" name="genome_ftp_link" value="${fieldValue(bean:trainingInstance,field:'genome_ftp_link')}"/>
                                 </td>
-                            </tr> 
+                            </tr>
                           </tbody>
                         </table>
                         <br>
-                        You may (optional) also specify these files: <g:link controller="help" action="list" fragment="which_files"><small>Help</small></g:link><br><br>
+                        You may (optionally) also specify one or several of the following files that contain external evidence for protein coding genes: <g:link controller="help" action="list" fragment="which_files"><small>Help</small></g:link><br><br>
                         <table>
                           <tbody>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="EstFile">cDNA file</label>
+                                    <label for="EstFile"><b>cDNA file</b> &nbsp; <g:link controller="help" action="list" fragment="cDNA"><small>Help</small></g:link></label>
                                 </td>
                                 <td valign="top">
-                                    <input type="file" id="EstFile" name="EstFile"/>
                                 </td>
-                            <td>&nbsp;<b>or</b>&nbsp;</td>
-                                <td valign="top" class="name">
-                                    <label for="est_ftp_link">web link to cDNA file</label>
-                                </td>
-                                <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'est_ftp_link','errors')}">
-                                    <input type="text" id="est_ftp_link" name="est_ftp_link" value="${fieldValue(bean:predictionInstance,field:'est_ftp_link')}"/> &nbsp; <g:link controller="help" action="list" fragment="cDNA"><small>Help</small></g:link>
-                                </td>
-                            </tr> 
+                            </tr>
+                            <tr class="prop">
+                              <td valign="top">Upload a file:</td>
+                              <td valign="top">
+                                            <input type="file" id="EstFile" name="EstFile"/>
+                              </td>
+                            </tr>
+                            <tr class="prop">
+                              <td>&nbsp;<b>or</b>&nbsp;</td><td></td>
+                            </tr>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="hint_file">Hint file</label>
+                                    <label for="est_ftp_link">specify web link to cDNA file:</label>
                                 </td>
-                                <td valign="top">
-                                    <input type="file" id="HintFile" name="HintFile"/> 
+                                <td valign="top" class="value ${hasErrors(bean:trainingInstance,field:'est_ftp_link','errors')}">
+                                    <input type="text" id="est_ftp_link" name="est_ftp_link" value="${fieldValue(bean:trainingInstance,field:'est_ftp_link')}"/>
                                 </td>
-                            <td><g:link controller="help" action="list" fragment="structure"><small>Help</small></g:link></td>
+                            </tr>
+                            <tr class="prop"><td><br></td><td></td></tr>
+                            <tr class="prop">
                                 <td valign="top" class="name">
-                                   
+                                  <label for="hint_file"><b>Hints file</b> &nbsp; <g:link controller="help" action="list" fragment="structure"><small>Help</small></g:link></label>
                                 </td>
                                 <td valign="top">
-                                    
+                                                      </td>
+                            </tr>
+                            <tr class="prop">
+                              <td valign="top">Upload a file:</td>
+                                <td valign="top">
+                                    <input type="file" id="HintFile" name="HintFile"/>
                                 </td>
-                            </tr> 
+                            </tr>
                         </tbody>
                     </table>
                     <br>
@@ -142,10 +225,46 @@
                 </div>
             </g:uploadForm>
             </div>
-            <p>&nbsp;</p>
-            <p style="text-align:right;">
-            <small>Please direct your questions and comments to <a href="mailto:augustus-training@gobics.de">augustus-training@gobics.de</a></small>
-            </p>
-        </div>
+       </div>
+     <div id="rechte_spalte">
+    <div class="linien_div">
+      <h5 class="ueberschrift_spezial">CONTACT</h5>
+      <strong>Institute for Mathematics und Computer Sciences</strong><br/>
+      <strong>Bioinformatics Group</strong><br />
+      Walther-Rathenau-Stra&szlig;e 47<br />
+      17487 Greifswald<br />
+      Germany<br />
+      Tel.: +49 (0)3834 86 - 46 24<br/>
+      Fax:  +49 (0)3834 86 - 46 40<br /><br />
+      <a href="mailto:bioinformatik.greifswald@gmail.com" title="E-Mail bioinformatik.greifswald@gmail.com, opens the\
+ standard mail program">bioinformatik.greifswald@gmail.com</a>
+    </div>
+    </div>
+
+    <div class="beendeFluss"></div>
+</div>
+<!-- ***** Ende: Koerper *************************************************// -->
+<!-- ***** Start: Fuss ***************************************************// -->
+<div id="fuss">
+  <div id="fuss_links"><p class="copyright">&copy; 2011 University of Greifswald</p></div>
+  <div id="fuss_mitte">
+  <div class="bannergroup">
+ </div>
+ </div>
+ <div id="fuss_rechts" >
+  <ul>
+   <li>
+    <a href="#seitenanfang">
+     <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="../images/top.gif" />
+     Top of page
+    </a>
+   </li>
+  </ul>
+ </div>
+ <div class="beendeFluss"></div>
+</div>
+<!-- ***** Ende: Fuss ***************************************************// -->
+
+
     </body>
 </html>

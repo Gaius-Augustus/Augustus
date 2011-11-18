@@ -10,7 +10,7 @@ environments {
 	development {
 		dataSource {
 			pooled = true
-			dbCreate = "create-drop" 
+			dbCreate = "update" 
 			url = "jdbc:mysql://localhost/augtraindev "
                         driverClassName = "com.mysql.jdbc.Driver"
                         username = "grails1"

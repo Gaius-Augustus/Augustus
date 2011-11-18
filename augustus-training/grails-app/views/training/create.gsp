@@ -95,7 +95,8 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 		</table>
 	      </legend><p>
                <div class="dialog">
-		    <p>You have to specify an <b>E-mail address</b>, a <b>species name</b>, and a <b>genome file</b>!</p>
+		    <p>Please use this form to submitt data for training AUGUSTUS parameters for novel species/new genomic data.</p>
+ 		    <p>You have to specify an <b>E-mail address</b>, a <b>species name</b>, and a <b>genome file</b>!</p>
                     <table>
                         <tbody>
                         
@@ -172,7 +173,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			    </tr>
 			    <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="est_ftp_link">specify web link to cDNA file</label>
+                                    <label for="est_ftp_link">specify web link to cDNA file:</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:trainingInstance,field:'est_ftp_link','errors')}">
                                     <input type="text" id="est_ftp_link" name="est_ftp_link" value="${fieldValue(bean:trainingInstance,field:'est_ftp_link')}"/>
@@ -197,7 +198,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			    </tr>
 			    <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="protein_ftp_link">specify web link to protein file</label>
+                                    <label for="protein_ftp_link">specify web link to protein file:</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:trainingInstance,field:'protein_ftp_link','errors')}">
                                     <input type="text" id="protein_ftp_link" name="protein_ftp_link" value="${fieldValue(bean:trainingInstance,field:'protein_ftp_link')}"/>
