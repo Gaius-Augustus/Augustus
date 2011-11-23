@@ -893,8 +893,12 @@ sub autoTrain_with_utr{
 
     my $augString;
     $augString="--aug=$autoAugDir_hints/predictions/augustus.gff";
-   
-    $perlCmdString="perl $scriptPath/autoAugTrain.pl -g=$genome -s=$species --utr -e=$estali $augString -w=$rootDir $verboseString --opt=$optrounds $useexistingopt";
+
+    if(-d $rootDir){
+  	  $perlCmdString="perl $scriptPath/autoAugTrain.pl -g=$genome -s=$species --utr -e=$estali $augString -w=$rootDir $verboseString --opt=$optrounds --useexisting";
+    }else{
+  	  $perlCmdString="perl $scriptPath/autoAugTrain.pl -g=$genome -s=$species --utr -e=$estali $augString -w=$rootDir $verboseString --opt=$optrounds $useexistingopt";
+    }
     print "\n2 $perlCmdString\n" if ($verbose>=2);
     system("$perlCmdString")==0 or die ("failed to execute: $!\n");
 

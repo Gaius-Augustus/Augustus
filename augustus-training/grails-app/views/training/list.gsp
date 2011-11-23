@@ -81,10 +81,6 @@
                    	        <g:sortableColumn property="id" title="&nbsp;ID&nbsp;" />
 
                                 <g:sortableColumn
-                                property="accession_id"
-                                title="&nbsp;Project ID&nbsp;" />
-
-                                <g:sortableColumn
                                 property="dateCreated"
                                 title="&nbsp;Date&nbsp;" />
 
@@ -99,8 +95,6 @@
                         <tr class="${(i % 2) == 0 ? 'odd' : 'even'}">
                         
                             <td><g:link action="show" id="${trainingInstance.id}">${fieldValue(bean:trainingInstance, field:'id')}</g:link></td>
-                        
-                            <td>${fieldValue(bean:trainingInstance, field:'accession_id')}</td>
                         
                             <td>${fieldValue(bean:trainingInstance, field:'dateCreated')}</td>
                         

@@ -31,7 +31,7 @@ ni-greifswald.de/" target="_blank" class="mainleveltop_" >Faculty</a><span class
    <div id="banner_links">
        <a href="http://www.math-inf.uni-greifswald.de/mathe/index.php" title="Institut f&uuml;r Mathematik und Inform\                                                                      \
                                                                                                                                                                                              
-atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
+atik"><img src="../../images/header.gif" alt="Directly to home" /> </a>
    </div>
    <div id="banner_mitte">
       <div id="bannertitel1">
@@ -43,7 +43,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
    </div>
    <div id="banner_rechts">
      <a href="http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167" title="Voderberg-Doppelspirale">
-     <img src="../images/spirale.gif" align="left" />
+     <img src="../../images/spirale.gif" align="left" />
      </a>
    </div>
 </div>
@@ -61,11 +61,11 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 
   <div id="linke_spalte">
      <ul class="menu">
-         <li><a href="../index.gsp"><span>Introduction</span></a></li>
+         <li><a href="../../index.gsp"><span>Introduction</span></a></li>
          <li><g:link controller="training" action="create"><span>Submitt Training</span></g:link></li>
          <li><g:link controller="prediction" action="create"><span>Submitt Prediction</span></g:link></li>
-         <li><a href="../help.gsp"><span>Help</span></a></li>
-         <li><a href="../references.gsp"><span>Links & References</span></a></li>
+         <li><a href="../../help.gsp"><span>Help</span></a></li>
+         <li><a href="../../references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
      </ul>
@@ -73,30 +73,30 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 
  <div id="mittel_spalte">
 <div class="main" id="main">
-   <h1><g:link controller="training" action="show">AUGUSTUS Training Results</g:link></h1>
+   <h1><g:link controller="training" action="show">AUGUSTUS Training: Job Status</g:link></h1>
             <g:if test="${flash.message}">
             <div class="message">${flash.message}</div>
             </g:if>
 
             <g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '0' || fieldValue(bean:trainingInstance, field:'job_status') == '1' || fieldValue(bean:trainingInstance, field:'job_status') == '2' || fieldValue(bean:trainingInstance, field:'job_status') == '3'}">
-            	<h1>Status of Job ${fieldValue(bean:trainingInstance, field:'accession_id')}</h1>
+<!--            	<h1>Status of Job ${fieldValue(bean:trainingInstance, field:'accession_id')}</h1>-->
             
-            Your job is in stage <g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '0'|| fieldValue(bean:trainingInstance, field:'job_status') == '1'}">1</g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '2'}">2</g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '3'}">3</g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '4'}">4</g:if>.<br><br>Explannation:
+            Your job is in stage <g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '0'|| fieldValue(bean:trainingInstance, field:'job_status') == '1'}"><b>1</b></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '2'}"><b>2</b></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '3'}"><b>3</b></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '4'}"><b>4</b></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '5'}"><b>5</b></g:if>.<br><br>Explannation:
             <ul>
-                <li>stage 1: submitted to webserver but not to grid, yet
-                <li>stage 2: submitted to grid and waiting for execution
-                <li>stage 3: calculating
-                <li>stage 4: finished
-                <li>stage 5: error
+                <li>stage 1: submitted to webserver but not to grid, yet</li>
+                <li>stage 2: submitted to grid and waiting for execution</li>
+                <li>stage 3: calculating</li>
+                <li>stage 4: finished</li>
+                <li>stage 5: error; please contact us via e-mail if you see that your job went into an error state.</li>
             </ul>
-            For more details, see <a href="../help.gsp#job_status">Help</a>
+            For more details, see <a href="../../help.gsp#job_status">Help</a>
             </g:if>
             
 
             <g:if test ="${fieldValue(bean:trainingInstance, field:'job_status') == '4'}">
-            <h1>Results for Job ${fieldValue(bean:trainingInstance, field:'accession_id')}</h1>
+            <!--<h1>Results for Job ${fieldValue(bean:trainingInstance, field:'accession_id')}</h1>-->
                <ul>
-                  <li>Your job is finished.
+                  <li>Your job is finished. You received an e-mail with the link to results.</li>
                </ul>
             </g:if>
 
@@ -114,9 +114,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
       Germany<br />
       Tel.: +49 (0)3834 86 - 46 24<br/>
       Fax:  +49 (0)3834 86 - 46 40<br /><br />
-      <a href="mailto:bioinformatik.greifswald@gmail.com" title="E-Mail bioinformatik.greifswald@gmail.com, opens the\                                                                      \
-                                                                                                                                                                                             
- standard mail program">bioinformatik.greifswald@gmail.com</a>
+      <a href="mailto:bioinformatik.greifswald@gmail.com" title="E-Mail bioinformatik.greifswald@gmail.com, opens the standard mail program">bioinformatik.greifswald@gmail.com</a>
     </div>
 
     <div class="beendeFluss"></div>

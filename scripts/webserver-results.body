@@ -1,0 +1,25 @@
+</span>
+
+  <div class="beendeFluss"></div>
+</div>
+<!-- ***** Ende: Kopfbereich *********************************************// -->
+<!-- ***** Start: Koerper ************************************************// -->
+<div id="koerper">
+
+  <div id="linke_spalte">
+     <ul class="menu">
+         <li><a href="http://bioinf.uni-greifswald.de/trainaugustus/index.gsp"><span>Introduction</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/trainaugustus/training/create"><span>Submitt Training</span></a></li>
+         <li><a href= "http://bioinf.uni-greifswald.de/trainaugustus/prediction/create"><span>Submitt Prediction</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/trainaugustus/help.gsp"><span>Help</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/trainaugustus/references.gsp"><span>Links & References</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
+     </ul>
+  </div>
+
+<div id="mittel_spalte">
+<a name="inhalt" id="inhalt"></a>
+<table class="contentpaneopen">
+<tr><td class="contentheading" width="100%">
+

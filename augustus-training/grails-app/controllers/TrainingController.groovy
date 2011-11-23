@@ -14,7 +14,11 @@ class TrainingController {
    def dbFile = new File("${output_dir}/augustus-database.log")
    // oldID is a parameter that is used for show redirects (see bottom)
    def oldID
-
+   // web-output, root directory to the results that are shown to end users
+   def web_output_dir = "/var/www/trainaugustus/training-results" // must be writable to webserver application
+   // AUGUSTUS_CONFIG_PATH
+   def AUGUSTUS_CONFIG_PATH = "/usr/local/augustus/trunks/config";
+   def AUGUSTUS_SCRIPTS_PATH = "/usr/local/augustus/trunks/scripts";
    def scaffold = Training
    // the method commit is started if the "Submit Job" button on the website is hit. It is the main method of Training Controller and contains a Thread method that will continue running as a background process after the user is redirected to the job status page.
 
@@ -268,7 +272,7 @@ class TrainingController {
             def delProc = "rm -r ${projectDir}".execute()
             delProc.waitFor()
             logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
-            flash.error = "Your protein file was not recognized as a protein file. It may be DNA file. The training job was not started. Please contact augustus-training@gobics.de if you are completely sure this file is a protein fasta file."
+            flash.error = "Your protein file was not recognized as a protein file. It may be DNA file. The training job was not started. Please contact augustus@uni-greifswald.de if you are completely sure this file is a protein fasta file."
             redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
             return
          }
@@ -349,7 +353,7 @@ class TrainingController {
             subject "Your AUGUSTUS training job ${trainingInstance.accession_id}"
             body """Hello!
 
-Thank you for submitting a job to train AUGUSTUS for the species ${trainingInstance.project_name}. The job status is available at http://localhost:8080/augustus-training/training/show/${trainingInstance.id}
+Thank you for submitting a job to train AUGUSTUS for the species ${trainingInstance.project_name}. The job status is available at http://bioinf.uni-greifswald.de/trainaugustus/training/show/${trainingInstance.id}
 
 You will be notified by e-mail when the job is finished.
 
@@ -357,7 +361,7 @@ Best regards,
 
 the AUGUSTUS training web server team
 
-http://localhost:8080/augustus-training
+http://bioinf.uni-greifswald.de/trainaugustus
 """
          }
          logFile << "${trainingInstance.accession_id} Confirmation e-mail sent.\n"          
@@ -405,7 +409,7 @@ Best regards,
 
 the AUGUSTUS training web server team
 
-http://localhost:8080/augustus-training
+http://bioinf.uni-greifswald.de/trainaugustus
 """
                  }
                  // delete database entry
@@ -446,7 +450,7 @@ Best regards,
 
 the AUGUSTUS training web server team
 
-http://localhost:8080/augustus-training/
+http://bioinf.uni-greifswald.de/trainaugustus/
 """
                     }
                  }
@@ -463,7 +467,7 @@ Best regards,
 
 the AUGUSTUS training web server team
 
-http://localhost:8080/augustus-training
+http://bioinf.uni-greifswald.de/trainaugustus
 """
                     }
                  }
@@ -521,7 +525,7 @@ Best regards,
 
 the AUGUSTUS training web server team
 
-http://localhost:8080/augustus-training
+http://bioinf.uni-greifswald.de/trainaugustus
 """
                  }
                  // delete database entry
@@ -581,7 +585,7 @@ Best regards,
 
 the AUGUSTUS training web server team
 
-http://localhost:8080/augustus-training
+http://bioinf.uni-greifswald.de/trainaugustus
 """
                  }
                  // delete database entry
@@ -604,7 +608,7 @@ Best regards,
 
 the AUGUSTUS training web server team
 
-http://localhost:8080/augustus-training
+http://bioinf.uni-greifswald.de/trainaugustus
 """
                  }
                  // delete database entry
@@ -650,7 +654,7 @@ http://localhost:8080/augustus-training
                  body """Hello!
 
 You submitted job ${trainingInstance.accession_id} for species ${trainingInstance.project_name}. The job was aborted because we want to avoid data duplication. The files you submitted were submitted, before. You find the results at 
-http://localhost:8080/augustus-training/training/show/${oldID}
+http://bioinf.uni-greifswald.de/trainaugustus/training/show/${oldID}
 
 Thank you for using AUGUSTUS!
 
@@ -658,7 +662,7 @@ Best regards,
 
 the AUGUSTUS training web server team
 
-http://localhost:8080/augustus-training
+http://bioinf.uni-greifswald.de/trainaugustus
 """
               }
               logFile << "${trainingInstance.accession_id} Data are identical to old job ${oldID}. ${projectDir} is deleted (rm -r).\n"
@@ -674,9 +678,9 @@ http://localhost:8080/augustus-training
            logFile << "${trainingInstance.accession_id} Writing SGE submission script.\n"
            def sgeFile = new File("${projectDir}/web-aug.sh")
            // write command in script (according to uploaded files)
-           sgeFile << "#!/bin/bash\n#\$ -S /bin/bash\n#\$ -cwd\n#\$ -m e\nexport AUGUSTUS_CONFIG_PATH=/c1/project/augustus/augustus/config\nexport PASAHOME=/c1/project/augustus/tools/PASA\nPATH=:\"\${PATH}\":~/augustus/src:~/augustus/scripts:~/scripts:/gobics/usr/pasa:~/tools/scipio:/c1/scratch/mario/gmap/bin:~/tools:~/bin\n\n"
+           sgeFile << "#!/bin/bash\n#\$ -S /bin/bash\n#\$ -cwd\n#\$ -m e\n\n"
            if( estExistsFlag ==1 && proteinExistsFlag == 0 && structureExistsFlag == 0){
-              sgeFile << "/c1/project/augustus/augustus/scripts/autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --pasa -v --noninteractive --workingdir=${projectDir}\n\n"
+              sgeFile << "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --pasa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err\n"
            }else if(estExistsFlag ==0 && proteinExistsFlag == 0 && structureExistsFlag == 1){
               sgeFile << "/c1/project/augustus/augustus/scripts/autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/training-gene-structure.gff --pasa -v --noninteractive --workingdir=${projectDir}\n\n"
            }else if(estExistsFlag ==0 && proteinExistsFlag == 1 && structureExistsFlag == 0){
@@ -690,14 +694,14 @@ http://localhost:8080/augustus-training
            }else if(estExistsFlag == 1 && proteinExistsFlag == 1 && structureExistsFlag == 1){
               sgeFile << "echo Simultaneous protein and structure file support are currently not implemented.\n\n"}
            // write submission script
-//            def submissionScript = new File("${projectDir}/submitt.sh")
+            def submissionScript = new File("${projectDir}/submitt.sh")
 //            def clusterENVDefs = "export SGE_ROOT=/opt/sge";
 //            def SGEqstatPath = "/opt/sge/bin/lx24-amd64/";
-//            def fileID = "${projectDir}/jobID"
-//            submissionScript << "ssh augustus@frontend \"cd ${projectDir}; ${clusterENVDefs}; ${SGEqstatPath}qsub web-aug.sh > ${fileID}\""
+            def fileID = "${projectDir}/jobID"
+            submissionScript << "cd ${projectDir}; qsub web-aug.sh > ${fileID}"
            // submitt job
-           //def jobSubmission = "bash ${projectDir}/submitt.sh".execute()
-           //jobSubmission.waitFor()
+           def jobSubmission = "bash ${projectDir}/submitt.sh".execute()
+           jobSubmission.waitFor()
            // get job ID
            def content = new File("${fileID}").text
            def jobID_array = content =~/Your job (\d*)/
@@ -711,7 +715,7 @@ http://localhost:8080/augustus-training
            trainingInstance.save()
            def statusScript = new File("${projectDir}/status.sh")
            def statusFile = "${projectDir}/job.status"
-           statusScript << "ssh frontend \"cd ${projectDir}; ${clusterENVDefs}; ${SGEqstatPath}qstat|grep \"web-aug.sh\"|grep \"${jobID}\" > ${statusFile}\""
+           statusScript << "cd ${projectDir}; qstat|grep web-aug.sh |grep ${jobID} > ${statusFile}"
            def statusContent
            def statusCheck 
            def qstat = 1
@@ -748,7 +752,7 @@ http://localhost:8080/augustus-training
               subject "Your AUGUSTUS training job ${trainingInstance.accession_id} is complete"
               body """Hello!
 
-Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} is complete. You find the results at http://localhost:8080/augustus-training/training/show/${trainingInstance.id}
+Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} is complete. You find the results at http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id/index.html .
 
 Thank you for using AUGUSTUS!
 
@@ -756,7 +760,7 @@ Best regards,
 
 the AUGUSTUS training web server team
 
-http://localhost:8080/augustus-training
+http://bioinf.uni-greifswald.de/trainaugustus
 """
           }
           logFile << "${trainingInstance.accession_id} Sent confirmation Mail that job finished successfully.\n"

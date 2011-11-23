@@ -1,0 +1,116 @@
+<h1>Instructions</h1>
+
+<p>Please download the files listed above by clicking on the links.</p>
+
+<p>All files and folders - except for log and error file - are compressed. To unpack <tt>*.tar.gz</tt> archives, e.g. on linux type</p><p><tt>tar -xzvf *.tar.gz</tt></p><p>For unpacking <tt>*.gz</tt> files, e.g. on linux type</p><p><tt>gunzip *.gz</tt>.</p>
+
+<p>The number of files listed on the results page of an individual AUGUSTUS training run as well as the number of files in each tar.gz-archive may vary between different training data sets. The following sections give an overview and description files that might be linked from this page.</p>
+
+<h2>Files and archives that are always produced</h2>
+<p>
+<ul>
+<li><b>parameters.tar.gz</b> - the AUGUSTUS parameter archive for your species</li>
+<li><b>training.gb.gz</b> - training genes that were used to optimize AUGUSTUS parameters in genbank format</li>
+<li><b>ab_initio.tar.gz</b> - <i>ab initio</i> gene predictions in the supplied genome sequence (without UTR)</li>
+<li><b>AutoAug.log</b> - log file of training and prediction process</li>
+<li><b>AutoAug.err</b> - error file of the training and prediction process</li>
+</ul>
+</p>
+
+<h2>Archives that are only produced under certain conditions</h2>
+
+<p>Depending on the combination of data sources that you submitted for training, and depending on how much information these data sources contain, the following files might also be produced:</p>
+<p>
+<ul>
+<li><b>hints_pred.tar.gz</b> - gene predictions with extrinsic evidence (without UTR)</li>
+<li><b>utr_pred.tar.gz</b> - <i>ab initio</i> gene predictions with UTR prediction</li>
+<li><b>hints_utr_pred.tar.gz</b> - gene predictions with extrinsic evidence and UTR</li>
+</ul>
+</p>
+
+<h2>The AUGUSTUS parameter archive</h2>
+
+<p>The AUGUSTUS parameter archive always contains the following files for your species:</p>
+
+<p>
+<ul>
+<li><b><i>species</i>_parameters.cfg</b></li>
+<li><b><i>species</i>_metapars.cfg</b></li>
+<li><b><i>species</i>_metapars.utr.cfg</b></li>
+<li><b><i>species</i>_exon_probs.pbl.withoutCRF</b></li>
+<li><b><i>species</i>_exon_probs.pbl</b></li>
+<li><b><i>species</i>_weihtmatrix.txt</b></li>
+<li><b><i>species</i>_intron_probs.pbl</b></li>
+<li><b><i>species</i>_intron_probs.pbl.withoutCRF</b></li>
+<li><b><i>species</i>_igenic_probs.pbl</b></li>
+<li><b><i>species</i>_igenic_probs.pbl.withoutCRF</b></li>
+</ul>
+</p>
+
+<p>If you want to use the parameters for predicting genes with a local AUGUSTUS installation, place the species parameter folder into your <tt>$AUGUSTUS_CONFIG_PATH</tt> species folder. Be aware that in general, our web server application does not optimize the CRF parameters. Therefore, do not run AUGUSTUS with CRF-flag with these parameters. UTR parameters have only been optimized for your species if this website contains an archive <tt>utr_pred.tar.gz</tt>. It does not make sense to locally predict genes with UTR if the UTR parameters were not optimized for your species.</p>
+
+<p>If you want to run further predictions on our web server application, you do not need to save the parameter archive locally for re-upload. Just remember the accession number of your job and specify it on the prediction interface. You find your job's accession number in the headline of this web site at "Training results for job ...".</p>
+
+<h2>Files that are always contained in gene prediction archives</h2>
+
+<p>
+<ul>
+<li><b>*.gff</b> - gene predictions in gff format</li>
+<li><b>*.gtf</b> - gene predictions in gtf format</li>
+<li><b>*.aa</b> - gene predictions as protein fasta sequences</li>
+<li><b>*.gbrowse</b> - gene prediction track for the GBrowse genome browser</li>
+</ul>
+</p>
+
+</div>
+</div>
+
+ <div id="rechte_spalte">
+  <div id="schriftgroesse">
+   <script type="text/javascript">
+    //<![CDATA[
+    document.write('<a href="http://bioinf.uni-greifswald.de/trainaugustus/training-results/ABCDRZ/index.html" title="Increase size" onclick="changeFontSize(2); return false;" class="larger">bigger</a><span class="unseen">&nbsp;< /span>');
+    document.write('<a href="http://bioinf.uni-greifswald.de/trainaugustus/training-results/ABCDRZ/index.html" title="Decrease size" onclick="changeFontSize(-2); return false;" class="smaller">smaller</a><span class="unseen">&nbsp;</span>');
+    document.write('<a href=""http://bioinf.uni-greifswald.de/trainaugustus/training-results/ABCDRZ/index.html" title="Revert styles to default" onclick="revertStyles(); return false;" class="reset">reset</a></p>');
+    //]]>
+   </script>
+  </div>
+<div class="linien_div">
+         <h5 class="ueberschrift_spezial">CONTACT</h5>
+         <strong>Institute for Mathematics und Computer Sciences</strong><br/>
+          Walther-Rathenau-Stra&szlig;e 47<br /> 17487 Greifswald<br /> Germany<br /> Tel.: +49 (0)3834 86 - 46 24<br /> Fax:  +49 (0)3834 86 - 46 40<br /><br /> <a href="mailto:bioinformatik.greifswald@gmail.com" title="E-Mail bioinformatik.greifswald@gmail.com, opens the standard mail program">bioinformatik.greifswald@gmail.com</a></div>
+
+ <div class="beendeFluss"></div>
+</div>
+<!-- ***** Ende: Koerper *************************************************// -->
+
+
+
+<!-- ***** Start: Fuss ***************************************************// -->
+<div id="fuss">
+ <div id="fuss_links"><p class="copyright">&copy; 2011 University of Greifswald</p></div>
+ <div id="fuss_mitte">
+         <table width="100%" border="0" cellpadding="0" cellspacing="1">
+                 <tr><td nowrap="nowrap"><a href="index.html" class="mainleveltop_" >Home</a>|&nbsp; </span><a href="http://www.math-inf.uni-greifswald.de/mathe/index.php/impressum" class="mainleveltop_" >Impressum</a>
+                 </td></tr>
+         </table>
+ <div class="bannergroup">
+ </div>
+ </div>
+ <div id="fuss_rechts" >
+  <ul>
+   <li>
+    <a href="#seitenanfang">
+     <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="http://www.math-inf.uni-greifswald.de/mathe/templates/uni2/bilder/frames/top.gif" />
+     Top of page
+    </a>
+   </li>
+  </ul>
+ </div>
+ <div class="beendeFluss"></div>
+</div>
+<!-- ***** Ende: Fuss ***************************************************// -->
+</body>
+
+</html>
+

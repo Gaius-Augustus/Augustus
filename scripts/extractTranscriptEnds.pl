@@ -7,11 +7,14 @@ my $n = 30;
 
 my $seq;
 my $seqLen;
+my $i = 1;
 while(<STDIN>){
     if($_=~m/^>/){
 	$lenLen = length($seq);
-	print substr($seq, $seqLen-30, 30)."\n";
+	print ">seq".$i."\n";
+	print substr($seq, $seqLen-30, 27)."\n";
 	$seq = "";
+	$i = $i+1;
     }else{
 	chomp;
 	$seq = $seq.$_;
@@ -20,5 +23,6 @@ while(<STDIN>){
 
 if(length($seq)>1){
     $lenLen = length($seq);
+    print ">seq".$i."\n";
     print substr($seq, $seqLen-30, 30)."\n";
 }

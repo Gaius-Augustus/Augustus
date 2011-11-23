@@ -12,15 +12,14 @@
 
 grails {
    mail {
-     host = "smtp.gmail.com"
-     port = 465
-     username = "katharina.hoff@gmail.com"
-     password = "1983Lizzy"
-     props = ["mail.smtp.auth":"true", 					   
-              "mail.smtp.socketFactory.port":"465",
-              "mail.smtp.socketFactory.class":"javax.net.ssl.SSLSocketFactory",
-              "mail.smtp.socketFactory.fallback":"false"]
-
+       host = "smtp.uni-greifswald.de"
+       port = 25
+       username = "hoffk83"
+       password = "gLk389!?"
+       grails.mail.default.from= "katharina.hoff@uni-greifswald.de"
+       props = ["mail.smtp.auth":"true", 					   
+		"mail.smtp.port":"25", 
+		]
 } }
 
 
