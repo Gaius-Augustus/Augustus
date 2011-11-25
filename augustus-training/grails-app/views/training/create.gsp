@@ -3,7 +3,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <meta name="layout" content="main" />
-        <title>Create Training</title>
+        <title>Submitt Training</title>
 	<script type="text/javascript" src="js/md_stylechanger.js"></script>         
     </head>
     <body>
@@ -119,7 +119,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                           </tbody> 
                       </table>
                       
-                      <p>There are two options for sequence file transfer:<br>You may <b>either</b> upload data files from your computer <b>or</b> specify web links. &nbsp; <a href="../help.gsp#upload_link"><small>Help</small></a></p>
+                      <p>There are two options for sequence file (fasta format) transfer:<br>You may <b>either</b> upload data files from your computer <b>or</b> specify web links. &nbsp; <a href="../help.gsp#upload_link"><small>Help</small></a></p>
                       <br>
                       <table>
                          <tbody>
@@ -217,7 +217,25 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                             </tr> 
                         </tbody>
                     </table>
-                    <br><br>
+                    <br>
+		    <h2>Possible file combinations</h2>
+		    <p>
+		      <ul>
+			<li><b>&#123;genome file, cDNA file&#125;</b><br>In this case, the cDNA file is used to create a training gene set. If cDNA quality is sufficient, also a UTR training set will be created.</li>
+			<li><b>&#123;genome file, protein file&#125;</b><br>In this case, the protein file is used to create a training gene set. No UTR training set can be created.</li>
+			<li><b>&#123;genome file, gene structure file&#125;</b><br>In this case, the gene structure file is used as a training gene set. If the gene structure file contains UTR elements, also a UTR training set will be created.</li>
+			<li><b>&#123;genome file, cDNA file, protein file&#125;</b><br>In this case, the protein file will be used to create a training gene set. No UTR training set will be created. cDNA sequences will be used as evidence for prediction, only.</li>
+			<li><b>&#123;genome file, cDNA file, gene structure file&#125;</b><br>In this case, the gene structure file is used as a training gene set. If the gene structure file contains UTR elements, also a UTR training set will be created. cDNA sequences will be used as evidence for prediction, only.</li>
+			</ul>
+		      </p>
+		    <h2>File combinations that are currently not supported</h2>
+		    <p>
+		      <ul>
+			<li><b>&#123;genome file, cDNA file, protein file, gene structure file&#125;</b></li>
+			<li><b>&#123;genome file, protein file, gene structure file&#125;</b></li>
+			</ul>
+		      </p>
+		    <br>
                 </div>
                 <div class="buttons">
                     <span class="button"><input class="commit" type="submit" value="Start Training" /></span>
@@ -236,8 +254,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
       Germany<br />
       Tel.: +49 (0)3834 86 - 46 24<br/>
       Fax:  +49 (0)3834 86 - 46 40<br /><br />
-      <a href="mailto:bioinformatik.greifswald@gmail.com" title="E-Mail bioinformatik.greifswald@gmail.com, opens the\
- standard mail program">bioinformatik.greifswald@gmail.com</a>
+      <a href="mailto:bioinformatik.greifswald@gmail.com" title="E-Mail bioinformatik.greifswald@gmail.com, opens the standard mail program">bioinformatik.greifswald@gmail.com</a>
     </div>
     </div>
 

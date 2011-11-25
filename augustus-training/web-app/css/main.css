@@ -83,11 +83,16 @@ div.main {
         color:black;
         margin: 1em;
 	margin-bottom: 0.5em;
-	width:  610px;
+	width:  540px;
         text-align:justify;
 }
 
 /* DIALOG */
+
+.dialog {
+    margin: 1em;
+    width: 620px;
+}
 
 .dialog table {
     padding: 5px 0;

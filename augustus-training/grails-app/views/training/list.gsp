@@ -46,7 +46,7 @@
 
 <div id="wegweiser">
   Navigation for: &nbsp; &nbsp;<span class="breadcrumbs pathway">
-    Current Training Jobs
+    Non-existing Job
 </span>
 
   <div class="beendeFluss"></div>
@@ -70,40 +70,16 @@
 
  <div id="mittel_spalte">
 <div class="main" id="main">
-   <h1><g:link controller="training" action="list">Current AUGUSTUS Training Jobs</g:link></h1>
-            <g:if test="${flash.message}">
-            <div class="message">${flash.message}</div>
-            </g:if>
+   <h1><g:link controller="training" action="list">Your job does not exist</g:link></h1>
             <div class="list">
-                <table frame="border" rules="all" cellpadding="5">
-                    <thead>
-                        <tr>
-                   	        <g:sortableColumn property="id" title="&nbsp;ID&nbsp;" />
-
-                                <g:sortableColumn
-                                property="dateCreated"
-                                title="&nbsp;Date&nbsp;" />
-
-                                <g:sortableColumn
-                                property="job_status"
-                                title="&nbsp;Job Status&nbsp;" />
-                        
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <g:each in="${trainingInstanceList}" status="i" var="trainingInstance">
-                        <tr class="${(i % 2) == 0 ? 'odd' : 'even'}">
-                        
-                            <td><g:link action="show" id="${trainingInstance.id}">${fieldValue(bean:trainingInstance, field:'id')}</g:link></td>
-                        
-                            <td>${fieldValue(bean:trainingInstance, field:'dateCreated')}</td>
-                        
-                            <td>${fieldValue(bean:trainingInstance, field:'job_status')}</td>
-
-                        </tr>
-                    </g:each>
-                    </tbody>
-                </table>
+	      <p>Thank you for using the AUGUSTUS training web server!</p>
+              <h2>Reasons why your job does not exist</h2>
+	      <p>
+		<ul>
+		  <li>You submitted a job with data that has previously been submitted to the AUGUSTUS training web server application. In this case, you received an e-mail pointing you to the job status and results of that previous job.<br></li>
+		  <li>You manually tried to look at a non-existing job status.</li>
+		  </ul>
+	      </p>
             </div>
  </div>
 </div>
