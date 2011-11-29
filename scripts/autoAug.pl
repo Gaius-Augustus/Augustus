@@ -1004,10 +1004,11 @@ sub collect{
     my $configDir="$AUGUSTUS_CONFIG_PATH/species/$species";
     print '3 cd ../config'."\n" if ($verbose>=3);
     chdir "../config";
-    $cmdString = "cp $configDir/* . ; rm *.orig*;";
-    print "3 $cmdString\n" if ($verbose>=3);
-    system("$cmdString")==0 or die ("failed to execute: $cmdString\n");
-    
+    if(-e "*.orig*"){
+       $cmdString = "cp $configDir/* . ; rm *.orig*;";
+       print "3 $cmdString\n" if ($verbose>=3);
+       system("$cmdString")==0 or die ("failed to execute: $cmdString\n");
+    }
     # collect files with gb format
 
     print "3 cd ../genes\n" if ($verbose>=3);
