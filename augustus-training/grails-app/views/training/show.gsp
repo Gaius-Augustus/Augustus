@@ -87,7 +87,7 @@ atik"><img src="../../images/header.gif" alt="Directly to home" /> </a>
                 <li>stage 2: submitted to grid and waiting for execution</li>
                 <li>stage 3: calculating</li>
                 <li>stage 4: finished</li>
-                <li>stage 5: error; please contact us via e-mail if you see that your job went into an error state.</li>
+                <li>stage 5: error. If you were the original submitter of this job, you will be notified about the error status via e-mail. If you were not the original submitter of this job but you have been redirected to this status page via e-mail because you submitted identical data, please contact us via e-mail.</li>
             </ul>
             For more details, see <a href="../../help.gsp#job_status">Help</a>
             </g:if>

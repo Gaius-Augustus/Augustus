@@ -4,7 +4,7 @@
 class Prediction {
    static searchable = true
    String email_adress
-   String project_id // equals the accession_id in training.groovy, can actually just be used as in training.groovy but if missing, it will be newly generated in the prediction controller.
+   String project_id // the species name according to a formerly computed webserver training run (random 8 character string)
    String genome_file
    String genome_ftp_link
    String genome_cksum = 0
@@ -21,6 +21,14 @@ class Prediction {
    String hint_size = 0
    String job_id // SGE Job ID will be determined by controller
    String job_status // SGE job status will be determined by
+   //generate a random (and unique) string for links to results here
+   private static String validChars ="ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
+   private int IDlength=8
+   int maxIndex = validChars.length()
+   def rnd = new Random()
+   String accession_id = (1..IDlength).sum{ 
+      validChars[ rnd.nextInt(maxIndex) ] 
+   } 
    Date dateCreated
    Boolean utr = false
    static constraints = {

@@ -7,7 +7,7 @@
 
 class TrainingController {
    // need to adjust the output dir to whatever working dir! This is where uploaded files and results will be saved.
-   def output_dir = "/data/www/augtrain/webdata" // should be something in home of webserver user and augustus frontend user. Directory will be copied from webserver user to augustus frontend user.
+   def output_dir = "/data/www/augtrain/webdata" // should be something in home of webserver user and augustus frontend user.
    // this log File contains the "process log", what was happening with which job when.
    def logFile = new File("${output_dir}/augustus-training.log")
    // this log File contains the "database" (not identical with the grails database and simply for logging purpose)
@@ -21,6 +21,8 @@ class TrainingController {
    def AUGUSTUS_CONFIG_PATH = "/usr/local/augustus/trunks/config";
    def AUGUSTUS_SCRIPTS_PATH = "/usr/local/augustus/trunks/scripts";
    def scaffold = Training
+   // Admin mail for errors
+   def admin_email = "katharina.hoff@gmail.com"
    // the method commit is started if the "Submit Job" button on the website is hit. It is the main method of Training Controller and contains a Thread method that will continue running as a background process after the user is redirected to the job status page.
 
    def commit = {
@@ -664,7 +666,7 @@ You submitted job ${trainingInstance.accession_id} for species ${trainingInstanc
 
 The job status of the previously submitted job is available at http://bioinf.uni-greifswald.de/trainaugustus/training/show/${oldID}
 
-The results - in case the previously submitted job finished, already - are available at http://bioinf.uni-greifswald.de/trainaugustus/training-results/${oldAccContent}/index.html
+The results are available at http://bioinf.uni-greifswald.de/trainaugustus/training-results/${oldAccContent}/index.html (Results are only available in case the previously submitted job's computations have finished, already.)
 
 Thank you for using AUGUSTUS!
 
@@ -675,7 +677,7 @@ the AUGUSTUS training web server team
 http://bioinf.uni-greifswald.de/trainaugustus
 """
               }
-              logFile << "${trainingInstance.accession_id} Data are identical to old job ${oldID} with Accession-ID ${oldAccContent}. ${projectDir} is deleted (rm -r).\n"
+              logFile << "${trainingInstance.accession_id} Data are identical to old job ${oldAccContent} with Accession-ID ${oldAccContent}. ${projectDir} is deleted (rm -r).\n"
               def delProc = "rm -r ${projectDir}".execute()
               delProc.waitFor()
               logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted, the user is informed!\n"
@@ -757,11 +759,25 @@ http://bioinf.uni-greifswald.de/trainaugustus
                  trainingInstance.save()
                  qstat = 0
                  today = new Date()
-                 logFile << "${trainingInstance.accession_id} Job ${jobID} finished at ${today}.\n"
+                 logFile << "${trainingInstance.accession_id} Job ${jobID} left SGE at ${today}.\n"
               }
               sleep 5000
            }
-           sendMail {
+	   // check whether errors occured by log-file-sizes
+	   def autoAugErrFile = new File("${projectDir}/AutoAug.err")
+	logFile << "${trainingInstance.accession_id} defined AutoAug.err.\n"
+	   def sgeErrFile = new File("${projectDir}/web-aug.sh.e${jobID}")
+logFile << "${trainingInstance.accession_id} defined web-aug.sh.e${jobID}.\n"
+	   def writeResultsErrFile = new File("${projectDir}/writeResults.err")
+logFile << "${trainingInstance.accession_id} defined writeResults.err.\n"
+	   def autoAugErrSize = autoAugErrFile.text.size()
+logFile << "${trainingInstance.accession_id} got autoAug.err size: ${autoAugErrSize}.\n"
+	   def sgeErrSize = sgeErrFile.text.size()
+logFile << "${trainingInstance.accession_id} got sge.err size: ${sgeErrSize}.\n"
+	   def writeResultsErrSize = writeResultsErrFile.text.size()
+logFile << "${trainingInstance.accession_id} got writeResults.err size ${writeResultsErrSize}.\n"
+           if(autoAugErrSize==0 && sgeErrSize==0 && writeResultsErrSize==0){
+           	sendMail {
               to "${trainingInstance.email_adress}"
               subject "Your AUGUSTUS training job ${trainingInstance.accession_id} is complete"
               body """Hello!
@@ -776,8 +792,90 @@ the AUGUSTUS training web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """
-          }
-          logFile << "${trainingInstance.accession_id} Sent confirmation Mail that job finished successfully.\n"
+         	 }
+          	logFile << "${trainingInstance.accession_id} Sent confirmation Mail that job computation was successful.\n"
+//  tar cf - XA2Y5VMJ/ | 7z a -si XA2Y5VMJ.tar.7z
+// rm -r projectDir
+// unpack with 7z x XA2Y5VMJ.tar.7z
+// tar xvf XA2Y5VMJ.tar
+		def packResults = new File("${output_dir}/pack${trainingInstance.accession_id}.sh")
+            	packResults << "cd ${output_dir}; tar cf - ${trainingInstance.accession_id} | 7z a -si ${trainingInstance.accession_id}.tar.7z; rm -r ${trainingInstance.accession_id};"
+		def cleanUp = "bash ${output_dir}/pack${trainingInstance.accession_id}.sh".execute()
+                cleanUp.waitFor()
+		def cleanUp2 = "rm ${output_dir}/pack${trainingInstance.accession_id}.sh".execute()
+		cleanUp2.waitFor()
+		logFile << "${trainingInstance.accession_id} autoAug directory was packed with tar/7z.\n"
+		logFile << "${trainingInstance.accession_id} Job completed. Result: error state.\n"
+	  }else{
+		if(autoAugErrSize > 0){
+			logFile << "${trainingInstance.accession_id} an error occured when autoAug.pl was executed!\n"; 
+			sendMail {
+              to "${admin_email}"
+              subject "Error in AUGUSTUS training job ${trainingInstance.accession_id}"
+              body """Hi ${admin_email}!
+
+Job: ${trainingInstance.accession_id}
+E-Mail: ${trainingInstance.email_adress}
+Species: ${trainingInstance.project_name}
+Link: http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/index.html
+
+An error occured in the autoAug pipeline. Please check manually what's wrong. The user has been informed.
+"""
+         		}
+		        trainingInstance.job_status = 5
+		}else if(sgeErrFile > 0){
+			logFile << "${trainingInstance.accession_id} a SGE error occured!\n";
+			sendMail {
+              to "${admin_email}"
+              subject "Error in AUGUSTUS training job ${trainingInstance.accession_id}"
+              body """Hi ${admin_email}!
+
+Job: ${trainingInstance.accession_id}
+E-Mail: ${trainingInstance.email_adress}
+Species: ${trainingInstance.project_name}
+Link: http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/index.html
+
+An SGE error occured. Please check manually what's wrong. The user has been informed.
+"""
+         		}
+		        trainingInstance.job_status = 5
+		}else{
+			logFile << "${trainingInstance.accession_id} an error occured during writing results!\n";
+			sendMail {
+              to "${admin_email}"
+              subject "Error in AUGUSTUS training job ${trainingInstance.accession_id}"
+              body """Hi ${admin_email}!
+
+Job: ${trainingInstance.accession_id}
+E-Mail: ${trainingInstance.email_adress}
+Species: ${trainingInstance.project_name}
+Link: http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/index.html
+
+An error occured during writing results. Please check manually what's wrong. The user has been informed.
+"""
+         		}
+		}
+		sendMail {
+              to "${trainingInstance.email_adress}"
+              subject "Your AUGUSTUS training job ${trainingInstance.accession_id} is in an error state"
+              body """Hello!
+
+An error occured while training AUGUSTUS for species ${trainingInstance.project_name} (Job ${trainingInstance.accession_id}).
+
+The administrator of the AUGUSTUS training web server has been informed and will get back to you as soon as the problem is solved.
+
+Thank you for using AUGUSTUS!
+
+Best regards,
+
+the AUGUSTUS training web server team
+
+http://bioinf.uni-greifswald.de/trainaugustus
+"""
+         	 }
+
+          	logFile << "${trainingInstance.accession_id} Sent confirmation Mail the job is in an error state.\n"
+	  }
       }
       //------------ END BACKGROUND PROCESS ----------------------------------
    }}

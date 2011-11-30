@@ -70,6 +70,7 @@
             <br>
 	    <h2>Contents</h2>
 	    <p>
+	      <a href="#noResults">Why do I not get any results?</a><br>
 	      <a href="#buisy">Why is the server buisy?</a><br>
               <a href="#species_name">What is the species name?</a><br>
 	      <a href="#email">Why must I give my e-mail address?</a><br>
@@ -84,10 +85,20 @@
               <a href="#project_id">What is the project identifier?</a><br>
               <a href="#job_status">What does my job status mean?</a><br>
               <a href="#utr">Why predicting the UTR?</a><br>
-              <a href="#list">Why does my results page redirect me to a list of jobs?</a><br>
+              <a href="#list">Why does my job not exist?</a><br>
             </p>
             <hr>
 	    <br>
+	    <h2 id="noResults">Why do I not get any results?</h2>
+	    <p>The quality of results depends on the quality and combination of you input data. If the input data did e.g. not provide sufficient information for generating training genes, then no AUGUSTUS paramteres will be optimized for your species, and no predictions will be made. In case of the gene prediction web server application, it is also possible that your submitted genome sequence does not contain any protein coding genes.</p>
+<p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
+            <hr>
+            <br>
             <h2 id="buisy">Why is the server buisy?</h2>
             <p>Training AUGUSTUS is a very resource and time consuming process. We use a grid engine queuing system with a limited number of waiting slots. If we estimate that the time from job submission to computation start might be very long, our web server might display a message that our server is buisy. The submission of new jobs is then disabled. Please wait one or two weeks before you try a new submission. If the problem persists longer than a month, please contact <a href="mailto:bioinformatik.greifswald@gmail.com">bioinformatik.greifswald@gmail.com</a>.</p>
 	    <p><a href="#seitenanfang">
@@ -272,21 +283,39 @@ HS04636 anchor  intronpart      7631    7633    0       +       0       source=M
             </p>
             <hr>
             <div id="archive"><h2>Parameter archive</h2></div>
-            A *.tar.gz archive with the following files is required for predicting genes in a new genome with pre-trained parameters:
+	    <p>
+            A *.tar.gz archive with a folder containing the following files is required for predicting genes in a new genome with pre-trained parameters:</p>
+	    <p>
             <ul>
-               <li><i>species</i>_parameters.cfg</li>
-               <li><i>species</i>_exon_probs.pbl</li>
-                        <li><i>species</i>_igenic_probs.pbl</li>
-               <li><i>species</i>_intron_probs.pbl</li>
-               <li><i>species</i>_weightmatrix.txt</li>
+               <li><i>species</i>/<i>species</i>_parameters.cfg</li>
+               <li><i>species</i>/<i>species</i>_exon_probs.pbl</li>
+               <li><i>species</i>/<i>species</i>_igenic_probs.pbl</li>
+               <li><i>species</i>/<i>species</i>_intron_probs.pbl</li>
+               <li><i>species</i>/<i>species</i>_weightmatrix.txt</li>
             </ul>
-            where <i>species</i> is replaced by the name of the species you trained AUGUSTUS for (e.g. <i>carrot</i>). If you simply tar and gzip the results of an AUGUSTUS training run, everything should work fine.
+	    </p>
+            <p>where <i>species</i> is replaced by the name of the species you trained AUGUSTUS for (e.g. <i>carrot</i>). If you simply tar and gzip the folder that contains parameters of an AUGUSTUS training run, everything should work fine.</p>
+                       <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
             <hr>
+            <br>
             <div id="project_id"><h2>What is the project identifier?</h2></div>
-            If you trained AUGUSTUS on this webserver, you may instead of uploading a parameter archive, simply specify the project identifier of this training run. You find the project identifier for example in the subject line for your training confirmation e-mail, where it says <i>Your AUGUSTUS training job project_id</i>. But you can also find the project identifier on the results webpage.
+            <p>If you trained AUGUSTUS on this webserver, you may instead of uploading a parameter archive, simply specify the project identifier of this training run. You find the project identifier for example in the subject line for your training confirmation e-mail, where it says <i>Your AUGUSTUS training job project_id</i>.</p>
+            <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
             <hr>
+            <br>
             <div id="job_status"><h2>What does my job status mean?</h2></div>
-            Your job is in one of five stages:
+            <p>Your job is in one of five stages:</p>
+	    <p>
             <ul>
                <li><b>stage 1</b>: submitted to webserver but not to cluster, yet. This may have one of the following reasons:
                <ul>
@@ -300,16 +329,35 @@ HS04636 anchor  intronpart      7631    7633    0       +       0       source=M
                <li><b>stage 4</b>: finished 
                <li><b>stage 5</b>: an error occurred
             </ul>
+	    </p>
+            <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
             <hr>
+            <br>
             <div id="utr"><h2>Why predicting the UTR?</h2>
-            If a model for the untranslated regions (UTRs) is available for the species, they are included in the prediction. It takes significantly more time but in addition to reporting UTRs, it usually is also a little more accurate on the coding regions when ESTs are given as input.
+            <p>If a model for the untranslated regions (UTRs) is available for the species, they are included in the prediction. It takes significantly more time but in addition to reporting UTRs, it usually is also a little more accurate on the coding regions when ESTs are given as input.</p>
+            <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
             <hr>
-            <div id="list"><h2>Why does my results page redirect me to a list of jobs?!</h2></div>
-            We are trying to avoid data duplication. If you submitted some data that was already submitted before, by you or somebody else, we will delete your job. You receive an e-mail with a link to the results of training AUGUSTUS on your data (but that results page was - as stated in the beginning - created before you even submitted your job). <br>
-            In the meantime your brower is redirected to a list of all available projects.
+            <br>
+            <div id="list"><h2>Why does my job not exist?</h2></div>
+            <p>We are trying to avoid data duplication. If you submitted some data that was already submitted before, by you or somebody else, we will delete your job. You receive an e-mail with a link to the job-status and results of training AUGUSTUS on your data. The results link will only be functional in case the computations of that previously submitted job have already finished.</p>
 
+            <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
             <hr>
-            
             </div>
 </div>
  </div>
