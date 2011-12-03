@@ -5,9 +5,12 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <meta name="layout" content="main" />
         <title>Create Prediction</title>
-    <script type="text/javascript" src="js/md_stylechanger.js"></script>         
+    <script type="text/javascript" src="js/md_stylechanger.js"></script>
     </head>
     <body>
+
+
+
 
 <!-- ***** Start: Kopfbereich ********************************************// -->
 <p class="unsichtbar">
@@ -86,7 +89,7 @@
                   <tr>
                     <td class="contentheading" width="100%">
                       
-                        <g:link controller="training" action="create">Data Input for Running AUGUSTUS</g:link>
+                        <g:link controller="prediction" action="create">Data Input for Running AUGUSTUS</g:link>
                     </td>
                   </tr>
                 </table>
@@ -133,7 +136,7 @@
                                     <label for="project_id">specify a project identifier:</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'project_id','errors')}">
-                                    <input type="text" id="project_id" name="augustus_project_id" value="${fieldValue(bean:predictionInstance,field:'project_id')}"/> <a href="../help.gsp#project_id"><small>Help</small></a>
+                                    <input type="text" id="project_id" name="project_id" value="${fieldValue(bean:predictionInstance,field:'project_id')}"/> <a href="../help.gsp#project_id"><small>Help</small></a>
 
                                 </td>
                             </tr>
@@ -165,8 +168,8 @@
                                 <td valign="top" class="name">
                                     <label for="genome_ftp_link">specify web link to genome file:</label>
                                 </td>
-                                <td valign="top" class="value ${hasErrors(bean:trainingInstance,field:'genome_ftp_link','errors')}">
-                                    <input type="text" id="genome_ftp_link" name="genome_ftp_link" value="${fieldValue(bean:trainingInstance,field:'genome_ftp_link')}"/>
+                                <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'genome_ftp_link','errors')}">
+                                    <input type="text" id="genome_ftp_link" name="genome_ftp_link" value="${fieldValue(bean:predictionInstance,field:'genome_ftp_link')}"/>
                                 </td>
                             </tr>
                           </tbody>
@@ -195,8 +198,8 @@
                                 <td valign="top" class="name">
                                     <label for="est_ftp_link">specify web link to cDNA file:</label>
                                 </td>
-                                <td valign="top" class="value ${hasErrors(bean:trainingInstance,field:'est_ftp_link','errors')}">
-                                    <input type="text" id="est_ftp_link" name="est_ftp_link" value="${fieldValue(bean:trainingInstance,field:'est_ftp_link')}"/>
+                                <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'est_ftp_link','errors')}">
+                                    <input type="text" id="est_ftp_link" name="est_ftp_link" value="${fieldValue(bean:predictionInstance,field:'est_ftp_link')}"/>
                                 </td>
                             </tr>
                             <tr class="prop"><td><br></td><td></td></tr>
@@ -235,8 +238,7 @@
       Germany<br />
       Tel.: +49 (0)3834 86 - 46 24<br/>
       Fax:  +49 (0)3834 86 - 46 40<br /><br />
-      <a href="mailto:bioinformatik.greifswald@gmail.com" title="E-Mail bioinformatik.greifswald@gmail.com, opens the\
- standard mail program">bioinformatik.greifswald@gmail.com</a>
+      <a href="mailto:augustus-web@uni-greifswald.de" title="E-Mail augustus-web@uni-greifswald.de, opens the  standard mail program">augustus-web@uni-greifswald.de</a>
     </div>
     </div>
 

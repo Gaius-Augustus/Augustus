@@ -43,7 +43,7 @@ class Prediction {
         }
       })
       genome_ftp_link(nullable:true, blank:true, url:true)
-      project_id(nullable:true, blank:true, size:8..8)
+      project_id(nullable:true, blank:true, size:3..30)
       est_file(nullable:true, blank:true, validator: { val, obj ->
          if (!(obj.est_file == null) && !(obj.est_ftp_link == null)) {
             return 'training.est_file.not_both'
@@ -59,6 +59,7 @@ class Prediction {
       hint_size(nullable:true)
       archive_cksum(nullable:true)
       archive_size(nullable:true)
+      archive_file(nullable:true)
       job_id(nullable:true)
       job_status(nullable:true)
       utr()

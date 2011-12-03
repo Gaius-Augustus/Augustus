@@ -254,7 +254,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
       Germany<br />
       Tel.: +49 (0)3834 86 - 46 24<br/>
       Fax:  +49 (0)3834 86 - 46 40<br /><br />
-      <a href="mailto:bioinformatik.greifswald@gmail.com" title="E-Mail bioinformatik.greifswald@gmail.com, opens the standard mail program">bioinformatik.greifswald@gmail.com</a>
+      <a href="mailto:augustus-web@uni-greifswald.de" title="E-Mail augustus-web@uni-greifswald.de, opens the standard mail program">augustus-web@uni-greifswald.de</a>
     </div>
     </div>
 

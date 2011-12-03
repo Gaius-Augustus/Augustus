@@ -18,20 +18,14 @@
   <table width="100%" border="0" cellpadding="0" cellspacing="1">
     <tr>
       <td nowrap="nowrap">
-        <a href="http://www.uni-greifswald.de" target="_blank" class="mainleveltop_" >University of Greifswald</a><span class="mainleveltop_">&nbsp;|&nbsp; </span><a href="http://www.mnf.u\
-\                                                                                                                                                                                            
-ni-greifswald.de/" target="_blank" class="mainleveltop_" >Faculty</a><span class="mainleveltop_">&nbsp;|&nbsp; </span><a href="http://www.math-inf.uni-greifswald.de/" target="_blank" class\
-\
-="mainleveltop_" >Institute</a><span class="mainleveltop_">&nbsp;|&nbsp;</span><a href="http://bioinf.uni-greifswald.de/" target="_blank" class="mainleveltop_">Bioinformatics Group</a>
+        <a href="http://www.uni-greifswald.de" target="_blank" class="mainleveltop_" >University of Greifswald</a><span class="mainleveltop_">&nbsp;|&nbsp; </span><a href="http://www.mnf.uni-greifswald.de/" target="_blank" class="mainleveltop_" >Faculty</a><span class="mainleveltop_">&nbsp;|&nbsp; </span><a href="http://www.math-inf.uni-greifswald.de/" target="_blank" class="mainleveltop_" >Institute</a><span class="mainleveltop_">&nbsp;|&nbsp;</span><a href="http://bioinf.uni-greifswald.de/" target="_blank" class="mainleveltop_">Bioinformatics Group</a>
       </td>
     </tr>
   </table>
 </div>
 <div id="banner">
    <div id="banner_links">
-       <a href="http://www.math-inf.uni-greifswald.de/mathe/index.php" title="Institut f&uuml;r Mathematik und Inform\                                                                      \
-                                                                                                                                                                                             
-atik"><img src="../../images/header.gif" alt="Directly to home" /> </a>
+       <a href="http://www.math-inf.uni-greifswald.de/mathe/index.php" title="Institut f&uuml;r Mathematik und Informatik"><img src="../../images/header.gif" alt="Directly to home" /> </a>
    </div>
    <div id="banner_mitte">
       <div id="bannertitel1">
@@ -114,7 +108,7 @@ atik"><img src="../../images/header.gif" alt="Directly to home" /> </a>
       Germany<br />
       Tel.: +49 (0)3834 86 - 46 24<br/>
       Fax:  +49 (0)3834 86 - 46 40<br /><br />
-      <a href="mailto:bioinformatik.greifswald@gmail.com" title="E-Mail bioinformatik.greifswald@gmail.com, opens the standard mail program">bioinformatik.greifswald@gmail.com</a>
+      <a href="mailto:augustus-web@uni-greifswald.de" title="E-Mail augustus-web@uni-greifswald.de, opens the standard mail program">augustus-web@uni-greifswald.de</a>
     </div>
 
     <div class="beendeFluss"></div>
