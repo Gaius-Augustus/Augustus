@@ -32,6 +32,7 @@ class Prediction {
    Date dateCreated
    Boolean utr = false
    static constraints = {
+      accession_id(unique:true) // may (unlikely) cause problems if the grails database ever gets lost.
       email_adress(email:true,blank:false,nullable:false)
       genome_file(nullable:true, blank:true, validator: { val, obj ->
         if (obj.genome_file == null && obj.genome_ftp_link == null) {

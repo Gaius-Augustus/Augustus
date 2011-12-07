@@ -1,0 +1,5 @@
+class Buisy {
+
+    static constraints = {
+    }
+}

@@ -9,9 +9,9 @@ hibernate {
 environments {
 	development {
 		dataSource {
-			pooled = true
-			dbCreate = "update" 
-			url = "jdbc:mysql://localhost/augtraindev "
+			poold = true
+			dbCreate = "update"
+			url = "jdbc:mysql://localhost/augtrainprod"
                         driverClassName = "com.mysql.jdbc.Driver"
                         username = "grails1"
                         password = "9M6T5kgU"
@@ -23,16 +23,16 @@ environments {
                                    minEvictableIdleTimeMillis = 60000
                                    timeBetweenEvictionRunsMillis = 60000
                                    maxWait = 10000
-                       }
+                        }                       
 
 
 		}
 	}
 	test {
 		dataSource {
-			pooled = true
+			poold = true
 			dbCreate = "update"
-			url = "jdbc:mysql://localhost/augtraintest"
+			url = "jdbc:mysql://localhost/augtrainprod"
                         driverClassName = "com.mysql.jdbc.Driver"
                         username = "grails1"
                         password = "9M6T5kgU"
@@ -44,7 +44,7 @@ environments {
                                    minEvictableIdleTimeMillis = 60000
                                    timeBetweenEvictionRunsMillis = 60000
                                    maxWait = 10000
-                       }
+                        }                       
 		}
 	}
 	production {
