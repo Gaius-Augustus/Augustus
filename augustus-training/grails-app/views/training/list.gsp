@@ -31,10 +31,10 @@
    </div>
    <div id="banner_mitte">
       <div id="bannertitel1">
-        Bioinformatics Web Server
+        Bioinformatics Web Server at University of Greifswald
       </div>
       <div id="bannertitel2">
-        AUGUSTUS Training
+        Gene Prediction with AUGUSTUS
       </div>
    </div>
    <div id="banner_rechts">
@@ -59,8 +59,8 @@
   <div id="linke_spalte">
      <ul class="menu">
          <li><a href="../index.gsp"><span>Introduction</span></a></li>
-         <li><g:link controller="training" action="create"><span>Submitt Training</span></g:link></li>
-         <li><g:link controller="prediction" action="create"><span>Submitt Prediction</span></g:link></li>
+         <li><g:link controller="training" action="create"><span>Submit Training</span></g:link></li>
+         <li><g:link controller="prediction" action="create"><span>Submit Prediction</span></g:link></li>
          <li><a href="../help.gsp"><span>Help</span></a></li>
          <li><a href="../references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>

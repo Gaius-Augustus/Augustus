@@ -32,10 +32,10 @@
    </div>
    <div id="banner_mitte">
       <div id="bannertitel1">
-        Bioinformatics Web Server
+        Bioinformatics Web Server at University of Greifswald
       </div>
       <div id="bannertitel2">
-        AUGUSTUS Training
+        Gene Prediction with AUGUSTUS
       </div>
    </div>
    <div id="banner_rechts">
@@ -47,7 +47,7 @@
 
 <div id="wegweiser">
   Navigation for: &nbsp; &nbsp;<span class="breadcrumbs pathway">
-    Submitt Prediction</span>
+    Submit Prediction</span>
 
   <div class="beendeFluss"></div>
 </div>
@@ -58,8 +58,8 @@
   <div id="linke_spalte">
      <ul class="menu">
          <li><a href="../index.gsp"><span>Introduction</span></a></li>
-         <li><g:link controller="training" action="create"><span>Submitt Training</span></g:link></li>
-         <li id="current"><g:link controller="prediction" action="create"><span>Submitt Prediction</span></g:link></li>
+         <li><g:link controller="training" action="create"><span>Submit Training</span></g:link></li>
+         <li id="current"><g:link controller="prediction" action="create"><span>Submit Prediction</span></g:link></li>
          <li><a href="../help.gsp"><span>Help</span></a></li>
          <li><a href="../references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
@@ -95,7 +95,8 @@
                 </table>
               </legend><p>
                 <div class="dialog">
-		    <p>Please use this form to submitt your data for running AUGUSTUS on new genomic data with already available pre-trained parameters.</p>
+		    <p>Please use this form to submit your data for running AUGUSTUS on new genomic data with already available pre-trained parameters.</p>
+		    <p>You have to specify an <b>E-mail address</b>!</p>
                     <table>
                         <tbody>
                                 <tr class="prop">
@@ -116,7 +117,7 @@
                          <tbody>
                              <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="ArchiveFile"><b>Augustus parameters</b></label>
+                                    <label for="ArchiveFile"><b>AUGUSTUS species parameters</b></label>
                                 </td>
                                 <td valitn="top">
                                 </td>
@@ -180,7 +181,7 @@
                           <tbody>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="EstFile"><b>cDNA file</b> &nbsp; <a href="../help.gsp#cDNA"><small>Help</small></a></label>
+                                    <label for="EstFile"><b>cDNA file</b> &nbsp; <small><b><i>Non-commercial users only</i></b></small> &nbsp;<a href="../help.gsp#cDNA"><small>Help</small></a></label>
                                 </td>
                                 <td valign="top">
                                 </td>
@@ -217,11 +218,70 @@
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                        </table>
+			<br>
+			<p>The following checkboxes allow you to modify the gene prediction behavior of AUGUSTUS:</p>
+			<table>
+				<tbody>
+					<tr class="prop">
+						<td valign="top" class="name">
+							<label for="UtrPrediction"><b>UTR prediction</b> &nbsp; <a href="../help.gsp#utr"><small>Help</small></a></label>
+						</td>
+					</tr>
+					<tr class="prop">
+						<td valign="top" class="name">
+							<g:checkBox name="utr" value="${false}" /> predict UTRs (requires species-specific UTR parameters)
+						</td>
+					</tr>
+					<tr class="prop">
+						<td valign="top" class="name">
+							<br><label for="StrandPrediction"><b>Report genes on</b></label>
+						</td>
+					</tr>
+					<tr class="prop">
+						<td valign="top" class="name">
+							<g:radio name="pred_strand" value="1" checked="true"/> both strands  &nbsp; &nbsp; <g:radio name="pred_strand" value="2"/> forward strand only &nbsp; &nbsp; <g:radio name="pred_strand" value="3"/> reverse strand only
+						</td>
+					<tr class="prop">
+						<td valign="top" class="name">
+							<br><label for="AlternativeTranscripts"><b>Alternative transcripts:</b></label>
+						</td>
+					</tr>
+					<tr class="prop">
+						<td valign="top" class="name">
+							<g:radio name="alt_transcripts" value="1" checked="true"/> none  &nbsp; &nbsp; <g:radio name="alt_transcripts" value="2"/> few &nbsp; &nbsp; <g:radio name="alt_transcripts" value="3"/> medium &nbsp; &nbsp; <g:radio name="alt_transcripts" value="4"/> many 
+						</td>
+					</tr>
+					<tr class="prop">
+						<td valign="top" class="name">
+							<br><label for="GeneStructure"><b>Allowed gene structure:</b>&nbsp; <a href="../help.gsp#allowedGeneStructure"><small>Help</small></a></label>
+						</td>
+					</tr>
+					<tr class="prop">
+						<td valign="top" class="name">
+							<g:radio name="allowed_structures" value="1" checked="true"/> predict any number of (possibly partial) genes<br>
+							<g:radio name="allowed_structures" value="2"/> only predict complete genes<br>
+							<g:radio name="allowed_structures" value="3"/> only predict complete genes - at least one<br>
+							<g:radio name="allowed_structures" value="4"/>  predict exactly one gene<br><br>
+							<g:checkBox name="ignore_conflicts" value="${false}" /> ignore conflicts with other strand
+						</td>
+					</tr>
+				</tbody>
+			</table>
                     <br>
-                    <g:checkBox name="utr" value="${false}" /> predict UTRs <a href="../help.gsp#utr"><small>Help</small></a>
-                    <br><br>
+		    <p>We use a <b>verification string</b> to figure out whether you are a <b>human</b> submitter. Please type the text in the image below into the text field next to the image.
+			<table>
+				<tbody>
+					<tr class="prop">
+						<td valign="top" class="name">
+							<img src="${createLink(controller: 'simpleCaptcha', action: 'captcha')}"/> &nbsp; &nbsp; <g:textField name="captcha"/>
+						</td>
+					</tr>
+				</tbody>
+			</table>
                 </div>
+
+		
                 <div class="buttons">
                     <span class="button"><input class="commit" type="submit" value="Start Predicting" /></span>
                 </div>

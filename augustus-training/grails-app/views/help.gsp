@@ -26,10 +26,10 @@
    </div>
    <div id="banner_mitte">
       <div id="bannertitel1">
-        Bioinformatics Web Server
+        Bioinformatics Web Server at University of Greifswald
       </div>
       <div id="bannertitel2">
-        AUGUSTUS Training
+        Gene Prediction with AUGUSTUS
       </div>
    </div>
    <div id="banner_rechts">
@@ -53,8 +53,8 @@
   <div id="linke_spalte">
     <ul class="menu">
          <li><a href="index.gsp"><span>Introduction</span></a></li>
-         <li><g:link controller="training" action="create"><span>Submitt Training</span></g:link></li>
-         <li><g:link controller="prediction" action="create"><span>Submitt Prediction</span></g:link></li>
+         <li><g:link controller="training" action="create"><span>Submit Training</span></g:link></li>
+         <li><g:link controller="prediction" action="create"><span>Submit Prediction</span></g:link></li>
          <li id="current"><a href="help.gsp"><span>Help</span></a></li>
          <li><a href="references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
@@ -75,7 +75,7 @@
               <a href="#species_name">What is the species name?</a><br>
 	      <a href="#email">Why must I give my e-mail address?</a><br>
               <a href="#upload_link">File upload versus web link</a><br>
-              <a href="#which_files">Which files must or can I submitt for training AUGUSTUS?</a><br>
+              <a href="#which_files">Which files must or can I submit for training AUGUSTUS?</a><br>
               <a href="#which_files_pred">Which files are required for predicting genes in a new genome?</a><br>
               <a href="#genome_file">Genome file</a><br>
               <a href="#cDNA">cDNA file</a><br>
@@ -112,7 +112,7 @@
             <div id="species_name"><h2>What is the species name?</h2></div>
                 <p>
                 The species name is the name of the species for whose genome you want to train AUGUSTUS. If you do not want to reveal the true species name, you may use any other string shorter than 30 characters as a species name. Species names must be unique, i.e. if the string of your choice is already existing in our system, you will get a message that you have to choose another species name.</p>
-               <p>We are not redistributing the original sequence data that you submitted to our web server application. However, we are redistributing the trained parameters and the species name.</p><p><b>Example:</b><br> If person 1 submitts a sequence data set for training and names it <i>hypothetical_species</i>, and a second person tries later to train AUGUSTUS with exactly the same sequence files (new data upload) and names the species <i>some_other_name</i>, the second person will be redirected to the results of the original training parameter results of person 1, and the species name <i>hypothetical_species</i> will be publicly readable.</p>
+               <p>We are not redistributing the original sequence data that you submitted to our web server application. However, we are redistributing the trained parameters and the species name.</p><p><b>Example:</b><br> If person 1 submits a sequence data set for training and names it <i>hypothetical_species</i>, and a second person tries later to train AUGUSTUS with exactly the same sequence files (new data upload) and names the species <i>some_other_name</i>, the second person will be redirected to the results of the original training parameter results of person 1, and the species name <i>hypothetical_species</i> will be publicly readable.</p>
             <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
@@ -149,7 +149,7 @@
             </p>
             <hr>
 	    <br>
-            <div id="which_files"><h2>Which files must or can I submitt for training AUGUSTUS?</h2></div>
+            <div id="which_files"><h2>Which files must or can I submit for training AUGUSTUS?</h2></div>
             <p>You need to specify
             <ul>
                <li>a <a href="#genome_file">genome file</a> and</li>
@@ -247,8 +247,8 @@ mdhdltgladrpglrftvpqikcymkqlltglhychvnqv
             <hr>
 	    <br>
             <div id="structure"><h2>Training gene structure and hints file</h2></div>
-	    <p>You can submitt your own, externally created training gene structures to the AUGUSTUS training web server application.</p>
-	    <p>For the gene prediction web server application, it is possible to submitt an externally created file that contains extrinsic evidence for gene structures.</p>
+	    <p>You can submit your own, externally created training gene structures to the AUGUSTUS training web server application.</p>
+	    <p>For the gene prediction web server application, it is possible to submit an externally created file that contains extrinsic evidence for gene structures.</p>
 	    <p>Those two files both have to be in gff-format with the following (obligatory) tabulator-separated entries per line:<br><b>seqname source feature start end score strand frame attributes comments</b><br></p>
             <h3>Important details about gff-format for AUGUSTUS training</h3>
 	    <p>

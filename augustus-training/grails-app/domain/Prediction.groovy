@@ -31,6 +31,10 @@ class Prediction {
    } 
    Date dateCreated
    Boolean utr = false
+   Integer pred_strand = 1
+   Integer alt_transcripts = 1
+   Integer allowed_structures = 1
+   Boolean ignore_conflicts = false
    static constraints = {
       accession_id(unique:true) // may (unlikely) cause problems if the grails database ever gets lost.
       email_adress(email:true,blank:false,nullable:false)

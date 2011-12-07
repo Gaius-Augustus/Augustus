@@ -3,8 +3,23 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <meta name="layout" content="main" />
-        <title>Submitt Training</title>
-	<script type="text/javascript" src="js/md_stylechanger.js"></script>         
+        <title>Submit Training</title>
+	<script type="text/javascript" src="js/md_stylechanger.js"></script> 
+	<!-- flooble Expandable Content header start -->
+	<script language="javascript">
+	// Expandable content script from flooble.com.
+	// For more information please visit:
+	//   http://www.flooble.com/scripts/expand.php
+	// Copyright 2002 Animus Pactum Consulting Inc.
+	// Script was customized for this application by author of this HTML document!
+	//----------------------------------------------
+	var ie4 = false; if(document.all) { ie4 = true; }
+	function getObject(id) { if (ie4) { return document.all[id]; } else { return document.getElementById(id); } }
+	function toggle(link, divId) { var lText = link.innerHTML; var d = getObject(divId);
+ 	if (lText == 'click to expand') { link.innerHTML = 'click to minimize'; d.style.display = 'block'; }
+ 	else { link.innerHTML = 'click to expand'; d.style.display = 'none'; } }
+	</script>
+	<!-- flooble Expandable Content header end   -->                        
     </head>
     <body>
 
@@ -31,10 +46,10 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
    </div>
    <div id="banner_mitte">
       <div id="bannertitel1">
-        Bioinformatics Web Server
+        Bioinformatics Web Server at University of Greifswald
       </div>
       <div id="bannertitel2">
-        AUGUSTUS Training
+        Gene Prediction with AUGUSTUS
       </div>
    </div>
    <div id="banner_rechts">
@@ -46,7 +61,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 
 <div id="wegweiser">
   Navigation for: &nbsp; &nbsp;<span class="breadcrumbs pathway">
-    Submitt Training</span>
+    Submit Training</span>
 
   <div class="beendeFluss"></div>
 </div>
@@ -58,8 +73,8 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
   <div id="linke_spalte">
      <ul class="menu">
          <li><a href="../index.gsp"><span>Introduction</span></a></li>
-         <li id="current"><g:link controller="training" action="create"><span>Submitt Training</span></g:link></li>
-         <li><g:link controller="prediction" action="create"><span>Submitt Prediction</span></g:link></li>
+         <li id="current"><g:link controller="training" action="create"><span>Submit Training</span></g:link></li>
+         <li><g:link controller="prediction" action="create"><span>Submit Prediction</span></g:link></li>
          <li><a href="../help.gsp"><span>Help</span></a></li>
          <li><a href="../references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
@@ -82,6 +97,8 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                  </div>
             </g:if>
             <div class="main" id="main">
+			<noscript><p><b><span style="color:red">Please enable javascript in your browser in order to display the submission form correctly!</span></b> Form functionality is not affected while javascript is disabled.</p>
+			</noscript>
             <g:uploadForm action="commit" method="post" >
             <fieldset><legend>
 		<table class="contentpaneopen">
@@ -94,7 +111,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 		</table>
 	      </legend><p>
                <div class="dialog">
-		    <p>Please use this form to submitt data for training AUGUSTUS parameters for novel species/new genomic data.</p>
+		    <p>Please use this form to submit data for training AUGUSTUS parameters for novel species/new genomic data.</p>
  		    <p>You have to specify an <b>E-mail address</b>, a <b>species name</b>, and a <b>genome file</b>!</p>
                     <table>
                         <tbody>
@@ -155,7 +172,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                           <tbody>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="EstFile"><b>cDNA file</b> &nbsp; <a href="../help.gsp#cDNA"><small>Help</small></a></label>
+                                    <label for="EstFile"><b>cDNA file</b> &nbsp; <small><b><i>Non-commercial users only</i></b></small> &nbsp; <a href="../help.gsp#cDNA"><small>Help</small></a></label>
                                 </td>
                                 <td valign="top">
                                 </td>
@@ -218,24 +235,38 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                         </tbody>
                     </table>
                     <br>
-		    <h2>Possible file combinations</h2>
-		    <p>
-		      <ul>
-			<li><b>&#123;genome file, cDNA file&#125;</b><br>In this case, the cDNA file is used to create a training gene set. If cDNA quality is sufficient, also a UTR training set will be created.</li>
-			<li><b>&#123;genome file, protein file&#125;</b><br>In this case, the protein file is used to create a training gene set. No UTR training set can be created.</li>
-			<li><b>&#123;genome file, gene structure file&#125;</b><br>In this case, the gene structure file is used as a training gene set. If the gene structure file contains UTR elements, also a UTR training set will be created.</li>
-			<li><b>&#123;genome file, cDNA file, protein file&#125;</b><br>In this case, the protein file will be used to create a training gene set. No UTR training set will be created. cDNA sequences will be used as evidence for prediction, only.</li>
-			<li><b>&#123;genome file, cDNA file, gene structure file&#125;</b><br>In this case, the gene structure file is used as a training gene set. If the gene structure file contains UTR elements, also a UTR training set will be created. cDNA sequences will be used as evidence for prediction, only.</li>
-			</ul>
-		      </p>
-		    <h2>File combinations that are currently not supported</h2>
-		    <p>
-		      <ul>
-			<li><b>&#123;genome file, cDNA file, protein file, gene structure file&#125;</b></li>
-			<li><b>&#123;genome file, protein file, gene structure file&#125;</b></li>
-			</ul>
-		      </p>
-		    <br>
+			<!-- show some content upon click -->
+			<h2>Possible file combinations [<a title="show/hide" id="exp_file_options_link" href="javascript: void(0);" onclick="toggle(this, 'exp_file_options');"  style="text-decoration: none; color: #006699; ">click to minimize</a>]</h2>
+			<div id="exp_file_options" style="padding: 3px;">		    <p>
+		      		<ul>
+					<li><b>{genome file, cDNA file}</b><br>In this case, the cDNA file is used to create a training gene set. If cDNA quality is sufficient, also a UTR training set will be created.</li>
+					<li><b>{genome file, protein file}</b><br>In this case, the protein file is used to create a training gene set. No UTR training set can be created.</li>
+					<li><b>{genome file, gene structure file}</b><br>In this case, the gene structure file is used as a training gene set. If the gene structure file contains UTR elements, also a UTR training set will be created.</li>
+					<li><b>{genome file, cDNA file, protein file}</b><br>In this case, the protein file will be used to create a training gene set. No UTR training set will be created. cDNA sequences will be used as evidence for prediction, only.</li>
+					<li><b>{genome file, cDNA file, gene structure file}</b><br>In this case, the gene structure file is used as a training gene set. If the gene structure file contains UTR elements, also a UTR training set will be created. cDNA sequences will be used as evidence for prediction, only.</li>
+				</ul>
+		      		</p>
+		    		<h2>File combinations that are currently not supported</h2>
+		    		<p>
+		      			<ul>
+					<li><b>{genome file, cDNA file, protein file, gene structure file}</b></li>
+					<li><b>{genome file, protein file, gene structure file}</b></li>
+					</ul>
+		      		</p>
+			</div>
+			<script language="javascript">toggle(getObject('exp_file_options_link'), 'exp_file_options');</script>
+			<!-- end of javascript content on click -->
+                    <br>
+		    <p>We use a <b>verification string</b> to figure out whether you are a <b>human</b> submitter. Please type the text in the image below into the text field next to the image.
+			<table>
+				<tbody>
+					<tr class="prop">
+						<td valign="top" class="name">
+							<img src="${createLink(controller: 'simpleCaptcha', action: 'captcha')}"/> &nbsp; &nbsp; <g:textField name="captcha"/>
+						</td>
+					</tr>
+				</tbody>
+			</table>
                 </div>
                 <div class="buttons">
                     <span class="button"><input class="commit" type="submit" value="Start Training" /></span>

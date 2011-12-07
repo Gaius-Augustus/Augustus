@@ -83,6 +83,22 @@ log4j = {
     warn   'org.mortbay.log'
 }
 
+simpleCaptcha {
+    // font size used in CAPTCHA images
+    fontSize = 30
+    height = 200
+    width = 200
+    // number of characters in CAPTCHA text
+    captchaLength = 6
 
+    // amount of space between the bottom of the CAPTCHA text and the bottom of the CAPTCHA image
+    bottomPadding = 16
+
+    // distance between the diagonal lines used to obfuscate the text
+    lineSpacing = 10
+
+    // the charcters shown in the CAPTCHA text must be one of the following
+    chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!-;"
+}
 
      

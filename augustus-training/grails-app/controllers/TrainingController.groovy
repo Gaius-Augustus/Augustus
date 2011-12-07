@@ -5,6 +5,22 @@
 //    - rendering of results/job status page
 //    - sending E-Mails concerning the job status (submission, errors, finished)
 
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileReader
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.OutputStream
+import java.io.Reader
+import java.io.StreamTokenizer
+import java.io.StringWriter
+import java.io.Writer
+import java.net.URL
+import java.util.zip.GZIPInputStream
+
+
 class TrainingController {
 	// need to adjust the output dir to whatever working dir! This is where uploaded files and results will be saved.
 	def output_dir = "/data/www/augtrain/webdata" // should be something in home of webserver user and augustus frontend user.
@@ -25,6 +41,9 @@ class TrainingController {
 	def admin_email = "katharina.hoff@gmail.com"
 	// sgeLen length of SGE queue, when is reached "the server is buisy" will be displayed
 	def sgeLen = 8;
+
+	// human verification:
+	def simpleCaptchaService
 
 	// check whether the server is buisy
 	def beforeInterceptor = {
@@ -50,7 +69,7 @@ class TrainingController {
 			// get IP-address
 			String userIPTried = request.remoteAddr
 			logFile <<  "SGE      On ${todayTried} somebody with IP ${userIPTried} tried to invoke the Training webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
-			render "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><meta name=\"layout\" content=\"main\" /><title>Submitt Training</title><script type=\"text/javascript\" src=\"js/md_stylechanger.js\"></script></head><body><!-- ***** Start: Kopfbereich ********************************************// --><p class=\"unsichtbar\"><a href=\"#inhalt\" title=\"Directly to Contents\">Directly to Contents</a></p><div id=\"navigation_oben\"><a name=\"seitenanfang\"></a><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"1\"><tr><td nowrap=\"nowrap\"><a href=\"http://www.uni-greifswald.de\" target=\"_blank\" class=\"mainleveltop_\" >University of Greifswald</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.mnf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Faculty</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.math-inf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Institute</a><span class=\"mainleveltop_\">&nbsp;|&nbsp;</span><a href=\"http://bioinf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\">Bioinformatics Group</a></td></tr></table></div><div id=\"banner\"><div id=\"banner_links\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php\" title=\"Institut f&uuml;r Mathematik und Informatik\"><img src=\"../images/header.gif\" alt=\"Directly to home\" /> </a></div><div id=\"banner_mitte\"><div id=\"bannertitel1\">Bioinformatics Web Server</div><div id=\"bannertitel2\">AUGUSTUS Training</div></div><div id=\"banner_rechts\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167\" title=\"Voderberg-Doppelspirale\"><img src=\"../images/spirale.gif\" align=\"left\" /></a></div></div><div id=\"wegweiser\">Navigation for: &nbsp; &nbsp;<span class=\"breadcrumbs pathway\">Submitt Training</span><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Kopfbereich *********************************************// --><!-- ***** Start: Koerper ************************************************// --><div id=\"koerper\"><div id=\"linke_spalte\"><ul class=\"menu\"><li><a href=\"../index.gsp\"><span>Introduction</span></a></li><li><a href=\"/augustus-training/training/create\"><span>Submitt Training</span></a></li><li><a href=\"/augustus-training/prediction/create\"><span>Submitt Prediction</span></a></li><li><a href=\"../help.gsp\"><span>Help</span></a></li><li><a href=\"../references.gsp\"><span>Links & References</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de\"><span>Bioinformatics Group</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/impressum.html\"><span>Impressum</span></a></li></ul></div><div id=\"mittel_spalte\"><div class=\"main\" id=\"main\"><h1><font color=\"#006699\">The Server is Busy</font></h1><p>You tried to access the AUGUSTUS training job submission page.</p><p>Training parameters for gene prediction is a process that takes a lot of computation time. We estimate that one training process requires approximately 10 days. Our web server is able to process a certain number of jobs in parallel, and we established a waiting queue. The waiting queue has a limited length, though. Currently, all slots for computation and for waiting are occupied.</p><p>We apologize for the inconvenience! Please try to submitt your job in a couple of weeks, again.</p><p>Feel free to contact us in case your job is particularly urgent.</p></div><p>&nbsp;</p>           </div><div id=\"rechte_spalte\"><div class=\"linien_div\"><h5 class=\"ueberschrift_spezial\">CONTACT</h5><strong>Institute for Mathematics und Computer Sciences</strong><br/><strong>Bioinformatics Group</strong><br />Walther-Rathenau-Stra&szlig;e 47<br />17487 Greifswald<br />Germany<br />Tel.: +49 (0)3834 86 - 46 24<br/>Fax:  +49 (0)3834 86 - 46 40<br /><br /><a href=\"mailto:augustus-web@uni-greifswald.de\" title=\"E-Mail augustus-web@uni-greifswald.de, opens the standard mail program\">augustus-web@uni-greifswald.de</a></div></div><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Koerper *************************************************// --><!-- ***** Start: Fuss ***************************************************// --><div id=\"fuss\"><div id=\"fuss_links\"><p class=\"copyright\">&copy; 2011 University of Greifswald</p></div><div id=\"fuss_mitte\"><div class=\"bannergroup\"></div></div><div id=\"fuss_rechts\" ><ul><li><a href=\"#seitenanfang\"><img hspace=\"5\" height=\"4\" border=\"0\" width=\"7\" alt=\"Seitenanfang\" src=\"../images/top.gif\" />Top of page</a></li></ul></div><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Fuss ***************************************************// --></body></html>"
+			render "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><meta name=\"layout\" content=\"main\" /><title>Submitt Training</title><script type=\"text/javascript\" src=\"js/md_stylechanger.js\"></script></head><body><!-- ***** Start: Kopfbereich ********************************************// --><p class=\"unsichtbar\"><a href=\"#inhalt\" title=\"Directly to Contents\">Directly to Contents</a></p><div id=\"navigation_oben\"><a name=\"seitenanfang\"></a><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"1\"><tr><td nowrap=\"nowrap\"><a href=\"http://www.uni-greifswald.de\" target=\"_blank\" class=\"mainleveltop_\" >University of Greifswald</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.mnf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Faculty</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.math-inf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Institute</a><span class=\"mainleveltop_\">&nbsp;|&nbsp;</span><a href=\"http://bioinf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\">Bioinformatics Group</a></td></tr></table></div><div id=\"banner\"><div id=\"banner_links\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php\" title=\"Institut f&uuml;r Mathematik und Informatik\"><img src=\"../images/header.gif\" alt=\"Directly to home\" /> </a></div><div id=\"banner_mitte\"><div id=\"bannertitel1\">Bioinformatics Web Server at University of Greifswald</div><div id=\"bannertitel2\">Gene Prediction with AUGUSTUS</div></div><div id=\"banner_rechts\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167\" title=\"Voderberg-Doppelspirale\"><img src=\"../images/spirale.gif\" align=\"left\" /></a></div></div><div id=\"wegweiser\">Navigation for: &nbsp; &nbsp;<span class=\"breadcrumbs pathway\">Submitt Training</span><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Kopfbereich *********************************************// --><!-- ***** Start: Koerper ************************************************// --><div id=\"koerper\"><div id=\"linke_spalte\"><ul class=\"menu\"><li><a href=\"../index.gsp\"><span>Introduction</span></a></li><li><a href=\"/augustus-training/training/create\"><span>Submitt Training</span></a></li><li><a href=\"/augustus-training/prediction/create\"><span>Submitt Prediction</span></a></li><li><a href=\"../help.gsp\"><span>Help</span></a></li><li><a href=\"../references.gsp\"><span>Links & References</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de\"><span>Bioinformatics Group</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/impressum.html\"><span>Impressum</span></a></li></ul></div><div id=\"mittel_spalte\"><div class=\"main\" id=\"main\"><h1><font color=\"#006699\">The Server is Busy</font></h1><p>You tried to access the AUGUSTUS training job submission page.</p><p>Training parameters for gene prediction is a process that takes a lot of computation time. We estimate that one training process requires approximately 10 days. Our web server is able to process a certain number of jobs in parallel, and we established a waiting queue. The waiting queue has a limited length, though. Currently, all slots for computation and for waiting are occupied.</p><p>We apologize for the inconvenience! Please try to submitt your job in a couple of weeks, again.</p><p>Feel free to contact us in case your job is particularly urgent.</p></div><p>&nbsp;</p>           </div><div id=\"rechte_spalte\"><div class=\"linien_div\"><h5 class=\"ueberschrift_spezial\">CONTACT</h5><strong>Institute for Mathematics und Computer Sciences</strong><br/><strong>Bioinformatics Group</strong><br />Walther-Rathenau-Stra&szlig;e 47<br />17487 Greifswald<br />Germany<br />Tel.: +49 (0)3834 86 - 46 24<br/>Fax:  +49 (0)3834 86 - 46 40<br /><br /><a href=\"mailto:augustus-web@uni-greifswald.de\" title=\"E-Mail augustus-web@uni-greifswald.de, opens the standard mail program\">augustus-web@uni-greifswald.de</a></div></div><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Koerper *************************************************// --><!-- ***** Start: Fuss ***************************************************// --><div id=\"fuss\"><div id=\"fuss_links\"><p class=\"copyright\">&copy; 2011 University of Greifswald</p></div><div id=\"fuss_mitte\"><div class=\"bannergroup\"></div></div><div id=\"fuss_rechts\" ><ul><li><a href=\"#seitenanfang\"><img hspace=\"5\" height=\"4\" border=\"0\" width=\"7\" alt=\"Seitenanfang\" src=\"../images/top.gif\" />Top of page</a></li></ul></div><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Fuss ***************************************************// --></body></html>"
 			return
 		}		
 	} 
@@ -82,6 +101,15 @@ class TrainingController {
 			String userIP = request.remoteAddr
 			logFile <<  "${trainingInstance.accession_id} user IP: ${userIP}\n"
 
+			//verify that the submitter is a person
+			boolean captchaValid = simpleCaptchaService.validateCaptcha(params.captcha)
+			if(captchaValid == false){
+				logFile << "${trainingInstance.accession_id} The user is probably not a human person. Job aborted.\n"
+				flash.error = "The verification string at the bottom of the page was not entered correctly!"
+            			redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}"])
+           			return
+			}
+
 			// upload of genome file
 			def uploadedGenomeFile = request.getFile('GenomeFile')
 			def seqNames = []
@@ -91,6 +119,16 @@ class TrainingController {
 				projectDir.mkdirs()
 				uploadedGenomeFile.transferTo( new File (projectDir, "genome.fa"))
 				trainingInstance.genome_file = uploadedGenomeFile.originalFilename
+				if("${uploadedGenomeFile.originalFilename}" =~ /\.gz/){
+					logFile <<  "${trainingInstance.accession_id} Genome file is gzipped.\n"
+					def gunzipGenomeScript = new File("${projectDir}/gunzipGenome.sh")
+					gunzipGenomeScript << "cd ${projectDir}; mv genome.fa genome.fa.gz; gunzip genome.fa.gz"
+					def gunzipGenome = "bash ${gunzipGenomeScript}".execute()
+					gunzipGenome.waitFor()
+					logFile <<  "${trainingInstance.accession_id} Unpacked genome file.\n"
+					def delProc = "rm ${gunzipGenomeScript}".execute()
+					delProc.waitFor()
+				}
 				logFile <<  "${trainingInstance.accession_id} uploaded genome file ${uploadedGenomeFile.originalFilename} was renamed to genome.fa and moved to ${projectDir}\n"
 				// check for fasta format & extract fasta headers for gff validation:
 				new File("${projectDir}/genome.fa").eachLine{line -> 
@@ -135,22 +173,26 @@ class TrainingController {
 				// checking web file for DNA fasta format: 
 				def URL url = new URL("${trainingInstance.genome_ftp_link}");
 				def URLConnection uc = url .openConnection()
-				def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
-				def String inputLine=null
-				def lineCounter = 1;
-				while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 20)) {
-					if(!(inputLine =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(inputLine =~ /^$/)){ genomeFastaFlag = 1 }
-						lineCounter = lineCounter + 1
-				}
-				br.close()
-				if(genomeFastaFlag == 1) {
-					logFile <<  "${trainingInstance.accession_id} The first 20 lines in genome file are not fasta.\n"
-					def delProc = "rm -r ${projectDir}".execute()
-					delProc.waitFor()
-					logFile << "${trainingInstance.accession_id} Project directory ${projectDir} is deleted.\n${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
-					flash.error = "Genome file ${trainingInstance.genome_ftp_link} is not in DNA fasta format."
-					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
-					return
+				if(!("${trainingInstance.genome_ftp_link}" =~ /\.gz/)){
+					def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
+					def String inputLine=null
+					def lineCounter = 1;
+					while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 20)) {
+						if(!(inputLine =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(inputLine =~ /^$/)){ genomeFastaFlag = 1 }
+							lineCounter = lineCounter + 1
+					}
+					br.close()
+					if(genomeFastaFlag == 1) {
+						logFile <<  "${trainingInstance.accession_id} The first 20 lines in genome file are not fasta.\n"
+						def delProc = "rm -r ${projectDir}".execute()
+						delProc.waitFor()
+						logFile << "${trainingInstance.accession_id} Project directory ${projectDir} is deleted.\n${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						flash.error = "Genome file ${trainingInstance.genome_ftp_link} is not in DNA fasta format."
+						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+						return
+					}
+				}else{
+					logFile <<  "${trainingInstance.accession_id} The linked genome file is gzipped. Format will be checked later after extraction.\n"
 				}
 			}
  
@@ -160,6 +202,16 @@ class TrainingController {
 				projectDir.mkdirs()
 				uploadedEstFile.transferTo( new File (projectDir, "est.fa"))
 				trainingInstance.est_file = uploadedEstFile.originalFilename
+				if("${uploadedEstFile.originalFilename}" =~ /\.gz/){
+					logFile <<  "${trainingInstance.accession_id} EST file is gzipped.\n"
+					def gunzipEstScript = new File("${projectDir}/gunzipEst.sh")
+					gunzipEstScript << "cd ${projectDir}; mv est.fa est.fa.gz; gunzip est.fa.gz"
+					def gunzipEst = "bash ${gunzipEstScript}".execute()
+					gunzipEst.waitFor()
+					logFile <<  "${trainingInstance.accession_id} Unpacked EST file.\n"
+					def delProc = "rm ${gunzipEstScript}".execute()
+					delProc.waitFor()
+				}
 				logFile << "${trainingInstance.accession_id} Uploaded EST file ${uploadedEstFile.originalFilename} was renamed to est.fa and moved to ${projectDir}\n"
 				// check fasta format
 				new File("${projectDir}/est.fa").eachLine{line -> 
@@ -196,25 +248,29 @@ class TrainingController {
 			if(!(trainingInstance.est_ftp_link == null)){
 				logFile << "${trainingInstance.accession_id} est web-link is ${trainingInstance.est_ftp_link}\n"
 				projectDir.mkdirs()
-				// checking web file for DNA fasta format: 
-				def URL url = new URL("${trainingInstance.est_ftp_link}");
-				def URLConnection uc = url .openConnection()
-				def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
-				def String inputLine=null
-				def lineCounter = 1
-				while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 20)) {
-					if(!(inputLine =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(inputLine =~ /^$/)){ estFastaFlag = 1 }
-					lineCounter = lineCounter + 1
-				}
-				br.close()
-				if(estFastaFlag == 1) {
-					logFile << "${trainingInstance.accession_id} The cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
-					def delProc = "rm -r ${projectDir}".execute()
-					delProc.waitFor()
-					logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
-					flash.error = "cDNA file ${trainingInstance.est_ftp_link} is not in DNA fasta format."
-					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
-					return
+				if(!("${trainingInstance.est_ftp_link}" =~ /\.gz/)){
+					// checking web file for DNA fasta format: 
+					def URL url = new URL("${trainingInstance.est_ftp_link}");
+					def URLConnection uc = url .openConnection()
+					def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
+					def String inputLine=null
+					def lineCounter = 1
+					while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 20)) {
+						if(!(inputLine =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(inputLine =~ /^$/)){ estFastaFlag = 1 }
+						lineCounter = lineCounter + 1
+					}
+					br.close()
+					if(estFastaFlag == 1) {
+						logFile << "${trainingInstance.accession_id} The cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
+						def delProc = "rm -r ${projectDir}".execute()
+						delProc.waitFor()
+						logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						flash.error = "cDNA file ${trainingInstance.est_ftp_link} is not in DNA fasta format."
+						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+						return
+					}
+				}else{
+					logFile <<  "${trainingInstance.accession_id} The linked EST file is gzipped. Format will be checked later after extraction.\n"
 				}
 			}
 
@@ -288,6 +344,16 @@ class TrainingController {
 				projectDir.mkdirs()
 				uploadedProteinFile.transferTo( new File (projectDir, "protein.fa"))
 				trainingInstance.protein_file = uploadedProteinFile.originalFilename
+				if("${uploadedProteinFile.originalFilename}" =~ /\.gz/){
+					logFile <<  "${trainingInstance.accession_id} Protein file is gzipped.\n"
+					def gunzipProteinScript = new File("${projectDir}/gunzipProtein.sh")
+					gunzipProteinScript << "cd ${projectDir}; mv protein.fa protein.fa.gz; gunzip protein.fa.gz"
+					def gunzipProtein = "bash ${gunzipProteinScript}".execute()
+					gunzipProtein.waitFor()
+					logFile <<  "${trainingInstance.accession_id} Unpacked Protein file.\n"
+					def delProc = "rm ${gunzipProteinScript}".execute()
+					delProc.waitFor()
+				}
 				logFile << "${trainingInstance.accession_id} Uploaded protein file ${uploadedProteinFile.originalFilename} was renamed to protein.fa and moved to ${projectDir}\n"
 				// check fasta format
 				// check that file contains protein sequence, here defined as not more than 5 percent C or c
@@ -342,40 +408,44 @@ class TrainingController {
 			if(!(trainingInstance.protein_ftp_link == null)){
 				logFile << "${trainingInstance.accession_id} protein web-link is ${trainingInstance.protein_ftp_link}\n"
 				projectDir.mkdirs()
-				// checking web file for protein fasta format: 
-				def URL url = new URL("${trainingInstance.protein_ftp_link}");
-				def URLConnection uc = url .openConnection()
-				def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
-				def String inputLine=null
-				def lineCounter = 1;
-				def cytosinCounter = 0 // C is cysteine in amino acids, and cytosine in DNA.
-				def allAminoAcidsCounter = 0
-				while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 50)) {
-					if(!(inputLine =~ /^[>AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/) && !(inputLine =~ /^$/)){ estFastaFlag = 1 }
-					if(!(inputLine =~ /^>/)){
-						inputLine.eachMatch(/[AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/){allAminoAcidsCounter = allAminoAcidsCounter + 1}
-						inputLine.eachMatch(/[Cc]/){cytosinCounter = cytosinCounter + 1}
+				if(!("${trainingInstance.protein_ftp_link}" =~ /\.gz/)){
+					// checking web file for protein fasta format: 
+					def URL url = new URL("${trainingInstance.protein_ftp_link}");
+					def URLConnection uc = url .openConnection()
+					def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
+					def String inputLine=null
+					def lineCounter = 1;
+					def cytosinCounter = 0 // C is cysteine in amino acids, and cytosine in DNA.
+					def allAminoAcidsCounter = 0
+					while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 50)) {
+						if(!(inputLine =~ /^[>AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/) && !(inputLine =~ /^$/)){ proteinFastaFlag = 1 }
+						if(!(inputLine =~ /^>/)){
+							inputLine.eachMatch(/[AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/){allAminoAcidsCounter = allAminoAcidsCounter + 1}
+							inputLine.eachMatch(/[Cc]/){cytosinCounter = cytosinCounter + 1}
+						}
 					}
-				}
-				br.close()
-				cRatio = cytosinCounter/allAminoAcidsCounter
-				if (cRatio >= 0.05){
-					logFile << "${trainingInstance.accession_id} The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence).\n ${projectDir} is deleted (rm -r).\n"
-					def delProc = "rm -r ${projectDir}".execute()
-					delProc.waitFor()
-					logFile << "\n${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
-					flash.error = "Protein file ${trainingInstance.protein_ftp_link} does not contain protein sequences."
-					redirect(action:create)
-					return
-				}
-				if(proteinFastaFlag == 1) {
-					logFile << "${trainingInstance.accession_id} The protein file was not protein fasta. ${projectDir} is deleted (rm -r).\n"
-					def delProc = "rm -r ${projectDir}".execute()
-					delProc.waitFor()
-					logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
-					flash.message = "Protein file ${trainingInstance.protein_ftp_link} is not in protein fasta format."
-					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
-					return
+					br.close()
+					cRatio = cytosinCounter/allAminoAcidsCounter
+					if (cRatio >= 0.05){
+						logFile << "${trainingInstance.accession_id} The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence).\n ${projectDir} is deleted (rm -r).\n"
+						def delProc = "rm -r ${projectDir}".execute()
+						delProc.waitFor()
+						logFile << "\n${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						flash.error = "Protein file ${trainingInstance.protein_ftp_link} does not contain protein sequences."
+						redirect(action:create)
+						return
+					}
+					if(proteinFastaFlag == 1) {
+						logFile << "${trainingInstance.accession_id} The protein file was not protein fasta. ${projectDir} is deleted (rm -r).\n"
+						def delProc = "rm -r ${projectDir}".execute()
+						delProc.waitFor()
+						logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						flash.message = "Protein file ${trainingInstance.protein_ftp_link} is not in protein fasta format."
+						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+						return
+					}
+				}else{
+					logFile <<  "${trainingInstance.accession_id} The linked Protein file is gzipped. Format will be checked later after extraction.\n"
 				}
 			}
 
@@ -418,6 +488,15 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					projectDir.mkdirs()
 					def wgetGenome = "wget -O ${projectDir}/genome.fa ${trainingInstance.genome_ftp_link}".execute()
 					wgetGenome.waitFor()
+					if("${trainingInstance.genome_ftp_link}" =~ /\.gz/){
+						def gunzipGenomeScript = new File("${projectDir}/gunzipGenome.sh")
+						gunzipGenomeScript << "cd ${projectDir}; mv genome.fa genome.fa.gz; gunzip genome.fa.gz"
+						def gunzipGenome = "bash ${gunzipGenomeScript}".execute()
+						gunzipGenome.waitFor()			
+						def delProc = "rm ${gunzipGenomeScript}".execute()
+						delProc.waitFor()
+						logFile <<  "${trainingInstance.accession_id} Unpacked genome file.\n"
+					}
 					logFile <<  "${trainingInstance.accession_id} genome file upload finished, file stored as genome.fa at ${projectDir}\n"
 					// check for fasta format & get seq names for gff validation:
 					new File("${projectDir}/genome.fa").eachLine{line -> 
@@ -540,6 +619,15 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					logFile <<  "${trainingInstance.accession_id} Retrieving EST/cDNA file ${trainingInstance.est_ftp_link}\n"
 					def wgetEst = "wget -O ${projectDir}/est.fa ${trainingInstance.est_ftp_link}".execute()
 					wgetEst.waitFor()
+					if("${trainingInstance.est_ftp_link}" =~ /\.gz/){
+						def gunzipEstScript = new File("${projectDir}/gunzipEst.sh")
+						gunzipEstScript << "cd ${projectDir}; mv est.fa est.fa.gz; gunzip est.fa.gz"
+						def gunzipEst = "bash ${gunzipEstScript}".execute()
+						gunzipEst.waitFor()			
+						def delProc = "rm ${gunzipEstScript}".execute()
+						delProc.waitFor()
+						logFile <<  "${trainingInstance.accession_id} Unpacked EST file.\n"
+					}					
 					logFile <<  "${trainingInstance.accession_id} EST/cDNA file upload finished, file stored as est.fa at ${projectDir}\n"
 					// check for fasta format:
 					new File("${projectDir}/est.fa").eachLine{line -> if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ estFastaFlag = 1 }}
@@ -591,6 +679,15 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					logFile <<  "${trainingInstance.accession_id} Retrieving protein file ${trainingInstance.protein_ftp_link}\n"
 					def wgetProtein = "wget -O ${projectDir}/protein.fa ${trainingInstance.protein_ftp_link}".execute()
 					wgetProtein.waitFor()
+					if("${trainingInstance.protein_ftp_link}" =~ /\.gz/){
+						def gunzipProteinScript = new File("${projectDir}/gunzipProtein.sh")
+						gunzipProteinScript << "cd ${projectDir}; mv protein.fa protein.fa.gz; gunzip protein.fa.gz"
+						def gunzipProtein = "bash ${gunzipProteinScript}".execute()
+						gunzipProtein.waitFor()			
+						def delProc = "rm ${gunzipProteinScript}".execute()
+						delProc.waitFor()
+						logFile <<  "${trainingInstance.accession_id} Unpacked protein file.\n"
+					}
 					logFile <<  "${trainingInstance.accession_id} Protein file upload finished, file stored as protein.fa at ${projectDir}\n"
 					// check for fasta protein format:
 					def cytosinCounter = 0 // C is cysteine in amino acids, and cytosine in DNA.
