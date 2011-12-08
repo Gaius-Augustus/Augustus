@@ -71,7 +71,7 @@
 	    <h2>Contents</h2>
 	    <p>
 	      <a href="#noResults">Why do I not get any results?</a><br>
-	      <a href="#buisy">Why is the server buisy?</a><br>
+	      <a href="#buisy">Why is the server busy?</a><br>
               <a href="#species_name">What is the species name?</a><br>
 	      <a href="#email">Why must I give my e-mail address?</a><br>
               <a href="#upload_link">File upload versus web link</a><br>
@@ -99,7 +99,7 @@
             </p>
             <hr>
             <br>
-            <h2 id="buisy">Why is the server buisy?</h2>
+            <h2 id="buisy">Why is the server busy?</h2>
             <p>Training AUGUSTUS is a very resource and time consuming process. We use a grid engine queuing system with a limited number of waiting slots. If we estimate that the time from job submission to computation start might be very long, our web server might display a message that our server is buisy. The submission of new jobs is then disabled. Please wait one or two weeks before you try a new submission. If the problem persists longer than a month, please contact <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a>.</p>
 	    <p><a href="#seitenanfang">
 	      <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />

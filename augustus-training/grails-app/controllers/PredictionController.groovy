@@ -18,8 +18,9 @@ class PredictionController {
 	// web-output, root directory to the results that are shown to end users
 	def web_output_dir = "/var/www/trainaugustus/prediction-results" // must be writable to webserver application
 	// AUGUSTUS_CONFIG_PATH
-	def AUGUSTUS_CONFIG_PATH = "/usr/local/augustus/trunks/config";
-	def AUGUSTUS_SCRIPTS_PATH = "/usr/local/augustus/trunks/scripts";
+	def AUGUSTUS_CONFIG_PATH = "/usr/local/augustus/trunks/config"
+	def AUGUSTUS_SCRIPTS_PATH = "/usr/local/augustus/trunks/scripts"
+	def BLAT_PATH = "/usr/local/blat/blat"
 	def scaffold = Prediction
 	// Admin mail for errors
 	def admin_email = "katharina.hoff@gmail.com"
@@ -66,8 +67,11 @@ class PredictionController {
 			redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 			return
 		}else{
+			// info string for confirmation E-Mail
+			def confirmationString
 			// this_project_id that is used internally by pipeline as species name.
 			def this_project_id = "web" + predictionInstance.accession_id
+			confirmationString = "Prediction job ID: ${predictionInstance.accession_id}\n"
 			predictionInstance.job_id = 0
 			// define flags for file format check, file removal in case of failure
 			def archiveExistsFlag = 0
@@ -78,6 +82,8 @@ class PredictionController {
 			def hintGffFlag = 0
 			def hintExistsFlag = 0
 			def overRideUtrFlag = 0
+			// species name for AUGUSTUS
+			def species
 			// get date
 			def today = new Date()
 			logFile << "${predictionInstance.accession_id} AUGUSTUS prediction webserver starting on ${today}\n"
@@ -92,7 +98,7 @@ class PredictionController {
             			redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
            			return
 			}
-			// check UTR flag
+			// utr checkbox
 			if(predictionInstance.utr == true){
 				overRideUtrFlag = 1
 				logFile << "${predictionInstance.accession_id} User enabled UTR prediction.\n"
@@ -109,6 +115,7 @@ class PredictionController {
 				projectDir.mkdirs()
          			uploadedParamArch.transferTo( new File (projectDir, "parameters.tar.gz"))
 				predictionInstance.archive_file = uploadedParamArch.originalFilename
+				confirmationString = "${confirmationString}Parameter archive: ${predictionInstance.archive_file}\n"
 				logFile <<  "${predictionInstance.accession_id} uploaded parameter archive ${predictionInstance.archive_file} was renamed to parameters.tar.gz and moved to ${projectDir}\n"
 				// get cksum and file size for database
 				def archCksumScript = new File("${projectDir}/archive_cksum.sh")
@@ -127,13 +134,10 @@ class PredictionController {
          			delProcCksumarch.waitFor()
          			def delProcCkSharch = "rm ${projectDir}/archive_cksum.sh".execute()
          			delProcCkSharch.waitFor()
-	
 				// check whether the archive contains all relevant files
 				def String paramDirName = "${projectDir}/params"
 				def MakeParamDir = "mkdir ${paramDirName}".execute()
 				MakeParamDir.waitFor()
-	
-				logFile << "checkParamArchive.pl ${projectDir}/parameters.tar.gz ${paramDirName} > ${projectDir}/archCheck.log 2> ${projectDir}/archCheck.err\n"
 				def checkParamArch = new File("${projectDir}/ckArch.sh")
 				checkParamArch << "checkParamArchive.pl ${projectDir}/parameters.tar.gz ${paramDirName} > ${projectDir}/archCheck.log 2> ${projectDir}/archCheck.err"
 				def checkParamArchRunning = "bash ${checkParamArch}".execute()
@@ -153,7 +157,7 @@ class PredictionController {
            				return
 				// if only UTR params are missing, set flag to override any user-defined UTR settings
 				}else if(archCheckLogSize > 0){
-					overRideUtrFlag = 1 // UTR predictions are now permanently disabled
+					overRideUtrFlag = 0 // UTR predictions are now permanently disabled
 					logFile <<  "${predictionInstance.accession_id} UTR predictions have been disabled because UTR parameters are missing!\n"
 				}
 				archiveExistsFlag = 1
@@ -174,7 +178,9 @@ class PredictionController {
 				}else{
 					logFile <<  "${predictionInstance.accession_id} Requested ${spec_conf_dir} exists on our system.\n"
 					speciesNameExistsFlag = 1
+					species = predictionInstance.project_id
 				}
+				confirmationString = "${confirmationString}AUGUSTUS parameter project identifier: ${predictionInstance.project_id}\n"
 			}
 	
 			// upload of genome file
@@ -184,6 +190,7 @@ class PredictionController {
          			projectDir.mkdirs()
          			uploadedGenomeFile.transferTo( new File (projectDir, "genome.fa"))
         			predictionInstance.genome_file = uploadedGenomeFile.originalFilename
+				confirmationString = "${confirmationString}Genome file: ${predictionInstance.genome_file}\n"
 				if("${uploadedGenomeFile.originalFilename}" =~ /\.gz/){
 					logFile <<  "${predictionInstance.accession_id} Genome file is gzipped.\n"
 					def gunzipGenomeScript = new File("${projectDir}/gunzipGenome.sh")
@@ -233,6 +240,7 @@ class PredictionController {
 	
 			// retrieve beginning of genome file for format check
 	      		if(!(predictionInstance.genome_ftp_link == null)){
+				confirmationString = "${confirmationString}Genome file: ${predictionInstance.genome_ftp_link}\n"
 	         		logFile <<  "${predictionInstance.accession_id} genome web-link is ${predictionInstance.genome_ftp_link}\n"
 	         		projectDir.mkdirs()
 	         		// checking web file for DNA fasta format: 
@@ -267,6 +275,7 @@ class PredictionController {
 	         		projectDir.mkdirs()
 	         		uploadedEstFile.transferTo( new File (projectDir, "est.fa"))
 	         		predictionInstance.est_file = uploadedEstFile.originalFilename
+				confirmationString = "${confirmationString}cDNA file: ${predictionInstance.est_file}\n"
 				if("${uploadedEstFile.originalFilename}" =~ /\.gz/){
 					logFile <<  "${predictionInstance.accession_id} EST file is gzipped.\n"
 					def gunzipEstScript = new File("${projectDir}/gunzipEst.sh")
@@ -311,8 +320,10 @@ class PredictionController {
 
       			// retrieve beginning of est file for format check
       			if(!(predictionInstance.est_ftp_link == null)){
+				confirmationString = "${confirmationString}cDNA file: ${predictionInstance.est_ftp_link}\n"
          			logFile << "${predictionInstance.accession_id} est web-link is ${predictionInstance.est_ftp_link}\n"
          			projectDir.mkdirs()
+				estExistsFlag = 1
 				if(!("${predictionInstance.est_ftp_link}" =~ /\.gz/)){
          				// checking web file for DNA fasta format: 
          				def URL url = new URL("${predictionInstance.est_ftp_link}");
@@ -345,6 +356,7 @@ class PredictionController {
 				projectDir.mkdirs()
 				uploadedStructFile.transferTo( new File (projectDir, "hints.gff"))
 				predictionInstance.hint_file = uploadedStructFile.originalFilename
+				confirmationString = "${confirmationString}Hints file: ${predictionInstance.hint_file}\n"
 				logFile << "${predictionInstance.accession_id} Uploaded hints file ${uploadedStructFile.originalFilename} was renamed to hints.gff and moved to ${projectDir}\n"
 				def gffColErrorFlag = 0
 				def gffNameErrorFlag = 0
@@ -405,10 +417,73 @@ class PredictionController {
 				def delProcCkShStruct = "rm ${projectDir}/struct_cksum.sh".execute()
 				delProcCkShStruct.waitFor()
 			}
-
-			// write radio buttons content to logfile
-			logFile << "${predictionInstance.accession_id} Radio button value: ${predictionInstance.pred_strand} - 1=both strands 2=only forward 3=only reverse\n"
-
+			def radioParameterString
+			confirmationString = "${confirmationString}User set UTR prediction: ${predictionInstance.utr}\n"
+			// utr
+			if(overRideUtrFlag==1){
+				radioParameterString = " --UTR=on"
+			}else{
+				confirmationString = "${confirmationString}Server set UTR prediction: false [UTR parameters missing!]\n"
+				radioParameterString = " --UTR=off"
+			}
+			// strand prediction radio buttons
+			if(predictionInstance.pred_strand == 1){
+				radioParameterString = "${radioParameterString} --strand=both"
+				confirmationString = "${confirmationString}Report genes on: both strands\n"
+				logFile << "${predictionInstance.accession_id} User enabled prediction on both strands.\n"
+			}else if(predictionInstance.pred_strand == 2){
+				confirmationString = "${confirmationString}Report genes on: forward strand only\n"
+				radioParameterString = "${radioParameterString} --strand=forward"
+				logFile << "${predictionInstance.accession_id} User enabled prediction on forward strand, only.\n"
+			}else{
+				confirmationString = "${confirmationString}Report genes on: reverse strand only\n"
+				radioParameterString = "${radioParameterString} --strand=backward"
+				logFile << "${predictionInstance.accession_id} User enabled prediction on reverse strand, only.\n"
+			}
+			// alternative transcript radio buttons
+			if(predictionInstance.alt_transcripts == 1){
+				radioParameterString = "${radioParameterString} --sample=100 --keep_viterbi=true --alternatives-from-sampling=false"
+				confirmationString = "${confirmationString}Alternative transcripts: none\n"
+				logFile << "${predictionInstance.accession_id} User disabled prediction of alternative transcripts.\n"
+			}else if(predictionInstance.alt_transcripts == 2){
+				radioParameterString = "${radioParameterString} --sample=100 --keep_viterbi=true --alternatives-from-sampling=true --minexonintronprob=0.2 --minmeanexonintronprob=0.5 --maxtracks=2"
+				confirmationString = "${confirmationString}Alternative transcripts: few\n"
+				logFile << "${predictionInstance.accession_id} User enabled prediction of few alternative transcripts.\n"
+			}else if(predictionInstance.alt_transcripts == 3){
+				radioParameterString = "${radioParameterString} --sample=100 --keep_viterbi=true --alternatives-from-sampling=true --minexonintronprob=0.08 --minmeanexonintronprob=0.4 --maxtracks=3"
+				confirmationString = "${confirmationString}Alternative transcripts: medium\n"
+				logFile << "${predictionInstance.accession_id} User enabled prediction of medium alternative transcripts.\n"
+			}else{
+				radioParameterString = "${radioParameterString} --sample=100 --keep_viterbi=true --alternatives-from-sampling=true --minexonintronprob=0.08 --minmeanexonintronprob=0.3 --maxtracks=20"
+				confirmationString = "${confirmationString}Alternative transcripts: many\n"
+				logFile << "${predictionInstance.accession_id} User enabled prediction of many alternative transcripts.\n"
+			}
+			// gene structure radio buttons
+			if(predictionInstance.allowed_structures == 1){
+				radioParameterString = "${radioParameterString} --genemodel=partial"
+				confirmationString = "${confirmationString}Allowed gene structure: predict any number of (possibly partial) genes\n"
+				logFile << "${predictionInstance.accession_id} User enabled the prediction of any number of genes.\n"
+			}else if(predictionInstance.allowed_structures == 2){
+				radioParameterString = "${radioParameterString} --genemodel=complete"
+				confirmationString = "${confirmationString}Allowed gene structure: only predict complete genes\n"
+				logFile << "${predictionInstance.accession_id} User disabled the prediction of incomplete genes.\n"
+			}else if(predictionInstance.allowed_structures == 3){
+				radioParameterString = "${radioParameterString} --genemodel=atleastone"
+				confirmationString = "${confirmationString}Allowed gene structure: only predict complete genes - at least one\n"
+				logFile << "${predictionInstance.accession_id} User disabled the prediction of incomplete genes and insists on at least one predicted gene.\n"
+			}else{
+				radioParameterString = "${radioParameterString} --genemodel=exactlyone"
+				confirmationString = "${confirmationString}Allowed gene structure: predict exactly one gene\n"
+				logFile << "${predictionInstance.accession_id} User enabled the prediction of exactly one gene.\n"
+			}
+			// ignore gene structure conflicts with other strand checkbox
+			if(predictionInstance.ignore_conflicts == false){
+				logFile << "${predictionInstance.accession_id} User did not enable to ignore strand conflicts.\n"
+			}else{
+				radioParameterString = "${radioParameterString} --strand=both"
+				logFile << "${predictionInstance.accession_id} User enabled to ignore strand conflicts.\n"
+			}
+			confirmationString = "${confirmationString}Ignore conflictes with other strand: ${predictionInstance.ignore_conflicts}\n"
 			// send confirmation email and redirect
 			if(!predictionInstance.hasErrors() && predictionInstance.save()){
 				predictionInstance.job_status = 0
@@ -417,9 +492,14 @@ class PredictionController {
 					subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id}"
 					body """Hello!
 
-Thank you for submitting the AUGUSTUS gene prediction job ${predictionInstance.accession_id}. The job status is available at http://bioinf.uni-greifswald.de/trainaugustus/prediction/show/${predictionInstance.id}
+Thank you for submitting the AUGUSTUS gene prediction job ${predictionInstance.accession_id}.
 
-You will be notified by e-mail when the job is finished.
+Details of your job:
+
+${confirmationString}
+The job status is available at http://bioinf.uni-greifswald.de/trainaugustus/prediction/show/${predictionInstance.id}
+
+You will receive a link to the results via email when the job has finished.
 
 Best regards,
 
@@ -592,8 +672,10 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					delProcCksumGenome.waitFor()
 					def delProcCkShGenome = "rm ${projectDir}/genome_cksum.sh".execute()
 					delProcCkShGenome.waitFor()
-				} // end of if(!(predictionInstance.genome_ftp_link == null))				}
-								// retrieve EST file
+				} // end of if(!(predictionInstance.genome_ftp_link == null))				
+				
+
+				// retrieve EST file
 				if(!(predictionInstance.est_ftp_link == null)){
 					logFile <<  "${predictionInstance.accession_id} Retrieving EST/cDNA file ${predictionInstance.est_ftp_link}\n"
 					def wgetEst = "wget -O ${projectDir}/est.fa ${predictionInstance.est_ftp_link}".execute()
@@ -702,11 +784,39 @@ http://bioinf.uni-greifswald.de/trainaugustus
 
 				//Write DB file: 
 				dbFile << "Date: [${today}] User-IP: [${userIP}] Grails-ID: [${predictionInstance.id}] Accession-ID: [${predictionInstance.accession_id}] Genome-File: [${predictionInstance.genome_file}] Genome-FTP-Link: [${predictionInstance.genome_ftp_link}] Genome-Cksum: [${predictionInstance.genome_cksum}] Genome-Filesize: [${predictionInstance.genome_size}] EST-File: [${predictionInstance.est_file}] EST-FTP-Link: [${predictionInstance.est_ftp_link}] EST-Cksum: [${predictionInstance.est_cksum}] EST-Filesize: [${predictionInstance.est_size}] Hint-File: [${predictionInstance.hint_file}] Hint-Cksum: [${predictionInstance.hint_cksum}] Hint-Filesize: [${predictionInstance.hint_size}] Parameter-String: [${predictionInstance.project_id}] Parameter-File: [${predictionInstance.archive_file}] Parameter-Cksum: [${predictionInstance.archive_cksum}] Parameter-Size: [${predictionInstance.archive_size}] Server-Set-UTR-Flag: [${overRideUtrFlag}] User-Set-UTR-Flag: [${predictionInstance.utr}] Report-Genes: [${predictionInstance.pred_strand}] Alternative-Transcripts: [${predictionInstance.alt_transcripts}] Gene-Structures: [${predictionInstance.allowed_structures}] Ignore-Conflicts: [${predictionInstance.ignore_conflicts}]\n"
+
+				//rename and move parameters
+				if(!uploadedParamArch.empty){
+					def mvParamsScript = new File("${projectDir}/mvParams.sh")
+					mvParamsScript << "${AUGUSTUS_SCRIPTS_PATH}/moveParameters.pl ${projectDir}/params ${predictionInstance.accession_id} ${AUGUSTUS_CONFIG_PATH}/species 2> ${projectDir}/mvParams.err"
+					def mvParamsRunning = "bash ${mvParamsScript}".execute()
+					mvParamsRunning.waitFor()
+					species = "${predictionInstance.accession_id}"
+					logfile << "${predictionInstance.accession_id} Moved uploaded parameters and renamed species to ${predictionInstance.accession_id}\n"
+				}
 				//Create sge script:
 				logFile << "${predictionInstance.accession_id} Writing SGE submission script.\n"
 				def sgeFile = new File("${projectDir}/web-aug.sh")
 				// write command in script (according to uploaded files)
 				sgeFile << "#!/bin/bash\n#\$ -S /bin/bash\n#\$ -cwd\n\n"
+				def cmdStr = "mkdir ${projectDir}/augustus\n"
+				if(estExistsFlag == 1){
+					cmdStr = "${cmdStr}${BLAT_PATH} -noHead ${projectDir}/genome.fa ${projectDir}/est.fa ${projectDir}/est.psl\n"
+					cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/blat2hints.pl --in=${projectDir}/est.psl --out=${projectDir}/est.hints --source=E\n"
+					cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/blat2gbrowse.pl ${projectDir}/est.psl ${projectDir}/est.gbrowse\n"
+				}
+				if(hintExistsFlag == 1){
+					cmdStr = "${cmdStr}cat ${projectDir}/hints.gff >> ${projectDir}/est.hints\n"
+				}
+				if((hintExistsFlag == 1) || (estExistsFlag == 1)){
+					radioParameterString = "${radioParameterString} --hintsfile=${projectDir}/est.hints --extrinsicCfgFile=${AUGUSTUS_CONFIG_PATH}/extrinsic/extrinsic.ME.cfg"
+				}
+				cmdStr = "${cmdStr}cd ${projectDir}/augustus\naugustus --species=${species} ${radioParameterString} ${projectDir}/genome.fa --codingseq=on --exonnames=on > ${projectDir}/augustus/augustus.gff\n"
+				cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/getAnnoFasta.pl --seqfile=${projectDir}/genome.fa ${projectDir}/augustus/augustus.gff\n"
+				cmdStr = "${cmdStr}cat ${projectDir}/augustus/augustus.gff | perl -ne 'if(m/\\tAUGUSTUS\\t/){print;}' > ${projectDir}/augustus/augustus.gtf\n"
+				cmdStr = "${cmdStr}cat ${projectDir}/augustus/augustus.gff | ${AUGUSTUS_SCRIPTS_PATH}/augustus2gbrowse.pl > ${projectDir}/augustus/augustus.gbrowse\n"
+				cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${predictionInstance.accession_id} null ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH}"
+				sgeFile << "${cmdStr}"
 				
 
 			}

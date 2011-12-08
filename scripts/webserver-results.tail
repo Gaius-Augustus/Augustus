@@ -4,9 +4,11 @@
 
 <p>All files and folders - except for log and error file - are compressed. To unpack <tt>*.tar.gz</tt> archives, e.g. on linux type</p><p><tt>tar -xzvf *.tar.gz</tt></p><p>For unpacking <tt>*.gz</tt> files, e.g. on linux type</p><p><tt>gunzip *.gz</tt>.</p>
 
-<p>The number of files listed on the results page of an individual AUGUSTUS training run as well as the number of files in each tar.gz-archive may vary between different training data sets. The following sections give an overview and description files that might be linked from this page.</p>
+<p>The number of files listed on the results page as well as the number of files in tar.gz-archives may vary between different input data sets and depending on whether you submitted a training or a prediction job. The following sections give an overview and description files that might be linked from this page.</p>
 
-<h2>Files and archives that are always produced</h2>
+<h2>AUGUSTUS Training App</h2>
+
+<h3>Files and archives that are always produced by training AUGUSTUS</h3>
 <p>
 <ul>
 <li><b>parameters.tar.gz</b> - the AUGUSTUS parameter archive for your species</li>
@@ -17,7 +19,7 @@
 </ul>
 </p>
 
-<h2>Archives that are only produced under certain conditions</h2>
+<h3>Archives that are only produced under certain conditions</h3>
 
 <p>Depending on the combination of data sources that you submitted for training, and depending on how much information these data sources contain, the following files might also be produced:</p>
 <p>
@@ -28,7 +30,7 @@
 </ul>
 </p>
 
-<h2>The AUGUSTUS parameter archive</h2>
+<h3>The AUGUSTUS parameter archive</h3>
 
 <p>The AUGUSTUS parameter archive always contains the following files for your species:</p>
 
@@ -51,13 +53,33 @@
 
 <p>If you want to run further predictions on our web server application, you do not need to save the parameter archive locally for re-upload. Just remember the accession number of your job and specify it on the prediction interface. You find your job's accession number in the headline of this web site at "Training results for job ...".</p>
 
+<h2>AUGUSTUS Prediction App</h2>
+
+<h3>Archive that is always produced when running AUGUSTUS</h3>
+
+<p>
+<ul>
+	<li><b>predictions.tar.gz</b> - gene predictions for your submitted data configuration</li>
+</ul>
+</p>
+
 <h2>Files that are always contained in gene prediction archives</h2>
 
 <p>
 <ul>
 <li><b>*.gff</b> - gene predictions in gff format</li>
+</ul>
+</p>
+
+<h2>Files that may optionally be contained in gene prediction archives</h2>
+
+<p>
+<ul>
 <li><b>*.gtf</b> - gene predictions in gtf format</li>
 <li><b>*.aa</b> - gene predictions as protein fasta sequences</li>
+<li><b>*.codingseq</b> - gene predictions as CDS DNA fasta sequences</li>
+<li><b>*.cdsexons</b> - predicted exons in DNA fasta sequences</li>
+<li><b>*.mrna</b> - predicted mRNA sequences (with UTRs) in DNA fasta sequences</li>
 <li><b>*.gbrowse</b> - gene prediction track for the GBrowse genome browser</li>
 </ul>
 </p>
@@ -69,7 +91,7 @@
   <div id="schriftgroesse">
    <script type="text/javascript">
     //<![CDATA[
-    document.write('<a href="http://bioinf.uni-greifswald.de/trainaugustus/training-results/ABCDRZ/index.html" title="Increase size" onclick="changeFontSize(2); return false;" class="larger">bigger</a><span class="unseen">&nbsp;< /span>');
+    document.write('<a href="http://bioinf.uni-greifswald.de/trainaugustus/training-results/ABCDRZ/index.html" title="Increase size" onclick="changeFontSize(2); return false;" class="larger">bigger</a><span class="unseen">&nbsp;</span>');
     document.write('<a href="http://bioinf.uni-greifswald.de/trainaugustus/training-results/ABCDRZ/index.html" title="Decrease size" onclick="changeFontSize(-2); return false;" class="smaller">smaller</a><span class="unseen">&nbsp;</span>');
     document.write('<a href=""http://bioinf.uni-greifswald.de/trainaugustus/training-results/ABCDRZ/index.html" title="Revert styles to default" onclick="revertStyles(); return false;" class="reset">reset</a></p>');
     //]]>
@@ -78,7 +100,7 @@
 <div class="linien_div">
          <h5 class="ueberschrift_spezial">CONTACT</h5>
          <strong>Institute for Mathematics und Computer Sciences</strong><br/>
-          Walther-Rathenau-Stra&szlig;e 47<br /> 17487 Greifswald<br /> Germany<br /> Tel.: +49 (0)3834 86 - 46 24<br /> Fax:  +49 (0)3834 86 - 46 40<br /><br /> <a href="mailto:bioinformatik.greifswald@gmail.com" title="E-Mail bioinformatik.greifswald@gmail.com, opens the standard mail program">bioinformatik.greifswald@gmail.com</a></div>
+          Walther-Rathenau-Stra&szlig;e 47<br /> 17487 Greifswald<br /> Germany<br /> Tel.: +49 (0)3834 86 - 46 24<br /> Fax:  +49 (0)3834 86 - 46 40<br /><br /> <a href="mailto:augustus-web@uni-greifswald.de" title="E-Mail augustus-web@uni-greifswald.de, opens the standard mail program">augustus-web@uni-greifswald.de</a></div>
 
  <div class="beendeFluss"></div>
 </div>

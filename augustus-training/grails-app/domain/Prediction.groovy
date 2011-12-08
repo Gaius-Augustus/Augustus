@@ -22,13 +22,14 @@ class Prediction {
    String job_id // SGE Job ID will be determined by controller
    String job_status // SGE job status will be determined by
    //generate a random (and unique) string for links to results here
-   private static String validChars ="ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
+   private static String validChars ="ABCDEFGHJKLMNPQRSTUVWXYZ123456789_abcdefghijkmnpqrstuvqxyz"
    private int IDlength=8
    int maxIndex = validChars.length()
    def rnd = new Random()
-   String accession_id = (1..IDlength).sum{ 
+   String bef_accession_id = (1..IDlength).sum{ 
       validChars[ rnd.nextInt(maxIndex) ] 
    } 
+   String accession_id = "pred${bef_accession_id}"
    Date dateCreated
    Boolean utr = false
    Integer pred_strand = 1

@@ -2,7 +2,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <meta name="layout" content="main" />
-        <title>Training Results</title>
+        <title>Results</title>
  	<link rel="stylesheet" media="screen" type="text/css" href="../css/main.css" />
  	<script type="text/javascript" src="../javascript/md_stylechanger.js"></script>
  	<link rel="icon" href="favicon32.ico">
@@ -30,10 +30,10 @@
    </div>
    <div id="banner_mitte">
       <div id="bannertitel1">
-        Bioinformatics Web Server
+        Bioinformatics Web Server at University of Greifswald
       </div>
       <div id="bannertitel2">
-        AUGUSTUS Training
+        Gene Prediction with AUGUSTUS
       </div>
    </div>
    <div id="banner_rechts">

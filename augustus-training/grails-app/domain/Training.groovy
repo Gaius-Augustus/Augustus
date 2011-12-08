@@ -16,13 +16,14 @@ class Training {
    String protein_ftp_link
    String struct_file
    //generate a random (and unique) string for links to results here
-   private static String validChars ="ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
+   private static String validChars ="ABCDEFGHJKLMNPQRSTUVWXYZ123456789_abcdefghijkmnpqrstuvqxyz"
    private int IDlength=8
    int maxIndex = validChars.length()
    def rnd = new Random()
-   String accession_id = (1..IDlength).sum{ 
+   String bef_accession_id = (1..IDlength).sum{ 
       validChars[ rnd.nextInt(maxIndex) ] 
    } 
+   String accession_id = "train${bef_accession_id}"
 
    // checksum columns in database, values will be determined by controller
    String genome_cksum = 0

@@ -101,4 +101,5 @@ simpleCaptcha {
     chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!-;"
 }
 
-     
+// you want to remove this for permanent deployment, hurts performance!     
+grails.gsp.enable.reload=true
