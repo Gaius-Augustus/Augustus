@@ -73,27 +73,22 @@
             </g:if>
 
             <g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '0' || fieldValue(bean:trainingInstance, field:'job_status') == '1' || fieldValue(bean:trainingInstance, field:'job_status') == '2' || fieldValue(bean:trainingInstance, field:'job_status') == '3'}">
-<!--            	<h1>Status of Job ${fieldValue(bean:trainingInstance, field:'accession_id')}</h1>-->
-            
-            Your job is in stage <g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '0'|| fieldValue(bean:trainingInstance, field:'job_status') == '1'}"><b>1</b></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '2'}"><b>2</b></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '3'}"><b>3</b></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '4'}"><b>4</b></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '5'}"><b>5</b></g:if>.<br><br>Explannation:
-            <ul>
-                <li>stage 1: submitted to webserver but not to grid, yet</li>
-                <li>stage 2: submitted to grid and waiting for execution</li>
-                <li>stage 3: calculating</li>
-                <li>stage 4: finished</li>
-                <li>stage 5: error. If you were the original submitter of this job, you will be notified about the error status via e-mail. If you were not the original submitter of this job but you have been redirected to this status page via e-mail because you submitted identical data, please contact us via e-mail.</li>
-            </ul>
-            For more details, see <a href="../../help.gsp#job_status">Help</a>
+            <p>
+            <g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '0'|| fieldValue(bean:trainingInstance, field:'job_status') == '1'}"><b><font color="#006699" size=2>Job submitted</font> <font color="#d2d2dc" size=2>&rarr; waiting for execution &rarr; computing &rarr; finished!</font></b><br></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '2'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>waiting for execution</font> <font color="#d2d2dc" size=2>&rarr; computing &rarr; finished!</font></b><br></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '3'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>computing</font> <font color="#d2d2dc" size=2>&rarr; finished!</font></b><br></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '4'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>computing</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>finished!</font></b><br></g:if></p>
             </g:if>
             
 
             <g:if test ="${fieldValue(bean:trainingInstance, field:'job_status') == '4'}">
-            <!--<h1>Results for Job ${fieldValue(bean:trainingInstance, field:'accession_id')}</h1>-->
-               <ul>
-                  <li>Your job is finished. You received an e-mail with the link to results.</li>
-               </ul>
+<p>
+	<b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>computing</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>finished!</font></b><br><br>The submitter of this job received an e-mail pointing to the results.
+</p>
             </g:if>
 
+            <g:if test ="${fieldValue(bean:trainingInstance, field:'job_status') == '5'}">
+<p>
+	<b><font color="#f40707" size=2>An error occured when executing this job!</font></b>
+</p>
+            </g:if>
 </div>
  </div>
 </div>

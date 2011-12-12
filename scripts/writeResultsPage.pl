@@ -8,9 +8,9 @@
 # grails-out is the directory where grails places the autoAug output files
 # www-out is the directory where results shall be made available to end users (i.e. an apache directory)
 	
-my $usage = "writeResultsPage ID species-name db-file grails-out www-out AugustusConfigPath AugustusScriptsPath\n";
+my $usage = "writeResultsPage ID species-name db-file grails-out www-out AugustusConfigPath AugustusScriptsPath final-flag\n";
 
-if(@ARGV != 7){
+if(@ARGV != 8){
         print $usage;
         exit;
 }
@@ -23,6 +23,7 @@ my $grailsOut = $ARGV[3];
 my $wwwOut = $ARGV[4];
 my $AUGUSTUS_CONFIG_PATH = $ARGV[5];
 my $svnScripts = $ARGV[6];
+my $final = $ARGV[7];
 
 ## retrieve all submission data information that will later be used to create the results page
 
@@ -30,15 +31,34 @@ my $dbLine = `grep $projectID $dbFile`;
 my @tdbLine = split(/\[|\]/, $dbLine);
 my $submissionDate = $tdbLine[1];
 
-## create the webserver output directory
-
 my $projectWebOutDir = $wwwOut."/$projectID";
-`mkdir $projectWebOutDir`;
-if (not(-d "$projectWebOutDir")){
-	print STDERR "Creating the output directory in for apache failed! Check writing permissions!\n";
-	exit;
+
+if($final == 0){
+	## create the webserver output directory
+	`mkdir $projectWebOutDir`;
+	if (not(-d "$projectWebOutDir")){
+		print STDERR "Creating the output directory in for apache failed! Check writing permissions!\n";
+		exit;
+	}
+	## create emtpy results page
+	my $head = $svnScripts."/webserver-results.head";
+	my $body = $svnScripts."/webserver-results.body";
+	my $tail = $svnScripts."/webserver-results.tail";
+	my $segmentFile1 = $grailsOut."/$projectID/segment1";
+	my $segmentFile2 = $grailsOut."/$projectID/segment2";
+	open(SEG1, ">", $segmentFile1) or die "Could not open file $segmentFile1!\n";
+	print SEG1 "Results for job $projectID\n";
+	close(SEG1) or die "Could not close file $segmentFile1!\n";
+	open(SEG2, ">", $segmentFile2) or die "Could not open file $segmentFile2!\n";
+	print SEG2 "<a href=\"index.html\" class=\"contentpagetitle\">Results for job $projectID</a>\n</td>\n</tr>\n</table>\n";
+	print SEG2 "<p>There are no results available, yet!</p>\n";
+	close(SEG2) or die "Could not close file $segmentFIle2!\n";
+	$cmdStr = "cat $head $segmentFile1 $body $segmentFile2 $tail > $projectWebOutDir/index.html";
+	`$cmdStr`;
+	
 }
 
+if($final == 1){
 ## create a paramter folder in web-out folder
 if($projectID =~ m/^t/){
 	print STDOUT "We are in training mode\n";
@@ -274,3 +294,4 @@ if($projectID =~ m/^t/){
 
 $cmdStr = "cat $head $segmentFile1 $body $segmentFile2 $tail > $projectWebOutDir/index.html";
 `$cmdStr`;
+}

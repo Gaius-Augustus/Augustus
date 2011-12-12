@@ -69,8 +69,6 @@ class PredictionController {
 		}else{
 			// info string for confirmation E-Mail
 			def confirmationString
-			// this_project_id that is used internally by pipeline as species name.
-			def this_project_id = "web" + predictionInstance.accession_id
 			confirmationString = "Prediction job ID: ${predictionInstance.accession_id}\n"
 			predictionInstance.job_id = 0
 			// define flags for file format check, file removal in case of failure
@@ -151,7 +149,7 @@ class PredictionController {
 					logFile <<  "${predictionInstance.accession_id} The parameter archive was not compatible. Project directory ${projectDir} is deleted (rm -r).\n"
 					def delProc = "rm -r ${projectDir}".execute()
             				delProc.waitFor()
-           				logFile <<  "${predictionInstance.accession_id} Job ${this_project_id} by user ${predictionInstance.email_adress} is aborted!\n"
+           				logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
            				flash.error = "Parameter archive ${uploadedParamArch.originalFilename} is not compatible with the AUGUSTUS prediction web server application."
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
            				return
@@ -171,7 +169,7 @@ class PredictionController {
 					logFile <<  "${predictionInstance.accession_id} The given parameter-string does not exist on our system. Project directory ${projectDir} is deleted (rm -r).\n"
 					def delProc = "rm -r ${projectDir}".execute()
             				delProc.waitFor()
-           				logFile <<  "${predictionInstance.accession_id} Job ${this_project_id} by user ${predictionInstance.email_adress} is aborted!\n"
+           				logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
            				flash.error = "The specified parameter ID ${predictionInstance.project_id} does not exist on our system."
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
            				return
@@ -214,7 +212,7 @@ class PredictionController {
             				logFile <<  "${predictionInstance.accession_id} The genome file was not fasta. Project directory ${projectDir} is deleted (rm -r).\n"
             				def delProc = "rm -r ${projectDir}".execute()
             				delProc.waitFor()
-            				logFile <<  "${predictionInstance.accession_id} Job ${this_project_id} by user ${predictionInstance.email_adress} is aborted!\n"
+            				logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
             				flash.error = "Genome file ${uploadedGenomeFile.originalFilename} is not in DNA fasta format."
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
@@ -259,7 +257,7 @@ class PredictionController {
 	            				logFile <<  "${predictionInstance.accession_id} The first 20 lines in genome file are not fasta.\n"
 	            				def delProc = "rm -r ${projectDir}".execute()
 	            				delProc.waitFor()
-	            				logFile << "${predictionInstance.accession_id} Project directory ${projectDir} is deleted.\n${predictionInstance.accession_id} Job ${this_project_id} by user ${predictionInstance.email_adress} is aborted!\n"	
+	            				logFile << "${predictionInstance.accession_id} Project directory ${projectDir} is deleted.\n${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"	
 	            				flash.error = "Genome file ${predictionInstance.genome_ftp_link} is not in DNA fasta format."
 	            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 	            				return
@@ -295,7 +293,7 @@ class PredictionController {
             				logFile << "${predictionInstance.accession_id} The cDNA file was not fasta. ${projectDir} (rm -r) is deleted.\n"
             				def delProc = "rm -r ${projectDir}".execute()
             				delProc.waitFor()
-            				logFile << "${predictionInstance.accession_id} Job ${this_project_id} by user ${predictionInstance.email_adress} is aborted!\n"
+            				logFile << "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
             				flash.error = "cDNA file ${uploadedEstFile.originalFilename} is not in DNA fasta format."
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
             				return
@@ -340,7 +338,7 @@ class PredictionController {
            					logFile << "${predictionInstance.accession_id} The cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
             					def delProc = "rm -r ${projectDir}".execute()
          					delProc.waitFor()
-            					logFile << "${predictionInstance.accession_id} Job ${this_project_id} by user ${predictionInstance.email_adress} is aborted!\n"
+            					logFile << "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
             					flash.error = "cDNA file ${predictionInstance.est_ftp_link} is not in DNA fasta format."
             					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
             					return
@@ -394,7 +392,7 @@ class PredictionController {
 						logFile << "${predictionInstance.accession_id} ${projectDir} (rm -r) is deleted.\n"
 						def delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
-						logFile << "${predictionInstance.accession_id} Job ${this_project_id} by user ${predictionInstance.email_adress} is aborted!\n"
+						logFile << "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 						return
 					}
@@ -486,6 +484,11 @@ class PredictionController {
 			confirmationString = "${confirmationString}Ignore conflictes with other strand: ${predictionInstance.ignore_conflicts}\n"
 			// send confirmation email and redirect
 			if(!predictionInstance.hasErrors() && predictionInstance.save()){
+				// generate empty results page
+				def emptyPageScript = new File("${projectDir}/emptyPage.sh")
+				emptyPageScript << "${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${predictionInstance.accession_id} null ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 0\n"
+				def emptyPageExecution = "bash ${projectDir}/emptyPage.sh".execute()
+				emptyPageExecution.waitFor()
 				predictionInstance.job_status = 0
 				sendMail {
 					to "${predictionInstance.email_adress}"
@@ -517,7 +520,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				logFile << "${predictionInstance.accession_id} ${projectDir} is deleted (rm -r).\n"
 				def delProc = "rm -r ${projectDir}".execute()
 				delProc.waitFor()
-				logFile << "${predictionInstance.accession_id} Job ${this_project_id} by user ${predictionInstance.email_adress} is aborted!\n"
+				logFile << "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 				render(view:'create', model:[predictionInstance:predictionInstance])
 				return
 			}
@@ -552,7 +555,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile <<  "${predictionInstance.accession_id} The genome file was not fasta. ${projectDir} is deleted (rm -r).\n"
 						def delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
-						logFile <<  "${predictionInstance.accession_id} Job ${this_project_id} by user ${predictionInstance.email_adress} is aborted!\n"
+						logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						sendMail {
 							to "${predictionInstance.email_adress}"
 							subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -648,7 +651,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							logFile << "${predictionInstance.accession_id} ${projectDir} is deleted (rm -r).\n"
 							def delProc = "rm -r ${projectDir}".execute()
 							delProc.waitFor()
-							logFile << "${predictionInstance.accession_id} Job ${this_project_id} by user ${predictionInstance.email_adress} is aborted!\n"
+							logFile << "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							// delete database entry
 							predictionInstance.delete()
 							return
@@ -696,7 +699,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile <<  "${predictionInstance.accession_id} The EST/cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
 						def delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
-						logFile <<  "${predictionInstance.accession_id} Job ${this_project_id} by user ${predictionInstance.email_adress} is aborted!\n"
+						logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						sendMail {
 							to "${predictionInstance.email_adress}"
 							subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -777,7 +780,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					logFile << "${predictionInstance.accession_id} Data are identical to old job ${oldAccContent} with Accession-ID ${oldAccContent}. ${projectDir} is deleted (rm -r).\n"
 					def delProc = "rm -r ${projectDir}".execute()
 					delProc.waitFor()
-					logFile << "${predictionInstance.accession_id} Job ${this_project_id} by user ${predictionInstance.email_adress} is aborted, the user is informed!\n"
+					logFile << "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted, the user is informed!\n"
 					predictionInstance.delete()
 					return
 				} // end of job was submitted before check
@@ -796,7 +799,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				}
 				//Create sge script:
 				logFile << "${predictionInstance.accession_id} Writing SGE submission script.\n"
-				def sgeFile = new File("${projectDir}/web-aug.sh")
+				def sgeFile = new File("${projectDir}/aug-pred.sh")
 				// write command in script (according to uploaded files)
 				sgeFile << "#!/bin/bash\n#\$ -S /bin/bash\n#\$ -cwd\n\n"
 				def cmdStr = "mkdir ${projectDir}/augustus\n"
@@ -815,9 +818,151 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/getAnnoFasta.pl --seqfile=${projectDir}/genome.fa ${projectDir}/augustus/augustus.gff\n"
 				cmdStr = "${cmdStr}cat ${projectDir}/augustus/augustus.gff | perl -ne 'if(m/\\tAUGUSTUS\\t/){print;}' > ${projectDir}/augustus/augustus.gtf\n"
 				cmdStr = "${cmdStr}cat ${projectDir}/augustus/augustus.gff | ${AUGUSTUS_SCRIPTS_PATH}/augustus2gbrowse.pl > ${projectDir}/augustus/augustus.gbrowse\n"
-				cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${predictionInstance.accession_id} null ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH}"
+				cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${predictionInstance.accession_id} null ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 2> ${projectDir}/writeResults.err\n"
 				sgeFile << "${cmdStr}"
 				
+				// write submission script
+				def submissionScript = new File("${projectDir}/submitt.sh")
+				def fileID = "${projectDir}/jobID"
+				submissionScript << "cd ${projectDir}; qsub aug-pred.sh > ${fileID}"
+				// submitt job
+				def jobSubmission = "bash ${projectDir}/submitt.sh".execute()
+				jobSubmission.waitFor()
+				// get job ID
+				def content = new File("${fileID}").text
+				def jobID_array = content =~/Your job (\d*)/
+				def jobID
+				(1..jobID_array.groupCount()).each{jobID = "${jobID_array[0][it]}"}
+				predictionInstance.job_id = jobID
+				logFile << "${predictionInstance.accession_id} Job ${jobID} submitted.\n"
+				// check for job status
+				predictionInstance.job_status = 1 // submitted
+				predictionInstance = predictionInstance.merge()
+				predictionInstance.save()
+				def statusScript = new File("${projectDir}/status.sh")
+				def statusFile = "${projectDir}/job.status"
+				statusScript << "cd ${projectDir}; qstat|grep aug-pred |grep ${jobID} > ${statusFile}"
+				def statusContent
+				def statusCheck 
+				def qstat = 1
+				def runFlag = 0;
+
+				while(qstat == 1){
+					statusCheck = "bash ${projectDir}/status.sh".execute()
+					statusCheck.waitFor()
+					statusContent = new File("${statusFile}").text
+					if(statusContent =~ /qw/){ 
+						predictionInstance.job_status = 2 
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
+					}else if( statusContent =~ /  r  / ){
+						predictionInstance.job_status = 3
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
+						if(runFlag == 0){
+							today = new Date() 
+							logFile << "${predictionInstance.accession_id} Job ${jobID} begins running at ${today}.\n"
+						}
+						runFlag = 1
+					}else{
+						predictionInstance.job_status = 4
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
+						qstat = 0
+						today = new Date()
+ 						logFile << "${predictionInstance.accession_id} Job ${jobID} left SGE at ${today}.\n"
+					}
+					sleep 5000
+			   	}
+			   	// check whether errors occured by log-file-sizes
+				def sgeErrFile = new File("${projectDir}/aug-pred.sh.e${jobID}")
+				def writeResultsErrFile = new File("${projectDir}/writeResults.err")
+				def sgeErrSize = sgeErrFile.text.size()
+				def writeResultsErrSize = writeResultsErrFile.text.size()
+				if(sgeErrSize==0 && writeResultsErrSize==0){
+					sendMail {
+						to "${predictionInstance.email_adress}"
+						subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} is complete"
+						body """Hello!
+
+Your AUGUSTUS training job ${predictionInstance.accession_id} finished. You find the results at http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html .
+
+Thank you for using AUGUSTUS!
+
+Best regards,
+
+the AUGUSTUS web server team
+
+http://bioinf.uni-greifswald.de/trainaugustus
+"""
+					}
+					logFile << "${predictionInstance.accession_id} Sent confirmation Mail that job computation was successful.\n"
+					// unpack with 7z x XA2Y5VMJ.tar.7z
+					// tar xvf XA2Y5VMJ.tar
+					def packResults = new File("${output_dir}/pack${predictionInstance.accession_id}.sh")
+					packResults << "cd ${output_dir}; tar cf - ${predictionInstance.accession_id} | 7z a -si ${predictionInstance.accession_id}.tar.7z; rm -r ${predictionInstance.accession_id};"
+					def cleanUp = "bash ${output_dir}/pack${predictionInstance.accession_id}.sh".execute()
+					cleanUp.waitFor()
+					def cleanUp2 = "rm ${output_dir}/pack${predictionInstance.accession_id}.sh".execute()
+					cleanUp2.waitFor()
+					logFile << "${predictionInstance.accession_id} job directory was packed with tar/7z.\n"
+					logFile << "${predictionInstance.accession_id} Job completed. Result: ok.\n"
+				}else{ 
+					if(sgeErrFile > 0){
+						logFile << "${predictionInstance.accession_id} a SGE error occured!\n";
+						sendMail {
+						to "${admin_email}"
+						subject "Error in AUGUSTUS training job ${predictionInstance.accession_id}"
+						body """Hi ${admin_email}!
+
+Job: ${predictionInstance.accession_id}
+E-Mail: ${predictionInstance.email_adress}
+Species: ${predictionInstance.project_name}
+Link: http://bioinf.uni-greifswald.de/trainaugustus/training-results/${predictionInstance.accession_id}/index.html
+
+An SGE error occured. Please check manually what's wrong. The user has been informed.
+"""
+						}
+						predictionInstance.job_status = 5
+					}else{
+						logFile << "${predictionInstance.accession_id} an error occured during writing results!\n";
+						sendMail {
+							to "${admin_email}"
+							subject "Error in AUGUSTUS training job ${predictionInstance.accession_id}"
+							body """Hi ${admin_email}!
+
+Job: ${predictionInstance.accession_id}
+E-Mail: ${predictionInstance.email_adress}
+Species: ${predictionInstance.project_name}
+Link: http://bioinf.uni-greifswald.de/trainaugustus/training-results/${predictionInstance.accession_id}/index.html
+
+An error occured during writing results. Please check manually what's wrong. The user has been informed.
+"""
+						}
+					}
+					sendMail {
+						to "${predictionInstance.email_adress}"
+						subject "Your AUGUSTUS training job ${predictionInstance.accession_id} is in an error state"
+						body """Hello!
+
+An error occured while training AUGUSTUS for species ${predictionInstance.project_name} (Job ${predictionInstance.accession_id}).
+
+The administrator of the AUGUSTUS training web server has been informed and will get back to you as soon as the problem is solved.
+
+Thank you for using AUGUSTUS!
+
+Best regards,
+
+the AUGUSTUS training web server team
+
+http://bioinf.uni-greifswald.de/trainaugustus
+"""
+					}
+
+					logFile << "${predictionInstance.accession_id} Sent confirmation Mail, the job is in an error state.\n"
+				}
+					
+
 
 			}
 			//------------ END BACKGROUND PROCESS ----------------------------------

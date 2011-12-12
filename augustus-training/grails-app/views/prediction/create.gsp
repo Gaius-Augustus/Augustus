@@ -6,6 +6,17 @@
         <meta name="layout" content="main" />
         <title>Create Prediction</title>
     <script type="text/javascript" src="js/md_stylechanger.js"></script>
+<script type="text/javascript">
+<!--
+    function toggle_visibility(id) {
+       var e = document.getElementById(id);
+       if(e.style.display == 'block')
+          e.style.display = 'none';
+       else
+          e.style.display = 'block';
+    }
+//-->
+</script>
     </head>
     <body>
 
@@ -280,11 +291,27 @@
 				</tbody>
 			</table>
                 </div>
+<!--
 
-		
-                <div class="buttons">
-                    <span class="button"><input class="commit" type="submit" value="Start Predicting" /></span>
-                </div>
+		<table>
+			<tr>
+				<td>
+-->
+               				<div class="buttons" onclick="toggle_visibility('spinner');">
+                   				<span class="button"><input class="commit" type="submit" value="Start Predicting" /></span>
+                			</div>
+<!--
+				</td>	
+				<td>
+					<SPACER TYPE=VERTICAL SIZE=32>
+					<div id="spinner" style='display:none;' align="center">
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../images/ajax-loader.gif" alt="spnner"/>
+					</div>
+
+				</td>	
+			</tr>
+		</table>
+-->
             </g:uploadForm>
             </div>
        </div>

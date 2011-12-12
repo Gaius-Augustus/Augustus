@@ -81,8 +81,11 @@ class TrainingController {
          		redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 			return
 		}else{
-			// project_id that is used internally by pipeline as species name.
-			def project_id = "web" + trainingInstance.accession_id
+			// info string for confirmation E-Mail
+			def confirmationString
+			confirmationString = "Training job ID: ${trainingInstance.accession_id}\n"
+			confirmationString = "${confirmationString}Species name: ${trainingInstance.project_name}\n"
+			def emailStr
 			trainingInstance.job_id = 0
 			// define flags for file format check, file removal in case of failure
 			def genomeFastaFlag = 0
@@ -93,7 +96,6 @@ class TrainingController {
 			def structureExistsFlag = 0
 			def proteinFastaFlag = 0
 			def proteinExistsFlag = 0
-
 			// get date
 			def today = new Date()
 			logFile << "${trainingInstance.accession_id} AUGUSTUS training webserver starting on ${today}\n"
@@ -119,6 +121,7 @@ class TrainingController {
 				projectDir.mkdirs()
 				uploadedGenomeFile.transferTo( new File (projectDir, "genome.fa"))
 				trainingInstance.genome_file = uploadedGenomeFile.originalFilename
+				confirmationString = "${confirmationString}Genome file: ${trainingInstance.genome_file}\n"
 				if("${uploadedGenomeFile.originalFilename}" =~ /\.gz/){
 					logFile <<  "${trainingInstance.accession_id} Genome file is gzipped.\n"
 					def gunzipGenomeScript = new File("${projectDir}/gunzipGenome.sh")
@@ -142,7 +145,7 @@ class TrainingController {
 					logFile <<  "${trainingInstance.accession_id} The genome file was not fasta. Project directory ${projectDir} is deleted (rm -r).\n"
 					def delProc = "rm -r ${projectDir}".execute()
 					delProc.waitFor()
-					logFile <<  "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					logFile <<  "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 					flash.error = "Genome file ${uploadedGenomeFile.originalFilename} is not in DNA fasta format."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return
@@ -173,6 +176,7 @@ class TrainingController {
 				// checking web file for DNA fasta format: 
 				def URL url = new URL("${trainingInstance.genome_ftp_link}");
 				def URLConnection uc = url .openConnection()
+				confirmationString = "${confirmationString}Genome file: ${trainingInstance.genome_ftp_link}\n"
 				if(!("${trainingInstance.genome_ftp_link}" =~ /\.gz/)){
 					def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
 					def String inputLine=null
@@ -186,7 +190,7 @@ class TrainingController {
 						logFile <<  "${trainingInstance.accession_id} The first 20 lines in genome file are not fasta.\n"
 						def delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
-						logFile << "${trainingInstance.accession_id} Project directory ${projectDir} is deleted.\n${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						logFile << "${trainingInstance.accession_id} Project directory ${projectDir} is deleted.\n${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						flash.error = "Genome file ${trainingInstance.genome_ftp_link} is not in DNA fasta format."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -202,6 +206,7 @@ class TrainingController {
 				projectDir.mkdirs()
 				uploadedEstFile.transferTo( new File (projectDir, "est.fa"))
 				trainingInstance.est_file = uploadedEstFile.originalFilename
+				confirmationString = "${confirmationString}cDNA file: ${trainingInstance.est_file}\n"
 				if("${uploadedEstFile.originalFilename}" =~ /\.gz/){
 					logFile <<  "${trainingInstance.accession_id} EST file is gzipped.\n"
 					def gunzipEstScript = new File("${projectDir}/gunzipEst.sh")
@@ -221,7 +226,7 @@ class TrainingController {
 					logFile << "${trainingInstance.accession_id} The cDNA file was not fasta. ${projectDir} (rm -r) is deleted.\n"
 					def delProc = "rm -r ${projectDir}".execute()
 					delProc.waitFor()
-					logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 					flash.error = "cDNA file ${uploadedEstFile.originalFilename} is not in DNA fasta format."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return
@@ -248,6 +253,7 @@ class TrainingController {
 			if(!(trainingInstance.est_ftp_link == null)){
 				logFile << "${trainingInstance.accession_id} est web-link is ${trainingInstance.est_ftp_link}\n"
 				projectDir.mkdirs()
+				confirmationString = "${confirmationString}cDNA file: ${trainingInstance.est_ftp_link}\n"
 				if(!("${trainingInstance.est_ftp_link}" =~ /\.gz/)){
 					// checking web file for DNA fasta format: 
 					def URL url = new URL("${trainingInstance.est_ftp_link}");
@@ -264,7 +270,7 @@ class TrainingController {
 						logFile << "${trainingInstance.accession_id} The cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
 						def delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
-						logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						flash.error = "cDNA file ${trainingInstance.est_ftp_link} is not in DNA fasta format."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -280,6 +286,7 @@ class TrainingController {
 				projectDir.mkdirs()
 				uploadedStructFile.transferTo( new File (projectDir, "training-gene-structure.gff"))
 				trainingInstance.struct_file = uploadedStructFile.originalFilename
+				confirmationString = "${confirmationString}Training gene structure file: ${trainingInstance.struct_file}\n"
 				logFile << "${trainingInstance.accession_id} Uploaded training gene structure file ${uploadedStructFile.originalFilename} was renamed to training-gene-structure.gff and moved to ${projectDir}\n"
 				def gffColErrorFlag = 0
 				def gffNameErrorFlag = 0
@@ -313,7 +320,7 @@ class TrainingController {
 						logFile << "${trainingInstance.accession_id} ${projectDir} (rm -r) is deleted.\n"
 						def delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
-						logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
 					}
@@ -344,6 +351,7 @@ class TrainingController {
 				projectDir.mkdirs()
 				uploadedProteinFile.transferTo( new File (projectDir, "protein.fa"))
 				trainingInstance.protein_file = uploadedProteinFile.originalFilename
+				confirmationString = "${confirmationString}Protein file: ${trainingInstance.protein_file}\n"
 				if("${uploadedProteinFile.originalFilename}" =~ /\.gz/){
 					logFile <<  "${trainingInstance.accession_id} Protein file is gzipped.\n"
 					def gunzipProteinScript = new File("${projectDir}/gunzipProtein.sh")
@@ -371,7 +379,7 @@ class TrainingController {
 					logFile << "${trainingInstance.accession_id} The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence). ${projectDir} is deleted.\n"
 					def delProc = "rm -r ${projectDir}".execute()
 					delProc.waitFor()
-					logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 					flash.error = "Your protein file was not recognized as a protein file. It may be DNA file. The training job was not started. Please contact augustus@uni-greifswald.de if you are completely sure this file is a protein fasta file."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return
@@ -380,7 +388,7 @@ class TrainingController {
 					logFile << "${trainingInstance.accession_id} The protein file was not protein fasta. ${projectDir} is deleted (rm -r).\n"
 					def delProc = "rm -r ${projectDir}".execute()
 					delProc.waitFor()
-					logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 					flash.error = "Protein file ${uploadedProteinFile.originalFilename} is not in protein fasta format."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return
@@ -408,6 +416,7 @@ class TrainingController {
 			if(!(trainingInstance.protein_ftp_link == null)){
 				logFile << "${trainingInstance.accession_id} protein web-link is ${trainingInstance.protein_ftp_link}\n"
 				projectDir.mkdirs()
+				confirmationString = "${confirmationString}Protein file: ${trainingInstance.protein_ftp_link}\n"
 				if(!("${trainingInstance.protein_ftp_link}" =~ /\.gz/)){
 					// checking web file for protein fasta format: 
 					def URL url = new URL("${trainingInstance.protein_ftp_link}");
@@ -430,7 +439,7 @@ class TrainingController {
 						logFile << "${trainingInstance.accession_id} The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence).\n ${projectDir} is deleted (rm -r).\n"
 						def delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
-						logFile << "\n${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						logFile << "\n${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						flash.error = "Protein file ${trainingInstance.protein_ftp_link} does not contain protein sequences."
 						redirect(action:create)
 						return
@@ -439,7 +448,7 @@ class TrainingController {
 						logFile << "${trainingInstance.accession_id} The protein file was not protein fasta. ${projectDir} is deleted (rm -r).\n"
 						def delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
-						logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						flash.message = "Protein file ${trainingInstance.protein_ftp_link} is not in protein fasta format."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -447,35 +456,31 @@ class TrainingController {
 				}else{
 					logFile <<  "${trainingInstance.accession_id} The linked Protein file is gzipped. Format will be checked later after extraction.\n"
 				}
+						
 			}
-
 			// send confirmation email and redirect
 			if(!trainingInstance.hasErrors() && trainingInstance.save()){
+				// generate empty results page
+				def emptyPageScript = new File("${projectDir}/emptyPage.sh")
+				emptyPageScript << "${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 0\n"
+				def emptyPageExecution = "bash ${projectDir}/emptyPage.sh".execute()
+				emptyPageExecution.waitFor()
 				trainingInstance.job_status = 0
+				emailStr = "Hello!\n\nThank you for submitting a job to train AUGUSTUS parameters for species ${trainingInstance.project_name}. The job status is available at http://bioinf.uni-greifswald.de/trainaugustus/training/show/${trainingInstance.id}.\n\nDetails of your job:\n\n${confirmationString}\nYou will be notified by e-mail where you find the results after computations of your job have finished.\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
 				sendMail {
 					to "${trainingInstance.email_adress}"
 					subject "Your AUGUSTUS training job ${trainingInstance.accession_id}"
-					body """Hello!
-
-Thank you for submitting a job to train AUGUSTUS for the species ${trainingInstance.project_name}. The job status is available at http://bioinf.uni-greifswald.de/trainaugustus/training/show/${trainingInstance.id}
-
-You will be notified by e-mail when the job is finished.
-
-Best regards,
-
-the AUGUSTUS training web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+					body """${emailStr}"""
 				}
 				logFile << "${trainingInstance.accession_id} Confirmation e-mail sent.\n"          
 				redirect(action:show,id:trainingInstance.id)
+				//forward(action:"show",id:trainingInstance.id)
 			} else {
 				logFile << "${trainingInstance.accession_id} An error occurred in the trainingInstance (e.g. E-Mail missing, see domain restrictions).\n"
 				logFile << "${trainingInstance.accession_id} ${projectDir} is deleted (rm -r).\n"
 				def delProc = "rm -r ${projectDir}".execute()
 				delProc.waitFor()
-				logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+				logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 				render(view:'create', model:[trainingInstance:trainingInstance])
 				return
 			}
@@ -510,7 +515,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile <<  "${trainingInstance.accession_id} The genome file was not fasta. ${projectDir} is deleted (rm -r).\n"
 						def delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
-						logFile <<  "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						logFile <<  "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						sendMail {
 							to "${trainingInstance.email_adress}"
 							subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
@@ -588,7 +593,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							logFile << "${trainingInstance.accession_id} ${projectDir} is deleted (rm -r).\n"
 							def delProc = "rm -r ${projectDir}".execute()
 							delProc.waitFor()
-							logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 							// delete database entry
 							trainingInstance.delete()
 							return
@@ -635,7 +640,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile <<  "${trainingInstance.accession_id} The EST/cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
 						def delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
-						logFile <<  "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						logFile <<  "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						sendMail {
 							to "${trainingInstance.email_adress}"
 							subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
@@ -704,7 +709,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile << "${trainingInstance.accession_id} The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence). ${projectDir} is deleted (rm -r).\n"
 						def delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
-						logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						sendMail {
 							to "${trainingInstance.email_adress}"
 							subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
@@ -727,7 +732,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile << "${trainingInstance.accession_id} The protein file was not protein fasta. ${projectDir} is deleted (rm -r).\n"
 						def delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
-						logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						sendMail {
 							to "${trainingInstance.email_adress}"
 							subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
@@ -808,7 +813,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					logFile << "${trainingInstance.accession_id} Data are identical to old job ${oldAccContent} with Accession-ID ${oldAccContent}. ${projectDir} is deleted (rm -r).\n"
 					def delProc = "rm -r ${projectDir}".execute()
 					delProc.waitFor()
-					logFile << "${trainingInstance.accession_id} Job ${project_id} by user ${trainingInstance.email_adress} is aborted, the user is informed!\n"
+					logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted, the user is informed!\n"
 					trainingInstance.delete()
 					return
 				} // end of job was submitted before check
@@ -821,22 +826,22 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				sgeFile << "#!/bin/bash\n#\$ -S /bin/bash\n#\$ -cwd\n\n"
 				// this has been checked, works.
 				if( estExistsFlag ==1 && proteinExistsFlag == 0 && structureExistsFlag == 0){
-					sgeFile << "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --pasa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err\n"
+					sgeFile << "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --pasa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 1 2> ${projectDir}/writeResults.err\n"
 					// this is currently tested
 				}else if(estExistsFlag == 0 && proteinExistsFlag == 0 && structureExistsFlag == 1){
-					sgeFile << "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/training-gene-structure.gff -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err"
+					sgeFile << "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/training-gene-structure.gff -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err"
 					// this is currently tested
 				}else if(estExistsFlag == 0 && proteinExistsFlag == 1 && structureExistsFlag == 0){
-					sgeFile << "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/protein.fa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err\n"
+					sgeFile << "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/protein.fa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 1 2> ${projectDir}/writeResults.err\n"
 					// all following commands still need testing
 				}else if(estExistsFlag == 1 && proteinExistsFlag == 1 && structureExistsFlag == 0){
-					sgeFile << "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --trainingset=${projectDir}/protein.fa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err\n\n"
+					sgeFile << "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --trainingset=${projectDir}/protein.fa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err\n\n"
 				}else if(estExistsFlag == 1 && proteinExistsFlag == 0 && structureExistsFlag == 1){
-					sgeFile << "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --trainingset=${projectDir}/training-gene-structure.gff -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err"
+					sgeFile << "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --trainingset=${projectDir}/training-gene-structure.gff -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err"
 				}else if(estExistsFlag == 0 && proteinExistsFlag == 1 && structureExistsFlag == 1){
-					sgeFile << "echo 'Simultaneous protein and structure file support are currently not implemented. Using the structure file, only.'\n\nautoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/training-gene-structure.gff -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err"
+					sgeFile << "echo 'Simultaneous protein and structure file support are currently not implemented. Using the structure file, only.'\n\nautoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/training-gene-structure.gff -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err"
 				}else if(estExistsFlag == 1 && proteinExistsFlag == 1 && structureExistsFlag == 1){
-					sgeFile << "echo Simultaneous protein and structure file support are currently not implemented.\n\nUsing the structure file, only.'\n\nautoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/training-gene-structure.gff -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err"
+					sgeFile << "echo Simultaneous protein and structure file support are currently not implemented.\n\nUsing the structure file, only.'\n\nautoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/training-gene-structure.gff -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err"
 				}
 				// write submission script
 				def submissionScript = new File("${projectDir}/submitt.sh")
@@ -887,7 +892,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						trainingInstance.save()
 						qstat = 0
 						today = new Date()
- 						logFile << "${trainingInstance.accession_id} Job ${jobID} left SGE at ${today}.\n"
+						logFile << "${trainingInstance.accession_id} Job ${jobID} left SGE at ${today}.\n"
 					}
 					sleep 5000
 			   	}
@@ -977,7 +982,7 @@ An error occured during writing results. Please check manually what's wrong. The
 						}
 					}
 					sendMail {
-						to "${trainingInstance.email_adress}"
+					to "${trainingInstance.email_adress}"
 						subject "Your AUGUSTUS training job ${trainingInstance.accession_id} is in an error state"
 						body """Hello!
 

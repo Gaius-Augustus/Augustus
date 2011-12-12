@@ -53,11 +53,11 @@
 
   <div id="linke_spalte">
      <ul class="menu">
-         <li><a href="../index.gsp"><span>Introduction</span></a></li>
+         <li><a href="../../index.gsp"><span>Introduction</span></a></li>
          <li><g:link controller="training" action="create"><span>Submit Training</span></g:link></li>
          <li><g:link controller="prediction" action="create"><span>Submit Prediction</span></g:link></li>
-         <li><a href="../help.gsp"><span>Help</span></a></li>
-         <li><a href="../references.gsp"><span>Links & References</span></a></li>
+         <li><a href="../../help.gsp"><span>Help</span></a></li>
+         <li><a href="../../references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
      </ul>
@@ -65,33 +65,28 @@
 
  <div id="mittel_spalte">
 <div class="main" id="main">
-   <h1><g:link controller="prediction" action="show">AUGUSTUS Prediction Results</g:link></h1>
+   <h1><g:link controller="prediction" action="show">AUGUSTUS Prediction: Job Status</g:link></h1>
             <g:if test="${flash.message}">
             <div class="message">${flash.message}</div>
             </g:if>
 
             <g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '0' || fieldValue(bean:predictionInstance, field:'job_status') == '1' || fieldValue(bean:predictionInstance, field:'job_status') == '2' || fieldValue(bean:predictionInstance, field:'job_status') == '3'}">
-                <h1>Status of Job ${fieldValue(bean:predictionInstance, field:'accession_id')}</h1>
-            
-            Your job is in stage <g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '0'|| fieldValue(bean:predictionInstance, field:'job_status') == '1'}">1</g:if><g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '2'}">2</g:if><g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '3'}">3</g:if><g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '4'}">4</g:if>.<br><br>Explannation:
-            <ul>
-                <li>stage 1: submitted to webserver but not to grid, yet
-                <li>stage 2: submitted to grid and waiting for execution
-                <li>stage 3: calculating
-                <li>stage 4: finished
-                <li>stage 5: error
-            </ul>
-            For more details, see <a href="../help.gsp#job_status">Help</a>
+            <p>
+            <g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '0'|| fieldValue(bean:predictionInstance, field:'job_status') == '1'}"><b><font color="#006699" size=2>Job submitted</font> <font color="#d2d2dc" size=2>&rarr; waiting for execution &rarr; computing &rarr; finished!</font></b><br></g:if><g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '2'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>waiting for execution</font> <font color="#d2d2dc" size=2>&rarr; computing &rarr; finished!</font></b><br></g:if><g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '3'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>computing</font> <font color="#d2d2dc" size=2>&rarr; finished!</font></b><br></g:if><g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '4'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>computing</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>finished!</font></b><br></g:if></p>
             </g:if>
             
 
             <g:if test ="${fieldValue(bean:predictionInstance, field:'job_status') == '4'}">
-            <h1>Results for Job ${fieldValue(bean:predictionInstance, field:'accession_id')}</h1>
-               <ul>
-                  <li>Your job is finished.
-               </ul>
+<p>
+	<b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>computing</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>finished!</font></b><br><br>The submitter of this job received an e-mail pointing to the results.
+</p>
             </g:if>
 
+            <g:if test ="${fieldValue(bean:predictionInstance, field:'job_status') == '5'}">
+<p>
+	<b><font color="#f40707" size=2>An error occured when executing this job!</font></b>
+</p>
+            </g:if>
 </div>
  </div>
 </div>
