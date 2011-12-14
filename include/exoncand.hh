@@ -12,6 +12,7 @@
  * Date       |   Author              |  Changes
  *------------|-----------------------|------------------------------------------
  * 3.11.2011  | Mario Stanke          | creation of the file
+ * 06.12.2011 | Alexander Gebauer     | definition of the stopcodons
 \******************************************************************************/
 
 #ifndef _EXONCAND_HH
@@ -20,9 +21,30 @@
 #include "types.hh"
 #include "exonmodel.hh" // for OpenReadingFrame
 
+#define DECLARE_ON(NAME, PATTERN, COUNT)			\
+    inline bool NAME(const char* dna) {				\
+		return strncmp(dna, PATTERN, COUNT) == 0;	\
+    }
+
+DECLARE_ON(ochre,    OCHRECODON, 3)
+DECLARE_ON(amber,    AMBERCODON, 3)
+DECLARE_ON(opal,     OPALCODON, 3)
+
+#define rCAmber_SEQUENCE "cta"
+#define rCOchre_SEQUENCE "tta"
+#define rCOpal_SEQUENCE "tca"
+DECLARE_ON(onRCOchre,     rCOchre_SEQUENCE, 3)
+DECLARE_ON(onRCAmber,    rCAmber_SEQUENCE, 3)
+DECLARE_ON(onRCOpal,    rCOpal_SEQUENCE, 3)
+
+inline bool onRCStopcodon(const char* dna) {
+    return
+	onRCOchre(dna) || onRCOpal(dna) || onRCAmber(dna);
+}
+
 /*
  * getExonCands: get all exon candidates
- * assqthresh, dssqthresh are thresholds for the inclusion of 
+ * assqthresh, dssqthresh are thresholds for the inclusion of
  * acceptor/donor splice sites based on the pattern probability
  * assqthresh=0.05 means that only acceptor ss are considered
  * that have a pattern, such that 5% of patterns have lower probability.
@@ -30,5 +52,6 @@
  */
 
 void getExonCands(const char* dna, float assqthresh=0, float dssqthresh=0);
+
 
 #endif  //  _EXONCAND_HH
