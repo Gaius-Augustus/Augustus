@@ -898,13 +898,18 @@ http://bioinf.uni-greifswald.de/trainaugustus
 			   	}
 
 			   	// check whether errors occured by log-file-sizes
+				logFile << "${trainingInstance.accession_id} Beginning to look for errors.\n"
 			   	def autoAugErrFile = new File("${projectDir}/AutoAug.err")
 				def sgeErrFile = new File("${projectDir}/web-aug.sh.e${jobID}")
 				def writeResultsErrFile = new File("${projectDir}/writeResults.err")
 				def autoAugErrSize = autoAugErrFile.text.size()
+				logFile << "${trainingInstance.accession_id} autoAugErrorSize is ${autoAugErrSize}.\n"
 				def sgeErrSize = sgeErrFile.text.size()
+				logFile << "${trainingInstance.accession_id} sgeErrSize is ${sgeErrSize}.\n"
 				def writeResultsErrSize = writeResultsErrFile.text.size()
+				logFile << "${trainingInstance.accession_id} writeResultsSize is ${writeResultsErrSize}.\n"
 				if(autoAugErrSize==0 && sgeErrSize==0 && writeResultsErrSize==0){
+					logFile << "${trainingInstance.accession_id} no errors occured (option 1).\n"
 					sendMail {
 						to "${trainingInstance.email_adress}"
 						subject "Your AUGUSTUS training job ${trainingInstance.accession_id} is complete"
@@ -933,7 +938,8 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					logFile << "${trainingInstance.accession_id} autoAug directory was packed with tar/7z.\n"
 					logFile << "${trainingInstance.accession_id} Job completed. Result: ok.\n"
 				}else{
-					if(autoAugErrSize > 0){
+					logFile << "${trainingInstance.accession_id} an error occured somewhere.\n"
+					if(!(autoAugErrSize == 0)){
 						logFile << "${trainingInstance.accession_id} an error occured when autoAug.pl was executed!\n"; 
 						sendMail {
 						to "${admin_email}"
@@ -949,7 +955,7 @@ An error occured in the autoAug pipeline. Please check manually what's wrong. Th
 """
 						}
 						trainingInstance.job_status = 5
-					}else if(sgeErrFile > 0){
+					}else if(!(sgeErrSize == 0)){
 						logFile << "${trainingInstance.accession_id} a SGE error occured!\n";
 						sendMail {
 						to "${admin_email}"

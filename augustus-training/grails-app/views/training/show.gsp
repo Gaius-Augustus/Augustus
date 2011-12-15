@@ -32,7 +32,7 @@
         Bioinformatics Web Server at University of Greifswald
       </div>
       <div id="bannertitel2">
-        Gene Prediction with AUGUSTUS
+        Gene Prediction with AUGUSTUS <b><font color="#ffb22a" size=3>beta</font></b>
       </div>
    </div>
    <div id="banner_rechts">
@@ -56,7 +56,9 @@
   <div id="linke_spalte">
      <ul class="menu">
          <li><a href="../../index.gsp"><span>Introduction</span></a></li>
+         <li><a href="../../trainingtutorial.gsp"><span>Training Tutorial</span></a></li>
          <li><g:link controller="training" action="create"><span>Submit Training</span></g:link></li>
+         <li><a href="../../predictiontutorial.gsp"><span>Prediction Tutorial</span></a></li>
          <li><g:link controller="prediction" action="create"><span>Submit Prediction</span></g:link></li>
          <li><a href="../../help.gsp"><span>Help</span></a></li>
          <li><a href="../../references.gsp"><span>Links & References</span></a></li>
