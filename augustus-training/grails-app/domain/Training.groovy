@@ -12,6 +12,7 @@ class Training {
    String est_ftp_link
    String job_id // SGE Job ID will be determined by controller
    String job_status // SGE job status will be determined by controller
+   String job_error
    String protein_file
    String protein_ftp_link
    String struct_file
@@ -77,6 +78,7 @@ class Training {
        struct_size(nullable:true)
        job_id(nullable:true)
        job_status(nullable:true)
+       job_error(nullable:true)
        dateCreated()
     }
 }

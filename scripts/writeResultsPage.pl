@@ -73,43 +73,55 @@ if($projectID =~ m/^t/){
 
 	my $cfgFile = $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_parameters.cfg";
 	if (not(-e $cfgFile)){
-		print STDERR "$cfgFile does not exist!\n";
+		print STDERR "$cfgFile does not exist! Parameters were not trained for job ID $projectID.\n";
+	}else{
+		$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_parameters.cfg";
+		system "$cmdStr\n";
 	}
-	$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_parameters.cfg";
-	system "$cmdStr\n";
 	if (not(-e $cfgFile)){
 		print STDERR "$projectWebOutParams/$species"."_parameters.cfg was not written! Check writing permissions!\n";
 	}
+
 	$cfgFile = $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_metapars.cfg";
-	if (not(-e $cfgFile)){
+	if (not(-e "$projectWebOutParams/$species"."_parameters.cfg")){
 		print STDERR "$cfgFile does not exist!\n";
+	}else{
+		$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_metapars.cfg";
+		system "$cmdStr\n";
 	}
-	$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_metapars.cfg";
-	system "$cmdStr\n";
+
 	$cfgFile = $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_metapars.utr.cfg";
 	if (not(-e $cfgFile)){
 		print STDERR "$cfgFile does not exist!\n";
+	}else{
+		$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_metapars.utr.cfg";
+		system "$cmdStr\n";
 	}
-	$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_metapars.utr.cfg";
-	system "$cmdStr\n";
+
 	$cfgFile = $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_exon_probs.pbl";
 	if (not(-e $cfgFile)){
 		print STDERR "$cfgFile does not exist!\n";
+	}else{
+		$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_exon_probs.pbl";
+		system "$cmdStr\n";
 	}
-	$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_exon_probs.pbl";
-	system "$cmdStr\n";
+
 	$cfgFile = $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_exon_probs.pbl.withoutCRF";
 	if (not(-e $cfgFile)){
 		print STDERR "$cfgFile does not exist!\n";
+	}else{
+		$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_exon_probs.pbl.withoutCRF";
+		system "$cmdStr\n";
 	}
-	$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_exon_probs.pbl.withoutCRF";
-	system "$cmdStr\n";
+
 	$cfgFile = $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_igenic_probs.pbl";
 	if (not(-e $cfgFile)){
 		print STDERR "$cfgFile does not exist!\n";
+	}else{
+		$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_igenic_probs.pbl";
+		system "$cmdStr\n";
 	}
-	$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_igenic_probs.pbl";
-	system "$cmdStr\n";
+
 	$cfgFile = $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_igenic_probs.pbl.withoutCRF";
 	if (not(-e $cfgFile)){
 		print STDERR "$cfgFile does not exist!\n";
@@ -125,54 +137,67 @@ if($projectID =~ m/^t/){
 	$cfgFile = $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_intron_probs.pbl.withoutCRF";
 	if (not(-e $cfgFile)){
 		print STDERR "$cfgFile does not exist!\n";
+	}else{
+		$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_intron_probs.pbl.withoutCRF";
+		system "$cmdStr\n";
 	}
-	$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_intron_probs.pbl.withoutCRF";
-	system "$cmdStr\n";
+
 	$cfgFile = $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_weightmatrix.txt";
 	if (not(-e $cfgFile)){
 		print STDERR "$cfgFile does not exist!\n";
+	}else{
+		$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_weightmatrix.txt";
+		system "$cmdStr\n";
 	}
-	$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_weightmatrix.txt";
-	system "$cmdStr\n";
 
 	## pack parameters
-	$cmdStr = "cd $projectWebOutDir; tar -czvf parameters.tar.gz $species &> /dev/null;";
-	`$cmdStr`;
+	if(-e $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_parameters.cfg"){
+		$cmdStr = "cd $projectWebOutDir; tar -czvf parameters.tar.gz $species &> /dev/null;";
+		`$cmdStr`;
+	}
+	my $paramsExistFlag = 1;
 	if (not(-e "$projectWebOutDir/parameters.tar.gz")){
 		print STDERR "$projectWebOutDir/parameters.tar.gz was not packed!\n";
+		$paramsExistFlag = 0;
 	}
 
 	## remove original parameter directoy from apache directory
-	$cmdStr = "rm -r $projectWebOutDir/$species";
-	system "$cmdStr\n";
+	if(-d "$projectWebOutDir/$species"){
+		$cmdStr = "rm -r $projectWebOutDir/$species";
+		system "$cmdStr\n";
+	}
 
 	## copy and pack training gene file
 	my $trainingFile = $grailsOut."/$projectID/autoAug/trainingSet/training/training.gb";
 	if (not(-e $trainingFile)){
 		print STDERR "$trainingFile does not exist!\n";
+	}else{
+		$cmdStr = "cp $trainingFile $projectWebOutDir/training.gb; cd $projectWebOutDir; gzip training.gb &> /dev/null;";
+		`$cmdStr`;
 	}
-	$cmdStr = "cp $trainingFile $projectWebOutDir/training.gb; cd $projectWebOutDir; gzip training.gb &> /dev/null;";
-	`$cmdStr`;
+	my $traininggb = 1;
 	if (not(-e $projectWebOutDir."/training.gb.gz")){
-	print STDERR "$projectWebOutDir/training.gb.gz was not packed!\n";
+		print STDERR "$projectWebOutDir/training.gb.gz was not packed!\n";
+		$traininggb = 0;
 	}
-
 
 	## copy and pack ab-initio output file
 	my $ab_initio_webDir = $projectWebOutDir."/ab_initio";
 	$cmdStr = "mkdir $ab_initio_webDir";
 	system $cmdStr;
 	my $ab_initio_grailsDir = $grailsOut."/$projectID/autoAug/autoAugPred_abinitio";
+	my $abinitioExistsFlag = 1;
 	if (not(-d "$ab_initio_grailsDir")){
 		print STDERR "AutoAug did not produce ab initio predictions!\n";
-		exit;
+		$abinitioExistsFlag = 0;
+	}else{
+		$cmdStr = "cp  $ab_initio_grailsDir/predictions/* $ab_initio_webDir; cp $ab_initio_grailsDir/gbrowse/* $ab_initio_webDir;";
+		`$cmdStr`;
+		$cmdStr = "cd $projectWebOutDir; tar -czvf ab_initio.tar.gz ab_initio;";
+		`$cmdStr`;
+		$cmdStr = "rm -r $ab_initio_webDir;";
+		`$cmdStr`;
 	}
-	$cmdStr = "cp  $ab_initio_grailsDir/predictions/* $ab_initio_webDir; cp $ab_initio_grailsDir/gbrowse/* $ab_initio_webDir;";
-	`$cmdStr`;
-	$cmdStr = "cd $projectWebOutDir; tar -czvf ab_initio.tar.gz ab_initio;";
-	`$cmdStr`;
-	$cmdStr = "rm -r $ab_initio_webDir;";
-	`$cmdStr`;
 
 	## copy and pack hints predictions - if they exist	
 	my $hintPredsExistFlag = 0;
@@ -238,14 +263,19 @@ if($projectID =~ m/^t/){
 	## copy log and error file
 	my $errorFile = $grailsOut."/$projectID/AutoAug.err";
 	my $logFile = $grailsOut."/$projectID/AutoAug.log";
-	$cmdStr = "cp $errorFile $projectWebOutDir; cp $logFile $projectWebOutDir;";
-	`$cmdStr`;
+	if(-e $errorFile){
+		$cmdStr = "cp $errorFile $projectWebOutDir; cp $logFile $projectWebOutDir;";
+		`$cmdStr`;
+	}else{
+		print STDERR "AutoAug.err was not produced!\n";
+		exit;
+	}
 }else{
 	## pack and copy augustus predictions
 	if(-d $grailsOut."/$projectID/augustus"){
-		$cmdStr = "cd $grailsOut/$projectID; tar -czvf augustus.tar.gz augustus;";
+		$cmdStr = "cd $grailsOut/$projectID; tar -czvf predictions.tar.gz augustus;";
 		`$cmdStr`;
-		$cmdStr = "cp $grailsOut/$projectID/augustus.tar.gz $projectWebOutDir/augustus.tar.gz";
+		$cmdStr = "cp $grailsOut/$projectID/predictions.tar.gz $projectWebOutDir/predictions.tar.gz";
 		`$cmdStr`;
 	}
 }
@@ -267,8 +297,15 @@ if($projectID =~ m/^t/){
 	print SEG2 "<a href=\"index.html\" class=\"contentpagetitle\">Training results for job $projectID</a>\n</td>\n</tr>\n</table>\n";
 	print SEG2 "<div class=\"main\" id=\"main\">\n<p>On this page, you find all relevant results to your AUGUSTUS training run $projectID for species $species, first submitted to our web server application on $submissionDate.</p>\n";
 	print SEG2 "<h1>Files for download</h1>\n<table>\n<tr><td><b>Log-file</b></td><td><a href=\"AutoAug.log\">AutoAug.log</a></td></tr>\n<tr><td><b>Error-file</b></td><td><a href=\"AutoAug.err\">AutoAug.err</a></td></tr>\n";
-	print SEG2 "<tr>\n<td><b>Species parameter archive</b>&nbsp;&nbsp;</td>\n<td><a href=\"parameters.tar.gz\">parameters.tar.gz</a></td>\n</tr>\n<tr>\n<td><b>Training genes</b>&nbsp;&nbsp;</td>\n";
-	print SEG2 "<td><a href=\"training.gb.gz\">training.gb.gz</a></td>\n</tr>\n<tr>\n<td><b>Ab initio predictions</b></td>\n<td><a href=\"ab_initio.tar.gz\">ab_initio.tar.gz</a></td>\n</tr>\n";
+	if($paramsExistFlag==1){
+	print SEG2 "<tr>\n<td><b>Species parameter archive</b>&nbsp;&nbsp;</td>\n<td><a href=\"parameters.tar.gz\">parameters.tar.gz</a></td>\n</tr>\n";
+	}
+	if($traininggb==1){
+	print SEG2 "<tr>\n<td><b>Training genes</b>&nbsp;&nbsp;</td><td><a href=\"training.gb.gz\">training.gb.gz</a></td>\n</tr>\n";
+	}
+	if($abinitioExistsFlag==1){
+	print SEG2 "<tr>\n<td><b>Ab initio predictions</b></td>\n<td><a href=\"ab_initio.tar.gz\">ab_initio.tar.gz</a></td>\n</tr>\n";
+	}
 	if($hintsPredsExistFlag==1){
 	print SEG2 "<tr>\n<td><b>Predictions with hints</b></td>\n<td><a href=\"hints_pred.tar.gz\">hints_pred.tar.gz</a></td>\n</tr>\n";
 	}

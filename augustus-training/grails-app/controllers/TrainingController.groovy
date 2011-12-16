@@ -41,6 +41,8 @@ class TrainingController {
 	def admin_email = "katharina.hoff@gmail.com"
 	// sgeLen length of SGE queue, when is reached "the server is buisy" will be displayed
 	def sgeLen = 8;
+	// max ftp/http filesize
+	def maxFileSizeByUpload = 1073741824
 
 	// human verification:
 	def simpleCaptchaService
@@ -87,6 +89,7 @@ class TrainingController {
 			confirmationString = "${confirmationString}Species name: ${trainingInstance.project_name}\n"
 			def emailStr
 			trainingInstance.job_id = 0
+			trainingInstance.job_error = 0
 			// define flags for file format check, file removal in case of failure
 			def genomeFastaFlag = 0
 			def estFastaFlag = 0
@@ -491,6 +494,12 @@ class TrainingController {
 				if(!(trainingInstance.genome_ftp_link == null)){
 					logFile <<  "${trainingInstance.accession_id} Retrieving genome file ${trainingInstance.genome_ftp_link}\n"
 					projectDir.mkdirs()
+					// check whether the genome file is small enough for upload
+
+
+// THIS IS WHERE I AM CURRENTLY WORKING!
+					def wgetGenomeSizeCk = "".execute()
+					wgetGenomeSizeCk.waitFor()
 					def wgetGenome = "wget -O ${projectDir}/genome.fa ${trainingInstance.genome_ftp_link}".execute()
 					wgetGenome.waitFor()
 					if("${trainingInstance.genome_ftp_link}" =~ /\.gz/){
@@ -771,6 +780,24 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					delProcCkShProtein.waitFor()
 				} // end of (!(trainingInstance.protein_ftp_link == null))
 
+				// confirm file upload via e-mail
+				if((!(trainingInstance.genome_ftp_link == null)) || (!(trainingInstance.protein_ftp_link == null)) || (!(trainingInstance.est_ftp_link == null))){
+					sendMail {
+						to "${trainingInstance.email_adress}"
+						subject "File upload has been completed for AUGUSTUS training job ${trainingInstance.accession_id}"
+						body """Hello!
+
+We have retrieved all files that you specified, successfully. You may delete them from the public server, now, without affecting the AUGUSTUS training job.
+
+Best regards,
+
+the AUGUSTUS training web server team
+
+http://bioinf.uni-greifswald.de/trainaugustus
+"""
+					}
+				}
+
 				// File formats appear to be ok. 
 				// check whether this job was submitted before:
 				def grepScript = new File("${projectDir}/grepScript.sh")
@@ -896,6 +923,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					}
 					sleep 5000
 			   	}
+				logFile << "${trainingInstance.accession_id} Job status is ${trainingInstance.job_status} when job leaves SGE.\n"
 
 			   	// check whether errors occured by log-file-sizes
 				logFile << "${trainingInstance.accession_id} Beginning to look for errors.\n"
@@ -954,8 +982,20 @@ Link: http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingI
 An error occured in the autoAug pipeline. Please check manually what's wrong. The user has been informed.
 """
 						}
-						trainingInstance.job_status = 5
-					}else if(!(sgeErrSize == 0)){
+						trainingInstance.job_error = 5
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
+						logFile << "${trainingInstance.accession_id} Job status is ${trainingInstance.job_error} when autoAug error occured.\n"
+
+						def packResults = new File("${output_dir}/pack${trainingInstance.accession_id}.sh")
+						packResults << "cd ${output_dir}; tar cf - ${trainingInstance.accession_id} | 7z a -si ${trainingInstance.accession_id}.tar.7z; rm -r ${trainingInstance.accession_id};"
+						def cleanUp = "bash ${output_dir}/pack${trainingInstance.accession_id}.sh".execute()
+						cleanUp.waitFor()
+						def cleanUp2 = "rm ${output_dir}/pack${trainingInstance.accession_id}.sh".execute()
+						cleanUp2.waitFor()
+						logFile << "${trainingInstance.accession_id} autoAug directory was packed with tar/7z.\n"
+					}
+					if(!(sgeErrSize == 0)){
 						logFile << "${trainingInstance.accession_id} a SGE error occured!\n";
 						sendMail {
 						to "${admin_email}"
@@ -970,8 +1010,12 @@ Link: http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingI
 An SGE error occured. Please check manually what's wrong. The user has been informed.
 """
 						}
-						trainingInstance.job_status = 5
-					}else{
+						trainingInstance.job_error = 5
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
+						logFile << "${trainingInstance.accession_id} Job status is ${trainingInstance.job_error} when SGE error occured.\n"
+					}
+					if(!(writeResultsErrSize == 0)){
 						logFile << "${trainingInstance.accession_id} an error occured during writing results!\n";
 						sendMail {
 							to "${admin_email}"
@@ -987,14 +1031,16 @@ An error occured during writing results. Please check manually what's wrong. The
 """
 						}
 					}
+					logFile << "${trainingInstance.accession_id} Job status is ${trainingInstance.job_error} after all errors have been checked.\n"
 					sendMail {
 					to "${trainingInstance.email_adress}"
-						subject "Your AUGUSTUS training job ${trainingInstance.accession_id} is in an error state"
+						subject "A problem occured during execution of your AUGUSTUS training job ${trainingInstance.accession_id}"
 						body """Hello!
 
-An error occured while training AUGUSTUS for species ${trainingInstance.project_name} (Job ${trainingInstance.accession_id}).
+A problem occured while training AUGUSTUS for species ${trainingInstance.project_name} (Job ${trainingInstance.accession_id}).
 
-The administrator of the AUGUSTUS training web server has been informed and will get back to you as soon as the problem is solved.
+You find the results page of your job at http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/index.html . http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/AutoAug.err should contain some information about the problem with your job.
+
 
 Thank you for using AUGUSTUS!
 
@@ -1005,11 +1051,13 @@ the AUGUSTUS training web server team
 http://bioinf.uni-greifswald.de/trainaugustus
 """
 					}
-
-					logFile << "${trainingInstance.accession_id} Sent confirmation Mail, the job is in an error state.\n"
 				}
 			}
 			//------------ END BACKGROUND PROCESS ----------------------------------
+
 		}
 	}
 }
+
+// curl -sI http://bioinf.uni-greifswald.de/bioinf/index.html | grep Content-Length | cut -d ' ' -f 2 to get file size
+// 1GB = 1,073,741,824 bytes (which is what we want to allow

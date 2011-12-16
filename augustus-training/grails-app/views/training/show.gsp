@@ -76,7 +76,18 @@
 
             <g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '0' || fieldValue(bean:trainingInstance, field:'job_status') == '1' || fieldValue(bean:trainingInstance, field:'job_status') == '2' || fieldValue(bean:trainingInstance, field:'job_status') == '3'}">
             <p>
-            <g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '0'|| fieldValue(bean:trainingInstance, field:'job_status') == '1'}"><b><font color="#006699" size=2>Job submitted</font> <font color="#d2d2dc" size=2>&rarr; waiting for execution &rarr; computing &rarr; finished!</font></b><br></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '2'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>waiting for execution</font> <font color="#d2d2dc" size=2>&rarr; computing &rarr; finished!</font></b><br></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '3'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>computing</font> <font color="#d2d2dc" size=2>&rarr; finished!</font></b><br></g:if><g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '4'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>computing</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>finished!</font></b><br></g:if></p>
+            <g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '0'|| fieldValue(bean:trainingInstance, field:'job_status') == '1'}">
+		<b><font color="#006699" size=2>Job submitted</font> <font color="#d2d2dc" size=2>&rarr; waiting for execution &rarr; computing &rarr; finished!</font></b><br>
+	   </g:if>
+
+	<g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '2'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>waiting for execution</font> <font color="#d2d2dc" size=2>&rarr; computing &rarr; finished!</font></b><br>
+	</g:if>
+
+	<g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '3'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>computing</font> <font color="#d2d2dc" size=2>&rarr; finished!</font></b><br>
+	</g:if>
+
+	<g:if test = "${fieldValue(bean:trainingInstance, field:'job_status') == '4'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>computing</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>finished!</font></b><br>
+	</g:if></p>
             </g:if>
             
 
@@ -86,7 +97,7 @@
 </p>
             </g:if>
 
-            <g:if test ="${fieldValue(bean:trainingInstance, field:'job_status') == '5'}">
+            <g:if test ="${fieldValue(bean:trainingInstance, field:'job_error') == '5'}">
 <p>
 	<b><font color="#f40707" size=2>An error occured when executing this job!</font></b>
 </p>

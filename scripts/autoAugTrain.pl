@@ -242,6 +242,11 @@ sub train{
     print "1 training.gb contains $counter_seq sequences and $counter_gen genes," if ($verbose>=1);
     print " each sequence contains $ave gene(s) on average.\n" if ($verbose>=1); 
     
+    # stop Pipeline if the number of training genes is lower than 100
+    if($counter_gen <= 100){
+	die("Number of training genes is with $counter_gen too low! Training aborted.\n");
+    }
+
     # set $v to the smaller one of 200 and int(0.1*$counter_gen)
     my $v=200;     # the number, how many genes the file training.gb.test should contain 
     $v=int(0.1*$counter_gen) unless (200 <= int(0.1*$counter_gen));
@@ -577,6 +582,10 @@ sub trainWithUTR{
 	}
 	close(TEMP1);
 	if($count>=150){$m=150}  else {$m=$count};
+	if($count<50){
+		print STDERR "Number of UTR training examples is smaller than 50. Abort UTR training.\n";
+		exit;
+	}
 	
 	# evaluate n
 	my $n;
@@ -621,7 +630,6 @@ sub trainWithUTR{
 	}
 	close TS;
 	print "1 Have constructed a training set train.gb for UTRs with $counter_gen genes\n" if ($verbose>=1);
-	
 	system("rm t.gb.train t.gb t.gb.test t.nomrna.test.gb")==0 or die("failed to execute: $!\n");
 	system("grep LOCUS train.gb | perl -pe 's/^LOCUS\s+(\S+)\s+.*/$1/' > train.gb.lst")==0 or die("failed to execute: $!\n");
 	print "3 Made file train.gb.lst under $workDir/training/utr/\n" if ($verbose>=3);
@@ -703,6 +711,7 @@ sub trainWithUTR{
 	# TODO: check what is better at the end
 	system("etraining --species=$species --UTR=on train.all.gb --CRF=1 1>etrain.out 2>etrain.err")==0 or die("failed to execute: $!\n");
     }
+
     print " Finished\n" if ($verbose>=2);
 }
 
