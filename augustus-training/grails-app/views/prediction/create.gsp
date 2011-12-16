@@ -189,7 +189,7 @@
                           </tbody>
                         </table>
                         <br>
-                        You may (optionally) also specify one or several of the following files that contain external evidence for protein coding genes: <a href="../help.gsp#which_files"><small>Help</small></a><br><br>
+                        You may (optionally) also specify one or several of the following files that contain external evidence for protein coding genes: <a href="../help.gsp#which_files_pred"><small>Help</small></a><br><br>
                         <table>
                           <tbody>
                             <tr class="prop">
@@ -219,7 +219,7 @@
                             <tr class="prop"><td><br></td><td></td></tr>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                  <label for="hint_file"><b>Hints file</b> &nbsp; <a href="../help.gsp#structure"><small>Help</small></a></label>
+                                  <label for="hint_file"><b>Hints file</b> &nbsp; <a href="../help.gsp#hints"><small>Help</small></a></label>
                                 </td>
                                 <td valign="top">
                                                       </td>

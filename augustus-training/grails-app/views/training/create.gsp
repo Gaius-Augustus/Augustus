@@ -101,6 +101,8 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
             <div class="main" id="main">
 			<noscript><p><b><span style="color:red">Please enable javascript in your browser in order to display the submission form correctly!</span></b> Form functionality is not affected while javascript is disabled.</p>
 			</noscript>
+<p><b>Before submitting a training job</b> for your species of interest, please check whether parameters have already been trained and have been made publicly available for your species at <a href="../predictiontutorial.gsp#param_id">our species overview table</a></p>
+
             <g:uploadForm action="commit" method="post" >
             <fieldset><legend>
 		<table class="contentpaneopen">
@@ -199,7 +201,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			    <tr class="prop"><td><br></td><td></td></tr>
                             <tr class="prop">
                                 <td valign="top" class="name">
-				  <label for="ProteinFile"><b>Protein file</b> &nbsp; <a href="../help.gsp#protein"><small>Help</small></a></label>
+				  <label for="ProteinFile"><b>Protein file</b> &nbsp; <small><b><i>Non-commercial users only</i></b></small> &nbsp; <a href="../help.gsp#protein"><small>Help</small></a></label>
                                 </td>
                                 <td valign="top">
                                                       </td>

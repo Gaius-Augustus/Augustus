@@ -85,6 +85,8 @@
 </ul>
 </p>
 
+<p><b>Before submitting a training job</b> for your species of interest, please check whether parameters have already been trained and have been made publicly available for your species at <a href="predictiontutorial.gsp#param_id">our species overview table</a></p>
+
 <hr>
 <br>
 
@@ -145,8 +147,11 @@ Top of page
 
 <p>The pipeline invoked by submitting a job to the AUGUSTUS trainng web server application is complex. The following image gives an overview of processes that will possibly be invoked - depending on the input file combination:</p>
 
+
 <p>
-<img src="images/autoAug.jpg" alt="image of the autoAug.pl pipeline processes">
+<table border="2" cellspacing="0" cellpadding="2">
+<tr><td><img src="images/autoAug.jpg" alt="image of the autoAug.pl pipeline processes"></td></tr>
+</table>
 </p>
 
 <p>The sharp-edge fields are input values of the submission form, the round edged fields are background processes/applied software tools/file formats/result files.</p>
@@ -180,7 +185,9 @@ Top of page
 <p>You find the AUGUSTUS training submission form by clicking on the following link in the left side navigation bar:</p>
 
 <p>
-<img src="images/submitt-link.jpg" alt="image of submission link">
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/submitt-link.jpg" alt="image of submission link"></td></tr>
+</table>
 </p>
 
 <p><a href="#seitenanfang">
@@ -201,8 +208,11 @@ Top of page
 <p>At first, you have to enter a <b>valid e-mail address</b>:</p>
 
 <p>
-<img src="images/email-training.jpg" alt="image of e-mail address field">
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/email-training.jpg" alt="image of e-mail address field"></td></tr>
+</table>
 </p>
+
 
 <p>The e-mail address is an obligatory field. Currently, there is no option for submitting AUGUSTUS training jobs anonymously.</p>
 
@@ -233,8 +243,11 @@ Top of page
 <div id="species"><h3><a href="#species">1.2.2 - Species name</a></h3></div>
 
 <p>
-<img src="images/species-name.jpg" alt="image of species name field">
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/species-name.jpg" alt="image of species name field"></td></tr>
+</table>
 </p>
+
 
 <div id="species_form"><h3><a href="#species_form">1.2.2.1 - The species name format</a></h3></div>
 
@@ -246,7 +259,7 @@ Top of page
 
 <p>However, if you do not want to reveal the true species name, you may use any other string shorter than 30 characters as a species name. Species names must be unique on our system, i.e. if the string of your choice is already existing in our system, you will get a message that you have to choose another species name.</p>
 
-<p>We are <b>not</b> redistributing the original sequence data that you submitted to our web server application. But we are redistributing the trained parameters and the species name and any other kind of result that your computation may have produced.</p><p><b>Example:</b></p><p>If person 1 submits a sequence data set for training and names it <i>hypothetical_species</i>, and a second person tries later to train AUGUSTUS with exactly the same sequence files (new data upload) and names the species <i>some_other_name</i>, the second person will be redirected to the results of the original training run of person 1, and the species name <i>hypothetical_species</i> will be publicly readable to person 2.</p>
+<p>We are <b>not</b> redistributing the original sequence data that you submitted to our web server application. But we are redistributing the trained parameters and the species name and any other kind of results that your computation may have produced.</p><p><b>Example:</b></p><p>If person 1 submits a sequence data set for training and names it <i>hypothetical_species</i>, and a second person tries later to train AUGUSTUS with exactly the same sequence files (new data upload) and names the species <i>some_other_name</i>, the second person will be redirected to the results of the original training run of person 1, and the species name <i>hypothetical_species</i> will be publicly readable to person 2.</p>
 
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
@@ -265,7 +278,9 @@ Top of page
 
 The genome file must contain the genome sequence in (multiple) fasta format. Every <i>unique</i> header begins with a <b>></b>. The sequence must be DNA. Allowed sequence characters: <b>A a T t G g C c H h X x R r Y y W w S s M m K k B b V v D d N n</b>. (Internally, AUGUSTUS will interpret everyting that is not <b>A a T t C c G g</b> as an <b>N</b>!) Empty lines are not allowed. If they occur, they will automatically be removed by the webserver application. White spaces in the sequence header might cause problems if the first word after the leading character <b>></b> is identical for several fasta entries. We generally recommend short, unique, non-white-space containing fasta headers.<br><br>
             <b>Correct file format example:</b>
-            <pre class="example">
+
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><font size="1">            <pre class="example">
 >Chr.1
 CCTCCTCCTGTTTTTCCCTCAATACAACCTCATTGGATTATTCAATTCAC
 CATCCTGCCCTTGTTCCTTCCATTATACAGCTGTCTTTGCCCTCTCCTTC
@@ -283,7 +298,8 @@ AGCGCAAGCGACGAGGAGGCTCATCGGCCGCCCGCGGAAAGCGTAGTCT
 TACACGGAAATCAACGGCGGTGTCATAAGCGAG
 >Chr.3
 .....
-            </pre>
+            </pre></font></td></tr>
+</table>
 </p>
 
 <p>Besides plain fasta format, our server accepts <b>gzipped-fasta</b> format for genome file upload. You find more information about gzip at the <a href="http://www.gzip.org/">gzip homepage</a>. Gzipped files have the file ending <tt>*.gz</tt>.</p>
@@ -293,7 +309,9 @@ TACACGGAAATCAACGGCGGTGTCATAAGCGAG
 <p>The AUGUSTUS training web server application offers two possiblities for transferring the genome file to the server: <i>Upload a file</i> and <i>specify a web link to file</i>.</p>
 
 <p>
-<img src="images/training-genome.jpg" alt="image of genome submission field">
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/training-genome.jpg" alt="image of genome submission field"></td></tr>
+</table>
 </p>
 
              <p>
@@ -343,7 +361,9 @@ Top of page
 <p>This feature is only for personal, academic, and non-profit use as this is required by the BLAT license.</p>
 
 <p>
-<img src="images/training-cDNA.jpg" alt="image of cDNA submission field">
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/training-cDNA.jpg" alt="image of cDNA submission field"></td></tr>
+</table>
 </p>
 
 
@@ -373,11 +393,6 @@ Top of page
 </p>
 
 
-
-
-
-
-
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
 Top of page
@@ -390,15 +405,18 @@ Top of page
 <div id="protein_file"><h3><a href="#protein_file">1.3.2 - Protein file</a></h3></div>
 
 <p>
-<img src="images/training-protein.jpg" alt="image of protein submission field">
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/training-protein.jpg" alt="image of protein submission field"></td></tr>
+</table>
 </p>
 
 <div id="protein_file_format"><h4><a href="#protein_file_format">1.3.2.1 - Protein file format</a></h4></div>
 
             <p>The protein file is a multiple fasta file that contains protein sequences, e.g. from a closely related species. Allowed sequence characters: <b>A a R r N n D d C c E e Q q G g H h I i L l K k M m F f P p S s T t W w Y y V v B b Z z J j X x</b>. Empty lines are not allowed but will simply be removed from the file by the webserver application. <br><br></p>
             <p><b>Correct file format example:</b>
-            <pre class="example">
-> protein1
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><font size="1"><pre class="example">
+>protein1
 maaaafgqlnleepppiwgsrsvdcfekleqigegtygqvymakeiktgeivalkkirmd
 neregfpitaireikilkklhhenvihlkeivtspgrdrddqgkpdnnkykggiymvfey
 mdhdltgladrpglrftvpqikcymkqlltglhychvnqvlhrdikgsnllidnegnlkl
@@ -408,7 +426,9 @@ neregfpitaireikilkklhhenvihlkeivtspgrdrddqgkpdnnkykggiymvfey
 mdhdltgladrpglrftvpqikcymkqlltglhychvnqv
 >protein3
 ...
-            </pre></p>
+            </pre></font></td></tr>
+</table>
+            </p>
 
 <div id="protein_file_upload"><h4><a href="#protein_file_upload">1.3.2.2 - Protein file upload options</a></h4></div>
 
@@ -430,7 +450,9 @@ Top of page
 <div id="structure_file"><h3><a href="#structure_file">1.3.3 - Training gene structure file</a></h3></div>
 
 <p>
-<img src="images/structure-file.jpg" alt="image of structure file upload field">
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/structure-file.jpg" alt="image of structure file upload field"></td></tr>
+</table>
 </p>
 
 <div id="structure_file_format"><h4><a href="#structure_file_format">1.3.3.1 - Training gene structure file format</a></h4></div>
@@ -442,7 +464,9 @@ Top of page
 <p>Gene structures in genbank format must contain the coding sequence parts and flanking regions. Flanking regions are important because AUGUSTUS is supposed to differentiate between genes and intergenic regions. The length of flanking regions depends on the length of genes in the target genome. In our pipeline, flanking regions are set to the average gene length (exceptionally applying the extreme limits between 1000 and 10000 nt). It is very important to make sure that the flanking regions do not contain any other protein coding gene parts, i.e. we recommend to trim flanking regions in a way that will exclude other CDS parts.</p>
 
 <p><b>Correct file format example (condensed view, the three dots represent further lines of sequences):</b>
-            <pre class="example">
+
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><font size="1">            <pre class="example">
 LOCUS       Chr.1_1-159458   159458 bp  DNA
 FEATURES             Location/Qualifiers
      source          1..159458
@@ -474,13 +498,17 @@ ORIGIN
      9061 attcaacaat tcttttcctt tatacacaaa gatacacaaa atataaaagt tttaatactt
      9121 caacttcaac gaaacagg
 //
-            </pre></p>
+            </pre></font></td></tr>
+</table>
+</p>
 
 
 <p>If you want to train UTRs, you have to additionally incorporate mRNA information in your genbank file.</p>
 
 <p><b>Correct file format example (including UTR training):</b>
-            <pre class="example">
+
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><font size="1">            <pre class="example">
 LOCUS       scf7180001240730_g20   526 bp  DNA
 FEATURES             Location/Qualifiers
      source          1..526
@@ -521,7 +549,9 @@ ORIGIN
       781 ctcgctacta acatcgcgtc gttatataaa tcagtgtata cggaattaaa cctgtcatgt
       841 ctcttgcaag acgtgtctgc tgttgtcacg cacaca
 //
-            </pre></p>
+            </pre></font></td></tr>
+</table>
+</p>
 
 <div id="structure_file_format_gff"><h5><a href="#structure_file_format_gff">1.3.3.1.2 - Training gene structure file in gff format</a></h5></div>
 
@@ -544,7 +574,9 @@ ORIGIN
 </p>
 
 <p><b>Correct file format example (without UTR):</b>
-            <pre class="example">
+
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><font size="1"><pre class="example">
 Chr.1	mySource	CDS	1767	1846	1.000	-	0	transcript_id "1597_1"
 Chr.1	mySource	CDS	1666	1709	1.000	-	1	transcript_id "1597_1"
 Chr.1	mySource	CDS	1486	1605	1.000	-	2	transcript_id "1597_1"
@@ -557,10 +589,13 @@ Chr.2	mySource	CDS	9591	9832	1.000	+	1	transcript_id "1399_2"
 Chr.2	mySource	CDS	9885	10307	1.000	+	2	transcript_id "1399_2"
 Chr.2	mySource	CDS	10358	10507	1.000	+	2	transcript_id "1399_2"
 Chr.2	mySource	CDS	10564	10643	1.000	+	2	transcript_id "1399_2"
-</pre></p>
+</pre></font></td></tr>
+</table>
+    </p>
 
 <p><b>Correct file format example (with UTR):</b>
-            <pre class="example">
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><font size="1"><pre class="example">
 Chr.1	mySource	5'-UTR	277153	277220	45	+	.	transcript_id "g22472.t1"; gene_id "g22472";
 Chr.1	mySource	CDS	277221	277238	1	+	0	transcript_id "g22472.t1"; gene_id "g22472";
 Chr.1	mySource	CDS	278100	278213	1	+	0	transcript_id "g22472.t1"; gene_id "g22472";
@@ -569,7 +604,9 @@ Chr.1	mySource	CDS	279630	279648	0.94	+	2	transcript_id "g22472.t1"; gene_id "g2
 Chr.1	mySource	CDS	279734	279768	0.94	+	1	transcript_id "g22472.t1"; gene_id "g22472";
 Chr.1	mySource	CDS	280307	280344	1	+	2	transcript_id "g22472.t1"; gene_id "g22472";
 Chr.1	mySource	3'-UTR	280345	280405	78	+	.	transcript_id "g22472.t1"; gene_id "g22472";
-</pre></p>
+</pre></font></td></tr>
+</table>
+</p>
 
 <div id="structure_file_purpose"><h4><a href="#structure_file_purpose">1.3.3.2 - What training gene structure files are used for</a></h4></div>
 
@@ -588,7 +625,11 @@ Top of page
 
 <div id="verification"><h2><a href="#verification">1.4 - Verification that you are a human</a></h2></div>
 
-<p><img src="images/verification.jpg" alt="image of verification field"></p>
+<p>
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/verification.jpg" alt="image of verification field"></td></tr>
+</table>
+</p>
 
 <p>Trying to avoid abuse of our web server application through bots, we implemented a <i>captcha</i>. The captcha is an image that contains a string. You have to type the string from the image into the field next to the image.</p>
 
@@ -604,7 +645,11 @@ Top of page
 <div id="submitt"><h2><a href="#submitt">1.5 - The submitt button</a></h2></div>
 
 
-<p><img src="images/train-submitt.jpg" alt="image of submission button"></p>
+<p>
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/train-submitt.jpg" alt="image of submission button"></td></tr>
+</table>
+</p>
 
 <p>After filling out the appropriate fields in the submission form, you have to click on the button that says "Start Training" at the bottom of the page. It might take a while until you are redirected to the status page of your job. The reason is that we are checking various file formats prior job acceptance, and that the transfer of files from your local harddrive to our server might take a while. Please be patient and wait until you are redirected to the status page! Do not click the button more than once (it won't do any harm but it also doesn't speed up anything).</p>
 
@@ -624,8 +669,11 @@ Top of page
 <p>If all fields were filled in correctly, the application is actually initiated. You will receive an e-mail that confirms your job submission and that contains a link to the job status page.</p>
 
 <p>
-<img src="images/training-job-status.jpg" alt="image of job status page">
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/training-job-status.jpg" alt="image of job status page"></td></tr>
+</table>
 </p>
+
 
 <p>In the beginning, the status page will display that your job has been <b>submitted</b>. This means, the web server application is currently uploading your files and validating file formats. After a while, the status will change to <b>waiting for execution</b>. This means that all file formats have been confirmed and an actually AUGUSTUS training job has been submitted to our grid engine, but the job is still pending in the queue. Depending on waiting queue length, this status may persist for a while. Please contact us in case you job is pending for more than one month. Later, the job status will change to <b>computing</b>. This means the job is currently computing. When the page displays <b>finished</b>, all computations have been finished and a website with your job's results has been generated.</p>
 
@@ -647,8 +695,11 @@ Top of page
 <p>You web browser will be redirected to a page with the following content if data duplication occured:</p>
 
 <p>
-<img src="images/job-does-not-exist-training.jpg" alt="image of non existing job status">
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/job-does-not-exist-training.jpg" alt="image of non existing job status"></td></tr>
+</table>
 </p>
+
 
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
@@ -697,8 +748,11 @@ Top of page
 <p>After job computations have finished, you will receive an e-mail with a link to the results of your submission. The linked web page may look similar to this:</p>
 
 <p>
-<img src="images/training-results-example.jpg" alt="image of results example">
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/training-results-example.jpg" alt="image of results example"></td></tr>
+</table>
 </p>
+
 
 <p>This page will should contain the files <b>AutoAug.log</b> and <b>AutoAug.err</b>. If no other files are displayed, you will find the reason for this behaviour in one of those files (e.g. if the creation of a sufficient number of training genes was not possible using the data that you supplied).</p>
 
