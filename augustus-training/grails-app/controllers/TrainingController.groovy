@@ -42,7 +42,7 @@ class TrainingController {
 	// sgeLen length of SGE queue, when is reached "the server is buisy" will be displayed
 	def sgeLen = 8;
 	// max ftp/http filesize
-	def maxFileSizeByUpload = 1073741824
+	def int maxFileSizeByWget = 1073741824
 
 	// human verification:
 	def simpleCaptchaService
@@ -492,43 +492,51 @@ class TrainingController {
 			Thread.start{
 				// retrieve genome file
 				if(!(trainingInstance.genome_ftp_link == null)){
-					logFile <<  "${trainingInstance.accession_id} Retrieving genome file ${trainingInstance.genome_ftp_link}\n"
+					logFile <<  "${trainingInstance.accession_id} Checking genome file size with curl prior upload\n"
 					projectDir.mkdirs()
 					// check whether the genome file is small enough for upload
+					def fileSizeScript = new File("${projectDir}/filzeSize.sh")
+					fileSizeScript << "curl -sI ${trainingInstance.genome_ftp_link} | grep Content-Length | cut -d ' ' -f 2 > ${projectDir}/genomeFileSize"
+					def retrieveFileSize = "bash ${fileSizeScript}".execute()
+					retrieveFileSize.waitFor()			
+					def delSzCrProc = "rm ${fileSizeScript}".execute()
+					delSzCrProc.waitFor()
+					def content = new File("${projectDir}/genomeFileSize").text
+					def st = new Scanner(content)//works for exactly one number in a file
+					def int genome_size;
+					genome_size = st.nextInt();
+					if(genome_size < maxFileSizeByWget){//1 GB
 
-
-// THIS IS WHERE I AM CURRENTLY WORKING!
-					def wgetGenomeSizeCk = "".execute()
-					wgetGenomeSizeCk.waitFor()
-					def wgetGenome = "wget -O ${projectDir}/genome.fa ${trainingInstance.genome_ftp_link}".execute()
-					wgetGenome.waitFor()
-					if("${trainingInstance.genome_ftp_link}" =~ /\.gz/){
-						def gunzipGenomeScript = new File("${projectDir}/gunzipGenome.sh")
-						gunzipGenomeScript << "cd ${projectDir}; mv genome.fa genome.fa.gz; gunzip genome.fa.gz"
-						def gunzipGenome = "bash ${gunzipGenomeScript}".execute()
-						gunzipGenome.waitFor()			
-						def delProc = "rm ${gunzipGenomeScript}".execute()
-						delProc.waitFor()
-						logFile <<  "${trainingInstance.accession_id} Unpacked genome file.\n"
-					}
-					logFile <<  "${trainingInstance.accession_id} genome file upload finished, file stored as genome.fa at ${projectDir}\n"
-					// check for fasta format & get seq names for gff validation:
-					new File("${projectDir}/genome.fa").eachLine{line -> 
-						if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }
-						if(line =~ /^>/){
-							def len = line.length()
-							seqNames << line[1..(len-1)]
+						logFile <<  "${trainingInstance.accession_id} Retrieving genome file ${trainingInstance.genome_ftp_link}\n"
+						def wgetGenome = "wget -O ${projectDir}/genome.fa ${trainingInstance.genome_ftp_link}".execute()
+						wgetGenome.waitFor()
+						if("${trainingInstance.genome_ftp_link}" =~ /\.gz/){
+							def gunzipGenomeScript = new File("${projectDir}/gunzipGenome.sh")
+							gunzipGenomeScript << "cd ${projectDir}; mv genome.fa genome.fa.gz; gunzip genome.fa.gz"
+							def gunzipGenome = "bash ${gunzipGenomeScript}".execute()
+							gunzipGenome.waitFor()			
+							def delProc = "rm ${gunzipGenomeScript}".execute()
+							delProc.waitFor()
+							logFile <<  "${trainingInstance.accession_id} Unpacked genome file.\n"
 						}
-					}
-					if(genomeFastaFlag == 1) {
-						logFile <<  "${trainingInstance.accession_id} The genome file was not fasta. ${projectDir} is deleted (rm -r).\n"
-						def delProc = "rm -r ${projectDir}".execute()
-						delProc.waitFor()
-						logFile <<  "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						sendMail {
-							to "${trainingInstance.email_adress}"
-							subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-							body """Hello!
+						logFile <<  "${trainingInstance.accession_id} genome file upload finished, file stored as genome.fa at ${projectDir}\n"
+						// check for fasta format & get seq names for gff validation:
+						new File("${projectDir}/genome.fa").eachLine{line -> 
+							if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }	
+							if(line =~ /^>/){
+								def len = line.length()
+								seqNames << line[1..(len-1)]
+							}
+						}
+						if(genomeFastaFlag == 1) {
+							logFile <<  "${trainingInstance.accession_id} The genome file was not fasta. ${projectDir} is deleted (rm -r).\n"	
+							def delProc = "rm -r ${projectDir}".execute()
+							delProc.waitFor()
+							logFile <<  "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							sendMail {
+								to "${trainingInstance.email_adress}"
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+								body """Hello!
 
 Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided genome file ${trainingInstance.genome_ftp_link} was not in DNA fasta format.
 
@@ -538,6 +546,18 @@ the AUGUSTUS training web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """	
+							}
+							// delete database entry
+							trainingInstance.delete()
+							return
+						}
+					}else{// actions if remote file was bigger than allowed
+						logFile << "${trainingInstance.accession_id} Genome file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
+						def errorStrMsg = "Hello!\nYour AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the genome file size was with ${genome_size} bigger than 1 GB. Please submitt a smaller genome size!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
+						sendMail {
+								to "${trainingInstance.email_adress}"
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+								body """${errorStrMsg}"""
 						}
 						// delete database entry
 						trainingInstance.delete()
@@ -630,30 +650,43 @@ http://bioinf.uni-greifswald.de/trainaugustus
 
 				// retrieve EST file
 				if(!(trainingInstance.est_ftp_link == null)){
-					logFile <<  "${trainingInstance.accession_id} Retrieving EST/cDNA file ${trainingInstance.est_ftp_link}\n"
-					def wgetEst = "wget -O ${projectDir}/est.fa ${trainingInstance.est_ftp_link}".execute()
-					wgetEst.waitFor()
-					if("${trainingInstance.est_ftp_link}" =~ /\.gz/){
-						def gunzipEstScript = new File("${projectDir}/gunzipEst.sh")
-						gunzipEstScript << "cd ${projectDir}; mv est.fa est.fa.gz; gunzip est.fa.gz"
-						def gunzipEst = "bash ${gunzipEstScript}".execute()
-						gunzipEst.waitFor()			
-						def delProc = "rm ${gunzipEstScript}".execute()
-						delProc.waitFor()
-						logFile <<  "${trainingInstance.accession_id} Unpacked EST file.\n"
-					}					
-					logFile <<  "${trainingInstance.accession_id} EST/cDNA file upload finished, file stored as est.fa at ${projectDir}\n"
-					// check for fasta format:
-					new File("${projectDir}/est.fa").eachLine{line -> if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ estFastaFlag = 1 }}
-					if(estFastaFlag == 1) {
-						logFile <<  "${trainingInstance.accession_id} The EST/cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
-						def delProc = "rm -r ${projectDir}".execute()
-						delProc.waitFor()
-						logFile <<  "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						sendMail {
-							to "${trainingInstance.email_adress}"
-							subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-							body """Hello!
+					// check whether the EST file is small enough for upload
+					logFile <<  "${trainingInstance.accession_id} Checking cDNA file size with curl prior upload\n"
+					def fileSizeScript = new File("${projectDir}/filzeSize.sh")
+					fileSizeScript << "curl -sI ${trainingInstance.est_ftp_link} | grep Content-Length | cut -d ' ' -f 2 > ${projectDir}/estFileSize"
+					def retrieveFileSize = "bash ${fileSizeScript}".execute()
+					retrieveFileSize.waitFor()			
+					def delSzCrProc = "rm ${fileSizeScript}".execute()
+					delSzCrProc.waitFor()
+					def content = new File("${projectDir}/estFileSize").text
+					def st = new Scanner(content)//works for exactly one number in a file
+					def int est_size;
+					est_size = st.nextInt();
+					if(est_size < maxFileSizeByWget){//1 GB
+						logFile <<  "${trainingInstance.accession_id} Retrieving EST/cDNA file ${trainingInstance.est_ftp_link}\n"
+						def wgetEst = "wget -O ${projectDir}/est.fa ${trainingInstance.est_ftp_link}".execute()
+						wgetEst.waitFor()
+						if("${trainingInstance.est_ftp_link}" =~ /\.gz/){
+							def gunzipEstScript = new File("${projectDir}/gunzipEst.sh")
+							gunzipEstScript << "cd ${projectDir}; mv est.fa est.fa.gz; gunzip est.fa.gz"
+							def gunzipEst = "bash ${gunzipEstScript}".execute()
+							gunzipEst.waitFor()			
+							def delProc = "rm ${gunzipEstScript}".execute()
+							delProc.waitFor()
+							logFile <<  "${trainingInstance.accession_id} Unpacked EST file.\n"
+						}					
+						logFile <<  "${trainingInstance.accession_id} EST/cDNA file upload finished, file stored as est.fa at ${projectDir}\n"
+						// check for fasta format:
+						new File("${projectDir}/est.fa").eachLine{line -> if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ estFastaFlag = 1 }}
+						if(estFastaFlag == 1) {
+							logFile <<  "${trainingInstance.accession_id} The EST/cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
+							def delProc = "rm -r ${projectDir}".execute()
+							delProc.waitFor()
+							logFile <<  "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							sendMail {
+								to "${trainingInstance.email_adress}"
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+								body """Hello!
 
 Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided cDNA file ${trainingInstance.est_ftp_link} was not in DNA fasta format.
 
@@ -663,10 +696,23 @@ the AUGUSTUS training web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """
+							}
+							// delete database entry
+							trainingInstance.delete()
+							return
+						}
+					}else{// actions if remote file was bigger than allowed
+						logFile << "${trainingInstance.accession_id} EST file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
+						def errorStrMsg = "Hello!\nYour AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the cDNA file size was with ${est_size} bigger than 1 GB. Please submitt a smaller cDNA size!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
+						sendMail {
+								to "${trainingInstance.email_adress}"
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+								body """${errorStrMsg}"""
 						}
 						// delete database entry
 						trainingInstance.delete()
 						return
+
 					}
 					def estCksumScript = new File("${projectDir}/est_cksum.sh")
 					def estCksumFile = "${projectDir}/est.cksum"
@@ -690,39 +736,52 @@ http://bioinf.uni-greifswald.de/trainaugustus
 
 				// retrieve protein file
 				if(!(trainingInstance.protein_ftp_link == null)){
-					logFile <<  "${trainingInstance.accession_id} Retrieving protein file ${trainingInstance.protein_ftp_link}\n"
-					def wgetProtein = "wget -O ${projectDir}/protein.fa ${trainingInstance.protein_ftp_link}".execute()
-					wgetProtein.waitFor()
-					if("${trainingInstance.protein_ftp_link}" =~ /\.gz/){
-						def gunzipProteinScript = new File("${projectDir}/gunzipProtein.sh")
-						gunzipProteinScript << "cd ${projectDir}; mv protein.fa protein.fa.gz; gunzip protein.fa.gz"
-						def gunzipProtein = "bash ${gunzipProteinScript}".execute()
-						gunzipProtein.waitFor()			
-						def delProc = "rm ${gunzipProteinScript}".execute()
-						delProc.waitFor()
-						logFile <<  "${trainingInstance.accession_id} Unpacked protein file.\n"
-					}
-					logFile <<  "${trainingInstance.accession_id} Protein file upload finished, file stored as protein.fa at ${projectDir}\n"
-					// check for fasta protein format:
-					def cytosinCounter = 0 // C is cysteine in amino acids, and cytosine in DNA.
-					def allAminoAcidsCounter = 0
-					new File("${projectDir}/protein.fa").eachLine{line -> 
-						if(!(line =~ /^[>AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx ]/) && !(line =~ /^$/)){ proteinFastaFlag = 1 }
-						if(!(line =~ /^>/)){
-							line.eachMatch(/[AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/){ allAminoAcidsCounter = allAminoAcidsCounter + 1 }
-							line.eachMatch(/[Cc]/){ cytosinCounter = cytosinCounter + 1 }
+					// check whether the Protein file is small enough for upload
+					logFile <<  "${trainingInstance.accession_id} Checking protein file size with curl prior upload\n"
+					def fileSizeScript = new File("${projectDir}/filzeSize.sh")
+					fileSizeScript << "curl -sI ${trainingInstance.protein_ftp_link} | grep Content-Length | cut -d ' ' -f 2 > ${projectDir}/estFileSize"
+					def retrieveFileSize = "bash ${fileSizeScript}".execute()
+					retrieveFileSize.waitFor()			
+					def delSzCrProc = "rm ${fileSizeScript}".execute()
+					delSzCrProc.waitFor()
+					def content = new File("${projectDir}/proteinFileSize").text
+					def st = new Scanner(content)//works for exactly one number in a file
+					def int protein_size;
+					protein_size = st.nextInt();
+					if(protein_size < maxFileSizeByWget){//1 GB
+						logFile <<  "${trainingInstance.accession_id} Retrieving protein file ${trainingInstance.protein_ftp_link}\n"
+						def wgetProtein = "wget -O ${projectDir}/protein.fa ${trainingInstance.protein_ftp_link}".execute()	
+						wgetProtein.waitFor()
+						if("${trainingInstance.protein_ftp_link}" =~ /\.gz/){
+							def gunzipProteinScript = new File("${projectDir}/gunzipProtein.sh")
+							gunzipProteinScript << "cd ${projectDir}; mv protein.fa protein.fa.gz; gunzip protein.fa.gz"	
+							def gunzipProtein = "bash ${gunzipProteinScript}".execute()
+							gunzipProtein.waitFor()			
+							def delProc = "rm ${gunzipProteinScript}".execute()
+							delProc.waitFor()
+							logFile <<  "${trainingInstance.accession_id} Unpacked protein file.\n"
 						}
-					}
-					cRatio = cytosinCounter/allAminoAcidsCounter
-					if (cRatio >= 0.05){
-						logFile << "${trainingInstance.accession_id} The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence). ${projectDir} is deleted (rm -r).\n"
-						def delProc = "rm -r ${projectDir}".execute()
-						delProc.waitFor()
-						logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						sendMail {
-							to "${trainingInstance.email_adress}"
-							subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-							body """Hello!
+						logFile <<  "${trainingInstance.accession_id} Protein file upload finished, file stored as protein.fa at ${projectDir}\n"
+						// check for fasta protein format:
+						def cytosinCounter = 0 // C is cysteine in amino acids, and cytosine in DNA.
+						def allAminoAcidsCounter = 0
+						new File("${projectDir}/protein.fa").eachLine{line -> 
+							if(!(line =~ /^[>AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx ]/) && !(line =~ /^$/)){ proteinFastaFlag = 1 }
+							if(!(line =~ /^>/)){
+								line.eachMatch(/[AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/){ allAminoAcidsCounter = allAminoAcidsCounter + 1 }
+								line.eachMatch(/[Cc]/){ cytosinCounter = cytosinCounter + 1 }
+							}
+						}
+						cRatio = cytosinCounter/allAminoAcidsCounter
+						if (cRatio >= 0.05){
+							logFile << "${trainingInstance.accession_id} The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence). ${projectDir} is deleted (rm -r).\n"
+							def delProc = "rm -r ${projectDir}".execute()
+							delProc.waitFor()
+							logFile << "${trainingInstance.accession_id} Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							sendMail {
+								to "${trainingInstance.email_adress}"
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+								body """Hello!
 
 Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided protein file ${trainingInstance.protein_ftp_link} is suspected to contain DNA instead of protein sequences.
 
@@ -731,7 +790,19 @@ Best regards,
 the AUGUSTUS training web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
-"""	
+"""		
+							}
+							// delete database entry
+							trainingInstance.delete()
+							return
+						}
+					}else{// actions if remote file was bigger than allowed
+						logFile << "${trainingInstance.accession_id} Protein file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
+						def errorStrMsg = "Hello!\nYour AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the protein file size was with ${protein_size} bigger than 1 GB. Please submitt a smaller protein size!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
+						sendMail {
+								to "${trainingInstance.email_adress}"
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+								body """${errorStrMsg}"""
 						}
 						// delete database entry
 						trainingInstance.delete()

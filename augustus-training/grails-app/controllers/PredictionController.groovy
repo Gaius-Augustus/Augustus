@@ -26,6 +26,8 @@ class PredictionController {
 	def admin_email = "katharina.hoff@gmail.com"
 	// sgeLen length of SGE queue, when is reached "the server is buisy" will be displayed
 	def sgeLen = 8;
+	// max ftp/http filesize
+	def int maxFileSizeByWget = 1073741824
 
 	// human verification:
 	def simpleCaptchaService
@@ -529,37 +531,50 @@ http://bioinf.uni-greifswald.de/trainaugustus
 			Thread.start{
 				// retrieve genome file
 				if(!(predictionInstance.genome_ftp_link == null)){
-					logFile <<  "${predictionInstance.accession_id} Retrieving genome file ${predictionInstance.genome_ftp_link}\n"
+					logFile <<  "${predictionInstance.accession_id} Checking genome file size with curl prior upload\n"
 					projectDir.mkdirs()
-					def wgetGenome = "wget -O ${projectDir}/genome.fa ${predictionInstance.genome_ftp_link}".execute()
-					wgetGenome.waitFor()
-					if("${predictionInstance.genome_ftp_link}" =~ /\.gz/){
-						def gunzipGenomeScript = new File("${projectDir}/gunzipGenome.sh")
-						gunzipGenomeScript << "cd ${projectDir}; mv genome.fa genome.fa.gz; gunzip genome.fa.gz"
-						def gunzipGenome = "bash ${gunzipGenomeScript}".execute()
-						gunzipGenome.waitFor()			
-						def delProc = "rm ${gunzipGenomeScript}".execute()
-						delProc.waitFor()
-						logFile <<  "${predictionInstance.accession_id} Unpacked genome file.\n"
-					}
-					logFile <<  "${predictionInstance.accession_id} genome file upload finished, file stored as genome.fa at ${projectDir}\n"
-					// check for fasta format & get seq names for gff validation:
-					new File("${projectDir}/genome.fa").eachLine{line -> 
-						if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }
-						if(line =~ /^>/){
-							def len = line.length()
-							seqNames << line[1..(len-1)]
+					// check whether the genome file is small enough for upload
+					def fileSizeScript = new File("${projectDir}/filzeSize.sh")
+					fileSizeScript << "curl -sI ${predictionInstance.genome_ftp_link} | grep Content-Length | cut -d ' ' -f 2 > ${projectDir}/genomeFileSize"
+					def retrieveFileSize = "bash ${fileSizeScript}".execute()
+					retrieveFileSize.waitFor()			
+					def delSzCrProc = "rm ${fileSizeScript}".execute()
+					delSzCrProc.waitFor()
+					def content = new File("${projectDir}/genomeFileSize").text
+					def st = new Scanner(content)//works for exactly one number in a file
+					def int genome_size;
+					genome_size = st.nextInt();
+					if(genome_size < maxFileSizeByWget){//1 GB
+						logFile <<  "${predictionInstance.accession_id} Retrieving genome file ${predictionInstance.genome_ftp_link}\n"
+						def wgetGenome = "wget -O ${projectDir}/genome.fa ${predictionInstance.genome_ftp_link}".execute()
+						wgetGenome.waitFor()
+						if("${predictionInstance.genome_ftp_link}" =~ /\.gz/){
+							def gunzipGenomeScript = new File("${projectDir}/gunzipGenome.sh")
+							gunzipGenomeScript << "cd ${projectDir}; mv genome.fa genome.fa.gz; gunzip genome.fa.gz"
+							def gunzipGenome = "bash ${gunzipGenomeScript}".execute()
+							gunzipGenome.waitFor()			
+							def delProc = "rm ${gunzipGenomeScript}".execute()
+							delProc.waitFor()
+							logFile <<  "${predictionInstance.accession_id} Unpacked genome file.\n"
 						}
-					}
-					if(genomeFastaFlag == 1) {
-						logFile <<  "${predictionInstance.accession_id} The genome file was not fasta. ${projectDir} is deleted (rm -r).\n"
-						def delProc = "rm -r ${projectDir}".execute()
-						delProc.waitFor()
-						logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-						sendMail {
-							to "${predictionInstance.email_adress}"
-							subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-							body """Hello!
+						logFile <<  "${predictionInstance.accession_id} genome file upload finished, file stored as genome.fa at ${projectDir}\n"
+						// check for fasta format & get seq names for gff validation:
+						new File("${projectDir}/genome.fa").eachLine{line -> 
+							if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }	
+							if(line =~ /^>/){
+								def len = line.length()
+								seqNames << line[1..(len-1)]
+							}
+						}
+						if(genomeFastaFlag == 1) {
+							logFile <<  "${predictionInstance.accession_id} The genome file was not fasta. ${projectDir} is deleted (rm -r).\n"
+							def delProc = "rm -r ${projectDir}".execute()
+							delProc.waitFor()
+							logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+							sendMail {
+								to "${predictionInstance.email_adress}"
+								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								body """Hello!
 
 Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided genome file ${predictionInstance.genome_ftp_link} was not in DNA fasta format.
 
@@ -569,10 +584,23 @@ the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """	
+							}
+							// delete database entry
+							predictionInstance.delete()
+							return
+						}
+					}else{// actions if remote file was bigger than allowed
+						logFile << "${predictionInstance.accession_id} Genome file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
+						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the genome file size was with ${genome_size} bigger than 1 GB. Please submitt a smaller genome size!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
+						sendMail {
+								to "${predictionInstance.email_adress}"
+								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								body """${errorStrMsg}"""
 						}
 						// delete database entry
 						predictionInstance.delete()
 						return
+
 					}
 					// check gff format
 					def gffColErrorFlag = 0
@@ -680,30 +708,43 @@ http://bioinf.uni-greifswald.de/trainaugustus
 
 				// retrieve EST file
 				if(!(predictionInstance.est_ftp_link == null)){
-					logFile <<  "${predictionInstance.accession_id} Retrieving EST/cDNA file ${predictionInstance.est_ftp_link}\n"
-					def wgetEst = "wget -O ${projectDir}/est.fa ${predictionInstance.est_ftp_link}".execute()
-					wgetEst.waitFor()
-					if("${predictionInstance.est_ftp_link}" =~ /\.gz/){
-						def gunzipEstScript = new File("${projectDir}/gunzipEst.sh")
-						gunzipEstScript << "cd ${projectDir}; mv est.fa est.fa.gz; gunzip est.fa.gz"
-						def gunzipEst = "bash ${gunzipEstScript}".execute()
-						gunzipEst.waitFor()			
-						def delProc = "rm ${gunzipEstScript}".execute()
-						delProc.waitFor()
-						logFile <<  "${predictionInstance.accession_id} Unpacked EST file.\n"
-					}
-					logFile <<  "${predictionInstance.accession_id} EST/cDNA file upload finished, file stored as est.fa at ${projectDir}\n"
-					// check for fasta format:
-					new File("${projectDir}/est.fa").eachLine{line -> if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ estFastaFlag = 1 }}
-					if(estFastaFlag == 1) {
-						logFile <<  "${predictionInstance.accession_id} The EST/cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
-						def delProc = "rm -r ${projectDir}".execute()
-						delProc.waitFor()
-						logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-						sendMail {
-							to "${predictionInstance.email_adress}"
-							subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-							body """Hello!
+					// check whether the EST file is small enough for upload
+					logFile <<  "${predictionInstance.accession_id} Checking cDNA file size with curl prior upload\n"
+					def fileSizeScript = new File("${projectDir}/filzeSize.sh")
+					fileSizeScript << "curl -sI ${predictionInstance.est_ftp_link} | grep Content-Length | cut -d ' ' -f 2 > ${projectDir}/estFileSize"
+					def retrieveFileSize = "bash ${fileSizeScript}".execute()
+					retrieveFileSize.waitFor()			
+					def delSzCrProc = "rm ${fileSizeScript}".execute()
+					delSzCrProc.waitFor()
+					def content = new File("${projectDir}/estFileSize").text
+					def st = new Scanner(content)//works for exactly one number in a file
+					def int est_size;
+					est_size = st.nextInt();
+					if(est_size < maxFileSizeByWget){//1 GB
+						logFile <<  "${predictionInstance.accession_id} Retrieving EST/cDNA file ${predictionInstance.est_ftp_link}\n"
+						def wgetEst = "wget -O ${projectDir}/est.fa ${predictionInstance.est_ftp_link}".execute()
+						wgetEst.waitFor()
+						if("${predictionInstance.est_ftp_link}" =~ /\.gz/){
+							def gunzipEstScript = new File("${projectDir}/gunzipEst.sh")
+							gunzipEstScript << "cd ${projectDir}; mv est.fa est.fa.gz; gunzip est.fa.gz"
+							def gunzipEst = "bash ${gunzipEstScript}".execute()
+							gunzipEst.waitFor()			
+							def delProc = "rm ${gunzipEstScript}".execute()
+							delProc.waitFor()
+							logFile <<  "${predictionInstance.accession_id} Unpacked EST file.\n"
+						}
+						logFile <<  "${predictionInstance.accession_id} EST/cDNA file upload finished, file stored as est.fa at ${projectDir}\n"
+						// check for fasta format:
+						new File("${projectDir}/est.fa").eachLine{line -> if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ estFastaFlag = 1 }}
+						if(estFastaFlag == 1) {
+							logFile <<  "${predictionInstance.accession_id} The EST/cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
+							def delProc = "rm -r ${projectDir}".execute()
+							delProc.waitFor()
+							logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+							sendMail {
+								to "${predictionInstance.email_adress}"
+								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								body """Hello!
 
 Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided cDNA file ${predictionInstance.est_ftp_link} was not in DNA fasta format.
 
@@ -713,10 +754,23 @@ the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """
+							}
+							// delete database entry
+							predictionInstance.delete()
+							return
+						}
+					}else{// actions if remote file was bigger than allowed
+						logFile << "${predictionInstance.accession_id} EST file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
+						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the cDNA file size was with ${est_size} bigger than 1 GB. Please submitt a smaller cDNA size!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
+						sendMail {
+								to "${predictionInstance.email_adress}"
+								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								body """${errorStrMsg}"""
 						}
 						// delete database entry
 						predictionInstance.delete()
 						return
+
 					}
 					def estCksumScript = new File("${projectDir}/est_cksum.sh")
 					def estCksumFile = "${projectDir}/est.cksum"
