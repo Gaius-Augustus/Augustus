@@ -1,5 +1,6 @@
-% Simply run PDFLATEX filter.tex
 \documentclass[11pt]{article}
+\usepackage{natbib}
+
 % Default margins are too wide all the way around. I reset them here
 \setlength{\topmargin}{-.5in}
 \setlength{\textheight}{9in}
@@ -9,19 +10,20 @@
 \setlength{\textheight}{9in}
 \setlength{\oddsidemargin}{.125in}
 \setlength{\textwidth}{6.25in} 
- 
-\begin{document}  
+
+
 \title{Filtering read alignments in BAM format} 
 \author{Tonatiuh Pe\~{n}a-Centeno \\
 University of Greifswald}
-\renewcommand{\today}{15 November, 2011}
-\maketitle
-\abstract{This is a description of the implementation of filterBam, a software that 
-filters out SAM alignment reads by the following criteria: coverage, percentage identity and, 
-if requested, insert length.}
+\date{\today}
 
-\section{NOTES:} 
-This document makes reference to the SAM/BAM format specification of \cite{heng09}.
+ 
+\begin{document}  
+\maketitle
+\abstract{This is a description of the implementation of filterBam, a software that filters out SAM alignment reads by the following criteria: coverage, percentage identity and, if requested, insert length.}
+
+\section{NOTES:}  
+This document makes reference to the SAM/BAM format specification of \citet{heng09:SAM}.
 
 \section{Bamtools}
 Bamtools is a C++ wrapper API of the more well-known Samtools software. The latest version of Bamools 
@@ -82,13 +84,7 @@ matches and deletions from the reference. In other words, we do the following
 \end{equation}
 
 
-\begin{thebibliography}{99}
-\bibitem{heng09} Heng Li, Bob Handsaker, Alec Wysoker, Tim Fennell, Jue Ruan, Nils Homer, Gabor Math, 
-Goncalo Abecasis, Richard Durbin and 1000 Genome Project Data Processing Subgroup 
-{\bf The Sequence Alignment/Map format and SAMtools}, 
-Bioinformatics Applications Note Vol. 25 No. 16, 2009, pp. 2078-2079.
-\end{thebibliography}
-
 \bibliographystyle{abbrvnat}
+\bibliography{bioinformatics}
 
 \end{document}

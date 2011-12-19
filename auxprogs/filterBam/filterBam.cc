@@ -1,9 +1,9 @@
 /*	Filters the coverage of a BAM alignment file
 
 	Created: 28-September-2011
-	Last modified: 14-November-2011
+	Last modified: 18-December-2011
 */ 
-
+ 
 #include <api/BamReader.h>
 #include <api/BamWriter.h>
 #include <api/BamAlignment.h> 
@@ -78,7 +78,8 @@ static const struct option longOpts[] = {
 // Display usage when --help
 void displayUsage(int argc, char *argv[])
 {
-	cout <<  " Usage: " << argv[0] << " in.bam out.bam\n";
+ 	cout <<  "-----------------------------------------------------------------------------------" << endl;
+	cout <<  " USAGE: " << argv[0] << " in.bam out.bam OPTIONS [option args] \n";
   	cout <<  "-----------------------------------------------------------------------------------" << endl;
 	cout <<  " Available options are                                                             " << endl;
   	cout <<  "-----------------------------------------------------------------------------------" << endl;
@@ -235,6 +236,9 @@ int main(int argc, char *argv[])
 		  	  goto nextAlignment;
 		  	}
 
+		  // Computing the pctge of Identity
+		  percid = 100*(qLength-editDistance)/qLength;
+		  RefID = al.RefID;
 		  // Skip if not complying with percid
 		  if (percid < minId)
 		  	{

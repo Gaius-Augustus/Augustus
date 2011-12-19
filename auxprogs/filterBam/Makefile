@@ -5,7 +5,7 @@
 #	b) libbamtools.a and lz library are used during the linking process
 #
 # 	Created: 28-September-2011
-#	Last modified: 15-November-2011
+#	Last modified: 18-December-2011
 
 # Variable definition
 HOME = /home/tonatiuh/web-home
@@ -33,7 +33,7 @@ $(PROGRAM) : $(OBJECTS)
 # % contains the stem-name of the file
 all:$(OBJECTS) # Compiles each foo.cc into foo.o
 $(OBJECTS) : %.o:%.cc
-	$(LINK.cc) $(CFLAGS) -c $^ -o $@ $(LIBS) 
+	$(LINK.cc) $(CFLAGS) -c $^ -o $@  
 
 # Create accompanying pdf file
 pdf:filterBam.tex
