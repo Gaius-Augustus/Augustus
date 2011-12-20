@@ -1,7 +1,7 @@
 /*	Filters the coverage of a BAM alignment file
 
 	Created: 28-September-2011
-	Last modified: 18-December-2011
+	Last modified: 20-December-2011
 */ 
  
 #include <api/BamReader.h>
@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
   // Filter variables
   float coverage;
   float percid;
-  int32_t InsertSize;  // InsertSize = qBaseInsert+tBaseInsert, in some cases
+  int32_t sumDandI;  // sumDandI = qBaseInsert+tBaseInsert, in some cases
   // Counters
   int outIntrons = 0;
   int outMinId = 0;
@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 		  qLength = al.Length; 		  // query length
 		  RefID = al.RefID;			  // ID of reference seq. (later used)
 		  sumMandI = 0;				  // Equiv to $qEnd-$qStart in PSL
-		  InsertSize = 0;
+		  sumDandI = 0;
 		  al.GetTag("NM", editDistance); // edit distance (see SAM spec)
 
 
@@ -257,9 +257,9 @@ int main(int argc, char *argv[])
 		  	}
 	
 		  // Number of inserts
-		  InsertSize = sumDandIOperations(cigar, "no");
+		  sumDandI = sumDandIOperations(cigar, "no");
 		  // Save if complying with insertLimit
-		  if (nointrons && InsertSize > insertLimit)
+		  if (nointrons && sumDandI > insertLimit)
 		  	{
 		  	  outIntrons++;
 		  	  goto nextAlignment;
