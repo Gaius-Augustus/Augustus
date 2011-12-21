@@ -1,0 +1,33 @@
+Prior to "bam2hints" you need to have BAMTools on your system.
+
+
+--- Installing BAMTools ---
+
+Get the latest version of BAMTools directly from GitHub (https://github.com/pezmaster31/bamtools).
+The download link is:
+  https://github.com/pezmaster31/bamtools/zipball/master .
+Unpack this , for example, into your home directory:
+  unzip pezmaster31-bamtools-466bc50.zip
+Then follow the instructions under https://github.com/pezmaster31/bamtools/wiki , which are basically:
+
+# installation of "cmake"
+# use a package manager, e.g.
+sudo apt-get install cmake
+# or see http://www.cmake.org/cmake/resources/software.html
+
+# do installation
+cd pezmaster31-bamtools-466bc50
+mkdir build
+cd build
+cmake ..
+
+make
+
+
+--- Installing bam2hints ---
+
+For this step, you only need to adjust one line of the makefile. Open "Makefile" with any editor and search for the line beginning with 'BAMTOOLS = '.
+Insert the path to your BAMTools directory here (e.g. 'BAMTOOLS = /home/<user_name>/pezmaster31-bamtools-466bc50', if you unzipped BAMTools to your home directory).
+Save and exit the makefile. Then, running the command:
+  make clean
+should result in a executable named "bam2hints".

@@ -4,8 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h> // getopt_long
-#include <list>   // data structure for exonpart and intron hints
-#include <unistd.h> // sleep
+#include <list>     // data structure for all hints
+#include <set>      // data structure for processed target names
+#include <string.h> // strcmp
 
 // BAMTools
 #include <api/BamReader.h>
@@ -18,18 +19,21 @@ using namespace std;
 using namespace BamTools;
 
 
-// type holding hint info
+// type that holds hint information
 struct hint_t {
-  int start;
-  int end;
-  char strand;
+  int start;   // 1-based begin coordinate on the reference
+  int end;     // 1-based last coordinate on the reference
+  char strand; // one of +-.
+  unsigned short int mult;    // multiplicity for intron hints
+    // sufficient data type, as the number of alignments at one location is bounded by the (maximum) alignment coverage (unsigned short int)
   // constructor
   hint_t(){
     strand = '.';
+    mult = 1;
   };
 } ;
 
-// type to label the hint lists
+// type to label the hint lists with their IDs (see RefNameByID)
 struct hintListLabel_t {
   list<hint_t>* ref;
   char* label;
@@ -60,7 +64,7 @@ const char* Source = "E";   //causes deprecation warning without 'const'
 bool IntOnly = false;
 bool Mult = true;
 bool RemRed = false;
-int MaxCov = 3000;
+unsigned short int MaxCov = 3000;
 bool SSOn = false;
 bool TrunkSS = false;
 double Score = 0;
@@ -74,7 +78,7 @@ const char* PrgSrc = "b2h"; // entry for gff field #2
 BamAlignment* pal = new BamAlignment; // pointer to a single alignment, marks space for the new alignment at beginning of the while-loop
 int TargetID = -2; // identifier of the currently processed reference sequence
 int OldTargetID; // identifier of the formerly processed reference sequence
-char* TargetName; // name of the processed reference sequence, used for printing
+char* TargetName; // name of the processed reference sequence, used for printing and checking sortedness
 vector<char*> RefNameByID; // array of reference sequence names, accessible with their BAM index
 vector<int> RefLengthByID; // array of reference sequence lengths, accessible with their BAM index
 
@@ -194,7 +198,7 @@ void printIntronList()
   printf("intron hints:\n");
   for(list<hint_t>::iterator listIter = intronlist.begin(); listIter != intronlist.end(); listIter++)
     {
-      printf("%10i %10i\n", listIter->start, listIter->end);
+      printf("%10i %10i %i\n", listIter->start, listIter->end, listIter->mult);
     }
 }
 
@@ -256,12 +260,45 @@ void sortASS_List()
 // print all hints (default) or the inalterable ones ("filter") to the outfile given with OUT
 void printHints(FILE* OUT, const char* tag = "")
 {
+  vector<hintListLabel_t>::iterator hintListIter; // pointing to current hint list
+  list<hint_t>::iterator listIter;                // pointing to current element in a list
+
   // preprocess certain lists
   sortIntronList();
+  if(Mult && !intronlist.empty())
+  {
+    // compress similar intron hints
+    listIter = intronlist.begin();
+    list<hint_t>::iterator protoHint = listIter; // pointing to a prototype, i.e. the first in a row of similar hints
+    listIter++; // start comparing to the second element
+
+    // go through the intron hints
+    while(listIter != intronlist.end())
+    {
+      // check similarity (equality of the intron boundaries)
+      if(protoHint->start == listIter->start && protoHint->end == listIter->end)
+      {
+	// count the duplicate
+	protoHint->mult++;
+	// TODO: after filtered printing and sorting there may be similar hints with mult > 1 anywhere, then do   protoHint->mult += listIter->mult;
+
+	// delete the duplicate and move to the returned following element
+	listIter = intronlist.erase(listIter);
+      }
+      else
+      {
+	// get new prototype
+	protoHint = listIter;
+	// go to the next element
+	listIter++;
+      }
+    }
+  }
+
   sortExonList();
   sortDSS_List();
   sortASS_List();
-  // TODO: execute multiplicity option
+
   // TODO: drop exonpart hints contained in exon hints
 
   //list<hint_t>* hintList [] = { &eplist, &intronlist, &exonlist }; // references to the hint lists
@@ -280,10 +317,10 @@ void printHints(FILE* OUT, const char* tag = "")
     int pos = pal->Position; // hints beginning before here won't multiply or change and can thus be printed
     // TODO: also incorporate filtered hint printing
 
-    for(vector<hintListLabel_t>::iterator hintListIter = hintList.begin(); hintListIter != hintList.end(); hintListIter++)
+    for(hintListIter = hintList.begin(); hintListIter != hintList.end(); hintListIter++)
     {
       // traverse the (ordered) list until reaching the current position
-      for(list<hint_t>::iterator listIter = hintListIter->ref->begin(); listIter->start < pos && listIter != hintListIter->ref->end(); listIter++)
+      for(listIter = hintListIter->ref->begin(); listIter->start < pos && listIter != hintListIter->ref->end(); listIter++)
       {
 	// print gff fields #1-#8
 	fprintf(OUT, "%s\t%s\t%s\t%i\t%i\t%g\t%c\t.\t", TargetName, PrgSrc, hintListIter->label, listIter->start, listIter->end, Score, listIter->strand);
@@ -303,20 +340,27 @@ void printHints(FILE* OUT, const char* tag = "")
   {
     // print all remaining elements of each list
 
-    for(vector<hintListLabel_t>::iterator hintListIter = hintList.begin(); hintListIter != hintList.end(); hintListIter++)
+    for(hintListIter = hintList.begin(); hintListIter != hintList.end(); hintListIter++)
     {
-      // output for every element
-      for(list<hint_t>::iterator listIter = hintListIter->ref->begin(); listIter != hintListIter->ref->end(); listIter++)
+      // output one gff line for every element
+      for(listIter = hintListIter->ref->begin(); listIter != hintListIter->ref->end(); listIter++)
       {
 	// gff fields #1-#8
 	fprintf(OUT, "%s\t%s\t%s\t%i\t%i\t%g\t%c\t.\t", TargetName, PrgSrc, hintListIter->label, listIter->start, listIter->end, Score, listIter->strand);
+
 	// gff field #9
 	// TODO: print "grp" and "cdna" data for clonefiles
-	// TODO: print multiplicity of intron hints
-	//fprintf(OUT, "");
+	// print multiplicity (of intron hints)
+	if(listIter->mult > 1)
+	{
+	  fprintf(OUT, "mult=%i;", listIter->mult);
+	}
+	// AUGUSTUS priority and source values
 	fprintf(OUT, "pri=%i;src=%s\n", Pri, Source);
       }
-      hintListIter->ref->clear(); // reset the list
+
+      // reset the list
+      hintListIter->ref->clear();
     }
   } // end if (filtering)
 }
@@ -406,6 +450,8 @@ int main(int argc, char* argv[])
   };
   //printf("output of long options\n"); for(int i=0; i<5; i++){ printf("long_options[%i]: %s %i %p %c ,", i, long_options[i].name, long_options[i].has_arg, long_options[i].flag, long_options[i].val);}
 
+  // receive the input options
+
   while((opt = getopt_long(argc, argv, "i:o:p:g:m:M:q:e:s:InrC:STv:c:t:G:h", long_options, &option_index)) != -1)
   {
     switch(opt)
@@ -434,7 +480,14 @@ int main(int argc, char* argv[])
     }
   }
 
+  // consistency check of supplied options
+  if(MaxGapLen >= MinIntLen)
+  {
+    cerr << "Need to have maxgaplen < minintronlen\n";
+    return -1;
+  }
 
+  // help text
   if(Help)
   {
     cout << "bam2hints -- Convert mRNA-to-genome alignments in BAM format into a hint file for AUGUSTUS in gff format.\n"
@@ -479,13 +532,10 @@ int main(int argc, char* argv[])
       */
          << "  --maxgenelen=n     -G   alignments of the same clone are considered to be of the same gene if not separeted by more than this (set to " << MaxGeneLen << ")\n"
          << "                          Alignments that span more than this are ignored, but better filter long introns through an alignment program.\n"
-         << "  --help             -h   show this information text\n"
+         << "  --help             -h   show this help text\n"
          << "\n";
     return 0;
   }
-
-
-  // TODO: check, if maxgaplen < minintronlen
 
 
   // open the input BAM file
@@ -494,6 +544,14 @@ int main(int argc, char* argv[])
   if( InFileName == NULL || !BAM.Open(InFileName) )
   {
     cerr << "Could not open input BAM file: " << (InFileName ? InFileName : "No input file") << endl;
+    return -1;
+  }
+
+  // check sortedness according to BAM
+  SamHeader header = BAM.GetHeader();
+  if(header.HasSortOrder() && header.SortOrder == "unsorted" && IntOnly && Mult)
+  {
+    cout << "\nBAM file MUST be sorted by target sequence names when 'intronsonly' and 'mult' options are active\n";
     return -1;
   }
 
@@ -512,7 +570,6 @@ int main(int argc, char* argv[])
   // prints the SORTED(!) SAM header lines
   printf("%s", BAM.GetHeaderText().data());  //printf("%s", (char*) BAM.GetHeaderText().c_str());
   */
-
 
   // get a mapping from reference sequence IDs to their names and lengths, respectively
 
@@ -564,26 +621,30 @@ int main(int argc, char* argv[])
   mal[pal->Name] = pal; //   OR   mal.insert(make_pair(pal->Name,pal));   OR   mal.insert(pair<string,BamAlignment*>(pal->Name,pal));
   */
 
-  long int Line = 0;   // line count
-  int QOffset, TOffset;   // 1-based start coordinate of the actual segment in query/target
+  long int Line = 0;    // line count
+  int QOffset, TOffset; // 1-based start coordinate of the actual segment in query/target
+
   // PSL-like alignment data
   // TODO: ensure sufficient array length / throw overflow warning
-  int block;   // index of next matching block, holds the element count of the "PSL?" arrays
+  int block;    // index of next matching block, holds the element count of the "PSL?" arrays
   int PSLb[10];
   int PSLq[10];
-  int PSLt[10];   // may need to be 'long int' if refseq longer than 400 Mbp
+  int PSLt[10]; // may need to be 'long int' if refseq longer than 400 Mbp
+
   // filtered block data
-  int blockNew;   // index of next filtered block, holds the element count of the following arrays
-  int BlockBegins[10];   // 1-based start coordinates of filtered alignment blocks
+  int blockNew;        // index of next filtered block, holds the element count of the following arrays
+  int BlockBegins[10]; // 1-based start coordinates of filtered alignment blocks
   int BlockEnds[10];   // 1-based end coordinates of filtered alignment blocks
   bool FolIntOK[10];   // whether the gap following a block is considered an intron
 
-  bool badAlignment; // alignment quality flag
-  int BlockIter; // index of current block
+  set<char*> seenRefSet; // list of already encountered reference sequences to check sortedness
+  bool badAlignment;     // alignment quality flag
+  int BlockIter;         // index of current block
   unsigned short int * alnCoverage = new unsigned short int [2]; // alignment coverage data of the current reference sequence
-  int CovIter; // index of current bin of alignment coverage
-  int GapLen; // length of the gap preceding the current block on the target sequence
-  hint_t* hint = new hint_t;   // pointer to a new hint, passed to the "add...Hint" routines
+    // as alternative use STL container vector<unsigned short int>
+  int CovIter;           // index of current bin of alignment coverage
+  int GapLen;            // length of the gap preceding the current block on the target sequence
+  hint_t* hint = new hint_t; // pointer to a new hint, passed to the "add...Hint" routines
 
   //  cout << "size of BamAlignment: " << sizeof(BamAlignment) << endl;
 
@@ -595,7 +656,7 @@ int main(int argc, char* argv[])
 
     // increase line count
     Line++;
-
+    /*
     // print processing information every 1000 lines
     if(Line % 1000 == 1)
     {
@@ -604,6 +665,7 @@ int main(int argc, char* argv[])
       cout.flush(); // to really output the message
       // print a newline after ending while
     }
+    */
 
     /*
     // for multi-line alignments
@@ -647,6 +709,8 @@ int main(int argc, char* argv[])
     for( vector<CigarOp>::iterator CIGARiter = pal->CigarData.begin(); CIGARiter != pal->CigarData.end(); CIGARiter++ )
     {
       // decide by CIGAR type (one of "MIDNSHP=X")
+
+      // TODO: incorporate 'B' type?
 
       if(CIGARiter->Type == 'M' || CIGARiter->Type == 'X' || CIGARiter->Type == '=')
       {
@@ -731,11 +795,25 @@ int main(int argc, char* argv[])
     // check alteration of the reference sequence, if so print hints
     if(TargetID != OldTargetID)
     {
-      // print remaining hints using the old target name (if there is a proper old target)
+      // check if there is a proper old target
       if(OldTargetID >= 0) // -1 <-> "*"(unknown reference), -2 <-> uninitialized
       {
+	// check previous occurence of that target
+	if(seenRefSet.find(TargetName) != seenRefSet.end())
+	{
+	  if(IntOnly && Mult)
+	  {
+	    // require sorting and abort
+	    cout << "\nBAM file MUST be sorted by target sequence names when 'intronsonly' and 'mult' options are active\n";
+	    return -1;
+	  }
+	}
+	seenRefSet.insert(TargetName);
+
+	// print remaining hints using the remaining TargetName
 	printHints(GFF, "");
       }
+
       // reset data structures for the new target
       if(TargetID >= 0)
       {

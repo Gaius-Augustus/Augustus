@@ -9,8 +9,7 @@
 
 # Variable definition
 # on greifweb1
-HOME = /home/sebastian
-BAMTOOLS = $(HOME)/pezmaster31-bamtools-6a75f0d
+BAMTOOLS = /home/sebastian/pezmaster31-bamtools-466bc50
 INCLUDES = $(BAMTOOLS)/include
 LIBS = $(BAMTOOLS)/lib/libbamtools.a -lz
 SOURCES = bam2hints.cc 
@@ -31,4 +30,4 @@ bam2hints.o : $(SOURCES)
 	$(LINK.cc) $(CFLAGS) -c $< -o $@ -I$(INCLUDES) 
 
 clean: 
-	rm -f *~ $(OBJECTS)
+	rm -f $(OBJECTS)
