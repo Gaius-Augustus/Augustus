@@ -99,7 +99,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                  </div>
             </g:if>
             <div class="main" id="main">
-			<noscript><p><b><span style="color:red">Please enable javascript in your browser in order to display the submission form correctly!</span></b> Form functionality is not affected while javascript is disabled.</p>
+			<noscript><p><b><span style="color:red">Please enable javascript in your browser in order to display the submission form correctly!</span></b> Form functionality is not affected significantly while javascript is disabled, but it looks less pretty.</p>
 			</noscript>
 <p><b>Before submitting a training job</b> for your species of interest, please check whether parameters have already been trained and have been made publicly available for your species at <a href="../predictiontutorial.gsp#param_id">our species overview table</a></p>
 
@@ -152,7 +152,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 				</td>
 		    	    </tr>
 			    <tr class="prop">
-			        <td valitn="top">Upload a file:</td>
+			        <td valitn="top">Upload a file <font size="1">(max. 100 MB)</font>:</td>
                                 <td valitn="top">
                                     <input type="file" id="GenomeFile" name="GenomeFile"/>
                                 </td>
@@ -162,7 +162,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 		            </tr>
 			    <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="genome_ftp_link">specify web link to genome file:</label>
+                                    <label for="genome_ftp_link">specify web link to genome file <font size="1">(max. 1 GB)</font>:</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:trainingInstance,field:'genome_ftp_link','errors')}">
                                     <input type="text" id="genome_ftp_link" name="genome_ftp_link" value="${fieldValue(bean:trainingInstance,field:'genome_ftp_link')}"/> 
@@ -182,7 +182,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                                 </td>
 			    </tr> 
 			    <tr class="prop">
-			      <td valign="top">Upload a file:</td>
+			      <td valign="top">Upload a file <font size="1">(max. 100 MB)</font>:</td>
 			      <td valign="top">
 				            <input type="file" id="EstFile" name="EstFile"/>
                               </td>
@@ -192,7 +192,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			    </tr>
 			    <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="est_ftp_link">specify web link to cDNA file:</label>
+                                    <label for="est_ftp_link">specify web link to cDNA file <font size="1">(max. 1 GB)</font>:</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:trainingInstance,field:'est_ftp_link','errors')}">
                                     <input type="text" id="est_ftp_link" name="est_ftp_link" value="${fieldValue(bean:trainingInstance,field:'est_ftp_link')}"/>
@@ -207,7 +207,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                                                       </td>
 		     	    </tr>
 			    <tr class="prop">
-			      <td valign="top">Upload a file:</td>
+			      <td valign="top">Upload a file <font size="1">(max. 100 MB)</font>:</td>
                                 <td valign="top">
                                     <input type="file" id="ProteinFile" name="ProteinFile"/>
                                 </td>
@@ -217,7 +217,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			    </tr>
 			    <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="protein_ftp_link">specify web link to protein file:</label>
+                                    <label for="protein_ftp_link">specify web link to protein file <font size="1">(max. 1 GB)</font>:</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:trainingInstance,field:'protein_ftp_link','errors')}">
                                     <input type="text" id="protein_ftp_link" name="protein_ftp_link" value="${fieldValue(bean:trainingInstance,field:'protein_ftp_link')}"/>
@@ -231,7 +231,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 				<td valign="top"></td>
 			    </tr>
 			    <tr class="prop">
-			        <td valign="top">Upload a file:</td>
+			        <td valign="top">Upload a file <font size="1">(max. 200 MB)</font>:</td>
                                 <td valign="top">
                                     <input type="file" id="StructFile" name="StructFile"/> 
                                 </td>

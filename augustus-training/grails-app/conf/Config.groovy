@@ -98,8 +98,8 @@ simpleCaptcha {
     lineSpacing = 10
 
     // the charcters shown in the CAPTCHA text must be one of the following
-    chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!-;"
+    chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!-?"
 }
 
 // you want to remove this for permanent deployment, hurts performance!     
-grails.gsp.enable.reload=true
+//grails.gsp.enable.reload=true

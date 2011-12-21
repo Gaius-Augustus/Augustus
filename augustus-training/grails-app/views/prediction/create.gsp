@@ -136,7 +136,7 @@
                                 </td>
 		  	     </tr> 
                             <tr class="prop">
-                                <td valitn="top">Upload an archive file: &nbsp; <a href="../help.gsp#archive"><small>Help</small></a>
+                                <td valitn="top">Upload an archive file  <font size="1">(max. 100 MB)</font>: &nbsp; <a href="../help.gsp#archive"><small>Help</small></a>
                                 </td>
                                 <td valitn="top">
                                     <input type="file" id="ArchiveFile" name="ArchiveFile"/></label>
@@ -170,7 +170,7 @@
                                 </td>
                             </tr>
                             <tr class="prop">
-                                <td valitn="top">Upload a file:</td>
+                                <td valitn="top">Upload a file <font size="1">(max. 100 MB)</font>:</td>
                                 <td valitn="top">
                                     <input type="file" id="GenomeFile" name="GenomeFile"/>
                                 </td>
@@ -180,7 +180,7 @@
                             </tr>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="genome_ftp_link">specify web link to genome file:</label>
+                                    <label for="genome_ftp_link">specify web link to genome file <font size="1">(max. 1 GB)</font>:</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'genome_ftp_link','errors')}">
                                     <input type="text" id="genome_ftp_link" name="genome_ftp_link" value="${fieldValue(bean:predictionInstance,field:'genome_ftp_link')}"/>
@@ -200,7 +200,7 @@
                                 </td>
                             </tr>
                             <tr class="prop">
-                              <td valign="top">Upload a file:</td>
+                              <td valign="top">Upload a file <font size="1">(max. 100 MB)</font>:</td>
                               <td valign="top">
                                             <input type="file" id="EstFile" name="EstFile"/>
                               </td>
@@ -210,7 +210,7 @@
                             </tr>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="est_ftp_link">specify web link to cDNA file:</label>
+                                    <label for="est_ftp_link">specify web link to cDNA file <font size="1">(max. 1 GB)</font>:</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'est_ftp_link','errors')}">
                                     <input type="text" id="est_ftp_link" name="est_ftp_link" value="${fieldValue(bean:predictionInstance,field:'est_ftp_link')}"/>
@@ -225,7 +225,7 @@
                                                       </td>
                             </tr>
                             <tr class="prop">
-                              <td valign="top">Upload a file:</td>
+                              <td valign="top">Upload a file <font size="1">(max. 200 MB)</font>:</td>
                                 <td valign="top">
                                     <input type="file" id="HintFile" name="HintFile"/>
                                 </td>

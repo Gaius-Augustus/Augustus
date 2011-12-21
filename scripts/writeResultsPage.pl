@@ -171,6 +171,11 @@ if($projectID =~ m/^t/){
 	my $trainingFile = $grailsOut."/$projectID/autoAug/trainingSet/training/training.gb";
 	if (not(-e $trainingFile)){
 		print STDERR "$trainingFile does not exist!\n";
+		$cfgFilesDir = "$AUGUSTUS_CONFIG_PATH/species/$projectID/$projectID";
+		if(-d $cfgFilesDir){
+			`rm -r $cfgFilesDir`;
+			print STDERR "Deleting $cfgFilesDir because no relevant parameters can have been produced.\n";4
+		}
 	}else{
 		$cmdStr = "cp $trainingFile $projectWebOutDir/training.gb; cd $projectWebOutDir; gzip training.gb &> /dev/null;";
 		`$cmdStr`;
@@ -324,7 +329,7 @@ if($projectID =~ m/^t/){
 	open(SEG2, ">", $segmentFile2) or die "Could not open file $segmentFile2!\n";
 	print SEG2 "<a href=\"index.html\" class=\"contentpagetitle\">Prediction results for job $projectID</a>\n</td>\n</tr>\n</table>\n";
 	print SEG2 "<div class=\"main\" id=\"main\">\n<p>On this page, you find all relevant results to your AUGUSTUS prediction run $projectID, first submitted to our web server application on $submissionDate.</p>\n";
-	print SEG2 "<h1>Files for download</h1>\n<table>\n<tr><td><b>Prediction archive</b></td><td><a href=\"augustus.tar.gz\">augustus.tar.gz</a></td></tr>\n";
+	print SEG2 "<h1>Files for download</h1>\n<table>\n<tr><td><b>Prediction archive</b></td><td><a href=\"predictions.tar.gz\">predictions.tar.gz</a></td></tr>\n";
 	print SEG2 "</table>\n<br><br>\n";
 	close(SEG2) or die "Could not close file $segmentFile2!\n";
 }

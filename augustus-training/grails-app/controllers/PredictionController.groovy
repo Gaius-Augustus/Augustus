@@ -26,8 +26,14 @@ class PredictionController {
 	def admin_email = "katharina.hoff@gmail.com"
 	// sgeLen length of SGE queue, when is reached "the server is buisy" will be displayed
 	def sgeLen = 8;
+	// max button filesize
+	def int maxButtonFileSize = 104857600 // 100 MB = 13107200 bytes = 104857600 bit, getFile etc. gives size in bit
+	def preUploadSize
 	// max ftp/http filesize
-	def int maxFileSizeByWget = 1073741824
+	def int maxFileSizeByWget = 1073741824 // 1 GB = 1073741824 bytes, curl gives size in bytes
+	// EST sequence properties (length)
+	def int estMinLen = 250
+	def int estMaxLen = 20000
 
 	// human verification:
 	def simpleCaptchaService
@@ -49,7 +55,6 @@ class PredictionController {
 		delProc.waitFor()
 		delProc = "rm -r ${output_dir}/${qstatFilePrefix}.qstatResult".execute()
 		delProc.waitFor()
-
 		if(qstatStatusNumber > sgeLen){
 			// get date
 			def todayTried = new Date()
@@ -84,6 +89,8 @@ class PredictionController {
 			def overRideUtrFlag = 0
 			// species name for AUGUSTUS
 			def species
+			// delProc is needed at many places
+			def delProc
 			// get date
 			def today = new Date()
 			logFile << "${predictionInstance.accession_id} AUGUSTUS prediction webserver starting on ${today}\n"
@@ -111,12 +118,21 @@ class PredictionController {
 			def String dirName = "${output_dir}/${predictionInstance.accession_id}"
 			def projectDir = new File(dirName)
 			if(!uploadedParamArch.empty){
-				// actually upload the file
-				projectDir.mkdirs()
-         			uploadedParamArch.transferTo( new File (projectDir, "parameters.tar.gz"))
-				predictionInstance.archive_file = uploadedParamArch.originalFilename
-				confirmationString = "${confirmationString}Parameter archive: ${predictionInstance.archive_file}\n"
-				logFile <<  "${predictionInstance.accession_id} uploaded parameter archive ${predictionInstance.archive_file} was renamed to parameters.tar.gz and moved to ${projectDir}\n"
+				// check file size
+				def preUploadSize = uploadedParamArch.getSize()
+				if(preUploadSize <= maxButtonFileSize){
+					// actually upload the file
+					projectDir.mkdirs()
+         				uploadedParamArch.transferTo( new File (projectDir, "parameters.tar.gz"))
+					predictionInstance.archive_file = uploadedParamArch.originalFilename
+					confirmationString = "${confirmationString}Parameter archive: ${predictionInstance.archive_file}\n"
+					logFile <<  "${predictionInstance.accession_id} uploaded parameter archive ${predictionInstance.archive_file} was renamed to parameters.tar.gz and moved to ${projectDir}\n"
+				}else{
+					logFile <<  "${predictionInstance.accession_id} The selected parameter archive file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
+					flash.error = "Parameter archive file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
+					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+					return
+				}
 				// get cksum and file size for database
 				def archCksumScript = new File("${projectDir}/archive_cksum.sh")
          			def archCksumFile = "${projectDir}/arch.cksum"
@@ -136,10 +152,10 @@ class PredictionController {
          			delProcCkSharch.waitFor()
 				// check whether the archive contains all relevant files
 				def String paramDirName = "${projectDir}/params"
-				def MakeParamDir = "mkdir ${paramDirName}".execute()
-				MakeParamDir.waitFor()
+				def paramDir = new File(paramDirName)
+				paramDir.mkdirs()
 				def checkParamArch = new File("${projectDir}/ckArch.sh")
-				checkParamArch << "checkParamArchive.pl ${projectDir}/parameters.tar.gz ${paramDirName} > ${projectDir}/archCheck.log 2> ${projectDir}/archCheck.err"
+				checkParamArch << "${AUGUSTUS_SCRIPTS_PATH}/checkParamArchive.pl ${projectDir}/parameters.tar.gz ${paramDirName} > ${projectDir}/archCheck.log 2> ${projectDir}/archCheck.err"
 				def checkParamArchRunning = "bash ${checkParamArch}".execute()
 				checkParamArchRunning.waitFor()
 				def archCheckLog = new File("${projectDir}/archCheck.log")
@@ -149,8 +165,8 @@ class PredictionController {
 				// if essential file are missing, redirect to input interface and inform user that the archive was not compatible
 				if(archCheckErrSize > 0){
 					logFile <<  "${predictionInstance.accession_id} The parameter archive was not compatible. Project directory ${projectDir} is deleted (rm -r).\n"
-					def delProc = "rm -r ${projectDir}".execute()
-            				delProc.waitFor()
+					//delProc = "rm -r ${projectDir}".execute()
+            				//delProc.waitFor()
            				logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
            				flash.error = "Parameter archive ${uploadedParamArch.originalFilename} is not compatible with the AUGUSTUS prediction web server application."
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
@@ -169,7 +185,7 @@ class PredictionController {
 				def spec_conf_dir = new File("${AUGUSTUS_CONFIG_PATH}/species/${predictionInstance.project_id}")
 				if(!spec_conf_dir.exists()){
 					logFile <<  "${predictionInstance.accession_id} The given parameter-string does not exist on our system. Project directory ${projectDir} is deleted (rm -r).\n"
-					def delProc = "rm -r ${projectDir}".execute()
+					delProc = "rm -r ${projectDir}".execute()
             				delProc.waitFor()
            				logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
            				flash.error = "The specified parameter ID ${predictionInstance.project_id} does not exist on our system."
@@ -184,13 +200,22 @@ class PredictionController {
 			}
 	
 			// upload of genome file
-			def uploadedGenomeFile = request.getFile('GenomeFile')
+			def uploadedGenomeFile
+			uploadedGenomeFile = request.getFile('GenomeFile')
      			def seqNames = []
 			if(!uploadedGenomeFile.empty){
+				// check file size
+				def preUploadSize = uploadedGenomeFile.getSize()
          			projectDir.mkdirs()
-         			uploadedGenomeFile.transferTo( new File (projectDir, "genome.fa"))
-        			predictionInstance.genome_file = uploadedGenomeFile.originalFilename
-				confirmationString = "${confirmationString}Genome file: ${predictionInstance.genome_file}\n"
+				if(preUploadSize <= maxButtonFileSize){
+         				uploadedGenomeFile.transferTo( new File (projectDir, "genome.fa"))
+        				predictionInstance.genome_file = uploadedGenomeFile.originalFilename
+					confirmationString = "${confirmationString}Genome file: ${predictionInstance.genome_file}\n"
+				}else{
+					logFile <<  "${predictionInstance.accession_id} The selected genome file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
+					flash.error = "Genome file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
+					return
+				}
 				if("${uploadedGenomeFile.originalFilename}" =~ /\.gz/){
 					logFile <<  "${predictionInstance.accession_id} Genome file is gzipped.\n"
 					def gunzipGenomeScript = new File("${projectDir}/gunzipGenome.sh")
@@ -198,7 +223,7 @@ class PredictionController {
 					def gunzipGenome = "bash ${gunzipGenomeScript}".execute()
 					gunzipGenome.waitFor()
 					logFile <<  "${predictionInstance.accession_id} Unpacked genome file.\n"
-					def delProc = "rm ${gunzipGenomeScript}".execute()
+					delProc = "rm ${gunzipGenomeScript}".execute()
 					delProc.waitFor()
 				}
          			logFile <<  "${predictionInstance.accession_id} uploaded genome file ${uploadedGenomeFile.originalFilename} was renamed to genome.fa and moved to ${projectDir}\n"
@@ -212,7 +237,7 @@ class PredictionController {
          			}
          			if(genomeFastaFlag == 1) {
             				logFile <<  "${predictionInstance.accession_id} The genome file was not fasta. Project directory ${projectDir} is deleted (rm -r).\n"
-            				def delProc = "rm -r ${projectDir}".execute()
+            				delProc = "rm -r ${projectDir}".execute()
             				delProc.waitFor()
             				logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
             				flash.error = "Genome file ${uploadedGenomeFile.originalFilename} is not in DNA fasta format."
@@ -257,7 +282,7 @@ class PredictionController {
 	         			br.close()
 	         			if(genomeFastaFlag == 1) {
 	            				logFile <<  "${predictionInstance.accession_id} The first 20 lines in genome file are not fasta.\n"
-	            				def delProc = "rm -r ${projectDir}".execute()
+	            				delProc = "rm -r ${projectDir}".execute()
 	            				delProc.waitFor()
 	            				logFile << "${predictionInstance.accession_id} Project directory ${projectDir} is deleted.\n${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"	
 	            				flash.error = "Genome file ${predictionInstance.genome_ftp_link} is not in DNA fasta format."
@@ -272,9 +297,18 @@ class PredictionController {
 	      		// upload of est file
 	      		def uploadedEstFile = request.getFile('EstFile')
 	      		if(!uploadedEstFile.empty){
-	         		projectDir.mkdirs()
-	         		uploadedEstFile.transferTo( new File (projectDir, "est.fa"))
-	         		predictionInstance.est_file = uploadedEstFile.originalFilename
+				// check file size
+				preUploadSize = uploadedEstFile.getSize()
+				if(preUploadSize <= maxButtonFileSize){
+	         			projectDir.mkdirs()
+	         			uploadedEstFile.transferTo( new File (projectDir, "est.fa"))
+	         			predictionInstance.est_file = uploadedEstFile.originalFilename
+				}else{
+					logFile <<  "${predictionInstance.accession_id} The selected cDNA file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
+					flash.error = "cDNA file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
+					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+					return
+				}
 				confirmationString = "${confirmationString}cDNA file: ${predictionInstance.est_file}\n"
 				if("${uploadedEstFile.originalFilename}" =~ /\.gz/){
 					logFile <<  "${predictionInstance.accession_id} EST file is gzipped.\n"
@@ -283,7 +317,7 @@ class PredictionController {
 					def gunzipEst = "bash ${gunzipEstScript}".execute()
 					gunzipEst.waitFor()
 					logFile <<  "${predictionInstance.accession_id} Unpacked EST file.\n"
-					def delProc = "rm ${gunzipEstScript}".execute()
+					delProc = "rm ${gunzipEstScript}".execute()
 					delProc.waitFor()
 				}
 	         		logFile << "${predictionInstance.accession_id} Uploaded EST file ${uploadedEstFile.originalFilename} was renamed to est.fa and moved to ${projectDir}\n"
@@ -293,7 +327,7 @@ class PredictionController {
 	         		}	
 	         		if(estFastaFlag == 1) {
             				logFile << "${predictionInstance.accession_id} The cDNA file was not fasta. ${projectDir} (rm -r) is deleted.\n"
-            				def delProc = "rm -r ${projectDir}".execute()
+            				delProc = "rm -r ${projectDir}".execute()
             				delProc.waitFor()
             				logFile << "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
             				flash.error = "cDNA file ${uploadedEstFile.originalFilename} is not in DNA fasta format."
@@ -338,7 +372,7 @@ class PredictionController {
          				br.close()
          				if(estFastaFlag == 1) {
            					logFile << "${predictionInstance.accession_id} The cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
-            					def delProc = "rm -r ${projectDir}".execute()
+            					delProc = "rm -r ${projectDir}".execute()
          					delProc.waitFor()
             					logFile << "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
             					flash.error = "cDNA file ${predictionInstance.est_ftp_link} is not in DNA fasta format."
@@ -353,9 +387,19 @@ class PredictionController {
 			// get hints file, format check
 			def uploadedStructFile = request.getFile('HintFile')
 			if(!uploadedStructFile.empty){
-				projectDir.mkdirs()
-				uploadedStructFile.transferTo( new File (projectDir, "hints.gff"))
-				predictionInstance.hint_file = uploadedStructFile.originalFilename
+				// check file size
+				preUploadSize = uploadedStructFile.getSize()
+				if(preUploadSize <= maxButtonFileSize){
+					projectDir.mkdirs()
+					uploadedStructFile.transferTo( new File (projectDir, "hints.gff"))
+					predictionInstance.hint_file = uploadedStructFile.originalFilename
+				}else{
+					def allowedHintsSize = maxButtonFileSize * 2
+					logFile <<  "${predictionInstance.accession_id} The selected Hints file was bigger than ${allowedHintsSize}. Submission rejected.\n"
+					flash.error = "Hints file is bigger than ${allowedHintsSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
+					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+					return
+				}
 				confirmationString = "${confirmationString}Hints file: ${predictionInstance.hint_file}\n"
 				logFile << "${predictionInstance.accession_id} Uploaded hints file ${uploadedStructFile.originalFilename} was renamed to hints.gff and moved to ${projectDir}\n"
 				def gffColErrorFlag = 0
@@ -392,7 +436,7 @@ class PredictionController {
 					}
 					if((gffColErrorFlag == 1 || gffNameErrorFlag == 1 || gffSourceErrorFlag == 1)){
 						logFile << "${predictionInstance.accession_id} ${projectDir} (rm -r) is deleted.\n"
-						def delProc = "rm -r ${projectDir}".execute()
+						delProc = "rm -r ${projectDir}".execute()
 						delProc.waitFor()
 						logFile << "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
@@ -520,7 +564,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 			} else {
 				logFile << "${predictionInstance.accession_id} An error occurred in the predictionInstance (e.g. E-Mail missing, see domain restrictions).\n"
 				logFile << "${predictionInstance.accession_id} ${projectDir} is deleted (rm -r).\n"
-				def delProc = "rm -r ${projectDir}".execute()
+				delProc = "rm -r ${projectDir}".execute()
 				delProc.waitFor()
 				logFile << "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 				render(view:'create', model:[predictionInstance:predictionInstance])
@@ -546,19 +590,24 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					genome_size = st.nextInt();
 					if(genome_size < maxFileSizeByWget){//1 GB
 						logFile <<  "${predictionInstance.accession_id} Retrieving genome file ${predictionInstance.genome_ftp_link}\n"
-						def wgetGenome = "wget -O ${projectDir}/genome.fa ${predictionInstance.genome_ftp_link}".execute()
+						def getGenomeScript = new File("${projectDir}/getGenome.sh")
+						getGenomeScript << "wget -O ${projectDir}/genome.fa ${predictionInstance.genome_ftp_link} > ${projectDir}/getGenome.out 2> ${projectDir}/getGenome.err"
+						def wgetGenome = "bash ${projectDir}/getGenome.sh".execute()
 						wgetGenome.waitFor()
+						delProc = "rm ${projectDir}/getGenome.sh".execute()
+						delProc.waitFor()
 						if("${predictionInstance.genome_ftp_link}" =~ /\.gz/){
 							def gunzipGenomeScript = new File("${projectDir}/gunzipGenome.sh")
 							gunzipGenomeScript << "cd ${projectDir}; mv genome.fa genome.fa.gz; gunzip genome.fa.gz"
 							def gunzipGenome = "bash ${gunzipGenomeScript}".execute()
 							gunzipGenome.waitFor()			
-							def delProc = "rm ${gunzipGenomeScript}".execute()
+							delProc = "rm ${gunzipGenomeScript}".execute()
 							delProc.waitFor()
 							logFile <<  "${predictionInstance.accession_id} Unpacked genome file.\n"
 						}
 						logFile <<  "${predictionInstance.accession_id} genome file upload finished, file stored as genome.fa at ${projectDir}\n"
 						// check for fasta format & get seq names for gff validation:
+logFile << "step1\n"
 						new File("${projectDir}/genome.fa").eachLine{line -> 
 							if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }	
 							if(line =~ /^>/){
@@ -566,9 +615,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 								seqNames << line[1..(len-1)]
 							}
 						}
+logFile << "step2\n"
 						if(genomeFastaFlag == 1) {
+logFile << "step3\n"
 							logFile <<  "${predictionInstance.accession_id} The genome file was not fasta. ${projectDir} is deleted (rm -r).\n"
-							def delProc = "rm -r ${projectDir}".execute()
+							delProc = "rm -r ${projectDir}".execute()
 							delProc.waitFor()
 							logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							sendMail {
@@ -589,6 +640,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							predictionInstance.delete()
 							return
 						}
+logFile << "step4\n"
 					}else{// actions if remote file was bigger than allowed
 						logFile << "${predictionInstance.accession_id} Genome file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
 						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the genome file size was with ${genome_size} bigger than 1 GB. Please submitt a smaller genome size!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
@@ -602,11 +654,13 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						return
 
 					}
+logFile << "step5\n"
 					// check gff format
 					def gffColErrorFlag = 0
 					def gffNameErrorFlag = 0
 					def gffSourceErrorFlag = 0
 					if((!uploadedStructFile.empty) &&(!(predictionInstance.genome_ftp_link == null))){ // if seqNames already exists
+logFile << "step6\n"
 						// gff format validation: number of columns 9, + or - in column 7, column 1 muss member von seqNames sein
 						def gffArray
 						def isElement
@@ -677,7 +731,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						if((gffColErrorFlag == 1 || gffNameErrorFlag == 1 || gffSourceErrorFlag ==1)){
 							logFile << "${predictionInstance.accession_id} ${projectDir} is deleted (rm -r).\n"
-							def delProc = "rm -r ${projectDir}".execute()
+							delProc = "rm -r ${projectDir}".execute()
 							delProc.waitFor()
 							logFile << "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							// delete database entry
@@ -685,12 +739,16 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							return
 						}
 					}
+logFile << "step7\n"
 					def genomeCksumScript = new File("${projectDir}/genome_cksum.sh")
 					def genomeCksumFile = "${projectDir}/genome.cksum"
 					genomeCksumScript << "cksum ${projectDir}/genome.fa > ${genomeCksumFile}"
 					def genomeCksumProcess = "bash ${projectDir}/genome_cksum.sh".execute()
+logFile << "step8\n"
 					genomeCksumProcess.waitFor()
+logFile << "step9\n"
 					def genomeCksumContent = new File("${genomeCksumFile}").text
+logFile << "step10\n"
 					def genomeCksum_array = genomeCksumContent =~/(\d*) \d* /
 					def genomeCksum
 					(1..genomeCksum_array.groupCount()).each{genomeCksum = "${genomeCksum_array[0][it]}"}
@@ -701,8 +759,10 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					logFile <<  "${predictionInstance.accession_id} genome.fa is ${predictionInstance.genome_size} big and has a cksum of ${genomeCksum}.\n"
 					def delProcCksumGenome = "rm ${projectDir}/genome.cksum".execute()
 					delProcCksumGenome.waitFor()
+logFile << "step11\n"
 					def delProcCkShGenome = "rm ${projectDir}/genome_cksum.sh".execute()
 					delProcCkShGenome.waitFor()
+logFile << "step12\n"
 				} // end of if(!(predictionInstance.genome_ftp_link == null))				
 				
 
@@ -722,14 +782,18 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					est_size = st.nextInt();
 					if(est_size < maxFileSizeByWget){//1 GB
 						logFile <<  "${predictionInstance.accession_id} Retrieving EST/cDNA file ${predictionInstance.est_ftp_link}\n"
-						def wgetEst = "wget -O ${projectDir}/est.fa ${predictionInstance.est_ftp_link}".execute()
+						def getEstScript = new File("${projectDir}/getEst.sh")
+						getEstScript << "wget -O ${projectDir}/genome.fa ${predictionInstance.est_ftp_link} > ${projectDir}/getEst.out 2> ${projectDir}/getEst.err"
+						def wgetEst = "bash ${projectDir}/getEst.sh".execute()
 						wgetEst.waitFor()
+						delProc = "rm ${projectDir}/getEst.sh".execute()
+						delProc.waitFor()
 						if("${predictionInstance.est_ftp_link}" =~ /\.gz/){
 							def gunzipEstScript = new File("${projectDir}/gunzipEst.sh")
 							gunzipEstScript << "cd ${projectDir}; mv est.fa est.fa.gz; gunzip est.fa.gz"
 							def gunzipEst = "bash ${gunzipEstScript}".execute()
 							gunzipEst.waitFor()			
-							def delProc = "rm ${gunzipEstScript}".execute()
+							delProc = "rm ${gunzipEstScript}".execute()
 							delProc.waitFor()
 							logFile <<  "${predictionInstance.accession_id} Unpacked EST file.\n"
 						}
@@ -738,7 +802,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						new File("${projectDir}/est.fa").eachLine{line -> if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ estFastaFlag = 1 }}
 						if(estFastaFlag == 1) {
 							logFile <<  "${predictionInstance.accession_id} The EST/cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
-							def delProc = "rm -r ${projectDir}".execute()
+							delProc = "rm -r ${projectDir}".execute()
 							delProc.waitFor()
 							logFile <<  "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							sendMail {
@@ -792,6 +856,43 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					delProcCkShEst.waitFor()
 				} // end of if(!(predictionInstance.est_ftp_link == null))
 
+				// check whether EST file is NOT RNAseq, i.e. does not contain on average very short entries
+				def int nEntries = 0
+				def int totalLen = 0
+				if(estExistsFlag == 1){
+					new File("${projectDir}/est.fa").eachLine{line -> 
+						if(line =~ /^>/){
+							nEntries = nEntries + 1
+						}else{
+							totalLen = totalLen + line.size()
+						}
+					}
+					def avEstLen = totalLen/nEntries
+					if(avEstLen < estMinLen){
+						logFile << "${predictionInstance.accession_id} EST sequences are on average shorter than ${estMinLen}, suspect RNAseq raw data. Abort job.\n"
+						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your cDNA file have an average length of ${avEstLen}. We suspect that sequences files with an average sequence length shorter than ${estMinLen} might contain RNAseq raw sequences. Currently, our web server application does not support the integration of RNAseq raw sequences. Please either assemble your sequences into longer contigs, or remove short sequences from your current file, or submitt a new job without specifying a cDNA file.\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
+						sendMail {
+								to "${predictionInstance.email_adress}"
+								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								body """${errorStrMsg}"""
+						}
+						// delete database entry
+						predictionInstance.delete()
+						return
+					}else if(avEstLen > estMaxLen){
+						logFile << "${predictionInstance.accession_id} EST sequences are on average longer than ${estMaxLen}, suspect non EST/cDNA data. Abort job.\n"
+						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your cDNA file have an average length of ${avEstLen}. We suspect that sequences files with an average sequence length longer than ${estMaxLen} might not contain ESTs or cDNAs. Please either remove long sequences from your current file, or submitt a new job without specifying a cDNA file.\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
+						sendMail {
+								to "${predictionInstance.email_adress}"
+								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								body """${errorStrMsg}"""
+						}
+						// delete database entry
+						predictionInstance.delete()
+						return
+					}
+				}
+
 				// confirm file upload via e-mail
 				if((!(predictionInstance.genome_ftp_link == null)) || (!(predictionInstance.est_ftp_link == null))){
 					sendMail {
@@ -814,9 +915,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				// check whether this job was submitted before:
 				def grepScript = new File("${projectDir}/grepScript.sh")
 				def grepResult = "${projectDir}/grep.result"
+logFile << "step13\n"
 				grepScript << "grep \"\\(Genome-Cksum: \\[${predictionInstance.genome_cksum}\\] Genome-Filesize: \\[${predictionInstance.genome_size}\\]\\).*\\(EST-Cksum: \\[${predictionInstance.est_cksum}\\] EST-Filesize: \\[${predictionInstance.est_size}\\]\\).*\\(Hint-Cksum: \\[${predictionInstance.hint_cksum}\\] Hint-Filesize: \\[${predictionInstance.hint_size}\\] Parameter-String: \\[${predictionInstance.project_id}\\]\\).*\\(Parameter-Cksum: \\[${predictionInstance.archive_cksum}\\] Parameter-Size: \\[${predictionInstance.archive_size}\\] Server-Set-UTR-Flag: \\[${overRideUtrFlag}\\]\\).*\\(Report-Genes: \\[${predictionInstance.pred_strand}\\] Alternative-Transcripts: \\[${predictionInstance.alt_transcripts}\\] Gene-Structures: \\[${predictionInstance.allowed_structures}\\] Ignore-Conflicts: \\[${predictionInstance.ignore_conflicts}\\]\\)\" ${dbFile} > ${grepResult}\n"
 				def grepJob = "bash ${projectDir}/grepScript.sh".execute()
 				grepJob.waitFor()
+logFile << "step14\n"
 				def grepContent = new File("${grepResult}").text
 				if(grepContent =~ /Genome-Cksum/){
 					//job was submitted before. Send E-Mail to user with a link to the results.
@@ -850,8 +953,8 @@ http://bioinf.uni-greifswald.de/trainaugustus
 """
 					}
 					logFile << "${predictionInstance.accession_id} Data are identical to old job ${oldAccContent} with Accession-ID ${oldAccContent}. ${projectDir} is deleted (rm -r).\n"
-					def delProc = "rm -r ${projectDir}".execute()
-					delProc.waitFor()
+					//////delProc = "rm -r ${projectDir}".execute()
+					//////delProc.waitFor()
 					logFile << "${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted, the user is informed!\n"
 					predictionInstance.delete()
 					return
@@ -862,12 +965,15 @@ http://bioinf.uni-greifswald.de/trainaugustus
 
 				//rename and move parameters
 				if(!uploadedParamArch.empty){
+logFile << "step 16\n";
 					def mvParamsScript = new File("${projectDir}/mvParams.sh")
-					mvParamsScript << "${AUGUSTUS_SCRIPTS_PATH}/moveParameters.pl ${projectDir}/params ${predictionInstance.accession_id} ${AUGUSTUS_CONFIG_PATH}/species 2> ${projectDir}/mvParams.err"
+					mvParamsScript << "${AUGUSTUS_SCRIPTS_PATH}/moveParameters.pl ${projectDir}/params ${predictionInstance.accession_id} ${AUGUSTUS_CONFIG_PATH}/species > ${projectDir}/mvParams.out 2> ${projectDir}/mvParams.err"
 					def mvParamsRunning = "bash ${mvParamsScript}".execute()
+logFile << "step 17\n";
 					mvParamsRunning.waitFor()
 					species = "${predictionInstance.accession_id}"
-					logfile << "${predictionInstance.accession_id} Moved uploaded parameters and renamed species to ${predictionInstance.accession_id}\n"
+logFile << "step 18\n";
+					logFile << "${predictionInstance.accession_id} Moved uploaded parameters and renamed species to ${predictionInstance.accession_id}\n"
 				}
 				//Create sge script:
 				logFile << "${predictionInstance.accession_id} Writing SGE submission script.\n"
@@ -972,12 +1078,19 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					// unpack with 7z x XA2Y5VMJ.tar.7z
 					// tar xvf XA2Y5VMJ.tar
 					def packResults = new File("${output_dir}/pack${predictionInstance.accession_id}.sh")
-					packResults << "cd ${output_dir}; tar cf - ${predictionInstance.accession_id} | 7z a -si ${predictionInstance.accession_id}.tar.7z; rm -r ${predictionInstance.accession_id};"
+					packResults << "cd ${output_dir}; tar -czvf ${predictionInstance.accession_id}"
+					//packResults << "cd ${output_dir}; tar cf - ${predictionInstance.accession_id} | 7z a -si ${predictionInstance.accession_id}.tar.7z; rm -r ${predictionInstance.accession_id};"
 					def cleanUp = "bash ${output_dir}/pack${predictionInstance.accession_id}.sh".execute()
 					cleanUp.waitFor()
-					def cleanUp2 = "rm ${output_dir}/pack${predictionInstance.accession_id}.sh".execute()
-					cleanUp2.waitFor()
-					logFile << "${predictionInstance.accession_id} job directory was packed with tar/7z.\n"
+					cleanUp = "rm ${output_dir}/pack${predictionInstance.accession_id}.sh".execute()
+					packResults = new File("${output_dir}/pack${predictionInstance.accession_id}.sh")
+					packResults << "; rm -r ${predictionInstance.accession_id};"
+					cleanUp = "bash ${output_dir}/pack${predictionInstance.accession_id}.sh".execute()
+					cleapUp.waitFor()
+					cleanUp = "rm ${output_dir}/pack${predictionInstance.accession_id}.sh".execute()
+					cleanUp.waitFor()
+					logFile << "${predictionInstance.accession_id} job directory was packed with tar/gz.\n"
+					//logFile << "${predictionInstance.accession_id} job directory was packed with tar/7z.\n"
 					logFile << "${predictionInstance.accession_id} Job completed. Result: ok.\n"
 				}else{ 
 					if(sgeErrFile > 0){
@@ -989,13 +1102,14 @@ http://bioinf.uni-greifswald.de/trainaugustus
 
 Job: ${predictionInstance.accession_id}
 E-Mail: ${predictionInstance.email_adress}
-Species: ${predictionInstance.project_name}
 Link: http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html
 
 An SGE error occured. Please check manually what's wrong. The user has been informed.
 """
 						}
 						predictionInstance.job_status = 5
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
 					}else{
 						logFile << "${predictionInstance.accession_id} an error occured during writing results!\n";
 						sendMail {
@@ -1005,12 +1119,14 @@ An SGE error occured. Please check manually what's wrong. The user has been info
 
 Job: ${predictionInstance.accession_id}
 E-Mail: ${predictionInstance.email_adress}
-Species: ${predictionInstance.project_name}
 Link: http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html
 
 An error occured during writing results. Please check manually what's wrong. The user has been informed.
 """
 						}
+						predictionInstance.job_status = 5
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
 					}
 					sendMail {
 						to "${predictionInstance.email_adress}"
