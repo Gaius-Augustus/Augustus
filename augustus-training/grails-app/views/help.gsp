@@ -421,7 +421,26 @@ Chr.1	mySource	3'-UTR	280345	280405	78	+	.	transcript_id "g22472.t1"; gene_id "g
             <OL TYPE="1">
             <li>The <b>sequence names</b> must be found in the fasta headers of sequences in the genome file. 
 	    <li>The <b>source</b> tells with which software/process the gene structure was generated (you can fill in whatever you like).
-            <li>The <b>feature</b> may for AUGUSTUS training be CDS, 5'-UTR or 3'-UTR. 
+            <li>The <b>feature</b> may for AUGUSTUS gene prediction be 
+		<ul>
+		<li><tt>start</tt> - translation start, specifies an interval that contains the start codon. The interval can be larger than 3 nucleotides, in which case every ATG in the interval gets a bonus.</li>
+		<li><tt>stop</tt> - translation end  (stop codon)</li>
+		<li><tt>tss</tt> - transcription start site</li>
+		<li><tt>tts</tt> - transcription termination site</li>
+		<li><tt>ass</tt> - acceptor (3') splice site, the last intron position</li>
+		<li><tt>dss</tt> - donor (5') splice site, the first intron position</li>
+		<li><tt>exonpart</tt> - part of an exon in the biological sense.</li>
+		<li><tt>exon</tt> - complete exon in the biological sense.</li>
+		<li><tt>intronpart</tt> - introns both between coding and non-coding exons.</li>
+		<li><tt>intron</tt> - complete intron in the biological sense</li>
+		<li><tt>CDSpart</tt> - part of the coding part of an exon. (CDS = coding sequence)</li>
+		<li><tt>CDS</tt> - coding part of an exon with exact boundaries. For internal exons of a multi exon gene this is identical to the biological boundaries of the exon. For the first and the last coding exon the boundaries are the boundaries of the coding sequence (start, stop).</li>
+		<li><tt>UTRpart</tt> - The hint interval must be included in the UTR part of an exon.</li>
+		<li><tt>UTR</tt> - exact boundaries of a UTR exon or the untranslated part of a partially coding exon.</li>
+		<li><tt>irpart</tt> - intergenic region part. The bonus applies to every base of the intergenic region. If UTR prediction is turned on (--UTR=on) then UTR is considered genic.
+		<li><tt>nonexonpart</tt> -  intergenic region or intron.</li>
+		<li><tt>genicpart</tt> - everything that is not intergenic region, i.e. intron or exon or UTR if applicable.</li>
+		</ul>
             <li><b>Start</b> is the beginning position of the line's feature, counting the first position of a sequence as position 1.
             <li><b>Stop</b> position, must be at least as large as start position.
             <li>The <b>score</b> must be a number but the number is irrelevant to our web server applications.
