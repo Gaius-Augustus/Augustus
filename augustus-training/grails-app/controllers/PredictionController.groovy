@@ -9,7 +9,7 @@ class PredictionController {
 	// need to adjust the output dir to whatever working dir! This is where uploaded files and results will be saved.
 	def output_dir = "/data/www/augpred/webdata" // should be something in home of webserver user and augustus frontend user.
 	// this log File contains the "process log", what was happening with which job when.
-	def logFile = new File("${output_dir}/augustus-prediction.log")
+	def logFile = new File("${output_dir}/pred.log")
 	// this log File contains the "database" (not identical with the grails database and simply for logging purpose)
 	def dbFile = new File("${output_dir}/augustus-pred-database.log")
 	// oldID is a parameter that is used for show redirects (see bottom)
@@ -25,7 +25,7 @@ class PredictionController {
 	// Admin mail for errors
 	def admin_email = "katharina.hoff@gmail.com"
 	// sgeLen length of SGE queue, when is reached "the server is buisy" will be displayed
-	def sgeLen = 8;
+	def sgeLen = 20;
 	// max button filesize
 	def int maxButtonFileSize = 104857600 // 100 MB = 13107200 bytes = 104857600 bit, getFile etc. gives size in bit
 	def preUploadSize
@@ -35,7 +35,7 @@ class PredictionController {
 	def int estMinLen = 250
 	def int estMaxLen = 20000
 	// logging verbosity-level
-	def verb = 3 // 1 only basic log messages, 2 all issued commands, 3 also script content
+	def verb = 2 // 1 only basic log messages, 2 all issued commands, 3 also script content
 	def cmd2Script
 	def cmdStr
 
@@ -50,13 +50,13 @@ class PredictionController {
 		def qstatFile = new File("${output_dir}/${qstatFilePrefix}.qstatScript")
 		cmd2Script = "qstat | grep qw | wc -l > ${output_dir}/${qstatFilePrefix}.qstatResult 2> /dev/null"
 		qstatFile << "${cmd2Script}"
-		if(verb > 3){
-			logFile << "SGE v3 - qstatFile << \"${cmd2Script}\"\n"
+		if(verb > 2){
+			logFile << "SGE          v3 - qstatFile << \"${cmd2Script}\"\n"
 		}
 		cmdStr = "bash ${output_dir}/${qstatFilePrefix}.qstatScript"
 		def qstatStatus = "${cmdStr}".execute()
-		if(verb > 1){
-			logFile << "SGE v2 - \"${cmdStr}\"\n"
+		if(verb > 2){
+			logFile << "SGE          v3 - \"${cmdStr}\"\n"
 		}
 		qstatStatus.waitFor()
 		def qstatStatusResult = new File("${output_dir}/${qstatFilePrefix}.qstatResult").text
@@ -65,14 +65,14 @@ class PredictionController {
 		(1..qstatStatus_array.groupCount()).each{qstatStatusNumber = "${qstatStatus_array[0][it]}"}
 		cmdStr = "rm -r ${output_dir}/${qstatFilePrefix}.qstatScript"
 		def delProc = "${cmdStr}".execute()
-		if(verb > 1){
-			logFile << "SGE v2 - \"${cmdStr}\"\n"
+		if(verb > 2){
+			logFile << "SGE          v3 - \"${cmdStr}\"\n"
 		}
 		delProc.waitFor()
 		cmdStr = "rm -r ${output_dir}/${qstatFilePrefix}.qstatResult"
 		delProc = "${cmdStr}".execute()
-		if(verb > 1){
-			logFile << "SGE v2 - \"${cmdStr}\"\n"
+		if(verb > 2){
+			logFile << "SGE          v3 - \"${cmdStr}\"\n"
 		}
 		delProc.waitFor()
 		if(qstatStatusNumber > sgeLen){
@@ -80,7 +80,7 @@ class PredictionController {
 			def todayTried = new Date()
 			// get IP-address
 			String userIPTried = request.remoteAddr
-			logFile <<  "SGE      v1 - On ${todayTried} somebody with IP ${userIPTried} tried to invoke the Prediction webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
+			logFile <<  "SGE          v1 - On ${todayTried} somebody with IP ${userIPTried} tried to invoke the Prediction webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
 			render "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><meta name=\"layout\" content=\"main\" /><title>Submitt Prediction</title><script type=\"text/javascript\" src=\"js/md_stylechanger.js\"></script></head><body><!-- ***** Start: Kopfbereich ********************************************// --><p class=\"unsichtbar\"><a href=\"#inhalt\" title=\"Directly to Contents\">Directly to Contents</a></p><div id=\"navigation_oben\"><a name=\"seitenanfang\"></a><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"1\"><tr><td nowrap=\"nowrap\"><a href=\"http://www.uni-greifswald.de\" target=\"_blank\" class=\"mainleveltop_\" >University of Greifswald</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.mnf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Faculty</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.math-inf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Institute</a><span class=\"mainleveltop_\">&nbsp;|&nbsp;</span><a href=\"http://bioinf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\">Bioinformatics Group</a></td></tr></table></div><div id=\"banner\"><div id=\"banner_links\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php\" title=\"Institut f&uuml;r Mathematik und Informatik\"><img src=\"../images/header.gif\" alt=\"Directly to home\" /> </a></div><div id=\"banner_mitte\"><div id=\"bannertitel1\">Bioinformatics Web Server at University of Greifswald</div><div id=\"bannertitel2\">Gene Prediction with AUGUSTUS</div></div><div id=\"banner_rechts\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167\" title=\"Voderberg-Doppelspirale\"><img src=\"../images/spirale.gif\" align=\"left\" /></a></div></div><div id=\"wegweiser\">Navigation for: &nbsp; &nbsp;<span class=\"breadcrumbs pathway\">Submitt Prediction</span><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Kopfbereich *********************************************// --><!-- ***** Start: Koerper ************************************************// --><div id=\"koerper\"><div id=\"linke_spalte\"><ul class=\"menu\"><li><a href=\"../index.gsp\"><span>Introduction</span></a></li><li><a href=\"/augustus-training/training/create\"><span>Submitt Training</span></a></li><li><a href=\"/augustus-training/prediction/create\"><span>Submitt Prediction</span></a></li><li><a href=\"../help.gsp\"><span>Help</span></a></li><li><a href=\"../references.gsp\"><span>Links & References</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de\"><span>Bioinformatics Group</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/impressum.html\"><span>Impressum</span></a></li></ul></div><div id=\"mittel_spalte\"><div class=\"main\" id=\"main\"><h1><font color=\"#006699\">The Server is Busy</font></h1><p>You tried to access the AUGUSTUS prediction job submission page.</p><p>Predicting genes with AUGUSTUS is a process that takes a lot of computation time. We estimate that one prediction process requires approximately 7 days. Our web server is able to process a certain number of jobs in parallel, and we established a waiting queue. The waiting queue has a limited length, though. Currently, all slots for computation and for waiting are occupied.</p><p>We apologize for the inconvenience! Please try to submitt your job in a couple of weeks, again.</p><p>Feel free to contact us in case your job is particularly urgent.</p></div><p>&nbsp;</p>           </div><div id=\"rechte_spalte\"><div class=\"linien_div\"><h5 class=\"ueberschrift_spezial\">CONTACT</h5><strong>Institute for Mathematics und Computer Sciences</strong><br/><strong>Bioinformatics Group</strong><br />Walther-Rathenau-Stra&szlig;e 47<br />17487 Greifswald<br />Germany<br />Tel.: +49 (0)3834 86 - 46 24<br/>Fax:  +49 (0)3834 86 - 46 40<br /><br /><a href=\"mailto:augustus-web@uni-greifswald.de\" title=\"E-Mail augustus-web@uni-greifswald.de, opens the standard mail program\">augustus-web@uni-greifswald.de</a></div></div><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Koerper *************************************************// --><!-- ***** Start: Fuss ***************************************************// --><div id=\"fuss\"><div id=\"fuss_links\"><p class=\"copyright\">&copy; 2011 University of Greifswald</p></div><div id=\"fuss_mitte\"><div class=\"bannergroup\"></div></div><div id=\"fuss_rechts\" ><ul><li><a href=\"#seitenanfang\"><img hspace=\"5\" height=\"4\" border=\"0\" width=\"7\" alt=\"Seitenanfang\" src=\"../images/top.gif\" />Top of page</a></li></ul></div><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Fuss ***************************************************// --></body></html>"
 			return
 		}		
@@ -191,7 +191,7 @@ class PredictionController {
 				def paramDir = new File(paramDirName)
 				paramDir.mkdirs()
 				def checkParamArch = new File("${projectDir}/ckArch.sh")
-				cmd2Script = "${AUGUSTUS_SCRIPTS_PATH}/checkParamArchive.pl ${projectDir}/parameters.tar.gz ${paramDirName} > ${projectDir}/archCheck.log 2> /dev/null"
+				cmd2Script = "${AUGUSTUS_SCRIPTS_PATH}/checkParamArchive.pl ${projectDir}/parameters.tar.gz ${paramDirName} > ${projectDir}/archCheck.log 2> ${projectDir}/archCheck.err"
 				checkParamArch << "${cmd2Script}"
 				if(verb > 2){
 					logFile << "${predictionInstance.accession_id} v3 - checkParamArch << \"${cmd2Script}\"\n"
@@ -682,7 +682,7 @@ class PredictionController {
 			if(!predictionInstance.hasErrors() && predictionInstance.save()){
 				// generate empty results page
 				def emptyPageScript = new File("${projectDir}/emptyPage.sh")
-				cmd2Script = "${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${predictionInstance.accession_id} null ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 0 &> /dev/null\n"
+				cmd2Script = "${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${predictionInstance.accession_id} null ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 0 &> /dev/null"
 				emptyPageScript << "${cmd2Script}"
 				if(verb > 2){
 					logFile << "${predictionInstance.accession_id} v3 - emptyPageScript << \"${cmd2Script}\"\n"
@@ -696,7 +696,7 @@ class PredictionController {
 				predictionInstance.job_status = 0
 				sendMail {
 					to "${predictionInstance.email_adress}"
-					subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id}"
+					subject "AUGUSTUS prediction job ${predictionInstance.accession_id}"
 					body """Hello!
 
 Thank you for submitting the AUGUSTUS gene prediction job ${predictionInstance.accession_id}.
@@ -704,7 +704,7 @@ Thank you for submitting the AUGUSTUS gene prediction job ${predictionInstance.a
 Details of your job:
 
 ${confirmationString}
-The job status is available at http://bioinf.uni-greifswald.de/trainaugustus/prediction/show/${predictionInstance.id}
+The job status is available at http://bioinf.uni-greifswald.de/augustus-training-0.1/prediction/show/${predictionInstance.id}
 
 You will receive a link to the results via email when the job has finished.
 
@@ -823,7 +823,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							logFile <<  "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							sendMail {
 								to "${predictionInstance.email_adress}"
-								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """Hello!
 
 Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided genome file ${predictionInstance.genome_ftp_link} was not in DNA fasta format.
@@ -844,9 +844,15 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the genome file size was with ${genome_size} bigger than 1 GB. Please submitt a smaller genome size!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
 						sendMail {
 								to "${predictionInstance.email_adress}"
-								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """${errorStrMsg}"""
 						}
+						cmdStr = "rm -r ${projectDir}"
+						delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}
+						delProc.waitFor()
 						// delete database entry
 						predictionInstance.delete()
 						return
@@ -877,7 +883,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							logFile << "${predictionInstance.accession_id} v1 - Hints file does not always contain 9 columns.\n"
 							sendMail {
 								to "${predictionInstance.email_adress}"
-								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """Hello!
 
 Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided hints file ${predictionInstance.hint_file} did not contain 9 columns in each line. Please make sure the gff-format complies with the instructions in our 'Help' section before submitting another job!
@@ -894,7 +900,7 @@ http://bioinf.uni-greifswald.de/trainaugustus/
 							logFile << "${predictionInstance.accession_id} v1 - Hints file contains entries that do not comply with genome sequence names.\n"
 							sendMail {
 								to "${predictionInstance.email_adress}"
-								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """Hello!
 
 Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequence names in the provided hints file ${predictionInstance.hint_file} did not comply with the sequence names in the supplied genome file ${predictionInstance.genome_ftp_link}. Please make sure the gff-format complies with the instructions in our 'Help' section before submitting another job!
@@ -911,7 +917,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							logFile << "${predictionInstance.accession_id} v1 - Hints file contains entries that do not have source=M in the last column.\n"
 							sendMail {
 								to "${predictionInstance.email_adress}"
-								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """Hello!
 
 Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the last column of your hints file ${predictionInstance.hint_file} does not contain the content source=M. Please make sure the gff-format complies with the instructions in our 'Help' section before submitting another job!
@@ -1057,7 +1063,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							logFile <<  "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							sendMail {
 								to "${predictionInstance.email_adress}"
-								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """Hello!
 
 Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided cDNA file ${predictionInstance.est_ftp_link} was not in DNA fasta format.
@@ -1078,9 +1084,15 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the cDNA file size was with ${est_size} bigger than 1 GB. Please submitt a smaller cDNA size!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
 						sendMail {
 								to "${predictionInstance.email_adress}"
-								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """${errorStrMsg}"""
 						}
+						cmdStr = "rm -r ${projectDir}"
+						delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}
+						delProc.waitFor()
 						// delete database entry
 						predictionInstance.delete()
 						return
@@ -1139,9 +1151,15 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your cDNA file have an average length of ${avEstLen}. We suspect that sequences files with an average sequence length shorter than ${estMinLen} might contain RNAseq raw sequences. Currently, our web server application does not support the integration of RNAseq raw sequences. Please either assemble your sequences into longer contigs, or remove short sequences from your current file, or submitt a new job without specifying a cDNA file.\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
 						sendMail {
 								to "${predictionInstance.email_adress}"
-								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """${errorStrMsg}"""
 						}
+						cmdStr = "rm -r ${projectDir}"
+						delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}
+						delProc.waitFor()
 						// delete database entry
 						predictionInstance.delete()
 						return
@@ -1150,9 +1168,15 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your cDNA file have an average length of ${avEstLen}. We suspect that sequences files with an average sequence length longer than ${estMaxLen} might not contain ESTs or cDNAs. Please either remove long sequences from your current file, or submitt a new job without specifying a cDNA file.\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
 						sendMail {
 								to "${predictionInstance.email_adress}"
-								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """${errorStrMsg}"""
 						}
+						cmdStr = "rm -r ${projectDir}"
+						delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}
+						delProc.waitFor()
 						// delete database entry
 						predictionInstance.delete()
 						return
@@ -1181,7 +1205,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				// check whether this job was submitted before:
 				def grepScript = new File("${projectDir}/grepScript.sh")
 				def grepResult = "${projectDir}/grep.result"
-				cmd2Script = "grep \"\\(Genome-Cksum: \\[${predictionInstance.genome_cksum}\\] Genome-Filesize: \\[${predictionInstance.genome_size}\\]\\).*\\(EST-Cksum: \\[${predictionInstance.est_cksum}\\] EST-Filesize: \\[${predictionInstance.est_size}\\]\\).*\\(Hint-Cksum: \\[${predictionInstance.hint_cksum}\\] Hint-Filesize: \\[${predictionInstance.hint_size}\\] Parameter-String: \\[${predictionInstance.project_id}\\]\\).*\\(Parameter-Cksum: \\[${predictionInstance.archive_cksum}\\] Parameter-Size: \\[${predictionInstance.archive_size}\\] Server-Set-UTR-Flag: \\[${overRideUtrFlag}\\]\\).*\\(Report-Genes: \\[${predictionInstance.pred_strand}\\] Alternative-Transcripts: \\[${predictionInstance.alt_transcripts}\\] Gene-Structures: \\[${predictionInstance.allowed_structures}\\] Ignore-Conflicts: \\[${predictionInstance.ignore_conflicts}\\]\\)\" ${dbFile} > ${grepResult} 2> /dev/null\n"
+				cmd2Script = "grep \"\\(Genome-Cksum: \\[${predictionInstance.genome_cksum}\\] Genome-Filesize: \\[${predictionInstance.genome_size}\\]\\).*\\(EST-Cksum: \\[${predictionInstance.est_cksum}\\] EST-Filesize: \\[${predictionInstance.est_size}\\]\\).*\\(Hint-Cksum: \\[${predictionInstance.hint_cksum}\\] Hint-Filesize: \\[${predictionInstance.hint_size}\\] Parameter-String: \\[${predictionInstance.project_id}\\]\\).*\\(Parameter-Cksum: \\[${predictionInstance.archive_cksum}\\] Parameter-Size: \\[${predictionInstance.archive_size}\\] Server-Set-UTR-Flag: \\[${overRideUtrFlag}\\]\\).*\\(Report-Genes: \\[${predictionInstance.pred_strand}\\] Alternative-Transcripts: \\[${predictionInstance.alt_transcripts}\\] Gene-Structures: \\[${predictionInstance.allowed_structures}\\] Ignore-Conflicts: \\[${predictionInstance.ignore_conflicts}\\]\\)\" ${dbFile} > ${grepResult} 2> /dev/null"
 				cmdStr = "bash ${projectDir}/grepScript.sh\n"
 				grepScript << "${cmd2Script}"
 				if(verb > 2){
@@ -1214,12 +1238,15 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					def oldAccContent = new File("${oldAccResult}").text	      
 					sendMail {
 						to "${predictionInstance.email_adress}"
-						subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was submitted before as job ${oldAccContent}"
+						subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was submitted before as job ${oldAccContent}"
 						body """Hello!
 
 You submitted job ${predictionInstance.accession_id}. The job was aborted because the files that you submitted were submitted, before. 
 
-The job status of the previously submitted job is available at http://bioinf.uni-greifswald.de/trainaugustus/prediction/show/${oldID}
+Details of your job:
+${confirmationString}
+
+The job status of the previously submitted job is available at http://bioinf.uni-greifswald.de/augustus-training-0.1/prediction/show/${oldID}
 
 The results are available at http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${oldAccContent}/index.html (Results are only available in case the previously submitted job's computations have finished, already.)
 
@@ -1285,7 +1312,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/getAnnoFasta.pl --seqfile=${projectDir}/genome.fa ${projectDir}/augustus/augustus.gff\n"
 				cmdStr = "${cmdStr}cat ${projectDir}/augustus/augustus.gff | perl -ne 'if(m/\\tAUGUSTUS\\t/){print;}' > ${projectDir}/augustus/augustus.gtf\n"
 				cmdStr = "${cmdStr}cat ${projectDir}/augustus/augustus.gff | ${AUGUSTUS_SCRIPTS_PATH}/augustus2gbrowse.pl > ${projectDir}/augustus/augustus.gbrowse\n"
-				cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${predictionInstance.accession_id} null ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 2> ${projectDir}/writeResults.err\n"
+				cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${predictionInstance.accession_id} null ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 2> ${projectDir}/writeResults.err"
 				sgeFile << "${cmdStr}"
 				
 				// write submission script
@@ -1362,7 +1389,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				if(sgeErrSize==0 && writeResultsErrSize==0){
 					sendMail {
 						to "${predictionInstance.email_adress}"
-						subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} is complete"
+						subject "AUGUSTUS prediction job ${predictionInstance.accession_id} is complete"
 						body """Hello!
 
 Your AUGUSTUS prediction job ${predictionInstance.accession_id} finished. You find the results at http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html .
@@ -1444,7 +1471,7 @@ An error occured during writing results. Please check manually what's wrong. The
 					}
 					sendMail {
 						to "${predictionInstance.email_adress}"
-						subject "An error occured while executing your AUGUSTUS prediction job ${predictionInstance.accession_id}"
+						subject "An error occured while executing AUGUSTUS prediction job ${predictionInstance.accession_id}"
 						body """Hello!
 
 An error occured while running the AUGUSTUS prediction job ${predictionInstance.accession_id}.

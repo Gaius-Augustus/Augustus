@@ -76,7 +76,7 @@
          <li><a href="../help.gsp"><span>Help</span></a></li>
          <li><a href="../references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
+         <li><a href="../impressum.gsp"><span>Impressum</span></a></li>
      </ul>
   </div>
 
@@ -96,6 +96,8 @@
                  </div>
             </g:if>
             <div class="main" id="main">
+			<noscript><p><b><span style="color:red">Please enable javascript in your browser in order to display the submission form correctly!</span></b> Form functionality is not affected significantly while javascript is disabled, but it looks less pretty.</p>
+			</noscript>
             <g:uploadForm action="commit" method="post" >
             <fieldset><legend>
                 <table class="contentpaneopen">
@@ -293,29 +295,25 @@
 				</tbody>
 			</table>
                 </div>
-<!--
 
+               				<div class="buttons" onclick="toggle_visibility('spinner');">
+                   				<span class="button"><input class="commit" type="submit" value="Start Predicting" /></span><br>
+                			</div>
+
+            </g:uploadForm>
+		<br>
 		<table>
 			<tr>
 				<td>
--->
-               				<div class="buttons" onclick="toggle_visibility('spinner');">
-                   				<span class="button"><input class="commit" type="submit" value="Start Predicting" /></span>
-                			</div>
-<!--
-				</td>	
-				<td>
-					<SPACER TYPE=VERTICAL SIZE=32>
 					<div id="spinner" style='display:none;' align="center">
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="../images/ajax-loader.gif" alt="spnner"/>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="http://www.animateit.net/data/media/june2010/compete.gif" border="0" alt="Spinner" /><br><p>We are processing your request... please do not close this window and do not click on the submission button again, until this message disappears!</p>
 					</div>
-
-				</td>	
+				</td>
+				<td><img src="../images/spacer.jpg" alt="spacer image"></td>
 			</tr>
 		</table>
--->
-            </g:uploadForm>
             </div>
+
        </div>
      <div id="rechte_spalte">
     <div class="linien_div">

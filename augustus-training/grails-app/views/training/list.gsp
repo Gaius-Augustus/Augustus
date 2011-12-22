@@ -66,7 +66,7 @@
          <li><a href="../help.gsp"><span>Help</span></a></li>
          <li><a href="../references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
+         <li><a href="../impressum.gsp"><span>Impressum</span></a></li>
      </ul>
   </div>
 

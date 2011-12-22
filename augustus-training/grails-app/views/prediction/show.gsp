@@ -1,6 +1,6 @@
 <html>
     <head>
-        <META HTTP-EQUIV="Refresh" CONTENT="5">
+        <META HTTP-EQUIV="Refresh" CONTENT="60">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <meta name="layout" content="main" />
         <title>Show Prediction</title>
@@ -61,7 +61,7 @@
          <li><a href="../../help.gsp"><span>Help</span></a></li>
          <li><a href="../../references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
+         <li><a href="../../impressum.gsp"><span>Impressum</span></a></li>
      </ul>
   </div>
 

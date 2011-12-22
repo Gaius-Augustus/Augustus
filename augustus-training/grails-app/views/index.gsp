@@ -63,7 +63,7 @@
          <li><a href="help.gsp"><span>Help</span></a></li>
          <li><a href="references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
+         <li><a href="impressum.gsp"><span>Impressum</span></a></li>
      </ul>
   </div>
 
@@ -72,14 +72,15 @@
     <table class="contentpaneopen">
       <tr>
 	<td class="contentheading" width="100%">
-	  <a href="index.gsp" class="contentpagetitle">Welcome to the AUGUSTUS training web server</a>
+	  <a href="index.gsp" class="contentpagetitle">Welcome to the AUGUSTUS <b><font color="#ffb22a" size=3>beta</font></b> web server</a>
         </td>
       </tr>
     </table>
-    <p> AUGUSTUS is a program that predicts genes in eukaryotic genomic sequences. This web server provides an interface for training AUGUSTUS on new genomes. It also enables you to predict genes in a genome sequence with already trained parameters.</p>
+    <p> AUGUSTUS is a program that predicts genes in eukaryotic genomic sequences. This web server provides an interface for training AUGUSTUS for predicting genes in genomes of novel species. It also enables you to predict genes in a genome sequence with already trained parameters.</p>
     <p>AUGUSTUS usually belongs to the most accurate programs for the species it is trained for. Often it is the most accurate ab initio program. For example, at the independent gene finder assessment (EGASP) on the human ENCODE regions AUGUSTUS was the most accurate gene finder among the tested ab initio programs. At the more recent nGASP (worm), it was among the best in the ab initio and transcript-based categories. See <a href="http://bioinf.uni-greifswald.de/augustus/accuracy">accuracy statistics</a> for further details.</p>
+    <p>Please be aware that gene prediction accuracy of AUGUSTUS always depends on the quality of the training gene set that was used for training species specific parameters. You should not expect the greatest accuracy from fully automated training gene generation as provided by this web server application. Instead, you should manually inspect (and maybe interatively improve) the training gene set.</p>
     <p>For more information about AUGUSTUS, have a look at <a href="http://bioinf.uni-greifswald.de/augustus/">the old AUGUSTUS web server</a>. There, you also find the <a href="http://bioinf.uni-greifswald.de/augustus/binaries/">stand alone tool</a> for download. AUGUSTUS is already trained for a number of genomes and you find the according parameter sets at <a href="http://bioinf.uni-greifswald.de/augustus/">the old web server</a>. Please check whether AUGUSTUS was already trained for your species before submitting a new training job.</p>
-   <p>Please be aware that this web service is <b>beta</b> testing phase, currently! Not everything may work smoothly, yet. Please contact us (augustus-web@uni-greifswald.de) if you encounter any errors or problems.</p>
+   <p>Please be aware that this web service is <b>beta</b> testing phase, currently! Not everything may work smoothly, yet. Please contact us (augustus-web@uni-greifswald.de) if you encounter any errors or problems. In that case, please include date and time when the problem first occured in your e-mail.</p>
   </div>
 
   <div id="rechte_spalte">

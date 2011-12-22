@@ -4,85 +4,7 @@
 
 <p>All files and folders - except for log and error file - are compressed. To unpack <tt>*.tar.gz</tt> archives, e.g. on linux type</p><p><tt>tar -xzvf *.tar.gz</tt></p><p>For unpacking <tt>*.gz</tt> files, e.g. on linux type</p><p><tt>gunzip *.gz</tt>.</p>
 
-<p>The number of files listed on the results page as well as the number of files in tar.gz-archives may vary between different input data sets and depending on whether you submitted a training or a prediction job. The following sections give an overview and description files that might be linked from this page.</p>
-
-<h2>AUGUSTUS Training App</h2>
-
-<h3>Files and archives that are always produced by training AUGUSTUS</h3>
-<p>
-<ul>
-<li><b>parameters.tar.gz</b> - the AUGUSTUS parameter archive for your species</li>
-<li><b>training.gb.gz</b> - training genes that were used to optimize AUGUSTUS parameters in genbank format</li>
-<li><b>ab_initio.tar.gz</b> - <i>ab initio</i> gene predictions in the supplied genome sequence (without UTR)</li>
-<li><b>AutoAug.log</b> - log file of training and prediction process</li>
-<li><b>AutoAug.err</b> - error file of the training and prediction process</li>
-</ul>
-</p>
-
-<h3>Archives that are only produced under certain conditions</h3>
-
-<p>Depending on the combination of data sources that you submitted for training, and depending on how much information these data sources contain, the following files might also be produced:</p>
-<p>
-<ul>
-<li><b>hints_pred.tar.gz</b> - gene predictions with extrinsic evidence (without UTR)</li>
-<li><b>utr_pred.tar.gz</b> - <i>ab initio</i> gene predictions with UTR prediction</li>
-<li><b>hints_utr_pred.tar.gz</b> - gene predictions with extrinsic evidence and UTR</li>
-</ul>
-</p>
-
-<h3>The AUGUSTUS parameter archive</h3>
-
-<p>The AUGUSTUS parameter archive always contains the following files for your species:</p>
-
-<p>
-<ul>
-<li><b><i>species</i>_parameters.cfg</b></li>
-<li><b><i>species</i>_metapars.cfg</b></li>
-<li><b><i>species</i>_metapars.utr.cfg</b></li>
-<li><b><i>species</i>_exon_probs.pbl.withoutCRF</b></li>
-<li><b><i>species</i>_exon_probs.pbl</b></li>
-<li><b><i>species</i>_weihtmatrix.txt</b></li>
-<li><b><i>species</i>_intron_probs.pbl</b></li>
-<li><b><i>species</i>_intron_probs.pbl.withoutCRF</b></li>
-<li><b><i>species</i>_igenic_probs.pbl</b></li>
-<li><b><i>species</i>_igenic_probs.pbl.withoutCRF</b></li>
-</ul>
-</p>
-
-<p>If you want to use the parameters for predicting genes with a local AUGUSTUS installation, place the species parameter folder into your <tt>$AUGUSTUS_CONFIG_PATH</tt> species folder. Be aware that in general, our web server application does not optimize the CRF parameters. Therefore, do not run AUGUSTUS with CRF-flag with these parameters. UTR parameters have only been optimized for your species if this website contains an archive <tt>utr_pred.tar.gz</tt>. It does not make sense to locally predict genes with UTR if the UTR parameters were not optimized for your species.</p>
-
-<p>If you want to run further predictions on our web server application, you do not need to save the parameter archive locally for re-upload. Just remember the accession number of your job and specify it on the prediction interface. You find your job's accession number in the headline of this web site at "Training results for job ...".</p>
-
-<h2>AUGUSTUS Prediction App</h2>
-
-<h3>Archive that is always produced when running AUGUSTUS</h3>
-
-<p>
-<ul>
-	<li><b>predictions.tar.gz</b> - gene predictions for your submitted data configuration</li>
-</ul>
-</p>
-
-<h2>Files that are always contained in gene prediction archives</h2>
-
-<p>
-<ul>
-<li><b>*.gff</b> - gene predictions in gff format</li>
-</ul>
-</p>
-
-<h2>Files that may optionally be contained in gene prediction archives</h2>
-
-<p>
-<ul>
-<li><b>*.gtf</b> - gene predictions in gtf format</li>
-<li><b>*.aa</b> - gene predictions as protein fasta sequences</li>
-<li><b>*.codingseq</b> - gene predictions as CDS DNA fasta sequences</li>
-<li><b>*.cdsexons</b> - predicted exons in DNA fasta sequences</li>
-<li><b>*.mrna</b> - predicted mRNA sequences (with UTRs) in DNA fasta sequences</li>
-<li><b>*.gbrowse</b> - gene prediction track for the GBrowse genome browser</li>
-</ul>
-</p>
+<p>Further instructions about results contents are given at the <a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/trainingtutorial.gsp#results">Training Tutorial</a> and the <a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/predictiontutorial.gsp#results">Prediction Tutorial</a>.
 
 </div>
 </div>
@@ -113,7 +35,7 @@
  <div id="fuss_links"><p class="copyright">&copy; 2011 University of Greifswald</p></div>
  <div id="fuss_mitte">
          <table width="100%" border="0" cellpadding="0" cellspacing="1">
-                 <tr><td nowrap="nowrap"><a href="index.html" class="mainleveltop_" >Home</a>|&nbsp; </span><a href="http://www.math-inf.uni-greifswald.de/mathe/index.php/impressum" class="mainleveltop_" >Impressum</a>
+                 <tr><td nowrap="nowrap"><a href="index.html" class="mainleveltop_" >Home</a>|&nbsp; </span><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/impressum.gsp" class="mainleveltop_" >Impressum</a>
                  </td></tr>
          </table>
  <div class="bannergroup">

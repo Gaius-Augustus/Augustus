@@ -300,7 +300,7 @@ if($projectID =~ m/^t/){
 
 	open(SEG2, ">", $segmentFile2) or die "Could not open file $segmentFile2!\n";
 	print SEG2 "<a href=\"index.html\" class=\"contentpagetitle\">Training results for job $projectID</a>\n</td>\n</tr>\n</table>\n";
-	print SEG2 "<div class=\"main\" id=\"main\">\n<p>On this page, you find all relevant results to your AUGUSTUS training run $projectID for species $species, first submitted to our web server application on $submissionDate.</p>\n";
+	print SEG2 "<div class=\"main\" id=\"main\">\n<p>On this page, you find all relevant results to AUGUSTUS training run $projectID for species $species, first submitted to our web server application on $submissionDate.</p>\n";
 	print SEG2 "<h1>Files for download</h1>\n<table>\n<tr><td><b>Log-file</b></td><td><a href=\"AutoAug.log\">AutoAug.log</a></td></tr>\n<tr><td><b>Error-file</b></td><td><a href=\"AutoAug.err\">AutoAug.err</a></td></tr>\n";
 	if($paramsExistFlag==1){
 	print SEG2 "<tr>\n<td><b>Species parameter archive</b>&nbsp;&nbsp;</td>\n<td><a href=\"parameters.tar.gz\">parameters.tar.gz</a></td>\n</tr>\n";
@@ -328,8 +328,8 @@ if($projectID =~ m/^t/){
 	close(SEG1) or die "Could not close file $segmentFile1!\n";
 	open(SEG2, ">", $segmentFile2) or die "Could not open file $segmentFile2!\n";
 	print SEG2 "<a href=\"index.html\" class=\"contentpagetitle\">Prediction results for job $projectID</a>\n</td>\n</tr>\n</table>\n";
-	print SEG2 "<div class=\"main\" id=\"main\">\n<p>On this page, you find all relevant results to your AUGUSTUS prediction run $projectID, first submitted to our web server application on $submissionDate.</p>\n";
-	print SEG2 "<h1>Files for download</h1>\n<table>\n<tr><td><b>Prediction archive</b></td><td><a href=\"predictions.tar.gz\">predictions.tar.gz</a></td></tr>\n";
+	print SEG2 "<div class=\"main\" id=\"main\">\n<p>On this page, you find all relevant results to AUGUSTUS prediction run $projectID, first submitted to our web server application on $submissionDate.</p>\n";
+	print SEG2 "<h1>Files for download</h1>\n<table>\n<tr><td><b>Prediction archive</b>&nbsp;&nbsp;</td><td><a href=\"predictions.tar.gz\">predictions.tar.gz</a></td></tr>\n";
 	print SEG2 "</table>\n<br><br>\n";
 	close(SEG2) or die "Could not close file $segmentFile2!\n";
 }

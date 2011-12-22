@@ -19,7 +19,18 @@
  	if (lText == 'click to expand') { link.innerHTML = 'click to minimize'; d.style.display = 'block'; }
  	else { link.innerHTML = 'click to expand'; d.style.display = 'none'; } }
 	</script>
-	<!-- flooble Expandable Content header end   -->                        
+	<!-- flooble Expandable Content header end   -->    
+<script type="text/javascript">
+<!--
+    function toggle_visibility(id) {
+       var e = document.getElementById(id);
+       if(e.style.display == 'block')
+          e.style.display = 'none';
+       else
+          e.style.display = 'block';
+    }
+//-->
+</script>                    
     </head>
     <body>
 
@@ -80,7 +91,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
          <li><a href="../help.gsp"><span>Help</span></a></li>
          <li><a href="../references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
+         <li><a href="../impressum.gsp"><span>Impressum</span></a></li>
      </ul>
   </div>
 
@@ -272,10 +283,21 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 				</tbody>
 			</table>
                 </div>
-                <div class="buttons">
+                <div class="buttons" onclick="toggle_visibility('spinner');">
                     <span class="button"><input class="commit" type="submit" value="Start Training" /></span>
                 </div>
             </g:uploadForm>
+		<br>
+		<table>
+			<tr>
+				<td>
+					<div id="spinner" style='display:none;' align="center">
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="http://www.animateit.net/data/media/june2010/compete.gif" border="0" alt="Spinner" /><br><p>We are processing your request... please do not close this window and do not click on the submission button again, until this message disappears!</p>
+					</div>
+				</td>
+				<td><img src="../images/spacer.jpg" alt="spacer image"></td>
+			</tr>
+		</table>
             </div>
             <p>&nbsp;</p>           
         </div>

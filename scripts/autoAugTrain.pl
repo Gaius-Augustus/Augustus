@@ -244,7 +244,7 @@ sub train{
     
     # stop Pipeline if the number of training genes is lower than 100
     if($counter_gen <= 100){
-	die("Number of training genes is with $counter_gen too low! Training aborted.\n");
+	die("Number of training genes is with $counter_gen too low (at least 100 genes required)! Training aborted.\n");
     }
 
     # set $v to the smaller one of 200 and int(0.1*$counter_gen)

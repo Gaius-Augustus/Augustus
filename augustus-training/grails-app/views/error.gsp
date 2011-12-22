@@ -25,6 +25,8 @@
 
   <body>
     <h1>Grails Runtime Exception</h1>
+	<p>Ooops... this looks ugly! Our apologies! Please send an e-mail to <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a>. Please tell us date and time and any actions from your side that may have caused this problem. Please also attach a copy of the below shown error log to your e-mail. Thanks for you help!</p>
+
     <h2>Error Details</h2>
 
   	<div class="message">

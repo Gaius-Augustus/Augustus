@@ -19,13 +19,13 @@ import java.io.StringWriter
 import java.io.Writer
 import java.net.URL
 import java.util.zip.GZIPInputStream
-
+          
 
 class TrainingController {
 	// need to adjust the output dir to whatever working dir! This is where uploaded files and results will be saved.
 	def output_dir = "/data/www/augtrain/webdata" // should be something in home of webserver user and augustus frontend user.
 	// this log File contains the "process log", what was happening with which job when.
-	def logFile = new File("${output_dir}/augustus-training.log")
+	def logFile = new File("${output_dir}/train.log")
 	// this log File contains the "database" (not identical with the grails database and simply for logging purpose)
 	def dbFile = new File("${output_dir}/augustus-database.log")
 	// oldID is a parameter that is used for show redirects (see bottom)
@@ -40,7 +40,7 @@ class TrainingController {
 	// Admin mail for errors
 	def admin_email = "katharina.hoff@gmail.com"
 	// sgeLen length of SGE queue, when is reached "the server is buisy" will be displayed
-	def sgeLen = 8;
+	def sgeLen = 20;
 	// max button filesize
 	def int maxButtonFileSize = 104857600 // 100 MB = 13107200 bytes = 104857600 bit, getFile etc. gives size in bit
 	def preUploadSize
@@ -65,13 +65,13 @@ class TrainingController {
 		def qstatFile = new File("${output_dir}/${qstatFilePrefix}.qstatScript")
 		cmd2Script = "/usr/bin/qstat | grep qw | wc -l > ${output_dir}/${qstatFilePrefix}.qstatResult 2> /dev/null"
 		qstatFile << "${cmd2Script}"
-		if(verb > 3){
-			logFile << "SGE v3 - qstatFile << \"${cmd2Script}\"\n"
+		if(verb > 2){
+			logFile << "SGE          v3 - qstatFile << \"${cmd2Script}\"\n"
 		}
 		cmdStr = "bash ${output_dir}/${qstatFilePrefix}.qstatScript"
 		def qstatStatus = "${cmdStr}".execute()
-		if(verb > 1){
-			logFile << "SGE v2 - \"${cmdStr}\"\n"
+		if(verb > 2){
+			logFile << "SGE          v3 - \"${cmdStr}\"\n"
 		}
 		qstatStatus.waitFor()
 		def qstatStatusResult = new File("${output_dir}/${qstatFilePrefix}.qstatResult").text
@@ -80,14 +80,14 @@ class TrainingController {
 		(1..qstatStatus_array.groupCount()).each{qstatStatusNumber = "${qstatStatus_array[0][it]}"}
 		cmdStr = "rm -r ${output_dir}/${qstatFilePrefix}.qstatScript &> /dev/null"
 		def delProc = "${cmdStr}".execute()
-		if(verb > 1){
-			logFile << "SGE v2 - \"${cmdStr}\"\n"
+		if(verb > 2){
+			logFile << "SGE          v3 - \"${cmdStr}\"\n"
 		}
 		delProc.waitFor()
 		cmdStr = "rm -r ${output_dir}/${qstatFilePrefix}.qstatResult &> /dev/null"
 		delProc = "${cmdStr}".execute()
-		if(verb > 1){
-			logFile << "SGE v2 - \"${cmdStr}\"\n"
+		if(verb > 2){
+			logFile << "SGE          v3 - \"${cmdStr}\"\n"
 		}
 		delProc.waitFor()
 
@@ -96,7 +96,7 @@ class TrainingController {
 			def todayTried = new Date()
 			// get IP-address
 			String userIPTried = request.remoteAddr
-			logFile <<  "SGE      v1 - On ${todayTried} somebody with IP ${userIPTried} tried to invoke the Training webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
+			logFile <<  "SGE          v1 - On ${todayTried} somebody with IP ${userIPTried} tried to invoke the Training webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
 			render "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><meta name=\"layout\" content=\"main\" /><title>Submitt Training</title><script type=\"text/javascript\" src=\"js/md_stylechanger.js\"></script></head><body><!-- ***** Start: Kopfbereich ********************************************// --><p class=\"unsichtbar\"><a href=\"#inhalt\" title=\"Directly to Contents\">Directly to Contents</a></p><div id=\"navigation_oben\"><a name=\"seitenanfang\"></a><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"1\"><tr><td nowrap=\"nowrap\"><a href=\"http://www.uni-greifswald.de\" target=\"_blank\" class=\"mainleveltop_\" >University of Greifswald</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.mnf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Faculty</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.math-inf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Institute</a><span class=\"mainleveltop_\">&nbsp;|&nbsp;</span><a href=\"http://bioinf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\">Bioinformatics Group</a></td></tr></table></div><div id=\"banner\"><div id=\"banner_links\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php\" title=\"Institut f&uuml;r Mathematik und Informatik\"><img src=\"../images/header.gif\" alt=\"Directly to home\" /> </a></div><div id=\"banner_mitte\"><div id=\"bannertitel1\">Bioinformatics Web Server at University of Greifswald</div><div id=\"bannertitel2\">Gene Prediction with AUGUSTUS</div></div><div id=\"banner_rechts\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167\" title=\"Voderberg-Doppelspirale\"><img src=\"../images/spirale.gif\" align=\"left\" /></a></div></div><div id=\"wegweiser\">Navigation for: &nbsp; &nbsp;<span class=\"breadcrumbs pathway\">Submitt Training</span><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Kopfbereich *********************************************// --><!-- ***** Start: Koerper ************************************************// --><div id=\"koerper\"><div id=\"linke_spalte\"><ul class=\"menu\"><li><a href=\"../index.gsp\"><span>Introduction</span></a></li><li><a href=\"/augustus-training/training/create\"><span>Submitt Training</span></a></li><li><a href=\"/augustus-training/prediction/create\"><span>Submitt Prediction</span></a></li><li><a href=\"../help.gsp\"><span>Help</span></a></li><li><a href=\"../references.gsp\"><span>Links & References</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de\"><span>Bioinformatics Group</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/impressum.html\"><span>Impressum</span></a></li></ul></div><div id=\"mittel_spalte\"><div class=\"main\" id=\"main\"><h1><font color=\"#006699\">The Server is Busy</font></h1><p>You tried to access the AUGUSTUS training job submission page.</p><p>Training parameters for gene prediction is a process that takes a lot of computation time. We estimate that one training process requires approximately 10 days. Our web server is able to process a certain number of jobs in parallel, and we established a waiting queue. The waiting queue has a limited length, though. Currently, all slots for computation and for waiting are occupied.</p><p>We apologize for the inconvenience! Please try to submitt your job in a couple of weeks, again.</p><p>Feel free to contact us in case your job is particularly urgent.</p></div><p>&nbsp;</p>           </div><div id=\"rechte_spalte\"><div class=\"linien_div\"><h5 class=\"ueberschrift_spezial\">CONTACT</h5><strong>Institute for Mathematics und Computer Sciences</strong><br/><strong>Bioinformatics Group</strong><br />Walther-Rathenau-Stra&szlig;e 47<br />17487 Greifswald<br />Germany<br />Tel.: +49 (0)3834 86 - 46 24<br/>Fax:  +49 (0)3834 86 - 46 40<br /><br /><a href=\"mailto:augustus-web@uni-greifswald.de\" title=\"E-Mail augustus-web@uni-greifswald.de, opens the standard mail program\">augustus-web@uni-greifswald.de</a></div></div><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Koerper *************************************************// --><!-- ***** Start: Fuss ***************************************************// --><div id=\"fuss\"><div id=\"fuss_links\"><p class=\"copyright\">&copy; 2011 University of Greifswald</p></div><div id=\"fuss_mitte\"><div class=\"bannergroup\"></div></div><div id=\"fuss_rechts\" ><ul><li><a href=\"#seitenanfang\"><img hspace=\"5\" height=\"4\" border=\"0\" width=\"7\" alt=\"Seitenanfang\" src=\"../images/top.gif\" />Top of page</a></li></ul></div><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Fuss ***************************************************// --></body></html>"
 			return
 		}		
@@ -282,7 +282,7 @@ class TrainingController {
 					if("${uploadedEstFile.originalFilename}" =~ /\.gz/){
 						logFile <<  "${trainingInstance.accession_id} v1 - EST file is gzipped.\n"
 						def gunzipEstScript = new File("${projectDir}/gunzipEst.sh")
-						cmd2Script = "cd ${projectDir};\n mv est.fa est.fa.gz &> /dev/null;\n gunzip est.fa.gz 2> /dev/null\n"
+						cmd2Script = "cd ${projectDir};\n mv est.fa est.fa.gz &> /dev/null;\n gunzip est.fa.gz 2> /dev/null"
 						gunzipEstScript << "${cmd2Script}"
 						if(verb > 2){
 							logFile << "${trainingInstance.accession_id} v3 - gunzipEstScript << \"${cmd2Script}\"\n"
@@ -321,7 +321,7 @@ class TrainingController {
 					} else { estExistsFlag = 1 }
 					def estCksumScript = new File("${projectDir}/est_cksum.sh")
 					def estCksumFile = "${projectDir}/est.cksum"
-					cmd2Script = "cksum ${projectDir}/est.fa > ${estCksumFile} &> /dev/null"
+					cmd2Script = "cksum ${projectDir}/est.fa > ${estCksumFile} 2> /dev/null"
 					estCksumScript << "${cmd2Script}"
 						if(verb > 2){
 							logFile << "${trainingInstance.accession_id} v3 - estCksumScript << \"${cmd2Script}\"\n"
@@ -657,7 +657,7 @@ class TrainingController {
 			if(!trainingInstance.hasErrors() && trainingInstance.save()){
 				// generate empty results page
 				def emptyPageScript = new File("${projectDir}/emptyPage.sh")
-				cmd2Script = "${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 0 &> /dev/null\n"
+				cmd2Script = "${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 0 &> /dev/null"
 				emptyPageScript << "${cmd2Script}"
 				if(verb > 2){
 					logFile << "${trainingInstance.accession_id} v3 - emptyPageScript << \"${cmd2Script}\"\n"
@@ -669,7 +669,7 @@ class TrainingController {
 				}
 				emptyPageExecution.waitFor()
 				trainingInstance.job_status = 0
-				emailStr = "Hello!\n\nThank you for submitting a job to train AUGUSTUS parameters for species ${trainingInstance.project_name}. The job status is available at http://bioinf.uni-greifswald.de/trainaugustus/training/show/${trainingInstance.id}.\n\nDetails of your job:\n\n${confirmationString}\nYou will be notified by e-mail where you find the results after computations of your job have finished.\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
+				emailStr = "Hello!\n\nThank you for submitting a job to train AUGUSTUS parameters for species ${trainingInstance.project_name}. The job status is available at http://bioinf.uni-greifswald.de/augustus-training-0.1/training/show/${trainingInstance.id}.\n\nDetails of your job:\n\n${confirmationString}\nYou will be notified by e-mail where you find the results after computations of your job have finished.\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
 				sendMail {
 					to "${trainingInstance.email_adress}"
 					subject "Your AUGUSTUS training job ${trainingInstance.accession_id}"
@@ -802,6 +802,12 @@ http://bioinf.uni-greifswald.de/trainaugustus
 								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
 								body """${errorStrMsg}"""
 						}
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
+						delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logFile << "${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}
+						delProc.waitFor()
 						// delete database entry
 						trainingInstance.delete()
 						return
@@ -1011,6 +1017,12 @@ http://bioinf.uni-greifswald.de/trainaugustus
 								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
 								body """${errorStrMsg}"""
 						}
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
+						delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logFile << "${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}
+						delProc.waitFor()
 						// delete database entry
 						trainingInstance.delete()
 						return
@@ -1073,6 +1085,12 @@ http://bioinf.uni-greifswald.de/trainaugustus
 								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
 								body """${errorStrMsg}"""
 						}
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
+						delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logFile << "${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}
+						delProc.waitFor()
 						// delete database entry
 						trainingInstance.delete()
 						return
@@ -1084,6 +1102,12 @@ http://bioinf.uni-greifswald.de/trainaugustus
 								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
 								body """${errorStrMsg}"""
 						}
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
+						delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logFile << "${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}
+						delProc.waitFor()
 						// delete database entry
 						trainingInstance.delete()
 						return
@@ -1200,6 +1224,12 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						// delete database entry
 						trainingInstance.delete()
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
+						delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logFile << "${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}
+						delProc.waitFor()
 						return
 					}
 					if(proteinFastaFlag == 1) {
@@ -1288,7 +1318,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				// check whether this job was submitted before:
 				def grepScript = new File("${projectDir}/grepScript.sh")
 				def grepResult = "${projectDir}/grep.result"
-				cmd2Script = "grep \"\\(Genome-Cksum: \\[${trainingInstance.genome_cksum}\\] Genome-Filesize: \\[${trainingInstance.genome_size}\\]\\).*\\(EST-Cksum: \\[${trainingInstance.est_cksum}\\] EST-Filesize: \\[${trainingInstance.est_size}\\]\\).*\\(Protein-Cksum: \\[${trainingInstance.protein_cksum}\\] Protein-Filesize: \\[${trainingInstance.protein_size}\\]\\)*\\(Struct-Cksum: \\[${trainingInstance.struct_cksum}\\]\\)\" ${dbFile} > ${grepResult} 2> /dev/null\n"
+				cmd2Script = "grep \"\\(Genome-Cksum: \\[${trainingInstance.genome_cksum}\\] Genome-Filesize: \\[${trainingInstance.genome_size}\\]\\).*\\(EST-Cksum: \\[${trainingInstance.est_cksum}\\] EST-Filesize: \\[${trainingInstance.est_size}\\]\\).*\\(Protein-Cksum: \\[${trainingInstance.protein_cksum}\\] Protein-Filesize: \\[${trainingInstance.protein_size}\\]\\)*\\(Struct-Cksum: \\[${trainingInstance.struct_cksum}\\]\\)\" ${dbFile} > ${grepResult} 2> /dev/null"
 				grepScript << "${cmd2Script}"
 				if(verb > 2){
 					logFile << "${trainingInstance.accession_id} v3 - grepScript << \"${cmd2Script}\"\n"
@@ -1326,7 +1356,10 @@ http://bioinf.uni-greifswald.de/trainaugustus
 
 You submitted job ${trainingInstance.accession_id} for species ${trainingInstance.project_name}. The job was aborted because the files that you submitted were submitted, before. 
 
-The job status of the previously submitted job is available at http://bioinf.uni-greifswald.de/trainaugustus/training/show/${oldID}
+Details of your job:
+${confirmationString}
+
+The job status of the previously submitted job is available at http://bioinf.uni-greifswald.de/augustus-training-0.1/training/show/${oldID}
 
 The results are available at http://bioinf.uni-greifswald.de/trainaugustus/training-results/${oldAccContent}/index.html (Results are only available in case the previously submitted job's computations have finished, already.)
 
@@ -1359,7 +1392,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				sgeFile << "#!/bin/bash\n#\$ -S /bin/bash\n#\$ -cwd\n\n"
 				// this has been checked, works.
 				if( estExistsFlag ==1 && proteinExistsFlag == 0 && structureExistsFlag == 0){
-					cmd2Script = "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --pasa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 1 2> ${projectDir}/writeResults.err\n"
+					cmd2Script = "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --pasa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 1 2> ${projectDir}/writeResults.err"
 					sgeFile << "${cmd2Script}"
 					if(verb > 2){
 						logFile << "${trainingInstance.accession_id} v3 - sgeFile << \"${cmd2Script}\"\n"
@@ -1370,20 +1403,20 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					sgeFile << "${cmd2Script}"
 					// this is currently tested
 				}else if(estExistsFlag == 0 && proteinExistsFlag == 1 && structureExistsFlag == 0){
-					cmd2Script = "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/protein.fa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 1 2> ${projectDir}/writeResults.err\n"
+					cmd2Script = "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/protein.fa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 1 2> ${projectDir}/writeResults.err"
 					sgeFile << "${cmd2Script}"
 					if(verb > 2){
 						logFile << "${trainingInstance.accession_id} v3 - sgeFile << \"${cmd2Script}\"\n"
 					}
 					// all following commands still need testing
 				}else if(estExistsFlag == 1 && proteinExistsFlag == 1 && structureExistsFlag == 0){
-					cmd2Script = "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --trainingset=${projectDir}/protein.fa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err\n"
+					cmd2Script = "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --trainingset=${projectDir}/protein.fa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err"
 					sgeFile << "${cmd2Script}"
 					if(verb > 2){
 						logFile << "${trainingInstance.accession_id} v3 - sgeFile << \"${cmd2Script}\"\n"
 					}
 				}else if(estExistsFlag == 1 && proteinExistsFlag == 0 && structureExistsFlag == 1){
-					cmd2Script = "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --trainingset=${projectDir}/training-gene-structure.gff -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err\n"
+					cmd2Script = "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --trainingset=${projectDir}/training-gene-structure.gff -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err"
 					sgeFile << "${cmd2Script}"
 					if(verb > 2){
 						logFile << "${trainingInstance.accession_id} v3 - sgeFile << \"${cmd2Script}\"\n"
@@ -1394,7 +1427,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile << "${trainingInstance.accession_id} v3 - sgeFile << \"${cmd2Script}\"\n"
 					}
 				}else if(estExistsFlag == 1 && proteinExistsFlag == 1 && structureExistsFlag == 1){
-					cmd2Script = "echo Simultaneous protein and structure file support are currently not implemented.\n\nUsing the structure file, only.'\n\nautoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/training-gene-structure.gff -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err\n"
+					cmd2Script = "echo Simultaneous protein and structure file support are currently not implemented.\n\nUsing the structure file, only.'\n\nautoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --trainingset=${projectDir}/training-gene-structure.gff -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 1 > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err"
 					sgeFile << "${cmd2Script}"
 					if(verb > 2){
 						logFile << "${trainingInstance.accession_id} v3 - sgeFile << \"${cmd2Script}\"\n"

@@ -8,13 +8,15 @@
 
   <div id="linke_spalte">
      <ul class="menu">
-         <li><a href="http://bioinf.uni-greifswald.de/trainaugustus/index.gsp"><span>Introduction</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/trainaugustus/training/create"><span>Submitt Training</span></a></li>
-         <li><a href= "http://bioinf.uni-greifswald.de/trainaugustus/prediction/create"><span>Submitt Prediction</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/trainaugustus/help.gsp"><span>Help</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/trainaugustus/references.gsp"><span>Links & References</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/index.gsp"><span>Introduction</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/trainingtutorial.gsp"><span>Training Tutorial</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/training/create"><span>Submit Training</span></a></li>
+         <li><a href= "http://bioinf.uni-greifswald.de/augustus-training-0.1/predictiontutorial.gsp"><span>Prediction Tutorial</span></a></li>
+         <li><a href= "http://bioinf.uni-greifswald.de/augustus-training-0.1/prediction/create"><span>Submit Prediction</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/help.gsp"><span>Help</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1//references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/impressum.gsp"><span>Impressum</span></a></li>
      </ul>
   </div>
 

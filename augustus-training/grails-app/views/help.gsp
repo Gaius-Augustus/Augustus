@@ -60,7 +60,7 @@
          <li id="current"><a href="help.gsp"><span>Help</span></a></li>
          <li><a href="references.gsp"><span>Links & References</span></a></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
+         <li><a href="impressum.gsp"><span>Impressum</span></a></li>
      </ul>
   </div>
  <div id="mittel_spalte">
@@ -90,6 +90,8 @@
               <a href="#utr">UTR prediction: yes or no?</a><br>
               <a href="#allowedGeneStructure">Allowed gene structure<a><br>
               <a href="#list">Why does my job not exist?</a><br>
+              <a href="#accuracy">Why is the prediction accuracy in the genome of my species not as good as I expected?</a><br>
+              <a href="#dog">Why do I see a running dog when pressing the submission button?</a><br>
             </p>
             <hr>
 	    <br>
@@ -555,6 +557,27 @@ HS04636 anchor  intronpart      7631    7633    0       +       0       source=M
             <div id="list"><h2>Why does my job not exist?</h2></div>
             <p>We are trying to avoid data duplication. If you submitted some data that was already submitted before, by you or somebody else, we will delete your job. You receive an e-mail with a link to the job-status and results of training AUGUSTUS on your data. The results link will only be functional in case the computations of that previously submitted job have already finished.</p>
 
+            <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
+            <hr>
+	<br>
+            <div id="accuracy"><h2>Why is the prediction accuracy in the genome of my species not as good as I expected?</h2></div>
+		<p>Gene prediction accuracy of AUGUSTUS in the genome of a certain species depends on the quality of training genes that were used for optimizing species specific parameters. The pipeline behind our AUGUSTUS training web server application offers a fully automated way of generating training genes, but it does not replace manual quality checks on the training genes that are often needed for improving the training gene set.</p>
+<p>In order to improve accuracy, you could manually inspect the generated training genes and select a trustworthy subset and try retraining AUGUSTUS. It also helps to compare the training gene set to other sources of evidence that are not supported by our web server application, e.g. RNA-seq data.</p>
+            <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
+            <hr>
+	<br>
+            <div id="dog"><h2>Why do I see a running dog when pressing the submission button?<</h2></div>
+              <p>We don't like being boring and thought this little free gif makes a difference and help entertaining you  ;-)</p>
             <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
