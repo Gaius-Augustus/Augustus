@@ -27,7 +27,8 @@ my %cmdpars = ( 'species'              => '',
 		'matrix_constraints'   => '',
 		'UTR'                  => '',
 		'aug_exec_dir'         => '',
-		'trainOnlyUtr'         => '');
+		'trainOnlyUtr'         => '',
+		'noTrainPars'          => '');
 
 $SIG{INT} = \&got_interrupt_signal;
 
@@ -69,6 +70,7 @@ $usage .= "--UTR=on                 Turn untranslated region model on for traini
 $usage .= "--aug_exec_dir=d         Path to augustus and etraining executable. If not specified\n";
 $usage .= "                         it must be in \$PATH environment variable.\n";
 $usage .= "--trainOnlyUtr=1         Use this option, if the exon, intron and intergenic models need not be trained. (default: 0)\n";
+$usage .= "--noTrainPars=1          Use this option, if the parameters to optimize do not affect training. The training step (etraining) is omitted completely. (default: 0)\n";
 
 
 my $be_silent = "--/augustus/verbosity=0 --/ExonModel/verbosity=0 --/IGenicModel/verbosity=0 --/IntronModel/verbosity=0 --/UtrModel/verbosity=0 --/genbank/verbosity=0";
@@ -117,7 +119,12 @@ if ($cmdpars{'aug_exec_dir'} =~ /.[^\/]$/) {
 if (qx(which "$cmdpars{'aug_exec_dir'}augustus") !~ /augustus$/){
     die ("augustus is not executable. Please add the directory which contains the executable augustus to the PATH environment variable or specify the path with --aug_exec_dir.");
 }
-if ($cmdpars{'opt_trans_matrix'} eq '') {
+
+if ($cmdpars{'opt_trans_matrix'} ne ''){
+    $cmdpars{'noTrainPars'} = 1;
+}
+
+if ($cmdpars{'noTrainPars'} eq '') {
     if (qx(which "$cmdpars{'aug_exec_dir'}etraining") !~ /etraining$/){
 	die ("etraining is not executable. Please add the directory which contains the executable etraining to the PATH environment variable or specify the path with --aug_exec_dir.");
     }
@@ -307,7 +314,7 @@ if ($cmdpars{'opt_trans_matrix'} eq '') {# optimize meta parameters
 	   }
        }
    }
-} else {# raed in transition matrix for optimization
+} else {# read in transition matrix for optimization
    open TRANS, '<' , <$cmdpars{'opt_trans_matrix'}> 
       or die ("Could not open transition matrix file $cmdpars{'opt_trans_matrix'}");
    print "Reading in the transition matrix...\n";
@@ -608,7 +615,7 @@ if ($cmdpars{'opt_trans_matrix'} eq ''){
 # final training
 #######################################################################################
 
-if ($cmdpars{'opt_trans_matrix'} eq ''){
+if ($cmdpars{'noTrainPars'} eq ''){
     # delete the temporary *pbl files
     for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
 	system ("rm -f $speciesdir/exon-tmp$k.pbl $speciesdir/intron-tmp$k.pbl $speciesdir/igenic-tmp$k.pbl $speciesdir/utr-tmp$k.pbl");
@@ -679,7 +686,7 @@ sub evalsnsp {
 	    if ($cmdpars{'onlytrain'} ne ''){
 		system ("cat $cmdpars{'onlytrain'} >> $optdir/curtrain");
 	    }
-	    if ($cmdpars{'opt_trans_matrix'} eq '') {# No need to retrain if the trans matrix is optimized.
+	    if ($cmdpars{'noTrainPars'} eq '') {# no need to retrain if the trans matrix is optimized or this option is otherwise explicitly set.
 		system("$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $be_silent $modelrestrict $optdir/curtrain");
 	    }
 	    
