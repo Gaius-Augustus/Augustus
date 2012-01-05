@@ -743,6 +743,8 @@ sub evalsnsp {
 	    if ($cmdpars{'noTrainPars'} eq '') {# No need to retrain if the trans matrix is optimized or noTrainPars=1 set explicitly.
 		system("$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $be_silent $modelrestrict $pbloutfiles $optdir/curtrain-$k");
 #		unlink $optdir/curtrain-$k;
+	    } else {
+		$pblinfiles = ""; # training did not take place, so the $pbloutfiles have not beeen created and cannot be used for prediction
 	    }
 	    
 	    system("$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $pblinfiles $optdir/bucket$k.gb > $optdir/predictions-$k.txt");
