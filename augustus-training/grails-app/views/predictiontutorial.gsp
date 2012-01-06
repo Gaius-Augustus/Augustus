@@ -115,7 +115,8 @@
 <a href="#alternative">1.3.5 - Alternative transcripts</a><br>
 <a href="#allowed_structure">1.3.6 - Allowed gene structure</a><br>
 <a href="#verification">1.4 - Verfification that you are a human</a><br>
-<a href="#submitt">1.5 - The submitt button</a><br><br>
+<a href="#submitt">1.5 - The submitt button</a><br>
+<a href="#exampledata">1.6 - Example data files</a><br><br>
 <a href="#job_status">2 - What happens after submission</a><br>
 <a href="#duplication">2.1 - Submission duplication</a><br>
 <a href="#error">2.2 - Errors during prediction</a><br><br>
@@ -769,6 +770,27 @@ Top of page
 <hr>
 <br>
 
+<div id="exampledata"><h2><a href="#exampledata">1.6 - Example data files</a></h2></div>
+
+<p>In the following, we provide some correctly formatted, compatible example data files:</p>
+
+<p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/honeybee1.tar.gz">http://bioinf.uni-greifswald.de/trainaugustus/examples/honeybee1.tar.gz</a> - This file is an example of a <b>AUGUSTUS species parameter archive file</b>. Please do <b>not</b> upload this archive to our server since the identical parameters are usable through the AUGUSTUS species parameter project identifier <b>honeybee1</b> and a re-upload would simply duplicate this data set. We only provide this file as an example which may help you check your own parameter archive in case incompatibilities with your application might occur. These parameters were optimized for predicting genes in <i>Apis mellifera</i>.</p>
+
+<p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/LG16.fa">http://bioinf.uni-greifswald.de/trainaugustus/examples/LG16.fa</a> - This file may be used as a <b>Genome file</b>. It contains linkage group 16 of <i>Apis mellifera</i> from GenBank (modified headers).</p>
+
+<p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/honeybee-ests.fa">http://bioinf.uni-greifswald.de/trainaugustus/examples/honeybee-ests.fa</a> - This file may be used as a <b>cDNA file</b>. It contains 3 ESTs of <i>Apis mellifera</i> from GenBank (modified headers).</p>
+
+<p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/honeybee.hints">http://bioinf.uni-greifswald.de/trainaugustus/examples/honeybee.hints</a> - This file may be used as a <b>Hints file</b>. It contains hints that were generated from <i>Apis mellifera</i> RNA-Seq data for genome file <a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/LG16.fa">LG16.fa</a>.</p>
+
+<p><a href="#seitenanfang">
+<img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+Top of page
+</a>
+<br>
+</p>
+<hr>
+<br>
+
 <div id="job_status"><h1><a href="#job_status">2 - What happens after submission</a></h1></div>
 
 <p>After you click the "Start Predicting" button, the web server application first validates whether the combination of your input fields is generally correct. If you did anything wrong, you will be redirected to the training submission form and an error message will be displayed at the top of the page.</p>
@@ -818,27 +840,9 @@ Top of page
 
 <div id="error"><h2><a href="#error">2.2 - Errors during prediction</a></h2></div>
 
-<p>You will receive an e-mail in case an error occurs during the AUGUSTUS gene prediction process. The admin of this server is also notified by e-mail about errors. We will get in touch with you, again, after we figured out what caused the error.</p>
+<p>You should automatically receive an e-mail in case an error occurs during the AUGUSTUS gene prediction process. The admin of this server is also notified by e-mail about errors. We will get in touch with you, again, after we figured out what caused the error.</p>
 
-<p>Since the web server application is currently in beta testing phase, unexpected errors might still occur. Therefore we ask for you help on reporting any unexpected errors.</p>
-
-<h3>Reasons that should not lead to the assumption of error occurence:</h3>
-
-<p><ul><li>Your job waiting for execution shorter than two months</li>
-<li>Your job is computing for shorter than two weeks</li>
-</ul></p>
-
-<h3>Reasons to report errors:</h3>
-
-<p><ul><li>Your job waiting for execution longer than two months</li>
-<li>Your job is computing longer than two weeks</li>
-<li>The job status page shows "finished" but you did not receive an e-mail with the link to results</li>
-<li>A Grails execption error is displayed</li>
-<li>You results page is empty although you received a confirmation e-mail that says your job finished</li>
-<li>...</li>
-</ul></p>
-
-<p>Please report unexpected errors to augustus-web@uni-greifswald.de. Please include which actions from your side exactly caused the error, and also copy the Grails exception message into your e-mail in case such a message was displayed.</p>
+<p>Since the web server application is currently in beta testing phase, completely unexpected errors might still occur. Therefore we ask for you help on reporting any unexpected errors to augustus-web@uni-greifswald.de. Please include which actions from your side exactly caused the error, and also copy the Grails exception message into your e-mail in case such a message was displayed.</p>
 
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />

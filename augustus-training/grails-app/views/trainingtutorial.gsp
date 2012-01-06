@@ -120,7 +120,8 @@
 <a href="#structure_file_format_gff">1.3.3.1.2 - Training gene structure file in gff format</a><br>
 <a href="#structure_file_purpose">1.3.3.2 - What training gene structure files are used for</a><br>
 <a href="#verification">1.4 - Verfification that you are a human</a><br>
-<a href="#submitt">1.5 - The submitt button</a><br><br>
+<a href="#submitt">1.5 - The submitt button</a><br>
+<a href="#exampledata">1.6 - Example data files</a><br><br>
 <a href="#job_status">2 - What happens after submission</a><br>
 <a href="#duplication">2.1 - Submission duplication</a><br>
 <a href="#error">2.2 - Errors during training</a><br><br>
@@ -160,12 +161,12 @@ Top of page
 
 <p>
 <ul>
-<li><b>{genome file, cDNA file}</b><br>In this case, the cDNA file is used to create training gene strucutures with <a href="http://pasa.sourceforge.net/">PASA</a> [<a href="#ref1">1</a>]. If cDNA end quality is sufficient, also a UTR training set will be created. After parameters have been trained using the so created gene structure file, the cDNAs will additionally be used to create <i>hints</i>. Hints are extrinsic evidence for gene structures that are used during gene prediction <i>with hints</i>. The mapping tool <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> [<a href="#ref2">2</a>]is used during hint generation. <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> is available <b><font color="f40b0b">for academic, personal and  non-profit use</font></b> on our web server, only! Finally, <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS</a> [<a href="#ref4">4</a>] is used to predict genes in the genome file <i>ab initio</i> and <i>with hints</i>.</li>
+<li><b>{genome file, cDNA file}</b><br>In this case, the cDNA file is used to create training gene strucutures with <a href="http://pasa.sourceforge.net/">PASA</a> [<a href="#ref1">1</a>]. If cDNA end quality is sufficient, also a UTR training set will be created (this is currently the only possibility to train UTR parameters using this web server application). After parameters have been trained using the so created gene structure file, the cDNAs will additionally be used to create <i>hints</i>. Hints are extrinsic evidence for gene structures that are used during gene prediction <i>with hints</i>. The mapping tool <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> [<a href="#ref2">2</a>]is used during hint generation. <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> is available <b><font color="f40b0b">for academic, personal and  non-profit use</font></b> on our web server, only! Finally, <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS</a> [<a href="#ref4">4</a>] is used to predict genes in the genome file <i>ab initio</i> and <i>with hints</i>.</li>
 
-<li><b>{genome file, protein file}</b><br>In this case, the protein file is used to create a training gene set using <a href="http://www.webscipio.org/">Scipio</a>. <a href="http://www.webscipio.org/">Scipio</a> [<a href="#ref3">3</a>] uses <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> [<a href="#ref2">2</a>]. <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> is available <b><font color="f40b0b">for academic, personal and  non-profit use</font></b> on our web server, only! No UTR training set can be created since protein sequences do not cover UTR regions. After parameter optimization, <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS</a> [<a href="#ref4">4</a>] is used to predict genes in the genome sequence <i>ab initio</i>.</li>
-					<li><b>{genome file, gene structure file}</b><br>In this case, the gene structure file is used as a training gene set. If the gene structure file contains UTR elements, also a UTR training set will be created. Gene structure files can be provided in two different formats: genbank format and gff format. If a genbank file is submitted, there is no dependency between training gene structure file and genome file. Parameters are then optimized based on the genbank training gene structure file. If a gff file is submitted, the gff must comply with the genome file entries. Training gene sequences are extraced from the genome file prior parameter optimization. Finally, <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS</a> [<a href="#ref4">4</a>] is used for <i>ab initio</i> gene prediction. The submission of training gene structure file in combination with a genome file is <b><font color="f40b0b">open to all users!</font></b></li>
+<li><b>{genome file, protein file}</b><br>In this case, the protein file is used to create a training gene set using <a href="http://www.webscipio.org/">Scipio</a>. <a href="http://www.webscipio.org/">Scipio</a> [<a href="#ref3">3</a>] uses <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> [<a href="#ref2">2</a>]. <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> is available <b><font color="f40b0b">for academic, personal and  non-profit use</font></b> on our web server, only! After parameter optimization, <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS</a> [<a href="#ref4">4</a>] is used to predict genes in the genome sequence <i>ab initio</i>.</li>
+					<li><b>{genome file, gene structure file}</b><br>In this case, the gene structure file is used as a training gene set. Gene structure files can be provided in two different formats: genbank format and gff format. If a genbank file is submitted, there is no dependency between training gene structure file and genome file. Parameters are then optimized based on the genbank training gene structure file. If a gff file is submitted, the gff must comply with the genome file entries. Training gene sequences are extraced from the genome file prior parameter optimization. Finally, <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS</a> [<a href="#ref4">4</a>] is used for <i>ab initio</i> gene prediction. The submission of training gene structure file in combination with a genome file is <b><font color="f40b0b">open to all users!</font></b></li>
 					<li><b>{genome file, cDNA file, protein file}</b><br>In this case, the protein file will be used to create a training gene set using <a href="http://www.webscipio.org/">Scipio</a> [<a href="#ref3">3</a>]. No UTR training set will be created. cDNA sequences will be used as evidence for gene prediction, only. Since both <a href="http://www.webscipio.org/">Scipio</a> and hint generation employ <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> [<a href="#ref2">2</a>], this file combination is available <b><font color="f40b0b">for academic, personal and  non-profit use</font></b> on our web server, only! Finally, <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS</a> [<a href="#ref4">4</a>] is used to predict genes in the genome file <i>ab initio</i> and <i>with hints</i>.</li>
-					<li><b>{genome file, cDNA file, gene structure file}</b><br>In this case, the gene structure file is used as a training gene set. If the gene structure file contains UTR elements, also a UTR training set will be created. cDNA sequences will be used as evidence for prediction in form of hints that are generated with the help of <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a>. Since hint generation employs <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> [<a href="#ref2">2</a>], this file combination is available <b><font color="f40b0b">for academic, personal and  non-profit use</font></b> on our web server, only! Finally, <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS</a> [<a href="#ref4">4</a>] is used to predict genes in the genome file <i>ab initio</i> and <i>with hints</i>.</li>
+					<li><b>{genome file, cDNA file, gene structure file}</b><br>In this case, the gene structure file is used as a training gene set. cDNA sequences will be used as evidence for prediction in form of hints that are generated with the help of <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a>. Since hint generation employs <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> [<a href="#ref2">2</a>], this file combination is available <b><font color="f40b0b">for academic, personal and  non-profit use</font></b> on our web server, only! Finally, <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS</a> [<a href="#ref4">4</a>] is used to predict genes in the genome file <i>ab initio</i> and <i>with hints</i>.</li>
 				</ul>
 </p>
 
@@ -662,6 +663,25 @@ Top of page
 <hr>
 <br>
 
+<div id="exampledata"><h2><a href="#exampledata">1.6 - Example data files</a></h2></div>
+
+<p>In the following, we provide some correctly formatted, compatible example data files:</p>
+
+<p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/chr1to3.fa">http://bioinf.uni-greifswald.de/trainaugustus/examples/chr1to3.fa</a> - This file may be used as a <b>Genome file</b>. It contains the first three chromosomes of <i>Mus musculus</i> from GenBank (modified headers).</p>
+
+<p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/estsChr1to3.fa">http://bioinf.uni-greifswald.de/trainaugustus/examples/estsChr1to3.fa</a> - This file may be used as a <b>cDNA file</b>. It contains EST sequences of <i>Mus musculus</i> from GenBank (modified headers).</p>
+
+<p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/rattusProteinsChr1to3.fa">http://bioinf.uni-greifswald.de/trainaugustus/examples/rattusProteinsChr1to3.fa</a> - This file may be used as a <b>Protein file</b>. It contains proteins of <i>Rattus norvegicus</i> from GenBank (modified headers) that map to chromosomes 1 to 3.</p>
+
+<p><a href="#seitenanfang">
+<img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+Top of page
+</a>
+<br>
+</p>
+<hr>
+<br>
+
 <div id="job_status"><h1><a href="#job_status">2 - What happens after submission</a></h1></div>
 
 <p>After you click the "Start Training" button, the web server application first validates whether the combination of your input fields is generally correct. If you did anything wrong, you will be redirected to the training submission form and an error message will be displayed at the top of the page.</p>
@@ -712,27 +732,9 @@ Top of page
 
 <div id="error"><h2><a href="#error">2.2 - Errors during training</a></h2></div>
 
-<p>You will receive an e-mail in case an error occurs during the AUGUSTUS training process. The admin of this server is also notified by e-mail about errors. We will get in touch with you, again, after we figured out what caused the error.</p>
+<p>You should automatically receive an e-mail in case an error occurs during the AUGUSTUS training process. The admin of this server is also notified by e-mail about errors. We will get in touch with you, again, after we figured out what caused the error.</p>
 
-<p>Since the web server application is currently in beta testing phase, unexpected errors might still occur. Therefore we ask for you help on reporting any unexpected errors.</p>
-
-<h3>Reasons that should not lead to the assumption of error occurence:</h3>
-
-<p><ul><li>Your job waiting for execution shorter than two months</li>
-<li>Your job is computing for shorter than two weeks</li>
-</ul></p>
-
-<h3>Reasons to report errors:</h3>
-
-<p><ul><li>Your job waiting for execution longer than two months</li>
-<li>Your job is computing longer than two weeks</li>
-<li>The job status page shows "finished" but you did not receive an e-mail with the link to results</li>
-<li>A Grails execption error is displayed</li>
-<li>You results page is empty although you received a confirmation e-mail that says your job finished</li>
-<li>...</li>
-</ul></p>
-
-<p>Please report unexpected errors to augustus-web@uni-greifswald.de. Please include which actions from your side exactly caused the error, and also scopy the Grails exception message into your e-mail in case such a message was displayed.</p>
+<p>Since the web server application is currently in beta testing phase, completely unexpected errors might still occur. Therefore we ask for you help on reporting any weird webserver application behaviour to augustus-web@uni-greifswald.de. Please include which actions from your side exactly caused the error, and also copy the Grails exception message into your e-mail in case such a message was displayed.</p>
 
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />

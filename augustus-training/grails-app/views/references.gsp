@@ -82,6 +82,9 @@
             <h2>References</h2>
             Please cite the following references when using the AUGUSTUS training web server results in your publication:
             <ul>
+	    <li>K. J. Hoff and M. Stanke (2012)<br>
+	    <a href="http://bioinf.uni-greifswald.de/trainaugustus/references/PAG2012.pdf">TrainAUGUSTUS - a Webserver Application for Parameter Training and Gene Prediction in Eukaryoties</a><br>
+	    International Plant & Animal XX Conference 2012, U.S.A. (Poster)</li>
             <li>D. Sommerfeld, T. Lingner, M. Stanke, B. Morgenstern, H. Richter (2009)<br>
 <a href="http://www.elsevier.com/wps/find/journaldescription.cws_home/505611/description">AUGUSTUS at MediGRID: Adaption of a Bioinformatics Application to Grid Computing for Efficient Genome Analysis</a><br>
 Future Generation Computer Systems 25, 337 - 345. 

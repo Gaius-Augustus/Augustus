@@ -112,7 +112,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
             <div class="main" id="main">
 			<noscript><p><b><span style="color:red">Please enable javascript in your browser in order to display the submission form correctly!</span></b> Form functionality is not affected significantly while javascript is disabled, but it looks less pretty.</p>
 			</noscript>
-<p><b>Before submitting a training job</b> for your species of interest, please check whether parameters have already been trained and have been made publicly available for your species at <a href="../predictiontutorial.gsp#param_id">our species overview table</a></p>
+<p><b>Before submitting a training job</b> for your species of interest, please check whether parameters have already been trained and have been made publicly available for your species at <a href="../predictiontutorial.gsp#param_id">our species overview table</a></p><p>Example data for this form is available <a href="../trainingtutorial.gsp#exampledata">here</a>.</p>
 
             <g:uploadForm action="commit" method="post" >
             <fieldset><legend>

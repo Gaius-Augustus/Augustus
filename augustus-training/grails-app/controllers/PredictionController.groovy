@@ -5,6 +5,22 @@
 //    - rendering of results/job status page
 //    - sending E-Mails concerning the job status (submission, errors, finished)
 
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileReader
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.OutputStream
+import java.io.Reader
+import java.io.StreamTokenizer
+import java.io.StringWriter
+import java.io.Writer
+import java.net.URL
+import java.util.zip.GZIPInputStream
+import java.net.UnknownHostException
+
 class PredictionController {
 	// need to adjust the output dir to whatever working dir! This is where uploaded files and results will be saved.
 	def output_dir = "/data/www/augpred/webdata" // should be something in home of webserver user and augustus frontend user.
@@ -39,6 +55,8 @@ class PredictionController {
 	def cmd2Script
 	def cmdStr
 
+	def logDate
+
 	// human verification:
 	def simpleCaptchaService
 
@@ -48,31 +66,43 @@ class PredictionController {
 		def rnd = new Random()
 		def qstatFilePrefix = (1..10).sum{prefixChars[ rnd.nextInt(prefixChars.length()) ]} 
 		def qstatFile = new File("${output_dir}/${qstatFilePrefix}.qstatScript")
-		cmd2Script = "qstat | grep qw | wc -l > ${output_dir}/${qstatFilePrefix}.qstatResult 2> /dev/null"
+		cmd2Script = "qstat -u \"*\" | grep qw | wc -l > ${output_dir}/${qstatFilePrefix}.qstatResult 2> /dev/null"
 		qstatFile << "${cmd2Script}"
 		if(verb > 2){
-			logFile << "SGE          v3 - qstatFile << \"${cmd2Script}\"\n"
+			logDate = new Date()
+			logFile << "${logDate} SGE          v3 - qstatFile << \"${cmd2Script}\"\n"
+		}
+		if(!qstatFile.exists()){
+			logDate = new Date()
+			logFile << "SEVERE ${logDate} SGE          v1 - ${qstatFile} does not exist!\n"
 		}
 		cmdStr = "bash ${output_dir}/${qstatFilePrefix}.qstatScript"
 		def qstatStatus = "${cmdStr}".execute()
 		if(verb > 2){
-			logFile << "SGE          v3 - \"${cmdStr}\"\n"
+			logDate = new Date()
+			logFile << "${logDate} SGE          v3 - \"${cmdStr}\"\n"
 		}
 		qstatStatus.waitFor()
 		def qstatStatusResult = new File("${output_dir}/${qstatFilePrefix}.qstatResult").text
 		def qstatStatus_array = qstatStatusResult =~ /(\d*)/
 		def qstatStatusNumber 
 		(1..qstatStatus_array.groupCount()).each{qstatStatusNumber = "${qstatStatus_array[0][it]}"}
-		cmdStr = "rm -r ${output_dir}/${qstatFilePrefix}.qstatScript"
+		cmdStr = "rm -r ${output_dir}/${qstatFilePrefix}.qstatScript &> /dev/null"
 		def delProc = "${cmdStr}".execute()
 		if(verb > 2){
-			logFile << "SGE          v3 - \"${cmdStr}\"\n"
+			logDate = new Date()
+			logFile << "${logDate} SGE          v3 - \"${cmdStr}\"\n"
 		}
 		delProc.waitFor()
-		cmdStr = "rm -r ${output_dir}/${qstatFilePrefix}.qstatResult"
+		if(qstatFile.exists()){
+			logDate = new Date()
+			logFile << "SEVERE ${logDate} SGE          v1 - ${qstatFile} was not deleted!\n"
+		}
+		cmdStr = "rm -r ${output_dir}/${qstatFilePrefix}.qstatResult &> /dev/null"
 		delProc = "${cmdStr}".execute()
 		if(verb > 2){
-			logFile << "SGE          v3 - \"${cmdStr}\"\n"
+			logDate = new Date()
+			logFile << "${logDate} SGE          v3 - \"${cmdStr}\"\n"
 		}
 		delProc.waitFor()
 		if(qstatStatusNumber > sgeLen){
@@ -80,11 +110,12 @@ class PredictionController {
 			def todayTried = new Date()
 			// get IP-address
 			String userIPTried = request.remoteAddr
-			logFile <<  "SGE          v1 - On ${todayTried} somebody with IP ${userIPTried} tried to invoke the Prediction webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
-			render "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><meta name=\"layout\" content=\"main\" /><title>Submitt Prediction</title><script type=\"text/javascript\" src=\"js/md_stylechanger.js\"></script></head><body><!-- ***** Start: Kopfbereich ********************************************// --><p class=\"unsichtbar\"><a href=\"#inhalt\" title=\"Directly to Contents\">Directly to Contents</a></p><div id=\"navigation_oben\"><a name=\"seitenanfang\"></a><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"1\"><tr><td nowrap=\"nowrap\"><a href=\"http://www.uni-greifswald.de\" target=\"_blank\" class=\"mainleveltop_\" >University of Greifswald</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.mnf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Faculty</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.math-inf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Institute</a><span class=\"mainleveltop_\">&nbsp;|&nbsp;</span><a href=\"http://bioinf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\">Bioinformatics Group</a></td></tr></table></div><div id=\"banner\"><div id=\"banner_links\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php\" title=\"Institut f&uuml;r Mathematik und Informatik\"><img src=\"../images/header.gif\" alt=\"Directly to home\" /> </a></div><div id=\"banner_mitte\"><div id=\"bannertitel1\">Bioinformatics Web Server at University of Greifswald</div><div id=\"bannertitel2\">Gene Prediction with AUGUSTUS</div></div><div id=\"banner_rechts\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167\" title=\"Voderberg-Doppelspirale\"><img src=\"../images/spirale.gif\" align=\"left\" /></a></div></div><div id=\"wegweiser\">Navigation for: &nbsp; &nbsp;<span class=\"breadcrumbs pathway\">Submitt Prediction</span><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Kopfbereich *********************************************// --><!-- ***** Start: Koerper ************************************************// --><div id=\"koerper\"><div id=\"linke_spalte\"><ul class=\"menu\"><li><a href=\"../index.gsp\"><span>Introduction</span></a></li><li><a href=\"/augustus-training/training/create\"><span>Submitt Training</span></a></li><li><a href=\"/augustus-training/prediction/create\"><span>Submitt Prediction</span></a></li><li><a href=\"../help.gsp\"><span>Help</span></a></li><li><a href=\"../references.gsp\"><span>Links & References</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de\"><span>Bioinformatics Group</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/impressum.html\"><span>Impressum</span></a></li></ul></div><div id=\"mittel_spalte\"><div class=\"main\" id=\"main\"><h1><font color=\"#006699\">The Server is Busy</font></h1><p>You tried to access the AUGUSTUS prediction job submission page.</p><p>Predicting genes with AUGUSTUS is a process that takes a lot of computation time. We estimate that one prediction process requires approximately 7 days. Our web server is able to process a certain number of jobs in parallel, and we established a waiting queue. The waiting queue has a limited length, though. Currently, all slots for computation and for waiting are occupied.</p><p>We apologize for the inconvenience! Please try to submitt your job in a couple of weeks, again.</p><p>Feel free to contact us in case your job is particularly urgent.</p></div><p>&nbsp;</p>           </div><div id=\"rechte_spalte\"><div class=\"linien_div\"><h5 class=\"ueberschrift_spezial\">CONTACT</h5><strong>Institute for Mathematics und Computer Sciences</strong><br/><strong>Bioinformatics Group</strong><br />Walther-Rathenau-Stra&szlig;e 47<br />17487 Greifswald<br />Germany<br />Tel.: +49 (0)3834 86 - 46 24<br/>Fax:  +49 (0)3834 86 - 46 40<br /><br /><a href=\"mailto:augustus-web@uni-greifswald.de\" title=\"E-Mail augustus-web@uni-greifswald.de, opens the standard mail program\">augustus-web@uni-greifswald.de</a></div></div><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Koerper *************************************************// --><!-- ***** Start: Fuss ***************************************************// --><div id=\"fuss\"><div id=\"fuss_links\"><p class=\"copyright\">&copy; 2011 University of Greifswald</p></div><div id=\"fuss_mitte\"><div class=\"bannergroup\"></div></div><div id=\"fuss_rechts\" ><ul><li><a href=\"#seitenanfang\"><img hspace=\"5\" height=\"4\" border=\"0\" width=\"7\" alt=\"Seitenanfang\" src=\"../images/top.gif\" />Top of page</a></li></ul></div><div class=\"beendeFluss\"></div></div><!-- ***** Ende: Fuss ***************************************************// --></body></html>"
+			logDate = new Date()
+			logFile <<  "${logDate} SGE          v1 - On ${todayTried} somebody with IP ${userIPTried} tried to invoke the Prediction webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
+			render "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><meta name=\"layout\" content=\"main\" /><title>Submitt Prediction</title><script type=\"text/javascript\" src=\"js/md_stylechanger.js\"></script></head><body><!-- Start: Kopfbereich --><p class=\"unsichtbar\"><a href=\"#inhalt\" title=\"Directly to Contents\">Directly to Contents</a></p><div id=\"navigation_oben\"><a name=\"seitenanfang\"></a><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"1\"><tr><td nowrap=\"nowrap\"><a href=\"http://www.uni-greifswald.de\" target=\"_blank\" class=\"mainleveltop_\" >University of Greifswald</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.mnf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Faculty</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.math-inf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Institute</a><span class=\"mainleveltop_\">&nbsp;|&nbsp;</span><a href=\"http://bioinf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\">Bioinformatics Group</a></td></tr></table></div><div id=\"banner\"><div id=\"banner_links\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php\" title=\"Institut f&uuml;r Mathematik und Informatik\"><img src=\"../images/header.gif\" alt=\"Directly to home\" /> </a></div><div id=\"banner_mitte\"><div id=\"bannertitel1\">Bioinformatics Web Server at University of Greifswald</div><div id=\"bannertitel2\">Gene Prediction with AUGUSTUS</div></div><div id=\"banner_rechts\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167\" title=\"Voderberg-Doppelspirale\"><img src=\"../images/spirale.gif\" align=\"left\" /></a></div></div><div id=\"wegweiser\">Navigation for: &nbsp; &nbsp;<span class=\"breadcrumbs pathway\">Submitt Prediction</span><div class=\"beendeFluss\"></div></div><!-- Ende: Kopfbereich --><!-- Start: Koerper --><div id=\"koerper\"><div id=\"linke_spalte\"><ul class=\"menu\"><li><a href=\"../index.gsp\"><span>Introduction</span></a></li><li><a href=\"/augustus-training/training/create\"><span>Submitt Training</span></a></li><li><a href=\"/augustus-training/prediction/create\"><span>Submitt Prediction</span></a></li><li><a href=\"../help.gsp\"><span>Help</span></a></li><li><a href=\"../references.gsp\"><span>Links & References</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de\"><span>Bioinformatics Group</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/impressum.html\"><span>Impressum</span></a></li></ul></div><div id=\"mittel_spalte\"><div class=\"main\" id=\"main\"><h1><font color=\"#006699\">The Server is Busy</font></h1><p>You tried to access the AUGUSTUS prediction job submission page.</p><p>Predicting genes with AUGUSTUS is a process that takes a lot of computation time. We estimate that one prediction process requires approximately 7 days. Our web server is able to process a certain number of jobs in parallel, and we established a waiting queue. The waiting queue has a limited length, though. Currently, all slots for computation and for waiting are occupied.</p><p>We apologize for the inconvenience! Please try to submitt your job in a couple of weeks, again.</p><p>Feel free to contact us in case your job is particularly urgent.</p></div><p>&nbsp;</p>           </div><div id=\"rechte_spalte\"><div class=\"linien_div\"><h5 class=\"ueberschrift_spezial\">CONTACT</h5><strong>Institute for Mathematics und Computer Sciences</strong><br/><strong>Bioinformatics Group</strong><br />Walther-Rathenau-Stra&szlig;e 47<br />17487 Greifswald<br />Germany<br />Tel.: +49 (0)3834 86 - 46 24<br/>Fax:  +49 (0)3834 86 - 46 40<br /><br /><a href=\"mailto:augustus-web@uni-greifswald.de\" title=\"E-Mail augustus-web@uni-greifswald.de, opens the standard mail program\">augustus-web@uni-greifswald.de</a></div></div><div class=\"beendeFluss\"></div></div><!-- Ende: Koerper --><!-- Start: Fuss --><div id=\"fuss\"><div id=\"fuss_links\"><p class=\"copyright\">&copy; 2011 University of Greifswald</p></div><div id=\"fuss_mitte\"><div class=\"bannergroup\"></div></div><div id=\"fuss_rechts\" ><ul><li><a href=\"#seitenanfang\"><img hspace=\"5\" height=\"4\" border=\"0\" width=\"7\" alt=\"Seitenanfang\" src=\"../images/top.gif\" />Top of page</a></li></ul></div><div class=\"beendeFluss\"></div></div><!-- Ende: Fuss --></body></html>"
 			return
 		}		
-	} 
+	}
 
 	// the method commit is started if the "Submit Job" button on the website is hit. It is the main method of Prediction Controller and contains a Thread method that will continue running as a background process after the user is redirected to the job status page.
 
@@ -111,16 +142,22 @@ class PredictionController {
 			def species
 			// delProc is needed at many places
 			def delProc
+			def st
+			def content
+			def int error_code
+			def urlExistsScript
 			// get date
 			def today = new Date()
-			logFile << "${predictionInstance.accession_id} v1 - AUGUSTUS prediction webserver starting on ${today}\n"
+			logFile << "${today} ${predictionInstance.accession_id} v1 - AUGUSTUS prediction webserver starting on ${today}\n"
       			// get IP-address
       			String userIP = request.remoteAddr
-      			logFile <<  "${predictionInstance.accession_id} v1 - user IP: ${userIP}\n"
+			logDate = new Date()
+      			logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - user IP: ${userIP}\n"
 			//verify that the submitter is a person
 			boolean captchaValid = simpleCaptchaService.validateCaptcha(params.captcha)
 			if(captchaValid == false){
-				logFile << "${predictionInstance.accession_id} v1 - The user is probably not a human person. Job aborted.\n"
+				logDate = new Date()
+				logFile << "${logDate} ${predictionInstance.accession_id} v1 - The user is probably not a human person. Job aborted.\n"
 				flash.error = "The verification string at the bottom of the page was not entered correctly!"
             			redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
            			return
@@ -128,10 +165,12 @@ class PredictionController {
 			// utr checkbox
 			if(predictionInstance.utr == true){
 				overRideUtrFlag = 1
-				logFile << "${predictionInstance.accession_id} v1 - User enabled UTR prediction.\n"
+				logDate = new Date()
+				logFile << "${logDate} ${predictionInstance.accession_id} v1 - User enabled UTR prediction.\n"
 			}else{
 				overRideUtrFlag = 0
-				logFile << "${predictionInstance.accession_id} v1 - User did not enable UTR prediction.\n"
+				logDate = new Date()
+				logFile << "${logDate} ${predictionInstance.accession_id} v1 - User did not enable UTR prediction.\n"
 			}
 			// get parameter archive file (if available)
 			def uploadedParamArch = request.getFile('ArchiveFile')
@@ -146,9 +185,11 @@ class PredictionController {
          				uploadedParamArch.transferTo( new File (projectDir, "parameters.tar.gz"))
 					predictionInstance.archive_file = uploadedParamArch.originalFilename
 					confirmationString = "${confirmationString}Parameter archive: ${predictionInstance.archive_file}\n"
-					logFile <<  "${predictionInstance.accession_id} v1 - uploaded parameter archive ${predictionInstance.archive_file} was renamed to parameters.tar.gz and moved to ${projectDir}\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - uploaded parameter archive ${predictionInstance.archive_file} was renamed to parameters.tar.gz and moved to ${projectDir}\n"
 				}else{
-					logFile <<  "${predictionInstance.accession_id} v1 - The selected parameter archive file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected parameter archive file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
 					flash.error = "Parameter archive file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
 					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
@@ -159,12 +200,14 @@ class PredictionController {
 				cmd2Script = "cksum ${projectDir}/parameters.tar.gz > ${archCksumFile} 2> /dev/null"
          			archCksumScript << "${cmd2Script}"
 				if(verb > 2){
-					logFile << "${predictionInstance.accession_id} v3 - archCksumScript << \"${cmd2Script}\"\n"
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v3 - archCksumScript << \"${cmd2Script}\"\n"
 				}
 				cmdStr = "bash ${projectDir}/archive_cksum.sh"
          			def archCksumProcess = "${cmdStr}".execute()
 				if(verb > 1){
-					logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 				}
          			archCksumProcess.waitFor()
          			def archCksumContent = new File("${archCksumFile}").text
@@ -173,17 +216,20 @@ class PredictionController {
          			(1..archCksum_array.groupCount()).each{archCksum = "${archCksum_array[0][it]}"}
          			predictionInstance.archive_cksum = "${archCksum}"
          			predictionInstance.archive_size = uploadedParamArch.size
-         			logFile <<  "${predictionInstance.accession_id} v1 - parameters.tar.gz is ${predictionInstance.archive_size} big and has a cksum of ${archCksum}.\n"
+				logDate = new Date()
+         			logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - parameters.tar.gz is ${predictionInstance.archive_size} big and has a cksum of ${archCksum}.\n"
 				cmdStr = "rm ${projectDir}/arch.cksum"
          			def delProcCksumarch = "${cmdStr}".execute()
 				if(verb > 1){
-					logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 				}
          			delProcCksumarch.waitFor()
-				cmdStr = "rm ${projectDir}/archive_cksum.sh"
+				cmdStr = "rm ${projectDir}/archive_cksum.sh &> /dev/null"
          			def delProcCkSharch = "${cmdStr}".execute()
 				if(verb > 1){
-					logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 				}
          			delProcCkSharch.waitFor()
 				// check whether the archive contains all relevant files
@@ -194,12 +240,14 @@ class PredictionController {
 				cmd2Script = "${AUGUSTUS_SCRIPTS_PATH}/checkParamArchive.pl ${projectDir}/parameters.tar.gz ${paramDirName} > ${projectDir}/archCheck.log 2> ${projectDir}/archCheck.err"
 				checkParamArch << "${cmd2Script}"
 				if(verb > 2){
-					logFile << "${predictionInstance.accession_id} v3 - checkParamArch << \"${cmd2Script}\"\n"
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v3 - checkParamArch << \"${cmd2Script}\"\n"
 				}
 				cmdStr = "bash ${checkParamArch}"
 				def checkParamArchRunning = "${cmdStr}".execute()
 				if(verb > 1){
-					logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 				}
 				checkParamArchRunning.waitFor()
 				def archCheckLog = new File("${projectDir}/archCheck.log")
@@ -208,43 +256,52 @@ class PredictionController {
 				def archCheckErrSize = archCheckErr.text.size()
 				// if essential file are missing, redirect to input interface and inform user that the archive was not compatible
 				if(archCheckErrSize > 0){
-					logFile <<  "${predictionInstance.accession_id} v1 - The parameter archive was not compatible. Project directory ${projectDir} is deleted (rm -r).\n"
-					cmdStr = "rm -r ${projectDir}"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The parameter archive was not compatible. Project directory ${projectDir} is deleted (rm -r).\n"
+					cmdStr = "rm -r ${projectDir} &> /dev/null"
 					delProc = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
             				delProc.waitFor()
-           				logFile <<  "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+					logDate = new Date()
+           				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
            				flash.error = "Parameter archive ${uploadedParamArch.originalFilename} is not compatible with the AUGUSTUS prediction web server application."
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
            				return
 				// if only UTR params are missing, set flag to override any user-defined UTR settings
 				}else if(archCheckLogSize > 0){
 					overRideUtrFlag = 0 // UTR predictions are now permanently disabled
-					logFile <<  "${predictionInstance.accession_id} v1 - UTR predictions have been disabled because UTR parameters are missing!\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - UTR predictions have been disabled because UTR parameters are missing!\n"
 				}
 				archiveExistsFlag = 1
 			}else{predictionInstance.archive_file = "empty"}
 	
 			// check whether parameters are available for project_id (previous prediction run)
-			logFile <<  "${predictionInstance.accession_id} v1 - The given parameter ID is ${predictionInstance.project_id}\n"
+			logDate = new Date()
+			logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The given parameter ID is ${predictionInstance.project_id}\n"
 			if(!(predictionInstance.project_id == null)){
 				def spec_conf_dir = new File("${AUGUSTUS_CONFIG_PATH}/species/${predictionInstance.project_id}")
 				if(!spec_conf_dir.exists()){
-					logFile <<  "${predictionInstance.accession_id} v1 - The given parameter-string does not exist on our system. Project directory ${projectDir} is deleted (rm -r).\n"
-					cmdStr = "rm -r ${projectDir}"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The given parameter-string does not exist on our system. Project directory ${projectDir} is deleted (rm -r).\n"
+					cmdStr = "rm -r ${projectDir} &> /dev/null"
 					delProc = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
             				delProc.waitFor()
-           				logFile <<  "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+					logDate = new Date()
+           				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
            				flash.error = "The specified parameter ID ${predictionInstance.project_id} does not exist on our system."
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
            				return
 				}else{
-					logFile <<  "${predictionInstance.accession_id} v1 - Requested ${spec_conf_dir} exists on our system.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Requested ${spec_conf_dir} exists on our system.\n"
 					speciesNameExistsFlag = 1
 					species = predictionInstance.project_id
 				}
@@ -264,29 +321,35 @@ class PredictionController {
         				predictionInstance.genome_file = uploadedGenomeFile.originalFilename
 					confirmationString = "${confirmationString}Genome file: ${predictionInstance.genome_file}\n"
 				}else{
-					logFile <<  "${predictionInstance.accession_id} v1 - The selected genome file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected genome file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
 					flash.error = "Genome file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
 					return
 				}
 				if("${uploadedGenomeFile.originalFilename}" =~ /\.gz/){
-					logFile <<  "${predictionInstance.accession_id} v1 - Genome file is gzipped.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Genome file is gzipped.\n"
 					def gunzipGenomeScript = new File("${projectDir}/gunzipGenome.sh")
 					cmd2Script = "cd ${projectDir}; mv genome.fa genome.fa.gz &> /dev/null; gunzip genome.fa.gz 2> /dev/null"
 					gunzipGenomeScript << "${cmd2Script}"
 					if(verb > 2){
-						logFile << "${predictionInstance.accession_id} v3 - gunzipGenomeScript << \"${cmd2Script}\"\n"
+						logDate = new Date()
+						logFile << "${logDate} ${predictionInstance.accession_id} v3 - gunzipGenomeScript << \"${cmd2Script}\"\n"
 					}
 					cmdStr = "bash ${gunzipGenomeScript}"
 					def gunzipGenome = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					gunzipGenome.waitFor()
-					logFile <<  "${predictionInstance.accession_id} v1 - Unpacked genome file.\n"
-					delProc = "rm ${gunzipGenomeScript}".execute()
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Unpacked genome file.\n"
+					delProc = "rm ${gunzipGenomeScript} &> /dev/null".execute()
 					delProc.waitFor()
 				}
-         			logFile <<  "${predictionInstance.accession_id} v1 - uploaded genome file ${uploadedGenomeFile.originalFilename} was renamed to genome.fa and moved to ${projectDir}\n"
+				logDate = new Date()
+         			logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - uploaded genome file ${uploadedGenomeFile.originalFilename} was renamed to genome.fa and moved to ${projectDir}\n"
         			// check for fasta format & extract fasta headers for gff validation:
          			new File("${projectDir}/genome.fa").eachLine{line -> 
             			if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }
@@ -296,14 +359,17 @@ class PredictionController {
             				}
          			}
          			if(genomeFastaFlag == 1) {
-            				logFile <<  "${predictionInstance.accession_id} v1 - The genome file was not fasta. Project directory ${projectDir} is deleted (rm -r).\n"
-					cmdStr = "rm -r ${projectDir}"
+					logDate = new Date()
+            				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file was not fasta. Project directory ${projectDir} is deleted (rm -r).\n"
+					cmdStr = "rm -r ${projectDir} &> /dev/null"
             				delProc = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
             				delProc.waitFor()
-            				logFile <<  "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+					logDate = new Date()
+            				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
             				flash.error = "Genome file ${uploadedGenomeFile.originalFilename} is not in DNA fasta format."
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
@@ -313,12 +379,14 @@ class PredictionController {
 					cmd2Script = "cksum ${projectDir}/genome.fa > ${genomeCksumFile} 2> /dev/null"
 	            			genomeCksumScript << "${cmd2Script}"
 					if(verb > 2){
-						logFile << "${predictionInstance.accession_id} v3 - genomeCksumScript << \"${cmd2Script}\"\n"
+						logDate = new Date()
+						logFile << "${logDate} ${predictionInstance.accession_id} v3 - genomeCksumScript << \"${cmd2Script}\"\n"
 					}
 					cmdStr = "bash ${projectDir}/genome_cksum.sh"
 	            			def genomeCksumProcess = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 	            			genomeCksumProcess.waitFor()
 	            			def genomeCksumContent = new File("${genomeCksumFile}").text
@@ -327,17 +395,20 @@ class PredictionController {
 	            			(1..genomeCksum_array.groupCount()).each{genomeCksum = "${genomeCksum_array[0][it]}"}
 	            			predictionInstance.genome_cksum = "${genomeCksum}"
 	            			predictionInstance.genome_size = uploadedGenomeFile.size
-	            			logFile <<  "${predictionInstance.accession_id} v1 - genome.fa is ${predictionInstance.genome_size} big and has a cksum of ${genomeCksum}.\n"
-					cmdStr = "rm ${projectDir}/genome.cksum"
+					logDate = new Date()
+	            			logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - genome.fa is ${predictionInstance.genome_size} big and has a cksum of ${genomeCksum}.\n"
+					cmdStr = "rm ${projectDir}/genome.cksum &> /dev/null"
 	            			def delProcCksumGenome = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 	            			delProcCksumGenome.waitFor()
-					cmdStr = "rm ${projectDir}/genome_cksum.sh"
+					cmdStr = "rm ${projectDir}/genome_cksum.sh &> /dev/null"
 	            			def delProcCkShGenome = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 	            			delProcCkShGenome.waitFor()
 	         		}
@@ -346,35 +417,85 @@ class PredictionController {
 			// retrieve beginning of genome file for format check
 	      		if(!(predictionInstance.genome_ftp_link == null)){
 				confirmationString = "${confirmationString}Genome file: ${predictionInstance.genome_ftp_link}\n"
-	         		logFile <<  "${predictionInstance.accession_id} v1 - genome web-link is ${predictionInstance.genome_ftp_link}\n"
+				logDate = new Date()
+	         		logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - genome web-link is ${predictionInstance.genome_ftp_link}\n"
 	         		projectDir.mkdirs()
-	         		// checking web file for DNA fasta format: 
 	         		def URL url = new URL("${predictionInstance.genome_ftp_link}");
+				// check whether URL exists
+				urlExistsScript = new File("${projectDir}/genomeExists.sh")
+				cmd2Script = "curl -o /dev/null --silent --head --write-out '%{http_code}\n' \"${predictionInstance.genome_ftp_link}\" > ${projectDir}/genomeExists"
+				urlExistsScript << "${cmd2Script}"
+				if(verb > 2){
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v3 - urlExistsScript << \"${cmd2Script}\"\n"
+				}
+				cmdStr = "bash ${urlExistsScript}"
+				def genomeUrlExists = "${cmdStr}".execute()
+				if(verb > 1){
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+				}
+				genomeUrlExists.waitFor()
+				cmdStr = "rm ${urlExistsScript} &> /dev/null"			
+				delProc = "${cmdStr}".execute()
+				if(verb > 1){
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+				}
+				delProc.waitFor()
+				content = new File("${projectDir}/genomeExists").text
+				st = new Scanner(content)//works for exactly one number in a file
+				error_code = st.nextInt();
+				if(!(error_code == 200)){
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v1 - The genome URL is not accessible. Response code: ${error_code}. Aborting job.\n"
+					cmdStr = "rm -r ${projectDir} &> /dev/null"
+					delProc = "${cmdStr}".execute()
+					if(verb > 1){
+						logDate = new Date()
+						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					}
+            				delProc.waitFor()
+					flash.error = "Cannot retrieve genome file from HTTP/FTP link ${predictionInstance.genome_ftp_link}."
+					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+					return
+				}else{
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v1 - The genome URL is accessible. Response code: ${error_code}.\n"
+				}
+	         		// checking web file for DNA fasta format: 
 	         		def URLConnection uc = url .openConnection()
 				if(!("${predictionInstance.genome_ftp_link}" =~ /\.gz/)){
 	         			def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
-	         			def String inputLine=null
-	         			def lineCounter = 1;
-	         			while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 20)) {
-	            				if(!(inputLine =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(inputLine =~ /^$/)){ genomeFastaFlag = 1 }
-	            				lineCounter = lineCounter + 1
-	         			}
-	         			br.close()
+					try{
+	         				def String inputLine=null
+	         				def lineCounter = 1;
+	         				while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 20)) {
+	            					if(!(inputLine =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(inputLine =~ /^$/)){ genomeFastaFlag = 1 }
+	            					lineCounter = lineCounter + 1
+	         				}
+					}finally{
+	         				br.close()
+					}
 	         			if(genomeFastaFlag == 1) {
-	            				logFile <<  "${predictionInstance.accession_id} v1 - The first 20 lines in genome file are not fasta.\n"
-						cmdStr = "rm -r ${projectDir}"
+						logDate = new Date()
+	            				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The first 20 lines in genome file are not fasta.\n"
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
 	            				delProc = "${cmdStr}".execute()
 						if(verb > 1){
-							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							logDate = new Date()
+							logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
 	            				delProc.waitFor()
-	            				logFile << "${predictionInstance.accession_id} v1 - Project directory ${projectDir} is deleted.\n${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"	
+						logDate = new Date()
+	            				logFile << "${logDate} ${predictionInstance.accession_id} v1 - Project directory ${projectDir} is deleted.\n${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"	
 	            				flash.error = "Genome file ${predictionInstance.genome_ftp_link} is not in DNA fasta format."
 	            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 	            				return
 	         			}
 				}else{
-					logFile <<  "${predictionInstance.accession_id} v1 - The linked genome file is gzipped. Format will be checked later after extraction.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The linked genome file is gzipped. Format will be checked later after extraction.\n"
 				}
 	      		}
 	
@@ -388,48 +509,57 @@ class PredictionController {
 	         			uploadedEstFile.transferTo( new File (projectDir, "est.fa"))
 	         			predictionInstance.est_file = uploadedEstFile.originalFilename
 				}else{
-					logFile <<  "${predictionInstance.accession_id} v1 - The selected cDNA file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected cDNA file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
 					flash.error = "cDNA file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
 					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}
 				confirmationString = "${confirmationString}cDNA file: ${predictionInstance.est_file}\n"
 				if("${uploadedEstFile.originalFilename}" =~ /\.gz/){
-					logFile <<  "${predictionInstance.accession_id} v1 - EST file is gzipped.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - EST file is gzipped.\n"
 					def gunzipEstScript = new File("${projectDir}/gunzipEst.sh")
 					cmd2Script = "cd ${projectDir}; mv est.fa est.fa.gz &> /dev/null; gunzip est.fa.gz 2> /dev/null"
 					gunzipEstScript << "${cmd2Script}"
 					if(verb > 2){
-						logFile << "${predictionInstance.accession_id} v3 - gunzipEstScript << \"${cmd2Script}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - gunzipEstScript << \"${cmd2Script}\"\n"
 					}
 					cmdStr = "bash ${gunzipEstScript}"
 					def gunzipEst = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					gunzipEst.waitFor()
 					logFile <<  "${predictionInstance.accession_id} v1 - Unpacked EST file.\n"
-					cmdStr = "rm ${gunzipEstScript}"
+					cmdStr = "rm ${gunzipEstScript} &> /dev/null"
 					delProc = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					delProc.waitFor()
 				}
-	         		logFile << "${predictionInstance.accession_id} v1 - Uploaded EST file ${uploadedEstFile.originalFilename} was renamed to est.fa and moved to ${projectDir}\n"
+	         		logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Uploaded EST file ${uploadedEstFile.originalFilename} was renamed to est.fa and moved to ${projectDir}\n"
 	         		// check fasta format
 	         		new File("${projectDir}/est.fa").eachLine{line -> 
 	            			if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(line =~ /^$/)){ estFastaFlag = 1 }
 	         		}	
 	         		if(estFastaFlag == 1) {
-            				logFile << "${predictionInstance.accession_id} v1 - The cDNA file was not fasta. ${projectDir} (rm -r) is deleted.\n"
-					cmdStr = "rm -r ${projectDir}"
+            				logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file was not fasta. ${projectDir} (rm -r) is deleted.\n"
+					cmdStr = "rm -r ${projectDir} &> /dev/null"
             				delProc = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
             				delProc.waitFor()
-            				logFile << "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+            				logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
             				flash.error = "cDNA file ${uploadedEstFile.originalFilename} is not in DNA fasta format."
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
             				return
@@ -439,12 +569,14 @@ class PredictionController {
 					cmd2Script = "cksum ${projectDir}/est.fa > ${estCksumFile} 2> /dev/null"
          				estCksumScript << "${cmd2Script}"
 					if(verb > 2){
-						logFile << "${predictionInstance.accession_id} v3 - estCksumScript << \"${cmd2Script}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - estCksumScript << \"${cmd2Script}\"\n"
 					}
 					cmdStr = "bash ${projectDir}/est_cksum.sh"
          				def estCksumProcess = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
          				estCksumProcess.waitFor()
          				def estCksumContent = new File("${estCksumFile}").text
@@ -453,17 +585,20 @@ class PredictionController {
          				(1..estCksum_array.groupCount()).each{estCksum = "${estCksum_array[0][it]}"}
          				predictionInstance.est_cksum = "${estCksum}"
          				predictionInstance.est_size = uploadedEstFile.size
-         				logFile <<  "${predictionInstance.accession_id} v1 - est.fa is ${predictionInstance.est_size} big and has a cksum of ${estCksum}.\n"
-					cmdStr = "rm ${projectDir}/est.cksum"
+         				logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - est.fa is ${predictionInstance.est_size} big and has a cksum of ${estCksum}.\n"
+					cmdStr = "rm ${projectDir}/est.cksum &> /dev/null"
          				def delProcCksumEst = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
          				delProcCksumEst.waitFor()
-					cmdStr = "rm ${projectDir}/est_cksum.sh"
+					cmdStr = "rm ${projectDir}/est_cksum.sh &> /dev/null"
          				def delProcCkShEst = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
          				delProcCkShEst.waitFor()
       			}
@@ -471,36 +606,86 @@ class PredictionController {
       			// retrieve beginning of est file for format check
       			if(!(predictionInstance.est_ftp_link == null)){
 				confirmationString = "${confirmationString}cDNA file: ${predictionInstance.est_ftp_link}\n"
-         			logFile << "${predictionInstance.accession_id} v1 - est web-link is ${predictionInstance.est_ftp_link}\n"
+         			logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - est web-link is ${predictionInstance.est_ftp_link}\n"
          			projectDir.mkdirs()
 				estExistsFlag = 1
 				if(!("${predictionInstance.est_ftp_link}" =~ /\.gz/)){
-         				// checking web file for DNA fasta format: 
          				def URL url = new URL("${predictionInstance.est_ftp_link}");
+					// check whether URL exists
+					urlExistsScript = new File("${projectDir}/estExists.sh")
+					cmd2Script = "curl -o /dev/null --silent --head --write-out '%{http_code}\n' \"${predictionInstance.est_ftp_link}\" > ${projectDir}/estExists"
+					urlExistsScript << "${cmd2Script}"
+					if(verb > 2){
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - urlExistsScript << \"${cmd2Script}\"\n"
+					}
+					cmdStr = "bash ${urlExistsScript}"
+					def genomeUrlExists = "${cmdStr}".execute()
+					if(verb > 1){
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					}
+					genomeUrlExists.waitFor()
+					cmdStr = "rm ${urlExistsScript} &> /dev/null"			
+					delProc = "${cmdStr}".execute()
+					if(verb > 1){
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					}
+					delProc.waitFor()
+					content = new File("${projectDir}/estExists").text
+					st = new Scanner(content)//works for exactly one number in a file
+					error_code = st.nextInt();
+					if(!(error_code == 200)){
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The EST URL is not accessible. Response code: ${error_code}. Aborting job.\n"
+						flash.error = "Cannot retrieve cDNA file from HTTP/FTP link ${predictionInstance.est_ftp_link}."
+						redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
+						delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}
+            					delProc.waitFor()
+						return
+					}else{
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The EST URL is accessible. Response code: ${error_code}.\n"
+					}
+         				// checking web file for DNA fasta format: 
          				def URLConnection uc = url .openConnection()
          				def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
-         				def String inputLine=null
-         				def lineCounter = 1
-         				while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 20)) {
-            					if(!(inputLine =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(inputLine =~ /^$/)){ estFastaFlag = 1 }
-            					lineCounter = lineCounter + 1
-         				}
-         				br.close()
+					try{
+         					def String inputLine=null
+         					def lineCounter = 1
+         					while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 20)) {
+            						if(!(inputLine =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(inputLine =~ /^$/)){ estFastaFlag = 1 }
+            						lineCounter = lineCounter + 1
+         					}
+					}finally{
+         					br.close()
+					}
          				if(estFastaFlag == 1) {
-           					logFile << "${predictionInstance.accession_id} v1 - The cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
-						cmdStr = "rm -r ${projectDir}"
+           					logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
             					delProc = "${cmdStr}".execute()
 						if(verb > 1){
-							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
          					delProc.waitFor()
-            					logFile << "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+            					logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
             					flash.error = "cDNA file ${predictionInstance.est_ftp_link} is not in DNA fasta format."
             					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
             					return
          				}
 				}else{
-					logFile <<  "${predictionInstance.accession_id} v1 - The linked EST file is gzipped. Format will be checked later after extraction.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The linked EST file is gzipped. Format will be checked later after extraction.\n"
 				}
       			}
 
@@ -515,13 +700,15 @@ class PredictionController {
 					predictionInstance.hint_file = uploadedStructFile.originalFilename
 				}else{
 					def allowedHintsSize = maxButtonFileSize * 2
-					logFile <<  "${predictionInstance.accession_id} v1 - The selected Hints file was bigger than ${allowedHintsSize}. Submission rejected.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected Hints file was bigger than ${allowedHintsSize}. Submission rejected.\n"
 					flash.error = "Hints file is bigger than ${allowedHintsSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
 					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}
 				confirmationString = "${confirmationString}Hints file: ${predictionInstance.hint_file}\n"
-				logFile << "${predictionInstance.accession_id} v1 - Uploaded hints file ${uploadedStructFile.originalFilename} was renamed to hints.gff and moved to ${projectDir}\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Uploaded hints file ${uploadedStructFile.originalFilename} was renamed to hints.gff and moved to ${projectDir}\n"
 				def gffColErrorFlag = 0
 				def gffNameErrorFlag = 0
 				def gffSourceErrorFlag = 0
@@ -547,30 +734,37 @@ class PredictionController {
 						}
 					}
 					if(gffSourceErrorFlag == 1){
-						logFile << "${predictionInstance.accession_id} v1 - Hint file's last column is not in correct format\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hint file's last column is not in correct format\n"
 						flash.error = "Hints file  ${predictionInstance.hint_file} is not in a compatible gff format (the last column does not contain source=M). Please make sure the gff-format complies with the instructions in our 'Help' section!"
 					}
 					if(gffColErrorFlag == 1){
-						logFile << "${predictionInstance.accession_id} v1 - Hint file does not always contain 9 columns.\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hint file does not always contain 9 columns.\n"
 						flash.error = "Hints file  ${predictionInstance.hint_file} is not in a compatible gff format (has not 9 columns). Please make sure the gff-format complies with the instructions in our 'Help' section!"
 					}
 					if(gffNameErrorFlag == 1){
-						logFile << "${predictionInstance.accession_id} v1 - Hint file contains entries that do not comply with genome sequence names.\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hint file contains entries that do not comply with genome sequence names.\n"
 						flash.error = "Entries in the hints file  ${predictionInstance.hint_file} do not match the sequence names of the genome file. Please make sure the gff-format complies with the instructions in our 'Help' section!"
 					}
 					if(gffFeatureErrorFlag == 1){
-						logFile << "${predictionInstance.accession_id} v1 - Hint file contains unsupported features.\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hint file contains unsupported features.\n"
 						flash.error = "Entries in the hints file  ${predictionInstance.hint_file} contain unsupported features. Please make sure the gff-format complies with the instructions in our 'Help' section!"
 					}
 					if((gffColErrorFlag == 1 || gffNameErrorFlag == 1 || gffSourceErrorFlag == 1 || gffFeatureErrorFlag == 1)){
-						logFile << "${predictionInstance.accession_id} v1 - ${projectDir} (rm -r) is deleted.\n"
-						cmdStr = "rm -r ${projectDir}"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - ${projectDir} is deleted.\n"
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
 						if(verb > 1){
-							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
 						delProc.waitFor()
-						logFile << "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 						return
 					}
@@ -581,12 +775,14 @@ class PredictionController {
 				cmd2Script = "cksum ${projectDir}/hints.gff > ${structCksumFile} 2> /dev/null"
 				structCksumScript << "${cmd2Script}"
 				if(verb > 2){
-					logFile << "${predictionInstance.accession_id} v3 - structCksumScript << \"${cmd2Script}\"\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - structCksumScript << \"${cmd2Script}\"\n"
 				}
 				cmdStr = "bash ${projectDir}/struct_cksum.sh"
 				def structCksumProcess = "${cmdStr}".execute()
 				if(verb > 1){
-					logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 				}
 				structCksumProcess.waitFor()
 				def structCksumContent = new File("${structCksumFile}").text
@@ -595,17 +791,20 @@ class PredictionController {
 				(1..structCksum_array.groupCount()).each{structCksum = "${structCksum_array[0][it]}"}
 				predictionInstance.hint_cksum = "${structCksum}"
 				predictionInstance.hint_size = uploadedStructFile.size
-				logFile <<  "${predictionInstance.accession_id} v1 - hints.gff is ${predictionInstance.hint_size} big and has a cksum of ${structCksum}.\n"
-				cmdStr = "rm ${projectDir}/struct.cksum"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - hints.gff is ${predictionInstance.hint_size} big and has a cksum of ${structCksum}.\n"
+				cmdStr = "rm ${projectDir}/struct.cksum &> /dev/null"
 				def delProcCksumStruct = "${cmdStr}".execute()
 				if(verb > 1){
-					logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 				}
 				delProcCksumStruct.waitFor()
-				cmdStr = "rm ${projectDir}/struct_cksum.sh"
+				cmdStr = "rm ${projectDir}/struct_cksum.sh &> /dev/null"
 				def delProcCkShStruct = "${cmdStr}".execute()
 				if(verb > 1){
-					logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 				}
 				delProcCkShStruct.waitFor()
 			}
@@ -624,58 +823,71 @@ class PredictionController {
 			if(predictionInstance.pred_strand == 1){
 				radioParameterString = "${radioParameterString} --strand=both"
 				confirmationString = "${confirmationString}Report genes on: both strands\n"
-				logFile << "${predictionInstance.accession_id} v1 - User enabled prediction on both strands.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User enabled prediction on both strands.\n"
 			}else if(predictionInstance.pred_strand == 2){
 				confirmationString = "${confirmationString}Report genes on: forward strand only\n"
 				radioParameterString = "${radioParameterString} --strand=forward"
-				logFile << "${predictionInstance.accession_id} v1 - User enabled prediction on forward strand, only.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User enabled prediction on forward strand, only.\n"
 			}else{
 				confirmationString = "${confirmationString}Report genes on: reverse strand only\n"
 				radioParameterString = "${radioParameterString} --strand=backward"
-				logFile << "${predictionInstance.accession_id} v1 - User enabled prediction on reverse strand, only.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User enabled prediction on reverse strand, only.\n"
 			}
 			// alternative transcript radio buttons
 			if(predictionInstance.alt_transcripts == 1){
 				radioParameterString = "${radioParameterString} --sample=100 --keep_viterbi=true --alternatives-from-sampling=false"
 				confirmationString = "${confirmationString}Alternative transcripts: none\n"
-				logFile << "${predictionInstance.accession_id} v1 - User disabled prediction of alternative transcripts.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User disabled prediction of alternative transcripts.\n"
 			}else if(predictionInstance.alt_transcripts == 2){
 				radioParameterString = "${radioParameterString} --sample=100 --keep_viterbi=true --alternatives-from-sampling=true --minexonintronprob=0.2 --minmeanexonintronprob=0.5 --maxtracks=2"
 				confirmationString = "${confirmationString}Alternative transcripts: few\n"
-				logFile << "${predictionInstance.accession_id} v1 - User enabled prediction of few alternative transcripts.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User enabled prediction of few alternative transcripts.\n"
 			}else if(predictionInstance.alt_transcripts == 3){
 				radioParameterString = "${radioParameterString} --sample=100 --keep_viterbi=true --alternatives-from-sampling=true --minexonintronprob=0.08 --minmeanexonintronprob=0.4 --maxtracks=3"
 				confirmationString = "${confirmationString}Alternative transcripts: medium\n"
-				logFile << "${predictionInstance.accession_id} v1 - User enabled prediction of medium alternative transcripts.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User enabled prediction of medium alternative transcripts.\n"
 			}else{
 				radioParameterString = "${radioParameterString} --sample=100 --keep_viterbi=true --alternatives-from-sampling=true --minexonintronprob=0.08 --minmeanexonintronprob=0.3 --maxtracks=20"
 				confirmationString = "${confirmationString}Alternative transcripts: many\n"
-				logFile << "${predictionInstance.accession_id} v1 - User enabled prediction of many alternative transcripts.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User enabled prediction of many alternative transcripts.\n"
 			}
 			// gene structure radio buttons
 			if(predictionInstance.allowed_structures == 1){
 				radioParameterString = "${radioParameterString} --genemodel=partial"
 				confirmationString = "${confirmationString}Allowed gene structure: predict any number of (possibly partial) genes\n"
-				logFile << "${predictionInstance.accession_id} v1 - User enabled the prediction of any number of genes.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User enabled the prediction of any number of genes.\n"
 			}else if(predictionInstance.allowed_structures == 2){
 				radioParameterString = "${radioParameterString} --genemodel=complete"
 				confirmationString = "${confirmationString}Allowed gene structure: only predict complete genes\n"
-				logFile << "${predictionInstance.accession_id} v1 - User disabled the prediction of incomplete genes.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User disabled the prediction of incomplete genes.\n"
 			}else if(predictionInstance.allowed_structures == 3){
 				radioParameterString = "${radioParameterString} --genemodel=atleastone"
 				confirmationString = "${confirmationString}Allowed gene structure: only predict complete genes - at least one\n"
-				logFile << "${predictionInstance.accession_id} v1 - User disabled the prediction of incomplete genes and insists on at least one predicted gene.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User disabled the prediction of incomplete genes and insists on at least one predicted gene.\n"
 			}else{
 				radioParameterString = "${radioParameterString} --genemodel=exactlyone"
 				confirmationString = "${confirmationString}Allowed gene structure: predict exactly one gene\n"
-				logFile << "${predictionInstance.accession_id} v1 - User enabled the prediction of exactly one gene.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User enabled the prediction of exactly one gene.\n"
 			}
 			// ignore gene structure conflicts with other strand checkbox
 			if(predictionInstance.ignore_conflicts == false){
-				logFile << "${predictionInstance.accession_id} v1 - User did not enable to ignore strand conflicts.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User did not enable to ignore strand conflicts.\n"
 			}else{
 				radioParameterString = "${radioParameterString} --strand=both"
-				logFile << "${predictionInstance.accession_id} v1 - User enabled to ignore strand conflicts.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User enabled to ignore strand conflicts.\n"
 			}
 			confirmationString = "${confirmationString}Ignore conflictes with other strand: ${predictionInstance.ignore_conflicts}\n"
 			// send confirmation email and redirect
@@ -685,12 +897,14 @@ class PredictionController {
 				cmd2Script = "${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${predictionInstance.accession_id} null ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 0 &> /dev/null"
 				emptyPageScript << "${cmd2Script}"
 				if(verb > 2){
-					logFile << "${predictionInstance.accession_id} v3 - emptyPageScript << \"${cmd2Script}\"\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - emptyPageScript << \"${cmd2Script}\"\n"
 				}
 				cmdStr = "bash ${projectDir}/emptyPage.sh"
 				def emptyPageExecution = "${cmdStr}".execute()
 				if(verb > 1){
-					logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 				}
 				emptyPageExecution.waitFor()
 				predictionInstance.job_status = 0
@@ -706,7 +920,7 @@ Details of your job:
 ${confirmationString}
 The job status is available at http://bioinf.uni-greifswald.de/augustus-training-0.1/prediction/show/${predictionInstance.id}
 
-You will receive a link to the results via email when the job has finished.
+You will receive an email when the job has finished. Results will then be available at http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html.
 
 Best regards,
 
@@ -717,18 +931,23 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				}
 
 
-				logFile << "${predictionInstance.accession_id} v1 - Confirmation e-mail sent.\n"          
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Confirmation e-mail sent.\n"          
 				redirect(action:show,id:predictionInstance.id)
 			} else {
-				logFile << "${predictionInstance.accession_id} v1 - An error occurred in the predictionInstance (e.g. E-Mail missing, see domain restrictions).\n"
-				logFile << "${predictionInstance.accession_id} v1 - ${projectDir} is deleted (rm -r).\n"
-				cmdStr = "rm -r ${projectDir}"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - An error occurred in the predictionInstance (e.g. E-Mail missing, see domain restrictions).\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - ${projectDir} is deleted.\n"
+				cmdStr = "rm -r ${projectDir} &> /dev/null"
 				delProc = "${cmdStr}".execute()
 				if(verb > 1){
-					logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 				}
 				delProc.waitFor()
-				logFile << "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 				render(view:'create', model:[predictionInstance:predictionInstance])
 				return
 			}
@@ -737,49 +956,57 @@ http://bioinf.uni-greifswald.de/trainaugustus
 			Thread.start{
 				// retrieve genome file
 				if(!(predictionInstance.genome_ftp_link == null)){
-					logFile <<  "${predictionInstance.accession_id} v1 - Checking genome file size with curl prior upload\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Checking genome file size with curl prior upload\n"
 					projectDir.mkdirs()
 					// check whether the genome file is small enough for upload
 					def fileSizeScript = new File("${projectDir}/filzeSize.sh")
 					cmd2Script = "curl -sI ${predictionInstance.genome_ftp_link} | grep Content-Length | cut -d ' ' -f 2 > ${projectDir}/genomeFileSize 2> /dev/null"
 					fileSizeScript << "${cmd2Script}"
 					if(verb > 2){
-						logFile << "${predictionInstance.accession_id} v3 - fileSizeScript << \"${cmd2Script}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - fileSizeScript << \"${cmd2Script}\"\n"
 					}
 					cmdStr = "bash ${fileSizeScript}"
 					def retrieveFileSize = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					retrieveFileSize.waitFor()	
-					cmdStr = "rm ${fileSizeScript}"		
+					cmdStr = "rm ${fileSizeScript} &> /dev/null"		
 					def delSzCrProc = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					delSzCrProc.waitFor()
-					def content = new File("${projectDir}/genomeFileSize").text
-					def st = new Scanner(content)//works for exactly one number in a file
+					content = new File("${projectDir}/genomeFileSize").text
+					st = new Scanner(content)//works for exactly one number in a file
 					def int genome_size;
 					genome_size = st.nextInt();
 					if(genome_size < maxFileSizeByWget){//1 GB
-						logFile <<  "${predictionInstance.accession_id} v1 - Retrieving genome file ${predictionInstance.genome_ftp_link}\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Retrieving genome file ${predictionInstance.genome_ftp_link}\n"
 						def getGenomeScript = new File("${projectDir}/getGenome.sh")
 						cmd2Script = "wget -O ${projectDir}/genome.fa ${predictionInstance.genome_ftp_link} &> /dev/null"
 						getGenomeScript << "${cmd2Script}"
 						if(verb > 2){
-							logFile << "${predictionInstance.accession_id} v3 - getGenomeScript << \"${cmd2Script}\"\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - getGenomeScript << \"${cmd2Script}\"\n"
 						}
 						cmdStr = "bash ${projectDir}/getGenome.sh"
 						def wgetGenome = "${cmdStr}".execute()
 						if(verb > 1){
-							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
 						wgetGenome.waitFor()
-						cmdStr = "rm ${projectDir}/getGenome.sh"
+						cmdStr = "rm ${projectDir}/getGenome.sh &> /dev/null"
 						delProc = "${cmdStr}".execute()
 						if(verb > 1){
-							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
 						delProc.waitFor()
 						if("${predictionInstance.genome_ftp_link}" =~ /\.gz/){
@@ -787,23 +1014,28 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							cmd2Script = "cd ${projectDir}; mv genome.fa genome.fa.gz &> /dev/null; gunzip genome.fa.gz 2> /dev/null"
 							gunzipGenomeScript << "${cmd2Script}"
 							if(verb > 2){
-								logFile << "${predictionInstance.accession_id} v3 - gunzipGenomeScript << \"${cmd2Script}\"\n"
+								logDate = new Date()
+								logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - gunzipGenomeScript << \"${cmd2Script}\"\n"
 							}
 							cmdStr = "bash ${gunzipGenomeScript}"
 							def gunzipGenome = "${cmdStr}".execute()
 							if(verb > 1){
-								logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+								logDate = new Date()
+								logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 							}
 							gunzipGenome.waitFor()
-							cmdStr = "rm ${gunzipGenomeScript}"
+							cmdStr = "rm ${gunzipGenomeScript} &> /dev/null"
 							delProc = "${cmdStr}".execute()
 							if(verb > 1){
-								logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+								logDate = new Date()
+								logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 							}
 							delProc.waitFor()
-							logFile <<  "${predictionInstance.accession_id} v1 - Unpacked genome file.\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Unpacked genome file.\n"
 						}
-						logFile <<  "${predictionInstance.accession_id} v1 - genome file upload finished, file stored as genome.fa at ${projectDir}\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - genome file upload finished, file stored as genome.fa at ${projectDir}\n"
 						// check for fasta format & get seq names for gff validation:
 						new File("${projectDir}/genome.fa").eachLine{line -> 
 							if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }	
@@ -813,14 +1045,17 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							}
 						}
 						if(genomeFastaFlag == 1) {
-							logFile <<  "${predictionInstance.accession_id} v1 - The genome file was not fasta. ${projectDir} is deleted (rm -r).\n"
-							cmdStr = "rm -r ${projectDir}"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file was not fasta. ${projectDir} is deleted.\n"
+							cmdStr = "rm -r ${projectDir} &> /dev/null"
 							delProc = "${cmdStr}".execute()
 							if(verb > 1){
-								logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+								logDate = new Date()
+								logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 							}
 							delProc.waitFor()
-							logFile <<  "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -840,17 +1075,19 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							return
 						}
 					}else{// actions if remote file was bigger than allowed
-						logFile << "${predictionInstance.accession_id} v1 - Genome file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Genome file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
 						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the genome file size was with ${genome_size} bigger than 1 GB. Please submitt a smaller genome size!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
 						sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """${errorStrMsg}"""
 						}
-						cmdStr = "rm -r ${projectDir}"
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
 						if(verb > 1){
-							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
 						delProc.waitFor()
 						// delete database entry
@@ -880,7 +1117,8 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							}
 						}
 						if(gffColErrorFlag == 1){
-							logFile << "${predictionInstance.accession_id} v1 - Hints file does not always contain 9 columns.\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hints file does not always contain 9 columns.\n"
 							sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -897,7 +1135,8 @@ http://bioinf.uni-greifswald.de/trainaugustus/
 							}
 						}
 						if(gffNameErrorFlag == 1){
-							logFile << "${predictionInstance.accession_id} v1 - Hints file contains entries that do not comply with genome sequence names.\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hints file contains entries that do not comply with genome sequence names.\n"
 							sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -914,7 +1153,8 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							}
 						}
 						if(gffSourceErrorFlag ==1){
-							logFile << "${predictionInstance.accession_id} v1 - Hints file contains entries that do not have source=M in the last column.\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hints file contains entries that do not have source=M in the last column.\n"
 							sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -932,14 +1172,17 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						
 						}
 						if((gffColErrorFlag == 1 || gffNameErrorFlag == 1 || gffSourceErrorFlag ==1)){
-							logFile << "${predictionInstance.accession_id} v1 - ${projectDir} is deleted (rm -r).\n"
-							cmdStr = "rm -r ${projectDir}"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - ${projectDir} is deleted.\n"
+							cmdStr = "rm -r ${projectDir} &> /dev/null"
 							delProc = "${cmdStr}".execute()
 							if(verb > 1){
-								logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+								logDate = new Date()
+								logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 							}
 							delProc.waitFor()
-							logFile << "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							// delete database entry
 							predictionInstance.delete()
 							return
@@ -950,12 +1193,14 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					cmd2Script = "cksum ${projectDir}/genome.fa > ${genomeCksumFile} 2> /dev/null"
 					genomeCksumScript << "${cmd2Script}"
 					if(verb > 2){
-						logFile << "${predictionInstance.accession_id} v3 - \"${cmd2Script}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - \"${cmd2Script}\"\n"
 					}
 					cmdStr = "bash ${projectDir}/genome_cksum.sh"
 					def genomeCksumProcess = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					genomeCksumProcess.waitFor()
 					def genomeCksumContent = new File("${genomeCksumFile}").text
@@ -966,17 +1211,20 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					genomeCksum_array = genomeCksumContent =~/\d* (\d*) /
 					predictionInstance.genome_size
 					(1..genomeCksum_array.groupCount()).each{predictionInstance.genome_size = "${genomeCksum_array[0][it]}"}
-					logFile <<  "${predictionInstance.accession_id} v1 - genome.fa is ${predictionInstance.genome_size} big and has a cksum of ${genomeCksum}.\n"
-					cmdStr = "rm ${projectDir}/genome.cksum"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - genome.fa is ${predictionInstance.genome_size} big and has a cksum of ${genomeCksum}.\n"
+					cmdStr = "rm ${projectDir}/genome.cksum &> /dev/null"
 					def delProcCksumGenome = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					delProcCksumGenome.waitFor()
-					cmdStr = "rm ${projectDir}/genome_cksum.sh"
+					cmdStr = "rm ${projectDir}/genome_cksum.sh &> /dev/null"
 					def delProcCkShGenome = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					delProcCkShGenome.waitFor()
 				} // end of if(!(predictionInstance.genome_ftp_link == null))				
@@ -985,47 +1233,55 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				// retrieve EST file
 				if(!(predictionInstance.est_ftp_link == null)){
 					// check whether the EST file is small enough for upload
-					logFile <<  "${predictionInstance.accession_id} v1 - Checking cDNA file size with curl prior upload\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Checking cDNA file size with curl prior upload\n"
 					def fileSizeScript = new File("${projectDir}/filzeSize.sh")
 					cmd2Script = "curl -sI ${predictionInstance.est_ftp_link} | grep Content-Length | cut -d ' ' -f 2 > ${projectDir}/estFileSize 2> /dev/null"
 					fileSizeScript << "${cmd2Script}"
 					if(verb > 2){
-						logFile << "${predictionInstance.accession_id} v3 - fileSizeScript << \"${cmd2Script}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - fileSizeScript << \"${cmd2Script}\"\n"
 					}
 					cmdStr = "bash ${fileSizeScript}"
 					def retrieveFileSize = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					retrieveFileSize.waitFor()	
-					cmdStr = "rm ${fileSizeScript}"		
+					cmdStr = "rm ${fileSizeScript} &> /dev/null"		
 					def delSzCrProc = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					delSzCrProc.waitFor()
-					def content = new File("${projectDir}/estFileSize").text
-					def st = new Scanner(content)//works for exactly one number in a file
+					content = new File("${projectDir}/estFileSize").text
+					st = new Scanner(content)//works for exactly one number in a file
 					def int est_size;
 					est_size = st.nextInt();
 					if(est_size < maxFileSizeByWget){//1 GB
-						logFile <<  "${predictionInstance.accession_id} v1 - Retrieving EST/cDNA file ${predictionInstance.est_ftp_link}\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Retrieving EST/cDNA file ${predictionInstance.est_ftp_link}\n"
 						def getEstScript = new File("${projectDir}/getEst.sh")
 						cmd2Script = "wget -O ${projectDir}/est.fa ${predictionInstance.est_ftp_link} &> /dev/null"
 						getEstScript << "${cmd2Script}"
 						if(verb > 2){
-							logFile << "${predictionInstance.accession_id} v2 - getEstScript << \"${cmd2Script}\"\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - getEstScript << \"${cmd2Script}\"\n"
 						}
 						cmdStr = "bash ${projectDir}/getEst.sh"
 						def wgetEst = "${cmdStr}".execute()
 						if(verb > 1){
-							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
 						wgetEst.waitFor()
-						cmdStr = "rm ${projectDir}/getEst.sh"
+						cmdStr = "rm ${projectDir}/getEst.sh &> /dev/null"
 						delProc = "${cmdStr}".execute()
 						if(verb > 1){
-							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
 						delProc.waitFor()
 						if("${predictionInstance.est_ftp_link}" =~ /\.gz/){
@@ -1033,34 +1289,42 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							cmd2Script = "cd ${projectDir}; mv est.fa est.fa.gz &> /dev/null; gunzip est.fa.gz 2> /dev/null"
 							gunzipEstScript << "${cmd2Script}"
 							if(verb > 2){
-								logFile << "${predictionInstance.accession_id} v3 - gunzipEstScript << \"${cmd2Script}\"\n"
+								logDate = new Date()
+								logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - gunzipEstScript << \"${cmd2Script}\"\n"
 							}
 							cmdStr = "bash ${gunzipEstScript}"
 							def gunzipEst = "${cmdStr}".execute()
 							if(verb > 1){
-								logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+								logDate = new Date()
+								logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 							}
 							gunzipEst.waitFor()	
-							cmdStr = "rm ${gunzipEstScript}"		
+							cmdStr = "rm ${gunzipEstScript} &> /dev/null"		
 							delProc = "${cmdStr}".execute()
 							if(verb > 1){
-								logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+								logDate = new Date()
+								logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 							}
 							delProc.waitFor()
-							logFile <<  "${predictionInstance.accession_id} v1 - Unpacked EST file.\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Unpacked EST file.\n"
 						}
-						logFile <<  "${predictionInstance.accession_id} v1 - EST/cDNA file upload finished, file stored as est.fa at ${projectDir}\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - EST/cDNA file upload finished, file stored as est.fa at ${projectDir}\n"
 						// check for fasta format:
 						new File("${projectDir}/est.fa").eachLine{line -> if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ estFastaFlag = 1 }}
 						if(estFastaFlag == 1) {
-							logFile <<  "${predictionInstance.accession_id} v1 - The EST/cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
-							cmdStr = "rm -r ${projectDir}"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The EST/cDNA file was not fasta. ${projectDir} is deleted.\n"
+							cmdStr = "rm -r ${projectDir} &> /dev/null"
 							delProc = "${cmdStr}".execute()
 							if(verb > 1){
-								logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+								logDate = new Date()
+								logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 							}
 							delProc.waitFor()
-							logFile <<  "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -1080,17 +1344,19 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							return
 						}
 					}else{// actions if remote file was bigger than allowed
-						logFile << "${predictionInstance.accession_id} v1 - EST file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - EST file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
 						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the cDNA file size was with ${est_size} bigger than 1 GB. Please submitt a smaller cDNA size!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
 						sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """${errorStrMsg}"""
 						}
-						cmdStr = "rm -r ${projectDir}"
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
 						if(verb > 1){
-							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
 						delProc.waitFor()
 						// delete database entry
@@ -1103,12 +1369,14 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					cmd2Script = "cksum ${projectDir}/est.fa > ${estCksumFile} 2> /dev/null"
 					estCksumScript << "${cmd2Script}"
 					if(verb > 2){
-						logFile << "${predictionInstance.accession_id} v3 - estCksumScript << \"${cmd2Script}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - estCksumScript << \"${cmd2Script}\"\n"
 					}
 					cmdStr = "bash ${projectDir}/est_cksum.sh"
 					def estCksumProcess = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					estCksumProcess.waitFor()
 					def estCksumContent = new File("${estCksumFile}").text
@@ -1119,17 +1387,20 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					estCksum_array = estCksumContent =~/\d* (\d*) /
 					predictionInstance.est_size
 					(1..estCksum_array.groupCount()).each{predictionInstance.est_size = "${estCksum_array[0][it]}"}
-					logFile <<  "${predictionInstance.accession_id} v1 - est.fa is ${predictionInstance.est_size} big and has a cksum of ${estCksum}.\n"
-					cmdStr = "rm ${projectDir}/est.cksum"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - est.fa is ${predictionInstance.est_size} big and has a cksum of ${estCksum}.\n"
+					cmdStr = "rm ${projectDir}/est.cksum &> /dev/null"
 					def delProcCksumEst = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					delProcCksumEst.waitFor()
-					cmdStr = "rm ${projectDir}/est_cksum.sh"
+					cmdStr = "rm ${projectDir}/est_cksum.sh &> /dev/null"
 					def delProcCkShEst = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					delProcCkShEst.waitFor()
 				} // end of if(!(predictionInstance.est_ftp_link == null))
@@ -1147,34 +1418,38 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					}
 					def avEstLen = totalLen/nEntries
 					if(avEstLen < estMinLen){
-						logFile << "${predictionInstance.accession_id} v1 - EST sequences are on average shorter than ${estMinLen}, suspect RNAseq raw data. Abort job.\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - EST sequences are on average shorter than ${estMinLen}, suspect RNAseq raw data. Abort job.\n"
 						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your cDNA file have an average length of ${avEstLen}. We suspect that sequences files with an average sequence length shorter than ${estMinLen} might contain RNAseq raw sequences. Currently, our web server application does not support the integration of RNAseq raw sequences. Please either assemble your sequences into longer contigs, or remove short sequences from your current file, or submitt a new job without specifying a cDNA file.\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
 						sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """${errorStrMsg}"""
 						}
-						cmdStr = "rm -r ${projectDir}"
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
 						if(verb > 1){
-							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
 						delProc.waitFor()
 						// delete database entry
 						predictionInstance.delete()
 						return
 					}else if(avEstLen > estMaxLen){
-						logFile << "${predictionInstance.accession_id} v1 - EST sequences are on average longer than ${estMaxLen}, suspect non EST/cDNA data. Abort job.\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - EST sequences are on average longer than ${estMaxLen}, suspect non EST/cDNA data. Abort job.\n"
 						def errorStrMsg = "Hello!\nYour AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your cDNA file have an average length of ${avEstLen}. We suspect that sequences files with an average sequence length longer than ${estMaxLen} might not contain ESTs or cDNAs. Please either remove long sequences from your current file, or submitt a new job without specifying a cDNA file.\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
 						sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
 								body """${errorStrMsg}"""
 						}
-						cmdStr = "rm -r ${projectDir}"
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
 						if(verb > 1){
-							logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
 						delProc.waitFor()
 						// delete database entry
@@ -1205,15 +1480,17 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				// check whether this job was submitted before:
 				def grepScript = new File("${projectDir}/grepScript.sh")
 				def grepResult = "${projectDir}/grep.result"
-				cmd2Script = "grep \"\\(Genome-Cksum: \\[${predictionInstance.genome_cksum}\\] Genome-Filesize: \\[${predictionInstance.genome_size}\\]\\).*\\(EST-Cksum: \\[${predictionInstance.est_cksum}\\] EST-Filesize: \\[${predictionInstance.est_size}\\]\\).*\\(Hint-Cksum: \\[${predictionInstance.hint_cksum}\\] Hint-Filesize: \\[${predictionInstance.hint_size}\\] Parameter-String: \\[${predictionInstance.project_id}\\]\\).*\\(Parameter-Cksum: \\[${predictionInstance.archive_cksum}\\] Parameter-Size: \\[${predictionInstance.archive_size}\\] Server-Set-UTR-Flag: \\[${overRideUtrFlag}\\]\\).*\\(Report-Genes: \\[${predictionInstance.pred_strand}\\] Alternative-Transcripts: \\[${predictionInstance.alt_transcripts}\\] Gene-Structures: \\[${predictionInstance.allowed_structures}\\] Ignore-Conflicts: \\[${predictionInstance.ignore_conflicts}\\]\\)\" ${dbFile} > ${grepResult} 2> /dev/null"
+				cmd2Script = "grep \"\\(Genome-Cksum: \\[${predictionInstance.genome_cksum}\\] Genome-Filesize: \\[${predictionInstance.genome_size}\\]\\)\" ${dbFile} | grep \"\\(EST-Cksum: \\[${predictionInstance.est_cksum}\\] EST-Filesize: \\[${predictionInstance.est_size}\\]\\)\" | grep \"\\(Hint-Cksum: \\[${predictionInstance.hint_cksum}\\] Hint-Filesize: \\[${predictionInstance.hint_size}\\] Parameter-String: \\[${predictionInstance.project_id}\\]\\)\" | grep \"\\(Parameter-Cksum: \\[${predictionInstance.archive_cksum}\\] Parameter-Size: \\[${predictionInstance.archive_size}\\] Server-Set-UTR-Flag: \\[${overRideUtrFlag}\\]\\)\" | grep \"\\(Report-Genes: \\[${predictionInstance.pred_strand}\\] Alternative-Transcripts: \\[${predictionInstance.alt_transcripts}\\] Gene-Structures: \\[${predictionInstance.allowed_structures}\\] Ignore-Conflicts: \\[${predictionInstance.ignore_conflicts}\\]\\)\"  > ${grepResult} 2> /dev/null"
 				cmdStr = "bash ${projectDir}/grepScript.sh\n"
 				grepScript << "${cmd2Script}"
 				if(verb > 2){
-					logFile << "${predictionInstance.accession_id} v3 - grepScript << \"${cmd2Script}\"\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - grepScript << \"${cmd2Script}\"\n"
 				}
 				def grepJob = "${cmdStr}".execute()
 				if(verb > 1){
-					logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 				}
 				grepJob.waitFor()
 				def grepContent = new File("${grepResult}").text
@@ -1227,12 +1504,14 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					cmd2Script = "grep \"Grails-ID: \\[${oldID}\\]\" ${dbFile} | perl -ne \"@t = split(/\\[/); @t2 = split(/\\]/, \\\$t[4]); print \\\$t2[0];\" > ${oldAccResult} 2> /dev/null"
 					oldAccScript << "${cmd2Script}"
 					if(verb > 2){
-						logFile << "${predictionInstance.accession_id} v3 - oldAccScript << \"${cmd2Script}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - oldAccScript << \"${cmd2Script}\"\n"
 					}
 					cmdStr = "bash ${projectDir}/oldAcc.sh"
 					def oldAccScriptProc = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					oldAccScriptProc.waitFor()
 					def oldAccContent = new File("${oldAccResult}").text	      
@@ -1259,14 +1538,17 @@ the AUGUSTUS web server team
 http://bioinf.uni-greifswald.de/trainaugustus
 """
 					}
-					logFile << "${predictionInstance.accession_id} v1 - Data are identical to old job ${oldAccContent} with Accession-ID ${oldAccContent}. ${projectDir} is deleted (rm -r).\n"
-					cmdStr = "rm -r ${projectDir}"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Data are identical to old job ${oldAccContent} with Accession-ID ${oldAccContent}. ${projectDir} is deleted.\n"
+					cmdStr = "rm -r ${projectDir} &> /dev/null"
 					delProc = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					delProc.waitFor()
-					logFile << "${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted, the user is informed!\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted, the user is informed!\n"
 					predictionInstance.delete()
 					return
 				} // end of job was submitted before check
@@ -1280,19 +1562,23 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					cmd2Script = "${AUGUSTUS_SCRIPTS_PATH}/moveParameters.pl ${projectDir}/params ${predictionInstance.accession_id} ${AUGUSTUS_CONFIG_PATH}/species 2> /dev/null\n"
 					mvParamsScript << "${cmd2Script}"
 					if(verb > 2){
-						logFile << "${predictionInstance.accession_id} v3 - mvParamsScript << \"${cmd2Script}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - mvParamsScript << \"${cmd2Script}\"\n"
 					}
 					cmdStr = "bash ${mvParamsScript}"
 					def mvParamsRunning = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					mvParamsRunning.waitFor()
 					species = "${predictionInstance.accession_id}"
-					logFile << "${predictionInstance.accession_id} v1 - Moved uploaded parameters and renamed species to ${predictionInstance.accession_id}\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Moved uploaded parameters and renamed species to ${predictionInstance.accession_id}\n"
 				}
 				//Create sge script:
-				logFile << "${predictionInstance.accession_id} v1 - Writing SGE submission script.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Writing SGE submission script.\n"
 				def sgeFile = new File("${projectDir}/aug-pred.sh")
 				// write command in script (according to uploaded files)
 				sgeFile << "#!/bin/bash\n#\$ -S /bin/bash\n#\$ -cwd\n\n"
@@ -1321,32 +1607,36 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				cmd2Script = "cd ${projectDir}; qsub aug-pred.sh > ${fileID} 2> /dev/null"
 				submissionScript << "${cmd2Script}"
 				if(verb > 2){
-					logFile << "${predictionInstance.accession_id} v3 - submissionScript << \"${cmd2Script}\"\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - submissionScript << \"${cmd2Script}\"\n"
 				}
 				// submitt job
 				cmdStr = "bash ${projectDir}/submitt.sh"
 				def jobSubmission = "${cmdStr}".execute()
 				if(verb > 1){
-					logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 				}
 				jobSubmission.waitFor()
 				// get job ID
-				def content = new File("${fileID}").text
+				content = new File("${fileID}").text
 				def jobID_array = content =~/Your job (\d*)/
 				def jobID
 				(1..jobID_array.groupCount()).each{jobID = "${jobID_array[0][it]}"}
 				predictionInstance.job_id = jobID
-				logFile << "${predictionInstance.accession_id} v1 - Job ${jobID} submitted.\n"
+				logDate = new Date()
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${jobID} submitted.\n"
 				// check for job status
 				predictionInstance.job_status = 1 // submitted
 				predictionInstance = predictionInstance.merge()
 				predictionInstance.save()
 				def statusScript = new File("${projectDir}/status.sh")
 				def statusFile = "${projectDir}/job.status"
-				cmd2Script = "cd ${projectDir}; qstat|grep aug-pred |grep ${jobID} > ${statusFile} 2> /dev/null"
+				cmd2Script = "cd ${projectDir}; qstat -u \"*\" | grep aug-pred | grep ${jobID} > ${statusFile} 2> /dev/null"
 				statusScript << "${cmd2Script}"
 				if(verb > 2){
-					logFile << "${predictionInstance.accession_id} v3 - statusScript <<\"${cmd2Script}\"\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - statusScript <<\"${cmd2Script}\"\n"
 				}
 				def statusContent
 				def statusCheck 
@@ -1368,7 +1658,8 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						predictionInstance.save()
 						if(runFlag == 0){
 							today = new Date() 
-							logFile << "${predictionInstance.accession_id} v1 - Job ${jobID} begins running at ${today}.\n"
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${jobID} begins running at ${today}.\n"
 						}
 						runFlag = 1
 					}else{
@@ -1377,22 +1668,35 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						predictionInstance.save()
 						qstat = 0
 						today = new Date()
- 						logFile << "${predictionInstance.accession_id} v1 - Job ${jobID} left SGE at ${today}.\n"
+ 						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${jobID} left SGE at ${today}.\n"
 					}
-					sleep 5000
+					sleep(300000) // 5 minutes
 			   	}
 			   	// check whether errors occured by log-file-sizes
 				def sgeErrFile = new File("${projectDir}/aug-pred.sh.e${jobID}")
 				def writeResultsErrFile = new File("${projectDir}/writeResults.err")
-				def sgeErrSize = sgeErrFile.text.size()
-				def writeResultsErrSize = writeResultsErrFile.text.size()
+				if(sgeErrFile.exists()){
+					def sgeErrSize = sgeErrFile.text.size()
+				}else{
+					def sgeErrSize = 10
+ 					logDate = new Date()
+					logFile <<  "SEVERE ${logDate} ${predictionInstance.accession_id} v1 - segErrFile was not created. Setting size to default value 10.\n"
+				}
+				if(writeResultsErrFile.exists()){
+					def writeResultsErrSize = writeResultsErrFile.text.size()
+				}else{
+					def writeResultsErrSize = 10
+ 					logDate = new Date()
+					logFile <<  "SEVERE ${logDate} ${predictionInstance.accession_id} v1 - writeResultsErr was not created. Setting size to default value 10.\n"
+				}
 				if(sgeErrSize==0 && writeResultsErrSize==0){
 					sendMail {
 						to "${predictionInstance.email_adress}"
 						subject "AUGUSTUS prediction job ${predictionInstance.accession_id} is complete"
 						body """Hello!
 
-Your AUGUSTUS prediction job ${predictionInstance.accession_id} finished. You find the results at http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html .
+Your AUGUSTUS prediction job ${predictionInstance.accession_id} finished. You find the results at http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html.
 
 Thank you for using AUGUSTUS!
 
@@ -1403,39 +1707,46 @@ the AUGUSTUS web server team
 http://bioinf.uni-greifswald.de/trainaugustus
 """
 					}
-					logFile << "${predictionInstance.accession_id} v1 - Sent confirmation Mail that job computation was successful.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Sent confirmation Mail that job computation was successful.\n"
 					// unpack with 7z x XA2Y5VMJ.tar.7z
 					// tar xvf XA2Y5VMJ.tar
 					def packResults = new File("${output_dir}/pack${predictionInstance.accession_id}.sh")
 					cmd2Script = "cd ${output_dir}; tar -czvf ${predictionInstance.accession_id}.tar.gz ${predictionInstance.accession_id} &> /dev/null"
 					packResults << "${cmd2Script}"
 					if(verb > 2){
-						logFile << "${predictionInstance.accession_id} v3 - packResults << \"${cmd2Script}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - packResults << \"${cmd2Script}\"\n"
 					}
 					//packResults << "cd ${output_dir}; tar cf - ${predictionInstance.accession_id} | 7z a -si ${predictionInstance.accession_id}.tar.7z; rm -r ${predictionInstance.accession_id};"
 					cmdStr = "bash ${output_dir}/pack${predictionInstance.accession_id}.sh"
 					def cleanUp = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					cleanUp.waitFor()
-					cmdStr = "rm ${output_dir}/pack${predictionInstance.accession_id}.sh"
+					cmdStr = "rm ${output_dir}/pack${predictionInstance.accession_id}.sh &> /dev/null"
 					cleanUp = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					cmdStr ="rm -r ${projectDir} &> /dev/null"
 					delProc = "${cmdStr}".execute()
 					if(verb > 1){
-						logFile << "${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
             				delProc.waitFor()
-					logFile << "${predictionInstance.accession_id} v1 - job directory was packed with tar/gz.\n"
-					//logFile << "${predictionInstance.accession_id} job directory was packed with tar/7z.\n"
-					logFile << "${predictionInstance.accession_id} v1 - Job completed. Result: ok.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - job directory was packed with tar/gz.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job completed. Result: ok.\n"
 				}else{ 
 					if(sgeErrSize > 0){
-						logFile << "${predictionInstance.accession_id} v1 - a SGE error occured!\n";
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - a SGE error occured!\n";
 						sendMail {
 						to "${admin_email}"
 						subject "Error in AUGUSTUS prediction job ${predictionInstance.accession_id}"
@@ -1452,7 +1763,8 @@ An SGE error occured. Please check manually what's wrong. The user has been info
 						predictionInstance = predictionInstance.merge()
 						predictionInstance.save()
 					}else{
-						logFile << "${predictionInstance.accession_id} v1 - an error occured during writing results!\n";
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - an error occured during writing results!\n";
 						sendMail {
 							to "${admin_email}"
 							subject "Error in AUGUSTUS prediction job ${predictionInstance.accession_id}"
@@ -1488,7 +1800,8 @@ http://bioinf.uni-greifswald.de/trainaugustus
 """
 					}
 
-					logFile << "${predictionInstance.accession_id} v1 - Sent confirmation Mail, the job is in an error state.\n"
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Sent confirmation Mail, the job is in an error state.\n"
 				}
 					
 

@@ -98,6 +98,7 @@
             <div class="main" id="main">
 			<noscript><p><b><span style="color:red">Please enable javascript in your browser in order to display the submission form correctly!</span></b> Form functionality is not affected significantly while javascript is disabled, but it looks less pretty.</p>
 			</noscript>
+<p>Example data for this form is available <a href="../predictiontutorial.gsp#exampledata">here</a>.</p>
             <g:uploadForm action="commit" method="post" >
             <fieldset><legend>
                 <table class="contentpaneopen">
