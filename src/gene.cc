@@ -2835,20 +2835,22 @@ void printGeneList(list<AltGene> *genelist, AnnoSequence *annoseq, bool withCS, 
 	    else
 		cout << geneit->id << "." << (*trit)->id << endl;
 
-	    (*trit)->printGFF();
+	    (*trit)->printGFF();	   
 	    if (annoseq->sequence){
-		if (withCS)
+	      if (withCS){
 		    (*trit)->printCodingSeq(annoseq);
-		if (withAA) {
-		    (*trit)->printProteinSeq(annoseq);
+	      }
+	      if (withAA) {
+		(*trit)->printProteinSeq(annoseq);
 #ifndef DEBUG
 		    if (Gene::print_blocks)
 #endif
 			(*trit)->printBlockSequences(annoseq);
-		}
+	      }
 	    }
-	    if (withEvidence)
-		(*trit)->printEvidence();
+	    if (withEvidence){
+	      (*trit)->printEvidence();
+	    }
 	}
 	cout << "# end gene " << geneit->id << endl << "###" << endl;
     }
@@ -2938,7 +2940,6 @@ list<AltGene>* groupTranscriptsToGenes(list<Gene> *transcripts){
     list<AltGene>::iterator agit;
     list<Gene>::iterator geneit;
     Gene* g;
-
     transcripts->sort();
 
     // loop over the transcripts
@@ -2951,7 +2952,6 @@ list<AltGene>* groupTranscriptsToGenes(list<Gene> *transcripts){
 	agit = agl->begin();
 	list<AltGene>::iterator firstOlp;
 	bool overlapFound = false;
-	
 	while (agit != agl->end()) {
 	    if (agit->overlaps(g)){
 		if (overlapFound == false) {

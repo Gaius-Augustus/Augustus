@@ -7,12 +7,12 @@
 #        - In the current version, the order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
 #        
 CC	= g++
-CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -O2 ${CFLAGS} # -pg -DDEBUG  -g -ggdb -static
+CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -DDEBUG  -g -ggdb -static
 INCLS	= -I../include -I.
 LIBS	= # -lcwd
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
- intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o exoncand.o
+ intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o meaPath.o exoncand.o
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
 PROGR	= augustus etraining consensusFinder curve2hints fastBlockSearch prepareAlign
@@ -24,7 +24,7 @@ all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 .SUFFIXES: .cc .o .so
 
 .cc.o:
-	$(CC) -c $(CFLAGS) -o $@ $< $(INCLS) 
+	$(CC) -c $(CFLAGS) -o $@ $< $(INCLS)
 
 augustus: augustus.cc $(OBJS) $(DUMOBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
@@ -80,7 +80,6 @@ augustus.o : \
 	../include/properties.hh \
 	../include/statemodel.hh \
 	../include/types.hh \
-	../include/vitmatrix.hh \
 	augustus.cc
 
 dummy.o : \
@@ -351,6 +350,7 @@ namgene.o : \
 	../include/statemodel.hh \
 	../include/types.hh \
 	../include/vitmatrix.hh \
+	../include/exoncand.hh \
 	namgene.cc
 
 projectio.o : \
@@ -504,14 +504,22 @@ commontrain.o : \
 mea.o : \
 	../include/mea.hh \
 	../include/gene.hh \
+	../include/graph.hh \
+	../include/meaPath.hh \
 	mea.cc
 
-exoncand.o : \
-	../include/exoncand.hh \
-	../include/types.hh \
-	../include/exonmodel.hh \
-	exoncand.cc
+graph.o : \
+	../include/graph.hh \
+	graph.cc
 
+meaPath.o : \
+	../include/meaPath.hh \
+
+exoncand.o : \
+       ../include/exoncand.hh \
+       ../include/types.hh \
+       ../include/exonmodel.hh \
+       exoncand.cc
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

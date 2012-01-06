@@ -755,7 +755,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   Gene *genes = NULL, *g;
   StatePath *viterbiPath;
   StatePath *condensedViterbiPath;
-  list<Gene> *MEAtranscripts = NULL;
+  list<Gene> *MEAtranscripts = new list<Gene>;
 
 
   // compute the viterbi and forward table, main work done here
@@ -856,8 +856,8 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
     if (show_progress)
 	cerr << endl;
     
-    /*    if(mea_prediction)
-	  MEAtranscripts = getMEAtranscripts(sampledGeneStructures, sampleiterations, strlen( dna )); */
+    // if(mea_prediction)
+    //	  MEAtranscripts = getMEAtranscripts(sampledGeneStructures, sampleiterations, strlen( dna )); 
     
      
     alltranscripts->sort();
@@ -894,25 +894,28 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   } // if (sampleiterations>1)
 
   // determine transcripts with maximum expected accuracy criterion
-  if(mea_prediction)
-    MEAtranscripts = getMEAtranscripts(alltranscripts, strlen( dna ));
+  if(mea_prediction){
+    getMEAtranscripts(MEAtranscripts, alltranscripts, strlen(dna));
+     
+    filteredTranscripts = MEAtranscripts;
+    
+    /*
+     * filter transcripts by probabilities, strand
+     */
+  }
+  else 
+    filteredTranscripts = Gene::filterGenePrediction(alltranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
   
-  /*
-   * filter transcripts by probabilities, strand
-   */
-  filteredTranscripts = Gene::filterGenePrediction(alltranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
-  delete alltranscripts;
-
   /*
    * filter transcripts by maximum track number
    */
+  
+  if(!mea_prediction)
+    delete alltranscripts;
+ 
 
-  if(MEAtranscripts != NULL){
-    filteredTranscripts = MEAtranscripts;
-  }
-  
   agl = groupTranscriptsToGenes(filteredTranscripts);
-  
+ 
   if (sampleiterations>1) {
     /*
      * compute apostprob of genes. The posterior probability of a gene is the 
