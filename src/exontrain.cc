@@ -139,7 +139,6 @@ void ExonModel::buildProbabilities( ){
 	delete r;
       }
       transInitBinProbs.trainBins(Constant::tis_maxbinsize);
-      cout << "tis bin boundaries" << endl;
       transInitBinProbs.printBoundaries();
       //transInitBinProbs.removeOrigs();
     }
