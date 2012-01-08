@@ -361,7 +361,7 @@ sub printGB {
 	@join =  ($codon, @join, $tend);
     } else {
 	die ("negative length") unless $codon >= $tend;
-	return unless ($tend >= 400 && $codon + 100 < length $seq);
+	return unless ($tend >= 401 && $codon + 100 < length $seq);
 	$beginpos = $tend-1-400;
 	$sequence = substr($seq, $beginpos, $codon - $tend + 100 + 400);
 	@join = ($tend, @join, $codon);

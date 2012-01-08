@@ -353,8 +353,8 @@ char* GBProcessor::getSequence( GBPositions& pos ) throw( GBError) {
 		}
 	}
 	if (count < pos.seqlength) {
-	  cerr << "Sequence was shorter than the expected " << pos.seqlength 
-	       << " bp. Please compare the line 'source 1..X' with the actual sequence length." << endl;
+	    cerr << "Warning: Sequence was shorter than expected frome the source line of the Genbank entry ( expected " << pos.seqlength 
+		 << " bp). Please compare the line 'source 1..X' with the actual sequence length (" << count << ")." << endl;
 	  pos.seqlength = count;
 	} 
 	seq[pos.seqlength]='\0'; 

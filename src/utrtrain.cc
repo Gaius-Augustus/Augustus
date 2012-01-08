@@ -740,22 +740,22 @@ void UtrModel::computeLengthDistributions( ){
     }
 
     if (numHuge5Single>0 && verbosity)
-	cerr << numHuge5Single << " 5' single exons were " << " longer than " << exonLenD << endl;
+	cout << numHuge5Single << " 5' single exons were " << " longer than " << exonLenD << endl;
     if (numHuge5Initial>0 && verbosity)
-	cerr << numHuge5Initial << " 5' initial exons were " << " longer than " << exonLenD << endl;
+	cout << numHuge5Initial << " 5' initial exons were " << " longer than " << exonLenD << endl;
     if (numHuge5Internal>0 && verbosity)
-	cerr << numHuge5Internal << " 5' internal exons were " << " longer than " << exonLenD << endl;
+	cout << numHuge5Internal << " 5' internal exons were " << " longer than " << exonLenD << endl;
     if (numHuge5Terminal>0 && verbosity)
-	cerr << numHuge5Terminal << " 5' terminal exons were " << " longer than " << exonLenD << endl;
+	cout << numHuge5Terminal << " 5' terminal exons were " << " longer than " << exonLenD << endl;
 
     if (numHuge3Single>0 && verbosity)
-	cerr << numHuge3Single << " 3' single exons were " << " longer than " << exonLenD << endl;
+	cout << numHuge3Single << " 3' single exons were " << " longer than " << exonLenD << endl;
     if (numHuge3Initial>0 && verbosity)
-	cerr << numHuge3Initial << " 3' initial exons were " << " longer than " << exonLenD << endl;
+	cout << numHuge3Initial << " 3' initial exons were " << " longer than " << exonLenD << endl;
     if (numHuge3Internal>0 && verbosity)
-	cerr << numHuge3Internal << " 3' internal exons were " << " longer than " << exonLenD << endl;
+	cout << numHuge3Internal << " 3' internal exons were " << " longer than " << exonLenD << endl;
     if (numHuge3Terminal>0 && verbosity)
-	cerr << numHuge3Terminal << " 3' terminal exons were " << " longer than " << exonLenD << endl;
+	cout << numHuge3Terminal << " 3' terminal exons were " << " longer than " << exonLenD << endl;
    
 
     sm.smoothCounts(lenCount5Single, lenDist5Single);
