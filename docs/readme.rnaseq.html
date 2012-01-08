@@ -28,8 +28,7 @@ You may adjust below procedure for your needs, for example, if you choose to fir
 reads to contigs, you may just just treat them as other larger transcript fragments such as ESTs and use
 <tt>BLAT/GMAP+blat2hints.pl</tt> to generate the hints. 
 </P>
-<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4><B>
-Align RNA-Seq Reads to Genome (directly)</B></FONT></FONT></P>
+<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4><B>1. Align RNA-Seq Reads to Genome (directly)</B></FONT></FONT></P>
 <P STYLE="margin-bottom: 0in">For species with many multi-exon genes
 (most eukaryotes), we found that <I>spliced reads are by far most
 valuable</I>. Spliced reads are reads that span an exon-exon boundary
@@ -80,7 +79,7 @@ and at most maxintronlen (default: 500000) apart from each other.</P>
   similarly in the genome (and are not repeatmasked nonetheless). We chose to
   remove hints that overlap a self-chain alignment of the UCSC Genome Browser.</P><P STYLE="margin-bottom: 0in">
 Sort alignments by target sequence and
-within target sequence by position for further processing 
+within target sequence by position for further processing (fs = filtered and sorted)
 </P>
 <pre><div class="code">cat ali.f.psl | sort -n -k 16,16 | sort -s -k 14,14 &gt; ali.fs.psl</div></pre>
 
@@ -102,24 +101,76 @@ To align color-space reads we chose SHRIMP, e.g. in the case of 36bp reads we ra
 </div><br>
 
 
+<a href="javascript:onoff('remap')" class="dlink"><span id="remap" title="remapd" class="dcross">[-]</span>
+<span class="dtitle">Iterate Spliced Alignment (optional but recommended)</span></a> <br>
+<div id="remapd" class="details" style="display:block;">
 
+Individually aligning RNA-Seq <i>spliced</i> reads to a genome is a hard problem and often
+not unambiguously possible. Reads that span an intron will often not be aligned correctly,
+in particular if only a short part of a read is in one exon and the larger part in another exon. 
+We use the knowledge on introns from the spliced alignment of other reads as well as from an
+initial gene prediction to align spliced reads that are otherwise not aligned correctly.<br>
 
-<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4><B>
-Generate <i>intron</i> Hints from Alignments</B></FONT></FONT></P>
+We compile a <b>preliminary set of introns</b>. One part of this set is the
+introns from above spliced alignments.
 
-<P STYLE="margin-bottom: 0in"><B>1.2 <I>intron</I> hints</B></P>
-<P STYLE="margin-bottom: 0in">Evidence about introns is collected
-from spliced alignments. The crucial data is the exact intron
-boundaries and the multiplicity of the intron, i.e. the absolute
-number of reads that span the intron.</P>
 <pre><div class="code">blat2hints.pl --intronsonly --in=ali.fs.psl --out=hints.introns.gff</div></pre>
 
+Another (optional) part of the set is the set of introns predicted by ab initio
+Augustus (or any other available structural genome annotation).
 
+<pre><div class="code">augustus --species=human --introns=on genome.masked.fa | tee \
+   aug.prelim.gff | grep -P "\tintron\t" > aug.introns.gff</div></pre>
 
-Individually aligning RNA-Seq <i>spliced</i> reads to a genome is a hard problem and often not unambiguously possible.
-Reads that span an intron will often not be aligned correctly, in particular if only a short part of a read is in one
-exon and the larger part in another exon. 
+We now join all unique preliminary introns in a list of the format <tt>chr10:8749-10821</tt>:
 
+<pre><div class="code">cat hints.introns.gff aug.introns.gff | perl -ne 'split; print "@_[0]:@_[3]-@_[4]\n";' | sort -u > introns.lst
+</div></pre>
+
+Next, we create a file <tt>exex.fa</tt> with <b>exon-exon</b> sequences. For each intron, we concatenate pieces of the flanking exons.
+
+<pre><div class="code">intron2exex.pl --introns=introns.lst --seq=genome.masked.fa --exex=exex.fa --map=map.psl</div></pre>
+
+The resulting file <tt>exex.fa</tt> looks like this:
+<pre><div class="code">>exex246182 75-GTAG-75 chr3.:100000692-100002450
+GTTTGGCATCATGGGATGGTATTTTAGACTTGCCAGAACAGAACACTATTCACAAAGATTGCCTGCAGTTTATTGACCAGCTTTCAGTGCCAGAGGAGAAGGCAGCAGAATTACTTTTGGATATTGAATCTGTAATTACCTTTTATTGTA
+</div></pre>
+
+The file <tt>map.psl</tt> contains the positions of the exon-exon sequences in the genome in order to <i>back-map</i> alignments of reads to <tt>exex.fa</tt> that we will make next to alignments to the genome.
+
+We align the original set of reads to the exon-exon sequences.
+
+<pre><div class="code">blat -noHead -stepSize=5 -minIdentity=93 -minScore=60 exex.fa rnaseq.fa exex.blat.psl</div></pre>
+
+Now, we create read-to-genome aligments from the read-to-exon aligments that actually cross
+the intron border:
+
+<pre><div class="code">pslMap.pl --filterunspliced --minmatch=60 --in=exex.blat.psl --map=map.psl --out=spliced.psl</div></pre>
+
+Each read has been aligned twice now, to the genome and to the exon-exon sequences. From the 
+read-to-genome alignments we only take the <i>unspliced</i> ones (seventh column < 35), as the spliced ones are
+represented in <tt>spliced.psl</tt>.
+
+<pre><div class="code">cat ali.psl | perl -ne 'split; print if ($_[7] <= 35);' | \
+  cat /dev/stdin spliced.psl | sort -k 10,10 | filterPSL.pl --uniq --paired > remap.f.psl</div></pre>
+
+Finally, we sort the alignments by target sequence names for hint generation:
+
+<pre><div class="code">cat remap.f.psl | sort -n -k 16,16 | sort -s -k 14,14 > remap.fs.psl</div></pre>
+
+As the code in this box is optional we rename the new alignments to <tt>ali.psl</tt>
+so people who did not read this box are not affected.
+
+<pre><div class="code">mv ali.fs.psl ali.direct.fs.psl
+mv remap.fs.psl ali.fs.psl</div></pre>
+</div>
+
+<P STYLE="margin-top: 0.17in; page-break-after: avoid"><FONT FACE="Albany, sans-serif"><FONT SIZE=4><B>2. Hint Generation</B></FONT></FONT></P>
+We currently generate two types of hints from the RNA-Seq alignments, <i>exonpart</i> and </i>intron</i> hints. Intron hints are more important but can currently not be generated by all NGS mapping programs: Most of them perform no spliced alignment.
+
+<P STYLE="margin-bottom: 0in"><B><I>Intron</I> hints</B></P>
+
+<pre><div class="code">blat2hints.pl --intronsonly --in=ali.fs.psl --out=hints.introns.gff</div></pre>
 
 <P STYLE="margin-bottom: 0in">If you chose a different approach,
 produce an output format like this for the intron hints:</P>
@@ -133,16 +184,7 @@ setting the bonus of this evidence source below. The strand of an
 intron will be determined automatically by Augustus.</SPAN></P>
 
 
-
-
-<P STYLE="margin-bottom: 0in">We generate two types of hints from
-the RNA-Seq alignments, <I>exonpart</I> and <I>intron</I>
-hints. Intron hints are more important but can currently not be
-generated by all NGS mapping programs: Most of them perform
-no spliced alignment. 
-</P>
-
-<P STYLE="margin-bottom: 0in"><B>1.2 <I>exonpart</I> hints and wiggle
+<P STYLE="margin-bottom: 0in"><B><I>Exonpart</I> hints and wiggle
 track</B></P>
 <P STYLE="margin-bottom: 0in">Each exonpart hint specifies an
 interval that is likely to be exonic. We take the local coverage
@@ -160,22 +202,22 @@ have <I>stranded</I> reads, you should generate two wig tracks, e.g.
 should then have the strand column set. This will help Augustus to
 determine the strand of a gene fragment.</P>
 <P STYLE="margin-bottom: 0in">Now generate the exonpart hints with</P>
-<pre><div class="code">cat cov.wig | wig2hints.pl --width=10 --margin=10 --minthresh=2 --minscore=4 --prune=0.1 --src=W --type=ep --UCSC=unstranded.track --radius=4.5 --pri=4 --strand=&quot;.&quot; &gt; hints.ep.gff</div></pre>
+<pre><div class="code">cat cov.wig | wig2hints.pl --width=10 --margin=10 --minthresh=2 --minscore=4 --prune=0.1 --src=W --type=ep \ 
+  --UCSC=unstranded.track --radius=4.5 --pri=4 --strand=&quot;.&quot; &gt; hints.ep.gff</div></pre>
 <P STYLE="margin-bottom: 0in">or adjust this command line accordingly
 when you have a stranded wig file. This command generates for each
 coverage island a sequence of adjacent 20bp <I>exonpart</I> hints
 (exonpart = ep) and also stores the average coverage depth in each
 such window as a means to adjust the weight of the evidence later.</P>
 
-<P STYLE="margin-bottom: 0in"><B>1.3 joined hints</B></P>
+<P STYLE="margin-bottom: 0in"><B>Joined hints</B></P>
 <P STYLE="margin-bottom: 0in">Concatenate all hints:</P>
 <pre><div class="code">cat hints.introns.gff hints.ep.gff [hints.other.gff] &gt; hints.gff</div></pre>
 <P STYLE="margin-bottom: 0in; font-style: normal">The
 optional hints.other.gff may contain hints from other evidence
 sources. It may be preferable for efficiency to split the hints file
 by chromosome.</P>
-<P STYLE="margin-bottom: 0in"><BR>
-</P>
+
 <P STYLE="margin-top: 0.17in"><FONT FACE="Albany, sans-serif"><FONT SIZE=4><B>3.
 Run Augustus</B></FONT></FONT></P>
 <P STYLE="margin-bottom: 0in"><B>3.1 Set hint parameters</B></P>
@@ -238,10 +280,10 @@ hit of a read or you allow best alignments also when they are
 ambiguous, then you may get a significant false positive rate of
 hints and you may have to reduce bonus factors significantly.</P>
 <P STYLE="margin-bottom: 0in">3) Alignment method.</P>
-<P STYLE="margin-bottom: 0in"><BR>
-</P>
+
 <P STYLE="margin-bottom: 0in"><B>3.2 Run Augustus</B></P>
-<pre><div class="code">augustus --species=human --UTR=on --extrinsicCfgFile=extrinsic.cfg --alternatives-from-evidence=true --hintsfile=hints.gff --allow_hinted_splicesites=atac</div></pre>
+<pre><div class="code">augustus --species=human --UTR=on --extrinsicCfgFile=extrinsic.cfg --alternatives-from-evidence=true \
+   --hintsfile=hints.gff --allow_hinted_splicesites=atac genome.masked.fa</div></pre>
 <P STYLE="margin-bottom: 0in">We recommend switching the UTR flag to
 "on" because RNA-Seq covers UTR as well. With <FONT FACE="Courier, monospace">--UTR=off</FONT>,
 the exonpart hints would be (mis)interpreted to be hints for coding
