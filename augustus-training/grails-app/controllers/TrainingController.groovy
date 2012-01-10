@@ -90,8 +90,8 @@ class TrainingController {
 		cmdStr = "rm -r ${output_dir}/${qstatFilePrefix}.qstatScript &> /dev/null"
 		def delProc = "${cmdStr}".execute()
 		if(qstatFile.exists()){
-			logDate = new Date()
-			logFile << "SEVERE ${logDate} SGE          v1 - ${qstatFile} was not deleted!\n"
+			//logDate = new Date()
+			//logFile << "SEVERE ${logDate} SGE          v1 - ${qstatFile} was not deleted!\n"
 		}
 		if(verb > 2){
 			logDate = new Date()
@@ -147,6 +147,9 @@ class TrainingController {
 			def content
 			def int error_code
 			def urlExistsScript
+			def autoAugErrSize = 10 // default: error
+			def sgeErrSize = 10 // default: error
+			def writeResultsErrSize = 10 // default: error
 			// get date
 			def today = new Date()
 			logDate = new Date()
@@ -1812,6 +1815,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - checking job SGE status...\n"
 				while(qstat == 1){
+					sleep(300000) // 5 minutes
 					statusCheck = "bash ${projectDir}/status.sh".execute()
 					statusCheck.waitFor()
 					statusContent = new File("${statusFile}").text
@@ -1838,7 +1842,6 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job ${jobID} left SGE at ${today}.\n"
 					}
-					sleep(300000) // 5 minutes
 			   	}
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job status is ${trainingInstance.job_status} when job leaves SGE.\n"
@@ -1846,32 +1849,33 @@ http://bioinf.uni-greifswald.de/trainaugustus
 			   	// check whether errors occured by log-file-sizes
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Beginning to look for errors.\n"
-			   	def autoAugErrFile = new File("${projectDir}/AutoAug.err")
-				def sgeErrFile = new File("${projectDir}/augtrain.sh.e${jobID}")
-				def writeResultsErrFile = new File("${projectDir}/writeResults.err")
-				if(autoAugErrFile.exists()){
-					def autoAugErrSize = autoAugErrFile.text.size()
+				if(new File("${projectDir}/AutoAug.err").exists()){
+					autoAugErrSize = new File("${projectDir}/AutoAug.err").size()
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  autoAugErrorSize is ${autoAugErrSize}.\n"
 				}else{
+					logDate = new Date()
 					logFile << "SEVERE ${logDate} ${trainingInstance.accession_id} v1 -  autoAugError file was not created. Default size value is set to 10.\n"
-					def autoAugErrSize = 10
+					autoAugErrSize = 10
 				}
-				if(sgeErrFile.exists()){
-					def sgeErrSize = sgeErrFile.text.size()
+				if(new File("${projectDir}/augtrain.sh.e${jobID}").exists()){
+					sgeErrSize = new File("${projectDir}/augtrain.sh.e${jobID}").size()
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  sgeErrSize is ${sgeErrSize}.\n"
+
 				}else{
+					logDate = new Date()					
 					logFile << "SEVERE ${logDate} ${trainingInstance.accession_id} v1 -   sgeErr file was not created. Default size value is set to 10.\n"
-					def sgeErrSize = 10
+					sgeErrSize = 10
 				}
-				if(writeResultsErrFile.exists()){
-					def writeResultsErrSize = writeResultsErrFile.text.size()
+				if(new File("${projectDir}/writeResults.err").exists()){
+					writeResultsErrSize = new File("${projectDir}/writeResults.err").size()
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  writeResultsSize is ${writeResultsErrSize}.\n"
 				}else{
+					logDate = new Date()
 					logFile << "SEVERE ${logDate} ${trainingInstance.accession_id} v1 -   writeResultsErr file was not created. Default size value is set to 10.\n"
-					def writeResultsErrSize = 10
+					writeResultsErrSize = 10
 				}
 				if(autoAugErrSize==0 && sgeErrSize==0 && writeResultsErrSize==0){
 					logDate = new Date()
@@ -2034,8 +2038,7 @@ An error occured during writing results. Please check manually what's wrong. The
 
 A problem occured while training AUGUSTUS for species ${trainingInstance.project_name} (Job ${trainingInstance.accession_id}).
 
-You find the results page of your job at http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/index.html . http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/AutoAug.err should contain some information about the problem with your job.
-
+You find the results page of your job at http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/index.html. Please check the provided log-files carefully before proceeding to work with the produced results. Please contact us (augustus-web@uni-greifswald.de) in case you are in doubt about the results.
 
 Thank you for using AUGUSTUS!
 

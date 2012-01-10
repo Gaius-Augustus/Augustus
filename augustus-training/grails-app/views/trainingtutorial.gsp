@@ -673,6 +673,8 @@ Top of page
 
 <p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/rattusProteinsChr1to3.fa">http://bioinf.uni-greifswald.de/trainaugustus/examples/rattusProteinsChr1to3.fa</a> - This file may be used as a <b>Protein file</b>. It contains proteins of <i>Rattus norvegicus</i> from GenBank (modified headers) that map to chromosomes 1 to 3.</p>
 
+<p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/traingenes.gb">http://bioinf.uni-greifswald.de/trainaugustus/examples/traingenes.gb</a> - This file contains 221 training genes for <i>Mus musculus</i> in GenBank format (including flanking regions).</p>
+
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
 Top of page

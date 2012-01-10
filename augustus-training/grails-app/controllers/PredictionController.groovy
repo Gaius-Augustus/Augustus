@@ -95,8 +95,8 @@ class PredictionController {
 		}
 		delProc.waitFor()
 		if(qstatFile.exists()){
-			logDate = new Date()
-			logFile << "SEVERE ${logDate} SGE          v1 - ${qstatFile} was not deleted!\n"
+			//logDate = new Date()
+			//logFile << "SEVERE ${logDate} SGE          v1 - ${qstatFile} was not deleted!\n"
 		}
 		cmdStr = "rm -r ${output_dir}/${qstatFilePrefix}.qstatResult &> /dev/null"
 		delProc = "${cmdStr}".execute()
@@ -146,6 +146,8 @@ class PredictionController {
 			def content
 			def int error_code
 			def urlExistsScript
+			def sgeErrSize = 10
+			def writeResultsErrSize = 10
 			// get date
 			def today = new Date()
 			logFile << "${today} ${predictionInstance.accession_id} v1 - AUGUSTUS prediction webserver starting on ${today}\n"
@@ -1644,6 +1646,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				def runFlag = 0;
 
 				while(qstat == 1){
+					sleep(300000) // 5 minutes
 					cmdStr = "bash ${projectDir}/status.sh"
 					statusCheck = "${cmdStr}".execute()
 					statusCheck.waitFor()
@@ -1671,22 +1674,19 @@ http://bioinf.uni-greifswald.de/trainaugustus
  						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${jobID} left SGE at ${today}.\n"
 					}
-					sleep(300000) // 5 minutes
 			   	}
 			   	// check whether errors occured by log-file-sizes
-				def sgeErrFile = new File("${projectDir}/aug-pred.sh.e${jobID}")
-				def writeResultsErrFile = new File("${projectDir}/writeResults.err")
-				if(sgeErrFile.exists()){
-					def sgeErrSize = sgeErrFile.text.size()
+				if(new File("${projectDir}/aug-pred.sh.e${jobID}").exists()){
+					sgeErrSize = new File("${projectDir}/aug-pred.sh.e${jobID}").size()
 				}else{
-					def sgeErrSize = 10
+					sgeErrSize = 10
  					logDate = new Date()
 					logFile <<  "SEVERE ${logDate} ${predictionInstance.accession_id} v1 - segErrFile was not created. Setting size to default value 10.\n"
 				}
-				if(writeResultsErrFile.exists()){
-					def writeResultsErrSize = writeResultsErrFile.text.size()
+				if(new File("${projectDir}/writeResults.err").exists()){
+					writeResultsErrSize = new File("${projectDir}/writeResults.err").size()
 				}else{
-					def writeResultsErrSize = 10
+					writeResultsErrSize = 10
  					logDate = new Date()
 					logFile <<  "SEVERE ${logDate} ${predictionInstance.accession_id} v1 - writeResultsErr was not created. Setting size to default value 10.\n"
 				}
