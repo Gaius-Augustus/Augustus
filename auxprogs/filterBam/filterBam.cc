@@ -141,6 +141,8 @@ int main(int argc, char *argv[])
   const char* inputFile = globalOptions.inputFile;
   const char* outputFile = globalOptions.outputFile;	
   const char* pairbedFile = globalOptions.pairbedFile;
+  cout << "------------------------------------------------" << endl;
+  cout << "Selected options are: " << endl;
   cout << "best=" << best << endl;
   cout << "help=" << help << endl;
   cout << "noIntrons=" << noIntrons << endl;
@@ -156,6 +158,7 @@ int main(int argc, char *argv[])
   cout << "minId=" <<  minId << endl;
   cout << "minIntronLen=" << minIntronLen << endl;
   cout << "uniqThresh=" << uniqThresh << endl;
+  cout << "------------------------------------------------" << endl;
 
   // Starting timer
   tStart = time(NULL);    
@@ -197,7 +200,7 @@ int main(int argc, char *argv[])
 		rName = getReferenceName(refData, RefID);
 		if (rName.find("printReferenceName")!=-1)
 		  {	  
-			cout << qName << " filtered out because it did not map with: " << rName << endl;
+			// cout << qName << " filtered out because it did not map with: " << rName << endl;
 			outNoMapping++;
 			goto nextAlignment;
 		  }
@@ -242,7 +245,7 @@ int main(int argc, char *argv[])
   		if (percId < minId)
   	  	{
   			outMinId++;
-			cout << qName << " filtered out by percid=" << percId << " < minId=" << minId << endl;
+			// cout << qName << " filtered out by percid=" << percId << " < minId=" << minId << endl;
   			goto nextAlignment;
   	  	}
 
@@ -254,7 +257,7 @@ int main(int argc, char *argv[])
   		if (coverage < minCover)
   		  {	
   			outMinCover++;
-			cout << qName << " filtered out by coverage= " << coverage << " < minId=" << minCover << endl;
+			// cout << qName << " filtered out by coverage= " << coverage << " < minId=" << minCover << endl;
   			goto nextAlignment;
   		  }	
 
@@ -264,13 +267,16 @@ int main(int argc, char *argv[])
   		if (noIntrons && baseInsert > insertLimit)
   		  {
   			outIntrons++;
-			cout << qName << " filtered out by intron criterion= " << baseInsert << " < minId=" << 
-				insertLimit << endl;
+			// cout << qName << " filtered out by intron criterion= " << baseInsert << " < minId=" << 
+			// 	insertLimit << endl;
   			goto nextAlignment;
   		  }
+
+
 	
-		cout << qName << " passed with parameters (percId, coverage)=(" << percId << "," << 
-				coverage << ")" << endl; 
+		// cout << qName << " passed with parameters (percId, coverage)=(" << percId << "," << 
+		// 		coverage << ")" << endl; 
+
 		// Appending coverage and percId into alignment
 		std::stringstream field;
 		field << percId;
@@ -284,12 +290,6 @@ int main(int argc, char *argv[])
   		   Generating array of strings to do equivalent to: */
         qali.push_back(al);
 
-		/////////////////////////////////////////////////////////////////
-		//
-		//     Estimation of "$percId" and "$coverage" goes here (see 
-		//     checkFileSortedness.pl
-		//
-		/////////////////////////////////////////////////////////////////
 
 		oldQnameStem = qNameStem;
 		if (line <= maxSortesTest)
@@ -297,10 +297,13 @@ int main(int argc, char *argv[])
 			qNameStems[qNameStem] = 1;
 		  }
 
-	  } // end while 
-	cout << "----------------------------" << endl;
-	cout << "The size of qali is: " << qali.size() << endl;
-	cout << "----------------------------" << endl;
+	  } ////// end while 
+
+
+	// cout << "----------------------------" << endl;
+	// cout << "qali.size()=" << qali.size() << endl;
+	// cout << "----------------------------" << endl;
+
 	// /* 	Calling of: "processQuery() if ($qnamestem ne "");" goes here */
 	// try {
 	  optionalCounters = processQuery(qali, refData, globalOptions, &writer);
@@ -313,8 +316,9 @@ int main(int argc, char *argv[])
 	// }
 
 	// Displaying results to STDOUT
-	cout <<  "\n        filtered:" << endl;
-	cout <<  "----------------:" << endl;
+	cout <<  "\n  filtered out: " << endl;
+	cout <<  "----------------: " << endl;
+	cout <<  "unmapped        : " << outNoMapping << endl;
 	cout <<  "percent identity: " << outMinId << endl;
 	cout <<  "coverage        : " << outMinCover << endl;
 	if (noIntrons)
@@ -395,7 +399,8 @@ void printQali(vector<BamAlignment> &qali, const RefVector refData)
 			ss_rstart.str() << " " << ss_rend.str() << " " << ss_percId.str() << " " << 
 		    ss_coverage.str() << " " << ss_score.str(); 
 	  cout << " ]," << endl;
-	  ss_rstart.str(""); ss_rend.str(""); ss_percId.str(""); ss_coverage.str(""); ss_score.str("");// clear strings
+	  // clear strings
+	  ss_rstart.str(""); ss_rend.str(""); ss_percId.str(""); ss_coverage.str(""); ss_score.str("");
 	}
 }
 
@@ -412,7 +417,7 @@ vector<BamAlignment> scoreAli(vector<BamAlignment>& qali)
 	  	(*it).GetTag("pi", s_percId);
   		(*it).GetTag("co", s_coverage);
  		ss_score << atof(s_coverage.c_str())+atof(s_percId.c_str()); 
-		cout << "Adding score=" << ss_score.str() << " to " << (*it).Name << endl;
+		// cout << "Adding score=" << ss_score.str() << " to " << (*it).Name << endl;
 		(*it).AddTag("sc", "Z", ss_score.str());
 		ss_score.str("");
 	}
@@ -544,18 +549,14 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 
   if (paired)
 	{
-	  //////////////////////////////////////////////////////////////////
-	  //// Printing alignment info before sorting
-	  cout << "------------------------------------------------------" << endl;
-	  cout << "qali BEFORE sorting by Name and position:" << endl;
-	  printQali(qali, refData);
-	  // Sorting by $tName and then by $tstart 
-	  sortQali(qali);
-	  //////////////////////////////////////////////////////////////////
-	  //// Printing alignment info before sorting
-	  cout << "------------------------------------------------------" << endl;
-	  cout << "qali BEFORE sorting by Name and position:" << endl;
-	  printQali(qali, refData);
+	  // //// Printing Qali before and after sorting
+	  // cout << "------------------------------------------------------" << endl;
+	  // cout << "qali BEFORE sorting by Name and position:" << endl;
+	  // printQali(qali, refData);
+	  sortQali(qali); 	  // Sorting by $tName and then by $tstart 
+	  // cout << "------------------------------------------------------" << endl;
+	  // cout << "qali AFTER sorting by Name and position:" << endl;
+	  // printQali(qali, refData);
 
 
 	  for (it=0; it<qali.size()-1; it++)
@@ -752,67 +753,65 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 	  //////////////////////////////
 
 	} else {// IF NOT PAIRED, single read
-			if ((uniq || best) && qali.size()>1)
-			{
-			  // Computing scores for each alignment and sorting them in descending order
-			  qali = scoreAli(qali);
-			  //// Printing alignment info before sorting
-			  cout << "------------------------------------------------------" << endl;
-			  cout << "qali BEFORE sorting by score:" << endl;
-			  printQali(qali, refData);
-			  std::stable_sort( qali.begin(), qali.end(), Sort::ByTag<std::string>("sc", Sort::DescendingOrder) );
-			  //// Printing alignment info before sorting
-			  cout << "------------------------------------------------------" << endl;
-			  cout << "qali AFTER sorting by score:" << endl;
-			  printQali(qali, refData);
-			  if (uniq)
-				{
-				  int second; int score0, score2; float ratio;
-				  second = 1;
-				  // Sweep through all alignments and stop until a di-similar one is found
-				  while (second < qali.size() && similar(qali.at(0), qali.at(second)))
-					{
-					  second++;
-					}
-				  cout << "The position of second=" << second << endl;
-				  // The $second alignment is the one with lowest $score, but that is still similar
-				  if (second < qali.size())
-					{
-					  qali.at(0).GetTag("sc", score0);
-					  qali.at(second-1).GetTag("sc", score2);
-					  cout << "score0 = " << score0 << "; score2 = " << score2 << endl;
-					  ratio = (float)score2/score0;
-					  // if (verbose)
-					  //   {
-					  cout << "best two alignments " << endl;
-					  cout << getReferenceName(refData, qali.at(0).RefID) << "\nscore=" << score0 << endl;
-					  cout << getReferenceName(refData, qali.at(0).RefID) << "\nscore=" << score2 << endl;
-					  cout << "ratio = " << ratio << endl;
-					  // }
-	
-					  if (ratio < uniqThresh) // ... significantly worse in terms of "scoreAli"
-						{		
-						  cout << "Letting pass only one alignment alignment: " << qali.at(0).Name << 
-							" because second alignment " << qali.at(second).Name << 
-							" is significantly worse." << endl;
-						  (*ptrWriter).SaveAlignment(qali.at(0)); // Prints alignment line into file
-						  outUniq += qali.size()-1;
-						} else {
-						outUniq += qali.size(); // dropping all alignments belonging to the same query
-						cout << "All queries (" << qali.size() << " alignments): " << 
-						  qali.at(0).Name << "filtered out by uniqueness ratio=" << 
-						  ratio << "> uniqThresh=" << uniqThresh << endl;
-					  }
-					} else {// Implies: (second == qali.size()) => all alginments in "qali" are similar	
-					cout << "Suboptimal alignments are all similar " << endl;
-					cout << "Letting pass only one alignment: " << qali.at(0).Name << endl;
-					(*ptrWriter).SaveAlignment(qali.at(0)); // Letting pass only best
-					outUniq += qali.size()-1;
+		if ((uniq || best) && qali.size()>1)
+		  {
+			// cout << "------------qali BEFORE sorting by score:---------------------------" << endl;
+			// printQali(qali, refData);
+			// Computing scores for each alignment and sorting them in descending order
+			qali = scoreAli(qali);
+			std::stable_sort( qali.begin(), qali.end(), Sort::ByTag<std::string>("sc", Sort::DescendingOrder) );
+			// cout << "------------qali AFTER sorting by score:----------------------------" << endl;
+			// printQali(qali, refData);
+			if (uniq)
+			  {
+				int second; int score0, score2; float ratio;
+				second = 1;
+				// Sweep through all alignments and stop until a di-similar one is found
+				while (second < qali.size() && similar(qali.at(0), qali.at(second)))
+				  {
+					second++;
 				  }
+				cout << "The position of second=" << second << endl;
+				// The $second alignment is the one with lowest $score, but that is still similar
+				if (second < qali.size())
+				  {
+					qali.at(0).GetTag("sc", score0);
+					qali.at(second-1).GetTag("sc", score2);
+					cout << "score0 = " << score0 << "; score2 = " << score2 << endl;
+					ratio = (float)score2/score0;
+					// if (verbose)
+					//   {
+					cout << "best two alignments " << endl;
+					cout << getReferenceName(refData, qali.at(0).RefID) << "\nscore=" << score0 << endl;
+					cout << getReferenceName(refData, qali.at(0).RefID) << "\nscore=" << score2 << endl;
+					cout << "ratio = " << ratio << endl;
+					// }
+	
+					if (ratio < uniqThresh) // ... significantly worse in terms of "scoreAli"
+					  {		
+						cout << "Letting pass only one alignment alignment: " << qali.at(0).Name << 
+						  " because second alignment " << qali.at(second).Name << 
+						  " is significantly worse." << endl;
+						(*ptrWriter).SaveAlignment(qali.at(0)); // Prints alignment line into file
+						outUniq += qali.size()-1;
+					  } else {
+					  outUniq += qali.size(); // dropping all alignments belonging to the same query
+					  cout << "All queries (" << qali.size() << " alignments): " << 
+						qali.at(0).Name << " filtered out by uniqueness ratio=" << 
+						ratio << "> uniqThresh=" << uniqThresh << endl;
+					}
+				  } else {// Implies: (second == qali.size()) => all alginments in "qali" are similar	
+				  cout << "Suboptimal alignments are all similar " << endl;
+				  cout << "Letting pass only one alignment: " << qali.at(0).Name << endl;
+				  (*ptrWriter).SaveAlignment(qali.at(0)); // Letting pass only best
+				  outUniq += qali.size()-1;
+				}
 
-				} else { // if !(unique) but (best)], take all best alignments that share maximum score
+			} else { // if !(unique) but (best)], take all best alignments that share maximum score
 
-	  			cout << "Size of qali is " << qali.size() << endl;
+			    cout << "----------------------------" << endl;
+				cout << "qali.size()=" << qali.size() << endl;
+				cout << "----------------------------" << endl;
 				string s_optScore, s_tempScore;
 				float optScore, tempScore; 
 				qali.at(0).GetTag("sc", s_optScore);
@@ -822,7 +821,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 				while(tempScore == optScore && qali.size()>0)
 				  {
 					(*ptrWriter).SaveAlignment(qali.at(0)); 
-					cout << "Wrote to file " << qali.at(0).Name << ", with tempScore=" << tempScore << endl;
+				  // cout << "Wrote to file " << qali.at(0).Name << ", with tempScore=" << tempScore << endl;
 					bestTnames.push_back(getReferenceName(refData, qali.at(0).RefID));
 					qali.erase(qali.begin()); // Delete first member of qali
 					qali.at(0).GetTag("sc", s_tempScore);
@@ -831,8 +830,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 
 				outBest += qali.size();
 				cout << "-------------------------------------" << endl;
-				cout << "Filtered out alignments by best criterion" << endl;
-				printQali(qali, refData);		
+				cout << "Filtered out alignments by best criterion: " << qali.size() << endl;
+				// printQali(qali, refData);		
 				cout << "-------------------------------------" << endl;
 				if (bestTnames.size()>1)
 				  {
@@ -842,15 +841,15 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 						geneNames.append(bestTnames.at(it));
 						geneNames.append(" ");
 					  }
-					cout << "Records for commongenefile: " << qali.at(0).Name <<  " " << geneNames;
+					cout << "Records for commongenefile: " << qali.at(0).Name <<  " " << 
+					  bestTnames.size() << " genes " << endl;
 				  }
 
 			  } // end if (unique)
 	
 		} else { //This else corresponds to: "if !((uniq || best) && qali.size()>1)"
-			  cout << "Letting pass all alignments associated with: " << qali.at(0).Name << 
-				" that is a total of: " << qali.size() << " alignments" << endl;
-			  for(int it=0; it<qali.size(); it++)
+		  	cout << "Letting pass all alignments, that is a total of: " << qali.size() << endl;
+			for(int it=0; it<qali.size(); it++)
 				{
 				  (*ptrWriter).SaveAlignment(qali.at(it)); // Prints alignment line into file
 				}

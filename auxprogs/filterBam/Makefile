@@ -16,9 +16,9 @@ CODE = $(HOME)/filterBam/bamtoolsCode
 INCLUDES = -I$(BT3)/include -I$(CODE)/headers -I$(BT3)/src/toolkit
 VPATH = $(CODE)/functions # Required to find files in functions/foo.cc
 LIBS = $(BT3)/lib/libbamtools.a -lz 
-SOURCES = processQuery.cc Qaliv.cc MatePairs.cc getReferenceName.cc initOptions.cc \
+SOURCES = filterBam.cc Qaliv.cc MatePairs.cc getReferenceName.cc initOptions.cc \
 			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc
-PROGRAM = processQuery
+PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
 CFLAGS = -g $(INCLUDES) -std=c++0x
 #LINK.cc = g++
