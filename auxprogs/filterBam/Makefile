@@ -1,24 +1,26 @@
-#	Makefile corresponding to FILTERBAM
+#	Makefile corresponding to computeMatePairs
 #	
 # 	NOTE:
 #	a) "-g" option allows for debugging
 #	b) libbamtools.a and lz library are used during the linking process
 #
-# 	Created: 28-September-2011
-#	Last modified: 18-December-2011
+# 	Created: 11-November-2011
+#	Last modified: 5-January-2012
 
 # Variable definition
 HOME = /home/tonatiuh/web-home
 BT1 = $(HOME)/pezmaster31-bamtools-12aca98
 BT2 = $(HOME)/bamtools-1.0.2
+BT3 = $(HOME)/bamtools
 CODE = $(HOME)/filterBam/bamtoolsCode
-INCLUDES = -I$(BT2)/include -I$(CODE)/headers
+INCLUDES = -I$(BT3)/include -I$(CODE)/headers -I$(BT3)/src/toolkit
 VPATH = $(CODE)/functions # Required to find files in functions/foo.cc
-LIBS = $(BT2)/lib/libbamtools.a -lz 
-SOURCES = filterBam.cc 
-PROGRAM = filterBam
+LIBS = $(BT3)/lib/libbamtools.a -lz 
+SOURCES = processQuery.cc Qaliv.cc MatePairs.cc getReferenceName.cc initOptions.cc \
+			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc
+PROGRAM = processQuery
 OBJECTS = $(SOURCES:.cc=.o)
-CFLAGS = -g $(INCLUDES) -std=c++0x # -std=c++0x is required for support of unordered maps
+CFLAGS = -g $(INCLUDES) -std=c++0x
 #LINK.cc = g++
 
 
@@ -33,11 +35,8 @@ $(PROGRAM) : $(OBJECTS)
 # % contains the stem-name of the file
 all:$(OBJECTS) # Compiles each foo.cc into foo.o
 $(OBJECTS) : %.o:%.cc
-	$(LINK.cc) $(CFLAGS) -c $^ -o $@  
+	$(LINK.cc) $(CFLAGS) -c $^ -o $@ 
 
-# Create accompanying pdf file
-pdf:filterBam.tex
-	pdflatex filterBam.tex
 
 clean: 
-	rm -f *~ $(OBJECTS) *.log *.aux
+	rm -f *~ $(OBJECTS)
