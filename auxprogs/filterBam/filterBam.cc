@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
   		cigarSize = cigar.size();
   		qName = al.Name; // query name
   		qLength = al.Length; // query length
-		if (qLength == 0) {qLength = 1;} //////////////////////////////////////////// TAKE OUT!!!!!!!!!!
+		// if (qLength == 0) {qLength = 1;} //////////////////////////////////////////// TAKE OUT!!!!!!!!!!
   		RefID = al.RefID; // ID of reference seq. (later used)
   		sumMandI = 0; // Equiv to $qEnd-$qStart in PSL
   		baseInsert = 0;
@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
   		if (percId < minId)
   	  	{
   			outMinId++;
-			// cout << qName << " filtered out by percid=" << percId << " < minId=" << minId << endl;
+			cout << qName << " filtered out by percid=" << percId << " < minId=" << minId << endl;
   			goto nextAlignment;
   	  	}
 
@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
   		if (coverage < minCover)
   		  {	
   			outMinCover++;
-			// cout << qName << " filtered out by coverage= " << coverage << " < minId=" << minCover << endl;
+			cout << qName << " filtered out by coverage= " << coverage << " < minId=" << minCover << endl;
   			goto nextAlignment;
   		  }	
 
@@ -267,15 +267,15 @@ int main(int argc, char *argv[])
   		if (noIntrons && baseInsert > insertLimit)
   		  {
   			outIntrons++;
-			// cout << qName << " filtered out by intron criterion= " << baseInsert << " < minId=" << 
-			// 	insertLimit << endl;
+			cout << qName << " filtered out by intron criterion= " << baseInsert << " < minId=" << 
+				insertLimit << endl;
   			goto nextAlignment;
   		  }
 
 
 	
-		// cout << qName << " passed with parameters (percId, coverage)=(" << percId << "," << 
-		// 		coverage << ")" << endl; 
+		cout << qName << " passed with parameters (percId, coverage)=(" << percId << "," << 
+				coverage << ")" << endl; 
 
 		// Appending coverage and percId into alignment
 		std::stringstream field;
