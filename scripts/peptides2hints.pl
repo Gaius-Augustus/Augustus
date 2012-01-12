@@ -2,6 +2,7 @@
 
 # Evaluate a psl-file that contains peptide 2 protein mappings 
 # in context with a gff-file of the protein coding genes 
+# or a six frame translation (gff!) that
 # the peptides were mapped against.
 #
 # Assumptions:
@@ -11,8 +12,15 @@
 # descriptor with the following format: 
 # transcript_id "au(\d*).g(\d*).t(\d*)
 #
+# In a gene gtf file, only the features CDS and intron are used.
+# In a six-frame translation gtf file, the feature frame is used.
+#
 # Example call:
 # perl peptides2hints.pl tiny.psl tiny.gtf E
+#
+# A six-frame fasta file produced with getorf can be converted to gtf format
+# with the following command:
+# cat six-frame.fa | perl -ne 'if(m/^>/){$_=~s/>//; @t1 = split(/_/); print $t1[0]."\tGETORF\tframe\t"; $t1[1]=~m/\d+ \[(\d+) - (\d+)\]/; $staC = $1; $stoC = $2; if($_ =~ m/REVERSE/){print $stoC."\t".$staC."\t.\t-\t";}else{print $staC."\t".$stoC."\t.\t+\t";} @t2 = split(/ /, $_); print "0\t$t2[0]\n";}' > six-frame.gtf
 
 my $usage = "peptides2hints.pl psl-file gff-file src > hint-file\n";
 
@@ -25,25 +33,27 @@ my $src = $ARGV[2];
 my $gffL;
 my %gffHash = ();
 my $geneName;
+my @gffLine = ();
 
 # read gff file into hash of arrays
 open(GFF, "<", $gffFile) or die ("Could not open gff-file $gffFile!\n");
 while(<GFF>){
-	if(($_=~m/CDS/) or( $_=~m/intron/)){
-		$gffL = $_;
+	$gffL = $_;
+	if(($_=~m/CDS/) or($_=~m/intron/)){
 		$gffL =~ m/transcript_id "au(\d*).g(\d*).t(\d*)"/;
 		$geneName = "au$1.g$2.t$3";
 		push (@{$gffHash{$geneName}}, $gffL);
-
+	}elsif($_=~m/frame/){
+		# muss noch genename für six-Frame einlesen implementieren!
+		@gffLine = split(/\t/, $gffL);
+		$geneName = $gffLine[8];
+		push (@{$gffHash{$geneName}}, $gffL);
 	}
-
 }
 close(GFF) or die ("Could not close gff-file $gffFile!\n");
 
 # compute gene lengths and delete genes whose length is not a multiple of 3
-my %geneLengths = ();
 my $thisGeneLen = 0;
-my @gffLine = ();
 my @geneGff = ();
 for $geneName ( keys %gffHash ) {
 	$thisGeneLen = 0;
@@ -54,22 +64,15 @@ for $geneName ( keys %gffHash ) {
 			$thisGeneLen = $thisGeneLen + ($gffLine[4] - $gffLine[3] + 1);
 		}
 	}
-	if($thisGeneLen%3 == 0){
-		$geneLengths{$geneName} = $thisGeneLen;
-	}else{
+	if(not($thisGeneLen%3 == 0)){
 		delete $gffHash{$geneName};
 	}
 }
 
 my @pslLine = ();
-my $pslStart;
-my $pslStop;
-my $gffStart;
-my $gffStop;
 my $strand;
 my $globalPslStart;
 my $globalPslStop;
-my $protLen;
 my @tmpPslLine;
 open(PSL, "<", $pslFile) or die("Could not open psl-file $pslFile\n");
 
@@ -79,8 +82,6 @@ while(<PSL>){
 	@pslLine = split(/\t/);
 	# continue working with perfect matches, only
 	if($pslLine[0] == $pslLine[10]){
-		$protLen = $pslLine[14];
-		#print "Local $pslStart $pslStop\n";
 		$geneName = $pslLine[13];
 		# get gff-entry for gene
 		if(exists $gffHash{$geneName}){
@@ -91,55 +92,56 @@ while(<PSL>){
 				$strand="-";
 				# convert psl file to the opposite strand
 				@tmpPslLine = @pslLine;
-				$pslLine[15] = $protLen - $tmpPslLine[16] + 1;
-				$pslLine[16] = $protLen - $tmpPslLine[15] + 1;
+				$pslLine[15] = $pslLine[14] - $tmpPslLine[16] + 1;
+				$pslLine[16] = $pslLine[14] - $tmpPslLine[15] + 1;
+				# pslLine[14] = protein length/target length; pslLine[15] = psl start; pslLine[16] = psl stop
 			}
-			$pslStart = $pslLine[15];
-			$pslStop = $pslLine[16];
-
-
 			$exonC = 1;
 			$intronLen = 0;
-			print "# $geneName $strand\n";
+			#print "# $geneName $strand\n";
 			foreach(@geneGff){
 				chomp;
 				@gffLine = split(/\t/);
-				$gffStart = $gffLine[3];
-				$gffStop = $gffLine[4];
-				if($strand eq "+"){
-					if($gffLine[2]=~m/CDS/){
-						if($exonC==1){
-							$firstExonStart = $gffStart;
-						}
-						#print "-----\n".$_."\n";
-						$globalPslStart = $pslStart*3-2 + $firstExonStart - 1 + $intronLen;
-						$globalPslStop = $pslStop*3 + $firstExonStart -1 + $intronLen;
-						#print $globalPslStart." ".$globalPslStop."\n";
-						if($globalPslStart>=$gffStart and $globalPslStart<=$gffStop and $globalPslStop>=$gffStart and $globalPslStop<=$gffStop){	
-							print $gffLine[0]."\tpep2hints\tCDSpart\t".$globalPslStart."\t".$globalPslStop."\t.\t$strand\t0\tsrc=$src\n";	
-							#print "Exon no. $exonC: GlobalPslStart: $globalPslStart GlobalPslStop: $globalPslStop vs. gffStart $gffStart and gffStop $gffStop\n";
-						}elsif($globalPslStart>=$gffStart and $globalPslStart<=$gffStop and $globalPslStop>=$gffStop){
-							#print "Partial hint found!\n";
-							print $gffLine[0]."\tpep2hints\tCDSpart\t".$globalPslStart."\t".$gffStop."\t.\t$strand\t0\tsrc=$src\n";
-							#print "Exon no. $exonC: LocalPslStart: $pslStart GlobalPslStart: $globalPslStart vs. gffStart $gffStart and gffStop $gffStop\n";
-							$printIntron = 1;
-						}elsif($globaPslStart<=$gffStart and $globalPslStop>=$pslStart and $globalPslStop<=$gffStop and $printIntron==1){
-							#print "Partial hint end found!\n";
-							print $gffLine[0]."\tpep2hints\tCDSpart\t".$gffStart."\t".$globalPslStop."\t.\t$strand\t".$gffLine[7]."\tsrc=$src end of intronspanning crap\n";
-							$printIntron = 0;
-						}
-						$exonC++;
-	
-					}elsif($gffLine[2]=~m/intron/){
-						$intronLen = $intronLen + ($gffStop -$gffStart + 1);
-						if($printIntron==1){
-							print $gffLine[0]."\tpep2hints\tintron\t$gffStart\t$gffStop\t.\t$strand\t.\tsrc=$src\n";
-						}
-						
+				if($gffLine[2]=~m/CDS/){
+					if($exonC==1){
+						$firstExonStart = $gffLine[3]; # $gffLine[3] = gffStart; $gffStop = $gffLine[4];
 					}
-	
-				}else{
-	
+					$globalPslStart = $pslLine[15]*3-2 + $firstExonStart - 1 + $intronLen;
+					$globalPslStop = $pslLine[16]*3 + $firstExonStart -1 + $intronLen;
+					if($globalPslStart>=$gffLine[3] and $globalPslStart<=$gffLine[4] and $globalPslStop>=$gffLine[3] and $globalPslStop<=$gffLine[4]){	
+						print $gffLine[0]."\tpep2hints\tCDSpart\t".$globalPslStart."\t".$globalPslStop."\t.\t$strand\t0\tsrc=$src\n";	
+						$printIntron = 0;
+					}elsif($globalPslStart>=$gffLine[3] and $globalPslStart<=$gffLine[4] and $globalPslStop>=$gffLine[4]){
+						print $gffLine[0]."\tpep2hints\tCDSpart\t".$globalPslStart."\t".$gffLine[4]."\t.\t$strand\t";
+						if($strand eq "+"){
+							print "0";
+						}else{
+							print "$gffLine[7]";
+						}
+						print "\tsrc=$src\n";
+						$printIntron = 1;
+					}elsif($globaPslStart<=$gffLine[3] and $globalPslStop>=$pslLine[15] and $globalPslStop<=$gffLine[4] and $printIntron==1)
+						print $gffLine[0]."\tpep2hints\tCDSpart\t".$gffLine[3]."\t".$globalPslStop."\t.\t$strand\t";
+						if($strand eq "+"){
+							print "$gffLine[7]";
+						}else{
+							print "0";
+						}
+						print "\tsrc=$src\n";
+						$printIntron = 0;
+					}
+					$exonC++;
+				}elsif($gffLine[2]=~m/intron/){
+					$intronLen = $intronLen + ($gffLine[4] -$gffLine[3] + 1);
+					if($printIntron==1){
+						print $gffLine[0]."\tpep2hints\tintron\t$$gffLine[3]\t$gffLine[4]\t.\t$strand\t.\tsrc=$src\n";
+					}
+				}elsif($gffLine[2]=~m/frame/){
+					$globalPslStart = $pslLine[15]*3-2 + $gffLine[3] - 1;
+					$globalPslStop = $pslLine[16]*3 + $gffLine[3] -1;
+					if($globalPslStart>=$gffLine[3] and $globalPslStart<=$gffLine[4] and $globalPslStop>=$gffLine[3] and $globalPslStop<=$gffLine[4]){	
+						print $gffLine[0]."\tpep2hints\tCDSpart\t".$globalPslStart."\t".$globalPslStop."\t.\t$strand\t0\tsrc=$src\n";
+					}
 				}
 			}
 		}
