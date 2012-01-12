@@ -4,7 +4,7 @@
 	This script only works with previously SORTED files!!!
 
 	Created: 4-November-2011
-	Last modified: 4-January-2012
+	Last modified: 11-January-2012
 */ 
  
 #include <api/BamReader.h>
@@ -26,6 +26,7 @@
 #include <cstdio>
 #include <algorithm>
 #include <unordered_map>
+#include <fstream>
 #include "header.h"
 
 
@@ -158,6 +159,8 @@ int main(int argc, char *argv[])
   cout << "minId=" <<  minId << endl;
   cout << "minIntronLen=" << minIntronLen << endl;
   cout << "uniqThresh=" << uniqThresh << endl;
+  cout << "commonGeneFile=" << commonGeneFile;
+  cout << "pairbedFile=" << pairbedFile;
   cout << "------------------------------------------------" << endl;
 
   // Starting timer
@@ -206,14 +209,20 @@ int main(int argc, char *argv[])
 		  }
 
 	
-		// Verifying file is sorted in ascending order
-		if (oldQnameStem.compare("") && oldQnameStem.compare(qNameStem))   
+		// Verifying file is sorted by query name
+		if (oldQnameStem.compare(qNameStem) && oldQnameStem.compare(""))   
 		  { 
 			// Checking whether 10th field is sorted in ascending order
 			if (line <= maxSortesTest && qNameStems[qNameStem])   
 			  {
 				cerr << "Input file not sorted by query name!\n" << qNameStem.c_str() << 
-				  " occurred previously. Set LC_ALL=C and sort -k 1,1" << endl; 	
+				  " occurred previously. " << endl;
+				cerr << "Do either of the following: " << endl;
+				cerr << "1) Convert the file into SAM with e.g. the 'bamtools' software. \n" << 
+						"   Then sort lexicographically by queryname, i.e. set LC_ALL=C and sort -k 1,1\n" 
+					 << "   Convert back again into BAM format, with e.g. 'samtools' software. " << endl;
+				cerr << "2) Sort BAM file directly with your preferred software package, " << 
+				  		"   e.g. 'samtools' or 'bamtools' " << endl;  	
 				exit(1);
 			  }	
 			/////////////////////////////////////////////////////////////////	  	
@@ -472,10 +481,10 @@ bool similar(BamAlignment al1, BamAlignment al2)
 
   if (jitTend <= itTstart || jitTstart >= itTend) // here: similar = overlapping target range
 	{
-	  cout << "they are not similar" << endl;
+	  cout << "[SIMILAR]: Alignments " << al1.Name << " and " << al2.Name << " ARE NOT similar" << endl;
 	  return false;
 	} else {
-			cout << "alignments " << al1.Name << " and " << al2.Name << " are similar" << endl;
+			cout << "[SIMILAR]: Alignments " << al1.Name << " and " << al2.Name << " ARE similar" << endl;
 			return true;
   		   }
 }
@@ -524,7 +533,11 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
   int minCover = globalOptions.minCover;
   int minId = globalOptions.minId;
   int minIntronLen = globalOptions.minIntronLen;
-  int uniqThresh = globalOptions.uniqThresh;
+  float uniqThresh = globalOptions.uniqThresh;
+  const char* commonGeneFile = globalOptions.commonGeneFile;
+  const char* pairbedFile = globalOptions.pairbedFile;
+  ofstream geneFile;
+  ofstream bedFile;
 
   // Mate variables
   string itRname, jitRname;
@@ -546,6 +559,11 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
   uint32_t itTstart;
   uint32_t itTend;
   string reservedField;
+
+  cout << "----------------------------" << endl;
+  cout << "qali.size()=" << qali.size() << endl;
+  cout << "----------------------------" << endl;
+
 
   if (paired)
 	{
@@ -753,52 +771,63 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 	  //////////////////////////////
 
 	} else {// IF NOT PAIRED, single read
+		cout << "Options selected: (uniq, best) = (" << uniq << ", " << best << ")" << endl;
+
 		if ((uniq || best) && qali.size()>1)
 		  {
-			// cout << "------------qali BEFORE sorting by score:---------------------------" << endl;
+			// cout << "qali BEFORE sorting by score:---------------------------" << endl;
 			// printQali(qali, refData);
-			// Computing scores for each alignment and sorting them in descending order
+			cout << "Assigning scores to each alignment and sorting them in descending order." << endl;
 			qali = scoreAli(qali);
 			std::stable_sort( qali.begin(), qali.end(), Sort::ByTag<std::string>("sc", Sort::DescendingOrder) );
-			// cout << "------------qali AFTER sorting by score:----------------------------" << endl;
-			// printQali(qali, refData);
-			if (uniq)
+			cout << "qali AFTER sorting by score:" << endl;
+			printQali(qali, refData);
+			if (uniq) 
 			  {
-				int second; int score0, score2; float ratio;
+				int second; float scoreFirst, scoreSecond, ratio;
+				string s_scoreFirst, s_scoreSecond;
 				second = 1;
 				// Sweep through all alignments and stop until a di-similar one is found
 				while (second < qali.size() && similar(qali.at(0), qali.at(second)))
 				  {
 					second++;
 				  }
-				cout << "The position of second=" << second << endl;
-				// The $second alignment is the one with lowest $score, but that is still similar
+				cout << "Comparing scores between: " << qali.at(0).Name << " and " << 
+					 qali.at(second).Name << endl;
+				// "Second" alignment is the one with lowest score, but that is still similar
 				if (second < qali.size())
 				  {
-					qali.at(0).GetTag("sc", score0);
-					qali.at(second-1).GetTag("sc", score2);
-					cout << "score0 = " << score0 << "; score2 = " << score2 << endl;
-					ratio = (float)score2/score0;
+					qali.at(0).GetTag("sc", s_scoreFirst);
+					qali.at(second).GetTag("sc", s_scoreSecond);
+					scoreFirst = atof(s_scoreFirst.c_str());
+					scoreSecond = atof(s_scoreSecond.c_str());
+					cout << "scoreFirst = " << scoreFirst << "; scoreSecond = " << scoreSecond << endl;
+					ratio = scoreSecond/scoreFirst;
 					// if (verbose)
 					//   {
-					cout << "best two alignments " << endl;
-					cout << getReferenceName(refData, qali.at(0).RefID) << "\nscore=" << score0 << endl;
-					cout << getReferenceName(refData, qali.at(0).RefID) << "\nscore=" << score2 << endl;
-					cout << "ratio = " << ratio << endl;
+					cout << "SIMILAR alignments with largest difference between scores: " << 
+					 		getReferenceName(refData, qali.at(0).RefID) << ", score=" << scoreFirst << 
+						    " and " << 
+							getReferenceName(refData, qali.at(0).RefID) << ", score=" << scoreSecond <<
+							"; and ratio = " << ratio << endl;
 					// }
 	
 					if (ratio < uniqThresh) // ... significantly worse in terms of "scoreAli"
 					  {		
-						cout << "Letting pass only one alignment alignment: " << qali.at(0).Name << 
-						  " because second alignment " << qali.at(second).Name << 
-						  " is significantly worse." << endl;
+						cout << "Letting pass only alignment " << qali.at(0).Name << 
+						  " because the LOWEST-scored SIMILAR-alignment " << qali.at(second).Name << 
+						  " is significantly worse, i.e. ratio=" << ratio << "<uniqThresh=" << 
+						  uniqThresh << endl;
 						(*ptrWriter).SaveAlignment(qali.at(0)); // Prints alignment line into file
 						outUniq += qali.size()-1;
+						cout << "Rest of alignments, i.e. " << outUniq << ", filtered out." << endl;
 					  } else {
-					  outUniq += qali.size(); // dropping all alignments belonging to the same query
-					  cout << "All queries (" << qali.size() << " alignments): " << 
-						qali.at(0).Name << " filtered out by uniqueness ratio=" << 
-						ratio << "> uniqThresh=" << uniqThresh << endl;
+					  	outUniq += qali.size(); // dropping all alignments belonging to the same query
+					  	cout << "(" << qali.size() << " alignments), filtered out because: ratio=" 
+							<< ratio << ">uniqThresh=" << uniqThresh << endl;
+					  for (int it=0; it<qali.size(); it++)
+						{cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
+						
 					}
 				  } else {// Implies: (second == qali.size()) => all alginments in "qali" are similar	
 				  cout << "Suboptimal alignments are all similar " << endl;
@@ -807,11 +836,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 				  outUniq += qali.size()-1;
 				}
 
-			} else { // if !(unique) but (best)], take all best alignments that share maximum score
+			} else { // (uniq, best) = (0, 1); let pass only (best) alignments that share maximum score
 
-			    cout << "----------------------------" << endl;
-				cout << "qali.size()=" << qali.size() << endl;
-				cout << "----------------------------" << endl;
 				string s_optScore, s_tempScore;
 				float optScore, tempScore; 
 				qali.at(0).GetTag("sc", s_optScore);
@@ -821,7 +847,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 				while(tempScore == optScore && qali.size()>0)
 				  {
 					(*ptrWriter).SaveAlignment(qali.at(0)); 
-				  // cout << "Wrote to file " << qali.at(0).Name << ", with tempScore=" << tempScore << endl;
+				  	cout << "Letting pass alignment (best): " << qali.at(0).Name << ", score=" 
+						 << tempScore << endl;
 					bestTnames.push_back(getReferenceName(refData, qali.at(0).RefID));
 					qali.erase(qali.begin()); // Delete first member of qali
 					qali.at(0).GetTag("sc", s_tempScore);
@@ -840,14 +867,16 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 					  {
 						geneNames.append(bestTnames.at(it));
 						geneNames.append(" ");
+						geneFile.open(commonGeneFile);
+						geneFile << qali.at(0).Name <<  " " << bestTnames.size() << " genes." << 
+							"geneNames="<< geneNames << endl;
 					  }
-					cout << "Records for commongenefile: " << qali.at(0).Name <<  " " << 
-					  bestTnames.size() << " genes " << endl;
-				  }
+					geneFile.close();
+				  } 
 
 			  } // end if (unique)
 	
-		} else { //This else corresponds to: "if !((uniq || best) && qali.size()>1)"
+		} else { // (uniq, best) = (0, 0) && qali.size()>1)"
 		  	cout << "Letting pass all alignments, that is a total of: " << qali.size() << endl;
 			for(int it=0; it<qali.size(); it++)
 				{
