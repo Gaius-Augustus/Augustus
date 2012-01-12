@@ -38,6 +38,7 @@ my @gffLine = ();
 # read gff file into hash of arrays
 open(GFF, "<", $gffFile) or die ("Could not open gff-file $gffFile!\n");
 while(<GFF>){
+	chomp;
 	$gffL = $_;
 	if(($_=~m/CDS/) or($_=~m/intron/)){
 		$gffL =~ m/transcript_id "au(\d*).g(\d*).t(\d*)"/;
@@ -120,7 +121,7 @@ while(<PSL>){
 						}
 						print "\tsrc=$src\n";
 						$printIntron = 1;
-					}elsif($globaPslStart<=$gffLine[3] and $globalPslStop>=$pslLine[15] and $globalPslStop<=$gffLine[4] and $printIntron==1)
+					}elsif($globaPslStart<=$gffLine[3] and $globalPslStop>=$pslLine[15] and $globalPslStop<=$gffLine[4] and $printIntron==1){
 						print $gffLine[0]."\tpep2hints\tCDSpart\t".$gffLine[3]."\t".$globalPslStop."\t.\t$strand\t";
 						if($strand eq "+"){
 							print "$gffLine[7]";
