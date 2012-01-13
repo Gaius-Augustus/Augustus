@@ -75,6 +75,8 @@ my $strand;
 my $globalPslStart;
 my $globalPslStop;
 my @tmpPslLine;
+my $preLine = "";
+my @preOut;
 open(PSL, "<", $pslFile) or die("Could not open psl-file $pslFile\n");
 
 # each line of PSL is processed
@@ -99,7 +101,7 @@ while(<PSL>){
 			}
 			$exonC = 1;
 			$intronLen = 0;
-			#print "# $geneName $strand\n";
+			$preLine = "";
 			foreach(@geneGff){
 				chomp;
 				@gffLine = split(/\t/);
@@ -109,39 +111,43 @@ while(<PSL>){
 					}
 					$globalPslStart = $pslLine[15]*3-2 + $firstExonStart - 1 + $intronLen;
 					$globalPslStop = $pslLine[16]*3 + $firstExonStart -1 + $intronLen;
-					if($globalPslStart>=$gffLine[3] and $globalPslStart<=$gffLine[4] and $globalPslStop>=$gffLine[3] and $globalPslStop<=$gffLine[4]){	
-						print $gffLine[0]."\tpep2hints\tCDSpart\t".$globalPslStart."\t".$globalPslStop."\t.\t$strand\t0\tsrc=$src\n";	
+					if($globalPslStart>=$gffLine[3] and $globalPslStart<=$gffLine[4] and $globalPslStop>=$gffLine[3] and $globalPslStop<=$gffLine[4]){
+						push(@preOut, $gffLine[0]."\tpep2hints\tCDSpart\t".$globalPslStart."\t".$globalPslStop."\t.\t$strand\t0\tsrc=$src");	
 						$printIntron = 0;
 					}elsif($globalPslStart>=$gffLine[3] and $globalPslStart<=$gffLine[4] and $globalPslStop>=$gffLine[4]){
-						print $gffLine[0]."\tpep2hints\tCDSpart\t".$globalPslStart."\t".$gffLine[4]."\t.\t$strand\t";
+						$preLine = $preLine.$gffLine[0]."\tpep2hints\tCDSpart\t".$globalPslStart."\t".$gffLine[4]."\t.\t$strand\t";
 						if($strand eq "+"){
-							print "0";
+							$preLine = $preLine."0";
 						}else{
-							print "$gffLine[7]";
+							$preLine = $preLine."$gffLine[7]";
 						}
-						print "\tsrc=$src\n";
+						$preLine = $preLine."\tsrc=$src";
+						push(@preOut, $preLine);
+						$preLine = "";
 						$printIntron = 1;
 					}elsif($globaPslStart<=$gffLine[3] and $globalPslStop>=$pslLine[15] and $globalPslStop<=$gffLine[4] and $printIntron==1){
-						print $gffLine[0]."\tpep2hints\tCDSpart\t".$gffLine[3]."\t".$globalPslStop."\t.\t$strand\t";
+						$preLine = $gffLine[0]."\tpep2hints\tCDSpart\t".$gffLine[3]."\t".$globalPslStop."\t.\t$strand\t";
 						if($strand eq "+"){
-							print "$gffLine[7]";
+							$preLine = $preLine."$gffLine[7]";
 						}else{
-							print "0";
+							$preLine = $preLine."0";
 						}
-						print "\tsrc=$src\n";
+						$preLine = $preLine."\tsrc=$src";
+						push(@preOut, $preLine);
+						$preLine = "";
 						$printIntron = 0;
 					}
 					$exonC++;
 				}elsif($gffLine[2]=~m/intron/){
 					$intronLen = $intronLen + ($gffLine[4] -$gffLine[3] + 1);
 					if($printIntron==1){
-						print $gffLine[0]."\tpep2hints\tintron\t$$gffLine[3]\t$gffLine[4]\t.\t$strand\t.\tsrc=$src\n";
+						push(@preOut, $gffLine[0]."\tpep2hints\tintron\t$$gffLine[3]\t$gffLine[4]\t.\t$strand\t.\tsrc=$src");
 					}
 				}elsif($gffLine[2]=~m/frame/){
 					$globalPslStart = $pslLine[15]*3-2 + $gffLine[3] - 1;
 					$globalPslStop = $pslLine[16]*3 + $gffLine[3] -1;
 					if($globalPslStart>=$gffLine[3] and $globalPslStart<=$gffLine[4] and $globalPslStop>=$gffLine[3] and $globalPslStop<=$gffLine[4]){	
-						print $gffLine[0]."\tpep2hints\tCDSpart\t".$globalPslStart."\t".$globalPslStop."\t.\t$strand\t0\tsrc=$src\n";
+						push(@preOut, $gffLine[0]."\tpep2hints\tCDSpart\t".$globalPslStart."\t".$globalPslStop."\t.\t$strand\t0\tsrc=$src");
 					}
 				}
 			}
@@ -149,3 +155,33 @@ while(<PSL>){
 	}
 }
 close(PSL) or die("Could not close psl-file $pslFile\n");
+
+# account for multiplicity
+my %countHints = ();
+foreach(@preOut){
+	$line = $_;
+	if(not(exists $countHints{$line})){
+		$countHints{$line} = 1;
+	}else{
+		$countHints{$line} = $countHints{$line} + 1;
+	}
+}
+
+# print hints
+while ( ($k,$v) = each %countHints ) {
+    print "$k;pri=4;mult=$v;\n";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
