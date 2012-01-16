@@ -662,111 +662,33 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 	  cout << "scalarQali=" << (int)qali.size() << endl;
 	  cout << "scalarMated=" << (int)mated.size() << endl;
 	  cout << "outPaired=" << (int)outPaired << endl;
-	  if (!uniq && !best || matepairs.size()<2)
-		{ // let pass all read alignments that are involved in mate pairs
-		  map<int,int>::iterator m_it;
-		  for (m_it=mated.begin(); m_it!=mated.end(); m_it++)
-			{ 
-			  // try {
-
-				(*ptrWriter).SaveAlignment(qali.at((*m_it).first)); // Saving alignment
-			  // } catch  (out_of_range& oor) {
-			  // 	cout << "There was an error at line " << line << ", " << oor.what() << endl;
-			  // }
-
-			}
-		} else {
-			// Sort matepairs by score, i.e. @matepairs = sort {$b->[2] <=> $a->[2]} @matepairs;
-			matepairs.sort(); 
-			printList(matepairs);
-	  }
-	  // 	  if (uniq)
-	  // 		{// let pass only best mate pair, and only if second is 
-	  // 		  // significantly worse
-	  // int second = 1;
-	  // list <MatePairs>::iterator matesIter = matepairs.begin();
-	  // while(second < matepairs.size()) // && similar())
-	  // 	{
-	  // 	  second++;
-	  // 	  matesIter++;
-	  // 	}
-	  // cout << "second=" << second << endl;
-
-	  // 		  if (second < (int)matepairs.size())
-	  // 			  {
-	  // matesIter = matepairs.begin();
-	  // float ratio = (*matesIter).values[2]/((*matepairs.begin()).values[2]);
-	  // cout << "ratio=" << ratio << endl;
-	  // if (verbose)
-	  //   {
-	  // printf("\nbest two mates\n");
-	  // matesIter = matepairs.begin();
-	  // cout << qali.at((int)(*matesIter).values[0]) << "paired with\n" << 
-	  //   		qali.at((int)(*matesIter).values[1]) << "score=" << 
-	  //   		(*matesIter).values[2] << "\n";
-	  // matesIter++;
-	  // cout << qali.at((int)(*matesIter).values[0]) << "paired with\n" << 
-	  //   		qali.at((int)(*matesIter).values[1]) << "score=" << 
-	  //   		(*matesIter).values[2] << "\n";
-	  // } // end if(verbose)
-
-	  // 				if (ratio < uniqthresh)
-	  // 				  {
-	  // // print the two alignments for best mate pair only
-	  // printf("%d", matepairs); // $qali[$matepairs[0]->[0]]->[0]);
-	  // printf("%d", matepairs); // $qali[$matepairs[0]->[1]]->[0]);
-	  // 				  } else {
-	  // 				  		matepairs.clear();
-	  // 				  }
-	  // 			  } else {
-	  // 			  if (verbose)
-	  // 				{
-	  // 				  printf( "suboptimal mate pairs are similar\n");
-	  // 				}
-	  // 			  // printf($qali[$matepairs[0]->[0]]->[0]);
-	  // 			  // printf($qali[$matepairs[0]->[1]]->[0]);			
-	  // 			  }// end if(second<@matepairs.size())
-	  // 			///// splice @matepairs, 1; # keep only the best pair (if any)
-
-	  // 		} else { // best: take all best alignment pairs
-	  // 		int optscore;
-	  // 		list<string> bestTnames;
-	  // 		int numbest = 0;
-	  // 		while (numbest < matepairs.size()) 
-	  // 		  {
-	  // 			// printf($qali[$matepairs[$numbest]->[0]]->[0]);
-	  // 			// printf($qali[$matepairs[$numbest]->[1]]->[0]);
-	  // 			// push @bestTnames, $qali[$matepairs[$numbest]->[0]]->[1];
-	  // 			numbest++;
-	  // 		  }
-	  // 		// $outBest += @matepairs - $numbest;
-	  // 		// splice @matepairs, $numbest; # keep only the first $numbest pairs
-	  // 		if (bestTnames.size()>1)
-	  // 		  {
-	  // 			map<string,int> genenames; 
-	  // 			int itTname = 0; 
-	  //           for (itTname; itTname<genenames.size(); itTname++) //my $Tname (@bestTnames) 
-	  // 				{ 
-	  // 				  // if (genenames[itTname]==1)
-	  // 				  // 	{
-	  // 				  // 	//$Tname =~ s/\.t\d+//; $genenames{$Tname}=1;
-	  // 				  // 	}
-	  // 				}
-	  // 			// print COMMON $oldqnamestem . "\t" . join(" ", keys %genenames) . "\n" if (%genenames > 1 && defined($commongenefile));
-
-	  // 		  }		
-	  // 	  } // end if(uniq)
-
-	  // } // end if (!uniq && !best || matepairs.size()<2)
-	
-	  // // output pairedbed info: go through list of all mate pairs and store start and end position
-	  // if (pairbedfile)
-	  // 	{
-	  // 	  while (matepairs.size() > 0)
-	  // 		{
-	  // 	  	// DO SOMETHING ELSE
-		
+	  // if (!uniq && !best || matepairs.size()<2)
+	  // 	{ // let pass all read alignments that are involved in mate pairs
+	  // 	  map<int,int>::iterator m_it;
+	  // 	  for (m_it=mated.begin(); m_it!=mated.end(); m_it++)
+	  // 		{ 
+	  // 		  // try {
+	  // 		  cout << "Letting pass all read alignments that are invoved in mate pairs" << endl;
+	  // 			(*ptrWriter).SaveAlignment(qali.at((*m_it).first)); // Saving alignment
+	  // 		  // } catch  (out_of_range& oor) {
+	  // 		  // 	cout << "There was an error at line " << line << ", " << oor.what() << endl;
+	  // 		  // }
 	  // 		}
+	  // 	} else { // uniq or best
+	  // 		// Sort matepairs by score 
+	  // 		matepairs.sort(); 
+	  // 		printList(matepairs);
+	  // 	  	if (uniq)
+	  // 		  {// let pass only best mate pair, and only if second is significantly worse
+	  // 			int second = 1;
+	  // 			list <MatePairs>::iterator matesIter = matepairs.begin();
+	  // 			while(second < matepairs.size()) // && similar()
+	  // 			  {
+	  // 				second++;
+	  // 				matesIter++;
+	  // 			  }
+	  // 			cout << "second=" << second << endl;
+	  //   	  }
 	  // 	}
 	  //////////////////////////////
 
