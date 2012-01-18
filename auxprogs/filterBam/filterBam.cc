@@ -74,12 +74,11 @@ void seed()
 }
 
 
-void sortQali(vector<BamAlignment>& qali);
 void printQali(vector<BamAlignment> &qali, const RefVector refData);
 float scoreMate(vector<BamAlignment> qali, int it, int jit, int dist, globalOptions_t globalOptions);
 void printMatedPairsInfo(list<MatePairs> matepairs, list<int> insertlen);
 void printMatedMap(map<int,int> mated);
-optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refData, globalOptions_t globalOptions, BamWriter* ptrWriter);
+optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem);
 
 
 int main(int argc, char *argv[])
@@ -142,26 +141,28 @@ int main(int argc, char *argv[])
   const char* inputFile = globalOptions.inputFile;
   const char* outputFile = globalOptions.outputFile;	
   const char* pairbedFile = globalOptions.pairbedFile;
-  cout << "------------------------------------------------" << endl;
-  cout << "Selected options are: " << endl;
-  cout << "best=" << best << endl;
-  cout << "help=" << help << endl;
-  cout << "noIntrons=" << noIntrons << endl;
-  cout << "paired=" << paired << endl;
-  cout << "uniq=" << uniq << endl;
-  cout << "verbose=" << verbose << endl;
-  cout << "Input file is " << inputFile << endl;
-  cout << "Output file is " << outputFile << endl;
-  cout << "Value of paired is " << paired << endl;
-  cout << "insertLimit=" << insertLimit << endl;
-  cout << "maxIntronLen=" <<  maxIntronLen << endl;
-  cout << "minCover=" <<  minCover << endl;
-  cout << "minId=" <<  minId << endl;
-  cout << "minIntronLen=" << minIntronLen << endl;
-  cout << "uniqThresh=" << uniqThresh << endl;
-  cout << "commonGeneFile=" << commonGeneFile << endl;
-  cout << "pairbedFile=" << pairbedFile << endl;
-  cout << "------------------------------------------------" << endl;
+  if (verbose)
+	{
+	  cout << "------------------------------------------------" << endl;
+	  cout << "Selected options are: " << endl;
+	  cout << "best=" << best << endl;
+	  cout << "help=" << help << endl;
+	  cout << "noIntrons=" << noIntrons << endl;
+	  cout << "paired=" << paired << endl;
+	  cout << "uniq=" << uniq << endl;
+	  cout << "verbose=" << verbose << endl;
+	  cout << "Input file: " << inputFile << endl;
+	  cout << "Output file: " << outputFile << endl;
+	  cout << "insertLimit=" << insertLimit << endl;
+	  cout << "maxIntronLen=" <<  maxIntronLen << endl;
+	  cout << "minCover=" <<  minCover << endl;
+	  cout << "minId=" <<  minId << endl;
+	  cout << "minIntronLen=" << minIntronLen << endl;
+	  cout << "uniqThresh=" << uniqThresh << endl;
+	  cout << "commonGeneFile=" << commonGeneFile << endl;
+	  cout << "pairbedFile=" << pairbedFile << endl;
+	  cout << "------------------------------------------------" << endl;
+	}
 
   // Starting timer
   tStart = time(NULL);    
@@ -203,7 +204,10 @@ int main(int argc, char *argv[])
 		rName = getReferenceName(refData, RefID);
 		if (rName.find("printReferenceName")!=-1)
 		  {	  
-			// cout << qName << " filtered out because it did not map with: " << rName << endl;
+			if (verbose)
+			  {
+				cout << qName << " filtered out because it is unmapped " << endl;
+			  }
 			outNoMapping++;
 			goto nextAlignment;
 		  }
@@ -254,7 +258,10 @@ int main(int argc, char *argv[])
   		if (percId < minId)
   	  	{
   			outMinId++;
-			cout << qName << " filtered out by percid=" << percId << " < minId=" << minId << endl;
+			if (verbose)
+			  {
+				cout << qName << " filtered out by percid=" << percId << " < minId=" << minId << endl;
+			  }
   			goto nextAlignment;
   	  	}
 
@@ -266,7 +273,10 @@ int main(int argc, char *argv[])
   		if (coverage < minCover)
   		  {	
   			outMinCover++;
-			cout << qName << " filtered out by coverage= " << coverage << " < minId=" << minCover << endl;
+			if (verbose)
+			  {
+				cout << qName << " filtered out by coverage= " << coverage << " < minId=" << minCover << endl;
+			  }
   			goto nextAlignment;
   		  }	
 
@@ -276,15 +286,20 @@ int main(int argc, char *argv[])
   		if (noIntrons && baseInsert > insertLimit)
   		  {
   			outIntrons++;
-			cout << qName << " filtered out by intron criterion= " << baseInsert << " < minId=" << 
-				insertLimit << endl;
+			if (verbose)
+			  {
+				cout << qName << " filtered out by intron criterion= " << baseInsert << " < minId=" << 
+					insertLimit << endl;
+			  }
   			goto nextAlignment;
   		  }
 
-
 	
-		cout << qName << " passed with parameters (percId, coverage)=(" << percId << "," << 
-				coverage << ")" << endl; 
+		if (verbose)
+		  {
+			cout << qName << " passed with parameters (percId, coverage)=(" << percId << "," << 
+					coverage << ")" << endl; 
+		  }
 
 		// Appending coverage and percId into alignment
 		std::stringstream field;
@@ -295,8 +310,7 @@ int main(int argc, char *argv[])
 		al.AddTag("co", "Z", field.str());
 		field.str("");
 
-  		/* Push @qali, [$_, $targetname, $qsuffix, $strand, $tstart, $tend, $percId, $coverage]; 
-  		   Generating array of strings to do equivalent to: */
+  		// Push @qali, [$_, $targetname, $qsuffix, $strand, $tstart, $tend, $percId, $coverage]; 
         qali.push_back(al);
 
 
@@ -309,24 +323,25 @@ int main(int argc, char *argv[])
 	  } ////// end while 
 
 
-	// cout << "----------------------------" << endl;
-	// cout << "qali.size()=" << qali.size() << endl;
-	// cout << "----------------------------" << endl;
 
 	// /* 	Calling of: "processQuery() if ($qnamestem ne "");" goes here */
-	// try {
-	  optionalCounters = processQuery(qali, refData, globalOptions, &writer);
-	  outPaired = optionalCounters.outPaired;
-	  outUniq = optionalCounters.outUniq;
-	  outBest = optionalCounters.outBest;
-	// } catch  (out_of_range& oor) {
-	//   cout << "There was an error here: " << oor.what() << endl;
-	//   cout << "Size of qali is: " << qali.size() << endl;
-	// }
+	if (qNameStem.compare(""))
+	  {
+		// try {
+		optionalCounters = processQuery(qali, refData, globalOptions, &writer, oldQnameStem);
+		outPaired = optionalCounters.outPaired;
+		outUniq = optionalCounters.outUniq;
+		outBest = optionalCounters.outBest;
+		// } catch  (out_of_range& oor) {
+		//   cout << "There was an error here: " << oor.what() << endl;
+		//   cout << "Size of qali is: " << qali.size() << endl;
+		// }
+	  }
 
 	// Displaying results to STDOUT
-	cout <<  "\n  filtered out: " << endl;
-	cout <<  "----------------: " << endl;
+	cout <<  "------------------------------------- " << endl;
+	cout <<  "\nSummary of filtered alignments: " << endl;
+	cout <<  "------------------------------------- " << endl;
 	cout <<  "unmapped        : " << outNoMapping << endl;
 	cout <<  "percent identity: " << outMinId << endl;
 	cout <<  "coverage        : " << outMinCover << endl;
@@ -346,18 +361,22 @@ int main(int argc, char *argv[])
 
 
 	// Displaying command line
+	cout <<  "------------------------------------- " << endl;
 	cout << "Cmd line: " << endl;
 	for (int it=0; it<argc;it++)
 	  {
 		cout << argv[it] << " ";
 	  }
 	cout << endl;
+	cout <<  "------------------------------------- " << endl;
 
-	// Printing sortedness test results
-	cout << "----------------------------------------" << endl;
-	cout << "File is correctly sorted " << endl;
-	cout << "----------------------------------------" << endl;
-
+	if (verbose)
+	  {
+		// Printing sortedness test results
+		cout << "----------------------------------------" << endl;
+		cout << "File is correctly sorted " << endl;
+		cout << "----------------------------------------" << endl;
+	  }
 
 	// Closing file handles
 	reader.Close();
@@ -370,12 +389,6 @@ int main(int argc, char *argv[])
 } // end main
 
 
-
-void sortQali(vector<BamAlignment>& qali) 
-{
-        sort( qali.begin(), qali.end(), Sort::ByName(Sort::AscendingOrder) );
-        sort( qali.begin(), qali.end(), Sort::ByPosition(Sort::AscendingOrder) );
-}
 
 void printQali(vector<BamAlignment> &qali, const RefVector refData)
 {
@@ -514,7 +527,7 @@ void printMatedMap(map<int,int> mated)
 }
 
 
-optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refData, globalOptions_t globalOptions, BamWriter* ptrWriter)
+optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem)
 {
   struct optionalCounters_t optionalCounters;
   // Optional counters
@@ -560,9 +573,13 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
   uint32_t itTend;
   string reservedField;
 
-  cout << "----------------------------" << endl;
-  cout << "qali.size()=" << qali.size() << endl;
-  cout << "----------------------------" << endl;
+  if (verbose)
+	{
+	  cout << "----------------------------" << endl;
+	  cout << "Options: (paired, uniq, best) = (" << paired << ", " << uniq << ", " << best << ")" << endl;
+	  cout << "Alignments passed for processing (qali.size())= " << qali.size() << endl;
+	  cout << "----------------------------" << endl;
+	}
 
 
   // Defines whether to treat reads as single- or pair-ended ones
@@ -665,6 +682,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 	  cout << "scalarQali=" << (int)qali.size() << endl;
 	  cout << "scalarMated=" << (int)mated.size() << endl;
 	  cout << "outPaired=" << (int)outPaired << endl;
+
 	  // if (!uniq && !best || matepairs.size()<2)
 	  // 	{ // let pass all read alignments that are involved in mate pairs
 	  // 	  map<int,int>::iterator m_it;
@@ -696,20 +714,30 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 	  //////////////////////////////
 
 	} else {// IF NOT PAIRED, single read
-		cout << "Options selected: (uniq, best) = (" << uniq << ", " << best << ")" << endl;
-		// Stem name used in case commongenefile is defined 
- 		string qName = qali.at(0).Name; 
 
 		if ((uniq || best) && qali.size()>1)
 		  {
-			// cout << "qali BEFORE sorting by score:---------------------------" << endl;
-			// printQali(qali, refData);
-			cout << "Assigning scores to each alignment and sorting them in descending order." << endl;
-			qali = scoreAli(qali);
-			std::stable_sort( qali.begin(), qali.end(), Sort::ByTag<std::string>("sc", Sort::DescendingOrder) );
-			cout << "qali AFTER sorting by score:" << endl;
-			printQali(qali, refData);
 
+			// Computing scores for each alignment, score=percId+coverage;
+			qali = scoreAli(qali);
+			if (verbose)
+			  {
+				cout << "qali BEFORE sorting by score:" << endl;
+				printQali(qali, refData);
+				cout << "Scoring alignments and sorting them according to such score." << endl;
+			  }
+
+			// Sorting alignments by score
+			std::stable_sort(qali.begin(), qali.end(), Sort::ByTag<std::string>("sc", Sort::DescendingOrder));
+
+			if (verbose)
+			  {
+				cout << "qali AFTER sorting by score:" << endl;
+				printQali(qali, refData);
+			  }
+
+
+			// Uniq option goes first before Best option
 			if (uniq) 
 			  {
 			  	int second; float scoreFirst, scoreSecond, ratio;
@@ -769,43 +797,57 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 
 			  } else { // (uniq, best) = (0, 1); let pass only (best) alignments that share maximum score
 
-				cout << "-------------------------------------------------" << endl;
-				cout << "Letting pass alignments that share optimal score." << endl;
-				cout << "-------------------------------------------------" << endl;
+			  if (verbose)
+				{
+				  cout << "------------------------------------------------------------------------" << endl;
+				  cout << "Option: best selected. " << endl;
+				  // cout << "Letting pass alignments that share optimal score:" << endl;
+				}
+
 			  	string s_optScore, s_tempScore;
 			  	float optScore, tempScore; 
-				vector<string> bestTnames;
+				vector<string> bestTnames; 
 				qali.at(0).GetTag("sc", s_optScore);
 				optScore = atof(s_optScore.c_str());
 				tempScore = optScore;
+				bool qSize = true;
 
-				while(qali.size() > 0 && tempScore == optScore)
+				while (tempScore == optScore && qSize)
 				  {
-					qali.at(0).GetTag("sc", s_tempScore);
-					tempScore = atof(s_tempScore.c_str());
 				  	cout << "Letting pass alignment (best): " << qali.at(0).Name << ", score=" 
-						 << tempScore << endl;
+						 << tempScore << ", optScore=" << optScore << endl;
 					(*ptrWriter).SaveAlignment(qali.at(0)); 
 					bestTnames.push_back(getReferenceName(refData, qali.at(0).RefID));
 					qali.erase(qali.begin()); // Delete first member of qali
 					cout << "After deleting element, qali.size()=" << qali.size() << endl;
+					if (qali.size()>0)
+					  {
+						qali.at(0).GetTag("sc", s_tempScore);
+						tempScore = atof(s_tempScore.c_str());
+					  } else {
+					  qSize = false;
+					  }
+						
 				  }
 
 				outBest += qali.size();
-				cout << "-------------------------------------" << endl;
-				cout << "Filtered out alignments by best criterion: " << qali.size() << endl;
-				printQali(qali, refData);		
-				cout << "-------------------------------------" << endl;
+				if (verbose)
+				  {
+					cout << "------------------------------------------------------------------------" << endl;
+					cout << "Filtered out alignments (best criterion): " << qali.size() << endl;
+					printQali(qali, refData);		
+					cout << "------------------------------------------------------------------------" << endl;
+					cout << "Summary [Common target names]: " << endl;
+					cout << "bestTnames.size()=" << bestTnames.size() << endl;
+				  }
 
-				cout << "bestTnames.size()=" << bestTnames.size() << endl;
-	// try {
 				if (bestTnames.size()>1)
 				  {
 					unordered_map<string, int> geneNames;
 					string tName;
 					for (int it=0; it<bestTnames.size(); it++)
 					  {
-						tName = bestTnames.at(it).substr(0, bestTnames.at(it).find("|"));					
+						tName = bestTnames.at(it); //bestTnames.at(it).substr(0,bestTnames.at(it).find("|"));
 						geneNames[tName]=1;
 						cout << "tName= " << tName << endl;
 					  }
@@ -816,22 +858,22 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 						unordered_map<string, int>::iterator itGn = geneNames.begin();
 						for (itGn; itGn != geneNames.end(); itGn++)
 						  {
-							cout << qName << ","<< (*itGn).first << "," << (*itGn).second << endl;
-							geneFile << qName << ","<< (*itGn).first << "," << (*itGn).second << endl;
+							cout << oldQnameStem << ","<< (*itGn).first << "," << (*itGn).second << endl;
+							geneFile << oldQnameStem << ","<< (*itGn).first << "," << (*itGn).second << endl;
 						  }
 						geneFile.close();
 					  }
 				  } 
 
-	// } catch  (out_of_range& oor) {
-	//   cout << "There was an error here: " << oor.what() << endl;
-	//   cout << "Exeption: Size of qali is: " << qali.size() << endl;
-	// }
-
 			  } // end if (unique)	
 
 		} else { // (uniq, best) = (0, 0) && qali.size()>1)"
-		  	cout << "Letting pass all alignments, that is a total of: " << qali.size() << endl;
+
+		  if (verbose)
+			{
+		  		cout << "Letting pass all alignments, i.e. a total of: " << qali.size() << endl;
+			}
+
 			for(int it=0; it<qali.size(); it++)
 				{
 				  (*ptrWriter).SaveAlignment(qali.at(it)); // Prints alignment line into file
@@ -839,12 +881,12 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 
 		} // end if !(uniq || paired)
 
-	// Clearing contents of qali
-	qali.clear();
-
 
   } // end if !(paired)
 
+
+  // Clearing contents of qali
+  qali.clear();
 
   // Updating filter counters	
   optionalCounters.outPaired = outPaired;
