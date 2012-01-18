@@ -4,7 +4,7 @@
 	This script only works with previously SORTED files!!!
 
 	Created: 4-November-2011
-	Last modified: 11-January-2012
+	Last modified: 18-January-2012
 */ 
  
 #include <api/BamReader.h>
@@ -722,9 +722,11 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 			qali = scoreAli(qali);
 			if (verbose)
 			  {
+				cout << "Scoring alignments and sorting them according to such score." << endl;
+				cout << "------------------------------------------------------------------------" << endl;
 				cout << "qali BEFORE sorting by score:" << endl;
 				printQali(qali, refData);
-				cout << "Scoring alignments and sorting them according to such score." << endl;
+				cout << "------------------------------------------------------------------------" << endl;
 			  }
 
 			// Sorting alignments by score
@@ -732,8 +734,10 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 
 			if (verbose)
 			  {
+				cout << "------------------------------------------------------------------------" << endl;
 				cout << "qali AFTER sorting by score:" << endl;
 				printQali(qali, refData);
+				cout << "------------------------------------------------------------------------" << endl;
 			  }
 
 
@@ -750,49 +754,78 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 					second++;
 				  }
 
+
 				// "Second" alignment is the one with lowest score, but that is still similar
 				if (second < qali.size())
 				  {
-					cout << "Comparing scores between: " << qali.at(0).Name << " and " << 
-					 	qali.at(second).Name << endl;
 
+					// Comparing scores between best-scored alignemtn and one indexed by "second"
 					qali.at(0).GetTag("sc", s_scoreFirst);
-					qali.at(second).GetTag("sc", s_scoreSecond);
 					scoreFirst = atof(s_scoreFirst.c_str());
+					qali.at(second).GetTag("sc", s_scoreSecond);
 					scoreSecond = atof(s_scoreSecond.c_str());
-					cout << "scoreFirst = " << scoreFirst << "; scoreSecond = " << scoreSecond << endl;
 					ratio = scoreSecond/scoreFirst;
-					// if (verbose)
-					//   {
-					cout << "Similar alignments with largest difference between scores: " << 
-					 		getReferenceName(refData, qali.at(0).RefID) << ", score=" << scoreFirst << 
-						    " and " << 
-							getReferenceName(refData, qali.at(0).RefID) << ", score=" << scoreSecond <<
-							"; and ratio = " << ratio << endl;
-					// }
+
+					if (verbose)
+					  {
+						cout << "\n------------------------------------------------------------------------" 
+							<< endl;
+						cout << "Position of last similar alignment (indexed by second)=" << second << endl;
+						cout << "Comparing scores between optimal and second: " << endl;
+						cout << "[" << getReferenceName(refData, qali.at(0).RefID) << "]<-" 
+							 << qali.at(0).Name << "; score=" << scoreFirst << " and " << endl; 
+						cout << "[" << getReferenceName(refData, qali.at(0).RefID) << "]<-" 
+							<< qali.at(second).Name << "; score=" << scoreSecond << endl;
+						cout << "Ratio between these two alignments: " << ratio << endl;
+						cout << "------------------------------------------------------------------------\n"; 
+					  }
 	
-					if (ratio < uniqThresh) // ... significantly worse in terms of "scoreAli"
+					// ... significantly worse in terms of "scoreAli"
+					if (ratio < uniqThresh) 
 					  {		
-						cout << "Letting pass only alignment " << qali.at(0).Name << 
-						  " because the LOWEST-scored SIMILAR-alignment " << qali.at(second).Name << 
-						  " is significantly worse, i.e. ratio=" << ratio << "<uniqThresh=" << 
-						  uniqThresh << endl;
+						if (verbose)
+						  {
+							cout << "Letting pass only alignment " << qali.at(0).Name << " because:" << endl;
+							cout << "'lowest-scored' but similar alignment " << qali.at(second).Name << endl;
+							cout << "is significantly worse, ratio=" << ratio << "<uniqThresh=" 
+							 	<< uniqThresh << endl;
+						  }
 						(*ptrWriter).SaveAlignment(qali.at(0)); // Prints alignment line into file
 						outUniq += qali.size()-1;
-					  	cout << "Rest of alignments, i.e. " << outUniq << ", filtered out." << endl;
-					  } else {
-					  	outUniq += qali.size(); // dropping all alignments belonging to the same query
-					  	cout << "(" << qali.size() << " alignments), filtered out because: ratio=" 
-					  		<< ratio << ">uniqThresh=" << uniqThresh << endl;
-					    for (int it=0; it<qali.size(); it++)
-					  	  {cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
+					  	cout << "(" << outUniq << "/" << qali.size() << ") alignments filtered out " 
+							 << " by uniqueness " << endl;
+							for (int it=0; it<qali.size(); it++)
+							  {cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
+					  } else { // dropping all alignments belonging to the same query
 					  	
+					  	outUniq += qali.size(); // Filtered alignments by uniqueness increases by size of Qali
+						if (verbose)
+						  {
+							cout << "(" << qali.size() << ") alignments filtered out by uniqueness because:";
+							cout << "\nThey are similar and have score ratio=" << ratio 
+								 << ">uniqThresh=" << uniqThresh << endl;
+							for (int it=0; it<qali.size(); it++)
+							  {cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
+						  }					  	
 					  }
-				  } else {// Implies: (second == qali.size()) => all alginments in "qali" are similar	
-				  	 cout << "Suboptimal alignments are all similar " << endl;
-				  	 cout << "Letting pass only one alignment: " << qali.at(0).Name << endl;
-				  	 (*ptrWriter).SaveAlignment(qali.at(0)); // Letting pass only best
-				  	 outUniq += qali.size()-1;
+				  } else {// '(second == qali.size()' => all alignments in "qali" are similar
+				  	  if (verbose)
+						{	
+	       	              qali.at(0).GetTag("sc", s_scoreFirst);
+						  scoreFirst = atof(s_scoreFirst.c_str());
+						  cout << "------------------------------------------------------------------------" 
+							<< endl;
+				  	 	  cout << "Suboptimal alignments are all similar " << endl;
+				  	 	  cout << "Letting pass only top-scored alignment: " << qali.at(0).Name 
+							   << ", score=" << scoreFirst << endl;
+						  cout << "(" << qali.size()-1 << ") alignments filtered out by uniqueness" << endl;
+						  for (int it=1; it<qali.size(); it++)
+						 	{cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
+						  cout << "------------------------------------------------------------------------" 
+							<< endl;
+						}
+				  	  (*ptrWriter).SaveAlignment(qali.at(0)); // Letting pass only best
+				  	  outUniq += qali.size()-1;
 				  }
 
 			  } else { // (uniq, best) = (0, 1); let pass only (best) alignments that share maximum score
@@ -800,7 +833,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 			  if (verbose)
 				{
 				  cout << "------------------------------------------------------------------------" << endl;
-				  cout << "Option: best selected. " << endl;
+				  cout << "Options: (paired, uniq, best) = (" << paired << ", " << uniq << ", " << best 
+					<< ")" << endl;
 				  // cout << "Letting pass alignments that share optimal score:" << endl;
 				}
 

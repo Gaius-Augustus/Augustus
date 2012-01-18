@@ -20,7 +20,8 @@ University of Greifswald}
  
 \begin{document}  
 \maketitle
-\abstract{This is a description of the implementation of filterBam, a software that filters out SAM alignment reads by the following criteria: coverage, percentage identity and, if requested, insert length.}
+\abstract{This note describes the operation of filterBam, a C++ program that makes use of Bamtools API in 
+order to filter alignment files stored in BAM format.}
 
 \section{NOTES:}  
 This document makes reference to the SAM/BAM format specification of \citet{heng09:SAM}.
@@ -33,6 +34,8 @@ is 2.0 and is available on the website
 	\end{center}
 \item 
 
+\section{Test data}
+We have generated a 
 
 \section{Compilation}
 Make sure to link with the ``-lz'' and ``-libbamtools.a'' flags on; where -lz refers to the ZLIB library, 
