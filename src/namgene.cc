@@ -755,8 +755,8 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   Gene *genes = NULL, *g;
   StatePath *viterbiPath;
   StatePath *condensedViterbiPath;
-  list<Gene> *MEAtranscripts = new list<Gene>;
 
+  list<Gene> MEAtranscripts;
 
   // compute the viterbi and forward table, main work done here
   viterbiAndForward(dna, profileModel);
@@ -855,11 +855,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
     } // for i<sampleiterations
     if (show_progress)
 	cerr << endl;
-    
-    // if(mea_prediction)
-    //	  MEAtranscripts = getMEAtranscripts(sampledGeneStructures, sampleiterations, strlen( dna )); 
-    
-     
+        
     alltranscripts->sort();
  
     // now remove multiple copies and increase apostprob instead
@@ -895,24 +891,23 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
 
   // determine transcripts with maximum expected accuracy criterion
   if(mea_prediction){
-    getMEAtranscripts(MEAtranscripts, alltranscripts, strlen(dna));
-     
-    filteredTranscripts = MEAtranscripts;
-    
+    getMEAtranscripts(&MEAtranscripts, sampledGeneStructures, sampleiterations, strlen( dna ));
+   
+    //getMEAtranscripts(&MEAtranscripts, alltranscripts, strlen(dna));
+   
     /*
      * filter transcripts by probabilities, strand
      */
-  }
-  else 
+    filteredTranscripts = Gene::filterGenePrediction(&MEAtranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
+
+  } 
+  else
     filteredTranscripts = Gene::filterGenePrediction(alltranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
-  
+  delete alltranscripts;
+
   /*
    * filter transcripts by maximum track number
-   */
-  
-  if(!mea_prediction)
-    delete alltranscripts;
- 
+   */  
 
   agl = groupTranscriptsToGenes(filteredTranscripts);
  

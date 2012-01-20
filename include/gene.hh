@@ -264,7 +264,6 @@ public:
 	    st = tmp;
 	}
     }
-
     if (supportingEvidence)
 	delete supportingEvidence;
     if (incompatibleEvidence)

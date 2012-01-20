@@ -9,14 +9,23 @@ void MEApath::findMEApath(){
 
   getTopologicalOrdering();
   graph->addBackEdges();
- 
+
   //graph->printGraph("flybase_graph.dot");
 
+  if(topSort.size() == graph->nodelist.size())
+    cerr<<"size of topSort ok!"<<endl;
+  else if (topSort.size() < graph->nodelist.size()){
+    cerr<<"size of topSort wrong!! > to many elements in nodelist!"<<endl;  
+  }
+  else
+    cerr<<"size of topSort wrong!! > topSort to big!"<<endl;
 
+  cerr<<"relaxing edges"<<endl;
   relax();   
   
-  // graph->printGraphToShell();
   //backtracking
+
+  cerr<<"backtracking"<<endl;
   Node *pos = topSort[0];
   meaPath.push_front(pos);  
   while(pos->pred != NULL){
@@ -24,7 +33,6 @@ void MEApath::findMEApath(){
     pos = pos->pred;
   }
   
-  /*
     //for graphviz dot to draw path
   for(list<Node*>::iterator node=graph->nodelist.begin(); node!=graph->nodelist.end(); node++){
     bool nodeInPath = false;
@@ -40,7 +48,7 @@ void MEApath::findMEApath(){
     (*node)->pred = NULL;
     nextNode:;
   }
-  graph->printGraph("2R.1000001-2000000last_section.dot"); */
+  graph->printGraph("debug_graph.dot"); 
 }
 
 void MEApath::getTopologicalOrdering(){
@@ -55,7 +63,7 @@ void MEApath::dfs(Node *n){
 
   processed[graph->getKey(n)] = n;
   for(list<Edge>::iterator edge=n->edgeoffsets.begin(); edge!=n->edgeoffsets.end(); edge++){
-    if(processed[graph->getKey(edge->to)]==0 )
+    if(processed[graph->getKey(edge->to)]==0)
       dfs(edge->to);
   }
   topSort.push_back(n);
@@ -67,7 +75,6 @@ void MEApath::relax(){
     (*it)->score = - numeric_limits<double>::max(); // set to minimum score
       
   graph->head->score = 0;  
-
   bool continueRelax = true;
 
   while(continueRelax){
@@ -84,9 +91,10 @@ void MEApath::relax(){
     if(nothingChanged) 
       continueRelax = false;
   }
-  for(list<Node*>::iterator node = graph->nodelist.begin(); node!=graph->nodelist.end(); node++)
+
+  for(list<Node*>::iterator node = graph->nodelist.begin(); node!=graph->nodelist.end(); node++){   
     for(list<Edge>::iterator edge = (*node)->edgeoffsets.begin(); edge != (*node)->edgeoffsets.end(); edge++)
       if(edge->to->score < (*node)->score + edge->score)
 	cerr<<"MEA (relax): wrong distance "<<edge->to->score<<" at: "<<edge->to->begin<<":"<<edge->to->end<<endl;
- 
+  }
 }

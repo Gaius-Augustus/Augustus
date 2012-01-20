@@ -1006,8 +1006,9 @@ char* Gene::getCodingSequence(AnnoSequence *annoseq) const{
 	exon = exon->next;
     }
     codingseq[clength]='\0';
-    if (strand == plusstrand)
+    if (strand == plusstrand){
 	return codingseq;
+    }
     else {
 	char* res = reverseComplement(codingseq);
 	delete [] codingseq;
@@ -2265,7 +2266,7 @@ list<Gene> *Gene::filterGenePrediction(list<Gene> *gl, const char *seq, Strand s
     annoseq->sequence = newstrcpy(seq);
     annoseq->offset = 0;
 
-    for(list<Gene >::iterator git = gl->begin();git != gl->end();git++){
+    for(list<Gene>::iterator git = gl->begin();git != gl->end();git++){
 	bool keep = true;
 	// delete gene if the combined CDS is too short, unless a CDS exon is truncated
 	if (git->clength < Constant::min_coding_len && git->completeCDS())

@@ -80,6 +80,10 @@ void Graph::buildGraph(){
     }
   }
 
+  nodelist.sort(compareNodes);
+ 
+  addCompatibleEdges();
+  
   // add node weight to edge weight
 
   for(list<Node*>::iterator node = nodelist.begin(); node != nodelist.end(); node++){
@@ -88,17 +92,13 @@ void Graph::buildGraph(){
     }
   }
   // printGraph("graph_visualization.dot");
-
-  nodelist.sort(compareNodes);
- 
-  addCompatibleEdges();
-
+  
   //sort edgeoffset lists
 
   for(list<Node*>::iterator node=nodelist.begin(); node!=nodelist.end(); node++)
     (*node)->edgeoffsets.sort(compareEdges);
 
-  //printGraph("graph_visualization_extended.dot");
+  printGraph("graph_extended.dot");
  
   
 }
@@ -182,7 +182,6 @@ void Graph::addPair(Status *exon1, Status *exon2){
   }
 }
 
-
 void Graph::createNeutralLine(){
 
   Node *pos = head;
@@ -196,17 +195,6 @@ void Graph::createNeutralLine(){
   }
   Edge lastEdge(tail);
   pos->edgeoffsets.push_back(lastEdge);
-}
-
-void Graph::insertIntron(Node *exon1, Node *exon2){
-  if(exon1->item==NULL && exon2->item==NULL){
-    Edge intr(exon2);
-    exon1->edgeoffsets.push_back(intr);
-  }
-  else{
-    Edge intr(exon2,false);
-    exon1->edgeoffsets.push_back(intr);
-  }
 }
 
 void Graph::addCompatibleEdges(){
@@ -238,7 +226,7 @@ void Graph::addCompatibleEdges(){
 
 
 void Graph::addBackEdges(){
-
+  cerr<<"entering add back edges"<<endl;
   map<string,Node*> inQueue;
   list<Node*> neutralNodes;
   Node *pos = head;
@@ -284,6 +272,7 @@ void Graph::addBackEdges(){
 	      
 	      if(minInQueue(&q) > (*fromNeut)->begin){
 		insertIntron(*fromNeut,*toNeut);
+		cerr<<"back edge inserted!"<<endl;
 		nonNeutralLoop = false;
 		goto nextEdge;
 	      }
@@ -294,6 +283,7 @@ void Graph::addBackEdges(){
       }
     }
   }
+  cerr<<"leaving addBackEdges()"<<endl;
 }
 
 int Graph::minInQueue(queue<Node*> *q){
@@ -395,7 +385,7 @@ double AugustusGraph::getIntronScore(Status *predExon, Status *nextExon){
     for(list<Status>::iterator st=statelist->begin(); st!=statelist->end(); st++){
       if(&(*st) == nextExon && &(*st) != &statelist->front()){
 	if((--st)->next != NULL)
-	  return st->score;
+	  return setScore(&(*st));
 	else
 	  return 0;
       }
@@ -405,7 +395,7 @@ double AugustusGraph::getIntronScore(Status *predExon, Status *nextExon){
     for(list<Status>::iterator st=statelist->begin(); st!=statelist->end(); st++){
       if(&(*st) == predExon && st->next != NULL){
 	st++;
-	return st->score;
+	return setScore(&(*st));
       }
     }
   }
@@ -443,6 +433,20 @@ void AugustusGraph::addEdgeToTail(Status *exon){
   }
 }
 
+void Graph::insertIntron(Node *exon1, Node *exon2){
+
+  // insert neutral edge 
+  if(exon1->item==NULL && exon2->item==NULL){    
+    Edge intr(exon2);
+    exon1->edgeoffsets.push_back(intr);
+  }
+  //insert compatible edge
+  else{
+    Edge intr(exon2, false);
+    exon1->edgeoffsets.push_back(intr);
+  }
+}
+
 bool AugustusGraph::compatible(Node *exon1, Node *exon2){
 
   if(exon1->item != NULL && exon2->item != NULL){
@@ -457,7 +461,14 @@ bool AugustusGraph::compatible(Node *exon1, Node *exon2){
 
       ||
 
-      (((is3UTRExon(type1) && is3UTRExon(type2) && ((type1 != utr3term && type2 != utr3init) || (type1 != rutr3init && type2 != rutr3term))) || (is5UTRExon(type1) && is5UTRExon(type2) && ((type1 != utr5term && type2 != utr5init) || (type1 != rutr5init && type2 != rutr5term)))) && sameStrand(type1,type2) && exon1->end < exon2->begin && sameReadingFrame(exon1,exon2));
+      (((is3UTRExon(type1) && is3UTRExon(type2) &&
+ (((type1 == utr3init || type1 == utr3internal) && (type2 == utr3internal || type2 == utr3term)) ||
+ ((type1 == rutr3term || type1 == rutr3internal) && (type2 == rutr3internal || type2 == rutr3init)))) 
+||
+(is5UTRExon(type1) && is5UTRExon(type2) &&
+ (((type1 == utr5init || type1 == utr5internal) && (type2 == utr5internal || type2 == utr5term)) ||
+ ((type1 == rutr5term || type1 == rutr5internal) && (type2 == rutr5internal || type2 == rutr5init))))) 
+&& sameStrand(type1,type2) && exon1->end < exon2->begin);
 
   }
   else 
@@ -500,21 +511,21 @@ void AugustusGraph::calculateBaseScores(){
 }
 
 double AugustusGraph::setScore(Status *st){
-
+ 
   if(st->name >= CDS && st->name < intron){
     double s_be = 0;
     for(int pos = st->begin; pos<=st->end; pos++)
-      if(getBasetype(&(*st), pos)>=0)
-	s_be += baseScore[getBasetype(&(*st), pos)*seqlength + pos] - r_be;
+      if(getBasetype(st, pos)>=0)
+	s_be += baseScore[getBasetype(st, pos)*seqlength + pos] - r_be;
     return alpha_se * (st->score - r_se) + alpha_be * s_be;
   }
   else{
     double s_bi = 0;
     for(int pos = st->begin; pos<=st->end; pos++)
-      if(getBasetype(&(*st), pos)>=0)
-	s_bi += baseScore[getBasetype(&(*st), pos)*seqlength + pos] - r_bi;
+      if(getBasetype(st, pos)>=0)
+	s_bi += baseScore[getBasetype(st, pos)*seqlength + pos] - r_bi;
     return alpha_si * (st->score - r_si) + alpha_bi * s_bi;
-  }
+  } 
 }
 
 int AugustusGraph::getBasetype(Status *st, int pos){
@@ -572,7 +583,7 @@ int AugustusGraph::getBasetype(Status *st, int pos){
 
 void AugustusGraph::printGraph(string filename){
 
-  cout<<"print graph to file:"<<endl;
+  cerr<<"print graph to file:"<<endl;
   //creates inputfile for graphviz
   map<string,Node*> inQueue;
   queue<Node*> q;
@@ -580,7 +591,7 @@ void AugustusGraph::printGraph(string filename){
   head->end = 0;
   q.push(head);
   ofstream file;
-  file.open(("/home/lizzy/augustus_output/" + filename).c_str());
+  file.open(("/home/lizzy/species/dm/training/" + filename).c_str());
   
   file<<"digraph MEAgraph {\n";
   file<<"rankdir=LR;\n";
@@ -668,7 +679,10 @@ void AugustusGraph::printGraph(string filename){
     }
   }
   file<<"}\n";
-  file.close(); 
+  file.close();
+
+  head->begin = -1;
+  head->end = -1; 
 }
 
 

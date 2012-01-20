@@ -4,11 +4,8 @@
 #include "gene.hh"
 #include "graph.hh"
 
-list<Gene>* getMEAtranscripts(Gene **sampledGeneStructures, int n, int strlength);
+void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures, int n, int strlength);
 void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int strlength);
-
-Gene* listToGene(list<Gene> *genelist);
-list<Gene>* geneToList(Gene *genes);
 
 void addToList(State *st, Statename name, list<Status> *slist);
 bool compareStatus(Status first, Status second);

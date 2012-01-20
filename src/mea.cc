@@ -6,23 +6,55 @@
 #include <iomanip>
 
 using namespace std;
-list<Gene>* getMEAtranscripts(Gene **sampledGeneStructures, int n, int strlength){
+void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures, int n, int strlength){
+
+  bool utr;
+  try {
+    utr = Properties::getBoolProperty("UTR");
+  } catch (...) {
+    utr = false;
+  }
+  double w_gene;
+  double w_exon;
+  double w_base;
+  double w_utr;
+ try {
+    w_gene = Properties::getdoubleProperty("/MeaPrediction/weight_gene");
+  } catch (...) {
+    w_gene = 0.0;
+  }
+ try {
+    w_exon = Properties::getdoubleProperty("/MeaPrediction/weight_exon");
+  } catch (...) {
+    w_exon = 0.0;
+  }
+ try {
+    w_base = Properties::getdoubleProperty("/MeaPrediction/weight_base");
+  } catch (...) {
+    w_base = 0.0;
+  }
+ try {
+    w_utr = Properties::getdoubleProperty("/MeaPrediction/weight_utr");
+  } catch (...) {
+    w_utr = 0.0;
+  }
 
   double maxAcc=-1;//infty
   
   Gene *bestG = NULL;
- 
+
   for (int j=0; j<n; j++){          
     double acc = 0.0;
-    for (int i=0; i<n; i++){     
-      Evaluation eval;      
-      eval.addToEvaluation(sampledGeneStructures[i], sampledGeneStructures[j]);
-      
-      // TODO: parameter for sensity to optimize accuracy criterion
+    for (int i=0; i<n; i++){ 
+       Evaluation eval;
+       eval.addToEvaluation(sampledGeneStructures[i], sampledGeneStructures[j], bothstrands);
+	
+      // TODO: parameter training to optimize accuracy criterion
 
-	acc += (eval.exonSens + eval.exonSpec) / 2;      
+      acc += w_gene * (eval.geneSens + eval.geneSpec) + w_exon * (eval.exonSens + eval.exonSpec) + w_base * (eval.nukSens + eval.nukSpec);
+      if(utr)
+      acc += w_utr * (eval.UTRexonSens + eval.UTRexonSpec) + w_base * (eval.nucUSens + eval.nucUSpec);
     }    
-    acc /= n;
     if (acc>maxAcc){
       maxAcc = acc;
       bestG = sampledGeneStructures[j];
@@ -30,11 +62,15 @@ list<Gene>* getMEAtranscripts(Gene **sampledGeneStructures, int n, int strlength
   }
   //cout<<"maximum Accuracy: "<<maxAcc<<"\t best Genestructure: "<<bestG->id<<endl;
 
-
- return geneToList(bestG);
+  while(bestG){
+    MEAtranscripts->push_back(*bestG);
+    bestG = bestG->next;
+  }
 }
 
 void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int strlength){
+
+  cerr<<"----entering getMEAtranscripts()----"<<endl;
 
   if(!alltranscripts->empty()){
    
@@ -44,16 +80,34 @@ void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int str
     } catch (...) {
       utr = false;
     }
+
+    /*
+     * evaluates accuracy for each gene
+     */
+    /*
+    list<AltGene> *genes = groupTranscriptsToGenes(alltranscripts);
+    for(list<AltGene>::iterator altg=genes->begin(); altg!=genes->end(); altg++){
+
+      for(list<Gene*>::iterator gPred=altg->transcripts.begin(); gPred!=altg->transcripts.end(); gPred++){
+	for(list<Gene*>::iterator gAnno=altg->transcripts.begin(); gAnno!=altg->transcripts.end(); gAnno++){
+	  Evaluation eval;
+	  addToEvaluation(*gPred, *gAnno, bothstrands);
+	  acc += w_gene * (eval.geneSens + eval.geneSpec) + w_exon * (eval.exonSens + eval.exonSpec) + w_base * (eval.nukSens + eval.nukSpec);
+      if(utr)
+      acc += w_utr * (eval.UTRexonSens + eval.UTRexonSpec) + w_base * (eval.nucUSens + eval.nucUSpec);
+	}
+	acc *= (*gPred)->apostprob;
+      }
+    }
+    */
    
     /*
      * builds datastructure needed for the graph representation
      */
-   
     list<Status> stateList, stlist;
 
-    list<Gene>::iterator it;
-
-    for(it=alltranscripts->begin();it!=alltranscripts->end();it++){
+    cerr<<"generating state list"<<endl;
+    for(list<Gene>::iterator it=alltranscripts->begin();it!=alltranscripts->end();it++){
       addToList(it->exons,CDS,&stateList);
       addToList(it->introns,intron,&stateList);
       if(utr){
@@ -75,12 +129,14 @@ void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int str
     }
     // printStatelist(&stlist);
 
+    cerr<<"initializing graph object"<<endl;
     //build Graph
     AugustusGraph myGraph(&stlist, strlength);
 
+    cerr<<"finding shortest path"<<endl;
     //find shortest path
     MEApath path(&myGraph);
-
+    
     getMeaGenelist(path.getPath(), meaGenes);
   }   
 } 
@@ -109,35 +165,12 @@ void printStatelist(list<Status> *stateList){
     }
 }
 
-
-Gene* listToGene(list<Gene> *genelist){
-
-  Gene *g = &(*(genelist->begin()));
-
-  for( list<Gene>::iterator it = genelist->begin(); it != genelist->end(); it++){
-    g->next = &(*it);
-    g = g->next;
-  }
-  return &(*(genelist->begin()));
-}
-
-list<Gene>* geneToList(Gene *genes){
-
-  list<Gene> *genelist = new list<Gene>;
+void addToList(State *state, Statename name, list<Status> *slist){
  
-  while(genes){
-    genelist->push_back(*genes);
-    genes = genes->next;
-  }
-  return genelist;  
-}
-
-void addToList(State *st, Statename name, list<Status> *slist){
- 
-  for(State *state=st; state!=NULL; state=state->next){
-
+  while(state && state->end >= state->begin){
     Status someState(name, state->begin, state->end, (double)state->apostprob, state);
     slist->push_back(someState);
+    state = state->next;
   }
 }
 
@@ -170,22 +203,25 @@ void getMeaGenelist(list<Node*> meaPath, list<Gene> *meaGenes){
 	currentGene = new Gene();
       }
     }
-  }  
+  } 
+  delete currentGene;  
 }
 
-void addExonToGene(Gene* gene, State* exon){
+void addExonToGene(Gene *gene, State *exon){
+
+  exon->next = NULL;
 
   if(isCodingExon(exon->type)){
     if(gene->exons == NULL)
-      gene->exons = exon;
+      gene->exons = exon;     
     else{
       exon->next = gene->exons;
       gene->exons = exon;
     }
   }
   else if(is5UTRExon(exon->type)){
-      if(gene->utr5exons == NULL)
-	gene->utr5exons = exon;
+    if(gene->utr5exons == NULL)
+      gene->utr5exons = exon;
       else{
 	exon->next = gene->utr5exons;
 	gene->utr5exons = exon;
@@ -211,11 +247,13 @@ void addIntronToGene(Gene* gene, Node* predExon, Node* succExon){
     }
   }
   State* intr;
-  if(intron != NULL && intron->item != NULL)
+  if(intron != NULL && intron->item != NULL){
     intr = new State(*((State*)intron->item));
-  else
+  }
+  else{
     intr = new State(predExon->end+1, succExon->begin-1, getIntronStateType((State*)predExon->item,(State*)succExon->item));
-
+  }
+  intr->next = NULL;
   if(isCodingIntron(intr->type) || intr->type == intron_type || intr->type == rintron_type){
     if(gene->introns == NULL)
       gene->introns = intr;
@@ -276,13 +314,15 @@ void setGeneProperties(Gene *gene){
     gene->strand = minusstrand;
 
   int transStart, transEnd, codlength = 0;
-  int codStart = gene->exons->begin, codEnd = gene->exons->end;
+  int codStart = 0, codEnd = 0;
   State *currState, *rcurrState;
 
   if(gene->exons != NULL){
+    codStart = gene->exons->begin;
+    codEnd = gene->exons->end;
     currState = gene->exons;
     while(currState){
-      codlength += currState->end - currState->begin +1;
+      codlength += currState->length();
       if(currState->begin < codStart)
 	codStart = currState->begin;
       if(currState->end > codEnd)
@@ -386,7 +426,7 @@ void setGeneProperties(Gene *gene){
  
 #ifdef DEBUG
   cerr<<"################################################\n";
-  cerr<<"# gene properties\n";
+  cerr<<"# (MEA) gene properties\n";
   cerr<<"################################################\n";
 
   if(gene->complete)

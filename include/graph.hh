@@ -24,7 +24,7 @@ class Graph;
 
 class Status{
 public:
-  Status(Statename s=type_unknown, int b=0, int e=0, double sc=0.0, void *it=NULL, Status *n=NULL):
+  Status(Statename s=type_unknown, int b=0, int e=0, double sc=0.0, const void *it=NULL, Status *n=NULL):
     name(s),
     begin(b),
     end(e),
@@ -36,12 +36,12 @@ public:
   int begin, end;
   double score;
   Status *next;
-  void *item;
+  const void *item;
 };
 
 class Node{
 public:
-  Node(int s=0, int e=0, double sc=0.0, void *it=NULL, Node *p=NULL):
+  Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, Node *p=NULL):
     begin(s),
     end(e),
     score(sc),
@@ -50,14 +50,14 @@ public:
   {}
   int begin, end;
   double score;
-  void *item;
+  const void *item;
   Node *pred;
   list<Edge> edgeoffsets;
 };
 
 class Edge{
 public:
-  Edge(Node *t=NULL, bool n=true, double sc=0.0, void *it=NULL):
+  Edge(Node *t=NULL, bool n=true, double sc=0.0, const void *it=NULL):
     to(t),
     score(sc),
     neutral(n),
@@ -66,7 +66,7 @@ public:
   Node *to;
   double score;
   bool neutral;
-  void *item;
+  const void *item;
 };
 
 /*
@@ -109,8 +109,8 @@ public:
   Node* addExon(Status *exon);
   void addPair(Status *exon1, Status *exon2);
   void createNeutralLine();  
-  void insertIntron(Node *exon1, Node *exon2);  
   void addCompatibleEdges();
+  void insertIntron(Node *exon1, Node *exon2);  
   int minInQueue(queue<Node*> *q);
   bool nonneutralIncomingEdge(Node *exon);
   void printGraphToShell();
@@ -122,7 +122,7 @@ public:
   virtual string getKey(Status *st)=0;
   virtual double getIntronScore(Status *predExon, Status *nextExon)=0;
   virtual void addEdgeFromHead(Status *exon)=0;
-  virtual void addEdgeToTail(Status *exon)=0;
+  virtual void addEdgeToTail(Status *exon)=0; 
   virtual bool compatible(Node *exon1, Node *exon2)=0;
   virtual double setScore(Status *st)=0;
   virtual void calculateBaseScores()=0;

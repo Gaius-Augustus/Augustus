@@ -263,15 +263,15 @@ void Evaluation::evaluateOnNucleotideLevel(list<State> *predictedExon, list<Stat
    * second bit (2): predicted?
    * third bit (4): predicted and in flanking region?
    */
-  try {
+   try {
     nuc = new char[n+1];
   } catch (...) {
     throw ProjectError("Not enough memory for evaluation on base level.");
-  }
+    }
 
-  for (int i=0; i<=n; i++)
-    nuc[i] = 0;
-    
+   for (int i=0; i<=n; i++)
+     nuc[i] = 0;
+  
     /*
      * Loop over the predicted exons and find the predicted coding nucs 
      */
