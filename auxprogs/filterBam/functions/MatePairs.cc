@@ -1,7 +1,7 @@
 /*	Implementation of the MATEPAIRS class
 
 	Created: 7-November-2011	
-	Last modified: 16-November-2011
+	Last modified: 20-January-2012
 */
 
 #include <iostream>

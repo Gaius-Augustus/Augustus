@@ -4,7 +4,7 @@
 	This script only works with previously SORTED files!!!
 
 	Created: 4-November-2011
-	Last modified: 19-January-2012
+	Last modified: 20-January-2012
 */ 
  
 #include <api/BamReader.h>
@@ -76,7 +76,7 @@ void seed()
 
 void printQali(vector<BamAlignment> &qali, const RefVector refData);
 float scoreMate(vector<BamAlignment> qali, int it, int jit, int dist, globalOptions_t globalOptions);
-void printMatedPairsInfo(vector<BamAlignment> qali, list<MatePairs> matepairs, list<int> insertlen);
+void printatedPairsInfo(vector<BamAlignment> qali, list<MatePairs> matepairs, list<int> insertlen);
 void printMatedMap(map<int,int> mated);
 optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem);
 
@@ -236,8 +236,7 @@ int main(int argc, char *argv[])
 
   		/////////////////////////////////////////////////////////////////
   		//
-  		//     Filters by "$percId", "$coverage" and intron gaps "$nointrons" go here  
-  		//     (see checkFileSortedness.pl)
+  		//     Filters by "$percId", "$coverage" and intron gaps "$noIntrons" go here  
   		//
   		/////////////////////////////////////////////////////////////////
 
@@ -601,6 +600,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 		  printQali(qali, refData);
 		}
 
+	  cout << "Size of qali" << qali.size() << ". Sorting vector " << endl; //////// TAKE OUT!!!!
+
 	  // Sorting by $tname and then by $tstart
       sort( qali.begin(), qali.end(), Sort::ByName(Sort::AscendingOrder) );
       sort( qali.begin(), qali.end(), Sort::ByPosition(Sort::AscendingOrder) );
@@ -708,6 +709,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 		} // end middle for
 
  
+	  cout << "Finished sorting. Continuing processing of paired alignments" << endl;  /////// TAKE OUT!!!!
+
 	  if (verbose)
 		{
 		  cout << "Summary of evaluation of candidate mate-pairs" << endl;
@@ -723,9 +726,10 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 	  int outPaired=0;
 	  outPaired += (int)qali.size() - (int)mated.size();
 
+
 	  //////////////////////////////
 	  if (!uniq && !best || matepairs.size()<2)
-	  	{ // let pass all read alignments that are involved in mate pairs
+	  	{ // (uniq,best= (0,0) or size of mated pairs=1, let pass all mate-paired alignments 
 	  	  map<int,int>::iterator m_it;
 	  	  for (m_it=mated.begin(); m_it!=mated.end(); m_it++)
 	  		{ 
@@ -736,18 +740,27 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
   			  (*ptrWriter).SaveAlignment(qali.at((*m_it).first)); 
 	  		}
 	  	} else { // (uniq or best) selected
-	  		// Sort matepairs by score 
+
+		if (verbose)
+		  {
 			cout << "Sort mate pairs by score" << endl;
 			cout << "BEFORE sorting" << endl;
 	  		printList(matepairs);
+		  }
+	  		// Sort matepairs by score 
 	  		matepairs.sort(); 
-			cout << "AFTER sorting" << endl;
-	  		printList(matepairs);
+
+			if (verbose)
+			  {
+				cout << "AFTER sorting" << endl;
+				printList(matepairs);
+			  }
+
 	  	  	if (uniq)
 	  		  {// let pass only best mate pair, and only if second is significantly worse
 	  			int second = 1;
 	  			list <MatePairs>::iterator matesIter = matepairs.begin();
-	  			while(second < matepairs.size()) // incorporate call to similar for both mate pairs
+	  			while(second < matepairs.size()) 
 	  			  {
 	  				second++;
 	  				matesIter++;
