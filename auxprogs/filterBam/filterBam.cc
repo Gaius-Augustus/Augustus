@@ -4,7 +4,7 @@
 	This script only works with previously SORTED files!!!
 
 	Created: 4-November-2011
-	Last modified: 18-January-2012
+	Last modified: 19-January-2012
 */ 
  
 #include <api/BamReader.h>
@@ -76,7 +76,7 @@ void seed()
 
 void printQali(vector<BamAlignment> &qali, const RefVector refData);
 float scoreMate(vector<BamAlignment> qali, int it, int jit, int dist, globalOptions_t globalOptions);
-void printMatedPairsInfo(list<MatePairs> matepairs, list<int> insertlen);
+void printMatedPairsInfo(vector<BamAlignment> qali, list<MatePairs> matepairs, list<int> insertlen);
 void printMatedMap(map<int,int> mated);
 optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem);
 
@@ -503,15 +503,22 @@ bool similar(BamAlignment al1, BamAlignment al2)
 }
 
 
-void printMatedPairsInfo(list<MatePairs> matepairs, list<int> insertlen)
+void printMatedPairsInfo(vector<BamAlignment> qali, list<MatePairs> matepairs, list<int> insertlen)
 {
-  list<MatePairs>::iterator it = matepairs.begin();
+  list<MatePairs>::iterator itMp = matepairs.begin();
   list<int>::iterator itInsertlen = insertlen.begin();
-  cout << "i j scoreMate insertLen" << endl;
-  for (it, itInsertlen; it != matepairs.end(); it++, itInsertlen++)
+  int counter = 0;
+  string qName1, qName2;
+  cout << "Printing Mate-pairs info:" << endl;
+  for (itMp, itInsertlen; itMp != matepairs.end(); itMp++, itInsertlen++)
 	{
-	  // cout << *it << "," << *itInsertlen;
-	  cout << *it << " " << *itInsertlen << endl;
+	  float it = (*itMp).values[0];
+	  float jit = (*itMp).values[1];
+	  qName1 = qali.at((*itMp).values[0]).Name;
+	  qName2 = qali.at((*itMp).values[1]).Name;
+	  cout << "(" << it << "," << jit << ")=" << qName1 << ", " << qName2 
+			<< ", scoreMate=" << (*itMp).values[2] 
+			<< ", inslen=" << *itInsertlen << endl;
 	}
 }
 
@@ -519,10 +526,10 @@ void printMatedPairsInfo(list<MatePairs> matepairs, list<int> insertlen)
 void printMatedMap(map<int,int> mated)
 {
   map<int,int>::iterator itMated = mated.begin();
-  cout << "key=>value" << endl;
+  cout << "Printing mated summary:" << endl;
   for (itMated; itMated!=mated.end(); itMated++)
 	{
-	  cout << (*itMated).first << "=>" << (*itMated).second << endl;
+	  cout << "mate:" << (*itMated).first << ", mated:" << (*itMated).second << " times" << endl;
 	}
 }
 
@@ -585,18 +592,31 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
   // Defines whether to treat reads as single- or pair-ended ones
   if (paired) 
 	{
-	  // //// Printing Qali before and after sorting
-	  // cout << "------------------------------------------------------" << endl;
-	  // cout << "qali BEFORE sorting by Name and position:" << endl;
-	  // printQali(qali, refData);
+
+	  if (verbose)
+		{
+		  // Printing Qali before sorting
+		  cout << "------------------------------------------------------" << endl;
+		  cout << "qali BEFORE sorting by Name and position:" << endl;
+		  printQali(qali, refData);
+		}
+
 	  // Sorting by $tname and then by $tstart
       sort( qali.begin(), qali.end(), Sort::ByName(Sort::AscendingOrder) );
       sort( qali.begin(), qali.end(), Sort::ByPosition(Sort::AscendingOrder) );
-	  // cout << "------------------------------------------------------" << endl;
-	  // cout << "qali AFTER sorting by Name and position:" << endl;
-	  // printQali(qali, refData);
 
+	  if (verbose)
+		{
+		  // Printing Qali after sorting
+		  cout << "------------------------------------------------------" << endl;
+		  cout << "qali AFTER sorting by Name and position:" << endl;
+		  printQali(qali, refData);
+		  cout << "------------------------------------------------------" << endl;
+		}
 
+	  // Sweeping through all possible pairings of alignments within Qali, looking 
+	  // for candidates that belong to different: mate (qSuffix), strand (+,-) 
+	  // and whose distance < maxInsertLength and insert length ...
 	  for (it=0; it<qali.size()-1; it++)
 		{
 		  itRname = getReferenceName(refData, qali.at(it).RefID); 
@@ -604,17 +624,26 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 		  itQsuffix = itQname.substr(itQname.find("/")+1, itQname.length());	
 		  itStrand = qali.at(it).IsReverseStrand();
 
-		  for (jit=it+1; jit<qali.size() && getReferenceName(refData, qali.at(it).RefID)==getReferenceName(refData, qali.at(jit).RefID); jit++) 
+		  // Only loop until chromosome is different
+		  for (jit=it+1; jit<qali.size() && getReferenceName(refData, qali.at(it).RefID)==
+											getReferenceName(refData, qali.at(jit).RefID); jit++) 
 			{
 			  jitRname = getReferenceName(refData, qali.at(jit).RefID);
 			  jitQname = qali.at(jit).Name;
 			  jitQsuffix = jitQname.substr(jitQname.find("/")+1, jitQname.length());	
 			  jitStrand = qali.at(jit).IsReverseStrand();
-			  // cout << "comparing " << it << "," <<  getReferenceName(refData, qali.at(it).RefID) << 
-			  // 		", with " << jit << "," << getReferenceName(refData, qali.at(jit).RefID) << endl;
-			  if (itQsuffix!=jitQsuffix) //qSuffix.qali.at(it)==qSuffix.qali.at(jit)
+
+			  if (verbose)
+				{
+				  cout << "comparing pair: " << it << "," << jit << ": [" 
+						<< itQname << ", " << jitQname  << "]=[" << itRname << ", mate " << itQsuffix 
+					   << ", strand " << bool_cast(itStrand) << "; " << jitRname 
+					   << ", mate " << jitQsuffix << ", strand " << bool_cast(jitStrand) << "]" << endl; 
+				}
+
+			  if (itQsuffix!=jitQsuffix) // different mates: (f,r) or (1,2)
   		  	  	{
-  		  	  	  if (itStrand!=jitStrand) //strand.qali.at(it)==strand.qali.at(jit)
+  		  	  	  if (itStrand!=jitStrand) //different strands: (false, true)=(+,-)
   		  	  	  	{
 		  			  jitTstart = qali.at(jit).Position; 
 		  			  jitTend = qali.at(jit).GetEndPosition(); ///////////+1
@@ -622,39 +651,54 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
     	  			  itTend = qali.at(it).GetEndPosition(); //////////+1
   		  	  		  dist = jitTstart - itTend - 1;
   		  	  		  if (itTstart>jitTstart)
-  		  	  		  	{
-  		  	  		  	  dist = itTstart - jitTend - 1;
-  		  	  		  	}
+  		  	  		  	{dist = itTstart - jitTend - 1;}
+
+
+					  if (verbose)
+						{
+						  cout << "Alignments " << it << "," << jit << " above with different mates, " 
+							   << "different strands, dist=" << dist 
+							   << ", maxIntronLen=" << maxIntronLen << endl;
+						}
+
+					  // If alignments not too far apart but not overlapping either, then they're mated
   		  			  if (dist < maxIntronLen && dist>=0)
   		  			  	{
-  		  			  	  // printf("found mate pair %d,%d\n", it, jit);
-  		  			  	  ///////////////////////////////////////////////////////////////////////////////
   		  			  	  //push @matepairs, [$i,$j,scoreMate($i,$j,$dist)];
-  		  			  	  scoreArray = {(float)it, (float)jit, scoreMate(qali, it, jit, dist, globalOptions)};
+  		  			  	  scoreArray = {(float)it,(float)jit, scoreMate(qali, it, jit, dist, globalOptions)};
   		  			  	  mp.push(scoreArray); matepairs.push_back(mp);
-  		  			  	  ///////////////////////////////////////////////////////////////////////////////
+
   		  			  	  if (!mated[it]) {mated[it]=0;}
   		  			  	  if (!mated[jit]) {mated[jit]=0;} 
   		  			  	  mated[it]++;
   		  			  	  mated[jit]++;
   		  			  	  inslen = jitTend - itTstart - 1;
   		  			  	  if (inslen<0)
-  		  			  	  	{
-  		  			  	  	  inslen = itTend - jitTstart - 1;
-  		  			  	  	} 
+  		  			  	  	{inslen = itTend - jitTstart - 1;} 
   		  			  	  scoremates = scoreMate(qali, it, jit, dist, globalOptions);
-  		  			  	  correction = dist/maxIntronLen/10;
-  	  	  			  	  // printf("mated[%d]=%d,mated[%d]=%d,inslen=%I32d,dist=%I32df,score=%2.5,
-  		  			  	  // 		  correction=%2.5f\n", it, mated[it], jit, mated[jit], inslen, dist, 
-  		  			  	  // 		  scoremates, correction);
-  		  			  	  printf("mated[%d]=%d,mated[%d]=%d,inslen=%I32d,dist=%I32d\n", it, mated[it], 
-								 jit, mated[jit], inslen, dist);
+
+						  if (verbose)
+							{
+							 cout << ">>>found mate pair:"<< it << "," << jit <<" (above alignment)" << endl;
+							  // cout << ": [" 
+							  // 	   << itQname << ", " << jitQname  << "]=[" << itRname << ", mate " 
+							  // 	   << itQsuffix << ", strand " << bool_cast(itStrand) << "; " << jitRname 
+							  // 	   << ", mate " << jitQsuffix << ", strand " << bool_cast(jitStrand) 
+							  // 	   << "]" << endl; 
+							  cout << "mated[" << it << "]=" << mated[it] << ",mated[" << jit <<"]="
+								   << mated[jit] << ", inslen=" << inslen << ",dist=" << dist << endl;
+
+							}
   		  			  	  ///////////////////////////////////////////////////////////////////////////////
   		  			  	  // push @insertlen, $inslen;
   		  			  	  insertlen.push_back(inslen); 
   		  			  	  ///////////////////////////////////////////////////////////////////////////////
   		  			  	} else {
-  		  					// printf("dist=%I32d not right between %d and %d\n", dist, it, jit);
+							if (verbose)
+							  {
+								cout <<"dist=" << dist << " not right between " << it << " and " 
+									<< jit << endl;
+							  }
   		  			  } // end if(dist < maxIntronLen && dist>=0)
 
   		  			} // end middle if
@@ -664,53 +708,53 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 		} // end middle for
 
  
-	  printf("found %d mate pairs, involving %d mates.\n", (int)matepairs.size(), (int)mated.size());
+	  if (verbose)
+		{
+		  cout << "Summary of evaluation of candidate mate-pairs" << endl;
+		  cout << "found " << matepairs.size() << " mate pairs, involving "  
+			   << mated.size() << " mates." << endl;
+		  cout << "------------------------------------------------------" << endl;
+		  cout << "------------------------------------------------------" << endl;
+		  printMatedPairsInfo(qali, matepairs, insertlen);
+		  printMatedMap(mated);
+		}
 
-	  /////////////////////////////////////////////
-	  // Printing by-products of computeMatePairs()
-	  printMatedPairsInfo(matepairs, insertlen);
-	  printMatedMap(mated);
-	  // printQali(qali, refData);
-	  /////////////////////////////////////////////
-
-
-	  //////////////////////////////
-	  // Insert commented code here
-	  // $outPaired += @qali - scalar(keys %mated);
+	  // Taking out all alignments that were not paired
 	  int outPaired=0;
 	  outPaired += (int)qali.size() - (int)mated.size();
-	  cout << "scalarQali=" << (int)qali.size() << endl;
-	  cout << "scalarMated=" << (int)mated.size() << endl;
-	  cout << "outPaired=" << (int)outPaired << endl;
 
-	  // if (!uniq && !best || matepairs.size()<2)
-	  // 	{ // let pass all read alignments that are involved in mate pairs
-	  // 	  map<int,int>::iterator m_it;
-	  // 	  for (m_it=mated.begin(); m_it!=mated.end(); m_it++)
-	  // 		{ 
-	  // 		  // try {
-	  // 		  cout << "Letting pass all read alignments that are invoved in mate pairs" << endl;
-	  // 			(*ptrWriter).SaveAlignment(qali.at((*m_it).first)); // Saving alignment
-	  // 		  // } catch  (out_of_range& oor) {
-	  // 		  // 	cout << "There was an error at line " << line << ", " << oor.what() << endl;
-	  // 		  // }
-	  // 		}
-	  // 	} else { // uniq or best
-	  // 		// Sort matepairs by score 
-	  // 		matepairs.sort(); 
-	  // 		printList(matepairs);
-	  // 	  	if (uniq)
-	  // 		  {// let pass only best mate pair, and only if second is significantly worse
-	  // 			int second = 1;
-	  // 			list <MatePairs>::iterator matesIter = matepairs.begin();
-	  // 			while(second < matepairs.size()) // && similar()
-	  // 			  {
-	  // 				second++;
-	  // 				matesIter++;
-	  // 			  }
-	  // 			cout << "second=" << second << endl;
-	  //   	  }
-	  // 	}
+	  //////////////////////////////
+	  if (!uniq && !best || matepairs.size()<2)
+	  	{ // let pass all read alignments that are involved in mate pairs
+	  	  map<int,int>::iterator m_it;
+	  	  for (m_it=mated.begin(); m_it!=mated.end(); m_it++)
+	  		{ 
+			  if (verbose)
+				{cout << "Letting pass paired-alignment (" << (*m_it).first << ") : " 
+					<< qali.at((*m_it).first).Name << endl;}
+			  // Saving alignment
+  			  (*ptrWriter).SaveAlignment(qali.at((*m_it).first)); 
+	  		}
+	  	} else { // (uniq or best) selected
+	  		// Sort matepairs by score 
+			cout << "Sort mate pairs by score" << endl;
+			cout << "BEFORE sorting" << endl;
+	  		printList(matepairs);
+	  		matepairs.sort(); 
+			cout << "AFTER sorting" << endl;
+	  		printList(matepairs);
+	  	  	if (uniq)
+	  		  {// let pass only best mate pair, and only if second is significantly worse
+	  			int second = 1;
+	  			list <MatePairs>::iterator matesIter = matepairs.begin();
+	  			while(second < matepairs.size()) // incorporate call to similar for both mate pairs
+	  			  {
+	  				second++;
+	  				matesIter++;
+	  			  }
+	  			cout << "second=" << second << endl;
+	    	  }
+	  	}
 	  //////////////////////////////
 
 	} else {// IF NOT PAIRED, single read
