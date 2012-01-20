@@ -1,7 +1,7 @@
 /* 	Function definitions
  
 	Created: 20-September-2011	
-	Last modified: 3-January-2012
+	Last modified: 20-January-2012
 */
 
 #include <api/BamReader.h>  
@@ -19,9 +19,6 @@
 #include<list> 
 #ifndef QALISIZE
 #define QALISIZE 8
-#endif
-#ifndef SIZE
-#define SIZE 3
 #endif
 
 using namespace std;  
@@ -61,36 +58,6 @@ struct globalOptions_t {
 globalOptions_t initOptions(int argc, char *argv[]);
 
 
-
-///////////////////////////////////////////////////////
-// QALI vector class definition
-///////////////////////////////////////////////////////
-
-#ifndef QALIv_H
-#define QALIv_H
-// Class definition 
-class Qaliv
-{
- 
-	public:
-   	  string name[QALISIZE];
-	  Qaliv();
-  	  Qaliv(string *message);
-  	  friend bool compare_group(const Qaliv& a, const Qaliv& b);
-  	  friend bool compare_value(const Qaliv& a, const Qaliv& b);
-	  friend ostream& operator<<(ostream& os, const Qaliv& x);
-
-};
-#endif
-
-void printVector(vector<Qaliv> someVector);
-void printFormattedVector(vector<Qaliv> someVector);
-bool compare_criteria_1(const Qaliv& a, const Qaliv& b); 
-bool compare_criteria_2(const Qaliv& a, const Qaliv& b);
-
-///////////////////////////////////////////////////////
-
-
 #ifndef MATEPAIRS_H
 #define MATEPAIRS_H
 // Class definition 
@@ -99,19 +66,22 @@ class MatePairs
    friend ostream &operator<<(ostream &, const MatePairs &);
 
    public:
-      float values[SIZE];
+  	  int alIt;
+  	  int alJit;
+  	  float score;
       MatePairs();
       MatePairs(const MatePairs &);
+      MatePairs(int it, int jit, float score);
       ~MatePairs(){};
- 	  void push(float values[SIZE]);
+ 	  void setValues(int it, int jit, float score);
       MatePairs &operator=(const MatePairs &rhs);
       int operator==(const MatePairs &rhs) const;
       int operator<(const MatePairs &rhs) const;
+  	  bool operator() (const MatePairs &lhs, const MatePairs &rhs) const;
 };
 #endif
 
-void printList(list<MatePairs> someList);
-void printFormattedList(list<MatePairs> someList);
+void printMatePairs(vector<MatePairs> someList, vector<BamAlignment> &qali);
 
 
 

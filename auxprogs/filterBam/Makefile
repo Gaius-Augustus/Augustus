@@ -5,7 +5,7 @@
 #	b) libbamtools.a and lz library are used during the linking process
 #
 # 	Created: 11-November-2011
-#	Last modified: 11-January-2012
+#	Last modified: 20-January-2012
 
 # Variable definition
 HOME = /home/tonatiuh/web-home
@@ -13,8 +13,8 @@ BT1 = $(HOME)/pezmaster31-bamtools-12aca98
 BT2 = $(HOME)/bamtools-1.0.2
 BT3 = $(HOME)/bamtools
 CODE = $(HOME)/filterBam/bamtoolsCode
-INCLUDES = -I$(BT3)/include -I$(CODE)/headers -I$(BT3)/src/toolkit
-VPATH = $(CODE)/functions # Required to find files in functions/foo.cc
+INCLUDES = -I$(BT3)/include -Iheaders -I$(BT3)/src/toolkit
+VPATH = functions # Required to find files in functions/foo.cc
 LIBS = $(BT3)/lib/libbamtools.a -lz 
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc \
 			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc

@@ -1,7 +1,6 @@
 /*	list:sort
 	
 	NOTE: 
-	This script only works with previously SORTED files!!!
 
 	Created: 4-November-2011
 	Last modified: 20-January-2012
@@ -69,16 +68,16 @@ double unifRand(double a, double b)
 //
 // Reset the random number generator with the system clock.
 void seed()
-{
+{ 
     srand(time(0));
 }
 
 
-void printQali(vector<BamAlignment> &qali, const RefVector refData);
-float scoreMate(vector<BamAlignment> qali, int it, int jit, int dist, globalOptions_t globalOptions);
+void printQali(vector<BamAlignment> &qali, const RefVector &refData);
+float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions);
 void printatedPairsInfo(vector<BamAlignment> qali, list<MatePairs> matepairs, list<int> insertlen);
 void printMatedMap(map<int,int> mated);
-optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem);
+optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem);
 
 
 int main(int argc, char *argv[])
@@ -223,7 +222,8 @@ int main(int argc, char *argv[])
 				  " occurred previously. " << endl;
 				cerr << "Do either of the following: " << endl;
 				cerr << "1) Convert the file into SAM with e.g. the 'bamtools' software. \n" << 
-						"   Then sort lexicographically by queryname, i.e. set LC_ALL=C and sort -k 1,1\n" 
+				  "   Then sort lexicographically by queryname, i.e. use the command" << endl;
+				cerr << "'export LC_ALL=C' and then 'sort -k 1,1'\n" 
 					 << "   Convert back again into BAM format, with e.g. 'samtools' software. " << endl;
 				cerr << "2) Sort BAM file directly with your preferred software package, " << 
 				  		"   e.g. 'samtools' or 'bamtools' " << endl;  	
@@ -389,7 +389,7 @@ int main(int argc, char *argv[])
 
 
 
-void printQali(vector<BamAlignment> &qali, const RefVector refData)
+void printQali(vector<BamAlignment> &qali, const RefVector &refData)
 {
   vector<BamAlignment>::iterator it = qali.begin();
   std::stringstream ss_rstart, ss_rend, ss_percId, ss_coverage, ss_score;
@@ -425,7 +425,7 @@ void printQali(vector<BamAlignment> &qali, const RefVector refData)
 	}
 }
 
-// parameter later used for comparing quality between two alignments
+// parameter later used for comparing quality between alignments
 vector<BamAlignment> scoreAli(vector<BamAlignment>& qali)
 {
   string s_percId, s_coverage;
@@ -447,19 +447,21 @@ vector<BamAlignment> scoreAli(vector<BamAlignment>& qali)
 
 }
 
+
 // for comparing quality of two mate-pair read alignments (it, jit)
-float scoreMate(vector<BamAlignment> qali, int it, int jit, int dist, globalOptions_t globalOptions)
+float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions)
 {
   int maxIntronLen = globalOptions.maxIntronLen;
   bool best = globalOptions.best;
-
   string percId1, coverage1, percId2, coverage2;
   string rf1, rf2;
 
-  qali.at(it).GetTag("pi", percId1);
-  qali.at(jit).GetTag("pi", percId2);
-  qali.at(it).GetTag("co", coverage1);
-  qali.at(jit).GetTag("co", coverage2);
+  // Retrieving percent identity
+  al1.GetTag("pi", percId1);
+  al2.GetTag("pi", percId2);
+  // Retrieving coverage values
+  al1.GetTag("co", coverage1);
+  al2.GetTag("co", coverage2);
 
   float percIdIt = atof(percId1.c_str());
   float percIdJit = atof(percId2.c_str());
@@ -476,6 +478,7 @@ float scoreMate(vector<BamAlignment> qali, int it, int jit, int dist, globalOpti
 
   return score;
 }
+
 
 
 //
@@ -502,23 +505,22 @@ bool similar(BamAlignment al1, BamAlignment al2)
 }
 
 
-void printMatedPairsInfo(vector<BamAlignment> qali, list<MatePairs> matepairs, list<int> insertlen)
+void printMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs)
 {
-  list<MatePairs>::iterator itMp = matepairs.begin();
-  list<int>::iterator itInsertlen = insertlen.begin();
+  vector<MatePairs>::iterator itMp = matepairs.begin();
+
   int counter = 0;
   string qName1, qName2;
   cout << "Printing Mate-pairs info:" << endl;
-  for (itMp, itInsertlen; itMp != matepairs.end(); itMp++, itInsertlen++)
+  for (itMp; itMp != matepairs.end(); itMp++)
 	{
-	  float it = (*itMp).values[0];
-	  float jit = (*itMp).values[1];
-	  qName1 = qali.at((*itMp).values[0]).Name;
-	  qName2 = qali.at((*itMp).values[1]).Name;
-	  cout << "(" << it << "," << jit << ")=" << qName1 << ", " << qName2 
-			<< ", scoreMate=" << (*itMp).values[2] 
-			<< ", inslen=" << *itInsertlen << endl;
-	}
+	  int it = (*itMp).alIt;
+	  int jit = (*itMp).alJit;
+	  float score = (*itMp).score;
+	  qName1 = qali.at(it).Name;
+	  qName2 = qali.at(jit).Name;
+	  cout << "(" << it << "," << jit << ")=" << qName1 << ", " << qName2 << ", scoreMate=" << score << endl;
+ 	}
 }
 
 
@@ -533,7 +535,7 @@ void printMatedMap(map<int,int> mated)
 }
 
 
-optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem)
+optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem)
 {
   struct optionalCounters_t optionalCounters;
   // Optional counters
@@ -564,15 +566,13 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
   string itQsuffix, jitQsuffix;
   bool itStrand, jitStrand;
   // Matepairs
-  list<MatePairs> matepairs;
+  vector<MatePairs> matepairs;
   MatePairs mp;
   list<int> insertlen;
   map<int, int> mated;
   int32_t inslen, dist;
   // unsigned int inslen, dist;
-  float scoremates, correction;
   int it, jit;
-  float scoreArray[SIZE];
   uint32_t jitTstart;
   uint32_t jitTend;
   uint32_t itTstart;
@@ -600,11 +600,11 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 		  printQali(qali, refData);
 		}
 
-	  cout << "Size of qali" << qali.size() << ". Sorting vector " << endl; //////// TAKE OUT!!!!
-
+	  cout << "Size of qali: " << qali.size() << ". Sorting vector " << endl; //////// TAKE OUT!!!!
 	  // Sorting by $tname and then by $tstart
-      sort( qali.begin(), qali.end(), Sort::ByName(Sort::AscendingOrder) );
-      sort( qali.begin(), qali.end(), Sort::ByPosition(Sort::AscendingOrder) );
+	  std::stable_sort( qali.begin(), qali.end(), Sort::ByName(Sort::AscendingOrder) );
+	  std::stable_sort( qali.begin(), qali.end(), Sort::ByPosition(Sort::AscendingOrder) );
+	  cout << "Finished sorting. Continuing processing of paired alignments" << endl;  /////// TAKE OUT!!!!
 
 	  if (verbose)
 		{
@@ -615,6 +615,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 		  cout << "------------------------------------------------------" << endl;
 		}
 
+	  // Evaluating candidate mate-pairs.
 	  // Sweeping through all possible pairings of alignments within Qali, looking 
 	  // for candidates that belong to different: mate (qSuffix), strand (+,-) 
 	  // and whose distance < maxInsertLength and insert length ...
@@ -647,12 +648,11 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
   		  	  	  if (itStrand!=jitStrand) //different strands: (false, true)=(+,-)
   		  	  	  	{
 		  			  jitTstart = qali.at(jit).Position; 
-		  			  jitTend = qali.at(jit).GetEndPosition(); ///////////+1
+		  			  jitTend = qali.at(jit).GetEndPosition();//bamtools iss. with intervals taken into acct 
 		  			  itTstart = qali.at(it).Position; 
-    	  			  itTend = qali.at(it).GetEndPosition(); //////////+1
+    	  			  itTend = qali.at(it).GetEndPosition(); //bamtools iss. with intervals taken into acct.
   		  	  		  dist = jitTstart - itTend - 1;
-  		  	  		  if (itTstart>jitTstart)
-  		  	  		  	{dist = itTstart - jitTend - 1;}
+  		  	  		  if (itTstart>jitTstart) {dist = itTstart - jitTend - 1;}
 
 
 					  if (verbose)
@@ -666,34 +666,29 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
   		  			  if (dist < maxIntronLen && dist>=0)
   		  			  	{
   		  			  	  //push @matepairs, [$i,$j,scoreMate($i,$j,$dist)];
-  		  			  	  scoreArray = {(float)it,(float)jit, scoreMate(qali, it, jit, dist, globalOptions)};
-  		  			  	  mp.push(scoreArray); matepairs.push_back(mp);
+  		  			  	  mp.setValues(it, jit, scoreMate(qali.at(it), qali.at(jit), dist, globalOptions)); 
+						  matepairs.push_back(mp);
 
   		  			  	  if (!mated[it]) {mated[it]=0;}
   		  			  	  if (!mated[jit]) {mated[jit]=0;} 
   		  			  	  mated[it]++;
   		  			  	  mated[jit]++;
   		  			  	  inslen = jitTend - itTstart - 1;
-  		  			  	  if (inslen<0)
-  		  			  	  	{inslen = itTend - jitTstart - 1;} 
-  		  			  	  scoremates = scoreMate(qali, it, jit, dist, globalOptions);
+  		  			  	  if (inslen<0) {inslen = itTend - jitTstart - 1;} 
 
 						  if (verbose)
 							{
 							 cout << ">>>found mate pair:"<< it << "," << jit <<" (above alignment)" << endl;
 							  // cout << ": [" 
 							  // 	   << itQname << ", " << jitQname  << "]=[" << itRname << ", mate " 
-							  // 	   << itQsuffix << ", strand " << bool_cast(itStrand) << "; " << jitRname 
+							  // 	   <<itQsuffix << ", strand " << bool_cast(itStrand) << "; " << jitRname 
 							  // 	   << ", mate " << jitQsuffix << ", strand " << bool_cast(jitStrand) 
 							  // 	   << "]" << endl; 
 							  cout << "mated[" << it << "]=" << mated[it] << ",mated[" << jit <<"]="
 								   << mated[jit] << ", inslen=" << inslen << ",dist=" << dist << endl;
-
 							}
-  		  			  	  ///////////////////////////////////////////////////////////////////////////////
   		  			  	  // push @insertlen, $inslen;
   		  			  	  insertlen.push_back(inslen); 
-  		  			  	  ///////////////////////////////////////////////////////////////////////////////
   		  			  	} else {
 							if (verbose)
 							  {
@@ -708,8 +703,6 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 			} // end inner for
 		} // end middle for
 
- 
-	  cout << "Finished sorting. Continuing processing of paired alignments" << endl;  /////// TAKE OUT!!!!
 
 	  if (verbose)
 		{
@@ -718,7 +711,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 			   << mated.size() << " mates." << endl;
 		  cout << "------------------------------------------------------" << endl;
 		  cout << "------------------------------------------------------" << endl;
-		  printMatedPairsInfo(qali, matepairs, insertlen);
+		  printMatedPairsInfo(qali, matepairs);
 		  printMatedMap(mated);
 		}
 
@@ -743,27 +736,35 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 
 		if (verbose)
 		  {
-			cout << "Sort mate pairs by score" << endl;
+  		    cout << "------------------------------------------------------" << endl;
+			cout << "Sort (descending) mated pairs by scoreMate" << endl;
 			cout << "BEFORE sorting" << endl;
-	  		printList(matepairs);
+	  		printMatePairs(matepairs, qali);
 		  }
-	  		// Sort matepairs by score 
-	  		matepairs.sort(); 
+	  		// // Sort matepairs by score (in descending order) 	
+			sort(matepairs.begin(), matepairs.end()); 
 
 			if (verbose)
 			  {
 				cout << "AFTER sorting" << endl;
-				printList(matepairs);
-			  }
-
+				printMatePairs(matepairs, qali);
+		        cout << "------------------------------------------------------" << endl;
+			  }  
+ 
 	  	  	if (uniq)
 	  		  {// let pass only best mate pair, and only if second is significantly worse
 	  			int second = 1;
-	  			list <MatePairs>::iterator matesIter = matepairs.begin();
-	  			while(second < matepairs.size()) 
+
+		    	cout << "------------------------------------------------------" << endl;
+				cout << "Comparing similarity between pairs:" << endl;
+			  	cout << "------------------------------------------------------" << endl;
+
+	  			while(second < matepairs.size() && similar(qali.at(matepairs.at(0).alIt), 
+														   qali.at(matepairs.at(second).alIt)) && 
+												   similar(qali.at(matepairs.at(0).alJit), 
+														   qali.at(matepairs.at(second).alJit))) 
 	  			  {
 	  				second++;
-	  				matesIter++;
 	  			  }
 	  			cout << "second=" << second << endl;
 	    	  }
@@ -787,7 +788,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 			  }
 
 			// Sorting alignments by score
-			std::stable_sort(qali.begin(), qali.end(), Sort::ByTag<std::string>("sc", Sort::DescendingOrder));
+			std::stable_sort(qali.begin(), qali.end(), Sort::ByTag<std::string>("sc",Sort::DescendingOrder));
 
 			if (verbose)
 			  {
@@ -798,7 +799,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector refD
 			  }
 
 
-			// Uniq option goes first before Best option
+			// Selecting Uniq alignments takes precedence over selecting the Best alignments
 			if (uniq) 
 			  {
 			  	int second; float scoreFirst, scoreSecond, ratio;
