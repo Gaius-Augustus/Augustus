@@ -120,6 +120,8 @@
 
 <p>However, if you do not want to reveal the true species name, you may use any other string shorter than 30 characters as a species name. Species names must be unique on our system, i.e. if the string of your choice is already existing in our system, you will get a message that you have to choose another species name.</p>
 
+<p>The species name is not allowed to contain spaces!</p>
+
 <p>We are <b>not</b> redistributing the original sequence data that you submitted to our web server application. But we are redistributing the trained parameters and the species name and any other kind of results that your computation may have produced.</p><p><b>Example:</b></p><p>If person 1 submits a sequence data set for training and names it <i>hypothetical_species</i>, and a second person tries later to train AUGUSTUS with exactly the same sequence files (new data upload) and names the species <i>some_other_name</i>, the second person will be redirected to the results of the original training run of person 1, and the species name <i>hypothetical_species</i> will be publicly readable to person 2.</p>
             <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />

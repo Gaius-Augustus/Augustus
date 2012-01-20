@@ -11,6 +11,8 @@
 my $usage = "writeResultsPage ID species-name db-file grails-out www-out AugustusConfigPath AugustusScriptsPath final-flag\n";
 
 if(@ARGV != 8){
+    $nArgs = @ARGV;
+    print "Number of args $nArgs\n";
         print $usage;
         exit;
 }

@@ -252,7 +252,7 @@ Top of page
 
 <div id="species_form"><h3><a href="#species_form">1.2.2.1 - The species name format</a></h3></div>
 
-<p>The species name must be a string of at most 30 characters length. It must be unique in our database.</p>
+<p>The species name must be a string of at most 30 characters length. It must be unique in our database and it may <b>not</b> contain spaces.</p>
 
 <div id="species_purpose"><h3><a href="#species_purpose">1.2.2.2 - Purpose of entering a species name</a></h3></div>
 

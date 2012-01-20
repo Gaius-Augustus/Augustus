@@ -168,6 +168,16 @@ class TrainingController {
             			redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}"])
            			return
 			}
+			
+			// check that species name does not contain spaces
+			if(trainingInstance.project_name =~ /\s/){
+				logDate = new Date()
+				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The species name contained whitespaces.\n"
+				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+			       flash.error = "Species name  ${trainingInstance.project_name} contains white spaces."
+   	  		       redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}"])
+	  		       return
+			} 
 
 			// upload of genome file
 			def uploadedGenomeFile
@@ -1721,7 +1731,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				sgeFile << "#!/bin/bash\n#\$ -S /bin/bash\n#\$ -cwd\n\n"
 				// this has been checked, works.
 				if( estExistsFlag ==1 && proteinExistsFlag == 0 && structureExistsFlag == 0){
-					cmd2Script = "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --pasa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} > ${projectDir}/writeResults.log 1 2> ${projectDir}/writeResults.err"
+					cmd2Script = "autoAug.pl --genome=${projectDir}/genome.fa --species=${trainingInstance.accession_id} --cdna=${projectDir}/est.fa --pasa -v --singleCPU --workingdir=${projectDir} > ${projectDir}/AutoAug.log 2> ${projectDir}/AutoAug.err\n\nwriteResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH}  1 > ${projectDir}/writeResults.log 2> ${projectDir}/writeResults.err"
 					sgeFile << "${cmd2Script}"
 					if(verb > 2){
 						logDate = new Date()
