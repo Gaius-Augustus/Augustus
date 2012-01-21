@@ -734,16 +734,17 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 	  		}
 	  	} else { // (uniq or best) selected
 
-		if (verbose)
-		  {
-  		    cout << "------------------------------------------------------" << endl;
-			cout << "Sort (descending) mated pairs by scoreMate" << endl;
-			cout << "BEFORE sorting" << endl;
-	  		printMatePairs(matepairs, qali);
-		  }
-	  		// // Sort matepairs by score (in descending order) 	
-			sort(matepairs.begin(), matepairs.end()); 
+   			if (verbose)
+			  {
+				cout << "------------------------------------------------------" << endl;
+				cout << "Sort (descending) mated pairs by scoreMate" << endl;
+				cout << "BEFORE sorting" << endl;
+				printMatePairs(matepairs, qali);
+			  }
 
+			// Sort matepairs by score (in descending order) 	
+			sort(matepairs.begin(), matepairs.end()); 
+ 
 			if (verbose)
 			  {
 				cout << "AFTER sorting" << endl;
@@ -767,7 +768,23 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 	  				second++;
 	  			  }
 	  			cout << "second=" << second << endl;
-	    	  }
+				if (second < matepairs.size())
+				  {
+					float ratio = matepairs.at(second).score/matepairs.at(0).score;
+
+					if (ratio < uniqThresh)
+					  {
+						cout << "Saving uniq mate pair (give details here)" << endl;
+						(*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
+						(*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
+					  }
+	
+				  }
+
+
+
+
+	    	  } // end of if(uniq)
 	  	}
 	  //////////////////////////////
 
@@ -817,7 +834,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 				if (second < qali.size())
 				  {
 
-					// Comparing scores between best-scored alignemtn and one indexed by "second"
+					// Comparing scores between best-scored alignment and one indexed by "second"
 					qali.at(0).GetTag("sc", s_scoreFirst);
 					scoreFirst = atof(s_scoreFirst.c_str());
 					qali.at(second).GetTag("sc", s_scoreSecond);

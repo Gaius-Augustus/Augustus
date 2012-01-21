@@ -99,14 +99,14 @@ int MatePairs::operator==(const MatePairs &rhs) const
 // We just compare equality of mates in terms of their score
 int MatePairs::operator<(const MatePairs &rhs) const
 {
-   if( this->score >=  rhs.score ) return 1;
+   if( this->score >= rhs.score ) return 1;
    return 0;
 }
 
-bool MatePairs::operator() (const MatePairs &lhs, const MatePairs &rhs) const
-{ 
-	return (lhs.score>rhs.score);
-}
+// bool MatePairs::operator() (const MatePairs &lhs, const MatePairs &rhs) const
+// { 
+// 	return (lhs.score < rhs.score);
+// }
 
 
 
