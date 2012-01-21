@@ -337,6 +337,10 @@ int main(int argc, char *argv[])
 		// }
 	  }
 
+	// Sorting insertlengths array
+	// @insertlen = sort {$a <=> $b} @insertlen;
+
+
 	// Displaying results to STDOUT
 	cout <<  "------------------------------------- " << endl;
 	cout <<  "\nSummary of filtered alignments: " << endl;
@@ -487,19 +491,36 @@ float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t gl
 // that very similar alignments are reported, e.g. an unspliced read going approximately up to an intron
 // and a spliced read with a few base pairs on one exon.
 // These should not be considered ambiguous when --uniq is specified.
-bool similar(BamAlignment al1, BamAlignment al2)
+// TODO: check whether boolean comparisons can be made with "uint32_t"
+bool similar(BamAlignment alR, BamAlignment alS, globalOptions_t globalOptions) 
 {
-  uint32_t jitTstart = al1.Position;
-  uint32_t jitTend = al2.GetEndPosition();  
-  uint32_t itTstart = al1.Position; 
-  uint32_t itTend = al2.GetEndPosition();
+  // Extracting options
+  bool verbose = globalOptions.verbose;
+	
+  // First alignment
+  int32_t rStart = alR.Position; 
+  int32_t rEnd = alR.GetEndPosition();
+  string rName = alR.Name;
+  // Second alignment
+  int32_t sStart = alS.Position;
+  int32_t sEnd = alS.GetEndPosition();
+  string sName = alS.Name;  
 
-  if (jitTend <= itTstart || jitTstart >= itTend) // here: similar = overlapping target range
+  if (verbose)
 	{
-	  cout << "[SIMILAR]: Alignments " << al1.Name << " and " << al2.Name << " are not similar" << endl;
+	  cout << "[SIMILAR]: checking whether " << rName << " and " << sName << " are approx. the same:"<< endl;
+	  cout << "[SIMILAR]: Overlap: (" << rName << "):" << rEnd << " <= (" << sName 
+		   << "):" << sStart << endl; 
+	  cout << "[SIMILAR]: Overlap: (" << rName << "):" << rStart << " >= (" << sName 
+		   << "):" << sEnd << endl; 
+	}
+
+  if (rEnd <= sStart || rStart >= sEnd) // here: similar = overlapping target range
+	{
+	  cout << "[SIMILAR]: Alignments are NOT SIMILAR" << endl;
 	  return false;
 	} else {
-		cout << "[SIMILAR]: Alignments " << al1.Name << " and " << al2.Name << " are similar" << endl;
+		cout << "[SIMILAR]: Alignments are SIMILAR" << endl;
 		return true;
   		   }
 }
@@ -654,7 +675,6 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
   		  	  		  dist = jitTstart - itTend - 1;
   		  	  		  if (itTstart>jitTstart) {dist = itTstart - jitTend - 1;}
 
-
 					  if (verbose)
 						{
 						  cout << "Alignments " << it << "," << jit << " above with different mates, " 
@@ -678,7 +698,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 
 						  if (verbose)
 							{
-							 cout << ">>>found mate pair:"<< it << "," << jit <<" (above alignment)" << endl;
+							 cout << ">>>found mate pair:"<< it << "," << jit <<" (above alignment)!!!" << endl;
 							  // cout << ": [" 
 							  // 	   << itQname << ", " << jitQname  << "]=[" << itRname << ", mate " 
 							  // 	   <<itQsuffix << ", strand " << bool_cast(itStrand) << "; " << jitRname 
@@ -687,8 +707,10 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 							  cout << "mated[" << it << "]=" << mated[it] << ",mated[" << jit <<"]="
 								   << mated[jit] << ", inslen=" << inslen << ",dist=" << dist << endl;
 							}
+
   		  			  	  // push @insertlen, $inslen;
   		  			  	  insertlen.push_back(inslen); 
+
   		  			  	} else {
 							if (verbose)
 							  {
@@ -752,39 +774,146 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 		        cout << "------------------------------------------------------" << endl;
 			  }  
  
+			// Selection of Uniq-ue mate-pairs takes precedence over selecting Best mate-pairs
 	  	  	if (uniq)
-	  		  {// let pass only best mate pair, and only if second is significantly worse
-	  			int second = 1;
+	  		  {// let pass only one mate pair, and only if second is significantly worse
+			  	int second; float scoreFirst, scoreSecond, ratio;
+				string mate1First, mate1Second, mate2First, mate2Second;
+				second = 1;
 
 		    	cout << "------------------------------------------------------" << endl;
 				cout << "Comparing similarity between pairs:" << endl;
+				cout << matepairs.at(0).alIt << " and " << matepairs.at(second).alIt << endl;
+				cout << matepairs.at(0).alJit << " and " << matepairs.at(second).alJit << endl;
 			  	cout << "------------------------------------------------------" << endl;
 
 	  			while(second < matepairs.size() && similar(qali.at(matepairs.at(0).alIt), 
-														   qali.at(matepairs.at(second).alIt)) && 
-												   similar(qali.at(matepairs.at(0).alJit), 
-														   qali.at(matepairs.at(second).alJit))) 
+														   qali.at(matepairs.at(second).alIt), globalOptions) 
+												&& similar(qali.at(matepairs.at(0).alJit), 
+														   qali.at(matepairs.at(second).alJit), globalOptions)) 
 	  			  {
 	  				second++;
 	  			  }
 	  			cout << "second=" << second << endl;
+
+
+				// "Second" mate-pair is the one with lowest score, but that is still similar
 				if (second < matepairs.size())
 				  {
-					float ratio = matepairs.at(second).score/matepairs.at(0).score;
+					mate1First = qali.at(matepairs.at(0).alIt).Name;
+					mate2First = qali.at(matepairs.at(0).alJit).Name;
+					scoreFirst = matepairs.at(0).score;
+					mate1Second = qali.at(matepairs.at(second).alIt).Name;
+					mate2Second = qali.at(matepairs.at(second).alJit).Name;
+					scoreSecond = matepairs.at(second).score;
 
+					ratio = scoreSecond/scoreFirst;
+
+					if (verbose)
+					  {
+						cout << "Selecting a unique mate-pair in terms of its score" << endl;
+						cout << "------------------------------------------------------------------------" 
+							<< endl;
+						cout << "Position of last similar mate-pair (indexed by second)=" << second << endl;
+						cout << "Comparing scores between optimal and second mate-pairs: " << endl;
+						cout << "[" << mate1First << " paired with " << mate2First << "; score=" 
+							 << scoreFirst << " paired with " << endl; 
+						cout << "[" << mate1First << "," << mate2Second << "; score=" 
+							 << scoreSecond << endl;
+						cout << "Ratio between these two mate-pairs: " << ratio << endl;
+						cout << "------------------------------------------------------------------------\n"; 
+					  }
+
+					//... siginificantly worse in terms of "scoreMate"
 					if (ratio < uniqThresh)
 					  {
+						if (verbose)
+						  {
+							cout << "Letting pass unique mate-pair: (" << mate1First << " and " 
+								 << mate2First << ") because:" << endl;
+							cout << "'lowest-scored' but similar mate-pair: (" << mate1Second << " and " 
+								 << mate2Second << ")" << endl;
+							cout << "are significantly worse, ratio=" << ratio << "<uniqThresh=" 
+							 	<< uniqThresh << endl;
+						  }
 						cout << "Saving uniq mate pair (give details here)" << endl;
 						(*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
 						(*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
+					  } else {// dropping all mate-pairs belonging to this query
+
+					  	  if (verbose)
+						    {
+							  cout << "(" << matepairs.size() <<") mate-pairs filtered out by uniqueness because:";
+							  cout << "\nThey are similar and have score ratio=" << ratio 
+								   << ">uniqThresh=" << uniqThresh << endl;
+							  for (int it=0; it<matepairs.size(); it++)
+								{cout << qali.at(matepairs.at(it).alIt).Name << ", " 
+									  << qali.at(matepairs.at(it).alJit).Name << ") filtered out by uniqueness " 
+									  << "criterion." << endl;}	
+							  cout << "Clearing contents of matepairs" << endl;				   	
+							}
+						  matepairs.clear();
 					  }
-	
-				  }
+
+
+				  } else {// '(second == matepairs.size()' => all mate-pairs in "matepairs" are similar
+					  if (verbose)
+						{
+						  cout << "------------------------------------------------------------------------" 
+								<< endl; 
+				  		  cout << "Suboptimal mate-pairs are all similar" << endl;
+				  	 	  cout << "Letting pass only top-scored mate-pair: " 
+							   << qali.at(matepairs.at(0).alIt).Name << " and " 
+							   << qali.at(matepairs.at(0).alJit).Name << ", score=" 
+							   << matepairs.at(0).score << endl;
+						  cout << "(" << matepairs.size()-1<< ") mate-pairs filtered out by uniqueness" << endl;
+						}
+
+					  cout << "Saving uniq mate pair (give details here)" << endl;
+					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
+					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
+				}
+
+				// splice @matepairs, 1; # keep only the best pair (if any)
+
+	    	  } else { // (uniq, best) = (0, 1); let pass only (best) mate-pairs that share maximum score
+
+			  	  if (verbose)
+					{
+					  cout << "------------------------------------------------------------------------" <<endl;
+					  cout << "Options: (paired, uniq, best) = (" << paired << ", " << uniq << ", " << best 
+						   << ")" << endl;
+					}
+
+				  string s_optScore, s_tempScore;
+				  float optScore, tempScore; 
+				  vector<string> bestTnames; 
+				  optScore = matepairs.at(0).score;
+				  tempScore = optScore;
+				  bool qSize = true;
+
+				  while (tempScore == optScore && qSize)
+					{
+					  cout << "Letting pass mate-pair (best): " << qali.at(matepairs.at(0).alIt).Name 
+						   << qali.at(matepairs.at(0).alJit).Name << ", score=" 
+						   << tempScore << ", optScore=" << optScore << endl;
+					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
+					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
+					  // bestTnames.push_back(getReferenceName(refData, qali.at(0).RefID));
+					  // qali.erase(qali.begin()); // Delete first member of qali
+					  // cout << "After deleting element, qali.size()=" << qali.size() << endl;
+					  // if (qali.size()>0)
+					  // 	{
+					  // 	  qali.at(0).GetTag("sc", s_tempScore);
+					  // 	  tempScore = atof(s_tempScore.c_str());
+					  // 	} else {
+					  // 	qSize = false;
+					}
 
 
 
+			}
 
-	    	  } // end of if(uniq)
 	  	}
 	  //////////////////////////////
 
@@ -816,15 +945,15 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 			  }
 
 
-			// Selecting Uniq alignments takes precedence over selecting the Best alignments
+			// Selection of Uniq-ue alignments takes precedence over selecting the Best alignments
 			if (uniq) 
-			  {
+			  { // let pass only one alignment, and only if second is significantly worse
 			  	int second; float scoreFirst, scoreSecond, ratio;
 				string s_scoreFirst, s_scoreSecond;
 				second = 1;
 
 				// Sweep through all alignments and stop until a di-similar one is found
-				while (second < qali.size() && similar(qali.at(0), qali.at(second)))
+				while (second < qali.size() && similar(qali.at(0), qali.at(second), globalOptions))
 				  {
 					second++;
 				  }
@@ -843,13 +972,14 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 
 					if (verbose)
 					  {
-						cout << "\n------------------------------------------------------------------------" 
+						cout << "Selecting a unique alignment in terms of its score" << endl;
+						cout << "------------------------------------------------------------------------" 
 							<< endl;
 						cout << "Position of last similar alignment (indexed by second)=" << second << endl;
 						cout << "Comparing scores between optimal and second: " << endl;
 						cout << "[" << getReferenceName(refData, qali.at(0).RefID) << "]<-" 
 							 << qali.at(0).Name << "; score=" << scoreFirst << " and " << endl; 
-						cout << "[" << getReferenceName(refData, qali.at(0).RefID) << "]<-" 
+						cout << "[" << getReferenceName(refData, qali.at(second).RefID) << "]<-" 
 							<< qali.at(second).Name << "; score=" << scoreSecond << endl;
 						cout << "Ratio between these two alignments: " << ratio << endl;
 						cout << "------------------------------------------------------------------------\n"; 
@@ -860,7 +990,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 					  {		
 						if (verbose)
 						  {
-							cout << "Letting pass only alignment " << qali.at(0).Name << " because:" << endl;
+							cout << "Letting pass unique alignment " << qali.at(0).Name << " because:" << endl;
 							cout << "'lowest-scored' but similar alignment " << qali.at(second).Name << endl;
 							cout << "is significantly worse, ratio=" << ratio << "<uniqThresh=" 
 							 	<< uniqThresh << endl;
@@ -910,7 +1040,6 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 				  cout << "------------------------------------------------------------------------" << endl;
 				  cout << "Options: (paired, uniq, best) = (" << paired << ", " << uniq << ", " << best 
 					<< ")" << endl;
-				  // cout << "Letting pass alignments that share optimal score:" << endl;
 				}
 
 			  	string s_optScore, s_tempScore;
