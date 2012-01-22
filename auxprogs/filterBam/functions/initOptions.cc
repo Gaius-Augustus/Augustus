@@ -2,7 +2,7 @@
 
 
 	Created: 27-September-2011
-	Last modified:  9-January-2012
+	Last modified: 22-January-2012
 */
 
 #include <iostream>
@@ -28,7 +28,7 @@ float uniqThresh = 0.96;
 const char* commonGeneFile;
 const char* inputFile;
 const char* outputFile;
-const char* pairbedFile;
+const char* pairBedFile;
 
 
 using namespace std;
@@ -56,7 +56,7 @@ struct globalOptions_t {
 	const char* commonGeneFile;
   	const char* inputFile;
   	const char* outputFile;
-	const char* pairbedFile;
+	const char* pairBedFile;
 };
 #endif
 
@@ -80,7 +80,7 @@ static const struct option longOpts[] = {
     { "commonGeneFile", required_argument, NULL, 'n' }, 
     { "in", required_argument, NULL, 'o' }, 
     { "out", required_argument, NULL, 'p' }, 
-    { "pairbedFile", required_argument, NULL, 'q' },
+    { "pairBedFile", required_argument, NULL, 'q' },
     { NULL, no_argument, NULL, 0 }
 };
 
@@ -122,7 +122,7 @@ void displayUsage(int argc, char *argv[])
 	cout <<  "                     fraction of best (default " << uniqThresh << ") " << endl;
 	cout <<  "  --commonGeneFile=s file name in which to write cases where one read maps to \n" <<
 	         "                     several different genes" << endl;
-	cout <<  "  --pairbedFile=s    file name of pairedness coverage:" << endl;
+	cout <<  "  --pairBedFile=s    file name of pairedness coverage:" << endl;
 	cout <<  "                     options:"  << endl;
 	cout <<  "	\t\t a .bed format file in which for each position the number of" << endl;
 	cout <<  "	\t\t filtered read pairs is reported that contain the position in" << endl; 
@@ -160,7 +160,7 @@ globalOptions_t initOptions(int argc, char *argv[])
 	globalOptions.commonGeneFile = "";
 	globalOptions.inputFile = "";
 	globalOptions.outputFile = "";
-	globalOptions.pairbedFile = "";
+	globalOptions.pairBedFile = "";
 
 	// Capturing options
 	opt = getopt_long_only(argc, argv, optString, longOpts, &longIndex);
@@ -182,7 +182,7 @@ globalOptions_t initOptions(int argc, char *argv[])
 			case 'n'	:	globalOptions.commonGeneFile = optarg;		break;
 			case 'o'	:	globalOptions.inputFile = optarg;			break;
 			case 'p'	:	globalOptions.outputFile = optarg;			break;
-			case 'q'	:	globalOptions.pairbedFile = optarg;			break;
+			case 'q'	:	globalOptions.pairBedFile = optarg;			break;
 			case 'h':   // HELP: fall-through is intentional
             case '?':
 				globalOptions.help = true;	

@@ -1,7 +1,7 @@
 /* 	Function definitions
  
 	Created: 20-September-2011	
-	Last modified: 20-January-2012
+	Last modified: 22-January-2012
 */
 
 #include <api/BamReader.h>  
@@ -52,7 +52,7 @@ struct globalOptions_t {
 	const char* commonGeneFile;
   	const char* inputFile;
   	const char* outputFile;
-	const char* pairbedFile;
+	const char* pairBedFile;
 };
 
 globalOptions_t initOptions(int argc, char *argv[]);

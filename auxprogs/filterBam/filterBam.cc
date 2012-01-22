@@ -3,7 +3,7 @@
 	NOTE: 
 
 	Created: 4-November-2011
-	Last modified: 20-January-2012
+	Last modified: 22-January-2012
 */ 
  
 #include <api/BamReader.h>
@@ -75,7 +75,7 @@ void seed()
 
 void printQali(vector<BamAlignment> &qali, const RefVector &refData);
 float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions);
-void printatedPairsInfo(vector<BamAlignment> qali, list<MatePairs> matepairs, list<int> insertlen);
+void prinMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs);
 void printMatedMap(map<int,int> mated);
 optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem);
 
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
   const char* commonGeneFile = globalOptions.commonGeneFile;
   const char* inputFile = globalOptions.inputFile;
   const char* outputFile = globalOptions.outputFile;	
-  const char* pairbedFile = globalOptions.pairbedFile;
+  const char* pairBedFile = globalOptions.pairBedFile;
   if (verbose)
 	{
 	  cout << "------------------------------------------------" << endl;
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 	  cout << "minIntronLen=" << minIntronLen << endl;
 	  cout << "uniqThresh=" << uniqThresh << endl;
 	  cout << "commonGeneFile=" << commonGeneFile << endl;
-	  cout << "pairbedFile=" << pairbedFile << endl;
+	  cout << "pairBedFile=" << pairBedFile << endl;
 	  cout << "------------------------------------------------" << endl;
 	}
 
@@ -577,7 +577,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
   int minIntronLen = globalOptions.minIntronLen;
   float uniqThresh = globalOptions.uniqThresh;
   const char* commonGeneFile = globalOptions.commonGeneFile;
-  const char* pairbedFile = globalOptions.pairbedFile;
+  const char* pairBedFile = globalOptions.pairBedFile;
   ofstream geneFile;
   ofstream bedFile;
 
@@ -592,6 +592,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
   list<int> insertlen;
   map<int, int> mated;
   int32_t inslen, dist;
+  // Pairbed
+  map<string,int> pairCovSteps;
   // unsigned int inslen, dist;
   int it, jit;
   uint32_t jitTstart;
@@ -741,20 +743,18 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 	  int outPaired=0;
 	  outPaired += (int)qali.size() - (int)mated.size();
 
-
-	  //////////////////////////////
-	  if (!uniq && !best || matepairs.size()<2)
-	  	{ // (uniq,best= (0,0) or size of mated pairs=1, let pass all mate-paired alignments 
+	  if ((!uniq && !best) || matepairs.size()<2)
+	  	{ // (uniq,best= (0,0) or size of mated pairs=1, let pass all mate-paired alignments
 	  	  map<int,int>::iterator m_it;
 	  	  for (m_it=mated.begin(); m_it!=mated.end(); m_it++)
 	  		{ 
 			  if (verbose)
-				{cout << "Letting pass paired-alignment (" << (*m_it).first << ") : " 
-					<< qali.at((*m_it).first).Name << endl;}
-			  // Saving alignment
+				{cout << "Letting pass paired-alignments: (" << (*m_it).first  
+					  << ") : " << qali.at((*m_it).first).Name << endl;}
+			  // Saving alignments
   			  (*ptrWriter).SaveAlignment(qali.at((*m_it).first)); 
 	  		}
-	  	} else { // (uniq or best) selected
+	  	} else { // (uniq or best) selected and matepair.size()>2
 
    			if (verbose)
 			  {
@@ -817,8 +817,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 						cout << "Position of last similar mate-pair (indexed by second)=" << second << endl;
 						cout << "Comparing scores between optimal and second mate-pairs: " << endl;
 						cout << "[" << mate1First << " paired with " << mate2First << "; score=" 
-							 << scoreFirst << " paired with " << endl; 
-						cout << "[" << mate1First << "," << mate2Second << "; score=" 
+							 << scoreFirst << endl; 
+						cout << "[" << mate1First << " paired with " << mate2Second << "; score=" 
 							 << scoreSecond << endl;
 						cout << "Ratio between these two mate-pairs: " << ratio << endl;
 						cout << "------------------------------------------------------------------------\n"; 
@@ -833,7 +833,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 								 << mate2First << ") because:" << endl;
 							cout << "'lowest-scored' but similar mate-pair: (" << mate1Second << " and " 
 								 << mate2Second << ")" << endl;
-							cout << "are significantly worse, ratio=" << ratio << "<uniqThresh=" 
+							cout << "is significantly worse, ratio=" << ratio << "<uniqThresh=" 
 							 	<< uniqThresh << endl;
 						  }
 						cout << "Saving uniq mate pair (give details here)" << endl;
@@ -874,7 +874,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
 				}
 
-				// splice @matepairs, 1; # keep only the best pair (if any)
+				// keep only the best pair (if any)
+				matepairs.resize(1);
 
 	    	  } else { // (uniq, best) = (0, 1); let pass only (best) mate-pairs that share maximum score
 
@@ -891,31 +892,79 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 				  optScore = matepairs.at(0).score;
 				  tempScore = optScore;
 				  bool qSize = true;
+				  int numBest = 0;
 
-				  while (tempScore == optScore && qSize)
+				  while (numBest < matepairs.size() && tempScore == optScore)
 					{
-					  cout << "Letting pass mate-pair (best): " << qali.at(matepairs.at(0).alIt).Name 
-						   << qali.at(matepairs.at(0).alJit).Name << ", score=" 
+					
+					  cout << "Letting pass mate-pair (best): " << qali.at(matepairs.at(numBest).alIt).Name 
+						   << " paired with " << qali.at(matepairs.at(numBest).alJit).Name << ", score=" 
 						   << tempScore << ", optScore=" << optScore << endl;
-					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
-					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
-					  // bestTnames.push_back(getReferenceName(refData, qali.at(0).RefID));
-					  // qali.erase(qali.begin()); // Delete first member of qali
-					  // cout << "After deleting element, qali.size()=" << qali.size() << endl;
-					  // if (qali.size()>0)
-					  // 	{
-					  // 	  qali.at(0).GetTag("sc", s_tempScore);
-					  // 	  tempScore = atof(s_tempScore.c_str());
-					  // 	} else {
-					  // 	qSize = false;
+					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alIt)); 
+					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alJit)); 
+					  cout << "Storing at bestTnames=" << getReferenceName(refData, qali.at(0).RefID) << endl;
+					  bestTnames.push_back(getReferenceName(refData, qali.at(numBest).RefID));
+					  numBest++;
+				  	  tempScore = matepairs.at(numBest).score;					  
 					}
+				  outBest += matepairs.size() - numBest;
+				  // Retaining only mate-pairs with optimal score
+				  matepairs.resize(numBest);
 
+				if (verbose)
+				  {
+					cout << "------------------------------------------------------------------------" << endl;
+					cout << "Filtered out alignments (best criterion): " << qali.size() << endl;
+					printQali(qali, refData);		
+					cout << "------------------------------------------------------------------------" << endl;
+					cout << "Summary [Common target names]: " << endl;
+					cout << "bestTnames.size()=" << bestTnames.size() << endl;
+				  }
 
+				  if (bestTnames.size()>1)
+					{
+					  unordered_map<string, int> geneNames;
+					  string tName;
+					  for (int it=0; it<bestTnames.size(); it++)
+						{
+						  tName = bestTnames.at(it); //bestTnames.at(it).substr(0,bestTnames.at(it).find("|"));
+						  geneNames[tName]=1;
+						  cout << "tName= " << tName << endl;
+						}
+					
+					  if (commonGeneFile)
+						{
+						  geneFile.open(commonGeneFile);
+						  unordered_map<string, int>::iterator itGn = geneNames.begin();
+						  for (itGn; itGn != geneNames.end(); itGn++)
+							{
+							  cout << oldQnameStem << ","<< (*itGn).first << "," << (*itGn).second << endl;
+							  geneFile << oldQnameStem << ","<< (*itGn).first << "," << (*itGn).second << endl;
+							}
+						  geneFile.close();  
+						}
+					} 
 
+			} // end if (unique)
+
+	  	} // (!uniq && !best) || matepairs.size()<2)
+
+	  // output pairedbed info: go through list of all mate pairs and store start and end position
+	  if (pairBedFile)
+		{
+		  int32_t pEnd, pStart;
+		  while (matepairs.size()>0)
+			{
+			  string chr = qali.at(matepairs.at(0).alIt).Name;
+			  if (!pairCovSteps[chr])
+				{
+			  	  pairCovSteps[chr] = 0;
+				}
+			  pEnd = qali.at(matepairs.at(0).alJit).Position;
+			  pStart = qali.at(matepairs.at(0).alIt).GetEndPosition();
 			}
+		}
 
-	  	}
-	  //////////////////////////////
 
 	} else {// IF NOT PAIRED, single read
 
@@ -1055,6 +1104,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 				  	cout << "Letting pass alignment (best): " << qali.at(0).Name << ", score=" 
 						 << tempScore << ", optScore=" << optScore << endl;
 					(*ptrWriter).SaveAlignment(qali.at(0)); 
+					cout << "Storing at bestTnames=" << getReferenceName(refData, qali.at(0).RefID) << endl;
 					bestTnames.push_back(getReferenceName(refData, qali.at(0).RefID));
 					qali.erase(qali.begin()); // Delete first member of qali
 					cout << "After deleting element, qali.size()=" << qali.size() << endl;
@@ -1063,7 +1113,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 						qali.at(0).GetTag("sc", s_tempScore);
 						tempScore = atof(s_tempScore.c_str());
 					  } else {
-					  qSize = false;
+					  	  qSize = false;
 					  }
 						
 				  }
