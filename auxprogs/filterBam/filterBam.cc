@@ -593,7 +593,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
   map<int, int> mated;
   int32_t inslen, dist;
   // Pairbed
-  map<string,int> pairCovSteps;
+  multimap<string,string> pairCovSteps;
   // unsigned int inslen, dist;
   int it, jit;
   uint32_t jitTstart;
@@ -953,16 +953,20 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 	  if (pairBedFile)
 		{
 		  int32_t pEnd, pStart;
-		  while (matepairs.size()>0)
-			{
-			  string chr = qali.at(matepairs.at(0).alIt).Name;
-			  if (!pairCovSteps[chr])
-				{
-			  	  pairCovSteps[chr] = 0;
-				}
-			  pEnd = qali.at(matepairs.at(0).alJit).Position;
-			  pStart = qali.at(matepairs.at(0).alIt).GetEndPosition();
-			}
+		  stringstream s_pEnd, s_pStart;
+		  string chr;
+		  // while (matepairs.size()>0)
+		  // 	{
+		  // 	  chr = qali.at(matepairs.at(0).alIt).Name;
+		  // 	  if (!pairCovSteps.count(chr))
+		  // 		{
+		  // 	  	  pairCovSteps.insert(pair<string,string>(chr,""));
+		  // 		}
+		  // 	  pEnd = qali.at(matepairs.at(0).alJit).Position;
+		  // 	  pStart = qali.at(matepairs.at(0).alIt).GetEndPosition()-1;
+		  // 	  s_pEnd << pEnd;
+		  // 	  s_pStart << pStart;
+		  // 	}
 		}
 
 
