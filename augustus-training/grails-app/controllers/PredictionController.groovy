@@ -23,7 +23,8 @@ import java.net.UnknownHostException
 
 class PredictionController {
 	// need to adjust the output dir to whatever working dir! This is where uploaded files and results will be saved.
-	def output_dir = "/data/www/augpred/webdata" // should be something in home of webserver user and augustus frontend user.
+//	def output_dir = "/data/www/augpred/webdata" // should be something in home of webserver user and augustus frontend user.
+	def output_dir = "/data/www/test"
 	// this log File contains the "process log", what was happening with which job when.
 	def logFile = new File("${output_dir}/pred.log")
 	// this log File contains the "database" (not identical with the grails database and simply for logging purpose)
@@ -32,7 +33,8 @@ class PredictionController {
 	def oldID
 	def oldAccID
 	// web-output, root directory to the results that are shown to end users
-	def web_output_dir = "/var/www/trainaugustus/prediction-results" // must be writable to webserver application
+//	def web_output_dir = "/var/www/trainaugustus/prediction-results" // must be writable to webserver application
+	def web_output_dir = "/var/www/test"
 	// AUGUSTUS_CONFIG_PATH
 	def AUGUSTUS_CONFIG_PATH = "/usr/local/augustus/trunks/config"
 	def AUGUSTUS_SCRIPTS_PATH = "/usr/local/augustus/trunks/scripts"
@@ -138,6 +140,7 @@ class PredictionController {
 			def hintGffFlag = 0
 			def hintExistsFlag = 0
 			def overRideUtrFlag = 0
+			def metacharacterFlag = 0
 			// species name for AUGUSTUS
 			def species
 			// delProc is needed at many places
@@ -355,11 +358,31 @@ class PredictionController {
         			// check for fasta format & extract fasta headers for gff validation:
          			new File("${projectDir}/genome.fa").eachLine{line -> 
             			if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }
-            				if(line =~ /^>/){
-               					def len = line.length()
-               					seqNames << line[1..(len-1)]
-            				}
+					if(line =~ /\\*/ || line =~ /\\?/){
+						metacharacterFlag = 1
+					}else{
+            					if(line =~ /^>/){
+               						def len = line.length()
+               						seqNames << line[1..(len-1)]
+            					}
+					}	
          			}
+				if(metacharacterFlag == 1){
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+					cmdStr = "rm -r ${projectDir} &> /dev/null"
+            				delProc = "${cmdStr}".execute()
+					if(verb > 1){
+						logDate = new Date()
+						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					}
+            				delProc.waitFor()
+					logDate = new Date()
+            				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+          				flash.error = "Genome file contains metacharacters (*, ?, ...). This is not allowed."
+            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+					return
+				}	
          			if(genomeFastaFlag == 1) {
 					logDate = new Date()
             				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file was not fasta. Project directory ${projectDir} is deleted (rm -r).\n"
@@ -548,8 +571,30 @@ class PredictionController {
 				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Uploaded EST file ${uploadedEstFile.originalFilename} was renamed to est.fa and moved to ${projectDir}\n"
 	         		// check fasta format
 	         		new File("${projectDir}/est.fa").eachLine{line -> 
-	            			if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(line =~ /^$/)){ estFastaFlag = 1 }
-	         		}	
+					if(line =~ /\\*/ || line =~ /\\?/){
+						metacharacterFlag = 1
+					}else{
+	            				if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(line =~ /^$/)){ 
+							estFastaFlag = 1
+						}
+					}
+	         		}
+				if(metacharacterFlag == 1){
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+					cmdStr = "rm -r ${projectDir} &> /dev/null"
+            				delProc = "${cmdStr}".execute()
+					if(verb > 1){
+						logDate = new Date()
+						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					}
+            				delProc.waitFor()
+					logDate = new Date()
+            				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+            				flash.error = "cDNA file contains metacharacters (*, ?, ...). This is not allowed."
+           				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+					return
+				}	
 	         		if(estFastaFlag == 1) {
             				logDate = new Date()
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file was not fasta. ${projectDir} (rm -r) is deleted.\n"
@@ -720,20 +765,40 @@ class PredictionController {
 					def gffArray
 					def isElement
 					new File("${projectDir}/hints.gff").eachLine{line -> 
-						gffArray = line.split("\t")
-						if(!(gffArray.size() == 9)){ 
-							gffColErrorFlag = 1
+						if(line =~ /\\*/ || line =~ /\\?/){
+							metacharacterFlag = 1
 						}else{
-							isElement = 0
-							seqNames.each{ seq ->
-								if(seq =~ /${gffArray[0]}/){ isElement = 1 }
-								if(isElement == 0){ gffNameErrorFlag = 1 }
-								if(!("${gffArray[8]}" =~ /source=M/)){gffSourceErrorFlag = 1}
-								if(!("${gffArray[2]}" =~ /start$/) && !("${gffArray[2]}" =~ /stop$/) && !("${gffArray[2]}" =~ /tss$/) && !("${gffArray[2]}" =~ /tts$/) && !("${gffArray[2]}" =~ /ass$/) && !("${gffArray[2]}" =~ /dss$/) && !("${gffArray[2]}" =~ /exonpart$/) && !("${gffArray[2]}" =~ /exon$/) && !("${gffArray[2]}" =~ /exon$/) && !("${gffArray[2]}" =~ /intronpart$/) && !("${gffArray[2]}" =~ /intron$/) && !("${gffArray[2]}" =~ /CDSpart$/) && !("${gffArray[2]}" =~ /CDS$/) && !("${gffArray[2]}" =~ /UTRpart$/) && !("${gffArray[2]}" =~ /UTR$/) && !("${gffArray[2]}" =~ /irpart$/) && !("${gffArray[2]}" =~ /nonexonpart$/) && !("${gffArray[2]}" =~ /genicpart$/)){
-									gffFeatureErrorFlag = 1
+							gffArray = line.split("\t")
+							if(!(gffArray.size() == 9)){ 
+								gffColErrorFlag = 1
+							}else{
+								isElement = 0
+								seqNames.each{ seq ->
+									if(seq =~ /${gffArray[0]}/){ isElement = 1 }
+									if(isElement == 0){ gffNameErrorFlag = 1 }
+									if(!("${gffArray[8]}" =~ /source=M/)){gffSourceErrorFlag = 1}
+									if(!("${gffArray[2]}" =~ /start$/) && !("${gffArray[2]}" =~ /stop$/) && !("${gffArray[2]}" =~ /tss$/) && !("${gffArray[2]}" =~ /tts$/) && !("${gffArray[2]}" =~ /ass$/) && !("${gffArray[2]}" =~ /dss$/) && !("${gffArray[2]}" =~ /exonpart$/) && !("${gffArray[2]}" =~ /exon$/) && !("${gffArray[2]}" =~ /exon$/) && !("${gffArray[2]}" =~ /intronpart$/) && !("${gffArray[2]}" =~ /intron$/) && !("${gffArray[2]}" =~ /CDSpart$/) && !("${gffArray[2]}" =~ /CDS$/) && !("${gffArray[2]}" =~ /UTRpart$/) && !("${gffArray[2]}" =~ /UTR$/) && !("${gffArray[2]}" =~ /irpart$/) && !("${gffArray[2]}" =~ /nonexonpart$/) && !("${gffArray[2]}" =~ /genicpart$/)){
+										gffFeatureErrorFlag = 1
+									}
 								}
 							}
 						}
+					}
+					if(metacharacterFlag == 1){
+						logDate = new Date()
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The hints file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
+            					delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logDate = new Date()
+							logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}
+            					delProc.waitFor()
+						logDate = new Date()
+            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+            					flash.error = "Hints file contains metacharacters (*, ?, ...). This is not allowed."
+            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+						return
 					}
 					if(gffSourceErrorFlag == 1){
 						logDate = new Date()
@@ -1040,11 +1105,45 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - genome file upload finished, file stored as genome.fa at ${projectDir}\n"
 						// check for fasta format & get seq names for gff validation:
 						new File("${projectDir}/genome.fa").eachLine{line -> 
-							if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }	
-							if(line =~ /^>/){
-								def len = line.length()
-								seqNames << line[1..(len-1)]
+							if(line =~ /\\*/ || line =~ /\\?/){
+								metacharacterFlag = 1
+							}else{
+								if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }	
+								if(line =~ /^>/){
+									def len = line.length()
+									seqNames << line[1..(len-1)]
+								}
 							}
+						}
+						if(metacharacterFlag == 1){
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+							cmdStr = "rm -r ${projectDir} &> /dev/null"
+            						delProc = "${cmdStr}".execute()
+							if(verb > 1){
+								logDate = new Date()
+								logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							}
+           						delProc.waitFor()
+							logDate = new Date()
+            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+							sendMail {
+								to "${predictionInstance.email_adress}"
+								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								body """Hello!
+
+Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided genome file ${predictionInstance.genome_ftp_link} contains metacharacters (e.g. * or ?). This is not allowed.
+
+Best regards,
+
+the AUGUSTUS web server team
+
+http://bioinf.uni-greifswald.de/trainaugustus
+"""	
+							}
+							// delete database entry
+							predictionInstance.delete()
+							return
 						}
 						if(genomeFastaFlag == 1) {
 							logDate = new Date()
@@ -1106,17 +1205,54 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						def gffArray
 						def isElement
 						new File("${projectDir}/hints.gff").eachLine{line -> 
-							gffArray = line.split("\t")
-							if(!(gffArray.size() == 9)){ 
-								gffColErrorFlag = 1 
+							if(line =~ /\\*/ || line =~ /\\?/){
+								metacharacterFlag = 1
 							}else{
-								isElement = 0
-								seqNames.each{ seq ->
-									if(seq =~ /${gffArray[0]}/){ isElement = 1 }
-									if(isElement == 0){ gffNameErrorFlag = 1 }
-									if(!("${gffArray[8]}" =~ /source=M/)){gffSourceErrorFlag = 1}
+
+
+
+								gffArray = line.split("\t")
+								if(!(gffArray.size() == 9)){ 
+									gffColErrorFlag = 1 
+								}else{
+									isElement = 0
+									seqNames.each{ seq ->
+										if(seq =~ /${gffArray[0]}/){ isElement = 1 }
+										if(isElement == 0){ gffNameErrorFlag = 1 }
+										if(!("${gffArray[8]}" =~ /source=M/)){gffSourceErrorFlag = 1}
+									}
 								}
 							}
+						}
+						if(metacharacterFlag == 1){
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The hints file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+							cmdStr = "rm -r ${projectDir} &> /dev/null"
+            						delProc = "${cmdStr}".execute()
+							if(verb > 1){
+								logDate = new Date()
+								logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							}
+           						delProc.waitFor()
+							logDate = new Date()
+            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+							sendMail {
+								to "${predictionInstance.email_adress}"
+								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								body """Hello!
+
+Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided hints file contains metacharacters (e.g. * or ?). This is not allowed.
+
+Best regards,
+
+the AUGUSTUS web server team
+
+http://bioinf.uni-greifswald.de/trainaugustus
+"""	
+							}
+							// delete database entry
+							predictionInstance.delete()
+							return
 						}
 						if(gffColErrorFlag == 1){
 							logDate = new Date()
@@ -1314,7 +1450,45 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - EST/cDNA file upload finished, file stored as est.fa at ${projectDir}\n"
 						// check for fasta format:
-						new File("${projectDir}/est.fa").eachLine{line -> if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ estFastaFlag = 1 }}
+						new File("${projectDir}/est.fa").eachLine{line -> 
+							if(line =~ /\\*/ || line =~ /\\?/){
+								metacharacterFlag = 1
+							}else{
+								if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ 
+									estFastaFlag = 1 
+								}
+							}
+						}
+						if(metacharacterFlag == 1){
+							logDate = new Date()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+							cmdStr = "rm -r ${projectDir} &> /dev/null"
+            						delProc = "${cmdStr}".execute()
+							if(verb > 1){
+								logDate = new Date()
+								logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							}
+           						delProc.waitFor()
+							logDate = new Date()
+            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+							sendMail {
+								to "${predictionInstance.email_adress}"
+								subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
+								body """Hello!
+
+Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided cDNA file ${predictionInstance.est_ftp_link} contains metacharacters (e.g. * or ?). This is not allowed.
+
+Best regards,
+
+the AUGUSTUS web server team
+
+http://bioinf.uni-greifswald.de/trainaugustus
+"""	
+							}
+							// delete database entry
+							predictionInstance.delete()
+							return
+						}
 						if(estFastaFlag == 1) {
 							logDate = new Date()
 							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The EST/cDNA file was not fasta. ${projectDir} is deleted.\n"

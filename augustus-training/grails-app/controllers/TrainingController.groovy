@@ -24,7 +24,8 @@ import java.net.HttpURLConnection;
 
 class TrainingController {
 	// need to adjust the output dir to whatever working dir! This is where uploaded files and results will be saved.
-	def output_dir = "/data/www/augtrain/webdata" // should be something in home of webserver user and augustus frontend user.
+//	// def output_dir = "/data/www/augtrain/webdata" // should be something in home of webserver user and augustus frontend user.
+	def output_dir = "/data/www/test"
 	// this log File contains the "process log", what was happening with which job when.
 	def logFile = new File("${output_dir}/train.log")
 	// this log File contains the "database" (not identical with the grails database and simply for logging purpose)
@@ -33,7 +34,8 @@ class TrainingController {
 	def oldID
 	def oldAccID
 	// web-output, root directory to the results that are shown to end users
-	def web_output_dir = "/var/www/trainaugustus/training-results" // must be writable to webserver application
+//	// def web_output_dir = "/var/www/trainaugustus/training-results" // must be writable to webserver application
+	def web_output_dir = "/var/www/test"
 	// AUGUSTUS_CONFIG_PATH
 	def AUGUSTUS_CONFIG_PATH = "/usr/local/augustus/trunks/config";
 	def AUGUSTUS_SCRIPTS_PATH = "/usr/local/augustus/trunks/scripts";
@@ -141,6 +143,7 @@ class TrainingController {
 			def structureExistsFlag = 0
 			def proteinFastaFlag = 0
 			def proteinExistsFlag = 0
+			def metacharacterFlag = 0
 			// delProc is needed at many places
 			def delProc
 			def st
@@ -214,12 +217,34 @@ class TrainingController {
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - uploaded genome file ${uploadedGenomeFile.originalFilename} was renamed to genome.fa and moved to ${projectDir}\n"
 					// check for fasta format & extract fasta headers for gff validation:
 					new File("${projectDir}/genome.fa").eachLine{line -> 
-						if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }
-						if(line =~ /^>/){
-							def len = line.length()
-							seqNames << line[1..(len-1)]
+						if(line =~ /\\*/ || line =~ /\\?/){
+							metacharacterFlag = 1
+						}else{
+							if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }
+							if(line =~ /^>/){
+								def len = line.length()
+								seqNames << line[1..(len-1)]
+							}
 						}
 					}
+					if(metacharacterFlag == 1){
+						logDate = new Date()
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
+						delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logDate = new Date()
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}	
+						delProc.waitFor()
+						logDate = new Date()
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						flash.error = "The genome file contains metacharacters (*, ?, ...). This is not allowed."
+						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+						return
+					}
+
+
 					if(genomeFastaFlag == 1) {
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file was not fasta. Project directory ${projectDir} is deleted.\n"
@@ -409,7 +434,29 @@ class TrainingController {
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Uploaded EST file ${uploadedEstFile.originalFilename} was renamed to est.fa and moved to ${projectDir}\n"
 					// check fasta format
 					new File("${projectDir}/est.fa").eachLine{line -> 
-						if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(line =~ /^$/)){ estFastaFlag = 1 }
+						if(line =~ /\\*/ || line =~ /\\?/){
+							metacharacterFlag = 1
+						}else{
+							if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(line =~ /^$/)){ 
+								estFastaFlag = 1
+							}
+						}
+					}
+					if(metacharacterFlag == 1){
+						logDate = new Date()
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The cDNA file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+						cmdStr = "rm -r ${projectDir} &> /dev/null"
+						delProc = "${cmdStr}".execute()
+						if(verb > 1){
+							logDate = new Date()
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+						}
+						delProc.waitFor()
+						logDate = new Date()
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						flash.error = "The cDNA file contains metacharacters (*, ?, ...). This is not allowed."
+						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+						return
 					}
 					if(estFastaFlag == 1) {
 						logDate = new Date()
@@ -577,18 +624,39 @@ class TrainingController {
 						def gffArray
 						def isElement
 						new File("${projectDir}/training-gene-structure.gff").eachLine{line -> 
-							if(line =~ /^LOCUS/){
-								structureGbkFlag = 1 
-							}
-							if(structureGbkFlag == 0){
-								gffArray = line.split("\t")
-								if(!(gffArray.size() == 9)){ gffColErrorFlag = 1 }
-								isElement = 0
-								seqNames.each{ seq ->
-									if(seq =~ /${gffArray[0]}/){ isElement = 1 }
-									if(isElement == 0){ gffNameErrorFlag = 1 }
+							// check whether weird metacharacters are included
+							if(line =~ /\\*/ || line =~ /\\?/){
+								metacharacterFlag = 1
+							}else{
+								if(line =~ /^LOCUS/){
+									structureGbkFlag = 1 
+								}
+								if(structureGbkFlag == 0){
+									gffArray = line.split("\t")
+									if(!(gffArray.size() == 9)){ gffColErrorFlag = 1 }
+									isElement = 0
+									seqNames.each{ seq ->
+										if(seq =~ /${gffArray[0]}/){ isElement = 1 }
+										if(isElement == 0){ gffNameErrorFlag = 1 }
+									}
 								}
 							}
+						}
+						if(metacharacterFlag == 1){
+							logDate = new Date()
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The gene structure file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+							cmdStr = "rm -r ${projectDir} &> /dev/null"
+							delProc = "${cmdStr}".execute()
+							if(verb > 1){
+								logDate = new Date()
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							}
+							delProc.waitFor()
+							logDate = new Date()
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							flash.error = "Gene Structure file contains metacharacters (*, ?, ...). This is not allowed."
+							redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+							return
 						}
 						if(gffColErrorFlag == 1 && structureGbkFlag == 0){
 							logDate = new Date()
@@ -718,11 +786,31 @@ class TrainingController {
 				def cytosinCounter = 0 // C is cysteine in amino acids, and cytosine in DNA.
 				def allAminoAcidsCounter = 0
 				new File("${projectDir}/protein.fa").eachLine{line -> 
-					if(!(line =~ /^[>AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx ]/) && !(line =~ /^$/)){ proteinFastaFlag = 1 }
-					if(!(line =~ /^>/)){
-						line.eachMatch(/[AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/){allAminoAcidsCounter = allAminoAcidsCounter + 1}
-						line.eachMatch(/[Cc]/){cytosinCounter = cytosinCounter + 1}
+					if(line =~ /\\*/ || line =~ /\\?/){
+						metacharacterFlag = 1
+					}else{
+						if(!(line =~ /^[>AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx ]/) && !(line =~ /^$/)){ proteinFastaFlag = 1 }
+						if(!(line =~ /^>/)){
+							line.eachMatch(/[AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/){allAminoAcidsCounter = allAminoAcidsCounter + 1}
+							line.eachMatch(/[Cc]/){cytosinCounter = cytosinCounter + 1}
+						}
 					}
+				}
+				if(metacharacterFlag == 1){
+					logDate = new Date()
+					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+					cmdStr = "rm -r ${projectDir} &> /dev/null"
+					delProc = "${cmdStr}".execute()
+					if(verb > 1){
+						logDate = new Date()
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					}
+					delProc.waitFor()
+					logDate = new Date()
+					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					flash.error = "The protein file contains metacharacters (*, ?, ...). This is not allowed."
+					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+					return
 				}
 				cRatio = cytosinCounter/allAminoAcidsCounter
 				if (cRatio >= 0.05){
@@ -744,7 +832,7 @@ class TrainingController {
 				if(proteinFastaFlag == 1) {
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein file was not protein fasta. ${projectDir} is deleted.\n"
-					cmdStr = "rm -r ${projectDir}&> /dev/null"
+					cmdStr = "rm -r ${projectDir} &> /dev/null"
 					delProc = "${cmdStr}".execute()
 					if(verb > 1){
 						logDate = new Date()
@@ -927,6 +1015,7 @@ class TrainingController {
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Confirmation e-mail sent.\n"          
 				redirect(action:show,id:trainingInstance.id)
 				//forward(action:"show",id:trainingInstance.id)
+				//forward action: "show", id: trainingInstance.id
 			} else {
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  An error occurred in the trainingInstance (e.g. E-Mail missing, see domain restrictions).\n"
@@ -1026,11 +1115,45 @@ class TrainingController {
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - genome file upload finished, file stored as genome.fa at ${projectDir}\n"
 						// check for fasta format & get seq names for gff validation:
 						new File("${projectDir}/genome.fa").eachLine{line -> 
-							if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }	
-							if(line =~ /^>/){
-								def len = line.length()
-								seqNames << line[1..(len-1)]
+							if(line =~ /\\*/ || line =~ /\\?/){
+								metacharacterFlag = 1
+							}else{
+								if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }	
+								if(line =~ /^>/){
+									def len = line.length()
+									seqNames << line[1..(len-1)]
+								}
 							}
+						}
+						if(metacharacterFlag == 1){
+							logDate = new Date()
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+							cmdStr = "rm -r ${projectDir} &> /dev/null"
+							delProc = "${cmdStr}".execute()
+							if(verb > 1){
+								logDate = new Date()
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							}
+							delProc.waitFor()
+							logDate = new Date()
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							sendMail {
+								to "${trainingInstance.email_adress}"
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+								body """Hello!
+
+Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided genome file ${trainingInstance.genome_ftp_link} contains metacharacters (e.g. * or ?). This is not allowed.
+
+Best regards,
+
+the AUGUSTUS training web server team
+
+http://bioinf.uni-greifswald.de/trainaugustus
+"""	
+							}
+							// delete database entry
+							trainingInstance.delete()
+							return
 						}
 						if(genomeFastaFlag == 1) {
 							logDate = new Date()
@@ -1091,18 +1214,54 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						def gffArray
 						def isElement
 						new File("${projectDir}/training-gene-structure.gff").eachLine{line -> 
-							if(line =~ /^LOCUS/){
-								structureGbkFlag = 1 
-							}
-							if(structureGbkFlag == 0){
-								gffArray = line.split("\t")
-								if(!(gffArray.size() == 9)){ gffColErrorFlag = 1 }
-								isElement = 0
-								seqNames.each{ seq ->
-									if(seq =~ /${gffArray[0]}/){ isElement = 1 }
-									if(isElement == 0){ gffNameErrorFlag = 1 }
+
+							if(line =~ /\\*/ || line =~ /\\?/){
+								metacharacterFlag = 1
+							}else{
+
+								if(line =~ /^LOCUS/){
+									structureGbkFlag = 1 
+								}
+								if(structureGbkFlag == 0){
+									gffArray = line.split("\t")
+									if(!(gffArray.size() == 9)){ gffColErrorFlag = 1 }
+									isElement = 0
+									seqNames.each{ seq ->
+										if(seq =~ /${gffArray[0]}/){ isElement = 1 }
+										if(isElement == 0){ gffNameErrorFlag = 1 }
+									}
 								}
 							}
+						}
+						if(metacharacterFlag == 1){
+							logDate = new Date()
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The gene structure file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+							cmdStr = "rm -r ${projectDir} &> /dev/null"
+							delProc = "${cmdStr}".execute()
+							if(verb > 1){
+								logDate = new Date()
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							}
+							delProc.waitFor()
+							logDate = new Date()
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							sendMail {
+								to "${trainingInstance.email_adress}"
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+								body """Hello!
+
+Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided gene structure file contains metacharacters (e.g. * or ?). This is not allowed.
+
+Best regards,
+
+the AUGUSTUS training web server team
+
+http://bioinf.uni-greifswald.de/trainaugustus
+"""	
+							}
+							// delete database entry
+							trainingInstance.delete()
+							return
 						}
 						if(gffColErrorFlag == 1 && structureGbkFlag == 0){
 							logDate = new Date()
@@ -1273,7 +1432,45 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - EST/cDNA file upload finished, file stored as est.fa at ${projectDir}\n"
 						// check for fasta format:
-						new File("${projectDir}/est.fa").eachLine{line -> if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ estFastaFlag = 1 }}
+						new File("${projectDir}/est.fa").eachLine{line -> 
+							if(line =~ /\\*/ || line =~ /\\?/){
+								metacharacterFlag = 1
+							}else{
+								if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){
+									 estFastaFlag = 1 
+								}
+							}
+						}
+						if(metacharacterFlag == 1){
+							logDate = new Date()
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The cDNA file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+							cmdStr = "rm -r ${projectDir} &> /dev/null"
+							delProc = "${cmdStr}".execute()
+							if(verb > 1){
+								logDate = new Date()
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							}
+							delProc.waitFor()
+							logDate = new Date()
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							sendMail {
+								to "${trainingInstance.email_adress}"
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+								body """Hello!
+
+Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided cDNA file ${trainingInstance.est_ftp_link} contains metacharacters (e.g. * or ?). This is not allowed.
+
+Best regards,
+
+the AUGUSTUS training web server team
+
+http://bioinf.uni-greifswald.de/trainaugustus
+"""	
+							}
+							// delete database entry
+							trainingInstance.delete()
+							return
+						}
 						if(estFastaFlag == 1) {
 							logDate = new Date()
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The EST/cDNA file was not fasta. ${projectDir} is deleted.\n"
@@ -1498,11 +1695,45 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						def cytosinCounter = 0 // C is cysteine in amino acids, and cytosine in DNA.
 						def allAminoAcidsCounter = 0
 						new File("${projectDir}/protein.fa").eachLine{line -> 
-							if(!(line =~ /^[>AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx ]/) && !(line =~ /^$/)){ proteinFastaFlag = 1 }
-							if(!(line =~ /^>/)){
-								line.eachMatch(/[AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/){ allAminoAcidsCounter = allAminoAcidsCounter + 1 }
-								line.eachMatch(/[Cc]/){ cytosinCounter = cytosinCounter + 1 }
+							if(line =~ /\\*/ || line =~ /\\?/){
+								metacharacterFlag = 1
+							}else{
+								if(!(line =~ /^[>AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx ]/) && !(line =~ /^$/)){ proteinFastaFlag = 1 }
+								if(!(line =~ /^>/)){
+									line.eachMatch(/[AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/){ allAminoAcidsCounter = allAminoAcidsCounter + 1 }
+									line.eachMatch(/[Cc]/){ cytosinCounter = cytosinCounter + 1 }
+								}
 							}
+						}
+						if(metacharacterFlag == 1){
+							logDate = new Date()
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
+							cmdStr = "rm -r ${projectDir} &> /dev/null"
+							delProc = "${cmdStr}".execute()
+							if(verb > 1){
+								logDate = new Date()
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
+							}
+							delProc.waitFor()
+							logDate = new Date()
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							sendMail {
+								to "${trainingInstance.email_adress}"
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+								body """Hello!
+
+Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided protein file ${trainingInstance.protein_ftp_link} contains metacharacters (e.g. * or ?). This is not allowed.
+
+Best regards,
+
+the AUGUSTUS training web server team
+
+http://bioinf.uni-greifswald.de/trainaugustus
+"""	
+							}
+							// delete database entry
+							trainingInstance.delete()
+							return
 						}
 						cRatio = cytosinCounter/allAminoAcidsCounter
 						if (cRatio >= 0.05){

@@ -82,7 +82,7 @@
               <a href="#genome_file">Genome file</a><br>
               <a href="#cDNA">cDNA file</a><br>
               <a href="#protein">Protein file</a><br>
-              <a href="#structure">Training gene structure and hint file</a><br>
+              <a href="#structure">Training gene structure file</a><br>
               <a href="#hints">Hints file</a><br>
               <a href="#archive">Parameter archive</a><br>
               <a href="#project_id">What is the project identifier?</a><br>
@@ -269,7 +269,7 @@ mdhdltgladrpglrftvpqikcymkqlltglhychvnqv
             <hr>
 	    <br>
             <div id="structure"><h2>Training gene structure file</h2></div>
-	    <p>You can submit your own, externally created training gene structures to the AUGUSTUS training web server application.</p>
+	    <p>You can submit your own, externally created training gene structures to the AUGUSTUS training web server application. Regardless of the format, gene structure files are not allowed to contain java metacharacters like "*" or "?".</p>
 
 <p>Training gene structure files can be submitted in two different formats: Genbank format or gff format.</p>
 
