@@ -248,9 +248,11 @@ int main(int argc, char *argv[])
 				  		"   e.g. 'samtools' or 'bamtools' " << endl;  	
 				exit(1);
 			  }	
-			/////////////////////////////////////////////////////////////////	  	
-			// 	Calling of: "processQuery() if (@qali);" goes here
-			/////////////////////////////////////////////////////////////////
+
+			if (qali.size()>0)
+			  {
+				optionalCounters = processQuery(qali, refData, globalOptions, &writer, oldQnameStem);
+			  }
 		  }  // end outer if
 
   		/////////////////////////////////////////////////////////////////
