@@ -29,12 +29,12 @@ written by Prof. Mario Stanke for PSL files. filterBAM includes the following fi
 
 \begin{itemize}
 	\item	Screens out unmapped alignments.
-	\item	Screens out alignments that do not comply with a pre-defined coverage level (default=80).
-	\item	Screens out alignments that do not comply with a pre-defined percentage of identity (default=).
-	\item	Screeens out alignments whose insert gaps do not comply with a pre-defined distance (default=).
-	\item	Filters in two modalities: single and paired-end reads.	
-	\item	When in paired-read mode, writes to file a prospective list of common target genes.
-	\item   When in paired-read mode, writes to file a prospective list of pairedness coverage. 
+	\item	Screens out alignments that do not comply with a pre-defined coverage level (default=80\%).
+	\item	Screens out alignments that do not comply with a pre-defined percentage of identity (default=92\%).
+	\item	Screeens out alignments whose insert gaps do not comply with a pre-defined distance (default=10).
+	\item	Filters in two modalities: single and paired-end reads, expecting paired-queries to be given the suffixes "/1", "/2" or ".f", ".r".
+	\item	When in paired-read mode, it optionally writes to separate files a prospective list of common 
+			target genes and of pairedness coverage.
 \end{itemize}
 
 \section{Single reads}

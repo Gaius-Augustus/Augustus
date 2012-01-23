@@ -8,7 +8,7 @@
 #	Last modified: 20-January-2012
 
 # Variable definition
-HOME = /home/tonatiuh/ #web-home
+HOME = /home/tonatiuh/web-home
 BT1 = $(HOME)/pezmaster31-bamtools-12aca98
 BT2 = $(HOME)/bamtools-1.0.2
 BT3 = $(HOME)/bamtools
