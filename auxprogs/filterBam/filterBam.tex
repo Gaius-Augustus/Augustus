@@ -23,6 +23,24 @@ University of Greifswald}
 \abstract{This note describes the operation of filterBam, a C++ program that makes use of Bamtools API in 
 order to filter alignment files stored in BAM format.}
 
+\section{Main features}
+filterBam is a C++ code that cleans alignment files in BAM format that is based on filterPSL, a Perl routine 
+written by Prof. Mario Stanke for PSL files. filterBAM includes the following filtering options:
+
+\begin{itemize}
+	\item	Screens out unmapped alignments.
+	\item	Screens out alignments that do not comply with a pre-defined coverage level (default=80).
+	\item	Screens out alignments that do not comply with a pre-defined percentage of identity (default=).
+	\item	Screeens out alignments whose insert gaps do not comply with a pre-defined distance (default=).
+	\item	Filters in two modalities: single and paired-end reads.	
+	\item	When in paired-read mode, writes to file a prospective list of common target genes.
+	\item   When in paired-read mode, writes to file a prospective list of pairedness coverage. 
+\end{itemize}
+
+\section{Single reads}
+filterBam has been 
+
+
 \section{NOTES:}  
 This document makes reference to the SAM/BAM format specification of \citet{heng09:SAM}.
 
