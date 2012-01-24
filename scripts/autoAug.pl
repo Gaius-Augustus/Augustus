@@ -214,7 +214,7 @@ if (!uptodate([$genome], [$genome_clean])){
 
 if($pasa && $index==0){
     $trainingset = "$trainDir/training/training.gb";
-    if (!uptodate([$genome,$fasta_cdna], [$trainingset])){
+    if (!uptodate([$genome_clean,$fasta_cdna], [$trainingset])){
 	construct_training_set();
     } else {
 	print ("1 Skipping training set construction with PASA. Using existing file $trainingset.\n") if ($verbose>=1);
@@ -222,12 +222,12 @@ if($pasa && $index==0){
 }
 
 if($index==0 && (!defined($hints) || !defined($estali))){
-    if (!uptodate(["$rootDir/seq/genome.fa"],["$rootDir/seq/genome.summary", "$rootDir/seq/contigs.gff"])){
+    if (!uptodate(["$rootDir/seq/genome_clean.fa"],["$rootDir/seq/genome.summary", "$rootDir/seq/contigs.gff"])){
 	prepare_genome();
     }
     
     if (defined($fasta_cdna) &&
-	!uptodate([$fasta_cdna, "$rootDir/seq/genome.fa"],
+	!uptodate([$fasta_cdna, "$rootDir/seq/genome_clean.fa"],
 		  ["$rootDir/cdna/cdna.psl", "$rootDir/cdna/cdna.f.psl", "$rootDir/hints/hints.E.gff"])){
 	alignments_and_hints();
     } else {
@@ -404,9 +404,9 @@ sub construct_training_set{
 
     # executing the Alignment Assembly
 
-    if (!uptodate([$genome, "alignAssembly.config", "transcripts.fasta", "transcripts.fasta.clean"],
+    if (!uptodate([$genome_clean, "alignAssembly.config", "transcripts.fasta", "transcripts.fasta.clean"],
 		  ["trainingSetCandidates.gff", "pasa_asmbls_to_training_set.stdout"])){
-	$cmdString="ln -fs $genome genome.fasta";
+	$cmdString="ln -fs $genome_clean genome.fasta";
 	print "3 $cmdString\n" if ($verbose>=3);
 	system("$cmdString")==0 or die("\nfailed to execute $!\n");
 	
@@ -436,7 +436,7 @@ sub construct_training_set{
 	    &DropDataBase("$MYSQLSERVER","$pasaDBname","$MYSQL_RW_USER","$MYSQL_RW_PASSWORD",\$dbh);
         }
 
-	$perlCmdString="perl $PASAHOME/scripts/Launch_PASA_pipeline.pl -c alignAssembly.config -C -R -g genome.fasta "
+	$perlCmdString="perl $PASAHOME/scripts/Launch_PASA_pipeline.pl -c alignAssembly.config -C -R -g $genome_clean "
 	    ."-t transcripts.fasta.clean -T -u transcripts.fasta $gmapoption 1>Launch_PASA_pipeline.stdout 2>Launch_PASA_pipeline.stderr";
 	
 	print "2 Executing the Alignment Assembly: $perlCmdString ..." if ($verbose>=2);
@@ -455,7 +455,7 @@ sub construct_training_set{
         
 
 	$perlCmdString="perl $PASAHOME/scripts/pasa_asmbls_to_training_set.dbi -M \"$pasaDBname:$MYSQLSERVER\" -p "
-	    ."\"$MYSQL_RO_USER:$MYSQL_RO_PASSWORD\" -g genome.fasta 1>pasa_asmbls_to_training_set.stdout 2>pasa_asmbls_to_training_set.stderr";
+	    ."\"$MYSQL_RO_USER:$MYSQL_RO_PASSWORD\" -g $genome_clean 1>pasa_asmbls_to_training_set.stdout 2>pasa_asmbls_to_training_set.stderr";
 	
 	print "2 Running $perlCmdString ..." if ($verbose>=2);
 	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
@@ -545,7 +545,7 @@ sub construct_training_set{
     my $string=find("gff2gbSmallDNA.pl");
     print "3 Found script $string.\n" if ($verbose>=3);
     
-    $perlCmdString="perl $string trainingSetComplete.gff $rootDir/seq/genome.fa $flanking_DNA "
+    $perlCmdString="perl $string trainingSetComplete.gff $genome_clean $flanking_DNA "
     ."trainingSetComplete.gb 1>gff2gbSmallDNA.stdout 2>gff2gbSmallDNA.stderr";
     
     print "3 $perlCmdString\n" if ($verbose>=3);
@@ -640,7 +640,7 @@ sub prepare_genome{
     print "3 cd $rootDir/seq\n" if ($verbose>=3);
     chdir "$rootDir/seq" or die ("Could not change directory to ../seq\n");
     my $string=find("summarizeACGTcontent.pl");
-    $perlCmdString="perl $string genome.fa > genome.summary";
+    $perlCmdString="perl $string $rootDir/seq/genome_clean.fa > genome.summary";
     print "3 Running $perlCmdString ..." if ($verbose>=3);
     system("$perlCmdString")==0 or die("\nfailed to execute: $perlCmdString!\n");
     
@@ -662,9 +662,9 @@ sub alignments_and_hints{
     }
     # blat 
     # maxIntron=5000 to be determined
-    if (!uptodate(["../seq/genome.fa", "cdna.fa"], ["cdna.psl"])){
+    if (!uptodate(["../seq/genome_clean.fa", "cdna.fa"], ["cdna.psl"])){
 	print "1 Aligning cDNA to genome with BLAT...\n" if ($verbose>=1); 
-	$cmdString="blat -noHead  -minIdentity=80 -maxIntron=$maxIntronLen ../seq/genome.fa cdna.fa cdna.psl 1>blat.stdout 2>blat.stderr"; 
+	$cmdString="blat -noHead  -minIdentity=80 -maxIntron=$maxIntronLen ../seq/genome_clean.fa cdna.fa cdna.psl 1>blat.stdout 2>blat.stderr"; 
 	print "3 $cmdString ..." if ($verbose>=3);
 	
 	my $abortString = "\nProgram aborted. Possibly \"BLAT\" is not installed or not in your PATH\n";  
@@ -746,7 +746,7 @@ sub autoTrain_no_utr{
     $trainingset   =   checkFile($trainingset, "training", $usage);
 
     # run autoAugTrain.pl
-    $perlCmdString="perl $scriptPath/autoAugTrain.pl -t=$trainingset -s=$species $useexistingopt -g=$genome -w=$rootDir $verboseString --opt=$optrounds";
+    $perlCmdString="perl $scriptPath/autoAugTrain.pl -t=$trainingset -s=$species $useexistingopt -g=$genome_clean -w=$rootDir $verboseString --opt=$optrounds";
     print "\n2 $perlCmdString\n" if ($verbose>=2);
     system("$perlCmdString")==0 or die ("failed to execute: $!\n");
 
@@ -781,7 +781,7 @@ sub autoAug_prepareScripts{
     my $utrString   ="--utr"          if ($utr_switch);
    
     
-    $perlCmdString = "perl $scriptPath/autoAugPred.pl -g=$genome --species=$species -w=$rootDir $utrString " . 
+    $perlCmdString = "perl $scriptPath/autoAugPred.pl -g=$genome_clean --species=$species -w=$rootDir $utrString " . 
 	"$verboseString $hintsString $useexistingopt";
     $perlCmdString .= " --singleCPU" if ($singleCPU);
     print "2 $perlCmdString" if ($verbose>=2);
@@ -804,7 +804,7 @@ sub autoAug_prepareScripts{
     my $sum=$index+1;
     if (!$singleCPU) {
 	print "\n\nWhen above jobs are finished, continue by running the command\n";
-	print "autoAug.pl --species=$species --genome=$genome --useexisting "
+	print "autoAug.pl --species=$species --genome=$genome_clean --useexisting "
 	    . "--hints=$hints $estString $verboseString $pasaString --index=$sum\n\n";
     }
 }
@@ -840,7 +840,7 @@ sub autoAug_continue{
     my $shellDir = "$mainDir/shells";
 
 
-    $perlCmdString = "perl $scriptPath/autoAugPred.pl --species=$species --genome=$rootDir/seq/genome.fa --continue --workingdir=$rootDir $verboseString $hintsString $utrString $useexistingopt";
+    $perlCmdString = "perl $scriptPath/autoAugPred.pl --species=$species --genome=$rootDir/seq/genome_clean.fa --continue --workingdir=$rootDir $verboseString $hintsString $utrString $useexistingopt";
     $perlCmdString .= " --singleCPU" if ($singleCPU);
     my $abortString = "\nError executing\n$perlCmdString\n";
     print "3 $perlCmdString\n" if ($verbose >= 3);
@@ -880,7 +880,7 @@ sub autoAug_noninteractive{
     $string="with hints and utr" if($hints_switch && $utr_switch);
 
     print "\n\n1 ####### Now predicting genes $string in the whole sequence...#######\n" if ($verbose>=1);
-    $perlCmdString="perl $scriptPath/autoAugPred.pl -g=$genome --species=$species $hintsString $utrString --noninteractive --cname=$cname -w=$rootDir $verboseString $useexistingopt";
+    $perlCmdString="perl $scriptPath/autoAugPred.pl -g=$genome_clean --species=$species $hintsString $utrString --noninteractive --cname=$cname -w=$rootDir $verboseString $useexistingopt";
     print "2 $perlCmdString ...\n" if ($verbose>1);
     system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
 
@@ -908,9 +908,9 @@ sub autoTrain_with_utr{
     $augString="--aug=$autoAugDir_hints/predictions/augustus.gff";
 
     if(-d $rootDir){
-  	  $perlCmdString="perl $scriptPath/autoAugTrain.pl -g=$genome -s=$species --utr -e=$estali $augString -w=$rootDir $verboseString --opt=$optrounds --useexisting";
+  	  $perlCmdString="perl $scriptPath/autoAugTrain.pl -g=$genome_clean -s=$species --utr -e=$estali $augString -w=$rootDir $verboseString --opt=$optrounds --useexisting";
     }else{
-  	  $perlCmdString="perl $scriptPath/autoAugTrain.pl -g=$genome -s=$species --utr -e=$estali $augString -w=$rootDir $verboseString --opt=$optrounds $useexistingopt";
+  	  $perlCmdString="perl $scriptPath/autoAugTrain.pl -g=$genome_clean -s=$species --utr -e=$estali $augString -w=$rootDir $verboseString --opt=$optrounds $useexistingopt";
     }
     print "\n2 $perlCmdString\n" if ($verbose>=2);
     system("$perlCmdString")==0 or die ("failed to execute: $!\n");
