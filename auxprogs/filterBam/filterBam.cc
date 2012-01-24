@@ -77,7 +77,7 @@ void printQali(vector<BamAlignment> &qali, const RefVector &refData);
 float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions);
 void prinMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs);
 void printMatedMap(map<int,int> mated);
-optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem);
+optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t optionalCounters);
 
 
 int main(int argc, char *argv[])
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
   int32_t baseInsert;  // baseInsert = qBaseInsert+tBaseInsert, in some cases
   // Counters
   int line = 0;
-  int outNoMapping = 0;
+  int noRefID = 0;
   int outMinId = 0;
   int outMinCover = 0;
   int outIntrons = 0;
@@ -120,6 +120,10 @@ int main(int argc, char *argv[])
   int outUniq = 0;
   int outBest = 0;
   optionalCounters_t optionalCounters;
+  // Optional counters
+  optionalCounters.outPaired = outPaired;
+  optionalCounters.outUniq = outUniq;
+  optionalCounters.outBest = outBest;
   // Initialising options
   struct globalOptions_t globalOptions;
   globalOptions = initOptions(argc, argv);
@@ -218,15 +222,16 @@ int main(int argc, char *argv[])
 			qSuffix = qName.substr(qName.find("/")+1, qName.length());	
 		  } 
 
-		// Unmapped filter (i.e. data whose Reference seq ID has not defined mapping)
+		// Filter for data whose Reference seq ID is not defined; i.e. RNAME= * in SAM format;
+		// i.e. unmapped fragment without coordinate 
 		rName = getReferenceName(refData, RefID);
 		if (rName.find("printReferenceName")!=-1)
 		  {	  
 			if (verbose)
 			  {
-				cout << qName << " filtered out because it is unmapped " << endl;
+				cout << qName << " filtered out because it has no refID " << endl;
 			  }
-			outNoMapping++;
+			noRefID++;
 			goto nextAlignment;
 		  }
 
@@ -251,14 +256,13 @@ int main(int argc, char *argv[])
 
 			if (qali.size()>0)
 			  {
-				optionalCounters = processQuery(qali, refData, globalOptions, &writer, oldQnameStem);
+				optionalCounters = processQuery(qali, refData, globalOptions, &writer, 
+												oldQnameStem, optionalCounters);
 			  }
 		  }  // end outer if
 
   		/////////////////////////////////////////////////////////////////
-  		//
-  		//     Filters by "$percId", "$coverage" and intron gaps "$noIntrons" go here  
-  		//
+  		// Filters for: "percId", "coverage" and intron gaps "noIntrons"   
   		/////////////////////////////////////////////////////////////////
 
   		// Fetching alignment information
@@ -273,7 +277,6 @@ int main(int argc, char *argv[])
 
 		// Percentage Identity filter
   		percId = 100*(qLength-editDistance)/qLength;  
-		// percId = unifRand(75,100); //////////////////// TAKE OUT!!!!
   		if (percId < minId)
   	  	{
   			outMinId++;
@@ -287,7 +290,6 @@ int main(int argc, char *argv[])
   		// Coverage filter
   		sumMandI = sumMandIOperations(cigar, "no");
    		coverage = (float)100*sumMandI/qLength; 
-		// coverage = unifRand(75,100); //////////////////// TAKE OUT!!!!
   		if (coverage < minCover)
   		  {	
   			outMinCover++;
@@ -349,7 +351,7 @@ int main(int argc, char *argv[])
 	if (qNameStem.compare(""))
 	  {
 		// try {
-		optionalCounters = processQuery(qali, refData, globalOptions, &writer, oldQnameStem);
+		optionalCounters = processQuery(qali,refData, globalOptions, &writer, oldQnameStem, optionalCounters);
 		outPaired = optionalCounters.outPaired;
 		outUniq = optionalCounters.outUniq;
 		outBest = optionalCounters.outBest;
@@ -367,7 +369,7 @@ int main(int argc, char *argv[])
 	cout <<  "\n\n------------------------------------- " << endl;
 	cout <<  "\nSummary of filtered alignments: " << endl;
 	cout <<  "------------------------------------- " << endl;
-	cout <<  "unmapped        : " << outNoMapping << endl;
+	cout <<  "no refID        : " << noRefID << endl;
 	cout <<  "percent identity: " << outMinId << endl;
 	cout <<  "coverage        : " << outMinCover << endl;
 	if (noIntrons)
@@ -578,13 +580,13 @@ void printMatedMap(map<int,int> mated)
 }
 
 
-optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem)
+optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t optionalCounters)
 {
-  struct optionalCounters_t optionalCounters;
   // Optional counters
-  int outPaired = 0;
-  int outUniq = 0;
-  int outBest = 0;
+  int outPaired = optionalCounters.outPaired;
+  int outUniq = optionalCounters.outUniq;
+  int outBest = optionalCounters.outBest;
+
 
   // Expanding options
   bool best = globalOptions.best;
@@ -1082,8 +1084,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 						if (verbose)
 						  {
 							cout << "(" << qali.size() << ") alignments filtered out by uniqueness because:";
-							cout << "\nThey are similar and have score ratio=" << ratio 
-								 << ">uniqThresh=" << uniqThresh << endl;
+							cout << "\nratio=" << ratio << ">uniqThresh=" << uniqThresh 
+								 << " between top and lowest-scored similar alignments." << endl;
 							for (int it=0; it<qali.size(); it++)
 							  {cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
 						  }					  	
