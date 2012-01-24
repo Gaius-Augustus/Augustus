@@ -35,6 +35,14 @@ my $submissionDate = $tdbLine[1];
 
 my $projectWebOutDir = $wwwOut."/$projectID";
 
+## check existence of files flags
+my $paramsExistFlag = 0;
+my $hintPredsExistFlag = 0;
+my $abinitioExistsFlag = 0;
+my $hintsPredsExistsFlag = 0;
+my $utrPredsExistsFlag = 0;
+my $utrHintsPredsExistsFlag = 0;
+
 if($final == 0){
 	## create the webserver output directory
 	`mkdir $projectWebOutDir`;
@@ -63,7 +71,7 @@ if($final == 0){
 if($final == 1){
 ## create a paramter folder in web-out folder
 if($projectID =~ m/^t/){
-	print STDOUT "We are in training mode\n";
+	print STDOUT "writeResults.pl is called in training mode\nCollecting parameters\n";
 	my $projectWebOutParams = $wwwOut."/$projectID/$species";
 	`mkdir $projectWebOutParams`;
 	if (not(-d "$projectWebOutParams")){
@@ -154,10 +162,10 @@ if($projectID =~ m/^t/){
 
 	## pack parameters
 	if(-e $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_parameters.cfg"){
+	    print STDOUT "Packing paramters...\n";
 		$cmdStr = "cd $projectWebOutDir; tar -czvf parameters.tar.gz $species &> /dev/null;";
 		`$cmdStr`;
 	}
-	my $paramsExistFlag = 1;
 	if (not(-e "$projectWebOutDir/parameters.tar.gz")){
 		print STDERR "$projectWebOutDir/parameters.tar.gz was not packed!\n";
 		$paramsExistFlag = 0;
@@ -165,12 +173,13 @@ if($projectID =~ m/^t/){
 
 	## remove original parameter directoy from apache directory
 	if(-d "$projectWebOutDir/$species"){
+      	        print "Cleaning up parameters in apache directory...\n";
 		$cmdStr = "rm -r $projectWebOutDir/$species";
 		system "$cmdStr\n";
 	}
 
 	## copy and pack training gene file
-	my $trainingFile = $grailsOut."/$projectID/autoAug/trainingSet/training/training.gb";
+	my $trainingFile = $grailsOut."/$projectID/autoAug/autoAugTrain/training/training.gb";
 	if (not(-e $trainingFile)){
 		print STDERR "$trainingFile does not exist!\n";
 		$cfgFilesDir = "$AUGUSTUS_CONFIG_PATH/species/$projectID/$projectID";
@@ -189,15 +198,15 @@ if($projectID =~ m/^t/){
 	}
 
 	## copy and pack ab-initio output file
+	print STDOUT "Packing ab-initio gene predictions...\n";
 	my $ab_initio_webDir = $projectWebOutDir."/ab_initio";
 	$cmdStr = "mkdir $ab_initio_webDir";
 	system $cmdStr;
 	my $ab_initio_grailsDir = $grailsOut."/$projectID/autoAug/autoAugPred_abinitio";
-	my $abinitioExistsFlag = 1;
-	if (not(-d "$ab_initio_grailsDir")){
+	if (not(-e "$ab_initio_grailsDir/predictions/augustus.gff")){
 		print STDERR "AutoAug did not produce ab initio predictions!\n";
-		$abinitioExistsFlag = 0;
 	}else{
+	        $abinitioExistsFlag = 1;
 		$cmdStr = "cp  $ab_initio_grailsDir/predictions/* $ab_initio_webDir; cp $ab_initio_grailsDir/gbrowse/* $ab_initio_webDir;";
 		`$cmdStr`;
 		$cmdStr = "cd $projectWebOutDir; tar -czvf ab_initio.tar.gz ab_initio;";
@@ -207,11 +216,11 @@ if($projectID =~ m/^t/){
 	}
 
 	## copy and pack hints predictions - if they exist	
-	my $hintPredsExistFlag = 0;
-	if(-d $grailsOut."/$projectID/autoAug/autoAugPred_hints"){
-		$hintsPredsExistFlag = 1;
+	if(-e $grailsOut."/$projectID/autoAug/autoAugPred_hints/predictions/augustus.gff"){
+		$hintsPredsExistsFlag = 1;
 	}
-	if($hintsPredsExistFlag==1){
+	if($hintsPredsExistsFlag==1){
+	        print "Packing gene predictions without UTR and with hints...\n";
 		my $hintsPred_webDir = $projectWebOutDir."/hints_pred";
 		$cmdStr = "mkdir $hintsPred_webDir";
 		system $cmdStr;
@@ -228,13 +237,12 @@ if($projectID =~ m/^t/){
 	}
 
 	## copy and pack UTR predictions - if they exist
-	my $utrPredsExistFlag = 0;
-	if(-d $grailsOut."/$projectID/autoAug/autoAugPred_utr"){
-		$utrPredsExistFlag = 1;
+	if(-e $grailsOut."/$projectID/autoAug/autoAugPred_utr/predictions/augustus.gff"){
+		$utrPredsExistsFlag = 1;
 	}else{
 		print STDOUT "AutoAug did not produce utr predictions!\n";
 	}
-	if($utrPredsExistFlag==1){
+	if($utrPredsExistsFlag==1){
 		my $utrPred_webDir = $projectWebOutDir."/utr_pred";
 		$cmdStr = "mkdir $utrPred_webDir";
 		system $cmdStr;
@@ -248,13 +256,13 @@ if($projectID =~ m/^t/){
 	}	
 
 	## copy and pack UTR hint predictions - if they exist
-	my $utrHintsPredsExistFlag = 0;
-	if(-d $grailsOut."/$projectID/autoAug/autoAugPred_hints_utr"){
-		$utrHintsPredsExistFlag = 1;
+	if(-e $grailsOut."/$projectID/autoAug/autoAugPred_hints_utr/predictions/augustus.gff"){
+		$utrHintsPredsExistsFlag = 1;
 	}else{
 		print STDOUT "AutoAug did not produce utr and hint predictions!\n";
 	}
-	if($utrHintsPredsExistFlag==1){
+	if($utrHintsPredsExistsFlag==1){
+	        print STDOUT "Packing gene predictions with UTR and hints...\n";
 		my $utrHintsPred_webDir = $projectWebOutDir."/hints_utr_pred";
 		$cmdStr = "mkdir $utrHintsPred_webDir";
 		system $cmdStr;
@@ -271,6 +279,7 @@ if($projectID =~ m/^t/){
 	my $errorFile = $grailsOut."/$projectID/AutoAug.err";
 	my $logFile = $grailsOut."/$projectID/AutoAug.log";
 	if(-e $errorFile){
+	        print STDOUT "Copying error and log file...\n";
 		$cmdStr = "cp $errorFile $projectWebOutDir; cp $logFile $projectWebOutDir;";
 		`$cmdStr`;
 	}else{
@@ -279,7 +288,9 @@ if($projectID =~ m/^t/){
 	}
 }else{
 	## pack and copy augustus predictions
+        print STDOUT "writeResults.pl is called in prediction mode...\n";
 	if(-d $grailsOut."/$projectID/augustus"){
+	        print STDOUT "Packing gene predictions...\n";
 		$cmdStr = "cd $grailsOut/$projectID; tar -czvf predictions.tar.gz augustus;";
 		`$cmdStr`;
 		$cmdStr = "cp $grailsOut/$projectID/predictions.tar.gz $projectWebOutDir/predictions.tar.gz";
@@ -304,24 +315,24 @@ if($projectID =~ m/^t/){
 	print SEG2 "<a href=\"index.html\" class=\"contentpagetitle\">Training results for job $projectID</a>\n</td>\n</tr>\n</table>\n";
 	print SEG2 "<div class=\"main\" id=\"main\">\n<p>On this page, you find all relevant results to AUGUSTUS training run $projectID for species $species, first submitted to our web server application on $submissionDate.</p>\n";
 	print SEG2 "<h1>Files for download</h1>\n<table>\n<tr><td><b>Log-file</b></td><td><a href=\"AutoAug.log\">AutoAug.log</a></td></tr>\n<tr><td><b>Error-file</b></td><td><a href=\"AutoAug.err\">AutoAug.err</a></td></tr>\n";
-	if($paramsExistFlag==1){
+	if(-e "$projectWebOutDir/parameters.tar.gz"){
 	print SEG2 "<tr>\n<td><b>Species parameter archive</b>&nbsp;&nbsp;</td>\n<td><a href=\"parameters.tar.gz\">parameters.tar.gz</a></td>\n</tr>\n";
-	}
-	if($traininggb==1){
+	}else{print STDOUT "Parameters are not included in web output\n";}
+	if(-e "$projectWebOutDir/training.gb"){
 	print SEG2 "<tr>\n<td><b>Training genes</b>&nbsp;&nbsp;</td><td><a href=\"training.gb.gz\">training.gb.gz</a></td>\n</tr>\n";
-	}
+	}else{print STDOUT "training.gb is not included in web output\n";}
 	if($abinitioExistsFlag==1){
 	print SEG2 "<tr>\n<td><b>Ab initio predictions</b></td>\n<td><a href=\"ab_initio.tar.gz\">ab_initio.tar.gz</a></td>\n</tr>\n";
-	}
-	if($hintsPredsExistFlag==1){
+	}else{print STDOUT "ab initio predictions are not included in web output\n";}
+	if($hintsPredsExistsFlag==1){
 	print SEG2 "<tr>\n<td><b>Predictions with hints</b></td>\n<td><a href=\"hints_pred.tar.gz\">hints_pred.tar.gz</a></td>\n</tr>\n";
-	}
-	if($utrPredsExistFlag==1){
+	}else{print STDOUT "hint predictions are not included in web output\n";}
+	if($utrPredsExistsFlag==1){
 	print SEG2 "<tr>\n<td><b>Predictions with UTR</b></td>\n<td><a href=\"utr_pred.tar.gz\">utr_pred.tar.gz</a></td>\n</tr>\n";
-	}
-	if($utrHintsPredsExistFlag==1){
+	}else{print STDOUT "UTR predictions are not included in web output\n";}
+	if($utrHintsPredsExistsFlag==1){
 	print SEG2 "<tr>\n<td><b>Predictions with hints and UTR &nbsp;&nbsp;</b></td>\n<td><a href=\"hints_utr_pred.tar.gz\">hints_utr_pred.tar.gz</a></td>\n</tr>\n";
-	}
+	}else{print STDOUT "UTR and hint predictions are not included in web output\n";}
 	print SEG2 "</table>\n<br><br>\n";
 	close(SEG2) or die "Could not close file $segmentFile2!\n";
 }else{
