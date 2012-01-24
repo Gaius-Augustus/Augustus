@@ -79,6 +79,15 @@ void prinMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs);
 void printMatedMap(map<int,int> mated);
 optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t optionalCounters);
 
+void printNameStems(unordered_map<string,int> qNameStems)
+{
+  unordered_map<string, int>::iterator it = qNameStems.begin();
+  for (it; it!=qNameStems.end(); it++)
+	{
+	  cout << (*it).first << "=>" << (*it).second << endl;
+	}
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -88,8 +97,8 @@ int main(int argc, char *argv[])
   BamWriter writer;
   BamAlignment al;
   vector<BamAlignment> qali;
-  unordered_map<string, int> qNameStems;
-  unordered_map<string, int>::iterator it;
+  unordered_map<string,int> qNameStems;
+  // unordered_map<string, int>::iterator it; /// TAKE OUT!!!
   time_t tStart, tEnd, tElapsed; 
   vector<CigarOp> cigar;
   char cigarType;
@@ -193,7 +202,6 @@ int main(int argc, char *argv[])
   	while (reader.GetNextAlignment(al)) 
 	  {
 		line++;
-
 	   
        // if (line%100000==1)
 	   // { 
@@ -222,23 +230,30 @@ int main(int argc, char *argv[])
 			qSuffix = qName.substr(qName.find("/")+1, qName.length());	
 		  } 
 
-		// Filter for data whose Reference seq ID is not defined; i.e. RNAME= * in SAM format;
-		// i.e. unmapped fragment without coordinate 
-		rName = getReferenceName(refData, RefID);
-		if (rName.find("printReferenceName")!=-1)
-		  {	  
-			if (verbose)
-			  {
-				cout << qName << " filtered out because it has no refID " << endl;
-			  }
-			noRefID++;
-			goto nextAlignment;
-		  }
+		// // Filter for data whose Reference seq ID is not defined; i.e. RNAME= * in SAM format;
+		// // i.e. unmapped fragment without coordinate 
+		// rName = getReferenceName(refData, RefID);
+		// if (rName.find("printReferenceName")!=-1)
+		//   {	  
+		// 	if (verbose)
+		// 	  {
+		// 		cout << qName << " filtered out because it has no refID " << endl;
+		// 	  }
+		// 	noRefID++;
+		// 	goto nextAlignment;
+		//   }
 
-	
+		// // What's the problem with unordered files?
+		// cout << "The value of qNameStems is " << endl;
+		// printNameStems(qNameStems);
+		// cout << "Where the qNameStem to be processed is: " << qNameStem << endl;
+		cout << "Test oldQnameStem.compare(qNameStem)=" << oldQnameStem.compare(qNameStem) << endl;
+
 		// Verifying file is sorted by query name
 		if (oldQnameStem.compare(qNameStem) && oldQnameStem.compare(""))   
 		  { 
+
+			// cout <<"Is " << qNameStem << " contained already in qNameStems? " << qNameStems[qNameStem] << endl;
 			// Checking whether 10th field is sorted in ascending order
 			if (line <= maxSortesTest && qNameStems[qNameStem])   
 			  {
@@ -1178,7 +1193,11 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 						unordered_map<string, int>::iterator itGn = geneNames.begin();
 						for (itGn; itGn != geneNames.end(); itGn++)
 						  {
-							cout << oldQnameStem << ","<< (*itGn).first << "," << (*itGn).second << endl;
+							if (verbose) 
+							  {
+								cout << "commonGeneFile:" << oldQnameStem << ","<< (*itGn).first << "," 
+									<< (*itGn).second << endl;
+							  }
 							geneFile << oldQnameStem << ","<< (*itGn).first << "," << (*itGn).second << endl;
 						  }
 						geneFile.close();
