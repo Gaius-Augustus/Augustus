@@ -217,7 +217,7 @@ class TrainingController {
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - uploaded genome file ${uploadedGenomeFile.originalFilename} was renamed to genome.fa and moved to ${projectDir}\n"
 					// check for fasta format & extract fasta headers for gff validation:
 					new File("${projectDir}/genome.fa").eachLine{line -> 
-						if(line =~ /\\*/ || line =~ /\\?/){
+						if(line =~ /\*/ || line =~ /\?/){
 							metacharacterFlag = 1
 						}else{
 							if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }
@@ -434,7 +434,7 @@ class TrainingController {
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Uploaded EST file ${uploadedEstFile.originalFilename} was renamed to est.fa and moved to ${projectDir}\n"
 					// check fasta format
 					new File("${projectDir}/est.fa").eachLine{line -> 
-						if(line =~ /\\*/ || line =~ /\\?/){
+						if(line =~ /\*/ || line =~ /\?/){
 							metacharacterFlag = 1
 						}else{
 							if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(line =~ /^$/)){ 
@@ -625,7 +625,7 @@ class TrainingController {
 						def isElement
 						new File("${projectDir}/training-gene-structure.gff").eachLine{line -> 
 							// check whether weird metacharacters are included
-							if(line =~ /\\*/ || line =~ /\\?/){
+							if(line =~ /\*/ || line =~ /\?/){
 								metacharacterFlag = 1
 							}else{
 								if(line =~ /^LOCUS/){
@@ -786,7 +786,7 @@ class TrainingController {
 				def cytosinCounter = 0 // C is cysteine in amino acids, and cytosine in DNA.
 				def allAminoAcidsCounter = 0
 				new File("${projectDir}/protein.fa").eachLine{line -> 
-					if(line =~ /\\*/ || line =~ /\\?/){
+					if(line =~ /\*/ || line =~ /\?/){
 						metacharacterFlag = 1
 					}else{
 						if(!(line =~ /^[>AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx ]/) && !(line =~ /^$/)){ proteinFastaFlag = 1 }
@@ -1115,7 +1115,7 @@ class TrainingController {
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - genome file upload finished, file stored as genome.fa at ${projectDir}\n"
 						// check for fasta format & get seq names for gff validation:
 						new File("${projectDir}/genome.fa").eachLine{line -> 
-							if(line =~ /\\*/ || line =~ /\\?/){
+							if(line =~ /\*/ || line =~ /\?/){
 								metacharacterFlag = 1
 							}else{
 								if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }	
@@ -1146,7 +1146,7 @@ Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${traini
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """	
@@ -1176,7 +1176,7 @@ Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${traini
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """	
@@ -1215,7 +1215,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						def isElement
 						new File("${projectDir}/training-gene-structure.gff").eachLine{line -> 
 
-							if(line =~ /\\*/ || line =~ /\\?/){
+							if(line =~ /\*/ || line =~ /\?/){
 								metacharacterFlag = 1
 							}else{
 
@@ -1254,7 +1254,7 @@ Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${traini
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """	
@@ -1275,7 +1275,7 @@ Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${traini
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus/
 """
@@ -1293,7 +1293,7 @@ Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${traini
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """
@@ -1433,7 +1433,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - EST/cDNA file upload finished, file stored as est.fa at ${projectDir}\n"
 						// check for fasta format:
 						new File("${projectDir}/est.fa").eachLine{line -> 
-							if(line =~ /\\*/ || line =~ /\\?/){
+							if(line =~ /\*/ || line =~ /\?/){
 								metacharacterFlag = 1
 							}else{
 								if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){
@@ -1462,7 +1462,7 @@ Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${traini
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """	
@@ -1492,7 +1492,7 @@ Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${traini
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """
@@ -1695,7 +1695,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						def cytosinCounter = 0 // C is cysteine in amino acids, and cytosine in DNA.
 						def allAminoAcidsCounter = 0
 						new File("${projectDir}/protein.fa").eachLine{line -> 
-							if(line =~ /\\*/ || line =~ /\\?/){
+							if(line =~ /\*/ || line =~ /\?/){
 								metacharacterFlag = 1
 							}else{
 								if(!(line =~ /^[>AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx ]/) && !(line =~ /^$/)){ proteinFastaFlag = 1 }
@@ -1726,7 +1726,7 @@ Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${traini
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """	
@@ -1757,7 +1757,7 @@ Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${traini
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """		
@@ -1807,7 +1807,7 @@ Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${traini
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """
@@ -1869,7 +1869,7 @@ We have retrieved all files that you specified, successfully. You may delete the
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """
@@ -1933,7 +1933,7 @@ Thank you for using AUGUSTUS!
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """
@@ -2132,7 +2132,7 @@ Thank you for using AUGUSTUS!
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """
@@ -2285,7 +2285,7 @@ Thank you for using AUGUSTUS!
 
 Best regards,
 
-the AUGUSTUS training web server team
+the AUGUSTUS web server team
 
 http://bioinf.uni-greifswald.de/trainaugustus
 """

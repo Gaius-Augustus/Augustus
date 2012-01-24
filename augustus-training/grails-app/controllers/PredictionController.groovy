@@ -358,7 +358,7 @@ class PredictionController {
         			// check for fasta format & extract fasta headers for gff validation:
          			new File("${projectDir}/genome.fa").eachLine{line -> 
             			if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }
-					if(line =~ /\\*/ || line =~ /\\?/){
+					if(line =~ /\*/ || line =~ /\?/){
 						metacharacterFlag = 1
 					}else{
             					if(line =~ /^>/){
@@ -571,7 +571,7 @@ class PredictionController {
 				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Uploaded EST file ${uploadedEstFile.originalFilename} was renamed to est.fa and moved to ${projectDir}\n"
 	         		// check fasta format
 	         		new File("${projectDir}/est.fa").eachLine{line -> 
-					if(line =~ /\\*/ || line =~ /\\?/){
+					if(line =~ /\*/ || line =~ /\?/){
 						metacharacterFlag = 1
 					}else{
 	            				if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(line =~ /^$/)){ 
@@ -765,7 +765,7 @@ class PredictionController {
 					def gffArray
 					def isElement
 					new File("${projectDir}/hints.gff").eachLine{line -> 
-						if(line =~ /\\*/ || line =~ /\\?/){
+						if(line =~ /\*/ || line =~ /\?/){
 							metacharacterFlag = 1
 						}else{
 							gffArray = line.split("\t")
@@ -1105,7 +1105,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - genome file upload finished, file stored as genome.fa at ${projectDir}\n"
 						// check for fasta format & get seq names for gff validation:
 						new File("${projectDir}/genome.fa").eachLine{line -> 
-							if(line =~ /\\*/ || line =~ /\\?/){
+							if(line =~ /\*/ || line =~ /\?/){
 								metacharacterFlag = 1
 							}else{
 								if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }	
@@ -1205,7 +1205,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						def gffArray
 						def isElement
 						new File("${projectDir}/hints.gff").eachLine{line -> 
-							if(line =~ /\\*/ || line =~ /\\?/){
+							if(line =~ /\*/ || line =~ /\?/){
 								metacharacterFlag = 1
 							}else{
 
@@ -1451,7 +1451,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - EST/cDNA file upload finished, file stored as est.fa at ${projectDir}\n"
 						// check for fasta format:
 						new File("${projectDir}/est.fa").eachLine{line -> 
-							if(line =~ /\\*/ || line =~ /\\?/){
+							if(line =~ /\*/ || line =~ /\?/){
 								metacharacterFlag = 1
 							}else{
 								if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ 
