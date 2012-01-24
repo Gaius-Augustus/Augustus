@@ -20,7 +20,7 @@ use File::Basename qw(dirname basename);
 BEGIN {
     $0=rel2abs($0);
     our $directory = dirname($0);
-}
+} 
 use lib $directory;
 use helpMod qw(find checkFile relToAbs uptodate);
 use Term::ANSIColor qw(:constants);
@@ -30,6 +30,7 @@ use strict;
 my $scriptPath=dirname($0);           # the path of directory where this script placed
 
 my $genome;                           # name of sequece file
+my $genome_clean;		      # genome file that has been cleaned of DOS whitespaces and linebreaks
 my $trainingset;                      # name of training set file
 my $species;                          # species name
 my $hints;                            # hints file name
@@ -64,6 +65,7 @@ my $shellDir;
 my $aug;
 my $perlCmdString;                    # to store perl commands
 my $cmdString;                        # to store shell commands
+my $string;          		      # temp string for perl-scripts, which will be called in this script
 
 
 
@@ -198,6 +200,17 @@ $hints = checkFile($hints,"hints", $usage) if (defined($hints));
 $estali = checkFile($estali,"EST alignment", $usage) if (defined($estali));
 
 training_set_dirs() if($index==0);
+
+# Clean genome file from DOS whitespaces/linebreaks
+if (!uptodate([$genome], [$genome_clean])){
+	print "3 Cleaning genome file from DOS whitespaces/linebreaks...\n" if ($verbose>2);
+	$genome_clean = "$rootDir/seq/genome_clean.fa";
+	$string = find("cleanDOSfasta.pl");
+	$perlCmdString = "perl $string $genome > $genome_clean";
+	print "3 $perlCmdString\n" if ($verbose>2);
+	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
+	unless(-e $genome_clean){die("Clean genome file $genome_clean does not exist!\n");}
+}
 
 if($pasa && $index==0){
     $trainingset = "$trainDir/training/training.gb";
