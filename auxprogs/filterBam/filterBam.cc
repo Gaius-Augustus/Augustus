@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <iomanip> 
 #include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 #include <cstdio>
 #include <algorithm>
 #include <unordered_map>
@@ -203,10 +204,10 @@ int main(int argc, char *argv[])
 	  {
 		line++;
 	   
-       // if (line%100000==1)
-	   // { 
-	   // 	 cout << "\r processed line " << line;
-       // }		
+       if (line%100000==1)
+	   { 
+	   	 cout << "\r processed line " << line;
+       }		
 
 		 // Call to compactify bed
 		// if (pairBedFile && $line % 10000000 == 0)
@@ -230,25 +231,22 @@ int main(int argc, char *argv[])
 			qSuffix = qName.substr(qName.find("/")+1, qName.length());	
 		  } 
 
-		// // Filter for data whose Reference seq ID is not defined; i.e. RNAME= * in SAM format;
-		// // i.e. unmapped fragment without coordinate 
-		// rName = getReferenceName(refData, RefID);
-		// if (rName.find("printReferenceName")!=-1)
-		//   {	  
-		// 	if (verbose)
-		// 	  {
-		// 		cout << qName << " filtered out because it has no refID " << endl;
-		// 	  }
-		// 	noRefID++;
-		// 	goto nextAlignment;
-		//   }
+		// Filter for data whose Reference seq ID is not defined; i.e. RNAME= * in SAM format;
+		// i.e. unmapped fragment without coordinate 
+		rName = getReferenceName(refData, RefID);
+		if (rName.find("printReferenceName")!=-1)
+		  {	  
+			if (verbose)
+			  {
+				cout << qName << " filtered out because it has no refID " << endl;
+			  }
+			noRefID++;
+			goto nextAlignment;
+		  }
 
+
+		// cout << line << ": oldQnamestem=" << oldQnameStem << ", qNameStem=" << qNameStem << endl;
 		// // What's the problem with unordered files?
-		// cout << "The value of qNameStems is " << endl;
-		// printNameStems(qNameStems);
-		// cout << "Where the qNameStem to be processed is: " << qNameStem << endl;
-		cout << "Test oldQnameStem.compare(qNameStem)=" << oldQnameStem.compare(qNameStem) << endl;
-
 		// Verifying file is sorted by query name
 		if (oldQnameStem.compare(qNameStem) && oldQnameStem.compare(""))   
 		  { 
@@ -284,7 +282,7 @@ int main(int argc, char *argv[])
   		cigar = al.CigarData;
   		cigarSize = cigar.size();
   		qName = al.Name; // query name
-  		qLength = al.Length; // query length
+  		qLength = al.Length; // query length (TODO: consider situations where qLength=0,undefined)
   		RefID = al.RefID; // ID of reference seq. (later used)
   		sumMandI = 0; // Equiv to $qEnd-$qStart in PSL
   		baseInsert = 0;
@@ -302,6 +300,7 @@ int main(int argc, char *argv[])
   			goto nextAlignment;
   	  	}
 
+
   		// Coverage filter
   		sumMandI = sumMandIOperations(cigar, "no");
    		coverage = (float)100*sumMandI/qLength; 
@@ -314,6 +313,7 @@ int main(int argc, char *argv[])
 			  }
   			goto nextAlignment;
   		  }	
+
 
   		// Intron gap filter
   		baseInsert = sumDandIOperations(cigar, "no");
@@ -350,7 +350,6 @@ int main(int argc, char *argv[])
 
   		// Push @qali, [$_, $targetname, $qsuffix, $strand, $tstart, $tend, $percId, $coverage]; 
         qali.push_back(al);
-
 
 		oldQnameStem = qNameStem;
 		if (line <= maxSortesTest)
