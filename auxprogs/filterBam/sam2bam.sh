@@ -1,5 +1,8 @@
-# Script to make conversion SAM->BAM with samtools,
-# assuming "samtools" is in Tonatiuh's drive
+# Script to make conversion SAM->BAM with samtools.
+#
+# NOTE: 
+# Modify the variable SAMTOOLS to point to the
+# directory where SAMTOOLS has been installed. 
 #
 # Created: 25-January-2012
 

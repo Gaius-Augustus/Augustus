@@ -21,7 +21,7 @@
 #include <sstream>
 #include <stdlib.h>
 #include <iomanip> 
-#include <boost/lexical_cast.hpp>
+// #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <cstdio>
 #include <algorithm>
@@ -598,7 +598,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
   int outUniq = optionalCounters.outUniq;
   int outBest = optionalCounters.outBest;
 
-
+ 
   // Expanding options
   bool best = globalOptions.best;
   bool paired = globalOptions.paired;
