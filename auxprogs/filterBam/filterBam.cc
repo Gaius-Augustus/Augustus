@@ -3,8 +3,8 @@
 	NOTE: 
 
 	Created: 4-November-2011
-	Last modified: 22-January-2012
-*/ 
+	Last modified: 25-January-2012
+*/  
  
 #include <api/BamReader.h>
 #include <api/BamWriter.h>
@@ -15,7 +15,7 @@
 #include <vector>
 #include <string>
 #include <stdio.h>
-#include <stdexcept>
+#include <stdexcept> 
 #include <time.h> 
 #include <getopt.h> 
 #include <sstream>
