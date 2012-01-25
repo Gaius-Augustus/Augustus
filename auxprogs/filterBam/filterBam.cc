@@ -224,10 +224,15 @@ int main(int argc, char *argv[])
 		qName = al.Name;
 		qNameStem = qName; 
 		RefID = al.RefID;
- 		
+
 		if (paired)
 		  {	
-			qNameStem = qName.substr(0, qName.find("/"));
+			// Taking out suffix: {f,r} or {1,2}
+			static const boost::regex exp("[\\.\\/]([fr12])$"); 
+			const std::string rep("");
+			qNameStem = boost::regex_replace(qNameStem, exp, rep, boost::match_default |
+										 boost::format_sed); 
+			// qNameStem = qName.substr(0, qName.find("/"));
 			qSuffix = qName.substr(qName.find("/")+1, qName.length());	
 		  } 
 
@@ -245,14 +250,12 @@ int main(int argc, char *argv[])
 		  }
 
 
-		// cout << line << ": oldQnamestem=" << oldQnameStem << ", qNameStem=" << qNameStem << endl;
-		// // What's the problem with unordered files?
 		// Verifying file is sorted by query name
+		// cout << line << ": oldQnamestem=" << oldQnameStem << ", qNameStem=" << qNameStem << endl;
 		if (oldQnameStem.compare(qNameStem) && oldQnameStem.compare(""))   
 		  { 
 
-			// cout <<"Is " << qNameStem << " contained already in qNameStems? " << qNameStems[qNameStem] << endl;
-			// Checking whether 10th field is sorted in ascending order
+			// Checking whether file is sorted by query name
 			if (line <= maxSortesTest && qNameStems[qNameStem])   
 			  {
 				cerr << "Input file not sorted by query name!\n" << qNameStem.c_str() << 
@@ -361,18 +364,13 @@ int main(int argc, char *argv[])
 
 
 
-	// /* 	Calling of: "processQuery() if ($qnamestem ne "");" goes here */
+	// /* 	Calling of: "processQuery() if ($qnamestem ne "");
 	if (qNameStem.compare(""))
 	  {
-		// try {
 		optionalCounters = processQuery(qali,refData, globalOptions, &writer, oldQnameStem, optionalCounters);
 		outPaired = optionalCounters.outPaired;
 		outUniq = optionalCounters.outUniq;
 		outBest = optionalCounters.outBest;
-		// } catch  (out_of_range& oor) {
-		//   cout << "There was an error here: " << oor.what() << endl;
-		//   cout << "Size of qali is: " << qali.size() << endl;
-		// }
 	  }
 
 	// Sorting insertlengths array
@@ -961,23 +959,28 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 
 				  if (bestTnames.size()>1)
 					{
-					  unordered_map<string, int> geneNames;
+					  unordered_map<string,int> geneNames;
 					  string tName;
+   					  static const boost::regex exp("\\.t\\d+");
+					  const std::string rep("");
+
 					  for (int it=0; it<bestTnames.size(); it++)
 						{
-						  tName = bestTnames.at(it); //bestTnames.at(it).substr(0,bestTnames.at(it).find("|"));
+						// Replace suffixes of the type chrX.t123
+						tName = boost::regex_replace(bestTnames.at(it), exp, rep, boost::match_default |
+														boost::format_sed); 
 						  geneNames[tName]=1;
 						  if (verbose) {cout << "tName= " << tName << endl;}
 						}
 					
-					  if (commonGeneFile)
+					  if (geneNames.size() > 1 && commonGeneFile)
 						{
 						  geneFile.open(commonGeneFile);
 						  unordered_map<string, int>::iterator itGn = geneNames.begin();
 						  for (itGn; itGn != geneNames.end(); itGn++)
 							{
-							  cout << oldQnameStem << ","<< (*itGn).first << "," << (*itGn).second << endl;
-							  geneFile << oldQnameStem << ","<< (*itGn).first << "," << (*itGn).second << endl;
+							  cout << oldQnameStem << "\t"<< (*itGn).first << "\t" << (*itGn).second << endl;
+							  geneFile << oldQnameStem <<"\t"<< (*itGn).first << "\t" << (*itGn).second << endl;
 							}
 						  geneFile.close();  
 						}
@@ -1086,6 +1089,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 							cout << "is significantly worse, ratio=" << ratio << "<uniqThresh=" 
 							 	<< uniqThresh << endl;
 						  }
+						// // Removing percId and coverage Tags before writing into file
+						// qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
 						(*ptrWriter).SaveAlignment(qali.at(0)); // Prints alignment line into file
 						outUniq += qali.size()-1;
 					  	cout << "(" << outUniq << "/" << qali.size() << ") alignments filtered out " 
@@ -1120,6 +1125,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 						  cout << "------------------------------------------------------------------------" 
 							<< endl;
 						}
+					  // // Removing percId and coverage Tags before writing into file
+					  // qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
 				  	  (*ptrWriter).SaveAlignment(qali.at(0)); // Letting pass only best
 				  	  outUniq += qali.size()-1;
 				  }
@@ -1149,6 +1156,9 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 							 << tempScore << ", optScore=" << optScore << endl;
 						cout << "Storing at bestTnames=" << getReferenceName(refData, qali.at(0).RefID) << endl;
 					  }
+
+					// // Removing percId and coverage Tags before writing into file
+					// qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
 					(*ptrWriter).SaveAlignment(qali.at(0)); 
 					bestTnames.push_back(getReferenceName(refData, qali.at(0).RefID));
 					qali.erase(qali.begin()); // Delete first member of qali
@@ -1177,28 +1187,40 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 
 				if (bestTnames.size()>1)
 				  {
-					unordered_map<string, int> geneNames;
+					unordered_map<string,int> geneNames;
 					string tName;
+					static const boost::regex exp("\\.t\\d+");
+					const std::string rep("");
+
 					for (int it=0; it<bestTnames.size(); it++)
 					  {
-						tName = bestTnames.at(it); //bestTnames.at(it).substr(0,bestTnames.at(it).find("|"));
+						// Replace suffixes of the type chrX.t123
+						tName = boost::regex_replace(bestTnames.at(it), exp, rep, boost::match_default |
+														boost::format_sed); 
 						geneNames[tName]=1;
 						if (verbose) {cout << "tName= " << tName << endl;}
 					  }
 					
-					if (commonGeneFile)
+					if (verbose) {cout << "Size of geneNames=" << geneNames.size() << endl;}
+					if (geneNames.size() > 1 && commonGeneFile)
 					  {
 						geneFile.open(commonGeneFile);
-						unordered_map<string, int>::iterator itGn = geneNames.begin();
+						unordered_map<string,int>::iterator itGn = geneNames.begin();
+
+						// Writing name of query first..
+						geneFile << oldQnameStem;
+
+						// Then writing the common genes for such query
 						for (itGn; itGn != geneNames.end(); itGn++)
 						  {
 							if (verbose) 
 							  {
-								cout << "commonGeneFile:" << oldQnameStem << ","<< (*itGn).first << "," 
+								cout << "commonGeneFile:" << oldQnameStem << "\t"<< (*itGn).first << "\t" 
 									<< (*itGn).second << endl;
 							  }
-							geneFile << oldQnameStem << ","<< (*itGn).first << "," << (*itGn).second << endl;
+							 geneFile << "\t"<< (*itGn).first;
 						  }
+						geneFile << endl;
 						geneFile.close();
 					  }
 				  } 
@@ -1214,6 +1236,8 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 
 			for(int it=0; it<qali.size(); it++)
 				{
+				  // // Removing percId and coverage Tags before writing into file
+				  // qali.at(it).RemoveTag("pi"); qali.at(it).RemoveTag("co");
 				  (*ptrWriter).SaveAlignment(qali.at(it)); // Prints alignment line into file
 				}
 
