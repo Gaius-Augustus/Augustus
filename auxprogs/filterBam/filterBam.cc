@@ -232,7 +232,6 @@ int main(int argc, char *argv[])
 			const std::string rep("");
 			qNameStem = boost::regex_replace(qNameStem, exp, rep, boost::match_default |
 										 boost::format_sed); 
-			// qNameStem = qName.substr(0, qName.find("/"));
 			qSuffix = qName.substr(qName.find("/")+1, qName.length());	
 		  } 
 
@@ -1257,5 +1256,3 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 
   return optionalCounters;
 } // end processQuery()
-
-
