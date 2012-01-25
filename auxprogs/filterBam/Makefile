@@ -8,10 +8,10 @@
 #	Last modified: 25-January-2012
 
 # Variable definition
-HOME = /home/tonatiuh/
+HOME = /home/tonatiuh/ 
 BT1 = $(HOME)/pezmaster31-bamtools-12aca98
 BT2 = $(HOME)/bamtools-1.0.2
-BT3 = $(HOME)/bamtools
+BT3 = $(HOME)/bamtools 
 CODE = $(HOME)/filterBam/bamtoolsCode
 INCLUDES = -I$(BT3)/include -Iheaders -I$(BT3)/src/toolkit
 VPATH = functions # Required to find files in functions/foo.cc
@@ -37,6 +37,8 @@ all:$(OBJECTS) # Compiles each foo.cc into foo.o
 $(OBJECTS) : %.o:%.cc
 	$(LINK.cc) $(CFLAGS) -c $^ -o $@ 
 
+pdf:
+	pdflatex $(PROGRAM).pdf
 
 clean: 
 	rm -f *~ $(OBJECTS)

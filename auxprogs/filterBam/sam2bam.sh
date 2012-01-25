@@ -2,4 +2,7 @@
 # assuming "samtools" is in Tonatiuh's drive
 
 SAMTOOLS=/home/tonatiuh/samtools;
-$SAMTOOLS/samtools view -bS example_1.sam -o example_1.bam
+SAM=$1;
+BAM=`echo $SAM|sed 's/.sam/.bam/'` 
+
+$SAMTOOLS/samtools view -bS $SAM -o $BAM
