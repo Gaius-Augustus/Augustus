@@ -24,7 +24,10 @@ CFLAGS = -g $(INCLUDES) -std=c++0x
 #LINK.cc = g++
 
 
-# Recipe(s)
+######################################################
+# Compilation of filterBam
+######################################################
+# Recipes
 # $@: full target name of current target. 
 # $<: .cc file of target. 
 $(PROGRAM) : $(OBJECTS) 
@@ -33,12 +36,34 @@ $(PROGRAM) : $(OBJECTS)
 # This recipe is equivalent to specifying:
 # $^: is a list of all the prerequisites of the rule
 # % contains the stem-name of the file
-all:$(OBJECTS) # Compiles each foo.cc into foo.o
+build : $(OBJECTS) # Compiles each foo.cc into foo.o
 $(OBJECTS) : %.o:%.cc
 	$(LINK.cc) $(CFLAGS) -c $^ -o $@ 
 
-pdf:
-	pdflatex $(PROGRAM).tex
+
+######################################################
+# Generation of PDF document
+######################################################
+
+PDFOBJECTS = $(PROGRAM).aux $(PROGRAM).blg $(PROGRAM).bbl $(PROGRAM).log
+
+pdf : $(PROGRAM).tex
+	pdflatex $^
+	pdflatex $^ 
+
+
+######################################################
+# Generation 
+######################################################
+SAMFILES = example_1.sam
+SCRIPT = sam2bam.sh
+
+bam : $(SAMFILES)
+	sh $(SCRIPT) $^
+
+######################################################
+# Cleaning routine 
+######################################################
 
 clean: 
-	rm -f *~ $(OBJECTS)
+	rm -f *~ $(OBJECTS) $(PDFOBJECTS)
