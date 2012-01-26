@@ -1,0 +1,28 @@
+#
+# These README contains instructions for how to:
+#
+# 	1. Build filterBam.cc 
+# 	2. Generate documentation file
+#	3. Generate dummy data to test file
+#
+# Requirements:
+# ...for building filterBam.cc:
+# 	- Latest version of BAMTOOLS installed https://github.com/pezmaster31/bamtools
+# 	- Boost-regex library for C++ www.boost.org
+# 	- GNU's "g++" compiler version 4.4.4 or later
+#
+# ... for generating dummy test data
+#	- Latest version of SAMTOOLS
+#
+# Created: 25-January-2012
+# Last modified: 26-January-2012
+#
+
+# 1) Building. Simply type: 
+make build
+
+# 2) Documentation. Type:
+make pdf
+
+# 3) Data generation (converts a dummy SAM file to BAM format). Type: 
+make bam
