@@ -21,13 +21,13 @@
 #include <sstream>
 #include <stdlib.h>
 #include <iomanip> 
-// #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 #include <cstdio>
 #include <algorithm>
 #include <unordered_map>
 #include <fstream>
 #include "header.h"
+// #include <boost/lexical_cast.hpp> // Take out depending on whether uint32_t behaves well.
 
 
 using namespace BamTools;
@@ -546,9 +546,9 @@ bool similar(BamAlignment alR, BamAlignment alS, globalOptions_t globalOptions)
 	{
 	  cout << "[SIMILAR]: checking whether " << rName << " and " << sName << " are approx. the same:"<< endl;
 	  cout << "[SIMILAR]: Overlap: (" << rName << "):" << rEnd << " <= (" << sName 
-		   << "):" << sStart << endl; 
+		   << "):" << sStart << " ?" << endl; 
 	  cout << "[SIMILAR]: Overlap: (" << rName << "):" << rStart << " >= (" << sName 
-		   << "):" << sEnd << endl; 
+		   << "):" << sEnd << " ?" << endl; 
 	}
 
   if (rEnd <= sStart || rStart >= sEnd) // here: similar = overlapping target range
@@ -556,7 +556,7 @@ bool similar(BamAlignment alR, BamAlignment alS, globalOptions_t globalOptions)
 	  cout << "[SIMILAR]: Alignments are NOT SIMILAR" << endl;
 	  return false;
 	} else {
-		cout << "[SIMILAR]: Alignments are SIMILAR" << endl;
+		cout << "[SIMILAR]: Ans: Alignments are SIMILAR" << endl;
 		return true;
   		   }
 }
@@ -1069,7 +1069,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 						cout << "Selecting a unique alignment in terms of its score" << endl;
 						cout << "------------------------------------------------------------------------" 
 							<< endl;
-						cout << "Position of last similar alignment (indexed by second)=" << second << endl;
+						cout << "Position of second worst alignment (index)=" << second << endl;
 						cout << "Comparing scores between optimal and second: " << endl;
 						cout << "[" << getReferenceName(refData, qali.at(0).RefID) << "]<-" 
 							 << qali.at(0).Name << "; score=" << scoreFirst << " and " << endl; 
