@@ -109,7 +109,7 @@ void displayUsage(int argc, char *argv[])
 	  				noIntrons << ")" << endl;
 	cout <<  "  --paired           require that paired reads are on opposite strands of same target" << endl;
 	cout <<  "  \t\t     (default " << paired << "). NOTE: see prerequisite section above." << endl;
-	cout <<  "  --uniq             take only best match and only, when second best is much worse " << 
+	cout <<  "  --uniq             take only best match, iff, second best is much worse " << 
 					" (default " << uniq << ")" << endl;
 	cout <<  "  --verbose          output debugging info (default " << verbose << ")" << endl;
 	cout <<  "  --insertLimit=n    maximum assumed size of inserts (default " << insertLimit << ")" << endl;
