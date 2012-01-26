@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
   			outIntrons++;
 			if (verbose)
 			  {
-				cout << qName << " filtered out by intron criterion= " << baseInsert << " > minId=" << 
+				cout << qName << " filtered out by intron criterion= " << baseInsert << " > insertLimit=" << 
 					insertLimit << endl;
 			  }
   			goto nextAlignment;
