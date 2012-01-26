@@ -2,7 +2,7 @@
 
 
 	Created: 27-September-2011
-	Last modified: 22-January-2012
+	Last modified: 26-January-2012
 */
 
 #include <iostream>
@@ -90,22 +90,25 @@ void displayUsage(int argc, char *argv[])
 {
 	cout <<  " Usage: " << argv[0] << " --in in.bam --out out.bam [options]\n";
   	cout <<  "--------------------------------------------------" << endl;
-	cout <<  " Available options are                            " << endl;
+	cout <<  " PREREQUISITE: (File sorted by query name)       " << endl; 
+	cout <<  " File must be sorted lexicographically by 'queryname', with e.g.\n" << 
+	  		 "\n  1) sort -k 1,1 [be aware: 'export LC_ALL=C' might be used " << 
+	  		 " because sort ignores characters like ':' \n" << 
+	  		 "\n  2) samtools and bamtools provide facilities to do the sorting,\n" <<
+	  		 "      but they are not guaranteed to work because of the problem mentioned above.\n" << endl;
   	cout <<  "--------------------------------------------------" << endl;
-	cout <<  "  PREREQUISITE: file must be sorted lexicographically by 'queryname', with e.g.\n" <<
-		   	 "                sort -k 1,1 but be aware: LC_ALL may have to be set to C\n" << 
-			 " 		because sort ignores characters like ':' \n";
+	cout <<  " PREREQUISITE: (Paired alignments only)       " << endl; 
+	cout <<  "\n If option 'paired'is used, then alignment names must include suffixes /1,/2 or /f, /r" <<endl;
+  	cout <<  "--------------------------------------------------" << endl;
+	cout <<  " Available options are                            " << endl;
   	cout <<  "--------------------------------------------------" << endl;
 	cout <<  "  --best             output all best matches that satisfy minId and minCover (default " << 
 					best << ")" << endl;
 	cout <<  "  --help             display this menu" << endl;
 	cout <<  "  --noIntrons        do not allow longer gaps -for RNA-RNA alignments- (default " << 
-					noIntrons << endl;
+	  				noIntrons << ")" << endl;
 	cout <<  "  --paired           require that paired reads are on opposite strands of same target" << endl;
-	cout <<  "  \t\t     (default " << paired << ")" << endl;
-	cout <<  "                     NOTE: " << endl;
-	cout <<  "	\t\t if option 'paired' is used then it expects .f,.r or /1,/2" << endl; 
-	cout <<  "	\t\t suffixes of mate pairs" << endl;
+	cout <<  "  \t\t     (default " << paired << "). NOTE: see prerequisite section above." << endl;
 	cout <<  "  --uniq             take only best match and only, when second best is much worse " << 
 					" (default " << uniq << ")" << endl;
 	cout <<  "  --verbose          output debugging info (default " << verbose << ")" << endl;

@@ -337,7 +337,8 @@ int main(int argc, char *argv[])
 			cout << qName << " passed with parameters (percId, coverage)=(" << percId << "," << 
 			  coverage << ")"; 
 			if (noIntrons)
-			  { cout << ", baseInsert=" << baseInsert << " > insertLimit" << endl;} else { cout << endl;}; 
+			 { cout << ", baseInsert=" << baseInsert << " > insertLimit=" << insertLimit << endl;} 
+				else {cout << endl;}; 
 		  }
 
 
