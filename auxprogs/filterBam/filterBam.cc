@@ -8,7 +8,7 @@
 
 
 	Created: 4-November-2011
-	Last modified: 25-January-2012
+	Last modified: 27-January-2012
 */  
  
 #include <api/BamReader.h>
@@ -29,7 +29,7 @@
 #include <boost/regex.hpp>
 #include <cstdio>
 #include <algorithm>
-#include <unordered_map>
+#include <unordered_map> 
 #include <fstream>
 #include "header.h"
 
@@ -52,31 +52,6 @@ struct optionalCounters_t {
   int outBest;
 };
 
-//
-// Generate a random number between 0 and 1
-// return a uniform number in [0,1].
-double unifRand()
-{
-    return rand() / double(RAND_MAX);
-}
-
-//
-// Generate a random number in a real interval.
-// param a one end point of the interval
-// param b the other end of the interval
-// return a inform rand numberin [a,b].
-double unifRand(double a, double b)
-{
-    return (b-a)*unifRand() + a;
-}
-
-//
-// Reset the random number generator with the system clock.
-void seed()
-{ 
-    srand(time(0));
-}
-
 
 void printQali(vector<BamAlignment> &qali, const RefVector &refData);
 float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions);
@@ -96,7 +71,6 @@ void printNameStems(unordered_map<string,int> qNameStems)
 
 int main(int argc, char *argv[])
 {
-  seed(); // For random number generation
   // Variable definition
   BamReader reader;
   BamWriter writer;
