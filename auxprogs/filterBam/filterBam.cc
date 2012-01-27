@@ -1,6 +1,11 @@
-/*	list:sort
-	
-	NOTE: 
+/*	
+	NOTE: Filters BAM alignments according to:
+
+	1. Percentage identity (percId)
+	2. Coverage (coverage)
+	3. Intron gaps (noIntrons, baseInsert)
+	4. Uniqueness (determined by percId and coverage)
+
 
 	Created: 4-November-2011
 	Last modified: 25-January-2012
@@ -27,7 +32,6 @@
 #include <unordered_map>
 #include <fstream>
 #include "header.h"
-// #include <boost/lexical_cast.hpp> // Take out depending on whether uint32_t behaves well.
 
 
 using namespace BamTools;

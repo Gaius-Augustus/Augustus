@@ -94,6 +94,8 @@ void displayUsage(int argc, char *argv[])
 	cout <<  " File must be sorted lexicographically by 'queryname', with e.g.\n" << 
 	  		 "\n  1) sort -k 1,1 [be aware: 'export LC_ALL=C' might be used " << 
 	  		 " because sort ignores characters like ':' \n" << 
+	  		 " Note: bear in mind that this will require converting your BAM file\n" << 
+	  		 " into SAM" << 
 	  		 "\n  2) samtools and bamtools provide facilities to do the sorting,\n" <<
 	  		 "      but they are not guaranteed to work because of the problem mentioned above.\n" << endl;
   	cout <<  "--------------------------------------------------" << endl;
