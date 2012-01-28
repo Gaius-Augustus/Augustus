@@ -59,14 +59,24 @@ void prinMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs);
 void printMatedMap(map<int,int> mated);
 optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t optionalCounters);
 
-void printNameStems(unordered_map<string,int> qNameStems)
+void compactifyBed(globalOptions_t globalOptions)
 {
-  unordered_map<string, int>::iterator it = qNameStems.begin();
-  for (it; it!=qNameStems.end(); it++)
+  bool verbose = globalOptions.verbose;
+
+  if (verbose)
 	{
-	  cout << (*it).first << "=>" << (*it).second << endl;
+  	  cout << "[COMPACTIFYBED]: doing nothing for the moment " << endl;
 	}
 }
+
+// void printNameStems(unordered_map<string,int> qNameStems)
+// {
+//   unordered_map<string, int>::iterator it = qNameStems.begin();
+//   for (it; it!=qNameStems.end(); it++)
+// 	{
+// 	  cout << (*it).first << "=>" << (*it).second << endl;
+// 	}
+// }
 
 
 int main(int argc, char *argv[])
@@ -188,12 +198,12 @@ int main(int argc, char *argv[])
        }		
 
 		 // Call to compactify bed
-		// if (pairBedFile && $line % 10000000 == 0)
-		//   {
-		// 	cout << "\nCompactifying coverage after " << line << " lines..." << endl;
-		// 	compactifyBed();
-		// 	cout << "done\n" << endl;
-		//   }
+		if (pairBedFile && line%10000000 == 0)
+		  {
+			cout << "\nCompactifying coverage after " << line << " lines..." << endl;
+			compactifyBed(globalOptions);
+			cout << "done\n" << endl;
+		  }
 
 
 		// Update qnamestem with the current line's query name 
@@ -637,11 +647,11 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 		  printQali(qali, refData);
 		}
 
-	  cout << "Size of qali: " << qali.size() << ". Sorting vector\n" << endl; //////// TAKE OUT!!!!
+	  // cout << "Size of qali: " << qali.size() << ". Sorting vector\n" << endl; //////// TAKE OUT!!!!
 	  // Sorting by $tname and then by $tstart
 	  std::stable_sort( qali.begin(), qali.end(), Sort::ByName(Sort::AscendingOrder) );
 	  std::stable_sort( qali.begin(), qali.end(), Sort::ByPosition(Sort::AscendingOrder) );
-	  cout << "Finished sorting. Continuing processing of paired alignments" << endl;  /////// TAKE OUT!!!!
+	  // cout << "Finished sorting. Continuing processing of paired alignments" << endl;  /////// TAKE OUT!!!!
 
 	  if (verbose)
 		{
@@ -968,24 +978,43 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 
 	  	} // (!uniq && !best) || matepairs.size()<2)
 
+	  // Write pairedness coverage infor into the pairBedFile
 	  // output pairedbed info: go through list of all mate pairs and store start and end position
 	  if (pairBedFile)
 		{
+		  bedFile.open(pairBedFile);
+		  bedFile << "track type=bedGraph name=\"pairedness coverage\" description=\"pairedness coverage\"";
+		  bedFile << " visibility=full color=200,100,0 altColor=200,100,0\n";
+		  compactifyBed(globalOptions); 
 		  int32_t pEnd, pStart;
 		  stringstream s_pEnd, s_pStart;
 		  string chr;
-		  // while (matepairs.size()>0)
-		  // 	{
-		  // 	  chr = qali.at(matepairs.at(0).alIt).Name;
-		  // 	  if (!pairCovSteps.count(chr))
-		  // 		{
-		  // 	  	  pairCovSteps.insert(pair<string,string>(chr,""));
-		  // 		}
-		  // 	  pEnd = qali.at(matepairs.at(0).alJit).Position;
-		  // 	  pStart = qali.at(matepairs.at(0).alIt).GetEndPosition()-1;
-		  // 	  s_pEnd << pEnd;
-		  // 	  s_pStart << pStart;
-		  // 	}
+		  while (matepairs.size()>0)
+		  	{
+		  	  chr = qali.at(matepairs.at(0).alIt).Name;
+		  	  if (!pairCovSteps.count(chr))
+		  		{
+		  	  	  pairCovSteps.insert(pair<string,string>(chr,""));
+		  		}
+		  	  pEnd = qali.at(matepairs.at(0).alJit).GetEndPosition();
+		  	  pStart = qali.at(matepairs.at(0).alIt).Position-1;
+		  	  s_pEnd << pEnd << ", -1";
+		  	  s_pStart << pStart << ", -1";
+			  pairCovSteps.insert(pair<string,string>(chr,s_pStart.str()));
+			  pairCovSteps.insert(pair<string,string>(chr,s_pEnd.str()));
+			  matepairs.erase(matepairs.begin()); // Delete first member of matepairs
+			  if (verbose)
+				{
+				  if (matepairs.size()==1)
+					{
+					  cout << "Printing final contents of pairCovSteps " << endl;
+					  multimap<string,string>::iterator iter;
+					  for (iter = pairCovSteps.begin() ; iter != pairCovSteps.end(); iter++ )
+						cout << (*iter).first << " => " << (*iter).second << endl;
+					}
+				}
+		  	}
+		  bedFile.close();
 		}
 
 
@@ -1235,3 +1264,5 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 
   return optionalCounters;
 } // end processQuery()
+
+
