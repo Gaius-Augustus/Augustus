@@ -114,20 +114,20 @@ void displayUsage(int argc, char *argv[])
 	cout <<  "  --uniq             take only best match, iff, second best is much worse " << 
 					" (default " << uniq << ")" << endl;
 	cout <<  "  --verbose          output debugging info (default " << verbose << ")" << endl;
-	cout <<  "  --insertLimit=n    maximum assumed size of inserts (default " << insertLimit << ")" << endl;
-	cout <<  "  --maxIntronLen=n   maximal separation of paired reads (default " << maxIntronLen << 
+	cout <<  "  --insertLimit n    maximum assumed size of inserts (default " << insertLimit << ")" << endl;
+	cout <<  "  --maxIntronLen n   maximal separation of paired reads (default " << maxIntronLen << 
 					")" << endl;
-	cout <<  "  --maxSortesTest=n  maximal sortedness (default " << maxSortesTest << ")" << endl;
-	cout <<  "  --minCover=n       minimal percentage of coverage of the query read (default " << 
+	cout <<  "  --maxSortesTest n  maximal sortedness (default " << maxSortesTest << ")" << endl;
+	cout <<  "  --minCover n       minimal percentage of coverage of the query read (default " << 
 			 		minCover << ")" << endl;
-	cout <<  "  --minId=n          minimal percentage of identity (default " << minId << ")" << endl;
-	cout <<  "  --minIntronLen=n   minimal     ''     ''   ''    ''   (default " << minIntronLen << 
+	cout <<  "  --minId n          minimal percentage of identity (default " << minId << ")" << endl;
+	cout <<  "  --minIntronLen n   minimal     ''     ''   ''    ''   (default " << minIntronLen << 
 					")" << endl;
-	cout <<  "  --uniqThresh=n     threshold % for uniq, second best must be at most this" << endl;
+	cout <<  "  --uniqThresh n     threshold % for uniq, second best must be at most this" << endl;
 	cout <<  "                     fraction of best (default " << uniqThresh << ") " << endl;
-	cout <<  "  --commonGeneFile=s file name in which to write cases where one read maps to \n" <<
+	cout <<  "  --commonGeneFile s file name in which to write cases where one read maps to \n" <<
 	         "                     several different genes" << endl;
-	cout <<  "  --pairBedFile=s    file name of pairedness coverage:" << endl;
+	cout <<  "  --pairBedFile s    file name of pairedness coverage:" << endl;
 	cout <<  "                     options:"  << endl;
 	cout <<  "	\t\t a .bed format file in which for each position the number of" << endl;
 	cout <<  "	\t\t filtered read pairs is reported that contain the position in" << endl; 
