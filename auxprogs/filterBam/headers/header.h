@@ -17,9 +17,6 @@
 #include <iomanip>
 #include <getopt.h> 
 #include<list> 
-#ifndef QALISIZE
-#define QALISIZE 8
-#endif
 
 using namespace std;  
 using namespace BamTools;    
@@ -84,4 +81,26 @@ class MatePairs
 void printMatePairs(vector<MatePairs> someList, vector<BamAlignment> &qali);
 
 
+#ifndef PAIREDNESSCOVERAGE_H
+#define PAIREDNESSCOVERAGE_H
+// Class definition 
+class PairednessCoverage
+{
+   friend ostream &operator<<(ostream &, const MatePairs &);
+
+   public:
+	  int coord; // pStart or pEnd coordinates
+  	  int label; // {-1} for pEnd and {1} for pStart
+  	  string chr; // chromosome name
+      PairednessCoverage();
+      PairednessCoverage(const PairednessCoverage &);
+  PairednessCoverage(int coord, int label, string chr);
+      ~PairednessCoverage(){};
+   	  void setValues(int coord, int label, string chr);
+      PairednessCoverage &operator=(const PairednessCoverage &rhs);
+      int operator==(const PairednessCoverage &rhs) const;
+      int operator<(const PairednessCoverage &rhs) const;
+  	  bool operator() (const PairednessCoverage &lhs, const PairednessCoverage &rhs) const;
+};
+#endif
 

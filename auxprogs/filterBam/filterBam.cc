@@ -8,7 +8,7 @@
 
 
 	Created: 4-November-2011
-	Last modified: 27-January-2012
+	Last modified: 29-January-2012
 */  
  
 #include <api/BamReader.h>
@@ -47,6 +47,7 @@ string bool_cast(const bool b)
     return ss.str();
 }
 
+
 struct optionalCounters_t {
   int outPaired;
   int outUniq;
@@ -54,8 +55,8 @@ struct optionalCounters_t {
 };
 
 
-template <typename K, typename V>
-vector<string> uniqueKeys(const multimap<K, V> &m)
+
+vector<string> uniqueKeys(const vector<PairednessCoverage> &m)
 {
   vector<string> unKeys;
 
@@ -63,18 +64,18 @@ vector<string> uniqueKeys(const multimap<K, V> &m)
 
   // find the number of different keys
   size_t nKeys = 1;
-  multimap<string, string>::const_iterator it = m.begin();
-  K lastkey = it->first;
-  unKeys.push_back(it->first);
+  vector<PairednessCoverage>::const_iterator it = m.begin();
+  string lastkey = it->chr;
+  unKeys.push_back(it->chr);
   ++it;
 
   while (it != m.end()) 
 	{
-      if (lastkey < it->first) 
+      if (lastkey < it->chr) 
 		{
 		  ++nKeys;
-		  lastkey = it->first;
-		  unKeys.push_back(it->first);
+		  lastkey = it->chr;
+		  unKeys.push_back(it->chr);
 		}
 	  ++it;
 	}
@@ -86,32 +87,9 @@ void printQali(vector<BamAlignment> &qali, const RefVector &refData);
 float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions);
 void prinMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs);
 void printMatedMap(map<int,int> mated);
-optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t optionalCounters);
-
-void compactifyBed(multimap<string,string> pairCovSteps, globalOptions_t globalOptions)
-{
-  vector<string> chrNames = uniqueKeys(pairCovSteps);
-  std::sort(chrNames.begin(), chrNames.end());
-  multimap<string,string>::iterator it;
-  vector<int> chrCovSteps;
-  string chr;
-
-  // Now sweep through each chromosome and stuff into a vector all the position values corresponding to 
-  // that vector
-  nextChromosome:
-    for (int iter = 0; iter < chrNames.size(); iter++ ) // display chromosomes in alph order
-  	  {
-		if (!pairCovSteps.count(chr)) goto nextChromosome; 
-
-		// for (it=ret.first; it!=ret.second; ++it)
-		//   {		  
-		// 	cout << " " << (*it).second;
-		// 	cout << endl;
-	  	//   }
-
-	  }
-
-}
+void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps);
+void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps);
+void compactifyBed(vector<PairednessCoverage> &pairCovSteps, globalOptions_t globalOptions);
 
 
 
@@ -160,6 +138,7 @@ int main(int argc, char *argv[])
   optionalCounters.outBest = outBest;
   // Initialising options
   struct globalOptions_t globalOptions;
+  vector<PairednessCoverage> pairCovSteps;  
   globalOptions = initOptions(argc, argv);
   bool best = globalOptions.best;
   bool help = globalOptions.help;
@@ -252,10 +231,11 @@ int main(int argc, char *argv[])
 		if (paired)
 		  {	
 			// Taking out suffix: {f,r} or {1,2}
-			static const boost::regex exp("[\\.\\/]([fr12])$"); 
-			const std::string rep("");
-			qNameStem = boost::regex_replace(qNameStem, exp, rep, boost::match_default |
-										 boost::format_sed); 
+			// static const boost::regex exp("[\\.\\/]([fr12])$"); 
+			// const std::string rep("");
+			// qNameStem = boost::regex_replace(qNameStem, exp, rep, boost::match_default |
+			// 							 boost::format_sed); 
+			qNameStem = qName.substr(0, qName.find("/"));
 			qSuffix = qName.substr(qName.find("/")+1, qName.length());	
 		  } 
 
@@ -293,11 +273,10 @@ int main(int argc, char *argv[])
 				exit(1);
 			  }	
 
-			if (qali.size()>0)
-			  {
-				optionalCounters = processQuery(qali, refData, globalOptions, &writer, 
-												oldQnameStem, optionalCounters);
-			  }
+			// if (qali.size()>0)
+			//   {
+			// 	processQuery(qali, refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps);
+			//   }
 		  }  // end outer if
 
   		/////////////////////////////////////////////////////////////////
@@ -387,15 +366,44 @@ int main(int argc, char *argv[])
 	  } ////// end while 
 
 
-
 	// /* 	Calling of: "processQuery() if ($qnamestem ne "");
 	if (qNameStem.compare(""))
 	  {
-		optionalCounters = processQuery(qali,refData, globalOptions, &writer, oldQnameStem, optionalCounters);
+		processQuery(qali,refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps);
 		outPaired = optionalCounters.outPaired;
 		outUniq = optionalCounters.outUniq;
 		outBest = optionalCounters.outBest;
 	  }
+
+	printPairCovSteps(pairCovSteps);
+
+
+	// // Write pairedness coverage data into pairBedFile
+	// if (pairBedFile)
+	//   {
+	// 	  bedFile.open(pairBedFile);
+	// 	  bedFile << "track type=bedGraph name=\"pairedness coverage\" description=\"pairedness coverage\"";
+	// 	  bedFile << " visibility=full color=200,100,0 altColor=200,100,0\n";
+	// 	  cout << "pairBedFile selected. Calling compactifyBed..." << endl;
+	// 	  compactifyBed(pairCovSteps, globalOptions); 
+
+	// 	  //  foreach my $chr (sort keys %paircovsteps)
+	// 	  // {
+	// 	  // 	my $cov = 0;
+	// 	  // 	my $pos = 0;
+	// 	  // 	next if (!@{$paircovsteps{$chr}});
+	// 	  // 	foreach my $step (@{$paircovsteps{$chr}})
+	// 	  // 	{
+	// 	  // 		print PAIRBED "$chr\t$pos\t$step->[0]\t$cov\n" if ($pos<$step->[0] && $cov>0);
+	// 	  // 		$pos = $step->[0];
+	// 	  // 		$cov += $step->[1];
+	// 	  // 	}
+	// 	  // 	warn ("inconsistent") if ($cov!=0);
+	// 	  //  }
+
+	// 	  bedFile.close();
+	//   }
+
 
 	// Sorting insertlengths array
 	// @insertlen = sort {$a <=> $b} @insertlen;
@@ -592,7 +600,7 @@ void printMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs)
 
   int counter = 0;
   string qName1, qName2;
-  cout << "Printing Mate-pairs info:" << endl;
+  cout << "Printing Mate-pairs info: [matepairs.size()=" << matepairs.size() << "]" << endl;
   for (itMp; itMp != matepairs.end(); itMp++)
 	{
 	  int it = (*itMp).alIt;
@@ -616,7 +624,61 @@ void printMatedMap(map<int,int> mated)
 }
 
 
-optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t optionalCounters)
+// // If several steps coincide then summarise them equivalently by one step in order to 
+// // 1) Save memory or 
+// // 2) output a bed file
+// void compactifyBed(vector<PairednessCoverage> & pairCovSteps, globalOptions_t globalOptions)
+// {
+//   vector<string> chrNames = uniqueKeys(pairCovSteps);
+//   std::sort(chrNames.begin(), chrNames.end());
+//   vector<string> chrCovSteps;
+//   string chr;
+//   int32_t before=0, after=0;
+
+//   // Now sweep through each chromosome and stuff into a vector all the position values corresponding to 
+//   // that vector
+//   nextChromosome:
+//     for (int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) // display chromosomes in alph order
+//   	  {
+// 		chr = chrNames.at(chrIt);
+// 		if (!pairCovSteps.count(chr)) goto nextChromosome; 
+
+// 	    multimap<string,string>::iterator it;
+// 	    pair<multimap<string,string>::iterator,multimap<string,string>::iterator> ret;
+// 		ret = pairCovSteps.equal_range(chr);
+// 		vector<string> pairCovContents;
+// 		// Stuffing into a vectors the coordinates of each chromosome
+// 		for (it=ret.first; it!=ret.second; ++it)
+// 		  {pairCovContents.push_back((*it).second);}
+// 		sort(pairCovContents.begin(), pairCovContents.end());
+// 	  }
+
+// }
+
+void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps)
+{
+  vector<string> chrNames = uniqueKeys(pairCovSteps);
+  string chr;
+
+  cout << "Printing pairCovSteps contents: key=>[value(s)]" << endl;
+  // Sweep through each chromosome and stuff their values into a vector 
+    for (int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) 
+  	  {
+
+		chr = chrNames.at(chrIt);
+		cout << chr << "=>" << endl;
+		int it=0;
+		for (it; it<pairCovSteps.size(); it++)
+		  {
+			if (pairCovSteps.at(it).chr == chr)
+			  cout << "\t[" << pairCovSteps.at(it).coord << "," << pairCovSteps.at(it).label << "]" << endl; 
+		  }
+	  }
+}
+
+
+
+void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps)
 {
   // Optional counters
   int outPaired = optionalCounters.outPaired;
@@ -652,8 +714,6 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
   list<int> insertlen;
   map<int,int> mated;
   int32_t inslen, dist;
-  // Pairbed
-  multimap<string,string> pairCovSteps;
   // unsigned int inslen, dist;
   int it, jit;
   uint32_t jitTstart;
@@ -794,9 +854,11 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 		  cout << "found " << matepairs.size() << " mate pairs, involving "  
 			   << mated.size() << " mates." << endl;
 		  cout << "------------------------------------------------------" << endl;
-		  cout << "------------------------------------------------------" << endl;
 		  printMatedPairsInfo(qali, matepairs);
 		  printMatedMap(mated);
+		  cout << "------------------------------------------------------" << endl;
+		  cout << "(paired,uniq,best)=" << paired << "," << uniq << "," << best << "\n";
+
 		}
 
 	  // Taking out all alignments that were not paired
@@ -805,6 +867,11 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 
 	  if ((!uniq && !best) || matepairs.size()<2)
 	  	{ // (uniq,best= (0,0) or size of mated pairs=1, let pass all mate-paired alignments
+		  cout << "------------------------------------------------\n";
+		  cout << "Letting pass all mated-paired alignments= " << mated.size() << ", listed below:\n";
+		  cout << "Size of matepairs=" << matepairs.size() << "\n";
+		  cout << "------------------------------------------------\n";
+
 	  	  map<int,int>::iterator m_it;
 	  	  for (m_it=mated.begin(); m_it!=mated.end(); m_it++)
 	  		{ 
@@ -1014,43 +1081,33 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 
 	  	} // (!uniq && !best) || matepairs.size()<2)
 
-	  // Write pairedness coverage infor into the pairBedFile
+	  // Write pairedness coverage infor into the pairBedFile	
 	  // output pairedbed info: go through list of all mate pairs and store start and end position
 	  if (pairBedFile)
 		{
-		  bedFile.open(pairBedFile);
-		  bedFile << "track type=bedGraph name=\"pairedness coverage\" description=\"pairedness coverage\"";
-		  bedFile << " visibility=full color=200,100,0 altColor=200,100,0\n";
-		  compactifyBed(pairCovSteps, globalOptions); 
-		  int32_t pEnd, pStart;
-		  stringstream s_pEnd, s_pStart;
+
+		  if (verbose)
+			{
+			  cout << "---------------------Start: Pair bed section ------------------------\n";
+			  cout << "The size of matepairs=" << matepairs.size() << "\n";
+			  cout << "---------------------End: Pair bed section ------------------------\n";
+			}
+
+		  int pEnd, pStart;
 		  string chr;
+		  PairednessCoverage pc;
+
 		  while (matepairs.size()>0)
 		  	{
-		  	  chr = qali.at(matepairs.at(0).alIt).Name;
-		  	  if (!pairCovSteps.count(chr))
-		  		{
-		  	  	  pairCovSteps.insert(pair<string,string>(chr,""));
-		  		}
+		  	  chr = getReferenceName(refData, qali.at(matepairs.at(0).alIt).RefID);
 		  	  pEnd = qali.at(matepairs.at(0).alJit).GetEndPosition();
 		  	  pStart = qali.at(matepairs.at(0).alIt).Position-1;
-		  	  s_pEnd << pEnd << ", -1";
-		  	  s_pStart << pStart << ", -1";
-			  pairCovSteps.insert(pair<string,string>(chr,s_pStart.str()));
-			  pairCovSteps.insert(pair<string,string>(chr,s_pEnd.str()));
+			  pc.setValues(pStart, 1, chr);
+			  pairCovSteps.push_back(pc);
+			  pc.setValues(pEnd, -1, chr);
+			  pairCovSteps.push_back(pc);
 			  matepairs.erase(matepairs.begin()); // Delete first member of matepairs
-			  if (verbose)
-				{
-				  if (matepairs.size()==1)
-					{
-					  cout << "Printing final contents of pairCovSteps " << endl;
-					  multimap<string,string>::iterator iter;
-					  for (iter = pairCovSteps.begin() ; iter != pairCovSteps.end(); iter++ )
-						cout << (*iter).first << " => " << (*iter).second << endl;
-					}
-				}
 		  	}
-		  bedFile.close();
 		}
 
 
@@ -1298,7 +1355,4 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
   optionalCounters.outUniq = outUniq;
   optionalCounters.outBest = outBest;
 
-  return optionalCounters;
 } // end processQuery()
-
-

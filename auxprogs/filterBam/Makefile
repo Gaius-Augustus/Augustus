@@ -5,7 +5,7 @@
 #	b) libbamtools.a and lz library are used during the linking process
 #
 # 	Created: 11-November-2011
-#	Last modified: 25-January-2012
+#	Last modified: 29-January-2012
 
 # Variable definition
 HOME = /home/tonatiuh
@@ -17,7 +17,7 @@ INCLUDES = -I$(BT3)/include -Iheaders -I$(BT3)/src/toolkit
 VPATH = functions # Required to find files in functions/foo.cc
 LIBS = $(BT3)/lib/libbamtools.a -lz -lboost_regex
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc \
-			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc
+			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
 CFLAGS = -g $(INCLUDES) -std=c++0x 
