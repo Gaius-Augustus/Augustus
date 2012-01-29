@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <unordered_map> 
 #include <fstream>
+#include <map>
 #include "header.h"
 
 
@@ -53,30 +54,65 @@ struct optionalCounters_t {
 };
 
 
+template <typename K, typename V>
+vector<string> uniqueKeys(const multimap<K, V> &m)
+{
+  vector<string> unKeys;
+
+  if (m.empty()) {return unKeys;}
+
+  // find the number of different keys
+  size_t nKeys = 1;
+  multimap<string, string>::const_iterator it = m.begin();
+  K lastkey = it->first;
+  unKeys.push_back(it->first);
+  ++it;
+
+  while (it != m.end()) 
+	{
+      if (lastkey < it->first) 
+		{
+		  ++nKeys;
+		  lastkey = it->first;
+		  unKeys.push_back(it->first);
+		}
+	  ++it;
+	}
+  return unKeys;
+}
+
+
 void printQali(vector<BamAlignment> &qali, const RefVector &refData);
 float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions);
 void prinMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs);
 void printMatedMap(map<int,int> mated);
 optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t optionalCounters);
 
-void compactifyBed(globalOptions_t globalOptions)
+void compactifyBed(multimap<string,string> pairCovSteps, globalOptions_t globalOptions)
 {
-  bool verbose = globalOptions.verbose;
+  vector<string> chrNames = uniqueKeys(pairCovSteps);
+  std::sort(chrNames.begin(), chrNames.end());
+  multimap<string,string>::iterator it;
+  vector<int> chrCovSteps;
+  string chr;
 
-  if (verbose)
-	{
-  	  cout << "[COMPACTIFYBED]: doing nothing for the moment " << endl;
-	}
+  // Now sweep through each chromosome and stuff into a vector all the position values corresponding to 
+  // that vector
+  nextChromosome:
+    for (int iter = 0; iter < chrNames.size(); iter++ ) // display chromosomes in alph order
+  	  {
+		if (!pairCovSteps.count(chr)) goto nextChromosome; 
+
+		// for (it=ret.first; it!=ret.second; ++it)
+		//   {		  
+		// 	cout << " " << (*it).second;
+		// 	cout << endl;
+	  	//   }
+
+	  }
+
 }
 
-// void printNameStems(unordered_map<string,int> qNameStems)
-// {
-//   unordered_map<string, int>::iterator it = qNameStems.begin();
-//   for (it; it!=qNameStems.end(); it++)
-// 	{
-// 	  cout << (*it).first << "=>" << (*it).second << endl;
-// 	}
-// }
 
 
 int main(int argc, char *argv[])
@@ -201,7 +237,7 @@ int main(int argc, char *argv[])
 		if (pairBedFile && line%10000000 == 0)
 		  {
 			cout << "\nCompactifying coverage after " << line << " lines..." << endl;
-			compactifyBed(globalOptions);
+			// compactifyBed(pairCovSteps, globalOptions);
 			cout << "done\n" << endl;
 		  }
 
@@ -985,7 +1021,7 @@ optionalCounters_t processQuery(vector<BamAlignment> &qali, const RefVector &ref
 		  bedFile.open(pairBedFile);
 		  bedFile << "track type=bedGraph name=\"pairedness coverage\" description=\"pairedness coverage\"";
 		  bedFile << " visibility=full color=200,100,0 altColor=200,100,0\n";
-		  compactifyBed(globalOptions); 
+		  compactifyBed(pairCovSteps, globalOptions); 
 		  int32_t pEnd, pStart;
 		  stringstream s_pEnd, s_pStart;
 		  string chr;
