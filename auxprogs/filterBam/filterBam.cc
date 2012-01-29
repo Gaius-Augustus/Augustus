@@ -89,6 +89,7 @@ void prinMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs);
 void printMatedMap(map<int,int> mated);
 void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps);
 void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps);
+void printChrOfPairCovSteps(vector<PairednessCoverage> &pairCovSteps, string chr);
 void compactifyBed(vector<PairednessCoverage> &pairCovSteps, globalOptions_t globalOptions);
 
 
@@ -157,6 +158,9 @@ int main(int argc, char *argv[])
   const char* inputFile = globalOptions.inputFile;
   const char* outputFile = globalOptions.outputFile;	
   const char* pairBedFile = globalOptions.pairBedFile;
+  ofstream geneFile;
+  ofstream bedFile;
+
   if (verbose)
 	{
 	  cout << "------------------------------------------------" << endl;
@@ -373,36 +377,36 @@ int main(int argc, char *argv[])
 		outPaired = optionalCounters.outPaired;
 		outUniq = optionalCounters.outUniq;
 		outBest = optionalCounters.outBest;
+		printPairCovSteps(pairCovSteps);
 	  }
 
-	printPairCovSteps(pairCovSteps);
 
 
-	// // Write pairedness coverage data into pairBedFile
-	// if (pairBedFile)
-	//   {
-	// 	  bedFile.open(pairBedFile);
-	// 	  bedFile << "track type=bedGraph name=\"pairedness coverage\" description=\"pairedness coverage\"";
-	// 	  bedFile << " visibility=full color=200,100,0 altColor=200,100,0\n";
-	// 	  cout << "pairBedFile selected. Calling compactifyBed..." << endl;
-	// 	  compactifyBed(pairCovSteps, globalOptions); 
+	// Write pairedness coverage data into pairBedFile
+	if (pairBedFile)
+	  {
+		  bedFile.open(pairBedFile);
+		  bedFile << "track type=bedGraph name=\"pairedness coverage\" description=\"pairedness coverage\"";
+		  bedFile << " visibility=full color=200,100,0 altColor=200,100,0\n";
+		  cout << "pairBedFile selected. Calling compactifyBed..." << endl;
+		  compactifyBed(pairCovSteps, globalOptions); 
 
-	// 	  //  foreach my $chr (sort keys %paircovsteps)
-	// 	  // {
-	// 	  // 	my $cov = 0;
-	// 	  // 	my $pos = 0;
-	// 	  // 	next if (!@{$paircovsteps{$chr}});
-	// 	  // 	foreach my $step (@{$paircovsteps{$chr}})
-	// 	  // 	{
-	// 	  // 		print PAIRBED "$chr\t$pos\t$step->[0]\t$cov\n" if ($pos<$step->[0] && $cov>0);
-	// 	  // 		$pos = $step->[0];
-	// 	  // 		$cov += $step->[1];
-	// 	  // 	}
-	// 	  // 	warn ("inconsistent") if ($cov!=0);
-	// 	  //  }
+		  //  foreach my $chr (sort keys %paircovsteps)
+		  // {
+		  // 	my $cov = 0;
+		  // 	my $pos = 0;
+		  // 	next if (!@{$paircovsteps{$chr}});
+		  // 	foreach my $step (@{$paircovsteps{$chr}})
+		  // 	{
+		  // 		print PAIRBED "$chr\t$pos\t$step->[0]\t$cov\n" if ($pos<$step->[0] && $cov>0);
+		  // 		$pos = $step->[0];
+		  // 		$cov += $step->[1];
+		  // 	}
+		  // 	warn ("inconsistent") if ($cov!=0);
+		  //  }
 
-	// 	  bedFile.close();
-	//   }
+		  bedFile.close();
+	  }
 
 
 	// Sorting insertlengths array
@@ -624,37 +628,6 @@ void printMatedMap(map<int,int> mated)
 }
 
 
-// // If several steps coincide then summarise them equivalently by one step in order to 
-// // 1) Save memory or 
-// // 2) output a bed file
-// void compactifyBed(vector<PairednessCoverage> & pairCovSteps, globalOptions_t globalOptions)
-// {
-//   vector<string> chrNames = uniqueKeys(pairCovSteps);
-//   std::sort(chrNames.begin(), chrNames.end());
-//   vector<string> chrCovSteps;
-//   string chr;
-//   int32_t before=0, after=0;
-
-//   // Now sweep through each chromosome and stuff into a vector all the position values corresponding to 
-//   // that vector
-//   nextChromosome:
-//     for (int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) // display chromosomes in alph order
-//   	  {
-// 		chr = chrNames.at(chrIt);
-// 		if (!pairCovSteps.count(chr)) goto nextChromosome; 
-
-// 	    multimap<string,string>::iterator it;
-// 	    pair<multimap<string,string>::iterator,multimap<string,string>::iterator> ret;
-// 		ret = pairCovSteps.equal_range(chr);
-// 		vector<string> pairCovContents;
-// 		// Stuffing into a vectors the coordinates of each chromosome
-// 		for (it=ret.first; it!=ret.second; ++it)
-// 		  {pairCovContents.push_back((*it).second);}
-// 		sort(pairCovContents.begin(), pairCovContents.end());
-// 	  }
-
-// }
-
 void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps)
 {
   vector<string> chrNames = uniqueKeys(pairCovSteps);
@@ -673,6 +646,57 @@ void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps)
 			if (pairCovSteps.at(it).chr == chr)
 			  cout << "\t[" << pairCovSteps.at(it).coord << "," << pairCovSteps.at(it).label << "]" << endl; 
 		  }
+	  }
+}
+
+
+void printChrOfPairCovSteps(vector<PairednessCoverage> &pairCovSteps, string chr)
+{
+
+  cout << "Printing pairCovSteps contents: key=>[value(s)]" << endl;
+  // Sweep through each chromosome and stuff their values into a vector 
+  cout << chr << "=>" << endl;
+  int it=0;
+  for (it; it<pairCovSteps.size(); it++)
+	{
+	  if (pairCovSteps.at(it).chr == chr)
+		cout << "\t[" << pairCovSteps.at(it).coord << "," << pairCovSteps.at(it).label << "]" << endl; 
+	}
+}
+
+
+// If several steps coincide then summarise them equivalently by one step in order to 
+// 1) Save memory or 
+// 2) output a bed file
+void compactifyBed(vector<PairednessCoverage> & pairCovSteps, globalOptions_t globalOptions)
+{
+  vector<string> chrNames = uniqueKeys(pairCovSteps);
+  std::sort(chrNames.begin(), chrNames.end());
+  vector<string> chrCovSteps;
+  string chr;
+  int32_t before=0, after=0;
+
+  // Now sweep through each chromosome and stuff into a vector all the position values corresponding to 
+  // that vector
+  nextChromosome:
+    for (int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) // display chromosomes in alph order
+  	  {
+		chr = chrNames.at(chrIt);
+		if (chr.size() ==0) goto nextChromosome; 
+
+		cout << "------------------------------------------------------\n";
+		cout << "Pairedness coverage BEFORE sorting:\n";
+		printChrOfPairCovSteps(pairCovSteps, chr);
+
+		// Foreach "$chr" in pairCovSteps, sort the contents of the "coord" field in ascending order
+        // {-1} corresponds to pEnd, and {1} corresponds to pStart
+		sort(pairCovSteps.begin(), pairCovSteps.end());
+
+		cout << "------------------------------------------------------\n";
+		cout << "Pairedness coverage AFTER sorting:\n";
+		printChrOfPairCovSteps(pairCovSteps, chr);
+		cout << "------------------------------------------------------\n";
+
 	  }
 }
 
