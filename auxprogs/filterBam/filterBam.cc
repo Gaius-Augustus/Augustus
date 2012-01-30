@@ -87,11 +87,11 @@ void printQali(vector<BamAlignment> &qali, const RefVector &refData);
 float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions);
 void prinMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs);
 void printMatedMap(map<int,int> mated);
-void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps);
+void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps, vector<int> &insertlen);
 void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps);
 void printChrOfPairCovSteps(vector<PairednessCoverage> &pairCovSteps, string chr);
-void compactifyBed(vector<PairednessCoverage> &pairCovSteps, globalOptions_t globalOptions);
-
+vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> &pairCovSteps, globalOptions_t globalOptions);
+void printSizeOfCoverInfo(vector<PairednessCoverage> &pairCovSteps);
 
 
 int main(int argc, char *argv[])
@@ -139,7 +139,8 @@ int main(int argc, char *argv[])
   optionalCounters.outBest = outBest;
   // Initialising options
   struct globalOptions_t globalOptions;
-  vector<PairednessCoverage> pairCovSteps;  
+  vector<PairednessCoverage> pairCovSteps;
+  vector<PairednessCoverage> compactPairCovSteps;  
   globalOptions = initOptions(argc, argv);
   bool best = globalOptions.best;
   bool help = globalOptions.help;
@@ -160,6 +161,7 @@ int main(int argc, char *argv[])
   const char* pairBedFile = globalOptions.pairBedFile;
   ofstream geneFile;
   ofstream bedFile;
+  vector<int> insertlen;
 
   if (verbose)
 	{
@@ -220,7 +222,7 @@ int main(int argc, char *argv[])
 		if (pairBedFile && line%10000000 == 0)
 		  {
 			cout << "\nCompactifying coverage after " << line << " lines..." << endl;
-			// compactifyBed(pairCovSteps, globalOptions);
+			compactPairCovSteps = compactifyBed(pairCovSteps, globalOptions);
 			cout << "done\n" << endl;
 		  }
 
@@ -279,7 +281,7 @@ int main(int argc, char *argv[])
 
 			// if (qali.size()>0)
 			//   {
-			// 	processQuery(qali, refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps);
+			// 	processQuery(qali, refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen);
 			//   }
 		  }  // end outer if
 
@@ -373,7 +375,7 @@ int main(int argc, char *argv[])
 	// /* 	Calling of: "processQuery() if ($qnamestem ne "");
 	if (qNameStem.compare(""))
 	  {
-		processQuery(qali,refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps);
+		processQuery(qali,refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen);
 		outPaired = optionalCounters.outPaired;
 		outUniq = optionalCounters.outUniq;
 		outBest = optionalCounters.outBest;
@@ -389,28 +391,54 @@ int main(int argc, char *argv[])
 		  bedFile << "track type=bedGraph name=\"pairedness coverage\" description=\"pairedness coverage\"";
 		  bedFile << " visibility=full color=200,100,0 altColor=200,100,0\n";
 		  cout << "pairBedFile selected. Calling compactifyBed..." << endl;
-		  compactifyBed(pairCovSteps, globalOptions); 
+		  printSizeOfCoverInfo(pairCovSteps);
+		  vector<PairednessCoverage> compactPairCovSteps = compactifyBed(pairCovSteps, globalOptions); 
+		  printSizeOfCoverInfo(compactPairCovSteps);
+ 		  vector<string> chrNames = uniqueKeys(compactPairCovSteps);
+		  vector<PairednessCoverage> pairCovStepsOfChr;
+		  string chr;
 
-		  //  foreach my $chr (sort keys %paircovsteps)
-		  // {
-		  // 	my $cov = 0;
-		  // 	my $pos = 0;
-		  // 	next if (!@{$paircovsteps{$chr}});
-		  // 	foreach my $step (@{$paircovsteps{$chr}})
-		  // 	{
-		  // 		print PAIRBED "$chr\t$pos\t$step->[0]\t$cov\n" if ($pos<$step->[0] && $cov>0);
-		  // 		$pos = $step->[0];
-		  // 		$cov += $step->[1];
-		  // 	}
-		  // 	warn ("inconsistent") if ($cov!=0);
-		  //  }
+		  cout << "Number of chromosomes is " << chrNames.size() << endl;
+	  nextChromosome:
+		  for (int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) // display chromosomes in alph order
+			{
+			  chr = chrNames.at(chrIt);
+			  if (chr.size() ==0) goto nextChromosome; 
 
+			  // Sweep through each chromosome and stuff their position values into a vector 
+			  int it=0;
+			  for (it; it<compactPairCovSteps.size(); it++)
+				{
+				  if (compactPairCovSteps.at(it).chr == chr)
+					pairCovStepsOfChr.push_back(compactPairCovSteps.at(it)); 
+				}
+
+			  int cov = 0;
+			  int pos = 0;
+			  PairednessCoverage step;
+			  for (int jit=0; jit<pairCovStepsOfChr.size(); jit++)
+				{
+				  step = pairCovStepsOfChr.at(jit); 
+				  if (pos < step.coord && cov > 0)
+				  	{
+					  bedFile << chr << "\t" << pos << "\t" << step.coord << "\t" << cov << endl;
+					} 
+				  pos = step.coord;
+				  cov += step.label;
+				}
+
+			  if (cov!=0)
+				{cout << "Inconsistent" << endl;}
+
+			} // end outer for
+
+		  // Closing bed file
 		  bedFile.close();
 	  }
 
 
-	// Sorting insertlengths array
-	// @insertlen = sort {$a <=> $b} @insertlen;
+	// Sorting insertlengths; i.e. @insertlen = sort {$a <=> $b} @insertlen;
+	sort(insertlen.begin(), insertlen.end());
 
 
 	// Displaying results to STDOUT
@@ -426,7 +454,11 @@ int main(int argc, char *argv[])
 	  {
 		cout << "not paired      : " << outPaired << endl;
       	cout << "quantiles of unspliced insert lengths: " << endl;
-	  	/// Print quantiles
+	  	for (int it=1; it<10; it++)
+		  {
+			cout << "q[" << (10*it) << "%]=" << insertlen.at(ceil(it*insertlen.size()/10)) << ",";
+		  }
+		cout << endl;
  	  } 
 	if (uniq) 
 	  {cout << "unique          : " << outUniq << endl;}
@@ -496,7 +528,7 @@ void printQali(vector<BamAlignment> &qali, const RefVector &refData)
 			ss_rstart.str() << " " << ss_rend.str() << " " << ss_percId.str() << " " << 
 		    ss_coverage.str() << " " << ss_score.str(); 
 	  cout << " ]," << endl;
-	  // clear strings
+	  // clear strings 
 	  ss_rstart.str(""); ss_rend.str(""); ss_percId.str(""); ss_coverage.str(""); ss_score.str("");
 	}
 }
@@ -634,7 +666,7 @@ void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps)
   string chr;
 
   cout << "Printing pairCovSteps contents: key=>[value(s)]" << endl;
-  // Sweep through each chromosome and stuff their values into a vector 
+  // Sweep through each chromosome and print only values associated to a chromosome name
     for (int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) 
   	  {
 
@@ -653,8 +685,8 @@ void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps)
 void printChrOfPairCovSteps(vector<PairednessCoverage> &pairCovSteps, string chr)
 {
 
-  cout << "Printing pairCovSteps contents: key=>[value(s)]" << endl;
-  // Sweep through each chromosome and stuff their values into a vector 
+  cout << "Printing coverage of chr=" << chr << endl;
+  // Print only values of pairCovSteps that coincide with given chr name
   cout << chr << "=>" << endl;
   int it=0;
   for (it; it<pairCovSteps.size(); it++)
@@ -665,16 +697,38 @@ void printChrOfPairCovSteps(vector<PairednessCoverage> &pairCovSteps, string chr
 }
 
 
+void printSizeOfCoverInfo(vector<PairednessCoverage> &pairCovSteps)
+{
+  vector<string> chrNames = uniqueKeys(pairCovSteps);
+  string chr;
+
+  // Sweep through each chromosome and print only values associated to a chromosome name
+    for (int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) 
+  	  {
+		chr = chrNames.at(chrIt);
+		int it=0;
+		int keySize = 0;
+		for (it; it<pairCovSteps.size(); it++)
+		  {
+			if (pairCovSteps.at(it).chr == chr)
+			  keySize++;
+		  }
+		cout << "Size of cover. info of chr=" << chr << " is " << keySize << endl;
+	  }
+}
+
+
 // If several steps coincide then summarise them equivalently by one step in order to 
 // 1) Save memory or 
 // 2) output a bed file
-void compactifyBed(vector<PairednessCoverage> & pairCovSteps, globalOptions_t globalOptions)
+vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSteps, globalOptions_t globalOptions)
 {
   vector<string> chrNames = uniqueKeys(pairCovSteps);
   std::sort(chrNames.begin(), chrNames.end());
-  vector<string> chrCovSteps;
   string chr;
   int32_t before=0, after=0;
+  vector<PairednessCoverage> pairCovStepsOfChr;
+  vector<PairednessCoverage> compactPairCovSteps;
 
   // Now sweep through each chromosome and stuff into a vector all the position values corresponding to 
   // that vector
@@ -684,25 +738,66 @@ void compactifyBed(vector<PairednessCoverage> & pairCovSteps, globalOptions_t gl
 		chr = chrNames.at(chrIt);
 		if (chr.size() ==0) goto nextChromosome; 
 
+ 		// Sweep through each chromosome and stuff their position values into a vector 
+		int it=0;
+		for (it; it<pairCovSteps.size(); it++)
+		  {
+			if (pairCovSteps.at(it).chr == chr)
+			  pairCovStepsOfChr.push_back(pairCovSteps.at(it)); 
+		  }
+
 		cout << "------------------------------------------------------\n";
 		cout << "Pairedness coverage BEFORE sorting:\n";
 		printChrOfPairCovSteps(pairCovSteps, chr);
 
 		// Foreach "$chr" in pairCovSteps, sort the contents of the "coord" field in ascending order
         // {-1} corresponds to pEnd, and {1} corresponds to pStart
-		sort(pairCovSteps.begin(), pairCovSteps.end());
+		sort(pairCovStepsOfChr.begin(), pairCovStepsOfChr.end());
 
 		cout << "------------------------------------------------------\n";
 		cout << "Pairedness coverage AFTER sorting:\n";
 		printChrOfPairCovSteps(pairCovSteps, chr);
 		cout << "------------------------------------------------------\n";
 
+ 
+		before += pairCovStepsOfChr.size();
+
+		cout << "-------------------------------------------------------" << endl;
+		cout << "Before removal" << endl;
+		printChrOfPairCovSteps(pairCovStepsOfChr, chr);
+
+
+		int jit=0;
+		while(jit < pairCovStepsOfChr.size()-1)
+		  {
+			if (pairCovStepsOfChr.at(jit).coord == pairCovStepsOfChr.at(jit+1).coord)
+			  {
+				pairCovStepsOfChr.at(jit).label += pairCovStepsOfChr.at(jit+1).label;
+				pairCovStepsOfChr.erase(pairCovStepsOfChr.begin()+jit+1); // Remove element jit+1
+			  } else {
+			  	  jit++;
+			  }
+		  }
+
+		cout << "After removal" << endl;
+		printChrOfPairCovSteps(pairCovStepsOfChr, chr);
+		cout << "-------------------------------------------------------" << endl;
+
+		after += pairCovStepsOfChr.size();
+
+		// Insert compact pairCovStepsOfChr into a new vector
+		compactPairCovSteps.insert(compactPairCovSteps.end(), pairCovStepsOfChr.begin(), pairCovStepsOfChr.end());
+		pairCovStepsOfChr.clear();
 	  }
+
+	cout << "\nPairedness coverage before compactifying: " << before << ", after: " << after << endl;
+
+	return compactPairCovSteps;
 }
 
 
 
-void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps)
+void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps, vector<int> &insertlen)
 {
   // Optional counters
   int outPaired = optionalCounters.outPaired;
@@ -735,7 +830,6 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
   // Matepairs
   vector<MatePairs> matepairs;
   MatePairs mp;
-  list<int> insertlen;
   map<int,int> mated;
   int32_t inslen, dist;
   // unsigned int inslen, dist;
@@ -1125,7 +1219,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		  	{
 		  	  chr = getReferenceName(refData, qali.at(matepairs.at(0).alIt).RefID);
 		  	  pEnd = qali.at(matepairs.at(0).alJit).GetEndPosition();
-		  	  pStart = qali.at(matepairs.at(0).alIt).Position-1;
+		  	  pStart = qali.at(matepairs.at(0).alIt).Position;
 			  pc.setValues(pStart, 1, chr);
 			  pairCovSteps.push_back(pc);
 			  pc.setValues(pEnd, -1, chr);
