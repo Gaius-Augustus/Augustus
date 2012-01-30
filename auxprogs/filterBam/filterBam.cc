@@ -26,19 +26,18 @@
 #include <sstream>
 #include <stdlib.h>
 #include <iomanip> 
-#include <boost/regex.hpp>
 #include <cstdio>
 #include <algorithm>
 #include <unordered_map> 
 #include <fstream>
 #include <map>
+#include <math.h>
 #include "header.h"
 
 
 using namespace BamTools;
 using namespace BamTools::Algorithms; 
 using namespace std;
-using namespace boost;
 
 string bool_cast(const bool b) 
 {
@@ -237,10 +236,6 @@ int main(int argc, char *argv[])
 		if (paired)
 		  {	
 			// Taking out suffix: {f,r} or {1,2}
-			// static const boost::regex exp("[\\.\\/]([fr12])$"); 
-			// const std::string rep("");
-			// qNameStem = boost::regex_replace(qNameStem, exp, rep, boost::match_default |
-			// 							 boost::format_sed); 
 			qNameStem = qName.substr(0, qName.find("/"));
 			qSuffix = qName.substr(qName.find("/")+1, qName.length());	
 		  } 
@@ -1170,14 +1165,11 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					{
 					  unordered_map<string,int> geneNames;
 					  string tName;
-   					  static const boost::regex exp("\\.t\\d+");
-					  const std::string rep("");
 
 					  for (int it=0; it<bestTnames.size(); it++)
 						{
 						// Replace suffixes of the type chrX.t123
-						tName = boost::regex_replace(bestTnames.at(it), exp, rep, boost::match_default |
-														boost::format_sed); 
+						  tName = tName.substr(0, tName.find(".t")); 
 						  geneNames[tName]=1;
 						  if (verbose) {cout << "tName= " << tName << endl;}
 						}
@@ -1407,14 +1399,11 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				  {
 					unordered_map<string,int> geneNames;
 					string tName;
-					static const boost::regex exp("\\.t\\d+");
-					const std::string rep("");
 
 					for (int it=0; it<bestTnames.size(); it++)
 					  {
 						// Replace suffixes of the type chrX.t123
-						tName = boost::regex_replace(bestTnames.at(it), exp, rep, boost::match_default |
-														boost::format_sed); 
+						tName = tName.substr(0, tName.find(".t")); 
 						geneNames[tName]=1;
 						if (verbose) {cout << "tName= " << tName << endl;}
 					  }
