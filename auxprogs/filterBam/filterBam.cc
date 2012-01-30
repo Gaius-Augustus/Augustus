@@ -1299,8 +1299,8 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 							cout << "is significantly worse, ratio=" << ratio << "<uniqThresh=" 
 							 	<< uniqThresh << endl;
 						  }
-						// // Removing percId and coverage Tags before writing into file
-						// qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
+						// Removing percId and coverage Tags before writing into file
+						qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
 						(*ptrWriter).SaveAlignment(qali.at(0)); // Prints alignment line into file
 						outUniq += qali.size()-1;
 					  	cout << "(" << outUniq << "/" << qali.size() << ") alignments filtered out " 
@@ -1335,8 +1335,8 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						  cout << "------------------------------------------------------------------------" 
 							<< endl;
 						}
-					  // // Removing percId and coverage Tags before writing into file
-					  // qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
+					  // Removing percId and coverage Tags before writing into file
+					  qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
 				  	  (*ptrWriter).SaveAlignment(qali.at(0)); // Letting pass only best
 				  	  outUniq += qali.size()-1;
 				  }
@@ -1367,8 +1367,8 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						cout << "Storing at bestTnames=" << getReferenceName(refData, qali.at(0).RefID) << endl;
 					  }
 
-					// // Removing percId and coverage Tags before writing into file
-					// qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
+					// Removing percId and coverage Tags before writing into file
+					qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
 					(*ptrWriter).SaveAlignment(qali.at(0)); 
 					bestTnames.push_back(getReferenceName(refData, qali.at(0).RefID));
 					qali.erase(qali.begin()); // Delete first member of qali
@@ -1443,8 +1443,8 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 
 			for(int it=0; it<qali.size(); it++)
 				{
-				  // // Removing percId and coverage Tags before writing into file
-				  // qali.at(it).RemoveTag("pi"); qali.at(it).RemoveTag("co");
+				  // Removing percId and coverage Tags before writing into file
+				  qali.at(it).RemoveTag("pi"); qali.at(it).RemoveTag("co");
 				  (*ptrWriter).SaveAlignment(qali.at(it)); // Prints alignment line into file
 				}
 

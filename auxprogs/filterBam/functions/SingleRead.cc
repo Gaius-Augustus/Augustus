@@ -27,6 +27,8 @@ class SingleRead
   	  float coverage;
   	  float percId;
   	  float score;
+	  // string name;
+      // int32_t position;
 
       SingleRead();
       SingleRead(const SingleRead &);
@@ -42,7 +44,7 @@ class SingleRead
 // Constructor
 SingleRead::SingleRead()   // Constructor
 {
-  	  al();
+  	  al;
   	  coverage = 0;
   	  percId = 0;
   	  score = coverage+percId;
@@ -114,5 +116,5 @@ void toString(SingleRead read)
 {
   BamAlignment al = read.al;
   float coverage, percId, score;
-  cout << al.Name << "," << al.RefId << "," << al.coverage << "," << al.percId << "," << al.score << endl; 
+  cout << al.Name << "," << al.RefID << "," << read.coverage << "," << read.percId << "," << read.score << endl; 
 }

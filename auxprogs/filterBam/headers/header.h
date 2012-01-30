@@ -55,6 +55,32 @@ struct globalOptions_t {
 globalOptions_t initOptions(int argc, char *argv[]);
 
 
+#ifndef
+#define 
+class SingleRead
+{
+   friend ostream &operator<<(ostream &, const SingleRead &);
+
+   public:
+  	  BamAlignment al;
+  	  float coverage;
+  	  float percId;
+  	  float score;
+	  /* string name; */
+	  /* int32_t position; */
+
+      SingleRead();
+      SingleRead(const SingleRead &);
+  	  SingleRead(BamAlignment al, float coverage, float percId);
+      ~SingleRead(){};
+ 	  void setValues(BamAlignment al, float coverage, float percId);
+      SingleRead &operator=(const SingleRead &rhs);
+      int operator==(const SingleRead &rhs) const;
+      int operator<(const SingleRead &rhs) const;
+  	  bool operator() (const SingleRead &lhs, const SingleRead &rhs) const;
+};
+#endif
+
 #ifndef MATEPAIRS_H
 #define MATEPAIRS_H
 // Class definition 
