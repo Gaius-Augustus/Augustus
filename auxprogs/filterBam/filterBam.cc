@@ -44,11 +44,6 @@ using namespace BamTools;
 using namespace BamTools::Algorithms; 
 using namespace std;
 
-
-
-
-
-
 void printQali(vector<BamAlignment> &qali, const RefVector &refData);
 float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions);
 void prinMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs);
@@ -64,6 +59,7 @@ vector<string> uniqueKeys(const vector<PairednessCoverage> &m);
 
 int main(int argc, char *argv[])
 {
+
   // Variable definition
   BamReader reader;
   BamWriter writer;
@@ -417,10 +413,13 @@ int main(int argc, char *argv[])
 	  {
 		cout << "not paired      : " << outPaired << endl;
       	cout << "quantiles of unspliced insert lengths: " << endl;
-	  	for (int it=1; it<10; it++)
-		  {
-			cout << "q[" << (10*it) << "%]=" << insertlen.at(ceil(it*insertlen.size()/10)) << ",";
-		  }
+		try { // catches: instance of 'std::out_of_range'
+		  for (int it=1; it<10; it++)
+			{
+			  cout << "q[" << (10*it) << "%]=" << insertlen.at(ceil(it*insertlen.size()/10)) << ",";
+			}
+		} catch (out_of_range& oor) { 
+		  cerr << "[TPC]: Problem with quantile computing: " << oor.what() << endl; }
 		cout << endl;
  	  } 
 	if (uniq) 
@@ -455,6 +454,7 @@ int main(int argc, char *argv[])
 	// Ending timer and printing elapsed time
 	tEnd = time(NULL);    
 	tElapsed = printElapsedTime(tEnd, tStart);     
+
 
 } // end main
 
@@ -845,7 +845,6 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 	  cout << "----------------------------" << endl;
 	}
 
-
   // Defines whether to treat reads as single- or pair-ended ones
   if (paired) 
 	{
@@ -854,21 +853,19 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		{
 		  // Printing Qali before sorting
 		  cout << "------------------------------------------------------" << endl;
-		  cout << "qali BEFORE sorting by Name and position:" << endl;
+		  cout << "qali BEFORE sorting by ref. Name and ref. start position:" << endl;
 		  printQali(qali, refData);
 		}
 
-	  // cout << "Size of qali: " << qali.size() << ". Sorting vector\n" << endl; //////// TAKE OUT!!!!
-	  // Sorting by $tname and then by $tstart
+	  // Sorting by $tname and then by $tstart (chek BAM format specification within SAM specs)
 	  std::stable_sort( qali.begin(), qali.end(), Sort::ByName(Sort::AscendingOrder) );
 	  std::stable_sort( qali.begin(), qali.end(), Sort::ByPosition(Sort::AscendingOrder) );
-	  // cout << "Finished sorting. Continuing processing of paired alignments" << endl;  /////// TAKE OUT!!!!
 
 	  if (verbose)
 		{
 		  // Printing Qali after sorting
 		  cout << "------------------------------------------------------" << endl;
-		  cout << "qali AFTER sorting by Name and position:" << endl;
+		  cout << "qali AFTER sorting by ref. Name and ref. start position:" << endl;
 		  printQali(qali, refData);
 		  cout << "------------------------------------------------------" << endl;
 		}
@@ -972,7 +969,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		  printMatedPairsInfo(qali, matepairs);
 		  printMatedMap(mated);
 		  cout << "------------------------------------------------------" << endl;
-		  cout << "(paired,uniq,best)=" << paired << "," << uniq << "," << best << "\n";
+		  cout << "(paired,uniq,best)=[" << paired << "," << uniq << "," << best << "]\n";
 
 		}
 
@@ -1133,23 +1130,25 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				  vector<string> bestTnames; 
 				  optScore = matepairs.at(0).score;
 				  tempScore = optScore;
-				  bool qSize = true;
 				  int numBest = 0;
 
-				  while (numBest < matepairs.size() && tempScore == optScore)
+				  while (numBest<matepairs.size() && matepairs.at(numBest).score == optScore)
 					{
-					
-					  cout << "Letting pass mate-pair (best): " << qali.at(matepairs.at(numBest).alIt).Name 
-						   << " paired with " << qali.at(matepairs.at(numBest).alJit).Name << ", score=" 
-						   << tempScore << ", optScore=" << optScore << endl;
+					  if (verbose)
+						{
+						  cout << "Letting pass mate-pair (best): " << qali.at(matepairs.at(0).alIt).Name 
+							   << " paired with " << qali.at(matepairs.at(0).alJit).Name << ", score=" 
+							   << tempScore << ", optScore=" << optScore << endl;
+						  cout << "Storing at bestTnames=" << getReferenceName(refData, qali.at(matepairs.at(0).alIt).RefID) 
+								<< endl;
+						}
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alIt)); 
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alJit)); 
-					  cout << "Storing at bestTnames=" << getReferenceName(refData, qali.at(0).RefID) << endl;
-					  bestTnames.push_back(getReferenceName(refData, qali.at(numBest).RefID));
+					  bestTnames.push_back(getReferenceName(refData,qali.at(matepairs.at(numBest).alIt).RefID));
 					  numBest++;
-				  	  tempScore = matepairs.at(numBest).score;					  
 					}
-				  outBest += matepairs.size() - numBest;
+
+				  outBest += matepairs.size();
 				  // Retaining only mate-pairs with optimal score
 				  matepairs.resize(numBest);
 
@@ -1171,6 +1170,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					  for (int it=0; it<bestTnames.size(); it++)
 						{
 						// Replace suffixes of the type chrX.t123
+						  tName = bestTnames.at(it);
 						  tName = tName.substr(0, tName.find(".t")); 
 						  geneNames[tName]=1;
 						  if (verbose) {cout << "tName= " << tName << endl;}
@@ -1360,7 +1360,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				tempScore = optScore;
 				bool qSize = true;
 
-				while (tempScore == optScore && qSize)
+				while (qSize && tempScore == optScore)
 				  {
 					if (verbose)
 					  {
@@ -1373,9 +1373,9 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
 					(*ptrWriter).SaveAlignment(qali.at(0)); 
 					bestTnames.push_back(getReferenceName(refData, qali.at(0).RefID));
-					qali.erase(qali.begin()); // Delete first member of qali
+					qali.erase(qali.begin()); // Deletes first member of qali
 					if (verbose)
-					  {cout << "After deleting element, qali.size()=" << qali.size() << endl;}
+					  {cout << "After deleting alignment, qali.size()=" << qali.size() << endl;}
 					if (qali.size()>0)
 					  {
 						qali.at(0).GetTag("sc", s_tempScore);
@@ -1405,6 +1405,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					for (int it=0; it<bestTnames.size(); it++)
 					  {
 						// Replace suffixes of the type chrX.t123
+						tName = bestTnames.at(it);
 						tName = tName.substr(0, tName.find(".t")); 
 						geneNames[tName]=1;
 						if (verbose) {cout << "tName= " << tName << endl;}
