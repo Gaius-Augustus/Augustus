@@ -1,7 +1,7 @@
 /* 	Function definitions
  
 	Created: 20-September-2011	
-	Last modified: 29-January-2012
+	Last modified: 30-January-2012
 */
 
 #include <api/BamReader.h>  
@@ -55,8 +55,8 @@ struct globalOptions_t {
 globalOptions_t initOptions(int argc, char *argv[]);
 
 
-#ifndef
-#define 
+#ifndef SINGLEREAD_H 
+#define SINGLEREAD_H
 class SingleRead
 {
    friend ostream &operator<<(ostream &, const SingleRead &);
@@ -66,8 +66,8 @@ class SingleRead
   	  float coverage;
   	  float percId;
   	  float score;
-	  /* string name; */
-	  /* int32_t position; */
+	  string name;
+	  int32_t position;
 
       SingleRead();
       SingleRead(const SingleRead &);

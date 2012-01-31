@@ -16,7 +16,6 @@
 using namespace std;
 using namespace BamTools;
 
-
 // Class definition 
 class SingleRead
 {
@@ -27,8 +26,8 @@ class SingleRead
   	  float coverage;
   	  float percId;
   	  float score;
-	  // string name;
-      // int32_t position;
+	  string name;
+      int32_t position;
 
       SingleRead();
       SingleRead(const SingleRead &);
@@ -110,6 +109,8 @@ int SingleRead::operator<(const SingleRead &rhs) const
   if( this->score < rhs.score ) return 1;
    return 0;
 }
+
+
 
 
 void toString(SingleRead read)

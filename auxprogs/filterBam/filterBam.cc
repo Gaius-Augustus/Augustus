@@ -8,7 +8,7 @@
 
 
 	Created: 4-November-2011
-	Last modified: 29-January-2012
+	Last modified: 31-January-2012
 */  
  
 #include <api/BamReader.h>
@@ -32,20 +32,7 @@
 #include <fstream>
 #include <map>
 #include <math.h>
-#include "header.h"
-
-
-using namespace BamTools;
-using namespace BamTools::Algorithms; 
-using namespace std;
-
-string bool_cast(const bool b) 
-{
-    ostringstream ss;
-    ss << boolalpha << b;
-    return ss.str();
-}
-
+#include "filterBam.h"
 
 struct optionalCounters_t {
   int outPaired;
@@ -53,33 +40,13 @@ struct optionalCounters_t {
   int outBest;
 };
 
+using namespace BamTools;
+using namespace BamTools::Algorithms; 
+using namespace std;
 
 
-vector<string> uniqueKeys(const vector<PairednessCoverage> &m)
-{
-  vector<string> unKeys;
 
-  if (m.empty()) {return unKeys;}
 
-  // find the number of different keys
-  size_t nKeys = 1;
-  vector<PairednessCoverage>::const_iterator it = m.begin();
-  string lastkey = it->chr;
-  unKeys.push_back(it->chr);
-  ++it;
-
-  while (it != m.end()) 
-	{
-      if (lastkey < it->chr) 
-		{
-		  ++nKeys;
-		  lastkey = it->chr;
-		  unKeys.push_back(it->chr);
-		}
-	  ++it;
-	}
-  return unKeys;
-}
 
 
 void printQali(vector<BamAlignment> &qali, const RefVector &refData);
@@ -91,6 +58,8 @@ void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps);
 void printChrOfPairCovSteps(vector<PairednessCoverage> &pairCovSteps, string chr);
 vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> &pairCovSteps, globalOptions_t globalOptions);
 void printSizeOfCoverInfo(vector<PairednessCoverage> &pairCovSteps);
+string bool_cast(const bool b);
+vector<string> uniqueKeys(const vector<PairednessCoverage> &m);
 
 
 int main(int argc, char *argv[])
@@ -101,7 +70,6 @@ int main(int argc, char *argv[])
   BamAlignment al;
   vector<BamAlignment> qali;
   unordered_map<string,int> qNameStems;
-  // unordered_map<string, int>::iterator it; /// TAKE OUT!!!
   time_t tStart, tEnd, tElapsed; 
   vector<CigarOp> cigar;
   char cigarType;
@@ -490,6 +458,40 @@ int main(int argc, char *argv[])
 
 } // end main
 
+
+string bool_cast(const bool b) 
+{
+    ostringstream ss;
+    ss << boolalpha << b;
+    return ss.str();
+}
+
+
+vector<string> uniqueKeys(const vector<PairednessCoverage> &m)
+{
+  vector<string> unKeys;
+
+  if (m.empty()) {return unKeys;}
+
+  // find the number of different keys
+  size_t nKeys = 1;
+  vector<PairednessCoverage>::const_iterator it = m.begin();
+  string lastkey = it->chr;
+  unKeys.push_back(it->chr);
+  ++it;
+
+  while (it != m.end()) 
+	{
+      if (lastkey < it->chr) 
+		{
+		  ++nKeys;
+		  lastkey = it->chr;
+		  unKeys.push_back(it->chr);
+		}
+	  ++it;
+	}
+  return unKeys;
+}
 
 
 void printQali(vector<BamAlignment> &qali, const RefVector &refData)
