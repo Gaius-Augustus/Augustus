@@ -238,10 +238,10 @@ int main(int argc, char *argv[])
 				exit(1);
 			  }	
 
-			// if (qali.size()>0)
-			//   {
-			// 	processQuery(qali, refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen);
-			//   }
+			if (qali.size()>0)
+			  {
+				processQuery(qali, refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen);
+			  }
 		  }  // end outer if
 
   		/////////////////////////////////////////////////////////////////
@@ -331,7 +331,7 @@ int main(int argc, char *argv[])
 	  } ////// end while 
 
 
-	// /* 	Calling of: "processQuery() if ($qnamestem ne "");
+	// Calling of: "processQuery() if ($qnamestem ne "");
 	if (qNameStem.compare(""))
 	  {
 		processQuery(qali,refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen);
@@ -1033,8 +1033,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 	  			  {
 	  				second++;
 	  			  }
-	  			cout << "second=" << second << endl;
-
+				if (verbose) {cout << "second=" << second << endl;}
 
 				// "Second" mate-pair is the one with lowest score, but that is still similar
 				if (second < matepairs.size())
@@ -1082,7 +1081,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						qali.at(matepairs.at(0).alJit).RemoveTag("co");
 						(*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
 						(*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
-						outUniq += qali.size()-2; // Drop all alignments except one set of pairs
+						outUniq += mated.size()-2; // Drop all mated-pairs except the optimal two
 					  } else {// dropping all mate-pairs belonging to this query
 
 					  	  if (verbose)
@@ -1122,7 +1121,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					  qali.at(matepairs.at(0).alJit).RemoveTag("co");
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
-					  outUniq += qali.size()-2; // Drop all alignments except one set of pairs
+					  outUniq += mated.size()-2; // Drop all alignments except one set of pairs
 				}
 
 				// keep only the best pair (if any)
@@ -1148,10 +1147,10 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					{
 					  if (verbose)
 						{
-						  cout << "Letting pass mate-pair (best): " << qali.at(matepairs.at(0).alIt).Name 
+						  cout << "[BUG?]Letting pass mate-pair (best): " << qali.at(matepairs.at(0).alIt).Name 
 							   << " paired with " << qali.at(matepairs.at(0).alJit).Name << ", score=" 
 							   << tempScore << ", optScore=" << optScore << endl;
-						  cout << "Storing at bestTnames=" << getReferenceName(refData, qali.at(matepairs.at(0).alIt).RefID) 
+						  cout << "[BUG?]Storing at bestTnames=" << getReferenceName(refData, qali.at(matepairs.at(0).alIt).RefID) 
 								<< endl;
 						}
 					  // Removing percId and coverage Tags before writing into file
@@ -1165,7 +1164,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					  numBest++;
 					}
 
-				  outBest += matepairs.size();
+				  outBest += mated.size(); // TO-CORRECT: Need to consider alignments with multiple mates!!!
 				  // Retaining only mate-pairs with optimal score
 				  matepairs.resize(numBest);
 
