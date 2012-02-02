@@ -5,17 +5,17 @@
 #	b) libbamtools.a and lz library are used during the linking process
 #
 # 	Created: 11-November-2011
-#	Last modified: 30-January-2012
+#	Last modified: 2-February-2012
 
 # Variable definition
-HOME = /home/tonatiuh
+HOME = /home/tonatiuh/web-home
 BT1 = $(HOME)/pezmaster31-bamtools-12aca98
 BT2 = $(HOME)/bamtools-1.0.2
 BT3 = $(HOME)/bamtools
 CODE = $(HOME)/filterBam/bamtoolsCode
 INCLUDES = -I$(BT3)/include -Iheaders -I$(BT3)/src/toolkit
 VPATH = functions # Required to find files in functions/foo.cc
-LIBS = $(BT3)/lib/libbamtools.a -lz -lboost_regex
+LIBS = $(BT3)/lib/libbamtools.a -lz 
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleRead.cc \
 			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam
@@ -53,7 +53,7 @@ pdf : $(PROGRAM).tex
 
 
 ######################################################
-# Generation 
+# Generation of Dummy datasets
 ######################################################
 SAMFILES = example_1.sam
 SCRIPT = sam2bam.sh

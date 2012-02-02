@@ -8,7 +8,7 @@
 
 
 	Created: 4-November-2011
-	Last modified: 31-January-2012
+	Last modified: 2-February-2012 
 */  
  
 #include <api/BamReader.h>
@@ -903,16 +903,16 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
   		  	  	  if (itStrand!=jitStrand) //different strands: (false, true)=(+,-)
   		  	  	  	{
 		  			  jitTstart = qali.at(jit).Position; 
-		  			  jitTend = qali.at(jit).GetEndPosition();//bamtools iss. with intervals taken into acct 
+		  			  jitTend = qali.at(jit).GetEndPosition(); 
 		  			  itTstart = qali.at(it).Position; 
-    	  			  itTend = qali.at(it).GetEndPosition(); //bamtools iss. with intervals taken into acct.
+    	  			  itTend = qali.at(it).GetEndPosition(); 
   		  	  		  dist = jitTstart - itTend - 1;
   		  	  		  if (itTstart>jitTstart) {dist = itTstart - jitTend - 1;}
 
 					  if (verbose)
 						{
-						  cout << "Alignments " << it << "," << jit << " above with different mates, " 
-							   << "different strands, dist=" << dist 
+						  cout << "Alignments " << it << "," << jit << " above point to common target, "  
+							   << "with different mates, with different strands, dist=" << dist 
 							   << ", maxIntronLen=" << maxIntronLen << endl;
 						}
 
@@ -932,7 +932,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 
 						  if (verbose)
 							{
-							 cout << ">>>found mate pair:"<< it << "," << jit <<" (above alignment)!!!" << endl;
+							 cout << ">>>found mate pair:"<< it <<"," <<jit <<" (above alignment)!!!" << endl;
 							  // cout << ": [" 
 							  // 	   << itQname << ", " << jitQname  << "]=[" << itRname << ", mate " 
 							  // 	   <<itQsuffix << ", strand " << bool_cast(itStrand) << "; " << jitRname 
@@ -974,7 +974,6 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		}
 
 	  // Taking out all alignments that were not paired
-	  int outPaired=0;
 	  outPaired += (int)qali.size() - (int)mated.size();
 
 	  if ((!uniq && !best) || matepairs.size()<2)
@@ -990,7 +989,8 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 			  if (verbose)
 				{cout << "Letting pass paired-alignments: (" << (*m_it).first  
 					  << ") : " << qali.at((*m_it).first).Name << endl;}
-			  // Saving alignments
+			  // Removing percId and coverage Tags before writing into file
+			  qali.at((*m_it).first).RemoveTag("pi"); qali.at((*m_it).first).RemoveTag("co");
   			  (*ptrWriter).SaveAlignment(qali.at((*m_it).first)); 
 	  		}
 	  	} else { // (uniq or best) selected and matepair.size()>2
@@ -1045,7 +1045,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					mate1Second = qali.at(matepairs.at(second).alIt).Name;
 					mate2Second = qali.at(matepairs.at(second).alJit).Name;
 					scoreSecond = matepairs.at(second).score;
-
+					// Computing ratio between first and second mate-pairs
 					ratio = scoreSecond/scoreFirst;
 
 					if (verbose)
@@ -1056,9 +1056,9 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						cout << "Position of last similar mate-pair (indexed by second)=" << second << endl;
 						cout << "Comparing scores between optimal and second mate-pairs: " << endl;
 						cout << "[" << mate1First << " paired with " << mate2First << "; score=" 
-							 << scoreFirst << endl; 
+							 << scoreFirst << "]" << endl; 
 						cout << "[" << mate1First << " paired with " << mate2Second << "; score=" 
-							 << scoreSecond << endl;
+							 << scoreSecond << "]" << endl;
 						cout << "Ratio between these two mate-pairs: " << ratio << endl;
 						cout << "------------------------------------------------------------------------\n"; 
 					  }
@@ -1075,9 +1075,14 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 							cout << "is significantly worse, ratio=" << ratio << "<uniqThresh=" 
 							 	<< uniqThresh << endl;
 						  }
-						cout << "Saving uniq mate pair (give details here)" << endl;
+						// Removing percId and coverage Tags before writing into file
+						qali.at(matepairs.at(0).alIt).RemoveTag("pi"); 
+						qali.at(matepairs.at(0).alIt).RemoveTag("co");
+						qali.at(matepairs.at(0).alJit).RemoveTag("pi"); 
+						qali.at(matepairs.at(0).alJit).RemoveTag("co");
 						(*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
 						(*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
+						outUniq += qali.size()-2; // Drop all alignments except one set of pairs
 					  } else {// dropping all mate-pairs belonging to this query
 
 					  	  if (verbose)
@@ -1091,6 +1096,8 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 									  << "criterion." << endl;}	
 							  cout << "Clearing contents of matepairs" << endl;				   	
 							}
+
+						  outUniq += mated.size(); // Drop all mated alignments
 						  matepairs.clear();
 					  }
 
@@ -1108,9 +1115,14 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						  cout << "(" << matepairs.size()-1<< ") mate-pairs filtered out by uniqueness" << endl;
 						}
 
-					  cout << "Saving uniq mate pair (give details here)" << endl;
+					  // Removing percId and coverage Tags before writing into file
+					  qali.at(matepairs.at(0).alIt).RemoveTag("pi"); 
+					  qali.at(matepairs.at(0).alIt).RemoveTag("co");
+					  qali.at(matepairs.at(0).alJit).RemoveTag("pi"); 
+					  qali.at(matepairs.at(0).alJit).RemoveTag("co");
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
+					  outUniq += qali.size()-2; // Drop all alignments except one set of pairs
 				}
 
 				// keep only the best pair (if any)
@@ -1142,6 +1154,11 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						  cout << "Storing at bestTnames=" << getReferenceName(refData, qali.at(matepairs.at(0).alIt).RefID) 
 								<< endl;
 						}
+					  // Removing percId and coverage Tags before writing into file
+					  qali.at(matepairs.at(numBest).alIt).RemoveTag("pi"); 
+					  qali.at(matepairs.at(numBest).alIt).RemoveTag("co");
+					  qali.at(matepairs.at(numBest).alJit).RemoveTag("pi"); 
+					  qali.at(matepairs.at(numBest).alJit).RemoveTag("co");
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alIt)); 
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alJit)); 
 					  bestTnames.push_back(getReferenceName(refData,qali.at(matepairs.at(numBest).alIt).RefID));
@@ -1274,6 +1291,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					scoreFirst = atof(s_scoreFirst.c_str());
 					qali.at(second).GetTag("sc", s_scoreSecond);
 					scoreSecond = atof(s_scoreSecond.c_str());
+					// Computing ratio between frist and second alignments
 					ratio = scoreSecond/scoreFirst;
 
 					if (verbose)
@@ -1305,13 +1323,14 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
 						(*ptrWriter).SaveAlignment(qali.at(0)); // Prints alignment line into file
 						outUniq += qali.size()-1;
-					  	cout << "(" << outUniq << "/" << qali.size() << ") alignments filtered out " 
-							 << " by uniqueness " << endl;
-							for (int it=0; it<qali.size(); it++)
+						if (verbose)
+						  {	cout << "(" << outUniq << "/" << qali.size() << ") alignments filtered out " 
+								 << " by uniqueness " << endl;
+							for (int it=1; it<qali.size(); it++)
 							  {cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
-					  } else { // dropping all alignments belonging to the same query
-					  	
-					  	outUniq += qali.size(); // Filtered alignments by uniqueness increases by size of Qali
+						  }
+					  } else { // dropping all alignments belonging to the same query				  	
+
 						if (verbose)
 						  {
 							cout << "(" << qali.size() << ") alignments filtered out by uniqueness because:";
@@ -1320,6 +1339,8 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 							for (int it=0; it<qali.size(); it++)
 							  {cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
 						  }					  	
+					  	  outUniq += qali.size();//Filtered out alignments by uniq. increases by size of Qali
+
 					  }
 				  } else {// '(second == qali.size()' => all alignments in "qali" are similar
 				  	  if (verbose)
