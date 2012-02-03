@@ -178,11 +178,11 @@ int main(int argc, char *argv[])
 	   
        if (line%100000==1)
 	   { 
-	   	 cout << "\r processed line " << line;
+	   	 printf("\r processed line %d", line);
        }		
 
 		 // Call to compactify bed
-		if (pairBedFile && line%10000000 == 0)
+	   if ((unsigned)strlen(pairBedFile) > 0 && line%10000000 == 0)
 		  {
 			cout << "\nCompactifying coverage after " << line << " lines..." << endl;
 			compactPairCovSteps = compactifyBed(pairCovSteps, globalOptions);
@@ -338,13 +338,13 @@ int main(int argc, char *argv[])
 		outPaired = optionalCounters.outPaired;
 		outUniq = optionalCounters.outUniq;
 		outBest = optionalCounters.outBest;
-		printPairCovSteps(pairCovSteps);
+		if (verbose) {printPairCovSteps(pairCovSteps);}
 	  }
 
 
 
 	// Write pairedness coverage data into pairBedFile
-	if (pairBedFile)
+	if ((unsigned)strlen(pairBedFile) > 0)
 	  {
 		  bedFile.open(pairBedFile);
 		  bedFile << "track type=bedGraph name=\"pairedness coverage\" description=\"pairedness coverage\"";
@@ -720,6 +720,7 @@ void printSizeOfCoverInfo(vector<PairednessCoverage> &pairCovSteps)
 // 2) output a bed file
 vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSteps, globalOptions_t globalOptions)
 {
+  bool verbose = globalOptions.verbose;
   vector<string> chrNames = uniqueKeys(pairCovSteps);
   std::sort(chrNames.begin(), chrNames.end());
   string chr;
@@ -743,25 +744,30 @@ vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSte
 			  pairCovStepsOfChr.push_back(pairCovSteps.at(it)); 
 		  }
 
-		cout << "------------------------------------------------------\n";
-		cout << "Pairedness coverage BEFORE sorting:\n";
-		printChrOfPairCovSteps(pairCovSteps, chr);
 
+		if (verbose)
+		  {
+			cout << "------------------------------------------------------\n";
+			cout << "Pairedness coverage BEFORE sorting:\n";
+			printChrOfPairCovSteps(pairCovSteps, chr);
+		  }
 		// Foreach "$chr" in pairCovSteps, sort the contents of the "coord" field in ascending order
         // {-1} corresponds to pEnd, and {1} corresponds to pStart
 		sort(pairCovStepsOfChr.begin(), pairCovStepsOfChr.end());
 
-		cout << "------------------------------------------------------\n";
-		cout << "Pairedness coverage AFTER sorting:\n";
-		printChrOfPairCovSteps(pairCovSteps, chr);
-		cout << "------------------------------------------------------\n";
-
+		if (verbose)
+		  {
+			cout << "------------------------------------------------------\n";
+			cout << "Pairedness coverage AFTER sorting:\n";
+			printChrOfPairCovSteps(pairCovSteps, chr);
+			cout << "------------------------------------------------------\n";
+			cout << "-------------------------------------------------------" << endl;
+			cout << "Before removal" << endl;
+			printChrOfPairCovSteps(pairCovStepsOfChr, chr);
+		  }
  
 		before += pairCovStepsOfChr.size();
 
-		cout << "-------------------------------------------------------" << endl;
-		cout << "Before removal" << endl;
-		printChrOfPairCovSteps(pairCovStepsOfChr, chr);
 
 
 		int jit=0;
@@ -776,10 +782,12 @@ vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSte
 			  }
 		  }
 
-		cout << "After removal" << endl;
-		printChrOfPairCovSteps(pairCovStepsOfChr, chr);
-		cout << "-------------------------------------------------------" << endl;
-
+		if (verbose)
+		  {
+			cout << "After removal" << endl;
+			printChrOfPairCovSteps(pairCovStepsOfChr, chr);
+			cout << "-------------------------------------------------------" << endl;
+		  }
 		after += pairCovStepsOfChr.size();
 
 		// Insert compact pairCovStepsOfChr into a new vector
@@ -787,7 +795,7 @@ vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSte
 		pairCovStepsOfChr.clear();
 	  }
 
-	cout << "\nPairedness coverage before compactifying: " << before << ", after: " << after << endl;
+		cout << "\nPairedness coverage before compactifying: " << before << ", after: " << after << endl;
 
 	return compactPairCovSteps;
 }
@@ -978,10 +986,13 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 
 	  if ((!uniq && !best) || matepairs.size()<2)
 	  	{ // (uniq,best= (0,0) or size of mated pairs=1, let pass all mate-paired alignments
-		  cout << "------------------------------------------------\n";
-		  cout << "Letting pass all mated-paired alignments= " << mated.size() << ", listed below:\n";
-		  cout << "Size of matepairs=" << matepairs.size() << "\n";
-		  cout << "------------------------------------------------\n";
+		  if (verbose)
+			{
+			  cout << "------------------------------------------------\n";
+			  cout << "Letting pass all mated-paired alignments= " << mated.size() << ", listed below:\n";
+			  cout << "Size of matepairs=" << matepairs.size() << "\n";
+			  cout << "------------------------------------------------\n";
+			}
 
 	  	  map<int,int>::iterator m_it;
 	  	  for (m_it=mated.begin(); m_it!=mated.end(); m_it++)

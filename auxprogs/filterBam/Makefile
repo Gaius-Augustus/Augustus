@@ -8,9 +8,9 @@
 #	Last modified: 2-February-2012
 
 # Variable definition
-HOME = /home/tonatiuh/web-home
-BT1 = $(HOME)/pezmaster31-bamtools-12aca98
-BT2 = $(HOME)/bamtools-1.0.2
+HOME = /home/tonatiuh/web-home/
+#BT1 = $(HOME)/pezmaster31-bamtools-12aca98
+#BT2 = $(HOME)/bamtools-1.0.2
 BT3 = $(HOME)/bamtools
 CODE = $(HOME)/filterBam/bamtoolsCode
 INCLUDES = -I$(BT3)/include -Iheaders -I$(BT3)/src/toolkit
