@@ -4,6 +4,10 @@
 #include "gene.hh"
 #include "graph.hh"
 
+/*
+ * interface to AUGUSTUS, getMEAtranscripts() is called in findGenes() : namgene.cc
+ */
+
 void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures, int n, int strlength);
 void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int strlength);
 

@@ -52,7 +52,7 @@ public:
   double score;
   const void *item;
   Node *pred;
-  list<Edge> edgeoffsets;
+  list<Edge> edges;
 };
 
 class Edge{
@@ -79,7 +79,7 @@ public:
 class Graph{
 public:
   Graph(list<Status> *states) : statelist(states){}
-  ~Graph(); 
+  virtual ~Graph(); 
   void addBackEdges();
 
   list<Node*> nodelist;      //stores all nodes belonging to the graph
@@ -90,7 +90,7 @@ public:
   Node *head;
   Node *tail;
  
-  //protected:
+  protected:
   void buildGraph(); //needs to be called in constructor of derived class
 
   // functions needed to build the graph

@@ -94,7 +94,11 @@ NAMGene::NAMGene() {
   } catch (...) {
     mea_prediction = false;
   }
-
+  try {
+    mea_eval = Properties::getBoolProperty("mea_evaluation");
+  } catch (...) {
+    mea_eval = false;
+  }
 
   // Read in protein profile
   try {
@@ -888,13 +892,23 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
       geneit1->normPostProb(sampleiterations); // +1 wegen Viterbipfad
     }
   } // if (sampleiterations>1)
-
+  /* if(mea_prediction){
+    int i=1;
+    for(list<Gene>::iterator it=alltranscripts->begin(); it!=alltranscripts->end(); it++){
+      it->geneid = i;
+      it->seqname = "2R";
+      it->source = "AUGUSTUS_samp";
+      it->printGFF();   
+      i++;
+    }
+    }*/
   // determine transcripts with maximum expected accuracy criterion
   if(mea_prediction){
-    getMEAtranscripts(&MEAtranscripts, sampledGeneStructures, sampleiterations, strlen( dna ));
-   
-    //getMEAtranscripts(&MEAtranscripts, alltranscripts, strlen(dna));
-   
+    if(mea_eval)
+      getMEAtranscripts(&MEAtranscripts, sampledGeneStructures, sampleiterations, strlen( dna ));
+    else
+      getMEAtranscripts(&MEAtranscripts, alltranscripts, strlen(dna));
+      
     /*
      * filter transcripts by probabilities, strand
      */
@@ -903,14 +917,22 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   } 
   else
     filteredTranscripts = Gene::filterGenePrediction(alltranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
-  delete alltranscripts;
 
   /*
    * filter transcripts by maximum track number
    */  
 
   agl = groupTranscriptsToGenes(filteredTranscripts);
- 
+  list<AltGene> *samples = new list<AltGene>;
+  samples = groupTranscriptsToGenes(alltranscripts);
+
+  for(list<AltGene>::iterator it=samples->begin(); it!= samples->end(); it++){
+    for(list<Gene*>::iterator gene=it->transcripts.begin(); gene!=it->transcripts.end();gene++)
+      (*gene)->printGFF();
+  }
+
+   delete alltranscripts;
+
   if (sampleiterations>1) {
     /*
      * compute apostprob of genes. The posterior probability of a gene is the 

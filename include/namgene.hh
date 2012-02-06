@@ -134,6 +134,7 @@ private:
     bool alternatives_from_sampling;
     bool alternatives_from_evidence;
     bool mea_prediction;
+    bool mea_eval;
     bool needForwardTable;
     bool show_progress;
     PP::SubstateModel* profileModel;

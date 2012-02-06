@@ -9,23 +9,10 @@ void MEApath::findMEApath(){
 
   getTopologicalOrdering();
   graph->addBackEdges();
-
-  //graph->printGraph("flybase_graph.dot");
-
-  if(topSort.size() == graph->nodelist.size())
-    cerr<<"size of topSort ok!"<<endl;
-  else if (topSort.size() < graph->nodelist.size()){
-    cerr<<"size of topSort wrong!! > to many elements in nodelist!"<<endl;  
-  }
-  else
-    cerr<<"size of topSort wrong!! > topSort to big!"<<endl;
-
-  cerr<<"relaxing edges"<<endl;
   relax();   
   
   //backtracking
 
-  cerr<<"backtracking"<<endl;
   Node *pos = topSort[0];
   meaPath.push_front(pos);  
   while(pos->pred != NULL){
@@ -34,6 +21,7 @@ void MEApath::findMEApath(){
   }
   
     //for graphviz dot to draw path
+
   for(list<Node*>::iterator node=graph->nodelist.begin(); node!=graph->nodelist.end(); node++){
     bool nodeInPath = false;
     bool predInPath = false;
@@ -48,7 +36,7 @@ void MEApath::findMEApath(){
     (*node)->pred = NULL;
     nextNode:;
   }
-  graph->printGraph("debug_graph.dot"); 
+  graph->printGraph("MEA_graph.dot");
 }
 
 void MEApath::getTopologicalOrdering(){
@@ -59,10 +47,14 @@ void MEApath::getTopologicalOrdering(){
   }
 }
 
+/*
+ * deapth first search
+ */
+
 void MEApath::dfs(Node *n){
 
   processed[graph->getKey(n)] = n;
-  for(list<Edge>::iterator edge=n->edgeoffsets.begin(); edge!=n->edgeoffsets.end(); edge++){
+  for(list<Edge>::iterator edge=n->edges.begin(); edge!=n->edges.end(); edge++){
     if(processed[graph->getKey(edge->to)]==0)
       dfs(edge->to);
   }
@@ -80,8 +72,9 @@ void MEApath::relax(){
   while(continueRelax){
     bool nothingChanged = true;
     for(int i = topSort.size()-1; i >= 0; i--){
-      for(list<Edge>::iterator edge=topSort[i]->edgeoffsets.begin(); edge!=topSort[i]->edgeoffsets.end(); edge++){	 
+      for(list<Edge>::iterator edge=topSort[i]->edges.begin(); edge!=topSort[i]->edges.end(); edge++){	 
 	if(topSort[i]->score + edge->score > edge->to->score){
+	  // update exon distance
 	  edge->to->score = topSort[i]->score + edge->score;
 	  edge->to->pred = topSort[i];
 	  nothingChanged = false;
@@ -93,7 +86,7 @@ void MEApath::relax(){
   }
 
   for(list<Node*>::iterator node = graph->nodelist.begin(); node!=graph->nodelist.end(); node++){   
-    for(list<Edge>::iterator edge = (*node)->edgeoffsets.begin(); edge != (*node)->edgeoffsets.end(); edge++)
+    for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++)
       if(edge->to->score < (*node)->score + edge->score)
 	cerr<<"MEA (relax): wrong distance "<<edge->to->score<<" at: "<<edge->to->begin<<":"<<edge->to->end<<endl;
   }

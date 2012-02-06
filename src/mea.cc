@@ -6,6 +6,10 @@
 #include <iomanip>
 
 using namespace std;
+
+/*
+ * accuracy criterion that evaluates on gene level (complex but therefore not exact)
+ */
 void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures, int n, int strlength){
 
   bool utr;
@@ -48,10 +52,7 @@ void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures,
     for (int i=0; i<n; i++){ 
        Evaluation eval;
        eval.addToEvaluation(sampledGeneStructures[i], sampledGeneStructures[j], bothstrands);
-	
-      // TODO: parameter training to optimize accuracy criterion
-
-      acc += w_gene * (eval.geneSens + eval.geneSpec) + w_exon * (eval.exonSens + eval.exonSpec) + w_base * (eval.nukSens + eval.nukSpec);
+       acc += w_gene * (eval.geneSens + eval.geneSpec) + w_exon * (eval.exonSens + eval.exonSpec) + w_base * (eval.nukSens + eval.nukSpec);
       if(utr)
       acc += w_utr * (eval.UTRexonSens + eval.UTRexonSpec) + w_base * (eval.nucUSens + eval.nucUSpec);
     }    
@@ -60,7 +61,6 @@ void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures,
       bestG = sampledGeneStructures[j];
     }
   }
-  //cout<<"maximum Accuracy: "<<maxAcc<<"\t best Genestructure: "<<bestG->id<<endl;
 
   while(bestG){
     MEAtranscripts->push_back(*bestG);
@@ -68,9 +68,11 @@ void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures,
   }
 }
 
-void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int strlength){
+/*
+ * MEA using graph representation
+ */
 
-  cerr<<"----entering getMEAtranscripts()----"<<endl;
+void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int strlength){
 
   if(!alltranscripts->empty()){
    
@@ -80,33 +82,12 @@ void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int str
     } catch (...) {
       utr = false;
     }
-
-    /*
-     * evaluates accuracy for each gene
-     */
-    /*
-    list<AltGene> *genes = groupTranscriptsToGenes(alltranscripts);
-    for(list<AltGene>::iterator altg=genes->begin(); altg!=genes->end(); altg++){
-
-      for(list<Gene*>::iterator gPred=altg->transcripts.begin(); gPred!=altg->transcripts.end(); gPred++){
-	for(list<Gene*>::iterator gAnno=altg->transcripts.begin(); gAnno!=altg->transcripts.end(); gAnno++){
-	  Evaluation eval;
-	  addToEvaluation(*gPred, *gAnno, bothstrands);
-	  acc += w_gene * (eval.geneSens + eval.geneSpec) + w_exon * (eval.exonSens + eval.exonSpec) + w_base * (eval.nukSens + eval.nukSpec);
-      if(utr)
-      acc += w_utr * (eval.UTRexonSens + eval.UTRexonSpec) + w_base * (eval.nucUSens + eval.nucUSpec);
-	}
-	acc *= (*gPred)->apostprob;
-      }
-    }
-    */
-   
+    
     /*
      * builds datastructure needed for the graph representation
      */
     list<Status> stateList, stlist;
 
-    cerr<<"generating state list"<<endl;
     for(list<Gene>::iterator it=alltranscripts->begin();it!=alltranscripts->end();it++){
       addToList(it->exons,CDS,&stateList);
       addToList(it->introns,intron,&stateList);
@@ -124,16 +105,12 @@ void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int str
       }
       stateList.back().next = NULL;
    
-      stlist.splice(stlist.end(),stateList);
-   
+      stlist.splice(stlist.end(),stateList);   
     }
-    // printStatelist(&stlist);
 
-    cerr<<"initializing graph object"<<endl;
     //build Graph
     AugustusGraph myGraph(&stlist, strlength);
 
-    cerr<<"finding shortest path"<<endl;
     //find shortest path
     MEApath path(&myGraph);
     
@@ -240,7 +217,7 @@ void addExonToGene(Gene *gene, State *exon){
 void addIntronToGene(Gene* gene, Node* predExon, Node* succExon){
  
   Edge* intron = NULL;
-  for(list<Edge>::iterator edge=predExon->edgeoffsets.begin(); edge!=predExon->edgeoffsets.end(); edge++){
+  for(list<Edge>::iterator edge=predExon->edges.begin(); edge!=predExon->edges.end(); edge++){
     if(edge->to == succExon){
       intron = &(*edge);     
       break;

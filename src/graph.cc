@@ -79,34 +79,36 @@ void Graph::buildGraph(){
       }
     }
   }
-
   nodelist.sort(compareNodes);
- 
-  addCompatibleEdges();
   
+  bool noCompatibleEdges;
+  try {
+    noCompatibleEdges = Properties::getBoolProperty("/MeaPrediction/no_compatible_edges");
+  } catch (...) {
+    noCompatibleEdges = false;
+  }
+  if(!noCompatibleEdges)
+    addCompatibleEdges();
+
   // add node weight to edge weight
 
   for(list<Node*>::iterator node = nodelist.begin(); node != nodelist.end(); node++){
-    for(list<Edge>::iterator edge = (*node)->edgeoffsets.begin(); edge != (*node)->edgeoffsets.end(); edge++){
+    for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
       edge->score += (*node)->score;
     }
   }
-  // printGraph("graph_visualization.dot");
   
   //sort edgeoffset lists
 
   for(list<Node*>::iterator node=nodelist.begin(); node!=nodelist.end(); node++)
-    (*node)->edgeoffsets.sort(compareEdges);
-
-  printGraph("graph_extended.dot");
- 
-  
+    (*node)->edges.sort(compareEdges);
 }
+
 
 bool Graph::edgeExists(Node *e1, Node *e2){
   if(e1 == NULL || e2 == NULL)
     return false;
-  for(list<Edge>::iterator it=e1->edgeoffsets.begin(); it!=e1->edgeoffsets.end(); it++){
+  for(list<Edge>::iterator it=e1->edges.begin(); it!=e1->edges.end(); it++){
     if(it->to == e2)
       return true;
   }
@@ -129,37 +131,35 @@ Node* Graph::addExon(Status *exon){
     addToHash(ex);
 
     if(exonAtGeneStart(exon)){
-      
-      //cout<<"exon "<<exon->begin<<":"<<exon->end<<" at gene start"<<endl;
+      // include edge from neutral line to exon
 
       Node *neut = new Node(ex->begin, ex->begin);
       Edge intron(ex, false);
       if(!alreadyProcessed(neut)){	
 	neutralLine[ex->begin-min] = neut;
-	neut->edgeoffsets.push_back(intron);
+	neut->edges.push_back(intron);
 	nodelist.push_back(neut);
 	addToHash(neut);
       }
       else{
-	getNode(neut)->edgeoffsets.push_back(intron);
+	getNode(neut)->edges.push_back(intron);
 	delete neut;
       }
     }
     if(exonAtGeneEnd(exon)){
-      
-      //cout<<"exon "<<exon->begin<<":"<<exon->end<<" at gene end"<<endl;
+	// include edge from exon to neutral line      
 
       Node *neut = new Node(ex->end, ex->end);
       if(!alreadyProcessed(neut)){
 	neutralLine[ex->end-min] = neut;
 	Edge intron(neut, false);
-	ex->edgeoffsets.push_back(intron);
+	ex->edges.push_back(intron);
 	nodelist.push_back(neut);
 	addToHash(neut);
       }
       else{
 	Edge intron(getNode(neut), false);
-	ex->edgeoffsets.push_back(intron);      
+	ex->edges.push_back(intron);      
 	delete neut;
       }
     }
@@ -174,11 +174,11 @@ void Graph::addPair(Status *exon1, Status *exon2){
   Node *e2 = addExon(exon2);
   if(exon1->next == exon2 && !edgeExists(e1,e2)){
     Edge in(e2, false);
-    e1->edgeoffsets.push_back(in);  
+    e1->edges.push_back(in);  
   }
   else if(exon1->next != exon2 && !edgeExists(e1,e2)){
     Edge in(e2, false, setScore(exon1->next), exon1->next->item);
-    e1->edgeoffsets.push_back(in);  
+    e1->edges.push_back(in);  
   }
 }
 
@@ -189,13 +189,17 @@ void Graph::createNeutralLine(){
   for(int i=0; i<n; i++){
     if(neutralLine[i] != NULL){
       Edge neut(neutralLine[i]);
-      pos->edgeoffsets.push_back(neut);
+      pos->edges.push_back(neut);
       pos = neutralLine[i];
     }
   }
   Edge lastEdge(tail);
-  pos->edgeoffsets.push_back(lastEdge);
+  pos->edges.push_back(lastEdge);
 }
+
+/*
+ * adds introns between exons under biologically reasonable conditions
+ */
 
 void Graph::addCompatibleEdges(){
 
@@ -224,20 +228,23 @@ void Graph::addCompatibleEdges(){
   }
 }
 
+/*
+ * adds back edges to the neutral line only if it does not cause non-neutral loops
+ */
 
 void Graph::addBackEdges(){
-  cerr<<"entering add back edges"<<endl;
+
   map<string,Node*> inQueue;
   list<Node*> neutralNodes;
   Node *pos = head;
   while(pos != tail){
 	neutralNodes.push_back(pos);
-    for(list<Edge>::iterator edge=pos->edgeoffsets.begin(); edge!=pos->edgeoffsets.end(); edge++){
+    for(list<Edge>::iterator edge=pos->edges.begin(); edge!=pos->edges.end(); edge++){
       if(edge->neutral){
 	pos = edge->to;
 	break;
       }
-      else if(&(*edge) == &pos->edgeoffsets.back())
+      else if(&(*edge) == &pos->edges.back())
 	cerr<<"ERROR: (mea) neutral line has gap!"<<endl;
     }
   }
@@ -253,7 +260,7 @@ void Graph::addBackEdges(){
 	queue<Node*> q;
 	inQueue.clear();
 	int nrNonNeutralEdges = 0;
-	for(list<Edge>::iterator edge=(*toNeut)->edgeoffsets.begin(); edge!=(*toNeut)->edgeoffsets.end(); edge++)
+	for(list<Edge>::iterator edge=(*toNeut)->edges.begin(); edge!=(*toNeut)->edges.end(); edge++)
 	  if(!edge->neutral)
 	    nrNonNeutralEdges++;
 	
@@ -262,7 +269,7 @@ void Graph::addBackEdges(){
 	  while(!q.empty()){
 	    Node *pos = q.front();
 	    q.pop();
-	    for(list<Edge>::iterator edge=pos->edgeoffsets.begin(); edge!=pos->edgeoffsets.end(); edge++){  
+	    for(list<Edge>::iterator edge=pos->edges.begin(); edge!=pos->edges.end(); edge++){  
 	      if(inQueue[getKey(edge->to)] == 0){
 		q.push(edge->to);
 		inQueue[getKey(edge->to)] = edge->to;
@@ -272,7 +279,6 @@ void Graph::addBackEdges(){
 	      
 	      if(minInQueue(&q) > (*fromNeut)->begin){
 		insertIntron(*fromNeut,*toNeut);
-		cerr<<"back edge inserted!"<<endl;
 		nonNeutralLoop = false;
 		goto nextEdge;
 	      }
@@ -283,7 +289,6 @@ void Graph::addBackEdges(){
       }
     }
   }
-  cerr<<"leaving addBackEdges()"<<endl;
 }
 
 int Graph::minInQueue(queue<Node*> *q){
@@ -305,7 +310,7 @@ bool Graph::nonneutralIncomingEdge(Node *exon){
   for(list<Node*>::iterator ex=nodelist.begin(); ex!=nodelist.end(); ex++){
     if((*ex)->begin > exon->begin)
       return false;
-    for(list<Edge>::iterator edge=(*ex)->edgeoffsets.begin(); edge!=(*ex)->edgeoffsets.end(); edge++){
+    for(list<Edge>::iterator edge=(*ex)->edges.begin(); edge!=(*ex)->edges.end(); edge++){
       if(!edge->neutral && edge->to == exon)
 	return true;
     }
@@ -319,7 +324,7 @@ for(list<Node*>::iterator node = nodelist.begin(); node != nodelist.end(); node+
     cout<<"-------------------------------------------------------"<<endl<<setw(10)<<"Node:"<<setw(10)<<(*node)->begin<<setw(10)<<(*node)->end<<setw(10)<<(*node)->score;
     if((*node)->item == NULL)
       cout<<setw(10)<<"neutral";
-    for(list<Edge>::iterator edge = (*node)->edgeoffsets.begin(); edge != (*node)->edgeoffsets.end(); edge++){
+    for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
       cout<<endl<<setw(10)<<"----->"<<setw(10)<<edge->to->begin<<setw(10)<<edge->to->end<<setw(10)<<edge->to->score;
       if(edge->neutral)
 	cout<<setw(10)<<"neutral";
@@ -365,7 +370,7 @@ bool AugustusGraph::exonAtCodingEnd(Node *st){
   return(Type == singleG || Type == terminal || Type == rsingleG || Type == rinitial);
 }
 
-
+// generates an identification key
 string AugustusGraph::getKey(Node *n){
 
   if(n->item == NULL)
@@ -402,6 +407,7 @@ double AugustusGraph::getIntronScore(Status *predExon, Status *nextExon){
   return 0;
 }
 
+//for incomplete features at the beginning of a sequence 
 void AugustusGraph::addEdgeFromHead(Status *exon){
 
   if(exon != NULL){
@@ -410,7 +416,7 @@ void AugustusGraph::addEdgeFromHead(Status *exon){
       if(!edgeExists(head,getNode(exon)) && !exonAtGeneStart(exon)){
      
 	Edge toExon(getNode(exon),false,getIntronScore(NULL,exon));
-	head->edgeoffsets.push_back(toExon);	
+	head->edges.push_back(toExon);	
       }
     }
     else if(exon->next != NULL){
@@ -419,7 +425,7 @@ void AugustusGraph::addEdgeFromHead(Status *exon){
   }
 }
 
-
+//for incomplete features at the end of a sequence
 void AugustusGraph::addEdgeToTail(Status *exon){
   
   Node *ex = getNode(exon);
@@ -428,7 +434,7 @@ void AugustusGraph::addEdgeToTail(Status *exon){
     if(!exonAtGeneEnd(exon))
       {
 	Edge toTail(tail,false,getIntronScore(exon,NULL));
-	ex->edgeoffsets.push_back(toTail);
+	ex->edges.push_back(toTail);
       }
   }
 }
@@ -438,12 +444,12 @@ void Graph::insertIntron(Node *exon1, Node *exon2){
   // insert neutral edge 
   if(exon1->item==NULL && exon2->item==NULL){    
     Edge intr(exon2);
-    exon1->edgeoffsets.push_back(intr);
+    exon1->edges.push_back(intr);
   }
   //insert compatible edge
   else{
     Edge intr(exon2, false);
-    exon1->edgeoffsets.push_back(intr);
+    exon1->edges.push_back(intr);
   }
 }
 
@@ -581,18 +587,24 @@ int AugustusGraph::getBasetype(Status *st, int pos){
 }
 
 
+/*
+ * creates an input file for graphviz
+ */
+
 void AugustusGraph::printGraph(string filename){
 
-  cerr<<"print graph to file:"<<endl;
-  //creates inputfile for graphviz
   map<string,Node*> inQueue;
   queue<Node*> q;
   head->begin = 0;
   head->end = 0;
   q.push(head);
   ofstream file;
-  file.open(("/home/lizzy/species/dm/training/" + filename).c_str());
-  
+  try{
+    file.open(("/home/lizzy/augustus_output/" + filename).c_str());
+  } catch (...) {
+    cerr<<"AugustusGraph::printGraph() can't open file"<<endl;
+    return;
+  }
   file<<"digraph MEAgraph {\n";
   file<<"rankdir=LR;\n";
  
@@ -601,7 +613,7 @@ void AugustusGraph::printGraph(string filename){
     Node *pos = q.front();
     q.pop(); 
    
-    for(list<Edge>::iterator it=pos->edgeoffsets.begin(); it!=pos->edgeoffsets.end(); it++){
+    for(list<Edge>::iterator it=pos->edges.begin(); it!=pos->edges.end(); it++){
      if(inQueue[getKey(it->to)] == 0){
 	q.push(it->to);
 	inQueue[getKey(it->to)] = it->to;
