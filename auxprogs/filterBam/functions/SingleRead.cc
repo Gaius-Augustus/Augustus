@@ -111,8 +111,6 @@ int SingleRead::operator<(const SingleRead &rhs) const
 }
 
 
-
-
 void toString(SingleRead read)
 {
   BamAlignment al = read.al;

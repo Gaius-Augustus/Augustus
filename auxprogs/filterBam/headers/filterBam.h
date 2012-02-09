@@ -1,7 +1,7 @@
 /* 	Function definitions
  
 	Created: 20-September-2011	
-	Last modified: 31-January-2012
+	Last modified: 8-February-2012
 */
 
 #include <api/BamReader.h>  
@@ -105,6 +105,10 @@ class MatePairs
 #endif
 
 void printMatePairs(vector<MatePairs> someList, vector<BamAlignment> &qali);
+vector<int> flattenMateIndices(vector<MatePairs> matepairs);
+vector<int> uniqueIndices(vector<MatePairs> matepairs);
+vector<int> locateIt(int alIt, vector<MatePairs> matepairs);
+vector<int> locateJit(int alJit, vector<MatePairs> matepairs);
 
 
 #ifndef PAIREDNESSCOVERAGE_H

@@ -259,7 +259,7 @@ int main(int argc, char *argv[])
   		al.GetTag("NM", editDistance); // edit distance (see SAM spec)
 
 		// Percentage Identity filter
-  		percId = 100*(qLength-editDistance)/qLength;  
+  		percId = (float)100*(qLength-editDistance)/qLength;  
   		if (percId < minId)
   	  	{
   			outMinId++;
@@ -407,25 +407,21 @@ int main(int argc, char *argv[])
 	cout <<  "no refID        : " << noRefID << endl;
 	cout <<  "percent identity: " << outMinId << endl;
 	cout <<  "coverage        : " << outMinCover << endl;
-	if (noIntrons)
-	  {cout <<  "nointrons       : " << outIntrons << endl;}
+	if (noIntrons) {cout <<  "nointrons       : " << outIntrons << endl;}
 	if (paired) 
 	  {
 		cout << "not paired      : " << outPaired << endl;
-      	cout << "quantiles of unspliced insert lengths: " << endl;
+      	cout << "quantiles of unspliced insert lengths: [insertlen.size()=" << insertlen.size() << "]" << endl;
 		try { // catches: instance of 'std::out_of_range'
-		  for (int it=1; it<10; it++)
-			{
-			  cout << "q[" << (10*it) << "%]=" << insertlen.at(ceil(it*insertlen.size()/10)) << ",";
+		  	  for (int it=1; it<10; it++)
+				{cout << "q[" << 10*it << "%]=" << insertlen.at(ceil(it*insertlen.size()/10)) << ",";}
+			} catch (out_of_range& oor) { 
+		  		  cerr << "[Quantiles]:" << oor.what() << "; insertlen.size()=" << insertlen.size() << endl; 
 			}
-		} catch (out_of_range& oor) { 
-		  cerr << "[TPC]: Problem with quantile computing: " << oor.what() << endl; }
 		cout << endl;
  	  } 
-	if (uniq) 
-	  {cout << "unique          : " << outUniq << endl;}
-	if (best)
-	  {cout << "best            : " << outBest << endl;}
+	if (uniq) {cout << "unique          : " << outUniq << endl;}
+	if (best) {cout << "best            : " << outBest << endl;}
 
 
 
@@ -465,6 +461,7 @@ string bool_cast(const bool b)
     ss << boolalpha << b;
     return ss.str();
 }
+
 
 
 vector<string> uniqueKeys(const vector<PairednessCoverage> &m)
@@ -981,7 +978,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 
 		}
 
-	  // Taking out all alignments that were not paired
+	  // Counting all alignments that were not paired
 	  outPaired += (int)qali.size() - (int)mated.size();
 
 	  if ((!uniq && !best) || matepairs.size()<2)
@@ -998,8 +995,9 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 	  	  for (m_it=mated.begin(); m_it!=mated.end(); m_it++)
 	  		{ 
 			  if (verbose)
-				{cout << "Letting pass paired-alignments: (" << (*m_it).first  
-					  << ") : " << qali.at((*m_it).first).Name << endl;}
+				{cout << "Letting pass paired-alignments: (" << (*m_it).first << ") : " 
+					  << qali.at((*m_it).first).Name << ", " << 
+						 getReferenceName(refData, qali.at((*m_it).first).RefID) << endl;}
 			  // Removing percId and coverage Tags before writing into file
 			  qali.at((*m_it).first).RemoveTag("pi"); qali.at((*m_it).first).RemoveTag("co");
   			  (*ptrWriter).SaveAlignment(qali.at((*m_it).first)); 
@@ -1027,20 +1025,23 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 			// Selection of Uniq-ue mate-pairs takes precedence over selecting Best mate-pairs
 	  	  	if (uniq)
 	  		  {// let pass only one mate pair, and only if second is significantly worse
-			  	int second; float scoreFirst, scoreSecond, ratio;
-				string mate1First, mate1Second, mate2First, mate2Second;
+			  	int second; float score_topPair, score_2ndPair, ratio;
+				string mate_1_topPair, mate_1_2ndPair, mate_2_topPair, mate_2_2ndPair;
 				second = 1;
 
-		    	cout << "------------------------------------------------------" << endl;
-				cout << "Comparing similarity between pairs:" << endl;
-				cout << matepairs.at(0).alIt << " and " << matepairs.at(second).alIt << endl;
-				cout << matepairs.at(0).alJit << " and " << matepairs.at(second).alJit << endl;
-			  	cout << "------------------------------------------------------" << endl;
+				if (verbose)
+				  {
+					cout << "------------------------------------------------------" << endl;
+					cout << "Comparing similarity between pairs:" << endl;
+					cout << matepairs.at(0).alIt << " and " << matepairs.at(second).alIt << endl;
+					cout << matepairs.at(0).alJit << " and " << matepairs.at(second).alJit << endl;
+					cout << "------------------------------------------------------" << endl;
+				  }
 
-	  			while(second < matepairs.size() && similar(qali.at(matepairs.at(0).alIt), 
-														   qali.at(matepairs.at(second).alIt), globalOptions) 
-												&& similar(qali.at(matepairs.at(0).alJit), 
-														   qali.at(matepairs.at(second).alJit), globalOptions)) 
+	  			while(second < matepairs.size() && 
+					  similar(qali.at(matepairs.at(0).alIt),qali.at(matepairs.at(second).alIt),globalOptions) 
+					  							&& 
+					  similar(qali.at(matepairs.at(0).alJit),qali.at(matepairs.at(second).alJit),globalOptions))
 	  			  {
 	  				second++;
 	  			  }
@@ -1049,14 +1050,17 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				// "Second" mate-pair is the one with lowest score, but that is still similar
 				if (second < matepairs.size())
 				  {
-					mate1First = qali.at(matepairs.at(0).alIt).Name;
-					mate2First = qali.at(matepairs.at(0).alJit).Name;
-					scoreFirst = matepairs.at(0).score;
-					mate1Second = qali.at(matepairs.at(second).alIt).Name;
-					mate2Second = qali.at(matepairs.at(second).alJit).Name;
-					scoreSecond = matepairs.at(second).score;
-					// Computing ratio between first and second mate-pairs
-					ratio = scoreSecond/scoreFirst;
+					// Fetching data from top-scored mate-pair:
+					mate_1_topPair = qali.at(matepairs.at(0).alIt).Name;
+					mate_2_topPair = qali.at(matepairs.at(0).alJit).Name;
+					score_topPair = matepairs.at(0).score;
+					// Fetching data from second-worst mate-pair:
+					mate_1_2ndPair = qali.at(matepairs.at(second).alIt).Name;
+					mate_2_2ndPair = qali.at(matepairs.at(second).alJit).Name;
+					score_2ndPair = matepairs.at(second).score;
+
+					// Computing ratio between both sets of mate-pairs:
+					ratio = score_2ndPair/score_topPair;
 
 					if (verbose)
 					  {
@@ -1065,10 +1069,10 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 							<< endl;
 						cout << "Position of last similar mate-pair (indexed by second)=" << second << endl;
 						cout << "Comparing scores between optimal and second mate-pairs: " << endl;
-						cout << "[" << mate1First << " paired with " << mate2First << "; score=" 
-							 << scoreFirst << "]" << endl; 
-						cout << "[" << mate1First << " paired with " << mate2Second << "; score=" 
-							 << scoreSecond << "]" << endl;
+						cout << "[" << mate_1_topPair << " paired with " << mate_2_topPair << "; score=" 
+							 << score_topPair << "]" << endl; 
+						cout << "[" << mate_1_topPair << " paired with " << mate_2_2ndPair << "; score=" 
+							 << score_2ndPair << "]" << endl;
 						cout << "Ratio between these two mate-pairs: " << ratio << endl;
 						cout << "------------------------------------------------------------------------\n"; 
 					  }
@@ -1078,16 +1082,16 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					  {
 						if (verbose)
 						  {
-							cout << "Letting pass unique mate-pair: (" << mate1First << " and " 
-								 << mate2First << ") because:" << endl;
-							cout << "'lowest-scored' but similar mate-pair: (" << mate1Second << " and " 
-								 << mate2Second << ")" << endl;
+							cout << "Letting pass unique mate-pair: (" << mate_1_topPair << " and " 
+								 << mate_2_topPair << ") because:" << endl;
+							cout << "'lowest-scored' but similar mate-pair: (" << mate_1_2ndPair << " and " 
+								 << mate_2_2ndPair << ")" << endl;
 							cout << "is significantly worse, ratio=" << ratio << "<uniqThresh=" 
 							 	<< uniqThresh << endl;
 						  }
-						// Removing percId and coverage Tags before writing into file
+						// Removing percId & coverage Tags from the unique mate-pair before writing it into file
 						qali.at(matepairs.at(0).alIt).RemoveTag("pi"); 
-						qali.at(matepairs.at(0).alIt).RemoveTag("co");
+					    qali.at(matepairs.at(0).alIt).RemoveTag("co");
 						qali.at(matepairs.at(0).alJit).RemoveTag("pi"); 
 						qali.at(matepairs.at(0).alJit).RemoveTag("co");
 						(*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
@@ -1097,20 +1101,22 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 
 					  	  if (verbose)
 						    {
-							  cout << "(" << matepairs.size() <<") mate-pairs filtered out by uniqueness because:";
+							  cout << "(" << matepairs.size() <<") mate-pairs filtered out by uniqueness "; 
+							  cout << "because:";
 							  cout << "\nThey are similar and have score ratio=" << ratio 
 								   << ">uniqThresh=" << uniqThresh << endl;
 							  for (int it=0; it<matepairs.size(); it++)
-								{cout << qali.at(matepairs.at(it).alIt).Name << ", " 
-									  << qali.at(matepairs.at(it).alJit).Name << ") filtered out by uniqueness " 
-									  << "criterion." << endl;}	
+								{
+								  cout << qali.at(matepairs.at(it).alIt).Name << ", " 
+									   << qali.at(matepairs.at(it).alJit).Name << ") filtered out by "; 
+								  cout << "uniqueness criterion." << endl;	
+								}	
 							  cout << "Clearing contents of matepairs" << endl;				   	
 							}
 
 						  outUniq += mated.size(); // Drop all mated alignments
 						  matepairs.clear();
 					  }
-
 
 				  } else {// '(second == matepairs.size()' => all mate-pairs in "matepairs" are similar
 					  if (verbose)
@@ -1132,17 +1138,18 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					  qali.at(matepairs.at(0).alJit).RemoveTag("co");
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
-					  outUniq += mated.size()-2; // Drop all alignments except one set of pairs
+					  outUniq += mated.size()-2; // Drop all alignments except the first pair of alignments
 				}
 
 				// keep only the best pair (if any)
 				matepairs.resize(1);
 
-	    	  } else { // (uniq, best) = (0, 1); let pass only (best) mate-pairs that share maximum score
+	    	  } else { // (uniq, best) = (0, 1); let pass only "best" mate-pairs that share maximum score
 
 			  	  if (verbose)
 					{
-					  cout << "------------------------------------------------------------------------" <<endl;
+					  cout << "------------------------------------------------------------------------" 
+						   << endl;
 					  cout << "Options: (paired, uniq, best) = (" << paired << ", " << uniq << ", " << best 
 						   << ")" << endl;
 					}
@@ -1154,16 +1161,32 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				  tempScore = optScore;
 				  int numBest = 0;
 
-				  while (numBest<matepairs.size() && matepairs.at(numBest).score == optScore)
+				  // // Taking provisions for repeated indices
+				  vector<int> uniqInd = uniqueIndices(matepairs);
+				  vector<int>::iterator itFind;
+				  vector<int> repeatedIndices;
+				  // vector<int> differ(uniqueIndices.size()+2);
+				  // vector<int>::iterator itDiffer;
+
+				  while (numBest < matepairs.size() && matepairs.at(numBest).score == optScore)
 					{
 					  if (verbose)
 						{
 						  cout << "[BUG?]Letting pass mate-pair (best): " << qali.at(matepairs.at(0).alIt).Name 
 							   << " paired with " << qali.at(matepairs.at(0).alJit).Name << ", score=" 
 							   << tempScore << ", optScore=" << optScore << endl;
-						  cout << "[BUG?]Storing at bestTnames=" << getReferenceName(refData, qali.at(matepairs.at(0).alIt).RefID) 
-								<< endl;
+						  cout << "[BUG?]Storing at bestTnames=" 
+							   << getReferenceName(refData, qali.at(matepairs.at(0).alIt).RefID) << endl;
 						}
+
+					  // Obtaining indices associated with alignment at position "numBest"
+					  // passedIndices.push_back(matepairs.at(numBest).alJit);
+					  // sort(passedIndices.begin(), passedIndices.end());
+					  // sort(uniqueIndices.begin(), uniqueIndices.end());
+					  // itDiffer = set_difference(uniqueIndices.begin(), uniqueIndices.end(), 
+					  // 						   passedIndices.begin(), passedIndices.end(), differ.begin());
+					  // cout << "Intersection has " << int(itDiffer-differ.begin()) << " as elements.\n";
+
 					  // Removing percId and coverage Tags before writing into file
 					  qali.at(matepairs.at(numBest).alIt).RemoveTag("pi"); 
 					  qali.at(matepairs.at(numBest).alIt).RemoveTag("co");
@@ -1173,9 +1196,19 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alJit)); 
 					  bestTnames.push_back(getReferenceName(refData,qali.at(matepairs.at(numBest).alIt).RefID));
 					  numBest++;
+					  // Deleting saved indices from matepairs
+			 try { // catches: instance of 'std::out_of_range'
+					  repeatedIndices = locateIt(matepairs.at(numBest).alIt, matepairs);
+					  cout << "Size of repeated indices=" << repeatedIndices.size() << endl;
+					  repeatedIndices = locateJit(matepairs.at(numBest).alJit, matepairs);
+					  cout << "Size of repeated indices=" << repeatedIndices.size() << endl;
+			     } catch (out_of_range& oor) { 
+					  cerr << "[BEST]:" << oor.what() << "; repeatedIndices.size()=" << repeatedIndices.size() << endl; 
+				 }
+
 					}
 
-				  outBest += mated.size(); // TO-CORRECT: Need to consider alignments with multiple mates!!!
+				  outBest += 0; //int(itDiffer-differ.begin()); 
 				  // Retaining only mate-pairs with optimal score
 				  matepairs.resize(numBest);
 
