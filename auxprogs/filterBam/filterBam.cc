@@ -6,7 +6,7 @@
 	3. Intron gaps (noIntrons, baseInsert)
 	4. Uniqueness (determined by percId and coverage)
 
-
+ 
 	Created: 4-November-2011
 	Last modified: 2-February-2012 
 */  
@@ -1164,10 +1164,12 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				  // // Taking provisions for repeated indices
 				  vector<int> uniqInd = uniqueIndices(matepairs);
 				  vector<int>::iterator itFind;
-				  vector<int> repeatedIndices;
-				  // vector<int> differ(uniqueIndices.size()+2);
-				  // vector<int>::iterator itDiffer;
-
+				  vector<int> writtenIndices; 
+				  writtenIndices.push_back(1);
+				  writtenIndices.push_back(2);
+				  writtenIndices.push_back(5);
+				  writtenIndices.push_back(3);
+			  
 				  while (numBest < matepairs.size() && matepairs.at(numBest).score == optScore)
 					{
 					  if (verbose)
@@ -1179,32 +1181,38 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 							   << getReferenceName(refData, qali.at(matepairs.at(0).alIt).RefID) << endl;
 						}
 
-					  // Obtaining indices associated with alignment at position "numBest"
-					  // passedIndices.push_back(matepairs.at(numBest).alJit);
-					  // sort(passedIndices.begin(), passedIndices.end());
-					  // sort(uniqueIndices.begin(), uniqueIndices.end());
-					  // itDiffer = set_difference(uniqueIndices.begin(), uniqueIndices.end(), 
-					  // 						   passedIndices.begin(), passedIndices.end(), differ.begin());
-					  // cout << "Intersection has " << int(itDiffer-differ.begin()) << " as elements.\n";
+					  if (writtenIndices.size()>0)
+						{
+						  // Verifying whether mate-pair(s) have been written before
+						  itFind=find(writtenIndices.begin(),writtenIndices.end(),matepairs.at(numBest).alIt);
+						  cout << "Value of itFind=" << *itFind << endl;
+						  // if (~p)
+						  // 	{
+						  // 	  // Removing percId and coverage Tags before writing into file
+						  // 	  qali.at(matepairs.at(numBest).alIt).RemoveTag("pi"); 
+						  // 	  qali.at(matepairs.at(numBest).alIt).RemoveTag("co");
+						  // 	  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alIt)); 
+						  // 	  // Updating written indices with newly saved alignemnts
+						  // 	  writtenIndices.push_back(matepairs.at(numBest).alIt);
+						  // 	}
 
-					  // Removing percId and coverage Tags before writing into file
-					  qali.at(matepairs.at(numBest).alIt).RemoveTag("pi"); 
-					  qali.at(matepairs.at(numBest).alIt).RemoveTag("co");
-					  qali.at(matepairs.at(numBest).alJit).RemoveTag("pi"); 
-					  qali.at(matepairs.at(numBest).alJit).RemoveTag("co");
-					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alIt)); 
-					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alJit)); 
-					  bestTnames.push_back(getReferenceName(refData,qali.at(matepairs.at(numBest).alIt).RefID));
+						  // Verifying whether mate-pair(s) have been written before
+						  itFind=find(writtenIndices.begin(),writtenIndices.end(),matepairs.at(numBest).alJit);
+						  cout << "Value of itFind=" << *itFind << endl;
+						  // if (~p)
+						  // 	{
+						  // 	  // Removing percId and coverage Tags before writing into file
+						  // 	  qali.at(matepairs.at(numBest).alJit).RemoveTag("pi"); 
+						  // 	  qali.at(matepairs.at(numBest).alJit).RemoveTag("co");
+						  // 	  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alJit)); 
+						  // 	  // Updating written indices with newly saved alignemnts
+						  // 	  writtenIndices.push_back(matepairs.at(numBest).alJit);
+						  // 	}
+						}
+
+					  // Keeping name of chromosome for: geneFile
+					  // bestTnames.push_back(getReferenceName(refData,qali.at(matepairs.at(numBest).alIt).RefID));
 					  numBest++;
-					  // Deleting saved indices from matepairs
-			 try { // catches: instance of 'std::out_of_range'
-					  repeatedIndices = locateIt(matepairs.at(numBest).alIt, matepairs);
-					  cout << "Size of repeated indices=" << repeatedIndices.size() << endl;
-					  repeatedIndices = locateJit(matepairs.at(numBest).alJit, matepairs);
-					  cout << "Size of repeated indices=" << repeatedIndices.size() << endl;
-			     } catch (out_of_range& oor) { 
-					  cerr << "[BEST]:" << oor.what() << "; repeatedIndices.size()=" << repeatedIndices.size() << endl; 
-				 }
 
 					}
 

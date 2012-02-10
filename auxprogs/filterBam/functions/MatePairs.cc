@@ -151,30 +151,28 @@ vector<int> uniqueIndices(vector<MatePairs> matepairs)
   return uniqInd;
 }
 
-vector<int> locateIt(int alIt, vector<MatePairs> matepairs)
+bool locateIt(int alIt, vector<MatePairs> matepairs)
 {
-  vector<int> repeatIt;
+  bool repeatIt=0;
 
   for (int it=0; it<matepairs.size(); it++)
 	{
 	  if (alIt == matepairs.at(it).alIt)
 		{
-		  repeatIt.push_back(alIt);
+		  return repeatIt;
 		}		
 	}
-  return repeatIt;
 }
 
-vector<int> locateJit(int alJit, vector<MatePairs> matepairs)
+bool locateJit(int alJit, vector<MatePairs> matepairs)
 {
-  vector<int> repeatJit;
+  bool repeatJit=0;
 
   for (int it=0; it<matepairs.size(); it++)
 	{
 	  if (alJit == matepairs.at(it).alJit)
 		{
-		  repeatJit.push_back(alJit);
+		  return repeatJit;
 		}		
 	}
-  return repeatJit;
 }

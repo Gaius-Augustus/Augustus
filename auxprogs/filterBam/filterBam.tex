@@ -20,8 +20,19 @@ University of Greifswald}
  
 \begin{document}  
 \maketitle
-\abstract{This note describes the operation of filterBam, a C++ program that makes use of Bamtools API in 
-order to filter alignment files stored in BAM format.}
+\abstract{RNA-seq data has become an important source of information for tasks such as differential 
+expression analysis, gene prediction and transcript quantification. In most of the cases, the initial 
+step in RNA-seq data analysis consists of aligning potentially millions of sequencing reads to a reference 
+genome; the reads might come in two formats: as single reads or as paired reads. Given that this new 
+technology produces millions of such short-reads, bespoke methods and tools are required to clean such 
+big amounts of information. In addition, the introduction of the \{S}equence \{A}lign\{M}ent format 
+has meant that many of the alignment tools (Bowtie, GMAP, etc.) now produce outputs in SAM or BAM format,
+BAM being the binary version of SAM.
+
+This note documents "filterBAM", a program designed to clean single and paired RNA-seq reads. The filter 
+is based on filterPSL, a perl script written by Prof. Mario Stanke. Both filterPSL and filterBam are 
+designed for the cleaning of data that will subsequently be applied to the gene prediction problem. 
+filterBam is written in C++ and makes use of the Bamtools API.}
 
 \section{Main features}
 filterBam is a C++ code that cleans alignment files in BAM format that is based on filterPSL, a Perl routine 
@@ -37,8 +48,10 @@ written by Prof. Mario Stanke for PSL files. filterBAM includes the following fi
 			target genes and of pairedness coverage.
 \end{itemize}
 
-\section{Single reads}
+
+\section{Single and paired-end reads}
 filterBam has been 
+
 
 
 \section{NOTES:}  

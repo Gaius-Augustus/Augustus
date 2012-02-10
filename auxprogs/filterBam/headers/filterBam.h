@@ -107,8 +107,8 @@ class MatePairs
 void printMatePairs(vector<MatePairs> someList, vector<BamAlignment> &qali);
 vector<int> flattenMateIndices(vector<MatePairs> matepairs);
 vector<int> uniqueIndices(vector<MatePairs> matepairs);
-vector<int> locateIt(int alIt, vector<MatePairs> matepairs);
-vector<int> locateJit(int alJit, vector<MatePairs> matepairs);
+bool locateIt(int alIt, vector<MatePairs> matepairs);
+bool locateJit(int alJit, vector<MatePairs> matepairs);
 
 
 #ifndef PAIREDNESSCOVERAGE_H
