@@ -1161,62 +1161,61 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				  tempScore = optScore;
 				  int numBest = 0;
 
-				  // // Taking provisions for repeated indices
-				  vector<int> uniqInd = uniqueIndices(matepairs);
-				  vector<int>::iterator itFind;
-				  vector<int> writtenIndices; 
-				  writtenIndices.push_back(1);
-				  writtenIndices.push_back(2);
-				  writtenIndices.push_back(5);
-				  writtenIndices.push_back(3);
-			  
+				  // Taking provisions for repeated indices
+				  map<int,int> writtenIndices;
+				  int mateIt, mateJit;
+
 				  while (numBest < matepairs.size() && matepairs.at(numBest).score == optScore)
 					{
+
+					  // Verifying whether mate-pair(s) have been written before
+					  mateIt = matepairs.at(numBest).alIt;
+					  if (!writtenIndices.count(mateIt))
+					  	{
+						  if (verbose)
+							{
+							  cout << "Letting pass alignment: " << qali.at(matepairs.at(0).alIt).Name 
+								   << ", i.e. pair: " << mateIt << ", score=" << tempScore 
+								   << ", optScore=" << optScore << endl;
+							}
+						  // Removing percId and coverage Tags before writing into file
+						  qali.at(matepairs.at(numBest).alIt).RemoveTag("pi"); 
+						  qali.at(matepairs.at(numBest).alIt).RemoveTag("co");
+						  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alIt)); 
+						  // Updating written indices with newly saved alignemnts
+						  writtenIndices[mateIt] = 1;
+						}
+
+					  // Verifying whether mate-pair(s) have been written before
+					  mateJit = matepairs.at(numBest).alJit;
+					  if (!writtenIndices.count(mateJit))
+					  	{
+					  	  if (verbose)
+					  		{
+					  		  cout << "Letting pass alignment: " << qali.at(matepairs.at(0).alJit).Name 
+					  			   << ", i.e. pair: " << mateJit << ", score=" << tempScore 
+					  			   << ", optScore=" << optScore << endl;
+					  		}
+					  	  // Removing percId and coverage Tags before writing into file
+					  	  qali.at(matepairs.at(numBest).alJit).RemoveTag("pi"); 
+					  	  qali.at(matepairs.at(numBest).alJit).RemoveTag("co");
+					  	  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alJit)); 
+					  	  // Updating written indices with newly saved alignemnts
+					  	  writtenIndices[mateJit] = 1;
+					  	}
+
+					  // Keeping name of reference for: geneFile
 					  if (verbose)
 						{
-						  cout << "[BUG?]Letting pass mate-pair (best): " << qali.at(matepairs.at(0).alIt).Name 
-							   << " paired with " << qali.at(matepairs.at(0).alJit).Name << ", score=" 
-							   << tempScore << ", optScore=" << optScore << endl;
-						  cout << "[BUG?]Storing at bestTnames=" 
-							   << getReferenceName(refData, qali.at(matepairs.at(0).alIt).RefID) << endl;
+						  cout << "Save at bestTnames:" 
+							   << getReferenceName(refData, qali.at(mateIt).RefID) << endl;
 						}
-
-					  if (writtenIndices.size()>0)
-						{
-						  // Verifying whether mate-pair(s) have been written before
-						  itFind=find(writtenIndices.begin(),writtenIndices.end(),matepairs.at(numBest).alIt);
-						  cout << "Value of itFind=" << *itFind << endl;
-						  // if (~p)
-						  // 	{
-						  // 	  // Removing percId and coverage Tags before writing into file
-						  // 	  qali.at(matepairs.at(numBest).alIt).RemoveTag("pi"); 
-						  // 	  qali.at(matepairs.at(numBest).alIt).RemoveTag("co");
-						  // 	  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alIt)); 
-						  // 	  // Updating written indices with newly saved alignemnts
-						  // 	  writtenIndices.push_back(matepairs.at(numBest).alIt);
-						  // 	}
-
-						  // Verifying whether mate-pair(s) have been written before
-						  itFind=find(writtenIndices.begin(),writtenIndices.end(),matepairs.at(numBest).alJit);
-						  cout << "Value of itFind=" << *itFind << endl;
-						  // if (~p)
-						  // 	{
-						  // 	  // Removing percId and coverage Tags before writing into file
-						  // 	  qali.at(matepairs.at(numBest).alJit).RemoveTag("pi"); 
-						  // 	  qali.at(matepairs.at(numBest).alJit).RemoveTag("co");
-						  // 	  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(numBest).alJit)); 
-						  // 	  // Updating written indices with newly saved alignemnts
-						  // 	  writtenIndices.push_back(matepairs.at(numBest).alJit);
-						  // 	}
-						}
-
-					  // Keeping name of chromosome for: geneFile
-					  // bestTnames.push_back(getReferenceName(refData,qali.at(matepairs.at(numBest).alIt).RefID));
+					  bestTnames.push_back(getReferenceName(refData,qali.at(mateIt).RefID));
 					  numBest++;
 
 					}
 
-				  outBest += 0; //int(itDiffer-differ.begin()); 
+				  outBest += writtenIndices.size(); 
 				  // Retaining only mate-pairs with optimal score
 				  matepairs.resize(numBest);
 
@@ -1261,7 +1260,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 
 	  	} // (!uniq && !best) || matepairs.size()<2)
 
-	  // Write pairedness coverage infor into the pairBedFile	
+	  // Write pairedness coverage info into the pairBedFile	
 	  // output pairedbed info: go through list of all mate pairs and store start and end position
 	  if (pairBedFile)
 		{
@@ -1444,6 +1443,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					// Removing percId and coverage Tags before writing into file
 					qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
 					(*ptrWriter).SaveAlignment(qali.at(0)); 
+					// Keeping name of reference for: geneFile
 					bestTnames.push_back(getReferenceName(refData, qali.at(0).RefID));
 					qali.erase(qali.begin()); // Deletes first member of qali
 					if (verbose)
