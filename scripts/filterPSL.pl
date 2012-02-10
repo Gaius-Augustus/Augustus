@@ -307,10 +307,10 @@ sub processQuery(){
 		my %haveOutput = (); # remember alignments that were printed, as some alignments can be part of several equally good pairs
 		while ($numbest < @matepairs && $matepairs[$numbest]->[2] == $optscore){
 		    my ($aliline1, $aliline2) = ($qali[$matepairs[$numbest]->[0]]->[0], $qali[$matepairs[$numbest]->[1]]->[0]);
-		    print $aliline1 if (!exists($haveOutput($aliline1)));
-		    $haveOutput($aliline1) = 1;
-                    print $qali[$matepairs[$numbest]->[1]]->[0] if (!exists($haveOutput($aliline2)));
-                    $haveOutput($aliline2) = 1;
+		    print $aliline1 if (!exists($haveOutput{$aliline1}));
+		    $haveOutput{$aliline1} = 1;
+                    print $qali[$matepairs[$numbest]->[1]]->[0] if (!exists($haveOutput{$aliline2}));
+                    $haveOutput{$aliline2} = 1;
                     push @bestTnames, $qali[$matepairs[$numbest]->[0]]->[1];
 		    $numbest++;
 		}
