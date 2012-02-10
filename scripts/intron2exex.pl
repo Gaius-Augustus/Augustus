@@ -73,7 +73,7 @@ open(MAP, ">$mapfile") || die "Could not open $mapfile for writing.\n" if (defin
 
 $/="\n>";
 while(<GENOME>) {
-    /[>]*(.*)\n/;
+    /[>]*(\S+)/;
     $chr = $1;
     $seq = $'; #'
     $seq =~ s/>//;
