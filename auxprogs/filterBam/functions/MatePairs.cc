@@ -1,7 +1,7 @@
 /*	Implementation of the MATEPAIRS class
 
 	Created: 7-November-2011	
-	Last modified: 9-February-2012
+	Last modified: 10-February-2012
 */
 
 #include <iostream>
@@ -121,58 +121,3 @@ void printMatePairs(vector<MatePairs> matepairs, vector<BamAlignment> &qali)
 }
 
 
-vector<int> flattenMateIndices(vector<MatePairs> matepairs)
-{
-  vector<int> alIdx;
-  for (int iter=0; iter < matepairs.size(); iter++)
-	{
-	  alIdx.push_back(matepairs.at(iter).alIt);
-	  alIdx.push_back(matepairs.at(iter).alJit);
-	}
-
-  return alIdx;
-}
-
-vector<int> uniqueIndices(vector<MatePairs> matepairs)
-{
-  vector<int> flattenedIndices = flattenMateIndices(matepairs);
-  map<int,int> ui;
-  for (int it=0; it<flattenedIndices.size(); it++) 
-	{
-	  ui[flattenedIndices.at(it)]++;
-	}
-  vector<int> uniqInd;
-  map<int,int>::iterator iter;
-  for (iter=ui.begin(); iter!=ui.end(); iter++) 
-	{
-	  uniqInd.push_back((*iter).first);
-	}
-
-  return uniqInd;
-}
-
-bool locateIt(int alIt, vector<MatePairs> matepairs)
-{
-  bool repeatIt=0;
-
-  for (int it=0; it<matepairs.size(); it++)
-	{
-	  if (alIt == matepairs.at(it).alIt)
-		{
-		  return repeatIt;
-		}		
-	}
-}
-
-bool locateJit(int alJit, vector<MatePairs> matepairs)
-{
-  bool repeatJit=0;
-
-  for (int it=0; it<matepairs.size(); it++)
-	{
-	  if (alJit == matepairs.at(it).alJit)
-		{
-		  return repeatJit;
-		}		
-	}
-}
