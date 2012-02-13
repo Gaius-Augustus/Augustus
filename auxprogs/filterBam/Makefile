@@ -20,7 +20,7 @@ SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleRea
 			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
-CFLAGS = -g $(INCLUDES) -std=c++0x 
+CFLAGS = -g $(INCLUDES) -std=c++0x -pg
 #LINK.cc = g++
 
 

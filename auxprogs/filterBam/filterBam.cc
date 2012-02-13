@@ -404,7 +404,7 @@ int main(int argc, char *argv[])
 	cout <<  "\n\n------------------------------------- " << endl;
 	cout <<  "\nSummary of filtered alignments: " << endl;
 	cout <<  "------------------------------------- " << endl;
-	cout <<  "no refID        : " << noRefID << endl;
+	cout <<  "unmapped        : " << noRefID << endl;
 	cout <<  "percent identity: " << outMinId << endl;
 	cout <<  "coverage        : " << outMinCover << endl;
 	if (noIntrons) {cout <<  "nointrons       : " << outIntrons << endl;}
@@ -1215,7 +1215,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 
 					}
 
-				  outBest += writtenIndices.size(); 
+				  outBest += mated.size()-writtenIndices.size(); 
 				  // Retaining only mate-pairs with optimal score
 				  matepairs.resize(numBest);
 
@@ -1249,9 +1249,13 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						  unordered_map<string, int>::iterator itGn = geneNames.begin();
 						  for (itGn; itGn != geneNames.end(); itGn++)
 							{
-							  cout << oldQnameStem << "\t"<< (*itGn).first << "\t" << (*itGn).second << endl;
-							  geneFile << oldQnameStem <<"\t"<< (*itGn).first << "\t" << (*itGn).second << endl;
+							  if (verbose)
+								{
+								  cout << oldQnameStem << "\t"<< (*itGn).first << "\t" << (*itGn).second << endl;
+								}
+							  geneFile << oldQnameStem <<"\t"<< (*itGn).first;
 							}
+						  geneFile << endl;
 						  geneFile.close();  
 						}
 					} 
@@ -1456,7 +1460,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					  	  qSize = false;
 					  }
 						
-				  }
+				  } 
 
 				outBest += qali.size();
 				if (verbose)
