@@ -8,7 +8,7 @@
 
  
 	Created: 4-November-2011
-	Last modified: 10-February-2012 
+	Last modified: 14-February-2012 
 */  
  
 #include <api/BamReader.h>
