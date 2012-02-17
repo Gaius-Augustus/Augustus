@@ -12,39 +12,11 @@ void MEApath::findMEApath(){
   relax();   
   
   //backtracking
-
-  Node *pos = topSort[0];
-  meaPath.push_front(pos);  
-  while(pos->pred != NULL){
-    meaPath.push_front(pos->pred); 
-    pos = pos->pred;
-  }
+  backtracking();
   
-    //for graphviz dot to draw path
-
-  for(list<Node*>::iterator node=graph->nodelist.begin(); node!=graph->nodelist.end(); node++){
-    bool nodeInPath = false;
-    bool predInPath = false;
-    for(list<Node*>::iterator pathNode=meaPath.begin(); pathNode!=meaPath.end(); pathNode++){
-      if((*node)->pred == *pathNode)
-	predInPath = true;
-      if(*node == *pathNode)
-	nodeInPath = true;
-      if(predInPath && nodeInPath)
-	goto nextNode;
-    }
-    (*node)->pred = NULL;
-    nextNode:;
-  }
+  //for graphviz dot to draw path
+  traverseForward();
   graph->printGraph("MEA_graph.dot");
-}
-
-void MEApath::getTopologicalOrdering(){
-
-  for(list<Node*>::iterator node=graph->nodelist.begin(); node!=graph->nodelist.end(); node++){   
-    if(processed[graph->getKey(*node)]==0)
-      dfs(*node);
-  }
 }
 
 /*
@@ -89,5 +61,40 @@ void MEApath::relax(){
     for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++)
       if(edge->to->score < (*node)->score + edge->score)
 	cerr<<"MEA (relax): wrong distance "<<edge->to->score<<" at: "<<edge->to->begin<<":"<<edge->to->end<<endl;
+  }
+}
+
+void MEApath::getTopologicalOrdering(){
+
+  for(list<Node*>::iterator node=graph->nodelist.begin(); node!=graph->nodelist.end(); node++){   
+    if(processed[graph->getKey(*node)]==0)
+      dfs(*node);
+  }
+}
+
+void MEApath::backtracking(){
+
+  Node *pos = topSort[0];
+  meaPath.push_front(pos);  
+  while(pos->pred != NULL){
+    meaPath.push_front(pos->pred); 
+    pos = pos->pred;
+  }
+}
+
+void MEApath::traverseForward(){
+  for(list<Node*>::iterator node=graph->nodelist.begin(); node!=graph->nodelist.end(); node++){
+    bool nodeInPath = false;
+    bool predInPath = false;
+    for(list<Node*>::iterator pathNode=meaPath.begin(); pathNode!=meaPath.end(); pathNode++){
+      if((*node)->pred == *pathNode)
+	predInPath = true;
+      if(*node == *pathNode)
+	nodeInPath = true;
+      if(predInPath && nodeInPath)
+	goto nextNode;
+    }
+    (*node)->pred = NULL;
+    nextNode:;
   }
 }

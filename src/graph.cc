@@ -19,19 +19,11 @@ Graph::~Graph(){
 
 void Graph::buildGraph(){
 
-  // get size of neutral line
+  vector<Node*> neutralLine; //represents the area of intergenic regions
 
-  max = 0; 
-  min = numeric_limits<int>::max();
-  for(list<Status>::iterator it=statelist->begin(); it!=statelist->end(); it++){
-    if(it->name >= CDS && it->name <intron){
-      if(it->end > max)
-	max = it->end;
-      
-      if(it->begin < min)
-	min = it->begin;    
-    }
-  }
+  // get size of neutral line
+  getSizeNeutralLine();
+
   for(int i=0; i<max-min+1; i++)
     neutralLine.push_back(NULL);
   
@@ -48,23 +40,23 @@ void Graph::buildGraph(){
     if(it->name == CDS || it->name == utr3 || it->name == utr5){     
       if(it->next != NULL){
 	if(it->next->name == CDS || it->next->name == utr3 || it->next->name == utr5)
-	  addPair(&(*it), it->next);
+	  addPair(&(*it), it->next, neutralLine);
 	else{
 	  if(it->next->next != NULL)
-	    addPair(&(*it), it->next->next);
+	    addPair(&(*it), it->next->next, neutralLine);
 	  else{
-	    addExon(&(*it));
+	    addExon(&(*it), neutralLine);
 	    addEdgeToTail(&(*it));
 	  }
 	}
       }
       else{
-	addExon(&(*it));
+	addExon(&(*it), neutralLine);
 	addEdgeToTail(&(*it));
       }
     }
   } 
-  createNeutralLine();
+  createNeutralLine(neutralLine);
  
   // add edges of incomplete transcripts to the neutral line
 
@@ -91,12 +83,7 @@ void Graph::buildGraph(){
     addCompatibleEdges();
 
   // add node weight to edge weight
-
-  for(list<Node*>::iterator node = nodelist.begin(); node != nodelist.end(); node++){
-    for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
-      edge->score += (*node)->score;
-    }
-  }
+  addWeightToEdge();
   
   //sort edgeoffset lists
 
@@ -123,7 +110,7 @@ Node* Graph::getNode(Status *st){
   return existingNodes[getKey(st)];
 }
 
-Node* Graph::addExon(Status *exon){
+Node* Graph::addExon(Status *exon, vector<Node*> &neutralLine){
 
   if(!alreadyProcessed(exon)){
     Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item);
@@ -168,10 +155,10 @@ Node* Graph::addExon(Status *exon){
   return getNode(exon);
 }
 
-void Graph::addPair(Status *exon1, Status *exon2){
+void Graph::addPair(Status *exon1, Status *exon2, vector<Node*> &neutralLine){
 
-  Node *e1 = addExon(exon1);
-  Node *e2 = addExon(exon2);
+  Node *e1 = addExon(exon1, neutralLine);
+  Node *e2 = addExon(exon2, neutralLine);
   if(exon1->next == exon2 && !edgeExists(e1,e2)){
     Edge in(e2, false);
     e1->edges.push_back(in);  
@@ -182,7 +169,7 @@ void Graph::addPair(Status *exon1, Status *exon2){
   }
 }
 
-void Graph::createNeutralLine(){
+void Graph::createNeutralLine(vector<Node*> &neutralLine){
 
   Node *pos = head;
   int n = neutralLine.size();
@@ -335,6 +322,29 @@ for(list<Node*>::iterator node = nodelist.begin(); node != nodelist.end(); node+
   }
 }
 
+void Graph::getSizeNeutralLine(){
+
+  max = 0; 
+  min = numeric_limits<int>::max();
+  for(list<Status>::iterator it=statelist->begin(); it!=statelist->end(); it++){
+    if(it->name >= CDS && it->name <intron){
+      if(it->end > max)
+	max = it->end;
+      
+      if(it->begin < min)
+	min = it->begin;    
+    }
+  }
+}
+
+void Graph::addWeightToEdge(){
+
+  for(list<Node*>::iterator node = nodelist.begin(); node != nodelist.end(); node++){
+    for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
+      edge->score += (*node)->score;
+    }
+  }
+}
 
 /*
  * program specific function implementation

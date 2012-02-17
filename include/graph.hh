@@ -11,6 +11,7 @@
 using namespace std;
 
 enum Statename{type_unknown=-1, CDS, utr3, utr5, intron, utr3Intron, utr5Intron};
+enum Neutral_type{unknown=-1, IR, plus0, plus1, plus2, minus0, minus1, minus2};
 
 class Status;
 class Node;
@@ -41,7 +42,7 @@ public:
 
 class Node{
 public:
-  Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, Node *p=NULL):
+  Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, Neutral_type t=unknown, Node *p=NULL):
     begin(s),
     end(e),
     score(sc),
@@ -51,6 +52,7 @@ public:
   int begin, end;
   double score;
   const void *item;
+  Neutral_type n_type; // helps to identify to which neutral line a neutral Node belongs
   Node *pred;
   list<Edge> edges;
 };
@@ -84,15 +86,14 @@ public:
 
   list<Node*> nodelist;      //stores all nodes belonging to the graph
   list<Status> *statelist;   
-  vector<Node*> neutralLine; //represents the area of intergenic regions
   int min, max;
   map<string,Node*> existingNodes;
   Node *head;
   Node *tail;
  
-  protected:
   void buildGraph(); //needs to be called in constructor of derived class
 
+  protected:	
   // functions needed to build the graph
   inline bool alreadyProcessed(Node *n){
   return(existingNodes[getKey(n)]!=NULL);    
@@ -106,14 +107,16 @@ public:
   } 
   Node* getNode(Node *n);
   Node* getNode(Status *st);
-  Node* addExon(Status *exon);
-  void addPair(Status *exon1, Status *exon2);
-  void createNeutralLine();  
+  Node* addExon(Status *exon, vector<Node*> &neutralLine);
+  void addPair(Status *exon1, Status *exon2, vector<Node*> &neutralLine);
+  void createNeutralLine(vector<Node*> &neutralLine); 
   void addCompatibleEdges();
   void insertIntron(Node *exon1, Node *exon2);  
   int minInQueue(queue<Node*> *q);
   bool nonneutralIncomingEdge(Node *exon);
   void printGraphToShell();
+  void getSizeNeutralLine();
+  void addWeightToEdge();
 
   // program specific functions
   virtual bool exonAtGeneStart(Status *st)=0;
@@ -182,7 +185,6 @@ try {
   for(int i = 0; i < seqlength*10; i++)
     baseScore.push_back(0);
 
-  buildGraph();
   }
   bool exonAtGeneStart(Status *st);
   bool exonAtGeneEnd(Status *st);

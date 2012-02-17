@@ -3,15 +3,15 @@
 
 class MEApath{
 public:
-  MEApath(AugustusGraph *g):graph(g){
-    findMEApath();
-  }
+  MEApath(AugustusGraph *g):graph(g){}
   ~MEApath(){}
 
   void findMEApath();
   void getTopologicalOrdering();
   void dfs(Node *n);
   void relax();
+  void backtracking();
+  void traverseForward();
   inline list<Node*> getPath(){
     return meaPath;
   }

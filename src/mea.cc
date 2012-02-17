@@ -82,11 +82,27 @@ void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int str
     } catch (...) {
       utr = false;
     }
-    
+
+    list<Status> stlist;
     /*
      * builds datastructure needed for the graph representation
      */
-    list<Status> stateList, stlist;
+    buildDatastructure(alltranscripts, utr, stlist);
+
+    //build Graph
+    AugustusGraph myGraph(&stlist, strlength);
+    myGraph.buildGraph();
+
+    //find shortest path
+    MEApath path(&myGraph);
+    path.findMEApath();
+    
+    getMeaGenelist(path.getPath(), meaGenes);
+  }   
+}
+
+void buildDatastructure(list<Gene> *alltranscripts, bool utr, list<Status> &stlist){
+   list<Status> stateList;
 
     for(list<Gene>::iterator it=alltranscripts->begin();it!=alltranscripts->end();it++){
       addToList(it->exons,CDS,&stateList);
@@ -107,15 +123,6 @@ void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int str
    
       stlist.splice(stlist.end(),stateList);   
     }
-
-    //build Graph
-    AugustusGraph myGraph(&stlist, strlength);
-
-    //find shortest path
-    MEApath path(&myGraph);
-    
-    getMeaGenelist(path.getPath(), meaGenes);
-  }   
 } 
 
 void printStatelist(list<Status> *stateList){
