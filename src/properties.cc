@@ -184,6 +184,7 @@ HINTSFILE_KEY,
 "proteinprofile",
 "sample",
 "scorediffweight", // temp
+"seven_neutralLines",
 SINGLESTRAND_KEY,
 "start",
 "stop",

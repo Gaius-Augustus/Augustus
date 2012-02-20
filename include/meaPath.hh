@@ -7,6 +7,7 @@ public:
   ~MEApath(){}
 
   void findMEApath();
+  void findMEApath7();
   void getTopologicalOrdering();
   void dfs(Node *n);
   void relax();

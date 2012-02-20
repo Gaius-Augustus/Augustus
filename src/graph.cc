@@ -308,7 +308,7 @@ bool Graph::nonneutralIncomingEdge(Node *exon){
 void Graph::printGraphToShell(){
   cout<<"****************GRAPH******************"<<endl<<endl;;
 for(list<Node*>::iterator node = nodelist.begin(); node != nodelist.end(); node++){
-    cout<<"-------------------------------------------------------"<<endl<<setw(10)<<"Node:"<<setw(10)<<(*node)->begin<<setw(10)<<(*node)->end<<setw(10)<<(*node)->score;
+  cout<<"-------------------------------------------------------"<<endl<<setw(10)<<"Node:"<<setw(10)<<(*node)->begin<<setw(10)<<(*node)->end<<setw(10)<<(*node)->score;
     if((*node)->item == NULL)
       cout<<setw(10)<<"neutral";
     for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
@@ -715,4 +715,319 @@ bool compareNodes(Node *first, Node *second){
 
 bool compareEdges(Edge first, Edge second){
   return(first.to->begin <= second.to->begin);
+}
+
+/*********************************************************************
+ * 
+ * date     |   author      |  added
+ * ---------|---------------|-----------------------------------------
+ * 16.01.12 |Stefanie König |  functions to construct graph
+ *                          |  with seven neutral lines
+*********************************************************************/
+
+//TODO: correct intron scoring
+/*
+builds Graph with seven neutral lines representing
+* the intergenetic region
+* the plus strand (3 neutral lines for each coding frame)
+* and the minus strand (3 neutral lines for each coding frame)
+*/
+void Graph::buildGraph7(){
+
+#ifdef DEBUG
+  cout<<"*****entering buildGraph7()******"<<endl;
+#endif
+
+  vector< vector<Node*> > neutralLines; //represents the seven neutral lines
+  
+  getSizeNeutralLine();
+
+  vector<Node*> intergenetic;   
+  neutralLines.push_back(intergenetic);
+  vector<Node*> plus0;
+  neutralLines.push_back(plus0);
+  vector<Node*> plus1;
+  neutralLines.push_back(plus1);
+  vector<Node*> plus2;
+  neutralLines.push_back(plus2);
+  vector<Node*> minus0;
+  neutralLines.push_back(minus0);
+  vector<Node*> minus1;
+  neutralLines.push_back(minus1);
+  vector<Node*> minus2;
+  neutralLines.push_back(minus2);
+
+  for(int i=0; i<max-min+1; i++){
+    for(int j=0; j<neutralLines.size(); j++){
+      neutralLines.at(j).push_back(NULL);
+    }
+  }
+
+  head = new Node(-1,-1); // initialize nodelist of the graph with head and tail
+  nodelist.push_back(head);
+  tail = new Node(max+1,max+1);
+  nodelist.push_back(tail);
+
+  calculateBaseScores();
+  
+  // add predicted genes to Graph (Augusutus information)
+
+  bool gene_end = true;
+
+  for(list<Status>::iterator it=statelist->begin(); it!=statelist->end(); it++){
+
+    if(gene_end == true && it->name == intron){ //start -> intron  (transcript incomplete at the start)
+      Node* first = addExon(it->next, neutralLines);
+      addIntron(head, first, &(*it));
+    }
+    if(it->name == CDS){ // CDS -> CDS   or   CDS -> end
+      gene_end = false;
+      Node* e1 = addExon(&(*it), neutralLines);
+
+      if(it->next != NULL){
+
+	if(it->next->name == intron && it->next->next == NULL){ //CDS -> intron -> end (transcript incomplete at the end)
+	  addIntron(e1, tail, it->next);
+	}
+
+	if(it->next != NULL && it->next->name == intron && it->next->next != NULL){ //CDS -> intron -> CDS
+          Node* e2 = addExon(it->next->next, neutralLines);
+	  addIntron(e1, e2, it->next);
+	}
+      }
+    }
+    if(it->next == NULL) // end of transcript
+      gene_end = true;
+  }
+
+  //create neutral lines by connecting neutral nodes in the vector (all entries in the Vector, which are not NULL)
+  //edges directed from smaller positions to larger
+  for(int j=0; j<neutralLines.size(); j++){
+    createNeutralLine(neutralLines.at(j));
+  }
+
+  //add Node weight to edge weight
+  addWeightToEdge();
+  
+}
+
+Node* Graph::addExon(Status *exon, vector< vector<Node*> > &neutralLines){
+
+  if(!alreadyProcessed(exon)){
+
+      Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item);
+      nodelist.push_back(ex);
+      addToHash(ex);
+      
+ 
+      Node *neut_to = new Node(ex->begin, ex->begin, 0.0, NULL, (Neutral_type)fromNeutralLine(exon) );
+      Edge intron(ex, false);
+      if(!alreadyProcessed(neut_to)){
+        neutralLines.at(fromNeutralLine(exon)).at(ex->begin-min) = neut_to;
+	neut_to->edges.push_back(intron);
+	nodelist.push_back(neut_to);
+	addToHash(neut_to);
+      }
+      else{
+ 	getNode(neut_to)->edges.push_back(intron);
+	delete neut_to;
+      }
+      
+      Node *neut_from = new Node(ex->end, ex->end, 0.0, NULL, (Neutral_type)toNeutralLine(exon));
+      if(!alreadyProcessed(neut_from)){
+        neutralLines.at(toNeutralLine(exon)).at(ex->end-min) = neut_from;
+        Edge intron(neut_from, false);
+	ex->edges.push_back(intron);
+	nodelist.push_back(neut_from);
+	addToHash(neut_from);
+      }
+      else{
+        Edge intron(getNode(neut_from), false);
+        ex->edges.push_back(intron);      
+        delete neut_from;
+      }
+      return ex;
+  }
+  return getNode(exon);
+}
+
+void Graph::addIntron(Node* exon1, Node* exon2, Status *intr){
+
+  if( !edgeExists(exon1,exon2) ){
+    Edge in(exon2, false, setScore(intr), intr->item);
+    exon1->edges.push_back(in);  
+  }
+}
+
+/* returns
+*  0 if edge: neutral Line IR --> exon start
+*  1 if edge: neutral Line 0+ --> exon start
+*  2 if edge: neutral Line 1+ --> exon start
+*  3 if edge: neutral Line 2+ --> exon start
+*  4 if edge: neutral Line 0- --> exon start
+*  5 if edge: neutral Line 1- --> exon start
+*  6 if edge: neutral Line 2- --> exon start
+*/
+int AugustusGraph::fromNeutralLine(Status *st){
+
+  utr = false;
+  StateType Type = ((State*)st->item)->type;  //item is a pointer of type void* -> type cast
+
+  if(exonAtGeneStart(st)){
+    return 0;
+  }
+  if(Type == internal0 || Type == internal1 || Type == internal2 || Type == terminal){
+    return (mod3(((State*)st->item)->frame() - mod3(((State*)st->item)->end - ((State*)st->item)->begin + 1)) + 1);
+  
+  }
+  if(Type == rinternal0 || Type == rinternal1 || Type == rinternal2 || Type == rinitial){
+    return (mod3(((State*)st->item)->frame() + mod3(((State*)st->item)->end - ((State*)st->item)->begin + 1)) + 4);
+  }
+  return -1;
+}
+
+/* returns
+*  0 if edge: exon end --> neutral Line IR 
+*  1 if edge: exon end --> neutral Line 0+
+*  2 if edge: exon end --> neutral Line 1+
+*  3 if edge: exon end --> neutral Line 2+
+*  4 if edge: exon end --> neutral Line 0-
+*  5 if edge: exon end --> neutral Line 1-
+*  6 if edge: exon end --> neutral Line 2-
+*/
+int AugustusGraph::toNeutralLine(Status *st){
+
+  utr= false;
+  StateType Type = ((State*)st->item)->type;  //item is a pointer of type void* -> type cast
+  if(exonAtGeneEnd(st)){
+    return 0;
+  }
+  if(Type == internal0 || Type == internal1 || Type == internal2 || Type == initial0 || Type == initial1 || Type == initial2){
+    return (((State*)st->item)->frame() + 1);
+  }
+  if(Type == rinternal0 || Type == rinternal1 || Type == rinternal2 || Type == rterminal0 || Type == rterminal1 || Type == rterminal2){
+    return (((State*)st->item)->frame() + 4);
+  }
+  return -1;
+}
+
+void AugustusGraph::printGraph7(string filename){
+
+  //creates inputfile for graphviz
+  map<string,Node*> inQueue;
+  queue<Node*> q;
+  q.push(head);
+  ofstream file;
+  file.open(("/home/stefanie/augustus_output/" + filename).c_str());
+  
+  file<<"digraph MEAgraph {\n";
+  file<<"rankdir=LR;\n";
+ 
+  file<<"\tnode[shape=box];\n";
+  while(!q.empty()){
+    Node *pos = q.front();
+    q.pop(); 
+   
+    for(list<Edge>::iterator it=pos->edges.begin(); it!=pos->edges.end(); it++){
+     if(inQueue[getKey(it->to)] == 0){
+	q.push(it->to);
+	inQueue[getKey(it->to)] = it->to;
+      }
+     string name1 = "exon";
+     string name2 = "exon";
+     StateType type1;
+     StateType type2;
+
+     if(pos->item != NULL)
+        type1 = ((State*)pos->item)->type;
+     else
+       type1 = TYPE_UNKNOWN;
+     if(it->to->item != NULL)
+       type2 = ((State*)it->to->item)->type;
+     else
+       type2 = TYPE_UNKNOWN;
+
+      if(pos->item != NULL)
+	name1 = name1 + itoa(type1) + "_";
+      name1 = name1 + itoa(pos->begin+1) + "_" + itoa(pos->end+1);
+      if(it->to->item != NULL)
+	name2 = name2 + itoa(type2) + "_";
+      name2 = name2 + itoa(it->to->begin+1) + "_" + itoa(it->to->end+1);
+      
+      file<<name1<<"[";
+      if(pos==head)
+	file<<"style=filled,label=head";
+      else if(pos->item == NULL)
+	file<<"shape=point";
+      else if(pos->item != NULL && it->to->n_type == IR)
+	file<<"style=filled,fillcolor=turquoise,";
+      file<<"];\n";
+
+      file<<name2<<"[";
+      if(it->to==tail)
+	file<<"style=filled,label=tail";
+      else if(it->to->item == NULL)
+	file<<"shape=point";
+      else if(pos->n_type == IR && it->to != NULL)
+	file<<"style=filled,fillcolor=yellow,";
+      file<<"];\n";
+      
+      if( !(pos == head && it->to ==tail) ){
+	file<<name1<<"->"<<name2<<"[";
+	if(pos->begin == pos->end && it->to->begin == it->to->end){
+	  if(pos == head || it->to == tail){
+	    if(it->to->pred == pos)
+	      file<<"color=blue,";
+	    else
+	      file<<"color=red,";
+	  }
+	  else{
+	    if(it->to->pred == pos)
+	      file<<"weight=100,color=blue,";
+	    else
+	      file<<"weight=100,color=red,";
+	  }
+	}
+	else if(it->to->pred == pos)
+	  file<<"color=blue,";
+
+	if( (pos == head || pos->n_type != unknown ) &&  it->to->n_type != unknown ){
+	  if(it->to->n_type==IR)
+	    file<<"label=IR];\n";
+	  if(it->to->n_type==plus0)
+	    file<<"label=plus0];\n";
+	  if(it->to->n_type==plus1)
+	    file<<"label=plus1];\n";
+	  if(it->to->n_type==plus2)
+	    file<<"label=plus2];\n";
+	  if(it->to->n_type==minus0)
+	    file<<"label=minus0];\n";
+	  if(it->to->n_type==minus1)
+	    file<<"label=minus1];\n";
+	  if(it->to->n_type==minus2)
+	    file<<"label=minus2];\n";
+	}
+	else if( (it->to == tail || it->to->n_type != unknown ) &&  pos->n_type != unknown ){
+	  if(pos->n_type==IR)
+	    file<<"label=IR];\n";
+	  if(pos->n_type==plus0)
+	    file<<"label=plus0];\n";
+	  if(pos->n_type==plus1)
+	    file<<"label=plus1];\n";
+	  if(pos->n_type==plus2)
+	    file<<"label=plus2];\n";
+	  if(pos->n_type==minus0)
+	    file<<"label=minus0];\n";
+	  if(pos->n_type==minus1)
+	    file<<"label=minus1];\n";
+	  if(pos->n_type==minus2)
+	    file<<"label=minus2];\n";
+	}
+	else
+	  file<<"label="<<it->score<<"];\n";  
+      }
+    }
+  }
+  file<<"}\n";
+  file.close();
 }

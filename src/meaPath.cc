@@ -98,3 +98,15 @@ void MEApath::traverseForward(){
     nextNode:;
   }
 }
+
+void MEApath::findMEApath7(){
+
+  getTopologicalOrdering();
+  relax();   
+  //backtracking
+  backtracking();
+  //for graphviz dot to draw path
+  traverseForward();
+  graph->printGraph7("graph.dot");
+
+}

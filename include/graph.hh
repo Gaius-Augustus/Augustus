@@ -47,6 +47,7 @@ public:
     end(e),
     score(sc),
     item(it),
+    n_type(t),
     pred(p)
   {}
   int begin, end;
@@ -92,6 +93,7 @@ public:
   Node *tail;
  
   void buildGraph(); //needs to be called in constructor of derived class
+  void buildGraph7(); // builds graph with seven neutral lines
 
   protected:	
   // functions needed to build the graph
@@ -130,6 +132,14 @@ public:
   virtual double setScore(Status *st)=0;
   virtual void calculateBaseScores()=0;
   virtual void printGraph(string filename)=0;   
+
+  // additional functions to construct graph with 7 neutral lines
+  Node* addExon(Status *exon, vector< vector<Node*> > &neutralLines);
+  void addIntron(Node* exon1, Node* exon2, Status *intr);
+  virtual int fromNeutralLine(Status *st)=0;
+  virtual int toNeutralLine(Status *st)=0;
+  virtual void printGraph7(string filename)=0;
+
 };
 
 class AugustusGraph : public Graph{
@@ -205,6 +215,10 @@ try {
   int seqlength;
   vector<double> baseScore;
   bool utr;
+
+  int fromNeutralLine(Status *st);  
+  int toNeutralLine(Status *st);
+  void printGraph7(string filename);
 
   // parameters for scores
   double alpha_se;
