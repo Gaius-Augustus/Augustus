@@ -5,6 +5,10 @@
 \usetikzlibrary{shapes,arrows}
 \usepackage{pdflscape}
 \usepackage{hyperref}
+\usepackage{multirow}
+% Fonts for commands, etc.
+\usepackage[scaled=0.92]{helvet}
+\usepackage[scaled=0.92]{uarial}
 
 % Default margins are too wide all the way around. I reset them here
 \setlength{\topmargin}{-.5in}
@@ -25,7 +29,14 @@
 \tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm,
     minimum height=2em]
 
-
+% Super and Sub-script commands for text-mode
+\newcommand{\superscript}[1]{\ensuremath{^{\textrm{#1}}}}
+\newcommand{\subscript}[1]{\ensuremath{_{\textrm{#1}}}}
+% Command to represent options for filterBam: "phv": helvetica, "pcr": courier ZapfChancery
+\newcommand{\printOption}[1]{$\textrm{-\,-}${\fontfamily{phv}\selectfont#1}$\langle${\fontfamily{phv}\selectfont value}$\rangle$}
+\newcommand{\setOption}[2]{{\fontfamily{phv}\selectfont#1}\ensuremath{=#2}}
+\newcommand{\option}[1]{{\fontfamily{phv}\selectfont#1}}
+\newcommand{\bamApi}[1]{#1}
 
 % Setting up title, etc 
 \title{Filtering read alignments in BAM format} 
@@ -36,205 +47,514 @@ University of Greifswald}
  
 \begin{document}  
 \maketitle
-\abstract{This note documents "filterBAM", a program designed to clean single and paired RNA-seq reads. 
-The filter 
-is based on filterPSL, a perl script written by Prof. Mario Stanke. Both filterPSL and filterBam are 
-designed for the cleaning of data that will subsequently be applied to the gene prediction problem. 
-Nevertheless, it should be possible to modify rather easily, if it is to be applied to a different type of 
-application. filterBam is written in C++ and makes use of the Bamtools API \citet{barnett11:BamTools}.
+\abstract{This note documents "filterBAM", a program designed to clean alignments stored in BAM format. 
+The filter is based on filterPSL, a perl script written by Prof. Mario Stanke as part of the AUGUSTUS 
+software suite [Reference]. Both filterPSL and filterBam are designed for the cleaning of data that will 
+subsequently be applied to the gene prediction problem. The filter produces also output that might later be 
+used in visualisation tools, such as UCSC browser. The code should be modifiable rather easily, if it is to be 
+applied to a different type of application. filterBam is written in C++ and makes use of the Bamtools 
+API of \citet{barnett11:BamTools}. 
 
-\section{Introduction}
-RNA-seq data has become an important source of information for tasks such as differential 
-expression analysis and transcript quantification. Given that this new technology produces millions of 
-such short-reads, bespoke methods and tools are required to process such big amounts of information. 
-Furthermore, the introduction of the Sequence AlignMent Format (SAM) \citet{heng09:SAM} has meant that many  
-alignment tools (Bowtie, GMAP, etc.) now produce outputs in such format or in its binary version, aka BAM.
+\section{Installation}
 
-filterBam is a C++ code that cleans alignment files in BAM format that is based on filterPSL, a Perl routine 
-written by Prof. Dr. Mario Stanke for PSL files. filterPSL was mainly used as a preprocessing step for 
-cleaning alignments obtained with e.g. BLAT. filterBam is supposed to supersede filterPSL by doing the same 
-sort of preprocessing but on RNA-seq alignment data represented in BAM format. filterBAM includes the 
-following filtering options:
+Here we describe how to install filterBam on a Linux terminal. 
 
-\section{Main features}
+\subsection{Requirements}
+This software has been tested on a a Dell (x86\_64) computer with Ubuntu [version]. Compilation of the 
+source code was done with GNU's C++ compiler, gcc version 4.4.3, with -std=c++0x experimental features 
+enabled, that is now part of the c++11 implementation of C++ programming language. 
+Table \ref{tab:software} below 
+shows the list of required software packages for compiling filterBam, or that might be helpful to have 
+when using filterBam. filterBam requires the zlib library \url{<http://www.zlib.net>} for support of the 
+BGZF format and also of libbamtools.a, which is a library within the Bamtools distribution.
+
 
 \begin{table}
-\begin{tabular} {|c|c|c|}
-\multicolumn{3}{*}{All types of reads} \\ \hline
-	& Screens out & unmapped alignments. \\
-	& Screens out & alignments that do not comply with a pre-defined coverage level (default=80\%). \\
-	& Screens out & alignments that do not comply with a pre-defined percentage of identity (default=92\%). \\
-	& Screeens out & alignments whose insert gaps do not comply with a pre-defined distance (default=10). \\ \hline
-\multicolumn{3}{*}{Single reads} \\ \hline
-	& Screens out & groups of alignments that belong to a common query, if (best) \\ 
-	& Screens out & groups of alignments that belong to a common query, if (unique) \\  
-\multicolumn{3}{*}{Paired reads} \\ \hline
-	& Screens out & paired alignments if (best) \\ 
-	& Screens out & paired alignments if (uniq) \\
-	& 
-	& Writes to file & a prospective list of common target genes \\ 
-	& Writes to file & a summary pairedness coverage. \\
-\
-\end{tabular}
+  \begin{center}
+    \begin{tabular}{|l|l|l|}
+	\hline
+      Software	& 	version	& Available at \\ \cline{1-3}
+      Bamtools	&	2.1.0	& \url{https://github.com/pezmaster31/bamtools} \\ \cline{1-3}
+      Samtools	& 	0.1.18	& \url{http://samtools.sourceforge.net/} \\ \cline{1-3}
+	  Library	&  version  & \\ \cline{1-3}
+	  zlib		&  $>=$ 1.2.2.1 & \\ \cline{1-3}
+    \end{tabular}
+  \end{center}
+  \label{tab:software}
+  \caption{List of software required by filterBam}
 \end{table}
 
-The filter should work fine for filtering data coming from 454 and Illumina but not for SOLiD technology. 
-The subsequent sections of this document describe how the filtering is done to single or paired-end reads.
 
+\subsection{Compilation}
+Type `make' to compile filterBam, the Makefile script will create directory 'build' where the binary 
+will be stored, keeping it separate from the source files. Set the \$BAMTOOLS variable within the 
 
-\section{Single reads}
-Operation of the single-read filter is described in a step by step basis because the paired-read filter works 
-in a very similar way. Figure \ref{tik:singleReadFilter} below shows the schematics of the operation of 
-the filter. Each read is processed independently, so assumming a set of reads $i\in {1,\dots,N}$, the 
-filter processes independently each of them one at a time.
-
-Firstly, the filter checks read $i$ is mapped or not. This is easily done by means of checking SAM field 
-number 2, the alignment FLAG, and more specifically bit $0\times4$, which is the only source of reliable 
-information to determine whether a read is mapped or not \citet{heng09:SAM}. This is achieved by using the 
-$isMapped()$ methods of BamTools. Unmapped reads are dropped, while mapped reads continue further processing. A counter keeps track of the number of unmapped reads that were dropped. 
-
-As a second step, reads that passed the mapping test are appended with two additional but temporary 
-string-tags. Tag "co" and tag "pi" are added to the binary alignment by the $addTag()$ method of BamTools. 
-"co" stands for \emph{coverage} and is a measure of the amount of reads located at a given genomic position. "pi" stands for \emph{percentage identity} and is a measure of the number of basis that correctly identify 
-a genomic position. Estimation of the coverage is done according to Equation \ref{eq:coverage}, whilst estimation of the percentage identity is done following Equation \ref{eq:percId}. 
-
-If the estimated coverage value for read $i$ is less than that of minCover, the read will be dropped and 
-a counter keeping track of such types of drops will be updated. In a similar way, if the value of percId 
-for read $i$, is less than that specified by minId, the read will be dropped and the corresponding counter 
-will be updated. Default values for $minCover=80$ and $percId=92$ might be modified by using the options 
-'--minCover <value>' and '--minId <value>'.
-
-An optional value, the number of inserts to the base reference (baseInsert), is computed optionally if 
-the '--noIntrons' option is used. The number of insertions to the reference is computed through the 
-application of Equation \ref{eq:baseInsert}. This filter depends on the insertLimit value that has been 
-specified, and which by default has a value of $10$. The insertLimit parameter might be modifed by 
-applying the '--insertLimit <value>' option.
-
-Once this filters have been applied: mapping filter, coverage filter, percentage identity filter and intron 
-filter, a set of reads will be dropped out. From the remaining reads that satisfied such filter criteria, 
-the information from coverage and percentage identity will be combined into a single figure, a \emph{score} 
-that will help in determining which reads are worth keeping and which not.
-
-
-\begin{figure}
-  \centering
-  \begin{tikzpicture}[node distance=2cm, auto]
-    % Place nodes
-    \node [cloud] (Start) {Start}; 
-	\node [decision, below of=Start, node distance=3cm] (unmapped) {Unmapped reads};
-    \node [block, below of=unmapped, node distance=3cm] (percId) {Compute percentage identity};
-    \node [block, below of=percId, node distance=3cm] (coverage) {Compute coverage};
-    \node [decision, below of=coverage, node distance=3cm] (noIntrons) {noIntrons?};
-    \node [block, left of=noIntrons, node distance=3cm] (baseInsert) {Compute Insertions to the ref.};
-    \node [block, below of=noIntrons, node distance=3cm] (unique) {Unique};
-    \node [cloud, below of=unique, node distance=3cm] (End) {End};
-    % Draw edges
-    \path [line] (Start) -- (unmapped);
-	%% \path [line] (unmapped -- node [near start] {yes} (percId);
-    \path [line] (unmapped) -- node {no} (percId);
-    \path [line] (percId) -- (coverage);
-    \path [line] (coverage) -- (noIntrons);
-    \path [line] (noIntrons) -- node [near start] {yes} (baseInsert);
-    \path [line] (baseInsert) |- (unique);
-    \path [line] (noIntrons) -- node {no}(unique);
-    \path [line,dashed] (unique) -- (End);
-  \end{tikzpicture}
-  % Caption and label
-  \caption{Flow diagram of the operation of the single-read filter}
-  \label{tik:singleReadFilter}
-\end{figure}
-
-
-\subsection{Uniq and Best criteria}
-Filtering by 'unique' or 'best' criteria is mutually exclusive, as Figure \ref{tik:singleReadFilter} shows. 
-After passing the basic filtering scheme already described, all the remaining alignments that belong to 
-a common query are scored through the function 
-
-\begin{equation}
-	\mathrm{score} = \mathrm{percId} + \mathrm{coverage}.
-\end{equation}
-
-The score is added as an optional tag to each alignment by means of the "addTag()" method of BamTools. 
-Afterwards, this group of alignments is sorted by its scored value; as illustrated in Table 
-\ref{tab:singleReads} below.
-
-\begin{landscape}
-  \centering
-  \begin{table}
-    \begin{tabular}{|l|l|l|l|}
-      \hline
-      r2/1	147	chr17	27698730	37	33M1I16M	=	27698611	-168	& Field10	& Field11	& XT:A:U	NM:i:1	SM:i:37	AM:i:0	X0:i:1	X1:i:0	XM:i:0	XO:i:1	XG:i:1	MD:Z:49 \\ \hline
-      r2/1	99	chr17	20320141	36	43M1I6M	=	20320287	196	& Field10	& Field11	& 	XT:A:R	NM:i:3	SM:i:0	AM:i:0	X0:i:2	X1:i:0	XM:i:2	XO:i:1	XG:i:1	MD:Z:17C25A5 \\ \hline
-      r2/1	99	chr19	1365	60	5M1I44M	=	8297	187	& Field10	& Field11	& 	XT:A:U	NM:i:1	SM:i:37	AM:i:37	X0:i:1	X1:i:0	XM:i:0	XO:i:1	XG:i:1	MD:Z:49 \\ \hline
-      r2/1	83	chr17	8038459	60	45M1I4M	=	8038315	-193	& Field10	& Field11	& 	XT:A:U	NM:i:2	SM:i:37	AM:i:37	X0:i:1	X1:i:0	XM:i:1	XO:i:1	XG:i:1	MD:Z:21T27 \\ \hline
-      r2/1	99	chr17	24524224	60	19M2I29M	=	24524392	218	& Field10	& Field11	& 	XT:A:U	NM:i:3	SM:i:37	AM:i:23	X0:i:1	X1:i:0	XM:i:1	XO:i:1	XG:i:2	MD:Z:11G36 \\ \hline
-      r2/1	163	chr17	30676705	37	26M2I20M2S	=	30676860	205	& Field10	& Field11	& 	XT:A:M	NM:i:2	SM:i:37	AM:i:37	XM:i:0	XO:i:1	XG:i:2	MD:Z:46 \\ \hline
-      r2/1	99	chr17	16894328	29	26M1I23M	=	16894487	209	& Field10	& Field11	& 	XT:A:R	NM:i:3	SM:i:0	AM:i:0	X0:i:4	X1:i:0	XM:i:2	XO:i:1	XG:i:1	MD:Z:4C1A42 \\ \hline
-      r2/1	147	chr17	5031883	60	24M1I25M	=	5031761	-171	& Field10	& Field11	& 	XT:A:U	NM:i:2	SM:i:37	AM:i:37	X0:i:1	X1:i:0	XM:i:1	XO:i:1	XG:i:1	MD:Z:11A37 \\ \hline
-      r2/1	83	chr18	1	0	10M1I39M	=	24	-206	& Field10	& Field11	& 	XT:A:R	NM:i:1	SM:i:0	AM:i:0	X0:i:2	X1:i:0	XM:i:0	XO:i:1	XG:i:1	MD:Z:49 \\ \hline
-    \end{tabular}
-    \caption{Some SAM alignments showing added tags: percId, coverage and score}
-    \label{tab:singleReads}
-  \end{table}
-\end{landscape}
-
-The difference between the 'unique' and 'best' criteria is that the former will select only the top-scored 
-alignment and will write it into file. Table Y below shows the same set of alignments as in \ref{tab:singleReads} after ranking. According to the 'uniq' criterion, only the top-ranked alignmnent is elligible to be 
-preserved. However, in case a group of alignments happen to share the same score, filterBam checks whether 
-such alignments are similar. 
-
-\subsection{Similarity function}
-
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=7cm]{figures/similarFunction.pdf}
-  \end{center}
-\end{figure}
-
-
-
-\section{Paired reads}
-
-\begin{figure}
-  \begin{center}
-    \includegraphics[width=7cm]{figures/pairedReads.pdf}
-  \end{center}
-\end{figure}
-
-
-\section{Bamtools}
-Bamtools is a C++ wrapper API of the more well-known Samtools software. The latest version of Bamools 
-is 2.0 and is available on the website \url{https://github.com/pezmaster31/bamtools/downloads}. 
-
-\section{Test data}
-We have generated two data sets to show filterBam in operation. 
-
-\section{Compilation}
 
 Note that the flag ``-std=c++0'' has been used given that some of the functionalities of the filter require 
 some of the newest features of GNU's g++ compiler. This and future versions of the software have been tested 
 on Ubuntu's g++ version 4.4.3.
 
-\section{How to run}
+\subsection{Running}
 A run that will let pass most, if not all, readings: 
 \begin{flushleft}
 ./filterBam input.bam output.bam --minCover 0 --minId 0  --insertLimit 10000000 --nointrons
 \end{flushleft}
 \textbf{Note:} that all options are provided at the very end.
 
-Make sure to link with the ``-lz'' and ``-libbamtools.a'' flags on; where -lz refers to the ZLIB library, 
-and libbamtools.a to the static bamtools library included in the software distribution. An example of 
-how to compile and link follows: 
 
-\begin{flushleft}
+\section{About Samtools and Bamtools}
+
+\subsection{Samtools}
+
+\subsection{Bamtools}
+Bamtools is a C++ wrapper API of the more well-known Samtools software. The latest version of Bamtools 
+is 2.0 and is available on the website \url{https://github.com/pezmaster31/bamtools/downloads}. Bam
+ According to the Bamtools porting guide (Barnett, October 2011), BT-2x and beyond will be neither binary- 
+nor source-compatible with the earlier BT-0x or BT-1x versions. Your programs compiled using those classes 
+will not work with the new libraries.
+
+\subsection{Test data}
+We have generated two data sets to show filterBam in operation. 
+
+
+\subsection{Technical stuff}
+The filter should work fine for data coming from $454$ and Illumina technologies but not for colorspace data generated by SOLiD technology. 
+
+
+\section{Introduction}
+RNA-seq data has become an important source of information for tasks such as differential 
+expression analysis, transcript quantification and gene prediction. Given that this new technology 
+produces millions of such short-reads ($\sim30bp$), bespoke methods and tools are required to process such big 
+amounts of information. For example, a single run of an RNAseq experiment will produce millions, if not, 
+hundreds of millions of short reads [Ref: Wiki].
+
+After sequencing and generation of an RNAseq dataset, a later step consists of utilising the short 
+reads to obtain an approximate 
+version of the transcriptome, typically via the alignment of the reads to a reference genome. 
+Such alignments can be carried out with tools such as BLAT, Bowtie, GSNAP, among others. In particular, 
+Bowtie and GSNAP are specifically designed to align reads as short as $50$ and $14$ bp, respectively. 
+Very recently, the introduction of the Sequence AlignMent Format, or SAM, by \citet{heng09:SAM}, has meant 
+that many of the aforementioned alignment tools now produce outputs in SAM format. 
+
+filterBam is a C++ code that cleans alignment files stored in BAM format, which is the binary version of 
+SAM. The software package is based on filterPSL, a Perl routine written by Prof. Dr. Mario Stanke for the processing of 
+alignment records stored in PSL format. filterPSL is part of a set of Perl scripts that accompany the 
+distribution of the annotation software, AUGUSTUS [Ref]. filterPSL is mainly used as a preprocessing step 
+for cleaning alignments obtained with softwares such as BLAT, and filterBam is supposed to supersede 
+it by doing the same task but on RNAseq alignment data stored in a BAM file. 
+
+\section{Main features}
+
+In a nutshell, assuming a BAM file given as input, filterBam by default cleans all those alignments that are either unmapped or do not satisfy any of the following conditions:  
 \begin{enumerate}
-	\item	
-		g++ -I\textbf{\$BAMTOOLS}/include   -g   -std=c++0x  -c filterBam.cc -o filterBam.o \\
-	\item	g++     -g -std=c++0x  filterBam.o -o filterBam \textbf{\$BAMTOOLS}/lib/libbamtools.a -lz  
-\end{enumerate}
-\end{flushleft}
-\vphantom{Nothing}
-where \textbf{\$BAMTOOLS} is the path where Bamtools was installed.
+	\item	do not comply with a minimum coverage;
+	\item	do not have a minimum value of percentage identitiy, or 
+	\item	(optionally), do not satisfy a minimum value of base inserts. 
+\end{enumerate} 
+Table \ref{tab:featuresFilter} above summarises the main features of the filter. 
+
+\begin{table}
+  \begin{center}
+    \begin{tabular} {|c|c|c|c|} \hline
+	 \multicolumn{4}{|c|}{\textbf{filterBam}} \\ \hline
+      Action & Feature & Option & Default value \\ \hline 
+      \multicolumn{4}{|c|}{Every alignment} \\ \hline
+      \multirow{4}{*}{Screens out} & unmapped & none &  none \\ \cline{2-4}
+      & coverage level & minCover & 80\% \\  \cline{2-4}
+      & pctge identity & minId & 92\%\\  \cline{2-4}
+      & insert gaps & insertLimit & 10bp\\ \hline
+      \multicolumn{4}{|c|}{Single alingments} \\ \hline
+      \multirow{2}{*}{Screens out} & best & none & nore \\ \cline{2-4}
+      & unique & uniqThresh & 0.96 \\ \hline
+      \multicolumn{4}{|c|}{Paired alignments} \\ \hline
+      \multirow{2}{*}{Screens out} & best & & \\  \cline{2-4}
+      & uniq & uniqThresh & 0.96 \\ \hline
+      \multirow{2}{*}{Writes to file} & common target genes & commonGeneFile & false \\  \cline{2-4} 
+      & pairedness coverage info & pairBedFile & false \\ \hline
+    \end{tabular}
+    \caption{Main features of filterBam.}
+    \label{tab:featuresFilter}
+  \end{center}
+\end{table}
+
+After this basic set of filters has been applied, the alignments are processed according to whether they 
+originated from single- or paired- RNAseq reads. Single alignments are cleaned by droppping out all those 
+that do not satisfy a score value that depends on the coverage and the percentage identity of the aligned read,
+i.e. $score(coverage, percId)$. Paired alignments are mated to other alignments according to the distance and 
+insert length from their associated reads; the filter then drops out all those pairs of alignments that do 
+not satisfy a score value that, once again, depends on coverage and percentage identity, ($score(coverage, percId)$).
+ 
+The subsequent sections of this document describe in a step-wise manner how the filtering of single- and 
+paired-alignments is done. The basic set of filters is described in Section \ref{sec:basicFilters}. 
+Then the filtering of single alignments is explained in Section \ref{sec:singleAls}, and finally the filtering 
+of paired alignments is explained in Section \ref{sec:pairedAls}.
+
+
+\section{Basic filters} \label{sec:basicFilters}
+Figure \ref{tik:singleReadFilter} below shows the schematics of the operation of the filter for single 
+alignments. In the subsequent, we will assume an input BAM file is constituted by a series of records 
+$i=\{1,\dots,N\}$, each containing the information of an alignment. See \citep{heng09:SAM} for further 
+reference. The filter first checks whether 
+alignment $i$ is mapped or not, and this is easily done by means of verifying the bit $0\times4$ of the 
+alignment FLAG (SAM field number 2). As the specification suggests, this bit is the only source 
+of reliable information to determine whether a read is mapped or not \citet{heng09:SAM}. This verification 
+is achieved by using the \bamApi{isMapped} method of BamTools. Unmapped reads are dropped, while mapped 
+reads continue further processing. A counter keeps track of the number of unmapped reads that were dropped. 
+
+As a second step, alignments that passed the mapping test are appended with two additional but temporary 
+string-tags. Tag `co' and tag `pi' are added to the binary alignment by the \bamApi{addTag} method of BamTools. 
+`co' stands for \emph{coverage} and is a measure of the amount of reads located at a given genomic position. 
+`pi' stands for \emph{percentage identity} and is a measure of the number of basis that correctly identify 
+a genomic position. Estimation of the coverage is done according to Equation \ref{eq:coverage}, whilst 
+estimation of the percentage identity is done following Equation \ref{eq:percId}, both in the Appendix. 
+
+If the estimated coverage value for the read in alignment $i$ is less than that of the specified 
+\option{minCover}, the alignment will be dropped and a counter keeping track of such types of events will 
+be updated. In a similar way, if the value of \option{percId} for the read of alignment $i$, is less than that 
+specified by \option{minId}, the alignment will be dropped and the corresponding counter will be updated. 
+Default values for \option{minCover} and \option{percId} are shown in Table \ref{tab:featuresFilter} 
+respectively, but might be modified by using the options \printOption{minCover} and \printOption{minId}.
+
+
+\section{Single alignments} \label{sec:singleAls}
+Continuing with Figure \ref{tik:singleReadFilter}, we assume either options \option{best} or \option{uniq}  
+are selected, but not option \option{paired}. The core issue to understand in the operation of the single-
+alignment mode filter, is that batches of alignments belonging to a common query QNAME\subscript{1} will 
+be processed independently from alignments belonging to a different query name QNAME\subscript{2}. 
+
+Alignments that passed the mapping test are appended with two additional but temporary 
+string-tags. Tag $co$ and tag $pi$ are added to the binary alignment by means of the \bamApi{addTag} method of 
+BamTools. Tag $co$ stands for \emph{coverage} and is a measure of the amount of reads located at a given 
+genomic position. Meanwhile $pi$ stands for \emph{percentage identity} and is a measure of the number of 
+basis that correctly identify a genomic position. Whereas estimation of the coverage is done according to 
+Equation \ref{eq:coverage}, estimation of the percentage identity is done according to Equation \ref{eq:percId}, both in the Appendix. Table \ref{tab:singleReads} below shows a series of alignments with the $co$ and 
+$pi$ tags added.
+
+ 
+If the estimated coverage value of alignment $i$ is less than that of \option{minCover}, the alignment 
+will be dropped and a counter keeping track of such types of drops will be updated. In a similar way, if 
+the value of \option{percId} for alignment $i$, is less than that specified by \option{minId}, the read 
+will be dropped and the corresponding counter will be updated. Default values for \setOption{minCover}{80} 
+and \setOption{percId}{92} might be modified by using the options \printOption{minCover} and 
+\printOption{minId}, respectively.
+
+An optional value, the number of inserts to the base reference (baseInsert), is computed optionally if 
+the '--noIntrons' option is used. The number of insertions to the reference is computed through the 
+application of Equation \ref{eq:baseInsert}. This filter depends on the insertLimit value that has been 
+specified, and which by default has a value of $10$. The insertLimit parameter might be modifed by 
+applying the \printOption{insertLimit} option.
+
+\begin{figure}
+\begin{center}
+  \begin{tikzpicture}[node distance=1mm, auto,
+    decision/.style={diamond, draw=black, thick, fill=white,
+    text width=4em, text badly centered,
+    inner sep=1pt, font=\sffamily\small},
+    block_center/.style ={rectangle, draw=black, thick, %fill=white,
+      text width=8em, text centered, minimum height=3em},
+    block_left/.style ={rectangle, draw=black, thick, fill=white,
+      text width=16em, text ragged, minimum height=3em, inner sep=6pt},
+    block_noborder/.style ={rectangle, draw=none, thick, fill=none,
+      text width=18em, text centered, minimum height=1em},
+    block_assign/.style ={rectangle, draw=black, thick, fill=white,
+      text width=18em, text ragged, minimum height=3em, inner sep=6pt},
+    block_lost/.style ={rectangle, draw=black, thick, fill=white,
+      text width=16em, text ragged, minimum height=3em, inner sep=6pt},
+      line/.style ={draw, thick, -latex', shorten >=0pt}]
+
+    % outlining the flowchart using the PGF/TikZ matrix funtion
+    \matrix [column sep=12mm,row sep=3mm] {
+
+    % Place nodes
+    \node [cloud] (Start) {Start}; & & \node [cloud] (alpha2) {$\alpha$}; \\ 
+	\node [decision] (unmapped) {Unmapped?}; & & \node [block_center] (scoreAli) {Score alignments}; \\
+    \node [block_center] (percId) {Percentage identity (percId)}; & & \node [decision] (unique) {Unique?}; \\
+	\node [decision] (ifPercId) {percId$\ge$minId?}; & & \node [block_center] (similar) {Similarity}; \\
+    \node [block_center] (coverage) {Coverage (coverage)}; & & \node [decision] (ratio) {ratio\\(top,second)}; \\
+	\node [decision] (ifCoverage) {coverage\\$\ge$\\minCover?}; & & \node [block_center] (top){Select top alignment}; & \node [block_center] (best) {Select align's sharing top score}; \\
+
+    \node [decision] (noIntrons) {noIntrons?}; & \node [decision] (insertLimit) {baseInsert $<$ insertLimit?}; & \node [block_center] (save) {Save alignments};  \\
+     \node [decision] (addOptions) {Unique\\$~\mathbf{|}~$\\Best?}; &  \node [block_center] (baseInsert) {Base inserts}; & \node [cloud] (end) {End}; & \\
+    \node [cloud] (alpha) {$\alpha$}; & & \\
+};% end matrix
+
+    \begin{scope}[every path/.style=line]
+	% Drawing paths, starting from left-most column
+
+    % paths from the first column
+    \path [line] (Start) -- (unmapped);
+    \path  (unmapped) -- node {no} (percId);
+	\path  (percId) -- (ifPercId);
+    \path  (ifPercId) -- node {yes} (coverage);
+	\path  (coverage) -- (ifCoverage);
+    \path  (ifCoverage) -- node {yes} (noIntrons);
+    \path  (noIntrons) -- node {no} (addOptions);
+    \path  (insertLimit) -- (baseInsert);
+    \path  (baseInsert) -- (addOptions);
+    \path [line,dashed] (addOptions) -- node {yes} (alpha);  
+	
+	% paths from the second column
+	\path (noIntrons) -- (insertLimit);
+	%% \path (insertLimit) -| (addOptions);
+
+	% paths from the third column
+	\path (alpha2) -- (scoreAli);
+	\path (scoreAli) -- (unique);
+	\path (unique) -- (similar);
+	\path (similar) -- (ratio);
+	\path (ratio) -- (top);
+	\path (top) -- (save);
+	\path (save) -- (end);
+
+	% paths from the fourth column
+	\path (unique) -| (best);
+	\path (best) |- (save);
+
+   \end{scope}
+
+  \end{tikzpicture}
+  % Caption and label
+  \caption{Flow diagram of the operation of the single-read filter}
+  \label{tik:singleFilter}
+\end{center}
+\end{figure}
+
+\subsection{Uniq and Best criteria}
+Further cleaning can be achieved by means of selecting the mutually exclusive \option{unique} or 
+\option{best} options. If such is the case, Figure \ref{tik:singleFilter} shows how an alignment record 
+continues throughout the process path. Options \option{best} and \option{unique} stand for the filter 
+selecting the \emph{best} group of alignments, or the single-top alignment (i.e. \option{unique}), in terms 
+of a cost function, which in this case is given defining the expression 
+
+\begin{equation}
+	\mathrm{score} = \mathrm{percId} + \mathrm{coverage}.
+\label{eq:score}
+\end{equation}
+
+Thus, after an alignment has passed through the mapping, coverage, percentage identity and intron-gap 
+filters, the information from coverage and percentage identity is be combined into the figure \option{score}.
+Such value is added to the alignment as the tag $sc$. 
+
+After a group of alingments belonging to the same query has been scored, the group is sorted by such score 
+value; as illustrated in Tables \ref{tab:singleReads} and \ref{tab:sortedReads} below.
+
+\begin{landscape}
+  \begin{table}\footnotesize
+\begin{center}
+    \begin{tabular*}{0.75\textwidth}{|l|l|l|l|l|l|l|}
+	\cline{1-7}
+	  QNAME & RNAME & startPOS & endPOS & pi & co & sc \\ \cline{1-7}
+      r2/1 & chr17 & 27698729 & 27698778 & 98 & 100 & 198 \\ \cline{1-7}
+      r2/1 & chr17 & 20320140 & 20320189 & 94 & 100 & 194 \\ \cline{1-7}
+      r2/1 & chr19 & 1364 & 1413 & 98 & 100 & 198 \\ \cline{1-7}
+      r2/1 & chr17 & 8038458 & 8038507 & 96 & 100 & 196 \\ \cline{1-7}
+      r2/1 & chr17 & 24524223 & 24524271 & 94 & 100 & 194 \\ \cline{1-7}
+      r2/1 & chr17 & 30676704 & 30676750 & 96 & 96 & 192 \\ \cline{1-7}
+      r2/1 & chr17 & 16894327 & 16894376 & 94 & 100 & 194 \\ \cline{1-7}
+      r2/1 & chr17 & 5031882 & 5031931 & 96 & 100 & 196 \\ \cline{1-7}
+      r2/1 & chr18 & 0 & 49 & 98 & 100 & 198 \\ \cline{1-7}
+    \end{tabular*}
+    \caption{SAM alignments with added tags: percId, coverage and score}
+    \label{tab:singleReads}
+\end{center}
+  \end{table}
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  \begin{table}\footnotesize
+\begin{center}
+    \begin{tabular*}{0.75\textwidth}{|l|l|l|l|l|l|l|}
+	\cline{1-7}
+	  QNAME & RNAME & startPOS & endPOS & pi & co & sc \\ \cline{1-7}
+      r2/1 & chr17 & 27698729 & 27698778 & 98 & 100 & 198 \\ \cline{1-7}
+      r2/1 & chr19 & 1364 & 1413 & 98 & 100 & 198 \\ \cline{1-7}
+      r2/1 & chr18 & 0 & 49 & 98 & 100 & 198 \\ \cline{1-7}
+      r2/1 & chr17 & 8038458 & 8038507 & 96 & 100 & 196 \\ \cline{1-7}
+      r2/1 & chr17 & 5031882 & 5031931 & 96 & 100 & 196 \\ \cline{1-7}
+      r2/1 & chr17 & 20320140 & 20320189 & 94 & 100 & 194 \\ \cline{1-7}
+      r2/1 & chr17 & 24524223 & 24524271 & 94 & 100 & 194 \\ \cline{1-7}
+      r2/1 & chr17 & 16894327 & 16894376 & 94 & 100 & 194 \\ \cline{1-7}
+      r2/1 & chr17 & 30676704 & 30676750 & 96 & 96 & 192 \\ \cline{1-7}
+    \end{tabular*}
+    \caption{SAM alignments after sorting by score}
+    \label{tab:sortedReads}
+\end{center}
+  \end{table}
+
+\end{landscape}
+
+The difference between the \option{uniq} and \option{best} criteria is that the former will select only 
+the top-scored alignment and will write it into file. Table \ref{tab:sortedReads} shows the same set of 
+alignments as in Table \ref{tab:singleReads}, but after ranking by score. According to the \option{best} 
+criterion, only the alignmnents sharing the optimal score will be preserved, while the rest of suboptimal 
+alignments will be dropped. In the example of Table \ref{tab:sortedReads}, the alignments sharing the 
+score=$198$ will be preserved while the rest will be discarded. 
+
+The option \option{uniq} is based also on the sorting of alignments by its score. The main difference however 
+is that only one alignment is preserved, provided that it is one of those sharing the top score, but also 
+provided that it is  is elligible to be preserved. However, in case a group of alignments happen to share 
+the same score, filterBam checks whether such alignments are similar; whereby similarity refers to two 
+reads to have been aligned on overlapping positions. 
+
+\subsection{Similarity function}
+A function that tests whether alignments (or two alignment pairs) are similar has been included within 
+filterBam. Testing for similarity is required given that by handling separately spliced and unspliced 
+alignments, there is the possibility that very similar alignments are reported, \emph{an unspliced read going approximately up to an intron and a spliced read with a few base pairs on one exon.} Such type of cases 
+should not be considerd ambiguous when \option{uniq} is specified. 
+
+Figure \ref{fig:similarityFunction} below shows two scenarios. In scenario one, a pair of reads were aligned 
+to overlapping ranges of the reference genome; both reads are deemed similar. In scenario two, the reads 
+are aligned to non-contiguous ranges of the reference genome, thus are considered not-similar.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[width=7cm]{figures/similarFunction.pdf}
+  \end{center}
+\caption{The similarity function checks whether mate paired reads are overlapping or not.}
+\label{fig:similarityFunction}
+\end{figure}
+
+Thus to finalise, a top-scored alignment will be let pass by the filter, if and only if, the second ranked 
+alignment is not all too-similar to the top alignment.
+
+\section{Paired alignments} \label{sec:pairedAls}
+
+This section describes the filtering of paired alignments. This feature is enabled by selecting the option  
+\option{paired}. By doing so, filterBam will compare a set of alignments belonging to a common query and 
+determine which alignments are paired with which others. Such matching is done by examining the distance and 
+insert length between candidate pairs. A more thorough explanation follows, nevertheless it is worth 
+pointing out that before alignments are processed as paired alignments, they are subjected to the basic 
+filters described in Section \ref{sec:basicFilters}. A flow chart of the operation of filterBam for paired 
+alignments is shown in Figure \ref{tik:matePairFilter} below.
+
+
+\begin{figure}
+\begin{center}
+  \begin{tikzpicture}[node distance=1mm, auto,
+    decision/.style={diamond, draw=black, thick, fill=white,
+    text width=4em, text badly centered,
+    inner sep=1pt, font=\sffamily\small},
+    block_center/.style ={rectangle, draw=black, thick, %fill=white,
+      text width=8em, text centered, minimum height=3em},
+    block_left/.style ={rectangle, draw=black, thick, fill=white,
+      text width=16em, text ragged, minimum height=3em, inner sep=6pt},
+    block_noborder/.style ={rectangle, draw=none, thick, fill=none,
+      text width=18em, text centered, minimum height=1em},
+    block_assign/.style ={rectangle, draw=black, thick, fill=white,
+      text width=18em, text ragged, minimum height=3em, inner sep=6pt},
+    block_lost/.style ={rectangle, draw=black, thick, fill=white,
+      text width=16em, text ragged, minimum height=3em, inner sep=6pt},
+      line/.style ={draw, thick, -latex', shorten >=0pt}]
+
+    % outlining the flowchart using the PGF/TikZ matrix funtion
+    \matrix [column sep=12mm,row sep=3mm] {
+
+    % Place nodes
+    \node [cloud] (Start) {Start}; & & \node [cloud] (alpha2) {$\alpha$}; & \\ 
+	\node [decision] (unmapped) {Unmapped?}; & & \node [block_center] (scoreAli) {Score alignments}; & \\
+	& & \node [block_center] (matePairs) {Compute mate pairs}; & \\
+    \node [block_center] (percId) {Percentage identity (percId)}; & & \node [decision] (unique) {Unique?}; & \\
+	\node [decision] (ifPercId) {percId$\ge$minId?}; & & \node [block_center] (similar) {Similarity btwn pairs}; & \\
+    \node [block_center] (coverage) {Coverage (coverage)}; & & \node [decision] (ratio) {ratio\\(top,second)}; & \\
+	\node [decision] (ifCoverage) {coverage\\$\ge$\\minCover?}; & & \node [block_center] (top){Select top mate-pair}; & \node [block_center] (best) {Select mate-pairs sharing top score}; \\
+
+    \node [decision] (noIntrons) {noIntrons?}; & \node [decision] (insertLimit) {baseInsert $<$ insertLimit?}; & \node [block_center] (save) {Save alignments belonging to selected mate-pairs}; & \\
+     \node [decision] (addOptions) {Unique\\$~\mathbf{|}~$\\Best?}; &  \node [block_center] (baseInsert) {Base inserts}; & \node [cloud] (end) {End}; & \\
+    \node [cloud] (alpha) {$\alpha$}; & & & \\
+};% end matrix
+
+    \begin{scope}[every path/.style=line]
+	% Drawing paths, starting from left-most column
+
+    % paths from the first column
+    \path [line] (Start) -- (unmapped);
+    \path  (unmapped) -- node {no} (percId);
+	\path  (percId) -- (ifPercId);
+    \path  (ifPercId) -- node {yes} (coverage);
+	\path  (coverage) -- (ifCoverage);
+    \path  (ifCoverage) -- node {yes} (noIntrons);
+    \path  (noIntrons) -- node {no} (addOptions);
+    \path  (insertLimit) -- (baseInsert);
+    \path  (baseInsert) -- (addOptions);
+    \path [line,dashed] (addOptions) -- node {yes} (alpha);  
+	
+	% paths from the second column
+	\path (noIntrons) -- (insertLimit);
+
+	% paths from the third column
+	\path (alpha2) -- (scoreAli);
+	\path (scoreAli) -- (matePairs);
+	\path (matePairs) -- (unique);
+	\path (unique) -- (similar);
+	\path (similar) -- (ratio);
+	\path (ratio) -- (top);
+	\path (top) -- (save);
+	\path (save) -- (end);
+
+	% paths from the fourth column
+	\path (unique) -| (best);
+	\path (best) |- (save);
+
+   \end{scope}
+
+  \end{tikzpicture}
+  % Caption and label
+  \caption{Flow diagram of the operation of the single-read filter}
+  \label{tik:matePairFilter}
+\end{center}
+\end{figure}
+
+ 
+\subsection{Mate pairs}
+
+Figure \ref{fig:pairedReads} shows a diagram in which four reads have been aligned: rs.1 (71), rs.2 (72), 
+rs.2 (139) and rs.1 (202); with starting positions between parentheses. Bare in mind that query names have 
+been made to coincide, in order to facilitate the understanding of the matching process. We recall that 
+filterBam accepts inputs with '/1', '/2' suffix when the option \option{paired} has been selected.
+
+\begin{figure}
+  \begin{center}
+    \includegraphics[scale=0.50]{figures/pairedReads.pdf}
+  \end{center}
+\caption{Paired reads}
+\label{fig:pairedReads}
+\end{figure}
+
+Within a group of alignments, presented in the example as queries $rs$, filterBam defines a list of candidate 
+mate pairs, as shown in Table X below. If one pair of alignments belongs to different mates {1,2} and come 
+from different strands {+,-}, then their distance and insert-length is computed. If a pair of alignments 
+has $dist\ge 0 $ and $insLen\le maxInsertLimit$, the alignments are considered a valid mate-pair.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|}\hline
+	Mate 1 & Mate 2 & Strand 1 & Strand 2 & dist & insLen & score \\ \cline{1-7}
+	rs1/1 (70) & rs1/1 (71) & false & false & -- & -- & -- \\ \cline{1-7}
+	rs1/1 (70) & rs1/2 (138) & false & true & 57 & 77 & 3.8 \\ \cline{1-7}
+	rs1/1 (70) & rs1/2 (201) & false & true & 120 & 138 & 3.875 \\ \cline{1-7}
+	rs1/1 (70) & rs1/2 (499) & false & false & -- & -- & -- \\ \cline{1-7}
+	rs1/1 (71) & rs1/2 (138) & false & true & 58 & 76 & 3.55 \\ \cline{1-7}
+	rs1/1 (71) & rs1/2 (201) & false & true & 121 & 137 & 3.625 \\ \cline{1-7}
+	rs1/1 (71) & rs1/2 (499) & false & false & -- & -- & -- \\ \cline{1-7}
+	rs1/2 (138) & rs1/2 (201) & true & true & -- & -- & -- \\ \cline{1-7}
+	rs1/2 (138) & rs1/2 (499) & true & false & -- & -- & -- \\ \cline{1-7}
+	rs1/2 (201) & rs1/2 (499) & true & false & -- & -- & -- \\ \cline{1-7}
+\end{tabular}
+\label{tab:}
+\caption{Candidate mate pairs in the example presented in Section \ref{sec:pairedAls}}
+\end{center}
+\end{table}    
+
+\subsection{Uniq and Best criteria}
+
+Figure \ref{tik:matePairFilter} shows the flow chart of operation of filterBam for paired alignments. 
+As it can be seen, the filter operates under very similar tenets to those of the filter for single 
+alignments, the main difference being that under the \option{paired} option, alignments are processed in 
+pairs. Thus after scoring of the alignments of forming of the mate-pairs, the \option{uniq} selects the 
+top-ranked pair of mates; where the rank is given by a function that makes use of the $coverage$ and 
+$percId$ in very similar terms to those of Equation \ref{eq:score}. Analogously as well, the option 
+\option{best}, lets pass the set of mate-pairs that share the maximum score. It is important to remark 
+that alignments that were not paired are dropped. 
 
 
 \section{Coverage, percent of identity and insert length}

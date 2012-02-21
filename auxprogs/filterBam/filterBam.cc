@@ -7,34 +7,34 @@
 	4. Uniqueness (determined by percId and coverage)
 
  
-	Created: 4-November-2011
-	Last modified: 14-February-2012 
-*/  
- 
-#include <api/BamReader.h>
-#include <api/BamWriter.h>
-#include <api/BamAlignment.h>
+	Created: 4-November-2011  
+	Last modified: 21-February-2012  
+*/    
+      
+#include <api/BamReader.h>   
+#include <api/BamWriter.h>  
+#include <api/BamAlignment.h> 
 #include <api/algorithms/Sort.h> 
 #include "bamtools_sort.h" 
-#include <iostream>
+#include <iostream> 
 #include <vector>
 #include <string>
-#include <stdio.h>
+#include <stdio.h> 
 #include <stdexcept> 
 #include <time.h> 
 #include <getopt.h> 
 #include <sstream>
 #include <stdlib.h>
-#include <iomanip> 
+#include <iomanip>  
 #include <cstdio>
 #include <algorithm>
 #include <unordered_map> 
-#include <fstream>
+#include <fstream>  
 #include <map>
-#include <math.h>
+#include <math.h> 
 #include "filterBam.h"
-
-struct optionalCounters_t {
+ 
+struct optionalCounters_t { 
   int outPaired;
   int outUniq;
   int outBest;
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
   int32_t baseInsert;  // baseInsert = qBaseInsert+tBaseInsert, in some cases
   // Counters
   int line = 0;
-  int noRefID = 0;
+  int outMap = 0;
   int outMinId = 0;
   int outMinCover = 0;
   int outIntrons = 0;
@@ -207,13 +207,13 @@ int main(int argc, char *argv[])
 		// Filter for data whose Reference seq ID is not defined; i.e. RNAME= * in SAM format;
 		// i.e. unmapped fragment without coordinate 
 		rName = getReferenceName(refData, RefID);
-		if (rName.find("printReferenceName")!=-1)
+		if (!al.IsMapped())
 		  {	  
 			if (verbose)
 			  {
-				cout << qName << " filtered out because it has no refID " << endl;
+				cout << qName << " filtered out because: unmapped " << endl;
 			  }
-			noRefID++;
+			outMap++;
 			goto nextAlignment;
 		  }
 
@@ -404,7 +404,7 @@ int main(int argc, char *argv[])
 	cout <<  "\n\n------------------------------------- " << endl;
 	cout <<  "\nSummary of filtered alignments: " << endl;
 	cout <<  "------------------------------------- " << endl;
-	cout <<  "unmapped        : " << noRefID << endl;
+	cout <<  "unmapped        : " << outMap << endl;
 	cout <<  "percent identity: " << outMinId << endl;
 	cout <<  "coverage        : " << outMinCover << endl;
 	if (noIntrons) {cout <<  "nointrons       : " << outIntrons << endl;}

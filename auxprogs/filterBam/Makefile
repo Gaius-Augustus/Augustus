@@ -8,19 +8,17 @@
 #	Last modified: 2-February-2012
 
 # Variable definition
-HOME = /home/tonatiuh/web-home/
-#BT1 = $(HOME)/pezmaster31-bamtools-12aca98
-#BT2 = $(HOME)/bamtools-1.0.2
-BT3 = $(HOME)/bamtools
-CODE = $(HOME)/filterBam/bamtoolsCode
-INCLUDES = -I$(BT3)/include -Iheaders -I$(BT3)/src/toolkit
+BAMTOOLS_ROOT := $(shell find ~ -name bamtools -type d) # Change "~" by "/" ?
+BAMTOOLS_ROOT := $(shell echo $(BAMTOOLS_ROOT)| sed -e "s/\([a-zA-Z,\/]*\) .*/\1/" )
+#BAMTOOLS_ROOT = /home/tonatiuh/web-home/bamtools
+INCLUDES = -I$(BAMTOOLS_ROOT)/include -Iheaders -I$(BAMTOOLS_ROOT)/src/toolkit
 VPATH = functions # Required to find files in functions/foo.cc
-LIBS = $(BT3)/lib/libbamtools.a -lz 
+LIBS = $(BAMTOOLS_ROOT)/lib/libbamtools.a -lz 
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleRead.cc \
 			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
-CFLAGS = -g $(INCLUDES) -std=c++0x -pg
+CFLAGS = -g $(INCLUDES) -std=c++0x -pg 
 #LINK.cc = g++
 
 
@@ -36,7 +34,7 @@ $(PROGRAM) : $(OBJECTS)
 # This recipe is equivalent to specifying:
 # $^: is a list of all the prerequisites of the rule
 # % contains the stem-name of the file
-build : $(OBJECTS) # Compiles each foo.cc into foo.o
+all : $(OBJECTS) # Compiles each foo.cc into foo.o
 $(OBJECTS) : %.o:%.cc
 	$(LINK.cc) $(CFLAGS) -c $^ -o $@ 
 
@@ -44,8 +42,6 @@ $(OBJECTS) : %.o:%.cc
 ######################################################
 # Generation of PDF document
 ######################################################
-
-PDFOBJECTS = $(PROGRAM).aux $(PROGRAM).blg $(PROGRAM).bbl $(PROGRAM).log
 
 pdf : $(PROGRAM).tex
 	pdflatex $^
@@ -64,6 +60,8 @@ bam : $(SAMFILES)
 ######################################################
 # Cleaning routine 
 ######################################################
+
+PDFOBJECTS = $(PROGRAM).aux $(PROGRAM).blg $(PROGRAM).bbl $(PROGRAM).log
 
 clean: 
 	rm -f *~ $(OBJECTS) $(PDFOBJECTS)
