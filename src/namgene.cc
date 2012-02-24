@@ -932,15 +932,8 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
    */  
 
   agl = groupTranscriptsToGenes(filteredTranscripts);
-  list<AltGene> *samples = new list<AltGene>;
-  samples = groupTranscriptsToGenes(alltranscripts);
-
-  for(list<AltGene>::iterator it=samples->begin(); it!= samples->end(); it++){
-    for(list<Gene*>::iterator gene=it->transcripts.begin(); gene!=it->transcripts.end();gene++)
-      (*gene)->printGFF();
-  }
-
-   delete alltranscripts;
+ 
+  delete alltranscripts;
 
   if (sampleiterations>1) {
     /*
