@@ -54,8 +54,8 @@ The filter is based on filterPSL, a perl script written by Prof. Mario Stanke as
 software suite [Reference]. Both filterPSL and filterBam are designed for the cleaning of data that will 
 subsequently be applied to the gene prediction problem. The filter produces also output that might later be 
 used in visualisation tools, such as UCSC browser. The code should be modifiable rather easily, if it is to be 
-applied to a different type of application. filterBam is written in C++ and makes use of the Bamtools 
-API of \citet{barnett11:BamTools}. 
+applied to a different type of application (see the reference manual below for further information).
+ filterBam is written in C++ and makes use of the Bamtools API of \citet{barnett11:BamTools}. 
 
 \section{Installation}
 
@@ -158,7 +158,8 @@ The filter should work fine for data coming from $454$ and Illumina technologies
 {\LARGE Filtering read alignments in BAM format: reference manual}
 \end{center}
 
-\abstract{Write something else here}. 
+\abstract{This note describes the operation of the filter and lists the main classes that were used to 
+implement it. In this way, other developers might }. 
 
 \section{Introduction}
 RNA-seq data has become an important source of information for tasks such as differential 
