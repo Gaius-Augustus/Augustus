@@ -8,7 +8,7 @@
 
 # Katharina Hoff, 9.6.2011
 
-my $usage = "filterSpliceHints.pl genome.fa hints.gff splice-pattern> out.gff\n\nThe most typical splice pattern should be GCAT! Sometimes, GCAG is also used.\n";
+my $usage = "filterSpliceHints.pl genome.fa hints.gff splice-pattern> out.gff\n\nThe most typical splice pattern should be GTAG! Sometimes, GCAG is also used.\n";
 
 if (@ARGV != 3) {
     print $usage;
@@ -32,6 +32,7 @@ LINE: while ($line = <FASTA>){
     }else{
     $line =~ s/[\x0A\x0D]+//g; 
     $line =~ s/(\s+)(\n)(\r)//g;
+    $line = uc($line);
 #    print "Hash key: $hash_key\n";
 #    print "Content: $line\n";
     $fasta_hash{$hash_key}.=$line; 
@@ -46,8 +47,8 @@ LINE: while($line = <HINTS>){
 #    print "Length: ".length($fasta_hash{$gff[0]})."\n";
     $siteA = substr($fasta_hash{$gff[0]}, ($gff[3]-1), 2);   
     $siteB = substr($fasta_hash{$gff[0]}, ($gff[4]-2), 2);
-    $given = $siteA.$siteB;
-#    print "Splice site: $given\n";
+#    $given = $siteA.$siteB;
+    print "Splice site: $given\n";
     if($given =~ m/$splice/){
 	print $gff[0]."\t".$gff[1]."\t".$gff[2]."\t".$gff[3]."\t".$gff[4]."\t".$gff[5]."\t+\t".$gff[7]."\t".$gff[8];
     }else{
