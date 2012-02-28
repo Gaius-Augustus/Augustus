@@ -26,7 +26,7 @@ class PairednessCoverage
   	  string chr; // chromosome name
       PairednessCoverage();
       PairednessCoverage(const PairednessCoverage &);
-  PairednessCoverage(int coord, int label, string chr);
+  	  PairednessCoverage(int coord, int label, string chr);
       ~PairednessCoverage(){};
    	  void setValues(int coord, int label, string chr);
       PairednessCoverage &operator=(const PairednessCoverage &rhs);

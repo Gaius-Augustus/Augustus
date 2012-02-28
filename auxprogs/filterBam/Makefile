@@ -5,16 +5,41 @@
 #	b) libbamtools.a and lz library are used during the linking process
 #
 # 	Created: 11-November-2011
-#	Last modified: 2-February-2012
+#	Last modified: 24-February-2012
 
-# Variable definition
-BAMTOOLS_ROOT := $(shell find ~ -name bamtools -type d) # Change "~" by "/" ?
-BAMTOOLS_ROOT := $(shell echo $(BAMTOOLS_ROOT)| sed -e "s/\([a-zA-Z,\/]*\) .*/\1/" )
-#BAMTOOLS_ROOT = /home/tonatiuh/web-home/bamtools
-INCLUDES = -I$(BAMTOOLS_ROOT)/include -Iheaders -I$(BAMTOOLS_ROOT)/src/toolkit
+
+# test: ttview checkBamEnv
+
+# checkBamEnv: 
+# 	@if [ -z "${BAMTOOLS}" ]; then \
+# 		echo '[Makefile]: $${BAMTOOLS} has not been set.'; \
+# 		exit 101; \
+# 	elif [ "${BAMTOOLS}" ]; then \
+# 		echo '[Makefile]: variable $${BAMTOOLS} is defined.'; \
+# 		echo "Compiling with BAMTOOLS=${BAMTOOLS}"; \
+# 	fi
+
+# ttview: checkBamEnv
+# 	@echo $(BAMTOOLS)/filterBam.cc 
+
+
+# # Variable definition
+# all:build pdf checkBamEnv
+
+# checkBamEnv: 
+# 	@if [ -z "${BAMTOOLS}" ]; then \
+# 		echo '[Makefile]: $${BAMTOOLS} has not been set.'; \
+# 		exit 101; \
+# 	elif [ "${BAMTOOLS}" ]; then \
+# 		echo '[Makefile]: variable $${BAMTOOLS} is defined.'; \
+# 		echo "Compiling with BAMTOOLS=${BAMTOOLS}"; \
+# 	fi
+
+BAMTOOLS = /home/tonatiuh/web-home/bamtools
+INCLUDES = -I$(BAMTOOLS)/include -Iheaders -I$(BAMTOOLS)/src/toolkit
 VPATH = functions # Required to find files in functions/foo.cc
-LIBS = $(BAMTOOLS_ROOT)/lib/libbamtools.a -lz 
-SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleRead.cc \
+LIBS = $(BAMTOOLS)/lib/libbamtools.a -lz 
+SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
 			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
@@ -28,13 +53,13 @@ CFLAGS = -g $(INCLUDES) -std=c++0x -pg
 # Recipes
 # $@: full target name of current target. 
 # $<: .cc file of target. 
+build : $(PROGRAM) $(OBJECTS)
 $(PROGRAM) : $(OBJECTS) 
 	$(LINK.cc) $(CFLAGS) $^ -o $@ $(LIBS) 
 
 # This recipe is equivalent to specifying:
 # $^: is a list of all the prerequisites of the rule
 # % contains the stem-name of the file
-all : $(OBJECTS) # Compiles each foo.cc into foo.o
 $(OBJECTS) : %.o:%.cc
 	$(LINK.cc) $(CFLAGS) -c $^ -o $@ 
 
@@ -61,7 +86,7 @@ bam : $(SAMFILES)
 # Cleaning routine 
 ######################################################
 
-PDFOBJECTS = $(PROGRAM).aux $(PROGRAM).blg $(PROGRAM).bbl $(PROGRAM).log
+PDFOBJECTS = $(PROGRAM).aux $(PROGRAM).blg $(PROGRAM).bbl $(PROGRAM).log $(PROGRAM).out
 
 clean: 
 	rm -f *~ $(OBJECTS) $(PDFOBJECTS)

@@ -6,6 +6,7 @@
 \usepackage{pdflscape}
 \usepackage{hyperref}
 \usepackage{multirow}
+\usepackage{listings}
 % Fonts for commands, etc.
 \usepackage[scaled=0.92]{helvet}
 \usepackage[scaled=0.92]{uarial}
@@ -37,9 +38,10 @@
 \newcommand{\setOption}[2]{{\fontfamily{phv}\selectfont#1}\ensuremath{=#2}}
 \newcommand{\option}[1]{{\fontfamily{phv}\selectfont#1}}
 \newcommand{\bamApi}[1]{#1}
+\newcommand{\unix}[1]{\texttt#1}
 
 % Setting up title, etc 
-\title{Filtering read alignments in BAM format} 
+\title{Filtering read alignments in BAM format: user guide} 
 \author{Tonatiuh Pe\~{n}a-Centeno \\
 University of Greifswald}
 \date{\today}
@@ -57,42 +59,67 @@ API of \citet{barnett11:BamTools}.
 
 \section{Installation}
 
-Here we describe how to install filterBam on a Linux terminal. 
+In this section we describe how to install filterBam on a Linux terminal. 
 
 \subsection{Requirements}
-This software has been tested on a a Dell (x86\_64) computer with Ubuntu [version]. Compilation of the 
-source code was done with GNU's C++ compiler, gcc version 4.4.3, with -std=c++0x experimental features 
-enabled, that is now part of the c++11 implementation of C++ programming language. 
-Table \ref{tab:software} below 
-shows the list of required software packages for compiling filterBam, or that might be helpful to have 
-when using filterBam. filterBam requires the zlib library \url{<http://www.zlib.net>} for support of the 
-BGZF format and also of libbamtools.a, which is a library within the Bamtools distribution.
-
+This software has been tested on a a Dell (x86\_64) computer with Ubuntu 10.04 (lucid). Compilation of the 
+code was done with GNU's C++ compiler, gcc version 4.4.3. Table \ref{tab:software} below 
+lists the required software packages for compiling filterBam; while \ref{tab:libraries} shows the libraries 
+necessary for compilation. In order to work with BAM files, it might be useful to have samtools installed, 
+so this has also been included in the tables as an optional package.
 
 \begin{table}
   \begin{center}
     \begin{tabular}{|l|l|l|}
+	\hline 
+	\multicolumn{3}{|c|}{Software Dependencies} \\ \cline{1-3}
 	\hline
-      Software	& 	version	& Available at \\ \cline{1-3}
+      Name		& 	version	& Available at \\ \cline{1-3}
       Bamtools	&	2.1.0	& \url{https://github.com/pezmaster31/bamtools} \\ \cline{1-3}
-      Samtools	& 	0.1.18	& \url{http://samtools.sourceforge.net/} \\ \cline{1-3}
-	  Library	&  version  & \\ \cline{1-3}
-	  zlib		&  $>=$ 1.2.2.1 & \\ \cline{1-3}
+      Samtools (optional)	& 	0.1.18	& \url{http://samtools.sourceforge.net/} \\ \cline{1-3}
     \end{tabular}
   \end{center}
   \label{tab:software}
   \caption{List of software required by filterBam}
 \end{table}
 
+\begin{table}
+  \begin{center}
+    \begin{tabular}{|l|l|l|l|}
+	\hline
+	\multicolumn{4}{|c|}{Library Dependencies} \\ \cline{1-4}
+	\hline
+	  Names		&  version  & Available at	&	Notes\\ \cline{1-4}
+	  zlib		&  $>=$ 1.2.2.1 & \url{<http://www.zlib.net>} & For support of BGZF format\\ \cline{1-4}
+    \end{tabular}
+  \end{center}
+  \label{tab:libraries}
+  \caption{List of libraries required by filterBam}
+\end{table}
+
+Note that the flag \unix{-std=c++0x}  has been used given that some of the functionalities of the filter require 
+some of the newest features of GNU's g++ compiler. It seems that c++11 has bundled such functionalities. 
 
 \subsection{Compilation}
-Type `make' to compile filterBam, the Makefile script will create directory 'build' where the binary 
-will be stored, keeping it separate from the source files. Set the \$BAMTOOLS variable within the 
 
+\begin{enumerate}
+	\item
+		Download the latest version of filterBam from [to define].
+	\item
+		Edit the Makefile so that the BAMTOOLS\_ROOT variable points to where Bamtools has been installed.
+		\footnote{If you do not happen to know where Bamtools is, Makefile will look for it by calling the UNIX 
+		\unix{find} command, but this may slow compilation time a bit.} 
+	\item
+		Type `make' to generate the binaries, which will be stored in the \textbf{bin} directory. 
+\end{enumerate}
 
-Note that the flag ``-std=c++0'' has been used given that some of the functionalities of the filter require 
-some of the newest features of GNU's g++ compiler. This and future versions of the software have been tested 
-on Ubuntu's g++ version 4.4.3.
+\section{A couple of examples}
+In this section we show how the filter works through the application of a couple of examples. The first 
+example documents the operation of the filter for single alignments, while the second example describes 
+the operation of the filter in paired-alignment mode.
+
+\subsection{Test data}
+We have generated two data sets to show filterBam in operation. 
 
 \subsection{Running}
 A run that will let pass most, if not all, readings: 
@@ -102,24 +129,36 @@ A run that will let pass most, if not all, readings:
 \textbf{Note:} that all options are provided at the very end.
 
 
-\section{About Samtools and Bamtools}
+\section{Some notes about Samtools and Bamtools}
 
+We introduce some examples of how to use Samtools and Bamtools to make life easier when working with BAM files. 
+Probably the main issue when working with BAM data is that alignments need to be sorted, but beign binary 
+implies that  
+ 
 \subsection{Samtools}
 
 \subsection{Bamtools}
 Bamtools is a C++ wrapper API of the more well-known Samtools software. The latest version of Bamtools 
-is 2.0 and is available on the website \url{https://github.com/pezmaster31/bamtools/downloads}. Bam
- According to the Bamtools porting guide (Barnett, October 2011), BT-2x and beyond will be neither binary- 
-nor source-compatible with the earlier BT-0x or BT-1x versions. Your programs compiled using those classes 
-will not work with the new libraries.
-
-\subsection{Test data}
-We have generated two data sets to show filterBam in operation. 
+is 2.0 and is specificed on Table \ref{tab:software}. 
 
 
-\subsection{Technical stuff}
+\section{Technical stuff}
+
+Other relevant issues that might be well documenting go here.
+
+\subsection{Input data}
 The filter should work fine for data coming from $454$ and Illumina technologies but not for colorspace data generated by SOLiD technology. 
 
+
+% We start a new section of the document, the "Reference Guide", so 
+% it is worth changing the name of the document and make a new title, 
+% in a new page
+\newpage
+\begin{center}
+{\LARGE Filtering read alignments in BAM format: reference manual}
+\end{center}
+
+\abstract{Write something else here}. 
 
 \section{Introduction}
 RNA-seq data has become an important source of information for tasks such as differential 
@@ -159,12 +198,12 @@ Table \ref{tab:featuresFilter} above summarises the main features of the filter.
 	 \multicolumn{4}{|c|}{\textbf{filterBam}} \\ \hline
       Action & Feature & Option & Default value \\ \hline 
       \multicolumn{4}{|c|}{Every alignment} \\ \hline
-      \multirow{4}{*}{Screens out} & unmapped & none &  none \\ \cline{2-4}
+      \multirow{4}{*}{Screens out} & unmapped & -- &  -- \\ \cline{2-4}
       & coverage level & minCover & 80\% \\  \cline{2-4}
       & pctge identity & minId & 92\%\\  \cline{2-4}
       & insert gaps & insertLimit & 10bp\\ \hline
       \multicolumn{4}{|c|}{Single alingments} \\ \hline
-      \multirow{2}{*}{Screens out} & best & none & nore \\ \cline{2-4}
+      \multirow{2}{*}{Screens out} & best & -- & nore \\ \cline{2-4}
       & unique & uniqThresh & 0.96 \\ \hline
       \multicolumn{4}{|c|}{Paired alignments} \\ \hline
       \multirow{2}{*}{Screens out} & best & & \\  \cline{2-4}
@@ -604,8 +643,6 @@ D.~Barnett, E.~Garrison, A.~Quinlan, M.~Strömberg, G.~Marth.
 \newblock BamTools: a C++ API and toolkit for analyzing and managing BAM files.
 \newblock \emph{Bioinformatics}, 27\penalty0 (12):\penalty0
   1691-1692, 2011.
-
-
 
 \end{thebibliography}
 

@@ -9,8 +9,8 @@
  
 	Created: 4-November-2011  
 	Last modified: 21-February-2012  
-*/    
-      
+*/     
+         
 #include <api/BamReader.h>   
 #include <api/BamWriter.h>  
 #include <api/BamAlignment.h> 
@@ -38,7 +38,7 @@ struct optionalCounters_t {
   int outPaired;
   int outUniq;
   int outBest;
-};
+}; 
 
 using namespace BamTools;
 using namespace BamTools::Algorithms; 
@@ -48,7 +48,7 @@ void printQali(vector<BamAlignment> &qali, const RefVector &refData);
 float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions);
 void prinMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs);
 void printMatedMap(map<int,int> mated);
-void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps, vector<int> &insertlen);
+void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps, vector<int> &insertlen, map<string, multimap<int,int>> & pairCovSteps2);
 void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps);
 void printChrOfPairCovSteps(vector<PairednessCoverage> &pairCovSteps, string chr);
 vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> &pairCovSteps, globalOptions_t globalOptions);
@@ -96,14 +96,16 @@ int main(int argc, char *argv[])
   int outUniq = 0;
   int outBest = 0;
   optionalCounters_t optionalCounters;
+  // Pairedness coverage
+  map<string, multimap<int,int>> pairCovSteps2;
+  vector<PairednessCoverage> pairCovSteps;
+  vector<PairednessCoverage> compactPairCovSteps;  
   // Optional counters
   optionalCounters.outPaired = outPaired;
   optionalCounters.outUniq = outUniq;
   optionalCounters.outBest = outBest;
   // Initialising options
   struct globalOptions_t globalOptions;
-  vector<PairednessCoverage> pairCovSteps;
-  vector<PairednessCoverage> compactPairCovSteps;  
   globalOptions = initOptions(argc, argv);
   bool best = globalOptions.best;
   bool help = globalOptions.help;
@@ -240,7 +242,7 @@ int main(int argc, char *argv[])
 
 			if (qali.size()>0)
 			  {
-				processQuery(qali, refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen);
+				processQuery(qali, refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen, pairCovSteps2);
 			  }
 		  }  // end outer if
 
@@ -334,7 +336,7 @@ int main(int argc, char *argv[])
 	// Calling of: "processQuery() if ($qnamestem ne "");
 	if (qNameStem.compare(""))
 	  {
-		processQuery(qali,refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen);
+		processQuery(qali,refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen, pairCovSteps2);
 		outPaired = optionalCounters.outPaired;
 		outUniq = optionalCounters.outUniq;
 		outBest = optionalCounters.outBest;
@@ -799,14 +801,13 @@ vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSte
 
 
 
-void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps, vector<int> &insertlen)
+void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps, vector<int> &insertlen, map<string, multimap<int,int>> & pairCovSteps2)
 {
   // Optional counters
   int outPaired = optionalCounters.outPaired;
   int outUniq = optionalCounters.outUniq;
   int outBest = optionalCounters.outBest;
 
- 
   // Expanding options
   bool best = globalOptions.best;
   bool paired = globalOptions.paired;
@@ -823,6 +824,8 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
   const char* pairBedFile = globalOptions.pairBedFile;
   ofstream geneFile;
   ofstream bedFile;
+  // Pairedness 
+  multimap<int,int> pairCoord;
 
   // Mate variables
   string itRname, jitRname;
@@ -1285,6 +1288,14 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		  	  chr = getReferenceName(refData, qali.at(matepairs.at(0).alIt).RefID);
 		  	  pEnd = qali.at(matepairs.at(0).alJit).GetEndPosition();
 		  	  pStart = qali.at(matepairs.at(0).alIt).Position;
+
+			  // Storing info using map structures
+			  pairCoord.insert(pair<int,int>(pStart, 1));
+			  pairCovSteps2.insert(pair<string,multimap<int,int>>(chr, pairCoord));
+			  pairCoord.insert(pair<int,int>(pEnd, -1));
+			  pairCovSteps2.insert(pair<string,multimap<int,int>>(chr, pairCoord));
+
+			  // Storing info using PairednessCoverage class
 			  pc.setValues(pStart, 1, chr);
 			  pairCovSteps.push_back(pc);
 			  pc.setValues(pEnd, -1, chr);
