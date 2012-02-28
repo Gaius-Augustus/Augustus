@@ -8,7 +8,7 @@
 
 # Katharina Hoff, 9.6.2011
 
-my $usage = "filerIntrons.pl genome.fa hints.gff splice-pattern> out.gff\n\nThe most typical splice pattern should be GCAT! Sometimes, GCAG is also used.\n";
+my $usage = "filterSpliceHints.pl genome.fa hints.gff splice-pattern> out.gff\n\nThe most typical splice pattern should be GCAT! Sometimes, GCAG is also used.\n";
 
 if (@ARGV != 3) {
     print $usage;
