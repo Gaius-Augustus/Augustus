@@ -1,4 +1,4 @@
-CFLAGS := -Wall -Wno-unused-result -Wno-sign-compare -ansi -pedantic -O2 -ggdb
+CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -O2 -ggdb
 
 psl2wig : aln2wig.o
 	gcc $(CFLAGS) -o aln2wig aln2wig.o;
