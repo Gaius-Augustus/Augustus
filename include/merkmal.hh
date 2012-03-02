@@ -65,7 +65,7 @@ private:
 
 /*
  * PatMMGroup
- * Contains a vector of parameters for each frame. Is used in particular for intron emiprobs.
+ * Contains a vector of parameters. Is used in particular for intron emiprobs.
  */
 class PatMMGroup : public MMGroup{
 public:
@@ -74,6 +74,7 @@ public:
     PatMMGroup() : MMGroup(){};
     Double* getFactor(int index);
     string verbalDescription(int index);
+    Double getMinProb(float qthresh);
     // data members
     int order;
     vector<Double> probs;
@@ -115,8 +116,10 @@ public:
     void monotonify(); // change weights so function is monotonic (again)
     void printBoundaries();
     int getIndex(Double p);
+    Double factor(Double p){if (nbins==0) return p; return avprobs[getIndex(p)];}
     void write(ostream &out);
     void read(ifstream &in);
+    Double getMinProb(float qthresh);
     // inherited
     Double* getFactor(int index);
     string verbalDescription(int index);
@@ -127,7 +130,7 @@ public:
     int nbins;                // number of bins
     vector<Double> origprobs; // original probability set used for "training" of bb and avprobs
     vector<Double> bb;        // bin boundaries,
-    vector<Double> avprobs;   // probs for bins [-infty, bb[0]), [bb[1],bb[2]), ... , [bb[nbins-1], infty]
+    vector<Double> avprobs;   // probs for bins [-infty, bb[0]), [bb[0],bb[1]), ... , [bb[nbins-1], infty]
 };
 
 /*

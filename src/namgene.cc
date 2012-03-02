@@ -175,9 +175,6 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
   StateModel::setPP(useProfile ? profileModel : NULL);  
   int progress, oldprogress=0;
 
-  // temporarily for development
-  if (Constant::exoncand)
-      getExonCands(dna);
   /*
    * Determine the length of the DNA sequence under consideration
    * and form the forward matrix
@@ -203,6 +200,7 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
 
   curGCIdx = -1; // initialize with invalid GC content class
   prepareModels(dna, dnalen, stateMap);
+
 
   /*
    * Check if all the sequence contains of non-nucleotides (e.g. N)
@@ -365,6 +363,11 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
    * call viterbiForwardAndSampling and thus change the viterbi and forward table again.
    * This probability needs to be multiplied at the appropriate places.
    */
+
+  // temporarily for development
+  if (Constant::exoncand)
+    getExonCands(dna, 0.1, 0.1); // Alex: please make these command-line parameters like 'exoncand'
+
   
 } // end ViterbiAndForward
 

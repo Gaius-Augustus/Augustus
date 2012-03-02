@@ -89,6 +89,8 @@ public:
     static Integer         k;
     static PatMMGroup      emiprobs;
     static PatMMGroup      *GCemiprobs;
+    static BinnedMMGroup   dssBinProbs;
+    static BinnedMMGroup   assBinProbs;
 private:
     StateType              itype;
     Integer                gweight;
@@ -130,8 +132,6 @@ private:
     static bool            initAlgorithmsCalled, haveSnippetProbs;
     static int             lastParIndex; // GC-index of current parameter set
     static Integer         verbosity;
-    static BinnedMMGroup   dssBinProbs;
-    static BinnedMMGroup   assBinProbs;
     static double          geoProb;
 };
 

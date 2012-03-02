@@ -15,6 +15,7 @@
  * 19.05.2003 | Stanke                | recursively include other property files
  * 10.05.2006 | Mario Stanke          | added 10 new species in the usage info
  * 15.05.2006 | Mario Stanke          | added 3' UTR states
+ * 29.02.2012 | Mario Stanke          | added quantile function
 \******************************************************************************/
 
 #ifndef _TYPES_HH
@@ -29,6 +30,9 @@
 #include <sstream>
 #include <cstring>
 #include <cstdlib>
+#include <vector>
+#include <limits>
+#include <algorithm> // for std:sort
 
 using namespace std;
 
@@ -717,6 +721,10 @@ inline char* newstrcpy(const string& s) {
 
 char *getRandomDNA(int len);
 
+/* for 0 <= q <=1 get the q-th quantile of the values store in
+ * vector v. 
+ */
+Double quantile(const vector<Double> &v, float q);
 
 /*
  * functions used in earlier versions

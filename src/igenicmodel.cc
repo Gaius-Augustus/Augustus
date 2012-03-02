@@ -65,10 +65,13 @@ void IGenicModel::init() {
  */
 void IGenicModel::initAlgorithms (Matrix<Double>& trans, int cur) {
   // set these parameters to the one of the GC content index gcIdx
-  if (!Constant::tieIgenicIntron)
+  if (!Constant::tieIgenicIntron 
+      || IntronModel::GCemiprobs == NULL 
+      || IntronModel::GCemiprobs[gcIdx].probs.size()==0) // this happens for intronless species
     emiprobs = GCemiprobs[gcIdx];
   else // use the intron content model
     emiprobs = IntronModel::GCemiprobs[gcIdx];
+  
   Pls = GCPls[gcIdx];
   geoProb = trans[cur][cur].doubleValue();
 }
@@ -252,7 +255,7 @@ void IGenicModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // viter
 		predSubmap.succCount()++;
 	} catch(...) {}
     }
-	
+
     if (algovar == doSampling) {
 	optionslist->prepareSampling();
 	try {
@@ -315,7 +318,8 @@ Double IGenicModel::emiProbUnderModel(int begin, int end) const {
 		int pn = s2i(sequence+begin-k);
 		p *= emiprobs.probs[pn];
 		if (inCRFTraining){
-		  if (Constant::tieIgenicIntron)
+		  if (Constant::tieIgenicIntron && IntronModel::GCemiprobs != NULL 
+		      && IntronModel::GCemiprobs[gcIdx].probs.size() > 0)
 		    IntronModel::GCemiprobs[gcIdx].addCount(pn);
 		  else 
 		    GCemiprobs[gcIdx].addCount(pn);

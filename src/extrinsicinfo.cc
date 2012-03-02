@@ -440,6 +440,8 @@ Feature *SequenceFeatureCollection::getFeatureListOvlpingRange(Bitmask featurety
  * 'strand' (0 = +, 1 = -) or NULL if there is none
  */
 Feature *SequenceFeatureCollection::getFeatureListContaining(Bitmask featuretypes, int position, Strand strand) {
+    if (!collection->hasHintsFile)
+      return NULL;
     Feature *hitlist = NULL;
     list<Feature>::iterator a, e;
     for (int type=0; type<NUM_FEATURE_TYPES; type++) {
@@ -2178,7 +2180,7 @@ void FeatureCollection::readGFFFile(const char *filename){
 	datei >> comment >> ws;
 	while (datei) {
 	    datei >> f >> comment >> ws;
-	    if (f.end >= predictionStart && f.start <= predictionEnd) {
+	    if (f.end >= predictionStart && f.start <= predictionEnd && f.type != -1) {
 		f.start -= predictionStart;
 		f.end -= predictionStart;
 		FeatureTypeInfo& fti = typeInfo[f.type];

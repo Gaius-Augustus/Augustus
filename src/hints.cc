@@ -203,10 +203,7 @@ istream& operator>>( istream& in, Feature& feature ){
 	feature.start--; // shift by -1, cause I start indexing with 0
 	feature.end--;   // shift by -1, cause I start indexing with 0
 	
-	feature.type = Feature::getFeatureType(feature.feature);
-	if ((int) feature.type < 0)
-	    cerr << "Unknown Feature '" << feature.feature << "'. Ignoring it." << endl;
-
+	feature.type = Feature::getFeatureType(feature.feature); // may fail: type = -1
     } catch (ProjectError e) {
 	cerr << "Error in hint line: " << copybuff << endl;
 	cerr << e.getMessage() << endl;
@@ -254,8 +251,9 @@ FeatureType Feature::getFeatureType(string typestring){
     else if (typestring == "nonirpart" || typestring == "genicpart")
 	type = nonirpartF;
     else {
-	cerr << "Unknown Feature '" << typestring << "'. Ignoring it." << endl;
-	type = (FeatureType) -1;
+      cerr << "Unknown hint feature '" << typestring << "'. Ignoring it. For a list of the 17 allowed features ";
+      cerr << "see the first column of the table in config/extrinsic/extrinsic.cfg." << endl;
+      type = (FeatureType) -1;
     }
     return type;
 }

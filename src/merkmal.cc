@@ -55,6 +55,10 @@ string PatMMGroup::verbalDescription(int index){
     return descr.str();
 }
 
+Double PatMMGroup::getMinProb(float qthresh){
+  return quantile(probs, qthresh);
+}
+
 void FramedPatMMGroup::getFramePat(int index, int &frame, int &pattern){
     frame = 0;
     while (frame < 3 && index >= probs[frame].size()){
@@ -195,6 +199,12 @@ void BinnedMMGroup::read(ifstream &in){
 	in >> bb[i-1] >> avprobs[i];
 }
 
+Double BinnedMMGroup::getMinProb(float qthresh){
+  if (nbins==0)
+    return quantile(origprobs, qthresh);
+  else
+    return quantile(avprobs, qthresh);
+}
 
 Double* BinnedMMGroup::getFactor(int index){
     return &avprobs[index];

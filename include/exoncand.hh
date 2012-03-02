@@ -44,11 +44,11 @@ inline bool onRCStopcodon(const char* dna) {
 
 /*
  * getExonCands: get all exon candidates
- * assqthresh, dssqthresh are thresholds for the inclusion of
+ * assqthresh, dssqthresh are between 0 and 1 and thresholds for the inclusion of
  * acceptor/donor splice sites based on the pattern probability
  * assqthresh=0.05 means that only acceptor ss are considered
- * that have a pattern, such that 5% of patterns have lower probability.
- *
+ * that have a pattern, such that 5% of true splice site patterns have lower probability.
+ * The default threshold of 0 means that all splice site patterns are considered.
  */
 
 void getExonCands(const char* dna, float assqthresh=0, float dssqthresh=0);

@@ -22,7 +22,9 @@
 
 // standard C/C++ includes
 #include <iostream>
+#include <vector>
 #include <cstdlib>
+
 
 // declaration of "global" variables
 //---------------------------------------
@@ -350,6 +352,20 @@ char *getRandomDNA(int len) {
     seq[i] = dnamap[(int) (4.0 * rand() / (1.0 + RAND_MAX))];
   }
   return seq;
+}
+
+Double quantile(const vector<Double> &v, float q){
+  if (v.size() ==0)
+    return -numeric_limits<double>::infinity();
+  if (q<0)
+    q=0;
+  if (q>1)
+    q=1;
+  vector<Double> w(v);
+  std::sort(w.begin(), w.end()); // O(n log n) but finding a quantile would be possible also in linear time
+  int threshindex = (int) (q * w.size());
+  cout << "quantile: size=" << w.size() << " index=" << threshindex << endl;
+  return w[threshindex];
 }
 
 /*

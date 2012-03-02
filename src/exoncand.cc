@@ -223,5 +223,25 @@ cout <<"Terminal forward: " <<terminal_fw<<endl;
 cout <<"Terminal reverse: " <<terminal_rv<<endl;
 cout << "strand length: " <<n<<endl;
   
-  // assqthresh, dssqthresh implemented later
+ // assqthresh, dssqthresh 
+ Double assminprob = IntronModel::assBinProbs.getMinProb(assqthresh);
+ Double dssminprob = IntronModel::dssBinProbs.getMinProb(dssqthresh);
+ cout << "thresholds: dssminprob=" << dssminprob << " assminprob=" << assminprob << endl;
+ // demo of splice site scores
+ Double p;
+ for (int i=0; i<200; i++){ // limit for testing and demo of code
+   if (i + Constant::ass_whole_size() + Constant::ass_upwindow_size < n){ // see class IntronModel for boundaries
+     p = IntronModel::aSSProb(i, true); // second argument: plusstrand?
+     if (p>0)
+       cout <<  ((p >= assminprob)? "strong" : "weak") << " intron may end at pos " 
+	    << i+Constant::ass_upwindow_size+Constant::ass_start+ASS_MIDDLE-1
+	    << " (0-based) on plusstrand, " << endl;
+   }
+   if (i + Constant::dss_whole_size() < n){ // see class IntronModel for boundaries
+     p = IntronModel::dSSProb(i, true);
+     if (p>0)
+       cout << ((p >= dssminprob)? "strong" : "weak") << " intron may start at pos " 
+	    << i+Constant::dss_start  << " (0-based) on plusstrand, "  << endl;
+   }
+ }
 }

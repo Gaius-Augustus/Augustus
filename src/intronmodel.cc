@@ -1176,7 +1176,6 @@ Double IntronModel::dSSProb(int base, bool forwardStrand){
 	//cout << "dssprob= " << dssprob << " idx= " << idx << " avprobs=" << dssBinProbs.avprobs[idx] << endl;
 	return dssBinProbs.avprobs[idx];
     } catch (InvalidNucleotideError e) {
-	//cerr << "got invalid nukleotide when checking for DSS: " << astr << endl;
 	return 0.0; // don't predict splice site when there is an unknown nucleotide
     }
 }
