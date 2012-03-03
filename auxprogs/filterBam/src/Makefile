@@ -8,7 +8,7 @@
 #	Last modified: 24-February-2012
 
 
-# test: ttview checkBamEnv
+# test: ttview checkBamEnv 
 
 # checkBamEnv: 
 # 	@if [ -z "${BAMTOOLS}" ]; then \
@@ -31,8 +31,7 @@ checkBamEnv:
 		echo '[Makefile]: $${BAMTOOLS} has not been set.'; \
 		exit 101; \
 	elif [ "${BAMTOOLS}" ]; then \
-		echo '[Makefile]: variable $${BAMTOOLS} is defined.'; \
-		echo "Compiling with BAMTOOLS=${BAMTOOLS}"; \
+		echo "Compiled with BAMTOOLS=${BAMTOOLS}"; 
 	fi
 
 # #BAMTOOLS = /home/tonatiuh/web-home/bamtools
@@ -86,7 +85,6 @@ bam : $(SAMFILES)
 # Cleaning routine 
 ######################################################
 
-PDFOBJECTS = $(PROGRAM).aux $(PROGRAM).blg $(PROGRAM).bbl $(PROGRAM).log $(PROGRAM).out
 
 clean: 
-	rm -f *~ $(OBJECTS) $(PDFOBJECTS)
+	rm -f *~ $(OBJECTS) 

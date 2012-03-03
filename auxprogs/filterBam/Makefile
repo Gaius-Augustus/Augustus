@@ -21,4 +21,4 @@ clean:
 
 
 clean: 
-	rm -f *~ $(OBJECTS) 
+	rm -f *~ src/*.o src/*.*~

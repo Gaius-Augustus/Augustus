@@ -1,30 +1,42 @@
+##########################################################################################
+# filterBam: a cleaning tool for genome alignment files in BAM format
 #
-# These README contains instructions for how to:
+# Author: 
+# Tonatiuh Pena-Centeno
+# Institut for Informatik un Mathematik
+# Universität Greifswald
+# 17489 Greifswald
+# Germany
+# tonatiuh.pena.centeno@gmail.com
 #
-# 	1. Build filterBam.cc 
-# 	2. Generate documentation file
-#	3. Generate dummy data to test file
-#
-# Requirements:
-# ...for building filterBam.cc:
-# 	- Latest version of BAMTOOLS installed https://github.com/pezmaster31/bamtools
-# 	- Boost-regex library for C++ www.boost.org
-# 	- GNU's "g++" compiler version 4.4.4 or later
-#
-# ... for generating dummy test data
-#	- Latest version of SAMTOOLS
-#
-# Created: 25-January-2012
-# Last modified: 26-January-2012
-#
-# Author: Tonatiuh Pena-Centeno
-#
+# 28-February-2012
 
-# 1) Building. Simply type: 
-make build
+Contents:
 
-# 2) Documentation. Type:
-make pdf
+1. INTRODUCTION
+2. INSTALLATION
+3. RUNNING 
 
-# 3) Data generation (converts a dummy SAM file to BAM format). Type: 
-make bam
+
+1. INTRODUCTION
+----------------
+filterBAM is a C++ routine based on filterPSL, a Perl script written by Prof. Dr. Mario Stanke for the 
+cleaning of PSL alignment files. See more on the accompanying PDF file.
+
+2. INSTALLATION
+----------------
+Type in the command line
+
+> make
+
+Executable binary file should be stored in the folder "bin", under the name "filterBam", i.e.
+
+> cd bin
+>./filterBam --help
+
+3. RUNNING
+----------------
+
+
+
+

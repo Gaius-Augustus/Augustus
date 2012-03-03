@@ -8,8 +8,8 @@
 
  
 	Created: 4-November-2011  
-	Last modified: 21-February-2012  
-*/     
+	Last modified: 28-February-2012  
+*/        
          
 #include <api/BamReader.h>   
 #include <api/BamWriter.h>  
@@ -17,14 +17,14 @@
 #include <api/algorithms/Sort.h> 
 #include "bamtools_sort.h" 
 #include <iostream> 
-#include <vector>
-#include <string>
+#include <vector> 
+#include <string> 
 #include <stdio.h> 
 #include <stdexcept> 
 #include <time.h> 
 #include <getopt.h> 
 #include <sstream>
-#include <stdlib.h>
+#include <stdlib.h> 
 #include <iomanip>  
 #include <cstdio>
 #include <algorithm>
