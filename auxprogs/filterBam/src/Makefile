@@ -3,21 +3,28 @@
 # 	Created: 11-November-2011
 #	Last modified: 4-March-2012
 
+
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
 			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
 CFLAGS = -g $(INCLUDES) -std=c++0x -pg 
-#LINK.cc = g++
-# #BAMTOOLS = /home/tonatiuh/web-home/bamtools
 INCLUDES = -I$(BAMTOOLS)/include -Iheaders -I$(BAMTOOLS)/src/toolkit
-VPATH = functions # Required to find files in functions/foo.cc
+VPATH = functions 
 LIBS = $(BAMTOOLS)/lib/libbamtools.a -lz 
+INSTDIR = bin
 
-# Variable definition
-all : $(PROGRAM) $(OBJECTS) CHECKBAM
+all : $(PROGRAM) $(OBJECTS) CHECKBAM BIN
 
-# Define destination directory
+BIN : $(PROGRAM) CHECKBAM
+	@if [ -d $(INSTDIR) ]; \
+		then \
+			mkdir $(INSTDIR);\
+			mv filterBam $(INSTDIR);\
+		else \
+			echo "Sorry, $(INSTDIR) does not exist";\
+	fi
+
 CHECKBAM: 
 	@if [ -z "${BAMTOOLS}" ]; then \
 		echo '[Makefile]: $${BAMTOOLS} has not been set.'; \
@@ -29,25 +36,8 @@ CHECKBAM:
 $(PROGRAM) : $(OBJECTS) 
 	$(LINK.cc) $(CFLAGS) $^ -o $@ $(LIBS) 
 
-# This recipe is equivalent to specifying:
-# $^: is a list of all the prerequisites of the rule
-# % contains the stem-name of the file
 $(OBJECTS) : %.o:%.cc
 	$(LINK.cc) $(CFLAGS) -c $^ -o $@ 
-
-
-# ######################################################
-# # Generation of Dummy datasets
-# ######################################################
-# SAMFILES = example_1.sam
-# SCRIPT = sam2bam.sh
-
-# bam : $(SAMFILES)
-# 	sh $(SCRIPT) $^
-
-######################################################
-# Cleaning routine 
-######################################################
 
 
 clean: 

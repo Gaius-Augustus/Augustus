@@ -3,10 +3,6 @@
 # Created: 28-February-2012
 # Last modified: 4-March-2012
 
-######################################################
-# Generation of PDF document
-######################################################
-
 
 all : filterBam.pdf
 

@@ -6,7 +6,7 @@
 	3. Intron gaps (noIntrons, baseInsert)
 	4. Uniqueness (determined by percId and coverage)
 
- 
+  
 	Created: 4-November-2011    
 	Last modified: 28-February-2012  
 */        

@@ -1,4 +1,4 @@
-#	Makefile corresponding to computeMatePairs
+#	Makefile for filterBam.cc and filterBam.tex
 #	
 # 	Created: 28-February-2012
 #	Last modified: 4-March-2012
