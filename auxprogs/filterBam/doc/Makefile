@@ -1,20 +1,22 @@
 # Generates documentation of filterBAM
 #
 # Created: 28-February-2012
-# Last modified: 28-February-2012
+# Last modified: 4-March-2012
 
 ######################################################
 # Generation of PDF document
 ######################################################
 
-PROGRAM=filterBam
 
-doc : $(PROGRAM).tex
-	pdflatex $^
-	pdflatex $^ 
+all : filterBam.pdf
 
-PDFOBJECTS = $(PROGRAM).aux $(PROGRAM).blg $(PROGRAM).bbl $(PROGRAM).log $(PROGRAM).out
+filterBam.pdf : filterBam.dvi
+	dvipdf $<
 
+filterBam.dvi:filterBam.tex
+	latex $< > filterBam.log
+	latex $< > filterBam.log
+	@echo "filterBam.tex compilation results being stored in filterBam.log"
 
 clean : 
-	rm -f *~ $(PDFOBJECTS)
+	rm -f *~ *.aux *.blg *.bbl *.log *.out *.dvi filterBam.log

@@ -7,12 +7,12 @@
 	4. Uniqueness (determined by percId and coverage)
 
  
-	Created: 4-November-2011  
+	Created: 4-November-2011    
 	Last modified: 28-February-2012  
 */        
          
-#include <api/BamReader.h>   
-#include <api/BamWriter.h>  
+#include <api/BamReader.h>    
+#include <api/BamWriter.h>   
 #include <api/BamAlignment.h> 
 #include <api/algorithms/Sort.h> 
 #include "bamtools_sort.h" 
@@ -23,7 +23,7 @@
 #include <stdexcept> 
 #include <time.h> 
 #include <getopt.h> 
-#include <sstream>
+#include <sstream> 
 #include <stdlib.h> 
 #include <iomanip>  
 #include <cstdio>
@@ -31,7 +31,7 @@
 #include <unordered_map> 
 #include <fstream>  
 #include <map>
-#include <math.h> 
+#include <math.h>  
 #include "filterBam.h"
  
 struct optionalCounters_t { 

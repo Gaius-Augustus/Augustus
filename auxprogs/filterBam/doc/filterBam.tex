@@ -10,13 +10,13 @@
 % Fonts for commands, etc.
 \usepackage[scaled=0.92]{helvet}
 \usepackage[scaled=0.92]{uarial}
-
+ 
 % Default margins are too wide all the way around. I reset them here
 \setlength{\topmargin}{-.5in}
 \setlength{\textheight}{9in}
 \setlength{\oddsidemargin}{.125in}
 \setlength{\textwidth}{6.25in}
-\setlength{\topmargin}{-.5in}
+\setlength{\topmargin}{-.5in} 
 \setlength{\textheight}{9in}
 \setlength{\oddsidemargin}{.125in}
 \setlength{\textwidth}{6.25in} 
@@ -467,19 +467,19 @@ A function that tests whether alignments (or two alignment pairs) are similar ha
 filterBam. Testing for similarity is required given that by handling separately spliced and unspliced 
 alignments, there is the possibility that very similar alignments are reported, \emph{an unspliced read going approximately up to an intron and a spliced read with a few base pairs on one exon.} Such type of cases 
 should not be considerd ambiguous when \option{uniq} is specified. 
-
+  
 Figure \ref{fig:similarityFunction} below shows two scenarios. In scenario one, a pair of reads were aligned 
 to overlapping ranges of the reference genome; both reads are deemed similar. In scenario two, the reads 
 are aligned to non-contiguous ranges of the reference genome, thus are considered not-similar.
 
 \begin{figure}
   \begin{center}
-    \includegraphics[width=7cm]{figures/similarFunction.pdf}
+    \includegraphics[width=7cm]{figures/similarityFunction.eps}
   \end{center}
 \caption{The similarity function checks whether mate paired reads are overlapping or not.}
 \label{fig:similarityFunction}
 \end{figure}
-
+ 
 Thus to finalise, a top-scored alignment will be let pass by the filter, if and only if, the second ranked 
 alignment is not all too-similar to the top alignment.
 
@@ -580,7 +580,7 @@ filterBam accepts inputs with '/1', '/2' suffix when the option \option{paired} 
 
 \begin{figure}
   \begin{center}
-    \includegraphics[scale=0.50]{figures/pairedReads.pdf}
+    \includegraphics[scale=0.50]{figures/pairedReads.eps}
   \end{center}
 \caption{Paired reads}
 \label{fig:pairedReads}
@@ -656,7 +656,7 @@ matches and deletions from the reference. In other words, we do the following
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
-
+ 
 \bibitem[Li et~al.(2009)Li, Handsaker, Wysoker, Fennell, Ruan, Homer, Math,
   Abecasis, Durbin, and Subgroup]{heng09:SAM}
 H.~Li, B.~Handsaker, A.~Wysoker, T.~Fennell, J.~Ruan, N.~Homer, G.~Math,
