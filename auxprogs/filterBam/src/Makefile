@@ -12,18 +12,13 @@ CFLAGS = -g $(INCLUDES) -std=c++0x -pg
 INCLUDES = -I$(BAMTOOLS)/include -Iheaders -I$(BAMTOOLS)/src/toolkit
 VPATH = functions 
 LIBS = $(BAMTOOLS)/lib/libbamtools.a -lz 
-INSTDIR = bin
+INSTDIR = ../bin
 
 all : $(PROGRAM) $(OBJECTS) CHECKBAM BIN
 
 BIN : $(PROGRAM) CHECKBAM
-	@if [ -d $(INSTDIR) ]; \
-		then \
-			mkdir $(INSTDIR);\
-			mv filterBam $(INSTDIR);\
-		else \
-			echo "Sorry, $(INSTDIR) does not exist";\
-	fi
+	mkdir $(INSTDIR);\
+	mv filterBam $(INSTDIR);
 
 CHECKBAM: 
 	@if [ -z "${BAMTOOLS}" ]; then \

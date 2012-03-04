@@ -1,5 +1,5 @@
 ##########################################################################################
-# filterBam: a cleaning tool for genome alignment files in BAM format
+# filterBam: a tool for cleaning alignment files in BAM format
 #
 # Author: 
 # Tonatiuh Pena-Centeno
@@ -9,34 +9,41 @@
 # Germany
 # tonatiuh.pena.centeno@gmail.com
 #
-# 28-February-2012
+#  4-March-2012
+##########################################################################################
+
 
 Contents:
 
 1. INTRODUCTION
-2. INSTALLATION
+2. INSTALLING
 3. RUNNING 
 
 
-1. INTRODUCTION
-----------------
+		1. INTRODUCTION
+		----------------
 filterBAM is a C++ routine based on filterPSL, a Perl script written by Prof. Dr. Mario Stanke for the 
-cleaning of PSL alignment files. See more on the accompanying PDF file.
+cleaning of PSL alignment files. For more information regarding the filter, please check the accompanying 
+PDF file that is created during compilation.
 
-2. INSTALLATION
-----------------
-Type in the command line
+		2. INSTALLING
+		----------------
+1. Download and extract the latest version of filterBam from [to define]. 
+
+2. Compile by typing in the command line
 
 > make
 
-Executable binary file should be stored in the folder "bin", under the name "filterBam", i.e.
+3. The binary file 'filterBam' should be stored in the folder 'bin'
 
 > cd bin
->./filterBam --help
 
-3. RUNNING
-----------------
+		3. RUNNING
+		----------------
 
+Get the 'help' menu by typing 
+
+>./filterBam --help 
 
 
 

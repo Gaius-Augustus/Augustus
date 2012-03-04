@@ -40,6 +40,7 @@
 \newcommand{\bamApi}[1]{{\fontfamily{bch}\selectfont#1}}
 \newcommand{\software}[1]{{\fontfamily{cmss}\selectfont#1}}
 \newcommand{\unix}[1]{\texttt{#1}}
+\newenvironment{cmdOutput}{\ttfamily}
 
 % Setting up title, etc 
 \title{Filtering read alignments in BAM format: user guide} 
@@ -55,8 +56,8 @@ The filter is based on filterPSL, a perl script written by Prof. Mario Stanke as
 software suite \citet{stanke08:augustus}. Both filterPSL and filterBam are designed for the cleaning of 
 alignment data that will subsequently be applied to the gene prediction problem. The filter produces also 
 output that might later be used for transcriptome quantification. The code should be modifiable rather 
-easily, if it is to be applied to a different type of application (see the reference manual below for 
-further information). filterBam is written in C++ and makes use of the Bamtools API of 
+easily, if it is to be applied to a different type of application (see the reference manual). 
+filterBam is written in C++ and makes use of the Bamtools API of 
 \citet{barnett11:BamTools}. 
 
 \section{Installation}
@@ -117,30 +118,61 @@ In this section we briefly describe the compilation process of \software{filterB
 		\unix{\$export BAMTOOLS}. 		
 	\item
 		Move to the directory where filterBam has been installed and type \unix{make}. This should compile 
-		the program filterBam.cc and this document, filterBam.tex.
+		the program filterBam.cc and the source of this document, filterBam.tex.
 	\item
-		The binaries will be stored in \unix{filterBam/bin} and the documentation in \unix{filterBam/doc}. 
+		The binary will be stored in \unix{filterBam/bin} and the documentation in \unix{filterBam/doc}. 
 \end{enumerate}
 
 \section{A couple of examples}
 In this section we show how the filter works through the application of a couple of examples. The first 
 example documents the operation of the filter for single alignments, while the second example describes 
-the operation of the filter in paired-alignment mode. The filter accepts a \printOption{help} option to 
+the operation of the filter in paired-alignment mode. The filter accepts a \option{help} option to 
 display its funcionalities.
 
 \subsection{Dummy data}
 We have generated two dummy data sets to show filterBam in operation. One file illustrates how the cleaning of
 single alignments works, while the other file shows how paired alignments are processed. The file 
-\unix{example\_single.bam} is a BAM file consists of a set of alignments that were specifically tailored to show 
-the functionalities of the filter when treating inputs as single alignments. In a similar way, the file 
+\unix{example\_single.bam} is a BAM file consists of a set of alignments that were specifically tailored to 
+show the functionalities of the filter when treating inputs as single alignments. In a similar way, the file 
 \unix{example\_paired.bam} was constructed with alignments that are product of paired-reads, so that the 
-functionalities of the filter under this mode of operation are shown.
+functionalities of the filter under this mode of operation are shown. Dummy data are stored under the folder 
+\unix{filterBam/data}.
 
 \subsection{Filtering of single alignments}
-A run that will let pass most, if not all, readings: 
+The filter allows screening out alignment under a set of different criteria: coverage level, percentage of 
+identity and insert gaps, with default values specified in Table \ref{tab:featuresFilter}. Running the filter 
+on \unix{example\_paired.bam} with default options, that is: 
+
 \begin{flushleft}
-\unix{./filterBam input.bam output.bam --minCover 0 --minId 0  --insertLimit 10000000 --nointrons}
+\begin{cmdOutput}
+> filterBam --in data/example\_1.bam --out data/example\_1.f.bam
+\end{cmdOutput}
 \end{flushleft}
+
+will lead to the following output: 
+
+\begin{flushleft}
+\begin{cmdOutput}
+------------------------------------- \\
+Summary of filtered alignments: \\
+------------------------------------- \\ 
+unmapped        : 11 \\
+percent identity: 5 \\
+coverage        : 0 \\
+------------------------------------- \\
+Cmd line: \\
+filterBam --in data/example\_1.bam --out data/example\_1.f.bam \\
+------------------------------------- \\
+Elapsed time:   0 seconds. \\
+\end{cmdOutput}
+\end{flushleft}
+
+The source file, \unix{example\_1.bam} stores $35$ alignments, whereas the filtered output has $19$ alignments.
+As the output shows, $16$ alignments were cleaned, $11$ because they were not mapped and $5$ because of the 
+percent identity criteria. \\
+
+Parameters of the filter might be modified. A run with \setOption{minCover}{70} will lead to a very different 
+output.
 
 \subsection{Filtering of paired alignments}
 
@@ -179,8 +211,10 @@ is 2.0 and is specificed on Table \ref{tab:software}.
 \end{center}
 
 \begin{center}
-Tonatiuh Pe\~{n}a-Centeno
-\date
+{\large
+Tonatiuh Pe\~{n}a-Centeno \\ 
+\date{\today}
+}
 \end{center}
 
 \abstract{This note describes the detailed operation of the filter and lists the main classes that were used to 
