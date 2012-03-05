@@ -144,27 +144,27 @@ identity and insert gaps, with default values specified in Table \ref{tab:featur
 on \unix{example\_paired.bam} with default options, that is: 
 
 \begin{flushleft}
-\begin{cmdOutput}
-> filterBam --in data/example\_1.bam --out data/example\_1.f.bam
-\end{cmdOutput}
+  \begin{cmdOutput}
+    > filterBam --in data/example\_1.bam --out data/example\_1.f.bam
+  \end{cmdOutput}
 \end{flushleft}
 
 will lead to the following output: 
 
 \begin{flushleft}
-\begin{cmdOutput}
-------------------------------------- \\
-Summary of filtered alignments: \\
-------------------------------------- \\ 
-unmapped        : 11 \\
-percent identity: 5 \\
-coverage        : 0 \\
-------------------------------------- \\
-Cmd line: \\
-filterBam --in data/example\_1.bam --out data/example\_1.f.bam \\
-------------------------------------- \\
-Elapsed time:   0 seconds. \\
-\end{cmdOutput}
+  \begin{cmdOutput}
+    ------------------------------------- \\
+    Summary of filtered alignments: \\
+    ------------------------------------- \\ 
+    unmapped        : 11 \\
+    percent identity: 5 \\
+    coverage        : 0 \\
+    ------------------------------------- \\
+    Cmd line: \\
+    filterBam --in data/example\_1.bam --out data/example\_1.f.bam \\
+    ------------------------------------- \\
+    Elapsed time:   0 seconds. \\
+  \end{cmdOutput}
 \end{flushleft}
 
 The source file, \unix{example\_1.bam} stores $35$ alignments, whereas the filtered output has $19$ alignments.
