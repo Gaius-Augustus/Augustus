@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+# Katharina J. Hoff
+# January 2012
+#
 # Evaluate a psl-file that contains peptide 2 protein mappings 
 # in context with a gff-file of the protein coding genes 
 # or a six frame translation (gff!) that
