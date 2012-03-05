@@ -7,8 +7,10 @@
 #
 # Input format: multiple fasta with fasta headers that contain only the gene identifier.
 # Output format: List of gene identifiers
+#
+# Note: consider running AUGUSTUS with the option --noInFrameStop=true if you want to avoid stop codons in the first place.
 
-my $usage = "filterInFrameStopCodons.pl protein.fa > no-stop.lst\n";
+my $usage = "filterInFrameStopCodons.pl protein.fa > no-stop.lst\nConsider running AUGUSTUS with the option --noInFrameStop=true if you want to avoid stop codons in the first place.\n";
 
 if (@ARGV != 1) {
     print $usage;
