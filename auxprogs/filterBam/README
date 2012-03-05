@@ -16,19 +16,35 @@
 Contents:
 
 1. INTRODUCTION
+2. DEPENDENCIES
 2. INSTALLING
 3. RUNNING 
 
 
 		1. INTRODUCTION
 		----------------
-filterBAM is a C++ routine based on filterPSL, a Perl script written by Prof. Dr. Mario Stanke for the 
-cleaning of PSL alignment files. For more information regarding the filter, please check the accompanying 
-PDF file that is created during compilation.
 
-		2. INSTALLING
+filterBAM is a C++ routine for filtering BAM alignment files; it is based on filterPSL, a Perl script written 
+by Prof. Dr. Mario Stanke for the cleaning of PSL alignment files. For more information regarding the 
+filter, please check the accompanying PDF file, located under the 'doc' directory of this installation.
+
+		2. DEPENDENCIES
 		----------------
+
+filterBam makes use of Bamtools' API, available from the web-page: https://github.com/pezmaster31/bamtools/wiki
+Go to the section 'Building and installing' of the referred page and follow the installation and building 
+instructions of Bamtools.
+
+		3. INSTALLING
+		----------------
+
 1. Download and extract the latest version of filterBam from [to define]. 
+
+2. Create and export an enviroment variable called 'BAMTOOLS' that points to the top-level directory where 
+such software resides, e.g.
+
+> BAMTOOLS=/home/tonatiuh/Documents/git/bamtools
+> export BAMTOOLS;
 
 2. Compile by typing in the command line
 
@@ -38,7 +54,9 @@ PDF file that is created during compilation.
 
 > cd bin
 
-		3. RUNNING
+4. User guide and reference manual are stored under the directory 'doc'
+
+		4. RUNNING
 		----------------
 
 Get the 'help' menu by typing 
