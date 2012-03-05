@@ -35,7 +35,7 @@
 \newcommand{\subscript}[1]{\ensuremath{_{\textrm{#1}}}}
 % Command to represent options for filterBam: "phv": helvetica, "pcr": courier ZapfChancery
 \newcommand{\printOption}[1]{$\textrm{-\,-}${\fontfamily{phv}\selectfont#1}$\langle${\fontfamily{phv}\selectfont value}$\rangle$}
-\newcommand{\setOption}[2]{{\fontfamily{phv}\selectfont#1}\ensuremath{=#2}}
+\newcommand{\setOption}[2]{{\fontfamily{phv}\selectfont#1}\ensuremath{=#2}} %{option}{value}
 \newcommand{\option}[1]{{\fontfamily{phv}\selectfont#1}}
 \newcommand{\bamApi}[1]{{\fontfamily{bch}\selectfont#1}}
 \newcommand{\software}[1]{{\fontfamily{cmss}\selectfont#1}}
@@ -56,9 +56,8 @@ The filter is based on filterPSL, a perl script written by Prof. Mario Stanke as
 software suite \citet{stanke08:augustus}. Both filterPSL and filterBam are designed for the cleaning of 
 alignment data that will subsequently be applied to the gene prediction problem. The filter produces also 
 output that might later be used for transcriptome quantification. The code should be modifiable rather 
-easily, if it is to be applied to a different type of application (see the reference manual). 
-filterBam is written in C++ and makes use of the Bamtools API of 
-\citet{barnett11:BamTools}. 
+easily, if it is to be applied to a different type of application. 
+filterBam is written in C++ and makes use of the Bamtools API of \citet{barnett11:BamTools}. 
 
 \section{Installation}
 
@@ -99,6 +98,9 @@ included in the tables.
   \caption{List of libraries required by filterBam}
   \label{tab:libraries}
 \end{table}
+
+Basic instructions on how to get and use the latest versions of \software{Samtools} and \software{Bamtools} 
+are provided in Section \ref{sec:utilityKits}.
 
 % Note that the flag \unix{-std=c++0x}  has been used given that some of the functionalities of the filter 
 % require some of the newest features of GNU's g++ compiler. It seems that c++11 has bundled such 
@@ -180,36 +182,46 @@ let pass only alignments that have a minimum thresholding score.
 RNA-seq libraries might contain paired-reads, which provide additional information by means of the distance 
 kept between the end of one read and the start of the other; something termed as the insert length. In fact,
 aligners such as \software{Bowtie} and \software{GSNAP} allow the alignment of paired reads by simply 
-plugging-in both sets of reads as inputs. Nevertheless, sets of single reads that have been aligned 
-independently might also be used to extract pairedness information: if you have two sets of aligned single 
-reads, simply look pairs of alignments that might be potential pair-mates. filterBam does precisely that, 
-within a single BAM file. 
+using both sets of reads as inputs. Nevertheless, sets of single reads that have been aligned 
+independently might also be used to extract pairedness information: simply look pairs of alignments that 
+might be potential pair-mates. filterBam does precisely that, within a single BAM file; for further information
+on how this is done see the Section \ref{sec:pairedAls}.
 
-An example of how to clean paired-alignments. The option \printOption{paired} must be set:
+In order for the filter to work on the paired-alignment mode, the option \printOption{paired} must be set. The 
+same set of options are available as with the single-alignment filter. However, there are subtle differences 
+on the criteria \printOption{best} or \option{uniq}, which are explained in Section \ref{sec:pairedAls} of the 
+reference manual.
 
 \begin{flushleft}
-\begin{cmdOutput}
-> ./filterBam --in ../data/example\_paired.bam --out ../data/example\_paired.f.bam --paired \\
- processed line 1 \\
--------------------------------------  \\
-Summary of filtered alignments:  \\
-------------------------------------- \\ 
-unmapped        : 2 \\
-percent identity: 3 \\
-coverage        : 0 \\
-not paired      : 2 \\
-quantiles of unspliced insert lengths: [insertlen.size()=0] \\
--------------------------------------  \\
-Cmd line:  \\
-./filterBam --in ../data/example\_paired.bam --out ../data/example\_paired.f.bam --paired  \\
--------------------------------------  \\
-Elapsed time:   0 seconds. \\
-\end{cmdOutput}
+  \begin{cmdOutput}
+    ------------------------------------- \\ 
+    Summary of filtered alignments:  \\
+    -------------------------------------  \\
+    unmapped        : 2 \\
+    percent identity: 0 \\
+    coverage        : 0 \\
+    not paired      : 1 \\
+    quantiles of unspliced insert lengths: [insertlen.size()=4]  \\
+    q[10\%]=76,q[20\%]=76,q[30\%]=77,q[40\%]=77,q[50\%]=137,q[60\%]=137,q[70\%]=137,q[80\%]=138,q[90\%]=138, \\
+    unique          : 2  \\
+    -------------------------------------  \\
+    Cmd line:  \\
+    ./filterBam --in data/example\_paired.bam --out data/example\_paired.f.bam --paired --minId 70 --uniq --uniqThresh 0.99 --verbose  \\
+    ----------------------------------------  \\
+    Elapsed time:   0 seconds.  \\
+  \end{cmdOutput}
 \end{flushleft}
 
-In this case the file 
+In this example, the file \unix{example\_paired.bam} originally with $7$ alignments is filtered under the 
+paired alignment mode, and with the options \setOption{minId}{70} and \setOption{uniqThresh}{0.99}. Setting 
+these parameters to such values will lead to the filter to discard $5$ alignments and to let pass only $2$.
 
-\subsection{Retrieving additional information}
+\subsection{Common gene information}
+When using paired alignments, an important source of information might be whether optimal alignments were 
+aligned to a common target. The option \printOption{commonGeneFile} allows to store such type of information 
+in a text file. 
+
+\subsection{Pairdness coverage information}
 For paired alignments, and in fact for paired reads, an important source of information is the distance kept 
 between reads. When operating in paired-alignment mode, filterBam preserves the information of pairedness 
 coverage between mate pairs. This feature is activated with the \printOption{pairBed}. 
@@ -229,7 +241,7 @@ Other relevant issues that might be well documenting go here.
 \subsection{Input data}
 The filter should work fine for data coming from $454$ and Illumina technologies but not for colorspace data generated by SOLiD technology. 
 
-\section{About Samtools and Bamtools}
+\section{About Samtools and Bamtools} \label{sec:utilityKits}
 
 We introduce some examples of how to use Samtools and Bamtools to make life easier when working with BAM files.
 In particular we concentrate on the issue of sorting files by query name, as this is the requirement for 
@@ -238,37 +250,40 @@ routine must consider the following: to momentarily put aside the header, do the
 header at the top of the sorted file.
  
 \subsection{Samtools}
-\software{Samtools} is a set of utilities for manipulating SAM/BAM files. After downloading and compiling
-(follow the instructions of \software{Samtools}), a binary with the name \unix{Samtools} will be created.
-Some useful commands in \unix{Samtools} are the following:
+\software{Samtools} is an API written in the \unix{C} language that includes a set of utilities for 
+manipulating SAM/BAM files. The software is available via \software{subversion} on the web-page 
+\url{http://samtools.sourceforge.net/}. Folow the installation instructions contained therein and a binary 
+file \unix{samtools} will be produced. Some useful commands follow:
 
 \begin{itemize}
+	\item	Help
+			\unix{samtools --help} 
 	\item	Convert from SAM to BAM \\
 			\unix{samtools view -bS input.sam -o output.bam} 
 	\item	Convert from BAM to SAM \\
 			\unix{samtools view -h input.bam > output.sam}
 	\item	Sort BAM file \\
 			\unix{samtools sort input.bam out}
-	\item	Help
-			\unix{samtools --help} 
 \end{itemize}
 
-\software{Samtools} comes as well with a \unix{C} written API so that one can program routines. 
+
 
 \subsection{Bamtools}
 
-\software{Bamtools} is a C++ wrapper API of the more well-known \unix{Samtools} software; in addition, it 
-includes a binary file with utilities that might be useful to manipulate BAM files. Some of the commands 
-I have found most useful are:
+In a similary way, \software{Bamtools} is an API, but now written in \unix{C++}, that also includes an 
+utility-kit to manipulate BAM files. Get hold of the latest version of \software{Bamtools} by following 
+the instructions contained in \url{https://github.com/pezmaster31/bamtools/wiki/Building-and-installing}; the 
+software \software{git} will be required. After compilation, a binary \unix{bin/bamtools} will be created. 
+Some of the commands useful commands are:
 
 \begin{itemize} 
+	\item	Help \\
+			\unix{bamtools --help}			
 	\item	Count number of alignments in a BAM file \\
 			\unix{bamtools count -in input.bam}
 	\item	Sorting files by query name [WARNING: it seems that this sorting does not behave well with 
 			characters s.a. ":" ] \\
 			\unix{bamtools sort -byname -in input.bam -out output.bam}
-	\item	Help \\
-			\unix{bamtools --help}			
 \end{itemize}
 
 

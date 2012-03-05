@@ -413,7 +413,7 @@ int main(int argc, char *argv[])
 	if (paired) 
 	  {
 		cout << "not paired      : " << outPaired << endl;
-      	cout << "quantiles of unspliced insert lengths: [insertlen.size()=" << insertlen.size() << "]" << endl;
+      	cout << "quantiles of unspliced insert lengths:" << endl;
 		try { // catches: instance of 'std::out_of_range'
 		  	  for (int it=1; it<10; it++)
 				{cout << "q[" << 10*it << "%]=" << insertlen.at(ceil(it*insertlen.size()/10)) << ",";}

@@ -31,30 +31,43 @@ filter, please check the accompanying PDF file, located under the 'doc' director
 		2. DEPENDENCIES
 		----------------
 
-filterBam makes use of Bamtools' API, available from the web-page: https://github.com/pezmaster31/bamtools/wiki
-Go to the section 'Building and installing' of the referred page and follow the installation and building 
-instructions of Bamtools.
+1. Bamtools' API is required for compilation, so go to the web-page: https://github.com/pezmaster31/bamtools/wiki , and more specifically to the section 'Building and installing' for instructions on how to get and compile 
+the latest version of Bamtools. The software 'git' will probably be required as well. Once with Bamtools, 
+filterBam can be compiled (see Section 3).
 
-		3. INSTALLING
+After compilation of Bamtools, a binary 'bamtools' is created. This so-called utility-kit allows the: 
+sorting, sampling, filtering, among other things, of of BAM files. It is recommended to practice a bit with 
+such features given that filterBam only accepts as input BAM files that have been previously sorted by 
+'query name'. 
+
+2. Although not required by filterBam, it may also be convenient to have a copy of the software Samtools. 
+This software is available via subversion (svn) on the web page: http://samtools.sourceforge.net/ . Follow 
+the installation instructions contained in the distribution package of Samtools.
+
+NOTE: Some examples on how to use Samtools and Bamtools utility kits are provided in the user manual of 
+filterBam.
+
+ 		3. INSTALLING
 		----------------
 
-1. Download and extract the latest version of filterBam from [to define]. 
+1. Download and extract the latest version of filterBam from the AUGUSTUS repository. 
 
 2. Create and export an enviroment variable called 'BAMTOOLS' that points to the top-level directory where 
-such software resides, e.g.
+Bamtools resides, e.g.
 
 > BAMTOOLS=/home/tonatiuh/Documents/git/bamtools
 > export BAMTOOLS;
 
-2. Compile by typing in the command line
+2. Compile by typing 
 
 > make
 
-3. The binary file 'filterBam' should be stored in the folder 'bin'
+3. A binary file 'filterBam' should be stored in the folder '$BAMTOOLS/bin'
 
 > cd bin
 
-4. User guide and reference manual are stored under the directory 'doc'
+4. User guide and reference manual are stored under the directory '$BAMTOOLS/doc' (filterBam.pdf)
+
 
 		4. RUNNING
 		----------------
@@ -63,5 +76,5 @@ Get the 'help' menu by typing
 
 >./filterBam --help 
 
-
+Some toy data sets are stored in the folder 'data' in case you want to see how the filter works.
 
