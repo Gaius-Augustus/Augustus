@@ -10,8 +10,8 @@ filterBam.pdf : filterBam.dvi
 	dvipdf $<
 
 filterBam.dvi:filterBam.tex
-	latex $< > filterBam.log
-	latex $< > filterBam.log
+	latex $< #> filterBam.log
+	latex $< #> filterBam.log
 	@echo "filterBam.tex compilation results being stored in filterBam.log"
 
 clean : 

@@ -172,11 +172,52 @@ As the output shows, $16$ alignments were cleaned, $11$ because they were not ma
 percent identity criteria. \\
 
 Parameters of the filter might be modified. A run with \setOption{minCover}{70} will lead to a very different 
-output.
+output. The options \option{best} and \option{uniq} are both mutually exclusive, because they make the filter 
+let pass only alignments that have a minimum thresholding score.
+
 
 \subsection{Filtering of paired alignments}
+RNA-seq libraries might contain paired-reads, which provide additional information by means of the distance 
+kept between the end of one read and the start of the other; something termed as the insert length. In fact,
+aligners such as \software{Bowtie} and \software{GSNAP} allow the alignment of paired reads by simply 
+plugging-in both sets of reads as inputs. Nevertheless, sets of single reads that have been aligned 
+independently might also be used to extract pairedness information: if you have two sets of aligned single 
+reads, simply look pairs of alignments that might be potential pair-mates. filterBam does precisely that, 
+within a single BAM file. 
+
+An example of how to clean paired-alignments. The option \printOption{paired} must be set:
+
+\begin{flushleft}
+\begin{cmdOutput}
+> ./filterBam --in ../data/example\_paired.bam --out ../data/example\_paired.f.bam --paired \\
+ processed line 1 \\
+-------------------------------------  \\
+Summary of filtered alignments:  \\
+------------------------------------- \\ 
+unmapped        : 2 \\
+percent identity: 3 \\
+coverage        : 0 \\
+not paired      : 2 \\
+quantiles of unspliced insert lengths: [insertlen.size()=0] \\
+
+-------------------------------------  \\
+Cmd line:  \\
+./filterBam --in ../data/example_paired.bam --out ../data/example_paired.f.bam --paired  \\
+-------------------------------------  \\
+Elapsed time:   0 seconds. \\
+\end{cmdOutput}
+\end{flushleft}
+
+In this case the file 
 
 \subsection{Retrieving additional information}
+For paired alignments, and in fact for paired reads, an important source of information is the distance kept 
+between reads. When operating in paired-alignment mode, filterBam preserves the information of pairedness 
+coverage between mate pairs. This feature is activated with the \printOption{pairBed} 
+
+\textbf{Warning}: At present time, the routine for collecting pairedness coverage information slows down quite 
+a lot the execution time, so use it your own risk. Nevertheless, a faster version of this feature should be 
+available relatively soon.
 
 \subsection{Other}
 This software has been tested on a a Dell (x86\_64) computer with Ubuntu 10.04 (lucid). Compilation of the 
@@ -191,15 +232,45 @@ The filter should work fine for data coming from $454$ and Illumina technologies
 
 \section{About Samtools and Bamtools}
 
-We introduce some examples of how to use Samtools and Bamtools to make life easier when working with BAM files. 
-Probably the main issue when working with BAM data is that alignments need to be sorted, but beign binary 
-implies that  
+We introduce some examples of how to use Samtools and Bamtools to make life easier when working with BAM files.
+In particular we concentrate on the issue of sorting files by query name, as this is the requirement for 
+filterBam. Attention should be paid to the fact that SAM and BAM files contain a header, so any sorting 
+routine must consider the following: to momentarily put aside the header, do the sorting, and then insert the 
+header at the top of the sorted file.
  
 \subsection{Samtools}
+\software{Samtools} is a set of utilities for manipulating SAM/BAM files. After downloading and compiling
+(follow the instructions of \software{Samtools}), a binary with the name \unix{Samtools} will be created.
+Some useful commands in \unix{Samtools} are the following:
+
+\begin{itemize}
+	\item	Convert from SAM to BAM \\
+			\unix{samtools view -bS input.sam -o output.bam} 
+	\item	Convert from BAM to SAM \\
+			\unix{samtools view -h input.bam > output.sam}
+	\item	Sort BAM file \\
+			\unix{samtools sort input.bam out}
+	\item	Help
+			\unix{samtools --help} 
+\end{itemize}
+
+\software{Samtools} comes as well with a \unix{C} written API so that one can program routines. 
 
 \subsection{Bamtools}
-Bamtools is a C++ wrapper API of the more well-known Samtools software. The latest version of Bamtools 
-is 2.0 and is specificed on Table \ref{tab:software}. 
+
+\software{Bamtools} is a C++ wrapper API of the more well-known \unix{Samtools} software; in addition, it 
+includes a binary file with utilities that might be useful to manipulate BAM files. Some of the commands 
+I have found most useful are:
+
+\begin{itemize} 
+	\item	Count number of alignments in a BAM file \\
+			\unix{bamtools count -in input.bam}
+	\item	Sorting files by query name [WARNING: it seems that this sorting does not behave well with 
+			characters s.a. ":" ] \\
+			\unix{bamtools sort -byname -in input.bam -out output.bam}
+	\item	Help \\
+			\unix{bamtools --help}			
+\end{itemize}
 
 
 % We start a new section of the document, the "Reference Guide", so 
