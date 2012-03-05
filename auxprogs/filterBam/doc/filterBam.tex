@@ -199,7 +199,6 @@ percent identity: 3 \\
 coverage        : 0 \\
 not paired      : 2 \\
 quantiles of unspliced insert lengths: [insertlen.size()=0] \\
-
 -------------------------------------  \\
 Cmd line:  \\
 ./filterBam --in ../data/example\_paired.bam --out ../data/example\_paired.f.bam --paired  \\
@@ -213,7 +212,7 @@ In this case the file
 \subsection{Retrieving additional information}
 For paired alignments, and in fact for paired reads, an important source of information is the distance kept 
 between reads. When operating in paired-alignment mode, filterBam preserves the information of pairedness 
-coverage between mate pairs. This feature is activated with the \printOption{pairBed} 
+coverage between mate pairs. This feature is activated with the \printOption{pairBed}. 
 
 \textbf{Warning}: At present time, the routine for collecting pairedness coverage information slows down quite 
 a lot the execution time, so use it your own risk. Nevertheless, a faster version of this feature should be 
@@ -359,10 +358,10 @@ The subsequent sections of this document describe in a step-wise manner how the 
 paired-alignments is done. The basic set of filters is described in Section \ref{sec:basicFilters}. 
 Then the filtering of single alignments is explained in Section \ref{sec:singleAls}, and finally the filtering 
 of paired alignments is explained in Section \ref{sec:pairedAls}.
-
-
+ 
+ 
 \section{Basic filters} \label{sec:basicFilters}
-Figure \ref{tik:singleReadFilter} below shows the schematics of the operation of the filter for single 
+Figure \ref{tik:singleFilter} below shows the schematics of the operation of the filter for single 
 alignments. In the subsequent, we will assume an input BAM file is constituted by a series of records 
 $i=\{1,\dots,N\}$, each containing the information of an alignment. See \citep{heng09:SAM} for further 
 reference. The filter first checks whether 
