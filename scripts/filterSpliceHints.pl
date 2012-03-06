@@ -48,7 +48,7 @@ LINE: while($line = <HINTS>){
     $siteA = substr($fasta_hash{$gff[0]}, ($gff[3]-1), 2);   
     $siteB = substr($fasta_hash{$gff[0]}, ($gff[4]-2), 2);
     $given = $siteA.$siteB;
-    print "Splice site: $given\n";
+    #print "Splice site: $given\n";
     if($given =~ m/$splice/){
 	print $gff[0]."\t".$gff[1]."\t".$gff[2]."\t".$gff[3]."\t".$gff[4]."\t".$gff[5]."\t+\t".$gff[7]."\t".$gff[8];
     }else{
