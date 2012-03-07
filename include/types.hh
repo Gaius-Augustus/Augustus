@@ -294,6 +294,11 @@ public:
     static Boolean codSeqOutput;
     static Boolean contentmodels; // whether to use content models, default: true
     static Integer min_intron_len; // minimal intron length (for hints)
+    static bool MultSpeciesMode; // whether we do comparative gene prediction in multiple species
+    static string  treefile; // file name in which a tree is specified in Newick format
+    static string speciesfilenames; // file name to file which contains the names of species and the corresponding file names
+    static string dbaccess; // comma separated string with database access (hostname, database name, table name, user, passwd
+    static string alnfile; // name of file that contains MSA of genomes
 };
 
 

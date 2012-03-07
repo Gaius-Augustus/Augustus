@@ -12,7 +12,8 @@ INCLS	= -I../include -I.
 LIBS	= # -lcwd
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
- intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o meaPath.o exoncand.o mea7.o
+ intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
+ meaPath.o exoncand.o mea7.o compgenepred.o randseqaccess.o
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
 PROGR	= augustus etraining consensusFinder curve2hints fastBlockSearch prepareAlign
@@ -526,6 +527,15 @@ exoncand.o : \
        ../include/types.hh \
        ../include/exonmodel.hh \
        exoncand.cc
+
+compgenepred.o : \
+       ../include/compgenepred.hh \
+       compgenepred.cc
+
+randseqaccess.o : \
+       ../include/randseqaccess.hh \
+       ../include/types.hh \
+       randseqaccess.cc
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

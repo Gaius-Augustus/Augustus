@@ -81,6 +81,11 @@ Boolean Constant::codSeqOutput = false;
 Boolean Constant::contentmodels = true;
 Boolean Constant::exoncand = false;
 Integer Constant::min_intron_len = 39;
+bool Constant::MultSpeciesMode = 0; // whether we do comparative gene prediction in multiple species
+string Constant::treefile; // file name in which a tree is specified in Newick format
+string Constant::speciesfilenames; // file name to file which contains the names of species and the corresponding file names
+string Constant::dbaccess; // comma separated string with database access (hostname, database name, table name, user, passwd
+string Constant::alnfile; // name of file that contains MSA of genomes
 
 bool inCRFTraining = false;
 
@@ -299,6 +304,17 @@ void Constant::init(){
     Properties::assignProperty("contentmodels", contentmodels);
     Properties::assignProperty("exoncand", exoncand);
     Properties::assignProperty("min_intron_len", min_intron_len);
+    Properties::assignProperty("treefile", treefile);
+    Properties::assignProperty("speciesfilenames", speciesfilenames);
+    Properties::assignProperty("dbaccess", dbaccess);
+    Properties::assignProperty("alnfile", alnfile);
+    
+    if (!alnfile.empty() && !treefile.empty() && (!speciesfilenames.empty() || !dbaccess.empty())){
+      MultSpeciesMode = true;
+    } else if (!(alnfile.empty() && treefile.empty() && speciesfilenames.empty() && dbaccess.empty())){
+      throw ProjectError("In comparative gene prediction mode you must specify parameters alnfile, treefile and (speciesfilenames or dbaccess).\n\
+In single species mode specify none of these parameters.\n");
+    }
 }
 
 int howOftenOccursIt(const char* haystack, const char* needle, const char *endhaystack){

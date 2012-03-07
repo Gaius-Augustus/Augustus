@@ -2,6 +2,7 @@
 // Sebastian Adler, 2011-09-27
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <getopt.h> // getopt_long
 #include <list>     // data structure for all hints

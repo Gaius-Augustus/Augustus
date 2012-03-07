@@ -9,7 +9,7 @@
 
 # Variable definition
 # on greifweb1
-BAMTOOLS = /home/sebastian/pezmaster31-bamtools-466bc50
+BAMTOOLS = /home/mario/tools/bamtools-1.0.2
 INCLUDES = $(BAMTOOLS)/include
 LIBS = $(BAMTOOLS)/lib/libbamtools.a -lz
 SOURCES = bam2hints.cc 

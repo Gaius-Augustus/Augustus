@@ -206,11 +206,13 @@ sub printConvertedGTF {
 	    $seen{$geneid} = 1;
 	}
 	# print transcript line
-	if ($gff3) {
-	    $txs{$txid}{"txline"}->[2] = "mRNA";
-	    $txs{$txid}{"txline"}->[8] = "ID=$txid;Parent=$geneid\n";
+	if ($txs{$txid}{"txline"}[0] ne ""){
+	    if ($gff3) {
+		$txs{$txid}{"txline"}->[2] = "mRNA";
+		$txs{$txid}{"txline"}->[8] = "ID=$txid;Parent=$geneid\n";
+	    }
+	    print OUT join ("\t", @{$txs{$txid}{"txline"}});
 	}
-	print OUT join ("\t", @{$txs{$txid}{"txline"}});
 	# print all other lines
 	@lines = sort {$a->[3] <=> $b->[3] || $a->[4] <=> $b->[4]}
 	(@{$txs{$txid}{"CDS"}}, @{$txs{$txid}{"UTR"}}, @{$txs{$txid}{"exon"}}, @{$txs{$txid}{"rest"}});

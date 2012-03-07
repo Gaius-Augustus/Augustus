@@ -17,6 +17,7 @@
 #include "namgene.hh"
 #include "evaluation.hh"
 #include "statemodel.hh"
+#include "compgenepred.hh"
 
 // standard C/C++ includes
 #include <fstream>
@@ -114,91 +115,97 @@ int main( int argc, char* argv[] ){
 	setParameters(); // NOTE: need Constant to be initialised first
 	StateModel::init();   // set global parameters of state models
 
-	string filename = Properties::getProperty("queryfile");
-	GBProcessor gbank(filename);
-	if (Gene::gff3)
+	if (Constant::MultSpeciesMode){
+	  CompGenePred cgp;
+	  cgp.start();
+	} else { // single species mode, default
+	  string filename = Properties::getProperty("queryfile");
+	  GBProcessor gbank(filename);
+	  if (Gene::gff3)
 	    cout << "##gff-version 3" << endl;
-	    
-	cout << PREAMBLE << endl;
-
-	/*
-	 * check for extrinsic information and initialise when existent
-	 */
-	FeatureCollection extrinsicFeatures;
-   	const char *extrinsicfilename;
-	try {
-	  extrinsicfilename =  Properties::getProperty("hintsfile");
-	} catch (...){
-	  extrinsicfilename = NULL;
-	  if (verbosity) 
-	    cout << "# No extrinsic information on sequences given." << endl;
-	}
-	if (verbosity && extrinsicfilename) {
-	  cout << "# reading in the file " << extrinsicfilename << " ..." << endl;
-	  extrinsicFeatures.readGFFFile(extrinsicfilename);
 	  
-	  if (verbosity) 
-	    cout << "# Have extrinsic information about " << extrinsicFeatures.getNumSeqsWithInfo()
-		 << " sequences (in the specified range). " << endl;
-	}
+	  cout << PREAMBLE << endl;
+	  
+	  /*
+	   * check for extrinsic information and initialise when existent
+	   */
+	  FeatureCollection extrinsicFeatures;
+	  const char *extrinsicfilename;
+	  try {
+	    extrinsicfilename =  Properties::getProperty("hintsfile");
+	  } catch (...){
+	    extrinsicfilename = NULL;
+	    if (verbosity) 
+	      cout << "# No extrinsic information on sequences given." << endl;
+	  }
+	  if (verbosity && extrinsicfilename) {
+	    cout << "# reading in the file " << extrinsicfilename << " ..." << endl;
+	    extrinsicFeatures.readGFFFile(extrinsicfilename);
+	  
+	    if (verbosity) 
+	      cout << "# Have extrinsic information about " << extrinsicFeatures.getNumSeqsWithInfo()
+		   << " sequences (in the specified range). " << endl;
+	  }
 
-	if (verbosity > 1) 
+	  if (verbosity > 1) 
 	    cout << "# Initialising the parameters ..." << endl;
-	BaseCount::init();
-	PP::initConstants();
-        NAMGene namgene; // creates and initializes the states
-	StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
+	  BaseCount::init();
+	  PP::initConstants();
+	  NAMGene namgene; // creates and initializes the states
+	  StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
 
-	try{
+	  try{
 	    string strandstr = Properties::getProperty("strand");
 	    if (strandstr == "forward" || strandstr == "Forward" || strandstr == "plus" || strandstr == "Plus" 
 		|| strandstr == "+" || strandstr == "Watson" || strandstr == "watson" || strandstr == "w" )
-		strand = plusstrand;
+	      strand = plusstrand;
 	    else if (strandstr == "backward" || strandstr == "Backward" || strandstr == "minus" 
 		     || strandstr == "Minus" || strandstr == "-" || strandstr == "Crick" || strandstr == "crick" 
 		     || strandstr == "c" || strandstr == "reverse" || strandstr == "Reverse")
-		strand = minusstrand;
+	      strand = minusstrand;
 	    else if (strandstr == "both")
-		strand = bothstrands;
+	      strand = bothstrands;
 	    else if (!(strandstr == ""))
-		cerr << "# Unknown option for strand: " << strandstr << endl;
-	} catch (...){} // take default strand
+	      cerr << "# Unknown option for strand: " << strandstr << endl;
+	  } catch (...){} // take default strand
 	
-	if (gbank.fileType() == fasta) {
+	  if (gbank.fileType() == fasta) {
 	    /*
 	     * Just predict the genes for every sequence in the file.
 	     */
 	    if (verbosity>2) {
-		if (filename == "-")
-		    cout << "# Reading sequences from standard input. Assuming fasta format." << endl;
-		else
-		    cout << "# Looks like " << filename << " is in fasta format." << endl;
+	      if (filename == "-")
+		cout << "# Reading sequences from standard input. Assuming fasta format." << endl;
+	      else
+		cout << "# Looks like " << filename << " is in fasta format." << endl;
 	    }
 	    AnnoSequence *testsequence = gbank.getSequenceList();
 	    cutRelevantPiece(testsequence);
 	    predictOnInputSequences(testsequence, namgene, extrinsicFeatures, strand);
 	    AnnoSequence::deleteSequence(testsequence);
-	} else if (gbank.fileType() == genbank) {
+	  } else if (gbank.fileType() == genbank) {
 	    /*
 	     * Sequences were already annotated. Predict and also check the accuracy.
 	     */
 	    if (verbosity>2)
-		cout << "# Looks like " << filename << " is in genbank format. " 
-		     << "Augustus uses the annotation for evaluation of accuracy." << endl;
+	      cout << "# Looks like " << filename << " is in genbank format. " 
+		   << "Augustus uses the annotation for evaluation of accuracy." << endl;
 	    AnnoSequence *annoseq = gbank.getAnnoSequenceList();
 	    cutRelevantPiece(annoseq);
 	    if (!checkExAcc)
-		evaluateOnTestSet(annoseq, namgene, extrinsicFeatures, strand);
+	      evaluateOnTestSet(annoseq, namgene, extrinsicFeatures, strand);
 	    else { // do not predict just check the accuracy of the extrinsic information
 		   // without deleting for redundancies
-		checkExtrinsicAccuracy(annoseq, namgene, extrinsicFeatures);
+	      checkExtrinsicAccuracy(annoseq, namgene, extrinsicFeatures);
 	    }
 	    AnnoSequence::deleteSequence(annoseq);
-	} else {
+	  } else {
 	    throw ProjectError("File format of " + filename + " not recognized.");
-	}
-//	if (verbosity>2)
+	  }
+	} // single species mode
+	//	if (verbosity>2)
 	cout << "# command line:" << endl << "# " << commandline << endl;
+
     } catch( ProjectError& err ){
         cerr << "\n" <<  argv[0] << ": ERROR\n\t" << err.getMessage( ) << "\n\n";
         errorcode=1;

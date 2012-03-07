@@ -214,7 +214,7 @@ sub setParInConfig{
 
 sub uptodate {
     my $input = shift;    # reference to list of input file names
-    my $output = shift;   # reference to list of input file names
+    my $output = shift;   # reference to list of output file names
     my $earliestOutMtime; # earliest modification time of an output file
     my $latestInMtime;    # latest modification time an any input file
     my @stat;             # holds info about file

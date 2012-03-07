@@ -98,8 +98,8 @@ while(<IN>){
 close IN;
 close OUT;
 
-print STDERR "$maperr alignments could not be mapped because the target was not a query in $mapfile." if ($maperr);
-print STDERR "$multerr lines in $mapfile had a duplicated query." if ($multerr);
+print STDERR "$maperr alignments could not be mapped because the target was not a query in $mapfile.\n" if ($maperr);
+print STDERR "$multerr lines in $mapfile had a duplicated query.\n" if ($multerr);
 print STDERR "$numunspliced unspliced read alignments were filtered out.\n" if ($filterunspliced);
 
 sub mapali {
