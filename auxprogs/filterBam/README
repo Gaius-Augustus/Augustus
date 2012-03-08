@@ -32,8 +32,7 @@ filter, please check the accompanying PDF file, located under the 'doc' director
 		----------------
 
 1. Bamtools' API is required for compilation, so go to the web-page: https://github.com/pezmaster31/bamtools/wiki , and more specifically to the section 'Building and installing' for instructions on how to get and compile 
-the latest version of Bamtools. The software 'git' will probably be required as well. Once with Bamtools, 
-filterBam can be compiled (see Section 3).
+the latest version of Bamtools. The softwares 'git' and 'cmake' will probably be required as well. Once with Bamtools, filterBam can be compiled (see Section 3).
 
 After compilation of Bamtools, a binary 'bamtools' is created. This so-called utility-kit allows the: 
 sorting, sampling, filtering, among other things, of of BAM files. It is recommended to practice a bit with 
