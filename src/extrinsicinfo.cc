@@ -586,7 +586,7 @@ void SequenceFeatureCollection::checkGroupConsistency(AnnoSequence *seq){
     
     string msgstring = messages.str();
     if (msgstring.length()>0 && Constant::augustus_verbosity>0){
-	cout << msgstring << endl;
+      	cout << msgstring;
     }
     emptyTrash();
 }
@@ -1379,22 +1379,22 @@ void SequenceFeatureCollection::createPredictionScheme(list<AltGene> *genes){
 	    }
 	
 	if (overruled) {
-	    //cout << "Group overruled: ";
-	    //git->print(cout);
+	  //cout << "Group overruled: ";
+	  //  git->print(cout);
 	}
 	if (weakerThanOther) {
-	    //cout << "Group weaker than other group.";
-	    //git->print(cout);
+	  //cout << "Group weaker than other group.";
+	  //  git->print(cout);
 	}
 	if (git->canCauseAltSplice()){
 	  if (!overruled && !weakerThanOther) {
 	    //cout << "Group not overruled, not weaker ";
-	    //git->print(cout);
+	    // git->print(cout);
 	    predictionScheme->addRun(PredictionRun(0, seqlen-1, git->getIncompGroups()));
 	  }
 	} else {
 	  //cout << "group cannot cause altsplice:" << endl;
-	  //git->print(cout);
+	  //	  git->print(cout);
 	}
     }
     
@@ -1426,7 +1426,7 @@ void SequenceFeatureCollection::createPredictionScheme(list<AltGene> *genes){
 	int begin, groupsbegin = INT_MAX;
 	int end, groupsend = -1;
 	// First determine smallest interval that contains all groups in G(R).
-	set<HintGroup*> *G = getCausingGroups(prit->omittedGroups);
+	set<HintGroup*> *G = getCausingGroups(*prit);
 	for(set<HintGroup*>::iterator Git = G->begin(); Git != G->end(); Git++){
 	    if ((*Git)->getBegin() < groupsbegin)
 		groupsbegin = (*Git)->getBegin();
@@ -1507,7 +1507,7 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
      *                                           ----      -----------    -------    ------      ------    ------<
      */
     // Add the first run with all hints to predictionScheme
-    predictionScheme->predictionRuns.push_front(PredictionRun(0, seqlen, NULL));
+    predictionScheme->predictionRuns.push_front(PredictionRun(0, seqlen, NULL, true));
     genes = new list<AltGene>;
     int runNo=0;
     int geneNo;
@@ -1521,7 +1521,7 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
 #endif
 	if (*generunit) {
 	    if (Constant::alternatives_from_evidence)
-		G = getCausingGroups(prit->omittedGroups);
+		G = getCausingGroups(*prit);
 	    else 
 		G = NULL;
 	    // now go through all transcripts and push it to alltranscripts, if it should not be excluded.
@@ -1582,6 +1582,9 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
 				}
 			    }
 			}
+#ifdef DEBUG
+			cout << "bestSfG=" << bestSfG << " bestSfnotG=" << bestSfnotG << " incomplete=" << incomplete << endl;
+#endif
 			if (/*(!bad || good)*/ (bestSfG >= 0.8 || bestSfG >= bestSfnotG) && !incomplete) {
 			    (*trit)->geneid = str;
 			    alltranscripts->push_back(**trit);
@@ -1675,13 +1678,14 @@ void SequenceFeatureCollection::sortIncompGroupsOfGroups(){
  * Get all hint groups whose incompGroups are identical to omittedGroups: G(R).
  * This assumes that the incompgroups and the omittedGroups are sorted.
  */
-set<HintGroup*> *SequenceFeatureCollection::getCausingGroups(list<HintGroup*> *omittedGroups){
+set<HintGroup*> *SequenceFeatureCollection::getCausingGroups(PredictionRun &pr){
+    list<HintGroup*> *omittedGroups = pr.omittedGroups;
     set<HintGroup*> * G = new set<HintGroup*>;
 #ifdef DEBUG
     cout << "G(R)= (" << endl;
 #endif
     for (list<HintGroup>::iterator grit = groupList->begin(); grit != groupList->end(); grit++)
-	if ((grit->getIncompGroups() == NULL && omittedGroups == NULL) ||
+	if (pr.allHints || (grit->getIncompGroups() == NULL && omittedGroups == NULL) ||
 	    (grit->getIncompGroups() != NULL && omittedGroups != NULL &&
 	     *(grit->getIncompGroups()) == *(omittedGroups))){
 #ifdef DEBUG

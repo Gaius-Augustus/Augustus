@@ -45,15 +45,18 @@ public:
     PredictionRun(){
 	begin = end = -1;
 	omittedGroups = NULL;
+	allHints = false;
     } 
-    PredictionRun(int begin, int end, list<HintGroup*> *omittedGroups){
+    PredictionRun(int begin, int end, list<HintGroup*> *omittedGroups, bool allHints = false){
 	this->begin = begin;
 	this->end = end;
 	this->omittedGroups = omittedGroups;
+	this->allHints = allHints;
     }
     void print(int beginPos = -1);
     int begin;
     int end;
+    bool allHints; // this is true for the (first) prediction run that includes all hints, this is not quite the same as omittedGroups=NULL
     list<HintGroup*> *omittedGroups;
 };
 
@@ -208,7 +211,7 @@ public:
     void setActiveFlag(list<HintGroup*> *groups, bool flag);
     list<AltGene> *joinGenesFromPredRuns(list<list<AltGene> *> *genesOfRuns, int maxtracks, bool uniqueCDS);
     void sortIncompGroupsOfGroups(); // sort by pointers, for '==' operator of lists
-    set<HintGroup*> *getCausingGroups(list<HintGroup*> *omittedGroups);
+    set<HintGroup*> *getCausingGroups(PredictionRun &pr);
     void prepare(AnnoSequence *annoseq, bool print);
     void prepareLocalMalus(const char* dna); // precompute tables for computing a local exonpart/UTRpart/CDSpart malus later
     int numZeroCov(int start, int end, int type, Strand strand);

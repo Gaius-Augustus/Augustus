@@ -222,7 +222,7 @@ if ($paired) {
     }
     print STDERR "\n";
 }
-print STDERR "unique          : $outUniq\n" if ($uniq);
+print STDERR "uniq            : $outUniq\n" if ($uniq);
 print STDERR "best            : $outBest\n" if ($best);
 print STDERR "command line: $cmdline\n";
 

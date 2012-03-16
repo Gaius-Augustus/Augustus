@@ -177,8 +177,8 @@ public:
     void updateFeatureConformance(HintGroup &other);
     bool nestedGenePossible(HintGroup &other);
     bool isTrashy();
-    // very temporary hack for rGASP
-    bool canCauseAltSplice() {return hints && hints->front()->type != exonpartF;};
+    // temporary hack for rGASP, sole exonpart hints cannot cause alternative splicing, too many with RNA-Seq
+    bool canCauseAltSplice() {return hints && (hints->size()>1 || hints->front()->type != exonpartF);};
     void setActiveFlag(bool active);
     void setDiscardFlag(bool discard);
     void addIncompGroup(HintGroup *otherGroup);
