@@ -162,7 +162,7 @@ wig2hints -- convert a file with conservation scores in wiggle format to a file 
 
 =head1 SYNOPSIS
 
-wig2gbrowse < score.wig > hints.gff
+wig2hints.pl < score.wig > hints.gff
     score.wig    - a file in wiggle format, e.g. 
                    fixedStep chrom=Nt-gDNA_Contig1538203 start=829 step=1
                    0.084

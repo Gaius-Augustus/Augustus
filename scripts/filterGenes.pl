@@ -10,7 +10,7 @@
 #############################################################
 
 if ($#ARGV != 1) {
-    print "usage:fileterGenes namefile dbfile\n";
+    print "usage:filterGenes.pl namefile dbfile\n";
     print "names of the genes to be filtered out come from\n";
     print "the first parameter.";
     exit;

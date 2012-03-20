@@ -70,7 +70,7 @@ if ($help) {
 my ($match,$TgapCount,$strand,$qname,$qstart,$qend,$qsize,$targetname,$tstart,$tend,$blockSizes,$qStarts,$tStarts,$qBaseInsert,$tBaseInsert);
 my ($qnamestem,$qsuffix);
 my $skiplines=0;
-my $line=0;
+my ($line,$lastCompactifyLine)=(0,0);
 my $oldqnamestem = "";
 my (@f,@b,@t,@q,@insertlen);
 my ($outMinId,$outMinCover,$outPaired,$outUniq,$outBest,$outIntrons) = (0,0,0,0,0,0); # number of reasons for filtering (nested, this order)
@@ -100,9 +100,10 @@ while (<>) {
 	$| = 1;
 	print STDERR "\r"."processed line $line";
     }
-    if (defined($pairbedfile) && $line % 10000000 == 0){
+    if (defined($pairbedfile) && $line % 10000000 == 0 && $line >= $lastCompactifyLine * 1.5){
 	print STDERR "\ncompactifing coverage after $line lines ...";
 	compactifyBed();
+	$lastCompactifyLine = $line;
 	print STDERR "done\n";
     }
 
