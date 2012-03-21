@@ -1,0 +1,30 @@
+%{
+    #define _SKIP_YYFLEXLEXER_
+    #include "scanner.ih"
+    #include "../parser/parser.h"
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string>
+%}
+
+%option yyclass="Scanner" outfile="scanner.cc"	
+%option c++ 8bit warn noyywrap yylineno    		
+
+%%
+
+
+[ \t\n]+                                   //skip white space
+
+([\-\+]{0,1}[0-9]*\.[0-9]+|[0-9]+\.)       {
+					   d_val->dist = atof(yytext);
+					   return Parser::DISTANCE;
+                                           }
+
+[a-z]+[A-Za-z0-9_]+		           {
+					   d_val->spec = new string(yytext);
+					   return Parser::SPECIES;
+					   }	
+[();,:]                                    return *yytext;
+
+
+%%
