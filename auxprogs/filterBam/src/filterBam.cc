@@ -240,10 +240,10 @@ int main(int argc, char *argv[])
 				exit(1);
 			  }	
 
-			if (qali.size()>0)
-			  {
-				processQuery(qali, refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen, pairCovSteps2);
-			  }
+			// if (qali.size()>0)
+			//   {
+			// 	processQuery(qali, refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen, pairCovSteps2);
+			//   }
 		  }  // end outer if
 
   		/////////////////////////////////////////////////////////////////
@@ -337,6 +337,7 @@ int main(int argc, char *argv[])
 	if (qNameStem.compare(""))
 	  {
 		processQuery(qali,refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen, pairCovSteps2);
+
 		outPaired = optionalCounters.outPaired;
 		outUniq = optionalCounters.outUniq;
 		outBest = optionalCounters.outBest;
@@ -1015,12 +1016,8 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				printMatePairs(matepairs, qali);
 			  }
 
-try { // catches: instance of 'std::out_of_range'
 			// Sort matepairs by score (in descending order) 	
 			sort(matepairs.begin(), matepairs.end()); 
- } catch (out_of_range& oor) { 
-  		cerr << "Could not sort mate-pairs" << oor.what() << endl; 
- }
 
 			if (verbose)
 			  {
