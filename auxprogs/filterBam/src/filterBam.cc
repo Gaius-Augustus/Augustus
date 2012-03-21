@@ -8,7 +8,7 @@
 
   
 	Created: 4-November-2011    
-	Last modified: 28-February-2012  
+	Last modified: 21-March-2012  
 */        
          
 #include <api/BamReader.h>    
@@ -617,10 +617,10 @@ bool similar(BamAlignment alR, BamAlignment alS, globalOptions_t globalOptions)
 
   if (rEnd <= sStart || rStart >= sEnd) // here: similar = overlapping target range
 	{
-	  cout << "[SIMILAR]: Alignments are NOT SIMILAR" << endl;
+	  if (verbose) {cout << "[SIMILAR]: Alignments are NOT SIMILAR" << endl;}
 	  return false;
 	} else {
-		cout << "[SIMILAR]: Ans: Alignments are SIMILAR" << endl;
+		if (verbose) {cout << "[SIMILAR]: Ans: Alignments are SIMILAR" << endl};
 		return true;
   		   }
 }
