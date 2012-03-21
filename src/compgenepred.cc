@@ -13,6 +13,7 @@
 #include "compgenepred.hh"
 #include "randseqaccess.hh"
 
+
 CompGenePred::CompGenePred(){
   RandSeqAccess *rsa;
   if (!Constant::speciesfilenames.empty()) {
@@ -20,16 +21,12 @@ CompGenePred::CompGenePred(){
   } else {
     rsa = new DbSeqAccess();
   }
-  AnnoSequence *annoSeq = rsa->getSeq("dog", "chr31", 39798072, 39798218, minusstrand);
-  if (annoSeq){
-    cout << "random sequence access test "<< endl;
-    //cout << annoSeq->seqname<<"\t"<<annoSeq->length<<"\t"<<annoSeq->offset<<endl;
-    //cout << annoSeq->sequence<<endl;
-  }
-
-
+  AnnoSequence *annoSeq = rsa->getSeq("human", "chr1", 1000, 1020, plusstrand);
+  if (annoSeq)
+    cout << "random sequence access test " << annoSeq->sequence << endl;
 }
 
 void CompGenePred::start(){
-
+  
 }
+

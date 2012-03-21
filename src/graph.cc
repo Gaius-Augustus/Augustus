@@ -732,7 +732,7 @@ builds Graph with seven neutral lines representing
 * the plus strand (3 neutral lines for each coding frame)
 * and the minus strand (3 neutral lines for each coding frame)
 */
-void Graph::buildGraph(list<Status> *additionalExons){
+void Graph::buildGraph7(){
 
 #ifdef DEBUG
   cout<<"*****entering buildGraph7()******"<<endl;
@@ -777,12 +777,12 @@ void Graph::buildGraph(list<Status> *additionalExons){
   for(list<Status>::iterator it=statelist->begin(); it!=statelist->end(); it++){
 
     if(gene_end == true && it->name == intron){ //start -> intron  (transcript incomplete at the start)
-      Node* first = addExon(it->next, neutralLines, true);
+      Node* first = addExon(it->next, neutralLines);
       addIntron(head, first, &(*it));
     }
     if(it->name == CDS){ // CDS -> CDS   or   CDS -> end
       gene_end = false;
-      Node* e1 = addExon(&(*it), neutralLines, true);
+      Node* e1 = addExon(&(*it), neutralLines);
 
       if(it->next != NULL){
 
@@ -791,7 +791,7 @@ void Graph::buildGraph(list<Status> *additionalExons){
 	}
 
 	if(it->next != NULL && it->next->name == intron && it->next->next != NULL){ //CDS -> intron -> CDS
-          Node* e2 = addExon(it->next->next, neutralLines, true);
+          Node* e2 = addExon(it->next->next, neutralLines);
 	  addIntron(e1, e2, it->next);
 	}
       }
@@ -800,12 +800,6 @@ void Graph::buildGraph(list<Status> *additionalExons){
       gene_end = true;
   }
 
-  //add additional Exoncandidates
-  if(additionalExons != NULL){
-    for(list<Status>::iterator it=additionalExons->begin(); it!=additionalExons->end(); it++){
-      addExon(&(*it), neutralLines, false);
-    }
-    }
   //create neutral lines by connecting neutral nodes in the vector (all entries in the Vector, which are not NULL)
   //edges directed from smaller positions to larger
   for(int j=0; j<neutralLines.size(); j++){
@@ -817,51 +811,42 @@ void Graph::buildGraph(list<Status> *additionalExons){
   
 }
 
-Node* Graph::addExon(Status *exon, vector< vector<Node*> > &neutralLines, bool sampled){
+Node* Graph::addExon(Status *exon, vector< vector<Node*> > &neutralLines){
 
   if(!alreadyProcessed(exon)){
 
-    double exon_score;
-
-    if(sampled){
-      exon_score = setScore(exon); // MEA score
-    }
-    else{
-      exon_score = exon->score; // not sampled -> some small probability 
-    }
-
-    Node *ex = new Node(exon->begin, exon->end, exon_score, exon->item);
-    nodelist.push_back(ex);
-    addToHash(ex);
+      Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item);
+      nodelist.push_back(ex);
+      addToHash(ex);
       
  
-    Node *neut_to = new Node(ex->begin, ex->begin, 0.0, NULL, (Neutral_type)fromNeutralLine(exon) );
-    Edge intron(ex, false);
-    if(!alreadyProcessed(neut_to)){
-      neutralLines.at(fromNeutralLine(exon)).at(ex->begin-min) = neut_to;
-      neut_to->edges.push_back(intron);
-      nodelist.push_back(neut_to);
-      addToHash(neut_to);
-    }
-    else{
-      getNode(neut_to)->edges.push_back(intron);
-      delete neut_to;
-    }
+      Node *neut_to = new Node(ex->begin, ex->begin, 0.0, NULL, (Neutral_type)fromNeutralLine(exon) );
+      Edge intron(ex, false);
+      if(!alreadyProcessed(neut_to)){
+        neutralLines.at(fromNeutralLine(exon)).at(ex->begin-min) = neut_to;
+	neut_to->edges.push_back(intron);
+	nodelist.push_back(neut_to);
+	addToHash(neut_to);
+      }
+      else{
+ 	getNode(neut_to)->edges.push_back(intron);
+	delete neut_to;
+      }
       
-    Node *neut_from = new Node(ex->end, ex->end, 0.0, NULL, (Neutral_type)toNeutralLine(exon));
-    if(!alreadyProcessed(neut_from)){
-      neutralLines.at(toNeutralLine(exon)).at(ex->end-min) = neut_from;
-      Edge intron(neut_from, false);
-      ex->edges.push_back(intron);
-      nodelist.push_back(neut_from);
-      addToHash(neut_from);
-    }
-    else{
-      Edge intron(getNode(neut_from), false);
-      ex->edges.push_back(intron);      
-      delete neut_from;
-    }
-    return ex;
+      Node *neut_from = new Node(ex->end, ex->end, 0.0, NULL, (Neutral_type)toNeutralLine(exon));
+      if(!alreadyProcessed(neut_from)){
+        neutralLines.at(toNeutralLine(exon)).at(ex->end-min) = neut_from;
+        Edge intron(neut_from, false);
+	ex->edges.push_back(intron);
+	nodelist.push_back(neut_from);
+	addToHash(neut_from);
+      }
+      else{
+        Edge intron(getNode(neut_from), false);
+        ex->edges.push_back(intron);      
+        delete neut_from;
+      }
+      return ex;
   }
   return getNode(exon);
 }
@@ -991,19 +976,19 @@ void AugustusGraph::printGraph7(string filename){
 	file<<name1<<"->"<<name2<<"[";
 	if(pos->begin == pos->end && it->to->begin == it->to->end){
 	  if(pos == head || it->to == tail){
-	    if(it->to->pred == pos && it->to->label == 1 && pos->label == 1)
+	    if(it->to->pred == pos)
 	      file<<"color=blue,";
 	    else
 	      file<<"color=red,";
 	  }
 	  else{
-	    if(it->to->pred == pos && it->to->label == 1 && pos->label == 1)
+	    if(it->to->pred == pos)
 	      file<<"weight=100,color=blue,";
 	    else
 	      file<<"weight=100,color=red,";
 	  }
 	}
-	else if(it->to->pred == pos && it->to->label == 1 && pos->label == 1)
+	else if(it->to->pred == pos)
 	  file<<"color=blue,";
 
 	if( (pos == head || pos->n_type != unknown ) &&  it->to->n_type != unknown ){

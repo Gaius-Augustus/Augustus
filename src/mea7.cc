@@ -38,12 +38,9 @@ void getMEAtranscripts7(list<Gene> *meaGenes, list<Gene> *alltranscripts, int st
     //builds datastructure needed for the graph representation
     buildDatastructure(alltranscripts, utr, stlist);
 
-    //in addition to the sampled exons, more exoncandidates can be added
-    list<Status> additionalExons;
-
     //build Graph
     AugustusGraph myGraph(&stlist, strlength);
-    myGraph.buildGraph(&additionalExons);
+    myGraph.buildGraph7();
 
     //find shortest path
     MEApath path(&myGraph);

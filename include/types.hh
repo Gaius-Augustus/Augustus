@@ -299,7 +299,6 @@ public:
     static string speciesfilenames; // file name to file which contains the names of species and the corresponding file names
     static string dbaccess; // comma separated string with database access (hostname, database name, table name, user, passwd
     static string alnfile; // name of file that contains MSA of genomes
-    static string orthoexons; //name of file that contains list of orthologous exons
 };
 
 

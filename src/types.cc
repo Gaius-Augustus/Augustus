@@ -86,7 +86,6 @@ string Constant::treefile; // file name in which a tree is specified in Newick f
 string Constant::speciesfilenames; // file name to file which contains the names of species and the corresponding file names
 string Constant::dbaccess; // comma separated string with database access (hostname, database name, table name, user, passwd
 string Constant::alnfile; // name of file that contains MSA of genomes
-string Constant::orthoexons; //name of file that contains list of orthologous exons
 
 bool inCRFTraining = false;
 
@@ -309,8 +308,6 @@ void Constant::init(){
     Properties::assignProperty("speciesfilenames", speciesfilenames);
     Properties::assignProperty("dbaccess", dbaccess);
     Properties::assignProperty("alnfile", alnfile);
-    Properties::assignProperty("orthoexons", orthoexons);
-
     
     if (!alnfile.empty() && !treefile.empty() && (!speciesfilenames.empty() || !dbaccess.empty())){
       MultSpeciesMode = true;

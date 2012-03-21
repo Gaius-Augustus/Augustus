@@ -16,11 +16,11 @@
 
 class CompGenePred {
 public:
-  CompGenePred();
-  ~CompGenePred() {}
+    CompGenePred();
+    ~CompGenePred() {}
 
-  void start();
-  
+    void start();
 };
+
 
 #endif  // _COMPGENEPRED

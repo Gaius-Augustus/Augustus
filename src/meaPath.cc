@@ -15,20 +15,7 @@ void MEApath::findMEApath(){
   backtracking();
   
   //for graphviz dot to draw path
-  for(list<Node*>::iterator node=graph->nodelist.begin(); node!=graph->nodelist.end(); node++){
-    bool nodeInPath = false;
-    bool predInPath = false;
-    for(list<Node*>::iterator pathNode=meaPath.begin(); pathNode!=meaPath.end(); pathNode++){
-      if((*node)->pred == *pathNode)
-	predInPath = true;
-      if(*node == *pathNode)
-	nodeInPath = true;
-      if(predInPath && nodeInPath)
-	goto nextNode;
-    }
-    (*node)->pred = NULL;
-    nextNode:;
-  }
+  traverseForward();
   graph->printGraph("MEA_graph.dot");
 }
 
@@ -88,25 +75,38 @@ void MEApath::getTopologicalOrdering(){
 void MEApath::backtracking(){
 
   Node *pos = topSort[0];
-  meaPath.push_front(pos);
-  pos->label = 1;  
+  meaPath.push_front(pos);  
   while(pos->pred != NULL){
-    meaPath.push_front(pos->pred);
-    pos->pred->label = 1; 
+    meaPath.push_front(pos->pred); 
     pos = pos->pred;
   }
 }
 
+void MEApath::traverseForward(){
+  for(list<Node*>::iterator node=graph->nodelist.begin(); node!=graph->nodelist.end(); node++){
+    bool nodeInPath = false;
+    bool predInPath = false;
+    for(list<Node*>::iterator pathNode=meaPath.begin(); pathNode!=meaPath.end(); pathNode++){
+      if((*node)->pred == *pathNode)
+	predInPath = true;
+      if(*node == *pathNode)
+	nodeInPath = true;
+      if(predInPath && nodeInPath)
+	goto nextNode;
+    }
+    (*node)->pred = NULL;
+    nextNode:;
+  }
+}
 
 void MEApath::findMEApath7(){
 
   getTopologicalOrdering();
-
-  relax(); 
-  
+  relax();   
   //backtracking
   backtracking();
-
+  //for graphviz dot to draw path
+  traverseForward();
   graph->printGraph7("graph.dot");
 
 }
