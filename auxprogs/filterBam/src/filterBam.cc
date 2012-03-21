@@ -620,7 +620,7 @@ bool similar(BamAlignment alR, BamAlignment alS, globalOptions_t globalOptions)
 	  if (verbose) {cout << "[SIMILAR]: Alignments are NOT SIMILAR" << endl;}
 	  return false;
 	} else {
-		if (verbose) {cout << "[SIMILAR]: Ans: Alignments are SIMILAR" << endl};
+		if (verbose) {cout << "[SIMILAR]: Ans: Alignments are SIMILAR" << endl;}
 		return true;
   		   }
 }
@@ -1015,9 +1015,13 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				printMatePairs(matepairs, qali);
 			  }
 
+try { // catches: instance of 'std::out_of_range'
 			// Sort matepairs by score (in descending order) 	
 			sort(matepairs.begin(), matepairs.end()); 
- 
+ } catch (out_of_range& oor) { 
+  		cerr << "Could not sort mate-pairs" << oor.what() << endl; 
+ }
+
 			if (verbose)
 			  {
 				cout << "AFTER sorting" << endl;
