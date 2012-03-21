@@ -46,6 +46,7 @@ my $verbose = 0;
 my $help = 0;
 my %qnamestems = (); # for checking sortedness.
 my $cmdline = join(" ", @ARGV);
+my $maxCountInsert = 1000000;
 
 GetOptions(
     'help!'=>\$help,
@@ -255,7 +256,7 @@ sub processQuery(){
 			    $mated{$j}++;
 			    my $inslen = $qali[$j]->[5] - $qali[$i]->[4] - 1;
 			    $inslen = $qali[$i]->[5] - $qali[$j]->[4] - 1 if ($inslen<0);
-			    push @insertlen, $inslen;
+			    push @insertlen, $inslen if (@insertlen < $maxCountInsert); # if not limited, this may use on huge files an unwarranted amount of RAM for a simple statistics
 			} else {
 			    #print "distance not right\n";
 			}
