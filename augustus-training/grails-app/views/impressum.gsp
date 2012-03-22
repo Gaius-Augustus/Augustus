@@ -55,6 +55,7 @@
 
   <div id="linke_spalte">
      <ul class="menu">
+         <li><div id="linksMenuText">AUGUSTUS Web Server Navigation</div></li>
          <li><a href="index.gsp"><span>Introduction</span></a></li>
          <li><a href="trainingtutorial.gsp"><span>Training Tutorial</span></a></li>
          <li><g:link controller="training" action="create"><span>Submit Training</span></g:link></li>
@@ -62,8 +63,17 @@
          <li><g:link controller="prediction" action="create"><span>Submit Prediction</span></g:link></li>
          <li><a href="help.gsp"><span>Help</span></a></li>
          <li><a href="references.gsp"><span>Links & References</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group</span></a></li>
          <li id="current"><a href="impressum.gsp"><span>Impressum</span></a></li>
+	 <li>&nbsp;</li>
+         <li><div id="linksMenuText">Other AUGUSTUS Resources</div></li>
+         <li><a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus">AUGUSTUS Wiki</a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Forum.Forum">AUGUSTUS Forum</a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/augustus/binaries/">Download AUGUSTUS</a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/augustus">Old AUGUSTUS gene prediction web server</a></li>
+	 <li>&nbsp;</li>
+<li><div id="linksMenuText">Other Links</div></li>
+         <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group Greifswald</span></a></li>
+
      </ul>
   </div>
 
