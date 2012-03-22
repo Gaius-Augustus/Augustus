@@ -36,9 +36,9 @@ public:
   MemSeqAccess();
   AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
   
-private:
+  private:
   map<string,string> filenames;
-  // map<string, char*> keys: speciesname:chrName values: dna sequence
+  map<string,char*> sequences;  //keys: speciesname:chrName values: dna sequence
 };
 
 
@@ -60,6 +60,7 @@ public:
  * to a map
  */
 map<string,string> getFileNames (string listfile);
+
 
 
 

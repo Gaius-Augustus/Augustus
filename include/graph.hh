@@ -4,7 +4,7 @@
 #include <map>
 #include <sstream>
 #include <queue>
-
+#include <iostream>
 #include "gene.hh"
 #include "properties.hh"
 
@@ -42,19 +42,21 @@ public:
 
 class Node{
 public:
-  Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, Neutral_type t=unknown, Node *p=NULL):
+  Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, Neutral_type t=unknown, Node *p=NULL, bool b=0):
     begin(s),
     end(e),
     score(sc),
     item(it),
     n_type(t),
-    pred(p)
+    pred(p),
+    label(b)
   {}
   int begin, end;
   double score;
   const void *item;
   Neutral_type n_type; // helps to identify to which neutral line a neutral Node belongs
   Node *pred;
+  bool label;  //label is 1, if node is in path, else label is 0
   list<Edge> edges;
 };
 
@@ -86,14 +88,14 @@ public:
   void addBackEdges();
 
   list<Node*> nodelist;      //stores all nodes belonging to the graph
-  list<Status> *statelist;   
+  list<Status> *statelist;
   int min, max;
   map<string,Node*> existingNodes;
   Node *head;
   Node *tail;
  
   void buildGraph(); //needs to be called in constructor of derived class
-  void buildGraph7(); // builds graph with seven neutral lines
+  void buildGraph(list<Status> *additionalExons); // builds graph with seven neutral lines
 
   protected:	
   // functions needed to build the graph
@@ -134,7 +136,7 @@ public:
   virtual void printGraph(string filename)=0;   
 
   // additional functions to construct graph with 7 neutral lines
-  Node* addExon(Status *exon, vector< vector<Node*> > &neutralLines);
+  Node* addExon(Status *exon, vector< vector<Node*> > &neutralLines, bool sampled);
   void addIntron(Node* exon1, Node* exon2, Status *intr);
   virtual int fromNeutralLine(Status *st)=0;
   virtual int toNeutralLine(Status *st)=0;
@@ -145,7 +147,7 @@ public:
 class AugustusGraph : public Graph{
 
 public:
-  AugustusGraph(list<Status> *states, int dnalength) : Graph(states),seqlength(dnalength){
+  AugustusGraph(list<Status> *states, int dnalength) : Graph(states), seqlength(dnalength){
   try {
     utr = Properties::getBoolProperty("UTR");
   } catch (...) {
@@ -216,9 +218,12 @@ try {
   vector<double> baseScore;
   bool utr;
 
+  list<Status> *additionalExons;
   int fromNeutralLine(Status *st);  
   int toNeutralLine(Status *st);
   void printGraph7(string filename);
+
+
 
   // parameters for scores
   double alpha_se;

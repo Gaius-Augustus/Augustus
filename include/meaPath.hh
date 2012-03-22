@@ -12,7 +12,6 @@ public:
   void dfs(Node *n);
   void relax();
   void backtracking();
-  void traverseForward();
   inline list<Node*> getPath(){
     return meaPath;
   }
