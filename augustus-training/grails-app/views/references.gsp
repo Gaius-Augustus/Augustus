@@ -56,11 +56,15 @@
      <ul class="menu">
          <li><div id="linksMenuText">AUGUSTUS Web Server Navigation</div></li>
          <li><a href="index.gsp"><span>Introduction</span></a></li>
+         <li><a href="about.gsp"><span>About AUGUSTUS</span></a></li>
+         <li><a href="accuracy.gsp"><span>Accuracy</span></a></li>
          <li><a href="trainingtutorial.gsp"><span>Training Tutorial</span></a></li>
          <li><g:link controller="training" action="create"><span>Submit Training</span></g:link></li>
          <li><a href="predictiontutorial.gsp"><span>Prediction Tutorial</span></a></li>
          <li><g:link controller="prediction" action="create"><span>Submit Prediction</span></g:link></li>
          <li><a href="help.gsp"><span>Help</span></a></li>
+         <li><a href="datasets.gsp"><span>Datasets for Download</span></a></li>
+         <li><a href="predictions_for_download.gsp"><span>Predictions for Download</span></a></li>
          <li id="current"><a href="references.gsp"><span>Links & References</span></a></li>
          <li><a href="impressum.gsp"><span>Impressum</span></a></li>
 	  <li>&nbsp;</li>
@@ -136,6 +140,33 @@ Nature 460, 352-358
       <a href="http://www.sciencemag.org/cgi/content/full/317/5845/1756">Draft Genome of the Filarial Nematode Parasite Brugia malayi</a><br>
       Science, 317 (5845), 1756, doi: 10.1126/science.1145406</li>
 
+</ul>
+
+<div id="contrib"><h2>User contributed species parameters:</h2></div>
+
+<ul>
+<li>
+The training annotation files of the following species are a courtesy of Jason Stajich:<br>
+<i>Aspergillus fumigatus, Aspergillus nidulans, Aspergillus oryzae, Aspergillus terreus, Botrytis cinerea, Candida albicans,
+Candida guilliermondii, Candida tropicalis, Chaetomium globosum, Coccidioides immitis, Coprinus cinereus, Cryptococcus neoformans gattii,
+Cryptococcus neoformans neoformans, Debaryomyces hansenii, Encephalitozoon cuniculi, Eremothecium gossypii, Fusarium graminearum,
+Histoplasma capsulatum, Kluyveromyces lactis, Laccaria bicolor, Lodderomyces elongisporus, Magnaporthe grisea, Neurospora crassa,
+Phanerochaete chrysosporium, Pichia stipitis, Rhizopus oryzae, Saccharomyces cerevisiae, Schizosaccharomyces pombe, Ustilago maydis, Yarrowia lipolytica</i>.
+</li>
+<li>
+The training for lamprey (<i>Petromyzon marinus</i>) was performed by Falk Hildebrand and Shigehiro Kuraku, based on the
+genome assembly (PMAR3.0) provided by the Genome Sequencing Center at Washington University School of Medicine (WUGSC)
+in St. Louis.
+</li>
+<li>
+The training for elephant shark (<i>Callorhinchus milii</i>) was performed by Tereza Manousaki and Shigehiro Kuraku, based on the genome assembly
+(made up of 1.4x whole genome shotgun reads) available at <a href="http://esharkgenome.imcb.a-star.edu.sg/resources.html">http://esharkgenome.imcb.a-star.edu.sg/resources.html</a>.
+</li>
+<li>
+The training for <i>Pneumocystis jirovecii</i> was performed by Marco Pagni, Philippe Hauser et al as described in Hauser PM, Burdet FX, Cisse OH,
+Keller L, Taffe P, Sanglard D, Pagni M., Comparative Genomics Suggests that the Fungal Pathogen Pneumocystis Is an Obligate Parasite
+Scavenging Amino Acids from Its Host's Lungs. PLoS One. 2010, Dec 20;5(12):e15152. PubMed PMID: 21188143; PubMed Central PMCID: PMC3004796.
+</li>
 </ul>
 
             </div>

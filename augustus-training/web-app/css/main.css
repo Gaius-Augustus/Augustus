@@ -483,6 +483,9 @@ div#mittel_spalte p { margin: 8px 0px 8px 0px; line-height: 1.3em; }
  
 div#mittel_spalte table { margin: 8px 0px 0px 0px; }
  
+td { font-size: 0.7em; }
+caption { font-size: 0.7em; }
+
 div#mittel_spalte h1 { font-size: 1.4em; }
 div#mittel_spalte h2 { font-size: 1.2em; }
 div#mittel_spalte h3 { font-size: 1.0em; }

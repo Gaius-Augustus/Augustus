@@ -57,11 +57,15 @@
      <ul class="menu">
          <li><div id="linksMenuText">AUGUSTUS Web Server Navigation</div></li>
          <li><a href="index.gsp"><span>Introduction</span></a></li>
+         <li><a href="about.gsp"><span>About AUGUSTUS</span></a></li>
+         <li><a href="accuracy.gsp"><span>Accuracy</span></a></li>
          <li><a href="trainingtutorial.gsp"><span>Training Tutorial</span></a></li>
          <li><g:link controller="training" action="create"><span>Submit Training</span></g:link></li>
          <li><a href="predictiontutorial.gsp"><span>Prediction Tutorial</span></a></li>
          <li><g:link controller="prediction" action="create"><span>Submit Prediction</span></g:link></li>
          <li><a href="help.gsp"><span>Help</span></a></li>
+         <li><a href="datasets.gsp"><span>Datasets for Download</span></a></li>
+         <li><a href="predictions_for_download.gsp"><span>Predictions for Download</span></a></li>
          <li><a href="references.gsp"><span>Links & References</span></a></li>
          <li id="current"><a href="impressum.gsp"><span>Impressum</span></a></li>
 	 <li>&nbsp;</li>
