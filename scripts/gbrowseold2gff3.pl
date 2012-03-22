@@ -6,9 +6,13 @@ use strict;
 use Getopt::Long;
 
 my $help = 0;
-my ($genename, $txname);
+my $hints = 0;
+my $id = 0;
+my ($genename, $txname,$source);
 
-GetOptions('help!'=>\$help);
+GetOptions('help!'=>\$help,
+    'hints!'=>\$hints,
+    'source=s'=>\$source);
 
 exec("perldoc $0") if ($help);
 
@@ -16,23 +20,31 @@ while(<>){
     chomp;
     my @f = split /\t/;
     if (@f == 9){
-	if ($f[2] eq "gene"){
-	    @f[8] =~ /Gene (\S+)/;
-	    $genename = $1;
-	    @f[8] =~ s/Gene (\S+)/ID=$genename/;
-	} elsif ($f[2] eq "mRNA"){
-            @f[8] =~ s/mRNA (\S+)\s*[;]?\s*(Gene \S+)?/ID=$1;Parent=$genename/;
-            $txname = $1;
-        } else { 
-	    @f[8] =~ s/mRNA (\S+);?/Parent=$1/;
+	if (!$hints){
+	    if ($f[2] eq "gene"){
+		@f[8] =~ /Gene (\S+)/;
+		$genename = $1;
+		@f[8] =~ s/Gene (\S+)/ID=$genename/;
+	    } elsif ($f[2] eq "mRNA"){
+		@f[8] =~ s/mRNA (\S+)\s*[;]?\s*(Gene \S+)?/ID=$1;Parent=$genename/;
+		$txname = $1;
+	    } else { 
+		@f[8] =~ s/mRNA (\S+);?/Parent=$1/;
+	    }
+	    if (@f[2] =~ /5\S*UTR/i){
+		@f[2] = "five_prime_utr";
+	    }
+	    if (@f[2] =~ /3\S*UTR/i){
+		@f[2] = "three_prime_utr";
+	    }
+	    next if (@f[2] eq "internal" || @f[2] eq "single" ||  @f[2] eq "initial" || @f[2] eq "terminal" || @f[2] eq "tts" || @f[2] eq "tss");
+	} else {
+	    $id++;
+	    @f[8] =~ s/$/ID=$id/;
+	    @f[8] =~ s/mult=/Note=/;
+	    @f[8] =~ s/Note /Note=/;
 	}
-	if (@f[2] =~ /5\S*UTR/i){
-	    @f[2] = "five_prime_utr";
-	}
-	if (@f[2] =~ /3\S*UTR/i){
-            @f[2] = "three_prime_utr";
-        }
-	next if (@f[2] eq "internal" || @f[2] eq "single" ||  @f[2] eq "initial" || @f[2] eq "terminal" || @f[2] eq "tts" || @f[2] eq "tss");
+	@f[1] = $source if (defined($source));
     }
 
     print "" . join("\t", @f) . "\n";
@@ -54,6 +66,9 @@ gbrowseold2gff3.pl < in.gbrowse > out.gff3
     This is a simple conversion, almost line by line, from a GBrowse 1.6 compatible to a GBrowse 2.0 compatible format for genes.
     
 =head1 OPTIONS
+
+    hints       convert gff format for intron hints to gff3
+    source      fill this into the second column
 
 =head1 DESCRIPTION
     
