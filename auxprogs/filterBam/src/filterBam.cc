@@ -202,8 +202,15 @@ int main(int argc, char *argv[])
 		if (paired)
 		  {	
 			// Taking out suffix: {f,r} or {1,2}
-			qNameStem = qName.substr(0, qName.find("/"));
-			qSuffix = qName.substr(qName.find("/")+1, qName.length());	
+			if (qName.find("/"))
+			  {
+				qNameStem = qName.substr(0, qName.find("/"));
+				qSuffix = qName.substr(qName.find("/")+1, qName.length());	
+			  } else if (qName.find("-"))
+			  {
+				qNameStem = qName.substr(0, qName.find("-"));
+				qSuffix = qName.substr(qName.find("-")+1, qName.length());	
+			  }
 		  } 
 
 		// Filter for data whose Reference seq ID is not defined; i.e. RNAME= * in SAM format;
@@ -343,7 +350,6 @@ int main(int argc, char *argv[])
 		outBest = optionalCounters.outBest;
 		if (verbose) {printPairCovSteps(pairCovSteps);}
 	  }
-
 
 
 	// Write pairedness coverage data into pairBedFile
