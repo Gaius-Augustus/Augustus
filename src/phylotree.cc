@@ -12,7 +12,8 @@
  **********************************************************************/
 
 
-#include "phylotree.hh"
+#include "../include/phylotree.hh"
+#include "parser/parser.h"
 #include <queue>
 #include <cmath>
 #include <iostream>
@@ -41,10 +42,9 @@ void PhyloTree::printTree(){
   }
 }
 
-
-void PhyloTree::printLeaves(){
-  for(size_t i=0; i<this->leaves.size(); i++){
-    this->leaves[i]->printNode();
+PhyloTree::~PhyloTree(){
+  for(list<Treenode*>::iterator it = treenodes.begin(); it != treenodes.end(); it++){
+    delete *it;
   }
 }
 
@@ -171,22 +171,21 @@ double PhyloTree::getAlphaScore(Treenode* node, bool label){
 
 PhyloTree parseTree(string filename){
 
-  PhyloTree tree;
-    /*
-  ifstream istrm(filename.c_str(), ios::in);
-  if (istrm.is_open()){
-    Parser parser(&tree, &istrm);  //define an object of the Parser class
+ PhyloTree tree;
+
+  filebuf fb;
+  fb.open(filename.c_str(),ios::in);
+  if (fb.is_open()){
+    istream istrm(&fb);
+    Parser parser(&tree, istrm);  //define an object of the Parser class
 #ifndef DEBUG
-    parser.setDebug(false);  // switch debugging on and off
+    parser.setDebug(false);
 #endif
     parser.parse(); //start parsing
-    istrm.close();
-    tree.printWithGraphviz("tree.dot");
-    tree.printTree();
-    tree.printLeaves();
+    fb.close();
   }
   else
-     throw ProjectError("Could not open input file " + filename);
-  */
+    throw ProjectError("Could not open input file " + filename);
+
   return tree;
 }

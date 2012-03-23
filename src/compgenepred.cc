@@ -26,7 +26,6 @@ CompGenePred::CompGenePred(){
     //cout << annoSeq->seqname<<"\t"<<annoSeq->length<<"\t"<<annoSeq->offset<<endl;
     //cout << annoSeq->sequence<<endl;
   }
-
 }
 
 void CompGenePred::start(){

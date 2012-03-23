@@ -13,7 +13,7 @@ LIBS	= # -lcwd
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
- meaPath.o exoncand.o mea7.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o
+ meaPath.o exoncand.o mea7.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o parse.o lex.o
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
 PROGR	= augustus etraining consensusFinder curve2hints fastBlockSearch prepareAlign
@@ -542,9 +542,14 @@ orthoexon.o : \
 	../include/projectio.hh \
 	orthoexon.cc
 
-phylotree.o : \
-	../include/phylotree.hh \
-	phylotree.cc
+parse.o: parser/parse.cc parser/parser.ih
+	$(CC) -std=c++0x -c -o $@ parser/parse.cc $(INCLS)
+
+lex.o: scanner/lex.cc scanner/scanner.ih
+	$(CC) -std=c++0x -c -o $@ scanner/lex.cc $(INCLS)
+
+phylotree.o: phylotree.cc ../include/phylotree.hh parser/parser.h
+	$(CC) -std=c++0x -c -o $@ $< $(INCLS)
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

@@ -63,12 +63,10 @@ public:
 class PhyloTree{
 
 public:
-
+  PhyloTree(){}
+  ~PhyloTree();
   list<Treenode*> treenodes; // leaf to root order!
-  vector<Treenode*> leaves; // might be not necessary
-
   void printTree();
-  void printLeaves();
   void printWithGraphviz(string filename);
   double pruningAlgor(OrthoExon &orthoex);
   double P(bool label1, bool label2, double dist) const;  //calculates probability of transition from label1 to label2 in time dist

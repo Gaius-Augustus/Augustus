@@ -1,0 +1,95 @@
+%class-name Parser
+%filenames parser
+%baseclass-preinclude ../../include/phylotree.hh
+%scanner ../scanner/scanner.h           //includes Scanner class
+%scanner-token-function d_scanner.lex()
+%debug
+
+/*
+define all types of semantic values of the symbols in the grammar
+*/
+%union{
+ Treenode* nodeptr;
+}
+
+/*
+tokens: terminal symbols, which the scanner returns, need to be in upper case letters
+*/
+%token DISTANCE SPECIES
+
+/*
+nonterminal symbols, need to be in lower case letters
+*/
+%type <nodeptr> subtree branch branchset leaf tree
+/*
+start here:
+*/
+%start tree  
+
+%%
+
+/*
+grammar rules:
+for example, the first rule means: a tree is a subtree followed by a semicolon.
+If this is matched, the code followed in the braces {} is executed.
+*/
+tree:	
+    subtree
+    ';'
+    {
+	$$ = $1;
+    }
+;
+
+subtree:
+    leaf
+    {	
+	$$ = $1;
+    }
+|
+    '('
+    branchset
+    ')'
+    {	
+	$$ = $2;
+    }
+;
+
+leaf:
+    SPECIES
+    {
+	Treenode *temp = new Treenode(d_scanner.matched());
+	ptree->treenodes.push_back(temp);
+	$$ = temp;
+    }
+;
+
+branchset:
+    branch
+    {
+	Treenode *temp = new Treenode;
+	temp->addChild($1);
+	$$ = temp;
+    }
+|
+    branchset
+    ','
+    branch
+    {
+	$1->addChild($3);
+	ptree->treenodes.push_back($1);
+	$$ = $1;
+    }
+;
+
+branch:
+    subtree
+    ':'
+    DISTANCE
+    {	
+	$1->addDistance(atof(d_scanner.matched().c_str())); //d_scanner.matched() returns the string, which the regular expression of a token type has matched
+	$$=$1;
+	
+    }
+;
+
