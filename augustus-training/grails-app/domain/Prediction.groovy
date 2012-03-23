@@ -3,6 +3,10 @@
 
 class Prediction {
    static searchable = true
+ String id 
+   static mapping ={
+	id generator:'uuid'
+   }
    String email_adress
    String project_id // the species name according to a formerly computed webserver training run (random 8 character string)
    String genome_file
@@ -35,10 +39,12 @@ class Prediction {
    Integer pred_strand = 1
    Integer alt_transcripts = 1
    Integer allowed_structures = 1
+   String results_Url // only to be stored if no e-mail was supplied
+   String message // only to be stored if no e-mail was supplied
    Boolean ignore_conflicts = false
    static constraints = {
       accession_id(unique:true) // may (unlikely) cause problems if the grails database ever gets lost.
-      email_adress(email:true,blank:false,nullable:false)
+      email_adress(email:true,blank:true,nullable:true)
       genome_file(nullable:true, blank:true, validator: { val, obj ->
         if (obj.genome_file == null && obj.genome_ftp_link == null) {
            return 'training.genome_file.no_genome_file'
@@ -68,6 +74,8 @@ class Prediction {
       archive_file(nullable:true)
       job_id(nullable:true)
       job_status(nullable:true)
+      results_Url(nullable:true)
+      message(maxSize:1000000000, nullable:true)
       utr()
       dateCreated()
    }

@@ -11,7 +11,7 @@ environments {
 		dataSource {
 			poold = true
 			dbCreate = "update"
-			url = "jdbc:mysql://localhost/augtrainprod"
+			url = "jdbc:mysql://localhost/augtraindev"
                         driverClassName = "com.mysql.jdbc.Driver"
                         username = "grails1"
                         password = "9M6T5kgU"

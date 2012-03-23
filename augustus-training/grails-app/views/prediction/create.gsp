@@ -111,8 +111,7 @@
             <div class="main" id="main">
 			<noscript><p><b><span style="color:red">Please enable javascript in your browser in order to display the submission form correctly!</span></b> Form functionality is not affected significantly while javascript is disabled, but it looks less pretty.</p>
 			</noscript>
-<p>Example data for this form is available <a href="../predictiontutorial.gsp#exampledata">here</a>.</p>
-            <g:uploadForm action="commit" method="post" >
+            <g:uploadForm action="commit" method="post" name="submissionform">
             <fieldset><legend>
                 <table class="contentpaneopen">
                   <tr>
@@ -124,8 +123,15 @@
                 </table>
               </legend><p>
                 <div class="dialog">
-		    <p>Please use this form to submit your data for running AUGUSTUS on new genomic data with already available pre-trained parameters.</p>
-		    <p>You have to specify an <b>E-mail address</b>!</p>
+		    <p>Use this form to submit your data for running AUGUSTUS on new genomic data with already available pre-trained parameters.</p>
+
+<p>Please read the <a href="../predictiontutorial.gsp">prediction tutorial</a> before submitting a job for the first time. Example data for this form is available <a href="../predictiontutorial.gsp#exampledata">here</a>. You may also use the button below to insert sample data. Please note that you will always need to enter the verification string at the bottom of the page, yourself, in order to submit a job!</p>
+
+           <g:actionSubmit action="fillSample" value="Fill in Sample Data" />
+
+
+
+		    <p>We strongly recommend that you specify an <b>E-mail address</b>! Please read the <a href="../help.gsp#email"><small>Help</small></a> page before submitting a job without e-mail address!</p>
                     <table>
                         <tbody>
                                 <tr class="prop">
@@ -163,7 +169,7 @@
                             </tr>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="project_id">specify a project identifier:</label>
+                                    <label for="project_id">specify a project identifier:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'project_id','errors')}">
                                     <input type="text" id="project_id" name="project_id" value="${fieldValue(bean:predictionInstance,field:'project_id')}"/> <a href="../help.gsp#project_id"><small>Help</small></a>
@@ -298,7 +304,7 @@
 				</tbody>
 			</table>
                     <br>
-		    <p>We use a <b>verification string</b> to figure out whether you are a <b>human</b> submitter. Please type the text in the image below into the text field next to the image.
+		    <p>We use a <b>verification string</b> to figure out whether you are a <b>human</b> person. Please type the text in the image below into the text field next to the image.
 			<table>
 				<tbody>
 					<tr class="prop">
