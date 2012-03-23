@@ -247,10 +247,10 @@ int main(int argc, char *argv[])
 				exit(1);
 			  }	
 
-			// if (qali.size()>0)
-			//   {
-			// 	processQuery(qali, refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen, pairCovSteps2);
-			//   }
+			if (qali.size()>0)
+			  {
+				processQuery(qali, refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen, pairCovSteps2);
+			  }
 		  }  // end outer if
 
   		/////////////////////////////////////////////////////////////////
