@@ -932,7 +932,7 @@ Double IntronModel::emiProbUnderModel (int begin, int end) const {
 		int idx = getGCIdx(begin+d);
 		for (int a=begin; a < begin+d; a++)
 		  try {
-		    restSeqProb *= GCemiprobs[idx].probs[s2i(sequence + a - k)];
+		    restSeqProb *= (a >= k && a < dnalen)? GCemiprobs[idx].probs[s2i(sequence + a - k)] : 0.25;
 		  } catch(...) {
 		    restSeqProb *= .25;
 		  }
@@ -940,7 +940,7 @@ Double IntronModel::emiProbUnderModel (int begin, int end) const {
 		  if (idx != getGCIdx(a))
 		  idx = getGCIdx(a);
 		  try {
-		    restSeqProb *= GCemiprobs[idx].probs[s2i(sequence + a - k)];
+		    restSeqProb *= (a >= k && a < dnalen)? GCemiprobs[idx].probs[s2i(sequence + a - k)] : 0.25;
 		  } catch(...) {
 		    restSeqProb *= .25;
 		  }
