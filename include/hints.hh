@@ -178,7 +178,8 @@ public:
     bool nestedGenePossible(HintGroup &other);
     bool isTrashy();
     // temporary hack for rGASP, sole exonpart hints cannot cause alternative splicing, too many with RNA-Seq
-    bool canCauseAltSplice() {return hints && (hints->size()>1 || hints->front()->type != exonpartF);};
+    bool canCauseAltSplice() {return hints && (hints->size()>1 || (hints->front()->type != exonpartF));};
+    //  bool canCauseAltSplice() {return hints && (hints->size()>1 || (hints->front()->type != exonpartF && !(hints->front()->mult < 2)));}; //TODO make this a parameter and test
     void setActiveFlag(bool active);
     void setDiscardFlag(bool discard);
     void addIncompGroup(HintGroup *otherGroup);
