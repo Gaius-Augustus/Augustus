@@ -1276,7 +1276,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 
 	  // Write pairedness coverage info into the pairBedFile	
 	  // output pairedbed info: go through list of all mate pairs and store start and end position
-	  if (pairBedFile)
+	  if (strlen(pairBedFile)>0)
 		{
 
 		  if (verbose)
@@ -1310,7 +1310,6 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 			  matepairs.erase(matepairs.begin()); // Delete first member of matepairs
 		  	}
 		}
-
 
 	} else {// IF NOT PAIRED, single read
 
