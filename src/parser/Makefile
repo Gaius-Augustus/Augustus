@@ -2,4 +2,4 @@
 
 bisonc++ grammar
 cd ../scanner
-flexc++ lexer
+~/usr/bin/flexc++ lexer

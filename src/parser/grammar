@@ -51,6 +51,7 @@ subtree:
     branchset
     ')'
     {	
+	ptree->push_back($2);
 	$$ = $2;
     }
 ;
@@ -59,7 +60,7 @@ leaf:
     SPECIES
     {
 	Treenode *temp = new Treenode(d_scanner.matched());
-	ptree->treenodes.push_back(temp);
+	ptree->push_back(temp);
 	$$ = temp;
     }
 ;
@@ -77,7 +78,6 @@ branchset:
     branch
     {
 	$1->addChild($3);
-	ptree->treenodes.push_back($1);
 	$$ = $1;
     }
 ;

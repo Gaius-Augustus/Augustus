@@ -1,20 +1,22 @@
+/**********************************************************************
+ * file:    mea7.cc
+ * licence: Artistic Licence, see file LICENCE.TXT or 
+ *          http://www.opensource.org/licenses/artistic-license.php
+ * descr.:  interface for MEA prediction in a graph  with seven neutral lines
+ * authors: Stefanie König
+ *
+ * date    |   author      |  changes
+ * --------|---------------|------------------------------------------
+ * 16.18.12|Stefanie König | creation of the file
+ **********************************************************************/
+
+
 #include "mea.hh"
 #include "mea7.hh"
 #include "meaPath.hh"
+#include "orthograph.hh"
+#include "orthoexon.hh"
 #include <iostream>
-
-
-/*********************************************************************
- * 
- * date     |   author      |  description
- * ---------|---------------|-----------------------------------------
- * 16.18.12 |Stefanie König |  interface for MEA prediction in a graph
- *          |               |  with seven neutral lines
- *          |               |  can't handle overlapping genes (no
- *          |               |  back edges)
- *          |               |  UTR prediction is not possible
-*********************************************************************/
-
 
 
 void getMEAtranscripts7(list<Gene> *meaGenes, list<Gene> *alltranscripts, int strlength){
@@ -38,15 +40,15 @@ void getMEAtranscripts7(list<Gene> *meaGenes, list<Gene> *alltranscripts, int st
     //builds datastructure needed for the graph representation
     buildDatastructure(alltranscripts, utr, stlist);
 
+    
     //in addition to the sampled exons, more exoncandidates can be added
     list<Status> additionalExons;
 
     //build Graph
-    AugustusGraph myGraph(&stlist, strlength);
-    myGraph.buildGraph(&additionalExons);
-
+    OrthoGraph myGraph =  OrthoGraph(&stlist, strlength, &additionalExons);
+   
     //find shortest path
-    MEApath path(&myGraph);
+    MEApath path(myGraph.graphs[0]);
     path.findMEApath7();
     
     //convert back to augustus datastructure for genes

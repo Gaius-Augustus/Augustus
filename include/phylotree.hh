@@ -34,6 +34,7 @@ public:
   {
     alpha.resize(2);
   }
+  ~Treenode(){}
   string species;
   double dist_to_parent;
   Treenode *parent;
@@ -63,7 +64,7 @@ public:
 class PhyloTree{
 
 public:
-  PhyloTree(){}
+  PhyloTree(string filename);
   ~PhyloTree();
   list<Treenode*> treenodes; // leaf to root order!
   void printTree();
@@ -73,7 +74,5 @@ public:
   double getAlphaScore(Treenode* node, bool label);
 
 };
-
-PhyloTree parseTree(string filename);
 
 #endif

@@ -42,6 +42,23 @@ void PhyloTree::printTree(){
   }
 }
 
+PhyloTree::PhyloTree(string filename){
+
+  filebuf fb;
+  fb.open(filename.c_str(),ios::in);
+  if (fb.is_open()){
+    istream istrm(&fb);
+    Parser parser(&treenodes, istrm);  //define an object of the Parser class
+#ifndef DEBUG
+    parser.setDebug(false);
+#endif
+    parser.parse(); //start parsing
+    fb.close();
+  }
+  else
+    throw ProjectError("Could not open input file " + filename);
+}
+
 PhyloTree::~PhyloTree(){
   for(list<Treenode*>::iterator it = treenodes.begin(); it != treenodes.end(); it++){
     delete *it;
@@ -56,7 +73,7 @@ void PhyloTree::printWithGraphviz(string filename){
   int i=0;
   int j=-1;
   ofstream file;
-  file.open(("/home/stefanie/Newick_parser/tree.dot"));
+  file.open(filename.c_str());
   
   file<<"digraph Tree {\n";
   file<<"rankdir=TB;\n";
@@ -167,25 +184,4 @@ double PhyloTree::getAlphaScore(Treenode* node, bool label){
   }
   return alpha_score;
 
-}
-
-PhyloTree parseTree(string filename){
-
- PhyloTree tree;
-
-  filebuf fb;
-  fb.open(filename.c_str(),ios::in);
-  if (fb.is_open()){
-    istream istrm(&fb);
-    Parser parser(&tree, istrm);  //define an object of the Parser class
-#ifndef DEBUG
-    parser.setDebug(false);
-#endif
-    parser.parse(); //start parsing
-    fb.close();
-  }
-  else
-    throw ProjectError("Could not open input file " + filename);
-
-  return tree;
 }

@@ -14,9 +14,9 @@ class Parser: public ParserBase
 {
     public:
     // $insert scannerobject
-    Parser(PhyloTree* tree, std::istream &in):d_scanner(in), ptree(tree) {}
+    Parser(list<Treenode*> *tree, std::istream &in):d_scanner(in), ptree(tree) {}
     Scanner d_scanner;
-    PhyloTree *ptree;
+    list<Treenode*> *ptree;
         
         int parse();
 

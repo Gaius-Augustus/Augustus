@@ -13,7 +13,7 @@ LIBS	= # -lcwd
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
- meaPath.o exoncand.o mea7.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o parse.o lex.o
+ meaPath.o exoncand.o mea7.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o parse.o lex.o orthograph.o
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
 PROGR	= augustus etraining consensusFinder curve2hints fastBlockSearch prepareAlign
@@ -541,6 +541,11 @@ orthoexon.o : \
 	../include/orthoexon.hh \
 	../include/projectio.hh \
 	orthoexon.cc
+
+orthograph.o : \
+	../include/orthograph.hh \
+	../include/graph.hh \
+	orthograph.cc
 
 parse.o: parser/parse.cc parser/parser.ih
 	$(CC) -std=c++0x -c -o $@ parser/parse.cc $(INCLS)
