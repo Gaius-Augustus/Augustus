@@ -1018,7 +1018,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 			  {
 				cout << "------------------------------------------------------" << endl;
 				cout << "Sort (descending) mated pairs by scoreMate" << endl;
-				cout << "BEFORE sorting [vector size]: " << qali.size() << endl;
+				cout << "BEFORE sorting [vector size]: " << matepairs.size() << endl;
 				printMatePairs(matepairs, qali);
 			  }
 
