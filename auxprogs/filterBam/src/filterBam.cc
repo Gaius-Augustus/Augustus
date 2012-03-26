@@ -406,7 +406,7 @@ int main(int argc, char *argv[])
 
 
 	// Sorting insertlengths; i.e. @insertlen = sort {$a <=> $b} @insertlen;
-	sort(insertlen.begin(), insertlen.end());
+	std::stable_sort(insertlen.begin(), insertlen.end());
 
 
 	// Displaying results to STDOUT
@@ -728,7 +728,7 @@ vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSte
 {
   bool verbose = globalOptions.verbose;
   vector<string> chrNames = uniqueKeys(pairCovSteps);
-  std::sort(chrNames.begin(), chrNames.end());
+  std::stable_sort(chrNames.begin(), chrNames.end());
   string chr;
   int32_t before=0, after=0;
   vector<PairednessCoverage> pairCovStepsOfChr;
@@ -759,7 +759,7 @@ vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSte
 		  }
 		// Foreach "$chr" in pairCovSteps, sort the contents of the "coord" field in ascending order
         // {-1} corresponds to pEnd, and {1} corresponds to pStart
-		sort(pairCovStepsOfChr.begin(), pairCovStepsOfChr.end());
+		std::stable_sort(pairCovStepsOfChr.begin(), pairCovStepsOfChr.end());
 
 		if (verbose)
 		  {
