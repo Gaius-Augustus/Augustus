@@ -861,9 +861,9 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 	}
 
   // Defines whether to treat reads as single- or pair-ended ones
-  if (paired) 
+  if (paired & qali.size()>0) 
 	{
-
+ 
 	  if (verbose)
 		{
 		  // Printing Qali before sorting
@@ -1276,6 +1276,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 
 	  // Write pairedness coverage info into the pairBedFile	
 	  // output pairedbed info: go through list of all mate pairs and store start and end position
+
 	  if (strlen(pairBedFile)>0)
 		{
 
