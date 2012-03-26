@@ -1023,7 +1023,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 			  }
 
 			// Sort matepairs by score (in descending order) 	
-			sort(matepairs.begin(), matepairs.end()); 
+			std::stable_sort(matepairs.begin(), matepairs.end()); 
 
 			if (verbose)
 			  {
