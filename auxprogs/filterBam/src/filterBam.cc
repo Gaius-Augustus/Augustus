@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
   float coverage;
   float percId;
   int32_t baseInsert;  // baseInsert = qBaseInsert+tBaseInsert, in some cases
+  string queryBases;
   // Counters
   int line = 0;
   int outMap = 0;
@@ -266,9 +267,14 @@ int main(int argc, char *argv[])
   		sumMandI = 0; // Equiv to $qEnd-$qStart in PSL
   		baseInsert = 0;
   		al.GetTag("NM", editDistance); // edit distance (see SAM spec)
+		queryBases = al.QueryBases; // 'aligned' seq, includes: indels, padding, clipping
+
+	    int numEquals = 0;
+		for (int i = 0; i < queryBases.size(); i++){if (queryBases[i] == '=') numEquals++;}
 
 		// Percentage Identity filter
-  		percId = (float)100*(qLength-editDistance)/qLength;  
+  		// percId = (float)100*(qLength-editDistance)/qLength;  
+  		percId = (float)100*numEquals/qLength;  
   		if (percId < minId)
   	  	{
   			outMinId++;
