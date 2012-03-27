@@ -13,7 +13,7 @@
 
 #include "orthograph.hh"
 
-OrthoGraph::OrthoGraph(list<Status> *states, int dnalength, list<Status> *additionalExons){
+OrthoGraph::OrthoGraph(list<Status> *states, int dnalength, list<Status*> &additionalExons){
     AugustusGraph *graph = new AugustusGraph(states, dnalength);
     graph->buildGraph(additionalExons);
     graphs.push_back(graph);

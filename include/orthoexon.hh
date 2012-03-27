@@ -21,14 +21,14 @@ class OrthoExon{
 
 public:
   OrthoExon();
-  ~OrthoExon() {}
+  ~OrthoExon();
 
   vector<Status*> orthoex;
   static vector<string> species;
   static size_t getVectorPositionSpecies(string name);
   /*
-  * cache functions to store score of already calculated label patterns
-  */
+   * cache functions to store score of already calculated label patterns
+   */
   string getKey();
   bool inHash();
   void addToHash(double score);
@@ -36,8 +36,12 @@ public:
   void incrementCounter();
 
 };
-
-void readOrthoExons(string filename); //read orthologous exons from a file
+/*
+ * read and write functions for orthologous exons
+ */
+list<OrthoExon> readOrthoExons(string filename); //read list of orthologous exons from a file
+ostream& operator<<(ostream& ostrm, OrthoExon& ex_tuple);
+istream& operator>>(istream& istrm, OrthoExon& ex_tuple);
 
 struct Score{
   double treescore;   //stores the score of a label pattern

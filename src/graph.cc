@@ -732,7 +732,7 @@ builds Graph with seven neutral lines representing
 * the plus strand (3 neutral lines for each coding frame)
 * and the minus strand (3 neutral lines for each coding frame)
 */
-void Graph::buildGraph(list<Status> *additionalExons){
+void Graph::buildGraph(list<Status*> &additionalExons){
 
 #ifdef DEBUG
   cout<<"*****entering buildGraph7()******"<<endl;
@@ -801,11 +801,13 @@ void Graph::buildGraph(list<Status> *additionalExons){
   }
 
   //add additional Exoncandidates
-  if(additionalExons != NULL){
-    for(list<Status>::iterator it=additionalExons->begin(); it!=additionalExons->end(); it++){
-      addExon(&(*it), neutralLines, false);
+  if(!additionalExons.empty()){
+    for(list<Status*>::iterator it = additionalExons.begin(); it!=additionalExons.end(); it++){
+      if ((*it) != NULL){
+	addExon((*it), neutralLines, false);
+      }
     }
-    }
+  }
   //create neutral lines by connecting neutral nodes in the vector (all entries in the Vector, which are not NULL)
   //edges directed from smaller positions to larger
   for(int j=0; j<neutralLines.size(); j++){
@@ -827,7 +829,7 @@ Node* Graph::addExon(Status *exon, vector< vector<Node*> > &neutralLines, bool s
       exon_score = setScore(exon); // MEA score
     }
     else{
-      exon_score = exon->score; // not sampled -> some small probability 
+      exon_score = exon->score; // not sampled -> some small probability
     }
 
     Node *ex = new Node(exon->begin, exon->end, exon_score, exon->item);

@@ -111,7 +111,7 @@ double PhyloTree::pruningAlgor(OrthoExon &orthoex){
     tree_score = orthoex.getScore();
   }
   else{
-    for(list<Treenode*>::iterator it = this->treenodes.begin(); it != this->treenodes.end(); it++){;
+    for(list<Treenode*>::iterator it = this->treenodes.begin(); it != this->treenodes.end(); it++){
       if((*it)->isLeaf()){
 	/*
 	 * initialization

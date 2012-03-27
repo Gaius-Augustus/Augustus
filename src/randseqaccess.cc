@@ -31,10 +31,6 @@ MemSeqAccess::MemSeqAccess(){
       inSeq = inSeq->next;
     }
   }
-  /*for(map<string, char*>::iterator i = sequences.begin(); i != sequences.end(); i++){
-    cout<<i->first<<endl;
-    cout<<i->second<<endl;
-    }*/
 }
 
 AnnoSequence* MemSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
@@ -43,7 +39,6 @@ AnnoSequence* MemSeqAccess::getSeq(string speciesname, string chrName, int start
   string key = speciesname + ":" + chrName;
   map<string,char*>::iterator it = sequences.find(key);
   if(it != sequences.end()){
-    //TODO: start and end positions may have to be checked, e.g. start < end ...
     annoseq = new AnnoSequence();
     annoseq->seqname = newstrcpy(key);
     annoseq->sequence = newstrcpy(it->second + start, end - start + 1);
@@ -85,9 +80,6 @@ map<string,string> getFileNames (string listfile){
 			   "...\n");
     }
     ifstrm.close();
-    /*for(map<string, string>::iterator it=filenames.begin(); it != filenames.end(); it++){
-      cout<<it->first<<"\t"<<it->second<<endl;
-    }*/
   }
   else
     throw ProjectError("Could not open input file " + listfile);

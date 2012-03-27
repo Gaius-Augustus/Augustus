@@ -23,11 +23,8 @@ CompGenePred::CompGenePred(){
   AnnoSequence *annoSeq = rsa->getSeq("dog", "chr31", 39798072, 39798218, minusstrand);
   if (annoSeq){
     cout << "random sequence access test "<< endl;
-    //cout << annoSeq->seqname<<"\t"<<annoSeq->length<<"\t"<<annoSeq->offset<<endl;
-    //cout << annoSeq->sequence<<endl;
   }
 }
 
 void CompGenePred::start(){
-
 }

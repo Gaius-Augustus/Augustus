@@ -95,7 +95,7 @@ public:
   Node *tail;
  
   void buildGraph(); //needs to be called in constructor of derived class
-  void buildGraph(list<Status> *additionalExons); // builds graph with seven neutral lines
+  void buildGraph(list<Status*> &additionalExons); // builds graph with seven neutral lines
 
   protected:	
   // functions needed to build the graph
@@ -218,7 +218,7 @@ try {
   vector<double> baseScore;
   bool utr;
 
-  list<Status> *additionalExons;
+  list<Status*> additionalExons;
   int fromNeutralLine(Status *st);  
   int toNeutralLine(Status *st);
   void printGraph7(string filename);

@@ -16,6 +16,7 @@
 #include "meaPath.hh"
 #include "orthograph.hh"
 #include "orthoexon.hh"
+#include "phylotree.hh"
 #include <iostream>
 
 
@@ -40,13 +41,19 @@ void getMEAtranscripts7(list<Gene> *meaGenes, list<Gene> *alltranscripts, int st
     //builds datastructure needed for the graph representation
     buildDatastructure(alltranscripts, utr, stlist);
 
+    //read in orthologous exons
+    list<OrthoExon> all_orthoex = readOrthoExons(Constant::orthoexons);
     
     //in addition to the sampled exons, more exoncandidates can be added
-    list<Status> additionalExons;
+    list<Status*> additionalExons;
+
+    for(list<OrthoExon>::iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
+      additionalExons.push_back(it->orthoex[0]);
+    }
 
     //build Graph
-    OrthoGraph myGraph =  OrthoGraph(&stlist, strlength, &additionalExons);
-   
+    OrthoGraph myGraph =  OrthoGraph(&stlist, strlength, additionalExons);
+
     //find shortest path
     MEApath path(myGraph.graphs[0]);
     path.findMEApath7();

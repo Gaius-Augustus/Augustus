@@ -13,12 +13,16 @@
 
 #include "orthoexon.hh"
 #include "projectio.hh"
+#include "types.hh"
 #include <fstream>
 #include <iostream>
 
 vector<string> OrthoExon::species;
 
 OrthoExon::OrthoExon(){
+}
+
+OrthoExon::~OrthoExon(){
 }
 
 size_t OrthoExon::getVectorPositionSpecies(string name){
@@ -30,53 +34,98 @@ size_t OrthoExon::getVectorPositionSpecies(string name){
   return species.size();
 }
 
-void readOrthoExons(string filename){
+list<OrthoExon> readOrthoExons(string filename){
+
+  list<OrthoExon> all_orthoex;
+
   ifstream istrm; 
   istrm.open(filename.c_str(), ifstream::in);
   if (istrm) {
     int nspecies;
-    string exontype;
-    int begin, length;
     istrm >> goto_line_after( "[SPECIES]");
     istrm >> comment >> nspecies;
-    vector<string> species(nspecies);
+    OrthoExon::species.resize(nspecies);
     istrm >> comment;
-    for (int i = 0; i < species.size(); i++){
-      istrm >> species[i];
+    for (int i = 0; i < OrthoExon::species.size(); i++){
+      istrm >> OrthoExon::species[i];
     }
     vector<string> chr(nspecies);
     while(istrm){
       istrm >> goto_line_after( "[CHR]") >> comment;
-      for (int i = 0; i < species.size(); i++){
+      for (int i = 0; i < nspecies; i++){
 	istrm >> chr[i];
       }
-      for (int i = 0; i < species.size(); i++){
-	cout<<chr[i]<<"\t";
-      } 
       cout << endl;
       istrm >> goto_line_after( "[ORTHOEX]");
       istrm >> comment;
        while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
-	istrm >> exontype;
-	for (int i = 0; i < nspecies; i++){
-	  istrm >> begin >> length;
-	  if (begin!=0 && length!=0){
-	    string key = itoa(begin-1) + ":" + itoa(begin+length-2) + ":" + exontype;
-	    cout<<key<<endl; 
-	    //search map existingNodes for key. in case that the key is not in
-	    //in the map -> cerr key. might be a typo in the input file
-	    //else set pointer to node
-	  }
-	  else{
-	    //set pointer to NULL
-	  }
-	}
-      }
-    }
-    
+	 OrthoExon ex_tuple;
+	 istrm >> ex_tuple;
+	 all_orthoex.push_back(ex_tuple);
+       }
+    } 
   }
   else
-  throw ProjectError("Could not open input file " + filename);
+    throw ProjectError("readOrthoExons: Could not open this file!");
+
+  return all_orthoex;
+}
+
+ostream& operator<<(ostream& ostrm, OrthoExon& ex_tuple){
+
+  int predictionStart;
+  try {
+    predictionStart = Properties::getIntProperty( "predictionStart" ) - 1;
+  } catch (...) {
+    predictionStart = 0;
+  }
+
+  int j = 0;
+  while ( ex_tuple.orthoex.at(j) == NULL ){
+    j++;
+  }
+  if (j < ex_tuple.orthoex.size()){
+    ostrm << stateTypeIdentifiers[(((State*)ex_tuple.orthoex.at(j)->item)->type)];
+    for (int i = 0; i < ex_tuple.orthoex.size(); i++){
+      if (ex_tuple.orthoex.at(i) == NULL){
+	ostrm << "\t" << 0 << "\t" << 0;
+      }
+      else{
+	ostrm << "\t" << ex_tuple.orthoex.at(i)->begin+1+predictionStart << "\t" << ex_tuple.orthoex.at(i)->end - ex_tuple.orthoex.at(i)->begin + 1;
+      }
+    }
+  }
+  else{
+    cerr<<"Error in writing orthoexon. vector<State*> orthoex only containts null pointers"<<endl;
+  }
+  return ostrm;
+}
+
+istream& operator>>(istream& istrm, OrthoExon& ex_tuple){
+
+  int predictionStart;
+  try {
+    predictionStart = Properties::getIntProperty( "predictionStart" ) - 1;
+  } catch (...) {
+    predictionStart = 0;
+  }
+
+  string exontype;
+  int begin, length;
+
+  istrm >> exontype;
+  for (int i = 0; i < OrthoExon::species.size(); i++){
+    istrm >> begin >> length;
+    if (begin != 0 && length != 0){
+      State *st = new State(begin-1-predictionStart, begin+length-2-predictionStart, toStateType(exontype.c_str()));
+      Status *state = new Status(CDS, begin-1-predictionStart, begin+length-2-predictionStart, 0.0, st);
+      ex_tuple.orthoex.push_back(state);
+    }
+    else{
+     ex_tuple.orthoex.push_back(NULL);
+    }
+  }
+  return istrm;
 }
 
 map<string, Score> labelscore; //stores score of prunning algorithm for each pattern (leaf labelling)
