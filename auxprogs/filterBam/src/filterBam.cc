@@ -272,8 +272,8 @@ int main(int argc, char *argv[])
 		// Percentage Identity filter; compute with equal signs 
 		if (alignedBases.find("=")!=-1) // Equal signs present indicate "camld" was run
 		  {
-			cout << "BAM file seems to have been pre-processed with calmd." << endl;
-			cout << "Computing percentage identity by counting number of (=) signs in SEQ field." << endl;
+			// cout << "BAM file seems to have been pre-processed with calmd." << endl;
+			// cout << "Computing percentage identity by counting number of (=) signs in SEQ field." << endl;
 			int numEquals = 0;
 			for (int i = 0; i < alignedBases.size(); i++)
 			  {
