@@ -268,17 +268,22 @@ int main(int argc, char *argv[])
   		baseInsert = 0;
   		al.GetTag("NM", editDistance); // edit distance (see SAM spec)
 		alignedBases = al.AlignedBases; // 'aligned' seq, includes: indels, padding, clipping
+		
+		// Percentage Identity filter; compute with equal signs 
+		if (alignedBases.find("=")!=-1) // Equal signs present indicate "camld" was run
+		  {
+			int numEquals = 0;
+			for (int i = 0; i < alignedBases.size(); i++)
+			  {
+				if (alignedBases[i] == '=') 
+				  numEquals++;
+			  }
+  			percId = (float)100*numEquals/qLength;  
 
-	    int numEquals = 0;
-		for (int i = 0; i < alignedBases.size(); i++)
-			{
-			  if (alignedBases[i] == '=') 
-				numEquals++;
-			}
+		  } else { // No equal signs present indicates no "calmd"
+			percId = (float)100*(qLength-editDistance)/qLength;  
+		  }
 
-		// Percentage Identity filter
-  		// percId = (float)100*(qLength-editDistance)/qLength;  
-  		percId = (float)100*numEquals/qLength;  
   		if (percId < minId)
   	  	{
   			outMinId++;
