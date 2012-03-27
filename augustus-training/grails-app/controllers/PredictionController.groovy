@@ -35,6 +35,8 @@ class PredictionController {
 	// web-output, root directory to the results that are shown to end users
 //	def web_output_dir = "/var/www/trainaugustus/prediction-results" // must be writable to webserver application
 	def web_output_dir = "/data/www/test/out"
+	def web_output_url = "http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/"
+	def war_url = "http://bioinf.uni-greifswald.de/augustus-training-0.1/"
 	// AUGUSTUS_CONFIG_PATH
 	def AUGUSTUS_CONFIG_PATH = "/usr/local/augustus/trunks/config"
 	def AUGUSTUS_SCRIPTS_PATH = "/usr/local/augustus/trunks/scripts"
@@ -58,6 +60,12 @@ class PredictionController {
 	def cmdStr
 
 	def logDate
+
+        // other variables
+	def accession_id
+	//def results_urls = ""
+	def message = ""
+
 
 	// human verification:
 	def simpleCaptchaService
@@ -128,17 +136,29 @@ class PredictionController {
 	def commit = {
 		def predictionInstance = new Prediction(params)
 		if(!(predictionInstance.id == null)){
-			if(predictionInstance.email_adress == null){
-				redirect(action:create)	
-			}else{
-				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-			}
+			redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 			return
 		}else{
-			if(predictionInstance.email_adress == null){
-				predictionInstance.results_Url = "http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html"
-				predictionInstance.message = "";
+			// retrieve parameters of form for early save()
+			def uploadedGenomeFile = request.getFile('GenomeFile')
+			def uploadedParamArch = request.getFile('ArchiveFile')
+	      		def uploadedEstFile = request.getFile('EstFile')
+			def uploadedStructFile = request.getFile('HintFile')
+			if(!(uploadedGenomeFile.empty)){
+	        		predictionInstance.genome_file = uploadedGenomeFile.originalFilename
 			}
+			if(!(uploadedParamArch.empty)){
+				predictionInstance.archive_file = uploadedParamArch.originalFilename
+			}
+			if(!(uploadedEstFile.empty)){
+				predictionInstance.est_file = uploadedEstFile.originalFilename
+			}
+			if(!(uploadedStructFile.empty)){
+				predictionInstance.hint_file = uploadedStructFile.originalFilename
+			}
+			predictionInstance.save()
+			predictionInstance.results_urls = ""
+			predictionInstance.message = "";
 			// info string for confirmation E-Mail
 			def confirmationString
 			def mailStr
@@ -177,11 +197,7 @@ class PredictionController {
 				logDate = new Date()
 				logFile << "${logDate} ${predictionInstance.accession_id} v1 - The user is probably not a human person. Job aborted.\n"
 				flash.error = "The verification string at the bottom of the page was not entered correctly!"
-				if(predictionInstance.email_adress == null){
-            				redirect(action:create)
-				}else{
-            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-				}
+            			redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
            			return
 			}
 			// utr checkbox
@@ -194,8 +210,14 @@ class PredictionController {
 				logDate = new Date()
 				logFile << "${logDate} ${predictionInstance.accession_id} v1 - User did not enable UTR prediction.\n"
 			}
+
+if(!predictionInstance.hasErrors()){
+	logFile << "There are no errors before parameter archive fetching!\n"
+}else{
+	logFile << "Errors after parameter - before - archive fetching!\n";
+}
 			// get parameter archive file (if available)
-			def uploadedParamArch = request.getFile('ArchiveFile')
+			//def uploadedParamArch = request.getFile('ArchiveFile')
 			def String dirName = "${output_dir}/${predictionInstance.accession_id}"
 			def projectDir = new File(dirName)
 			if(!uploadedParamArch.empty){
@@ -205,7 +227,7 @@ class PredictionController {
 					// actually upload the file
 					projectDir.mkdirs()
          				uploadedParamArch.transferTo( new File (projectDir, "parameters.tar.gz"))
-					predictionInstance.archive_file = uploadedParamArch.originalFilename
+					//predictionInstance.archive_file = uploadedParamArch.originalFilename
 					confirmationString = "${confirmationString}Parameter archive: ${predictionInstance.archive_file}\n"
 					logDate = new Date()
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - uploaded parameter archive ${predictionInstance.archive_file} was renamed to parameters.tar.gz and moved to ${projectDir}\n"
@@ -213,12 +235,7 @@ class PredictionController {
 					logDate = new Date()
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected parameter archive file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
 					flash.error = "Parameter archive file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
-					
-					if(predictionInstance.email_adress == null){
-            					redirect(action:create)
-					}else{
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-					}
+            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}
 				// get cksum and file size for database
@@ -299,11 +316,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
            				flash.error = "Parameter archive ${uploadedParamArch.originalFilename} is not compatible with the AUGUSTUS prediction web server application."
-					if(predictionInstance.email_adress == null){
-            					redirect(action:create)
-					}else{
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-					}
+            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
            				return
 				// if only UTR params are missing, set flag to override any user-defined UTR settings
 				}else if(archCheckLogSize > 0){
@@ -313,6 +326,12 @@ class PredictionController {
 				}
 				archiveExistsFlag = 1
 			}else{predictionInstance.archive_file = "empty"}
+
+if(!predictionInstance.hasErrors()){
+	logFile << "There are no errors after parameter archive fetching!\n"
+}else{
+	logFile << "Errors after parameter archive fetching!\n";
+}
 	
 			// check whether parameters are available for project_id (previous prediction run)
 			logDate = new Date()
@@ -337,11 +356,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
            				flash.error = "The specified parameter ID ${predictionInstance.project_id} does not exist on our system."
-					if(predictionInstance.email_adress == null){
-            					redirect(action:create)
-					}else{
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-					}
+            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
            				return
 				}else{
 					logDate = new Date()
@@ -351,10 +366,15 @@ class PredictionController {
 				}
 				confirmationString = "${confirmationString}AUGUSTUS parameter project identifier: ${predictionInstance.project_id}\n"
 			}
-	
+
+if(!predictionInstance.hasErrors()){
+	logFile << "There are no errors after checking project ID!\n"
+}else{
+	logFile << "Errors after checking project ID!\n";
+}
 			// upload of genome file
-			def uploadedGenomeFile
-			uploadedGenomeFile = request.getFile('GenomeFile')
+			//def uploadedGenomeFile
+			//uploadedGenomeFile = request.getFile('GenomeFile')
      			def seqNames = []
 			if(!uploadedGenomeFile.empty){
 				// check file size
@@ -362,7 +382,7 @@ class PredictionController {
          			projectDir.mkdirs()
 				if(preUploadSize <= maxButtonFileSize){
          				uploadedGenomeFile.transferTo( new File (projectDir, "genome.fa"))
-        				predictionInstance.genome_file = uploadedGenomeFile.originalFilename
+        				//predictionInstance.genome_file = uploadedGenomeFile.originalFilename
 					confirmationString = "${confirmationString}Genome file: ${predictionInstance.genome_file}\n"
 				}else{
 					logDate = new Date()
@@ -424,11 +444,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
           				flash.error = "Genome file contains metacharacters (*, ?, ...). This is not allowed."
-					if(predictionInstance.email_adress == null){
-            					redirect(action:create)
-					}else{
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-					}
+            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}	
          			if(genomeFastaFlag == 1) {
@@ -448,11 +464,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
             				flash.error = "Genome file ${uploadedGenomeFile.originalFilename} is not in DNA fasta format."
-					if(predictionInstance.email_adress == null){
-            					redirect(action:create)
-					}else{
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-					}
+            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 	         		} else {
 	            			def genomeCksumScript = new File("${projectDir}/genome_cksum.sh")
@@ -494,6 +506,12 @@ class PredictionController {
 	            			delProcCkShGenome.waitFor()
 	         		}
 			}
+
+if(!predictionInstance.hasErrors()){
+	logFile << "There are no errors after uploading genome file!\n"
+}else{
+	logFile << "Errors after uploading genome file!\n";
+}
 	
 			// retrieve beginning of genome file for format check
 	      		if(!(predictionInstance.genome_ftp_link == null)){
@@ -543,11 +561,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
 					flash.error = "Cannot retrieve genome file from HTTP/FTP link ${predictionInstance.genome_ftp_link}."
-					if(predictionInstance.email_adress == null){
-            					redirect(action:create)
-					}else{
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-					}
+            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}else{
 					logDate = new Date()
@@ -584,11 +598,7 @@ class PredictionController {
 	            					logFile << "${logDate} ${predictionInstance.accession_id} v1 - Project directory ${projectDir} is deleted.\n${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"	
 						}
 	            				flash.error = "Genome file ${predictionInstance.genome_ftp_link} is not in DNA fasta format."
-						if(predictionInstance.email_adress == null){
-            						redirect(action:create)
-						}else{
-            						redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-						}
+            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 	            				return
 	         			}
 				}else{
@@ -596,16 +606,23 @@ class PredictionController {
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The linked genome file is gzipped. Format will be checked later after extraction.\n"
 				}
 	      		}
-	
+
+
+if(!predictionInstance.hasErrors()){
+	logFile << "There are no errors after fetching genome file!\n"
+}else{
+	logFile << "Errors after fetching genome file!\n";
+}
+
 	      		// upload of est file
-	      		def uploadedEstFile = request.getFile('EstFile')
+	      		// def uploadedEstFile = request.getFile('EstFile')
 	      		if(!uploadedEstFile.empty){
 				// check file size
 				preUploadSize = uploadedEstFile.getSize()
 				if(preUploadSize <= maxButtonFileSize){
 	         			projectDir.mkdirs()
 	         			uploadedEstFile.transferTo( new File (projectDir, "est.fa"))
-	         			predictionInstance.est_file = uploadedEstFile.originalFilename
+	         			//predictionInstance.est_file = uploadedEstFile.originalFilename
 				}else{
 					logDate = new Date()
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected cDNA file was bigger than ${maxButtonFileSize}.\n"
@@ -615,11 +632,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
 					flash.error = "cDNA file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
-					if(predictionInstance.email_adress == null){
-            					redirect(action:create)
-					}else{
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-					}
+            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}
 				confirmationString = "${confirmationString}cDNA file: ${predictionInstance.est_file}\n"
@@ -678,11 +691,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
             				flash.error = "cDNA file contains metacharacters (*, ?, ...). This is not allowed."
-					if(predictionInstance.email_adress == null){
-            					redirect(action:create)
-					}else{
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-					}
+            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}	
 	         		if(estFastaFlag == 1) {
@@ -702,11 +711,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
             				flash.error = "cDNA file ${uploadedEstFile.originalFilename} is not in DNA fasta format."
-					if(predictionInstance.email_adress == null){
-            					redirect(action:create)
-					}else{
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-					}
+            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
             				return
          			} else { estExistsFlag = 1 }
          				def estCksumScript = new File("${projectDir}/est_cksum.sh")
@@ -747,6 +752,12 @@ class PredictionController {
 					}
          				delProcCkShEst.waitFor()
       			}
+
+if(!predictionInstance.hasErrors()){
+	logFile << "There are no errors after uploading EST file!\n"
+}else{
+	logFile << "Errors after uploading EST file!\n";
+}
 
       			// retrieve beginning of est file for format check
       			if(!(predictionInstance.est_ftp_link == null)){
@@ -791,11 +802,7 @@ class PredictionController {
            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						}
 						flash.error = "Cannot retrieve cDNA file from HTTP/FTP link ${predictionInstance.est_ftp_link}."
-						if(predictionInstance.email_adress == null){
-            						redirect(action:create)
-						}else{
-            						redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-						}
+            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
 						if(verb > 1){
@@ -838,11 +845,7 @@ class PredictionController {
            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						}
             					flash.error = "cDNA file ${predictionInstance.est_ftp_link} is not in DNA fasta format."
-            					if(predictionInstance.email_adress == null){
-            						redirect(action:create)
-						}else{
-            						redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-						}
+            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
             					return
          				}
 				}else{
@@ -851,15 +854,22 @@ class PredictionController {
 				}
       			}
 
+
+if(!predictionInstance.hasErrors()){
+	logFile << "There are no errors after fetching EST file!\n"
+}else{
+	logFile << "Errors after fetching EST file!\n";
+}
+
 			// get hints file, format check
-			def uploadedStructFile = request.getFile('HintFile')
+			// def uploadedStructFile = request.getFile('HintFile')
 			if(!uploadedStructFile.empty){
 				// check file size
 				preUploadSize = uploadedStructFile.getSize()
 				if(preUploadSize <= maxButtonFileSize){
 					projectDir.mkdirs()
 					uploadedStructFile.transferTo( new File (projectDir, "hints.gff"))
-					predictionInstance.hint_file = uploadedStructFile.originalFilename
+					//predictionInstance.hint_file = uploadedStructFile.originalFilename
 				}else{
 					def allowedHintsSize = maxButtonFileSize * 2
 					logDate = new Date()
@@ -870,11 +880,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
 					flash.error = "Hints file is bigger than ${allowedHintsSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
-					if(predictionInstance.email_adress == null){
-            					redirect(action:create)
-					}else{
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-					}
+            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}
 				confirmationString = "${confirmationString}Hints file: ${predictionInstance.hint_file}\n"
@@ -925,11 +931,7 @@ class PredictionController {
            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						}
             					flash.error = "Hints file contains metacharacters (*, ?, ...). This is not allowed."
-						if(predictionInstance.email_adress == null){
-            						redirect(action:create)
-						}else{
-            						redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-						}
+            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 						return
 					}
 					if(gffSourceErrorFlag == 1){
@@ -968,11 +970,7 @@ class PredictionController {
 						}else{
            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						}
-						if(predictionInstance.email_adress == null){
-            						redirect(action:create)
-						}else{
-            						redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-						}
+            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 						return
 					}
 				}
@@ -1017,6 +1015,13 @@ class PredictionController {
 			}
 			def radioParameterString
 			confirmationString = "${confirmationString}User set UTR prediction: ${predictionInstance.utr}\n"
+
+if(!predictionInstance.hasErrors()){
+	logFile << "There are no errors after uploading hints file!\n"
+}else{
+	logFile << "Errors after uploading file!\n";
+}
+
 			// utr
 			if(overRideUtrFlag==1){
 				radioParameterString = " --UTR=on"
@@ -1097,8 +1102,25 @@ class PredictionController {
 				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User enabled to ignore strand conflicts.\n"
 			}
 			confirmationString = "${confirmationString}Ignore conflictes with other strand: ${predictionInstance.ignore_conflicts}\n"
+
+if(!predictionInstance.hasErrors()){
+	logFile << "There are no errors right before the save for E-mail sending!\n"
+}else{
+	logFile << "Errors right before the save for E-Mail sending!\n";
+}
+
 			// send confirmation email and redirect
+			predictionInstance = predictionInstance.merge()
+			if(predictionInstance.save()){
+				logFile << "Saving seems ok\n"
+			}else{ logFile << "Saving is the PROBLEM!\n";
+			}
+
 			if(!predictionInstance.hasErrors() && predictionInstance.save()){
+				// save new varialbes in database
+				//predictionInstance.results_urls = results_urls
+				predictionInstance.message = message
+				predictionInstance.save()
 				// generate empty results page
 				def emptyPageScript = new File("${projectDir}/emptyPage.sh")
 				cmd2Script = "${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${predictionInstance.accession_id} null ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 0 &> /dev/null"
@@ -1117,11 +1139,8 @@ class PredictionController {
 				predictionInstance.job_status = 0
 				logDate = new Date()
 				mailStr = "Details of your job:\n\n${confirmationString}\n\n"
-				if(predictionInstance.email_adress == null){
-					predictionInstance.message = "---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
-					logDate = new Date()
-					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Did not send confirmation e-mail because user stays anonymous, but everything is ok.\n"
-				}else{
+				predictionInstance.message = "---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
+				if(predictionInstance.email_adress != null){
 					sendMail {
 						to "${predictionInstance.email_adress}"
 						subject "AUGUSTUS prediction job ${predictionInstance.accession_id}"
@@ -1131,11 +1150,9 @@ Thank you for submitting the AUGUSTUS gene prediction job ${predictionInstance.a
 
 ${mailStr}
 
-The job status is available at http://bioinf.uni-greifswald.de/augustus-training-0.1/prediction/show/${predictionInstance.id}.
+The status/results page of your job is ${war_url}prediction/show/${predictionInstance.id}.
 
-Results will then be available at http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html after the job has finished.
-
-You will receive an email when the job has finished.
+You will be notified via email when the job has finished.
 
 Best regards,
 
@@ -1146,6 +1163,9 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					}
 					logDate = new Date()
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Confirmation e-mail sent.\n" 
+				}else{
+					logDate = new Date()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Did not send confirmation e-mail because user stays anonymous, but everything is ok.\n"
 				}
 				redirect(action:show,id:predictionInstance.id)
 			} else {
@@ -1283,12 +1303,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
            							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							}
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided genome file\n${predictionInstance.genome_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
-							if(predictionInstance.email_adress == null){
-								logDate = new Date()
-								predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-								predictionInstance = predictionInstance.merge()
-								predictionInstance.save()
-							}else{
+							logDate = new Date()
+							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
+							if(predictionInstance.email_adress != null){
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -1305,7 +1324,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 								}
 							}
 							// delete database entry
-							predictionInstance.delete()
+							//predictionInstance.delete()
+							predictionInstance.results_urls = null
+							predictionInstance.job_status = 5
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
 							return
 						}
 						if(genomeFastaFlag == 1) {
@@ -1325,12 +1348,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
            							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							}
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided genome file ${predictionInstance.genome_ftp_link} was not in DNA fasta format.\n\n"
+							logDate = new Date()
+							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
 							if(predictionInstance.email_adress == null){
-								logDate = new Date()
-								predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-								predictionInstance = predictionInstance.merge()
-								predictionInstance.save()
-							}else{
 								sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -1346,7 +1368,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 								}
 							}
 							// delete database entry
-							predictionInstance.delete()
+							//predictionInstance.delete()
+							predictionInstance.results_urls = null
+							predictionInstance.job_status = 5
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
 							return
 						}
 					}else{// actions if remote file was bigger than allowed
@@ -1359,12 +1385,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the genome file size was\nwith ${genome_size} bigger than 1 GB. Please submitt a smaller genome size!\n\n"
 						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
-						if(predictionInstance.email_adress == null){
-							logDate = new Date()
-							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-							predictionInstance = predictionInstance.merge()
-							predictionInstance.save()
-						}else{
+						logDate = new Date()
+						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
+						if(predictionInstance.email_adress != null){
 							sendMail {
 							to "${predictionInstance.email_adress}"
 							subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -1379,7 +1404,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						delProc.waitFor()
 						// delete database entry
-						predictionInstance.delete()
+						//predictionInstance.delete()
+						predictionInstance.results_urls = null
+						predictionInstance.job_status = 5
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
 						return
 
 					}
@@ -1423,12 +1452,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
            						delProc.waitFor()
 							logDate = new Date()
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided hints file\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
-							if(predictionInstance.email_adress == null){
-								logDate = new Date()
-								predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-								predictionInstance = predictionInstance.merge()
-								predictionInstance.save()
-							}else{
+							logDate = new Date()
+							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
+							if(predictionInstance.email_adress != null){
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -1444,19 +1472,22 @@ http://bioinf.uni-greifswald.de/trainaugustus
 								}
 							}
 							// delete database entry
-							predictionInstance.delete()
+							//predictionInstance.delete()
+							predictionInstance.results_urls = null
+							predictionInstance.job_status = 5
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
 							return
 						}
 						if(gffColErrorFlag == 1){
 							logDate = new Date()
 							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hints file does not always contain 9 columns.\n"
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided hints file\n${predictionInstance.hint_file}\ndid not contain 9 columns in each line. Please make sure the gff-format complies\nwith the instructions in our 'Help' section before submitting another job!\n\n"
-							if(predictionInstance.email_adress == null){
-								logDate = new Date()
-								predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-								predictionInstance = predictionInstance.merge()
-								predictionInstance.save()
-							}else{
+							logDate = new Date()
+							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
+							if(predictionInstance.email_adress != null){
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -1476,12 +1507,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							logDate = new Date()
 							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hints file contains entries that do not comply with genome sequence names.\n"
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequence names in\nthe provided hints file\n${predictionInstance.hint_file}\ndid not comply with the sequence names in the supplied genome file\n${predictionInstance.genome_ftp_link}.\nPlease make sure the gff-format complies with the instructions in our 'Help' section\nbefore submitting another job!\n\n"
-							if(predictionInstance.email_adress == null){
-								logDate = new Date()
-								predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-								predictionInstance = predictionInstance.merge()
-								predictionInstance.save()
-							}else{
+							logDate = new Date()
+							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
+							if(predictionInstance.email_adress != null){
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -1501,12 +1531,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							logDate = new Date()
 							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hints file contains entries that do not have source=M in the last column.\n"
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the last column of your\nhints file\n${predictionInstance.hint_file}\ndoes not contain the content source=M. Please make sure the gff-format complies with\nthe instructions in our 'Help' section before submitting another job!\n\n"
-							if(predictionInstance.email_adress == null){
-								logDate = new Date()
-								predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-								predictionInstance = predictionInstance.merge()
-								predictionInstance.save()
-							}else{
+							logDate = new Date()
+							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
+							if(predictionInstance.email_adress != null){
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -1539,7 +1568,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
            							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							}
 							// delete database entry
-							predictionInstance.delete()
+							//predictionInstance.delete()
+							predictionInstance.results_urls = null
+							predictionInstance.job_status = 5
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
 							return
 						}
 					}
@@ -1693,12 +1726,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
            							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							}
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided cDNA file\n${predictionInstance.est_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
-							if(predictionInstance.email_adress == null){
-								logDate = new Date()
-								predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-								predictionInstance = predictionInstance.merge()
-								predictionInstance.save()
-							}else{
+							logDate = new Date()
+							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
+							if(predictionInstance.email_adress != null){
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -1714,7 +1746,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 								}
 							}
 							// delete database entry
-							predictionInstance.delete()
+							//predictionInstance.delete()
+							predictionInstance.results_urls = null
+							predictionInstance.job_status = 5
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
 							return
 						}
 						if(estFastaFlag == 1) {
@@ -1734,12 +1770,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
            							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 							}
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided cDNA file\n${predictionInstance.est_ftp_link}\nwas not in DNA fasta format.\n\n"
-							if(predictionInstance.email_adress == null){
-								logDate = new Date()
-								predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-								predictionInstance = predictionInstance.merge()
-								predictionInstance.save()
-							}else{
+							logDate = new Date()
+							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
+							if(predictionInstance.email_adress != null){
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -1755,7 +1790,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 								}
 							}
 							// delete database entry
-							predictionInstance.delete()
+							//predictionInstance.delete()
+							predictionInstance.results_urls = null
+							predictionInstance.job_status = 5
+							predictionInstance = predictionInstance.merge()
+							predictionInstance.save()
 							return
 						}
 					}else{// actions if remote file was bigger than allowed
@@ -1763,13 +1802,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - EST file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the cDNA file size was\nwith ${est_size} bigger than 1 GB. Please submitt a smaller cDNA size!\n\n"
 						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
-
-						if(predictionInstance.email_adress == null){
-							logDate = new Date()
-							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-							predictionInstance = predictionInstance.merge()
-							predictionInstance.save()
-						}else{
+						logDate = new Date()
+						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
+						if(predictionInstance.email_adress != null){
 							sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -1784,7 +1821,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						delProc.waitFor()
 						// delete database entry
-						predictionInstance.delete()
+						//predictionInstance.delete()
+						predictionInstance.results_urls = null
+						predictionInstance.job_status = 5
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
 						return
 
 					}
@@ -1851,12 +1892,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your\ncDNA file have an average length of ${avEstLen}. We suspect that sequences files\nwith an average sequence length shorter than ${estMinLen} might contain RNAseq\nraw sequences. Currently, our web server application does not support the integration\nof RNAseq raw sequences. Please either assemble your sequences into longer contigs,\nor remove short sequences from your current file, or submitt a new job without\nspecifying a cDNA file.\n\n"
 						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
-						if(predictionInstance.email_adress == null){
-							logDate = new Date()
-							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-							predictionInstance = predictionInstance.merge()
-							predictionInstance.save()
-						}else{
+						logDate = new Date()
+						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
+						if(predictionInstance.email_adress != null){
 
 							sendMail {
 									to "${predictionInstance.email_adress}"
@@ -1872,7 +1912,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						delProc.waitFor()
 						// delete database entry
-						predictionInstance.delete()
+						//predictionInstance.delete()
+						predictionInstance.results_urls = null
+						predictionInstance.job_status = 5
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
 						return
 					}else if(avEstLen > estMaxLen){
 						logDate = new Date()
@@ -1884,12 +1928,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your\ncDNA file have an average length of ${avEstLen}. We suspect that sequence\nfiles with an average sequence length longer than ${estMaxLen} might not contain\nESTs or cDNAs. Please either remove long sequences from your current file, or\nsubmitt a new job without specifying a cDNA file.\n\n"
 						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
-						if(predictionInstance.email_adress == null){
-							logDate = new Date()
-							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-							predictionInstance = predictionInstance.merge()
-							predictionInstance.save()
-						}else{
+						logDate = new Date()
+						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
+						if(predictionInstance.email_adress != null){
 							sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
@@ -1904,7 +1947,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						delProc.waitFor()
 						// delete database entry
-						predictionInstance.delete()
+						//predictionInstance.delete()
+						predictionInstance.results_urls = null
+						predictionInstance.job_status = 5
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
 						return
 					}
 				}
@@ -1912,12 +1959,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				// confirm file upload via e-mail
 				if((!(predictionInstance.genome_ftp_link == null)) || (!(predictionInstance.est_ftp_link == null))){
 					mailStr = "We have retrieved all files that you specified, successfully. You may delete them\nfrom the public server, now, without affecting the AUGUSTUS prediction job.\n\n"
-					if(predictionInstance.email_adress == null){
-						logDate = new Date()
-						predictionInstance.message = "${predictionInstance.message}---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
-						predictionInstance = predictionInstance.merge()
-						predictionInstance.save()
-					}else{
+					logDate = new Date()
+					predictionInstance.message = "${predictionInstance.message}---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
+					predictionInstance = predictionInstance.merge()
+					predictionInstance.save()
+					if(predictionInstance.email_adress != null){
 
 						sendMail {
 							to "${predictionInstance.email_adress}"
@@ -1955,7 +2001,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				def grepContent = new File("${grepResult}").text
 				if(grepContent =~ /Genome-Cksum/){
 					//job was submitted before. Send E-Mail to user with a link to the results.
-					def id_array = grepContent =~ /Grails-ID: \[(\d*)\] /
+					def id_array = grepContent =~ /Grails-ID: \[(\w*)\] /
 					oldID
 					(0..id_array.groupCount()).each{oldID = "${id_array[0][it]}"}
 					def oldAccScript = new File("${projectDir}/oldAcc.sh")
@@ -1974,13 +2020,13 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					}
 					oldAccScriptProc.waitFor()
 					def oldAccContent = new File("${oldAccResult}").text
-					mailStr = "You submitted job ${predictionInstance.accession_id}. The job was aborted because the files that you submitted were submitted, before.\n\nDetails of your job:\n${confirmationString}\n\nThe job status of the previously submitted job is available at http://bioinf.uni-greifswald.de/augustus-training-0.1/prediction/show/${oldID}\n\nThe results are available at http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${oldAccContent}/index.html (Results are only available in case the previously submitted job's computations have finished, already.)\n\n"
-					if(predictionInstance.email_adress == null){
-						logDate = new Date()
-						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
-						predictionInstance = predictionInstance.merge()
-						predictionInstance.save()
-					}else{
+					mailStr = "You submitted job ${predictionInstance.accession_id}.\nThe job was aborted because the files that you submitted were submitted, before.\n\nThe old job with identical input files and identical parameters is available at\n${war_url}prediction/show/${oldID}\n\n"
+					predictionInstance.old_url = "${war_url}prediction/show/${oldID}"
+					logDate = new Date()
+					predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+					predictionInstance = predictionInstance.merge()
+					predictionInstance.save()
+					if(predictionInstance.email_adress != null){
 						sendMail {
 							to "${predictionInstance.email_adress}"
 							subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was submitted before as job ${oldAccContent}"
@@ -2010,7 +2056,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					}else{
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted, the user has been informed!\n"
 					}
-					predictionInstance.delete()
+					//predictionInstance.delete()
+					predictionInstance.results_urls = null
+					predictionInstance.job_status = 5
+					predictionInstance = predictionInstance.merge()
+					predictionInstance.save()
 					return
 				} // end of job was submitted before check
 
@@ -2109,6 +2159,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					cmdStr = "bash ${projectDir}/status.sh"
 					statusCheck = "${cmdStr}".execute()
 					statusCheck.waitFor()
+					sleep(100)
 					statusContent = new File("${statusFile}").text
 					if(statusContent =~ /qw/){ 
 						predictionInstance.job_status = 2 
@@ -2124,6 +2175,12 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${jobID} begins running at ${today}.\n"
 						}
 						runFlag = 1
+					}else if(!statusContent.empty){
+						predictionInstance.job_status = 3
+						predictionInstance = predictionInstance.merge()
+						predictionInstance.save()
+						logFile << "${logDate} ${predictionInstance.accession_id} v1 - Job ${jobID} is neither in qw nor in r status but is still on the grid!\n"
+						runFlag = 1	
 					}else{
 						predictionInstance.job_status = 4
 						predictionInstance = predictionInstance.merge()
@@ -2134,6 +2191,12 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${jobID} left SGE at ${today}.\n"
 					}
 			   	}
+				// collect results link information
+				if(new File("${web_output_dir}/${predictionInstance.accession_id}/predictions.tar.gz").exists()){
+					predictionInstance.results_urls = "<p>${predictionInstance.results_urls}<b>Prediction archive</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${predictionInstance.accession_id}/predictions.tar.gz\">predictions.tar.gz</a><br></p>"
+					predictionInstance = predictionInstance.merge()
+					predictionInstance.save()
+				}
 			   	// check whether errors occured by log-file-sizes
 				if(new File("${projectDir}/aug-pred.sh.e${jobID}").exists()){
 					sgeErrSize = new File("${projectDir}/aug-pred.sh.e${jobID}").size()
@@ -2151,21 +2214,22 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				}
 				if(sgeErrSize==0 && writeResultsErrSize==0){
 					mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} finished.\n\n"
+					logDate = new Date()
+					predictionInstance.message = "${predictionInstance.message}---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
+					predictionInstance = predictionInstance.merge()
+					predictionInstance.save()
 					if(predictionInstance.email_adress == null){
 						logDate = new Date()
-						predictionInstance.message = "${predictionInstance.message}---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
-						predictionInstance = predictionInstance.merge()
-						predictionInstance.save()
-						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Computation was successful. Did not send e-mail to user because not e-mail adress was supplied.\n"
-					}else{
+					}
+					if(predictionInstance.email_adress != null){
 						sendMail {
 							to "${predictionInstance.email_adress}"
 							subject "AUGUSTUS prediction job ${predictionInstance.accession_id} is complete"
 							body """Hello!
 
 ${mailStr}
-You find the results at http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html.
+You find the results at ${war_url}prediction/show/${predictionInstance.id}.
 
 Best regards,
 
@@ -2224,7 +2288,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 Job: ${predictionInstance.accession_id}
 E-Mail: anonymous
 User IP: ${userIP}
-Link: http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html
+Link: ${war_url}prediction/show/${predictionInstance.id}
 
 An SGE error occured. Please check manually what's wrong. The user has been informed.
 """	
@@ -2238,7 +2302,7 @@ An SGE error occured. Please check manually what's wrong. The user has been info
 Job: ${predictionInstance.accession_id}
 E-Mail: ${predictionInstance.email_adress}
 User IP: ${userIP}
-Link: http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html
+Link: ${war_url}prediction/show/${predictionInstance.id}
 
 An SGE error occured. Please check manually what's wrong. The user has been informed.
 """	
@@ -2259,7 +2323,7 @@ An SGE error occured. Please check manually what's wrong. The user has been info
 Job: ${predictionInstance.accession_id}
 E-Mail: anonymous
 User IP: ${userIP}
-Link: http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html
+Link: ${war_url}prediction/show/${predictionInstance.id}
 
 An error occured during writing results. Please check manually what's wrong. The user has been informed.
 """
@@ -2273,7 +2337,7 @@ An error occured during writing results. Please check manually what's wrong. The
 Job: ${predictionInstance.accession_id}
 E-Mail: ${predictionInstance.email_adress}
 User IP: ${userIP}
-Link: http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/${predictionInstance.accession_id}/index.html
+Link: ${war_url}prediction/show/${predictionInstance.id}
 
 An error occured during writing results. Please check manually what's wrong. The user has been informed.
 """
@@ -2284,11 +2348,11 @@ An error occured during writing results. Please check manually what's wrong. The
 						predictionInstance.save()
 					}
 					mailStr = "An error occured while running the AUGUSTUS prediction job ${predictionInstance.accession_id}.\n\n"
+					logDate = new Date()
+					predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}Please contact augustus-web@uni-greifswald.de if you want to find out what went wrong.\n\n"
+					predictionInstance = predictionInstance.merge()
+					predictionInstance.save()
 					if(predictionInstance.email_adress == null){
-						logDate = new Date()
-						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}Please have a look at the log files. Please contact augustus-web@uni-greifswald.de if you don't understand what went wrong.\n\n"
-						predictionInstance = predictionInstance.merge()
-						predictionInstance.save()
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The job is in an error state. Cound not send e-mail to anonymous user because no email adress was supplied.\n"
 					}else{

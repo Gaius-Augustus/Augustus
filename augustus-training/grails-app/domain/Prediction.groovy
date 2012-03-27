@@ -3,7 +3,7 @@
 
 class Prediction {
    static searchable = true
- String id 
+   String id 
    static mapping ={
 	id generator:'uuid'
    }
@@ -26,7 +26,7 @@ class Prediction {
    String job_id // SGE Job ID will be determined by controller
    String job_status // SGE job status will be determined by
    //generate a random (and unique) string for links to results here
-   private static String validChars ="ABCDEFGHJKLMNPQRSTUVWXYZ123456789_abcdefghijkmnpqrstuvqxyz"
+  private static String validChars ="ABCDEFGHJKLMNPQRSTUVWXYZ123456789_abcdefghijkmnpqrstuvqxyz"
    private int IDlength=8
    int maxIndex = validChars.length()
    def rnd = new Random()
@@ -39,11 +39,12 @@ class Prediction {
    Integer pred_strand = 1
    Integer alt_transcripts = 1
    Integer allowed_structures = 1
-   String results_Url // only to be stored if no e-mail was supplied
+   String results_urls // only to be stored if no e-mail was supplied
    String message // only to be stored if no e-mail was supplied
    Boolean ignore_conflicts = false
+   String old_url
    static constraints = {
-      accession_id(unique:true) // may (unlikely) cause problems if the grails database ever gets lost.
+      //accession_id(unique:true) // may (unlikely) cause problems if the grails database ever gets lost.
       email_adress(email:true,blank:true,nullable:true)
       genome_file(nullable:true, blank:true, validator: { val, obj ->
         if (obj.genome_file == null && obj.genome_ftp_link == null) {
@@ -55,6 +56,7 @@ class Prediction {
         }
       })
       genome_ftp_link(nullable:true, blank:true, url:true)
+      old_url(nullable:true)
       project_id(nullable:true, blank:true, size:3..30)
       est_file(nullable:true, blank:true, validator: { val, obj ->
          if (!(obj.est_file == null) && !(obj.est_ftp_link == null)) {
@@ -74,7 +76,7 @@ class Prediction {
       archive_file(nullable:true)
       job_id(nullable:true)
       job_status(nullable:true)
-      results_Url(nullable:true)
+      results_urls(nullable:true)
       message(maxSize:1000000000, nullable:true)
       utr()
       dateCreated()

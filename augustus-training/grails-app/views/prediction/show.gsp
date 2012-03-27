@@ -78,55 +78,76 @@
      </ul>
   </div>
 
- <div id="mittel_spalte">
-<div class="main" id="main">
-   <h1><g:link controller="prediction" action="show">AUGUSTUS Gene Prediction: Job Status</g:link></h1>
-            <g:if test="${flash.message}">
-            <div class="message">${flash.message}</div>
-            </g:if>
-
-<g:if test="${predictionInstance.email_adress == null}">
-<p><font color="#FF0000"><b>Please bookmark this page!</b></font> AUGUSTUS computations may take only a couple of minutes or up to several weeks depending on the input data size. Bookmarking this page ensures that you will be able to return to this page in order to find the results of your job, later.</p>
-</g:if>
-
-<p>
-            <g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '0' || fieldValue(bean:predictionInstance, field:'job_status') == '1' || fieldValue(bean:predictionInstance, field:'job_status') == '2' || fieldValue(bean:predictionInstance, field:'job_status') == '3'}">
-            <p>
-<div style="width:500px;height:30px;border:1px solid #d2d2dc">
-            <g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '0'|| fieldValue(bean:predictionInstance, field:'job_status') == '1'}"><b><font color="#006699" size=2>&nbsp;Job submitted</font> <font color="#d2d2dc" size=2>&rarr; waiting for execution &rarr; computing &rarr; finished!</font></b><br></g:if><g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '2'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>waiting for execution</font> <font color="#d2d2dc" size=2>&rarr; computing &rarr; finished!</font></b><br></g:if><g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '3'}"><b><font color="#d2d2dc" size=2>&nbsp;Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>computing</font> <font color="#d2d2dc" size=2>&rarr; finished!</font></b><br></g:if><g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '4'}"><b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>computing</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>finished!</font></b><br></g:if></p>
-</div>
-            </g:if>
-</p>
-            
-            <g:if test ="${fieldValue(bean:predictionInstance, field:'job_status') == '4'}">
-<p>
-	<b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>computing</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>finished!</font></b><g:if test="${predictionInstance?.email_adress}"><br><br>The submitter of this job received an e-mail pointing to the results.</g:if>
-</p>
-            </g:if>
+<div id="mittel_spalte">
+	<div class="main" id="main">
+		<h1><font color="#006699">Predicting Genes with AUGUSTUS<br>Job ${predictionInstance.accession_id}</font></h1>
+		<g:if test="${flash.message}">
+			<div class="message">${flash.message}</div>
+		</g:if>
 
 
+		<p>
+			<font color="#FF0000"><b>Please bookmark this page!</b></font> AUGUSTUS computations may take only a couple of minutes or up to several weeks depending on the input data size. Bookmarking this page ensures that you will be able to return to this page in order to find the results of your job, later.
+		</p>
+		<hr>
+		<h2><font color="#006699">Job Status</font></h2>
+		<p>
+            		<g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '0' || fieldValue(bean:predictionInstance, field:'job_status') == '1' || fieldValue(bean:predictionInstance, field:'job_status') == '2' || fieldValue(bean:predictionInstance, field:'job_status') == '3'}">
+				<g:if test = "${predictionInstance.old_url == null}">
+					<div style="width:470px;height:30px;border:1px solid #d2d2dc">
+						<p>
+							<g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '0'|| fieldValue(bean:predictionInstance, field:'job_status') == '1'}">
+								<b><font color="#006699" size=2>&nbsp;Job submitted</font> <font color="#d2d2dc" size=2>&rarr; waiting for execution &rarr; computing &rarr; finished!</font></b><br>
+							</g:if>
+							<g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '2'}">
+								<b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>waiting for execution</font> <font color="#d2d2dc" size=2>&rarr; computing &rarr; finished!</font></b><br>
+							</g:if>
+							<g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '3'}">
+								<b><font color="#d2d2dc" size=2>&nbsp;Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>computing</font> <font color="#d2d2dc" size=2>&rarr; finished!</font></b><br>
+							</g:if>
+							<g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '4'}">
+								<b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>computing</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>finished!</font></b><br>
+							</g:if>
+						</p>
+					</div>
+				</g:if>
 
-            <g:if test ="${fieldValue(bean:predictionInstance, field:'job_status') == '5'}">
-<p>
-	<b><font color="#f40707" size=2>An error occured when executing this job!</font></b>
-</p>
-            </g:if>
 
-<g:if test="${predictionInstance.email_adress == null && predictionInstance.job_status >= 4}">
-<h2><font color="#006699">Results</font></h2>
-<p>You find the results of your job at <br><a href="${predictionInstance.results_Url}">${predictionInstance.results_Url}</a></p>
-</g:if>
+            		</g:if>
+			<g:if test = "${predictionInstance.old_url != null}">
+				<b><font color="#FF0000">Data duplication!</font></b> A job with identical data was submitted before. You find the old job at <a href="${predictionInstance.old_url}">${predictionInstance.old_url}</a>.
+			</g:if>
+		</p>
 
-          <g:if test="${predictionInstance?.message}">
+            	<g:if test ="${fieldValue(bean:predictionInstance, field:'job_status') == '4'}">
+			<p>
+				<b><font color="#d2d2dc" size=2>Job submitted</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>waiting for execution</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#d2d2dc" size=2>computing</font> <font color="#ffb22a" size=2>&rarr;</font> <font color="#006699" size=2>finished!</font></b>	
+			</p>
+            	</g:if>
+            	<g:if test ="${fieldValue(bean:predictionInstance, field:'job_status') == '5'}">
+			<g:if test="${predictionInstance.old_url == null}">
+				<p>
+					<b><font color="#f40707" size=2>An error occured when executing this job!</font></b>
+				</p>
+			</g:if>
+		</g:if>
+		<g:if test="${predictionInstance.job_status >= 4 && predictionInstance.results_urls != null}">
+			<hr>
+			<h2><font color="#006699">Results</font></h2>
+			${predictionInstance.results_urls}
+			<p><b>Instructions</b></p>
+			<p>Please download the files listed above by clicking on the links.</p>
+			<p>All files and folders are compressed. To unpack <tt>*.tar.gz</tt> archives, e.g. on linux type<br><br>
+			<tt>tar -xzvf *.tar.gz</tt><br><br>
+			For unpacking <tt>*.gz</tt> files, e.g. on linux type<br><br>
+			<tt>gunzip *.gz.</tt></p>
+			<p>Further instructions about results contents are given at the <a href="../../trainingtutorial.gsp">Training Tutorial</a> and the <a href="../../predictiontutorial.gsp">Prediction Tutorial</a>.</p>
+		</g:if>
+		<hr>
 		<h2><font color="#006699">Messages</font></h2>
-			
-		<p><pre>${predictionInstance.message}</pre></p>
-
-
-
-          </g:if>
-</div>
- </div>
+		<p><pre>${predictionInstance.message}</pre></p>	
+		<hr>	
+ 	</div>
 </div>
 
 <div id="rechte_spalte">
