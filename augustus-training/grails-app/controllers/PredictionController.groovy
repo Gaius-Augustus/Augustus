@@ -37,6 +37,7 @@ class PredictionController {
 	def web_output_dir = "/data/www/test/out"
 	def web_output_url = "http://bioinf.uni-greifswald.de/trainaugustus/prediction-results/"
 	def war_url = "http://bioinf.uni-greifswald.de/augustus-training-0.1/"
+	def footer = "\n\n------------------------------------------------------------------------------------\nThis is an automatically generated message.\n\nhttp://bioinf.uni-greifswald.de/trainaugustus" // footer of e-mail
 	// AUGUSTUS_CONFIG_PATH
 	def AUGUSTUS_CONFIG_PATH = "/usr/local/augustus/trunks/config"
 	def AUGUSTUS_SCRIPTS_PATH = "/usr/local/augustus/trunks/scripts"
@@ -122,7 +123,7 @@ class PredictionController {
 			String userIPTried = request.remoteAddr
 			logDate = new Date()
 			logFile <<  "${logDate} SGE          v1 - On ${todayTried} somebody with IP ${userIPTried} tried to invoke the Prediction webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
-			render "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><meta name=\"layout\" content=\"main\" /><title>Submitt Prediction</title><script type=\"text/javascript\" src=\"js/md_stylechanger.js\"></script></head><body><!-- Start: Kopfbereich --><p class=\"unsichtbar\"><a href=\"#inhalt\" title=\"Directly to Contents\">Directly to Contents</a></p><div id=\"navigation_oben\"><a name=\"seitenanfang\"></a><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"1\"><tr><td nowrap=\"nowrap\"><a href=\"http://www.uni-greifswald.de\" target=\"_blank\" class=\"mainleveltop_\" >University of Greifswald</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.mnf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Faculty</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.math-inf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Institute</a><span class=\"mainleveltop_\">&nbsp;|&nbsp;</span><a href=\"http://bioinf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\">Bioinformatics Group</a></td></tr></table></div><div id=\"banner\"><div id=\"banner_links\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php\" title=\"Institut f&uuml;r Mathematik und Informatik\"><img src=\"../images/header.gif\" alt=\"Directly to home\" /> </a></div><div id=\"banner_mitte\"><div id=\"bannertitel1\">Bioinformatics Web Server at University of Greifswald</div><div id=\"bannertitel2\">Gene Prediction with AUGUSTUS</div></div><div id=\"banner_rechts\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167\" title=\"Voderberg-Doppelspirale\"><img src=\"../images/spirale.gif\" align=\"left\" /></a></div></div><div id=\"wegweiser\">Navigation for: &nbsp; &nbsp;<span class=\"breadcrumbs pathway\">Submitt Prediction</span><div class=\"beendeFluss\"></div></div><!-- Ende: Kopfbereich --><!-- Start: Koerper --><div id=\"koerper\"><div id=\"linke_spalte\"><ul class=\"menu\"><li><a href=\"../index.gsp\"><span>Introduction</span></a></li><li><a href=\"/augustus-training/training/create\"><span>Submitt Training</span></a></li><li><a href=\"/augustus-training/prediction/create\"><span>Submitt Prediction</span></a></li><li><a href=\"../help.gsp\"><span>Help</span></a></li><li><a href=\"../references.gsp\"><span>Links & References</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de\"><span>Bioinformatics Group</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/impressum.html\"><span>Impressum</span></a></li></ul></div><div id=\"mittel_spalte\"><div class=\"main\" id=\"main\"><h1><font color=\"#006699\">The Server is Busy</font></h1><p>You tried to access the AUGUSTUS prediction job submission page.</p><p>Predicting genes with AUGUSTUS is a process that takes a lot of computation time. We estimate that one prediction process requires approximately 7 days. Our web server is able to process a certain number of jobs in parallel, and we established a waiting queue. The waiting queue has a limited length, though. Currently, all slots for computation and for waiting are occupied.</p><p>We apologize for the inconvenience! Please try to submitt your job in a couple of weeks, again.</p><p>Feel free to contact us in case your job is particularly urgent.</p></div><p>&nbsp;</p>           </div><div id=\"rechte_spalte\"><div class=\"linien_div\"><h5 class=\"ueberschrift_spezial\">CONTACT</h5><strong>Institute for Mathematics und Computer Sciences</strong><br/><strong>Bioinformatics Group</strong><br />Walther-Rathenau-Stra&szlig;e 47<br />17487 Greifswald<br />Germany<br />Tel.: +49 (0)3834 86 - 46 24<br/>Fax:  +49 (0)3834 86 - 46 40<br /><br /><a href=\"mailto:augustus-web@uni-greifswald.de\" title=\"E-Mail augustus-web@uni-greifswald.de, opens the standard mail program\">augustus-web@uni-greifswald.de</a></div></div><div class=\"beendeFluss\"></div></div><!-- Ende: Koerper --><!-- Start: Fuss --><div id=\"fuss\"><div id=\"fuss_links\"><p class=\"copyright\">&copy; 2011 University of Greifswald</p></div><div id=\"fuss_mitte\"><div class=\"bannergroup\"></div></div><div id=\"fuss_rechts\" ><ul><li><a href=\"#seitenanfang\"><img hspace=\"5\" height=\"4\" border=\"0\" width=\"7\" alt=\"Seitenanfang\" src=\"../images/top.gif\" />Top of page</a></li></ul></div><div class=\"beendeFluss\"></div></div><!-- Ende: Fuss --></body></html>"
+			render "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><meta name=\"layout\" content=\"main\" /><title>Submitt Prediction</title><script type=\"text/javascript\" src=\"js/md_stylechanger.js\"></script></head><body><!-- Start: Kopfbereich --><p class=\"unsichtbar\"><a href=\"#inhalt\" title=\"Directly to Contents\">Directly to Contents</a></p><div id=\"navigation_oben\"><a name=\"seitenanfang\"></a><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"1\"><tr><td nowrap=\"nowrap\"><a href=\"http://www.uni-greifswald.de\" target=\"_blank\" class=\"mainleveltop_\" >University of Greifswald</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.mnf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Faculty</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.math-inf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Institute</a><span class=\"mainleveltop_\">&nbsp;|&nbsp;</span><a href=\"http://bioinf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\">Bioinformatics Group</a></td></tr></table></div><div id=\"banner\"><div id=\"banner_links\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php\" title=\"Institut f&uuml;r Mathematik und Informatik\"><img src=\"../images/header.gif\" alt=\"Directly to home\" /> </a></div><div id=\"banner_mitte\"><div id=\"bannertitel1\">Bioinformatics Web Server at University of Greifswald</div><div id=\"bannertitel2\">Gene Prediction with AUGUSTUS</div></div><div id=\"banner_rechts\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167\" title=\"Voderberg-Doppelspirale\"><img src=\"../images/spirale.gif\" align=\"left\" /></a></div></div><div id=\"wegweiser\">Navigation for: &nbsp; &nbsp;<span class=\"breadcrumbs pathway\">Submitt Prediction</span><div class=\"beendeFluss\"></div></div><!-- Ende: Kopfbereich --><!-- Start: Koerper --><div id=\"koerper\"><div id=\"linke_spalte\"><ul class=\"menu\"><li><div id=\"linksMenuText\">AUGUSTUS Web Server Navigation</div></li><li><a href=\"../index.gsp\"><span>Introduction</span></a></li><li><a href=\"../about.gsp\"><span>About AUGUSTUS</span></a></li><li><a href=\"../accuracy.gsp\"><span>Accuracy</span></a></li><li><a href=\"/augustus-training/training/create\"><span>Submitt Training</span></a></li><li><a href=\"/augustus-training/prediction/create\"><span>Submitt Prediction</span></a></li><li><a href=\"../help.gsp\"><span>Help</span></a></li><li><a href=\"../datasets.gsp\"><span>Datasets for Download</span></a></li><li><a href=\"../predictions_for_download.gsp\"><span>Predictions for Download</span></a></li><li><a href=\"../references.gsp\"><span>Links & References</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/impressum.html\"><span>Impressum</span></a></li><li>&nbsp;</li><li><div id=\"linksMenuText\">Other AUGUSTUS Resources</div></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus\">AUGUSTUS Wiki</a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Forum.Forum\">AUGUSTUS Forum</a></li><li><a href=\"http://bioinf.uni-greifswald.de/augustus/binaries/\">Download AUGUSTUS</a></li><li><a href=\"http://bioinf.uni-greifswald.de/augustus\">Old AUGUSTUS gene prediction web server</a></li><li>&nbsp;</li><li><div id=\"linksMenuText\">Other Links</div></li><li><a href=\"http://bioinf.uni-greifswald.de\"><span>Bioinformatics Group Greifswald</span></a></li></ul></div><div id=\"mittel_spalte\"><div class=\"main\" id=\"main\"><h1><font color=\"#006699\">The Server is Busy</font></h1><p>You tried to access the AUGUSTUS prediction job submission page.</p><p>Predicting genes with AUGUSTUS is a process that takes a lot of computation time. We estimate that one prediction process requires approximately 7 days. Our web server is able to process a certain number of jobs in parallel, and we established a waiting queue. The waiting queue has a limited length, though. Currently, all slots for computation and for waiting are occupied.</p><p>We apologize for the inconvenience! Please try to submitt your job in a couple of weeks, again.</p><p>Feel free to contact us in case your job is particularly urgent.</p></div><p>&nbsp;</p>           </div><div id=\"rechte_spalte\"><div class=\"linien_div\"><h5 class=\"ueberschrift_spezial\">CONTACT</h5><strong>Institute for Mathematics und Computer Sciences</strong><br/><strong>Bioinformatics Group</strong><br />Walther-Rathenau-Stra&szlig;e 47<br />17487 Greifswald<br />Germany<br />Tel.: +49 (0)3834 86 - 46 24<br/>Fax:  +49 (0)3834 86 - 46 40<br /><br /><a href=\"mailto:augustus-web@uni-greifswald.de\" title=\"E-Mail augustus-web@uni-greifswald.de, opens the standard mail program\">augustus-web@uni-greifswald.de</a></div></div><div class=\"beendeFluss\"></div></div><!-- Ende: Koerper --><!-- Start: Fuss --><div id=\"fuss\"><div id=\"fuss_links\"><p class=\"copyright\">&copy; 2011 University of Greifswald</p></div><div id=\"fuss_mitte\"><div class=\"bannergroup\"></div></div><div id=\"fuss_rechts\" ><ul><li><a href=\"#seitenanfang\"><img hspace=\"5\" height=\"4\" border=\"0\" width=\"7\" alt=\"Seitenanfang\" src=\"../images/top.gif\" />Top of page</a></li></ul></div><div class=\"beendeFluss\"></div></div><!-- Ende: Fuss --></body></html>"
 			return
 		}		
 	}
@@ -157,8 +158,8 @@ class PredictionController {
 				predictionInstance.hint_file = uploadedStructFile.originalFilename
 			}
 			predictionInstance.save()
-			predictionInstance.results_urls = ""
-			predictionInstance.message = "";
+			//predictionInstance.results_urls = ""
+			//predictionInstance.message = "";
 			// info string for confirmation E-Mail
 			def confirmationString
 			def mailStr
@@ -184,6 +185,7 @@ class PredictionController {
 			def urlExistsScript
 			def sgeErrSize = 10
 			def writeResultsErrSize = 10
+			def msgStr
 			// get date
 			def today = new Date()
 			logFile << "${today} ${predictionInstance.accession_id} v1 - AUGUSTUS prediction webserver starting on ${today}\n"
@@ -1138,28 +1140,21 @@ if(!predictionInstance.hasErrors()){
 				emptyPageExecution.waitFor()
 				predictionInstance.job_status = 0
 				logDate = new Date()
-				mailStr = "Details of your job:\n\n${confirmationString}\n\n"
-				predictionInstance.message = "---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
+				mailStr = "Details of your job:\n\n${confirmationString}\n"
+				predictionInstance.message = "---------------------------------------\n${logDate} - Message:\n"
+				predictionInstance.message = "${predictionInstance.message}---------------------------------------\n\n${mailStr}"
 				if(predictionInstance.email_adress != null){
+					msgStr = "Hello!\n\n"
+					msgStr = "${msgStr}Thank you for submitting the AUGUSTUS gene prediction "
+					msgStr = "${msgStr}job ${predictionInstance.accession_id}.\n\n"
+					msgStr = "${msgStr}${mailStr}The status/results page of your job is "
+					msgStr = "${msgStr}${war_url}prediction/show/${predictionInstance.id}.\n\n"
+					msgStr = "${msgStr}You will be notified via email when the job has finished.\n\nBest regards,\n\n"
+					msgStr = "${msgStr}the AUGUSTUS web server team"
 					sendMail {
 						to "${predictionInstance.email_adress}"
 						subject "AUGUSTUS prediction job ${predictionInstance.accession_id}"
-						body """Hello!
-
-Thank you for submitting the AUGUSTUS gene prediction job ${predictionInstance.accession_id}.
-
-${mailStr}
-
-The status/results page of your job is ${war_url}prediction/show/${predictionInstance.id}.
-
-You will be notified via email when the job has finished.
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+						body """${msgStr}${footer}"""
 					}
 					logDate = new Date()
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Confirmation e-mail sent.\n" 
@@ -1304,23 +1299,19 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							}
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided genome file\n${predictionInstance.genome_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
-							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance.message = "${predictionInstance.message}----------------------------"
+							predictionInstance.message = "${predictionInstance.message}-----------------\n${logDate}"
+							predictionInstance.message = "${predictionInstance.message} - Error Message:\n----------"
+							predictionInstance.message = "${predictionInstance.message}-----------------------------"
+							predictionInstance.message = "------\n\n${mailStr}"
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-									body """Hello!
-
-${mailStr}
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+									body """${msgStr}${footer}"""
 								}
 							}
 							// delete database entry
@@ -1353,18 +1344,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress == null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 								sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-								body """Hello!
-
-${mailStr}
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+								body """${msgStr}${footer}"""
 								}
 							}
 							// delete database entry
@@ -1384,7 +1368,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						}
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the genome file size was\nwith ${genome_size} bigger than 1 GB. Please submitt a smaller genome size!\n\n"
-						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
+						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						logDate = new Date()
 						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
 						predictionInstance = predictionInstance.merge()
@@ -1393,7 +1377,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							sendMail {
 							to "${predictionInstance.email_adress}"
 							subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-							body """${errorStrMsg}"""
+							body """${errorStrMsg}${footer}"""
 							}
 						}
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
@@ -1457,18 +1441,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-									body """Hello!
-
-${mailStr}
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+									body """${msgStr}${footer}"""
 								}
 							}
 							// delete database entry
@@ -1488,18 +1465,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-									body """Hello!
-
-${mailStr}
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+									body """${msgStr}${footer}"""
 								}
 							}
 						}
@@ -1512,18 +1482,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-									body """Hello!
-
-${mailStr}
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+									body """${msgStr}${footer}"""
 								}
 							}
 						}
@@ -1536,18 +1499,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-									body """Hello!
-
-${mailStr}
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+									body """${msgStr}${footer}"""
 								}
 							}						
 						}
@@ -1731,18 +1687,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-									body """Hello!
-
-${mailStr}
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+									body """${msgStr}${footer}"""
 								}
 							}
 							// delete database entry
@@ -1775,18 +1724,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 								sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-									body """Hello!
-
-${mailStr}
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+									body """${msgStr}${footer}"""
 								}
 							}
 							// delete database entry
@@ -1801,7 +1743,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - EST file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the cDNA file size was\nwith ${est_size} bigger than 1 GB. Please submitt a smaller cDNA size!\n\n"
-						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
+						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						logDate = new Date()
 						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
 						predictionInstance = predictionInstance.merge()
@@ -1810,7 +1752,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-									body """${errorStrMsg}"""
+									body """${errorStrMsg}${footer}"""
 							}
 						}
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
@@ -1891,7 +1833,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						}
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your\ncDNA file have an average length of ${avEstLen}. We suspect that sequences files\nwith an average sequence length shorter than ${estMinLen} might contain RNAseq\nraw sequences. Currently, our web server application does not support the integration\nof RNAseq raw sequences. Please either assemble your sequences into longer contigs,\nor remove short sequences from your current file, or submitt a new job without\nspecifying a cDNA file.\n\n"
-						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
+						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						logDate = new Date()
 						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
 						predictionInstance = predictionInstance.merge()
@@ -1901,7 +1843,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							sendMail {
 									to "${predictionInstance.email_adress}"
 									subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-									body """${errorStrMsg}"""
+									body """${errorStrMsg}${footer}"""
 							}
 						}
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
@@ -1927,7 +1869,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						}
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your\ncDNA file have an average length of ${avEstLen}. We suspect that sequence\nfiles with an average sequence length longer than ${estMaxLen} might not contain\nESTs or cDNAs. Please either remove long sequences from your current file, or\nsubmitt a new job without specifying a cDNA file.\n\n"
-						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
+						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						logDate = new Date()
 						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
 						predictionInstance = predictionInstance.merge()
@@ -1936,7 +1878,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							sendMail {
 								to "${predictionInstance.email_adress}"
 								subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
-								body """${errorStrMsg}"""
+								body """${errorStrMsg}${footer}"""
 							}
 						}
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
@@ -1964,19 +1906,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					predictionInstance = predictionInstance.merge()
 					predictionInstance.save()
 					if(predictionInstance.email_adress != null){
-
+							msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						sendMail {
 							to "${predictionInstance.email_adress}"
 							subject "File upload has been completed for AUGUSTUS prediction job ${predictionInstance.accession_id}"
-							body """Hello!
-
-${mailStr}
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+							body """${msgStr}${footer}"""
 						}
 					}
 				}
@@ -2020,25 +1954,20 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					}
 					oldAccScriptProc.waitFor()
 					def oldAccContent = new File("${oldAccResult}").text
-					mailStr = "You submitted job ${predictionInstance.accession_id}.\nThe job was aborted because the files that you submitted were submitted, before.\n\nThe old job with identical input files and identical parameters is available at\n${war_url}prediction/show/${oldID}\n\n"
+					mailStr = "You submitted job ${predictionInstance.accession_id}.\nThe job was aborted because the files that you submitted were submitted, before.\n\n"
 					predictionInstance.old_url = "${war_url}prediction/show/${oldID}"
 					logDate = new Date()
 					predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
 					predictionInstance = predictionInstance.merge()
 					predictionInstance.save()
 					if(predictionInstance.email_adress != null){
+						msgStr = "Hello!\n\n${mailStr}The old job with identical input files and identical parameters"
+						msgStr = "${msgStr} is available at\n${war_url}prediction/show/${oldID}.\n\nBest regards,\n\n"
+						msgStr = "${msgStr}the AUGUSTUS web server team"
 						sendMail {
 							to "${predictionInstance.email_adress}"
 							subject "AUGUSTUS prediction job ${predictionInstance.accession_id} was submitted before as job ${oldAccContent}"
-							body """Hello!
-
-${mailStr}
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+							body """${msgStr}${footer}"""
 						}
 					}
 					logDate = new Date()
@@ -2193,7 +2122,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 			   	}
 				// collect results link information
 				if(new File("${web_output_dir}/${predictionInstance.accession_id}/predictions.tar.gz").exists()){
-					predictionInstance.results_urls = "<p>${predictionInstance.results_urls}<b>Prediction archive</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${predictionInstance.accession_id}/predictions.tar.gz\">predictions.tar.gz</a><br></p>"
+					predictionInstance.results_urls = "<p><b>Prediction archive</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${predictionInstance.accession_id}/predictions.tar.gz\">predictions.tar.gz</a><br></p>"
 					predictionInstance = predictionInstance.merge()
 					predictionInstance.save()
 				}
@@ -2223,20 +2152,13 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Computation was successful. Did not send e-mail to user because not e-mail adress was supplied.\n"
 					}
 					if(predictionInstance.email_adress != null){
+						msgStr = "Hello!\n\n${mailStr}You find the results at "
+						msgStr = "${msgStr}${war_url}prediction/show/${predictionInstance.id}.\n\nBest regards,\n\n"
+						msgStr = "${msgStr}the AUGUSTUS web server team"
 						sendMail {
 							to "${predictionInstance.email_adress}"
 							subject "AUGUSTUS prediction job ${predictionInstance.accession_id} is complete"
-							body """Hello!
-
-${mailStr}
-You find the results at ${war_url}prediction/show/${predictionInstance.id}.
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+							body """${msgStr}${footer}"""
 						}
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Sent confirmation Mail that job computation was successful.\n"
@@ -2279,33 +2201,24 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					if(sgeErrSize > 0){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - a SGE error occured!\n";
+						msgStr = "Hi ${admin_email}!\n\nJob: ${predictionInstance.accession_id}\n"
+						msgStr = "${msgStr}IP: ${userIP}\n"
+						msgStr = "${msgStr}E-Mail: ${predictionInstance.email_adress}\n"
+						msgStr = "${msgStr}Link: ${war_url}prediction/show/${predictionInstance.id}\n\n"
+						msgStr = "${msgStr}An SGE error occured. Please check manually what's wrong. "
 						if(predictionInstance.email_adress == null){
+							msgStr = "${msgStr}The user has not been informed."
 							sendMail {
 							to "${admin_email}"
 							subject "Error in AUGUSTUS prediction job ${predictionInstance.accession_id}"
-							body """Hi ${admin_email}!
-
-Job: ${predictionInstance.accession_id}
-E-Mail: anonymous
-User IP: ${userIP}
-Link: ${war_url}prediction/show/${predictionInstance.id}
-
-An SGE error occured. Please check manually what's wrong. The user has been informed.
-"""	
+							body """${msgStr}${footer}"""	
 							}
 						}else{
+							msgStr = "${msgStr}The user has been informed."
 							sendMail {
 							to "${admin_email}"
 							subject "Error in AUGUSTUS prediction job ${predictionInstance.accession_id}"
-							body """Hi ${admin_email}!
-
-Job: ${predictionInstance.accession_id}
-E-Mail: ${predictionInstance.email_adress}
-User IP: ${userIP}
-Link: ${war_url}prediction/show/${predictionInstance.id}
-
-An SGE error occured. Please check manually what's wrong. The user has been informed.
-"""	
+							body """${msgStr}${footer}"""	
 							}
 						}
 						predictionInstance.job_status = 5
@@ -2314,33 +2227,24 @@ An SGE error occured. Please check manually what's wrong. The user has been info
 					}else{
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - an error occured during writing results!\n";
+						msgStr = "Hi ${admin_email}!\n\nJob: ${predictionInstance.accession_id}\n"
+						msgStr = "${msgStr}IP: ${userIP}\n"
+						msgStr = "${msgStr}E-Mail: ${predictionInstance.email_adress}\n"
+						msgStr = "${msgStr}Link: ${war_url}prediction/show/${predictionInstance.id}\n\n"
+						msgStr = "${msgStr}An error occured during writing results.. Please check manually what's wrong. "
 						if(predictionInstance.email_adress == null){
+							msgStr = "${msgStr} The user has not been informed."
 							sendMail {
 								to "${admin_email}"
 								subject "Error in AUGUSTUS prediction job ${predictionInstance.accession_id}"
-								body """Hi ${admin_email}!
-
-Job: ${predictionInstance.accession_id}
-E-Mail: anonymous
-User IP: ${userIP}
-Link: ${war_url}prediction/show/${predictionInstance.id}
-
-An error occured during writing results. Please check manually what's wrong. The user has been informed.
-"""
+								body """${msgStr}${footer}"""
 							}
 						}else{
+							msgStr = "${msgStr} The user has been informed."
 							sendMail {
 								to "${admin_email}"
 								subject "Error in AUGUSTUS prediction job ${predictionInstance.accession_id}"
-								body """Hi ${admin_email}!
-
-Job: ${predictionInstance.accession_id}
-E-Mail: ${predictionInstance.email_adress}
-User IP: ${userIP}
-Link: ${war_url}prediction/show/${predictionInstance.id}
-
-An error occured during writing results. Please check manually what's wrong. The user has been informed.
-"""
+								body """${msgStr}${footer}"""
 							}
 						}
 						predictionInstance.job_status = 5
@@ -2356,22 +2260,13 @@ An error occured during writing results. Please check manually what's wrong. The
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The job is in an error state. Cound not send e-mail to anonymous user because no email adress was supplied.\n"
 					}else{
+						msgStr = "Hello!\n\n${mailStr}The administrator of the AUGUSTUS web server has been informed and"
+						msgStr = "${msgStr} will get back to you as soon as the problem is solved.\n\nBest regards,\n\n"
+						msgStr = "${msgStr}the AUGUSTUS web server team"
 						sendMail {
 							to "${predictionInstance.email_adress}"
 							subject "An error occured while executing AUGUSTUS prediction job ${predictionInstance.accession_id}"
-							body """Hello!
-
-${mailStr}
-The administrator of the AUGUSTUS web server has been informed and will get back to you as soon as the problem is solved.
-
-Thank you for using AUGUSTUS!
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+							body """${msgStr}${footer}"""
 						}
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Sent confirmation Mail, the job is in an error state.\n"
