@@ -125,7 +125,6 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
             <div class="main" id="main">
 			<noscript><p><b><span style="color:red">Please enable javascript in your browser in order to display the submission form correctly!</span></b> Form functionality is not affected significantly while javascript is disabled, but it looks less pretty.</p>
 			</noscript>
-<p><b>Before submitting a training job</b> for your species of interest, please check whether parameters have already been trained and have been made publicly available for your species at <a href="../predictiontutorial.gsp#param_id">our species overview table</a></p><p>Example data for this form is available <a href="../trainingtutorial.gsp#exampledata">here</a>.</p>
 
             <g:uploadForm action="commit" method="post" >
             <fieldset><legend>
@@ -139,8 +138,11 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 		</table>
 	      </legend><p>
                <div class="dialog">
-		    <p>Please use this form to submit data for training AUGUSTUS parameters for novel species/new genomic data.</p>
- 		    <p>You have to specify an <b>E-mail address</b>, a <b>species name</b>, and a <b>genome file</b>!</p>
+		    <p>Use this form to submit data for training AUGUSTUS parameters for novel species/new genomic data.</p>	
+		    <p><b>Before submitting a training job</b> for your species of interest, please check whether parameters have already been trained and have been made publicly available for your species at <a href="../predictiontutorial.gsp#param_id">our species overview table</a></p>
+		    <p>Please read the <a href="../trainingtutorial.gsp">training tutorial</a> before submitting a job for the first time. Example data for this form is available <a href="../trainingtutorial.gsp#exampledata">here</a>. You may also use the button below to insert sample data. Please note that you will always need to enter the verification string at the bottom of the page, yourself, in order to submit a job!</p>
+		<g:actionSubmit action="fillSample" value="Fill in Sample Data" />
+ 		    <p>We strongly recommend that you specify an <b>E-mail address</b>! Please read the <a href="../help.gsp#email"><small>Help</small></a> page before submitting a job without e-mail address! You have to give a <b>species name</b>, and a <b>genome file</b>!</p>
                     <table>
                         <tbody>
                         
@@ -152,10 +154,9 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                                     <input type="text" id="email_adress" name="email_adress" value="${fieldValue(bean:trainingInstance,field:'email_adress')}"/> &nbsp; <a href="../help.gsp#email"><small>Help</small></a>
                                 </td> 
                             </tr> 
-                        
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="project_name">Species name</label>
+                                    <label for="project_name">Species name <font color="#FF0000">*</font></label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:trainingInstance,field:'project_name','errors')}">
                                     <input type="text" maxlength="30" id="project_name" name="project_name" value="${fieldValue(bean:trainingInstance,field:'project_name')}"/> &nbsp; <a href="../help.gsp#species_name"><small>Help</small></a>
@@ -170,7 +171,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                          <tbody>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="GenomeFile"><b>Genome file</b>&nbsp; <a href="../help.gsp#genome_file"><small>Help</small></a></label>
+                                    <label for="GenomeFile"><b>Genome file</b> <font color="#FF0000">*</font>&nbsp; <a href="../help.gsp#genome_file"><small>Help</small></a></label>
                                 </td>
 				<td valign="top">
 				</td>
@@ -195,7 +196,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                           </tbody>
                         </table>
                         <br>
-                        You need to specify <b>at least one</b> of the following files: <a href="../help.gsp#which_fiiles"><small>Help</small></a><br><br>
+                        You need to specify <b>at least one</b> of the following files: <font color="#FF0000">*</font> <a href="../help.gsp#which_fiiles"><small>Help</small></a><br><br>
                         <table>
                           <tbody>
                             <tr class="prop">
@@ -285,16 +286,17 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			<script language="javascript">toggle(getObject('exp_file_options_link'), 'exp_file_options');</script>
 			<!-- end of javascript content on click -->
                     <br>
-		    <p>We use a <b>verification string</b> to figure out whether you are a <b>human</b> submitter. Please type the text in the image below into the text field next to the image.
+		    <p>We use a <b>verification string</b> to figure out whether you are a <b>human</b>. Please type the text in the image below into the text field next to the image.
 			<table>
 				<tbody>
 					<tr class="prop">
 						<td valign="top" class="name">
-							<img src="${createLink(controller: 'simpleCaptcha', action: 'captcha')}"/> &nbsp; &nbsp; <g:textField name="captcha"/>
+							<img src="${createLink(controller: 'simpleCaptcha', action: 'captcha')}"/> &nbsp; &nbsp; <g:textField name="captcha"/><font color="#FF0000">*</font>
 						</td>
 					</tr>
 				</tbody>
 			</table>
+			<p><font color="#FF0000">*</font>) mandatory input arguments</p>
                 </div>
                 <div class="buttons" onclick="toggle_visibility('spinner');">
                     <span class="button"><input class="commit" type="submit" value="Start Training" /></span>

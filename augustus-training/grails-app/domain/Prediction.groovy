@@ -39,8 +39,8 @@ class Prediction {
    Integer pred_strand = 1
    Integer alt_transcripts = 1
    Integer allowed_structures = 1
-   String results_urls // only to be stored if no e-mail was supplied
-   String message // only to be stored if no e-mail was supplied
+   String results_urls
+   String message
    Boolean ignore_conflicts = false
    String old_url
    static constraints = {

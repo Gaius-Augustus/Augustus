@@ -56,7 +56,7 @@ class PredictionController {
 	def int estMinLen = 250
 	def int estMaxLen = 20000
 	// logging verbosity-level
-	def verb = 3 // 1 only basic log messages, 2 all issued commands, 3 also script content
+	def verb = 2 // 1 only basic log messages, 2 all issued commands, 3 also script content
 	def cmd2Script
 	def cmdStr
 
@@ -64,9 +64,6 @@ class PredictionController {
 
         // other variables
 	def accession_id
-	//def results_urls = ""
-	def message = ""
-
 
 	// human verification:
 	def simpleCaptchaService
@@ -131,7 +128,7 @@ class PredictionController {
 	// the method commit is started if the "Submit Job" button on the website is hit. It is the main method of Prediction Controller and contains a Thread method that will continue running as a background process after the user is redirected to the job status page.
 
 	def fillSample = {
-		redirect(action:create, params:[genome_ftp_link:"http://bioinf.uni-greifswald.de/trainaugustus/examples/LG16.fa",project_id:"honeybee1",est_ftp_link:"http://bioinf.uni-greifswald.de/trainaugustus/examples/honeybee-ests.fa"])
+		redirect(action:create, params:[genome_ftp_link:"http://bioinf.uni-greifswald.de/trainaugustus/examples/LG16.fa",project_id:"honeybee1"])
 	}
 
 	def commit = {
@@ -158,8 +155,6 @@ class PredictionController {
 				predictionInstance.hint_file = uploadedStructFile.originalFilename
 			}
 			predictionInstance.save()
-			//predictionInstance.results_urls = ""
-			//predictionInstance.message = "";
 			// info string for confirmation E-Mail
 			def confirmationString
 			def mailStr
@@ -212,12 +207,6 @@ class PredictionController {
 				logDate = new Date()
 				logFile << "${logDate} ${predictionInstance.accession_id} v1 - User did not enable UTR prediction.\n"
 			}
-
-if(!predictionInstance.hasErrors()){
-	logFile << "There are no errors before parameter archive fetching!\n"
-}else{
-	logFile << "Errors after parameter - before - archive fetching!\n";
-}
 			// get parameter archive file (if available)
 			//def uploadedParamArch = request.getFile('ArchiveFile')
 			def String dirName = "${output_dir}/${predictionInstance.accession_id}"
@@ -328,13 +317,6 @@ if(!predictionInstance.hasErrors()){
 				}
 				archiveExistsFlag = 1
 			}else{predictionInstance.archive_file = "empty"}
-
-if(!predictionInstance.hasErrors()){
-	logFile << "There are no errors after parameter archive fetching!\n"
-}else{
-	logFile << "Errors after parameter archive fetching!\n";
-}
-	
 			// check whether parameters are available for project_id (previous prediction run)
 			logDate = new Date()
 			logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The given parameter ID is ${predictionInstance.project_id}\n"
@@ -368,12 +350,6 @@ if(!predictionInstance.hasErrors()){
 				}
 				confirmationString = "${confirmationString}AUGUSTUS parameter project identifier: ${predictionInstance.project_id}\n"
 			}
-
-if(!predictionInstance.hasErrors()){
-	logFile << "There are no errors after checking project ID!\n"
-}else{
-	logFile << "Errors after checking project ID!\n";
-}
 			// upload of genome file
 			//def uploadedGenomeFile
 			//uploadedGenomeFile = request.getFile('GenomeFile')
@@ -508,13 +484,6 @@ if(!predictionInstance.hasErrors()){
 	            			delProcCkShGenome.waitFor()
 	         		}
 			}
-
-if(!predictionInstance.hasErrors()){
-	logFile << "There are no errors after uploading genome file!\n"
-}else{
-	logFile << "Errors after uploading genome file!\n";
-}
-	
 			// retrieve beginning of genome file for format check
 	      		if(!(predictionInstance.genome_ftp_link == null)){
 				confirmationString = "${confirmationString}Genome file: ${predictionInstance.genome_ftp_link}\n"
@@ -608,14 +577,6 @@ if(!predictionInstance.hasErrors()){
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The linked genome file is gzipped. Format will be checked later after extraction.\n"
 				}
 	      		}
-
-
-if(!predictionInstance.hasErrors()){
-	logFile << "There are no errors after fetching genome file!\n"
-}else{
-	logFile << "Errors after fetching genome file!\n";
-}
-
 	      		// upload of est file
 	      		// def uploadedEstFile = request.getFile('EstFile')
 	      		if(!uploadedEstFile.empty){
@@ -754,13 +715,6 @@ if(!predictionInstance.hasErrors()){
 					}
          				delProcCkShEst.waitFor()
       			}
-
-if(!predictionInstance.hasErrors()){
-	logFile << "There are no errors after uploading EST file!\n"
-}else{
-	logFile << "Errors after uploading EST file!\n";
-}
-
       			// retrieve beginning of est file for format check
       			if(!(predictionInstance.est_ftp_link == null)){
 				confirmationString = "${confirmationString}cDNA file: ${predictionInstance.est_ftp_link}\n"
@@ -855,14 +809,6 @@ if(!predictionInstance.hasErrors()){
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The linked EST file is gzipped. Format will be checked later after extraction.\n"
 				}
       			}
-
-
-if(!predictionInstance.hasErrors()){
-	logFile << "There are no errors after fetching EST file!\n"
-}else{
-	logFile << "Errors after fetching EST file!\n";
-}
-
 			// get hints file, format check
 			// def uploadedStructFile = request.getFile('HintFile')
 			if(!uploadedStructFile.empty){
@@ -1017,13 +963,6 @@ if(!predictionInstance.hasErrors()){
 			}
 			def radioParameterString
 			confirmationString = "${confirmationString}User set UTR prediction: ${predictionInstance.utr}\n"
-
-if(!predictionInstance.hasErrors()){
-	logFile << "There are no errors after uploading hints file!\n"
-}else{
-	logFile << "Errors after uploading file!\n";
-}
-
 			// utr
 			if(overRideUtrFlag==1){
 				radioParameterString = " --UTR=on"
@@ -1104,13 +1043,6 @@ if(!predictionInstance.hasErrors()){
 				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User enabled to ignore strand conflicts.\n"
 			}
 			confirmationString = "${confirmationString}Ignore conflictes with other strand: ${predictionInstance.ignore_conflicts}\n"
-
-if(!predictionInstance.hasErrors()){
-	logFile << "There are no errors right before the save for E-mail sending!\n"
-}else{
-	logFile << "Errors right before the save for E-Mail sending!\n";
-}
-
 			// send confirmation email and redirect
 			predictionInstance = predictionInstance.merge()
 			if(predictionInstance.save()){
@@ -1119,9 +1051,8 @@ if(!predictionInstance.hasErrors()){
 			}
 
 			if(!predictionInstance.hasErrors() && predictionInstance.save()){
-				// save new varialbes in database
-				//predictionInstance.results_urls = results_urls
-				predictionInstance.message = message
+				// save new variables in database
+				predictionInstance.message = ""
 				predictionInstance.save()
 				// generate empty results page
 				def emptyPageScript = new File("${projectDir}/emptyPage.sh")
@@ -1906,7 +1837,7 @@ if(!predictionInstance.hasErrors()){
 					predictionInstance = predictionInstance.merge()
 					predictionInstance.save()
 					if(predictionInstance.email_adress != null){
-							msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
+						msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						sendMail {
 							to "${predictionInstance.email_adress}"
 							subject "File upload has been completed for AUGUSTUS prediction job ${predictionInstance.accession_id}"
@@ -2109,7 +2040,6 @@ if(!predictionInstance.hasErrors()){
 						predictionInstance = predictionInstance.merge()
 						predictionInstance.save()
 						logFile << "${logDate} ${predictionInstance.accession_id} v1 - Job ${jobID} is neither in qw nor in r status but is still on the grid!\n"
-						runFlag = 1	
 					}else{
 						predictionInstance.job_status = 4
 						predictionInstance = predictionInstance.merge()
@@ -2272,9 +2202,6 @@ if(!predictionInstance.hasErrors()){
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Sent confirmation Mail, the job is in an error state.\n"
 					}
 				}
-					
-
-
 			}
 			//------------ END BACKGROUND PROCESS ----------------------------------
 		} // end of (!(predictionInstance.id == null))

@@ -79,8 +79,14 @@
   </div>
 
 <div id="mittel_spalte">
-	<div class="main" id="main">
-		<h1><font color="#006699">Predicting Genes with AUGUSTUS<br>Job ${predictionInstance.accession_id}</font></h1>
+    <a name="inhalt" id="inhalt"></a>
+    <table class="contentpaneopen">
+      <tr>
+	<td class="contentheading" width="100%">
+	  <font color="#006699">Predicting Genes with AUGUSTUS<br>Job ${predictionInstance.accession_id}</font>
+        </td>
+      </tr>
+    </table>
 		<g:if test="${flash.message}">
 			<div class="message">${flash.message}</div>
 		</g:if>
@@ -131,7 +137,7 @@
 				</p>
 			</g:if>
 		</g:if>
-		<g:if test="${predictionInstance.job_status >= 4 && predictionInstance.results_urls != null}">
+		<g:if test="${predictionInstance.job_status >= '4' && predictionInstance.results_urls != null}">
 			<hr>
 			<h2><font color="#006699">Results</font></h2>
 			${predictionInstance.results_urls}
@@ -147,7 +153,6 @@
 		<h2><font color="#006699">Messages</font></h2>
 		<p><pre>${predictionInstance.message}</pre></p>	
 		<hr>	
- 	</div>
 </div>
 
 <div id="rechte_spalte">

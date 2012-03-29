@@ -3,7 +3,10 @@
 
 class Training {
    static searchable = true
-   
+   String id 
+   static mapping ={
+	id generator:'uuid'
+   }
    String email_adress
    String project_name
    String genome_file
@@ -36,11 +39,13 @@ class Training {
    String protein_size = 0
    String struct_size = 0
    Date dateCreated
-
+   String results_urls
+   String message
+   String old_url
    static constraints ={
-       accession_id(unique:true) // may (unlikely) cause problems if the grails database ever gets lost.
-       email_adress(email:true,blank:false,nullable:false)
-       project_name(blank:false, unique:true, maxSize:30)
+      // accession_id(unique:false) // may (unlikely) cause problems if the grails database ever gets lost.
+       email_adress(email:true,blank:true,nullable:true)
+       project_name(blank:false, unique:false, maxSize:30)
        genome_file(nullable:true, blank:true, validator: { val, obj ->
             if (obj.genome_file == null && obj.genome_ftp_link == null) {
                 return 'training.genome_file.no_genome_file'
@@ -80,5 +85,8 @@ class Training {
        job_status(nullable:true)
        job_error(nullable:true)
        dateCreated()
+       old_url(nullable:true)
+       results_urls(nullable:true)
+       message(maxSize:1000000000, nullable:true) 
     }
 }

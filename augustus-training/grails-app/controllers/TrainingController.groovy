@@ -35,7 +35,10 @@ class TrainingController {
 	def oldAccID
 	// web-output, root directory to the results that are shown to end users
 //	def web_output_dir = "/var/www/trainaugustus/training-results" // must be writable to webserver application
-	def web_output_dir = "/var/www/test"
+	def web_output_dir = "/data/www/test/out"
+	def web_output_url = "http://bioinf.uni-greifswald.de/trainaugustus/training-results/"
+	def war_url = "http://bioinf.uni-greifswald.de/augustus-training-0.1/"
+	def footer = "\n\n------------------------------------------------------------------------------------\nThis is an automatically generated message.\n\nhttp://bioinf.uni-greifswald.de/trainaugustus" // footer of e-mail
 	// AUGUSTUS_CONFIG_PATH
 	def AUGUSTUS_CONFIG_PATH = "/usr/local/augustus/trunks/config";
 	def AUGUSTUS_SCRIPTS_PATH = "/usr/local/augustus/trunks/scripts";
@@ -56,6 +59,7 @@ class TrainingController {
 	def verb = 2 // 1 only basic log messages, 2 all issued commands, 3 also script content
 	def cmd2Script
 	def cmdStr
+	def msgStr
 
 	def logDate
 
@@ -115,10 +119,15 @@ class TrainingController {
 			String userIPTried = request.remoteAddr
 			logDate = new Date()
 			logFile <<  "${logDate} SGE          v1 - On ${todayTried} somebody with IP ${userIPTried} tried to invoke the Training webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
-			render "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><meta name=\"layout\" content=\"main\" /><title>Submitt Training</title><script type=\"text/javascript\" src=\"js/md_stylechanger.js\"></script></head><body><!-- Start: Kopfbereich --><p class=\"unsichtbar\"><a href=\"#inhalt\" title=\"Directly to Contents\">Directly to Contents</a></p><div id=\"navigation_oben\"><a name=\"seitenanfang\"></a><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"1\"><tr><td nowrap=\"nowrap\"><a href=\"http://www.uni-greifswald.de\" target=\"_blank\" class=\"mainleveltop_\" >University of Greifswald</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.mnf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Faculty</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.math-inf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Institute</a><span class=\"mainleveltop_\">&nbsp;|&nbsp;</span><a href=\"http://bioinf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\">Bioinformatics Group</a></td></tr></table></div><div id=\"banner\"><div id=\"banner_links\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php\" title=\"Institut f&uuml;r Mathematik und Informatik\"><img src=\"../images/header.gif\" alt=\"Directly to home\" /> </a></div><div id=\"banner_mitte\"><div id=\"bannertitel1\">Bioinformatics Web Server at University of Greifswald</div><div id=\"bannertitel2\">Gene Prediction with AUGUSTUS</div></div><div id=\"banner_rechts\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167\" title=\"Voderberg-Doppelspirale\"><img src=\"../images/spirale.gif\" align=\"left\" /></a></div></div><div id=\"wegweiser\">Navigation for: &nbsp; &nbsp;<span class=\"breadcrumbs pathway\">Submitt Training</span><div class=\"beendeFluss\"></div></div><!-- Ende: Kopfbereich --><!-- Start: Koerper --><div id=\"koerper\"><div id=\"linke_spalte\"><ul class=\"menu\"><li><a href=\"../index.gsp\"><span>Introduction</span></a></li><li><a href=\"/augustus-training/training/create\"><span>Submitt Training</span></a></li><li><a href=\"/augustus-training/prediction/create\"><span>Submitt Prediction</span></a></li><li><a href=\"../help.gsp\"><span>Help</span></a></li><li><a href=\"../references.gsp\"><span>Links & References</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de\"><span>Bioinformatics Group</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/impressum.html\"><span>Impressum</span></a></li></ul></div><div id=\"mittel_spalte\"><div class=\"main\" id=\"main\"><h1><font color=\"#006699\">The Server is Busy</font></h1><p>You tried to access the AUGUSTUS training job submission page.</p><p>Training parameters for gene prediction is a process that takes a lot of computation time. We estimate that one training process requires approximately 10 days. Our web server is able to process a certain number of jobs in parallel, and we established a waiting queue. The waiting queue has a limited length, though. Currently, all slots for computation and for waiting are occupied.</p><p>We apologize for the inconvenience! Please try to submitt your job in a couple of weeks, again.</p><p>Feel free to contact us in case your job is particularly urgent.</p></div><p>&nbsp;</p>           </div><div id=\"rechte_spalte\"><div class=\"linien_div\"><h5 class=\"ueberschrift_spezial\">CONTACT</h5><strong>Institute for Mathematics und Computer Sciences</strong><br/><strong>Bioinformatics Group</strong><br />Walther-Rathenau-Stra&szlig;e 47<br />17487 Greifswald<br />Germany<br />Tel.: +49 (0)3834 86 - 46 24<br/>Fax:  +49 (0)3834 86 - 46 40<br /><br /><a href=\"mailto:augustus-web@uni-greifswald.de\" title=\"E-Mail augustus-web@uni-greifswald.de, opens the standard mail program\">augustus-web@uni-greifswald.de</a></div></div><div class=\"beendeFluss\"></div></div><!-- Ende: Koerper --><!-- Start: Fuss --><div id=\"fuss\"><div id=\"fuss_links\"><p class=\"copyright\">&copy; 2011 University of Greifswald</p></div><div id=\"fuss_mitte\"><div class=\"bannergroup\"></div></div><div id=\"fuss_rechts\" ><ul><li><a href=\"#seitenanfang\"><img hspace=\"5\" height=\"4\" border=\"0\" width=\"7\" alt=\"Seitenanfang\" src=\"../images/top.gif\" />Top of page</a></li></ul></div><div class=\"beendeFluss\"></div></div><!-- Ende: Fuss --></body></html>"
+			render "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><meta name=\"layout\" content=\"main\" /><title>Submitt Training</title><script type=\"text/javascript\" src=\"js/md_stylechanger.js\"></script></head><body><!-- Start: Kopfbereich --><p class=\"unsichtbar\"><a href=\"#inhalt\" title=\"Directly to Contents\">Directly to Contents</a></p><div id=\"navigation_oben\"><a name=\"seitenanfang\"></a><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"1\"><tr><td nowrap=\"nowrap\"><a href=\"http://www.uni-greifswald.de\" target=\"_blank\" class=\"mainleveltop_\" >University of Greifswald</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.mnf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Faculty</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.math-inf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Institute</a><span class=\"mainleveltop_\">&nbsp;|&nbsp;</span><a href=\"http://bioinf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\">Bioinformatics Group</a></td></tr></table></div><div id=\"banner\"><div id=\"banner_links\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php\" title=\"Institut f&uuml;r Mathematik und Informatik\"><img src=\"../images/header.gif\" alt=\"Directly to home\" /> </a></div><div id=\"banner_mitte\"><div id=\"bannertitel1\">Bioinformatics Web Server at University of Greifswald</div><div id=\"bannertitel2\">Gene training with AUGUSTUS</div></div><div id=\"banner_rechts\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167\" title=\"Voderberg-Doppelspirale\"><img src=\"../images/spirale.gif\" align=\"left\" /></a></div></div><div id=\"wegweiser\">Navigation for: &nbsp; &nbsp;<span class=\"breadcrumbs pathway\">Submitt Training</span><div class=\"beendeFluss\"></div></div><!-- Ende: Kopfbereich --><!-- Start: Koerper --><div id=\"koerper\"><div id=\"linke_spalte\"><ul class=\"menu\"><li><a href=\"../index.gsp\"><span>Introduction</span></a></li><li><a href=\"/augustus-training/training/create\"><span>Submitt Training</span></a></li><li><a href=\"/augustus-training/training/create\"><span>Submitt training</span></a></li><li><a href=\"../help.gsp\"><span>Help</span></a></li><li><a href=\"../references.gsp\"><span>Links & References</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de\"><span>Bioinformatics Group</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/impressum.html\"><span>Impressum</span></a></li></ul></div><div id=\"mittel_spalte\"><div class=\"main\" id=\"main\"><h1><font color=\"#006699\">The Server is Busy</font></h1><p>You tried to access the AUGUSTUS training job submission page.</p><p>Training parameters for gene training is a process that takes a lot of computation time. We estimate that one training process requires approximately 10 days. Our web server is able to process a certain number of jobs in parallel, and we established a waiting queue. The waiting queue has a limited length, though. Currently, all slots for computation and for waiting are occupied.</p><p>We apologize for the inconvenience! Please try to submitt your job in a couple of weeks, again.</p><p>Feel free to contact us in case your job is particularly urgent.</p></div><p>&nbsp;</p>           </div><div id=\"rechte_spalte\"><div class=\"linien_div\"><h5 class=\"ueberschrift_spezial\">CONTACT</h5><strong>Institute for Mathematics und Computer Sciences</strong><br/><strong>Bioinformatics Group</strong><br />Walther-Rathenau-Stra&szlig;e 47<br />17487 Greifswald<br />Germany<br />Tel.: +49 (0)3834 86 - 46 24<br/>Fax:  +49 (0)3834 86 - 46 40<br /><br /><a href=\"mailto:augustus-web@uni-greifswald.de\" title=\"E-Mail augustus-web@uni-greifswald.de, opens the standard mail program\">augustus-web@uni-greifswald.de</a></div></div><div class=\"beendeFluss\"></div></div><!-- Ende: Koerper --><!-- Start: Fuss --><div id=\"fuss\"><div id=\"fuss_links\"><p class=\"copyright\">&copy; 2011 University of Greifswald</p></div><div id=\"fuss_mitte\"><div class=\"bannergroup\"></div></div><div id=\"fuss_rechts\" ><ul><li><a href=\"#seitenanfang\"><img hspace=\"5\" height=\"4\" border=\"0\" width=\"7\" alt=\"Seitenanfang\" src=\"../images/top.gif\" />Top of page</a></li></ul></div><div class=\"beendeFluss\"></div></div><!-- Ende: Fuss --></body></html>"
 			return
 		}		
 	} 
+	
+	// fill in sample data
+	def fillSample = {
+		redirect(action:create, params:[genome_ftp_link:"http://bioinf.uni-greifswald.de/trainaugustus/examples/chr1to3.fa", protein_ftp_link:"http://bioinf.uni-greifswald.de/trainaugustus/examples/rattusProteinsChr1to3.fa", project_name:"Mus_musculus"])
+	}
 
 	// the method commit is started if the "Submit Job" button on the website is hit. It is the main method of Training Controller and contains a Thread method that will continue running as a background process after the user is redirected to the job status page.
 	def commit = {
@@ -127,11 +136,31 @@ class TrainingController {
          		redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 			return
 		}else{
+			// retrieve parameters of form for early save()
+			def uploadedGenomeFile = request.getFile('GenomeFile')
+			def uploadedProteinFile = request.getFile('ProteinFile')
+	      		def uploadedEstFile = request.getFile('EstFile')
+			def uploadedStructFile = request.getFile('StructFile')
+			if(!(uploadedGenomeFile.empty)){
+	        		trainingInstance.genome_file = uploadedGenomeFile.originalFilename
+			}
+			if(!(uploadedProteinFile.empty)){
+				trainingInstance.protein_file = uploadedProteinFile.originalFilename
+			}
+			if(!(uploadedEstFile.empty)){
+				trainingInstance.est_file = uploadedEstFile.originalFilename
+			}
+			if(!(uploadedStructFile.empty)){
+				trainingInstance.hint_file = uploadedStructFile.originalFilename
+			}
+			trainingInstance.results_urls = ""
+			trainingInstance.message = ""
+			trainingInstance.save()
 			// info string for confirmation E-Mail
 			def confirmationString
 			confirmationString = "Training job ID: ${trainingInstance.accession_id}\n"
 			confirmationString = "${confirmationString}Species name: ${trainingInstance.project_name}\n"
-			def emailStr
+			def mailStr
 			trainingInstance.job_id = 0
 			trainingInstance.job_error = 0
 			// define flags for file format check, file removal in case of failure
@@ -176,15 +205,17 @@ class TrainingController {
 			if(trainingInstance.project_name =~ /\s/){
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The species name contained whitespaces.\n"
-				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+				if(trainingInstance.email_adress == null){
+					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+				}else{
+					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+				}
 			       flash.error = "Species name  ${trainingInstance.project_name} contains white spaces."
    	  		       redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}"])
 	  		       return
 			} 
 
 			// upload of genome file
-			def uploadedGenomeFile
-			uploadedGenomeFile = request.getFile('GenomeFile')
 			// check file size
 		        preUploadSize = uploadedGenomeFile.getSize()
 			def seqNames = []
@@ -194,7 +225,6 @@ class TrainingController {
 				if(preUploadSize <= maxButtonFileSize){
 					projectDir.mkdirs()
 					uploadedGenomeFile.transferTo( new File (projectDir, "genome.fa"))
-					trainingInstance.genome_file = uploadedGenomeFile.originalFilename
 					confirmationString = "${confirmationString}Genome file: ${trainingInstance.genome_file}\n"
 					if("${uploadedGenomeFile.originalFilename}" =~ /\.gz/){
 						logDate = new Date()
@@ -238,7 +268,11 @@ class TrainingController {
 						}	
 						delProc.waitFor()
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
 						flash.error = "The genome file contains metacharacters (*, ?, ...). This is not allowed."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -256,7 +290,11 @@ class TrainingController {
 						}
 						delProc.waitFor()
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
 						flash.error = "Genome file ${uploadedGenomeFile.originalFilename} is not in DNA fasta format."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -382,7 +420,12 @@ class TrainingController {
 						}
 						delProc.waitFor()
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Project directory ${projectDir} is deleted.\n${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Project directory ${projectDir} is deleted.\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
 						flash.error = "Genome file ${trainingInstance.genome_ftp_link} is not in DNA fasta format."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -394,14 +437,12 @@ class TrainingController {
 			}
  
 			// upload of est file
-			def uploadedEstFile = request.getFile('EstFile')
 			// check file size
 			preUploadSize = uploadedEstFile.getSize()
 			if(!uploadedEstFile.empty){
 				if(preUploadSize <= maxButtonFileSize){
 					projectDir.mkdirs()
 					uploadedEstFile.transferTo( new File (projectDir, "est.fa"))
-					trainingInstance.est_file = uploadedEstFile.originalFilename
 					confirmationString = "${confirmationString}cDNA file: ${trainingInstance.est_file}\n"
 					if("${uploadedEstFile.originalFilename}" =~ /\.gz/){
 						logDate = new Date()
@@ -453,7 +494,11 @@ class TrainingController {
 						}
 						delProc.waitFor()
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
 						flash.error = "The cDNA file contains metacharacters (*, ?, ...). This is not allowed."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -469,7 +514,11 @@ class TrainingController {
 						}
 						delProc.waitFor()
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
 						flash.error = "cDNA file ${uploadedEstFile.originalFilename} is not in DNA fasta format."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -513,7 +562,12 @@ class TrainingController {
 					delProc.waitFor()
 				}else{
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The selected cDNA file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The selected cDNA file was bigger than ${maxButtonFileSize}.\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
 						flash.error = "cDNA file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -555,7 +609,7 @@ class TrainingController {
 					error_code = st.nextInt();
 					if(!(error_code == 200)){
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The EST URL is not accessible. Response code: ${error_code}. Aborting job.\n"
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The EST URL is not accessible. Response code: ${error_code}.\n"
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
 						if(verb > 1){
@@ -563,6 +617,11 @@ class TrainingController {
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
 						delProc.waitFor()
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
 						flash.error = "Cannot retrieve cDNA file from HTTP/FTP link ${trainingInstance.est_ftp_link}."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -594,7 +653,11 @@ class TrainingController {
 						}
 						delProc.waitFor()
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
 						flash.error = "cDNA file ${trainingInstance.est_ftp_link} is not in DNA fasta format."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -606,14 +669,12 @@ class TrainingController {
 			}
 
 			// upload of structure file
-			def uploadedStructFile = request.getFile('StructFile')
 			// check file size
 			preUploadSize = uploadedStructFile.getSize()
 			if(!uploadedStructFile.empty){
 				if(preUploadSize <= maxButtonFileSize * 2){
 					projectDir.mkdirs()
-					uploadedStructFile.transferTo( new File (projectDir, "training-gene-structure.gff"))
-					trainingInstance.struct_file = uploadedStructFile.originalFilename
+					uploadedStructFile.transferTo( new File (projectDir, "training-gene-structure.gff"))\
 					confirmationString = "${confirmationString}Training gene structure file: ${trainingInstance.struct_file}\n"
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Uploaded training gene structure file ${uploadedStructFile.originalFilename} was renamed to training-gene-structure.gff and moved to ${projectDir}\n"
@@ -653,7 +714,11 @@ class TrainingController {
 							}
 							delProc.waitFor()
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							if(trainingInstance.email_adress == null){
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+							}else{
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							}
 							flash.error = "Gene Structure file contains metacharacters (*, ?, ...). This is not allowed."
 							redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 							return
@@ -679,7 +744,11 @@ class TrainingController {
 							}
 							delProc.waitFor()
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							if(trainingInstance.email_adress == null){
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+							}else{
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							}
 							redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 							return
 						}
@@ -688,7 +757,12 @@ class TrainingController {
 				}else{
 					def allowedStructSize = maxButtonFileSize * 2
 					logDate = new Date()
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The selected training gene structure file was bigger than ${allowedStructSize}. Submission rejected.\n"
+					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The selected training gene structure file was bigger than ${allowedStructSize}.\n"
+					if(trainingInstance.email_adress == null){
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+					}else{
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					}
 					flash.error = "Training gene structure file is bigger than ${allowedStructSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return	
@@ -736,18 +810,21 @@ class TrainingController {
 
 			// upload of protein file
 			def cRatio = 0
-			def uploadedProteinFile = request.getFile('ProteinFile')
 			// check file size
 			preUploadSize = uploadedProteinFile.getSize()
 			if(!uploadedProteinFile.empty){
 				if(preUploadSize <= maxButtonFileSize){
 					projectDir.mkdirs()
 					uploadedProteinFile.transferTo( new File (projectDir, "protein.fa"))
-					trainingInstance.protein_file = uploadedProteinFile.originalFilename
 					confirmationString = "${confirmationString}Protein file: ${trainingInstance.protein_file}\n"
 				}else{
 					logDate = new Date()
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The selected protein file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
+					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The selected protein file was bigger than ${maxButtonFileSize}.\n"
+					if(trainingInstance.email_adress == null){
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+					}else{
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					}
 					flash.error = "Protein file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return	
@@ -807,7 +884,11 @@ class TrainingController {
 					}
 					delProc.waitFor()
 					logDate = new Date()
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					if(trainingInstance.email_adress == null){
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+					}else{
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					}
 					flash.error = "The protein file contains metacharacters (*, ?, ...). This is not allowed."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return
@@ -824,7 +905,11 @@ class TrainingController {
 					}
 					delProc.waitFor()
 					logDate = new Date()
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					if(trainingInstance.email_adress == null){
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+					}else{
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					}
 					flash.error = "Your protein file was not recognized as a protein file. It may be DNA file. The training job was not started. Please contact augustus@uni-greifswald.de if you are completely sure this file is a protein fasta file."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return
@@ -840,7 +925,11 @@ class TrainingController {
 					}
 					delProc.waitFor()
 					logDate = new Date()
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					if(trainingInstance.email_adress == null){
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+					}else{
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					}
 					flash.error = "Protein file ${uploadedProteinFile.originalFilename} is not in protein fasta format."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return
@@ -915,7 +1004,7 @@ class TrainingController {
 					error_code = st.nextInt();
 					if(!(error_code == 200)){
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein URL is not accessible. Response code: ${error_code}. Aborting job.\n"
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein URL is not accessible. Response code: ${error_code}.\n"
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
 						if(verb > 1){
@@ -923,6 +1012,11 @@ class TrainingController {
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
 						delProc.waitFor()
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
 						flash.error = "Cannot retrieve protein file from HTTP/FTP link ${trainingInstance.protein_ftp_link}."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -960,7 +1054,11 @@ class TrainingController {
 						}
 						delProc.waitFor()
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
 						flash.error = "Protein file ${trainingInstance.protein_ftp_link} does not contain protein sequences."
 						redirect(action:create)
 						return
@@ -976,7 +1074,11 @@ class TrainingController {
 						}
 						delProc.waitFor()
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
 						flash.message = "Protein file ${trainingInstance.protein_ftp_link} is not in protein fasta format."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -989,6 +1091,9 @@ class TrainingController {
 			}
 			// send confirmation email and redirect
 			if(!trainingInstance.hasErrors() && trainingInstance.save()){
+				// save new variables in database
+				trainingInstance.message = ""
+				trainingInstance.save()
 				// generate empty results page
 				def emptyPageScript = new File("${projectDir}/emptyPage.sh")
 				cmd2Script = "${AUGUSTUS_SCRIPTS_PATH}/writeResultsPage.pl ${trainingInstance.accession_id} ${trainingInstance.project_name} ${dbFile} ${output_dir} ${web_output_dir} ${AUGUSTUS_CONFIG_PATH} ${AUGUSTUS_SCRIPTS_PATH} 0 &> /dev/null"
@@ -1005,14 +1110,22 @@ class TrainingController {
 				}
 				emptyPageExecution.waitFor()
 				trainingInstance.job_status = 0
-				emailStr = "Hello!\n\nThank you for submitting a job to train AUGUSTUS parameters for species ${trainingInstance.project_name}. The job status is available at http://bioinf.uni-greifswald.de/augustus-training-0.1/training/show/${trainingInstance.id}.\n\nDetails of your job:\n\n${confirmationString}\nYou will be notified by e-mail after computations of your job have finished. You will then find the results of your job at http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/index.html.\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
-				sendMail {
-					to "${trainingInstance.email_adress}"
-					subject "Your AUGUSTUS training job ${trainingInstance.accession_id}"
-					body """${emailStr}"""
-				}
-				logDate = new Date()
-				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Confirmation e-mail sent.\n"          
+				mailStr = "Details of your job:\n\n${confirmationString}\n"
+				trainingInstance.message = "---------------------------------------\n${logDate} - Message:\n"
+				trainingInstance.message = "${trainingInstance.message}---------------------------------------\n\n${mailStr}"
+				if(trainingInstance.email_adress != null){
+					msgStr = "Hello!\n\nThank you for submitting a job to train AUGUSTUS parameters for species ${trainingInstance.project_name}.\n\n${mailStr}The status/results page of your job is ${war_url}training/show/${trainingInstance.id}.\n\nYou will be notified by e-mail after computations of your job have finished.\n\nBest regards,\n\nthe AUGUSTUS web server team"
+					sendMail {
+						to "${trainingInstance.email_adress}"
+						subject "Your AUGUSTUS training job ${trainingInstance.accession_id}"
+						body """${msgStr}${footer}"""
+					}
+					logDate = new Date()
+					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Confirmation e-mail sent.\n"
+				}else{
+					logDate = new Date()
+					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Did not send confirmation e-mail because user stays anonymous, but everything is ok.\n"
+				}    
 				redirect(action:show,id:trainingInstance.id)
 				//forward(action:"show",id:trainingInstance.id)
 				//forward action: "show", id: trainingInstance.id
@@ -1136,23 +1249,34 @@ class TrainingController {
 							}
 							delProc.waitFor()
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							sendMail {
-								to "${trainingInstance.email_adress}"
-								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """Hello!
-
-Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided genome file ${trainingInstance.genome_ftp_link} contains metacharacters (e.g. * or ?). This is not allowed.
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""	
+							if(trainingInstance.email_adress == null){
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+							}else{
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							}
+							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name} was aborted\nbecause the provided genome file\n${trainingInstance.genome_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
+							logDate = new Date()
+							trainingInstance.message = "${trainingInstance.message}----------------------------"
+							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}-----------------------------"
+							trainingInstance.message = "------\n\n${mailStr}"
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
+							if(trainingInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+								sendMail {
+									to "${trainingInstance.email_adress}"
+									subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+									body """${msgStr}${footer}"""	
+								}
 							}
 							// delete database entry
-							trainingInstance.delete()
+							//trainingInstance.delete()
+							trainingInstance.results_urls = null
+							trainingInstance.job_status = 5
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
 							return
 						}
 						if(genomeFastaFlag == 1) {
@@ -1166,33 +1290,60 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							}
 							delProc.waitFor()
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							sendMail {
-								to "${trainingInstance.email_adress}"
-								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """Hello!
-
-Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided genome file ${trainingInstance.genome_ftp_link} was not in DNA fasta format.
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""	
+							if(trainingInstance.email_adress == null){
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+							}else{
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							}
+							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided genome file\n${trainingInstance.genome_ftp_link}\nwas not in DNA fasta format.\n\n"
+							logDate = new Date()
+							trainingInstance.message = "${trainingInstance.message}----------------------------"
+							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}-----------------------------"
+							trainingInstance.message = "------\n\n${mailStr}"
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
+							if(trainingInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+								sendMail {
+									to "${trainingInstance.email_adress}"
+									subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+									body """${msgStr}${footer}"""	
+								}
 							}
 							// delete database entry
-							trainingInstance.delete()
+							//trainingInstance.delete()
+							trainingInstance.results_urls = null
+							trainingInstance.job_status = 5
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
 							return
 						}
 					}else{// actions if remote file was bigger than allowed
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Genome file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
-						def errorStrMsg = "Hello!\nYour AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the genome file size was with ${genome_size} bytes bigger than ${maxFileSizeByWget} bytes. Please submitt a smaller genome file!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
-						sendMail {
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Genome file size exceeds permitted ${maxFileSizeByWget} bytes.\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
+						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the genome file size was with ${genome_size} bytes bigger than ${maxFileSizeByWget} bytes.\nPlease submitt a smaller genome file!\n\n"
+						logDate = new Date()
+						trainingInstance.message = "${trainingInstance.message}----------------------------"
+						trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+						trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+						trainingInstance.message = "${trainingInstance.message}-----------------------------"
+						trainingInstance.message = "------\n\n${mailStr}"
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
+						if(trainingInstance.email_adress != null){
+							msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+							sendMail {
 								to "${trainingInstance.email_adress}"
 								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """${errorStrMsg}"""
+								body """${msgStr}${footer}"""	
+							}
 						}
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
@@ -1202,7 +1353,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						delProc.waitFor()
 						// delete database entry
-						trainingInstance.delete()
+						//trainingInstance.delete()
+						trainingInstance.results_urls = null
+						trainingInstance.job_status = 5
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
 						return
 					}
 
@@ -1244,59 +1399,76 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							}
 							delProc.waitFor()
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							sendMail {
-								to "${trainingInstance.email_adress}"
-								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """Hello!
-
-Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided gene structure file contains metacharacters (e.g. * or ?). This is not allowed.
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""	
+							if(trainingInstance.email_adress == null){
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+							}else{
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							}
+							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided gene structure file contains metacharacters (e.g. * or ?).\nThis is not allowed.\n\n"
+							logDate = new Date()
+							trainingInstance.message = "${trainingInstance.message}----------------------------"
+							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}-----------------------------"
+							trainingInstance.message = "------\n\n${mailStr}"
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
+							if(trainingInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+								sendMail {
+									to "${trainingInstance.email_adress}"
+									subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+									body """${msgStr}${footer}"""	
+								}
 							}
 							// delete database entry
-							trainingInstance.delete()
+							//trainingInstance.delete()
+							trainingInstance.results_urls = null
+							trainingInstance.job_status = 5
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
 							return
 						}
 						if(gffColErrorFlag == 1 && structureGbkFlag == 0){
 							logDate = new Date()
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Training gene structure file does not always contain 9 columns.\n"
-							sendMail {
-								to "${trainingInstance.email_adress}"
-								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """Hello!
-
-Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided training gene structure file ${trainingInstance.struct_file} did not contain 9 columns in each line. Please make sure the gff-format complies with the instructions in our 'Help' section before submitting another job!
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus/
-"""
+							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided training gene structure file\n${trainingInstance.struct_file}\ndid not contain 9 columns in each line.\nPlease make sure the gff-format complies with the instructions in our 'Help' section before\nsubmitting another job!\n\n"
+							logDate = new Date()
+							trainingInstance.message = "${trainingInstance.message}----------------------------"
+							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}-----------------------------"
+							trainingInstance.message = "------\n\n${mailStr}"
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
+							if(trainingInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+								sendMail {
+									to "${trainingInstance.email_adress}"
+									subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"	
+									body """${msgStr}${footer}"""	
+								}
 							}
 						}
 						if(gffNameErrorFlag == 1 && structureGbkFlag == 0){
 							logDate = new Date()
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Training gene structure file contains entries that do not comply with genome sequence names.\n"
-							sendMail {
-								to "${trainingInstance.email_adress}"
-								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """Hello!
-
-Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the sequence names in the provided training gene structure file ${trainingInstance.struct_file} did not comply with the sequence names in the supplied genome file ${trainingInstance.genome_ftp_link}. Please make sure the gff-format complies with the instructions in our 'Help' section before submitting another job!
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the sequence names in the provided training gene structure file\n${trainingInstance.struct_file}\ndid not comply with the sequence names in the supplied genome file\n${trainingInstance.genome_ftp_link}.\nPlease make sure the gff-format complies with the instructions in our 'Help' section\nbefore submitting another job!\n\n"
+							logDate = new Date()
+							trainingInstance.message = "${trainingInstance.message}----------------------------"
+							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}-----------------------------"
+							trainingInstance.message = "------\n\n${mailStr}"
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
+							if(trainingInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+								sendMail {
+									to "${trainingInstance.email_adress}"
+									subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"	
+									body """${msgStr}${footer}"""	
+								}
 							}
 						}
 						if((gffColErrorFlag == 1 || gffNameErrorFlag == 1) && structureGbkFlag == 0){
@@ -1310,9 +1482,17 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							}
 							delProc.waitFor()
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							if(trainingInstance.email_adress == null){
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+							}else{
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							}
 							// delete database entry
-							trainingInstance.delete()
+							//trainingInstance.delete()
+							trainingInstance.results_urls = null
+							trainingInstance.job_status = 5
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
 							return
 						}
 					}
@@ -1452,23 +1632,34 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							}
 							delProc.waitFor()
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							sendMail {
-								to "${trainingInstance.email_adress}"
-								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """Hello!
-
-Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided cDNA file ${trainingInstance.est_ftp_link} contains metacharacters (e.g. * or ?). This is not allowed.
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""	
+							if(trainingInstance.email_adress == null){
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+							}else{
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							}
+							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided cDNA file\n${trainingInstance.est_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
+							logDate = new Date()
+							trainingInstance.message = "${trainingInstance.message}----------------------------"
+							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}-----------------------------"
+							trainingInstance.message = "------\n\n${mailStr}"
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
+							if(trainingInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+								sendMail {
+									to "${trainingInstance.email_adress}"
+									subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"	
+									body """${msgStr}${footer}"""	
+								}
 							}
 							// delete database entry
-							trainingInstance.delete()
+							//trainingInstance.delete()
+							trainingInstance.results_urls = null
+							trainingInstance.job_status = 5
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
 							return
 						}
 						if(estFastaFlag == 1) {
@@ -1482,33 +1673,60 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							}
 							delProc.waitFor()
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							sendMail {
-								to "${trainingInstance.email_adress}"
-								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """Hello!
-
-Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided cDNA file ${trainingInstance.est_ftp_link} was not in DNA fasta format.
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+							if(trainingInstance.email_adress == null){
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+							}else{
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							}
+							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided cDNA file\n${trainingInstance.est_ftp_link}\nwas not in DNA fasta format.\n\n"
+							logDate = new Date()
+							trainingInstance.message = "${trainingInstance.message}----------------------------"
+							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}-----------------------------"
+							trainingInstance.message = "------\n\n${mailStr}"
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
+							if(trainingInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+								sendMail {
+									to "${trainingInstance.email_adress}"
+									subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"	
+									body """${msgStr}${footer}"""	
+								}
 							}
 							// delete database entry
-							trainingInstance.delete()
+							//trainingInstance.delete()
+							trainingInstance.results_urls = null
+							trainingInstance.job_status = 5
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
 							return
 						}
 					}else{// actions if remote file was bigger than allowed
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  EST file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
-						def errorStrMsg = "Hello!\nYour AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the cDNA file size was with ${est_size} bigger than 1 GB. Please submitt a smaller cDNA size!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
-						sendMail {
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  EST file size exceeds permitted ${maxFileSizeByWget} bytes.\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
+						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the cDNA file size was with ${est_size} bigger than 1 GB.\nPlease submitt a smaller cDNA size!\n\n"
+						logDate = new Date()
+						trainingInstance.message = "${trainingInstance.message}----------------------------"
+						trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+						trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+						trainingInstance.message = "${trainingInstance.message}-----------------------------"
+						trainingInstance.message = "------\n\n${mailStr}"
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
+						if(trainingInstance.email_adress != null){
+							msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+							sendMail {
 								to "${trainingInstance.email_adress}"
-								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """${errorStrMsg}"""
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"	
+								body """${msgStr}${footer}"""	
+							}
 						}
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
@@ -1518,7 +1736,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						delProc.waitFor()
 						// delete database entry
-						trainingInstance.delete()
+						//trainingInstance.delete()
+						trainingInstance.results_urls = null
+						trainingInstance.job_status = 5
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
 						return
 
 					}
@@ -1578,12 +1800,28 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					def avEstLen = totalLen/nEntries
 					if(avEstLen < estMinLen){
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  EST sequences are on average shorter than ${estMinLen}, suspect RNAseq raw data. Abort job.\n"
-						def errorStrMsg = "Hello!\nYour AUGUSTUS training job ${trainingInstance.accession_id} was aborted because the sequences in your cDNA file have an average length of ${avEstLen}. We suspect that sequences files with an average sequence length shorter than ${estMinLen} might contain RNAseq raw sequences. Currently, our web server application does not support the integration of RNAseq raw sequences. Please either assemble your sequences into longer contigs, or remove short sequences from your current file, or submitt a new job without specifying a cDNA file.\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
-						sendMail {
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  EST sequences are on average shorter than ${estMinLen}, suspect RNAseq raw data.\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
+						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted because the sequences in your\ncDNA file have an average length of ${avEstLen}. We suspect that sequences files\nwith an average sequence length shorter than ${estMinLen} might\ncontain RNAseq raw sequences. Currently, our web server application does not support\nthe integration of RNAseq raw sequences. Please either assemble\nyour sequences into longer contigs, or remove short sequences from your current file,\nor submitt a new job without specifying a cDNA file.\n\n"
+						logDate = new Date()
+						trainingInstance.message = "${trainingInstance.message}----------------------------"
+						trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+						trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+						trainingInstance.message = "${trainingInstance.message}-----------------------------"
+						trainingInstance.message = "------\n\n${mailStr}"
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
+						if(trainingInstance.email_adress != null){
+							msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+							sendMail {
 								to "${trainingInstance.email_adress}"
-								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """${errorStrMsg}"""
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"	
+								body """${msgStr}${footer}"""	
+							}
 						}
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
@@ -1593,16 +1831,36 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						delProc.waitFor()
 						// delete database entry
-						trainingInstance.delete()
+						//trainingInstance.delete()
+						trainingInstance.results_urls = null
+						trainingInstance.job_status = 5
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
 						return
 					}else if(avEstLen > estMaxLen){
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  EST sequences are on average longer than ${estMaxLen}, suspect non EST/cDNA data. Abort job.\n"
-						def errorStrMsg = "Hello!\nYour AUGUSTUS training job ${trainingInstance.accession_id} was aborted because the sequences in your cDNA file have an average length of ${avEstLen}. We suspect that sequences files with an average sequence length longer than ${estMaxLen} might not contain ESTs or cDNAs. Please either remove long sequences from your current file, or submitt a new job without specifying a cDNA file.\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
-						sendMail {
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  EST sequences are on average longer than ${estMaxLen}, suspect non EST/cDNA data.\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
+						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted because\nthe sequences in your cDNA file have an average length of ${avEstLen}.\nWe suspect that sequences files with an average sequence length longer than ${estMaxLen}\nmight not contain ESTs or cDNAs. Please either remove long sequences from your\ncurrent file, or submitt a new job without specifying a cDNA file.\n\n"
+						logDate = new Date()
+						trainingInstance.message = "${trainingInstance.message}----------------------------"
+						trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+						trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+						trainingInstance.message = "${trainingInstance.message}-----------------------------"
+						trainingInstance.message = "------\n\n${mailStr}"
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
+						if(trainingInstance.email_adress != null){
+							msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+							sendMail {
 								to "${trainingInstance.email_adress}"
-								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """${errorStrMsg}"""
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"	
+								body """${msgStr}${footer}"""	
+							}
 						}
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
@@ -1612,7 +1870,11 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						delProc.waitFor()
 						// delete database entry
-						trainingInstance.delete()
+						//trainingInstance.delete()
+						trainingInstance.results_urls = null
+						trainingInstance.job_status = 5
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
 						return
 					}
 				}
@@ -1716,23 +1978,34 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							}
 							delProc.waitFor()
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							sendMail {
-								to "${trainingInstance.email_adress}"
-								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """Hello!
-
-Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided protein file ${trainingInstance.protein_ftp_link} contains metacharacters (e.g. * or ?). This is not allowed.
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""	
+							if(trainingInstance.email_adress == null){
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+							}else{
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							}
+							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided protein file\n${trainingInstance.protein_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
+							logDate = new Date()
+							trainingInstance.message = "${trainingInstance.message}----------------------------"
+							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}-----------------------------"
+							trainingInstance.message = "------\n\n${mailStr}"
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
+							if(trainingInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+								sendMail {
+									to "${trainingInstance.email_adress}"
+									subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"		
+									body """${msgStr}${footer}"""	
+								}
 							}
 							// delete database entry
-							trainingInstance.delete()
+							//trainingInstance.delete()
+							trainingInstance.results_urls = null
+							trainingInstance.job_status = 5
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
 							return
 						}
 						cRatio = cytosinCounter/allAminoAcidsCounter
@@ -1747,36 +2020,67 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							}
 							delProc.waitFor()
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							sendMail {
-								to "${trainingInstance.email_adress}"
-								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """Hello!
-
-Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided protein file ${trainingInstance.protein_ftp_link} is suspected to contain DNA instead of protein sequences.
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""		
+							if(trainingInstance.email_adress == null){
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+							}else{
+								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+							}
+							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided protein file\n${trainingInstance.protein_ftp_link}\nis suspected to contain DNA instead of protein sequences.\n\n"
+							logDate = new Date()
+							trainingInstance.message = "${trainingInstance.message}----------------------------"
+							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}-----------------------------"
+							trainingInstance.message = "------\n\n${mailStr}"
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
+							if(trainingInstance.email_adress != null){
+								msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+								sendMail {
+									to "${trainingInstance.email_adress}"
+									subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"		
+									body """${msgStr}${footer}"""	
+								}
 							}
 							// delete database entry
-							trainingInstance.delete()
+							//trainingInstance.delete()
+							trainingInstance.results_urls = null
+							trainingInstance.job_status = 5
+							trainingInstance = trainingInstance.merge()
+							trainingInstance.save()
 							return
 						}
 					}else{// actions if remote file was bigger than allowed
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Protein file size exceeds permitted ${maxFileSizeByWget} bytes. Abort job.\n"
-						def errorStrMsg = "Hello!\nYour AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the protein file size was with ${protein_size} bigger than 1 GB. Please submitt a smaller protein size!\n\nBest regards,\n\nthe AUGUSTUS web server team\n\nhttp://bioinf.uni-greifswald.de/trainaugustus\n"
-						sendMail {
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Protein file size exceeds permitted ${maxFileSizeByWget} bytes.\n"
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
+						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the protein file size was with ${protein_size} bigger than 1 GB.\nPlease submitt a smaller protein size!\n\n"
+						logDate = new Date()
+						trainingInstance.message = "${trainingInstance.message}----------------------------"
+						trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+						trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+						trainingInstance.message = "${trainingInstance.message}-----------------------------"
+						trainingInstance.message = "------\n\n${mailStr}"
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
+						if(trainingInstance.email_adress != null){
+							msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+							sendMail {
 								to "${trainingInstance.email_adress}"
 								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-								body """${errorStrMsg}"""
+								body """${msgStr}${footer}"""	
+							}
 						}
 						// delete database entry
-						trainingInstance.delete()
+						//trainingInstance.delete()
+						trainingInstance.results_urls = null
+						trainingInstance.job_status = 5
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
 						if(verb > 1){
@@ -1797,23 +2101,34 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						}
 						delProc.waitFor()
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						sendMail {
-							to "${trainingInstance.email_adress}"
-							subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
-							body """Hello!
-
-Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} was aborted because the provided protein file ${trainingInstance.protein_ftp_link} is not in fasta format.
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+						if(trainingInstance.email_adress == null){
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						}else{
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+						}
+						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided protein file\n${trainingInstance.protein_ftp_link}\nis not in fasta format.\n\n"
+						logDate = new Date()
+						trainingInstance.message = "${trainingInstance.message}----------------------------"
+						trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+						trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+						trainingInstance.message = "${trainingInstance.message}-----------------------------"
+						trainingInstance.message = "------\n\n${mailStr}"
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
+						if(trainingInstance.email_adress != null){
+							msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+							sendMail {
+								to "${trainingInstance.email_adress}"
+								subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+								body """${msgStr}${footer}"""	
+							}
 						}
 						// delete database entry
-						trainingInstance.delete()
+						//trainingInstance.delete()
+						trainingInstance.results_urls = null
+						trainingInstance.job_status = 5
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
 						return
 					}
 					def proteinCksumScript = new File("${projectDir}/protein_cksum.sh")
@@ -1860,19 +2175,18 @@ http://bioinf.uni-greifswald.de/trainaugustus
 
 				// confirm file upload via e-mail
 				if((!(trainingInstance.genome_ftp_link == null)) || (!(trainingInstance.protein_ftp_link == null)) || (!(trainingInstance.est_ftp_link == null))){
-					sendMail {
-						to "${trainingInstance.email_adress}"
-						subject "File upload has been completed for AUGUSTUS training job ${trainingInstance.accession_id}"
-						body """Hello!
-
-We have retrieved all files that you specified, successfully. You may delete them from the public server, now, without affecting the AUGUSTUS training job.
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+					mailStr = "We have retrieved all files that you specified, successfully. You may delete\nthem from the public server, now, without affecting the AUGUSTUS training job.\n\n"
+					logDate = new Date()
+					trainingInstance.message = "${trainingInstance.message}---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
+					trainingInstance = trainingInstance.merge()
+					trainingInstance.save()
+					if(trainingInstance.email_adress != null){
+						msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+						sendMail {
+							to "${trainingInstance.email_adress}"
+							subject "File upload has been completed for AUGUSTUS training job ${trainingInstance.accession_id}"
+							body """${msgStr}${footer}"""
+						}
 					}
 				}
 
@@ -1896,7 +2210,7 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				def grepContent = new File("${grepResult}").text
 				if(grepContent =~ /Struct-Cksum/){
 					//job was submitted before. Send E-Mail to user with a link to the results.
-					def id_array = grepContent =~ /Grails-ID: \[(\d*)\] /
+					def id_array = grepContent =~ /Grails-ID: \[(\w*)\] /
 					oldID
 					(0..id_array.groupCount()).each{oldID = "${id_array[0][it]}"}
 					def oldAccScript = new File("${projectDir}/oldAcc.sh")
@@ -1914,29 +2228,22 @@ http://bioinf.uni-greifswald.de/trainaugustus
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					oldAccScriptProc.waitFor()
-					def oldAccContent = new File("${oldAccResult}").text	      
-					sendMail {
-						to "${trainingInstance.email_adress}"
-						subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was submitted before as job ${oldAccContent}"
-						body """Hello!
-
-You submitted job ${trainingInstance.accession_id} for species ${trainingInstance.project_name}. The job was aborted because the files that you submitted were submitted, before. 
-
-Details of your job:
-${confirmationString}
-
-The job status of the previously submitted job is available at http://bioinf.uni-greifswald.de/augustus-training-0.1/training/show/${oldID}
-
-The results are available at http://bioinf.uni-greifswald.de/trainaugustus/training-results/${oldAccContent}/index.html (Results are only available in case the previously submitted job's computations have finished, already.)
-
-Thank you for using AUGUSTUS!
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+					def oldAccContent = new File("${oldAccResult}").text	
+					mailStr = "You submitted job ${trainingInstance.accession_id}.\nThe job was aborted because the files that you submitted were submitted, before.\n\n"
+					trainingInstance.old_url = "${war_url}training/show/${oldID}"
+					logDate = new Date()
+					trainingInstance.message = "${trainingInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+					trainingInstance = trainingInstance.merge()
+					trainingInstance.save()
+					if(trainingInstance.email_adress != null){
+						msgStr = "Hello!\n\n${mailStr}The old job with identical input files and identical parameters"
+						msgStr = "${msgStr} is available at\n${war_url}training/show/${oldID}.\n\nBest regards,\n\n"
+						msgStr = "${msgStr}the AUGUSTUS web server team"
+						sendMail {
+							to "${trainingInstance.email_adress}"
+							subject "AUGUSTUS training job ${trainingInstance.accession_id} was submitted before as job ${oldAccContent}"
+							body """${msgStr}${footer}"""
+						}
 					}
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Data are identical to old job ${oldAccContent} with Accession-ID ${oldAccContent}. ${projectDir} is deleted.\n"
@@ -1948,8 +2255,16 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					}
 					//delProc.waitFor()
 					logDate = new Date()
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted, the user is informed!\n"
-					trainingInstance.delete()
+					if(trainingInstance.email_adress == null){
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+					}else{
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted! The user has been informed.\n"
+					}
+					//trainingInstance.delete()
+					trainingInstance.results_urls = null
+					trainingInstance.job_status = 5
+					trainingInstance = trainingInstance.merge()
+					trainingInstance.save()
 					return
 				} // end of job was submitted before check
 				//Write DB file: 
@@ -2056,9 +2371,10 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - checking job SGE status...\n"
 				while(qstat == 1){
-					sleep(300000) // 5 minutes
+					sleep(30) // 300000 = 5 minutes
 					statusCheck = "bash ${projectDir}/status.sh".execute()
 					statusCheck.waitFor()
+					sleep(100)
 					statusContent = new File("${statusFile}").text
 					if(statusContent =~ /qw/){ 
 						trainingInstance.job_status = 2 
@@ -2074,6 +2390,12 @@ http://bioinf.uni-greifswald.de/trainaugustus
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job ${jobID} begins running at ${today}.\n"
 						}
 						runFlag = 1
+					}else if(!statusContent.empty){
+						trainingInstance.job_status = 3
+						trainingInstance = trainingInstance.merge()
+						trainingInstance.save()
+						logDate = new Date()
+						logFile << "${logDate} ${trainingInstance.accession_id} v1 - Job ${jobID} is neither in qw nor in r status but is still on the grid!\n"
 					}else{
 						trainingInstance.job_status = 4
 						trainingInstance = trainingInstance.merge()
@@ -2086,7 +2408,45 @@ http://bioinf.uni-greifswald.de/trainaugustus
 			   	}
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job status is ${trainingInstance.job_status} when job leaves SGE.\n"
-
+				// collect results link information
+				if(new File("${web_output_dir}/${trainingInstance.accession_id}/AutoAug.log").exists()){
+					trainingInstance.results_urls = "<p><b>Log-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/AutoAug.log\">AutoAug.log</a><br></p>"
+				}
+				if(new File("${web_output_dir}/${trainingInstance.accession_id}/AutoAug.err").exists()){
+					if(trainingInstance.results_urls == null){
+						trainingInstance.results_urls = "<p><b>Error-file/b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/AutoAug.err\">AutoAug.err</a><br></p>"
+					}else{
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Error-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/AutoAug.err\">AutoAug.err</a><br></p>"
+					}
+				}
+				if(new File("${web_output_dir}/${trainingInstance.accession_id}/parameters.tar.gz").exists()){
+					if(trainingInstance.results_urls == null){
+						trainingInstance.results_urls = "<p><b>Species parameter archive</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/parameters.tar.gz\">parameters.tar.gz</a><br></p>"
+					}else{
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Species parameter archive</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/parameters.tar.gz\">parameters.tar.gz</a><br></p>"
+					}
+				}
+				if(new File("${web_output_dir}/${trainingInstance.accession_id}/training.gb.gz").exists()){
+					if(trainingInstance.results_urls == null){
+						trainingInstance.results_urls = "<p><b>Training genes</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/training.gb.gz\">training.gb.gz</a><br></p>"
+					}else{
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Training genes</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/training.gb.gz\">training.gb.gz</a><br></p>"
+					}
+				}
+				if(new File("${web_output_dir}/${trainingInstance.accession_id}/ab_initio.tar.gz").exists()){
+					if(trainingInstance.results_urls == null){
+						trainingInstance.results_urls = "<p><b>Ab initio predictions</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/ab_initio.tar.gz\">ab_initio.tar.gz</a><br></p>"
+					}else{
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Ab initio predictions</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/ab_initio.tar.gz\">ab_initio.tar.gz</a><br></p>"
+					}
+				}
+				if(new File("${web_output_dir}/${trainingInstance.accession_id}/hints_pred.tar.gz").exists()){
+					if(trainingInstance.results_urls == null){
+						trainingInstance.results_urls = "<p><b>Predictions with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/hints_pred.tar.gz\">hints_pred.tar.gz</a><br></p>"
+					}else{
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Predictions with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/training.gb.gz\">training.gb.gz</a><br></p>"
+					}
+				}
 			   	// check whether errors occured by log-file-sizes
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Beginning to look for errors.\n"
@@ -2121,21 +2481,27 @@ http://bioinf.uni-greifswald.de/trainaugustus
 				if(autoAugErrSize==0 && sgeErrSize==0 && writeResultsErrSize==0){
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  no errors occured (option 1).\n"
-					sendMail {
-						to "${trainingInstance.email_adress}"
-						subject "Your AUGUSTUS training job ${trainingInstance.accession_id} is complete"
-						body """Hello!
 
-Your AUGUSTUS training job ${trainingInstance.accession_id} for species ${trainingInstance.project_name} is complete. You find the results at http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/index.html .
-
-Thank you for using AUGUSTUS!
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
+					mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} finished.\n\n"
+					logDate = new Date()
+					trainingInstance.message = "${trainingInstance.message}---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
+					trainingInstance = trainingInstance.merge()
+					trainingInstance.save()
+					if(trainingInstance.email_adress == null){
+						logDate = new Date()
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Computation was successful. Did not send e-mail to user because not e-mail adress was supplied.\n"
+					}
+					if(trainingInstance.email_adress != null){
+						msgStr = "Hello!\n\n${mailStr}You find the results at "
+						msgStr = "${msgStr}${war_url}training/show/${trainingInstance.id}.\n\nBest regards,\n\n"
+						msgStr = "${msgStr}the AUGUSTUS web server team"
+						sendMail {
+							to "${trainingInstance.email_adress}"
+							subject "AUGUSTUS training job ${trainingInstance.accession_id} is complete"
+							body """${msgStr}${footer}"""
+						}
+						logDate = new Date()
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Sent confirmation Mail that job computation was successful.\n"
 					}
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Sent confirmation Mail that job computation was successful.\n"
@@ -2181,18 +2547,26 @@ http://bioinf.uni-greifswald.de/trainaugustus
 					if(!(autoAugErrSize == 0)){
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  an error occured when autoAug.pl was executed!\n"; 
-						sendMail {
-						to "${admin_email}"
-						subject "Error in AUGUSTUS training job ${trainingInstance.accession_id}"
-						body """Hi ${admin_email}!
-
-Job: ${trainingInstance.accession_id}
-E-Mail: ${trainingInstance.email_adress}
-Species: ${trainingInstance.project_name}
-Link: http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/index.html
-
-An error occured in the autoAug pipeline. Please check manually what's wrong. The user has been informed.
-"""
+						msgStr = "Hi ${admin_email}!\n\nJob: ${trainingInstance.accession_id}\n"
+						msgStr = "${msgStr}IP: ${userIP}\n"
+						msgStr = "${msgStr}E-Mail: ${trainingInstance.email_adress}\n"
+						msgStr = "${msgStr}Link: ${war_url}training/show/${trainingInstance.id}\n\n"
+						msgStr = "${msgStr}An error occured in the autoAug pipeline. "
+						msgStr = "${msgStr}Please check manually what's wrong.  "
+						if(trainingInstance.email_adress == null){
+							msgStr = "${msgStr}The user has not been informed."
+							sendMail {
+							to "${admin_email}"
+							subject "Error in AUGUSTUS training job ${trainingInstance.accession_id}"
+							body """${msgStr}${footer}"""	
+							}
+						}else{
+							msgStr = "${msgStr}The user has been informed."
+							sendMail {
+							to "${admin_email}"
+							subject "Error in AUGUSTUS training job ${trainingInstance.accession_id}"
+							body """${msgStr}${footer}"""	
+							}
 						}
 						trainingInstance.job_error = 5
 						trainingInstance = trainingInstance.merge()
@@ -2234,18 +2608,27 @@ An error occured in the autoAug pipeline. Please check manually what's wrong. Th
 					if(!(sgeErrSize == 0)){
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  a SGE error occured!\n";
-						sendMail {
-						to "${admin_email}"
-						subject "Error in AUGUSTUS training job ${trainingInstance.accession_id}"
-						body """Hi ${admin_email}!
-
-Job: ${trainingInstance.accession_id}
-E-Mail: ${trainingInstance.email_adress}
-Species: ${trainingInstance.project_name}
-Link: http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/index.html
-
-An SGE error occured. Please check manually what's wrong. The user has been informed.
-"""
+						logDate = new Date()
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - a SGE error occured!\n";
+						msgStr = "Hi ${admin_email}!\n\nJob: ${trainingInstance.accession_id}\n"
+						msgStr = "${msgStr}IP: ${userIP}\n"
+						msgStr = "${msgStr}E-Mail: ${trainingInstance.email_adress}\n"
+						msgStr = "${msgStr}Link: ${war_url}training/show/${trainingInstance.id}\n\n"
+						msgStr = "${msgStr}An SGE error occured. Please check manually what's wrong. "
+						if(trainingInstance.email_adress == null){
+							msgStr = "${msgStr}The user has not been informed."
+							sendMail {
+							to "${admin_email}"
+							subject "Error in AUGUSTUS training job ${trainingInstance.accession_id}"
+							body """${msgStr}${footer}"""	
+							}
+						}else{
+							msgStr = "${msgStr}The user has been informed."
+							sendMail {
+							to "${admin_email}"
+							subject "Error in AUGUSTUS training job ${trainingInstance.accession_id}"
+							body """${msgStr}${footer}"""	
+							}
 						}
 						trainingInstance.job_error = 5
 						trainingInstance = trainingInstance.merge()
@@ -2256,44 +2639,54 @@ An SGE error occured. Please check manually what's wrong. The user has been info
 					if(!(writeResultsErrSize == 0)){
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  an error occured during writing results!\n";
-						sendMail {
+						msgStr = "Hi ${admin_email}!\n\nJob: ${trainingInstance.accession_id}\n"
+						msgStr = "${msgStr}IP: ${userIP}\n"
+						msgStr = "${msgStr}E-Mail: ${trainingInstance.email_adress}\n"
+						msgStr = "${msgStr}Link: ${war_url}training/show/${trainingInstance.id}\n\n"
+						msgStr = "${msgStr}An error occured during writing results. Please check manually what's wrong. "
+						if(trainingInstance.email_adress == null){
+							msgStr = "${msgStr}The user has not been informed."
+							sendMail {
 							to "${admin_email}"
 							subject "Error in AUGUSTUS training job ${trainingInstance.accession_id}"
-							body """Hi ${admin_email}!
-
-Job: ${trainingInstance.accession_id}
-E-Mail: ${trainingInstance.email_adress}
-Species: ${trainingInstance.project_name}
-Link: http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/index.html
-
-An error occured during writing results. Please check manually what's wrong. The user has been informed.
-"""
+							body """${msgStr}${footer}"""	
+							}
+						}else{
+							msgStr = "${msgStr}The user has been informed."
+							sendMail {
+							to "${admin_email}"
+							subject "Error in AUGUSTUS training job ${trainingInstance.accession_id}"
+							body """${msgStr}${footer}"""	
+							}
 						}
 					}
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job status is ${trainingInstance.job_error} after all errors have been checked.\n"
-					sendMail {
-					to "${trainingInstance.email_adress}"
-						subject "A problem occured during execution of your AUGUSTUS training job ${trainingInstance.accession_id}"
-						body """Hello!
 
-A problem occured while training AUGUSTUS for species ${trainingInstance.project_name} (Job ${trainingInstance.accession_id}).
 
-You find the results page of your job at http://bioinf.uni-greifswald.de/trainaugustus/training-results/${trainingInstance.accession_id}/index.html. Please check the provided log-files carefully before proceeding to work with the produced results. Please contact us (augustus-web@uni-greifswald.de) in case you are in doubt about the results.
-
-Thank you for using AUGUSTUS!
-
-Best regards,
-
-the AUGUSTUS web server team
-
-http://bioinf.uni-greifswald.de/trainaugustus
-"""
-					}
+					mailStr = "An error occured while running the AUGUSTUS training job ${trainingInstance.accession_id}.\n\n Please check the log-files carefully before proceeding to work with the produced results.\nPlease contact augustus-web@uni-greifswald.de in case you are in doubt about the results.\n\n"
+					logDate = new Date()
+					trainingInstance.message = "${trainingInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}Please contact augustus-web@uni-greifswald.de if you want to find out what went wrong.\n\n"
+					trainingInstance = trainingInstance.merge()
+					trainingInstance.save()
+					if(trainingInstance.email_adress == null){
+						logDate = new Date()
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The job is in an error state. Cound not send e-mail to anonymous user because no email adress was supplied.\n"
+					}else{
+						msgStr = "Hello!\n\n${mailStr}You find the results of your job at ${war_url}training/show/${trainingInstance.id}.\n\nThe administrator of the AUGUSTUS web server has been informed and"
+						msgStr = "${msgStr} will get back to you as soon as the problem is solved.\n\nBest regards,\n\n"
+						msgStr = "${msgStr}the AUGUSTUS web server team"
+						sendMail {
+							to "${trainingInstance.email_adress}"
+							subject "An error occured while executing AUGUSTUS training job ${trainingInstance.accession_id}"
+							body """${msgStr}${footer}"""
+						}
+						logDate = new Date()
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Sent confirmation Mail, the job is in an error state.\n"
+					}					
 				}
 			}
 			//------------ END BACKGROUND PROCESS ----------------------------------
-
 		}
 	}
 }

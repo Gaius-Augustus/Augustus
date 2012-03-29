@@ -152,7 +152,7 @@
                          <tbody>
                              <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="ArchiveFile"><b>AUGUSTUS species parameters</b></label>
+                                    <label for="ArchiveFile"><b>AUGUSTUS species parameters</b> <font color="#FF0000">*</font></label>
                                 </td>
                                 <td valitn="top">
                                 </td>
@@ -186,7 +186,7 @@
                          <tbody>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="GenomeFile"><b>Genome file</b>&nbsp; <a href="../help.gsp#genome_file"><small>Help</small></a></label>
+                                    <label for="GenomeFile"><b>Genome file</b> <font color="#FF0000">*</font>&nbsp; <a href="../help.gsp#genome_file"><small>Help</small></a></label>
                                 </td>
                                 <td valign="top">
                                 </td>
@@ -309,11 +309,12 @@
 				<tbody>
 					<tr class="prop">
 						<td valign="top" class="name">
-							<img src="${createLink(controller: 'simpleCaptcha', action: 'captcha')}"/> &nbsp; &nbsp; <g:textField name="captcha"/>
+							<img src="${createLink(controller: 'simpleCaptcha', action: 'captcha')}"/> &nbsp; &nbsp; <g:textField name="captcha"/> <font color="#FF0000">*</font>
 						</td>
 					</tr>
 				</tbody>
 			</table>
+			<p><font color="#FF0000">*</font>) mandatory input arguments</p>
                 </div>
 
                				<div class="buttons" onclick="toggle_visibility('spinner');">

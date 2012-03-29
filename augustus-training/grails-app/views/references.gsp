@@ -80,8 +80,13 @@
      </ul>
   </div>
  <div id="mittel_spalte">
-<div class="main" id="main">
-   <h1><a href="references.gsp">References & Links</a></h1>
+    <table class="contentpaneopen">
+      <tr>
+	<td class="contentheading" width="100%">
+	  <font color="#006699">References & Links</font>
+        </td>
+      </tr>
+    </table>
             <g:if test="${flash.message}">
             <div class="message">${flash.message}</div>
             </g:if>
@@ -90,11 +95,10 @@
                 <g:renderErrors bean="${trainingInstance}" as="list" />
             </div>
             </g:hasErrors>
-            <div class="main" id="main">
             <h2>Link to the old AUGUSTUS web server</h2>
-            The old AUGUSTUS web server for predictions with pre-trained models is available at <a href="http://augustus.gobics.de">http://augustus.gobics.de</a>.
+            <p>The old AUGUSTUS web server for predictions with pre-trained models is available at <a href="http://augustus.gobics.de">http://augustus.gobics.de</a>.</p>
             <h2>References</h2>
-            Please cite the following references when using the AUGUSTUS training web server results in your publication:
+            <p>Please cite the following references when using the AUGUSTUS training web server results in your publication:</p>
             <ul>
 	    <li>K. J. Hoff and M. Stanke (2012)<br>
 	    <a href="http://bioinf.uni-greifswald.de/trainaugustus/references/PAG2012.pdf">TrainAUGUSTUS - a Webserver Application for Parameter Training and Gene Prediction in Eukaryoties</a><br>
@@ -169,8 +173,6 @@ Scavenging Amino Acids from Its Host's Lungs. PLoS One. 2010, Dec 20;5(12):e1515
 </li>
 </ul>
 
-            </div>
- </div>
 </div>
 <div id="rechte_spalte">
     <div class="linien_div">

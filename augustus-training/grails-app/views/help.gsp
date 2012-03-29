@@ -78,8 +78,13 @@
      </ul>
   </div>
  <div id="mittel_spalte">
-<div class="main" id="main">
-   <h1><a href="help.gsp">Help</a></h1>
+    <table class="contentpaneopen">
+      <tr>
+	<td class="contentheading" width="100%">
+	  <font color="#006699">Help</font>
+        </td>
+      </tr>
+    </table>
             <div class="main" id="main">
             <p>This website contains <i>short instructions</i> and some <i>frequently asked questions</i> concerning <ul><li>the training of AUGUSTUS and <li>predicting genes in a new genomic sequence with pre-trained parameters.</ul> <br>For more detailed instructions, please read <a href="trainingtutorial.gsp">Training Tutorial</a> and <a href="predictiontutorial.gsp">Prediction Tutorial</a>.</p>
             <hr>
@@ -603,7 +608,7 @@ HS04636 anchor  intronpart      7631    7633    0       +       0       source=M
             <hr>
             </div></div>
 </div>
- </div>
+
 </div>
 <div id="rechte_spalte">
     <div class="linien_div">
