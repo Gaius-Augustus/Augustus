@@ -12,6 +12,7 @@
 
 // project includes
 #include "extrinsicinfo.hh"
+#include "randseqaccess.hh"
 
 
 class CompGenePred {
@@ -20,7 +21,7 @@ public:
   ~CompGenePred() {}
 
   void start();
-  
+  RandSeqAccess *rsa;
 };
 
 #endif  // _COMPGENEPRED

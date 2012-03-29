@@ -22,7 +22,8 @@
  */
 class RandSeqAccess {
 protected:
-  RandSeqAccess() {}
+  RandSeqAccess() {};
+  virtual ~RandSeqAccess() {}
 public:
   virtual AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand) =  0;
 };
