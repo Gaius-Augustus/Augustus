@@ -196,6 +196,7 @@ class TrainingController {
 			if(captchaValid == false){
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The user is probably not a human person. Job aborted.\n"
+				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 				flash.error = "The verification string at the bottom of the page was not entered correctly!"
             			redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}"])
            			return
@@ -210,9 +211,10 @@ class TrainingController {
 				}else{
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 				}
-			       flash.error = "Species name  ${trainingInstance.project_name} contains white spaces."
-   	  		       redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}"])
-	  		       return
+				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+				flash.error = "Species name  ${trainingInstance.project_name} contains white spaces."
+   	  			redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}"])
+	  			return
 			} 
 
 			// upload of genome file
@@ -273,6 +275,7 @@ class TrainingController {
 						}else{
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						}
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 						flash.error = "The genome file contains metacharacters (*, ?, ...). This is not allowed."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -295,6 +298,7 @@ class TrainingController {
 						}else{
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						}
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 						flash.error = "Genome file ${uploadedGenomeFile.originalFilename} is not in DNA fasta format."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -340,6 +344,7 @@ class TrainingController {
 				}else{
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The selected genome file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 						flash.error = "Genome file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -387,6 +392,7 @@ class TrainingController {
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					delProc.waitFor()
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					flash.error = "Cannot retrieve genome file from HTTP/FTP link ${trainingInstance.genome_ftp_link}."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return
@@ -426,6 +432,7 @@ class TrainingController {
 						}else{
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						}
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 						flash.error = "Genome file ${trainingInstance.genome_ftp_link} is not in DNA fasta format."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -499,6 +506,7 @@ class TrainingController {
 						}else{
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						}
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 						flash.error = "The cDNA file contains metacharacters (*, ?, ...). This is not allowed."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -519,6 +527,7 @@ class TrainingController {
 						}else{
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						}
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 						flash.error = "cDNA file ${uploadedEstFile.originalFilename} is not in DNA fasta format."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -568,6 +577,7 @@ class TrainingController {
 						}else{
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						}
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 						flash.error = "cDNA file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -622,6 +632,7 @@ class TrainingController {
 						}else{
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						}
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 						flash.error = "Cannot retrieve cDNA file from HTTP/FTP link ${trainingInstance.est_ftp_link}."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -658,6 +669,7 @@ class TrainingController {
 						}else{
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						}
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 						flash.error = "cDNA file ${trainingInstance.est_ftp_link} is not in DNA fasta format."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -719,6 +731,7 @@ class TrainingController {
 							}else{
 								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 							}
+							flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 							flash.error = "Gene Structure file contains metacharacters (*, ?, ...). This is not allowed."
 							redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 							return
@@ -726,11 +739,13 @@ class TrainingController {
 						if(gffColErrorFlag == 1 && structureGbkFlag == 0){
 							logDate = new Date()
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Training gene structure file does not always contain 9 columns.\n"
+							flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 							flash.error = "Training gene structure file  ${trainingInstance.struct_file} is not in a compatible gff format (has not 9 columns). Please make sure the gff-format complies with the instructions in our 'Help' section!"
 						}
 						if(gffNameErrorFlag == 1 && structureGbkFlag == 0){
 							logDate = new Date()
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Training gene structure file contains entries that do not comply with genome sequence names.\n"
+							flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 							flash.error = "Entries in the training gene structure file  ${trainingInstance.struct_file} do not match the sequence names of the genome file. Please make sure the gff-format complies with the instructions in our 'Help' section!"
 						}
 						if((gffColErrorFlag == 1 || gffNameErrorFlag == 1) && structureGbkFlag == 0){
@@ -763,6 +778,7 @@ class TrainingController {
 					}else{
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 					}
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					flash.error = "Training gene structure file is bigger than ${allowedStructSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return	
@@ -825,6 +841,7 @@ class TrainingController {
 					}else{
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 					}
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					flash.error = "Protein file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return	
@@ -889,6 +906,7 @@ class TrainingController {
 					}else{
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 					}
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					flash.error = "The protein file contains metacharacters (*, ?, ...). This is not allowed."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return
@@ -910,6 +928,7 @@ class TrainingController {
 					}else{
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 					}
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					flash.error = "Your protein file was not recognized as a protein file. It may be DNA file. The training job was not started. Please contact augustus@uni-greifswald.de if you are completely sure this file is a protein fasta file."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return
@@ -930,6 +949,7 @@ class TrainingController {
 					}else{
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 					}
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					flash.error = "Protein file ${uploadedProteinFile.originalFilename} is not in protein fasta format."
 					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 					return
@@ -1017,6 +1037,7 @@ class TrainingController {
 						}else{
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						}
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 						flash.error = "Cannot retrieve protein file from HTTP/FTP link ${trainingInstance.protein_ftp_link}."
 						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
 						return
@@ -1059,6 +1080,7 @@ class TrainingController {
 						}else{
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
 						}
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 						flash.error = "Protein file ${trainingInstance.protein_ftp_link} does not contain protein sequences."
 						redirect(action:create)
 						return

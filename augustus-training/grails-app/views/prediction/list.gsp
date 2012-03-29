@@ -84,16 +84,8 @@
  <div id="mittel_spalte">
 <div class="main" id="main">
    <h1><g:link controller="prediction" action="list">Your job does not exist</g:link></h1>
-            <div class="list">
-	      <p>Thank you for using the AUGUSTUS prediction web server!</p>
-              <h2>Reasons why your job does not exist</h2>
-	      <p>
-		<ul>
-		  <li>You submitted a job with data that has previously been submitted to the AUGUSTUS prediction web server application. In this case, you received an e-mail pointing you to the job status and results of that previous job.<br></li>
-		  <li>You manually tried to look at a non-existing job status.</li>
-		  </ul>
+	      <p>We flush the web server application's database from time to time. If the job you are looking for was submitted a long time ago, it has likely been deleted from our system. Otherwise, please contact <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a> and tell us the link and job-ID that you failed to access.
 	      </p>
-            </div>
  </div>
 </div>
 

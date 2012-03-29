@@ -39,6 +39,7 @@ class Prediction {
    Integer pred_strand = 1
    Integer alt_transcripts = 1
    Integer allowed_structures = 1
+   String species_select
    String results_urls
    String message
    Boolean ignore_conflicts = false
@@ -51,13 +52,14 @@ class Prediction {
            return 'training.genome_file.no_genome_file'
         } else if (!(obj.genome_ftp_link == null) && !(obj.genome_file == null)) {
            return 'training.genome_file.not_both'
-        } else if ((obj.project_id == null) && (obj.archive_file == null)) {
-           return 'prediction.genome_file.archive_or_id'
-        }
+        } //else if ((obj.project_id == null) && (obj.archive_file == null)) {
+        //   return 'prediction.genome_file.archive_or_id'
+        //}
       })
       genome_ftp_link(nullable:true, blank:true, url:true)
       old_url(nullable:true)
       project_id(nullable:true, blank:true, size:3..30)
+      species_select(nullable:true)
       est_file(nullable:true, blank:true, validator: { val, obj ->
          if (!(obj.est_file == null) && !(obj.est_ftp_link == null)) {
             return 'training.est_file.not_both'

@@ -131,6 +131,8 @@ class PredictionController {
 		redirect(action:create, params:[genome_ftp_link:"http://bioinf.uni-greifswald.de/trainaugustus/examples/LG16.fa",project_id:"honeybee1"])
 	}
 
+
+
 	def commit = {
 		def predictionInstance = new Prediction(params)
 		if(!(predictionInstance.id == null)){
@@ -194,6 +196,7 @@ class PredictionController {
 				logDate = new Date()
 				logFile << "${logDate} ${predictionInstance.accession_id} v1 - The user is probably not a human person. Job aborted.\n"
 				flash.error = "The verification string at the bottom of the page was not entered correctly!"
+				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
             			redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
            			return
 			}
@@ -225,6 +228,7 @@ class PredictionController {
 				}else{
 					logDate = new Date()
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected parameter archive file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					flash.error = "Parameter archive file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
@@ -306,6 +310,7 @@ class PredictionController {
 					}else{
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
            				flash.error = "Parameter archive ${uploadedParamArch.originalFilename} is not compatible with the AUGUSTUS prediction web server application."
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
            				return
@@ -333,12 +338,12 @@ class PredictionController {
 					}
             				delProc.waitFor()
 					logDate = new Date()
-					logDate = new Date()
 					if(predictionInstance.email_adress == null){
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
 					}else{
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
            				flash.error = "The specified parameter ID ${predictionInstance.project_id} does not exist on our system."
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
            				return
@@ -350,6 +355,172 @@ class PredictionController {
 				}
 				confirmationString = "${confirmationString}AUGUSTUS parameter project identifier: ${predictionInstance.project_id}\n"
 			}
+			// check whether parameters were supplied in double or triple
+			if(predictionInstance.archive_file == "empty" && predictionInstance.project_id == null && predictionInstance.species_select == "null"){
+				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+           			flash.error = "You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
+            			redirect(action:create)
+           			return
+			}else if(predictionInstance.archive_file != "empty" && predictionInstance.project_id != null && predictionInstance.species_select != "null"){
+				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+				flash.error = "You specified parameters in three different ways. Please decide for on way! You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
+            			redirect(action:create)
+           			return
+			}else if(predictionInstance.archive_file != "empty" && predictionInstance.project_id != null){
+				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+				flash.error = "You specified parameters as archive file and as project ID. Please decide for on way! You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
+            			redirect(action:create)
+				return
+			}else if(predictionInstance.project_id != null && predictionInstance.species_select != "null"){
+				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+				flash.error = "You specified parameters as project ID and by selecting an organism from the dropdown menu. Please decide for on way! You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
+				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+            			redirect(action:create)
+				return
+			}else if(predictionInstance.archive_file != "empty" && predictionInstance.species_select != "null"){
+				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+				flash.error = "You specified parameters as parameter archive and by selecting an organism from the dropdown menu. Please decide for on way! You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
+				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+            			redirect(action:create)
+				return
+			}
+			// assign parameter set from dropdown menu
+			if(predictionInstance.species_select == "Acyrthosiphon pisum (animal)"){
+				predictionInstance.project_id = "pea_aphid"
+			}else if(predictionInstance.species_select == "Aedes aegypti (animal)"){
+				predictionInstance.project_id = "aedes"
+			}else if(predictionInstance.species_select == "Amphimedon queenslandica (animal)"){
+				predictionInstance.project_id = "amphimedon"
+			}else if(predictionInstance.species_select == "Apis mellifera (animal)"){
+				predictionInstance.project_id = "honeybee1"
+			}else if(predictionInstance.species_select == "Brugia malayi (animal)"){
+				predictionInstance.project_id = "brugia"
+			}else if(predictionInstance.species_select == "Caenorhabditis elegans (animal)"){
+				predictionInstance.project_id = "caenorhabditis"
+			}else if(predictionInstance.species_select == "Callorhinchus milii (animal)"){
+				predictionInstance.project_id = "elephant_shark"
+			}else if(predictionInstance.species_select == "Drosophila melanogaster (animal)"){
+				predictionInstance.project_id = "fly"
+			}else if(predictionInstance.species_select == "Homo sapiens (animal)"){
+				predictionInstance.project_id = "human"
+			}else if(predictionInstance.species_select == "Petromyzon marinus (animal)"){
+				predictionInstance.project_id = "lamprey"
+			}else if(predictionInstance.species_select == "Nasonia vitripennis (animal)"){
+				predictionInstance.project_id = "nasonia"
+			}else if(predictionInstance.species_select == "Schistosoma mansoni (animal)"){
+				predictionInstance.project_id = "schistosoma"
+			}else if(predictionInstance.species_select == "Tribolium castaneum (animal)"){
+				predictionInstance.project_id = "tribolium"
+			}else if(predictionInstance.species_select == "Trichinella spiralis (animal)"){
+				predictionInstance.project_id = "trichinella"
+			}else if(predictionInstance.species_select == "Tetrahymena thermophila (alveolata)"){
+				predictionInstance.project_id = "tetrahymena"
+			}else if(predictionInstance.species_select == "Toxoplasma gondii (alveolata)"){
+				predictionInstance.project_id = "toxoplasma"
+			}else if(predictionInstance.species_select == "Arabidopsis thaliana (plant)"){
+				predictionInstance.project_id = "arabidopsis"
+			}else if(predictionInstance.species_select == "Chlamydomonas reinhardtii (alga)"){
+				predictionInstance.project_id = "chlamy2011"
+			}else if(predictionInstance.species_select == "Galdieria sulphuraria (alga)"){
+				predictionInstance.project_id = "galdieria"
+			}else if(predictionInstance.species_select == "Solaneum lycopersicum (plant)"){
+				predictionInstance.project_id = "tomato"
+			}else if(predictionInstance.species_select == "Zea mays (plant)"){
+				predictionInstance.project_id = "maize"
+			}else if(predictionInstance.species_select == "Aspergillus fumigatus (fungus)"){
+				predictionInstance.project_id = "aspergillus_fumigatus"
+			}else if(predictionInstance.species_select == "Aspergillus nidulans (fungus)"){
+				predictionInstance.project_id = "aspergillus_nidulans"
+			}else if(predictionInstance.species_select == "Aspergillus oryzae (fungus)"){
+				predictionInstance.project_id = "aspergillus_oryzae"
+			}else if(predictionInstance.species_select == "Aspergillus terreus (fungus)"){
+				predictionInstance.project_id = "aspergillus_terreus"
+			}else if(predictionInstance.species_select == "Botrytis cinerea (fungus)"){
+				predictionInstance.project_id = "botrytis_cinerea"
+			}else if(predictionInstance.species_select == "Candida albicans (fungus)"){
+				predictionInstance.project_id = "candida_albicans"
+			}else if(predictionInstance.species_select == "Candida guilliermondii (fungus)"){
+				predictionInstance.project_id = "candida_guilliermondii"
+			}else if(predictionInstance.species_select == "Candida tropicalis (fungus)"){
+				predictionInstance.project_id = "candida_tropicalis"
+			}else if(predictionInstance.species_select == "Chaetomium globosum (fungus)"){
+				predictionInstance.project_id = "chaetomium_globosum"
+			}else if(predictionInstance.species_select == "Coccidioides immitis (fungus)"){
+				predictionInstance.project_id = "coccidioides_immitis"
+			}else if(predictionInstance.species_select == "Coprinus cinereus (fungus)"){
+				predictionInstance.project_id = "coprinus"
+			}else if(predictionInstance.species_select == "Cryptococcus neoformans (fungus)"){
+				predictionInstance.project_id = "cryptococcus_neoformans_neoformans_B"
+			}else if(predictionInstance.species_select == "Debarymomyces hansenii (fungus)"){
+				predictionInstance.project_id = "debaryomyces_hansenii"
+			}else if(predictionInstance.species_select == "Encephalitozoon cuniculi (fungus)"){
+				predictionInstance.project_id = "encephalitozoon_cuniculi_GB"
+			}else if(predictionInstance.species_select == "Eremothecium gossypii (fungus)"){
+				predictionInstance.project_id = "eremothecium_gossypii"
+			}else if(predictionInstance.species_select == "Fusarium graminearum (fungus)"){
+				predictionInstance.project_id = "fusarium_graminearum"
+			}else if(predictionInstance.species_select == "Histoplasma capsulatum (fungus)"){
+				predictionInstance.project_id = "histoplasma_capsulatum"
+			}else if(predictionInstance.species_select == "Kluyveromyces lactis (fungus)"){
+				predictionInstance.project_id = "kluyveromyces_lactis"
+			}else if(predictionInstance.species_select == "Laccaria bicolor (fungus)"){
+				predictionInstance.project_id = "laccaria_bicolor"
+			}else if(predictionInstance.species_select == "Lodderomyces elongisporus (fungus)"){
+				predictionInstance.project_id = "lodderomyces_elongisporus"
+			}else if(predictionInstance.species_select == "Magnaporthe grisea (fungus)"){
+				predictionInstance.project_id = "magnaporthe_grisea"
+			}else if(predictionInstance.species_select == "Neurospora crassa (fungus)"){
+				predictionInstance.project_id = "neurospora_crassa"
+			}else if(predictionInstance.species_select == "Phanerochaete chrysosporium (fungus)"){
+				predictionInstance.project_id = "phanerochaete_chrysosporium"
+			}else if(predictionInstance.species_select == "Pichia stipitis (fungus)"){
+				predictionInstance.project_id = "pichia_stipitis"
+			}else if(predictionInstance.species_select == "Rhizopus oryzae (fungus)"){
+				predictionInstance.project_id = "rhizopus_oryzae"
+			}else if(predictionInstance.species_select == "Saccharomyces cerevisiae (fungus)"){
+				predictionInstance.project_id = "saccharomyces_cerevisiae_S288C"
+			}else if(predictionInstance.species_select == "Schizosaccharomyces pombe (fungus)"){
+				predictionInstance.project_id = "schizosaccharomyces_pombe"
+			}else if(predictionInstance.species_select == "Ustilago maydis (fungus)"){
+				predictionInstance.project_id = "ustilago_maydis"
+			}else if(predictionInstance.species_select == "Verticillium longisporum (fungus)"){
+				predictionInstance.project_id = "verticillium_longisporum1"
+			}else if(predictionInstance.species_select == "Yarrowia lipolytica (fungus)"){
+				predictionInstance.project_id = "yarrowia_lipolytica"
+			}else if(predictionInstance.species_select == "Heliconius melpomene (animal)"){
+				predictionInstance.project_id = "heliconius_melpomene1"
+			}else if(predictionInstance.species_select == "Bombus terrestris (animal)"){
+				predictionInstance.project_id = "bombus_terrestris2"
+			}
+			if(predictionInstance.project_id != null && predictionInstance.species_select != "null"){
+				species = predictionInstance.project_id
+				confirmationString = "${confirmationString}AUGUSTUS parameter project identifier: ${predictionInstance.project_id}\n"
+			}
+			logDate = new Date()
+			logFile << "${logDate} ${predictionInstance.accession_id} v1 - Parameter set ${predictionInstance.project_id} was assigned through dropdown selection ${predictionInstance.species_select}\n"
+			if(predictionInstance.project_id == null && predictionInstance.archive_file == "empty"){
+				logDate = new Date()
+				logFile << "${logDate} ${predictionInstance.accession_id} v1 - project_id is empty.\n"
+				cmdStr = "rm -r ${projectDir} &> /dev/null"
+            			delProc = "${cmdStr}".execute()
+				if(verb > 1){
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+				}
+            			delProc.waitFor()
+				logDate = new Date()
+				if(predictionInstance.email_adress == null){
+           				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+				}else{
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+				}
+				flash.error = "No parameters given!"
+				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+            			redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+				return
+
+			}
+
 			// upload of genome file
 			//def uploadedGenomeFile
 			//uploadedGenomeFile = request.getFile('GenomeFile')
@@ -415,13 +586,13 @@ class PredictionController {
 					}
             				delProc.waitFor()
 					logDate = new Date()
-					logDate = new Date()
 					if(predictionInstance.email_adress == null){
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
 					}else{
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
           				flash.error = "Genome file contains metacharacters (*, ?, ...). This is not allowed."
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}	
@@ -442,6 +613,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
             				flash.error = "Genome file ${uploadedGenomeFile.originalFilename} is not in DNA fasta format."
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 	         		} else {
@@ -532,6 +704,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
 					flash.error = "Cannot retrieve genome file from HTTP/FTP link ${predictionInstance.genome_ftp_link}."
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}else{
@@ -569,6 +742,7 @@ class PredictionController {
 	            					logFile << "${logDate} ${predictionInstance.accession_id} v1 - Project directory ${projectDir} is deleted.\n${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"	
 						}
 	            				flash.error = "Genome file ${predictionInstance.genome_ftp_link} is not in DNA fasta format."
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
             					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 	            				return
 	         			}
@@ -595,6 +769,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
 					flash.error = "cDNA file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}
@@ -654,6 +829,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
             				flash.error = "cDNA file contains metacharacters (*, ?, ...). This is not allowed."
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}	
@@ -674,6 +850,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
             				flash.error = "cDNA file ${uploadedEstFile.originalFilename} is not in DNA fasta format."
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
             				return
          			} else { estExistsFlag = 1 }
@@ -758,6 +935,7 @@ class PredictionController {
            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						}
 						flash.error = "Cannot retrieve cDNA file from HTTP/FTP link ${predictionInstance.est_ftp_link}."
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
             					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 						cmdStr = "rm -r ${projectDir} &> /dev/null"
 						delProc = "${cmdStr}".execute()
@@ -801,6 +979,7 @@ class PredictionController {
            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						}
             					flash.error = "cDNA file ${predictionInstance.est_ftp_link} is not in DNA fasta format."
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
             					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
             					return
          				}
@@ -828,6 +1007,7 @@ class PredictionController {
            					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 					}
 					flash.error = "Hints file is bigger than ${allowedHintsSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
+					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
             				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 					return
 				}
@@ -879,6 +1059,7 @@ class PredictionController {
            						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
 						}
             					flash.error = "Hints file contains metacharacters (*, ?, ...). This is not allowed."
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
             					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
 						return
 					}
@@ -886,21 +1067,25 @@ class PredictionController {
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hint file's last column is not in correct format\n"
 						flash.error = "Hints file  ${predictionInstance.hint_file} is not in a compatible gff format (the last column does not contain source=M). Please make sure the gff-format complies with the instructions in our 'Help' section!"
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					}
 					if(gffColErrorFlag == 1){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hint file does not always contain 9 columns.\n"
 						flash.error = "Hints file  ${predictionInstance.hint_file} is not in a compatible gff format (has not 9 columns). Please make sure the gff-format complies with the instructions in our 'Help' section!"
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					}
 					if(gffNameErrorFlag == 1){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hint file contains entries that do not comply with genome sequence names.\n"
 						flash.error = "Entries in the hints file  ${predictionInstance.hint_file} do not match the sequence names of the genome file. Please make sure the gff-format complies with the instructions in our 'Help' section!"
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					}
 					if(gffFeatureErrorFlag == 1){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hint file contains unsupported features.\n"
 						flash.error = "Entries in the hints file  ${predictionInstance.hint_file} contain unsupported features. Please make sure the gff-format complies with the instructions in our 'Help' section!"
+						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					}
 					if((gffColErrorFlag == 1 || gffNameErrorFlag == 1 || gffSourceErrorFlag == 1 || gffFeatureErrorFlag == 1)){
 						logDate = new Date()

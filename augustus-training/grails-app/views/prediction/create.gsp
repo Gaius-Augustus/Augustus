@@ -131,7 +131,7 @@
 
 
 
-		    <p>We strongly recommend that you specify an <b>E-mail address</b>! Please read the <a href="../help.gsp#email"><small>Help</small></a> page before submitting a job without e-mail address!</p>
+		    <p>We recommend that you specify an <b>E-mail address</b>.</p>
                     <table>
                         <tbody>
                                 <tr class="prop">
@@ -173,6 +173,75 @@
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'project_id','errors')}">
                                     <input type="text" id="project_id" name="project_id" value="${fieldValue(bean:predictionInstance,field:'project_id')}"/> <a href="../help.gsp#project_id"><small>Help</small></a>
+
+                                </td>
+                            </tr>
+                            <tr class="prop">
+                                <td>&nbsp;<b>or</b>&nbsp;</td><td></td>
+                            </tr>
+                            <tr class="prop">
+                                <td valign="top" class="name">
+                                    <label for="project_id">select an organism:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
+                                </td>
+                                <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'species_select','errors')}">
+                                    <g:select name="species_select" from="${[
+'Acyrthosiphon pisum (animal)', 
+'Aedes aegypti (animal)', 
+'Amphimedon queenslandica (animal)', 
+'Apis mellifera (animal)', 
+'Bombus terrestris (animal)',
+'Brugia malayi (animal)', 
+'Caenorhabditis elegans (animal)', 
+'Callorhinchus milii (animal)', 
+'Drosophila melanogaster (animal)', 
+'Heliconius melpomene (animal)',
+'Homo sapiens (animal)', 
+'Petromyzon marinus (animal)', 
+'Nasonia vitripennis (animal)', 
+'Schistosoma mansoni (animal)', 
+'Tribolium castaneum (animal)', 
+'Trichinella spiralis (animal)', 
+'Tetrahymena thermophila (alveolata)',
+'Toxoplasma gondii (alveolata)',
+'Arabidopsis thaliana (plant)',
+'Chlamydomonas reinhardtii (alga)',
+'Galdieria sulphuraria (alga)',
+'Solaneum lycopersicum (plant)',
+'Zea mays (plant)',
+'Aspergillus fumigatus (fungus)',
+'Aspergillus nidulans (fungus)',
+'Aspergillus oryzae (fungus)',
+'Aspergillus terreus (fungus)',
+'Botrytis cinerea (fungus)',
+'Candida albicans (fungus)',
+'Candida guilliermondii (fungus)',
+'Candida tropicalis (fungus)',
+'Chaetomium globosum (fungus)',
+'Coccidioides immitis (fungus)',
+'Coprinus cinereus (fungus)',
+'Cryptococcus neoformans (fungus)',
+'Debarymomyces hansenii (fungus)',
+'Encephalitozoon cuniculi (fungus)',
+'Eremothecium gossypii (fungus)',
+'Fusarium graminearum (fungus)',
+'Histoplasma capsulatum (fungus)',
+'Kluyveromyces lactis (fungus)',
+'Laccaria bicolor (fungus)',
+'Lodderomyces elongisporus (fungus)',
+'Magnaporthe grisea (fungus)',
+'Neurospora crassa (fungus)',
+'Phanerochaete chrysosporium (fungus)',
+'Pichia stipitis (fungus)',
+'Rhizopus oryzae (fungus)',
+'Saccharomyces cerevisiae (fungus)',
+'Schizosaccharomyces pombe (fungus)',
+'Ustilago maydis (fungus)',
+'Verticillium longisporum (fungus)',
+'Yarrowia lipolytica (fungus)'
+]}" 
+value="${fieldValue(bean:predictionInstance,field:'species_select')}" noSelection="${['null':'Select One...']}"/>
+
+ <a href="../help.gsp#project_id"><small>Help</small></a>
 
                                 </td>
                             </tr>
