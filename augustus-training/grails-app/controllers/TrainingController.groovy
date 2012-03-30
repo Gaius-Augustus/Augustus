@@ -2432,41 +2432,41 @@ class TrainingController {
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job status is ${trainingInstance.job_status} when job leaves SGE.\n"
 				// collect results link information
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/AutoAug.log").exists()){
-					trainingInstance.results_urls = "<p><b>Log-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/AutoAug.log\">AutoAug.log</a><br></p>"
+					trainingInstance.results_urls = "<p><b>Log-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.log\">AutoAug.log</a><br></p>"
 				}
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/AutoAug.err").exists()){
 					if(trainingInstance.results_urls == null){
-						trainingInstance.results_urls = "<p><b>Error-file/b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/AutoAug.err\">AutoAug.err</a><br></p>"
+						trainingInstance.results_urls = "<p><b>Error-file/b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.err\">AutoAug.err</a><br></p>"
 					}else{
 						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Error-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/AutoAug.err\">AutoAug.err</a><br></p>"
 					}
 				}
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/parameters.tar.gz").exists()){
 					if(trainingInstance.results_urls == null){
-						trainingInstance.results_urls = "<p><b>Species parameter archive</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/parameters.tar.gz\">parameters.tar.gz</a><br></p>"
+						trainingInstance.results_urls = "<p><b>Species parameter archive</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/parameters.tar.gz\">parameters.tar.gz</a><br></p>"
 					}else{
-						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Species parameter archive</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/parameters.tar.gz\">parameters.tar.gz</a><br></p>"
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Species parameter archive</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/parameters.tar.gz\">parameters.tar.gz</a><br></p>"
 					}
 				}
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/training.gb.gz").exists()){
 					if(trainingInstance.results_urls == null){
-						trainingInstance.results_urls = "<p><b>Training genes</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/training.gb.gz\">training.gb.gz</a><br></p>"
+						trainingInstance.results_urls = "<p><b>Training genes</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/training.gb.gz\">training.gb.gz</a><br></p>"
 					}else{
-						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Training genes</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/training.gb.gz\">training.gb.gz</a><br></p>"
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Training genes</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/training.gb.gz\">training.gb.gz</a><br></p>"
 					}
 				}
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/ab_initio.tar.gz").exists()){
 					if(trainingInstance.results_urls == null){
-						trainingInstance.results_urls = "<p><b>Ab initio predictions</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/ab_initio.tar.gz\">ab_initio.tar.gz</a><br></p>"
+						trainingInstance.results_urls = "<p><b>Ab initio predictions</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/ab_initio.tar.gz\">ab_initio.tar.gz</a><br></p>"
 					}else{
-						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Ab initio predictions</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/ab_initio.tar.gz\">ab_initio.tar.gz</a><br></p>"
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Ab initio predictions</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/ab_initio.tar.gz\">ab_initio.tar.gz</a><br></p>"
 					}
 				}
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/hints_pred.tar.gz").exists()){
 					if(trainingInstance.results_urls == null){
-						trainingInstance.results_urls = "<p><b>Predictions with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/hints_pred.tar.gz\">hints_pred.tar.gz</a><br></p>"
+						trainingInstance.results_urls = "<p><b>Predictions with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/hints_pred.tar.gz\">hints_pred.tar.gz</a><br></p>"
 					}else{
-						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Predictions with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/training.gb.gz\">training.gb.gz</a><br></p>"
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Predictions with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/training.gb.gz\">training.gb.gz</a><br></p>"
 					}
 				}
 			   	// check whether errors occured by log-file-sizes

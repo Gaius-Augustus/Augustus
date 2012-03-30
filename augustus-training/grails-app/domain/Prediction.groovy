@@ -44,6 +44,18 @@ class Prediction {
    String message
    Boolean ignore_conflicts = false
    String old_url
+   // some flags for empty fields in form
+   Boolean warn
+   Boolean has_genome_file
+   Boolean has_est_file
+   Boolean has_param_file
+   Boolean has_hint_file
+   Boolean has_select
+   Boolean has_utr
+   Boolean has_strand
+   Boolean has_transcripts
+   Boolean has_structures
+   Boolean has_conflicts
    static constraints = {
       //accession_id(unique:true) // may (unlikely) cause problems if the grails database ever gets lost.
       email_adress(email:true,blank:true,nullable:true)
@@ -82,5 +94,16 @@ class Prediction {
       message(maxSize:1000000000, nullable:true)
       utr()
       dateCreated()
+      has_genome_file(nullable:true)
+      has_est_file(nullable:true)
+      warn(nullable:true)
+      has_param_file(nullable:true)
+      has_hint_file(nullable:true)
+      has_select(nullable:true)
+      has_utr(nullable:true)
+      has_strand(nullable:true)
+      has_transcripts(nullable:true)
+      has_structures(nullable:true)
+      has_conflicts(nullable:true)
    }
 }

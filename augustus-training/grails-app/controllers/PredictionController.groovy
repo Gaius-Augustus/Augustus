@@ -136,7 +136,8 @@ class PredictionController {
 	def commit = {
 		def predictionInstance = new Prediction(params)
 		if(!(predictionInstance.id == null)){
-			redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+			flash.error = "Internal error 2. Please contact augustus-web@uni-greifswald.de if the problem persists!"
+			redirect(action:create)
 			return
 		}else{
 			// retrieve parameters of form for early save()
@@ -190,14 +191,94 @@ class PredictionController {
       			String userIP = request.remoteAddr
 			logDate = new Date()
       			logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - user IP: ${userIP}\n"
+
+			// flag for redirect to submission form, display warning in appropriate places
+			predictionInstance.warn = true
+			// parameters for redirecting
+			def redirParams=[:] 
+			if(predictionInstance.email_adress != null){
+				redirParams["email_adress"]="${predictionInstance.email_adress}"
+			}
+			if(predictionInstance.genome_ftp_link != null){
+				redirParams["genome_ftp_link"]="${predictionInstance.genome_ftp_link}"
+			}
+			if(predictionInstance.est_ftp_link != null){
+				redirParams["est_ftp_link"]="${predictionInstance.est_ftp_link}"
+			}
+			if(predictionInstance.project_id != null){
+				redirParams["project_id"]="${predictionInstance.project_id}"
+			}
+			if(predictionInstance.genome_file != null){
+				redirParams["has_genome_file"]="${predictionInstance.warn}"
+			}
+			if(predictionInstance.est_file != null){
+				redirParams["has_est_file"]="${predictionInstance.warn}"
+			}
+			if(predictionInstance.archive_file != null){
+				redirParams["has_param_file"]="${predictionInstance.warn}"
+			}
+			if(predictionInstance.hint_file != null){
+				redirParams["has_hint_file"]="${predictionInstance.warn}"
+			}
+			if(predictionInstance.species_select != "null"){
+				redirParams["has_select"]="${predictionInstance.warn}"
+			}
+			if(predictionInstance.utr == true){
+				redirParams["has_utr"]="${predictionInstance.warn}"	
+			}
+			if(predictionInstance.pred_strand != 1){
+				redirParams["has_strand"]="${predictionInstance.warn}"
+			}
+			if(predictionInstance.alt_transcripts != 1){
+				redirParams["has_transcripts"]="${predictionInstance.warn}"
+			}
+			if(predictionInstance.allowed_structures != 1){
+				redirParams["has_structures"]="${predictionInstance.warn}"
+			}
+			if(predictionInstance.ignore_conflicts == true){
+				redirParams["has_conflicts"]="${predictionInstance.warn}"
+			}
+			redirParams["warn"]="${predictionInstance.warn}"
+			// put redirect procedure into a function
+			def cleanRedirect = {
+				logDate = new Date()
+				if(predictionInstance.email_adress == null){
+           				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+				}else{
+           				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+				}
+				flash.message = "Info: Please check all fields marked in blue for completeness before starting the prediction job!"
+            			redirect(action:create, params:redirParams)
+			}
+			// clean up directory (delete) function
+			def String dirName = "${output_dir}/${predictionInstance.accession_id}"
+			def projectDir = new File(dirName)
+			def deleteDir = {
+				logDate = new Date()
+				logFile << "${logDate} ${predictionInstance.accession_id} v1 - Project directory is deleted\n"
+				cmdStr = "rm -r ${projectDir} &> /dev/null"
+				delProc = "${cmdStr}".execute()
+				if(verb > 1){
+					logDate = new Date()
+					logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"								}
+            			delProc.waitFor()
+			}
+			// log abort function
+			def logAbort = {
+				logDate = new Date()
+					if(predictionInstance.email_adress == null){
+           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+					}else{
+           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+					}
+			}
 			//verify that the submitter is a person
 			boolean captchaValid = simpleCaptchaService.validateCaptcha(params.captcha)
 			if(captchaValid == false){
 				logDate = new Date()
-				logFile << "${logDate} ${predictionInstance.accession_id} v1 - The user is probably not a human person. Job aborted.\n"
+				logFile << "${logDate} ${predictionInstance.accession_id} v1 - The user is probably not a human person.\n"
 				flash.error = "The verification string at the bottom of the page was not entered correctly!"
-				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            			redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            			cleanRedirect()
            			return
 			}
 			// utr checkbox
@@ -212,8 +293,6 @@ class PredictionController {
 			}
 			// get parameter archive file (if available)
 			//def uploadedParamArch = request.getFile('ArchiveFile')
-			def String dirName = "${output_dir}/${predictionInstance.accession_id}"
-			def projectDir = new File(dirName)
 			if(!uploadedParamArch.empty){
 				// check file size
 				def preUploadSize = uploadedParamArch.getSize()
@@ -227,10 +306,9 @@ class PredictionController {
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - uploaded parameter archive ${predictionInstance.archive_file} was renamed to parameters.tar.gz and moved to ${projectDir}\n"
 				}else{
 					logDate = new Date()
-					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected parameter archive file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected parameter archive file was bigger than ${maxButtonFileSize}.\n"
 					flash.error = "Parameter archive file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
-            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            				cleanRedirect()
 					return
 				}
 				// get cksum and file size for database
@@ -296,23 +374,10 @@ class PredictionController {
 				// if essential file are missing, redirect to input interface and inform user that the archive was not compatible
 				if(archCheckErrSize > 0){
 					logDate = new Date()
-					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The parameter archive was not compatible. Project directory ${projectDir} is deleted (rm -r).\n"
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-					delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-            				delProc.waitFor()
-					logDate = new Date()
-					if(predictionInstance.email_adress == null){
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-					}
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The parameter archive was not compatible.\n"
+					deleteDir()
            				flash.error = "Parameter archive ${uploadedParamArch.originalFilename} is not compatible with the AUGUSTUS prediction web server application."
-            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            				cleanRedirect()
            				return
 				// if only UTR params are missing, set flag to override any user-defined UTR settings
 				}else if(archCheckLogSize > 0){
@@ -329,23 +394,10 @@ class PredictionController {
 				def spec_conf_dir = new File("${AUGUSTUS_CONFIG_PATH}/species/${predictionInstance.project_id}")
 				if(!spec_conf_dir.exists()){
 					logDate = new Date()
-					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The given parameter-string does not exist on our system. Project directory ${projectDir} is deleted (rm -r).\n"
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-					delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-            				delProc.waitFor()
-					logDate = new Date()
-					if(predictionInstance.email_adress == null){
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-					}
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The given parameter-string does not exist on our system.\n"
+					deleteDir()
            				flash.error = "The specified parameter ID ${predictionInstance.project_id} does not exist on our system."
-            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            				cleanRedirect()
            				return
 				}else{
 					logDate = new Date()
@@ -357,31 +409,24 @@ class PredictionController {
 			}
 			// check whether parameters were supplied in double or triple
 			if(predictionInstance.archive_file == "empty" && predictionInstance.project_id == null && predictionInstance.species_select == "null"){
-				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
            			flash.error = "You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
-            			redirect(action:create)
+            			cleanRedirect()
            			return
 			}else if(predictionInstance.archive_file != "empty" && predictionInstance.project_id != null && predictionInstance.species_select != "null"){
-				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 				flash.error = "You specified parameters in three different ways. Please decide for on way! You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
-            			redirect(action:create)
+            			cleanRedirect()
            			return
 			}else if(predictionInstance.archive_file != "empty" && predictionInstance.project_id != null){
-				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 				flash.error = "You specified parameters as archive file and as project ID. Please decide for on way! You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
-            			redirect(action:create)
+            			cleanRedirect()
 				return
 			}else if(predictionInstance.project_id != null && predictionInstance.species_select != "null"){
-				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 				flash.error = "You specified parameters as project ID and by selecting an organism from the dropdown menu. Please decide for on way! You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
-				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            			redirect(action:create)
+            			cleanRedirect()
 				return
 			}else if(predictionInstance.archive_file != "empty" && predictionInstance.species_select != "null"){
-				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 				flash.error = "You specified parameters as parameter archive and by selecting an organism from the dropdown menu. Please decide for on way! You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
-				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            			redirect(action:create)
+            			cleanRedirect()
 				return
 			}
 			// assign parameter set from dropdown menu
@@ -501,22 +546,9 @@ class PredictionController {
 			if(predictionInstance.project_id == null && predictionInstance.archive_file == "empty"){
 				logDate = new Date()
 				logFile << "${logDate} ${predictionInstance.accession_id} v1 - project_id is empty.\n"
-				cmdStr = "rm -r ${projectDir} &> /dev/null"
-            			delProc = "${cmdStr}".execute()
-				if(verb > 1){
-					logDate = new Date()
-					logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-				}
-            			delProc.waitFor()
-				logDate = new Date()
-				if(predictionInstance.email_adress == null){
-           				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-				}else{
-					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-				}
+				deleteDir()
 				flash.error = "No parameters given!"
-				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            			redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            			cleanRedirect()
 				return
 
 			}
@@ -577,44 +609,18 @@ class PredictionController {
          			}
 				if(metacharacterFlag == 1){
 					logDate = new Date()
-					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-            				delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-            				delProc.waitFor()
-					logDate = new Date()
-					if(predictionInstance.email_adress == null){
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-					}
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file contains metacharacters (e.g. * or ?).\n";
+					deleteDir()
           				flash.error = "Genome file contains metacharacters (*, ?, ...). This is not allowed."
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            				cleanRedirect()
 					return
 				}	
          			if(genomeFastaFlag == 1) {
 					logDate = new Date()
-            				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file was not fasta. Project directory ${projectDir} is deleted (rm -r).\n"
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-            				delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-            				delProc.waitFor()
-					logDate = new Date()
-					if(predictionInstance.email_adress == null){
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-					}
+            				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file was not fasta.\n"
+					deleteDir()
             				flash.error = "Genome file ${uploadedGenomeFile.originalFilename} is not in DNA fasta format."
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            				cleanRedirect()
 					return
 	         		} else {
 	            			def genomeCksumScript = new File("${projectDir}/genome_cksum.sh")
@@ -691,21 +697,9 @@ class PredictionController {
 				if(!(error_code == 200)){
 					logDate = new Date()
 					logFile << "${logDate} ${predictionInstance.accession_id} v1 - The genome URL is not accessible. Response code: ${error_code}.\n"
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-					delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-            				delProc.waitFor()
-					if(predictionInstance.email_adress == null){
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-					}
+					deleteDir()
 					flash.error = "Cannot retrieve genome file from HTTP/FTP link ${predictionInstance.genome_ftp_link}."
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            				cleanRedirect()
 					return
 				}else{
 					logDate = new Date()
@@ -728,22 +722,9 @@ class PredictionController {
 	         			if(genomeFastaFlag == 1) {
 						logDate = new Date()
 	            				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The first 20 lines in genome file are not fasta.\n"
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-	            				delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-	            				delProc.waitFor()
-						logDate = new Date()
-						if(predictionInstance.email_adress == null){
-	            					logFile << "${logDate} ${predictionInstance.accession_id} v1 - Project directory ${projectDir} is deleted.\n${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-	            					logFile << "${logDate} ${predictionInstance.accession_id} v1 - Project directory ${projectDir} is deleted.\n${predictionInstance.accession_id} Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"	
-						}
+						deleteDir()
 	            				flash.error = "Genome file ${predictionInstance.genome_ftp_link} is not in DNA fasta format."
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            					cleanRedirect()
 	            				return
 	         			}
 				}else{
@@ -763,14 +744,8 @@ class PredictionController {
 				}else{
 					logDate = new Date()
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected cDNA file was bigger than ${maxButtonFileSize}.\n"
-					if(predictionInstance.email_adress == null){
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-					}
 					flash.error = "cDNA file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            				cleanRedirect()
 					return
 				}
 				confirmationString = "${confirmationString}cDNA file: ${predictionInstance.est_file}\n"
@@ -814,44 +789,18 @@ class PredictionController {
 	         		}
 				if(metacharacterFlag == 1){
 					logDate = new Date()
-					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-            				delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-            				delProc.waitFor()
-					logDate = new Date()
-					if(predictionInstance.email_adress == null){
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-					}
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file contains metacharacters (e.g. * or ?).\n"
+					deleteDir()
             				flash.error = "cDNA file contains metacharacters (*, ?, ...). This is not allowed."
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            				cleanRedirect()
 					return
 				}	
 	         		if(estFastaFlag == 1) {
             				logDate = new Date()
-					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file was not fasta. ${projectDir} (rm -r) is deleted.\n"
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-            				delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-            				delProc.waitFor()
-            				logDate = new Date()
-					if(predictionInstance.email_adress == null){
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-					}
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file was not fasta.\n"
+					deleteDir()
             				flash.error = "cDNA file ${uploadedEstFile.originalFilename} is not in DNA fasta format."
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            				cleanRedirect()
             				return
          			} else { estExistsFlag = 1 }
          				def estCksumScript = new File("${projectDir}/est_cksum.sh")
@@ -929,21 +878,9 @@ class PredictionController {
 					if(!(error_code == 200)){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The EST URL is not accessible. Response code: ${error_code}.\n"
-						if(predictionInstance.email_adress == null){
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-						}
+						deleteDir()
 						flash.error = "Cannot retrieve cDNA file from HTTP/FTP link ${predictionInstance.est_ftp_link}."
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-            					delProc.waitFor()
+            					cleanRedirect()
 						return
 					}else{
 						logDate = new Date()
@@ -964,23 +901,10 @@ class PredictionController {
 					}
          				if(estFastaFlag == 1) {
            					logDate = new Date()
-						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file was not fasta. ${projectDir} is deleted (rm -r).\n"
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-            					delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-         					delProc.waitFor()
-            					logDate = new Date()
-						if(predictionInstance.email_adress == null){
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-						}
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file was not fasta.\n"
+						deleteDir()
             					flash.error = "cDNA file ${predictionInstance.est_ftp_link} is not in DNA fasta format."
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            					cleanRedirect()
             					return
          				}
 				}else{
@@ -1001,14 +925,8 @@ class PredictionController {
 					def allowedHintsSize = maxButtonFileSize * 2
 					logDate = new Date()
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected Hints file was bigger than ${allowedHintsSize}.\n"
-					if(predictionInstance.email_adress == null){
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-					}
 					flash.error = "Hints file is bigger than ${allowedHintsSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            				redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            				cleanRedirect()
 					return
 				}
 				confirmationString = "${confirmationString}Hints file: ${predictionInstance.hint_file}\n"
@@ -1044,66 +962,35 @@ class PredictionController {
 					}
 					if(metacharacterFlag == 1){
 						logDate = new Date()
-						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The hints file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-            					delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-            					delProc.waitFor()
-						logDate = new Date()
-						if(predictionInstance.email_adress == null){
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-						}
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The hints file contains metacharacters (e.g. * or ?).\n"
+						deleteDir()
             					flash.error = "Hints file contains metacharacters (*, ?, ...). This is not allowed."
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+            					cleanRedirect()
 						return
 					}
 					if(gffSourceErrorFlag == 1){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hint file's last column is not in correct format\n"
 						flash.error = "Hints file  ${predictionInstance.hint_file} is not in a compatible gff format (the last column does not contain source=M). Please make sure the gff-format complies with the instructions in our 'Help' section!"
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					}
 					if(gffColErrorFlag == 1){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hint file does not always contain 9 columns.\n"
 						flash.error = "Hints file  ${predictionInstance.hint_file} is not in a compatible gff format (has not 9 columns). Please make sure the gff-format complies with the instructions in our 'Help' section!"
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					}
 					if(gffNameErrorFlag == 1){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hint file contains entries that do not comply with genome sequence names.\n"
 						flash.error = "Entries in the hints file  ${predictionInstance.hint_file} do not match the sequence names of the genome file. Please make sure the gff-format complies with the instructions in our 'Help' section!"
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					}
 					if(gffFeatureErrorFlag == 1){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hint file contains unsupported features.\n"
 						flash.error = "Entries in the hints file  ${predictionInstance.hint_file} contain unsupported features. Please make sure the gff-format complies with the instructions in our 'Help' section!"
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					}
 					if((gffColErrorFlag == 1 || gffNameErrorFlag == 1 || gffSourceErrorFlag == 1 || gffFeatureErrorFlag == 1)){
-						logDate = new Date()
-						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - ${projectDir} is deleted.\n"
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						logDate = new Date()
-						if(predictionInstance.email_adress == null){
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-						}
-            					redirect(action:create, params:[email_adress:"${predictionInstance.email_adress}"])
+						deleteDir()
+            					cleanRedirect()
 						return
 					}
 				}
@@ -1229,12 +1116,6 @@ class PredictionController {
 			}
 			confirmationString = "${confirmationString}Ignore conflictes with other strand: ${predictionInstance.ignore_conflicts}\n"
 			// send confirmation email and redirect
-			predictionInstance = predictionInstance.merge()
-			if(predictionInstance.save()){
-				logFile << "Saving seems ok\n"
-			}else{ logFile << "Saving is the PROBLEM!\n";
-			}
-
 			if(!predictionInstance.hasErrors() && predictionInstance.save()){
 				// save new variables in database
 				predictionInstance.message = ""
@@ -1282,21 +1163,8 @@ class PredictionController {
 			} else {
 				logDate = new Date()
 				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - An error occurred in the predictionInstance (e.g. E-Mail missing, see domain restrictions).\n"
-				logDate = new Date()
-				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - ${projectDir} is deleted.\n"
-				cmdStr = "rm -r ${projectDir} &> /dev/null"
-				delProc = "${cmdStr}".execute()
-				if(verb > 1){
-					logDate = new Date()
-					logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-				}
-				delProc.waitFor()
-				logDate = new Date()
-				if(predictionInstance.email_adress == null){
-           				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-				}else{
-           				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-				}
+				deleteDir()
+				logAbort()
 				render(view:'create', model:[predictionInstance:predictionInstance])
 				return
 			}
@@ -1399,20 +1267,10 @@ class PredictionController {
 						}
 						if(metacharacterFlag == 1){
 							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-            						delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-           						delProc.waitFor()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file contains metacharacters (e.g. * or ?).\n";
+							deleteDir()
 							logDate = new Date()
-							if(predictionInstance.email_adress == null){
-           							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-           							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-							}
+							logAbort()
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided genome file\n${predictionInstance.genome_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
 							predictionInstance.message = "${predictionInstance.message}----------------------------"
@@ -1440,20 +1298,9 @@ class PredictionController {
 						}
 						if(genomeFastaFlag == 1) {
 							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file was not fasta. ${projectDir} is deleted.\n"
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(predictionInstance.email_adress == null){
-           							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-           							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-							}
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file was not fasta.\n"
+							deleteDir()
+							logAbort()
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided genome file ${predictionInstance.genome_ftp_link} was not in DNA fasta format.\n\n"
 							logDate = new Date()
 							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
@@ -1478,11 +1325,7 @@ class PredictionController {
 					}else{// actions if remote file was bigger than allowed
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Genome file size exceeds permitted ${maxFileSizeByWget} bytes.\n"
-						if(predictionInstance.email_adress == null){
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-						}
+						logAbort()
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the genome file size was\nwith ${genome_size} bigger than 1 GB. Please submitt a smaller genome size!\n\n"
 						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						logDate = new Date()
@@ -1496,15 +1339,7 @@ class PredictionController {
 							body """${errorStrMsg}${footer}"""
 							}
 						}
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						// delete database entry
-						//predictionInstance.delete()
+						deleteDir()
 						predictionInstance.results_urls = null
 						predictionInstance.job_status = 5
 						predictionInstance = predictionInstance.merge()
@@ -1542,14 +1377,8 @@ class PredictionController {
 						}
 						if(metacharacterFlag == 1){
 							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The hints file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-            						delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-           						delProc.waitFor()
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The hints file contains metacharacters (e.g. * or ?).\n";
+							deleteDir()
 							logDate = new Date()
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided hints file\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
@@ -1624,23 +1453,8 @@ class PredictionController {
 							}						
 						}
 						if((gffColErrorFlag == 1 || gffNameErrorFlag == 1 || gffSourceErrorFlag ==1)){
-							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - ${projectDir} is deleted.\n"
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(predictionInstance.email_adress == null){
-           							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-           							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-							}
-							// delete database entry
-							//predictionInstance.delete()
+							deleteDir()
+							logAbort()
 							predictionInstance.results_urls = null
 							predictionInstance.job_status = 5
 							predictionInstance = predictionInstance.merge()
@@ -1783,20 +1597,9 @@ class PredictionController {
 						}
 						if(metacharacterFlag == 1){
 							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-            						delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-           						delProc.waitFor()
-							logDate = new Date()
-							if(predictionInstance.email_adress == null){
-           							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-           							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-							}
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The cDNA file contains metacharacters (e.g. * or ?).\n";
+							deleteDir()
+							logAbort()
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided cDNA file\n${predictionInstance.est_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
 							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
@@ -1820,20 +1623,9 @@ class PredictionController {
 						}
 						if(estFastaFlag == 1) {
 							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The EST/cDNA file was not fasta. ${projectDir} is deleted.\n"
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(predictionInstance.email_adress == null){
-           							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-           							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-							}
+							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The EST/cDNA file was not fasta.\n"
+							deleteDir()
+							logAbort()
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided cDNA file\n${predictionInstance.est_ftp_link}\nwas not in DNA fasta format.\n\n"
 							logDate = new Date()
 							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
@@ -1871,15 +1663,7 @@ class PredictionController {
 									body """${errorStrMsg}${footer}"""
 							}
 						}
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						// delete database entry
-						//predictionInstance.delete()
+						deleteDir()
 						predictionInstance.results_urls = null
 						predictionInstance.job_status = 5
 						predictionInstance = predictionInstance.merge()
@@ -1943,11 +1727,7 @@ class PredictionController {
 					if(avEstLen < estMinLen){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - EST sequences are on average shorter than ${estMinLen}, suspect RNAseq raw data.\n"
-						if(predictionInstance.email_adress == null){
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-						}
+						logAbort()
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your\ncDNA file have an average length of ${avEstLen}. We suspect that sequences files\nwith an average sequence length shorter than ${estMinLen} might contain RNAseq\nraw sequences. Currently, our web server application does not support the integration\nof RNAseq raw sequences. Please either assemble your sequences into longer contigs,\nor remove short sequences from your current file, or submitt a new job without\nspecifying a cDNA file.\n\n"
 						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						logDate = new Date()
@@ -1962,15 +1742,7 @@ class PredictionController {
 									body """${errorStrMsg}${footer}"""
 							}
 						}
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						// delete database entry
-						//predictionInstance.delete()
+						deleteDir()
 						predictionInstance.results_urls = null
 						predictionInstance.job_status = 5
 						predictionInstance = predictionInstance.merge()
@@ -1979,11 +1751,7 @@ class PredictionController {
 					}else if(avEstLen > estMaxLen){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - EST sequences are on average longer than ${estMaxLen}, suspect non EST/cDNA data.\n"
-						if(predictionInstance.email_adress == null){
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-           						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
-						}
+						logAbort()
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your\ncDNA file have an average length of ${avEstLen}. We suspect that sequence\nfiles with an average sequence length longer than ${estMaxLen} might not contain\nESTs or cDNAs. Please either remove long sequences from your current file, or\nsubmitt a new job without specifying a cDNA file.\n\n"
 						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						logDate = new Date()
@@ -1997,13 +1765,7 @@ class PredictionController {
 								body """${errorStrMsg}${footer}"""
 							}
 						}
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
+						deleteDir()
 						// delete database entry
 						//predictionInstance.delete()
 						predictionInstance.results_urls = null
@@ -2087,21 +1849,9 @@ class PredictionController {
 						}
 					}
 					logDate = new Date()
-					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Data are identical to old job ${oldAccContent} with Accession-ID ${oldAccContent}. ${projectDir} is deleted.\n"
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-					delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-					delProc.waitFor()
-					logDate = new Date()
-					if(predictionInstance.email_adress == null){
-						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user anonymous user with IP ${userIP} is aborted.\n"
-					}else{
-						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted, the user has been informed!\n"
-					}
-					//predictionInstance.delete()
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Data are identical to old job ${oldAccContent} with Accession-ID ${oldAccContent}.\n"
+					deleteDir()
+					logAbort()
 					predictionInstance.results_urls = null
 					predictionInstance.job_status = 5
 					predictionInstance = predictionInstance.merge()
@@ -2237,7 +1987,7 @@ class PredictionController {
 			   	}
 				// collect results link information
 				if(new File("${web_output_dir}/${predictionInstance.accession_id}/predictions.tar.gz").exists()){
-					predictionInstance.results_urls = "<p><b>Prediction archive</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${predictionInstance.accession_id}/predictions.tar.gz\">predictions.tar.gz</a><br></p>"
+					predictionInstance.results_urls = "<p><b>Prediction archive</b>&nbsp;&nbsp;<a href=\"${web_output_url}${predictionInstance.accession_id}/predictions.tar.gz\">predictions.tar.gz</a><br></p>"
 					predictionInstance = predictionInstance.merge()
 					predictionInstance.save()
 				}
@@ -2264,7 +2014,7 @@ class PredictionController {
 					predictionInstance.save()
 					if(predictionInstance.email_adress == null){
 						logDate = new Date()
-						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Computation was successful. Did not send e-mail to user because not e-mail adress was supplied.\n"
+						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Computation was successful. Did not send e-mail to user because no e-mail adress was supplied.\n"
 					}
 					if(predictionInstance.email_adress != null){
 						msgStr = "Hello!\n\n${mailStr}You find the results at "
@@ -2301,13 +2051,7 @@ class PredictionController {
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
-					cmdStr ="rm -r ${projectDir} &> /dev/null"
-					delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-            				delProc.waitFor()
+					deleteDir()
 					logDate = new Date()
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - job directory was packed with tar/gz.\n"
 					logDate = new Date()

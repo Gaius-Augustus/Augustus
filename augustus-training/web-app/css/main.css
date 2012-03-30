@@ -110,6 +110,15 @@ div.main {
     text-align: left;
     width: 85%;
 }
+
+.prop_warn {
+    padding-left: 1em;
+    background: #f3f8fc;
+    border-style:hidden;
+    border-left-style:double;
+    border: 1px solid #006dba;
+    padding: 5px;
+}
 /**********
 div.main {
         font-size:1em;

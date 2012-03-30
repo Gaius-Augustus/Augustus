@@ -144,6 +144,9 @@
                                 </tr>
                           </tbody> 
                       </table>
+		      <g:if test="${predictionInstance.warn == true}">
+				HAHAHAHAHA
+		      </g:if>
                       <br>
                       You must <b>either</b> upload a *.tar.gz archive with AUGUSTUS species parameters from your computer <b>or</b> specify a project identifier: &nbsp; <a href="../help.gsp#which_files_pred"><small>Help</small></a>
                       <br>
@@ -161,7 +164,9 @@
                                 <td valitn="top">Upload an archive file  <font size="1">(max. 100 MB)</font>: &nbsp; <a href="../help.gsp#archive"><small>Help</small></a>
                                 </td>
                                 <td valitn="top">
-                                    <input type="file" id="ArchiveFile" name="ArchiveFile"/></label>
+					<g:if test="${predictionInstance.has_param_file == true}"><div class="prop_warn"></g:if>
+					<input type="file" id="ArchiveFile" name="ArchiveFile"/></label>
+					<g:if test="${predictionInstance.has_param_file == true}"></div></g:if>
                                 </td>
                             </tr>
                             <tr class="prop">
@@ -184,6 +189,7 @@
                                     <label for="project_id">select an organism:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label>
                                 </td>
                                 <td valign="top" class="value ${hasErrors(bean:predictionInstance,field:'species_select','errors')}">
+					<g:if test="${predictionInstance.has_select == true}"><div class="prop_warn"></g:if>
                                     <g:select name="species_select" from="${[
 'Acyrthosiphon pisum (animal)', 
 'Aedes aegypti (animal)', 
@@ -242,6 +248,7 @@
 value="${fieldValue(bean:predictionInstance,field:'species_select')}" noSelection="${['null':'Select One...']}"/>
 
  <a href="../help.gsp#project_id"><small>Help</small></a>
+				<g:if test="${predictionInstance.has_select == true}"></div></g:if>
 
                                 </td>
                             </tr>
@@ -260,15 +267,20 @@ value="${fieldValue(bean:predictionInstance,field:'species_select')}" noSelectio
                                 <td valign="top">
                                 </td>
                             </tr>
+
+
                             <tr class="prop">
-                                <td valitn="top">Upload a file <font size="1">(max. 100 MB)</font>:</td>
-                                <td valitn="top">
-                                    <input type="file" id="GenomeFile" name="GenomeFile"/>
+                                <td valign="top">Upload a file <font size="1">(max. 100 MB)</font>:</td>
+                                <td valign="top">
+					<g:if test="${predictionInstance.has_genome_file == true}"><div class="prop_warn"></g:if>
+					<input type="file" id="GenomeFile" name="GenomeFile"/>
+					<g:if test="${predictionInstance.has_genome_file == true}"></div></g:if>
                                 </td>
                             </tr>
                             <tr class="prop">
                                 <td>&nbsp;<b>or</b>&nbsp;</td><td></td>
                             </tr>
+
                             <tr class="prop">
                                 <td valign="top" class="name">
                                     <label for="genome_ftp_link">specify web link to genome file <font size="1">(max. 1 GB)</font>:</label>
@@ -293,7 +305,9 @@ value="${fieldValue(bean:predictionInstance,field:'species_select')}" noSelectio
                             <tr class="prop">
                               <td valign="top">Upload a file <font size="1">(max. 100 MB)</font>:</td>
                               <td valign="top">
-                                            <input type="file" id="EstFile" name="EstFile"/>
+					<g:if test="${predictionInstance.has_est_file == true}"><div class="prop_warn"></g:if>
+					<input type="file" id="EstFile" name="EstFile"/>
+					<g:if test="${predictionInstance.has_est_file == true}"></div></g:if>
                               </td>
                             </tr>
                             <tr class="prop">
@@ -318,7 +332,9 @@ value="${fieldValue(bean:predictionInstance,field:'species_select')}" noSelectio
                             <tr class="prop">
                               <td valign="top">Upload a file <font size="1">(max. 200 MB)</font>:</td>
                                 <td valign="top">
-                                    <input type="file" id="HintFile" name="HintFile"/>
+					<g:if test="${predictionInstance.has_hint_file == true}"><div class="prop_warn"></g:if>
+                                   	 <input type="file" id="HintFile" name="HintFile"/>
+					<g:if test="${predictionInstance.has_hint_file == true}"></div></g:if>
                                 </td>
                             </tr>
                         </tbody>
@@ -334,7 +350,9 @@ value="${fieldValue(bean:predictionInstance,field:'species_select')}" noSelectio
 					</tr>
 					<tr class="prop">
 						<td valign="top" class="name">
+							<g:if test="${predictionInstance.has_utr == true}"><div class="prop_warn"></g:if>
 							<g:checkBox name="utr" value="${false}" /> predict UTRs (requires species-specific UTR parameters)
+							<g:if test="${predictionInstance.has_utr == true}"></div></g:if>
 						</td>
 					</tr>
 					<tr class="prop">
@@ -344,7 +362,9 @@ value="${fieldValue(bean:predictionInstance,field:'species_select')}" noSelectio
 					</tr>
 					<tr class="prop">
 						<td valign="top" class="name">
+							<g:if test="${predictionInstance.has_strand == true}"><div class="prop_warn"></g:if>
 							<g:radio name="pred_strand" value="1" checked="true"/> both strands  &nbsp; &nbsp; <g:radio name="pred_strand" value="2"/> forward strand only &nbsp; &nbsp; <g:radio name="pred_strand" value="3"/> reverse strand only
+							<g:if test="${predictionInstance.has_strand == true}"></div></g:if>
 						</td>
 					<tr class="prop">
 						<td valign="top" class="name">
@@ -363,12 +383,17 @@ value="${fieldValue(bean:predictionInstance,field:'species_select')}" noSelectio
 					</tr>
 					<tr class="prop">
 						<td valign="top" class="name">
+						<g:if test="${predictionInstance.has_structures == true}"><div class="prop_warn"></g:if>
 							<g:radio name="allowed_structures" value="1" checked="true"/> predict any number of (possibly partial) genes<br>
 							<g:radio name="allowed_structures" value="2"/> only predict complete genes<br>
 							<g:radio name="allowed_structures" value="3"/> only predict complete genes - at least one<br>
 							<g:radio name="allowed_structures" value="4"/>  predict exactly one gene<br><br>
+						<g:if test="${predictionInstance.has_structures == true}"></div></g:if>
+						<g:if test="${predictionInstance.has_conflicts == true}"><div class="prop_warn"></g:if>
 							<g:checkBox name="ignore_conflicts" value="${false}" /> ignore conflicts with other strand
+						<g:if test="${predictionInstance.has_conflicts == true}"></div></g:if>
 						</td>
+
 					</tr>
 				</tbody>
 			</table>
@@ -378,7 +403,9 @@ value="${fieldValue(bean:predictionInstance,field:'species_select')}" noSelectio
 				<tbody>
 					<tr class="prop">
 						<td valign="top" class="name">
+							<g:if test="${predictionInstance.warn == true}"><div class="prop_warn"></g:if>
 							<img src="${createLink(controller: 'simpleCaptcha', action: 'captcha')}"/> &nbsp; &nbsp; <g:textField name="captcha"/> <font color="#FF0000">*</font>
+							<g:if test="${predictionInstance.warn == true}"></div></g:if>
 						</td>
 					</tr>
 				</tbody>
