@@ -19,8 +19,23 @@
 class OrthoExon{
 
 public:
-  OrthoExon() {}
-  ~OrthoExon(){} //TODO: delete State objects
+  OrthoExon(){
+    orthoex.resize(OrthoExon::species.size());
+  }
+  ~OrthoExon(){
+    for(size_t pos = 0; pos < orthoex.size(); pos++){
+      delete orthoex[pos];
+    }
+  }
+  //copy constructor
+  OrthoExon(const OrthoExon& other){
+    orthoex.resize(other.orthoex.size());
+    for(size_t pos = 0; pos < orthoex.size(); pos++){
+      if (other.orthoex[pos]){
+	orthoex[pos] = new State(*other.orthoex[pos]);
+      }
+    }
+  }
 
   static vector<string> species;
   vector<State*> orthoex;

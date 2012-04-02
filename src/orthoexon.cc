@@ -124,10 +124,7 @@ istream& operator>>(istream& istrm, OrthoExon& ex_tuple){
     istrm >> begin >> length;
     if (begin != 0 && length != 0){
       State *state = new State(begin-1, begin+length-2, toStateType(exontype.c_str()));
-      ex_tuple.orthoex.push_back(state);
-    }
-    else{
-     ex_tuple.orthoex.push_back(NULL);
+      ex_tuple.orthoex[i] = state;
     }
   }
   return istrm;
