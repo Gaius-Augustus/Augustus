@@ -2045,7 +2045,7 @@ class TrainingController {
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - checking job SGE status...\n"
 				while(qstat == 1){
-					sleep(30) // 300000 = 5 minutes
+					sleep(300000) // 300000 = 5 minutes
 					statusCheck = "bash ${projectDir}/status.sh".execute()
 					statusCheck.waitFor()
 					sleep(100)

@@ -100,7 +100,7 @@
 		<p>
             		<g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '0' || fieldValue(bean:predictionInstance, field:'job_status') == '1' || fieldValue(bean:predictionInstance, field:'job_status') == '2' || fieldValue(bean:predictionInstance, field:'job_status') == '3'}">
 				<g:if test = "${predictionInstance.old_url == null}">
-					<div style="width:470px;height:30px;border:1px solid #d2d2dc">
+					<div style="width:600px;height:30px;border:1px solid #d2d2dc">
 						<p>
 							<g:if test = "${fieldValue(bean:predictionInstance, field:'job_status') == '0'|| fieldValue(bean:predictionInstance, field:'job_status') == '1'}">
 								<b><font color="#006699" size=2>&nbsp;Job submitted</font> <font color="#d2d2dc" size=2>&rarr; waiting for execution &rarr; computing &rarr; finished!</font></b><br>

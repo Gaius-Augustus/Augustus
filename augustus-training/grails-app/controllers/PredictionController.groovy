@@ -1966,7 +1966,7 @@ class PredictionController {
 				def runFlag = 0;
 
 				while(qstat == 1){
-					sleep(30) // 300000 = 5 minutes
+					sleep(300000) // 300000 = 5 minutes
 					cmdStr = "bash ${projectDir}/status.sh"
 					statusCheck = "${cmdStr}".execute()
 					statusCheck.waitFor()

@@ -779,7 +779,7 @@ sub scipio_conversion{
     print "3 $cmdString ..." if ($verbose>2); 
     system("$cmdString")==0 or die("Program aborted. Possibly \"scipio\" is not installed or not in your PATH");
     print "Finished.\n" if ($verbose>2);
-    $cmdString = "cat scipio.yaml | yaml2gff.pl > scipio.gff 2> yaml2gff.err"; 
+    $cmdString = "cat scipio.yaml | yaml2gff.1.4.pl --filterstatus=\"incomplete\"> scipio.gff 2> yaml2gff.err"; 
     print "3 $cmdString ..." if ($verbose>2);
     system("$cmdString")==0 or die("Command aborted. Possibly \"scipio\" is not installed or not in your PATH\n");
     print "Finished.\n" if ($verbose>2);
