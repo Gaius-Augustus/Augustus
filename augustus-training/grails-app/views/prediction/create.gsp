@@ -144,9 +144,6 @@
                                 </tr>
                           </tbody> 
                       </table>
-		      <g:if test="${predictionInstance.warn == true}">
-				HAHAHAHAHA
-		      </g:if>
                       <br>
                       You must <b>either</b> upload a *.tar.gz archive with AUGUSTUS species parameters from your computer <b>or</b> specify a project identifier: &nbsp; <a href="../help.gsp#which_files_pred"><small>Help</small></a>
                       <br>

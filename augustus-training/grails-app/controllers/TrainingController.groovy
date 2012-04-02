@@ -133,7 +133,8 @@ class TrainingController {
 	def commit = {
 		def trainingInstance = new Training(params)
 		if(!(trainingInstance.id == null)){
-         		redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+			flash.error = "Internal error 2. Please contact augustus-web@uni-greifswald.de if the problem persists!"
+         		redirect(action:create)
 			return
 		}else{
 			// retrieve parameters of form for early save()
@@ -151,7 +152,7 @@ class TrainingController {
 				trainingInstance.est_file = uploadedEstFile.originalFilename
 			}
 			if(!(uploadedStructFile.empty)){
-				trainingInstance.hint_file = uploadedStructFile.originalFilename
+				trainingInstance.struct_file = uploadedStructFile.originalFilename
 			}
 			trainingInstance.results_urls = ""
 			trainingInstance.message = ""
@@ -191,14 +192,81 @@ class TrainingController {
 			logDate = new Date()
 			logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - user IP: ${userIP}\n"
 
+			// flags for redirect to submission form, display warning in appropriate places
+			trainingInstance.warn = true
+			// parameters for redirecting
+			def redirParams = [:]
+			redirParams["warn"] = "${trainingInstance.warn}"
+			if(trainingInstance.email_adress != null){
+				redirParams["email_adress"] = "${trainingInstance.email_adress}"
+			}
+			if(trainingInstance.project_name != null){
+				redirParams["project_name"] = "${trainingInstance.project_name}"
+			}
+			if(trainingInstance.genome_ftp_link != null){
+				redirParams["genome_ftp_link"] = "${trainingInstance.genome_ftp_link}"
+			}
+			if(trainingInstance.est_ftp_link != null){
+				redirParams["est_ftp_link"] = "${trainingInstance.est_ftp_link}"
+			}
+			if(trainingInstance.protein_ftp_link != null){
+				redirParams["protein_ftp_link"] = "${trainingInstance.protein_ftp_link}"
+			}
+			if(trainingInstance.genome_file != null){
+				redirParams["has_genome_file"] = "${trainingInstance.warn}"
+			}
+			if(trainingInstance.est_file != null){
+				redirParams["has_est_file"] = "${trainingInstance.warn}"
+			}
+			if(trainingInstance.protein_file != null){
+				redirParams["has_protein_file"] = "${trainingInstance.warn}"
+			}
+			if(trainingInstance.struct_file != null){
+				redirParams["has_struct_file"] = "${trainingInstance.warn}"
+			}
+
+			// redirect function
+			def cleanRedirect = {
+				logDate = new Date()
+				if(trainingInstance.email_adress == null){
+					logFile << "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+				}else{
+					logFile << "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+				}
+				flash.message = "Info: Please check all fields marked in blue for completeness before starting the training job!"
+				redirect(action:create, params:redirParams)
+				
+			}
+			// directory delete function
+			def String dirName = "${output_dir}/${trainingInstance.accession_id}"
+			def projectDir = new File(dirName)
+			def deleteDir = {
+				logDate = new Date()
+				logFile << "${logDate} ${trainingInstance.accession_id} v1 - Project directory is deleted\n"
+				cmdStr = "rm -r ${projectDir} &> /dev/null"
+				delProc = "${cmdStr}".execute()
+				if(verb > 1){
+					logDate = new Date()
+					logFile << "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"								}
+            			delProc.waitFor()
+			}
+			// log abort function
+			def logAbort = {
+				logDate = new Date()
+					if(trainingInstance.email_adress == null){
+           					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+					}else{
+           					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					}
+			}
+
 			//verify that the submitter is a person
 			boolean captchaValid = simpleCaptchaService.validateCaptcha(params.captcha)
 			if(captchaValid == false){
 				logDate = new Date()
-				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The user is probably not a human person. Job aborted.\n"
-				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The user is probably not a human person.\n"
 				flash.error = "The verification string at the bottom of the page was not entered correctly!"
-            			redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}"])
+            			cleanRedirect()
            			return
 			}
 			
@@ -206,14 +274,8 @@ class TrainingController {
 			if(trainingInstance.project_name =~ /\s/){
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The species name contained whitespaces.\n"
-				if(trainingInstance.email_adress == null){
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-				}else{
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-				}
-				flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 				flash.error = "Species name  ${trainingInstance.project_name} contains white spaces."
-   	  			redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}"])
+            			cleanRedirect()
 	  			return
 			} 
 
@@ -221,8 +283,6 @@ class TrainingController {
 			// check file size
 		        preUploadSize = uploadedGenomeFile.getSize()
 			def seqNames = []
-			def String dirName = "${output_dir}/${trainingInstance.accession_id}"
-			def projectDir = new File(dirName)
 			if(!uploadedGenomeFile.empty){
 				if(preUploadSize <= maxButtonFileSize){
 					projectDir.mkdirs()
@@ -261,46 +321,20 @@ class TrainingController {
 					}
 					if(metacharacterFlag == 1){
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}	
-						delProc.waitFor()
-						logDate = new Date()
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file contains metacharacters (e.g. * or ?).\n";
+						deleteDir()
 						flash.error = "The genome file contains metacharacters (*, ?, ...). This is not allowed."
-						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            					cleanRedirect()
 						return
 					}
 
 
 					if(genomeFastaFlag == 1) {
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file was not fasta. Project directory ${projectDir} is deleted.\n"
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile << "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						logDate = new Date()
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file was not fasta.\n"
+						deleteDir()
 						flash.error = "Genome file ${uploadedGenomeFile.originalFilename} is not in DNA fasta format."
-						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            					cleanRedirect()
 						return
 					} else {
 						def genomeCksumScript = new File("${projectDir}/genome_cksum.sh")
@@ -343,10 +377,9 @@ class TrainingController {
 					}
 				}else{
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The selected genome file was bigger than ${maxButtonFileSize}. Submission rejected.\n"
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The selected genome file was bigger than ${maxButtonFileSize}.\n"
 						flash.error = "Genome file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
-						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            					cleanRedirect()
 						return
 				}	
 			} // end of genome file upload
@@ -384,17 +417,10 @@ class TrainingController {
 				error_code = st.nextInt();
 				if(!(error_code == 200)){
 					logDate = new Date()
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome URL is not accessible. Response code: ${error_code}. Aborting job.\n"
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-					delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-					delProc.waitFor()
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome URL is not accessible. Response code: ${error_code}.\n"
+					deleteDir()
 					flash.error = "Cannot retrieve genome file from HTTP/FTP link ${trainingInstance.genome_ftp_link}."
-					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            				cleanRedirect()
 					return
 				}else{
 					logDate = new Date()
@@ -418,23 +444,9 @@ class TrainingController {
 					if(genomeFastaFlag == 1) {
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The first 20 lines in genome file are not fasta.\n"
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Project directory ${projectDir} is deleted.\n"
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+						deleteDir()
 						flash.error = "Genome file ${trainingInstance.genome_ftp_link} is not in DNA fasta format."
-						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            					cleanRedirect()
 						return
 					}
 				}else{
@@ -492,44 +504,18 @@ class TrainingController {
 					}
 					if(metacharacterFlag == 1){
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The cDNA file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						logDate = new Date()
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The cDNA file contains metacharacters (e.g. * or ?).\n";
+						deleteDir()
 						flash.error = "The cDNA file contains metacharacters (*, ?, ...). This is not allowed."
-						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            					cleanRedirect()
 						return
 					}
 					if(estFastaFlag == 1) {
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The cDNA file was not fasta. ${projectDir} is deleted.\n"
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						logDate = new Date()
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The cDNA file was not fasta.\n"
+						deleteDir()
 						flash.error = "cDNA file ${uploadedEstFile.originalFilename} is not in DNA fasta format."
-						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            					cleanRedirect()
 						return
 					} else { estExistsFlag = 1 }
 					def estCksumScript = new File("${projectDir}/est_cksum.sh")
@@ -572,14 +558,8 @@ class TrainingController {
 				}else{
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The selected cDNA file was bigger than ${maxButtonFileSize}.\n"
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 						flash.error = "cDNA file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
-						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            					cleanRedirect()
 						return
 				}
 			}
@@ -620,21 +600,9 @@ class TrainingController {
 					if(!(error_code == 200)){
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The EST URL is not accessible. Response code: ${error_code}.\n"
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+						deleteDir()
 						flash.error = "Cannot retrieve cDNA file from HTTP/FTP link ${trainingInstance.est_ftp_link}."
-						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            					cleanRedirect()
 						return
 					}else{
 						logDate = new Date()
@@ -655,23 +623,10 @@ class TrainingController {
 					}
 					if(estFastaFlag == 1) {
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The cDNA file was not fasta. ${projectDir} is deleted.\n"
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						logDate = new Date()
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The cDNA file was not fasta.\n"
+						deleteDir()
 						flash.error = "cDNA file ${trainingInstance.est_ftp_link} is not in DNA fasta format."
-						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            					cleanRedirect()
 						return
 					}
 				}else{
@@ -717,54 +672,25 @@ class TrainingController {
 						}
 						if(metacharacterFlag == 1){
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The gene structure file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(trainingInstance.email_adress == null){
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							}
-							flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The gene structure file contains metacharacters (e.g. * or ?).\n";
+							deleteDir()
 							flash.error = "Gene Structure file contains metacharacters (*, ?, ...). This is not allowed."
-							redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            						cleanRedirect()
 							return
 						}
 						if(gffColErrorFlag == 1 && structureGbkFlag == 0){
 							logDate = new Date()
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Training gene structure file does not always contain 9 columns.\n"
-							flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 							flash.error = "Training gene structure file  ${trainingInstance.struct_file} is not in a compatible gff format (has not 9 columns). Please make sure the gff-format complies with the instructions in our 'Help' section!"
 						}
 						if(gffNameErrorFlag == 1 && structureGbkFlag == 0){
 							logDate = new Date()
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Training gene structure file contains entries that do not comply with genome sequence names.\n"
-							flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 							flash.error = "Entries in the training gene structure file  ${trainingInstance.struct_file} do not match the sequence names of the genome file. Please make sure the gff-format complies with the instructions in our 'Help' section!"
 						}
 						if((gffColErrorFlag == 1 || gffNameErrorFlag == 1) && structureGbkFlag == 0){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - ${projectDir} is deleted.\n"
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(trainingInstance.email_adress == null){
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							}
-							redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+							deleteDir()
+            						cleanRedirect()
 							return
 						}
 					}
@@ -773,14 +699,8 @@ class TrainingController {
 					def allowedStructSize = maxButtonFileSize * 2
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The selected training gene structure file was bigger than ${allowedStructSize}.\n"
-					if(trainingInstance.email_adress == null){
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-					}
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					flash.error = "Training gene structure file is bigger than ${allowedStructSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
-					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            				cleanRedirect()
 					return	
 				}
 				structureExistsFlag = 1
@@ -836,14 +756,8 @@ class TrainingController {
 				}else{
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The selected protein file was bigger than ${maxButtonFileSize}.\n"
-					if(trainingInstance.email_adress == null){
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-					}
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
 					flash.error = "Protein file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
-					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            				cleanRedirect()
 					return	
 				}
 				if("${uploadedProteinFile.originalFilename}" =~ /\.gz/){
@@ -892,66 +806,27 @@ class TrainingController {
 				}
 				if(metacharacterFlag == 1){
 					logDate = new Date()
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-					delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-					delProc.waitFor()
-					logDate = new Date()
-					if(trainingInstance.email_adress == null){
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-					}
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein file contains metacharacters (e.g. * or ?).\n";
+					deleteDir()
 					flash.error = "The protein file contains metacharacters (*, ?, ...). This is not allowed."
-					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            				cleanRedirect()
 					return
 				}
 				cRatio = cytosinCounter/allAminoAcidsCounter
 				if (cRatio >= 0.05){
 					logDate = new Date()
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence). ${projectDir} is deleted.\n"
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-					delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-					delProc.waitFor()
-					logDate = new Date()
-					if(trainingInstance.email_adress == null){
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-					}
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence).\n"
+					deleteDir()
 					flash.error = "Your protein file was not recognized as a protein file. It may be DNA file. The training job was not started. Please contact augustus@uni-greifswald.de if you are completely sure this file is a protein fasta file."
-					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            				cleanRedirect()
 					return
 				}
 				if(proteinFastaFlag == 1) {
 					logDate = new Date()
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein file was not protein fasta. ${projectDir} is deleted.\n"
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-					delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-					delProc.waitFor()
-					logDate = new Date()
-					if(trainingInstance.email_adress == null){
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-					}
-					flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein file was not protein fasta.\n"
+					deleteDir()
 					flash.error = "Protein file ${uploadedProteinFile.originalFilename} is not in protein fasta format."
-					redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            				cleanRedirect()
 					return
 				}
 				proteinExistsFlag = 1
@@ -1025,21 +900,9 @@ class TrainingController {
 					if(!(error_code == 200)){
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein URL is not accessible. Response code: ${error_code}.\n"
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+						deleteDir()
 						flash.error = "Cannot retrieve protein file from HTTP/FTP link ${trainingInstance.protein_ftp_link}."
-						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+            					cleanRedirect()
 						return
 					}else{
 						logDate = new Date()
@@ -1066,43 +929,18 @@ class TrainingController {
 					}
 					if (cRatio >= 0.05){
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence).\n ${projectDir} is deleted.\n"
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						logDate = new Date()
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
-						flash.message = "Please check that all values that you want to submit are contained in the form before trying to submit, again!"
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence).\n"
+						deleteDir()
 						flash.error = "Protein file ${trainingInstance.protein_ftp_link} does not contain protein sequences."
-						redirect(action:create)
+            					cleanRedirect()
 						return
 					}
 					if(proteinFastaFlag == 1) {
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  The protein file was not protein fasta. ${projectDir} is deleted.\n"
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						logDate = new Date()
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
-						flash.message = "Protein file ${trainingInstance.protein_ftp_link} is not in protein fasta format."
-						redirect(action:create, params:[email_adress:"${trainingInstance.email_adress}", project_name:"${trainingInstance.project_name}"])
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  The protein file was not protein fasta.\n"
+						deleteDir()
+						flash.error = "Protein file ${trainingInstance.protein_ftp_link} is not in fasta format."
+            					cleanRedirect()
 						return
 					}
 				}else{
@@ -1154,17 +992,8 @@ class TrainingController {
 			} else {
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  An error occurred in the trainingInstance (e.g. E-Mail missing, see domain restrictions).\n"
-				logDate = new Date()
-				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  ${projectDir} is deleted.\n"
-				cmdStr = "rm -r ${projectDir} &> /dev/null"
-				delProc = "${cmdStr}".execute()
-				if(verb > 1){
-					logDate = new Date()
-					logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-				}
-				delProc.waitFor()
-				logDate = new Date()
-				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+				deleteDir()
+				logAbort()
 				render(view:'create', model:[trainingInstance:trainingInstance])
 				return
 			}
@@ -1262,20 +1091,9 @@ class TrainingController {
 						}
 						if(metacharacterFlag == 1){
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(trainingInstance.email_adress == null){
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							}
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file contains metacharacters (e.g. * or ?).\n";
+							deleteDir()
+							logAbort()
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name} was aborted\nbecause the provided genome file\n${trainingInstance.genome_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
 							trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -1304,19 +1122,8 @@ class TrainingController {
 						if(genomeFastaFlag == 1) {
 							logDate = new Date()
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file was not fasta. ${projectDir} is deleted.\n"
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(trainingInstance.email_adress == null){
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							}
+							deleteDir()
+							logAbort()
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided genome file\n${trainingInstance.genome_ftp_link}\nwas not in DNA fasta format.\n\n"
 							logDate = new Date()
 							trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -1345,11 +1152,7 @@ class TrainingController {
 					}else{// actions if remote file was bigger than allowed
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Genome file size exceeds permitted ${maxFileSizeByWget} bytes.\n"
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
+						logAbort()
 						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the genome file size was with ${genome_size} bytes bigger than ${maxFileSizeByWget} bytes.\nPlease submitt a smaller genome file!\n\n"
 						logDate = new Date()
 						trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -1367,15 +1170,7 @@ class TrainingController {
 								body """${msgStr}${footer}"""	
 							}
 						}
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						// delete database entry
-						//trainingInstance.delete()
+						deleteDir()
 						trainingInstance.results_urls = null
 						trainingInstance.job_status = 5
 						trainingInstance = trainingInstance.merge()
@@ -1412,20 +1207,9 @@ class TrainingController {
 						}
 						if(metacharacterFlag == 1){
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The gene structure file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(trainingInstance.email_adress == null){
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							}
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The gene structure file contains metacharacters (e.g. * or ?).\n";
+							deleteDir()
+							logAbort()
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided gene structure file contains metacharacters (e.g. * or ?).\nThis is not allowed.\n\n"
 							logDate = new Date()
 							trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -1494,21 +1278,8 @@ class TrainingController {
 							}
 						}
 						if((gffColErrorFlag == 1 || gffNameErrorFlag == 1) && structureGbkFlag == 0){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  ${projectDir} is deleted.\n"
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(trainingInstance.email_adress == null){
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							}
+							deleteDir()
+							logAbort()
 							// delete database entry
 							//trainingInstance.delete()
 							trainingInstance.results_urls = null
@@ -1645,20 +1416,9 @@ class TrainingController {
 						}
 						if(metacharacterFlag == 1){
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The cDNA file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(trainingInstance.email_adress == null){
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							}
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The cDNA file contains metacharacters (e.g. * or ?).\n";
+							deleteDir()
+							logAbort()
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided cDNA file\n${trainingInstance.est_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
 							trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -1687,19 +1447,8 @@ class TrainingController {
 						if(estFastaFlag == 1) {
 							logDate = new Date()
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The EST/cDNA file was not fasta. ${projectDir} is deleted.\n"
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(trainingInstance.email_adress == null){
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							}
+							deleteDir()
+							logAbort()
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided cDNA file\n${trainingInstance.est_ftp_link}\nwas not in DNA fasta format.\n\n"
 							logDate = new Date()
 							trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -1717,8 +1466,6 @@ class TrainingController {
 									body """${msgStr}${footer}"""	
 								}
 							}
-							// delete database entry
-							//trainingInstance.delete()
 							trainingInstance.results_urls = null
 							trainingInstance.job_status = 5
 							trainingInstance = trainingInstance.merge()
@@ -1728,11 +1475,7 @@ class TrainingController {
 					}else{// actions if remote file was bigger than allowed
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  EST file size exceeds permitted ${maxFileSizeByWget} bytes.\n"
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
+						logAbort()
 						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the cDNA file size was with ${est_size} bigger than 1 GB.\nPlease submitt a smaller cDNA size!\n\n"
 						logDate = new Date()
 						trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -1750,15 +1493,7 @@ class TrainingController {
 								body """${msgStr}${footer}"""	
 							}
 						}
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						// delete database entry
-						//trainingInstance.delete()
+						deleteDir()
 						trainingInstance.results_urls = null
 						trainingInstance.job_status = 5
 						trainingInstance = trainingInstance.merge()
@@ -1823,11 +1558,7 @@ class TrainingController {
 					if(avEstLen < estMinLen){
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  EST sequences are on average shorter than ${estMinLen}, suspect RNAseq raw data.\n"
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
+						logAbort()
 						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted because the sequences in your\ncDNA file have an average length of ${avEstLen}. We suspect that sequences files\nwith an average sequence length shorter than ${estMinLen} might\ncontain RNAseq raw sequences. Currently, our web server application does not support\nthe integration of RNAseq raw sequences. Please either assemble\nyour sequences into longer contigs, or remove short sequences from your current file,\nor submitt a new job without specifying a cDNA file.\n\n"
 						logDate = new Date()
 						trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -1845,15 +1576,7 @@ class TrainingController {
 								body """${msgStr}${footer}"""	
 							}
 						}
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						// delete database entry
-						//trainingInstance.delete()
+						deleteDir()
 						trainingInstance.results_urls = null
 						trainingInstance.job_status = 5
 						trainingInstance = trainingInstance.merge()
@@ -1862,11 +1585,7 @@ class TrainingController {
 					}else if(avEstLen > estMaxLen){
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  EST sequences are on average longer than ${estMaxLen}, suspect non EST/cDNA data.\n"
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
+						logAbort()
 						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted because\nthe sequences in your cDNA file have an average length of ${avEstLen}.\nWe suspect that sequences files with an average sequence length longer than ${estMaxLen}\nmight not contain ESTs or cDNAs. Please either remove long sequences from your\ncurrent file, or submitt a new job without specifying a cDNA file.\n\n"
 						logDate = new Date()
 						trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -1884,15 +1603,7 @@ class TrainingController {
 								body """${msgStr}${footer}"""	
 							}
 						}
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						// delete database entry
-						//trainingInstance.delete()
+						deleteDir()
 						trainingInstance.results_urls = null
 						trainingInstance.job_status = 5
 						trainingInstance = trainingInstance.merge()
@@ -1991,20 +1702,9 @@ class TrainingController {
 						}
 						if(metacharacterFlag == 1){
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein file contains metacharacters (e.g. * or ?). ${projectDir} is deleted.\n";
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(trainingInstance.email_adress == null){
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							}
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The protein file contains metacharacters (e.g. * or ?).\n";
+							deleteDir()
+							logAbort()
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided protein file\n${trainingInstance.protein_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
 							trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -2033,20 +1733,9 @@ class TrainingController {
 						cRatio = cytosinCounter/allAminoAcidsCounter
 						if (cRatio >= 0.05){
 							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence). ${projectDir} is deleted.\n"
-							cmdStr = "rm -r ${projectDir} &> /dev/null"
-							delProc = "${cmdStr}".execute()
-							if(verb > 1){
-								logDate = new Date()
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-							}
-							delProc.waitFor()
-							logDate = new Date()
-							if(trainingInstance.email_adress == null){
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-							}else{
-								logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-							}
+							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  The protein file was with cysteine ratio ${cRatio} not recognized as protein file (probably DNA sequence).\n"
+							deleteDir()
+							logAbort()
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided protein file\n${trainingInstance.protein_ftp_link}\nis suspected to contain DNA instead of protein sequences.\n\n"
 							logDate = new Date()
 							trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -2075,11 +1764,7 @@ class TrainingController {
 					}else{// actions if remote file was bigger than allowed
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Protein file size exceeds permitted ${maxFileSizeByWget} bytes.\n"
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
+						logAbort()
 						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the protein file size was with ${protein_size} bigger than 1 GB.\nPlease submitt a smaller protein size!\n\n"
 						logDate = new Date()
 						trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -2097,37 +1782,18 @@ class TrainingController {
 								body """${msgStr}${footer}"""	
 							}
 						}
-						// delete database entry
-						//trainingInstance.delete()
 						trainingInstance.results_urls = null
 						trainingInstance.job_status = 5
 						trainingInstance = trainingInstance.merge()
 						trainingInstance.save()
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
+						deleteDir()
 						return
 					}
 					if(proteinFastaFlag == 1) {
 						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  The protein file was not protein fasta. ${projectDir} is deleted.\n"
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-						delProc.waitFor()
-						logDate = new Date()
-						if(trainingInstance.email_adress == null){
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-						}else{
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
-						}
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  The protein file was not protein fasta.\n"
+						deleteDir()
+						logAbort()
 						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided protein file\n${trainingInstance.protein_ftp_link}\nis not in fasta format.\n\n"
 						logDate = new Date()
 						trainingInstance.message = "${trainingInstance.message}----------------------------"
@@ -2145,8 +1811,6 @@ class TrainingController {
 								body """${msgStr}${footer}"""	
 							}
 						}
-						// delete database entry
-						//trainingInstance.delete()
 						trainingInstance.results_urls = null
 						trainingInstance.job_status = 5
 						trainingInstance = trainingInstance.merge()
@@ -2269,20 +1933,8 @@ class TrainingController {
 					}
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Data are identical to old job ${oldAccContent} with Accession-ID ${oldAccContent}. ${projectDir} is deleted.\n"
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-					//delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-					//delProc.waitFor()
-					logDate = new Date()
-					if(trainingInstance.email_adress == null){
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
-					}else{
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted! The user has been informed.\n"
-					}
-					//trainingInstance.delete()
+					deleteDir()
+					logAbort()
 					trainingInstance.results_urls = null
 					trainingInstance.job_status = 5
 					trainingInstance = trainingInstance.merge()
@@ -2457,16 +2109,16 @@ class TrainingController {
 				}
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/ab_initio.tar.gz").exists()){
 					if(trainingInstance.results_urls == null){
-						trainingInstance.results_urls = "<p><b>Ab initio predictions</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/ab_initio.tar.gz\">ab_initio.tar.gz</a><br></p>"
+						trainingInstance.results_urls = "<p><b>Ab initio trainings</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/ab_initio.tar.gz\">ab_initio.tar.gz</a><br></p>"
 					}else{
-						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Ab initio predictions</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/ab_initio.tar.gz\">ab_initio.tar.gz</a><br></p>"
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Ab initio trainings</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/ab_initio.tar.gz\">ab_initio.tar.gz</a><br></p>"
 					}
 				}
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/hints_pred.tar.gz").exists()){
 					if(trainingInstance.results_urls == null){
-						trainingInstance.results_urls = "<p><b>Predictions with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/hints_pred.tar.gz\">hints_pred.tar.gz</a><br></p>"
+						trainingInstance.results_urls = "<p><b>trainings with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/hints_pred.tar.gz\">hints_pred.tar.gz</a><br></p>"
 					}else{
-						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Predictions with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/training.gb.gz\">training.gb.gz</a><br></p>"
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>trainings with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/training.gb.gz\">training.gb.gz</a><br></p>"
 					}
 				}
 			   	// check whether errors occured by log-file-sizes
@@ -2551,13 +2203,7 @@ class TrainingController {
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
-					cmdStr = "rm -r ${projectDir} &> /dev/null"
-					delProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-            				delProc.waitFor()
+					deleteDir()
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  autoAug directory was packed with tar/gz.\n"
 					//logFile << "${trainingInstance.accession_id} v1 -  autoAug directory was packed with tar/7z.\n"
@@ -2616,13 +2262,8 @@ class TrainingController {
 							logDate = new Date()
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
 						}
-						cmdStr = "rm -r ${projectDir} &> /dev/null"
-						delProc = "${cmdStr}".execute()
-						if(verb > 1){
-							logDate = new Date()
-							logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
-						}
-            					delProc.waitFor()
+						cleanUp.waitFor()
+						deleteDir()
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  autoAug directory was packed with tar/gz.\n"
 						//logFile << "${trainingInstance.accession_id} v1 -  autoAug directory was packed with tar/7z.\n"

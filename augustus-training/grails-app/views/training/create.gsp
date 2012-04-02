@@ -179,7 +179,9 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			    <tr class="prop">
 			        <td valitn="top">Upload a file <font size="1">(max. 100 MB)</font>:</td>
                                 <td valitn="top">
-                                    <input type="file" id="GenomeFile" name="GenomeFile"/>
+					<g:if test="${trainingInstance.has_genome_file == true}"><div class="prop_warn"></g:if>
+                                    		<input type="file" id="GenomeFile" name="GenomeFile"/>
+					<g:if test="${trainingInstance.has_genome_file == true}"></div></g:if>
                                 </td>
 			    </tr>
 			    <tr class="prop">
@@ -209,7 +211,9 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			    <tr class="prop">
 			      <td valign="top">Upload a file <font size="1">(max. 100 MB)</font>:</td>
 			      <td valign="top">
+					<g:if test="${trainingInstance.has_est_file == true}"><div class="prop_warn"></g:if>
 				            <input type="file" id="EstFile" name="EstFile"/>
+					<g:if test="${trainingInstance.has_est_file == true}"></div></g:if>
                               </td>
 			    </tr>
 			    <tr class="prop">
@@ -234,7 +238,9 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			    <tr class="prop">
 			      <td valign="top">Upload a file <font size="1">(max. 100 MB)</font>:</td>
                                 <td valign="top">
-                                    <input type="file" id="ProteinFile" name="ProteinFile"/>
+					<g:if test="${trainingInstance.has_protein_file == true}"><div class="prop_warn"></g:if>
+                                    		<input type="file" id="ProteinFile" name="ProteinFile"/>
+					<g:if test="${trainingInstance.has_protein_file == true}"></div></g:if>
                                 </td>
 		            </tr> 
 			    <tr class="prop">
@@ -258,7 +264,9 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			    <tr class="prop">
 			        <td valign="top">Upload a file <font size="1">(max. 200 MB)</font>:</td>
                                 <td valign="top">
-                                    <input type="file" id="StructFile" name="StructFile"/> 
+					<g:if test="${trainingInstance.has_struct_file == true}"><div class="prop_warn"></g:if>
+                                    		<input type="file" id="StructFile" name="StructFile"/> 
+					<g:if test="${trainingInstance.has_struct_file == true}"></div></g:if>
                                 </td>
                             </tr> 
                         </tbody>
@@ -291,7 +299,9 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 				<tbody>
 					<tr class="prop">
 						<td valign="top" class="name">
-							<img src="${createLink(controller: 'simpleCaptcha', action: 'captcha')}"/> &nbsp; &nbsp; <g:textField name="captcha"/><font color="#FF0000">*</font>
+							<g:if test="${trainingInstance.warn == true}"><div class="prop_warn"></g:if>
+								<img src="${createLink(controller: 'simpleCaptcha', action: 'captcha')}"/> &nbsp; &nbsp; <g:textField name="captcha"/><font color="#FF0000">*</font>
+							<g:if test="${trainingInstance.warn == true}"></div></g:if>
 						</td>
 					</tr>
 				</tbody>

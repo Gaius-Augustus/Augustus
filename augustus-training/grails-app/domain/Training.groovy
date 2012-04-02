@@ -42,6 +42,12 @@ class Training {
    String results_urls
    String message
    String old_url
+   // flags for emtpy fields in form after redirect
+   Boolean warn
+   Boolean has_genome_file
+   Boolean has_est_file
+   Boolean has_protein_file
+   Boolean has_struct_file
    static constraints ={
       // accession_id(unique:false) // may (unlikely) cause problems if the grails database ever gets lost.
        email_adress(email:true,blank:true,nullable:true)
@@ -88,5 +94,10 @@ class Training {
        old_url(nullable:true)
        results_urls(nullable:true)
        message(maxSize:1000000000, nullable:true) 
+       warn(nullable:true)
+       has_genome_file(nullable:true)
+       has_est_file(nullable:true)
+       has_protein_file(nullable:true)
+       has_struct_file(nullable:true)
     }
 }

@@ -110,7 +110,7 @@
               <a href="#allowedGeneStructure">Allowed gene structure<a><br>
               <a href="#list">Why does my job not exist?</a><br>
               <a href="#accuracy">Why is the prediction accuracy in the genome of my species not as good as I expected?</a><br>
-              <a href="#dog">Why do I see a running dog when pressing the submission button?</a><br>
+              <a href="#dog">Why do I see a running dog after pressing the submission button?</a><br>
             </p>
             <hr>
 	    <br>
@@ -597,8 +597,11 @@ HS04636 anchor  intronpart      7631    7633    0       +       0       source=M
             </p>
             <hr>
 	<br>
-            <div id="dog"><h2>Why do I see a running dog when pressing the submission button?<</h2></div>
-              <p>We don't like being boring and thought this little free gif makes a difference and help entertaining you  ;-)</p>
+            <div id="dog"><h2>Why do I see a running dog after pressing the submission button?</h2></div>
+              <p>It's just for fun, to make the time during submission pass faster ;-) As Loriot said: <i>Life without a dog is possible, but pointless.</i></p>
+					<div align="center">
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="http://www.animateit.net/data/media/june2010/compete.gif" border="0" alt="Spinner" />
+					</div>
             <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page

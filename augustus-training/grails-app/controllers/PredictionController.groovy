@@ -410,22 +410,37 @@ class PredictionController {
 			// check whether parameters were supplied in double or triple
 			if(predictionInstance.archive_file == "empty" && predictionInstance.project_id == null && predictionInstance.species_select == "null"){
            			flash.error = "You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
+				logDate = new Date()
+				logFile << "${logDate} ${predictionInstance.accession_id} v1 - user specified no AUGUSTUS parameters\n"
+				deleteDir()
             			cleanRedirect()
            			return
 			}else if(predictionInstance.archive_file != "empty" && predictionInstance.project_id != null && predictionInstance.species_select != "null"){
+				logDate = new Date()
+				logFile << "${logDate} ${predictionInstance.accession_id} v1 - user specified more than one option for AUGUSTUS parameters\n"
 				flash.error = "You specified parameters in three different ways. Please decide for on way! You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
+				deleteDir()
             			cleanRedirect()
            			return
 			}else if(predictionInstance.archive_file != "empty" && predictionInstance.project_id != null){
+				logDate = new Date()
+				logFile << "${logDate} ${predictionInstance.accession_id} v1 - user specified more than one option for AUGUSTUS parameters\n"
 				flash.error = "You specified parameters as archive file and as project ID. Please decide for on way! You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
+				deleteDir()
             			cleanRedirect()
 				return
 			}else if(predictionInstance.project_id != null && predictionInstance.species_select != "null"){
+				logDate = new Date()
+				logFile << "${logDate} ${predictionInstance.accession_id} v1 - user specified more than one option for AUGUSTUS parameters\n"
 				flash.error = "You specified parameters as project ID and by selecting an organism from the dropdown menu. Please decide for on way! You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
+				deleteDir()
             			cleanRedirect()
 				return
 			}else if(predictionInstance.archive_file != "empty" && predictionInstance.species_select != "null"){
+				logDate = new Date()
+				logFile << "${logDate} ${predictionInstance.accession_id} v1 - user specified more than one option for AUGUSTUS parameters\n"
 				flash.error = "You specified parameters as parameter archive and by selecting an organism from the dropdown menu. Please decide for on way! You need to specify a parameter archive for upload OR enter a project identifier OR select an organism!"
+				deleteDir()
             			cleanRedirect()
 				return
 			}
@@ -745,6 +760,7 @@ class PredictionController {
 					logDate = new Date()
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected cDNA file was bigger than ${maxButtonFileSize}.\n"
 					flash.error = "cDNA file is bigger than ${maxButtonFileSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
+					deleteDir()
             				cleanRedirect()
 					return
 				}
