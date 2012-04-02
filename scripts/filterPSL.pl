@@ -293,8 +293,10 @@ sub processQuery(){
 			# print the two alignments for best mate pair only
 			print $qali[$matepairs[0]->[0]]->[0];
 			print $qali[$matepairs[0]->[1]]->[0];
+			$outUniq += @qali-1;
 		    } else {
 			@matepairs = ();
+			$outUniq += @qali;
 		    }
 		} else {
 		    print "suboptimal mate pairs are similar\n" if ($verbose);
