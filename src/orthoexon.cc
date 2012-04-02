@@ -19,13 +19,7 @@
 
 vector<string> OrthoExon::species;
 
-OrthoExon::OrthoExon(){
-}
-
-OrthoExon::~OrthoExon(){
-}
-
-size_t OrthoExon::getVectorPositionSpecies(string name){
+size_t OrthoExon::getVectorPositionSpecies(string name) {
   for(size_t pos=0; pos < species.size(); pos++){
     if (species.at(pos) == name){
       return pos;
@@ -34,9 +28,9 @@ size_t OrthoExon::getVectorPositionSpecies(string name){
   return species.size();
 }
 
-list<OrthoExon> readOrthoExons(string filename){
+map< vector<string>, list<OrthoExon> > readOrthoExons(string filename){
 
-  list<OrthoExon> all_orthoex;
+  map< vector<string>, list<OrthoExon> > all_orthoex;
 
   ifstream istrm; 
   istrm.open(filename.c_str(), ifstream::in);
@@ -55,13 +49,18 @@ list<OrthoExon> readOrthoExons(string filename){
       for (int i = 0; i < nspecies; i++){
 	istrm >> chr[i];
       }
+      map< vector<string>, list<OrthoExon> >::iterator it = all_orthoex.find(chr);
+      if (it == all_orthoex.end()){
+	list<OrthoExon> empty_list;
+	all_orthoex[chr] = empty_list;
+      }  
       cout << endl;
       istrm >> goto_line_after( "[ORTHOEX]");
       istrm >> comment;
        while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
 	 OrthoExon ex_tuple;
 	 istrm >> ex_tuple;
-	 all_orthoex.push_back(ex_tuple);
+	 all_orthoex[chr].push_back(ex_tuple);
        }
     } 
   }
@@ -71,27 +70,41 @@ list<OrthoExon> readOrthoExons(string filename){
   return all_orthoex;
 }
 
-ostream& operator<<(ostream& ostrm, OrthoExon& ex_tuple){
-
-  int predictionStart;
-  try {
-    predictionStart = Properties::getIntProperty( "predictionStart" ) - 1;
-  } catch (...) {
-    predictionStart = 0;
+void writeOrthoExons(const map< vector<string>, list<OrthoExon> > &all_orthoex){
+  cout << "# orthologous exons\n" << "#\n" <<"[SPECIES]\n" << "# number of species" << endl;
+  cout << OrthoExon::species.size() << endl;
+  cout << "# species names" << endl;
+  for (size_t i = 0; i < OrthoExon::species.size(); i++){
+    cout << OrthoExon::species[i] << "\t";
   }
+  cout << endl;
+  for(map< vector<string>, list<OrthoExon> >::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
+    cout << "#[CHR]" << endl;
+    for (size_t i = 0; i < OrthoExon::species.size(); i++){
+      cout << it->first[i] << "\t";
+      }
+    cout << endl;
+    cout << "#[ORTHOEX]" << endl;
+    for(list<OrthoExon>::const_iterator ortho = it->second.begin(); ortho != it->second.end(); ortho++){
+      cout << *ortho << endl;
+    }
+  }
+}
+
+ostream& operator<<(ostream& ostrm, const OrthoExon &ex_tuple){
 
   int j = 0;
   while ( ex_tuple.orthoex.at(j) == NULL ){
     j++;
   }
   if (j < ex_tuple.orthoex.size()){
-    ostrm << stateTypeIdentifiers[(((State*)ex_tuple.orthoex.at(j)->item)->type)];
+    ostrm << stateTypeIdentifiers[(ex_tuple.orthoex.at(j)->type)];
     for (int i = 0; i < ex_tuple.orthoex.size(); i++){
       if (ex_tuple.orthoex.at(i) == NULL){
 	ostrm << "\t" << 0 << "\t" << 0;
       }
       else{
-	ostrm << "\t" << ex_tuple.orthoex.at(i)->begin+1+predictionStart << "\t" << ex_tuple.orthoex.at(i)->end - ex_tuple.orthoex.at(i)->begin + 1;
+	ostrm << "\t" << ex_tuple.orthoex.at(i)->begin+1 << "\t" << ex_tuple.orthoex.at(i)->end - ex_tuple.orthoex.at(i)->begin + 1;
       }
     }
   }
@@ -103,13 +116,6 @@ ostream& operator<<(ostream& ostrm, OrthoExon& ex_tuple){
 
 istream& operator>>(istream& istrm, OrthoExon& ex_tuple){
 
-  int predictionStart;
-  try {
-    predictionStart = Properties::getIntProperty( "predictionStart" ) - 1;
-  } catch (...) {
-    predictionStart = 0;
-  }
-
   string exontype;
   int begin, length;
 
@@ -117,8 +123,7 @@ istream& operator>>(istream& istrm, OrthoExon& ex_tuple){
   for (int i = 0; i < OrthoExon::species.size(); i++){
     istrm >> begin >> length;
     if (begin != 0 && length != 0){
-      State *st = new State(begin-1-predictionStart, begin+length-2-predictionStart, toStateType(exontype.c_str()));
-      Status *state = new Status(CDS, begin-1-predictionStart, begin+length-2-predictionStart, 0.0, st);
+      State *state = new State(begin-1, begin+length-2, toStateType(exontype.c_str()));
       ex_tuple.orthoex.push_back(state);
     }
     else{
@@ -128,41 +133,48 @@ istream& operator>>(istream& istrm, OrthoExon& ex_tuple){
   return istrm;
 }
 
-map<string, Score> labelscore; //stores score of prunning algorithm for each pattern (leaf labelling)
+map<string, Score> cache::labelscore; //stores score of prunning algorithm for each pattern (leaf labelling)
 
-string OrthoExon::getKey(){
+string OrthoExon::getKey(const OrthoGraph &orthograph) const{
 
   string key = "";
-  for (size_t i=0; i < this->orthoex.size(); i++){
+  for (size_t i = 0; i < this->orthoex.size(); i++){
     if (this->orthoex.at(i) == NULL){
       key += "2";
     }
-    //TODO:
-    /*else if(this->orthoex.at(i)->label == 1){
-      key += "1";
-    }
-    else if(this->orthoex.at(i)->label == 0){
-      key += "0";
-      }*/
+    else {
+      map<string, Node*>::iterator it = orthograph.graphs.at(i)->existingNodes.find(orthograph.graphs.at(i)->getKey(this->orthoex.at(i)));
+      if (it != orthograph.graphs.at(i)->existingNodes.end()){
+	bool label = it->second->label;
+	if (label == 1){
+	  key += "1";
+	}
+	else if (label == 0){
+	  key += "0";
+	}
+      }
+      else
+	throw ProjectError("Error in OrthoExon::getKey: exon not in graph!");
+      }
   }
   return key;
 }
 
-bool OrthoExon::inHash(){
-  return ( labelscore.find(this->getKey()) != labelscore.end() );
+bool cache::inHash(string key){
+  return ( labelscore.find(key) != labelscore.end() );
 }
 
-void OrthoExon::addToHash(double score){
+void cache::addToHash(string key, double score){
   Score s;
   s.treescore = score;
   s.count = 1;
-  labelscore[this->getKey()] = s;
+  labelscore[key] = s;
 
 }
 
-double OrthoExon::getScore(){
-  return labelscore[this->getKey()].treescore;
+double cache::getScore(string key){
+  return labelscore[key].treescore;
 }
-void OrthoExon::incrementCounter(){
-  labelscore[this->getKey()].count++;
+void cache::incrementCounter(string key){
+  labelscore[key].count++;
 }

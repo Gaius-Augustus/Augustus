@@ -17,9 +17,10 @@ using namespace std;
 class OrthoGraph{
 
 public:
-  OrthoGraph(list<Status> *states, int dnalength, list<Status*> &additionalExons);
+  OrthoGraph();
   ~OrthoGraph();
   vector<AugustusGraph*> graphs;
+  void addSingleGraph(string species, AugustusGraph* singleGraph);
 };
 
 #endif

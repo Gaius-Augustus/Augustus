@@ -394,6 +394,11 @@ string AugustusGraph::getKey(Status *st){
   return (itoa(st->begin) + ":" + itoa(st->end) + ":" + itoa( (int)((State*)st->item)->type )); 
 }
 
+string AugustusGraph::getKey(State *st){
+
+  return (itoa(st->begin) + ":" + itoa(st->end) + ":" + itoa( (int)(st->type)) ); 
+}
+
 double AugustusGraph::getIntronScore(Status *predExon, Status *nextExon){
 
   if(nextExon != NULL){
@@ -732,7 +737,7 @@ builds Graph with seven neutral lines representing
 * the plus strand (3 neutral lines for each coding frame)
 * and the minus strand (3 neutral lines for each coding frame)
 */
-void Graph::buildGraph(list<Status*> &additionalExons){
+void Graph::buildGraph(list<Status> &additionalExons){
 
 #ifdef DEBUG
   cout<<"*****entering buildGraph7()******"<<endl;
@@ -802,10 +807,8 @@ void Graph::buildGraph(list<Status*> &additionalExons){
 
   //add additional Exoncandidates
   if(!additionalExons.empty()){
-    for(list<Status*>::iterator it = additionalExons.begin(); it!=additionalExons.end(); it++){
-      if ((*it) != NULL){
-	addExon((*it), neutralLines, false);
-      }
+    for(list<Status>::iterator it = additionalExons.begin(); it!=additionalExons.end(); it++){
+      addExon(&(*it), neutralLines, false);
     }
   }
   //create neutral lines by connecting neutral nodes in the vector (all entries in the Vector, which are not NULL)

@@ -13,7 +13,7 @@ LIBS	= # -lcwd
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
- meaPath.o exoncand.o mea7.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o parse.o lex.o orthograph.o
+ meaPath.o exoncand.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o parse.o lex.o orthograph.o
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
 PROGR	= augustus etraining consensusFinder curve2hints fastBlockSearch prepareAlign
@@ -509,12 +509,6 @@ mea.o : \
 	../include/meaPath.hh \
 	mea.cc
 
-mea7.o : \
-	../include/mea.hh \
-	../include/mea7.hh \
-	../include/meaPath.hh \
-	mea7.cc
-
 graph.o : \
 	../include/graph.hh \
 	graph.cc
@@ -529,22 +523,29 @@ exoncand.o : \
        exoncand.cc
 
 compgenepred.o : \
-       ../include/compgenepred.hh \
+	../include/compgenepred.hh \
+	../include/randseqaccess.hh \
+	../include/namgene.hh \
+	../include/statemodel.hh \
+	../include/orthoexon.hh \
+	../include/extrinsicinfo.hh \
+	../include/mea.hh \
        compgenepred.cc
 
 randseqaccess.o : \
        ../include/randseqaccess.hh \
-       ../include/types.hh \
+       ../include/genbank.hh \
        randseqaccess.cc
 
 orthoexon.o : \
 	../include/orthoexon.hh \
 	../include/projectio.hh \
+	../include/types.hh \
 	orthoexon.cc
 
 orthograph.o : \
 	../include/orthograph.hh \
-	../include/graph.hh \
+	../include/orthoexon.hh \
 	orthograph.cc
 
 parse.o: parser/parse.cc parser/parser.ih

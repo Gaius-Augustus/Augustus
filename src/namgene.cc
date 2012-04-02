@@ -27,7 +27,6 @@
 #include "gene.hh"
 #include "projectio.hh"  // for comment, goto_line_after
 #include "mea.hh"
-#include "mea7.hh"
 #include "exoncand.hh"
 
 // standard C/C++ includes
@@ -99,11 +98,6 @@ NAMGene::NAMGene() {
     mea_eval = Properties::getBoolProperty("mea_evaluation");
   } catch (...) {
     mea_eval = false;
-  }
-  try {
-    mea_prediction7 = Properties::getBoolProperty("seven_neutralLines");
-  } catch (...) {
-    mea_prediction7 = false;
   }
 
   // Read in protein profile
@@ -914,9 +908,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   // determine transcripts with maximum expected accuracy criterion
   if(mea_prediction){
 
-    if(mea_prediction7)
-      getMEAtranscripts7(&MEAtranscripts, alltranscripts, strlen(dna)); //interface for MEA prediction in a graph with seven neutral lines
-    else if(mea_eval)
+    if(mea_eval)
       getMEAtranscripts(&MEAtranscripts, sampledGeneStructures, sampleiterations, strlen( dna ));
     else
       getMEAtranscripts(&MEAtranscripts, alltranscripts, strlen(dna));

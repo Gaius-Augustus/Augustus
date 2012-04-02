@@ -16,8 +16,8 @@
 #include <vector>
 #include "graph.hh"
 #include "orthoexon.hh"
+#include "orthograph.hh"
 
-using namespace std;
 
 //forward declarations
 class Treenode;
@@ -25,6 +25,13 @@ class PhyloTree;
 
 
 class Treenode{
+
+private:
+  string species;
+  double dist_to_parent;
+  Treenode *parent;
+  list<Treenode*> children;
+  vector<double> alpha; //DB variable of Prunning Algorithm
  
 public:  
   Treenode(string s="interior", double t=0.0, Treenode *p=NULL):
@@ -35,11 +42,6 @@ public:
     alpha.resize(2);
   }
   ~Treenode(){}
-  string species;
-  double dist_to_parent;
-  Treenode *parent;
-  list<Treenode*> children;
-  vector<double> alpha; //DB variable of Prunning Algorithm
 
   inline void addDistance(double dist){
     this->dist_to_parent=dist;
@@ -50,28 +52,35 @@ public:
     this->children.push_back(child);
   }
 
-  inline bool isLeaf(){
+  inline bool isLeaf() const {
     return (this->children.empty());
   }
 
-  inline bool isRoot(){
+  inline bool isRoot() const {
     return (this->parent == NULL);
   }
-  void printNode();
+
+  void printNode() const;
+  double calculateAlphaScore(bool label);
+
+  friend class PhyloTree;
   
 };
 
+double P(bool label1, bool label2, double dist);  //calculates probability of transition from label1 to label2 in time dist
+
 class PhyloTree{
+
+private:
+ list<Treenode*> treenodes; // leaf to root order!
 
 public:
   PhyloTree(string filename);
   ~PhyloTree();
-  list<Treenode*> treenodes; // leaf to root order!
-  void printTree();
-  void printWithGraphviz(string filename);
-  double pruningAlgor(OrthoExon &orthoex);
-  double P(bool label1, bool label2, double dist) const;  //calculates probability of transition from label1 to label2 in time dist
-  double getAlphaScore(Treenode* node, bool label);
+ 
+  void printTree() const;
+  void printWithGraphviz(string filename) const;
+  double pruningAlgor(const OrthoExon &orthoex, const OrthoGraph &orthograph);
 
 };
 

@@ -95,15 +95,15 @@ public:
   Node *tail;
  
   void buildGraph(); //needs to be called in constructor of derived class
-  void buildGraph(list<Status*> &additionalExons); // builds graph with seven neutral lines
-
-  protected:	
+  void buildGraph(list<Status> &additionalExons); // builds graph with seven neutral lines
+  
   // functions needed to build the graph
+protected:	
   inline bool alreadyProcessed(Node *n){
-  return(existingNodes[getKey(n)]!=NULL);    
+    return(existingNodes[getKey(n)]!=NULL);    
   }
   inline bool alreadyProcessed(Status *st){
-  return(existingNodes[getKey(st)]!=NULL); 
+    return(existingNodes[getKey(st)]!=NULL); 
   }
   bool edgeExists(Node *e1, Node *e2);
   inline void addToHash(Node *n){
@@ -127,6 +127,7 @@ public:
   virtual bool exonAtGeneEnd(Status *st)=0;
   virtual string getKey(Node *n)=0;
   virtual string getKey(Status *st)=0;
+  virtual string getKey(State *st)=0;
   virtual double getIntronScore(Status *predExon, Status *nextExon)=0;
   virtual void addEdgeFromHead(Status *exon)=0;
   virtual void addEdgeToTail(Status *exon)=0; 
@@ -204,6 +205,7 @@ try {
   bool exonAtCodingEnd(Node *st);
   string getKey(Node *n);
   string getKey(Status *st);
+  string getKey(State *st);
   double getIntronScore(Status *predExon, Status *nextExon);  
   void addEdgeFromHead(Status *exon);
   void addEdgeToTail(Status *exon);
@@ -218,7 +220,7 @@ try {
   vector<double> baseScore;
   bool utr;
 
-  list<Status*> additionalExons;
+  list<Status> additionalExons;
   int fromNeutralLine(Status *st);  
   int toNeutralLine(Status *st);
   void printGraph7(string filename);

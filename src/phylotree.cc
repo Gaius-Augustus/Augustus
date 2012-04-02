@@ -20,7 +20,7 @@
 #include <fstream>
 
 
-void Treenode::printNode(){
+void Treenode::printNode() const {
   cout<<"Species: "<<this->species<<" Distance: "<<this->dist_to_parent;
   if (this->parent == NULL){
     cout<<" root ";
@@ -30,14 +30,37 @@ void Treenode::printNode(){
   }
   else {
     cout<<" Children :";
-    for(list<Treenode*>::iterator node = this->children.begin(); node != this->children.end(); node++){
+    for(list<Treenode*>::const_iterator node = this->children.begin(); node != this->children.end(); node++){
       cout<<(*node)->species<<endl;
     }
   }
 }
 
-void PhyloTree::printTree(){
-  for(list<Treenode*>::iterator node = this->treenodes.begin(); node != this->treenodes.end(); node++){
+double Treenode::calculateAlphaScore(bool label){
+  
+  double alpha_score = 1.0;
+  for(list<Treenode*>::iterator it = this->children.begin(); it != this->children.end(); it++){
+
+    alpha_score*=((P(label, 0, (*it)->dist_to_parent)*(*it)->alpha.at(0)) + (P(label, 1, (*it)->dist_to_parent)*(*it)->alpha.at(1)));
+  }
+  return alpha_score;
+
+}
+
+double P(bool label1, bool label2, double dist){  //the substitution model: Neyman-two-state model
+
+  const double mu = 2; //TODO: command-line parameter
+
+  if(label1 == label2){
+    return (0.5)*(1+exp(-mu*dist));
+  }
+  else{
+    return (0.5)*(1-exp(-mu*dist));
+  }
+}
+
+void PhyloTree::printTree() const {
+  for(list<Treenode*>::const_iterator node = this->treenodes.begin(); node != this->treenodes.end(); node++){
       (*node)->printNode();
   }
 }
@@ -56,7 +79,7 @@ PhyloTree::PhyloTree(string filename){
     fb.close();
   }
   else
-    throw ProjectError("Could not open input file " + filename);
+    throw ProjectError("PhyloTree::PhyloTree: Could not open this file!");
 }
 
 PhyloTree::~PhyloTree(){
@@ -65,7 +88,7 @@ PhyloTree::~PhyloTree(){
   }
 }
 
-void PhyloTree::printWithGraphviz(string filename){
+void PhyloTree::printWithGraphviz(string filename) const {
 
   //creates inputfile für graphviz
   queue<Treenode*> tree;
@@ -102,13 +125,13 @@ void PhyloTree::printWithGraphviz(string filename){
   file.close();
 }
 
-double PhyloTree::pruningAlgor(OrthoExon &orthoex){
+double PhyloTree::pruningAlgor(const OrthoExon &orthoex,const OrthoGraph &orthograph){
 
   double tree_score;
-
-  if(orthoex.inHash()){
-    orthoex.incrementCounter();
-    tree_score = orthoex.getScore();
+  string key = orthoex.getKey(orthograph);
+  if(cache::inHash(key)){
+    cache::incrementCounter(key);
+    tree_score = cache::getScore(key);
   }
   else{
     for(list<Treenode*>::iterator it = this->treenodes.begin(); it != this->treenodes.end(); it++){
@@ -116,40 +139,39 @@ double PhyloTree::pruningAlgor(OrthoExon &orthoex){
 	/*
 	 * initialization
 	*/
-	if(orthoex.orthoex.at(OrthoExon::getVectorPositionSpecies((*it)->species)) == NULL){     // no Exon present -> sum over all possible labels (0,1)
+	if(key.at(OrthoExon::getVectorPositionSpecies((*it)->species)) == '2'){     // no Exon present -> sum over all possible labels (0,1)
 	  cout<<(*it)->species<<"\t"<<(OrthoExon::getVectorPositionSpecies((*it)->species))<<"\t"<<"NULL"<<endl;
 	  (*it)->alpha.at(0) = 1; 
 	  (*it)->alpha.at(1) = 1;
 	}
-	//TODO:
-	/*else{
-	  if(orthoex.at(OrthoExon::getVectorPositionSpecies((*it)->species))->label == 1){   // Exon present and also part of the path
+	else{
+	  if(key.at(OrthoExon::getVectorPositionSpecies((*it)->species)) == '1'){   // Exon present and also part of the path
 	    cout<<(*it)->species<<"\t"<<(OrthoExon::getVectorPositionSpecies((*it)->species))<<"\t"<<"1"<<endl;
 	    (*it)->alpha.at(0) = 0; 
 	    (*it)->alpha.at(1) = 1;
 	  }
-	  if(orthoex.at(OrthoExon::getVectorPositionSpecies((*it)->species))->label == 0){   // Exon present, but not part of the path
+	  if(key.at(OrthoExon::getVectorPositionSpecies((*it)->species)) == '0'){   // Exon present, but not part of the path
 	    cout<<(*it)->species<<"\t"<<(OrthoExon::getVectorPositionSpecies((*it)->species))<<"\t"<<"0"<<endl;
 	    (*it)->alpha.at(0) = 1; 
 	    (*it)->alpha.at(1) = 0;
 	  }
-	  }*/
+	}
       }
       /*
 	computation of the alpha values for the interior nodes
        */
       else{
-	(*it)->alpha.at(0) = getAlphaScore((*it) , 0);
-	(*it)->alpha.at(1) = getAlphaScore((*it) , 1);
+	(*it)->alpha.at(0) = (*it)->calculateAlphaScore(0);
+	(*it)->alpha.at(1) = (*it)->calculateAlphaScore(1);
       }
     }
     /*
       computation of the overall tree score
      */
     tree_score  = ( 0.5*(this->treenodes.back()->alpha.at(0) + this->treenodes.back()->alpha.at(1)) ); //equilibrium frequencies: (0.5, 0.5)
-    orthoex.addToHash(tree_score);
+    cache::addToHash(key, tree_score);
 
-  #ifdef DEBUG
+    // #ifdef DEBUG
   cout<<"#####################################################################\n";
   cout<<"# tableau Prunning Alogrithm\n";
   cout<<"#####################################################################\n";
@@ -158,30 +180,7 @@ double PhyloTree::pruningAlgor(OrthoExon &orthoex){
      cout<<(*it)->species<<"\t\t"<<(*it)->alpha.at(0)<<"\t\t"<<(*it)->alpha.at(1)<<"\n";
     }
     cout<<"#####################################################################\n";
-  #endif
+    //#endif
   }
   return tree_score;
-}
-
-double PhyloTree::P(bool label1, bool label2, double dist) const{  //the substitution model: Neyman-two-state model
-
-  const double mu = 2; //TODO: command-line parameter
-
-  if(label1 == label2){
-    return (0.5)*(1+exp(-mu*dist));
-  }
-  else{
-    return (0.5)*(1-exp(-mu*dist));
-  }
-}
-
-double PhyloTree::getAlphaScore(Treenode* node, bool label){
-  
-  double alpha_score = 1.0;
-  for(list<Treenode*>::iterator it = node->children.begin(); it != node->children.end(); it++){
-
-    alpha_score*=((P(label, 0, (*it)->dist_to_parent)*(*it)->alpha.at(0)) + (P(label, 1, (*it)->dist_to_parent)*(*it)->alpha.at(1)));
-  }
-  return alpha_score;
-
 }

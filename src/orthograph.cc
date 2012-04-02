@@ -12,15 +12,23 @@
 
 
 #include "orthograph.hh"
+#include "orthoexon.hh"
 
-OrthoGraph::OrthoGraph(list<Status> *states, int dnalength, list<Status*> &additionalExons){
-    AugustusGraph *graph = new AugustusGraph(states, dnalength);
-    graph->buildGraph(additionalExons);
-    graphs.push_back(graph);
+OrthoGraph::OrthoGraph(){
+  graphs.resize(OrthoExon::species.size());
 }
 
 OrthoGraph::~OrthoGraph(){
   for(int i = 0; i < graphs.size(); i++){
     delete graphs[i];
   }
+}
+
+void OrthoGraph::addSingleGraph(string species, AugustusGraph* singleGraph){
+  size_t pos = OrthoExon::getVectorPositionSpecies(species);
+  if (pos < this->graphs.size()){
+    this->graphs[pos] = singleGraph;
+  }
+  else
+    cerr << "species names in Orthograph and OrthoExon don't match" << endl;
 }
