@@ -77,15 +77,18 @@
 
      </ul>
   </div>
- <div id="mittel_spalte">
+
+  <div id="mittel_spalte">
+    <a name="inhalt" id="inhalt"></a>
     <table class="contentpaneopen">
       <tr>
 	<td class="contentheading" width="100%">
-	  <font color="#006699">Help</font>
+	  <a href="accuracy.gsp" class="contentpagetitle">Help</a>
         </td>
       </tr>
     </table>
-            <div class="main" id="main">
+
+
             <p>This website contains <i>short instructions</i> and some <i>frequently asked questions</i> concerning <ul><li>the training of AUGUSTUS and <li>predicting genes in a new genomic sequence with pre-trained parameters.</ul> <br>For more detailed instructions, please read <a href="trainingtutorial.gsp">Training Tutorial</a> and <a href="predictiontutorial.gsp">Prediction Tutorial</a>.</p>
             <hr>
             <br>
@@ -94,7 +97,7 @@
 	      <a href="#noResults">Why do I not get any results?</a><br>
 	      <a href="#buisy">Why is the server busy?</a><br>
               <a href="#species_name">What is the species name?</a><br>
-	      <a href="#email">Why must I give my e-mail address?</a><br>
+	      <a href="#email">Why should I give my e-mail address?</a><br>
               <a href="#upload_link">File upload versus web link</a><br>
               <a href="#which_files">Which files must or can I submit for training AUGUSTUS?</a><br>
               <a href="#which_files_pred">Which files are required for predicting genes in a new genome?</a><br>
@@ -108,14 +111,23 @@
               <a href="#job_status">What does my job status mean?</a><br>
               <a href="#utr">UTR prediction: yes or no?</a><br>
               <a href="#allowedGeneStructure">Allowed gene structure<a><br>
-              <a href="#list">Why does my job not exist?</a><br>
+              <a href="#list">What about that data duplication?</a><br>
               <a href="#accuracy">Why is the prediction accuracy in the genome of my species not as good as I expected?</a><br>
+              <a href="#privacy">What about data privacy and security?</a><br>
+              <a href="#commercial">I am not from academia/non-profit. What can I do?</a><br>
               <a href="#dog">Why do I see a running dog after pressing the submission button?</a><br>
             </p>
             <hr>
 	    <br>
 	    <h2 id="noResults">Why do I not get any results?</h2>
-	    <p>The quality of results depends on the quality and combination of you input data. If the input data did e.g. not provide sufficient information for generating training genes, then no AUGUSTUS paramteres will be optimized for your species, and no predictions will be made. In case of the gene prediction web server application, it is also possible that your submitted genome sequence does not contain any protein coding genes.</p>
+		<p>
+		<ul>
+			<li><b>Did an obvious error occur?</b><br>Please contact <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a> if you are not sure what the error message is telling you.</li>
+			<li><b>Did you submitt your job a long time ago and it seems to be "stuck" at the status of "computing"?</b><br>Please contact <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a> to inquire whether your job is really still running.</li>
+			<li><b>Did your job finish but there are just no parameters or predictions?</b><br>The quality of results depends on the quality and combination of your input data. If the input data did e.g. not provide sufficient information for generating training genes, then no AUGUSTUS parameters will be optimized for your species, and no predictions will be made. In case of the gene prediction web server application, it is also possible that your submitted genome sequence does not contain any protein coding genes.</li>
+		</ul>
+		</p>
+	    <p></p>
 <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
@@ -125,7 +137,7 @@
             <hr>
             <br>
             <h2 id="buisy">Why is the server busy?</h2>
-            <p>Training AUGUSTUS is a very resource and time consuming process. We use a grid engine queuing system with a limited number of waiting slots. If we estimate that the time from job submission to computation start might be very long, our web server might display a message that our server is buisy. The submission of new jobs is then disabled. Please wait one or two weeks before you try a new submission. If the problem persists longer than a month, please contact <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a>.</p>
+            <p>Training AUGUSTUS is a very resource and time consuming process. We use a grid engine queuing system with a limited number of waiting slots. If we estimate that the time from job submission to computation start might be very long, our web server might display a message that our server is buisy. The submission of new jobs is then disabled (prediction and training submission will both be disabled). Please wait one or two weeks before you try a new submission. If the problem persists longer than a month, or if your job is urgent, please contact <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a>.</p>
 	    <p><a href="#seitenanfang">
 	      <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
 	      Top of page
@@ -135,13 +147,13 @@
             <hr>
 	    <br>
             <div id="species_name"><h2>What is the species name?</h2></div>
-<p>The species name is the name of the species for whose genome you want to train AUGUSTUS. The species name is an obligatory parameter that AUGUSTUS needs in order to find the correct parameters that shall be applied for predicting genes in a specified genomic sequence. Considering that AUGUSTUS training is such a time consuming process, our objective is to know the names of species for which AUGUSTUS was trained in order to make the trained parameters available to the public so that others who are interested in the same species as you do not have to rerun the training process.</p>
+<p>The species name is the name of the species for whose genome you want to train AUGUSTUS. The species name is an obligatory parameter. Considering that AUGUSTUS training is such a time consuming process, our objective is to know the names of species for which AUGUSTUS was trained in order to make the trained parameters available to the public so that others who are interested in the same species as you do not have to rerun the training process. (We will only explicitely publish your parameter set with the next AUGUSTUS release after confirming via e-mail that you agree to this.)</p>
 
-<p>However, if you do not want to reveal the true species name, you may use any other string shorter than 30 characters as a species name. Species names must be unique on our system, i.e. if the string of your choice is already existing in our system, you will get a message that you have to choose another species name.</p>
+<p>However, if you do not want to reveal the true species name, you may use any other string shorter than 30 characters as a species name.</p>
 
 <p>The species name is not allowed to contain spaces!</p>
 
-<p>We are <b>not</b> redistributing the original sequence data that you submitted to our web server application. But we are redistributing the trained parameters and the species name and any other kind of results that your computation may have produced.</p><p><b>Example:</b></p><p>If person 1 submits a sequence data set for training and names it <i>hypothetical_species</i>, and a second person tries later to train AUGUSTUS with exactly the same sequence files (new data upload) and names the species <i>some_other_name</i>, the second person will be redirected to the results of the original training run of person 1, and the species name <i>hypothetical_species</i> will be publicly readable to person 2.</p>
+
             <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
@@ -150,19 +162,26 @@
             </p>
             <hr>
             <br>
-            <div id="email"><h2>Why must I give my e-mail address?</h2></div>
-            <p> We save use your e-mail address for the following purposes:</p>
+            <div id="email"><h2>Why should I give my e-mail address?</h2></div>
+	    <p>Unlike many other bioinformatics web services, the AUGUSTUS web server application is not an implementation of a fail-safe procedure. Particularly the assembly of a training gene set from extrinsic data (ESTs and protein sequences) and a genome sequence may not always work perfectly. Our pipeline may issue warnings or errors, and sometimes, we need to get some feedback from you via e-mail in order to figure out what is the problem with your particular input data set.</p>
+
+            <p>In addition, training and running AUGUSTUS are rather time consuming processes that may take up to several weeks (depending on the input data). It may be more convenient to receive an e-mail notification about your job having finished, than checking the status page over and over, again.</p>
+	    <p> Therefore, we strongly recommend that you enter an e-mail adress.</p>
+            <p> If supplied, we use your e-mail address for the following purposes:</p>
 
 <p>
 <ul>
 <li>Confirming your job submission</li>
-<li>Confirming successful file upload (for large files)</li>
-<li>Sending you link to the results of your job (you will never get the link to the results if you do not enter a <b>valid</b> address to which you have access)</li>
-<li>Informing you about any problems that might occur during your particular job</li>
+<li>Confirming successful file upload (for large files via ftp/http)</li>
+<li>Notifying you about your job having finished</li>
+<li>Informing you about any problems that might occur during your particular job and asking questions about that job in order to solve those problems</li>
+<li>Asking you whether we should include your species parameters into the next AUGUSTUS release (applies to training, only)</li>
 </ul>
 </p>
 
-<p>We do <b>not</b> use your e-mail address to send you any <i>spam</i>, i.e. about web service updates. We do<b>not</b> share your e-mail addresses with any third parties.</p>
+<p>We do <b>not</b> use your e-mail address to send you any <i>spam</i>, i.e. about web service updates. We do <b>not</b> share your e-mail address with any third parties.</p>
+
+<p>Job submission without giving an email adress is possible but discouraged.</p>
             <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
@@ -197,7 +216,7 @@
             </ul>
 	    </p>
 	    <p>
-            Please consider that training AUGUSTUS is a time and resource consuming process. For optimal results, you should specify as much information as possible for a single training run instead of starting the AUGUSTUS training multiple times with different file combinations!</p>
+            Please consider that training AUGUSTUS is a time and resource consuming process. For optimal results, you should specify as much information as possible for a single training run instead of starting the AUGUSTUS training multiple times with different file combinations! If you have a lot of EST data, we recommend that you submitt ESTs instead of protein sequences since ESTs will likely allow the generation of a UTR training set.</p>
 	                <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
@@ -210,7 +229,7 @@
             <p>For predicting genes in a new genome with already trained parameters, you need to specify
             <ul>
                <li>a <a href="#genome_file">genome file</a> and</li>
-               <li>a <a href="#archive">parameter archive</a>. Instead of uploading the archive, you may also enter a valid <a href="#project_id">project identifier</a> in case you trained AUGUSTUS on this web server and the training has already finished.
+               <li>a <a href="#archive">parameter archive</a>. Instead of uploading the archive, you may also enter a valid <a href="#project_id">project identifier</a> in case you trained AUGUSTUS on this web server and the training has already finished; or you may select pre-trained parameter set from the drop down menu.
             </ul></p>
 	    <p>
             You may in addition specify an <a href="#cDNA">EST/cDNA file</a> and/or a <a href="#structure">hints file</a> that will be used as extrinsic evidence for predicting genes.</p>
@@ -223,7 +242,18 @@
             <hr>
 	    <br>
             <div id="genome_file"><h2>Genome file</h2></div>
-            <p>The genome file is an obligatory file for training AUGUSTUS and for making predictions with pre-trained parameters in a new genome. It must contain the genome in (multiple) fasta format. Every header begins with a <b>></b>. The sequence must be DNA. Allowed sequence characters: <b>A a T t G g C c H h X x R r Y y W w S s M m K k B b V v D d N n</b>. (Internally, AUGUSTUS will interpret everyting that is not <b>A a T t C c G g</b> as an <b>N</b>!) Empty lines are not allowed. If they occur, they will automatically be removed by the webserver applications.<br><br>
+            <p>The genome file is an obligatory file for training AUGUSTUS and for making predictions with pre-trained parameters in a new genome. It must contain the genome sequence in (multiple) fasta format. Every header begins with a <b>></b>. The sequence must be DNA. Allowed sequence characters: <b>A a T t G g C c H h X x R r Y y W w S s M m K k B b V v D d N n</b>. (Internally, AUGUSTUS will interpret everyting that is not <b>A a T t C c G g</b> as an <b>N</b>!) Empty lines are not allowed. If they occur, they will automatically be removed by the webserver applications.</p>
+<p>Headers must be <b>unique</b> within a file! We recommend that you use <b>short fasta headers</b>. Headers like<br>
+<pre>
+>gi|382483733|gb|GZ667513.1|GW667513 SSH_BP_47 Some species
+Wicked root cDNA library Some species cDNA clone SSH_BP_47 
+similar to Putative NADH-cytochrome B5 reductase, mRNA sequence
+</pre><br>
+are likely to cause a lot of warning messages. An example for a short header created from the too long header above:<br><br>
+<pre>
+>GZ667513.1
+</pre>
+<br><br>
             <b>Correct file format example:</b>
             <pre class="example">
 >Chr.1
@@ -254,7 +284,7 @@ TACACGGAAATCAACGGCGGTGTCATAAGCGAG
             <hr>
 	    <br>
             <div id="cDNA"><h2>cDNA file</h2></div>
-            <p>The cDNA file is a multiple fasta DNA file that contains e.g. ESTs or full-length cDNA sequences. Allowed sequence characters: <b>A a T t G g C c H h X x R r Y y W w S s M m K k B b V v D d N n U u</b>. Empty lines are not allowed and will be removed from the submitted file by the webserver application. See <a href="#genome_file">Genome file</a> for a format example. Upload of a cDNA file to our web server applications will invoke the software <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> [<a href="trainingtutorial.gsp#ref2">2</a>], which is on our webserver application only available <b><font color="f40b0b">for academic, personal and  non-profit use</font></b>.</p>
+            <p>The cDNA file is a multiple fasta DNA file that contains e.g. ESTs or full-length cDNA sequences. Allowed sequence characters: <b>A a T t G g C c H h X x R r Y y W w S s M m K k B b V v D d N n U u</b>. Empty lines are not allowed and will be removed from the submitted file by the webserver application. See <a href="#genome_file">Genome file</a> for a format example. Upload of a cDNA file to our web server application will invoke the software <a href="http://genome.ucsc.edu/cgi-bin/hgBlat?command=start">BLAT</a> [<a href="trainingtutorial.gsp#ref2">2</a>], which is on our webserver application only available <b><font color="f40b0b">for academic, personal and  non-profit use</font></b>.</p>
 	    <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
@@ -508,7 +538,7 @@ HS04636 anchor  intronpart      7631    7633    0       +       0       source=M
 <li><i>species</i>/<i>species</i>_igenic_probs.pbl.withoutCRF
 </ul>
 </p>
-<p>where <i>species</i> is replaced by the name of the species you trained AUGUSTUS for (e.g. carrot would result it <i>carrot</i>/<i>carrot</i>_parameters.cfg). The additional <i>species</i> before the slash means that all those files must reside in a directory that is called <i>species</i> before you tar and gzip it. If you simply tar and gzip the folder that contains parameters of an AUGUSTUS training run, everything should work fine.</p>
+<p>where <i>species</i> is replaced by the name of the species you trained AUGUSTUS for (e.g. carrot would result it <i>carrot</i>/<i>carrot</i>_parameters.cfg). The additional <i>species</i> before the slash means that all those files must reside in a directory that is called <i>species</i>  (or in our example: <i>carrot</i>) before you tar and gzip it. If you simply tar and gzip the folder that contains parameters of an AUGUSTUS training run, everything should work fine.</p>
                        <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
@@ -518,7 +548,7 @@ HS04636 anchor  intronpart      7631    7633    0       +       0       source=M
             <hr>
             <br>
             <div id="project_id"><h2>What is the project identifier?</h2></div>
-            <p>If you trained AUGUSTUS on this webserver, you may instead of uploading a parameter archive, simply specify the project identifier of this training run. You find the project identifier for example in the subject line for your training confirmation e-mail, where it says <i>Your AUGUSTUS training job project_id</i>.</p>
+            <p>If you trained AUGUSTUS on this webserver, you may instead of uploading a parameter archive, simply specify the project identifier of this training run. You find the project identifier for example in the subject line for your training confirmation e-mail, where it says <i>Your AUGUSTUS training job project_id</i>. Project identitfiers typically consist of the letters <i>pred</i> or <i>train</i>, followed by a random string of 8 digits resulting in for example <i>train345kljD4</i>.</p>
             <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
@@ -528,9 +558,10 @@ HS04636 anchor  intronpart      7631    7633    0       +       0       source=M
             <hr>
             <br>
             <div id="job_status"><h2>What does my job status mean?</h2></div>
-<p>In the beginning, the status page will display that your job has been <b>submitted</b>. This means, the web server application is currently uploading your files and validating file formats. After a while, the status will change to <b>waiting for execution</b>. This means that all file formats have been confirmed and an actually AUGUSTUS training job has been submitted to our grid engine, but the job is still pending in the queue. Depending on waiting queue length, this status may persist for a while. Please contact us in case you job is pending for more than one month. Later, the job status will change to <b>computing</b>. This means the job is currently computing. When the page displays <b>finished</b>, all computations have been finished and a website with your job's results has been generated.</p>
+		<p>
+In the beginning, the status page will display that your job has been submitted. This means, the web server application is currently uploading your files and validating file formats. After a while, the status will change to waiting for execution. This means that all file formats have been confirmed and an AUGUSTUS training job has been submitted to our grid engine, but the job is still pending. Depending on waiting queue length, this status may persist for a while. Please contact us in case you job is pending for more than one month. Later, the job status will change to computing. This means the job is currently computing. When the page displays finished, all computations have been finished and a website with your job's results has been generated.</p>
 
-<p>You will receive an e-mail with the link to the results of your job when computations are finished.</p>
+<p>You will receive an e-mail with the link to the results of your job when computations are finished if you specified an email adress.</p>
             <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
@@ -539,14 +570,14 @@ HS04636 anchor  intronpart      7631    7633    0       +       0       source=M
             </p>
             <hr>
             <br>
-            <div id="utr"><h2>UTR prediction: yes or no?</h2>
-            <p>It takes significantly more time to predict UTRs but in addition to reporting UTRs, it usually is also a little more accurate on the coding regions when ESTs are given as extrinsic evidence.</p>
+            <div id="utr"><h2>UTR prediction: yes or no?</h2></div>
+		<p>It takes significantly more time to predict UTRs but in addition to reporting UTRs, it usually is also a little more accurate on the coding regions when ESTs are given as extrinsic evidence.</p>
 
-<p>UTR prediction is only possible if UTR parameter files exist for your species. Even if UTR parameter files exist for a species, you should make sure, that they are <i>species specific</i>, i.e. have actually been optimized for your target species. It is a waste of time to predict UTRs with <i>general</i> (template) parameters.</p>
+<p>UTR prediction is only possible if UTR parameter files exist for your species. Even if UTR parameter files exist for a species, you should make sure, that they are species specific, i.e. have actually been optimized for your target species. It is a waste of time to predict UTRs with general (template) parameters.</p>
 
 <p>If no UTR parameter files exist for your species but you enables UTR prediction in the form, the web server application will overrule the choice to predict UTRs by simply not predicting any UTRs.</p>
 
-            <p><a href="#seitenanfang">
+ <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
             </a>
@@ -554,20 +585,19 @@ HS04636 anchor  intronpart      7631    7633    0       +       0       source=M
             </p>
             <hr>
             <br>
-            <div id="allowedGeneStructure"><h2>Allowed gene structure</h2>
+            <div id="allowedGeneStructure"><h2>Allowed gene structure</h2></div>
 
-<p><b>Predict any number of (possibly partial) genes:</b> This option is set by default. AUGUSTUS may predict no gene at all, one or more genes. The genes at the boundaries of the input sequence may be partial. Partial here means that not all of the exons of a gene are contained in the input sequence, but it is assumed that the sequence starts or ends in a non-coding region.<p>
+<p><b>Predict any number of (possibly partial) genes:</b> This option is set by default. AUGUSTUS may predict no gene at all, one or more genes. The genes at the boundaries of the input sequence may be partial. Partial here means that not all of the exons of a gene are contained in the input sequence, but it is assumed that the sequence starts or ends in a non-coding region.</p>
 
 <p><b>Predict only complete genes:</b> AUGUSTUS assumes that the input sequence does not start or end within a gene. Zero or more complete genes are predicted.</p>
 
 <p><b>Predict only complete genes - at least one:</b> As the previous option. But AUGUSTUS predicts at least one gene (if possible).</p>
 
-<p><b>Predict exactly one complete gene:</b> AUGUSTUS assumes that the sequence contains exactly one complete gene. Note: This feature does not work properly in combination with alternative transcripts. </p>
+<p><b>Predict exactly one complete gene:</b> AUGUSTUS assumes that the sequence contains exactly one complete gene. Note: This feature does not work properly in combination with alternative transcripts.</p>
 
 <p><b>Ignore conflicts with other strand:</b> By default AUGUSTUS assumes that no genes - even on opposite strands - overlap. Indeed, this usually is the case but sometimes an intron contains a gene on the opposite strand. In this case, or when AUGUSTUS makes a false prediction on the one strand because it falsely thinks there is a conflicting gene on the other strand, AUGUSTUS should be run with this option set. It then predicts the genes on each strand separately and independently. This may lead to more false positive predictions, though.</p>
 
-
-            <p><a href="#seitenanfang">
+ <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
             </a>
@@ -575,44 +605,74 @@ HS04636 anchor  intronpart      7631    7633    0       +       0       source=M
             </p>
             <hr>
             <br>
-            <div id="list"><h2>Why does my job not exist?</h2></div>
-            <p>We are trying to avoid data duplication. If you submitted some data that was already submitted before, by you or somebody else, we will delete your job. You receive an e-mail with a link to the job-status and results of training AUGUSTUS on your data. The results link will only be functional in case the computations of that previously submitted job have already finished.</p>
-
-            <p><a href="#seitenanfang">
+            <div id="list"><h2>What about that data duplication?</h2></div>
+<p>We are trying to avoid data duplication. If you submitted some data that was already submitted before, by you or by somebody else, we will display a link to the previously submitted job.</p>
+ <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page
             </a>
             <br>
             </p>
             <hr>
-	<br>
+            <br>
             <div id="accuracy"><h2>Why is the prediction accuracy in the genome of my species not as good as I expected?</h2></div>
-		<p>Gene prediction accuracy of AUGUSTUS in the genome of a certain species depends on the quality of training genes that were used for optimizing species specific parameters. The pipeline behind our AUGUSTUS training web server application offers a fully automated way of generating training genes, but it does not replace manual quality checks on the training genes that are often needed for improving the training gene set.</p>
-<p>In order to improve accuracy, you could manually inspect the generated training genes and select a trustworthy subset and try retraining AUGUSTUS. It also helps to compare the training gene set to other sources of evidence that are not supported by our web server application, e.g. RNA-seq data.</p>
-            <p><a href="#seitenanfang">
-              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
-              Top of page
-            </a>
-            <br>
-            </p>
-            <hr>
-	<br>
-            <div id="dog"><h2>Why do I see a running dog after pressing the submission button?</h2></div>
-              <p>It's just for fun, to make the time during submission pass faster ;-) As Loriot said: <i>Life without a dog is possible, but pointless.</i></p>
-					<div align="center">
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="http://www.animateit.net/data/media/june2010/compete.gif" border="0" alt="Spinner" />
-					</div>
-            <p><a href="#seitenanfang">
-              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
-              Top of page
-            </a>
-            <br>
-            </p>
-            <hr>
-            </div></div>
-</div>
+<p>Gene prediction accuracy of AUGUSTUS in the genome of a certain species depends on the quality of training genes that were used for optimizing species specific parameters. The pipeline behind our AUGUSTUS training web server application offers a fully automated way of generating training genes, but it does not replace manual quality checks on the training genes that are often needed for improving the training gene set quality.</p>
 
-</div>
+<p>In order to improve accuracy, you could manually inspect the generated training genes and select a trustworthy subset and try retraining AUGUSTUS with this subset. It also helps to compare the training gene set to other sources of evidence that are not supported by our web server application, e.g. RNA-seq data.</p>
+ <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
+            <hr>
+            <br>
+            <div id="privacy"><h2>What about data privacy and security</h2></div>
+<p>The results of your job submission (i.e. in case of the training web server application that means log files, trained parameters, training genes, ab initio gene predictions and gene prediction with hints; or in case of the prediction web server application the augustus prediction archive) are publicly available. The link to your job status contains a long, pseudo-random string (uuid), and one needs to guess the string in order to get access to the results - but this is not particularly secure!</p>
+<p>Other users who submit exactly the same input files as have been submitted before, will be redirected to the results page of the previously submitted job. They do not need to guess the link.</p>
+<p>Files that you upload to our server, e.g. sequence files, are not directly made available to anyone. However, if you chose to upload a file via http/ftp link, the link to your file is displayed on the job status page.</p>
+<p>We are interested in redistributing high quality parameter sets for novel species with the AUGUSTUS release. We will not do so without your explicit permission.</p>
+<p>Our server logs e-mail adresses, IP adresses and all job submission details. We store this data for a limited time in order to be able to trace back errors or e.g. contact you about a permission to publish parameter sets. By submitting a job, you agree that we log this data.</p>
+<p>Please contact <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a> if your particular job requires a more secure environment, e.g. as part of a collaboration.</p>
+ <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
+            <hr>
+            <br>
+            <div id="commercial"><h2>I am not from academia/non-profit. What can I do?</h2></div>
+		<p>Users who are not from academia or a non-profit organisation, and who are not using our web application for personal purposes, only, have the following options:
+<ul>
+<li>Run the training web server application with a genome file and an externally created training gene file</li>
+<li>Run AUGUSTUS predictions ab initio or with an externally created hint file</li>
+<li>Purchase a BLAT license from <a href="http://www.kentinformatics.com/">http://www.kentinformatics.com/</a> and run the autoAug Pipeline locally</li>
+</ul>
+</p>
+
+ <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
+            <hr>
+            <br>
+
+            <div id="dog"><h2>Why do I see a running dog when pressing the submission button?</h2></div>
+<p>As Loriot said (freely translated): <i>Life without a dog is possible, but pointless.</i> ... the animation is simply displayed to make the waiting time during job submission more pleasant ;-)</p>
+ <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
+            <hr>
+            <br>
+  </div>
+
+
 <div id="rechte_spalte">
     <div class="linien_div">
       <h5 class="ueberschrift_spezial">CONTACT</h5>

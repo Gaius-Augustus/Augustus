@@ -215,11 +215,11 @@ Top of page
 
 <div id="general_data"><h2><a href="#general_data">1.2 - Filling in general job data</a></h2></div>
 
-<p>This section describes all fields that must be filled in for every job submission, i.e. fields that are obligatory.</p> 
+<p>This section describes fields that should be filled in for every job submission, i.e. fields that are obligatory (except for the email adress, which is optional but strongly recommended).</p> 
 
 <div id="email"><h3><a href="#email">1.2.1 - E-mail address</a></h3></div> 
 
-<p>At first, you have to enter a <b>valid e-mail address</b>:</p>
+<p>At first, we recommend that you enter a <b>valid e-mail address</b>:</p>
 
 <p>
 <table border="2" cellspacing="0" cellpadding="0">
@@ -228,18 +228,24 @@ Top of page
 </p>
 
 
-<p>The e-mail address is an obligatory field. Currently, there is no option for submitting AUGUSTUS training jobs anonymously.</p>
+<p>It is possible to run AUGUSTUS without giving an e-mail adress but here are some reasons why we recommend supplying an e-mail adress:
+
+<ul>
+<li>Unlike many other bioinformatics web services, the AUGUSTUS web server application is not an implementation of a fail-safe procedure. Particularly the assembly of a training gene set from extrinsic data (ESTs and protein sequences) and a genome sequence may not always work perfectly. Our pipeline may issue warnings or errors, and sometimes, we need to get some feedback from you via e-mail in order to figure out what is the problem with your particular input data set.</li>
+<li>In addition, training AUGUSTUS is rather time consuming processe that may take up to several weeks (depending on the input data). It may be more convenient to receive an e-mail notification about your job having finished, than checking the status page over and over, again</li>
+</ul></p>
 
 <div id="email_purpose"><h4><a href="#email_purpose">1.2.1.1 - What your e-mail address is used for</a></h4></div>
 
-<p> We save use your e-mail address for the following purposes:</p>
+<p> We use your e-mail address for the following purposes:</p>
 
 <p>
 <ul>
 <li>Confirming your job submission</li>
-<li>Confirming successful file upload (for large files)</li>
-<li>Sending you link to the results of your job (you will never get the link to the results if you do not enter a <b>valid</b> address to which you have access)</li>
+<li>Confirming successful file upload (for large files via ftp/http link)</li>
+<li>Notifying you that your job has finished</li>
 <li>Informing you about any problems that might occur during your particular AUGUSTUS training job</li>
+<li>Asking you for permission to publish parameters with the next AUGUSTUS release</li>
 </ul>
 </p>
 
@@ -265,15 +271,13 @@ Top of page
 
 <div id="species_form"><h3><a href="#species_form">1.2.2.1 - The species name format</a></h3></div>
 
-<p>The species name must be a string of at most 30 characters length. It must be unique in our database and it may <b>not</b> contain spaces.</p>
+<p>The species name must be a string of at most 30 characters length. It is <b>not</b> allowed to contain spaces.</p>
 
 <div id="species_purpose"><h3><a href="#species_purpose">1.2.2.2 - Purpose of entering a species name</a></h3></div>
 
-<p>The species name is the name of the species for whose genome you want to train AUGUSTUS. The species name is an obligatory parameter that AUGUSTUS needs in order to find the correct parameters that shall be applied for predicting genes in a specified genomic sequence. Considering that AUGUSTUS training is such a time consuming process, our objective is to know the names of species for which AUGUSTUS was trained in order to make the trained parameters available to the public so that others who are interested in the same species as you do not have to rerun the training process.</p>
+<p>The species name is the name of the species for whose genome you want to train AUGUSTUS. The species name is an obligatory parameter. Considering that AUGUSTUS training is such a time consuming process, our objective is to know the names of species for which AUGUSTUS was trained in order to make the trained parameters available to the public so that others who are interested in the same species as you do not have to rerun the training process. (You will be asked for permission before your parameter set is shared.)</p>
 
-<p>However, if you do not want to reveal the true species name, you may use any other string shorter than 30 characters as a species name. Species names must be unique on our system, i.e. if the string of your choice is already existing in our system, you will get a message that you have to choose another species name.</p>
-
-<p>We are <b>not</b> redistributing the original sequence data that you submitted to our web server application. But we are redistributing the trained parameters and the species name and any other kind of results that your computation may have produced.</p><p><b>Example:</b></p><p>If person 1 submits a sequence data set for training and names it <i>hypothetical_species</i>, and a second person tries later to train AUGUSTUS with exactly the same sequence files (new data upload) and names the species <i>some_other_name</i>, the second person will be redirected to the results of the original training run of person 1, and the species name <i>hypothetical_species</i> will be publicly readable to person 2.</p>
+<p>However, if you do not want to reveal the true species name, you may use any other string shorter than 30 characters as a species name.</p>
 
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
@@ -343,7 +347,7 @@ TACACGGAAATCAACGGCGGTGTCATAAGCGAG
 
 <p>
 <ul>
-<li>Training gene structure generation (if no training gene structure file was submitted)</li>
+<li>Training gene structure generation (if no training gene structure file was submitted or if the training gene structure was supplied in gff format)</li>
 <li>Target sequence for gene prediction with the new AUGUSTUS parameters (always)</li>
 </ul>
 </p>
@@ -688,6 +692,14 @@ Top of page
 
 <p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/traingenes.gb">http://bioinf.uni-greifswald.de/trainaugustus/examples/traingenes.gb</a> - This file contains 221 training genes for <i>Mus musculus</i> in GenBank format (including flanking regions).</p>
 
+<p>You can insert some of these sample data sets by pressing the "Fill in Sample Data" button:</p>
+
+<p>
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/train-sample.jpg" alt="image of sample button"></td></tr>
+</table>
+</p>
+
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
 Top of page
@@ -699,9 +711,9 @@ Top of page
 
 <div id="job_status"><h1><a href="#job_status">2 - What happens after submission</a></h1></div>
 
-<p>After you click the "Start Training" button, the web server application first validates whether the combination of your input fields is generally correct. If you did anything wrong, you will be redirected to the training submission form and an error message will be displayed at the top of the page.</p>
+<p>After you click the "Start Training" button, the web server application first validates whether the combination of your input fields is generally correct. If you submitted unsupported input combinations, you will be redirected to the training submission form and an error message will be displayed at the top of the page.</p>
 
-<p>If all fields were filled in correctly, the application is actually initiated. You will receive an e-mail that confirms your job submission and that contains a link to the job status page.</p>
+<p>If all fields were filled in correctly, the application is actually initiated. You will receive an e-mail that confirms your job submission and that contains a link to the job status page (if you supplied an e-mail adress), and you will be redirected to the job status page.</p>
 
 <p>
 <table border="2" cellspacing="0" cellpadding="0">
@@ -710,9 +722,9 @@ Top of page
 </p>
 
 
-<p>In the beginning, the status page will display that your job has been <b>submitted</b>. This means, the web server application is currently uploading your files and validating file formats. After a while, the status will change to <b>waiting for execution</b>. This means that all file formats have been confirmed and an actually AUGUSTUS training job has been submitted to our grid engine, but the job is still pending in the queue. Depending on waiting queue length, this status may persist for a while. Please contact us in case you job is pending for more than one month. Later, the job status will change to <b>computing</b>. This means the job is currently computing. When the page displays <b>finished</b>, all computations have been finished and a website with your job's results has been generated.</p>
+<p>In the beginning, the status page will display that your job has been <b>submitted</b>. This means, the web server application is currently uploading your files and validating file formats. After a while, the status will change to <b>waiting for execution</b>. This means that all file formats have been confirmed and an actually AUGUSTUS training job has been submitted to our grid engine, but the job is still pending. Depending on waiting queue length, this status may persist for a while. Please contact us in case you job is pending for more than one month. Later, the job status will change to <b>computing</b>. This means the job is currently computing. When the page displays <b>finished</b>, all computations have been finished and a website with your job's results has been generated.</p>
 
-<p>You will receive an e-mail with the link to the results of your job. This link is publicly accessible but hard to guess.</p>
+<p>You will be notified by email when your job has finished - if you supplied an email adress.</p>
 
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
@@ -725,15 +737,7 @@ Top of page
 
 <div id="duplication"><h2><a href="#duplication">2.1 - Submission duplication</a></h2></div>
 
-<p>Since training AUGUSTUS is a very resource consuming process, we try to avoid data duplication. In case you or somebody else tries to submitt exactly the same input file combination more than once, the duplicated job will be deleted and the submitter of the redundant job will receive an e-mail with the link to the previously submitted job status and with a link to the results page (which may still be empty in case the duplicated job has not finished computing, yet.)</p>
-
-<p>You web browser will be redirected to a page with the following content if data duplication occured:</p>
-
-<p>
-<table border="2" cellspacing="0" cellpadding="0">
-<tr><td><img src="images/job-does-not-exist-training.jpg" alt="image of non existing job status"></td></tr>
-</table>
-</p>
+<p>Since training AUGUSTUS is a very resource consuming process, we try to avoid data duplication. In case you or somebody else tries to submitt exactly the same input file combination more than once, the duplicated job will be stopped and the submitter of the redundant job will receive information where to find the previous job status page.</p>
 
 
 <p><a href="#seitenanfang">
@@ -747,7 +751,7 @@ Top of page
 
 <div id="error"><h2><a href="#error">2.2 - Errors during training</a></h2></div>
 
-<p>You should automatically receive an e-mail in case an error occurs during the AUGUSTUS training process. The admin of this server is also notified by e-mail about errors. We will get in touch with you, again, after we figured out what caused the error.</p>
+<p>You should automatically receive an e-mail in case an error occurs during the AUGUSTUS training process. The admin of this server is also notified by e-mail about errors. We will get in touch with you, again, after we figured out what caused the error. (If you did not supply an email adress, we will probably ignore the error because we cannot communicate with you about the input files.)</p>
 
 <p>Since the web server application is currently in beta testing phase, completely unexpected errors might still occur. Therefore we ask for you help on reporting any weird webserver application behaviour to augustus-web@uni-greifswald.de. Please include which actions from your side exactly caused the error, and also copy the Grails exception message into your e-mail in case such a message was displayed.</p>
 
@@ -762,7 +766,7 @@ Top of page
 
 <div id="results"><h1><a href="#results">3 - Training Results</a></h1></div>
 
-<p>After job computations have finished, you will receive an e-mail with a link to the results of your submission. The linked web page may look similar to this:</p>
+<p>After job computations have finished, you will receive an e-mail (if you supplied an email adress). The job status web page may at this point in time look similar to this:</p>
 
 <p>
 <table border="2" cellspacing="0" cellpadding="0">

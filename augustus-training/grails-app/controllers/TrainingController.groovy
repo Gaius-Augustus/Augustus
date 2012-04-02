@@ -24,8 +24,8 @@ import java.net.HttpURLConnection;
 
 class TrainingController {
 	// need to adjust the output dir to whatever working dir! This is where uploaded files and results will be saved.
-//	def output_dir = "/data/www/augtrain/webdata" // should be something in home of webserver user and augustus frontend user.
-	def output_dir = "/data/www/test"
+	def output_dir = "/data/www/augtrain/webdata" // should be something in home of webserver user and augustus frontend user.
+	//def output_dir = "/data/www/test"
 	// this log File contains the "process log", what was happening with which job when.
 	def logFile = new File("${output_dir}/train.log")
 	// this log File contains the "database" (not identical with the grails database and simply for logging purpose)
@@ -34,8 +34,8 @@ class TrainingController {
 	def oldID
 	def oldAccID
 	// web-output, root directory to the results that are shown to end users
-//	def web_output_dir = "/var/www/trainaugustus/training-results" // must be writable to webserver application
-	def web_output_dir = "/data/www/test/out"
+	def web_output_dir = "/var/www/trainaugustus/training-results" // must be writable to webserver application
+//	def web_output_dir = "/data/www/test/out"
 	def web_output_url = "http://bioinf.uni-greifswald.de/trainaugustus/training-results/"
 	def war_url = "http://bioinf.uni-greifswald.de/augustus-training-0.1/"
 	def footer = "\n\n------------------------------------------------------------------------------------\nThis is an automatically generated message.\n\nhttp://bioinf.uni-greifswald.de/trainaugustus" // footer of e-mail
