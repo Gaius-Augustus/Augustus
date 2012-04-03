@@ -13,6 +13,8 @@
  * 23.10.06| Mario Stanke  | Evidence, SrcEvidence to attach hint summary to genes
  * 29.05.07| Mario Stanke  | introduce frame modifier, so truncated exons get the right frame
  * 25.07.08| Mario Stanke  | updated getInducedStatePath to deal with UTRs
+ * 11.03.12| Mario Stanke  | frame_compatible for overlapping coding regions (bacteria)
+ * 25.03.12| Mario Stanke  | frame_compatible for exon and hint (corrected compatibility for peptide hints)
  **********************************************************************/
 
 #include "gene.hh"
@@ -159,6 +161,16 @@ int lenStateList(State *head) {
 // reading frame, in case it is a (coding) exon, usually depends only on the type
 int State::frame(){
     return mod3(stateReadingFrames[type] + framemod);
+}
+
+bool State::frame_compatible(const Feature *hint){
+  return ((hint->strand == plusstrand && strand() == plusstrand && mod3(end - hint->start + 1 - hint->frame - frame())==0)
+	  || (hint->strand == minusstrand && strand() == minusstrand && mod3(end - hint->end + hint->frame + frame() + 1)==0));
+}
+
+bool frame_compatible(State *ex1, State* ex2){
+  return ((isOnFStrand(ex1->type) && isOnFStrand(ex2->type) && mod3(ex2->end - ex1->end - ex2->frame() + ex1->frame()) == 0)
+	  || (!isOnFStrand(ex1->type) && !isOnFStrand(ex2->type) && mod3(ex2->end - ex1->end + ex2->frame() - ex1->frame()) == 0));
 }
 
 bool State::operator< (const State &other) const {
@@ -406,7 +418,7 @@ bool StatePath::operator< (const StatePath &other) const{
 
 Gene* StatePath::projectOntoGeneSequence(const char *genenames){
     State* curState = first, *anIntron, *lastIntron = NULL;
-    int genenumber = 1;  
+    int genenumber = 1;
     Gene *aGene = NULL, *firstGene = NULL, *lastGene=NULL;
     State *last5utrexon, *last3utrexon, *utrexon;
     list<PP::Match>::iterator protIt = proteinMatches.begin();
@@ -889,20 +901,12 @@ StatePath *StatePath::condenseStatePath(StatePath *oldpath){
     State *oldstate, *temp;
     
     for (oldstate = oldpath->first; oldstate != NULL; oldstate = oldstate->next) {
-	if (path->first != NULL && path->first->type == oldstate->type) {
+        if (path->first != NULL && path->first->type == oldstate->type 
+	    && !isCodingExon(oldstate->type)) { // no condensing when coding exons overlap
 	    path->first->end = oldstate->end;
 	    path->first->truncated |= oldstate->truncated;
 	    path->first->prob *= oldstate->prob;
 	} else {
-// 	    temp = new State();
-// 	    temp->begin = oldstate->begin;
-// 	    temp->end = oldstate->end;
-// 	    temp->type = oldstate->type;
-// 	    temp->prob = oldstate->prob;
-// 	    temp->hasScore = oldstate->hasScore;
-// 	    temp->apostprob = oldstate->apostprob;
-// 	    temp->truncated = oldstate->truncated;
-
 	    temp = new State(*oldstate);
 	    temp->next = NULL;
 	    path->push(temp);
@@ -1488,8 +1492,9 @@ double Gene::supportingFraction(HintGroup *group){
 	for (state = exons; state != NULL; state = state->next){
 	    if ((hint->type == exonF || hint->type == CDSF) && hint->start == state->begin && hint->end == state->end)
 		supports = true;
-	    else if ((hint->type == exonpartF || hint->type == CDSpartF) && hint->start >= state->begin && hint->end <= state->end)
-		supports = true; // TODO: check frame here, too
+	    else if ((hint->type == exonpartF || hint->type == CDSpartF) && hint->start >= state->begin && hint->end <= state->end
+		     && state->frame_compatible(hint))
+	      supports = true;
 	}
 	for (state = introns; state != NULL; state = state->next){
 	    if (hint->type == intronF && hint->start == state->begin && hint->end == state->end)
@@ -2509,12 +2514,12 @@ bool AltGene::overlaps(Gene *gene){
   for (list<Gene*>::iterator agit = transcripts.begin(); agit != transcripts.end(); agit++){
       for (aexon = (*agit)->exons; aexon != NULL; aexon = aexon->next) {
 	 for (exon = gene->exons; exon != NULL; exon = exon->next) {
-	     if (!(exon->end < aexon->begin || exon->begin > aexon->end))
+	     if (!(exon->end < aexon->begin || exon->begin > aexon->end)
+		 && frame_compatible(exon, aexon))
 		 return true;
 	 }  
       }
   }
-
   return false;
 }
 

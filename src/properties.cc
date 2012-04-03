@@ -334,9 +334,7 @@ void Properties::init( int argc, char* argv[] ){
 	throw HelpException(SPECIES_LIST);
 
     // check query filename
-    if (!hasProperty(INPUTFILE_KEY)){
-	throw ProjectError("No query file specified. Type \"augustus\" for help.");
-    } else { // expand the ~ if existent
+    if (hasProperty(INPUTFILE_KEY)){// expand the ~ if existent
 	string filename =  properties[INPUTFILE_KEY];
 	filename = expandHome(filename);
 	properties[INPUTFILE_KEY] = filename;
@@ -390,11 +388,11 @@ void Properties::init( int argc, char* argv[] ){
     bool singleStrand = hasProperty(SINGLESTRAND_KEY) && getBoolProperty(SINGLESTRAND_KEY);
     string strandCFGName = singleStrand? "singlestrand" : "shadow";
 
-    // genemodel {partial, complete, atleastone, exactlyone, intronless}
+    // genemodel {partial, complete, atleastone, exactlyone, intronless, bacterium}
     string genemodelValue = hasProperty(GENEMODEL_KEY) ? properties[GENEMODEL_KEY] : "partial";
     if (genemodelValue != "partial" && genemodelValue != "complete" && genemodelValue != "atleastone" &&
-	genemodelValue != "exactlyone" && genemodelValue != "intronless")
-	throw ProjectError("Unknown value for parameter " GENEMODEL_KEY);
+	genemodelValue != "exactlyone" && genemodelValue != "intronless" && genemodelValue != "bacterium")
+        throw ProjectError(string("Unknown value for parameter ") + GENEMODEL_KEY + ": " + genemodelValue);
     string transfileValue = "trans_" + strandCFGName + "_" + genemodelValue;
 
     bool utr_option_on=false;
@@ -422,6 +420,9 @@ void Properties::init( int argc, char* argv[] ){
       stateCFGfilename += "_2igenic";
     else if (genemodelValue == "intronless"){
       stateCFGfilename += "_intronless";
+    } else if (genemodelValue == "bacterium"){
+      stateCFGfilename += "_bacterium";
+      Constant::overlapmode = true;
     } else if (utr_option_on)
       stateCFGfilename += "_utr";
     stateCFGfilename += ".cfg";

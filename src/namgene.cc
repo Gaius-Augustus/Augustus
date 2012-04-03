@@ -460,7 +460,7 @@ StatePath* NAMGene::getViterbiPath(const char *dna, const char* seqname){
   cerr << "ln ""        : " << maxValue.log() << "\n";
 #endif
     int base = dnalen-1;
-    oli.state = TYPE_UNKNOWN;
+    oli.reset();
     
     while (base>0) {
 	int stateidx;
@@ -478,15 +478,19 @@ StatePath* NAMGene::getViterbiPath(const char *dna, const char* seqname){
 #endif
 	states[stateidx]->viterbiForwardAndSampling( viterbi, forward, state, base, 
 						     doBacktracking, oli );
-	if ((oli.base >= base && oli.state == state) || (oli.base > base + 10)) {
-	    throw ProjectError("Viterbi got stuck at state " + itoa(state) + "and base " + itoa(base) +
-			       ".\n(oli.state =" + itoa(oli.state) + ", oli.base="+ itoa(oli.base) +")");
+	if (!Constant::overlapmode && ((oli.base >= base && oli.state == state) || (oli.base > base + 10))) {
+	  throw ProjectError("Viterbi got stuck at state " + itoa(state) + "and base " + itoa(base) +
+			     ".\n(oli.state =" + itoa(oli.state) + ", oli.base="+ itoa(oli.base) +")");
 	}
 	State *temp = new State(oli.base+1, base, getStateType(stateidx));
 	temp->setTruncFlag(base, oli.base, dnalen);
 	viterbiPath->push(temp);
-	base = oli.base;
+	if (Constant::overlapmode && oli.predEnd > -INT_MAX)
+	  base = oli.predEnd;
+	else 
+	  base = oli.base;
 	state = oli.state;
+	oli.reset();
     }
     if (profileModel)
 	profileModel->appendMatchesTo(viterbiPath->proteinMatches);
@@ -518,7 +522,7 @@ Gene *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *
     singlestrand = Properties::getBoolProperty("singlestrand");
   } catch (...) {}
   
-  int maxstep = 200000;
+  int maxstep = 1000000;
   int endPos, beginPos;
   int seqlen = strlen(dna);
   try {
@@ -591,7 +595,7 @@ Gene *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *
 
     if (!singlestrand) {
 	SequenceFeatureCollection partSFC(sfc, beginPos, endPos);
-	pieceGenes = getStepGenes(curAnnoSeq, partSFC, strand, beginPos + annoseq->offset);
+	pieceGenes = getStepGenes(curAnnoSeq, partSFC, strand);
     } else {
 	if (strand == plusstrand || strand == bothstrands){
 	    SequenceFeatureCollection partSFC(sfc, beginPos, endPos);
@@ -783,7 +787,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   viterbiPath = getViterbiPath(dna, "");
   //getPathEmiProb(viterbiPath, dna); // for testing
   condensedViterbiPath = StatePath::condenseStatePath(viterbiPath);
-  // condensedViterbiPath->print(); // for testing
+  //condensedViterbiPath->print(); // for testing
   genes = condensedViterbiPath->projectOntoGeneSequence("g");
   delete viterbiPath;
 
@@ -906,20 +910,21 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
     }
     }*/
   // determine transcripts with maximum expected accuracy criterion
-  if(mea_prediction){
-
-    if(mea_eval)
-      getMEAtranscripts(&MEAtranscripts, sampledGeneStructures, sampleiterations, strlen( dna ));
-    else
-      getMEAtranscripts(&MEAtranscripts, alltranscripts, strlen(dna));
+  if (Constant::MultSpeciesMode){
+    // store alltranscripts in member variable of NAMGene
+    sampledTxs = alltranscripts;
+    filteredTranscripts = new list<Gene>;
+  } else if (mea_prediction){
+      if(mea_eval)
+	getMEAtranscripts(&MEAtranscripts, sampledGeneStructures, sampleiterations, strlen( dna ));
+      else
+	getMEAtranscripts(&MEAtranscripts, alltranscripts, strlen(dna));
       
-    /*
-     * filter transcripts by probabilities, strand
-     */
-    filteredTranscripts = Gene::filterGenePrediction(&MEAtranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
-
-  } 
-  else
+      /*
+       * filter transcripts by probabilities, strand
+       */
+      filteredTranscripts = Gene::filterGenePrediction(&MEAtranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
+  } else
     filteredTranscripts = Gene::filterGenePrediction(alltranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
 
   /*
@@ -928,7 +933,8 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
 
   agl = groupTranscriptsToGenes(filteredTranscripts);
  
-  delete alltranscripts;
+  if (!Constant::MultSpeciesMode)
+    delete alltranscripts;
 
   if (sampleiterations>1) {
     /*

@@ -86,6 +86,7 @@ string Constant::treefile; // file name in which a tree is specified in Newick f
 string Constant::speciesfilenames; // file name to file which contains the names of species and the corresponding file names
 string Constant::dbaccess; // comma separated string with database access (hostname, database name, table name, user, passwd
 string Constant::alnfile; // name of file that contains MSA of genomes
+bool Constant::overlapmode = false;
 string Constant::orthoexons; //name of file that contains list of orthologous exons
 
 bool inCRFTraining = false;

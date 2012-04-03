@@ -18,6 +18,7 @@
 #include <map>
 #include <list>
 #include <limits>
+#include <climits>
 
 using namespace std;
 
@@ -719,11 +720,19 @@ public:
     OptionListItem(){};
     OptionListItem(int st, int bs, Double p){
 	state = st;
-	base = bs;
+	base = predEnd = bs;
 	probability = p;
     }
+    OptionListItem(int st, int bs, int pe, Double p){
+	state = st;
+	base = bs;
+	predEnd = pe;
+	probability = p;
+    }
+    void reset(){state = TYPE_UNKNOWN; base = predEnd = -INT_MAX;}
     int state;
     int base;
+    int predEnd; // base at which predecessor state ends, usually identical to base unless states (genes) overlap
     Double probability;
 };
 

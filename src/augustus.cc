@@ -119,7 +119,12 @@ int main( int argc, char* argv[] ){
 	  CompGenePred cgp;
 	  cgp.start();
 	} else { // single species mode, default
-	  string filename = Properties::getProperty("queryfile");
+	  // check query filename
+	  if (!Properties::hasProperty(INPUTFILE_KEY)){
+	    throw ProjectError("No query file specified. Type \"augustus\" for help.");
+	  }
+	  string filename =  Properties::getProperty(INPUTFILE_KEY);
+
 	  GBProcessor gbank(filename);
 	  if (Gene::gff3)
 	    cout << "##gff-version 3" << endl;
@@ -324,7 +329,7 @@ void evaluateOnTestSet(AnnoSequence *annoseq, NAMGene &namgene, FeatureCollectio
 	    delete annoseq->anno->condensedBackwardPath;
 	    annoseq->anno->condensedBackwardPath = NULL; // so annoseq destructor doesn't crash
 	}
-	//handleViterbiVariables( namgene.getViterbiVariables() );
+	// handleViterbiVariables( namgene.getViterbiVariables() );
 	annoseq = annoseq->next;
     }
     if (!noprediction) {

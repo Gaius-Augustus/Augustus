@@ -79,6 +79,9 @@ public:
     void printProbabilities ( int parIndex, BaseCount *bc, const char* suffix = NULL );
     void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int,
 				   AlgorithmVariant, OptionListItem&) const;
+    void processOvlpOption(ViterbiMatrixType& , ViterbiMatrixType&, AlgorithmVariant&,
+			   int state, int endOfPred, int beginOfBioExon, Double &maxProb,
+			   Double emiProb, Double &fwdsum, OptionsList *, OptionListItem &oli) const;
     Double emiProbUnderModel(int begin, int end) const;
     Double endPartEmiProb(int end) const;
     Double notEndPartEmiProb(int beginOfStart, int right, int frameOfRight, Feature *exonparts) const;

@@ -146,17 +146,19 @@ public:
 	    evidence = new Evidence(*other.evidence);
     }
   int frame(); // reading frame, in case it is a (coding) exon, usually depends only on the type
+  bool frame_compatible(const Feature *hint);
   void addEvidence(string srcname) {if (!evidence) evidence = new Evidence(false); evidence->add(srcname);}
   bool operator< (const State &other) const;
   bool operator== (const State &other) const;
   int length() {
     return end - begin + 1;
   }
-
+  Strand strand() {return isOnFStrand(type)? plusstrand : minusstrand;}
   State *getBiologicalState();
   void setTruncFlag(int end, int predEnd, int dnalen);
 };
 
+bool frame_compatible(State *ex1, State* ex2);
 
 /**
  * A path through the Hidden-Markov-Model states

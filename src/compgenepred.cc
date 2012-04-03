@@ -34,7 +34,8 @@ void CompGenePred::start(){
 
   // first species (testing only)
   NAMGene namgene; // creates and initializes the states
-  SequenceFeatureCollection sfc(NULL); // hints, empty for now, will later read in hints for sequence ranges from database
+  FeatureCollection extrinsicFeatures; // hints, empty for now, will later read in hints for sequence ranges from database
+  SequenceFeatureCollection sfc(&extrinsicFeatures); 
   StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
 
   map< vector<string>, list<OrthoExon> > all_orthoex = readOrthoExons(Constant::orthoexons);  //read in orthologous exons from file
@@ -70,10 +71,11 @@ void CompGenePred::start(){
 	cout << it->begin <<"\t"<< it->end <<"\t"<<((State*) it->item)->type << endl;
 	}*/
 
-      //namgene.doViterbiPiecewise(sfc, seqRange, bothstrands); // builds graph for each species
+      namgene.doViterbiPiecewise(sfc, seqRange, bothstrands); // builds graph for each species
 
-      list<Gene> *alltranscripts = NULL; //von namgene
+      list<Gene> *alltranscripts = namgene.getAllTranscripts();
       if(alltranscripts){
+	cout << "building Graph for " << s << endl;
 	if(!alltranscripts->empty()){
 	  /*
 	   * build datastructure for graph representation
@@ -81,6 +83,7 @@ void CompGenePred::start(){
 	   */
 	  list<Status> stlist;
 	  buildDatastructure(alltranscripts, false, stlist);
+	  delete alltranscripts;
 	  //build graph
 	  AugustusGraph *singleGraph = new AugustusGraph(&stlist, seqRange->length);
 	  singleGraph->buildGraph(additionalExons);

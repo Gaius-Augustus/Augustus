@@ -867,22 +867,8 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
     int endOfBioExon = base + baseOffset; 
     int right = endOfBioExon - innerPartEndOffset;
     
-    // if (etype == singleG || etype == terminal) {
-    // 	right = base - STOPCODON_LEN;
-    // 	endOfBioExon = base;
-    // } else if(etype == rsingleG || etype == rinitial) {
-    // 	right = base - trans_init_window - STARTCODON_LEN;
-    // 	endOfBioExon = base - trans_init_window;
-    // } else if(isOnFStrand(etype)){
-    // 	right = base;
-    // 	endOfBioExon = base + Constant::dss_start;
-    // } else {
-    // 	right = base;
-    // 	endOfBioExon = base + Constant::ass_end;
-    // }
-    
     /*
-     * If it is impossible that a (complete) exon ends here return immediately.
+     * If it is impossible that a (complete) exon ends here, return immediately.
      */
     
     if (endPartProb <= 0 || right < 0) {
@@ -921,25 +907,6 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 	mod3(win - 1 - endOfBioExon + endOfNonStopcodon) : 
 	mod3(win + 1 + endOfBioExon - endOfNonStopcodon);
 
-   // switch(etype) { 
-    // 	case singleG: case initial0: case initial1: case initial2:
-    // 	    left = ORFleft + STARTCODON_LEN; break;
-    // 	case terminal: case internal0: case internal1: case internal2:
-    // 	  if (ORFleft > 0)
-    // 	    left = ORFleft + Constant::ass_end; 
-    // 	  else
-    // 	    left = 0; 
-    // 	  break;
-    //    	case rinitial: case rinternal0: case rinternal1: case rinternal2:
-    // 	  if (ORFleft > 0)
-    // 	    left = ORFleft + Constant::dss_start;
-    // 	  else
-    // 	    left = 0;
-    // 	  break;
-    // 	default: // i.e., when there must be a reverse stop codon at the left end ...
-    // 	    left = ORFleft;
-    // }
-    
     int ORFleft = orf->leftmostExonBegin(frameOfEndOfNonStopcodon, endOfNonStopcodon, isOnFStrand(etype));
 
     /*
@@ -1022,7 +989,6 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 	Double notEndPartProb = notEndPartEmiProb(beginOfStart, right, frameOfRight, extrinsicexons);
 	if (notEndPartProb <= 0.0 || endOfPred >= dnalen) 
 	    continue;
-	// one of two cases where endOfPred < 0
 	// - initial or single exon starts right at pos 1
 	// - left truncated internal or terminal exon
 	const ViterbiColumnType& predForw =  forward[endOfPred >= 0 ? endOfPred : 0];
@@ -1081,6 +1047,10 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 		}
 	    }
 	} // end of loop over predecessor state
+	if (Constant::overlapmode){ // potentially increase maxProb and change oli if overlap is better
+	  processOvlpOption(viterbi, forward, algovar, state, endOfPred, beginOfBioExon, maxProb,
+			    endPartProb * notEndPartProb, fwdsum, optionslist, oli);
+	}
     } // end of loop over the exon length
     
     switch (algovar) {
@@ -1130,6 +1100,64 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
     delete exonScorer;
 } // ExonModel::viterbiForwardAndSampling
 
+/*
+ * ===[ ExonModel::processOvlpOption ]=====================================
+ *
+ * Check in the inner loop of the Viterbi algorithm whether introducing an overlap of exons
+ * improves the probability maxProb of the best non-overlapping option. This introduces another nested loop.
+ *        beginOfBioExon
+ *           |
+ *           >------------------------------------------------------------------->
+ * ------------------------------------->
+ *   |<----------- ovlp --------------->|
+ * endOfPred                         endOfPred2
+ */
+void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType& forward, AlgorithmVariant& algovar, 
+				  int state, int endOfPred, int beginOfBioExon, Double &maxProb,
+				  Double emiProb, Double &fwdsum, OptionsList *optionslist, OptionListItem &oli) const {
+  int maxOvlp = 50; // TODO move to exon initialization 
+  vector<Ancestor>::const_iterator it;
+
+  for (int ovlp = 1; ovlp <= maxOvlp && endOfPred + ovlp >= 0 && endOfPred + ovlp < dnalen; ovlp++){
+    int endOfPred2 = endOfPred + ovlp;
+    Double lenProb = Double(4.0).pow(ovlp); // TODO * lenDistProb(biological overlap)
+    const ViterbiColumnType& predForw =  forward[endOfPred2 >= 0 ? endOfPred2 : 0];
+    ViterbiColumnType& predVit = viterbi[endOfPred2 >= 0 ? endOfPred2 : 0]; 
+    
+    //    cout << "state=" << state << " endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 << " lenProb= " << lenProb << " maxProb=" << maxProb << endl;
+    for (it = ancestor.begin(); it != ancestor.end(); ++it ){
+      int predState = it->pos;
+      if (algovar == doSampling) {
+	if (predForw[predState] == 0)
+	  continue;
+      } else
+	if (predVit.get(predState)==0)
+	  continue; // predecessor state cannot end at this position
+      Double transEmiProb = it->val * emiProb * lenProb;
+      if (needForwardTable(algovar)) {
+	Double fwdsummand = predForw[predState] * transEmiProb;
+	if (algovar == doSampling) {
+	  if (fwdsummand > 0) 
+	    optionslist->add(predState, endOfPred, fwdsummand);
+	  continue;
+	} else 
+	  fwdsum += fwdsummand;
+      }
+      Double predProb = predVit.get(predState) * transEmiProb;
+      //      cout << "possible predState=" << predState << " predProb=" << predProb << endl;
+      if (predProb > maxProb) {
+	cout << "overlap improves at endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 
+	     << " state=" << state << " predState=" << predState << endl;
+	maxProb = predProb;
+	if (algovar==doBacktracking) {
+	  oli.base = endOfPred;
+	  oli.predEnd = endOfPred2;
+	  oli.state = predState;
+	}
+      }
+    }
+  }
+}
 
 /*
  * ===[ ExonModel::endPartEmiProb ]=====================================
