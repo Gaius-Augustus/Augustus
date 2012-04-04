@@ -92,7 +92,7 @@ class Training {
        job_error(nullable:true)
        dateCreated()
        old_url(nullable:true)
-       results_urls(nullable:true)
+       results_urls(maxSize:1000000000, nullable:true)
        message(maxSize:1000000000, nullable:true) 
        warn(nullable:true)
        has_genome_file(nullable:true)

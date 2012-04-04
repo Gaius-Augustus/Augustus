@@ -180,6 +180,7 @@ if($projectID =~ m/^t/){
 
 	## copy and pack training gene file
 	my $trainingFile = $grailsOut."/$projectID/autoAug/autoAugTrain/training/training.gb";
+	print STDOUT "Training file is: $trainingFile\n";
 	if (not(-e $trainingFile)){
 		print STDERR "$trainingFile does not exist!\n";
 		$cfgFilesDir = "$AUGUSTUS_CONFIG_PATH/species/$projectID/$projectID";
