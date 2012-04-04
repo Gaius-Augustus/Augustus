@@ -50,10 +50,9 @@ void CompGenePred::start(){
   chrName.push_back("chr31");
   int start[] = {44836600, 31983200, 39789600} ;
   int end[] = {44846200, 31992000, 39798300};
-  Strand strand = minusstrand;
  
   for (int s = 0; s < 3; s++) {
-    AnnoSequence *seqRange = rsa->getSeq(speciesname[s], chrName[s], start[s], end[s], strand);
+    AnnoSequence *seqRange = rsa->getSeq(speciesname[s], chrName[s], start[s], end[s]);
     if (seqRange){
       //cout << seqRange->seqname << "\t" << seqRange->length << "\t" << seqRange->offset << endl;
       //cout << seqRange->sequence << endl;
@@ -82,8 +81,7 @@ void CompGenePred::start(){
 	   * @stlist : list of all sampled states
 	   */
 	  list<Status> stlist;
-	  buildDatastructure(alltranscripts, false, stlist);
-	  delete alltranscripts;
+	  buildDatastructure(alltranscripts, false, stlist); //TODO delete transcripts
 	  //build graph
 	  AugustusGraph *singleGraph = new AugustusGraph(&stlist, seqRange->length);
 	  singleGraph->buildGraph(additionalExons);
@@ -92,7 +90,7 @@ void CompGenePred::start(){
 	}
       }
     } else {
-      cerr << "random sequence access failed on " << speciesname[s] << ", " << chrName[s] << ", " << start[s] << ", " <<  end[s] << ", " <<  strand << endl;
+      cerr << "random sequence access failed on " << speciesname[s] << ", " << chrName[s] << ", " << start[s] << ", " <<  end[s] << ", " << endl;
     }
   } 
 }

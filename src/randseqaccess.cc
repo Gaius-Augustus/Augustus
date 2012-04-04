@@ -33,8 +33,8 @@ MemSeqAccess::MemSeqAccess(){
   }
 }
 
-AnnoSequence* MemSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
-  cout << "retrieving " << speciesname << " " << chrName << ":" << start << "-" << end << " " << strand << " from memory." << endl;
+AnnoSequence* MemSeqAccess::getSeq(string speciesname, string chrName, int start, int end){
+  cout << "retrieving " << speciesname << " " << chrName << ":" << start << "-" << end << " " << " from memory." << endl;
   AnnoSequence *annoseq = NULL;
   string key = speciesname + ":" + chrName;
   map<string,char*>::iterator it = sequences.find(key);
@@ -42,11 +42,6 @@ AnnoSequence* MemSeqAccess::getSeq(string speciesname, string chrName, int start
     annoseq = new AnnoSequence();
     annoseq->seqname = newstrcpy(key);
     annoseq->sequence = newstrcpy(it->second + start, end - start + 1);
-    if (strand == minusstrand){
-      char *seq = reverseComplement(annoseq->sequence);
-      delete [] annoseq->sequence;
-      annoseq->sequence = seq;
-    }
     annoseq->length = end-start+1;
     annoseq->offset = start;
   }
@@ -57,8 +52,8 @@ DbSeqAccess::DbSeqAccess(){
   cout << "opening database connection using connection data " << Constant::dbaccess << endl;
 }
 
-AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
-  cout << "retrieving " << speciesname << " " << chrName << ":" << start << "-" << end << " " << strand << " from database." << endl;
+AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start, int end){
+  cout << "retrieving " << speciesname << " " << chrName << ":" << start << "-" << end << " " << " from database." << endl;
   return NULL;
 }
 

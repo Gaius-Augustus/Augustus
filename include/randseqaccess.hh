@@ -25,7 +25,7 @@ protected:
   RandSeqAccess() {};
   virtual ~RandSeqAccess() {}
 public:
-  virtual AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand) =  0;
+  virtual AnnoSequence* getSeq(string speciesname, string chrName, int start, int end) =  0;
 };
 
 /*
@@ -35,7 +35,7 @@ public:
 class MemSeqAccess : public RandSeqAccess {
 public:
   MemSeqAccess();
-  AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
+  AnnoSequence* getSeq(string speciesname, string chrName, int start, int end);
   
   private:
   map<string,string> filenames;
@@ -50,7 +50,7 @@ public:
 class DbSeqAccess : public RandSeqAccess {
 public:
   DbSeqAccess();
-  AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
+  AnnoSequence* getSeq(string speciesname, string chrName, int start, int end);
 };
 
 /*
