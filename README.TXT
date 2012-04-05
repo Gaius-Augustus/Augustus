@@ -7,9 +7,9 @@
 %             Institut fuer Mathematik und Informatik           Institut fuer Informatik         %
 %             17497 Greifswald                                  37077 Goettingen                 %
 %             Fon: +49 3834 864642                                                               %
-%             mstanke@gwdg.de                                   keller@cs.uni-goettingen.de      %
+%             mario.stanke@uni-greifswald.de                    keller@cs.uni-goettingen.de      %
 %                                                                                                %
-%             Date: March 2nd, 2011                                                              %
+%             Date: April 5th, 2012                                                              %
 %                                                                                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -829,11 +829,13 @@ AUGUSTUS can also be run through a web-interface avaible on the AUGUSTUS home pa
               10. CONTACT
               -----------
 
-Please contact me (Mario) in case you find a bug, or miss a desireable feature or need executables for a different platform, need
-detailed info about the model, ....
-In case you need to run AUGUSTUS on a different organism and have ESTs or 454 sequences or a set of bona fide genes as training data for
-AUGUSTUS we could make another specially trained version of AUGUSTUS.
-Please contact Oliver for issues concerning the Protein Profile Extension
+In case you find a bug, or miss a desireable feature or need executables for a different platform, need
+detailed info about the model, please check this forum and post your question at:
+http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Forum.Forum
+
+In case you need to train AUGUSTUS on a different organism consider this training web service:
+bioinf.uni-greifswald.de/trainaugustus
+Please contact Oliver for issues concerning the Protein Profile Extension.
 
 
               11. REFERENCES
