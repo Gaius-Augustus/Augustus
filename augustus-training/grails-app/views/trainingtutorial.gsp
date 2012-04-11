@@ -684,13 +684,24 @@ Top of page
 
 <p>In the following, we provide some correctly formatted, compatible example data files:</p>
 
+<h3><font color="#006699">1.6.1 - Genome and ESTs</font></h3>
 <p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/chr1to3.fa">http://bioinf.uni-greifswald.de/trainaugustus/examples/chr1to3.fa</a> - This file may be used as a <b>Genome file</b>. It contains the first three chromosomes of <i>Mus musculus</i> from GenBank (modified headers).</p>
 
 <p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/estsChr1to3.fa">http://bioinf.uni-greifswald.de/trainaugustus/examples/estsChr1to3.fa</a> - This file may be used as a <b>cDNA file</b>. It contains EST sequences of <i>Mus musculus</i> from GenBank (modified headers).</p>
 
-<p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/rattusProteinsChr1to3.fa">http://bioinf.uni-greifswald.de/trainaugustus/examples/rattusProteinsChr1to3.fa</a> - This file may be used as a <b>Protein file</b>. It contains proteins of <i>Rattus norvegicus</i> from GenBank (modified headers) that map to chromosomes 1 to 3.</p>
+<h3><font color="#006699">1.6.2 - Genome and Proteins</font></h3>
+
+<p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/chr1to6.fa">http://bioinf.uni-greifswald.de/trainaugustus/examples/chr1to6.fa</a> - This file may be used as a <b>Genome file</b>. It contains the first six chromosomes of <i>Mus musculus</i> from GenBank (modified headers).</p>
+
+<p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/rattusProteinsChr1to6.fa">http://bioinf.uni-greifswald.de/trainaugustus/examples/rattusProteinsChr1to6.fa</a> - This file may be used as a <b>Protein file</b>. It contains proteins of <i>Rattus norvegicus</i> from GenBank (modified headers) that map to chromosomes 1 to 6.</p>
+
+<h3><font color="#006699">1.6.3 - Genome and Gene Structure File</font></h3>
+
+<p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/chr1to3.fa">http://bioinf.uni-greifswald.de/trainaugustus/examples/chr1to3.fa</a> - This file may be used as a <b>Genome file</b>. It contains the first three chromosomes of <i>Mus musculus</i> from GenBank (modified headers).</p>
 
 <p><a href="http://bioinf.uni-greifswald.de/trainaugustus/examples/traingenes.gb">http://bioinf.uni-greifswald.de/trainaugustus/examples/traingenes.gb</a> - This file contains 221 training genes for <i>Mus musculus</i> in GenBank format (including flanking regions).</p>
+
+<h3><font color="#006699">1.6.4 - Automatic Data Insertion</font></h3>
 
 <p>You can insert some of these sample data sets by pressing the "Fill in Sample Data" button:</p>
 

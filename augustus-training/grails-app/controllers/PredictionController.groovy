@@ -1154,8 +1154,8 @@ class PredictionController {
 				predictionInstance.job_status = 0
 				logDate = new Date()
 				mailStr = "Details of your job:\n\n${confirmationString}\n"
-				predictionInstance.message = "---------------------------------------\n${logDate} - Message:\n"
-				predictionInstance.message = "${predictionInstance.message}---------------------------------------\n\n${mailStr}"
+				predictionInstance.message = "----------------------------------------\n${logDate} - Message:\n"
+				predictionInstance.message = "${predictionInstance.message}----------------------------------------\n\n${mailStr}"
 				if(predictionInstance.email_adress != null){
 					msgStr = "Hello!\n\n"
 					msgStr = "${msgStr}Thank you for submitting the AUGUSTUS gene prediction "
@@ -1290,9 +1290,9 @@ class PredictionController {
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided genome file\n${predictionInstance.genome_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
 							predictionInstance.message = "${predictionInstance.message}----------------------------"
-							predictionInstance.message = "${predictionInstance.message}-----------------\n${logDate}"
+							predictionInstance.message = "${predictionInstance.message}------------------\n${logDate}"
 							predictionInstance.message = "${predictionInstance.message} - Error Message:\n----------"
-							predictionInstance.message = "${predictionInstance.message}-----------------------------"
+							predictionInstance.message = "${predictionInstance.message}------------------------------"
 							predictionInstance.message = "------\n\n${mailStr}"
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
@@ -1319,7 +1319,7 @@ class PredictionController {
 							logAbort()
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided genome file ${predictionInstance.genome_ftp_link} was not in DNA fasta format.\n\n"
 							logDate = new Date()
-							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress == null){
@@ -1345,7 +1345,7 @@ class PredictionController {
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the genome file size was\nwith ${genome_size} bigger than 1 GB. Please submitt a smaller genome size!\n\n"
 						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						logDate = new Date()
-						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+						predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 						predictionInstance = predictionInstance.merge()
 						predictionInstance.save()
 						if(predictionInstance.email_adress != null){
@@ -1398,7 +1398,7 @@ class PredictionController {
 							logDate = new Date()
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided hints file\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
-							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
@@ -1422,7 +1422,7 @@ class PredictionController {
 							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hints file does not always contain 9 columns.\n"
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided hints file\n${predictionInstance.hint_file}\ndid not contain 9 columns in each line. Please make sure the gff-format complies\nwith the instructions in our 'Help' section before submitting another job!\n\n"
 							logDate = new Date()
-							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
@@ -1439,7 +1439,7 @@ class PredictionController {
 							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hints file contains entries that do not comply with genome sequence names.\n"
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequence names in\nthe provided hints file\n${predictionInstance.hint_file}\ndid not comply with the sequence names in the supplied genome file\n${predictionInstance.genome_ftp_link}.\nPlease make sure the gff-format complies with the instructions in our 'Help' section\nbefore submitting another job!\n\n"
 							logDate = new Date()
-							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
@@ -1456,7 +1456,7 @@ class PredictionController {
 							logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Hints file contains entries that do not have source=M in the last column.\n"
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the last column of your\nhints file\n${predictionInstance.hint_file}\ndoes not contain the content source=M. Please make sure the gff-format complies with\nthe instructions in our 'Help' section before submitting another job!\n\n"
 							logDate = new Date()
-							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
@@ -1618,7 +1618,7 @@ class PredictionController {
 							logAbort()
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided cDNA file\n${predictionInstance.est_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
-							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
@@ -1644,7 +1644,7 @@ class PredictionController {
 							logAbort()
 							mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the provided cDNA file\n${predictionInstance.est_ftp_link}\nwas not in DNA fasta format.\n\n"
 							logDate = new Date()
-							predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+							predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 							predictionInstance = predictionInstance.merge()
 							predictionInstance.save()
 							if(predictionInstance.email_adress != null){
@@ -1669,7 +1669,7 @@ class PredictionController {
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the cDNA file size was\nwith ${est_size} bigger than 1 GB. Please submitt a smaller cDNA size!\n\n"
 						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						logDate = new Date()
-						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+						predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 						predictionInstance = predictionInstance.merge()
 						predictionInstance.save()
 						if(predictionInstance.email_adress != null){
@@ -1747,7 +1747,7 @@ class PredictionController {
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your\ncDNA file have an average length of ${avEstLen}. We suspect that sequences files\nwith an average sequence length shorter than ${estMinLen} might contain RNAseq\nraw sequences. Currently, our web server application does not support the integration\nof RNAseq raw sequences. Please either assemble your sequences into longer contigs,\nor remove short sequences from your current file, or submitt a new job without\nspecifying a cDNA file.\n\n"
 						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						logDate = new Date()
-						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+						predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 						predictionInstance = predictionInstance.merge()
 						predictionInstance.save()
 						if(predictionInstance.email_adress != null){
@@ -1771,7 +1771,7 @@ class PredictionController {
 						mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted because the sequences in your\ncDNA file have an average length of ${avEstLen}. We suspect that sequence\nfiles with an average sequence length longer than ${estMaxLen} might not contain\nESTs or cDNAs. Please either remove long sequences from your current file, or\nsubmitt a new job without specifying a cDNA file.\n\n"
 						def errorStrMsg = "Hello!\n${mailStr}Best regards,\n\nthe AUGUSTUS web server team"
 						logDate = new Date()
-						predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+						predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 						predictionInstance = predictionInstance.merge()
 						predictionInstance.save()
 						if(predictionInstance.email_adress != null){
@@ -1796,7 +1796,7 @@ class PredictionController {
 				if((!(predictionInstance.genome_ftp_link == null)) || (!(predictionInstance.est_ftp_link == null))){
 					mailStr = "We have retrieved all files that you specified, successfully. You may delete them\nfrom the public server, now, without affecting the AUGUSTUS prediction job.\n\n"
 					logDate = new Date()
-					predictionInstance.message = "${predictionInstance.message}---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
+					predictionInstance.message = "${predictionInstance.message}----------------------------------------\n${logDate} - Message:\n----------------------------------------\n\n${mailStr}"
 					predictionInstance = predictionInstance.merge()
 					predictionInstance.save()
 					if(predictionInstance.email_adress != null){
@@ -1851,7 +1851,7 @@ class PredictionController {
 					mailStr = "You submitted job ${predictionInstance.accession_id}.\nThe job was aborted because the files that you submitted were submitted, before.\n\n"
 					predictionInstance.old_url = "${war_url}prediction/show/${oldID}"
 					logDate = new Date()
-					predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+					predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 					predictionInstance = predictionInstance.merge()
 					predictionInstance.save()
 					if(predictionInstance.email_adress != null){
@@ -2025,7 +2025,7 @@ class PredictionController {
 				if(sgeErrSize==0 && writeResultsErrSize==0){
 					mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} finished.\n\n"
 					logDate = new Date()
-					predictionInstance.message = "${predictionInstance.message}---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
+					predictionInstance.message = "${predictionInstance.message}----------------------------------------\n${logDate} - Message:\n----------------------------------------\n\n${mailStr}"
 					predictionInstance = predictionInstance.merge()
 					predictionInstance.save()
 					if(predictionInstance.email_adress == null){
@@ -2128,7 +2128,7 @@ class PredictionController {
 					}
 					mailStr = "An error occured while running the AUGUSTUS prediction job ${predictionInstance.accession_id}.\n\n"
 					logDate = new Date()
-					predictionInstance.message = "${predictionInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}Please contact augustus-web@uni-greifswald.de if you want to find out what went wrong.\n\n"
+					predictionInstance.message = "${predictionInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}Please contact augustus-web@uni-greifswald.de if you want to find out what went wrong.\n\n"
 					predictionInstance = predictionInstance.merge()
 					predictionInstance.save()
 					if(predictionInstance.email_adress == null){

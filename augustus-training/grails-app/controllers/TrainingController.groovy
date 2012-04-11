@@ -126,7 +126,7 @@ class TrainingController {
 	
 	// fill in sample data
 	def fillSample = {
-		redirect(action:create, params:[genome_ftp_link:"http://bioinf.uni-greifswald.de/trainaugustus/examples/chr1to3.fa", protein_ftp_link:"http://bioinf.uni-greifswald.de/trainaugustus/examples/rattusProteinsChr1to3.fa", project_name:"Mus_musculus"])
+		redirect(action:create, params:[genome_ftp_link:"http://bioinf.uni-greifswald.de/trainaugustus/examples/chr1to6.fa", protein_ftp_link:"http://bioinf.uni-greifswald.de/trainaugustus/examples/rattusProteinsChr1to6.fa", project_name:"Mus_musculus"])
 	}
 
 	// the method commit is started if the "Submit Job" button on the website is hit. It is the main method of Training Controller and contains a Thread method that will continue running as a background process after the user is redirected to the job status page.
@@ -971,8 +971,8 @@ class TrainingController {
 				emptyPageExecution.waitFor()
 				trainingInstance.job_status = 0
 				mailStr = "Details of your job:\n\n${confirmationString}\n"
-				trainingInstance.message = "---------------------------------------\n${logDate} - Message:\n"
-				trainingInstance.message = "${trainingInstance.message}---------------------------------------\n\n${mailStr}"
+				trainingInstance.message = "----------------------------------------\n${logDate} - Message:\n"
+				trainingInstance.message = "${trainingInstance.message}----------------------------------------\n\n${mailStr}"
 				if(trainingInstance.email_adress != null){
 					msgStr = "Hello!\n\nThank you for submitting a job to train AUGUSTUS parameters for species ${trainingInstance.project_name}.\n\n${mailStr}The status/results page of your job is ${war_url}training/show/${trainingInstance.id}.\n\nYou will be notified by e-mail after computations of your job have finished.\n\nBest regards,\n\nthe AUGUSTUS web server team"
 					sendMail {
@@ -1096,9 +1096,9 @@ class TrainingController {
 							logAbort()
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name} was aborted\nbecause the provided genome file\n${trainingInstance.genome_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
-							trainingInstance.message = "${trainingInstance.message}----------------------------"
+							trainingInstance.message = "${trainingInstance.message}-----------------------------"
 							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
-							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
 							trainingInstance.message = "${trainingInstance.message}-----------------------------"
 							trainingInstance.message = "------\n\n${mailStr}"
 							trainingInstance = trainingInstance.merge()
@@ -1156,9 +1156,9 @@ class TrainingController {
 						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the genome file size was with ${genome_size} bytes bigger than ${maxFileSizeByWget} bytes.\nPlease submitt a smaller genome file!\n\n"
 						logDate = new Date()
 						trainingInstance.message = "${trainingInstance.message}----------------------------"
-						trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+						trainingInstance.message = "${trainingInstance.message}------------------\n${logDate}"
 						trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
-						trainingInstance.message = "${trainingInstance.message}-----------------------------"
+						trainingInstance.message = "${trainingInstance.message}------------------------------"
 						trainingInstance.message = "------\n\n${mailStr}"
 						trainingInstance = trainingInstance.merge()
 						trainingInstance.save()
@@ -1213,8 +1213,8 @@ class TrainingController {
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided gene structure file contains metacharacters (e.g. * or ?).\nThis is not allowed.\n\n"
 							logDate = new Date()
 							trainingInstance.message = "${trainingInstance.message}----------------------------"
-							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
-							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}------------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
 							trainingInstance.message = "${trainingInstance.message}-----------------------------"
 							trainingInstance.message = "------\n\n${mailStr}"
 							trainingInstance = trainingInstance.merge()
@@ -1241,8 +1241,8 @@ class TrainingController {
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided training gene structure file\n${trainingInstance.struct_file}\ndid not contain 9 columns in each line.\nPlease make sure the gff-format complies with the instructions in our 'Help' section before\nsubmitting another job!\n\n"
 							logDate = new Date()
 							trainingInstance.message = "${trainingInstance.message}----------------------------"
-							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
-							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}------------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
 							trainingInstance.message = "${trainingInstance.message}-----------------------------"
 							trainingInstance.message = "------\n\n${mailStr}"
 							trainingInstance = trainingInstance.merge()
@@ -1261,9 +1261,9 @@ class TrainingController {
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Training gene structure file contains entries that do not comply with genome sequence names.\n"
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the sequence names in the provided training gene structure file\n${trainingInstance.struct_file}\ndid not comply with the sequence names in the supplied genome file\n${trainingInstance.genome_ftp_link}.\nPlease make sure the gff-format complies with the instructions in our 'Help' section\nbefore submitting another job!\n\n"
 							logDate = new Date()
-							trainingInstance.message = "${trainingInstance.message}----------------------------"
+							trainingInstance.message = "${trainingInstance.message}-----------------------------"
 							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
-							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
 							trainingInstance.message = "${trainingInstance.message}-----------------------------"
 							trainingInstance.message = "------\n\n${mailStr}"
 							trainingInstance = trainingInstance.merge()
@@ -1422,8 +1422,8 @@ class TrainingController {
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided cDNA file\n${trainingInstance.est_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
 							trainingInstance.message = "${trainingInstance.message}----------------------------"
-							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
-							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}------------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
 							trainingInstance.message = "${trainingInstance.message}-----------------------------"
 							trainingInstance.message = "------\n\n${mailStr}"
 							trainingInstance = trainingInstance.merge()
@@ -1451,9 +1451,9 @@ class TrainingController {
 							logAbort()
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided cDNA file\n${trainingInstance.est_ftp_link}\nwas not in DNA fasta format.\n\n"
 							logDate = new Date()
-							trainingInstance.message = "${trainingInstance.message}----------------------------"
+							trainingInstance.message = "${trainingInstance.message}-----------------------------"
 							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
-							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
 							trainingInstance.message = "${trainingInstance.message}-----------------------------"
 							trainingInstance.message = "------\n\n${mailStr}"
 							trainingInstance = trainingInstance.merge()
@@ -1479,8 +1479,8 @@ class TrainingController {
 						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the cDNA file size was with ${est_size} bigger than 1 GB.\nPlease submitt a smaller cDNA size!\n\n"
 						logDate = new Date()
 						trainingInstance.message = "${trainingInstance.message}----------------------------"
-						trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
-						trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+						trainingInstance.message = "${trainingInstance.message}------------------\n${logDate}"
+						trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
 						trainingInstance.message = "${trainingInstance.message}-----------------------------"
 						trainingInstance.message = "------\n\n${mailStr}"
 						trainingInstance = trainingInstance.merge()
@@ -1562,8 +1562,8 @@ class TrainingController {
 						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted because the sequences in your\ncDNA file have an average length of ${avEstLen}. We suspect that sequences files\nwith an average sequence length shorter than ${estMinLen} might\ncontain RNAseq raw sequences. Currently, our web server application does not support\nthe integration of RNAseq raw sequences. Please either assemble\nyour sequences into longer contigs, or remove short sequences from your current file,\nor submitt a new job without specifying a cDNA file.\n\n"
 						logDate = new Date()
 						trainingInstance.message = "${trainingInstance.message}----------------------------"
-						trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
-						trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+						trainingInstance.message = "${trainingInstance.message}------------------\n${logDate}"
+						trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
 						trainingInstance.message = "${trainingInstance.message}-----------------------------"
 						trainingInstance.message = "------\n\n${mailStr}"
 						trainingInstance = trainingInstance.merge()
@@ -1589,8 +1589,8 @@ class TrainingController {
 						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted because\nthe sequences in your cDNA file have an average length of ${avEstLen}.\nWe suspect that sequences files with an average sequence length longer than ${estMaxLen}\nmight not contain ESTs or cDNAs. Please either remove long sequences from your\ncurrent file, or submitt a new job without specifying a cDNA file.\n\n"
 						logDate = new Date()
 						trainingInstance.message = "${trainingInstance.message}----------------------------"
-						trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
-						trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+						trainingInstance.message = "${trainingInstance.message}------------------\n${logDate}"
+						trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
 						trainingInstance.message = "${trainingInstance.message}-----------------------------"
 						trainingInstance.message = "------\n\n${mailStr}"
 						trainingInstance = trainingInstance.merge()
@@ -1708,8 +1708,8 @@ class TrainingController {
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided protein file\n${trainingInstance.protein_ftp_link}\ncontains metacharacters (e.g. * or ?). This is not allowed.\n\n"
 							logDate = new Date()
 							trainingInstance.message = "${trainingInstance.message}----------------------------"
-							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
-							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+							trainingInstance.message = "${trainingInstance.message}------------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
 							trainingInstance.message = "${trainingInstance.message}-----------------------------"
 							trainingInstance.message = "------\n\n${mailStr}"
 							trainingInstance = trainingInstance.merge()
@@ -1739,9 +1739,9 @@ class TrainingController {
 							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided protein file\n${trainingInstance.protein_ftp_link}\nis suspected to contain DNA instead of protein sequences.\n\n"
 							logDate = new Date()
 							trainingInstance.message = "${trainingInstance.message}----------------------------"
-							trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+							trainingInstance.message = "${trainingInstance.message}------------------\n${logDate}"
 							trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
-							trainingInstance.message = "${trainingInstance.message}-----------------------------"
+							trainingInstance.message = "${trainingInstance.message}------------------------------"
 							trainingInstance.message = "------\n\n${mailStr}"
 							trainingInstance = trainingInstance.merge()
 							trainingInstance.save()
@@ -1768,8 +1768,8 @@ class TrainingController {
 						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the protein file size was with ${protein_size} bigger than 1 GB.\nPlease submitt a smaller protein size!\n\n"
 						logDate = new Date()
 						trainingInstance.message = "${trainingInstance.message}----------------------------"
-						trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
-						trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
+						trainingInstance.message = "${trainingInstance.message}------------------\n${logDate}"
+						trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
 						trainingInstance.message = "${trainingInstance.message}-----------------------------"
 						trainingInstance.message = "------\n\n${mailStr}"
 						trainingInstance = trainingInstance.merge()
@@ -1796,10 +1796,10 @@ class TrainingController {
 						logAbort()
 						mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name}\nwas aborted because the provided protein file\n${trainingInstance.protein_ftp_link}\nis not in fasta format.\n\n"
 						logDate = new Date()
-						trainingInstance.message = "${trainingInstance.message}----------------------------"
+						trainingInstance.message = "${trainingInstance.message}-----------------------------"
 						trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
 						trainingInstance.message = "${trainingInstance.message} - Error Message:\n----------"
-						trainingInstance.message = "${trainingInstance.message}-----------------------------"
+						trainingInstance.message = "${trainingInstance.message}------------------------------"
 						trainingInstance.message = "------\n\n${mailStr}"
 						trainingInstance = trainingInstance.merge()
 						trainingInstance.save()
@@ -1863,7 +1863,7 @@ class TrainingController {
 				if((!(trainingInstance.genome_ftp_link == null)) || (!(trainingInstance.protein_ftp_link == null)) || (!(trainingInstance.est_ftp_link == null))){
 					mailStr = "We have retrieved all files that you specified, successfully. You may delete\nthem from the public server, now, without affecting the AUGUSTUS training job.\n\n"
 					logDate = new Date()
-					trainingInstance.message = "${trainingInstance.message}---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
+					trainingInstance.message = "${trainingInstance.message}----------------------------------------\n${logDate} - Message:\n----------------------------------------\n\n${mailStr}"
 					trainingInstance = trainingInstance.merge()
 					trainingInstance.save()
 					if(trainingInstance.email_adress != null){
@@ -1918,7 +1918,7 @@ class TrainingController {
 					mailStr = "You submitted job ${trainingInstance.accession_id}.\nThe job was aborted because the files that you submitted were submitted, before.\n\n"
 					trainingInstance.old_url = "${war_url}training/show/${oldID}"
 					logDate = new Date()
-					trainingInstance.message = "${trainingInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}"
+					trainingInstance.message = "${trainingInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 					trainingInstance = trainingInstance.merge()
 					trainingInstance.save()
 					if(trainingInstance.email_adress != null){
@@ -2086,11 +2086,17 @@ class TrainingController {
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/AutoAug.log").exists()){
 					logDate = new Date()
 					logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/AutoAug.log does exist and is linked.\n"
-					trainingInstance.results_urls = "<p><b>Log-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.log\">AutoAug.log</a><br></p>"
+					if(trainingInstance.results_urls == null){
+						trainingInstance.results_urls = "<p><b>Log-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.log\">AutoAug.log</a><br></p>"
+					}else{
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Log-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.log\">AutoAug.log</a><br></p>"
+					}
 				}else{
 					logDate = new Date()
 					logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/AutoAug.log is missing!\n"
 				}
+				trainingInstance = trainingInstance.merge()
+				trainingInstance.save()
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/AutoAug.err").exists()){
 					if(trainingInstance.results_urls == null){
 						trainingInstance.results_urls = "<p><b>Error-file/b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.err\">AutoAug.err</a><br></p>"
@@ -2099,11 +2105,13 @@ class TrainingController {
 					}
 					logDate = new Date()
 					logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/AutoAug.err does exist and is linked.\n"
-					trainingInstance.results_urls = "<p><b>Log-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.err\">AutoAug.err</a><br></p>"
+					trainingInstance.results_urls = "<p><b>Error-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.err\">AutoAug.err</a><br></p>"
 				}else{
 					logDate = new Date()
 					logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/AutoAug.err is missing!\n"
 				}
+				trainingInstance = trainingInstance.merge()
+				trainingInstance.save()
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/parameters.tar.gz").exists()){
 					logDate = new Date()
 					logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/parameters.tar.gz does exist and is linked.\n"
@@ -2189,7 +2197,7 @@ class TrainingController {
 
 					mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} finished.\n\n"
 					logDate = new Date()
-					trainingInstance.message = "${trainingInstance.message}---------------------------------------\n${logDate} - Message:\n---------------------------------------\n\n${mailStr}"
+					trainingInstance.message = "${trainingInstance.message}----------------------------------------\n${logDate} - Message:\n----------------------------------------\n\n${mailStr}"
 					trainingInstance = trainingInstance.merge()
 					trainingInstance.save()
 					if(trainingInstance.email_adress == null){
@@ -2358,7 +2366,7 @@ class TrainingController {
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job error status is ${trainingInstance.job_error} after all errors have been checked.\n"
 					mailStr = "An error occured while running the AUGUSTUS training job ${trainingInstance.accession_id}.\n\n Please check the log-files carefully before proceeding to work with the produced results.\nPlease contact augustus-web@uni-greifswald.de in case you are in doubt about the results.\n\n"
 					logDate = new Date()
-					trainingInstance.message = "${trainingInstance.message}---------------------------------------------\n${logDate} - Error Message:\n---------------------------------------------\n\n${mailStr}Please contact augustus-web@uni-greifswald.de if you want to find out what went wrong.\n\n"
+					trainingInstance.message = "${trainingInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}Please contact augustus-web@uni-greifswald.de if you want to find out what went wrong.\n\n"
 					trainingInstance = trainingInstance.merge()
 					trainingInstance.save()
 					if(trainingInstance.email_adress == null){
