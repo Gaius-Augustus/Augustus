@@ -2087,7 +2087,7 @@ class TrainingController {
 					logDate = new Date()
 					logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/AutoAug.log does exist and is linked.\n"
 					if(trainingInstance.results_urls == null){
-						trainingInstance.results_urls = "<p><b>Log-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.log\">AutoAug.log</a><br></p>"
+						trainingInstance.results_urls = "<p><b>Log-file/b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.log\">AutoAug.log</a><br></p>"
 					}else{
 						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Log-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/AutoAug.log\">AutoAug.log</a><br></p>"
 					}
