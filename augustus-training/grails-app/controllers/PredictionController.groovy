@@ -551,6 +551,10 @@ class PredictionController {
 				predictionInstance.project_id = "heliconius_melpomene1"
 			}else if(predictionInstance.species_select == "Bombus terrestris (animal)"){
 				predictionInstance.project_id = "bombus_terrestris2"
+			}else if(predictionInstance.species_select == "Rhodnius prolixus (animal)"){
+				predictionInstance.project_id = "rhodnium"
+			}else if(predictionInstance.species_select == "Conidiobolus coronatus (fungus)"){
+				predictionInstance.project_id = "Conidiobolus_coronatus"
 			}
 			if(predictionInstance.project_id != null && predictionInstance.species_select != "null"){
 				species = predictionInstance.project_id
