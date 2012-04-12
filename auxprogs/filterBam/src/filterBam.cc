@@ -207,10 +207,9 @@ int main(int argc, char *argv[])
 			  {
 				qNameStem = qName.substr(0, qName.find("/"));
 				qSuffix = qName.substr(qName.find("/")+1, qName.length());	
-			  } else if (qName.find("-"))
-			  {
-				qNameStem = qName.substr(0, qName.find("-"));
-				qSuffix = qName.substr(qName.find("-")+1, qName.length());	
+			  } else if (qName.find("-")) {
+		   		    qNameStem = qName.substr(0, qName.find_last_of("-"));
+					qSuffix = qName.substr(qName.find_last_of("-")+1, qName.length());	
 			  }
 		  } 
 
