@@ -1,3 +1,15 @@
+List of changes from version 2.5.5 to 2.6 (until April 12th, 2012)
+     - new species bombus_terrestris, rhodnium, Conidiobolus_coronatus
+     - new auxiliary programs filterBam, bam2hints
+     - update to species tomato
+     - option --mea=1 to maximize expected accuracy instead of using Viterbi algorithm
+     - new option --contentmodels=off that neutralizes all models except signal models
+       (to analyse SNP influence on gene structure)
+     - new parameter --min_intron_len for species with shorter introns than the default 39bp
+     - added scripts wigchoose.pl, filterShrimp.pl
+     - updated RNA-Seq documentation readme.rnaseq.html
+     - bugfixes (in augustus, autoAugPred.pl, maskNregions.pl, optimize_augustus.pl, filterPSL.pl,
+       intron2exex.pl
 List of changes from version 2.5 to 2.5.5 (until March 2nd, 2011)
      - added a tutorial
      - bugfixes, in particular one that caused a crash on Mac OS

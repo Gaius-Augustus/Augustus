@@ -8,6 +8,8 @@ Michael Deyholos <deyholos@ualberta.ca>
 "Hideaki Sugawara" <hsugawar2010@gmail.com>
 "Mr Akira Ohyama" <akr@insilicobiology.co.jp>
 "BGI automatic annotation pipeline" <liugeng@genomics.cn>
+Olivier Arnaiz <arnaiz@cgm.cnrs-gif.fr>
+
 
 try performance of noInFrameStop=true
 
