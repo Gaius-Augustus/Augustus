@@ -2084,13 +2084,13 @@ class TrainingController {
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job status is ${trainingInstance.job_status} when job leaves SGE.\n"
 				// collect results link information
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/AutoAug.log").exists()){
-					logDate = new Date()
-					logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/AutoAug.log does exist and is linked.\n"
 					if(trainingInstance.results_urls == null){
-						trainingInstance.results_urls = "<p><b>Log-file/b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.log\">AutoAug.log</a><br></p>"
+						trainingInstance.results_urls = "<p><b>Log-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.log\">AutoAug.log</a><br></p>"
 					}else{
 						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Log-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/AutoAug.log\">AutoAug.log</a><br></p>"
 					}
+					logDate = new Date()
+					logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/AutoAug.log does exist and is linked.\n"
 				}else{
 					logDate = new Date()
 					logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/AutoAug.log is missing!\n"
@@ -2099,13 +2099,12 @@ class TrainingController {
 				trainingInstance.save()
 				if(new File("${web_output_dir}/${trainingInstance.accession_id}/AutoAug.err").exists()){
 					if(trainingInstance.results_urls == null){
-						trainingInstance.results_urls = "<p><b>Error-file/b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.err\">AutoAug.err</a><br></p>"
+						trainingInstance.results_urls = "<p><b>Error-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.err\">AutoAug.err</a><br></p>"
 					}else{
 						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>Error-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}/${trainingInstance.accession_id}/AutoAug.err\">AutoAug.err</a><br></p>"
 					}
 					logDate = new Date()
 					logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/AutoAug.err does exist and is linked.\n"
-					trainingInstance.results_urls = "<p><b>Error-file</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/AutoAug.err\">AutoAug.err</a><br></p>"
 				}else{
 					logDate = new Date()
 					logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/AutoAug.err is missing!\n"
