@@ -35,7 +35,7 @@
 #include "filterBam.h"
  
 struct optionalCounters_t { 
-  int outaired;
+  int outPaired;
   int outUniq;
   int outBest;
 }; 
