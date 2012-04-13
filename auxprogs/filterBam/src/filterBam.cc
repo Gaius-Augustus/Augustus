@@ -253,10 +253,10 @@ int main(int argc, char *argv[])
 				cerr << "3) In the case of samtools, the command is the following: \n" <<
 				  "   'samtools sort [-n] file.bam' \n" <<  
 				  "   [-n] should sort by query name, just as 'sort -k 10,10' would do in a PSL file." << endl;
-				cerr << "  Without options, the sorting will be done by reference name and target coordinate," << endl;  	
-				cerr << "  just as a 'sort -n -k 16,16 | sort -k 14,14' would do with PSL." << endl;  	
-				cerr << "  For more information check the man page included in samtools distribution." << endl;  			cerr << "4) bamtools can also sort bam files 'bamtools sort -queryname -in file.bam'," << endl;	
-				cerr << " but only provides the option to do it by queryname." << endl;	
+				cerr << "   Without options, the sorting will be done by reference name and target coordinate," << endl;  	
+				cerr << "   just as a 'sort -n -k 16,16 | sort -k 14,14' would do with PSL." << endl;  	
+				cerr << "   For more information check the man page included in samtools distribution." << endl;  			cerr << "4) bamtools can also sort bam files 'bamtools sort -queryname -in file.bam'," << endl;	
+				cerr << "   but only provides the option to do it by queryname." << endl;	
 
 				exit(1);
 			  }	
