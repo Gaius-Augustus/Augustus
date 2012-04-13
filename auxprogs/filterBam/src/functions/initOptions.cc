@@ -94,10 +94,16 @@ void displayUsage(int argc, char *argv[])
 	cout <<  " File must be sorted lexicographically by 'queryname', with e.g.\n" << 
 	  		 "\n  1) sort -k 1,1 [be aware: 'export LC_ALL=C' might be used " << 
 	  		 " because sort ignores characters like ':' \n" << 
-	  		 " Note: bear in mind that this will require converting your BAM file\n" << 
-	  		 " into SAM" << 
+	  		 "      Note: bear in mind that this will require converting your BAM file into SAM.\n" << 
 	  		 "\n  2) samtools and bamtools provide facilities to do the sorting,\n" <<
-	  		 "      but they are not guaranteed to work because of the problem mentioned above.\n" << endl;
+	  		 "      but they are not guaranteed to work because of the problem mentioned above.\n" << 
+			 "\n  3) In the case of samtools, the command is: 'samtools sort [-n] file.bam'\n" <<  
+			 "      [-n] should sort by query name, just as 'sort -k 10,10' would do in a PSL file.\n" << 
+			 "      Without options, the sorting will be done by reference name and target coordinate,\n" <<   	
+			 "      just as a 'sort -n -k 16,16 | sort -k 14,14' would do with PSL.\n" <<   	
+	  		 "      For more information check the man page included in samtools distribution.\n" <<   
+			 "\n  4) bamtools can also sort bam files 'bamtools sort -queryname -in file.bam'," <<	
+			 "\n      but only provides the option to do it by queryname." << endl;	
   	cout <<  "--------------------------------------------------" << endl;
 	cout <<  " PREREQUISITE: (Paired alignments only)       " << endl; 
 	cout <<  "\n If option 'paired'is used, then alignment names must include suffixes /1,/2 or /f, /r" <<endl;

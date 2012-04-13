@@ -202,15 +202,21 @@ int main(int argc, char *argv[])
 
 		if (paired)
 		  {	
+			if (verbose) {cout << "qName=" << qName << endl;}
 			// Taking out suffix: {f,r} or {1,2}
-			if (qName.find("/"))
+			if (qName.find("/") != -1)
 			  {
 				qNameStem = qName.substr(0, qName.find("/"));
 				qSuffix = qName.substr(qName.find("/")+1, qName.length());	
-			  } else if (qName.find("-")) {
-		   		    qNameStem = qName.substr(0, qName.find_last_of("-"));
-					qSuffix = qName.substr(qName.find_last_of("-")+1, qName.length());	
-			  }
+			  } else {
+					if (qName.find_last_of("-") != -1) 
+						{
+				  		  if (verbose) {cout << "Found slash as indicator of pairedness" << endl;}
+		   		    	  qNameStem = qName.substr(0, qName.find_last_of("-"));
+						  qSuffix = qName.substr(qName.find_last_of("-")+1, qName.length());	
+						  if (verbose) {cout << "qNameStem=" << qNameStem << " and qSuffix=" << qSuffix << endl;}
+			  			}
+			  } 
 		  } 
 
 		// Filter for data whose Reference seq ID is not defined; i.e. RNAME= * in SAM format;
@@ -244,6 +250,14 @@ int main(int argc, char *argv[])
 					 << "   Convert back again into BAM format, with e.g. 'samtools' software. " << endl;
 				cerr << "2) Sort BAM file directly with your preferred software package, " << 
 				  		"   e.g. 'samtools' or 'bamtools' " << endl;  	
+				cerr << "3) In the case of samtools, the command is the following: \n" <<
+				  "   'samtools sort [-n] file.bam' \n" <<  
+				  "    [-n] should sort by query name, just as 'sort -k 10,10' would do in a PSL file." << endl;
+				cerr << "Without options, the sorting will be done by reference name and target coordinate," << endl;  	
+				cerr << "just as a 'sort -n -k 16,16 | sort -k 14,14' would do with PSL." << endl;  	
+				cerr << "For more information check the man page included in samtools distribution." << endl;  					cerr << "4) bamtools can also sort bam files 'bamtools sort -queryname -in file.bam'," << endl;	
+				cerr << "but only provides the option to do it by queryname." << endl;	
+
 				exit(1);
 			  }	
 
