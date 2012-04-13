@@ -246,17 +246,17 @@ int main(int argc, char *argv[])
 				cerr << "Do either of the following: " << endl;
 				cerr << "1) Convert the file into SAM with e.g. the 'bamtools' software. \n" << 
 				  "   Then sort lexicographically by queryname, i.e. use the command" << endl;
-				cerr << "'export LC_ALL=C' and then 'sort -k 1,1'\n" 
+				cerr << "   'export LC_ALL=C' and then 'sort -k 1,1'\n" 
 					 << "   Convert back again into BAM format, with e.g. 'samtools' software. " << endl;
 				cerr << "2) Sort BAM file directly with your preferred software package, " << 
 				  		"   e.g. 'samtools' or 'bamtools' " << endl;  	
 				cerr << "3) In the case of samtools, the command is the following: \n" <<
 				  "   'samtools sort [-n] file.bam' \n" <<  
 				  "    [-n] should sort by query name, just as 'sort -k 10,10' would do in a PSL file." << endl;
-				cerr << "Without options, the sorting will be done by reference name and target coordinate," << endl;  	
-				cerr << "just as a 'sort -n -k 16,16 | sort -k 14,14' would do with PSL." << endl;  	
-				cerr << "For more information check the man page included in samtools distribution." << endl;  					cerr << "4) bamtools can also sort bam files 'bamtools sort -queryname -in file.bam'," << endl;	
-				cerr << "but only provides the option to do it by queryname." << endl;	
+				cerr << "     Without options, the sorting will be done by reference name and target coordinate," << endl;  	
+				cerr << "     just as a 'sort -n -k 16,16 | sort -k 14,14' would do with PSL." << endl;  	
+				cerr << "     For more information check the man page included in samtools distribution." << endl;  			cerr << "4) bamtools can also sort bam files 'bamtools sort -queryname -in file.bam'," << endl;	
+				cerr << "     but only provides the option to do it by queryname." << endl;	
 
 				exit(1);
 			  }	
