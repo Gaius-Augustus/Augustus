@@ -35,7 +35,7 @@
 #include "filterBam.h"
  
 struct optionalCounters_t { 
-  int outPaired;
+  int outaired;
   int outUniq;
   int outBest;
 }; 
@@ -241,7 +241,7 @@ int main(int argc, char *argv[])
 			// Checking whether file is sorted by query name
 			if (line <= maxSortesTest && qNameStems[qNameStem])   
 			  {
-				cerr << "Input file not sorted by query name!\n" << qNameStem.c_str() << 
+				cerr << "\nInput file not sorted by query name!\n" << qNameStem.c_str() << 
 				  " occurred previously. " << endl;
 				cerr << "Do either of the following: " << endl;
 				cerr << "1) Convert the file into SAM with e.g. the 'bamtools' software. \n" << 
