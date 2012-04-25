@@ -13,7 +13,9 @@
 
 
 #include "../include/phylotree.hh"
+#include "orthoexon.hh"
 #include "parser/parser.h"
+#include "properties.hh"
 #include <queue>
 #include <cmath>
 #include <iostream>
@@ -36,27 +38,15 @@ void Treenode::printNode() const {
   }
 }
 
-double Treenode::calculateAlphaScore(bool label){
+double Treenode::calculateAlphaScore(bool label, ExonEvoModel &evo){
   
   double alpha_score = 1.0;
   for(list<Treenode*>::iterator it = this->children.begin(); it != this->children.end(); it++){
 
-    alpha_score*=((P(label, 0, (*it)->dist_to_parent)*(*it)->alpha.at(0)) + (P(label, 1, (*it)->dist_to_parent)*(*it)->alpha.at(1)));
+    alpha_score*=((evo.P(label, 0, (*it)->dist_to_parent)*(*it)->alpha.at(0)) + (evo.P(label, 1, (*it)->dist_to_parent)*(*it)->alpha.at(1)));
   }
   return alpha_score;
 
-}
-
-double P(bool label1, bool label2, double dist){  //the substitution model: Neyman-two-state model
-
-  const double mu = 2; //TODO: command-line parameter
-
-  if(label1 == label2){
-    return (0.5)*(1+exp(-mu*dist));
-  }
-  else{
-    return (0.5)*(1-exp(-mu*dist));
-  }
 }
 
 void PhyloTree::printTree() const {
@@ -65,13 +55,22 @@ void PhyloTree::printTree() const {
   }
 }
 
+size_t PhyloTree::getVectorPositionSpecies(string name) {
+  for(size_t pos=0; pos < species.size(); pos++){
+    if (species.at(pos) == name){
+      return pos;
+    }
+  }
+  return species.size();
+}
+
 PhyloTree::PhyloTree(string filename){
 
   filebuf fb;
   fb.open(filename.c_str(),ios::in);
   if (fb.is_open()){
     istream istrm(&fb);
-    Parser parser(&treenodes, istrm);  //define an object of the Parser class
+    Parser parser(&treenodes, &species, istrm);  //define an object of the Parser class
 #ifndef DEBUG
     parser.setDebug(false);
 #endif
@@ -83,10 +82,12 @@ PhyloTree::PhyloTree(string filename){
 }
 
 PhyloTree::~PhyloTree(){
-  for(list<Treenode*>::iterator it = treenodes.begin(); it != treenodes.end(); it++){
+   for(list<Treenode*>::iterator it = treenodes.begin(); it != treenodes.end(); it++){
     delete *it;
-  }
+   }
 }
+
+
 
 void PhyloTree::printWithGraphviz(string filename) const {
 
@@ -125,7 +126,7 @@ void PhyloTree::printWithGraphviz(string filename) const {
   file.close();
 }
 
-double PhyloTree::pruningAlgor(const OrthoExon &orthoex,const OrthoGraph &orthograph){
+double PhyloTree::pruningAlgor(const OrthoExon &orthoex, const OrthoGraph &orthograph){
 
   double tree_score;
   string key = orthoex.getKey(orthograph);
@@ -139,19 +140,19 @@ double PhyloTree::pruningAlgor(const OrthoExon &orthoex,const OrthoGraph &orthog
 	/*
 	 * initialization
 	*/
-	if(key.at(OrthoExon::getVectorPositionSpecies((*it)->species)) == '2'){     // no Exon present -> sum over all possible labels (0,1)
-	  cout<<(*it)->species<<"\t"<<(OrthoExon::getVectorPositionSpecies((*it)->species))<<"\t"<<"NULL"<<endl;
+	if(key.at(getVectorPositionSpecies((*it)->species)) == '2'){     // no Exon present -> sum over all possible labels (0,1)
+	  cout<<(*it)->species<<"\t"<<(getVectorPositionSpecies((*it)->species))<<"\t"<<"NULL"<<endl;
 	  (*it)->alpha.at(0) = 1; 
 	  (*it)->alpha.at(1) = 1;
 	}
 	else{
-	  if(key.at(OrthoExon::getVectorPositionSpecies((*it)->species)) == '1'){   // Exon present and also part of the path
-	    cout<<(*it)->species<<"\t"<<(OrthoExon::getVectorPositionSpecies((*it)->species))<<"\t"<<"1"<<endl;
+	  if(key.at(getVectorPositionSpecies((*it)->species)) == '1'){   // Exon present and also part of the path
+	    cout<<(*it)->species<<"\t"<<(getVectorPositionSpecies((*it)->species))<<"\t"<<"1"<<endl;
 	    (*it)->alpha.at(0) = 0; 
 	    (*it)->alpha.at(1) = 1;
 	  }
-	  if(key.at(OrthoExon::getVectorPositionSpecies((*it)->species)) == '0'){   // Exon present, but not part of the path
-	    cout<<(*it)->species<<"\t"<<(OrthoExon::getVectorPositionSpecies((*it)->species))<<"\t"<<"0"<<endl;
+	  if(key.at(getVectorPositionSpecies((*it)->species)) == '0'){   // Exon present, but not part of the path
+	    cout<<(*it)->species<<"\t"<<(getVectorPositionSpecies((*it)->species))<<"\t"<<"0"<<endl;
 	    (*it)->alpha.at(0) = 1; 
 	    (*it)->alpha.at(1) = 0;
 	  }
@@ -161,17 +162,17 @@ double PhyloTree::pruningAlgor(const OrthoExon &orthoex,const OrthoGraph &orthog
 	computation of the alpha values for the interior nodes
        */
       else{
-	(*it)->alpha.at(0) = (*it)->calculateAlphaScore(0);
-	(*it)->alpha.at(1) = (*it)->calculateAlphaScore(1);
+	(*it)->alpha.at(0) = (*it)->calculateAlphaScore(0, this->evo);
+	(*it)->alpha.at(1) = (*it)->calculateAlphaScore(1, this->evo);
       }
     }
     /*
       computation of the overall tree score
      */
-    tree_score  = ( 0.5*(this->treenodes.back()->alpha.at(0) + this->treenodes.back()->alpha.at(1)) ); //equilibrium frequencies: (0.5, 0.5)
+    tree_score  = ( this->evo.getEquilibriumFreq(0) * this->treenodes.back()->alpha.at(0) ) + ( this->evo.getEquilibriumFreq(1) * this->treenodes.back()->alpha.at(1) );
     cache::addToHash(key, tree_score);
 
-    // #ifdef DEBUG
+#ifdef DEBUG
   cout<<"#####################################################################\n";
   cout<<"# tableau Prunning Alogrithm\n";
   cout<<"#####################################################################\n";
@@ -180,7 +181,51 @@ double PhyloTree::pruningAlgor(const OrthoExon &orthoex,const OrthoGraph &orthog
      cout<<(*it)->species<<"\t\t"<<(*it)->alpha.at(0)<<"\t\t"<<(*it)->alpha.at(1)<<"\n";
     }
     cout<<"#####################################################################\n";
-    //#endif
+#endif
   }
   return tree_score;
+}
+
+ExonEvoModel::ExonEvoModel(){
+  
+  try {
+    mu  = Properties::getdoubleProperty("/CompPred/exon_loss");
+  } catch (...) {
+    mu  = 2.0;
+  }
+  try {
+    lambda = Properties::getdoubleProperty("/CompPred/exon_gain");
+  } catch (...) {
+    lambda = 2.0;
+  }
+  if(mu <= 0.0 || lambda <= 0.0){
+    throw ProjectError("the rates for exon loss/gain have to be positive");
+  }
+}
+
+double ExonEvoModel::P(bool label1, bool label2, double dist) const {  //the substitution model
+
+  if(label1 == false && label2 == true){ // P(0 -> 1)
+    return (lambda / (lambda + mu)) * (1 - exp(-(mu + lambda) * dist));
+  }
+  else if(label1 == true && label2 == false){ // P(1 -> 0)
+    return (mu / (lambda + mu)) * (1 - exp(-(mu + lambda) * dist));
+  }
+  else if(label1 == false && label2 == false){ // P(0 -> 0)
+    return (1 - (lambda / (lambda + mu)) * (1 - exp(-(mu + lambda) * dist)));
+  }
+  else{ // P(1 -> 1)
+    return  (1 - (mu / (lambda + mu)) * (1 - exp(-(mu + lambda) * dist)));
+  }
+    
+}
+
+double ExonEvoModel::getEquilibriumFreq(bool label) const {
+
+  if(label == 1){
+    return (lambda / (lambda + mu));
+  }
+  else{
+    return (mu / (lambda + mu));
+  }  
 }

@@ -7,17 +7,18 @@ public:
   ~MEApath(){}
 
   void findMEApath();
-  void findMEApath7();
+  double findMEApath7();
   void getTopologicalOrdering();
   void dfs(Node *n);
   void relax();
   void backtracking();
+  void updateLabels();
   inline list<Node*> getPath(){
     return meaPath;
   }
 private:
   AugustusGraph *graph;
-  vector<Node*> topSort;
+  vector<Node*> topSort;  // reverse topological ordering of nodelist starting with tail
   map<string,Node*> processed;
   list<Node*> meaPath;
 };

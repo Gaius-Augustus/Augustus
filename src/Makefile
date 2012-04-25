@@ -524,12 +524,7 @@ exoncand.o : \
 
 compgenepred.o : \
 	../include/compgenepred.hh \
-	../include/randseqaccess.hh \
-	../include/namgene.hh \
-	../include/statemodel.hh \
-	../include/orthoexon.hh \
-	../include/extrinsicinfo.hh \
-	../include/mea.hh \
+	../include/orthograph.hh \
        compgenepred.cc
 
 randseqaccess.o : \
@@ -545,7 +540,9 @@ orthoexon.o : \
 
 orthograph.o : \
 	../include/orthograph.hh \
-	../include/orthoexon.hh \
+	../include/meaPath.hh \
+	../include/mea.hh \
+	../include/namgene.hh \
 	orthograph.cc
 
 parse.o: parser/parse.cc parser/parser.ih
@@ -554,7 +551,7 @@ parse.o: parser/parse.cc parser/parser.ih
 lex.o: scanner/lex.cc scanner/scanner.ih
 	$(CC) -std=c++0x -c -o $@ scanner/lex.cc $(INCLS)
 
-phylotree.o: phylotree.cc ../include/phylotree.hh parser/parser.h
+phylotree.o: phylotree.cc ../include/phylotree.hh parser/parser.h ../include/orthoexon.hh ../include/properties.hh
 	$(CC) -std=c++0x -c -o $@ $< $(INCLS)
 
 #    1) signed-unsigned comparisons are needed because the methods

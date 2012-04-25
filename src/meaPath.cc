@@ -33,6 +33,7 @@ void MEApath::findMEApath(){
 }
 
 /*
+
  * deapth first search
  */
 
@@ -66,7 +67,11 @@ void MEApath::relax(){
 	}
       }    
     }
-    if(nothingChanged) 
+    /*
+     * @MultSpeciesMode: in this mode, no backedges are added, the graph is truly acyclic. 
+     * It is, therefore, sufficient to relax each node exactly one time.
+     */
+    if(nothingChanged || Constant::MultSpeciesMode)
       continueRelax = false;
   }
 
@@ -88,25 +93,35 @@ void MEApath::getTopologicalOrdering(){
 void MEApath::backtracking(){
 
   Node *pos = topSort[0];
-  meaPath.push_front(pos);
-  pos->label = 1;  
+  meaPath.push_front(pos);  
   while(pos->pred != NULL){
     meaPath.push_front(pos->pred);
+    pos = pos->pred;
+  }
+}
+
+void MEApath::updateLabels(){
+
+  Node *pos = topSort[0];
+  pos->label = 1;  
+  while(pos->pred != NULL){
     pos->pred->label = 1; 
     pos = pos->pred;
   }
 }
 
 
-void MEApath::findMEApath7(){
+double MEApath::findMEApath7(){
 
   getTopologicalOrdering();
 
-  relax(); 
-  
-  //backtracking
-  backtracking();
+  relax();
+
+  updateLabels();
 
   graph->printGraph7("graph.dot");
 
+  return topSort[0]->score;
+
 }
+

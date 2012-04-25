@@ -40,7 +40,7 @@ AnnoSequence* MemSeqAccess::getSeq(string speciesname, string chrName, int start
   map<string,char*>::iterator it = sequences.find(key);
   if(it != sequences.end()){
     annoseq = new AnnoSequence();
-    annoseq->seqname = newstrcpy(key);
+    annoseq->seqname = newstrcpy(chrName);
     annoseq->sequence = newstrcpy(it->second + start, end - start + 1);
     annoseq->length = end-start+1;
     annoseq->offset = start;

@@ -27,9 +27,9 @@ void Graph::buildGraph(){
   for(int i=0; i<max-min+1; i++)
     neutralLine.push_back(NULL);
   
-  head = new Node(-1,-1);
+  head = new Node(-1,-1, 0.0, NULL, IR);
   nodelist.push_back(head);
-  tail = new Node(max+1,max+1);
+  tail = new Node(max+1,max+1, 0.0, NULL, IR);
   nodelist.push_back(tail);
 
   calculateBaseScores();
@@ -120,7 +120,7 @@ Node* Graph::addExon(Status *exon, vector<Node*> &neutralLine){
     if(exonAtGeneStart(exon)){
       // include edge from neutral line to exon
 
-      Node *neut = new Node(ex->begin, ex->begin);
+      Node *neut = new Node(ex->begin, ex->begin, 0.0, NULL, IR);
       Edge intron(ex, false);
       if(!alreadyProcessed(neut)){	
 	neutralLine[ex->begin-min] = neut;
@@ -136,7 +136,7 @@ Node* Graph::addExon(Status *exon, vector<Node*> &neutralLine){
     if(exonAtGeneEnd(exon)){
 	// include edge from exon to neutral line      
 
-      Node *neut = new Node(ex->end, ex->end);
+      Node *neut = new Node(ex->end, ex->end, 0.0, NULL, IR);
       if(!alreadyProcessed(neut)){
 	neutralLine[ex->end-min] = neut;
 	Edge intron(neut, false);
@@ -310,7 +310,7 @@ void Graph::printGraphToShell(){
 for(list<Node*>::iterator node = nodelist.begin(); node != nodelist.end(); node++){
   cout<<"-------------------------------------------------------"<<endl<<setw(10)<<"Node:"<<setw(10)<<(*node)->begin<<setw(10)<<(*node)->end<<setw(10)<<(*node)->score;
     if((*node)->item == NULL)
-      cout<<setw(10)<<"neutral";
+      cout<<setw(10)<<neutralTypeIdentifiers[(*node)->n_type];
     for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
       cout<<endl<<setw(10)<<"----->"<<setw(10)<<edge->to->begin<<setw(10)<<edge->to->end<<setw(10)<<edge->to->score;
       if(edge->neutral)
@@ -384,7 +384,7 @@ bool AugustusGraph::exonAtCodingEnd(Node *st){
 string AugustusGraph::getKey(Node *n){
 
   if(n->item == NULL)
-    return (itoa(n->begin) + ":neutral");
+    return (itoa(n->begin) +  ":" + neutralTypeIdentifiers[n->n_type]);
   else
     return (itoa(n->begin) + ":" + itoa(n->end) + ":" + itoa( (int)((State*)n->item)->type )); 
 }
@@ -737,15 +737,27 @@ builds Graph with seven neutral lines representing
 * the plus strand (3 neutral lines for each coding frame)
 * and the minus strand (3 neutral lines for each coding frame)
 */
-void Graph::buildGraph(list<Status> &additionalExons){
 
-#ifdef DEBUG
-  cout<<"*****entering buildGraph7()******"<<endl;
-#endif
+string neutralTypeIdentifiers[NUM_NEUTRAL_TYPES]=
+  {"IR", "plus0", "plus1", "plus2", "minus0", "minus1", "minus2"};
+
+void Graph::buildGraph(list<Status> &additionalExons){
 
   vector< vector<Node*> > neutralLines; //represents the seven neutral lines
   
   getSizeNeutralLine();
+
+  /*
+   * extend NeutralLine in case that additional Exons are out of range
+   */
+  if(!additionalExons.empty()){
+    for(list<Status>::iterator it=additionalExons.begin(); it!=additionalExons.end(); it++){
+      if(it->end > max)
+	max = it->end;	  
+      if(it->begin < min)
+	min = it->begin;	
+    }
+  }
 
   vector<Node*> intergenetic;   
   neutralLines.push_back(intergenetic);
@@ -768,9 +780,9 @@ void Graph::buildGraph(list<Status> &additionalExons){
     }
   }
 
-  head = new Node(-1,-1); // initialize nodelist of the graph with head and tail
+  head = new Node(-1,-1, 0.0, NULL, IR); // initialize nodelist of the graph with head and tail
   nodelist.push_back(head);
-  tail = new Node(max+1,max+1);
+  tail = new Node(max+1,max+1, 0.0, NULL, IR);
   nodelist.push_back(tail);
 
   calculateBaseScores();
@@ -788,7 +800,6 @@ void Graph::buildGraph(list<Status> &additionalExons){
     if(it->name == CDS){ // CDS -> CDS   or   CDS -> end
       gene_end = false;
       Node* e1 = addExon(&(*it), neutralLines, true);
-
       if(it->next != NULL){
 
 	if(it->next->name == intron && it->next->next == NULL){ //CDS -> intron -> end (transcript incomplete at the end)
@@ -825,6 +836,7 @@ void Graph::buildGraph(list<Status> &additionalExons){
 Node* Graph::addExon(Status *exon, vector< vector<Node*> > &neutralLines, bool sampled){
 
   if(!alreadyProcessed(exon)){
+    //cout << "exon: "<< exon->begin <<"-"<<exon->end<<"\ttype: " << ((State*)exon->item)->type<<"\t" <<((State*)exon->item)->frame() <<endl;
 
     double exon_score;
 
@@ -868,14 +880,46 @@ Node* Graph::addExon(Status *exon, vector< vector<Node*> > &neutralLines, bool s
     }
     return ex;
   }
-  return getNode(exon);
+  else{
+    return getNode(exon);
+  }
 }
 
 void Graph::addIntron(Node* exon1, Node* exon2, Status *intr){
 
+#ifdef DEBUG
+  //cout << "intron: "<< intr->begin <<"-"<<intr->end<<"\ttype: " << ((State*)intr->item)->type <<endl;
+#endif
+
   if( !edgeExists(exon1,exon2) ){
     Edge in(exon2, false, setScore(intr), intr->item);
     exon1->edges.push_back(in);  
+  }
+}
+
+void Graph::BFS(Node* node){
+
+  size_t number_nodes = 0;
+
+  list<Node *> queue;
+  map<string, Node*> marked;
+  queue.push_back(node);
+  marked[getKey(node)] = node;
+  while(!queue.empty()){
+    Node *next = queue.front();
+    number_nodes++;
+    queue.pop_front();
+    if (next->label == 1){
+      cout << next->begin << "\t" << next->end << endl;
+    }
+    else{
+      for (list<Edge>::iterator it = next->edges.begin(); it != next->edges.end(); it++){
+	if( marked[getKey(next)] == 0 ){
+	   marked[getKey(next)] = next;
+	   queue.push_back(node);	   
+	}
+      }
+    }
   }
 }
 
@@ -1011,37 +1055,11 @@ void AugustusGraph::printGraph7(string filename){
 	else if(it->to->pred == pos && it->to->label == 1 && pos->label == 1)
 	  file<<"color=blue,";
 
-	if( (pos == head || pos->n_type != unknown ) &&  it->to->n_type != unknown ){
-	  if(it->to->n_type==IR)
-	    file<<"label=IR];\n";
-	  if(it->to->n_type==plus0)
-	    file<<"label=plus0];\n";
-	  if(it->to->n_type==plus1)
-	    file<<"label=plus1];\n";
-	  if(it->to->n_type==plus2)
-	    file<<"label=plus2];\n";
-	  if(it->to->n_type==minus0)
-	    file<<"label=minus0];\n";
-	  if(it->to->n_type==minus1)
-	    file<<"label=minus1];\n";
-	  if(it->to->n_type==minus2)
-	    file<<"label=minus2];\n";
+	if( pos->n_type != NOT_NEUTRAL  &&  it->to->n_type != NOT_NEUTRAL ){
+	  file<<"label=" << neutralTypeIdentifiers[it->to->n_type] << "];\n";
 	}
-	else if( (it->to == tail || it->to->n_type != unknown ) &&  pos->n_type != unknown ){
-	  if(pos->n_type==IR)
-	    file<<"label=IR];\n";
-	  if(pos->n_type==plus0)
-	    file<<"label=plus0];\n";
-	  if(pos->n_type==plus1)
-	    file<<"label=plus1];\n";
-	  if(pos->n_type==plus2)
-	    file<<"label=plus2];\n";
-	  if(pos->n_type==minus0)
-	    file<<"label=minus0];\n";
-	  if(pos->n_type==minus1)
-	    file<<"label=minus1];\n";
-	  if(pos->n_type==minus2)
-	    file<<"label=minus2];\n";
+	else if( it->to->n_type != NOT_NEUTRAL &&  pos->n_type != NOT_NEUTRAL ){
+	  file<<"label=" << neutralTypeIdentifiers[pos->n_type] << "];\n";
 	}
 	else
 	  file<<"label="<<it->score<<"];\n";  
@@ -1051,3 +1069,4 @@ void AugustusGraph::printGraph7(string filename){
   file<<"}\n";
   file.close();
 }
+

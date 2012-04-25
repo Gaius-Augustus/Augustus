@@ -11,7 +11,12 @@
 using namespace std;
 
 enum Statename{type_unknown=-1, CDS, utr3, utr5, intron, utr3Intron, utr5Intron};
-enum Neutral_type{unknown=-1, IR, plus0, plus1, plus2, minus0, minus1, minus2};
+
+
+// types of neutral nodes:
+#define NUM_NEUTRAL_TYPES 8
+enum Neutral_type{NOT_NEUTRAL=-1, IR, plus0, plus1, plus2, minus0, minus1, minus2};
+extern string neutralTypeIdentifiers[NUM_NEUTRAL_TYPES];
 
 class Status;
 class Node;
@@ -42,7 +47,7 @@ public:
 
 class Node{
 public:
-  Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, Neutral_type t=unknown, Node *p=NULL, bool b=0):
+  Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, Neutral_type t=NOT_NEUTRAL, Node *p=NULL, bool b=0):
     begin(s),
     end(e),
     score(sc),
@@ -96,6 +101,8 @@ public:
  
   void buildGraph(); //needs to be called in constructor of derived class
   void buildGraph(list<Status> &additionalExons); // builds graph with seven neutral lines
+
+  void BFS(Node* node);
   
   // functions needed to build the graph
 protected:	

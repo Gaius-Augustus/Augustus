@@ -17,50 +17,74 @@
 #include <fstream>
 #include <iostream>
 
-vector<string> OrthoExon::species;
 
-size_t OrthoExon::getVectorPositionSpecies(string name) {
-  for(size_t pos=0; pos < species.size(); pos++){
-    if (species.at(pos) == name){
-      return pos;
+OrthoExon::OrthoExon(){
+  orthoex.resize(OrthoGraph::tree->species.size());
+}
+OrthoExon::~OrthoExon(){
+  for(size_t pos = 0; pos < orthoex.size(); pos++){
+    delete orthoex[pos];
+  }
+}
+//copy constructor
+OrthoExon::OrthoExon(const OrthoExon& other){
+  orthoex.resize(other.orthoex.size());
+  for(size_t pos = 0; pos < orthoex.size(); pos++){
+    if (other.orthoex[pos]){
+      orthoex[pos] = new State(*other.orthoex[pos]);
     }
   }
-  return species.size();
 }
 
-map< vector<string>, list<OrthoExon> > readOrthoExons(string filename){
+//copy with permutation of vector entries
+OrthoExon::OrthoExon(const OrthoExon& other, const vector<size_t> &permutation){
+  orthoex.resize(other.orthoex.size());
+  for(size_t pos = 0; pos < orthoex.size(); pos++){
+    if (other.orthoex[pos]){
+      orthoex[permutation[pos]] = new State(*other.orthoex[pos]);
+    }
+  }
+}
 
-  map< vector<string>, list<OrthoExon> > all_orthoex;
+list<OrthoExon> readOrthoExons(string filename){
+
+  list<OrthoExon> all_orthoex;
 
   ifstream istrm; 
   istrm.open(filename.c_str(), ifstream::in);
   if (istrm) {
     int nspecies;
+    string species;
+    vector<size_t> permutation;
     istrm >> goto_line_after( "[SPECIES]");
     istrm >> comment >> nspecies;
-    OrthoExon::species.resize(nspecies);
+    if (nspecies != OrthoGraph::tree->species.size()){
+      throw ProjectError("readOrthoExons: number of species in " + filename + 
+			 " is " + itoa(nspecies) + ". Number of species in treefile is " + itoa(OrthoGraph::tree->species.size()));
+    }
     istrm >> comment;
-    for (int i = 0; i < OrthoExon::species.size(); i++){
-      istrm >> OrthoExon::species[i];
+    for (int i = 0; i < nspecies; i++){
+      istrm >> species;
+      size_t pos = OrthoGraph::tree->getVectorPositionSpecies(species);
+      if (pos == OrthoGraph::tree->species.size()){
+	throw ProjectError("readOrthoExons: species name in " + filename + 
+			   " is not a species name in treefile.");
+      }
+      permutation.push_back(pos);
     }
     vector<string> chr(nspecies);
     while(istrm){
       istrm >> goto_line_after( "[CHR]") >> comment;
       for (int i = 0; i < nspecies; i++){
-	istrm >> chr[i];
-      }
-      map< vector<string>, list<OrthoExon> >::iterator it = all_orthoex.find(chr);
-      if (it == all_orthoex.end()){
-	list<OrthoExon> empty_list;
-	all_orthoex[chr] = empty_list;
-      }  
+	istrm >> chr[permutation[i]];
+      } 
       cout << endl;
       istrm >> goto_line_after( "[ORTHOEX]");
       istrm >> comment;
        while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
 	 OrthoExon ex_tuple;
 	 istrm >> ex_tuple;
-	 all_orthoex[chr].push_back(ex_tuple);
+	 all_orthoex.push_back(OrthoExon(ex_tuple, permutation));
        }
     } 
   }
@@ -70,24 +94,17 @@ map< vector<string>, list<OrthoExon> > readOrthoExons(string filename){
   return all_orthoex;
 }
 
-void writeOrthoExons(const map< vector<string>, list<OrthoExon> > &all_orthoex){
+void writeOrthoExons(const list<OrthoExon> &all_orthoex){
   cout << "# orthologous exons\n" << "#\n" <<"[SPECIES]\n" << "# number of species" << endl;
-  cout << OrthoExon::species.size() << endl;
+  cout << OrthoGraph::tree->species.size() << endl;
   cout << "# species names" << endl;
-  for (size_t i = 0; i < OrthoExon::species.size(); i++){
-    cout << OrthoExon::species[i] << "\t";
+  for (size_t i = 0; i < OrthoGraph::tree->species.size(); i++){
+    cout << OrthoGraph::tree->species[i] << "\t";
   }
   cout << endl;
-  for(map< vector<string>, list<OrthoExon> >::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
-    cout << "#[CHR]" << endl;
-    for (size_t i = 0; i < OrthoExon::species.size(); i++){
-      cout << it->first[i] << "\t";
-      }
-    cout << endl;
-    cout << "#[ORTHOEX]" << endl;
-    for(list<OrthoExon>::const_iterator ortho = it->second.begin(); ortho != it->second.end(); ortho++){
-      cout << *ortho << endl;
-    }
+  cout << "#[ORTHOEX]" << endl;
+  for(list<OrthoExon>::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
+    cout << *it << endl;
   }
 }
 
@@ -120,7 +137,7 @@ istream& operator>>(istream& istrm, OrthoExon& ex_tuple){
   int begin, length;
 
   istrm >> exontype;
-  for (int i = 0; i < OrthoExon::species.size(); i++){
+  for (int i = 0; i < OrthoGraph::tree->species.size(); i++){
     istrm >> begin >> length;
     if (begin != 0 && length != 0){
       State *state = new State(begin-1, begin+length-2, toStateType(exontype.c_str()));
@@ -151,7 +168,7 @@ string OrthoExon::getKey(const OrthoGraph &orthograph) const{
 	}
       }
       else
-	throw ProjectError("Error in OrthoExon::getKey: exon not in graph!");
+	throw ProjectError("Error in OrthoExon::getKey: exon " + orthograph.graphs.at(i)->getKey(this->orthoex.at(i)) +" not in graph!");
       }
   }
   return key;
@@ -174,4 +191,12 @@ double cache::getScore(string key){
 }
 void cache::incrementCounter(string key){
   labelscore[key].count++;
+}
+
+double cache::getOverallScore(){
+  double overall_score = 0;
+  for(map<string, Score>::iterator it = labelscore.begin(); it != labelscore.end(); it++){
+    overall_score += (it->second.treescore * it->second.count);
+  }
+  return overall_score;
 }

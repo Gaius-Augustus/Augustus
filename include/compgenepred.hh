@@ -1,3 +1,4 @@
+
 /**********************************************************************
  * file:    compgenepred.hh
  * licence: Artistic Licence, see file LICENCE.TXT or 
@@ -13,7 +14,6 @@
 // project includes
 #include "extrinsicinfo.hh"
 #include "randseqaccess.hh"
-
 
 class CompGenePred {
 public:

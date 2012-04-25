@@ -15,13 +15,15 @@
 #include <string>
 #include <vector>
 #include "graph.hh"
-#include "orthoexon.hh"
-#include "orthograph.hh"
+
 
 
 //forward declarations
 class Treenode;
 class PhyloTree;
+class OrthoGraph;
+class OrthoExon;
+class ExonEvoModel;
 
 
 class Treenode{
@@ -61,23 +63,38 @@ public:
   }
 
   void printNode() const;
-  double calculateAlphaScore(bool label);
+  double calculateAlphaScore(bool label, ExonEvoModel &evo);
 
   friend class PhyloTree;
   
 };
 
-double P(bool label1, bool label2, double dist);  //calculates probability of transition from label1 to label2 in time dist
+class ExonEvoModel{
+
+public:
+  ExonEvoModel();
+  ~ExonEvoModel() {}
+  double P(bool label1, bool label2, double dist) const;  //calculates probability of transition from label1 to label2 in time dist
+  double getEquilibriumFreq(bool label) const;  //equilibrium frequency of a label
+
+  //private:
+  double mu;  // rate for exon loss
+  double lambda; // rate for exon gain
+
+};
 
 class PhyloTree{
 
 private:
- list<Treenode*> treenodes; // leaf to root order!
+  list<Treenode*> treenodes; // leaf to root order!
 
 public:
   PhyloTree(string filename);
   ~PhyloTree();
- 
+
+  vector<string> species;
+  ExonEvoModel evo;
+  size_t getVectorPositionSpecies(string name);
   void printTree() const;
   void printWithGraphviz(string filename) const;
   double pruningAlgor(const OrthoExon &orthoex, const OrthoGraph &orthograph);

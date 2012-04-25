@@ -19,27 +19,14 @@
 class OrthoExon{
 
 public:
-  OrthoExon(){
-    orthoex.resize(OrthoExon::species.size());
-  }
-  ~OrthoExon(){
-    for(size_t pos = 0; pos < orthoex.size(); pos++){
-      delete orthoex[pos];
-    }
-  }
+  OrthoExon();
+  ~OrthoExon();
   //copy constructor
-  OrthoExon(const OrthoExon& other){
-    orthoex.resize(other.orthoex.size());
-    for(size_t pos = 0; pos < orthoex.size(); pos++){
-      if (other.orthoex[pos]){
-	orthoex[pos] = new State(*other.orthoex[pos]);
-      }
-    }
-  }
+  OrthoExon(const OrthoExon& other);
+  //copy with permutation of vector entries
+  OrthoExon(const OrthoExon& other, const vector<size_t> &permutation);
 
-  static vector<string> species;
   vector<State*> orthoex;
-  static size_t getVectorPositionSpecies(string name);
   string getKey(const OrthoGraph &orthograph) const; //determines the key of an orthoex for the map labelscore
 
 };
@@ -47,8 +34,8 @@ public:
 /*
  * read and write functions for orthologous exons
  */
-map< vector<string>, list<OrthoExon> > readOrthoExons(string filename); //read list of orthologous exons from a file
-void writeOrthoExons(const map< vector<string>, list<OrthoExon> > &all_orthoex);
+list<OrthoExon> readOrthoExons(string filename); //read list of orthologous exons from a file
+void writeOrthoExons(const list<OrthoExon> &all_orthoex);
 ostream& operator<<(ostream& ostrm, const OrthoExon &ex_tuple);
 istream& operator>>(istream& istrm, OrthoExon& ex_tuple);
 
@@ -77,6 +64,7 @@ namespace cache{
   void addToHash(string key, double score);
   double getScore(string key);
   void incrementCounter(string key);
+  double getOverallScore();
 }
 
 #endif

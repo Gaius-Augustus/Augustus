@@ -61,6 +61,7 @@ leaf:
     {
 	Treenode *temp = new Treenode(d_scanner.matched());
 	ptree->push_back(temp);
+	pspecies->push_back(d_scanner.matched());
 	$$ = temp;
     }
 ;
