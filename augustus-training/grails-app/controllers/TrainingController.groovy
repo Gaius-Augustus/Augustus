@@ -664,8 +664,10 @@ class TrainingController {
 									if(!(gffArray.size() == 9)){ gffColErrorFlag = 1 }
 									isElement = 0
 									seqNames.each{ seq ->
-										if(seq =~ /${gffArray[0]}/){ isElement = 1 }
-										if(isElement == 0){ gffNameErrorFlag = 1 }
+										if(seq =~ /${gffArray[0]}/){ isElement = isElement + 1}
+									}
+									if(isElement == 0){ gffNameErrorFlag = 1 
+										logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - ${gffArray[0]} is not contained in genome.fa\n"
 									}
 								}
 							}
@@ -1199,8 +1201,10 @@ class TrainingController {
 									if(!(gffArray.size() == 9)){ gffColErrorFlag = 1 }
 									isElement = 0
 									seqNames.each{ seq ->
-										if(seq =~ /${gffArray[0]}/){ isElement = 1 }
-										if(isElement == 0){ gffNameErrorFlag = 1 }
+										if(seq =~ /${gffArray[0]}/){ isElement = isElement + 1}
+									}
+									if(isElement == 0){ gffNameErrorFlag = 1 
+										logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - ${gffArray[0]} is not contained in genome.fa\n"
 									}
 								}
 							}
