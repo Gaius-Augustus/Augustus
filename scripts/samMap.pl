@@ -76,7 +76,7 @@ while(<SAM>){
 
 	$beforeJunction = $junctionStart - $globalStart +1;
 	if($beforeJunction > 0){
-		$startCoord = ($tSam[3]+$tMap[15]-1);
+		$startCoord = ($tSam[3]+$tMap[15]-1+2);
 	}else{
 		$startCoord = ($tSam[3]+$tMap[15]-1+$tMap[7]);
 	}
