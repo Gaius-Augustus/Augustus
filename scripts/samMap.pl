@@ -99,7 +99,7 @@ while(<SAM>){
 			$newCigar = $newCigar.$number.$letter;		
 			# print "Remaining positions before the junction: ".($beforeJunction - $number)." Reset beforeJunction to this value.\n";
 			$beforeJunction = $beforeJunction - $number;
-		}elsif($seenJunction == 0 and $beforeJunction > 0 ){
+		}elsif($seenJunction == 0 and $beforeJunction > 1 ){
 			# print "Partially before Junction: ";
 			# print ($number - ($number - $beforeJunction)-1);
 			$newCigar = $newCigar.($number - ($number - $beforeJunction)-1);	
