@@ -1,5 +1,4 @@
 mailing list for updates:
-Jennifer Wortman, TIGR
 "Mustapha Larbaoui" <ml6@sanger.ac.uk>
 "Uffe Hellsten" <uhellsten@lbl.gov>
 "Uwe Hilgert" <hilgert@cshl.edu>

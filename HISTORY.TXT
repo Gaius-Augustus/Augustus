@@ -1,5 +1,5 @@
 List of changes from version 2.5.5 to 2.6 (until April 12th, 2012)
-     - new species bombus_terrestris, rhodnium, Conidiobolus_coronatus
+     - new species bombus_terrestris, rhodnius, Conidiobolus_coronatus
      - new auxiliary programs filterBam, bam2hints
      - update to species tomato
      - option --mea=1 to maximize expected accuracy instead of using Viterbi algorithm
