@@ -5,11 +5,11 @@
 #	b) libbamtools.a and lz library are used during the linking process
 #
 # 	Created: 14-December-2011
-#	Last modified: 14-December-2011
+#	Last modified:  4-May-2012
 
 # Variable definition
 # on greifweb1
-BAMTOOLS = /fs1.cm/katharina/tools/pezmaster31-bamtools-7f8b301
+BAMTOOLS = /fs1.bioinf/tonatiuh/git/bamtools
 INCLUDES = $(BAMTOOLS)/include
 LIBS = $(BAMTOOLS)/lib/libbamtools.a -lz
 SOURCES = bam2hints.cc 

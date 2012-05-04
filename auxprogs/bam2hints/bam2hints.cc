@@ -432,6 +432,7 @@ int main(int argc, char* argv[])
     {"maxgaplen", 1, 0, 'g'},
     {"minintronlen", 1, 0, 'm'},
     {"maxintronlen", 1, 0, 'M'},
+    {"MinEndBlockLen", 1, 0, 'b'},
     {"maxQgaplen", 1, 0, 'q'},
     {"ep_cutoff", 1, 0, 'e'},
     {"source", 1, 0, 's'},
@@ -453,7 +454,7 @@ int main(int argc, char* argv[])
 
   // receive the input options
 
-  while((opt = getopt_long(argc, argv, "i:o:p:g:m:M:q:e:s:InrC:STv:c:t:G:h", long_options, &option_index)) != -1)
+  while((opt = getopt_long(argc, argv, "i:o:p:g:m:M:q:e:s:InrC:STv:c:t:G:b:h", long_options, &option_index)) != -1)
   {
     switch(opt)
     {
@@ -464,6 +465,7 @@ int main(int argc, char* argv[])
     case 'g': MaxGapLen     = atoi(optarg); break;
     case 'm': MinIntLen     = atoi(optarg); break;
     case 'M': MaxIntLen     = atoi(optarg); break;
+    case 'b': MinEndBlockLen = atoi(optarg); break;
     case 'q': MaxQGapLen    = atoi(optarg); break;
     case 'e': EpCutoff      = atoi(optarg); break;
     case 's': Source        = optarg;       break;
@@ -503,6 +505,7 @@ int main(int argc, char* argv[])
          << "  --maxgaplen=n      -g   gaps at most this length are simply closed (set to " << MaxGapLen << ")\n"
          << "  --minintronlen=n   -m   alignments with gaps shorter than this and longer than maxgaplen are discarded (set to " << MinIntLen << ")\n"
          << "  --maxintronlen=n   -M   alignments with longer gaps are discarded (set to " << MaxIntLen << ")\n"
+         << "  --MinEndBlockLen=n -b   [whatever this parameter may represent]" << MinEndBlockLen << ")\n"
          << "  --maxQgaplen=n     -q   maximum length of gap in query (cDNA) sequence (set to " << MaxQGapLen << ")\n"
          << "  --ep_cutoff=n      -e   this many bp are cut off of each exonpart hint at end of alignment (set to " << EpCutoff << ")\n"
          << "  --source=s         -s   source identifier (set to '" << Source << "')\n"
