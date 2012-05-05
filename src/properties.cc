@@ -45,6 +45,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/BaseCount/weighingType",
 "/BaseCount/weightMatrixFile",
 "bridge_genicpart_bonus",
+"canCauseAltSplice",
 "capthresh",
 "cds",
 "checkExAcc",

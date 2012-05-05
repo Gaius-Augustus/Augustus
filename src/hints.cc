@@ -11,9 +11,11 @@
  **********************************************************************/
 
 #include "hints.hh"
+#include "properties.hh"
 
 #include <iostream>
 #include <cstdlib>
+#include <set>
 
 const char* featureTypeNames[NUM_FEATURE_TYPES]= {"start", "stop", "ass", "dss", 
 						  "exonpart", "exon", "intronpart", "intron",
@@ -703,10 +705,39 @@ bool HintGroup::isTrashy(){
 
 /*
  * HintGroup::canCauseAltSplice
+ * optional TODO: also implement a minimal multiplicity, e.g. intron:3,exon:1
  */
 bool HintGroup::canCauseAltSplice() {
-    return hints && (hints->size()>1 || (hints->front()->type != exonpartF));// temporary hack for rGASP, sole exonpart hints cannot cause alternative splicing, too many with RNA-Seq
-    //  bool canCauseAltSplice() {return hints && (hints->size()>1 || (hints->front()->type != exonpartF && !(hints->front()->mult < 2)));}; //TODO make this a parameter and test
+  static set<FeatureType> *causingTypes = NULL;
+  if (causingTypes == NULL){ // initialize on first call
+    causingTypes = new set<FeatureType>;
+    char *canCauseAltSpliceList = NULL;
+    try {
+      canCauseAltSpliceList = newstrcpy(Properties::getProperty( "canCauseAltSplice" ));
+    } catch(...) {
+      canCauseAltSpliceList = newstrcpy("intron,exon,tss,tts,start,stop,ass,dss,ip,CDS,CDSpart,UTR,UTRpart"); // default
+    }
+    char *typestr = strtok(canCauseAltSpliceList, ",");
+    while (typestr != NULL) {
+      FeatureType type = Feature::getFeatureType(typestr);
+      if (type >= 0)
+	causingTypes->insert(type);
+      typestr = strtok (NULL, ",");
+    }
+    if (canCauseAltSpliceList)
+      delete [] canCauseAltSpliceList;
+  }
+  bool ret = false;
+  if (hints){
+    list<Feature*>::iterator fit = hints->begin();
+    while(ret == false && fit != hints->end()){
+      ret |= (causingTypes->find((*fit)->type) != causingTypes->end()); // can cause altsplice if ANY of the types in the group match
+      fit++;
+    }
+  }
+  // was before a hack (for rGASP):
+  // return hints && (hints->size()>1 || (hints->front()->type != exonpartF));
+  return ret;
 }
 
 /*
