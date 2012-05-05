@@ -188,7 +188,7 @@
 # 3' UTR single exon
 1 30      0.98
 # 3' UTR initial exon
-1 31      0.92
+1 31      0.02
 #           -----  Initial Exon 0  -----
 # longdss0 Intron
 2 10	2.0
@@ -339,14 +339,14 @@
 # 3' UTR intron single base
 32 32    .997
 # 3' UTR internal exon
-32 34    .0003
+32 34    .000001
 # 3' UTR terminal exon
-32 35    .0027
+32 35    .002999
 #           -----  3' UTR intron variable length -----
 # 3' UTR internal exon
-33 34    .1
+33 34    .0003
 # 3' UTR terminal exon
-33 35    .9
+33 35    .9997
 #           -----  3' UTR internal exon  -----
 # 3' UTR intron single base
 34 32    1.0
@@ -509,14 +509,14 @@
 # reverse 3' UTR intron
 67 67     .997
 # reverse 3' UTR internal exon
-67 69     .0003
+67 69     .000001
 # reverse 3' UTR initial exon
-67 66     .0027
+67 66     .002999
 #           -----  reverse 3' UTR intron variable length -----
 # reverse 3' UTR internal exon
-68 69     .1
+68 69     .0003
 # reverse 3' UTR initial exon
-68 66     .9
+68 66     .9997
 #           -----  reverse 3' UTR internal exon  -----
 # reverse 3' intron single base
 69 67     1.0

@@ -44,6 +44,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/augustus/verbosity",
 "/BaseCount/weighingType",
 "/BaseCount/weightMatrixFile",
+"bridge_genicpart_bonus",
 "capthresh",
 "cds",
 "checkExAcc",

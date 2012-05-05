@@ -975,7 +975,15 @@ void SequenceFeatureCollection::findGenicGaps(){
 	return;
    int mingaplen = 1;
    int maxgaplen = 500000; // to prevent coincidental false grouping, e.g. across half a chromosome, to disturb the results
-   double nonirpartbonus = 2.0; // the inverse of this factor applies to every igenic region base in the genic gaps
+   double nonirpartbonus; // the inverse of this factor applies to every igenic region base in the genic gaps
+   try {
+     nonirpartbonus = Properties::getdoubleProperty( "bridge_genicpart_bonus" );
+   } catch(...) {
+     nonirpartbonus = 2.0;
+     return;
+   }
+
+
    bool found;
    for (list<HintGroup>::iterator grit = groupList->begin(); grit != groupList->end(); grit++){ 
 //     grit->print(cout, true);
