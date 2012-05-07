@@ -73,18 +73,24 @@ while(<SAM>){
 	$globalStart = ($tSam[3]+$tMap[15]-1);
 	#
 	# process the cigar string
+	my $softclipped = 0;	
+	if($tSam[5]=~m/^(\d+)N/){
+		$softclipped = $1;		
+	}
 
 	$beforeJunction = $junctionStart - $globalStart +1;
 	if($beforeJunction > 0){
-		$startCoord = ($tSam[3]+$tMap[15]-1+2);
+		$startCoord = ($tSam[3]+$tMap[15]-1+2)+$softclipped;
+
 	}else{
-		$startCoord = ($tSam[3]+$tMap[15]-1+$tMap[7]);
+		$startCoord = ($tSam[3]+$tMap[15]-1+$tMap[7]+$softclipped);
 	}
 	$cigarLen = length($tSam[5]);
 	$safeForAfterJunction = 0;
 	$cigPos = 1;
 	$seenJunction = 0;
 	$newCigar = "";
+
 	# print "\n\noldCigar: $tSam[5]\nnewCigar computation:\nThe junction is at $beforeJunction in the read\n";
 	while($cigarLen > 0){
 		#print "Cigar Len at the beginning is $cigarLen\n";
