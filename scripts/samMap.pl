@@ -68,9 +68,9 @@ while(<SAM>){
 	$mapLine = $mapHash{$exexName};
 	@tMap = split(/\t/, $mapLine);
 	$intronLen = $tMap[7];
-	$junctionStart = $tMap[15]+$tMap[0]/2; # last base before junction
+	$junctionStart = $tMap[15]+$tMap[0]/2+1; # first base after junction
 	
-	$globalStart = ($tSam[3]+$tMap[15]-1);
+	$globalStart = $tSam[3]+$tMap[15];
 	#
 	# process the cigar string
 	my $softclipped = 0;	
@@ -78,12 +78,12 @@ while(<SAM>){
 		$softclipped = $1;		
 	}
 
-	$beforeJunction = $junctionStart - $globalStart +1;
+	$beforeJunction = $junctionStart - $globalStart + $softclipped;
 	if($beforeJunction > 0){
-		$startCoord = ($tSam[3]+$tMap[15]-1+2)+$softclipped;
+		$startCoord = ($tSam[3]+$tMap[15]+1;
 
 	}else{
-		$startCoord = ($tSam[3]+$tMap[15]-1+$tMap[7]+$softclipped);
+		$startCoord = ($tSam[3]+$tMap[15]+1+$tMap[7]);
 	}
 	$cigarLen = length($tSam[5]);
 	$safeForAfterJunction = 0;
