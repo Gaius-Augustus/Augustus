@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 #
-# Map a sam file that was created by aligning against an exon-exon junction file back to genome level
+# Map a sam file that was created by aligning against an exon-exon junction file back to genome level.
+# Filters out non-intron-containing alignments.
 #
 # Katharina J. Hoff, May 3rd 2012
 
@@ -61,80 +62,54 @@ my $startCoord;
 # process each line of sam format
 open(SAM, "<", $exexFile) or die("Could not open exexFile $exexFile!\n");
 while(<SAM>){
+    if(not(m/^@/)){       
 	@tSam = split(/\t/);
 	$readLen = length($tSam[9]);
 	$exexName = $tSam[2];
-	# print $exexName."\t";
 	$mapLine = $mapHash{$exexName};
 	@tMap = split(/\t/, $mapLine);
-	$intronLen = $tMap[7];
 	$junctionStart = $tMap[15]+$tMap[0]/2+1; # first base after junction
-	
 	$globalStart = $tSam[3]+$tMap[15];
-	#
+	$intronLen = $tMap[7];
 	# process the cigar string
 	my $softclipped = 0;	
-	if($tSam[5]=~m/^(\d+)N/){
+	if($tSam[5]=~m/^(\d+)S/){
 		$softclipped = $1;		
 	}
-
 	$beforeJunction = $junctionStart - $globalStart + $softclipped;
 	if($beforeJunction > 0){
-		$startCoord = ($tSam[3]+$tMap[15]+1;
+		$startCoord = $tSam[3]+$tMap[15]  ;
 
 	}else{
-		$startCoord = ($tSam[3]+$tMap[15]+1+$tMap[7]);
+		$startCoord = ($tSam[3]+$tMap[15]+$tMap[7]);
 	}
 	$cigarLen = length($tSam[5]);
 	$safeForAfterJunction = 0;
 	$cigPos = 1;
 	$seenJunction = 0;
 	$newCigar = "";
-
-	# print "\n\noldCigar: $tSam[5]\nnewCigar computation:\nThe junction is at $beforeJunction in the read\n";
 	while($cigarLen > 0){
-		#print "Cigar Len at the beginning is $cigarLen\n";
 		$tSam[5] =~ m/^(\d+)(\w)/;
 		$letter = $2; 
 		$number = $1;
-		# print "We are now dealing with $number $letter\n";
 		if($number < $beforeJunction and $seenJunction == 0){
-			#print "This claims that $number + $cigPos -1 is smaller or equal to $beforeJunction.\n";
-			# print "Truely before Junction at $beforeJunction: ";
-			# print "$number$letter\n";
 			$newCigar = $newCigar.$number.$letter;		
-			# print "Remaining positions before the junction: ".($beforeJunction - $number)." Reset beforeJunction to this value.\n";
 			$beforeJunction = $beforeJunction - $number;
-		}elsif($seenJunction == 0 and $beforeJunction > 1 ){
-			# print "Partially before Junction: ";
-			# print ($number - ($number - $beforeJunction)-1);
-			$newCigar = $newCigar.($number - ($number - $beforeJunction)-1);	
-			# print "$letter\n";
+		}elsif($seenJunction == 0 and $beforeJunction => 1 ){
+			$newCigar = $newCigar.($number - ($number - $beforeJunction));	
 			$newCigar = $newCigar.$letter;
-			# print " at junction: ";
-			# print "$intronLen"."N\n";
 			$newCigar = $newCigar.$intronLen."N";
-			# print " partially after Junction:";
-			# print ($number-$beforeJunction+1);
-			$newCigar = $newCigar.($number-$beforeJunction+1);
-			# print "$letter\n";
+			$newCigar = $newCigar.($number-$beforeJunction);
 			$newCigar = $newCigar.$letter;
 			$seenJunction = 1;
 		}else{
-			# print " truely after junction: ";
-			# print "$number$letter\n";
 			$newCigar = $newCigar.$number.$letter;
 		}
 	
 		$cigPos = $cigPos + $number;
-		#print "\ncigPos reset to $cigPos\n";
 		$tSam[5]=~ s/$number$letter//;
 		$cigarLen = length($tSam[5]);
-		#print "Cigar Len at the end is $cigarLen\n";
-
-
 	}
-# 	print "New Cigar: $newCigar\n";
 	if($newCigar =~ m/N/){
 		print $tSam[0]."\t".$tSam[1]."\t".$tMap[13]."\t".$startCoord."\t".$tSam[4]."\t$newCigar";
 		$samLen = @tSam;
@@ -142,5 +117,6 @@ while(<SAM>){
 			print "\t$tSam[$count]";
 		}
 	}
+    }
 }
 close(SAM) or die("Could not close exexFile $exexFile!\n");
