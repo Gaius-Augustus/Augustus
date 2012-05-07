@@ -92,6 +92,9 @@ while(<SAM>){
 		$tSam[5] =~ m/^(\d+)(\w)/;
 		$letter = $2; 
 		$number = $1;
+		if($tSam[3]>($tMap[0]/2)){
+		    $seenJunction = 1;
+		}
 		if($number < $beforeJunction and $seenJunction == 0){
 			$newCigar = $newCigar.$number.$letter;		
 			$beforeJunction = $beforeJunction - $number;
