@@ -2,7 +2,7 @@
 /* 																	 					*/
 /* Tonatiuh Pena-Centeno 											 					*/
 /* Created: 11-April-2012 											 					*/
-/* Last modified: 11-April-2012 									 					*/
+/* Last modified: 18-May-2012   									 					*/
 
 #include <stdio.h>
 #include <stdlib.h> 
@@ -23,18 +23,18 @@ int main(int argc, char *argv[])
 	const char *_fnidx;
 	_fnidx = 0;
 	bamFile fp;
-	bam_index_t *idx;
+	bam_index_t *idx; 
 	if ((fp = bam_open(fn, "r")) == 0) {
-		fprintf(stderr, "[checkSortedness] fail to open the BAM file.\n");
+		fprintf(stderr, "[checkTargetSortedness] fail to open the BAM file.\n");
 		return -1;
 	}
 	idx = bam_index_core(fp);
 	bam_close(fp);
 	if(idx == 0) {
-		fprintf(stderr, "[checkSortedness] file is not sorted by target name and position.\n");
+		fprintf(stderr, "[checkTargetSortedness] file is not sorted by target name and position.\n");
 		return -1; 
 	} 
-	printf("[checkSortedness]: BAM file correctly sorted.\n");
+	printf("[checkTargetSortedness]: BAM file correctly sorted.\n");
 
 	return 0;
 
