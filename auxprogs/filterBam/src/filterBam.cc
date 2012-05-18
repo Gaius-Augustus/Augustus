@@ -1342,7 +1342,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		  	}
 		}
 
-	} else {// IF NOT PAIRED, single read
+	} else {// IF NOT PAIRED, single alignments
 
 		if ((uniq || best) && qali.size()>1)
 		  {
