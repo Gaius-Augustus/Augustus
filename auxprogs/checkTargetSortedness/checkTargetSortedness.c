@@ -1,4 +1,4 @@
-/* This is one of the examples included in the SAMtools distribution 					*/
+/* Checks whether a file has been sorted by target name				  					*/
 /* 																	 					*/
 /* Tonatiuh Pena-Centeno 											 					*/
 /* Created: 11-April-2012 											 					*/
