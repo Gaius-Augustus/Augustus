@@ -88,6 +88,7 @@ string Constant::dbaccess; // comma separated string with database access (hostn
 string Constant::alnfile; // name of file that contains MSA of genomes
 bool Constant::overlapmode = false;
 string Constant::orthoexons; //name of file that contains list of orthologous exons
+Integer Constant::maxOvlp = 50; // maximum overlap of coding regions for bacteria
 
 bool inCRFTraining = false;
 
@@ -311,7 +312,8 @@ void Constant::init(){
     Properties::assignProperty("dbaccess", dbaccess);
     Properties::assignProperty("alnfile", alnfile);
     Properties::assignProperty("orthoexons", orthoexons);
-    
+    Properties::assignProperty("maxOvlp", maxOvlp);
+
     if (!alnfile.empty() && !treefile.empty() && (!speciesfilenames.empty() || !dbaccess.empty())){
       MultSpeciesMode = true;
     } else if (!(alnfile.empty() && treefile.empty() && speciesfilenames.empty() && dbaccess.empty())){

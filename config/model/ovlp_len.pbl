@@ -1,0 +1,172 @@
+# default overlap length distribution when using option --genemodel=bacterium
+# This can be overriden by a species-specific length distribution when a file
+# myspecies_ovlp_len.pbl exists in the parameter folder for species 'myspecies'.
+# The probability of observing an overlap at all is set in config/model/trans_shadow_bacterium.pbl
+# This file only specifies the probability of an overlap length, GIVEN that
+# an overlap of the given type occurs.
+# The overlap length is the number of bases that are common to the coding sequence of two neighboring genes.
+# The bases in the stop codon are thereby counted as part of the coding sequence.
+# maximum overlap length, this parameter should be set in myspecies_parameters.cfg
+# (or on the command line)
+# maxOvlp = 50
+[HEAD2TAIL]
+# >--------->           or    <--------------<
+#       >----------->                   <-------------<
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+#
+[HEAD2HEAD]
+# >--------->
+#       <-----------<
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+#
+[TAIL2TAIL]
+# <---------<
+#       >----------->
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02
+0.02

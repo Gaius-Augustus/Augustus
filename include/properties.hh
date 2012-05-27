@@ -25,7 +25,7 @@
 #include <map>
 
 
-#define NUMPARNAMES 198
+#define NUMPARNAMES 199
 
 #define GENEMODEL_KEY "genemodel"
 #define SINGLESTRAND_KEY "singlestrand"
@@ -40,6 +40,7 @@
 #define EXTERNAL_KEY "optCfgFile"
 #define HINTSFILE_KEY "hintsfile"
 
+#define OVLPLENFILE "ovlp_len.pbl"
 /**
  * The base exception class for Properties
  *

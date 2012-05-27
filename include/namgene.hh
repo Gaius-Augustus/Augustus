@@ -90,6 +90,7 @@ private:
     list<AltGene>* findGenes(const char *dna, Strand strand, bool onlyViterbi=true);
     int getNextCutEndPoint(const char *dna, int beginPos, int maxstep, SequenceFeatureCollection& sfc);
     void readTransAndInitProbs( );
+    void readOvlpLenDist( );
     void checkProbsConsistency( );
     void computeReachableStates( );
     void createStateModels( );

@@ -150,6 +150,7 @@ HINTSFILE_KEY,
 "keep_viterbi",
 "lossweight", // temp
 "maxDNAPieceSize",
+"maxOvlp",
 "maxtracks",
 "mea",
 "mea_evaluation",

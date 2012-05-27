@@ -128,6 +128,7 @@ NAMGene::NAMGene() {
 
   needForwardTable = (sampleiterations > 0);
   readTransAndInitProbs();
+  readOvlpLenDist();
   checkProbsConsistency();
   computeReachableStates();
   createStateModels();
@@ -1342,14 +1343,14 @@ void NAMGene::readTransAndInitProbs( ){
       if (istrm.peek() == EOF) // file doesn't exist
 	  throw ProjectError(fname + " doesn't exist");
       if (!inCRFTraining)
-	  cout << " Use species specific transition matrix: " << fname;
+	  cout << " Using species specific transition matrix: " << fname;
   } catch (...){
       istrm.clear();
       // use default transition parameter file
       string fname = Constant::modelPath() + Properties::getProperty(TRANSFILE_KEY);
       istrm.open(fname.c_str());
       if (!inCRFTraining)
-	  cout << " Use default transition matrix.";
+	  cout << " Using default transition matrix.";
   }
   cout << endl;
 
@@ -1403,6 +1404,40 @@ void NAMGene::readTransAndInitProbs( ){
     istrm.close();
   } else {
     throw NAMGeneError( "Could't open the file with transition probabilities." );
+  }
+}
+
+void NAMGene::readOvlpLenDist( ){
+  if (!Constant::overlapmode)
+    return;
+  // this function is only relevant for prokaryotes (--genemodel=bacterium)
+  ifstream istrm;
+  string speciesValue = Properties::getProperty(SPECIES_KEY);
+  try {
+      // look if there is a species specific ovlp_len.pbl file and take it
+      string fname = Constant::fullSpeciesPath() + speciesValue + "_" + OVLPLENFILE;
+      istrm.open(fname.c_str());
+      if (istrm.peek() == EOF) // file doesn't exist
+	  throw ProjectError(fname + " doesn't exist");
+      cout << " Using species specific overlap length distribution: " << fname;
+  } catch (...){
+      istrm.clear();
+      // use default overlap length distribution file
+      string fname = Constant::modelPath() + OVLPLENFILE;
+      istrm.open(fname.c_str());
+      cout << " Using default overlap length distribution file.";
+  }
+  cout << endl;
+
+  if( istrm ){
+    istrm >>  goto_line_after( "[HEAD2TAIL]" );
+    istrm >> comment;
+    for (int i=1;i<=Constant::maxOvlp; i++)
+      {}
+      //istrm >> head2tail_ovlp[i];
+    istrm.close();
+  } else {
+    throw NAMGeneError( "Could't open the file with the overlap length distribution." );
   }
 }
 
