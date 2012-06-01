@@ -48,6 +48,9 @@ istream& operator>>(istream& istrm, OrthoExon& ex_tuple);
 struct Score{
   double treescore;   //stores the score of a label pattern
   int count;          //counts the number of exontuples which have that specific pattern
+
+  Score() : treescore(0), count(0) {}
+  ~Score() {}
 };
 
 /*
