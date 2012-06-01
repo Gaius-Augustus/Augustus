@@ -7,12 +7,10 @@ public:
   ~MEApath(){}
 
   void findMEApath();
-  double findMEApath7();
   void getTopologicalOrdering();
   void dfs(Node *n);
   void relax();
   void backtracking();
-  void updateLabels();
   inline list<Node*> getPath(){
     return meaPath;
   }

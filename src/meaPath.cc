@@ -99,29 +99,3 @@ void MEApath::backtracking(){
     pos = pos->pred;
   }
 }
-
-void MEApath::updateLabels(){
-
-  Node *pos = topSort[0];
-  pos->label = 1;  
-  while(pos->pred != NULL){
-    pos->pred->label = 1; 
-    pos = pos->pred;
-  }
-}
-
-
-double MEApath::findMEApath7(){
-
-  getTopologicalOrdering();
-
-  relax();
-
-  updateLabels();
-
-  graph->printGraph7("graph.dot");
-
-  return topSort[0]->score;
-
-}
-

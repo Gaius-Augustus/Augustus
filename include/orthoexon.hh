@@ -16,6 +16,9 @@
 #include <vector>
 #include <string>
 
+//forward declarations:
+class ExonCandidate;
+
 class OrthoExon{
 
 public:
@@ -26,9 +29,10 @@ public:
   //copy with permutation of vector entries
   OrthoExon(const OrthoExon& other, const vector<size_t> &permutation);
 
-  vector<State*> orthoex;
-  string getKey(const OrthoGraph &orthograph) const; //determines the key of an orthoex for the map labelscore
-
+  vector<ExonCandidate*> orthoex;
+  string labelpattern;  //changes dynamically and has to be updated after every optimization step
+  string getKey(const OrthoGraph &orthograph); //determines the key of an orthoex for the map labelscore
+  
 };
 
 /*
@@ -36,9 +40,10 @@ public:
  */
 list<OrthoExon> readOrthoExons(string filename); //read list of orthologous exons from a file
 void writeOrthoExons(const list<OrthoExon> &all_orthoex);
+
+
 ostream& operator<<(ostream& ostrm, const OrthoExon &ex_tuple);
 istream& operator>>(istream& istrm, OrthoExon& ex_tuple);
-
 
 struct Score{
   double treescore;   //stores the score of a label pattern
@@ -48,10 +53,10 @@ struct Score{
 /*
  * hashfunction storing all label patterns and their Score
  * key: string over alphabet {0,1,2}^k, k = # species^k
- * 0 codes for exon in graph, but not part of the best gene structure
- * 1 codes for exon in graph and part of the best gene structure
+ * 0 codes for exon in graph, but not part of the maximum weight path
+ * 1 codes for exon in graph and part of the maximum weight path
  * 2 codes for exon not in graph: Status* = NULL
- * first digit in string refers to first species in OrthoExon::species, second digit refers to second species, ...
+ * first digit in string refers to first species in PhyloTree::species, second digit refers to second species, ...
  */
 
 namespace cache{
@@ -61,10 +66,11 @@ namespace cache{
    * cache functions
    */
   bool inHash(string key);
+  void resetCounter();
   void addToHash(string key, double score);
   double getScore(string key);
   void incrementCounter(string key);
-  double getOverallScore();
+  void printCache(list<OrthoExon> &ortho);
 }
 
 #endif

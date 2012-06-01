@@ -7,22 +7,29 @@
 #include <iostream>
 #include "gene.hh"
 #include "properties.hh"
+#include "exoncand.hh"
 
 using namespace std;
 
 enum Statename{type_unknown=-1, CDS, utr3, utr5, intron, utr3Intron, utr5Intron};
 
 
-// types of neutral nodes:
-#define NUM_NEUTRAL_TYPES 8
-enum Neutral_type{NOT_NEUTRAL=-1, IR, plus0, plus1, plus2, minus0, minus1, minus2};
-extern string neutralTypeIdentifiers[NUM_NEUTRAL_TYPES];
+/* types of nodes:
+ * sampled exons and introns: sampled
+ * additional exons, which are not sampled: unsampled_exons
+ * neutral nodes: IR, plus0, plus1, plus2, minus0, minus1, minus2 (for each of the 7 neutral lines one type)
+ * NOT_KNOWN: default type, for example head and tail
+ */
+#define NUM_NODETYPES 10
+
+enum NodeType{NOT_KNOWN=-1, IR, plus0, plus1, plus2, minus0, minus1, minus2, sampled, unsampled_exon};
+extern string nodeTypeIdentifiers[NUM_NODETYPES];
 
 class Status;
 class Node;
 class Edge;
 class Graph;
-
+class MoveObject;
 
 /*
  * Status stores all the relavant information (for states) from the program specific datastructure
@@ -47,22 +54,27 @@ public:
 
 class Node{
 public:
-  Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, Neutral_type t=NOT_NEUTRAL, Node *p=NULL, bool b=0):
+  Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, NodeType t=NOT_KNOWN, Node *p=NULL, bool b=0, Node *n=NULL):
     begin(s),
     end(e),
     score(sc),
     item(it),
     n_type(t),
     pred(p),
-    label(b)
+    label(b),
+    topSort_next(n)
   {}
   int begin, end;
   double score;
   const void *item;
-  Neutral_type n_type; // helps to identify to which neutral line a neutral Node belongs
+  NodeType n_type;
   Node *pred;
-  bool label;  //label is 1, if node is in path, else label is 0
+  bool label;           // label is 1, if node is in path, else label is 0
+  Node *topSort_next;   // pointer to next node in a topologically sorted list of nodes
   list<Edge> edges;
+
+  StateType castToStateType(); //casts void* back to State* and returns the StateType
+
 };
 
 class Edge{
@@ -88,7 +100,7 @@ public:
 
 class Graph{
 public:
-  Graph(list<Status> *states) : statelist(states){}
+  Graph(list<Status> *states) : statelist(states) {}
   virtual ~Graph(); 
   void addBackEdges();
 
@@ -100,24 +112,20 @@ public:
   Node *tail;
  
   void buildGraph(); //needs to be called in constructor of derived class
-  void buildGraph(list<Status> &additionalExons); // builds graph with seven neutral lines
 
-  void BFS(Node* node);
-  
+  template<class T> inline bool alreadyProcessed(T *temp){
+    return(existingNodes[getKey(temp)]!=NULL);    
+  }
+  template<class T> inline Node* getNode(T *temp){
+    return existingNodes[getKey(temp)];
+  }
+
   // functions needed to build the graph
-protected:	
-  inline bool alreadyProcessed(Node *n){
-    return(existingNodes[getKey(n)]!=NULL);    
-  }
-  inline bool alreadyProcessed(Status *st){
-    return(existingNodes[getKey(st)]!=NULL); 
-  }
+protected:
   bool edgeExists(Node *e1, Node *e2);
   inline void addToHash(Node *n){
     existingNodes[getKey(n)] = n;
-  } 
-  Node* getNode(Node *n);
-  Node* getNode(Status *st);
+  }
   Node* addExon(Status *exon, vector<Node*> &neutralLine);
   void addPair(Status *exon1, Status *exon2, vector<Node*> &neutralLine);
   void createNeutralLine(vector<Node*> &neutralLine); 
@@ -135,6 +143,7 @@ protected:
   virtual string getKey(Node *n)=0;
   virtual string getKey(Status *st)=0;
   virtual string getKey(State *st)=0;
+  virtual string getKey(ExonCandidate *exoncand)=0;
   virtual double getIntronScore(Status *predExon, Status *nextExon)=0;
   virtual void addEdgeFromHead(Status *exon)=0;
   virtual void addEdgeToTail(Status *exon)=0; 
@@ -142,13 +151,6 @@ protected:
   virtual double setScore(Status *st)=0;
   virtual void calculateBaseScores()=0;
   virtual void printGraph(string filename)=0;   
-
-  // additional functions to construct graph with 7 neutral lines
-  Node* addExon(Status *exon, vector< vector<Node*> > &neutralLines, bool sampled);
-  void addIntron(Node* exon1, Node* exon2, Status *intr);
-  virtual int fromNeutralLine(Status *st)=0;
-  virtual int toNeutralLine(Status *st)=0;
-  virtual void printGraph7(string filename)=0;
 
 };
 
@@ -213,6 +215,7 @@ try {
   string getKey(Node *n);
   string getKey(Status *st);
   string getKey(State *st);
+  string getKey(ExonCandidate *exoncand);
   double getIntronScore(Status *predExon, Status *nextExon);  
   void addEdgeFromHead(Status *exon);
   void addEdgeToTail(Status *exon);
@@ -226,13 +229,6 @@ try {
   int seqlength;
   vector<double> baseScore;
   bool utr;
-
-  list<Status> additionalExons;
-  int fromNeutralLine(Status *st);  
-  int toNeutralLine(Status *st);
-  void printGraph7(string filename);
-
-
 
   // parameters for scores
   double alpha_se;
@@ -255,4 +251,124 @@ stringstream ss;
 ss << t;
 return ss.str();
 }
+
+class SpeciesGraph : public AugustusGraph {
+
+private:
+  list<ExonCandidate*> additionalExons; //exons, which are not sampled
+  string speciesname;
+  double max_weight; // the max weight of a node/edge in the graph, used as an upper/lower bound
+
+public:
+  SpeciesGraph(list<Status> *states, int dnalength, list<ExonCandidate*> &addEx, string name) :
+    AugustusGraph(states, dnalength),
+    additionalExons(addEx),
+    speciesname(name),
+    max_weight(0)
+  {}
+
+  using AugustusGraph::getKey;
+
+  //functions to build graph with seven neutral lines
+
+  void buildGraph();
+  int fromNeutralLine(Node *node);  // determines the type of the neutral line of the preceding neutral node
+  int toNeutralLine(Node *node);    // determines the type of the neutral line of the suceeding neutral node
+  void printGraph(string filename); // prints graph in dot-format
+  string getKey(Node *n); 
+  double setScore(Status *st);
+  Node* addExon(Status *exon, vector< vector<Node*> > &neutralLines);        // adds a sampled exon to the graph
+  Node* addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines); // adds an exon, which is not sampled
+  void addNeutralNodes(Node *node,vector< vector<Node*> > &neutralLines);    // adds neutral nodes and edges to and from an exon
+  void addIntron(Node* exon1, Node* exon2, Status *intr);                    // adds a sampled intron
+
+  inline void updateMaxWeight(double weight){
+    if(abs(weight) > max_weight)
+      max_weight = abs(weight);
+  }
+  inline double getMaxWeight(){                         // upper bound of a maximum weight path
+    return 2 * max_weight * nodelist.size();
+  }
+
+  // maximum weight path problem related functions
+
+  void topSort();                                       // sorts nodelist of graph topologically
+  void dfs(Node* node, map<string,Node*> &processed);   // subroutine of topSort()                                  
+  void relax(Node* begin, Node *end);                   // relaxation of all nodes "in between" begin and end ("in between" in terms of the topological ordering)
+  void setPathLabels(Node *begin, Node *end, bool label);
+  bool isReachable(Node *node, Node *target);           // determines whether the target node is reachable from node
+  double localChange(MoveObject *move);
+  void undoChange(MoveObject *move);
+  double getScorePath(Node *begin, Node *end);    // calc. the sum of edge weights of the path: begin ~~> end
+  void printPath(Node *begin, Node *end);
+
+};
+
+struct MoveNode{
+
+  Node *node;
+  double weight;
+
+  MoveNode(Node* n, double w) : node(n), weight(w) {}
+  ~MoveNode() {}
+};
+
+struct MoveEdge{
+
+  Edge *edge;
+  double weight;
+
+  MoveEdge(Edge* e, double w) : edge(e), weight(w) {}
+  ~MoveEdge() {}
+};
+
+class MoveObject{
+public:
+  //private:
+  SpeciesGraph *graph;
+  list<MoveNode> nodes;  // sorted list of nodes
+  list<MoveEdge> edges;  // sorted list of edges
+  Node* local_head;
+  Node* local_tail;
+
+public:
+  MoveObject(SpeciesGraph *g) :
+    graph(g),
+    local_head(NULL),
+    local_tail(NULL)
+  {}
+  ~MoveObject() {}
+
+  inline Node* getHead() const{
+    return local_head;
+  }
+  inline Node* getTail() const{
+    return local_tail;
+  }
+  inline void addNode(Node* node, double weight){
+    nodes.push_back(MoveNode(node, weight));
+  }
+  inline void addEdge(Edge* edge, double weight){
+    edges.push_back(MoveEdge(edge, weight));
+  }
+  inline void addNodeFront(Node* node, double weight){
+    nodes.push_front(MoveNode(node, weight));
+  }
+  inline void addEdgeFront(Edge* edge, double weight){
+    edges.push_front(MoveEdge(edge, weight));
+  }
+  void addWeights();
+  void undoAddWeights();
+  void initLocalHeadandTail(size_t step_size);
+  void setLocalHead(Node *node);
+  void setLocalTail(Node *node);
+  void goLeftOnPath(size_t step_size);
+  void goRightOnPath(size_t step_size);
+};
+
+
+//print functions for Nodes and Edges
+ostream& operator<<(ostream& ostrm, Node *node);
+ostream& operator<<(ostream& ostrm, const Edge &edge);
+
 #endif

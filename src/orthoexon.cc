@@ -12,6 +12,7 @@
 
 
 #include "orthoexon.hh"
+#include "exoncand.hh"
 #include "projectio.hh"
 #include "types.hh"
 #include <fstream>
@@ -31,7 +32,7 @@ OrthoExon::OrthoExon(const OrthoExon& other){
   orthoex.resize(other.orthoex.size());
   for(size_t pos = 0; pos < orthoex.size(); pos++){
     if (other.orthoex[pos]){
-      orthoex[pos] = new State(*other.orthoex[pos]);
+      orthoex[pos] = new ExonCandidate(*other.orthoex[pos]);
     }
   }
 }
@@ -41,7 +42,7 @@ OrthoExon::OrthoExon(const OrthoExon& other, const vector<size_t> &permutation){
   orthoex.resize(other.orthoex.size());
   for(size_t pos = 0; pos < orthoex.size(); pos++){
     if (other.orthoex[pos]){
-      orthoex[permutation[pos]] = new State(*other.orthoex[pos]);
+      orthoex[permutation[pos]] = new ExonCandidate(*other.orthoex[pos]);
     }
   }
 }
@@ -115,7 +116,7 @@ ostream& operator<<(ostream& ostrm, const OrthoExon &ex_tuple){
     j++;
   }
   if (j < ex_tuple.orthoex.size()){
-    ostrm << stateTypeIdentifiers[(ex_tuple.orthoex.at(j)->type)];
+    ostrm << stateTypeIdentifiers[(ex_tuple.orthoex.at(j)->getStateType())];
     for (int i = 0; i < ex_tuple.orthoex.size(); i++){
       if (ex_tuple.orthoex.at(i) == NULL){
 	ostrm << "\t" << 0 << "\t" << 0;
@@ -134,14 +135,14 @@ ostream& operator<<(ostream& ostrm, const OrthoExon &ex_tuple){
 istream& operator>>(istream& istrm, OrthoExon& ex_tuple){
 
   string exontype;
-  int begin, length;
+  long int begin, length;
 
   istrm >> exontype;
   for (int i = 0; i < OrthoGraph::tree->species.size(); i++){
     istrm >> begin >> length;
     if (begin != 0 && length != 0){
-      State *state = new State(begin-1, begin+length-2, toStateType(exontype.c_str()));
-      ex_tuple.orthoex[i] = state;
+      ExonCandidate *exoncand = new ExonCandidate(toExonType(exontype.c_str()), begin-1, begin+length-2);
+      ex_tuple.orthoex[i] = exoncand;
     }
   }
   return istrm;
@@ -149,29 +150,29 @@ istream& operator>>(istream& istrm, OrthoExon& ex_tuple){
 
 map<string, Score> cache::labelscore; //stores score of prunning algorithm for each pattern (leaf labelling)
 
-string OrthoExon::getKey(const OrthoGraph &orthograph) const{
+string OrthoExon::getKey(const OrthoGraph &orthograph){
 
-  string key = "";
+  labelpattern = "";
   for (size_t i = 0; i < this->orthoex.size(); i++){
     if (this->orthoex.at(i) == NULL){
-      key += "2";
+      labelpattern += "2";
     }
     else {
       map<string, Node*>::iterator it = orthograph.graphs.at(i)->existingNodes.find(orthograph.graphs.at(i)->getKey(this->orthoex.at(i)));
       if (it != orthograph.graphs.at(i)->existingNodes.end()){
 	bool label = it->second->label;
 	if (label == 1){
-	  key += "1";
+	  labelpattern += "1";
 	}
 	else if (label == 0){
-	  key += "0";
+	  labelpattern += "0";
 	}
       }
       else
-	throw ProjectError("Error in OrthoExon::getKey: exon " + orthograph.graphs.at(i)->getKey(this->orthoex.at(i)) +" not in graph!");
+      throw ProjectError("Error in OrthoExon::getKey: exon " + orthograph.graphs.at(i)->getKey(this->orthoex.at(i)) +" not in graph!");
       }
   }
-  return key;
+  return labelpattern;
 }
 
 bool cache::inHash(string key){
@@ -181,9 +182,41 @@ bool cache::inHash(string key){
 void cache::addToHash(string key, double score){
   Score s;
   s.treescore = score;
-  s.count = 1;
   labelscore[key] = s;
 
+}
+
+void cache::resetCounter(){
+
+  for(map<string, Score>::iterator it = labelscore.begin(); it != labelscore.end(); it++){
+    it->second.count = 0;
+  }
+
+}
+
+void cache::printCache(list<OrthoExon> &ortho){
+
+  resetCounter();
+
+  cout << "*************************************************************************" << endl;
+  cout << "--- orthologous exons + labelpattern ---" << endl;
+  for(list<OrthoExon>::iterator it = ortho.begin(); it != ortho.end(); it++){
+    incrementCounter(it->labelpattern);
+    cout << *it << "\t" << it->labelpattern << endl;
+  }
+  cout << "\n--- cache summary ---" << endl;
+  cout.width(4); cout << "";
+  cout.width(12); cout << "score";
+  cout.width(4); cout << "#" << endl;
+
+  for(map<string, Score>::iterator it = labelscore.begin(); it != labelscore.end(); it++){
+
+    cout.width(4); cout << it->first;
+    cout.width(12); cout << it->second.treescore;
+    cout.width(4); cout << it->second.count << endl;
+
+  }
+  cout << "*************************************************************************" << endl;
 }
 
 double cache::getScore(string key){
@@ -191,12 +224,4 @@ double cache::getScore(string key){
 }
 void cache::incrementCounter(string key){
   labelscore[key].count++;
-}
-
-double cache::getOverallScore(){
-  double overall_score = 0;
-  for(map<string, Score>::iterator it = labelscore.begin(); it != labelscore.end(); it++){
-    overall_score += (it->second.treescore * it->second.count);
-  }
-  return overall_score;
 }

@@ -87,7 +87,7 @@ void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int str
     /*
      * builds datastructure needed for the graph representation
      */
-    buildDatastructure(alltranscripts, utr, stlist);
+    buildStatusList(alltranscripts, utr, stlist);
 
     //build Graph
     AugustusGraph myGraph(&stlist, strlength);
@@ -101,7 +101,7 @@ void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int str
   }   
 }
 
-void buildDatastructure(list<Gene> *alltranscripts, bool utr, list<Status> &stlist){
+void buildStatusList(list<Gene> *alltranscripts, bool utr, list<Status> &stlist){
    list<Status> stateList;
 
     for(list<Gene>::iterator it=alltranscripts->begin();it!=alltranscripts->end();it++){
@@ -444,7 +444,7 @@ void getMeaGenelist7(list<Node*> meaPath, list<Gene> *meaGenes){
       }
       current=current->pred;  //exon1
     }
-    State *ex = new State(*((State*)current->item));
+    State *ex = new State(current->begin, current->end, current->castToStateType());
     addExonToGene(currentGene, ex);
     if(current->pred->n_type  == IR){ //end of gene
       setGeneProperties(currentGene);

@@ -13,6 +13,9 @@
  *------------|-----------------------|------------------------------------------
  * 3.11.2011  | Mario Stanke          | creation of the file
  * 06.12.2011 | Alexander Gebauer     | definition of the stopcodons
+ * 17.01.2012 | Alexander Gebauer     | add class AlignSeq und struct block
+ * 27.02.2012 | Alexander Gebauer     | add class ExonCandidate
+ * 30.04.2012 | Stefanie König        | added getStateType() and toExonType()
 \******************************************************************************/
 
 #ifndef _EXONCAND_HH
@@ -42,6 +45,85 @@ inline bool onRCStopcodon(const char* dna) {
 	onRCOchre(dna) || onRCOpal(dna) || onRCAmber(dna);
 }
 
+#define EXON_TYPES 17
+
+enum ExonType{UNKNOWN_EXON = -1,
+	       // forward strand
+	       singleGene, initial_0, initial_1, initial_2, internal_0, internal_1, internal_2, terminal_exon,
+	       // reverse strand
+	       rsingleGene, rinitial_exon, rinternal_0, rinternal_1, rinternal_2, rterminal_0, rterminal_1, rterminal_2
+};
+
+// converts a stateTypeIdentifier to the ExonType
+ExonType toExonType(const char* str);
+
+
+struct block {
+	long int begin;
+	int length;
+	int previousGaps;
+	int index;
+};
+
+
+class ExonCandidate {
+public:
+	ExonCandidate(ExonType s=UNKNOWN_EXON, long int b=0, long int e=0, double sc=0.0):
+	    type(s),
+	    begin(b),
+	    end(e),
+	    score(sc)
+	  {}
+	~ExonCandidate(){}
+        ExonCandidate(const ExonCandidate& other):
+            type(other.type),
+            begin(other.begin),
+            end(other.end),
+            score(other.score)
+          {}
+	 ExonType type;
+	 long int begin, end;
+	 double score;
+
+	 long int getStart(void);
+	 long int getEnd(void);
+	 ExonType getExonType(void);
+         StateType getStateType(void);
+	 double getScore(void);
+	 string createKey();
+};
+
+class AlignSeq {
+public:
+	AlignSeq() {}
+	~AlignSeq(){}
+	string name, chromosome;
+	long int start, seqLen, alignLen;
+	Strand strand;
+	vector<long int*> cmpStarts;
+	list<block> sequence;
+
+	map<string, ExonCandidate*> existingCandidates;
+	inline void addToHash(ExonCandidate *ec) {
+	     existingCandidates[ec->createKey()] = ec;
+	}
+};
+
+/*class AlignmentBlock {
+public:
+	AlignmentBlock(vector<AlignSeq*> v=NULL, int i=0):
+		speciesTupel(v),
+		extent(i)
+	{}
+	AlignmentBlock(){}
+	~AlignmentBlock(){}
+	vector<AlignSeq*> alignSpeciesTupel;
+	//int extent;
+
+};*/
+
+
+
 /*
  * getExonCands: get all exon candidates
  * assqthresh, dssqthresh are between 0 and 1 and thresholds for the inclusion of
@@ -51,7 +133,9 @@ inline bool onRCStopcodon(const char* dna) {
  * The default threshold of 0 means that all splice site patterns are considered.
  */
 
-void getExonCands(const char* dna, float assqthresh=0, float dssqthresh=0);
-
+double getGC_Content(const char *dna);
+char* randomDNAGenerator (double gc_content);
+list<ExonCandidate* > getExonCands(const char* dna, float assqthresh, float dssqthresh);
+// void computeIndicesSS(list<ExonCandidate*> cand, int seqlen);
 
 #endif  //  _EXONCAND_HH

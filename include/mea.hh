@@ -10,7 +10,7 @@
 
 void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures, int n, int strlength);
 void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int strlength);
-void buildDatastructure(list<Gene> *alltranscripts, bool utr, list<Status> &stlist);
+void buildStatusList(list<Gene> *alltranscripts, bool utr, list<Status> &stlist);
 void addToList(State *st, Statename name, list<Status> *slist);
 bool compareStatus(Status first, Status second);
 bool compareGenes(Gene first, Gene second);

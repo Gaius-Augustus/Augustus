@@ -14,12 +14,15 @@
 
 #include "../include/phylotree.hh"
 #include "orthoexon.hh"
-#include "parser/parser.h"
 #include "properties.hh"
 #include <queue>
 #include <cmath>
 #include <iostream>
 #include <fstream>
+
+#ifdef CPP0X
+#include "parser/parser.h"
+#endif
 
 
 void Treenode::printNode() const {
@@ -66,6 +69,8 @@ size_t PhyloTree::getVectorPositionSpecies(string name) {
 
 PhyloTree::PhyloTree(string filename){
 
+#ifdef CPP0X
+
   filebuf fb;
   fb.open(filename.c_str(),ios::in);
   if (fb.is_open()){
@@ -79,6 +84,10 @@ PhyloTree::PhyloTree(string filename){
   }
   else
     throw ProjectError("PhyloTree::PhyloTree: Could not open this file!");
+
+#else
+  throw ProjectError("Comparative gene prediction not possible with this compiled version. Please recompile with flag CPP0X.");
+#endif
 }
 
 PhyloTree::~PhyloTree(){
@@ -126,12 +135,13 @@ void PhyloTree::printWithGraphviz(string filename) const {
   file.close();
 }
 
-double PhyloTree::pruningAlgor(const OrthoExon &orthoex, const OrthoGraph &orthograph){
+double PhyloTree::pruningAlgor(OrthoExon &orthoex, const OrthoGraph &orthograph){
 
+
+  const double constant =300;  //parameter to increase/decrease probability
   double tree_score;
   string key = orthoex.getKey(orthograph);
   if(cache::inHash(key)){
-    cache::incrementCounter(key);
     tree_score = cache::getScore(key);
   }
   else{
@@ -139,20 +149,20 @@ double PhyloTree::pruningAlgor(const OrthoExon &orthoex, const OrthoGraph &ortho
       if((*it)->isLeaf()){
 	/*
 	 * initialization
-	*/
+	 */
 	if(key.at(getVectorPositionSpecies((*it)->species)) == '2'){     // no Exon present -> sum over all possible labels (0,1)
-	  cout<<(*it)->species<<"\t"<<(getVectorPositionSpecies((*it)->species))<<"\t"<<"NULL"<<endl;
+	  //cout<<(*it)->species<<"\t"<<(getVectorPositionSpecies((*it)->species))<<"\t"<<"NULL"<<endl;
 	  (*it)->alpha.at(0) = 1; 
 	  (*it)->alpha.at(1) = 1;
 	}
 	else{
 	  if(key.at(getVectorPositionSpecies((*it)->species)) == '1'){   // Exon present and also part of the path
-	    cout<<(*it)->species<<"\t"<<(getVectorPositionSpecies((*it)->species))<<"\t"<<"1"<<endl;
+	    //cout<<(*it)->species<<"\t"<<(getVectorPositionSpecies((*it)->species))<<"\t"<<"1"<<endl;
 	    (*it)->alpha.at(0) = 0; 
 	    (*it)->alpha.at(1) = 1;
 	  }
 	  if(key.at(getVectorPositionSpecies((*it)->species)) == '0'){   // Exon present, but not part of the path
-	    cout<<(*it)->species<<"\t"<<(getVectorPositionSpecies((*it)->species))<<"\t"<<"0"<<endl;
+	    //cout<<(*it)->species<<"\t"<<(getVectorPositionSpecies((*it)->species))<<"\t"<<"0"<<endl;
 	    (*it)->alpha.at(0) = 1; 
 	    (*it)->alpha.at(1) = 0;
 	  }
@@ -169,8 +179,8 @@ double PhyloTree::pruningAlgor(const OrthoExon &orthoex, const OrthoGraph &ortho
     /*
       computation of the overall tree score
      */
-    tree_score  = ( this->evo.getEquilibriumFreq(0) * this->treenodes.back()->alpha.at(0) ) + ( this->evo.getEquilibriumFreq(1) * this->treenodes.back()->alpha.at(1) );
-    cache::addToHash(key, tree_score);
+    tree_score  =( ( this->evo.getEquilibriumFreq(0) * this->treenodes.back()->alpha.at(0) ) + ( this->evo.getEquilibriumFreq(1) * this->treenodes.back()->alpha.at(1)) );
+    cache::addToHash(key, constant * tree_score);
 
 #ifdef DEBUG
   cout<<"#####################################################################\n";
@@ -203,7 +213,7 @@ ExonEvoModel::ExonEvoModel(){
   }
 }
 
-double ExonEvoModel::P(bool label1, bool label2, double dist) const {  //the substitution model
+double ExonEvoModel::P(bool label1, bool label2, double dist) const {  // the substitution model
 
   if(label1 == false && label2 == true){ // P(0 -> 1)
     return (lambda / (lambda + mu)) * (1 - exp(-(mu + lambda) * dist));

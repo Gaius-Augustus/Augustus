@@ -97,7 +97,7 @@ public:
   size_t getVectorPositionSpecies(string name);
   void printTree() const;
   void printWithGraphviz(string filename) const;
-  double pruningAlgor(const OrthoExon &orthoex, const OrthoGraph &orthograph);
+  double pruningAlgor(OrthoExon &orthoex, const OrthoGraph &orthograph);
 
 };
 

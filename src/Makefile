@@ -7,7 +7,7 @@
 #        - In the current version, the order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
 #        
 CC	= g++
-CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -DDEBUG  -g -ggdb -static
+CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -std=c++0x -DCPP0X -DDEBUG  -g -ggdb -static
 INCLS	= -I../include -I.
 LIBS	= # -lcwd
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
@@ -552,7 +552,7 @@ lex.o: scanner/lex.cc scanner/scanner.ih
 	$(CC) -std=c++0x -c -o $@ scanner/lex.cc $(INCLS)
 
 phylotree.o: phylotree.cc ../include/phylotree.hh parser/parser.h ../include/orthoexon.hh ../include/properties.hh
-	$(CC) -std=c++0x -c -o $@ $< $(INCLS)
+	$(CC) -c -o $@ $< $(INCLS)
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

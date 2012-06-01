@@ -12,6 +12,7 @@
 
 #include "compgenepred.hh"
 #include "orthograph.hh"
+#include "orthoexon.hh"
 
 CompGenePred::CompGenePred(){
   if (!Constant::speciesfilenames.empty()) {
@@ -25,6 +26,8 @@ void CompGenePred::start(){
 
   OrthoGraph::tree = new PhyloTree(Constant::treefile);  //has to be initialized before OrthoGraph
 
+  OrthoGraph::numSpecies = OrthoGraph::tree->species.size();
+
   OrthoGraph::initOutputFiles();
 
   //GenomicMSA msa;
@@ -36,9 +39,9 @@ void CompGenePred::start(){
   OrthoGraph orthograph(rsa);
 
   // iterative optimization
-  orthograph.optimizeLabels();
-  // transfer longest paths to genes + filter + ouput
+  orthograph.optimize();
 
+  // transfer longest paths to genes + filter + ouput
   orthograph.outputGenes(minusstrand);
 
   // }

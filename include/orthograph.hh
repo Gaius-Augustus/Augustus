@@ -23,21 +23,34 @@ public:
   OrthoGraph(RandSeqAccess *rsa);
   ~OrthoGraph();
 
-  vector<AugustusGraph*> graphs;
+  static size_t numSpecies;               //the number of species
+  vector<SpeciesGraph*> graphs;
   vector<AnnoSequence*> orthoSeqRanges;
   static PhyloTree *tree;
   static vector<ofstream*> filestreams;
   list<OrthoExon> all_orthoex;
   vector< list<Gene> *> ptrs_to_alltranscripts; //stores pointers to alltranscripts until they can be deleted (destructor of OrthoGraph)
-  double score;
 
-
+  //functions to redirect filestreams
   static void initOutputFiles();
   static void closeOutputFiles();
-  void optimizeLabels();
+
+
+  //optimization functions
+  void optimize();
+  void localMove(vector<MoveObject*> &orthomove);
+  double calculateScoreDiff(vector<MoveObject*> &orthomove);
+  inline double pruningAlgor(){                    // pruning Algor. for all OrthoExons
+    return pruningAlgor(all_orthoex);
+  }                          
+  double pruningAlgor(list<OrthoExon> &orthoex);   // pruning Algor. for a list of OrthoExons in a range
+  list<OrthoExon> orthoExInRange(vector<MoveObject*> &orthomove); //determine all OrthoExons in a range
+  void addOrthoIntrons(vector<MoveObject*> &orthomove, list<OrthoExon> &local_orthoexons);
+
   void outputGenes(Strand strand);
   inline void storePtrsToAlltranscripts(list<Gene> *alltranscripts){
     this->ptrs_to_alltranscripts.push_back(alltranscripts);
   }
 };
+
 #endif
