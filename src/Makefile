@@ -7,13 +7,21 @@
 #        - In the current version, the order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
 #        
 CC	= g++
-CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -std=c++0x -DCPP0X -DDEBUG  -g -ggdb -static
+# uncomment this for comparative gene finding
+# CPP0X = true 
+CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -DDEBUG  -g -ggdb -static
+ifdef CPP0X
+	CFLAGS += -std=c++0x -DCPP0X
+endif
 INCLS	= -I../include -I.
 LIBS	= # -lcwd
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
- meaPath.o exoncand.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o parse.o lex.o orthograph.o
+ meaPath.o exoncand.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o orthograph.o
+ifdef CPP0X
+	OBJS += parse.o lex.o
+endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
 PROGR	= augustus etraining consensusFinder curve2hints fastBlockSearch prepareAlign
