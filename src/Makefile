@@ -20,7 +20,7 @@ OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
  meaPath.o exoncand.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o orthograph.o
 ifdef CPP0X
-	OBJS += parse.o lex.o
+	OBJS += parser/parse.o scanner/lex.o
 endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
@@ -553,14 +553,20 @@ orthograph.o : \
 	../include/namgene.hh \
 	orthograph.cc
 
-parse.o: parser/parse.cc parser/parser.ih
-	$(CC) -std=c++0x -c -o $@ parser/parse.cc $(INCLS)
+parser/parse.o: \
+	parser/parser.ih \
+	parser/parse.cc
 
-lex.o: scanner/lex.cc scanner/scanner.ih
-	$(CC) -std=c++0x -c -o $@ scanner/lex.cc $(INCLS)
+scanner/lex.o: \
+	scanner/scanner.ih \
+	scanner/lex.cc
 
-phylotree.o: phylotree.cc ../include/phylotree.hh parser/parser.h ../include/orthoexon.hh ../include/properties.hh
-	$(CC) -c -o $@ $< $(INCLS)
+phylotree.o: \
+	../include/phylotree.hh \
+	parser/parser.h \
+	../include/orthoexon.hh \
+	../include/properties.hh\
+	phylotree.cc
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

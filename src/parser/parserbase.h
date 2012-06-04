@@ -30,7 +30,7 @@ class ParserBase
     enum Tokens__
     {
         DISTANCE = 257,
-        SPECIES,
+        SPECIES
     };
 
 // $insert STYPE
@@ -54,7 +54,7 @@ union STYPE__
         enum ErrorRecovery__
         {
             DEFAULT_RECOVERY_MODE__,
-            UNEXPECTED_TOKEN__,
+            UNEXPECTED_TOKEN__
         };
         bool        d_debug__;
         size_t      d_nErrors__;

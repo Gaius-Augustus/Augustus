@@ -22,7 +22,7 @@ class ScannerBase
     {
         RULE = 0,
         FLAGS,
-        ACCCOUNT,
+        ACCCOUNT
     };
 
     enum
@@ -45,7 +45,7 @@ protected:
         ECHO_CH,                // echo ch itself (d_matched empty)
         ECHO_FIRST,             // echo d_matched[0], push back the rest
         MATCH,                  // matched a rule
-        RETURN,                 // no further continuation, lex returns 0.
+        RETURN                 // no further continuation, lex returns 0.
     };
 
 public:
