@@ -17,7 +17,7 @@ $usage .= "gmap_build -d exex_db exex.fa\n";
 $usage .= "gsnap --format=sam --nofails -d exex_db rnaseq.fastq > exex.sam\n\n";
 $usage .= "map.psl was created in the following way:\n";
 $usage .= "intron2exex.pl --introns=introns.lst --seq=genome.masked.fa --exex=exex.fa --map=map.psl\n\n";
-
+$usage .= "Please note that mapSam.pl assumes that the flanking region of introns is 75+75 bp!\n";
 if(@ARGV != 2){
     print $usage;
     exit;
@@ -59,6 +59,8 @@ my $letter;
 my $number;
 my $newCigar;
 my $startCoord;
+my $cigarNumber;
+my $badCigar = 0;
 # process each line of sam format
 open(SAM, "<", $exexFile) or die("Could not open exexFile $exexFile!\n");
 while(<SAM>){
@@ -68,27 +70,27 @@ while(<SAM>){
 	$exexName = $tSam[2];
 	$mapLine = $mapHash{$exexName};
 	@tMap = split(/\t/, $mapLine);
-	$junctionStart = $tMap[15]+$tMap[0]/2+1; # first base after junction
-	$globalStart = $tSam[3]+$tMap[15];
-	$intronLen = $tMap[7];
-	# process the cigar string
-	my $softclipped = 0;	
-	if($tSam[5]=~m/^(\d+)S/){
+	$junctionStart = $tMap[15]+$tMap[0]/2+1; # first base after
+	if(($tMap[0]/2)==75){ # results from fragment border introns!
+	    $globalStart = $tSam[3]+$tMap[15];
+	    $intronLen = $tMap[7];
+	    # process the cigar string
+	    my $softclipped = 0;	
+	    if($tSam[5]=~m/^(\d+)S/){
 		$softclipped = $1;		
-	}
-	$beforeJunction = $junctionStart - $globalStart + $softclipped;
-	if($beforeJunction > 0){
-		$startCoord = $tSam[3]+$tMap[15]  ;
-
-	}else{
+	    }
+	    $beforeJunction = $junctionStart - $globalStart + $softclipped;
+	    if($beforeJunction > 0){
+		$startCoord = $tSam[3]+$tMap[15];
+	    }else{
 		$startCoord = ($tSam[3]+$tMap[15]+$tMap[7]);
-	}
-	$cigarLen = length($tSam[5]);
-	$safeForAfterJunction = 0;
-	$cigPos = 1;
-	$seenJunction = 0;
-	$newCigar = "";
-	while($cigarLen > 0){
+	    }
+	    $cigarLen = length($tSam[5]);
+	    $safeForAfterJunction = 0;
+	    $cigPos = 1;
+	    $seenJunction = 0;
+	    $newCigar = "";
+	    while($cigarLen > 0){
 		$tSam[5] =~ m/^(\d+)(\w)/;
 		$letter = $2; 
 		$number = $1;
@@ -96,30 +98,61 @@ while(<SAM>){
 		    $seenJunction = 1;
 		}
 		if($number < $beforeJunction and $seenJunction == 0){
-			$newCigar = $newCigar.$number.$letter;		
+		    $cigarNumber = $number;
+		    if($cigarNumber==0 and $letter eq 'M'){
+			$badCigar = 1;
+		    }
+			$newCigar = $newCigar.$cigarNumber.$letter;		
 			$beforeJunction = $beforeJunction - $number;
 		}elsif($seenJunction == 0 and $beforeJunction => 1 ){
-			$newCigar = $newCigar.($number - ($number - $beforeJunction));	
+		    $cigarNumber = ($number - ($number - $beforeJunction));
+		    if($cigarNumber==0 and $letter eq 'M'){
+			$badCigar = 1;
+		    }
+			$newCigar = $newCigar.$cigarNumber;	
 			$newCigar = $newCigar.$letter;
 			$newCigar = $newCigar.$intronLen."N";
-			$newCigar = $newCigar.($number-$beforeJunction);
+		    $cigarNumber = ($number-$beforeJunction);
+                    if($cigarNumber==0 and $letter eq 'M'){
+                        $badCigar = 1;
+                    }
+			$newCigar = $newCigar.$cigarNumber;
 			$newCigar = $newCigar.$letter;
 			$seenJunction = 1;
 		}else{
-			$newCigar = $newCigar.$number.$letter;
+		    $cigarNumber = $number;
+                    if($cigarNumber==0 and $letter eq 'M'){
+                        $badCigar = 1;
+                    }
+		    $newCigar = $newCigar.$cigarNumber.$letter;
 		}
 	
 		$cigPos = $cigPos + $number;
 		$tSam[5]=~ s/$number$letter//;
 		$cigarLen = length($tSam[5]);
 	}
-	if($newCigar =~ m/N/){
+	if($newCigar =~ m/N/ and $badCigar==0){
 		print $tSam[0]."\t".$tSam[1]."\t".$tMap[13]."\t".$startCoord."\t".$tSam[4]."\t$newCigar";
 		$samLen = @tSam;
 		for ($count = 6; $count < $samLen; $count ++){
 			print "\t$tSam[$count]";
 		}
+	}elsif($badCigar==1){
+	    print STDERR "Warning - Bad CIGAR (this alignment is not included in the output at stdout):\n".$tSam[0]."\t".$tSam[1]."\t".$tMap[13]."\t".$startCoord."\t".$tSam[4]."\t$newCigar\n";
+                $samLen = @tSam;
+                for ($count = 6; $count < $samLen; $count ++){
+                        print STDERR "\t$tSam[$count]";
+                }
+	    print STDERR "Sam:\n";
+	    print STDERR $_;
+	    
+	    print STDERR "Map:\n";
+	    foreach(@tMap){
+	    print STDERR "\t".$_;
+	    }
 	}
+	$badCigar = 0;
     }
+}
 }
 close(SAM) or die("Could not close exexFile $exexFile!\n");
