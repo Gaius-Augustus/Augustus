@@ -9,7 +9,7 @@
 %             Fon: +49 3834 864642                                                               %
 %             mario.stanke@uni-greifswald.de                    keller@cs.uni-goettingen.de      %
 %                                                                                                %
-%             Date: April 5th, 2012                                                              %
+%             Date: June 9th, 2012                                                               %
 %                                                                                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -109,7 +109,7 @@ Scavenging Amino Acids from Its Host's Lungs. PLoS One. 2010, Dec 20;5(12):e1515
 
 1. unpack
 
->tar -xzf augustus.2.5.5.src.tar.gz
+>tar -xzf augustus.2.6.1.src.tar.gz
 
 The tar-archive contains one directory 'augustus-2.4' with the following 
 sub-directories:

@@ -1,3 +1,8 @@
+List of changes from version 2.6 to 2.6.1 (until June 9th, 2012)
+     - make the sources compatible with older compilers that do not understand the flag -std=c++0x
+     - script samMap.pl
+     - filterBam bugfixes
+     - customized transition matrix for species chlamy2011
 List of changes from version 2.5.5 to 2.6 (until April 12th, 2012)
      - new species bombus_terrestris, rhodnius, Conidiobolus_coronatus
      - new auxiliary programs filterBam, bam2hints
