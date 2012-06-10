@@ -125,7 +125,7 @@ private:
     vector<StateType>   stateMap;
     /// @doc index of the parameters read into the models (based on sequence composition)
     int                 lastParIndex;
-
+    /// overlap length distributions for bacterial model
     Boolean proteinOutput;
     Boolean codSeqOutput;
     Boolean noInFrameStop;

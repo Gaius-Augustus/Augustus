@@ -301,7 +301,10 @@ public:
     static string alnfile; // name of file that contains MSA of genomes
     static bool overlapmode; // whether overlapping exons are allowed in Viterbi algorithm
     static string orthoexons; //name of file that contains list of orthologous exons
-    static Integer maxOvlp;
+    static Integer maxOvlp; // parameters for overlapping coding regions in bacteria
+    static vector<Double> head2tail_ovlp;
+    static vector<Double> head2head_ovlp;
+    static vector<Double> tail2tail_ovlp;
 };
 
 

@@ -3,7 +3,7 @@
  * licence: Artistic Licence, see file LICENCE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  * descr.:  
- * authors: Mario Stanke (mario@gobics.de)
+ * authors: Mario Stanke (mario.stanke@uni-greifswald.de)
  * 
  * date    |   author      |  changes 
  * --------|---------------|------------------------------------------ 
@@ -89,6 +89,9 @@ string Constant::alnfile; // name of file that contains MSA of genomes
 bool Constant::overlapmode = false;
 string Constant::orthoexons; //name of file that contains list of orthologous exons
 Integer Constant::maxOvlp = 50; // maximum overlap of coding regions for bacteria
+vector<Double> Constant::head2tail_ovlp;
+vector<Double> Constant::head2head_ovlp;
+vector<Double> Constant::tail2tail_ovlp;
 
 bool inCRFTraining = false;
 

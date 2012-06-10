@@ -1419,22 +1419,31 @@ void NAMGene::readOvlpLenDist( ){
       istrm.open(fname.c_str());
       if (istrm.peek() == EOF) // file doesn't exist
 	  throw ProjectError(fname + " doesn't exist");
-      cout << " Using species specific overlap length distribution: " << fname;
+      cout << "# Using species specific overlap length distribution: " << fname << endl;
   } catch (...){
       istrm.clear();
       // use default overlap length distribution file
       string fname = Constant::modelPath() + OVLPLENFILE;
       istrm.open(fname.c_str());
-      cout << " Using default overlap length distribution file.";
+      cout << "# Using default overlap length distribution file." << endl;
   }
-  cout << endl;
-
-  if( istrm ){
+  
+  if (istrm) {
+    Constant::head2tail_ovlp.assign(Constant::maxOvlp+1, 0.0);
     istrm >>  goto_line_after( "[HEAD2TAIL]" );
     istrm >> comment;
-    for (int i=1;i<=Constant::maxOvlp; i++)
-      {}
-      //istrm >> head2tail_ovlp[i];
+    for (int i=0; i <= Constant::maxOvlp; i++)
+      istrm >> Constant::head2tail_ovlp[i];
+    Constant::head2head_ovlp.assign(Constant::maxOvlp+1, 0.0);
+    istrm >>  goto_line_after( "[HEAD2HEAD]" );
+    istrm >> comment;
+    for (int i=0; i <= Constant::maxOvlp; i++)
+      istrm >> Constant::head2head_ovlp[i];
+    Constant::tail2tail_ovlp.assign(Constant::maxOvlp+1, 0.0);
+    istrm >>  goto_line_after( "[TAIL2TAIL]" );
+    istrm >> comment;
+    for (int i=0; i <= Constant::maxOvlp; i++)
+      istrm >> Constant::tail2tail_ovlp[i];
     istrm.close();
   } else {
     throw NAMGeneError( "Could't open the file with the overlap length distribution." );
