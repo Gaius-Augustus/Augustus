@@ -13,7 +13,6 @@
 
 #include "orthograph.hh"
 #include "mea.hh"
-#include "namgene.hh"
 
 
 
@@ -22,89 +21,9 @@ vector<ofstream*> OrthoGraph::filestreams;
 size_t OrthoGraph::numSpecies;
 
 
-OrthoGraph::OrthoGraph(RandSeqAccess *rsa){
-
-  numSpecies = tree->species.size();
-
-  //TODO: für GeneMSA Object umschreiben
-
-  NAMGene namgene; // creates and initializes the states
-  FeatureCollection extrinsicFeatures; // hints, empty for now, will later read in hints for sequence ranges from database
-  SequenceFeatureCollection sfc(&extrinsicFeatures); 
-  StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
-
+OrthoGraph::OrthoGraph(){
   graphs.resize(numSpecies);
   orthoSeqRanges.resize(numSpecies);
-
-  //temp:
-  all_orthoex = readOrthoExons(Constant::orthoexons);
-  vector<string> speciesname = tree->species;
-  vector<string> chrName;
-  chrName.push_back("chr21");
-  chrName.push_back("chr17");
-  chrName.push_back("chr31");
-
-  //example1:
-  int start[] = {44836600, 31983200, 39789600} ;
-  int end[] = {44846200, 31992100, 39798300}; 
-  Strand strand = minusstrand;
-
-  //example2:
-  //int start[] = {43529600, 31121600, 38807600} ;
-  //int end[] = {43536200, 31126550, 38812200}; 
-  //Strand strand = plusstrand;
-
-  for (int s = 0; s < 3; s++) {
-    orthoSeqRanges[s] = rsa->getSeq(speciesname[s], chrName[s], start[s], end[s]);
-    if (orthoSeqRanges[s]){
-      //cout << seqRange->seqname << "\t" << seqRange->length << "\t" << seqRange->offset << endl;
-      //cout << seqRange->sequence << endl;
-      /*
-       * build list of additional exoncandidates, which are inserted in the graph
-       */
-      list<ExonCandidate*> additionalExons;
-      for(list<OrthoExon>::iterator it = this->all_orthoex.begin(); it !=  this->all_orthoex.end(); it++){
-	if(it->orthoex[s] != NULL){
-	  it->orthoex[s]->begin -= orthoSeqRanges[s]->offset;
-	  it->orthoex[s]->end -= orthoSeqRanges[s]->offset;
-	  additionalExons.push_back(it->orthoex[s]);
-	}
-      }
-      /*for(list<Status>::iterator it = additionalExons.begin(); it != additionalExons.end(); it++){
-	cout << it->begin <<"\t"<< it->end <<"\t"<<((State*) it->item)->type << endl;
-	}*/
-
-      namgene.doViterbiPiecewise(sfc, orthoSeqRanges[s], strand); // builds graph for each species
-
-      list<Gene> *alltranscripts = namgene.getAllTranscripts();
-      if(alltranscripts){
-	cout << "building Graph for " << speciesname[s] << endl;
-	if(!alltranscripts->empty()){
-	  /*
-	   * build datastructure for graph representation
-	   * @stlist : list of all sampled states
-	   */
-	  list<Status> stlist;
-	  buildStatusList(alltranscripts, false, stlist);
-	  //build graph
-	  SpeciesGraph *singleGraph = new SpeciesGraph(&stlist, orthoSeqRanges[s]->length, additionalExons, speciesname[s]);
-	  singleGraph->buildGraph();
-	  //find correct position in vector and add graph for species to OrthoGraph
-	  size_t pos = tree->getVectorPositionSpecies(speciesname[s]);
-	  if (pos < numSpecies){
-	    this->graphs[pos] = singleGraph;
-	  }
-	  else{
-	    cerr << "species names in Orthograph and OrthoExon don't match" << endl;
-	  }
-	  storePtrsToAlltranscripts(alltranscripts); //save pointers to transcripts and delete them after gene list is build
-	}
-      }    
-    } else {
-      cerr << "random sequence access failed on " << speciesname[s] << ", " << chrName[s] << ", " << start[s] << ", " <<  end[s] << ", " << endl;
-    }
-  }
-  pruningAlgor();
 }
 
 

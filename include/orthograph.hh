@@ -13,14 +13,13 @@
 #include "graph.hh"
 #include "phylotree.hh"
 #include "orthoexon.hh"
-#include "randseqaccess.hh"
 
 using namespace std;
 
 class OrthoGraph{
 
 public:
-  OrthoGraph(RandSeqAccess *rsa);
+  OrthoGraph();
   ~OrthoGraph();
 
   static size_t numSpecies;               //the number of species
