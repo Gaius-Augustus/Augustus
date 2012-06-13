@@ -45,7 +45,11 @@ static int read_bam(void *data, bam1_t *b) // read level filters better go here 
 
 int main(int argc, char *argv[])
 {
-	int i, n, tid, beg, end, pos, *n_plp, baseQ = 0, mapQ = 0;
+
+	char *filename=NULL;
+	char *trackname=NULL;
+
+	int n, tid, beg, end, pos, *n_plp, baseQ = 0, mapQ = 0;
 	const bam_pileup1_t **plp;
 	char *reg = 0; // specified region
 	void *bed = 0; // BED data structure
@@ -68,70 +72,82 @@ int main(int argc, char *argv[])
 	}
 
 	// initialize the auxiliary data structures
-	n = argc - optind; // the number of BAMs on the command line; we will just need one
-	if (n>1) {printf("Just one BAM file as input is admitted!!!\n"); exit(1);}
-	data = calloc(n, sizeof(void*)); // data[i] for the i-th input
+	
+	if ((argc - optind)!=1) 
+	  { // number of input BAMs should be equal to 1
+		printf("Just one BAM file as input is admitted!!!\n"); 
+		exit(1);
+	  }
+
+	data = calloc(1, sizeof(void*)); // data[i] for the i-th input; data is an array
 	beg = 0; end = 1<<30; tid = -1;  // set the default region
 
-	bam_header_t *htmp;
-	i=0;
-	data[i] = calloc(1, sizeof(aux_t));
-	data[i]->fp = bam_open(argv[optind+i], "r"); // open BAM
-	data[i]->min_mapQ = mapQ;                    // set the mapQ filter
-	htmp = bam_header_read(data[i]->fp);         // read the BAM header
+	// Open BAM file, including header
+	char *oldName, *newName;
+	bam_header_t *htmp = 0;							// keep the header of the 1st BAM */
+	data[0] = calloc(1, sizeof(aux_t));
+	filename = argv[optind];
+	data[0]->fp = bam_open(filename, "r"); 		// open BAM
+	data[0]->min_mapQ = mapQ;                    	// set the mapQ filter
+	htmp = bam_header_read(data[0]->fp);         	// read the BAM header
 
-	h = htmp; // keep the header of the 1st BAM
-			
 	if (reg)
 	  { // parse the region
-		bam_parse_region(h, reg, &tid, &beg, &end);
+		bam_parse_region(htmp, reg, &tid, &beg, &end);
 	  }
 
 	if (tid >= 0) 
 	  { // if a region is specified and parsed successfully
-		bam_index_t *idx = bam_index_load(argv[optind+i]);  // load the index
-		data[i]->iter = bam_iter_query(idx, tid, beg, end); // set the iterator
+		bam_index_t *idx = bam_index_load(argv[optind]);  // load the index
+		data[0]->iter = bam_iter_query(idx, tid, beg, end); // set the iterator
 		bam_index_destroy(idx); // the index is not needed any more; phase out of the memory
 	  }
 
-
 	// the core multi-pileup loop
-	mplp = bam_mplp_init(n, read_bam, (void**)data); // initialization
-	n_plp = calloc(n, sizeof(int)); // n_plp[i] is the number of covering reads from the i-th BAM
-	plp = calloc(n, sizeof(void*)); // plp[i] points to the array of covering reads (internal in mplp)
+	mplp = bam_mplp_init(1, read_bam, (void**)data); // initialization
+	n_plp = calloc(1, sizeof(int)); // n_plp[i] is the number of covering reads from the i-th BAM
+	plp = calloc(1, sizeof(void*)); // plp[i] points to the array of covering reads (internal in mplp)
 
-	while (bam_mplp_auto(mplp, &tid, &pos, n_plp, plp) > 0) 
+	// Print track name
+	/* printf("track name=%s type=wiggle_0\n",trackname==NULL? filename : trackname); */
+	printf("track name=%s type=wiggle_0\n", trackname==NULL? filename : trackname);
+
+	oldName = "";
+
+	while (bam_mplp_auto(mplp, &tid, &pos, n_plp, plp) > 0)
 	  { // come to the next covered position
+
 		if (pos < beg || pos >= end) continue; // out of range; skip
-		if (bed && bed_overlap(bed, h->target_name[tid], pos, pos + 1) == 0) continue; // not in BED; skip
+		if (bed && bed_overlap(bed, htmp->target_name[tid], pos, pos + 1) == 0) continue; // not in BED; skip
 
 		// prints reference name (I will not require it all the time)
-		fputs(h->target_name[tid], stdout); 
-		// prints position 
-		printf("\t%d", pos+1); 
-
-		// Sweeping through all BAM files; just one in my case
-		i=0; // base level filters have to go here
-		int j, m = 0;
-		for (j = 0; j < n_plp[i]; ++j) 
+		newName = htmp->target_name[tid];
+		/* fputs(newName, stdout);  */
+		if (strcmp(oldName, newName))
 		  {
-			const bam_pileup1_t *p = plp[i] + j; // DON'T modfity plp[][] unless you really know
-			if (p->is_del || p->is_refskip)
-			  {
-				++m; // having dels or refskips at tid:pos
-			  }
-			else if (bam1_qual(p->b)[p->qpos] < baseQ)
-			  {
-				fprintf(stdout, "Out because of low quality...\n");
-				++m; // low base quality
-			  }
+			printf("variableStep chrom=%s\n", newName);
 		  }
 
-		// Prints out the depth, discounting "m" from the pile if: dels/refskips or low quality 
-		// alignments were present
-		printf("\t%d", n_plp[i] - m); 
-		putchar('\n');
+		// Sweeping through all BAM files; just one in my case
+		// base level filters have to go here
+		int m = 0;
+		int j;
+		for (j = 0; j < n_plp[0]; ++j)
+		  {
+			const bam_pileup1_t *p = plp[0] + j; 	// DON'T modify plp[][] unless you really know
+			if (p->is_del || p->is_refskip) {++m;} 	// having dels or refskips at tid:pos
+			/* 	else if (bam1_qual(p->b)[p->qpos] < baseQ) {++m;} // low base quality */
+		  }
 
+		// Prints out the depth, discounting "m" from the pile if: dels/refskips or low quality
+		// alignments were present
+		int coverage = n_plp[0] - m;
+
+		// prints position and coverage
+		if (coverage > 0) printf("%d %d\n", pos+1, coverage);
+
+		// Updating reference name
+		oldName = newName;
 	  } // end while
 
 
@@ -140,13 +156,12 @@ int main(int argc, char *argv[])
 	bam_mplp_destroy(mplp);
 
 	bam_header_destroy(h);
-	i=0;
-	bam_close(data[i]->fp);
-	if (data[i]->iter) 
+	bam_close(data[0]->fp);
+	if (data[0]->iter) 
 	  { 
-		bam_iter_destroy(data[i]->iter); 
+		bam_iter_destroy(data[0]->iter); 
 	  }
-	free(data[i]); 
+	free(data[0]); 
 	free(data); 
 	free(reg);
 	if (bed) 
