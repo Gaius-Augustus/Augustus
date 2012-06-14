@@ -194,7 +194,7 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
   StateModel::setContentStairs(&cs);
 
   curGCIdx = -1; // initialize with invalid GC content class
-  prepareModels(dna, dnalen, stateMap);
+  prepareModels(dna, dnalen);
 
 
   /*
@@ -1572,8 +1572,7 @@ void NAMGene::initAlgorithms(int idx){
     states[i]->initPredecessors(transitions, i);
 }
 
-void NAMGene::prepareModels(const char* dna, int dnalen, 
-			    const vector<StateType>& stateMap) {
+void NAMGene::prepareModels(const char* dna, int dnalen) {
     StateModel::prepareViterbi(dna, dnalen, stateMap);
 #ifdef DEBUG
     PP::ExonScorer::transitions = &transitions;
@@ -1594,7 +1593,7 @@ void NAMGene::setPathAndProb(AnnoSequence *annoseq, FeatureCollection &extrinsic
     sfc.prepare(annoseq, false);
     sfc.computeHintedSites(annoseq->sequence);
     sfc.prepareLocalMalus(annoseq->sequence);
-    prepareModels(annoseq->sequence, annoseq->length, stateMap);
+    prepareModels(annoseq->sequence, annoseq->length);
     annoseq->anno->emiProb = getPathEmiProb(&(*(annoseq->anno->path)), &(*(annoseq->sequence)), sfc);
     annoseq = annoseq->next;
   }
