@@ -101,7 +101,7 @@ private:
      * Read in the parameters for all the models from files
      *
      */
-    void prepareModels(const char*dna, int len, const vector<StateType>& stateMap);
+    void prepareModels(const char*dna, int len);
 
     int tryFindCutEndPoint(StatePath *condensedExamPath, int examIntervalStart, int examIntervalEnd, list<Feature> *groupGaps, bool onlyInternalIR);
 private:
