@@ -1,13 +1,12 @@
-/* This program demonstrates how to generate pileup from multiple BAMs
- * simutaneously, to achieve random access and to use the BED interface.
+/* This program demonstrates how to generate pileup from a BAM file
  * To compile this program separately, you may:
  *
- *   gcc -g -O2 -Wall -o bam2depth -D_MAIN_BAM2DEPTH bam2depth.c -L. -lbam -lz
+ *   gcc -g -O2 -Wall -o bam2wig -D_MAIN_BAM2WIG bam2wig.c -L. -lbam -lz
  */
 
-// Some other notes
-/* 																			*/
-/* From BAM.H, the structure BAM_PILEUP1_T is defined as follows: 			*/
+/* NOTES:															  		*/
+/*																			*/
+/* 1) From BAM.H, the structure BAM_PILEUP1_T is defined as follows: 		*/
 /* 																			*/
 /* 		typedef struct { 													*/
 /*   		bam1_t *b; 														*/
@@ -16,8 +15,13 @@
 /*   		uint32_t is_del:1, is_head:1, is_tail:1, is_refskip:1, aux:28; 	*/
 /* 		} bam_pileup1_t; 													*/
 /* 						   													*/
-/* Created: 12-June-2012 */
-/* Last modified: 13-June-2012 */
+/*																			*/
+/* 2) Conditional assignment is used as follows:	 						*/
+/* 							condition ? value_if_true : value_if_false 		*/
+/*																			*/
+/* Created: 12-June-2012 													*/
+/* Last modified: 14-June-2012												*/
+
 
 #include <stdlib.h>
 #include <string.h>
@@ -31,18 +35,16 @@ typedef struct {     // auxiliary data structure
 	int min_mapQ;    // mapQ filter
 } aux_t;
 
-void *bed_read(const char *fn); // read a BED or position list file
-void bed_destroy(void *_h);     // destroy the BED data structure
-int bed_overlap(const void *_h, const char *chr, int beg, int end); // test if chr:beg-end overlaps
 
 // This function reads a BAM alignment from one BAM file.
-static int read_bam(void *data, bam1_t *b) // read level filters better go here to avoid pileup
-{
+static int read_bam(void *data, bam1_t *b) 
+{// read level filters better go here to avoid pileup
 	aux_t *aux = (aux_t*)data; // data in fact is a pointer to an auxiliary structure
 	int ret = aux->iter? bam_iter_read(aux->fp, aux->iter, b) : bam_read1(aux->fp, b);
-	if ((int)b->core.qual < aux->min_mapQ) b->core.flag |= BAM_FUNMAP;
+	if ((int)b->core.qual < aux->min_mapQ) b->core.flag |= BAM_FUNMAP; // |= is an assignment by bitwise OR
 	return ret;
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -50,45 +52,45 @@ int main(int argc, char *argv[])
 	char *filename=NULL;
 	char *trackname=NULL;
 
-	int n, tid, beg, end, pos, *n_plp, baseQ = 0, mapQ = 0;
+	int n, tid, beg, end, pos, *n_plp, mapQ = 0;
 	const bam_pileup1_t **plp;
 	char *reg = 0; // specified region
-	void *bed = 0; // BED data structure
 	bam_header_t *h = 0; // BAM header of the 1st input
 	aux_t **data;
 	bam_mplp_t mplp;
 
 	// parse the command line
-	while ((n = getopt(argc, argv, "r:b:q:Q:")) >= 0) {
+	while ((n = getopt(argc, argv, "r:t:Q:")) >= 0) {
 		switch (n) {
 			case 'r': reg = strdup(optarg); break;   // parsing a region requires a BAM header
-			case 'b': bed = bed_read(optarg); break; // BED or position list file can be parsed now
-			case 'q': baseQ = atoi(optarg); break;   // base quality threshold
 			case 'Q': mapQ = atoi(optarg); break;    // mapping quality threshold
+			case 't': trackname = strdup(optarg); break;    // mapping quality threshold
 		}
 	}
 	if (optind == argc) {
-		fprintf(stderr, "Usage: bam2wig [-r reg] [-q baseQthres] [-Q mapQthres] [-b in.bed] <in1.bam> [...]\n");
+		fprintf(stderr, "Usage: bam2wig [-r reg] [-r trackname] [-Q mapQthres] <in.bam> \n");
 		return 1;
 	}
 
 	// initialize the auxiliary data structures
 	
-	if ((argc - optind)!=1) 
+	if ((argc-optind) != 1) 
 	  { // number of input BAMs should be equal to 1
 		printf("Just one BAM file as input is admitted!!!\n"); 
 		exit(1);
 	  }
 
-	data = calloc(1, sizeof(void*)); // data[i] for the i-th input; data is an array
-	beg = 0; end = 1<<30; tid = -1;  // set the default region
+	// data[0] for the only input; data is an array with one element
+	data = calloc(1, sizeof(void*)); 
+	// set the default region. shift end to left, appending 30 zeros (end=1073741824) 
+	beg = 0; end = 1<<30; tid = -1;  
 
 	// Open BAM file, including header
 	char *oldName, *newName;
 	bam_header_t *htmp = 0;							// keep the header of the 1st BAM */
 	data[0] = calloc(1, sizeof(aux_t));
 	filename = argv[optind];
-	data[0]->fp = bam_open(filename, "r"); 		// open BAM
+	data[0]->fp = bam_open(filename, "r"); 			// open BAM
 	data[0]->min_mapQ = mapQ;                    	// set the mapQ filter
 	htmp = bam_header_read(data[0]->fp);         	// read the BAM header
 
@@ -109,7 +111,7 @@ int main(int argc, char *argv[])
 	n_plp = calloc(1, sizeof(int)); // n_plp[i] is the number of covering reads from the i-th BAM
 	plp = calloc(1, sizeof(void*)); // plp[i] points to the array of covering reads (internal in mplp)
 
-	// Print track name
+	// Print track name (if trackname specified, then use it)
 	printf("track name=%s type=wiggle_0\n", trackname==NULL? filename : trackname);
 
 	oldName = "";
@@ -118,7 +120,6 @@ int main(int argc, char *argv[])
 	  { // come to the next covered position
 
 		if (pos < beg || pos >= end) continue; // out of range; skip
-		if (bed && bed_overlap(bed, htmp->target_name[tid], pos, pos + 1) == 0) continue; // not in BED; skip
 
 		// prints reference name (I will not require it all the time)
 		newName = htmp->target_name[tid];
@@ -165,9 +166,6 @@ int main(int argc, char *argv[])
 	free(data[0]); 
 	free(data); 
 	free(reg);
-	if (bed) 
-	  { 
-		bed_destroy(bed); 
-	  }
+
 	return 0;
 }
