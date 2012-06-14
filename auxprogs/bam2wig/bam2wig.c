@@ -40,6 +40,7 @@ typedef struct {     // auxiliary data structure
 static int read_bam(void *data, bam1_t *b) 
 {// read level filters better go here to avoid pileup
 	aux_t *aux = (aux_t*)data; // data in fact is a pointer to an auxiliary structure
+	// Select "bam_iter_read" if region has been provided and "bam_read1", otherwise
 	int ret = aux->iter? bam_iter_read(aux->fp, aux->iter, b) : bam_read1(aux->fp, b);
 	if ((int)b->core.qual < aux->min_mapQ) b->core.flag |= BAM_FUNMAP; // |= is an assignment by bitwise OR
 	return ret;
@@ -73,7 +74,6 @@ int main(int argc, char *argv[])
 	}
 
 	// initialize the auxiliary data structures
-	
 	if ((argc-optind) != 1) 
 	  { // number of input BAMs should be equal to 1
 		printf("Just one BAM file as input is admitted!!!\n"); 
@@ -81,23 +81,22 @@ int main(int argc, char *argv[])
 	  }
 
 	// data[0] for the only input; data is an array with one element
-	data = calloc(1, sizeof(void*)); 
-	// set the default region. shift end to left, appending 30 zeros (end=1073741824) 
+	data = calloc(1, sizeof(void*));
+	// set the default region. left-shift "end" by appending 30 zeros (i.e. end=1073741824) 
 	beg = 0; end = 1<<30; tid = -1;  
 
 	// Open BAM file, including header
-	char *oldName, *newName;
+	char *oldTargetName, *newTargetName;
 	bam_header_t *htmp = 0;							// keep the header of the 1st BAM */
-	data[0] = calloc(1, sizeof(aux_t));
 	filename = argv[optind];
+	data[0] = calloc(1, sizeof(aux_t));
 	data[0]->fp = bam_open(filename, "r"); 			// open BAM
 	data[0]->min_mapQ = mapQ;                    	// set the mapQ filter
 	htmp = bam_header_read(data[0]->fp);         	// read the BAM header
 
-	if (reg)
-	  { // parse the region
-		bam_parse_region(htmp, reg, &tid, &beg, &end);
-	  }
+	// parsing region
+	if (reg) { bam_parse_region(htmp, reg, &tid, &beg, &end); }
+
 
 	if (tid >= 0) 
 	  { // if a region is specified and parsed successfully
@@ -105,6 +104,7 @@ int main(int argc, char *argv[])
 		data[0]->iter = bam_iter_query(idx, tid, beg, end); // set the iterator
 		bam_index_destroy(idx); // the index is not needed any more; phase out of the memory
 	  }
+
 
 	// the core multi-pileup loop
 	mplp = bam_mplp_init(1, read_bam, (void**)data); // initialization
@@ -114,20 +114,17 @@ int main(int argc, char *argv[])
 	// Print track name (if trackname specified, then use it)
 	printf("track name=%s type=wiggle_0\n", trackname==NULL? filename : trackname);
 
-	oldName = "";
+	oldTargetName = "";
 
 	while (bam_mplp_auto(mplp, &tid, &pos, n_plp, plp) > 0)
 	  { // come to the next covered position
 
 		if (pos < beg || pos >= end) continue; // out of range; skip
 
-		// prints reference name (I will not require it all the time)
-		newName = htmp->target_name[tid];
-		/* fputs(newName, stdout);  */
-		if (strcmp(oldName, newName))
-		  {
-			printf("variableStep chrom=%s\n", newName);
-		  }
+		// print reference name as the header of each track
+		newTargetName = htmp->target_name[tid];
+		if (strcmp(oldTargetName, newTargetName))
+		  { printf("variableStep chrom=%s\n", newTargetName); }
 
 		// Sweeping through all BAM files; just one in my case
 		// base level filters have to go here
@@ -148,7 +145,7 @@ int main(int argc, char *argv[])
 		if (coverage > 0) printf("%d %d\n", pos+1, coverage);
 
 		// Updating reference name
-		oldName = newName;
+		oldTargetName = newTargetName;
 	  } // end while
 
 
