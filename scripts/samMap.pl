@@ -101,6 +101,8 @@ while(<SAM>){
 		    $cigarNumber = $number;
 		    if($cigarNumber==0 and $letter eq 'M'){
 			$badCigar = 1;
+		    }elsif($cigarNumber=~m/\D/){
+			$badCigar = 1;
 		    }
 			$newCigar = $newCigar.$cigarNumber.$letter;		
 			$beforeJunction = $beforeJunction - $number;
@@ -108,13 +110,17 @@ while(<SAM>){
 		    $cigarNumber = ($number - ($number - $beforeJunction));
 		    if($cigarNumber==0 and $letter eq 'M'){
 			$badCigar = 1;
-		    }
+		    }elsif($cigarNumber=~m/\D/){
+			$badCigar = 1;
+                    }
 			$newCigar = $newCigar.$cigarNumber;	
 			$newCigar = $newCigar.$letter;
 			$newCigar = $newCigar.$intronLen."N";
 		    $cigarNumber = ($number-$beforeJunction);
                     if($cigarNumber==0 and $letter eq 'M'){
                         $badCigar = 1;
+                    }elsif($cigarNumber=~m/\D/){
+			$badCigar = 1;
                     }
 			$newCigar = $newCigar.$cigarNumber;
 			$newCigar = $newCigar.$letter;
@@ -123,6 +129,8 @@ while(<SAM>){
 		    $cigarNumber = $number;
                     if($cigarNumber==0 and $letter eq 'M'){
                         $badCigar = 1;
+                    }elsif($cigarNumber=~m/\D/){
+			$badCigar = 1;
                     }
 		    $newCigar = $newCigar.$cigarNumber.$letter;
 		}
