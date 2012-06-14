@@ -15,8 +15,9 @@
 /*   		int indel, level; 												*/
 /*   		uint32_t is_del:1, is_head:1, is_tail:1, is_refskip:1, aux:28; 	*/
 /* 		} bam_pileup1_t; 													*/
-/* 																			*/
-
+/* 						   													*/
+/* Created: 12-June-2012 */
+/* Last modified: 13-June-2012 */
 
 #include <stdlib.h>
 #include <string.h>
@@ -109,7 +110,6 @@ int main(int argc, char *argv[])
 	plp = calloc(1, sizeof(void*)); // plp[i] points to the array of covering reads (internal in mplp)
 
 	// Print track name
-	/* printf("track name=%s type=wiggle_0\n",trackname==NULL? filename : trackname); */
 	printf("track name=%s type=wiggle_0\n", trackname==NULL? filename : trackname);
 
 	oldName = "";
@@ -152,7 +152,8 @@ int main(int argc, char *argv[])
 
 
 	// Freeing used memory and closing handles
-	free(n_plp); free(plp);
+	free(n_plp); 
+	free(plp);
 	bam_mplp_destroy(mplp);
 
 	bam_header_destroy(h);
