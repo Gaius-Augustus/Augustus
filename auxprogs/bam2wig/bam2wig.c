@@ -28,8 +28,8 @@ static int read_bam(void *data, bam1_t *b)
 	// data is a pointer to the auxiliary structure
 	aux_t *aux = (aux_t*)data; 
 
-	// Read only alignments falling into a region, if one has been provided (i.e. bam_iter_read)
-	// or read all alignments otherwise (bam_read1)
+	// Compute coverage according to the specified region, if one has been provided (i.e. bam_iter_read)
+	// or compute coverage of the complete alignment otherwise (bam_read1)
 	int ret = aux->iter? bam_iter_read(aux->fp, aux->iter, b) : bam_read1(aux->fp, b);
 
 	return ret;
