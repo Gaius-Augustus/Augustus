@@ -1,26 +1,10 @@
-/* This program demonstrates how to generate pileup from a BAM file
- * To compile this program separately, you may:
- *
- *   gcc -g -O2 -Wall -o bam2wig -D_MAIN_BAM2WIG bam2wig.c -L. -lbam -lz
- */
-
-/* NOTES:															  		*/
-/*																			*/
-/* 1) From BAM.H, the structure BAM_PILEUP1_T is defined as follows: 		*/
-/* 																			*/
-/* 		typedef struct { 													*/
-/*   		bam1_t *b; 														*/
-/*   		int32_t qpos; 													*/
-/*   		int indel, level; 												*/
-/*   		uint32_t is_del:1, is_head:1, is_tail:1, is_refskip:1, aux:28; 	*/
-/* 		} bam_pileup1_t; 													*/
-/* 						   													*/
-/*																			*/
-/* 2) Conditional assignment is used as follows:	 						*/
-/* 							condition ? value_if_true : value_if_false 		*/
-/*																			*/
-/* Created: 12-June-2012 													*/
-/* Last modified: 14-June-2012												*/
+/* 
+   Creates a Wiggle file with coverage information coming from a BAM file 	
+ 																			
+ 																			
+   Created: 12-June-2012 													
+   Last modified: 15-June-2012												
+*/
 
 
 #include <stdlib.h>
@@ -29,23 +13,39 @@
 #include <unistd.h>
 #include "bam.h"
 
-typedef struct {     // auxiliary data structure
+// Auxiliary data structure
+typedef struct {     
 	bamFile fp;      // the file handler
 	bam_iter_t iter; // NULL if a region not specified
-	int min_mapQ;    // mapQ filter
+	int min_mapQ;    // mapQ (for filtering purposes but not used in this app)
 } aux_t;
 
 
-// This function reads a BAM alignment from one BAM file.
+// Reads a BAM alignment from a BAM file.
 static int read_bam(void *data, bam1_t *b) 
 {// read level filters better go here to avoid pileup
-	aux_t *aux = (aux_t*)data; // data in fact is a pointer to an auxiliary structure
-	// Select "bam_iter_read" if region has been provided and "bam_read1", otherwise
+
+	// data is a pointer to the auxiliary structure
+	aux_t *aux = (aux_t*)data; 
+
+	// Read only alignments falling into a region, if one has been provided (i.e. bam_iter_read)
+	// or read all alignments otherwise (bam_read1)
 	int ret = aux->iter? bam_iter_read(aux->fp, aux->iter, b) : bam_read1(aux->fp, b);
-	if ((int)b->core.qual < aux->min_mapQ) b->core.flag |= BAM_FUNMAP; // |= is an assignment by bitwise OR
+
 	return ret;
 }
 
+
+void usage()
+{
+  printf("\n");
+  fprintf(stderr, "Usage: bam2wig [-r region] [-t trackname] <in.bam> \n");
+  printf("------------------------------------------------------------\n");
+  printf(" -r   Allows to specify a target region, e.g. 'chr3L:10-250'\n");	
+  printf(" -t   A string might be provided as track name\n");
+  printf("\n");	
+  exit(1);
+}
 
 int main(int argc, char *argv[])
 {
@@ -53,50 +53,51 @@ int main(int argc, char *argv[])
 	char *filename=NULL;
 	char *trackname=NULL;
 
-	int n, tid, beg, end, pos, *n_plp, mapQ = 0;
+	int n, tid, beg, end, pos, *n_plp;
 	const bam_pileup1_t **plp;
 	char *reg = 0; // specified region
 	bam_header_t *h = 0; // BAM header of the 1st input
 	aux_t **data;
 	bam_mplp_t mplp;
 
-	// parse the command line
-	while ((n = getopt(argc, argv, "r:t:Q:")) >= 0) {
-		switch (n) {
-			case 'r': reg = strdup(optarg); break;   // parsing a region requires a BAM header
-			case 'Q': mapQ = atoi(optarg); break;    // mapping quality threshold
-			case 't': trackname = strdup(optarg); break;    // mapping quality threshold
-		}
-	}
-	if (optind == argc) {
-		fprintf(stderr, "Usage: bam2wig [-r reg] [-r trackname] [-Q mapQthres] <in.bam> \n");
-		return 1;
-	}
-
-	// initialize the auxiliary data structures
-	if ((argc-optind) != 1) 
-	  { // number of input BAMs should be equal to 1
-		printf("Just one BAM file as input is admitted!!!\n"); 
-		exit(1);
+	// Parsing the command line
+	while ((n = getopt(argc, argv, "r:t:")) >= 0) 
+	  {
+		switch (n) 
+			{
+			  case 'r': reg = strdup(optarg); break;   // parsing a region requires a BAM header
+			  case 't': trackname = strdup(optarg); break;    // mapping quality threshold
+			  default :
+				usage();
+			}
 	  }
 
-	// data[0] for the only input; data is an array with one element
-	data = calloc(1, sizeof(void*));
+	if (optind == argc || (argc-optind) != 1)
+	  {
+		usage();
+	  }
+
+
+	// Initialising auxiliary data structures
+	data = calloc(1, sizeof(void*)); // data[0] is array for just one BAM file
 	// set the default region. left-shift "end" by appending 30 zeros (i.e. end=1073741824) 
 	beg = 0; end = 1<<30; tid = -1;  
 
-	// Open BAM file, including header
-	char *oldTargetName, *newTargetName;
-	bam_header_t *htmp = 0;							// keep the header of the 1st BAM */
+	// Opening BAM file
+	char *oldTargetName = "", *newTargetName;
 	filename = argv[optind];
 	data[0] = calloc(1, sizeof(aux_t));
-	data[0]->fp = bam_open(filename, "r"); 			// open BAM
-	data[0]->min_mapQ = mapQ;                    	// set the mapQ filter
-	htmp = bam_header_read(data[0]->fp);         	// read the BAM header
+	data[0]->fp = bam_open(filename, "r"); 			// file handler of BAM
+	data[0]->min_mapQ = 0;                    		// mapQ is not used by this app
+	// Reading BAM header
+	bam_header_t *htmp = 0;							 
+	htmp = bam_header_read(data[0]->fp);         	
 
 	// parsing region
-	if (reg) { bam_parse_region(htmp, reg, &tid, &beg, &end); }
-
+	if (reg) 
+		{ 
+		  bam_parse_region(htmp, reg, &tid, &beg, &end); 
+		}
 
 	if (tid >= 0) 
 	  { // if a region is specified and parsed successfully
@@ -106,46 +107,52 @@ int main(int argc, char *argv[])
 	  }
 
 
-	// the core multi-pileup loop
+	// The set of multi-pileup functions are used to obtain the coverage information 
 	mplp = bam_mplp_init(1, read_bam, (void**)data); // initialization
-	n_plp = calloc(1, sizeof(int)); // n_plp[i] is the number of covering reads from the i-th BAM
-	plp = calloc(1, sizeof(void*)); // plp[i] points to the array of covering reads (internal in mplp)
+	n_plp = calloc(1, sizeof(int)); // n_plp[0] contains the number of covering reads 
+	plp = calloc(1, sizeof(void*)); // plp[0] points to the array of covering reads (internal in mplp)
 
-	// Print track name (if trackname specified, then use it)
+	// Print default trackname or use the one specified by the user
 	printf("track name=%s type=wiggle_0\n", trackname==NULL? filename : trackname);
 
-	oldTargetName = "";
 
 	while (bam_mplp_auto(mplp, &tid, &pos, n_plp, plp) > 0)
 	  { // come to the next covered position
 
-		if (pos < beg || pos >= end) continue; // out of range; skip
+		// If requested region is of range, skip
+		if (pos < beg || pos >= end) 
+		 	continue;
 
-		// print reference name as the header of each track
+		// Print the reference name as the header of each track
 		newTargetName = htmp->target_name[tid];
 		if (strcmp(oldTargetName, newTargetName))
-		  { printf("variableStep chrom=%s\n", newTargetName); }
+		  { 
+			printf("variableStep chrom=%s\n", newTargetName); 
+		  }
 
-		// Sweeping through all BAM files; just one in my case
-		// base level filters have to go here
-		int m = 0;
-		int j;
+		// Verifying whether the array of covering reads corresponds to "del" or "refskip"
+		int j, m = 0;
 		for (j = 0; j < n_plp[0]; ++j)
 		  {
 			const bam_pileup1_t *p = plp[0] + j; 	// DON'T modify plp[][] unless you really know
-			if (p->is_del || p->is_refskip) {++m;} 	// having dels or refskips at tid:pos
-			/* 	else if (bam1_qual(p->b)[p->qpos] < baseQ) {++m;} // low base quality */
+			if (p->is_del || p->is_refskip) 
+			  {// having dels or refskips at tid:pos
+				++m;
+			  } 	
 		  }
 
-		// Prints out the depth, discounting "m" from the pile if: dels/refskips or low quality
-		// alignments were present
+		// Estimates the depth, discounting "m" from the pile if: dels/refskips were found
 		int coverage = n_plp[0] - m;
 
-		// prints position and coverage
-		if (coverage > 0) printf("%d %d\n", pos+1, coverage);
+		// Prints position and coverage
+		if (coverage > 0) 
+		  {
+			printf("%d %d\n", pos+1, coverage);
+		  }
 
-		// Updating reference name
+		// Update reference name
 		oldTargetName = newTargetName;
+
 	  } // end while
 
 
@@ -153,9 +160,10 @@ int main(int argc, char *argv[])
 	free(n_plp); 
 	free(plp);
 	bam_mplp_destroy(mplp);
-
 	bam_header_destroy(h);
 	bam_close(data[0]->fp);
+
+	// Iterator is used only when a region was provided
 	if (data[0]->iter) 
 	  { 
 		bam_iter_destroy(data[0]->iter); 
