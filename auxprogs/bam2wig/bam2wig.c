@@ -42,6 +42,7 @@ void usage()
   fprintf(stderr, "Usage: bam2wig [-r region] [-t trackname] <in.bam> \n");
   printf("------------------------------------------------------------\n");
   printf(" -r   Allows to specify a target region, e.g. 'chr3L:10-250'\n");	
+  printf("      This option can only be used if an index file exists. See: samtools index \n");	
   printf(" -t   A string might be provided as track name\n");
   printf("\n");	
   exit(1);

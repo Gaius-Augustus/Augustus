@@ -7,10 +7,10 @@
 #
 
 PROGRAM = bam2wig
-SOURCES = $(PROGRAM)  		
+SOURCES = $(PROGRAM) bam_index.o 
 OBJECTS = $(SOURCES:.c=.o) 
-CFLAGS=-g -Wall -O2
-SAMTOOLS=/home/tonatiuh/Documents/git/samtools # Modify this flag
+CFLAGS= -g -Wall -O2
+SAMTOOLS=/home/tonatiuh/Documents/git/samtools
 INCLUDES=-I$(SAMTOOLS) -I.
 VPATH=$(SAMTOOLS)
 LIBS=$(SAMTOOLS)/libbam.a -lcurses -lm -lz 
