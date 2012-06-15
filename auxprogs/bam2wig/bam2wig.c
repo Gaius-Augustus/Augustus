@@ -46,6 +46,10 @@ void usage()
   printf("      See: samtools index \n");	
   printf(" -t   A string might be provided as track name\n");
   printf("\n");	
+  printf("NOTE:");
+  printf("File needs to be sorted by Reference ID (i.e. target name)\n");
+  printf("Use 'samtools sort <in.bam>' to such effect.\n"); 
+  printf("\n");
   exit(1);
 }
 
