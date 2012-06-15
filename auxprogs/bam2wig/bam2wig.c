@@ -23,7 +23,7 @@ typedef struct {
 
 // Reads a BAM alignment from a BAM file.
 static int read_bam(void *data, bam1_t *b) 
-{// read level filters better go here to avoid pileup
+{// If necessary, include UNMAPPED filtering in here to avoid pileup (use min_mapQ)
 
 	// data is a pointer to the auxiliary structure
 	aux_t *aux = (aux_t*)data; 
