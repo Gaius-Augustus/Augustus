@@ -11,6 +11,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "sam.h"  
 #include "bam.h"
 
 // Auxiliary data structure
@@ -35,6 +36,7 @@ static int read_bam(void *data, bam1_t *b)
 	return ret;
 }
 
+extern bam_index_t *bam_index_core(bamFile fp);
 
 void usage()
 {
@@ -65,6 +67,7 @@ int main(int argc, char *argv[])
 	bam_header_t *h = 0; // BAM header of the 1st input
 	aux_t **data;
 	bam_mplp_t mplp;
+	bam_index_t *idx; 
 
 	// Parsing the command line
 	while ((n = getopt(argc, argv, "r:t:")) >= 0) 
@@ -98,6 +101,14 @@ int main(int argc, char *argv[])
 	// Reading BAM header
 	bam_header_t *htmp = 0;							 
 	htmp = bam_header_read(data[0]->fp);         	
+
+
+	// Verifying file is sorted by target name and coordinate
+	idx = bam_index_core(data[0]->fp);
+	if(idx == 0) {
+		fprintf(stderr, "\n[bam2wig] file is not sorted by target name and position.\n");
+		return -1; 
+	} 
 
 	// parsing region
 	if (reg) 

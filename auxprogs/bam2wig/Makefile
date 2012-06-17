@@ -3,26 +3,25 @@
 # NOTE: Modify the variable SAMTOOLS according to where your samtools software has been installed
 #
 # Created: 12-June-2012
-# Last modified: 15-June-2012
+# Last modified: 17-June-2012
 #
 
 PROGRAM = bam2wig
 SOURCES = $(PROGRAM) bam_index.o 
 OBJECTS = $(SOURCES:.c=.o) 
-CFLAGS= -g -Wall -O2
 SAMTOOLS=/home/tonatiuh/Documents/git/samtools
 INCLUDES=-I$(SAMTOOLS) -I.
 VPATH=$(SAMTOOLS)
 LIBS=$(SAMTOOLS)/libbam.a -lcurses -lm -lz 
+CFLAGS= -g -Wall -O2 $(INCLUDES)
 CC=gcc
 
-# RECIPES (just to remember how compiling and linking are done)
-all : bam2wig.o bam_index.o
-	$(CC) $(CFLAGS) bam2wig.o $(SAMTOOLS)/bam_index.o -o bam2wig $(LIBS)
+$(PROGRAM) : bam2wig.o bam_index.o
+	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
 
 bam2wig.o : bam2wig.c 
-	$(CC) $(CFLAGS) -c bam2wig.c -o bam2wig.o -I$(SAMTOOLS) -I.
+	$(CC) $(CFLAGS) -c $^ -o $@ $(INCLUDES)
 
+clean: 
+	rm -f $(OBJECTS) bam2wig.o
 
-clean :
-	rm -f *~ $(OBJECTS) *.o bam2wig
