@@ -9,10 +9,10 @@ A file test.bam has ben included. You can try bam2wig by trying out
 the following examples,
 
 a) ./bam2wig test.bam 
-b) ./bam2wig -t "my_specified_track" -r chr3L test.bam 
+b) ./bam2wig -t "my_specified_track" -r chr3L test.s.bam 
 
-Example (b) can only be done if an index file for test.bam exists. 
-Do "samtools index test.bam" and a file "test.bam.bai" will be generated.
+Example (b) can only be done if an index file for test.s.bam exists. 
+Do "samtools index test.s.bam" and a file "test.s.bam.bai" will be generated.
 
 Tonatiuh Pena
-15-June-2012
+17-June-2012
