@@ -79,8 +79,11 @@ PhyloTree::PhyloTree(string filename){
 #ifndef DEBUG
     parser.setDebug(false);
 #endif
-    parser.parse(); //start parsing
+    int error_message = parser.parse();  //start parsing
     fb.close();
+    if(error_message == 1){
+      throw ProjectError("the parsing of " + filename + " has been unsuccessful. Please check, whether the syntax of your input file is correct" );
+    }
   }
   else
     throw ProjectError("PhyloTree::PhyloTree: Could not open this file!");

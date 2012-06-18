@@ -15,7 +15,7 @@ define all types of semantic values of the symbols in the grammar
 /*
 tokens: terminal symbols, which the scanner returns, need to be in upper case letters
 */
-%token DISTANCE SPECIES
+%token DISTANCE SPECIES NUM BEGIN END TRANSLATE TREE
 
 /*
 nonterminal symbols, need to be in lower case letters
@@ -24,7 +24,7 @@ nonterminal symbols, need to be in lower case letters
 /*
 start here:
 */
-%start tree  
+%start nexus  
 
 %%
 
@@ -33,6 +33,49 @@ grammar rules:
 for example, the first rule means: a tree is a subtree followed by a semicolon.
 If this is matched, the code followed in the braces {} is executed.
 */
+
+nexus:
+    tree
+|
+    BEGIN
+    TREE
+    ';'
+    TREE
+    SPECIES
+    '='
+    tree
+    END
+    ';'
+|
+    BEGIN
+    TREE
+    ';'
+    TRANSLATE
+    translationkey
+    TREE
+    SPECIES
+    '='
+    tree
+    END
+    ';'
+;
+translationkey:
+     key	
+     ','
+     translationkey
+|
+     key
+     ';'	
+;
+
+key:
+    NUM
+    SPECIES
+    {
+    	pspecies->push_back(d_scanner.matched());
+    }
+;
+
 tree:	
     subtree
     ';'
@@ -57,15 +100,21 @@ subtree:
 ;
 
 leaf:
+    NUM
+    {
+    	Treenode *temp = new Treenode(pspecies->at(atoi(d_scanner.matched().c_str())-1));
+    	ptree->push_back(temp);
+    	$$ = temp;
+    }
+|
     SPECIES
     {
-	Treenode *temp = new Treenode(d_scanner.matched());
-	ptree->push_back(temp);
-	pspecies->push_back(d_scanner.matched());
-	$$ = temp;
+     	Treenode *temp = new Treenode(d_scanner.matched());
+     	ptree->push_back(temp);
+     	pspecies->push_back(d_scanner.matched());
+     	$$ = temp;
     }
 ;
-
 branchset:
     branch
     {
@@ -92,5 +141,14 @@ branch:
 	$$=$1;
 	
     }
+|
+    subtree
+    ':'
+    NUM
+    {
+	$1->addDistance(atof(d_scanner.matched().c_str()));
+	$$=$1;
+    }	
+	
 ;
 

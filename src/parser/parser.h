@@ -18,6 +18,7 @@ class Parser: public ParserBase
     Scanner d_scanner;
     list<Treenode*> *ptree;
     vector<string> *pspecies;
+    
         
         int parse();
 
