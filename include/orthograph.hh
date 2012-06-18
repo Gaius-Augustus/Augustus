@@ -10,7 +10,7 @@
 #ifndef _ORTHOGRAPH_HH
 #define _ORTHOGRAPH_HH
 
-#include "graph.hh"
+#include "speciesgraph.hh"
 #include "phylotree.hh"
 #include "orthoexon.hh"
 
