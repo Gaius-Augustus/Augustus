@@ -1,17 +1,17 @@
 # Compiles an example program that makes use of the SAMtools API
 # 
 # Created: 11-April-2012
-# Last modified: 18-May-2012
+# Last modified: 19-June-2012
 # 
 
-SOURCES = checkTargetSortedness.c bam_index.o ### Keep in mind that "bam_index.o" needs to be included!!!
+SOURCES = checkTargetSortedness.c 
 PROGRAM = checkTargetSortedness
 OBJECTS = $(SOURCES:.c=.o) 
 CFLAGS=-g -Wall -O2
-SAMTOOLS=/home/tonatiuh/Documents/git/samtools
+SAMTOOLS=/fs1.bioinf/tonatiuh/git/samtools
 INCLUDES=-I$(SAMTOOLS) -I.
 VPATH=$(SAMTOOLS)
-LIBS=$(SAMTOOLS)/libbam.a -lcurses -lm -lz 
+LIBS=$(SAMTOOLS)/libbam.a -lcurses -lm -lz -lpthread
 CC=gcc
 
 all:$(PROGRAM) $(OBJECTS)
@@ -24,3 +24,4 @@ $(OBJECTS):%.o:%.c
 
 clean: 
 	rm *.o 
+
