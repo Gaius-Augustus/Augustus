@@ -176,33 +176,34 @@ void OrthoGraph::optimize(){
   cache::printCache(all_orthoex);
 
   //loop over OrthoExons
-  for(list<OrthoExon>::iterator orthoex = all_orthoex.begin(); orthoex != all_orthoex.end(); orthoex++){
+  if(!all_orthoex.empty()){
+    for(list<OrthoExon>::iterator orthoex = all_orthoex.begin(); orthoex != all_orthoex.end(); orthoex++){
 
-    cout << *orthoex << endl;
-    cout << orthoex->labelpattern << endl;
+      cout << *orthoex << endl;
+      cout << orthoex->labelpattern << endl;
 
-     //count number of zeros and ones in labelpattern of an OrthoExon
+      //count number of zeros and ones in labelpattern of an OrthoExon
 
-    size_t numOnes = 0;
-    size_t numZeros = 0;
+      size_t numOnes = 0;
+      size_t numZeros = 0;
 
-    for(string::iterator string_it = orthoex->labelpattern.begin(); string_it < orthoex->labelpattern.end(); string_it++){
-      if(*string_it == '1'){
-	numOnes++;
-      }
-      if(*string_it == '0'){
-	numZeros++;
-      }
+      for(string::iterator string_it = orthoex->labelpattern.begin(); string_it < orthoex->labelpattern.end(); string_it++){
+	if(*string_it == '1'){
+	  numOnes++;
+	}
+	if(*string_it == '0'){
+	  numZeros++;
+	}
     }
-
-    if( numOnes == 0 || numZeros == 0 ){           // nothing has to be done
-      cout << "nothing has to be done" << endl;
-    }
-    else {
-
-      vector<MoveObject*> orthomove(numSpecies);
-
-      if ( numOnes >= numZeros ){                  // make all zeros to ones	
+      
+      if( numOnes == 0 || numZeros == 0 ){           // nothing has to be done
+	cout << "nothing has to be done" << endl;
+      }
+      else {
+	
+	vector<MoveObject*> orthomove(numSpecies);
+	
+	if ( numOnes >= numZeros ){                  // make all zeros to ones	
 	cout << "make all zeros to ones" << endl;
 	for(size_t pos = 0; pos < numSpecies; pos++){
 	  if( (orthoex->labelpattern[pos] == '0')  ){
@@ -215,25 +216,26 @@ void OrthoGraph::optimize(){
 	  }
 	}
 	localMove(orthomove);
-      }
-      else {                                       // make all ones to zeros
-	cout << "make all ones to zeros" << endl;	
-	for(size_t pos = 0; pos < numSpecies; pos++){
-	  if( (orthoex->labelpattern[pos] == '1')  ){
-	    MoveObject *move = new MoveObject(graphs[pos]);
-	    move->addNode( graphs[pos]->getNode(orthoex->orthoex[pos]), - graphs[pos]->getMaxWeight() );
-	    move->initLocalHeadandTail(2);
-	    orthomove[pos] = move;
-	    cout << "local_head: " << orthomove[pos]->getHead() << endl;
-	    cout << "local_tail: " << orthomove[pos]->getTail() << endl;
-	  }
 	}
-	localMove(orthomove);
+	else {                                       // make all ones to zeros
+	  cout << "make all ones to zeros" << endl;	
+	  for(size_t pos = 0; pos < numSpecies; pos++){
+	    if( (orthoex->labelpattern[pos] == '1')  ){
+	      MoveObject *move = new MoveObject(graphs[pos]);
+	      move->addNode( graphs[pos]->getNode(orthoex->orthoex[pos]), - graphs[pos]->getMaxWeight() );
+	      move->initLocalHeadandTail(2);
+	      orthomove[pos] = move;
+	      cout << "local_head: " << orthomove[pos]->getHead() << endl;
+	      cout << "local_tail: " << orthomove[pos]->getTail() << endl;
+	    }
+	  }
+	  localMove(orthomove);
+	}
+	//delete MoveObjects
+	for(size_t pos = 0; pos < numSpecies; pos++){
+	  delete orthomove[pos];
+	} 
       }
-      //delete MoveObjects
-      for(size_t pos = 0; pos < numSpecies; pos++){
-	delete orthomove[pos];
-      } 
     }
   }
 }

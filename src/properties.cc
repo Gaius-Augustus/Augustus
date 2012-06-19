@@ -53,6 +53,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "complete_genes",
 "/CompPred/exon_gain",
 "/CompPred/exon_loss",
+"/CompPred/phylo_factor",
 "/CompPred/outdir",
 "/Constant/almost_identical_maxdiff",
 "/Constant/amberprob",

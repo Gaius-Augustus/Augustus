@@ -140,8 +140,14 @@ void PhyloTree::printWithGraphviz(string filename) const {
 
 double PhyloTree::pruningAlgor(OrthoExon &orthoex, const OrthoGraph &orthograph){
 
+  double phylo_factor; //parameter to increase/decrease probability
 
-  const double constant =300;  //parameter to increase/decrease probability
+  try {
+    phylo_factor  = Properties::getdoubleProperty("/CompPred/phylo_factor");
+  } catch (...) {
+    phylo_factor = 1.0;
+  }
+
   double tree_score;
   string key = orthoex.getKey(orthograph);
   if(cache::inHash(key)){
@@ -180,10 +186,10 @@ double PhyloTree::pruningAlgor(OrthoExon &orthoex, const OrthoGraph &orthograph)
       }
     }
     /*
-      computation of the overall tree score
+      computation of the overall tree score: log Probability multiplied with some constant factor
      */
-    tree_score  =( ( this->evo.getEquilibriumFreq(0) * this->treenodes.back()->alpha.at(0) ) + ( this->evo.getEquilibriumFreq(1) * this->treenodes.back()->alpha.at(1)) );
-    cache::addToHash(key, constant * tree_score);
+    tree_score  = log( ( this->evo.getEquilibriumFreq(0) * this->treenodes.back()->alpha.at(0) ) + ( this->evo.getEquilibriumFreq(1) * this->treenodes.back()->alpha.at(1)) ) * phylo_factor;
+    cache::addToHash(key, tree_score);
 
 #ifdef DEBUG
   cout<<"#####################################################################\n";
