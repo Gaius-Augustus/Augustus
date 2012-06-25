@@ -84,6 +84,7 @@ Currently, AUGUSTUS has been trained for predicting genes in:
   - Acyrthosiphon pisum (pea aphid)
   - Leishmania tarentolae (protozoa, intronless)
   - Trichinella spiralis
+  - Theobroma cacao (cacao)
 
 The training annotation files of the following species are a courtesy of Jason Stajich (see also http://fungal.genome.duke.edu/): 
 Aspergillus fumigatus, Aspergillus nidulans, Aspergillus oryzae, Aspergillus terreus, Botrytis cinerea, Candida albicans
@@ -103,6 +104,8 @@ The training for elephant shark (Callorhinchus milii) was performed by Tereza Ma
 The training for Pneumocystis jirovecii was performed by Marco Pagni, Philippe Hauser et al as described in Hauser PM, Burdet FX, Cissé OH,
 Keller L, Taffé P, Sanglard D, Pagni M., Comparative Genomics Suggests that the Fungal Pathogen Pneumocystis Is an Obligate Parasite
 Scavenging Amino Acids from Its Host's Lungs. PLoS One. 2010, Dec 20;5(12):e15152. PubMed PMID: 21188143; PubMed Central PMCID: PMC3004796. 
+
+The parameter training for cacao was done by Don Gilbert (gilbertd at indiana.edu).
 
               2. INSTALLATION
               ---------------
