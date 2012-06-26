@@ -5,11 +5,11 @@
 		"cigar" 	: 	"*N*"
 	  },
 
-	  { "id" 		: 	"isMapped",
+	  { "id" 		: 	"is_Mapped",
 		"isMapped" 	:	"true"
 	  }
 
 	],
 
-"rule" 	:	"!operation_N & isMapped"
+"rule" 	:	"!operation_N & is_Mapped"
 }
