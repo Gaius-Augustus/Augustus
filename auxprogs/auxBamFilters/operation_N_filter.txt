@@ -1,0 +1,11 @@
+{
+"filters" : 
+	[
+	  { "id" 		: 	"operation_N",
+		"isMapped" 	:	"true",
+		"cigar" 	: 	"*N*"
+	  }
+	],
+
+"rule" 	:	"!operation_N"
+}

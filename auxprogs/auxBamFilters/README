@@ -1,0 +1,11 @@
+# README on operation_N_filter.txt and merging bam files
+# Tonatiuh Pena Centeno and Katharina J. Hoff
+# June 26th 2012
+
+The file operation_N_filter.txt is a bamtools filter that will discard all entries from a bam file that contain the letter N in the CIGAR string. (In terms of gene structures, Ns reflect long introns.)
+
+Usage example:
+bamtools filter -in toyAlignments.bam -out toy.withoutN.bam -script operation_N_filter.txt
+
+Furthermore, we shortly document how to join bam files:
+bamtools merge -in eg1.bam -in eg2.bam -out eg.merged.bam
