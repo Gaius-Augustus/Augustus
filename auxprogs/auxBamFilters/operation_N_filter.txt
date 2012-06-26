@@ -2,10 +2,14 @@
 "filters" : 
 	[
 	  { "id" 		: 	"operation_N",
-		"isMapped" 	:	"true",
 		"cigar" 	: 	"*N*"
+	  },
+
+	  { "id" 		: 	"isMapped",
+		"isMapped" 	:	"true"
 	  }
+
 	],
 
-"rule" 	:	"!operation_N"
+"rule" 	:	"!operation_N & isMapped"
 }
