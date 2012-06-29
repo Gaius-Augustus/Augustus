@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 	bam_header_t *h = 0; // BAM header of the 1st input
 	aux_t **data;
 	bam_mplp_t mplp;
-	bam_index_t *idx; 
+	/* bam_index_t *idx;  */
 
 	// Parsing the command line
 	while ((n = getopt(argc, argv, "r:t:")) >= 0) 
@@ -103,12 +103,12 @@ int main(int argc, char *argv[])
 	htmp = bam_header_read(data[0]->fp);         	
 
 
-	// Verifying file is sorted by target name and coordinate
-	idx = bam_index_core(data[0]->fp);
-	if(idx == 0) {
-		fprintf(stderr, "\n[bam2wig] file is not sorted by target name and position.\n");
-		return -1; 
-	} 
+	/* // Verifying file is sorted by target name and coordinate */
+	/* idx = bam_index_core(data[0]->fp); */
+	/* if(idx == 0) { */
+	/* 	fprintf(stderr, "\n[bam2wig] file is not sorted by target name and position.\n"); */
+	/* 	return -1;  */
+	/* }  */
 
 	// parsing region
 	if (reg) 

@@ -3,7 +3,7 @@
 # NOTE: Modify the variable SAMTOOLS according to where your samtools software has been installed
 #
 # Created: 12-June-2012
-# Last modified: 17-June-2012
+# Last modified: 19-June-2012
 #
 
 PROGRAM = bam2wig
@@ -12,7 +12,7 @@ OBJECTS = $(SOURCES:.c=.o)
 SAMTOOLS=/home/tonatiuh/Documents/git/samtools
 INCLUDES=-I$(SAMTOOLS) -I.
 VPATH=$(SAMTOOLS)
-LIBS=$(SAMTOOLS)/libbam.a -lcurses -lm -lz 
+LIBS=$(SAMTOOLS)/libbam.a -lcurses -lm -lz -lpthread
 CFLAGS= -g -Wall -O2 $(INCLUDES)
 CC=gcc
 
