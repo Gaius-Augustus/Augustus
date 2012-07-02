@@ -73,6 +73,7 @@ public:
     // set the path and emiProbs for all annotations in annoseq (for option scoreTx)
     void setPathAndProb(AnnoSequence *annoseq, FeatureCollection &extrinsicFeatures);
     list<Gene> *getAllTranscripts() {return sampledTxs;}
+    void getPrepareModels(const char *dna, int len) {prepareModels(dna, len);}
 private:
     /**
      * Start the viterbi algorithm with the given DNA sequence.

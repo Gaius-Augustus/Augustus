@@ -16,6 +16,7 @@
 // project includes
 #include "properties.hh"
 #include "projectio.hh" // for comment
+#include "types.hh"
 
 // standard C/C++ includes
 #include <iostream>
@@ -410,6 +411,51 @@ void Motif::read(ifstream &in){
       in >> windowProbs[i][j];
     }
   }
+}
+
+/*
+ *
+ * xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ * | k bases | n bases (actual motif)    |
+ * The first k bases come from a uniform distribution as they are not parametrized.
+ * The n bases from the motif are samples from the non-homogeneous markov chain of the motif. P_i(X_i | X_{i-1}, ..., X_{i-k})
+ */
+char* Motif::getSampleDNA() {
+    char bases[5] = "acgt"; // 0->a, 1->c, 2->g, 3->t
+    int dnaLength = n + k;
+    char *sequence;
+
+    sequence = new char[dnaLength+1];
+    // first k bases from uniform distribution
+    for (int i=0; i<k; i++) {
+        sequence[i] = bases[(int) (4.0 * rand() / (1.0 + RAND_MAX))];
+    }
+    // sample 1 position at a time
+    for (int i=k; i<dnaLength; i++) {
+        double r=rand() / (1.0 + RAND_MAX);
+        Double cumProb = 0.0;
+        for (int base = 0; base < 4 && cumProb <= r; base++) {// try new base at position i, keep that base when cumulative prob. exceeds r
+            sequence[i] = bases[base];
+            int pn = s2i(sequence+i-k);
+            cumProb = cumProb + windowProbs[i-k][pn];
+        }
+    }
+    sequence[dnaLength] = '\0';
+    return sequence;
+}
+
+Double Motif::getProbThreshold (double q, int numSamples){
+    char* seq;
+    vector<Double> all_probs;
+    srand(time(0));
+    for (int i=0; i<numSamples; i++) {
+        seq = getSampleDNA();
+        //cout << i << "   " << seq << endl;
+        Double prob = Motif::seqProb(seq + k);
+        all_probs.push_back(prob);
+        delete seq;
+    }
+    return quantile(all_probs, q);
 }
 
 void ContentDecomposition::setProperties(){

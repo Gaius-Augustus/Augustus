@@ -418,6 +418,9 @@ void IntronModel::readAllParameters(){
 	  istrm >> goto_line_after( "[ASSMOTIF]" );
 	  GCassMotif[idx].read(istrm);
 	}
+	// this default setting is only relevant for exon candidate filtering when doing comparative gene
+	// finding
+	assMotif = &GCassMotif[(int) (Constant::decomp_num_steps/2)];
 	istrm.close();
     } else 
 	throw ProjectError("IntronModel::readAllParameters: Couldn't open file " + filename);

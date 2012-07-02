@@ -15,7 +15,6 @@
  * 06.12.2011 | Alexander Gebauer     | definition of the stopcodons
  * 17.01.2012 | Alexander Gebauer     | add class AlignSeq und struct block
  * 27.02.2012 | Alexander Gebauer     | add class ExonCandidate
- * 30.04.2012 | Stefanie König        | added getStateType() and toExonType()
 \******************************************************************************/
 
 #ifndef _EXONCAND_HH
@@ -25,9 +24,9 @@
 #include "exonmodel.hh" // for OpenReadingFrame
 
 #define DECLARE_ON(NAME, PATTERN, COUNT)			\
-    inline bool NAME(const char* dna) {				\
-		return strncmp(dna, PATTERN, COUNT) == 0;	\
-    }
+        inline bool NAME(const char* dna) {				\
+    return strncmp(dna, PATTERN, COUNT) == 0;	\
+}
 
 DECLARE_ON(ochre,    OCHRECODON, 3)
 DECLARE_ON(amber,    AMBERCODON, 3)
@@ -42,87 +41,67 @@ DECLARE_ON(onRCOpal,    rCOpal_SEQUENCE, 3)
 
 inline bool onRCStopcodon(const char* dna) {
     return
-	onRCOchre(dna) || onRCOpal(dna) || onRCAmber(dna);
+            onRCOchre(dna) || onRCOpal(dna) || onRCAmber(dna);
 }
 
 #define EXON_TYPES 17
 
 enum ExonType{UNKNOWN_EXON = -1,
-	       // forward strand
-	       singleGene, initial_0, initial_1, initial_2, internal_0, internal_1, internal_2, terminal_exon,
-	       // reverse strand
-	       rsingleGene, rinitial_exon, rinternal_0, rinternal_1, rinternal_2, rterminal_0, rterminal_1, rterminal_2
+    // forward strand
+    singleGene, initial_0, initial_1, initial_2, internal_0, internal_1, internal_2, terminal_exon,
+    // reverse strand
+    rsingleGene, rinitial_exon, rinternal_0, rinternal_1, rinternal_2, rterminal_0, rterminal_1, rterminal_2
 };
+
+extern const int exonTypeReadingFrames[EXON_TYPES];
+extern const char* stateExonTypeIdentifiers[EXON_TYPES];
 
 // converts a stateTypeIdentifier to the ExonType
 ExonType toExonType(const char* str);
 
-
+// structure for the reading of an aligned sequence
 struct block {
-	long int begin;
-	int length;
-	int previousGaps;
-	int index;
+    int begin;
+    int length;
+    int previousGaps;
 };
-
 
 class ExonCandidate {
 public:
-	ExonCandidate(ExonType s=UNKNOWN_EXON, long int b=0, long int e=0, double sc=0.0):
-	    type(s),
-	    begin(b),
-	    end(e),
-	    score(sc)
-	  {}
-	~ExonCandidate(){}
-        ExonCandidate(const ExonCandidate& other):
-            type(other.type),
-            begin(other.begin),
-            end(other.end),
-            score(other.score)
-          {}
-	 ExonType type;
-	 long int begin, end;
-	 double score;
+    ExonCandidate(ExonType s=UNKNOWN_EXON, long int b=0, long int e=0, double sc=0.0, double ass_sc=0.0, double dss_sc=0.0):
+        type(s),
+        begin(b),
+        end(e),
+        score(sc),
+        assScore(ass_sc),
+        dssScore(dss_sc)
+    {}
+    ~ExonCandidate(){}
+    ExonType type;
+    int begin, end;
+    double score, assScore, dssScore;
 
-	 long int getStart(void);
-	 long int getEnd(void);
-	 ExonType getExonType(void);
-         StateType getStateType(void);
-	 double getScore(void);
-	 string createKey();
+    int getStart(void);
+    int getEnd(void);
+    ExonType getExonType(void);
+    double getScore(void);
+    int complementType(void);
+    StateType getStateType(void);
+    string createKey(void);
 };
 
+// class stores all the informations about an alignment part of a single species
 class AlignSeq {
 public:
-	AlignSeq() {}
-	~AlignSeq(){}
-	string name, chromosome;
-	long int start, seqLen, alignLen;
-	Strand strand;
-	vector<long int*> cmpStarts;
-	list<block> sequence;
-
-	map<string, ExonCandidate*> existingCandidates;
-	inline void addToHash(ExonCandidate *ec) {
-	     existingCandidates[ec->createKey()] = ec;
-	}
+    AlignSeq() {}
+    ~AlignSeq(){}
+    string name;
+    pair<string,long int> chromosome; // stores the number and the length of the chromosome
+    int start, offset, seqLen, alignLen;
+    Strand strand;
+    vector<int*> cmpStarts;
+    list<block> sequence;
 };
-
-/*class AlignmentBlock {
-public:
-	AlignmentBlock(vector<AlignSeq*> v=NULL, int i=0):
-		speciesTupel(v),
-		extent(i)
-	{}
-	AlignmentBlock(){}
-	~AlignmentBlock(){}
-	vector<AlignSeq*> alignSpeciesTupel;
-	//int extent;
-
-};*/
-
-
 
 /*
  * getExonCands: get all exon candidates
@@ -134,8 +113,6 @@ public:
  */
 
 double getGC_Content(const char *dna);
-char* randomDNAGenerator (double gc_content);
-list<ExonCandidate* > getExonCands(const char* dna, float assqthresh, float dssqthresh);
-// void computeIndicesSS(list<ExonCandidate*> cand, int seqlen);
+// void computeIndices(list<ExonCandidate*> cand, int seqlen);
 
 #endif  //  _EXONCAND_HH

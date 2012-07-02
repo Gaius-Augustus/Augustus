@@ -8,7 +8,7 @@
 #        
 CC	= g++
 # uncomment this for comparative gene finding
-# CPP0X = true 
+#CPP0X = true 
 CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -DDEBUG  -g -ggdb -static
 ifdef CPP0X
 	CFLAGS += -std=c++0x -DCPP0X
@@ -18,7 +18,8 @@ LIBS	= # -lcwd
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
- meaPath.o exoncand.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o orthograph.o speciesgraph.o
+ meaPath.o exoncand.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o orthograph.o speciesgraph.o\
+  genomicMSA.o geneMSA.o
 ifdef CPP0X
 	OBJS += parser/parse.o scanner/lex.o
 endif
@@ -526,6 +527,7 @@ meaPath.o : \
 
 exoncand.o : \
        ../include/exoncand.hh \
+       ../include/intronmodel.hh \
        ../include/types.hh \
        ../include/exonmodel.hh \
        exoncand.cc
@@ -533,6 +535,11 @@ exoncand.o : \
 compgenepred.o : \
 	../include/compgenepred.hh \
 	../include/orthograph.hh \
+	../include/mea.hh \
+        ../include/genomicMSA.hh \
+        ../include/geneMSA.hh \
+	../include/orthoexon.hh \
+	../include/namgene.hh \
        compgenepred.cc
 
 randseqaccess.o : \
@@ -552,6 +559,21 @@ orthograph.o : \
 	../include/mea.hh \
 	../include/namgene.hh \
 	orthograph.cc
+
+genomicMSA.o : \
+	../include/genomicMSA.hh \
+	../include/exoncand.hh \
+	../include/orthoexon.hh \
+	genomicMSA.cc
+
+geneMSA.o : \
+	../include/geneMSA.hh \
+	../include/genomicMSA.hh \
+	../include/exoncand.hh \
+	../include/orthoexon.hh \
+	../include/intronmodel.hh \
+	../include/namgene.hh \
+	geneMSA.cc
 
 parser/parse.o: \
 	parser/parser.ih \

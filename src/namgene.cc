@@ -360,10 +360,10 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
    */
 
   // temporarily for development
-  if (Constant::exoncand)
-    getExonCands(dna, 0.1, 0.1); // Alex: please make these command-line parameters like 'exoncand'
+  if (Constant::exoncand) {
+	  //getExonCandidates(dna, 0, 0); // Alex: please make these command-line parameters like 'exoncand'
+  }
 
-  
 } // end ViterbiAndForward
 
 StatePath* NAMGene::getSampledPath(const char *dna, const char* seqname){

@@ -69,6 +69,7 @@ public:
     static Integer getD() {return d;}
     static void resetModelCount(){introncount = 0;};
     static double getGeoProb(){return geoProb;}
+    static Double getAssMotifProbThreshold(double q) {return assMotif->getProbThreshold(q);}
 private:
     static void initSnippetProbs();
     void processSequence( const char* start, const char* end);
