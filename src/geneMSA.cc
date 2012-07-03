@@ -199,8 +199,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
             while ((lmb<=*ritStart)&&(i-*ritStart<=max_exon_length)&&(ritStart!=exonStart.rend())) {
                 if ((i-*ritStart>=4)&&((i-*ritStart+1)%3==0)) {
                     ptr = new ExonCandidate;
-                    ptr->begin=*ritStart /*+ as->offset*/;
-                    ptr->end=i + 3 /* + as->offset*/;
+                    ptr->begin=*ritStart -1;
+                    ptr->end=i + 3 -1;
                     ptr->type=singleGene;
                     candidates->push_back(ptr);
                 }
@@ -221,8 +221,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while((lmb<=*ritStart)&&(i-*ritStart<=max_exon_length)&&(ritStart!=exonStart.rend())) {
                     if ((i-*ritStart>=3)&&((i-*ritStart+1)%3==frame) && (p >= dssminprob)) {
                         ptr = new ExonCandidate;
-                        ptr->begin=*ritStart /*+ as->offset*/;
-                        ptr->end=i /*+ as->offset*/;
+                        ptr->begin=*ritStart -1;
+                        ptr->end=i -1;
                         if (frame==0) {
                             ptr->type=initial_0;
                         } else if (frame==1) {
@@ -247,8 +247,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while((lmb<=*ritASS)&&(i-*ritASS<=max_exon_length)&&(ritASS!=exonASS.rend())) {
                     if ((i-*ritASS>=5) && (p >= dssminprob)) {
                         ptr = new ExonCandidate;
-                        ptr->begin=*ritASS + 3 /*+ as->offset*/;
-                        ptr->end=i /*+ as->offset*/;
+                        ptr->begin=*ritASS + 3-1;
+                        ptr->end=i-1;
                         if (frame==0) {
                             ptr->type=internal_0;
                         } else if (frame==1) {
@@ -274,8 +274,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while ((i-*ritASS<=max_exon_length)&&(ritASS!=exonASS.rend())) {
                     if ((i-*ritASS>=3)&&((i-*ritASS+1)%3==frame)&&(*ritASS>=orf.leftmostExonBegin(0,i,true))) {
                         ptr = new ExonCandidate;
-                        ptr->begin=*ritASS + 3 /*+ as->offset*/;
-                        ptr->end=i + 3 /*+ as->offset*/;
+                        ptr->begin=*ritASS + 3-1;
+                        ptr->end=i + 3-1;
                         ptr->type=terminal_exon;
                         candidates->push_back(ptr);
                     }
@@ -294,8 +294,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
             while ((i-*ritRCStop<=max_exon_length)&&(ritRCStop!=exonRCStop.rend())) {
                 if ((i-*ritRCStop>=6)&&((i-*ritRCStop)%3==0)) {
                     ptr = new ExonCandidate;
-                    ptr->begin=*ritRCStop + 1 /*+ as->offset*/;
-                    ptr->end=i + 3 /*+ as->offset*/;
+                    ptr->begin=*ritRCStop + 1-1;
+                    ptr->end=i + 3-1;
                     ptr->type=rsingleGene;
                     candidates->push_back(ptr);
                     break;
@@ -317,8 +317,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while((lmb<=*ritRDSS+2)&&(i-*ritRDSS<=max_exon_length)&&(ritRDSS!=exonRDSS.rend())) {
                     if ((i-*ritRDSS>=2)&&((i+1-*ritRDSS)%3==frame)) {
                         ptr = new ExonCandidate;
-                        ptr->begin=*ritRDSS + 3 /*+ as->offset*/;
-                        ptr->end=i + 3 /*+ as->offset*/;
+                        ptr->begin=*ritRDSS + 3-1;
+                        ptr->end=i + 3-1;
                         ptr->type=rinitial_exon;
                         candidates->push_back(ptr);
                     }
@@ -340,8 +340,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while((lmb<=*ritRDSS)&&(i-*ritRDSS<=max_exon_length)&&(ritRDSS!=exonRDSS.rend())) {
                     if (i-*ritRDSS>=5 && (p >= assminprob)) {
                         ptr = new ExonCandidate;
-                        ptr->begin=*ritRDSS + 3 /*+ as->offset*/;
-                        ptr->end=i /*+ as->offset*/;
+                        ptr->begin=*ritRDSS + 3-1;
+                        ptr->end=i-1;
                         if (frame==0) {
                             ptr->type=rinternal_0;
                         } else if (frame==1) {
@@ -368,8 +368,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while ((i-*ritRCStop<=max_exon_length)&&(ritRCStop!=exonRCStop.rend())) {
                     if ((i-*ritRCStop>=4)&&((i-*ritRCStop)%3==frame) && (p >= assminprob)) {
                         ptr = new ExonCandidate;
-                        ptr->begin=*ritRCStop + 1 /*+ as->offset*/;
-                        ptr->end=i /*+ as->offset*/;
+                        ptr->begin=*ritRCStop + 1-1;
+                        ptr->end=i -1;
                         if (frame==0) {
                             ptr->type=rterminal_0;
                         } else if (frame==1) {
@@ -575,7 +575,7 @@ void GeneMSA::printExonCands(vector<int> offsets) {
             if ((this->exoncands.at(i)!=NULL) && (it_exists != this->alignment.end())) {
                 for (list<ExonCandidate*>::iterator it_exonCands=this->exoncands.at(i)->begin(); it_exonCands!=this->exoncands.at(i)->end(); it_exonCands++) {
                     cout<<(*it_exists)->alignSpeciesTupel.at(i)->chromosome.first<< "\tAUGUSTUS\t";
-                    cout<<stateExonTypeIdentifiers[(*it_exonCands)->type]<<"\t"<<(*it_exonCands)->begin + offsets[i]<<"\t"<<(*it_exonCands)->end + offsets[i]<<"\t"<<(*it_exonCands)->score<<"\t";
+                    cout<<stateExonTypeIdentifiers[(*it_exonCands)->type]<<"\t"<<(*it_exonCands)->begin + offsets[i]+1<<"\t"<<(*it_exonCands)->end + offsets[i]+1<<"\t"<<(*it_exonCands)->score<<"\t";
                     cout<<(((*it_exists)->alignSpeciesTupel.at(i)->strand == plusstrand)? '+' : '-')<<"\t"<<exonTypeReadingFrames[(*it_exonCands)->type]<<"\t";
                     cout<<"group ID"<<endl;
                 }
@@ -608,7 +608,7 @@ void GeneMSA::printOrthoExons(vector<int> offsets) {
                     }
                     if (it_exists != this->alignment.end()) {
                         cout<<(*it_exists)->alignSpeciesTupel.at(j)->chromosome.first<< "\tAUGUSTUS\t";
-                        cout<<stateExonTypeIdentifiers[it_oe->orthoex.at(j)->type]<<"\t"<<it_oe->orthoex.at(j)->begin + offsets[j]<<"\t"<<it_oe->orthoex.at(j)->end + offsets[j]<<"\t"<<it_oe->orthoex.at(j)->score<<"\t";
+                        cout<<stateExonTypeIdentifiers[it_oe->orthoex.at(j)->type]<<"\t"<<it_oe->orthoex.at(j)->begin + offsets[j]+1<<"\t"<<it_oe->orthoex.at(j)->end + offsets[j]+1<<"\t"<<it_oe->orthoex.at(j)->score<<"\t";
                         cout<<(((*it_exists)->alignSpeciesTupel.at(j)->strand == plusstrand)? '+' : '-')<<"\t"<<exonTypeReadingFrames[it_oe->orthoex.at(j)->type]<<"\t";
                         cout<<"ID="<< orthoExonNo <<" ; "<<"species "<<"\""<<(*it_exists)->alignSpeciesTupel.at(j)->name<<"\""<<endl;
                     }
