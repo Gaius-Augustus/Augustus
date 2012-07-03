@@ -45,17 +45,18 @@ void CompGenePred::start(){
     msa.readAlignment();
     msa.prepareExons();
     vector<string> speciesname = OrthoGraph::tree->species;
-    GeneMSA *geneRange;
+    GeneMSA *geneRange = new GeneMSA;
+    vector<int> offsets;
 
     /*//temp:
-		orthograph.all_orthoex = readOrthoExons(Constant::orthoexons);
-		vector<string> chrName;
-		chrName.push_back("chr21");
-		chrName.push_back("chr17");
-		chrName.push_back("chr31");
-		int start[] = {44836600, 31983200, 39789600} ;
-		int end[] = {44846200, 31992100, 39798300};
-		Strand strand = minusstrand;*/
+        orthograph.all_orthoex = readOrthoExons(Constant::orthoexons);
+        vector<string> chrName;
+        chrName.push_back("chr21");
+        chrName.push_back("chr17");
+        chrName.push_back("chr31");
+        int start[] = {44836600, 31983200, 39789600} ;
+        int end[] = {44846200, 31992100, 39798300};
+        Strand strand = minusstrand;*/
 
     // determine object that holds a sequence range for each species
     // loop over species
@@ -72,44 +73,45 @@ void CompGenePred::start(){
                     break;
                 } else {
                     namgene.getPrepareModels(seqRange->sequence, seqRange->length); // is needed for IntronModel::dssProb in GenomicMSA::createExonCands
-                    geneRange->createExonCands(seqRange, 0.05, 0.23, 0.23); // ToDo:make this reasonable after experience with the data
+                    offsets.push_back(seqRange->offset);
+                    geneRange->createExonCands(seqRange->sequence, 0.05, 0.23, 0.23); // ToDo:make this reasonable after experience with the data
 
                     /*
                      * build list of additional exoncandidates, which are inserted in the graph
                      */
                     /*list<ExonCandidate*> additionalExons;
-					for(list<OrthoExon>::iterator it = orthograph.all_orthoex.begin(); it !=  orthograph.all_orthoex.end(); it++){
-						if(it->orthoex[s] != NULL){
-							it->orthoex[s]->begin -= orthograph.orthoSeqRanges[s]->offset;
-							it->orthoex[s]->end -= orthograph.orthoSeqRanges[s]->offset;
-							additionalExons.push_back(it->orthoex[s]);
-						}
-					}*/
+                    for(list<OrthoExon>::iterator it = orthograph.all_orthoex.begin(); it !=  orthograph.all_orthoex.end(); it++){
+                        if(it->orthoex[s] != NULL){
+                            it->orthoex[s]->begin -= orthograph.orthoSeqRanges[s]->offset;
+                            it->orthoex[s]->end -= orthograph.orthoSeqRanges[s]->offset;
+                            additionalExons.push_back(it->orthoex[s]);
+                        }
+                    }*/
 
                     //namgene.doViterbiPiecewise(sfc, orthograph.orthoSeqRanges[s], strand); // builds graph for each species
 
                     /*list<Gene> *alltranscripts = namgene.getAllTranscripts();
-					if(alltranscripts){
-						cout << "building Graph for " << speciesname[s] << endl;
-						if(!alltranscripts->empty()){*
-							/
-							/* build datastructure for graph representation
+                    if(alltranscripts){
+                        cout << "building Graph for " << speciesname[s] << endl;
+                        if(!alltranscripts->empty()){*
+                            /
+                            /* build datastructure for graph representation
                      * @stlist : list of all sampled states
                      */
                     /*list<Status> stlist;
-							buildStatusList(alltranscripts, false, stlist);
-							//build graph
-							SpeciesGraph *singleGraph = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesname[s]);
-							singleGraph->buildGraph();
-							//find correct position in vector and add graph for species to OrthoGraph
-							size_t pos = OrthoGraph::tree->getVectorPositionSpecies(speciesname[s]);
-							if (pos < OrthoGraph::numSpecies){
-								orthograph.graphs[pos] = singleGraph;
-							} else {
-								cerr << "species names in Orthograph and OrthoExon don't match" << endl;
-							}
-							orthograph.storePtrsToAlltranscripts(alltranscripts); //save pointers to transcripts and delete them after gene list is build
-						}*/
+                            buildStatusList(alltranscripts, false, stlist);
+                            //build graph
+                            SpeciesGraph *singleGraph = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesname[s]);
+                            singleGraph->buildGraph();
+                            //find correct position in vector and add graph for species to OrthoGraph
+                            size_t pos = OrthoGraph::tree->getVectorPositionSpecies(speciesname[s]);
+                            if (pos < OrthoGraph::numSpecies){
+                                orthograph.graphs[pos] = singleGraph;
+                            } else {
+                                cerr << "species names in Orthograph and OrthoExon don't match" << endl;
+                            }
+                            orthograph.storePtrsToAlltranscripts(alltranscripts); //save pointers to transcripts and delete them after gene list is build
+                        }*/
                 }
             } else {
                 geneRange->exoncands.push_back(NULL);
@@ -117,9 +119,9 @@ void CompGenePred::start(){
                 cout<< speciesname[s] << " doesn't exist in this part of the alignment."<< endl;
             }
         }
-        geneRange->printExonCands();
-        geneRange->createOrthoExons();
-        geneRange->printOrthoExons();
+        geneRange->printExonCands(offsets);
+        geneRange->createOrthoExons(offsets);
+        geneRange->printOrthoExons(offsets);
         //list<OrthoExon> orthoExons = geneRange->getOrthoExons();
 
         //orthograph.pruningAlgor();

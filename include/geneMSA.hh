@@ -45,16 +45,16 @@ public:
      * The default threshold of 0 means that all splice site patterns are considered.
      */
     //void createExonCands(const char *dna, float assqthresh, float dssqthresh);
-    void createExonCands(AnnoSequence *as, float assqthresh, float dssqthresh, float motifqthresh);
+    void createExonCands(const char *dna, float assqthresh, float dssqthresh, float motifqthresh);
 
     pair<int,int> getAlignedPosition(AlignSeq* ptr, int pos);	// computes the aligned position of a base in an alignment and the 'block' where the base is found
     int getRealPosition(AlignSeq* ptr, int pos, int idx);	// computes the real position of a base dependent on its position in the alignment
-    void createOrthoExons();	// searches for the orthologue exons of the exon candidates of the reference species
+    void createOrthoExons(vector<int> offsets);	// searches for the orthologue exons of the exon candidates of the reference species
     list<ExonCandidate*>* getExonCands(int speciesIdx);
     list<OrthoExon> getOrthoExons();
     void openOutputFiles();
-    void printExonCands();
-    void printOrthoExons();
+    void printExonCands(vector<int> offsets);
+    void printOrthoExons(vector<int> offsets);
     void closeOutputFiles();
 };
 
