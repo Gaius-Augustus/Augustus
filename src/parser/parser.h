@@ -14,10 +14,10 @@ class Parser: public ParserBase
 {
     public:
     // $insert scannerobject
- Parser(list<Treenode*> *tree, vector<string> *species, std::istream &in):d_scanner(in), ptree(tree), pspecies(species) {}
+ Parser(std::list<Treenode*> *tree, std::vector<std::string> *species, std::istream &in):d_scanner(in), ptree(tree), pspecies(species) {}
     Scanner d_scanner;
-    list<Treenode*> *ptree;
-    vector<string> *pspecies;
+    std::list<Treenode*> *ptree;
+    std::vector<std::string> *pspecies;
     
         
         int parse();
