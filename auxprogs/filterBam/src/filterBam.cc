@@ -1036,17 +1036,21 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 			  cout << "------------------------------------------------\n";
 			}
 
-	  	  map<int,int>::iterator m_it;
-	  	  for (m_it=mated.begin(); m_it!=mated.end(); m_it++)
-	  		{ 
-			  if (verbose)
-				{cout << "Letting pass paired-alignments: (" << (*m_it).first << ") : " 
-					  << qali.at((*m_it).first).Name << ", " << 
-						 getReferenceName(refData, qali.at((*m_it).first).RefID) << endl;}
-			  // Removing percId and coverage Tags before writing into file
-			  qali.at((*m_it).first).RemoveTag("pi"); qali.at((*m_it).first).RemoveTag("co");
-  			  (*ptrWriter).SaveAlignment(qali.at((*m_it).first)); 
-	  		}
+		  if (matepairs.size()>0)
+			{
+			  map<int,int>::iterator m_it;
+			  for (m_it=mated.begin(); m_it!=mated.end(); m_it++)
+				{ 
+				  if (verbose)
+					{cout << "Letting pass paired-alignments: (" << (*m_it).first << ") : " 
+						  << qali.at((*m_it).first).Name << ", " << 
+						getReferenceName(refData, qali.at((*m_it).first).RefID) << endl;}
+				  // Removing percId and coverage Tags before writing into file
+				  qali.at((*m_it).first).RemoveTag("pi"); qali.at((*m_it).first).RemoveTag("co");
+				  (*ptrWriter).SaveAlignment(qali.at((*m_it).first)); 
+				}
+			}
+
 	  	} else { // (uniq or best) selected and matepair.size()>2
 
    			if (verbose)
