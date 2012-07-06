@@ -45,7 +45,6 @@ void CompGenePred::start(){
     msa.readAlignment();
     msa.prepareExons();
     vector<string> speciesname = OrthoGraph::tree->species;
-    GeneMSA *geneRange = new GeneMSA;
     vector<int> offsets;
 
     /*//temp:
@@ -60,13 +59,13 @@ void CompGenePred::start(){
 
     // determine object that holds a sequence range for each species
     // loop over species
-    geneRange->openOutputFiles();
-    while ((geneRange = msa.getNextGene())) {
+    GeneMSA::openOutputFiles();
+    while (GeneMSA *geneRange = msa.getNextGene()) {
         for (int s = 0; s < speciesname.size(); s++) {
             if (!geneRange->getChr(s).empty()) {
                 //AnnoSequence *seqRange = rsa->getSeq(speciesname[s], chrName[s], start[s], end[s]);
                 AnnoSequence *seqRange = rsa->getSeq(speciesname[s], geneRange->getChr(s), geneRange->getStart(s), geneRange->getEnd(s)/*, geneRange->getStrand(s)*/);
-		orthograph.orthoSeqRanges[s] = seqRange;
+                orthograph.orthoSeqRanges[s] = seqRange;
                 // maybe do not need getStrand because nameGene generates the reverse complement of an already reversed complement
                 if (seqRange==NULL) {
                     cerr << "random sequence access failed on " << speciesname[s] << ", " << geneRange->getChr(s) << ", " << geneRange->getStart(s) << ", " <<  geneRange->getEnd(s) << ", " << endl;
@@ -74,8 +73,8 @@ void CompGenePred::start(){
                 } else {
                     namgene.getPrepareModels(seqRange->sequence, seqRange->length); // is needed for IntronModel::dssProb in GenomicMSA::createExonCands
                     offsets.push_back(seqRange->offset);
-                    geneRange->createExonCands(seqRange->sequence, 0.05, 0.23, 0.23); // ToDo:make this reasonable after experience with the data
-		    list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));		    
+                    geneRange->createExonCands(seqRange->sequence, 0.1, 0.316, 0.316); // ToDo:make this reasonable after experience with the data
+                    list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
                     /*
                      * build list of additional exoncandidates, which are inserted in the graph
                      */
@@ -87,15 +86,15 @@ void CompGenePred::start(){
 		      additionalExons.push_back(it->orthoex[s]);
 		      }
 		      }*/
-		    namgene.doViterbiPiecewise(sfc, seqRange, geneRange->getStrand(s)); // builds graph for each species
+                    namgene.doViterbiPiecewise(sfc, seqRange, geneRange->getStrand(s)); // builds graph for each species
                     list<Gene> *alltranscripts = namgene.getAllTranscripts();
                     if(alltranscripts){
                         cout << "building Graph for " << speciesname[s] << endl;
                         if(!alltranscripts->empty()){
                             /* build datastructure for graph representation
-			     * @stlist : list of all sampled states
-			     */
-			    list<Status> stlist;
+                             * @stlist : list of all sampled states
+                             */
+                            list<Status> stlist;
                             buildStatusList(alltranscripts, false, stlist);
                             //build graph
                             SpeciesGraph *singleGraph = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesname[s]);
@@ -109,7 +108,7 @@ void CompGenePred::start(){
                             }
                             orthograph.storePtrsToAlltranscripts(alltranscripts); //save pointers to transcripts and delete them after gene list is build
                         }
-		    }
+                    }
                 }
             } else {
                 geneRange->exoncands.push_back(NULL);
@@ -123,24 +122,27 @@ void CompGenePred::start(){
         orthograph.all_orthoex = geneRange->getOrthoExons();
 
 
-	cout << "pruning Algorithm for all orthologous exons" << endl;
-	orthograph.pruningAlgor();
-	cache::printCache(orthograph.all_orthoex);
+        cout << "pruning Algorithm for all orthologous exons" << endl;
+        orthograph.pruningAlgor();
+        cache::printCache(orthograph.all_orthoex);
 
-	// iterative optimization
-	orthograph.optimize();
+        // iterative optimization
+        orthograph.optimize();
 
-	orthograph.pruningAlgor();
-	cache::printCache(orthograph.all_orthoex);
+        orthograph.pruningAlgor();
+        cache::printCache(orthograph.all_orthoex);
 
-	
-	// transfer longest paths to genes + filter + ouput
-	orthograph.outputGenes(geneRange->getStrand(0));
+
+        // transfer longest paths to genes + filter + ouput
+        orthograph.outputGenes(geneRange->getStrand(0));
+
+        offsets.clear();
+        delete geneRange;
     }
-    geneRange->closeOutputFiles();
+    GeneMSA::closeOutputFiles();
     OrthoGraph::closeOutputFiles();
-	
+
     // free memory space of tree
     delete OrthoGraph::tree;
-	
+
 }

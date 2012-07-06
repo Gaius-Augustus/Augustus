@@ -113,21 +113,6 @@ bool compBegin (ExonCandidate* a, ExonCandidate* b) {
     }
 }
 
-GeneMSA::~GeneMSA(){
-        if (exonCands_outfile)
-            delete exonCands_outfile;
-        if (orthoExons_outfile)
-            delete orthoExons_outfile;
-        for (list<AlignmentBlock*>::iterator it=alignment.begin(); it!=alignment.end(); it++) {
-                delete[] *it;
-        }
-        for (int i=0; i<exoncands.size(); i++) {
-            delete exoncands[i];
-        }
-        for (int i=0; i<existingCandidates.size(); i++) {
-            delete existingCandidates[i];
-        }
-}
 
 // adds the keys to the map function
 map<string,ExonCandidate*>* GeneMSA::addToHash(list<ExonCandidate*> *ec) {
@@ -199,8 +184,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
             while ((lmb<=*ritStart)&&(i-*ritStart<=max_exon_length)&&(ritStart!=exonStart.rend())) {
                 if ((i-*ritStart>=4)&&((i-*ritStart+1)%3==0)) {
                     ptr = new ExonCandidate;
-                    ptr->begin=*ritStart -1;
-                    ptr->end=i + 3 -1;
+                    ptr->begin=*ritStart - 1;
+                    ptr->end=i + 2;
                     ptr->type=singleGene;
                     candidates->push_back(ptr);
                 }
@@ -221,8 +206,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while((lmb<=*ritStart)&&(i-*ritStart<=max_exon_length)&&(ritStart!=exonStart.rend())) {
                     if ((i-*ritStart>=3)&&((i-*ritStart+1)%3==frame) && (p >= dssminprob)) {
                         ptr = new ExonCandidate;
-                        ptr->begin=*ritStart -1;
-                        ptr->end=i -1;
+                        ptr->begin=*ritStart - 1;
+                        ptr->end=i - 1;
                         if (frame==0) {
                             ptr->type=initial_0;
                         } else if (frame==1) {
@@ -247,8 +232,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while((lmb<=*ritASS)&&(i-*ritASS<=max_exon_length)&&(ritASS!=exonASS.rend())) {
                     if ((i-*ritASS>=5) && (p >= dssminprob)) {
                         ptr = new ExonCandidate;
-                        ptr->begin=*ritASS + 3-1;
-                        ptr->end=i-1;
+                        ptr->begin=*ritASS + 2;
+                        ptr->end=i - 1;
                         if (frame==0) {
                             ptr->type=internal_0;
                         } else if (frame==1) {
@@ -274,8 +259,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while ((i-*ritASS<=max_exon_length)&&(ritASS!=exonASS.rend())) {
                     if ((i-*ritASS>=3)&&((i-*ritASS+1)%3==frame)&&(*ritASS>=orf.leftmostExonBegin(0,i,true))) {
                         ptr = new ExonCandidate;
-                        ptr->begin=*ritASS + 3-1;
-                        ptr->end=i + 3-1;
+                        ptr->begin=*ritASS + 2;
+                        ptr->end=i + 2;
                         ptr->type=terminal_exon;
                         candidates->push_back(ptr);
                     }
@@ -294,8 +279,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
             while ((i-*ritRCStop<=max_exon_length)&&(ritRCStop!=exonRCStop.rend())) {
                 if ((i-*ritRCStop>=6)&&((i-*ritRCStop)%3==0)) {
                     ptr = new ExonCandidate;
-                    ptr->begin=*ritRCStop + 1-1;
-                    ptr->end=i + 3-1;
+                    ptr->begin=*ritRCStop;
+                    ptr->end=i + 2;
                     ptr->type=rsingleGene;
                     candidates->push_back(ptr);
                     break;
@@ -317,8 +302,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while((lmb<=*ritRDSS+2)&&(i-*ritRDSS<=max_exon_length)&&(ritRDSS!=exonRDSS.rend())) {
                     if ((i-*ritRDSS>=2)&&((i+1-*ritRDSS)%3==frame)) {
                         ptr = new ExonCandidate;
-                        ptr->begin=*ritRDSS + 3-1;
-                        ptr->end=i + 3-1;
+                        ptr->begin=*ritRDSS + 2;
+                        ptr->end=i + 2;
                         ptr->type=rinitial_exon;
                         candidates->push_back(ptr);
                     }
@@ -340,8 +325,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while((lmb<=*ritRDSS)&&(i-*ritRDSS<=max_exon_length)&&(ritRDSS!=exonRDSS.rend())) {
                     if (i-*ritRDSS>=5 && (p >= assminprob)) {
                         ptr = new ExonCandidate;
-                        ptr->begin=*ritRDSS + 3-1;
-                        ptr->end=i-1;
+                        ptr->begin=*ritRDSS + 2;
+                        ptr->end=i - 1;
                         if (frame==0) {
                             ptr->type=rinternal_0;
                         } else if (frame==1) {
@@ -368,8 +353,8 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while ((i-*ritRCStop<=max_exon_length)&&(ritRCStop!=exonRCStop.rend())) {
                     if ((i-*ritRCStop>=4)&&((i-*ritRCStop)%3==frame) && (p >= assminprob)) {
                         ptr = new ExonCandidate;
-                        ptr->begin=*ritRCStop + 1-1;
-                        ptr->end=i -1;
+                        ptr->begin=*ritRCStop;
+                        ptr->end=i - 1;
                         if (frame==0) {
                             ptr->type=rterminal_0;
                         } else if (frame==1) {
@@ -388,10 +373,10 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
     }
 
     candidates->sort(compBegin);
-    exoncands.push_back(candidates);
+    this->exoncands.push_back(candidates);
     existingCandidates.push_back(addToHash(candidates));
 
-    /*if (candidates!=NULL) {
+   /* if (candidates!=NULL) {
         cout<<"possible exons: "<<endl;
         for (list<ExonCandidate*>::iterator lit=candidates->begin(); lit!=candidates->end(); lit++) {
             cout<<"start: "<<(*lit)->begin;
@@ -451,11 +436,11 @@ void GeneMSA::createOrthoExons(vector<int> offsets) {
         hasOrthoExon=false;
 
         while ((!found) && (!this->alignment.empty())) {
-            if ((*it_ab)->alignSpeciesTupel.at(0)->start > (*it)->begin + offsets[0]) {
-                cout<<" exon "<<(*it)->begin + offsets[0]<<".."<<(*it)->end + offsets[0]<<" is outside (in front of) the aligned range"<<endl;
+            if ((*it_ab)->alignSpeciesTupel.at(0)->start > (*it)->begin + offsets[0] + 1) {
+                cout<<" exon "<<(*it)->begin + offsets[0] + 1<<".."<<(*it)->end + offsets[0] + 1<<" is outside (in front of) the aligned range"<<endl;
                 found=true;
-            } else if (((*it_ab)->alignSpeciesTupel.at(0)->start <= (*it)->begin + offsets[0])
-                         && ((*it_ab)->alignSpeciesTupel.at(0)->start + (*it_ab)->alignSpeciesTupel.at(0)->seqLen - 1 >= (*it)->end + offsets[0])) {
+            } else if (((*it_ab)->alignSpeciesTupel.at(0)->start <= (*it)->begin + offsets[0] + 1)
+                         && ((*it_ab)->alignSpeciesTupel.at(0)->start + (*it_ab)->alignSpeciesTupel.at(0)->seqLen - 1 >= (*it)->end + offsets[0] + 1)) {
 
                 as_ptr=(*it_ab)->alignSpeciesTupel.at(0);
                 if (as_ptr != NULL) {
@@ -502,20 +487,20 @@ void GeneMSA::createOrthoExons(vector<int> offsets) {
                 found=true;
             } else {
                 it_ab++;
-                if ((*it_ab)->alignSpeciesTupel.at(0)->start <= (*it)->begin + offsets[0]) {
+                if ((*it_ab)->alignSpeciesTupel.at(0)->start <= (*it)->begin + offsets[0] + 1) {
                     this->alignment.pop_front();
                 } else {
-                    cout<<" exon "<<(*it)->begin + offsets[0]<<".."<<(*it)->end + offsets[0]<<" hasn't start and end in a coherently aligned sequence"<<endl;
+                    cout<<" exon "<<(*it)->begin + offsets[0] + 1<<".."<<(*it)->end + offsets[0] + 1<<" hasn't start and end in a coherently aligned sequence"<<endl;
                     it_ab--;
                     found=true;
                 }
                 if (this->alignment.empty()) {
-                    cout<<" exon "<<(*it)->begin + offsets[0]<<".."<<(*it)->end + offsets[0]<<" is outside (behind) the aligned range"<<endl;
+                    cout<<" exon "<<(*it)->begin + offsets[0] + 1<<".."<<(*it)->end + offsets[0] + 1<<" is outside (behind) the aligned range"<<endl;
                 }
             }
         }
     }
-    cout<<endl;
+    /*cout<<endl;
     for (list<OrthoExon>::iterator it_oe=orthoExonsList.begin(); it_oe!=orthoExonsList.end(); it_oe++) {
         for (int j=0; j<(*it_ab)->alignSpeciesTupel.size(); j++) {
             if (it_oe->orthoex.at(j)!=NULL && (*it_ab)->alignSpeciesTupel.at(j)!=NULL) {
@@ -528,7 +513,7 @@ void GeneMSA::createOrthoExons(vector<int> offsets) {
             }
         }
         cout<<endl;
-    }
+    }*/
 }
 
  void GeneMSA::openOutputFiles(){

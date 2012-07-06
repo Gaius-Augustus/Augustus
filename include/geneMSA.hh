@@ -27,7 +27,16 @@ public:
     list<OrthoExon> orthoExonsList;		// list of orthologue exons found in a gene segment
 
     GeneMSA() {};
-    ~GeneMSA();
+    ~GeneMSA(){
+        for (int i=0; i<exoncands.size(); i++) {
+            exoncands.at(i)->clear();
+            delete exoncands[i];
+        }
+        for (int i=0; i<existingCandidates.size(); i++) {
+            existingCandidates.at(i)->clear();
+            delete existingCandidates[i];
+        }
+    };
 
     int getStart(int speciesIdx);
     int getEnd(int speciesIdx);
@@ -52,10 +61,10 @@ public:
     void createOrthoExons(vector<int> offsets);	// searches for the orthologue exons of the exon candidates of the reference species
     list<ExonCandidate*>* getExonCands(int speciesIdx);
     list<OrthoExon> getOrthoExons();
-    void openOutputFiles();
+    static void openOutputFiles();
     void printExonCands(vector<int> offsets);
     void printOrthoExons(vector<int> offsets);
-    void closeOutputFiles();
+    static void closeOutputFiles();
 };
 
 #endif  // _GENEMSA
