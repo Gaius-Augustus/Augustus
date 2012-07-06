@@ -891,7 +891,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 	}
 
   // Defines whether to treat reads as single- or pair-ended ones
-  if (paired & qali.size()>1) 
+  if (paired & qali.size()>0) 
 	{
  
 	  // cout << "The size of qali is: " << qali.size() << endl;
