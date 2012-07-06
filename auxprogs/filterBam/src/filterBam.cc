@@ -891,10 +891,12 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 	}
 
   // Defines whether to treat reads as single- or pair-ended ones
-  if (paired & qali.size()>0) 
+  if (paired & qali.size()>1) 
 	{
  
-	  if (verbose)
+	  // cout << "The size of qali is: " << qali.size() << endl;
+
+	  if (verbose && qali.size()>1)
 		{
 		  // Printing Qali before sorting
 		  cout << "------------------------------------------------------" << endl;
@@ -902,11 +904,14 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		  printQali(qali, refData);
 		}
 
-	  // Sorting by $tname and then by $tstart (chek BAM format specification within SAM specs)
-	  std::stable_sort( qali.begin(), qali.end(), Sort::ByName(Sort::AscendingOrder) );
-	  std::stable_sort( qali.begin(), qali.end(), Sort::ByPosition(Sort::AscendingOrder) );
+	  if (qali.size() > 1)
+		{
+		  // Sorting by $tname and then by $tstart (chek BAM format specification within SAM specs)
+		  std::stable_sort( qali.begin(), qali.end(), Sort::ByName(Sort::AscendingOrder) );
+		  std::stable_sort( qali.begin(), qali.end(), Sort::ByPosition(Sort::AscendingOrder) );
+		}
 
-	  if (verbose)
+	  if (verbose && qali.size()>1)
 		{
 		  // Printing Qali after sorting
 		  cout << "------------------------------------------------------" << endl;
