@@ -1,9 +1,12 @@
 /* 
    Creates a Wiggle file with coverage information coming from a BAM file 	
  																			
+   NOTE: 
+   Depending on the version of the compiler,  the call to "-lcurses" might have 
+   to be replaced to "-lncurses"
  																			
    Created: 12-June-2012 													
-   Last modified: 17-June-2012												
+   Last modified:  9-July-2012												
 */
 
 
