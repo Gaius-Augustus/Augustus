@@ -16,6 +16,7 @@
 
 using namespace std;
 
+//forward declarations
 class OrthoExon;
 
 class OrthoGraph{
@@ -58,9 +59,8 @@ public:
      * all nodes with the labels 0 are made to 1 and vice versa
      */
     vector<MoveObject*> majorityRuleMove(OrthoExon *orthoex);
-    vector<MoveObject*> allToOne(OrthoExon *orthoex);
 
-    void outputGenes(Strand strand);
+    void outputGenes();
     inline void storePtrsToAlltranscripts(list<Gene> *alltranscripts){
 	this->ptrs_to_alltranscripts.push_back(alltranscripts);
     }

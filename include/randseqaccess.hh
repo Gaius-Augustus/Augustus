@@ -22,10 +22,10 @@
  */
 class RandSeqAccess {
 protected:
-  RandSeqAccess() {};
-  virtual ~RandSeqAccess() {}
+    RandSeqAccess() {};
+    virtual ~RandSeqAccess() {}
 public:
-  virtual AnnoSequence* getSeq(string speciesname, string chrName, int start, int end) =  0;
+    virtual AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand) =  0;
 };
 
 /*
@@ -34,12 +34,12 @@ public:
  */
 class MemSeqAccess : public RandSeqAccess {
 public:
-  MemSeqAccess();
-  AnnoSequence* getSeq(string speciesname, string chrName, int start, int end);
+    MemSeqAccess();
+    AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
   
-  private:
-  map<string,string> filenames;
-  map<string,char*> sequences;  //keys: speciesname:chrName values: dna sequence
+private:
+    map<string,string> filenames;
+    map<string,char*> sequences;  //keys: speciesname:chrName values: dna sequence
 };
 
 
@@ -49,8 +49,8 @@ public:
  */
 class DbSeqAccess : public RandSeqAccess {
 public:
-  DbSeqAccess();
-  AnnoSequence* getSeq(string speciesname, string chrName, int start, int end);
+    DbSeqAccess();
+    AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
 };
 
 /*

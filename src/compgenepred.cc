@@ -29,6 +29,7 @@ CompGenePred::CompGenePred(){
 
 void CompGenePred::start(){
     // read in alignment, determine orthologous sequence fragments
+
     OrthoGraph::tree = new PhyloTree(Constant::treefile);  //has to be initialized before OrthoGraph
 
     OrthoGraph::numSpecies = OrthoGraph::tree->species.size();
@@ -47,15 +48,8 @@ void CompGenePred::start(){
     vector<string> speciesname = OrthoGraph::tree->species;
     vector<int> offsets;
 
-    /*//temp:
-      orthograph.all_orthoex = readOrthoExons(Constant::orthoexons);
-      vector<string> chrName;
-      chrName.push_back("chr21");
-      chrName.push_back("chr17");
-      chrName.push_back("chr31");
-      int start[] = {44836600, 31983200, 39789600} ;
-      int end[] = {44846200, 31992100, 39798300};
-      Strand strand = minusstrand;*/
+    //temp:
+    //orthograph.all_orthoex = readOrthoExons(Constant::orthoexons);
 
     // determine object that holds a sequence range for each species
     // loop over species
@@ -63,10 +57,8 @@ void CompGenePred::start(){
     while (GeneMSA *geneRange = msa.getNextGene()) {
         for (int s = 0; s < speciesname.size(); s++) {
             if (!geneRange->getChr(s).empty()) {
-                //AnnoSequence *seqRange = rsa->getSeq(speciesname[s], chrName[s], start[s], end[s]);
-                AnnoSequence *seqRange = rsa->getSeq(speciesname[s], geneRange->getChr(s), geneRange->getStart(s), geneRange->getEnd(s)/*, geneRange->getStrand(s)*/);
+                AnnoSequence *seqRange = rsa->getSeq(speciesname[s], geneRange->getChr(s), geneRange->getStart(s), geneRange->getEnd(s), geneRange->getStrand(s));
                 orthograph.orthoSeqRanges[s] = seqRange;
-                // maybe do not need getStrand because nameGene generates the reverse complement of an already reversed complement
                 if (seqRange==NULL) {
                     cerr << "random sequence access failed on " << speciesname[s] << ", " << geneRange->getChr(s) << ", " << geneRange->getStart(s) << ", " <<  geneRange->getEnd(s) << ", " << endl;
                     break;
@@ -86,7 +78,7 @@ void CompGenePred::start(){
 		      additionalExons.push_back(it->orthoex[s]);
 		      }
 		      }*/
-                    namgene.doViterbiPiecewise(sfc, seqRange, geneRange->getStrand(s)); // builds graph for each species
+                    namgene.doViterbiPiecewise(sfc, seqRange, bothstrands); // builds graph for each species
                     list<Gene> *alltranscripts = namgene.getAllTranscripts();
                     if(alltranscripts){
                         cout << "building Graph for " << speciesname[s] << endl;
@@ -134,7 +126,7 @@ void CompGenePred::start(){
 
 
         // transfer longest paths to genes + filter + ouput
-        orthograph.outputGenes(geneRange->getStrand(0));
+        orthograph.outputGenes();
 
         offsets.clear();
         delete geneRange;

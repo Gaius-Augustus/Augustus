@@ -12,6 +12,7 @@
 
 
 #include "orthograph.hh"
+#include "geneMSA.hh"
 #include "mea.hh"
 
 using namespace std;
@@ -36,49 +37,69 @@ OrthoGraph::~OrthoGraph(){
     }
 }
 
-void OrthoGraph::outputGenes(Strand strand){
+void OrthoGraph::outputGenes(){
 
     Boolean noInFrameStop;
-    double minmeanexonintronprob;
-    double minexonintronprob;  // lower bound on probabilities of all exons and introns in the coding region
 
     try {
 	noInFrameStop = Properties::getBoolProperty("noInFrameStop");
     } catch (...) {
 	noInFrameStop = false;
     }
-    try {
-	minmeanexonintronprob = Properties::getdoubleProperty("minmeanexonintronprob");
-    } catch (...) {
-	minmeanexonintronprob = 0.0;
-    }
-    try {
-	minexonintronprob = Properties::getdoubleProperty("minexonintronprob");
-    } catch (...) {
-	minexonintronprob = 0.0;
-    }
-
+ 
     for (size_t pos = 0; pos < numSpecies; pos++){
-	/*
-	 * backtracking
-	 */
-	list<Node*> longest_path; //stores path nodes
 
-	Node *begin = this->graphs[pos]->head; //pointer to head
-	while(begin != NULL){
-	    if(begin->label == 1){
-		longest_path.push_back(begin);
-	    }
-	    begin = begin->topSort_next;
-	}
 	list<Gene> *genes = new list<Gene>;
-	/*
-	 * convert list of path nodes to list of genes
-	 */
-	getMeaGenelist7(longest_path, genes);
-   
+	
+	Node* current = graphs[pos]->tail;
+	Node* head =  graphs[pos]->head;
+	Node* predcurrent;
+	
+	Gene *currentGene = new Gene();
+	
+	// start backtracking
+	while(current != head){
+	    
+	    while(current->item == NULL){ //skip all neutral nodes
+		if (current == head){
+		    goto end;
+		}
+		current = graphs[pos]->getTopSortPred(current);  //exon1
+	    }
+	    State *ex;
+	    if(current->n_type == sampled){
+		ex = new State(*((State*)(current->item)));
+	    }
+	    else{
+		ex = new State(current->begin, current->end, current->castToStateType());
+	    }
+	    addExonToGene(currentGene, ex);
+	    predcurrent = graphs[pos]->getTopSortPred(current);
+	    if(predcurrent->n_type  == IR){ //end of gene
+		setGeneProperties(currentGene);
+		genes->push_front(*currentGene);
+		delete currentGene;
+		currentGene = new Gene();
+		current = predcurrent;
+	    }
+	    else{
+		while(predcurrent->item == NULL){
+		    if(predcurrent == head){
+			setGeneProperties(currentGene);
+			genes->push_front(*currentGene);
+			delete currentGene;
+			goto end;
+		    }
+		    predcurrent = graphs[pos]->getTopSortPred(predcurrent); //exon2
+		}
+		addIntronToGene(currentGene, predcurrent, current); //add intron exon2->exon1
+		current = predcurrent;
+	    }  
+	}
+    end:
+
 	list<Gene> *filteredTranscripts = new list<Gene>;
-	filteredTranscripts = Gene::filterGenePrediction(genes, this->orthoSeqRanges[pos]->sequence, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
+	filteredTranscripts = Gene::filterGenePrediction(genes, orthoSeqRanges[pos]->sequence, bothstrands, noInFrameStop);
 	list<AltGene> *agl = groupTranscriptsToGenes(filteredTranscripts);
 
 	delete genes;
@@ -188,7 +209,7 @@ void OrthoGraph::localMove(vector<MoveObject*> &orthomove){
 
     // the magnitude of the expansion in each iteration. The number of nodes, the local_heads are shifted left
     // and the local_tails are shifted right on the current path.
-    size_t step_size =1;
+   
 
     for(size_t iter = 0; iter < maxIterations; iter++){
 
@@ -199,14 +220,14 @@ void OrthoGraph::localMove(vector<MoveObject*> &orthomove){
 	    //shift local_heads and local_heads
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(orthomove[pos]){
-		    orthomove[pos]->goLeftOnPath(step_size);
-		    orthomove[pos]->goRightOnPath(step_size);
+		    orthomove[pos]->shiftHead();
+		    orthomove[pos]->shiftTail();
 		    cout << "local_head: " << orthomove[pos]->getHead() << endl;
 		    cout << "local_tail: " << orthomove[pos]->getTail() << endl;
 		}
 	    }
 	}
-    
+	
 	// do the local changes and determine the  difference  between the new and the old local score
 	double score = calculateScoreDiff(orthomove);
 	if(score >= 0){
@@ -351,24 +372,6 @@ void OrthoGraph::addOrthoIntrons(vector<MoveObject*> &orthomove, list<OrthoExon>
 			if (flag == true){
 			    break;
 			}
-			Node *succ_node = graphs[pos]->getSuccessor(node);
-			Node *pred_target = graphs[pos]->getPredecessor(target);
-			//cout << "target " << target << "\t" << "pred_target " <<pred_target << endl;
-			for(list<Edge>::iterator it = succ_node->edges.begin(); it!= succ_node->edges.end(); it++){
-			    if(it->to == pred_target){
-				cout <<"Kante gefunden: "<< *it << endl;
-				cout <<"füge Knoten " << target << " zu dem MoveObject hinzu " << endl;
-				orthomove[pos]->addNodeBack(target, graphs[pos]->getMaxWeight());
-				orthomove[pos]->addEdgeBack(&(*it), graphs[pos]->getMaxWeight());
-				//TODO flankierende Kanten auf minus unendlich setzen
-				flag = true;
-				node = target;
-				break;
-			    }
-			}
-			if (flag == true){
-			    break;
-			}
 		    }
 		}
 	    }
@@ -397,25 +400,6 @@ void OrthoGraph::addOrthoIntrons(vector<MoveObject*> &orthomove, list<OrthoExon>
 				node = target;
 				break;
 			    }
-			}
-
-			Node *pred_node = graphs[pos]->getPredecessor(node);
-			Node *succ_target = graphs[pos]->getSuccessor(target);
-			//cout << "target " << target << "\t" << "succ_target " <<succ_target << endl;
-			for(list<Edge>::iterator it = succ_target->edges.begin(); it!= succ_target->edges.end(); it++){
-			    if(it->to == pred_node){
-				cout <<"Kante gefunden: "<< *it << endl;
-				cout <<"füge Knoten " << target << " zu dem MoveObject hinzu " << endl;
-				orthomove[pos]->addNodeFront(target, graphs[pos]->getMaxWeight());
-				orthomove[pos]->addEdgeFront(&(*it), graphs[pos]->getMaxWeight());
-				//TODO flankierende Kanten auf minus unendlich setzen
-				flag = true;
-				node = target;
-				break;
-			    }
-			}
-			if (flag == true){
-			    break;
 			}
 		    }
 		}
@@ -452,9 +436,9 @@ vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon *orthoex){
 	if ( numOnes >= numZeros ){                  // make all zeros to ones	
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if( (orthoex->labelpattern[pos] == '0')  ){
-		    MoveObject *move = new MoveObject(graphs[pos]);
+		    MoveObject *move = new MoveObject(graphs[pos], 3);
 		    move->addNodeBack( graphs[pos]->getNode(orthoex->orthoex[pos]), graphs[pos]->getMaxWeight() );
-		    move->initLocalHeadandTail(1);
+		    move->initLocalHeadandTail();
 		    orthomove[pos] = move;
 		    cout << "local_head: " << orthomove[pos]->getHead() << endl;
 		    cout << "local_tail: " << orthomove[pos]->getTail() << endl;
@@ -465,9 +449,9 @@ vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon *orthoex){
 	    cout << "make all ones to zeros" << endl;	
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if( (orthoex->labelpattern[pos] == '1')  ){
-		    MoveObject *move = new MoveObject(graphs[pos]);
+		    MoveObject *move = new MoveObject(graphs[pos], 3);
 		    move->addNodeBack( graphs[pos]->getNode(orthoex->orthoex[pos]), - graphs[pos]->getMaxWeight() );
-		    move->initLocalHeadandTail(4);
+		    move->initLocalHeadandTail();
 		    orthomove[pos] = move;
 		    cout << "local_head: " << orthomove[pos]->getHead() << endl;
 		    cout << "local_tail: " << orthomove[pos]->getTail() << endl;
@@ -478,32 +462,6 @@ vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon *orthoex){
     return orthomove;
 }
 
-
-vector<MoveObject*> OrthoGraph::allToOne(OrthoExon *orthoex){
-
-    cout << "all to One move " << endl;
-    cout << *orthoex << "\t" << orthoex->labelpattern << endl;
-
-    vector<MoveObject*> orthomove;
-
-    for(string::iterator string_it = orthoex->labelpattern.begin(); string_it < orthoex->labelpattern.end(); string_it++){
-	if(*string_it == '0'){
-	    orthomove.resize(numSpecies);
-	    for(size_t pos = 0; pos < numSpecies; pos++){
-		if( (orthoex->labelpattern[pos] == '0')  ){
-		    MoveObject *move = new MoveObject(graphs[pos]);
-		    move->addNodeBack( graphs[pos]->getNode(orthoex->orthoex[pos]), graphs[pos]->getMaxWeight() );
-		    move->initLocalHeadandTail(2);
-		    orthomove[pos] = move;
-		    cout << "local_head: " << orthomove[pos]->getHead() << endl;
-		    cout << "local_tail: " << orthomove[pos]->getTail() << endl;
-		}
-	    }
-	    break;
-	}
-    }
-    return orthomove;
-}
 
 map<string, Score> cache::labelscore; //stores score of prunning algorithm for each pattern (leaf labelling)
 
@@ -534,7 +492,7 @@ void cache::printCache(list<OrthoExon> &ortho){
     cout << "--- orthologous exons + labelpattern ---" << endl;
     for(list<OrthoExon>::iterator it = ortho.begin(); it != ortho.end(); it++){
 	incrementCounter(it->labelpattern);
-	cout << *it << "\t" << it->labelpattern << endl;
+	//cout << *it << "\t" << it->labelpattern << endl;
     }
     cout << "\n--- cache summary ---" << endl;
     cout.width(4); cout << "";

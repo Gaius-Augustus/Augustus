@@ -114,17 +114,19 @@ void SpeciesGraph::buildGraph(){
 	
     //find longest path in the graph
     topSort();
-   
+
     //relax all nodes in topological order
     relax(head, tail);
 
     printGraph(speciesname + ".dot");
+    cout << "leaving build Graph" << endl;
 	
 }
 
 Node* SpeciesGraph::addExon(Status *exon, vector< vector<Node*> > &neutralLines){
 
     if(!alreadyProcessed(exon)){
+	//cout << "sampled: "<< exon->begin << "\t" << exon->end << "\t" <<(string)stateTypeIdentifiers[((State*)exon->item)->type] << endl;
 	Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item, sampled);
 	nodelist.push_back(ex);
 	addToHash(ex);
@@ -137,10 +139,14 @@ Node* SpeciesGraph::addExon(Status *exon, vector< vector<Node*> > &neutralLines)
 Node* SpeciesGraph::addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines){
 
     if(!alreadyProcessed(exon)){
+
 	Node *ex = new Node(exon->begin, exon->end, exon->score, exon, unsampled_exon);
 	nodelist.push_back(ex);
 	addToHash(ex);
 	addNeutralNodes(ex, neutralLines);
+    }
+    else{	
+	//cout << "unsampled_exoncand: "<< exon->begin << "\t" << exon->end << "\t" <<(string)stateTypeIdentifiers[exon->getStateType()] << endl;
     }
     return getNode(exon);
 }
@@ -173,25 +179,6 @@ void SpeciesGraph::addNeutralNodes(Node *node,vector< vector<Node*> > &neutralLi
 	node->edges.push_back(intron);      
 	delete neut_from;
     }
-}
-
-Node* SpeciesGraph::getPredecessor(Node* node){
-    if(node->n_type > minus2){
-	return existingNodes[itoa(node->begin) + ":" + itoa( (NodeType)(fromNeutralLine(node)))];
-    }
-    else{
-	throw ProjectError("in SpeciesGraph::getPredecessor: node is not an exon");
-    }
-    return NULL;
-}
-Node* SpeciesGraph::getSuccessor(Node* node){
-    if(node->n_type > minus2){
-	return existingNodes[itoa(node->end) + ":" + itoa( (NodeType)(toNeutralLine(node)))];
-    }
-    else{
-	throw ProjectError("in SpeciesGraph::getSuccessor: node is not an exon");
-    }
-    return NULL;
 }
 
 void SpeciesGraph::addIntron(Node* exon1, Node* exon2, Status *intr){
@@ -260,7 +247,7 @@ int SpeciesGraph::toNeutralLine(Node *node){
     return -1;
 }
 
-void SpeciesGraph::printGraph(string filename){
+void SpeciesGraph::printGraph(string filename, Node *begin, Node *end, bool only_sampled){
 
     //creates inputfile for graphviz
     ofstream file;
@@ -270,16 +257,18 @@ void SpeciesGraph::printGraph(string filename){
     file<<"rankdir=LR;\n";
  
     file<<"\tnode[shape=box];\n";
-    Node *pos = head;
-    Node *current_path = head;
-    while(pos != NULL){
+    Node *pos = begin;
+    Node *current_path = begin;
+    while(pos != end){
 
-	if(!(pos->n_type == unsampled_exon && pos->label == 0)){
-   
+	if(only_sampled && (pos->n_type == unsampled_exon && pos->label == 0)){
+	}
+	else{
 	    for(list<Edge>::iterator it=pos->edges.begin(); it!=pos->edges.end(); it++){
 
-		if(!(it->to->n_type == unsampled_exon && it->to->label == 0)){
-
+		if(only_sampled && (it->to->n_type == unsampled_exon && it->to->label == 0)){
+		}
+		else{
 		    string name1 = "";
 		    string name2 = "";
 		    StateType type1 = pos->castToStateType();
@@ -313,8 +302,6 @@ void SpeciesGraph::printGraph(string filename){
 			file<<"style=filled,label=head";
 		    else if(pos->item == NULL)
 			file<<"shape=point";
-		    else if(pos->item != NULL && it->to->n_type == IR)
-			file<<"style=filled,fillcolor=turquoise,";
 		    else if(pos->n_type == unsampled_exon)
 			file<<"style=filled,fillcolor=lightgrey,";
 		    file<<"];\n";
@@ -324,8 +311,6 @@ void SpeciesGraph::printGraph(string filename){
 			file<<"style=filled,label=tail";
 		    else if(it->to->item == NULL)
 			file<<"shape=point";
-		    else if(pos->n_type == IR && it->to != NULL)
-			file<<"style=filled,fillcolor=yellow,";
 		    else if(it->to->n_type == unsampled_exon)
 			file<<"style=filled,fillcolor=lightgrey,";
 		    file<<"];\n";
@@ -383,11 +368,17 @@ void SpeciesGraph::topSort(){
 	    dfs(*node, processed);
 	}
     }
+    // set pointers to the preceding nodes in topSort
+    Node *next = head;
+    while(next != tail){
+	next->topSort_next->topSort_pred = next;
+	next = 	next->topSort_next;
+    }
 }
 
 void SpeciesGraph::dfs(Node *node, map<string,Node*> &processed){
 
-    static Node* temp = NULL;
+    static Node* next = NULL;
 
     processed[getKey(node)] = node;
     for(list<Edge>::iterator edge=node->edges.begin(); edge!=node->edges.end(); edge++){
@@ -395,9 +386,9 @@ void SpeciesGraph::dfs(Node *node, map<string,Node*> &processed){
 	    dfs(edge->to, processed);
     }
     if(node != tail){
-	node->topSort_next = temp;
+	node->topSort_next = next;
     }
-    temp = node;
+    next = node;
 }
 
 void SpeciesGraph::relax(Node *begin, Node *end){
@@ -426,7 +417,7 @@ void SpeciesGraph::relax(Node *begin, Node *end){
 	next = next->topSort_next;
     } 
 
-    //set node labels
+    //set new path labels
     while(next != begin){
 	next->label = 1;
 	next = next->pred;
@@ -434,13 +425,13 @@ void SpeciesGraph::relax(Node *begin, Node *end){
     next->label = 1;
 
 }
-void MoveObject::initLocalHeadandTail(size_t step_size){
+void MoveObject::initLocalHeadandTail(){
 
     Node *left = NULL;
     Node *right = NULL;
 
     if(nodes.empty() && edges.empty()){
-	throw ProjectError("MoveObject::setLocalHead(): no nodes and no edges specified in MoveObject");
+	throw ProjectError("MoveObject::initLocalHeadandTail(): no nodes and no edges specified in MoveObject");
     }
     else if(edges.empty()){
 	left = nodes.front().node;
@@ -459,75 +450,38 @@ void MoveObject::initLocalHeadandTail(size_t step_size){
 	}
 	left = nodes.front().node;
     }
-    setLocalTail(right);
-    setLocalHead(left);
 
-    /*if(local_head == local_tail){
-      goLeftOnPath(step_size);
-      goRightOnPath(step_size);
-      }*/
-
-    
+    if (left->label != right->label)
+	throw ProjectError("MoveObject::initLocalHeadandTail(): either all nodes have label 1 or all node have label 0");
+    else{
+	local_head = graph->getTopSortPred(left, step_size);
+	local_tail = graph->getTopSortNext(right, step_size);
+    }
 }
 
-void  MoveObject::setLocalHead(Node *node){
- 
-    while(node->label != 1){
-	node = node->pred;
+Node* SpeciesGraph::getTopSortPred(Node *node, size_t step){
+
+ while(step > 0 && node != head){
+     do{
+	 node = node->topSort_pred;
+     }
+     while(node->label == 0);
+     step--;
     }
-    local_head = node;
-}
-
-void MoveObject::goLeftOnPath(size_t step_size){
-
-    Node *node = local_head;
-  
-    while(step_size > 0 && node != graph->head){
-	node = node->pred;
-	step_size--;
-    }
-    local_head = node;
-}
-
-void MoveObject::goRightOnPath(size_t step_size){
-
-    Node *node = local_tail;
-
-    while(step_size > 0 && node != graph->tail){
-	for(list<Edge>::iterator edge = node->edges.begin(); edge != node->edges.end(); edge++){
-	    if(edge->to->label == 1 &&edge->to->pred == node){
-		node = edge->to;
-		break;
-	    }
-	}      
-	step_size--;
-    }
-    local_tail = node;
-}
+    return node;
 
 
-void MoveObject::setLocalTail(Node *node){
+} 
+Node* SpeciesGraph::getTopSortNext(Node *node, size_t step){
 
-    list<Node*> queue;
-    queue.push_back(node);
-    map<string, Node*> processed;
-    processed[graph->getKey(node)] = node;
-    while(!queue.empty()){
-	Node *next = queue.front();
-	queue.pop_front();
-	if (next->label == 1){ 
-	    local_tail = next;
-	    break;
-	}
-	else{
-	    for(list<Edge>::iterator edge = next->edges.begin(); edge != next->edges.end(); edge++){      
-		if (processed[graph->getKey(edge->to)] == 0){
-		    processed[graph->getKey(edge->to)] = edge->to;
-		    queue.push_back(edge->to);
-		}
-	    }
-	}
-    }
+ while(step > 0 && node != tail){
+     do{
+	 node = node->topSort_next;
+     }
+     while(node->label == 0);
+     step--;
+ }
+ return node;
 }
 
 string SpeciesGraph::getKey(Node *n){
@@ -563,6 +517,8 @@ double SpeciesGraph::localChange(MoveObject *move){
     cout << "\nSpecies: " << speciesname <<"\n\nbefore local change" << endl;
     double local_score = - getScorePath(move->getHead(), move->getTail());  //old score of local path
 
+    printGraph(speciesname + itoa( move->getHead()->begin ) + "_" + itoa( move->getHead()->end ) +"_" + itoa( move->getTail()->begin ) + "_" + itoa( move->getTail()->end )  + ".dot", move->getHead(), move->getTail() ); 
+
     move->addWeights();
  
     relax(move->getHead(), move->getTail());            // relax edges
@@ -572,19 +528,17 @@ double SpeciesGraph::localChange(MoveObject *move){
     cout << "\nafter local change" << endl;
     local_score += getScorePath(move->getHead(), move->getTail());  // new score of local path
 
-    printGraph(speciesname + ".opt.dot"); 
+    printGraph(speciesname + itoa(move->getHead()->begin) + "_" + itoa(move->getHead()->end) +"_" + itoa(move->getTail()->begin) + "_" + itoa(move->getTail()->end)  + "opt.dot", move->getHead(), move->getTail());
+    
     return local_score;
 }
 
 double SpeciesGraph::getScorePath(Node *begin, Node *end){
 
     double score = 0;
-
+    cout << begin->begin << "\t" << begin->end << "\t" << score  << endl;
     while(begin != end){	
-	Node *next = begin->topSort_next;
-	while(next->label == 0){
-	    next = next->topSort_next;
-	}
+	Node *next = getTopSortNext(begin);
 	for(list<Edge>::iterator edge = begin->edges.begin(); edge != begin->edges.end(); edge++){
 	    if(edge->to == next){
 		score += edge->score;
