@@ -1,8 +1,8 @@
-/* Checks whether a file has been sorted by target name				  					*/
-/* 																	 					*/
-/* Tonatiuh Pena-Centeno 											 					*/
-/* Created: 11-April-2012 											 					*/
-/* Last modified: 18-May-2012   									 					*/
+/* Checks whether a file has been sorted by target name	 					*/
+/* 														 					*/
+/* Tonatiuh Pena-Centeno 								 					*/
+/* Created: 11-April-2012 								 					*/
+/* Last modified:  9-July-2012                           					*/
 
 #include <stdio.h>
 #include <stdlib.h> 
@@ -14,7 +14,7 @@ extern bam_index_t *bam_index_core(bamFile fp);
 int main(int argc, char *argv[])  
 {  
     if (argc == 1) {
-        fprintf(stderr, "Usage: checkSortedness <in.bam> [region]\n");
+        fprintf(stderr, "Usage: checkSortedness <in.bam> \n");
         return 1;
     }
 

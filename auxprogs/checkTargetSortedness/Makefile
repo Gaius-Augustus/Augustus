@@ -1,7 +1,12 @@
-# Compiles an example program that makes use of the SAMtools API
+# Tests whether BAM file has been sorted by target reference (RefID)
 # 
+# NOTE: 
+# Depending on the version of the compiler,  the call to "-lcurses" might have 
+# to be replaced to "-lncurses"
+#
+#
 # Created: 11-April-2012
-# Last modified: 4-July-2012
+# Last modified:  9-July-2012
 # 
 
 SOURCES = checkTargetSortedness.c bam_index.o ### Keep in mind that "bam_index.o" needs to be included!!!
