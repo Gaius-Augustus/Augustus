@@ -4,11 +4,11 @@
 #	a) "-g" option allows for debugging
 #	b) libbamtools.a and lz library are used during the linking process
 #
-# 	Created: 25-Aug-11
+# 	Created: 25-Aug-11 
 #	Last modified: 7-May-2012
-
+ 
 # Variable definition
-HOME = /home/tonatiuh/Documents/git
+HOME = /fs1.bioinf/tonatiuh/git
 BT3 = $(HOME)/bamtools
 CODE = ../
 INCLUDES = -I$(BT3)/include -I$(CODE)/headers -I$(BT3)/src/toolkit
