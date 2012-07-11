@@ -1,7 +1,7 @@
 /*	Prints the coverage of a BAM alignment file
 
 	Created: 13-Sep-11
-	Last modified:  7-May-2012
+	Last modified: 11-July-2012
 */
 
 #include <api/BamReader.h>
@@ -160,6 +160,7 @@ int main(int argc, char *argv[])
 		if (!(pal+line)->IsMapped()) // Unmapped alignment
 		  {	 
 			if (verbose) cout << "alignment " << line << ": unmapped" << endl;
+			outNoMapping++;
 			goto nextAlignment;
 		  }
  
@@ -225,6 +226,42 @@ int main(int argc, char *argv[])
 	// Closing file handles
     reader.Close();
 	writer.Close();
+
+
+	// Displaying results to STDOUT
+	cout <<  "\n\n------------------------------------- " << endl;
+	cout <<  "\nSummary of filtered alignments: " << endl;
+	cout <<  "------------------------------------- " << endl;
+	cout <<  "unmapped        : " << outNoMapping << endl;
+	cout <<  "percent identity: " << outMinId << endl;
+	cout <<  "coverage        : " << outMinCover << endl;
+	if (noIntrons) {cout <<  "nointrons       : " << outIntrons << endl;}
+	if (paired) 
+	  {
+		cout << "not paired      : " << outPaired << endl;
+      	cout << "quantiles of unspliced insert lengths:" << endl;
+		// try { // catches: instance of 'std::out_of_range'
+		//   	  for (int it=1; it<10; it++)
+		// 		{cout << "q[" << 10*it << "%]=" << insertlen.at(ceil(it*insertlen.size()/10)) << ",";}
+		// 	} catch (out_of_range& oor) { 
+		//   		  cerr << "[Quantiles]:" << oor.what() << "; insertlen.size()=" << insertlen.size() << endl; 
+		// 	}
+		cout << endl;
+ 	  } 
+	if (uniq) {cout << "unique          : " << outUniq << endl;}
+	if (best) {cout << "best            : " << outBest << endl;}
+
+
+
+	// Displaying command line
+	cout <<  "------------------------------------- " << endl;
+	cout << "Cmd line: " << endl;
+	for (int it=0; it<argc;it++)
+	  {
+		cout << argv[it] << " ";
+	  }
+	cout << endl;
+	cout <<  "------------------------------------- " << endl;
 
 
 	// // Printing sizes associated to vector of: vecSingleAlignments
