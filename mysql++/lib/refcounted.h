@@ -29,6 +29,7 @@
 #define MYSQLPP_REFCOUNTED_H
 
 #include <memory>
+#include <cstring>
 
 namespace mysqlpp {
 
