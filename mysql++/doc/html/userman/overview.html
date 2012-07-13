@@ -1,0 +1,111 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>2. Overview</title><link rel="stylesheet" href="tangentsoft.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.69.1"><link rel="start" href="index.html" title="MySQL++ v3.1.0 User Manual"><link rel="up" href="index.html" title="MySQL++ v3.1.0 User Manual"><link rel="prev" href="index.html" title="MySQL++ v3.1.0 User Manual"><link rel="next" href="tutorial.html" title="3. Tutorial"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">2. Overview</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="index.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="tutorial.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="overview"></a>2. Overview</h2></div></div></div><p>MySQL++ has a lot of complexity and power to cope with the
+  variety of ways people use databases, but at bottom it doesn&#8217;t
+  work all that differently than other database access APIs. The usage
+  pattern looks like this:</p><div class="orderedlist"><ol type="1"><li><p>Open the connection</p></li><li><p>Form and execute the query</p></li><li><p>If successful, iterate through the result
+    set</p></li><li><p>Else, deal with errors</p></li></ol></div><p>Each of these steps corresponds to a MySQL++ class or class
+  hierarchy. An overview of each follows.</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="Connection"></a>2.1. The Connection Object</h3></div></div></div><p>A <tt><a href="../refman/classmysqlpp_1_1Connection.html">Connection</a></tt> object manages the
+    connection to the MySQL server. You need at least one of these
+    objects to do anything. Because the other MySQL++ objects your
+    program will use often depend (at least indirectly) on the
+    <code class="classname">Connection</code> instance, the
+    <code class="classname">Connection</code> object needs to live at least as
+    long as all other MySQL++ objects in your program.</p><p>MySQL supports many different types of data connection between
+    the client and the server: TCP/IP, Unix domain sockets, and Windows
+    named pipes. The generic <code class="classname">Connection</code> class
+    supports all of these, figuring out which one you mean based on the
+    parameters you pass to
+    <code class="methodname">Connection::connect()</code>. But if you know in
+    advance that your program only needs one particular connection type,
+    there are subclasses with simpler interfaces. For example,
+    there&#8217;s <tt><a href="../refman/classmysqlpp_1_1TCPConnection.html">TCPConnection</a></tt> if you
+    know your program will always use a networked database
+    server.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="Query"></a>2.2. The Query Object</h3></div></div></div><p>Most often, you create SQL queries using a <tt><a href="../refman/classmysqlpp_1_1Query.html">Query</a></tt> object created by the
+    <code class="classname">Connection</code> object.</p><p><code class="classname">Query</code> acts as a standard C++ output
+    stream, so you can write data to it like you would to
+    <code class="classname">std::cout</code> or
+    <code class="classname">std::ostringstream</code>. This is the most C++ish
+    way MySQL++ provides for building up a query string.  The library
+    includes <a href="../refman/manip_8h.html" target="_top">stream
+    manipulators</a> that are type-aware so it&#8217;s easy to build
+    up syntactically-correct SQL.</p><p><code class="classname">Query</code> also has a feature called <a href="tquery.html">Template Queries</a> which work something like C&#8217;s
+    <code class="function">printf()</code> function: you set up a fixed query
+    string with tags inside that indicate where to insert the variable
+    parts. If you have multiple queries that are structurally similar,
+    you simply set up one template query, and use that in the various
+    locations of your program.</p><p>A third method for building queries is to use
+    <code class="classname">Query</code> with <a href="ssqls.html" title="5. Specialized SQL Structures">SSQLS</a>. This feature lets you create C++
+    structures that mirror your database schemas. These in turn give
+    <code class="classname">Query</code> the information it needs to build many
+    common SQL queries for you. It can <span><strong class="command">INSERT</strong></span>,
+    <span><strong class="command">REPLACE</strong></span> and <span><strong class="command">UPDATE</strong></span> rows in a
+    table given the data in SSQLS form. It can also generate
+    <span><strong class="command">SELECT * FROM SomeTable</strong></span> queries and store the
+    results as an STL collection of SSQLSes.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="Result"></a>2.3. Result Sets</h3></div></div></div><p>The field data in a result set are stored in a special
+    <code class="classname">std::string</code>-like class called <tt><a href="../refman/classmysqlpp_1_1String.html">String</a></tt>. This class has conversion operators
+    that let you automatically convert these objects to any of the basic
+    C data types. Additionally, MySQL++ defines classes like <tt><a href="../refman/structmysqlpp_1_1DateTime.html">DateTime</a></tt>, which you can initialize from a
+    MySQL <span><strong class="command">DATETIME</strong></span> string. These automatic
+    conversions are protected against bad conversions, and can either
+    set a warning flag or throw an exception, depending on how you set
+    the library up.</p><p>As for the result sets as a whole, MySQL++ has a number of
+    different ways of representing them:</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="SimpleResult"></a>Queries That Do Not Return Data</h4></div></div></div><p>Not all SQL queries return data. An example is
+      <span><strong class="command">CREATE TABLE</strong></span>. For these types of queries, there
+      is a special result type (<tt><a href="../refman/classmysqlpp_1_1SimpleResult.html">SimpleResult</a></tt>) that simply reports the state resulting from
+      the query: whether the query was successful, how many rows it
+      impacted (if any), etc.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="StoreQueryResult"></a>Queries That Return Data: MySQL++ Data Structures</h4></div></div></div><p>The most direct way to retrieve a result set is to use
+      <code class="methodname">Query::store()</code>. This returns a <tt><a href="../refman/classmysqlpp_1_1StoreQueryResult.html">StoreQueryResult</a></tt> object, which derives
+      from <code class="classname">std::vector&lt;mysqlpp::Row&gt;</code>,
+      making it a random-access container of <tt><a href="../refman/classmysqlpp_1_1Row.html">Row</a></tt>s. In turn, each <code class="classname">Row</code> object is
+      like a <code class="classname">std::vector</code> of
+      <code class="classname">String</code> objects, one for each field in the
+      result set. Therefore, you can treat
+      <code class="classname">StoreQueryResult</code> as a two-dimensional
+      array: you can get the 5th field on the 2nd row by simply saying
+      <code class="methodname">result[1][4]</code>. You can also access row
+      elements by field name, like this:
+      <code class="methodname">result[2]["price"]</code>.</p><p>A less direct way of working with query results is to use
+      <code class="methodname">Query::use()</code>, which returns a <tt><a href="../refman/classmysqlpp_1_1UseQueryResult.html">UseQueryResult</a></tt> object. This class acts
+      like an STL input iterator rather than a
+      <code class="classname">std::vector</code>: you walk through your result
+      set processing one row at a time, always going forward. You
+      can&#8217;t seek around in the result set, and you can&#8217;t
+      know how many results are in the set until you find the end. In
+      payment for that inconvenience, you get better memory efficiency,
+      because the entire result set doesn&#8217;t need to be stored in
+      RAM. This is very useful when you need large result sets.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="storein"></a>Queries That Return Data: Specialized SQL
+      Structures</h4></div></div></div><p>Accessing results through MySQL++&#8217;s data structures is
+      a pretty low level of abstraction. It&#8217;s better than using
+      the MySQL C API, but not by much. You can elevate things a little
+      closer to the level of the problem space by using the <a href="ssqls.html" title="5. Specialized SQL Structures">SSQLS feature</a>. This lets you define C++
+      structures that match the table structures in your database
+      schema. In addition, it&#8217;s easy to use SSQLSes with regular
+      STL containers (and thus, algorithms) so you don&#8217;t have to
+      deal with the quirks of MySQL++&#8217;s data structures.</p><p>The advantage of this method is that your program will
+      require very little embedded SQL code. You can simply execute a
+      query, and receive your results as C++ data structures, which can
+      be accessed just as you would any other structure. The results can
+      be accessed through the Row object, or you can ask the library to
+      dump the results into an STL container &#8212; sequential or
+      set-associative, it doesn&#8217;t matter &#8212; for you. Consider
+      this:</p><pre class="programlisting">
+vector&lt;stock&gt; v;
+query &lt;&lt; "SELECT * FROM stock";
+query.storein(v);
+for (vector&lt;stock&gt;::iterator it = v.begin(); it != v.end(); ++it) {
+  cout &lt;&lt; "Price: " &lt;&lt; it-&gt;price &lt;&lt; endl;
+}</pre><p>Isn&#8217;t that slick?</p><p>If you don&#8217;t want to create SSQLSes to match your
+      table structures, as of MySQL++ v3 you can now use
+      <code class="classname">Row</code> here instead:</p><pre class="programlisting">
+vector&lt;mysqlpp::Row&gt; v;
+query &lt;&lt; "SELECT * FROM stock";
+query.storein(v);
+for (vector&lt;mysqlpp::Row&gt;::iterator it = v.begin(); it != v.end(); ++it) {
+  cout &lt;&lt; "Price: " &lt;&lt; it-&gt;at("price") &lt;&lt; endl;
+}</pre><p>It lacks a certain syntactic elegance, but it has its
+      uses.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="exceptions-intro"></a>2.4. Exceptions</h3></div></div></div><p>By default, the library throws <a href="tutorial.html#exceptions">exceptions</a>
+    whenever it encounters an error. You can ask the library to set
+    an error flag instead, if you like, but the exceptions carry more
+    information. Not only do they include a string member telling you
+    why the exception was thrown, there are several exception types,
+    so you can distinguish between different error types within a
+    single <span class="symbol">try</span> block.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="index.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="tutorial.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">MySQL++ v3.1.0 User Manual </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 3. Tutorial</td></tr></table></div></body></html>

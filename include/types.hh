@@ -312,20 +312,19 @@ extern bool inCRFTraining;
 
 extern const int power2id[31];
 
-// #define SET_FLAG(x) (1 << (int)(x))
-#define SET_FLAG(x) power2id[x]
+#define A_SET_FLAG(x) power2id[x]
 
 struct Bitmask {
     Bitmask (int n=0) : value(n) {}
     Bitmask (const Bitmask& other) : value(other.value) {}
     bool operator[] (int n) const {
-	return value & SET_FLAG(n);
+	return value & A_SET_FLAG(n);
     }
     void set(int n) {
-	value |= SET_FLAG(n);
+	value |= A_SET_FLAG(n);
     }
     void unset(int n) {
-	value &= ~SET_FLAG(n);
+	value &= ~A_SET_FLAG(n);
     }
     static Bitmask any() {
 	return Bitmask(-1);

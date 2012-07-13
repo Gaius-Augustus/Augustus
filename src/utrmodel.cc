@@ -1133,7 +1133,7 @@ Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
 	 * dss hints
 	 */
 	if (utype == utr5internal || utype == utr5init || utype == utr3internal || utype == utr3init){
-	    Feature *feature = seqFeatColl->getFeatureListContaining(SET_FLAG(dssF), endOfBioExon+1, plusstrand);
+	    Feature *feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(dssF), endOfBioExon+1, plusstrand);
 	    if (feature)
 		while (feature) {
 		    extrinsicQuot *= feature->bonus;
@@ -1146,7 +1146,7 @@ Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
 	 * ass hints
 	 */
 	if (utype == rutr5term || utype == rutr5internal || utype == rutr3internal || utype == rutr3term){
-	    Feature *feature = seqFeatColl->getFeatureListContaining(SET_FLAG(assF), endOfBioExon+1, minusstrand);
+	    Feature *feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(assF), endOfBioExon+1, minusstrand);
 	    if (feature)
 		while (feature) {
 		    extrinsicQuot *= feature->bonus;
@@ -1165,7 +1165,7 @@ Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
 	     * an intron gets the bonus for each position covered by an intronpart hint 
 	     * (counted multiply for overlapping hints)
 	     */
-	    Feature *part, *intronList = seqFeatColl->getFeatureListOvlpingRange(SET_FLAG(intronpartF) | SET_FLAG(nonexonpartF), endOfBioExon+1, end,
+	    Feature *part, *intronList = seqFeatColl->getFeatureListOvlpingRange(A_SET_FLAG(intronpartF) | A_SET_FLAG(nonexonpartF), endOfBioExon+1, end,
 										 isOnFStrand(utype)? plusstrand : minusstrand);
 	    for (int i=endOfBioExon+1; i <= end; i++) {
 		for (part = intronList; part!= NULL; part = part->next){
@@ -1493,7 +1493,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	 * dss hints
 	 */
 	if (utype == rutr5internal || utype == rutr5init || utype == rutr3init || utype == rutr3internal){
-	    Feature *feature = seqFeatColl->getFeatureListContaining(SET_FLAG(dssF), beginOfBioExon-1, minusstrand);
+	    Feature *feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(dssF), beginOfBioExon-1, minusstrand);
 	    if (feature)
 		while (feature) {
 		    extrinsicQuot *= feature->bonus;
@@ -1506,7 +1506,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	 * ass hints
 	 */
 	if (utype == utr5internal || utype == utr5term || utype == utr3internal || utype == utr3term){
-	    Feature *feature = seqFeatColl->getFeatureListContaining(SET_FLAG(assF), beginOfBioExon-1, plusstrand);
+	    Feature *feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(assF), beginOfBioExon-1, plusstrand);
 	    if (feature)
 		while (feature) {
 		    extrinsicQuot *= feature->bonus;
@@ -1526,7 +1526,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	 * an intron gets the bonus for each position covered by an intronpart hint 
 	 * (counted multiply for overlapping hints)
 	 */
-	Feature *intronList = seqFeatColl->getFeatureListOvlpingRange(SET_FLAG(intronpartF) | SET_FLAG(nonexonpartF), begin, endOfMiddle, strand);
+	Feature *intronList = seqFeatColl->getFeatureListOvlpingRange(A_SET_FLAG(intronpartF) | A_SET_FLAG(nonexonpartF), begin, endOfMiddle, strand);
 	for (int i=begin; i <= endOfMiddle; i++)
 	    for (Feature *part = intronList; part!= NULL; part = part->next){
 		if (part->start <= i && part->end >= i)
@@ -1537,7 +1537,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	/*
 	 * intronpart bonus for the part of the intron that is handled in the exon states
 	 */
-	Feature *part, *intronList = seqFeatColl->getFeatureListOvlpingRange(SET_FLAG(intronpartF) | SET_FLAG(nonexonpartF), begin, beginOfBioExon-1, strand);
+	Feature *part, *intronList = seqFeatColl->getFeatureListOvlpingRange(A_SET_FLAG(intronpartF) | A_SET_FLAG(nonexonpartF), begin, beginOfBioExon-1, strand);
 	for (int i=begin; i <= beginOfBioExon-1; i++) {
 	    for (part = intronList; part!= NULL; part = part->next){
 		if (part->start<=i && part->end>=i){
@@ -1782,7 +1782,7 @@ Double UtrModel::tssProb(int left) const { // TODO: store results for later to b
     transstart = isOnFStrand(utype)? right - tss_end + 1 : left + tss_end - 1;
     extrinsicProb = 1.0;
 
-    Feature *tsshints = seqFeatColl->getFeatureListContaining(SET_FLAG(tssF), transstart, isOnFStrand(utype)? plusstrand : minusstrand);
+    Feature *tsshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(tssF), transstart, isOnFStrand(utype)? plusstrand : minusstrand);
     if (tsshints) {
 	while (tsshints) {
 	    extrinsicProb  *= tsshints->distance_faded_bonus(transstart);
@@ -1865,7 +1865,7 @@ void UtrModel::computeTtsProbs(){
 	    ttsProbPlus[aataaa_box_begin] = 0;
 	} else {
 	    ttspos = aataaa_box_begin + aataaa_boxlen + Constant::d_polyasig_cleavage - 1;
-	    ttshints = seqFeatColl->getFeatureListContaining(SET_FLAG(ttsF), ttspos, plusstrand);
+	    ttshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(ttsF), ttspos, plusstrand);
 	    extrinsicProb = 1.0;
 	    if (ttshints) {
 		while (ttshints) {
@@ -1892,7 +1892,7 @@ void UtrModel::computeTtsProbs(){
 	if (ttspos < 0 || aataaa_box_begin + aataaa_boxlen - 1 >= dnalen) {
 	    ttsProbPlus[aataaa_box_begin] = 0;
 	} else {
-	    ttshints = seqFeatColl->getFeatureListContaining(SET_FLAG(ttsF), ttspos, minusstrand);
+	    ttshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(ttsF), ttspos, minusstrand);
 	    extrinsicProb = 1.0;
 	    if (ttshints) {
 		while (ttshints) {
@@ -1939,7 +1939,7 @@ Double UtrModel::longIntronProb(int internalBegin, int internalEnd) const {
     // malus for intron bases not covered by intronparts
     int coveredBegin = internalEnd+1;
     int coveredEnd = internalBegin-1;
-    Feature *part, *intronList = seqFeatColl->getFeatureListOvlpingRange(SET_FLAG(intronpartF) | SET_FLAG(nonexonpartF), internalBegin, 
+    Feature *part, *intronList = seqFeatColl->getFeatureListOvlpingRange(A_SET_FLAG(intronpartF) | A_SET_FLAG(nonexonpartF), internalBegin, 
 								      internalEnd, isOnFStrand(utype)? plusstrand : minusstrand);
     for (part = intronList; part!= NULL; part = part->next){
 	if (part->start< coveredBegin)

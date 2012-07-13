@@ -1,0 +1,417 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>7. Using MySQL++ in a Multithreaded Program</title><link rel="stylesheet" href="tangentsoft.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.69.1"><link rel="start" href="index.html" title="MySQL++ v3.1.0 User Manual"><link rel="up" href="index.html" title="MySQL++ v3.1.0 User Manual"><link rel="prev" href="unicode.html" title="6. Using Unicode with MySQL++"><link rel="next" href="configuration.html" title="8. Configuring MySQL++"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">7. Using MySQL++ in a Multithreaded Program</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="unicode.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="configuration.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="threads"></a>7. Using MySQL++ in a Multithreaded Program</h2></div></div></div><p>MySQL++ is not &#8220;thread safe&#8221; in any
+  meaningful sense. MySQL++ contains very little code that
+  actively prevents trouble with threads, and all of it is
+  optional. We have done some work in MySQL++ to make thread
+  safety <span class="emphasis"><em>achievable</em></span>, but it doesn&#8217;t come
+  for free.</p><p>The main reason for this is that MySQL++ is
+  generally I/O-bound, not processor-bound. That is, if
+  your program&#8217;s bottleneck is MySQL++, the ultimate
+  cause is usually the I/O overhead of using a client-server
+  database. Doubling the number of threads will just let your
+  program get back to waiting for I/O twice as fast. Since <a href="http://www.eecs.berkeley.edu/Pubs/TechRpts/2006/EECS-2006-1.pdf" target="_top">threads
+  are evil</a> and generally can&#8217;t help MySQL++, the only
+  optional thread awareness features we turn on in the shipping
+  version of MySQL++ are those few that have no practical negative
+  consequences. Everything else is up to you, the programmer, to
+  evaluate and enable as and when you need it.</p><p>We&#8217;re going to assume that you are reading this chapter
+  because you find yourself needing to use threads for some other
+  reason than to speed up MySQL access. Our purpose here is limited
+  to setting down the rules for avoiding problems with MySQL++ in a
+  multi-threaded program. We won&#8217;t go into the broader issues of
+  thread safety outside the scope of MySQL++. You will need a grounding
+  in threads in general to get the full value of this advice.</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="thread-build"></a>7.1. Build Issues</h3></div></div></div><p>Before you can safely use MySQL++ with threads, there are
+    several things you must do to get a thread-aware build:</p><div class="orderedlist"><ol type="1"><li><p><span class="emphasis"><em>Build MySQL++ itself with thread awareness
+        turned on.</em></span></p><p>On Linux, Cygwin and Unix (OS X, *BSD, Solaris...),
+        pass the <code class="computeroutput">--enable-thread-check</code>
+        flag to the <code class="filename">configure</code> script. Beware, this
+        is only a request to the <code class="filename">configure</code> script
+        to look for thread support on your system, not a requirement
+        to do or die: if the script doesn&#8217;t find what it needs
+        to do threading, MySQL++ will just get built without thread
+        support. See <code class="filename">README-Unix.txt</code> for more
+        details.</p><p>On Windows, if you use the Visual C++ project files or
+        the MinGW Makefile that comes with the MySQL++ distribution,
+        threading is always turned on, due to the nature of
+        Windows.</p><p>If you build MySQL++ in some other way, such as with
+        Dev-Cpp (based on MinGW) you&#8217;re on your own to enable
+        thread awareness.</p></li><li><p><span class="emphasis"><em>Link your program to a thread-aware build of the
+        MySQL C API library.</em></span></p><p>If you use a binary distribution of MySQL on Unixy
+        systems, you usually get two different versions of the MySQL
+        C API library, one with thread support and one without. These
+        are typically called <code class="filename">libmysqlclient</code> and
+        <code class="filename">libmysqlclient_r</code>, the latter being the
+        thread-safe one. (The &#8220;<code class="filename">_r</code>&#8221;
+        means reentrant.)</p><p>If you&#8217;re using the Windows binary distribution
+        of MySQL, you should have only one version of the C
+        API library, which should be thread-aware. If you have
+        two, you probably just have separate debug and optimized
+        builds. See <code class="filename">README-Visual-C++.txt</code> or
+        <code class="filename">README-MinGW.txt</code> for details.</p><p>If you build MySQL from source, you might only get
+        one version of the MySQL C API library, and it can have
+        thread awareness or not, depending on your configuration
+        choices. This is the case with Cygwin, where you currently
+        have no choice but to build the C API library from source. (See
+        <code class="filename">README-Cygwin.txt</code>.)</p></li><li><p><span class="emphasis"><em>Enable threading in your program&#8217;s build
+        options.</em></span></p><p>This is different for every platform, but it&#8217;s
+        usually the case that you don&#8217;t get thread-aware builds
+        by default. Depending on the platform, you might need to change
+        compiler options, linker options, or both. See your development
+        environment&#8217;s documentation, or study how MySQL++ itself
+        turns on thread-aware build options when requested.</p></li></ol></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="thread-conn-mgmt"></a>7.2. Connection Management</h3></div></div></div><p>The MySQL C API underpinning MySQL++ does not allow multiple
+    concurrent queries on a single connection. You can run into this
+    problem in a single-threaded program, too, which is why we cover the
+    details elsewhere, in <a href="tutorial.html#concurrentqueries" title="3.16. Concurrent Queries on a Connection">Section 3.16, &#8220;Concurrent Queries on a Connection&#8221;</a>.
+    It&#8217;s a thornier problem when using threads, though.</p><p>The simple fix is to just create a separarate <tt><a href="../refman/classmysqlpp_1_1Connection.html">Connection</a></tt> object for each thread that
+    needs to make database queries. This works well if you have a small
+    number of threads that need to make queries, and each thread uses
+    its connection often enough that the server doesn&#8217;t <a href="tutorial.html#conn-timeout" title="3.15. Dealing with Connection Timeouts">time out</a> waiting for queries.</p><p>If you have lots of threads or the frequency of queries is
+    low, the connection management overhead will be excessive. To avoid
+    that, we created the <tt><a href="../refman/classmysqlpp_1_1ConnectionPool.html">ConnectionPool</a></tt>
+    class. It manages a pool of <code class="classname">Connection</code>
+    objects like library books: a thread checks one out, uses
+    it, and then returns it to the pool as soon as it&#8217;s
+    done with it. This keeps the number of active connections
+    low. We suggest that you keep each connection&#8217;s
+    use limited to a single variable scope for <a href="http://en.wikipedia.org/wiki/RAII" target="_top">RAII</a> reasons;
+    we created a little helper called <tt><a href="../refman/classmysqlpp_1_1ScopedConnection.html">ScopedConnection</a></tt> to make that easy.</p><p><code class="classname">ConnectionPool</code> has three
+    methods that you need to override in a subclass to
+    make it concrete: <code class="methodname">create()</code>,
+    <code class="methodname">destroy()</code>, and
+    <code class="methodname">max_idle_time()</code>. These overrides let
+    the base class delegate operations it can&#8217;t successfully do
+    itself to its subclass. The <code class="classname">ConnectionPool</code>
+    can&#8217;t know how to <code class="methodname">create()</code>
+    the <code class="classname">Connection</code> objects, because that
+    depends on how your program gets login parameters, server
+    information, etc.  <code class="classname">ConnectionPool</code>
+    also makes the subclass <code class="methodname">destroy()</code>
+    the <code class="classname">Connection</code> objects it created; it
+    could assume that they&#8217;re simply allocated on the heap
+    with <code class="methodname">new</code>, but it can&#8217;t be sure,
+    so the base class delegates destruction, too. Finally, the base
+    class can&#8217;t know what the connection idle timeout policy
+    in the client would make the most sense, so it asks its subclass
+    via the <code class="methodname">max_idle_time()</code> method.</p><p><code class="classname">ConnectionPool</code> also allows you to
+    override <code class="methodname">release()</code>, if needed. For simple
+    uses, it&#8217;s not necessary to override this.</p><p>In designing your <code class="classname">ConnectionPool</code>
+    derivative, you might consider making it a <a href="http://en.wikipedia.org/wiki/Singleton_pattern" target="_top">Singleton</a>,
+    since there should only be one pool in a program.</p><p>Another thing you might consider doing is passing a
+    <tt><a href="../refman/classmysqlpp_1_1ReconnectOption.html">ReconnectOption</a></tt> object to
+    <code class="methodname">Connection::set_option()</code> in your
+    <code class="methodname">create()</code> override before returning the
+    new <code class="classname">Connection</code> pointer. This will cause
+    the underlying MySQL C API to try to reconnect to the database
+    server if a query fails because the connection was dropped
+    by the server. This can happen if the DB server is allowed to
+    restart out from under your application. In many applications,
+    this isn&#8217;t allowed, or if it does happen, you might want
+    your code to be able to detect it, so MySQL++ doesn&#8217;t set
+    this option for you automatically.</p><p>Here is an example showing how to use connection pools with
+    threads:</p><pre class="programlisting">#include "cmdline.h"
+#include "threads.h"
+
+#include &lt;iostream&gt;
+
+using namespace std;
+
+
+// Define a concrete ConnectionPool derivative.  Takes connection
+// parameters as inputs to its ctor, which it uses to create the
+// connections we're called upon to make.  Note that we also declare
+// a global pointer to an object of this type, which we create soon
+// after startup; this should be a common usage pattern, as what use
+// are multiple pools?
+class SimpleConnectionPool : public mysqlpp::ConnectionPool
+{
+public:
+    // The object's only constructor
+    SimpleConnectionPool(const char* db, const char* server,
+            const char* user, const char* password) :
+    db_(db ? db : ""),
+    server_(server ? server : ""),
+    user_(user ? user : ""),
+    password_(password ? password : "")
+    {
+    }
+
+    // The destructor.  We _must_ call ConnectionPool::clear() here,
+    // because our superclass can't do it for us.
+    ~SimpleConnectionPool()
+    {
+        clear();
+    }
+
+protected:
+    // Superclass overrides
+    mysqlpp::Connection* create()
+    {
+        // Create connection using the parameters we were passed upon
+        // creation.  This could be something much more complex, but for
+        // the purposes of the example, this suffices.
+        cout.put('C'); cout.flush(); // indicate connection creation
+        return new mysqlpp::Connection(
+                db_.empty() ? 0 : db_.c_str(),
+                server_.empty() ? 0 : server_.c_str(),
+                user_.empty() ? 0 : user_.c_str(),
+                password_.empty() ? "" : password_.c_str());
+    }
+
+    void destroy(mysqlpp::Connection* cp)
+    {
+        // Our superclass can't know how we created the Connection, so
+        // it delegates destruction to us, to be safe.
+        cout.put('D'); cout.flush(); // indicate connection destruction
+        delete cp;
+    }
+
+    unsigned int max_idle_time()
+    {
+        // Set our idle time at an example-friendly 3 seconds.  A real
+        // pool would return some fraction of the server's connection
+        // idle timeout instead.
+        return 3;
+    }
+
+private:
+    // Our connection parameters
+    std::string db_, server_, user_, password_;
+};
+SimpleConnectionPool* poolptr = 0;
+
+
+#if defined(HAVE_THREADS)
+static thread_return_t CALLBACK_SPECIFIER
+worker_thread(thread_arg_t running_flag)
+{
+    // Ask the underlying C API to allocate any per-thread resources it
+    // needs, in case it hasn't happened already.  In this particular
+    // program, it's almost guaranteed that the grab() call below will
+    // create a new connection the first time through, and thus allocate
+    // these resources implicitly, but there's a nonzero chance that
+    // this won't happen.  Anyway, this is an example program, meant to
+    // show good style, so we take the high road and ensure the
+    // resources are allocated before we do any queries.
+    mysqlpp::Connection::thread_start();
+
+    // Pull data from the sample table a bunch of times, releasing the
+    // connection we use each time.
+    for (size_t i = 0; i &lt; 6; ++i) {
+        // Go get a free connection from the pool, or create a new one
+        // if there are no free conns yet.
+        mysqlpp::Connection* cp = poolptr-&gt;grab();
+        if (!cp) {
+            cerr &lt;&lt; "Failed to get a connection from the pool!" &lt;&lt; endl;
+            break;
+        }
+
+        // Pull a copy of the sample stock table and print a dot for
+        // each row in the result set.
+        mysqlpp::Query query(cp-&gt;query("select * from stock"));
+        mysqlpp::StoreQueryResult res = query.store();
+        for (size_t j = 0; j &lt; res.num_rows(); ++j) {
+            cout.put('.');
+        }
+
+        // Immediately release the connection once we're done using it.
+        // If we don't, the pool can't detect idle connections reliably.
+        poolptr-&gt;release(cp);
+
+        // Delay 1-4 seconds before doing it again.  Because this can
+        // delay longer than the idle timeout, we'll occasionally force
+        // the creation of a new connection on the next loop.
+        sleep(rand() % 4 + 1);  
+    }
+
+    // Tell main() that this thread is no longer running
+    *reinterpret_cast&lt;bool*&gt;(running_flag) = false;
+    
+    // Release the per-thread resources before we exit
+    mysqlpp::Connection::thread_end();
+
+    return 0;
+}
+#endif
+
+
+int
+main(int argc, char *argv[])
+{
+#if defined(HAVE_THREADS)
+    // Get database access parameters from command line
+    const char* db = 0, *server = 0, *user = 0, *pass = "";
+    if (!parse_command_line(argc, argv, &amp;db, &amp;server, &amp;user, &amp;pass)) {
+        return 1;
+    }
+
+    // Create the pool and grab a connection.  We do it partly to test
+    // that the parameters are good before we start doing real work, and
+    // partly because we need a Connection object to call thread_aware()
+    // on to check that it's okay to start doing that real work.  This
+    // latter check should never fail on Windows, but will fail on most
+    // other systems unless you take positive steps to build with thread
+    // awareness turned on.  See README-*.txt for your platform.
+    poolptr = new SimpleConnectionPool(db, server, user, pass);
+    try {
+        mysqlpp::Connection* cp = poolptr-&gt;grab();
+        if (!cp-&gt;thread_aware()) {
+            cerr &lt;&lt; "MySQL++ wasn't built with thread awareness!  " &lt;&lt;
+                    argv[0] &lt;&lt; " can't run without it." &lt;&lt; endl;
+            return 1;
+        }
+        poolptr-&gt;release(cp);
+    }
+    catch (mysqlpp::Exception&amp; e) {
+        cerr &lt;&lt; "Failed to set up initial pooled connection: " &lt;&lt;
+                e.what() &lt;&lt; endl;
+        return 1;
+    }
+
+    // Setup complete.  Now let's spin some threads...
+    cout &lt;&lt; endl &lt;&lt; "Pool created and working correctly.  Now to do "
+            "some real work..." &lt;&lt; endl;
+    srand(time(0));
+    bool running[] = {
+            true, true, true, true, true, true, true,
+            true, true, true, true, true, true, true };
+    const size_t num_threads = sizeof(running) / sizeof(running[0]);
+    size_t i;
+    for (i = 0; i &lt; num_threads; ++i) {
+        if (int err = create_thread(worker_thread, running + i)) {
+            cerr &lt;&lt; "Failed to create thread " &lt;&lt; i &lt;&lt;
+                    ": error code " &lt;&lt; err &lt;&lt; endl;
+            return 1;
+        }
+    }
+
+    // Test the 'running' flags every second until we find that they're
+    // all turned off, indicating that all threads are stopped.
+    cout.put('W'); cout.flush(); // indicate waiting for completion
+    do {
+        sleep(1);
+        i = 0;
+        while (i &lt; num_threads &amp;&amp; !running[i]) ++i;
+    }
+    while (i &lt; num_threads);
+    cout &lt;&lt; endl &lt;&lt; "All threads stopped!" &lt;&lt; endl;
+
+    // Shut it all down...
+    delete poolptr;
+    cout &lt;&lt; endl;
+#else
+    (void)argc;     // warning squisher
+    cout &lt;&lt; argv[0] &lt;&lt; " requires that threads be enabled!" &lt;&lt; endl;
+#endif
+
+    return 0;
+}
+</pre><p>The example works with both Windows native
+    threads and with POSIX threads.<sup>[<a name="id2743280" href="#ftn.id2743280">16</a>]</sup> Because thread-enabled builds are only
+    the default on Windows, it&#8217;s quite possible for this program
+    to do nothing on other platforms. See above for instructions on
+    enabling a thread-aware build.</p><p>If you write your code without checks for thread support
+    like you see in the code above and link it to a build of MySQL++
+    that isn&#8217;t thread-aware, it will still try to run. The
+    threading mechanisms fall back to a single-threaded mode when
+    threads aren&#8217;t available. A particular danger is that the
+    mutex lock mechanism used to keep the pool&#8217;s internal data
+    consistent while multiple threads access it will just quietly
+    become a no-op if MySQL++ is built without thread support. We do
+    it this way because we don&#8217;t want to make thread support
+    a MySQL++ prerequisite. And, although it would be of limited
+    value, this lets you use <code class="classname">ConnectionPool</code>
+    in single-threaded programs.</p><p>You might wonder why we don&#8217;t just work around
+    this weakness in the C API transparently in MySQL++ instead of
+    suggesting design guidelines to avoid it. We&#8217;d like to do
+    just that, but how?</p><p>If you consider just the threaded case, you could argue for
+    the use of mutexes to protect a connection from trying to execute
+    two queries at once. The cure is worse than the disease: it turns a
+    design error into a performance sap, as the second thread is blocked
+    indefinitely waiting for the connection to free up. Much better to
+    let the program get the &#8220;Commands out of sync&#8221; error,
+    which will guide you to this section of the manual, which tells you
+    how to avoid the error with a better design.</p><p>Another option would be to bury
+    <code class="classname">ConnectionPool</code> functionality within MySQL++
+    itself, so the library could create new connections at need.
+    That&#8217;s no good because the above example is the most complex
+    in MySQL++, so if it were mandatory to use connection pools, the
+    whole library would be that much more complex to use. The whole
+    point of MySQL++ is to make using the database easier. MySQL++
+    offers the connection pool mechanism for those that really need it,
+    but an option it must remain.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="thread-helpers"></a>7.3. Helper Functions</h3></div></div></div><p><code class="classname">Connection</code> has several thread-related
+    static methods you might care about when using MySQL++ with
+    threads.</p><p>You can call
+    <code class="methodname">Connection::thread_aware()</code> to
+    determine whether MySQL++ and the underlying C API library were
+    both built to be thread-aware. I want to stress that thread
+    <span class="emphasis"><em>awareness</em></span> is not the same thing as thread
+    <span class="emphasis"><em>safety</em></span>: it&#8217;s still up to you to make
+    your code thread-safe. If this method returns true, it just means
+    it&#8217;s <span class="emphasis"><em>possible</em></span> to achieve thread-safety,
+    not that you actually have it.</p><p>If your program&#8217;s connection-management strategy
+    allows a thread to use a <code class="classname">Connection</code>
+    object that another thread created, you need to know
+    about <code class="methodname">Connection::thread_start()</code>.
+    This function sets up per-thread resources needed to make MySQL
+    server calls. You don&#8217;t need to call it when you use the
+    simple <code class="classname">Connection</code>-per-thread strategy,
+    because this function is implicitly called the first time you
+    create a <code class="classname">Connection</code> in a thread. It&#8217;s
+    not harmful to call this function from a thread that previously
+    created a <code class="classname">Connection</code>, just unnecessary. The
+    only time it&#8217;s necessary is when a thread can make calls
+    to the database server on a <code class="classname">Connection</code>
+    that another thread created and that thread hasn&#8217;t already
+    created a <code class="classname">Connection</code> itself.</p><p>If you use <code class="classname">ConnectionPool</code>, you should
+    call <code class="methodname">thread_start()</code> at the start of each
+    worker thread because you probably can&#8217;t reliably predict
+    whether your <code class="methodname">grab()</code> call will create a new
+    <code class="classname">Connection</code> or will return one previously
+    returned to the pool from another thread.  It&#8217;s possible
+    to conceive of situations where you can guarantee that each pool
+    user always creates a fresh <code class="classname">Connection</code> the
+    first time it calls <code class="methodname">grab()</code>, but thread
+    programming is complex enough that it&#8217;s best to take the
+    safe path and always call <code class="methodname">thread_start()</code>
+    early in each worker thread.</p><p>Finally, there&#8217;s the complementary method,
+    <code class="methodname">Connection::thread_end()</code>. Strictly
+    speaking, it&#8217;s not <span class="emphasis"><em>necessary</em></span> to call
+    this. The per-thread memory allocated by the C API is small,
+    it doesn&#8217;t grow over time, and a typical thread is going
+    to need this memory for its entire run time. Memory debuggers
+    aren&#8217;t smart enough to know all this, though, so they will
+    gripe about a memory leak unless you call this from each thread
+    that uses MySQL++ before that thread exits.</p><p>Although its name suggests otherwise,
+    <code class="methodname">Connection::thread_id()</code> has nothing to
+    do with anything in this chapter.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="thread-data-sharing"></a>7.4. Sharing MySQL++ Data Structures</h3></div></div></div><p>We&#8217;re in the process of making it safer to share
+    MySQL++&#8217;s data structures across threads. Although things
+    are getting better, it&#8217;s highly doubtful that all problems
+    with this are now fixed. By way of illustration, allow me explain
+    one aspect of this problem and how we solved it in MySQL++
+    3.0.0.</p><p>When you issue a database query that returns rows, you
+    also get information about the columns in each row. Since the
+    column information is the same for each row in the result set,
+    older versions of MySQL++ kept this information in the result
+    set object, and each <tt><a href="../refman/classmysqlpp_1_1Row.html">Row</a></tt> kept
+    a pointer back to the result set object that created it so it
+    could access this common data at need. This was fine as long as
+    each result set object outlived the <code class="classname">Row</code>
+    objects it returned.  It required uncommon usage patterns to run
+    into trouble in this area in a single-threaded program, but in
+    a multi-threaded program it was easy. For example, there&#8217;s
+    frequently a desire to let one connection do the queries, and other
+    threads process the results.  You can see how avoiding lifetime
+    problems here would require a careful locking strategy.</p><p>We got around this in MySQL++ v3.0 by giving these shared data
+    structures a lifetime independent of the result set object that
+    intitially creates it. These shared data structures stick around
+    until the last object needing them gets destroyed.</p><p>Although this is now a solved problem, I bring it up because
+    there are likely other similar lifetime and sequencing problems
+    waiting to be discovered inside MySQL++. If you would like to
+    help us find these, by all means, share data between threads
+    willy-nilly.  We welcome your crash reports on the MySQL++
+    mailing list. But if you&#8217;d prefer to avoid problems,
+    it&#8217;s better to keep all data about a query within a single
+    thread. Between this and the advice in prior sections, you should
+    be able to use threads with MySQL++ without trouble.</p></div><div class="footnotes"><br><hr width="100" align="left"><div class="footnote"><p><sup>[<a name="ftn.id2743280" href="#id2743280">16</a>] </sup>The file
+    <code class="filename">examples/threads.h</code> contains a few macros and
+    such to abstract away the differences between the two threading
+    models.</p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="unicode.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="configuration.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">6. Using Unicode with MySQL++ </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 8. Configuring MySQL++</td></tr></table></div></body></html>

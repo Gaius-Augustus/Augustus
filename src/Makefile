@@ -1,20 +1,32 @@
 #
 # Makefile for Augustus
 #
+include ../common.mk
+CC	= g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt 
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - In the current version, the order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-#        
-CC	= g++
-# uncomment this for comparative gene finding
-#CPP0X = true 
 CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -DDEBUG  -g -ggdb -static
+
 ifdef CPP0X
 	CFLAGS += -std=c++0x -DCPP0X
 endif
-INCLS	= -I../include -I.
-LIBS	= # -lcwd
+INCLS	= -I../include
+
+ifdef MYSQL
+#   	 - copy mysqlpplib to a path that is registered in /etc/ld.so.conf, in most Unix-like OS,they
+#          are /usr/lib/, /lib/,/usr/share/lib/.If you you want indicate your own lib-path but have no
+#          authority to run 'ldconfig',copy 'mysqlpplib' to '/your/run-time lib/path/',compile Augustus
+#          with '-Wl,rpath=/your/run-time lib/path/'.
+# replace RUNTIME_LIBPATH with your own run-time libpath if mysqlpp is not installed system-wide, e.g.
+# RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib 
+RUNTIME_LIBPATH = 
+INCLS	+= -I/usr/include/mysql -I/usr/local/include/mysql++
+LIBS 	=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
+CFLAGS  += -DAMYSQL
+endif
+
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
@@ -38,31 +50,31 @@ all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
 augustus: augustus.cc $(OBJS) $(DUMOBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp augustus ../bin/
+	mv augustus ../bin/
 
 etraining: etraining.cc $(TOBJS) $(OBJS) 
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp etraining ../bin/
+	mv etraining ../bin/
 
 evaluate: evaluate.cc $(OBJS) $(DUMOBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 
 consensusFinder: consensusFinder.cc consensus.o 
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp consensusFinder ../bin/
+	mv consensusFinder ../bin/
 
 curve2hints: curve2hints.cc exon_seg.o 
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp curve2hints ../bin/
+	mv curve2hints ../bin/
 
 fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	types.o properties.o geneticcode.o pp_profile.o lldouble.o
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp fastBlockSearch ../bin/
+	mv fastBlockSearch ../bin/
 
 prepareAlign: pp_prepare_align.cc
 	$(CC) $(CFLAGS) -o $@ $^
-	cp prepareAlign ../bin/
+	mv prepareAlign ../bin/
 
 info:
 	echo "$(CFLAGS)" > $(INFO)

@@ -1,0 +1,224 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>9. Using MySQL++ in Your Own Project</title><link rel="stylesheet" href="tangentsoft.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.69.1"><link rel="start" href="index.html" title="MySQL++ v3.1.0 User Manual"><link rel="up" href="index.html" title="MySQL++ v3.1.0 User Manual"><link rel="prev" href="configuration.html" title="8. Configuring MySQL++"><link rel="next" href="breakages.html" title="10. Incompatible Library Changes"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">9. Using MySQL++ in Your Own Project</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="configuration.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="breakages.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="incorporating"></a>9. Using MySQL++ in Your Own Project</h2></div></div></div><p>Up to now, this manual has only discussed MySQL++
+  in conjunction with the example programs that come with the
+  library. This chapter covers the steps you need to take to
+  incorporate MySQL++ into your own projects.</p><p>The first thing you have to do is include
+  <code class="filename">mysql++.h</code> in each module
+  that uses MySQL++. In modules that use <a href="ssqls.html" title="5. Specialized SQL Structures">SSQLS v1</a>, you also need to include
+  <code class="filename">ssqls.h</code>.<sup>[<a name="id2746875" href="#ftn.id2746875">20</a>]</sup></p><p>At this point, your project probably still won&#8217;t compile,
+  and it certainly won&#8217;t link. The remaining steps are dependent
+  on the operating system and tools you are using. The rest of this
+  chapter is broken up into several sections, one for each major
+  platform type. You can skip over the sections for platforms you
+  don&#8217;t use.</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="inc-vstudio"></a>9.1. Visual C++</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="inc-vstudio-mfc"></a>Using MySQL++ in an MFC Project</h4></div></div></div><p>If you don&#8217;t already have a project set up, open
+      Visual Studio, say File | New | Project, then choose Visual C++
+      | MFC | MFC Application.  Go through the wizard setting up the
+      project as you see fit.</p><p>Once you have your project open, right click on your
+      top-level executable in the Solution Explorer, choose Properties,
+      and make the following changes.  (Where it doesn&#8217;t
+      specify Debug or Release, make the same change to both
+      configurations.)</p><div class="itemizedlist"><ul type="disc"><li><p>Append the following to C/C++
+        | General | Additional Include Directories:
+        <code class="filename">C:\Program Files\MySQL\MySQL Server 5.0\include,
+        C:\mysql++\include</code></p></li><li><p>Under C/C++ | Code Generation change
+        &#8220;Runtime Library&#8221; to &#8220;Multi-threaded
+        Debug DLL (/MDd)&#8221; for the Debug configuration. For
+        the Release configuration, make it &#8220;Multi-threaded DLL
+        (/MD)&#8221;.</p></li><li><p>Append the following to Linker | General |
+          Additional Library Directories for the Debug configuration:
+          <code class="filename">C:\Program Files\MySQL\MySQL Server 5.0\lib\debug,
+          C:\mysql++\vc\debug</code></p><p>For the Release configuration, make it the same,
+          but change the &#8220;debug&#8221; directory names to
+          &#8220;opt&#8221;.</p></li><li><p>Under Linker | Input add the following to
+          &#8220;Additional Dependencies&#8221; for the Debug
+          configuration: <code class="filename">libmysql.lib wsock32.lib
+          mysqlpp_d.lib</code></p><p>...and then for the Release configuration:
+          <code class="filename">libmysql.lib wsock32.lib
+          mysqlpp.lib</code></p><p>This difference is because MySQL++&#8217;s Debug
+          DLL and import library have a <code class="filename">_d</code>
+          suffix so you can have both in the same directory without
+          conflicts.</p></li></ul></div><p>You may want to study
+      <code class="filename">examples\vstudio\mfc\mfc.vcproj</code>
+      to see this in action. Note that some of the paths will
+      be different, because it can use relative paths for
+      <code class="filename">mysqlpp.dll</code>.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="inc-vstudio-wforms"></a>Using MySQL++ in a Windows Forms C++/CLI Project</h4></div></div></div><p>Before you start work on getting MySQL++ working with your
+      own program, you need to make some changes to the MySQL++ build
+      settings. Open <code class="filename">mysqlpp.sln</code>, then right-click
+      on the mysqlpp target and select Properties. Make the following
+      changes for both the Debug and Release configurations:</p><div class="itemizedlist"><ul type="disc"><li><p>Under Configuration Properties | General,
+        change &#8220;Common Language Runtime support&#8221; to the
+        /clr setting.</p></li><li><p>Under C/C++ | Code Generation, change
+        &#8220;Enable C++ Exceptions&#8221; from &#8220;Yes
+        (/EHsc)&#8221; to &#8220;Yes With SEH Exceptions
+        (/EHa)&#8221;</p></li></ul></div><p>If you have already built MySQL++, be sure to perform a
+      complete rebuild after changing these options.  The compiler
+      will emit several C4835 warnings after making those changes,
+      which are harmless when using the DLL with a C++/CLI
+      program, but which warn of real problems when using it with
+      unmanaged C++.  This is why MySQL++&#8217;s Windows installer
+      (<code class="filename">install.hta</code>) offers the option to install
+      the CLR version into a separate directory; use it if you need
+      both managed and unmanaged versions installed!</p><p>For the same reason, you might give some thought about
+      where you install <code class="filename">mysqlpp.dll</code> on your
+      end user&#8217;s machines when distributing your program.
+      My recommendation is to install it in the same directory as
+      the <code class="filename">.exe</code> file that uses it, rather than
+      installing into a system directory where it could conflict
+      with a <code class="filename">mysqlpp.dll</code> built with different
+      settings.</p><p>Once you have MySQL++ built with CLR support, open your
+      program&#8217;s project.  If you don&#8217;t already have a
+      project set up, open Visual Studio, say File | New | Project,
+      then choose Visual C++ | CLR | Windows Forms Application.
+      Go through the wizard setting up the project as you see
+      fit.</p><p>The configuration process isn&#8217;t much different from
+      that for an MFC project, so go through the list above first.
+      Then, make the following changes particular to .NET and
+      C++/CLI:</p><div class="itemizedlist"><ul type="disc"><li><p>Under Configuration Properties | General
+        change the setting from /clr:pure to /clr.  (You need mixed
+        assembly support to allow a C++/CLI program to use a plain C++
+        library like MySQL++.)</p></li><li><p>For the Linker | Input settings, you
+        don&#8217;t need <code class="filename">wsock32.lib</code>. The mere
+        fact that you&#8217;re using .NET takes care of that dependency
+        for you.</p></li></ul></div><p>In the MFC instructions above, it said that you need to
+      build it using the Multi-threaded DLL version of the C++ Runtime
+      Library. That&#8217;s not strictly true for MFC, but it&#8217;s
+      an absolute requirement for C++/CLI. See the Remarks in <a href="http://msdn.microsoft.com/en-us/library/k8d11d4s.aspx" target="_top">the
+      MSDN article on the /clr switch</a> for details.</p><p>You may want to study
+      <code class="filename">examples\vstudio\wforms\wforms.vcproj</code>
+      to see all this in action. Note that some of the
+      paths will be different, because it can use relative
+      paths for <code class="filename">mysqlpp_d.dll</code> and
+      <code class="filename">mysqlpp.dll</code>.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="inc-unix"></a>9.2. Unixy Platforms: Linux, *BSD, OS X, Cygwin, Solaris...</h3></div></div></div><p>There are lots of ways to build programs on Unixy
+    platforms.  We&#8217;ll cover just the most generic way
+    here, <code class="filename">Makefile</code>s. We&#8217;ll use a very
+    simple example so it&#8217;s clear how to translate this to
+    more sophisticated build systems such as GNU Autotools or
+    Bakefile.</p><p>&#8220;Hello, world!&#8221; for MySQL++ might look something
+    like this:</p><pre class="programlisting">#include &lt;mysql++.h&gt;
+
+int main()
+{
+    mysqlpp::String greeting("Hello, world!");
+    std::cout &lt;&lt; greeting &lt;&lt; std::endl;
+    return 0;
+}
+</pre><p>Here&#8217;s a <code class="filename">Makefile</code> for building
+    that program:</p><pre class="programlisting">CXX := g++
+CXXFLAGS := -I/usr/include/mysql -I/usr/local/include/mysql++
+LDFLAGS := -L/usr/local/lib -lmysqlpp -lmysqlclient
+EXECUTABLE := hello
+
+all: $(EXECUTABLE)
+
+clean: 
+    rm -f $(EXECUTABLE) *.o
+</pre><p>The first three lines are where all of the assumptions
+    about file and path names are laid out. Probably at least one of
+    these assumptions isn&#8217;t true for your system, and so will
+    require changing.</p><p>The trickiest line is the third one. MySQL++ programs
+    need to get built against both the MySQL and MySQL++
+    libraries, because MySQL++ is built on top of the MySQL C
+    API library. If you&#8217;re building a threaded program,
+    use <code class="filename">-lmysqlclient_r</code> instead. (See <a href="threads.html" title="7. Using MySQL++ in a Multithreaded Program">Section 7, &#8220;Using MySQL++ in a Multithreaded Program&#8221;</a> for more details on building thread-aware
+    programs.)</p><p>On some systems, the order of libraries in the
+    <code class="varname">LDFLAGS</code> line is important: these linkers collect
+    symbols from right to left, so the rightmost library needs to
+    be the most generic. In this example, MySQL++ depends on MySQL,
+    so the MySQL C API library is rightmost.</p><p>You might need to add more libraries to the
+    <code class="varname">LDFLAGS</code> line.  <code class="filename">-lnsl</code>,
+    <code class="filename">-lz</code> and <code class="filename">-lm</code> are
+    common. If you study how MySQL++ itself gets built on your system,
+    you can see what it uses, and emulate that.</p><p>Beyond that, we have a pretty vanilla
+    <code class="filename">Makefile</code>. We don&#8217;t have any special
+    dependency or build rules, because the default rules should work
+    fine, particularly if you&#8217;re using GNU make, which is just
+    about universal these days.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="inc-osx"></a>9.3. OS X</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="inc-osx-makefile"></a>Makefiles</h4></div></div></div><p>The <a href="incorporating.html#inc-unix" title="9.2. Unixy Platforms: Linux, *BSD, OS X, Cygwin, Solaris...">generic Makefile
+      instructions above</a> cover most of what you need to know
+      about using Makefiles on OS X.</p><p>One thing that may trip you up on OS X is that it uses an
+      uncommon dynamic linkage system. The easiest way to cope with
+      this is to link your executables with the compiler, rather than
+      call <code class="filename">ld</code> directly.</p><p>Another tricky bit on OS X is the concept of Universal
+      binaries. See <code class="filename">README-Mac-OS-X.txt</code> for
+      details on building a Universal version of the MySQL++ library,
+      if you need one. By default, you only get a version tuned for
+      the system type you build it on.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="inc-osx-xcode"></a>Xcode</h4></div></div></div><p>I have no information on how to incorporate MySQL++ in
+      an Xcode project. Send a message to the MySQL++ mailing list
+      if you can help out here.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="inc-mingw"></a>9.4. MinGW</h3></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="inc-mingw-makefile"></a>Makefiles</h4></div></div></div><p>The <a href="incorporating.html#inc-unix" title="9.2. Unixy Platforms: Linux, *BSD, OS X, Cygwin, Solaris...">generic Makefile instructions
+      above</a> apply to MinGW&#8217;s version of GNU make as
+      well. You will have some differences due to the platform, so
+      here&#8217;s the adjusted <code class="filename">Makefile</code>:</p><pre class="programlisting">CXX := g++
+MYSQL_DIR := "c:/Program Files/MySQL/MySQL Server 5.0"
+CXXFLAGS := -I$(MYSQL_DIR)/include -Ic:/MySQL++/include
+LDFLAGS := -L$(MYSQL_DIR)/lib/opt -Lc:/MySQL++/lib/MinGW -lmysqlclient -lmysqlpp
+EXECUTABLE := hello
+
+all: $(EXECUTABLE)
+
+clean: 
+	del $(EXECUTABLE)
+</pre><p>Note the use of forward slashes. GNU make uses the
+      backslash as an escape character, so you&#8217;d have to double
+      them if you&#8217;re unwilling to use forward slashes.</p><p>Also note that I&#8217;ve used <span><strong class="command">del</strong></span>
+      instead of <span><strong class="command">rm</strong></span> in the clean target. Unless
+      there is a program called <code class="filename">sh.exe</code> in
+      your <code class="varname">PATH</code>, MinGW make uses Windows&#8217;
+      <code class="filename">cmd.exe</code> for shell commands. The most likely
+      reason to have <code class="filename">sh.exe</code> is if you also have
+      Cygwin or MSYS installed. The next section covers the best way
+      I&#8217;ve found to cope with that.</p><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="inc-mingw-cygwin"></a>Working with MinGW Under Cygwin</h5></div></div></div><p>Compared to Unix, the biggest difference you&#8217;ll
+        find is that MinGW calls its <code class="filename">make</code>
+        executable <code class="filename">mingw32-make</code>. As I understand
+        it, this is to allow it to coexist with Cygwin, since the two
+        versions have some behavioral differences, despite both being
+        based on GNU Make.  A <code class="filename">Makefile</code> written
+        for one is likely to fail to work correctly with the other,
+        so you have to be able to specify which one you mean.</p><p>If you have both MinGW and Cygwin installed, you may be
+        tempted to use Cygwin&#8217;s superior command line environment
+        over a Windows command shell or MSYS. If you&#8217;re like me,
+        you type <code class="filename">make</code> reflexively now; typing
+        <code class="filename">mingw32-make</code> instead isn&#8217;t going
+        to work. Another problem with having Cygwin and MinGW on the
+        same system is that this puts a <code class="filename">sh.exe</code>
+        program in your system&#8217;s <code class="varname">PATH</code>
+        which makes MinGW make send shell commands to it instead of
+        <code class="filename">cmd.exe</code> as it normally would.  I find it
+        best to set up a special MinGW environment to avoid problems
+        stemming from these platform differences.</p><p>I&#8217;ve created a pair of scripts that let me work
+        in Cygwin mode most of the time and temporarily drop down
+        into &#8220;MinGW mode&#8221; only when necessary. I call the
+        first script <code class="filename">mingw</code>, and put it somewhere
+        in the Cygwin <code class="varname">PATH</code>:</p><pre class="programlisting">
+  #!/bin/sh
+  PATH=/cygdrive/c/mingw/bin:/cygdrive/c/windows:/cygdrive/c/windows/system32:/cygdrive/c/cygwin/bin
+  echo "Say 'exit' to leave MinGW shell and restore Cygwin environment."
+  /usr/bin/bash --rcfile ~/.mingwrc</pre><p>Then there&#8217;s a tiny little file called
+        <code class="filename">.mingwrc</code> that goes in your Cygwin home
+        directory:</p><pre class="programlisting">
+  alias make=mingw32-make
+  PS1='MinGW: \W \$ '</pre><p>(This split is necessary due to the way Bash works.)</p><p>The first script sets up most of the MinGW environment,
+        putting the MinGW and Windows directories ahead of the Cygwin
+        directory so programs in those locations take precedence. Then
+        the second script finishes setting up the MinGW sub-shell,
+        causing the <code class="filename">make</code> command to invoke
+        MinGW&#8217;s make program instead of Cygwin&#8217;s, and
+        changing the command prompt to remind you that you&#8217;re
+        in a sub-shell. Just say <span><strong class="command">exit</strong></span> to get back
+        to Cygwin mode.</p></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="inc-mingw-ide"></a>Third-Party MinGW IDEs (Dev-C++, Code::Blocks...)</h4></div></div></div><p>I have no information on how to do this. We&#8217;ve
+      received reports on the mailing list from people that have made
+      it work, but no specifics on what all needs to be done. The
+      Makefile discussion above should give you some hints.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="inc-eclipse"></a>9.5. Eclipse</h3></div></div></div><p>As far as I can tell, the simplest way to build a C++
+    project with Eclipse is to set up a Makefile for it as described
+    <a href="incorporating.html#inc-unix" title="9.2. Unixy Platforms: Linux, *BSD, OS X, Cygwin, Solaris...">above</a>, then add an external
+    run configuration for your local make tool. Get the project
+    building from the command line with make, then go to Run |
+    External Tools | Open External Tools Dialog and add a new launch
+    configuration.</p><p>For example, on my OS X system I use
+    <code class="filename">/usr/bin/gnumake</code> for the program location
+    and pick the project root with the Browse Workspace button to
+    set the working directory.</p></div><div class="footnotes"><br><hr width="100" align="left"><div class="footnote"><p><sup>[<a name="ftn.id2746875" href="#id2746875">20</a>] </sup>MySQL++ has many header
+  files, but the only one that isn&#8217;t intertwined with the rest is
+  <code class="filename">ssqls.h</code>. <code class="filename">mysql++.h</code> brings
+  in all of the others in the correct order. Some have tried to speed
+  their build times by finding a subset of MySQL++ headers to include,
+  but <code class="filename">mysql++.h</code> already does as much of this as
+  is practical. MySQL++&#8217;s monolithic nature rules out finding
+  a true subset of the library headers.</p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="configuration.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="breakages.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">8. Configuring MySQL++ </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 10. Incompatible Library Changes</td></tr></table></div></body></html>

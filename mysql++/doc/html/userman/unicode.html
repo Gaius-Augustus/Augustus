@@ -1,0 +1,121 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>6. Using Unicode with MySQL++</title><link rel="stylesheet" href="tangentsoft.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.69.1"><link rel="start" href="index.html" title="MySQL++ v3.1.0 User Manual"><link rel="up" href="index.html" title="MySQL++ v3.1.0 User Manual"><link rel="prev" href="ssqls.html" title="5. Specialized SQL Structures"><link rel="next" href="threads.html" title="7. Using MySQL++ in a Multithreaded Program"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">6. Using Unicode with MySQL++</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ssqls.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="threads.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="unicode"></a>6. Using Unicode with MySQL++</h2></div></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="unicode-history"></a>6.1. A Short History of Unicode</h3></div><div><h4 class="subtitle">...with a focus on relevance to MySQL++</h4></div></div></div><p>In the old days, computer operating systems only dealt with
+    8-bit character sets. That only allows for 256 possible characters,
+    but the modern Western languages have more characters combined than
+    that alone. Add in all the other languages of the world plus the
+    various symbols people use in writing, and you have a real
+    mess!</p><p>Since no standards body held sway over things like
+    international character encoding in the early days of computing,
+    many different character sets were invented. These character sets
+    weren&#8217;t even standardized between operating systems, so heaven
+    help you if you needed to move localized Greek text on a DOS box to
+    a Russian Macintosh! The only way we got any international
+    communication done at all was to build standards on top of the
+    common 7-bit ASCII subset.  Either people used approximations like a
+    plain &#8220;c&#8221; instead of the French &#8220;ç&#8221;,
+    or they invented things like HTML entities
+    (&#8220;&amp;ccedil;&#8221; in this case) to encode these additional
+    characters using only 7-bit ASCII.</p><p>Unicode solves this problem. It encodes every character used
+    for writing in the world, using up to 4 bytes per character. The
+    subset covering the most economically valuable cases takes two bytes
+    per character, so most Unicode-aware programs deal in 2-byte
+    characters, for efficiency.</p><p>Unfortunately, Unicode was invented about two decades
+    too late for Unix and C. Those decades of legacy created an
+    immense inertia preventing a widespread move away from 8-bit
+    characters. MySQL and C++ come out of these older traditions, and
+    so they share the same practical limitations. MySQL++ currently
+    doesn't have any code in it for Unicode conversions; it just
+    passes data along unchanged from the underlying MySQL C API,
+    so you still need to be aware of these underlying issues.</p><p>During the development of the <a href="http://en.wikipedia.org/wiki/Plan_9_from_Bell_Labs" target="_top">Plan
+    9</a> operating system (a kind of successor to Unix) Ken
+    Thompson <a href="http://www.cl.cam.ac.uk/~mgk25/ucs/utf-8-history.txt" target="_top">invented</a>
+    the <a href="http://en.wikipedia.org/wiki/UTF-8" target="_top">UTF-8
+    encoding</a>. UTF-8 is a superset of 7-bit ASCII and is
+    compatible with C strings, since it doesn&#8217;t use 0 bytes
+    anywhere as multi-byte Unicode encodings do. As a result, many
+    programs that deal in text will cope with UTF-8 data even though
+    they have no explicit support for UTF-8. (Follow the last link above
+    to see how the design of UTF-8 allows this.) Thus, when explicit
+    support for Unicode was added in MySQL v4.1, they chose to make
+    UTF-8 the native encoding, to preserve backward compatibility with
+    programs that had no Unicode support.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="unicode-unix"></a>6.2. Unicode on Unixy Systems</h3></div></div></div><p>Linux and Unix have system-wide UTF-8 support these days. If
+    your operating system is of 2001 or newer vintage, it probably has
+    such support.</p><p>On such a system, the terminal I/O code understands UTF-8
+    encoded data, so your program doesn&#8217;t require any special code
+    to correctly display a UTF-8 string. If you aren&#8217;t sure
+    whether your system supports UTF-8 natively, just run the
+    <code class="filename">simple1</code> example: if the first item has two
+    high-ASCII characters in place of the &#8220;ü&#8221; in
+    &#8220;Nürnberger Brats&#8221;, you know it&#8217;s not
+    handling UTF-8.</p><p>If your Unix doesn&#8217;t support UTF-8 natively, it likely
+    doesn&#8217;t support any form of Unicode at all, for the historical
+    reasons I gave above. Therefore, you will have to convert the UTF-8
+    data to the local 8-bit character set. The standard Unix function
+    <code class="function">iconv()</code> can help here. If your system
+    doesn&#8217;t have the <code class="function">iconv()</code> facility, there
+    is <a href="http://www.gnu.org/software/libiconv/" target="_top">a free
+    implementation</a> available from the GNU Project. Another
+    library you might check out is IBM&#8217;s <a href="http://icu.sourceforge.net/" target="_top">ICU</a>. This is rather
+    heavy-weight, so if you just need basic conversions,
+    <code class="function">iconv()</code> should suffice.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="unicode-windows"></a>6.3. Unicode on Windows</h3></div></div></div><p>Each Windows API function that takes a string actually comes
+    in two versions. One version supports only 1-byte &#8220;ANSI&#8221;
+    characters (a superset of ASCII), so they end in 'A'. Windows also
+    supports the 2-byte subset of Unicode called <a href="http://en.wikipedia.org/wiki/UCS-2" target="_top">UCS-2</a>.  Some call
+    these &#8220;wide&#8221; characters, so the other set of functions
+    end in 'W'. The <code class="function"><a href="http://msdn.microsoft.com/library/en-us/winui/winui/windowsuserinterface/windowing/dialogboxes/dialogboxreference/dialogboxfunctions/messagebox.asp" target="_top">MessageBox</a>()</code>
+    API, for instance, is actually a macro, not a real function. If you
+    define the <span class="symbol">UNICODE</span> macro when building your
+    program, the <code class="function">MessageBox()</code> macro evaluates to
+    <code class="function">MessageBoxW()</code>; otherwise, to
+    <code class="function">MessageBoxA()</code>.</p><p>Since MySQL uses the UTF-8 Unicode encoding and Windows uses
+    UCS-2, you must convert data when passing text between MySQL++ and
+    the Windows API. Since there&#8217;s no point in trying for
+    portability &#8212; no other OS I&#8217;m aware of uses UCS-2
+    &#8212; you might as well use platform-specific functions to do this
+    translation. Since version 2.2.2, MySQL++ ships with two Visual C++
+    specific examples showing how to do this in a GUI program.  (In
+    earlier versions of MySQL++, we did Unicode conversion in the
+    console mode programs, but this was unrealistic.)</p><p>How you handle Unicode data depends on whether you&#8217;re
+    using the native Windows API, or the newer .NET API. First, the
+    native case:</p><pre class="programlisting">
+// Convert a C string in UTF-8 format to UCS-2 format.
+void ToUCS2(LPTSTR pcOut, int nOutLen, const char* kpcIn)
+{
+  MultiByteToWideChar(CP_UTF8, 0, kpcIn, -1, pcOut, nOutLen);
+}
+
+// Convert a UCS-2 string to C string in UTF-8 format.
+void ToUTF8(char* pcOut, int nOutLen, LPCWSTR kpcIn)
+{
+  WideCharToMultiByte(CP_UTF8, 0, kpcIn, -1, pcOut, nOutLen, 0, 0);
+}</pre><p>These functions leave out some important error checking, so
+    see <code class="filename">examples/vstudio/mfc/mfc_dlg.cpp</code> for the
+    complete version.</p><p>If you&#8217;re building a .NET application (such as, perhaps,
+    because you&#8217;re using Windows Forms), it&#8217;s better to use
+    the .NET libraries for this:</p><pre class="programlisting">
+// Convert a C string in UTF-8 format to a .NET String in UCS-2 format.
+String^ ToUCS2(const char* utf8)
+{
+  return gcnew String(utf8, 0, strlen(utf8), System::Text::Encoding::UTF8);
+}
+
+// Convert a .NET String in UCS-2 format to a C string in UTF-8 format.
+System::Void ToUTF8(char* pcOut, int nOutLen, String^ sIn)
+{
+  array&lt;Byte&gt;^ bytes = System::Text::Encoding::UTF8-&gt;GetBytes(sIn);
+  nOutLen = Math::Min(nOutLen - 1, bytes-&gt;Length);
+  System::Runtime::InteropServices::Marshal::Copy(bytes, 0,
+    IntPtr(pcOut), nOutLen);
+  pcOut[nOutLen] = '\0';
+}</pre><p>Unlike the native API versions, these examples are complete,
+    since the .NET platform handles a lot of things behind the scenes
+    for us. We don&#8217;t need any error-checking code for such simple
+    routines.</p><p>All of this assumes you&#8217;re using Windows NT or one of
+    its direct descendants: Windows 2000, Windows XP, Windows Vista, or
+    any &#8220;Server&#8221; variant of Windows. Windows 95 and its
+    descendants (98, ME, and CE) do not support UCS-2. They still have
+    the 'W' APIs for compatibility, but they just smash the data down to
+    8-bit and call the 'A' version for you.</p></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="unicode-refs"></a>6.4. For More Information</h3></div></div></div><p>The <a href="http://www.unicode.org/faq/" target="_top">Unicode
+      FAQs</a> page has copious information on this complex
+      topic.</p><p>When it comes to Unix and UTF-8 specific items, the <a href="http://www.cl.cam.ac.uk/~mgk25/unicode.html" target="_top">UTF-8 and
+      Unicode FAQ for Unix/Linux</a> is a quicker way to find basic
+      information.</p></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ssqls.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="threads.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">5. Specialized SQL Structures </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 7. Using MySQL++ in a Multithreaded Program</td></tr></table></div></body></html>

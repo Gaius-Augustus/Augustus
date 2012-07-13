@@ -108,7 +108,7 @@ int main( int argc, char* argv[] ){
 	cout << HELP_USAGE << endl;
 	return 0;
     }
-    try{	
+    try{
 	Properties::init( argc, argv );
 	Constant::init();
 	Gene::init();
@@ -451,7 +451,11 @@ void setParameters(){
 	    cerr << "Could not open error file " << errorfilename << ". Will use stderr instead." << endl;
 	}
     }
-
+    if (Gene::gff3 && Gene::stopCodonExcludedFromCDS)
+	cerr << "Warning: The gff3 standard requires that the stop codon is included in the CDS. "
+	     << "Unless this is your intention, set stopCodonExcludedFromCDS to false in your "
+	     << "species' configuration file or on the command line." << endl;
+    
     if (Properties::hasProperty("translation_table"))
 	GeneticCode::chooseTranslationTable(Properties::getIntProperty("translation_table"));
 }

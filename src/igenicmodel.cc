@@ -291,7 +291,7 @@ Double IGenicModel::emiProbUnderModel(int begin, int end) const {
     bool have_irparthint=false, have_nonexonpartF=false, have_nonirparthint=false;
     
     for (; begin <= end; begin++){
-	Feature * hints = seqFeatColl->getFeatureListContaining(SET_FLAG(irpartF) | SET_FLAG(nonexonpartF) | SET_FLAG(nonirpartF), begin, bothstrands);
+	Feature * hints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(irpartF) | A_SET_FLAG(nonexonpartF) | A_SET_FLAG(nonirpartF), begin, bothstrands);
 	if (hints) {
 	    while (hints) {
 		have_irparthint |= (hints->type == irpartF);

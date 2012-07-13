@@ -42,8 +42,8 @@
 #include <climits>
 #include <iterator> // for ostream_iterator
 
-Bitmask     SequenceFeatureCollection::validDSS = SET_FLAG(Seq2Int(2)("gt")) | SET_FLAG(Seq2Int(2)("gc"));
-Bitmask     SequenceFeatureCollection::validASS = SET_FLAG(Seq2Int(2)("ag"));
+Bitmask     SequenceFeatureCollection::validDSS = A_SET_FLAG(Seq2Int(2)("gt")) | A_SET_FLAG(Seq2Int(2)("gc"));
+Bitmask     SequenceFeatureCollection::validASS = A_SET_FLAG(Seq2Int(2)("ag"));
 set<string> SequenceFeatureCollection::validHintedSites;
 
 
@@ -881,7 +881,7 @@ Feature *SequenceFeatureCollection::getExonListOvlpingRange(int startPosition, i
     
     Feature *first, *last, *lst, *temp;
     bool reading_frame_ok;
-    lst = getFeatureListOvlpingRange(SET_FLAG(exonF) | SET_FLAG(exonpartF) | SET_FLAG(CDSF) | SET_FLAG(CDSpartF) | SET_FLAG(UTRF) | SET_FLAG(UTRpartF), 
+    lst = getFeatureListOvlpingRange(A_SET_FLAG(exonF) | A_SET_FLAG(exonpartF) | A_SET_FLAG(CDSF) | A_SET_FLAG(CDSpartF) | A_SET_FLAG(UTRF) | A_SET_FLAG(UTRpartF), 
 				     startPosition, endPosition, strand);
 
     // now filter list by keeping only the ones with a right reading frame
@@ -1797,7 +1797,7 @@ void SequenceFeatureCollection::prepareLocalMalus(const char* dna){
   int hintcount;
   for (int i = 1; i < seqlen-1; i++){
     if (validDSSPattern(dna + i) || validRDSSPattern(dna + i - 1) || validASSPattern(dna + i - 1) || validRASSPattern(dna + i)){
-      hitlist =  getFeatureListOvlpingRange(SET_FLAG(exonpartF), i-exwin, i+exwin, bothstrands);
+      hitlist =  getFeatureListOvlpingRange(A_SET_FLAG(exonpartF), i-exwin, i+exwin, bothstrands);
       if (validDSSPattern(dna + i) || validRASSPattern(dna + i)){
 	f = hitlist;
 	hintcount = 0;

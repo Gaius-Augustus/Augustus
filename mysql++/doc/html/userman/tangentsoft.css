@@ -1,0 +1,108 @@
+BODY {
+  background-color: #FFFFEE;
+  font-family:
+  	"Georgia",
+	"Luxi Serif",
+	"New Century Schoolbook",
+	"Times New Roman",
+  	"Times",
+	serif;
+  margin-left: 30pt; 
+  margin-right: 30pt; 
+}
+
+a:link { 
+  color: #491E00;
+}
+
+a:visited { 
+  color: #7D2E01;
+}
+
+a:hover { 
+  color: #CC5500;
+  text-decoration: none;
+}
+
+a:active { 
+  color: #DA7417;
+}
+
+DIV.footnote > P {
+	font-size: 85%;
+}
+
+EM.phrase {
+	/* Georgia's great, but oldstyle numerals make math hard to read */
+	font-family: "Times", "Times New Roman", serif;
+}
+
+H1, H2, H3, H4, H5, H6, DIV.navheader > TABLE > TBODY > TR > TH {
+  color: #501000;
+  font-family:
+  	"Verdana",
+	"Luxi Sans",
+	"Helvetica Narrow",
+	"Arial",
+	"Univers",
+	sans-serif;
+  font-weight: bold;
+}
+
+H1 {
+  font-size: 20pt;
+}
+
+H2 {
+  font-size: 18pt;
+}
+
+H3 {
+  font-size: 14pt;
+}
+
+H4 {
+  font-size: 10pt;
+}
+H4.subtitle {
+  margin-left: 20pt;
+}
+
+H5 {
+  font-size: 10pt;
+  margin-left: 20pt;
+}
+
+P {
+  line-height: 140%;
+  margin-left: 20pt;
+}
+
+div.sect3 {
+	margin-left: 20pt;
+}
+
+li {
+	margin-left: 30pt;
+}
+
+li p {
+	margin-left: 0pt;
+}
+
+pre.programlisting, pre.screen {
+	border: 1px solid #882200;
+	margin: 10pt;
+	margin-left: 40pt;
+	padding: 10pt;
+	background-color: #FFFFCC;
+}
+
+.type {
+	font-family: monospace;
+}
+
+.symbol {
+	font-family: monospace;
+}
+

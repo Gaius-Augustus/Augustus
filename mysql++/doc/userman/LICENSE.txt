@@ -1,0 +1,59 @@
+MySQL++ User Manual License
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+I. COPYRIGHT
+
+    The copyright to the MySQL++ User Manual is owned by its authors.
+
+
+II. LICENSE
+
+    The MySQL++ User Manual may be reproduced and distributed in whole
+    or in part, in any medium physical or electronic, provided that
+    this license notice is displayed in the reproduction. Commercial
+    redistribution is permitted and encouraged. Thirty days advance
+    notice via email to the authors of redistribution is appreciated,
+    to give the authors time to provide updated documents.
+
+
+    A. REQUIREMENTS OF MODIFIED WORKS
+
+        All modified documents, including translations,
+        anthologies, and partial documents, must meet the
+        following requirements:
+
+            1.  The modified version must be labeled as such.
+
+            2.  The person making the modifications must be
+                identified.
+
+            3.  Acknowledgement of the original author must be
+                retained.
+
+            4.  The location of the original unmodified
+                document be identified.
+
+            5.  The original authors' names may not be used
+                to assert or imply endorsement of the
+                resulting document without the original
+                authors' permission.
+
+        In addition it is requested that:
+
+            1.  The modifications (including deletions)
+                be noted.
+
+            2.  The authors be notified by email of the
+                modification in advance of redistribution,
+                if an email address is provided in
+                the document.
+
+        Mere aggregation of the MySQL++ User Manual with other
+        documents or programs on the same media shall not cause
+        this license to apply to those other works.
+
+        All translations, derivative documents, or modified
+        documents that incorporate the MySQL++ User Manual may
+        not have more restrictive license terms than these,
+        except that you may require distributors to make the
+        resulting document available in source format.

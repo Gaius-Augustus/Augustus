@@ -274,7 +274,11 @@ int main (int argc, char **argv)
 		setbuf(handle, buffer);
 
 		/*read in the first line*/
-		fgets (firstline, sizeof firstline, handle);
+		if (fgets (firstline, sizeof firstline, handle) == NULL){
+		    perror ( filename );
+		    printf ("Could not read first line.");
+		    exit(2);
+		}
 		chomp(firstline);
 		
 		tokenCounts = detectTokenCount(firstline,'\t');

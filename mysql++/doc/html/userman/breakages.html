@@ -1,0 +1,667 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>10. Incompatible Library Changes</title><link rel="stylesheet" href="tangentsoft.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.69.1"><link rel="start" href="index.html" title="MySQL++ v3.1.0 User Manual"><link rel="up" href="index.html" title="MySQL++ v3.1.0 User Manual"><link rel="prev" href="incorporating.html" title="9. Using MySQL++ in Your Own Project"><link rel="next" href="licenses.html" title="11. Licensing"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">10. Incompatible Library Changes</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="incorporating.html">Prev</a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="licenses.html">Next</a></td></tr></table><hr></div><div class="sect1" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="breakages"></a>10. Incompatible Library Changes</h2></div></div></div><p>This chapter documents those library changes since the epochal
+  1.7.9 release that break end-user programs. You can dig this stuff out
+  of the ChangeLog, but the ChangeLog focuses more on explaining and
+  justifying the facets of each change, while this section focuses on
+  how to migrate your code between these library versions.</p><p>Since pure additions do not break programs, those changes are
+  still documented only in the ChangeLog.</p><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="api-changes"></a>10.1. API Changes</h3></div></div></div><p>This section documents files, functions, methods and classes
+    that were removed or changed in an incompatible way. If your program
+    uses the changed item, you will have to change something in your
+    program to get it to compile after upgrading to each of these
+    versions.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="api-1.7.10"></a>v1.7.10</h4></div></div></div><p>Removed <code class="methodname">Row::operator[]()</code> overloads
+      except the one for <span class="type">size_type</span>, and added
+      <code class="methodname">Row::lookup_by_name()</code> to provide the
+      &#8220;subscript by string&#8221; functionality.  In practical
+      terms, this change means that the <code class="varname">row["field"]</code>
+      syntax no longer works; you must use the new
+      <code class="methodname">lookup_by_name</code> method instead.</p><p>Renamed the generated library on POSIX systems from
+      <code class="filename">libsqlplus</code> to
+      <code class="filename">libmysqlpp</code>.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="api-1.7.19"></a>v1.7.19</h4></div></div></div><p>Removed <code class="methodname">SQLQuery::operator=()</code>, and
+      the same for its <code class="classname">Query</code> subclass. Use the
+      copy constructor instead, if you need to copy one query to another
+      query object.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="api-1.7.20"></a>v1.7.20</h4></div></div></div><p>The library used to have two names for many core classes: a
+      short one, such as <code class="classname">Row</code> and a longer one,
+      <code class="classname">MysqlRow</code>. The library now uses the shorter
+      names exclusively.</p><p>All symbols within MySQL++ are in the
+      <code class="filename">mysqlpp</code> namespace now if you use the new
+      <code class="filename">mysql++.h</code> header. If you use the older
+      <code class="filename">sqlplus.hh</code> or <code class="filename">mysql++.hh</code>
+      headers, these symbols are hoist up into the global namespace. The
+      older headers cause the compiler to emit warnings if you use them,
+      and they will go away someday.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="api-2.0.0"></a>v2.0.0</h4></div></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-2.0.0-Connection"></a>Connection class changes</h5></div></div></div><div class="itemizedlist"><ul type="disc"><li><p><code class="methodname">Connection::create_db()</code>
+          and <code class="methodname">drop_db()</code> return
+          <span class="symbol">true</span> on success. They returned
+          <span class="symbol">false</span> in v1.7.<span class="emphasis"><em>x</em></span>! This
+          change will only affect your code if you have exceptions
+          disabled.</p></li><li><p>Renamed
+          <code class="methodname">Connection::real_connect()</code>
+          to <code class="methodname">connect()</code>, made several
+          more of its parameters default, and removed the
+          old <code class="methodname">connect()</code> method, as
+          it&#8217;s now a strict subset of the new one. The
+          only practical consequence is that if your program
+          was using <code class="methodname">real_connect()</code>,
+          you will have to change it to
+          <code class="methodname">connect()</code>.</p></li><li><p>Replaced
+          <code class="methodname">Connection::read_option()</code> with new
+          <code class="methodname">set_option()</code> mechanism. In addition
+          to changing the name, programs using this function will have
+          to use the new <code class="classname">Connection::Option</code>
+          enumerated values, accept a <span class="symbol">true</span>
+          return value as meaning success instead of 0, and
+          use the proper argument type. Regarding the latter,
+          <code class="methodname">read_option()</code> took a <span class="type">const
+          char*</span> argument, but because it was just a thin wrapper
+          over the MySQL C API function <tt><a href="http://dev.mysql.com/doc/mysql/en/mysql-options.html">mysql_options()</a></tt>, the actual value being pointed to could
+          be any of several types. This new mechanism is properly
+          type-safe.</p></li></ul></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-2.0.0-Exception"></a>Exception-related changes</h5></div></div></div><div class="itemizedlist"><ul type="disc"><li><p>Classes <code class="classname">Connection</code>,
+          <code class="classname">Query</code>, <code class="classname">Result</code>,
+          <code class="classname">ResUse</code>, and <code class="classname">Row</code>
+          now derive from <tt><a href="../refman/classmysqlpp_1_1OptionalExceptions.html">OptionalExceptions</a></tt> which gives these classes a common
+          interface for disabling exceptions. In addition, almost all
+          of the per-method exception-disabling flags were removed. The
+          preferred method for disabling exceptions on these objects
+          is to create an instance of the new <tt><a href="../refman/classmysqlpp_1_1NoExceptions.html">NoExceptions</a></tt> class on the stack, which disables
+          exceptions on an <code class="classname">OptionalExceptions</code>
+          subclass as long as the <code class="classname">NoExceptions</code>
+          instance is in scope. You can instead call
+          <code class="methodname">disable_exceptions()</code> on any
+          of these objects, but if you only want them disabled
+          temporarily, it&#8217;s easy to forget to re-enable them
+          later.</p></li><li><p>In the previous version of MySQL++,
+          those classes that supported optional exceptions that
+          could create instances of other such classes were
+          supposed to pass this flag on to their children. That
+          is, if you created a <code class="classname">Connection</code>
+          object with exceptions enabled, and then asked it to
+          create a <code class="classname">Query</code> object, the
+          <code class="classname">Query</code> object also had exceptions
+          disabled. The problem is, this didn&#8217;t happen in all
+          cases where it should have in v1.7. This bug is fixed in
+          v2.0. If your program begins crashing due to uncaught
+          exceptions after upgrading to v2.0, this is the most likely
+          cause. The most expeditious fix in this situation is to
+          use the new <code class="classname">NoExceptions</code> feature to
+          return these code paths to the v1.7 behavior. A better fix
+          is to rework your program to avoid or deal with the new
+          exceptions.</p></li><li><p>All custom MySQL++ exceptions now derive from
+          the new <tt><a href="../refman/classmysqlpp_1_1Exception.html">Exception</a></tt> interface.
+          The practical upshot of this is that the variability between
+          the various exception types has been eliminated. For instance,
+          to get the error string, the <code class="classname">BadQuery</code>
+          exception had a string member called <code class="varname">error</code>
+          plus a method called <code class="methodname">what()</code>. Both
+          did the same thing, and the <code class="methodname">what()</code>
+          method is more common, so the error string was dropped
+          from the interface. None of the example programs had to be
+          changed to work with the new exceptions, so if your program
+          handles MySQL++ exceptions the same way they do, your program
+          won&#8217;t need to change, either.</p></li><li><p>Renamed
+          <code class="classname">SQLQueryNEParams</code> exception to
+          <code class="classname">BadParamCount</code> to match style of other
+          exception names.</p></li><li><p>Added <tt><a href="../refman/classmysqlpp_1_1BadOption.html">BadOption</a></tt>, <tt><a href="../refman/classmysqlpp_1_1ConnectionFailed.html">ConnectionFailed</a></tt>, <tt><a href="../refman/classmysqlpp_1_1DBSelectionFailed.html">DBSelectionFailed</a></tt>, <tt><a href="../refman/classmysqlpp_1_1EndOfResults.html">EndOfResults</a></tt>, <tt><a href="../refman/classmysqlpp_1_1EndOfResultSets.html">EndOfResultSets</a></tt>, <tt><a href="../refman/classmysqlpp_1_1LockFailed.html">LockFailed</a></tt>, and <tt><a href="../refman/classmysqlpp_1_1ObjectNotInitialized.html">ObjectNotInitialized</a></tt> exception types, to fix
+          overuse of <code class="classname">BadQuery</code>. Now the
+          latter is used only for errors on query execution. If
+          your program has a &#8220;catch-all&#8221; block taking a
+          <code class="classname">std::exception</code> for each try block
+          containing MySQL++ statements, you probably won&#8217;t
+          need to change your program. Otherwise, the new exceptions
+          will likely show up as program crashes due to unhandled
+          exceptions.</p></li></ul></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-2.0.0-Query"></a>Query class changes</h5></div></div></div><div class="itemizedlist"><ul type="disc"><li><p>In previous versions,
+          <code class="classname">Connection</code> had
+          a querying interface similar to class
+          <code class="classname">Query</code>&#8217;s. These methods were
+          intended only for <code class="classname">Query</code>&#8217;s use; no
+          example ever used this interface directly, so no end-user code
+          is likely to be affected by this change.</p></li><li><p>A more likely problem arising from
+          the above change is code that tests for query success
+          by calling the <code class="classname">Connection</code>
+          object&#8217;s <code class="methodname">success()</code> method
+          or by casting it to <span class="type">bool</span>. This will now give
+          misleading results, because queries no longer go through
+          the <code class="classname">Connection</code> object. Class
+          <code class="classname">Query</code> has the same success-testing
+          interface, so use it instead.</p></li><li><p><code class="classname">Query</code> now derives
+          from <code class="classname">std::ostream</code> instead of
+          <code class="classname">std::stringstream</code>.</p></li></ul></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-2.0.0-Result"></a>Result/ResUse class changes</h5></div></div></div><div class="itemizedlist"><ul type="disc"><li><p>Renamed
+          <code class="methodname">ResUse::mysql_result()</code> to
+          <code class="methodname">raw_result()</code> so it&#8217;s database
+          server neutral.</p></li><li><p>Removed
+          <code class="methodname">ResUse::eof()</code>, as it wrapped
+          the deprecated and unnecessary MySQL C API function
+          <tt><a href="http://dev.mysql.com/doc/mysql/en/mysql-eof.html">mysql_eof()</a></tt>. See the
+          <code class="filename">simple3</code> and <code class="filename">usequery</code>
+          examples to see the proper way to test for the end of a result
+          set.</p></li></ul></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-2.0.0-Row"></a>Row class changes</h5></div></div></div><div class="itemizedlist"><ul type="disc"><li><p>Removed &#8220;field name&#8221; form
+          of <code class="methodname">Row::field_list()</code>. It was
+          pointless.</p></li><li><p><code class="classname">Row</code> subscripting
+          works more like v1.7.9: one can subscript a
+          <code class="classname">Row</code> with a string (e.g.
+          <code class="methodname">row["myfield"]</code>), or with
+          an integer (e.g. <code class="methodname">row[5]</code>).
+          <code class="methodname">lookup_by_name()</code> was
+          removed. Because <code class="methodname">row[0]</code> is
+          ambiguous (0 could mean the first field, or be a null
+          pointer to <span class="type">const char*</span>), there is now
+          <code class="methodname">Row::at()</code>, which can look up any
+          field by index.</p></li></ul></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-2.0.0-misc"></a>Miscellaneous changes</h5></div></div></div><div class="itemizedlist"><ul type="disc"><li><p>Where possible, all distributed Makefiles only
+          build dynamic libraries. (Shared objects on most Unices, DLLs
+          on Windows, etc.) Unless your program is licensed under the
+          GPL or LGPL, you shouldn&#8217;t have been using the static
+          libraries from previous versions anyway.</p></li><li><p>Removed the backwards-compatibility
+          headers <code class="filename">sqlplus.hh</code> and
+          <code class="filename">mysql++.hh</code>. If you were
+          still using these, you will have to change to
+          <code class="filename">mysql++.h</code>, which will put all symbols in
+          <span class="symbol">namespace mysqlpp</span>.</p></li><li><p>Can no longer use arrow operator
+          (<span class="symbol">-&gt;</span>) on the iterators into the
+          <code class="classname">Fields</code>, <code class="classname">Result</code>
+          and <code class="classname">Row</code> containers.</p></li></ul></div></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="api-2.2.0"></a>v2.2.0</h4></div></div></div><p>Code like this will have to change:</p><pre class="programlisting">
+query &lt;&lt; "delete from mytable where myfield=%0:myvalue";
+query.parse();
+query.def["myvalue"] = some_value;
+query.execute();</pre><p>...to something more like this:</p><pre class="programlisting">
+query &lt;&lt; "delete from mytable where myfield=%0";
+query.parse();
+query.execute(some_value);</pre><p>The first code snippet abuses the default template query
+      parameter mechanism (<code class="varname">Query::def</code>) to fill out
+      the template instead of using one of the overloaded forms of
+      <code class="methodname">execute()</code>,
+      <code class="methodname">store()</code> or <code class="methodname">use()</code>
+      taking one or more <code class="classname">SQLString</code> parameters.
+      The purpose of <code class="varname">Query::def</code> is to allow for
+      default template parameters over multiple queries. In the first
+      snippet above, there is only one parameter, so in order to justify
+      the use of template queries in the first place, it must be
+      changing with each query. Therefore, it isn&#8217;t really a
+      &#8220;default&#8221; parameter at all. We did not make this
+      change maliciously, but you can understand why we are not in any
+      hurry to restore this &#8220;feature&#8221;.</p><p>(Incidentally, this change was made to allow better support
+      for BLOB columns.)</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="api-2.3.0"></a>v2.3.0</h4></div></div></div><p><code class="methodname">Connection::set_option()</code> calls now
+      set the connection option immediately, instead of waiting until
+      just before the connnection is actually established. Code that
+      relied on the old behavior could see unhandled exceptions, since
+      option setting errors are now thrown from a different part of the
+      code. You want to wrap the actual
+      <code class="methodname">set_option()</code> call now, not
+      <code class="methodname">Connection::connect()</code></p><p><code class="classname">FieldNames</code> and
+      <code class="classname">FieldTypes</code> are no longer exported from the
+      library. If you are using these classes directly from Visual C++
+      or MinGW, your code won&#8217;t be able to dynamically link to a
+      DLL version of the library any more. These are internal classes,
+      however, so no one should be using them directly.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="api-3.0.0"></a>v3.0.0</h4></div></div></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-3.0.0-names"></a>Class name changes</h5></div></div></div><p>Several classes changed names in this
+        release:</p><div class="itemizedlist"><ul type="disc"><li><p><code class="classname">ColData</code> is now
+          <code class="classname">String</code>.</p></li><li><p><code class="classname">NullisBlank</code>
+          is now <code class="classname">NullIsBlank</code>. (Note
+          the capital <span class="emphasis"><em>I</em></span>.) Similar
+          changes for <code class="classname">NullisNull</code> and
+          <code class="classname">NullisZero</code>.</p></li><li><p><code class="classname">ResNSel</code> is now
+          <code class="classname">SimpleResult</code>.</p></li><li><p><code class="classname">Result</code> is now
+          <code class="classname">StoreQueryResult</code>.</p></li><li><p><code class="classname">ResUse</code> is now
+          <code class="classname">UseQueryResult</code>.</p></li><li><p><code class="classname">SQLString</code> is now
+          <code class="classname">SQLTypeAdapter</code>.</p></li></ul></div><p>When first building existing code against this version,
+        you may find it helpful to define the macro
+        <code class="varname">MYSQLPP_OLD_CLASS_NAMES</code> in your
+        program&#8217;s build options. This will turn on some macros
+        that set up aliases for the new class names matching their
+        corresponding old names. Then, when you&#8217;ve fixed up any
+        other issues that may prevent your program from building with
+        the new MySQL++, you can turn it back off and fix up any class
+        name differences.</p><p>If you were only using <code class="classname">ColData</code> in a
+        BLOB context, you should use <code class="classname">sql_blob</code> or
+        one of the related typedefs defined in
+        <code class="filename">lib/sql_types.h</code> instead, to insulate your
+        code from changes like these.</p><p>The <code class="classname">SQLString</code> change
+        shouldn&#8217;t affect you, as this class was not designed to be
+        used by end user code. But, due to the old name and the fact
+        that it used to derive from <code class="classname">std::string</code>,
+        some might have been tempted to use it as an enhanced
+        <code class="classname">std::string</code>. Such code will undoubtedly
+        break, but can probably be fixed by just changing it to use
+        <code class="classname">std::string</code> instead.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-3.0.0-Connection"></a>Connection class changes</h5></div></div></div><p>The option setting mechanism has been redesigned. (Yes,
+        again.) There used to be an enum in
+        <code class="classname">Connection</code> with a value for each option
+        we understood, and an overload of
+        <code class="methodname">Connection::set_option()</code> for each
+        argument type we understood. It was possible to pass any option
+        value to any <code class="methodname">set_option()</code> overload, and
+        the problem would only be detected at run time. Now each option
+        is represented by a class derived from the new
+        <code class="classname">Option</code> abstract base class, and
+        <code class="methodname">set_option()</code> simply takes a pointer to
+        one of these objects. See
+        <code class="filename">examples/multiquery.cpp</code> for the syntax.
+        Since each <code class="classname">Option</code> subclass takes only the
+        parameter types it actually understands, it&#8217;s now
+        completely type-safe at compile time.</p><p>The new option setting mechanism also has the virtue of
+        being more powerful so it let us replace several existing things
+        within <code class="classname">Connection</code> with new
+        options:</p><div class="itemizedlist"><ul type="disc"><li><p>Replaced
+          <code class="methodname">enable_ssl()</code> with
+          <code class="classname">SslOption</code>.</p></li><li><p>Replaced the <code class="varname">compress</code>
+          parameter to the <code class="classname">Connection</code>
+          create-and-connect constructor and
+          <code class="methodname">Connection::connect()</code> method with
+          <code class="classname">CompressOption</code>.</p></li><li><p>Replaced the
+          <code class="varname">connect_timeout</code> parameter with
+          <code class="classname">ConnectTimeoutOption</code>.</p></li><li><p>Defined <code class="classname">Option</code>
+          subclasses for each of the flags you would previously set
+          using the <code class="varname">client_flag</code> parameter. There
+          are about a dozen of these, so instead of listing them,
+          look in <code class="filename">lib/options.h</code> for something
+          with a similar name.</p></li></ul></div><p>Collapsed <code class="classname">Connection</code>&#8217;s
+        <code class="varname">host</code>, <code class="varname">port</code>, and
+        <code class="varname">socket_name</code> parameters down into a new
+        combined <code class="varname">server</code> parameter which is parsed to
+        determine what kind of connection you mean. These interfaces are
+        still compatible with v2.3 and earlier up through the port
+        parameter.</p><p>Moved
+        <code class="methodname">Connection::affected_rows()</code>,
+        <code class="methodname">info()</code> and
+        <code class="methodname">insert_id()</code> methods to class
+        <code class="classname">Query</code>, as they relate to the most
+        recently-executed query.</p><p>Changed the return type of
+        <code class="methodname">Connection::ping()</code> from
+        <span class="type">int</span> to <span class="type">bool</span>. If you were calling
+        <code class="methodname">ping()</code> in <span class="type">bool</span> context
+        or using its return value in <span class="type">bool</span> context,
+        you will need to reverse the sense of the test because the
+        previous return code used zero to mean success. Now it returns
+        <span class="type">true</span> to indicate success.</p><p>Renamed several methods:</p><div class="itemizedlist"><ul type="disc"><li><p>Use <code class="methodname">client_version()</code>
+          instead of <code class="methodname">api_version()</code> or
+          <code class="methodname">client_info()</code>.</p></li><li><p>Use
+          <code class="methodname">ipc_version()</code> instead of
+          <code class="methodname">host_info()</code>.</p></li><li><p>Use
+          <code class="methodname">protocol_version()</code> instead of
+          <code class="methodname">proto_info()</code>.</p></li><li><p>Use
+          <code class="methodname">server_version()</code> instead of
+          <code class="methodname">server_info()</code>.</p></li><li><p>Use
+          <code class="methodname">status()</code> instead of
+          <code class="methodname">stat()</code>.</p></li></ul></div><p>Also, removed <code class="methodname">close()</code> in favor
+        of <code class="methodname">disconnect()</code>, which has always
+        done the same thing.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-3.0.0-DateTime"></a>Date and Time class changes</h5></div></div></div><p>The <span class="type">sql_timestamp</span> typedef is now
+        an alias for <code class="classname">DateTime</code>, not
+        <code class="classname">Time</code>.</p><p>There used to be implicit conversion constructors from
+        <code class="classname">ColData</code> (now
+        <code class="classname">String</code>),
+        <code class="classname">std::string</code> and <span class="type">const char*</span>
+        for the <code class="classname">Date</code>,
+        <code class="classname">DateTime</code>, and <code class="classname">Time</code>
+        classes. It&#8217;s still possible to do these conversions, but
+        only explicitly. (This had to be done to make
+        <code class="classname">Null&lt;T&gt;</code> work in SSQLSes.)</p><p>The most likely place to run into problems as a result
+        of this change is in code like this:</p><pre class="programlisting">
+void some_function(const mysqlpp::DateTime&amp; dt);
+
+some_function("2007-12-22");</pre><p>The function call needs to be changed to:</p><pre class="programlisting">
+some_function(mysqlpp::DateTime("2007-12-22"));</pre></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-3.0.0-Exception"></a>Exception changes</h5></div></div></div><p>If an error occurs during the processing of a
+        &#8220;use&#8221; query (as opposed to the initial execution) we
+        throw the new <code class="classname">UseQueryError</code> exception
+        instead of <code class="classname">BadQuery</code>.</p><p>If you pass bad values to the <code class="classname">Row</code>
+        ctor so that it can&#8217;t initialize itself properly, it
+        throws the <code class="classname">ObjectNotInitialized </code>
+        exception instead of <code class="classname">BadQuery</code>.</p><p>Together, these two changes mean that
+        <code class="classname">BadQuery</code> is now used solely to indicate
+        a problem executing the actual SQL query statement.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-3.0.0-Field"></a>Field and Fields class changes</h5></div></div></div><p><code class="classname">Field</code> is now a real C++ class,
+        not just a typedef for the corresponding C API class. Major
+        portability impacts are:</p><div class="itemizedlist"><ul type="disc"><li><p>It has no public data members. Where
+          sensible, there is a public accessor function of the
+          same name as the corresponding field in the C API
+          structure.</p></li><li><p>The main exception to this is the
+          <code class="varname">flags</code> data member. This is a bitfield in
+          the C API data structure and you had to use MySQL-specific
+          constants to break values out of it. MySQL++&#8217;s new
+          <code class="classname">Field</code> class provides a public member
+          function returning <span class="type">bool</span> for each of these
+          flags.</p></li><li><p>The new class doesn&#8217;t include all of the
+          data members from the C API version. We left out those that
+          aren&#8217;t used within MySQL++ or its examples, or whose
+          function we couldn&#8217;t understand. Basically, if we
+          couldn&#8217;t document a reason to use it, we left it
+          out.</p></li></ul></div><p><code class="classname">Fields</code> used to be a
+        <code class="classname">std::vector</code> work-alike which
+        worked with the C API to access fields and return them
+        as though they were simply contained directly within the
+        <code class="classname">Fields</code> object. Now that we have a
+        real MySQL++ class to hold information about each field
+        without reference to the C API, we were able to replace the
+        <code class="classname">Fields</code> class with:</p><pre class="programlisting">
+typedef std::vector&lt;Field&gt; Fields;</pre><p>If anything, this should give a pure superset of the old
+        functionality, but it&#8217;s possible it could break end user
+        code.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-3.0.0-Query"></a>Query class changes</h5></div></div></div><p>If you were using <span class="type">char</span> as an 8-bit integer
+        in query building, there are several places in MySQL++ v3 where
+        it will now be treated as a single-character string. MySQL++
+        has had the <code class="classname">tiny_int</code> class for many
+        years now specifically to provide a true 8-bit integer without
+        the semantic confusion surrounding the old C <span class="type">char</span>
+        type. Either use <code class="classname">tiny_int</code>, or
+        use the SQL type aliases <span class="type">sql_tinyint</span> and
+        <span class="type">sql_tinyint_unsigned</span> instead.</p><p>The &#8216;r&#8217; and &#8216;R&#8217; template query
+        parameter modifiers were removed. They made the library do
+        quoting and both quoting and escaping (respectively) regardless
+        of the data type of the parameter. There are no corresponding
+        <code class="classname">Query</code> stream manipulators, so for
+        symmetery we had to decide whether to add such manipulators or
+        remove the tquery modifiers. There should never be a reason to
+        force quoting or escaping other than to work around a MySQL++
+        bug, and it&#8217;s better to just fix the bug than work around
+        it, so removed the tquery modifiers.</p><p><code class="methodname">Query::store_next()</code>
+        and <code class="methodname">Result::fetch_row()</code> no
+        longer throw the <code class="classname">EndOfResults</code> and
+        <code class="classname">EndOfResultSets</code> exceptions; these
+        are not exceptional conditions! These methods simply return
+        <span class="type">false</span> when you hit the end of the result set
+        now.</p><p>Renamed <code class="varname">Query::def</code> to
+        <code class="varname">Query::template_defaults</code> to make its
+        purpose clearer.</p><p>Removed <code class="methodname">Query::preview()</code>.  The
+        most direct replacement for this set of overloaded methods is
+        the parallel set of <code class="methodname">str()</code> methods,
+        which were just aliases before. (Chose
+        <code class="methodname">str()</code> over
+        <code class="methodname">preview()</code> because it&#8217;s standard
+        C++ nomenclature.) But if you&#8217;re just looking to get a
+        copy of a built query string and you aren&#8217;t using template
+        queries, you can now insert the <code class="classname">Query</code>
+        into a stream and get the same result.</p><p>For example, a lot of code in the examples that used to
+        say things like:</p><pre class="programlisting">
+cout &lt;&lt; query.preview() &lt;&lt; endl;</pre><p>now looks like this:</p><pre class="programlisting">
+cout &lt;&lt; query &lt;&lt; endl;</pre></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-3.0.0-Result"></a>Result, ResUse, and ResNSel class changes</h5></div></div></div><p>In addition to the class name changes described above,
+        <code class="classname">UseQueryResult</code> is no longer
+        <code class="classname">StoreQueryResult</code>&#8217;s base class.
+        There is a new abstract class called
+        <code class="classname">ResultBase</code> containing much of what used
+        to be in <code class="classname">ResUse</code>, and it is the base of
+        both of these concrete result set types. This should only affect
+        your code if you were using <code class="classname">ResUse</code>
+        references to refer to <code class="classname">Result</code>
+        objects.</p><p>Removed a bunch of duplicate methods:</p><div class="itemizedlist"><ul type="disc"><li><p>Use
+          <code class="methodname">num_fields()</code> instead of
+          <code class="methodname">columns()</code>.</p></li><li><p>Use
+          <code class="methodname">field_names()</code> instead of
+          <code class="methodname">names()</code>.</p></li><li><p>Use
+          <code class="methodname">num_rows()</code> instead of
+          <code class="methodname">rows()</code>.</p></li><li><p>Use
+          <code class="methodname">field_types()</code> instead of
+          <code class="methodname">types()</code>.</p></li></ul></div><p>Renamed several methods for &#8220;grammar&#8221; reasons.
+        For example, some methods returned a single object but had a
+        &#8220;plural&#8221; name, implying that it returned a container
+        of objects. In cases like this, we changed the name to agree
+        with the return value. Some of these also fall into the
+        duplicate method category above:</p><div class="itemizedlist"><ul type="disc"><li><p>Use
+          <code class="methodname">field(unsigned int)</code>
+          instead of <code class="methodname">fields(unsigned
+          int)</code>.</p></li><li><p>Use <code class="methodname">field_num(const
+          std::string&amp;)</code>
+          instead of <code class="methodname">names(const
+          std::string&amp;)</code>.</p></li><li><p>Use
+          <code class="methodname">field_name(int)</code> instead of
+          <code class="methodname">names(int)</code>.</p></li><li><p>Use
+          <code class="methodname">field_type(int)</code> instead of
+          <code class="methodname">types(int)</code>.</p></li></ul></div><p>Removed several &#8220;smelly&#8221; methods:</p><div class="itemizedlist"><ul type="disc"><li><p><code class="methodname">purge()</code>: was an
+          internal implementation detail, not something for end user
+          code to call</p></li><li><p><code class="methodname">raw_result()</code>: end
+          user code shouldn&#8217;t be digging down to the C API data
+          structures, but if you really need something like this, look
+          at the implementation of
+          <code class="methodname">Query::storein()</code>. Its workings will
+          probably be educational.</p></li><li><p><code class="methodname">reset_names()</code>:
+          no reason to call this, especially now that the field
+          name list is initialized once at startup and then never
+          changed</p></li><li><p><code class="methodname">reset_field_names()</code>:
+          just an alias for previous</p></li><li><p><code class="methodname">reset_types()</code>:
+          same argument as for
+          <code class="methodname">reset_names()</code></p></li><li><p><code class="methodname">reset_field_types()</code>:
+          just an alias for previous</p></li></ul></div><p><code class="methodname">ResUse::field_num()</code> would
+        unconditionally throw a <code class="classname">BadFieldName</code>
+        exception when you asked for a field that doesn&#8217;t exist.
+        Now, if exceptions are disabled on the object, it just returns
+        -1.</p><p><code class="classname">SimpleResult</code>&#8217;s member
+        variables are all now private, and have read-only accessor
+        functions of the same name.</p><p>Code like this used to work:</p><pre class="programlisting">
+mysqlpp::Row row;
+mysqlpp::Result::size_type i;
+for (i = 0; row = res[i]; ++i) {
+  // Do something with row here
+}</pre><p>That is, indexing past the end of a &#8220;store&#8221;
+        result set would just return an empty row object, which tests as
+        false in <span class="type">bool</span> context, so it ends the loop. Now
+        that <code class="classname">StoreQueryResult</code> is a
+        <code class="classname">std::vector</code> derivative, this either
+        crashes your program or causes the standard library to throw an
+        exception, depending on what debugging features your version of
+        STL has. The proper technique is:</p><pre class="programlisting">
+mysqlpp::Row row;
+mysqlpp::StoreQueryResult::size_type i;
+for (i = 0; i &lt; res.num_rows(); ++i) {
+  row = res[i];
+  // Do something with row here
+}</pre><p>...or, in a more C++ish idiom:</p><pre class="programlisting">
+mysqlpp::Row row;
+mysqlpp::StoreQueryResult::const_iterator it;
+for (it = res.begin(); it != res.end(); ++it) {
+  row = *it;
+  // Do something with row here
+}</pre></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-3.0.0-Row"></a>Row class changes</h5></div></div></div><p>Removed <code class="methodname">Row::raw_data()</code>,
+        <code class="methodname">raw_size()</code> and
+        <code class="methodname">raw_string()</code>. These were useful with
+        BLOB data back when MySQL++ didn&#8217;t handle embedded null
+        characters very well, and when copies of
+        <code class="classname">ColData</code> objects were expensive. Neither
+        is true now, so they have no value any more. Equivalent calls
+        are:</p><pre class="programlisting">
+mysqlpp::String s = row[0];
+s.data();                          // raw_data() equivalent
+s.length();                        // raw_size() equivalent
+std::string(s.data(), s.length()); // raw_string() equivalent</pre><p><code class="methodname">Row::operator[](const char*)</code>
+        would unconditionally throw a
+        <code class="classname">BadFieldName</code> exception when you asked for
+        a field that doesn&#8217;t exist. Now, if exceptions are
+        disabled on the <code class="classname">Row</code> object, it just
+        returns a reference to an empty <code class="classname">String</code>
+        object.  You can tell when this happens because such an object
+        tests as false in <span class="type">bool</span> context.</p></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-3.0.0-SSQLS"></a>Specialized SQL Structure (SSQLS) changes</h5></div></div></div><p>Renamed <code class="filename">custom*</code> to
+        <code class="filename">ssqls*</code>. There is a backwards-compatibility
+        header <code class="filename">custom.h</code> which includes
+        <code class="filename">ssqls.h</code> for you, but it will go away in a
+        future version of MySQL++.</p><p>SSQLSes get populated by field name now, not by
+        field order. In v2, it was absolutely required that your
+        SSQLS had its fields declared in exactly the same order
+        as the fields in the database server, and there could be
+        no gaps. An <span><strong class="command">ALTER TABLE</strong></span> command would
+        almost always necessitate redefining the corresponding SSQLS
+        and rebuilding your program. Some alterations actually made
+        using SSQLS impossible. For the most part, this change just
+        gives your program additional flexibility in the face of
+        future changes. However, code that was taking advantage of
+        this low-level fact will break when moving to v3. Before I
+        explain how, let&#8217;s go over the high-level functional
+        changes you&#8217;ll find in v3&#8217;s SSQLS mechanism.</p><p>Because MySQL++ no longer needs the
+        SSQLS field order to match the SQL field order,
+        the <code class="function">sql_create_c_order_*</code>
+        SSQLS creation macro was dropped in v3. We were
+        also able to drop the ordering parameters from
+        <code class="function">sql_create_complete_*</code>. That in turn
+        means there is no longer a difference between the way it and
+        <code class="function">sql_create_c_names_*</code> work, so the latter
+        was also dropped. Thus, there are now only two groups of SSQLS
+        creation macros left: <code class="function">sql_create_*</code>,
+        which works pretty much as it always has, and
+        <code class="function">sql_create_complete_*</code>, which is the same
+        except for the lack of ordering parameters.</p><p>In general, you should be using
+        <code class="function">sql_create_*</code> for all SSQLSes unless
+        you need to use different names for data members in C++ than
+        you use for the corresponding columns in SQL. In that case,
+        use <code class="function">sql_create_complete_*</code> instead.</p><p>In v2, it was possible to have different SQL column
+        names than SSQLS data member names while still using
+        <code class="function">sql_create_*</code> if you only used SSQLS
+        for data retrieval.<sup>[<a name="id2785860" href="#ftn.id2785860">21</a>]</sup> In
+        v3, you must use <code class="function">sql_create_complete_*</code>
+        for absolutely all uses of SSQLS when you want the C++ field
+        names to differ from the SQL column names.</p><p>The new <code class="classname">Null&lt;T&gt;</code> support in
+        SSQLSes causes an internal compiler error in Visual C++ 2003.
+        (VC++ 2005 and newer have no trobule with it.) A poll on the
+        mailing list says there aren&#8217;t many people still stuck on
+        this version, so we just ifdef&#8217;d out the SSQLS mechanism
+        and all the examples that use it when built with VC++ 2003.  If
+        this affects you, see <a href="ssqls.html#ssqls-vc2003" title="5.15. SSQLS and Visual C++ 2003">Section 5.15, &#8220;SSQLS and Visual C++ 2003&#8221;</a> for
+        suggestions on ways to cope.</p><p>If you are using types other than MySQL++&#8217;s
+        <span class="type">sql_*</span> ones <sup>[<a name="id2785930" href="#ftn.id2785930">22</a>]</sup>
+        in your SSQLSes, code that previously worked may now see
+        <code class="classname">TypeLookupFailed</code> exceptions. (This
+        can be thrown even if exceptions are otherwise disabled in
+        MySQL++.) This version of MySQL++ is stricter about mapping
+        SQL to C++ type information, and vice versa. If the library
+        can&#8217;t find a suitable mapping from one type system
+        to the other, it throws this exception, because its only
+        other option would be to crash or raise an assertion. This
+        typically happens when building SQL queries, so you can
+        probably handle it the same way as if the subsequent
+        query excecution failed. If you&#8217;re catching the
+        generic <code class="classname">mysqlpp::Exception</code>, your
+        error handling code might not need to change. If you see
+        this exception, it does mean you need to look into your
+        use of data types, though. The table that controls this is
+        <code class="varname">mysql_type_info::types</code>, defined at the top
+        of <code class="filename">lib/type_info.cpp</code>. Every data type in
+        <code class="filename">lib/sql_types.h</code> has a corresponding record
+        in this table, so if you stick to those types, you&#8217;ll
+        be fine. It&#8217;s also okay to use types your C++ compiler
+        can convert directly to these predefined types.</p><p>The <code class="varname">_table</code> static member variable
+        for each SSQLS is now private. The recommended way to access
+        this remains unchanged: the <code class="function">table()</code>
+        static member function.</p><p><code class="function">table()</code> used to return a modifiable
+        reference to the table name. Now there are two overloads,
+        one which returns an unmodifiable pointer to the table name,
+        and the other which takes <span class="type">const char*</span> so you
+        can override the default table name. So, the code we used to
+        recommend for changing the SSQLS&#8217;s table name:</p><pre class="programlisting">
+my_ssqls_type::table() = "MyTableName";</pre><p>now needs to be:</p><pre class="programlisting">
+my_ssqls_type::table("MyTableName");</pre></div><div class="sect4" lang="en"><div class="titlepage"><div><div><h5 class="title"><a name="api-3.0.0-misc"></a>Miscellaneous changes</h5></div></div></div><p>MySQL++ does quoting and escaping much more selectively
+        now. Basically, if the library can tell you&#8217;re not
+        building a SQL query using one of the standard methods, it
+        assumes you&#8217;re outputting values for human consumption, so
+        it disables quoting and SQL escaping. If you need to build your
+        own mechanism to replace this, quoting is easy to do, and
+        <code class="methodname">Query::escape_string()</code> can do SQL
+        escaping for you.</p><p>Removed <code class="methodname">success()</code> in
+        <code class="classname">Connection</code>, <code class="classname">Query</code>
+        and <code class="classname">SimpleResult</code> (neé
+        <code class="classname">ResNSel</code>) and simply made these classes
+        testable in <span class="type">bool</span> context to get the same
+        information. An additional change in
+        <code class="classname">Connection</code> is that it used to be
+        considered &#8220;unsuccessful&#8221; when the connection was
+        down. Since the sense of this test is now whether the object is
+        in a good state, it only returns <span class="type">false</span> when the
+        connection attempt fails. Call
+        <code class="methodname">Connection::is_connected()</code> if you just
+        want to test whether the connection is up.</p><p>The debug mode build of the library now has a "_d" suffix
+        for Visual C++, and Xcode. This lets you have both versions
+        installed without conflict. The release build uses the current
+        naming scheme. If you have an existing program building against
+        MySQL++ on these platforms, you&#8217;ll need to change your
+        build options to use the new name in debug mode.</p><p>Renamed <code class="varname">NO_LONG_LONGS</code> to
+        <code class="varname">MYSQLPP_NO_LONG_LONGS</code> to avoid a risk of
+        collision in the global macro namespace.</p></div></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="api-3.0.7"></a>v3.0.7</h4></div></div></div><p>Most MySQL++ classes with <code class="methodname">at()</code>
+      or <code class="methodname">operator []()</code> methods now
+      throw the new <tt><a href="../refman/structmysqlpp_1_1BadIndex.html">BadIndex</a></tt>
+      exception when you pass an out-of-range index. These
+      methods variously either did not check their indices,
+      or threw <code class="classname">std::out_of_range</code> when
+      passed a bad index. The one exception that comes to mind is
+      <code class="classname">Fields</code>, which is just a typedef for a
+      specialization of <code class="classname">std::vector</code>, and the
+      Standard has its own rules for index checking.</p></div></div><div class="sect2" lang="en"><div class="titlepage"><div><div><h3 class="title"><a name="abi-changes"></a>10.2. ABI Changes</h3></div></div></div><p>This section documents those library changes that require you
+    to rebuild your program so that it will link with the new library.
+    Most of the items in the previous section are also ABI changes, but
+    this section is only for those items that shouldn&#8217;t require
+    any code changes in your program.</p><p>If you were going to rebuild your program after
+    installing the new library anyway, you can probably ignore this
+    section.</p><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="abi-1.7.18"></a>v1.7.18</h4></div></div></div><p>The <code class="classname">Query</code> classes now subclass from
+      <code class="classname">stringstream</code> instead of the deprecated
+      <code class="classname">strstream</code>.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="abi-1.7.19"></a>v1.7.19</h4></div></div></div><p>Fixed several <span class="type">const</span>-incorrectnesses in the
+      <code class="classname">Query</code> classes.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="abi-1.7.22"></a>v1.7.22</h4></div></div></div><p>Removed &#8220;reset query&#8221; parameters from several
+      <code class="classname">Query</code> class members. This is not an API
+      change, because the parameters were given default values, and the
+      library would ignore any value other than the default. So, any
+      program that tried to make them take another value wouldn&#8217;t
+      have worked anyway.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="abi-1.7.24"></a>v1.7.24</h4></div></div></div><p>Some freestanding functions didn&#8217;t get moved into
+      <span class="symbol">namespace mysqlpp</span> when that namespace was
+      created. This release fixed that. It doesn&#8217;t affect the API
+      if your program&#8217;s C++ source files say <span class="symbol">using
+      namespace mysqlpp</span> within them.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="abi-2.0.0"></a>v2.0.0</h4></div></div></div><p>Removed <code class="methodname">Connection::infoo()</code>.
+      (I&#8217;d call this an API change if I thought there were any
+      programs out there actually using this...)</p><p>Collapsed the <code class="classname">Connection</code> constructor
+      taking a bool (for setting the throw_exceptions flag) and the
+      default constructor into a single constructor using a default for
+      the parameter.</p><p>Classes <code class="classname">Connection</code> and
+      <code class="classname">Query</code> are now derived from the
+      <code class="classname">Lockable</code> interface, instead of implementing
+      their own lock/unlock functions.</p><p>In several instances, functions that took objects by
+      value now take them by const reference, for efficiency.</p><p>Merged <code class="classname">SQLQuery</code> class&#8217;s members
+      into class <code class="classname">Query</code>.</p><p>Merged <code class="classname">RowTemplate</code> class&#8217;s
+      members into class <code class="classname">Row</code>.</p><p>Reordered member variable declarations in some classes. The
+      most common instance is when the private section was declared
+      before the public section; it is now the opposite way. This
+      can change the object&#8217;s layout in memory, so a program
+      linking to the library must be rebuilt.</p><p>Simplified the date and time class hierarchy.
+      <tt><a href="../refman/structmysqlpp_1_1Date.html">Date</a></tt> used to
+      derive from <code class="classname">mysql_date</code>,
+      <tt><a href="../refman/structmysqlpp_1_1Time.html">Time</a></tt> used to derive
+      from <code class="classname">mysql_time</code>, and <tt><a href="../refman/structmysqlpp_1_1DateTime.html">DateTime</a></tt> used to derive from
+      both of those.  All three of these classes used to derive
+      from <code class="classname">mysql_dt_base</code>.  All of the
+      <code class="classname">mysql_*</code> classes&#8217; functionality
+      and data has been folded into the leaf classes, and now the
+      only thing shared between them is their dependence on the
+      <tt><a href="../refman/structmysqlpp_1_1DTbase.html">DTbase</a></tt> template. Since the
+      leaf classes&#8217; interface has not changed and end-user
+      code shouldn&#8217;t have been using the other classes, this
+      shouldn&#8217;t affect the API in any practical way.</p><p><code class="classname">mysql_type_info</code> now always
+      initializes its private <code class="varname">num</code> member.
+      Previously, this would go uninitialized if you used the default
+      constructor. Now there is no default ctor, but the ctor taking one
+      argument (which sets <code class="varname">num</code>) has a default.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="abi-3.0.0"></a>v3.0.0</h4></div></div></div><p>Removed <code class="varname">reset_query</code> parameters from
+      <code class="classname">Query</code> member functions. None of these have
+      been honored at least going back to v1.7.9, so this is not an API
+      change. As of this version, <code class="classname">Query</code> now
+      automatically detects when it can safely reset itself after
+      executing a query, so it&#8217;s not necessary to ask for a reset
+      except when using template queries.</p><p>Removed overloads of
+      <code class="methodname">Query::execute()</code>,
+      <code class="methodname">store()</code>, and
+      <code class="methodname">use()</code> that take only a <span class="type">const
+      char*</span>. This is not an API change because there was an
+      equivalent call chain for this already. This change just snaps
+      a layer of indirection.</p><p><code class="methodname">Query::error()</code> is now
+      <span class="type">const</span> and returns <span class="type">const char*</span> instead
+      of a <code class="classname">std::string</code> by value.</p><p>Removed <code class="classname">Lockable</code> mechanism as it was
+      conceptually flawed. <code class="classname">Connection</code> and
+      <code class="classname">Query</code> consequently no longer derive from
+      <code class="classname">Lockable</code>. Since it was basically useless in
+      prior versions, it can&#8217;t be construed as an API
+      change.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="abi-3.0.1"></a>v3.0.1</h4></div></div></div><p><code class="methodname">Connection::thread_aware()</code>,
+      <code class="methodname">thread_start()</code> and
+      <code class="methodname">thread_end()</code> are now static methods, so
+      a program can call them before creating a connection. Ditto for
+      <code class="classname">DBDriver</code> methods of the same name.</p><p><code class="methodname">ConnectionPool::release()</code> is now
+      virtual, so a subclass can override it.</p></div><div class="sect3" lang="en"><div class="titlepage"><div><div><h4 class="title"><a name="abi-3.0.2"></a>v3.0.2</h4></div></div></div><p><code class="methodname">ConnectionPool::grab()</code> is now
+      virtual; same reason as above.</p><p><code class="classname">Query</code> can now be tested in
+      <span class="type">bool</span> context, as was intended for v3.0.0. Had to
+      change the &#8220;safe bool&#8221; method signature to make it
+      happen, so technically it&#8217;s an API change, but it&#8217;s
+      still used the same way.</p></div></div><div class="footnotes"><br><hr width="100" align="left"><div class="footnote"><p><sup>[<a name="ftn.id2785860" href="#id2785860">21</a>] </sup>In MySQL++ v2, data
+        retreival (<code class="methodname">Query::storein()</code>,
+        <code class="methodname">SSQLS(const Row&amp; other)</code>,
+        etc.) worked fine regardless of whether your SSQLS field names
+        matched those in the corresponding SQL table, because the
+        SSQLS was populated by position, not by field name. Thus,
+        if all you used SSQLS for was data retrieval, you could
+        define your structures with <code class="function">sql_create_*</code>
+        in v2. This was never recommended, because such an SSQLS
+        wouldn&#8217;t work with other features of MySQL++ like
+        <code class="methodname">Query::insert()</code> because they depend
+        on being able to map names from C++ to SQL and back. You
+        needed to use <code class="function">sql_create_c_names_*</code>
+        to make these features work in v2 in the face of a naming
+        scheme difference between C++ and SQL.</p></div><div class="footnote"><p><sup>[<a name="ftn.id2785930" href="#id2785930">22</a>] </sup>These typedefs
+        have been available since MySQL++ v2.1.</p></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="incorporating.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="licenses.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">9. Using MySQL++ in Your Own Project </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 11. Licensing</td></tr></table></div></body></html>

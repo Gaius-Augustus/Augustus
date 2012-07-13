@@ -1260,7 +1260,7 @@ Double ExonModel::endPartEmiProb(int end) const {
 		endPartProb = 0.0;
 	    else 
 		endPartProb = 1.0;
-	    feature = seqFeatColl->getFeatureListContaining(SET_FLAG(dssF), dsspos, plusstrand);
+	    feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(dssF), dsspos, plusstrand);
 	    if (feature) {
 		while (feature) {
 		    extrinsicEmiQuot *= feature->distance_faded_bonus(dsspos);
@@ -1283,7 +1283,7 @@ Double ExonModel::endPartEmiProb(int end) const {
 		endPartProb = 1.0;
 	    } else 
 		endPartProb = 0.0;
-	    feature = seqFeatColl->getFeatureListContaining(SET_FLAG(assF), asspos, minusstrand);
+	    feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(assF), asspos, minusstrand);
 	    if (feature)
 		while (feature) {
 		    extrinsicEmiQuot *= feature->distance_faded_bonus(asspos);
@@ -1374,7 +1374,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 		else 
 		    beginPartProb = 1.0; // splice site is evaluated in other state
 		if (beginPartProb > 0.0){
-		    feature = seqFeatColl->getFeatureListContaining(SET_FLAG(assF), beginOfBioExon - 1, plusstrand);
+		    feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(assF), beginOfBioExon - 1, plusstrand);
 		    if (feature) {
 			while (feature) {
 			    extrinsicQuot *= feature->distance_faded_bonus(beginOfBioExon - 1);
@@ -1428,7 +1428,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 	    else 
 		beginPartProb = 1.0; // splice site is evaluated in other state
 	    if (beginPartProb > 0.0){
-		feature = seqFeatColl->getFeatureListContaining(SET_FLAG(dssF), beginOfBioExon - 1, minusstrand);
+		feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(dssF), beginOfBioExon - 1, minusstrand);
 		if (feature) {
 		    while (feature) {
 			extrinsicQuot *= feature->distance_faded_bonus(beginOfBioExon - 1);

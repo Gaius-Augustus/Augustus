@@ -1,0 +1,90 @@
+/* Markup specific to Doxygen, mostly just overriding subsets of the
+   styles in doxygen.css */
+a.anchor:hover { color: #501000; }
+
+div.qindex { background-color: #FFFFCC; border: 4px solid #FFEEBB }
+a.qindex:hover { background-color: #EEDDBB }
+a.qindex:visited { color: #7D2E01 }
+a.qindexHL { background-color: #501000; color: #FFEEBB }
+a.qindexHL:hover { background-color: #501000; color: #FFEEBB }
+a.qindexHL:visited { background-color: #501000; color: #FFEEBB }
+
+div.fragment { border: 1px solid #CCBBAA; background-color: #DDDDAA; }
+pre.fragment { border: 1px solid #CCBBAA; background-color: #FFFFDD; }
+
+TD.indexkey { background-color: #FFFFCC; }
+TD.indexvalue { background-color: #FFFFCC; }
+
+td.md { background-color: #FFFFCC; font-weight: bold; }
+td.mdname { background-color: #FFFFCC; font-weight: bold; color: #602020; width: 600px; }
+td.mdname1 { background-color: #FFFFCC; font-weight: bold; color: #602020; }
+.mdTable { background-color: #FFFFCC; border: 1px solid #CCBBAA; }
+.mdescLeft { background-color: #FFFFCC; border: 1px none #CCBBAA; }
+.mdescRight { background-color: #FFFFCC; border: 1px none #CCBBAA; }
+.memitem { background-color: #FFFFCC; border: 1px solid #CCBBAA; }
+.memItemLeft { background-color: #FFFFCC; border: 1px solid #CCBBAA; }
+.memItemRight { background-color: #FFFFCC; border: 1px solid #CCBBAA; }
+.memname { color: #501000; }
+.memproto { background-color: #DDDDAA; border: 1px solid #CCBBAA; }
+div.nav { background-color: #DDDDAA; border: 1px solid #CCBBAA; }
+
+
+/* Standard markup styles, borrowed from tangentsoft.net */
+body {
+  background-color: #FFFFEE;
+  margin-left: 30pt; 
+  margin-right: 30pt; 
+}
+body, div, dd, dl, li, ol, p, td, ul {
+  font-family:
+    "Georgia",
+    "Luxi Serif",
+    "New Century Schoolbook",
+    "Times New Roman",
+    "Times",
+  serif;
+  font-size: 12pt;
+  line-height: 140%;
+}
+
+a { color: #491E00; }
+a:link { color: #491E00; }
+a:visited { color: #7D2E01; }
+a:hover { color: #CC5500; background-color: transparent; text-decoration: none; }
+a:active { color: #DA7417; } 
+
+
+b { color: #501000; }
+
+h1, h2, h3, h4, h5, h6 {
+  color: #501000;
+  font-family:
+    "Verdana",
+    "Luxi Sans",
+    "Helvetica Narrow",
+    "Arial",
+    "Univers",
+  sans-serif;
+  font-weight: bold;
+}
+
+h1 {
+  font-size: 20pt;
+  margin-left: 0pt;
+}
+h2 {
+  font-size: 16pt;
+  margin-left: -10pt;
+}
+h3 {
+  font-size: 14pt;
+  margin-left: -10pt;
+}
+h4 {
+  font-size: 12pt;
+  margin-left: -10pt;
+}
+h5 {
+  font-size: 10pt;
+  margin-left: -10pt;
+}
