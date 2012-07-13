@@ -1,0 +1,127 @@
+#+TITLE:     change-history.org
+#+AUTHOR:    yuqiulin
+#+EMAIL:     yuqiulin@genomics.cn
+#+DATE:      2012-06-09 Sat
+#+DESCRIPTION: 
+#+KEYWORDS: 
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+
+* Database schema
+  In current we use Ensembl database schema as template.A full featured Ensembl database is consist of over 70 tables.
+  For a gene prediction task using Augustus as annotation engine,we only need 3 of them.
+
+** table 'dna'
+   Contains DNA sequence. This table has a 1:1 relationship with the contig table.
+   There's a one-one map for each record in this table to each single row in a plain file 
+   'dna.txt' in which sequences are stored in format of 'int-id\tsequence'.
+|---------------+----------+---------------+-----------------------------------------------------------------------------------+-------------|
+| Column        | Type     | Default value | Description                                                                       | Index       |
+|---------------+----------+---------------+-----------------------------------------------------------------------------------+-------------|
+| seq_region_id | INT(10)  |               | Primary key, internal identifier. Foreign key references to the seq_region table. | primary key |
+| sequence      | LONGTEXT |               | DNA sequence.                                                                     |             |
+|---------------+----------+---------------+-----------------------------------------------------------------------------------+-------------|
+
+** table 'seq_region'
+   Stores information about sequence regions. The primary key is used as a pointer into the 
+   dna table so that actual sequence can be obtained, and the coord_system_id allows sequence 
+   regions of multiple types to be stored.Contigs are stored with the 'coord_system_id=2'.
+   Chromosomes have 'coord_system_id=1',they have no corresponding record in table 'dna'.
+   The relationship between contigs and chromosomes is stored in the assembly table.
+|-----------------+-------------+---------------+---------------------------------------------------+-------------------------|
+| Column          | Type        | Default value | Description                                       | Index                   |
+|-----------------+-------------+---------------+---------------------------------------------------+-------------------------|
+| seq_region_id   | INT(10)     |               | Primary key, internal identifier.                 | primary key             |
+| name            | VARCHAR(40) |               | Sequence region name.                             | unique key: name_cs_idx |
+| coord_system_id | INT(10)     |               | Foreign key references to the coord_system table. | unique key: name_cs_idx |
+| key: cs_idx     |             |               |                                                   |                         |
+| length          | INT(10)     |               | Sequence length.                                  |                         |
+|-----------------+-------------+---------------+---------------------------------------------------+-------------------------|
+
+** table 'assembly'
+   This is the assembly table structure.
+|-------------------+------------------+------+-----+---------+-------|
+| Field             | Type             | Null | Key | Default | Extra |
+|-------------------+------------------+------+-----+---------+-------|
+| asm_seq_region_id | int(10) unsigned | NO   | PRI | NULL    |       |
+| cmp_seq_region_id | int(10) unsigned | NO   | PRI | NULL    |       |
+| asm_start         | int(10)          | NO   | PRI | NULL    |       |
+| asm_end           | int(10)          | NO   | PRI | NULL    |       |
+| cmp_start         | int(10)          | NO   | PRI | NULL    |       |
+| cmp_end           | int(10)          | NO   | PRI | NULL    |       |
+| ori               | tinyint(4)       | NO   | PRI | NULL    |       |
+|-------------------+------------------+------+-----+---------+-------|
+
+* mysql++ API
+  In current,we use a third-part mysql API:mysql++ to handle sequence from database.I choose it because of its lightweight
+  and it supports STL perfectly.
+** configuration
+   'mysqlpplib' is added to in trunk base directory and 'mysql' 'mysqlppheader' are added in include directory.'mysql' is
+   set of header files comes with mysql.
+** run-time libpath
+   Copy mysqlpplib to a path that is registered in '/etc/ld.so.cathe '.In most Unix-like OS,they
+   are '/usr/lib/','/lib/','/usr/share/lib/'.If you you want indicate your own lib-path but have no
+   authority to run 'ldconfig',copy 'mysqlpplib' to '/your/run-time lib/path/',compile Augustus
+   with '-Wl,rpath= /your/run-time lib/path/'.
+** use SSQLS
+   mysqlpp allows user defined 'Specialized SQL Structure'.At the most superficial level,and SSQLS has a member variable 
+   corresponding to each field in the SQL table.
+   In 'trunks/include/mysqlppheader/table_structure.h' defined 'dna','seq_region','assembly'.
+#   TODO:add 'gff' and 'extrinsic-gff'
+#+begin_example
+sql_create_2(dna,
+	     1, 2,
+	     int,seq_region_id,
+	     std::string, sequence)  
+sql_create_4(seq_region,
+	     1,4,
+	     int,seq_region_id,
+	     std::string,name,
+	     std::string,coord_system_id,
+	     int,length)
+sql_create_6(assembly,
+	     1, 6,
+	     int, asm_seq_region_id,
+	     int, cmp_seq_region_id,
+	     int, asm_start,
+	     int, asm_end,
+	     int, cmp_start,
+	     int, cmp_end)
+#+end_example 
+
+* cmdline parameters
++ --dbaccess accepts comma separated string "database name,host name,user,passwd,table name"
++ the only parameter without a '--' is the query.If '--dbaccess' is indicated,query corresponds
+  to a name in 'seq_region' table.So skip filetype detect in this case.
++ --predictionStart and --predictionEnd still work the same way as when input file is a fasta or genebank.
+
+#+begin_example
+augustus --dbaccess="fly,localhost,henry,123456,," 3L --predictionStart=100 --predictionEnd=30000000 --species=fly 
+#+end_example
+   
+* modification
+|--------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| file               | desc                                                                                                                                                       |
+|--------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Makefile           | add 2 header path and 2 lib path;add -Wl,rpath=/your/run-timelib/path                                                                                      |
+| types.cc           | l-322~l-324,comment an exception thow message to allow 'dbaccess' in sigle mode.I don't want to modify this behavior in system level so I just comment it. |
+| types.cc           | reorder --dbaccess to "database name,host name,user,passwd,tablename"                                                                                      |
+| randaccess.{hh,cc} | accomplish the AnnoSequence* DbSeqAccess::getSeq method.Give a mysqlpp::connection object to class DbSeqAccess.                                            |
+| genbank.cc         | GBSplitter(string fname ),l-526. If input fname is a name in 'seq_region' in database,skip the filetype detect.                                            |
+| table_structure.h  | in '/trunks/include/mysqlppheader/' add 3 SSQLS: 'dna','seq_region','assembly'                                                                             |
+|--------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------|
+
+
+
+
+
+
+
+
+  

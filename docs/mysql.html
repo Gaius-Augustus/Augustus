@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+lang="en" xml:lang="en">
+<head>
+<title>change-history.org</title>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2012-06-09 Sat"/>
+<meta name="author" content="yuqiulin"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+
+<h1 class="title">change-history.org</h1>
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 Database schema </a>
+<ul>
+<li><a href="#sec-1.1">1.1 table 'dna' </a></li>
+<li><a href="#sec-1.2">1.2 table 'seq_region' </a></li>
+<li><a href="#sec-1.3">1.3 table 'assembly' </a></li>
+</ul>
+</li>
+<li><a href="#sec-2">2 mysql++ API </a>
+<ul>
+<li><a href="#sec-2.1">2.1 configuration </a></li>
+<li><a href="#sec-2.2">2.2 run-time libpath </a></li>
+<li><a href="#sec-2.3">2.3 use SSQLS </a></li>
+</ul>
+</li>
+<li><a href="#sec-3">3 cmdline parameters </a></li>
+<li><a href="#sec-4">4 modification </a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Database schema </h2>
+<div class="outline-text-2" id="text-1">
+
+<p>In current we use Ensembl database schema as template.A full featured Ensembl database is consist of over 70 tables.
+For a gene prediction task using Augustus as annotation engine,we only need 3 of them.
+</p>
+
+</div>
+
+<div id="outline-container-1.1" class="outline-3">
+<h3 id="sec-1.1"><span class="section-number-3">1.1</span> table 'dna' </h3>
+<div class="outline-text-3" id="text-1.1">
+
+<p>Contains DNA sequence. This table has a 1:1 relationship with the contig table.
+There's a one-one map for each record in this table to each single row in a plain file 
+'dna.txt' in which sequences are stored in format of 'int-id\tsequence'.
+</p><table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Column</th><th scope="col">Type</th><th scope="col">Default value</th><th scope="col">Description</th><th scope="col">Index</th></tr>
+</thead>
+<tbody>
+<tr><td>seq_region_id</td><td>INT(10)</td><td></td><td>Primary key, internal identifier. Foreign key references to the seq_region table.</td><td>primary key</td></tr>
+<tr><td>sequence</td><td>LONGTEXT</td><td></td><td>DNA sequence.</td><td></td></tr>
+</tbody>
+</table>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1.2" class="outline-3">
+<h3 id="sec-1.2"><span class="section-number-3">1.2</span> table 'seq_region' </h3>
+<div class="outline-text-3" id="text-1.2">
+
+<p>Stores information about sequence regions. The primary key is used as a pointer into the 
+dna table so that actual sequence can be obtained, and the coord_system_id allows sequence 
+regions of multiple types to be stored.Contigs are stored with the 'coord_system_id=2'.
+Chromosomes have 'coord_system_id=1',they have no corresponding record in table 'dna'.
+The relationship between contigs and chromosomes is stored in the assembly table.
+</p><table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Column</th><th scope="col">Type</th><th scope="col">Default value</th><th scope="col">Description</th><th scope="col">Index</th></tr>
+</thead>
+<tbody>
+<tr><td>seq_region_id</td><td>INT(10)</td><td></td><td>Primary key, internal identifier.</td><td>primary key</td></tr>
+<tr><td>name</td><td>VARCHAR(40)</td><td></td><td>Sequence region name.</td><td>unique key: name_cs_idx</td></tr>
+<tr><td>coord_system_id</td><td>INT(10)</td><td></td><td>Foreign key references to the coord_system table.</td><td>unique key: name_cs_idx</td></tr>
+<tr><td>key: cs_idx</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>length</td><td>INT(10)</td><td></td><td>Sequence length.</td><td></td></tr>
+</tbody>
+</table>
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1.3" class="outline-3">
+<h3 id="sec-1.3"><span class="section-number-3">1.3</span> table 'assembly' </h3>
+<div class="outline-text-3" id="text-1.3">
+
+<p>This is the assembly table structure.
+</p><table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">Field</th><th scope="col">Type</th><th scope="col">Null</th><th scope="col">Key</th><th scope="col">Default</th><th scope="col">Extra</th></tr>
+</thead>
+<tbody>
+<tr><td>asm_seq_region_id</td><td>int(10) unsigned</td><td>NO</td><td>PRI</td><td>NULL</td><td></td></tr>
+<tr><td>cmp_seq_region_id</td><td>int(10) unsigned</td><td>NO</td><td>PRI</td><td>NULL</td><td></td></tr>
+<tr><td>asm_start</td><td>int(10)</td><td>NO</td><td>PRI</td><td>NULL</td><td></td></tr>
+<tr><td>asm_end</td><td>int(10)</td><td>NO</td><td>PRI</td><td>NULL</td><td></td></tr>
+<tr><td>cmp_start</td><td>int(10)</td><td>NO</td><td>PRI</td><td>NULL</td><td></td></tr>
+<tr><td>cmp_end</td><td>int(10)</td><td>NO</td><td>PRI</td><td>NULL</td><td></td></tr>
+<tr><td>ori</td><td>tinyint(4)</td><td>NO</td><td>PRI</td><td>NULL</td><td></td></tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> mysql++ API </h2>
+<div class="outline-text-2" id="text-2">
+
+<p>In current,we use a third-part mysql API:mysql++ to handle sequence from database.I choose it because of its lightweight
+and it supports STL perfectly.
+</p>
+</div>
+
+<div id="outline-container-2.1" class="outline-3">
+<h3 id="sec-2.1"><span class="section-number-3">2.1</span> configuration </h3>
+<div class="outline-text-3" id="text-2.1">
+
+<p>'mysqlpplib' is added to in trunk base directory and 'mysql' 'mysqlppheader' are added in include directory.'mysql' is
+set of header files comes with mysql.
+</p></div>
+
+</div>
+
+<div id="outline-container-2.2" class="outline-3">
+<h3 id="sec-2.2"><span class="section-number-3">2.2</span> run-time libpath </h3>
+<div class="outline-text-3" id="text-2.2">
+
+<p>Copy mysqlpplib to a path that is registered in '<i>etc/ld.so.cathe '.In most Unix-like OS,they    are '/usr/lib</i>','<i>lib</i>','<i>usr/share/lib</i>'.If you you want indicate your own lib-path but have no
+authority to run 'ldconfig',copy 'mysqlpplib' to '<i>your/run-time lib/path</i>',compile Augustus
+with '-Wl,rpath= <i>your/run-time lib/path</i>'.
+</p></div>
+
+</div>
+
+<div id="outline-container-2.3" class="outline-3">
+<h3 id="sec-2.3"><span class="section-number-3">2.3</span> use SSQLS </h3>
+<div class="outline-text-3" id="text-2.3">
+
+<p>mysqlpp allows user defined 'Specialized SQL Structure'.At the most superficial level,and SSQLS has a member variable 
+corresponding to each field in the SQL table.
+In 'trunks/include/mysqlppheader/table_structure.h' defined 'dna','seq_region','assembly'.
+</p>
+
+
+<pre class="example">sql_create_2(dna,
+             1, 2,
+             int,seq_region_id,
+             std::string, sequence)  
+sql_create_4(seq_region,
+             1,4,
+             int,seq_region_id,
+             std::string,name,
+             std::string,coord_system_id,
+             int,length)
+sql_create_6(assembly,
+             1, 6,
+             int, asm_seq_region_id,
+             int, cmp_seq_region_id,
+             int, asm_start,
+             int, asm_end,
+             int, cmp_start,
+             int, cmp_end)
+</pre>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> cmdline parameters </h2>
+<div class="outline-text-2" id="text-3">
+
+<ul>
+<li>
+&ndash;dbaccess accepts comma separated string "database name,host name,user,passwd,table name"
+</li>
+<li>
+the only parameter without a '&ndash;' is the query.If '&ndash;dbaccess' is indicated,query corresponds
+to a name in 'seq_region' table.So skip filetype detect in this case.
+</li>
+<li>
+&ndash;predictionStart and &ndash;predictionEnd still work the same way as when input file is a fasta or genebank.
+
+
+</li>
+</ul>
+
+
+<pre class="example">augustus --dbaccess="fly,localhost,henry,123456,," 3L --predictionStart=100 --predictionEnd=30000000 --species=fly 
+</pre>
+
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> modification </h2>
+<div class="outline-text-2" id="text-4">
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<caption></caption>
+<colgroup><col align="left" /><col align="left" />
+</colgroup>
+<thead>
+<tr><th scope="col">file</th><th scope="col">desc</th></tr>
+</thead>
+<tbody>
+<tr><td>Makefile</td><td>add 2 header path and 2 lib path;add -Wl,rpath=/your/run-timelib/path</td></tr>
+<tr><td>types.cc</td><td>l-322~l-324,comment an exception thow message to allow 'dbaccess' in sigle mode.I don't want to modify this behavior in system level so I just comment it.</td></tr>
+<tr><td>types.cc</td><td>reorder &ndash;dbaccess to "database name,host name,user,passwd,tablename"</td></tr>
+<tr><td>randaccess.{hh,cc}</td><td>accomplish the AnnoSequence* DbSeqAccess::getSeq method.Give a mysqlpp::connection object to class DbSeqAccess.</td></tr>
+<tr><td>genbank.cc</td><td>GBSplitter(string fname ),l-526. If input fname is a name in 'seq_region' in database,skip the filetype detect.</td></tr>
+<tr><td>table_structure.h</td><td>in '<i>trunks/include/mysqlppheader</i>' add 3 SSQLS: 'dna','seq_region','assembly'</td></tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+</div>
+</div>
+<div id="postamble">
+<p class="author"> Author: yuqiulin
+<a href="mailto:yuqiulin@genomics.cn">&lt;yuqiulin@genomics.cn&gt;</a>
+</p>
+<p class="date"> Date: 2012-06-09 Sat</p>
+<p class="creator">HTML generated by org-mode 6.33x in emacs 23</p>
+</div>
+</div>
+</body>
+</html>
