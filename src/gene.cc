@@ -2473,32 +2473,31 @@ bool AltGene::operator< (const AltGene &other) const {
 
 
 void AltGene::addGene(Gene *gene) {
-  if (transcripts.empty()) {
-    strand = gene->strand;
-    mincodstart = gene->codingstart;
-    maxcodend = gene->codingend;
-    transcripts.push_back(gene);
-  } else {
-    if (gene->strand != strand)
-      throw ProjectError("AltGene::addGene: Tried to summarize transcripts on opposite strands into gene.");
-    if (gene->codingstart < mincodstart)
-      mincodstart = gene->codingstart;
-    if (gene->codingend > maxcodend)
-      maxcodend = gene->codingend;
+    if (transcripts.empty()) {
+	strand = gene->strand;
+	mincodstart = gene->codingstart;
+	maxcodend = gene->codingend;
+	transcripts.push_back(gene);
+    } else {
+	if (gene->strand != strand)
+	    throw ProjectError("AltGene::addGene: Tried to summarize transcripts on opposite strands into gene.");
+	if (gene->codingstart < mincodstart)
+	    mincodstart = gene->codingstart;
+	if (gene->codingend > maxcodend)
+	    maxcodend = gene->codingend;
     
-    bool prevExist = false;
-    for(list<Gene*>::iterator git = transcripts.begin(); git != transcripts.end(); git++){
-      if (**git == *gene) {
-	cout << "Error in addGene" << endl;
-	(*git)->addSampleCount(1);
-	(*git)->addStatePostProbs(1.0);
-	prevExist = true;
-      }
+	bool prevExist = false;
+	for(list<Gene*>::iterator git = transcripts.begin(); git != transcripts.end(); git++){
+	    if (**git == *gene) {
+		(*git)->addSampleCount(1);
+		(*git)->addStatePostProbs(1.0);
+		prevExist = true;
+	    }
+	}
+	if (!prevExist)
+	    transcripts.push_back(gene);
     }
-    if (!prevExist)
-      transcripts.push_back(gene);
-  }
-  apostprob += gene->apostprob;
+    apostprob += gene->apostprob;
 }
 
 /*
