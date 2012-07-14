@@ -1134,6 +1134,8 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
 	if (predVit.get(predState)==0)
 	  continue; // predecessor state cannot end at this position
       StateType predStateType = (*stateMap)[predState];
+      if (predStateType == igenic)
+	  continue; // makes no sense to overlap with intergenic region
       if (isOnFStrand(etype) == isOnFStrand(predStateType))
 	lenProb = Constant::head2tail_ovlp[ovlp];
       else if (isOnFStrand(etype))
@@ -1154,7 +1156,7 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
       //      cout << "possible predState=" << predState << " predProb=" << predProb << endl;
       if (predProb > maxProb) {
 	cout << "overlap improves at endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 
-	     << " state=" << state << " predState=" << predState << endl;
+	     << " state=" << state << " predState=" << predState << " overlap length=" << ovlp <<endl;
 	maxProb = predProb;
 	if (algovar==doBacktracking) {
 	  oli.base = endOfPred;
