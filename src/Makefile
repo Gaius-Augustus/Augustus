@@ -50,31 +50,31 @@ all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
 augustus: augustus.cc $(OBJS) $(DUMOBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	mv augustus ../bin/
+	cp augustus ../bin/
 
 etraining: etraining.cc $(TOBJS) $(OBJS) 
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	mv etraining ../bin/
+	cp etraining ../bin/
 
 evaluate: evaluate.cc $(OBJS) $(DUMOBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 
 consensusFinder: consensusFinder.cc consensus.o 
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	mv consensusFinder ../bin/
+	cp consensusFinder ../bin/
 
 curve2hints: curve2hints.cc exon_seg.o 
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	mv curve2hints ../bin/
+	cp curve2hints ../bin/
 
 fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	types.o properties.o geneticcode.o pp_profile.o lldouble.o
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	mv fastBlockSearch ../bin/
+	cp fastBlockSearch ../bin/
 
 prepareAlign: pp_prepare_align.cc
 	$(CC) $(CFLAGS) -o $@ $^
-	mv prepareAlign ../bin/
+	cp prepareAlign ../bin/
 
 info:
 	echo "$(CFLAGS)" > $(INFO)

@@ -1428,6 +1428,12 @@ void NAMGene::readOvlpLenDist( ){
       cout << "# Using default overlap length distribution file." << endl;
   }
   
+  if (Constant::maxOvlp >= Constant::min_coding_len)
+      throw NAMGeneError( string("maxOvlp(") +  itoa(Constant::maxOvlp) +
+			  string(") is not smaller than /Constant/min_coding_len(")
+			  + itoa(Constant::min_coding_len) + ").\n"+
+			  "Please change this by decreasing maxOvlp or increasing /Constant/min_coding_len.");
+
   if (istrm) {
     Constant::head2tail_ovlp.assign(Constant::maxOvlp+1, 0.0);
     istrm >>  goto_line_after( "[HEAD2TAIL]" );

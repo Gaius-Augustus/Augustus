@@ -88,7 +88,7 @@ string Constant::dbaccess; // comma separated string with database access (datab
 string Constant::alnfile; // name of file that contains MSA of genomes
 bool Constant::overlapmode = false;
 string Constant::orthoexons; //name of file that contains list of orthologous exons
-Integer Constant::maxOvlp = 50; // maximum overlap of coding regions for bacteria
+Integer Constant::maxOvlp = 60; // maximum overlap of coding regions for bacteria
 vector<Double> Constant::head2tail_ovlp;
 vector<Double> Constant::head2head_ovlp;
 vector<Double> Constant::tail2tail_ovlp;

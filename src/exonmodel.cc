@@ -259,23 +259,37 @@ ExonModel::ExonModel() : gweight(1) {
 	    beginPartLen = 0;
 	    innerPartOffset = isOnFStrand(etype) ? Constant::ass_end : Constant::dss_start;
     }
-    switch (etype) {
-	case singleG: case terminal:
-	    // stop codon at right end of exon
-	    innerPartEndOffset = STOPCODON_LEN;
-	    baseOffset = 0;
-	    // endPartLen = STOPCODON_LEN;
-	    break;
-	case rsingleG: case rinitial: 
-	    // reverse start codon at right end of exon
-	    innerPartEndOffset = STARTCODON_LEN;
-	    baseOffset = -trans_init_window;
-	    // endPartLen = STARTCODON_LEN + trans_init_window;
-	    break;
-	default:  // splice site at right end of exon
-	    innerPartEndOffset = baseOffset = isOnFStrand(etype) ? Constant::dss_start : Constant::ass_end;
-	    // endPartLen = 0;
-    }
+    baseOffset = getBaseOffset(etype);
+    innerPartEndOffset = getInnerPartEndOffset(etype);
+}
+
+
+/*
+ * getBaseOffset
+ */
+int ExonModel::getBaseOffset(StateType type){
+    if (type == singleG || type == terminal) // stop codon at right end of exon
+	return 0;
+    
+    if (type == rsingleG || type == rinitial) // reverse start codon at right end of exon
+	return -trans_init_window; 
+    
+    // splice site at right end of exon
+    return isOnFStrand(type) ? Constant::dss_start : Constant::ass_end;
+}
+
+/*
+ * getInnerPartEndOffset
+ */
+int ExonModel::getInnerPartEndOffset(StateType type){
+    if (type == singleG || type == terminal) // stop codon at right end of exon
+	return STOPCODON_LEN;
+    
+    if (type == rsingleG || type == rinitial) // reverse start codon at right end of exon
+	return STARTCODON_LEN; 
+    
+    // splice site at right end of exon
+    return isOnFStrand(type) ? Constant::dss_start : Constant::ass_end;
 }
 
 /*
@@ -864,7 +878,7 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
      * endOfBioExon is the position most downstream (wrt forward strand) of the biological exon
      */
     
-    int endOfBioExon = base + baseOffset; 
+    int endOfBioExon = base + baseOffset;
     int right = endOfBioExon - innerPartEndOffset;
     
     /*
@@ -978,7 +992,6 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 	if (startMax > base + beginPartLen) // ensure that base>endOfPred
 	    startMax = base + beginPartLen;
     }
-     
     /*
      * loop over the length of the inner sequence
      */
@@ -1048,8 +1061,8 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 	    }
 	} // end of loop over predecessor state
 	if (Constant::overlapmode){ // potentially increase maxProb and change oli if overlap is better
-	  processOvlpOption(viterbi, forward, algovar, state, endOfPred, beginOfBioExon, maxProb,
-			    endPartProb * notEndPartProb, fwdsum, optionslist, oli);
+	    processOvlpOption(viterbi, forward, algovar, state, endOfPred, beginOfBioExon, maxProb,
+			      endPartProb * notEndPartProb, fwdsum, optionslist, oli);
 	}
     } // end of loop over the exon length
     
@@ -1108,23 +1121,29 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
  *        beginOfBioExon
  *           |
  *           >------------------------------------------------------------------->
- * ------------------------------------->
- *   |<----------- ovlp --------------->|
- * endOfPred                         endOfPred2
- */
+ * ----------------------------------------------->
+ *   |<----------- ovlp --------------->|         |
+ * endOfPred                         endOfPred2   |
+ *                                              endOfBioExon (previous)
+ *           |-----------   bioOvlp  -------------|
+*/
 void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType& forward, AlgorithmVariant& algovar, 
 				  int state, int endOfPred, int beginOfBioExon, Double &maxProb,
 				  Double emiProb, Double &fwdsum, OptionsList *optionslist, OptionListItem &oli) const {
   vector<Ancestor>::const_iterator it;
-
-  for (int ovlp = 0; ovlp <= Constant::maxOvlp && endOfPred + ovlp >= 0 && endOfPred + ovlp < dnalen; ovlp++){
+  // distinguish between maxOvlp (biological) and maximum for ovlp (states)
+  // The actual biological overlap (that depends on the state combination) may not be larger than Constant::maxOvlp
+  int maxStateOvlp = Constant::maxOvlp + 2 * trans_init_window;
+  for (int ovlp = 0; ovlp <= maxStateOvlp && endOfPred + ovlp >= 0 && endOfPred + ovlp < dnalen; ovlp++){
     int endOfPred2 = endOfPred + ovlp;
+    int endOfBioExon; // of left gene, depends on endOfPred2 and on type of exon
+    int bioOvlp; // actual number of bases shared in the two exons
     Double lenCorrection = Double(4.0).pow(ovlp); // heuristic, because bases in overlap are evaluated twice
     Double lenProb;
     const ViterbiColumnType& predForw =  forward[endOfPred2 >= 0 ? endOfPred2 : 0];
     ViterbiColumnType& predVit = viterbi[endOfPred2 >= 0 ? endOfPred2 : 0]; 
     
-    //    cout << "state=" << state << " endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 << " lenProb= " << lenProb << " maxProb=" << maxProb << endl;
+    //cout << "state=" << state << " endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 << " maxProb=" << maxProb << endl;
     for (it = ancestor.begin(); it != ancestor.end(); ++it ){
       int predState = it->pos;
       if (algovar == doSampling) {
@@ -1136,12 +1155,21 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
       StateType predStateType = (*stateMap)[predState];
       if (predStateType == igenic)
 	  continue; // makes no sense to overlap with intergenic region
-      if (isOnFStrand(etype) == isOnFStrand(predStateType))
-	lenProb = Constant::head2tail_ovlp[ovlp];
-      else if (isOnFStrand(etype))
-	lenProb = Constant::head2head_ovlp[ovlp];
-      else 
-	lenProb = Constant::tail2tail_ovlp[ovlp];
+      endOfBioExon = endOfPred2  + getBaseOffset(predStateType);
+      bioOvlp = endOfBioExon - beginOfBioExon + 1;
+      if (bioOvlp < 0)
+	  lenProb = 1.0;
+      else if (bioOvlp <= Constant::maxOvlp) {
+	  if (isOnFStrand(etype) == isOnFStrand(predStateType))
+	      lenProb = Constant::head2tail_ovlp[bioOvlp];
+	  else if (isOnFStrand(etype))
+	      lenProb = Constant::head2head_ovlp[bioOvlp];
+	  else 
+	      lenProb = Constant::tail2tail_ovlp[bioOvlp];
+      } else
+	  lenProb = 0.0;
+      if (lenProb == 0)
+	  continue;
       Double transEmiProb = it->val * emiProb * lenProb * lenCorrection;
       if (needForwardTable(algovar)) {
 	Double fwdsummand = predForw[predState] * transEmiProb;
@@ -1153,10 +1181,11 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
 	  fwdsum += fwdsummand;
       }
       Double predProb = predVit.get(predState) * transEmiProb;
-      //      cout << "possible predState=" << predState << " predProb=" << predProb << endl;
+      //cout << "possible predState=" << predState << " predProb=" << predProb << endl;
       if (predProb > maxProb) {
-	cout << "overlap improves at endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 
-	     << " state=" << state << " predState=" << predState << " overlap length=" << ovlp <<endl;
+	cout << "# overlap improves at endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 
+	     << " state=" << state << " predState=" << predState << " ovlp=" << ovlp
+	     << " bioOvlp=" << bioOvlp << " lenProb=" << lenProb << endl;
 	maxProb = predProb;
 	if (algovar==doBacktracking) {
 	  oli.base = endOfPred;

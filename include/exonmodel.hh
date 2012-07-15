@@ -121,6 +121,8 @@ private:
     // internal class functions
     static void computeLengthDistributions( );
     static void fillTailsOfLengthDistributions( );
+    static int getBaseOffset(StateType type);
+    static int getInnerPartEndOffset(StateType type);
 
     StateType        etype;
     Integer          win,                 // reading frame of this state (fixed)
