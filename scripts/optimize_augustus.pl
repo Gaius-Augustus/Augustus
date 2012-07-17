@@ -634,7 +634,9 @@ if ($cmdpars{'noTrainPars'} eq ''){
     if ($cmdpars{'onlytrain'} ne ''){
 	system ("cat $cmdpars{'onlytrain'} >> $optdir/curtrain");
     }
-    system("etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $be_silent $optdir/curtrain $modelrestrict");
+    my $cmd = "etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $be_silent $optdir/curtrain $pars $modelrestrict";
+    print "$cmd\n";
+    system($cmd);
     system("rm -f $optdir/curtrain");
 }
 
