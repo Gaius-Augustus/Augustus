@@ -27,7 +27,7 @@
 
 const int exonTypeReadingFrames[EXON_TYPES]=
 { 0,0,1,2,0,1,2,0,          // forward exons
-  2,2,0,1,2,0,1,2,          // reverse exons // ToDo: this are the AUGUSTUS frames, maybe need .gff frames
+  2,2,0,1,2,0,1,2,          // reverse exons
 };
 
 const char* stateExonTypeIdentifiers[EXON_TYPES]=
@@ -61,20 +61,23 @@ StateType ExonCandidate::getStateType(){
 
 // returns the complement biological exon type of a given exon type
 int ExonCandidate::complementType() {
+    int frontBases = 0;
     if (this->type==0 || this->type==8) {
         return (this->type + 8) % 16;
     } else if (this->type>=1 && this->type<=3) {
         return (this->type + 8 -((this->end - this->begin + 1) %3));
     } else if (this->type>=4 && this->type<=6) {
-        return (this->type + 6);
+        frontBases =((this->end - this->begin + 1) - exonTypeReadingFrames[this->type]) %3;
+        return (this->type + 8 - frontBases - exonTypeReadingFrames[this->type]);
     } else if (this->type==7) {
-        return (this->type + 6 + ((this->end - this->begin + 1) %3));
+        return (this->type + 8 - ((this->end - this->begin + 1) %3));
     } else if (this->type==9) {
         return (this->type - 8 + ((this->end - this->begin + 1) %3));
     } else if (this->type>=10 && this->type<=12) {
-        return (this->type - 6);
+        frontBases =(exonTypeReadingFrames[this->type] + ((this->end - this->begin + 2) %3)) %3;
+        return (this->type - 6 + frontBases - exonTypeReadingFrames[this->type]);
     } else {
-        return (this->type - 6  - ((this->end - this->begin + 1) %3));
+        return (this->type - 8  + ((this->end - this->begin + 1) %3));
     }
 }
 
@@ -92,7 +95,7 @@ ExonType toExonType(const char* str){
 // create a key for a map function to find orthologue exons quickly
 string ExonCandidate::createKey() {
     if(this == NULL) {
-        return "no key";
+        return "no candidate";
     } else {
         return (itoa(this->begin) + ":" + itoa(this->end) + ":" + itoa(this->type));
     }
@@ -133,12 +136,12 @@ bool comp_test (ExonCandidate* a, ExonCandidate* b) {
 // I probably do not need this anymore
 // computes intervals to the exon candidates vector so that access to the vector later is quicker
 /*void computeIndices(list<ExonCandidate*> cand, int seqlen) {
-	 /* firstEnd[i] holds an iterator to cand to the first element f in the vector such that
-	 	f->end >= i*block_size, where i>=0 and i ist such that i*block_size <= seqlen */
-//list<ExonCandidate*>::iterator **firstEnd;
-/* lastBegin[i] holds an iterator to cand to the vector such that all following elements f have
-	 	f->begin > i*block_size, where i>=0 and i ist such that i*block_size <= seqlen*/
-/*list<ExonCandidate*>::iterator **lastBegin;
+	    //firstEnd[i] holds an iterator to cand to the first element f in the vector such that
+	 	//f->end >= i*block_size, where i>=0 and i ist such that i*block_size <= seqlen
+    list<ExonCandidate*>::iterator **firstEnd;
+  // lastBegin[i] holds an iterator to cand to the vector such that all following elements f have
+  // f->begin > i*block_size, where i>=0 and i ist such that i*block_size <= seqlen
+    list<ExonCandidate*>::iterator **lastBegin;
 	int block_size=20;  // block_size=20 is for testing, I will change it to 10000 or larger later
 	int j;
 	if (cand.empty()) {

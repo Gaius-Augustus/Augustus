@@ -21,6 +21,8 @@
 GeneMSA* GenomicMSA::getNextGene() {
     GeneMSA *ptr=new GeneMSA();
     int max_intron_length=12000;
+    vector<Strand >geneStrand;
+    vector<string> geneChr;
     bool geneRange=true;
     if (this->alignment.empty()) {
         delete ptr;
@@ -29,14 +31,31 @@ GeneMSA* GenomicMSA::getNextGene() {
     list<AlignmentBlock*>::iterator it_pos=this->alignment.begin();
     list<AlignmentBlock*>::iterator it_prev=it_pos;
     it_pos++;
-    while (geneRange &&(it_pos!=this->alignment.end())) {
+    for (int i=0; i<(*it_prev)->alignSpeciesTupel.size(); i++) {
+        geneStrand.push_back(STRAND_UNKNOWN);
+        geneChr.push_back("");
+    }
+    while (geneRange && (it_pos!=this->alignment.end())) {
         for (int i=0; i<(*it_prev)->alignSpeciesTupel.size(); i++) {
-            if (((*it_prev)->alignSpeciesTupel.at(i)!=NULL) && ((*it_pos)->alignSpeciesTupel.at(i)!=NULL)) {
-                // the alignment parts have to be on the same strand, the same chromosome and less than "max_intron_length" apart
-                if (((*it_pos)->alignSpeciesTupel.at(i)->start - ((*it_prev)->alignSpeciesTupel.at(i)->start + (*it_prev)->alignSpeciesTupel.at(i)->seqLen)>max_intron_length)
-                        ||((*it_pos)->alignSpeciesTupel.at(i)->start - ((*it_prev)->alignSpeciesTupel.at(i)->start + (*it_prev)->alignSpeciesTupel.at(i)->seqLen)<0)
-                        ||	((*it_pos)->alignSpeciesTupel.at(i)->strand != (*it_prev)->alignSpeciesTupel.at(i)->strand)
-                        || ((*it_pos)->alignSpeciesTupel.at(i)->chromosome.first != (*it_prev)->alignSpeciesTupel.at(i)->chromosome.first)) {
+            int geneStart = 0;
+            int geneSeqLen = 0;
+            if ((*it_prev)->alignSpeciesTupel.at(i)!=NULL) {
+                if ((geneChr[i] == "") && (geneStrand[i] == STRAND_UNKNOWN)) {
+                    geneChr[i] = (*it_prev)->alignSpeciesTupel.at(i)->chromosome.first;
+                    geneStrand[i] = (*it_prev)->alignSpeciesTupel.at(i)->strand;
+                }
+                geneStart = (*it_prev)->alignSpeciesTupel.at(i)->start;
+                geneSeqLen = (*it_prev)->alignSpeciesTupel.at(i)->seqLen;
+            }
+            // the alignment parts have to be on the same strand, the same chromosome and less than "max_intron_length" apart
+            if (((*it_pos)->alignSpeciesTupel.at(i)!=NULL) && (geneChr[i] != "")) {
+                if (((*it_pos)->alignSpeciesTupel.at(i)->strand != geneStrand[i]) || ((*it_pos)->alignSpeciesTupel.at(i)->chromosome.first != geneChr[i])) {
+                    geneRange=false;
+                    break;
+                }
+            }
+            if (((*it_pos)->alignSpeciesTupel.at(i)!=NULL) && (geneStart != 0)) {
+                if (((*it_pos)->alignSpeciesTupel.at(i)->start - (geneStart + geneSeqLen) > max_intron_length) || ((*it_pos)->alignSpeciesTupel.at(i)->start - (geneStart + geneSeqLen) < 0)) {
                     geneRange=false;
                     break;
                 }
@@ -168,8 +187,8 @@ void GenomicMSA::readAlignment() {
                         index=cmpNames.size();
                         cmpNames.push_back(ptr->name);
                     }
-                    Alignmentfile>>ptr->offset; //ToDo: may be change that -> how to handle an possible offset???
-                    ptr->start=ptr->offset+1; //  ToDo: have to change that -> how to handle an possible offset??? and ptr->start is in .maf-file 0-based, maybe changing the perl-script
+                    Alignmentfile>>ptr->offset;
+                    ptr->start=ptr->offset+1;
                     ptr->cmpStarts.push_back(&ptr->start);
                     Alignmentfile>>ptr->seqLen;
                     Alignmentfile>>str;
@@ -181,9 +200,6 @@ void GenomicMSA::readAlignment() {
                         ptr->strand=STRAND_UNKNOWN;
                     }
                     Alignmentfile>>ptr->chromosome.second;
-                    /*if (ptr->strand==minusstrand) {
-						ptr->start=chrSize - ptr->start - ptr->seqLen+2;
-					}*/
                     Alignmentfile>>seq;
                     ptr->alignLen=seq.length();
                     Alignmentfile>>indifferent;
@@ -257,25 +273,31 @@ void GenomicMSA::readAlignment() {
 void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
     list<AlignmentBlock*>::iterator it_pos=this->alignment.begin();
     list<AlignmentBlock*>::iterator it_prev;
-    bool complete, sameDistance;
-    int count, distance;
     vector<bool> doesNotExistBefore(false,(*it_pos)->alignSpeciesTupel.size());
+    vector<Strand >geneStrand;
+    vector<string> geneChr;
     list<block>::iterator it_block;
 
     float specieslimit=percentSpeciesAligned * (*it_pos)->alignSpeciesTupel.size();
+    for (int i=0; i<(*it_pos)->alignSpeciesTupel.size(); i++) {
+        geneStrand.push_back(STRAND_UNKNOWN);
+        geneChr.push_back("");
+    }
     for (it_pos=this->alignment.begin(); it_pos!=this->alignment.end(); it_pos++) {
-        complete=true;
-        sameDistance=true;
-        distance=-1;
+        bool complete=true;
+        bool sameDistance=true;
+        int distance=-1;
         int emptyBegin=1;
+        int geneStart = 0;
+        int geneSeqLen = 0;
         if (it_pos==this->alignment.begin()) {
             it_prev=it_pos;
         } else {
             // specieslimit is the percentage of species, which have to be in the alignmentblocks to merge them
-            while (complete &&(it_pos!=this->alignment.end())) {
-                count=0;
+            while (complete && (it_pos!=this->alignment.end())) {
+                int count=0;
                 for (int j=0; j<(*it_prev)->alignSpeciesTupel.size(); j++) {
-                    if (((*it_prev)->alignSpeciesTupel.at(j)==NULL) || ((*it_pos)->alignSpeciesTupel.at(j)==NULL)) {
+                    if (((*it_prev)->alignSpeciesTupel.at(j)==NULL) /*|| ((*it_pos)->alignSpeciesTupel.at(j)==NULL)*/) {
                         count++;
                         doesNotExistBefore[j]=true;
                         if (count>=specieslimit) {
@@ -283,12 +305,27 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                             break;
                         }
                     }
+                    if ((*it_prev)->alignSpeciesTupel.at(j)!=NULL) {
+                        if ((geneChr[j] == "") && (geneStrand[j] == STRAND_UNKNOWN)) {
+                            geneChr[j] = (*it_prev)->alignSpeciesTupel.at(j)->chromosome.first;
+                            geneStrand[j] = (*it_prev)->alignSpeciesTupel.at(j)->strand;
+                        }
+                        geneStart = (*it_prev)->alignSpeciesTupel.at(j)->start;
+                        geneSeqLen = (*it_prev)->alignSpeciesTupel.at(j)->seqLen;
+                    }
+
                     //  max 5 bases apart and on the same chromosome, when there is an alignmentblock before
-                    if (((*it_prev)->alignSpeciesTupel.at(j)!=NULL) && ((*it_pos)->alignSpeciesTupel.at(j)!=NULL)) {
+                    if (((*it_pos)->alignSpeciesTupel.at(j)!=NULL) && (geneChr[j] != "")) {
                         if (doesNotExistBefore[j]==false) {
-                            if (((*it_pos)->alignSpeciesTupel.at(j)->start - ((*it_prev)->alignSpeciesTupel.at(j)->start + (*it_prev)->alignSpeciesTupel.at(j)->seqLen)>maxGapLen)
-                                    ||	((*it_pos)->alignSpeciesTupel.at(j)->start - ((*it_prev)->alignSpeciesTupel.at(j)->start + (*it_prev)->alignSpeciesTupel.at(j)->seqLen)<0)
-                                    || ((*it_pos)->alignSpeciesTupel.at(j)->chromosome.first != (*it_prev)->alignSpeciesTupel.at(j)->chromosome.first)) {
+                            if (((*it_pos)->alignSpeciesTupel.at(j)->strand != geneStrand[j]) || ((*it_pos)->alignSpeciesTupel.at(j)->chromosome.first != geneChr[j])) {
+                                complete=false;
+                                break;
+                            }
+                        }
+                    }
+                    if (((*it_pos)->alignSpeciesTupel.at(j)!=NULL) && (geneStart != 0)) {
+                        if (doesNotExistBefore[j]==false) {
+                            if (((*it_pos)->alignSpeciesTupel.at(j)->start - (geneStart + geneSeqLen) > maxGapLen) || ((*it_pos)->alignSpeciesTupel.at(j)->start - (geneStart + geneSeqLen) < 0)) {
                                 complete=false;
                                 break;
                             }
@@ -296,11 +333,11 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                             doesNotExistBefore[j]=false;
                         }
                     }
-                    // sequences of the different species have to be the same distance
+                    // sequences of the different species have to have the same distance
                     if (((*it_prev)->alignSpeciesTupel.at(j)!=NULL) && ((*it_pos)->alignSpeciesTupel.at(j)!=NULL)) {
                         if (distance==-1) {
                             distance=(*it_pos)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->seqLen;
-                        } else if (distance!=((*it_pos)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->seqLen)) {
+                        } else if (distance != ((*it_pos)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->seqLen)) {
                             sameDistance=false;
                         }
                         // ^ operator for logical exclusive OR
@@ -314,14 +351,13 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                     for (int j=0; j<(*it_prev)->alignSpeciesTupel.size(); j++) {
                         if (((*it_prev)->alignSpeciesTupel.at(j)==NULL) && ((*it_pos)->alignSpeciesTupel.at(j)==NULL)) {
                             emptyBegin++;
-                        } else if (((*it_prev)->alignSpeciesTupel.at(j)==NULL) && ((*it_pos)->alignSpeciesTupel.at(j)!=NULL)) {
-                            (*it_prev)->alignSpeciesTupel.at(j)=(*it_pos)->alignSpeciesTupel.at(j);
+                        } else if (((*it_prev)->alignSpeciesTupel.at(j) == NULL) && ((*it_pos)->alignSpeciesTupel.at(j) != NULL)) {
+                            (*it_prev)->alignSpeciesTupel.at(j) = (*it_pos)->alignSpeciesTupel.at(j);
                             for (int k=0; k<emptyBegin; k++) {
                                 (*it_prev)->alignSpeciesTupel.at(j)->cmpStarts.insert((*it_prev)->alignSpeciesTupel.at(j)->cmpStarts.begin(),NULL);
                             }
                         } else if (((*it_prev)->alignSpeciesTupel.at(j)!=NULL) && ((*it_pos)->alignSpeciesTupel.at(j)!=NULL)) {
                             if (!sameDistance) {
-                                //(*it_prev)->alignSpeciesTupel.at(j)->cmpStarts.push_back(&(*it_pos)->alignSpeciesTupel.at(j)->start);
                                 int *cmpStart_ptr;
                                 cmpStart_ptr= new int;
                                 *cmpStart_ptr = (*it_pos)->alignSpeciesTupel.at(j)->start + ((*it_prev)->alignSpeciesTupel.at(j)->alignLen - (*it_prev)->alignSpeciesTupel.at(j)->seqLen);
@@ -331,14 +367,14 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                                 it->begin=it->begin+((*it_prev)->alignSpeciesTupel.at(j)->alignLen - (*it_prev)->alignSpeciesTupel.at(j)->seqLen);
                                 // maybe have to change that
                                 //if (sameDistance) {
-                                it->previousGaps=it->previousGaps+((*it_prev)->alignSpeciesTupel.at(j)->alignLen - (*it_prev)->alignSpeciesTupel.at(j)->seqLen);
+                                it->previousGaps=it->previousGaps + ((*it_prev)->alignSpeciesTupel.at(j)->alignLen - (*it_prev)->alignSpeciesTupel.at(j)->seqLen);
                                 //}
                             }
-                            (*it_prev)->alignSpeciesTupel.at(j)->alignLen=(*it_prev)->alignSpeciesTupel.at(j)->alignLen + (*it_pos)->alignSpeciesTupel.at(j)->alignLen
-                                    +(*it_pos)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->seqLen;
-                            (*it_prev)->alignSpeciesTupel.at(j)->seqLen=(*it_prev)->alignSpeciesTupel.at(j)->seqLen + (*it_pos)->alignSpeciesTupel.at(j)->seqLen
-                                    +(*it_pos)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->seqLen;
-                            it_block=(*it_prev)->alignSpeciesTupel.at(j)->sequence.end();
+                            (*it_prev)->alignSpeciesTupel.at(j)->alignLen = (*it_prev)->alignSpeciesTupel.at(j)->alignLen + (*it_pos)->alignSpeciesTupel.at(j)->alignLen
+                                    + (*it_pos)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->seqLen;
+                            (*it_prev)->alignSpeciesTupel.at(j)->seqLen = (*it_prev)->alignSpeciesTupel.at(j)->seqLen + (*it_pos)->alignSpeciesTupel.at(j)->seqLen
+                                    + (*it_pos)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->seqLen;
+                            it_block = (*it_prev)->alignSpeciesTupel.at(j)->sequence.end();
                             (*it_prev)->alignSpeciesTupel.at(j)->sequence.splice(it_block,(*it_pos)->alignSpeciesTupel.at(j)->sequence);
                         } else {
                             (*it_prev)->alignSpeciesTupel.at(j)->cmpStarts.push_back(NULL);
@@ -384,7 +420,3 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
         cout<<endl;
     }*/
 }
-
-
-
-

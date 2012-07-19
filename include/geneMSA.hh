@@ -28,20 +28,29 @@ public:
 
     GeneMSA() {};
     ~GeneMSA(){
+        if (!alignment.empty()) {
+            alignment.clear();
+        }
         for (int i=0; i<exoncands.size(); i++) {
-            exoncands.at(i)->clear();
-            delete exoncands[i];
+            if (exoncands[i]!=NULL) {
+                exoncands.at(i)->clear();
+                delete exoncands[i];
+            }
         }
         for (int i=0; i<existingCandidates.size(); i++) {
-            existingCandidates.at(i)->clear();
-            delete existingCandidates[i];
+            if (existingCandidates[i]!=NULL) {
+                existingCandidates.at(i)->clear();
+                delete existingCandidates[i];
+            }
         }
     };
 
-    int getStart(int speciesIdx);
-    int getEnd(int speciesIdx);
+    string getName(int speciesIdx);
+    long int getChrLength(int speciesIdx);
     string getChr(int speciesIdx);
     Strand getStrand(int speciesIdx);
+    int getStart(int speciesIdx);
+    int getEnd(int speciesIdx);
 
     map<string,ExonCandidate*>* addToHash(list<ExonCandidate*> *ec); // adds the keys to the map function
 
