@@ -264,12 +264,13 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
 void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
     list<AlignmentBlock*>::iterator it_pos=this->alignment.begin();
     list<AlignmentBlock*>::iterator it_prev;
-    vector<bool> doesNotExistBefore(false,(*it_pos)->alignSpeciesTupel.size());
+    //vector<bool> doesNotExistBefore(false,(*it_pos)->alignSpeciesTupel.size());
     vector<Strand >geneStrand;
     vector<string> geneChr;
     list<block>::iterator it_block;
 
-    float specieslimit=percentSpeciesAligned * (*it_pos)->alignSpeciesTupel.size();
+    // specieslimit is the percentage of species, which have to be in the alignmentblocks to merge them
+    float specieslimit = (*it_pos)->alignSpeciesTupel.size() - (percentSpeciesAligned * (*it_pos)->alignSpeciesTupel.size());
     for (int i=0; i<(*it_pos)->alignSpeciesTupel.size(); i++) {
         geneStrand.push_back(STRAND_UNKNOWN);
         geneChr.push_back("");
@@ -284,13 +285,12 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
         if (it_pos==this->alignment.begin()) {
             it_prev=it_pos;
         } else {
-            // specieslimit is the percentage of species, which have to be in the alignmentblocks to merge them
             while (complete && (it_pos!=this->alignment.end())) {
                 int count=0;
                 for (int j=0; j<(*it_prev)->alignSpeciesTupel.size(); j++) {
-                    if (((*it_prev)->alignSpeciesTupel.at(j)==NULL) /*|| ((*it_pos)->alignSpeciesTupel.at(j)==NULL)*/) {
+                    if (((*it_prev)->alignSpeciesTupel.at(j)==NULL) || ((*it_pos)->alignSpeciesTupel.at(j)==NULL)) {
                         count++;
-                        doesNotExistBefore[j]=true;
+                        //doesNotExistBefore[j]=true;
                         if (count>=specieslimit) {
                             complete=false;
                             break;
@@ -305,24 +305,24 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                         geneSeqLen = (*it_prev)->alignSpeciesTupel.at(j)->seqLen;
                     }
 
-                    //  max 5 bases apart and on the same chromosome, when there is an alignmentblock before
+                    //  max 5 bases apart, on the same strand and on the same chromosome, when there is an alignmentblock before
                     if (((*it_pos)->alignSpeciesTupel.at(j)!=NULL) && (geneChr[j] != "")) {
-                        if (doesNotExistBefore[j]==false) {
+                        //if (doesNotExistBefore[j]==false) {
                             if (((*it_pos)->alignSpeciesTupel.at(j)->strand != geneStrand[j]) || ((*it_pos)->alignSpeciesTupel.at(j)->chromosome.first != geneChr[j])) {
                                 complete=false;
                                 break;
                             }
-                        }
+                        //}
                     }
                     if (((*it_pos)->alignSpeciesTupel.at(j)!=NULL) && (geneStart != 0)) {
-                        if (doesNotExistBefore[j]==false) {
+                        //if (doesNotExistBefore[j]==false) {
                             if (((*it_pos)->alignSpeciesTupel.at(j)->start - (geneStart + geneSeqLen) > maxGapLen) || ((*it_pos)->alignSpeciesTupel.at(j)->start - (geneStart + geneSeqLen) < 0)) {
                                 complete=false;
                                 break;
                             }
-                        } else {
+                        /*} else {
                             doesNotExistBefore[j]=false;
-                        }
+                        }*/
                     }
                     // sequences of the different species have to have the same distance
                     if (((*it_prev)->alignSpeciesTupel.at(j)!=NULL) && ((*it_pos)->alignSpeciesTupel.at(j)!=NULL)) {

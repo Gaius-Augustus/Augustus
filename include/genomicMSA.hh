@@ -25,7 +25,7 @@ public:
      * returns NULL if alignment is empty
      */
     void prepareExons() {
-        mergeAlignment (5,0.9); // TODO: make this reasonable after experience with the data
+        mergeAlignment (5,0.6); // TODO: make this reasonable after experience with the data
     }
     GeneMSA *getNextGene();
 

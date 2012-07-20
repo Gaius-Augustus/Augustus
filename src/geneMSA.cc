@@ -81,6 +81,8 @@ int GeneMSA::getEnd(int speciesIdx){
     for (list<AlignmentBlock*>::reverse_iterator rit=this->alignment.rbegin(); rit!=this->alignment.rend(); rit++) {
         if ((*rit)->alignSpeciesTupel.at(speciesIdx)!=NULL) {
             if (this->getStrand(speciesIdx)==plusstrand) {
+                //cout<<"Offset "<<(*rit)->alignSpeciesTupel.at(speciesIdx)->offset<<endl;
+                //cout<<"seqLen "<<(*rit)->alignSpeciesTupel.at(speciesIdx)->seqLen - 1<<endl;
                 return (*rit)->alignSpeciesTupel.at(speciesIdx)->offset + (*rit)->alignSpeciesTupel.at(speciesIdx)->seqLen - 1;
             } else {
                 for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {

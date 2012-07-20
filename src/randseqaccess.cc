@@ -41,19 +41,8 @@ MemSeqAccess::MemSeqAccess(){
 }
 
 AnnoSequence* MemSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
-
-
     AnnoSequence *annoseq = NULL;
     string key = speciesname + ":" + chrName;
-
-#ifdef DEBUG
-    cout << "retrieving sequence:\t" << key << "\t" << start << "-" << end << "\t";
-    if( strand == plusstrand )
-	cout << "+" << endl;
-    else
-	cout << "-" << endl;	
-#endif
-
     map<string,char*>::iterator it = sequences.find(key);
     if(it != sequences.end()){
 	annoseq = new AnnoSequence();
