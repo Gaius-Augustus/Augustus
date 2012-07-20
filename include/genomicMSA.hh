@@ -19,7 +19,7 @@ public:
     GenomicMSA() {}
    ~GenomicMSA(){}
 
-    void readAlignment(); // reads a multiple species alignment from a *.maf file
+    void readAlignment(vector<string> speciesnames); // reads a multiple species alignment from a *.maf file
     /*
      * merges the merged alignment parts so that a gene is possibly in this segment
      * returns NULL if alignment is empty

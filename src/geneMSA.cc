@@ -591,7 +591,7 @@ void GeneMSA::printExonCands(vector<int> offsets) {
                         //cout<<mod3(3-(exonTypeReadingFrames[(*it_exonCands)->type] - ((*it_exonCands)->end - (*it_exonCands)->begin + 1)))<<"\t";
                     } else {
                         cout<<this->getChrLength(i) - ((*it_exonCands)->end + offsets[i])<<"\t"<<this->getChrLength(i) - ((*it_exonCands)->begin+ offsets[i]) <<"\t";
-                        cout<<'-'<<"\t";
+                        cout<<(*it_exonCands)->score<<"\t"<<'-'<<"\t";
                         //cout<<mod3(2-(exonTypeReadingFrames[(*it_exonCands)->type]))<<"\t";
                     }
                     cout<<mod3(3-(exonTypeReadingFrames[(*it_exonCands)->type] - ((*it_exonCands)->end - (*it_exonCands)->begin + 1)))<<"\t";

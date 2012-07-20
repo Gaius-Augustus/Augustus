@@ -109,12 +109,10 @@ GeneMSA* GenomicMSA::getNextGene() {
 }
 
 //  *.maf-file is read and will be saved as vector with pointers on a vector with pointers
-void GenomicMSA::readAlignment() {
-    int index;
-    bool existing;
+void GenomicMSA::readAlignment(vector<string> speciesnames) {
+    int index=0;
     string indifferent;
     string completeName;
-    vector<string> cmpNames;
     char str;
     string seq;
     block cur_block;
@@ -163,11 +161,8 @@ void GenomicMSA::readAlignment() {
                     for (int i=0; i<completeName.length(); i++) {
                         if (completeName[i]=='-') { //real seperator is the point '.' for example hs19.chr21, has to be changed
                             ptr->name=completeName.substr(0,i);
-                            // ptr->chromosome.first=completeName.substr(i+1,completeName.length()-1); // correct version for chromosome
-                            ptr->chromosome.first=completeName.substr(i+1,5); // version for vergl_syn testfile
-                            if (*(ptr->chromosome.first.end()-1)=='(') {
-                                ptr->chromosome.first=ptr->chromosome.first.erase(ptr->chromosome.first.length()-1,ptr->chromosome.first.length()-1);
-                            }
+                            ptr->chromosome.first=completeName.substr(i+1,completeName.length()- 1);
+                            ptr->chromosome.first=ptr->chromosome.first.erase(ptr->chromosome.first.find_first_of("("),ptr->chromosome.first.length()-1); // version for vergl_syn testfile
                             break;
                         }
                         if (i==completeName.length()-1) {
@@ -175,17 +170,13 @@ void GenomicMSA::readAlignment() {
                             ptr->chromosome.first="unknown";
                         }
                     }
-                    existing=false; // ToDo: change that to the vector with the speciesnames
-                    for (int i=0; i<cmpNames.size(); i++) {
-                        if (cmpNames[i]==ptr->name) {
+                    for (int i=0; i<speciesnames.size(); i++) {
+                        if (speciesnames[i]==ptr->name) {
                             index=i;
-                            existing=true;
                             break;
+                        } else if (i == (speciesnames.size() - 1)) {
+                            cout<<"species "<<ptr->name<<" isn't included in the dataset"<<endl;
                         }
-                    }
-                    if (!existing) { // ToDo: change that to the vector with the speciesnames
-                        index=cmpNames.size();
-                        cmpNames.push_back(ptr->name);
                     }
                     Alignmentfile>>ptr->offset;
                     ptr->start=ptr->offset+1;

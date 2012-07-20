@@ -42,10 +42,10 @@ void CompGenePred::start(){
     SequenceFeatureCollection sfc(&extrinsicFeatures);
     StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
 
-    GenomicMSA msa;
-    msa.readAlignment();
-    msa.prepareExons();
     vector<string> speciesname = OrthoGraph::tree->species;
+    GenomicMSA msa;
+    msa.readAlignment(speciesname);
+    msa.prepareExons();
     vector<int> offsets;
 
     //temp:
