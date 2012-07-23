@@ -48,13 +48,13 @@ GeneMSA* GenomicMSA::getNextGene() {
                 geneSeqLen = (*it_prev)->alignSpeciesTupel.at(i)->seqLen;
             }
             // the alignment parts have to be on the same strand, the same chromosome and less than "max_intron_length" apart
-            if (((*it_pos)->alignSpeciesTupel.at(i)!=NULL) && (geneChr[i] != "")) {
+            if (((*it_pos)->alignSpeciesTupel.at(i)!=NULL)) {
                 if (((*it_pos)->alignSpeciesTupel.at(i)->strand != geneStrand[i]) || ((*it_pos)->alignSpeciesTupel.at(i)->chromosome.first != geneChr[i])) {
                     geneRange=false;
                     break;
                 }
             }
-            if (((*it_pos)->alignSpeciesTupel.at(i)!=NULL) && (geneStart != 0)) {
+            if (((*it_pos)->alignSpeciesTupel.at(i)!=NULL) /*&& (geneStart != 0)*/) {
                 if (((*it_pos)->alignSpeciesTupel.at(i)->start - (geneStart + geneSeqLen) > max_intron_length) || ((*it_pos)->alignSpeciesTupel.at(i)->start - (geneStart + geneSeqLen) < 0)) {
                     geneRange=false;
                     break;
