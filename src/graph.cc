@@ -537,15 +537,15 @@ double AugustusGraph::setScore(Status *st){
     double s_be = 0;
     for(int pos = st->begin; pos<=st->end; pos++)
       if(getBasetype(st, pos)>=0)
-	s_be += baseScore[getBasetype(st, pos)*seqlength + pos] - r_be;
-    return alpha_se * (st->score - r_se) + alpha_be * s_be;
+	s_be += log(baseScore[getBasetype(st, pos)*seqlength + pos]) + r_be;
+    return alpha_se * (log(st->score) + r_se) + alpha_be * s_be;
   }
   else{
     double s_bi = 0;
     for(int pos = st->begin; pos<=st->end; pos++)
       if(getBasetype(st, pos)>=0)
-	s_bi += baseScore[getBasetype(st, pos)*seqlength + pos] - r_bi;
-    return alpha_si * (st->score - r_si) + alpha_bi * s_bi;
+	s_bi += log(baseScore[getBasetype(st, pos)*seqlength + pos]) + r_bi;
+    return alpha_si * (log(st->score) + r_si) + alpha_bi * s_bi;
   }
 }
 
