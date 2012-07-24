@@ -121,10 +121,10 @@ void GeneticCode::chooseTranslationTable(int n) {
 	int aa = get_aa_from_symbol(string(TranslationTables[n]).at(codon));
 	if (aa != map[codon]) {
 	    // DEBUG MESSAGE
-	    cout << "# Warning: Using nonstandard Genetic code: " 
+	    cout << "# Warning: Using nonstandard genetic code: " 
 		 << Seq2Int(3).INV(codon)
-		 << " coding for " << (aa < 0 ? "STOPP" : GeneticCode::aa_names[aa])
-		 << " instead of " << (map[codon] < 0 ? "STOPP" : GeneticCode::aa_names[map[codon]])
+		 << " coding for " << (aa < 0 ? "STOP" : GeneticCode::aa_names[aa])
+		 << " instead of " << (map[codon] < 0 ? "STOP" : GeneticCode::aa_names[map[codon]])
 		 << ".\n";
 	}
 	map[codon]=aa;
