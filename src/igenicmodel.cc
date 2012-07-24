@@ -24,7 +24,6 @@
 // standard C/C++ includes
 #include <fstream>
 
-
 /*
  * Initialisation of static data members
  */
@@ -67,10 +66,12 @@ void IGenicModel::initAlgorithms (Matrix<Double>& trans, int cur) {
   // set these parameters to the one of the GC content index gcIdx
   if (!Constant::tieIgenicIntron 
       || IntronModel::GCemiprobs == NULL 
-      || IntronModel::GCemiprobs[gcIdx].probs.size()==0) // this happens for intronless species
-    emiprobs = GCemiprobs[gcIdx];
-  else // use the intron content model
-    emiprobs = IntronModel::GCemiprobs[gcIdx];
+      || IntronModel::GCemiprobs[gcIdx].probs.size()==0 // this happens for intronless species
+      || IntronModel::k != k) {
+      emiprobs = GCemiprobs[gcIdx];
+  } else {// use the intron content model
+      emiprobs = IntronModel::GCemiprobs[gcIdx];
+  }
   
   Pls = GCPls[gcIdx];
   geoProb = trans[cur][cur].doubleValue();
