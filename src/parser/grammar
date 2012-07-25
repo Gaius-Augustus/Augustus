@@ -1,12 +1,15 @@
+/*
+bisonc++ directives
+*/
 %class-name Parser
 %filenames parser
 %baseclass-preinclude ../../include/phylotree.hh
-%scanner ../scanner/scanner.h           //includes Scanner class
+%scanner ../scanner/scanner.h              //includes Scanner class
 %scanner-token-function d_scanner.lex()
 %debug
 
 /*
-define all types of semantic values of the symbols in the grammar
+type of semantic value of non-terminal symbols
 */
 %union{
  Treenode* nodeptr;
@@ -22,16 +25,15 @@ nonterminal symbols, need to be in lower case letters
 */
 %type <nodeptr> subtree branch branchset leaf tree
 /*
-start here:
+start symbol: if the token stream can be completely reduced to this
+symbol, the input is accepted
 */
 %start nexus  
 
 %%
 
 /*
-grammar rules:
-for example, the first rule means: a tree is a subtree followed by a semicolon.
-If this is matched, the code followed in the braces {} is executed.
+grammar rules (analogous to Backus-Naur form)
 */
 
 nexus:

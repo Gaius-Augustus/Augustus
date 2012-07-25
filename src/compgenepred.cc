@@ -1,9 +1,9 @@
 /**********************************************************************
- * file:    compgenepred.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  comparative gene prediction on multiple species
- * authors: Mario Stanke, Alexander Gebauer, Stefanie König
+ * file: compgenepred.cc licence: Artistic Licence, see file
+ * LICENCE.TXT or
+ * http://www.opensource.org/licenses/artistic-license.php descr.:
+ * comparative gene prediction on multiple species authors: Mario
+ * Stanke, Alexander Gebauer, Stefanie König
  *
  * date    |   author      |  changes
  * --------|---------------|------------------------------------------
@@ -30,11 +30,17 @@ CompGenePred::CompGenePred(){
 void CompGenePred::start(){
     // read in alignment, determine orthologous sequence fragments
 
-    OrthoGraph::tree = new PhyloTree(Constant::treefile);  //has to be initialized before OrthoGraph
+
+#ifdef DEBUG
+    cout << "reading in the phylogenetic tree" << endl;
+#endif
+    OrthoGraph::tree = new PhyloTree(Constant::treefile);  // reads in the phylogenetic tree
+#ifdef DEBUG
+    OrthoGraph::tree->printWithGraphviz("tree.dot");
+#endif
 
     OrthoGraph::numSpecies = OrthoGraph::tree->species.size();
-
-    //OrthoGraph orthograph;
+  
     OrthoGraph::initOutputFiles();
 
     NAMGene namgene; // creates and initializes the states
@@ -48,17 +54,23 @@ void CompGenePred::start(){
     msa.prepareExons();
     vector<int> offsets;
 
-    //temp:
-    //orthograph.all_orthoex = readOrthoExons(Constant::orthoexons);
-
     // determine object that holds a sequence range for each species
     // loop over species
     GeneMSA::openOutputFiles();
     while (GeneMSA *geneRange = msa.getNextGene()) {
+	OrthoGraph orthograph;
         for (int s = 0; s < speciesname.size(); s++) {
             if (!geneRange->getChr(s).empty()) {
                 AnnoSequence *seqRange = rsa->getSeq(speciesname[s], geneRange->getChr(s), geneRange->getStart(s), geneRange->getEnd(s), geneRange->getStrand(s));
-                //orthograph.orthoSeqRanges[s] = seqRange;
+#ifdef DEBUG
+		cout << "retrieving sequence:\t" << speciesname[s] << ":" << geneRange->getChr(s) << "\t" << geneRange->getStart(s) << "-" << geneRange->getEnd(s) << "\t";
+		if( geneRange->getStrand(s) == plusstrand )
+		    cout << "+\t";
+		else
+		    cout << "-\t";
+		cout << "(" <<geneRange->getEnd(s) - geneRange->getStart(s) + 1 << "bp)" << endl;
+#endif
+                orthograph.orthoSeqRanges[OrthoGraph::tree->getVectorPositionSpecies(speciesname[s])] = seqRange;
                 if (seqRange==NULL) {
                     cerr << "random sequence access failed on " << speciesname[s] << ", " << geneRange->getChr(s) << ", " << geneRange->getStart(s) << ", " <<  geneRange->getEnd(s) << ", " << endl;
                     break;
@@ -71,75 +83,58 @@ void CompGenePred::start(){
                     }
                     geneRange->createExonCands(seqRange->sequence, 0.1, 0.316, 0.316); // ToDo:make this reasonable after experience with the data
                     list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
-                    /*
-                     * build list of additional exoncandidates, which are inserted in the graph
-                     */
-                    /*list<ExonCandidate*> additionalExons;
-		            for(list<OrthoExon>::iterator it = orthograph.all_orthoex.begin(); it !=  orthograph.all_orthoex.end(); it++){
-		                if(it->orthoex[s] != NULL){
-		                    it->orthoex[s]->begin -= orthograph.orthoSeqRanges[s]->offset;
-		                    it->orthoex[s]->end -= orthograph.orthoSeqRanges[s]->offset;
-		                    additionalExons.push_back(it->orthoex[s]);
-		                }
-		            }
-                    namgene.doViterbiPiecewise(sfc, seqRange, bothstrands); // builds graph for each species
-                    list<Gene> *alltranscripts = namgene.getAllTranscripts();
-                    if(alltranscripts){
-                        cout << "building Graph for " << speciesname[s] << endl;
-                        if(!alltranscripts->empty()){*/
-                            /* build datastructure for graph representation
-                             * @stlist : list of all sampled states
-                             */
-                            /*list<Status> stlist;
-                            buildStatusList(alltranscripts, false, stlist);
-                            //build graph
-                            SpeciesGraph *singleGraph = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesname[s]);
-                            singleGraph->buildGraph();
-                            //find correct position in vector and add graph for species to OrthoGraph
-                            size_t pos = OrthoGraph::tree->getVectorPositionSpecies(speciesname[s]);
-                            if (pos < OrthoGraph::numSpecies){
-                                orthograph.graphs[pos] = singleGraph;
-                            } else {
-                                cerr << "species names in Orthograph and OrthoExon don't match" << endl;
-                            }
-                            orthograph.storePtrsToAlltranscripts(alltranscripts); //save pointers to transcripts and delete them after gene list is build
-                        }
-                      }*/
-                }
-            } else {
-                offsets.push_back(0);
-                geneRange->exoncands.push_back(NULL);
-                geneRange->existingCandidates.push_back(NULL);
-                cout<< speciesname[s] << " doesn't exist in this part of the alignment."<< endl;
-            }
-        }
-        geneRange->printExonCands(offsets);
-        geneRange->createOrthoExons(offsets);
-        geneRange->printOrthoExons(offsets);
-        //orthograph.all_orthoex = geneRange->getOrthoExons();
+		  
+		    namgene.doViterbiPiecewise(sfc, seqRange, bothstrands); // sampling
+		    list<Gene> *alltranscripts = namgene.getAllTranscripts();
+		    if(alltranscripts){
+			cout << "building Graph for " << speciesname[s] << endl;
+			/* build datastructure for graph representation
+			 * @stlist : list of all sampled states
+			 */
+			list<Status> stlist;
+			if(!alltranscripts->empty()){
+			    buildStatusList(alltranscripts, false, stlist);
+			}
+			//build graph
+			SpeciesGraph *singleGraph = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesname[s]);
+			singleGraph->buildGraph();
+			//find correct position in vector and add graph for species to OrthoGraph
+			size_t pos = OrthoGraph::tree->getVectorPositionSpecies(speciesname[s]);
+			if (pos < OrthoGraph::numSpecies){
+			    orthograph.graphs[pos] = singleGraph;
+			} else {
+			    cerr << "species names in Orthograph and OrthoExon don't match" << endl;
+			}
+			orthograph.ptrs_to_alltranscripts[pos] = alltranscripts; //save pointers to transcripts and delete them after gene list is build
+		    }
+		}
+	    } else {
+		offsets.push_back(0);
+		geneRange->exoncands.push_back(NULL);
+		geneRange->existingCandidates.push_back(NULL);
+		cout<< speciesname[s] << " doesn't exist in this part of the alignment."<< endl;
+	    }
+	}
+	geneRange->printExonCands(offsets);
+	geneRange->createOrthoExons(offsets);
+	geneRange->printOrthoExons(offsets);
+	orthograph.all_orthoex = geneRange->getOrthoExons();
 
-
-        //cout << "pruning Algorithm for all orthologous exons" << endl;
-        //orthograph.pruningAlgor();
-        //cache::printCache(orthograph.all_orthoex);
-
-        // iterative optimization
-        //orthograph.optimize();
-
-        //orthograph.pruningAlgor();
-        //cache::printCache(orthograph.all_orthoex);
-
-
-        // transfer longest paths to genes + filter + ouput
-        //orthograph.outputGenes();
-
-        offsets.clear();
-        delete geneRange;
+	if(!orthograph.all_orthoex.empty()){   
+	    // iterative optimization of labelings in graphs
+	    orthograph.optimize();	    
+	}
+	
+	// transfer max weight paths to genes + filter + ouput
+	orthograph.outputGenes();
+	
+	offsets.clear();
+	delete geneRange;
     }
     GeneMSA::closeOutputFiles();
-    //OrthoGraph::closeOutputFiles();
-
+    OrthoGraph::closeOutputFiles();
+    
     // free memory space of tree
     delete OrthoGraph::tree;
-
+    
 }

@@ -11,7 +11,6 @@
 #define _ORTHOEXON_HH
 
 #include "orthograph.hh"
-#include <map>
 #include <vector>
 #include <string>
 
@@ -22,20 +21,21 @@ class OrthoExon{
 
 public:
     OrthoExon();
-    ~OrthoExon();
-    //copy constructor
-    OrthoExon(const OrthoExon& other);
+    ~OrthoExon() {};
     //copy with permutation of vector entries
     OrthoExon(const OrthoExon& other, const vector<size_t> &permutation);
 
     vector<ExonCandidate*> orthoex;
-    string labelpattern;  //changes dynamically and has to be updated after every optimization step
+    //TODO: instead of an attribute write a function getLabelpattern() which returns the current
+    //label pattern
+    string labelpattern;
 };
 
 /*
  * read and write functions for orthologous exons
+ * TODO: allow orthologous exons to be on different strands
  */
-list<OrthoExon> readOrthoExons(string filename); //read list of orthologous exons from a file
+list<OrthoExon> readOrthoExons(string filename); //reads list of orthologous exons from a file
 void writeOrthoExons(const list<OrthoExon> &all_orthoex);
 
 

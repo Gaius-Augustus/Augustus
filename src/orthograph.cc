@@ -25,21 +25,24 @@ size_t OrthoGraph::numSpecies;
 OrthoGraph::OrthoGraph(){
     graphs.resize(numSpecies);
     orthoSeqRanges.resize(numSpecies);
+    ptrs_to_alltranscripts.resize(numSpecies);
 }
 
 
 
 OrthoGraph::~OrthoGraph(){
     for(int i = 0; i < numSpecies; i++){
-	delete graphs[i];
-	delete ptrs_to_alltranscripts[i];
-	delete orthoSeqRanges[i];
+	if(orthoSeqRanges[i]){
+	    delete graphs[i];
+	    delete ptrs_to_alltranscripts[i];
+	    delete orthoSeqRanges[i];
+	}
     }
 }
 
 void OrthoGraph::outputGenes(){
 
-    Boolean noInFrameStop;
+    Boolean noInFrameStop;  
 
     try {
 	noInFrameStop = Properties::getBoolProperty("noInFrameStop");
@@ -49,101 +52,104 @@ void OrthoGraph::outputGenes(){
  
     for (size_t pos = 0; pos < numSpecies; pos++){
 
-	list<Gene> *genes = new list<Gene>;
+	if(graphs[pos]){
+
+	    list<Gene> *genes = new list<Gene>;
 	
-	Node* current = graphs[pos]->tail;
-	Node* head =  graphs[pos]->head;
-	Node* predcurrent;
+	    Node* current = graphs[pos]->tail;
+	    Node* head =  graphs[pos]->head;
+	    Node* predcurrent;
 	
-	Gene *currentGene = new Gene();
+	    Gene *currentGene = new Gene();
 	
-	// start backtracking
-	while(current != head){
+	    // convert node labeling of graph into a list of genes
+	    while(current != head){
 	    
-	    while(current->item == NULL){ //skip all neutral nodes
-		if (current == head){
-		    goto end;
-		}
-		current = graphs[pos]->getTopSortPred(current);  //exon1
-	    }
-	    State *ex;
-	    if(current->n_type == sampled){
-		ex = new State(*((State*)(current->item)));
-	    }
-	    else{
-		ex = new State(current->begin, current->end, current->castToStateType());
-	    }
-	    addExonToGene(currentGene, ex);
-	    predcurrent = graphs[pos]->getTopSortPred(current);
-	    if(predcurrent->n_type  == IR){ //end of gene
-		setGeneProperties(currentGene);
-		genes->push_front(*currentGene);
-		delete currentGene;
-		currentGene = new Gene();
-		current = predcurrent;
-	    }
-	    else{
-		while(predcurrent->item == NULL){
-		    if(predcurrent == head){
-			setGeneProperties(currentGene);
-			genes->push_front(*currentGene);
-			delete currentGene;
+		while(current->item == NULL){ //skip all neutral nodes
+		    if (current == head){
 			goto end;
 		    }
-		    predcurrent = graphs[pos]->getTopSortPred(predcurrent); //exon2
+		    current = graphs[pos]->getTopSortPred(current);  //exon1
 		}
-		addIntronToGene(currentGene, predcurrent, current); //add intron exon2->exon1
-		current = predcurrent;
-	    }  
-	}
-    end:
-
-	list<Gene> *filteredTranscripts = new list<Gene>;
-	filteredTranscripts = Gene::filterGenePrediction(genes, orthoSeqRanges[pos]->sequence, bothstrands, noInFrameStop);
-	list<AltGene> *agl = groupTranscriptsToGenes(filteredTranscripts);
-
-	delete genes;
-	/*
-	 * possibly more filter steps
-	 */
-	agl->sort();
-
-	static vector<int> geneid(numSpecies, 1); // made this static so gene numbering goes across sequences and is unique
-	int transcriptid;
-
-	// shift gene coordinates, set sequence name, gene and transcript names
-	for (list<AltGene>::iterator agit = agl->begin(); agit != agl->end(); ++agit){
-	    agit->shiftCoordinates(this->orthoSeqRanges[pos]->offset);
-	    agit->seqname =  this->orthoSeqRanges[pos]->seqname;
-	    agit->id = "g"+itoa(geneid[pos]);
-	    agit->sortTranscripts();
-
-	    transcriptid = 1;
-	    for(list<Gene*>::iterator it = agit->transcripts.begin();it != agit->transcripts.end(); ++it ) {
-		(*it)->seqname = this->orthoSeqRanges[pos]->seqname;
-		(*it)->id = "t" + itoa(transcriptid);
-		(*it)->geneid = agit->id;
-		transcriptid++;
+		State *ex;
+		if(current->n_type == sampled){
+		    ex = new State(*((State*)(current->item)));
+		}
+		else{
+		    ex = new State(current->begin, current->end, current->castToStateType());
+		}
+		addExonToGene(currentGene, ex);
+		predcurrent = graphs[pos]->getTopSortPred(current);
+		if(predcurrent->n_type  == IR){ //end of gene
+		    setGeneProperties(currentGene);
+		    genes->push_front(*currentGene);
+		    delete currentGene;
+		    currentGene = new Gene();
+		    current = predcurrent;
+		}
+		else{
+		    while(predcurrent->item == NULL){
+			if(predcurrent == head){
+			    setGeneProperties(currentGene);
+			    genes->push_front(*currentGene);
+			    delete currentGene;
+			    goto end;
+			}
+			predcurrent = graphs[pos]->getTopSortPred(predcurrent); //exon2
+		    }
+		    addIntronToGene(currentGene, predcurrent, current); //add intron exon2->exon1
+		    current = predcurrent;
+		}  
 	    }
-	    geneid[pos]++;
-	}
-	// print the genes
-	streambuf *coutbuf = cout.rdbuf(); //save old buf
-	cout.rdbuf(filestreams[pos]->rdbuf()); //redirect std::cout to species file!
+	end:
 
-	//print sequence information
+	    list<Gene> *filteredTranscripts = new list<Gene>;
+	    filteredTranscripts = Gene::filterGenePrediction(genes, orthoSeqRanges[pos]->sequence, bothstrands, noInFrameStop);
+	    list<AltGene> *agl = groupTranscriptsToGenes(filteredTranscripts);
 
-	cout << "#----- prediction on sequence range " << this->orthoSeqRanges[pos]->offset  << "-" << this->orthoSeqRanges[pos]->offset + this->orthoSeqRanges[pos]->length << " (length = "
-	     << this->orthoSeqRanges[pos]->length << ", name = "
-	     << this->orthoSeqRanges[pos]->seqname << ") -----" << endl << "#" << endl;
+	    delete genes;
+	    /*
+	     * possibly more filter steps
+	     */
+	    agl->sort();
 
-	if(!agl->empty()){
-	    printGeneList(agl, this->orthoSeqRanges[pos], Constant::codSeqOutput, Constant::proteinOutput, false);
+	    static vector<int> geneid(numSpecies, 1); // made this static so gene numbering goes across sequences and is unique
+	    int transcriptid;
+
+	    // shift gene coordinates, set sequence name, gene and transcript names
+	    for (list<AltGene>::iterator agit = agl->begin(); agit != agl->end(); ++agit){
+		agit->shiftCoordinates(this->orthoSeqRanges[pos]->offset);
+		agit->seqname =  this->orthoSeqRanges[pos]->seqname;
+		agit->id = "g"+itoa(geneid[pos]);
+		agit->sortTranscripts();
+
+		transcriptid = 1;
+		for(list<Gene*>::iterator it = agit->transcripts.begin();it != agit->transcripts.end(); ++it ) {
+		    (*it)->seqname = this->orthoSeqRanges[pos]->seqname;
+		    (*it)->id = "t" + itoa(transcriptid);
+		    (*it)->geneid = agit->id;
+		    transcriptid++;
+		}
+		geneid[pos]++;
+	    }
+	    // print the genes
+	    streambuf *coutbuf = cout.rdbuf(); //save old buf
+	    cout.rdbuf(filestreams[pos]->rdbuf()); //redirect std::cout to species file
+
+	    //print sequence information
+
+	    cout << "#----- prediction on sequence range " << this->orthoSeqRanges[pos]->offset  << "-" << this->orthoSeqRanges[pos]->offset + this->orthoSeqRanges[pos]->length << " (length = "
+		 << this->orthoSeqRanges[pos]->length << ", name = "
+		 << this->orthoSeqRanges[pos]->seqname << ") -----" << endl << "#" << endl;
+
+	    if(!agl->empty()){
+		printGeneList(agl, this->orthoSeqRanges[pos], Constant::codSeqOutput, Constant::proteinOutput, false);
+	    }
+	    else{
+		cout << "# (none)" << endl;
+	    }
+	    cout.rdbuf(coutbuf); //reset to standard output again   
 	}
-	else{
-	    cout << "# (none)" << endl;
-	}
-	cout.rdbuf(coutbuf); //reset to standard output again   
     }
 }
 
@@ -185,10 +191,12 @@ void OrthoGraph::closeOutputFiles(){
 
 void OrthoGraph::optimize(){
 
-    //loop over OrthoExons
+    //create MoveObjects
+
+    //for now, loop over OrthoExons
     if(!all_orthoex.empty()){
 	for(list<OrthoExon>::iterator orthoex = all_orthoex.begin(); orthoex != all_orthoex.end(); orthoex++){
-	    vector<MoveObject*> orthomove = majorityRuleMove(&(*orthoex));
+	    vector<MoveObject*> orthomove = majorityRuleMove(*orthoex);
 	    if(!orthomove.empty()){
 		localMove(orthomove);
 		//delete MoveObjects
@@ -203,39 +211,72 @@ void OrthoGraph::optimize(){
 void OrthoGraph::localMove(vector<MoveObject*> &orthomove){
 
 
-    // number of iterations, the local bounds are expanded and the move is repeated,
-    // makes sure, that the move is not kept too locally and get's stuck in local optimum
-    size_t maxIterations = 1;  
+    bool retry = false;  //if true, the move is repeated on a 'larger' subgraph
 
-    // the magnitude of the expansion in each iteration. The number of nodes, the local_heads are shifted left
-    // and the local_tails are shifted right on the current path.
+    int maxIterations = 3;  // max number a move can be repeated
+    int iter = 0;
+    int shift_size = 2;  // number of nodes local_head/local_tail is shifted to the left/right on the current path
    
+    do{
 
-    for(size_t iter = 0; iter < maxIterations; iter++){
+	if(retry){
 
-	cout << "iteration: " << iter << endl;
+	    cout << "iteration:\t" << iter <<"\tshift_size:\t"<<shift_size <<endl;
 
-	if(iter > 0){
-
-	    //shift local_heads and local_heads
+	    //shift local_heads and local_tails for each species
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(orthomove[pos]){
-		    orthomove[pos]->shiftHead();
-		    orthomove[pos]->shiftTail();
-		    cout << "local_head: " << orthomove[pos]->getHead() << endl;
-		    cout << "local_tail: " << orthomove[pos]->getTail() << endl;
+		    orthomove[pos]->shiftHead(shift_size);
+		    orthomove[pos]->shiftTail(shift_size);
+		    cout << graphs[pos]->getSpeciesname() << endl;
+		    cout << "local_head:\t" << orthomove[pos]->getHead() << endl;
+		    cout << "local_tail:\t" << orthomove[pos]->getTail() << endl;
 		}
 	    }
 	}
+
+	retry = false;
+
+	double graph_score = 0; //difference between the new and the old scores of the local paths
+	double phylo_score = 0; //diference between the new and the old phylogenetic score
+
+	// determine all OrthoExons in that range
 	
-	// do the local changes and determine the  difference  between the new and the old local score
-	double score = calculateScoreDiff(orthomove);
-	if(score >= 0){
-	    cout << "overall score has improved, accept move\n" << endl;
-	    break;
+	list<OrthoExon> local_orthoexons = orthoExInRange(orthomove);
+ 
+	//calculate phylo_score
+
+	phylo_score -= pruningAlgor(local_orthoexons);
+
+	// do local changes for each graph  
+	for(size_t pos = 0; pos < numSpecies; pos++){
+	    if(orthomove[pos]){
+		graph_score += graphs[pos]->localChange(orthomove[pos]);
+	    }
+	}
+	print_change = true;
+	//calculate new phylo_score
+	phylo_score += pruningAlgor(local_orthoexons);
+	print_change = false;
+
+	cout << "-------------------------------------" << endl;
+	cout << "graph_score\t" << graph_score << endl;
+	cout << "phylo_score\t" << phylo_score << endl;
+
+	if( graph_score == 0 && phylo_score == 0 ){
+	    //nothing changed, repeat move on larger subgraph
+	    if( iter < maxIterations ){
+		cout << "repeat\n" << endl;
+		retry = true;
+	    }
+	}
+	
+	else if( (graph_score + phylo_score) > 0 ){
+	    //score improved, accept move
+	    cout << "accept\n" << endl; 
 	}
 	else{
-	    cout << "score as not improved, undo changes\n" << endl;
+	    cout << "undo\n" << endl;
 	    // no improvement, undo local changes
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(orthomove[pos]){
@@ -243,41 +284,10 @@ void OrthoGraph::localMove(vector<MoveObject*> &orthomove){
 		}
 	    }
 	}
+	iter++;
     }
+    while( retry );
 }
-
-
-double OrthoGraph::calculateScoreDiff(vector<MoveObject*> &orthomove){
-
-    double graph_score = 0; //difference between the new and the old scores of the local paths
-    double phylo_score = 0; //diference between the new and the old score of the phylogenetic edges
-
-    // determine all OrthoExons in that range
-    // TODO: if there are other OrthoExons within that range, relax them simulateneously
-  
-    list<OrthoExon> local_orthoexons = orthoExInRange(orthomove);
-    //addOrthoIntrons(orthomove,local_orthoexons );
- 
-    //calculate phylo_score
-    phylo_score -= pruningAlgor(local_orthoexons);
-    cache::printCache(local_orthoexons);
-
-    // do local changes for each graph  
-    for(size_t pos = 0; pos < numSpecies; pos++){
-	if(orthomove[pos]){
-	    graph_score += graphs[pos]->localChange(orthomove[pos]);
-	}
-    }
-    //calculate new phylo_score
-    phylo_score += pruningAlgor(local_orthoexons);
-    cache::printCache(local_orthoexons);
-
-    cout << "graph_score: " << graph_score << endl;
-    cout << "phylo_score: " << phylo_score << endl;
-
-    return (graph_score + phylo_score);
-}
-
 
 double OrthoGraph::pruningAlgor(list<OrthoExon> &orthoex){
 
@@ -300,8 +310,11 @@ double OrthoGraph::pruningAlgor(list<OrthoExon> &orthoex){
 
 string OrthoGraph::getLabelpattern(OrthoExon &ex){
 
+    string old_labelpattern = ex.labelpattern;
+
     ex.labelpattern = "";
     for (size_t i = 0; i < ex.orthoex.size(); i++){
+
 	if (ex.orthoex.at(i) == NULL){
 	    ex.labelpattern += "2";
 	}
@@ -319,6 +332,9 @@ string OrthoGraph::getLabelpattern(OrthoExon &ex){
 	    else
 		throw ProjectError("Error in OrthoExon::getKey: exon " + graphs.at(i)->getKey(ex.orthoex.at(i)) +" not in graph!");
 	}
+    }
+    if(!old_labelpattern.empty() && old_labelpattern != ex.labelpattern && print_change ){
+	cout << ex << "\t" + old_labelpattern + " --> " + ex.labelpattern << endl;
     }
     return ex.labelpattern;
 }
@@ -342,83 +358,23 @@ list<OrthoExon> OrthoGraph::orthoExInRange(vector<MoveObject*> &orthomove){
     }
     return local_orthoexons;
 }
-
-void OrthoGraph::addOrthoIntrons(vector<MoveObject*> &orthomove, list<OrthoExon> &local_orthoexons){
-
-    bool flag = true;
-    cout << "schaue rechts" << endl;
-    for(size_t pos = 0; pos < numSpecies; pos++){
-	if(orthomove[pos]){
-	    if(!orthomove[pos]->nodesIsEmpty()){
-		Node *node = orthomove[pos]->getNodeBack();
-		while(flag){
-		    //cout << "entering loop" << endl;
-		    //cout << "node " << node << endl; 
-		    flag = false;
-	  
-		    for(list<OrthoExon>::const_iterator ortho = local_orthoexons.begin(); ortho != local_orthoexons.end(); ortho++){
-			Node *target = graphs[pos]->getNode(ortho->orthoex[pos]);
-			for(list<Edge>::iterator it = node->edges.begin(); it!= node->edges.end(); it++){
-			    if(it->to == target){
-				cout <<"Kante gefunden: "<< *it << endl;
-				cout <<"füge Knoten " << target << " zu dem MoveObject hinzu " << endl;
-				orthomove[pos]->addNodeBack(target, graphs[pos]->getMaxWeight());
-				orthomove[pos]->addEdgeBack(&(*it), graphs[pos]->getMaxWeight());
-				flag = true;
-				node = target;
-				break;
-			    }
-			}
-			if (flag == true){
-			    break;
-			}
-		    }
-		}
-	    }
-	}
-    }
-    flag = true;
-    cout << "schaue links" << endl;
-  
-    for(size_t pos = 0; pos < numSpecies; pos++){
-	if(orthomove[pos]){
-	    if(!orthomove[pos]->nodesIsEmpty()){
-		Node *node = orthomove[pos]->getNodeFront();
-		while(flag){
-		    //cout << "entering loop" << endl;
-		    //cout << "node " << node << endl; 
-		    flag = false;
-		    for(list<OrthoExon>::const_iterator ortho = local_orthoexons.begin(); ortho != local_orthoexons.end(); ortho++){
-			Node *target = graphs[pos]->getNode(ortho->orthoex[pos]);
-			for(list<Edge>::iterator it = target->edges.begin(); it!= target->edges.end(); it++){
-			    if(it->to == node){
-				cout <<"Kante gefunden: "<< *it << endl;
-				cout <<"füge Knoten " << target << " zu dem MoveObject hinzu " << endl;
-				orthomove[pos]->addNodeFront(target, graphs[pos]->getMaxWeight());
-				orthomove[pos]->addEdgeFront(&(*it), graphs[pos]->getMaxWeight());
-				flag = true;
-				node = target;
-				break;
-			    }
-			}
-		    }
-		}
-	    }
-	}
-    }
-}
-
-vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon *orthoex){
+	
+vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon &orthoex){
 
     vector<MoveObject*> orthomove;
+
+    int shift_size = 5;
   
     //count number of zeros and ones in labelpattern of an OrthoExon
   
     size_t numOnes = 0;
     size_t numZeros = 0;
 
+    //get current label pattern, important to update this !!!!
+    string labelpattern = getLabelpattern(orthoex);
+
   
-    for(string::iterator string_it = orthoex->labelpattern.begin(); string_it < orthoex->labelpattern.end(); string_it++){
+    for(string::iterator string_it = labelpattern.begin(); string_it < labelpattern.end(); string_it++){
 	if(*string_it == '1'){
 	    numOnes++;
 	}
@@ -427,34 +383,34 @@ vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon *orthoex){
 	}
     }
   
-    if( numOnes == 0 || numZeros == 0 ){           // nothing has to be done
+    if( numOnes == 0 || numZeros == 0 ){ // nothing has to be done
     }
     else {  
 	cout << "Majority Rule Move " << endl;
-	cout << *orthoex << "\t" << orthoex->labelpattern << endl;
+	cout << orthoex << "\t" << orthoex.labelpattern << endl;
+	cout << "iteration:\t" << 0  <<"\tshift_size:\t" <<shift_size<<endl;
 	orthomove.resize(numSpecies);
-	if ( numOnes >= numZeros ){                  // make all zeros to ones	
+	if ( numOnes >= numZeros ){   // make all zeros to ones	
 	    for(size_t pos = 0; pos < numSpecies; pos++){
-		if( (orthoex->labelpattern[pos] == '0')  ){
-		    MoveObject *move = new MoveObject(graphs[pos], 3);
-		    move->addNodeBack( graphs[pos]->getNode(orthoex->orthoex[pos]), graphs[pos]->getMaxWeight() );
+		if( (orthoex.labelpattern[pos] == '0')  ){
+		    MoveObject *move = new MoveObject(graphs[pos],shift_size);
+		    move->addNodeBack( graphs[pos]->getNode(orthoex.orthoex[pos]), graphs[pos]->getMaxWeight() );
 		    move->initLocalHeadandTail();
 		    orthomove[pos] = move;
-		    cout << "local_head: " << orthomove[pos]->getHead() << endl;
-		    cout << "local_tail: " << orthomove[pos]->getTail() << endl;
+		    cout << "local_head:\t" << orthomove[pos]->getHead() << endl;
+		    cout << "local_tail:\t" << orthomove[pos]->getTail() << endl;
 		}
 	    }
 	}
-	else {                                       // make all ones to zeros
-	    cout << "make all ones to zeros" << endl;	
+	else {   // make all ones to zeros	
 	    for(size_t pos = 0; pos < numSpecies; pos++){
-		if( (orthoex->labelpattern[pos] == '1')  ){
-		    MoveObject *move = new MoveObject(graphs[pos], 3);
-		    move->addNodeBack( graphs[pos]->getNode(orthoex->orthoex[pos]), - graphs[pos]->getMaxWeight() );
+		if( (orthoex.labelpattern[pos] == '1')  ){
+		    MoveObject *move = new MoveObject(graphs[pos], shift_size);
+		    move->addNodeBack( graphs[pos]->getNode(orthoex.orthoex[pos]), - graphs[pos]->getMaxWeight() );
 		    move->initLocalHeadandTail();
 		    orthomove[pos] = move;
-		    cout << "local_head: " << orthomove[pos]->getHead() << endl;
-		    cout << "local_tail: " << orthomove[pos]->getTail() << endl;
+		    cout << "local_head:\t" << orthomove[pos]->getHead() << endl;
+		    cout << "local_tail:\t" << orthomove[pos]->getTail() << endl;
 		}
 	    }
 	}
@@ -462,17 +418,16 @@ vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon *orthoex){
     return orthomove;
 }
 
+map<string, Score> cache::labelscore; //stores score of prunning algorithm for each pattern (leaf labeling)
 
-map<string, Score> cache::labelscore; //stores score of prunning algorithm for each pattern (leaf labelling)
-
-bool cache::inHash(string key){
-    return ( labelscore.find(key) != labelscore.end() );
+bool cache::inHash(string labelpattern){
+    return ( labelscore.find(labelpattern) != labelscore.end() );
 }
 
-void cache::addToHash(string key, double score){
+void cache::addToHash(string labelpattern, double score){
     Score s;
     s.treescore = score;
-    labelscore[key] = s;
+    labelscore[labelpattern] = s;
 
 }
 
@@ -483,6 +438,7 @@ void cache::resetCounter(){
     }
 
 }
+
 
 void cache::printCache(list<OrthoExon> &ortho){
 
@@ -509,9 +465,9 @@ void cache::printCache(list<OrthoExon> &ortho){
     cout << "*************************************************************************" << endl;
 }
 
-double cache::getScore(string key){
-    return labelscore[key].treescore;
+double cache::getScore(string labelpattern){
+    return labelscore[labelpattern].treescore;
 }
-void cache::incrementCounter(string key){
-    labelscore[key].count++;
+void cache::incrementCounter(string labelpattern){
+    labelscore[labelpattern].count++;
 }

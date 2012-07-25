@@ -24,6 +24,11 @@ class SpeciesGraph : public AugustusGraph {
 private:
     list<ExonCandidate*> additionalExons; //exons, which are not sampled
     string speciesname;
+#ifdef DEBUG
+    int count_sampled;               // number of sampled exons
+    int count_additional;            // number of additional exons
+    int count_overlap;               // overlap between sampled and additional exons
+#endif
     double max_weight; // the max weight of a node/edge in the graph, used as an upper/lower bound
 
 public:
@@ -31,45 +36,64 @@ public:
 	AugustusGraph(states, dnalength),
 	additionalExons(addEx),
 	speciesname(name),
+#ifdef DEBUG
+	count_sampled(0),
+	count_additional(0),
+	count_overlap(0),
+#endif
 	max_weight(0)
     {}
 
     using AugustusGraph::getKey;
 
-    //functions to build graph with seven neutral lines
+    /*
+     * functions to build graph
+     */
     
     void buildGraph();
-    int fromNeutralLine(Node *node);  // determines the type of the neutral line of the preceding neutral node
-    int toNeutralLine(Node *node);    // determines the type of the neutral line of the suceeding neutral node
-
+    NodeType fromNeutralLine(Node *node);  // returns type of noncoding segment preceding the exon/node
+    NodeType toNeutralLine(Node *node);    // returns type of noncoding segment suceeding the exon/node
     void printGraph(string filename, Node* begin, Node* end, bool only_sampled = false); // prints graph in dot-format
     inline void printGraph(string filename){
 	printGraph(filename, head, tail, true);
     }
+    /*
+     * @getKey(): if 'node' is a neutral node, then key = PosBegin:n_type
+     * else key = PosBegin:PosEnd:StateType
+     */
     string getKey(Node *n);
     double setScore(Status *st);
     Node* addExon(Status *exon, vector< vector<Node*> > &neutralLines);        // adds a sampled exon to the graph
-    Node* addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines); // adds an exon, which is not sampled
+    void addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines);  // adds an exon, which is not sampled
     void addNeutralNodes(Node *node,vector< vector<Node*> > &neutralLines);    // adds neutral nodes and edges to and from an exon
     void addIntron(Node* exon1, Node* exon2, Status *intr);                    // adds a sampled intron
 
     inline void updateMaxWeight(double weight){
-	if(abs(weight) > max_weight)
-	    max_weight = abs(weight);
+	if(abs(weight) > max_weight){
+	    max_weight = weight;
+	}
     }
-    inline double getMaxWeight(){                         // upper bound of a maximum weight path
+    inline double getMaxWeight() const{                         // upper bound of a maximum weight path
 	return 2 * max_weight * nodelist.size();
     }
+    inline string getSpeciesname() const{
+	return speciesname;
+    }
 
-    // maximum weight path problem related functions
+    /*
+     * maximum weight path problem related functions
+     */
 
     void topSort();                                       // sorts nodelist of graph topologically
-    void dfs(Node* node, map<string,Node*> &processed);   // subroutine of topSort()                                
+    void dfs(Node* node, map<string,Node*> &processed);   // depth first search, subroutine of topSort()                                
     void relax(Node* begin, Node *end);                   // relaxation of all nodes "in between" begin and end ("in between" in terms of the topological ordering)
+    inline void relax(){
+	relax(head, tail);
+    }
     double localChange(MoveObject *move);                 // local path search with calculation of the score difference between new and old local path
     double getScorePath(Node *begin, Node *end);          // calc. the sum of edge weights of the path: begin ~~> end
-    Node* getTopSortPred(Node *node, size_t step = 1); 
-    Node* getTopSortNext(Node *node, size_t step = 1);
+    Node* getTopSortPred(Node *node, size_t step = 1);    //get next node in topological order which is on the path
+    Node* getTopSortNext(Node *node, size_t step = 1);    //get previous node in topological order which is on the path
 
 };
 
@@ -145,8 +169,9 @@ public:
     }
     void addWeights();
     void undoAddWeights();
-    void initLocalHeadandTail();
+    void initLocalHeadandTail();  //determines local_head and local_tail
 
 };
 
 #endif  // _SPECIESGRAPH
+ 

@@ -14,8 +14,6 @@
 #include "phylotree.hh"
 #include "orthoexon.hh"
 
-using namespace std;
-
 //forward declarations
 class OrthoExon;
 
@@ -33,23 +31,24 @@ public:
     list<OrthoExon> all_orthoex;
     vector< list<Gene> *> ptrs_to_alltranscripts; //stores pointers to alltranscripts until they can be deleted (destructor of OrthoGraph)
 
+    bool print_change; //only temporary flag
+
     //functions to redirect filestreams
     static void initOutputFiles();
     static void closeOutputFiles();
 
-    string getLabelpattern(OrthoExon &ex); //determines the key of an orthoex for the map labelscore
+    string getLabelpattern(OrthoExon &ex); //determines the current labelpattern of an orthoex
 
     //optimization functions
-    void optimize();
-    void localMove(vector<MoveObject*> &orthomove);
-    double calculateScoreDiff(vector<MoveObject*> &orthomove);
+    void optimize();                                 // create MoveObjects
+    void localMove(vector<MoveObject*> &orthomove);  // do the local move for a MoveObject
     inline double pruningAlgor(){                    // pruning Algor. for all OrthoExons
 	return pruningAlgor(all_orthoex);
     }
                          
     double pruningAlgor(list<OrthoExon> &orthoex);   // pruning Algor. for a list of OrthoExons in a range
     list<OrthoExon> orthoExInRange(vector<MoveObject*> &orthomove); //determine all OrthoExons in a range
-    void addOrthoIntrons(vector<MoveObject*> &orthomove, list<OrthoExon> &local_orthoexons);
+   
 
 
     //functions to create different types of moves:
@@ -58,7 +57,7 @@ public:
      * majorityRule: if # of 0's in labelpattern of an OrthoExon is smaller than # of 1's,
      * all nodes with the labels 0 are made to 1 and vice versa
      */
-    vector<MoveObject*> majorityRuleMove(OrthoExon *orthoex);
+    vector<MoveObject*> majorityRuleMove(OrthoExon &orthoex);
 
     void outputGenes();
     inline void storePtrsToAlltranscripts(list<Gene> *alltranscripts){
@@ -69,7 +68,7 @@ public:
 struct Score{
     double treescore;   //stores the score of a label pattern
  
-    int count;          //counts the number of exontuples which have that specific pattern
+    int count;          //counts the number of exon candidate tuples which have that specific pattern
 
     Score() : treescore(0), count(0) {}
     ~Score() {}
@@ -77,7 +76,7 @@ struct Score{
 
 /*
  * hashfunction storing all label patterns and their Score
- * key: string over alphabet {0,1,2}^k, k = # species^k
+ * labelpattern: string over alphabet {0,1,2}^k, k = # species^k
  * 0 codes for exon in graph, but not part of the maximum weight path
  * 1 codes for exon in graph and part of the maximum weight path
  * 2 codes for exon not in graph: Status* = NULL
@@ -90,13 +89,12 @@ namespace cache{
     /*
      * cache functions
      */
-    bool inHash(string key);
+    bool inHash(string labelpattern);
     void resetCounter();
-    void addToHash(string key, double score);
-    double getScore(string key);
-    void incrementCounter(string key);
+    void addToHash(string labelpattern, double score);
+    double getScore(string labelpattern);
+    void incrementCounter(string labelpattern);
     void printCache(list<OrthoExon> &ortho);
 }
-
 
 #endif

@@ -79,7 +79,11 @@ PhyloTree::PhyloTree(string filename){
 #ifndef DEBUG
 	parser.setDebug(false);
 #endif
-	int error_message = parser.parse();  //start parsing
+	/*
+	 * start parsing
+	 * @error_message: if 0 parsing was successful, if 1 input syntax is wrong
+	 */
+	int error_message = parser.parse();
 	fb.close();
 	if(error_message == 1){
 	    throw ProjectError("the parsing of " + filename + " has been unsuccessful. Please check, whether the syntax of your input file is correct" );
@@ -145,19 +149,16 @@ double PhyloTree::pruningAlgor(string labelpattern){
 	    /*
 	     * initialization
 	     */
-	    if(labelpattern.at(getVectorPositionSpecies((*it)->species)) == '2'){     // no Exon present -> sum over all possible labels (0,1)
-		//cout<<(*it)->species<<"\t"<<(getVectorPositionSpecies((*it)->species))<<"\t"<<"NULL"<<endl;
+	    if(labelpattern.at(getVectorPositionSpecies((*it)->species)) == '2'){     // no exon present -> sum over all possible labels (0,1)
 		(*it)->alpha.at(0) = 1; 
 		(*it)->alpha.at(1) = 1;
 	    }
 	    else{
-		if(labelpattern.at(getVectorPositionSpecies((*it)->species)) == '1'){   // Exon present and also part of the path
-		    //cout<<(*it)->species<<"\t"<<(getVectorPositionSpecies((*it)->species))<<"\t"<<"1"<<endl;
+		if(labelpattern.at(getVectorPositionSpecies((*it)->species)) == '1'){   // exon present and also part of the path;
 		    (*it)->alpha.at(0) = 0; 
 		    (*it)->alpha.at(1) = 1;
 		}
-		if(labelpattern.at(getVectorPositionSpecies((*it)->species)) == '0'){   // Exon present, but not part of the path
-		    //cout<<(*it)->species<<"\t"<<(getVectorPositionSpecies((*it)->species))<<"\t"<<"0"<<endl;
+		if(labelpattern.at(getVectorPositionSpecies((*it)->species)) == '0'){   // exon present, but not part of the path
 		    (*it)->alpha.at(0) = 1; 
 		    (*it)->alpha.at(1) = 0;
 		}
@@ -177,16 +178,16 @@ double PhyloTree::pruningAlgor(string labelpattern){
     double tree_score  = log( ( this->evo.getEquilibriumFreq(0) * this->treenodes.back()->alpha.at(0) ) + ( this->evo.getEquilibriumFreq(1) * this->treenodes.back()->alpha.at(1)) ) * this->evo.getPhyloFactor();
    
 
-#ifdef DEBUG
+    /*#ifdef DEBUG
     cout<<"#####################################################################\n";
-    cout<<"# tableau Prunning Alogrithm\n";
+    cout<<"# tableau pruning alogrithm\n";
     cout<<"#####################################################################\n";
     cout<<"node\t\t"<<"label 0\t\t"<<"label 1\n";
     for(list<Treenode*>::iterator it = this->treenodes.begin(); it != this->treenodes.end(); it++){
 	cout<<(*it)->species<<"\t\t"<<(*it)->alpha.at(0)<<"\t\t"<<(*it)->alpha.at(1)<<"\n";
     }
     cout<<"#####################################################################\n";
-#endif
+    #endif*/
     return tree_score;
   
 }

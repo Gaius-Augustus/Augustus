@@ -25,11 +25,15 @@ class ExonEvoModel;
 class Treenode{
 
 private:
-    std::string species;
-    double dist_to_parent;
-    Treenode *parent;
-    std::list<Treenode*> children;
-    std::vector<double> alpha; //DB variable of Prunning Algorithm
+    std::string species;             // speciesname (only leaf nodes)
+    double dist_to_parent;           // branch length to parent
+    Treenode *parent;                // parent node
+    std::list<Treenode*> children;   // child nodes
+    std::vector<double> alpha;       /* stores dynamic programing variable of pruning algorithm:
+				      * alpha[i] is the conditional probability of the label pattern 
+				      * in the subtree rooted in this node given this node has label i,
+				      * where i is from the state space { 0,1 }
+				      */
  
 public:  
     Treenode(std::string s="interior", double t=0.0, Treenode *p=NULL):
@@ -59,30 +63,38 @@ public:
     }
 
     void printNode() const;
-    double calculateAlphaScore(bool label, ExonEvoModel &evo);
+    double calculateAlphaScore(bool label, ExonEvoModel &evo); // calculates the dynamic programing variables
 
     friend class PhyloTree;
   
 };
+
+/*
+ * model of exon evolution
+ */
 
 class ExonEvoModel{
 
 public:
     ExonEvoModel();
     ~ExonEvoModel() {}
-    double P(bool label1, bool label2, double dist) const;  //calculates probability of transition from label1 to label2 in time dist
+    double P(bool label1, bool label2, double dist) const;  //returns probability of transition from label1 to label2 along a branch of length dist
     double getEquilibriumFreq(bool label) const;  //equilibrium frequency of a label
     inline double getPhyloFactor() const{
 	return phylo_factor;
     }
 
 private:
-    double mu;  // rate for exon loss
-    double lambda; // rate for exon gain
-    double phylo_factor; //parameter to increase/decrease probability
+    double mu;           // rate for exon loss
+    double lambda;       // rate for exon gain
+    double phylo_factor; // parameter to increase/decrease probability
 
 
 };
+
+/*
+ * the phylogenetic tree
+ */
 
 class PhyloTree{
 
@@ -93,12 +105,12 @@ public:
     PhyloTree(std::string filename);
     ~PhyloTree();
 
-    std::vector<std::string> species;
+    std::vector<std::string> species;  //vector of species names
     ExonEvoModel evo;
     size_t getVectorPositionSpecies(std::string name);
     void printTree() const;
     void printWithGraphviz(std::string filename) const;
-    double pruningAlgor(std::string labelpattern);
+    double pruningAlgor(std::string labelpattern);   //executes pruning algorithm for the tree and a the given model of exon evolution
 
 };
 
