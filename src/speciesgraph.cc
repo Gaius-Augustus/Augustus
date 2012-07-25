@@ -17,7 +17,7 @@
 
 #include "speciesgraph.hh"
 
-void SpeciesGraph::buildGraph(){
+double SpeciesGraph::buildGraph(){
 
     vector< vector<Node*> > neutralLines; //represents the seven neutral lines
 
@@ -113,8 +113,8 @@ void SpeciesGraph::buildGraph(){
     cout << "sampled\t\t" << count_sampled << endl;
     cout << "additional\t" << count_additional << endl;
     cout << "overlap\t\t" << count_overlap << endl << endl;
-
 #endif
+
     //create neutral lines by connecting neutral nodes in the vector
     for(int j=0; j<neutralLines.size(); j++){
 	createNeutralLine(neutralLines.at(j));
@@ -131,17 +131,18 @@ void SpeciesGraph::buildGraph(){
 
 #ifdef DEBUG
     printGraph(speciesname + ".dot");
-#endif	
-
+#endif
+    
+    if(count_sampled != 0)
+	return count_overlap/(double)count_sampled;
+    return 2; //some number greater than 1 (just to be able to identify this case and sort it out)
 }
 
 Node* SpeciesGraph::addExon(Status *exon, vector< vector<Node*> > &neutralLines){
 
     if(!alreadyProcessed(exon)){
-#ifdef DEBUG
 	count_sampled++;
 	//cout << "sampled_exon\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" << (string)stateTypeIdentifiers[((State*)exon->item)->type] << "\t"<< endl;
-#endif
 	Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item, sampled);
 	nodelist.push_back(ex);
 	addToHash(ex);
@@ -152,21 +153,17 @@ Node* SpeciesGraph::addExon(Status *exon, vector< vector<Node*> > &neutralLines)
 }
 
 void SpeciesGraph::addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines){
-
+    count_additional++;
     if(!alreadyProcessed(exon)){
-#ifdef DEBUG
-	count_additional++;
 	//cout << "unsampled_exon\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" <<(string)stateTypeIdentifiers[exon->getStateType()] << endl;
-#endif
-	Node *ex = new Node(exon->begin, exon->end, exon->score, exon, unsampled_exon);
+	//TODO: Node *ex = new Node(exon->begin, exon->end, exon-> ?, exon, unsampled_exon);
+	Node *ex = new Node(exon->begin, exon->end, -0.1, exon, unsampled_exon);
 	nodelist.push_back(ex);
 	addToHash(ex);
 	addNeutralNodes(ex, neutralLines);
     }
     else{
-#ifdef DEBUG
 	count_overlap++;
-#endif
     }
 }
 
@@ -204,10 +201,7 @@ void SpeciesGraph::addIntron(Node* exon1, Node* exon2, Status *intr){
 
 
     if( !edgeExists(exon1,exon2) ){
-
-#ifdef DEBUG
 	//cout << "sampled_intron\t\t"<< intr->begin << "\t\t" << intr->end << "\t\t" << (string)stateTypeIdentifiers[((State*)intr->item)->type] << endl;
-#endif
 	Edge in(exon2, false, setScore(intr), intr->item);
 	exon1->edges.push_back(in);
 	string intron_key = getKey(exon1) + ":" + getKey(exon2);

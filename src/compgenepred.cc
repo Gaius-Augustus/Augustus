@@ -43,6 +43,12 @@ void CompGenePred::start(){
   
     OrthoGraph::initOutputFiles();
 
+    /*stores for each species the fraction of sampled exons, which are also exon candidates
+    * determined by evaluation DSS and ASS signals
+    */
+    vector< list< double > > fraction_sampled;
+    fraction_sampled.resize(OrthoGraph::numSpecies);
+
     NAMGene namgene; // creates and initializes the states
     FeatureCollection extrinsicFeatures; // hints, empty for now, will later read in hints for sequence ranges from database
     SequenceFeatureCollection sfc(&extrinsicFeatures);
@@ -70,7 +76,7 @@ void CompGenePred::start(){
 		    cout << "-\t";
 		cout << "(" <<geneRange->getEnd(s) - geneRange->getStart(s) + 1 << "bp)" << endl;
 #endif
-                orthograph.orthoSeqRanges[OrthoGraph::tree->getVectorPositionSpecies(speciesname[s])] = seqRange;
+                orthograph.orthoSeqRanges[s] = seqRange;
                 if (seqRange==NULL) {
                     cerr << "random sequence access failed on " << speciesname[s] << ", " << geneRange->getChr(s) << ", " << geneRange->getStart(s) << ", " <<  geneRange->getEnd(s) << ", " << endl;
                     break;
@@ -96,16 +102,12 @@ void CompGenePred::start(){
 			    buildStatusList(alltranscripts, false, stlist);
 			}
 			//build graph
-			SpeciesGraph *singleGraph = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesname[s]);
-			singleGraph->buildGraph();
-			//find correct position in vector and add graph for species to OrthoGraph
-			size_t pos = OrthoGraph::tree->getVectorPositionSpecies(speciesname[s]);
-			if (pos < OrthoGraph::numSpecies){
-			    orthograph.graphs[pos] = singleGraph;
-			} else {
-			    cerr << "species names in Orthograph and OrthoExon don't match" << endl;
+			orthograph.graphs[s] = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesname[s]);
+			double frac_sampled =orthograph.graphs[s]->buildGraph();
+			if (frac_sampled <= 1){
+			    fraction_sampled[s].push_back(frac_sampled);
 			}
-			orthograph.ptrs_to_alltranscripts[pos] = alltranscripts; //save pointers to transcripts and delete them after gene list is build
+			orthograph.ptrs_to_alltranscripts[s] = alltranscripts; //save pointers to transcripts and delete them after gene list is build
 		    }
 		}
 	    } else {
@@ -133,7 +135,7 @@ void CompGenePred::start(){
     }
     GeneMSA::closeOutputFiles();
     OrthoGraph::closeOutputFiles();
-    
+
     // free memory space of tree
     delete OrthoGraph::tree;
     
