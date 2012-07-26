@@ -35,13 +35,15 @@ void CompGenePred::start(){
     cout << "reading in the phylogenetic tree" << endl;
 #endif
     PhyloTree *tree = new PhyloTree(Constant::treefile);  //has to be initialized before OrthoGraph
-#ifdef DEBUG
-    OrthoGraph::tree->printWithGraphviz("tree.dot");
-#endif
 
     OrthoGraph::tree = tree;
     GeneMSA::tree = tree;
     OrthoGraph::numSpecies = OrthoGraph::tree->species.size();
+
+
+#ifdef DEBUG
+    OrthoGraph::tree->printWithGraphviz("tree.dot");
+#endif
   
     OrthoGraph::initOutputFiles();
 
