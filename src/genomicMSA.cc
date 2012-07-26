@@ -23,6 +23,7 @@ GeneMSA* GenomicMSA::getNextGene() {
     int max_intron_length=12000;
     vector<Strand >geneStrand;
     vector<string> geneChr;
+    vector<int> geneStarts, geneSeqLens;
     bool geneRange=true;
     if (this->alignment.empty()) {
         delete ptr;
@@ -34,28 +35,30 @@ GeneMSA* GenomicMSA::getNextGene() {
     for (int i=0; i<(*it_prev)->alignSpeciesTupel.size(); i++) {
         geneStrand.push_back(STRAND_UNKNOWN);
         geneChr.push_back("");
+        geneStarts.push_back(0);
+        geneSeqLens.push_back(0);
+
     }
     while (geneRange && (it_pos!=this->alignment.end())) {
         for (int i=0; i<(*it_prev)->alignSpeciesTupel.size(); i++) {
-            int geneStart = 0;
-            int geneSeqLen = 0;
             if ((*it_prev)->alignSpeciesTupel.at(i)!=NULL) {
                 if ((geneChr[i] == "") && (geneStrand[i] == STRAND_UNKNOWN)) {
                     geneChr[i] = (*it_prev)->alignSpeciesTupel.at(i)->chromosome.first;
                     geneStrand[i] = (*it_prev)->alignSpeciesTupel.at(i)->strand;
                 }
-                geneStart = (*it_prev)->alignSpeciesTupel.at(i)->start;
-                geneSeqLen = (*it_prev)->alignSpeciesTupel.at(i)->seqLen;
+                geneStarts[i] = (*it_prev)->alignSpeciesTupel.at(i)->start;
+                geneSeqLens[i] = (*it_prev)->alignSpeciesTupel.at(i)->seqLen;
             }
             // the alignment parts have to be on the same strand, the same chromosome and less than "max_intron_length" apart
-            if (((*it_pos)->alignSpeciesTupel.at(i)!=NULL)) {
-                if (((*it_pos)->alignSpeciesTupel.at(i)->strand != geneStrand[i]) || ((*it_pos)->alignSpeciesTupel.at(i)->chromosome.first != geneChr[i])) {
+            if (((*it_pos)->alignSpeciesTupel.at(i)!=NULL) && geneStrand[i]!=STRAND_UNKNOWN && geneChr[i] != "") {
+                if (((*it_pos)->alignSpeciesTupel.at(i)->strand != geneStrand[i]) || ((*it_pos)->alignSpeciesTupel.at(i)->chromosome.first != geneChr[i])
+                      || ((*it_pos)->alignSpeciesTupel.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0)) {
                     geneRange=false;
                     break;
                 }
             }
-            if (((*it_pos)->alignSpeciesTupel.at(i)!=NULL) /*&& (geneStart != 0)*/) {
-                if (((*it_pos)->alignSpeciesTupel.at(i)->start - (geneStart + geneSeqLen) > max_intron_length) || ((*it_pos)->alignSpeciesTupel.at(i)->start - (geneStart + geneSeqLen) < 0)) {
+            if ((*it_pos)->alignSpeciesTupel.at(i)!=NULL && (*it_prev)->alignSpeciesTupel.at(i)!=NULL) {
+                if (((*it_pos)->alignSpeciesTupel.at(i)->start - ((*it_prev)->alignSpeciesTupel.at(i)->start + (*it_prev)->alignSpeciesTupel.at(i)->seqLen) > max_intron_length)) {
                     geneRange=false;
                     break;
                 }
@@ -264,7 +267,6 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
 void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
     list<AlignmentBlock*>::iterator it_pos=this->alignment.begin();
     list<AlignmentBlock*>::iterator it_prev;
-    //vector<bool> doesNotExistBefore(false,(*it_pos)->alignSpeciesTupel.size());
     vector<Strand >geneStrand;
     vector<string> geneChr;
     list<block>::iterator it_block;
@@ -290,7 +292,6 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                 for (int j=0; j<(*it_prev)->alignSpeciesTupel.size(); j++) {
                     if (((*it_prev)->alignSpeciesTupel.at(j)==NULL) || ((*it_pos)->alignSpeciesTupel.at(j)==NULL)) {
                         count++;
-                        //doesNotExistBefore[j]=true;
                         if (count>=specieslimit) {
                             complete=false;
                             break;
@@ -307,22 +308,16 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
 
                     //  max 5 bases apart, on the same strand and on the same chromosome, when there is an alignmentblock before
                     if (((*it_pos)->alignSpeciesTupel.at(j)!=NULL) && (geneChr[j] != "")) {
-                        //if (doesNotExistBefore[j]==false) {
                             if (((*it_pos)->alignSpeciesTupel.at(j)->strand != geneStrand[j]) || ((*it_pos)->alignSpeciesTupel.at(j)->chromosome.first != geneChr[j])) {
                                 complete=false;
                                 break;
                             }
-                        //}
                     }
                     if (((*it_pos)->alignSpeciesTupel.at(j)!=NULL) && (geneStart != 0)) {
-                        //if (doesNotExistBefore[j]==false) {
                             if (((*it_pos)->alignSpeciesTupel.at(j)->start - (geneStart + geneSeqLen) > maxGapLen) || ((*it_pos)->alignSpeciesTupel.at(j)->start - (geneStart + geneSeqLen) < 0)) {
                                 complete=false;
                                 break;
                             }
-                        /*} else {
-                            doesNotExistBefore[j]=false;
-                        }*/
                     }
                     // sequences of the different species have to have the same distance
                     if (((*it_prev)->alignSpeciesTupel.at(j)!=NULL) && ((*it_pos)->alignSpeciesTupel.at(j)!=NULL)) {

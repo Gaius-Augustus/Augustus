@@ -13,6 +13,8 @@
 // project includes
 #include "exoncand.hh"
 #include "orthoexon.hh"
+#include "phylotree.hh"
+
 
 struct AlignmentBlock {
     vector<AlignSeq*> alignSpeciesTupel;
@@ -20,7 +22,9 @@ struct AlignmentBlock {
 
 class GeneMSA {
 public:
-    static ofstream *exonCands_outfile, *orthoExons_outfile; // pointer to the output files
+    static PhyloTree *tree;
+    static int orthoExonID; // stores an ID for exons of different species which are orthologous to each other
+    static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles; // pointers to the output files
     list<AlignmentBlock*> alignment;		// list of the alignment parts which possibly belong to a gene segment
     vector< list<ExonCandidate*>* > exoncands;		// exon candidates found in the different species in a gene segment
     vector< map<string, ExonCandidate*>* > existingCandidates;		// stores the keys of the exon candidates for the different species

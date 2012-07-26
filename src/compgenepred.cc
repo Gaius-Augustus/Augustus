@@ -34,11 +34,13 @@ void CompGenePred::start(){
 #ifdef DEBUG
     cout << "reading in the phylogenetic tree" << endl;
 #endif
-    OrthoGraph::tree = new PhyloTree(Constant::treefile);  // reads in the phylogenetic tree
+    PhyloTree *tree = new PhyloTree(Constant::treefile);  //has to be initialized before OrthoGraph
 #ifdef DEBUG
     OrthoGraph::tree->printWithGraphviz("tree.dot");
 #endif
 
+    OrthoGraph::tree = tree;
+    GeneMSA::tree = tree;
     OrthoGraph::numSpecies = OrthoGraph::tree->species.size();
   
     OrthoGraph::initOutputFiles();
@@ -122,7 +124,7 @@ void CompGenePred::start(){
 	geneRange->printOrthoExons(offsets);
 	orthograph.all_orthoex = geneRange->getOrthoExons();
 
-	if(!orthograph.all_orthoex.empty()){   
+	if(!orthograph.all_orthoex.empty()){
 	    // iterative optimization of labelings in graphs
 	    orthograph.optimize();	    
 	}

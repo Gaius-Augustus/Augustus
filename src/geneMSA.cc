@@ -20,8 +20,12 @@
 #include <iostream>
 #include <string>
 
-ofstream *GeneMSA::exonCands_outfile=NULL;
-ofstream *GeneMSA::orthoExons_outfile=NULL;
+using namespace std;
+
+PhyloTree *GeneMSA::tree = NULL;
+int GeneMSA::orthoExonID = 1;
+vector<ofstream*> GeneMSA::exonCands_outfiles;
+vector<ofstream*> GeneMSA::orthoExons_outfiles;
 
 string GeneMSA::getName(int speciesIdx) {
     for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
@@ -426,7 +430,7 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
             cout<<"     typ "<<(*lit)->type<<endl;
         }
     }*/
-    cout << "thresholds: dssminprob=" << dssminprob << " assminprob=" << assminprob << endl;
+    //cout << "thresholds: dssminprob=" << dssminprob << " assminprob=" << assminprob << endl;
 }
 
 // computes the aligned position of a base in an alignment and the 'block' where the base is found
@@ -504,7 +508,7 @@ void GeneMSA::createOrthoExons(vector<int> offsets) {
                                 } else {
                                     key = "no key";
                                 }
-                                if (existingCandidates[i]!=NULL && existingCandidates[0]!=NULL ) {
+                                if (existingCandidates[i]!=NULL && existingCandidates[0]!=NULL) {
                                     map<string, ExonCandidate*>::iterator map_it = (*existingCandidates[i]).find(key);
                                     if (map_it!=(*existingCandidates[i]).end()) {
                                         oe.orthoex[i]=(map_it->second);
@@ -550,38 +554,40 @@ void GeneMSA::createOrthoExons(vector<int> offsets) {
 
  void GeneMSA::openOutputFiles(){
     string outputdirectory;  //directory for output files
-
     try {
         outputdirectory = Properties::getProperty("/examples/outdirectory");
     } catch (...) {
         outputdirectory = "";
     }
     outputdirectory = expandHome(outputdirectory); //replace "~" by "$HOME"
-
-    string file_exoncand = outputdirectory + "exonCands" + ".gff";
-    ofstream *os_ec = new ofstream(file_exoncand.c_str());
-    if (os_ec) {
-        exonCands_outfile=os_ec;
-        (*os_ec) << PREAMBLE << endl;
-        (*os_ec) << "#\n#-----  exon candidates  -----" << endl << "#" << endl;
-    }
-    string file_orthoexon = outputdirectory + "orthoExons" + ".gff";
-    ofstream *os_oe = new ofstream(file_orthoexon.c_str());
-    if (os_oe) {
-        orthoExons_outfile=os_oe;
-        (*os_oe) << PREAMBLE << endl;
-        (*os_oe) << "#\n#----- orthologue exons  -----" << endl << "#" << endl;
+    exonCands_outfiles.resize(tree->species.size());
+    orthoExons_outfiles.resize(tree->species.size());
+    for (int i=0; i<tree->species.size(); i++) {
+        string file_exoncand = outputdirectory + "exonCands." + tree->species[i] + ".gff";
+        ofstream *os_ec = new ofstream(file_exoncand.c_str());
+        if (os_ec!=NULL) {
+            exonCands_outfiles[i]=os_ec;
+            (*os_ec) << PREAMBLE << endl;
+            (*os_ec) << "#\n#-----  exon candidates  -----" << endl << "#" << endl;
+        }
+        string file_orthoexon = outputdirectory + "orthoExons." + tree->species[i] + ".gff";
+        ofstream *os_oe = new ofstream(file_orthoexon.c_str());
+        if (os_oe) {
+            orthoExons_outfiles[i]=os_oe;
+            (*os_oe) << PREAMBLE << endl;
+            (*os_oe) << "#\n#----- orthologue exons  -----" << endl << "#" << endl;
+        }
     }
 }
 
 //writes the exon candidates of a species of a dna segment in the file 'exonCands.gff'
 void GeneMSA::printExonCands(vector<int> offsets) {
     streambuf *console = cout.rdbuf();  //save old buf
-    cout.rdbuf(exonCands_outfile->rdbuf());  //redirect cout to 'exonCands.gff'!
     if (!(this->exoncands.empty())) {
         for (int i=0; i<this->exoncands.size(); i++) {
+            cout.rdbuf(exonCands_outfiles[i]->rdbuf());  //redirect cout to 'exonCands.speciesname.gff'
             if (this->exoncands.at(i)!=NULL) {
-                cout<<" # speciesname: "<<this->getName(i) <<endl;
+                cout << " # sequence:\t" << this->getName(i)<<"\t"<<this->getStart(i)<< "-"<< this->getEnd(i)<<endl;
                 for (list<ExonCandidate*>::iterator it_exonCands=this->exoncands.at(i)->begin(); it_exonCands!=this->exoncands.at(i)->end(); it_exonCands++) {
                     cout<<this->getChr(i)<< "\tAUGUSTUS\t";
                     cout<<stateExonTypeIdentifiers[(*it_exonCands)->type]<<"\t";
@@ -598,7 +604,7 @@ void GeneMSA::printExonCands(vector<int> offsets) {
                     cout<<"group ID"<<endl;
                 }
             } else {
-                cout<<"#  no exon candidates found " << endl;
+                cout<<"#  no exon candidates for species "<<this->getName(i)<<" found " << endl;
             }
         }
     } else {
@@ -610,32 +616,25 @@ void GeneMSA::printExonCands(vector<int> offsets) {
 //writes the orthologue exons of the different species in the file 'orthoExons.gff'
 void GeneMSA::printOrthoExons(vector<int> offsets) {
     streambuf *console = cout.rdbuf();
-    cout.rdbuf(orthoExons_outfile->rdbuf());  //direct cout to 'orthoExons.gff'!
-
     if (!(this->orthoExonsList.empty())) {
-        int orthoExonNo = 1;
         for (list<OrthoExon>::iterator it_oe=orthoExonsList.begin(); it_oe!=orthoExonsList.end(); it_oe++) {
             for (int j=0; j<it_oe->orthoex.size(); j++) {
+                cout.rdbuf(orthoExons_outfiles[j]->rdbuf());  //direct cout to 'orthoExons.speciesname.gff'
                 if (it_oe->orthoex.at(j)!=NULL) {
                         cout<<this->getChr(j)<< "\tAUGUSTUS\t"<<stateExonTypeIdentifiers[it_oe->orthoex.at(j)->type]<<"\t";
                         if (this->getStrand(j) == plusstrand) {
                             cout <<it_oe->orthoex.at(j)->begin + offsets[j]+1<<"\t"<<it_oe->orthoex.at(j)->end + offsets[j]+1<<"\t"<<it_oe->orthoex.at(j)->score<<"\t";
                             cout<<'+'<<"\t";
-                            //cout<<mod3(3-(exonTypeReadingFrames[it_oe->orthoex.at(j)->type] - (it_oe->orthoex.at(j)->end - it_oe->orthoex.at(j)->begin + 1))) <<"\t";
                         } else {
                             cout <<this->getChrLength(j) - (it_oe->orthoex.at(j)->end + offsets[j])<<"\t"<<this->getChrLength(j) - (it_oe->orthoex.at(j)->begin + offsets[j])<<"\t";
                             cout<<it_oe->orthoex.at(j)->score<<"\t"<<'-'<<"\t";
-                            //cout<<mod3(2-(exonTypeReadingFrames[it_oe->orthoex.at(j)->type])) <<"\t";
                         }
                         cout<<mod3(3-(exonTypeReadingFrames[it_oe->orthoex.at(j)->type] - (it_oe->orthoex.at(j)->end - it_oe->orthoex.at(j)->begin + 1))) <<"\t";
-                        cout<<"ID="<< orthoExonNo <<" ; "<<"species "<<"\""<<this->getName(j)<<"\""<<endl;
-                    //}
-                } else {
-                     cout<<"#  species "<<this->getName(j)<<" no orthologue exon found " << endl;
+                        cout<<"ID="<<orthoExonID<<endl;
                 }
             }
             cout<<"# "<<endl;
-            orthoExonNo++;
+            orthoExonID++;
         }
     } else {
         cout << "#  no orthologue exons found at all" << endl;
@@ -644,16 +643,18 @@ void GeneMSA::printOrthoExons(vector<int> offsets) {
 }
 
 void GeneMSA::closeOutputFiles(){
-    if (exonCands_outfile) {
-        if(exonCands_outfile->is_open()) {
-            exonCands_outfile->close();
-            delete exonCands_outfile;
+    for (int i=0; i<tree->species.size(); i++) {
+        if (exonCands_outfiles[i]) {
+            if(exonCands_outfiles[i]->is_open()) {
+                exonCands_outfiles[i]->close();
+                delete exonCands_outfiles[i];
+            }
         }
-    }
-    if (orthoExons_outfile) {
-        if(orthoExons_outfile->is_open()) {
-            orthoExons_outfile->close();
-            delete orthoExons_outfile;
+        if (orthoExons_outfiles[i]) {
+            if(orthoExons_outfiles[i]->is_open()) {
+                orthoExons_outfiles[i]->close();
+                delete orthoExons_outfiles[i];
+            }
         }
     }
 }
