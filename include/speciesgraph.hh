@@ -66,7 +66,7 @@ public:
 
     inline void updateMaxWeight(double weight){
 	if(abs(weight) > max_weight){
-	    max_weight = weight;
+	    max_weight = abs(weight);
 	}
     }
     inline double getMaxWeight() const{                         // upper bound of a maximum weight path
