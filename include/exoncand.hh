@@ -90,7 +90,7 @@ public:
     string createKey(void);
 };
 
-// class stores all the informations about an alignment part of a single species
+// class stores all the information about an alignment part of a single species
 class AlignSeq {
 public:
     AlignSeq() {}

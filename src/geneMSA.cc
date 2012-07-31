@@ -179,12 +179,13 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
     list<int> exonRCStop;
     list<int> exonASS;
     list<int> exonRDSS;
-    ExonCandidate *ptr;
+    ExonCandidate *ec;
     list<ExonCandidate*> *candidates=new list<ExonCandidate*>;
     Double assminprob = IntronModel::assBinProbs.getMinProb(assqthresh) * IntronModel::getAssMotifProbThreshold(motifqthresh);
     Double dssminprob = IntronModel::dssBinProbs.getMinProb(dssqthresh);
 
     OpenReadingFrame orf(dna, max_exon_length, n);
+    // preprocessing all left coordinates of an exon candidate interval
     for (int i=0; i<=n - 1; i++) {
         // positions of all startcodons "atg"
         if (onStart(dna+i)) {
@@ -210,13 +211,13 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
         }
     }
     list<int>::reverse_iterator ritStart = exonStart.rbegin();
-    list<int>::reverse_iterator ritStart_cur=ritStart;
+    list<int>::reverse_iterator ritStart_cur = ritStart;
     list<int>::reverse_iterator ritASS = exonASS.rbegin();
-    list<int>::reverse_iterator ritASS_cur=ritASS;
+    list<int>::reverse_iterator ritASS_cur = ritASS;
     list<int>::reverse_iterator ritRDSS = exonRDSS.rbegin();
-    list<int>::reverse_iterator ritRDSS_cur=ritRDSS;
+    list<int>::reverse_iterator ritRDSS_cur = ritRDSS;
     list<int>::reverse_iterator ritRCStop = exonRCStop.rbegin();
-    list<int>::reverse_iterator ritRCStop_cur=ritRCStop;
+    list<int>::reverse_iterator ritRCStop_cur = ritRCStop;
 
     for (int i= n - 1; i>= 2; i--) {
         // computing single genes on the forward strand with at least startcodon+codon+stopcodon
@@ -229,11 +230,11 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
             int lmb = orf.leftmostExonBegin(0,i,true);
             while ((lmb<=*ritStart)&&(i-*ritStart<=max_exon_length)&&(ritStart!=exonStart.rend())) {
                 if ((i-*ritStart>=4)&&((i-*ritStart+1)%3==0)) {
-                    ptr = new ExonCandidate;
-                    ptr->begin=*ritStart - 1;
-                    ptr->end=i + 2;
-                    ptr->type=singleGene;
-                    candidates->push_back(ptr);
+                    ec = new ExonCandidate;
+                    ec->begin=*ritStart - 1;
+                    ec->end=i + 2;
+                    ec->type=singleGene;
+                    candidates->push_back(ec);
                 }
                 ritStart++;
             };
@@ -251,17 +252,17 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 int lmb = orf.leftmostExonBegin(frame,i,true);
                 while((lmb<=*ritStart)&&(i-*ritStart<=max_exon_length)&&(ritStart!=exonStart.rend())) {
                     if ((i-*ritStart>=3)&&((i-*ritStart+1)%3==frame) && (p >= dssminprob)) {
-                        ptr = new ExonCandidate;
-                        ptr->begin=*ritStart - 1;
-                        ptr->end=i - 1;
-                        if (frame==0) {
-                            ptr->type=initial_0;
-                        } else if (frame==1) {
-                            ptr->type=initial_1;
+                        ec = new ExonCandidate;
+                        ec->begin = *ritStart - 1;
+                        ec->end = i - 1;
+                        if (frame == 0) {
+                            ec->type = initial_0;
+                        } else if (frame == 1) {
+                            ec->type = initial_1;
                         } else {
-                            ptr->type=initial_2;
+                            ec->type = initial_2;
                         }
-                        candidates->push_back(ptr);
+                        candidates->push_back(ec);
                     }
                     ritStart++;
                 };
@@ -273,21 +274,21 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 while ((i<*ritASS)&&(ritASS!=exonASS.rend())){
                     ritASS++;
                 }
-                ritASS_cur=ritASS;
+                ritASS_cur = ritASS;
                 int lmb = orf.leftmostExonBegin(frame,i,true);
-                while((lmb<=*ritASS)&&(i-*ritASS<=max_exon_length)&&(ritASS!=exonASS.rend())) {
+                while(lmb <= *ritASS && i-*ritASS <= max_exon_length && ritASS != exonASS.rend()) {
                     if ((i-*ritASS>=5) && (p >= dssminprob)) {
-                        ptr = new ExonCandidate;
-                        ptr->begin=*ritASS + 2;
-                        ptr->end=i - 1;
-                        if (frame==0) {
-                            ptr->type=internal_0;
+                        ec = new ExonCandidate;
+                        ec->begin = *ritASS + 2;
+                        ec->end = i - 1;
+                        if (frame == 0) {
+                            ec->type = internal_0;
                         } else if (frame==1) {
-                            ptr->type=internal_1;
+                            ec->type = internal_1;
                         } else {
-                            ptr->type=internal_2;
+                            ec->type = internal_2;
                         }
-                        candidates->push_back(ptr);
+                        candidates->push_back(ec);
                     }
                     ritASS++;
                 };
@@ -304,11 +305,11 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 ritASS_cur=ritASS;
                 while ((i-*ritASS<=max_exon_length)&&(ritASS!=exonASS.rend())) {
                     if ((i-*ritASS>=3)&&((i-*ritASS+1)%3==frame)&&(*ritASS>=orf.leftmostExonBegin(0,i,true))) {
-                        ptr = new ExonCandidate;
-                        ptr->begin=*ritASS + 2;
-                        ptr->end=i + 2;
-                        ptr->type=terminal_exon;
-                        candidates->push_back(ptr);
+                        ec = new ExonCandidate;
+                        ec->begin = *ritASS + 2;
+                        ec->end = i + 2;
+                        ec->type = terminal_exon;
+                        candidates->push_back(ec);
                     }
                     ritASS++;
                 };
@@ -324,11 +325,11 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
             ritRCStop_cur=ritRCStop;
             while ((i-*ritRCStop<=max_exon_length)&&(ritRCStop!=exonRCStop.rend())) {
                 if ((i-*ritRCStop>=6)&&((i-*ritRCStop)%3==0)) {
-                    ptr = new ExonCandidate;
-                    ptr->begin=*ritRCStop;
-                    ptr->end=i + 2;
-                    ptr->type=rsingleGene;
-                    candidates->push_back(ptr);
+                    ec = new ExonCandidate;
+                    ec->begin=*ritRCStop;
+                    ec->end=i + 2;
+                    ec->type=rsingleGene;
+                    candidates->push_back(ec);
                     break;
                 } else {
                     ritRCStop++;
@@ -347,11 +348,11 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 int lmb = orf.leftmostExonBegin(2,i,false);
                 while((lmb<=*ritRDSS+2)&&(i-*ritRDSS<=max_exon_length)&&(ritRDSS!=exonRDSS.rend())) {
                     if ((i-*ritRDSS>=2)&&((i+1-*ritRDSS)%3==frame)) {
-                        ptr = new ExonCandidate;
-                        ptr->begin=*ritRDSS + 2;
-                        ptr->end=i + 2;
-                        ptr->type=rinitial_exon;
-                        candidates->push_back(ptr);
+                        ec = new ExonCandidate;
+                        ec->begin=*ritRDSS + 2;
+                        ec->end=i + 2;
+                        ec->type=rinitial_exon;
+                        candidates->push_back(ec);
                     }
                     ritRDSS++;
                 };
@@ -370,17 +371,17 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 int lmb = orf.leftmostExonBegin(frame,i,false);
                 while((lmb<=*ritRDSS)&&(i-*ritRDSS<=max_exon_length)&&(ritRDSS!=exonRDSS.rend())) {
                     if (i-*ritRDSS>=5 && (p >= assminprob)) {
-                        ptr = new ExonCandidate;
-                        ptr->begin=*ritRDSS + 2;
-                        ptr->end=i - 1;
+                        ec = new ExonCandidate;
+                        ec->begin=*ritRDSS + 2;
+                        ec->end=i - 1;
                         if (frame==0) {
-                            ptr->type=rinternal_0;
+                            ec->type=rinternal_0;
                         } else if (frame==1) {
-                            ptr->type=rinternal_1;
+                            ec->type=rinternal_1;
                         } else {
-                            ptr->type=rinternal_2;
+                            ec->type=rinternal_2;
                         }
-                        candidates->push_back(ptr);
+                        candidates->push_back(ec);
                     }
                     ritRDSS++;
                 };
@@ -398,17 +399,17 @@ void GeneMSA::createExonCands(const char *dna, float assqthresh, float dssqthres
                 ritRCStop_cur=ritRCStop;
                 while ((i-*ritRCStop<=max_exon_length)&&(ritRCStop!=exonRCStop.rend())) {
                     if ((i-*ritRCStop>=4)&&((i-*ritRCStop)%3==frame) && (p >= assminprob)) {
-                        ptr = new ExonCandidate;
-                        ptr->begin=*ritRCStop;
-                        ptr->end=i - 1;
+                        ec = new ExonCandidate;
+                        ec->begin=*ritRCStop;
+                        ec->end=i - 1;
                         if (frame==0) {
-                            ptr->type=rterminal_2;
+                            ec->type=rterminal_2;
                         } else if (frame==1) {
-                            ptr->type=rterminal_1;
+                            ec->type=rterminal_1;
                         } else {
-                            ptr->type=rterminal_0;
+                            ec->type=rterminal_0;
                         }
-                        candidates->push_back(ptr);
+                        candidates->push_back(ec);
                         break;
                     } else {
                         ritRCStop++;

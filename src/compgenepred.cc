@@ -1,9 +1,10 @@
 /**********************************************************************
- * file: compgenepred.cc licence: Artistic Licence, see file
+ * file: compgenepred.cc
+ * licence: Artistic Licence, see file
  * LICENCE.TXT or
- * http://www.opensource.org/licenses/artistic-license.php descr.:
- * comparative gene prediction on multiple species authors: Mario
- * Stanke, Alexander Gebauer, Stefanie König
+ * http://www.opensource.org/licenses/artistic-license.php
+ * descr.: comparative gene prediction on multiple species
+ * authors: Mario Stanke, Alexander Gebauer, Stefanie König
  *
  * date    |   author      |  changes
  * --------|---------------|------------------------------------------
@@ -30,11 +31,10 @@ CompGenePred::CompGenePred(){
 void CompGenePred::start(){
     // read in alignment, determine orthologous sequence fragments
 
-
 #ifdef DEBUG
     cout << "reading in the phylogenetic tree" << endl;
 #endif
-    PhyloTree *tree = new PhyloTree(Constant::treefile);  //has to be initialized before OrthoGraph
+    PhyloTree *tree = new PhyloTree(Constant::treefile);  // has to be initialized before OrthoGraph
 
     OrthoGraph::tree = tree;
     GeneMSA::tree = tree;
@@ -58,9 +58,9 @@ void CompGenePred::start(){
     SequenceFeatureCollection sfc(&extrinsicFeatures);
     StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
 
-    vector<string> speciesname = OrthoGraph::tree->species;
+    vector<string> speciesNames = OrthoGraph::tree->species;
     GenomicMSA msa;
-    msa.readAlignment(speciesname);
+    msa.readAlignment(speciesNames);
     msa.prepareExons();
     vector<int> offsets;
 
@@ -69,24 +69,25 @@ void CompGenePred::start(){
     GeneMSA::openOutputFiles();
     while (GeneMSA *geneRange = msa.getNextGene()) {
 	OrthoGraph orthograph;
-        for (int s = 0; s < speciesname.size(); s++) {
-            if (!geneRange->getChr(s).empty()) {
-                AnnoSequence *seqRange = rsa->getSeq(speciesname[s], geneRange->getChr(s), geneRange->getStart(s), geneRange->getEnd(s), geneRange->getStrand(s));
+        for (int s = 0; s < speciesNames.size(); s++) {
+	    string seqId = geneRange->getChr(s);
+            if (!seqId.empty()) {
+                AnnoSequence *seqRange = rsa->getSeq(speciesNames[s], seqId, geneRange->getStart(s), geneRange->getEnd(s), geneRange->getStrand(s));
 #ifdef DEBUG
-		cout << "retrieving sequence:\t" << speciesname[s] << ":" << geneRange->getChr(s) << "\t" << geneRange->getStart(s) << "-" << geneRange->getEnd(s) << "\t";
+		cout << "retrieving sequence:\t" << speciesNames[s] << ":" << seqId << "\t" << geneRange->getStart(s) << "-" << geneRange->getEnd(s) << "\t";
 		if( geneRange->getStrand(s) == plusstrand )
 		    cout << "+\t";
 		else
 		    cout << "-\t";
-		cout << "(" <<geneRange->getEnd(s) - geneRange->getStart(s) + 1 << "bp)" << endl;
+		cout << "(" << geneRange->getEnd(s) - geneRange->getStart(s) + 1 << "bp)" << endl;
 #endif
                 orthograph.orthoSeqRanges[s] = seqRange;
-                if (seqRange==NULL) {
-                    cerr << "random sequence access failed on " << speciesname[s] << ", " << geneRange->getChr(s) << ", " << geneRange->getStart(s) << ", " <<  geneRange->getEnd(s) << ", " << endl;
+                if (seqRange == NULL) {
+                    cerr << "random sequence access failed on " << speciesNames[s] << ", " << seqId << ", " << geneRange->getStart(s) << ", " <<  geneRange->getEnd(s) << ", " << endl;
                     break;
                 } else {
                     namgene.getPrepareModels(seqRange->sequence, seqRange->length); // is needed for IntronModel::dssProb in GenomicMSA::createExonCands
-                    if (geneRange->getStrand(s)==plusstrand) {
+                    if (geneRange->getStrand(s) == plusstrand) {
                         offsets.push_back(geneRange->getStart(s));
                     } else {
                         offsets.push_back(geneRange->getChrLength(s) - (geneRange->getEnd(s)) - 1);
@@ -97,7 +98,7 @@ void CompGenePred::start(){
 		    namgene.doViterbiPiecewise(sfc, seqRange, bothstrands); // sampling
 		    list<Gene> *alltranscripts = namgene.getAllTranscripts();
 		    if(alltranscripts){
-			cout << "building Graph for " << speciesname[s] << endl;
+			cout << "building Graph for " << speciesNames[s] << endl;
 			/* build datastructure for graph representation
 			 * @stlist : list of all sampled states
 			 */
@@ -106,19 +107,19 @@ void CompGenePred::start(){
 			    buildStatusList(alltranscripts, false, stlist);
 			}
 			//build graph
-			orthograph.graphs[s] = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesname[s]);
-			double frac_sampled =orthograph.graphs[s]->buildGraph();
+			orthograph.graphs[s] = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesNames[s]);
+			double frac_sampled = orthograph.graphs[s]->buildGraph();
 			if (frac_sampled <= 1){
 			    fraction_sampled[s].push_back(frac_sampled);
 			}
-			orthograph.ptrs_to_alltranscripts[s] = alltranscripts; //save pointers to transcripts and delete them after gene list is build
+			orthograph.ptrs_to_alltranscripts[s] = alltranscripts; // save pointers to transcripts and delete them after gene list is build
 		    }
 		}
 	    } else {
 		offsets.push_back(0);
 		geneRange->exoncands.push_back(NULL);
 		geneRange->existingCandidates.push_back(NULL);
-		cout<< speciesname[s] << " doesn't exist in this part of the alignment."<< endl;
+		cout<< speciesNames[s] << " doesn't exist in this part of the alignment."<< endl;
 	    }
 	}
 	geneRange->printExonCands(offsets);
