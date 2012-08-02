@@ -1,10 +1,9 @@
 /**********************************************************************
- * file: compgenepred.cc
- * licence: Artistic Licence, see file
+ * file: compgenepred.cc licence: Artistic Licence, see file
  * LICENCE.TXT or
- * http://www.opensource.org/licenses/artistic-license.php
- * descr.: comparative gene prediction on multiple species
- * authors: Mario Stanke, Alexander Gebauer, Stefanie König
+ * http://www.opensource.org/licenses/artistic-license.php descr.:
+ * comparative gene prediction on multiple species authors: Mario
+ * Stanke, Alexander Gebauer, Stefanie König
  *
  * date    |   author      |  changes
  * --------|---------------|------------------------------------------
@@ -31,10 +30,11 @@ CompGenePred::CompGenePred(){
 void CompGenePred::start(){
     // read in alignment, determine orthologous sequence fragments
 
+
 #ifdef DEBUG
     cout << "reading in the phylogenetic tree" << endl;
 #endif
-    PhyloTree *tree = new PhyloTree(Constant::treefile);  // has to be initialized before OrthoGraph
+    PhyloTree *tree = new PhyloTree(Constant::treefile);  //has to be initialized before OrthoGraph
 
     OrthoGraph::tree = tree;
     GeneMSA::tree = tree;
@@ -48,10 +48,10 @@ void CompGenePred::start(){
     OrthoGraph::initOutputFiles();
 
     /*stores for each species the fraction of sampled exons, which are also exon candidates
-    * determined by evaluation DSS and ASS signals
-    */
-    vector< list< double > > fraction_sampled;
-    fraction_sampled.resize(OrthoGraph::numSpecies);
+     * determined by evaluation DSS and ASS signals
+     */
+    /*vector< list< double > > fraction_sampled;
+    fraction_sampled.resize(OrthoGraph::numSpecies);*/
 
     NAMGene namgene; // creates and initializes the states
     FeatureCollection extrinsicFeatures; // hints, empty for now, will later read in hints for sequence ranges from database
@@ -68,80 +68,88 @@ void CompGenePred::start(){
     // loop over species
     GeneMSA::openOutputFiles();
     while (GeneMSA *geneRange = msa.getNextGene()) {
-	OrthoGraph orthograph;
+        OrthoGraph orthograph;
         for (int s = 0; s < speciesNames.size(); s++) {
-	    string seqId = geneRange->getChr(s);
-            if (!seqId.empty()) {
-                AnnoSequence *seqRange = rsa->getSeq(speciesNames[s], seqId, geneRange->getStart(s), geneRange->getEnd(s), geneRange->getStrand(s));
+            string seqID = geneRange->getSeqID(s);
+            if (!seqID.empty()) {
+                AnnoSequence *seqRange = rsa->getSeq(speciesNames[s], seqID, geneRange->getStart(s), geneRange->getEnd(s), geneRange->getStrand(s));
 #ifdef DEBUG
-		cout << "retrieving sequence:\t" << speciesNames[s] << ":" << seqId << "\t" << geneRange->getStart(s) << "-" << geneRange->getEnd(s) << "\t";
-		if( geneRange->getStrand(s) == plusstrand )
-		    cout << "+\t";
-		else
-		    cout << "-\t";
-		cout << "(" << geneRange->getEnd(s) - geneRange->getStart(s) + 1 << "bp)" << endl;
+                cout << "retrieving sequence:\t" << speciesNames[s] << ":" << geneRange->getSeqID(s) << "\t" << geneRange->getStart(s) << "-" << geneRange->getEnd(s) << "\t";
+                if( geneRange->getStrand(s) == plusstrand )
+                    cout << "+\t";
+                else
+                    cout << "-\t";
+                cout << "(" <<geneRange->getEnd(s) - geneRange->getStart(s) + 1 << "bp)" << endl;
 #endif
                 orthograph.orthoSeqRanges[s] = seqRange;
-                if (seqRange == NULL) {
-                    cerr << "random sequence access failed on " << speciesNames[s] << ", " << seqId << ", " << geneRange->getStart(s) << ", " <<  geneRange->getEnd(s) << ", " << endl;
+                if (seqRange==NULL) {
+                    cerr << "random sequence access failed on " << speciesNames[s] << ", " << geneRange->getSeqID(s) << ", " << geneRange->getStart(s) << ", " <<  geneRange->getEnd(s) << ", " << endl;
                     break;
                 } else {
                     namgene.getPrepareModels(seqRange->sequence, seqRange->length); // is needed for IntronModel::dssProb in GenomicMSA::createExonCands
-                    if (geneRange->getStrand(s) == plusstrand) {
+                    if (geneRange->getStrand(s)==plusstrand) {
                         offsets.push_back(geneRange->getStart(s));
                     } else {
-                        offsets.push_back(geneRange->getChrLength(s) - (geneRange->getEnd(s)) - 1);
+                        offsets.push_back(geneRange->getSeqIDLength(s) - (geneRange->getEnd(s)) - 1);
                     }
-                    geneRange->createExonCands(seqRange->sequence, 0.1, 0.316, 0.316); // ToDo:make this reasonable after experience with the data
+                    geneRange->createExonCands(seqRange->sequence); // ToDo:make this reasonable after experience with the data
                     list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
-		  
-		    namgene.doViterbiPiecewise(sfc, seqRange, bothstrands); // sampling
-		    list<Gene> *alltranscripts = namgene.getAllTranscripts();
-		    if(alltranscripts){
-			cout << "building Graph for " << speciesNames[s] << endl;
-			/* build datastructure for graph representation
-			 * @stlist : list of all sampled states
-			 */
-			list<Status> stlist;
-			if(!alltranscripts->empty()){
-			    buildStatusList(alltranscripts, false, stlist);
-			}
-			//build graph
-			orthograph.graphs[s] = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesNames[s]);
-			double frac_sampled = orthograph.graphs[s]->buildGraph();
-			if (frac_sampled <= 1){
-			    fraction_sampled[s].push_back(frac_sampled);
-			}
-			orthograph.ptrs_to_alltranscripts[s] = alltranscripts; // save pointers to transcripts and delete them after gene list is build
-		    }
-		}
-	    } else {
-		offsets.push_back(0);
-		geneRange->exoncands.push_back(NULL);
-		geneRange->existingCandidates.push_back(NULL);
-		cout<< speciesNames[s] << " doesn't exist in this part of the alignment."<< endl;
-	    }
-	}
-	geneRange->printExonCands(offsets);
-	geneRange->createOrthoExons(offsets);
-	geneRange->printOrthoExons(offsets);
-	orthograph.all_orthoex = geneRange->getOrthoExons();
 
-	if(!orthograph.all_orthoex.empty()){
+                    namgene.doViterbiPiecewise(sfc, seqRange, bothstrands); // sampling
+                    list<Gene> *alltranscripts = namgene.getAllTranscripts();
+                    if(alltranscripts){
+                        cout << "building Graph for " << speciesNames[s] << endl;
+                        /* build datastructure for graph representation
+                         * @stlist : list of all sampled states
+                         */
+                        list<Status> stlist;
+                        if(!alltranscripts->empty()){
+                            buildStatusList(alltranscripts, false, stlist);
+                        }
+                        //build graph
+                        orthograph.graphs[s] = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesNames[s]);
+                        /*double frac_sampled =orthograph.graphs[s]->buildGraph();
+                        if (frac_sampled <= 1){
+                            fraction_sampled[s].push_back(frac_sampled);
+                        }*/
+                        orthograph.ptrs_to_alltranscripts[s] = alltranscripts; //save pointers to transcripts and delete them after gene list is build
+                    }
+                }
+            } else {
+                offsets.push_back(0);
+                geneRange->exoncands.push_back(NULL);
+                geneRange->existingCandidates.push_back(NULL);
+                cout<< speciesNames[s] << " doesn't exist in this part of the alignment."<< endl;
+            }
+        }
+        geneRange->printExonCands(offsets);
+        geneRange->createOrthoExons(offsets);
+        geneRange->printOrthoExons(offsets);
+        orthograph.all_orthoex = geneRange->getOrthoExons();
+
+        if(!orthograph.all_orthoex.empty()){
 	    // iterative optimization of labelings in graphs
-	    orthograph.optimize();	    
+	    orthograph.optimize();
 	}
-	
+
 	// transfer max weight paths to genes + filter + ouput
 	orthograph.outputGenes();
-	
-	offsets.clear();
-	delete geneRange;
+
+        offsets.clear();
+        delete geneRange;
     }
+    /*for (int i=0; i<OrthoGraph::numSpecies; i++) {
+        double sum = 0.0;
+        for (list<double>::iterator it=fraction_sampled[i].begin(); it!=fraction_sampled[i].end(); it++) {
+            sum = sum +(*it);
+        }
+        cout<<sum/fraction_sampled[i].size() <<endl;
+    }*/
+
     GeneMSA::closeOutputFiles();
     OrthoGraph::closeOutputFiles();
 
     // free memory space of tree
     delete OrthoGraph::tree;
-    
+
 }

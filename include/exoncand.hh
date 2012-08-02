@@ -96,7 +96,7 @@ public:
     AlignSeq() {}
     ~AlignSeq(){}
     string name;
-    pair<string,long int> chromosome; // stores the number and the length of the chromosome
+    pair<string,long int> seqID; // stores the sequence ID and the length of the sequence ID
     int start, offset, seqLen, alignLen;
     Strand strand;
     vector<int*> cmpStarts;

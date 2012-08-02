@@ -17,7 +17,7 @@
 
 
 struct AlignmentBlock {
-    vector<AlignSeq*> alignSpeciesTupel;
+    vector<AlignSeq*> alignSpeciesTuple;
 };
 
 class GeneMSA {
@@ -50,8 +50,8 @@ public:
     };
 
     string getName(int speciesIdx);
-    long int getChrLength(int speciesIdx);
-    string getChr(int speciesIdx);
+    long int getSeqIDLength(int speciesIdx);
+    string getSeqID(int speciesIdx);
     Strand getStrand(int speciesIdx);
     int getStart(int speciesIdx);
     int getEnd(int speciesIdx);
@@ -67,7 +67,7 @@ public:
      * The default threshold of 0 means that all splice site patterns are considered.
      */
     //void createExonCands(const char *dna, float assqthresh, float dssqthresh);
-    void createExonCands(const char *dna, float assqthresh, float dssqthresh, float motifqthresh);
+    void createExonCands(const char *dna, double assmotifqthresh=0.05, double assqthresh=0.15, double dssqthresh=0.15);
 
     pair<int,int> getAlignedPosition(AlignSeq* ptr, int pos);	// computes the aligned position of a base in an alignment and the 'block' where the base is found
     int getRealPosition(AlignSeq* ptr, int pos, int idx);	// computes the real position of a base dependent on its position in the alignment

@@ -32,7 +32,7 @@ GeneMSA* GenomicMSA::getNextGene() {
     list<AlignmentBlock*>::iterator it_pos=this->alignment.begin();
     list<AlignmentBlock*>::iterator it_prev=it_pos;
     it_pos++;
-    for (int i=0; i<(*it_prev)->alignSpeciesTupel.size(); i++) {
+    for (int i=0; i<(*it_prev)->alignSpeciesTuple.size(); i++) {
         geneStrand.push_back(STRAND_UNKNOWN);
         geneChr.push_back("");
         geneStarts.push_back(0);
@@ -40,25 +40,25 @@ GeneMSA* GenomicMSA::getNextGene() {
 
     }
     while (geneRange && (it_pos!=this->alignment.end())) {
-        for (int i=0; i<(*it_prev)->alignSpeciesTupel.size(); i++) {
-            if ((*it_prev)->alignSpeciesTupel.at(i)!=NULL) {
+        for (int i=0; i<(*it_prev)->alignSpeciesTuple.size(); i++) {
+            if ((*it_prev)->alignSpeciesTuple.at(i)!=NULL) {
                 if ((geneChr[i] == "") && (geneStrand[i] == STRAND_UNKNOWN)) {
-                    geneChr[i] = (*it_prev)->alignSpeciesTupel.at(i)->chromosome.first;
-                    geneStrand[i] = (*it_prev)->alignSpeciesTupel.at(i)->strand;
+                    geneChr[i] = (*it_prev)->alignSpeciesTuple.at(i)->seqID.first;
+                    geneStrand[i] = (*it_prev)->alignSpeciesTuple.at(i)->strand;
                 }
-                geneStarts[i] = (*it_prev)->alignSpeciesTupel.at(i)->start;
-                geneSeqLens[i] = (*it_prev)->alignSpeciesTupel.at(i)->seqLen;
+                geneStarts[i] = (*it_prev)->alignSpeciesTuple.at(i)->start;
+                geneSeqLens[i] = (*it_prev)->alignSpeciesTuple.at(i)->seqLen;
             }
-            // the alignment parts have to be on the same strand, the same chromosome and less than "max_intron_length" apart
-            if (((*it_pos)->alignSpeciesTupel.at(i)!=NULL) && geneStrand[i]!=STRAND_UNKNOWN && geneChr[i] != "") {
-                if (((*it_pos)->alignSpeciesTupel.at(i)->strand != geneStrand[i]) || ((*it_pos)->alignSpeciesTupel.at(i)->chromosome.first != geneChr[i])
-                      || ((*it_pos)->alignSpeciesTupel.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0)) {
+            // the alignment parts have to be on the same strand, the same seqID and less than "max_intron_length" apart
+            if (((*it_pos)->alignSpeciesTuple.at(i)!=NULL) && geneStrand[i]!=STRAND_UNKNOWN && geneChr[i] != "") {
+                if (((*it_pos)->alignSpeciesTuple.at(i)->strand != geneStrand[i]) || ((*it_pos)->alignSpeciesTuple.at(i)->seqID.first != geneChr[i])
+                      || ((*it_pos)->alignSpeciesTuple.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0)) {
                     geneRange=false;
                     break;
                 }
             }
-            if ((*it_pos)->alignSpeciesTupel.at(i)!=NULL && (*it_prev)->alignSpeciesTupel.at(i)!=NULL) {
-                if (((*it_pos)->alignSpeciesTupel.at(i)->start - ((*it_prev)->alignSpeciesTupel.at(i)->start + (*it_prev)->alignSpeciesTupel.at(i)->seqLen) > max_intron_length)) {
+            if ((*it_pos)->alignSpeciesTuple.at(i)!=NULL && (*it_prev)->alignSpeciesTuple.at(i)!=NULL) {
+                if (((*it_pos)->alignSpeciesTuple.at(i)->start - ((*it_prev)->alignSpeciesTuple.at(i)->start + (*it_prev)->alignSpeciesTuple.at(i)->seqLen) > max_intron_length)) {
                     geneRange=false;
                     break;
                 }
@@ -74,32 +74,32 @@ GeneMSA* GenomicMSA::getNextGene() {
 
     /*for (list<AlignmentBlock*>::iterator it=ptr->alignment.begin(); it!=ptr->alignment.end(); it++) {
 		cout<<"ptr"<<endl;
-		for (int j=0; j<(*it)->alignSpeciesTupel.size(); j++) {
-			if ((*it)->alignSpeciesTupel.at(j)!=NULL) {
-				//cout<<"Name: "<< (*it)->alignSpeciesTupel.at(j)->name <<endl;
-				cout<<"chromosome: "<< (*it)->alignSpeciesTupel.at(j)->chromosome.first<<endl;
-				//cout<<"chromosome length: "<< (*it)->alignSpeciesTupel.at(j)->chromosome.second<<endl;
-				cout<<"start: "<<(*it)->alignSpeciesTupel.at(j)->start<<endl;
+		for (int j=0; j<(*it)->alignSpeciesTuple.size(); j++) {
+			if ((*it)->alignSpeciesTuple.at(j)!=NULL) {
+				//cout<<"Name: "<< (*it)->alignSpeciesTuple.at(j)->name <<endl;
+				cout<<"seqID: "<< (*it)->alignSpeciesTuple.at(j)->seqID.first<<endl;
+				//cout<<"seqID length: "<< (*it)->alignSpeciesTuple.at(j)->seqID.second<<endl;
+				cout<<"start: "<<(*it)->alignSpeciesTuple.at(j)->start<<endl;
 				cout<<"cmp_starts: ";
-				for (int i=0; i<(*it)->alignSpeciesTupel.at(j)->cmpStarts.size(); i++) {
-					if ((*it)->alignSpeciesTupel.at(j)->cmpStarts[i]!=NULL) {
-						cout<<*((*it)->alignSpeciesTupel.at(j)->cmpStarts[i])<<"  ";
+				for (int i=0; i<(*it)->alignSpeciesTuple.at(j)->cmpStarts.size(); i++) {
+					if ((*it)->alignSpeciesTuple.at(j)->cmpStarts[i]!=NULL) {
+						cout<<*((*it)->alignSpeciesTuple.at(j)->cmpStarts[i])<<"  ";
 					} else {
 						cout<<"NULL"<<"  ";
 					}
 				}
 				cout<<endl;
-				cout<<"sequencelength: "<<(*it)->alignSpeciesTupel.at(j)->seqLen<<endl;
-				cout<<"alignmentlength: "<<(*it)->alignSpeciesTupel.at(j)->alignLen<<endl;
-				cout<<"Strand: "<<(*it)->alignSpeciesTupel.at(j)->strand<<endl;
-				if ((*it)->alignSpeciesTupel.at(j)->sequence.empty()) {
+				cout<<"sequencelength: "<<(*it)->alignSpeciesTuple.at(j)->seqLen<<endl;
+				cout<<"alignmentlength: "<<(*it)->alignSpeciesTuple.at(j)->alignLen<<endl;
+				cout<<"Strand: "<<(*it)->alignSpeciesTuple.at(j)->strand<<endl;
+				if ((*it)->alignSpeciesTuple.at(j)->sequence.empty()) {
 					cout<<"komisch"<<endl;
 				}
-				while (!(*it)->alignSpeciesTupel.at(j)->sequence.empty()) {
-					cout<< "segment_start "<<(*it)->alignSpeciesTupel.at(j)->sequence.front().begin;
-					cout<<"   length "<<(*it)->alignSpeciesTupel.at(j)->sequence.front().length;
-					cout<<"   gaps "<<(*it)->alignSpeciesTupel.at(j)->sequence.front().previousGaps<<endl;
-					(*it)->alignSpeciesTupel.at(j)->sequence.pop_front();
+				while (!(*it)->alignSpeciesTuple.at(j)->sequence.empty()) {
+					cout<< "segment_start "<<(*it)->alignSpeciesTuple.at(j)->sequence.front().begin;
+					cout<<"   length "<<(*it)->alignSpeciesTuple.at(j)->sequence.front().length;
+					cout<<"   gaps "<<(*it)->alignSpeciesTuple.at(j)->sequence.front().previousGaps<<endl;
+					(*it)->alignSpeciesTuple.at(j)->sequence.pop_front();
 				}
 			} else {
 				cout<<"Nullpointer"<<endl;
@@ -137,7 +137,7 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
         noSpecies++;
     }
     SpeciesnameFile.close();
-    alignBlock.alignSpeciesTupel=vector<AlignSeq*> (noSpecies);
+    alignBlock.alignSpeciesTuple=vector<AlignSeq*> (noSpecies);
 
     string alignFilename = Constant::alnfile;
     ifstream Alignmentfile;
@@ -151,7 +151,7 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
         Alignmentfile>>indifferent;
         if (indifferent=="s") {
             for (int i=0; i<noSpecies; i++) {
-                alignBlock.alignSpeciesTupel[i]=NULL;
+                alignBlock.alignSpeciesTuple[i]=NULL;
             }
             for (int j=0; j<noSpecies; j++) {
                 if (indifferent!="s") {
@@ -159,18 +159,18 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
                 } else {
                     indifferent="not s";
                     ptr =new AlignSeq;
-                    // reads the name of the species and the chromosome from the first column
+                    // reads the name of the species and the seqID from the first column
                     Alignmentfile>>completeName;
                     for (int i=0; i<completeName.length(); i++) {
                         if (completeName[i]=='-') { //real seperator is the point '.' for example hs19.chr21, has to be changed
                             ptr->name=completeName.substr(0,i);
-                            ptr->chromosome.first=completeName.substr(i+1,completeName.length()- 1);
-                            ptr->chromosome.first=ptr->chromosome.first.erase(ptr->chromosome.first.find_first_of("("),ptr->chromosome.first.length()-1); // version for vergl_syn testfile
+                            ptr->seqID.first=completeName.substr(i+1,completeName.length()- 1);
+                            ptr->seqID.first=ptr->seqID.first.erase(ptr->seqID.first.find_first_of("("),ptr->seqID.first.length()-1); // version for vergl_syn testfile
                             break;
                         }
                         if (i==completeName.length()-1) {
                             ptr->name=completeName;
-                            ptr->chromosome.first="unknown";
+                            ptr->seqID.first="unknown";
                         }
                     }
                     for (int i=0; i<speciesnames.size(); i++) {
@@ -193,7 +193,7 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
                     } else {
                         ptr->strand=STRAND_UNKNOWN;
                     }
-                    Alignmentfile>>ptr->chromosome.second;
+                    Alignmentfile>>ptr->seqID.second;
                     Alignmentfile>>seq;
                     ptr->alignLen=seq.length();
                     Alignmentfile>>indifferent;
@@ -219,7 +219,7 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
                             }
                         }
                     }
-                    alignBlock.alignSpeciesTupel[index]=ptr;
+                    alignBlock.alignSpeciesTuple[index]=ptr;
                 }
             }
             complPtr =new AlignmentBlock;
@@ -230,26 +230,26 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
     Alignmentfile.close();
 
     /*for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
-		cout<<"tupelstart"<<endl;
-		for (int j=0; j<(*it)->alignSpeciesTupel.size(); j++) {
-			if ((*it)->alignSpeciesTupel.at(j)!=NULL) {
-				cout<<"Name: "<< (*it)->alignSpeciesTupel.at(j)->name <<endl;
-				cout<<"chromosome: "<< (*it)->alignSpeciesTupel.at(j)->chromosome.first<<endl;
-				//cout<<"chromosome length: "<< (*it)->alignSpeciesTupel.at(j)->chromosome.second<<endl;
-				cout<<"start: "<<(*it)->alignSpeciesTupel.at(j)->start<<endl;
+		cout<<"Tuplestart"<<endl;
+		for (int j=0; j<(*it)->alignSpeciesTuple.size(); j++) {
+			if ((*it)->alignSpeciesTuple.at(j)!=NULL) {
+				cout<<"Name: "<< (*it)->alignSpeciesTuple.at(j)->name <<endl;
+				cout<<"seqID: "<< (*it)->alignSpeciesTuple.at(j)->seqID.first<<endl;
+				//cout<<"seqID length: "<< (*it)->alignSpeciesTuple.at(j)->seqID.second<<endl;
+				cout<<"start: "<<(*it)->alignSpeciesTuple.at(j)->start<<endl;
 				cout<<"cmp_starts: ";
-				for (int i=0; i<(*it)->alignSpeciesTupel.at(j)->cmpStarts.size(); i++) {
-					if ((*it)->alignSpeciesTupel.at(j)->cmpStarts[i]!=NULL) {
-						cout<<*((*it)->alignSpeciesTupel.at(j)->cmpStarts[i])<<"  ";
+				for (int i=0; i<(*it)->alignSpeciesTuple.at(j)->cmpStarts.size(); i++) {
+					if ((*it)->alignSpeciesTuple.at(j)->cmpStarts[i]!=NULL) {
+						cout<<*((*it)->alignSpeciesTuple.at(j)->cmpStarts[i])<<"  ";
 					} else {
 						cout<<"NULL"<<"  ";
 					}
 				}
 				cout<<endl;
-				cout<<"sequencelength: "<<(*it)->alignSpeciesTupel.at(j)->seqLen<<endl;
-				cout<<"alignmentlength: "<<(*it)->alignSpeciesTupel.at(j)->alignLen<<endl;
-				cout<<"Strand: "<<(*it)->alignSpeciesTupel.at(j)->strand<<endl;
-				for (list<block>::iterator itb=(*it)->alignSpeciesTupel.at(j)->sequence.begin(); itb!=(*it)->alignSpeciesTupel.at(j)->sequence.end(); itb++) {
+				cout<<"sequencelength: "<<(*it)->alignSpeciesTuple.at(j)->seqLen<<endl;
+				cout<<"alignmentlength: "<<(*it)->alignSpeciesTuple.at(j)->alignLen<<endl;
+				cout<<"Strand: "<<(*it)->alignSpeciesTuple.at(j)->strand<<endl;
+				for (list<block>::iterator itb=(*it)->alignSpeciesTuple.at(j)->sequence.begin(); itb!=(*it)->alignSpeciesTuple.at(j)->sequence.end(); itb++) {
 					cout<< "segment_start "<<(*itb).begin;
 					cout<<"   length "<<(*itb).length;
 					cout<<"   gaps "<<(*itb).previousGaps<<endl;
@@ -258,7 +258,7 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
 				cout<<"Nullpointer"<<endl;
 			}
 		}
-		cout<<"tupelend"<<endl;
+		cout<<"Tupleend"<<endl;
 		cout<<endl;
 	}*/
 }
@@ -272,8 +272,8 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
     list<block>::iterator it_block;
 
     // specieslimit is the percentage of species, which have to be in the alignmentblocks to merge them
-    float specieslimit = (*it_pos)->alignSpeciesTupel.size() - (percentSpeciesAligned * (*it_pos)->alignSpeciesTupel.size());
-    for (int i=0; i<(*it_pos)->alignSpeciesTupel.size(); i++) {
+    float specieslimit = (*it_pos)->alignSpeciesTuple.size() - (percentSpeciesAligned * (*it_pos)->alignSpeciesTuple.size());
+    for (int i=0; i<(*it_pos)->alignSpeciesTuple.size(); i++) {
         geneStrand.push_back(STRAND_UNKNOWN);
         geneChr.push_back("");
     }
@@ -289,81 +289,81 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
         } else {
             while (complete && (it_pos!=this->alignment.end())) {
                 int count=0;
-                for (int j=0; j<(*it_prev)->alignSpeciesTupel.size(); j++) {
-                    if (((*it_prev)->alignSpeciesTupel.at(j)==NULL) || ((*it_pos)->alignSpeciesTupel.at(j)==NULL)) {
+                for (int j=0; j<(*it_prev)->alignSpeciesTuple.size(); j++) {
+                    if (((*it_prev)->alignSpeciesTuple.at(j)==NULL) || ((*it_pos)->alignSpeciesTuple.at(j)==NULL)) {
                         count++;
                         if (count>=specieslimit) {
                             complete=false;
                             break;
                         }
                     }
-                    if ((*it_prev)->alignSpeciesTupel.at(j)!=NULL) {
+                    if ((*it_prev)->alignSpeciesTuple.at(j)!=NULL) {
                         if ((geneChr[j] == "") && (geneStrand[j] == STRAND_UNKNOWN)) {
-                            geneChr[j] = (*it_prev)->alignSpeciesTupel.at(j)->chromosome.first;
-                            geneStrand[j] = (*it_prev)->alignSpeciesTupel.at(j)->strand;
+                            geneChr[j] = (*it_prev)->alignSpeciesTuple.at(j)->seqID.first;
+                            geneStrand[j] = (*it_prev)->alignSpeciesTuple.at(j)->strand;
                         }
-                        geneStart = (*it_prev)->alignSpeciesTupel.at(j)->start;
-                        geneSeqLen = (*it_prev)->alignSpeciesTupel.at(j)->seqLen;
+                        geneStart = (*it_prev)->alignSpeciesTuple.at(j)->start;
+                        geneSeqLen = (*it_prev)->alignSpeciesTuple.at(j)->seqLen;
                     }
 
-                    //  max 5 bases apart, on the same strand and on the same chromosome, when there is an alignmentblock before
-                    if (((*it_pos)->alignSpeciesTupel.at(j)!=NULL) && (geneChr[j] != "")) {
-                            if (((*it_pos)->alignSpeciesTupel.at(j)->strand != geneStrand[j]) || ((*it_pos)->alignSpeciesTupel.at(j)->chromosome.first != geneChr[j])) {
+                    //  max 5 bases apart, on the same strand and on the same seqID, when there is an alignmentblock before
+                    if (((*it_pos)->alignSpeciesTuple.at(j)!=NULL) && (geneChr[j] != "")) {
+                            if (((*it_pos)->alignSpeciesTuple.at(j)->strand != geneStrand[j]) || ((*it_pos)->alignSpeciesTuple.at(j)->seqID.first != geneChr[j])) {
                                 complete=false;
                                 break;
                             }
                     }
-                    if (((*it_pos)->alignSpeciesTupel.at(j)!=NULL) && (geneStart != 0)) {
-                            if (((*it_pos)->alignSpeciesTupel.at(j)->start - (geneStart + geneSeqLen) > maxGapLen) || ((*it_pos)->alignSpeciesTupel.at(j)->start - (geneStart + geneSeqLen) < 0)) {
+                    if (((*it_pos)->alignSpeciesTuple.at(j)!=NULL) && (geneStart != 0)) {
+                            if (((*it_pos)->alignSpeciesTuple.at(j)->start - (geneStart + geneSeqLen) > maxGapLen) || ((*it_pos)->alignSpeciesTuple.at(j)->start - (geneStart + geneSeqLen) < 0)) {
                                 complete=false;
                                 break;
                             }
                     }
                     // sequences of the different species have to have the same distance
-                    if (((*it_prev)->alignSpeciesTupel.at(j)!=NULL) && ((*it_pos)->alignSpeciesTupel.at(j)!=NULL)) {
+                    if (((*it_prev)->alignSpeciesTuple.at(j)!=NULL) && ((*it_pos)->alignSpeciesTuple.at(j)!=NULL)) {
                         if (distance==-1) {
-                            distance=(*it_pos)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->seqLen;
-                        } else if (distance != ((*it_pos)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->seqLen)) {
+                            distance=(*it_pos)->alignSpeciesTuple.at(j)->start - (*it_prev)->alignSpeciesTuple.at(j)->start - (*it_prev)->alignSpeciesTuple.at(j)->seqLen;
+                        } else if (distance != ((*it_pos)->alignSpeciesTuple.at(j)->start - (*it_prev)->alignSpeciesTuple.at(j)->start - (*it_prev)->alignSpeciesTuple.at(j)->seqLen)) {
                             sameDistance=false;
                         }
                         // ^ operator for logical exclusive OR
-                    } else if (((*it_prev)->alignSpeciesTupel.at(j)!=NULL) ^ ((*it_pos)->alignSpeciesTupel.at(j)!=NULL)) {
+                    } else if (((*it_prev)->alignSpeciesTuple.at(j)!=NULL) ^ ((*it_pos)->alignSpeciesTuple.at(j)!=NULL)) {
                         sameDistance=false;
                     }
                 }
 
                 // the informations of two alignment parts become combined
                 if (complete) {
-                    for (int j=0; j<(*it_prev)->alignSpeciesTupel.size(); j++) {
-                        if (((*it_prev)->alignSpeciesTupel.at(j)==NULL) && ((*it_pos)->alignSpeciesTupel.at(j)==NULL)) {
+                    for (int j=0; j<(*it_prev)->alignSpeciesTuple.size(); j++) {
+                        if (((*it_prev)->alignSpeciesTuple.at(j)==NULL) && ((*it_pos)->alignSpeciesTuple.at(j)==NULL)) {
                             emptyBegin++;
-                        } else if (((*it_prev)->alignSpeciesTupel.at(j) == NULL) && ((*it_pos)->alignSpeciesTupel.at(j) != NULL)) {
-                            (*it_prev)->alignSpeciesTupel.at(j) = (*it_pos)->alignSpeciesTupel.at(j);
+                        } else if (((*it_prev)->alignSpeciesTuple.at(j) == NULL) && ((*it_pos)->alignSpeciesTuple.at(j) != NULL)) {
+                            (*it_prev)->alignSpeciesTuple.at(j) = (*it_pos)->alignSpeciesTuple.at(j);
                             for (int k=0; k<emptyBegin; k++) {
-                                (*it_prev)->alignSpeciesTupel.at(j)->cmpStarts.insert((*it_prev)->alignSpeciesTupel.at(j)->cmpStarts.begin(),NULL);
+                                (*it_prev)->alignSpeciesTuple.at(j)->cmpStarts.insert((*it_prev)->alignSpeciesTuple.at(j)->cmpStarts.begin(),NULL);
                             }
-                        } else if (((*it_prev)->alignSpeciesTupel.at(j)!=NULL) && ((*it_pos)->alignSpeciesTupel.at(j)!=NULL)) {
+                        } else if (((*it_prev)->alignSpeciesTuple.at(j)!=NULL) && ((*it_pos)->alignSpeciesTuple.at(j)!=NULL)) {
                             if (!sameDistance) {
                                 int *cmpStart_ptr;
                                 cmpStart_ptr= new int;
-                                *cmpStart_ptr = (*it_pos)->alignSpeciesTupel.at(j)->start + ((*it_prev)->alignSpeciesTupel.at(j)->alignLen - (*it_prev)->alignSpeciesTupel.at(j)->seqLen);
-                                (*it_prev)->alignSpeciesTupel.at(j)->cmpStarts.push_back(cmpStart_ptr);
+                                *cmpStart_ptr = (*it_pos)->alignSpeciesTuple.at(j)->start + ((*it_prev)->alignSpeciesTuple.at(j)->alignLen - (*it_prev)->alignSpeciesTuple.at(j)->seqLen);
+                                (*it_prev)->alignSpeciesTuple.at(j)->cmpStarts.push_back(cmpStart_ptr);
                             }
-                            for (list<block>::iterator it=(*it_pos)->alignSpeciesTupel.at(j)->sequence.begin(); it!=(*it_pos)->alignSpeciesTupel.at(j)->sequence.end(); it++) {
-                                it->begin=it->begin+((*it_prev)->alignSpeciesTupel.at(j)->alignLen - (*it_prev)->alignSpeciesTupel.at(j)->seqLen);
+                            for (list<block>::iterator it=(*it_pos)->alignSpeciesTuple.at(j)->sequence.begin(); it!=(*it_pos)->alignSpeciesTuple.at(j)->sequence.end(); it++) {
+                                it->begin=it->begin+((*it_prev)->alignSpeciesTuple.at(j)->alignLen - (*it_prev)->alignSpeciesTuple.at(j)->seqLen);
                                 // maybe have to change that
                                 //if (sameDistance) {
-                                it->previousGaps=it->previousGaps + ((*it_prev)->alignSpeciesTupel.at(j)->alignLen - (*it_prev)->alignSpeciesTupel.at(j)->seqLen);
+                                it->previousGaps=it->previousGaps + ((*it_prev)->alignSpeciesTuple.at(j)->alignLen - (*it_prev)->alignSpeciesTuple.at(j)->seqLen);
                                 //}
                             }
-                            (*it_prev)->alignSpeciesTupel.at(j)->alignLen = (*it_prev)->alignSpeciesTupel.at(j)->alignLen + (*it_pos)->alignSpeciesTupel.at(j)->alignLen
-                                    + (*it_pos)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->seqLen;
-                            (*it_prev)->alignSpeciesTupel.at(j)->seqLen = (*it_prev)->alignSpeciesTupel.at(j)->seqLen + (*it_pos)->alignSpeciesTupel.at(j)->seqLen
-                                    + (*it_pos)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->start - (*it_prev)->alignSpeciesTupel.at(j)->seqLen;
-                            it_block = (*it_prev)->alignSpeciesTupel.at(j)->sequence.end();
-                            (*it_prev)->alignSpeciesTupel.at(j)->sequence.splice(it_block,(*it_pos)->alignSpeciesTupel.at(j)->sequence);
+                            (*it_prev)->alignSpeciesTuple.at(j)->alignLen = (*it_prev)->alignSpeciesTuple.at(j)->alignLen + (*it_pos)->alignSpeciesTuple.at(j)->alignLen
+                                    + (*it_pos)->alignSpeciesTuple.at(j)->start - (*it_prev)->alignSpeciesTuple.at(j)->start - (*it_prev)->alignSpeciesTuple.at(j)->seqLen;
+                            (*it_prev)->alignSpeciesTuple.at(j)->seqLen = (*it_prev)->alignSpeciesTuple.at(j)->seqLen + (*it_pos)->alignSpeciesTuple.at(j)->seqLen
+                                    + (*it_pos)->alignSpeciesTuple.at(j)->start - (*it_prev)->alignSpeciesTuple.at(j)->start - (*it_prev)->alignSpeciesTuple.at(j)->seqLen;
+                            it_block = (*it_prev)->alignSpeciesTuple.at(j)->sequence.end();
+                            (*it_prev)->alignSpeciesTuple.at(j)->sequence.splice(it_block,(*it_pos)->alignSpeciesTuple.at(j)->sequence);
                         } else {
-                            (*it_prev)->alignSpeciesTupel.at(j)->cmpStarts.push_back(NULL);
+                            (*it_prev)->alignSpeciesTuple.at(j)->cmpStarts.push_back(NULL);
                         }
                     }
                     it_pos=this->alignment.erase(it_pos);
@@ -374,26 +374,26 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
     }
 
     /*for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
-        cout<<"tupelstart"<<endl;
-        for (int j=0; j<(*it)->alignSpeciesTupel.size(); j++) {
-            if ((*it)->alignSpeciesTupel.at(j)!=NULL) {
-                cout<<"Name: "<< (*it)->alignSpeciesTupel.at(j)->name <<endl;
-                cout<<"chromosome: "<< (*it)->alignSpeciesTupel.at(j)->chromosome.first<<endl;
-                //cout<<"chromosome length: "<< (*it)->alignSpeciesTupel.at(j)->chromosome.second<<endl;
-                cout<<"start: "<<(*it)->alignSpeciesTupel.at(j)->start<<endl;
+        cout<<"Tuplestart"<<endl;
+        for (int j=0; j<(*it)->alignSpeciesTuple.size(); j++) {
+            if ((*it)->alignSpeciesTuple.at(j)!=NULL) {
+                cout<<"Name: "<< (*it)->alignSpeciesTuple.at(j)->name <<endl;
+                cout<<"seqID: "<< (*it)->alignSpeciesTuple.at(j)->seqID.first<<endl;
+                //cout<<"seqID length: "<< (*it)->alignSpeciesTuple.at(j)->seqID.second<<endl;
+                cout<<"start: "<<(*it)->alignSpeciesTuple.at(j)->start<<endl;
                 cout<<"cmp_starts: ";
-                for (int i=0; i<(*it)->alignSpeciesTupel.at(j)->cmpStarts.size(); i++) {
-                    if ((*it)->alignSpeciesTupel.at(j)->cmpStarts[i]!=NULL) {
-                        cout<<*((*it)->alignSpeciesTupel.at(j)->cmpStarts[i])<<"  ";
+                for (int i=0; i<(*it)->alignSpeciesTuple.at(j)->cmpStarts.size(); i++) {
+                    if ((*it)->alignSpeciesTuple.at(j)->cmpStarts[i]!=NULL) {
+                        cout<<*((*it)->alignSpeciesTuple.at(j)->cmpStarts[i])<<"  ";
                     } else {
                         cout<<"NULL"<<"  ";
                     }
                 }
                 cout<<endl;
-                cout<<"sequencelength: "<<(*it)->alignSpeciesTupel.at(j)->seqLen<<endl;
-                cout<<"alignmentlength: "<<(*it)->alignSpeciesTupel.at(j)->alignLen<<endl;
-                cout<<"Strand: "<<(*it)->alignSpeciesTupel.at(j)->strand<<endl;
-                for (list<block>::iterator itb=(*it)->alignSpeciesTupel.at(j)->sequence.begin(); itb!=(*it)->alignSpeciesTupel.at(j)->sequence.end(); itb++) {
+                cout<<"sequencelength: "<<(*it)->alignSpeciesTuple.at(j)->seqLen<<endl;
+                cout<<"alignmentlength: "<<(*it)->alignSpeciesTuple.at(j)->alignLen<<endl;
+                cout<<"Strand: "<<(*it)->alignSpeciesTuple.at(j)->strand<<endl;
+                for (list<block>::iterator itb=(*it)->alignSpeciesTuple.at(j)->sequence.begin(); itb!=(*it)->alignSpeciesTuple.at(j)->sequence.end(); itb++) {
                     cout<< "segment_start "<<(*itb).begin;
                     cout<<"   length "<<(*itb).length;
                     cout<<"   gaps "<<(*itb).previousGaps<<endl;
@@ -402,7 +402,7 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                 cout<<"Nullpointer"<<endl;
             }
         }
-        cout<<"tupelend"<<endl;
+        cout<<"Tupleend"<<endl;
         cout<<endl;
     }*/
 }
