@@ -28,12 +28,11 @@ void MEApath::findMEApath(){
     }
     (*node)->pred = NULL;
     nextNode:;
-  }
-  graph->printGraph("MEA_graph.dot");
+    }
+  //  graph->printGraph("/fs1.data/lizzy/species/tribolium/param_training/train_log/tmp_opt_triboliumMEA/MEA_graph.dot");
 }
 
 /*
-
  * deapth first search
  */
 
@@ -51,7 +50,7 @@ void MEApath::relax(){
 
   for(list<Node*>::iterator it=graph->nodelist.begin(); it!=graph->nodelist.end(); it++)
     (*it)->score = - numeric_limits<double>::max(); // set to minimum score
-      
+
   graph->head->score = 0;  
   bool continueRelax = true;
 
@@ -71,7 +70,9 @@ void MEApath::relax(){
      * @MultSpeciesMode: in this mode, no backedges are added, the graph is truly acyclic. 
      * It is, therefore, sufficient to relax each node exactly one time.
      */
-    if(nothingChanged || Constant::MultSpeciesMode)
+    if(Constant::MultSpeciesMode)
+      cerr<<"WARNING! relax(): MultSpeciesMode is on!!!"<<endl;
+    if(nothingChanged)
       continueRelax = false;
   }
 
@@ -93,7 +94,7 @@ void MEApath::getTopologicalOrdering(){
 void MEApath::backtracking(){
 
   Node *pos = topSort[0];
-  meaPath.push_front(pos);  
+  meaPath.push_front(pos);
   while(pos->pred != NULL){
     meaPath.push_front(pos->pred);
     pos = pos->pred;

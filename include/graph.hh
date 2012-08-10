@@ -157,7 +157,7 @@ protected:
     virtual double setScore(Status *st)=0;
     virtual void calculateBaseScores()=0;
     virtual void printGraph(string filename)=0;   
-
+    virtual void printGraph2(string filename)=0;   
 };
 
 class AugustusGraph : public Graph{
@@ -172,42 +172,42 @@ public:
 	try {
 	    alpha_se = Properties::getdoubleProperty("/MeaPrediction/alpha_SE");
 	} catch (...) {
-	    alpha_se = 0;
+	    alpha_se = 0.25;
 	}
 	try {
 	    alpha_si = Properties::getdoubleProperty("/MeaPrediction/alpha_SI");
 	} catch (...) {
-	    alpha_si = 0;
+	    alpha_si = 0.25;
 	}
 	try {
 	    alpha_be = Properties::getdoubleProperty("/MeaPrediction/alpha_BE");
 	} catch (...) {
-	    alpha_be = 0;
+	    alpha_be = 0.25;
 	}
 	try {
 	    alpha_bi = Properties::getdoubleProperty("/MeaPrediction/alpha_BI");
 	} catch (...) {
-	    alpha_bi = 0;
+	    alpha_bi = 0.25;
 	}
 	try {
 	    r_se = Properties::getdoubleProperty("/MeaPrediction/r_SE");
 	} catch (...) {
-	    r_se = 0;
+	    r_se = 0.5;
 	}
 	try {
 	    r_si = Properties::getdoubleProperty("/MeaPrediction/r_SI");
 	} catch (...) {
-	    r_si = 0;
+	    r_si = 0.5;
 	}
 	try {
 	    r_be = Properties::getdoubleProperty("/MeaPrediction/r_BE");
 	} catch (...) {
-	    r_be = 0;
+	    r_be = 0.5;
 	}
 	try {
 	    r_bi = Properties::getdoubleProperty("/MeaPrediction/r_BI");
 	} catch (...) {
-	    r_bi = 0;
+	    r_bi = 0.5;
 	}
 
 	for(int i = 0; i < seqlength*10; i++)
@@ -232,6 +232,7 @@ public:
     double setScore(Status *st);
     int getBasetype(Status *st, int pos);
     void printGraph(string filename); 
+    void printGraph2(string filename); 
     int seqlength;
     vector<double> baseScore;
     bool utr;

@@ -3,7 +3,8 @@
 #include <list>
 #include <fstream>
 #include <sstream>
-#include<iomanip>
+#include <iomanip>
+#include <cmath>
 
 #include "graph.hh"
 #include "mea.hh"
@@ -89,7 +90,6 @@ void Graph::buildGraph(){
 
   for(list<Node*>::iterator node=nodelist.begin(); node!=nodelist.end(); node++)
     (*node)->edges.sort(compareEdges);
-
 }
 
 
@@ -301,11 +301,17 @@ bool Graph::nonneutralIncomingEdge(Node *exon){
 void Graph::printGraphToShell(){
   cout<<"****************GRAPH******************"<<endl<<endl;;
 for(list<Node*>::iterator node = nodelist.begin(); node != nodelist.end(); node++){
-  cout<<"-------------------------------------------------------"<<endl<<setw(10)<<"Node:"<<setw(10)<<(*node)->begin<<setw(10)<<(*node)->end<<setw(10)<<(*node)->score;
+  cout<<"-------------------------------------------------------"<<endl<<setw(10)<<"Node";
+  if((*node)->item != NULL) 
+    cout<<((State*)(*node)->item)->type;
+  cout<<":"<<setw(10)<<(*node)->begin<<setw(10)<<(*node)->end<<setw(10)<<(*node)->score;
     if((*node)->item == NULL)
       cout<<setw(10)<<"neutral";
     for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
-      cout<<endl<<setw(10)<<"----->"<<setw(10)<<edge->to->begin<<setw(10)<<edge->to->end<<setw(10)<<edge->to->score;
+      cout<<endl<<setw(10);
+      if(edge->item != NULL)
+	cout<<((State*)edge->item)->type;
+      cout<<"----->"<<setw(10)<<edge->to->begin<<setw(10)<<edge->to->end<<setw(10)<<edge->to->score;
       if(edge->neutral)
 	cout<<setw(10)<<"neutral";
       if(edge->to->pred == *node)
@@ -533,6 +539,9 @@ void AugustusGraph::calculateBaseScores(){
 
 double AugustusGraph::setScore(Status *st){
 
+  if(st->score == 0){
+    return 0;
+  }
   if(st->name >= CDS && st->name < intron){
     double s_be = 0;
     for(int pos = st->begin; pos<=st->end; pos++)
@@ -606,6 +615,103 @@ int AugustusGraph::getBasetype(Status *st, int pos){
  * creates an input file for graphviz
  */
 
+void AugustusGraph::printGraph2(string filename){
+
+  ofstream file;
+  try{
+    file.open((filename).c_str());
+  } catch (...) {
+    cerr<<"AugustusGraph::printGraph() can't open file"<<endl;
+    return;
+  }
+  file<<"digraph MEAgraph {\n";
+  file<<"rankdir=LR;\n";
+
+  file<<"\tnode[shape=box];\n";
+
+  head->begin = 0;
+  head->end = 0;
+
+  for(list<Node*>::iterator pos = nodelist.begin(); pos != nodelist.end(); pos++){
+    for(list<Edge>::iterator it = (*pos)->edges.begin(); it != (*pos)->edges.end(); it++){
+      string name1 = "exon";
+      string name2 = "exon";
+      StateType type1;
+      StateType type2;
+
+      if((*pos)->item != NULL)
+	type1 = ((State*)(*pos)->item)->type;
+     else
+       type1 = TYPE_UNKNOWN;
+     if(it->to->item != NULL)
+       type2 = ((State*)it->to->item)->type;
+     else
+       type2 = TYPE_UNKNOWN;
+
+     if((*pos)->item != NULL)
+	name1 = name1 + itoa(type1) + "_";
+     name1 = name1 + itoa((*pos)->begin) + "_" + itoa((*pos)->end);
+      if(it->to->item != NULL)
+	name2 = name2 + itoa(type2) + "_";
+      name2 = name2 + itoa(it->to->begin) + "_" + itoa(it->to->end);
+     
+      file<<name1<<"[";
+      if((*pos)->begin == it->to->begin)
+	file<<"label="<<(*pos)->begin<<",style=filled,fillcolor=yellow,";
+      if((*pos)->end == it->to->end)
+	file<<"style=filled,fillcolor=turquoise,";
+      if((type1 >= singleG && type1 <=terminal) || (type1 >= rsingleG && type1 <= rterminal2))
+	file<<"shape=ellipse,";
+      file<<"];\n";
+
+      file<<name2<<"[";
+      if((*pos)->begin == it->to->begin)
+	file<<"style=filled,fillcolor=yellow,";
+      if((*pos)->end == it->to->end)
+	file<<"label="<<it->to->end<<",style=filled,fillcolor=turquoise,";
+      if((type2 >= singleG && type2 <=terminal) || (type2 >= rsingleG && type2 <= rterminal2))
+	file<<"shape=ellipse,";
+      file<<"];\n";
+     
+      
+      if((*pos)==head)
+	file<<name1<<"[style=filled,label=head];\n";
+      if(it->to==tail)
+	file<<name2<<"[style=filled,label=tail];\n";
+
+      if((*pos)->begin == it->to->begin)
+	file<<"{ rank=same; "<<name1<<";"<<name2<<";}\n";
+      if((*pos)->end == it->to->end)
+	file<<"{ rank=same; "<<name1<<";"<<name2<<";}\n";
+      
+     
+      file<<name1<<"->"<<name2<<"[";
+      if((*pos)->begin == (*pos)->end && it->to->begin == it->to->end){
+	if((*pos)->begin <= it->to->begin){
+	  if(it->to->pred == (*pos))
+	    file<<"weight=100,color=blue,";
+	  else
+	    file<<"weight=100,color=red,";
+	}
+	else{
+	  if(it->to->pred == (*pos))
+	    file<<"weight=-100,color=blue,";
+	  else
+	    file<<"weight=-100,color=green,";
+	}
+      }
+      else if(it->to->pred == (*pos))
+	file<<"color=blue,";
+      file<<"label=\""<<it->score<<"\"];\n";  
+    }
+  }
+  file<<"}\n";
+  file.close();
+
+  head->begin = -1;
+  head->end = -1;
+}
+
 void AugustusGraph::printGraph(string filename){
 
   map<string,Node*> inQueue;
@@ -615,7 +721,7 @@ void AugustusGraph::printGraph(string filename){
   q.push(head);
   ofstream file;
   try{
-    file.open(("/home/Lizzy/augustus_output/" + filename).c_str());
+    file.open((filename).c_str());
   } catch (...) {
     cerr<<"AugustusGraph::printGraph() can't open file"<<endl;
     return;

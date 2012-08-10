@@ -916,15 +916,15 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
     sampledTxs = alltranscripts;
     filteredTranscripts = new list<Gene>;
   } else if (mea_prediction){
-      if(mea_eval)
-	getMEAtranscripts(&MEAtranscripts, sampledGeneStructures, sampleiterations, strlen( dna ));
-      else
-	getMEAtranscripts(&MEAtranscripts, alltranscripts, strlen(dna));
-      
-      /*
-       * filter transcripts by probabilities, strand
-       */
-      filteredTranscripts = Gene::filterGenePrediction(&MEAtranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
+    if(mea_eval)
+      getMEAtranscripts(&MEAtranscripts, sampledGeneStructures, sampleiterations, strlen( dna ));
+    else
+      getMEAtranscripts(&MEAtranscripts, alltranscripts, strlen(dna));
+    
+    /*
+     * filter transcripts by probabilities, strand
+     */
+    filteredTranscripts = Gene::filterGenePrediction(&MEAtranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
   } else
     filteredTranscripts = Gene::filterGenePrediction(alltranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
 

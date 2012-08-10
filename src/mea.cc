@@ -75,7 +75,7 @@ void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures,
 void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int strlength){
 
   if(!alltranscripts->empty()){
-   
+
     bool utr;
     try {
       utr = Properties::getBoolProperty("UTR");
@@ -127,6 +127,7 @@ void buildStatusList(list<Gene> *alltranscripts, bool utr, list<Status> &stlist)
 
 void printStatelist(list<Status> *stateList){
 
+  cout<<"-------------State list START-----------------"<<endl;
   list<Status>::iterator da;
   for(da=stateList->begin();da!=stateList->end();da++){
     if(da->name==CDS) 
@@ -147,13 +148,16 @@ void printStatelist(list<Status> *stateList){
       cout<<"\tgene end";
     cout<<endl;
     }
+  cout<<"-----------State list END----------------"<<endl;
 }
 
 void addToList(State *state, Statename name, list<Status> *slist){
  
-  while(state && state->end >= state->begin){
-    Status someState(name, state->begin, state->end, (double)state->apostprob, state);
-    slist->push_back(someState);
+  while(state){
+    if(state->end >= state->begin){ // UTR exon can have length 0 when start codon comes right after splice site
+      Status someState(name, state->begin, state->end, (double)state->apostprob, state);
+      slist->push_back(someState);
+    }
     state = state->next;
   }
 }
@@ -175,6 +179,8 @@ void getMeaGenelist(list<Node*> meaPath, list<Gene> *meaGenes){
     if((*node)->item != NULL){
       State *ex = new State(*((State*)(*node)->item));
       addExonToGene(currentGene, ex);
+      if((*node)->pred == NULL)
+	cerr<<"ERROR in getMeaGenelist(): node in meaPath has no predecessor"<<endl;
       if((*node)->pred->item != NULL){
 	if((*node)->pred->end != (*node)->begin-1){
 	  addIntronToGene(currentGene, (*node)->pred, *node);
