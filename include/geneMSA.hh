@@ -1,5 +1,5 @@
 /**********************************************************************
- * file:    geomicMSA.hh
+ * file:    genomicMSA.hh
  * licence: Artistic Licence, see file LICENCE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  * descr.:  multiple sequence alignment of genomes for comparative gene prediction
@@ -37,6 +37,9 @@ public:
         }
         for (int i=0; i<exoncands.size(); i++) {
             if (exoncands[i]!=NULL) {
+		for(list<ExonCandidate*>::iterator it = exoncands[i]->begin(); it != exoncands[i]->end(); it++){
+		    delete *it;
+		}
                 exoncands.at(i)->clear();
                 delete exoncands[i];
             }
