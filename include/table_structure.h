@@ -3,12 +3,14 @@
 
 #include <mysql++.h>
 #include <ssqls.h>
-#include<string>
-#include<cstring>
-#include<stdlib.h>
+#include <string>
+#include <cstring>
+#include <stdlib.h>
 using namespace std;
+// The database schema is an excerpt from ENSEMBL:
+// http://www.ensembl.org/info/docs/api/core/core_schema.html
 // The following is calling a very complex macro which will create
-// table structure row in a STL container.
+// the table structure row in a STL container.
 sql_create_2(dna,
 	     1, 2,
 	     int,seq_region_id,
@@ -27,7 +29,9 @@ sql_create_6(assembly,
 	     int, asm_end,
 	     int, cmp_start,
 	     int, cmp_end)
-//ommit species name,assume every species has its own database,'name' is the shared key in 'seq_region' table which refers to 'chrName' in augustus,it could also be scaffold.'query_region' is defiend in database 'cmpproject',so is 'augustus-gff'
+// omit species name, assume every species has its own database,
+// 'name' is the shared key in 'seq_region' table which refers to 'chrName' in augustus
+// it could also be scaffold.'query_region' is defined in database 'cmpproject', so is 'augustus-gff'
 
 
 #endif //_TABLE_STRUCTURE

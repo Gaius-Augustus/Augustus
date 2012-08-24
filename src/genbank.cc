@@ -698,7 +698,7 @@ Boolean GBSplitter::findPositions( GBPositions& pos ) throw( GBError ){
         int curpos = isstrm.tellg();
         isstrm >> ws;
         isstrm.getline( buf, 255 );
-	if (isstrm.rdstate() & ifstream::failbit){
+	if (!isstrm.eof() && (isstrm.rdstate() & ifstream::failbit)){
 	    cerr << "Could not read the following line in Genbank file. " << buf << endl;
 	    // ignore problem by removing the failbit
 	    isstrm.clear(isstrm.rdstate() & ~ifstream::failbit);

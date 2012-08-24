@@ -104,55 +104,54 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
 #else // AMYSQL
 
 /*
- * coord_id is a identifier in table 'seq_region'.
- * coord_id==2: this is a contig.there's an entity in 'dna' table,you can retrive sequence directly from it.
- * coord_id==1: this is a chromosome that is consist of more than one entities in 'dna' table.You can't
- * retrieve sequence directly from 'dna' table.The components id and order in which
+ * coord_id is an identifier in table 'seq_region'.
+ * coord_id==2: this is a contig. There's an entity in 'dna' table, you can retrive sequence directly from it.
+ * coord_id==1: this is a chromosome that is consist of more than one entities in 'dna' table. You can't
+ * retrieve sequence directly from 'dna' table. The components id and order in which
  * they are assembled can be found in table 'assembly'.
  */
 AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
     mysqlpp::StoreQueryResult store_res;
-    AnnoSequence* annoseq=NULL;
-    int coord_id,seq_region_id,seq_region_length; 
+    AnnoSequence* annoseq = NULL;
+    int coord_id, seq_region_id, seq_region_length; 
     vector<assembly> asm_query_region;
-    mysqlpp::Query detect_coord_id=con.query();
-    detect_coord_id<<"select seq_region_id,coord_system_id,length from seq_region where name=\""
-		   <<chrName<<"\"";
-    store_res=detect_coord_id.store();
-    try{
-	if(store_res.num_rows()==0){
-	    cerr<<"DbSeqAccess::getSeq : chrName\"" <<chrName
-		<<"\" not exist in Database,retrive sequence failed."<<endl;
-	}
-	else{
-	    seq_region_id=store_res[0][0];
-	    coord_id=store_res[0][1];
-	    seq_region_length=store_res[0][2];
+    mysqlpp::Query detect_coord_id = con.query();
+    detect_coord_id << "select seq_region_id,coord_system_id,length from seq_region where name=\""
+		    << chrName << "\"";
+    store_res = detect_coord_id.store();
+    try {
+	if(store_res.num_rows() ==0 ){
+	    cerr << "DbSeqAccess::getSeq : chrName\"" << chrName
+		 << "\" does not exist in database, retriving sequence failed." << endl;
+	} else {
+	    seq_region_id = store_res[0][0];
+	    coord_id = store_res[0][1];
+	    seq_region_length = store_res[0][2];
 /* 
- * in different datababses,'coord_id' are defined differently.
- * get a short substring,if query succeed，the query sequence is a 'contig'
+ * In different databases, 'coord_id' are defined differently.
+ * get a short substring, if query succeed, the query sequence is a 'contig'
  * otherwise it's a 'chromosome'
  */
-	    detect_coord_id<<"select substring(sequence from 1 for 10) from dna where seq_region_id="<<seq_region_id<<endl;
-	    store_res=detect_coord_id.store();
+	    detect_coord_id << "select substring(sequence from 1 for 10) from dna where seq_region_id="
+			    << seq_region_id << endl;
+	    store_res = detect_coord_id.store();
 	    if(store_res.size()==0){
 		coord_id=1;
-	    }
-	    else{
+	    } else {
 		coord_id=2;
 	    }
-	    if(end==-1){// predictionEnd is not defiend.
-		end=seq_region_length;
+	    if(end == -1){// predictionEnd is not defiend.
+		end = seq_region_length;
 	    }
-	    if(start==0){// predictionEnd is not defiend.
+	    if(start == 0){// predictionStart is not defiend.
 		++start;
 	    }
-	    if(coord_id==1){
+	    if(coord_id == 1){
 		get_region_coord(seq_region_id,start,end,asm_query_region);
 	    }
 /*
- *This record can't be found in table 'assembly'.
- *Just for the convenient to put a vector<assembly> to Function:getNextDBSequence.
+ * This record can't be found in table 'assembly'.
+ * Just for the convenient to put a vector<assembly> to Function:getNextDBSequence.
  */
 	    if(coord_id==2){
 		assembly row(seq_region_id,seq_region_id,start,end,start,end);
