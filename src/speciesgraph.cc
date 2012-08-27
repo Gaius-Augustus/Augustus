@@ -17,7 +17,7 @@
 
 #include "speciesgraph.hh"
 
-double SpeciesGraph::buildGraph(){
+void SpeciesGraph::buildGraph(){
 
     vector< vector<Node*> > neutralLines; //represents the seven neutral lines
 
@@ -133,15 +133,14 @@ double SpeciesGraph::buildGraph(){
     printGraph(speciesname + ".dot");
 #endif
     
-    if(count_sampled != 0)
-	return count_overlap/(double)count_sampled;
-    return 2; //some number greater than 1 (just to be able to identify this case and sort it out)
 }
 
 Node* SpeciesGraph::addExon(Status *exon, vector< vector<Node*> > &neutralLines){
 
     if(!alreadyProcessed(exon)){
+#ifdef DEBUG
 	count_sampled++;
+#endif
 	//cout << "sampled_exon\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" << (string)stateTypeIdentifiers[((State*)exon->item)->type] << "\t"<< endl;
 	Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item, sampled);
 	nodelist.push_back(ex);
@@ -153,7 +152,9 @@ Node* SpeciesGraph::addExon(Status *exon, vector< vector<Node*> > &neutralLines)
 }
 
 void SpeciesGraph::addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines){
+#ifdef DEBUG
     count_additional++;
+#endif
     if(!alreadyProcessed(exon)){
 	//cout << "unsampled_exon\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" <<(string)stateTypeIdentifiers[exon->getStateType()] << endl;
 	//TODO: Node *ex = new Node(exon->begin, exon->end, exon-> ?, exon, unsampled_exon);
@@ -163,7 +164,9 @@ void SpeciesGraph::addExon(ExonCandidate *exon, vector< vector<Node*> > &neutral
 	addNeutralNodes(ex, neutralLines);
     }
     else{
+#ifdef DEBUG
 	count_overlap++;
+#endif
     }
 }
 
@@ -204,7 +207,6 @@ void SpeciesGraph::addIntron(Node* exon1, Node* exon2, Status *intr){
 	//cout << "sampled_intron\t\t"<< intr->begin << "\t\t" << intr->end << "\t\t" << (string)stateTypeIdentifiers[((State*)intr->item)->type] << endl;
 	Edge in(exon2, false, setScore(intr), intr->item);
 	exon1->edges.push_back(in);
-	string intron_key = getKey(exon1) + ":" + getKey(exon2);
     }
 }
 
@@ -547,7 +549,7 @@ double SpeciesGraph::getScorePath(Node *begin, Node *end){
 #ifdef DEBUG
     //cout << begin->begin << "\t" << begin->end << "\t" << score  << endl;
 #endif
-    while(begin != end){	
+    while(begin != end){
 	Node *next = getTopSortNext(begin);
 	for(list<Edge>::iterator edge = begin->edges.begin(); edge != begin->edges.end(); edge++){
 	    if(edge->to == next){

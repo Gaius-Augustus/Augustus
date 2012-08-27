@@ -26,7 +26,6 @@ OrthoExon::OrthoExon(){
 //copy with permutation of vector entries
 OrthoExon::OrthoExon(const OrthoExon& other, const vector<size_t> &permutation){
     orthoex.resize(other.orthoex.size());
-    labelpattern = other.labelpattern;
     for(size_t pos = 0; pos < orthoex.size(); pos++){
 	if (other.orthoex[pos]){
 	    orthoex[permutation[pos]] = other.orthoex[pos];

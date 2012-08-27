@@ -43,9 +43,17 @@ void CompGenePred::start(){
 
 #ifdef DEBUG
     OrthoGraph::tree->printWithGraphviz("tree.dot");
+    cout << "-------------------------------\nparameters phylogenetic model\n-------------------------------" << endl;
+    cout << "rate exon loss:\t" << OrthoGraph::tree->evo.getMu() << endl;
+    cout << "rate exon gain:\t" << OrthoGraph::tree->evo.getLambda() << endl;
+    cout << "phylo factor:\t" << OrthoGraph::tree->evo.getPhyloFactor() <<  "\n-------------------------------" << endl;
 #endif
   
-    OrthoGraph::initOutputFiles();
+    //initialize output files of initial gene prediction and optimized gene prediction
+    vector<ofstream*> initGenes = initOutputFiles(".init");
+    vector<int> init_geneid(OrthoGraph::numSpecies, 1); // gene numbering
+    vector<ofstream*> optGenes = initOutputFiles();
+    vector<int> opt_geneid(OrthoGraph::numSpecies, 1);
 
     NAMGene namgene; // creates and initializes the states
     FeatureCollection extrinsicFeatures; // hints, empty for now, will later read in hints for sequence ranges from database
@@ -62,7 +70,7 @@ void CompGenePred::start(){
     // loop over species
     GeneMSA::openOutputFiles();
     while (GeneMSA *geneRange = msa.getNextGene()) {
-        OrthoGraph orthograph;
+        OrthoGraph orthograph(geneRange);
         for (int s = 0; s < speciesNames.size(); s++) {
             string seqID = geneRange->getSeqID(s);
             if (!seqID.empty()) {
@@ -120,20 +128,25 @@ void CompGenePred::start(){
         geneRange->printOrthoExons(offsets);
         orthograph.all_orthoex = geneRange->getOrthoExons();
 
-        /*if(!orthograph.all_orthoex.empty()){
-	    // iterative optimization of labelings in graphs
+	orthograph.outputGenes(initGenes,init_geneid);
+
+        if(!orthograph.all_orthoex.empty()){
+	    orthograph.pruningAlgor();
+	    orthograph.printCache();
+	    // Iterative optimization of labelings in graphs
 	    orthograph.optimize();
-	    }*/
+	}
 
 	// transfer max weight paths to genes + filter + ouput
-	//orthograph.outputGenes();
+	orthograph.outputGenes(optGenes,opt_geneid);
 
         offsets.clear();
         delete geneRange;
     }
 
     GeneMSA::closeOutputFiles();
-    OrthoGraph::closeOutputFiles();
+    closeOutputFiles(initGenes);
+    closeOutputFiles(optGenes);
 
     // free memory space of tree
     delete OrthoGraph::tree;

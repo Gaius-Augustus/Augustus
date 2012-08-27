@@ -16,36 +16,48 @@
 
 //forward declarations
 class OrthoExon;
+class GeneMSA;
 
 class OrthoGraph{
 
 public:
-    OrthoGraph();
-    ~OrthoGraph();
+    OrthoGraph(GeneMSA *gm) : geneMSA(gm) {
+	graphs.resize(numSpecies);
+	orthoSeqRanges.resize(numSpecies);
+	ptrs_to_alltranscripts.resize(numSpecies);
+	print_change = false;
+    }
+    ~OrthoGraph(){
+	for(int i = 0; i < numSpecies; i++){
+	    delete graphs[i];
+	    delete ptrs_to_alltranscripts[i];
+	    delete orthoSeqRanges[i];
+	}
+    }
 
-    static size_t numSpecies;               //the number of species
+    static size_t numSpecies; //the number of species
+    GeneMSA *geneMSA;
     vector<SpeciesGraph*> graphs;
     vector<AnnoSequence*> orthoSeqRanges;
     static PhyloTree *tree;
-    static vector<ofstream*> filestreams;
     list<OrthoExon> all_orthoex;
     vector< list<Gene> *> ptrs_to_alltranscripts; //stores pointers to alltranscripts until they can be deleted (destructor of OrthoGraph)
 
     bool print_change; //only temporary flag
 
-    //functions to redirect filestreams
-    static void initOutputFiles();
-    static void closeOutputFiles();
-
     string getLabelpattern(OrthoExon &ex); //determines the current labelpattern of an orthoex
+    void printHTMLgBrowse(OrthoExon &ex);  //temp: html output for gBrowse
+    inline void printCache(){
+	printCache(all_orthoex);
+    }
+    void printCache(list<OrthoExon> &ortho);
 
     //optimization functions
     void optimize();                                 // create MoveObjects
     void localMove(vector<MoveObject*> &orthomove);  // do the local move for a MoveObject
     inline double pruningAlgor(){                    // pruning Algor. for all OrthoExons
 	return pruningAlgor(all_orthoex);
-    }
-                         
+    }               
     double pruningAlgor(list<OrthoExon> &orthoex);   // pruning Algor. for a list of OrthoExons in a range
     list<OrthoExon> orthoExInRange(vector<MoveObject*> &orthomove); //determine all OrthoExons in a range
    
@@ -59,7 +71,7 @@ public:
      */
     vector<MoveObject*> majorityRuleMove(OrthoExon &orthoex);
 
-    void outputGenes();
+    void outputGenes(vector<ofstream*> filestreams, vector<int> &geneid);
     inline void storePtrsToAlltranscripts(list<Gene> *alltranscripts){
 	this->ptrs_to_alltranscripts.push_back(alltranscripts);
     }
@@ -94,7 +106,11 @@ namespace cache{
     void addToHash(string labelpattern, double score);
     double getScore(string labelpattern);
     void incrementCounter(string labelpattern);
-    void printCache(list<OrthoExon> &ortho);
 }
+
+//functions to redirect filestreams
+vector<ofstream*> initOutputFiles(string extension = string());
+void closeOutputFiles(vector<ofstream*> filestreams);
+
 
 #endif

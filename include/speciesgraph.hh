@@ -24,9 +24,11 @@ class SpeciesGraph : public AugustusGraph {
 private:
     list<ExonCandidate*> additionalExons; //exons, which are not sampled
     string speciesname;
+#ifdef DEBUG
     int count_sampled;               // number of sampled exons
     int count_additional;            // number of additional exons
     int count_overlap;               // overlap between sampled and additional exons
+#endif
     double max_weight; // the max weight of a node/edge in the graph, used as an upper/lower bound
 
 public:
@@ -34,9 +36,11 @@ public:
 	AugustusGraph(states, dnalength),
 	additionalExons(addEx),
 	speciesname(name),
+#ifdef DEBUG
 	count_sampled(0),
 	count_additional(0),
 	count_overlap(0),
+#endif
 	max_weight(0)
     {}
 
@@ -46,7 +50,7 @@ public:
      * functions to build graph
      */
     
-    double buildGraph();
+    void buildGraph();
     NodeType fromNeutralLine(Node *node);  // returns type of noncoding segment preceding the exon/node
     NodeType toNeutralLine(Node *node);    // returns type of noncoding segment suceeding the exon/node
     void printGraph(string filename, Node* begin, Node* end, bool only_sampled = false); // prints graph in dot-format

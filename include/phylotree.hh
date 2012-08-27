@@ -83,7 +83,12 @@ public:
     inline double getPhyloFactor() const{
 	return phylo_factor;
     }
-
+    inline double getMu() const{
+	return mu;
+    }
+    inline double getLambda() const{
+	return lambda;
+    }
 private:
     double mu;           // rate for exon loss
     double lambda;       // rate for exon gain

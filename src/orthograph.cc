@@ -12,35 +12,16 @@
 
 
 #include "orthograph.hh"
-#include "geneMSA.hh"
 #include "mea.hh"
+#include "geneMSA.hh"
 
 using namespace std;
 
 PhyloTree *OrthoGraph::tree = NULL;
-vector<ofstream*> OrthoGraph::filestreams;
+
 size_t OrthoGraph::numSpecies;
 
-
-OrthoGraph::OrthoGraph(){
-    graphs.resize(numSpecies);
-    orthoSeqRanges.resize(numSpecies);
-    ptrs_to_alltranscripts.resize(numSpecies);
-}
-
-
-
-OrthoGraph::~OrthoGraph(){
-    for(int i = 0; i < numSpecies; i++){
-	if(orthoSeqRanges[i]){
-	    delete graphs[i];
-	    delete ptrs_to_alltranscripts[i];
-	    delete orthoSeqRanges[i];
-	}
-    }
-}
-
-void OrthoGraph::outputGenes(){
+void OrthoGraph::outputGenes(vector<ofstream*> filestreams, vector<int> &geneid){
 
     Boolean noInFrameStop;  
 
@@ -62,7 +43,7 @@ void OrthoGraph::outputGenes(){
 	
 	    Gene *currentGene = new Gene();
 	
-	    // convert node labeling of graph into a list of genes
+	    // convert node labeling of graph into a list of genes (backtracking from tail)
 	    while(current != head){
 	    
 		while(current->item == NULL){ //skip all neutral nodes
@@ -113,7 +94,6 @@ void OrthoGraph::outputGenes(){
 	     */
 	    agl->sort();
 
-	    static vector<int> geneid(numSpecies, 1); // made this static so gene numbering goes across sequences and is unique
 	    int transcriptid;
 
 	    // shift gene coordinates, set sequence name, gene and transcript names
@@ -138,9 +118,8 @@ void OrthoGraph::outputGenes(){
 
 	    //print sequence information
 
-	    cout << "#----- prediction on sequence range " << this->orthoSeqRanges[pos]->offset  << "-" << this->orthoSeqRanges[pos]->offset + this->orthoSeqRanges[pos]->length << " (length = "
-		 << this->orthoSeqRanges[pos]->length << ", name = "
-		 << this->orthoSeqRanges[pos]->seqname << ") -----" << endl << "#" << endl;
+	    cout << "#----- prediction on sequence range " << this->orthoSeqRanges[pos]->seqname << ":" << this->orthoSeqRanges[pos]->offset + 1  << "-" << this->orthoSeqRanges[pos]->offset + this->orthoSeqRanges[pos]->length << " ("
+		 << this->orthoSeqRanges[pos]->length << "bp) -----" << endl << "#" << endl;
 
 	    if(!agl->empty()){
 		printGeneList(agl, this->orthoSeqRanges[pos], Constant::codSeqOutput, Constant::proteinOutput, false);
@@ -152,42 +131,6 @@ void OrthoGraph::outputGenes(){
 	}
     }
 }
-
-void OrthoGraph::initOutputFiles(){
-
-    string outdir;  //direction for output files
-
-    try {
-	outdir = Properties::getProperty("/CompPred/outdir");
-    } catch (...) {
-	outdir = "";
-    }
-
-    outdir = expandHome(outdir); //replace "~" by "$HOME"
-    filestreams.resize(numSpecies);
-    for(size_t pos = 0; pos < numSpecies; pos++){
-	string filename = outdir + tree->species[pos] + ".gff";
-	ofstream *out = new ofstream(filename.c_str());
-	if(out){
-	    filestreams[pos] = out;
-	    (*out) << PREAMBLE << endl;
-	    (*out) << "#\n#----- prediction for species '" << tree->species[pos] << "' -----" << endl << "#" << endl;
-	}
-    }
-}
-
-void OrthoGraph::closeOutputFiles(){
-
-    for(size_t pos = 0; pos < numSpecies; pos++){
-	if(filestreams[pos]){
-	    if(filestreams[pos]->is_open()){
-		filestreams[pos]->close();
-		delete filestreams[pos];
-	    }
-	}
-    }
-}
-
 
 void OrthoGraph::optimize(){
 
@@ -245,7 +188,6 @@ void OrthoGraph::localMove(vector<MoveObject*> &orthomove){
 	list<OrthoExon> local_orthoexons = orthoExInRange(orthomove);
  
 	//calculate phylo_score
-
 	phylo_score -= pruningAlgor(local_orthoexons);
 
 	// do local changes for each graph  
@@ -258,7 +200,6 @@ void OrthoGraph::localMove(vector<MoveObject*> &orthomove){
 	//calculate new phylo_score
 	phylo_score += pruningAlgor(local_orthoexons);
 	print_change = false;
-
 	cout << "-------------------------------------" << endl;
 	cout << "graph_score\t" << graph_score << endl;
 	cout << "phylo_score\t" << phylo_score << endl;
@@ -270,14 +211,13 @@ void OrthoGraph::localMove(vector<MoveObject*> &orthomove){
 		retry = true;
 	    }
 	}
-	
 	else if( (graph_score + phylo_score) > 0 ){
 	    //score improved, accept move
 	    cout << "accept\n" << endl; 
 	}
 	else{
 	    cout << "undo\n" << endl;
-	    // no improvement, undo local changes
+	    // no improvement, undo local changes by relaxing nodes again this time with original weights
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(orthomove[pos]){
 		    graphs[pos]->relax(orthomove[pos]->getHead(), orthomove[pos]->getTail());
@@ -310,32 +250,36 @@ double OrthoGraph::pruningAlgor(list<OrthoExon> &orthoex){
 
 string OrthoGraph::getLabelpattern(OrthoExon &ex){
 
-    string old_labelpattern = ex.labelpattern;
-
-    ex.labelpattern = "";
+    string labelpattern;
     for (size_t i = 0; i < ex.orthoex.size(); i++){
 
 	if (ex.orthoex.at(i) == NULL){
-	    ex.labelpattern += "2";
+	    labelpattern += "2";
 	}
 	else {
 	    map<string, Node*>::iterator it = graphs.at(i)->existingNodes.find(graphs.at(i)->getKey(ex.orthoex.at(i)));
 	    if (it != graphs.at(i)->existingNodes.end()){
 		bool label = it->second->label;
 		if (label == 1){
-		    ex.labelpattern += "1";
+		    labelpattern += "1";
 		}
 		else if (label == 0){
-		    ex.labelpattern += "0";
+		    labelpattern += "0";
 		}
 	    }
 	    else
 		throw ProjectError("Error in OrthoExon::getKey: exon " + graphs.at(i)->getKey(ex.orthoex.at(i)) +" not in graph!");
 	}
     }
-    if(!old_labelpattern.empty() && old_labelpattern != ex.labelpattern && print_change ){
-	cout << ex << "\t" + old_labelpattern + " --> " + ex.labelpattern << endl;
+    if ( ex.labelpattern != labelpattern){
+	if(print_change){
+	    cout << ex << "\t" << ex.labelpattern << "-->" << labelpattern << endl;
+	    //temp: html output for gBrowse
+	    printHTMLgBrowse(ex);
+	}
     }
+
+    ex.labelpattern = labelpattern;
     return ex.labelpattern;
 }
 
@@ -370,7 +314,7 @@ vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon &orthoex){
     size_t numOnes = 0;
     size_t numZeros = 0;
 
-    //get current label pattern, important to update this !!!!
+    //get current label pattern
     string labelpattern = getLabelpattern(orthoex);
 
   
@@ -382,36 +326,19 @@ vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon &orthoex){
 	    numZeros++;
 	}
     }
-  
-    if( numOnes == 0 || numZeros == 0 ){ // nothing has to be done
-    }
-    else {  
+    if ( numOnes > numZeros && numZeros > 0 ){                    // make all zeros to ones	
 	cout << "Majority Rule Move " << endl;
-	cout << orthoex << "\t" << orthoex.labelpattern << endl;
+	cout << orthoex << "\t" << labelpattern << endl;
 	cout << "iteration:\t" << 0  <<"\tshift_size:\t" <<shift_size<<endl;
 	orthomove.resize(numSpecies);
-	if ( numOnes >= numZeros ){   // make all zeros to ones	
-	    for(size_t pos = 0; pos < numSpecies; pos++){
-		if( (orthoex.labelpattern[pos] == '0')  ){
-		    MoveObject *move = new MoveObject(graphs[pos],shift_size);
-		    move->addNodeBack( graphs[pos]->getNode(orthoex.orthoex[pos]), graphs[pos]->getMaxWeight() );
-		    move->initLocalHeadandTail();
-		    orthomove[pos] = move;
-		    cout << "local_head:\t" << orthomove[pos]->getHead() << endl;
-		    cout << "local_tail:\t" << orthomove[pos]->getTail() << endl;
-		}
-	    }
-	}
-	else {   // make all ones to zeros	
-	    for(size_t pos = 0; pos < numSpecies; pos++){
-		if( (orthoex.labelpattern[pos] == '1')  ){
-		    MoveObject *move = new MoveObject(graphs[pos], shift_size);
-		    move->addNodeBack( graphs[pos]->getNode(orthoex.orthoex[pos]), - graphs[pos]->getMaxWeight() );
-		    move->initLocalHeadandTail();
-		    orthomove[pos] = move;
-		    cout << "local_head:\t" << orthomove[pos]->getHead() << endl;
-		    cout << "local_tail:\t" << orthomove[pos]->getTail() << endl;
-		}
+	for(size_t pos = 0; pos < numSpecies; pos++){
+	    if( (labelpattern[pos] == '0')  ){
+		MoveObject *move = new MoveObject(graphs[pos],shift_size);
+		move->addNodeBack( graphs[pos]->getNode(orthoex.orthoex[pos]), graphs[pos]->getMaxWeight() );
+		move->initLocalHeadandTail();
+		orthomove[pos] = move;
+		cout << "local_head:\t" << orthomove[pos]->getHead() << endl;
+		cout << "local_tail:\t" << orthomove[pos]->getTail() << endl;
 	    }
 	}
     }
@@ -440,22 +367,23 @@ void cache::resetCounter(){
 }
 
 
-void cache::printCache(list<OrthoExon> &ortho){
+void OrthoGraph::printCache(list<OrthoExon> &ortho){
 
-    resetCounter();
+    cache::resetCounter();
 
     cout << "*************************************************************************" << endl;
     cout << "--- orthologous exons + labelpattern ---" << endl;
     for(list<OrthoExon>::iterator it = ortho.begin(); it != ortho.end(); it++){
-	incrementCounter(it->labelpattern);
-	//cout << *it << "\t" << it->labelpattern << endl;
+	cache::incrementCounter(getLabelpattern(*it));
+	cout << *it << "\t" << getLabelpattern(*it)  << endl;
+	printHTMLgBrowse(*it);
     }
     cout << "\n--- cache summary ---" << endl;
     cout.width(4); cout << "";
     cout.width(12); cout << "score";
     cout.width(4); cout << "#" << endl;
 
-    for(map<string, Score>::iterator it = labelscore.begin(); it != labelscore.end(); it++){
+    for(map<string, Score>::iterator it = cache::labelscore.begin(); it != cache::labelscore.end(); it++){
 
 	cout.width(4); cout << it->first;
 	cout.width(12); cout << it->second.treescore;
@@ -470,4 +398,68 @@ double cache::getScore(string labelpattern){
 }
 void cache::incrementCounter(string labelpattern){
     labelscore[labelpattern].count++;
+}
+
+
+vector<ofstream*> initOutputFiles(string extension){
+
+    vector<ofstream*> filestreams;
+    string outdir;  //direction for output files
+    try {
+	outdir = Properties::getProperty("/CompPred/outdir");
+    } catch (...) {
+	outdir = "";
+    }
+    outdir = expandHome(outdir); //replace "~" by "$HOME"
+    filestreams.resize(OrthoGraph::numSpecies);
+    for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){
+	string filename = outdir + OrthoGraph::tree->species[pos] + extension + ".gff";
+	if(Gene::gff3){
+	    filename += "3";	    
+	}
+	ofstream *out = new ofstream(filename.c_str());
+	if(out){
+	    filestreams[pos] = out;
+	    (*out) << PREAMBLE << endl;
+	    (*out) << "#\n#----- prediction for species '" << OrthoGraph::tree->species[pos] << "' -----" << endl << "#" << endl;
+	}	
+    }
+    return filestreams;
+}
+
+void closeOutputFiles(vector<ofstream*> filestreams){
+
+    for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){
+	if(filestreams[pos]){
+	    if(filestreams[pos]->is_open()){
+		filestreams[pos]->close();
+		delete filestreams[pos];
+	    }
+	}
+    }
+}
+
+void OrthoGraph::printHTMLgBrowse(OrthoExon &ex){
+
+    for (int j=0; j<ex.orthoex.size(); j++) {
+	if (ex.orthoex.at(j)!=NULL) {
+	    cout << "http://bioinf.uni-greifswald.de/gb2/gbrowse/vergl" << itoa(j+1) <<"/?name=" << geneMSA->getSeqID(j) << "%3A";
+	    if (geneMSA->getStrand(j) == plusstrand) {
+		cout << ex.orthoex.at(j)->begin + orthoSeqRanges[j]->offset +1 << ".." << ex.orthoex.at(j)->end +orthoSeqRanges[j]->offset +1 << endl;
+	    } else {
+		cout << geneMSA->getSeqIDLength(j) - (ex.orthoex.at(j)->end + orthoSeqRanges[j]->offset) << ".." << geneMSA->getSeqIDLength(j) - (ex.orthoex.at(j)->begin + orthoSeqRanges[j]->offset) << endl;
+	    }
+	}
+    }
+    for (int j=0; j<ex.orthoex.size(); j++) {
+	if (ex.orthoex.at(j)!=NULL) {
+	    cout << "http://bioinf.uni-greifswald.de/gb2/gbrowse_syn/vergl_syn/?search_src=vergl" << itoa(j+1) << ";name=" << geneMSA->getSeqID(j) << ":";
+	    if (geneMSA->getStrand(j) == plusstrand) {
+		cout << ex.orthoex.at(j)->begin + orthoSeqRanges[j]->offset +1 << ".." << ex.orthoex.at(j)->end +orthoSeqRanges[j]->offset +1 << endl;
+	    } else {
+		cout << geneMSA->getSeqIDLength(j) - (ex.orthoex.at(j)->end + orthoSeqRanges[j]->offset) << ".." << geneMSA->getSeqIDLength(j) - (ex.orthoex.at(j)->begin + orthoSeqRanges[j]->offset) << endl;
+	    }
+	    break;
+	}
+    }
 }
