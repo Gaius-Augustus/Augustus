@@ -1,5 +1,5 @@
 /**********************************************************************
- * file:    geomicMSA.hh
+ * file:    genomicMSA.hh
  * licence: Artistic Licence, see file LICENCE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  * descr.:  multiple sequence alignment of genomes for comparative gene prediction

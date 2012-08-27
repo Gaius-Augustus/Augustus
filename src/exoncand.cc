@@ -31,8 +31,8 @@ const int exonTypeReadingFrames[EXON_TYPES]=
 };
 
 const char* stateExonTypeIdentifiers[EXON_TYPES]=
-{ "SINGLE GENE", "INITIAL0", "INITIAL1", "INITIAL2", "INTERNAL0", "INTERNAL1", "INTERNAL2", "TERMINAL",
-  "RSINGLE GENE", "RINITIAL", "RINTERNAL0", "RINTERNAL1", "RINTERNAL2", "RTERMINAL0", "RTERMINAL1", "RTERMINAL2",
+{ "SINGLE", "INITIAL0", "INITIAL1", "INITIAL2", "INTERNAL0", "INTERNAL1", "INTERNAL2", "TERMINAL",
+  "RSINGLE", "RINITIAL", "RINTERNAL0", "RINTERNAL1", "RINTERNAL2", "RTERMINAL0", "RTERMINAL1", "RTERMINAL2",
 };
 
 int ExonCandidate::getStart() {
@@ -47,7 +47,7 @@ ExonType ExonCandidate::getExonType() {
     return type;
 }
 
-double ExonCandidate::getScore() {
+Double ExonCandidate::getScore() {
     return score;
 }
 

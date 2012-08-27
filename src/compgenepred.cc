@@ -47,12 +47,6 @@ void CompGenePred::start(){
   
     OrthoGraph::initOutputFiles();
 
-    /*stores for each species the fraction of sampled exons, which are also exon candidates
-     * determined by evaluation DSS and ASS signals
-     */
-    /*vector< list< double > > fraction_sampled;
-    fraction_sampled.resize(OrthoGraph::numSpecies);*/
-
     NAMGene namgene; // creates and initializes the states
     FeatureCollection extrinsicFeatures; // hints, empty for now, will later read in hints for sequence ranges from database
     SequenceFeatureCollection sfc(&extrinsicFeatures);
@@ -108,10 +102,8 @@ void CompGenePred::start(){
                         }
                         //build graph
                         orthograph.graphs[s] = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesNames[s]);
-                        /*double frac_sampled =orthograph.graphs[s]->buildGraph();
-                        if (frac_sampled <= 1){
-                            fraction_sampled[s].push_back(frac_sampled);
-                        }*/
+                        orthograph.graphs[s]->buildGraph();
+
                         orthograph.ptrs_to_alltranscripts[s] = alltranscripts; //save pointers to transcripts and delete them after gene list is build
                     }
                 }
@@ -122,29 +114,23 @@ void CompGenePred::start(){
                 cout<< speciesNames[s] << " doesn't exist in this part of the alignment."<< endl;
             }
         }
+        geneRange->printGeneRanges();
         geneRange->printExonCands(offsets);
         geneRange->createOrthoExons(offsets);
         geneRange->printOrthoExons(offsets);
         orthograph.all_orthoex = geneRange->getOrthoExons();
 
-        if(!orthograph.all_orthoex.empty()){
+        /*if(!orthograph.all_orthoex.empty()){
 	    // iterative optimization of labelings in graphs
 	    orthograph.optimize();
-	}
+	    }*/
 
 	// transfer max weight paths to genes + filter + ouput
-	orthograph.outputGenes();
+	//orthograph.outputGenes();
 
         offsets.clear();
         delete geneRange;
     }
-    /*for (int i=0; i<OrthoGraph::numSpecies; i++) {
-        double sum = 0.0;
-        for (list<double>::iterator it=fraction_sampled[i].begin(); it!=fraction_sampled[i].end(); it++) {
-            sum = sum +(*it);
-        }
-        cout<<sum/fraction_sampled[i].size() <<endl;
-    }*/
 
     GeneMSA::closeOutputFiles();
     OrthoGraph::closeOutputFiles();

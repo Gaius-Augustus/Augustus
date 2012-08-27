@@ -68,7 +68,7 @@ struct block {
 
 class ExonCandidate {
 public:
-    ExonCandidate(ExonType s=UNKNOWN_EXON, long int b=0, long int e=0, double sc=0.0, double ass_sc=0.0, double dss_sc=0.0):
+    ExonCandidate(ExonType s=UNKNOWN_EXON, long int b=0, long int e=0, Double sc=0.0, Double ass_sc=0.0, Double dss_sc=0.0):
         type(s),
         begin(b),
         end(e),
@@ -79,12 +79,12 @@ public:
     ~ExonCandidate(){}
     ExonType type;
     int begin, end;
-    double score, assScore, dssScore;
+    Double score, assScore, dssScore;
 
     int getStart(void);
     int getEnd(void);
     ExonType getExonType(void);
-    double getScore(void);
+    Double getScore(void);
     int complementType(void);
     StateType getStateType(void);
     string createKey(void);

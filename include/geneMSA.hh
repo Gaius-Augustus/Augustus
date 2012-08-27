@@ -23,8 +23,11 @@ struct AlignmentBlock {
 class GeneMSA {
 public:
     static PhyloTree *tree;
+    static int utr_range;
     static int orthoExonID; // stores an ID for exons of different species which are orthologous to each other
-    static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles; // pointers to the output files
+    static int geneRangeID; // stores an ID for the possible gene ranges of the different species which belong together
+    static vector<int> exonCandID; // stores the IDs for exon candidates of different species
+    static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles; // pointers to the output files
     list<AlignmentBlock*> alignment;		// list of the alignment parts which possibly belong to a gene segment
     vector< list<ExonCandidate*>* > exoncands;		// exon candidates found in the different species in a gene segment
     vector< map<string, ExonCandidate*>* > existingCandidates;		// stores the keys of the exon candidates for the different species
@@ -37,9 +40,9 @@ public:
         }
         for (int i=0; i<exoncands.size(); i++) {
             if (exoncands[i]!=NULL) {
-		for(list<ExonCandidate*>::iterator it = exoncands[i]->begin(); it != exoncands[i]->end(); it++){
-		    delete *it;
-		}
+                for(list<ExonCandidate*>::iterator it = exoncands[i]->begin(); it != exoncands[i]->end(); it++){
+                    delete *it;
+                }
                 exoncands.at(i)->clear();
                 delete exoncands[i];
             }
@@ -70,7 +73,7 @@ public:
      * The default threshold of 0 means that all splice site patterns are considered.
      */
     //void createExonCands(const char *dna, float assqthresh, float dssqthresh);
-    void createExonCands(const char *dna, double assmotifqthresh=0.05, double assqthresh=0.15, double dssqthresh=0.15);
+    void createExonCands(const char *dna, double assmotifqthresh=0.15, double assqthresh=0.3, double dssqthresh=0.7);
 
     pair<int,int> getAlignedPosition(AlignSeq* ptr, int pos);	// computes the aligned position of a base in an alignment and the 'block' where the base is found
     int getRealPosition(AlignSeq* ptr, int pos, int idx);	// computes the real position of a base dependent on its position in the alignment
@@ -78,8 +81,10 @@ public:
     list<ExonCandidate*>* getExonCands(int speciesIdx);
     list<OrthoExon> getOrthoExons();
     static void openOutputFiles();
+    void printGeneRanges();
     void printExonCands(vector<int> offsets);
     void printOrthoExons(vector<int> offsets);
+    void printSingleOrthoExon(OrthoExon &oe, vector<int> offsets);
     static void closeOutputFiles();
 };
 
