@@ -1911,8 +1911,9 @@ class PredictionController {
 				def cmdStr = "mkdir ${projectDir}/augustus\n"
 				if(estExistsFlag == 1){
 					cmdStr = "${cmdStr}${BLAT_PATH} -noHead ${projectDir}/genome.fa ${projectDir}/est.fa ${projectDir}/est.psl\n"
-					cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/blat2hints.pl --in=${projectDir}/est.psl --out=${projectDir}/est.hints --source=E\n"
-					cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/blat2gbrowse.pl ${projectDir}/est.psl ${projectDir}/est.gbrowse\n"
+					cmdStr = "${cmdStr}cat ${projectDir}/est.psl | sort -n -k 16,16 | sort -s -k 14,14 > ${projectDir}/est.s.psl\n"
+					cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/blat2hints.pl --in=${projectDir}/est.s.psl --out=${projectDir}/est.hints --source=E\n"
+					cmdStr = "${cmdStr}${AUGUSTUS_SCRIPTS_PATH}/blat2gbrowse.pl ${projectDir}/est.s.psl ${projectDir}/est.gbrowse\n"
 				}
 				if(hintExistsFlag == 1){
 					cmdStr = "${cmdStr}cat ${projectDir}/hints.gff >> ${projectDir}/est.hints\n"
