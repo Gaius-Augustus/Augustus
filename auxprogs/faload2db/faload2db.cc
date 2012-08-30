@@ -19,11 +19,16 @@
 #include <iostream>     /* for printf */
 #include <getopt.h>     /* for getopt_long; standard getopt is in unistd.h */
 #include <stdlib.h>     /* for exit() */
+#include <mysql++.h>
+#include <exception>
+
 using namespace std;
 
-void printUsage();
-
 int chunksize = 50000;
+mysqlpp::Connection con;
+
+void printUsage();
+void connectDB(string dbaccess);
 
 /*
  * main
@@ -86,10 +91,18 @@ int main( int argc, char* argv[] ){
 	printUsage();
 	exit(1);
     }
-    
+       
     cout << "species=" << species << endl
 	 << "dbaccess=" << dbaccess << endl
 	 << "genomefname=" << genomefname << endl;
+    
+    try {
+	connectDB(dbaccess);
+    } catch (const char *m) {
+	cerr << "Database connection error:" << endl << m << endl;
+	exit(1);
+    }
+ 
 }
 
 
@@ -98,7 +111,7 @@ void printUsage(){
 faload2db [parameters] --species=SPECIES --dbaccess=dbname,host,user,passwd  inputfilename\n\
 \n\
 inputfilename refers to a genome file in FASTA format\n\
-SPECIES is the same identifier as is used in the treefile and alnfile\n\
+SPECIES is the same identifier as is used in the treefile and alnfile parameters to augustus.\n\
 \n\
 dbname,host,user,passwd are the name of the SQL database, the host name or IP, the database user and password\n\
 When storing genomes of multiple organisms call this program repeatedly for each one.\n\
@@ -108,4 +121,38 @@ parameters:\n\
 --chunksize   the sequences in the input genome are split into chunks of this size so\n\
               that subsequent retrievals of small sequence ranges do not require to read\n\
               the complete - potentially much longer - chromosome. (default " << chunksize << ")\n";
+}
+
+void connectDB(string dbaccess){
+    string db_name, host, user, passwd;
+
+    string::size_type start=0, end;
+    end = dbaccess.find(','); // string 'dbaccess' is delimited by ','
+    if (end == string::npos)
+	throw ("Database name missing in dbaccess.");
+    db_name = dbaccess.substr(start, end-start);
+    start = end + 1;
+    end = dbaccess.find(',', start);
+    if (end == string::npos)
+	throw ("Host name missing in dbaccess.");
+    host = dbaccess.substr(start, end-start);
+    start = end + 1;
+    end = dbaccess.find(',', start);
+    if (end == string::npos)
+	throw ("User name missing in dbaccess.");
+    user = dbaccess.substr(start, end-start);
+    start = end + 1;
+    end = dbaccess.find(',', start);
+    if (end == string::npos)
+	passwd = dbaccess.substr(start);
+    else 
+	passwd = dbaccess.substr(start, end-start); // in case dbaccess also includes the port number
+    
+    try {
+	cout << "Trying to connect to database " << db_name << " on server "
+	     << host << " as user " << user << " using password " << passwd << " ..." << endl;
+	con.connect(db_name.c_str(), host.c_str(), user.c_str(), passwd.c_str());
+    } catch(const mysqlpp::BadQuery& e){
+	cout << "Connection error: " << e.what() << endl;
+    }
 }
