@@ -122,7 +122,14 @@
 	    <h2 id="noResults">Why do I not get any results?</h2>
 		<p>
 		<ul>
-			<li><b>Did an obvious error occur?</b><br>Please contact <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a> if you are not sure what the error message is telling you.</li>
+			<li><b>Did an obvious error occur?</b><br>Please contact <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a> if you are not sure what the error message is telling you.<br>
+			  <p>One frequently occuring error in the AutoAug.err file is the following:</p>
+
+<p>The file with UTR parameters for train****** does not seem to exist. This likely means that the UTR model has not beeen trained yet for train******.</p>
+
+			  <p>This error message tells you that no UTR parameters were trained for your species. If no other error messages are contained above the first UTR error message, the general results of your job are ok, you simply did not get UTR parameters and thus no predictions with UTR.</p>
+
+</li>
 			<li><b>Did you submitt your job a long time ago and it seems to be "stuck" at the status of "computing"?</b><br>Please contact <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a> to inquire whether your job is really still running.</li>
 			<li><b>Did your job finish but there are just no parameters or predictions?</b><br>The quality of results depends on the quality and combination of your input data. If the input data did e.g. not provide sufficient information for generating training genes, then no AUGUSTUS parameters will be optimized for your species, and no predictions will be made. In case of the gene prediction web server application, it is also possible that your submitted genome sequence does not contain any protein coding genes.</li>
 		</ul>

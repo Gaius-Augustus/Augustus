@@ -822,6 +822,12 @@ Top of page
 
 <p>This file contains all error messages of the AUGUSTUS training and prediction processed invoked by the AUGUSTUS training web server application. It is a plain text file, i.e. you should be able to open it with any text editor or even your web browser. In your own interest, you should check the AutoAug.err file. If this file is not empty, something did go wrong and you probably shouldn't trust the results blindly - in case any were produced at all.</p>
 
+<p>One frequently occuring error in the AutoAug.err file is the following:</p>
+
+<p>The file with UTR parameters for train****** does not seem to exist. This likely means that the UTR model has not beeen trained yet for train******.</p>
+
+<p>This error message tells you that no UTR parameters were trained for your species. If no other error messages are contained above the first UTR error message, the general results of your job are ok, you simply did not get UTR parameters and thus no predictions with UTR.</p>
+
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
 Top of page
