@@ -446,7 +446,7 @@ class PredictionController {
 			}
 			// assign parameter set from dropdown menu
 			if(predictionInstance.species_select == "Acyrthosiphon pisum (animal)"){
-				predictionInstance.project_id = "pea_aphid"
+				predictionInstance.project_id = "pea_aphid"				
 			}else if(predictionInstance.species_select == "Aedes aegypti (animal)"){
 				predictionInstance.project_id = "aedes"
 			}else if(predictionInstance.species_select == "Amphimedon queenslandica (animal)"){
@@ -1056,10 +1056,23 @@ class PredictionController {
 			def radioParameterString
 			confirmationString = "${confirmationString}User set UTR prediction: ${predictionInstance.utr}\n"
 			// utr
+			// check whether utr parameters actually exist:
+			def utrParamContent = new File("${AUGUSTUS_CONFIG_PATH}/species/${species}/${species}_utr_probs.pbl")
+			if(utrParamContent.exists() == false){
+			        overRideUtrFlag = 0;
+				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - UTR prediction was disabled because UTR parameters do not exist for this species!\n";
+			}
+			// enable or disable utr prediction in AUGUSTUS command
 			if(overRideUtrFlag==1){
-				radioParameterString = " --UTR=on"
+				if(predictionInstance.allowed_structures == 1 || predictionInstance.allowed_structures == 2){
+					radioParameterString = " --UTR=on"
+				}else{
+					radioParameterString = " --UTR=off"
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - UTR prediction was disabled due to incompatibility with at least one or exactly one gene predcition\n";
+					overRideUtrFlag = 0;
+				}
 			}else if(overRideUtrFlag==0 && predictionInstance.utr == true){
-				confirmationString = "${confirmationString}Server set UTR prediction: false [UTR parameters missing!]\n"
+				confirmationString = "${confirmationString}Server set UTR prediction: false [UTR parameters missing or conflict with allows gene structure!]\n"
 				radioParameterString = " --UTR=off"
 			}else{
 				radioParameterString = " --UTR=off"

@@ -2367,7 +2367,7 @@ class TrainingController {
 					}
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Job error status is ${trainingInstance.job_error} after all errors have been checked.\n"
-					mailStr = "An error occured while running the AUGUSTUS training job ${trainingInstance.accession_id}.\n\nPlease check the log-files carefully before proceeding to work with the produced results.\nPlease contact augustus-web@uni-greifswald.de in case you are in doubt about the results.\n\n"
+					mailStr = "An error occured while running the AUGUSTUS training job ${trainingInstance.accession_id}.\n\nPlease check the log-files carefully before proceeding to work with the produced results.\n\n"
 					logDate = new Date()
 					trainingInstance.message = "${trainingInstance.message}----------------------------------------------\n${logDate} - Error Message:\n----------------------------------------------\n\n${mailStr}"
 					trainingInstance = trainingInstance.merge()

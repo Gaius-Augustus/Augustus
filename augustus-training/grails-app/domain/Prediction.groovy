@@ -70,7 +70,7 @@ class Prediction {
       })
       genome_ftp_link(nullable:true, blank:true, url:true)
       old_url(nullable:true)
-      project_id(nullable:true, blank:true, size:3..30)
+      project_id(nullable:true, blank:true, size:3..50)
       species_select(nullable:true)
       est_file(nullable:true, blank:true, validator: { val, obj ->
          if (!(obj.est_file == null) && !(obj.est_ftp_link == null)) {

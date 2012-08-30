@@ -575,7 +575,36 @@ In the beginning, the status page will display that your job has been submitted.
 
 <p>UTR prediction is only possible if UTR parameter files exist for your species. Even if UTR parameter files exist for a species, you should make sure, that they are species specific, i.e. have actually been optimized for your target species. It is a waste of time to predict UTRs with general (template) parameters.</p>
 
+<p>UTR prediction is only supported in combination with the following two gene structure constraints:</p>
+<ul>
+<li>predict any number of (possibly partial) genes</li>
+<li>only predict complete genes</li>
+</ul>
+<p>UTR prediction is not possible in combination with the gene structure constraints:</p>
+<ul>
+<li>only predict complete genes - at least one</li>
+<li>predict exactly one gene</li>
+</ul>
+
 <p>If no UTR parameter files exist for your species but you enables UTR prediction in the form, the web server application will overrule the choice to predict UTRs by simply not predicting any UTRs.</p>
+
+<h3>Species for which UTR parameters are available:</h3>
+
+<ul>
+  <li>Acyrthosiphon pisum (pea_aphid)</li>
+  <li>Amphimedon queenslandica (amphimedon)</li>
+  <li>Apis mellifera (honeybee1)</li>
+  <li>Bombus terrestris (bombus_terrestris2)</li>
+  <li>Caenorhabditis elegans (caenorhabditis)</li>
+  <li>Drosophila melanogaster (fly)</li>
+  <li>Homo sapiens (human)</li>
+  <li>Trichinella spiralis (trichinella)</li>
+  <li>Toxoplasma gondii (toxoplasma)</li>
+  <li>Arabidopsis thaliana (arabidopsis)</li>
+  <li>Chlamydomonas reinhartii (chlamy2011)</li>
+  <li>Galdieria sulphuraria (galdieria)</li>
+  <li>Solanum lycopersicum (tomato)</li>
+</ul>
 
  <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
