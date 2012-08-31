@@ -14,18 +14,6 @@ ifdef CPP0X
 endif
 INCLS	= -I../include
 
-ifdef MYSQL
-#   	 - copy mysqlpplib to a path that is registered in /etc/ld.so.conf, in most Unix-like OS,they
-#          are /usr/lib/, /lib/,/usr/share/lib/.If you you want indicate your own lib-path but have no
-#          authority to run 'ldconfig',copy 'mysqlpplib' to '/your/run-time lib/path/',compile Augustus
-#          with '-Wl,rpath=/your/run-time lib/path/'.
-# replace RUNTIME_LIBPATH with your own run-time libpath if mysqlpp is not installed system-wide, e.g.
-# RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib 
-RUNTIME_LIBPATH = 
-INCLS	+= -I/usr/include/mysql -I/usr/local/include/mysql++
-LIBS 	=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
-CFLAGS  += -DAMYSQL
-endif
 
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
@@ -37,8 +25,22 @@ ifdef CPP0X
 endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
-PROGR	= augustus etraining consensusFinder curve2hints fastBlockSearch prepareAlign
+PROGR	= augustus etraining consensusFinder curve2hints prepareAlign
 INFO    = cflags
+
+ifdef MYSQL
+#   	 - copy mysqlpplib to a path that is registered in /etc/ld.so.conf, in most Unix-like OS,they
+#          are /usr/lib/, /lib/,/usr/share/lib/.If you you want indicate your own lib-path but have no
+#          authority to run 'ldconfig',copy 'mysqlpplib' to '/your/run-time lib/path/',compile Augustus
+#          with '-Wl,rpath=/your/run-time lib/path/'.
+# replace RUNTIME_LIBPATH with your own run-time libpath if mysqlpp is not installed system-wide, e.g.
+# RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib 
+RUNTIME_LIBPATH = 
+INCLS	+= -I/usr/include/mysql -I/usr/local/include/mysql++
+LIBS 	=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
+CFLAGS  += -DAMYSQL
+#PROGR   += faload2db
+endif
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
@@ -75,6 +77,10 @@ fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 prepareAlign: pp_prepare_align.cc
 	$(CC) $(CFLAGS) -o $@ $^
 	cp prepareAlign ../bin/
+
+faload2db: faload2db.cc genbank.o gene.o lldouble.o types.o properties.o motif.o intronmodel.o statemodel.o exonmodel.o utrmodel.o igenicmodel.o merkmal.o extrinsicinfo.o hints.o geneticcode.o namgene.o
+	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	cp faload2db ../bin/
 
 info:
 	echo "$(CFLAGS)" > $(INFO)

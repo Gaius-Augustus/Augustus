@@ -5,4 +5,4 @@
 #CPP0X = true
 
 # uncomment this line when you need MySQL access to sequences (most users don't)
-#MYSQL = true
+MYSQL = true

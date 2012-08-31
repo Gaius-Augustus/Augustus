@@ -29,6 +29,7 @@ mysqlpp::Connection con;
 
 void printUsage();
 void connectDB(string dbaccess);
+void createTable();
 
 /*
  * main
@@ -91,18 +92,14 @@ int main( int argc, char* argv[] ){
 	printUsage();
 	exit(1);
     }
-       
-    cout << "species=" << species << endl
-	 << "dbaccess=" << dbaccess << endl
-	 << "genomefname=" << genomefname << endl;
-    
+
     try {
 	connectDB(dbaccess);
     } catch (const char *m) {
 	cerr << "Database connection error:" << endl << m << endl;
 	exit(1);
     }
- 
+    createTable();
 }
 
 
@@ -115,12 +112,18 @@ SPECIES is the same identifier as is used in the treefile and alnfile parameters
 \n\
 dbname,host,user,passwd are the name of the SQL database, the host name or IP, the database user and password\n\
 When storing genomes of multiple organisms call this program repeatedly for each one.\n\
+A single table with the structure\n\
+\
+is created.\n\
 \n\
 parameters:\n\
 --help        print this usage info\n\
 --chunksize   the sequences in the input genome are split into chunks of this size so\n\
               that subsequent retrievals of small sequence ranges do not require to read\n\
-              the complete - potentially much longer - chromosome. (default " << chunksize << ")\n";
+              the complete - potentially much longer - chromosome. (default " << chunksize << ")\n\
+\n\
+example:\n\
+     faload2db --species=chicken --dbaccess=birds,localhost,mario,dF$n.E chickengenome.fa\n";
 }
 
 void connectDB(string dbaccess){
@@ -156,3 +159,20 @@ void connectDB(string dbaccess){
 	cout << "Connection error: " << e.what() << endl;
     }
 }
+
+/*
+ * create table `genomes` if it does not already exist
+ */
+void createTable(){
+    mysqlpp::Query query = con.query("CREATE TABLE IF NOT EXISTS genomes (\
+        seqid int(10) unsigned NOT NULL AUTO_INCREMENT,			\
+        dnaseq longtext NOT NULL,					\
+        start int(9) unsigned NOT NULL,\
+        end int(9) unsigned NOT NULL,\
+        species varchar(50),\
+        PRIMARY KEY (seqid),\
+        KEY region (species,start,end)\
+      ) ENGINE=MyISAM DEFAULT CHARSET=latin1 MAX_ROWS=1000000 AVG_ROW_LENGTH=50000;");
+   query.execute();
+}
+
