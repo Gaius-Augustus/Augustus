@@ -613,6 +613,10 @@ speciesgraph.o: \
 	../include/speciesgraph.hh \
 	speciesgraph.cc
 
+fasta.o: \
+	../include/fasta.hh \
+	fasta.cc
+
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately
 #       return unsigned types. Using a negative integer in a

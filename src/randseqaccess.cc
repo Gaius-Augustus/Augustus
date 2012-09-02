@@ -120,9 +120,9 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
 		    << chrName << "\"";
     store_res = detect_coord_id.store();
     try {
-	if(store_res.num_rows() ==0 ){
+	if(store_res.num_rows() == 0 ){
 	    cerr << "DbSeqAccess::getSeq : chrName\"" << chrName
-		 << "\" does not exist in database, retriving sequence failed." << endl;
+		 << "\" does not exist in database, retrieval of sequence failed." << endl;
 	} else {
 	    seq_region_id = store_res[0][0];
 	    coord_id = store_res[0][1];

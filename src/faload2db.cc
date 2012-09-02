@@ -233,22 +233,21 @@ void createTable(){
 /*
  * insert one sequence into database
  * return the number of chunks that sequence was cut into
+ * start and end are 0-based and inclusive.
  */
-int insertSeq(char *sequence, char *name, int length, string species){
+int insertSeq(string sequence, char *name, int length, string species){
     int chunks = 0;
-    
+    int start = 0, end;
     cout << "inserting " << name << " len=" << length << "..." << endl;
-
-    mysqlpp::Query query = con.query();
-
-    //genomes row(mysqlpp::null, sequence, 0, length-1, species);
-    //query.insert(row);
-
-    query << "INSERT INTO genomes (dnaseq,start,end,species) VALUES(\""
-	  << sequence << "\",0," << length-1 << ",\"" << species << "\")";
-
-    cout << "Executing" << endl << query.str() << endl;
-    query.execute();
-
+    while (start < length) {
+	end = (start + chunksize < length)? (start + chunksize - 1) : length - 1;
+	mysqlpp::Query query = con.query();
+	query << "INSERT INTO genomes (dnaseq,start,end,species) VALUES(\""
+	      << sequence.substr(start, end-start+1) << "\"," << start << "," << end << ",\"" << species << "\")";
+	
+	cout << "Executing" << endl << query.str() << endl;
+	query.execute();
+	start += chunksize;
+    }
     return chunks;
 }
