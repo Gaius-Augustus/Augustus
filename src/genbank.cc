@@ -2,7 +2,7 @@
  * file:    genbank.cc
  * licence: Artistic Licence, see file LICENCE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  extrinsic information/hints, user constraints
+ * descr.:  sequence and gene struture input from file
  * authors: Mario Stanke, mario@gobics.de, Stafilarakis
  *
  * date     |   author      |  changes
@@ -13,6 +13,7 @@
  **********************************************************************/
 
 #include "genbank.hh"
+#include "fasta.hh"
 
 // project includes
 #include "properties.hh"
@@ -611,53 +612,16 @@ GBPositions* GBSplitter::nextData( ) throw( GBError ){
 
 
 AnnoSequence *GBSplitter::getNextFASTASequence( ) throw( GBError ){
-    string line;
-    string sequence("");
-    char   *cseq;
-    char   c;
-    static int unnamedcount=1;
-    // skip empty lines
-    ifstrm >> ws;
-    if (!(ifstrm))
+    char *sequence = NULL, *name = NULL;
+    int length;
+    readOneFastaSeq(ifstrm, sequence, name, length);
+    if (sequence == NULL || length == 0)
 	return NULL;
+
     AnnoSequence *seq = new AnnoSequence();
-    c = ifstrm.peek();
-    if (c=='>') {// sequence name specified
-	getline(ifstrm, line);
-	// go up to the first white space, i.e. interpret only the first word as sequence identifier
-	int endpos = 1;
-	while (endpos < line.length() && !isspace(line[endpos]))
-	    endpos++;
-	endpos--;
-	//ignore white spaces (especially the DOS carriage return \r=\cr=13) at the end of the line
-	//int endpos=line.length()-1;
-	//while (endpos > 0 && isspace(line[endpos]))
-	//    endpos--;
-	seq->seqname = newstrcpy(line.c_str()+1, endpos);
-    } else { // not correct fasta: unnamed sequence
-	seq->seqname = new char[14]; // at most 100000 sequences
-	sprintf(seq->seqname, "unnamed-%d", unnamedcount);
-    }
-    if (!ifstrm)
-	return NULL;
-    while(ifstrm && ifstrm.peek( ) != '>'){
-	if (getline(ifstrm, line))
-	    sequence.append(line);
-    }
-    cseq = new char[sequence.length()+1];
-     
-    // now filter out any characters that are not letters
-    int pos = 0;
-    for (int i=0; i < sequence.length(); i++) 
-	if (isalpha( sequence[i] ))
-	    cseq[pos++] = tolower(sequence[i]);
-    cseq[pos] = '\0';
-    seq->length = pos; 
-    seq->sequence = cseq;
-    if (seq->length == 0){
-	delete seq;
-	return NULL;
-    }
+    seq->seqname = name;
+    seq->sequence = sequence;
+    seq->length = length;
     return seq;
 }
 

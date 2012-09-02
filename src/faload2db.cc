@@ -12,17 +12,21 @@
  **********************************************************************/
 
 // project includes
-#include "genbank.hh"
+#include "fasta.hh"
 
 // standard C/C++ includes
 #include <string>
-#include <iostream>     /* for printf */
+#include <iostream>
+#include <fstream>
 #include <getopt.h>     /* for getopt_long; standard getopt is in unistd.h */
 #include <stdlib.h>     /* for exit() */
 #include <mysql++.h>
 #include <exception>
+#include <ssqls.h>
 
 using namespace std;
+
+//sql_create_5(genomes,1,5,int,seqid,string,sequence,int,start,int,end,string,species)
 
 int chunksize = 50000;
 mysqlpp::Connection con;
@@ -30,6 +34,7 @@ mysqlpp::Connection con;
 void printUsage();
 void connectDB(string dbaccess);
 void createTable();
+int insertSeq(char *sequence, char* name, int length, string species);
 
 /*
  * main
@@ -44,10 +49,11 @@ int main( int argc, char* argv[] ){
         {"species", 1, 0, 's'},
         {"dbaccess", 1, 0, 'd'},
         {"help", 0, 0, 'h'},
+	{"chunksize", 1, 0, 'c'},
         {NULL, 0, NULL, 0}
     };
     int option_index = 0;
-    while ((c = getopt_long(argc, argv, "s:d:h", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "s:d:hc:", long_options, &option_index)) != -1) {
         switch (c) {
         case 's':
 	    species = optarg;
@@ -57,6 +63,9 @@ int main( int argc, char* argv[] ){
             break;
         case 'h':
             help = 1;
+            break;
+        case 'c':
+	    chunksize = atoi(optarg);
             break;
         default:
             break;
@@ -92,6 +101,16 @@ int main( int argc, char* argv[] ){
 	printUsage();
 	exit(1);
     }
+    if (chunksize < 2){
+	cerr << "Chunksize too small (" << chunksize << "). Should be roughly in the oder of a gene's length." << endl;
+	printUsage();
+	exit(1);
+    }
+    if (chunksize > 1000000){
+	cerr << "Chunksize too big (" << chunksize << "). " << endl;
+	printUsage();
+	exit(1);
+    }
 
     try {
 	connectDB(dbaccess);
@@ -101,14 +120,31 @@ int main( int argc, char* argv[] ){
     }
     try {
 	createTable();
-	GBProcessor fasta(genomefname);
-	AnnoSequence *seq = fasta.getSequenceList();
-	while( seq ){
-	    cout << seq->seqname << "\t" << seq->sequence << endl;
-	    seq = seq->next;
+
+	ifstream ifstrm;
+	ifstrm.open(genomefname.c_str());
+	if( !ifstrm )
+	    throw string("Could not open input file \"") + genomefname + "\"!";
+
+	char *sequence = NULL, *name = NULL;
+	int length, seqCount = 0, chunkCount = 0, lenCount = 0;
+	readOneFastaSeq(ifstrm, sequence, name, length);
+	while (sequence){
+	    chunkCount += insertSeq(sequence, name, length, species);
+	    seqCount++;
+	    lenCount += length;
+	    delete sequence;
+	    delete name;
+	    sequence = name = NULL;
+	    readOneFastaSeq(ifstrm, sequence, name, length);
 	}
-    } catch( ProjectError& err ){
-        cerr << "\n" <<  argv[0] << ": ERROR\n\t" << err.getMessage( ) << "\n\n";
+	if (seqCount > 0)
+	    cout << "Inserted " << chunkCount << " chunks of " << seqCount << " sequences (total length "
+		 << lenCount << " bp)." << endl;
+	else
+	    cout << "No sequences found. Nothing inserted into database." << endl;
+    } catch( string err ){
+        cerr << "\n" <<  argv[0] << ": ERROR\n\t" << err << "\n\n";
 	exit(1);
     } 
 }
@@ -131,10 +167,17 @@ parameters:\n\
 --help        print this usage info\n\
 --chunksize   the sequences in the input genome are split into chunks of this size so\n\
               that subsequent retrievals of small sequence ranges do not require to read\n\
-              the complete - potentially much longer - chromosome. (default " << chunksize << ")\n\
+              the complete - potentially much longer - chromosome. (<= 1000000, default " << chunksize << ")\n\
 \n\
 example:\n\
-     faload2db --species=chicken --dbaccess=birds,localhost,mario,dF$n.E chickengenome.fa\n";
+     faload2db --species=chicken --dbaccess=birds,localhost,mario,dF$n.E chickengenome.fa\n\
+\n\
+Example code for database creation before calling faload2db:\n\
+mysql -u root -p\n\
+create database birds;\n\
+select password('dF$n.E');\n\
+create user `mario`@`%` identified by password '*72E7F76393830492EB3C58AD730188708BD72DE1'; /* or whatever the password code is*/\n\
+grant all privileges on birds.* to mario@'%';\n";
 }
 
 void connectDB(string dbaccess){
@@ -187,3 +230,25 @@ void createTable(){
    query.execute();
 }
 
+/*
+ * insert one sequence into database
+ * return the number of chunks that sequence was cut into
+ */
+int insertSeq(char *sequence, char *name, int length, string species){
+    int chunks = 0;
+    
+    cout << "inserting " << name << " len=" << length << "..." << endl;
+
+    mysqlpp::Query query = con.query();
+
+    //genomes row(mysqlpp::null, sequence, 0, length-1, species);
+    //query.insert(row);
+
+    query << "INSERT INTO genomes (dnaseq,start,end,species) VALUES(\""
+	  << sequence << "\",0," << length-1 << ",\"" << species << "\")";
+
+    cout << "Executing" << endl << query.str() << endl;
+    query.execute();
+
+    return chunks;
+}

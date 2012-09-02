@@ -19,7 +19,7 @@ OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
  meaPath.o exoncand.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o orthograph.o speciesgraph.o\
-  genomicMSA.o geneMSA.o
+  genomicMSA.o geneMSA.o fasta.o
 ifdef CPP0X
 	OBJS += parser/parse.o scanner/lex.o
 endif
@@ -39,7 +39,7 @@ RUNTIME_LIBPATH =
 INCLS	+= -I/usr/include/mysql -I/usr/local/include/mysql++
 LIBS 	=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
 CFLAGS  += -DAMYSQL
-#PROGR   += faload2db
+PROGR   += faload2db
 endif
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
@@ -78,7 +78,7 @@ prepareAlign: pp_prepare_align.cc
 	$(CC) $(CFLAGS) -o $@ $^
 	cp prepareAlign ../bin/
 
-faload2db: faload2db.cc genbank.o gene.o lldouble.o types.o properties.o motif.o intronmodel.o statemodel.o exonmodel.o utrmodel.o igenicmodel.o merkmal.o extrinsicinfo.o hints.o geneticcode.o namgene.o
+faload2db: faload2db.cc fasta.o
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp faload2db ../bin/
 
@@ -231,6 +231,7 @@ extrinsicinfo.o : \
 
 genbank.o : \
 	../include/genbank.hh \
+	../include/fasta.hh \
 	../include/gene.hh \
 	../include/geneticcode.hh \
 	../include/lldouble.hh \
