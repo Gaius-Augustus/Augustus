@@ -104,13 +104,64 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
 #else // AMYSQL
 
 /*
+ * retrieve sequence directly from table genomes(seqid, dnaseq, seqname, start, end, species)
+ * arguments and columns start and end are 0-based.
+ */
+AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
+    mysqlpp::StoreQueryResult store_res;
+    string dna, chunkseq;
+    mysqlpp::Query query = con.query();
+    query << "SELECT dnaseq,start,end FROM genomes WHERE species='" << speciesname << "' AND seqname='"
+	  << chrName << "' AND start <= " << end << " AND end >= " << start << " ORDER BY start ASC";
+    cout << "Executing" << endl << query.str() << endl;
+    vector<genomes> g;
+    query.storein(g);
+    
+    
+    AnnoSequence* annoseq = new AnnoSequence();
+    annoseq->seqname = newstrcpy(chrName);
+    if (g.empty())
+	throw ProjectError("Could not retrieve sequence from database using query:" + query.str());
+    else if (g.size() == 1){ // segment overlaps a single dna chunk
+	if (!(g[0].start <= start && g[0].end >= end))
+	    throw ProjectError("Tried to retrieve a sequence that is only partially contained in database:"
+			       + chrName + ":" + itoa(start) + "-" + itoa(end));
+	dna = g[0].sequence.substr(start - g[0].start, end-start+1);
+    } else {
+	vector<genomes>::iterator it = g.begin();
+	if (it->end >= end)
+	    throw ProjectError("Segment not uniquely represented in database. Have you loaded sequences more than once?");
+	dna = it->sequence.substr(start - g[0].start);
+	while (it != g.end()) {
+	    if ((it+1) != g.end() && it->end + 1 != (it+1)->start)
+		throw ProjectError("Internal error. Genome sequence not sliced seamlessly into chunks.");
+	    it++;
+	    if (it != g.end()){
+		if ((it+1) != g.end()) {
+		    if (it->end >= end)
+			throw ProjectError("Segment not uniquely represented in database. Have you loaded sequences more than once?");
+		    dna.append(it->sequence);
+		} else { // last chunk
+		    if (false) // TODO sanity check
+			throw ProjectError("");
+		    dna.append(it->sequence.substr(0,10)); //TODO LEN
+		}
+	    }
+	}
+    }
+    annoseq->sequence = newstrcpy((strand == minusstrand)? reverseComplement(chunkseq.c_str()) : chunkseq.c_str());
+    return annoseq;
+}
+
+
+/*
  * coord_id is an identifier in table 'seq_region'.
  * coord_id==2: this is a contig. There's an entity in 'dna' table, you can retrive sequence directly from it.
  * coord_id==1: this is a chromosome that is consist of more than one entities in 'dna' table. You can't
  * retrieve sequence directly from 'dna' table. The components id and order in which
  * they are assembled can be found in table 'assembly'.
  */
-AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
+AnnoSequence* DbSeqAccess::getSeq2(string speciesname, string chrName, int start, int end, Strand strand){
     mysqlpp::StoreQueryResult store_res;
     AnnoSequence* annoseq = NULL;
     int coord_id, seq_region_id, seq_region_length; 

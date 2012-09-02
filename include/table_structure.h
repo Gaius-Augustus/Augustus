@@ -7,6 +7,19 @@
 #include <cstring>
 #include <stdlib.h>
 using namespace std;
+
+/*
+ * tables structure for comparative gene prediction, all in one table, one database for all species
+ */
+sql_create_6(genomes,
+	     1,6,
+	     int,seqid,
+	     string,sequence,
+	     string,seqname,
+	     int,start,
+	     int,end,
+	     string,species)
+
 // The database schema is an excerpt from ENSEMBL:
 // http://www.ensembl.org/info/docs/api/core/core_schema.html
 // The following is calling a very complex macro which will create

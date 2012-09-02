@@ -56,6 +56,8 @@ class DbSeqAccess : public RandSeqAccess {
 public:
     DbSeqAccess();
     AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
+    // the following function is for the BGI-style database
+    AnnoSequence* getSeq2(string speciesname, string chrName, int start, int end, Strand strand);
 #ifdef AMYSQL
     int split_dbaccess();
     void connect_db();

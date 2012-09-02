@@ -26,7 +26,7 @@
 
 using namespace std;
 
-//sql_create_5(genomes,1,5,int,seqid,string,sequence,int,start,int,end,string,species)
+//sql_create_6(genomes,1,6,int,seqid,string,sequence,string,seqname,int,start,int,end,string,species)
 
 int chunksize = 50000;
 mysqlpp::Connection con;
@@ -34,7 +34,7 @@ mysqlpp::Connection con;
 void printUsage();
 void connectDB(string dbaccess);
 void createTable();
-int insertSeq(char *sequence, char* name, int length, string species);
+int insertSeq(string sequence, char* name, int length, string species);
 
 /*
  * main
@@ -221,11 +221,12 @@ void createTable(){
     mysqlpp::Query query = con.query("CREATE TABLE IF NOT EXISTS genomes (\
         seqid int(10) unsigned NOT NULL AUTO_INCREMENT,			\
         dnaseq longtext NOT NULL,					\
+        seqname varchar(50),					\
         start int(9) unsigned NOT NULL,\
         end int(9) unsigned NOT NULL,\
         species varchar(50),\
         PRIMARY KEY (seqid),\
-        KEY region (species,start,end)\
+        KEY region (species,seqname,start,end)\
       ) ENGINE=MyISAM DEFAULT CHARSET=latin1 MAX_ROWS=1000000 AVG_ROW_LENGTH=50000;");
    query.execute();
 }
@@ -238,15 +239,17 @@ void createTable(){
 int insertSeq(string sequence, char *name, int length, string species){
     int chunks = 0;
     int start = 0, end;
-    cout << "inserting " << name << " len=" << length << "..." << endl;
+    // cout << "inserting " << name << " len=" << length << "..." << endl;
     while (start < length) {
 	end = (start + chunksize < length)? (start + chunksize - 1) : length - 1;
 	mysqlpp::Query query = con.query();
-	query << "INSERT INTO genomes (dnaseq,start,end,species) VALUES(\""
-	      << sequence.substr(start, end-start+1) << "\"," << start << "," << end << ",\"" << species << "\")";
+	query << "INSERT INTO genomes (dnaseq,seqname,start,end,species) VALUES(\""
+	      << sequence.substr(start, end-start+1) << "\",\"" << name << "\"," 
+	      << start << "," << end << ",\"" << species << "\")";
 	
-	cout << "Executing" << endl << query.str() << endl;
+	// cout << "Executing" << endl << query.str() << endl;
 	query.execute();
+	chunks++;
 	start += chunksize;
     }
     return chunks;
