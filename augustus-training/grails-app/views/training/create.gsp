@@ -257,7 +257,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 			    <tr class="prop"><td><br></td><td></td></tr>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="struct_file"><b>Training gene structure file</b> &nbsp; <a href="../help.gsp#structure"><small>Help</small></a></label>
+                                    <label for="struct_file"><b>Training gene structure file</b> &nbsp; <a href="../help.gsp#structure"><small>Help</small></a> <font color="#FF0000">(gff or gb format, no gzip!)</font></label>
                                 </td>
 				<td valign="top"></td>
 			    </tr>

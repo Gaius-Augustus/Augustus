@@ -2157,7 +2157,7 @@ class TrainingController {
 					if(trainingInstance.results_urls == null){
 						trainingInstance.results_urls = "<p><b>predictions with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/hints_pred.tar.gz\">hints_pred.tar.gz</a><br></p>"
 					}else{
-						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>predictions with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/training.gb.gz\">training.gb.gz</a><br></p>"
+						trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>predictions with hints</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/hints_pred.tar.gz\">hints_pred.tar.gz</a><br></p>"
 					}
 				}else{
 					logDate = new Date()
