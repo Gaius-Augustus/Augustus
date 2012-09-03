@@ -158,7 +158,7 @@ void SpeciesGraph::addExon(ExonCandidate *exon, vector< vector<Node*> > &neutral
     if(!alreadyProcessed(exon)){
 	//cout << "unsampled_exon\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" <<(string)stateTypeIdentifiers[exon->getStateType()] << endl;
 	//TODO: Node *ex = new Node(exon->begin, exon->end, exon-> ?, exon, unsampled_exon);
-	Node *ex = new Node(exon->begin, exon->end, -0.1, exon, unsampled_exon);
+	Node *ex = new Node(exon->begin, exon->end, ec_score, exon, unsampled_exon);
 	nodelist.push_back(ex);
 	addToHash(ex);
 	addNeutralNodes(ex, neutralLines);

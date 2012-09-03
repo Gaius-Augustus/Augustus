@@ -30,6 +30,7 @@ private:
     int count_overlap;               // overlap between sampled and additional exons
 #endif
     double max_weight; // the max weight of a node/edge in the graph, used as an upper/lower bound
+    double ec_score; //temp: until there are real scores for exon candidates
 
 public:
     SpeciesGraph(list<Status> *states, int dnalength, list<ExonCandidate*> &addEx, string name) :
@@ -42,7 +43,13 @@ public:
 	count_overlap(0),
 #endif
 	max_weight(0)
-    {}
+    {
+	try {
+	    ec_score = Properties::getdoubleProperty("/CompPred/ec_score");
+	} catch (...) {
+	    ec_score = -100;
+	}
+    }
 
     using AugustusGraph::getKey;
 
