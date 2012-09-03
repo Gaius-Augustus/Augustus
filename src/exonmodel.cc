@@ -1454,7 +1454,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 	    // reverse donor splice site
 	    if (beginOfStart == 0)
 	      beginPartProb = 1.0; // left truncated
-	    else if (beginOfBioExon<0 || (beginOfBioExon - DSS_MIDDLE>0 && !isPossibleRDSS(beginOfBioExon - 1)))
+	    else if (beginOfBioExon < 0 || (beginOfBioExon - DSS_MIDDLE > 0 && !isPossibleRDSS(beginOfBioExon - 1)))
 		beginPartProb = 0.0;
 	    else 
 		beginPartProb = 1.0; // splice site is evaluated in other state
@@ -1465,7 +1465,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 			extrinsicQuot *= feature->distance_faded_bonus(beginOfBioExon - 1);
 			feature = feature->next;
 		    }
-		} else if (seqFeatColl->collection->hasHintsFile)
+		} else if (seqFeatColl->collection->hasHintsFile && beginOfBioExon > 0)
 		    extrinsicQuot = seqFeatColl->collection->malus(dssF) * seqFeatColl->localSSMalus(dssF, beginOfBioExon - 1, minusstrand);
 	    }
 	    break;
