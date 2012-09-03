@@ -24,6 +24,8 @@ class SpeciesGraph : public AugustusGraph {
 private:
     list<ExonCandidate*> additionalExons; //exons, which are not sampled
     string speciesname;
+    string seqID;
+    int offset;
 #ifdef DEBUG
     int count_sampled;               // number of sampled exons
     int count_additional;            // number of additional exons
@@ -31,18 +33,22 @@ private:
 #endif
     double max_weight; // the max weight of a node/edge in the graph, used as an upper/lower bound
     double ec_score; //temp: until there are real scores for exon candidates
+    ofstream *sampled_exons;
 
 public:
-    SpeciesGraph(list<Status> *states, int dnalength, list<ExonCandidate*> &addEx, string name) :
+    SpeciesGraph(list<Status> *states, int dnalength, list<ExonCandidate*> &addEx, string name, string seqid, int os, ofstream *se) :
 	AugustusGraph(states, dnalength),
 	additionalExons(addEx),
 	speciesname(name),
+	seqID(seqid),
+	offset(os),
 #ifdef DEBUG
 	count_sampled(0),
 	count_additional(0),
 	count_overlap(0),
 #endif
-	max_weight(0)
+	max_weight(0),
+	sampled_exons(se)
     {
 	try {
 	    ec_score = Properties::getdoubleProperty("/CompPred/ec_score");
@@ -74,6 +80,7 @@ public:
     void addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines);  // adds an exon, which is not sampled
     void addNeutralNodes(Node *node,vector< vector<Node*> > &neutralLines);    // adds neutral nodes and edges to and from an exon
     void addIntron(Node* exon1, Node* exon2, Status *intr);                    // adds a sampled intron
+    void printSampledExon(Node *node);
 
     inline void updateMaxWeight(double weight){
 	if(abs(weight) > max_weight){

@@ -143,6 +143,7 @@ Node* SpeciesGraph::addExon(Status *exon, vector< vector<Node*> > &neutralLines)
 #endif
 	//cout << "sampled_exon\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" << (string)stateTypeIdentifiers[((State*)exon->item)->type] << "\t"<< endl;
 	Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item, sampled);
+	printSampledExon(ex);
 	nodelist.push_back(ex);
 	addToHash(ex);
 	addNeutralNodes(ex, neutralLines);    
@@ -208,6 +209,13 @@ void SpeciesGraph::addIntron(Node* exon1, Node* exon2, Status *intr){
 	Edge in(exon2, false, setScore(intr), intr->item);
 	exon1->edges.push_back(in);
     }
+}
+
+void SpeciesGraph::printSampledExon(Node *node){
+    streambuf *coutbuf = cout.rdbuf(); //save old buf
+    cout.rdbuf(sampled_exons->rdbuf()); //redirect std::cout to species file
+    cout << seqID << "\tSAMPLED_ECs\t" <<  node->begin + offset + 1 << "\t" << node->end + offset + 1 <<"\t" << node->score << "\t.\t.\tName=" << (string)stateTypeIdentifiers[node->castToStateType()] <<"|"<< node->score<< endl;
+    cout.rdbuf(coutbuf); //reset to standard output again 
 }
 
 NodeType SpeciesGraph::fromNeutralLine(Node *node){

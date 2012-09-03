@@ -54,6 +54,7 @@ void CompGenePred::start(){
     vector<int> init_geneid(OrthoGraph::numSpecies, 1); // gene numbering
     vector<ofstream*> optGenes = initOutputFiles();
     vector<int> opt_geneid(OrthoGraph::numSpecies, 1);
+    vector<ofstream*> sampledExons = initOutputFiles(".sampled_ECs");
 
     NAMGene namgene; // creates and initializes the states
     FeatureCollection extrinsicFeatures; // hints, empty for now, will later read in hints for sequence ranges from database
@@ -109,7 +110,7 @@ void CompGenePred::start(){
                             buildStatusList(alltranscripts, false, stlist);
                         }
                         //build graph
-                        orthograph.graphs[s] = new SpeciesGraph(&stlist, orthograph.orthoSeqRanges[s]->length, additionalExons, speciesNames[s]);
+                        orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRange->length, additionalExons, speciesNames[s], seqID, seqRange->offset, sampledExons[s]);
                         orthograph.graphs[s]->buildGraph();
 
                         orthograph.ptrs_to_alltranscripts[s] = alltranscripts; //save pointers to transcripts and delete them after gene list is build
