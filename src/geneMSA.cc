@@ -621,7 +621,7 @@ void GeneMSA::createOrthoExons(vector<int> offsets) {
          for (int i=0; i<this->exoncands.size(); i++) {
              cout.rdbuf(geneRanges_outfiles[i]->rdbuf());  //redirect cout to 'geneRanges.speciesname.gff'
              if (this->exoncands.at(i)!=NULL) {
-                 cout << this->getSeqID(i)<<"\tGeneRange\t"<<"exon\t"<<this->getStart(i)<<"\t"<< this->getEnd(i)<<"\t0\t";
+                 cout << this->getSeqID(i)<<"\tGeneRange\t"<<"exon\t"<<this->getStart(i) + 1<<"\t"<< this->getEnd(i) + 1<<"\t0\t";
                  if (this->getStrand(i) == plusstrand) {
                      cout<<'+'<<"\t";
                  } else {
