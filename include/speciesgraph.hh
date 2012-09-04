@@ -106,8 +106,11 @@ public:
     }
     double localChange(MoveObject *move);                 // local path search with calculation of the score difference between new and old local path
     double getScorePath(Node *begin, Node *end);          // calc. the sum of edge weights of the path: begin ~~> end
-    Node* getTopSortPred(Node *node, size_t step = 1);    //get next node in topological order which is on the path
-    Node* getTopSortNext(Node *node, size_t step = 1);    //get previous node in topological order which is on the path
+    Node* getTopSortPred(Node *node);    //get next node in topological order which is on the path
+    Node* getTopSortNext(Node *node);    //get previous node in topological order which is on the path
+    Node* getNextExonOnPath(Node *node, size_t step);  // returns the i-th next exon on the current path, where i is the step size (size_t step)
+    Node* getPredExonOnPath(Node *node, size_t step);  // returns the i-th preceding exon on the current path
+    
 
 };
 
@@ -176,10 +179,10 @@ public:
 	return nodes.empty();
     }
     inline void shiftHead(size_t step = 1){
-	local_head = graph->getTopSortPred(local_head,step);
+	local_head = graph->getPredExonOnPath(local_head,step);
     }
     inline void shiftTail(size_t step = 1){
-	local_tail = graph->getTopSortNext(local_tail,step);
+	local_tail = graph->getNextExonOnPath(local_tail,step);
     }
     void addWeights();
     void undoAddWeights();

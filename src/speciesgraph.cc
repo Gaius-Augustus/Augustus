@@ -467,31 +467,53 @@ void MoveObject::initLocalHeadandTail(){
     if (left->label != right->label)
 	throw ProjectError("MoveObject::initLocalHeadandTail(): either all nodes have label 1 or all node have label 0");
     else{
-	local_head = graph->getTopSortPred(left, step_size);
-	local_tail = graph->getTopSortNext(right, step_size);
+	local_head = graph->getPredExonOnPath(left, step_size);
+	local_tail = graph->getNextExonOnPath(right, step_size);
     }
 }
 
-Node* SpeciesGraph::getTopSortPred(Node *node, size_t step){
+Node* SpeciesGraph::getTopSortPred(Node *node){
 
- while(step > 0 && node != head){
+ if(node != head){
      do{
 	 node = node->topSort_pred;
      }
      while(node->label == 0);
-     step--;
     }
     return node;
 
 
 } 
-Node* SpeciesGraph::getTopSortNext(Node *node, size_t step){
+Node* SpeciesGraph::getTopSortNext(Node *node){
+
+ if(node != tail){
+     do{
+	 node = node->topSort_next;
+     }
+     while(node->label == 0);
+ }
+ return node;
+}
+
+Node* SpeciesGraph::getPredExonOnPath(Node *node, size_t step){
+
+ while(step > 0 && node != head){
+     do{
+	 node = node->topSort_pred;
+     }
+     while(node->label == 0 || ( node->n_type >= IR && node->n_type <=minus2 ));
+     step--;
+    }
+    return node;
+}
+
+Node* SpeciesGraph::getNextExonOnPath(Node *node, size_t step){
 
  while(step > 0 && node != tail){
      do{
 	 node = node->topSort_next;
      }
-     while(node->label == 0);
+     while(node->label == 0 || ( node->n_type >= IR && node->n_type <=minus2 ) );
      step--;
  }
  return node;

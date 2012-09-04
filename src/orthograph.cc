@@ -153,12 +153,11 @@ void OrthoGraph::optimize(){
 
 void OrthoGraph::localMove(vector<MoveObject*> &orthomove){
 
+    
+
 
     bool retry = false;  //if true, the move is repeated on a 'larger' subgraph
-
-    int maxIterations = 3;  // max number a move can be repeated
-    int iter = 0;
-    int shift_size = 2;  // number of nodes local_head/local_tail is shifted to the left/right on the current path
+    int iter = 0;  // number of current iteration
    
     do{
 
@@ -306,8 +305,6 @@ list<OrthoExon> OrthoGraph::orthoExInRange(vector<MoveObject*> &orthomove){
 vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon &orthoex){
 
     vector<MoveObject*> orthomove;
-
-    int shift_size = 5;
   
     //count number of zeros and ones in labelpattern of an OrthoExon
   
@@ -329,11 +326,11 @@ vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon &orthoex){
     if ( numOnes > numZeros && numZeros > 0 ){                    // make all zeros to ones	
 	cout << "Majority Rule Move " << endl;
 	cout << orthoex << "\t" << labelpattern << endl;
-	cout << "iteration:\t" << 0  <<"\tshift_size:\t" <<shift_size<<endl;
+	cout << "iteration:\t" << 0  << "\tshift_size:\t" << shift_size << endl;
 	orthomove.resize(numSpecies);
 	for(size_t pos = 0; pos < numSpecies; pos++){
 	    if( (labelpattern[pos] == '0')  ){
-		MoveObject *move = new MoveObject(graphs[pos],shift_size);
+		MoveObject *move = new MoveObject(graphs[pos], shift_size + 1);
 		move->addNodeBack( graphs[pos]->getNode(orthoex.orthoex[pos]), graphs[pos]->getMaxWeight() );
 		move->initLocalHeadandTail();
 		orthomove[pos] = move;

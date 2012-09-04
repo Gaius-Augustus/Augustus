@@ -26,6 +26,18 @@ public:
 	orthoSeqRanges.resize(numSpecies);
 	ptrs_to_alltranscripts.resize(numSpecies);
 	print_change = false;
+
+	try {
+	    maxIterations = Properties::getIntProperty("/CompPred/maxIterations");
+	} catch (...) {
+	    maxIterations = 0;
+	}
+	try {
+	    shift_size = Properties::getIntProperty("/CompPred/shift_size");
+	} catch (...) {
+	    shift_size = 1;
+	}
+
     }
     ~OrthoGraph(){
 	for(int i = 0; i < numSpecies; i++){
@@ -42,6 +54,8 @@ public:
     static PhyloTree *tree;
     list<OrthoExon> all_orthoex;
     vector< list<Gene> *> ptrs_to_alltranscripts; //stores pointers to alltranscripts until they can be deleted (destructor of OrthoGraph)
+    int maxIterations;  // max number a move can be repeated
+    int shift_size;     // number of exons local_head/local_tail is shifted to the left/right on the current path
 
     bool print_change; //only temporary flag
 
