@@ -48,7 +48,7 @@ AnnoSequence* MemSeqAccess::getSeq(string speciesname, string chrName, int start
 	annoseq = new AnnoSequence();
 	annoseq->seqname = newstrcpy(chrName);
 	annoseq->sequence = newstrcpy(it->second + start, end - start + 1);
-	annoseq->length = end-start+1;
+	annoseq->length = end - start + 1;
 	annoseq->offset = start;
 	if(strand == minusstrand){
 	    char *reverseDNA = reverseComplement(annoseq->sequence);
@@ -87,7 +87,6 @@ map<string,string> getFileNames (string listfile){
 
 DbSeqAccess::DbSeqAccess(){
 #ifdef AMYSQL
-    cout << "opening database connection using connection data\"" << Constant::dbaccess << "\""<<endl;
     dbaccess = Constant::dbaccess;
     split_dbaccess();
     connect_db();
@@ -106,14 +105,19 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
 /*
  * retrieve sequence directly from table genomes(seqid, dnaseq, seqname, start, end, species)
  * arguments and columns start and end are 0-based.
+ *
+ * database chunks:   |-------------||-------------||-------------||-------------||-------------|
+ * requested segment:                      |--------------------------|
+ *                                   |   start                       end
+ *                             g[0].start                          | 
  */
 AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
     mysqlpp::StoreQueryResult store_res;
-    string dna, chunkseq;
+    string dna;
     mysqlpp::Query query = con.query();
     query << "SELECT dnaseq,start,end FROM genomes WHERE species='" << speciesname << "' AND seqname='"
 	  << chrName << "' AND start <= " << end << " AND end >= " << start << " ORDER BY start ASC";
-    cout << "Executing" << endl << query.str() << endl;
+    // cout << "Executing" << endl << query.str() << endl;
     vector<genomes> g;
     query.storein(g);
     
@@ -126,12 +130,12 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
 	if (!(g[0].start <= start && g[0].end >= end))
 	    throw ProjectError("Tried to retrieve a sequence that is only partially contained in database:"
 			       + chrName + ":" + itoa(start) + "-" + itoa(end));
-	dna = g[0].sequence.substr(start - g[0].start, end-start+1);
+	dna = g[0].dnaseq.substr(start - g[0].start, end-start+1);
     } else {
 	vector<genomes>::iterator it = g.begin();
 	if (it->end >= end)
 	    throw ProjectError("Segment not uniquely represented in database. Have you loaded sequences more than once?");
-	dna = it->sequence.substr(start - g[0].start);
+	dna = it->dnaseq.substr(start - g[0].start);
 	while (it != g.end()) {
 	    if ((it+1) != g.end() && it->end + 1 != (it+1)->start)
 		throw ProjectError("Internal error. Genome sequence not sliced seamlessly into chunks.");
@@ -140,16 +144,18 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
 		if ((it+1) != g.end()) {
 		    if (it->end >= end)
 			throw ProjectError("Segment not uniquely represented in database. Have you loaded sequences more than once?");
-		    dna.append(it->sequence);
+		    dna.append(it->dnaseq);
 		} else { // last chunk
-		    if (false) // TODO sanity check
-			throw ProjectError("");
-		    dna.append(it->sequence.substr(0,10)); //TODO LEN
+		    if (it->end < end)
+			throw ProjectError("Tried to retrieve a sequence that is only partially contained in database:" + chrName + ":" + itoa(start) + "-" + itoa(end));
+		    dna.append(it->dnaseq.substr(0, end - it->start + 1)); // rest of sequence = initial part of last chunk
 		}
 	    }
 	}
     }
-    annoseq->sequence = newstrcpy((strand == minusstrand)? reverseComplement(chunkseq.c_str()) : chunkseq.c_str());
+    annoseq->sequence = newstrcpy((strand == minusstrand)? reverseComplement(dna.c_str()) : dna.c_str());
+    annoseq->length = end - start + 1;
+    annoseq->offset = start;
     return annoseq;
 }
 
@@ -240,9 +246,10 @@ void DbSeqAccess::connect_db(){
     const  char* host = db_information[1].c_str();
     const  char* user = db_information[2].c_str();
     const  char* passwd = db_information[3].c_str();
-    try{
+    try {
+	cout << "Opening database connection using connection data \"" << Constant::dbaccess << "\"...\t";
 	con.connect(db_name,host,user,passwd);
-	cout << "DB connection OK:" << user << "\ton " << host << "\tconnects to " << db_name << "\n";
+	cout << "DB connection OK." << endl;
     }
     catch(const mysqlpp::BadQuery& er){
 	cout << "Query error: " << er.what() << endl;

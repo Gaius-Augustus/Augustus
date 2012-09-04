@@ -564,6 +564,7 @@ compgenepred.o : \
 randseqaccess.o : \
        ../include/randseqaccess.hh \
        ../include/genbank.hh \
+       ../include/table_structure.h \
        randseqaccess.cc
 
 orthoexon.o : \

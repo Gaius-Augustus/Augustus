@@ -14,7 +14,7 @@ using namespace std;
 sql_create_6(genomes,
 	     1,6,
 	     int,seqid,
-	     string,sequence,
+	     string,dnaseq,
 	     string,seqname,
 	     int,start,
 	     int,end,

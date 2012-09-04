@@ -20,7 +20,7 @@
 
 
 CompGenePred::CompGenePred(){
-    if (!Constant::speciesfilenames.empty()) {
+    if (Constant::Constant::dbaccess.empty()) { // give priority to database in case both exist
         rsa = new MemSeqAccess();
     } else {
         rsa = new DbSeqAccess();
