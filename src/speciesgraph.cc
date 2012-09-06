@@ -214,7 +214,7 @@ void SpeciesGraph::addIntron(Node* exon1, Node* exon2, Status *intr){
 void SpeciesGraph::printSampledExon(Node *node){
     streambuf *coutbuf = cout.rdbuf(); //save old buf
     cout.rdbuf(sampled_exons->rdbuf()); //redirect std::cout to species file
-    cout << seqID << "\tSAMPLED_ECs\t" <<  node->begin + offset + 1 << "\t" << node->end + offset + 1 <<"\t" << node->score << "\t.\t.\tName=" << (string)stateTypeIdentifiers[node->castToStateType()] <<"|"<< node->score<< endl;
+    cout << seqID << "\tSAMPLED_ECs\texon\t" <<  node->begin + offset + 1 << "\t" << node->end + offset + 1 <<"\t" << node->score << "\t.\t.\tName=" << (string)stateTypeIdentifiers[node->castToStateType()] <<"|"<< node->score<< endl;
     cout.rdbuf(coutbuf); //reset to standard output again 
 }
 
