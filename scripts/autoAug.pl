@@ -667,7 +667,7 @@ sub alignments_and_hints{
 	$cmdString="blat -noHead  -minIdentity=80 -maxIntron=$maxIntronLen ../seq/genome_clean.fa cdna.fa cdna.psl 1>blat.stdout 2>blat.stderr"; 
 	print "3 $cmdString ..." if ($verbose>=3);
 	
-	my $abortString = "\nProgram aborted. Possibly \"BLAT\" is not installed or not in your PATH\n";  
+	my $abortString = "\nProgram aborted. BLAT threw an error message.\nPossibly \"BLAT\" is not installed or not in your PATH or your genome or cDNA file contained non-unique fasta headers.\n";  
 	
 	system("$cmdString")==0 or die("$abortString");
 	print "Finished!\n" if ($verbose>=3);
