@@ -110,7 +110,7 @@ public:
     Node* getTopSortNext(Node *node);    //get previous node in topological order which is on the path
     Node* getNextExonOnPath(Node *node, size_t step);  // returns the i-th next exon on the current path, where i is the step size (size_t step)
     Node* getPredExonOnPath(Node *node, size_t step);  // returns the i-th preceding exon on the current path
-    
+    void printNode(Node *node); //print Node with offset
 
 };
 

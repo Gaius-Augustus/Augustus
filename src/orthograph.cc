@@ -334,8 +334,10 @@ vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon &orthoex){
 		move->addNodeBack( graphs[pos]->getNode(orthoex.orthoex[pos]), graphs[pos]->getMaxWeight() );
 		move->initLocalHeadandTail();
 		orthomove[pos] = move;
-		cout << "local_head:\t" << orthomove[pos]->getHead() << endl;
-		cout << "local_tail:\t" << orthomove[pos]->getTail() << endl;
+		cout << "local_head:\t";
+		graphs[pos]->printNode(orthomove[pos]->getHead());
+		cout << "local_tail:\t";
+		graphs[pos]->printNode(orthomove[pos]->getTail());
 	    }
 	}
     }

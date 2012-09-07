@@ -56,6 +56,8 @@ void CompGenePred::start(){
     vector<int> opt_geneid(OrthoGraph::numSpecies, 1);
     vector<ofstream*> sampledExons = initOutputFiles(".sampled_ECs");
 
+    BaseCount::init();
+    PP::initConstants();
     NAMGene namgene; // creates and initializes the states
     FeatureCollection extrinsicFeatures; // hints, empty for now, will later read in hints for sequence ranges from database
     SequenceFeatureCollection sfc(&extrinsicFeatures);
