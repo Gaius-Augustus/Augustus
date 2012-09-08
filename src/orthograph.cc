@@ -13,7 +13,6 @@
 
 #include "orthograph.hh"
 #include "mea.hh"
-#include "geneMSA.hh"
 
 using namespace std;
 
@@ -34,6 +33,9 @@ void OrthoGraph::outputGenes(vector<ofstream*> filestreams, vector<int> &geneid)
     for (size_t pos = 0; pos < numSpecies; pos++){
 
 	if(graphs[pos]){
+
+	    AnnoSequence *annoseq = graphs[pos]->getAnnoSeq();
+	    Strand strand = graphs[pos]->getSeqStrand();
 
 	    list<Gene> *genes = new list<Gene>;
 	
@@ -85,8 +87,11 @@ void OrthoGraph::outputGenes(vector<ofstream*> filestreams, vector<int> &geneid)
 	end:
 
 	    list<Gene> *filteredTranscripts = new list<Gene>;
-	    filteredTranscripts = Gene::filterGenePrediction(genes, orthoSeqRanges[pos]->sequence, bothstrands, noInFrameStop);
+	    filteredTranscripts = Gene::filterGenePrediction(genes, annoseq->sequence, bothstrands, noInFrameStop);
 	    list<AltGene> *agl = groupTranscriptsToGenes(filteredTranscripts);
+	    if(strand == minusstrand){
+		agl = reverseGeneList(agl, annoseq->length - 1);
+	    }
 
 	    delete genes;
 	    /*
@@ -98,14 +103,14 @@ void OrthoGraph::outputGenes(vector<ofstream*> filestreams, vector<int> &geneid)
 
 	    // shift gene coordinates, set sequence name, gene and transcript names
 	    for (list<AltGene>::iterator agit = agl->begin(); agit != agl->end(); ++agit){
-		agit->shiftCoordinates(this->orthoSeqRanges[pos]->offset);
-		agit->seqname =  this->orthoSeqRanges[pos]->seqname;
+		agit->shiftCoordinates(annoseq->offset);
+		agit->seqname =  annoseq->seqname;
 		agit->id = "g"+itoa(geneid[pos]);
 		agit->sortTranscripts();
 
 		transcriptid = 1;
 		for(list<Gene*>::iterator it = agit->transcripts.begin();it != agit->transcripts.end(); ++it ) {
-		    (*it)->seqname = this->orthoSeqRanges[pos]->seqname;
+		    (*it)->seqname = annoseq->seqname;
 		    (*it)->id = "t" + itoa(transcriptid);
 		    (*it)->geneid = agit->id;
 		    transcriptid++;
@@ -118,11 +123,20 @@ void OrthoGraph::outputGenes(vector<ofstream*> filestreams, vector<int> &geneid)
 
 	    //print sequence information
 
-	    cout << "#----- prediction on sequence range " << this->orthoSeqRanges[pos]->seqname << ":" << this->orthoSeqRanges[pos]->offset + 1  << "-" << this->orthoSeqRanges[pos]->offset + this->orthoSeqRanges[pos]->length << " ("
-		 << this->orthoSeqRanges[pos]->length << "bp) -----" << endl << "#" << endl;
+	    cout << "#----- prediction on sequence range " << annoseq->seqname << ":" << annoseq->offset + 1  << "-" << annoseq->offset + annoseq->length << " (" << annoseq->length << "bp) -----" << endl << "#" << endl;
 
 	    if(!agl->empty()){
-		printGeneList(agl, this->orthoSeqRanges[pos], Constant::codSeqOutput, Constant::proteinOutput, false);
+		if(strand == minusstrand){
+		    char *DNA = annoseq->sequence;
+		    char *reverseDNA = reverseComplement(DNA);
+		    annoseq->sequence = reverseDNA;
+		    printGeneList(agl, annoseq, Constant::codSeqOutput, Constant::proteinOutput, false);
+		    annoseq->sequence = DNA;
+		    delete [] reverseDNA;
+		}
+		else{
+		    printGeneList(agl, annoseq, Constant::codSeqOutput, Constant::proteinOutput, false);
+		}
 	    }
 	    else{
 		cout << "# (none)" << endl;
@@ -442,23 +456,18 @@ void OrthoGraph::printHTMLgBrowse(OrthoExon &ex){
 
     for (int j=0; j<ex.orthoex.size(); j++) {
 	if (ex.orthoex.at(j)!=NULL) {
-	    cout << "http://bioinf.uni-greifswald.de/gb2/gbrowse/vergl" << itoa(j+1) <<"/?name=" << geneMSA->getSeqID(j) << "%3A";
-	    if (geneMSA->getStrand(j) == plusstrand) {
-		cout << ex.orthoex.at(j)->begin + orthoSeqRanges[j]->offset +1 << ".." << ex.orthoex.at(j)->end +orthoSeqRanges[j]->offset +1 << endl;
+
+	    int offset = graphs[j]->getSeqOffset();
+	    Strand strand = graphs[j]->getSeqStrand();
+	    int length = graphs[j]->getSeqLength();
+	    char* seqname = graphs[j]->getSeqID();
+
+	    cout << "http://bioinf.uni-greifswald.de/gb2/gbrowse/vergl" << itoa(j+1) <<"/?name=" << seqname  << "%3A";
+	    if (strand == plusstrand) {
+		cout << ex.orthoex.at(j)->begin + offset + 1 << ".." << ex.orthoex.at(j)->end + offset + 1 << endl;
 	    } else {
-		cout << geneMSA->getSeqIDLength(j) - (ex.orthoex.at(j)->end + orthoSeqRanges[j]->offset) << ".." << geneMSA->getSeqIDLength(j) - (ex.orthoex.at(j)->begin + orthoSeqRanges[j]->offset) << endl;
+		cout << length - ex.orthoex.at(j)->end + offset << ".." << length - ex.orthoex.at(j)->begin + offset << endl;
 	    }
-	}
-    }
-    for (int j=0; j<ex.orthoex.size(); j++) {
-	if (ex.orthoex.at(j)!=NULL) {
-	    cout << "http://bioinf.uni-greifswald.de/gb2/gbrowse_syn/vergl_syn/?search_src=vergl" << itoa(j+1) << ";name=" << geneMSA->getSeqID(j) << ":";
-	    if (geneMSA->getStrand(j) == plusstrand) {
-		cout << ex.orthoex.at(j)->begin + orthoSeqRanges[j]->offset +1 << ".." << ex.orthoex.at(j)->end +orthoSeqRanges[j]->offset +1 << endl;
-	    } else {
-		cout << geneMSA->getSeqIDLength(j) - (ex.orthoex.at(j)->end + orthoSeqRanges[j]->offset) << ".." << geneMSA->getSeqIDLength(j) - (ex.orthoex.at(j)->begin + orthoSeqRanges[j]->offset) << endl;
-	    }
-	    break;
 	}
     }
 }

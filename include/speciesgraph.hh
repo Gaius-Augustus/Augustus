@@ -22,10 +22,10 @@
 class SpeciesGraph : public AugustusGraph {
 
 private:
+    AnnoSequence *seqRange;
     list<ExonCandidate*> additionalExons; //exons, which are not sampled
     string speciesname;
-    string seqID;
-    int offset;
+    Strand strand;
 #ifdef DEBUG
     int count_sampled;               // number of sampled exons
     int count_additional;            // number of additional exons
@@ -36,12 +36,12 @@ private:
     ofstream *sampled_exons;
 
 public:
-    SpeciesGraph(list<Status> *states, int dnalength, list<ExonCandidate*> &addEx, string name, string seqid, int os, ofstream *se) :
-	AugustusGraph(states, dnalength),
+    SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> &addEx, string name, Strand s, ofstream *se) :
+	AugustusGraph(states, seq->length),
+	seqRange(seq),
 	additionalExons(addEx),
 	speciesname(name),
-	seqID(seqid),
-	offset(os),
+	strand(s),
 #ifdef DEBUG
 	count_sampled(0),
 	count_additional(0),
@@ -56,7 +56,9 @@ public:
 	    ec_score = -100;
 	}
     }
-
+    ~SpeciesGraph(){
+	delete seqRange;
+    }
     using AugustusGraph::getKey;
 
     /*
@@ -93,6 +95,25 @@ public:
     inline string getSpeciesname() const{
 	return speciesname;
     }
+    inline char* getSequence() const{
+	return seqRange->sequence;
+    }
+    inline char* getSeqID() const{
+	return seqRange->seqname;
+    }
+    inline int getSeqOffset() const{
+	return seqRange->offset;
+    }
+    inline int getSeqLength() const{
+	return seqRange->length;
+    }
+    inline Strand getSeqStrand() const{
+	return strand;
+    }
+    inline AnnoSequence* getAnnoSeq() const{
+	return seqRange;
+    }
+
 
     /*
      * maximum weight path problem related functions

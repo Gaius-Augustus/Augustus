@@ -214,7 +214,14 @@ void SpeciesGraph::addIntron(Node* exon1, Node* exon2, Status *intr){
 void SpeciesGraph::printSampledExon(Node *node){
     streambuf *coutbuf = cout.rdbuf(); //save old buf
     cout.rdbuf(sampled_exons->rdbuf()); //redirect std::cout to species file
-    cout << seqID << "\tSAMPLED_ECs\texon\t" <<  node->begin + offset + 1 << "\t" << node->end + offset + 1 <<"\t" << node->score << "\t.\t.\tName=" << (string)stateTypeIdentifiers[node->castToStateType()] <<"|"<< node->score << "|";
+    cout << getSeqID() << "\tSAMPLED_ECs\texon\t";
+    if(strand == plusstrand){
+	cout <<  node->begin + getSeqOffset() + 1 << "\t" << node->end + getSeqOffset() + 1;
+    }
+    else{
+	cout << getSeqLength() - node->end + getSeqOffset() << "\t" << getSeqLength() - node->begin + getSeqOffset();
+    }
+    cout <<"\t" << node->score << "\t.\t.\tName=" << (string)stateTypeIdentifiers[node->castToStateType()] <<"|"<< node->score << "|";
     if (node->n_type == sampled) {
 	cout << ((State*)(node->item))->apostprob << endl;
     }
@@ -620,10 +627,16 @@ void MoveObject::undoAddWeights(){
 void SpeciesGraph::printNode(Node *node){
 
     if(node->n_type >= IR && node->n_type <= minus2){
-	cout << node->begin + offset << "\t" << node->end + offset << "\t" << nodeTypeIdentifiers[node->n_type]<< "\t" << endl;
+	cout << node->begin + getSeqOffset() << "\t" << node->end + getSeqOffset() << "\t" << nodeTypeIdentifiers[node->n_type]<< "\t" << endl;
     }
     else if(node->n_type >= minus2){
-	cout << node->begin + offset << "\t" << node->end + offset << "\t" << stateTypeIdentifiers[node->castToStateType()] << "\t" << endl;
+	if(strand == plusstrand){
+	    cout <<  node->begin + getSeqOffset() + 1 << "\t" << node->end + getSeqOffset() + 1;
+	}
+	else{
+	    cout << getSeqLength() - node->end + getSeqOffset() << "\t" << getSeqLength() - node->begin + getSeqOffset();
+	}
+	cout  << "\t" << stateTypeIdentifiers[node->castToStateType()] << "\t" << endl;
     }
     else if( node->begin == -1)
 	cout << "head" << endl;

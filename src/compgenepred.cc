@@ -73,7 +73,7 @@ void CompGenePred::start(){
     // loop over species
     GeneMSA::openOutputFiles();
     while (GeneMSA *geneRange = msa.getNextGene()) {
-        OrthoGraph orthograph(geneRange);
+        OrthoGraph orthograph;
         for (int s = 0; s < speciesNames.size(); s++) {
             string seqID = geneRange->getSeqID(s);
             if (!seqID.empty()) {
@@ -86,7 +86,6 @@ void CompGenePred::start(){
                     cout << "-\t";
                 cout << "(" <<geneRange->getEnd(s) - geneRange->getStart(s) + 1 << "bp)" << endl;
 #endif
-                orthograph.orthoSeqRanges[s] = seqRange;
                 if (seqRange==NULL) {
                     cerr << "random sequence access failed on " << speciesNames[s] << ", " << geneRange->getSeqID(s) << ", " << geneRange->getStart(s) << ", " <<  geneRange->getEnd(s) << ", " << endl;
                     break;
@@ -112,7 +111,7 @@ void CompGenePred::start(){
                             buildStatusList(alltranscripts, false, stlist);
                         }
                         //build graph
-                        orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRange->length, additionalExons, speciesNames[s], seqID, seqRange->offset, sampledExons[s]);
+                        orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRange, additionalExons, speciesNames[s], geneRange->getStrand(s), sampledExons[s]);
                         orthograph.graphs[s]->buildGraph();
 
                         orthograph.ptrs_to_alltranscripts[s] = alltranscripts; //save pointers to transcripts and delete them after gene list is build

@@ -16,14 +16,12 @@
 
 //forward declarations
 class OrthoExon;
-class GeneMSA;
 
 class OrthoGraph{
 
 public:
-    OrthoGraph(GeneMSA *gm) : geneMSA(gm) {
+    OrthoGraph(){
 	graphs.resize(numSpecies);
-	orthoSeqRanges.resize(numSpecies);
 	ptrs_to_alltranscripts.resize(numSpecies);
 	print_change = false;
 
@@ -43,14 +41,11 @@ public:
 	for(int i = 0; i < numSpecies; i++){
 	    delete graphs[i];
 	    delete ptrs_to_alltranscripts[i];
-	    delete orthoSeqRanges[i];
 	}
     }
 
     static size_t numSpecies; //the number of species
-    GeneMSA *geneMSA;
     vector<SpeciesGraph*> graphs;
-    vector<AnnoSequence*> orthoSeqRanges;
     static PhyloTree *tree;
     list<OrthoExon> all_orthoex;
     vector< list<Gene> *> ptrs_to_alltranscripts; //stores pointers to alltranscripts until they can be deleted (destructor of OrthoGraph)

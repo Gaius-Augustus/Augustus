@@ -15,6 +15,7 @@
  * 25.07.08| Mario Stanke  | updated getInducedStatePath to deal with UTRs
  * 11.03.12| Mario Stanke  | frame_compatible for overlapping coding regions (bacteria)
  * 25.03.12| Mario Stanke  | frame_compatible for exon and hint (corrected compatibility for peptide hints)
+ * 08.09.12| Stefanie König| reverse type of reverse strand exons added in reverseGeneSequence
  **********************************************************************/
 
 #include "gene.hh"
@@ -3021,7 +3022,15 @@ void reverseGeneSequence(Gene* &seq, int endpos){
 		    headst->type = rinternalExon(mod3(2+headst->frame() - headst->length())); break;
 		case singleG : 
 		    headst->type = rsingleG; break;
-		default:; // TODO: reverse the types of reverse strand exons
+	        case rterminal0 : case rterminal1 : case rterminal2:
+	            headst->type = terminal; break;
+	        case rinitial :
+		    headst->type = initialExon(mod3(headst->length())); break;
+	        case rinternal0 : case rinternal1 : case rinternal2:
+		    headst->type = internalExon(mod3(1+headst->frame() + headst->length())); break;
+                case rsingleG : 
+		    headst->type = singleG; break;
+		default:;
 	    }
 	    // headst->bc.reverse();
 	    headst->next = head->exons;
