@@ -487,7 +487,7 @@ void OrthoGraph::addScoreSelectivePressure(){
 		if(it->orthoex[pos]){
 		    Node* node = graphs[pos]->getNode(it->orthoex[pos]);
 		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
-			iter->score += 50;
+			iter->score += oe_score;
 		    }
 		}
 	    }
