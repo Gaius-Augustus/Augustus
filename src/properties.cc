@@ -58,6 +58,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/exon_gain",
 "/CompPred/exon_loss",
 "/CompPred/maxIterations",
+"/CompPred/oe_score",
 "/CompPred/outdir_orthoexons",
 "/CompPred/outdir",
 "/CompPred/phylo_factor",

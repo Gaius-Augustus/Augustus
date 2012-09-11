@@ -132,6 +132,9 @@ void CompGenePred::start(){
 
 	orthograph.outputGenes(initGenes,init_geneid);
 
+	//add score for selective pressure of orthoexons
+	orthograph.addScoreSelectivePressure();
+
         if(!orthograph.all_orthoex.empty()){
 	    orthograph.pruningAlgor();
 	    orthograph.printCache();

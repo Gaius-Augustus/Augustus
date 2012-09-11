@@ -471,3 +471,26 @@ void OrthoGraph::printHTMLgBrowse(OrthoExon &ex){
 	}
     }
 }
+
+void OrthoGraph::addScoreSelectivePressure(){
+
+    double oe_score;
+    try {
+	oe_score = Properties::getdoubleProperty("/CompPred/oe_score");
+    } catch (...) {
+	oe_score = 50;
+    }
+
+    if(!all_orthoex.empty()){
+	for(list<OrthoExon>::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
+	    for(size_t pos = 0; pos < numSpecies; pos++){
+		if(it->orthoex[pos]){
+		    Node* node = graphs[pos]->getNode(it->orthoex[pos]);
+		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
+			iter->score += 50;
+		    }
+		}
+	    }
+	}
+    }
+}
