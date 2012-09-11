@@ -446,6 +446,7 @@ sub construct_training_set{
 	$abortString.= "1. There is already a database named \"$pasaDBname\" in your mysql host.\n";
 	$abortString.= "2. The software \"slclust\" is not installed correctly, try to install it";
 	$abortString.= " again (see the details in the PASA documentation).\n";
+        $abortString.= "3. The fasta headers in cDNA or genome file were not unique.\n";
 	$abortString.= "Inspect $trainDir/pasa/Launch_PASA_pipeline.stderr for PASA error messages.\n";
 	
 	system("$perlCmdString")==0 or die ("$abortString");
