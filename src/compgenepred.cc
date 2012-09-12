@@ -130,10 +130,13 @@ void CompGenePred::start(){
         geneRange->printOrthoExons(offsets);
         orthograph.all_orthoex = geneRange->getOrthoExons();
 
-	orthograph.outputGenes(initGenes,init_geneid);
-
 	//add score for selective pressure of orthoexons
 	orthograph.addScoreSelectivePressure();
+	
+	//determine initial path
+	orthograph.globalPathSearch();
+
+	orthograph.outputGenes(initGenes,init_geneid);
 
         if(!orthograph.all_orthoex.empty()){
 	    orthograph.pruningAlgor();

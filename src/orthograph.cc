@@ -494,3 +494,12 @@ void OrthoGraph::addScoreSelectivePressure(){
 	}
     }
 }
+
+void OrthoGraph::globalPathSearch(){
+
+    for(size_t pos = 0; pos < numSpecies; pos++){
+	if(graphs[pos]){
+	    graphs[pos]->relax();
+	}
+    }
+}

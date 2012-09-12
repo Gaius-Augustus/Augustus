@@ -127,10 +127,10 @@ void SpeciesGraph::buildGraph(){
     topSort();
 
     //relax all nodes in topological order and label all nodes with 1 if on max weight path
-    relax();
+    //relax();
 
 #ifdef DEBUG
-    printGraph(speciesname + ".dot");
+    //printGraph(speciesname + ".dot");
 #endif
     
 }

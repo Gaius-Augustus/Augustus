@@ -55,6 +55,7 @@ public:
     bool print_change; //only temporary flag
 
     void addScoreSelectivePressure(); //adds score for selective pressure to all nodes representing orthologous exons
+    void globalPathSearch(); //determine initial labeling of the graphs
     string getLabelpattern(OrthoExon &ex); //determines the current labelpattern of an orthoex
     void printHTMLgBrowse(OrthoExon &ex);  //temp: html output for gBrowse
     inline void printCache(){
