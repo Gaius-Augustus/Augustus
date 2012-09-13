@@ -475,10 +475,16 @@ void OrthoGraph::printHTMLgBrowse(OrthoExon &ex){
 void OrthoGraph::addScoreSelectivePressure(){
 
     double oe_score;
+    double not_oe_penalty;
     try {
 	oe_score = Properties::getdoubleProperty("/CompPred/oe_score");
     } catch (...) {
 	oe_score = 50;
+    }
+    try {
+	not_oe_penalty = Properties::getdoubleProperty("/CompPred/not_oe_penalty");
+    } catch (...) {
+	not_oe_penalty = -20;
     }
 
     if(!all_orthoex.empty()){
@@ -487,7 +493,7 @@ void OrthoGraph::addScoreSelectivePressure(){
 		if(it->orthoex[pos]){
 		    Node* node = graphs[pos]->getNode(it->orthoex[pos]);
 		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
-			iter->score += oe_score;
+			iter->score += oe_score - not_oe_penalty;
 		    }
 		}
 	    }

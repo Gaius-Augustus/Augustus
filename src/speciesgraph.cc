@@ -142,7 +142,7 @@ Node* SpeciesGraph::addExon(Status *exon, vector< vector<Node*> > &neutralLines)
 	count_sampled++;
 #endif
 	//cout << "sampled_exon\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" << (string)stateTypeIdentifiers[((State*)exon->item)->type] << "\t"<< endl;
-	Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item, sampled);
+	Node *ex = new Node(exon->begin, exon->end, (setScore(exon) + not_oe_penalty), exon->item, sampled);
 	printSampledExon(ex);
 	nodelist.push_back(ex);
 	addToHash(ex);
@@ -158,8 +158,7 @@ void SpeciesGraph::addExon(ExonCandidate *exon, vector< vector<Node*> > &neutral
 #endif
     if(!alreadyProcessed(exon)){
 	//cout << "unsampled_exon\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" <<(string)stateTypeIdentifiers[exon->getStateType()] << endl;
-	//TODO: Node *ex = new Node(exon->begin, exon->end, exon-> ?, exon, unsampled_exon);
-	Node *ex = new Node(exon->begin, exon->end, ec_score, exon, unsampled_exon);
+	Node *ex = new Node(exon->begin, exon->end, (ec_score + not_oe_penalty), exon, unsampled_exon);
 	nodelist.push_back(ex);
 	addToHash(ex);
 	addNeutralNodes(ex, neutralLines);
