@@ -50,9 +50,13 @@ void CompGenePred::start(){
 #endif
   
     //initialize output files of initial gene prediction and optimized gene prediction
-    vector<ofstream*> initGenes = initOutputFiles(".init");
-    vector<int> init_geneid(OrthoGraph::numSpecies, 1); // gene numbering
-    vector<ofstream*> optGenes = initOutputFiles();
+#ifdef DEBUG
+    vector<ofstream*> baseGenes = initOutputFiles(".base"); // equivalent to MEA prediction
+    vector<int> base_geneid(OrthoGraph::numSpecies, 1); // gene numbering
+    vector<ofstream*> initGenes = initOutputFiles(".init"); // score added to all orthologous exons and penalty added to all non orthologous exons, then global path search repeated
+    vector<int> init_geneid(OrthoGraph::numSpecies, 1);
+#endif
+    vector<ofstream*> optGenes = initOutputFiles();  //optimized gene prediction by applying majority rule move
     vector<int> opt_geneid(OrthoGraph::numSpecies, 1);
     vector<ofstream*> sampledExons = initOutputFiles(".sampled_ECs");
 
@@ -129,14 +133,15 @@ void CompGenePred::start(){
         geneRange->createOrthoExons(offsets);
         geneRange->printOrthoExons(offsets);
         orthograph.all_orthoex = geneRange->getOrthoExons();
-
+	
+#ifdef DEBUG
+	orthograph.outputGenes(baseGenes,base_geneid);
 	//add score for selective pressure of orthoexons
 	orthograph.addScoreSelectivePressure();
-	
 	//determine initial path
 	orthograph.globalPathSearch();
-
 	orthograph.outputGenes(initGenes,init_geneid);
+#endif
 
         if(!orthograph.all_orthoex.empty()){
 	    orthograph.pruningAlgor();

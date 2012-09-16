@@ -487,6 +487,18 @@ void OrthoGraph::addScoreSelectivePressure(){
 	not_oe_penalty = -20;
     }
 
+    for(size_t pos = 0; pos < numSpecies; pos++){
+	if(graphs[pos]){
+	    for(list<Node*>::iterator node = graphs[pos]->nodelist.begin(); node != graphs[pos]->nodelist.end(); node++){
+		if((*node)->n_type > minus2){
+		    for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
+			edge->score += not_oe_penalty;
+		    }
+		}
+	    }
+	}
+    }
+
     if(!all_orthoex.empty()){
 	for(list<OrthoExon>::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
 	    for(size_t pos = 0; pos < numSpecies; pos++){

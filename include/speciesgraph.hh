@@ -35,7 +35,6 @@ private:
 #endif
     double max_weight; // the max weight of a node/edge in the graph, used as an upper/lower bound
     double ec_score; //temp: until there are real scores for exon candidates
-    double not_oe_penalty; //penalty for a sampled exon to be not orthologous
     ofstream *sampled_exons;
 
 public:
@@ -57,11 +56,6 @@ public:
 	    ec_score = Properties::getdoubleProperty("/CompPred/ec_score");
 	} catch (...) {
 	    ec_score = -100;
-	}
-	try {
-	    not_oe_penalty = Properties::getdoubleProperty("/CompPred/not_oe_penalty");
-	} catch (...) {
-	    not_oe_penalty = -20;
 	}
     }
     ~SpeciesGraph(){
