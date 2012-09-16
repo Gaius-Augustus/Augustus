@@ -65,12 +65,12 @@ public:
 
     //optimization functions
     void optimize();                                 // create MoveObjects
-    void localMove(vector<MoveObject*> &orthomove);  // do the local move for a MoveObject
+    void localMove(vector<Move*> &orthomove);  // do the local move for a MoveObject
     inline double pruningAlgor(){                    // pruning Algor. for all OrthoExons
 	return pruningAlgor(all_orthoex);
     }               
     double pruningAlgor(list<OrthoExon> &orthoex);   // pruning Algor. for a list of OrthoExons in a range
-    list<OrthoExon> orthoExInRange(vector<MoveObject*> &orthomove); //determine all OrthoExons in a range
+    list<OrthoExon> orthoExInRange(vector<Move*> &orthomove); //determine all OrthoExons in a range
    
 
 
@@ -80,7 +80,7 @@ public:
      * majorityRule: if # of 0's in labelpattern of an OrthoExon is smaller than # of 1's,
      * all nodes with the labels 0 are made to 1 and vice versa
      */
-    vector<MoveObject*> majorityRuleMove(OrthoExon &orthoex);
+    vector<Move*> majorityRuleMove(OrthoExon &orthoex);
 
     void outputGenes(vector<ofstream*> filestreams, vector<int> &geneid);
     inline void storePtrsToAlltranscripts(list<Gene> *alltranscripts){

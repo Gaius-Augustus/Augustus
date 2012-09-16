@@ -445,13 +445,13 @@ void SpeciesGraph::relax(Node *begin, Node *end){
     next->label = 1;
 
 }
-void MoveObject::initLocalHeadandTail(){
+void Move::initLocalHeadandTail(){
 
     Node *left = NULL;
     Node *right = NULL;
 
     if(nodes.empty() && edges.empty()){
-	throw ProjectError("MoveObject::initLocalHeadandTail(): no nodes and no edges specified in MoveObject");
+	throw ProjectError("MoveObject::initLocalHeadandTail(): no nodes and no edges specified in Move");
     }
     else if(edges.empty()){
 	left = nodes.front().node;
@@ -472,7 +472,7 @@ void MoveObject::initLocalHeadandTail(){
     }
     cout <<  graph->getSpeciesname() << endl;
     if (left->label != right->label)
-	throw ProjectError("MoveObject::initLocalHeadandTail(): either all nodes have label 1 or all node have label 0");
+	throw ProjectError("Move::initLocalHeadandTail(): either all nodes have label 1 or all node have label 0");
     else{
 	local_head = graph->getPredExonOnPath(left, step_size);
 	local_tail = graph->getNextExonOnPath(right, step_size);
@@ -554,7 +554,7 @@ double SpeciesGraph::setScore(Status *st){
     }
 }
 
-double SpeciesGraph::localChange(MoveObject *move){
+double SpeciesGraph::localChange(Move *move){
 
 #ifdef DEBUG
     //cout << "\nSpecies: " << speciesname <<"\n\nbefore local change" << endl;
@@ -602,7 +602,7 @@ double SpeciesGraph::getScorePath(Node *begin, Node *end){
     return score;
 }
 
-void MoveObject::addWeights(){
+void Move::addWeights(){
     for (list<MoveNode>::iterator it = nodes.begin(); it != nodes.end(); it++){
 	for (list<Edge>::iterator iter =  it->node->edges.begin(); iter != it->node->edges.end(); iter++){
 	    iter->score += it->weight;
@@ -612,7 +612,7 @@ void MoveObject::addWeights(){
 	iter->edge->score += iter->weight;
     }
 }
-void MoveObject::undoAddWeights(){
+void Move::undoAddWeights(){
     for (list<MoveNode>::iterator it = nodes.begin(); it != nodes.end(); it++){
 	for (list<Edge>::iterator iter =  it->node->edges.begin(); iter != it->node->edges.end(); iter++){
 	    iter->score -= it->weight;

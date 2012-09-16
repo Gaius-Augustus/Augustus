@@ -153,7 +153,7 @@ void OrthoGraph::optimize(){
     //for now, loop over OrthoExons
     if(!all_orthoex.empty()){
 	for(list<OrthoExon>::iterator orthoex = all_orthoex.begin(); orthoex != all_orthoex.end(); orthoex++){
-	    vector<MoveObject*> orthomove = majorityRuleMove(*orthoex);
+	    vector<Move*> orthomove = majorityRuleMove(*orthoex);
 	    if(!orthomove.empty()){
 		localMove(orthomove);
 		//delete MoveObjects
@@ -165,7 +165,7 @@ void OrthoGraph::optimize(){
     }
 }
 
-void OrthoGraph::localMove(vector<MoveObject*> &orthomove){
+void OrthoGraph::localMove(vector<Move*> &orthomove){
 
     
 
@@ -297,7 +297,7 @@ string OrthoGraph::getLabelpattern(OrthoExon &ex){
 }
 
 
-list<OrthoExon> OrthoGraph::orthoExInRange(vector<MoveObject*> &orthomove){
+list<OrthoExon> OrthoGraph::orthoExInRange(vector<Move*> &orthomove){
 
     list<OrthoExon> local_orthoexons;
 
@@ -316,9 +316,9 @@ list<OrthoExon> OrthoGraph::orthoExInRange(vector<MoveObject*> &orthomove){
     return local_orthoexons;
 }
 	
-vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon &orthoex){
+vector<Move*> OrthoGraph::majorityRuleMove(OrthoExon &orthoex){
 
-    vector<MoveObject*> orthomove;
+    vector<Move*> orthomove;
   
     //count number of zeros and ones in labelpattern of an OrthoExon
   
@@ -344,7 +344,7 @@ vector<MoveObject*> OrthoGraph::majorityRuleMove(OrthoExon &orthoex){
 	orthomove.resize(numSpecies);
 	for(size_t pos = 0; pos < numSpecies; pos++){
 	    if( (labelpattern[pos] == '0')  ){
-		MoveObject *move = new MoveObject(graphs[pos], shift_size + 1);
+		Move *move = new Move(graphs[pos], shift_size + 1);
 		move->addNodeBack( graphs[pos]->getNode(orthoex.orthoex[pos]), graphs[pos]->getMaxWeight() );
 		move->initLocalHeadandTail();
 		orthomove[pos] = move;

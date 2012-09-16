@@ -29,7 +29,6 @@ class Status;
 class Node;
 class Edge;
 class Graph;
-class MoveObject;
 
 /*
  * Status stores all the relavant information (for states) from the program specific datastructure

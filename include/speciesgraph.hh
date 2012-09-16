@@ -18,6 +18,8 @@
 //project includes
 #include "graph.hh"
 
+//forward declarations
+class Move;
 
 class SpeciesGraph : public AugustusGraph {
 
@@ -131,7 +133,7 @@ public:
     inline void relax(){
 	relax(head, tail);
     }
-    double localChange(MoveObject *move);                 // local path search with calculation of the score difference between new and old local path
+    double localChange(Move *move);                 // local path search with calculation of the score difference between new and old local path
     double getScorePath(Node *begin, Node *end);          // calc. the sum of edge weights of the path: begin ~~> end
     Node* getTopSortPred(Node *node);    //get next node in topological order which is on the path
     Node* getTopSortNext(Node *node);    //get previous node in topological order which is on the path
@@ -159,7 +161,7 @@ struct MoveEdge{
     ~MoveEdge() {}
 };
 
-class MoveObject{
+class Move{
 
 private:
     SpeciesGraph *graph;
@@ -170,13 +172,13 @@ private:
     Node* local_tail;
 
 public:
-    MoveObject(SpeciesGraph *g, size_t s = 1) :
+    Move(SpeciesGraph *g, size_t s = 1) :
 	graph(g),
 	step_size(s),
 	local_head(NULL),
 	local_tail(NULL)
     {}
-    ~MoveObject() {}
+    ~Move() {}
 
     inline Node* getHead() const{
 	return local_head;
