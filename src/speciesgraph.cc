@@ -19,6 +19,8 @@
 
 void SpeciesGraph::buildGraph(){
 
+    cout << "ec_score\t" << ec_score << endl;
+
     vector< vector<Node*> > neutralLines; //represents the seven neutral lines
 
     getSizeNeutralLine();
