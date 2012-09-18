@@ -25,7 +25,7 @@ STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_DIR = $(INSTALL) -d
-BK_DEPS = /home/mario/augustus/trunks/mysql++/bk-deps
+BK_DEPS = /home/alexander/augustus/trunks/mysql++/bk-deps
 srcdir = .
 libdir = ${exec_prefix}/lib
 DLLPREFIX = lib
@@ -36,7 +36,7 @@ RANLIB = ranlib
 CXX = g++
 CXXFLAGS = -g -O2
 CPPFLAGS =  -I/usr/include/mysql
-LDFLAGS =  -L/usr/lib64
+LDFLAGS =  -L/usr/lib/x86_64-linux-gnu/
 
 ### Variables: ###
 

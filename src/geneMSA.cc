@@ -30,6 +30,7 @@ int GeneMSA::geneRangeID = 1;
 vector<ofstream*> GeneMSA::exonCands_outfiles;
 vector<ofstream*> GeneMSA::orthoExons_outfiles;
 vector<ofstream*> GeneMSA::geneRanges_outfiles;
+ofstream *GeneMSA::pamlFile;
 
 string GeneMSA::getName(int speciesIdx) {
     for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
@@ -102,6 +103,18 @@ int GeneMSA::getEnd(int speciesIdx){
     return 0;
 }
 
+int GeneMSA::getGFF3FrameForExon(ExonCandidate *ec) {
+    if (ec->type<=7) {
+        return mod3(3-(exonTypeReadingFrames[ec->type] - (ec->end - ec->begin + 1)));
+    } else if ((ec->type==8) || (ec->type>=13)) {
+        return 0;
+    } else if (ec->type==9) {
+        return mod3(ec->end - ec->begin + 1);
+    } else {
+        return mod3(1 + exonTypeReadingFrames[ec->type] + (ec->end - ec->begin + 1));
+    }
+}
+
 list<ExonCandidate*>* GeneMSA::getExonCands(int speciesIdx) {
     if (this->exoncands.at(speciesIdx)!=NULL) {
         return exoncands.at(speciesIdx);
@@ -116,17 +129,6 @@ list<OrthoExon> GeneMSA::getOrthoExons(){
     } else {
         cout<<" no orthologue exons in this part of the alignment found"<<endl;
         return this->orthoExonsList;  // list is empty
-    }
-}
-
-// use this compare function if you want to use ExonCandidate::computeIntervals
-bool compType (ExonCandidate* a, ExonCandidate* b) {
-    if (a->type != b->type) {
-        return (a->type<b->type);
-    } else  if (a->end != b->end) {
-        return (a->end<b->end);
-    } else {
-        return (a->begin<b->begin);
     }
 }
 
@@ -148,7 +150,6 @@ bool compAlignedPos (int a, block b) {
     return (a < b.begin - b.previousGaps);
 }
 
-// compare function to find the correct real position of a base
 // compare function to sort the exon candidates by startposition
 bool compBegin (ExonCandidate* a, ExonCandidate* b) {
     if (a->begin != b->begin) {
@@ -158,6 +159,19 @@ bool compBegin (ExonCandidate* a, ExonCandidate* b) {
     } else {
         return (a->type<b->type);
     }
+}
+
+string GeneMSA::reverseString(string text) {
+    int i = 0;
+    int n = text.length();
+    while (i < (n/2)) {
+        char c;
+        c = (text[i]);
+        text[i] = text[n-i-1];
+        text[n-i-1] = c;
+        i++;
+    }
+    return text;
 }
 
 // adds the keys to the map function
@@ -232,7 +246,7 @@ void GeneMSA::createExonCands(const char *dna, double assmotifqthresh, double as
     list<int>::reverse_iterator ritRCStop_cur = ritRCStop;
 
     for (int i= n - 1; i>= 2; i--) {
-        // computing single genes on the forward strand with at least startcodon+codon+stopcodon
+        // computing single genes on the forward strand with at least Constant::min_coding_len
         if (ochre(dna+i) || opal(dna+i) ||amber(dna+i)) {
             ritStart=ritStart_cur;
             while ((i<*ritStart)&&(ritStart!=exonStart.rend())){
@@ -240,8 +254,8 @@ void GeneMSA::createExonCands(const char *dna, double assmotifqthresh, double as
             }
             ritStart_cur=ritStart;
             int lmb = orf.leftmostExonBegin(0,i,true);
-            while ((lmb<=*ritStart)&&(i-*ritStart<=max_exon_length)&&(ritStart!=exonStart.rend())) {
-                if ((i-*ritStart >= 201) && ((i-*ritStart+1)%3==0)) {
+            while ((lmb<=*ritStart) && (i-*ritStart<=max_exon_length) && (ritStart!=exonStart.rend())) {
+                if ((i-*ritStart >= Constant::min_coding_len) && ((i-*ritStart+1)%3==0)) {
                     ec = new ExonCandidate;
                     ec->begin=*ritStart - 1;
                     ec->end=i + 2;
@@ -332,15 +346,16 @@ void GeneMSA::createExonCands(const char *dna, double assmotifqthresh, double as
             }
         }
 
-        // computing single genes on the reverse strand with at least startcodon+codon+ctopcodon
+        // computing single genes on the reverse strand with at least Constant::min_coding_len
         if (onRStart(dna+i)) {
             ritRCStop=ritRCStop_cur;
             while ((i<*ritRCStop)&&(ritRCStop!=exonRCStop.rend())){
                 ritRCStop++;
             }
             ritRCStop_cur=ritRCStop;
-            while ((i-*ritRCStop <= max_exon_length)&&(ritRCStop!=exonRCStop.rend())) {
-                if ((i-*ritRCStop >= 201)&&((i-*ritRCStop)%3==0)) {
+            int lmb = orf.leftmostExonBegin(2,i,false);
+            while ((lmb<=*ritRCStop) && (i-*ritRCStop <= max_exon_length) && (ritRCStop!=exonRCStop.rend())) {
+                if ((i-*ritRCStop >= Constant::min_coding_len) && ((i-*ritRCStop)%3 == 0)) {
                     ec = new ExonCandidate;
                     ec->begin=*ritRCStop;
                     ec->end=i + 2;
@@ -394,11 +409,11 @@ void GeneMSA::createExonCands(const char *dna, double assmotifqthresh, double as
                         ec->dssScore = (*ritRDSS).second;
                         ec->assScore = p;
                         if (frame==0) {
-                            ec->type=rinternal_0;
+                            ec->type=rinternal_2;
                         } else if (frame==1) {
                             ec->type=rinternal_1;
                         } else {
-                            ec->type=rinternal_2;
+                            ec->type=rinternal_0;
                         }
                         candidates->push_back(ec);
                     }
@@ -416,7 +431,7 @@ void GeneMSA::createExonCands(const char *dna, double assmotifqthresh, double as
                     ritRCStop++;
                 }
                 ritRCStop_cur=ritRCStop;
-                while ((i-*ritRCStop<=max_exon_length)&&(ritRCStop!=exonRCStop.rend())) {
+                while ((i-*ritRCStop<=max_exon_length) && (ritRCStop!=exonRCStop.rend())) {
                     if ((i-*ritRCStop>=4)&&((i-*ritRCStop)%3==frame) && (p >= assminprob)) {
                         ec = new ExonCandidate;
                         ec->begin=*ritRCStop;
@@ -458,7 +473,7 @@ void GeneMSA::createExonCands(const char *dna, double assmotifqthresh, double as
 
 // computes the aligned position of a base in an alignment and the 'block' where the base is found
 pair <int, int> GeneMSA::getAlignedPosition(AlignSeq *as_ptr, int pos) {
-    list<block>::iterator it, cit;
+    list<block>::iterator it;
     vector<int*>::iterator it_cmpStart;
     pair <int, int> alignedPos;
     it=upper_bound(as_ptr->sequence.begin(), as_ptr->sequence.end(), pos, compAlignedPos);
@@ -490,7 +505,7 @@ int GeneMSA::getRealPosition(AlignSeq *ptr, int pos, int idx) {
 }
 
 // searches for the orthologue exons of the exon candidates of the reference species
-void GeneMSA::createOrthoExons(vector<int> offsets) {
+void GeneMSA::createOrthoExons(RandSeqAccess *rsa, vector<int> offsets) {
     list<AlignmentBlock*>::iterator it_ab;
     list<ExonCandidate*> cands = *getExonCands(0);
     AlignSeq *as_ptr, *ptr;
@@ -503,60 +518,85 @@ void GeneMSA::createOrthoExons(vector<int> offsets) {
         found=false;
         hasOrthoExon=false;
         if (!oe.orthoex.empty()) {
-           oe.orthoex.clear();
-           oe.orthoex.resize(this->exoncands.size());
+            oe.orthoex.clear();
+            oe.orthoex.resize(this->exoncands.size());
         }
         while ((!found) && (it_ab!=this->alignment.end())) {
+            /*while ((it_ab!=this->alignment.end()) && ((*it_ab)->alignSpeciesTuple.at(0) == NULL)) {
+                cout<<"Reference species does not exist in an alignment block!!!"<< endl;
+                it_ab++;
+            }*/
+                if ((*it_ab)->alignSpeciesTuple.at(0)->start > (*ec)->begin + offsets[0] + 1) {
+                    //cout<<" exon "<<(*ec)->begin + offsets[0] + 1<<".."<<(*ec)->end + offsets[0] + 1<<" is outside (in front of) the aligned range"<<endl;
+                    found=true;
+                } else if (((*it_ab)->alignSpeciesTuple.at(0)->start <= (*ec)->begin + offsets[0] + 1)
+                        && ((*it_ab)->alignSpeciesTuple.at(0)->start + (*it_ab)->alignSpeciesTuple.at(0)->seqLen - 1 >= (*ec)->end + offsets[0] + 1)) {
+                    as_ptr=(*it_ab)->alignSpeciesTuple.at(0);
+                    if (as_ptr != NULL) {
+                        oe.orthoex[0]=(*ec);
+                        for (int i=1; i<(*it_ab)->alignSpeciesTuple.size(); i++) {
+                            int alignedPosStart = getAlignedPosition(as_ptr, (*ec)->begin + offsets[0]).first;
+                            int idxStart = getAlignedPosition(as_ptr, (*ec)->begin + offsets[0]).second;
+                            int alignedPosEnd = getAlignedPosition(as_ptr, (*ec)->end + offsets[0]).first;
+                            int idxEnd = getAlignedPosition(as_ptr, (*ec)->end + offsets[0]).second;
 
-            if ((*it_ab)->alignSpeciesTuple.at(0)->start > (*ec)->begin + offsets[0] + 1) {
-                //cout<<" exon "<<(*ec)->begin + offsets[0] + 1<<".."<<(*ec)->end + offsets[0] + 1<<" is outside (in front of) the aligned range"<<endl;
-                found=true;
-            } else if (((*it_ab)->alignSpeciesTuple.at(0)->start <= (*ec)->begin + offsets[0] + 1)
-                         && ((*it_ab)->alignSpeciesTuple.at(0)->start + (*it_ab)->alignSpeciesTuple.at(0)->seqLen - 1 >= (*ec)->end + offsets[0] + 1)) {
-                as_ptr=(*it_ab)->alignSpeciesTuple.at(0);
-                if (as_ptr != NULL) {
-                    oe.orthoex[0]=(*ec);
-                    for (int i=1; i<(*it_ab)->alignSpeciesTuple.size(); i++) {
-                        int alignedPosStart = getAlignedPosition(as_ptr, (*ec)->begin + offsets[0]).first;
-                        int idxStart = getAlignedPosition(as_ptr, (*ec)->begin + offsets[0]).second;
-                        int alignedPosEnd = getAlignedPosition(as_ptr, (*ec)->end + offsets[0]).first;
-                        int idxEnd = getAlignedPosition(as_ptr, (*ec)->end + offsets[0]).second;
-
-                        ptr = (*it_ab)->alignSpeciesTuple.at(i);
-                        if (ptr != NULL) {
-                            int realStart = getRealPosition(ptr, alignedPosStart, idxStart);
-                            //cout<<"Start "<<realStart<<endl;
-                            int realEnd = getRealPosition(ptr, alignedPosEnd, idxEnd);
-                            if ((realStart != -1) && (realEnd != -1) && ((mod3((*ec)->end - (*ec)->begin)) == (mod3(realEnd - realStart)))) {
-                                if ((*ec)->type > -1) {
-                                    key = (itoa(realStart - offsets[i]) + ":" + itoa(realEnd - offsets[i]) + ":" + itoa((*ec)->type));
-                                } else {
-                                    key = "no key";
-                                }
-                                if (existingCandidates[i]!=NULL && existingCandidates[0]!=NULL) {
-                                    map<string, ExonCandidate*>::iterator map_it = (*existingCandidates[i]).find(key);
-                                    if (map_it!=(*existingCandidates[i]).end()) {
-                                        oe.orthoex[i]=(map_it->second);
-                                        hasOrthoExon=true;
+                            ptr = (*it_ab)->alignSpeciesTuple.at(i);
+                            if (ptr != NULL) {
+                                int realStart = getRealPosition(ptr, alignedPosStart, idxStart);
+                                int realEnd = getRealPosition(ptr, alignedPosEnd, idxEnd);
+                                if ((realStart != -1) && (realEnd != -1) && ((mod3((*ec)->end - (*ec)->begin)) == (mod3(realEnd - realStart)))) {
+                                    if ((*ec)->type > -1) {
+                                        key = (itoa(realStart - offsets[i]) + ":" + itoa(realEnd - offsets[i]) + ":" + itoa((*ec)->type));
+                                    } else {
+                                        key = "no key";
+                                    }
+                                    if (existingCandidates[i]!=NULL && existingCandidates[0]!=NULL) {
+                                        map<string, ExonCandidate*>::iterator map_it = (*existingCandidates[i]).find(key);
+                                        if (map_it!=(*existingCandidates[i]).end()) {
+                                            oe.orthoex[i]=(map_it->second);
+                                            hasOrthoExon=true;
+                                        }
                                     }
                                 }
                             }
                         }
+                        if (hasOrthoExon) {
+
+                            /*vector<ExonCandidate*> orthoExon = cutIncompleteCodons(oe.orthoex);
+                        //vector<string> sequences;
+                        AnnoSequence *seqRange;
+                        for (int i=0; i<orthoExon.size(); i++) {
+                            ptr = (*it_ab)->alignSpeciesTuple.at(i);
+                            if ((orthoExon.at(i) != NULL) && (ptr != NULL)) {
+                                if (this->getStrand(i) == minusstrand) {
+                                    seqRange = rsa->getSeq(this->getName(i), this->getSeqID(i), this->getSeqIDLength(i) - (orthoExon[i]->end + offsets[i] + 1),
+                                                                         this->getSeqIDLength(i) - (orthoExon[i]->begin + offsets[i] + 1), this->getStrand(i));
+                                } else {
+                                    seqRange = rsa->getSeq(this->getName(i), this->getSeqID(i), orthoExon[i]->begin + offsets[i], orthoExon[i]->end + offsets[i], this->getStrand(i));
+                                }
+
+                                string sequence = getAlignedOrthoExon(ptr, orthoExon[i], seqRange->sequence, offsets, i);
+                                cout<<"s "<<sequence<<endl;
+
+                            }
+                        }*/
+                            this->orthoExonsList.push_back(oe);
+                        }
                     }
-                    if (hasOrthoExon) {
-                        this->orthoExonsList.push_back(oe);
-                    }
-                }
-                found=true;
-            } else {
-                it_ab++;
-                if ((*it_ab)->alignSpeciesTuple.at(0)->start > (*ec)->begin + offsets[0] + 1) {
+                    found=true;
+                } else {
+                    it_ab++;
+                    /*if ((*it_ab)->alignSpeciesTuple.at(0) == NULL) {
+                    cout<<"Reference species does not exist in an alignmnet block!!!"<< endl;
+                    break;
+                } else*/ if ((*it_ab)->alignSpeciesTuple.at(0)->start > (*ec)->begin + offsets[0] + 1) {
                     //cout<<" exon "<<(*ec)->begin + offsets[0] + 1<<".."<<(*ec)->end + offsets[0] + 1<<" hasn't start and end in a coherently aligned sequence"<<endl;
                     it_ab--;
                     found=true;
                 }
                 if (this->getEnd(0) - utr_range < (*ec)->begin + offsets[0] + 1) {
                     cout<<" exon "<<(*ec)->begin + offsets[0] + 1<<".."<<(*ec)->end + offsets[0] + 1<<" is outside (behind) the aligned range"<<endl;
+                    found=true;
                 }
             }
         }
@@ -577,7 +617,69 @@ void GeneMSA::createOrthoExons(vector<int> offsets) {
     }*/
 }
 
- void GeneMSA::openOutputFiles(){
+vector<ExonCandidate*> GeneMSA::cutIncompleteCodons(vector<ExonCandidate*> orthoexon) {
+    for (int i=0; i<orthoexon.size(); i++) {
+        if (orthoexon[i]!= NULL) {
+            if (getGFF3FrameForExon(orthoexon[i]) == 1) {
+                orthoexon[i]->begin = orthoexon[i]->begin + 1;
+            } else if (getGFF3FrameForExon(orthoexon[i]) == 2) {
+                orthoexon[i]->begin = orthoexon[i]->begin + 2;
+            } else if ((orthoexon[i]->type == 13) || (orthoexon[i]->type == 14) || (orthoexon[i]->type == 15) || (orthoexon[i]->type == 8)) {
+                orthoexon[i]->begin = orthoexon[i]->begin + 3;
+            }
+            if ((orthoexon[i]->type == 2) || (orthoexon[i]->type == 5) || (orthoexon[i]->type == 11) || (orthoexon[i]->type == 14)) {
+                orthoexon[i]->end = orthoexon[i]->end - 1;
+            } else if ((orthoexon[i]->type == 3) || (orthoexon[i]->type == 6) || (orthoexon[i]->type == 10) || (orthoexon[i]->type == 13)) {
+                orthoexon[i]->end = orthoexon[i]->end - 2;
+            } else if ((orthoexon[i]->type == 7) || (orthoexon[i]->type == 0)) {
+                orthoexon[i]->end = orthoexon[i]->end - 3;
+            }
+        }
+    }
+    return orthoexon;
+}
+
+string GeneMSA::getAlignedOrthoExon(AlignSeq *as_ptr, ExonCandidate* ec, string seq, vector<int> offsets, int speciesIdx) {
+    if (as_ptr != NULL) {
+        int alignedPosStart = getAlignedPosition(as_ptr, ec->begin + offsets[speciesIdx] + 1).first;
+        int idxStart = getAlignedPosition(as_ptr, ec->begin + offsets[speciesIdx] + 1).second;
+        int alignedBegin = (*(as_ptr->cmpStarts[idxStart])) + alignedPosStart;
+        int alignedPosEnd = getAlignedPosition(as_ptr, ec->end + offsets[speciesIdx]).first;
+        int idxEnd = getAlignedPosition(as_ptr, ec->end + offsets[speciesIdx] + 1).second;
+        int alignedEnd = (*(as_ptr->cmpStarts[idxEnd])) +  alignedPosEnd;
+        list<block>::iterator it=upper_bound(as_ptr->sequence.begin(), as_ptr->sequence.end(), alignedBegin, compRealPos);
+        list<block>::iterator it_prev = it;
+        it_prev--;
+        while (((*it_prev).begin + (*it_prev).length) < alignedEnd) {
+            string gap = "";
+            int numberGaps=(*it).previousGaps - (*it_prev).previousGaps;
+            for (int j=0; j<numberGaps; j++) {
+                gap += "-";
+            }
+            //cout<<seq<<endl;
+            try {
+                seq.insert((*it).begin - alignedBegin - numberGaps , gap);
+            }
+            catch (...) {
+                cout<<seq<<endl;
+                cout<<ec->begin<<"   "<<ec->type<<endl;
+                cout<<"sequence is too short, out of range error"<<endl;
+                cout<<"it-prev "<<(*it_prev).begin<<"     "<<(*it_prev).length<<endl;
+                cout<<"ab "<<alignedBegin<<endl;
+                cout<<"ae "<<alignedEnd<<endl;
+                cout<<(*it).begin - alignedBegin - numberGaps<<"  "<<seq.length()<<endl;
+                break;
+            }
+            it++;
+            it_prev++;
+        }
+        return seq;
+    } else {
+        return "";
+    }
+}
+
+void GeneMSA::openOutputFiles(){
     string outputdirectory;  //directory for output files
     try {
         outputdirectory = Properties::getProperty("/CompPred/outdir_orthoexons");
@@ -612,28 +714,99 @@ void GeneMSA::createOrthoExons(vector<int> offsets) {
             (*os_oe) << "#\n#----- orthologue exons  -----" << endl << "#" << endl;
         }
     }
+    string paml_file = outputdirectory + "pamlfile.fa";
+    ofstream *os_pf = new ofstream(paml_file.c_str());
+    if (os_pf!=NULL) {
+        pamlFile=os_pf;
+    }
 }
 
- //writes the possible gene ranges of a species in the file 'geneRanges.speciesnames.gff'
- void GeneMSA::printGeneRanges() {
-     streambuf *console = cout.rdbuf();  //save old buf
-     if (!(this->exoncands.empty())) {
-         for (int i=0; i<this->exoncands.size(); i++) {
-             cout.rdbuf(geneRanges_outfiles[i]->rdbuf());  //redirect cout to 'geneRanges.speciesname.gff'
-             if (this->exoncands.at(i)!=NULL) {
-                 cout << this->getSeqID(i)<<"\tGeneRange\t"<<"exon\t"<<this->getStart(i) + 1<<"\t"<< this->getEnd(i) + 1<<"\t0\t";
-                 if (this->getStrand(i) == plusstrand) {
-                     cout<<'+'<<"\t";
-                 } else {
-                     cout<<'-'<<"\t";
-                 }
-                 cout<<".\t"<<"Name="<<geneRangeID<<endl;
-             }
-         }
-         geneRangeID++;
-     }
-     cout.rdbuf(console); //reset to standard output again
- }
+//writes the exons for the paml input file '
+void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, vector<int> offsets) {
+    streambuf *console = cout.rdbuf();  //save old buf
+    cout.rdbuf(pamlFile->rdbuf());  //redirect cout to 'pamlFile.fa'
+    list<AlignmentBlock*>::iterator it_ab = this->alignment.begin();
+    list<AlignmentBlock*>::iterator current_it_ab;
+    if (!(this->orthoExonsList.empty())) {
+        for (list<OrthoExon>::iterator it_oe = this->orthoExonsList.begin(); it_oe != this->orthoExonsList.end(); it_oe++) {
+            int noSpecies = 0;
+            AnnoSequence *seqRange;
+            vector<int> speciesIdx;
+            int alignedOrthoExonLength=0;
+            vector<ExonCandidate*> orthoExon = cutIncompleteCodons(it_oe->orthoex);
+            for (int i=0; i<orthoExon.size(); i++) {
+                while (it_ab!=this->alignment.end()) {
+                    if (((*it_ab)->alignSpeciesTuple.at(0)->start <= orthoExon[0]->begin + offsets[0] + 1)
+                            && ((*it_ab)->alignSpeciesTuple.at(0)->start + (*it_ab)->alignSpeciesTuple.at(0)->seqLen - 1 >= orthoExon[0]->end + offsets[0] + 1)) {
+                        current_it_ab = it_ab;
+                        break;
+                    } else {
+                        it_ab++;
+                    }
+                }
+                //AlignSeq *as_ptr = (*current_it_ab)->alignSpeciesTuple.at(i);
+                if ((orthoExon.at(i) != NULL) && ((orthoExon[i]->end - orthoExon[i]->begin + 1) >= 3)) {
+                    if (i == 0) {
+                        seqRange = rsa->getSeq(this->getName(i), this->getSeqID(i), orthoExon[i]->begin + offsets[i], orthoExon[i]->end + offsets[i], this->getStrand(i));
+                        alignedOrthoExonLength = getAlignedOrthoExon((*current_it_ab)->alignSpeciesTuple.at(0), orthoExon[0], seqRange->sequence, offsets, 0).length();
+                    }
+                    if ((((alignedOrthoExonLength) % 3) == 0) && (alignedOrthoExonLength) == (getAlignedOrthoExon((*current_it_ab)->alignSpeciesTuple.at(i), orthoExon[i], seqRange->sequence, offsets, i).length())) {
+                        speciesIdx.push_back(i);
+                        noSpecies++;
+                    }
+                }
+            }
+            if (noSpecies > 1) {
+                //seqRange = rsa->getSeq(this->getName(0), this->getSeqID(0), orthoExon[0]->begin + offsets[0], orthoExon[0]->end + offsets[0], this->getStrand(0));
+                cout<<noSpecies<<"  "<<alignedOrthoExonLength<<endl;
+                for (vector<int>::iterator it = speciesIdx.begin(); it!=speciesIdx.end(); it++) {
+                    cout<<this->getName(*it)<<endl;
+                    if (this->getStrand(*it) == minusstrand) {
+                        seqRange = rsa->getSeq(this->getName(*it), this->getSeqID(*it), this->getSeqIDLength(*it) - (orthoExon[*it]->end + offsets[*it] + 1),
+                                this->getSeqIDLength(*it) - (orthoExon[*it]->begin + offsets[*it] + 1), this->getStrand(*it));
+                    } else {
+                        seqRange = rsa->getSeq(this->getName(*it), this->getSeqID(*it), orthoExon[*it]->begin + offsets[*it], orthoExon[*it]->end + offsets[*it], this->getStrand(*it));
+                    }
+
+                    if (orthoExon[*it]->type > 7) {
+                        char *dna = seqRange->sequence;
+                        string seq = dna;
+                        int n = strlen(dna);
+                        for (int j=0; j<n; j++) {
+                            seq[j] = wcComplement(*(dna+j));
+                        }
+                        cout<<reverseString(getAlignedOrthoExon((*current_it_ab)->alignSpeciesTuple.at(*it), orthoExon[(*it)], dna, offsets, (*it)))<<endl;
+                    } else {
+                        cout<<getAlignedOrthoExon((*current_it_ab)->alignSpeciesTuple.at(*it), orthoExon[(*it)], seqRange->sequence, offsets, (*it))<<endl;
+                    }
+                }
+                cout<<endl;
+            }
+        }
+    }
+    cout.rdbuf(console); //reset to standard output again
+}
+
+//writes the possible gene ranges of a species in the file 'geneRanges.speciesnames.gff'
+void GeneMSA::printGeneRanges() {
+    streambuf *console = cout.rdbuf();  //save old buf
+    if (!(this->exoncands.empty())) {
+        for (int i=0; i<this->exoncands.size(); i++) {
+            cout.rdbuf(geneRanges_outfiles[i]->rdbuf());  //redirect cout to 'geneRanges.speciesname.gff'
+            if (this->exoncands.at(i)!=NULL) {
+                cout << this->getSeqID(i)<<"\tGeneRange\t"<<"exon\t"<<this->getStart(i) + 1<<"\t"<< this->getEnd(i) + 1<<"\t0\t";
+                if (this->getStrand(i) == plusstrand) {
+                    cout<<'+'<<"\t";
+                } else {
+                    cout<<'-'<<"\t";
+                }
+                cout<<".\t"<<"Name="<<geneRangeID<<endl;
+            }
+        }
+        geneRangeID++;
+    }
+    cout.rdbuf(console); //reset to standard output again
+}
 
 //writes the exon candidates of a species of a dna segment in the file 'exonCands.species.gff'
 void GeneMSA::printExonCands(vector<int> offsets) {
@@ -646,19 +819,18 @@ void GeneMSA::printExonCands(vector<int> offsets) {
         for (int i=0; i<this->exoncands.size(); i++) {
             cout.rdbuf(exonCands_outfiles[i]->rdbuf());  //redirect cout to 'exonCands.speciesname.gff'
             if (this->exoncands.at(i)!=NULL) {
-                cout << "# sequence:\t" << this->getName(i)<<"\t"<<this->getStart(i)<< "-"<< this->getEnd(i)<<"  "<<this->getEnd(i) - this->getStart(i)<<"bp"<<endl;
+                cout << "# sequence:\t" << this->getName(i)<<"\t"<<this->getStart(i) + 1<< "-"<< this->getEnd(i) + 1<<"  "<<this->getEnd(i) - this->getStart(i)<<"bp"<<endl;
                 for (list<ExonCandidate*>::iterator it_exonCands=this->exoncands.at(i)->begin(); it_exonCands!=this->exoncands.at(i)->end(); it_exonCands++) {
                     cout<<this->getSeqID(i)<< "\tEC\t"<<"exon\t";
                     if (this->getStrand(i) == plusstrand) {
                         cout<<(*it_exonCands)->begin + offsets[i]+1<<"\t"<<(*it_exonCands)->end + offsets[i]+1<<"\t"<<(*it_exonCands)->score<<"\t";
                         cout<<'+'<<"\t";
-                        //cout<<mod3(3-(exonTypeReadingFrames[(*it_exonCands)->type] - ((*it_exonCands)->end - (*it_exonCands)->begin + 1)))<<"\t";
                     } else {
                         cout<<this->getSeqIDLength(i) - ((*it_exonCands)->end + offsets[i])<<"\t"<<this->getSeqIDLength(i) - ((*it_exonCands)->begin+ offsets[i]) <<"\t";
                         cout<<(*it_exonCands)->score<<"\t"<<'-'<<"\t";
-                        //cout<<mod3(2-(exonTypeReadingFrames[(*it_exonCands)->type]))<<"\t";
+                        //cout<<mod3(2-(exonTypeReadingFrames[(*it_exonCands)->type] - ((*it_exonCands)->end - (*it_exonCands)->begin + 1)))<<"\t";
                     }
-                    cout<<mod3(3-(exonTypeReadingFrames[(*it_exonCands)->type] - ((*it_exonCands)->end - (*it_exonCands)->begin + 1)))<<"\t";
+                    cout<<getGFF3FrameForExon(*it_exonCands)<<"\t";
                     cout<<"Name="<<stateExonTypeIdentifiers[(*it_exonCands)->type]<<endl;
                     //exonCandID[i]++;
                 }
@@ -695,11 +867,13 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, vector<int> offsets) {
             if (this->getStrand(j) == plusstrand) {
                 cout <<oe.orthoex.at(j)->begin + offsets[j]+1<<"\t"<<oe.orthoex.at(j)->end + offsets[j]+1<<"\t"<<oe.orthoex.at(j)->score<<"\t";
                 cout<<'+'<<"\t";
+                //cout<<mod3(3-(exonTypeReadingFrames[oe.orthoex.at(j)->type] - (oe.orthoex.at(j)->end - oe.orthoex.at(j)->begin + 1))) <<"\t";
             } else {
                 cout <<this->getSeqIDLength(j) - (oe.orthoex.at(j)->end + offsets[j])<<"\t"<<this->getSeqIDLength(j) - (oe.orthoex.at(j)->begin + offsets[j])<<"\t";
                 cout<<oe.orthoex.at(j)->score<<"\t"<<'-'<<"\t";
+                //cout<<mod3(2-(exonTypeReadingFrames[oe.orthoex.at(j)->type] - (oe.orthoex.at(j)->end - oe.orthoex.at(j)->begin + 1)))<<"\t";
             }
-            cout<<mod3(3-(exonTypeReadingFrames[oe.orthoex.at(j)->type] - (oe.orthoex.at(j)->end - oe.orthoex.at(j)->begin + 1))) <<"\t";
+            cout<<getGFF3FrameForExon(oe.orthoex.at(j)) <<"\t";
             cout<<"ID="<<orthoExonID<<";Name="<<orthoExonID<<";Note="<<stateExonTypeIdentifiers[oe.orthoex.at(j)->type]<<endl;
         }
     }
@@ -725,6 +899,12 @@ void GeneMSA::closeOutputFiles(){
                 orthoExons_outfiles[i]->close();
                 delete orthoExons_outfiles[i];
             }
+        }
+    }
+    if (pamlFile) {
+        if(pamlFile->is_open()) {
+            pamlFile->close();
+            delete pamlFile;
         }
     }
 }

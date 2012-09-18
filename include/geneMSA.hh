@@ -14,6 +14,7 @@
 #include "exoncand.hh"
 #include "orthoexon.hh"
 #include "phylotree.hh"
+#include "randseqaccess.hh"
 
 
 struct AlignmentBlock {
@@ -27,6 +28,7 @@ public:
     static int orthoExonID; // stores an ID for exons of different species which are orthologous to each other
     static int geneRangeID; // stores an ID for the possible gene ranges of the different species which belong together
     static vector<int> exonCandID; // stores the IDs for exon candidates of different species
+    static ofstream *pamlFile;
     static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles; // pointers to the output files
     list<AlignmentBlock*> alignment;		// list of the alignment parts which possibly belong to a gene segment
     vector< list<ExonCandidate*>* > exoncands;		// exon candidates found in the different species in a gene segment
@@ -61,7 +63,9 @@ public:
     Strand getStrand(int speciesIdx);
     int getStart(int speciesIdx);
     int getEnd(int speciesIdx);
+    int getGFF3FrameForExon(ExonCandidate *ec);
 
+    string reverseString(string text);
     map<string,ExonCandidate*>* addToHash(list<ExonCandidate*> *ec); // adds the keys to the map function
 
     /*
@@ -77,10 +81,13 @@ public:
 
     pair<int,int> getAlignedPosition(AlignSeq* ptr, int pos);	// computes the aligned position of a base in an alignment and the 'block' where the base is found
     int getRealPosition(AlignSeq* ptr, int pos, int idx);	// computes the real position of a base dependent on its position in the alignment
-    void createOrthoExons(vector<int> offsets);	// searches for the orthologue exons of the exon candidates of the reference species
+    void createOrthoExons(RandSeqAccess *rsa, vector<int> offsets);	// searches for the orthologue exons of the exon candidates of the reference species
     list<ExonCandidate*>* getExonCands(int speciesIdx);
     list<OrthoExon> getOrthoExons();
+    vector<ExonCandidate*> cutIncompleteCodons(vector<ExonCandidate*> orthoex);
+    string getAlignedOrthoExon(AlignSeq *as_ptr, ExonCandidate* ec, string seq, vector<int> offsets, int speciesIdx);
     static void openOutputFiles();
+    void printExonsForPamlInput(RandSeqAccess *rsa, vector<int> offsets);
     void printGeneRanges();
     void printExonCands(vector<int> offsets);
     void printOrthoExons(vector<int> offsets);

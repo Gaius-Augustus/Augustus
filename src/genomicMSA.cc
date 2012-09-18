@@ -33,6 +33,10 @@ GeneMSA* GenomicMSA::getNextGene() {
     list<AlignmentBlock*>::iterator it_pos=this->alignment.begin();
     list<AlignmentBlock*>::iterator it_prev=it_pos;
     it_pos++;
+    list<AlignmentBlock*>::iterator it_succ=it_pos;
+    if (it_succ != this->alignment.end()) {
+        it_succ++;
+    }
     for (int i=0; i<(*it_prev)->alignSpeciesTuple.size(); i++) {
         geneStrand.push_back(STRAND_UNKNOWN);
         geneChr.push_back("");
@@ -54,11 +58,27 @@ GeneMSA* GenomicMSA::getNextGene() {
                 }
             }
             // the alignment parts have to be on the same strand, the same seqID and less than "max_intron_length" apart
-            if (((*it_pos)->alignSpeciesTuple.at(i)!=NULL) && geneStrand[i]!=STRAND_UNKNOWN && geneChr[i] != "") {
+            // if there is only a short possible exon part of a species different to the strand or chromosome, it will be ignored
+            if (((*it_pos)->alignSpeciesTuple.at(i)!=NULL) && (geneStrand[i] != STRAND_UNKNOWN) && (geneChr[i] != "")) {
                 if (((*it_pos)->alignSpeciesTuple.at(i)->strand != geneStrand[i]) || ((*it_pos)->alignSpeciesTuple.at(i)->seqID.first != geneChr[i])
                       || ((*it_pos)->alignSpeciesTuple.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0)) {
-                    geneRange=false;
-                    break;
+                    if ((*it_succ)->alignSpeciesTuple.at(i) != NULL) {
+                        if (((*it_succ)->alignSpeciesTuple.at(i)->strand != geneStrand[i]) || ((*it_succ)->alignSpeciesTuple.at(i)->seqID.first != geneChr[i])
+                               || ((*it_succ)->alignSpeciesTuple.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0) || (((*it_pos)->alignSpeciesTuple.at(i)->seqLen) > 1000)) {
+                            geneRange=false;
+                            break;
+                        } else {
+                            if (i != 0) {
+                                (*it_pos)->alignSpeciesTuple.at(i) = NULL;
+                            } else {
+                                geneRange=false;
+                                break;
+                            }
+                        }
+                    } else {
+                        geneRange=false;
+                        break;
+                    }
                 }
             }
             if ((*it_pos)->alignSpeciesTuple.at(i)!=NULL && (*it_prev)->alignSpeciesTuple.at(i)!=NULL) {
@@ -72,6 +92,9 @@ GeneMSA* GenomicMSA::getNextGene() {
         if (geneRange) {
             it_prev=it_pos;
             it_pos++;
+            if (it_succ != this->alignment.end()) {
+                it_succ++;
+            }
         }
     }
     ptr->alignment.assign(this->alignment.begin(),it_pos);
@@ -127,22 +150,8 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
     AlignSeq *ptr;
     AlignmentBlock alignBlock;
     AlignmentBlock *complPtr;
-
-    //read the number of species
-    string speciesfile = Constant::speciesfilenames;
-    ifstream SpeciesnameFile;
-    SpeciesnameFile.open(speciesfile.c_str(), ifstream::in);
-    if (!SpeciesnameFile) {
-        cerr << "Could not find the species name file " << speciesfile<< "." << endl;
-        throw PropertiesError( "GenomicMSA::readAlignment: Could not open this file!" ); //maybe change  PropertiesError
-    }
-    int noSpecies=0;
-    string text;
-    while(getline(SpeciesnameFile,text)) {
-        noSpecies++;
-    }
-    SpeciesnameFile.close();
-    alignBlock.alignSpeciesTuple=vector<AlignSeq*> (noSpecies);
+    vector<string> notExistingSpecies;
+    alignBlock.alignSpeciesTuple=vector<AlignSeq*> (speciesnames.size());
 
     string alignFilename = Constant::alnfile;
     ifstream Alignmentfile;
@@ -154,11 +163,13 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
 
     while (!Alignmentfile.eof()) {
         Alignmentfile>>indifferent;
+        int speciesFound = 0;
         if (indifferent=="s") {
-            for (int i=0; i<noSpecies; i++) {
+            for (int i=0; i<speciesnames.size(); i++) {
                 alignBlock.alignSpeciesTuple[i]=NULL;
             }
-            for (int j=0; j<noSpecies; j++) {
+            //for (int j=0; j<speciesnames.size(); j++) {
+            while (speciesnames.size() > speciesFound) {
                 if (indifferent!="s") {
                     break;
                 } else {
@@ -167,7 +178,7 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
                     // reads the name of the species and the seqID from the first column
                     Alignmentfile>>completeName;
                     for (int i=0; i<completeName.length(); i++) {
-                        if (completeName[i]=='-') { //real seperator is the point '.' for example hs19.chr21, has to be changed
+                        if ((completeName[i]=='-') || (completeName[i]=='.')) { //real seperator is the point '.' for example hs19.chr21, has to be changed
                             ptr->name=completeName.substr(0,i);
                             ptr->seqID.first=completeName.substr(i+1,completeName.length()- 1);
                             ptr->seqID.first=ptr->seqID.first.erase(ptr->seqID.first.find_first_of("("),ptr->seqID.first.length()-1); // version for vergl_syn testfile
@@ -179,11 +190,26 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
                         }
                     }
                     for (int i=0; i<speciesnames.size(); i++) {
-                        if (speciesnames[i]==ptr->name) {
+                        if (speciesnames[i] == ptr->name) {
                             index=i;
                             break;
                         } else if (i == (speciesnames.size() - 1)) {
-                            cout<<"species "<<ptr->name<<" isn't included in the dataset"<<endl;
+                            index = -1;
+                            if (notExistingSpecies.empty()) {
+                                notExistingSpecies.push_back(ptr->name);
+                            } else {
+                                bool found = false;
+                                for (int k=0; k<notExistingSpecies.size(); k++) {
+                                    if (notExistingSpecies[k] == ptr->name) {
+                                        found =true;
+                                        break;
+                                    }
+                                }
+                                if (!found) {
+                                    notExistingSpecies.push_back(ptr->name);
+                                    found = false;
+                                }
+                            }
                         }
                     }
                     Alignmentfile>>ptr->offset;
@@ -224,7 +250,10 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
                             }
                         }
                     }
-                    alignBlock.alignSpeciesTuple[index]=ptr;
+                    if (index != -1) {
+                        alignBlock.alignSpeciesTuple[index]=ptr;
+                        speciesFound++;
+                    }
                 }
             }
             complPtr =new AlignmentBlock;
@@ -233,6 +262,14 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
         }
     }
     Alignmentfile.close();
+
+    if (!(notExistingSpecies.empty())) {
+        cout<<endl;
+        for (int i=0; i<notExistingSpecies.size(); i++) {
+            cout<<"species "<<notExistingSpecies[i]<<" isn't included in the tree file"<<endl;
+        }
+        cout<<endl;
+    }
 
     /*for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
 		cout<<"Tuplestart"<<endl;
@@ -272,19 +309,13 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
 void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
     list<AlignmentBlock*>::iterator it_pos=this->alignment.begin();
     list<AlignmentBlock*>::iterator it_prev;
-    //vector<Strand >geneStrand;
-    //vector<string> geneChr;
     list<block>::iterator it_block;
 
     // specieslimit is the percentage of species, which have to be in the alignmentblocks to merge them
     float specieslimit = (*it_pos)->alignSpeciesTuple.size() - (percentSpeciesAligned * (*it_pos)->alignSpeciesTuple.size());
-    /*for (int i=0; i<(*it_pos)->alignSpeciesTuple.size(); i++) {
-        geneStrand.push_back(STRAND_UNKNOWN);
-        geneChr.push_back("");
-    }*/
     for (it_pos=this->alignment.begin(); it_pos!=this->alignment.end(); it_pos++) {
         bool complete=true;
-        bool sameDistance=true;
+        //bool sameDistance=true;
         int distance=-1;
         int emptyBegin=1;
         int geneStart = 0;
@@ -297,6 +328,7 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
         } else {
             while (complete && (it_pos!=this->alignment.end())) {
                 int count=0;
+                bool sameDistance=true;
                 for (int j=0; j<(*it_prev)->alignSpeciesTuple.size(); j++) {
                     if (((*it_prev)->alignSpeciesTuple.at(j)==NULL) || ((*it_pos)->alignSpeciesTuple.at(j)==NULL)) {
                         count++;
@@ -306,13 +338,8 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                         }
                     }
                     if ((*it_prev)->alignSpeciesTuple.at(j)!=NULL) {
-                        /*if ((geneChr[j] == "") && (geneStrand[j] == STRAND_UNKNOWN)) {
-                            geneChr[j] = (*it_prev)->alignSpeciesTuple.at(j)->seqID.first;
-                            geneStrand[j] = (*it_prev)->alignSpeciesTuple.at(j)->strand;
-                        }*/
                         geneChr = (*it_prev)->alignSpeciesTuple.at(j)->seqID.first;
                         geneStrand = (*it_prev)->alignSpeciesTuple.at(j)->strand;
-
                         geneStart = (*it_prev)->alignSpeciesTuple.at(j)->start;
                         geneSeqLen = (*it_prev)->alignSpeciesTuple.at(j)->seqLen;
                     }
@@ -360,6 +387,12 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                                 *cmpStart_ptr = (*it_pos)->alignSpeciesTuple.at(j)->start + ((*it_prev)->alignSpeciesTuple.at(j)->alignLen - (*it_prev)->alignSpeciesTuple.at(j)->seqLen);
                                 (*it_prev)->alignSpeciesTuple.at(j)->cmpStarts.push_back(cmpStart_ptr);
                             }
+                            /*if (((*it_prev)->alignSpeciesTuple.at(j)->start + (*it_prev)->alignSpeciesTuple.at(j)->seqLen) == (*it_pos)->alignSpeciesTuple.at(j)->start) {
+                                it_block = (*it_prev)->alignSpeciesTuple.at(j)->sequence.end();
+                                it_block--;
+                                it_block->length =  it_block->length + (*it_pos)->alignSpeciesTuple.at(j)->sequence.begin()->length;
+                                (*it_pos)->alignSpeciesTuple.at(j)->sequence.pop_front();
+                            }*/
                             for (list<block>::iterator it=(*it_pos)->alignSpeciesTuple.at(j)->sequence.begin(); it!=(*it_pos)->alignSpeciesTuple.at(j)->sequence.end(); it++) {
                                 it->begin=it->begin+((*it_prev)->alignSpeciesTuple.at(j)->alignLen - (*it_prev)->alignSpeciesTuple.at(j)->seqLen);
                                 // maybe have to change that
@@ -371,6 +404,7 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                                     + (*it_pos)->alignSpeciesTuple.at(j)->start - (*it_prev)->alignSpeciesTuple.at(j)->start - (*it_prev)->alignSpeciesTuple.at(j)->seqLen;
                             (*it_prev)->alignSpeciesTuple.at(j)->seqLen = (*it_prev)->alignSpeciesTuple.at(j)->seqLen + (*it_pos)->alignSpeciesTuple.at(j)->seqLen
                                     + (*it_pos)->alignSpeciesTuple.at(j)->start - (*it_prev)->alignSpeciesTuple.at(j)->start - (*it_prev)->alignSpeciesTuple.at(j)->seqLen;
+
                             it_block = (*it_prev)->alignSpeciesTuple.at(j)->sequence.end();
                             (*it_prev)->alignSpeciesTuple.at(j)->sequence.splice(it_block,(*it_pos)->alignSpeciesTuple.at(j)->sequence);
                         } else {

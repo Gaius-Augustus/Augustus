@@ -122,7 +122,7 @@ public:
     void read(ifstream &in);
     void clearCounts();
     char* getSampleDNA();
-    Double getProbThreshold (double q, int numSamples = 1000);
+    Double getProbThreshold (double q, int numSamples = 10000);
 private:
     vector<Double> *windowProbs;
     vector<int>    *windowCounts;

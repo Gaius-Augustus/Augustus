@@ -447,7 +447,7 @@ char* Motif::getSampleDNA() {
 Double Motif::getProbThreshold (double q, int numSamples){
     char* seq;
     vector<Double> all_probs;
-    srand(time(0));
+    srand(1);
     for (int i=0; i<numSamples; i++) {
         seq = getSampleDNA();
         //cout << i << "   " << seq << endl;
