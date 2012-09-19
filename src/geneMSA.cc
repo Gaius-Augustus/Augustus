@@ -730,7 +730,7 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, vector<int> offsets) {
     if (!(this->orthoExonsList.empty())) {
         for (list<OrthoExon>::iterator it_oe = this->orthoExonsList.begin(); it_oe != this->orthoExonsList.end(); it_oe++) {
             int noSpecies = 0;
-            AnnoSequence *seqRange;
+            AnnoSequence *seqRange = NULL;
             vector<int> speciesIdx;
             int alignedOrthoExonLength=0;
             vector<ExonCandidate*> orthoExon = cutIncompleteCodons(it_oe->orthoex);

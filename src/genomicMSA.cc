@@ -64,7 +64,9 @@ GeneMSA* GenomicMSA::getNextGene() {
                       || ((*it_pos)->alignSpeciesTuple.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0)) {
                     if ((*it_succ)->alignSpeciesTuple.at(i) != NULL) {
                         if (((*it_succ)->alignSpeciesTuple.at(i)->strand != geneStrand[i]) || ((*it_succ)->alignSpeciesTuple.at(i)->seqID.first != geneChr[i])
-                               || ((*it_succ)->alignSpeciesTuple.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0) || (((*it_pos)->alignSpeciesTuple.at(i)->seqLen) > 1000)) {
+                               || ((*it_succ)->alignSpeciesTuple.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0) || (((*it_pos)->alignSpeciesTuple.at(i)->seqLen) > 1000)
+                               || ((*it_succ)->alignSpeciesTuple.at(i)->start - (geneStarts[i] +  geneSeqLens[i]) > max_intron_length)
+                               || ((*it_succ)->alignSpeciesTuple.at(i)->start + (*it_succ)->alignSpeciesTuple.at(i)->seqLen - seqStart[i]) > max_GeneMSA_length) {
                             geneRange=false;
                             break;
                         } else {
@@ -82,7 +84,7 @@ GeneMSA* GenomicMSA::getNextGene() {
                 }
             }
             if ((*it_pos)->alignSpeciesTuple.at(i)!=NULL && (*it_prev)->alignSpeciesTuple.at(i)!=NULL) {
-                if (((*it_pos)->alignSpeciesTuple.at(i)->start - ((*it_prev)->alignSpeciesTuple.at(i)->start + (*it_prev)->alignSpeciesTuple.at(i)->seqLen) > max_intron_length)
+                if (((*it_pos)->alignSpeciesTuple.at(i)->start - (geneStarts[i] + geneSeqLens[i]) > max_intron_length)
                     || ((*it_pos)->alignSpeciesTuple.at(i)->start + (*it_pos)->alignSpeciesTuple.at(i)->seqLen - seqStart[i]) > max_GeneMSA_length) {
                     geneRange=false;
                     break;
