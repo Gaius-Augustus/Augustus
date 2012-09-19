@@ -155,9 +155,9 @@ void CompGenePred::start(){
     }
 
     GeneMSA::closeOutputFiles();
-
-    closeOutputFiles(baseGenes);
+#ifdef DEBUG
     closeOutputFiles(initGenes);
+#endif
     closeOutputFiles(optGenes);
 
     // free memory space of tree

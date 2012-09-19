@@ -171,43 +171,64 @@ public:
 	try {
 	    alpha_se = Properties::getdoubleProperty("/MeaPrediction/alpha_SE");
 	} catch (...) {
-	    alpha_se = 0.25;
+	    alpha_se = 0.745;
 	}
 	try {
 	    alpha_si = Properties::getdoubleProperty("/MeaPrediction/alpha_SI");
 	} catch (...) {
-	    alpha_si = 0.25;
+	    alpha_si = 0.3775;
 	}
 	try {
 	    alpha_be = Properties::getdoubleProperty("/MeaPrediction/alpha_BE");
 	} catch (...) {
-	    alpha_be = 0.25;
+	    alpha_be = 0.1;
 	}
 	try {
 	    alpha_bi = Properties::getdoubleProperty("/MeaPrediction/alpha_BI");
 	} catch (...) {
-	    alpha_bi = 0.25;
+	    alpha_bi = 0.01;
 	}
 	try {
 	    r_se = Properties::getdoubleProperty("/MeaPrediction/r_SE");
 	} catch (...) {
-	    r_se = 0.5;
+	    r_se = 0.6;
 	}
 	try {
 	    r_si = Properties::getdoubleProperty("/MeaPrediction/r_SI");
 	} catch (...) {
-	    r_si = 0.5;
+	    r_si = 0.6;
 	}
 	try {
 	    r_be = Properties::getdoubleProperty("/MeaPrediction/r_BE");
 	} catch (...) {
-	    r_be = 0.5;
+	    r_be = 0.6;
 	}
 	try {
 	    r_bi = Properties::getdoubleProperty("/MeaPrediction/r_BI");
 	} catch (...) {
-	    r_bi = 0.5;
+	    r_bi = 0.7;
 	}
+	try {
+	    m_se = Properties::getdoubleProperty("m_SE");
+	} catch (...) {
+	    m_se = 1;
+	}
+	try {
+	    m_si = Properties::getdoubleProperty("m_SI");
+	} catch (...) {
+	    m_si = 1;
+	}
+	try {
+	    m_be = Properties::getdoubleProperty("m_BE");
+	} catch (...) {
+	    m_be = 1;
+	}
+	try {
+	    m_bi = Properties::getdoubleProperty("m_BI");
+	} catch (...) {
+	  m_bi = 1;
+	}
+	
 
 	for(int i = 0; i < seqlength*10; i++)
 	    baseScore.push_back(0);
@@ -245,6 +266,10 @@ public:
     double r_si;
     double r_be;
     double r_bi;
+  double m_se;
+  double m_si;
+  double m_be;
+  double m_bi;
 };
 
 bool compareNodes(Node *first, Node *second);

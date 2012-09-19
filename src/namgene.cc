@@ -94,6 +94,14 @@ NAMGene::NAMGene() {
   } catch (...) {
     mea_prediction = false;
   }
+
+  if(mea_prediction){
+    sampleiterations = 100;
+    alternatives_from_sampling = true;
+    minexonintronprob = 0;
+    minmeanexonintronprob = 0;
+  }
+
   try {
     mea_eval = Properties::getBoolProperty("mea_evaluation");
   } catch (...) {

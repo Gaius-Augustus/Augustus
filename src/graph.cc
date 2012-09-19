@@ -538,23 +538,22 @@ void AugustusGraph::calculateBaseScores(){
 }
 
 double AugustusGraph::setScore(Status *st){
-
-  if(st->score == 0){
-    return 0;
-  }
+  
   if(st->name >= CDS && st->name < intron){
     double s_be = 0;
     for(int pos = st->begin; pos<=st->end; pos++)
       if(getBasetype(st, pos)>=0)
-	s_be += log(baseScore[getBasetype(st, pos)*seqlength + pos]) + r_be;
-    return alpha_se * (log(st->score) + r_se) + alpha_be * s_be;
+        s_be += baseScore[getBasetype(st, pos)*seqlength + pos];
+    s_be /= st->end - st->begin + 1;
+    return alpha_se * (m_se * st->score - r_se) + alpha_be * (m_be * s_be - r_be);
   }
   else{
     double s_bi = 0;
     for(int pos = st->begin; pos<=st->end; pos++)
       if(getBasetype(st, pos)>=0)
-	s_bi += log(baseScore[getBasetype(st, pos)*seqlength + pos]) + r_bi;
-    return alpha_si * (log(st->score) + r_si) + alpha_bi * s_bi;
+        s_bi += baseScore[getBasetype(st, pos)*seqlength + pos];
+    s_bi /= st->end - st->begin + 1;
+    return alpha_si * (m_si * st->score - r_si) + alpha_bi * (m_bi * s_bi - r_bi);
   }
 }
 
