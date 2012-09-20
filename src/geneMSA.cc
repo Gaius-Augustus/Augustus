@@ -349,19 +349,22 @@ void GeneMSA::createExonCands(const char *dna, double assmotifqthresh, double as
         // computing single genes on the reverse strand with at least Constant::min_coding_len
         if (onRStart(dna+i)) {
             ritRCStop=ritRCStop_cur;
-            while ((i<*ritRCStop)&&(ritRCStop!=exonRCStop.rend())){
+            while ((i < *ritRCStop) && (ritRCStop != exonRCStop.rend())){
                 ritRCStop++;
             }
             ritRCStop_cur=ritRCStop;
-            int lmb = orf.leftmostExonBegin(2,i,false);
-            while ((lmb<=*ritRCStop) && (i-*ritRCStop <= max_exon_length) && (ritRCStop!=exonRCStop.rend())) {
-                if ((i-*ritRCStop >= Constant::min_coding_len) && ((i-*ritRCStop)%3 == 0)) {
-                    ec = new ExonCandidate;
-                    ec->begin=*ritRCStop;
-                    ec->end=i + 2;
-                    ec->type=rsingleGene;
-                    candidates->push_back(ec);
-                    break;
+            while ((i-*ritRCStop <= max_exon_length) && (ritRCStop!=exonRCStop.rend())) {
+                if ((i-*ritRCStop)%3 == 0) {
+                    if ((i-*ritRCStop) >= Constant::min_coding_len) {
+                        ec = new ExonCandidate;
+                        ec->begin=*ritRCStop;
+                        ec->end=i + 2;
+                        ec->type=rsingleGene;
+                        candidates->push_back(ec);
+                        break;
+                    } else {
+                        break;
+                    }
                 } else {
                     ritRCStop++;
                 }
@@ -505,7 +508,7 @@ int GeneMSA::getRealPosition(AlignSeq *ptr, int pos, int idx) {
 }
 
 // searches for the orthologue exons of the exon candidates of the reference species
-void GeneMSA::createOrthoExons(RandSeqAccess *rsa, vector<int> offsets) {
+void GeneMSA::createOrthoExons(vector<int> offsets) {
     list<AlignmentBlock*>::iterator it_ab;
     list<ExonCandidate*> cands = *getExonCands(0);
     AlignSeq *as_ptr, *ptr;
@@ -522,10 +525,6 @@ void GeneMSA::createOrthoExons(RandSeqAccess *rsa, vector<int> offsets) {
             oe.orthoex.resize(this->exoncands.size());
         }
         while ((!found) && (it_ab!=this->alignment.end())) {
-            /*while ((it_ab!=this->alignment.end()) && ((*it_ab)->alignSpeciesTuple.at(0) == NULL)) {
-                cout<<"Reference species does not exist in an alignment block!!!"<< endl;
-                it_ab++;
-            }*/
                 if ((*it_ab)->alignSpeciesTuple.at(0)->start > (*ec)->begin + offsets[0] + 1) {
                     //cout<<" exon "<<(*ec)->begin + offsets[0] + 1<<".."<<(*ec)->end + offsets[0] + 1<<" is outside (in front of) the aligned range"<<endl;
                     found=true;
@@ -561,35 +560,13 @@ void GeneMSA::createOrthoExons(RandSeqAccess *rsa, vector<int> offsets) {
                             }
                         }
                         if (hasOrthoExon) {
-
-                            /*vector<ExonCandidate*> orthoExon = cutIncompleteCodons(oe.orthoex);
-                        //vector<string> sequences;
-                        AnnoSequence *seqRange;
-                        for (int i=0; i<orthoExon.size(); i++) {
-                            ptr = (*it_ab)->alignSpeciesTuple.at(i);
-                            if ((orthoExon.at(i) != NULL) && (ptr != NULL)) {
-                                if (this->getStrand(i) == minusstrand) {
-                                    seqRange = rsa->getSeq(this->getName(i), this->getSeqID(i), this->getSeqIDLength(i) - (orthoExon[i]->end + offsets[i] + 1),
-                                                                         this->getSeqIDLength(i) - (orthoExon[i]->begin + offsets[i] + 1), this->getStrand(i));
-                                } else {
-                                    seqRange = rsa->getSeq(this->getName(i), this->getSeqID(i), orthoExon[i]->begin + offsets[i], orthoExon[i]->end + offsets[i], this->getStrand(i));
-                                }
-
-                                string sequence = getAlignedOrthoExon(ptr, orthoExon[i], seqRange->sequence, offsets, i);
-                                cout<<"s "<<sequence<<endl;
-
-                            }
-                        }*/
                             this->orthoExonsList.push_back(oe);
                         }
                     }
                     found=true;
                 } else {
                     it_ab++;
-                    /*if ((*it_ab)->alignSpeciesTuple.at(0) == NULL) {
-                    cout<<"Reference species does not exist in an alignmnet block!!!"<< endl;
-                    break;
-                } else*/ if ((*it_ab)->alignSpeciesTuple.at(0)->start > (*ec)->begin + offsets[0] + 1) {
+                    if ((*it_ab)->alignSpeciesTuple.at(0)->start > (*ec)->begin + offsets[0] + 1) {
                     //cout<<" exon "<<(*ec)->begin + offsets[0] + 1<<".."<<(*ec)->end + offsets[0] + 1<<" hasn't start and end in a coherently aligned sequence"<<endl;
                     it_ab--;
                     found=true;
@@ -750,6 +727,7 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, vector<int> offsets) {
                         seqRange = rsa->getSeq(this->getName(i), this->getSeqID(i), orthoExon[i]->begin + offsets[i], orthoExon[i]->end + offsets[i], this->getStrand(i));
                         alignedOrthoExonLength = getAlignedOrthoExon((*current_it_ab)->alignSpeciesTuple.at(0), orthoExon[0], seqRange->sequence, offsets, 0).length();
                     }
+                    seqRange = rsa->getSeq(this->getName(i), this->getSeqID(i), orthoExon[i]->begin + offsets[i], orthoExon[i]->end + offsets[i], this->getStrand(i));
                     if ((((alignedOrthoExonLength) % 3) == 0) && (alignedOrthoExonLength) == (getAlignedOrthoExon((*current_it_ab)->alignSpeciesTuple.at(i), orthoExon[i], seqRange->sequence, offsets, i).length())) {
                         speciesIdx.push_back(i);
                         noSpecies++;
@@ -757,6 +735,7 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, vector<int> offsets) {
                 }
             }
             if (noSpecies > 1) {
+                cout<<"idx "<<speciesIdx.size()<<endl;
                 //seqRange = rsa->getSeq(this->getName(0), this->getSeqID(0), orthoExon[0]->begin + offsets[0], orthoExon[0]->end + offsets[0], this->getStrand(0));
                 cout<<noSpecies<<"  "<<alignedOrthoExonLength<<endl;
                 for (vector<int>::iterator it = speciesIdx.begin(); it!=speciesIdx.end(); it++) {
@@ -768,7 +747,7 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, vector<int> offsets) {
                         seqRange = rsa->getSeq(this->getName(*it), this->getSeqID(*it), orthoExon[*it]->begin + offsets[*it], orthoExon[*it]->end + offsets[*it], this->getStrand(*it));
                     }
 
-                    if (orthoExon[*it]->type > 7) {
+                    /*if (orthoExon[*it]->type > 7) {
                         char *dna = seqRange->sequence;
                         string seq = dna;
                         int n = strlen(dna);
@@ -776,9 +755,9 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, vector<int> offsets) {
                             seq[j] = wcComplement(*(dna+j));
                         }
                         cout<<reverseString(getAlignedOrthoExon((*current_it_ab)->alignSpeciesTuple.at(*it), orthoExon[(*it)], dna, offsets, (*it)))<<endl;
-                    } else {
+                    } else {*/
                         cout<<getAlignedOrthoExon((*current_it_ab)->alignSpeciesTuple.at(*it), orthoExon[(*it)], seqRange->sequence, offsets, (*it))<<endl;
-                    }
+                    //}
                 }
                 cout<<endl;
             }
