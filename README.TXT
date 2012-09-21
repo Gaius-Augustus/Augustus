@@ -22,8 +22,9 @@
   7.  AUGUSTUS-PPX: PREDICTIONS USING PROTEIN PROFILES
   8.  RETRAINING AUGUSTUS
   9.  WEB-SERVER
-  10. CONTACT ME
-  11. REFERENCES
+  10. MEA: USING THE MAXIMUM EXPECTED ACCURACY APPROACH
+  11. CONTACT ME
+  12. REFERENCES
 
               1. INTRODUCTION
               ---------------
@@ -826,10 +827,15 @@ These can be multi-gene sequences and genes on the reverse strand. However, the 
               9. WEB-SERVER
               -------------
 
-AUGUSTUS can also be run through a web-interface avaible on the AUGUSTUS home page: http://augustus.gobics.de. 
+AUGUSTUS can also be run through a web-interface avaible on the AUGUSTUS home page: http://augustus.gobics.de.
 
+	     10. MEA: USING THE MAXIMUM EXPECTED ACCURACY APPROACH
+ 	     -----------------------------------------------------
 
-              10. CONTACT
+MEA is an alternative decoding approach and is described in the Poster found in docs/MEAposter.pdf.
+For predictions using MEA the corresponding AUGUSTUS parameter has to be turned on: --mea=1
+
+              11. CONTACT
               -----------
 
 In case you find a bug, or miss a desireable feature or need executables for a different platform, need
@@ -841,7 +847,7 @@ bioinf.uni-greifswald.de/trainaugustus
 Please contact Oliver for issues concerning the Protein Profile Extension.
 
 
-              11. REFERENCES
+              12. REFERENCES
               -------------
 
 Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008)
