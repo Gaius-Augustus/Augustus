@@ -48,7 +48,7 @@ void CompGenePred::start(){
     cout << "rate exon gain:\t" << OrthoGraph::tree->evo.getLambda() << endl;
     cout << "phylo factor:\t" << OrthoGraph::tree->evo.getPhyloFactor() <<  "\n-------------------------------" << endl;
 #endif
-  
+
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(".base"); // equivalent to MEA prediction
     vector<int> base_geneid(OrthoGraph::numSpecies, 1); // gene numbering
@@ -132,32 +132,32 @@ void CompGenePred::start(){
         geneRange->printOrthoExons(offsets);
         geneRange->printExonsForPamlInput(rsa, offsets);
         orthograph.all_orthoex = geneRange->getOrthoExons();
-	
-	orthograph.outputGenes(baseGenes,base_geneid);
-	//add score for selective pressure of orthoexons
-	orthograph.addScoreSelectivePressure();
-	//determine initial path
-	orthograph.globalPathSearch();
-	orthograph.outputGenes(initGenes,init_geneid);
+
+        orthograph.outputGenes(baseGenes,base_geneid);
+        //add score for selective pressure of orthoexons
+        orthograph.addScoreSelectivePressure();
+        //determine initial path
+        orthograph.globalPathSearch();
+        orthograph.outputGenes(initGenes,init_geneid);
 
         if(!orthograph.all_orthoex.empty()){
-	    orthograph.pruningAlgor();
-	    orthograph.printCache();
-	    // Iterative optimization of labelings in graphs
-	    orthograph.optimize();
-	}
+            orthograph.pruningAlgor();
+            orthograph.printCache();
+            // Iterative optimization of labelings in graphs
+            orthograph.optimize();
+        }
 
-	// transfer max weight paths to genes + filter + ouput
-	orthograph.outputGenes(optGenes,opt_geneid);
+        // transfer max weight paths to genes + filter + ouput
+        orthograph.outputGenes(optGenes,opt_geneid);*/
 
         offsets.clear();
         delete geneRange;
     }
 
     GeneMSA::closeOutputFiles();
-#ifdef DEBUG
+
     closeOutputFiles(initGenes);
-#endif
+    closeOutputFiles(baseGenes);
     closeOutputFiles(optGenes);
 
     // free memory space of tree
