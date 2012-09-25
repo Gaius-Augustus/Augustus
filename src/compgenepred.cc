@@ -148,7 +148,7 @@ void CompGenePred::start(){
         }
 
         // transfer max weight paths to genes + filter + ouput
-        orthograph.outputGenes(optGenes,opt_geneid);*/
+        orthograph.outputGenes(optGenes,opt_geneid);
 
         offsets.clear();
         delete geneRange;
