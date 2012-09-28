@@ -9,12 +9,12 @@
 
 # Variable definition
 # on greifweb1
-BAMTOOLS = /fs1.cm/katharina/tools/pezmaster31-bamtools-7f8b301
+BAMTOOLS = /home/tonatiuh/Documents/git/bamtools
 INCLUDES = $(BAMTOOLS)/include
 LIBS = $(BAMTOOLS)/lib/libbamtools.a -lz
 SOURCES = bam2hints.cc 
 OBJECTS = $(SOURCES:.cc=.o)
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -p -O0
 
 LINK.cc = g++
 

@@ -539,17 +539,42 @@ int main(int argc, char* argv[])
          << "  --help             -h   show this help text\n"
          << "\n";
     return 0;
-  }
+  } 
 
 
   // open the input BAM file
   BamReader BAM;
 
   if( InFileName == NULL || !BAM.Open(InFileName) )
-  {
-    cerr << "Could not open input BAM file: " << (InFileName ? InFileName : "No input file") << endl;
-    return -1;
-  }
+	{
+	  cerr << "Could not open input BAM file: " << (InFileName ? InFileName : "No input file") << endl;
+	  return -1;
+	}
+
+  // Estimating the right value of the arrays:  PSLb;  PSLq;  PSLt; BlockBegins; BlockEnds and FolOK;
+  // This is done by sweeping through all the alignments and calculating the maxBlock size.
+  cout << "Wait a moment, calculating maximum block size that needs to be allocated... ";
+  int alignmentBlock, maxBlock=0;
+  while (BAM.GetNextAlignment(*pal)) 
+	{ 	
+	  alignmentBlock=0;
+	  // Retrieving maximum number of "blocks" in the BAM file
+	  for( vector<CigarOp>::iterator tempIter = pal->CigarData.begin(); tempIter != pal->CigarData.end(); tempIter++ )
+		{
+		  if(tempIter->Type == 'M' || tempIter->Type == 'X' || tempIter->Type == '=')
+			{
+			  alignmentBlock++;
+			}
+		} 
+
+	  if (alignmentBlock >= maxBlock) maxBlock = alignmentBlock;
+	} // end while
+  cout << "Done" << endl;
+
+  // closing and opening handle of BAM file
+  BAM.Close();
+  BAM.Open(InFileName);
+ 
 
   // check sortedness according to BAM
   SamHeader header = BAM.GetHeader();
@@ -631,15 +656,15 @@ int main(int argc, char* argv[])
   // PSL-like alignment data
   // TODO: ensure sufficient array length / throw overflow warning
   int block;    // index of next matching block, holds the element count of the "PSL?" arrays
-  int PSLb[10];
-  int PSLq[10];
-  int PSLt[10]; // may need to be 'long int' if refseq longer than 400 Mbp
+  int PSLb[maxBlock];
+  int PSLq[maxBlock];
+  int PSLt[maxBlock]; // may need to be 'long int' if refseq longer than 400 Mbp
 
   // filtered block data
   int blockNew;        // index of next filtered block, holds the element count of the following arrays
-  int BlockBegins[10]; // 1-based start coordinates of filtered alignment blocks
-  int BlockEnds[10];   // 1-based end coordinates of filtered alignment blocks
-  bool FolIntOK[10];   // whether the gap following a block is considered an intron
+  int BlockBegins[maxBlock]; // 1-based start coordinates of filtered alignment blocks
+  int BlockEnds[maxBlock];   // 1-based end coordinates of filtered alignment blocks
+  bool FolIntOK[maxBlock];   // whether the gap following a block is considered an intron
 
   set<char*> seenRefSet; // list of already encountered reference sequences to check sortedness
   bool badAlignment;     // alignment quality flag
