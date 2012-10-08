@@ -134,7 +134,7 @@ void CompGenePred::start(){
         geneRange->printExonCands(offsets);
         geneRange->createOrthoExons(offsets);
         geneRange->printOrthoExons(offsets);
-        geneRange->printExonsForPamlInput(rsa, offsets);
+        //geneRange->printExonsForPamlInput(rsa, offsets);
         orthograph.all_orthoex = geneRange->getOrthoExons();
 
         orthograph.outputGenes(baseGenes,base_geneid);
