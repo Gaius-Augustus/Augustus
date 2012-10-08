@@ -14,12 +14,9 @@
  * 18.06.12| Stefanie König| creation of the file
  **********************************************************************/
 
-
 #include "speciesgraph.hh"
 
 void SpeciesGraph::buildGraph(){
-
-    cout << "ec_score\t" << ec_score << endl;
 
     vector< vector<Node*> > neutralLines; //represents the seven neutral lines
 
@@ -132,7 +129,7 @@ void SpeciesGraph::buildGraph(){
     relax();
 
 #ifdef DEBUG
-    //printGraph(speciesname + ".dot");
+    printGraph(speciesname + ".dot");
 #endif
     
 }
@@ -447,39 +444,6 @@ void SpeciesGraph::relax(Node *begin, Node *end){
     next->label = 1;
 
 }
-void Move::initLocalHeadandTail(){
-
-    Node *left = NULL;
-    Node *right = NULL;
-
-    if(nodes.empty() && edges.empty()){
-	throw ProjectError("MoveObject::initLocalHeadandTail(): no nodes and no edges specified in Move");
-    }
-    else if(edges.empty()){
-	left = nodes.front().node;
-	right = nodes.back().node;
-    }
-    else if(nodes.empty()){
-	left =  nodes.front().node;
-	right = edges.back().edge->to;
-    }
-    else{
-	if(compareNodes( edges.back().edge->to, nodes.back().node)){
-	    right = nodes.back().node;
-	}
-	else{
-	    right = edges.front().edge->to;
-	}
-	left = nodes.front().node;
-    }
-    cout <<  graph->getSpeciesname() << endl;
-    if (left->label != right->label)
-	throw ProjectError("Move::initLocalHeadandTail(): either all nodes have label 1 or all node have label 0");
-    else{
-	local_head = graph->getPredExonOnPath(left, step_size);
-	local_tail = graph->getNextExonOnPath(right, step_size);
-    }
-}
 
 Node* SpeciesGraph::getTopSortPred(Node *node){
 
@@ -538,22 +502,24 @@ string SpeciesGraph::getKey(Node *n){
 
 double SpeciesGraph::setScore(Status *st){
 
-    if(st->name >= CDS && st->name < intron){
-	double s_be = 0;
-	for(int pos = st->begin; pos<=st->end; pos++)
-	    if(getBasetype(st, pos)>=0)
-		s_be += baseScore[getBasetype(st, pos)*seqlength + pos] - r_be;
-	updateMaxWeight(alpha_se * (st->score - r_se) + alpha_be * s_be);
-	return alpha_se * (st->score - r_se) + alpha_be * s_be;
-    }
-    else{
-	double s_bi = 0;
-	for(int pos = st->begin; pos<=st->end; pos++)
-	    if(getBasetype(st, pos)>=0)
-		s_bi += baseScore[getBasetype(st, pos)*seqlength + pos] - r_bi;
-	updateMaxWeight(alpha_si * (st->score - r_si) + alpha_bi * s_bi);
-	return alpha_si * (st->score - r_si) + alpha_bi * s_bi;
-    }
+ if(st->name >= CDS && st->name < intron){
+    double s_be = 0;
+    for(int pos = st->begin; pos<=st->end; pos++)
+      if(getBasetype(st, pos)>=0)
+        s_be += baseScore[getBasetype(st, pos)*seqlength + pos];
+    s_be /= st->end - st->begin + 1;
+    updateMaxWeight(alpha_se * (m_se * st->score - r_se) + alpha_be * (m_be * s_be - r_be));
+    return alpha_se * (m_se * st->score - r_se) + alpha_be * (m_be * s_be - r_be);
+  }
+  else{
+    double s_bi = 0;
+    for(int pos = st->begin; pos<=st->end; pos++)
+      if(getBasetype(st, pos)>=0)
+        s_bi += baseScore[getBasetype(st, pos)*seqlength + pos];
+    s_bi /= st->end - st->begin + 1;
+    updateMaxWeight(alpha_si * (m_si * st->score - r_si) + alpha_bi * (m_bi * s_bi - r_bi));
+    return alpha_si * (m_si * st->score - r_si) + alpha_bi * (m_bi * s_bi - r_bi);
+  }
 }
 
 double SpeciesGraph::localChange(Move *move){
@@ -562,23 +528,13 @@ double SpeciesGraph::localChange(Move *move){
     //cout << "\nSpecies: " << speciesname <<"\n\nbefore local change" << endl;
 #endif
     double local_score = - getScorePath(move->getHead(), move->getTail());  //old score of local path
-
-    //printGraph(speciesname + itoa( move->getHead()->begin ) + "_" + itoa( move->getHead()->end ) +"_" + itoa( move->getTail()->begin ) + "_" + itoa( move->getTail()->end )  + ".dot", move->getHead(), move->getTail() ); 
-
     move->addWeights();
- 
     relax(move->getHead(), move->getTail());            // relax edges
-
     move->undoAddWeights();
-
 #ifdef DEBUG
-    // cout << "\nafter local change" << endl;
+    //cout << "\nafter local change" << endl;
 #endif
-
     local_score += getScorePath(move->getHead(), move->getTail());  // new score of local path
-
-    //printGraph(speciesname + itoa(move->getHead()->begin) + "_" + itoa(move->getHead()->end) +"_" + itoa(move->getTail()->begin) + "_" + itoa(move->getTail()->end)  + "opt.dot", move->getHead(), move->getTail());
-    
     return local_score;
 }
 
@@ -604,27 +560,6 @@ double SpeciesGraph::getScorePath(Node *begin, Node *end){
     return score;
 }
 
-void Move::addWeights(){
-    for (list<MoveNode>::iterator it = nodes.begin(); it != nodes.end(); it++){
-	for (list<Edge>::iterator iter =  it->node->edges.begin(); iter != it->node->edges.end(); iter++){
-	    iter->score += it->weight;
-	}
-    }
-    for (list<MoveEdge>::iterator iter = edges.begin(); iter != edges.end(); iter++){
-	iter->edge->score += iter->weight;
-    }
-}
-void Move::undoAddWeights(){
-    for (list<MoveNode>::iterator it = nodes.begin(); it != nodes.end(); it++){
-	for (list<Edge>::iterator iter =  it->node->edges.begin(); iter != it->node->edges.end(); iter++){
-	    iter->score -= it->weight;
-	}
-    }
-    for (list<MoveEdge>::iterator iter = edges.begin(); iter != edges.end(); iter++){
-	iter->edge->score -= iter->weight;
-    }
-}
-
 void SpeciesGraph::printNode(Node *node){
 
     if(node->n_type >= IR && node->n_type <= minus2){
@@ -645,3 +580,60 @@ void SpeciesGraph::printNode(Node *node){
 	cout << "tail" << endl;
     }
 }
+
+void Move::addWeights(){
+    for (list<MoveNode>::iterator it = nodes.begin(); it != nodes.end(); it++){
+	for (list<Edge>::iterator iter =  it->node->edges.begin(); iter != it->node->edges.end(); iter++){
+	    iter->score += it->weight;
+	}
+    }
+    for (list<MoveEdge>::iterator iter = edges.begin(); iter != edges.end(); iter++){
+	iter->edge->score += iter->weight;
+    }
+}
+
+void Move::undoAddWeights(){
+    for (list<MoveNode>::iterator it = nodes.begin(); it != nodes.end(); it++){
+	for (list<Edge>::iterator iter =  it->node->edges.begin(); iter != it->node->edges.end(); iter++){
+	    iter->score -= it->weight;
+	}
+    }
+    for (list<MoveEdge>::iterator iter = edges.begin(); iter != edges.end(); iter++){
+	iter->edge->score -= iter->weight;
+    }
+}
+
+void Move::initLocalHeadandTail(){
+
+    Node *left = NULL;
+    Node *right = NULL;
+
+    if(nodes.empty() && edges.empty()){
+	throw ProjectError("MoveObject::initLocalHeadandTail(): no nodes and no edges specified in Move");
+    }
+    else if(edges.empty()){
+	left = nodes.front().node;
+	right = nodes.back().node;
+    }
+    else if(nodes.empty()){
+	left =  nodes.front().node;
+	right = edges.back().edge->to;
+    }
+    else{
+	if(compareNodes( edges.back().edge->to, nodes.back().node)){
+	    right = nodes.back().node;
+	}
+	else{
+	    right = edges.front().edge->to;
+	}
+	left = nodes.front().node;
+    }
+    cout <<  graph->getSpeciesname() << endl;
+    if (left->label != right->label)
+	throw ProjectError("Move::initLocalHeadandTail(): either all nodes have label 1 or all node have label 0");
+    else{
+	local_head = graph->getPredExonOnPath(left, step_size);
+	local_tail = graph->getNextExonOnPath(right, step_size);
+    }
+}
+

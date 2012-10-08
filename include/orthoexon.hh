@@ -10,9 +10,9 @@
 #ifndef _ORTHOEXON_HH
 #define _ORTHOEXON_HH
 
-#include "orthograph.hh"
 #include <vector>
 #include <string>
+#include <list>
 
 //forward declarations:
 class ExonCandidate;
@@ -23,23 +23,25 @@ public:
     OrthoExon();
     ~OrthoExon() {};
     //copy with permutation of vector entries
-    OrthoExon(const OrthoExon& other, const vector<size_t> &permutation);
+    OrthoExon(const OrthoExon& other, const std::vector<size_t> &permutation);
 
-    vector<ExonCandidate*> orthoex;
+    std::vector<ExonCandidate*> orthoex;
     //TODO: instead of an attribute write a function getLabelpattern() which returns the current
-    //label pattern
-    string labelpattern;
+    //label pattern. This is the safer way and guarantees to always have the current label pattern.
+    std::string labelpattern;
 };
 
 /*
  * read and write functions for orthologous exons
- * TODO: allow orthologous exons to be on different strands
+ * TODO: - allow orthologous exons to be on different strands
+ *       - substract offset; on reverse strand, start/end positions have to be made relative to the
+ *         reverse complement
  */
-list<OrthoExon> readOrthoExons(string filename); //reads list of orthologous exons from a file
-void writeOrthoExons(const list<OrthoExon> &all_orthoex);
+std::list<OrthoExon> readOrthoExons(std::string filename); //reads list of orthologous exons from a file
+void writeOrthoExons(const std::list<OrthoExon> &all_orthoex);
 
 
-ostream& operator<<(ostream& ostrm, const OrthoExon &ex_tuple);
-istream& operator>>(istream& istrm, OrthoExon& ex_tuple);
+std::ostream& operator<<(std::ostream& ostrm, const OrthoExon &ex_tuple);
+std::istream& operator>>(std::istream& istrm, OrthoExon& ex_tuple);
 
 #endif

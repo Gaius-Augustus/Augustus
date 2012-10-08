@@ -117,7 +117,7 @@ void OrthoGraph::outputGenes(vector<ofstream*> filestreams, vector<int> &geneid)
 		}
 		geneid[pos]++;
 	    }
-	    // print the genes
+	    //print the genes
 	    streambuf *coutbuf = cout.rdbuf(); //save old buf
 	    cout.rdbuf(filestreams[pos]->rdbuf()); //redirect std::cout to species file
 
@@ -150,7 +150,7 @@ void OrthoGraph::optimize(){
 
     //create MoveObjects
 
-    //for now, loop over OrthoExons
+    //for now, loop over OrthoExons and apply majority rule move if possible
     if(!all_orthoex.empty()){
 	for(list<OrthoExon>::iterator orthoex = all_orthoex.begin(); orthoex != all_orthoex.end(); orthoex++){
 	    vector<Move*> orthomove = majorityRuleMove(*orthoex);
@@ -168,16 +168,14 @@ void OrthoGraph::optimize(){
 void OrthoGraph::localMove(vector<Move*> &orthomove){
 
     
-
-
     bool retry = false;  //if true, the move is repeated on a 'larger' subgraph
-    int iter = 0;  // number of current iteration
+    int iter = 0;  // number of current repetition
    
     do{
 
 	if(retry){
 
-	    cout << "iteration:\t" << iter <<"\tshift_size:\t"<<shift_size <<endl;
+	    cout << "repetition:\t" << iter <<"\tshift_size:\t"<<shift_size <<endl;
 
 	    //shift local_heads and local_tails for each species
 	    for(size_t pos = 0; pos < numSpecies; pos++){
@@ -196,8 +194,7 @@ void OrthoGraph::localMove(vector<Move*> &orthomove){
 	double graph_score = 0; //difference between the new and the old scores of the local paths
 	double phylo_score = 0; //diference between the new and the old phylogenetic score
 
-	// determine all OrthoExons in that range
-	
+	// determine all OrthoExons in that range	
 	list<OrthoExon> local_orthoexons = orthoExInRange(orthomove);
  
 	//calculate phylo_score
@@ -231,6 +228,7 @@ void OrthoGraph::localMove(vector<Move*> &orthomove){
 	else{
 	    cout << "undo\n" << endl;
 	    // no improvement, undo local changes by relaxing nodes again this time with original weights
+	    // TODO: has to be replaced by an undo buffer or something similar in future
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(orthomove[pos]){
 		    graphs[pos]->relax(orthomove[pos]->getHead(), orthomove[pos]->getTail());
@@ -487,10 +485,11 @@ void OrthoGraph::addScoreSelectivePressure(){
 	not_oe_penalty = -20;
     }
 
+    // penalize all additional exon candidates and sampled exon candidates with a rel. sampling frequency < 0.7
     for(size_t pos = 0; pos < numSpecies; pos++){
 	if(graphs[pos]){
 	    for(list<Node*>::iterator node = graphs[pos]->nodelist.begin(); node != graphs[pos]->nodelist.end(); node++){
-		if((*node)->n_type > minus2){
+		if( (*node)->n_type == unsampled_exon || ( (*node)->n_type == sampled && ((State*)((*node)->item))->apostprob < 0.7) ){
 		    for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
 			edge->score += not_oe_penalty;
 		    }
@@ -498,15 +497,21 @@ void OrthoGraph::addScoreSelectivePressure(){
 	    }
 	}
     }
-
+    // reward all orthologous exon candidates (sampled exons candidates only if they have a rel. sampling frequency > 0.3) + undo penalty
     if(!all_orthoex.empty()){
 	for(list<OrthoExon>::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(it->orthoex[pos]){
 		    Node* node = graphs[pos]->getNode(it->orthoex[pos]);
 		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
-			iter->score += oe_score - not_oe_penalty;
+			if( node->n_type == unsampled_exon || ( node->n_type == sampled && ((State*)(node->item))->apostprob >= 0.3) ){
+			    iter->score += oe_score;
+			}
+			if( node->n_type == unsampled_exon || ( node->n_type == sampled && ((State*)(node->item))->apostprob < 0.7) ){
+			    iter->score += - not_oe_penalty;
+			}
 		    }
+
 		}
 	    }
 	}

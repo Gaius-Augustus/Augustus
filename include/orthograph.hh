@@ -10,12 +10,10 @@
 #ifndef _ORTHOGRAPH_HH
 #define _ORTHOGRAPH_HH
 
+//project includes
 #include "speciesgraph.hh"
-#include "phylotree.hh"
 #include "orthoexon.hh"
-
-//forward declarations
-class OrthoExon;
+#include "phylotree.hh"
 
 class OrthoGraph{
 
@@ -24,7 +22,6 @@ public:
 	graphs.resize(numSpecies);
 	ptrs_to_alltranscripts.resize(numSpecies);
 	print_change = false;
-
 	try {
 	    maxIterations = Properties::getIntProperty("/CompPred/maxIterations");
 	} catch (...) {
@@ -35,7 +32,6 @@ public:
 	} catch (...) {
 	    shift_size = 1;
 	}
-
     }
     ~OrthoGraph(){
 	for(int i = 0; i < numSpecies; i++){
@@ -52,9 +48,10 @@ public:
     int maxIterations;  // max number a move can be repeated
     int shift_size;     // number of exons local_head/local_tail is shifted to the left/right on the current path
 
-    bool print_change; //only temporary flag
+    bool print_change; // only temporary flag
 
-    void addScoreSelectivePressure(); //adds score for selective pressure to all nodes representing orthologous exons
+    void addScoreSelectivePressure(); //const. reward for orthologous exons and const. penalty for non-orthologous exons. Only temporary until PAML is integrated.
+
     void globalPathSearch(); //determine initial labeling of the graphs
     string getLabelpattern(OrthoExon &ex); //determines the current labelpattern of an orthoex
     void printHTMLgBrowse(OrthoExon &ex);  //temp: html output for gBrowse
@@ -69,23 +66,17 @@ public:
     inline double pruningAlgor(){                    // pruning Algor. for all OrthoExons
 	return pruningAlgor(all_orthoex);
     }               
-    double pruningAlgor(list<OrthoExon> &orthoex);   // pruning Algor. for a list of OrthoExons in a range
+    double pruningAlgor(list<OrthoExon> &orthoex);   // pruning Algor. for a list of OrthoExons
     list<OrthoExon> orthoExInRange(vector<Move*> &orthomove); //determine all OrthoExons in a range
    
-
-
-    //functions to create different types of moves:
-  
+    //functions to create different types of moves 
     /* 
      * majorityRule: if # of 0's in labelpattern of an OrthoExon is smaller than # of 1's,
      * all nodes with the labels 0 are made to 1 and vice versa
      */
     vector<Move*> majorityRuleMove(OrthoExon &orthoex);
 
-    void outputGenes(vector<ofstream*> filestreams, vector<int> &geneid);
-    inline void storePtrsToAlltranscripts(list<Gene> *alltranscripts){
-	this->ptrs_to_alltranscripts.push_back(alltranscripts);
-    }
+    void outputGenes(vector<ofstream*> filestreams, vector<int> &geneid); //output genes + filter
 };
 
 struct Score{
@@ -98,12 +89,12 @@ struct Score{
 };
 
 /*
- * hashfunction storing all label patterns and their Score
+ * hashfunction storing all label patterns and their score
  * labelpattern: string over alphabet {0,1,2}^k, k = # species^k
- * 0 codes for exon in graph, but not part of the maximum weight path
- * 1 codes for exon in graph and part of the maximum weight path
- * 2 codes for exon not in graph: Status* = NULL
- * first digit in string refers to first species in PhyloTree::species, second digit refers to second species, ...
+ * the i-th character in a label pattern is
+ * 0 if the exon in the i-th species has label 0
+ * 1 if the exon in the i-th species has label 1
+ * 2 if exon in the i-th species does not exist
  */
 
 namespace cache{

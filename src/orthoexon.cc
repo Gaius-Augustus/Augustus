@@ -14,6 +14,7 @@
 #include "orthoexon.hh"
 #include "exoncand.hh"
 #include "projectio.hh"
+#include "orthograph.hh"
 #include "types.hh"
 
 #include <fstream>

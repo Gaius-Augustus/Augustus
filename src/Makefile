@@ -569,15 +569,15 @@ randseqaccess.o : \
 
 orthoexon.o : \
 	../include/orthoexon.hh \
+	../include/exoncand.hh \
 	../include/projectio.hh \
+	../include/orthograph.hh \
 	../include/types.hh \
 	orthoexon.cc
 
 orthograph.o : \
 	../include/orthograph.hh \
-	../include/meaPath.hh \
 	../include/mea.hh \
-	../include/namgene.hh \
 	orthograph.cc
 
 genomicMSA.o : \
@@ -606,7 +606,6 @@ scanner/lex.o: \
 phylotree.o: \
 	../include/phylotree.hh \
 	parser/parser.h \
-	../include/orthoexon.hh \
 	../include/properties.hh\
 	phylotree.cc
 

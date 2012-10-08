@@ -29,7 +29,7 @@ private:
     double dist_to_parent;           // branch length to parent
     Treenode *parent;                // parent node
     std::list<Treenode*> children;   // child nodes
-    std::vector<double> alpha;       /* stores dynamic programing variable of pruning algorithm:
+    std::vector<double> alpha;       /* stores dynamic programing variable of the pruning algorithm:
 				      * alpha[i] is the conditional probability of the label pattern 
 				      * in the subtree rooted in this node given this node has label i,
 				      * where i is from the state space { 0,1 }
@@ -44,24 +44,19 @@ public:
 	alpha.resize(2);
     }
     ~Treenode(){}
-
     inline void addDistance(double dist){
 	this->dist_to_parent=dist;
     }
-
     inline void addChild(Treenode *child){
 	child->parent=this;
 	this->children.push_back(child);
     }
-
     inline bool isLeaf() const {
 	return (this->children.empty());
     }
-
     inline bool isRoot() const {
 	return (this->parent == NULL);
     }
-
     void printNode() const;
     double calculateAlphaScore(bool label, ExonEvoModel &evo); // calculates the dynamic programing variables
 
@@ -92,7 +87,7 @@ public:
 private:
     double mu;           // rate for exon loss
     double lambda;       // rate for exon gain
-    double phylo_factor; // parameter to increase/decrease probability
+    double phylo_factor; // tuning parameter to fit phylogenetic score to scores in the graph
 
 
 };

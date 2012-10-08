@@ -8,6 +8,9 @@
  * date    |   author      |  changes
  * --------|---------------|------------------------------------------
  * 07.03.12| Mario Stanke  | creation of the file
+ * 06.10.12|Stefanie König | construction of an OrthoGraph from a set of
+ *         |               | orthologous sequences + integration of
+ *         |               | the optimization method
  **********************************************************************/
 
 #include "compgenepred.hh"
@@ -82,6 +85,7 @@ void CompGenePred::start(){
                 AnnoSequence *seqRange = rsa->getSeq(speciesNames[s], seqID, geneRange->getStart(s), geneRange->getEnd(s), geneRange->getStrand(s));
 #ifdef DEBUG
                 cout << "retrieving sequence:\t" << speciesNames[s] << ":" << geneRange->getSeqID(s) << "\t" << geneRange->getStart(s) << "-" << geneRange->getEnd(s) << "\t";
+
                 if( geneRange->getStrand(s) == plusstrand )
                     cout << "+\t";
                 else
@@ -108,7 +112,7 @@ void CompGenePred::start(){
                         /* build datastructure for graph representation
                          * @stlist : list of all sampled states
                          */
-                        list<Status> stlist;
+			list<Status> stlist;
                         if(!alltranscripts->empty()){
                             buildStatusList(alltranscripts, false, stlist);
                         }
@@ -149,7 +153,6 @@ void CompGenePred::start(){
 
         // transfer max weight paths to genes + filter + ouput
         orthograph.outputGenes(optGenes,opt_geneid);
-
         offsets.clear();
         delete geneRange;
     }
@@ -160,7 +163,6 @@ void CompGenePred::start(){
     closeOutputFiles(baseGenes);
     closeOutputFiles(optGenes);
 
-    // free memory space of tree
     delete OrthoGraph::tree;
 
 }

@@ -3,7 +3,7 @@
  * licence: Artistic Licence, see file LICENCE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  * descr.:  builds a directed acyclic graph from a set of sampled genes.
- *          underlying auxiliary structure of the graph consists of seven
+ *          The underlying auxiliary structure of the graph consists of seven
  *          neutral lines each representing a type of non-coding segment
  *          In comparative gene prediction for each species an object of
  *          this class is created.
@@ -35,7 +35,7 @@ private:
 #endif
     double max_weight; // the max weight of a node/edge in the graph, used as an upper/lower bound
     double ec_score; //temp: until there are real scores for exon candidates
-    ofstream *sampled_exons;
+    ofstream *sampled_exons;        // output file of sampled exons
 
 public:
     SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> &addEx, string name, Strand s, ofstream *se) :
@@ -75,7 +75,7 @@ public:
 	printGraph(filename, head, tail, true);
     }
     /*
-     * @getKey(): if 'node' is a neutral node, then key = PosBegin:n_type
+     * @getKey(): if the node is a neutral node, then key = PosBegin:n_type
      * else key = PosBegin:PosEnd:StateType
      */
     string getKey(Node *n);
@@ -84,7 +84,7 @@ public:
     void addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines);  // adds an exon, which is not sampled
     void addNeutralNodes(Node *node,vector< vector<Node*> > &neutralLines);    // adds neutral nodes and edges to and from an exon
     void addIntron(Node* exon1, Node* exon2, Status *intr);                    // adds a sampled intron
-    void printSampledExon(Node *node);
+    void printSampledExon(Node *node); //prints sampled exons to display them with gBrowse
 
     inline void updateMaxWeight(double weight){
 	if(abs(weight) > max_weight){

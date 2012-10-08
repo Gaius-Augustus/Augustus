@@ -70,7 +70,6 @@ size_t PhyloTree::getVectorPositionSpecies(string name) {
 PhyloTree::PhyloTree(string filename){
 
 #ifdef CPP0X
-
     filebuf fb;
     fb.open(filename.c_str(),ios::in);
     if (fb.is_open()){
@@ -81,7 +80,7 @@ PhyloTree::PhyloTree(string filename){
 #endif
 	/*
 	 * start parsing
-	 * @error_message: if 0 parsing was successful, if 1 input syntax is wrong
+	 * if error_message=0 parsing was successful, if error_message=1 input syntax is wrong
 	 */
 	int error_message = parser.parse();
 	fb.close();
