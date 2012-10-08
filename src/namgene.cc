@@ -95,7 +95,7 @@ NAMGene::NAMGene() {
     mea_prediction = false;
   }
 
-  if(mea_prediction){
+  if(mea_prediction || Constant::MultSpeciesMode){
     sampleiterations = 100;
     alternatives_from_sampling = true;
     minexonintronprob = 0;
