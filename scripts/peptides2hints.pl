@@ -13,7 +13,7 @@
 # cat in.gtf | sort -n -k4 > out.gtf
 # The gtf file contains in its last column an AUGUSTUS transcript
 # descriptor with the following format: 
-# transcript_id "au(\d*).g(\d*).t(\d*)
+# transcript_id "g(\d*).t(\d*)
 #
 # In a gene gtf file, only the features CDS and intron are used.
 # In a six-frame translation gtf file, the feature frame is used.
@@ -68,8 +68,8 @@ while(<GFF>){
 	chomp;
 	$gffL = $_;
 	if(($_=~m/CDS/) or($_=~m/intron/)){
-		$gffL =~ m/transcript_id "au(\d*).g(\d*).t(\d*)"/;
-		$geneName = "au$1.g$2.t$3";
+		$gffL =~ m/transcript_id "g(\d*).t(\d*)"/;
+		$geneName = "g$1.t$2";
 		push (@{$gffHash{$geneName}}, $gffL);
 	}elsif($_=~m/frame/){
 		# muss noch genename für six-Frame einlesen implementieren!

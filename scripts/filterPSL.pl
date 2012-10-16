@@ -211,6 +211,10 @@ if (defined($pairbedfile)){
 
 @insertlen = sort {$a <=> $b} @insertlen;
 
+#foreach(@insertlen){
+#    print STDOUT "Insert\t".$_."\n";
+#}
+
 print STDERR "\n        filtered:\n";
 print STDERR "----------------:\n";
 print STDERR "percent identity: $outMinId\n";

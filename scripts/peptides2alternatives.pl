@@ -24,25 +24,26 @@ if(@ARGV!=2){print STDERR $usage; exit -1;}
 
 my $peptides = $ARGV[0];
 my $allGenes = $ARGV[1];
-my $toBeMapped = "/tmp/tobemapped.fa"; # file with peptides that are still to be mapped, must be writable!
-my $target = "/tmp/target.fa"; # file with proteins to be mapped against, must be writable!
-my $tmpPsl = "/tmp/tmp.psl"; # temporary psl file, must be writable!
-my $blat = "/home/katharina/blat/blat"; # BLAT version on your system
+my $toBeMapped = "tobemapped.fa"; # file with peptides that are still to be mapped, must be writable!
+my $target = "target.fa"; # file with proteins to be mapped against, must be writable!
+my $tmpPsl = "tmp.psl"; # temporary psl file, must be writable!
+my $blat = "/usr/local/bin/blat"; # BLAT version on your system
 my @t1; # temporary variable 1
 
+print STDERR "Find number of transcripts\n";
 # identify max number of transcripts
 my $maxT = 0;
 open(GENES, "<", $allGenes) or die "Could not open file $allGenes!\n";
 while(<GENES>){
 	if($_ =~ m/^>/){
 		chomp;
-		$_ =~ m/^>au\d+\.g\d+\.t(\d+)/;
+		$_ =~ m/^>g\d+\.t(\d+)/;
 		if($1 > $maxT){$maxT = $1;}
 	}
 }
 close(GENES) or die "Could not close file $allGenes!\n";
 
-
+print STEDERR "Read peptides for mapping\n";
 # initialize toBeMapped Hash
 my %mapHash = ();
 my $curPep;
@@ -62,13 +63,14 @@ close(PEPTIDES) or die "Could not close peptide file $peptides!\n";
 # for each transcriptNo Do
 my $printFlag = 0;
 my $count;
+print STDERR "Looping from 1 to $maxT with mapping\n";
 for ($count=1; $count<=$maxT; $count++){
 	# get transcripts that are going to be used as mapping target
 	open(GENES, "<", $allGenes) or die "Could not open file $allGenes!\n";
 	open(TARGET, ">", $target) or die "Could not open file $target!\n";
 	while(<GENES>){
 		if($_=~m/^>/){
-			if($_=~m/^>au\d+\.g\d+\.t$count\n/){$printFlag = 1;}else{$printFlag = 0}
+			if($_=~m/^>g\d+\.t$count\n/){$printFlag = 1;}else{$printFlag = 0}
 		}
 		if($printFlag == 1){
 			print TARGET $_;
