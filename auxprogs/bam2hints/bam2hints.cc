@@ -8,6 +8,8 @@
 #include <list>     // data structure for all hints
 #include <set>      // data structure for processed target names
 #include <string.h> // strcmp
+#include <algorithm>
+#include <math.h>
 
 // BAMTools
 #include <api/BamReader.h>
@@ -569,7 +571,7 @@ int main(int argc, char* argv[])
 
 	  if (alignmentBlock >= maxBlock) maxBlock = alignmentBlock;
 	} // end while
-  cout << "Done" << endl;
+  cout << ".. done" << endl;
 
   // closing and opening handle of BAM file
   BAM.Close();
@@ -623,7 +625,12 @@ int main(int argc, char* argv[])
     //RefVector::difference_type SeqInd = RefVecIter - RefSeq.begin(); // fetch index by iterator using pointer difference
 
     //cout << BAM.GetReferenceID(RefVecIter->RefName) << " " << RefVecIter->RefName << " " << RefVecIter->RefLength << endl;
-  }
+  } 
+
+  // Obtaining the maximum reference sequence length
+  int maxRefLen = *max_element(RefLengthByID.begin(),RefLengthByID.end());
+  int maxCovBins = ceil(maxRefLen/10+1.5);
+  // printf("\nmaxCovBins=%d\n", maxCovBins);
 
   // initialize the labelling of hint lists
   hintList.push_back(hintListLabel_t(eplist, "exonpart"));
@@ -669,14 +676,14 @@ int main(int argc, char* argv[])
   set<char*> seenRefSet; // list of already encountered reference sequences to check sortedness
   bool badAlignment;     // alignment quality flag
   int BlockIter;         // index of current block
-  unsigned short int * alnCoverage = new unsigned short int [2]; // alignment coverage data of the current reference sequence
+  unsigned short int * alnCoverage = new unsigned short int [maxCovBins]; // alignment coverage data of the current reference sequence
     // as alternative use STL container vector<unsigned short int>
   int CovIter;           // index of current bin of alignment coverage
   int GapLen;            // length of the gap preceding the current block on the target sequence
   hint_t* hint = new hint_t; // pointer to a new hint, passed to the "add...Hint" routines
 
   //  cout << "size of BamAlignment: " << sizeof(BamAlignment) << endl;
-
+  
 
   while(BAM.GetNextAlignment(*pal))
   {
@@ -685,6 +692,7 @@ int main(int argc, char* argv[])
 
     // increase line count
     Line++;
+
     /*
     // print processing information every 1000 lines
     if(Line % 1000 == 1)
@@ -852,6 +860,7 @@ int main(int argc, char* argv[])
 	delete [] alnCoverage;
 
 	int CovBinCount = RefLengthByID.at(TargetID)/10 + 1; // needed number of entries
+	// cout << "CovBinCount=" << CovBinCount << endl;
 	// allocate alignment coverage array
 	alnCoverage = new(nothrow) unsigned short int [CovBinCount]; // disable exceptions for failures
 	// handle failed allocation
@@ -872,7 +881,10 @@ int main(int argc, char* argv[])
 
 
     // apply a coverage threshold
-
+	// cout << "PSLt[0]/10=" << PSLt[0]/10 << endl;
+	// cout << "(PSLt[block-1]=" << PSLt[block-1] << endl;
+	// cout << "PSLb[block-1]=" << PSLb[block-1] << endl;
+	// cout << "(PSLt[block-1] + PSLb[block-1] - 1)/10=" << (PSLt[block-1] + PSLb[block-1] - 1)/10 << endl;
     // check each 10bp bin for too high abundance of alignments
     for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10; CovIter++)
     {
@@ -883,6 +895,8 @@ int main(int argc, char* argv[])
 	break;
       }
     }
+	// cout << "CovIter=" << CovIter << endl;
+
     if(badAlignment)
     {
       //cerr<<"reached coverage at "<<TargetName<<", position "<<CovIter*10<<"\n";
