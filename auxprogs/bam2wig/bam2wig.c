@@ -4,9 +4,10 @@
    NOTE: 
    Depending on the version of the compiler,  the call to "-lcurses" might have 
    to be replaced to "-lncurses"
- 																			
+ 					
+   Tonatiuh Pena-Centeno														
    Created: 12-June-2012 													
-   Last modified:  9-July-2012												
+   Last modified:   6-November-2012												
 */
 
 
@@ -105,13 +106,6 @@ int main(int argc, char *argv[])
 	bam_header_t *htmp = 0;							 
 	htmp = bam_header_read(data[0]->fp);         	
 
-
-	/* // Verifying file is sorted by target name and coordinate */
-	/* idx = bam_index_core(data[0]->fp); */
-	/* if(idx == 0) { */
-	/* 	fprintf(stderr, "\n[bam2wig] file is not sorted by target name and position.\n"); */
-	/* 	return -1;  */
-	/* }  */
 
 	// parsing region
 	if (reg) 
