@@ -29,7 +29,7 @@ my @t;
 
 open(CEGMA, "<", $ARGV[0]) or die("Could not open CEGMA file $ARGV[0]!\n");
 while(<CEGMA>){
-    if($_=~m/First/){$geneCounter = $geneCounter + 1;}
+    if(($_=~m/First/) or ($_=~m/Single/)){$geneCounter = $geneCounter + 1;}
     if($_=~m/Exon/){
 	chomp;
 	@t = split(/\t/);
