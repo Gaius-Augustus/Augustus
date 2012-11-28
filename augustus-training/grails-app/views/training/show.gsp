@@ -147,7 +147,7 @@
 			<tt>tar -xzvf *.tar.gz</tt><br><br>
 			For unpacking <tt>*.gz</tt> files, e.g. on linux type<br><br>
 			<tt>gunzip *.gz.</tt></p>
-			<p>Further instructions about results contents are given at the <a href="../../trainingtutorial.gsp">Training Tutorial</a> and the <a href="../../predictiontutorial.gsp">Prediction Tutorial</a>.</p>
+			<p>Further instructions about results contents are given at the <a href="../../trainingtutorial.gsp">Training Tutorial</a> and the <a href="../../predictiontutorial.gsp">Prediction Tutorial</a>. Typical error messages from the log files are explained at <a href="../../help.gsp#noResults">Help</a>.</p>
 		</g:if>
 		<hr>
 		<h2><font color="#006699">Messages</font></h2>

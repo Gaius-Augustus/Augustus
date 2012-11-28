@@ -125,9 +125,18 @@
 			<li><b>Did an obvious error occur?</b><br>Please contact <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a> if you are not sure what the error message is telling you.<br>
 			  <p>One frequently occuring error in the AutoAug.err file is the following:</p>
 
-<p>The file with UTR parameters for train****** does not seem to exist. This likely means that the UTR model has not beeen trained yet for train******.</p>
+<p><b>The file with UTR parameters for train****** does not seem to exist.</b> This likely means that the UTR model has not beeen trained yet for train******.</p>
 
 			  <p>This error message tells you that no UTR parameters were trained for your species. If no other error messages are contained above the first UTR error message, the general results of your job are ok, you simply did not get UTR parameters and thus no predictions with UTR.</p>
+
+                          <p><b>Illegal division by zero at /usr/local/augustus/trunks/scripts/autoAugTrain.pl line 241.<br>
+failed to execute: No such file or directory<br></b> This error occurs when not training gene structures were generated/available. This may be caused by one of the following circumstances:<br>
+
+<ul>
+<li>You supplied a genome and protein file. In this case, Scipio was not able to generate any <i>complete</i> gene structures from the data set. In most cases, some <i>incomplete</i> gene structures were produced, but since they frequently cause crashes in the augustus training routine, we do not use them within the web service.</li>
+
+<li>The files that you supplied had long an complex fasta headers. This causes problems with PASA and Scipio. Take care that the fasta headers in all your files are unique, short, do not contain whitespaces or special characters.</li>
+</ul>
 
 </li>
 			<li><b>Did you submitt your job a long time ago and it seems to be "stuck" at the status of "computing"?</b><br>Please contact <a href="mailto:augustus-web@uni-greifswald.de">augustus-web@uni-greifswald.de</a> to inquire whether your job is really still running.</li>
