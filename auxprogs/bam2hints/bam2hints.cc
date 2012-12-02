@@ -886,7 +886,7 @@ int main(int argc, char* argv[])
 	// cout << "PSLb[block-1]=" << PSLb[block-1] << endl;
 	// cout << "(PSLt[block-1] + PSLb[block-1] - 1)/10=" << (PSLt[block-1] + PSLb[block-1] - 1)/10 << endl;
     // check each 10bp bin for too high abundance of alignments
-    for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10; CovIter++)
+    for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
     {
       if(alnCoverage[CovIter] >= MaxCov)
       {
@@ -905,7 +905,7 @@ int main(int argc, char* argv[])
     }
 
     // update the coverage data with the accepted alignment
-    for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10; CovIter++)
+    for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
     {
       alnCoverage[CovIter]++;
     }
