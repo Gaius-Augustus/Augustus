@@ -1,5 +1,6 @@
 // Convert mRNA-to-genome alignments in BAM format into a hint file for AUGUSTUS in gff format.
 // Sebastian Adler, 2011-09-27
+// Some fixed patched by Tonatiuh Pena-Centeno,  2-December-2012
 
 #include <stdio.h>
 #include <string.h>
