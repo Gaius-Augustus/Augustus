@@ -143,7 +143,7 @@
 			${trainingInstance.results_urls}
 			<p><b>Instructions</b></p>
 			<p>Please download the files listed above by clicking on the links.</p>
-			<p>All files and folders are compressed. To unpack <tt>*.tar.gz</tt> archives, e.g. on linux type<br><br>
+			<p>All files and folders (except for the *.log and *.err file) are compressed. To unpack <tt>*.tar.gz</tt> archives, e.g. on linux type<br><br>
 			<tt>tar -xzvf *.tar.gz</tt><br><br>
 			For unpacking <tt>*.gz</tt> files, e.g. on linux type<br><br>
 			<tt>gunzip *.gz.</tt></p>

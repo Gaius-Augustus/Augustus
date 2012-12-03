@@ -796,6 +796,10 @@ Top of page
 
 <p>To save files on your local system, click the file link with the right mouse button and select "Save Link As..." (or similar).</p>
 
+<p>Unpack *.tar.gz archives locally on your system by typing <tt>tar -xzvf *.tar.gz</tt> into your shell. (You find more information about the software tar at the <a href="http://www.gnu.org/s/tar/">GNU tar website</a>.)</p>
+
+<p>To view a real training output example, <a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/training/show/ff80818136a76dad0136a76edf560001">click here</a>!</p>
+
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
 Top of page
@@ -807,7 +811,13 @@ Top of page
 
 <div id="results_autoAuglog"><h2><a href="#results_autoAuglog">3.1 - The AutoAug.log file</a></h2></div>
 
-<p>This file contains all logging messages of the AUGUSTUS training and prediction processed invoked by the AUGUSTUS training web server application. It is a plain text file, i.e. you should be able to open it with any text editor or even your web browser. In your own interest, you should check the AutoAug.log file for the number of training genes that were generated from you input files (except if you submitted a training gene structure file), for the number UTR training genes, and for gene prediction accuracy.</p>
+<p>This file contains all logging messages of the AUGUSTUS training and prediction processed invoked by the AUGUSTUS training web server application. It is a plain text file, i.e. you should be able to open it with any text editor or even your web browser. In your own interest, you should check the AutoAug.log file for the number of training genes that were generated from your input files (except if you submitted a training gene structure file), for the number UTR training genes, and for gene prediction accuracy.</p>
+
+<p>If your job ran successfully, the log file will contain a line that says <i>1 training set training.gb.train contains x sequences and y genes.</i>. If the number of <i>x</i> is low, you should probably refrain from further using the produced parameter set. From our experience, you need at least a couple of hundreds of training genes in order to obtain good parameter sets. If UTR training was possible, the log file will contain similar information for the number of UTR training examples. Here, you also want to see a number that is at least a couple of hundreds - otherwise do not use the produced UTR parameters for gene prediction.</p>
+
+<p>The log file also contains a line that says <i>1 The accuracy after optimizing without CRF-etraining is z</i>. This accuracy value was obtained from a test gene set that was not used for training computed with the following formula:<br><br>
+3*nucleotide_sensitivity + 2*nucleotide_specificity + 4*exon_sensitivity + 3*exon_specificity + 2*gene_sensitivity + 1*gene_specificity)/15<br><br>
+Commonly observed values at this position range from 40 to 60 percent. If you obtain a very low value, this gives a strong indication that the obtained parameter set is not very useful for predicting genes accurately.</p>
 
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
@@ -827,6 +837,8 @@ Top of page
 <p>The file with UTR parameters for train****** does not seem to exist. This likely means that the UTR model has not beeen trained yet for train******.</p>
 
 <p>This error message tells you that no UTR parameters were trained for your species. If no other error messages are contained above the first UTR error message, the general results of your job are ok, you simply did not get UTR parameters and thus no predictions with UTR.</p>
+
+<p>Further error messages (that e.g. lead to null results) are explained on <a href="help.gsp#noResults">our Help page</a>.</p>
 
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
@@ -897,6 +909,8 @@ The files <b>ab_inito.tar.gz</b> and <b>pred_hints.tar.gz</b> are gene predictio
 <li>*.gff - gene predictions in gff format</li>
 </ul>
 </p>
+
+<p>You find an example for AUGUSTUS prediction gff format at the <a href="help.gsp#results_pred">AUGUSTUS prediction tutorial</a>.</p>
 
 <h4>Files that may optionally be contained in gene prediction archives:</h4>
 <p>

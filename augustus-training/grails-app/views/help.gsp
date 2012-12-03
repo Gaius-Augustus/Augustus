@@ -1,4 +1,4 @@
-<html>
+    <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <meta name="layout" content="main" />
@@ -114,7 +114,9 @@
               <a href="#list">What about that data duplication?</a><br>
               <a href="#accuracy">Why is the prediction accuracy in the genome of my species not as good as I expected?</a><br>
               <a href="#privacy">What about data privacy and security?</a><br>
-              <a href="#commercial">I am not from academia/non-profit. What can I do?</a><br>
+	      <a href="#results_pred">Gene prediction results</a><br>
+	      <a href="#results_train">Training results</a><br>
+              <a href="#commercial">I am not from academia/not non-profit. What can I do?</a><br>
               <a href="#dog">Why do I see a running dog after pressing the submission button?</a><br>
             </p>
             <hr>
@@ -687,6 +689,145 @@ In the beginning, the status page will display that your job has been submitted.
             </p>
             <hr>
             <br>
+	    <div id="results_pred"><h2>Prediction results</h2></div>
+<p>After job computations have finished, you will receive an e-mail (if you supplied an e-mail adress). The job status web page may at this point in time look similar to this:</p>
+
+<p>
+<table border="2" cellspacing="0" cellpadding="0">
+<tr><td><img src="images/prediction-results-example.jpg" alt="image of results example"></td></tr>
+</table>
+</p>
+
+<p>This page should contain the file <b>augustus.tar.gz</b>. Please make a "right click" on the link and select "Save As" (or similar) to save the file on your local harddrive.</p>
+
+<p><b>augustus.tar.gz</b> is a gene prediction archive and its content depends on the input file combination. You can unpack the archive by typing <tt>tar -xzvf *.tar.gz</tt> into your shell. (You find more information about the software tar at the <a href="http://www.gnu.org/s/tar/">GNU tar website</a>.)
+</p>
+
+<h4>Files that are always contained in gene prediction archives:</h4>
+
+<p>
+<ul>
+<li>*.gff - gene predictions in gff format</li>
+</ul>
+<br>
+            <b>Format example AUGUSTUS prediction gff file:</b>
+            <pre class="example">
+# This output was generated with AUGUSTUS (version 2.6).
+# AUGUSTUS is a gene prediction tool for eukaryotes written by Mario Stanke (mario.stanke@uni-greifswald.de)
+# and Oliver Keller (keller@cs.uni-goettingen.de).
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+# reading in the file /var/tmp/augustus/AUG-1855139717/hints.gff ...
+# Setting 1group1gene for E.
+# Sources of extrinsic information: M E 
+# Have extrinsic information about 1 sequences (in the specified range). 
+# Initialising the parameters ...
+# human version. Use default transition matrix.
+# Looks like /var/tmp/augustus/AUG-1855139717/input.fa is in fasta format.
+# We have hints for 1 sequence and for 1 of the sequences in the input set.
+#
+# ----- prediction on sequence number 1 (length = 6483, name = HSACKI10) -----
+#
+# Delete group HintGroup , 5803-5803, mult= 1, priority= -1 1 features
+# Forced unstranded hint group to the only possible strand for 3 groups.
+# Deleted 1 groups because some hint was not satisfiable.
+# Constraints/Hints:
+HSACKI10	anchor	start	182	184	0	+	.	src=M
+HSACKI10	anchor	stop	3058	3060	0	+	.	src=M
+HSACKI10	anchor	dss	4211	4211	0	+	.	src=M
+HSACKI10	b2h	ep	1701	2075	0	.	.	grp=154723761;pri=4;src=E
+HSACKI10	b2h	ep	1716	2300	0	+	.	grp=13907559;pri=4;src=E
+HSACKI10	b2h	ep	1908	2300	0	+	.	grp=154736078;pri=4;src=E
+HSACKI10	b2h	ep	3592	3593	0	+	.	grp=13907559;pri=4;src=E
+HSACKI10	b2h	ep	3836	3940	0	+	.	grp=154736078;pri=4;src=E
+HSACKI10	b2h	ep	5326	5499	0	+	.	grp=27937842;pri=4;src=E
+HSACKI10	b2h	ep	5805	6157	0	+	.	grp=27937842;pri=4;src=E
+HSACKI10	b2h	exon	3142	3224	0	+	.	grp=13907559;pri=4;src=E
+HSACKI10	b2h	exon	3142	3224	0	+	.	grp=154736078;pri=4;src=E
+HSACKI10	b2h	exon	3592	3748	0	+	.	grp=154736078;pri=4;src=E
+HSACKI10	anchor	intronpart	5000	5100	0	+	.	src=M
+HSACKI10	b2h	intron	2301	3141	0	+	.	grp=13907559;pri=4;src=E
+HSACKI10	b2h	intron	2301	3141	0	+	.	grp=154736078;pri=4;src=E
+HSACKI10	b2h	intron	3225	3591	0	+	.	grp=13907559;pri=4;src=E
+HSACKI10	b2h	intron	3225	3591	0	+	.	grp=154736078;pri=4;src=E
+HSACKI10	b2h	intron	3749	3835	0	+	.	grp=154736078;pri=4;src=E
+HSACKI10	b2h	intron	5500	5804	0	+	.	grp=27937842;pri=4;src=E
+HSACKI10	anchor	CDS	6194	6316	0	-	0	src=M
+HSACKI10	anchor	CDSpart	5900	6000	0	+	.	src=M
+# Predicted genes for sequence number 1 on both strands
+# start gene g1
+HSACKI10	AUGUSTUS	gene	182	3060	0.63	+	.	g1
+HSACKI10	AUGUSTUS	transcript	182	3060	0.63	+	.	g1.t1
+HSACKI10	AUGUSTUS	start_codon	182	184	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+HSACKI10	AUGUSTUS	initial	182	225	1	+	0	transcript_id "g1.t1"; gene_id "g1";
+HSACKI10	AUGUSTUS	internal	1691	2300	0.86	+	1	transcript_id "g1.t1"; gene_id "g1";
+HSACKI10	AUGUSTUS	terminal	3049	3060	0.74	+	0	transcript_id "g1.t1"; gene_id "g1";
+HSACKI10	AUGUSTUS	CDS	182	225	1	+	0	transcript_id "g1.t1"; gene_id "g1";
+HSACKI10	AUGUSTUS	CDS	1691	2300	0.86	+	1	transcript_id "g1.t1"; gene_id "g1";
+HSACKI10	AUGUSTUS	CDS	3049	3060	0.74	+	0	transcript_id "g1.t1"; gene_id "g1";
+HSACKI10	AUGUSTUS	stop_codon	3058	3060	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+# coding sequence = [atgatgaaaccctgtctctaccaaaaagacaaaaaattagccagctcaagcaagcactactcttcctcccgcagtggag
+# gaggaggaggaggaggaggatgtggaggaggaggaggagtgtcatccctaagaatttctagcagcaaaggctcccttggtggaggatttagctcaggg
+# gggttcagtggtggctcttttagccgtgggagctctggtgggggatgctttgggggctcatcaggtggctatggaggattaggaggttttggtggagg
+# tagctttcatggaagctatggaagtagcagctttggtgggagttatggaggcagctttggagggggcaatttcggaggtggcagctttggtgggggca
+# gctttggtggaggcggctttggtggaggcggctttggaggaggctttggtggtggatttggaggagatggtggccttctctctggaaatgaaaaagta
+# accatgcagaatctgaatgaccgcctggcttcctacttggacaaagttcgggctctggaagaatcaaactatgagctggaaggcaaaatcaaggagtg
+# gtatgaaaagcatggcaactcacatcagggggagcctcgtgactacagcaaatactacaaaaccatcgatgaccttaaaaatcagagaacaacataa]
+# protein sequence = [MMKPCLYQKDKKLASSSKHYSSSRSGGGGGGGGCGGGGGVSSLRISSSKGSLGGGFSSGGFSGGSFSRGSSGGGCFGG
+# SSGGYGGLGGFGGGSFHGSYGSSSFGGSYGGSFGGGNFGGGSFGGGSFGGGGFGGGGFGGGFGGGFGGDGGLLSGNEKVTMQNLNDRLASYLDKVRAL
+# EESNYELEGKIKEWYEKHGNSHQGEPRDYSKYYKTIDDLKNQRTT]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 20
+# CDS exons: 1/3
+#      E:   1 
+# CDS introns: 0/2
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 0
+# incompatible hint groups: 5
+#      E:   3 (gi|154723761,gi|13907559,gi|154736078)
+#      M:   2 
+# end gene g1
+###         </pre>
+<br>
+Different kinds of information are printed after the hash signs, e.g. the applied AUGUSTUS version and parameter set, predicted coding sequence and amino acid sequence. Predictions and hints are given in tabulator separated gff format, i.e. the first column contains the target sequence, second column contains the source of the feature, third column contains the feature, forth column contains the feature start, fifth column contains the feature end, sixth column contains a score (if applicable), seventh column contains the strand, eightth column contains the reading frame and nineth column contains either for hints the grouping and source information, or for prediction lines the gene/transcript identifier.
+</p>
+
+<h4>Files that may optionally be contained in gene prediction archives:</h4>
+<p>
+<ul>
+<li>*.gtf - gene predictions in gtf format
+<li>*.aa - gene predictions as protein fasta sequences
+<li>*.codingseq - gene predictions as CDS DNA fasta sequences
+<li>*.cdsexons - predicted exons in DNA fasta sequences
+<li>*.mrna - predicted mRNA sequences (with UTRs) in DNA fasta sequences
+<li>*.gbrowse - gene prediction track for the GBrowse genome browser
+</ul>
+</p>
+
+<p><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/prediction/show/ff80818136a76dad0136a76fb00b0002">Click here</a> to view a real AUGUSTUS prediction web service output!</p>
+
+    <p>It is important that you check the results of an AUGUSTUS gene prediction run. Do not trust predictions blindly! Prediction accuracy depends on the input sequence quality, on hints quality and on whether a given parameter set fits to the species of the supplied genomic sequence.</p>	    
+ <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+	    </p>
+            <hr>
+            <br>
+            <div id="results_train"><h2>Training results</h2></div>
+	    <p>You find a detailed description of training results by <a href="trainingtutorial.gsp#results">clicking here</a>. To view a sample output, <a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/training/show/ff80818136a76dad0136a76edf560001">click here</a>!</p>
+ <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
+            <hr>
+            <br>
+
             <div id="commercial"><h2>I am not from academia/non-profit. What can I do?</h2></div>
 		<p>Users who are not from academia or a non-profit organisation, and who are not using our web application for personal purposes, only, have the following options:
 <ul>
@@ -758,4 +899,3 @@ In the beginning, the status page will display that your job has been submitted.
 <!-- ***** Ende: Fuss ***************************************************// -->
 
     </body>
-</html>
