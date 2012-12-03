@@ -99,6 +99,7 @@
               <a href="#species_name">What is the species name?</a><br>
 	      <a href="#email">Why should I give my e-mail address?</a><br>
               <a href="#upload_link">File upload versus web link</a><br>
+	      <a href="#most_common_problem">Instructions for fasta headers</a><br>
               <a href="#which_files">Which files must or can I submit for training AUGUSTUS?</a><br>
               <a href="#which_files_pred">Which files are required for predicting genes in a new genome?</a><br>
               <a href="#genome_file">Genome file</a><br>
@@ -226,7 +227,45 @@ failed to execute: No such file or directory<br></b> This error occurs when not 
             </p>
             <hr>
 	    <br>
-            <div id="which_files"><h2>Which files must or can I submit for training AUGUSTUS?</h2></div>
+	    <div id="most_common_problem"><h2>Instructions for fasta headers</h2></div>
+            <p>We observed that most problems with generating training genes for training AUGUSTUS are caused by fasta headers in the sequence files. Some of the tools in our pipeline will truncate fasta headers if they are too long or contain spaces, or contain special characters. This definitely leads to a lot of warning messages in the AutoAug.err file, and it may also lead to non-unique fasta entry names, which will lead to a crash of the pipeline. We therefore strongly recommend that you adhere to the following rules for fasta headers when using our web services:
+	      <ul>
+		<li>no whitespaces in the headers</li>
+		<li>no special characters in the headers (e.g. <tt>!#@&|;</tt>)</li>
+		<li>make the headers as short as possible</li>
+		<li>let headers not start with a number but with a letter</li>
+		<li>let headers contain letters and numbers, only</li>
+	      </ul>
+	    </p>
+	    <p>In the following we give some header examples that will not cause problems:<br><br>
+	      <tt>>entry1</tt><br>
+	      <tt>>contig1000</tt><br>
+	      <tt>>est20</tt><br>
+	      <tt>>scaffold239</tt>
+	      </p>
+	    <p>The following kinds of headers will cause at least warning messages but probably also a pipeline crash:<br><br>
+	      <tt>>contig1 length=1000 Arabidopsis thaliana</tt><br>
+	      <tt>>gi|123344545|some_protein|some_species</tt><br>
+	      <tt>>Drosophila melanogaster scaffold 10000</tt><br>
+	      </p>
+	    <p>If you have a fasta file with unsuitable headers and you do not know how to modify them automatically, you may use the Perl script <a href="http://bioinf.uni-greifswald.de/bioinf/downloads/simplifyFastaHeaders.pl">simplifyFastaHeaders.pl</a>. After saving it on your local Unix system, first check whether the location of Perl in the first line of the script is correct for your system (<tt>#!/usr/bin/perl</tt>). If Perl is installed in another location, you need to modify that line! Then, execute the script with the following parameters:<br><br>
+<tt>perl simplifyFastaHeaders.pl in.fa nameStem out.fa header.map</tt><br><br>
+<ul>
+<li><tt>in.fa</tt> is the input fasta file, it must already be in valid fasta format</li>
+<li><tt>nameStem</tt> is a character descriptor that will be used as a start for all simplified headers, e.g. <tt>est</tt>, or <tt>contig</tt>, or <tt>protein</tt>, etc. Be aware that fasta headers must always be unique, so choose different nameStems for genome and cDNA and protein file!</li>
+<li>out.fa</li> is the output fasta file with simplified fasta headers, this file can be processed by our web service.</li>
+<li>header.map</li> is a map that contains the simplied header and the original header in a tabular separated format.</li>
+</p>
+<p><b>Why is the simplification of fasta headers not a built in function of the web service?</b> The reason is that we think you should be able to recognize the predictions later on! Gene predictions will be made available in gff format, which contains the sequence name in the first column. Therefore, you should modify the fasta headers yourself, before submitting data to the web service!</p>
+            <p><a href="#seitenanfang">
+              <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
+              Top of page
+            </a>
+            <br>
+            </p>
+            <hr>
+            <br>
+	    <div id="which_files"><h2>Which files must or can I submit for training AUGUSTUS?</h2></div>
             <p>You need to specify
             <ul>
                <li>a <a href="#genome_file">genome file</a> and</li>

@@ -165,7 +165,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                           </tbody> 
                       </table>
                       
-                      <p>There are two options for sequence file (fasta format) transfer:<br>You may <b>either</b> upload data files from your computer <b>or</b> specify web links. &nbsp; <a href="../help.gsp#upload_link"><small>Help</small></a></p>
+                      <p>There are two options for sequence file (fasta format) transfer:<br>You may <b>either</b> upload data files from your computer <b>or</b> specify web links. &nbsp; <a href="../help.gsp#upload_link"><small>Help</small></a><br><br><font color="#FF0000">Please read our <a href="../help.gsp#most_common_problem">instructions about fasta headers</a> before using this web service!</font> Most problems with this web service are caused by a wrong fasta header format!</p>
                       <br>
                       <table>
                          <tbody>
