@@ -180,7 +180,13 @@ sub train{
 	    $genome = checkFile($genome, "fasta", $usage);
 	    $string = find("gff2gbSmallDNA.pl");
 	    chdir "$workDir/training/" or die("Error: could not change directory to $workDir/training/!\n");
-	    
+	    # check whether gff file contains any entries
+	    open(GFFforCounting, "<", $trainingset) or die("Cannot open training gene structure gff file $trainingset!\n");
+		$gffLines++ while (<GFFforCounting>);
+	    close(GFFforCounting) or die("Cannot close training gene structure gff file $trainingset!\n");
+	    if($gffLines==0){
+		print STDERR "Number of lines in gff file was zero! This is likely to cause problems because no training gene genbank entries can be created! etraining will crash when the training gene genbank file is empty!\n";
+	    }
 	    # The GFF-file needs to be sorted such that for each gene or mRNA the exons are in increasing order 
 	    $cmdString="cat $trainingset | perl -pe 's/\t\S*Parent=/\t/' | sort -n -k 4 | sort -s -k 9 | sort -s -k 1,1 > training.gff";
 	    print "3 Running \"$cmdString\" ..." if ($verbose >2);
@@ -788,6 +794,13 @@ sub scipio_conversion{
     print "3 $cmdString ..." if ($verbose>2);
     system("$cmdString")==0 or die("Command aborted.\n");
     print "Finished.\n" if ($verbose>2);
+    # check whether gff file contains any entries                                                                                                                                     
+    open(GFFforCounting, "<", "traingenes.gff") or die("Cannot open training gene structure gff file traingenes.gff!\n");
+    $gffLines++ while (<GFFforCounting>);
+    close(GFFforCounting) or die("Cannot close training gene structure gff file traingenes.gff!\n");
+    if($gffLines==0){
+	 print STDERR "Number of lines in gff file produced by scipio was zero! This is likely to cause problems because no training gene genbank entries can be created! etraining will crash when the training gene genbank file is empty!\n";
+    }
     # finally convert to Genbank format
     $pathstr = find("gff2gbSmallDNA.pl");
     $perlCmdString="perl $pathstr traingenes.gff $genome $flanking_DNA training.gb";
