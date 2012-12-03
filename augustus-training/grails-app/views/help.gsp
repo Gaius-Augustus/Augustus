@@ -253,8 +253,9 @@ failed to execute: No such file or directory<br></b> This error occurs when not 
 <ul>
 <li><tt>in.fa</tt> is the input fasta file, it must already be in valid fasta format</li>
 <li><tt>nameStem</tt> is a character descriptor that will be used as a start for all simplified headers, e.g. <tt>est</tt>, or <tt>contig</tt>, or <tt>protein</tt>, etc. Be aware that fasta headers must always be unique, so choose different nameStems for genome and cDNA and protein file!</li>
-<li>out.fa</li> is the output fasta file with simplified fasta headers, this file can be processed by our web service.</li>
-<li>header.map</li> is a map that contains the simplied header and the original header in a tabular separated format.</li>
+<li><tt>out.fa</tt></li> is the output fasta file with simplified fasta headers, this file can be processed by our web service.</li>
+<li><tt>header.map</tt></li> is a map that contains the simplied header and the original header in a tabular separated format.</li>
+</ul>
 </p>
 <p><b>Why is the simplification of fasta headers not a built in function of the web service?</b> The reason is that we think you should be able to recognize the predictions later on! Gene predictions will be made available in gff format, which contains the sequence name in the first column. Therefore, you should modify the fasta headers yourself, before submitting data to the web service!</p>
             <p><a href="#seitenanfang">
