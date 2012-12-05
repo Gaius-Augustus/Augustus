@@ -366,7 +366,9 @@ if ($cmdpars{'opt_trans_matrix'} eq ''){
 	die("Too many $species_cfg_filename.orig copies. Please delete some.");
     }
 
-    open(SPCCFG, "<$species_cfg_filename") or die ("Could not open $species_cfg_filename");
+    if(-e "$species_cfg_filename"){
+	open(SPCCFG, "<$species_cfg_filename") or die ("Could not open $species_cfg_filename");
+    }else{die "File $species_cfg_filename does not seem to exist!\n";}
     print "Reading in the starting meta parameters from $species_cfg_filename...\n";
     $/="\n";
     @spcfilelines = <SPCCFG>;

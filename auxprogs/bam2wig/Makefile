@@ -9,7 +9,7 @@
 PROGRAM = bam2wig
 SOURCES = $(PROGRAM) bam_index.o 
 OBJECTS = $(SOURCES:.c=.o) 
-SAMTOOLS=/home/tonatiuh/Documents/git/samtools
+SAMTOOLS=/fs1.cm/katharina/tools/samtools/
 INCLUDES=-I$(SAMTOOLS) -I.
 VPATH=$(SAMTOOLS)
 LIBS=$(SAMTOOLS)/libbam.a -lcurses -lm -lz -lpthread
