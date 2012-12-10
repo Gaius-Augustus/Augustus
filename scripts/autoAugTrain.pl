@@ -246,6 +246,9 @@ sub train{
 	$counter_gen++ if(/^     CDS             /);
     }
     close TS;
+    if($counter_gen == 0){
+	die("ERROR: training.gb is empty. Possible reasons:\n\ta) features in a provided training gene structure gff file were not compliant with the autoAug.pl pipeline (for instructions read at e.g. http://bioinf.uni-greifswald.de/augustus-training-0.1/help.gsp#structure\n\tb) Scipio failed to generate training gene structures\n\tThis will cause a crash of the autoAug.pl pipeline!\n");
+    }
     my $ave=$counter_gen/$counter_seq;
     print "1 training.gb contains $counter_seq sequences and $counter_gen genes," if ($verbose>=1);
     print " each sequence contains $ave gene(s) on average.\n" if ($verbose>=1); 
