@@ -17,7 +17,8 @@ int printElapsedTime(int tEnd, int tStart)
   int tElapsed;
   tElapsed = difftime(tEnd, tStart);     
   
-  cout << "Elapsed time: " << setw(3) << tElapsed << " seconds.\n"; 
+  printf("Elapsed time: %.3lf seconds.\n", tElapsed); 
+  // cout << "Elapsed time: " << setw(3) << tElapsed << " seconds.\n"; 
 
   return tElapsed;
 }

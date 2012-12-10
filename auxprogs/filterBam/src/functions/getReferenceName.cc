@@ -15,7 +15,8 @@
 using namespace std;
 using namespace BamTools;
 
-string getReferenceName(vector<RefData> refData, int RefID)
+// string getReferenceName(vector<RefData> refData, int RefID)
+string getReferenceName(const RefVector &refData, int RefID)
 {
 	string refName = "";
 	try {

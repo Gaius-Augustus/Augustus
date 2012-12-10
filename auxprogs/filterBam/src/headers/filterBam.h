@@ -23,7 +23,8 @@ using namespace BamTools;
  
 // For debugging
 string printCigarOperations(vector<CigarOp> cigar);
-string getReferenceName(vector<RefData> refData, int RefID);
+/* string getReferenceName(vector<RefData> refData, int RefID); */
+string getReferenceName(const RefVector &refData, int RefID);
 string getReferenceLength(vector<RefData> refData, int RefID);
 
 // For computing Coverage and Insertions
