@@ -431,7 +431,7 @@ sub construct_training_set{
 	    
 	}
 	close(CONFIG);
-	print "0 Warning: MYSQL_RO_PASSWORD is empty!\n" if (! $MYSQL_RO_PASSWORD);
+	print "0 WARNING: MYSQL_RO_PASSWORD is empty!\n" if (! $MYSQL_RO_PASSWORD);
 	
 	my $dbh;
 	if ($useexisting) {
@@ -622,7 +622,7 @@ sub construct_training_set{
     print "3 The number of all entries that created a problem is $bad_num\n" if ($verbose>=3);
     my $frac=$bad_num/$num_TSC;
     if($frac>=0.5){
-	print "3 Warning: The fraction of all entries that created a problem is ".($bad_num/$num_TSC)."\n" if ($verbose>=3);
+	print "3 WARNING: The fraction of all entries that created a problem is ".($bad_num/$num_TSC)."\n" if ($verbose>=3);
     }
 
     # create file training.gb without erroneous genes
@@ -1105,19 +1105,19 @@ sub check_fasta_headers{
 	chomp;
 	if($_=~m/\s/){
 	    if($spaces == 0){
-		print STDERR "Warning: Detected whitespace in fasta header of file $fastaFile. ".$stdStr;
+		print "1 - WARNING: Detected whitespace in fasta header of file $fastaFile. ".$stdStr;
 		$spaces++;
 	    }
 	}
 	if($_=~m/\|/){
 	    if($orSign == 0){
-		print STDERR "Warning: Detected "|" in fasta header of file $fastaFile. ".$stdStr;
+		print "1 - WARNING: Detected "|" in fasta header of file $fastaFile. ".$stdStr;
 		$orSign++;
 	    }
 	}
 	if($_=!m/[>a-zA-Z0123456789]/){
 	    if($someThingWrongWithHeader==0){
-		print STDERR "Warning: Fasta headers inf file $fastaFile seem to contain non-letter and non-number characters. That means they may contain some kind of special character. ".$stdStr;
+		print "1 - WARNING: Fasta headers inf file $fastaFile seem to contain non-letter and non-number characters. That means they may contain some kind of special character. ".$stdStr;
 		$someThingWrongWithHeader++;
 	    }
 	}
