@@ -802,7 +802,7 @@ sub check_fasta_headers{
         }
         if($_=!m/[>a-zA-Z0123456789]/){
             if($someThingWrongWithHeader==0){
-                print STDERR "Warning: Fasta headers inf file $fastaFile seem to contain non-letter and non-number characters. That means they may contain some kind of special character. ".$stdStr;
+                print STDERR "Warning: Fasta headers in file $fastaFile seem to contain non-letter and non-number characters. That means they may contain some kind of special character. ".$stdStr;
                 $someThingWrongWithHeader++;
             }
         }
