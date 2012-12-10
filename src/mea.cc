@@ -10,7 +10,7 @@ using namespace std;
 /*
  * accuracy criterion that evaluates on gene level (complex but therefore not exact)
  */
-void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures, int n, int strlength){
+void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures, int n, const char* dna){
 
   bool utr;
   try {
@@ -72,7 +72,7 @@ void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures,
  * MEA using graph representation
  */
 
-void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int strlength){
+void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, const char* dna){
 
   if(!alltranscripts->empty()){
 
@@ -90,7 +90,7 @@ void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int str
     buildStatusList(alltranscripts, utr, stlist);
 
     //build Graph
-    AugustusGraph myGraph(&stlist, strlength);
+    AugustusGraph myGraph(&stlist, dna);
     myGraph.buildGraph();
 
     //find shortest path
@@ -369,7 +369,6 @@ void setGeneProperties(Gene *gene){
   gene->codingstart = codStart;
   gene->codingend = codEnd;
   gene->length = codEnd-codStart+1;
-  gene->clength = codlength;
 
   if(utr){
     if(gene->strand == plusstrand){
@@ -400,17 +399,23 @@ void setGeneProperties(Gene *gene){
     }
   }
   if(gene->exons != NULL){
+
+    // determine coding length of aGene
+    gene->clength = 0;
+    for (State* ee = gene->exons; ee != NULL; ee = ee->next)
+	gene->clength += ee->length();
+
     State *lastExon = gene->exons;
     while(lastExon->next)
       lastExon = lastExon->next;
-    int codingFrame;
     if(gene->strand == plusstrand)
-      codingFrame = mod3(gene->exons->frame() - (gene->exons->end - gene->exons->begin + 1) % 3);
-    else
-      codingFrame = mod3(gene->exons->frame() + (gene->exons->end - gene->exons->begin + 1) % 3);    
+     	gene->frame = mod3(gene->exons->frame() - gene->exons->length());
+    else{
+	gene->frame = mod3(gene->exons->frame() + gene->exons->length());
+	gene->frame = mod3(gene->frame - gene->clength + 1);
+    }
     if(gene->exons->truncated == TRUNC_LEFT || !isFirstExon(gene->exons->type) || lastExon->truncated == TRUNC_RIGHT || !isLastExon(lastExon->type)){
 	gene->complete = false;
-	gene->frame = codingFrame;
     } 
   }  
  

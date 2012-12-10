@@ -925,9 +925,9 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
     filteredTranscripts = new list<Gene>;
   } else if (mea_prediction){
     if(mea_eval)
-      getMEAtranscripts(&MEAtranscripts, sampledGeneStructures, sampleiterations, strlen( dna ));
+      getMEAtranscripts(&MEAtranscripts, sampledGeneStructures, sampleiterations, dna);
     else
-      getMEAtranscripts(&MEAtranscripts, alltranscripts, strlen(dna));
+      getMEAtranscripts(&MEAtranscripts, alltranscripts, dna);
     
     /*
      * filter transcripts by probabilities, strand

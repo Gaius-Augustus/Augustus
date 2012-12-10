@@ -39,7 +39,7 @@ private:
 
 public:
     SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> &addEx, string name, Strand s, ofstream *se) :
-	AugustusGraph(states, seq->length),
+	AugustusGraph(states, seq->sequence),
 	seqRange(seq),
 	additionalExons(addEx),
 	speciesname(name),
@@ -68,7 +68,7 @@ public:
      */
     
     void buildGraph();
-    NodeType fromNeutralLine(Node *node);  // returns type of noncoding segment preceding the exon/node
+    list<NodeType> fromNeutralLine(Node *node);  // returns type of noncoding segment preceding the exon/node
     NodeType toNeutralLine(Node *node);    // returns type of noncoding segment suceeding the exon/node
     void printGraph(string filename, Node* begin, Node* end, bool only_sampled = false); // prints graph in dot-format
     inline void printGraph(string filename){

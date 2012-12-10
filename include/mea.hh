@@ -8,8 +8,8 @@
  * interface to AUGUSTUS, getMEAtranscripts() is called in findGenes() : namgene.cc
  */
 
-void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures, int n, int strlength);
-void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, int strlength);
+void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures, int n, const char* dna);
+void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, const char* dna);
 void buildStatusList(list<Gene> *alltranscripts, bool utr, list<Status> &stlist);
 void addToList(State *st, Statename name, list<Status> *slist);
 bool compareStatus(Status first, Status second);

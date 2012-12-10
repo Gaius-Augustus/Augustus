@@ -20,9 +20,10 @@ enum Statename{type_unknown=-1, CDS, utr3, utr5, intron, utr3Intron, utr5Intron}
  * neutral nodes: IR, plus0, plus1, plus2, minus0, minus1, minus2 (for each of the 7 neutral lines one type)
  * NOT_KNOWN: default type, for example head and tail
  */
-#define NUM_NODETYPES 10
+#define NUM_NODETYPES 16
 
-enum NodeType{NOT_KNOWN=-1, IR, plus0, plus1, plus2, minus0, minus1, minus2, sampled, unsampled_exon};
+enum NodeType{NOT_KNOWN=-1, IR, plus0, plus1, plus2, minus0, minus1, minus2, T_plus1, TA_plus2, TG_plus2, T_minus1, C_minus1, YY_minus0, sampled, unsampled_exon};
+
 extern string nodeTypeIdentifiers[NUM_NODETYPES];
 
 class Status;
@@ -156,13 +157,14 @@ protected:
     virtual double setScore(Status *st)=0;
     virtual void calculateBaseScores()=0;
     virtual void printGraph(string filename)=0;   
-    virtual void printGraph2(string filename)=0;   
+    virtual void printGraph2(string filename)=0;  
+    virtual bool mergedStopcodon(Node* exon1, Node* exon2)=0;
 };
 
 class AugustusGraph : public Graph{
 
 public:
-    AugustusGraph(list<Status> *states, int dnalength) : Graph(states), seqlength(dnalength){
+    AugustusGraph(list<Status> *states, const char* dna) : Graph(states), sequence(dna), seqlength(strlen(dna)){
 	try {
 	    utr = Properties::getBoolProperty("UTR");
 	} catch (...) {
@@ -252,7 +254,9 @@ public:
     double setScore(Status *st);
     int getBasetype(Status *st, int pos);
     void printGraph(string filename); 
-    void printGraph2(string filename); 
+    void printGraph2(string filename);
+    bool mergedStopcodon(Node* exon1, Node* exon2);
+    const char* sequence;
     int seqlength;
     vector<double> baseScore;
     bool utr;

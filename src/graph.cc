@@ -106,14 +106,14 @@ bool Graph::edgeExists(Node *e1, Node *e2){
 Node* Graph::addExon(Status *exon, vector<Node*> &neutralLine){
 
   if(!alreadyProcessed(exon)){
-    Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item);
+    Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item, sampled);
     nodelist.push_back(ex);
     addToHash(ex);
 
     if(exonAtGeneStart(exon)){
       // include edge from neutral line to exon
 
-      Node *neut = new Node(ex->begin, ex->begin);
+      Node *neut = new Node(ex->begin, ex->begin, 0.0, NULL, IR);
       Edge intron(ex, false);
       if(!alreadyProcessed(neut)){	
 	neutralLine[ex->begin-min] = neut;
@@ -129,7 +129,7 @@ Node* Graph::addExon(Status *exon, vector<Node*> &neutralLine){
     if(exonAtGeneEnd(exon)){
 	// include edge from exon to neutral line      
 
-      Node *neut = new Node(ex->end, ex->end);
+      Node *neut = new Node(ex->end, ex->end, 0.0, NULL, IR);
       if(!alreadyProcessed(neut)){
 	neutralLine[ex->end-min] = neut;
 	Edge intron(neut, false);
@@ -543,7 +543,7 @@ double AugustusGraph::setScore(Status *st){
     double s_be = 0;
     for(int pos = st->begin; pos<=st->end; pos++)
       if(getBasetype(st, pos)>=0)
-        s_be += baseScore[getBasetype(st, pos)*seqlength + pos];
+	s_be += baseScore[getBasetype(st, pos)*seqlength + pos];
     s_be /= st->end - st->begin + 1;
     return alpha_se * (m_se * st->score - r_se) + alpha_be * (m_be * s_be - r_be);
   }
@@ -551,7 +551,7 @@ double AugustusGraph::setScore(Status *st){
     double s_bi = 0;
     for(int pos = st->begin; pos<=st->end; pos++)
       if(getBasetype(st, pos)>=0)
-        s_bi += baseScore[getBasetype(st, pos)*seqlength + pos];
+	s_bi += baseScore[getBasetype(st, pos)*seqlength + pos];
     s_bi /= st->end - st->begin + 1;
     return alpha_si * (m_si * st->score - r_si) + alpha_bi * (m_bi * s_bi - r_bi);
   }
@@ -840,20 +840,23 @@ StateType Node::castToStateType(){
 }
 
 string nodeTypeIdentifiers[NUM_NODETYPES]=
-  {"IR", "plus0", "plus1", "plus2", "minus0", "minus1", "minus2", "sampled", "unsampled_exon"};
+  {"IR", "plus0", "plus1", "plus2", "minus0", "minus1", "minus2", "T_plus1", "TA_plus2", "TG_plus2", "T_minus1", "C_minus1", "YY_minus0", "sampled", "unsampled_exon"};
 
 //print function for nodes and edges
 ostream& operator<<(ostream& ostrm, Node *node){
 
-  if(node->n_type >= IR){
-    ostrm << node->begin << "\t" << node->end << "\t" << nodeTypeIdentifiers[node->n_type]<< "\t" << node->score;
-  }
-  else if( node->begin == -1)
-    ostrm << "head";
-  else{
-    ostrm << "tail";
-  }
-  return ostrm;
+    if(node->n_type >= IR && node->n_type <= YY_minus0){
+	ostrm << node->begin << "\t" << node->end << "\t" << nodeTypeIdentifiers[node->n_type]<< "\t";
+    }
+    else if(node->n_type >= sampled){
+	ostrm << node->begin << "\t" << node->end << "\t" << stateTypeIdentifiers[node->castToStateType()]<< "\t";
+    }
+    else if( node->begin == -1)
+	ostrm << "head";
+    else{
+	ostrm << "tail";
+    }
+    return ostrm;
 }
 
 ostream& operator<<(ostream& ostrm, const Edge &edge){
@@ -862,4 +865,29 @@ ostream& operator<<(ostream& ostrm, const Edge &edge){
   return ostrm;
 }
 
+bool AugustusGraph::mergedStopcodon(Node* exon1, Node* exon2){
 
+    StateType type = exon1->castToStateType();
+    char* joinedCodon = NULL;
+
+    if(isCodingExon(type) && isCodingExon(exon2->castToStateType())){
+	if(type == initial1 || type == internal1 || type == rterminal1 || type == rinternal1 ){
+	    joinedCodon = newstrcpy(sequence + exon1->end, 1);
+	    strncat(joinedCodon, sequence + exon2->begin, 2);
+	}
+	else if(type == initial2 || type == internal2 ||  type == rterminal0 || type == rinternal0 ){
+	    joinedCodon = newstrcpy(sequence + exon1->end - 1, 2);
+	    strncat(joinedCodon, sequence + exon2->begin, 1);
+	}
+	if(joinedCodon){
+	    if (isOnFStrand(type) && GeneticCode::isStopcodon(joinedCodon) ){
+		return true;
+	    }
+	    if( !isOnFStrand(type) && GeneticCode::isRCStopcodon(joinedCodon) ){
+		return true;
+		}
+	    delete [] joinedCodon;
+	}
+    }
+    return false;
+}
