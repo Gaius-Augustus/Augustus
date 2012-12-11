@@ -29,11 +29,12 @@ public:
     static int geneRangeID; // stores an ID for the possible gene ranges of the different species which belong together
     static vector<int> exonCandID; // stores the IDs for exon candidates of different species
     static ofstream *pamlFile;
-    static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles; // pointers to the output files
+    static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles, omega_outfiles; // pointers to the output files
     list<AlignmentBlock*> alignment;		// list of the alignment parts which possibly belong to a gene segment
     vector< list<ExonCandidate*>* > exoncands;		// exon candidates found in the different species in a gene segment
     vector< map<string, ExonCandidate*>* > existingCandidates;		// stores the keys of the exon candidates for the different species
     list<OrthoExon> orthoExonsList;		// list of orthologue exons found in a gene segment
+    list<OrthoExon> orthoExonsWithOmega; //list of orthologue exons with an computed dN/dS ratio
 
     GeneMSA() {};
     ~GeneMSA(){
@@ -69,29 +70,30 @@ public:
     map<string,ExonCandidate*>* addToHash(list<ExonCandidate*> *ec); // adds the keys to the map function
 
     /*
-     * createExonCands: get all exon candidates
-     * assqthresh, dssqthresh are between 0 and 1 and thresholds for the inclusion of
+     * assmotifqthresh, assqthresh, dssqthresh are between 0 and 1 and thresholds for the inclusion of
      * acceptor/donor splice sites based on the pattern probability
      * assqthresh=0.05 means that only acceptor ss are considered
      * that have a pattern, such that 5% of true splice site patterns have lower probability.
      * The default threshold of 0 means that all splice site patterns are considered.
      */
-    //void createExonCands(const char *dna, float assqthresh, float dssqthresh);
-    void createExonCands(const char *dna, double assmotifqthresh=0.15, double assqthresh=0.3, double dssqthresh=0.7);
-
+    void createExonCands(const char *dna, double assmotifqthresh=0.15, double assqthresh=0.3, double dssqthresh=0.7); // get all exon candidates
+    Double computeSpliceSiteScore(Double exonScore, Double minProb, Double maxProb); //computes the score for the splice sites of an exon candidate
     pair<int,int> getAlignedPosition(AlignSeq* ptr, int pos);	// computes the aligned position of a base in an alignment and the 'block' where the base is found
     int getRealPosition(AlignSeq* ptr, int pos, int idx);	// computes the real position of a base dependent on its position in the alignment
     void createOrthoExons(vector<int> offsets);	// searches for the orthologue exons of the exon candidates of the reference species
     list<ExonCandidate*>* getExonCands(int speciesIdx);
     list<OrthoExon> getOrthoExons();
     vector<ExonCandidate*> cutIncompleteCodons(vector<ExonCandidate*> orthoex);
+    void readOmega(string file);
     string getAlignedOrthoExon(AlignSeq *as_ptr, ExonCandidate* ec, string seq, vector<int> offsets, int speciesIdx);
+    vector <string> getSeqForPaml(AlignmentBlock *it_ab, vector<ExonCandidate*> oe, vector<string> seq, vector<int> offsets, vector<int> speciesIdx);
     static void openOutputFiles();
-    void printExonsForPamlInput(RandSeqAccess *rsa, vector<int> offsets);
     void printGeneRanges();
     void printExonCands(vector<int> offsets);
-    void printOrthoExons(vector<int> offsets);
+    void printOrthoExons(RandSeqAccess *rsa, vector<int> offsets);
     void printSingleOrthoExon(OrthoExon &oe, vector<int> offsets);
+    void printExonWithOmega(vector<int> offsets);
+    void printExonsForPamlInput(RandSeqAccess *rsa,  OrthoExon &oe,  vector<int> offsets);
     static void closeOutputFiles();
 };
 
