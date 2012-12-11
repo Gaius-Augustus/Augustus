@@ -70,8 +70,8 @@ void CompGenePred::start(){
 
     vector<string> speciesNames = OrthoGraph::tree->species;
     GenomicMSA msa;
-    msa.readAlignment(speciesNames);
-    msa.prepareExons();
+    msa.readAlignment(speciesNames);  // reads the alignment
+    msa.prepareExons(); // merges alignment blocks if possible
     vector<int> offsets;
 
     // determine object that holds a sequence range for each species
@@ -102,7 +102,7 @@ void CompGenePred::start(){
                     } else {
                         offsets.push_back(geneRange->getSeqIDLength(s) - (geneRange->getEnd(s)) - 1);
                     }
-                    geneRange->createExonCands(seqRange->sequence); // ToDo:make this reasonable after experience with the data
+                    geneRange->createExonCands(seqRange->sequence); // identifies exon candidates on the sequence
                     list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
 
                     namgene.doViterbiPiecewise(sfc, seqRange, bothstrands); // sampling
@@ -112,7 +112,7 @@ void CompGenePred::start(){
                         /* build datastructure for graph representation
                          * @stlist : list of all sampled states
                          */
-			list<Status> stlist;
+                        list<Status> stlist;
                         if(!alltranscripts->empty()){
                             buildStatusList(alltranscripts, false, stlist);
                         }
@@ -133,8 +133,7 @@ void CompGenePred::start(){
         geneRange->printGeneRanges();
         geneRange->printExonCands(offsets);
         geneRange->createOrthoExons(offsets);
-        geneRange->printOrthoExons(offsets);
-        //geneRange->printExonsForPamlInput(rsa, offsets);
+        geneRange->printOrthoExons(rsa, offsets);
         orthograph.all_orthoex = geneRange->getOrthoExons();
 
         orthograph.outputGenes(baseGenes,base_geneid);
