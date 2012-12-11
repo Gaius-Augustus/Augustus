@@ -68,7 +68,7 @@ struct block {
 
 class ExonCandidate {
 public:
-    ExonCandidate(ExonType s=UNKNOWN_EXON, long int b=0, long int e=0, Double sc=0.0, Double ass_sc=0.0, Double dss_sc=0.0):
+    ExonCandidate(ExonType s=UNKNOWN_EXON, long int b=0, long int e=0, Double sc=0.0, Double ass_sc=1.0, Double dss_sc=1.0):
         type(s),
         begin(b),
         end(e),
@@ -76,6 +76,14 @@ public:
         assScore(ass_sc),
         dssScore(dss_sc)
     {}
+    ExonCandidate(ExonCandidate* other){
+        begin = other->begin;
+        end = other->end;
+        type = other->type;
+        score = other->score;
+        assScore = other->assScore;
+        dssScore = other->dssScore;
+    }
     ~ExonCandidate(){}
     ExonType type;
     int begin, end;
@@ -104,7 +112,6 @@ public:
 };
 
 /*
- * getExonCands: get all exon candidates
  * assqthresh, dssqthresh are between 0 and 1 and thresholds for the inclusion of
  * acceptor/donor splice sites based on the pattern probability
  * assqthresh=0.05 means that only acceptor ss are considered
