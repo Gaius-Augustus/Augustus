@@ -156,7 +156,7 @@ void Graph::addPair(Status *exon1, Status *exon2, vector<Node*> &neutralLine){
     Edge in(e2, false);
     e1->edges.push_back(in);  
   }
-  else if(exon1->next != exon2 && !edgeExists(e1,e2)){
+  else if(exon1->next != exon2 && !edgeExists(e1,e2) && !mergedStopcodon(e1,e2)){
     Edge in(e2, false, setScore(exon1->next), exon1->next->item);
     e1->edges.push_back(in);  
   }
@@ -468,7 +468,7 @@ void Graph::insertIntron(Node *exon1, Node *exon2){
     exon1->edges.push_back(intr);
   }
   //insert compatible edge
-  else{
+  else if(!mergedStopcodon(exon1, exon2)){
     Edge intr(exon2, false);
     exon1->edges.push_back(intr);
   }

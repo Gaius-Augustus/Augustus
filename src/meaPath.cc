@@ -93,7 +93,7 @@ void MEApath::getTopologicalOrdering(){
 
 void MEApath::backtracking(){
 
-  Node *pos = topSort[0];
+  Node *pos = graph->tail;
   meaPath.push_front(pos);
   while(pos->pred != NULL){
     meaPath.push_front(pos->pred);
