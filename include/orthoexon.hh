@@ -29,6 +29,7 @@ public:
     //TODO: instead of an attribute write a function getLabelpattern() which returns the current
     //label pattern. This is the safer way and guarantees to always have the current label pattern.
     std::string labelpattern;
+    int ID;
 };
 
 /*
