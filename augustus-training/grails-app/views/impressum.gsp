@@ -121,7 +121,7 @@
 	<p>December 2011</p>
 
 	<h3>1. Ambit</h3>
-	<p>This impressum applies to pages with the URL http://bioinf.uni-greifswald.de/trainaugustus and http://bioinf.uni-greifswald.de/augustus-training-0.1. </p>
+	<p>This impressum applies to pages with the URL http://bioinf.uni-greifswald.de/trainaugustus and http://bioinf.uni-greifswald.de/webaugustus. </p>
 
 	<h3>2. Content of these web pages</h3>
 	<p>The University of Greifswald does not give any warranty for timeliness, correctness, completeness, runnability or quality of the provided information and services. Liability claims against the university that refer to damages of material or ideal value and that resulted from the usage or non-usage of error-containing and incomplete information, are generally excluded if no verifiable deliberate or coarsely careless behaviour by the university exists.</p>

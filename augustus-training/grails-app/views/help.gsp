@@ -846,7 +846,7 @@ Different kinds of information are printed after the hash signs, e.g. the applie
 </ul>
 </p>
 
-<p><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/prediction/show/ff80818136a76dad0136a76fb00b0002">Click here</a> to view a real AUGUSTUS prediction web service output!</p>
+<p><a href="http://bioinf.uni-greifswald.de/webaugustus/prediction/show/ff80818136a76dad0136a76fb00b0002">Click here</a> to view a real AUGUSTUS prediction web service output!</p>
 
     <p>It is important that you check the results of an AUGUSTUS gene prediction run. Do not trust predictions blindly! Prediction accuracy depends on the input sequence quality, on hints quality and on whether a given parameter set fits to the species of the supplied genomic sequence.</p>	    
  <p><a href="#seitenanfang">
@@ -858,7 +858,7 @@ Different kinds of information are printed after the hash signs, e.g. the applie
             <hr>
             <br>
             <div id="results_train"><h2>Training results</h2></div>
-	    <p>You find a detailed description of training results by <a href="trainingtutorial.gsp#results">clicking here</a>. To view a sample output, <a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/training/show/ff80818136a76dad0136a76edf560001">click here</a>!</p>
+	    <p>You find a detailed description of training results by <a href="trainingtutorial.gsp#results">clicking here</a>. To view a sample output, <a href="http://bioinf.uni-greifswald.de/webaugustus/training/show/ff80818136a76dad0136a76edf560001">click here</a>!</p>
  <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page

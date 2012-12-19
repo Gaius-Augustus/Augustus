@@ -159,7 +159,7 @@ Top of page
 
 <div id="job_submission"><h1><a href="#job_submission">1 - Job Submission in general</a></h1></div>
 
-<p>The pipeline invoked by submitting a job to the AUGUSTUS trainng web server application is complex. The following image gives an overview of processes that will possibly be invoked - depending on the input file combination:</p>
+<p>The pipeline invoked by submitting a job to the AUGUSTUS training web server application is complex. The following image gives an overview of processes that will possibly be invoked - depending on the input file combination:</p>
 
 
 <p>
@@ -798,7 +798,7 @@ Top of page
 
 <p>Unpack *.tar.gz archives locally on your system by typing <tt>tar -xzvf *.tar.gz</tt> into your shell. (You find more information about the software tar at the <a href="http://www.gnu.org/s/tar/">GNU tar website</a>.)</p>
 
-<p>To view a real training output example, <a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/training/show/ff80818136a76dad0136a76edf560001">click here</a>!</p>
+<p>To view a real training output example, <a href="http://bioinf.uni-greifswald.de/webaugustus/training/show/ff80818136a76dad0136a76edf560001">click here</a>!</p>
 
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
