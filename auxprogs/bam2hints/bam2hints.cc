@@ -608,25 +608,27 @@ int main(int argc, char* argv[])
   RefVector RefSeq = BAM.GetReferenceData(); // implicit ID-to-name listing
   RefNameByID.resize(RefSeq.size()); // set the map vector's size to the number of reference sequence entries
   RefLengthByID.resize(RefSeq.size());
-  unsigned int index;
+  // unsigned int index; // Remove TPC
 
-  for( RefVector::iterator RefVecIter = RefSeq.begin(); RefVecIter != RefSeq.end(); RefVecIter++ )
-  {
-    // ensure sufficient length of the map vector (if some indices are skipped)
-    index = BAM.GetReferenceID(RefVecIter->RefName);
-    if(index > RefNameByID.size() - 1)
-    {
-      RefNameByID.resize(index + 1);
-      RefLengthByID.resize(index + 1);
-    }
+  // Remove TPC
+  // for( RefVector::iterator RefVecIter = RefSeq.begin(); RefVecIter != RefSeq.end(); RefVecIter++ )
+  // {
+  //   // ensure sufficient length of the map vector (if some indices are skipped)
+  //   index = BAM.GetReferenceID(RefVecIter->RefName);
+  // 	// cout << "Value of index is: " << index << endl;
+  //   if(index > RefNameByID.size() - 1)
+  //   {
+  //     RefNameByID.resize(index + 1);
+  //     RefLengthByID.resize(index + 1);
+  //   }
 
-    // store the identifier/length in vector entry with index "index"
-    RefNameByID.at(index) = (char*) RefVecIter->RefName.c_str();
-    RefLengthByID.at(index) = RefVecIter->RefLength;
-    //RefVector::difference_type SeqInd = RefVecIter - RefSeq.begin(); // fetch index by iterator using pointer difference
+  //   // store the identifier/length in vector entry with index "index"
+  //   RefNameByID.at(index) = (char*) RefVecIter->RefName.c_str();
+  //   RefLengthByID.at(index) = RefVecIter->RefLength;
+  //   //RefVector::difference_type SeqInd = RefVecIter - RefSeq.begin(); // fetch index by iterator using pointer difference
 
-    //cout << BAM.GetReferenceID(RefVecIter->RefName) << " " << RefVecIter->RefName << " " << RefVecIter->RefLength << endl;
-  } 
+  //   //cout << BAM.GetReferenceID(RefVecIter->RefName) << " " << RefVecIter->RefName << " " << RefVecIter->RefLength << endl;
+  // } 
 
   // Obtaining the maximum reference sequence length
   int maxRefLen = *max_element(RefLengthByID.begin(),RefLengthByID.end());
@@ -640,14 +642,13 @@ int main(int argc, char* argv[])
   hintList.push_back(hintListLabel_t(dsslist, "DSS"));
   hintList.push_back(hintListLabel_t(asslist, "ASS"));
 
-  /*
-  // print reference mapping
-  printf("RefNameByID:\n");
-  for(int rmit = 0; rmit < RefSeq.size(); rmit++)
-  {
-    printf("%2i %s\n", rmit, RefNameByID[rmit]);
-  }
-  */
+  
+  // // print reference mapping
+  // printf("RefNameByID:\n");
+  // for(int rmit = 0; rmit < RefSeq.size(); rmit++)
+  // {
+  //   printf("%2i %s\n", rmit, RefNameByID[rmit]);
+  // }
 
 
   // iterate through the alignments and get hints for the proper ones
@@ -752,45 +753,45 @@ int main(int argc, char* argv[])
 
       if(CIGARiter->Type == 'M' || CIGARiter->Type == 'X' || CIGARiter->Type == '=')
       {
-	// if extension of the previous block is necessary...
-	if(block > 0 &&  PSLt[block-1] + PSLb[block-1] == TOffset && PSLq[block-1] + PSLb[block-1] == QOffset)
-	{
-	  // add this segment to the existing block, update the block length
+  	// if extension of the previous block is necessary...
+  	if(block > 0 &&  PSLt[block-1] + PSLb[block-1] == TOffset && PSLq[block-1] + PSLb[block-1] == QOffset)
+  	{
+  	  // add this segment to the existing block, update the block length
           PSLb[block-1] += CIGARiter->Length;
-	}
-	else
-	{
-	  // create a new block
-	  PSLb[block] = CIGARiter->Length;
-	  PSLq[block] = QOffset;
-	  PSLt[block] = TOffset;
-	  block++;
-	}
+  	}
+  	else
+  	{
+  	  // create a new block
+  	  PSLb[block] = CIGARiter->Length;
+  	  PSLq[block] = QOffset;
+  	  PSLt[block] = TOffset;
+  	  block++;
+  	}
 
-	// set positions in query and target to right after that block
-	QOffset += CIGARiter->Length;
-	TOffset += CIGARiter->Length;
+  	// set positions in query and target to right after that block
+  	QOffset += CIGARiter->Length;
+  	TOffset += CIGARiter->Length;
       }
       else if(CIGARiter->Type == 'H' || CIGARiter->Type == 'S' || CIGARiter->Type == 'P')
       {
-	// ignore clipping (unaligned rad sequence) and padding (gap-to-gap-match used in multiple sequence alignments)
+  	// ignore clipping (unaligned rad sequence) and padding (gap-to-gap-match used in multiple sequence alignments)
       }
       else if(CIGARiter->Type == 'D' || CIGARiter->Type == 'N')
       {
-	// update position in target
-	TOffset += CIGARiter->Length;
+  	// update position in target
+  	TOffset += CIGARiter->Length;
       }
       else if(CIGARiter->Type == 'I')
       {
-	// update position in query
-	QOffset += CIGARiter->Length;
+  	// update position in query
+  	QOffset += CIGARiter->Length;
       }
       else
       {
-	printf("Found unknown CIGAR type %c\n", CIGARiter->Type);
-	// drop alignment and suppress further filtering of blocks
-	badAlignment = true;
-	block = -1;
+  	printf("Found unknown CIGAR type %c\n", CIGARiter->Type);
+  	// drop alignment and suppress further filtering of blocks
+  	badAlignment = true;
+  	block = -1;
       } // end if (recognizing CIGAR type)
     } // end for (parsing of CIGAR string)
 
@@ -818,7 +819,7 @@ int main(int argc, char* argv[])
       printf("Alignment dropped: exceeding max length: ");
       for( vector<CigarOp>::iterator CIGARiter = pal->CigarData.begin(); CIGARiter != pal->CigarData.end(); CIGARiter++ )
       {
-	printf("%i%c",CIGARiter->Length,CIGARiter->Type);
+  	printf("%i%c",CIGARiter->Length,CIGARiter->Type);
       }
       printf("\n");
       */
@@ -836,67 +837,69 @@ int main(int argc, char* argv[])
       // check if there is a proper old target
       if(OldTargetID >= 0) // -1 <-> "*"(unknown reference), -2 <-> uninitialized
       {
-	// check previous occurence of that target
-	if(seenRefSet.find(TargetName) != seenRefSet.end())
-	{
-	  if(IntOnly && Mult)
-	  {
-	    // require sorting and abort
-	    cout << "\nBAM file MUST be sorted by target sequence names when 'intronsonly' and 'mult' options are active\n";
-	    return -1;
-	  }
-	}
-	seenRefSet.insert(TargetName);
+  	// check previous occurence of that target
+  	if(seenRefSet.find(TargetName) != seenRefSet.end())
+  	{
+  	  if(IntOnly && Mult)
+  	  {
+  	    // require sorting and abort
+  	    cout << "\nBAM file MUST be sorted by target sequence names when 'intronsonly' and 'mult' options are active\n";
+  	    return -1;
+  	  }
+  	}
+  	seenRefSet.insert(TargetName);
 
-	// print remaining hints using the remaining TargetName
-	printHints(GFF, "");
+  	// print remaining hints using the remaining TargetName
+  	printHints(GFF, "");
       }
 
       // reset data structures for the new target
       if(TargetID >= 0)
       {
-	TargetName = RefNameByID.at(TargetID); // update target name
+		TargetName = strdup(RefSeq.at(TargetID).RefName.c_str()); // update target name
+  	// TargetName = RefNameByID.at(TargetID); // update target name // Remove TPC
 
-	// free the alignment coverage array
-	delete [] alnCoverage;
+  	// free the alignment coverage array
+  	delete [] alnCoverage;
 
-	int CovBinCount = RefLengthByID.at(TargetID)/10 + 1; // needed number of entries
-	// cout << "CovBinCount=" << CovBinCount << endl;
-	// allocate alignment coverage array
-	alnCoverage = new(nothrow) unsigned short int [CovBinCount]; // disable exceptions for failures
-	// handle failed allocation
-	if(alnCoverage == NULL)
-	{
-	  cout << "Could not allocate memory for " << TargetName << "\n"
-	       << "Aborting!\n";
-	  return -1;
-	}
+  	int CovBinCount = RefSeq.at(TargetID).RefLength/10 + 1; // needed number of entries
+  	// int CovBinCount = RefLengthByID.at(TargetID)/10 + 1; // needed number of entries // Remove TPC
+  	// cout << "CovBinCount=" << CovBinCount << endl;
+  	// allocate alignment coverage array
+  	alnCoverage = new(nothrow) unsigned short int [CovBinCount]; // disable exceptions for failures
+  	// handle failed allocation
+  	if(alnCoverage == NULL)
+  	{
+  	  cout << "Could not allocate memory for " << TargetName << "\n"
+  	       << "Aborting!\n";
+  	  return -1;
+  	}
 
-	// initialize the coverage with zeros
-	for(CovIter = 0; CovIter < CovBinCount; CovIter++)
-	{
-	  alnCoverage[CovIter] = 0;
-	}
+  	// initialize the coverage with zeros
+  	for(CovIter = 0; CovIter < CovBinCount; CovIter++)
+  	{
+  	  alnCoverage[CovIter] = 0;
+  	}
       }
     }
 
 
     // apply a coverage threshold
-	// cout << "PSLt[0]/10=" << PSLt[0]/10 << endl;
-	// cout << "(PSLt[block-1]=" << PSLt[block-1] << endl;
-	// cout << "PSLb[block-1]=" << PSLb[block-1] << endl;
-	// cout << "(PSLt[block-1] + PSLb[block-1] - 1)/10=" << (PSLt[block-1] + PSLb[block-1] - 1)/10 << endl;
+  	// cout << "PSLt[0]/10=" << PSLt[0]/10 << endl;
+  	// cout << "(PSLt[block-1]=" << PSLt[block-1] << endl;
+  	// cout << "PSLb[block-1]=" << PSLb[block-1] << endl;
+  	// cout << "(PSLt[block-1] + PSLb[block-1] - 1)/10=" << (PSLt[block-1] + PSLb[block-1] - 1)/10 << endl;
     // check each 10bp bin for too high abundance of alignments
     for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
     {
       if(alnCoverage[CovIter] >= MaxCov)
       {
-	// stop scanning and ...
-	badAlignment = true;
-	break;
+  	// stop scanning and ...
+  	badAlignment = true;
+  	break;
       }
     }
-	// cout << "CovIter=" << CovIter << endl;
+  	// cout << "CovIter=" << CovIter << endl;
 
     if(badAlignment)
     {
@@ -922,47 +925,47 @@ int main(int argc, char* argv[])
       // get the length of the gap to the former block
       if(blockNew == 0)
       {
-	GapLen = MinIntLen;
+  	GapLen = MinIntLen;
       }
       else
       {
-	GapLen = PSLt[BlockIter] - BlockEnds[blockNew-1] - 1;
+  	GapLen = PSLt[BlockIter] - BlockEnds[blockNew-1] - 1;
       }
-      //printf("        GapLen=%i blockNew=%i MinIntLen=%i MaxIntLen=%i MaxGapLen=%i MaxQGapLen=%i\n", GapLen, blockNew, MinIntLen, MaxIntLen, MaxGapLen, MaxQGapLen);
+      // printf("        GapLen=%i blockNew=%i MinIntLen=%i MaxIntLen=%i MaxGapLen=%i MaxQGapLen=%i\n", GapLen, blockNew, MinIntLen, MaxIntLen, MaxGapLen, MaxQGapLen);
 
       // decide by gap length
       if(MinIntLen <= GapLen && GapLen <= MaxIntLen)
       {
-	// gap represents an intron, add new block
-	BlockBegins[blockNew] = PSLt[BlockIter];
+  	// gap represents an intron, add new block
+  	BlockBegins[blockNew] = PSLt[BlockIter];
         BlockEnds[blockNew] = PSLt[BlockIter] + PSLb[BlockIter] - 1;
-	if(BlockIter < block - 1 && PSLq[BlockIter+1] - PSLq[BlockIter] - PSLb[BlockIter] <= MaxQGapLen)
-	{
-	  FolIntOK[blockNew] = true;
-	}
-	else
-	{
-	  FolIntOK[blockNew] = false;
-	}
-	blockNew++;
+  	if(BlockIter < block - 1 && PSLq[BlockIter+1] - PSLq[BlockIter] - PSLb[BlockIter] <= MaxQGapLen)
+  	{
+  	  FolIntOK[blockNew] = true;
+  	}
+  	else
+  	{
+  	  FolIntOK[blockNew] = false;
+  	}
+  	blockNew++;
       }
       else if(GapLen <= MaxGapLen)
       {
-	// gap represents a deletion in the read, expand former block
-	BlockEnds[blockNew-1] = PSLt[BlockIter] + PSLb[BlockIter] - 1;
+  	// gap represents a deletion in the read, expand former block
+  	BlockEnds[blockNew-1] = PSLt[BlockIter] + PSLb[BlockIter] - 1;
         if(BlockIter < block - 1 && PSLq[BlockIter+1] - PSLq[BlockIter] - PSLb[BlockIter] <= MaxQGapLen)
-	{ 
-	  FolIntOK[blockNew-1] = true;
-	}
+  	{ 
+  	  FolIntOK[blockNew-1] = true;
+  	}
         else
-	{ 
-	  FolIntOK[blockNew-1] = false;
-	}
+  	{ 
+  	  FolIntOK[blockNew-1] = false;
+  	}
       }
       else
       {
-	// gap is not feasible, drop alignment
-	badAlignment = true;
+  	// gap is not feasible, drop alignment
+  	badAlignment = true;
       }
     } // end for
 
@@ -984,84 +987,84 @@ int main(int argc, char* argv[])
       //printf("    Deriving hints\n");
       for(BlockIter=0; BlockIter<blockNew; BlockIter++)
       {
-	if(BlockIter == 0)
-	{
-	  // first block of an alignment
-	  if(blockNew == 1 && !IntOnly)
-	  {
-	    // one-block-alignment, only exonpart hint derivable
-	    if(BlockEnds[BlockIter] - BlockBegins[BlockIter] >= 2*EpCutoff)
-	    {
-	      //printf("        Exonpart %i %i\n", BlockBegins[BlockIter]+EpCutoff, BlockEnds[BlockIter]-EpCutoff);
-	      hint->start = BlockBegins[BlockIter]+EpCutoff;
-	      hint->end = BlockEnds[BlockIter]-EpCutoff;
-	      addExonpartHint(hint);
-	    }
-	  }
-	  else if(BlockEnds[BlockIter] - BlockBegins[BlockIter] + 1 >= MinEndBlockLen)
-	  {
-	    // first block of multi-block-alignment and having a minimum length
-	    if(BlockEnds[BlockIter] - BlockBegins[BlockIter] >= EpCutoff && !IntOnly)
-	    {
-	      // exonpart hint
+  	if(BlockIter == 0)
+  	{
+  	  // first block of an alignment
+  	  if(blockNew == 1 && !IntOnly)
+  	  {
+  	    // one-block-alignment, only exonpart hint derivable
+  	    if(BlockEnds[BlockIter] - BlockBegins[BlockIter] >= 2*EpCutoff)
+  	    {
+  	      //printf("        Exonpart %i %i\n", BlockBegins[BlockIter]+EpCutoff, BlockEnds[BlockIter]-EpCutoff);
+  	      hint->start = BlockBegins[BlockIter]+EpCutoff;
+  	      hint->end = BlockEnds[BlockIter]-EpCutoff;
+  	      addExonpartHint(hint);
+  	    }
+  	  }
+  	  else if(BlockEnds[BlockIter] - BlockBegins[BlockIter] + 1 >= MinEndBlockLen)
+  	  {
+  	    // first block of multi-block-alignment and having a minimum length
+  	    if(BlockEnds[BlockIter] - BlockBegins[BlockIter] >= EpCutoff && !IntOnly)
+  	    {
+  	      // exonpart hint
               //printf("        Exonpart %i %i\n", BlockBegins[BlockIter]+EpCutoff, BlockEnds[BlockIter]);
               hint->start = BlockBegins[BlockIter]+EpCutoff;
-	      hint->end = BlockEnds[BlockIter];
+  	      hint->end = BlockEnds[BlockIter];
               addExonpartHint(hint);
-	    }
-	    if(SSOn && !IntOnly)
-	    {
-	      // SS hints for the following intron (all 4 possibilities)
-	      //printf("        DSS/ASS %i %i\n", BlockEnds[BlockIter]+1, BlockEnds[BlockIter]+1);
+  	    }
+  	    if(SSOn && !IntOnly)
+  	    {
+  	      // SS hints for the following intron (all 4 possibilities)
+  	      //printf("        DSS/ASS %i %i\n", BlockEnds[BlockIter]+1, BlockEnds[BlockIter]+1);
               //printf("        DSS/ASS %i %i\n", BlockBegins[BlockIter+1]-1, BlockBegins[BlockIter+1]-1);
               hint->start = BlockEnds[BlockIter] + 1;
               hint->end = BlockEnds[BlockIter] + 1;
-	      addDSS_Hint(hint);
+  	      addDSS_Hint(hint);
               addASS_Hint(hint);
               hint->start = BlockBegins[BlockIter+1] - 1;
               hint->end = BlockBegins[BlockIter+1] - 1;
               addDSS_Hint(hint);
               addASS_Hint(hint);
-	    }
-	    if(FolIntOK[BlockIter] && (BlockIter < blockNew - 2 || BlockEnds[BlockIter+1] - BlockBegins[BlockIter+1] + 1 >= MinEndBlockLen))
-	    {
+  	    }
+  	    if(FolIntOK[BlockIter] && (BlockIter < blockNew - 2 || BlockEnds[BlockIter+1] - BlockBegins[BlockIter+1] + 1 >= MinEndBlockLen))
+  	    {
               //printf("        Intron %i %i\n", BlockEnds[BlockIter]+1, BlockBegins[BlockIter+1]-1);
-	      hint->start = BlockEnds[BlockIter] + 1;
+  	      hint->start = BlockEnds[BlockIter] + 1;
               hint->end = BlockBegins[BlockIter+1] - 1;
               addIntronHint(hint);
-	    }
-	  }
-	}
-	else if(BlockIter == blockNew - 1 && !IntOnly)
-	{
-	  // last block of multi-block-alignment
-	  if(BlockEnds[BlockIter] - BlockBegins[BlockIter] + 1 >= MinEndBlockLen && BlockEnds[BlockIter] - BlockBegins[BlockIter] >= EpCutoff)
-	  {
-	    //printf("        Exonpart %i %i\n", BlockBegins[BlockIter], BlockEnds[BlockIter]-EpCutoff);
-	    hint->start = BlockBegins[BlockIter];
-	    hint->end = BlockEnds[BlockIter]-EpCutoff;
-	    addExonpartHint(hint);
-	  }
-	}
-	else
-	{
-	  // inner block of an alignment
-	  if(!IntOnly)
-	  {
-	    //printf("        Exon %i %i\n", BlockBegins[BlockIter], BlockEnds[BlockIter]);
-	    hint->start = BlockBegins[BlockIter];
+  	    }
+  	  }
+  	}
+  	else if(BlockIter == blockNew - 1 && !IntOnly)
+  	{
+  	  // last block of multi-block-alignment
+  	  if(BlockEnds[BlockIter] - BlockBegins[BlockIter] + 1 >= MinEndBlockLen && BlockEnds[BlockIter] - BlockBegins[BlockIter] >= EpCutoff)
+  	  {
+  	    //printf("        Exonpart %i %i\n", BlockBegins[BlockIter], BlockEnds[BlockIter]-EpCutoff);
+  	    hint->start = BlockBegins[BlockIter];
+  	    hint->end = BlockEnds[BlockIter]-EpCutoff;
+  	    addExonpartHint(hint);
+  	  }
+  	}
+  	else
+  	{
+  	  // inner block of an alignment
+  	  if(!IntOnly)
+  	  {
+  	    //printf("        Exon %i %i\n", BlockBegins[BlockIter], BlockEnds[BlockIter]);
+  	    hint->start = BlockBegins[BlockIter];
             hint->end = BlockEnds[BlockIter];
             addExonHint(hint);
-	  }
-	  if(FolIntOK[BlockIter] && (BlockIter < blockNew - 2 || BlockEnds[BlockIter+1] - BlockBegins[BlockIter+1] + 1 >= MinEndBlockLen))
-	  {
-	    //printf("        Intron %i %i\n", BlockEnds[BlockIter]+1, BlockBegins[BlockIter+1]-1);
-	    hint->start = BlockEnds[BlockIter] + 1;
-	    hint->end = BlockBegins[BlockIter+1] - 1;
-	    addIntronHint(hint);
-	    if(SSOn && !IntOnly)
-	    {
-	      //printf("        DSS/ASS %i %i\n", BlockEnds[BlockIter]+1, BlockEnds[BlockIter]+1);
+  	  }
+  	  if(FolIntOK[BlockIter] && (BlockIter < blockNew - 2 || BlockEnds[BlockIter+1] - BlockBegins[BlockIter+1] + 1 >= MinEndBlockLen))
+  	  {
+  	    //printf("        Intron %i %i\n", BlockEnds[BlockIter]+1, BlockBegins[BlockIter+1]-1);
+  	    hint->start = BlockEnds[BlockIter] + 1;
+  	    hint->end = BlockBegins[BlockIter+1] - 1;
+  	    addIntronHint(hint);
+  	    if(SSOn && !IntOnly)
+  	    {
+  	      //printf("        DSS/ASS %i %i\n", BlockEnds[BlockIter]+1, BlockEnds[BlockIter]+1);
               //printf("        DSS/ASS %i %i\n", BlockBegins[BlockIter+1]-1, BlockBegins[BlockIter+1]-1);
               hint->start = BlockEnds[BlockIter] + 1;
               hint->end = BlockEnds[BlockIter] + 1;
@@ -1071,9 +1074,9 @@ int main(int argc, char* argv[])
               hint->end = BlockBegins[BlockIter+1] - 1;
               addDSS_Hint(hint);
               addASS_Hint(hint);
- 	    }
-	  }
-	} // end if (figuring out the blocks position)
+  	    }
+  	  }
+  	} // end if (figuring out the blocks position)
       } // end for (looping through blocks)
     } // end if (deriving hints)
 
