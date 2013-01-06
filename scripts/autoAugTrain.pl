@@ -594,7 +594,7 @@ sub trainWithUTR{
 	close(TEMP1);
 	if($count>=150){$m=150}  else {$m=$count};
 	if($count<50){
-		print STDERR "Number of UTR training examples is smaller than 50. Abort UTR training.\n";
+		die( "ERROR: Number of UTR training examples is smaller than 50. Abort UTR training. If this is the only error message, the AUGUSTUS parameters for your species were optimized ok, but you are lacking UTR parameters. Do not attempt to predict genes with UTRs for this species using the current parameter set!\n");
 		exit;
 	}
 	
