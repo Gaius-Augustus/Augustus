@@ -37,10 +37,15 @@ if ($size > @namelines) {
     exit;
 }
 
+my %unique = ();
+
 foreach (@namelines) {
     /LOCUS +([^ ]+) */;
     #print "$1\n";
     push @names, "$1";
+    if(not(defined($unique{$1}))){$unique{$1} = 1;}else{
+	die( "ERROR in randomSplit.pl line 47: LOCUS names in genbank file are not unique!\n");
+    }
 }
 
 %testnames=();
