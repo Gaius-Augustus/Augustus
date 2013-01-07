@@ -254,7 +254,7 @@ sub train{
     print " each sequence contains $ave gene(s) on average.\n" if ($verbose>=1); 
     
     # stop Pipeline if the number of training genes is lower than 100
-    if($counter_gen <= 100){
+    if($counter_gen < 100){
 	die("Number of training genes is with $counter_gen too low (at least 100 genes required)! Training aborted.\n");
     }
 
