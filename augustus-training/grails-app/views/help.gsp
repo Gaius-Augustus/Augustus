@@ -384,6 +384,8 @@ mdhdltgladrpglrftvpqikcymkqlltglhychvnqv
 
 <p>Gene structures in genbank format must contain the coding sequence parts and flanking regions. Flanking regions are important because AUGUSTUS is supposed to differentiate between genes and intergenic regions. The length of flanking regions depends on the length of genes in the target genome. In our pipeline, flanking regions are set to the average gene length (exceptionally applying the extreme limits between 1000 and 10000 nt). It is very important to make sure that the flanking regions do not contain any other protein coding gene parts, i.e. we recommend to trim flanking regions in a way that will exclude other CDS parts.</p>
 
+<p>It is important for our pipeline that the LOCUS names within a submitted training gene structure file are unique, i.e. you should not use the same LOCUS name more than one time!</p>
+
 <p><b>Correct file format example (condensed view, the three dots represent further lines of sequences):</b>
             <pre class="example">
 LOCUS       Chr.1_1-159458   159458 bp  DNA
