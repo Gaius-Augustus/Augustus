@@ -85,9 +85,14 @@ all scripts of AUGUSTUS and PASA shall be executable. For
 details see the documentations of AUGUSTUS and PASA.
 
 If you use PASA with GMAP instead of BLAT then please note that PASA is curently not fully compatible
-with GMAP versions after the version from 2007-09-28. If you use a newer GMAP version then remove
-the "-S" option in the PASA script scripts/process_GMAP_alignments.pl so it says:
+with GMAP versions after the version from 2007-09-28. If you use a newer GMAP version you might have to
+ remove the "-S" option in the PASA script scripts/process_GMAP_alignments.pl so it says:
 gmap_setup -D gmap_db_dir -d $genome_db $genome_db
+(Although one user reported to us that GMAP-2012-04-07 needs exactly the -S tag!)
+
+Pay attention on how to configure PASA with MySQL! If you want to run PASA without root priviledges, you 
+should first create a database for PASA (e.g. dbname-PASA, user priv > read and write), and then create
+ a new database with name PASAspeciesname, where speciesname is the name you use in --species=speciesname. 
 
 Furthermore, if you are using a cluster, AUGUSTUS should be installed there as well. The 
 path to "augustus" should also be concated to the "PATH" in your cluster.  
