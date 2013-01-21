@@ -2163,6 +2163,19 @@ class TrainingController {
 					logDate = new Date()
 					logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/hints_pred.tar.gz is missing!\n"
 				}
+                                if(new File("${web_output_dir}/${trainingInstance.accession_id}/hints_utr_pred.tar.gz").exists()){
+                                        logDate = new Date()
+                                        logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/hints_utr_pred.tar.gz exists and is linked.\n"
+                                        if(trainingInstance.results_urls == null){
+                                                trainingInstance.results_urls = "<p><b>predictions with hints and UTRs</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/hints_utr_pred.tar.gz\">hints_utr_pred.tar.gz</a><br></p>"
+                                        }else{
+                                                trainingInstance.results_urls = "${trainingInstance.results_urls}<p><b>predictions with hints and UTRs</b>&nbsp;&nbsp;<a href=\"${web_output_url}${trainingInstance.accession_id}/hints_utr_pred.tar.gz\">hints_utr_pred.tar.gz</a><br></p>"
+                                        }
+                                }else{
+                                        logDate = new Date()
+                                        logFile << "${logDate} ${trainingInstance.accession_id} v1 - ${web_output_dir}/${trainingInstance.accession_id}/hints_utr_pred.tar.gz is missing!\n"
+                                }
+
 			   	// check whether errors occured by log-file-sizes
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Beginning to look for errors.\n"
