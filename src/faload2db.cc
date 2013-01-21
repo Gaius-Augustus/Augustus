@@ -239,7 +239,6 @@ void createTable(){
 int insertSeq(string sequence, char *name, int length, string species){
     int chunks = 0;
     int start = 0, end;
-    // cout << "inserting " << name << " len=" << length << "..." << endl;
     while (start < length) {
 	end = (start + chunksize < length)? (start + chunksize - 1) : length - 1;
 	mysqlpp::Query query = con.query();
