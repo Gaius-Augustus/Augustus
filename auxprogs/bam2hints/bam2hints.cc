@@ -608,27 +608,6 @@ int main(int argc, char* argv[])
   RefVector RefSeq = BAM.GetReferenceData(); // implicit ID-to-name listing
   RefNameByID.resize(RefSeq.size()); // set the map vector's size to the number of reference sequence entries
   RefLengthByID.resize(RefSeq.size());
-  // unsigned int index; // Remove TPC
-
-  // Remove TPC
-  // for( RefVector::iterator RefVecIter = RefSeq.begin(); RefVecIter != RefSeq.end(); RefVecIter++ )
-  // {
-  //   // ensure sufficient length of the map vector (if some indices are skipped)
-  //   index = BAM.GetReferenceID(RefVecIter->RefName);
-  // 	// cout << "Value of index is: " << index << endl;
-  //   if(index > RefNameByID.size() - 1)
-  //   {
-  //     RefNameByID.resize(index + 1);
-  //     RefLengthByID.resize(index + 1);
-  //   }
-
-  //   // store the identifier/length in vector entry with index "index"
-  //   RefNameByID.at(index) = (char*) RefVecIter->RefName.c_str();
-  //   RefLengthByID.at(index) = RefVecIter->RefLength;
-  //   //RefVector::difference_type SeqInd = RefVecIter - RefSeq.begin(); // fetch index by iterator using pointer difference
-
-  //   //cout << BAM.GetReferenceID(RefVecIter->RefName) << " " << RefVecIter->RefName << " " << RefVecIter->RefLength << endl;
-  // } 
 
   // Obtaining the maximum reference sequence length
   int maxRefLen = *max_element(RefLengthByID.begin(),RefLengthByID.end());
@@ -857,13 +836,11 @@ int main(int argc, char* argv[])
       if(TargetID >= 0)
       {
 		TargetName = strdup(RefSeq.at(TargetID).RefName.c_str()); // update target name
-  	// TargetName = RefNameByID.at(TargetID); // update target name // Remove TPC
 
   	// free the alignment coverage array
   	delete [] alnCoverage;
 
   	int CovBinCount = RefSeq.at(TargetID).RefLength/10 + 1; // needed number of entries
-  	// int CovBinCount = RefLengthByID.at(TargetID)/10 + 1; // needed number of entries // Remove TPC
   	// cout << "CovBinCount=" << CovBinCount << endl;
   	// allocate alignment coverage array
   	alnCoverage = new(nothrow) unsigned short int [CovBinCount]; // disable exceptions for failures
