@@ -328,7 +328,6 @@ while(<FASTA>) {
 	    if (!$overlap && $currentSeqBegin < $lastSeqEnd + 1) {
 		$currentSeqBegin = $lastSeqEnd + 1;
 	    }
-	
 	    if ($overlap || $currentSeqBegin < $genebegin) {# UTR not overlapping with previous gene
 		$newname = $seqname . "_${currentSeqBegin}-$currentSeqEnd";
 		&printhead($newname, $currentSeqEnd-$currentSeqBegin+1);
@@ -432,12 +431,13 @@ sub nrsort {
 	}
 	$i++;
     }
-    # remove all mrnas without cds
-    for($i = 0; $i < @ret; $i++)
-   {
-	if (!exists($geneNames{$ret[$i][1]}))
-	{
+    # remove all mRNAs without CDS
+    $i=0;
+    while($i < @ret) {
+	if (!exists($geneNames{$ret[$i][1]})){
 	    splice @ret, $i, 1;
+	} else {
+	    $i++;
 	}
     }
 
