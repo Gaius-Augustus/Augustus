@@ -35,6 +35,17 @@ keep_viterbi                true  # set to true if all Viterbi transcripts shoul
 uniqueCDS                   true  # don't report transcripts that differ only in the UTR
 UTR                         off   # predict untranslated regions
 
+# mea parameter
+/MeaPrediction/alpha_E  1
+/MeaPrediction/alpha_I  1
+/MeaPrediction/x0_E     -5
+/MeaPrediction/x0_I     -5
+/MeaPrediction/x1_E     5
+/MeaPrediction/x1_I     5
+/MeaPrediction/y0_E     0.5
+/MeaPrediction/y0_I     0.5
+
+
 #
 # 
 # The rest of the file contains mainly meta parameters used for training.
@@ -43,8 +54,8 @@ UTR                         off   # predict untranslated regions
 # global constants
 # ----------------------------
 
-/Constant/trans_init_window     8
-/Constant/ass_upwindow_size     23
+/Constant/trans_init_window     6
+/Constant/ass_upwindow_size     25
 /Constant/ass_start             3
 /Constant/ass_end               1
 /Constant/dss_start             2
@@ -58,7 +69,7 @@ UTR                         off   # predict untranslated regions
 /Constant/gc_range_max          0.44
 /Constant/decomp_num_steps      3
 /Constant/min_coding_len        102
-/Constant/probNinCoding         0.23
+/Constant/probNinCoding         0.15
 /Constant/amberprob             0.185   # Prob(stop codon = tag), if 0 tag is assumed to code for amino acid
 /Constant/ochreprob             0.583   # Prob(stop codon = taa), if 0 taa is assumed to code for amino acid
 /Constant/opalprob              0.232   # Prob(stop codon = tga), if 0 tga is assumed to code for amino acid
@@ -90,28 +101,28 @@ UTR                         off   # predict untranslated regions
 /ExonModel/etpseudocount      3
 /ExonModel/exonlengthD        2000    # beyond this the distribution is geometric
 /ExonModel/maxexonlength      15000
-/ExonModel/slope_of_bandwidth 0.3
-/ExonModel/minwindowcount     10
-/ExonModel/tis_motif_memory   3
-/ExonModel/tis_motif_radius   2
+/ExonModel/slope_of_bandwidth 0.6
+/ExonModel/minwindowcount     15
+/ExonModel/tis_motif_memory   2
+/ExonModel/tis_motif_radius   0
  
 # Properties for IntronModel
 # ----------------------------
 /IntronModel/verbosity          0
 /IntronModel/infile             tribolium2012_intron_probs.pbl
 /IntronModel/outfile            tribolium2012_intron_probs.pbl
-/IntronModel/patpseudocount     5.0
+/IntronModel/patpseudocount     7
 /IntronModel/k                  4     # order of the Markov chain for content model, keep equal to /ExonModel/k
-/IntronModel/slope_of_bandwidth 0.4
+/IntronModel/slope_of_bandwidth 0.4625
 /IntronModel/minwindowcount     4
 /IntronModel/asspseudocount     0.00266
 /IntronModel/dsspseudocount     0.0005
-/IntronModel/dssneighborfactor  0.00173
+/IntronModel/dssneighborfactor  0.01
 #/IntronModel/splicefile         tribolium2012_splicefile.txt # this optional file contains additional windows around splice sites for training, uncomment if you have one
 /IntronModel/sf_with_motif	false           # if true the splice file is also used to train the branch point region
-/IntronModel/d                  100  # constraint: this must be larger than 4 + /Constant/dss_end + /Constant/ass_upwindow_size + /Constant/ass_start
+/IntronModel/d                  950  # constraint: this must be larger than 4 + /Constant/dss_end + /Constant/ass_upwindow_size + /Constant/ass_start
 /IntronModel/ass_motif_memory   3
-/IntronModel/ass_motif_radius   3
+/IntronModel/ass_motif_radius   4
 
 # Properties for UtrModel
 # ----------------------------
@@ -122,16 +133,16 @@ UTR                         off   # predict untranslated regions
 /UtrModel/utr5patternweight     0.5
 /UtrModel/utr3patternweight     0.5
 /UtrModel/patpseudocount        1
-/UtrModel/tssup_k               0
+/UtrModel/tssup_k               2
 /UtrModel/tssup_patpseudocount  1
-/UtrModel/slope_of_bandwidth    0.2375
-/UtrModel/minwindowcount        3
+/UtrModel/slope_of_bandwidth    0.25
+/UtrModel/minwindowcount        2
 /UtrModel/exonlengthD           800
 /UtrModel/maxexonlength         1800
 /UtrModel/max3singlelength      2000
 /UtrModel/max3termlength        1500
-/UtrModel/tss_start             8
-/UtrModel/tss_end               5
+/UtrModel/tss_start             0
+/UtrModel/tss_end               4
 /UtrModel/tata_start            2
 /UtrModel/tata_end              10
 /UtrModel/tata_pseudocount      2
@@ -140,6 +151,6 @@ UTR                         off   # predict untranslated regions
 /UtrModel/polyasig_consensus    aataaa  # polyadenylation signal training not fully automated yet
 /UtrModel/d_polyasig_cleavage   14      # the transcription end is predicted this many bases after the polyadenylation signal
 /UtrModel/d_polya_cleavage_min  7
-/UtrModel/d_polya_cleavage_max  19
-/UtrModel/prob_polya            0.4
+/UtrModel/d_polya_cleavage_max  23
+/UtrModel/prob_polya            1
 /UtrModel/tts_motif_memory      1

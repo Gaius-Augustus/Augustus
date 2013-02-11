@@ -35,6 +35,18 @@ keep_viterbi                true  # set to true if all Viterbi transcripts shoul
 uniqueCDS                   true  # don't report transcripts that differ only in the UTR
 UTR                         off   # predict untranslated regions
 
+# mea parameter
+mea   1
+/MeaPrediction/alpha_E  1
+/MeaPrediction/alpha_I  1
+/MeaPrediction/x0_E     -5
+/MeaPrediction/x0_I     -5
+/MeaPrediction/x1_E     5
+/MeaPrediction/x1_I     5
+/MeaPrediction/y0_E     0.5
+/MeaPrediction/y0_I     0.5
+
+
 #
 # 
 # The rest of the file contains mainly meta parameters used for training.
@@ -122,16 +134,16 @@ UTR                         off   # predict untranslated regions
 /UtrModel/utr5patternweight     0.5
 /UtrModel/utr3patternweight     0.5
 /UtrModel/patpseudocount        1
-/UtrModel/tssup_k               0
+/UtrModel/tssup_k               2
 /UtrModel/tssup_patpseudocount  1
-/UtrModel/slope_of_bandwidth    0.2375
-/UtrModel/minwindowcount        3
+/UtrModel/slope_of_bandwidth    0.25
+/UtrModel/minwindowcount        2
 /UtrModel/exonlengthD           800
 /UtrModel/maxexonlength         1800
 /UtrModel/max3singlelength      2000
 /UtrModel/max3termlength        1500
-/UtrModel/tss_start             8
-/UtrModel/tss_end               5
+/UtrModel/tss_start             0
+/UtrModel/tss_end               4
 /UtrModel/tata_start            2
 /UtrModel/tata_end              10
 /UtrModel/tata_pseudocount      2
@@ -141,5 +153,5 @@ UTR                         off   # predict untranslated regions
 /UtrModel/d_polyasig_cleavage   14      # the transcription end is predicted this many bases after the polyadenylation signal
 /UtrModel/d_polya_cleavage_min  7
 /UtrModel/d_polya_cleavage_max  23
-/UtrModel/prob_polya            0.4
+/UtrModel/prob_polya            1
 /UtrModel/tts_motif_memory      1

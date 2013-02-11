@@ -541,19 +541,43 @@ double AugustusGraph::setScore(Status *st){
   
   if(st->name >= CDS && st->name < intron){
     double s_be = 0;
-    for(int pos = st->begin; pos<=st->end; pos++)
-      if(getBasetype(st, pos)>=0)
-	s_be += baseScore[getBasetype(st, pos)*seqlength + pos];
+    double p_b = 0;
+    for(int pos = st->begin; pos<=st->end; pos++){
+      if(getBasetype(st, pos)>=0){
+	p_b = baseScore[getBasetype(st, pos)*seqlength + pos];
+	if(p_b < y0_e)
+	  s_be += -x0_e/y0_e * p_b + x0_e;
+	else
+	  s_be += x1_e/(1 - y0_e) * (p_b - y0_e);
+      }
+    }
     s_be /= st->end - st->begin + 1;
-    return alpha_se * (m_se * st->score - r_se) + alpha_be * (m_be * s_be - r_be);
+    double s_se = 0;
+    if(st->score < y0_e)
+      s_se = -x0_e/y0_e * st->score + x0_e;
+    else
+      s_se = x1_e/(1 - y0_e) * (st->score - y0_e);
+    return alpha_e * s_se + s_be;
   }
   else{
     double s_bi = 0;
-    for(int pos = st->begin; pos<=st->end; pos++)
-      if(getBasetype(st, pos)>=0)
-	s_bi += baseScore[getBasetype(st, pos)*seqlength + pos];
+    double p_b = 0;
+    for(int pos = st->begin; pos<=st->end; pos++){
+      if(getBasetype(st, pos)>=0){
+	p_b = baseScore[getBasetype(st, pos)*seqlength + pos];
+	if(p_b < y0_i)
+	  s_bi += -x0_i/y0_i * p_b + x0_i;
+	else
+	  s_bi += x1_i/(1 - y0_i) * (p_b - y0_i);
+      }
+    }
     s_bi /= st->end - st->begin + 1;
-    return alpha_si * (m_si * st->score - r_si) + alpha_bi * (m_bi * s_bi - r_bi);
+    double s_si = 0;
+    if(st->score < y0_i)
+      s_si = -x0_i/y0_i * st->score + x0_i;
+    else
+      s_si = x1_i/(1 - y0_i) * (st->score - y0_i);
+    return alpha_i * s_si + s_bi;
   }
 }
 

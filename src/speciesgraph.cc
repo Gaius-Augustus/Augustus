@@ -566,27 +566,14 @@ string SpeciesGraph::getKey(Node *n){
 	return (itoa(n->begin) + ":" + itoa(n->end) + ":" + itoa( (int)(n->castToStateType()) )); 
 }
 
+
 double SpeciesGraph::setScore(Status *st){
 
-    if(st->name >= CDS && st->name < intron){
-	double s_be = 0;
-	for(int pos = st->begin; pos<=st->end; pos++)
-	    if(getBasetype(st, pos)>=0)
-		s_be += baseScore[getBasetype(st, pos)*seqlength + pos];
-	s_be /= st->end - st->begin + 1;
-	updateMaxWeight(alpha_se * (m_se * st->score - r_se) + alpha_be * (m_be * s_be - r_be));
-	return alpha_se * (m_se * st->score - r_se) + alpha_be * (m_be * s_be - r_be);
-    }
-    else{
-	double s_bi = 0;
-	for(int pos = st->begin; pos<=st->end; pos++)
-	    if(getBasetype(st, pos)>=0)
-		s_bi += baseScore[getBasetype(st, pos)*seqlength + pos];
-	s_bi /= st->end - st->begin + 1;
-	updateMaxWeight(alpha_si * (m_si * st->score - r_si) + alpha_bi * (m_bi * s_bi - r_bi));
-	return alpha_si * (m_si * st->score - r_si) + alpha_bi * (m_bi * s_bi - r_bi);
-    }
+  double score = AugustusGraph::setScore(st);
+  updateMaxWeight(score);
+  return score;
 }
+
 
 double SpeciesGraph::localChange(Move *move){
 

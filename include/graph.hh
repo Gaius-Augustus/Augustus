@@ -171,64 +171,44 @@ public:
 	    utr = false;
 	}
 	try {
-	    alpha_se = Properties::getdoubleProperty("/MeaPrediction/alpha_SE");
+	    alpha_e = Properties::getdoubleProperty("/MeaPrediction/alpha_E");
 	} catch (...) {
-	    alpha_se = 0.745;
+	    alpha_e = 1;
 	}
 	try {
-	    alpha_si = Properties::getdoubleProperty("/MeaPrediction/alpha_SI");
+	    alpha_i = Properties::getdoubleProperty("/MeaPrediction/alpha_I");
 	} catch (...) {
-	    alpha_si = 0.3775;
+	    alpha_i = 1;
 	}
 	try {
-	    alpha_be = Properties::getdoubleProperty("/MeaPrediction/alpha_BE");
+	    x0_e = Properties::getdoubleProperty("/MeaPrediction/x0_E");
 	} catch (...) {
-	    alpha_be = 0.1;
+	    x0_e = -1;
 	}
 	try {
-	    alpha_bi = Properties::getdoubleProperty("/MeaPrediction/alpha_BI");
+	    x0_i = Properties::getdoubleProperty("/MeaPrediction/x0_I");
 	} catch (...) {
-	    alpha_bi = 0.01;
+	    x0_i = -1;
 	}
 	try {
-	    r_se = Properties::getdoubleProperty("/MeaPrediction/r_SE");
+	    x1_e = Properties::getdoubleProperty("/MeaPrediction/x1_E");
 	} catch (...) {
-	    r_se = 0.6;
+	    x1_e = 1;
 	}
 	try {
-	    r_si = Properties::getdoubleProperty("/MeaPrediction/r_SI");
+	    x1_i = Properties::getdoubleProperty("/MeaPrediction/x1_I");
 	} catch (...) {
-	    r_si = 0.6;
+	    x1_i = 1;
 	}
 	try {
-	    r_be = Properties::getdoubleProperty("/MeaPrediction/r_BE");
+	    y0_e = Properties::getdoubleProperty("/MeaPrediction/y0_E");
 	} catch (...) {
-	    r_be = 0.6;
+	    y0_e = 0.5;
 	}
 	try {
-	    r_bi = Properties::getdoubleProperty("/MeaPrediction/r_BI");
+	    y0_i = Properties::getdoubleProperty("/MeaPrediction/y0_I");
 	} catch (...) {
-	    r_bi = 0.7;
-	}
-	try {
-	    m_se = Properties::getdoubleProperty("m_SE");
-	} catch (...) {
-	    m_se = 1;
-	}
-	try {
-	    m_si = Properties::getdoubleProperty("m_SI");
-	} catch (...) {
-	    m_si = 1;
-	}
-	try {
-	    m_be = Properties::getdoubleProperty("m_BE");
-	} catch (...) {
-	    m_be = 1;
-	}
-	try {
-	    m_bi = Properties::getdoubleProperty("m_BI");
-	} catch (...) {
-	  m_bi = 1;
+	    y0_i = 0.5;
 	}
 	
 
@@ -261,19 +241,15 @@ public:
     vector<double> baseScore;
     bool utr;
 
-    // parameters for scores
-    double alpha_se;
-    double alpha_si;
-    double alpha_be;
-    double alpha_bi;
-    double r_se; 
-    double r_si;
-    double r_be;
-    double r_bi;
-  double m_se;
-  double m_si;
-  double m_be;
-  double m_bi;
+  // parameters for scores
+  double alpha_e;
+  double alpha_i;
+  double x0_e;
+  double x0_i;
+  double x1_e;
+  double x1_i;
+  double y0_e;
+  double y0_i;
 };
 
 bool compareNodes(Node *first, Node *second);
