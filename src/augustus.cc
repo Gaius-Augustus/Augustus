@@ -114,6 +114,7 @@ int main( int argc, char* argv[] ){
 	Gene::init();
 	setParameters(); // NOTE: need Constant to be initialised first
 	StateModel::init();   // set global parameters of state models
+	GeneticCode::init();
 
 	if (Constant::MultSpeciesMode){
 	  CompGenePred cgp;

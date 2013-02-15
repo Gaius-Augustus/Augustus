@@ -1092,7 +1092,7 @@ Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
     Double endPartProb = 1, extrinsicQuot = 1;
     switch (utype) {
 	case utr5single: case utr5term:
-	    if ((endOfBioExon + 3 <= dnalen - 1) && !onStart(sequence+endOfBioExon+1))
+	    if ((endOfBioExon + 3 <= dnalen - 1) && !GeneticCode::isStartcodon(sequence+endOfBioExon+1))
 		endPartProb = 0.0;
 	    break;
 	case utr5internal: case utr5init: case utr3internal: case utr3init:

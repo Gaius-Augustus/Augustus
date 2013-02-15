@@ -123,7 +123,6 @@ void ExonModel::buildProbabilities( ){
      */
     transInitMotif->makeProbs();
     //cout << "TransInit Motif" << endl;
-    //transInitMotif->printProbs();
     if (Constant::CRFtrainTIS){
       // make TIS CRF features
       transInitBinProbs.reset();
@@ -142,7 +141,8 @@ void ExonModel::buildProbabilities( ){
       transInitBinProbs.printBoundaries();
       //transInitBinProbs.removeOrigs();
     }
-    
+    // start codons
+    GeneticCode::trainStartCodonProbs(startcounts);
     /*
      * etMotif = motif before the donor splice site.
      * the index is the reading frame at the beginning (left) of the motif
@@ -358,6 +358,9 @@ void ExonModel::printProbabilities(int idx, BaseCount *bc, const char* suffix){
 	    if (idx == 0 ) { 
 		ofstrm << "#exon model parameters\n# begin of content independent part" << endl;
 		
+		ofstrm << "# start codon probabilities\n[STARTCODONS]" << endl;
+		GeneticCode::writeStart(ofstrm);
+
 		ofstrm << "\n# Length distributions\n[LENGTH]" << endl;
 		ofstrm << "# maximal individually stored length probability =\n" << exonLenD << endl;
 		ofstrm << "# slope of smoothing bandwidth =\n" << slope_of_bandwidth << endl;
@@ -679,12 +682,13 @@ void ExonModel::processSingleExon( const State* exon) {
     if (length < STARTCODON_LEN + STOPCODON_LEN) {
 	throw ExonModelError("Single training exon too short.");
     } 
-    if (!onStart(sequence+exon->begin)) {
-      string msg("Single exon gene doesn't begin with atg codon but with ");
+    if (!GeneticCode::isStartcodon(sequence+exon->begin)) {
+      string msg("Single exon gene does not begin with start codon but with ");
       msg += string(sequence+exon->begin, 3);
 	throw ExonModelError(msg);
     }
-   
+    startcounts[Seq2Int(3)(sequence+exon->begin)]++; // count start codon
+    
     if (length > trans_init_window && exon->begin >= trans_init_window + tis_motif_memory){
 	transInitMotif->addSequence(sequence + exon->begin - trans_init_window, gweight);
 	tiswins->push_back(string(sequence + exon->begin - trans_init_window - tis_motif_memory, 
@@ -734,10 +738,13 @@ void ExonModel::processInitialExon( const State* exon){
 	curwin = curwin + length;
 	throw ExonModelError( "Initial exon has length < 3!" );
     }
-    if (!onStart(sequence+exon->begin)) {
+    if (!GeneticCode::isStartcodon(sequence+exon->begin)) {
 	curwin = curwin + length;
-	throw ExonModelError("Initial Exon doesn't begin with start codon.");
+	string msg("Initial exon does not begin with start codon but with ");
+	msg += string(sequence+exon->begin, 3);
+	throw ExonModelError(msg);
     } 
+    startcounts[Seq2Int(3)(sequence+exon->begin)]++; // count start codon
 
     if (length > trans_init_window && exon->begin >= trans_init_window + tis_motif_memory){
 	transInitMotif->addSequence(sequence + exon->begin - trans_init_window, gweight);

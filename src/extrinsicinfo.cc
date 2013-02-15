@@ -528,12 +528,12 @@ void SequenceFeatureCollection::checkGroupConsistency(AnnoSequence *seq){
 			const char* cStart = seq->sequence + hint->start;
 			const char* cEnd = seq->sequence + hint->end +1;
 			plusPossible = plusPossible
-			    && (validASSPattern(cStart-2) || onStart(cStart))
+			    && (validASSPattern(cStart-2) || GeneticCode::isStartcodon(cStart))
 			    && (validDSSPattern(cEnd) || GeneticCode::isStopcodon(cEnd-3));
 			minusPossible = minusPossible
 			    && (validRDSSPattern(cStart-2) 
 				|| GeneticCode::isRCStopcodon(cStart))
-			    && (validRASSPattern(cEnd) || onRStart(cEnd-3));
+			    && (validRASSPattern(cEnd) || GeneticCode::isStartcodon(cEnd-3, true));
 		    }
 		}
 	    }
@@ -638,10 +638,10 @@ void SequenceFeatureCollection::warnInconsistentHints(AnnoSequence *seq){
 	}
 	bool hasATG = false;
 	for (int i = it->start; i <= it->end-2; i++)
-	    hasATG |= ((it->strand == plusstrand || it->strand == STRAND_UNKNOWN || it->strand == bothstrands) && onStart(seq->sequence+i)) 
-	      || ((it->strand == minusstrand || it->strand == STRAND_UNKNOWN || it->strand == bothstrands) && onRStart(seq->sequence+i));
+	    hasATG |= ((it->strand == plusstrand || it->strand == STRAND_UNKNOWN || it->strand == bothstrands) && GeneticCode::isStartcodon(seq->sequence+i)) 
+		|| ((it->strand == minusstrand || it->strand == STRAND_UNKNOWN || it->strand == bothstrands) && GeneticCode::isStartcodon(seq->sequence+i, false));
 	if (!hasATG){ 
-	    messages << "# Error: start hint range does not contain ATG" << endl << "# " << *it << endl;
+	    messages << "# Error: start hint range contains no start codon" << endl << "# " << *it << endl;
 	    badFeatures.push_back(*it);
 	}
     }
@@ -763,10 +763,10 @@ void SequenceFeatureCollection::warnInconsistentHints(AnnoSequence *seq){
 	}
 	if (!(it->strand != minusstrand
 	      && (validASSPattern(seq->sequence+it->start-2)
-		  || onStart(seq->sequence+it->start))) &&
+		  || GeneticCode::isStartcodon(seq->sequence+it->start))) &&
 	    !(it->strand !=plusstrand
 	      && !(validRASSPattern(seq->sequence+it->end+1)
-		   || onRStart(seq->sequence+it->end-2)))) {
+		   || GeneticCode::isStartcodon(seq->sequence+it->end-2, true)))) {
 	    messages << "# Error: exon hint has invalid splice pattern '";
 	    if (it->strand == minusstrand)
 		putReverseComplement(ostream_iterator<char>(messages), 

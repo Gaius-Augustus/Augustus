@@ -77,9 +77,9 @@ int main( int argc, char* argv[] ){
 	Constant::dss_gc_allowed = true; // default value for training!
 	Constant::init();
 	BaseCount::init();  // replaces train.init()
-
+	GeneticCode::init();
 	if (Properties::hasProperty("translation_table")) // check whether a different set of stop codons was specified
-	  GeneticCode::chooseTranslationTable(Properties::getIntProperty("translation_table"));
+	    GeneticCode::chooseTranslationTable(Properties::getIntProperty("translation_table"));
 
 	EHMMTraining train;
 	setParameters();

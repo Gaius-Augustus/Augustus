@@ -9,6 +9,7 @@
  * --------|---------------|------------------------------------------
  * 15.09.02| Mario Stanke  | creation of the class
  * 13.06.07| Oliver Keller | added alternative translation tables
+ * 14.02.13| Mario Stanke  | added alternative start codon tables
  **********************************************************************/
 
 #include "geneticcode.hh"
@@ -18,11 +19,19 @@
 #include <iomanip>  // for setw
 
 const char GeneticCode::aa_symbols_with_stop[NUM_AA+2] = "*GDERKNQSTAVLIFYWHMCP";
+// {A,C,T}TG are start codons in the default translation table 1
+bool GeneticCode::start_codons[64];
+// by default, ATG has probability 1, the rest 0
+Double GeneticCode::start_codon_probs[64] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+					      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int GeneticCode::numStartCodons = 3;
 const char* const GeneticCode::aa_symbols = aa_symbols_with_stop + 1;
 const char* const GeneticCode::aa_names[NUM_AA] = {"GLYCINE","ASPARTIC ACID","GLUTAMIC ACID","ARGININE","LYSINE","ASPARAGINE",
 						   "GLUTAMINE","SERINE","THREONINE","ALANINE","VALINE","LEUCINE",
 						   "ISOLEUCINE","PHENYLALANINE","TYROSINE","TRYPTOPHAN","HISTIDINE",
 						   "METHIONINE","CYSTEINE","PROLINE"};
+
+Seq2Int GeneticCode::codon(3);
 
 /*
  * codons are numbered in lexicographic order: aaa=0, aac=1, aag=2, aat=3, aca=4, ...
@@ -48,31 +57,57 @@ int GeneticCode::map[64] = { 4, 5, 4, 5, // aa.
 			    11,13,11,13  // tt.
 };
 
-const char * const GeneticCode::TranslationTables[24] = 
+const char * const GeneticCode::TranslationTables[NUM_TRANSTABS+1] = 
 {"", 
- "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSS*CWCLFLF",
- "KNKNTTTT*S*SMIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF",
- "KNKNTTTTRSRSMIMIQHQHPPPPRRRRTTTTEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF",
- "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF",
- "KNKNTTTTSSSSMIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF",
- "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVVQYQYSSSS*CWCLFLF",
+ "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSS*CWCLFLF", // 1
+ "KNKNTTTT*S*SMIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF", // 2
+ "KNKNTTTTRSRSMIMIQHQHPPPPRRRRTTTTEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF", // 3
+ "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF", // 4
+ "KNKNTTTTSSSSMIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF", // 5
+ "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVVQYQYSSSS*CWCLFLF", // 6
  "", "",
- "NNKNTTTTSSSSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF",
- "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSCCWCLFLF",
- "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSS*CWCLFLF",
- "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLSLEDEDAAAAGGGGVVVV*Y*YSSSS*CWCLFLF",
- "KNKNTTTTGSGSMIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF",
- "NNKNTTTTSSSSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVVYY*YSSSSWCWCLFLF",
- "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*YQYSSSS*CWCLFLF",
- "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*YLYSSSS*CWCLFLF",
+ "NNKNTTTTSSSSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF", // 9
+ "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSCCWCLFLF", // 10
+ "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSS*CWCLFLF", // 11
+ "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLSLEDEDAAAAGGGGVVVV*Y*YSSSS*CWCLFLF", // 12
+ "KNKNTTTTGSGSMIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF", // 13
+ "NNKNTTTTSSSSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVVYY*YSSSSWCWCLFLF", // 14
+ "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*YQYSSSS*CWCLFLF", // 15
+ "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*YLYSSSS*CWCLFLF", // 16
  "", "", "", "",
- "NNKNTTTTSSSSMIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF",
- "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*YLY*SSS*CWCLFLF",
- "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSS*CWC*FLF"};
+ "NNKNTTTTSSSSMIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF", // 21
+ "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*YLY*SSS*CWCLFLF", // 22
+ "KNKNTTTTRSRSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSS*CWC*FLF", // 23
+ "KNKNTTTTSSKSIIMIQHQHPPPPRRRRLLLLEDEDAAAAGGGGVVVV*Y*YSSSSWCWCLFLF"};// 24
+//AAAAAAAAAAAAAAAACCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTT
+//AAAACCCCGGGGTTTTAAAACCCCGGGGTTTTAAAACCCCGGGGTTTTAAAACCCCGGGGTTTT
+//ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT
+
+const char * const GeneticCode::StartCodons[NUM_TRANSTABS+1] = 
+{"", 
+ "--------------M---------------M-------------------------------M-", // 1
+ "------------MMMM------------------------------M-----------------", // 2
+ "------------M-M-------------------------------------------------", // 3
+ "------------MMMM--------------M---------------M-------------M-M-", // 4
+ "------------MMMM------------------------------M---------------M-", // 5
+ "--------------M-------------------------------------------------", // 6
+ "", "",
+ "--------------M-------------------------------M-----------------", // 9
+ "--------------M-------------------------------------------------", // 10
+ "------------MMMM--------------M---------------M---------------M-", // 11
+ "--------------M---------------M---------------------------------", // 12
+ "------------M-M-------------------------------M---------------M-", // 13
+ "--------------M-------------------------------------------------", // 14
+ "--------------M-------------------------------------------------", // 15
+ "--------------M-------------------------------------------------", // 16
+ "", "", "", "",
+ "--------------M-------------------------------M-----------------", // 21
+ "--------------M-------------------------------------------------", // 22
+ "--------------MM------------------------------M-----------------", // 23
+ "--------------M---------------M---------------M---------------M-"}; // 24
 
 int **GeneticCode::syncodons = 0;
 int *GeneticCode::codonsOfAA = 0;
-
 
 void GeneticCode::reverseMap(){
     if (syncodons != 0) 
@@ -115,20 +150,28 @@ void GeneticCode::printReverseGeneticMap(){
 }
 
 void GeneticCode::chooseTranslationTable(int n) {
-    if (n >= 24 || n < 0) n=1;
+    if (n > NUM_TRANSTABS || n < 0) n=1; // default translation table is 1
     if (string(TranslationTables[n]) == "") n=1;
-    for (int codon=0; codon<64; codon++) {
-	int aa = get_aa_from_symbol(string(TranslationTables[n]).at(codon));
-	if (aa != map[codon]) {
+    numStartCodons = 0;
+    for (int c=0; c<64; c++) {
+	int aa = get_aa_from_symbol(string(TranslationTables[n]).at(c));
+	if (string(StartCodons[n]).at(c) != '-'){
+	    numStartCodons++;
+	    start_codons[c] = true;
+	} else {
+	    start_codons[c] = false;
+	}
+	if (aa != map[c]) {
 	    // DEBUG MESSAGE
 	    cout << "# Warning: Using nonstandard genetic code: " 
-		 << Seq2Int(3).INV(codon)
+		 << Seq2Int(3).INV(c)
 		 << " coding for " << (aa < 0 ? "STOP" : GeneticCode::aa_names[aa])
-		 << " instead of " << (map[codon] < 0 ? "STOP" : GeneticCode::aa_names[map[codon]])
+		 << " instead of " << (map[c] < 0 ? "STOP" : GeneticCode::aa_names[map[c]])
 		 << ".\n";
 	}
-	map[codon]=aa;
+	map[c] = aa;
     }
+    reverseMap();
 }
 
 char GeneticCode::translate(const char* t) {
@@ -179,4 +222,78 @@ bool GeneticCode::containsInFrameStopcodon(const char* dna, int begin, int end, 
     return hasStop;
 }
 
-  
+void GeneticCode::printStartCodons(){
+    cout << "# admissible start codons and their probabilities: ";
+    bool first = true;
+    for (int c=0;c<64;c++){
+	if (isStartcodon(c)){
+	    if (!first)
+		cout << ", ";
+	    cout <<  Seq2Int(3).INV(c) << "(" << startCodonProb(c) << ")";
+	    first = false;
+	}
+    }
+    cout << endl;
+}
+
+void GeneticCode::trainStartCodonProbs(int startcounts[]){
+    int sum = 0;
+    bool first = true;
+    cout << "start codon frequencies: ";
+    for (int c=0; c<64; c++){
+	if (startcounts[c]>0){
+	    if (!first)
+		cout << ", ";
+	    cout << Seq2Int(3).INV(c) << "(" << startcounts[c] << ")";
+	    sum += startcounts[c];
+	    first = false;
+	}
+    }
+    cout << endl;
+    // estimate probabilities as relative frequencies
+    if (sum > 0){
+	for (int c=0; c<64; c++){
+	    if (start_codons[c]){
+		start_codon_probs[c] = Double(startcounts[c]) / sum;
+	    }
+	}
+    } // otherwise leave default (only ATG)
+    printStartCodons();
+}
+
+void GeneticCode::writeStart(ofstream &out){
+    out << "# number of start codons:" << endl << numStartCodons << endl;;
+    out << "# start codons and their probabilities" << endl;
+    for (int c=0; c<64; c++){
+	if (start_codons[c] && start_codon_probs[c] > 0.0){
+	    out << Seq2Int(3).INV(c) << "\t" << start_codon_probs[c] << endl;
+	}
+    }
+}
+
+void GeneticCode::readStart(ifstream &in){
+    int n;
+    string cod;
+    Double prob;
+    if (!in)
+	throw ProjectError("Error when reading in start codon probabilities.");
+    in >> comment >> n >> comment;
+    for (int i=0; i<n; i++){
+	in >> cod >> prob;
+	if (prob < 0.0)
+	    throw ProjectError("Start codon probability is negative.");
+	try {
+	    int pn = Seq2Int(3)(cod.c_str());
+	    if (pn < 0 || pn > 63)
+		throw ProjectError();
+	    if (start_codons[pn]){
+		start_codon_probs[pn] = prob;
+	    } else {
+		cerr << cod << " is not a start codon in the chosen translation table. Ignoring it." << endl;
+	    }
+	} catch (...) {
+	    throw ProjectError(string("Invalid start codon ")+cod);
+	}
+    }
+    printStartCodons();
+}

@@ -192,6 +192,7 @@ private:
     static int            lastParIndex; // GC-index of current parameter set   
     static int            verbosity;
     static list<string>   *tiswins; // holds translation initiation windows (for CRF training)
+    static int            startcounts[]; // how often did the different start codons appear during training?
 };
 
 

@@ -107,7 +107,7 @@ bool            ExonModel::initAlgorithmsCalled = false;
 bool            ExonModel::haveORF = false;
 int             ExonModel::lastParIndex = -1; // GC-index of current parameter set
 int             ExonModel::verbosity;
-
+int             ExonModel::startcounts[64] = {0};
 
 /* --- OpenReadingFrame methods ------------------------------------ */
 
@@ -432,6 +432,16 @@ void ExonModel::readProbabilities(int parIndex) {
 	int dummyl, dummyi, dummyk;
 	Double dbl;
 
+	// for backward compatibility, check whether STARTCODON parameters exist at all
+	streampos spos = istrm.tellg();
+	istrm >> goto_line_after( "[STARTCODONS]" );
+	if (!istrm){
+	    istrm.clear();
+	    istrm.seekg(spos); // go back to where you were and use default start codons
+	} else {
+	    GeneticCode::readStart(istrm);
+	}
+
 	if (!hasLenDist) {
 	    // read length distributions
 	    istrm >> goto_line_after( "[LENGTH]");
@@ -529,7 +539,7 @@ void ExonModel::readProbabilities(int parIndex) {
 	    emiprobs.order = k;
 	}
 	// for backward compatibility, check whether EMISSION parameters exist at all, if not compute them from the Psl (old version)
-	streampos spos = istrm.tellg();
+	spos = istrm.tellg();
 	istrm >> goto_line_after( "[EMISSION]" );
 	if (!istrm){
 	    istrm.clear();
@@ -604,6 +614,16 @@ void ExonModel::readAllParameters(){
     Seq2Int s2i_e(k+1);
     int dummyl, dummyi, dummyk;
     Double dbl;
+    
+    // for backward compatibility, check whether STARTCODON parameters exist at all
+    streampos spos = istrm.tellg();
+    istrm >> goto_line_after( "[STARTCODONS]" );
+    if (!istrm){
+	istrm.clear();
+	istrm.seekg(spos); // go back to where you were and use default start codons
+    } else {
+	GeneticCode::readStart(istrm);
+    }
 
     if (!hasLenDist) {
       // read length distributions
@@ -679,7 +699,7 @@ void ExonModel::readAllParameters(){
 
       istrm >> goto_line_after( "[TRANSINIT]" );
       GCtransInitMotif[idx].read(istrm);
-      streampos spos = istrm.tellg();
+      spos = istrm.tellg();
       istrm >> goto_line_after( "[TRANSINITBIN]" );
       if (!istrm) {
 	istrm.clear();
@@ -1248,18 +1268,21 @@ Double ExonModel::endPartEmiProb(int end) const {
 	case rsingleG: case rinitial:
 	{
 	    int startpos = end - trans_init_window - STARTCODON_LEN + 1;
-	    if (startpos >= 0 && onRStart(sequence + startpos)) {
-	      if (startpos + STARTCODON_LEN + trans_init_window - 1 + tis_motif_memory < dnalen){
-		endPartProb = transInitMotif->seqProb(sequence + startpos + STARTCODON_LEN, true, true);// HMM
-		if (transInitBinProbs.nbins >= 1) {
-		  int idx = GCtransInitBinProbs[gcIdx].getIndex(endPartProb);// map prob to CRF score
-		  if (inCRFTraining && (countEnd < 0 || (startpos >= countStart && startpos <= countEnd)))
-		    GCtransInitBinProbs[gcIdx].addCount(idx);
-		  endPartProb = transInitBinProbs.avprobs[idx];
+	    if (startpos >= 0 && GeneticCode::isStartcodon(sequence + startpos, true)) {
+		endPartProb = GeneticCode::startCodonProb(sequence + startpos, true);
+		if (endPartProb > 0.0){
+		    if (startpos + STARTCODON_LEN + trans_init_window - 1 + tis_motif_memory < dnalen){
+			endPartProb *= transInitMotif->seqProb(sequence + startpos + STARTCODON_LEN, true, true);// HMM
+			if (transInitBinProbs.nbins >= 1) {
+			    int idx = GCtransInitBinProbs[gcIdx].getIndex(endPartProb);// map prob to CRF score
+			    if (inCRFTraining && (countEnd < 0 || (startpos >= countStart && startpos <= countEnd)))
+				GCtransInitBinProbs[gcIdx].addCount(idx);
+			    endPartProb = transInitBinProbs.avprobs[idx];
+			}
+		    }
+		    else
+			endPartProb = pow(0.25, (double)(dnalen-(startpos + STARTCODON_LEN)));
 		}
-	      }
-		else
-		    endPartProb = pow(0.25, (double)(dnalen-(startpos + STARTCODON_LEN)));
 	    } else 
 		endPartProb = 0.0;
 	    // check if we have extrinsic information about a reverse start codon
@@ -1359,40 +1382,37 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
     switch( etype ){
 	case singleG: case initial0: case initial1: case initial2:
 	    // start codon at the beginning?
-	    if ((beginOfBioExon >= 0) && onStart(sequence + beginOfStart - STARTCODON_LEN)) {
-		// two cases ... . the normal one with enough sequence space before the gene
-		int transInitStart = beginOfBioExon - trans_init_window;
-		if (transInitStart > transInitMotif->k){
-		    beginPartProb = transInitMotif->seqProb(sequence+transInitStart);
-		    if (transInitBinProbs.nbins >= 1) {
-		      int idx = GCtransInitBinProbs[gcIdx].getIndex(beginPartProb);// map prob to CRF score
-		      if (inCRFTraining && (countEnd < 0 || (transInitStart >= countStart && transInitStart <= countEnd)))
-			GCtransInitBinProbs[gcIdx].addCount(idx);
-		      beginPartProb = transInitBinProbs.avprobs[idx];
+	    if ((beginOfBioExon >= 0) && GeneticCode::isStartcodon(sequence + beginOfStart - STARTCODON_LEN)){
+		beginPartProb = GeneticCode::startCodonProb(sequence + beginOfStart - STARTCODON_LEN);
+		if (beginPartProb > 0.0){
+		    // two cases ... . the normal one with enough sequence space before the gene
+		    int transInitStart = beginOfBioExon - trans_init_window;
+		    if (transInitStart > transInitMotif->k){
+			beginPartProb *= transInitMotif->seqProb(sequence+transInitStart);
+			if (transInitBinProbs.nbins >= 1) {
+			    int idx = GCtransInitBinProbs[gcIdx].getIndex(beginPartProb);// map prob to CRF score
+			    if (inCRFTraining && (countEnd < 0 || (transInitStart >= countStart && transInitStart <= countEnd)))
+				GCtransInitBinProbs[gcIdx].addCount(idx);
+			    beginPartProb = transInitBinProbs.avprobs[idx];
+			}
+		    } else {
+			/* ... and the case where there is no place for the transInitMotif
+			 * take emission probs of 1/4 for the rest up to the beginning of the seq
+			 * endOfPred is negative in this case!
+			 * Need this if the gene starts right after the sequence.
+			 */
+			beginPartProb *= pow(0.25, (double)(beginOfStart - STARTCODON_LEN));
 		    }
-		} else {
-		/* ... and the case where there is no place for the transInitMotif
-		 * take emission probs of 1/4 for the rest up to the beginning of the seq
-		 * endOfPred is negative in this case!
-		 * Need this if the gene starts right after the sequence.
-		 */
-		    beginPartProb = pow(0.25, (double)(beginOfStart - STARTCODON_LEN));
+		    feature = seqFeatColl->getFeatureListOvlpingRange(startF, beginOfStart-3, beginOfStart-1 , plusstrand); 
+		    if (feature) {
+			while (feature) {
+			    if (feature->start <= beginOfStart-3 && feature->end >= beginOfStart-1)
+				extrinsicQuot *= feature->distance_faded_bonus(beginOfStart-2);
+			    feature = feature->next;
+			}
+		    } else if (seqFeatColl->collection->hasHintsFile)
+			extrinsicQuot = seqFeatColl->collection->malus(startF);
 		}
-		feature = seqFeatColl->getFeatureListOvlpingRange(startF, beginOfStart-3, beginOfStart-1 , plusstrand); 
-		if (feature) {
-		  while (feature) {
-		    if (feature->start <= beginOfStart-3 && feature->end >= beginOfStart-1)
-		      extrinsicQuot *= feature->distance_faded_bonus(beginOfStart-2);
-		    feature = feature->next;
-		  }
-		} else if (seqFeatColl->collection->hasHintsFile)
-		  extrinsicQuot = seqFeatColl->collection->malus(startF);
-		/*
-		feature = seqFeatColl->getFeatureAt(startF, beginOfStart-1 , plusstrand);
-		if (feature)
-		    extrinsicQuot *= feature->bonus;
-		else if (seqFeatColl->collection->hasHintsFile)
-		    extrinsicQuot *= seqFeatColl->collection->malus(startF);*/
 	    } else 
 		beginPartProb = 0.0; 
 	    break;

@@ -17,15 +17,19 @@
 
 // project includes
 #include "types.hh"
+#include "projectio.hh"
 
 // standard C/C++ includes
 #include <string>
 #include <cstring>
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 
 
 #define NUM_AA 20
+#define NUM_TRANSTABS 24
 
 /*
  * === am I at a possible splice site or translation start site ===
@@ -240,18 +244,23 @@ inline char Seq2Int::int2BASE(int i) {
     }
 }
 
-
 class GeneticCode {
 public:
-    static void init(){
-	reverseMap();
+     static void init() {
+	chooseTranslationTable(1);
     }
     static void printReverseGeneticMap();
+    
 private:
     GeneticCode() {}
     static void reverseMap();
     static const char aa_symbols_with_stop[];
+    static bool start_codons[];
+    static Double start_codon_probs[];
     static const char * const TranslationTables[];
+    static const char * const StartCodons[];
+    static Seq2Int codon;
+    static int numStartCodons;
 public:
     static void chooseTranslationTable( int );
     static const char* const aa_symbols;
@@ -272,13 +281,36 @@ public:
     static bool isStopcodon(const char* t) {
 	return translate(t)=='*';
     }
+    static bool isStartcodon(const char* t, bool rc=false){
+	try {
+	    if (rc)
+		return start_codons[codon.rc(t)];	
+	    else
+		return start_codons[codon(t)];
+	} catch (InvalidNucleotideError){}
+	return false;
+    }
+    static bool isStartcodon(int pn){
+	return start_codons[pn];
+    }
+    static Double startCodonProb(const char* t, bool rc=false){
+	try {
+	    int pn = rc? codon.rc(t) : codon(t);
+	    if (start_codons[pn])
+		return start_codon_probs[pn];
+	} catch (InvalidNucleotideError){}
+	return 0.0;
+    }
+    static Double startCodonProb(int pn){
+	return start_codon_probs[pn];
+    }
     static bool isRCStopcodon(const char* t) {
 	return revtranslate(t)=='*';
     }
     static bool containsInFrameStopcodon(const char*, int, int, bool, int);
+    static void printStartCodons();
+    static void trainStartCodonProbs(int startcounts[]);
+    static void writeStart(ofstream &out); // write start codon probs to file
+    static void readStart(ifstream &in); // read start codon probs from file
 };
-
-
-
-
 #endif    //  _GENETIC_CODE_HH
