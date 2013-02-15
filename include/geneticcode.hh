@@ -260,6 +260,7 @@ private:
     static const char * const TranslationTables[];
     static const char * const StartCodons[];
     static Seq2Int codon;
+    static int translationtable;
     static int numStartCodons;
 public:
     static void chooseTranslationTable( int );

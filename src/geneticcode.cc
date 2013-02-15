@@ -24,6 +24,7 @@ bool GeneticCode::start_codons[64];
 // by default, ATG has probability 1, the rest 0
 Double GeneticCode::start_codon_probs[64] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 					      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int GeneticCode::translationtable = 1;
 int GeneticCode::numStartCodons = 3;
 const char* const GeneticCode::aa_symbols = aa_symbols_with_stop + 1;
 const char* const GeneticCode::aa_names[NUM_AA] = {"GLYCINE","ASPARTIC ACID","GLUTAMIC ACID","ARGININE","LYSINE","ASPARAGINE",
@@ -172,6 +173,7 @@ void GeneticCode::chooseTranslationTable(int n) {
 	map[c] = aa;
     }
     reverseMap();
+    translationtable = n;
 }
 
 char GeneticCode::translate(const char* t) {
@@ -262,7 +264,11 @@ void GeneticCode::trainStartCodonProbs(int startcounts[]){
 }
 
 void GeneticCode::writeStart(ofstream &out){
-    out << "# number of start codons:" << endl << numStartCodons << endl;;
+    int n=0;
+    for (int c=0; c<64; c++)
+	if (start_codons[c] && start_codon_probs[c] > 0.0)
+	    n++;
+    out << "# number of start codons:" << endl << n << endl;;
     out << "# start codons and their probabilities" << endl;
     for (int c=0; c<64; c++){
 	if (start_codons[c] && start_codon_probs[c] > 0.0){
@@ -289,7 +295,8 @@ void GeneticCode::readStart(ifstream &in){
 	    if (start_codons[pn]){
 		start_codon_probs[pn] = prob;
 	    } else {
-		cerr << cod << " is not a start codon in the chosen translation table. Ignoring it." << endl;
+		cerr << cod << " is not a start codon in the chosen translation table "
+		     << translationtable << ". Ignoring it." << endl;
 	    }
 	} catch (...) {
 	    throw ProjectError(string("Invalid start codon ")+cod);
