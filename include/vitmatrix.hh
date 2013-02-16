@@ -750,8 +750,10 @@ public:
 	while (!options.empty())
 	    options.pop_front();
     }
-    void add(int state, int base, Double probability) {
-	options.push_back(OptionListItem(state, base, probability));
+    void add(int state, int base, Double probability, int predEnd = -INT_MAX) {
+	options.push_back(OptionListItem(state, base, 
+					 (predEnd == -INT_MAX)? base : predEnd,
+					 probability));
 	cumprob += probability;
     }
     void prepareSampling() {

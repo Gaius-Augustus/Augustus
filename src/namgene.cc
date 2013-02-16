@@ -416,7 +416,10 @@ StatePath* NAMGene::getSampledPath(const char *dna, const char* seqname){
 	  State *temp = new State(oli.base+1, base, getStateType(state));
 	  temp->setTruncFlag(base, oli.base, dnalen);
 	  sampledPath->push(temp);
-	  base = oli.base;
+	  if (Constant::overlapmode && oli.predEnd > -INT_MAX)
+	      base = oli.predEnd;
+	  else
+	      base = oli.base;
 	  state = oli.state;
 	  pathEmiProb *= oli.probability;
       }

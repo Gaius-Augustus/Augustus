@@ -909,6 +909,8 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 	// viterbi[base].erase(state);
 	// if (needForwardTable(algovar))
 	//     forward[base].erase(state);
+	if (algovar == doSampling)
+	    throw ProjectError("ExonModel: Trying to sample from empty options list. Internal error.");
 	return;
     }
 
@@ -1192,26 +1194,27 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
 	  continue;
       Double transEmiProb = it->val * emiProb * lenProb * lenCorrection;
       if (needForwardTable(algovar)) {
-	Double fwdsummand = predForw[predState] * transEmiProb;
-	if (algovar == doSampling) {
-	  if (fwdsummand > 0) 
-	    optionslist->add(predState, endOfPred, fwdsummand);
-	  continue;
-	} else 
-	  fwdsum += fwdsummand;
+	  Double fwdsummand = predForw[predState] * transEmiProb;
+	  if (algovar == doSampling) {
+	      if (fwdsummand > 0) 
+		  optionslist->add(predState, endOfPred, fwdsummand, endOfPred2);
+	      continue;
+	  } else 
+	      fwdsum += fwdsummand;
       }
       Double predProb = predVit.get(predState) * transEmiProb;
       //cout << "possible predState=" << predState << " predProb=" << predProb << endl;
       if (predProb > maxProb) {
-	cout << "# overlap improves at endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 
-	     << " state=" << state << " predState=" << predState << " ovlp=" << ovlp
-	     << " bioOvlp=" << bioOvlp << " lenProb=" << lenProb << endl;
-	maxProb = predProb;
-	if (algovar==doBacktracking) {
-	  oli.base = endOfPred;
-	  oli.predEnd = endOfPred2;
-	  oli.state = predState;
-	}
+	  // TODO: remove this comment when overlap prediction is mature
+	  cout << "# overlap improves at endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 
+	       << " state=" << state << " predState=" << predState << " ovlp=" << ovlp
+	       << " bioOvlp=" << bioOvlp << " lenProb=" << lenProb << endl;
+	  maxProb = predProb;
+	  if (algovar == doBacktracking) {
+	      oli.base = endOfPred;
+	      oli.predEnd = endOfPred2;
+	      oli.state = predState;
+	  }
       }
     }
   }
