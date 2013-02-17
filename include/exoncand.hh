@@ -7,14 +7,15 @@
  * An exon candidate is a sequence interval with frame and strand information
  * such that 
  * at the 5' end is either an ASS or a start codon and
- * at the 3' end is either a DSS or a stop codon
+ * at the 3' end is either a DSS or a stop codon.
  *
  * Date       |   Author              |  Changes
  *------------|-----------------------|------------------------------------------
  * 3.11.2011  | Mario Stanke          | creation of the file
- * 06.12.2011 | Alexander Gebauer     | definition of the stopcodons
+ * 06.12.2011 | Alexander Gebauer     | definition of the stop codons
  * 17.01.2012 | Alexander Gebauer     | add class AlignSeq und struct block
  * 27.02.2012 | Alexander Gebauer     | add class ExonCandidate
+ * 13.01.2011 | Mario Stanke          | revision: general set of stop codons
 \******************************************************************************/
 
 #ifndef _EXONCAND_HH
@@ -22,28 +23,6 @@
 
 #include "types.hh"
 #include "exonmodel.hh" // for OpenReadingFrame
-
-#define DECLARE_ON(NAME, PATTERN, COUNT)			\
-        inline bool NAME(const char* dna) {				\
-    return strncmp(dna, PATTERN, COUNT) == 0;	\
-}
-
-DECLARE_ON(ochre,    OCHRECODON, 3)
-DECLARE_ON(amber,    AMBERCODON, 3)
-DECLARE_ON(opal,     OPALCODON, 3)
-
-#define rCAmber_SEQUENCE "cta"
-#define rCOchre_SEQUENCE "tta"
-#define rCOpal_SEQUENCE "tca"
-DECLARE_ON(onRCOchre,     rCOchre_SEQUENCE, 3)
-DECLARE_ON(onRCAmber,    rCAmber_SEQUENCE, 3)
-DECLARE_ON(onRCOpal,    rCOpal_SEQUENCE, 3)
-
-inline bool onRCStopcodon(const char* dna) {
-    return
-            onRCOchre(dna) || onRCOpal(dna) || onRCAmber(dna);
-}
-
 #define EXON_TYPES 17
 
 enum ExonType{UNKNOWN_EXON = -1,
@@ -95,7 +74,7 @@ public:
     Double getScore(void);
     int complementType(void);
     StateType getStateType(void);
-    string createKey(void);
+    string key(void);
 };
 
 // class stores all the information about an alignment part of a single species

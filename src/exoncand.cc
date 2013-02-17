@@ -93,7 +93,7 @@ ExonType toExonType(const char* str){
 }
 
 // create a key for a map function to find orthologue exons quickly
-string ExonCandidate::createKey() {
+string ExonCandidate::key() {
     if(this == NULL) {
         return "no candidate";
     } else {
@@ -116,11 +116,11 @@ double getGC_Content(const char *dna) {
 
 bool comp_test (ExonCandidate* a, ExonCandidate* b) {
     if (a->type != b->type) {
-        return (a->type<b->type);
-    } else  if (a->end != b->end) {
-        return (a->end<b->end);
+        return (a->type < b->type);
+    } else if (a->end != b->end) {
+        return (a->end < b->end);
     } else {
-        return (a->begin<b->begin);
+        return (a->begin < b->begin);
     }
 }
 

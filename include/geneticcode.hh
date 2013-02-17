@@ -1,9 +1,7 @@
 /*****************************************************************************\
  * Filename : geneticcode.hh
  * Authors  : Mario Stanke
- * Project  : HMM
- * Version  : 0.1
- *
+ * 
  *
  * Description: The genetic code maps codons to amino acids
  *
@@ -72,6 +70,13 @@ DECLARE_ON(onRASS,    RASS_SEQUENCE, 2)
 DECLARE_ON(onStart,   STARTCODON, 3)
 DECLARE_ON(onRStart,  RCSTARTCODON, 3)
 
+// stop codons
+DECLARE_ON(onOchre,   OCHRECODON, 3)
+DECLARE_ON(onAmber,   AMBERCODON, 3)
+DECLARE_ON(onOpal,    OPALCODON, 3)
+DECLARE_ON(onROchre,  RCOCHRECODON, 3)
+DECLARE_ON(onRAmber,  RCAMBERCODON, 3)
+DECLARE_ON(onROpal,   RCOPALCODON, 3)
 
 /*
  * wcComplement

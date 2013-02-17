@@ -17,16 +17,16 @@
 #include <iostream>
 #include <string>
 
-// merges the merged alignment parts so that a gene is possibly in this segment
+// merges the already merged alignment parts so that segment likely contains complete genes
 GeneMSA* GenomicMSA::getNextGene() {
-    GeneMSA *ptr=new GeneMSA();
-    int maxIntronLen=50000;
+    GeneMSA *ptr = new GeneMSA();
+    int maxIntronLen = 50000;
     int maxGeneLen = 1000000;
-    int maxChangedSeq = 1000;
+    int maxChangedSeq = 1000; // exceptions at most this long are allowed from the "same target"-rule
     vector<Strand >geneStrand;
     vector<string> geneChr;
     vector<int> geneStarts, geneSeqLens, seqStart;
-    bool geneRange=true;
+    bool geneRange = true;
     if (this->alignment.empty()) {
         delete ptr;
         return NULL;
@@ -165,35 +165,36 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
     }
 
     while (!Alignmentfile.eof()) {
-        Alignmentfile>>indifferent;
+        Alignmentfile >> indifferent;
         int speciesFound = 0;
-        if (indifferent=="s") {
+        if (indifferent == "s") {
             for (int i=0; i<speciesnames.size(); i++) {
                 alignBlock.alignSpeciesTuple[i]=NULL;
             }
             while (speciesnames.size() > speciesFound) {
-                if (indifferent!="s") {
+                if (indifferent != "s") {
                     break;
                 } else {
-                    indifferent="not s";
-                    ptr =new AlignSeq;
+                    indifferent = "not s";
+                    ptr = new AlignSeq;
                     // reads the name of the species and the seqID from the first column
-                    Alignmentfile>>completeName;
+		    // TODO: may have to be checked/adjusted for general .maf files
+                    Alignmentfile >> completeName;
                     for (int i=0; i<completeName.length(); i++) {
-                        if ((completeName[i]=='-') || (completeName[i]=='.')) { //real seperator is the point '.' for example hs19.chr21, has to be changed
-                            ptr->name=completeName.substr(0,i);
-                            ptr->seqID.first=completeName.substr(i+1,completeName.length()- (i+1));
-                            ptr->seqID.first=ptr->seqID.first.erase(ptr->seqID.first.find_first_of("("),ptr->seqID.first.length()-1); // version for vergl_syn testfile
+                        if ((completeName[i] == '-') || (completeName[i] == '.')) { //real seperator is the point '.' for example hs19.chr21, has to be changed
+                            ptr->name = completeName.substr(0,i);
+                            ptr->seqID.first = completeName.substr(i+1,completeName.length()- (i+1));
+                            ptr->seqID.first = ptr->seqID.first.erase(ptr->seqID.first.find_first_of("("),ptr->seqID.first.length()-1); // version for vergl_syn testfile
                             break;
                         }
-                        if (i==completeName.length()-1) {
-                            ptr->name=completeName;
-                            ptr->seqID.first="unknown";
+                        if (i == completeName.length()-1) {
+                            ptr->name = completeName;
+                            ptr->seqID.first = "unknown";
                         }
                     }
                     for (int i=0; i<speciesnames.size(); i++) {
                         if (speciesnames[i] == ptr->name) {
-                            index=i;
+                            index = i;
                             break;
                         } else if (i == (speciesnames.size() - 1)) {
                             index = -1;
@@ -214,27 +215,27 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
                             }
                         }
                     }
-                    Alignmentfile>>ptr->offset;
-                    ptr->start=ptr->offset+1;
+                    Alignmentfile >> ptr->offset;
+                    ptr->start = ptr->offset+1;
                     ptr->cmpStarts.push_back(&ptr->start);
-                    Alignmentfile>>ptr->seqLen;
-                    Alignmentfile>>str;
+                    Alignmentfile >> ptr->seqLen;
+                    Alignmentfile >> str;
                     if (str == '+') {
-                        ptr->strand=plusstrand;
+                        ptr->strand = plusstrand;
                     } else if (str == '-') {
-                        ptr->strand=minusstrand;
+                        ptr->strand = minusstrand;
                     } else {
-                        ptr->strand=STRAND_UNKNOWN;
+                        ptr->strand = STRAND_UNKNOWN;
                     }
-                    Alignmentfile>>ptr->seqID.second;
-                    Alignmentfile>>seq;
-                    ptr->alignLen=seq.length();
-                    Alignmentfile>>indifferent;
+                    Alignmentfile >> ptr->seqID.second;
+                    Alignmentfile >> seq;
+                    ptr->alignLen = seq.length();
+                    Alignmentfile >> indifferent;
                     // reads the aligned sequence
-                    cur_block.begin=ptr->start;
-                    cur_block.length=1;
-                    cur_block.previousGaps=0;
-                    for (int i=1; i<=seq.length(); i++) {
+                    cur_block.begin = ptr->start;
+                    cur_block.length = 1;
+                    cur_block.previousGaps = 0;
+                    for (int i=1; i <= seq.length(); i++) {
                         if ((seq[i-1]!='-')&&(seq[i]=='-')) {
                             ptr->sequence.push_back(cur_block);
                         } else if ((seq[i-1]=='-')&&(seq[i]=='-')) {
@@ -258,8 +259,8 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
                     }
                 }
             }
-            complPtr =new AlignmentBlock;
-            *complPtr=alignBlock;
+            complPtr = new AlignmentBlock;
+            *complPtr = alignBlock;
             this->alignment.push_back(complPtr);
         }
     }
@@ -307,7 +308,7 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
 	}*/
 }
 
-//aligned sequences, which have a distance of at most 5 bases will be merged
+// aligned sequences, which have a distance of at most maxGapLen bases will be merged
 void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
     list<AlignmentBlock*>::iterator it_pos=this->alignment.begin();
     list<AlignmentBlock*>::iterator it_prev;
@@ -315,7 +316,7 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
 
     // specieslimit is the percentage of species, which have to be in the alignmentblocks to merge them
     float specieslimit = (*it_pos)->alignSpeciesTuple.size() - (percentSpeciesAligned * (*it_pos)->alignSpeciesTuple.size());
-    for (it_pos=this->alignment.begin(); it_pos!=this->alignment.end(); it_pos++) {
+    for (it_pos = this->alignment.begin(); it_pos != this->alignment.end(); it_pos++) {
         bool complete=true;
         int distance=-1;
         int emptyBegin=1;
@@ -345,7 +346,7 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                         geneSeqLen = (*it_prev)->alignSpeciesTuple.at(j)->seqLen;
                     }
 
-                    //  max 6 bases apart, on the same strand and on the same seqID, when there is an alignmentblock before
+                    //  max maxGapLen bases apart, on the same strand and on the same seqID, when there is an alignmentblock before
                     if (((*it_pos)->alignSpeciesTuple.at(j)!=NULL) && (geneChr != "")) {
                             if (((*it_pos)->alignSpeciesTuple.at(j)->strand != geneStrand) || ((*it_pos)->alignSpeciesTuple.at(j)->seqID.first != geneChr)) {
                                 complete=false;
@@ -372,7 +373,7 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                     }
                 }
 
-                // the informations of two alignment parts become combined
+                // the information of two alignment parts become combined
                 if (complete) {
                     for (int j=0; j<(*it_prev)->alignSpeciesTuple.size(); j++) {
                         if (((*it_prev)->alignSpeciesTuple.at(j)==NULL) && ((*it_pos)->alignSpeciesTuple.at(j)==NULL)) {

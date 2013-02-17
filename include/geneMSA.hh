@@ -30,11 +30,11 @@ public:
     static vector<int> exonCandID; // stores the IDs for exon candidates of different species
     static ofstream *pamlFile;
     static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles, omega_outfiles; // pointers to the output files
-    list<AlignmentBlock*> alignment;		// list of the alignment parts which possibly belong to a gene segment
-    vector< list<ExonCandidate*>* > exoncands;		// exon candidates found in the different species in a gene segment
-    vector< map<string, ExonCandidate*>* > existingCandidates;		// stores the keys of the exon candidates for the different species
-    list<OrthoExon> orthoExonsList;		// list of orthologue exons found in a gene segment
-    list<OrthoExon> orthoExonsWithOmega; //list of orthologue exons with an computed dN/dS ratio
+    list<AlignmentBlock*> alignment;            // list of the alignment parts which possibly belong to a gene segment
+    vector< list<ExonCandidate*>* > exoncands;  // exon candidates found in the different species in a gene segment
+    vector< map<string, ExonCandidate*>* > existingCandidates; // stores the keys of the exon candidates for the different species
+    list<OrthoExon> orthoExonsList;		// list of ortholog exons found in a gene segment
+    list<OrthoExon> orthoExonsWithOmega;        // list of ortholog exons with a computed omega=dN/dS ratio
 
     GeneMSA() {};
     ~GeneMSA(){

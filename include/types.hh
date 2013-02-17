@@ -42,6 +42,7 @@ enum Strand {STRAND_UNKNOWN=-1, plusstrand, minusstrand, bothstrands};
 /**
  * ASS       = acceptor splice site, between intron and exon
  * DSS       = donor splice site , between exon and intron
+ * stop codons depend on genetic code, prefer to use Geneticcode::isStopcodon
  */
 #define ASS_MIDDLE      2
 #define DSS_MIDDLE      2
@@ -50,6 +51,9 @@ enum Strand {STRAND_UNKNOWN=-1, plusstrand, minusstrand, bothstrands};
 #define OCHRECODON      "taa"
 #define OPALCODON       "tga"
 #define AMBERCODON      "tag"
+#define RCOCHRECODON    "tta"
+#define RCOPALCODON     "tca"
+#define RCAMBERCODON    "cta"
 #define TRUNC_LEFT      1
 #define TRUNC_RIGHT     2 
 
