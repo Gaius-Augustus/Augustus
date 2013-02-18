@@ -80,6 +80,7 @@ int main( int argc, char* argv[] ){
 	GeneticCode::init();
 	if (Properties::hasProperty("translation_table")) // check whether a different set of stop codons was specified
 	    GeneticCode::chooseTranslationTable(Properties::getIntProperty("translation_table"));
+
 	EHMMTraining train;
 	setParameters();
 
