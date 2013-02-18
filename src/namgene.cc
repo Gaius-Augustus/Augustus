@@ -175,6 +175,7 @@ int NAMGene::getStateIndex(StateType type){
 }
 
 void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
+ 
   StateModel::setPP(useProfile ? profileModel : NULL);  
   int progress, oldprogress=0;
 
@@ -203,7 +204,7 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
 
   curGCIdx = -1; // initialize with invalid GC content class
   prepareModels(dna, dnalen);
-
+  
 
   /*
    * Check if all the sequence contains of non-nucleotides (e.g. N)
@@ -246,6 +247,8 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
   double beforeCount=0.0, afterCount=0.0;
   int mincount = 1000;
 #endif
+
+
   for( int j = 1; j < dnalen; j++ ) { // TODO: this ignores the first nucleotide
       if (cs.idx[j] != curGCIdx) {// check whether GC content has changed, this is in particular the case at the very start
           curGCIdx = cs.idx[j];
@@ -1582,7 +1585,7 @@ void NAMGene::createStateModels( ){
 void NAMGene::initAlgorithms(int idx){
   StateModel::resetPars();
   StateModel::setGCIdx(idx);
-  for( int i = 0; i < statecount; ++i ){ 	
+  for( int i = 0; i < statecount; ++i ){
     states[i]->initAlgorithms(transitions, i);
   }
   /*

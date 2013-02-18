@@ -791,6 +791,39 @@ void ExonModel::readAllParameters(){
   }
 }
 
+
+/*
+ * ===[ ExonModel::getCodonUsage]====================================
+ * Compute a probability vector pi(0),... pi(63) that represents the
+ * codon usage.
+ * For now, codon usage is approximated by emiprobs
+ * in future on could alternatively measure it during training and output in species_exon_probs.pbl.
+ */
+double *ExonModel::getCodonUsage(){
+    int numCodons = 20000; // number of sampled codons
+    double *pi = new double[64];
+    for (int c=0; c<64; c++)
+	pi[c] = 0;
+    if (emiprobs.order == 0)
+	throw ProjectError("ExonModel::getCodonUsage emission probabilities not initialized?");
+    char *sampledCDS = getSampledCDS(emiprobs.probs, emiprobs.order, numCodons);
+    //    cout << "sampled cds " << sampledCDS << endl;
+    Seq2Int s2i(3);
+    for (int i=0; i<numCodons; i++)
+	pi[s2i(sampledCDS+emiprobs.order+i*3)] += 1;
+    delete sampledCDS;
+    // normalize pi
+    int s = 0.0;
+    for (int c=0; c<64; c++)
+	s += pi[c];
+    //cout << "codon usage: " << endl;
+    for (int c=0; c<64; c++){
+	pi[c] /= s;
+	// cout << c << "\t" << s2i.inv(c) << "\t" << pi[c] << endl;
+    }
+    return pi;
+}
+
 /*
  * ===[ ExonModel::fillTailsOfLengthDistributions]====================================
  * Define the tail of the length distributions: from exonLenD up to max_exon_length

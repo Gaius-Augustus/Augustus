@@ -113,8 +113,9 @@ int main( int argc, char* argv[] ){
 	Constant::init();
 	Gene::init();
 	GeneticCode::init();
-	setParameters(); // NOTE: need Constant to be initialised first
+	setParameters(); // NOTE: need Constant and GeneticCode to be initialised first
 	StateModel::init();   // set global parameters of state models
+
 
 	if (Constant::MultSpeciesMode){
 	  CompGenePred cgp;
@@ -159,7 +160,6 @@ int main( int argc, char* argv[] ){
 	  PP::initConstants();
 	  NAMGene namgene; // creates and initializes the states
 	  StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
-
 	  try{
 	    string strandstr = Properties::getProperty("strand");
 	    if (strandstr == "forward" || strandstr == "Forward" || strandstr == "plus" || strandstr == "Plus" 

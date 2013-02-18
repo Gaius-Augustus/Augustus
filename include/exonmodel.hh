@@ -95,6 +95,7 @@ public:
     }
     static void readProbabilities(int parIndex);
     static void readAllParameters();
+    static double *getCodonUsage();
     static void resetModelCount(){exoncount = 0;};
     static int getMaxStateLen() { return max_exon_length + trans_init_window; }
     static void setORF() {

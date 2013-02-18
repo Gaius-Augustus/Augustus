@@ -304,3 +304,43 @@ void GeneticCode::readStart(ifstream &in){
     }
     printStartCodons();
 }
+
+/*
+ * getSampledSeq
+ * ****|***|***|***|***|***|
+ * k bases from uniform distribution, then numCodons codons
+ * k is the order of the Markov chain
+ */
+char *getSampledCDS(vector<Double> *emiprobs, int k, int numCodons){
+    int dnaLength = k + 3*numCodons;
+    char bases[5] = "acgt"; // 0->a, 1->c, 2->g, 3->t
+    char *cds = new char[dnaLength+1];
+    cds[dnaLength] = '\0';
+    Seq2Int s2i(k+1);
+
+    // first k bases from uniform distribution
+    for (int i=0; i<k; i++) {
+        cds[i] = bases[(int) (4.0 * rand() / (1.0 + RAND_MAX))];
+    }
+    Double sumProb, cumProb;
+    double r;
+    // sample one codon and one frame position at a time
+    for (int i=0; i<numCodons; i++) {
+	for (int f=0; f<3; f++) {// reading frame
+	    sumProb = 0.0;
+	    for (int base = 0; base < 4; base++) {
+		cds[k+3*i+f] = bases[base];
+		if (!(f==2 && GeneticCode::isStopcodon(cds + k+3*i+f-2)))
+		    sumProb += emiprobs[f][s2i(cds + 3*i+f)];
+	    }
+	    r = rand() / (1.0 + RAND_MAX);
+	    cumProb = 0.0;
+	    for (int base = 0; base < 4 && cumProb <= r*sumProb; base++) {// try new base at position i, keep that base when cumulative prob. exceeds r
+		cds[k+3*i+f] = bases[base];
+		if (!(f==2 && GeneticCode::isStopcodon(cds + k+3*i+f-2)))
+		    cumProb += emiprobs[f][s2i(cds + 3*i+f)];
+	    }
+	}	
+    }
+    return cds;
+}

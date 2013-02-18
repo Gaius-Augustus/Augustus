@@ -319,4 +319,9 @@ public:
     static void writeStart(ofstream &out); // write start codon probs to file
     static void readStart(ifstream &in); // read start codon probs from file
 };
+
+// getSampledCDS: sample a coding region from emission probabilities
+char *getSampledCDS(vector<Double> *emiprobs, int k, int numCodons);
+
 #endif    //  _GENETIC_CODE_HH
+
