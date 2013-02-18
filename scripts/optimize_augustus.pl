@@ -28,7 +28,10 @@ my %cmdpars = ( 'species'              => '',
 		'UTR'                  => '',
 		'aug_exec_dir'         => '',
 		'trainOnlyUtr'         => '',
-		'noTrainPars'          => '');
+		'noTrainPars'          => '',
+                'translation_table'    => '',
+                'genemodel'            => '',
+                '/Constant/min_coding_len' => '');
 
 $SIG{INT} = \&got_interrupt_signal;
 
@@ -133,6 +136,15 @@ if ($cmdpars{'noTrainPars'} eq '') {
 my $pars="";
 if ($cmdpars{"UTR"} eq "on"){
     $pars="--UTR=on";
+}
+if ($cmdpars{"translation_table"} > 1){
+    $pars = $pars." --translation_table=".$cmdpars{"translation_table"};
+}
+if (length($cmdpars{"genemodel"}) > 1){
+    $pars = $pars." --genemodel=".$cmdpars{"genemodel"};
+}
+if (not($cmdpars{"/Constant/min_coding_len"} eq "")){
+    $pars = $pars." --/Constant/min_coding_len=".$cmdpars{"/Constant/min_coding_len"};
 }
 
 my $modelrestrict = "";
