@@ -237,7 +237,7 @@ if($projectID =~ m/^t/){
 		`$cmdStr`;	
 	}
 
-	## copy and pack UTR predictions - if they exist
+	## copy and pack UTR predictions - if they exist - actually, autoAug NEVER produces this file at the moment!
 	if(-e $grailsOut."/$projectID/autoAug/autoAugPred_utr/predictions/augustus.gff"){
 		$utrPredsExistsFlag = 1;
 	}else{

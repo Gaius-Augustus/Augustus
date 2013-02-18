@@ -29,7 +29,7 @@
         Bioinformatics Web Server at University of Greifswald
       </div>
       <div id="bannertitel2">
-        Gene Prediction with AUGUSTUS <b><font color="#ffb22a" size=3>beta</font></b>
+        Gene Prediction with AUGUSTUS
       </div>
    </div>
    <div id="banner_rechts">
@@ -311,7 +311,7 @@ Top of page
 <td><font size="1">Heliconius melpomene</font></td><td><font size="1">heliconius_melpomene1</font></td><td><font size="1">Sebastian Adler and Katharina Hoff</font></td>
 </tr>
 <tr>
-<td><font size="1">Gallus gallus domesticus</font></td><td><<font size="1">chicken</font></td><td><font size="1">Stefanie Koenig</font></td>
+<td><font size="1">Gallus gallus domesticus</font></td><td><font size="1">chicken</font></td><td><font size="1">Stefanie Koenig</font></td>
 </tr>
 <tr>
 <td><font size="1">Homo sapiens</font></td><td><font size="1">human</font></td><td><font size="1"></font></td>
@@ -865,8 +865,6 @@ Top of page
 <div id="error"><h2><a href="#error">2.2 - Errors during prediction</a></h2></div>
 
 <p>You should automatically receive an e-mail in case an error occurs during the AUGUSTUS gene prediction process. The admin of this server is also notified by e-mail about errors. We will get in touch with you, again, after we figured out what caused the error. If you did not supply an e-mail adress, errors are likely to be ignored by the AUGUSTUS webserver development team.</p>
-
-<p>Since the web server application is currently in beta testing phase, completely unexpected errors might still occur. Therefore we ask for you help on reporting any unexpected errors to augustus-web@uni-greifswald.de. Please include which actions from your side exactly caused the error, and also copy the Grails exception message into your e-mail in case such a message was displayed.</p>
 
 <p><a href="#seitenanfang">
 <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />

@@ -32,7 +32,7 @@
         Bioinformatics Web Server at University of Greifswald
       </div>
       <div id="bannertitel2">
-        Gene Prediction with AUGUSTUS <b><font color="#ffb22a" size=3>beta</font></b>
+        Gene Prediction with AUGUSTUS
       </div>
    </div>
    <div id="banner_rechts">
@@ -86,7 +86,7 @@
     <table class="contentpaneopen">
       <tr>
 	<td class="contentheading" width="100%">
-	  <a href="index.gsp" class="contentpagetitle">Welcome to the AUGUSTUS <b><font color="#ffb22a" size=3>beta</font></b> web server</a>
+	  <a href="index.gsp" class="contentpagetitle">Welcome to the WebAUGUSTUS</a>
         </td>
       </tr>
     </table>
@@ -95,7 +95,6 @@
     <p>Please be aware that gene prediction accuracy of AUGUSTUS always depends on the quality of the training gene set that was used for training species specific parameters. You should not expect the greatest accuracy from fully automated training gene generation as provided by this web server application. Instead, you should manually inspect (and maybe interatively improve) the training gene set.</p>
 <p>AUGUSTUS is already trained for a number of genomes and you find the according parameter sets at <a href="predictiontutorial.gsp#param_id">the prediction tutorial</a>. <b>Please check whether AUGUSTUS was already trained for your species before submitting a new training job.</b></p>
     <p><a href="http://bioinf.uni-greifswald.de/augustus/">The Old AUGUSTUS web server</a> offers similar gene prediction services but no parameter training service.</p>
-   <p>This web service is <b>beta</b> testing phase, currently! Not everything may work smoothly, yet. Please contact us (augustus-web@uni-greifswald.de) if you encounter any errors or problems. In that case, please include date and time when the problem first occured in your e-mail.</p>
 <br><br>
 <h2>OK, I got it! Take me straight to...</h2>
 <p>
