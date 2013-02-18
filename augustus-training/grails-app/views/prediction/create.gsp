@@ -197,6 +197,7 @@
 'Caenorhabditis elegans (animal)', 
 'Callorhinchus milii (animal)', 
 'Drosophila melanogaster (animal)', 
+'Gallus gallus domesticus (animal)',
 'Heliconius melpomene (animal)',
 'Homo sapiens (animal)', 
 'Nasonia vitripennis (animal)', 

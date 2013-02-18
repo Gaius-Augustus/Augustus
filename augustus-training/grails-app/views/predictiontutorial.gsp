@@ -311,6 +311,9 @@ Top of page
 <td><font size="1">Heliconius melpomene</font></td><td><font size="1">heliconius_melpomene1</font></td><td><font size="1">Sebastian Adler and Katharina Hoff</font></td>
 </tr>
 <tr>
+<td><font size="1">Gallus gallus domesticus</font></td><td><<font size="1">chicken</font></td><td><font size="1">Stefanie Koenig</font></td>
+</tr>
+<tr>
 <td><font size="1">Homo sapiens</font></td><td><font size="1">human</font></td><td><font size="1"></font></td>
 </tr>
 <tr>

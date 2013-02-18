@@ -461,6 +461,8 @@ class PredictionController {
 				predictionInstance.project_id = "elephant_shark"
 			}else if(predictionInstance.species_select == "Drosophila melanogaster (animal)"){
 				predictionInstance.project_id = "fly"
+			}else if(predictionInstance.species_select == "Gallus gallus domesticus (animal)"){
+			      	predictionInstance.project_id = "chicken"
 			}else if(predictionInstance.species_select == "Homo sapiens (animal)"){
 				predictionInstance.project_id = "human"
 			}else if(predictionInstance.species_select == "Petromyzon marinus (animal)"){
