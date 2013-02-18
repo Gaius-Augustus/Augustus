@@ -112,9 +112,9 @@ int main( int argc, char* argv[] ){
 	Properties::init( argc, argv );
 	Constant::init();
 	Gene::init();
+	GeneticCode::init();
 	setParameters(); // NOTE: need Constant to be initialised first
 	StateModel::init();   // set global parameters of state models
-	GeneticCode::init();
 
 	if (Constant::MultSpeciesMode){
 	  CompGenePred cgp;
@@ -457,8 +457,9 @@ void setParameters(){
 	     << "Unless this is your intention, set stopCodonExcludedFromCDS to false in your "
 	     << "species' configuration file or on the command line." << endl;
     
-    if (Properties::hasProperty("translation_table"))
-	GeneticCode::chooseTranslationTable(Properties::getIntProperty("translation_table"));
+    if (Properties::hasProperty("translation_table")){
+        GeneticCode::chooseTranslationTable(Properties::getIntProperty("translation_table"));
+    }
 }
 
 
