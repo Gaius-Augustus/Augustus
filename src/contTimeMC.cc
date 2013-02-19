@@ -1,25 +1,21 @@
 /*****************************************************************************\
- * Filename : contTimeMC.hh
- * Authors  : Mario Stanke
+ * Filename : contTimeMC.cc
+ * licence  : Artistic Licence, see file LICENCE.TXT or 
+ *            http://www.opensource.org/licenses/artistic-license.php
+ * Authors  : Mario Stanke, mario.stanke@uni-greifswald.de
  *
- * Description: continuous-time Markov chains for sequence evolution
- *              codon models
  *
  * Date       |   Author              |  Changes
  *------------|-----------------------|------------------------------------------
- * 17.02.2013 | Mario Stanke          | creation of the class
+ * 19.02.2013 | Mario Stanke          | creation of the class
 \******************************************************************************/
-#ifndef _CONTTIMEMC_HH
-#define _CONTTIMEMC_HH
 
 // project includes
-#include "geneticcode.hh"
+#include "contTimeMC.hh"
 
 // standard C/C++ includes
 #include <iostream>
-#include <gsl/gsl_matrix.h>
 
-using namespace std;
 
 /*
  * 64x64 rate matrix Q for codon substitutions as in Yang, "Computational Molecular Evolution", (2.7)
@@ -27,6 +23,8 @@ using namespace std;
 
 gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector with 64 elements
 			       double omega,  // dN/dS, nonsynonymous/synonymous ratio
-			       double kappa); // transition/transversion ratio, usually >1
-
-#endif    // _CONTTIMEMC_HH
+			       double kappa){ // transition/transversion ratio, usually >1
+    gsl_matrix* Q = gsl_matrix_alloc (64, 64);
+    
+    return Q;
+}

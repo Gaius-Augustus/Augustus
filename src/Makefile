@@ -9,19 +9,20 @@ CC	= g++
 #        - In the current version, the order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
 CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -DDEBUG -g -ggdb -static
 
-ifdef CPP0X
+ifdef COMPGENEPRED
 	CFLAGS += -std=c++0x -DCPP0X
 endif
 INCLS	= -I../include
-
+LIBS    = 
 
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
  meaPath.o exoncand.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o orthograph.o speciesgraph.o\
   genomicMSA.o geneMSA.o fasta.o
-ifdef CPP0X
-	OBJS += parser/parse.o scanner/lex.o
+ifdef COMPGENEPRED
+	OBJS += parser/parse.o scanner/lex.o contTimeMC.o
+	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
@@ -37,10 +38,11 @@ ifdef MYSQL
 # RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib 
 RUNTIME_LIBPATH = 
 INCLS	+= -I/usr/include/mysql -I/usr/local/include/mysql++
-LIBS 	=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
+LIBS 	+=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
 CFLAGS  += -DAMYSQL
 PROGR   += faload2db
 endif
+
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
@@ -616,6 +618,10 @@ speciesgraph.o: \
 fasta.o: \
 	../include/fasta.hh \
 	fasta.cc
+
+contTimeMC.o: \
+	../include/contTimeMC.hh \
+	contTimeMC.cc
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately
