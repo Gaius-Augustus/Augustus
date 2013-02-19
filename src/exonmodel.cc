@@ -796,7 +796,7 @@ void ExonModel::readAllParameters(){
  * ===[ ExonModel::getCodonUsage]====================================
  * Compute a probability vector pi(0),... pi(63) that represents the
  * codon usage.
- * For now, codon usage is approximated by emiprobs
+ * For now, codon usage is approximated by emission probabilities
  * in future on could alternatively measure it during training and output in species_exon_probs.pbl.
  */
 double *ExonModel::getCodonUsage(){
@@ -804,22 +804,23 @@ double *ExonModel::getCodonUsage(){
     double *pi = new double[64];
     for (int c=0; c<64; c++)
 	pi[c] = 0;
-    if (emiprobs.order == 0)
-	throw ProjectError("ExonModel::getCodonUsage emission probabilities not initialized?");
-    char *sampledCDS = getSampledCDS(emiprobs.probs, emiprobs.order, numCodons);
-    //    cout << "sampled cds " << sampledCDS << endl;
+    if (!GCemiprobs)
+    	throw ProjectError("ExonModel::getCodonUsage emission probabilities not initialized?");
+    FramedPatMMGroup &e = GCemiprobs[Constant::decomp_num_steps/2]; // assume average GC content
+    char *sampledCDS = getSampledCDS(e.probs, e.order, numCodons);
+    //cout << "sampled cds " << sampledCDS << endl;
     Seq2Int s2i(3);
     for (int i=0; i<numCodons; i++)
-	pi[s2i(sampledCDS+emiprobs.order+i*3)] += 1;
+	pi[s2i(sampledCDS+e.order+i*3)] += 1;
     delete sampledCDS;
     // normalize pi
     int s = 0.0;
     for (int c=0; c<64; c++)
 	s += pi[c];
-    //cout << "codon usage: " << endl;
+    cout << "codon usage: " << endl;
     for (int c=0; c<64; c++){
 	pi[c] /= s;
-	// cout << c << "\t" << s2i.inv(c) << "\t" << pi[c] << endl;
+	cout << c << "\t" << s2i.inv(c) << "\t" << pi[c] << endl;
     }
     return pi;
 }

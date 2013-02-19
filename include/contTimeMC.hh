@@ -28,5 +28,5 @@ using namespace std;
 gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector with 64 elements
 			       double omega,  // dN/dS, nonsynonymous/synonymous ratio
 			       double kappa); // transition/transversion ratio, usually >1
-
+void printCodonMatrix(gsl_matrix *M);
 #endif    // _CONTTIMEMC_HH

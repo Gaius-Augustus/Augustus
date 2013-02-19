@@ -21,6 +21,8 @@
 #include "orthoexon.hh"
 #include "namgene.hh"
 
+#include "contTimeMC.hh"
+#include <gsl/gsl_matrix.h>
 
 CompGenePred::CompGenePred(){
     if (Constant::Constant::dbaccess.empty()) { // give priority to database in case both exist
@@ -68,6 +70,12 @@ void CompGenePred::start(){
     SequenceFeatureCollection sfc(&extrinsicFeatures);
     StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
 
+    // temporary tests of codon rate matrix stuff (Mario)
+    //double *pi = ExonModel::getCodonUsage();
+    //gsl_matrix *Q = getCodonRateMatrix(pi,0,1);
+    //cout << "codon rate matrix" << endl;
+    //printCodonMatrix(Q);
+    
     vector<string> speciesNames = OrthoGraph::tree->species;
     GenomicMSA msa;
     msa.readAlignment(speciesNames);  // reads the alignment
@@ -97,6 +105,7 @@ void CompGenePred::start(){
                     break;
                 } else {
                     namgene.getPrepareModels(seqRange->sequence, seqRange->length); // is needed for IntronModel::dssProb in GenomicMSA::createExonCands
+
                     if (geneRange->getStrand(s)==plusstrand) {
                         offsets.push_back(geneRange->getStart(s));
                     } else {

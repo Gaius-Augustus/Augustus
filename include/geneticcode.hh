@@ -318,6 +318,9 @@ public:
     static void trainStartCodonProbs(int startcounts[]);
     static void writeStart(ofstream &out); // write start codon probs to file
     static void readStart(ifstream &in); // read start codon probs from file
+    static bool is_purine(int b){
+	return (b==0 || b==2); // 0=a, 1=c, 2=g, 3=t, a and g are purines
+    }
 };
 
 // getSampledCDS: sample a coding region from emission probabilities
