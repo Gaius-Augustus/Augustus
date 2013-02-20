@@ -72,7 +72,7 @@ void CompGenePred::start(){
 
     // temporary tests of codon rate matrix stuff (Mario)
     //double *pi = ExonModel::getCodonUsage();
-    //gsl_matrix *Q = getCodonRateMatrix(pi,0,1);
+    //gsl_matrix *Q = getCodonRateMatrix(pi,1,1);
     //cout << "codon rate matrix" << endl;
     //printCodonMatrix(Q);
     

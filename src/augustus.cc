@@ -118,8 +118,12 @@ int main( int argc, char* argv[] ){
 
 
 	if (Constant::MultSpeciesMode){
-	  CompGenePred cgp;
-	  cgp.start();
+#ifdef COMPGENEPRED
+	    CompGenePred cgp;
+	    cgp.start();
+#else
+	    throw ProjectError("Comparative gene prediction not possible with this compiled version. Please recompile with flag COMPGENEPRED set in common.mk.");
+#endif	  
 	} else { // single species mode, default
 	  // check query filename
 	  if (!Properties::hasProperty(INPUTFILE_KEY)){

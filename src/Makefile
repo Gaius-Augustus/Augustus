@@ -10,7 +10,7 @@ CC	= g++
 CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -DDEBUG -g -ggdb -static
 
 ifdef COMPGENEPRED
-	CFLAGS += -std=c++0x -DCPP0X
+	CFLAGS += -std=c++0x -DCOMPGENEPRED
 endif
 INCLS	= -I../include
 LIBS    = 
@@ -18,10 +18,10 @@ LIBS    =
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
- meaPath.o exoncand.o compgenepred.o randseqaccess.o orthoexon.o phylotree.o orthograph.o speciesgraph.o\
+ meaPath.o exoncand.o randseqaccess.o orthoexon.o phylotree.o orthograph.o speciesgraph.o\
   genomicMSA.o geneMSA.o fasta.o
 ifdef COMPGENEPRED
-	OBJS += parser/parse.o scanner/lex.o contTimeMC.o
+	OBJS += parser/parse.o scanner/lex.o contTimeMC.o compgenepred.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 endif
 DUMOBJS = dummy.o

@@ -63,10 +63,21 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
     }
 
     // initialize diagonal elements (each row must sum to 0)
-    
-
+    double rowsum;
+    double scale = 0.0; // factor by which matrix must be scaled to achieve one expected mutation per time unit
+    for (int i=0; i<64; i++){
+	rowsum = 0.0;
+	for (int j=0; j<64; j++)
+	    rowsum += gsl_matrix_get(Q, i, j);
+	gsl_matrix_set(Q, i, i, -rowsum); // q_{i,i} = - sum_{j!=i} q_{i,j}
+	scale += rowsum * pi[i];
+    }
+    if (scale != 0.0)
+	scale = 1.0/scale;
+    else
+	scale = 1.0; // should not happen
     // normalize Q so that the exptected number of codon mutations per time unit is 1
-    
+    gsl_matrix_scale(Q, scale);
     return Q;
 }
 
@@ -81,8 +92,8 @@ void printCodonMatrix(gsl_matrix *M) {    // M is usually Q or P = exp(Qt)
     for (int i=0; i<64; i++){
 	cout << Seq2Int(3).inv(i) << " " << GeneticCode::translate(i) << " ";
 	for (int j=0; j<64; j++){
-	    if (gsl_matrix_get(M,i,j) > 0.0)
-		cout << setw(6) << fixed << setprecision(4) << gsl_matrix_get(M,i,j) << " ";
+	    if (abs(gsl_matrix_get(M,i,j)) > 1e-6)
+		cout << setw(6) << fixed << setprecision(3) << gsl_matrix_get(M,i,j) << " ";
 	    else 
 		cout << setw(7) << " ";
 	}

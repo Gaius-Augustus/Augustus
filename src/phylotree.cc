@@ -19,7 +19,7 @@
 #include <iostream>
 #include <fstream>
 
-#ifdef CPP0X
+#ifdef COMPGENEPRED
 #include "parser/parser.h"
 #endif
 
@@ -69,7 +69,7 @@ size_t PhyloTree::getVectorPositionSpecies(string name) {
 
 PhyloTree::PhyloTree(string filename){
 
-#ifdef CPP0X
+#ifdef COMPGENEPRED
     filebuf fb;
     fb.open(filename.c_str(),ios::in);
     if (fb.is_open()){
@@ -92,7 +92,7 @@ PhyloTree::PhyloTree(string filename){
 	throw ProjectError("PhyloTree::PhyloTree: Could not open this file!");
 
 #else
-    throw ProjectError("Comparative gene prediction not possible with this compiled version. Please recompile with flag CPP0X.");
+    throw ProjectError("Comparative gene prediction not possible with this compiled version. Please recompile with flag COMPGENEPRED set in common.mk.");
 #endif
 }
 
