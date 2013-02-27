@@ -366,6 +366,7 @@ sub construct_training_set{
     }
 
     if (!uptodate(["transcripts.fasta"], ["transcripts.fasta.clean"])){
+	count_fasta_entries("$trainDir/pasa/transcripts.fasta");
 	$perlCmdString="perl $PASAHOME/seqclean/seqclean/seqclean transcripts.fasta 1>seqclean.stdout 2>seqclean.stderr";
 	print "2 Running $perlCmdString ..." if ($verbose>=2);
 	system("$perlCmdString")==0 or die ("failed to execute: $!\n");
@@ -1111,7 +1112,7 @@ sub check_fasta_headers{
 	}
 	if($_=~m/\|/){
 	    if($orSign == 0){
-		print "1 - WARNING: Detected "|" in fasta header of file $fastaFile. ".$stdStr;
+		print "1 - WARNING: Detected | in fasta header of file $fastaFile. ".$stdStr;
 		$orSign++;
 	    }
 	}
@@ -1124,4 +1125,15 @@ sub check_fasta_headers{
    }
     close(FASTA) or die("Could not close fasta file $fastaFile!\n");
     
+}
+
+sub count_fasta_entries{
+    my $fastaFile=shift;
+    my $fc = 0;
+    open(FASTA, "<", $fastaFile) or die("Could not open fasta file $fastaFile!\n");
+    while(<FASTA>){
+	if(m/^>/){$fc++;}
+    }
+    close(FASTA) or die("Could not close fasta file $fastaFile!\n");
+    if($fc<=100){print STDERR "WARNING: Fasta file $fastaFile contained less than 100 entries. At least 100 genes are required for training AUGUSTUS. It is impossible to generate this numbere of genes with the given data! If PASA will be unable to generate at least one gene structure, the pipeline will die, later!\n";}
 }
