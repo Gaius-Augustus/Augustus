@@ -1,3 +1,14 @@
+List of changes from version 2.6.1 to 2.7 (until March 4th, 2013)
+     - support for prokaryotic genomes (overlapping genes, arbitrary sets of start codons)
+       --genemodel=bacterium still preliminary
+     - new species chicken, xenoturbella, heliconius_melpomene1, cacao (Don Gilbert)
+     - improved species tribolium2012
+     - speedup of bam2hints, filterBam (by a very large factor in cases of large headers)
+     - no in-frame codon-split stop codons anymore with option --mea=1
+     - new script for converting CEGMA gff output format to a gff format
+     - database access as alternative to flat file input for comparative gene finding
+     - bugfixes (--noprediction, bam2hints, .gb input with Windows line breaks, tetrahymena,
+                 optimize_augustus)
 List of changes from version 2.6 to 2.6.1 (until June 9th, 2012)
      - make the sources compatible with older compilers that do not understand the flag -std=c++0x
      - script samMap.pl
