@@ -54,18 +54,17 @@ filterBam.
 2. Create and export an enviroment variable called 'BAMTOOLS' that points to the top-level directory where 
 Bamtools resides, e.g.
 
-> BAMTOOLS=/home/tonatiuh/Documents/git/bamtools
-> export BAMTOOLS;
+> export BAMTOOLS=/home/tonatiuh/Documents/git/bamtools
 
-2. Compile by typing 
+2. Compile filterBam by typing 
 
 > make
 
-3. A binary file 'filterBam' should be stored in the folder '$BAMTOOLS/bin'
+3. A binary file 'filterBam' should be stored in the folder 'bin'
 
-> cd bin
+> ls bin
 
-4. User guide and reference manual are stored under the directory '$BAMTOOLS/doc' (filterBam.pdf)
+4. Find the user guide at doc/filterBam.pdf
 
 
 		4. RUNNING

@@ -1068,7 +1068,7 @@ sub check_upfront{
     die("Error: The environment variable AUGUSTUS_CONFIG_PATH is not defined.\n") unless $ENV{'AUGUSTUS_CONFIG_PATH'};
     die("Error: The environment variable PASAHOME is undefined.\n") if ($pasa && !defined($ENV{'PASAHOME'}));
     
-    my $augpath = "$ENV{'AUGUSTUS_CONFIG_PATH'}/../src/augustus";
+    my $augpath = "$ENV{'AUGUSTUS_CONFIG_PATH'}/../bin/augustus";
     if (system("$augpath > /dev/null 2> /dev/null") != 0){
 	if (! -f $augpath){
 	    print STDERR "Error: augustus executable not found at $augpath.\n";

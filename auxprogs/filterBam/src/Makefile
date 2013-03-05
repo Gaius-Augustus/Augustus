@@ -17,7 +17,7 @@ INSTDIR = ../bin
 all : $(PROGRAM) $(OBJECTS) CHECKBAM BIN
 
 BIN : $(PROGRAM) CHECKBAM
-	mkdir $(INSTDIR);\
+	mkdir -p $(INSTDIR);\
 	mv filterBam $(INSTDIR);
 
 CHECKBAM: 
