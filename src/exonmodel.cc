@@ -1240,9 +1240,9 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
       //cout << "possible predState=" << predState << " predProb=" << predProb << endl;
       if (predProb > maxProb) {
 	  // TODO: remove this comment when overlap prediction is mature
-	  cout << "# overlap improves at endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 
-	       << " state=" << state << " predState=" << predState << " ovlp=" << ovlp
-	       << " bioOvlp=" << bioOvlp << " lenProb=" << lenProb << endl;
+	  //cout << "# overlap improves at endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 
+	  //     << " state=" << state << " predState=" << predState << " ovlp=" << ovlp
+	  //     << " bioOvlp=" << bioOvlp << " lenProb=" << lenProb << endl;
 	  maxProb = predProb;
 	  if (algovar == doBacktracking) {
 	      oli.base = endOfPred;
