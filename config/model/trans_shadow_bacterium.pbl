@@ -36,11 +36,11 @@
 [Transition]
 #           -----  Igenic region  -----
 # intergenic region
-0 0     .998
+0 0     .994
 # single
-0 1	.001
+0 1	.003
 # reverse single exon
-0 2	.001
+0 2	.003
 #           -----  Single Exon  -----
 # intergenic region
 1 0	.96
