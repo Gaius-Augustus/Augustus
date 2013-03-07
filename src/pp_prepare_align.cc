@@ -452,7 +452,7 @@ bool cutAlignment(vector<string>& sequences, int min_size, vector<string>& nodel
 		} else {
 		    // DEBUG
 		    for (int k=i-1; blocksize>0; k--)
-			if (coltypes[k]=='+')
+			if (coltypes[k]=='+'){
 			    if (blockcols[k]) {
 				cerr << "ERROR: column " << k << " can not be part of a block." << endl
 				     << " Not enough columns until the next mismatch @ " << i << "." << endl;
@@ -468,6 +468,7 @@ bool cutAlignment(vector<string>& sequences, int min_size, vector<string>& nodel
 				exit(-1);
 			    } else 
 				blocksize--;
+			}
 #endif
 		}
 		//

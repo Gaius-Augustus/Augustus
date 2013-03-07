@@ -1118,7 +1118,10 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 	} // end of loop over predecessor state
 	if (Constant::overlapmode){ // potentially increase maxProb and change oli if overlap is better
 	    processOvlpOption(viterbi, forward, algovar, state, endOfPred, beginOfBioExon, maxProb,
-			      endPartProb * notEndPartProb, fwdsum, optionslist, oli);
+			      endPartProb * notEndPartProb, fwdsum, optionslist, oli, base);
+	    if (oli.predEnd >= base){
+		cerr << "possible infinite loop " << oli.predEnd << " " << base << " " << state << " " << oli.state << " " << endOfPred << endl;
+	    }
 	}
     } // end of loop over the exon length
     
@@ -1185,7 +1188,7 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 */
 void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType& forward, AlgorithmVariant& algovar, 
 				  int state, int endOfPred, int beginOfBioExon, Double &maxProb,
-				  Double emiProb, Double &fwdsum, OptionsList *optionslist, OptionListItem &oli) const {
+				  Double emiProb, Double &fwdsum, OptionsList *optionslist, OptionListItem &oli, int base) const {
   vector<Ancestor>::const_iterator it;
   // distinguish between maxOvlp (biological) and maximum for ovlp (states)
   // The actual biological overlap (that depends on the state combination) may not be larger than Constant::maxOvlp
@@ -1238,11 +1241,10 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
       }
       Double predProb = predVit.get(predState) * transEmiProb;
       //cout << "possible predState=" << predState << " predProb=" << predProb << endl;
-      if (predProb > maxProb) {
-	  // TODO: remove this comment when overlap prediction is mature
-	  //cout << "# overlap improves at endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 
-	  //     << " state=" << state << " predState=" << predState << " ovlp=" << ovlp
-	  //     << " bioOvlp=" << bioOvlp << " lenProb=" << lenProb << endl;
+      if (predProb > maxProb && endOfPred2 < base) {
+	  // cout << "# overlap improves at endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 
+	  // << " state=" << state << " predState=" << predState << " ovlp=" << ovlp
+	  // << " bioOvlp=" << bioOvlp << " lenProb=" << lenProb << endl;
 	  maxProb = predProb;
 	  if (algovar == doBacktracking) {
 	      oli.base = endOfPred;

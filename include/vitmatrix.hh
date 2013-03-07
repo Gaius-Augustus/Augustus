@@ -717,7 +717,7 @@ private:
  */
 class OptionListItem {
 public:
-    OptionListItem(){};
+    OptionListItem(){reset();};
     OptionListItem(int st, int bs, Double p){
 	state = st;
 	base = predEnd = bs;

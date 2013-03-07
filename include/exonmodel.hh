@@ -81,7 +81,7 @@ public:
 				   AlgorithmVariant, OptionListItem&) const;
     void processOvlpOption(ViterbiMatrixType& , ViterbiMatrixType&, AlgorithmVariant&,
 			   int state, int endOfPred, int beginOfBioExon, Double &maxProb,
-			   Double emiProb, Double &fwdsum, OptionsList *, OptionListItem &oli) const;
+			   Double emiProb, Double &fwdsum, OptionsList *, OptionListItem &oli, int base) const;
     Double emiProbUnderModel(int begin, int end) const;
     Double endPartEmiProb(int end) const;
     Double notEndPartEmiProb(int beginOfStart, int right, int frameOfRight, Feature *exonparts) const;

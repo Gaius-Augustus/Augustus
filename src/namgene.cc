@@ -407,8 +407,8 @@ StatePath* NAMGene::getSampledPath(const char *dna, const char* seqname){
       base = oli.base;
       state = oli.state;
       pathEmiProb *= oli.probability;
-      oli.state = TYPE_UNKNOWN;
-      oli.base = -1;
+      oli.reset();
+
       while (base>0) {
 	  if (cs.idx[base] != curGCIdx) { // chech whether GC content has changed
 	    curGCIdx = cs.idx[base];
@@ -425,6 +425,7 @@ StatePath* NAMGene::getSampledPath(const char *dna, const char* seqname){
 	      base = oli.base;
 	  state = oli.state;
 	  pathEmiProb *= oli.probability;
+	  oli.reset();
       }
   }
 
@@ -719,7 +720,7 @@ list<AltGene> *NAMGene::getStepGenes(AnnoSequence *annoseq, SequenceFeatureColle
     sfc.createPredictionScheme(genesAllHints);
     PredictionScheme *scheme  = sfc.predictionScheme;
 #ifdef DEBUG
-    // scheme->print(annoseq->offset);
+    //scheme->print(annoseq->offset);
 #endif
     /*
      * Then make further runs with certain hintgroups deactivated.
@@ -1447,12 +1448,13 @@ void NAMGene::readOvlpLenDist( ){
       cout << "# Using default overlap length distribution file." << endl;
   }
   
-  if (Constant::maxOvlp >= Constant::min_coding_len)
-      throw NAMGeneError( string("maxOvlp(") +  itoa(Constant::maxOvlp) +
-			  string(") is not smaller than /Constant/min_coding_len(")
-			  + itoa(Constant::min_coding_len) + ").\n"+
-			  "Please change this by decreasing maxOvlp or increasing /Constant/min_coding_len.");
-
+  if (Constant::maxOvlp >= Constant::min_coding_len){
+      cerr << string("WARNING: maxOvlp(") +  itoa(Constant::maxOvlp) +
+	  string(") is not smaller than /Constant/min_coding_len(")
+	  + itoa(Constant::min_coding_len) + ").\n" +
+	  "This may result in nested genes, either properly nested, or several genes with the same stop codon.\n" + 
+	  "You may want to change this by decreasing maxOvlp or increasing /Constant/min_coding_len." << endl;
+  }
   if (istrm) {
     Constant::head2tail_ovlp.assign(Constant::maxOvlp+1, 0.0);
     istrm >>  goto_line_after( "[HEAD2TAIL]" );
