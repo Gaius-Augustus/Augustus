@@ -39,7 +39,7 @@ void CompGenePred::start(){
 #ifdef DEBUG
     cout << "reading in the phylogenetic tree" << endl;
 #endif
-    PhyloTree *tree = new PhyloTree(Constant::treefile);  //has to be initialized before OrthoGraph
+    PhyloTree *tree = new PhyloTree(Constant::treefile);  // has to be initialized before OrthoGraph
 
     OrthoGraph::tree = tree;
     GeneMSA::tree = tree;
@@ -71,11 +71,26 @@ void CompGenePred::start(){
     StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
 
     // temporary tests of codon rate matrix stuff (Mario)
-    //double *pi = ExonModel::getCodonUsage();
-    //gsl_matrix *Q = getCodonRateMatrix(pi,1,1);
-    //cout << "codon rate matrix" << endl;
-    //printCodonMatrix(Q);
-    
+    /*double *pi = ExonModel::getCodonUsage();
+    gsl_matrix *Q = getCodonRateMatrix(pi,.1,2);
+    cout << "codon rate matrix Q" << endl;
+    printCodonMatrix(Q);
+    gsl_vector *lambda;
+    gsl_matrix *U, *Uinv;
+    int status = eigendecompose(Q, pi, lambda, U, Uinv);
+    if (status)
+	throw ProjectError("Spectral decomposition of rate matrix failed.");
+    double t = 0.1;
+    gsl_matrix *P = expQt(t, lambda, U, Uinv);
+    cout << "codon rate matrix P(" << t << ")" << endl;
+    printCodonMatrix(P);
+    gsl_matrix_free(U);
+    gsl_matrix_free(Uinv);
+    gsl_matrix_free(P);
+    gsl_matrix_free(Q);
+    gsl_vector_free(lambda);
+    */
+
     vector<string> speciesNames = OrthoGraph::tree->species;
     GenomicMSA msa;
     msa.readAlignment(speciesNames);  // reads the alignment
