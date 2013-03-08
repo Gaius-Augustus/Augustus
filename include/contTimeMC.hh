@@ -14,6 +14,7 @@
 
 // project includes
 #include "geneticcode.hh"
+#include "matrix.hh"
 
 // standard C/C++ includes
 #include <iostream>
@@ -21,6 +22,71 @@
 #include <gsl/gsl_eigen.h>
 
 using namespace std;
+
+/*
+ * class CodonEvo
+ * Computes and stores 64x64 codon substitution probability matrices
+ * P(t,omega,kappa,pi) = exp(Q(omega,kappa,pi)*t)
+ * for a sample of values for t and omega (dN/dS, selection)
+ * and a fixed given value of kappa (transition/transversion ratio)
+ * and vector pi (codon usage).
+ * Matrices are precomputed and retrieval of P(t,omega) is then a constant time lookup
+ * as this is needed very often during estimation of omega for a given tree.
+ */
+class CodonEvo {
+public:
+    CodonEvo() : k(0), m(0), kappa(2) {};
+    ~CodonEvo();
+    void setKappa(double kappa){ this->kappa = kappa;} // transition/transversion ratio
+    void setPi(double *pi); // codon usage
+
+    /* Determine the branch lengths for which matrices P should be stored, at most m.
+     * For trees with few species, say <10, this could be all branch lengths b occuring
+     * in the tree. A value of m=-1 means to store all lengths in b. Memory may be saved
+     * by building m clusters roughly representing all lengths in b.
+     */
+    void setBranchLengths(vector<double> &b, int m=-1);
+    void printBranchLengths();
+
+    /*
+     * Chooses k values for omega around 1, e.g. 0.8, 1, 1.2 for k=3.
+     * Later, one can see which of these values of omega gives the maximum likelihood.
+     */
+    void setOmegas(int k);
+    vector<double> *getOmegas(){return &omegas;}
+    void printOmegas();
+
+    void computePmatrices(); // precomputes and stores the array of matrices
+
+    /*
+     * Returns a pointer to the 64x64 substitution probability matrix
+     * for which t and omega come closest to scored values.
+     * The second version is for the (typical) case when omega is already given by an index u to omegas;
+     */
+    gsl_matrix *getSubMatrixP(double omega, double t);
+    gsl_matrix *getSubMatrixP(int u, double t);
+    
+    /*
+     * Computes the substitution probability 
+     * P( X(t)=to | X(0)=from, omega), where 1 <= from,to <= 64 are codons
+     * If you want to call this for many values of 'from' and 'to', use rather getSubMatrixP above.
+     */
+    double subProb(int from, int to, double omega, double t){
+	gsl_matrix *P = getSubMatrixP(omega, t);
+	return gsl_matrix_get(P, from, to);
+    }
+private:
+    int findClosestIndex(vector<double> &v, double val);
+
+private:
+    int k; // number of different omega values for which P's are stored
+    int m; // number of branch lengths (times) for which P's are stored
+    double kappa;
+    double *pi;
+    vector<double> times; // sorted vector of branch lengths
+    vector<double> omegas; // sorted vector of omegas (contains values below, around and above 1)
+    Matrix<gsl_matrix *> allPs;
+};
 
 /*
  * 64x64 rate matrix Q for codon substitutions as in Yang, "Computational Molecular Evolution", (2.7)
@@ -46,8 +112,6 @@ int eigendecompose(gsl_matrix *Q,       // input
  */
 
 gsl_matrix *expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv);
-
-
 
 void printCodonMatrix(gsl_matrix *M);
 #endif    // _CONTTIMEMC_HH

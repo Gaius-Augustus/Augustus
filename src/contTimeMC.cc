@@ -17,6 +17,170 @@
 // standard C/C++ includes
 #include <iostream>
 #include <iomanip>
+#include <vector> 
+#include <algorithm>
+
+void CodonEvo::setPi(double *pi){
+    this->pi = new double[64];
+    for (int i=0;i<64; i++)
+	this->pi[i] = pi[i];
+}
+
+/* Determine the branch lengths for which matrices P should be stored, at most m.
+ * For trees with few species, say <10, this could be all branch lengths b occuring
+ * in the tree. A value of m=-1 means to store all lengths in b. For large trees, memory 
+ * is saved by storing only m times roughly representing all lengths in b.
+ */
+void CodonEvo::setBranchLengths(vector<double> &b, int m){
+    this->m = m;
+    // make a sorted copy of the unique times in b
+    times = b;
+    sort(times.begin(), times.end());
+    vector<double>::iterator it = unique(times.begin(), times.end());
+    times.resize(distance(times.begin(), it));
+
+    if (this->m < 0 || this->m > times.size())
+	this->m = times.size(); // as default take all values of b
+
+    if (this->m < times.size()){
+	// Store fewer values than are in b. 
+	if (this->m == 1){
+	    // take mean branch length of b if there shall be only one branch length in 'times'
+	    double sum = 0.0;
+	    for (vector<double>::iterator it = b.begin(); it != b.end(); it++)
+		sum += *it;
+	    times.clear();
+	    times.push_back(sum / b.size());
+	} else {
+	    // For now, very simply take m equidistant branch lengths between min and max
+	    double min = times.front();
+	    double step = (times.back() - min) / (this->m-1);
+	    times.clear();
+	    for (int i=0; i < this->m; i++)
+		times.push_back(min + i*step);
+	}
+    }
+}
+
+void CodonEvo::printBranchLengths(){
+    for (int i=0; i<times.size(); i++)
+	cout << i << " " << times[i] << endl;
+}
+
+/*
+ * Chooses k values for omega around 1, for which matrices P will be stored.
+ * Examples:
+ * k   set of omegas
+ * 1   1 (does not make sense for selection detection)
+ * 2   0.67, 1
+ * 3   0.67, 1, 1.5
+ * 4   0.5, 0.75, 1, 1.33
+ * 5   0.5, 0.75, 1, 1.333, 2
+ * 6   0.4, 0.6, 0.8, 1, 1.25, 1.67
+ * 10  0.29, 0.43, 0.57, 0.71, 0.86, 1, 1.17, 1.4, 1.75, 2.33
+ * Later, one can see which of these values of omega gives the maximum likelihood.
+ */
+void CodonEvo::setOmegas(int k){
+    omegas.clear();
+    int c = 2; // must be >0, the larger this constant the closer the omegas are to 1
+    if (k<1)
+	return;
+    int r = (int) (0.5 + (double) (k-1)/2);
+    int rr = k-1-r;
+    for (int i=r; i>=1; i--)
+	omegas.push_back(1 - (double) i/(c+r));
+    omegas.push_back(1);
+    for (int i=1; i<=rr; i++)
+	omegas.push_back(1.0 / (1 - (double) i/(c+r)));
+    this->k = k;
+}
+
+void CodonEvo::printOmegas(){
+    for (int i=0; i < omegas.size(); i++)
+	cout << i << " " << omegas[i] << endl;
+}
+
+/* 
+ * Precompute and store the array of matrices.
+ * Takes approximate k * m * 0.015 seconds on greif1: Time for eigendecompose is small compared to time for expQt.
+ */
+void CodonEvo::computePmatrices(){
+    double omega;
+    double t;
+    gsl_matrix *Q, *U, *Uinv, *P;
+    gsl_vector *lambda;
+    int status;
+    allPs.assign(k, m, NULL); // omegas index the rows, times index the columns
+    cout << k << "x" << m << " matrices" << endl;
+    for (int u=0; u<k; u++){
+	omega = omegas[u];
+	// compute decomposition of Q, which does not require t yet
+	Q = getCodonRateMatrix(pi, omega, kappa);
+	status = eigendecompose(Q, pi, lambda, U, Uinv);
+	if (status) {
+	    stringstream s;
+	    s << "Spectral decomposition of rate matrix for omega=" << omega << " failed.";
+	    throw ProjectError(s.str());
+	}
+	for (int v=0; v<m; v++){
+	    t = times[v]; // time
+	    P = expQt(t, lambda, U, Uinv);
+	    // store P
+	    allPs[u][v] = P;
+	    cout << "codon rate matrix P(t=" << t << ", omega=" << omega << ")" << endl;
+	    printCodonMatrix(allPs[u][v]);
+	}
+	gsl_matrix_free(U);
+	gsl_matrix_free(Uinv);
+	gsl_matrix_free(Q);
+	gsl_vector_free(lambda);
+    }
+}
+
+/*
+ * Returns a pointer to the 64x64 substitution probability matrix
+ * for which omega and t come closest to scored values.
+ */
+gsl_matrix *CodonEvo::getSubMatrixP(double omega, double t){
+    // determine index u into vector of omegas such that omegas[u] is close to omega
+    int u = findClosestIndex(omegas, omega);
+    return getSubMatrixP(u, t);
+}
+
+/*
+ * Returns a pointer to the 64x64 substitution probability matrix
+ * for which omegas[u] and t come closest to scored values.
+ */
+gsl_matrix *CodonEvo::getSubMatrixP(int u, double t){
+    // determine index v into vector of branch lengths such that times[v] is close to t
+    int v = findClosestIndex(times, t);
+    cout << "approximating by " << omegas[u] << " and " << times[v] << endl;
+    return allPs[u][v];
+}
+
+// determines index j into vector v such that v[j] is closest to val
+int CodonEvo::findClosestIndex(vector<double> &v, double val){
+    // do linear search, logarithmic search is probably not worth it with the vector sizes we expect
+    int j = 0;
+    double dist = 1000; // infinity
+    for (int i=0; i < v.size(); i++)
+	if (abs(v[i]-val) < dist){
+	    dist = abs(v[i]-val);
+	    j = i;
+	}
+    return j;
+}
+
+// destructor
+CodonEvo::~CodonEvo(){
+    omegas.clear();
+    times.clear();
+    for (int i=0; i < allPs.getColSize(); i++)
+	for (int j=0; j< allPs.getRowSize(); j++){
+	    gsl_matrix_free(allPs[i][j]);
+	}
+    allPs.assign(0, 0, NULL);
+}
 
 /*
  * 64x64 rate matrix Q for codon substitutions as in Yang, "Computational Molecular Evolution", (2.7)

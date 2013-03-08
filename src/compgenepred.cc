@@ -23,6 +23,7 @@
 
 #include "contTimeMC.hh"
 #include <gsl/gsl_matrix.h>
+#include <ctime>
 
 CompGenePred::CompGenePred(){
     if (Constant::Constant::dbaccess.empty()) { // give priority to database in case both exist
@@ -72,23 +73,24 @@ void CompGenePred::start(){
 
     // temporary tests of codon rate matrix stuff (Mario)
     /*double *pi = ExonModel::getCodonUsage();
-    gsl_matrix *Q = getCodonRateMatrix(pi,.1,2);
-    cout << "codon rate matrix Q" << endl;
-    printCodonMatrix(Q);
-    gsl_vector *lambda;
-    gsl_matrix *U, *Uinv;
-    int status = eigendecompose(Q, pi, lambda, U, Uinv);
-    if (status)
-	throw ProjectError("Spectral decomposition of rate matrix failed.");
-    double t = 0.1;
-    gsl_matrix *P = expQt(t, lambda, U, Uinv);
-    cout << "codon rate matrix P(" << t << ")" << endl;
+    CodonEvo codonevo;
+    codonevo.setKappa(2);
+    codonevo.setPi(pi);
+    vector<double> b; // all branch lengths occuring in the tree
+    b.push_back(.1);
+    b.push_back(.2);
+    b.push_back(.3);
+    codonevo.setBranchLengths(b, 10);
+    cout << "Branch lengths, for which substitution matrices are stored:" << endl;
+    codonevo.printBranchLengths();
+    
+    codonevo.setOmegas(10);
+    cout << "Omegas, for which substitution matrices are stored:" << endl;
+    codonevo.printOmegas();
+    codonevo.computePmatrices();
+    
+    gsl_matrix *P = codonevo.getSubMatrixP(0.3, 0.25);
     printCodonMatrix(P);
-    gsl_matrix_free(U);
-    gsl_matrix_free(Uinv);
-    gsl_matrix_free(P);
-    gsl_matrix_free(Q);
-    gsl_vector_free(lambda);
     */
 
     vector<string> speciesNames = OrthoGraph::tree->species;

@@ -914,17 +914,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
     for(geneit1 = alltranscripts->begin(); geneit1 != alltranscripts->end(); geneit1++){
       geneit1->normPostProb(sampleiterations); // +1 wegen Viterbipfad
     }
-  } // if (sampleiterations>1)
-  /* if(mea_prediction){
-    int i=1;
-    for(list<Gene>::iterator it=alltranscripts->begin(); it!=alltranscripts->end(); it++){
-      it->geneid = i;
-      it->seqname = "2R";
-      it->source = "AUGUSTUS_samp";
-      it->printGFF();   
-      i++;
-    }
-    }*/
+  }
   // determine transcripts with maximum expected accuracy criterion
   if (Constant::MultSpeciesMode){
     // store alltranscripts in member variable of NAMGene
