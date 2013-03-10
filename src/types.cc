@@ -388,7 +388,7 @@ Double quantile(const vector<Double> &v, float q){
   vector<Double> w(v);
   std::sort(w.begin(), w.end()); // O(n log n) but finding a quantile would be possible also in linear time
   int threshindex = (int) (q * w.size());
-  cout << "quantile: size=" << w.size() << " index=" << threshindex << endl;
+  // cout << "quantile: size=" << w.size() << " index=" << threshindex << endl;
   return w[threshindex];
 }
 

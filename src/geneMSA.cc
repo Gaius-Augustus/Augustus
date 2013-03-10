@@ -976,9 +976,10 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, OrthoExon &oe, vector<i
                 }
             }
         }
-        if (noSpecies == 2 && speciesIdx[1]==2) {
+	//cout << noSpecies << " " << speciesIdx[1] << endl;
+        if (noSpecies == 2 /*&& speciesIdx[1]==2*/) {
             orthoExonsWithOmega.push_back(oe);
-            //printSingleOrthoExon(oe, offsets);
+            printSingleOrthoExon(oe, offsets); // TODO remove
             vector<string> pamlSeq;
             for (vector<int>::iterator it = speciesIdx.begin(); it!=speciesIdx.end(); it++) {
                 if (this->getStrand(*it) == minusstrand) {

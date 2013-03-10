@@ -127,8 +127,10 @@ void CodonEvo::computePmatrices(){
 	    P = expQt(t, lambda, U, Uinv);
 	    // store P
 	    allPs[u][v] = P;
-	    cout << "codon rate matrix P(t=" << t << ", omega=" << omega << ")" << endl;
-	    printCodonMatrix(allPs[u][v]);
+#ifdef DEBUG
+	    //	    cout << "codon rate matrix P(t=" << t << ", omega=" << omega << ")" << endl;
+	    //	    printCodonMatrix(allPs[u][v]);
+#endif
 	}
 	gsl_matrix_free(U);
 	gsl_matrix_free(Uinv);

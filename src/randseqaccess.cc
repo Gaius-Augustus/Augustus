@@ -113,11 +113,12 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
  */
 AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
     mysqlpp::StoreQueryResult store_res;
-    string dna;
+    string dna, querystr;
     mysqlpp::Query query = con.query();
     query << "SELECT dnaseq,start,end FROM genomes WHERE species='" << speciesname << "' AND seqname='"
 	  << chrName << "' AND start <= " << end << " AND end >= " << start << " ORDER BY start ASC";
-    // cout << "Executing" << endl << query.str() << endl;
+    querystr = query.str();
+    // cout << "Executing" << endl << querystr << endl;
     vector<genomes> g;
     query.storein(g);
     
@@ -125,7 +126,7 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
     AnnoSequence* annoseq = new AnnoSequence();
     annoseq->seqname = newstrcpy(chrName);
     if (g.empty())
-	throw ProjectError("Could not retrieve sequence from database using query:" + query.str());
+	throw ProjectError("Could not retrieve sequence from database using query:" + querystr);
     else if (g.size() == 1){ // segment overlaps a single dna chunk
 	if (!(g[0].start <= start && g[0].end >= end))
 	    throw ProjectError("Tried to retrieve a sequence that is only partially contained in database:"

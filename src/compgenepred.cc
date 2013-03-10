@@ -81,8 +81,7 @@ void CompGenePred::start(){
     b.push_back(.2);
     b.push_back(.3);
     codonevo.setBranchLengths(b, 10);
-    cout << "Branch lengths, for which substitution matrices are stored:" << endl;
-    codonevo.printBranchLengths();
+    // codonevo.printBranchLengths();
     
     codonevo.setOmegas(10);
     cout << "Omegas, for which substitution matrices are stored:" << endl;
@@ -133,7 +132,7 @@ void CompGenePred::start(){
 
                     namgene.doViterbiPiecewise(sfc, seqRange, bothstrands); // sampling
                     list<Gene> *alltranscripts = namgene.getAllTranscripts();
-                    if(alltranscripts){
+                    if (alltranscripts){
                         cout << "building Graph for " << speciesNames[s] << endl;
                         /* build datastructure for graph representation
                          * @stlist : list of all sampled states
