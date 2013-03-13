@@ -32,7 +32,7 @@ while (<>) {
 	    @alidata = @alirows = ();
 	}
 	print $line;
-    } elsif (/(^s\s.*\t)(\S+)$/){
+    } elsif (/(^s\s.*\s)(\S+)$/){
 	push @alidata, $1;
 	push @alirows, $2;
     }
