@@ -115,6 +115,8 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/ExonModel/exonlengthD",
 "/ExonModel/infile",
 "/ExonModel/k",
+"/ExonModel/lenboostE",
+"/ExonModel/lenboostL",
 "/ExonModel/maxexonlength",
 "/ExonModel/minexonlength",
 "/ExonModel/minPatSum",

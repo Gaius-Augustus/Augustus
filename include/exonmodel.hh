@@ -194,6 +194,8 @@ private:
     static int            verbosity;
     static list<string>   *tiswins; // holds translation initiation windows (for CRF training)
     static int            startcounts[]; // how often did the different start codons appear during training?
+    static int            lenboostL; // parameters for boosting length distribution of single and initial exons
+    static double         lenboostE; // length above L are improved, the more the larger E is
 };
 
 

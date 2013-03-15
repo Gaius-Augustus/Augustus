@@ -108,6 +108,8 @@ bool            ExonModel::haveORF = false;
 int             ExonModel::lastParIndex = -1; // GC-index of current parameter set
 int             ExonModel::verbosity;
 int             ExonModel::startcounts[64] = {0};
+int             ExonModel::lenboostL = INT_MAX; // parameters for boosting length dist of single and initial exons
+double          ExonModel::lenboostE = 0; // length above L are improved, the more the larger E is
 
 /* --- OpenReadingFrame methods ------------------------------------ */
 
@@ -377,6 +379,18 @@ void ExonModel::init() {
     } catch( ProjectError e) { 
 	cerr << e.getMessage();
     }
+    try{
+	lenboostE = Properties::getdoubleProperty( "/ExonModel/lenboostE");
+	if (lenboostE < 0.0)
+	    throw ProjectError("Inadmissible value: /ExonModel/lenboostE is negative.");
+    } catch( ProjectError e) { 
+	cerr << e.getMessage();
+    }
+    try{
+	lenboostL = Properties::getIntProperty( "/ExonModel/lenboostL");
+    } catch( ProjectError e) { 
+	cerr << e.getMessage();
+    }
 	
     trans_init_window = Constant::trans_init_window;
 
@@ -455,14 +469,20 @@ void ExonModel::readProbabilities(int parIndex) {
 	    lenDistInitial.assign(max_exon_length+1, 0.0);
 	    lenDistInternal.assign(max_exon_length+1, 0.0);
 	    lenDistTerminal.assign(max_exon_length+1, 0.0);
-	
+	    double boostfactor = 1.0;
 	    for( int i = 0; i <= exonLenD; i++ ){
 		istrm >> dummyi;
 		istrm >> dbl;
 		lenDistSingle[i] = dbl / 1000;
 		istrm >> dbl; 
 		lenDistInitial[i]= dbl / 1000; 
-		istrm >> dbl; 
+		istrm >> dbl;
+		if (i > lenboostL){
+		    // if requested (e.g. on bacteria), boost the probabilities of lengths > L by (1+E)^{i-L}
+		    boostfactor *= (1 + lenboostE);
+		    lenDistInitial[i] *= boostfactor;
+		    lenDistSingle[i] *= boostfactor;
+		}
 		lenDistInternal[i] = dbl / 1000;
 		istrm >> dbl;
 		lenDistTerminal[i] = dbl / 1000;
