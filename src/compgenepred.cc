@@ -43,7 +43,7 @@ void CompGenePred::start(){
     PhyloTree *tree = new PhyloTree(Constant::treefile);  // has to be initialized before OrthoGraph
 
     OrthoGraph::tree = tree;
-    GeneMSA::tree = tree;
+    GeneMSA::setTree(tree);
     OrthoGraph::numSpecies = OrthoGraph::tree->species.size();
 
 
@@ -72,25 +72,23 @@ void CompGenePred::start(){
     StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
 
     // temporary tests of codon rate matrix stuff (Mario)
-    /*double *pi = ExonModel::getCodonUsage();
+    double *pi = ExonModel::getCodonUsage();
     CodonEvo codonevo;
     codonevo.setKappa(2);
     codonevo.setPi(pi);
     vector<double> b; // all branch lengths occuring in the tree
-    b.push_back(.1);
-    b.push_back(.2);
-    b.push_back(.3);
+    b.push_back(.4);
     codonevo.setBranchLengths(b, 10);
     // codonevo.printBranchLengths();
     
-    codonevo.setOmegas(10);
+    codonevo.setOmegas(40);
     cout << "Omegas, for which substitution matrices are stored:" << endl;
     codonevo.printOmegas();
-    codonevo.computePmatrices();
+    codonevo.computeLogPmatrices();
     
-    gsl_matrix *P = codonevo.getSubMatrixP(0.3, 0.25);
+    gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
     printCodonMatrix(P);
-    */
+    GeneMSA::setCodonEvo(&codonevo);
 
     vector<string> speciesNames = OrthoGraph::tree->species;
     GenomicMSA msa;

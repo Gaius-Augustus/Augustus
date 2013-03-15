@@ -54,27 +54,39 @@ public:
      */
     void setOmegas(int k);
     vector<double> *getOmegas(){return &omegas;}
+    double getOmega(int u){return omegas[u];}
+    int getK(){ return k;}
     void printOmegas();
 
-    void computePmatrices(); // precomputes and stores the array of matrices
+    void computeLogPmatrices(); // precomputes and stores the array of matrices
 
     /*
      * Returns a pointer to the 64x64 substitution probability matrix
      * for which t and omega come closest to scored values.
      * The second version is for the (typical) case when omega is already given by an index u to omegas;
      */
-    gsl_matrix *getSubMatrixP(double omega, double t);
-    gsl_matrix *getSubMatrixP(int u, double t);
+    gsl_matrix *getSubMatrixLogP(double omega, double t);
+    gsl_matrix *getSubMatrixLogP(int u, double t);
     
     /*
      * Computes the substitution probability 
      * P( X(t)=to | X(0)=from, omega), where 1 <= from,to <= 64 are codons
      * If you want to call this for many values of 'from' and 'to', use rather getSubMatrixP above.
      */
-    double subProb(int from, int to, double omega, double t){
-	gsl_matrix *P = getSubMatrixP(omega, t);
+    double subLogProb(int from, int to, double omega, double t){
+	gsl_matrix *P = getSubMatrixLogP(omega, t);
 	return gsl_matrix_get(P, from, to);
     }
+    /*
+     * log likelihood of exon candidate pair e1, e1 (required: equal number of codons, gapless)
+     * Used for testing. The pruning algorithm requires tuples of codons instead.
+     */
+    double logLik(const char *e1, const char *e2, int u, double t); // output variables
+    /*
+     * Estimate selection omega on pair of codon sequences.
+     */
+    double estOmegaOnSeqPair(const char *e1, const char *e2, double t, // input variables
+			     int& numAliCodons, int &numSynSubst, int &numNonSynSubst); // output variables
 private:
     int findClosestIndex(vector<double> &v, double val);
 
@@ -85,7 +97,7 @@ private:
     double *pi;
     vector<double> times; // sorted vector of branch lengths
     vector<double> omegas; // sorted vector of omegas (contains values below, around and above 1)
-    Matrix<gsl_matrix *> allPs;
+    Matrix<gsl_matrix *> allPs; // parametrized log probability matrices
 };
 
 /*

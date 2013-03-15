@@ -104,7 +104,7 @@ void CodonEvo::printOmegas(){
  * Precompute and store the array of matrices.
  * Takes approximate k * m * 0.015 seconds on greif1: Time for eigendecompose is small compared to time for expQt.
  */
-void CodonEvo::computePmatrices(){
+void CodonEvo::computeLogPmatrices(){
     double omega;
     double t;
     gsl_matrix *Q, *U, *Uinv, *P;
@@ -127,10 +127,10 @@ void CodonEvo::computePmatrices(){
 	    P = expQt(t, lambda, U, Uinv);
 	    // store P
 	    allPs[u][v] = P;
-#ifdef DEBUG
-	    //	    cout << "codon rate matrix P(t=" << t << ", omega=" << omega << ")" << endl;
-	    //	    printCodonMatrix(allPs[u][v]);
-#endif
+	    //#ifdef DEBUG
+	    // cout << "codon rate matrix log P(t=" << t << ", omega=" << omega << ")" << endl;
+	    // printCodonMatrix(allPs[u][v]);
+	    //#endif
 	}
 	gsl_matrix_free(U);
 	gsl_matrix_free(Uinv);
@@ -143,20 +143,20 @@ void CodonEvo::computePmatrices(){
  * Returns a pointer to the 64x64 substitution probability matrix
  * for which omega and t come closest to scored values.
  */
-gsl_matrix *CodonEvo::getSubMatrixP(double omega, double t){
+gsl_matrix *CodonEvo::getSubMatrixLogP(double omega, double t){
     // determine index u into vector of omegas such that omegas[u] is close to omega
     int u = findClosestIndex(omegas, omega);
-    return getSubMatrixP(u, t);
+    return getSubMatrixLogP(u, t);
 }
 
 /*
  * Returns a pointer to the 64x64 substitution probability matrix
  * for which omegas[u] and t come closest to scored values.
  */
-gsl_matrix *CodonEvo::getSubMatrixP(int u, double t){
+gsl_matrix *CodonEvo::getSubMatrixLogP(int u, double t){
     // determine index v into vector of branch lengths such that times[v] is close to t
     int v = findClosestIndex(times, t);
-    cout << "approximating by " << omegas[u] << " and " << times[v] << endl;
+    //cout << "approximating by omega=" << omegas[u] << " and t=" << times[v] << endl;
     return allPs[u][v];
 }
 
@@ -173,6 +173,61 @@ int CodonEvo::findClosestIndex(vector<double> &v, double val){
     return j;
 }
 
+/*
+ * log likelihood of exon candidate pair e1, e2 (required: equal number of codons, gapless)
+ * Used for testing. The pruning algorithm requires tuples of codons instead.
+ */
+double CodonEvo::logLik(const char *e1, const char *e2, int u, double t) {
+    gsl_matrix *logP = CodonEvo::getSubMatrixLogP(u, t);
+    int n = strlen(e1)/3; // number of nucleotide triples
+    int from, to; // from: codon in e1, to: codon in e2
+    Seq2Int s2i(3);
+    double loglik = 0.0;
+    for (int i=0; i<n; i++){
+	try {
+	    from = s2i(e1 + 3*i);
+	    to   = s2i(e2 + 3*i);
+	    loglik += gsl_matrix_get(logP, from, to);
+	} catch (...){} // gap or n characters
+    }
+    return loglik;
+}
+
+double CodonEvo::estOmegaOnSeqPair(const char *e1, const char *e2, double t, // input variables
+		int& numAliCodons, int &numSynSubst, int &numNonSynSubst){ // output variables
+    if (!e1 || !e2 || strlen(e1) != strlen(e2) || strlen(e1)%3 != 0)
+	throw ProjectError("CodonEvo::logLik: wrong exon lengths");
+    int maxU = 0; // index to omegas
+    double loglik, ML = -numeric_limits<double>::max();
+    for (int u=0; u < k; u++){
+	loglik = logLik(e1, e2, u, t);
+	if (loglik > ML){
+	    ML = loglik;
+	    maxU = u;
+	}
+    }
+    
+    numAliCodons = 0; // number of aligned codons (gapless in both exons)
+    numSynSubst = 0;
+    numNonSynSubst = 0;
+    int n = strlen(e1)/3; // number of nucleotide triples
+    int from, to; // from: codon in e1, to: codon in e2
+    Seq2Int s2i(3);
+    for (int i=0; i<n; i++){
+	try {
+	    from = s2i(e1 + 3*i);
+	    to   = s2i(e2 + 3*i);
+	    numAliCodons++;
+	    if (from != to){
+		if (GeneticCode::translate(from) == GeneticCode::translate(to))
+		    numSynSubst++;
+		else 
+		    numNonSynSubst++;
+	    }
+	} catch (...){} // gap or n characters
+    }
+    return omegas[maxU];
+}
 // destructor
 CodonEvo::~CodonEvo(){
     omegas.clear();
@@ -317,6 +372,7 @@ int eigendecompose(gsl_matrix *Q,        // input
 /*
  * compute the matrix exponential P(t) = exp(Q*t),
  * where Q is given by U, diag(lambda) and U^{-1} as computed by eigendecompose
+ * Values of P are stored in log-space, i.e. ln P is stored (elementwise natural logarithm).
  */
 gsl_matrix *expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv){
     gsl_matrix* P = gsl_matrix_alloc (64, 64);    
@@ -327,7 +383,14 @@ gsl_matrix *expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv)
 	    Pij = 0;
 	    for (int k=0; k<64; k++)
 		Pij += gsl_matrix_get(U, i, k) * exp(gsl_vector_get(lambda, k)*t) * gsl_matrix_get(Uinv, k, j);
-	    gsl_matrix_set(P, i, j, Pij);
+	    if (Pij>0.0)
+		gsl_matrix_set(P, i, j, log(Pij));
+	    else if (Pij < -0.001){
+		cerr << Pij << endl;
+		throw ProjectError("negative probability in substitution matrix");
+	    } else {
+		gsl_matrix_set(P, i, j, -numeric_limits<double>::max()); // ln 0 = -infty	
+	    }
 	}
     }
     return P;
@@ -339,18 +402,21 @@ gsl_matrix *expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv)
 void printCodonMatrix(gsl_matrix *M) {    // M is usually Q or P = exp(Qt)
     cout << "      ";
     for (int j=0; j<64; j++)
-	cout << "  " << Seq2Int(3).inv(j) << "  "; // head line codon
+	cout << "   " << Seq2Int(3).inv(j) << "  "; // head line codon
     cout << endl << "      ";;
     for (int j=0; j<64; j++)
-	cout << "   " << GeneticCode::translate(j) << "   "; // head line amino acid
+	cout << "   " << GeneticCode::translate(j) << "    "; // head line amino acid
     cout << endl;
     for (int i=0; i<64; i++){
 	cout << Seq2Int(3).inv(i) << " " << GeneticCode::translate(i) << " ";
 	for (int j=0; j<64; j++){
-	    if (abs(gsl_matrix_get(M,i,j)) > 1e-6)
-		cout << setw(6) << fixed << setprecision(3) << gsl_matrix_get(M,i,j) << " ";
-	    else 
-		cout << setw(7) << " ";
+	    double m = gsl_matrix_get(M,i,j);
+	    if ( 0 <= m && m < 1e-6)
+		cout << setw(7) << " "; // probability 0
+	    else if (m == -numeric_limits<double>::max())
+		cout << setw(8) << " -inf "; // probability 0 in log-space
+	    else
+		cout << setw(7) << fixed << setprecision(3) << gsl_matrix_get(M,i,j) << " ";
 	}
 	cout << endl;
     }

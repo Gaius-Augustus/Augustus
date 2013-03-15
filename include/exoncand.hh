@@ -32,8 +32,10 @@ enum ExonType{UNKNOWN_EXON = -1,
     rsingleGene, rinitial_exon, rinternal_0, rinternal_1, rinternal_2, rterminal_0, rterminal_1, rterminal_2
 };
 
-extern const int exonTypeReadingFrames[EXON_TYPES];
-extern const char* stateExonTypeIdentifiers[EXON_TYPES];
+bool isPlusExon(ExonType t);
+
+extern const int exonTypeReadingFrames[EXON_TYPES-1];
+extern const char* stateExonTypeIdentifiers[EXON_TYPES-1];
 
 // converts a stateTypeIdentifier to the ExonType
 ExonType toExonType(const char* str);
@@ -70,6 +72,7 @@ public:
 
     int getStart(void);
     int getEnd(void);
+    int len() {return end-begin+1;}
     ExonType getExonType(void);
     Double getScore(void);
     int complementType(void);
@@ -82,7 +85,7 @@ class AlignSeq {
 public:
     AlignSeq() {}
     ~AlignSeq(){}
-    string name;
+    string name; // Mario: this is the species name rename later
     pair<string,long int> seqID; // stores the sequence ID and the length of the sequence ID
     int start, offset, seqLen, alignLen;
     Strand strand;

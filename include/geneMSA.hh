@@ -15,6 +15,7 @@
 #include "orthoexon.hh"
 #include "phylotree.hh"
 #include "randseqaccess.hh"
+#include "contTimeMC.hh"
 
 
 struct AlignmentBlock {
@@ -23,7 +24,6 @@ struct AlignmentBlock {
 
 class GeneMSA {
 public:
-    static PhyloTree *tree;
     static int utr_range;
     static int orthoExonID; // stores an ID for exons of different species which are orthologous to each other
     static int geneRangeID; // stores an ID for the possible gene ranges of the different species which belong together
@@ -37,6 +37,8 @@ public:
     list<OrthoExon> orthoExonsWithOmega;        // list of ortholog exons with a computed omega=dN/dS ratio
 
     GeneMSA() {};
+    static void setTree(PhyloTree *t){tree = t;}
+    static void setCodonEvo(CodonEvo *c){codonevo = c;}
     ~GeneMSA(){
         if (!alignment.empty()) {
             alignment.clear();
@@ -83,7 +85,7 @@ public:
     void createOrthoExons(vector<int> offsets);	// searches for the orthologue exons of the exon candidates of the reference species
     list<ExonCandidate*>* getExonCands(int speciesIdx);
     list<OrthoExon> getOrthoExons();
-    vector<ExonCandidate*> cutIncompleteCodons(vector<ExonCandidate*> orthoex);
+    void cutIncompleteCodons(vector<ExonCandidate*> &orthoex);
     void readOmega(string file);
     string getAlignedOrthoExon(AlignSeq *as_ptr, ExonCandidate* ec, string seq, vector<int> offsets, int speciesIdx);
     vector <string> getSeqForPaml(AlignmentBlock *it_ab, vector<ExonCandidate*> oe, vector<string> seq, vector<int> offsets, vector<int> speciesIdx);
@@ -91,10 +93,13 @@ public:
     void printGeneRanges();
     void printExonCands(vector<int> offsets);
     void printOrthoExons(RandSeqAccess *rsa, vector<int> offsets);
-    void printSingleOrthoExon(OrthoExon &oe, vector<int> offsets);
+    void printSingleOrthoExon(OrthoExon &oe, vector<int> offsets, bool files = true, double omega=-1, int numSub=-1);
     void printExonWithOmega(vector<int> offsets);
     void printExonsForPamlInput(RandSeqAccess *rsa,  OrthoExon &oe,  vector<int> offsets);
     static void closeOutputFiles();
+private:
+    static PhyloTree *tree;
+    static CodonEvo *codonevo;
 };
 
 #endif  // _GENEMSA

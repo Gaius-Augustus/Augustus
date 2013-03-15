@@ -24,16 +24,16 @@
 #include <string>
 #include <sys/time.h>
 
+bool isPlusExon(ExonType t){
+    return t < rsingleGene;
+}
 
-const int exonTypeReadingFrames[EXON_TYPES]=
-{ 0,0,1,2,0,1,2,0,          // forward exons
-  2,2,0,1,2,0,1,2,          // reverse exons
-};
+const int exonTypeReadingFrames[EXON_TYPES-1] = { 0,0,1,2,0,1,2,0,         // forward exons
+						  2,2,0,1,2,0,1,2};         // reverse exons
 
-const char* stateExonTypeIdentifiers[EXON_TYPES]=
+const char* stateExonTypeIdentifiers[EXON_TYPES-1] =
 { "SINGLE", "INITIAL0", "INITIAL1", "INITIAL2", "INTERNAL0", "INTERNAL1", "INTERNAL2", "TERMINAL",
-  "RSINGLE", "RINITIAL", "RINTERNAL0", "RINTERNAL1", "RINTERNAL2", "RTERMINAL0", "RTERMINAL1", "RTERMINAL2",
-};
+  "RSINGLE", "RINITIAL", "RINTERNAL0", "RINTERNAL1", "RINTERNAL2", "RTERMINAL0", "RTERMINAL1", "RTERMINAL2"};
 
 int ExonCandidate::getStart() {
     return begin;
