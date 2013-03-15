@@ -15,11 +15,13 @@ $usage .= "options:\n";
 $usage .= "--AUGUSTUS_CONFIG_PATH=dir full path to augustus/config directory\n";
 $usage .= "--silent                   suppress help messages\n";
 $usage .= "--ignore                   don't do anything if species already exists (default: off)\n";
+$usage .= "--prokaryotic              use prokaryotic template instead of eukaryotic template\n";
 
 my $species;
 my $silent;
 my $AUGUSTUS_CONFIG_PATH;
 my $ignore;
+my $prokaryotic;
 
 ##############################################################
 # Check the command line
@@ -31,7 +33,7 @@ if ($#ARGV<0) {
 }
 
 GetOptions( 'species=s' => \$species, 'AUGUSTUS_CONFIG_PATH=s' => \$AUGUSTUS_CONFIG_PATH, 'silent!' => \$silent,
-    'ignore!' => \$ignore);
+    'ignore!' => \$ignore, 'prokaryotic!' => \$prokaryotic);
 
 
 if (!defined($species) || $species eq ""){
@@ -55,6 +57,9 @@ my $cfgfilename = $speciesdir . $species . "_parameters.cfg";
 my $weightfilename = $speciesdir . $species . "_weightmatrix.txt";
 my $metafilename = $speciesdir . $species . "_metapars.cfg";
 my $metautrfilename = $speciesdir . $species . "_metapars.utr.cfg";
+my $ovlpfilename = $speciesdir . $species . "_ovlp_len.pbl";
+my $transshadowfilename = $speciesdir . $species ."_trans_shadow_bacterium.pbl";
+
 
 ##############################################################
 # check whether the config files already exist
@@ -87,6 +92,13 @@ if ($exists) {
 # create the new files
 ##############################################################
 
+# info prokaryotic/eukaryotic
+if(!$prokaryotic){
+    print "Will create parameters for a EUKARYOTIC species!\n";
+}else{
+    print "Will create parameters for a PROKARYOTIC species!\n";
+}
+
 # directory
 
 if (stat $speciesdir == 0){
@@ -97,28 +109,69 @@ if (stat $speciesdir == 0){
 # config file
 
 print "creating $cfgfilename ...\n";
-open (GENERIC, "<$configdir/species/generic/generic_parameters.cfg") or die ("Could not open $configdir/species/generic/generic_parameters.cfg.");
-open (CFG, ">$cfgfilename") or die ("Could not write $cfgfilename.");
-while (<GENERIC>) {
-    s/generic/$species/;
-    s/use as template for your own species//;
-    print CFG;
+if(!$prokaryotic){
+    open (GENERIC, "<$configdir/species/generic/generic_parameters.cfg") or die ("Could not open $configdir/species/generic/generic_parameters.cfg.");
+    open (CFG, ">$cfgfilename") or die ("Could not write $cfgfilename.");
+    while (<GENERIC>) {
+	s/generic/$species/;
+	s/use as template for your own species//;
+	print CFG;
+    }
+}else{
+    open (PROK, "<$configdir/species/template_prokaryotic/template_prokaryotic_parameters.cfg") or die ("Could not open $configdir/species/template_prokaryotic/template_prokaryotic_parameters.cfg.");
+    open (CFG, ">$cfgfilename") or die ("Could not write $cfgfilename.");
+    while (<PROK>) {
+        s/template_prokaryotic/$species/;
+        s/use as template for your own species//;
+        print CFG;
+    }
+
 }
 
 # weightmatrix
 print "creating $weightfilename ...\n";
-if (stat "$configdir/species/generic/generic_weightmatrix.txt" == 0){
-    die ("$configdir/species/generic/generic_weightmatrix.txt doesn't exist.");
+if(!$prokaryotic){
+    if (stat "$configdir/species/generic/generic_weightmatrix.txt" == 0){
+	die ("$configdir/species/generic/generic_weightmatrix.txt doesn't exist.");
+    }
+    system ("cp $configdir/species/generic/generic_weightmatrix.txt $weightfilename");
+}else{
+    if (stat "$configdir/species/template_prokaryotic/template_prokaryotic_weightmatrix.txt" == 0){
+        die ("$configdir/species/template_prokaryotic/template_prokaryotic_weightmatrix.txt doesn't exist.");
+    }
+    system ("cp $configdir/species/template_prokaryotic/template_prokaryotic_weightmatrix.txt $weightfilename");
 }
-system ("cp $configdir/species/generic/generic_weightmatrix.txt $weightfilename");
 
 # meta parameters for training
 print "creating $metafilename ...\n";
-if (stat "$configdir/species/generic/generic_metapars.cfg" == 0){
-    die ("$configdir/species/generic/generic_metapars.cfg doesn't exist.");
+if(!$prokaryotic){
+    if (stat "$configdir/species/generic/generic_metapars.cfg" == 0){
+	die ("$configdir/species/generic/generic_metapars.cfg doesn't exist.");
+    }
+    system ("cp $configdir/species/generic/generic_metapars.cfg $metafilename");
+    system ("cp $configdir/species/generic/generic_metapars.utr.cfg $metautrfilename");
+}else{
+    if (stat "$configdir/species/template_prokaryotic/template_prokaryotic_metapars.cfg" == 0){
+        die ("$configdir/species/template_prokaryotic/template_prokaryotic_metapars.cfg doesn't exist.");
+    }
+    system ("cp $configdir/species/template_prokaryotic/template_prokaryotic_metapars.cfg $metafilename");
+    system ("cp $configdir/species/template_prokaryotic/template_prokaryotic_metapars.utr.cfg $metautrfilename");
 }
-system ("cp $configdir/species/generic/generic_metapars.cfg $metafilename");
-system ("cp $configdir/species/generic/generic_metapars.utr.cfg $metautrfilename");
+
+# files that are only created for prokaryotes
+if($prokaryotic){
+    print "creating $ovlpfilename ...\n";
+    if (stat "$configdir/species/template_prokaryotic/template_prokaryotic_ovlp_len.pbl"== 0){
+	die ("$configdir/species/template_prokaryotic/template_prokaryotic_ovlp_len.pbl does not exist.");
+    }
+    system ("cp $configdir/species/template_prokaryotic/template_prokaryotic_ovlp_len.pbl $ovlpfilename");
+    print "creating $transshadowfilename ..\n";
+    if (stat "$configdir/species/template_prokaryotic/template_prokaryotic_trans_shadow_bacterium.pbl"== 0){
+	die ("$configdir/species/template_prokaryotic/template_prokaryotic_trans_shadow_bacterium.pbl does not exist.");
+    }
+    system ("cp $configdir/species/template_prokaryotic/template_prokaryotic_trans_shadow_bacterium.pbl $transshadowfilename");
+}
+
 
 print "The necessary files for training $species have been created.\n";
 if (!$silent){
