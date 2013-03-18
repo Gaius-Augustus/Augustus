@@ -19,9 +19,9 @@ OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
  meaPath.o exoncand.o randseqaccess.o orthoexon.o phylotree.o orthograph.o speciesgraph.o\
-  genomicMSA.o geneMSA.o fasta.o
+  fasta.o
 ifdef COMPGENEPRED
-	OBJS += parser/parse.o scanner/lex.o contTimeMC.o compgenepred.o
+	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 endif
 DUMOBJS = dummy.o
