@@ -38,9 +38,9 @@
 # intergenic region
 0 0     .994
 # single
-0 1	.003 # increase? maybe try 0.01, 0.03, 0.1, 0.3, 1, 10
+0 1	.001 # increase? maybe try 0.01, 0.03, 0.1, 0.3, 1, 10
 # reverse single exon
-0 2	.003
+0 2	.001
 #           -----  Single Exon  -----
 # intergenic region
 1 0	.96
