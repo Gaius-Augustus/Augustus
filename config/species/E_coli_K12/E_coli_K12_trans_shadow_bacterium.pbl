@@ -38,16 +38,16 @@
 # intergenic region
 0 0     .994
 # single
-0 1	.003 # increase? maybe try 0.01, 0.03, 0.1, 0.3, 1, 10
+0 1	.01 # increase? maybe try 0.01, 0.03, 0.1, 0.3, 1, 10
 # reverse single exon
-0 2	.003
+0 2	.01
 #           -----  Single Exon  -----
 # intergenic region
 1 0	.96
 # single exon (usually overlapping)
-1 1	.02
+1 1	.015
 # reverse single exon (usually overlapping)
-1 2	.02
+1 2	.015
 #           -----  reverse Single Exon  -----
 # intergenic region
 2 0	.96
