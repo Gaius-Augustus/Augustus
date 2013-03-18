@@ -45,9 +45,9 @@
 # intergenic region
 1 0	.96
 # single exon (usually overlapping)
-1 1	.015
+1 1	.02
 # reverse single exon (usually overlapping)
-1 2	.015
+1 2	.02
 #           -----  reverse Single Exon  -----
 # intergenic region
 2 0	.96
