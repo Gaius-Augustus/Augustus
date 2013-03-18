@@ -658,7 +658,7 @@ void ExonModel::readAllParameters(){
       lenDistInitial.assign(max_exon_length+1, 0.0);
       lenDistInternal.assign(max_exon_length+1, 0.0);
       lenDistTerminal.assign(max_exon_length+1, 0.0);
-	
+      double boostfactor = 1.0;
       for( int i = 0; i <= exonLenD; i++ ){
 	istrm >> dummyi;
 	istrm >> dbl;
@@ -666,6 +666,12 @@ void ExonModel::readAllParameters(){
 	istrm >> dbl; 
 	lenDistInitial[i]= dbl / 1000; 
 	istrm >> dbl; 
+	if (i > lenboostL){
+	    // if requested (e.g. on bacteria), boost the probabilities of lengths > L by (1+E)^{i-L}
+	    boostfactor *= (1 + lenboostE);
+	    lenDistInitial[i] *= boostfactor;
+	    lenDistSingle[i] *= boostfactor;
+	}
 	lenDistInternal[i] = dbl / 1000;
 	istrm >> dbl;
 	lenDistTerminal[i] = dbl / 1000;
