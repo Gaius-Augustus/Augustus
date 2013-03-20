@@ -381,16 +381,14 @@ void ExonModel::init() {
     }
     try{
 	lenboostE = Properties::getdoubleProperty( "/ExonModel/lenboostE");
-	if (lenboostE < 0.0)
-	    throw ProjectError("Inadmissible value: /ExonModel/lenboostE is negative.");
-    } catch( ProjectError e) { 
-	cerr << e.getMessage();
-    }
+	if (lenboostE < 0.0){
+	    cout << "Warning: /ExonModel/lenboostE < 0 does not make sense. Will use 0 instead." << endl;
+	    lenboostE = 0.0;
+	}
+    } catch( ProjectError e) {}
     try{
 	lenboostL = Properties::getIntProperty( "/ExonModel/lenboostL");
-    } catch( ProjectError e) { 
-	cerr << e.getMessage();
-    }
+    } catch( ProjectError e) {}
 	
     trans_init_window = Constant::trans_init_window;
 
