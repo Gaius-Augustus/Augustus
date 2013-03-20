@@ -263,6 +263,8 @@ void UtrModel::buildTTSModel(const AnnoSequence* annoseq){
 	  // search for best matching pattern
 	  bool found = false;
 	  int bestpos = 999;
+	  // string upregion(annoseq->sequence+curgene->transend - d_polya_cleavage_min - aataaa_boxlen + 1, d_polya_cleavage_max - d_polya_cleavage_min + 1);
+	  // cout << "tts upregion\t" << upregion << endl;
 	  for (int pos = curgene->transend - d_polya_cleavage_min - aataaa_boxlen + 1; pos >= curgene->transend - d_polya_cleavage_max - aataaa_boxlen + 1; pos--) {
 	      if (pos >= 0 && pos < annoseq->length - aataaa_boxlen) {
 		  try {
