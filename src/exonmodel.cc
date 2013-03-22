@@ -841,11 +841,12 @@ double *ExonModel::getCodonUsage(){
     int s = 0.0;
     for (int c=0; c<64; c++)
 	s += pi[c];
-    cout << "codon usage: " << endl;
-    for (int c=0; c<64; c++){
-	pi[c] /= s;
-	cout << c << "\t" << s2i.inv(c) << "\t" << pi[c] << endl;
-    }
+    /* 
+       cout << "codon usage: " << endl;
+       for (int c=0; c<64; c++){
+       pi[c] /= s;
+       cout << c << "\t" << s2i.inv(c) << "\t" << pi[c] << endl;
+       } */
     return pi;
 }
 

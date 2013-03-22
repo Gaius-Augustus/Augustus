@@ -77,7 +77,7 @@ void CompGenePred::start(){
     codonevo.setKappa(2);
     codonevo.setPi(pi);
     vector<double> b; // all branch lengths occuring in the tree
-    b.push_back(.4);
+    b.push_back(.5); // 50% codon substitutions between D.mel and D.pseudoo., 40% between human and mouse
     codonevo.setBranchLengths(b, 10);
     // codonevo.printBranchLengths();
     
@@ -86,8 +86,8 @@ void CompGenePred::start(){
     codonevo.printOmegas();
     codonevo.computeLogPmatrices();
     
-    gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
-    printCodonMatrix(P);
+    // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
+    // printCodonMatrix(P);
     GeneMSA::setCodonEvo(&codonevo);
 
     vector<string> speciesNames = OrthoGraph::tree->species;
@@ -95,12 +95,14 @@ void CompGenePred::start(){
     msa.readAlignment(speciesNames);  // reads the alignment
     msa.prepareExons(); // merges alignment blocks if possible
     vector<int> offsets;
-
+    bool AlexFail;
+    
     // determine object that holds a sequence range for each species
     // loop over species
     GeneMSA::openOutputFiles();
     while (GeneMSA *geneRange = msa.getNextGene()) {
         OrthoGraph orthograph;
+	AlexFail = false; // temporary fix until Alexanders Bug is corrected
         for (int s = 0; s < speciesNames.size(); s++) {
             string seqID = geneRange->getSeqID(s);
             if (!seqID.empty()) {
@@ -116,6 +118,7 @@ void CompGenePred::start(){
 #endif
                 if (seqRange==NULL) {
                     cerr << "random sequence access failed on " << speciesNames[s] << ", " << geneRange->getSeqID(s) << ", " << geneRange->getStart(s) << ", " <<  geneRange->getEnd(s) << ", " << endl;
+		    AlexFail = true;
                     break;
                 } else {
                     namgene.getPrepareModels(seqRange->sequence, seqRange->length); // is needed for IntronModel::dssProb in GenomicMSA::createExonCands
@@ -153,30 +156,32 @@ void CompGenePred::start(){
                 cout<< speciesNames[s] << " doesn't exist in this part of the alignment."<< endl;
             }
         }
-        geneRange->printGeneRanges();
-        geneRange->printExonCands(offsets);
-        geneRange->createOrthoExons(offsets);
-        geneRange->printOrthoExons(rsa, offsets);
-        orthograph.all_orthoex = geneRange->getOrthoExons();
-
-        orthograph.outputGenes(baseGenes,base_geneid);
-        //add score for selective pressure of orthoexons
-        orthograph.addScoreSelectivePressure();
-        //determine initial path
-        orthograph.globalPathSearch();
-        orthograph.outputGenes(initGenes,init_geneid);
-
-        if(!orthograph.all_orthoex.empty()){
+	if (!AlexFail){
+	  geneRange->printGeneRanges();
+	  geneRange->printExonCands(offsets);
+	  geneRange->createOrthoExons(offsets);
+	  geneRange->printOrthoExons(rsa, offsets);
+	  orthograph.all_orthoex = geneRange->getOrthoExons();
+	  
+	  orthograph.outputGenes(baseGenes,base_geneid);
+	  //add score for selective pressure of orthoexons
+	  orthograph.addScoreSelectivePressure();
+	  //determine initial path
+	  orthograph.globalPathSearch();
+	  orthograph.outputGenes(initGenes,init_geneid);
+	  
+	  if(!orthograph.all_orthoex.empty()){
             orthograph.pruningAlgor();
             orthograph.printCache();
             // Iterative optimization of labelings in graphs
             orthograph.optimize();
-        }
-
-        // transfer max weight paths to genes + filter + ouput
-        orthograph.outputGenes(optGenes,opt_geneid);
-        offsets.clear();
-        delete geneRange;
+	  }
+	  
+	  // transfer max weight paths to genes + filter + ouput
+	  orthograph.outputGenes(optGenes,opt_geneid);
+	  offsets.clear();
+	  delete geneRange;
+	}
     }
 
     GeneMSA::closeOutputFiles();

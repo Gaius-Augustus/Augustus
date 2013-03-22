@@ -72,16 +72,20 @@ Strand GeneMSA::getStrand(int speciesIdx) {
     return STRAND_UNKNOWN;
 }
 
+// Mario: there may be bugs in this and the next function of Alexander materializing when start<0 or end > seqlen
 int GeneMSA::getStart(int speciesIdx) {
+  int start;
     for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
         if ((*it)->alignSpeciesTuple.at(speciesIdx)!=NULL) {
-            if (this->getStrand(speciesIdx)==plusstrand) {
-                return (*it)->alignSpeciesTuple.at(speciesIdx)->offset - utr_range;
+            if (this->getStrand(speciesIdx) == plusstrand) {
+	        start = (*it)->alignSpeciesTuple.at(speciesIdx)->offset - utr_range;
+		return start;
             } else {
                 for (list<AlignmentBlock*>::reverse_iterator rit=this->alignment.rbegin(); rit!=this->alignment.rend(); rit++) {
                     if ((*rit)->alignSpeciesTuple.at(speciesIdx)!=NULL) {
-                        return ((*it)->alignSpeciesTuple.at(speciesIdx)->seqID.second) - ((*rit)->alignSpeciesTuple.at(speciesIdx)->offset)
+		        int start = ((*it)->alignSpeciesTuple.at(speciesIdx)->seqID.second) - ((*rit)->alignSpeciesTuple.at(speciesIdx)->offset)
                                 - ((*rit)->alignSpeciesTuple.at(speciesIdx)->seqLen) - utr_range;
+			return start;
                     }
                 }
             }
@@ -91,16 +95,18 @@ int GeneMSA::getStart(int speciesIdx) {
 }
 
 int GeneMSA::getEnd(int speciesIdx){
-    for (list<AlignmentBlock*>::reverse_iterator rit=this->alignment.rbegin(); rit!=this->alignment.rend(); rit++) {
+    for (list<AlignmentBlock*>::reverse_iterator rit = this->alignment.rbegin(); rit != this->alignment.rend(); rit++) {
         if ((*rit)->alignSpeciesTuple.at(speciesIdx)!=NULL) {
-            if (this->getStrand(speciesIdx)==plusstrand) {
-                return (*rit)->alignSpeciesTuple.at(speciesIdx)->offset + (*rit)->alignSpeciesTuple.at(speciesIdx)->seqLen - 1 + utr_range;
-            } else {
-                for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
-                    if ((*it)->alignSpeciesTuple.at(speciesIdx)!=NULL) {
-                        return ((*rit)->alignSpeciesTuple.at(speciesIdx)->seqID.second) - ((*it)->alignSpeciesTuple.at(speciesIdx)->offset + 1) + utr_range;
-                    }
-                }
+	    if (this->getStrand(speciesIdx) == plusstrand) {
+	        int end = (*rit)->alignSpeciesTuple.at(speciesIdx)->offset + (*rit)->alignSpeciesTuple.at(speciesIdx)->seqLen - 1 + utr_range;
+		return end;
+	    } else {
+	        for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
+	  	  if ((*it)->alignSpeciesTuple.at(speciesIdx) != NULL){
+		      int end = ((*rit)->alignSpeciesTuple.at(speciesIdx)->seqID.second) - ((*it)->alignSpeciesTuple.at(speciesIdx)->offset + 1) + utr_range;
+		      return end;
+		  }
+	      }
             }
         }
     }
@@ -560,7 +566,7 @@ void GeneMSA::createOrthoExons(vector<int> offsets) {
                                 } else {
                                     key = "no key";
                                 }
-                                if (existingCandidates[i]!=NULL && existingCandidates[0]!=NULL) {
+                                if (existingCandidates[i] != NULL && existingCandidates[0] != NULL) {
                                     map<string, ExonCandidate*>::iterator map_it = (*existingCandidates[i]).find(key);
                                     if (map_it != (*existingCandidates[i]).end()) {
                                         if (((*it_ab)->alignSpeciesTuple.at(i)->start <= map_it->second->begin + offsets[i] + 1)
@@ -1014,7 +1020,7 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, OrthoExon &oe, vector<i
 		if (noSpecies==2){ // just for testing
 		    cout << setw(8) << "codons" << setw(10) << "syn sub" << setw(12) << "nonsyn sub"
 			 << setw(8) << "omega" << endl;
-		    double t(0.4);
+		    double t(0.5);
 		    int numAliCodons, numSynSubst, numNonSynSubst;
 		    double omega = codonevo->estOmegaOnSeqPair(pamlSeq[0].c_str(), pamlSeq[1].c_str(), t,
 							       numAliCodons, numSynSubst, numNonSynSubst);

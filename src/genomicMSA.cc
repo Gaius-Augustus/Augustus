@@ -63,7 +63,7 @@ GeneMSA* GenomicMSA::getNextGene() {
             if (((*it_pos)->alignSpeciesTuple.at(i)!=NULL) && (geneStrand[i] != STRAND_UNKNOWN) && (geneChr[i] != "")) {
                 if (((*it_pos)->alignSpeciesTuple.at(i)->strand != geneStrand[i]) || ((*it_pos)->alignSpeciesTuple.at(i)->seqID.first != geneChr[i])
                       || ((*it_pos)->alignSpeciesTuple.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0)) {
-                    if ((*it_succ)->alignSpeciesTuple.at(i) != NULL) {
+		    if (it_succ != alignment.end() && (*it_succ)->alignSpeciesTuple.at(i) != NULL) {
                         if (((*it_succ)->alignSpeciesTuple.at(i)->strand != geneStrand[i]) || ((*it_succ)->alignSpeciesTuple.at(i)->seqID.first != geneChr[i])
                                || ((*it_succ)->alignSpeciesTuple.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0) || (((*it_pos)->alignSpeciesTuple.at(i)->seqLen) > maxChangedSeq)
                                || ((*it_succ)->alignSpeciesTuple.at(i)->start - (geneStarts[i] +  geneSeqLens[i]) > maxIntronLen)
@@ -235,6 +235,7 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
                     Alignmentfile >> seq;
                     aseq->alignLen = seq.length();
                     Alignmentfile >> indifferent;
+		    //cout << "alignment " << aseq->seqLen << " " << aseq->name << " " << aseq->seqID.first << " start=" << aseq->start << " strand=" << aseq->strand << endl;
                     // reads the aligned sequence
                     cur_block.begin = aseq->start;
                     cur_block.length = 1;
