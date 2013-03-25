@@ -48,9 +48,9 @@ parition_gtf2gb.pl      Partition a gtf file into gene clusters of a specified
 
     LOCUS       NC_010473.1_5128-6494   1367 bp  DNA
     FEATURES             Location/Qualifiers
-    source          1..1367
-    CDS             107..402
-    /gene="170079668"
+             source          1..1367
+             CDS             107..402
+                             /gene="170079668"
 	     CDS             complement(556..1332)
 	                     /gene="170079669"
 	BASE COUNT     346 a   349 c  336 g   336 t
