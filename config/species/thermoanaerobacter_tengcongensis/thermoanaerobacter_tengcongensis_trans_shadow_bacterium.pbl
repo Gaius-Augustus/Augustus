@@ -1,0 +1,58 @@
+#
+# Transition probabilities and initial probabilities for the overall HMM 
+#
+# number of states
+3
+#
+# Transition probabilities of the Semi-CRF
+# Date: 8.3.2012
+
+# Initial probabilities (a priori probs for a state ending at a
+# certain position, e.g. the position before the first nucleotide in
+# the sequence or the last position.
+# only non-zero probabilities
+[Initial]
+# number of states where a start is possible
+3
+# state prob statename
+0   .3    # intergenic region
+1   .4    # single Exon
+2   .4    # reverse single Exon
+
+# Terminal probabilities (a priori probs for a state ending at
+# the last position.
+# only non-zero probabilities neccessary
+[Terminal]
+# number of states where terminating is possible
+3
+# state prob statename
+0   .3    # intergenic region
+1   .4    # single Exon
+2   .4    # reverse single Exon
+
+#
+# Transition probabilities 
+# only non-zero probabilities
+[Transition]
+#           -----  Igenic region  -----
+# intergenic region
+0 0     .992
+# single
+0 1	.004 # increase? maybe try 0.01, 0.03, 0.1, 0.3, 1, 10
+# reverse single exon
+0 2	.004
+#           -----  Single Exon  -----
+# intergenic region
+1 0	.96
+# single exon (usually overlapping)
+1 1	.02
+# reverse single exon (usually overlapping)
+1 2	.02
+#           -----  reverse Single Exon  -----
+# intergenic region
+2 0	.96
+# single exon (usually overlapping)
+2 1	.02
+# reverse single exon (usually overlapping)
+2 2	.02
+
