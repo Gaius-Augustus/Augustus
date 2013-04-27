@@ -568,7 +568,7 @@ void UtrModel::readAllParameters(){
   string filename = Constant::fullSpeciesPath() + Properties::getProperty("/UtrModel/infile");
   ifstream istrm(filename.c_str());
   if( istrm ){
-    int size, dummyi;
+    int size=-1, dummyi;
     Double dbl;
     
     if (!hasLenDist) {
@@ -613,7 +613,9 @@ void UtrModel::readAllParameters(){
       
       Seq2Int s2ib(aataaa_boxlen);
       istrm >> goto_line_after("[AATAAA]" );
-      istrm >> comment >> size; 	    
+      istrm >> comment >> size;
+      if (size == -1)
+	  throw UtrModelError("Could not read in polyA signal.\n");
       aataaa_probs.assign( size, 0.0);
       while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
 	  int pn = s2ib.read(istrm);
