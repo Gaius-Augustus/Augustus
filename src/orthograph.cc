@@ -489,7 +489,8 @@ void OrthoGraph::addScoreSelectivePressure(){
     for(size_t pos = 0; pos < numSpecies; pos++){
 	if(graphs[pos]){
 	    for(list<Node*>::iterator node = graphs[pos]->nodelist.begin(); node != graphs[pos]->nodelist.end(); node++){
-		if( (*node)->n_type == unsampled_exon || ( (*node)->n_type == sampled && ((State*)((*node)->item))->apostprob < 0.7) ){
+		//if( (*node)->n_type == unsampled_exon || ( (*node)->n_type == sampled && ((State*)((*node)->item))->apostprob < 0.7) ){
+		if( (*node)->n_type >= sampled ){
 		    for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
 			edge->score += not_oe_penalty;
 		    }
@@ -502,12 +503,17 @@ void OrthoGraph::addScoreSelectivePressure(){
 	for(list<OrthoExon>::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(it->orthoex[pos]){
+		    double omega = it->getOmega();
+		    int  subst = it->getSubst();
 		    Node* node = graphs[pos]->getNode(it->orthoex[pos]);
+		    int len =  node->end - node->begin + 1;
 		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
-			if( node->n_type == unsampled_exon || ( node->n_type == sampled && ((State*)(node->item))->apostprob >= 0.3) ){
+			//if( node->n_type == unsampled_exon || ( node->n_type == sampled && ((State*)(node->item))->apostprob >= 0.3) ){
+			if( (omega >= 0 && omega <= 0.5 && subst > 5) || (omega >= 0 && omega <= 0.8 && subst >= 30) || len >= 300 ){
 			    iter->score += oe_score;
 			}
-			if( node->n_type == unsampled_exon || ( node->n_type == sampled && ((State*)(node->item))->apostprob < 0.7) ){
+			//if( node->n_type == unsampled_exon || ( node->n_type == sampled && ((State*)(node->item))->apostprob < 0.7) ){
+			if( node->n_type >= sampled){
 			    iter->score += - not_oe_penalty;
 			}
 		    }

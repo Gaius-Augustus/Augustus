@@ -106,27 +106,33 @@ void CompGenePred::start(){
         for (int s = 0; s < speciesNames.size(); s++) {
             string seqID = geneRange->getSeqID(s);
             if (!seqID.empty()) {
-                AnnoSequence *seqRange = rsa->getSeq(speciesNames[s], seqID, geneRange->getStart(s), geneRange->getEnd(s), geneRange->getStrand(s));
+		int start = geneRange->getStart(s);
+		int end = geneRange->getEnd(s);
+		// Steffi: gene Range must not exceed max length of 1000000 bps, otherwise sequence gets splits in doViterbiPiecewise!!!
+		if(end-start+1 > 1000000){
+		    throw ProjectError("compgenepred: sequence " + speciesNames[s] + "." + seqID + ":" + itoa(start) + ".." + itoa(end) + " exceeds 1000000bp");
+		}
+                AnnoSequence *seqRange = rsa->getSeq(speciesNames[s], seqID, start, end, geneRange->getStrand(s));
 #ifdef DEBUG
-                cout << "retrieving sequence:\t" << speciesNames[s] << ":" << geneRange->getSeqID(s) << "\t" << geneRange->getStart(s) << "-" << geneRange->getEnd(s) << "\t";
+                cout << "retrieving sequence:\t" << speciesNames[s] << ":" << seqID << "\t" << start << "-" << end << "\t";
 
                 if( geneRange->getStrand(s) == plusstrand )
                     cout << "+\t";
                 else
                     cout << "-\t";
-                cout << "(" <<geneRange->getEnd(s) - geneRange->getStart(s) + 1 << "bp)" << endl;
+                cout << "(" <<end - start + 1 << "bp)" << endl;
 #endif
                 if (seqRange==NULL) {
-                    cerr << "random sequence access failed on " << speciesNames[s] << ", " << geneRange->getSeqID(s) << ", " << geneRange->getStart(s) << ", " <<  geneRange->getEnd(s) << ", " << endl;
+                    cerr << "random sequence access failed on " << speciesNames[s] << ", " << seqID << ", " << start << ", " << end << ", " << endl;
 		    AlexFail = true;
                     break;
                 } else {
                     namgene.getPrepareModels(seqRange->sequence, seqRange->length); // is needed for IntronModel::dssProb in GenomicMSA::createExonCands
 
                     if (geneRange->getStrand(s)==plusstrand) {
-                        offsets.push_back(geneRange->getStart(s));
+                        offsets.push_back(start);
                     } else {
-                        offsets.push_back(geneRange->getSeqIDLength(s) - (geneRange->getEnd(s)) - 1);
+                        offsets.push_back(geneRange->getSeqIDLength(s) - end - 1);
                     }
                     geneRange->createExonCands(seqRange->sequence); // identifies exon candidates on the sequence
                     list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
@@ -171,10 +177,10 @@ void CompGenePred::start(){
 	  orthograph.outputGenes(initGenes,init_geneid);
 	  
 	  if(!orthograph.all_orthoex.empty()){
-            orthograph.pruningAlgor();
-            orthograph.printCache();
-            // Iterative optimization of labelings in graphs
-            orthograph.optimize();
+	      orthograph.pruningAlgor();
+	      orthograph.printCache();
+	      // Iterative optimization of labelings in graphs
+	      orthograph.optimize();
 	  }
 	  
 	  // transfer max weight paths to genes + filter + ouput

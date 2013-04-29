@@ -71,9 +71,7 @@ public:
     list<NodeType> fromNeutralLine(Node *node);  // returns type of noncoding segment preceding the exon/node
     NodeType toNeutralLine(Node *node);    // returns type of noncoding segment suceeding the exon/node
     void printGraph(string filename, Node* begin, Node* end, bool only_sampled = false); // prints graph in dot-format
-    inline void printGraph(string filename){
-	printGraph(filename, head, tail, true);
-    }
+    void printGraph(string filename){printGraph(filename, head, tail, true);}
     /*
      * @getKey(): if the node is a neutral node, then key = PosBegin:n_type
      * else key = PosBegin:PosEnd:StateType
@@ -85,37 +83,20 @@ public:
     void addNeutralNodes(Node *node,vector< vector<Node*> > &neutralLines);    // adds neutral nodes and edges to and from an exon
     void addIntron(Node* exon1, Node* exon2, Status *intr);                    // adds a sampled intron
     void printSampledExon(Node *node); //prints sampled exons to display them with gBrowse
-
-    inline void updateMaxWeight(double weight){
-	if(abs(weight) > max_weight){
+    void updateMaxWeight(double weight){
+	if(abs(weight) > max_weight)
 	    max_weight = abs(weight);
-	}
     }
-    inline double getMaxWeight() const{                         // upper bound of a maximum weight path
+    double getMaxWeight() const {                         // upper bound of a maximum weight path
 	return 2 * max_weight * nodelist.size();
     }
-    inline string getSpeciesname() const{
-	return speciesname;
-    }
-    inline char* getSequence() const{
-	return seqRange->sequence;
-    }
-    inline char* getSeqID() const{
-	return seqRange->seqname;
-    }
-    inline int getSeqOffset() const{
-	return seqRange->offset;
-    }
-    inline int getSeqLength() const{
-	return seqRange->length;
-    }
-    inline Strand getSeqStrand() const{
-	return strand;
-    }
-    inline AnnoSequence* getAnnoSeq() const{
-	return seqRange;
-    }
-
+    string getSpeciesname() const {return speciesname;}
+    char* getSequence() const {return seqRange->sequence;}
+    char* getSeqID() const {return seqRange->seqname;}
+    int getSeqOffset() const {return seqRange->offset;}
+    int getSeqLength() const {return seqRange->length;}
+    Strand getSeqStrand() const {return strand;}
+    AnnoSequence* getAnnoSeq() const {return seqRange;}
 
     /*
      * maximum weight path problem related functions
@@ -174,43 +155,20 @@ public:
     {}
     ~Move() {}
 
-    inline Node* getHead() const{
-	return local_head;
-    }
-    inline Node* getTail() const{
-	return local_tail;
-    }
-    inline void addNodeBack(Node* node, double weight){
-	nodes.push_back(MoveNode(node, weight));
-    }
-    inline void addEdgeBack(Edge* edge, double weight){
-	edges.push_back(MoveEdge(edge, weight));
-    }
-    inline void addNodeFront(Node* node, double weight){
-	nodes.push_front(MoveNode(node, weight));
-    }
-    inline void addEdgeFront(Edge* edge, double weight){
-	edges.push_front(MoveEdge(edge, weight));
-    }
-    inline Node* getNodeBack() const{
-	return nodes.back().node;
-    }
-    inline Node* getNodeFront() const{
-	return nodes.front().node;
-    }
-    inline bool nodesIsEmpty() const{
-	return nodes.empty();
-    }
-    inline void shiftHead(size_t step = 1){
-	local_head = graph->getPredExonOnPath(local_head,step);
-    }
-    inline void shiftTail(size_t step = 1){
-	local_tail = graph->getNextExonOnPath(local_tail,step);
-    }
+    Node* getHead() const {return local_head;}
+    Node* getTail() const {return local_tail;}
+    void addNodeBack(Node* node, double weight){nodes.push_back(MoveNode(node, weight));}
+    void addEdgeBack(Edge* edge, double weight){edges.push_back(MoveEdge(edge, weight));}
+    void addNodeFront(Node* node, double weight){nodes.push_front(MoveNode(node, weight));}
+    void addEdgeFront(Edge* edge, double weight){edges.push_front(MoveEdge(edge, weight));}
+    Node* getNodeBack() const {return nodes.back().node;}
+    Node* getNodeFront() const {return nodes.front().node;}
+    bool nodesIsEmpty() const {return nodes.empty();}
+    void shiftHead(size_t step = 1){local_head = graph->getPredExonOnPath(local_head,step);}
+    void shiftTail(size_t step = 1){local_tail = graph->getNextExonOnPath(local_tail,step);}
     void addWeights();
     void undoAddWeights();
     void initLocalHeadandTail();  //determines local_head and local_tail
-
 };
 
 #endif  // _SPECIESGRAPH

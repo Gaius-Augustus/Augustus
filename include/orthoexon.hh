@@ -30,6 +30,14 @@ public:
     //label pattern. This is the safer way and guarantees to always have the current label pattern.
     std::string labelpattern;
     int ID;
+    double getOmega() const{return omega;}
+    double getSubst() const{return subst;}
+    void setOmega(double o){omega=o;}
+    void setSubst(int s){subst=s;}
+    
+private:
+    double omega;
+    int subst;
 };
 
 /*

@@ -272,7 +272,7 @@ void GeneMSA::createExonCands(const char *dna, double assmotifqthresh, double as
                 if ((i - *ritStart >= Constant::min_coding_len) && ((i - *ritStart+1)%3 == 0)) {
                     ec = new ExonCandidate;
                     ec->begin = *ritStart - 1;
-                    ec->end = i-1;
+                    ec->end = i+2;
                     ec->type = singleGene;
                     candidates->push_back(ec);
                 }
@@ -350,7 +350,7 @@ void GeneMSA::createExonCands(const char *dna, double assmotifqthresh, double as
                     if ((i-(*ritASS).first>=3) && ((i-(*ritASS).first + 1)%3==frame) && ((*ritASS).first>=orf.leftmostExonBegin(0,i,true))) {
                         ec = new ExonCandidate;
                         ec->begin = (*ritASS).first + 2;
-                        ec->end = i -1;
+                        ec->end = i+2;
                         ec->assScore = (*ritASS).second;
                         ec->type = terminal_exon;
                         candidates->push_back(ec);
@@ -371,7 +371,7 @@ void GeneMSA::createExonCands(const char *dna, double assmotifqthresh, double as
                 if ((i-*ritRCStop)%3 == 0) {
                     if ((i-*ritRCStop) >= Constant::min_coding_len) {
                         ec = new ExonCandidate;
-                        ec->begin=*ritRCStop +3;
+                        ec->begin=*ritRCStop;
                         ec->end=i + 2;
                         ec->type=rsingleGene;
                         candidates->push_back(ec);
@@ -454,7 +454,7 @@ void GeneMSA::createExonCands(const char *dna, double assmotifqthresh, double as
                     }
                     if ((i-*ritRCStop>=4) && ((i-*ritRCStop)%3==frame) && (p >= assminprob)) {
                         ec = new ExonCandidate;
-                        ec->begin=*ritRCStop+3;
+                        ec->begin=*ritRCStop;
                         ec->end=i - 1;
                         ec->assScore = computeSpliceSiteScore(p, assminprob, assmaxprob);
                         if (frame==0) {
@@ -619,9 +619,17 @@ void GeneMSA::cutIncompleteCodons(vector<ExonCandidate*> &orthoexon) {
     for (int i=0; i<orthoexon.size(); i++) {
         if (orthoexon[i] != NULL) {
 	    if (isPlusExon(orthoexon[i]->type)){
+		// Steffi: remove Stoppcodon on forward strand
+		if (orthoexon[i]->type == singleGene || orthoexon[i]->type == terminal_exon){
+		    orthoexon[i]->end -= 3;
+		}
 		orthoexon[i]->begin += getGFF3FrameForExon(orthoexon[i]);
 		orthoexon[i]->end -= exonTypeReadingFrames[orthoexon[i]->type];
 	    } else {
+		// Steffi: remove Stoppcodon on reverse strand
+		if (orthoexon[i]->type == rsingleGene || orthoexon[i]->type >= rterminal_0){
+		    orthoexon[i]->begin += 3;
+		}
 		orthoexon[i]->begin += mod3(orthoexon[i]->len()-2+exonTypeReadingFrames[orthoexon[i]->type]);
 		orthoexon[i]->end -= 2-exonTypeReadingFrames[orthoexon[i]->type];
 	    }
@@ -840,8 +848,10 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, vector<int> offsets, bool file
 		 << stateExonTypeIdentifiers[ec->type];
 	    if (omega >= 0.0)
 		cout << ";omega=" << omega;
+	        //cout << "|" << omega;  // for viewing in gBrowse use this style instead
 	    if (numSub >= 0)
 		cout << ";subst=" << numSub; // number of substitutions
+	        //cout << "|" << numSub; // for viewing in gBrowse use this style instead
 	    cout << endl;
         }
     }
@@ -1026,6 +1036,9 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, OrthoExon &oe, vector<i
 							       numAliCodons, numSynSubst, numNonSynSubst);
 		    cout << setw(8) << numAliCodons << setw(10) << numSynSubst << setw(12) << numNonSynSubst
 			 << setw(7) << omega << endl;
+		    oe.setOmega(omega);
+		    oe.setSubst(numSynSubst + numNonSynSubst);
+		    //printSingleOrthoExon(oe, offsets, true, omega, numSynSubst + numNonSynSubst);
 		    printSingleOrthoExon(oe, offsets, false, omega, numSynSubst + numNonSynSubst);
 		}
             }

@@ -22,10 +22,14 @@
 
 
 OrthoExon::OrthoExon(){
+    omega = -1;
+    subst = -1;
     orthoex.resize(OrthoGraph::numSpecies);
 }
 //copy with permutation of vector entries
 OrthoExon::OrthoExon(const OrthoExon& other, const vector<size_t> &permutation){
+    omega = other.omega;
+    subst = other.subst;
     orthoex.resize(other.orthoex.size());
     for(size_t pos = 0; pos < orthoex.size(); pos++){
 	if (other.orthoex[pos]){

@@ -21,7 +21,7 @@
 GeneMSA* GenomicMSA::getNextGene() {
     GeneMSA *ptr = new GeneMSA();
     int maxIntronLen = 50000;
-    int maxGeneLen = 1000000;
+    int maxGeneLen = 1000000 - 2*GeneMSA::utr_range;
     int maxChangedSeq = 1000; // exceptions at most this long are allowed from the "same target"-rule
     vector<Strand >geneStrand;
     vector<string> geneChr;
