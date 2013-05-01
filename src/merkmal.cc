@@ -348,7 +348,7 @@ void CRF::onlineLargeMarginTraining(Parameters* parameters, vector<AnnoSequence*
     int N; // number of rounds
     int m; // training set size
     int numiterations=0, u; // at most Nm
-    bool useForUpdate, termination=false;
+    bool termination=false;
     double target;
     StatePath *viterbiPath, *correctPath, *condensedViterbiPath=NULL;//, *condensedCorrectPath=NULL;
     int chunksize = 100; // consider this many training genes to be one training example (will be increased a little below to fit)
@@ -424,7 +424,6 @@ void CRF::onlineLargeMarginTraining(Parameters* parameters, vector<AnnoSequence*
 	cout << "*** CRF training round " << round << " of " << N <<  " ***" << endl;
 	for (int i=0; i < m && (maxTrainSeqs < 0 || i < maxTrainSeqs); i += chunksize) {
 	    // reset chunk counters
-	    useForUpdate = false;
 	    bs.assign(chunksize, 0.0);
 	    // loop over chunk	   
 	    for (u = 0; u < chunksize && i + u < m; u++) {
@@ -494,7 +493,6 @@ void CRF::onlineLargeMarginTraining(Parameters* parameters, vector<AnnoSequence*
 		    if (!(correctPathEmiProb > 0.0)){
 			cout << "Correct path IMPOSSIBLE in model. Can't do anything about this by only changing weights." << endl;
 		    } else {
-			useForUpdate = true;
 			/*
 			 * compute loss function that measures how far Viterbi is off
 			 */

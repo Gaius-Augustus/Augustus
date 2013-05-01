@@ -499,8 +499,6 @@ bool cutAlignment(vector<string>& sequences, int min_size, vector<string>& nodel
 	    seq_count * net_width: // current size of alignment
 	    0; // current size is not accepted (we need more columns)
 	int argmax = -1;
-	float column_gain_estimation = 0;
-	// float column_gain_estimation2 = 0;
 	
 	// each column defines a set of sequences preventing it from
 	// being a block start; we need at least to delete one of these
@@ -532,7 +530,6 @@ bool cutAlignment(vector<string>& sequences, int min_size, vector<string>& nodel
 		if (currval > maxval) {
 		    maxval = currval;
 		    argmax = i;
-		    column_gain_estimation = added_cols;
 		}
 	    }
 	}
@@ -581,10 +578,6 @@ bool cutAlignment(vector<string>& sequences, int min_size, vector<string>& nodel
 		    oldval = newval;
 		}
 	    }
-
-#ifdef DEBUG
-	cerr << "\nEstimated # of added columns: " << column_gain_estimation << "." << endl;
-#endif
 
 #ifdef DEBUG
 	cerr << "Columns actually made block columns: ";

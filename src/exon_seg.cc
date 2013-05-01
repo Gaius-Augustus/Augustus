@@ -364,7 +364,7 @@ using namespace std;
   void exon_segmentation::find_splice(vector< vector< vector<int> > > &input_set,dataset &coverage_info){
     cout<<"Started finding splice sites."<<endl;
     int i,j,strand,track,l,template_size=90;
-    double mean_template=0.0,f_mean=0,sigma_template=0,sigma_f=0,prev_mean;
+    double mean_template=0.0,f_mean=0,sigma_template=0,sigma_f=0;
     vector<double> smooth_data,corr_value;
     /* It will store the template which we have to find
      */
@@ -429,22 +429,6 @@ using namespace std;
     f_mean=0;
     for(l=0;l<smooth_data.size()-template_size;l++){
       
-      /* If l =0 then calculate the mean
-       * by looping over the template window
-       */
-      /*if(l==0){
-	for(i=0;i<template_size;i++)
-	  f_mean+=smooth_data[i];
-	f_mean=f_mean/template_size;
-	}*/
-      /* if l>0 then find the mean
-       * by using the previous value in constant time
-       */
-      /*else{ 
-	if(l==72550)
-	  cout<<prev_mean<<'\t'<<smooth_data[l-template_size]<<'\t'<<smooth_data[l]<<endl;
-	f_mean=(prev_mean*template_size-smooth_data[l-template_size]+smooth_data[l])/template_size;
-	}*/
       /* Find the standard deviation and mean 
        */
       sigma_f=0;
@@ -461,9 +445,6 @@ using namespace std;
       corr_value[l]=corr_value[l]/(sigma_f*sigma_template*(template_size-1) );
       if(corr_value[l]>0.01123)
 	splice_place<<l<<'\t'<<corr_value[l]<<endl;
-      /* Store the mean values to be used in next iteration
-       */
-      prev_mean=f_mean;
     }
     splice_place.close();
     cout<<"Finished finding splice sites."<<endl;

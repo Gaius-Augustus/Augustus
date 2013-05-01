@@ -73,7 +73,7 @@ void consensus::set_values(int pattern_size1,float p_value1, float delta1, int m
 void consensus::set_file_name(string filename){
   //reading the file and storing the strings
   string fileline,fileline1;
-  int len,len1,temp_starting,temp_ending;
+  int len1,temp_starting,temp_ending;
   sequence temp;
   ifstream infile (filename.c_str());
   //ignores the first line
@@ -99,21 +99,17 @@ void consensus::set_file_name(string filename){
 	if( (starting>=0 && (ending==0||ending>fileline.length()))|| (starting<0 && temp_starting<0)){//if end is not defined or it is shorter then take the available string
 	  if(starting >=0){
 	    len1=fileline.length()-starting+1;
-	    len=fileline.copy(buf,len1,starting);
 	  }
 	  else{
 	    len1=fileline.length()+ending+1;
-	    len=fileline.copy(buf,len1,0);
 	  }
 	}
 	else{
 	  if(starting>=0){
 	    len1=ending-starting+1;
-	    len=fileline.copy(buf,len1,starting);
 	  }
 	  else{
 	    len1=ending-starting+1;
-	    len=fileline.copy(buf,len1,temp_starting);
 	  }
 	}	  
 	temp.seq=buf;//string is copied to the structure
@@ -142,21 +138,17 @@ void consensus::set_file_name(string filename){
     if( (starting>=0 && (ending==0||ending>fileline.length()))|| (starting<0 && temp_starting<0)){//if end is not defined or it is shorter then take the available string
       if(starting >=0){
 	len1=fileline.length()-starting+1;
-	len=fileline.copy(buf,len1,starting);
       }
       else{
 	len1=fileline.length()+ending+1;
-	len=fileline.copy(buf,len1,0);
       }
     }
     else{
       if(starting>=0){
 	len1=ending-starting+1;
-	len=fileline.copy(buf,len1,starting);
       }
       else{
 	len1=ending-starting+1;
-	len=fileline.copy(buf,len1,temp_starting);
       }
     }
     temp.seq=buf;
@@ -175,7 +167,7 @@ void consensus::set_file_name(string filename){
 
 //function add some extra strings
 void consensus::add_string(string fileline){
-  int len,len1,temp_starting,temp_ending;
+  int len1,temp_starting,temp_ending;
   sequence temp;
   if(starting<0){
     temp_starting=fileline.length()+starting;
@@ -190,21 +182,17 @@ void consensus::add_string(string fileline){
     if( (starting>=0 && (ending==0||ending>fileline.length()))|| (starting<0 && temp_starting<0)){//if end is not defined or it is shorter then take the available string
       if(starting >=0){
 	len1=fileline.length()-starting+1;
-	len=fileline.copy(buf,len1,starting);
       }
       else{
 	len1=fileline.length()+ending+1;
-	len=fileline.copy(buf,len1,0);
       }
     }
     else{
       if(starting>=0){
 	len1=ending-starting+1;
-	len=fileline.copy(buf,len1,starting);
       }
       else{
 	len1=ending-starting+1;
-	len=fileline.copy(buf,len1,temp_starting);
       }
     }
     temp.seq=buf;

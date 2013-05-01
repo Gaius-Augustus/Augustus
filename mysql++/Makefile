@@ -25,7 +25,7 @@ STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_DIR = $(INSTALL) -d
-BK_DEPS = /home/alexander/augustus/trunks/mysql++/bk-deps
+BK_DEPS = /home/mario/augustus/trunks/mysql++/bk-deps
 srcdir = .
 libdir = ${exec_prefix}/lib
 DLLPREFIX = lib
@@ -36,7 +36,7 @@ RANLIB = ranlib
 CXX = g++
 CXXFLAGS = -g -O2
 CPPFLAGS =  -I/usr/include/mysql
-LDFLAGS =  -L/usr/lib/x86_64-linux-gnu/
+LDFLAGS =  -L/usr/lib/x86_64-linux-gnu
 
 ### Variables: ###
 
@@ -531,7 +531,7 @@ test_sqlstream$(EXEEXT): $(TEST_SQLSTREAM_OBJECTS) $(DLLPREFIX)mysqlpp$(__mysqlp
 	$(__test_sqlstream___mac_setfilecmd)
 
 test_ssqls2$(EXEEXT): $(TEST_SSQLS2_OBJECTS) $(DLLPREFIX)mysqlpp$(__mysqlpp___targetsuf3) $(LIBPREFIX)mysqlpp_ssqls2parse$(LIBEXT)
-	$(CXX) -o $@ $(TEST_SSQLS2_OBJECTS)    -L. -lmysqlclient   $(LDFLAGS)  -lmysqlpp -lmysqlpp_ssqls2parse $(LIBS)
+	$(CXX) -o $@ $(TEST_SSQLS2_OBJECTS)    -L. -lmysqlpp_ssqls2parse -lmysqlclient   $(LDFLAGS)  -lmysqlpp $(LIBS)
 	
 	$(__test_ssqls2___mac_setfilecmd)
 

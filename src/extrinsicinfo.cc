@@ -1017,8 +1017,9 @@ void SequenceFeatureCollection::findGenicGaps(){
 		   prevhit++;
 	       }
 	   }
-//	   if (found)
-//	       grit->print(cout, true);
+	   if (found) {
+	       // grit->print(cout, true);
+	   }
        }
    }
 }
@@ -1545,8 +1546,10 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
 		    (*trit)->compileExtrinsicEvidence(groupList);
 		    if (Constant::alternatives_from_evidence) {
 			// check whether transcript obeys above rule
+#ifdef DEBUG
 			bool bad = false;
 			bool good = false;
+#endif
 			bool incomplete = false;
 			double sf;
 			double bestSfG = 0;
@@ -1574,8 +1577,9 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
 				    if (sf > bestSfG)
 					bestSfG = sf;
 				    if (sf >= 0.8) {
-
+#ifdef DEBUG
 					good = true;
+#endif
 				    }
 				} else { 
 				    if (sf > bestSfnotG)
@@ -1584,8 +1588,8 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
 #ifdef DEBUG
 					cout << "Following HintGroup not in G supports above transcript:";
 					grit->print(cout);
-#endif
 					bad = true;
+#endif
 				    }
 				}
 			    }
@@ -1597,12 +1601,12 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
 			    (*trit)->geneid = str;
 			    alltranscripts->push_back(**trit);
 #ifdef DEBUG
-// 			    cout << "transcript taken:" << endl;//AUSGABE
+// 			    cout << "transcript taken:" << endl;
 // 			    (*trit)->printGFF();
 #endif
 			} else {
 #ifdef DEBUG
-			    cout << "transcript excluded: ";//AUSGABE
+			    cout << "transcript excluded: ";
 			    if (incomplete)
 				cout << "incomplete ";
 			    if (bad)

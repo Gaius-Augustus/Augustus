@@ -545,7 +545,6 @@ void MultiTargetExonScorer::postProcessing(const Double& maxProb) {
 
     // apply global thresholds
     ViterbiSubmapType::iterator it = targetVit.begin(0), end = targetVit.begin(MAX_BLOCKCOUNT), temp;
-    ViterbiSubmapType::iterator target_it = targetVit.begin(0);
     while (it != end)
 	if (it->second.p > maxProb * mdl.prfl.getGlobalThresh(complement, it->first)) 
 	    ++it;

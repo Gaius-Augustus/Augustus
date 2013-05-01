@@ -999,7 +999,6 @@ int NAMGene::getNextCutEndPoint(const char *dna, int beginPos, int maxstep, Sequ
   char *curdna; 
   int cutendpoint=0;
   int examChunkSize=50000;
-  int newbegin;
   int examIntervalStart, examIntervalEnd;
   SequenceFeatureCollection *partSFC;
   list<Feature> *groupGaps;
@@ -1010,8 +1009,6 @@ int NAMGene::getNextCutEndPoint(const char *dna, int beginPos, int maxstep, Sequ
   if (examChunkSize > 150000)
     examChunkSize = 150000;
 
-  newbegin = maxstep-examChunkSize; 
-  
   if (restlen <= maxstep){
     return beginPos + restlen-1;
   } else {
