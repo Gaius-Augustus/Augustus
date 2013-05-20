@@ -20,6 +20,10 @@
 
 struct AlignmentBlock {
     vector<AlignSeq*> alignSpeciesTuple;
+    ~AlignmentBlock(){
+	for (int i=0; i<alignSpeciesTuple.size(); i++)
+	    delete alignSpeciesTuple.at(i);	
+    } 
 };
 
 class GeneMSA {
@@ -41,7 +45,10 @@ public:
     static void setCodonEvo(CodonEvo *c){codonevo = c;}
     ~GeneMSA(){
         if (!alignment.empty()) {
-            alignment.clear();
+	    for (list<AlignmentBlock*>::iterator it = alignment.begin(); it != alignment.end(); it++) {
+		delete *it;
+	    }
+	    alignment.clear();
         }
         for (int i=0; i<exoncands.size(); i++) {
             if (exoncands[i]!=NULL) {

@@ -93,7 +93,7 @@ void CompGenePred::start(){
     vector<string> speciesNames = OrthoGraph::tree->species;
     GenomicMSA msa;
     msa.readAlignment(speciesNames);  // reads the alignment
-    msa.prepareExons(); // merges alignment blocks if possible
+    msa.prepareExons(); // merges alignment blocks if possible. Mario: TODO sort aligments in between
     vector<int> offsets;
     bool AlexFail;
     

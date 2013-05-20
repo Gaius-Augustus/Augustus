@@ -111,6 +111,7 @@ inputfilename refers to a genome file in FASTA format\n\
 SPECIES is the same identifier as is used in the treefile and alnfile parameters to augustus.\n\
 \n\
 dbname,host,user,passwd are the name of the SQL database, the host name or IP, the database user and password\n\
+The password can be left empty is the mysql user account is not password protected.\n\
 When storing genomes of multiple organisms call this program repeatedly for each one.\n\
 A single table with the structure\n\
 \
@@ -122,8 +123,9 @@ parameters:\n\
               that subsequent retrievals of small sequence ranges do not require to read\n\
               the complete - potentially much longer - chromosome. (default " << chunksize << ")\n\
 \n\
-example:\n\
-     faload2db --species=chicken --dbaccess=birds,localhost,mario,dF$n.E chickengenome.fa\n";
+examples:\n\
+     faload2db --species=chicken --dbaccess=birds,localhost,mario,dF$n.E chickengenome.fa\n\
+     faload2db --species=chicken --dbaccess=birds,localhost,mario, chickengenome.fa\n";
 }
 
 void connectDB(string dbaccess){

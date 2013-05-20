@@ -279,7 +279,8 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
         cout<<endl;
     }
 }
-
+// Mario: this apparently assumes that the maf aligments are sorted so that neighboring
+// alignments can be merged in this order. TODO: sorting.
 // aligned sequences, which have a distance of at most maxGapLen bases will be merged
 void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
     list<AlignmentBlock*>::iterator it_pos=this->alignment.begin();
@@ -377,6 +378,7 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                             (*it_prev)->alignSpeciesTuple.at(j)->cmpStarts.push_back(NULL);
                         }
                     }
+		    delete (*it_pos);
                     it_pos=this->alignment.erase(it_pos);
                 }
             }
