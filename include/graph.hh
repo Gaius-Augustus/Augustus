@@ -76,6 +76,7 @@ public:
     list<Edge> edges;
 
     StateType castToStateType(); //casts void* back to State* and returns the StateType
+    void addWeight(double weight); //add weight to all outgoing edges
 
 };
 

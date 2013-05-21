@@ -915,3 +915,10 @@ bool AugustusGraph::mergedStopcodon(Node* exon1, Node* exon2){
     }
     return false;
 }
+
+void Node::addWeight(double weight){
+
+    for(list<Edge>::iterator edge = edges.begin(); edge != edges.end(); edge++){
+	edge->score += weight;
+    }
+}
