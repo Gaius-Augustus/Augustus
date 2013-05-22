@@ -99,10 +99,17 @@
             <p>The old AUGUSTUS web server for predictions with pre-trained models is available at <a href="http://augustus.gobics.de">http://augustus.gobics.de</a>.</p>
             <h2>References</h2>
             <p>Please cite the following references when using the AUGUSTUS training web server results in your publication:</p>
+	    <ul>
+	      <li>K. J. Hoff and M. Stanke (2013)<br>
+		<a href="http://nar.oxfordjournals.org/content/early/2013/05/21/nar.gkt418.full?keytype=ref&ijkey=Alnjr4zdAka9FGo">WebAUGUSTUS - a web service for training AUGUSTUS and predicting genes in eukaryotes</a><br>
+		Nucleic Acids Res, doi:10.1093/nar/gkt418</li>
+	      <li>K. J. Hoff and M. Stanke (2012)<br>
+            <a href="http://bioinf.uni-greifswald.de/trainaugustus/references/PAG2012.pdf">TrainAUGUSTUS - a Webserver Application for Parameter Training and Gene Prediction in Eukaryoties</a><br>
+            International Plant & Animal XX Conference 2012, U.S.A. (Poster)</li>
+	      </ul>
+
+	    <p>Please cite the following references when using results obtained by AUGUSTUS in your publication:</p>
             <ul>
-	    <li>K. J. Hoff and M. Stanke (2012)<br>
-	    <a href="http://bioinf.uni-greifswald.de/trainaugustus/references/PAG2012.pdf">TrainAUGUSTUS - a Webserver Application for Parameter Training and Gene Prediction in Eukaryoties</a><br>
-	    International Plant & Animal XX Conference 2012, U.S.A. (Poster)</li>
             <li>D. Sommerfeld, T. Lingner, M. Stanke, B. Morgenstern, H. Richter (2009)<br>
 <a href="http://www.elsevier.com/wps/find/journaldescription.cws_home/505611/description">AUGUSTUS at MediGRID: Adaption of a Bioinformatics Application to Grid Computing for Efficient Genome Analysis</a><br>
 Future Generation Computer Systems 25, 337 - 345. 
