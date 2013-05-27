@@ -25,6 +25,9 @@ OrthoExon::OrthoExon(){
     omega = -1;
     subst = -1;
     orthoex.resize(OrthoGraph::numSpecies);
+    orthonode.resize(OrthoGraph::numSpecies);
+    weights.resize(OrthoGraph::numSpecies,0);
+    labels.resize(OrthoGraph::numSpecies);
 }
 //copy with permutation of vector entries
 OrthoExon::OrthoExon(const OrthoExon& other, const vector<size_t> &permutation){
@@ -34,6 +37,9 @@ OrthoExon::OrthoExon(const OrthoExon& other, const vector<size_t> &permutation){
     for(size_t pos = 0; pos < orthoex.size(); pos++){
 	if (other.orthoex[pos]){
 	    orthoex[permutation[pos]] = other.orthoex[pos];
+	    orthonode[permutation[pos]] = other.orthonode[pos];
+	    weights[permutation[pos]] = other.weights[pos];
+	    labels[permutation[pos]] = other.labels[pos];
 	}
     }
 }
@@ -57,7 +63,7 @@ list<OrthoExon> readOrthoExons(string filename){
 	istrm >> comment;
 	for (int i = 0; i < nspecies; i++){
 	    istrm >> species;
-	    size_t pos = OrthoGraph::tree->getVectorPositionSpecies(species);
+	    int pos = OrthoGraph::tree->findIndex(species);
 	    if (pos == OrthoGraph::numSpecies){
 		throw ProjectError("readOrthoExons: species name in " + filename + 
 				   " is not a species name in treefile.");
@@ -89,9 +95,11 @@ list<OrthoExon> readOrthoExons(string filename){
 void writeOrthoExons(const list<OrthoExon> &all_orthoex){
     cout << "# orthologous exons\n" << "#\n" <<"[SPECIES]\n" << "# number of species" << endl;
     cout << OrthoGraph::numSpecies << endl;
+    vector<string> species;
+    OrthoGraph::tree->getSpeciesNames(species);
     cout << "# species names" << endl;
     for (size_t i = 0; i < OrthoGraph::numSpecies; i++){
-	cout << OrthoGraph::tree->species[i] << "\t";
+	cout << species[i] << "\t";
     }
     cout << endl;
     cout << "#[ORTHOEX]" << endl;

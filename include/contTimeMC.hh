@@ -8,6 +8,9 @@
  * Date       |   Author              |  Changes
  *------------|-----------------------|------------------------------------------
  * 17.02.2013 | Mario Stanke          | creation of the class
+ * 27.05.2013 | Stefanie König        | creation of the class ExonEvo
+ *            |                       | and a base class Evo from which ExonEvo
+ *            |                       | and CodonEvo inherit
 \******************************************************************************/
 #ifndef _CONTTIMEMC_HH
 #define _CONTTIMEMC_HH
@@ -24,21 +27,13 @@
 using namespace std;
 
 /*
- * class CodonEvo
- * Computes and stores 64x64 codon substitution probability matrices
- * P(t,omega,kappa,pi) = exp(Q(omega,kappa,pi)*t)
- * for a sample of values for t and omega (dN/dS, selection)
- * and a fixed given value of kappa (transition/transversion ratio)
- * and vector pi (codon usage).
- * Matrices are precomputed and retrieval of P(t,omega) is then a constant time lookup
- * as this is needed very often during estimation of omega for a given tree.
+ * abstract base class for codon and exon evolution
  */
-class CodonEvo {
+class Evo {
 public:
-    CodonEvo() : k(0), m(0), kappa(2) {};
-    ~CodonEvo();
-    void setKappa(double kappa){ this->kappa = kappa;} // transition/transversion ratio
-    void setPi(double *pi); // codon usage
+    Evo(int s) : states(s), m(0) {};
+    ~Evo();
+    int getNumStates(){return states;}
 
     /* Determine the branch lengths for which matrices P should be stored, at most m.
      * For trees with few species, say <10, this could be all branch lengths b occuring
@@ -48,6 +43,49 @@ public:
     void setBranchLengths(vector<double> &b, int m=-1);
     void printBranchLengths();
 
+    virtual void computeLogPmatrices()=0; // precomputes and stores the array of matrices
+
+    double getPi(int i) const {return pi[i];}  //equilibrium frequency of state i
+    double getLogPi(int i) const {return log(getPi(i));}
+
+    /*
+     * functions to access transition probabilities from state i to state j along a branch of length t
+     * in some evolutionary models it is desired to vary one additional parameter on which
+     * transition probabilities depend (eg omega (dN/dS) or rate of exon loss).
+     * u is the index to that additional parameter and is set to 0 by default if no additional
+     * parameter exists)
+     */
+    double getP(int i,int j,double t, int u=0); 
+    double getLogP(int i,int j,double t, int u=0){return log(getP(i,j,t,u));}
+
+protected:
+    int findClosestIndex(vector<double> &v, double val);
+
+protected:
+    int states; //number of states (64 in codon model and (currently) 2 in exon model)
+    int m; // number of branch lengths (times) for which P's are stored
+    double *pi;
+    vector<double> times; // sorted vector of branch lengths
+    Matrix<gsl_matrix *> allPs; // parametrized probability matrices
+};
+
+/*
+ * class CodonEvo
+ * Computes and stores 64x64 codon substitution probability matrices
+ * P(t,omega,kappa,pi) = exp(Q(omega,kappa,pi)*t)
+ * for a sample of values for t and omega (dN/dS, selection)
+ * and a fixed given value of kappa (transition/transversion ratio)
+ * and vector pi (codon usage).
+ * Matrices are precomputed and retrieval of P(t,omega) is then a constant time lookup
+ * as this is needed very often during estimation of omega for a given tree.
+ */
+class CodonEvo : public Evo {
+public:
+    CodonEvo() : Evo(64), k(0), kappa(2) {};
+    ~CodonEvo();
+    void setKappa(double kappa){ this->kappa = kappa;} // transition/transversion ratio
+    void setPi(double *pi); // codon usage
+   
     /*
      * Chooses k values for omega around 1, e.g. 0.8, 1, 1.2 for k=3.
      * Later, one can see which of these values of omega gives the maximum likelihood.
@@ -87,17 +125,11 @@ public:
      */
     double estOmegaOnSeqPair(const char *e1, const char *e2, double t, // input variables
 			     int& numAliCodons, int &numSynSubst, int &numNonSynSubst); // output variables
-private:
-    int findClosestIndex(vector<double> &v, double val);
 
 private:
     int k; // number of different omega values for which P's are stored
-    int m; // number of branch lengths (times) for which P's are stored
     double kappa;
-    double *pi;
-    vector<double> times; // sorted vector of branch lengths
     vector<double> omegas; // sorted vector of omegas (contains values below, around and above 1)
-    Matrix<gsl_matrix *> allPs; // parametrized log probability matrices
 };
 
 /*
@@ -126,4 +158,41 @@ int eigendecompose(gsl_matrix *Q,       // input
 gsl_matrix *expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv);
 
 void printCodonMatrix(gsl_matrix *M);
+
+/*
+ * class ExonEvo
+ * Computes and stores 2x2 probability matrices for exon gain/loss events
+ * P(t) = exp(Q(lambda, mu)*t) for a sample of values for t
+ * and a fixed given value for lambda (rate of exon gain) and mu (rate of exon loss)
+ * Matrices are precomputed and retrieval of P(t) is then a constant time lookup
+ */
+class ExonEvo : public Evo{
+
+public:
+    ExonEvo() : Evo(2)  {
+	setLambda();
+	setMu();
+	setPhyloFactor();
+	setPi();
+    };
+    void setPi();
+    void setPhyloFactor();
+    void setPhyloFactor(int k){phylo_factor=k;}
+    double getPhyloFactor() const{return phylo_factor;}
+    void setMu();
+    double getMu() const{return mu;}
+    void setLambda();
+    double getLambda() const{return lambda;}
+    void computeLogPmatrices();
+    gsl_matrix *computeP(double t); //computes transition matrix P for time t
+
+    void addBranchLength(double b); //add new branch length b and matrix P(b)
+   
+private:
+    double mu;            // rate for exon loss
+    double lambda;        // rate for exon gain
+    double phylo_factor;  // tuning parameter to fit phylogenetic score to scores in the graph
+
+};
+
 #endif    // _CONTTIMEMC_HH

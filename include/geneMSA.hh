@@ -17,12 +17,15 @@
 #include "randseqaccess.hh"
 #include "contTimeMC.hh"
 
+//forward declarations
+class OrthoGraph;
 
 struct AlignmentBlock {
     vector<AlignSeq*> alignSpeciesTuple;
     ~AlignmentBlock(){
-	for (int i=0; i<alignSpeciesTuple.size(); i++)
-	    delete alignSpeciesTuple.at(i);	
+	// Steffi: this causes a segmentation fault for more than two species. I don't know why.
+	// for (int i=0; i<alignSpeciesTuple.size(); i++) 
+	    //delete alignSpeciesTuple.at(i);	
     } 
 };
 
@@ -89,7 +92,7 @@ public:
     Double computeSpliceSiteScore(Double exonScore, Double minProb, Double maxProb); //computes the score for the splice sites of an exon candidate
     pair<int,int> getAlignedPosition(AlignSeq* ptr, int pos);	// computes the aligned position of a base in an alignment and the 'block' where the base is found
     int getRealPosition(AlignSeq* ptr, int pos, int idx);	// computes the real position of a base dependent on its position in the alignment
-    void createOrthoExons(vector<int> offsets);	// searches for the orthologue exons of the exon candidates of the reference species
+    void createOrthoExons(vector<int> offsets, OrthoGraph &orthograph);	// searches for the orthologue exons of the exon candidates of the reference species
     list<ExonCandidate*>* getExonCands(int speciesIdx);
     list<OrthoExon> getOrthoExons();
     void cutIncompleteCodons(vector<ExonCandidate*> &orthoex);

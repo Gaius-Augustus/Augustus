@@ -17,6 +17,7 @@
 #include "orthoexon.hh"
 #include "intronmodel.hh"
 #include "namgene.hh"
+#include "orthograph.hh"
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -526,7 +527,7 @@ int GeneMSA::getRealPosition(AlignSeq *ptr, int pos, int idx) {
 
 // searches for the ortholog exons of the exon candidates of the reference species
 // => any ortholog exon must have an exon in the reference species
-void GeneMSA::createOrthoExons(vector<int> offsets) {
+void GeneMSA::createOrthoExons(vector<int> offsets, OrthoGraph &orthograph) {
     list<AlignmentBlock*>::iterator it_ab;
     list<ExonCandidate*> cands = *getExonCands(0); // exon candidates of reference species
     AlignSeq *as_ptr, *ptr;
@@ -573,6 +574,13 @@ void GeneMSA::createOrthoExons(vector<int> offsets) {
                                                 && ((*it_ab)->alignSpeciesTuple.at(i)->start + (*it_ab)->alignSpeciesTuple.at(i)->seqLen - 1
 						    >= map_it->second->end + offsets[i] + 1)) {
                                             oe.orthoex[i] = (map_it->second);
+					    /*
+					     * steffi: set pointer to the corresponding node in OrthoGraph
+					     * this might consume a lot of memory, there might be a better
+					     * solution to quickly access nodes corresponding to an exon candidate
+					     */ 
+					    Node* node = orthograph.graphs[i]->getNode(oe.orthoex[i]);
+					    oe.orthonode[i]=node;
                                             hasOrthoExon = true;
                                         }
                                     }
@@ -581,6 +589,8 @@ void GeneMSA::createOrthoExons(vector<int> offsets) {
                         }
                     }
                     if (hasOrthoExon) {
+			Node* node = orthograph.graphs[0]->getNode(oe.orthoex[0]);
+			oe.orthonode[0]=node;
                         oe.ID = orthoExonID;
                         orthoExonID++;
                         this->orthoExonsList.push_back(oe);
@@ -707,33 +717,36 @@ void GeneMSA::openOutputFiles(){
         outputdirectory = "";
     }
     outputdirectory = expandHome(outputdirectory); //replace "~" by "$HOME"
-    exonCands_outfiles.resize(tree->species.size());
-    orthoExons_outfiles.resize(tree->species.size());
-    geneRanges_outfiles.resize(tree->species.size());
-    omega_outfiles.resize(tree->species.size());
-    for (int i=0; i<tree->species.size(); i++) {
-        string file_exoncand = outputdirectory + "exonCands." + tree->species[i] + ".gff3";
+    
+    exonCands_outfiles.resize(tree->numSpecies());
+    orthoExons_outfiles.resize(tree->numSpecies());
+    geneRanges_outfiles.resize(tree->numSpecies());
+    omega_outfiles.resize(tree->numSpecies());
+    vector<string> species;
+    tree->getSpeciesNames(species);
+    for (int i=0; i<tree->numSpecies(); i++) {
+        string file_exoncand = outputdirectory + "exonCands." + species[i] + ".gff3";
         ofstream *os_ec = new ofstream(file_exoncand.c_str());
         if (os_ec!=NULL) {
             exonCands_outfiles[i]=os_ec;
             (*os_ec) << PREAMBLE << endl;
             (*os_ec) << "#\n#-----  exon candidates  -----" << endl << "#" << endl;
         }
-        string file_geneRanges = outputdirectory + "geneRanges." + tree->species[i] + ".gff3";
+        string file_geneRanges = outputdirectory + "geneRanges." + species[i] + ".gff3";
         ofstream *os_gr = new ofstream(file_geneRanges.c_str());
         if (os_gr!=NULL) {
             geneRanges_outfiles[i]=os_gr;
             (*os_gr) << PREAMBLE << endl;
             (*os_gr) << "#\n#-----  possible gene ranges  -----" << endl << "#" << endl;
         }
-        string file_orthoexon = outputdirectory + "orthoExons." + tree->species[i] + ".gff3";
+        string file_orthoexon = outputdirectory + "orthoExons." + species[i] + ".gff3";
         ofstream *os_oe = new ofstream(file_orthoexon.c_str());
         if (os_oe) {
             orthoExons_outfiles[i]=os_oe;
             (*os_oe) << PREAMBLE << endl;
             (*os_oe) << "#\n#----- ortholog exons  -----" << endl << "#" << endl;
         }
-        string file_omega = outputdirectory + "omegaExons." + tree->species[i] + ".gff3";
+        string file_omega = outputdirectory + "omegaExons." + species[i] + ".gff3";
         ofstream *os_omega = new ofstream(file_omega.c_str());
         if (os_omega) {
             omega_outfiles[i]=os_omega;
@@ -1053,7 +1066,7 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, OrthoExon &oe, vector<i
 }
 
 void GeneMSA::closeOutputFiles(){
-    for (int i=0; i<tree->species.size(); i++) {
+    for (int i=0; i<tree->numSpecies(); i++) {
         if (exonCands_outfiles[i]) {
             if(exonCands_outfiles[i]->is_open()) {
                 exonCands_outfiles[i]->close();

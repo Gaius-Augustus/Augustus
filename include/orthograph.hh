@@ -52,7 +52,22 @@ public:
 
     void addScoreSelectivePressure(); //const. reward for orthologous exons and const. penalty for non-orthologous exons. Only temporary until PAML is integrated.
 
-    void globalPathSearch(); //determine initial labeling of the graphs
+    /*
+     * optimization by making small local changes called moves
+     */
+    void optimize(ExonEvo &evo);// main routine, in which different moves are created
+    void localMove(vector<Move*> &orthomove, ExonEvo &evo);  // execution a single move
+    /*
+     * currently, only a single type of move is implemented:
+     * if # of 0's in labelpattern of an OrthoExon is smaller than # of 1's,
+     * all nodes with the labels 0 are made to 1 and vice versa
+     */
+    vector<Move*> majorityRuleMove(OrthoExon &orthoex);
+    double pruningAlgor(ExonEvo &evo){                    // pruning algor. for all OrthoExons
+	return pruningAlgor(all_orthoex, evo);
+    }               
+    double pruningAlgor(list<OrthoExon> &orthoex, ExonEvo &evo);   // pruning algor. for a list of OrthoExons
+    list<OrthoExon> orthoExInRange(vector<Move*> &orthomove); //determine all OrthoExons in a range
     string getLabelpattern(OrthoExon &ex); //determines the current labelpattern of an orthoex
     void printHTMLgBrowse(OrthoExon &ex);  //temp: html output for gBrowse
     inline void printCache(){
@@ -60,23 +75,21 @@ public:
     }
     void printCache(list<OrthoExon> &ortho);
 
-    //optimization functions
-    void optimize();                                 // create MoveObjects
-    void localMove(vector<Move*> &orthomove);  // do the local move for a MoveObject
-    inline double pruningAlgor(){                    // pruning Algor. for all OrthoExons
-	return pruningAlgor(all_orthoex);
-    }               
-    double pruningAlgor(list<OrthoExon> &orthoex);   // pruning Algor. for a list of OrthoExons
-    list<OrthoExon> orthoExInRange(vector<Move*> &orthomove); //determine all OrthoExons in a range
-   
-    //functions to create different types of moves 
-    /* 
-     * majorityRule: if # of 0's in labelpattern of an OrthoExon is smaller than # of 1's,
-     * all nodes with the labels 0 are made to 1 and vice versa
+    /*
+     * optimization via dual decomposition
+     * problem is decomposed into two subproblems whith can be solved efficiently:
+     * horizontal problem: DAG longest path
+     * verical problem: MAP inference on a set of disjoint phylogenetic trees whose
+     * leaf nodes are assigned to weights.
      */
-    vector<Move*> majorityRuleMove(OrthoExon &orthoex);
+    double dualdecomp(ExonEvo &evo, int T=10);  //main routine
+    double treeMAPInf(ExonEvo &evo);  //vertical problem
+    double globalPathSearch(); // horizontal problem
+    double getStepSize(int t);    // specifies a sequence of steps
+    double makeConsistent(ExonEvo &evo);
 
-    void outputGenes(vector<ofstream*> filestreams, vector<int> &geneid); //output genes + filter
+    // transform graph labeling into list of genes + filter + output
+    void outputGenes(vector<ofstream*> filestreams, vector<int> &geneid);
 };
 
 struct Score{

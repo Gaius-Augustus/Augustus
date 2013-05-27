@@ -12,6 +12,7 @@
 
 
 #include "orthograph.hh"
+#include "contTimeMC.hh"
 #include "mea.hh"
 
 using namespace std;
@@ -146,7 +147,7 @@ void OrthoGraph::outputGenes(vector<ofstream*> filestreams, vector<int> &geneid)
     }
 }
 
-void OrthoGraph::optimize(){
+void OrthoGraph::optimize(ExonEvo &evo){
 
     //create MoveObjects
 
@@ -155,7 +156,7 @@ void OrthoGraph::optimize(){
 	for(list<OrthoExon>::iterator orthoex = all_orthoex.begin(); orthoex != all_orthoex.end(); orthoex++){
 	    vector<Move*> orthomove = majorityRuleMove(*orthoex);
 	    if(!orthomove.empty()){
-		localMove(orthomove);
+		localMove(orthomove,evo);
 		//delete MoveObjects
 		for(size_t pos = 0; pos < numSpecies; pos++){
 		    delete orthomove[pos];
@@ -165,7 +166,7 @@ void OrthoGraph::optimize(){
     }
 }
 
-void OrthoGraph::localMove(vector<Move*> &orthomove){
+void OrthoGraph::localMove(vector<Move*> &orthomove, ExonEvo &evo){
 
     
     bool retry = false;  //if true, the move is repeated on a 'larger' subgraph
@@ -198,7 +199,7 @@ void OrthoGraph::localMove(vector<Move*> &orthomove){
 	list<OrthoExon> local_orthoexons = orthoExInRange(orthomove);
  
 	//calculate phylo_score
-	phylo_score -= pruningAlgor(local_orthoexons);
+	phylo_score -= pruningAlgor(local_orthoexons,evo);
 
 	// do local changes for each graph  
 	for(size_t pos = 0; pos < numSpecies; pos++){
@@ -208,7 +209,7 @@ void OrthoGraph::localMove(vector<Move*> &orthomove){
 	}
 	print_change = true;
 	//calculate new phylo_score
-	phylo_score += pruningAlgor(local_orthoexons);
+	phylo_score += pruningAlgor(local_orthoexons, evo);
 	print_change = false;
 	cout << "-------------------------------------" << endl;
 	cout << "graph_score\t" << graph_score << endl;
@@ -240,9 +241,10 @@ void OrthoGraph::localMove(vector<Move*> &orthomove){
     while( retry );
 }
 
-double OrthoGraph::pruningAlgor(list<OrthoExon> &orthoex){
+double OrthoGraph::pruningAlgor(list<OrthoExon> &orthoex, ExonEvo &evo){
 
     double tree_score = 0;
+    Evo *evo_base = &evo;
 
     for(list<OrthoExon>::iterator ortho = orthoex.begin(); ortho != orthoex.end(); ortho++){
 
@@ -251,7 +253,9 @@ double OrthoGraph::pruningAlgor(list<OrthoExon> &orthoex){
 	    tree_score += cache::getScore(labelpattern);
 	}
 	else{
-	    double score = tree->pruningAlgor(labelpattern);
+	    PhyloTree temp(*tree);
+	    double score = temp.pruningAlgor(labelpattern, evo_base);
+	    score=log(score) * evo.getPhyloFactor();
 	    cache::addToHash(labelpattern, score);
 	    tree_score += score;
 	}
@@ -423,8 +427,10 @@ vector<ofstream*> initOutputFiles(string extension){
     }
     outdir = expandHome(outdir); //replace "~" by "$HOME"
     filestreams.resize(OrthoGraph::numSpecies);
+    vector<string> species;
+    OrthoGraph::tree->getSpeciesNames(species);
     for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){
-	string filename = outdir + OrthoGraph::tree->species[pos] + extension + ".gff";
+	string filename = outdir + species[pos] + extension + ".gff";
 	if(Gene::gff3){
 	    filename += "3";	    
 	}
@@ -432,7 +438,7 @@ vector<ofstream*> initOutputFiles(string extension){
 	if(out){
 	    filestreams[pos] = out;
 	    (*out) << PREAMBLE << endl;
-	    (*out) << "#\n#----- prediction for species '" << OrthoGraph::tree->species[pos] << "' -----" << endl << "#" << endl;
+	    (*out) << "#\n#----- prediction for species '" << species[pos] << "' -----" << endl << "#" << endl;
 	}	
     }
     return filestreams;
@@ -524,11 +530,163 @@ void OrthoGraph::addScoreSelectivePressure(){
     }
 }
 
-void OrthoGraph::globalPathSearch(){
+double OrthoGraph::globalPathSearch(){
+
+    double score=0;
 
     for(size_t pos = 0; pos < numSpecies; pos++){
 	if(graphs[pos]){
 	    graphs[pos]->relax();
+	    score += graphs[pos]->getScorePath(graphs[pos]->head, graphs[pos]->tail);
 	}
     }
+    return score;
 }
+
+double OrthoGraph::dualdecomp(ExonEvo &evo, int T){
+
+    OrthoExon oe = *all_orthoex.begin();
+    double w = 0.1;
+    for(int x=1; x<500; ){
+    	cout << "weight: "<< x*w<<endl;
+    	for(int i=0;i<2;i++){
+    	    for(int j=0;j<2;j++){
+    		for(int k=0;k<2;k++){
+    		    oe.labels[0]=i;
+    		    oe.labels[1]=j;
+    		    oe.labels[2]=k;
+    		    oe.weights[0]=w*x;
+    		oe.weights[1]=w*x;
+    		oe.weights[2]=w*x;
+    		cout<<i<<j<<k<<"\t";
+    		PhyloTree temp=(*tree);
+    		evo.setPhyloFactor(100);
+    		double score = temp.weightedMAP(oe, evo, true);
+    		cout<<score<<endl;
+    		}
+    	    }
+    	}
+    	x=x+10;
+    }
+
+    //initialization
+    double U = std::numeric_limits<double>::max(); //upper bound
+
+    list<OrthoExon*> diff;
+
+    for(int t=0; t<T;t++){
+	double score = 0; 
+	double delta = getStepSize(t);             //get next step size
+	cout<<"delta_"<<t<<"="<<delta<<endl; 
+	score += globalPathSearch();
+	score += treeMAPInf(evo);
+	U = min(U,score);              //update upper bound
+	bool isConsistent = true;
+	for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
+	    bool isdiff = false;
+	    for(size_t pos = 0; pos < numSpecies; pos++){
+		if(hects->orthoex[pos]){
+		    // get corresponding node in graph
+		    Node* node = hects->orthonode[pos];
+		    bool h = node->label;
+		    bool v = hects->labels[pos];
+		    if(v != h){  //shared nodes are labelled inconsistently in the two subproblems
+			isdiff = true;
+			isConsistent = false;
+			double weight = delta*(v-h);
+			//update weights
+			node->addWeight(weight);
+			hects->weights[pos] -= weight;     
+		    }
+		}
+	    }
+	    if(isdiff && t==0)
+		diff.push_back(&(*hects));
+	}
+
+#ifdef DEBUG
+	cout<<"HECT\tpath\tMAP\tnew MAP weights"<<endl;
+	for(auto it = diff.begin(); it != diff.end(); it++){
+	    cout<<"ID:"<<(*it)->ID<<"\t";
+	    for(size_t pos = 0; pos < (*it)->orthonode.size(); pos++){
+		if((*it)->orthoex[pos]){
+		    cout<<(*it)->orthonode[pos]->label;
+		}
+		else
+		    cout<<"-"; 
+	    }
+	    cout<<"\t";
+	    for(size_t pos = 0; pos < (*it)->labels.size(); pos++){
+		if((*it)->orthoex[pos]){
+		    cout<<(*it)->labels[pos];
+		}
+		else
+		    cout<<"-"; 
+	    }
+	    cout<<"\t";
+	    for(size_t pos = 0; pos < (*it)->weights.size(); pos++){
+		if((*it)->orthoex[pos]){
+		    cout<<(*it)->weights[pos]<<"\t";
+		}
+		else
+		    cout<<"-\t"; 
+	    }
+	    cout<<endl;
+	}
+	cout<<endl;
+#endif
+	if(isConsistent){ // exact solution is found
+	    return 0;
+	}
+    }
+    double score = makeConsistent(evo);
+    double error = (U-score);
+    cout<<"error\t"<<error<<endl;
+    return error;
+    
+}
+
+/*
+ * 
+ * requirement delta -> 0 for t -> infinity and
+ * sum(deltas) = infinity
+ */
+double OrthoGraph::getStepSize(int t){
+    
+    double delta=0;
+    if(t == 0){ //small step size
+    	delta = 0.0001;
+    }
+    else{
+	delta = 10/sqrt(t);
+    }
+    return delta;
+}
+
+double OrthoGraph::treeMAPInf(ExonEvo &evo){
+
+    double score=0;
+
+    for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
+	PhyloTree temp=(*tree);
+	score += temp.weightedMAP(*hects, evo);
+    }
+    return score;
+}
+
+double OrthoGraph::makeConsistent(ExonEvo &evo){
+
+    double score = 0;
+    score += globalPathSearch();
+    for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
+	for(size_t pos = 0; pos < numSpecies; pos++){
+	    if(hects->orthoex[pos]){
+		// set label to label of the corresponding node in the graph
+		hects->labels[pos] = hects->orthonode[pos]->label;
+	    }
+	}
+	PhyloTree temp=(*tree);
+	score += temp.weightedMAP(*hects, evo, true);
+    }
+    return score;
+}	

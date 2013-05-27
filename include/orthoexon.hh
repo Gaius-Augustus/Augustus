@@ -16,6 +16,7 @@
 
 //forward declarations:
 class ExonCandidate;
+class Node;
 
 class OrthoExon{
 
@@ -26,6 +27,9 @@ public:
     OrthoExon(const OrthoExon& other, const std::vector<size_t> &permutation);
 
     std::vector<ExonCandidate*> orthoex;
+    std::vector<Node*> orthonode; //corresponding nodes in the graph
+    std::vector<double> weights;
+    std::vector<int> labels;
     //TODO: instead of an attribute write a function getLabelpattern() which returns the current
     //label pattern. This is the safer way and guarantees to always have the current label pattern.
     std::string labelpattern;

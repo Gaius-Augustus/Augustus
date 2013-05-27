@@ -40,19 +40,22 @@ void CompGenePred::start(){
 #ifdef DEBUG
     cout << "reading in the phylogenetic tree" << endl;
 #endif
-    PhyloTree *tree = new PhyloTree(Constant::treefile);  // has to be initialized before OrthoGraph
-
-    OrthoGraph::tree = tree;
-    GeneMSA::setTree(tree);
-    OrthoGraph::numSpecies = OrthoGraph::tree->species.size();
-
+    PhyloTree tree(Constant::treefile);  // has to be initialized before OrthoGraph
+    ExonEvo evo;
+    vector<double> branchset;
+    tree.getBranchLengths(branchset);
+    evo.setBranchLengths(branchset);
+    evo.computeLogPmatrices();
+    OrthoGraph::tree = &tree;
+    GeneMSA::setTree(&tree);
+    OrthoGraph::numSpecies = OrthoGraph::tree->numSpecies();
 
 #ifdef DEBUG
     OrthoGraph::tree->printWithGraphviz("tree.dot");
     cout << "-------------------------------\nparameters phylogenetic model\n-------------------------------" << endl;
-    cout << "rate exon loss:\t" << OrthoGraph::tree->evo.getMu() << endl;
-    cout << "rate exon gain:\t" << OrthoGraph::tree->evo.getLambda() << endl;
-    cout << "phylo factor:\t" << OrthoGraph::tree->evo.getPhyloFactor() <<  "\n-------------------------------" << endl;
+    cout << "rate exon loss:\t" << evo.getMu() << endl;
+    cout << "rate exon gain:\t" << evo.getLambda() << endl;
+    cout << "phylo factor:\t" << evo.getPhyloFactor() <<  "\n-------------------------------" << endl;
 #endif
 
     //initialize output files of initial gene prediction and optimized gene prediction
@@ -89,8 +92,9 @@ void CompGenePred::start(){
     // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
     // printCodonMatrix(P);
     GeneMSA::setCodonEvo(&codonevo);
-
-    vector<string> speciesNames = OrthoGraph::tree->species;
+  
+    vector<string> speciesNames;
+    OrthoGraph::tree->getSpeciesNames(speciesNames);
     GenomicMSA msa;
     msa.readAlignment(speciesNames);  // reads the alignment
     msa.prepareExons(); // merges alignment blocks if possible. Mario: TODO sort aligments in between
@@ -165,7 +169,7 @@ void CompGenePred::start(){
 	if (!AlexFail){
 	  geneRange->printGeneRanges();
 	  geneRange->printExonCands(offsets);
-	  geneRange->createOrthoExons(offsets);
+	  geneRange->createOrthoExons(offsets, orthograph);
 	  geneRange->printOrthoExons(rsa, offsets);
 	  orthograph.all_orthoex = geneRange->getOrthoExons();
 	  
@@ -177,10 +181,11 @@ void CompGenePred::start(){
 	  orthograph.outputGenes(initGenes,init_geneid);
 	  
 	  if(!orthograph.all_orthoex.empty()){
-	      orthograph.pruningAlgor();
+	      orthograph.pruningAlgor(evo);
 	      orthograph.printCache();
 	      // Iterative optimization of labelings in graphs
-	      orthograph.optimize();
+	      orthograph.optimize(evo);
+	      //orthograph.dualdecomp(evo,25);
 	  }
 	  
 	  // transfer max weight paths to genes + filter + ouput
@@ -195,7 +200,5 @@ void CompGenePred::start(){
     closeOutputFiles(initGenes);
     closeOutputFiles(baseGenes);
     closeOutputFiles(optGenes);
-
-    delete OrthoGraph::tree;
 
 }

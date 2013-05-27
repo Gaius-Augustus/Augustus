@@ -8,11 +8,15 @@
  * Date       |   Author              |  Changes
  *------------|-----------------------|------------------------------------------
  * 19.02.2013 | Mario Stanke          | creation of the class
+ * 27.05.2013 | Stefanie König        | creation of the class ExonEvo
+ *            |                       | and a base class Evo from which ExonEvo
+ *            |                       | and CodonEvo inherit
 \******************************************************************************/
 
 // project includes
 #include "contTimeMC.hh"
 #include "geneticcode.hh"
+#include "properties.hh"
 
 // standard C/C++ includes
 #include <iostream>
@@ -20,10 +24,16 @@
 #include <vector> 
 #include <algorithm>
 
-void CodonEvo::setPi(double *pi){
-    this->pi = new double[64];
-    for (int i=0;i<64; i++)
-	this->pi[i] = pi[i];
+
+// destructor
+Evo::~Evo(){
+    times.clear();
+    for (int i=0; i < allPs.getColSize(); i++)
+	for (int j=0; j< allPs.getRowSize(); j++){
+	    gsl_matrix_free(allPs[i][j]);
+	}
+    allPs.assign(0, 0, NULL);
+    delete[] pi;
 }
 
 /* Determine the branch lengths for which matrices P should be stored, at most m.
@@ -31,7 +41,7 @@ void CodonEvo::setPi(double *pi){
  * in the tree. A value of m=-1 means to store all lengths in b. For large trees, memory 
  * is saved by storing only m times roughly representing all lengths in b.
  */
-void CodonEvo::setBranchLengths(vector<double> &b, int m){
+void Evo::setBranchLengths(vector<double> &b, int m){
     this->m = m;
     // make a sorted copy of the unique times in b
     times = b;
@@ -62,9 +72,35 @@ void CodonEvo::setBranchLengths(vector<double> &b, int m){
     }
 }
 
-void CodonEvo::printBranchLengths(){
+void Evo::printBranchLengths(){
     for (int i=0; i<times.size(); i++)
 	cout << i << " " << times[i] << endl;
+}
+
+// determines index j into vector v such that v[j] is closest to val
+int Evo::findClosestIndex(vector<double> &v, double val){
+    // do linear search, logarithmic search is probably not worth it with the vector sizes we expect
+    int j = 0;
+    double dist = 1000; // infinity
+    for (int i=0; i < v.size(); i++)
+	if (abs(v[i]-val) < dist){
+	    dist = abs(v[i]-val);
+	    j = i;
+	}
+    return j;
+}
+
+double Evo::getP(int i,int j,double t, int u){
+    // determine index v into vector of branch lengths such that times[v] is close to t
+    int v = findClosestIndex(times, t);
+    gsl_matrix *P = allPs[u][v];
+    return gsl_matrix_get(P,i,j);
+}
+
+void CodonEvo::setPi(double *pi){
+    this->pi = new double[64];
+    for (int i=0;i<64; i++)
+	this->pi[i] = pi[i];
 }
 
 /*
@@ -160,19 +196,6 @@ gsl_matrix *CodonEvo::getSubMatrixLogP(int u, double t){
     return allPs[u][v];
 }
 
-// determines index j into vector v such that v[j] is closest to val
-int CodonEvo::findClosestIndex(vector<double> &v, double val){
-    // do linear search, logarithmic search is probably not worth it with the vector sizes we expect
-    int j = 0;
-    double dist = 1000; // infinity
-    for (int i=0; i < v.size(); i++)
-	if (abs(v[i]-val) < dist){
-	    dist = abs(v[i]-val);
-	    j = i;
-	}
-    return j;
-}
-
 /*
  * log likelihood of exon candidate pair e1, e2 (required: equal number of codons, gapless)
  * Used for testing. The pruning algorithm requires tuples of codons instead.
@@ -231,12 +254,6 @@ double CodonEvo::estOmegaOnSeqPair(const char *e1, const char *e2, double t, // 
 // destructor
 CodonEvo::~CodonEvo(){
     omegas.clear();
-    times.clear();
-    for (int i=0; i < allPs.getColSize(); i++)
-	for (int j=0; j< allPs.getRowSize(); j++){
-	    gsl_matrix_free(allPs[i][j]);
-	}
-    allPs.assign(0, 0, NULL);
 }
 
 /*
@@ -420,4 +437,89 @@ void printCodonMatrix(gsl_matrix *M) {    // M is usually Q or P = exp(Qt)
 	}
 	cout << endl;
     }
+}
+
+void ExonEvo::setLambda(){
+
+    try {
+	lambda = Properties::getdoubleProperty("/CompPred/exon_gain");
+    } catch (...) {
+	lambda = 2.0;
+    }
+    if(lambda <= 0.0){
+	throw ProjectError("the rates for exon loss/gain have to be positive");
+    }
+}
+
+void ExonEvo::setMu(){
+  
+    try {
+	mu  = Properties::getdoubleProperty("/CompPred/exon_loss");
+    } catch (...) {
+	mu  = 2.0;
+    }
+    if(mu <= 0.0){
+	throw ProjectError("the rates for exon loss/gain have to be positive");
+    }
+}
+
+void ExonEvo::setPhyloFactor(){
+
+    try {
+	phylo_factor  = Properties::getdoubleProperty("/CompPred/phylo_factor");
+    } catch (...) {
+	phylo_factor = 1.0;
+    }
+    if(phylo_factor <= 0.0){
+	throw ProjectError("phylogenetic factor needs to be real positive number");
+    }
+    
+}
+void ExonEvo::computeLogPmatrices(){
+
+    allPs.assign(1, m, NULL);
+    for (int v=0; v<m; v++){
+	double t = times[v]; // time
+	gsl_matrix *P = computeP(t);
+        allPs[0][v]=P;
+    }
+}
+
+void ExonEvo::setPi(){
+
+    this->pi = new double[2];
+    this->pi[0] = (mu / (lambda + mu));
+    this->pi[1] = (lambda / (lambda + mu));
+}
+    
+
+void ExonEvo::addBranchLength(double b){
+
+    bool isIncluded = false;
+
+    for (int i=0; i < times.size(); i++){
+	if(times[i] == b){
+	    isIncluded = true;
+	    break;
+	}
+    }
+    if(!isIncluded){ // add branch length
+	times.push_back(b);
+	gsl_matrix *P=computeP(b);
+	vector<gsl_matrix*> row = allPs.getRow(0);
+	row.push_back(P);
+	allPs.assign(1, row.size(), NULL);
+	for (int v=0; v<row.size(); v++){
+	    allPs[0][v]=row[v];	
+	}
+    }
+}
+
+gsl_matrix *ExonEvo::computeP(double t){
+    gsl_matrix* P = gsl_matrix_calloc(states, states);
+    gsl_matrix_set(P, 0, 1, (lambda / (lambda + mu)) * (1 - exp(-(mu + lambda) * t)));
+    gsl_matrix_set(P, 1, 0, (mu / (lambda + mu)) * (1 - exp(-(mu + lambda) * t)));
+    gsl_matrix_set(P, 0, 0, 1 - gsl_matrix_get(P,0,1));
+    gsl_matrix_set(P, 1, 1, 1 - gsl_matrix_get(P,1,0));
+    return P;
 }

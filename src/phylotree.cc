@@ -13,7 +13,8 @@
 
 
 #include "phylotree.hh"
-#include "properties.hh"
+#include "contTimeMC.hh"
+#include "orthoexon.hh"
 #include <queue>
 #include <cmath>
 #include <iostream>
@@ -23,10 +24,8 @@
 #include "parser/parser.h"
 #endif
 
-
-
 void Treenode::printNode() const {
-    cout<<"Species: "<<this->species<<" Distance: "<<this->dist_to_parent;
+    cout<<"Species: "<<this->species<<" Distance: "<<this->distance;
     if (this->parent == NULL){
 	cout<<" root ";
     }
@@ -41,15 +40,19 @@ void Treenode::printNode() const {
     }
 }
 
-double Treenode::calculateAlphaScore(bool label, ExonEvoModel &evo){
-  
-    double alpha_score = 1.0;
-    for(list<Treenode*>::iterator it = this->children.begin(); it != this->children.end(); it++){
+void Treenode::addChild(Treenode *child){
+    child->parent=this;
+    this->children.push_back(child);
+}
 
-	alpha_score*=((evo.P(label, 0, (*it)->dist_to_parent)*(*it)->alpha.at(0)) + (evo.P(label, 1, (*it)->dist_to_parent)*(*it)->alpha.at(1)));
-    }
-    return alpha_score;
+void Treenode::makeRoot(){
+    this->parent=NULL;
+    this->addDistance(0.0);
+}
 
+void Treenode::resizeTable(int size, double val){
+    table.clear();
+    table.resize(size,val);
 }
 
 void PhyloTree::printTree() const {
@@ -58,7 +61,7 @@ void PhyloTree::printTree() const {
     }
 }
 
-size_t PhyloTree::getVectorPositionSpecies(string name) {
+int PhyloTree::findIndex(string name) const {
     for(size_t pos=0; pos < species.size(); pos++){
 	if (species.at(pos) == name){
 	    return pos;
@@ -96,149 +99,318 @@ PhyloTree::PhyloTree(string filename){
 #endif
 }
 
+//copy constructor
+PhyloTree::PhyloTree(const PhyloTree &other){
+    this->species=other.species;
+    
+    if(!other.treenodes.empty()){
+	Treenode *root=other.treenodes.back();
+	if(!root->isRoot()){
+	    throw ProjectError("last node in tree ist not the root");
+	}
+	Treenode *root_copy = new Treenode();
+	this->treenodes.push_front(root_copy);
+	list<Treenode*> stack;
+	list<Treenode*> stack_copy;
+	stack.push_front(root);
+	stack_copy.push_front(root_copy);
+	while(!stack.empty()){
+	    Treenode *p = stack.front();
+	    stack.pop_front();
+	    Treenode *p_copy = stack_copy.front();
+	    stack_copy.pop_front();
+	    if(!p->isLeaf()){
+		for(auto it = p->children.rbegin(); it != p->children.rend(); it++){
+		    Treenode *copy = new Treenode((*it)->getSpecies(), (*it)->getDist());
+		    p_copy->addChild(copy);
+		    this->treenodes.push_front(copy);
+		    stack_copy.push_front(copy);
+		    stack.push_front(*it);
+		}
+	    }
+	}
+    }
+}
+
 PhyloTree::~PhyloTree(){
     for(list<Treenode*>::iterator it = treenodes.begin(); it != treenodes.end(); it++){
 	delete *it;
     }
+    treenodes.clear();
+    species.clear();
 }
-
-
 
 void PhyloTree::printWithGraphviz(string filename) const {
 
     //creates inputfile für graphviz
     queue<Treenode*> tree;
-    tree.push(this->treenodes.back());
-    int i=0;
-    int j=-1;
-    ofstream file;
-    file.open(filename.c_str());
+    if(!treenodes.empty()){
+	tree.push(this->treenodes.back());
+   
+	int i=0;
+	int j=-1;
+	ofstream file;
+	file.open(filename.c_str());
   
-    file<<"digraph Tree {\n";
-    file<<"rankdir=TB;\n";
-    file<<"\tnode[shape=circle];\n";
-    file<<"edge [arrowhead=none];\n";
+	file<<"digraph Tree {\n";
+	file<<"rankdir=TB;\n";
+	file<<"\tnode[shape=circle];\n";
+	file<<"edge [arrowhead=none];\n";
 
-    file<<i<<"[shape=point];\n";
-
-    while(!tree.empty()){
-	Treenode *next=tree.front();
-	tree.pop();
-	j++;
-	for(list<Treenode*>::iterator node = next->children.begin(); node != next->children.end(); node++){
-	    tree.push((*node));
-	    i++;
-	    if( !(*node)->children.empty()){
-		file<<i<<"[shape=point];\n";
+	file<<i<<"[shape=point];\n";
+	while(!tree.empty()){
+	    Treenode *next=tree.front();
+	    tree.pop();
+	    j++;
+	    for(list<Treenode*>::iterator node = next->children.begin(); node != next->children.end(); node++){
+		tree.push((*node));
+		i++;
+		if( !(*node)->children.empty()){
+		    file<<i<<"[shape=point];\n";
+		}
+		else{
+		    file<<i<<"[label="<<(*node)->getSpecies()<<",shape=ellipse];\n";
+		}
+		file<<j<<"->"<<i<<"[label="<<(*node)->getDist()<<"];\n";
 	    }
-	    else{
-		file<<i<<"[label="<<(*node)->species<<",shape=ellipse];\n";
-	    }
-	    file<<j<<"->"<<i<<"[label="<<(*node)->dist_to_parent<<"];\n";
 	}
+	file<<"}\n";
+	file.close();
     }
-    file<<"}\n";
-    file.close();
+}
+double PhyloTree::pruningAlgor(string labelpattern, Evo *evo, int u){
+    vector<int> tuple;
+    for (int i=0; i<labelpattern.length() ; i++){
+    	tuple.push_back(atoi((labelpattern.substr(i,1)).c_str()));
+    }
+    return pruningAlgor(tuple, evo, u);
 }
 
-double PhyloTree::pruningAlgor(string labelpattern){
- 
-    for(list<Treenode*>::iterator it = this->treenodes.begin(); it != this->treenodes.end(); it++){
-	if((*it)->isLeaf()){
-	    /*
-	     * initialization
-	     */
-	    if(labelpattern.at(getVectorPositionSpecies((*it)->species)) == '2'){     // no exon present -> sum over all possible labels (0,1)
-		(*it)->alpha.at(0) = 1; 
-		(*it)->alpha.at(1) = 1;
+
+double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
+
+    int states = evo->getNumStates();
+    
+    for(auto node = treenodes.begin(); node != treenodes.end(); node++){
+	if((*node)->isLeaf()){
+	    // initialization
+	    int c =tuple.at(findIndex((*node)->getSpecies()));
+	    if(c >= states || c < 0){    
+		(*node)->resizeTable(states,1);  // in the case of unknown characters, we sum over all possibilities
 	    }
 	    else{
-		if(labelpattern.at(getVectorPositionSpecies((*it)->species)) == '1'){   // exon present and also part of the path;
-		    (*it)->alpha.at(0) = 0; 
-		    (*it)->alpha.at(1) = 1;
-		}
-		if(labelpattern.at(getVectorPositionSpecies((*it)->species)) == '0'){   // exon present, but not part of the path
-		    (*it)->alpha.at(0) = 1; 
-		    (*it)->alpha.at(1) = 0;
-		}
+		(*node)->resizeTable(states,0);
+		(*node)->setTable(c,1); 
 	    }
 	}
-	/*
-	  computation of the alpha values for the interior nodes
-	*/
 	else{
-	    (*it)->alpha.at(0) = (*it)->calculateAlphaScore(0, this->evo);
-	    (*it)->alpha.at(1) = (*it)->calculateAlphaScore(1, this->evo);
+	    //recursion for the interior nodes
+	    (*node)->resizeTable(states);	
+	    for(int i=0; i<states; i++){
+		double score = 1.0;
+		for(auto it = (*node)->children.begin(); it != (*node)->children.end(); it++){
+		    double sum=0;
+		    for(int j=0; j<states; j++){
+			sum+=evo->getP(i,j,(*it)->getDist(),u) * (*it)->getTable(j);
+		    }
+		    score*=sum; 
+		}
+		(*node)->setTable(i,score);	
+	    }
 	}
     }
-    /*
-      computation of the overall tree score: log Probability multiplied with some constant factor
-    */
-    double tree_score  = log( ( this->evo.getEquilibriumFreq(0) * this->treenodes.back()->alpha.at(0) ) + ( this->evo.getEquilibriumFreq(1) * this->treenodes.back()->alpha.at(1)) ) * this->evo.getPhyloFactor();
-   
+    printRecursionTable();
 
-    /*#ifdef DEBUG
-    cout<<"#####################################################################\n";
-    cout<<"# tableau pruning alogrithm\n";
-    cout<<"#####################################################################\n";
-    cout<<"node\t\t"<<"label 0\t\t"<<"label 1\n";
-    for(list<Treenode*>::iterator it = this->treenodes.begin(); it != this->treenodes.end(); it++){
-	cout<<(*it)->species<<"\t\t"<<(*it)->alpha.at(0)<<"\t\t"<<(*it)->alpha.at(1)<<"\n";
+    //in the root, we take the weighted average over all states
+    double tree_score=0;
+    for(int i=0; i<states; i++){
+	tree_score += (evo->getPi(i) * treenodes.back()->getTable(i));
     }
-    cout<<"#####################################################################\n";
-    #endif*/
+    cout <<"tree likelyhood\t"<<tree_score<<endl;
     return tree_score;
   
 }
 
-ExonEvoModel::ExonEvoModel(){
-  
-    try {
-	mu  = Properties::getdoubleProperty("/CompPred/exon_loss");
-    } catch (...) {
-	mu  = 2.0;
+void PhyloTree::printRecursionTable() const{
+
+    cout<<"+-------------------------------------------------------------------+\n";
+    cout<<"|                       recursion table                             |\n";
+    cout<<"+-------------------------------------------------------------------+\n";
+    cout<<left;
+    cout<<setw(15)<<"node";
+    for(int i=0; i<(*treenodes.begin())->table.size(); i++){
+	cout<<"state "<<setw(9)<<i;
     }
-    try {
-	lambda = Properties::getdoubleProperty("/CompPred/exon_gain");
-    } catch (...) {
-	lambda = 2.0;
+    cout<<endl;
+    for(auto it = treenodes.begin(); it != treenodes.end(); it++){
+	cout<<setw(15)<<(*it)->getSpecies();
+	for(int i=0; i<(*it)->table.size(); i++){
+	    cout<<setw(15)<<(*it)->getTable(i);
+	}
+	cout<<endl;
     }
-    if(mu <= 0.0 || lambda <= 0.0){
-	throw ProjectError("the rates for exon loss/gain have to be positive");
-    }
-    try {
-	phylo_factor  = Properties::getdoubleProperty("/CompPred/phylo_factor");
-    } catch (...) {
-	phylo_factor = 1.0;
-    }
-    if(phylo_factor <= 0.0){
-	throw ProjectError("phylogenetic factor needs to be real positive number");
+    cout<<"+-------------------------------------------------------------------+\n";
+
+}
+
+void PhyloTree::getBranchLengths(vector<double> &branchset) const {
+
+    for(auto node = treenodes.begin(); node != treenodes.end(); node++){
+	if(!((*node)->isRoot()))
+	    branchset.push_back((*node)->getDist());
     }
 }
 
-double ExonEvoModel::P(bool label1, bool label2, double dist) const {  // the substitution model
+Treenode *PhyloTree::getLeaf(string species) const {
+    for(auto node = treenodes.begin(); node != treenodes.end(); node++){
+	if( (*node)->getSpecies() == species)
+	    return (*node);
+    }
+    throw ProjectError("species " + species + " not in tree") ;
+}
 
-    if(label1 == false && label2 == true){ // P(0 -> 1)
-	return (lambda / (lambda + mu)) * (1 - exp(-(mu + lambda) * dist));
-    }
-    else if(label1 == true && label2 == false){ // P(1 -> 0)
-	return (mu / (lambda + mu)) * (1 - exp(-(mu + lambda) * dist));
-    }
-    else if(label1 == false && label2 == false){ // P(0 -> 0)
-	return (1 - (lambda / (lambda + mu)) * (1 - exp(-(mu + lambda) * dist)));
-    }
-    else{ // P(1 -> 1)
-	return  (1 - (mu / (lambda + mu)) * (1 - exp(-(mu + lambda) * dist)));
-    }
+void PhyloTree::drop(string species){
+
+    Treenode *node=getLeaf(species);
+    drop(node);
+}
+
+void PhyloTree::drop(Treenode *node, ExonEvo *evo){
     
+    if(node->isLeaf()){
+	Treenode *p=node->getParent();
+	if(p){
+	    p->removeChild(node);
+	    if(p->children.size()==1){
+		collapse(p,evo);
+	    }
+	}
+	treenodes.remove(node);
+	delete node;
+    }
 }
 
-double ExonEvoModel::getEquilibriumFreq(bool label) const {
+void PhyloTree::collapse(Treenode *node, ExonEvo *evo){
 
-    if(label == 1){
-	return (lambda / (lambda + mu));
+    Treenode *child = node->children.front();
+
+    if(!(node->isRoot())){
+	Treenode *parent = node->getParent();
+	parent->removeChild(node);
+	parent->addChild(child);
+	double dist= child->getDist() + node->getDist();
+	child->addDistance(dist);
+	if(evo)
+	    evo->addBranchLength(dist);
     }
     else{
-	return (mu / (lambda + mu));
-    }  
+	child->makeRoot();
+    }
+    treenodes.remove(node);
+    delete node;   
+}
+/*
+ * MAP inference given a set of weights for leaf nodes
+ * if the flag 'fixLeafLabels' is turned on MAP inference is carried out
+ * with leaf labels are fixed to the corresponding labels in the hect
+ */
+double PhyloTree::weightedMAP(OrthoExon &hect, ExonEvo &evo, bool fixLeafLabels){
+
+    int states = evo.getNumStates();
+    double k =evo.getPhyloFactor(); //scaling factor 
+
+ start:
+    for(auto node = treenodes.begin(); node != treenodes.end(); node++){
+	if((*node)->isLeaf()){
+	    // initialization
+	    int pos = findIndex((*node)->getSpecies());
+	    if(!hect.orthoex[pos]){ //in the case that the exon does not exist, we remove the node
+		Treenode* tmp=*node;
+		if(node == treenodes.begin()){
+		    drop(tmp, &evo);
+		    goto start;
+		}
+		else{
+		    node--;
+		    drop(tmp, &evo);
+		}
+	    }
+	    else{
+		double weight =hect.weights.at(pos);
+		if(fixLeafLabels){
+		    (*node)->resizeTable(states,-std::numeric_limits<double>::infinity());
+		    int label = hect.labels[pos];
+		    (*node)->setTable(label,weight*label);
+		}
+		else{
+		    (*node)->resizeTable(states,0);
+		    (*node)->setTable(1,weight);
+		} 
+		(*node)->bestAssign.clear();
+		(*node)->bestAssign.resize(states);
+	    }
+	}
+	else{
+	    //recursion for the interior nodes
+	    (*node)->resizeTable(states);
+	    (*node)->bestAssign.clear();
+	    (*node)->bestAssign.resize(states);
+	    for(int i=0; i<states; i++){
+		double score = 0.0;
+		for(auto it = (*node)->children.begin(); it != (*node)->children.end(); it++){
+		    double max = -std::numeric_limits<double>::infinity();
+		    int bestAssign = -1; 
+		    for(int j=0; j<states; j++){
+			double branch_score = (k*evo.getLogP(i,j,(*it)->getDist())) + (*it)->getTable(j);
+			//cout<<"(k*evo.getLogP(i,j,(*it)->getDist())) + (*it)->getTable(j)="<<(k*evo.getLogP(i,j,(*it)->getDist()))<<"+"<<(*it)->getTable(j)<<endl;
+			if(max < branch_score){
+			    max = branch_score;
+			    bestAssign=j;
+			}
+		    }
+		    score+=max;
+		    (*it)->bestAssign[i]=bestAssign;
+		}
+		(*node)->setTable(i,score);
+	    }
+	}
+    }
+    //printRecursionTable();
+
+    // backtracking
+    double max = -std::numeric_limits<double>::infinity();
+    if(!treenodes.empty()){
+	list< pair<Treenode*,int> > stack;
+	int bestAssign = -1;
+	Treenode* root = treenodes.back();	
+	for(int i=0; i<states; i++){
+	    double root_score = (k*evo.getLogPi(i)) + root->getTable(i);
+	    //cout<<"(k*evo.getLogPi(i)) + root->getTable(i)="<<(k*evo.getLogPi(i))<<"+"<<root->getTable(i)<<endl;
+	    if(max < root_score){
+		max = root_score;
+		bestAssign=i;
+	    }
+	}
+	stack.push_front(make_pair(root,bestAssign));
+	while(!stack.empty()){
+	    pair<Treenode *,int> p = stack.front();
+	    stack.pop_front();
+	    Treenode *node=p.first;
+	    bestAssign=p.second;
+	    if(node->isLeaf()){
+		int pos = findIndex(node->getSpecies());
+		if(fixLeafLabels && hect.labels[pos] != bestAssign){
+		    throw ProjectError("in PhyloTree:weightedMAP. Leaf Labels changed although the flag fixLeafLabels is turned on");
+		}
+		hect.labels[pos]=bestAssign;
+	    }
+	    else{
+		for(auto it=node->children.begin(); it!=node->children.end(); it++){
+		    stack.push_front(make_pair(*it, (*it)->bestAssign[bestAssign]));
+		    
+		}
+	    }
+	}
+    }
+    return max;
 }
