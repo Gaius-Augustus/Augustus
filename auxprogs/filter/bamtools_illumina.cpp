@@ -1,10 +1,10 @@
 // ***************************************************************************
-// bamtools_illumina.cpp (c) 2013
+// bamtools_illumina.cpp 
 // Tonatiuh Pena-Centeno
 // ---------------------------------------------------------------------------
-// Last modified: 14 October 2011
+// Last modified: 2-June-2013
 // ---------------------------------------------------------------------------
-// Resolves paired-end reads (marking the IsProperPair flag as needed).
+// Resolves paired-end reads 
 // ***************************************************************************
 
 #include "bamtools_illumina.h"
@@ -27,6 +27,7 @@ using namespace BamTools;
 #include <string>
 #include <utility>
 #include <vector>
+#include <string>
 using namespace std;
 
 // --------------------------------------------------------------------------
@@ -35,6 +36,7 @@ using namespace std;
 
 static const int      NUM_MODELS = 8;
 static const string   READ_GROUP_TAG = "RG";
+static const double   DEFAULT_COVERAGE = 0.95;
 static const double   DEFAULT_CONFIDENCE_INTERVAL = 0.9973;
 static const uint16_t DEFAULT_MIN_MAPQUALITY = 1;
 static const double   DEFAULT_UNUSEDMODEL_THRESHOLD = 0.1;
@@ -64,6 +66,7 @@ static const string OPTIONS_TOKEN    = "[Options]";
 static const string READGROUPS_TOKEN = "[ReadGroups]";
 
 // option keywords
+static const string OPTION_COVERAGE   = "Coverage";
 static const string OPTION_CONFIDENCEINTERVAL   = "ConfidenceInterval";
 static const string OPTION_MINIMUMMAPQUALITY    = "MinimumMapQuality";
 static const string OPTION_UNUSEDMODELTHRESHOLD = "UnusedModelThreshold";
@@ -165,15 +168,19 @@ struct ReadGroupResolver {
     bool IsValidOrientation(const BamAlignment& al) const;
 
     // select 2 best models based on observed data
+    void PrintModels(const string& readGroupName);
     void DetermineTopModels(const string& readGroupName);
 
     // static settings
+    static double Coverage;
     static double ConfidenceInterval;
     static double UnusedModelThreshold;
+    static void SetCoverage(const double& coverage);
     static void SetConfidenceInterval(const double& ci);
     static void SetUnusedModelThreshold(const double& umt);
 };
 
+double ReadGroupResolver::Coverage   = DEFAULT_COVERAGE;
 double ReadGroupResolver::ConfidenceInterval   = DEFAULT_CONFIDENCE_INTERVAL;
 double ReadGroupResolver::UnusedModelThreshold = DEFAULT_UNUSEDMODEL_THRESHOLD;
 
@@ -201,6 +208,23 @@ bool ReadGroupResolver::IsValidInsertSize(const BamAlignment& al) const {
 bool ReadGroupResolver::IsValidOrientation(const BamAlignment& al) const {
     const uint16_t currentModelId = CalculateModelType(al) + 1; // convert model type (array index) to ID number
     return ( currentModelId == TopModelId || currentModelId == NextTopModelId );
+}
+
+void ReadGroupResolver::PrintModels(const string& readGroupName) {
+
+    // sort models (from most common to least common)
+    sort( Models.begin(), Models.end(), std::greater<ModelType>() );
+	cout << "Read group: " << readGroupName << endl;
+	cout << "Found configurations:" << Models.size() << endl;
+    for (int it=0;it<Models.size();it++) {
+	  cout << "Config " << Models[it].ID << ": " << Models[it].size() << endl; 
+	}
+    const unsigned int activeModelCountSum = Models[0].size() + Models[1].size();
+    const unsigned int unusedModelCountSum = Models[2].size() + Models[3].size() +
+                                             Models[4].size() + Models[5].size() +
+                                             Models[6].size() + Models[7].size();    
+	cout << "activeModelCountSum: " << activeModelCountSum << endl;
+	cout << "unusedModelCountSum: " << unusedModelCountSum << endl;
 }
 
 void ReadGroupResolver::DetermineTopModels(const string& readGroupName) {
@@ -274,6 +298,10 @@ void ReadGroupResolver::DetermineTopModels(const string& readGroupName) {
     MaxFragmentLength    = fragments[maxIndex];
 }
 
+void ReadGroupResolver::SetCoverage(const double& coverage) {
+    Coverage = coverage;
+}
+
 void ReadGroupResolver::SetConfidenceInterval(const double& ci) {
     ConfidenceInterval = ci;
 }
@@ -288,7 +316,7 @@ void ReadGroupResolver::SetUnusedModelThreshold(const double& umt) {
 struct IlluminaTool::IlluminaSettings {
 
     // modes
-    // bool IsFilter;
+    bool IsClean;
     bool IsMakeStats;
 
     // bool IsMarkPairs;
@@ -301,6 +329,7 @@ struct IlluminaTool::IlluminaSettings {
     bool IsForceCompression;
 
     // resolve option flags
+  	bool HasCoverage;
     bool HasConfidenceInterval;
     bool HasForceMarkReadGroups;
     bool HasMinimumMapQuality;
@@ -313,6 +342,7 @@ struct IlluminaTool::IlluminaSettings {
     string ReadNamesFilename; //  ** N.B. - Only used internally, not set from cmdline **
 
     // resolve options
+ 	double	 Coverage;
     double   ConfidenceInterval;
     uint16_t MinimumMapQuality;
     double   UnusedModelThreshold;
@@ -321,7 +351,7 @@ struct IlluminaTool::IlluminaSettings {
     IlluminaSettings(void)
 	    : IsMakeStats(false)
 		// ///////////////////////////
-		// , IsFilter(false)
+		, IsClean(false)
 		// ///////////////////////////
 
         // , IsMarkPairs(false)
@@ -331,6 +361,7 @@ struct IlluminaTool::IlluminaSettings {
         , HasOutputBamFile(false)
         , HasStatsFile(false)
         , IsForceCompression(false)
+        , HasCoverage(false)
         , HasConfidenceInterval(false)
         , HasForceMarkReadGroups(false)
         , HasMinimumMapQuality(false)
@@ -339,6 +370,7 @@ struct IlluminaTool::IlluminaSettings {
         , OutputBamFilename(Options::StandardOut())
         , StatsFilename("")
         , ReadNamesFilename(DEFAULT_READNAME_FILE)
+        , Coverage(DEFAULT_COVERAGE)
         , ConfidenceInterval(DEFAULT_CONFIDENCE_INTERVAL)
         , MinimumMapQuality(DEFAULT_MIN_MAPQUALITY)
         , UnusedModelThreshold(DEFAULT_UNUSEDMODEL_THRESHOLD)
@@ -533,6 +565,13 @@ bool IlluminaTool::StatsFileReader::ParseOptionLine(const string& line,
     // -----------------------------------
     // handle option based on keyword
 
+    // Coverage
+    if ( option == OPTION_COVERAGE ) {
+        value >> settings->Coverage;
+        settings->HasCoverage = true;
+        return true;
+    }
+
     // ConfidenceInterval
     if ( option == OPTION_CONFIDENCEINTERVAL ) {
         value >> settings->ConfidenceInterval;
@@ -561,7 +600,7 @@ bool IlluminaTool::StatsFileReader::ParseOptionLine(const string& line,
     }
 
     // otherwise unknown option
-    cerr << "bamtools resolve ERROR - unrecognized option: " << option << " in stats file" << endl;
+    cerr << "filter ERROR - unrecognized option: " << option << " in stats file" << endl;
     return false;
 }
 
@@ -765,6 +804,7 @@ void IlluminaTool::StatsFileWriter::WriteOptions(IlluminaTool::IlluminaSettings*
     // \n
 
     m_stream << OPTIONS_TOKEN << endl
+             << OPTION_COVERAGE   << EQUAL_CHAR << settings->Coverage << endl
              << OPTION_CONFIDENCEINTERVAL   << EQUAL_CHAR << settings->ConfidenceInterval << endl
              << OPTION_FORCEMARKREADGROUPS  << EQUAL_CHAR << boolalpha << settings->HasForceMarkReadGroups << endl
              << OPTION_MINIMUMMAPQUALITY    << EQUAL_CHAR << settings->MinimumMapQuality << endl
@@ -824,9 +864,9 @@ struct IlluminaTool::IlluminaToolPrivate {
     // internal methods
     private:
         bool CheckSettings(vector<string>& errors);
-		// ///////////////////////////
-        // bool Filter(void);
-		// ///////////////////////////
+		///////////////////////////
+        bool Clean(void);
+		///////////////////////////
         bool MakeStats(void);
         void ParseHeader(const SamHeader& header);
         bool ReadStatsFile(void);
@@ -848,91 +888,38 @@ bool IlluminaTool::IlluminaToolPrivate::CheckSettings(vector<string>& errors) {
     // if MakeStats mode
     if ( m_settings->IsMakeStats ) {
 
-        // // ensure mutex mode
-        // if ( m_settings->IsMarkPairs )
-        //     errors.push_back("Cannot run in both -makeStats & -markPairs modes. Please select ONE.");
-        // if ( m_settings->IsTwoPass )
-        //     errors.push_back("Cannot run in both -makeStats & -twoPass modes. Please select ONE.");
-
         // error if output BAM options supplied
         if ( m_settings->HasOutputBamFile )
             errors.push_back("Cannot use -out (output BAM file) in -makeStats mode.");
-        // if ( m_settings->IsForceCompression )
-        //     errors.push_back("Cannot use -forceCompression. No output BAM file is being generated.");
 
         // make sure required stats file supplied
         if ( !m_settings->HasStatsFile )
             errors.push_back("Ouptut stats filename required for -makeStats mode. Please specify one using -stats option.");
 
-        // // check for UseStats options
-        // if ( m_settings->HasForceMarkReadGroups )
-        //     errors.push_back("Cannot use -forceMarkReadGroups. -markPairs options are DISABLED in -makeStats mode.");
     }
 
-	// /////////////////////////////////////////////////////////////////////////
-    // // if Filter mode
-    // if ( m_settings->IsFilter ) {
+	/////////////////////////////////////////////////////////////////////////
+    // if Clean mode
+    else if ( m_settings->IsClean ) {
+        // // error if output BAM options supplied
+        // if ( m_settings->HasOutputBamFile )
+        //     errors.push_back("Cannot use -out (output BAM file) in -clean mode.");
 
-    //     // ensure mutex mode
-    //     if ( m_settings->IsMarkPairs )
-    //         errors.push_back("Cannot run in both -makeStats & -markPairs modes. Please select ONE.");
-    //     if ( m_settings->IsTwoPass )
-    //         errors.push_back("Cannot run in both -makeStats & -twoPass modes. Please select ONE.");
-
-    //     // error if output BAM options supplied
-    //     if ( m_settings->HasOutputBamFile )
-    //         errors.push_back("Cannot use -out (output BAM file) in -makeStats mode.");
-    //     if ( m_settings->IsForceCompression )
-    //         errors.push_back("Cannot use -forceCompression. No output BAM file is being generated.");
-
-    //     // make sure required stats file supplied
-    //     if ( !m_settings->HasStatsFile )
-    //         errors.push_back("Ouptut stats filename required for -makeStats mode. Please specify one using -stats option.");
-
-    //     // check for UseStats options
-    //     if ( m_settings->HasForceMarkReadGroups )
-    //         errors.push_back("Cannot use -forceMarkReadGroups. -markPairs options are DISABLED in -makeStats mode.");
-    // }
-
-	// /////////////////////////////////////////////////////////////////////////
-
-    // // if MarkPairs mode
-    // else if ( m_settings->IsMarkPairs ) {
-
-    //     // ensure mutex mode
-    //     if ( m_settings->IsMakeStats )
-    //         errors.push_back("Cannot run in both -makeStats & -markPairs modes. Please select ONE.");
-    //     // if ( m_settings->IsTwoPass )
-    //     //     errors.push_back("Cannot run in both -markPairs & -twoPass modes. Please select ONE.");
-
-    //     // make sure required stats file supplied
-    //     if ( !m_settings->HasStatsFile )
-    //         errors.push_back("Input stats filename required for -markPairs mode. Please specify one using -stats option.");
-
-    //     // check for MakeStats options
-    //     if ( m_settings->HasConfidenceInterval )
-    //         errors.push_back("Cannot use -ci. -makeStats options are DISABLED is -markPairs mode.");
-    // }
-
-    // // if TwoPass mode
-    // else if ( m_settings->IsTwoPass ) {
-
-    //     // ensure mutex mode
-    //     if ( m_settings->IsMakeStats )
-    //         errors.push_back("Cannot run in both -makeStats & -twoPass modes. Please select ONE.");
-    //     if ( m_settings->IsMarkPairs )
-    //         errors.push_back("Cannot run in both -markPairs & -twoPass modes. Please select ONE.");
-
-    //     // make sure input is file not stdin
-    //     if ( !m_settings->HasInputBamFile || m_settings->InputBamFilename == Options::StandardIn() )
-    //         errors.push_back("Cannot run -twoPass mode with BAM data from stdin. Please specify existing file using -in option.");
-    // }
+        // // make sure required stats file supplied
+        // if ( !m_settings->HasStatsFile )
+        //     errors.push_back("Ouptut stats filename required for -clean mode. Please specify one using -stats option.");
+    }
+	/////////////////////////////////////////////////////////////////////////
 
     // no mode selected
     else
-        errors.push_back("No resolve mode specified. Please select ONE of the following: -makeStats or -markPairs. See help for more info.");
+        errors.push_back("No <mode> specified. Please select -clean. Type filter illumina --help for more info.");
 
     // boundary checks on values
+    if ( m_settings->HasCoverage ) {
+        if ( m_settings->Coverage < 0.0 || m_settings->Coverage > 1.0 )
+            errors.push_back("Invalid Coverage. Must be between 0 and 1");
+    }
     if ( m_settings->HasConfidenceInterval ) {
         if ( m_settings->ConfidenceInterval < 0.0 || m_settings->ConfidenceInterval > 1.0 )
             errors.push_back("Invalid confidence interval. Must be between 0 and 1");
@@ -959,7 +946,7 @@ bool IlluminaTool::IlluminaToolPrivate::MakeStats(void) {
     // open our BAM reader
     BamReader bamReader;
     if ( !bamReader.Open(m_settings->InputBamFilename) ) {
-        cerr << "bamtools resolve ERROR: could not open input BAM file: "
+        cerr << "filter ERROR: could not open input BAM file: "
              << m_settings->InputBamFilename << endl;
         return false;
     }
@@ -971,7 +958,7 @@ bool IlluminaTool::IlluminaToolPrivate::MakeStats(void) {
     // open ReadNamesFileWriter
     IlluminaTool::ReadNamesFileWriter readNamesWriter;
     if ( !readNamesWriter.Open(m_settings->ReadNamesFilename) ) {
-        cerr << "bamtools resolve ERROR: could not open (temp) output read names file: "
+        cerr << "filter ERROR: could not open (temp) output read names file: "
              << m_settings->ReadNamesFilename << endl;
         bamReader.Close();
         return false;
@@ -1001,7 +988,7 @@ bool IlluminaTool::IlluminaToolPrivate::MakeStats(void) {
         // look up resolver for read group
         rgIter = m_readGroups.find(readGroup);
         if ( rgIter == m_readGroups.end() )  {
-            cerr << "bamtools resolve ERROR - unable to calculate stats, unknown read group encountered: "
+            cerr << "bamtools ERROR - unable to calculate stats, unknown read group encountered: "
                  << readGroup << endl;
             bamReader.Close();
             return false;
@@ -1050,6 +1037,246 @@ bool IlluminaTool::IlluminaToolPrivate::MakeStats(void) {
 
         // calculate acceptable orientation & insert sizes for this read group
         resolver.DetermineTopModels(name);
+		
+        // clear out left over read names
+        // (these have mates that did not pass filters or were already removed as non-unique)
+        resolver.ReadNames.clear();
+    }
+
+    // if we get here, return success
+    return true;
+}
+
+// --------------------------------------------------------------------------
+// Implementation of cleaning filter
+
+// In SAM, sumDandIOperations = $qBaseInsert+$tBaseInsert
+uint32_t sumDandIOperations(vector<CigarOp> cigar, string printFlag)
+{
+	int cigarSize = cigar.size();
+	uint32_t sumDandI = 0;
+ 	uint32_t cigarLength;
+  	char cigarType;
+
+	// Scanning through all CIGAR operations
+	for (int it=0; it<cigarSize; it++)
+		{
+		// Length is number of bases
+		cigarLength = cigar.at(it).Length;	
+		// Type means operations, i.e. MINDSHP 
+		cigarType = cigar.at(it).Type;  
+
+		if (cigarType == 'D' || cigarType == 'I')
+			{
+		  	// Sum and print operations
+			sumDandI = cigarLength + sumDandI;	
+			if (!printFlag.compare("print"))
+			  {cout << cigarLength << ";" << cigarType << ",";}
+			}	
+		} // end for
+
+	return sumDandI;
+}
+
+
+uint32_t sumMandIOperations(vector<CigarOp> cigar, string printFlag)
+{
+	int cigarSize = cigar.size();
+	uint32_t sumMandI = 0;
+ 	uint32_t cigarLength;
+  	char cigarType;
+
+	// Scanning through all CIGAR operations
+	for (int it=0; it<cigarSize; it++)
+		{
+		// Length is number of bases
+		cigarLength = cigar.at(it).Length;	
+		// Type means operations, i.e. MINDSHP 
+		cigarType = cigar.at(it).Type;  
+
+		if (cigarType == 'M' || cigarType == 'I')
+			{
+		  	// Sum and print operations
+			sumMandI = cigarLength + sumMandI;	
+			if (!printFlag.compare("print"))
+			  {cout << cigarLength << ";" << cigarType << ",";}
+			}	
+		} // end for
+
+	return sumMandI;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////
+
+bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
+
+    // pull resolver settings from command-line settings
+    ReadGroupResolver::SetCoverage(m_settings->Coverage);
+    ReadGroupResolver::SetConfidenceInterval(m_settings->ConfidenceInterval);
+    ReadGroupResolver::SetUnusedModelThreshold(m_settings->UnusedModelThreshold);
+
+    // open our BAM reader
+    BamReader bamReader;
+    if ( !bamReader.Open(m_settings->InputBamFilename) ) {
+        cerr << "filter ERROR: could not open input BAM file: "
+             << m_settings->InputBamFilename << endl;
+        return false;
+    }
+
+    // retrieve header & parse for read groups
+    const SamHeader& header = bamReader.GetHeader();
+    const RefVector& references = bamReader.GetReferenceData();
+    ParseHeader(header);
+
+    // open BamWriter
+    BamWriter writer;
+    if ( !writer.Open(m_settings->OutputBamFilename, header, references) ) {
+        cerr << "filter ERROR: could not open "
+             << m_settings->OutputBamFilename << " for writing." << endl;
+        bamReader.Close();
+        return false;
+    }
+
+
+    // open ReadNamesFileWriter
+    IlluminaTool::ReadNamesFileWriter readNamesWriter;
+    if ( !readNamesWriter.Open(m_settings->ReadNamesFilename) ) {
+        cerr << "filter ERROR: could not open (temp) output read names file: "
+             << m_settings->ReadNamesFilename << endl;
+        bamReader.Close();
+        return false;
+    }
+
+    // read through BAM file
+    BamAlignment al;
+    string readGroup("");
+    map<string, ReadGroupResolver>::iterator rgIter;
+    map<string, bool>::iterator readNameIter;
+	int notPaired=0, notMapped=0, notMateMapped=0, mateNotOnSameRef=0;
+
+	vector<CigarOp> cigar;
+	char cigarType;
+	uint32_t cigarLength;
+	uint32_t qLength;
+	uint32_t RefID;
+	uint32_t editDistance;
+	int sumMandI, sumDandI; 
+  	float coverage, percId;
+  	int minCover = 100*(m_settings->Coverage), minId = 92; 
+  	int outPercId = 0, outCover = 0;
+	int baseInstert = 0, insertLimit = 10;
+
+	cout << "################################" << endl;
+	cout << "minCover=" << minCover << endl;
+	cout << "percId=" << minId << endl;
+	cout << "################################" << endl;
+
+ nextAlignment:
+    while ( bamReader.GetNextAlignmentCore(al) ) {
+
+        // skip if alignment is not paired, mapped, nor mate is mapped
+		if (!al.IsPaired()) {notPaired++; goto nextAlignment;};
+	   	if (!al.IsMapped()) {notMapped++; goto nextAlignment;}; 
+		if (!al.IsMateMapped()) {notMateMapped++; goto nextAlignment;};
+
+        // skip if alignment & mate not on same reference sequence
+        if ( al.RefID != al.MateRefID ) {mateNotOnSameRef++; continue;}
+
+		// Augustus'-related filters
+		sumMandI = 0;
+		qLength = al.Length; 
+		al.GetTag("NM", editDistance); // edit distance
+
+		// Filtering by percentage identity
+		percId = 100*(qLength-editDistance)/qLength;
+		if (percId < minId) { outPercId++; goto nextAlignment; }		
+
+		// Filtering by coverage
+		sumMandI = sumMandIOperations(al.CigarData, "no");
+		coverage = (float)100*sumMandI/qLength;
+		if (coverage < minCover) { outCover++; goto nextAlignment; }		
+
+  		// // Intron gap filter
+  		// baseInsert = sumDandIOperations(al.CigarData, "no");
+  		// if (noIntrons && baseInsert > insertLimit) { outIntrons++; goto nextAlignment; }
+
+        // flesh out the char data, so we can retrieve its read group ID
+        al.BuildCharData();
+
+        // get read group from alignment (OK if empty)
+        readGroup.clear();
+        al.GetTag(READ_GROUP_TAG, readGroup);
+
+        // look up resolver for read group
+        rgIter = m_readGroups.find(readGroup);
+        if ( rgIter == m_readGroups.end() )  {
+            cerr << "filter ERROR - unable to calculate stats, unknown read group encountered: "
+                 << readGroup << endl;
+            bamReader.Close();
+            return false;
+        }
+        ReadGroupResolver& resolver = (*rgIter).second;
+
+        // determine unique-ness of current alignment
+        const bool isCurrentMateUnique = ( al.MapQuality >= m_settings->MinimumMapQuality );
+
+        // look up read name
+        readNameIter = resolver.ReadNames.find(al.Name);
+
+        // if read name found (current alignment's mate already parsed)
+        if ( readNameIter != resolver.ReadNames.end() ) {
+
+            // if both unique mates are unique, store read name & insert size for later
+            const bool isStoredMateUnique  = (*readNameIter).second;
+            if ( isCurrentMateUnique && isStoredMateUnique ) {
+
+                // save read name in temp file as candidates for later pair marking
+                readNamesWriter.Write(readGroup, al.Name);
+
+                // determine model type & store fragment length for stats calculation
+                const uint16_t currentModelType = CalculateModelType(al);
+                assert( currentModelType != ModelType::DUMMY_ID );
+                resolver.Models[currentModelType].push_back( abs(al.InsertSize) );
+            }
+
+            // unique or not, remove read name from map
+            resolver.ReadNames.erase(readNameIter);
+        }
+
+        // if read name not found, store new entry
+        else resolver.ReadNames.insert( make_pair<string, bool>(al.Name, isCurrentMateUnique) );
+
+		// Saving alignments that made it through filter
+		writer.SaveAlignment(al);
+
+    } // end while
+
+    // close files
+    readNamesWriter.Close();
+    bamReader.Close();
+	writer.Close();
+
+	// Print stats
+	cout << "------------------------------------------------------------" << endl;
+	cout << "Summary" << endl;
+	cout << "notPaired = " << notPaired << endl;
+	cout << "notMapped = " << notMapped << endl;
+	cout << "notMateMapped = " << notMateMapped << endl;
+	cout << "mateNotOnSameRef = " << mateNotOnSameRef << endl;
+	cout << "outPercId = " << outPercId << endl;
+	cout << "outCover = " << outCover << endl;
+	cout << "------------------------------------------------------------" << endl;
+
+    // iterate back through read groups
+    map<string, ReadGroupResolver>::iterator rgEnd  = m_readGroups.end();
+    for ( rgIter = m_readGroups.begin(); rgIter != rgEnd; ++rgIter ) {
+        const string& name = (*rgIter).first;
+        ReadGroupResolver& resolver = (*rgIter).second;
+
+        // calculate acceptable orientation & insert sizes for this read group
+		resolver.PrintModels(name);
+        resolver.DetermineTopModels(name);
 
         // clear out left over read names
         // (these have mates that did not pass filters or were already removed as non-unique)
@@ -1061,120 +1288,7 @@ bool IlluminaTool::IlluminaToolPrivate::MakeStats(void) {
 }
 
 
-// /////////////////////////////////////////////////////////////////////////////////
-
-// bool IlluminaTool::IlluminaToolPrivate::Filter(void) {
-
-//     // pull resolver settings from command-line settings
-//     ReadGroupResolver::SetConfidenceInterval(m_settings->ConfidenceInterval);
-//     ReadGroupResolver::SetUnusedModelThreshold(m_settings->UnusedModelThreshold);
-
-//     // open our BAM reader
-//     BamReader bamReader;
-//     if ( !bamReader.Open(m_settings->InputBamFilename) ) {
-//         cerr << "bamtools resolve ERROR: could not open input BAM file: "
-//              << m_settings->InputBamFilename << endl;
-//         return false;
-//     }
-
-//     // retrieve header & parse for read groups
-//     const SamHeader& header = bamReader.GetHeader();
-//     ParseHeader(header);
-
-//     // open ReadNamesFileWriter
-//     IlluminaTool::ReadNamesFileWriter readNamesWriter;
-//     if ( !readNamesWriter.Open(m_settings->ReadNamesFilename) ) {
-//         cerr << "bamtools resolve ERROR: could not open (temp) output read names file: "
-//              << m_settings->ReadNamesFilename << endl;
-//         bamReader.Close();
-//         return false;
-//     }
-
-//     // read through BAM file
-//     BamAlignment al;
-//     string readGroup("");
-//     map<string, ReadGroupResolver>::iterator rgIter;
-//     map<string, bool>::iterator readNameIter;
-//     while ( bamReader.GetNextAlignmentCore(al) ) {
-
-//         // skip if alignment is not paired, mapped, nor mate is mapped
-//         if ( !al.IsPaired() || !al.IsMapped() || !al.IsMateMapped() )
-//             continue;
-
-//         // skip if alignment & mate not on same reference sequence
-//         if ( al.RefID != al.MateRefID ) continue;
-
-//         // flesh out the char data, so we can retrieve its read group ID
-//         al.BuildCharData();
-
-//         // get read group from alignment (OK if empty)
-//         readGroup.clear();
-//         al.GetTag(READ_GROUP_TAG, readGroup);
-
-//         // look up resolver for read group
-//         rgIter = m_readGroups.find(readGroup);
-//         if ( rgIter == m_readGroups.end() )  {
-//             cerr << "bamtools resolve ERROR - unable to calculate stats, unknown read group encountered: "
-//                  << readGroup << endl;
-//             bamReader.Close();
-//             return false;
-//         }
-//         ReadGroupResolver& resolver = (*rgIter).second;
-
-//         // determine unique-ness of current alignment
-//         const bool isCurrentMateUnique = ( al.MapQuality >= m_settings->MinimumMapQuality );
-
-//         // look up read name
-//         readNameIter = resolver.ReadNames.find(al.Name);
-
-//         // if read name found (current alignment's mate already parsed)
-//         if ( readNameIter != resolver.ReadNames.end() ) {
-
-//             // if both unique mates are unique, store read name & insert size for later
-//             const bool isStoredMateUnique  = (*readNameIter).second;
-//             if ( isCurrentMateUnique && isStoredMateUnique ) {
-
-//                 // save read name in temp file as candidates for later pair marking
-//                 readNamesWriter.Write(readGroup, al.Name);
-
-//                 // determine model type & store fragment length for stats calculation
-//                 const uint16_t currentModelType = CalculateModelType(al);
-//                 assert( currentModelType != ModelType::DUMMY_ID );
-//                 resolver.Models[currentModelType].push_back( abs(al.InsertSize) );
-//             }
-
-//             // unique or not, remove read name from map
-//             resolver.ReadNames.erase(readNameIter);
-//         }
-
-//         // if read name not found, store new entry
-//         else resolver.ReadNames.insert( make_pair<string, bool>(al.Name, isCurrentMateUnique) );
-//     }
-
-//     // close files
-//     readNamesWriter.Close();
-//     bamReader.Close();
-
-//     // iterate back through read groups
-//     map<string, ReadGroupResolver>::iterator rgEnd  = m_readGroups.end();
-//     for ( rgIter = m_readGroups.begin(); rgIter != rgEnd; ++rgIter ) {
-//         const string& name = (*rgIter).first;
-//         ReadGroupResolver& resolver = (*rgIter).second;
-
-//         // calculate acceptable orientation & insert sizes for this read group
-//         resolver.DetermineTopModels(name);
-
-//         // clear out left over read names
-//         // (these have mates that did not pass filters or were already removed as non-unique)
-//         resolver.ReadNames.clear();
-//     }
-
-//     // if we get here, return success
-//     return true;
-// }
-
-
-// /////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 
 void IlluminaTool::IlluminaToolPrivate::ParseHeader(const SamHeader& header) {
 
@@ -1196,14 +1310,14 @@ bool IlluminaTool::IlluminaToolPrivate::ReadStatsFile(void) {
     // attempt to open stats file
     IlluminaTool::StatsFileReader statsReader;
     if ( !statsReader.Open(m_settings->StatsFilename) ) {
-        cerr << "bamtools resolve ERROR - could not open stats file: "
+        cerr << "filter ERROR - could not open stats file: "
              << m_settings->StatsFilename << " for reading" << endl;
         return false;
     }
 
     // attempt to read stats data
     if ( !statsReader.Read(m_settings, m_readGroups) ) {
-        cerr << "bamtools resolve ERROR - could not parse stats file: "
+        cerr << "filter ERROR - could not parse stats file: "
              << m_settings->StatsFilename << " for data" << endl;
         return false;
     }
@@ -1237,7 +1351,7 @@ void IlluminaTool::IlluminaToolPrivate::ResolveAlignment(BamAlignment& al) {
     // look up read group's 'resolver'
     map<string, ReadGroupResolver>::iterator rgIter = m_readGroups.find(readGroupName);
     if ( rgIter == m_readGroups.end() ) {
-        cerr << "bamtools resolve ERROR - read group found that was not in header: "
+        cerr << "filter ERROR - read group found that was not in header: "
              << readGroupName << endl;
         exit(1);
     }
@@ -1264,14 +1378,14 @@ bool IlluminaTool::IlluminaToolPrivate::ResolvePairs(void) {
     // open file containing read names of candidate proper pairs
     IlluminaTool::ReadNamesFileReader readNamesReader;
     if ( !readNamesReader.Open(m_settings->ReadNamesFilename) ) {
-        cerr << "bamtools resolve ERROR: could not open (temp) inputput read names file: "
+        cerr << "filter ERROR: could not open (temp) inputput read names file: "
              << m_settings->ReadNamesFilename << endl;
         return false;
     }
 
     // parse read names (matching with corresponding read groups)
     if ( !readNamesReader.Read(m_readGroups) ) {
-        cerr << "bamtools resolve ERROR: could not read candidate read names from file: "
+        cerr << "filter ERROR: could not read candidate read names from file: "
              << m_settings->ReadNamesFilename << endl;
         readNamesReader.Close();
         return false;
@@ -1280,14 +1394,14 @@ bool IlluminaTool::IlluminaToolPrivate::ResolvePairs(void) {
     // close read name file reader & delete temp file
     readNamesReader.Close();
     if ( remove(m_settings->ReadNamesFilename.c_str()) != 0 ) {
-        cerr << "bamtools resolve WARNING: could not delete temp file: "
+        cerr << "filter WARNING: could not delete temp file: "
              << m_settings->ReadNamesFilename << endl;
     }
 
     // open our BAM reader
     BamReader reader;
     if ( !reader.Open(m_settings->InputBamFilename) ) {
-        cerr << "bamtools resolve ERROR: could not open input BAM file: "
+        cerr << "filter ERROR: could not open input BAM file: "
              << m_settings->InputBamFilename << endl;
         return false;
     }
@@ -1306,7 +1420,7 @@ bool IlluminaTool::IlluminaToolPrivate::ResolvePairs(void) {
     BamWriter writer;
     writer.SetCompressionMode(compressionMode);
     if ( !writer.Open(m_settings->OutputBamFilename, header, references) ) {
-        cerr << "bamtools resolve ERROR: could not open "
+        cerr << "filter ERROR: could not open "
              << m_settings->OutputBamFilename << " for writing." << endl;
         reader.Close();
         return false;
@@ -1331,7 +1445,7 @@ bool IlluminaTool::IlluminaToolPrivate::Run(void) {
     // verify that command line settings are acceptable
     vector<string> errors;
     if ( !CheckSettings(errors) ) {
-        cerr << "bamtools resolve ERROR - invalid settings: " << endl;
+        cerr << "filter ERROR - invalid settings: " << endl;
         vector<string>::const_iterator errorIter = errors.begin();
         vector<string>::const_iterator errorEnd  = errors.end();
         for ( ; errorIter != errorEnd; ++errorIter )
@@ -1353,90 +1467,37 @@ bool IlluminaTool::IlluminaToolPrivate::Run(void) {
 
         // generate stats data
         if ( !MakeStats() ) {
-            cerr << "bamtools resolve ERROR - could not generate stats" << endl;
+            cerr << "filter ERROR - could not generate stats" << endl;
             return false;
         }
 
         // write stats to file
         if ( !WriteStatsFile() ) {
-            cerr << "bamtools resolve ERROR - could not write stats file: "
+            cerr << "filter ERROR - could not write stats file: "
                  << m_settings->StatsFilename << endl;
             return false;
         }
     }
 
-	// /////////////////////////////////////////////////////////////
-    // // -filter mode
-    // if ( m_settings->IsFilter ) {
+	/////////////////////////////////////////////////////////////
+    // -clean mode
+    if ( m_settings->IsClean ) {
 
-    //     // generate stats data
-    //     if ( !Filter() ) {
-    //         cerr << "bamtools filter ERROR - could not generate stats" << endl;
-    //         return false;
-    //     }
+        // generate stats data
+        if ( !Clean() ) {
+            cerr << "filter clean ERROR - could not filter the file" << endl;
+            return false;
+        }
 
-    //     // write stats to file
-    //     if ( !WriteStatsFile() ) {
-    //         cerr << "bamtools filter ERROR - could not write stats file: "
-    //              << m_settings->StatsFilename << endl;
-    //         return false;
-    //     }
-    // }
-	// /////////////////////////////////////////////////////////////
+        // // write stats to file
+        // if ( !WriteStatsFile() ) {
+        //     cerr << "bamtools clean ERROR - could not write stats file: "
+        //          << m_settings->StatsFilename << endl;
+        //     return false;
+        // }
+    }
+	/////////////////////////////////////////////////////////////
 
-    // // -markPairs mode
-    // else if ( m_settings->IsMarkPairs ) {
-
-    //     // read stats from file
-    //     if ( !ReadStatsFile() ) {
-    //         cerr << "bamtools resolve ERROR - could not read stats file: "
-    //              << m_settings->StatsFilename << endl;
-    //         return false;
-    //     }
-
-    //     // do paired-end resolution
-    //     if ( !ResolvePairs() ) {
-    //         cerr << "bamtools resolve ERROR - could not resolve pairs" << endl;
-    //         return false;
-    //     }
-    // }
-
-    // // -twoPass mode
-    // else {
-
-    //     // generate stats data
-    //     if ( !MakeStats() ) {
-    //         cerr << "bamtools resolve ERROR - could not generate stats" << endl;
-    //         return false;
-    //     }
-
-	// 	// //////////////////////////////////////////////////////////////
-    //     // // generate stats data
-    //     // if ( !Filter() ) {
-    //     //     cerr << "bamtools resolve ERROR - could not FILTER" << endl;
-    //     //     return false;
-    //     // }
-	// 	// //////////////////////////////////////////////////////////////
-
-
-    //     // if stats file requested
-    //     if ( m_settings->HasStatsFile ) {
-
-    //         // write stats to file
-    //         // emit warning if write fails, but paired-end resolution should be allowed to proceed
-    //         if ( !WriteStatsFile() )
-    //             cerr << "bamtools resolve WARNING - could not write stats file: "
-    //                  << m_settings->StatsFilename << endl;
-    //     }
-
-    //     // do paired-end resolution
-    //     if ( !ResolvePairs() ) {
-    //         cerr << "bamtools resolve ERROR - could not resolve pairs" << endl;
-    //         return false;
-    //     }
-    // }
-
-    // return success
     return true;
 }
 
@@ -1449,14 +1510,14 @@ bool IlluminaTool::IlluminaToolPrivate::WriteStatsFile(void) {
     // attempt to open stats file
     IlluminaTool::StatsFileWriter statsWriter;
     if ( !statsWriter.Open(m_settings->StatsFilename) ) {
-        cerr << "bamtools resolve ERROR - could not open stats file: "
+        cerr << "filter ERROR - could not open stats file: "
              << m_settings->StatsFilename << " for writing" << endl;
         return false;
     }
 
     // attempt to write stats data
     if ( !statsWriter.Write(m_settings, m_readGroups) ) {
-        cerr << "bamtools resolve ERROR - could not write stats file: "
+        cerr << "filter ERROR - could not write stats file: "
              << m_settings->StatsFilename << " for data" << endl;
         return false;
     }
@@ -1474,44 +1535,28 @@ IlluminaTool::IlluminaTool(void)
     , m_impl(0)
 {
     // set description texts
-    const string programDescription = "It will filter paired-end alignments from illumina technology";
+    const string programDescription = "It will clean (filter) paired-end alignments from illumina technology";
     const string programUsage = "<mode> [options] [-in <filename>] [-out <filename>] [-stats <filename>]";
     const string inputBamDescription = "the input BAM file(s)";
     const string outputBamDescription = "the output BAM file";
     const string statsFileDescription = "input/output stats file, depending on selected mode (see below). "
             "This file is human-readable, storing fragment length data generated per read group, as well as "
             "the options used to configure the -makeStats mode";
-    // const string forceCompressionDescription = "if results are sent to stdout (like when piping to another tool), "
-    //         "default behavior is to leave output uncompressed."
-    //         "Use this flag to override and force compression. This feature is disabled in -makeStats mode.";
-
-	// //////////////////////////////////////////////////////////
-    // const string filterDescription = "will filter paired-end alignments.";
-	// //////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////
+    const string cleanDescription = "will clean paired-end alignments.";
+	//////////////////////////////////////////////////////////
     const string makeStatsDescription = "generates a fragment-length stats file from the input BAM. "
             "Data is written to file specified using the -stats option. "
             "MarkPairs Mode Settings are DISABLED.";
-
-    // const string markPairsDescription = "generates an output BAM with alignments marked with proper-pair status. "
-    //         "Stats data is read from file specified using the -stats option. "
-    //         "MakeStats Mode Settings are DISABLED";
-    // const string twoPassDescription = "combines the -makeStats & -markPairs modes into a single command. "
-    //         "However, due to the two-pass nature of paired-end resolution, piping BAM data via stdin is DISABLED. "
-    //         "You must supply an explicit input BAM file. Output BAM may be piped to stdout, however, if desired. "
-    //         "All MakeStats & MarkPairs Mode Settings are available. "
-    //         "The intermediate stats file is not necessary, but if the -stats options is used, then one will be generated. "
-    //         "You may find this useful for documentation purposes.";
-    // const string minMapQualDescription = "minimum map quality. Used in -makeStats mode as a heuristic for determining a mate's "
-    //         "uniqueness. Used in -markPairs mode as a filter for marking candidate proper pairs.";
-
+    const string coverageDescription = "minimum amount of bases that the read must cover over the region it aligns; "
+            "expressed as a percentage. Default 0.95";
     const string confidenceIntervalDescription = "confidence interval. Set min/max fragment lengths such that we capture "
             "this fraction of pairs";
     const string unusedModelThresholdDescription = "unused model threshold. The resolve tool considers 8 possible orientation models "
             "for pairs. The top 2 are selected for later use when actually marking alignments. This value determines the "
             "cutoff for marking a read group as ambiguous. Meaning that if the ratio of the number of alignments from bottom 6 models "
             "to the top 2 is greater than this threshold, then the read group is flagged as ambiguous. By default, NO alignments "
-            "from ambiguous read groups will be marked as proper pairs. You may override this behavior with the -force option "
-            "in -markPairs mode";
+            "from ambiguous read groups will be marked as proper pairs.";
     const string forceMarkDescription = "forces all read groups to be marked according to their top 2 'orientation models'. "
             "When generating stats, the 2 (out of 8 possible) models with the most observations are chosen as the top models for each read group. "
             "If the remaining 6 models account for more than some threshold ([default=10%], see -umt), then the read group is marked as ambiguous. "
@@ -1531,38 +1576,31 @@ IlluminaTool::IlluminaTool(void)
                             IO_Opts, Options::StandardOut());
     Options::AddValueOption("-stats", "STATS filename", statsFileDescription, "",
                             m_settings->HasStatsFile, m_settings->StatsFilename, IO_Opts);
-
-    // Options::AddOption("-forceCompression", forceCompressionDescription,
-    //                    m_settings->IsForceCompression, IO_Opts);
-
-    OptionGroup* ModeOpts = Options::CreateOptionGroup("Resolve Modes (must select ONE of the following)");
-	// //////////////////////////////////////////////////////////////
-    // Options::AddOption("-filter", filterDescription, m_settings->IsFilter, ModeOpts);
-	// //////////////////////////////////////////////////////////////
+    OptionGroup* ModeOpts = Options::CreateOptionGroup("Filtering Modes (must select ONE of the following)");
+	//////////////////////////////////////////////////////////////
+    Options::AddOption("-clean", cleanDescription, m_settings->IsClean, ModeOpts);
+	//////////////////////////////////////////////////////////////
     Options::AddOption("-makeStats", makeStatsDescription, m_settings->IsMakeStats, ModeOpts);
-
-    // Options::AddOption("-markPairs", markPairsDescription, m_settings->IsMarkPairs, ModeOpts);
-    // Options::AddOption("-twoPass",   twoPassDescription,   m_settings->IsTwoPass,   ModeOpts);
-
-    OptionGroup* GeneralOpts = Options::CreateOptionGroup("General Resolve Options (available in all modes)");
+    // OptionGroup* GeneralOpts = Options::CreateOptionGroup("General Resolve Options (available in all modes)");
     // Options::AddValueOption("-minMQ", "unsigned short", minMapQualDescription, "",
     //                         m_settings->HasMinimumMapQuality, m_settings->MinimumMapQuality, GeneralOpts);
 
-    OptionGroup* MakeStatsOpts = Options::CreateOptionGroup("MakeStats Mode Options (disabled in -markPairs mode)");
-    Options::AddValueOption("-ci", "double", confidenceIntervalDescription, "",
-                            m_settings->HasConfidenceInterval, m_settings->ConfidenceInterval, MakeStatsOpts);
-    Options::AddValueOption("-umt", "double", unusedModelThresholdDescription, "",
-                            m_settings->HasUnusedModelThreshold, m_settings->UnusedModelThreshold, MakeStatsOpts);
-
-	// ////////////////////////////////////////////////////
-    // OptionGroup* FilterOpts = Options::CreateOptionGroup("Filter Mode Options (disabled in -markPairs mode)");
+    // OptionGroup* MakeStatsOpts = Options::CreateOptionGroup("MakeStats Mode Options (disabled in -markPairs mode)");
     // Options::AddValueOption("-ci", "double", confidenceIntervalDescription, "",
-    //                         m_settings->HasConfidenceInterval, m_settings->ConfidenceInterval, FilterOpts);
+    //                         m_settings->HasConfidenceInterval, m_settings->ConfidenceInterval, MakeStatsOpts);
     // Options::AddValueOption("-umt", "double", unusedModelThresholdDescription, "",
-    //                         m_settings->HasUnusedModelThreshold, m_settings->UnusedModelThreshold, FilterOpts);
-	// ////////////////////////////////////////////////////
-    // OptionGroup* MarkPairsOpts = Options::CreateOptionGroup("MarkPairs Mode Options (disabled in -makeStats mode)");
-    // Options::AddOption("-force", forceMarkDescription, m_settings->HasForceMarkReadGroups, MarkPairsOpts);
+    //                         m_settings->HasUnusedModelThreshold, m_settings->UnusedModelThreshold, MakeStatsOpts);
+
+	////////////////////////////////////////////////////
+    OptionGroup* CleanOpts = Options::CreateOptionGroup("-clean Mode Options");
+    Options::AddValueOption("-minCover", "double", coverageDescription, "",
+                            m_settings->HasCoverage, m_settings->Coverage, CleanOpts);
+    Options::AddValueOption("-ci", "double", confidenceIntervalDescription, "",
+                            m_settings->HasConfidenceInterval, m_settings->ConfidenceInterval, CleanOpts);
+    Options::AddValueOption("-umt", "double", unusedModelThresholdDescription, "",
+                            m_settings->HasUnusedModelThreshold, m_settings->UnusedModelThreshold, CleanOpts);
+	////////////////////////////////////////////////////
+
 }
 
 IlluminaTool::~IlluminaTool(void) {
