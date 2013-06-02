@@ -1,10 +1,10 @@
 // ***************************************************************************
-// bamtools_resolve.h (c) 2011 Derek Barnett
-// Marth Lab, Department of Biology, Boston College
+// bamtools_illumina 
+// Tonatiuh Pena-Centeno
 // ---------------------------------------------------------------------------
-// Last modified: 23 June 2011
+// Last modified:  2-June-2013
 // ---------------------------------------------------------------------------
-// Resolves paired-end reads (marking the IsProperPair flag as needed).
+// Filters out paired-end reads (so far Illumina technology is considered).
 // ***************************************************************************
 
 #ifndef BAMTOOLS_ILLUMINA_H
@@ -40,3 +40,4 @@ class IlluminaTool : public AbstractTool {
 } // namespace BamTools
 
 #endif // BAMTOOLS_ILLUMINA_H
+

@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 // Last modified: 2-June-2013
 // ---------------------------------------------------------------------------
-// Resolves paired-end reads 
+// Filter out paired-end reads (so far only Illumina technology is considered) 
 // ***************************************************************************
 
 #include "bamtools_illumina.h"
