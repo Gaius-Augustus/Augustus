@@ -17,39 +17,6 @@ OBJECTS=bamtools_illumina.o filter.o
 all : $(OBJECTS)
 	$(LINK.cc) -o filter $(OBJECTS) $(LIBS) $(CFLAGS)
 
-# bamtools_convert.o : bamtools_convert.cpp 
-# 	$(LINK.cc) $(CFLAGS) -c $(BAMTOOLS)/src/toolkit/bamtools_convert.cpp -o bamtools_convert.o
-
-# bamtools_count.o : bamtools_count.cpp 
-# 	$(LINK.cc) $(CFLAGS) -c $(BAMTOOLS)/src/toolkit/bamtools_count.cpp -o bamtools_count.o
-
-# bamtools_coverage.o : bamtools_coverage.cpp
-# 	$(LINK.cc) $(CFLAGS) -c $(BAMTOOLS)/src/toolkit/bamtools_coverage.cpp -o bamtools_coverage.o 
-
-# bamtools_filter.o : bamtools_filter.cpp
-# 	$(LINK.cc) $(CFLAGS) -c $(BAMTOOLS)/src/toolkit/bamtools_filter.cpp -o bamtools_filter.o
-
-# bamtools_header.o : bamtools_header.cpp
-# 	$(LINK.cc) $(CFLAGS) -c $(BAMTOOLS)/src/toolkit/bamtools_header.cpp -o bamtools_header.o
-
-# bamtools_index.o : bamtools_index.cpp
-# 	$(LINK.cc) $(CFLAGS) -c $(BAMTOOLS)/src/toolkit/bamtools_index.cpp -o bamtools_index.o
-
-# bamtools_merge.o : bamtools_merge.cpp
-# 	$(LINK.cc) $(CFLAGS) -c $(BAMTOOLS)/src/toolkit/bamtools_merge.cpp -o bamtools_merge.o
-
-# bamtools_random.o : bamtools_random.cpp
-# 	$(LINK.cc) $(CFLAGS) -c $(BAMTOOLS)/src/toolkit/bamtools_random.cpp -o bamtools_random.o
-
-# bamtools_revert.o : bamtools_revert.cpp
-# 	$(LINK.cc) $(CFLAGS) -c $(BAMTOOLS)/src/toolkit/bamtools_revert.cpp -o bamtools_revert.o
-
-# bamtools_sort.o : bamtools_sort.cpp
-# 	$(LINK.cc) $(CFLAGS) -c $(BAMTOOLS)/src/toolkit/bamtools_sort.cpp -o bamtools_sort.o
-
-# bamtools_split.o : bamtools_split.cpp
-# 	$(LINK.cc) $(CFLAGS) -c $(BAMTOOLS)/src/toolkit/bamtools_split.cpp -o bamtools_split.o
-
 # bamtools_stats.o : bamtools_stats.cpp
 # 	$(LINK.cc) $(CFLAGS) -c $(BAMTOOLS)/src/toolkit/bamtools_stats.cpp -o bamtools_stats.o
 

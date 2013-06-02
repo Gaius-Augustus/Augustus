@@ -1,10 +1,8 @@
 // ***************************************************************************
-// bamtools.cpp (c) 2010 Derek Barnett, Erik Garrison
-// Marth Lab, Department of Biology, Boston College
 // ---------------------------------------------------------------------------
-// Last modified: 12 October 2012 (DB)
+// Last modified: 2-June-2013
 // ---------------------------------------------------------------------------
-// Integrates a number of BamTools functionalities into a single executable.
+// Filter by Tonatiuh Pena-Centeno
 // ***************************************************************************
 
 #include "bamtools_illumina.h"
@@ -67,9 +65,9 @@ int Help(int argc, char* argv[]) {
 
     // print general BamTools help message
     cerr << endl;
-    cerr << "usage: bamtools [--help] COMMAND [ARGS]" << endl;
+    cerr << "usage: filter [--help] SEQUENCING_TYPE [ARGS]" << endl;
     cerr << endl;
-    cerr << "Available bamtools commands:" << endl;
+    cerr << "Available sequencing types:" << endl;
     cerr << "\tillumina         filters alignments coming from illumina paired-end reads" << endl;
     cerr << "See Augustus documentation for more information." << endl;
     cerr << endl;
