@@ -1,6 +1,6 @@
 // ***************************************************************************
-// bamtools_resolve.cpp (c) 2011
-// Marth Lab, Department of Biology, Boston College
+// bamtools_illumina.cpp (c) 2013
+// Tonatiuh Pena-Centeno
 // ---------------------------------------------------------------------------
 // Last modified: 14 October 2011
 // ---------------------------------------------------------------------------
@@ -288,9 +288,11 @@ void ReadGroupResolver::SetUnusedModelThreshold(const double& umt) {
 struct IlluminaTool::IlluminaSettings {
 
     // modes
+    // bool IsFilter;
     bool IsMakeStats;
-    bool IsMarkPairs;
-    bool IsTwoPass;
+
+    // bool IsMarkPairs;
+    // bool IsTwoPass;
 
     // I/O flags
     bool HasInputBamFile;
@@ -317,9 +319,14 @@ struct IlluminaTool::IlluminaSettings {
 
     // constructor
     IlluminaSettings(void)
-        : IsMakeStats(false)
-        , IsMarkPairs(false)
-        , IsTwoPass(false)
+	    : IsMakeStats(false)
+		// ///////////////////////////
+		// , IsFilter(false)
+		// ///////////////////////////
+
+        // , IsMarkPairs(false)
+        // , IsTwoPass(false)
+
         , HasInputBamFile(false)
         , HasOutputBamFile(false)
         , HasStatsFile(false)
@@ -817,6 +824,9 @@ struct IlluminaTool::IlluminaToolPrivate {
     // internal methods
     private:
         bool CheckSettings(vector<string>& errors);
+		// ///////////////////////////
+        // bool Filter(void);
+		// ///////////////////////////
         bool MakeStats(void);
         void ParseHeader(const SamHeader& header);
         bool ReadStatsFile(void);
@@ -838,62 +848,89 @@ bool IlluminaTool::IlluminaToolPrivate::CheckSettings(vector<string>& errors) {
     // if MakeStats mode
     if ( m_settings->IsMakeStats ) {
 
-        // ensure mutex mode
-        if ( m_settings->IsMarkPairs )
-            errors.push_back("Cannot run in both -makeStats & -markPairs modes. Please select ONE.");
-        if ( m_settings->IsTwoPass )
-            errors.push_back("Cannot run in both -makeStats & -twoPass modes. Please select ONE.");
+        // // ensure mutex mode
+        // if ( m_settings->IsMarkPairs )
+        //     errors.push_back("Cannot run in both -makeStats & -markPairs modes. Please select ONE.");
+        // if ( m_settings->IsTwoPass )
+        //     errors.push_back("Cannot run in both -makeStats & -twoPass modes. Please select ONE.");
 
         // error if output BAM options supplied
         if ( m_settings->HasOutputBamFile )
             errors.push_back("Cannot use -out (output BAM file) in -makeStats mode.");
-        if ( m_settings->IsForceCompression )
-            errors.push_back("Cannot use -forceCompression. No output BAM file is being generated.");
+        // if ( m_settings->IsForceCompression )
+        //     errors.push_back("Cannot use -forceCompression. No output BAM file is being generated.");
 
         // make sure required stats file supplied
         if ( !m_settings->HasStatsFile )
             errors.push_back("Ouptut stats filename required for -makeStats mode. Please specify one using -stats option.");
 
-        // check for UseStats options
-        if ( m_settings->HasForceMarkReadGroups )
-            errors.push_back("Cannot use -forceMarkReadGroups. -markPairs options are DISABLED in -makeStats mode.");
+        // // check for UseStats options
+        // if ( m_settings->HasForceMarkReadGroups )
+        //     errors.push_back("Cannot use -forceMarkReadGroups. -markPairs options are DISABLED in -makeStats mode.");
     }
 
-    // if MarkPairs mode
-    else if ( m_settings->IsMarkPairs ) {
+	// /////////////////////////////////////////////////////////////////////////
+    // // if Filter mode
+    // if ( m_settings->IsFilter ) {
 
-        // ensure mutex mode
-        if ( m_settings->IsMakeStats )
-            errors.push_back("Cannot run in both -makeStats & -markPairs modes. Please select ONE.");
-        if ( m_settings->IsTwoPass )
-            errors.push_back("Cannot run in both -markPairs & -twoPass modes. Please select ONE.");
+    //     // ensure mutex mode
+    //     if ( m_settings->IsMarkPairs )
+    //         errors.push_back("Cannot run in both -makeStats & -markPairs modes. Please select ONE.");
+    //     if ( m_settings->IsTwoPass )
+    //         errors.push_back("Cannot run in both -makeStats & -twoPass modes. Please select ONE.");
 
-        // make sure required stats file supplied
-        if ( !m_settings->HasStatsFile )
-            errors.push_back("Input stats filename required for -markPairs mode. Please specify one using -stats option.");
+    //     // error if output BAM options supplied
+    //     if ( m_settings->HasOutputBamFile )
+    //         errors.push_back("Cannot use -out (output BAM file) in -makeStats mode.");
+    //     if ( m_settings->IsForceCompression )
+    //         errors.push_back("Cannot use -forceCompression. No output BAM file is being generated.");
 
-        // check for MakeStats options
-        if ( m_settings->HasConfidenceInterval )
-            errors.push_back("Cannot use -ci. -makeStats options are DISABLED is -markPairs mode.");
-    }
+    //     // make sure required stats file supplied
+    //     if ( !m_settings->HasStatsFile )
+    //         errors.push_back("Ouptut stats filename required for -makeStats mode. Please specify one using -stats option.");
 
-    // if TwoPass mode
-    else if ( m_settings->IsTwoPass ) {
+    //     // check for UseStats options
+    //     if ( m_settings->HasForceMarkReadGroups )
+    //         errors.push_back("Cannot use -forceMarkReadGroups. -markPairs options are DISABLED in -makeStats mode.");
+    // }
 
-        // ensure mutex mode
-        if ( m_settings->IsMakeStats )
-            errors.push_back("Cannot run in both -makeStats & -twoPass modes. Please select ONE.");
-        if ( m_settings->IsMarkPairs )
-            errors.push_back("Cannot run in both -markPairs & -twoPass modes. Please select ONE.");
+	// /////////////////////////////////////////////////////////////////////////
 
-        // make sure input is file not stdin
-        if ( !m_settings->HasInputBamFile || m_settings->InputBamFilename == Options::StandardIn() )
-            errors.push_back("Cannot run -twoPass mode with BAM data from stdin. Please specify existing file using -in option.");
-    }
+    // // if MarkPairs mode
+    // else if ( m_settings->IsMarkPairs ) {
+
+    //     // ensure mutex mode
+    //     if ( m_settings->IsMakeStats )
+    //         errors.push_back("Cannot run in both -makeStats & -markPairs modes. Please select ONE.");
+    //     // if ( m_settings->IsTwoPass )
+    //     //     errors.push_back("Cannot run in both -markPairs & -twoPass modes. Please select ONE.");
+
+    //     // make sure required stats file supplied
+    //     if ( !m_settings->HasStatsFile )
+    //         errors.push_back("Input stats filename required for -markPairs mode. Please specify one using -stats option.");
+
+    //     // check for MakeStats options
+    //     if ( m_settings->HasConfidenceInterval )
+    //         errors.push_back("Cannot use -ci. -makeStats options are DISABLED is -markPairs mode.");
+    // }
+
+    // // if TwoPass mode
+    // else if ( m_settings->IsTwoPass ) {
+
+    //     // ensure mutex mode
+    //     if ( m_settings->IsMakeStats )
+    //         errors.push_back("Cannot run in both -makeStats & -twoPass modes. Please select ONE.");
+    //     if ( m_settings->IsMarkPairs )
+    //         errors.push_back("Cannot run in both -markPairs & -twoPass modes. Please select ONE.");
+
+    //     // make sure input is file not stdin
+    //     if ( !m_settings->HasInputBamFile || m_settings->InputBamFilename == Options::StandardIn() )
+    //         errors.push_back("Cannot run -twoPass mode with BAM data from stdin. Please specify existing file using -in option.");
+    // }
 
     // no mode selected
     else
-        errors.push_back("No resolve mode specified. Please select ONE of the following: -makeStats, -markPairs, or -twoPass. See help for more info.");
+        errors.push_back("No resolve mode specified. Please select ONE of the following: -makeStats or -markPairs. See help for more info.");
 
     // boundary checks on values
     if ( m_settings->HasConfidenceInterval ) {
@@ -1022,6 +1059,122 @@ bool IlluminaTool::IlluminaToolPrivate::MakeStats(void) {
     // if we get here, return success
     return true;
 }
+
+
+// /////////////////////////////////////////////////////////////////////////////////
+
+// bool IlluminaTool::IlluminaToolPrivate::Filter(void) {
+
+//     // pull resolver settings from command-line settings
+//     ReadGroupResolver::SetConfidenceInterval(m_settings->ConfidenceInterval);
+//     ReadGroupResolver::SetUnusedModelThreshold(m_settings->UnusedModelThreshold);
+
+//     // open our BAM reader
+//     BamReader bamReader;
+//     if ( !bamReader.Open(m_settings->InputBamFilename) ) {
+//         cerr << "bamtools resolve ERROR: could not open input BAM file: "
+//              << m_settings->InputBamFilename << endl;
+//         return false;
+//     }
+
+//     // retrieve header & parse for read groups
+//     const SamHeader& header = bamReader.GetHeader();
+//     ParseHeader(header);
+
+//     // open ReadNamesFileWriter
+//     IlluminaTool::ReadNamesFileWriter readNamesWriter;
+//     if ( !readNamesWriter.Open(m_settings->ReadNamesFilename) ) {
+//         cerr << "bamtools resolve ERROR: could not open (temp) output read names file: "
+//              << m_settings->ReadNamesFilename << endl;
+//         bamReader.Close();
+//         return false;
+//     }
+
+//     // read through BAM file
+//     BamAlignment al;
+//     string readGroup("");
+//     map<string, ReadGroupResolver>::iterator rgIter;
+//     map<string, bool>::iterator readNameIter;
+//     while ( bamReader.GetNextAlignmentCore(al) ) {
+
+//         // skip if alignment is not paired, mapped, nor mate is mapped
+//         if ( !al.IsPaired() || !al.IsMapped() || !al.IsMateMapped() )
+//             continue;
+
+//         // skip if alignment & mate not on same reference sequence
+//         if ( al.RefID != al.MateRefID ) continue;
+
+//         // flesh out the char data, so we can retrieve its read group ID
+//         al.BuildCharData();
+
+//         // get read group from alignment (OK if empty)
+//         readGroup.clear();
+//         al.GetTag(READ_GROUP_TAG, readGroup);
+
+//         // look up resolver for read group
+//         rgIter = m_readGroups.find(readGroup);
+//         if ( rgIter == m_readGroups.end() )  {
+//             cerr << "bamtools resolve ERROR - unable to calculate stats, unknown read group encountered: "
+//                  << readGroup << endl;
+//             bamReader.Close();
+//             return false;
+//         }
+//         ReadGroupResolver& resolver = (*rgIter).second;
+
+//         // determine unique-ness of current alignment
+//         const bool isCurrentMateUnique = ( al.MapQuality >= m_settings->MinimumMapQuality );
+
+//         // look up read name
+//         readNameIter = resolver.ReadNames.find(al.Name);
+
+//         // if read name found (current alignment's mate already parsed)
+//         if ( readNameIter != resolver.ReadNames.end() ) {
+
+//             // if both unique mates are unique, store read name & insert size for later
+//             const bool isStoredMateUnique  = (*readNameIter).second;
+//             if ( isCurrentMateUnique && isStoredMateUnique ) {
+
+//                 // save read name in temp file as candidates for later pair marking
+//                 readNamesWriter.Write(readGroup, al.Name);
+
+//                 // determine model type & store fragment length for stats calculation
+//                 const uint16_t currentModelType = CalculateModelType(al);
+//                 assert( currentModelType != ModelType::DUMMY_ID );
+//                 resolver.Models[currentModelType].push_back( abs(al.InsertSize) );
+//             }
+
+//             // unique or not, remove read name from map
+//             resolver.ReadNames.erase(readNameIter);
+//         }
+
+//         // if read name not found, store new entry
+//         else resolver.ReadNames.insert( make_pair<string, bool>(al.Name, isCurrentMateUnique) );
+//     }
+
+//     // close files
+//     readNamesWriter.Close();
+//     bamReader.Close();
+
+//     // iterate back through read groups
+//     map<string, ReadGroupResolver>::iterator rgEnd  = m_readGroups.end();
+//     for ( rgIter = m_readGroups.begin(); rgIter != rgEnd; ++rgIter ) {
+//         const string& name = (*rgIter).first;
+//         ReadGroupResolver& resolver = (*rgIter).second;
+
+//         // calculate acceptable orientation & insert sizes for this read group
+//         resolver.DetermineTopModels(name);
+
+//         // clear out left over read names
+//         // (these have mates that did not pass filters or were already removed as non-unique)
+//         resolver.ReadNames.clear();
+//     }
+
+//     // if we get here, return success
+//     return true;
+// }
+
+
+// /////////////////////////////////////////////////////////////////////////////////
 
 void IlluminaTool::IlluminaToolPrivate::ParseHeader(const SamHeader& header) {
 
@@ -1212,48 +1365,76 @@ bool IlluminaTool::IlluminaToolPrivate::Run(void) {
         }
     }
 
-    // -markPairs mode
-    else if ( m_settings->IsMarkPairs ) {
+	// /////////////////////////////////////////////////////////////
+    // // -filter mode
+    // if ( m_settings->IsFilter ) {
 
-        // read stats from file
-        if ( !ReadStatsFile() ) {
-            cerr << "bamtools resolve ERROR - could not read stats file: "
-                 << m_settings->StatsFilename << endl;
-            return false;
-        }
+    //     // generate stats data
+    //     if ( !Filter() ) {
+    //         cerr << "bamtools filter ERROR - could not generate stats" << endl;
+    //         return false;
+    //     }
 
-        // do paired-end resolution
-        if ( !ResolvePairs() ) {
-            cerr << "bamtools resolve ERROR - could not resolve pairs" << endl;
-            return false;
-        }
-    }
+    //     // write stats to file
+    //     if ( !WriteStatsFile() ) {
+    //         cerr << "bamtools filter ERROR - could not write stats file: "
+    //              << m_settings->StatsFilename << endl;
+    //         return false;
+    //     }
+    // }
+	// /////////////////////////////////////////////////////////////
 
-    // -twoPass mode
-    else {
+    // // -markPairs mode
+    // else if ( m_settings->IsMarkPairs ) {
 
-        // generate stats data
-        if ( !MakeStats() ) {
-            cerr << "bamtools resolve ERROR - could not generate stats" << endl;
-            return false;
-        }
+    //     // read stats from file
+    //     if ( !ReadStatsFile() ) {
+    //         cerr << "bamtools resolve ERROR - could not read stats file: "
+    //              << m_settings->StatsFilename << endl;
+    //         return false;
+    //     }
 
-        // if stats file requested
-        if ( m_settings->HasStatsFile ) {
+    //     // do paired-end resolution
+    //     if ( !ResolvePairs() ) {
+    //         cerr << "bamtools resolve ERROR - could not resolve pairs" << endl;
+    //         return false;
+    //     }
+    // }
 
-            // write stats to file
-            // emit warning if write fails, but paired-end resolution should be allowed to proceed
-            if ( !WriteStatsFile() )
-                cerr << "bamtools resolve WARNING - could not write stats file: "
-                     << m_settings->StatsFilename << endl;
-        }
+    // // -twoPass mode
+    // else {
 
-        // do paired-end resolution
-        if ( !ResolvePairs() ) {
-            cerr << "bamtools resolve ERROR - could not resolve pairs" << endl;
-            return false;
-        }
-    }
+    //     // generate stats data
+    //     if ( !MakeStats() ) {
+    //         cerr << "bamtools resolve ERROR - could not generate stats" << endl;
+    //         return false;
+    //     }
+
+	// 	// //////////////////////////////////////////////////////////////
+    //     // // generate stats data
+    //     // if ( !Filter() ) {
+    //     //     cerr << "bamtools resolve ERROR - could not FILTER" << endl;
+    //     //     return false;
+    //     // }
+	// 	// //////////////////////////////////////////////////////////////
+
+
+    //     // if stats file requested
+    //     if ( m_settings->HasStatsFile ) {
+
+    //         // write stats to file
+    //         // emit warning if write fails, but paired-end resolution should be allowed to proceed
+    //         if ( !WriteStatsFile() )
+    //             cerr << "bamtools resolve WARNING - could not write stats file: "
+    //                  << m_settings->StatsFilename << endl;
+    //     }
+
+    //     // do paired-end resolution
+    //     if ( !ResolvePairs() ) {
+    //         cerr << "bamtools resolve ERROR - could not resolve pairs" << endl;
+    //         return false;
+    //     }
+    // }
 
     // return success
     return true;
@@ -1293,30 +1474,36 @@ IlluminaTool::IlluminaTool(void)
     , m_impl(0)
 {
     // set description texts
-    const string programDescription = "resolves paired-end reads (marking the IsProperPair flag as needed)";
-    const string programUsage = "<mode> [options] [-in <filename>] [-out <filename> | [-forceCompression] ] [-stats <filename>]";
+    const string programDescription = "It will filter paired-end alignments from illumina technology";
+    const string programUsage = "<mode> [options] [-in <filename>] [-out <filename>] [-stats <filename>]";
     const string inputBamDescription = "the input BAM file(s)";
     const string outputBamDescription = "the output BAM file";
     const string statsFileDescription = "input/output stats file, depending on selected mode (see below). "
             "This file is human-readable, storing fragment length data generated per read group, as well as "
             "the options used to configure the -makeStats mode";
-    const string forceCompressionDescription = "if results are sent to stdout (like when piping to another tool), "
-            "default behavior is to leave output uncompressed."
-            "Use this flag to override and force compression. This feature is disabled in -makeStats mode.";
+    // const string forceCompressionDescription = "if results are sent to stdout (like when piping to another tool), "
+    //         "default behavior is to leave output uncompressed."
+    //         "Use this flag to override and force compression. This feature is disabled in -makeStats mode.";
+
+	// //////////////////////////////////////////////////////////
+    // const string filterDescription = "will filter paired-end alignments.";
+	// //////////////////////////////////////////////////////////
     const string makeStatsDescription = "generates a fragment-length stats file from the input BAM. "
             "Data is written to file specified using the -stats option. "
             "MarkPairs Mode Settings are DISABLED.";
-    const string markPairsDescription = "generates an output BAM with alignments marked with proper-pair status. "
-            "Stats data is read from file specified using the -stats option. "
-            "MakeStats Mode Settings are DISABLED";
-    const string twoPassDescription = "combines the -makeStats & -markPairs modes into a single command. "
-            "However, due to the two-pass nature of paired-end resolution, piping BAM data via stdin is DISABLED. "
-            "You must supply an explicit input BAM file. Output BAM may be piped to stdout, however, if desired. "
-            "All MakeStats & MarkPairs Mode Settings are available. "
-            "The intermediate stats file is not necessary, but if the -stats options is used, then one will be generated. "
-            "You may find this useful for documentation purposes.";
-    const string minMapQualDescription = "minimum map quality. Used in -makeStats mode as a heuristic for determining a mate's "
-            "uniqueness. Used in -markPairs mode as a filter for marking candidate proper pairs.";
+
+    // const string markPairsDescription = "generates an output BAM with alignments marked with proper-pair status. "
+    //         "Stats data is read from file specified using the -stats option. "
+    //         "MakeStats Mode Settings are DISABLED";
+    // const string twoPassDescription = "combines the -makeStats & -markPairs modes into a single command. "
+    //         "However, due to the two-pass nature of paired-end resolution, piping BAM data via stdin is DISABLED. "
+    //         "You must supply an explicit input BAM file. Output BAM may be piped to stdout, however, if desired. "
+    //         "All MakeStats & MarkPairs Mode Settings are available. "
+    //         "The intermediate stats file is not necessary, but if the -stats options is used, then one will be generated. "
+    //         "You may find this useful for documentation purposes.";
+    // const string minMapQualDescription = "minimum map quality. Used in -makeStats mode as a heuristic for determining a mate's "
+    //         "uniqueness. Used in -markPairs mode as a filter for marking candidate proper pairs.";
+
     const string confidenceIntervalDescription = "confidence interval. Set min/max fragment lengths such that we capture "
             "this fraction of pairs";
     const string unusedModelThresholdDescription = "unused model threshold. The resolve tool considers 8 possible orientation models "
@@ -1332,7 +1519,7 @@ IlluminaTool::IlluminaTool(void)
             "By setting this option, a read group's ambiguity flag will be ignored, and all of its alignments will be compared to the top 2 models.";
 
     // set program details
-    Options::SetProgramInfo("bamtools resolve", programDescription, programUsage);
+    Options::SetProgramInfo("filter illumina", programDescription, programUsage);
 
     // set up I/O options
     OptionGroup* IO_Opts = Options::CreateOptionGroup("Input & Output");
@@ -1344,17 +1531,22 @@ IlluminaTool::IlluminaTool(void)
                             IO_Opts, Options::StandardOut());
     Options::AddValueOption("-stats", "STATS filename", statsFileDescription, "",
                             m_settings->HasStatsFile, m_settings->StatsFilename, IO_Opts);
-    Options::AddOption("-forceCompression", forceCompressionDescription,
-                       m_settings->IsForceCompression, IO_Opts);
+
+    // Options::AddOption("-forceCompression", forceCompressionDescription,
+    //                    m_settings->IsForceCompression, IO_Opts);
 
     OptionGroup* ModeOpts = Options::CreateOptionGroup("Resolve Modes (must select ONE of the following)");
+	// //////////////////////////////////////////////////////////////
+    // Options::AddOption("-filter", filterDescription, m_settings->IsFilter, ModeOpts);
+	// //////////////////////////////////////////////////////////////
     Options::AddOption("-makeStats", makeStatsDescription, m_settings->IsMakeStats, ModeOpts);
-    Options::AddOption("-markPairs", markPairsDescription, m_settings->IsMarkPairs, ModeOpts);
-    Options::AddOption("-twoPass",   twoPassDescription,   m_settings->IsTwoPass,   ModeOpts);
+
+    // Options::AddOption("-markPairs", markPairsDescription, m_settings->IsMarkPairs, ModeOpts);
+    // Options::AddOption("-twoPass",   twoPassDescription,   m_settings->IsTwoPass,   ModeOpts);
 
     OptionGroup* GeneralOpts = Options::CreateOptionGroup("General Resolve Options (available in all modes)");
-    Options::AddValueOption("-minMQ", "unsigned short", minMapQualDescription, "",
-                            m_settings->HasMinimumMapQuality, m_settings->MinimumMapQuality, GeneralOpts);
+    // Options::AddValueOption("-minMQ", "unsigned short", minMapQualDescription, "",
+    //                         m_settings->HasMinimumMapQuality, m_settings->MinimumMapQuality, GeneralOpts);
 
     OptionGroup* MakeStatsOpts = Options::CreateOptionGroup("MakeStats Mode Options (disabled in -markPairs mode)");
     Options::AddValueOption("-ci", "double", confidenceIntervalDescription, "",
@@ -1362,8 +1554,15 @@ IlluminaTool::IlluminaTool(void)
     Options::AddValueOption("-umt", "double", unusedModelThresholdDescription, "",
                             m_settings->HasUnusedModelThreshold, m_settings->UnusedModelThreshold, MakeStatsOpts);
 
-    OptionGroup* MarkPairsOpts = Options::CreateOptionGroup("MarkPairs Mode Options (disabled in -makeStats mode)");
-    Options::AddOption("-force", forceMarkDescription, m_settings->HasForceMarkReadGroups, MarkPairsOpts);
+	// ////////////////////////////////////////////////////
+    // OptionGroup* FilterOpts = Options::CreateOptionGroup("Filter Mode Options (disabled in -markPairs mode)");
+    // Options::AddValueOption("-ci", "double", confidenceIntervalDescription, "",
+    //                         m_settings->HasConfidenceInterval, m_settings->ConfidenceInterval, FilterOpts);
+    // Options::AddValueOption("-umt", "double", unusedModelThresholdDescription, "",
+    //                         m_settings->HasUnusedModelThreshold, m_settings->UnusedModelThreshold, FilterOpts);
+	// ////////////////////////////////////////////////////
+    // OptionGroup* MarkPairsOpts = Options::CreateOptionGroup("MarkPairs Mode Options (disabled in -makeStats mode)");
+    // Options::AddOption("-force", forceMarkDescription, m_settings->HasForceMarkReadGroups, MarkPairsOpts);
 }
 
 IlluminaTool::~IlluminaTool(void) {

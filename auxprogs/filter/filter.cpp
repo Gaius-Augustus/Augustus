@@ -70,7 +70,7 @@ int Help(int argc, char* argv[]) {
     cerr << "usage: bamtools [--help] COMMAND [ARGS]" << endl;
     cerr << endl;
     cerr << "Available bamtools commands:" << endl;
-    cerr << "\tresolve         Resolves paired-end reads (marking the IsProperPair flag as needed)" << endl;
+    cerr << "\tillumina         filters alignments coming from illumina paired-end reads" << endl;
     cerr << "See Augustus documentation for more information." << endl;
     cerr << endl;
     return EXIT_SUCCESS;
