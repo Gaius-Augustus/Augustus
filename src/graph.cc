@@ -892,25 +892,24 @@ ostream& operator<<(ostream& ostrm, const Edge &edge){
 bool AugustusGraph::mergedStopcodon(Node* exon1, Node* exon2){
 
     StateType type = exon1->castToStateType();
-    char* joinedCodon = NULL;
+    char joinedCodon[4] = "";
 
     if(isCodingExon(type) && isCodingExon(exon2->castToStateType())){
 	if(type == initial1 || type == internal1 || type == rterminal1 || type == rinternal1 ){
-	    joinedCodon = newstrcpy(sequence + exon1->end, 1);
+	    strncat(joinedCodon, sequence + exon1->end, 1);
 	    strncat(joinedCodon, sequence + exon2->begin, 2);
 	}
 	else if(type == initial2 || type == internal2 ||  type == rterminal0 || type == rinternal0 ){
-	    joinedCodon = newstrcpy(sequence + exon1->end - 1, 2);
+	    strncat(joinedCodon, sequence + exon1->end - 1, 2);
 	    strncat(joinedCodon, sequence + exon2->begin, 1);
 	}
-	if(joinedCodon){
+	if(joinedCodon[0] != '\0'){
 	    if (isOnFStrand(type) && GeneticCode::isStopcodon(joinedCodon) ){
 		return true;
 	    }
 	    if( !isOnFStrand(type) && GeneticCode::isRCStopcodon(joinedCodon) ){
 		return true;
-		}
-	    delete [] joinedCodon;
+	    }
 	}
     }
     return false;
