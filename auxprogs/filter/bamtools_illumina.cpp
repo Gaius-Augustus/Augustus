@@ -40,7 +40,6 @@ static const double   DEFAULT_COVERAGE = 0.95;
 static const double   DEFAULT_CONFIDENCE_INTERVAL = 0.9973;
 static const uint16_t DEFAULT_MIN_MAPQUALITY = 1;
 static const double   DEFAULT_UNUSEDMODEL_THRESHOLD = 0.1;
-
 // --------------------------------------------------------------------------
 // stats file constants
 // --------------------------------------------------------------------------
@@ -159,7 +158,6 @@ struct ReadGroupResolver {
     bool HasData;
     vector<ModelType> Models;
     map<string, bool> ReadNames;
-
     // ctor
     ReadGroupResolver(void);
 
@@ -215,7 +213,7 @@ void ReadGroupResolver::PrintModels(const string& readGroupName) {
     // sort models (from most common to least common)
     sort( Models.begin(), Models.end(), std::greater<ModelType>() );
 	cout << "Read group: " << readGroupName << endl;
-	cout << "Found configurations:" << Models.size() << endl;
+	cout << "Found orientations:" << Models.size() << endl;
     for (int it=0;it<Models.size();it++) {
 	  cout << "Config " << Models[it].ID << ": " << Models[it].size() << endl; 
 	}
@@ -225,6 +223,7 @@ void ReadGroupResolver::PrintModels(const string& readGroupName) {
                                              Models[6].size() + Models[7].size();    
 	cout << "activeModelCountSum: " << activeModelCountSum << endl;
 	cout << "unusedModelCountSum: " << unusedModelCountSum << endl;
+	cout << "activeModelCountSum+unusedModelCountSum = wc -l file_uniq_names.txt" << endl;
 }
 
 void ReadGroupResolver::DetermineTopModels(const string& readGroupName) {
@@ -905,9 +904,9 @@ bool IlluminaTool::IlluminaToolPrivate::CheckSettings(vector<string>& errors) {
         // if ( m_settings->HasOutputBamFile )
         //     errors.push_back("Cannot use -out (output BAM file) in -clean mode.");
 
-        // // make sure required stats file supplied
-        // if ( !m_settings->HasStatsFile )
-        //     errors.push_back("Ouptut stats filename required for -clean mode. Please specify one using -stats option.");
+        // make sure required stats file supplied
+        if ( !m_settings->HasStatsFile )
+            errors.push_back("Ouptut stats filename required for -clean mode. Please specify one using -stats option.");
     }
 	/////////////////////////////////////////////////////////////////////////
 
@@ -1153,6 +1152,7 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
     string readGroup("");
     map<string, ReadGroupResolver>::iterator rgIter;
     map<string, bool>::iterator readNameIter;
+	int readNameCount;
 	int notPaired=0, notMapped=0, notMateMapped=0, mateNotOnSameRef=0;
 
 	vector<CigarOp> cigar;
@@ -1171,9 +1171,17 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
 	cout << "minCover=" << minCover << endl;
 	cout << "percId=" << minId << endl;
 	cout << "################################" << endl;
+	// For processing percentage identity (PI) and coverage (CO) 
+	std::stringstream field;
+	string currentPercId, currentCoverage; 
+	float curPercId, curCoverage;
+	int illumina;
 
  nextAlignment:
     while ( bamReader.GetNextAlignmentCore(al) ) {
+
+        // flesh out the char data, so we can retrieve its read group ID
+        al.BuildCharData();
 
         // skip if alignment is not paired, mapped, nor mate is mapped
 		if (!al.IsPaired()) {notPaired++; goto nextAlignment;};
@@ -1183,26 +1191,28 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
         // skip if alignment & mate not on same reference sequence
         if ( al.RefID != al.MateRefID ) {mateNotOnSameRef++; continue;}
 
-		// Augustus'-related filters
-		sumMandI = 0;
+		// Augustus-related filters
 		qLength = al.Length; 
-		al.GetTag("NM", editDistance); // edit distance
+		al.GetTag("NM", editDistance);
 
 		// Filtering by percentage identity
-		percId = 100*(qLength-editDistance)/qLength;
-		if (percId < minId) { outPercId++; goto nextAlignment; }		
+		percId = (float)100*(qLength-editDistance)/qLength;
+		if (percId < minId) { outPercId++; goto nextAlignment; }
+		field << percId;		
+		al.AddTag("pi", "Z", field.str());
+ 		field.str("");
 
 		// Filtering by coverage
 		sumMandI = sumMandIOperations(al.CigarData, "no");
 		coverage = (float)100*sumMandI/qLength;
-		if (coverage < minCover) { outCover++; goto nextAlignment; }		
+		if (coverage < minCover) { outCover++; goto nextAlignment; }
+		field << coverage;		
+		al.AddTag("co", "Z", field.str());
+ 		field.str("");
 
   		// // Intron gap filter
   		// baseInsert = sumDandIOperations(al.CigarData, "no");
   		// if (noIntrons && baseInsert > insertLimit) { outIntrons++; goto nextAlignment; }
-
-        // flesh out the char data, so we can retrieve its read group ID
-        al.BuildCharData();
 
         // get read group from alignment (OK if empty)
         readGroup.clear();
@@ -1218,12 +1228,21 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
         }
         ReadGroupResolver& resolver = (*rgIter).second;
 
+		// Retrieving PERCID and COVERAGE values stored in alignment
+		al.GetTag("pi", currentPercId);
+		curPercId = atof(currentPercId.c_str());
+		al.GetTag("co", currentCoverage);
+  		curCoverage = atof(currentCoverage.c_str());
+
         // determine unique-ness of current alignment
         const bool isCurrentMateUnique = ( al.MapQuality >= m_settings->MinimumMapQuality );
+		const float currentMateScore = (curCoverage+curPercId)/100;
 
         // look up read name
         readNameIter = resolver.ReadNames.find(al.Name);
-
+		readNameCount = resolver.ReadNames.count(al.Name);
+		if (readNameCount > 2){cout << "al.Name aligned mult. times!" << endl;}
+		
         // if read name found (current alignment's mate already parsed)
         if ( readNameIter != resolver.ReadNames.end() ) {
 
@@ -1238,17 +1257,49 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
                 const uint16_t currentModelType = CalculateModelType(al);
                 assert( currentModelType != ModelType::DUMMY_ID );
                 resolver.Models[currentModelType].push_back( abs(al.InsertSize) );
-            }
+
+				// Saving alignments that made it through filter and are unique
+				writer.SaveAlignment(al);
+
+            } 
 
             // unique or not, remove read name from map
             resolver.ReadNames.erase(readNameIter);
         }
 
         // if read name not found, store new entry
-        else resolver.ReadNames.insert( make_pair<string, bool>(al.Name, isCurrentMateUnique) );
+        else {
+				resolver.ReadNames.insert( make_pair<string, bool>(al.Name, isCurrentMateUnique) );
+			}	
 
-		// Saving alignments that made it through filter
-		writer.SaveAlignment(al);
+		// ///////////////////////////////////////////////////////////////
+        // // if read name found (current alignment's mate already parsed)
+        // if ( readNameIter != resolver.ReadNames.end() ) {
+
+        //     // if both unique mates are unique, store read name & insert size for later
+        //     const bool isStoredMateUnique  = (*readNameIter).second;
+        //     if ( isCurrentMateUnique && isStoredMateUnique ) {
+
+        //         // save read name in temp file as candidates for later pair marking
+        //         readNamesWriter.Write(readGroup, al.Name);
+
+        //         // determine model type & store fragment length for stats calculation
+        //         const uint16_t currentModelType = CalculateModelType(al);
+        //         assert( currentModelType != ModelType::DUMMY_ID );
+        //         resolver.Models[currentModelType].push_back( abs(al.InsertSize) );
+
+		// 		// Saving alignments that made it through filter and are unique
+		// 		writer.SaveAlignment(al);
+
+        //     }
+
+        //     // unique or not, remove read name from map
+        //     resolver.ReadNames.erase(readNameIter);
+        // }
+
+        // // if read name not found, store new entry
+        // else resolver.ReadNames.insert( make_pair<string, bool>(al.Name, isCurrentMateUnique) );
+		// ///////////////////////////////////////////////////////////////
 
     } // end while
 
@@ -1266,6 +1317,7 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
 	cout << "mateNotOnSameRef = " << mateNotOnSameRef << endl;
 	cout << "outPercId = " << outPercId << endl;
 	cout << "outCover = " << outCover << endl;
+	cout << "illumina = " << illumina << endl;
 	cout << "------------------------------------------------------------" << endl;
 
     // iterate back through read groups
@@ -1489,12 +1541,12 @@ bool IlluminaTool::IlluminaToolPrivate::Run(void) {
             return false;
         }
 
-        // // write stats to file
-        // if ( !WriteStatsFile() ) {
-        //     cerr << "bamtools clean ERROR - could not write stats file: "
-        //          << m_settings->StatsFilename << endl;
-        //     return false;
-        // }
+        // write stats to file
+        if ( !WriteStatsFile() ) {
+            cerr << "bamtools clean ERROR - could not write stats file: "
+                 << m_settings->StatsFilename << endl;
+            return false;
+        }
     }
 	/////////////////////////////////////////////////////////////
 
