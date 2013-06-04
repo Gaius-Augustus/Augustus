@@ -255,7 +255,7 @@ double OrthoGraph::pruningAlgor(list<OrthoExon> &orthoex, ExonEvo &evo){
 	else{
 	    PhyloTree temp(*tree);
 	    double score = temp.pruningAlgor(labelpattern, evo_base);
-	    score=log(score) * evo.getPhyloFactor();
+	    score=score * evo.getPhyloFactor();
 	    cache::addToHash(labelpattern, score);
 	    tree_score += score;
 	}
@@ -544,46 +544,63 @@ double OrthoGraph::globalPathSearch(){
 }
 
 double OrthoGraph::dualdecomp(ExonEvo &evo, int T){
+ 
+    // cout.precision(8);
+    // evo.setPhyloFactor(10);
+    // cout<<"MAP inference with weights all set to 0.0 and scaling factor: ";
+    // cout<<evo.getPhyloFactor()<<endl;
+    // OrthoExon oe;
+    // ExonCandidate *ex = new ExonCandidate(singleGene,500,1000);
+    // for(int i=0; i<oe.orthoex.size(); i++){
+    // 	oe.orthoex[i] = ex;
+    // }
+    // for(int i=0;i<2;i++){
+    // 	for(int j=0;j<2;j++){
+    // 	    for(int k=0;k<2;k++){
+    // 		oe.labels[0]=i;
+    // 		oe.labels[1]=j;
+    // 		oe.labels[2]=k;
+    // 		PhyloTree temp=(*tree);
+    //    		double score = temp.weightedMAP(oe, evo, true);
+    // 		cout<<i<<j<<k<<"\t"<<score<<endl;
+    // 	    }
+    // 	}
+    // }
+    // oe.orthoex[1]=NULL;
+    // for(int i=0;i<2;i++){
+    // 	for(int k=0;k<2;k++){
+    // 	    oe.labels[0]=i;
+    // 	    oe.labels[2]=k;
+    // 	    PhyloTree temp=(*tree);
+    // 	    double score = temp.weightedMAP(oe, evo, true);
+    // 	    cout<<i<<"-"<<k<<"\t"<<score<<endl;
+    // 	} 
+    // }
+    // oe.orthoex[1]=ex;
+    // oe.orthoex[2]=NULL;
+    // for(int i=0;i<2;i++){
+    // 	for(int k=0;k<2;k++){
+    // 	    oe.labels[0]=i;
+    // 	    oe.labels[1]=k;
+    // 	    PhyloTree temp=(*tree);
+    // 	    double score = temp.weightedMAP(oe, evo, true);
+    // 	    cout<<i<<k<<"-"<<"\t"<<score<<endl;
+    // 	} 
+    // }
+    // cout<<endl;
 
-    OrthoExon oe = *all_orthoex.begin();
-    double w = 0.1;
-    for(int x=1; x<500; ){
-    	cout << "weight: "<< x*w<<endl;
-    	for(int i=0;i<2;i++){
-    	    for(int j=0;j<2;j++){
-    		for(int k=0;k<2;k++){
-    		    oe.labels[0]=i;
-    		    oe.labels[1]=j;
-    		    oe.labels[2]=k;
-    		    oe.weights[0]=w*x;
-    		oe.weights[1]=w*x;
-    		oe.weights[2]=w*x;
-    		cout<<i<<j<<k<<"\t";
-    		PhyloTree temp=(*tree);
-    		evo.setPhyloFactor(100);
-    		double score = temp.weightedMAP(oe, evo, true);
-    		cout<<score<<endl;
-    		}
-    	    }
-    	}
-    	x=x+10;
-    }
-
+    // delete ex;
     //initialization
     double U = std::numeric_limits<double>::max(); //upper bound
-
-    list<OrthoExon*> diff;
-
+    printInfo();
     for(int t=0; t<T;t++){
 	double score = 0; 
 	double delta = getStepSize(t);             //get next step size
-	cout<<"delta_"<<t<<"="<<delta<<endl; 
 	score += globalPathSearch();
 	score += treeMAPInf(evo);
 	U = min(U,score);              //update upper bound
 	bool isConsistent = true;
 	for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
-	    bool isdiff = false;
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(hects->orthoex[pos]){
 		    // get corresponding node in graph
@@ -591,7 +608,6 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, int T){
 		    bool h = node->label;
 		    bool v = hects->labels[pos];
 		    if(v != h){  //shared nodes are labelled inconsistently in the two subproblems
-			isdiff = true;
 			isConsistent = false;
 			double weight = delta*(v-h);
 			//update weights
@@ -600,46 +616,15 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, int T){
 		    }
 		}
 	    }
-	    if(isdiff && t==0)
-		diff.push_back(&(*hects));
 	}
-
-#ifdef DEBUG
-	cout<<"HECT\tpath\tMAP\tnew MAP weights"<<endl;
-	for(auto it = diff.begin(); it != diff.end(); it++){
-	    cout<<"ID:"<<(*it)->ID<<"\t";
-	    for(size_t pos = 0; pos < (*it)->orthonode.size(); pos++){
-		if((*it)->orthoex[pos]){
-		    cout<<(*it)->orthonode[pos]->label;
-		}
-		else
-		    cout<<"-"; 
-	    }
-	    cout<<"\t";
-	    for(size_t pos = 0; pos < (*it)->labels.size(); pos++){
-		if((*it)->orthoex[pos]){
-		    cout<<(*it)->labels[pos];
-		}
-		else
-		    cout<<"-"; 
-	    }
-	    cout<<"\t";
-	    for(size_t pos = 0; pos < (*it)->weights.size(); pos++){
-		if((*it)->orthoex[pos]){
-		    cout<<(*it)->weights[pos]<<"\t";
-		}
-		else
-		    cout<<"-\t"; 
-	    }
-	    cout<<endl;
-	}
-	cout<<endl;
-#endif
+	cout<<"delta_"<<t<<"="<<delta<<endl; 
+	printInfo(true);
 	if(isConsistent){ // exact solution is found
 	    return 0;
 	}
     }
     double score = makeConsistent(evo);
+    printInfo();
     double error = (U-score);
     cout<<"error\t"<<error<<endl;
     return error;
@@ -653,15 +638,13 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, int T){
  */
 double OrthoGraph::getStepSize(int t){
     
-    double delta=0;
     if(t == 0){ //small step size
-    	delta = 0.0001;
+    	return 0.0001;
     }
     else{
-	delta = 10/sqrt(t);
+	return 10/sqrt(t);
     }
-    return delta;
-}
+ }
 
 double OrthoGraph::treeMAPInf(ExonEvo &evo){
 
@@ -690,3 +673,58 @@ double OrthoGraph::makeConsistent(ExonEvo &evo){
     }
     return score;
 }	
+
+void OrthoGraph::printInfo(bool only_change){
+
+    cout.precision(6);
+    cout<<left;
+    cout<<"HECT\tpath\tMAP\t"<<setw(15*tree->numSpecies())<<"new MAP weights"<<setw(15*tree->numSpecies())<<"new path weights"<<endl;
+    for(auto it = all_orthoex.begin(); it != all_orthoex.end();it++){
+	string h_pattern="";
+	string v_pattern="";
+	for(size_t pos = 0; pos < it->orthonode.size(); pos++){
+	    if(it->orthoex[pos]){
+		h_pattern+=itoa(it->orthonode[pos]->label);
+	    }
+	    else
+		h_pattern+="-";
+	}
+	for(size_t pos = 0; pos < it->labels.size(); pos++){
+	    if(it->orthoex[pos]){
+		v_pattern+=itoa(it->labels[pos]);
+	    }
+	    else
+		v_pattern+="-";
+	}
+	if((h_pattern != "000" && h_pattern != "00-" && h_pattern != "0-0") || h_pattern != v_pattern){
+	    //printHTMLgBrowse(*it);
+	    cout<<right;
+	    cout<<"ID:"<<it->ID<<"\t"<<h_pattern<<"\t"<<v_pattern<<"\t";
+	    if(!only_change || h_pattern != v_pattern){
+		for(size_t pos = 0; pos < it->weights.size(); pos++){
+		    if(it->orthoex[pos]){
+			cout<<setw(15)<<fixed<<it->weights[pos];
+		    }
+		    else
+			cout<<setw(15)<<"-"; 
+		}
+		cout<<"\t\t";
+		for(size_t pos = 0; pos < it->weights.size(); pos++){
+		    if(it->orthoex[pos]){
+			Node *node = it->orthonode[pos];
+			for(auto iter = node->edges.begin(); iter != node->edges.end(); iter++){
+			    if(iter->to->n_type < sampled){
+				cout<<setw(15)<<fixed<<iter->score;
+				break;
+			    }
+			}
+		    }
+		    else
+			cout<<setw(15)<<"-"; 
+		}
+	    }
+	    cout<<endl;
+	}
+    }
+    cout<<endl;
+}

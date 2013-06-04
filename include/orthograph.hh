@@ -87,6 +87,7 @@ public:
     double globalPathSearch(); // horizontal problem
     double getStepSize(int t);    // specifies a sequence of steps
     double makeConsistent(ExonEvo &evo);
+    void printInfo(bool only_change=false);
 
     // transform graph labeling into list of genes + filter + output
     void outputGenes(vector<ofstream*> filestreams, vector<int> &geneid);
