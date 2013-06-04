@@ -34,9 +34,9 @@ CompGenePred::CompGenePred(){
 }
 
 void CompGenePred::start(){
+
     // read in alignment, determine orthologous sequence fragments
-
-
+    
 #ifdef DEBUG
     cout << "reading in the phylogenetic tree" << endl;
 #endif
@@ -57,6 +57,13 @@ void CompGenePred::start(){
     cout << "rate exon gain:\t" << evo.getLambda() << endl;
     cout << "phylo factor:\t" << evo.getPhyloFactor() <<  "\n-------------------------------" << endl;
 #endif
+
+    bool dualdecomp;
+    try {
+	dualdecomp = Properties::getBoolProperty("/CompPred/dualdecomp");
+    } catch (...) {
+	dualdecomp = false;
+    }
 
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(".base"); // equivalent to MEA prediction
@@ -181,11 +188,14 @@ void CompGenePred::start(){
 	  orthograph.outputGenes(initGenes,init_geneid);
 	  
 	  if(!orthograph.all_orthoex.empty()){
-	      orthograph.pruningAlgor(evo);
-	      orthograph.printCache();
-	      // Iterative optimization of labelings in graphs
-	      orthograph.optimize(evo);
-	      //orthograph.dualdecomp(evo,25);
+	      if(dualdecomp){ // optimization via dual decomposition
+		  orthograph.dualdecomp(evo,100);
+	      }
+	      else{ // optimization by making small changes (moves)
+		  orthograph.pruningAlgor(evo);
+		  orthograph.printCache();
+		  orthograph.optimize(evo);
+	      }
 	  }
 	  
 	  // transfer max weight paths to genes + filter + ouput

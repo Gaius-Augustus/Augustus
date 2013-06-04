@@ -65,6 +65,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/paml",
 "/CompPred/phylo_factor",
 "/CompPred/shift_size",
+"/CompPred/dualdecomp",
 "/Constant/almost_identical_maxdiff",
 "/Constant/amberprob",
 "/Constant/ass_end",
