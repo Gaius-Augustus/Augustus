@@ -82,6 +82,8 @@ private:
     std::vector<std::string> species;  //vector of species names
 public:
     PhyloTree(std::string filename);
+    //create star-like tree with unit branch length b from a set of species identifiers
+    PhyloTree(const std::vector<std::string> &speciesnames, double b=1);
     //copy constructor
     PhyloTree(const PhyloTree &other);
     ~PhyloTree();

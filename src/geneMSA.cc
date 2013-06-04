@@ -1007,7 +1007,7 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, OrthoExon &oe, vector<i
             }
         }
 
-        if (noSpecies == 2 /*&& speciesIdx[1]==2*/) {
+        if (noSpecies >= 2 /*&& speciesIdx[1]==2*/) {
             orthoExonsWithOmega.push_back(oe);
             vector<string> pamlSeq;
             for (vector<int>::iterator it = speciesIdx.begin(); it!=speciesIdx.end(); it++) {
@@ -1053,6 +1053,11 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, OrthoExon &oe, vector<i
 		    oe.setSubst(numSynSubst + numNonSynSubst);
 		    //printSingleOrthoExon(oe, offsets, true, omega, numSynSubst + numNonSynSubst);
 		    printSingleOrthoExon(oe, offsets, false, omega, numSynSubst + numNonSynSubst);
+		}
+		else{
+		    double omega = codonevo->estOmegaOnSeqTuple(pamlSeq, tree);
+		    oe.setOmega(omega);
+		    printSingleOrthoExon(oe, offsets, false, omega, -1);
 		}
             }
         }

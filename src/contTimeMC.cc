@@ -17,6 +17,7 @@
 #include "contTimeMC.hh"
 #include "geneticcode.hh"
 #include "properties.hh"
+#include "phylotree.hh"
 
 // standard C/C++ includes
 #include <iostream>
@@ -33,6 +34,11 @@ Evo::~Evo(){
 	    gsl_matrix_free(allPs[i][j]);
 	}
     allPs.assign(0, 0, NULL);
+    for (int i=0; i < allLogPs.getColSize(); i++)
+    	for (int j=0; j< allLogPs.getRowSize(); j++){
+    	    gsl_matrix_free(allLogPs[i][j]);
+    	}
+    allLogPs.assign(0, 0, NULL);
     delete[] pi;
 }
 
@@ -90,11 +96,16 @@ int Evo::findClosestIndex(vector<double> &v, double val){
     return j;
 }
 
-double Evo::getP(int i,int j,double t, int u){
+gsl_matrix *Evo::getSubMatrixP(int u, double t){
     // determine index v into vector of branch lengths such that times[v] is close to t
     int v = findClosestIndex(times, t);
-    gsl_matrix *P = allPs[u][v];
-    return gsl_matrix_get(P,i,j);
+    return allPs[u][v];
+}
+
+gsl_matrix *Evo::getSubMatrixLogP(int u, double t){
+    // determine index v into vector of branch lengths such that times[v] is close to t
+    int v = findClosestIndex(times, t);
+    return allLogPs[u][v];
 }
 
 void CodonEvo::setPi(double *pi){
@@ -147,6 +158,7 @@ void CodonEvo::computeLogPmatrices(){
     gsl_vector *lambda;
     int status;
     allPs.assign(k, m, NULL); // omegas index the rows, times index the columns
+    allLogPs.assign(k, m, NULL);
     cout << k << "x" << m << " matrices" << endl;
     for (int u=0; u<k; u++){
 	omega = omegas[u];
@@ -163,9 +175,10 @@ void CodonEvo::computeLogPmatrices(){
 	    P = expQt(t, lambda, U, Uinv);
 	    // store P
 	    allPs[u][v] = P;
+	    allLogPs[u][v] = log(P,states);
 	    //#ifdef DEBUG
 	    // cout << "codon rate matrix log P(t=" << t << ", omega=" << omega << ")" << endl;
-	    // printCodonMatrix(allPs[u][v]);
+	    // printCodonMatrix(allLogPs[u][v]);
 	    //#endif
 	}
 	gsl_matrix_free(U);
@@ -182,18 +195,7 @@ void CodonEvo::computeLogPmatrices(){
 gsl_matrix *CodonEvo::getSubMatrixLogP(double omega, double t){
     // determine index u into vector of omegas such that omegas[u] is close to omega
     int u = findClosestIndex(omegas, omega);
-    return getSubMatrixLogP(u, t);
-}
-
-/*
- * Returns a pointer to the 64x64 substitution probability matrix
- * for which omegas[u] and t come closest to scored values.
- */
-gsl_matrix *CodonEvo::getSubMatrixLogP(int u, double t){
-    // determine index v into vector of branch lengths such that times[v] is close to t
-    int v = findClosestIndex(times, t);
-    //cout << "approximating by omega=" << omegas[u] << " and t=" << times[v] << endl;
-    return allPs[u][v];
+    return Evo::getSubMatrixLogP(u, t);
 }
 
 /*
@@ -201,7 +203,7 @@ gsl_matrix *CodonEvo::getSubMatrixLogP(int u, double t){
  * Used for testing. The pruning algorithm requires tuples of codons instead.
  */
 double CodonEvo::logLik(const char *e1, const char *e2, int u, double t) {
-    gsl_matrix *logP = CodonEvo::getSubMatrixLogP(u, t);
+    gsl_matrix *logP = Evo::getSubMatrixLogP(u, t);
     int n = strlen(e1)/3; // number of nucleotide triples
     int from, to; // from: codon in e1, to: codon in e2
     Seq2Int s2i(3);
@@ -401,12 +403,12 @@ gsl_matrix *expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv)
 	    for (int k=0; k<64; k++)
 		Pij += gsl_matrix_get(U, i, k) * exp(gsl_vector_get(lambda, k)*t) * gsl_matrix_get(Uinv, k, j);
 	    if (Pij>0.0)
-		gsl_matrix_set(P, i, j, log(Pij));
+		gsl_matrix_set(P, i, j, Pij);
 	    else if (Pij < -0.001){
 		cerr << Pij << endl;
 		throw ProjectError("negative probability in substitution matrix");
 	    } else {
-		gsl_matrix_set(P, i, j, -numeric_limits<double>::max()); // ln 0 = -infty	
+		gsl_matrix_set(P, i, j, 0.0);
 	    }
 	}
     }
@@ -437,6 +439,28 @@ void printCodonMatrix(gsl_matrix *M) {    // M is usually Q or P = exp(Qt)
 	}
 	cout << endl;
     }
+}
+
+/*
+ * computes the element-wise natrual logarithm of a matrix P
+ */
+gsl_matrix *log(gsl_matrix *P, int states){
+
+    gsl_matrix* LogP = gsl_matrix_calloc(states, states); 
+    for (int i=0; i<states; i++){
+     	for (int j=0; j<states; j++){
+     	    double Pij = gsl_matrix_get(P,i,j);
+    	    if (Pij>0.0)
+    		gsl_matrix_set(LogP, i, j, log(Pij));
+    	    else if (Pij < -0.001){
+    		cerr << Pij << endl;
+    		throw ProjectError("negative probability in substitution matrix");
+    	    } else {
+    		gsl_matrix_set(LogP, i, j, -numeric_limits<double>::max()); // ln 0 = -infty       
+    	    }
+     	}	
+    }
+    return LogP;
 }
 
 void ExonEvo::setLambda(){
@@ -478,10 +502,12 @@ void ExonEvo::setPhyloFactor(){
 void ExonEvo::computeLogPmatrices(){
 
     allPs.assign(1, m, NULL);
+    allLogPs.assign(1, m, NULL);
     for (int v=0; v<m; v++){
 	double t = times[v]; // time
 	gsl_matrix *P = computeP(t);
         allPs[0][v]=P;
+	allLogPs[0][v]=log(P,states); 
     }
 }
 
@@ -512,6 +538,13 @@ void ExonEvo::addBranchLength(double b){
 	for (int v=0; v<row.size(); v++){
 	    allPs[0][v]=row[v];	
 	}
+	gsl_matrix *LogP=log(P,states);
+	row = allLogPs.getRow(0);
+	row.push_back(LogP);
+	allLogPs.assign(1, row.size(), NULL);
+	for (int v=0; v<row.size(); v++){
+	    allLogPs[0][v]=row[v];	
+	}
     }
 }
 
@@ -522,4 +555,50 @@ gsl_matrix *ExonEvo::computeP(double t){
     gsl_matrix_set(P, 0, 0, 1 - gsl_matrix_get(P,0,1));
     gsl_matrix_set(P, 1, 1, 1 - gsl_matrix_get(P,1,0));
     return P;
+}
+
+/* 
+ * Estimate omega on a sequence of codon tuples.
+ * only for testing, may need adjustment
+ * TODO:
+ * - change data structure for codon tuples to vectors of integers, more efficient
+ * - save log-likelihood of codon tuples in a cache, so that calculation has to be done only once.
+ * - scale branch lengths
+ * - count number of substitutions (part of the HECT scoring function)
+ */
+double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree){
+
+    for(int i=1; i<seqtuple.size();i++){
+	if(seqtuple[0].length() != seqtuple[i].length()){
+	    	throw ProjectError("CodonEvo::estOmegaOnSeqTuple: wrong exon lengths");
+	}
+    }
+    int n = seqtuple[0].length()/3; // number of nucleotide triples
+    int maxU = 0; // index to omegas
+    double ML = -numeric_limits<double>::max();
+    Evo* evo = this;
+    for (int u=0; u < k; u++){
+	Seq2Int s2i(3);
+	double loglik = 0.0;
+	for (int i=0; i<n; i++){
+	    vector<int> codontuple;
+	    int numCodons=0;
+	    for(int j=0; j<seqtuple.size();j++){
+		int codon=64;
+		try {
+		    codon = s2i(seqtuple[j].c_str() + 3*i);
+		    numCodons++;
+		} catch(...){} // gap or n character
+		codontuple.push_back(codon);
+	    }
+	    if(numCodons >= 2){
+		loglik += tree->pruningAlgor(codontuple, evo, u);
+	    }
+	}
+	if (loglik > ML){
+	    ML = loglik;
+	    maxU = u;
+	}
+    }
+    return omegas[maxU];
 }

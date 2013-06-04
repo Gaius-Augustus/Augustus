@@ -99,6 +99,17 @@ PhyloTree::PhyloTree(string filename){
 #endif
 }
 
+PhyloTree::PhyloTree(const vector<string> &speciesnames, double b){
+    this->species=speciesnames;
+    Treenode *root = new Treenode;
+    for(int i=0;i<speciesnames.size(); i++){
+	Treenode *leaf = new Treenode(speciesnames[i],b);
+	root->addChild(leaf);
+	this->treenodes.push_back(leaf);
+    }
+    this->treenodes.push_back(root);
+}
+
 //copy constructor
 PhyloTree::PhyloTree(const PhyloTree &other){
     this->species=other.species;
@@ -210,8 +221,9 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
 		double score = 1.0;
 		for(auto it = (*node)->children.begin(); it != (*node)->children.end(); it++){
 		    double sum=0;
+		    gsl_matrix *P = evo->getSubMatrixP(u,(*it)->getDist());
 		    for(int j=0; j<states; j++){
-			sum+=evo->getP(i,j,(*it)->getDist(),u) * (*it)->getTable(j);
+			sum+=gsl_matrix_get(P,i,j) * (*it)->getTable(j);
 		    }
 		    score*=sum; 
 		}
@@ -219,15 +231,14 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
 	    }
 	}
     }
-    printRecursionTable();
+    //printRecursionTable();
 
     //in the root, we take the weighted average over all states
     double tree_score=0;
     for(int i=0; i<states; i++){
 	tree_score += (evo->getPi(i) * treenodes.back()->getTable(i));
     }
-    cout <<"tree likelyhood\t"<<tree_score<<endl;
-    return tree_score;
+    return log(tree_score);
   
 }
 
@@ -338,7 +349,7 @@ double PhyloTree::weightedMAP(OrthoExon &hect, ExonEvo &evo, bool fixLeafLabels)
 	    else{
 		double weight =hect.weights.at(pos);
 		if(fixLeafLabels){
-		    (*node)->resizeTable(states,-std::numeric_limits<double>::infinity());
+		    (*node)->resizeTable(states,-std::numeric_limits<double>::max());
 		    int label = hect.labels[pos];
 		    (*node)->setTable(label,weight*label);
 		}
@@ -358,11 +369,11 @@ double PhyloTree::weightedMAP(OrthoExon &hect, ExonEvo &evo, bool fixLeafLabels)
 	    for(int i=0; i<states; i++){
 		double score = 0.0;
 		for(auto it = (*node)->children.begin(); it != (*node)->children.end(); it++){
-		    double max = -std::numeric_limits<double>::infinity();
-		    int bestAssign = -1; 
+		    double max = -std::numeric_limits<double>::max();
+		    int bestAssign = -1;
+		    gsl_matrix *P = evo.getSubMatrixLogP(0,(*it)->getDist());
 		    for(int j=0; j<states; j++){
-			double branch_score = (k*evo.getLogP(i,j,(*it)->getDist())) + (*it)->getTable(j);
-			//cout<<"(k*evo.getLogP(i,j,(*it)->getDist())) + (*it)->getTable(j)="<<(k*evo.getLogP(i,j,(*it)->getDist()))<<"+"<<(*it)->getTable(j)<<endl;
+			double branch_score = (k*gsl_matrix_get(P,i,j)) + (*it)->getTable(j);
 			if(max < branch_score){
 			    max = branch_score;
 			    bestAssign=j;
@@ -378,14 +389,13 @@ double PhyloTree::weightedMAP(OrthoExon &hect, ExonEvo &evo, bool fixLeafLabels)
     //printRecursionTable();
 
     // backtracking
-    double max = -std::numeric_limits<double>::infinity();
+    double max = -std::numeric_limits<double>::max();
     if(!treenodes.empty()){
 	list< pair<Treenode*,int> > stack;
 	int bestAssign = -1;
 	Treenode* root = treenodes.back();	
 	for(int i=0; i<states; i++){
 	    double root_score = (k*evo.getLogPi(i)) + root->getTable(i);
-	    //cout<<"(k*evo.getLogPi(i)) + root->getTable(i)="<<(k*evo.getLogPi(i))<<"+"<<root->getTable(i)<<endl;
 	    if(max < root_score){
 		max = root_score;
 		bestAssign=i;

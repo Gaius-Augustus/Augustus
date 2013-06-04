@@ -24,6 +24,9 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_eigen.h>
 
+// forward declarations
+class PhyloTree;
+
 using namespace std;
 
 /*
@@ -32,7 +35,7 @@ using namespace std;
 class Evo {
 public:
     Evo(int s) : states(s), m(0) {};
-    ~Evo();
+    virtual ~Evo();
     int getNumStates(){return states;}
 
     /* Determine the branch lengths for which matrices P should be stored, at most m.
@@ -49,14 +52,16 @@ public:
     double getLogPi(int i) const {return log(getPi(i));}
 
     /*
-     * functions to access transition probabilities from state i to state j along a branch of length t
-     * in some evolutionary models it is desired to vary one additional parameter on which
-     * transition probabilities depend (eg omega (dN/dS) or rate of exon loss).
-     * u is the index to that additional parameter and is set to 0 by default if no additional
-     * parameter exists)
+     * Returns a pointer to the probability matrix for which t comes closest.
+     * u is the index to a second parameter for which the probability matrices
+     * are stored for different values.
+     * in the case of codon evolution u is the index to omega (dN/ds, selection)
+     * in the case of exon evolution probability matrices currently only
+     * depend on t and thus u is set to 0. It is however conceivable
+     * to allow different rates of exon loss in future.
      */
-    double getP(int i,int j,double t, int u=0); 
-    double getLogP(int i,int j,double t, int u=0){return log(getP(i,j,t,u));}
+    gsl_matrix *getSubMatrixP(int u, double t); 
+    gsl_matrix *getSubMatrixLogP(int u, double t); 
 
 protected:
     int findClosestIndex(vector<double> &v, double val);
@@ -67,6 +72,7 @@ protected:
     double *pi;
     vector<double> times; // sorted vector of branch lengths
     Matrix<gsl_matrix *> allPs; // parametrized probability matrices
+    Matrix<gsl_matrix *> allLogPs; // parametrized log probability matrices
 };
 
 /*
@@ -101,10 +107,8 @@ public:
     /*
      * Returns a pointer to the 64x64 substitution probability matrix
      * for which t and omega come closest to scored values.
-     * The second version is for the (typical) case when omega is already given by an index u to omegas;
      */
     gsl_matrix *getSubMatrixLogP(double omega, double t);
-    gsl_matrix *getSubMatrixLogP(int u, double t);
     
     /*
      * Computes the substitution probability 
@@ -125,6 +129,11 @@ public:
      */
     double estOmegaOnSeqPair(const char *e1, const char *e2, double t, // input variables
 			     int& numAliCodons, int &numSynSubst, int &numNonSynSubst); // output variables
+    /*
+     * Estimate omega on a sequence of codon tuples.
+     * only for testing, may need adjustment
+     */
+    double estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree);
 
 private:
     int k; // number of different omega values for which P's are stored
@@ -160,6 +169,11 @@ gsl_matrix *expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv)
 void printCodonMatrix(gsl_matrix *M);
 
 /*
+ * computes the element-wise natrual logarithm of a matrix P
+ */
+gsl_matrix *log(gsl_matrix *P, int states);
+
+/*
  * class ExonEvo
  * Computes and stores 2x2 probability matrices for exon gain/loss events
  * P(t) = exp(Q(lambda, mu)*t) for a sample of values for t
@@ -177,15 +191,14 @@ public:
     };
     void setPi();
     void setPhyloFactor();
-    void setPhyloFactor(int k){phylo_factor=k;}
+    void setPhyloFactor(double k){phylo_factor=k;}
     double getPhyloFactor() const{return phylo_factor;}
     void setMu();
     double getMu() const{return mu;}
     void setLambda();
     double getLambda() const{return lambda;}
-    void computeLogPmatrices();
     gsl_matrix *computeP(double t); //computes transition matrix P for time t
-
+    void computeLogPmatrices();
     void addBranchLength(double b); //add new branch length b and matrix P(b)
    
 private:
