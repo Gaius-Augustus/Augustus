@@ -110,9 +110,14 @@ struct ModelType {
 
     // constants
     static const uint16_t DUMMY_ID;
+	static const uint16_t GOOD1;
+	static const uint16_t GOOD5;
 };
 
 const uint16_t ModelType::DUMMY_ID = 100;
+const uint16_t ModelType::GOOD1 = 1;
+const uint16_t ModelType::GOOD5 = 5;
+
 
 bool operator>(const ModelType& lhs, const ModelType& rhs) {
     return lhs.size() > rhs.size();
@@ -1211,7 +1216,7 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
     map<string, bool>::iterator readNameIter;
     map<string, float>::iterator readScoreIter;
 	int readNameCount;
-	int notPaired=0, notMapped=0, notMateMapped=0, mateNotOnSameRef=0;
+	int notPaired=0, notMapped=0, notMateMapped=0, mateNotOnSameRef=0, singletons=0;
 
 	vector<CigarOp> cigar;
 	char cigarType;
@@ -1233,7 +1238,7 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
 	std::stringstream field;
 	string currentPercId, currentCoverage; 
 	float curPercId, curCoverage;
-	int illumina;
+	int illumina=0;
 
  nextAlignment:
     while ( bamReader.GetNextAlignmentCore(al) ) {
@@ -1241,11 +1246,13 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
         // flesh out the char data, so we can retrieve its read group ID
         al.BuildCharData();
 
-        // skip if alignment is not paired, mapped, nor mate is mapped
+        // skip if alignment is not paired, not mapped or mate is unmapped
 		if (!al.IsPaired()) {notPaired++; goto nextAlignment;};
 	   	if (!al.IsMapped()) {notMapped++; goto nextAlignment;}; 
 		if (!al.IsMateMapped()) {notMateMapped++; goto nextAlignment;};
 
+		// Drop singletons as well
+		if (al.IsPaired() && al.IsMapped() && !al.IsMateMapped()){singletons++; goto nextAlignment;};	
         // skip if alignment & mate not on same reference sequence
         if ( al.RefID != al.MateRefID ) {mateNotOnSameRef++; continue;}
 
@@ -1308,8 +1315,7 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
             // if both unique mates are unique, store read name & insert size for later
             const bool isStoredMateUnique  = (*readNameIter).second;
             float storedMateScore  = (*readScoreIter).second;
-			cout << "isStoredMateUnique:" << isStoredMateUnique << "; storedMateScore:" << storedMateScore << endl; 
-            if ( isCurrentMateUnique && isStoredMateUnique ) {
+            // if ( isCurrentMateUnique && isStoredMateUnique ) {
 
                 // save read name in temp file as candidates for later pair marking
                 readNamesWriter.Write(readGroup, al.Name);
@@ -1319,10 +1325,13 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
                 assert( currentModelType != ModelType::DUMMY_ID );
                 resolver.Models[currentModelType].push_back( abs(al.InsertSize) );
 
+				if (currentModelType == ModelType::GOOD1 || currentModelType == ModelType::GOOD5){ 
+				  illumina++;
 				// Saving alignments that made it through filter and are unique
 				writer.SaveAlignment(al);
+				}
 
-            } 
+            // } 
 
             // unique or not, remove read name from map
             resolver.ReadNames.erase(readNameIter);
@@ -1379,6 +1388,7 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
 	cout << "mateNotOnSameRef = " << mateNotOnSameRef << endl;
 	cout << "outPercId = " << outPercId << endl;
 	cout << "outCover = " << outCover << endl;
+	cout << "singletons = " << singletons << endl;
 	cout << "illumina = " << illumina << endl;
 	cout << "------------------------------------------------------------" << endl;
 
