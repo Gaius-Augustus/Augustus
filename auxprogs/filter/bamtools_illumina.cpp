@@ -158,6 +158,7 @@ struct ReadGroupResolver {
     bool HasData;
     vector<ModelType> Models;
     map<string, bool> ReadNames;
+    map<string, float> ReadScores;
     // ctor
     ReadGroupResolver(void);
 
@@ -1105,6 +1106,62 @@ uint32_t sumMandIOperations(vector<CigarOp> cigar, string printFlag)
 	return sumMandI;
 }
 
+bool similar(BamAlignment& alR, BamAlignment& alS) 
+{
+
+  // First alignment
+  int32_t rStart = alR.Position; 
+  int32_t rEnd = alR.GetEndPosition();
+  string rName = alR.Name;
+  // Second alignment
+  int32_t sStart = alS.Position;
+  int32_t sEnd = alS.GetEndPosition();
+  string sName = alS.Name;  
+
+  // if (verbose)
+  // 	{
+  // 	  cout << "[SIMILAR]: checking whether " << rName << " and " << sName << " are approx. the same:"<< endl;
+  // 	  cout << "[SIMILAR]: Overlap: (" << rName << "):" << rEnd << " <= (" << sName 
+  // 		   << "):" << sStart << " ?" << endl; 
+  // 	  cout << "[SIMILAR]: Overlap: (" << rName << "):" << rStart << " >= (" << sName 
+  // 		   << "):" << sEnd << " ?" << endl; 
+  // 	}
+
+  if (rEnd <= sStart || rStart >= sEnd) // here: similar = overlapping target range
+	{
+	  // if (verbose) {cout << "[SIMILAR]: Alignments are NOT SIMILAR" << endl;}
+	  return false;
+	} else {
+		// if (verbose) {cout << "[SIMILAR]: Ans: Alignments are SIMILAR" << endl;}
+		return true;
+  		   }
+}
+
+// for comparing quality of two mate-pair read alignments (it, jit)
+float scoreMate(BamAlignment& al1, BamAlignment& al2, int dist)
+{
+  // int maxIntronLen = globalOptions.maxIntronLen;
+  string percId1, coverage1, percId2, coverage2;
+  string rf1, rf2;
+
+  // Retrieving percent identity
+  al1.GetTag("pi", percId1);
+  al2.GetTag("pi", percId2);
+  // Retrieving coverage values
+  al1.GetTag("co", coverage1);
+  al2.GetTag("co", coverage2);
+
+  float percIdIt = atof(percId1.c_str());
+  float percIdJit = atof(percId2.c_str());
+  float coverageIt = atof(coverage1.c_str());
+  float coverageJit = atof(coverage2.c_str());
+
+  float score = (percIdIt + percIdJit)/100 // percent identity
+				 + (coverageIt + coverageJit)/100; // percent coverage
+
+  return score;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -1152,6 +1209,7 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
     string readGroup("");
     map<string, ReadGroupResolver>::iterator rgIter;
     map<string, bool>::iterator readNameIter;
+    map<string, float>::iterator readScoreIter;
 	int readNameCount;
 	int notPaired=0, notMapped=0, notMateMapped=0, mateNotOnSameRef=0;
 
@@ -1240,6 +1298,7 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
 
         // look up read name
         readNameIter = resolver.ReadNames.find(al.Name);
+        readScoreIter = resolver.ReadScores.find(al.Name);
 		readNameCount = resolver.ReadNames.count(al.Name);
 		if (readNameCount > 2){cout << "al.Name aligned mult. times!" << endl;}
 		
@@ -1248,6 +1307,8 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
 
             // if both unique mates are unique, store read name & insert size for later
             const bool isStoredMateUnique  = (*readNameIter).second;
+            float storedMateScore  = (*readScoreIter).second;
+			cout << "isStoredMateUnique:" << isStoredMateUnique << "; storedMateScore:" << storedMateScore << endl; 
             if ( isCurrentMateUnique && isStoredMateUnique ) {
 
                 // save read name in temp file as candidates for later pair marking
@@ -1270,6 +1331,7 @@ bool IlluminaTool::IlluminaToolPrivate::Clean(void) {
         // if read name not found, store new entry
         else {
 				resolver.ReadNames.insert( make_pair<string, bool>(al.Name, isCurrentMateUnique) );
+				resolver.ReadScores.insert( make_pair<string, float>(al.Name, currentMateScore) );
 			}	
 
 		// ///////////////////////////////////////////////////////////////
