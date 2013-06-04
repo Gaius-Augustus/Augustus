@@ -48,9 +48,9 @@ public:
     static void setCodonEvo(CodonEvo *c){codonevo = c;}
     ~GeneMSA(){
         if (!alignment.empty()) {
-	    for (list<AlignmentBlock*>::iterator it = alignment.begin(); it != alignment.end(); it++) {
-		delete *it;
-	    }
+	    // for (list<AlignmentBlock*>::iterator it = alignment.begin(); it != alignment.end(); it++) {
+	    // 	delete *it;
+	    // }
 	    alignment.clear();
         }
         for (int i=0; i<exoncands.size(); i++) {

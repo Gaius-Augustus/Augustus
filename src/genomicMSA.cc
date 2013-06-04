@@ -378,7 +378,7 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                             (*it_prev)->alignSpeciesTuple.at(j)->cmpStarts.push_back(NULL);
                         }
                     }
-		    delete (*it_pos);
+		    //delete (*it_pos);
                     it_pos=this->alignment.erase(it_pos);
                 }
             }
