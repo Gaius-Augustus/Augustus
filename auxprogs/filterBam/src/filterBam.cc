@@ -9,7 +9,7 @@
   
 	Created: 4-November-2011    
 	Last modified: 13-April-2012  
-*/        
+*/         
          
 #include <api/BamReader.h>    
 #include <api/BamWriter.h>   
@@ -33,6 +33,48 @@
 #include <map>
 #include <math.h>  
 #include "filterBam.h"
+
+const uint16_t ModelType::DUMMY_ID = 100;
+
+
+uint16_t CalculateModelType(const BamAlignment& al) {
+
+    // localize alignment's mate positions & orientations for convenience
+    const int32_t m1_begin = ( al.IsFirstMate() ? al.Position : al.MatePosition );
+    const int32_t m2_begin = ( al.IsFirstMate() ? al.MatePosition : al.Position );
+    const bool m1_isReverseStrand = ( al.IsFirstMate() ? al.IsReverseStrand() : al.IsMateReverseStrand() );
+    const bool m2_isReverseStrand = ( al.IsFirstMate() ? al.IsMateReverseStrand() : al.IsReverseStrand() );
+
+	cout << "--------------------------------" << endl;	
+		  cout << "m1_isReverseStrand: " << m1_isReverseStrand << al.IsFirstMate() << al.IsReverseStrand() << al.IsMateReverseStrand() << endl;
+		  cout << "m2_isReverseStrand: " << m2_isReverseStrand << al.IsFirstMate() << al.IsMateReverseStrand() << al.IsReverseStrand() << endl;
+
+    // determine 'model type'
+    if ( m1_begin < m2_begin ) {
+        if ( !m1_isReverseStrand && !m2_isReverseStrand ) return 0; // ID: 1
+        if ( !m1_isReverseStrand &&  m2_isReverseStrand ) 
+		{
+			cout << "CurrentModelType:" << 2 << endl; 
+			return 1;
+		} // ID: 2 //Lizzy
+        if (  m1_isReverseStrand && !m2_isReverseStrand ) return 2; // ID: 3
+        if (  m1_isReverseStrand &&  m2_isReverseStrand ) return 3; // ID: 4
+    } else {
+        if ( !m2_isReverseStrand && !m1_isReverseStrand ) return 4; // ID: 5
+        if ( !m2_isReverseStrand &&  m1_isReverseStrand ) 
+		{
+			cout << "CurrentModelType:" << 6 << endl; 
+			return 5;
+		} // ID: 6 //Lizzy
+        if (  m2_isReverseStrand && !m1_isReverseStrand ) return 6; // ID: 7
+        if (  m2_isReverseStrand &&  m1_isReverseStrand ) return 7; // ID: 8
+    }
+	cout << "--------------------------------" << endl;	
+
+    // unknown model
+    return ModelType::DUMMY_ID;
+}
+
  
 struct optionalCounters_t { 
   int outPaired;
@@ -44,7 +86,7 @@ using namespace BamTools;
 using namespace BamTools::Algorithms; 
 using namespace std;
 
-void printQali(vector<BamAlignment> &qali, const RefVector &refData);
+void printQali(vector<BamAlignment> &qali, const RefVector &refData, bool pairwiseAlignments);
 float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions);
 void prinMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs);
 void printMatedMap(map<int,int> mated);
@@ -96,6 +138,8 @@ int main(int argc, char *argv[])
   int outPaired = 0;
   int outUniq = 0;
   int outBest = 0;
+  int singleton = 0, notMateMapped = 0, notPaired = 0, notOnSameTarget = 0;
+  bool isSingleton; 
   optionalCounters_t optionalCounters;
   // Pairedness coverage
   map<string, multimap<int,int>> pairCovSteps2;
@@ -114,6 +158,7 @@ int main(int argc, char *argv[])
   bool paired = globalOptions.paired;
   bool uniq = globalOptions.uniq;
   bool verbose = globalOptions.verbose;
+  bool pairwiseAlignments = globalOptions.pairwiseAlignments;
   int insertLimit = globalOptions.insertLimit;
   int maxIntronLen = globalOptions.maxIntronLen;
   int maxSortesTest = globalOptions.maxSortesTest;
@@ -139,6 +184,7 @@ int main(int argc, char *argv[])
 	  cout << "paired=" << paired << endl;
 	  cout << "uniq=" << uniq << endl;
 	  cout << "verbose=" << verbose << endl;
+	  cout << "pairwiseAlignments=" << pairwiseAlignments << endl;
 	  cout << "Input file: " << inputFile << endl;
 	  cout << "Output file: " << outputFile << endl;
 	  cout << "insertLimit=" << insertLimit << endl;
@@ -202,21 +248,35 @@ int main(int argc, char *argv[])
 
 		if (paired)
 		  {	
-			if (verbose) {cout << "qName=" << qName << endl;}
-			// Taking out suffix: {f,r} or {1,2}
-			if (qName.find("/") != -1)
+
+			if (!pairwiseAlignments)
 			  {
-				qNameStem = qName.substr(0, qName.find("/"));
-				qSuffix = qName.substr(qName.find("/")+1, qName.length());	
-			  } else {
-					if (qName.find_last_of("-") != -1) 
+				if (verbose) {cout << "qName=" << qName << endl;}
+				// Taking out suffix: {f,r} or {1,2}
+				if (qName.find("/") != -1)
+				  {
+					qNameStem = qName.substr(0, qName.find("/"));
+					qSuffix = qName.substr(qName.find("/")+1, qName.length());	
+				  } else {
+				  	if (qName.find_last_of("-") != -1) 
 						{
-				  		  if (verbose) {cout << "Found slash as indicator of pairedness" << endl;}
-		   		    	  qNameStem = qName.substr(0, qName.find_last_of("-"));
-						  qSuffix = qName.substr(qName.find_last_of("-")+1, qName.length());	
-						  if (verbose) {cout << "qNameStem=" << qNameStem << " and qSuffix=" << qSuffix << endl;}
-			  			} 
-			  } 
+					  		if (verbose) {cout << "Found slash as indicator of pairedness" << endl;}
+					  		qNameStem = qName.substr(0, qName.find_last_of("-"));
+					  		qSuffix = qName.substr(qName.find_last_of("-")+1, qName.length());	
+							if (verbose) {cout << "qNameStem=" << qNameStem << " and qSuffix=" << qSuffix << endl;}
+						} 
+				  } 
+
+			  } else {//No signs to separate reads
+			  	  qNameStem = qName.substr(0, qName.length());
+				  	if (al.IsFirstMate()) {
+							qSuffix = "1";
+					} else if (al.IsSecondMate()) {
+							qSuffix = "2";
+					} else { if(verbose){cout << "Multiple fragments" << endl;}}
+				  if (verbose) {cout << "qNameStem=" << qNameStem << " and qSuffix=" << qSuffix << endl;}
+
+			}
 		  } 
 
 		// Filter for data whose Reference seq ID is not defined; i.e. RNAME= * in SAM format;
@@ -233,6 +293,18 @@ int main(int argc, char *argv[])
 		  }
 
 
+        // skip if alignment is not paired, mapped, nor mate is mapped
+		if (pairwiseAlignments)
+		  {
+			isSingleton = al.IsPaired() && al.IsMapped() && !al.IsMateMapped();
+			if( isSingleton ) {singleton++;}
+			if ( !al.IsPaired() ) {notPaired++; goto nextAlignment;}
+			if ( !al.IsMateMapped() ) {notMateMapped++; goto nextAlignment;}
+	        // skip if alignment & mate not on same reference sequence
+	        if ( al.RefID != al.MateRefID ) {notOnSameTarget++; goto nextAlignment;}
+		}
+
+	
 		// Verifying file is sorted by query name
 		// cout << line << ": oldQnamestem=" << oldQnameStem << ", qNameStem=" << qNameStem << endl;
 		if (oldQnameStem.compare(qNameStem) && oldQnameStem.compare(""))   
@@ -441,6 +513,7 @@ int main(int argc, char *argv[])
 
 	// Displaying results to STDOUT
 	cout <<  "\n\n------------------------------------- " << endl;
+	cout <<  "Processed alignments: " << line << endl;
 	cout <<  "\nSummary of filtered alignments: " << endl;
 	cout <<  "------------------------------------- " << endl;
 	cout <<  "unmapped        : " << outMap << endl;
@@ -449,7 +522,7 @@ int main(int argc, char *argv[])
 	if (noIntrons) {cout <<  "nointrons       : " << outIntrons << endl;}
 	if (paired) 
 	  {
-		cout << "not paired      : " << outPaired << endl;
+		cout << "not paired (our criterion)	: " << outPaired << endl;
       	cout << "quantiles of unspliced insert lengths:" << endl;
 		try { // catches: instance of 'std::out_of_range'
 		  	  for (int it=1; it<10; it++)
@@ -459,9 +532,13 @@ int main(int argc, char *argv[])
 			}
 		cout << endl;
  	  } 
-	if (uniq) {cout << "unique          : " << outUniq << endl;}
-	if (best) {cout << "best            : " << outBest << endl;}
-
+	if (uniq) {cout << "not unique	: " << outUniq << endl;}
+	if (best) {cout << "not best	: " << outBest << endl;}
+	if (pairwiseAlignments)
+ 	  {
+		cout << "singleton	: " << singleton << endl;
+		cout << "on diff. target : " << notOnSameTarget << endl;
+	  }
 
 
 	// Displaying command line
@@ -530,7 +607,7 @@ vector<string> uniqueKeys(const vector<PairednessCoverage> &m)
 }
 
 
-void printQali(vector<BamAlignment> &qali, const RefVector &refData)
+void printQali(vector<BamAlignment> &qali, const RefVector &refData, bool pairwiseAlignments)
 {
   vector<BamAlignment>::iterator it = qali.begin();
   std::stringstream ss_rstart, ss_rend, ss_percId, ss_coverage, ss_score;
@@ -544,7 +621,15 @@ void printQali(vector<BamAlignment> &qali, const RefVector &refData)
 	{
 	  rName = getReferenceName(refData, (*it).RefID); 
 	  qName = (*it).Name; 
-	  qSuffix = qName.substr(qName.find("/")+1, qName.length());	
+	  if (!pairwiseAlignments) {
+		  qSuffix = qName.substr(qName.find("/")+1, qName.length()); 
+	  } else {
+		if ((*it).IsFirstMate()) {
+					qSuffix = "1";
+		} else if ((*it).IsSecondMate()) {
+					qSuffix = "2";
+				} else { cout << "Multiple fragments" << endl;}
+	  }
 	  strand = (*it).IsReverseStrand();
 	  ss_rstart << (*it).Position; 
 	  ss_rend << (*it).GetEndPosition();
@@ -850,6 +935,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
   bool paired = globalOptions.paired;
   bool uniq = globalOptions.uniq;
   bool verbose = globalOptions.verbose;
+  bool pairwiseAlignments = globalOptions.pairwiseAlignments;
   int insertLimit = globalOptions.insertLimit;
   int maxIntronLen = globalOptions.maxIntronLen;
   int maxSortesTest = globalOptions.maxSortesTest;
@@ -884,9 +970,11 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 
   if (verbose)
 	{
+	  if (qali.size() > 2){
 	  cout << "----------------------------" << endl;
 	  cout << "Options: (paired, uniq, best) = (" << paired << ", " << uniq << ", " << best << ")" << endl;
-	  cout << "Alignments passed for processing (qali.size())= " << qali.size() << endl;
+		cout << "Alignments passed for processing (qali.size())= " << qali.size() << endl;
+}
 	  cout << "----------------------------" << endl;
 	}
 
@@ -901,7 +989,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		  // Printing Qali before sorting
 		  cout << "------------------------------------------------------" << endl;
 		  cout << "qali BEFORE sorting by ref. Name and ref. start position:" << endl;
-		  printQali(qali, refData);
+		  printQali(qali, refData, pairwiseAlignments);
 		}
 
 	  if (qali.size() > 1)
@@ -916,7 +1004,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		  // Printing Qali after sorting
 		  cout << "------------------------------------------------------" << endl;
 		  cout << "qali AFTER sorting by ref. Name and ref. start position:" << endl;
-		  printQali(qali, refData);
+		  printQali(qali, refData, pairwiseAlignments);
 		  cout << "------------------------------------------------------" << endl;
 		}
 
@@ -928,7 +1016,15 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		{
 		  itRname = getReferenceName(refData, qali.at(it).RefID); 
 		  itQname = qali.at(it).Name; 
-		  itQsuffix = itQname.substr(itQname.find("/")+1, itQname.length());	
+		  if (!pairwiseAlignments) {
+		  	itQsuffix = itQname.substr(itQname.find("/")+1, itQname.length()); 
+		  } else {
+				  	if (qali.at(it).IsFirstMate()) {
+							itQsuffix = "1";
+					} else if (qali.at(it).IsSecondMate()) {
+							itQsuffix = "2";
+					}
+		  }
 		  itStrand = qali.at(it).IsReverseStrand();
 
 		  // Only loop until chromosome is different
@@ -937,7 +1033,14 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 			{
 			  jitRname = getReferenceName(refData, qali.at(jit).RefID);
 			  jitQname = qali.at(jit).Name;
-			  jitQsuffix = jitQname.substr(jitQname.find("/")+1, jitQname.length());	
+			  if (!pairwiseAlignments) {
+				jitQsuffix = jitQname.substr(jitQname.find("/")+1, jitQname.length()); } else {	
+				  	if (qali.at(jit).IsFirstMate()) {
+							jitQsuffix = "1";
+					} else if (qali.at(jit).IsSecondMate()) {
+							jitQsuffix = "2";
+					}
+			  }
 			  jitStrand = qali.at(jit).IsReverseStrand();
 
 			  if (verbose)
@@ -1272,7 +1375,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				  {
 					cout << "------------------------------------------------------------------------" << endl;
 					cout << "Filtered out alignments (best criterion): " << qali.size() << endl;
-					printQali(qali, refData);		
+					printQali(qali, refData, pairwiseAlignments);		
 					cout << "------------------------------------------------------------------------" << endl;
 					cout << "Summary [Common target names]: " << endl;
 					cout << "bestTnames.size()=" << bestTnames.size() << endl;
@@ -1363,7 +1466,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				cout << "Scoring alignments and sorting them according to such score." << endl;
 				cout << "------------------------------------------------------------------------" << endl;
 				cout << "qali BEFORE sorting by score:" << endl;
-				printQali(qali, refData);
+				printQali(qali, refData, pairwiseAlignments);
 				cout << "------------------------------------------------------------------------" << endl;
 			  }
 
@@ -1374,7 +1477,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 			  {
 				cout << "------------------------------------------------------------------------" << endl;
 				cout << "qali AFTER sorting by score:" << endl;
-				printQali(qali, refData);
+				printQali(qali, refData, pairwiseAlignments);
 				cout << "------------------------------------------------------------------------" << endl;
 			  }
 
@@ -1524,7 +1627,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				  {
 					cout << "------------------------------------------------------------------------" << endl;
 					cout << "Filtered out alignments (best criterion): " << qali.size() << endl;
-					printQali(qali, refData);		
+					printQali(qali, refData, pairwiseAlignments);		
 					cout << "------------------------------------------------------------------------" << endl;
 					cout << "Summary [Common target names]: " << endl;
 					cout << "bestTnames.size()=" << bestTnames.size() << endl;

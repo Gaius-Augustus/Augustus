@@ -18,6 +18,7 @@ bool noIntrons = false;
 bool paired = false;
 bool uniq = false;
 bool verbose = false;
+bool pairwiseAlignments = false;
 int insertLimit = 10;
 int maxIntronLen = 500000;
 int maxSortesTest = 100000;
@@ -34,7 +35,7 @@ const char* pairBedFile;
 using namespace std;
 
 // Definition of global variables
-static const char *optString = "a:b:c:d:e:f:g:i:j:k:l:m:n:o:p:q:h?";
+static const char *optString = "a:b:c:d:e:f:g:i:j:k:l:m:n:o:p:q:w:h?";
 extern int opterr; // Display error if opterr=0
 
 #ifndef GLOBALOPTIONS_T
@@ -45,7 +46,8 @@ struct globalOptions_t {
 	bool noIntrons;
 	bool paired;
 	bool uniq;
-	bool verbose;  	
+	bool verbose;  
+  	bool pairwiseAlignments;	
 	int insertLimit;
 	int maxIntronLen;
 	int maxSortesTest; 
@@ -81,6 +83,7 @@ static const struct option longOpts[] = {
     { "in", required_argument, NULL, 'o' }, 
     { "out", required_argument, NULL, 'p' }, 
     { "pairBedFile", required_argument, NULL, 'q' },
+    { "pairwiseAlignments", no_argument, NULL, 'w' },
     { NULL, no_argument, NULL, 0 }
 };
 
@@ -138,6 +141,8 @@ void displayUsage(int argc, char *argv[])
 	cout <<  "	\t\t a .bed format file in which for each position the number of" << endl;
 	cout <<  "	\t\t filtered read pairs is reported that contain the position in" << endl; 
 	cout <<  "  \t\t\t or between the reads" << endl;
+	cout <<  "  --pairwiseAlignments             use in case alignments were done in pairwise fashion (default:  " << 
+					pairwiseAlignments << ")" << endl;
 }
 
 
@@ -161,6 +166,7 @@ globalOptions_t initOptions(int argc, char *argv[])
 	globalOptions.paired = paired;
 	globalOptions.uniq = uniq;
 	globalOptions.verbose = verbose;
+	globalOptions.pairwiseAlignments = verbose;
 	globalOptions.insertLimit = insertLimit;
 	globalOptions.maxIntronLen = maxIntronLen;
 	globalOptions.maxSortesTest = maxSortesTest; 
@@ -183,6 +189,7 @@ globalOptions_t initOptions(int argc, char *argv[])
 			case 'c'	:	globalOptions.paired = true;			    break;
 			case 'd'	:	globalOptions.uniq = true;					break;
 			case 'e'	:	globalOptions.verbose = true;				break;
+			case 'w'	:	globalOptions.pairwiseAlignments = true;	break;
             case 'f'	:	globalOptions.insertLimit = atoi(optarg);	break;
             case 'g'	:	globalOptions.maxIntronLen = atoi(optarg);	break;
             case 'i'	:	globalOptions.maxSortesTest = atoi(optarg);	break;

@@ -39,7 +39,8 @@ struct globalOptions_t {
 	bool noIntrons;
 	bool paired;
 	bool uniq;
-	bool verbose;  	
+	bool verbose;  
+  	bool pairwiseAlignments;	
 	int insertLimit;
 	int maxIntronLen;
 	int maxSortesTest; 
@@ -135,3 +136,30 @@ class PairednessCoverage
 };
 #endif
 
+struct ModelType {
+
+    // data members
+    uint16_t ID;
+    vector<int32_t> FragmentLengths;
+
+    // ctor
+    ModelType(const uint16_t id)
+        : ID(id)
+    {
+        // preallocate space for 10K fragments per model type
+        FragmentLengths.reserve(10000);
+    }
+
+    // convenience access to internal fragment lengths vector
+    vector<int32_t>::iterator begin(void) { return FragmentLengths.begin(); }
+    vector<int32_t>::const_iterator begin(void) const { return FragmentLengths.begin(); }
+    void clear(void) { FragmentLengths.clear(); }
+    vector<int32_t>::iterator end(void) { return FragmentLengths.end(); }
+    vector<int32_t>::const_iterator end(void) const { return FragmentLengths.end(); }
+    void push_back(const int32_t& x) { FragmentLengths.push_back(x); }
+    size_t size(void) const { return FragmentLengths.size(); }
+
+    // constants
+    static const uint16_t DUMMY_ID;
+};
+uint16_t CalculateModelType(const BamAlignment& al);
