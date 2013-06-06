@@ -87,8 +87,7 @@ void OrthoGraph::outputGenes(vector<ofstream*> filestreams, vector<int> &geneid)
 	    }
 	end:
 
-	    list<Gene> *filteredTranscripts = new list<Gene>;
-	    filteredTranscripts = Gene::filterGenePrediction(genes, annoseq->sequence, bothstrands, noInFrameStop);
+	    list<Gene> *filteredTranscripts = Gene::filterGenePrediction(genes, annoseq->sequence, bothstrands, noInFrameStop);
 	    list<AltGene> *agl = groupTranscriptsToGenes(filteredTranscripts);
 	    if(strand == minusstrand){
 		agl = reverseGeneList(agl, annoseq->length - 1);
@@ -142,7 +141,7 @@ void OrthoGraph::outputGenes(vector<ofstream*> filestreams, vector<int> &geneid)
 	    else{
 		cout << "# (none)" << endl;
 	    }
-	    cout.rdbuf(coutbuf); //reset to standard output again   
+	    cout.rdbuf(coutbuf); //reset to standard output again
 	}
     }
 }
