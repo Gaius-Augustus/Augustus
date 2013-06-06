@@ -617,29 +617,35 @@ void GeneMSA::createOrthoExons(vector<int> offsets, OrthoGraph &orthograph) {
                 found = true;
             } else {
                 it_ab++;
-                if ((*it_ab)->alignSpeciesTuple.at(0)->start > (*ec)->begin + offsets[0] + 1) {
-                    it_ab--;
-                    found = true;
-                }
-                if (this->getEnd(0) - utr_range < (*ec)->begin + offsets[0] + 1) {
-                    cout << " exon "<<(*ec)->begin + offsets[0] + 1<<".."<<(*ec)->end + offsets[0] + 1<<" is outside (behind) the aligned range"<<endl;
-                    found = true;
-                }
+		if(it_ab != this->alignment.end() ){
+		    if ((*it_ab)->alignSpeciesTuple.at(0)->start > (*ec)->begin + offsets[0] + 1) {
+			it_ab--;
+			found = true;
+		    }
+		    if (this->getEnd(0) - utr_range < (*ec)->begin + offsets[0] + 1) {
+			cout << " exon "<<(*ec)->begin + offsets[0] + 1<<".."<<(*ec)->end + offsets[0] + 1<<" is outside (behind) the aligned range"<<endl;
+			found = true;
+		    }
+		}
             }
         }
     }
-
-    for (list<OrthoExon>::iterator it_oe = orthoExonsList.begin(); it_oe != orthoExonsList.end(); it_oe++) {
-        for (int j=0; j < this->exoncands.size(); j++) {
-            if (it_oe->orthoex.at(j) != NULL && (*it_ab)->alignSpeciesTuple.at(j)!=NULL) {
-                cout << "species: " << this->getName(j) << "\t" << "\tstart: "<< it_oe->orthoex.at(j)->begin
-		     << "\tend: " << it_oe->orthoex.at(j)->end << "\ttyp " << it_oe->orthoex.at(j)->type << endl;
-            } else {
-                cout << "species " << this->getName(j) << " has no ortholog exon " << endl;
-            }
-        }
-        cout << endl;
-    }
+    /*
+     * steffi: in the following code the list iterator it_ab points to the past-the-end element of list<AlignmentBlock*>.
+     * dereferencing it could lead to a segmentation fault. Since I don't know, what Alex tries to do here
+     * and the code is only output information, I just uncommented it.
+     */
+    // for (list<OrthoExon>::iterator it_oe = orthoExonsList.begin(); it_oe != orthoExonsList.end(); it_oe++) {
+    //     for (int j=0; j < this->exoncands.size(); j++) {
+    //         if (it_oe->orthoex.at(j) != NULL && (*it_ab)->alignSpeciesTuple.at(j)!=NULL) {
+    //             cout << "species: " << this->getName(j) << "\t" << "\tstart: "<< it_oe->orthoex.at(j)->begin
+    // 		     << "\tend: " << it_oe->orthoex.at(j)->end << "\ttyp " << it_oe->orthoex.at(j)->type << endl;
+    //         } else {
+    //             cout << "species " << this->getName(j) << " has no ortholog exon " << endl;
+    //         }
+    //     }
+    //     cout << endl;
+    // }
 }
 
 // cut off incomplete codons at both boundaries of all exon candidates
