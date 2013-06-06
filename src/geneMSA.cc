@@ -493,15 +493,29 @@ void GeneMSA::createExonCands(const char *dna, double assmotifqthresh, double as
 }
 
 // computes the aligned position of a base in an alignment and the 'block' where the base is found
+/*
+ * steffi: the following two functions are a total mess !!!
+ * I only fixed out of range iterators which occasionally caused segmentation faults
+ */
 pair <int, int> GeneMSA::getAlignedPosition(AlignSeq *as_ptr, int pos) {
     list<block>::iterator it;
     vector<int*>::iterator it_cmpStart;
     pair <int, int> alignedPos;
     it = upper_bound(as_ptr->sequence.begin(), as_ptr->sequence.end(), pos, compAlignedPos);
-    it--;
+    if(it == as_ptr->sequence.begin()){
+	alignedPos.first = -1;
+	alignedPos.second = 0;
+	return alignedPos;
+    } else {
+	it--;
+    }
     it_cmpStart = upper_bound(as_ptr->cmpStarts.begin(), as_ptr->cmpStarts.end(), (pos + it->previousGaps), compCmpStarts);
-    it_cmpStart--;
-    while ((*it_cmpStart)==NULL) {
+    if(it_cmpStart == as_ptr->cmpStarts.begin()){
+	throw ProjectError("in GeneMSA::getAlignedPosition");
+    } else {
+	it_cmpStart--;
+    }
+    while ((*it_cmpStart)==NULL && it_cmpStart != as_ptr->cmpStarts.begin()){
         it_cmpStart--;
     }
     vector<int*>::difference_type idx = distance(as_ptr->cmpStarts.begin(), it_cmpStart);
@@ -520,7 +534,11 @@ int GeneMSA::getRealPosition(AlignSeq *ptr, int pos, int idx) {
         return -1;
     }
     it = upper_bound(ptr->sequence.begin(), ptr->sequence.end(), alignedPos, compRealPos);
-    it--;
+    if(it == ptr->sequence.begin()){
+	return alignedPos;
+    } else{
+	it--;
+    }
     realPos = alignedPos - it->previousGaps;
     return realPos;
 }
