@@ -131,7 +131,7 @@ PhyloTree::PhyloTree(const PhyloTree &other){
 	    Treenode *p_copy = stack_copy.front();
 	    stack_copy.pop_front();
 	    if(!p->isLeaf()){
-		for(auto it = p->children.rbegin(); it != p->children.rend(); it++){
+	      for(list<Treenode*>::reverse_iterator it = p->children.rbegin(); it != p->children.rend(); it++){
 		    Treenode *copy = new Treenode((*it)->getSpecies(), (*it)->getDist());
 		    p_copy->addChild(copy);
 		    this->treenodes.push_front(copy);
@@ -202,7 +202,7 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
 
     int states = evo->getNumStates();
     
-    for(auto node = treenodes.begin(); node != treenodes.end(); node++){
+    for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if((*node)->isLeaf()){
 	    // initialization
 	    int c =tuple.at(findIndex((*node)->getSpecies()));
@@ -219,7 +219,7 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
 	    (*node)->resizeTable(states);	
 	    for(int i=0; i<states; i++){
 		double score = 1.0;
-		for(auto it = (*node)->children.begin(); it != (*node)->children.end(); it++){
+		for(list<Treenode*>::iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
 		    double sum=0;
 		    gsl_matrix *P = evo->getSubMatrixP(u,(*it)->getDist());
 		    for(int j=0; j<states; j++){
@@ -253,7 +253,7 @@ void PhyloTree::printRecursionTable() const{
 	cout<<"state "<<setw(9)<<i;
     }
     cout<<endl;
-    for(auto it = treenodes.begin(); it != treenodes.end(); it++){
+    for(list<Treenode*>::iterator it = treenodes.begin(); it != treenodes.end(); it++){
 	cout<<setw(15)<<(*it)->getSpecies();
 	for(int i=0; i<(*it)->table.size(); i++){
 	    cout<<setw(15)<<(*it)->getTable(i);
@@ -266,14 +266,14 @@ void PhyloTree::printRecursionTable() const{
 
 void PhyloTree::getBranchLengths(vector<double> &branchset) const {
 
-    for(auto node = treenodes.begin(); node != treenodes.end(); node++){
+  for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if(!((*node)->isRoot()))
 	    branchset.push_back((*node)->getDist());
     }
 }
 
 Treenode *PhyloTree::getLeaf(string species) const {
-    for(auto node = treenodes.begin(); node != treenodes.end(); node++){
+  for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if( (*node)->getSpecies() == species)
 	    return (*node);
     }
@@ -331,7 +331,7 @@ double PhyloTree::weightedMAP(OrthoExon &hect, ExonEvo &evo, bool fixLeafLabels)
     double k =evo.getPhyloFactor(); //scaling factor 
 
  start:
-    for(auto node = treenodes.begin(); node != treenodes.end(); node++){
+    for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if((*node)->isLeaf()){
 	    // initialization
 	    int pos = findIndex((*node)->getSpecies());
@@ -368,7 +368,7 @@ double PhyloTree::weightedMAP(OrthoExon &hect, ExonEvo &evo, bool fixLeafLabels)
 	    (*node)->bestAssign.resize(states);
 	    for(int i=0; i<states; i++){
 		double score = 0.0;
-		for(auto it = (*node)->children.begin(); it != (*node)->children.end(); it++){
+		for(list<Treenode*>iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
 		    double max = -std::numeric_limits<double>::max();
 		    int bestAssign = -1;
 		    gsl_matrix *P = evo.getSubMatrixLogP(0,(*it)->getDist());
@@ -415,7 +415,7 @@ double PhyloTree::weightedMAP(OrthoExon &hect, ExonEvo &evo, bool fixLeafLabels)
 		hect.labels[pos]=bestAssign;
 	    }
 	    else{
-		for(auto it=node->children.begin(); it!=node->children.end(); it++){
+	      for(list<Treenode*>::iterator it=node->children.begin(); it!=node->children.end(); it++){
 		    stack.push_front(make_pair(*it, (*it)->bestAssign[bestAssign]));
 		    
 		}
