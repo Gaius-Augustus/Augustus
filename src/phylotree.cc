@@ -253,7 +253,7 @@ void PhyloTree::printRecursionTable() const{
 	cout<<"state "<<setw(9)<<i;
     }
     cout<<endl;
-    for(list<Treenode*>::iterator it = treenodes.begin(); it != treenodes.end(); it++){
+    for(list<Treenode*>::const_iterator it = treenodes.begin(); it != treenodes.end(); it++){
 	cout<<setw(15)<<(*it)->getSpecies();
 	for(int i=0; i<(*it)->table.size(); i++){
 	    cout<<setw(15)<<(*it)->getTable(i);
@@ -266,14 +266,14 @@ void PhyloTree::printRecursionTable() const{
 
 void PhyloTree::getBranchLengths(vector<double> &branchset) const {
 
-  for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
+  for(list<Treenode*>::const_iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if(!((*node)->isRoot()))
 	    branchset.push_back((*node)->getDist());
     }
 }
 
 Treenode *PhyloTree::getLeaf(string species) const {
-  for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
+  for(list<Treenode*>::const_iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if( (*node)->getSpecies() == species)
 	    return (*node);
     }
@@ -368,7 +368,7 @@ double PhyloTree::weightedMAP(OrthoExon &hect, ExonEvo &evo, bool fixLeafLabels)
 	    (*node)->bestAssign.resize(states);
 	    for(int i=0; i<states; i++){
 		double score = 0.0;
-		for(list<Treenode*>iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
+		for(list<Treenode*>::iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
 		    double max = -std::numeric_limits<double>::max();
 		    int bestAssign = -1;
 		    gsl_matrix *P = evo.getSubMatrixLogP(0,(*it)->getDist());
