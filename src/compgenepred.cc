@@ -51,7 +51,6 @@ void CompGenePred::start(){
     OrthoGraph::numSpecies = OrthoGraph::tree->numSpecies();
 
 #ifdef DEBUG
-    OrthoGraph::tree->printWithGraphviz("tree.dot");
     cout << "-------------------------------\nparameters phylogenetic model\n-------------------------------" << endl;
     cout << "rate exon loss:\t" << evo.getMu() << endl;
     cout << "rate exon gain:\t" << evo.getLambda() << endl;
@@ -179,7 +178,19 @@ void CompGenePred::start(){
 	  geneRange->createOrthoExons(offsets, orthograph);
 	  geneRange->printOrthoExons(rsa, offsets);
 	  orthograph.all_orthoex = geneRange->getOrthoExons();
-	  
+
+	  for(list<OrthoExon>::iterator hects = orthograph.all_orthoex.begin(); hects != orthograph.all_orthoex.end(); hects++){ //TODO: move this to createOrthoExons()
+	      for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){
+		  if(hects->orthoex[pos]==NULL){
+		      hects->labels[pos]=2;
+		  }
+		  else{
+		      Node* node = orthograph.graphs[pos]->getNode(hects->orthoex[pos]);
+		      hects->orthonode[pos]=node;
+		  }
+	      }
+	  }
+	 
 	  orthograph.outputGenes(baseGenes,base_geneid);
 	  //add score for selective pressure of orthoexons
 	  orthograph.addScoreSelectivePressure();
@@ -189,17 +200,18 @@ void CompGenePred::start(){
 	  
 	  if(!orthograph.all_orthoex.empty()){
 	      if(dualdecomp){ // optimization via dual decomposition
-		  orthograph.dualdecomp(evo,100);
+		  vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
+		  orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,500);
+		  orthograph.filterGeneList(genelist,optGenes,opt_geneid);
 	      }
 	      else{ // optimization by making small changes (moves)
 		  orthograph.pruningAlgor(evo);
 		  orthograph.printCache();
 		  orthograph.optimize(evo);
+		  // transfer max weight paths to genes + filter + ouput
+		  orthograph.outputGenes(optGenes, opt_geneid);
 	      }
 	  }
-	  
-	  // transfer max weight paths to genes + filter + ouput
-	  orthograph.outputGenes(optGenes,opt_geneid);
 	  offsets.clear();
 	  delete geneRange;
 	}

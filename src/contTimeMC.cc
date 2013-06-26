@@ -559,20 +559,21 @@ gsl_matrix *ExonEvo::computeP(double t){
 
 /* 
  * Estimate omega on a sequence of codon tuples.
- * only for testing, may need adjustment
+ * only for testing, may need adjustments
  * TODO:
  * - change data structure for codon tuples to vectors of integers, more efficient
  * - save log-likelihood of codon tuples in a cache, so that calculation has to be done only once.
  * - scale branch lengths
- * - count number of substitutions (part of the HECT scoring function)
  */
-double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree){
+double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
+				    int &subst){ //output variables
 
     for(int i=1; i<seqtuple.size();i++){
 	if(seqtuple[0].length() != seqtuple[i].length()){
 	    	throw ProjectError("CodonEvo::estOmegaOnSeqTuple: wrong exon lengths");
 	}
     }
+
     int n = seqtuple[0].length()/3; // number of nucleotide triples
     int maxU = 0; // index to omegas
     double ML = -numeric_limits<double>::max();
@@ -600,5 +601,48 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree){
 	    maxU = u;
 	}
     }
+    // count number of substitutions
+    subst = 0;
+    Seq2Int s2i(3);
+
+    // settings to reduce MAP algorithm to Fitch Algorithm
+    vector<double> weights(seqtuple.size(),0);
+    Parsimony parsi;
+    parsi.computeLogPmatrices();
+    Evo *parsi_base = &parsi;
+
+    for (int i=0; i<n; i++){
+	vector<int> codontuple;
+	int numCodons=0;
+	for(int j=0; j<seqtuple.size();j++){
+	    int codon=64;
+	    try {
+		codon = s2i(seqtuple[j].c_str() + 3*i);
+		numCodons++;
+	    } catch(...){} // gap or n character
+	    codontuple.push_back(codon);
+	}
+	if(numCodons >= 2){
+	    PhyloTree temp(*tree); // only use a copy of the tree !!!
+	    subst += -temp.MAP(codontuple, weights, parsi_base, 1, true); // Fitch Algorithm 
+	}
+    }
     return omegas[maxU];
+}
+
+void Parsimony::computeLogPmatrices(){
+
+    allLogPs.assign(1, m, NULL);
+    gsl_matrix* P = gsl_matrix_calloc(states, states);
+    for (int i=0; i<states; i++){
+	for (int j=0; j<states; j++){
+	    if(i != j){
+		gsl_matrix_set(P, i, j, -1);
+	    }
+	    else{
+		gsl_matrix_set(P, i, j, 0);
+	    }
+	}
+    }
+    allLogPs[0][0]=P;
 }

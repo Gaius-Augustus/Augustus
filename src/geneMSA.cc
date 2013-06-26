@@ -592,13 +592,6 @@ void GeneMSA::createOrthoExons(vector<int> offsets, OrthoGraph &orthograph) {
                                                 && ((*it_ab)->alignSpeciesTuple.at(i)->start + (*it_ab)->alignSpeciesTuple.at(i)->seqLen - 1
 						    >= map_it->second->end + offsets[i] + 1)) {
                                             oe.orthoex[i] = (map_it->second);
-					    /*
-					     * steffi: set pointer to the corresponding node in OrthoGraph
-					     * this might consume a lot of memory, there might be a better
-					     * solution to quickly access nodes corresponding to an exon candidate
-					     */ 
-					    Node* node = orthograph.graphs[i]->getNode(oe.orthoex[i]);
-					    oe.orthonode[i]=node;
                                             hasOrthoExon = true;
                                         }
                                     }
@@ -607,10 +600,8 @@ void GeneMSA::createOrthoExons(vector<int> offsets, OrthoGraph &orthograph) {
                         }
                     }
                     if (hasOrthoExon) {
-			Node* node = orthograph.graphs[0]->getNode(oe.orthoex[0]);
-			oe.orthonode[0]=node;
-                        oe.ID = orthoExonID;
-                        orthoExonID++;
+			oe.ID = orthoExonID;
+			orthoExonID++;
                         this->orthoExonsList.push_back(oe);
                     }
                 }
@@ -883,12 +874,14 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, vector<int> offsets, bool file
 	    cout << "\t" << ec->score << "\t" << (isPlusExon(ec->type)? '+' : '-') << "\t"; // strand of exon
             cout << getGFF3FrameForExon(ec) << "\t" << "ID=" << oe.ID << ";Name=" << oe.ID << ";Note=" 
 		 << stateExonTypeIdentifiers[ec->type];
-	    if (omega >= 0.0)
+	    if (omega >= 0.0){
 		cout << ";omega=" << omega;
 	        //cout << "|" << omega;  // for viewing in gBrowse use this style instead
-	    if (numSub >= 0)
+	    }
+	    if (numSub >= 0){
 		cout << ";subst=" << numSub; // number of substitutions
 	        //cout << "|" << numSub; // for viewing in gBrowse use this style instead
+	    }
 	    cout << endl;
         }
     }
@@ -1079,9 +1072,12 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, OrthoExon &oe, vector<i
 		    printSingleOrthoExon(oe, offsets, false, omega, numSynSubst + numNonSynSubst);
 		}
 		else{
-		    double omega = codonevo->estOmegaOnSeqTuple(pamlSeq, tree);
+		    int subst;
+		    //TODO: scale branch lenghts to one substitution per codon per time unit
+		    double omega = codonevo->estOmegaOnSeqTuple(pamlSeq, tree, subst);
 		    oe.setOmega(omega);
-		    printSingleOrthoExon(oe, offsets, false, omega, -1);
+		    oe.setSubst(subst);
+		    printSingleOrthoExon(oe, offsets, false, omega, subst);
 		}
             }
         }

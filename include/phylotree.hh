@@ -97,7 +97,8 @@ public:
     Treenode *getLeaf(std::string species) const;
     int findIndex(std::string name) const;
     void printTree() const;
-    void printWithGraphviz(std::string filename) const;
+    void printNewick(std::string filename) const; // output tree in Newick format
+    void recursiveNWK(std::ofstream &file, Treenode *node) const; // subroutine of printNewick()
 
     /*
      * functions to remove terminal branches and possibly interior nodes
@@ -106,8 +107,8 @@ public:
      * will be collapsed and the branch length will be added to its child
      */
     void drop(std::string species);  
-    void drop(Treenode *node, ExonEvo *evo=NULL);  
-    void collapse(Treenode *node, ExonEvo *evo=NULL);
+    void drop(Treenode *node, Evo *evo=NULL);  
+    void collapse(Treenode *node, Evo *evo=NULL);
 
     /*
      * Felsensteins Pruning Algorithm
@@ -123,7 +124,8 @@ public:
      * (needed in 'optimization via dual decomposition' to make the solutions
      * of the two subproblems consistent)
      */
-    double weightedMAP(OrthoExon &hect, ExonEvo &evo, bool fixLeafLabels=false);
+    double MAP(std::vector<int> &labels, std::vector<double> &weights, Evo *evo, double k=1.0, bool fixLeafLabels=false);
+    void MAPbacktrack(std::vector<int> &labels, Treenode* root, int bestAssign, bool fixLeafLabels);
 };
 
 #endif

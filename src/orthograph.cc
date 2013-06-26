@@ -21,25 +21,18 @@ PhyloTree *OrthoGraph::tree = NULL;
 
 size_t OrthoGraph::numSpecies;
 
-void OrthoGraph::outputGenes(vector<ofstream*> filestreams, vector<int> &geneid){
 
-    Boolean noInFrameStop;  
+void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
 
-    try {
-	noInFrameStop = Properties::getBoolProperty("noInFrameStop");
-    } catch (...) {
-	noInFrameStop = false;
-    }
- 
     for (size_t pos = 0; pos < numSpecies; pos++){
-
+	
 	if(graphs[pos]){
 
-	    AnnoSequence *annoseq = graphs[pos]->getAnnoSeq();
-	    Strand strand = graphs[pos]->getSeqStrand();
-
+	    // delete old genelist
+	    if(genelist[pos]){
+		delete genelist[pos];
+	    }
 	    list<Gene> *genes = new list<Gene>;
-	
 	    Node* current = graphs[pos]->tail;
 	    Node* head =  graphs[pos]->head;
 	    Node* predcurrent;
@@ -86,14 +79,35 @@ void OrthoGraph::outputGenes(vector<ofstream*> filestreams, vector<int> &geneid)
 		}  
 	    }
 	end:
+	    if(!genes->empty())
+		genelist[pos] = genes;
+	}
+    }
+}
 
-	    list<Gene> *filteredTranscripts = Gene::filterGenePrediction(genes, annoseq->sequence, bothstrands, noInFrameStop);
+void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid){
+
+    Boolean noInFrameStop;  
+
+    try {
+	noInFrameStop = Properties::getBoolProperty("noInFrameStop");
+    } catch (...) {
+	noInFrameStop = false;
+    }
+    
+    for (size_t pos = 0; pos < numSpecies; pos++){	
+	if(genelist[pos]){
+
+	    AnnoSequence *annoseq = graphs[pos]->getAnnoSeq();
+	    Strand strand = graphs[pos]->getSeqStrand();
+
+	    list<Gene> *filteredTranscripts = Gene::filterGenePrediction(genelist[pos], annoseq->sequence, bothstrands, noInFrameStop);
 	    list<AltGene> *agl = groupTranscriptsToGenes(filteredTranscripts);
 	    if(strand == minusstrand){
 		agl = reverseGeneList(agl, annoseq->length - 1);
 	    }
 
-	    delete genes;
+	    delete genelist[pos];
 	    /*
 	     * possibly more filter steps
 	     */
@@ -542,62 +556,43 @@ double OrthoGraph::globalPathSearch(){
     return score;
 }
 
-double OrthoGraph::dualdecomp(ExonEvo &evo, int T){
- 
-    // cout.precision(8);
-    // evo.setPhyloFactor(10);
-    // cout<<"MAP inference with weights all set to 0.0 and scaling factor: ";
-    // cout<<evo.getPhyloFactor()<<endl;
-    // OrthoExon oe;
-    // ExonCandidate *ex = new ExonCandidate(singleGene,500,1000);
-    // for(int i=0; i<oe.orthoex.size(); i++){
-    // 	oe.orthoex[i] = ex;
-    // }
-    // for(int i=0;i<2;i++){
-    // 	for(int j=0;j<2;j++){
-    // 	    for(int k=0;k<2;k++){
-    // 		oe.labels[0]=i;
-    // 		oe.labels[1]=j;
-    // 		oe.labels[2]=k;
-    // 		PhyloTree temp=(*tree);
-    //    		double score = temp.weightedMAP(oe, evo, true);
-    // 		cout<<i<<j<<k<<"\t"<<score<<endl;
-    // 	    }
-    // 	}
-    // }
-    // oe.orthoex[1]=NULL;
-    // for(int i=0;i<2;i++){
-    // 	for(int k=0;k<2;k++){
-    // 	    oe.labels[0]=i;
-    // 	    oe.labels[2]=k;
-    // 	    PhyloTree temp=(*tree);
-    // 	    double score = temp.weightedMAP(oe, evo, true);
-    // 	    cout<<i<<"-"<<k<<"\t"<<score<<endl;
-    // 	} 
-    // }
-    // oe.orthoex[1]=ex;
-    // oe.orthoex[2]=NULL;
-    // for(int i=0;i<2;i++){
-    // 	for(int k=0;k<2;k++){
-    // 	    oe.labels[0]=i;
-    // 	    oe.labels[1]=k;
-    // 	    PhyloTree temp=(*tree);
-    // 	    double score = temp.weightedMAP(oe, evo, true);
-    // 	    cout<<i<<k<<"-"<<"\t"<<score<<endl;
-    // 	} 
-    // }
-    // cout<<endl;
+double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int gr_ID, int T){
 
-    // delete ex;
-    //initialization
-    double U = std::numeric_limits<double>::max(); //upper bound
-    printInfo();
+    ofstream outfile("gr_" + itoa(gr_ID) + ".txt");
+    if(!outfile.is_open())
+	throw ProjectError("could not open file gr_" + itoa(gr_ID) + ".txt");
+    streambuf *coutbuf = cout.rdbuf(); //save old buf
+    cout.rdbuf(outfile.rdbuf()); //redirect std::cout to species file
+
+    /*
+     * initialization
+     */
+    vector<double> v_duals;                                  // vector of dual values
+    vector<double> v_primals;                                // vector of primal values
+    double best_dual = std::numeric_limits<double>::max();   // best dual value so far
+    double best_primal = -std::numeric_limits<double>::max(); // best primal value so far
+    // number of iterations prior to t where the dual value increases
+    int v = 0; 
+
     for(int t=0; t<T;t++){
-	double score = 0; 
-	double delta = getStepSize(t);             //get next step size
-	score += globalPathSearch();
-	score += treeMAPInf(evo);
-	U = min(U,score);              //update upper bound
+ 
+	double delta = getStepSize(t,v); //get next step size
+	cout<<"delta_"<<t<<"="<<delta<<endl;
+	double path_score = globalPathSearch();
+	double current_dual = path_score + treeMAPInf(evo);   // dual value of the t-th iteration 
+	best_dual = min(best_dual,current_dual);              // update upper bound
+	if(!v_duals.empty()){  // update v
+	    if(v_duals.back() > current_dual)
+		v++;
+	}
+	v_duals.push_back(current_dual);
+	double current_primal = path_score + makeConsistent(evo); // primal value of the t-the iteration
+	if(best_primal < current_primal){
+	    best_primal = current_primal;
+	    buildGeneList(genelist); // save new record
+	}
+	v_primals.push_back(current_primal);
+	
 	bool isConsistent = true;
 	for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
 	    for(size_t pos = 0; pos < numSpecies; pos++){
@@ -616,42 +611,52 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, int T){
 		}
 	    }
 	}
-	cout<<"delta_"<<t<<"="<<delta<<endl; 
 	printInfo(true);
 	if(isConsistent){ // exact solution is found
-	    return 0;
+	    if(v_duals.back() != v_primals.back())
+		throw ProjectError("in dualdecomp(): solutions are consistent but dual and primal value are different");
+	    break;
 	}
     }
-    double score = makeConsistent(evo);
-    printInfo();
-    double error = (U-score);
+    double error = best_dual - best_primal;
     cout<<"error\t"<<error<<endl;
+    cout<<endl;
+    cout<<"iter\tdual\tprimal"<<endl;
+    for(int pos = 0; pos < v_duals.size(); pos++){
+	cout<<pos<<"\t"<<v_duals[pos]<<"\t"<<v_primals[pos]<<endl;
+    }
+    cout.rdbuf(coutbuf); //reset to standard output again
+    outfile.close();
     return error;
-    
 }
 
 /*
- * 
  * requirement delta -> 0 for t -> infinity and
  * sum(deltas) = infinity
+ * v ist the number of iterations prior to t where the dual value increases
+ * the purpose of v is to decrease the step size only if we move in the wrong direction
  */
-double OrthoGraph::getStepSize(int t){
+double OrthoGraph::getStepSize(int t, int v){
+
+    const double c = 15; //TODO: make this a command line parameter and train it 
     
     if(t == 0){ //small step size
     	return 0.0001;
     }
     else{
-	return 10/sqrt(t);
+	return c/sqrt(v+1);
     }
  }
 
 double OrthoGraph::treeMAPInf(ExonEvo &evo){
 
     double score=0;
+    double k =evo.getPhyloFactor(); //scaling factor 
 
     for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
-	PhyloTree temp=(*tree);
-	score += temp.weightedMAP(*hects, evo);
+	PhyloTree temp(*tree);
+	Evo *evo_base = &evo;
+	score += temp.MAP(hects->labels, hects->weights, evo_base, k);
     }
     return score;
 }
@@ -659,16 +664,17 @@ double OrthoGraph::treeMAPInf(ExonEvo &evo){
 double OrthoGraph::makeConsistent(ExonEvo &evo){
 
     double score = 0;
-    score += globalPathSearch();
+    double k =evo.getPhyloFactor(); //scaling factor 
+
     for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
-	for(size_t pos = 0; pos < numSpecies; pos++){
-	    if(hects->orthoex[pos]){
-		// set label to label of the corresponding node in the graph
-		hects->labels[pos] = hects->orthonode[pos]->label;
-	    }
+	PhyloTree temp(*tree);
+	Evo *evo_base = &evo;
+	vector<int> labels(numSpecies,2);
+	for(int pos=0; pos < hects->orthonode.size(); pos++){
+	    if(hects->orthonode[pos])
+		labels[pos] = hects->orthonode[pos]->label;
 	}
-	PhyloTree temp=(*tree);
-	score += temp.weightedMAP(*hects, evo, true);
+	score += temp.MAP(labels, hects->weights, evo_base, k, true);
     }
     return score;
 }	
@@ -686,16 +692,12 @@ void OrthoGraph::printInfo(bool only_change){
 		h_pattern+=itoa(it->orthonode[pos]->label);
 	    }
 	    else
-		h_pattern+="-";
+		h_pattern+="2";
 	}
 	for(size_t pos = 0; pos < it->labels.size(); pos++){
-	    if(it->orthoex[pos]){
-		v_pattern+=itoa(it->labels[pos]);
-	    }
-	    else
-		v_pattern+="-";
+	    v_pattern+=itoa(it->labels[pos]);
 	}
-	if((h_pattern != "000" && h_pattern != "00-" && h_pattern != "0-0") || h_pattern != v_pattern){
+	if((h_pattern != "000" && h_pattern != "002" && h_pattern != "020") || h_pattern != v_pattern){
 	    //printHTMLgBrowse(*it);
 	    cout<<right;
 	    cout<<"ID:"<<it->ID<<"\t"<<h_pattern<<"\t"<<v_pattern<<"\t";

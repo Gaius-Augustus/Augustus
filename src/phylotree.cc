@@ -15,6 +15,7 @@
 #include "phylotree.hh"
 #include "contTimeMC.hh"
 #include "orthoexon.hh"
+#include "graph.hh"
 #include <queue>
 #include <cmath>
 #include <iostream>
@@ -90,6 +91,46 @@ PhyloTree::PhyloTree(string filename){
 	if(error_message == 1){
 	    throw ProjectError("the parsing of " + filename + " has been unsuccessful. Please check, whether the syntax of your input file is correct" );
 	}
+	/*
+	 * if only a subset of the species is sought, drop all leaf nodes
+	 * which are not in the given subset
+	 */
+	string only_species;
+	Properties::assignProperty("/CompPred/only_species", only_species);
+	if(!only_species.empty()){
+	    ifstream ifstrm(only_species.c_str());
+	    if (ifstrm.is_open()){
+		vector<string> keep; // the subset of species to be kept
+		string s;
+		while(std::getline(ifstrm,s,'\n')){
+		    keep.push_back(s);
+		}
+		ifstrm.close();
+		vector<string> subset_species;
+		for(int i=0; i<species.size(); i++){
+		    bool found=false;
+		    for(int j=0; j<keep.size(); j++){
+			if(species[i] == keep[j]){
+			    found=true;
+			    break;
+			}
+		    }
+		    if(!found){ //if species name ist not in list, remove leaf
+			drop(species[i]);
+		    }
+		    else{
+			subset_species.push_back(species[i]);
+		    }
+		}
+		species=subset_species;
+		if(species.size() < 2 || species.size() < keep.size())
+		    throw ProjectError(only_species + " has the wrong format. correct format:\n\n" + 
+				       "hg19\n" + "mm9\n" + "galGal3\n" + "...\n" + 
+				       "The species identifiers must be the same as in the phylogenetic tree. At least two species identifiers must be given.");
+	    }
+	    else
+		throw ProjectError("Could not open input file " + only_species);
+	}
     }
     else
 	throw ProjectError("PhyloTree::PhyloTree: Could not open this file!");
@@ -151,44 +192,38 @@ PhyloTree::~PhyloTree(){
     species.clear();
 }
 
-void PhyloTree::printWithGraphviz(string filename) const {
+void PhyloTree::printNewick(string filename) const {
 
-    //creates inputfile für graphviz
-    queue<Treenode*> tree;
     if(!treenodes.empty()){
-	tree.push(this->treenodes.back());
-   
-	int i=0;
-	int j=-1;
 	ofstream file;
 	file.open(filename.c_str());
-  
-	file<<"digraph Tree {\n";
-	file<<"rankdir=TB;\n";
-	file<<"\tnode[shape=circle];\n";
-	file<<"edge [arrowhead=none];\n";
-
-	file<<i<<"[shape=point];\n";
-	while(!tree.empty()){
-	    Treenode *next=tree.front();
-	    tree.pop();
-	    j++;
-	    for(list<Treenode*>::iterator node = next->children.begin(); node != next->children.end(); node++){
-		tree.push((*node));
-		i++;
-		if( !(*node)->children.empty()){
-		    file<<i<<"[shape=point];\n";
-		}
-		else{
-		    file<<i<<"[label="<<(*node)->getSpecies()<<",shape=ellipse];\n";
-		}
-		file<<j<<"->"<<i<<"[label="<<(*node)->getDist()<<"];\n";
-	    }
-	}
-	file<<"}\n";
+	recursiveNWK(file,treenodes.back());
 	file.close();
     }
+ 
 }
+
+void PhyloTree::recursiveNWK(ofstream &file, Treenode *node) const {
+    if(node->isLeaf()){
+	file<<node->getSpecies()<<":"<<node->getDist();
+    }
+    else{
+	file<<"(";
+	for(list<Treenode*>::iterator it=node->children.begin(); it !=node->children.end(); it++){
+	    if( it != node->children.begin() )
+		file<<",";
+	    recursiveNWK(file,*it);
+	}
+	if(node->isRoot()){
+	    file<<");";
+	}
+	else{
+	    file<<"):"<<node->getDist();
+	}
+	    
+    }
+}
+
 double PhyloTree::pruningAlgor(string labelpattern, Evo *evo, int u){
     vector<int> tuple;
     for (int i=0; i<labelpattern.length() ; i++){
@@ -256,7 +291,12 @@ void PhyloTree::printRecursionTable() const{
     for(list<Treenode*>::const_iterator it = treenodes.begin(); it != treenodes.end(); it++){
 	cout<<setw(15)<<(*it)->getSpecies();
 	for(int i=0; i<(*it)->table.size(); i++){
-	    cout<<setw(15)<<(*it)->getTable(i);
+	    if( (*it)->getTable(i) == - std::numeric_limits<double>::max()){
+		cout<<setw(15)<<"-inf";
+	    }
+	    else{
+		cout<<setw(15)<<(*it)->getTable(i);
+	    }
 	}
 	cout<<endl;
     }
@@ -286,7 +326,7 @@ void PhyloTree::drop(string species){
     drop(node);
 }
 
-void PhyloTree::drop(Treenode *node, ExonEvo *evo){
+void PhyloTree::drop(Treenode *node, Evo *evo){
     
     if(node->isLeaf()){
 	Treenode *p=node->getParent();
@@ -301,7 +341,7 @@ void PhyloTree::drop(Treenode *node, ExonEvo *evo){
     }
 }
 
-void PhyloTree::collapse(Treenode *node, ExonEvo *evo){
+void PhyloTree::collapse(Treenode *node, Evo *evo){
 
     Treenode *child = node->children.front();
 
@@ -323,35 +363,34 @@ void PhyloTree::collapse(Treenode *node, ExonEvo *evo){
 /*
  * MAP inference given a set of weights for leaf nodes
  * if the flag 'fixLeafLabels' is turned on MAP inference is carried out
- * with leaf labels are fixed to the corresponding labels in the hect
+ * with leaf labels fixed to the labels in the vector
  */
-double PhyloTree::weightedMAP(OrthoExon &hect, ExonEvo &evo, bool fixLeafLabels){
+double PhyloTree::MAP(vector<int> &labels, vector<double> &weights, Evo *evo, double k ,bool fixLeafLabels){
 
-    int states = evo.getNumStates();
-    double k =evo.getPhyloFactor(); //scaling factor 
+    int states = evo->getNumStates();
 
  start:
     for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if((*node)->isLeaf()){
 	    // initialization
 	    int pos = findIndex((*node)->getSpecies());
-	    if(!hect.orthoex[pos]){ //in the case that the exon does not exist, we remove the node
+	    int c = labels[pos];
+	    if(c >= states || c < 0){ //in the case that the exon does not exist, we remove the node
 		Treenode* tmp=*node;
 		if(node == treenodes.begin()){
-		    drop(tmp, &evo);
+		    drop(tmp, evo);
 		    goto start;
 		}
 		else{
 		    node--;
-		    drop(tmp, &evo);
+		    drop(tmp, evo);
 		}
 	    }
 	    else{
-		double weight =hect.weights.at(pos);
+		double weight = weights[pos];
 		if(fixLeafLabels){
 		    (*node)->resizeTable(states,-std::numeric_limits<double>::max());
-		    int label = hect.labels[pos];
-		    (*node)->setTable(label,weight*label);
+		    (*node)->setTable(c,weight*c);
 		}
 		else{
 		    (*node)->resizeTable(states,0);
@@ -371,7 +410,7 @@ double PhyloTree::weightedMAP(OrthoExon &hect, ExonEvo &evo, bool fixLeafLabels)
 		for(list<Treenode*>::iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
 		    double max = -std::numeric_limits<double>::max();
 		    int bestAssign = -1;
-		    gsl_matrix *P = evo.getSubMatrixLogP(0,(*it)->getDist());
+		    gsl_matrix *P = evo->getSubMatrixLogP(0,(*it)->getDist());
 		    for(int j=0; j<states; j++){
 			double branch_score = (k*gsl_matrix_get(P,i,j)) + (*it)->getTable(j);
 			if(max < branch_score){
@@ -388,39 +427,43 @@ double PhyloTree::weightedMAP(OrthoExon &hect, ExonEvo &evo, bool fixLeafLabels)
     }
     //printRecursionTable();
 
-    // backtracking
     double max = -std::numeric_limits<double>::max();
     if(!treenodes.empty()){
-	list< pair<Treenode*,int> > stack;
 	int bestAssign = -1;
 	Treenode* root = treenodes.back();	
 	for(int i=0; i<states; i++){
-	    double root_score = (k*evo.getLogPi(i)) + root->getTable(i);
+	    double root_score = (k*evo->getLogPi(i)) + root->getTable(i);
 	    if(max < root_score){
 		max = root_score;
 		bestAssign=i;
 	    }
 	}
-	stack.push_front(make_pair(root,bestAssign));
-	while(!stack.empty()){
-	    pair<Treenode *,int> p = stack.front();
-	    stack.pop_front();
-	    Treenode *node=p.first;
-	    bestAssign=p.second;
-	    if(node->isLeaf()){
-		int pos = findIndex(node->getSpecies());
-		if(fixLeafLabels && hect.labels[pos] != bestAssign){
-		    throw ProjectError("in PhyloTree:weightedMAP. Leaf Labels changed although the flag fixLeafLabels is turned on");
-		}
-		hect.labels[pos]=bestAssign;
-	    }
-	    else{
-	      for(list<Treenode*>::iterator it=node->children.begin(); it!=node->children.end(); it++){
-		    stack.push_front(make_pair(*it, (*it)->bestAssign[bestAssign]));
-		    
-		}
+	// backtracking to assign leaf nodes to the MAP labels
+	//if(!fixLeafLabels)
+	MAPbacktrack(labels, root, bestAssign, fixLeafLabels);
+    }
+    return max;
+}
+
+void PhyloTree::MAPbacktrack(vector<int> &labels, Treenode* root, int bestAssign, bool fixLeafLabels){
+
+    list< pair<Treenode*,int> > stack;
+    stack.push_front(make_pair(root,bestAssign));
+    while(!stack.empty()){
+	pair<Treenode *,int> p = stack.front();
+	stack.pop_front();
+	Treenode *node=p.first;
+	bestAssign=p.second;
+	if(node->isLeaf()){
+	    int pos = findIndex(node->getSpecies());
+	    if(fixLeafLabels && bestAssign != labels[pos])
+		throw ProjectError("in MAPbacktrack: fixLeafNodes is one but different node labels");
+	    labels[pos]=bestAssign;
+	}
+	else{
+	    for(list<Treenode*>::iterator it=node->children.begin(); it!=node->children.end(); it++){
+		stack.push_front(make_pair(*it, (*it)->bestAssign[bestAssign]));
 	    }
 	}
     }
-    return max;
 }

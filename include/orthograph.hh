@@ -82,15 +82,21 @@ public:
      * verical problem: MAP inference on a set of disjoint phylogenetic trees whose
      * leaf nodes are assigned to weights.
      */
-    double dualdecomp(ExonEvo &evo, int T=10);  //main routine
+    double dualdecomp(ExonEvo &evo,vector< list<Gene> *> &genelist, int gr_ID, int T=10);  //main routine
     double treeMAPInf(ExonEvo &evo);  //vertical problem
     double globalPathSearch(); // horizontal problem
-    double getStepSize(int t);    // specifies a sequence of steps
+    double getStepSize(int t, int v);    // specifies a sequence of steps
     double makeConsistent(ExonEvo &evo);
     void printInfo(bool only_change=false);
 
     // transform graph labeling into list of genes + filter + output
-    void outputGenes(vector<ofstream*> filestreams, vector<int> &geneid);
+    void buildGeneList(vector< list<Gene>* > &genelist);
+    void filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid);
+    void outputGenes(vector<ofstream*> &filestreams, vector<int> &geneid){
+	vector< list<Gene> *> genelist(numSpecies);
+	buildGeneList(genelist);
+	filterGeneList(genelist,filestreams, geneid);
+    }
 };
 
 struct Score{

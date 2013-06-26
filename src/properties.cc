@@ -60,6 +60,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/maxIterations",
 "/CompPred/not_oe_penalty",
 "/CompPred/oe_score",
+"/CompPred/only_species",
 "/CompPred/outdir_orthoexons",
 "/CompPred/outdir",
 "/CompPred/paml",

@@ -47,6 +47,7 @@ public:
     void printBranchLengths();
 
     virtual void computeLogPmatrices()=0; // precomputes and stores the array of matrices
+    virtual void addBranchLength(double b)=0; //add new branch length b and matrix P(b)
 
     double getPi(int i) const {return pi[i];}  //equilibrium frequency of state i
     double getLogPi(int i) const {return log(getPi(i));}
@@ -133,7 +134,13 @@ public:
      * Estimate omega on a sequence of codon tuples.
      * only for testing, may need adjustment
      */
-    double estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree);
+    double estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
+			      int &subst); // output variables
+    /* 
+     * add new branch length b
+     * this function is currently not needed, since the pruning algorithm does change the phylogenetic tree
+     */
+    void addBranchLength(double b){} 
 
 private:
     int k; // number of different omega values for which P's are stored
@@ -208,4 +215,25 @@ private:
 
 };
 
+/*
+ * class Parsimony
+ * transitions from state i to state j are independ of the branch length
+ * and cost -1 if i!=j and 0 if i==j.
+ * can be used to calculate the minimum nunber of codon substitutions
+ * for a given tree topology
+ */
+class Parsimony : public Evo{
+
+public:
+    Parsimony() : Evo(64) {
+	this->m = 1;
+	this->times.push_back(1);
+	this->pi = new double[64];
+	for(int i=0; i<64; i++){
+	    pi[i]=1;
+	}
+    };
+    void computeLogPmatrices();
+    void addBranchLength(double b){} 
+};
 #endif    // _CONTTIMEMC_HH
