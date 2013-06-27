@@ -134,7 +134,7 @@ public:
      * Estimate omega on a sequence of codon tuples.
      * only for testing, may need adjustment
      */
-    double estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
+  double estOmegaOnSeqTuple(vector<string> &seqtuple, vector<int> &speciesIdx, PhyloTree *tree,
 			      int &subst); // output variables
     /* 
      * add new branch length b

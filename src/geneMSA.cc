@@ -761,13 +761,13 @@ void GeneMSA::openOutputFiles(){
             (*os_oe) << PREAMBLE << endl;
             (*os_oe) << "#\n#----- ortholog exons  -----" << endl << "#" << endl;
         }
-        string file_omega = outputdirectory + "omegaExons." + species[i] + ".gff3";
+        /*string file_omega = outputdirectory + "omegaExons." + species[i] + ".gff3";
         ofstream *os_omega = new ofstream(file_omega.c_str());
         if (os_omega) {
             omega_outfiles[i]=os_omega;
             (*os_omega) << PREAMBLE << endl;
             (*os_omega) << "#\n#----- exons with a dN/dS ratio smaller than one -----" << endl << "#" << endl;
-        }
+	}*/
     }
     string paml_file = outputdirectory + "pamlfile.fa";
     ofstream *os_pf = new ofstream(paml_file.c_str());
@@ -843,14 +843,14 @@ void GeneMSA::printOrthoExons(RandSeqAccess *rsa, vector<int> offsets) {
             paml="";
         }
         for (list<OrthoExon>::iterator it_oe=orthoExonsList.begin(); it_oe!=orthoExonsList.end(); it_oe++) {
-            printSingleOrthoExon(*it_oe, offsets);
             printExonsForPamlInput(rsa, *it_oe, offsets);
+	    printSingleOrthoExon(*it_oe, offsets, true, it_oe->getOmega(), it_oe->getSubst());
             if (!paml.empty()) {
                 readOmega(paml);
             }
         }
         if (!paml.empty()) {
-            printExonWithOmega(offsets);
+	    //printExonWithOmega(offsets);
         }
     }
 }
@@ -876,7 +876,7 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, vector<int> offsets, bool file
 		 << stateExonTypeIdentifiers[ec->type];
 	    if (omega >= 0.0){
 		cout << ";omega=" << omega;
-	        //cout << "|" << omega;  // for viewing in gBrowse use this style instead
+		//cout << "|" << omega;  // for viewing in gBrowse use this style instead
 	    }
 	    if (numSub >= 0){
 		cout << ";subst=" << numSub; // number of substitutions
@@ -1057,7 +1057,7 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, OrthoExon &oe, vector<i
                     k++;
                 }
                 cout << endl;
-		if (noSpecies==2){ // just for testing
+		/*if (noSpecies==2){ // just for testing
 		    cout << setw(8) << "codons" << setw(10) << "syn sub" << setw(12) << "nonsyn sub"
 			 << setw(8) << "omega" << endl;
 		    double t(0.5);
@@ -1070,15 +1070,13 @@ void GeneMSA::printExonsForPamlInput(RandSeqAccess *rsa, OrthoExon &oe, vector<i
 		    oe.setSubst(numSynSubst + numNonSynSubst);
 		    //printSingleOrthoExon(oe, offsets, true, omega, numSynSubst + numNonSynSubst);
 		    printSingleOrthoExon(oe, offsets, false, omega, numSynSubst + numNonSynSubst);
-		}
-		else{
-		    int subst;
-		    //TODO: scale branch lenghts to one substitution per codon per time unit
-		    double omega = codonevo->estOmegaOnSeqTuple(pamlSeq, tree, subst);
-		    oe.setOmega(omega);
-		    oe.setSubst(subst);
-		    printSingleOrthoExon(oe, offsets, false, omega, subst);
-		}
+		}*/
+		int subst;
+		//TODO: scale branch lenghts to one substitution per codon per time unit
+		double omega = codonevo->estOmegaOnSeqTuple(pamlSeq, speciesIdx, tree, subst);
+		oe.setOmega(omega);
+		oe.setSubst(subst);
+		printSingleOrthoExon(oe, offsets, false, omega, subst);
             }
         }
     }

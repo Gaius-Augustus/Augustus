@@ -565,7 +565,7 @@ gsl_matrix *ExonEvo::computeP(double t){
  * - save log-likelihood of codon tuples in a cache, so that calculation has to be done only once.
  * - scale branch lengths
  */
-double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
+double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, vector<int> &speciesIdx, PhyloTree *tree,
 				    int &subst){ //output variables
 
     for(int i=1; i<seqtuple.size();i++){
@@ -582,15 +582,14 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 	Seq2Int s2i(3);
 	double loglik = 0.0;
 	for (int i=0; i<n; i++){
-	    vector<int> codontuple;
-	    int numCodons=0;
-	    for(int j=0; j<seqtuple.size();j++){
-		int codon=64;
+	  vector<int> codontuple(tree->numSpecies(),64);
+	  int numCodons=0;
+	  for(int j=0; j<seqtuple.size();j++){
 		try {
-		    codon = s2i(seqtuple[j].c_str() + 3*i);
+		    int codon = s2i(seqtuple[j].c_str() + 3*i);
+		    codontuple[speciesIdx[j]]=codon;
 		    numCodons++;
 		} catch(...){} // gap or n character
-		codontuple.push_back(codon);
 	    }
 	    if(numCodons >= 2){
 		loglik += tree->pruningAlgor(codontuple, evo, u);
@@ -606,21 +605,20 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
     Seq2Int s2i(3);
 
     // settings to reduce MAP algorithm to Fitch Algorithm
-    vector<double> weights(seqtuple.size(),0);
+    vector<double> weights(tree->numSpecies(),0);
     Parsimony parsi;
     parsi.computeLogPmatrices();
     Evo *parsi_base = &parsi;
-
+    
     for (int i=0; i<n; i++){
-	vector<int> codontuple;
+	vector<int> codontuple(tree->numSpecies(),64);
 	int numCodons=0;
 	for(int j=0; j<seqtuple.size();j++){
-	    int codon=64;
 	    try {
-		codon = s2i(seqtuple[j].c_str() + 3*i);
+		int codon = s2i(seqtuple[j].c_str() + 3*i);
 		numCodons++;
+		codontuple[speciesIdx[j]]=codon;
 	    } catch(...){} // gap or n character
-	    codontuple.push_back(codon);
 	}
 	if(numCodons >= 2){
 	    PhyloTree temp(*tree); // only use a copy of the tree !!!
