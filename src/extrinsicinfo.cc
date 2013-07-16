@@ -1853,7 +1853,8 @@ void SequenceFeatureCollection::prepareLocalMalus(const char* dna){
  * localSSMalus
  */
 double SequenceFeatureCollection::localSSMalus(FeatureType type, int pos, Strand strand){
-  if ((type == dssF && strand == plusstrand && !hasLocalSSmalus[pos][forwDSS]) ||
+  if (pos < 0 || pos >= seqlen ||
+      (type == dssF && strand == plusstrand && !hasLocalSSmalus[pos][forwDSS]) ||
       (type == dssF && strand == minusstrand && !hasLocalSSmalus[pos][revDSS]) ||
       (type == assF && strand == plusstrand && !hasLocalSSmalus[pos][forwASS]) ||
       (type == assF && strand == minusstrand && !hasLocalSSmalus[pos][revASS]))

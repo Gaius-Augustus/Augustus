@@ -11,6 +11,9 @@ sudo apt-get install libmysqlclient-dev
 # the sources of the mysql++ API are in the folder mysql++
 # they are a minor edit (compilation errors and warnings) of the sources from
 # http://www.tangentsoft.net/mysql++/releases/mysql++-3.1.0.tar.gz
-# follow the compilation instructions in the folder mysql++
+# follow the compilation instructions in the folder mysql++:
+./configure
+make
+sudo make install
 # don't forgeet to register changes wrt shared objects in system
 sudo ldconfig
