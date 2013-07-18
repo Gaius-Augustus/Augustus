@@ -461,7 +461,7 @@ public:
   void appendGene(Gene* gene);
   void appendForwardGene(Gene* gene);
   void appendBackwardGene(Gene* gene);
-  void printGFF();
+  const void printGFF() const;
 
   StatePath *path;
   StatePath *condensedPath;

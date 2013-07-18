@@ -2686,7 +2686,7 @@ void Annotation::appendBackwardGene(Gene* gene){
     gene->next = NULL;
 }
 
-void Annotation::printGFF(){
+const void Annotation::printGFF() const {
     Gene *gene;
     for (gene = genes; gene != NULL; gene = gene->next) {
       gene->printGFF();

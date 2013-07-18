@@ -164,6 +164,8 @@ AnnoSequence* GBProcessor::getAnnoSequence( GBPositions* pos ){
 		  gene->clength += 3;
 		  st->begin -= 3;
 	      }
+	      if (st->begin < 0 || st->end >= annoseq->length)
+		  throw GBError("Stop codon out of sequence bounds. Ignoring sequence.");
 	  }
 
 	  if (gene->codingstart < 0 || gene->codingstart > st->begin)

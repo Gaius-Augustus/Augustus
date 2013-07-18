@@ -230,8 +230,6 @@ void IntronModel::processASS(const char* dna, int pos, Boolean withMotif){
      * the shortest intron in the drosophila training set was 44bp
      */
     
-    
-
     if (withMotif && pos - ASS_MIDDLE - Constant::ass_start - ass_upwindow_size >= assMotif->k) 	
 	assMotif->addSequence(dna + pos - ASS_MIDDLE - Constant::ass_start - ass_upwindow_size, gweight);
     
@@ -239,7 +237,7 @@ void IntronModel::processASS(const char* dna, int pos, Boolean withMotif){
 	return;
     static char *astr = new char[Constant::ass_size()+1]; // waive the delete
     Seq2Int s2i(Constant::ass_size());
-    if(!onASS(dna + pos - ASS_MIDDLE)) 
+    if(!onASS(dna + pos - ASS_MIDDLE))
         throw IntronModelError("ASS error! Expected 'ag' but found '" + 
 			       string(dna, pos - ASS_MIDDLE,2) + 
 			       "' at position " + itoa(pos - ASS_MIDDLE) + ".");
@@ -314,6 +312,7 @@ void IntronModel::buildProbabilities(const AnnoSequence* annoseq){
     /*
      * process the genes
      */
+
     const AnnoSequence *as = annoseq;
     while (as){
       sequence = as->sequence;
