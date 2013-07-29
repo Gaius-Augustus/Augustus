@@ -11,20 +11,24 @@
 
 
 my $usage = "\n$0 -- Map a sam file that was created by aligning against an exon-exon junction file back to genome level\n\n";
-$usage .= "Usage: $0 exex.sam map.psl > out.sam\n\n";
+$usage .= "Usage: $0 exex.sam map.psl [flank] > out.sam\n\n";
 $usage .= "exex.sam was created e.g. with GSNAP in the following way:\n";
 $usage .= "gmap_build -d exex_db exex.fa\n";
 $usage .= "gsnap --format=sam --nofails -d exex_db rnaseq.fastq > exex.sam\n\n";
 $usage .= "map.psl was created in the following way:\n";
 $usage .= "intron2exex.pl --introns=introns.lst --seq=genome.masked.fa --exex=exex.fa --map=map.psl\n\n";
-$usage .= "Please note that mapSam.pl assumes that the flanking region of introns is 75+75 bp!\n";
-if(@ARGV != 2){
+$usage .= "Please note that mapSam.pl assumes that the flanking region of introns is 75+75 bp! Specify other value if needed.\n";
+if(! defined $ARGV[1]){
     print $usage;
     exit;
 }
 
 my $exexFile = $ARGV[0];
 my $mapFile = $ARGV[1];
+my $flank = 75;
+if(defined $ARGV[2]){
+    $flank = $ARGV[2];
+}
 
 my %mapHash = ();
 my @t;
@@ -71,7 +75,7 @@ while(<SAM>){
 	$mapLine = $mapHash{$exexName};
 	@tMap = split(/\t/, $mapLine);
 	$junctionStart = $tMap[15]+$tMap[0]/2+1; # first base after
-	if(($tMap[0]/2)==75){ # results from fragment border introns!
+	if(($tMap[0]/2)==$flank){ # results from fragment border introns!
 	    $globalStart = $tSam[3]+$tMap[15];
 	    $intronLen = $tMap[7];
 	    # process the cigar string
@@ -93,45 +97,37 @@ while(<SAM>){
 	    while($cigarLen > 0){
 		$tSam[5] =~ m/^(\d+)(\w)/;
 		$letter = $2; 
-		$number = $1;
+		$number = $1; 
 		if($tSam[3]>($tMap[0]/2)){
 		    $seenJunction = 1;
 		}
-		if($number < $beforeJunction and $seenJunction == 0){
+		if($number <= $beforeJunction and $seenJunction == 0){
 		    $cigarNumber = $number;
-		    if($cigarNumber==0 and $letter eq 'M'){
-			$badCigar = 1;
-		    }elsif($cigarNumber=~m/\D/){
-			$badCigar = 1;
+		    if(($cigarNumber==0 and $letter eq 'M') or $cigarNumber=~m/\D/){
+				$badCigar = 1;
 		    }
 			$newCigar = $newCigar.$cigarNumber.$letter;		
 			$beforeJunction = $beforeJunction - $number;
-		}elsif($seenJunction == 0 and $beforeJunction => 1 ){
+		}elsif($seenJunction == 0 and $beforeJunction >= 1 ){
 		    $cigarNumber = ($number - ($number - $beforeJunction));
-		    if($cigarNumber==0 and $letter eq 'M'){
-			$badCigar = 1;
-		    }elsif($cigarNumber=~m/\D/){
-			$badCigar = 1;
-                    }
+		    if(($cigarNumber==0 and $letter eq 'M') or $cigarNumber=~m/\D/){
+				$badCigar = 1;
+		    }
 			$newCigar = $newCigar.$cigarNumber;	
 			$newCigar = $newCigar.$letter;
 			$newCigar = $newCigar.$intronLen."N";
 		    $cigarNumber = ($number-$beforeJunction);
-                    if($cigarNumber==0 and $letter eq 'M'){
+                    if(($cigarNumber==0 and $letter eq 'M') or $cigarNumber=~m/\D/){
                         $badCigar = 1;
-                    }elsif($cigarNumber=~m/\D/){
-			$badCigar = 1;
                     }
 			$newCigar = $newCigar.$cigarNumber;
 			$newCigar = $newCigar.$letter;
 			$seenJunction = 1;
 		}else{
 		    $cigarNumber = $number;
-                    if($cigarNumber==0 and $letter eq 'M'){
-                        $badCigar = 1;
-                    }elsif($cigarNumber=~m/\D/){
-			$badCigar = 1;
-                    }
+            if(($cigarNumber==0 and $letter eq 'M') or $cigarNumber=~m/\D/){
+				$badCigar = 1;
+            }
 		    $newCigar = $newCigar.$cigarNumber.$letter;
 		}
 	
