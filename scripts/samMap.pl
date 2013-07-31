@@ -135,13 +135,13 @@ while(<SAM>){
 		$tSam[5]=~ s/$number$letter//;
 		$cigarLen = length($tSam[5]);
 	}
-	if($newCigar =~ m/N/ and $badCigar==0){
+	if($newCigar =~ m/N/ and $badCigar==0 and not($newCigar=~m/\d+H\d+N\d+H/)){
 		print $tSam[0]."\t".$tSam[1]."\t".$tMap[13]."\t".$startCoord."\t".$tSam[4]."\t$newCigar";
 		$samLen = @tSam;
 		for ($count = 6; $count < $samLen; $count ++){
 			print "\t$tSam[$count]";
 		}
-	}elsif($badCigar==1){
+	}elsif($badCigar==1 or $newCigar=~m/\d+H\d+N\d+H/){
 	    print STDERR "Warning - Bad CIGAR (this alignment is not included in the output at stdout):\n".$tSam[0]."\t".$tSam[1]."\t".$tMap[13]."\t".$startCoord."\t".$tSam[4]."\t$newCigar\n";
                 $samLen = @tSam;
                 for ($count = 6; $count < $samLen; $count ++){
