@@ -98,7 +98,7 @@ public:
     list<OrthoExon> getOrthoExons();
     void cutIncompleteCodons(vector<ExonCandidate*> &orthoex);
     void readOmega(string file);
-    string getAlignedOrthoExon(AlignSeq *as_ptr, ExonCandidate* ec, string seq, vector<int> offsets, int speciesIdx);
+    string getAlignedOrthoExon(AlignSeq *as_ptr, ExonCandidate* ec, string seq, int offset);
     vector <string> getSeqForPaml(AlignmentBlock *it_ab, vector<ExonCandidate*> oe, vector<string> seq, vector<int> offsets, vector<int> speciesIdx);
     static void openOutputFiles();
     void printGeneRanges();
