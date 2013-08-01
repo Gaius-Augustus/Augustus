@@ -85,9 +85,12 @@ class AlignSeq {
 public:
     AlignSeq() {}
     ~AlignSeq(){}
-    string name; // Mario: this is the species name rename later
-    pair<string,long int> seqID; // stores the sequence ID and the length of the sequence ID
-    int start, offset, seqLen, alignLen;
+    string sname; // species name
+    string seqID; // e.g. chr21
+    int chrLen;   // total length of sequence seqID (needed for reverse complementing alignments)
+    int start;    // start position of alignment, 1-based
+    int seqLen;   // length of aligned sequence fragment, not counting gaps characters
+    int alignLen; // length of aligned sequence fragment, including gap characters
     Strand strand;
     vector<int*> cmpStarts;
     list<block> sequence;

@@ -936,7 +936,6 @@ void SingleTargetExonScorer::checkResults(const OptionListItem& oli,
 	maxProbNow = leftViterbi * suffixFactor * transEmiProb * getFactor();
 	ViterbiSubmapType::const_iterator iter = currmap->bound(rightId);
 	if (iter == currmap->end() || iter->first != rightId || iter->second.predMap != pred) {
-	    ViterbiSubmapEntry ent = iter->second;
 	    error = "Predecessor submap mismatch!\n";
 	} else if (pred != 0 && predSubstate != currmap->getPredecessorSubstate(rightId)) {
 	    error = "Predecessor substate mismatch!\n";

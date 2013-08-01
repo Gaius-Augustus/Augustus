@@ -22,6 +22,7 @@ class OrthoGraph;
 
 struct AlignmentBlock {
     vector<AlignSeq*> alignSpeciesTuple;
+    AlignmentBlock(size_t n) : alignSpeciesTuple(n, NULL){} // initialize with NULL, which stand for missing AlignSeqs
     ~AlignmentBlock(){
 	// Steffi: this causes a segmentation fault for more than two species. I don't know why.
 	// for (int i=0; i<alignSpeciesTuple.size(); i++) 

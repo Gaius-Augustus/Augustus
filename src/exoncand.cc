@@ -9,7 +9,6 @@
  * --------|--------------------|------------------------------------------
  * 03.11.11| Mario Stanke       | creation of the file
  * 06.12.11| Alexander Gebauer  | implementation of getExonCands
- * 22.02.12| Alexander Gebauer  | implementation of readAlignments
  * 29.02.12| Alexander Gebauer  | implementation of summarizeAlignments
  * 27.03.12| Alexander Gebauer  | (implementation of computeIntervals referring to SequenceFeatureCollection::computeIndices)
  **********************************************************************/

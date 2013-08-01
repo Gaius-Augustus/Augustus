@@ -33,6 +33,7 @@
 #include <vector>
 #include <limits>
 #include <algorithm> // for std:sort
+#include <map>
 
 using namespace std;
 
@@ -739,6 +740,14 @@ char *getRandomDNA(int len);
  * vector v. 
  */
 Double quantile(const vector<Double> &v, float q);
+
+/* obtain a "hashtable" from a list of unique names, e.g.
+ * [human, mouse, dog] becomes
+ * human => 0, mouse => 1, dog => 2
+ * Mario: This could become an unordered_map (expected constant time) once we commit to C++11,
+ * rather than a logarithmic tree data structure
+ */
+map<string, size_t> *getMap (vector<string> names) throw(ProjectError);
 
 /*
  * functions used in earlier versions

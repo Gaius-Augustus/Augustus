@@ -13,6 +13,7 @@
 #include "exoncand.hh"
 #include "genomicMSA.hh"
 #include "orthoexon.hh"
+#include "phylotree.hh"
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -49,7 +50,7 @@ GeneMSA* GenomicMSA::getNextGene() {
         for (int i=0; i<(*it_prev)->alignSpeciesTuple.size(); i++) {
             if ((*it_prev)->alignSpeciesTuple.at(i)!=NULL) {
                 if ((geneChr[i] == "") && (geneStrand[i] == STRAND_UNKNOWN)) {
-                    geneChr[i] = (*it_prev)->alignSpeciesTuple.at(i)->seqID.first;
+                    geneChr[i] = (*it_prev)->alignSpeciesTuple.at(i)->seqID;
                     geneStrand[i] = (*it_prev)->alignSpeciesTuple.at(i)->strand;
                 }
                 geneStarts[i] = (*it_prev)->alignSpeciesTuple.at(i)->start;
@@ -61,10 +62,10 @@ GeneMSA* GenomicMSA::getNextGene() {
             // the alignment parts have to be on the same strand, the same seqID and less than "maxIntronLen" apart
             // if there is only a short possible exon part of a species different to the strand or chromosome, it will be ignored
             if (((*it_pos)->alignSpeciesTuple.at(i)!=NULL) && (geneStrand[i] != STRAND_UNKNOWN) && (geneChr[i] != "")) {
-                if (((*it_pos)->alignSpeciesTuple.at(i)->strand != geneStrand[i]) || ((*it_pos)->alignSpeciesTuple.at(i)->seqID.first != geneChr[i])
+                if (((*it_pos)->alignSpeciesTuple.at(i)->strand != geneStrand[i]) || ((*it_pos)->alignSpeciesTuple.at(i)->seqID != geneChr[i])
                       || ((*it_pos)->alignSpeciesTuple.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0)) {
 		    if (it_succ != alignment.end() && (*it_succ)->alignSpeciesTuple.at(i) != NULL) {
-                        if (((*it_succ)->alignSpeciesTuple.at(i)->strand != geneStrand[i]) || ((*it_succ)->alignSpeciesTuple.at(i)->seqID.first != geneChr[i])
+                        if (((*it_succ)->alignSpeciesTuple.at(i)->strand != geneStrand[i]) || ((*it_succ)->alignSpeciesTuple.at(i)->seqID != geneChr[i])
                                || ((*it_succ)->alignSpeciesTuple.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0) || (((*it_pos)->alignSpeciesTuple.at(i)->seqLen) > maxChangedSeq)
                                || ((*it_succ)->alignSpeciesTuple.at(i)->start - (geneStarts[i] +  geneSeqLens[i]) > maxIntronLen)
                                || ((*it_succ)->alignSpeciesTuple.at(i)->start + (*it_succ)->alignSpeciesTuple.at(i)->seqLen - seqStart[i]) > maxGeneLen) {
@@ -102,61 +103,31 @@ GeneMSA* GenomicMSA::getNextGene() {
     }
     ptr->alignment.assign(this->alignment.begin(),it_pos);
     this->alignment.erase(this->alignment.begin(),it_pos);
-
-    /*for (list<AlignmentBlock*>::iterator it=ptr->alignment.begin(); it!=ptr->alignment.end(); it++) {
-		cout<<"ptr"<<endl;
-		for (int j=0; j<(*it)->alignSpeciesTuple.size(); j++) {
-			if ((*it)->alignSpeciesTuple.at(j)!=NULL) {
-				//cout<<"Name: "<< (*it)->alignSpeciesTuple.at(j)->name <<endl;
-				cout<<"seqID: "<< (*it)->alignSpeciesTuple.at(j)->seqID.first<<endl;
-				//cout<<"seqID length: "<< (*it)->alignSpeciesTuple.at(j)->seqID.second<<endl;
-				cout<<"start: "<<(*it)->alignSpeciesTuple.at(j)->start<<endl;
-				cout<<"cmp_starts: ";
-				for (int i=0; i<(*it)->alignSpeciesTuple.at(j)->cmpStarts.size(); i++) {
-					if ((*it)->alignSpeciesTuple.at(j)->cmpStarts[i]!=NULL) {
-						cout<<*((*it)->alignSpeciesTuple.at(j)->cmpStarts[i])<<"  ";
-					} else {
-						cout<<"NULL"<<"  ";
-					}
-				}
-				cout<<endl;
-				cout<<"sequencelength: "<<(*it)->alignSpeciesTuple.at(j)->seqLen<<endl;
-				cout<<"alignmentlength: "<<(*it)->alignSpeciesTuple.at(j)->alignLen<<endl;
-				cout<<"Strand: "<<(*it)->alignSpeciesTuple.at(j)->strand<<endl;
-				if ((*it)->alignSpeciesTuple.at(j)->sequence.empty()) {
-					cout<<"komisch"<<endl;
-				}
-				while (!(*it)->alignSpeciesTuple.at(j)->sequence.empty()) {
-					cout<< "segment_start "<<(*it)->alignSpeciesTuple.at(j)->sequence.front().begin;
-					cout<<"   length "<<(*it)->alignSpeciesTuple.at(j)->sequence.front().length;
-					cout<<"   gaps "<<(*it)->alignSpeciesTuple.at(j)->sequence.front().previousGaps<<endl;
-					(*it)->alignSpeciesTuple.at(j)->sequence.pop_front();
-				}
-			} else {
-				cout<<"Nullpointer"<<endl;
-			}
-		}
-		cout<<"ptr"<<endl;
-		cout<<endl;
-	}*/
     return ptr;
 }
 
-//  *.maf-file is read and will be saved as vector with pointers on a vector with pointers
-void GenomicMSA::readAlignment(vector<string> speciesnames) {
+/*  *.maf file is read and saved into this->alignment
+ *  only the species with names in the given list are considered, the rest is ignored
+ */
+void GenomicMSA::readAlignment(string alignFilename, vector<string> speciesnames) {
     int index = 0;
-    string indifferent;
+    string buffer;
     string completeName;
-    char str;
+    char strandChar;
     string seq;
     block cur_block;
     AlignSeq *aseq;
-    AlignmentBlock alignBlock;
-    AlignmentBlock *complPtr;
-    vector<string> notExistingSpecies;
-    alignBlock.alignSpeciesTuple = vector<AlignSeq*> (speciesnames.size());
+    AlignmentBlock *alignBlock;
+    map<string, size_t> *speciesIndex = NULL; // to quickly access the number for a given species name
+    map<string, size_t> notExistingSpecies;
 
-    string alignFilename = Constant::alnfile;
+    try {
+	speciesIndex = getMap(speciesnames);
+    } catch (ProjectError e) {
+	cerr << e.getMessage() << endl << "GenomicMSA::readAlignment some species name in tree or name list occurred more than once.";
+	throw e;
+    }
+
     ifstream Alignmentfile;
     Alignmentfile.open(alignFilename.c_str(), ifstream::in);
     if (!Alignmentfile) {
@@ -165,120 +136,132 @@ void GenomicMSA::readAlignment(vector<string> speciesnames) {
     }
 
     while (!Alignmentfile.eof()) {
-        Alignmentfile >> indifferent;
-        int speciesFound = 0;
-        if (indifferent == "s") {
-            for (int i=0; i<speciesnames.size(); i++) {
-                alignBlock.alignSpeciesTuple[i]=NULL;
-            }
-            while (speciesnames.size() > speciesFound) {
-                if (indifferent != "s") {
-                    break;
-                } else {
-                    indifferent = "not s";
-                    aseq = new AlignSeq;
-                    // reads the name of the species and the seqID from the first column
-		    // TODO: may have to be checked/adjusted for general .maf files
-                    Alignmentfile >> completeName;
-                    for (int i=0; i<completeName.length(); i++) {
-			// seperator is the point '.' for example hs19.chr21, has to be changed
-                        if ((completeName[i] == '-') || (completeName[i] == '.')) { 
-                            aseq->name = completeName.substr(0,i);
-                            aseq->seqID.first = completeName.substr(i+1, string::npos);
-			    // some input file have a suffix "(..)" that needs to be stripped
-			    string::size_type p = aseq->seqID.first.find_first_of("(");
-			    if (p != std::string::npos)
-				aseq->seqID.first = aseq->seqID.first.erase(p); 
-                            break;
-                        }
-                        if (i == completeName.length()-1) {
-                            aseq->name = completeName;
-                            aseq->seqID.first = "unknown";
-                        }
-                    }
-                    for (int i=0; i<speciesnames.size(); i++) {
-                        if (speciesnames[i] == aseq->name) {
-                            index = i;
-                            break;
-                        } else if (i == (speciesnames.size() - 1)) {
-                            index = -1;
-                            if (notExistingSpecies.empty()) {
-                                notExistingSpecies.push_back(aseq->name);
-                            } else {
-                                bool found = false;
-                                for (int k=0; k<notExistingSpecies.size(); k++) {
-                                    if (notExistingSpecies[k] == aseq->name) {
-                                        found =true;
-                                        break;
-                                    }
-                                }
-                                if (!found) {
-                                    notExistingSpecies.push_back(aseq->name);
-                                    found = false;
-                                }
-                            }
-                        }
-                    }
-                    Alignmentfile >> aseq->offset;
-                    aseq->start = aseq->offset+1;
-                    aseq->cmpStarts.push_back(&aseq->start);
-                    Alignmentfile >> aseq->seqLen;
-                    Alignmentfile >> str;
-                    if (str == '+') {
-                        aseq->strand = plusstrand;
-                    } else if (str == '-') {
-                        aseq->strand = minusstrand;
-                    } else {
-                        aseq->strand = STRAND_UNKNOWN;
-                    }
-                    Alignmentfile >> aseq->seqID.second;
-                    Alignmentfile >> seq;
-                    aseq->alignLen = seq.length();
-                    Alignmentfile >> indifferent;
-		    //cout << "alignment " << aseq->seqLen << " " << aseq->name << " " << aseq->seqID.first << " start=" << aseq->start << " strand=" << aseq->strand << endl;
-                    // reads the aligned sequence
-                    cur_block.begin = aseq->start;
-                    cur_block.length = 1;
-                    cur_block.previousGaps = 0;
-                    for (int i=1; i <= seq.length(); i++) {
-                        if ((seq[i-1]!='-')&&(seq[i]=='-')) {
-                            aseq->sequence.push_back(cur_block);
-                        } else if ((seq[i-1]=='-')&&(seq[i]=='-')) {
-                            cur_block.previousGaps++;
-                        } else if ((seq[i-1]=='-')&&(seq[i]!='-')) {
-                            cur_block.begin=aseq->start+i;
-                            cur_block.length=1;
-                            cur_block.previousGaps++;
-                        } else if ((seq[i-1]!='-')&&(seq[i]!='-')) {
-                            if (i==seq.length()) {
-                                aseq->sequence.push_back(cur_block);
+        Alignmentfile >> buffer;
+        int numSpeciesFound = 0;
+        if (buffer == "s") {
+	    alignBlock = new AlignmentBlock(speciesnames.size()); // create new empty alignment block
+            // loop over the lines of the alignment block, don't search any further if enough species were found
+            while (speciesnames.size() > numSpeciesFound && buffer == "s") {
+		aseq = new AlignSeq;
+		// reads the name of the species and the seqID from the first column
+		// TODO: may have to be checked/adjusted for general .maf files
+		Alignmentfile >> completeName;
+		for (int i=0; i<completeName.length(); i++) {
+		    // seperator is the point '.' for example hs19.chr21, has to be changed
+		    if ((completeName[i] == '-') || (completeName[i] == '.')) { 
+			aseq->sname = completeName.substr(0,i);
+			aseq->seqID = completeName.substr(i+1, string::npos);
+			// some input file have a suffix "(..)" that needs to be stripped
+			string::size_type p = aseq->seqID.find_first_of("(");
+			if (p != std::string::npos)
+			    aseq->seqID = aseq->seqID.erase(p); 
+			break;
+		    }
+		    if (i == completeName.length()-1) {
+			aseq->sname = completeName;
+			aseq->seqID = "unknown";
+		    }
+		}
+		  
+		Alignmentfile >> aseq->start;
+		aseq->start += 1;
+		aseq->cmpStarts.push_back(&aseq->start);
+		Alignmentfile >> aseq->seqLen;
+		Alignmentfile >> strandChar;
+		if (strandChar == '+') {
+		    aseq->strand = plusstrand;
+		} else if (strandChar == '-') {
+		    aseq->strand = minusstrand;
+		} else {
+		    aseq->strand = STRAND_UNKNOWN;
+		}
+		Alignmentfile >> aseq->chrLen;
+		Alignmentfile >> seq;
+		aseq->alignLen = seq.length();
+		Alignmentfile >> buffer;
 
-                            } else {
-                                cur_block.length++;
-                            }
-                        }
-                    }
-                    if (index != -1) {
-                        alignBlock.alignSpeciesTuple[index]=aseq;
-                        speciesFound++;
-                    }
-                }
-            }
-            complPtr = new AlignmentBlock;
-            *complPtr = alignBlock;
-            this->alignment.push_back(complPtr);
-        }
+		// reads the aligned sequence
+		cur_block.begin = aseq->start;
+		cur_block.length = 1;
+		cur_block.previousGaps = 0;
+		for (int i=1; i <= seq.length(); i++) {
+		    if ((seq[i-1] != '-') && ( seq[i] == '-')) {
+			aseq->sequence.push_back(cur_block);
+		    } else if ((seq[i-1]=='-')&&(seq[i]=='-')) {
+			cur_block.previousGaps++;
+		    } else if ((seq[i-1]=='-')&&(seq[i]!='-')) {
+			cur_block.begin = aseq->start+i;
+			cur_block.length=1;
+			cur_block.previousGaps++;
+		    } else if ((seq[i-1]!='-')&&(seq[i]!='-')) {
+			if (i==seq.length()) {
+			    aseq->sequence.push_back(cur_block);
+			} else {
+			    cur_block.length++;
+			}
+		    }
+		}
+		    
+		map<string,size_t>::iterator pit = speciesIndex->find(aseq->sname);
+
+		if (pit != speciesIndex->end()) { // species name in the white list
+		    index = pit->second;
+		    alignBlock->alignSpeciesTuple[index] = aseq; // place at the right position
+		    numSpeciesFound++;
+		} else {
+		    notExistingSpecies.insert(pair<string, size_t>(aseq->sname,1));
+		}
+	    }
+	    alignment.push_back(alignBlock);
+	}
     }
+    // clean up
     Alignmentfile.close();
-
-    if (!(notExistingSpecies.empty())) {
-        cout<<endl;
-        for (int i=0; i<notExistingSpecies.size(); i++) {
-            cout<<"species "<<notExistingSpecies[i]<<" isn't included in the tree file"<<endl;
-        }
-        cout<<endl;
+    for (map<string,size_t>::iterator it = notExistingSpecies.begin(); it != notExistingSpecies.end(); ++it)
+	cerr << "Warning: Species " << it->first << "is not included in the target list of species. These alignment lines are ingored." << endl;
+    if (speciesIndex){
+	speciesIndex->clear();
+	delete speciesIndex;
     }
 }
+
+/* printMAF
+ * print alignment in .maf format, to stdout if outFname is empty string
+ */
+void GenomicMSA::printAlignment(string outFname){
+    AlignmentBlock *aliblock;
+    for (list<AlignmentBlock*>::iterator alit = alignment.begin(); alit != alignment.end(); alit++) {
+	aliblock = *alit;
+	for(vector<AlignSeq*>::iterator aseqit = aliblock->alignSpeciesTuple.begin(); aseqit != aliblock->alignSpeciesTuple.end(); aseqit++){
+	    AlignSeq* aseq = *aseqit;
+	    if (aseq) {
+		cout << setw(15) << aseq->sname << "." << aseq->seqID
+		     << "\tchrLen=" << aseq->chrLen
+		     << "\talignLen=" << aseq->alignLen
+		     << "\tstart=" << aseq->start
+		     << "\tseqLen=" << aseq->seqLen
+		     << "\t" << ((aseq->strand == plusstrand)? "+":"_");
+		cout << "\tstarts:";
+		for (vector<int *>::iterator startsit = aseq->cmpStarts.begin(); startsit != aseq->cmpStarts.end(); ++startsit){
+		    cout << **startsit;
+		    if (startsit+1 != aseq->cmpStarts.end())
+			cout << ",";
+		}
+		cout << "\tsequence:";
+		for (list<block>::iterator bit = aseq->sequence.begin(); bit != aseq->sequence.end();){
+		    cout << "(" << bit->begin << "," << bit->length << "," << bit->previousGaps << ")";
+		    if (++bit != aseq->sequence.end())
+			cout << ";";
+		}
+	    } else {
+		cout << "no alignment";
+	    }
+	    cout << endl;
+	}
+	cout << endl;
+    }
+}
+
 // Mario: this apparently assumes that the maf aligments are sorted so that neighboring
 // alignments can be merged in this order. TODO: sorting.
 // aligned sequences, which have a distance of at most maxGapLen bases will be merged
@@ -295,7 +278,7 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
         int emptyBegin=1;
         int geneStart = 0;
         int geneSeqLen = 0;
-        Strand  geneStrand = STRAND_UNKNOWN;
+        Strand geneStrand = STRAND_UNKNOWN;
         string geneChr = "";
 
         if (it_pos==this->alignment.begin()) {
@@ -313,7 +296,7 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                         }
                     }
                     if ((*it_prev)->alignSpeciesTuple.at(j)!=NULL) {
-                        geneChr = (*it_prev)->alignSpeciesTuple.at(j)->seqID.first;
+                        geneChr = (*it_prev)->alignSpeciesTuple.at(j)->seqID;
                         geneStrand = (*it_prev)->alignSpeciesTuple.at(j)->strand;
                         geneStart = (*it_prev)->alignSpeciesTuple.at(j)->start;
                         geneSeqLen = (*it_prev)->alignSpeciesTuple.at(j)->seqLen;
@@ -321,7 +304,7 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
 
                     //  max maxGapLen bases apart, on the same strand and on the same seqID, when there is an alignmentblock before
                     if (((*it_pos)->alignSpeciesTuple.at(j)!=NULL) && (geneChr != "")) {
-                            if (((*it_pos)->alignSpeciesTuple.at(j)->strand != geneStrand) || ((*it_pos)->alignSpeciesTuple.at(j)->seqID.first != geneChr)) {
+                            if (((*it_pos)->alignSpeciesTuple.at(j)->strand != geneStrand) || ((*it_pos)->alignSpeciesTuple.at(j)->seqID != geneChr)) {
                                 complete=false;
                                 break;
                             }
@@ -385,37 +368,4 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
         }
         it_prev=it_pos;
     }
-
-    /*for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
-        cout<<"Tuplestart"<<endl;
-        for (int j=0; j<(*it)->alignSpeciesTuple.size(); j++) {
-            if ((*it)->alignSpeciesTuple.at(j)!=NULL) {
-                cout<<"Name: "<< (*it)->alignSpeciesTuple.at(j)->name <<endl;
-                cout<<"seqID: "<< (*it)->alignSpeciesTuple.at(j)->seqID.first<<endl;
-                //cout<<"seqID length: "<< (*it)->alignSpeciesTuple.at(j)->seqID.second<<endl;
-                cout<<"start: "<<(*it)->alignSpeciesTuple.at(j)->start<<endl;
-                cout<<"cmp_starts: ";
-                for (int i=0; i<(*it)->alignSpeciesTuple.at(j)->cmpStarts.size(); i++) {
-                    if ((*it)->alignSpeciesTuple.at(j)->cmpStarts[i]!=NULL) {
-                        cout<<*((*it)->alignSpeciesTuple.at(j)->cmpStarts[i])<<"  ";
-                    } else {
-                        cout<<"NULL"<<"  ";
-                    }
-                }
-                cout<<endl;
-                cout<<"sequencelength: "<<(*it)->alignSpeciesTuple.at(j)->seqLen<<endl;
-                cout<<"alignmentlength: "<<(*it)->alignSpeciesTuple.at(j)->alignLen<<endl;
-                cout<<"Strand: "<<(*it)->alignSpeciesTuple.at(j)->strand<<endl;
-                for (list<block>::iterator itb=(*it)->alignSpeciesTuple.at(j)->sequence.begin(); itb!=(*it)->alignSpeciesTuple.at(j)->sequence.end(); itb++) {
-                    cout<< "segment_start "<<(*itb).begin;
-                    cout<<"   length "<<(*itb).length;
-                    cout<<"   gaps "<<(*itb).previousGaps<<endl;
-                }
-            } else {
-                cout<<"Nullpointer"<<endl;
-            }
-        }
-        cout<<"Tupleend"<<endl;
-        cout<<endl;
-    }*/
 }

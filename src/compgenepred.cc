@@ -91,8 +91,8 @@ void CompGenePred::start(){
     // codonevo.printBranchLengths();
     
     codonevo.setOmegas(40);
-    cout << "Omegas, for which substitution matrices are stored:" << endl;
-    codonevo.printOmegas();
+    //cout << "Omegas, for which substitution matrices are stored:" << endl;
+    //codonevo.printOmegas();
     codonevo.computeLogPmatrices();
     
     // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
@@ -102,7 +102,9 @@ void CompGenePred::start(){
     vector<string> speciesNames;
     OrthoGraph::tree->getSpeciesNames(speciesNames);
     GenomicMSA msa;
-    msa.readAlignment(speciesNames);  // reads the alignment
+    msa.readAlignment(Constant::alnfile, speciesNames);  // reads the alignment
+    // msa.printAlignment("");
+    // exit(1);
     msa.prepareExons(); // merges alignment blocks if possible. Mario: TODO sort aligments in between
     vector<int> offsets;
     bool AlexFail;

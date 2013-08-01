@@ -38,18 +38,18 @@ vector<ofstream*> GeneMSA::omega_outfiles;
 ofstream *GeneMSA::pamlFile;
 
 string GeneMSA::getName(int speciesIdx) {
-    for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
-        if ((*it)->alignSpeciesTuple.at(speciesIdx)!=NULL) {
-            return (*it)->alignSpeciesTuple.at(speciesIdx)->name;
-        }
-    }
-    return "";
+	for (list<AlignmentBlock*>::iterator it = this->alignment.begin(); it != this->alignment.end(); it++) {
+		if ((*it)->alignSpeciesTuple.at(speciesIdx) != NULL) {
+			return (*it)->alignSpeciesTuple.at(speciesIdx)->sname;
+		}
+	}
+	return "";
 }
 
 long int GeneMSA::getSeqIDLength(int speciesIdx) {
     for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
         if ((*it)->alignSpeciesTuple.at(speciesIdx)!=NULL) {
-            return (*it)->alignSpeciesTuple.at(speciesIdx)->seqID.second;
+            return (*it)->alignSpeciesTuple.at(speciesIdx)->chrLen;
         }
     }
     return 0;
@@ -58,7 +58,7 @@ long int GeneMSA::getSeqIDLength(int speciesIdx) {
 string GeneMSA::getSeqID(int speciesIdx) {
     for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
         if ((*it)->alignSpeciesTuple.at(speciesIdx)!=NULL) {
-            return (*it)->alignSpeciesTuple.at(speciesIdx)->seqID.first;
+            return (*it)->alignSpeciesTuple.at(speciesIdx)->seqID;
         }
     }
     return "";
@@ -77,14 +77,14 @@ Strand GeneMSA::getStrand(int speciesIdx) {
 int GeneMSA::getStart(int speciesIdx) {
   int start;
     for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
-        if ((*it)->alignSpeciesTuple.at(speciesIdx)!=NULL) {
+        if ((*it)->alignSpeciesTuple.at(speciesIdx) != NULL) {
             if (this->getStrand(speciesIdx) == plusstrand) {
-	        start = (*it)->alignSpeciesTuple.at(speciesIdx)->offset - utr_range;
+	        start = (*it)->alignSpeciesTuple.at(speciesIdx)->start - 1 - utr_range;
 		return start;
             } else {
                 for (list<AlignmentBlock*>::reverse_iterator rit=this->alignment.rbegin(); rit!=this->alignment.rend(); rit++) {
                     if ((*rit)->alignSpeciesTuple.at(speciesIdx)!=NULL) {
-		        int start = ((*it)->alignSpeciesTuple.at(speciesIdx)->seqID.second) - ((*rit)->alignSpeciesTuple.at(speciesIdx)->offset)
+		        int start = ((*it)->alignSpeciesTuple.at(speciesIdx)->chrLen) - ((*rit)->alignSpeciesTuple.at(speciesIdx)->start-1)
                                 - ((*rit)->alignSpeciesTuple.at(speciesIdx)->seqLen) - utr_range;
 			return start;
                     }
@@ -99,12 +99,12 @@ int GeneMSA::getEnd(int speciesIdx){
     for (list<AlignmentBlock*>::reverse_iterator rit = this->alignment.rbegin(); rit != this->alignment.rend(); rit++) {
         if ((*rit)->alignSpeciesTuple.at(speciesIdx)!=NULL) {
 	    if (this->getStrand(speciesIdx) == plusstrand) {
-	        int end = (*rit)->alignSpeciesTuple.at(speciesIdx)->offset + (*rit)->alignSpeciesTuple.at(speciesIdx)->seqLen - 1 + utr_range;
+	        int end = (*rit)->alignSpeciesTuple.at(speciesIdx)->start - 1 + (*rit)->alignSpeciesTuple.at(speciesIdx)->seqLen - 1 + utr_range;
 		return end;
 	    } else {
 	        for (list<AlignmentBlock*>::iterator it=this->alignment.begin(); it!=this->alignment.end(); it++) {
 	  	  if ((*it)->alignSpeciesTuple.at(speciesIdx) != NULL){
-		      int end = ((*rit)->alignSpeciesTuple.at(speciesIdx)->seqID.second) - ((*it)->alignSpeciesTuple.at(speciesIdx)->offset + 1) + utr_range;
+		      int end = ((*rit)->alignSpeciesTuple.at(speciesIdx)->chrLen) - ((*it)->alignSpeciesTuple.at(speciesIdx)->start) + utr_range;
 		      return end;
 		  }
 	      }

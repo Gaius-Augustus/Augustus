@@ -25,7 +25,6 @@
 #include <vector>
 #include <cstdlib>
 
-
 // declaration of "global" variables
 //---------------------------------------
 string Constant::configPath;
@@ -390,6 +389,16 @@ Double quantile(const vector<Double> &v, float q){
   int threshindex = (int) (q * w.size());
   // cout << "quantile: size=" << w.size() << " index=" << threshindex << endl;
   return w[threshindex];
+}
+
+map<string, size_t> *getMap (vector<string> names) throw(ProjectError) {
+    map<string, size_t> *hashtable = new map<string, size_t>;
+    for (size_t i=0; i<names.size(); i++){
+	if (hashtable->find(names[i]) != hashtable->end())
+	    throw ProjectError(string("getMap: list of names contains multiple entries: ") + names[i]);
+	hashtable->insert(pair<string, size_t>(names[i], i));
+    }
+    return hashtable;
 }
 
 /*
