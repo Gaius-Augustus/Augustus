@@ -33,8 +33,9 @@ public:
 private:
     list<AlignmentBlock*> alignment;
     /*
-     * merges multiple alignment parts if all species are less than "maxGapLen" bases apart and
-     * 'percentSpeciesAligned' percent of the species are contained in the alignment parts
+     * merges neighboring AlignmentBlocks in alignment if all species are at most "maxGapLen" bases apart and
+     * at least 'percentSpeciesAligned' percent of the species are contained in the alignment parts
+     * Purpose: An ortho exon will be assumed to be contained in a single (merged) alignment block.
      */
     void mergeAlignment(int maxGapLen, float percentSpeciesAligned);
 

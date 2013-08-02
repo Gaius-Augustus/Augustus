@@ -20,15 +20,26 @@
 //forward declarations
 class OrthoGraph;
 
-struct AlignmentBlock {
-    vector<AlignSeq*> alignSpeciesTuple;
-    AlignmentBlock(size_t n) : alignSpeciesTuple(n, NULL){} // initialize with NULL, which stand for missing AlignSeqs
+class AlignmentBlock {
+public:
+    AlignmentBlock(size_t n) : rows(n, NULL){} // initialize with NULL, which stand for missing AlignSeqs
     ~AlignmentBlock(){
 	// Steffi: this causes a segmentation fault for more than two species. I don't know why.
-	// for (int i=0; i<alignSpeciesTuple.size(); i++) 
-	    //delete alignSpeciesTuple.at(i);	
-    } 
+	// for (int i=0; i<rows.size(); i++) 
+	    //delete rows.at(i);	
+    }
+    friend bool mergeable (AlignmentBlock *b1, AlignmentBlock *b2, int maxGapLen, float mergeableFrac);
+public: // should rather be private
+    vector<AlignSeq*> rows;
 };
+
+/*
+ * b1 and b2 can be merged in that order because they are very similar and right next to each other.
+ * In at least 'mergeableFrac' of the alignment block rows the aligned sequenes are
+ * present, refer to the same terget sequence, are on the same strand and satisfy 0 <= gaplen <= maxGapLen
+ */
+bool mergeable (AlignmentBlock *b1, AlignmentBlock *b2, int maxGapLen, float mergeableFrac);
+
 
 class GeneMSA {
 public:
