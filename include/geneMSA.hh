@@ -11,6 +11,7 @@
 #define _GENEMSA
 
 // project includes
+#include "alignment.hh"
 #include "exoncand.hh"
 #include "orthoexon.hh"
 #include "phylotree.hh"
@@ -20,29 +21,6 @@
 //forward declarations
 class OrthoGraph;
 
-class AlignmentBlock {
-public:
-    AlignmentBlock(size_t n) : alignLen(0) , rows(n, NULL) {} // initialize with NULL, which stand for missing AlignSeqs
-    ~AlignmentBlock(){
-	// Steffi: this causes a segmentation fault for more than two species. I don't know why.
-	// for (int i=0; i<rows.size(); i++) 
-	//    delete rows.at(i);	
-    }
-    friend bool mergeable (AlignmentBlock *b1, AlignmentBlock *b2, int maxGapLen, float mergeableFrac);
-    void merge(AlignmentBlock *other); // append 'other' AlignmentBlock to this
-public: // should rather be private
-    int alignLen; // all aligned sequences are this long when gaps are included
-    vector<AlignSeq*> rows;
-};
-
-/*
- * b1 and b2 can be merged in that order because they are very similar and right next to each other.
- * In at least 'mergeableFrac' of the alignment block rows the aligned sequenes are
- * present, refer to the same terget sequence, are on the same strand and satisfy 0 <= gaplen <= maxGapLen
- */
-bool mergeable (AlignmentBlock *b1, AlignmentBlock *b2, int maxGapLen, float mergeableFrac);
-
-
 class GeneMSA {
 public:
     static int utr_range;
@@ -51,19 +29,19 @@ public:
     static vector<int> exonCandID; // stores the IDs for exon candidates of different species
     static ofstream *pamlFile;
     static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles, omega_outfiles; // pointers to the output files
-    list<AlignmentBlock*> alignment;            // list of the alignment parts which possibly belong to a gene segment
+    list<Alignment*> alignment;            // list of the alignment parts which possibly belong to a gene segment
     vector< list<ExonCandidate*>* > exoncands;  // exon candidates found in the different species in a gene segment
     vector< map<string, ExonCandidate*>* > existingCandidates; // stores the keys of the exon candidates for the different species
     list<OrthoExon> orthoExonsList;		// list of ortholog exons found in a gene segment
     list<OrthoExon> orthoExonsWithOmega;        // list of ortholog exons with a computed omega=dN/dS ratio
 
-    GeneMSA() {};
+    GeneMSA(RandSeqAccess *rsa) {this->rsa = rsa;};
     static void setTree(PhyloTree *t){tree = t;}
     static void setCodonEvo(CodonEvo *c){codonevo = c;}
     static int numSpecies(){return tree->numSpecies();}
     ~GeneMSA(){
         if (!alignment.empty()) {
-	    // for (list<AlignmentBlock*>::iterator it = alignment.begin(); it != alignment.end(); it++) {
+	    // for (list<Alignment*>::iterator it = alignment.begin(); it != alignment.end(); it++) {
 	    // 	delete *it;
 	    // }
 	    alignment.clear();
@@ -85,8 +63,8 @@ public:
         }
     };
 
-    string getName(int speciesIdx);
-    long int getSeqIDLength(int speciesIdx);
+    string getName(int speciesIdx); // species name
+    //long int getSeqIDLength(int speciesIdx);
     string getSeqID(int speciesIdx);
     Strand getStrand(int speciesIdx);
     int getStart(int speciesIdx);
@@ -105,16 +83,17 @@ public:
      */
     void createExonCands(const char *dna, double assmotifqthresh=0.15, double assqthresh=0.3, double dssqthresh=0.7); // get all exon candidates
     Double computeSpliceSiteScore(Double exonScore, Double minProb, Double maxProb); //computes the score for the splice sites of an exon candidate
-    pair<int,int> getAlignedPosition(AlignSeq* ptr, int pos);	// computes the aligned position of a base in an alignment and the 'block' where the base is found
-    int getRealPosition(AlignSeq* ptr, int pos, int idx);	// computes the real position of a base dependent on its position in the alignment
+    pair<int,int> getAlignedPosition(AlignmentRow* row, int pos);  // computes the aligned position of a base in an alignment and the 'block' where the base is found
+    int getRealPosition(AlignmentRow* ptr, int pos, int idx);	// computes the real position of a base dependent on its position in the alignment
     void createOrthoExons(vector<int> offsets, OrthoGraph &orthograph);	// searches for the orthologue exons of the exon candidates of the reference species
     list<ExonCandidate*>* getExonCands(int speciesIdx);
     list<OrthoExon> getOrthoExons();
     void cutIncompleteCodons(vector<ExonCandidate*> &orthoex);
     void readOmega(string file);
-    string getAlignedOrthoExon(AlignSeq *as_ptr, ExonCandidate* ec, string seq, int offset);
-    vector <string> getSeqForPaml(AlignmentBlock *it_ab, vector<ExonCandidate*> oe, vector<string> seq, vector<int> offsets, vector<int> speciesIdx);
+    string getAlignedOrthoExon(AlignmentRow *as_ptr, ExonCandidate* ec, string seq, int offset);
+    vector <string> getSeqForPaml(Alignment *it_ab, vector<ExonCandidate*> oe, vector<string> seq, vector<int> offsets, vector<int> speciesIdx);
     static void openOutputFiles();
+    void printStats(); // to stdout
     void printGeneRanges();
     void printExonCands(vector<int> offsets);
     void printOrthoExons(RandSeqAccess *rsa, vector<int> offsets);
@@ -125,6 +104,7 @@ public:
 private:
     static PhyloTree *tree;
     static CodonEvo *codonevo;
+    RandSeqAccess *rsa;
 };
 
 #endif  // _GENEMSA

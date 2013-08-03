@@ -27,11 +27,32 @@
  * needed for comparative gene finding
  */
 class RandSeqAccess {
+public:
+    int getNumSpecies() {return numSpecies;}
+    void setLength(int idx, string chrName, int len);
+    int getChrLen(int idx, string chrName);
+    void setSpeciesNames(vector<string> speciesNames);
+    string getSname(size_t idx) {return speciesNames[idx];}
+    int getIdx(string speciesname) {
+	map<string,size_t>::iterator it = speciesIndex.find(speciesname);
+	if (it == speciesIndex.end())
+	    return -1;
+	else 
+	    return it->second;
+    }
+    void printStats();
+    virtual AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand) =  0;
+    AnnoSequence* getSeq(size_t speciesIdx, string chrName, int start, int end, Strand strand) {
+	return getSeq(getSname(speciesIdx), chrName, start, end, strand);
+    }
+
 protected:
     RandSeqAccess() {};
     virtual ~RandSeqAccess() {}
-public:
-    virtual AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand) =  0;
+    int numSpecies;
+    vector<map<string,int>> chrLen;
+    vector<string> speciesNames;
+    map<string, size_t> speciesIndex; // to quickly access the index for a given species name
 };
 
 /*

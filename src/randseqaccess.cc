@@ -23,6 +23,47 @@
 #include <query.h>
 #endif
 
+void RandSeqAccess::setLength(int idx, string chrName, int len){
+    map<string,int>::iterator it = chrLen[idx].find(chrName);
+    if (it == chrLen[idx].end()){
+	chrLen[idx].insert(pair<string,int>(chrName, len));
+    } else {
+	if (it->second != len)
+	    throw ProjectError("Lengths of " + chrName + " inconsistent.");
+    }
+}
+
+void RandSeqAccess::setSpeciesNames(vector<string> speciesNames){
+    numSpecies = speciesNames.size();
+    this->speciesNames = speciesNames;
+    chrLen.resize(numSpecies, map<string,int>()); // empty initialization
+    for (size_t i=0; i < numSpecies; i++){
+	if (speciesIndex.find(speciesNames[i]) != speciesIndex.end())
+	    throw ProjectError(string("List of species names contains multiple entries: ") + speciesNames[i]);
+	speciesIndex.insert(pair<string, size_t>(speciesNames[i], i));
+    }
+}
+
+int RandSeqAccess::getChrLen(int idx, string chrName){
+    map<string,int>::iterator it = chrLen[idx].find(chrName);
+    if(it != chrLen[idx].end()) {
+	return it->second;
+    } else {
+	cout << "RandSeqAccess::getChrLen failed on sequence " << chrName << " from species " << speciesNames[idx] << endl;
+	return -1; // TODO: error throwing
+    }
+}
+
+void RandSeqAccess::printStats(){
+    cout << "number of species" << numSpecies << endl;
+    for (int s=0; s<numSpecies; s++){
+	cout << "species " << setw(2) << s << ": " << speciesNames[s] << "\tspeciesIndex= " << getIdx(speciesNames[s]) << endl;
+	cout << "sequence lengths for species " << speciesNames[s] << " from alignment file:" << endl;
+	for (map<string,int>::iterator it = chrLen[s].begin(); it != chrLen[s].end(); ++it)
+	    cout << it->first << " => " << it->second << '\n';
+    }
+}
+
 MemSeqAccess::MemSeqAccess(){
     cout << "reading in file names for species from " << Constant::speciesfilenames << endl;
     filenames = getFileNames (Constant::speciesfilenames);

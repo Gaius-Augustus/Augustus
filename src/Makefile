@@ -21,7 +21,7 @@ OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o
  meaPath.o exoncand.o randseqaccess.o speciesgraph.o\
   fasta.o
 ifdef COMPGENEPRED
-	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o
+	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 endif
 DUMOBJS = dummy.o
@@ -561,6 +561,7 @@ compgenepred.o : \
         ../include/geneMSA.hh \
 	../include/orthoexon.hh \
 	../include/namgene.hh \
+	../include/randseqaccess.hh \
        compgenepred.cc
 
 randseqaccess.o : \
@@ -586,6 +587,8 @@ genomicMSA.o : \
 	../include/genomicMSA.hh \
 	../include/exoncand.hh \
 	../include/orthoexon.hh \
+	../include/randseqaccess.hh \
+	../include/alignment.hh \
 	genomicMSA.cc
 
 geneMSA.o : \
@@ -595,6 +598,8 @@ geneMSA.o : \
 	../include/orthoexon.hh \
 	../include/intronmodel.hh \
 	../include/namgene.hh \
+	../include/randseqaccess.hh \
+	../include/alignment.hh \
 	geneMSA.cc
 
 parser/parse.o: \
@@ -622,6 +627,10 @@ fasta.o: \
 contTimeMC.o: \
 	../include/contTimeMC.hh \
 	contTimeMC.cc
+
+alignment.o: \
+	../include/alignment.hh \
+	alignment.cc
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

@@ -40,6 +40,8 @@ using namespace std;
 
 enum Strand {STRAND_UNKNOWN=-1, plusstrand, minusstrand, bothstrands};
 
+ostream& operator<< (ostream& strm, const Strand s);
+
 /**
  * ASS       = acceptor splice site, between intron and exon
  * DSS       = donor splice site , between exon and intron

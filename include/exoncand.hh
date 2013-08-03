@@ -40,12 +40,6 @@ extern const char* stateExonTypeIdentifiers[EXON_TYPES-1];
 // converts a stateTypeIdentifier to the ExonType
 ExonType toExonType(const char* str);
 
-// structure for the reading of an aligned sequence
-struct block {
-    int begin;
-    int length;
-    int previousGaps;
-};
 
 class ExonCandidate {
 public:
@@ -78,23 +72,6 @@ public:
     int complementType(void);
     StateType getStateType(void);
     string key(void);
-};
-
-// class stores all the information about an alignment part of a single species
-class AlignSeq {
-public:
-    AlignSeq() {}
-    ~AlignSeq(){}
-    string sname; // species name
-    string seqID; // e.g. chr21
-    int chrLen;   // total length of sequence seqID (needed for reverse complementing alignments)
-    int start;    // start position of alignment, 1-based
-    int end() {return start + seqLen - 1;} // last aligned position, 1-based
-    int seqLen;   // length of aligned sequence fragment, not counting gaps characters
-    //    int alignLen; // length of aligned sequence fragment, including gap characters
-    Strand strand;
-    vector<int*> cmpStarts;
-    list<block> sequence;
 };
 
 /*

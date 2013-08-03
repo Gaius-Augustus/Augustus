@@ -101,10 +101,13 @@ void CompGenePred::start(){
   
     vector<string> speciesNames;
     OrthoGraph::tree->getSpeciesNames(speciesNames);
-    GenomicMSA msa;
-    msa.readAlignment(Constant::alnfile, speciesNames);  // reads the alignment
-    // msa.printAlignment("");
-    // exit(1);
+    rsa->setSpeciesNames(speciesNames);
+    GenomicMSA msa(rsa);
+    msa.readAlignment(Constant::alnfile);  // reads the alignment
+    rsa->printStats();
+    //msa.printAlignment("");
+    //exit(0);
+   
     msa.prepareExons(); // merges alignment blocks if possible. Mario: TODO sort aligments in between
     vector<int> offsets;
     bool AlexFail;
@@ -113,6 +116,8 @@ void CompGenePred::start(){
     // loop over species
     GeneMSA::openOutputFiles();
     while (GeneMSA *geneRange = msa.getNextGene()) {
+	cout << "processing next gene range:" << endl;
+	geneRange->printStats();
         OrthoGraph orthograph;
 	AlexFail = false; // temporary fix until Alexanders Bug is corrected
         for (int s = 0; s < speciesNames.size(); s++) {
@@ -144,7 +149,7 @@ void CompGenePred::start(){
                     if (geneRange->getStrand(s)==plusstrand) {
                         offsets.push_back(start);
                     } else {
-                        offsets.push_back(geneRange->getSeqIDLength(s) - end - 1);
+                        offsets.push_back(rsa->getChrLen(s, geneRange->getSeqID(s)) - end - 1);
                     }
                     geneRange->createExonCands(seqRange->sequence); // identifies exon candidates on the sequence
                     list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
