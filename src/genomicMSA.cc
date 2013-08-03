@@ -178,7 +178,16 @@ void GenomicMSA::readAlignment(string alignFilename, vector<string> speciesnames
 		}
 		Alignmentfile >> aseq->chrLen;
 		Alignmentfile >> seq;
-		aseq->alignLen = seq.length();
+		if (!alignBlock->alignLen)
+		    alignBlock->alignLen = seq.length();
+		else if (alignBlock->alignLen != seq.length()) {
+		    string msg = "Error in MAF in sequence ";
+		    msg += aseq->seqID ;
+		    msg += " at position ";
+		    msg += aseq->start;
+		    msg += ". Alignment row does not agree in length.";
+		    throw ProjectError(msg);
+		}
 		Alignmentfile >> buffer;
 
 		// reads the aligned sequence
@@ -233,12 +242,12 @@ void GenomicMSA::printAlignment(string outFname){
     AlignmentBlock *aliblock;
     for (list<AlignmentBlock*>::iterator alit = alignment.begin(); alit != alignment.end(); alit++) {
 	aliblock = *alit;
+	cout << "alignLen=" << setw(6) << aliblock->alignLen << endl;
 	for(vector<AlignSeq*>::iterator aseqit = aliblock->rows.begin(); aseqit != aliblock->rows.end(); aseqit++){
 	    AlignSeq* aseq = *aseqit;
 	    if (aseq) {
 		cout << setw(15) << aseq->sname << "." << aseq->seqID
 		     << "\tchrLen=" << aseq->chrLen
-		     << "\talignLen=" << aseq->alignLen
 		     << "\tstart=" << aseq->start
 		     << "\tseqLen=" << aseq->seqLen
 		     << "\t" << ((aseq->strand == plusstrand)? "+":"_");
@@ -344,14 +353,14 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
                             if (!sameDistance) {
                                 int *cmpStart_ptr;
                                 cmpStart_ptr= new int;
-                                *cmpStart_ptr = (*it_pos)->rows.at(j)->start + ((*it_prev)->rows.at(j)->alignLen - (*it_prev)->rows.at(j)->seqLen);
+                                *cmpStart_ptr = (*it_pos)->rows.at(j)->start + ((*it_prev)->alignLen - (*it_prev)->rows.at(j)->seqLen);
                                 (*it_prev)->rows.at(j)->cmpStarts.push_back(cmpStart_ptr);
                             }
                             for (list<block>::iterator it=(*it_pos)->rows.at(j)->sequence.begin(); it!=(*it_pos)->rows.at(j)->sequence.end(); it++) {
-                                it->begin=it->begin+((*it_prev)->rows.at(j)->alignLen - (*it_prev)->rows.at(j)->seqLen);
-                                it->previousGaps=it->previousGaps + ((*it_prev)->rows.at(j)->alignLen - (*it_prev)->rows.at(j)->seqLen);
+                                it->begin=it->begin+((*it_prev)->alignLen - (*it_prev)->rows.at(j)->seqLen);
+                                it->previousGaps=it->previousGaps + ((*it_prev)->alignLen - (*it_prev)->rows.at(j)->seqLen);
                             }
-                            (*it_prev)->rows.at(j)->alignLen = (*it_prev)->rows.at(j)->alignLen + (*it_pos)->rows.at(j)->alignLen
+                            (*it_prev)->alignLen = (*it_prev)->alignLen + (*it_pos)->alignLen
                                     + (*it_pos)->rows.at(j)->start - (*it_prev)->rows.at(j)->start - (*it_prev)->rows.at(j)->seqLen;
                             (*it_prev)->rows.at(j)->seqLen = (*it_prev)->rows.at(j)->seqLen + (*it_pos)->rows.at(j)->seqLen
                                     + (*it_pos)->rows.at(j)->start - (*it_prev)->rows.at(j)->start - (*it_prev)->rows.at(j)->seqLen;

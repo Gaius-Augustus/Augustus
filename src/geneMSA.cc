@@ -8,6 +8,7 @@
  * date    |   author           |  changes
  * --------|--------------------|------------------------------------------
  * 04.04.12| Alexander Gebauer  | creation of the file
+ * 02.08.13| Mario Stanke       | rewrite of the merging of alignment blocks
  **********************************************************************/
 
 #include "geneticcode.hh"
@@ -38,21 +39,31 @@ vector<ofstream*> GeneMSA::omega_outfiles;
 ofstream *GeneMSA::pamlFile;
 
 bool mergeable (AlignmentBlock *b1, AlignmentBlock *b2, int maxGapLen, float mergeableFrac){
-    int k = b1->rows.size(); // number of species
-    if (k != b2->rows.size())
-	throw ProjectError("Tried to merge aligmnment blocks of an incomplatible number of species");
-    
-    int allowedMismatches = (1.0 - mergeableFrac) * k; //TODO round correctly
-    for (int s=0; s<k && allowedMismatches >=0; s++){
+    int remainingAllowedMismatches = (1.0 - mergeableFrac - 1e5) * GeneMSA::numSpecies();
+    for (int s=0; s < GeneMSA::numSpecies() && remainingAllowedMismatches >=0; s++){
         if (b1->rows[s] && b2->rows[s]){
-	    int dist = b2->rows.at(s)->start - b1->rows.at(s)->start - b1->rows.at(s)->seqLen;
-	    if (dist >=0 && dist <= maxGapLen)
-		allowedMismatches--;
+	    int dist = b2->rows.at(s)->start - b1->rows.at(s)->end() - 1; // 0 distance means direct adjacency
+	    if (dist < 0 || dist > maxGapLen)
+		remainingAllowedMismatches--;
 	}
-    } 
-    return (allowedMismatches >=0);
+    }
+    return (remainingAllowedMismatches >=0);
 }
 
+/*
+ *
+ *  |      this             |   |      other      |
+ *   xxxx xxxx     xxxxx         xxxxxx  xxx xxxx
+ *   xxxxxxxxxxxxxxxxxxxxxxx        xxxx   xxxxxxx
+ *          NULL                  xxxxxxxxxxxxxxx
+ *     xxxxxx xxxxxxxxxxxxxx           NULL
+ *        xxxxxxx xxxxxxxxxx     xxxxx         xxx
+ *
+ *
+ */
+void AlignmentBlock::merge(AlignmentBlock *other){
+    alignLen += other->alignLen;
+}
 
 string GeneMSA::getName(int speciesIdx) {
 	for (list<AlignmentBlock*>::iterator it = this->alignment.begin(); it != this->alignment.end(); it++) {

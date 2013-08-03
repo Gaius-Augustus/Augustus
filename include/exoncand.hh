@@ -89,8 +89,9 @@ public:
     string seqID; // e.g. chr21
     int chrLen;   // total length of sequence seqID (needed for reverse complementing alignments)
     int start;    // start position of alignment, 1-based
+    int end() {return start + seqLen - 1;} // last aligned position, 1-based
     int seqLen;   // length of aligned sequence fragment, not counting gaps characters
-    int alignLen; // length of aligned sequence fragment, including gap characters
+    //    int alignLen; // length of aligned sequence fragment, including gap characters
     Strand strand;
     vector<int*> cmpStarts;
     list<block> sequence;

@@ -22,14 +22,16 @@ class OrthoGraph;
 
 class AlignmentBlock {
 public:
-    AlignmentBlock(size_t n) : rows(n, NULL){} // initialize with NULL, which stand for missing AlignSeqs
+    AlignmentBlock(size_t n) : alignLen(0) , rows(n, NULL) {} // initialize with NULL, which stand for missing AlignSeqs
     ~AlignmentBlock(){
 	// Steffi: this causes a segmentation fault for more than two species. I don't know why.
 	// for (int i=0; i<rows.size(); i++) 
-	    //delete rows.at(i);	
+	//    delete rows.at(i);	
     }
     friend bool mergeable (AlignmentBlock *b1, AlignmentBlock *b2, int maxGapLen, float mergeableFrac);
+    void merge(AlignmentBlock *other); // append 'other' AlignmentBlock to this
 public: // should rather be private
+    int alignLen; // all aligned sequences are this long when gaps are included
     vector<AlignSeq*> rows;
 };
 
@@ -58,6 +60,7 @@ public:
     GeneMSA() {};
     static void setTree(PhyloTree *t){tree = t;}
     static void setCodonEvo(CodonEvo *c){codonevo = c;}
+    static int numSpecies(){return tree->numSpecies();}
     ~GeneMSA(){
         if (!alignment.empty()) {
 	    // for (list<AlignmentBlock*>::iterator it = alignment.begin(); it != alignment.end(); it++) {
