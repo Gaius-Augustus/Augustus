@@ -21,8 +21,9 @@ public:
 
     void readAlignment(string alignFilename); // reads a multiple species alignment from a *.maf file
     void printAlignment(string outFname); // print alignment in .maf format, to stdout if outFname is empty string
+    int numAlignments() {return alignment.size();}
    /*
-     * merges the merged alignment parts so that a gene is possibly in this segment
+     * merges alignments so that a gene is possibly in this segment
      * returns NULL if alignment is empty
      */
     void prepareExons() {
@@ -34,6 +35,11 @@ public:
      * for each species on hash with sequence names as keys and lengths as values
      */
     vector<map<string,int>> chrLen; 
+    /**
+     * merges pairs of alignments in order to reduce the alignment number in trivial cases
+     * without doing any pontentially false mergers
+     */
+    void compactify();
 private:
     list<Alignment*> alignment;
     /*

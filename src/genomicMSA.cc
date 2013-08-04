@@ -150,11 +150,10 @@ void GenomicMSA::printAlignment(string outFname){
     Alignment *aliblock;
     for (list<Alignment*>::iterator alit = alignment.begin(); alit != alignment.end(); alit++) {
 	aliblock = *alit;
-	cout << "aliLen=" << setw(6) << aliblock->aliLen << endl;
-	for(vector<AlignmentRow*>::iterator aseqit = aliblock->rows.begin(); aseqit != aliblock->rows.end(); aseqit++){
+	cout << *aliblock << endl << endl;
+	/*for(vector<AlignmentRow*>::iterator aseqit = aliblock->rows.begin(); aseqit != aliblock->rows.end(); aseqit++){
 	    AlignmentRow* row = *aseqit;
 	    if (row) {
-		cout << "new data: " << *row << endl;
 		cout << setw(15) << row->seqID
 		     << "\tstart=" << row->start
 		     << "\tseqLen=" << row->seqLen
@@ -176,9 +175,47 @@ void GenomicMSA::printAlignment(string outFname){
 	    }
 	    cout << endl;
 	}
-	cout << endl;
+	cout << endl;*/
     }
 }
+
+/**
+ * Merges pairs of alignments in trivial cases in order to reduce the alignment number without doing any pontentially false mergers.
+ * The priority is on avoiding false mergers. Not all trivial mergers are guaranteed to be realized, though.
+ * Trivial mergers are found by sorting with respect to a number of (random) different species.
+ */
+void GenomicMSA::compactify(){
+    int numSortRefs = 3; // Sort wrt to at most this many species, a larger value requires more time now
+                         // but may save time later by reducing alignments. For genomic alignments, where the first species is 
+                         // present in ALL alignments (e.g. UCSC vertebrate), this only needs to be 1
+    int numAlis = alignment.size();
+    if (numSortRefs > numSpecies)
+	numSortRefs = numSpecies;
+    for (int i=0; i< numSortRefs; i++){
+	// use the first species (probably often important to users)
+	// and otherwise evenly spaced indices to the list of species
+	size_t s = i * numSpecies / numSortRefs;
+	alignment.sort(SortCriterion(s)); // sort by species number s
+	list<Alignment*>::iterator ait, bit;
+	for (ait = alignment.begin(); ait != alignment.end();) {
+	    bit = ait;
+	    ++bit;
+	    if (bit == alignment.end())
+		break;
+	    // ait and bit point to neighbors in this order
+	    // all rows present in both alignments must be very close neighbors (at most 3 codons distance)
+	    if (mergeable(*ait, *bit, 9, 1.0)){ 
+		(*ait)->merge(*bit);
+		alignment.erase(bit);
+	    } else {
+		++ait;
+	    }
+	}
+    }
+    cout << "MAF compatification reduced the number of aligments from " << numAlis << " to " <<  alignment.size() << " (to "
+	 << setprecision(3) <<  (100.0 * alignment.size() / numAlis) << "%)." << endl;
+}
+
 
 // Mario: this apparently assumes that the maf aligments are sorted so that neighboring
 // alignments can be merged in this order. TODO: sorting.

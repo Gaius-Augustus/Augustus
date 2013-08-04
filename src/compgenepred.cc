@@ -105,8 +105,8 @@ void CompGenePred::start(){
     GenomicMSA msa(rsa);
     msa.readAlignment(Constant::alnfile);  // reads the alignment
     rsa->printStats();
+    msa.compactify();
     //msa.printAlignment("");
-    //exit(0);
    
     msa.prepareExons(); // merges alignment blocks if possible. Mario: TODO sort aligments in between
     vector<int> offsets;

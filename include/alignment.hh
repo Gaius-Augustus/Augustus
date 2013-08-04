@@ -16,7 +16,7 @@
 #include <list>
 #include <iostream>
 
-// structure for the reading of an aligned sequence
+// structure for the reading of an aligned sequence, TODO: remove this later
 struct block {
     int begin;
     int length;
@@ -49,19 +49,19 @@ public:
     list<block> sequence;
 
     int end() {return start + seqLen - 1;} // last aligned position, 1-based
-    int chrStart(){
+    int chrStart() const {
 	return frags.at(0).chrPos;
     }
-    int chrEnd(){
+    int chrEnd() const{
 	size_t n = frags.size();
 	fragment last = frags.at(n-1);
 	return last.chrPos + last.len - 1;
     }
-    int getSeqLen(){
+    int getSeqLen() const{
 	return chrEnd() - chrStart() + 1;
     }
-    friend ostream& operator<< (ostream& strm, const AlignmentRow);
-
+    friend ostream& operator<< (ostream& strm, const AlignmentRow &row);
+    friend void appendRow(AlignmentRow **r1, AlignmentRow *r2, int aliLen1);
     string seqID; // e.g. chr21
     Strand strand;
     vector<fragment> frags; // fragments are sorted by alignment positions AND by chromosomal positions (assumption for now)
@@ -96,11 +96,31 @@ public:
 	//    delete rows.at(i);	
     }
     friend bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac);
+    friend ostream& operator<< (ostream& strm, const Alignment &a);
     void merge(Alignment *other); // append 'other' Alignment to this
 public: // should rather be private
     int aliLen; // all aligned sequences are this long when gaps are included
     vector<AlignmentRow*> rows;
     size_t numRows; // = number of species
+};
+
+// sorting operator, with respect to a given species index
+struct SortCriterion {
+    SortCriterion(size_t speciesIdx) : s(speciesIdx) {};
+    bool operator() (Alignment* const a1, Alignment* const a2){
+	// alignments, where row s is missing come last
+	if (a2->rows[s] == NULL)
+	    return true;
+	if (a1->rows[s] == NULL)
+	    return false;
+	if (a1->rows[s]->seqID < a2->rows[s]->seqID)
+	    return true;
+	if (a1->rows[s]->seqID > a2->rows[s]->seqID)
+	    return false;
+	// same sequence, compare chromosomal start positions
+	return (a1->rows[s]->chrStart() < a2->rows[s]->chrStart());
+    }
+    size_t s;
 };
 
 /*
