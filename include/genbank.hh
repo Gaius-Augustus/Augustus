@@ -22,8 +22,11 @@
 #include <list>
 #include <fstream>
 
+#define GBMAXLINELEN 8192
 
 enum FileType {unknown, genbank, fasta};
+
+
 
 /**
  * Exception class for the GenBank classes.

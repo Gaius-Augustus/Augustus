@@ -27,7 +27,7 @@
 GBProcessor::GBProcessor(string filename) :
     gbs(filename)
 {
-    try{    
+    try{
 	gbVerbosity = Properties::getIntProperty("/genbank/verbosity");
     } catch (...){
 	gbVerbosity = 3;
@@ -372,7 +372,7 @@ GBFeature::GBFeature(const char *pos) throw( GBError ){
   complete_r=complete_l=true;
   istringstream isstrm( pos );
   char c;
-  char tmp[8192] = { '\0' }; // need more than 4200 chars for human muscle gene TTN
+  char tmp[GBMAXLINELEN] = { '\0' }; // need more than 4200 chars for human muscle gene TTN
   char* join = (char*)0;
   int i = 0;
 
@@ -417,11 +417,11 @@ GBFeature::GBFeature(const char *pos) throw( GBError ){
 
   // try to determine the name of the gene
   char *genename;
-  char buf[256];
+  char buf[GBMAXLINELEN];
   bool searchFinished = false;
   char *gtag;
   while( isstrm && !searchFinished){
-    isstrm.getline( buf, 255 );
+    isstrm.getline( buf, GBMAXLINELEN-1 );
     if (strncmp(buf, "                     ", 21) != 0) {  // name of the gene not found
       geneid="";
       searchFinished = true;
@@ -629,13 +629,13 @@ AnnoSequence *GBSplitter::getNextFASTASequence( ) throw( GBError ){
 
 
 Boolean GBSplitter::gotoEnd( ){
-    char buf[256];
+    char buf[GBMAXLINELEN];
     do{
         int i = 0;
-        ifstrm.getline( buf, 256 );
+        ifstrm.getline( buf, GBMAXLINELEN );
 	if ((ifstrm.rdstate() & ifstream::failbit) && !(ifstrm.rdstate() & ifstream::eofbit))
 	    ifstrm.clear(ifstrm.rdstate() & ~ifstream::failbit);
-        while( i < 255 && isspace(buf[i]))
+        while( i < GBMAXLINELEN-1 && isspace(buf[i]))
             i++;
         if( buf[i] == '/' && buf[i+1] == '/' )
             return true;
@@ -659,15 +659,16 @@ Boolean GBSplitter::findPositions( GBPositions& pos ) throw( GBError ){
     pos.length++;                       // Now with the '\0'!!!
     pos.seqlength = 0;
     istringstream isstrm( pos.buffer );
-    char buf[256];
+    char buf[GBMAXLINELEN];
     while( isstrm ){
         int curpos = isstrm.tellg();
         isstrm >> ws;
-        isstrm.getline( buf, 255 );
+        isstrm.getline( buf, GBMAXLINELEN-1 );
 	if (!isstrm.eof() && (isstrm.rdstate() & ifstream::failbit)){
-	    cerr << "Could not read the following line in Genbank file. " << buf << endl;
+	    throw GBError(string("Could not read the following line in Genbank file.\n") + buf 
+			  + "\nMaximum line length is \n" + itoa(GBMAXLINELEN-1) + ".\n");
 	    // ignore problem by removing the failbit
-	    isstrm.clear(isstrm.rdstate() & ~ifstream::failbit);
+	    // isstrm.clear(isstrm.rdstate() & ~ifstream::failbit);
 	}
         char *src;
         char *rna;
