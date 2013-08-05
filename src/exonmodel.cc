@@ -46,7 +46,6 @@ Integer ExonModel::k = 4;
 Integer ExonModel::etorder = 1;
 Integer ExonModel::etpseudocount = 3;
 Integer ExonModel::min_exon_length = 1;
-Integer ExonModel::max_exon_length = 12000;
 Integer ExonModel::trans_init_window = 12;
 FramedPatMMGroup ExonModel::emiprobs("exon emiprob old");
 FramedPatMMGroup* ExonModel::GCemiprobs = NULL;
@@ -350,11 +349,6 @@ void ExonModel::init() {
 	// optional parameter
     }
     try{
-	max_exon_length = Properties::getIntProperty( "/ExonModel/maxexonlength");
-    } catch( ProjectError e) { 
-	cerr << e.getMessage();
-    }
-    try{
 	minPatSum = Properties::getIntProperty( "/ExonModel/minPatSum");
     } catch( ProjectError e) { 
 	cerr << e.getMessage();
@@ -463,10 +457,10 @@ void ExonModel::readProbabilities(int parIndex) {
 	    istrm >> comment >> numSingle >> numInitial >> numInternal >> numTerminal;
 	    istrm >> comment >> numHugeSingle >> numHugeInitial >> numHugeInternal >> numHugeTerminal;
 	    istrm >> comment;
-	    lenDistSingle.assign(max_exon_length+1, 0.0);
-	    lenDistInitial.assign(max_exon_length+1, 0.0);
-	    lenDistInternal.assign(max_exon_length+1, 0.0);
-	    lenDistTerminal.assign(max_exon_length+1, 0.0);
+	    lenDistSingle.assign(Constant::max_exon_len+1, 0.0);
+	    lenDistInitial.assign(Constant::max_exon_len+1, 0.0);
+	    lenDistInternal.assign(Constant::max_exon_len+1, 0.0);
+	    lenDistTerminal.assign(Constant::max_exon_len+1, 0.0);
 	    double boostfactor = 1.0;
 	    for( int i = 0; i <= exonLenD; i++ ){
 		istrm >> dummyi;
@@ -652,10 +646,10 @@ void ExonModel::readAllParameters(){
       istrm >> comment >> numSingle >> numInitial >> numInternal >> numTerminal;
       istrm >> comment >> numHugeSingle >> numHugeInitial >> numHugeInternal >> numHugeTerminal;
       istrm >> comment;
-      lenDistSingle.assign(max_exon_length+1, 0.0);
-      lenDistInitial.assign(max_exon_length+1, 0.0);
-      lenDistInternal.assign(max_exon_length+1, 0.0);
-      lenDistTerminal.assign(max_exon_length+1, 0.0);
+      lenDistSingle.assign(Constant::max_exon_len+1, 0.0);
+      lenDistInitial.assign(Constant::max_exon_len+1, 0.0);
+      lenDistInternal.assign(Constant::max_exon_len+1, 0.0);
+      lenDistTerminal.assign(Constant::max_exon_len+1, 0.0);
       double boostfactor = 1.0;
       for( int i = 0; i <= exonLenD; i++ ){
 	istrm >> dummyi;
@@ -863,25 +857,25 @@ void ExonModel::fillTailsOfLengthDistributions( ){
     
     a = lenDistSingle[exonLenD];
     p = Double(1.0) - a/(Double(numHugeSingle+1)/Double(numSingle+1));
-    for (k = exonLenD+1; k <= max_exon_length; k++){
+    for (k = exonLenD+1; k <= Constant::max_exon_len; k++){
 	lenDistSingle[k] = p * lenDistSingle[k-1];
     } 
 
     a = lenDistInitial[exonLenD];
     p = Double(1.0) - a/((Double(numHugeInitial)+1)/(numInitial+1));
-    for (k = exonLenD+1; k <= max_exon_length; k++){
+    for (k = exonLenD+1; k <= Constant::max_exon_len; k++){
 	lenDistInitial[k] = p * lenDistInitial[k-1];
     } 
 
     a = lenDistInternal[exonLenD];
     p = Double(1.0) - a/((Double(numHugeInternal)+1)/(numInternal+1));
-    for (k = exonLenD+1; k <= max_exon_length; k++){
+    for (k = exonLenD+1; k <= Constant::max_exon_len; k++){
 	lenDistInternal[k] = p * lenDistInternal[k-1];
     } 
 
     a = lenDistTerminal[exonLenD];
     p = Double(1.0) - a/((Double(numHugeTerminal)+1)/(numTerminal+1));
-    for (k = exonLenD+1; k <= max_exon_length; k++){
+    for (k = exonLenD+1; k <= Constant::max_exon_len; k++){
 	lenDistTerminal[k] = p * lenDistTerminal[k-1];
     }
 }

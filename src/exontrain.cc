@@ -537,10 +537,10 @@ void ExonModel::computeLengthDistributions( ){
      * compute length distributions
      *
      */
-    lenDistSingle.assign(max_exon_length+1, 0.0);
-    lenDistInitial.assign(max_exon_length+1, 0.0);
-    lenDistInternal.assign(max_exon_length+1, 0.0);
-    lenDistTerminal.assign(max_exon_length+1, 0.0);
+    lenDistSingle.assign(Constant::Constant::max_exon_len + 1, 0.0);
+    lenDistInitial.assign(Constant::max_exon_len + 1, 0.0);
+    lenDistInternal.assign(Constant::max_exon_len + 1, 0.0);
+    lenDistTerminal.assign(Constant::max_exon_len + 1, 0.0);
     
 
     numHugeSingle   = numHugeExonsOfType[singleG];

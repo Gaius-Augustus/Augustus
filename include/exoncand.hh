@@ -64,14 +64,14 @@ public:
     int begin, end;
     Double score, assScore, dssScore;
 
-    int getStart(void);
-    int getEnd(void);
+    int getStart();
+    int getEnd();
     int len() {return end-begin+1;}
-    ExonType getExonType(void);
-    Double getScore(void);
-    int complementType(void);
-    StateType getStateType(void);
-    string key(void);
+    ExonType getExonType();
+    Double getScore();
+    int complementType();
+    StateType getStateType();
+    string key();
 };
 
 /*

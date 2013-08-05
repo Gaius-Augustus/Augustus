@@ -46,6 +46,7 @@ int Constant::decomp_num_at = 1;
 int Constant::decomp_num_gc = 1;
 int Constant::decomp_num_steps = 1;
 int Constant::min_coding_len = 102;
+int Constant::max_exon_len = 12000;
 Integer Constant::d_polyasig_cleavage = 20;
 bool Constant::keep_viterbi = false;
 double Constant::gc_range_min = 0.32;

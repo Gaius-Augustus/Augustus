@@ -49,6 +49,24 @@ AlignmentRow::AlignmentRow(string seqID, int chrPos, Strand strand, string rowst
     }
 }
 
+// simple left-to-right search starting from given fragment 'from'
+// effizient, when many 'chrPos' are searched in left-to-right order
+int AlignmentRow::getAliPos(int chrPos, vector<fragment>::const_iterator from){
+    if (from == frags.end() || from->chrPos > chrPos) // chrPos the the left of alignment
+	return -2;
+    while (from->chrPos + from->len - 1 < chrPos && from != frags.end())
+	++from;
+    if (from == frags.end())
+	return -1;
+    // chr          | chrPos 
+    //       from->chrPos         
+    //         |----------------------|
+    // ali   from->aliPos
+    if (chrPos < from->chrPos) // chrPos falls in an aligment gap
+	return -1;
+    return from->aliPos + chrPos - from->chrPos;
+}
+
 /**
  * append row r2 to r1, thereby shifting all alignment coordinates of r2 by aliLen1
  */
@@ -125,4 +143,14 @@ void Alignment::merge(Alignment *other){
 	appendRow(&rows[s], other->rows[s], aliLen);
     aliLen += other->aliLen;
     // cout << "result:" << endl << *this << endl;
+}
+
+int Alignment::maxRange(){
+    int range, max = 0;
+    for(size_t s=0; s<numRows; s++){
+	range = rows[s]? rows[s]->getSeqLen() : 0;
+	if (range > max)
+	    max = range;
+    }
+    return max;
 }

@@ -37,9 +37,14 @@ public:
     vector<map<string,int>> chrLen; 
     /**
      * merges pairs of alignments in order to reduce the alignment number in trivial cases
-     * without doing any pontentially false mergers
+     * without doing any potentially false mergers
      */
     void compactify();
+    /**
+     * changes alignment list, so that afterwards, each alignment contains a gene range:
+     * a single alignment that may contain one or more gene, usually the merger of many .maf alignments
+     */
+    void findGeneRanges();
 private:
     list<Alignment*> alignment;
     /*

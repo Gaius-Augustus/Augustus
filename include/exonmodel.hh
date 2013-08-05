@@ -97,11 +97,11 @@ public:
     static void readAllParameters();
     static double *getCodonUsage();
     static void resetModelCount(){exoncount = 0;};
-    static int getMaxStateLen() { return max_exon_length + trans_init_window; }
+    static int getMaxStateLen() { return Constant::max_exon_len + trans_init_window; }
     static void setORF() {
       if (orf)
 	delete orf;
-      orf = new OpenReadingFrame(sequence, max_exon_length, dnalen);
+      orf = new OpenReadingFrame(sequence, Constant::max_exon_len, dnalen);
       initAlgorithmsCalled = false;
     }
 
@@ -144,7 +144,6 @@ private:
     static Integer         etorder;      // order of the exon terminating motif
     static Integer         etpseudocount;// pseudocount for the exon terminating motif
     static Integer         min_exon_length;
-    static Integer         max_exon_length;
     static Integer         trans_init_window;
 
     static FramedPatMMGroup emiprobs;

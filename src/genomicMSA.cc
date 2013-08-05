@@ -216,6 +216,35 @@ void GenomicMSA::compactify(){
 	 << setprecision(3) <<  (100.0 * alignment.size() / numAlis) << "%)." << endl;
 }
 
+/**
+ * 
+ */
+void GenomicMSA::findGeneRanges(){
+    // temporary code, to be done properly later
+    int maxIntronLen = 100000;
+    int maxGeneLen = 1000000 - 2*GeneMSA::padding;
+    int numAlis = alignment.size();
+    alignment.sort(SortCriterion(0)); // sort by species number s
+    list<Alignment*>::iterator ait, bit;
+    for (ait = alignment.begin(); ait != alignment.end();) {
+	bit = ait;
+	++bit;
+	if (bit == alignment.end())
+	    break;
+	// ait and bit point to neighbors in this order
+	// all rows present in both alignments must be very close neighbors (at most 3 codons distance)
+	if (((*ait)->maxRange() + (*bit)->maxRange() + maxIntronLen <= maxGeneLen)
+	    && mergeable(*ait, *bit, maxIntronLen, 0.6)){ 
+	    (*ait)->merge(*bit);
+	    alignment.erase(bit);
+	} else {
+	    ++ait;
+	}
+    }
+    cout << "findGeneRanges reduced the number of aligments from " << numAlis << " to " <<  alignment.size() << " (to "
+	 << setprecision(3) <<  (100.0 * alignment.size() / numAlis) << "%)." << endl;
+}
+
 
 // Mario: this apparently assumes that the maf aligments are sorted so that neighboring
 // alignments can be merged in this order. TODO: sorting.
@@ -326,90 +355,11 @@ void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
 }
 
 
-// merges the already merged alignment parts so that segment likely contains complete genes
+// pops the first alignment from list
 GeneMSA* GenomicMSA::getNextGene() {
-    GeneMSA *ptr = new GeneMSA(rsa);
-    int maxIntronLen = 50000;
-    int maxGeneLen = 1000000 - 2*GeneMSA::utr_range;
-    int maxChangedSeq = 1000; // exceptions at most this long are allowed from the "same target"-rule
-    vector<Strand >geneStrand;
-    vector<string> geneChr;
-    vector<int> geneStarts, geneSeqLens, seqStart;
-    bool geneRange = true;
-    if (this->alignment.empty()) {
-        delete ptr;
-        return NULL;
-    }
-    list<Alignment*>::iterator it_pos=this->alignment.begin();
-    list<Alignment*>::iterator it_prev=it_pos;
-    it_pos++;
-    list<Alignment*>::iterator it_succ=it_pos;
-    if (it_succ != this->alignment.end()) {
-        it_succ++;
-    }
-    for (int i=0; i<(*it_prev)->rows.size(); i++) {
-        geneStrand.push_back(STRAND_UNKNOWN);
-        geneChr.push_back("");
-        geneStarts.push_back(0);
-        geneSeqLens.push_back(0);
-        seqStart.push_back(-1);
-    }
-    while (geneRange && (it_pos!=this->alignment.end())) {
-        for (int i=0; i<(*it_prev)->rows.size(); i++) {
-            if ((*it_prev)->rows.at(i)!=NULL) {
-                if ((geneChr[i] == "") && (geneStrand[i] == STRAND_UNKNOWN)) {
-                    geneChr[i] = (*it_prev)->rows.at(i)->seqID;
-                    geneStrand[i] = (*it_prev)->rows.at(i)->strand;
-                }
-                geneStarts[i] = (*it_prev)->rows.at(i)->start;
-                geneSeqLens[i] = (*it_prev)->rows.at(i)->seqLen;
-                if (seqStart[i]== -1) {
-                    seqStart[i] = (*it_prev)->rows.at(i)->start;
-                }
-            }
-            // the alignment parts have to be on the same strand, the same seqID and less than "maxIntronLen" apart
-            // if there is only a short possible exon part of a species different to the strand or chromosome, it will be ignored
-            if (((*it_pos)->rows.at(i)!=NULL) && (geneStrand[i] != STRAND_UNKNOWN) && (geneChr[i] != "")) {
-                if (((*it_pos)->rows.at(i)->strand != geneStrand[i]) || ((*it_pos)->rows.at(i)->seqID != geneChr[i])
-                      || ((*it_pos)->rows.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0)) {
-		    if (it_succ != alignment.end() && (*it_succ)->rows.at(i) != NULL) {
-                        if (((*it_succ)->rows.at(i)->strand != geneStrand[i]) || ((*it_succ)->rows.at(i)->seqID != geneChr[i])
-                               || ((*it_succ)->rows.at(i)->start - (geneStarts[i] + geneSeqLens[i]) < 0) || (((*it_pos)->rows.at(i)->seqLen) > maxChangedSeq)
-                               || ((*it_succ)->rows.at(i)->start - (geneStarts[i] +  geneSeqLens[i]) > maxIntronLen)
-                               || ((*it_succ)->rows.at(i)->start + (*it_succ)->rows.at(i)->seqLen - seqStart[i]) > maxGeneLen) {
-                            geneRange=false;
-                            break;
-                        } else {
-                            if (i != 0) {
-                                (*it_pos)->rows.at(i) = NULL;
-                            } else {
-                                geneRange=false;
-                                break;
-                            }
-                        }
-                    } else {
-                        geneRange=false;
-                        break;
-                    }
-                }
-            }
-            if ((*it_pos)->rows.at(i)!=NULL && (*it_prev)->rows.at(i)!=NULL) {
-                if (((*it_pos)->rows.at(i)->start - (geneStarts[i] + geneSeqLens[i]) > maxIntronLen)
-                    || ((*it_pos)->rows.at(i)->start + (*it_pos)->rows.at(i)->seqLen - seqStart[i]) > maxGeneLen) {
-                    geneRange=false;
-                    break;
-                }
-            }
-        }
-        if (geneRange) {
-            it_prev=it_pos;
-            it_pos++;
-            if (it_succ != this->alignment.end()) {
-                it_succ++;
-            }
-        }
-    }
-    ptr->alignment.assign(this->alignment.begin(),it_pos);
-    this->alignment.erase(this->alignment.begin(),it_pos);
-    return ptr;
+    if (alignment.empty())
+	return NULL;
+    GeneMSA *geneRange = new GeneMSA(rsa, alignment.front());
+    alignment.pop_front();
+    return geneRange;
 }

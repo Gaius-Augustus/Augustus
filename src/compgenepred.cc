@@ -106,10 +106,11 @@ void CompGenePred::start(){
     msa.readAlignment(Constant::alnfile);  // reads the alignment
     rsa->printStats();
     msa.compactify();
+    msa.findGeneRanges();
     //msa.printAlignment("");
    
-    msa.prepareExons(); // merges alignment blocks if possible. Mario: TODO sort aligments in between
-    vector<int> offsets;
+    //msa.prepareExons(); // merges alignment blocks if possible. Mario: TODO sort aligments in between
+    vector<int> offsets(speciesNames.size(), 0);
     bool AlexFail;
     
     // determine object that holds a sequence range for each species
@@ -123,35 +124,23 @@ void CompGenePred::start(){
         for (int s = 0; s < speciesNames.size(); s++) {
             string seqID = geneRange->getSeqID(s);
             if (!seqID.empty()) {
-		int start = geneRange->getStart(s);
+		int start = geneRange->getStart(s); // start, end refer to plus strand
 		int end = geneRange->getEnd(s);
-		// Steffi: gene Range must not exceed max length of 1000000 bps, otherwise sequence gets splits in doViterbiPiecewise!!!
-		if(end-start+1 > 1000000){
-		    throw ProjectError("compgenepred: sequence " + speciesNames[s] + "." + seqID + ":" + itoa(start) + ".." + itoa(end) + " exceeds 1000000bp");
-		}
-                AnnoSequence *seqRange = rsa->getSeq(speciesNames[s], seqID, start, end, geneRange->getStrand(s));
-#ifdef DEBUG
-                cout << "retrieving sequence:\t" << speciesNames[s] << ":" << seqID << "\t" << start << "-" << end << "\t";
+		offsets[s] = (geneRange->getStrand(s) == plusstrand)?
+		    start : rsa->getChrLen(s, seqID) - 1 - end;
 
-                if( geneRange->getStrand(s) == plusstrand )
-                    cout << "+\t";
-                else
-                    cout << "-\t";
-                cout << "(" <<end - start + 1 << "bp)" << endl;
-#endif
-                if (seqRange==NULL) {
-                    cerr << "random sequence access failed on " << speciesNames[s] << ", " << seqID << ", " << start << ", " << end << ", " << endl;
+                AnnoSequence *seqRange = rsa->getSeq(speciesNames[s], seqID, start, end, geneRange->getStrand(s));
+                if (seqRange == NULL) {
+                    cerr << "random sequence access failed on " << speciesNames[s] << ", " << seqID << ", " 
+			 << start << ", " << end << ", " << endl;
 		    AlexFail = true;
                     break;
                 } else {
-                    namgene.getPrepareModels(seqRange->sequence, seqRange->length); // is needed for IntronModel::dssProb in GenomicMSA::createExonCands
+		    // this is needed for IntronModel::dssProb in GenomicMSA::createExonCands
+                    namgene.getPrepareModels(seqRange->sequence, seqRange->length); 
 
-                    if (geneRange->getStrand(s)==plusstrand) {
-                        offsets.push_back(start);
-                    } else {
-                        offsets.push_back(rsa->getChrLen(s, geneRange->getSeqID(s)) - end - 1);
-                    }
-                    geneRange->createExonCands(seqRange->sequence); // identifies exon candidates on the sequence
+		    // identifies exon candidates in the sequence for species s
+                    geneRange->createExonCands(s, seqRange->sequence);
                     list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
 
                     namgene.doViterbiPiecewise(sfc, seqRange, bothstrands); // sampling
@@ -165,24 +154,24 @@ void CompGenePred::start(){
                         if(!alltranscripts->empty()){
                             buildStatusList(alltranscripts, false, stlist);
                         }
-                        //build graph
-                        orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRange, additionalExons, speciesNames[s], geneRange->getStrand(s), sampledExons[s]);
+                        // build graph
+                        orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRange, additionalExons, speciesNames[s], 
+								geneRange->getStrand(s), sampledExons[s]);
                         orthograph.graphs[s]->buildGraph();
 
-                        orthograph.ptrs_to_alltranscripts[s] = alltranscripts; //save pointers to transcripts and delete them after gene list is build
+			//save pointers to transcripts and delete them after gene list is build
+                        orthograph.ptrs_to_alltranscripts[s] = alltranscripts; 
                     }
                 }
             } else {
-                offsets.push_back(0);
                 geneRange->exoncands.push_back(NULL);
                 geneRange->existingCandidates.push_back(NULL);
-                cout<< speciesNames[s] << " doesn't exist in this part of the alignment."<< endl;
             }
         }
 	if (!AlexFail){
 	  geneRange->printGeneRanges();
 	  geneRange->printExonCands(offsets);
-	  geneRange->createOrthoExons(offsets, orthograph);
+	  geneRange->createOrthoExons(offsets);
 	  geneRange->printOrthoExons(rsa, offsets);
 	  orthograph.all_orthoex = geneRange->getOrthoExons();
 
@@ -219,7 +208,7 @@ void CompGenePred::start(){
 		  orthograph.outputGenes(optGenes, opt_geneid);
 	      }
 	  }
-	  offsets.clear();
+	  offsets.assign(speciesNames.size(), 0);
 	  delete geneRange;
 	}
     }

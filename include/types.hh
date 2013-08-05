@@ -271,6 +271,7 @@ public:
     static int tss_upwindow_size;   // win from start of model up to tss
     static int tss_start;
     static int min_coding_len;
+    static int max_exon_len;
     static Integer d_polyasig_cleavage;
     static bool keep_viterbi;
     static double gc_range_min;

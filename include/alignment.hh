@@ -62,6 +62,16 @@ public:
     }
     friend ostream& operator<< (ostream& strm, const AlignmentRow &row);
     friend void appendRow(AlignmentRow **r1, AlignmentRow *r2, int aliLen1);
+
+    /** convert from chromosomal to alignment position
+     * start search from the fragment 'from' on, i.e. assume that aliPos is not to the left of fragment *from
+     * return -1, if chrPos is outside the range of these fragments
+     * return -2, if position is otherwise not mappable: no fragment contains the chrPos, i.e. chrPos is in a gap
+     */
+    int getAliPos(int chrPos, vector<fragment>::const_iterator from);
+    int getAliPos(int chrPos) { return getAliPos(chrPos, frags.begin()); }
+
+    // data members
     string seqID; // e.g. chr21
     Strand strand;
     vector<fragment> frags; // fragments are sorted by alignment positions AND by chromosomal positions (assumption for now)
@@ -86,6 +96,8 @@ public:
  *       a.rows[0].frags = ((1002, 0, 9), (1027, 23, 12))
  *       a.rows[0].chrStart() = 1002
  *       a.rows[0].chrEnd() = 1037
+ *
+ * Coordinates are LEFT TO RIGHT, for reverse strand alignments, they refer to the REVERSE COMPLEMENT of the sequence.
  */
 class Alignment {
 public:
@@ -98,6 +110,7 @@ public:
     friend bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac);
     friend ostream& operator<< (ostream& strm, const Alignment &a);
     void merge(Alignment *other); // append 'other' Alignment to this
+    int maxRange(); // chromosomal range, maximized over rows
 public: // should rather be private
     int aliLen; // all aligned sequences are this long when gaps are included
     vector<AlignmentRow*> rows;
