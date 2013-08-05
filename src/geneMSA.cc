@@ -530,9 +530,11 @@ int GeneMSA::getRealPosition(AlignmentRow *ptr, int pos, int idx) {
  * createOrthoExons
  */
 void GeneMSA::createOrthoExons(vector<int> offsets, float consThres) {
+    cout << "creating ortho exon for alignment" << *alignment << endl;
     int k = alignment->rows.size();
     int m = 0; // the number of nonempty rows
     int aliStart, aliEnd, chrExonStart, chrExonEnd;
+    string key;
     for (size_t s=0; s<k; s++)
 	if (alignment->rows[s])
 	    m++;
@@ -540,6 +542,14 @@ void GeneMSA::createOrthoExons(vector<int> offsets, float consThres) {
     int minEC = (consThres * m > 2.0)? m * consThres + 0.9999 : 2; 
     cout << "an OE must have at least " << minEC << " ECs" << endl;
 
+    /*
+     * Store for each exon candidate in alignment space (keys of format "aliStart:aliEnd;type")
+     * a list of (speciesIdx, ExonCandidate*), e.g.
+     * alignedECs["100:200:1"] = {(0, ec0), (3, ec3)}
+     */
+
+    map<string, list<pair<int,ExonCandidate*> > > alignedECs;
+    map<string, list<pair<int,ExonCandidate*> > >::iterator aec;
     // map all exon candidates to alignment positions, where possible
     // this search in LINEAR in the length of all exon candidates
     // + the number of all alignment fragments
@@ -548,8 +558,8 @@ void GeneMSA::createOrthoExons(vector<int> offsets, float consThres) {
 	    break;
 	AlignmentRow *row = alignment->rows[s];
 	vector<fragment>::const_iterator from = row->frags.begin();
-	for(list<ExonCandidate*>::iterator ec = exoncands[s]->begin(); ec != exoncands[s]->end(); ++ec){
-	    chrExonStart = (*ec)->getStart();
+	for(list<ExonCandidate*>::iterator ecit = exoncands[s]->begin(); ecit != exoncands[s]->end(); ++ecit){
+	    chrExonStart = (*ecit)->getStart();
 	    // go the the first fragment that may contain the ec start
 	    while (from != row->frags.end() && from->chrPos + from->len - 1 < chrExonStart)
 		++from;
@@ -557,97 +567,46 @@ void GeneMSA::createOrthoExons(vector<int> offsets, float consThres) {
 		break; // have searched beyond the last alignment fragment => finished
 	    aliStart = row->getAliPos(chrExonStart, from);
 	    if (aliStart >= 0){ // left exon boundary mappable
-		chrExonEnd = (*ec)->getEnd();
+		chrExonEnd = (*ecit)->getEnd();
 		aliEnd = row->getAliPos(chrExonEnd, from);
 		if (aliEnd >= 0){
 		    // both exon boundaries were mappable
 		    // store the ec in the hash
-		    cout << "could map " << rsa->getSname(s) << " " << row->seqID << ":" << chrExonStart
-			 << ".." << chrExonEnd << " to " << " alignment coordinates " << aliStart << ".."
-			 << aliEnd << endl;
-
+		    key = itoa(aliStart) + ":" + itoa(aliEnd) + ":" + itoa((*ecit)->type);
+		    cout << "could map " << rsa->getSname(s) << " " << row->seqID << ":" << chrExonStart << ".." << chrExonEnd 
+			 << " to " << " alignment coordinates " << aliStart << ".." << aliEnd << " key= " << key << endl;
+		    aec = alignedECs.find(key);
+		    if (aec == alignedECs.end()){ // insert new list
+			list<pair<int,ExonCandidate*> > e;
+			e.push_back(pair<int,ExonCandidate*> (s, *ecit));
+			alignedECs.insert(pair<string,list<pair<int,ExonCandidate*> > >(key, e));
+		    } else {// append new entry to existing list
+			aec->second.push_back(pair<int,ExonCandidate*> (s, *ecit));
+		    }
 		}
 	    }
 	}
     }
     
-
     /*
-    list<Alignment*>::iterator it_ab;
-    list<ExonCandidate*> cands = *getExonCands(0); // exon candidates of reference species
-    AlignmentRow *as_ptr, *ptr;
-    OrthoExon oe;
-    string key;
-    bool found, hasOrthoExon;
-
-    it_ab = this->alignment.begin();
-    for (list<ExonCandidate*>::iterator ec = cands.begin(); ec!=cands.end(); ec++) {
-        found = false;
-        hasOrthoExon = false;
-        if (!oe.orthoex.empty()) {
-            oe.orthoex.clear();
-            oe.orthoex.resize(this->exoncands.size()); // "Why that many?", wonders Mario.
-        }
-        while ((!found) && (it_ab != this->alignment.end())) {
-            if ((*it_ab)->rows.at(0)->start > (*ec)->begin + offsets[0] + 1) {
-                found = true;
-            } else if (((*it_ab)->rows.at(0)->start <= (*ec)->begin + offsets[0] + 1)
-                    && ((*it_ab)->rows.at(0)->start + (*it_ab)->rows.at(0)->seqLen - 1 >= (*ec)->end + offsets[0] + 1)) {
-                as_ptr=(*it_ab)->rows.at(0);
-                if (as_ptr != NULL) {
-                    oe.orthoex[0]=(*ec);
-                    int alignedPosStart = getAlignedPosition(as_ptr, (*ec)->begin + offsets[0]).first;
-                    int idxStart = getAlignedPosition(as_ptr, (*ec)->begin + offsets[0]).second;
-                    int alignedPosEnd = getAlignedPosition(as_ptr, (*ec)->end + offsets[0]).first;
-                    int idxEnd = getAlignedPosition(as_ptr, (*ec)->end + offsets[0]).second;
-                    for (int i=1; i<(*it_ab)->rows.size(); i++) { // loop over all non-reference species
-                        ptr = (*it_ab)->rows.at(i);
-                        if (ptr != NULL) {
-                            int realStart = getRealPosition(ptr, alignedPosStart, idxStart);
-                            int realEnd = getRealPosition(ptr, alignedPosEnd, idxEnd);
-                            if ((realStart != -1) && (realEnd != -1) && ((mod3((*ec)->end - (*ec)->begin)) == (mod3(realEnd - realStart)))) {
-                                if ((*ec)->type > -1) {
-                                    key = (itoa(realStart - offsets[i]) + ":" + itoa(realEnd - offsets[i]) + ":" + itoa((*ec)->type));
-                                } else {
-                                    key = "no key";
-                                }
-                                if (existingCandidates[i] != NULL && existingCandidates[0] != NULL) {
-                                    map<string, ExonCandidate*>::iterator map_it = (*existingCandidates[i]).find(key);
-                                    if (map_it != (*existingCandidates[i]).end()) {
-                                        if (((*it_ab)->rows.at(i)->start <= map_it->second->begin + offsets[i] + 1)
-                                                && ((*it_ab)->rows.at(i)->start + (*it_ab)->rows.at(i)->seqLen - 1
-						    >= map_it->second->end + offsets[i] + 1)) {
-                                            oe.orthoex[i] = (map_it->second);
-                                            hasOrthoExon = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (hasOrthoExon) {
-			oe.ID = orthoExonID;
-			orthoExonID++;
-                        this->orthoExonsList.push_back(oe);
-                    }
-                }
-                found = true;
-            } else {
-                it_ab++;
-		if(it_ab != this->alignment.end() ){
-		    if ((*it_ab)->rows.at(0)->start > (*ec)->begin + offsets[0] + 1) {
-			it_ab--;
-			found = true;
-		    }
-		    if (this->getEnd(0) - padding < (*ec)->begin + offsets[0] + 1) {
-			cout << " exon "<<(*ec)->begin + offsets[0] + 1<<".."<<(*ec)->end + offsets[0] + 1<<" is outside (behind) the aligned range"<<endl;
-			found = true;
-		    }
-		}
-            }
-        }
+     * Create one ortho exon candidate for each key to which at least minEC exon candidates mapped 
+     */
+    for (aec = alignedECs.begin(); aec != alignedECs.end(); ++aec){
+	if (aec->second.size() >= minEC){
+	    OrthoExon oe;
+	    oe.ID = orthoExonID;
+	    orthoExonID++;
+	    oe.orthoex.resize(k, NULL);
+	    for (list<pair<int,ExonCandidate*> >::iterator it = aec->second.begin(); it != aec->second.end(); ++it){
+		int s = it->first;
+		ExonCandidate *ec = it->second;
+		if (oe.orthoex[s])
+		    throw ProjectError("createOrthoExons: Have two exon candidates from the same species " + rsa->getSname(s) + " with the same key.");
+		oe.orthoex[s] = ec;
+	    }
+	    orthoExonsList.push_back(oe);
+	}
     }
-    */
 }
 
 // cut off incomplete codons at both boundaries of all exon candidates
