@@ -807,23 +807,28 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files, double omega, int 
 }
 
 /** getCodonAlignment
+ * Two codons are considered aligned, when all 3 of their bases are aligned with each other.
+ * 
+ * example input (all ECs have agree in phase at both boundaries)
  *
- * Example input (all ECs have agree in phase at both boundaries)
- *  a|c g t|t t g|a t g|t c a|a a
- *  a|c g t|t t g|a t g|t c a|a a
- *  a|c g t|t t g|a t g|t c a|a a
- *  a|c g t|t t g|a t g|t c a|a a
+ *       a|c - - t t|g a t|g t c|g a t|a a 
+ *       a|c - - c t|a a - - - c|a n c|a g
+ *       g|c g - t|t g a|- g t c|g a c|a a
+ *       a|c g t|t t g|a t - t|c g a|c - a
+ *       a|c g - t|t g a|t g t|t g a|- a a
  *
- * Example output:
- *
- *
- *
- *
- *
+ * example output:
+ *         - - -|c t t|g t c|- - -|g a t
+ *         - - -|c c t|- - -|- - -|a n c
+ *         c g t|- - -|g t c|- - -|g a c
+ *         - - -|- - -|- - -|c g a|- - -
+ *         c g t|- - -|- - -|t g a|- - -
  *
  */
 vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence> const &seqRanges) {
     vector<string> rowstrings(numSpecies(), "");
+    // consider only codon columns with a number of codons at least this fraction of the nonempty rows 
+    // float minAlignedCodonFrac = 0.3;
     return rowstrings;
 }
 
