@@ -115,8 +115,8 @@ ostream& operator<< (ostream& strm, const Alignment &a){
 }
 
 bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac){
-    int remainingAllowedMismatches = (1.0 - mergeableFrac) * a1->numRows;
-    for (int s=0; s < a1->numRows && remainingAllowedMismatches >=0; s++){
+    int remainingAllowedMismatches = (1.0 - mergeableFrac) * a1->numRows();
+    for (int s=0; s < a1->numRows() && remainingAllowedMismatches >=0; s++){
         if (a1->rows[s] && a2->rows[s]){
 	    int dist = a2->rows.at(s)->chrStart() - a1->rows.at(s)->chrEnd() - 1; // 0 distance means direct adjacency
 	    if (dist < 0 || dist > maxGapLen)
@@ -139,7 +139,7 @@ bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac
  */
 void Alignment::merge(Alignment *other){
     // cout << "merging " <<  *this <<  "with" <<  *other << endl;
-    for (size_t s=0; s<numRows; s++)
+    for (size_t s=0; s<numRows(); s++)
 	appendRow(&rows[s], other->rows[s], aliLen);
     aliLen += other->aliLen;
     // cout << "result:" << endl << *this << endl;
@@ -147,7 +147,7 @@ void Alignment::merge(Alignment *other){
 
 int Alignment::maxRange(){
     int range, max = 0;
-    for(size_t s=0; s<numRows; s++){
+    for(size_t s=0; s<numRows(); s++){
 	range = rows[s]? rows[s]->getSeqLen() : 0;
 	if (range > max)
 	    max = range;

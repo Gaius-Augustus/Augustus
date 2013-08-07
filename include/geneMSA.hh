@@ -23,24 +23,21 @@ class OrthoGraph;
 
 class GeneMSA {
 public:
+    GeneMSA(RandSeqAccess *rsa, Alignment *a);
+    ~GeneMSA();
     static int padding; // add this many bases to the region before and after the aligned region
     static int orthoExonID; // stores an ID for exons of different species which are orthologous to each other
     static int geneRangeID; // stores an ID for the possible gene ranges of the different species which belong together
     static vector<int> exonCandID; // stores the IDs for exon candidates of different species
-    static ofstream *pamlFile;
     // pointers to the output files
     static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles, omega_outfiles; 
     Alignment* alignment;            // alignment of regions which possibly belong to a gene
     vector< list<ExonCandidate*>* > exoncands;  // exon candidates found in the different species in a gene segment
-    vector< map<string, ExonCandidate*>* > existingCandidates; // stores the keys of the exon candidates for the different species
     list<OrthoExon> orthoExonsList;		// list of ortholog exons found in a gene segment
-    list<OrthoExon> orthoExonsWithOmega;        // list of ortholog exons with a computed omega=dN/dS ratio
 
-    GeneMSA(RandSeqAccess *rsa, Alignment *a);
-    ~GeneMSA();
     static void setTree(PhyloTree *t){tree = t;}
-    static void setCodonEvo(CodonEvo *c){codonevo = c;}
-    static int numSpecies(){return tree->numSpecies();}
+    static void setCodonEvo(CodonEvo *c){ codonevo = c; }
+    static int numSpecies(){ return tree->numSpecies(); }
 
     string getSeqID(int speciesIdx) {
 	if (alignment->rows[speciesIdx])
@@ -72,42 +69,41 @@ public:
      * The default threshold of 0 means that all splice site patterns are considered.
      */
     void createExonCands(int s, const char *dna, double assmotifqthresh=0.15, double assqthresh=0.3, double dssqthresh=0.7);
-    void shiftEC(int speciesIdx, int offset); // add offset to all ec coordinates
 
     //computes the score for the splice sites of an exon candidate
     Double computeSpliceSiteScore(Double exonScore, Double minProb, Double maxProb); 
     // computes the aligned position of a base in an alignment and the 'block' where the base is found
     pair<int,int> getAlignedPosition(AlignmentRow* row, int pos);  
-    // computes the real position of a base dependent on its position in the alignment
-    int getRealPosition(AlignmentRow* ptr, int pos, int idx);  
+
     /**
      * find all ortholog exon candidates, that are present in at least max(2, consThresh * m)
      * where m <= numSpecies is the number of species that are present in the alignment
      * ortholog exon candidates:
      * - both splice sites align exactly
-     * - the exon candidate type agrees
+     * - the exon candidate types agrees (single, rsingle, internal0, ...)
+     * - the phases at both boundaries agree (i.e. exon candidate types and length modulo 3)
      * EC coordinates are region-based, as they are used in the OrthoGraph
      */
-    void createOrthoExons(vector<int> offsets, float consThres = 0.5);
+    void createOrthoExons(float consThres = 0.5);
     list<ExonCandidate*>* getExonCands(int speciesIdx){ return exoncands.at(speciesIdx); }
-    list<OrthoExon> getOrthoExons();
-    void cutIncompleteCodons(vector<ExonCandidate*> &orthoex);
-    void readOmega(string file);
+    list<OrthoExon> getOrthoExons() { return orthoExonsList; }
     string getAlignedOrthoExon(AlignmentRow *as_ptr, ExonCandidate* ec, string seq, int offset);
-    vector <string> getSeqForPaml(Alignment *it_ab, vector<ExonCandidate*> oe, vector<string> seq, vector<int> offsets, vector<int> speciesIdx);
-    static void openOutputFiles();
     void printStats(); // to stdout
     void printGeneRanges();
-    void printExonCands(vector<int> offsets);
-    void printOrthoExons(RandSeqAccess *rsa, vector<int> offsets);
-    void printSingleOrthoExon(OrthoExon &oe, vector<int> offsets, bool files = true, double omega=-1, int numSub=-1);
-    void printExonWithOmega(vector<int> offsets);
-    void printExonsForPamlInput(RandSeqAccess *rsa,  OrthoExon &oe,  vector<int> offsets);
+    void printExonCands();
+    void printOrthoExons(RandSeqAccess *rsa);
+    void printSingleOrthoExon(OrthoExon &oe, bool files = true, double omega=-1, int numSub=-1);
+    void computeOmegas(vector<AnnoSequence> const &seqRanges);
+    static void openOutputFiles();
     static void closeOutputFiles();
+
 private:
+    vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence> const &seqRanges);
+    void cutIncompleteCodons(OrthoExon &oe);
     static PhyloTree *tree;
     static CodonEvo *codonevo;
     vector<int> starts, ends; // gene ranges for each species
+    vector<int> offsets; // this many bases are upstream from the region
     RandSeqAccess *rsa;
 };
 

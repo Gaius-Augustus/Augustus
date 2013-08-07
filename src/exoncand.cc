@@ -100,18 +100,11 @@ string ExonCandidate::key() {
     }
 }
 
-double getGC_Content(const char *dna) {
-    int n=strlen(dna);
-    double gc_content=0.0;
-    for (int i=0; i<=n-1; i++) {
-        if ((dna[i]=='g') || (dna[i]=='G') || (dna[i]=='C') || (dna[i]=='c'))  {
-            gc_content++;
-        }
-    }
-    gc_content=gc_content/n;
-    return gc_content;
+ostream& operator<<(ostream& strm, const ExonCandidate &ec){
+    strm << ec.begin << "\t" << ec.end << "\ttype=" << ec.type << "\tscore=" << ec.score 
+	 << "\tassScore=" << ec.assScore << "\tdssScore=" << ec.dssScore;
+    return strm;
 }
-
 
 bool comp_test (ExonCandidate* a, ExonCandidate* b) {
     if (a->type != b->type) {

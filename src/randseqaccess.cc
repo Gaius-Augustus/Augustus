@@ -291,7 +291,7 @@ void DbSeqAccess::connect_db(){
     const  char* user = db_information[2].c_str();
     const  char* passwd = db_information[3].c_str();
     try {
-	cout << "Opening database connection using connection data \"" << Constant::dbaccess << "\"...\t";
+	cout << "# Opening database connection using connection data \"" << Constant::dbaccess << "\"...\t";
 	con.connect(db_name,host,user,passwd);
 	cout << "DB connection OK." << endl;
     }

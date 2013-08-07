@@ -159,7 +159,6 @@ void CodonEvo::computeLogPmatrices(){
     int status;
     allPs.assign(k, m, NULL); // omegas index the rows, times index the columns
     allLogPs.assign(k, m, NULL);
-    cout << k << "x" << m << " matrices" << endl;
     for (int u=0; u<k; u++){
 	omega = omegas[u];
 	// compute decomposition of Q, which does not require t yet
@@ -565,12 +564,13 @@ gsl_matrix *ExonEvo::computeP(double t){
  * - save log-likelihood of codon tuples in a cache, so that calculation has to be done only once.
  * - scale branch lengths
  */
-double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, vector<int> &speciesIdx, PhyloTree *tree,
+double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 				    int &subst){ //output variables
-
+    if (seqtuple.size() != tree->numSpecies())
+	throw ProjectError("CodonEvo::estOmegaOnSeqTuple: inconsistent number of species.");
     for(int i=1; i<seqtuple.size();i++){
 	if(seqtuple[0].length() != seqtuple[i].length()){
-	    	throw ProjectError("CodonEvo::estOmegaOnSeqTuple: wrong exon lengths");
+	    throw ProjectError("CodonEvo::estOmegaOnSeqTuple: wrong exon lengths");
 	}
     }
 
@@ -578,18 +578,18 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, vector<int> &speci
     int maxU = 0; // index to omegas
     double ML = -numeric_limits<double>::max();
     Evo* evo = this;
-    for (int u=0; u < k; u++){
+    for (int u=0; u < k; u++){ // loop over omegas
 	Seq2Int s2i(3);
 	double loglik = 0.0;
 	for (int i=0; i<n; i++){
-	  vector<int> codontuple(tree->numSpecies(),64);
-	  int numCodons=0;
-	  for(int j=0; j<seqtuple.size();j++){
-		try {
-		    int codon = s2i(seqtuple[j].c_str() + 3*i);
-		    codontuple[speciesIdx[j]]=codon;
-		    numCodons++;
-		} catch(...){} // gap or n character
+	    vector<int> codontuple(tree->numSpecies(), 64); // 64 = missing codon
+	    int numCodons = 0;
+	    for(size_t s=0; s < tree->numSpecies(); s++){
+		if (seqtuple[s].size()>0)
+		    try {
+			codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
+			numCodons++;
+		    } catch(...){} // gap or n character
 	    }
 	    if(numCodons >= 2){
 		loglik += tree->pruningAlgor(codontuple, evo, u);
@@ -613,12 +613,12 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, vector<int> &speci
     for (int i=0; i<n; i++){
 	vector<int> codontuple(tree->numSpecies(),64);
 	int numCodons=0;
-	for(int j=0; j<seqtuple.size();j++){
-	    try {
-		int codon = s2i(seqtuple[j].c_str() + 3*i);
-		numCodons++;
-		codontuple[speciesIdx[j]]=codon;
-	    } catch(...){} // gap or n character
+	for(size_t s=0; s < tree->numSpecies(); s++){
+	    if (seqtuple[s].size() > 0)
+		try {
+		    codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
+		    numCodons++;
+		} catch(...){} // gap or n character
 	}
 	if(numCodons >= 2){
 	    PhyloTree temp(*tree); // only use a copy of the tree !!!

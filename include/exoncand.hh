@@ -25,7 +25,7 @@
 #include "exonmodel.hh" // for OpenReadingFrame
 #define EXON_TYPES 17
 
-enum ExonType{UNKNOWN_EXON = -1,
+enum ExonType {UNKNOWN_EXON = -1,
     // forward strand
     singleGene, initial_0, initial_1, initial_2, internal_0, internal_1, internal_2, terminal_exon,
     // reverse strand
@@ -72,6 +72,7 @@ public:
     int complementType();
     StateType getStateType();
     string key();
+    friend ostream& operator<<(ostream& strm, const ExonCandidate &ec);
 };
 
 /*
@@ -82,7 +83,5 @@ public:
  * The default threshold of 0 means that all splice site patterns are considered.
  */
 
-double getGC_Content(const char *dna);
-// void computeIndices(list<ExonCandidate*> cand, int seqlen);
 
 #endif  //  _EXONCAND_HH

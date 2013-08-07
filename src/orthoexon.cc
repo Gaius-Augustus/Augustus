@@ -10,12 +10,7 @@
  * 09.03.12|Stefanie König | creation of the file
  **********************************************************************/
 
-// project includes
 #include "orthoexon.hh"
-#include "exoncand.hh"
-#include "projectio.hh"
-#include "orthograph.hh"
-#include "types.hh"
 
 #include <fstream>
 #include <iostream>
@@ -43,6 +38,14 @@ OrthoExon::OrthoExon(const OrthoExon& other, const vector<size_t> &permutation){
 	}
     }
 }
+
+StateType OrthoExon::getStateType() const{
+    for (int s = 0; s < orthoex.size(); s++)
+	if (orthoex[s])
+	    return orthoex[s]->getStateType();
+    return TYPE_UNKNOWN;
+}
+
 
 list<OrthoExon> readOrthoExons(string filename){
 
@@ -108,17 +111,14 @@ void writeOrthoExons(const list<OrthoExon> &all_orthoex){
     }
 }
 
-ostream& operator<<(ostream& ostrm, const OrthoExon &ex_tuple){
-
-  
-    ostrm << stateTypeIdentifiers[ (ex_tuple.orthoex.at(0)->getStateType())];
-    for (int i = 0; i < ex_tuple.orthoex.size(); i++){
-	if (ex_tuple.orthoex.at(i) == NULL){
+ostream& operator<<(ostream& ostrm, const OrthoExon &oe){
+    ostrm << stateTypeIdentifiers[oe.getStateType()];
+    for (int s = 0; s < oe.orthoex.size(); s++){
+	ExonCandidate *ec = oe.orthoex[s];
+	if (ec)
+	    ostrm << "\t" << ec->begin+1 << "\t" << ec->end - ec->begin + 1;
+	else
 	    ostrm << "\t" << 0 << "\t" << 0 << "\t";
-	}
-	else{
-	    ostrm << "\t" << ex_tuple.orthoex.at(i)->begin+1 << "\t" << ex_tuple.orthoex.at(i)->end - ex_tuple.orthoex.at(i)->begin + 1;
-	}
     }
     return ostrm;
 }

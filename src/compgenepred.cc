@@ -104,46 +104,38 @@ void CompGenePred::start(){
     rsa->setSpeciesNames(speciesNames);
     GenomicMSA msa(rsa);
     msa.readAlignment(Constant::alnfile);  // reads the alignment
-    rsa->printStats();
-    msa.compactify();
-    msa.findGeneRanges();
+    // rsa->printStats();
+    msa.compactify(); // trivial mergers of neighboring alignments
+    msa.findGeneRanges(); // nontrivial summary of alignments
     //msa.printAlignment("");
-   
-    //msa.prepareExons(); // merges alignment blocks if possible. Mario: TODO sort aligments in between
-    vector<int> offsets(speciesNames.size(), 0);
-    bool AlexFail;
     
-    // determine object that holds a sequence range for each species
-    // loop over species
+
     GeneMSA::openOutputFiles();
     while (GeneMSA *geneRange = msa.getNextGene()) {
 	cout << "processing next gene range:" << endl;
 	geneRange->printStats();
         OrthoGraph orthograph;
-	AlexFail = false; // temporary fix until Alexanders Bug is corrected
+	vector<AnnoSequence> seqRanges(speciesNames.size());
         for (int s = 0; s < speciesNames.size(); s++) {
             string seqID = geneRange->getSeqID(s);
             if (!seqID.empty()) {
 		int start = geneRange->getStart(s); // start, end refer to plus strand
 		int end = geneRange->getEnd(s);
-		offsets[s] = (geneRange->getStrand(s) == plusstrand)?
-		    start : rsa->getChrLen(s, seqID) - 1 - end;
-
-                AnnoSequence *seqRange = rsa->getSeq(speciesNames[s], seqID, start, end, geneRange->getStrand(s));
-                if (seqRange == NULL) {
+		AnnoSequence *as = rsa->getSeq(speciesNames[s], seqID, start, end, geneRange->getStrand(s));
+                if (!as) {
                     cerr << "random sequence access failed on " << speciesNames[s] << ", " << seqID << ", " 
 			 << start << ", " << end << ", " << endl;
-		    AlexFail = true;
                     break;
                 } else {
+		    //seqRanges[s] = *as; // DNA seqs will be reused when omega is computed
 		    // this is needed for IntronModel::dssProb in GenomicMSA::createExonCands
-                    namgene.getPrepareModels(seqRange->sequence, seqRange->length); 
+                    namgene.getPrepareModels(as->sequence, as->length); 
 
 		    // identifies exon candidates in the sequence for species s
-                    geneRange->createExonCands(s, seqRange->sequence);
+                    geneRange->createExonCands(s, as->sequence);
                     list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
 
-                    namgene.doViterbiPiecewise(sfc, seqRange, bothstrands); // sampling
+                    namgene.doViterbiPiecewise(sfc, as, bothstrands); // sampling
                     list<Gene> *alltranscripts = namgene.getAllTranscripts();
                     if (alltranscripts){
                         cout << "building Graph for " << speciesNames[s] << endl;
@@ -155,7 +147,7 @@ void CompGenePred::start(){
                             buildStatusList(alltranscripts, false, stlist);
                         }
                         // build graph
-                        orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRange, additionalExons, speciesNames[s], 
+                        orthograph.graphs[s] = new SpeciesGraph(&stlist, as, additionalExons, speciesNames[s], 
 								geneRange->getStrand(s), sampledExons[s]);
                         orthograph.graphs[s]->buildGraph();
 
@@ -163,54 +155,50 @@ void CompGenePred::start(){
                         orthograph.ptrs_to_alltranscripts[s] = alltranscripts; 
                     }
                 }
-            } else {
-                geneRange->exoncands.push_back(NULL);
-                geneRange->existingCandidates.push_back(NULL);
             }
         }
-	if (!AlexFail){
-	  geneRange->printGeneRanges();
-	  geneRange->printExonCands(offsets);
-	  geneRange->createOrthoExons(offsets);
-	  geneRange->printOrthoExons(rsa, offsets);
-	  orthograph.all_orthoex = geneRange->getOrthoExons();
+	
+	geneRange->printGeneRanges();
+	geneRange->printExonCands();
+	geneRange->createOrthoExons();
+	geneRange->computeOmegas(seqRanges); // omegas are stored as OrthoExon attribute
+	geneRange->printOrthoExons(rsa);
+	orthograph.all_orthoex = geneRange->getOrthoExons();
 
-	  for(list<OrthoExon>::iterator hects = orthograph.all_orthoex.begin(); hects != orthograph.all_orthoex.end(); hects++){ //TODO: move this to createOrthoExons()
-	      for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){
-		  if(hects->orthoex[pos]==NULL){
-		      hects->labels[pos]=2;
-		  }
-		  else{
-		      Node* node = orthograph.graphs[pos]->getNode(hects->orthoex[pos]);
-		      hects->orthonode[pos]=node;
-		  }
-	      }
-	  }
-	 
-	  orthograph.outputGenes(baseGenes,base_geneid);
-	  //add score for selective pressure of orthoexons
-	  orthograph.addScoreSelectivePressure();
-	  //determine initial path
-	  orthograph.globalPathSearch();
-	  orthograph.outputGenes(initGenes,init_geneid);
-	  
-	  if(!orthograph.all_orthoex.empty()){
-	      if(dualdecomp){ // optimization via dual decomposition
-		  vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
-		  orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,500);
-		  orthograph.filterGeneList(genelist,optGenes,opt_geneid);
-	      }
-	      else{ // optimization by making small changes (moves)
-		  orthograph.pruningAlgor(evo);
-		  orthograph.printCache();
-		  orthograph.optimize(evo);
-		  // transfer max weight paths to genes + filter + ouput
-		  orthograph.outputGenes(optGenes, opt_geneid);
-	      }
-	  }
-	  offsets.assign(speciesNames.size(), 0);
-	  delete geneRange;
+	for(list<OrthoExon>::iterator hects = orthograph.all_orthoex.begin(); hects != orthograph.all_orthoex.end();
+	    hects++){ //TODO: move this to createOrthoExons()
+	    for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){
+		if(hects->orthoex[pos]==NULL){
+		    hects->labels[pos]=2;
+		}
+		else{
+		    Node* node = orthograph.graphs[pos]->getNode(hects->orthoex[pos]);
+		    hects->orthonode[pos]=node;
+		}
+	    }
 	}
+	 
+	orthograph.outputGenes(baseGenes,base_geneid);
+	//add score for selective pressure of orthoexons
+	orthograph.addScoreSelectivePressure();
+	//determine initial path
+	orthograph.globalPathSearch();
+	orthograph.outputGenes(initGenes,init_geneid);
+	  
+	if(!orthograph.all_orthoex.empty()){
+	    if (dualdecomp){ // optimization via dual decomposition
+		vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
+		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,500);
+		orthograph.filterGeneList(genelist,optGenes,opt_geneid);
+	    } else { // optimization by making small changes (moves)
+		orthograph.pruningAlgor(evo);
+		orthograph.printCache();
+		orthograph.optimize(evo);
+		// transfer max weight paths to genes + filter + ouput
+		orthograph.outputGenes(optGenes, opt_geneid);
+	    }
+	}
+	delete geneRange;
     }
 
     GeneMSA::closeOutputFiles();

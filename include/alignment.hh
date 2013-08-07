@@ -101,7 +101,7 @@ public:
  */
 class Alignment {
 public:
-    Alignment(size_t k) : aliLen(0), rows(k, NULL), numRows(k) {} // initialize with NULL, which stand for missing AlignmentRows
+    Alignment(size_t k) : aliLen(0), rows(k, NULL) {} // initialize with NULL, which stand for missing AlignmentRows
     ~Alignment(){
 	// Steffi: this causes a segmentation fault for more than two species. I don't know why.
 	// for (int i=0; i<rows.size(); i++) 
@@ -111,10 +111,10 @@ public:
     friend ostream& operator<< (ostream& strm, const Alignment &a);
     void merge(Alignment *other); // append 'other' Alignment to this
     int maxRange(); // chromosomal range, maximized over rows
+    int numRows() { return rows.size(); }
 public: // should rather be private
     int aliLen; // all aligned sequences are this long when gaps are included
     vector<AlignmentRow*> rows;
-    size_t numRows; // = number of species
 };
 
 // sorting operator, with respect to a given species index
