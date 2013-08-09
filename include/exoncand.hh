@@ -66,6 +66,9 @@ public:
 
     int getStart();
     int getEnd();
+    int getFirstCodingBase();
+    int getLastCodingBase();
+    int gff3Frame();
     int len() {return end-begin+1;}
     ExonType getExonType();
     Double getScore();
@@ -82,6 +85,11 @@ public:
  * that have a pattern, such that 5% of true splice site patterns have lower probability.
  * The default threshold of 0 means that all splice site patterns are considered.
  */
+
+list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh=0.15, double assqthresh=0.3, double dssqthresh=0.7);
+
+//computes the score for the splice sites of an exon candidate
+Double computeSpliceSiteScore(Double exonScore, Double minProb, Double maxProb); 
 
 
 #endif  //  _EXONCAND_HH

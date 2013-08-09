@@ -39,14 +39,26 @@ AlignmentRow::AlignmentRow(string seqID, int chrPos, Strand strand, string rowst
 	    len++;
 	    i++;
 	}
-	if (len>0) {
+	if (len>0)
 	    frags.push_back(fragment(chrPos - len, aliPos - len, len));
-	}
     }
     // row consists of just gaps
     if (frags.empty()){
 	frags.push_back(fragment(chrPos, 0, 0)); // add a single fragment of length 0 to start of alignment
     }
+}
+
+int AlignmentRow::chrStart() const {
+    if (frags.empty())
+	return -1;
+    return frags[0].chrPos;
+}
+
+int AlignmentRow::chrEnd() const{
+    if (frags.empty()) // this only happens temporarily during appendRow
+	return -1;
+    fragment last = frags[frags.size()-1];
+    return last.chrPos + last.len - 1;
 }
 
 // simple left-to-right search starting from given fragment 'from'
@@ -76,8 +88,10 @@ void appendRow(AlignmentRow **r1, AlignmentRow *r2, int aliLen1){
 	(*r1)->seqID = r2->seqID;
 	(*r1)->strand = r2->strand;
     }
-    if ((*r1) && r2 && (*r1)->seqID != r2->seqID){
-	// incomplatible sequence IDs, use the fragments with the longer chromosomal range and throw away the other alignment row
+    if ((*r1) && r2 &&
+	((*r1)->seqID != r2->seqID || r2->chrStart() <= (*r1)->chrEnd())){
+	// incomplatible sequence IDs or second row does not come after first row,
+	// use the fragments with the longer chromosomal range and throw away the other alignment row
 	if ((*r1)->getSeqLen() >= r2->getSeqLen())
 	    return; // implicitly delete the fragments of the second row r2
 	else {
@@ -138,11 +152,9 @@ bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac
  *
  */
 void Alignment::merge(Alignment *other){
-    // cout << "merging " <<  *this <<  "with" <<  *other << endl;
     for (size_t s=0; s<numRows(); s++)
 	appendRow(&rows[s], other->rows[s], aliLen);
     aliLen += other->aliLen;
-    // cout << "result:" << endl << *this << endl;
 }
 
 int Alignment::maxRange(){
@@ -153,4 +165,12 @@ int Alignment::maxRange(){
 	    max = range;
     }
     return max;
+}
+
+int Alignment::numFilledRows(){
+    int m = 0;
+    for (size_t s=0; s<rows.size(); s++)
+	if (rows[s])
+	    m++;
+    return m;
 }

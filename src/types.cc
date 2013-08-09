@@ -390,7 +390,7 @@ char *getRandomDNA(int len) {
 }
 
 Double quantile(const vector<Double> &v, float q){
-  if (v.size() ==0)
+  if (v.size() == 0)
     return -numeric_limits<double>::infinity();
   if (q<0)
     q=0;

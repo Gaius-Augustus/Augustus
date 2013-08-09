@@ -127,7 +127,8 @@ void CompGenePred::start(){
 			 << start << ", " << end << ", " << endl;
                     break;
                 } else {
-		    //seqRanges[s] = *as; // DNA seqs will be reused when omega is computed
+		    seqRanges[s] = *as; // DNA seqs will be reused when omega is computed
+		    
 		    // this is needed for IntronModel::dssProb in GenomicMSA::createExonCands
                     namgene.getPrepareModels(as->sequence, as->length); 
 
@@ -161,7 +162,7 @@ void CompGenePred::start(){
 	geneRange->printGeneRanges();
 	geneRange->printExonCands();
 	geneRange->createOrthoExons();
-	geneRange->computeOmegas(seqRanges); // omegas are stored as OrthoExon attribute
+	geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
 	geneRange->printOrthoExons(rsa);
 	orthograph.all_orthoex = geneRange->getOrthoExons();
 

@@ -16,13 +16,6 @@
 #include <list>
 #include <iostream>
 
-// structure for the reading of an aligned sequence, TODO: remove this later
-struct block {
-    int begin;
-    int length;
-    int previousGaps;
-};
-
 // gapless alignment fragment
 class fragment {
 public:
@@ -30,7 +23,6 @@ public:
     int chrPos; // chromosomal start position of fragment, 0-based
     int aliPos; // start position of fragment in alignment, 0-based
     int len;    // fragment length
-    
 };
 
 /**
@@ -42,24 +34,10 @@ public:
     AlignmentRow() {}
     AlignmentRow(string seqID, int chrPos, Strand strand, string rowbuffer);
     ~AlignmentRow(){}
-    // remove all these attributes from Alexander later
-    int start;    // start chromosomal position of alignment, 1-based
-    int seqLen;   // length of aligned sequence fragment, not counting gaps characters
-    vector<int*> cmpStarts;
-    list<block> sequence;
 
-    int end() {return start + seqLen - 1;} // last aligned position, 1-based
-    int chrStart() const {
-	return frags.at(0).chrPos;
-    }
-    int chrEnd() const{
-	size_t n = frags.size();
-	fragment last = frags.at(n-1);
-	return last.chrPos + last.len - 1;
-    }
-    int getSeqLen() const{
-	return chrEnd() - chrStart() + 1;
-    }
+    int chrStart() const;
+    int chrEnd() const;
+    int getSeqLen() const { return chrEnd() - chrStart() + 1; }
     friend ostream& operator<< (ostream& strm, const AlignmentRow &row);
     friend void appendRow(AlignmentRow **r1, AlignmentRow *r2, int aliLen1);
 
@@ -104,14 +82,15 @@ public:
     Alignment(size_t k) : aliLen(0), rows(k, NULL) {} // initialize with NULL, which stand for missing AlignmentRows
     ~Alignment(){
 	// Steffi: this causes a segmentation fault for more than two species. I don't know why.
-	// for (int i=0; i<rows.size(); i++) 
-	//    delete rows.at(i);	
+	for (int i=0; i<rows.size(); i++) 
+	    delete rows.at(i);	
     }
     friend bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac);
     friend ostream& operator<< (ostream& strm, const Alignment &a);
     void merge(Alignment *other); // append 'other' Alignment to this
     int maxRange(); // chromosomal range, maximized over rows
     int numRows() { return rows.size(); }
+    int numFilledRows(); // number of nonempty rows
 public: // should rather be private
     int aliLen; // all aligned sequences are this long when gaps are included
     vector<AlignmentRow*> rows;

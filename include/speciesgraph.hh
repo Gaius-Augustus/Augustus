@@ -59,7 +59,7 @@ public:
 	}
     }
     ~SpeciesGraph(){
-	delete seqRange;
+	// AnnoSequence must be deleted by caller (it is needed at other places)
     }
     using AugustusGraph::getKey;
 

@@ -134,6 +134,32 @@ inline char* reverseComplement(const char* dna) {
     return result;
 }
 
+inline void reverseComplementString(string &text) {
+    int n = text.length();
+    for (int i=0; i < n/2; i++) {
+        char c;
+        c = text[i];
+        text[i] = wcComplement(text[n-i-1]);
+        text[n-i-1] = wcComplement(c);
+    }
+    if (n%2) // n odd, must complement the middle character
+	text[n/2] = wcComplement(text[n/2]);
+}
+
+
+inline void reverseString(string &text) {
+    int i = 0;
+    int n = text.length();
+    while (i < (n/2)) {
+        char c;
+        c = (text[i]);
+        text[i] = text[n-i-1];
+        text[n-i-1] = c;
+        i++;
+    }
+}
+
+
 
 /*
  * a class for converting sequence into integer

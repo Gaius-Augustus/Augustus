@@ -27,7 +27,6 @@ void GenomicMSA::readAlignment(string alignFilename) {
     string rowseq, buffer;
     string completeName;
     char strandChar;
-    block cur_block;
     AlignmentRow *row;
     Alignment *alignBlock;
     map<string, size_t> notExistingSpecies;
@@ -90,34 +89,9 @@ void GenomicMSA::readAlignment(string alignFilename) {
 		}
 		
 		row = new AlignmentRow (seqID, chrStart, strand, rowseq);
-		row->start = chrStart + 1; // TODO remove
-		row->cmpStarts.push_back(&row->start);
-		row->seqLen = seqLen;
 		if (seqLen != row->getSeqLen())
 		    cerr << "Inconsistenty in .maf file: Sequence length different from number of non-gap characters in row:" 
 			 << endl << "speciesName" << "." << seqID << "\t" << chrStart << "\t" << seqLen << "\t" << rowseq << endl;
-
-		// reads the aligned sequence
-		cur_block.begin = row->start;
-		cur_block.length = 1;
-		cur_block.previousGaps = 0;
-		for (int i=1; i <= rowseq.length(); i++) {
-		    if ((rowseq[i-1] != '-') && ( rowseq[i] == '-')) {
-			row->sequence.push_back(cur_block);
-		    } else if ((rowseq[i-1]=='-')&&(rowseq[i]=='-')) {
-			cur_block.previousGaps++;
-		    } else if ((rowseq[i-1]=='-')&&(rowseq[i]!='-')) {
-			cur_block.begin = row->start+i;
-			cur_block.length=1;
-			cur_block.previousGaps++;
-		    } else if ((rowseq[i-1]!='-')&&(rowseq[i]!='-')) {
-			if (i==rowseq.length()) {
-			    row->sequence.push_back(cur_block);
-			} else {
-			    cur_block.length++;
-			}
-		    }
-		}
 		
 		index = rsa->getIdx(speciesName);
 		if (index >=0) { // species name in the white list
@@ -243,115 +217,6 @@ void GenomicMSA::findGeneRanges(){
     }
     cout << "findGeneRanges reduced the number of aligments from " << numAlis << " to " <<  alignment.size() << " (to "
 	 << setprecision(3) <<  (100.0 * alignment.size() / numAlis) << "%)." << endl;
-}
-
-
-// Mario: this apparently assumes that the maf aligments are sorted so that neighboring
-// alignments can be merged in this order. TODO: sorting.
-// aligned sequences, which have a distance of at most maxGapLen bases will be merged
-void GenomicMSA::mergeAlignment(int maxGapLen, float percentSpeciesAligned) {
-    list<Alignment*>::iterator it_pos=this->alignment.begin();
-    list<Alignment*>::iterator it_prev;
-    list<block>::iterator it_block;
-
-    // specieslimit is the percentage of species, which have to be in the alignmentblocks to merge them
-    float specieslimit = (*it_pos)->rows.size() - (percentSpeciesAligned * (*it_pos)->rows.size());
-    for (it_pos = this->alignment.begin(); it_pos != this->alignment.end(); it_pos++) {
-        bool complete=true;
-        int distance=-1;
-        int emptyBegin=1;
-        int geneStart = 0;
-        int geneSeqLen = 0;
-        Strand geneStrand = STRAND_UNKNOWN;
-        string geneChr = "";
-
-        if (it_pos==this->alignment.begin()) {
-            it_prev=it_pos;
-        } else {
-            while (complete && (it_pos!=this->alignment.end())) {
-                int count=0;
-                bool sameDistance=true;
-                for (int j=0; j<(*it_prev)->rows.size(); j++) {
-                    if (((*it_prev)->rows.at(j)==NULL) || ((*it_pos)->rows.at(j)==NULL)) {
-                        count++;
-                        if (count>=specieslimit) {
-                            complete=false;
-                            break;
-                        }
-                    }
-                    if ((*it_prev)->rows.at(j)!=NULL) {
-                        geneChr = (*it_prev)->rows.at(j)->seqID;
-                        geneStrand = (*it_prev)->rows.at(j)->strand;
-                        geneStart = (*it_prev)->rows.at(j)->start;
-                        geneSeqLen = (*it_prev)->rows.at(j)->seqLen;
-                    }
-
-                    //  max maxGapLen bases apart, on the same strand and on the same seqID, when there is an alignmentblock before
-                    if (((*it_pos)->rows.at(j)!=NULL) && (geneChr != "")) {
-                            if (((*it_pos)->rows.at(j)->strand != geneStrand) || ((*it_pos)->rows.at(j)->seqID != geneChr)) {
-                                complete=false;
-                                break;
-                            }
-                    }
-                    if (((*it_pos)->rows.at(j)!=NULL) && (geneStart != 0)) {
-                            if (((*it_pos)->rows.at(j)->start - (geneStart + geneSeqLen) > maxGapLen) || ((*it_pos)->rows.at(j)->start - (geneStart + geneSeqLen) < 0)) {
-                                complete=false;
-                                break;
-                            }
-                    }
-                    // sequences of the different species have to have the same distance
-                    if (((*it_prev)->rows.at(j)!=NULL) && ((*it_pos)->rows.at(j)!=NULL)) {
-                       if (distance==-1) {
-                            distance=(*it_pos)->rows.at(j)->start - (*it_prev)->rows.at(j)->start - (*it_prev)->rows.at(j)->seqLen;
-                        } else
-                            if (distance != ((*it_pos)->rows.at(j)->start - (*it_prev)->rows.at(j)->start - (*it_prev)->rows.at(j)->seqLen)) {
-                            sameDistance=false;
-                        }
-                        // ^ operator for logical exclusive OR
-                    } else if (((*it_prev)->rows.at(j)!=NULL) ^ ((*it_pos)->rows.at(j)!=NULL)) {
-                        sameDistance=false;
-                    }
-                }
-
-                // the information of two alignment parts become combined
-                if (complete) {
-                    for (int j=0; j<(*it_prev)->rows.size(); j++) {
-                        if (((*it_prev)->rows.at(j)==NULL) && ((*it_pos)->rows.at(j)==NULL)) {
-                            emptyBegin++;
-                        } else if (((*it_prev)->rows.at(j) == NULL) && ((*it_pos)->rows.at(j) != NULL)) {
-                            (*it_prev)->rows.at(j) = (*it_pos)->rows.at(j);
-                            for (int k=0; k<emptyBegin; k++) {
-                                (*it_prev)->rows.at(j)->cmpStarts.insert((*it_prev)->rows.at(j)->cmpStarts.begin(),NULL);
-                            }
-                        } else if (((*it_prev)->rows.at(j)!=NULL) && ((*it_pos)->rows.at(j)!=NULL)) {
-                            if (!sameDistance) {
-                                int *cmpStart_ptr;
-                                cmpStart_ptr= new int;
-                                *cmpStart_ptr = (*it_pos)->rows.at(j)->start + ((*it_prev)->aliLen - (*it_prev)->rows.at(j)->seqLen);
-                                (*it_prev)->rows.at(j)->cmpStarts.push_back(cmpStart_ptr);
-                            }
-                            for (list<block>::iterator it=(*it_pos)->rows.at(j)->sequence.begin(); it!=(*it_pos)->rows.at(j)->sequence.end(); it++) {
-                                it->begin=it->begin+((*it_prev)->aliLen - (*it_prev)->rows.at(j)->seqLen);
-                                it->previousGaps=it->previousGaps + ((*it_prev)->aliLen - (*it_prev)->rows.at(j)->seqLen);
-                            }
-                            (*it_prev)->aliLen = (*it_prev)->aliLen + (*it_pos)->aliLen
-                                    + (*it_pos)->rows.at(j)->start - (*it_prev)->rows.at(j)->start - (*it_prev)->rows.at(j)->seqLen;
-                            (*it_prev)->rows.at(j)->seqLen = (*it_prev)->rows.at(j)->seqLen + (*it_pos)->rows.at(j)->seqLen
-                                    + (*it_pos)->rows.at(j)->start - (*it_prev)->rows.at(j)->start - (*it_prev)->rows.at(j)->seqLen;
-
-                            it_block = (*it_prev)->rows.at(j)->sequence.end();
-                            (*it_prev)->rows.at(j)->sequence.splice(it_block,(*it_pos)->rows.at(j)->sequence);
-                        } else {
-                            (*it_prev)->rows.at(j)->cmpStarts.push_back(NULL);
-                        }
-                    }
-		    //delete (*it_pos);
-                    it_pos=this->alignment.erase(it_pos);
-                }
-            }
-        }
-        it_prev=it_pos;
-    }
 }
 
 

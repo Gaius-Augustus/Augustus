@@ -252,6 +252,7 @@ double CodonEvo::estOmegaOnSeqPair(const char *e1, const char *e2, double t, // 
     }
     return omegas[maxU];
 }
+
 // destructor
 CodonEvo::~CodonEvo(){
     omegas.clear();
