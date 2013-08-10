@@ -153,14 +153,13 @@ void GeneMSA::createExonCands(int s, const char *dna){
 
     exoncands[s] = findExonCands(dna, assmotifqthresh, assqthresh, dssqthresh); 
     cout << "Found " << exoncands[s]->size() << " ECs on species " << rsa->getSname(s) << endl; 
-
 }
 
 
 /**
  * createOrthoExons
  */
-void GeneMSA::createOrthoExons(float consThres) {
+void GeneMSA::createOrthoExons(float consThres, int minAvLen) {
     cout << "Creating ortho exon for alignment" << endl << *alignment << endl;
     int k = alignment->rows.size();
     int m = alignment->numFilledRows();; // the number of nonempty rows
@@ -169,7 +168,7 @@ void GeneMSA::createOrthoExons(float consThres) {
     string key;
     // an ortho exon candidate must have an EC in at least this many species (any subset allowed):
     int minEC = (consThres * m > 2.0)? m * consThres + 0.9999 : 2;
-    // cout << "OEs in this gene range must have at least " << minEC << " ECs" << endl;
+    cout << "OEs in this gene range must have at least " << minEC << " ECs" << endl;
 
     /*
      * Store for each exon candidate in alignment space (keys encodes all of: aliStart aliEnd type lenMod3)
@@ -211,7 +210,7 @@ void GeneMSA::createOrthoExons(float consThres) {
 			+ ((*ecit)->type << 2) // 5 bit
 			+ lenMod3; // 2 bit
 		    //cout << "Could map " << rsa->getSname(s) << " " << row->seqID << ":" << chrExonStart << ".." << chrExonEnd 
-		    //		 << " to " << " alignment coordinates " << aliStart << ".." << aliEnd << " key = " << key << endl;
+		    // << " to " << " alignment coordinates " << aliStart << ".." << aliEnd << " key = " << key << endl;
 		    aec = alignedECs.find(key);
 		    if (aec == alignedECs.end()){ // insert new list
 			list<pair<int,ExonCandidate*> > e;
@@ -230,9 +229,8 @@ void GeneMSA::createOrthoExons(float consThres) {
      */
     for (aec = alignedECs.begin(); aec != alignedECs.end(); ++aec){
 	if (aec->second.size() >= minEC){
+	    float avLen = 0.0;
 	    OrthoExon oe;
-	    oe.ID = orthoExonID;
-	    orthoExonID++;
 	    oe.orthoex.resize(k, NULL);
 	    for (list<pair<int,ExonCandidate*> >::iterator it = aec->second.begin(); it != aec->second.end(); ++it){
 		int s = it->first;
@@ -242,8 +240,14 @@ void GeneMSA::createOrthoExons(float consThres) {
 		    throw ProjectError("createOrthoExons: Have two exon candidates from the same species " 
 				       + rsa->getSname(s) + " with the same key " + itoa(aec->first));
 		oe.orthoex[s] = ec;
+		avLen += ec->len();
 	    }
-	    orthoExonsList.push_back(oe);
+	    avLen /= aec->second.size(); // compute average length of exon candidates in oe
+	    if (avLen >= minAvLen){
+		oe.ID = orthoExonID;
+		orthoExonID++;
+		orthoExonsList.push_back(oe);
+	    }
 	}
     }
 }
@@ -339,15 +343,20 @@ void GeneMSA::printExonCands() {
                     fstrm << getSeqID(s)<< "\tEC\t" << "exon\t";
                     if (getStrand(s) == plusstrand) {
                         fstrm << (*ecit)->begin + offsets[s] + 1 << "\t" << (*ecit)->end + offsets[s] + 1 
-			      << "\t" << (*ecit)->score << "\t" << '+' << "\t";
+			      << "\t" << (*ecit)->score << "\t";
                     } else {
 			int chrLen = rsa->getChrLen(s, getSeqID(s));
                         fstrm << chrLen - ((*ecit)->end + offsets[s]) << "\t"
 			      << chrLen - ((*ecit)->begin+ offsets[s]) << "\t"
-			      << (*ecit)->score << "\t" << '-' << "\t";
+			      << (*ecit)->score << "\t";
                     }
-                    fstrm << (*ecit)->gff3Frame() << "\t" << "ID=" << exonCandID[s] << ";"
+		    // the gff strand of the exon is the "strand product" of the alignment strand and exon type strand
+		    // e.g. "-" x "-" = "+" << '+' << "\t";
+		    fstrm << ((isPlusExon((*ecit)->type) == (getStrand(s) == plusstrand))? '+' : '-');
+                    fstrm << "\t" << (*ecit)->gff3Frame() << "\t" << "ID=" << exonCandID[s] << ";"
 			  << "Name=" <<stateExonTypeIdentifiers[(*ecit)->type] << endl;
+		    // TODO: adjust type on reverse alignment setrand (compate comment in printSingleOrthoExon)
+
                     exonCandID[s]++;
                 }
             } else {
@@ -384,9 +393,12 @@ void GeneMSA::printSingleOrthoExon(const OrthoExon &oe, bool files) {
 		int chrLen = rsa->getChrLen(s, getSeqID(s));
                 cout << chrLen - (ec->end + offsets[s]) << "\t" << chrLen - (ec->begin + offsets[s]);
             }
-	    cout << "\t" << ec->score << "\t" << (isPlusExon(ec->type)? '+' : '-') << "\t"; // strand of exon
-            cout << ec->gff3Frame() << "\t" << "ID=" << oe.ID << ";Name=" << oe.ID << ";Note=" 
-		 << stateExonTypeIdentifiers[ec->type];
+	    cout << "\t" << ec->score << "\t" 
+		// the gff strand of the exon is the "strand product" of the alignment strand and exon type strand
+		// e.g. "-" x "-" = "+"
+		 << ((isPlusExon(ec->type) == (getStrand(s) == plusstrand))? '+' : '-');
+            cout << "\t" << ec->gff3Frame() << "\t" << "ID=" << oe.ID << ";Name=" << oe.ID << ";Note=" 
+		 << stateExonTypeIdentifiers[ec->type]; // TODO: reverse type if alignment strand is "-"
 	    if (oe.getOmega() >= 0.0){
 		cout << ";omega=" << oe.getOmega();
 		//cout << "|" << oe.getOmega();  // for viewing in gBrowse use this style instead

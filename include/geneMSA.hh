@@ -53,13 +53,14 @@ public:
     /**
      * find all ortholog exon candidates, that are present in at least max(2, consThresh * m)
      * where m <= numSpecies is the number of species that are present in the alignment
+     * Only report OrthoExons oe with at least 'minAvLen' as average length of the exon candidates in oe.
      * ortholog exon candidates:
      * - both splice sites align exactly
      * - the exon candidate types agrees (single, rsingle, internal0, ...)
      * - the phases at both boundaries agree (i.e. exon candidate types and length modulo 3)
      * EC coordinates are region-based, as they are used in the OrthoGraph
      */
-    void createOrthoExons(float consThres = 0.5);
+    void createOrthoExons(float consThres = 0.0, int minAvLen = 0);
     void printStats(); // to stdout
     void printGeneRanges();
     void printExonCands();
