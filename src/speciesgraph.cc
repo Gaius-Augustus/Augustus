@@ -476,7 +476,7 @@ void SpeciesGraph::dfs(Node *node, map<string,Node*> &processed){
     next = node;
 }
 
-void SpeciesGraph::relax(Node *begin, Node *end){
+double SpeciesGraph::relax(Node *begin, Node *end){
 
     Node *next = begin;
   
@@ -508,6 +508,7 @@ void SpeciesGraph::relax(Node *begin, Node *end){
 	next = next->pred;
     }
     next->label = 1;
+    return end->score;
 
 }
 

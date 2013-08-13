@@ -81,6 +81,7 @@ void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
 	end:
 	    if(!genes->empty())
 		genelist[pos] = genes;
+
 	}
     }
 }
@@ -549,8 +550,7 @@ double OrthoGraph::globalPathSearch(){
 
     for(size_t pos = 0; pos < numSpecies; pos++){
 	if(graphs[pos]){
-	    graphs[pos]->relax();
-	    score += graphs[pos]->getScorePath(graphs[pos]->head, graphs[pos]->tail);
+	    score += graphs[pos]->relax();
 	}
     }
     return score;
@@ -558,12 +558,7 @@ double OrthoGraph::globalPathSearch(){
 
 double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int gr_ID, int T){
 
-    ofstream outfile("gr_" + itoa(gr_ID) + ".txt");
-    if(!outfile.is_open())
-	throw ProjectError("could not open file gr_" + itoa(gr_ID) + ".txt");
-    streambuf *coutbuf = cout.rdbuf(); //save old buf
-    cout.rdbuf(outfile.rdbuf()); //redirect std::cout to species file
-
+    cout<<"dual decomposition on gene Range "<<gr_ID<<endl;
     /*
      * initialization
      */
@@ -573,11 +568,9 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
     double best_primal = -std::numeric_limits<double>::max(); // best primal value so far
     // number of iterations prior to t where the dual value increases
     int v = 0; 
-
     for(int t=0; t<T;t++){
- 
 	double delta = getStepSize(t,v); //get next step size
-	cout<<"delta_"<<t<<"="<<delta<<endl;
+	cout<<"round="<<t<<"\tdelta="<<delta<<endl;
 	double path_score = globalPathSearch();
 	double current_dual = path_score + treeMAPInf(evo);   // dual value of the t-th iteration 
 	best_dual = min(best_dual,current_dual);              // update upper bound
@@ -587,13 +580,13 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
 	}
 	v_duals.push_back(current_dual);
 	double current_primal = path_score + makeConsistent(evo); // primal value of the t-the iteration
+	v_primals.push_back(current_primal);
 	if(best_primal < current_primal){
 	    best_primal = current_primal;
 	    buildGeneList(genelist); // save new record
 	}
-	v_primals.push_back(current_primal);
-	
-	bool isConsistent = true;
+	// updated weights
+	bool isConsistent=true;
 	for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(hects->orthoex[pos]){
@@ -602,7 +595,7 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
 		    bool h = node->label;
 		    bool v = hects->labels[pos];
 		    if(v != h){  //shared nodes are labelled inconsistently in the two subproblems
-			isConsistent = false;
+			isConsistent=false;
 			double weight = delta*(v-h);
 			//update weights
 			node->addWeight(weight);
@@ -611,23 +604,28 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
 		}
 	    }
 	}
-	printInfo(true);
-	if(isConsistent){ // exact solution is found
-	    if(v_duals.back() != v_primals.back())
-		throw ProjectError("in dualdecomp(): solutions are consistent but dual and primal value are different");
+	if(isConsistent || abs(best_dual - best_primal) < 1e-8)
 	    break;
-	}
     }
     double error = best_dual - best_primal;
-    cout<<"error\t"<<error<<endl;
-    cout<<endl;
-    cout<<"iter\tdual\tprimal"<<endl;
-    for(int pos = 0; pos < v_duals.size(); pos++){
-	cout<<pos<<"\t"<<v_duals[pos]<<"\t"<<v_primals[pos]<<endl;
+    // print primal and dual values
+    if(v_duals.size() > 1){ 
+	ofstream outfile("gr_" + itoa(gr_ID) + ".txt");
+	if(!outfile.is_open())
+	    throw ProjectError("could not open file gr_" + itoa(gr_ID) + ".txt");
+	streambuf *coutbuf = cout.rdbuf(); //save old buf
+	cout.rdbuf(outfile.rdbuf()); //redirect std::cout to species file
+	printSummary();
+	cout.precision(10);
+	cout<<"error\t"<<error<<"\n\niter\tdual\tprimal"<<endl;
+	for(int pos = 0; pos < v_duals.size(); pos++){
+	    cout<<pos<<"\t"<<v_duals[pos]<<"\t"<<v_primals[pos]<<endl;
+	}
+	cout.rdbuf(coutbuf); //reset to standard output again
+	outfile.close();
     }
-    cout.rdbuf(coutbuf); //reset to standard output again
-    outfile.close();
     return error;
+
 }
 
 /*
@@ -679,53 +677,26 @@ double OrthoGraph::makeConsistent(ExonEvo &evo){
     return score;
 }	
 
-void OrthoGraph::printInfo(bool only_change){
-
-    cout.precision(6);
-    cout<<left;
-    cout<<"HECT\tpath\tMAP\t"<<setw(15*tree->numSpecies())<<"new MAP weights"<<setw(15*tree->numSpecies())<<"new path weights"<<endl;
+void OrthoGraph::printSummary(){
+    map<string,int> mymap;
     for(auto it = all_orthoex.begin(); it != all_orthoex.end();it++){
-	string h_pattern="";
-	string v_pattern="";
+	string key="";
 	for(size_t pos = 0; pos < it->orthonode.size(); pos++){
 	    if(it->orthoex[pos]){
-		h_pattern+=itoa(it->orthonode[pos]->label);
+		key+=itoa(it->orthonode[pos]->label);
 	    }
-	    else
-		h_pattern+="2";
-	}
-	for(size_t pos = 0; pos < it->labels.size(); pos++){
-	    v_pattern+=itoa(it->labels[pos]);
-	}
-	if((h_pattern != "000" && h_pattern != "002" && h_pattern != "020") || h_pattern != v_pattern){
-	    //printHTMLgBrowse(*it);
-	    cout<<right;
-	    cout<<"ID:"<<it->ID<<"\t"<<h_pattern<<"\t"<<v_pattern<<"\t";
-	    if(!only_change || h_pattern != v_pattern){
-		for(size_t pos = 0; pos < it->weights.size(); pos++){
-		    if(it->orthoex[pos]){
-			cout<<setw(15)<<fixed<<it->weights[pos];
-		    }
-		    else
-			cout<<setw(15)<<"-"; 
-		}
-		cout<<"\t\t";
-		for(size_t pos = 0; pos < it->weights.size(); pos++){
-		    if(it->orthoex[pos]){
-			Node *node = it->orthonode[pos];
-			for(auto iter = node->edges.begin(); iter != node->edges.end(); iter++){
-			    if(iter->to->n_type < sampled){
-				cout<<setw(15)<<fixed<<iter->score;
-				break;
-			    }
-			}
-		    }
-		    else
-			cout<<setw(15)<<"-"; 
-		}
+	    else{
+		key+="2";
 	    }
-	    cout<<endl;
+	}
+	if(mymap.find(key) != mymap.end()){
+	    mymap[key]++;
+	}
+	else{
+	    mymap[key]=1;
 	}
     }
-    cout<<endl;
+    for(map<string,int>::iterator it = mymap.begin(); it != mymap.end(); it++){
+	cout<<it->first<<"\t"<<it->second<<endl;
+    }
 }
