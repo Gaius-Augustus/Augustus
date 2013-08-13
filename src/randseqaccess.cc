@@ -15,6 +15,7 @@
 #include "randseqaccess.hh"
 #include "genbank.hh"
 #include <iostream>
+#include <iomanip> 
 #include <fstream>
 #include <types.hh>
 
