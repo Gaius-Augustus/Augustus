@@ -135,8 +135,10 @@ public:
      * Estimate omega on a sequence of codon tuples.
      * only for testing, may need adjustment
      */
-  double estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
+    double estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 			      int &subst); // output variables
+    // for GRK proposal
+    void graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree);
     /* 
      * add new branch length b
      * this function is currently not needed, since the pruning algorithm does change the phylogenetic tree

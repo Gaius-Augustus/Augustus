@@ -644,6 +644,71 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
     return omegas[maxU];
 }
 
+void CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
+    if (seqtuple.size() != tree->numSpecies())
+	throw ProjectError("CodonEvo::estOmegaOnSeqTuple: inconsistent number of species.");
+    for(int i=1; i<seqtuple.size();i++){
+	if(seqtuple[0].length() != seqtuple[i].length()){
+	    throw ProjectError("CodonEvo::estOmegaOnSeqTuple: wrong exon lengths");
+	}
+    }
+
+    int n = seqtuple[0].length()/3; // number of nucleotide triples
+    int numCodons;
+    double Eomega = 0.0, loglik, sum = 0.0;
+    Seq2Int s2i(3);
+    
+    cout << "graph omega" << endl;
+    for (int i=0; i<n; i++){
+	for (int u=0; u < k; u++){ // loop over omegas
+	    vector<int> codontuple(tree->numSpecies(), 64); // 64 = missing codon
+	    numCodons = 0;
+	    for(size_t s=0; s < tree->numSpecies(); s++){
+		if (seqtuple[s].size()>0)
+		    try {
+			codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
+			numCodons++;
+		    } catch(...){} // gap or n character
+	    }
+	    if (numCodons >= 2){
+		loglik = tree->pruningAlgor(codontuple, this, u);
+		Eomega += exp(loglik)*omegaPrior[u]*omegas[u];
+		sum += exp(loglik)*omegaPrior[u];
+	    }
+	}
+	Eomega /= sum;
+	cout << i << "\t" << Eomega << endl;
+    }
+    
+    // count number of substitutions
+    int subst;
+ 
+    // settings to reduce MAP algorithm to Fitch Algorithm
+    vector<double> weights(tree->numSpecies(),0);
+    Parsimony parsi;
+    parsi.computeLogPmatrices();
+    Evo *parsi_base = &parsi;
+    cout << "graph substitutions" << endl;
+    for (int i=0; i<n; i++){
+	for(size_t s=0; s < tree->numSpecies(); s++){
+	    vector<int> codontuple(tree->numSpecies(), 64);
+	    numCodons=0;
+	    for(size_t s=0; s < tree->numSpecies(); s++){
+		if (seqtuple[s].size() > 0)
+		    try {
+			codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
+			numCodons++;
+		    } catch(...){} // gap or n character
+	    }
+	    if(numCodons >= 2){
+		PhyloTree temp(*tree); // only use a copy of the tree !!!
+		subst = temp.MAP(codontuple, weights, parsi_base, 1, true); // Fitch Algorithm 
+		cout << i << "\t" << subst << endl; 
+	    }
+	}
+    }
+}
+
 void Parsimony::computeLogPmatrices(){
 
     allLogPs.assign(1, m, NULL);
