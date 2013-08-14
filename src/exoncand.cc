@@ -153,7 +153,7 @@ Double computeSpliceSiteScore(Double exonScore, Double minProb, Double maxProb) 
 
 
 
-list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, double assqthresh, double dssqthresh){
+list<ExonCandidate*> *findExonCands(const char *dna, int minLen, double assmotifqthresh, double assqthresh, double dssqthresh){
     int n = strlen(dna);
     int frame;
     Double p;
@@ -163,11 +163,14 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
     list< pair<int, Double> > exonRDSS;
     ExonCandidate *ec;
     list<ExonCandidate*> *candidates = new list<ExonCandidate*>;
-    Double assminprob = IntronModel::assBinProbs.getMinProb(assqthresh) * IntronModel::getAssMotifProbThreshold(assmotifqthresh);
-    Double dssminprob = IntronModel::dssBinProbs.getMinProb(dssqthresh);
-    Double assmaxprob = IntronModel::assBinProbs.getMinProb(0.99) * IntronModel::getAssMotifProbThreshold(0.9999);
-    Double dssmaxprob = IntronModel::dssBinProbs.getMinProb(0.99);
-
+    Double assminprob, dssminprob, assmaxprob, dssmaxprob;
+    bool withSplicing = (IntronModel::assBinProbs.nbins > 0); // eukaryotic species?
+    if (withSplicing){
+	assminprob = IntronModel::assBinProbs.getMinProb(assqthresh) * IntronModel::getAssMotifProbThreshold(assmotifqthresh);
+	dssminprob = IntronModel::dssBinProbs.getMinProb(dssqthresh);
+	assmaxprob = IntronModel::assBinProbs.getMinProb(0.99) * IntronModel::getAssMotifProbThreshold(0.9999);
+	dssmaxprob = IntronModel::dssBinProbs.getMinProb(0.99);
+    } // otherwise it is a bacterium and exon candidates with splice sites don't exist
     OpenReadingFrame orf(dna, Constant::max_exon_len, n);
     // preprocessing all left coordinates of an exon candidate interval
     for (int i=0; i<=n - 1; i++) {
@@ -177,7 +180,7 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
             exonStart.push_back(i + 1);
         }
         // positons of all ASSs "ag"
-        if (onASS(dna+i) && (i + Constant::ass_whole_size() - Constant::ass_start < n)) {
+        if (withSplicing && onASS(dna+i) && (i + Constant::ass_whole_size() - Constant::ass_start < n)) {
             p = IntronModel::aSSProb(i - Constant::ass_upwindow_size - Constant::ass_start, true);
             if (p >= assminprob ) {
                 ssWithScore.first = i;
@@ -186,7 +189,7 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
             }
         }
         // positions of all reverse DSS "ac"
-        if (onRDSS(dna+i) && (i + Constant::dss_whole_size() - Constant::dss_end < n)) {
+        if (withSplicing && onRDSS(dna+i) && (i + Constant::dss_whole_size() - Constant::dss_end < n)) {
             p = IntronModel::dSSProb(i - Constant::dss_end, false);
             if (p >= dssminprob) {
                 ssWithScore.first = i;
@@ -223,14 +226,15 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
                     ec->begin = *ritStart - 1;
                     ec->end = i + 2;
                     ec->type = singleGene;
-                    candidates->push_back(ec);
+		    if(ec->len() >= minLen)
+			candidates->push_back(ec);
                 }
                 ritStart++;
             };
         }
 
         // computing initial exons on the forward strand with at least startcodon plus base
-        if (onDSS(dna + i) && (i + Constant::dss_whole_size() - Constant::dss_start  < n)) {
+        if (withSplicing && onDSS(dna + i) && (i + Constant::dss_whole_size() - Constant::dss_start  < n)) {
             p = IntronModel::dSSProb(i - Constant::dss_start,true);
             for (frame=0; frame<=2; frame++) {
                 ritStart=ritStart_cur;
@@ -252,45 +256,48 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
                         } else {
                             ec->type = initial_2;
                         }
-                        candidates->push_back(ec);
+			if(ec->len() >= minLen)
+			    candidates->push_back(ec);
                     }
                     ritStart++;
                 };
             }
 
             // computing internals on the forward strand with at least one codon
-            for (frame=0; frame<=2; frame++) {
-                ritASS=ritASS_cur;
-                while ((i<(*ritASS).first)&&(ritASS!=exonASS.rend())){
-                    ritASS++;
-                }
-                ritASS_cur = ritASS;
-                int lmb = orf.leftmostExonBegin(frame,i,true);
-                while(lmb <= (*ritASS).first && i-(*ritASS).first <= Constant::max_exon_len && ritASS != exonASS.rend()) {
-                    if ((i-(*ritASS).first>=5) && (p >= dssminprob)) {
-                        ec = new ExonCandidate;
-                        ec->begin = (*ritASS).first + 2;
-                        ec->end = i - 1;
-                        ec->assScore = (*ritASS).second;
-                        ec->dssScore = computeSpliceSiteScore(p, dssminprob, dssmaxprob);
-                        if (frame == 0) {
-                            ec->type = internal_0;
-                        } else if (frame==1) {
-                            ec->type = internal_1;
-                        } else {
-                            ec->type = internal_2;
-                        }
-                        candidates->push_back(ec);
-                    }
-                    ritASS++;
-                };
-            }
+	    if (withSplicing) {
+		for (frame=0; frame<=2; frame++) {
+		    ritASS=ritASS_cur;
+		    while (i < (*ritASS).first && ritASS!=exonASS.rend())
+			ritASS++;
+		    ritASS_cur = ritASS;
+		    int lmb = orf.leftmostExonBegin(frame, i, true);
+		    while(lmb <= (*ritASS).first && i-(*ritASS).first <= Constant::max_exon_len && ritASS != exonASS.rend()) {
+			if ((i-(*ritASS).first>=5) && (p >= dssminprob)) {
+			    ec = new ExonCandidate;
+			    ec->begin = (*ritASS).first + 2;
+			    ec->end = i - 1;
+			    ec->assScore = (*ritASS).second;
+			    ec->dssScore = computeSpliceSiteScore(p, dssminprob, dssmaxprob);
+			    if (frame == 0) {
+				ec->type = internal_0;
+			    } else if (frame==1) {
+				ec->type = internal_1;
+			    } else {
+				ec->type = internal_2;
+			    }
+			    if(ec->len() >= minLen)
+				candidates->push_back(ec);
+			}
+			ritASS++;
+		    };
+		}
+	    }
         }
 
-        // computing terminals on the forward strand with at least one base stopcodon
-        if (GeneticCode::isStopcodon(dna+i)) {
+        // computing terminal exons on the forward strand with at least one base stopcodon
+        if (withSplicing && GeneticCode::isStopcodon(dna+i)) {
             for (frame=0; frame<=2; frame++) {
-                ritASS=ritASS_cur;
+                ritASS = ritASS_cur;
                 while ((i<(*ritASS).first)&&(ritASS!=exonASS.rend())){
                     ritASS++;
                 }
@@ -302,7 +309,8 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
                         ec->end = i + 2;
                         ec->assScore = (*ritASS).second;
                         ec->type = terminal_exon;
-                        candidates->push_back(ec);
+			if(ec->len() >= minLen)
+			    candidates->push_back(ec);
                     }
                     ritASS++;
                 };
@@ -315,7 +323,7 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
             while ((i < *ritRCStop) && (ritRCStop != exonRCStop.rend())){
                 ritRCStop++;
             }
-            ritRCStop_cur=ritRCStop;
+            ritRCStop_cur = ritRCStop;
             while ((i-*ritRCStop <=  Constant::max_exon_len) && (ritRCStop!=exonRCStop.rend())) {
                 if ((i-*ritRCStop)%3 == 0) {
                     if ((i-*ritRCStop) >= Constant::min_coding_len) {
@@ -323,7 +331,8 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
                         ec->begin = *ritRCStop;
                         ec->end = i + 2;
                         ec->type=rsingleGene;
-                        candidates->push_back(ec);
+			if(ec->len() >= minLen)
+			    candidates->push_back(ec);
                         break;
                     } else {
                         break;
@@ -335,7 +344,7 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
         }
 
         // computing initials on the reverse strand with at least start codon plus base
-        if (onRStart(dna+i)) {
+        if (withSplicing && onRStart(dna+i)) {
             for (frame=0; frame<=2; frame++) {
                 ritRDSS=ritRDSS_cur;
                 while ((i<(*ritRDSS).first)&&(ritRDSS!=exonRDSS.rend())){
@@ -358,7 +367,7 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
         }
 
         // computing internals on the reverse strand with at least a codon
-        if (onRASS(dna+i) && (i + Constant::ass_upwindow_size + Constant::ass_whole_size() - Constant::ass_start < n)) {
+        if (withSplicing && onRASS(dna+i) && (i + Constant::ass_upwindow_size + Constant::ass_whole_size() - Constant::ass_start < n)) {
             p = IntronModel::aSSProb(i-Constant::ass_end, false);
             for (frame=0; frame<=2; frame++) {
                 ritRDSS=ritRDSS_cur;
@@ -381,7 +390,8 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
                         } else {
                             ec->type=rinternal_2;
                         }
-                        candidates->push_back(ec);
+			if(ec->len() >= minLen)
+			    candidates->push_back(ec);
                     }
                     ritRDSS++;
                 };
@@ -389,7 +399,7 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
         }
 
         // computing terminals on the reverse strand with at least one base plus stopcodon
-        if (onRASS(dna+i) && (i + Constant::ass_upwindow_size + Constant::ass_whole_size() - Constant::ass_start < n)) {
+        if (withSplicing && onRASS(dna+i) && (i + Constant::ass_upwindow_size + Constant::ass_whole_size() - Constant::ass_start < n)) {
             p = IntronModel::aSSProb(i-Constant::ass_end, false);
             for (frame=0; frame<=2; frame++) {
                 ritRCStop=ritRCStop_cur;
@@ -413,7 +423,8 @@ list<ExonCandidate*> *findExonCands(const char *dna, double assmotifqthresh, dou
                         } else {
                             ec->type=rterminal_0;
                         }
-                        candidates->push_back(ec);
+			if(ec->len() >= minLen)
+			    candidates->push_back(ec);
                         break;
                     } else {
                         ritRCStop++;

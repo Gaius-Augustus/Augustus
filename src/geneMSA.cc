@@ -118,8 +118,17 @@ GeneMSA::~GeneMSA(){
 string GeneMSA::getSeqID(int speciesIdx) {
     if (alignment->rows[speciesIdx])
 	return alignment->rows[speciesIdx]->seqID;
-    else 
+    else
 	return "";
+}
+
+int GeneMSA::getMaxSeqIdLen(){
+    int maxNameLen = 0;
+    for(int s=0; s<numSpecies(); s++)
+	if (alignment->rows[s] && alignment->rows[s]->seqID.length() > maxNameLen)
+	    maxNameLen = alignment->rows[s]->seqID.length();
+
+    return maxNameLen;
 }
 
 Strand GeneMSA::getStrand(int speciesIdx){
@@ -128,7 +137,6 @@ Strand GeneMSA::getStrand(int speciesIdx){
     else 
 	return STRAND_UNKNOWN;
 }
-
 
 // adds the keys to the map function
 map<string,ExonCandidate*>* GeneMSA::getECHash(list<ExonCandidate*> *ec) {
@@ -147,11 +155,13 @@ void GeneMSA::createExonCands(int s, const char *dna){
     double assmotifqthresh = 0.15;
     double assqthresh = 0.3;
     double dssqthresh = 0.7;
+    int minEClen = 1;
     Properties::assignProperty("/CompPred/assmotifqthresh", assmotifqthresh);
     Properties::assignProperty("/CompPred/assqthresh", assqthresh);
     Properties::assignProperty("/CompPred/dssqthresh", dssqthresh);
+    // TODO Properties::assignProperty("/CompPred/minExonCandLen", minEClen);
 
-    exoncands[s] = findExonCands(dna, assmotifqthresh, assqthresh, dssqthresh); 
+    exoncands[s] = findExonCands(dna, minEClen, assmotifqthresh, assqthresh, dssqthresh); 
     cout << "Found " << exoncands[s]->size() << " ECs on species " << rsa->getSname(s) << endl; 
 }
 
@@ -227,6 +237,7 @@ void GeneMSA::createOrthoExons(float consThres, int minAvLen) {
     /*
      * Create one ortho exon candidate for each key to which at least minEC exon candidates mapped 
      */
+    int numOE = 0;
     for (aec = alignedECs.begin(); aec != alignedECs.end(); ++aec){
 	if (aec->second.size() >= minEC){
 	    float avLen = 0.0;
@@ -246,10 +257,12 @@ void GeneMSA::createOrthoExons(float consThres, int minAvLen) {
 	    if (avLen >= minAvLen){
 		oe.ID = orthoExonID;
 		orthoExonID++;
+		numOE++;
 		orthoExonsList.push_back(oe);
 	    }
 	}
     }
+    cout << "Found " << numOE << " ortho exons" << endl;
 }
 
 
@@ -416,7 +429,7 @@ void GeneMSA::printSingleOrthoExon(const OrthoExon &oe, bool files) {
 /** 
  * Two codons are considered aligned, when all 3 of their bases are aligned with each other.
  * Note that not all bases of an ExonCandidate need be aligned.
- * example input (all ECs have agree in phase at both boundaries)
+ * example input (all ECs agree in phase at both boundaries)
  *        
  *                 a|c - - t t|g a t|g t c|g a t|a a 
  *                 a|c - - c t|a a - - - c|a n c|a g
@@ -531,11 +544,13 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 	for (size_t s=0; s<k; s++)
 	    reverseComplementString(rowstrings[s]); 
     }
-    /*
+
     cout << "codon alignment:" << endl;
+    int maxSnameLen = rsa->getMaxSnameLen();
+    int maxSeqIDLen = getMaxSeqIdLen();
     for (size_t s=0; s<k; s++)
-	cout << rsa->getSname(s) << "\t" << getSeqID(s) << "\t" << rowstrings[s] << endl;
-    */
+	cout << setw(maxSnameLen) << rsa->getSname(s) << "\t" << setw(maxSeqIDLen) << getSeqID(s) << "\t" << rowstrings[s] << endl;
+
     return rowstrings;
 }
 
@@ -561,7 +576,7 @@ void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
 		
 	vector<string> rowstrings = getCodonAlignment(*oe, seqRanges, froms);
 
-	// TODO: scale branch lenghts to one substitution per codon per time unit
+	// TODO: scale branch lengths to one substitution per codon per time unit
 	double omega = codonevo->estOmegaOnSeqTuple(rowstrings, tree, subst);
 	oe->setOmega(omega);
 	oe->setSubst(subst);

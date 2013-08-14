@@ -114,7 +114,7 @@ void GenomicMSA::readAlignment(string alignFilename) {
     // clean up
     Alignmentfile.close();
     for (map<string,size_t>::iterator it = notExistingSpecies.begin(); it != notExistingSpecies.end(); ++it)
-	cerr << "Warning: Species " << it->first << "is not included in the target list of species. These alignment lines are ingored." << endl;
+	cerr << "Warning: Species " << it->first << " is not included in the target list of species. These alignment lines are ingored." << endl;
 }
 
 /* printMAF

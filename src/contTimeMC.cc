@@ -142,6 +142,21 @@ void CodonEvo::setOmegas(int k){
     this->k = k;
 }
 
+/*
+ * use a normal distribution with mean 1 and standard deviation sigma as prior for omega
+ */
+void CodonEvo::setPrior(double sigma ){
+    double sum = 0;
+    for (int i=0; i<k; i++){
+	double omega = omegas[i];
+	double t = (omega-1.0)/sigma;
+	sum += omegaPrior[i] = exp(-t*t/2);
+    }
+    // normalize
+    for (int i=0; i<k; i++)
+	omegaPrior[i] /= sum;
+}
+
 void CodonEvo::printOmegas(){
     for (int i=0; i < omegas.size(); i++)
 	cout << i << " " << omegas[i] << endl;
@@ -592,7 +607,7 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 			numCodons++;
 		    } catch(...){} // gap or n character
 	    }
-	    if(numCodons >= 2){
+	    if (numCodons >= 2){
 		loglik += tree->pruningAlgor(codontuple, evo, u);
 	    }
 	}

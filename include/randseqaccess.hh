@@ -33,13 +33,8 @@ public:
     int getChrLen(int idx, string chrName);
     void setSpeciesNames(vector<string> speciesNames);
     string getSname(size_t idx) {return speciesNames[idx];}
-    int getIdx(string speciesname) {
-	map<string,size_t>::iterator it = speciesIndex.find(speciesname);
-	if (it == speciesIndex.end())
-	    return -1;
-	else 
-	    return it->second;
-    }
+    int getMaxSnameLen(); // for neat indentation into right column
+    int getIdx(string speciesname);
     void printStats();
     virtual AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand) =  0;
     AnnoSequence* getSeq(size_t speciesIdx, string chrName, int start, int end, Strand strand) {

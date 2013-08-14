@@ -98,6 +98,7 @@ public:
      * Later, one can see which of these values of omega gives the maximum likelihood.
      */
     void setOmegas(int k);
+    void setPrior(double sigma = 0.2);
     vector<double> *getOmegas(){return &omegas;}
     double getOmega(int u){return omegas[u];}
     int getK(){ return k;}
@@ -146,6 +147,7 @@ private:
     int k; // number of different omega values for which P's are stored
     double kappa;
     vector<double> omegas; // sorted vector of omegas (contains values below, around and above 1)
+    vector<double> omegaPrior; // prior distribution on omega, centered at 1
 };
 
 /*

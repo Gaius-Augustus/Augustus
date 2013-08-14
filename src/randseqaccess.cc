@@ -45,6 +45,24 @@ void RandSeqAccess::setSpeciesNames(vector<string> speciesNames){
     }
 }
 
+int RandSeqAccess::getMaxSnameLen(){
+    int maxNameLen = 0;
+    for (size_t s=0; s<numSpecies; s++)
+	if (speciesNames[s].length() > maxNameLen)
+	    maxNameLen = speciesNames[s].length();
+    return maxNameLen;
+}
+
+
+int RandSeqAccess::getIdx(string speciesname) {
+    map<string,size_t>::iterator it = speciesIndex.find(speciesname);
+    if (it == speciesIndex.end())
+	return -1;
+    else 
+	return it->second;
+}
+
+
 int RandSeqAccess::getChrLen(int idx, string chrName){
     map<string,int>::iterator it = chrLen[idx].find(chrName);
     if(it != chrLen[idx].end()) {
