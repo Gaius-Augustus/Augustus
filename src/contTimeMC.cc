@@ -146,6 +146,7 @@ void CodonEvo::setOmegas(int k){
  * use a normal distribution with mean 1 and standard deviation sigma as prior for omega
  */
 void CodonEvo::setPrior(double sigma ){
+    omegaPrior.resize(k, 0);
     double sum = 0;
     for (int i=0; i<k; i++){
 	double omega = omegas[i];
@@ -655,11 +656,12 @@ void CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
 
     int n = seqtuple[0].length()/3; // number of nucleotide triples
     int numCodons;
-    double Eomega = 0.0, loglik, sum = 0.0;
+    double Eomega, loglik, sum;
     Seq2Int s2i(3);
     
     cout << "graph omega" << endl;
     for (int i=0; i<n; i++){
+	Eomega = sum = 0.0;
 	for (int u=0; u < k; u++){ // loop over omegas
 	    vector<int> codontuple(tree->numSpecies(), 64); // 64 = missing codon
 	    numCodons = 0;
@@ -690,21 +692,19 @@ void CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
     Evo *parsi_base = &parsi;
     cout << "graph substitutions" << endl;
     for (int i=0; i<n; i++){
+	vector<int> codontuple(tree->numSpecies(), 64);
+	numCodons=0;
 	for(size_t s=0; s < tree->numSpecies(); s++){
-	    vector<int> codontuple(tree->numSpecies(), 64);
-	    numCodons=0;
-	    for(size_t s=0; s < tree->numSpecies(); s++){
-		if (seqtuple[s].size() > 0)
-		    try {
-			codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
-			numCodons++;
-		    } catch(...){} // gap or n character
-	    }
-	    if(numCodons >= 2){
-		PhyloTree temp(*tree); // only use a copy of the tree !!!
-		subst = temp.MAP(codontuple, weights, parsi_base, 1, true); // Fitch Algorithm 
-		cout << i << "\t" << subst << endl; 
-	    }
+	    if (seqtuple[s].size() > 0)
+		try {
+		    codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
+		    numCodons++;
+		} catch(...){} // gap or n character
+	}
+	if(numCodons >= 2){
+	    PhyloTree temp(*tree); // only use a copy of the tree !!!
+	    subst = -temp.MAP(codontuple, weights, parsi_base, 1, true); // Fitch Algorithm 
+	    cout << i << "\t" << subst << endl; 
 	}
     }
 }
