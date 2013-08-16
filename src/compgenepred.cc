@@ -91,6 +91,7 @@ void CompGenePred::start(){
     // codonevo.printBranchLengths();
     
     codonevo.setOmegas(40);
+    codonevo.setPrior(1.0);
     //cout << "Omegas, for which substitution matrices are stored:" << endl;
     //codonevo.printOmegas();
     codonevo.computeLogPmatrices();

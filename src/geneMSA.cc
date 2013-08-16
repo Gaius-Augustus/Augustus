@@ -414,7 +414,7 @@ void GeneMSA::printSingleOrthoExon(const OrthoExon &oe, bool files) {
 		 << stateExonTypeIdentifiers[ec->type]; // TODO: reverse type if alignment strand is "-"
 	    if (oe.getOmega() >= 0.0){
 		cout << ";omega=" << oe.getOmega();
-		//cout << "|" << oe.getOmega();  // for viewing in gBrowse use this style instead
+		//cout << "|" << oe.getOmega();  // for viewing in GBrowse use this style instead
 	    }
 	    if (oe.getSubst() >= 0){
 		cout << ";subst=" << oe.getSubst(); // number of substitutions
@@ -577,7 +577,11 @@ void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
 	vector<string> rowstrings = getCodonAlignment(*oe, seqRanges, froms);
 
 	// TODO: scale branch lengths to one substitution per codon per time unit
+	//cout << "OE" << endl;
+	// printSingleOrthoExon(*oe, false);
 	double omega = codonevo->estOmegaOnSeqTuple(rowstrings, tree, subst);
+	//cout << "omega=" << omega << endl;
+	//codonevo->graphOmegaOnCodonAli(rowstrings, tree);
 	oe->setOmega(omega);
 	oe->setSubst(subst);
     }
