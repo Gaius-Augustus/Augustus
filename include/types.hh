@@ -39,7 +39,7 @@ using namespace std;
 
 
 enum Strand {STRAND_UNKNOWN=-1, plusstrand, minusstrand, bothstrands};
-
+char strandChar (Strand s);
 ostream& operator<< (ostream& strm, const Strand s);
 
 /**

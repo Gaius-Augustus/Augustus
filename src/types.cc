@@ -159,15 +159,21 @@ const int stateReadingFrames[NUM_TYPES]=
  0,0,0,0,0,0,0,0,0,0,0,0,  // reverse utr
  0,0,0};                   // other
 
+char strandChar (Strand s){
+    switch (s){
+    case plusstrand:
+	return '+';
+    case minusstrand:
+	return '-';
+    case bothstrands:
+	return '.';
+    default:
+	return '?';
+    }
+}
+
 ostream& operator<< (ostream& strm, const Strand s){
-    if (s == plusstrand)
-	strm << "+";
-    else if (s == minusstrand)
-	strm << "-";
-    else  if (s == bothstrands)
-	strm << ".";
-    else 
-	strm << "?";
+    strm << strandChar(s);
     return strm;
 }
 
