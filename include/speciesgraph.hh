@@ -103,7 +103,7 @@ public:
      */
 
     void topSort();                                       // sorts nodelist of graph topologically
-    void dfs(Node* node, map<string,Node*> &processed);   // depth first search, subroutine of topSort()                                
+    void dfs(Node* node);   // depth first search, subroutine of topSort()                                
     double relax(Node* begin, Node *end);                   // relaxation of all nodes "in between" begin and end ("in between" in terms of the topological ordering)
     inline double relax(){
 	return relax(head, tail);

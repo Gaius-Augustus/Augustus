@@ -446,11 +446,9 @@ void SpeciesGraph::printGraph(string filename, Node *begin, Node *end, bool only
 
 void SpeciesGraph::topSort(){
 
-    map<string,Node*> processed;
-
     for(list<Node*>::iterator node=nodelist.begin(); node!=nodelist.end(); node++){   
-	if(processed[getKey(*node)]==0){
-	    dfs(*node, processed);
+	if((*node)->label == 0){
+	    dfs(*node);
 	}
     }
     // set pointers to the preceding nodes in topSort
@@ -461,14 +459,14 @@ void SpeciesGraph::topSort(){
     }
 }
 
-void SpeciesGraph::dfs(Node *node, map<string,Node*> &processed){
+void SpeciesGraph::dfs(Node *node){
 
     static Node* next = NULL;
 
-    processed[getKey(node)] = node;
+    node->label = 1;
     for(list<Edge>::iterator edge=node->edges.begin(); edge!=node->edges.end(); edge++){
-	if(processed[getKey(edge->to)] == 0)
-	    dfs(edge->to, processed);
+	if(edge->to->label == 0)
+	    dfs(edge->to);
     }
     if(node != tail){
 	node->topSort_next = next;
