@@ -61,7 +61,7 @@ void CompGenePred::start(){
     try {
 	dualdecomp = Properties::getBoolProperty("/CompPred/dualdecomp");
     } catch (...) {
-	dualdecomp = false;
+	dualdecomp = true;
     }
 
     //initialize output files of initial gene prediction and optimized gene prediction
@@ -190,7 +190,7 @@ void CompGenePred::start(){
 	if(!orthograph.all_orthoex.empty()){
 	    if (dualdecomp){ // optimization via dual decomposition
 		vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
-		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,500);
+		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,100);
 		orthograph.filterGeneList(genelist,optGenes,opt_geneid);
 	    } else { // optimization by making small changes (moves)
 		orthograph.pruningAlgor(evo);
