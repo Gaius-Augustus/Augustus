@@ -494,13 +494,13 @@ void OrthoGraph::printHTMLgBrowse(OrthoExon &ex){
 
 void OrthoGraph::addScoreSelectivePressure(){
 
-    double oe_score;
+    //double oe_score;
     double not_oe_penalty;
-    try {
+    /*try {
 	oe_score = Properties::getdoubleProperty("/CompPred/oe_score");
     } catch (...) {
 	oe_score = 50;
-    }
+	}*/
     try {
 	not_oe_penalty = Properties::getdoubleProperty("/CompPred/not_oe_penalty");
     } catch (...) {
