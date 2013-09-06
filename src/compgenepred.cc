@@ -63,6 +63,18 @@ void CompGenePred::start(){
     } catch (...) {
 	dualdecomp = true;
     }
+    int maxIterations; // maximum number of dual decomposition iterations
+    try {
+	maxIterations = Properties::getIntProperty("/CompPred/maxIterations");
+    } catch (...) {
+	maxIterations = 100;
+    }
+    double dd_factor; // parameter of the dual decomposition step size function 
+    try {
+	dd_factor = Properties::getdoubleProperty("/CompPred/dd_factor");
+    } catch (...) {
+	dd_factor = 15;
+    }
 
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(".base"); // equivalent to MEA prediction
@@ -190,7 +202,7 @@ void CompGenePred::start(){
 	if(!orthograph.all_orthoex.empty()){
 	    if (dualdecomp){ // optimization via dual decomposition
 		vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
-		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,100);
+		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factor);
 		orthograph.filterGeneList(genelist,optGenes,opt_geneid);
 	    } else { // optimization by making small changes (moves)
 		orthograph.pruningAlgor(evo);

@@ -166,11 +166,13 @@ void OrthoGraph::optimize(ExonEvo &evo){
     //create MoveObjects
 
     //for now, loop over OrthoExons and apply majority rule move if possible
+
+    int shift_size=3;     // number of exons local_head/local_tail is shifted to the left/right on the current path 
     if(!all_orthoex.empty()){
 	for(list<OrthoExon>::iterator orthoex = all_orthoex.begin(); orthoex != all_orthoex.end(); orthoex++){
-	    vector<Move*> orthomove = majorityRuleMove(*orthoex);
+	    vector<Move*> orthomove = majorityRuleMove(*orthoex, shift_size);
 	    if(!orthomove.empty()){
-		localMove(orthomove,evo);
+		localMove(orthomove,evo,shift_size);
 		//delete MoveObjects
 		for(size_t pos = 0; pos < numSpecies; pos++){
 		    delete orthomove[pos];
@@ -180,9 +182,9 @@ void OrthoGraph::optimize(ExonEvo &evo){
     }
 }
 
-void OrthoGraph::localMove(vector<Move*> &orthomove, ExonEvo &evo){
+void OrthoGraph::localMove(vector<Move*> &orthomove, ExonEvo &evo, int shift_size){
 
-    
+    int maxIterations=0;  // max number a move can be repeated                                                                                                                                         
     bool retry = false;  //if true, the move is repeated on a 'larger' subgraph
     int iter = 0;  // number of current repetition
    
@@ -332,7 +334,7 @@ list<OrthoExon> OrthoGraph::orthoExInRange(vector<Move*> &orthomove){
     return local_orthoexons;
 }
 	
-vector<Move*> OrthoGraph::majorityRuleMove(OrthoExon &orthoex){
+vector<Move*> OrthoGraph::majorityRuleMove(OrthoExon &orthoex, int shift_size){
 
     vector<Move*> orthomove;
   
@@ -523,15 +525,15 @@ void OrthoGraph::addScoreSelectivePressure(){
 	for(list<OrthoExon>::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(it->orthoex[pos]){
-		    double omega = it->getOmega();
-		    int  subst = it->getSubst();
+		    //double omega = it->getOmega();
+		    //int  subst = it->getSubst();
 		    Node* node = graphs[pos]->getNode(it->orthoex[pos]);
-		    int len =  node->end - node->begin + 1;
+		    //int len =  node->end - node->begin + 1;
 		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
 			//if( node->n_type == unsampled_exon || ( node->n_type == sampled && ((State*)(node->item))->apostprob >= 0.3) ){
-			if( (omega >= 0 && omega <= 0.5 && subst > 5) || (omega >= 0 && omega <= 0.8 && subst >= 30) || len >= 300 ){
-			    iter->score += oe_score;
-			}
+			//  if( (omega >= 0 && omega <= 0.5 && subst > 5) || (omega >= 0 && omega <= 0.8 && subst >= 30) || len >= 300 ){
+			//	iter->score += oe_score;
+			//  }
 			//if( node->n_type == unsampled_exon || ( node->n_type == sampled && ((State*)(node->item))->apostprob < 0.7) ){
 			if( node->n_type >= sampled){
 			    iter->score += - not_oe_penalty;
@@ -556,7 +558,7 @@ double OrthoGraph::globalPathSearch(){
     return score;
 }
 
-double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int gr_ID, int T){
+double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int gr_ID, int T, double c){
 
     cout<<"dual decomposition on gene Range "<<gr_ID<<endl;
     /*
@@ -567,10 +569,11 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
     double best_dual = std::numeric_limits<double>::max();   // best dual value so far
     double best_primal = -std::numeric_limits<double>::max(); // best primal value so far
     // number of iterations prior to t where the dual value increases
-    int v = 0; 
+    int v = 0;
+    cout.precision(10);
+    cout<<"iter\tstep_size\tprimal\tdual"<<endl;
     for(int t=0; t<T;t++){
-	double delta = getStepSize(t,v); //get next step size
-	cout<<"round="<<t<<"\tdelta="<<delta<<endl;
+	double delta = getStepSize(c,t,v); //get next step size
 	double path_score = globalPathSearch();
 	double current_dual = path_score + treeMAPInf(evo);   // dual value of the t-th iteration 
 	best_dual = min(best_dual,current_dual);              // update upper bound
@@ -585,6 +588,7 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
 	    best_primal = current_primal;
 	    buildGeneList(genelist); // save new record
 	}
+	cout<<t<<"\t"<<delta<<"\t"<<current_primal<<"\t"<<current_dual<<endl;
 	// updated weights
 	bool isConsistent=true;
 	for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
@@ -609,7 +613,7 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
     }
     double error = best_dual - best_primal;
     // print primal and dual values
-    if(v_duals.size() > 1){ 
+    /*if(v_duals.size() > 1){ 
 	ofstream outfile("gr_" + itoa(gr_ID) + ".txt");
 	if(!outfile.is_open())
 	    throw ProjectError("could not open file gr_" + itoa(gr_ID) + ".txt");
@@ -623,7 +627,8 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
 	}
 	cout.rdbuf(coutbuf); //reset to standard output again
 	outfile.close();
-    }
+	}*/
+    cout<<"error: "<<error<<endl;
     return error;
 
 }
@@ -634,9 +639,7 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
  * v ist the number of iterations prior to t where the dual value increases
  * the purpose of v is to decrease the step size only if we move in the wrong direction
  */
-double OrthoGraph::getStepSize(int t, int v){
-
-    const double c = 15; //TODO: make this a command line parameter and train it 
+double OrthoGraph::getStepSize(double c, int t, int v){
     
     if(t == 0){ //small step size
     	return 0.0001;
