@@ -122,15 +122,6 @@ string GeneMSA::getSeqID(int speciesIdx) {
 	return "";
 }
 
-int GeneMSA::getMaxSeqIdLen(){
-    int maxNameLen = 0;
-    for(int s=0; s<numSpecies(); s++)
-	if (alignment->rows[s] && alignment->rows[s]->seqID.length() > maxNameLen)
-	    maxNameLen = alignment->rows[s]->seqID.length();
-
-    return maxNameLen;
-}
-
 Strand GeneMSA::getStrand(int speciesIdx){
     if (alignment->rows[speciesIdx])
 	return alignment->rows[speciesIdx]->strand;
@@ -545,12 +536,12 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 	    reverseComplementString(rowstrings[s]); 
     }
 
-    cout << "codon alignment:" << endl;
+    /*cout << "codon alignment:" << endl;
     int maxSnameLen = rsa->getMaxSnameLen();
-    int maxSeqIDLen = getMaxSeqIdLen();
+    int maxSeqIDLen = alignment->getMaxSeqIdLen();
     for (size_t s=0; s<k; s++)
 	cout << setw(maxSnameLen) << rsa->getSname(s) << "\t" << setw(maxSeqIDLen) << getSeqID(s) << "\t" << rowstrings[s] << endl;
-
+    */
     return rowstrings;
 }
 

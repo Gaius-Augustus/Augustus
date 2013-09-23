@@ -33,7 +33,6 @@ public:
     // start <= end refer to the FORWARD strand of the sequence (different from class 'alignment')
     // start = end = -1 if the species is absent from the alignment
     string getSeqID(int speciesIdx);
-    int getMaxSeqIdLen(); // for neat printing
     Strand getStrand(int speciesIdx);
     int getStart(int speciesIdx){ return starts[speciesIdx]; }
     int getEnd(int speciesIdx){ return ends[speciesIdx]; }

@@ -1851,7 +1851,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 	Double localPartMalus = seqFeatColl->collection->localPartMalus(CDSpartF, zeroCov, partBonus, nep);
 	if (localPartMalus < 1.0/partBonus) // at least have ab initio probabilities
 	  localPartMalus = 1.0/partBonus;
-	//	cout << "partBonus[" << beginOfBioExon << ", " << endOfBioExon << "]= " << partBonus << " zeroCov = " << zeroCov << " localPartMalus = " << localPartMalus << endl;
+	// cout << "partBonus[" << beginOfBioExon << ", " << endOfBioExon << "]= " << partBonus << " zeroCov = " << zeroCov << " localPartMalus = " << localPartMalus << endl;
 	extrinsicQuot *= localPartMalus;
       }
 	if (exonLength-numEPendingInExon > 0)

@@ -120,8 +120,9 @@ void CompGenePred::start(){
     // rsa->printStats();
     msa.compactify(); // trivial mergers of neighboring alignments
     msa.findGeneRanges(); // nontrivial summary of alignments
+  
     //msa.printAlignment("");
-    
+    //exit(0);
 
     GeneMSA::openOutputFiles();
     while (GeneMSA *geneRange = msa.getNextGene()) {

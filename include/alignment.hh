@@ -16,6 +16,8 @@
 #include <list>
 #include <iostream>
 
+class MsaSignature; // forward declaration
+
 // gapless alignment fragment
 class fragment {
 public:
@@ -31,15 +33,18 @@ public:
  */
 class AlignmentRow {
 public:
-    AlignmentRow() {}
+    AlignmentRow() : cumFragLen(0) {}
     AlignmentRow(string seqID, int chrPos, Strand strand, string rowbuffer);
     ~AlignmentRow(){}
 
     int chrStart() const;
     int chrEnd() const;
     int getSeqLen() const { return chrEnd() - chrStart() + 1; }
+    int getCumFragLen() const { return cumFragLen; }
+    void addFragment(int chrPos, int aliPos, int len);
+    string getSignature() const {return seqID + ((strand == minusstrand)? "-" : "+");}
     friend ostream& operator<< (ostream& strm, const AlignmentRow &row);
-    friend void appendRow(AlignmentRow **r1, AlignmentRow *r2, int aliLen1);
+    friend void appendRow(AlignmentRow **r1, const AlignmentRow *r2, int aliLen1, string sigstr = "");
 
     /** convert from chromosomal to alignment position
      * start search from the fragment 'from' on, i.e. assume that aliPos is not to the left of fragment *from
@@ -53,6 +58,8 @@ public:
     string seqID; // e.g. chr21
     Strand strand;
     vector<fragment> frags; // fragments are sorted by alignment positions AND by chromosomal positions (assumption for now)
+private:
+    int cumFragLen; // total length of all fragments, becomes a nonredundant attribute after merging of alignments
 };
 
 
@@ -85,12 +92,17 @@ public:
 	for (int i=0; i<rows.size(); i++) 
 	    delete rows.at(i);	
     }
-    friend bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac);
+    friend bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac, bool strong=false);
     friend ostream& operator<< (ostream& strm, const Alignment &a);
-    void merge(Alignment *other); // append 'other' Alignment to this
+    void merge(Alignment *other, const MsaSignature *sig = NULL); // append 'other' Alignment to this
+    friend Alignment* mergeAliList(list<Alignment*> alis,  const MsaSignature *sig);
     int maxRange(); // chromosomal range, maximized over rows
-    int numRows() { return rows.size(); }
-    int numFilledRows(); // number of nonempty rows
+    int numRows() const { return rows.size(); }
+    int numFilledRows() const; // number of nonempty rows
+    int getCumFragLen() const; // total length of all fragments
+    int getMaxSeqIdLen() const;
+    string getSignature() const;
+    int numFitting(const MsaSignature *sig) const;
 public: // should rather be private
     int aliLen; // all aligned sequences are this long when gaps are included
     vector<AlignmentRow*> rows;
@@ -115,15 +127,70 @@ struct SortCriterion {
     size_t s;
 };
 
+
+// sorting operator, with respect to a given species index, index version
+// for sorting a vector or list of indices to another vector that holds the Alignments
+struct IdxSortCriterion {
+    IdxSortCriterion(vector<Alignment*> const a_, size_t speciesIdx) : s(speciesIdx), a(a_) {};
+    bool operator() (int i, int j){
+	// alignments, where row s is missing come last
+	if (a[j]->rows[s] == NULL && a[i]->rows[s]) // this conjunction makes sorting stable where the sequence is missing
+	    return true;
+	if (a[i]->rows[s] == NULL)
+	    return false;
+	if (a[i]->rows[s]->seqID < a[j]->rows[s]->seqID)
+	    return true;
+	if (a[i]->rows[s]->seqID > a[j]->rows[s]->seqID)
+	    return false;
+	// same sequence, compare chromosomal start positions
+	return (a[i]->rows[s]->chrStart() < a[j]->rows[s]->chrStart());
+    }
+    size_t s;
+    vector<Alignment*> const &a;
+};
+
 /*
  * b1 and b2 can be merged in that order because they are very similar and right next to each other.
  * In at least 'mergeableFrac' of the alignment rows the aligned sequenes are
- * present, refer to the same terget sequence, are on the same strand and satisfy 0 <= gaplen <= maxGapLen
+ * strong=false: - refer to the same terget sequence, are on the same strand and satisfy 0 <= gaplen <= maxGapLen
+ *                 if both are present
+ * strong=true:  - refer to the same terget sequence, are on the same strand and satisfy 0 <= gaplen <= maxGapLen
+ *                 if at least one is present
  */
-bool mergeable (Alignment *b1, Alignment *b2, int maxGapLen, float mergeableFrac);
+bool mergeable (Alignment *b1, Alignment *b2, int maxGapLen, float mergeableFrac, bool strong);
 
 inline bool isGap(char c){
     return (c == '-' || c == '.');
 }
+
+/*
+ * MsaSignature is a summary of the seqId/strand combinations of the alignment
+ *
+ */
+class MsaSignature {
+public:
+    string sigstr() const{
+	string str;
+	for (int s = 0; s < sigrows.size(); ++s)
+	    if (sigrows[s] != "")
+		str += itoa(s) + ":" + sigrows[s];
+	return str;
+    }
+    vector<string> sigrows; // each row contains seqID and strand, e.g. chr21+
+    int numAli;
+    int sumAliLen;
+    int depth;
+    int color;
+    // list<int> nodes;
+    bool operator< (const MsaSignature &other) const {
+	return (depth > other.depth || (depth == other.depth && sumAliLen > other.sumAliLen));
+    }
+    bool fits(const Alignment &a, size_t s) const {
+	return a.rows[s] && (sigrows[s] == a.rows[s]->seqID + strandChar(a.rows[s]->strand));
+    }
+    static int maxSigStrLen;
+};
+
+bool cmpSigPtr(const MsaSignature *s1, const MsaSignature *s2);
 
 #endif  // _ALIGNMENT
