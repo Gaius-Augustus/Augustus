@@ -15,6 +15,7 @@
 #include "geneMSA.hh"
 #include "randseqaccess.hh"
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/depth_first_search.hpp>
 
 #define NUMCOLNAMES 32
 const string colornames[NUMCOLNAMES] = {"aquamarine", "darksalmon", "gainsboro", "gold", "cadetblue", "yellowgreen",
@@ -36,7 +37,7 @@ struct AliEdge {
 };
 
 struct AliGraph {
-    vector<int> topo; // topologial order
+    vector<size_t> topo; // topologial order
     int maxWexceptCov;
 };
 
@@ -55,9 +56,20 @@ public:
     friend ostream& operator<< (ostream& strm, const AliPath &p);
 };
 
-
 typedef AlignmentGraph::vertex_descriptor vertex_descriptor;
 typedef AlignmentGraph::edge_descriptor edge_descriptor;
+
+class dfs_time_visitor: public boost::default_dfs_visitor {
+    //    typedef typename property_traits < size_t* >::value_type T;
+public:
+    dfs_time_visitor(size_t *fmap, size_t n) : m_ftimemap(fmap), t(n) { }
+  template < typename Vertex, typename Graph >
+    void finish_vertex(Vertex u, const Graph & g) { m_ftimemap[--t] = u; }
+    size_t *m_ftimemap;
+    size_t t;
+};
+
+
 
 // use funcion overloading on this as the STL list cannot delete from normal and reverse iterators in the same way
 void eraseListRange(list<int> L, list<int>::reverse_iterator from, list<int>::reverse_iterator to);

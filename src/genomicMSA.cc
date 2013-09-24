@@ -439,7 +439,16 @@ void GenomicMSA::findGeneRanges(){
 
     // sort topologically to detect cycles
     aliG2[graph_bundle].topo.resize(numNodes2);
-    try {
+    // take the reversed finishing times of depth first search as proxy to a topological order
+    // this is a topological ordering if aliG2 is a DAG, otherwise below maximum weight path search
+    // may find subtoptimal paths
+    dfs_time_visitor vis(&aliG2[graph_bundle].topo[0], numNodes2);
+    depth_first_search(aliG2, visitor(vis));
+    cout << "reverse DFS finishing order (approx topological): ";
+    for (int i=0; i<numNodes2; i++)
+	cout << aliG2[graph_bundle].topo[i] << " ";
+    cout << endl;
+    /*    try {
 	vector<AlignmentGraph::vertex_descriptor > topo;
 	topological_sort(aliG2, std::back_inserter(topo));
 	int i=0;
@@ -449,11 +458,7 @@ void GenomicMSA::findGeneRanges(){
     } catch (bad_graph &e) {
 	// TODO, remove back edges in DFS and retry until it is a DAG
 	cerr << e.what() << endl;
-    }
-    cout << "A topological ordering: ";
-    for (int i=0; i<numNodes2; i++)
-	cout << aliG2[graph_bundle].topo[i] << " ";
-    cout << endl;
+	}*/
 
     cout << "number of signatures=" << signatures.size() << endl;
     list<MsaSignature*> siglist;
