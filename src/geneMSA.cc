@@ -80,8 +80,11 @@ GeneMSA::GeneMSA(RandSeqAccess *rsa, Alignment *a) {
 		    throw ProjectError("GeneMSA: Unknown strand in alignment.");
 		}
 	    // ensure that gene predictions on each region will be done IN ONE PIECE
-	    if (ends[s]-starts[s]+1 > maxDNAPieceSize){
-		int tooMuch = ends[s] - starts[s] + 1 - maxDNAPieceSize;
+	    int geneRangeLen = ends[s]-starts[s]+1;
+	    if (geneRangeLen > maxDNAPieceSize){
+		cerr << "Warning: length of gene range(" << geneRangeLen << ") is species " << rsa->getSname(s) <<  " exceeds maxDNAPieceSize(" 
+		     << maxDNAPieceSize << "). Will shorten sequence at both ends to achieve a length of " << maxDNAPieceSize << endl;
+		int tooMuch = geneRangeLen - maxDNAPieceSize;
 		starts[s] += (tooMuch + 1)/2;
 		ends[s] -= (tooMuch + 1)/2;
 	    }
@@ -313,23 +316,17 @@ void GeneMSA::printStats(){
     }
 }
 
-// writes the possible gene ranges of a species in the file 'geneRanges.speciesnames.gff3'
+// appends the gene range of each species to the file 'geneRanges.speciesnames.gff3'
 void GeneMSA::printGeneRanges() {
-    if (!(this->exoncands.empty())) {
-        for (int i=0; i < this->exoncands.size(); i++) {
-	    ofstream &fstrm = *geneRanges_outfiles[i]; // write to 'geneRanges.speciesname[i].gff3'
-            if (this->exoncands.at(i)!=NULL) {
-                fstrm << this->getSeqID(i) << "\tGeneRange\t" << "exon\t" << this->getStart(i) + 1 << "\t"
-		      << this->getEnd(i) + 1 << "\t0\t";
-                if (this->getStrand(i) == plusstrand)
-                    fstrm <<'+'<<"\t";
-		else
-                    fstrm << '-' << "\t";
-                fstrm << ".\t" << "Name=" << geneRangeID << endl;
-            }
-        }
-        geneRangeID++;
+    for (size_t s=0; s < numSpecies(); s++) {
+	ofstream &fstrm = *geneRanges_outfiles[s]; // write to 'geneRanges.speciesname[s].gff3'
+	if (getStart(s) >= 0) {
+	    fstrm << getSeqID(s) << "\tGeneRange\t" << "exon\t" << getStart(s) + 1 << "\t" << getEnd(s) + 1 << "\t0\t"
+		  << getStrand(s) << "\t" << ".\t" << "Name=" << geneRangeID;
+	    fstrm << ";Note=" << alignment->getSignature() << endl;
+	}
     }
+    geneRangeID++;
 }
 
 // writes the exon candidates of all species into the file 'exonCands.species.gff3'
@@ -569,7 +566,7 @@ void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
 
 	// TODO: scale branch lengths to one substitution per codon per time unit
 	//cout << "OE" << endl;
-	// printSingleOrthoExon(*oe, false);
+	//printSingleOrthoExon(*oe, false);
 	double omega = codonevo->estOmegaOnSeqTuple(rowstrings, tree, subst);
 	//cout << "omega=" << omega << endl;
 	//codonevo->graphOmegaOnCodonAli(rowstrings, tree);

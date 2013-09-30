@@ -22,9 +22,12 @@ class MsaSignature; // forward declaration
 class fragment {
 public:
     fragment(int chrPos, int aliPos, int len) : chrPos(chrPos), aliPos(aliPos), len(len) {}
+    fragment() {}
+    int chrEnd() const { return chrPos + len - 1; }
     int chrPos; // chromosomal start position of fragment, 0-based
     int aliPos; // start position of fragment in alignment, 0-based
     int len;    // fragment length
+    
 };
 
 /**
@@ -39,10 +42,19 @@ public:
 
     int chrStart() const;
     int chrEnd() const;
+    int aliEnd() const;
     int getSeqLen() const { return chrEnd() - chrStart() + 1; }
     int getCumFragLen() const { return cumFragLen; }
+    void setCumFragLen(int len) { cumFragLen = len;} // use with care to ensure consistency
+    int gapLenAfterFrag(size_t i) const {
+	if (i+1 >= frags.size())
+	    return 0;
+	return frags[i+1].chrPos - frags[i].chrPos - frags[i].len;
+    }
     void addFragment(int chrPos, int aliPos, int len);
+    void addFragment(fragment &f) { addFragment(f.chrPos, f.aliPos, f.len); }
     string getSignature() const {return seqID + ((strand == minusstrand)? "-" : "+");}
+    void pack();
     friend ostream& operator<< (ostream& strm, const AlignmentRow &row);
     friend void appendRow(AlignmentRow **r1, const AlignmentRow *r2, int aliLen1, string sigstr = "");
 
@@ -53,7 +65,7 @@ public:
      */
     int getAliPos(int chrPos, vector<fragment>::const_iterator from);
     int getAliPos(int chrPos) { return getAliPos(chrPos, frags.begin()); }
-
+    
     // data members
     string seqID; // e.g. chr21
     Strand strand;
@@ -89,13 +101,15 @@ public:
     Alignment(size_t k) : aliLen(0), rows(k, NULL) {} // initialize with NULL, which stand for missing AlignmentRows
     ~Alignment(){
 	// Steffi: this causes a segmentation fault for more than two species. I don't know why.
+	// Mario: still?
 	for (int i=0; i<rows.size(); i++) 
-	    delete rows.at(i);	
+	    delete rows[i];	
     }
     friend bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac, bool strong=false);
     friend ostream& operator<< (ostream& strm, const Alignment &a);
     void merge(Alignment *other, const MsaSignature *sig = NULL); // append 'other' Alignment to this
     friend Alignment* mergeAliList(list<Alignment*> alis,  const MsaSignature *sig);
+    friend void capAliSize(list<Alignment*> &alis, int maxRange);
     int maxRange(); // chromosomal range, maximized over rows
     int numRows() const { return rows.size(); }
     int numFilledRows() const; // number of nonempty rows
@@ -103,6 +117,8 @@ public:
     int getMaxSeqIdLen() const;
     string getSignature() const;
     int numFitting(const MsaSignature *sig) const;
+    void shiftAliPositions(int offset);
+    void pack(); // merge pairs of fragments without gap into one fragment making the alignment representation more compact
 public: // should rather be private
     int aliLen; // all aligned sequences are this long when gaps are included
     vector<AlignmentRow*> rows;
@@ -192,5 +208,14 @@ public:
 };
 
 bool cmpSigPtr(const MsaSignature *s1, const MsaSignature *s2);
+
+typedef pair<size_t, int> BoundaryFragment; // (s, chrPos), where s= species index
+
+class CompareBoundaryFragment {
+public:
+    bool operator()(BoundaryFragment& bf1, BoundaryFragment& bf2) {
+	return bf1.second > bf2.second; // => sort by increasing chromosomal position
+    }
+};
 
 #endif  // _ALIGNMENT

@@ -17,11 +17,11 @@
 
 class CompGenePred {
 public:
-  CompGenePred();
-  ~CompGenePred() {}
+    CompGenePred();
+    ~CompGenePred() { delete rsa;}
 
-  void start();
-  RandSeqAccess *rsa;
+    void start();
+    RandSeqAccess *rsa;
 };
 
 #endif  // _COMPGENEPRED

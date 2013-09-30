@@ -90,7 +90,7 @@ void GenomicMSA::readAlignment(string alignFilename) {
         if (buffer == "s") {
 	    alignBlock = new Alignment(numSpecies); // create new empty alignment block
             // loop over the lines of the alignment block, don't search any further if enough species were found
-            while (numSpeciesFound < numSpecies && buffer == "s") {
+            while (numSpeciesFound < numSpecies && buffer == "s" && !Alignmentfile.eof()) {
 		// reads the name of the species and the seqID from the first column
 		// TODO: may have to be checked/adjusted for general .maf files
 		Alignmentfile >> completeName >> chrStart >> seqLen >> strandChar >> lenOfChr >> rowseq >> buffer;
@@ -133,10 +133,10 @@ void GenomicMSA::readAlignment(string alignFilename) {
 			 << endl << "speciesName" << "." << seqID << "\t" << chrStart << "\t" << seqLen << "\t" << rowseq << endl;
 		
 		index = rsa->getIdx(speciesName);
-		if (index >=0) { // species name in the white list
+		if (index >= 0) { // species name in the white list
 		    alignBlock->rows[index] = row; // place at the right position
 		    // store chrLen and check whether consistent with previous chrLen
-		    try{
+		    try {
 			rsa->setLength(index, row->seqID, lenOfChr);
 		    } catch (ProjectError e){
 			cerr << e.getMessage() << endl << "MAF file inconsistent." << endl;
@@ -144,16 +144,25 @@ void GenomicMSA::readAlignment(string alignFilename) {
 		    }
 		    numSpeciesFound++;
 		} else {
+		    // "Species " << speciesName << " not in tree"
 		    notExistingSpecies.insert(pair<string, size_t>(speciesName, 1));
+		    delete row;
 		}
 	    }
-	    alignment.push_back(alignBlock);
+	    if (numSpeciesFound > 0)
+		alignment.push_back(alignBlock);
+	    else
+		delete alignBlock;
 	}
     }
     // clean up
     Alignmentfile.close();
-    for (map<string,size_t>::iterator it = notExistingSpecies.begin(); it != notExistingSpecies.end(); ++it)
-	cerr << "Warning: Species " << it->first << " is not included in the target list of species. These alignment lines are ingored." << endl;
+    if (!notExistingSpecies.empty()){
+	cerr << "Warning: Species ";
+	    for (map<string,size_t>::iterator it = notExistingSpecies.begin(); it != notExistingSpecies.end(); ++it)
+		cerr << it->first << " ";
+	cerr << ((notExistingSpecies.size() > 1)? "are": "is") << " not included in the target list of species. These alignment lines are ingored." << endl;
+    }
 }
 
 /* printMAF
@@ -377,11 +386,13 @@ void GenomicMSA::findGeneRanges(){
     } while (numNodes < numNodesOld);
 
     // take all singleton alignments that are now long enough
+    // at the same time, pack all alignments
     alignment.clear();
     int numNodes2 = 0;
     for (uid = 0; uid < num_vertices(aliG); uid++){
 	Alignment* a = aliG[vertex(uid, aliG)].a;
 	if (a){
+	    a->pack();
 	    if (out_degree(uid, aliG) == 0 && in_degree(uid, aliG) == 0){
 		if (a->aliLen >= minGeneLen) // discard alignments that are too short to hold at least a short gene
 		    alignment.push_back(a);
@@ -487,37 +498,45 @@ void GenomicMSA::findGeneRanges(){
 	}
     }
     cout << "found " << allPaths.size() << " paths" << endl;
-    /*
+    
     for (int i=0; i<allPaths.size(); i++)
 	cout << allPaths[i] << endl;
-    */
+    
 
     // repeat pruning until nothing changes (usually changes only in the first iteration)
     int totalNumNodes;
+    // cut paths whose gene range exceeds maxDNAPieceSize into several smaller paths at weak links
+    //chunkyFyPaths(allPaths, aliG2);
     while (prunePaths(allPaths, aliG2)){
-	//cout << "allPaths after pruning:" << endl;
+	cout << "allPaths after pruning:" << endl;
 	totalNumNodes = 0;
 	for (int i=0; i < allPaths.size(); i++){
 	    totalNumNodes += allPaths[i].path.size();
-	    //cout << allPaths[i] << endl;
+	    cout << allPaths[i] << endl;
 	}
 	cout << "aliG2 nodes " << num_vertices(aliG2) << " allPaths nodes " << totalNumNodes << " ratio: " << (float) totalNumNodes/num_vertices(aliG2) << endl;
     }
 
     // for each path, make a single alignment and add to alignment list
     for (int i=0; i < allPaths.size(); i++){
-	// cout << "alignment from path " << allPaths[i] << endl;
+	cout << "alignment from path " << allPaths[i] << endl;
 	list<Alignment* > plist;
 	list<int> &p = allPaths[i].path;
 	for (list<int>::iterator it = p.begin(); it != p.end(); ++it)
 	    plist.push_back(aliG2[*it].a);
 	va = mergeAliList(plist, allPaths[i].sig);
-	if (va && va->aliLen >= minGeneLen) // discard alignments that are too short to hold at least a short gene
+	if (va && va->aliLen >= minGeneLen){ // discard alignments that are too short to hold at least a short gene
+	    cout << *va << endl;
 	    alignment.push_back(va);
+	}
     }
+    int sizeBeforeCapping = alignment.size();
+    capAliSize(alignment, Properties::getIntProperty( "maxDNAPieceSize" ));
+    if (alignment.size() > sizeBeforeCapping)
+	cout << "very large alignments had to be cut " << alignment.size() - sizeBeforeCapping << " times." << endl;
     alignment.sort(SortCriterion(0)); // sort (arbitrarily) by first species
-    cout << "findGeneRanges reduced the number of aligments from " << numAlis << " to " <<  alignment.size() << " (to "
-	 << setprecision(3) <<  (100.0 * alignment.size() / numAlis) << "%)." << endl;
+    cout << "findGeneRanges " << ((alignment.size() <= numAlis)? "reduced" : "increased") << " the number of aligments from " << numAlis << " to " 
+	 <<  alignment.size() << " (to " << setprecision(3) <<  (100.0 * alignment.size() / numAlis) << "%)." << endl;
     // delete all alignments from the graph nodes
     for (uid = 0; uid < num_vertices(aliG2); uid++){
 	Alignment* a = aliG2[uid].a;
@@ -525,6 +544,22 @@ void GenomicMSA::findGeneRanges(){
 	    delete a;
     }
 }
+/*
+void GenomicMSA::chunkyFyPaths(vector<AliPath> &allPaths, AlignmentGraph &g){
+    int maxDNAPieceSize = Properties::getIntProperty( "maxDNAPieceSize" );
+    int i, m = allPaths.size();
+    for (i=0; i<m; i++){
+	AliPath &p = allPaths[i];
+	
+    }
+}
+int AliPath::maxSeqRange(AlignmentGraph &g){
+    int n = path.size();
+    if (n == 0)
+	return 0;
+    int max = 0;
+    
+    }*/
 
 bool GenomicMSA::prunePaths(vector<AliPath> &allPaths, AlignmentGraph &g){
     bool changed = false;

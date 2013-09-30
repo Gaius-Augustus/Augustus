@@ -830,7 +830,7 @@ double *ExonModel::getCodonUsage(){
     Seq2Int s2i(3);
     for (int i=0; i<numCodons; i++)
 	pi[s2i(sampledCDS+e.order+i*3)] += 1;
-    delete sampledCDS;
+    delete [] sampledCDS;
     // normalize pi
     int s = 0.0;
     for (int c=0; c<64; c++)
@@ -1427,8 +1427,7 @@ Double ExonModel::endPartEmiProb(int end) const {
  * frameOfRight is the reading frame of the position "right".
  */
 
-Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRight,
-				    Feature *exonparts) const {
+Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRight, Feature *exonparts) const {
     Double beginPartProb, restSeqProb, lenPartProb;
     Feature *feature;
     Double extrinsicQuot = 1;
@@ -1440,7 +1439,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
     switch( etype ){
 	case singleG: case initial0: case initial1: case initial2:
 	    // start codon at the beginning?
-	    if ((beginOfBioExon >= 0) && GeneticCode::isStartcodon(sequence + beginOfStart - STARTCODON_LEN)){
+	    if ((beginOfBioExon >= 0) && GeneticCode::isStartcodon(sequence + beginOfBioExon)){
 		beginPartProb = GeneticCode::startCodonProb(sequence + beginOfStart - STARTCODON_LEN);
 		if (beginPartProb > 0.0){
 		    // two cases ... . the normal one with enough sequence space before the gene

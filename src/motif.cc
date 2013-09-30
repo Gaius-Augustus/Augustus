@@ -453,7 +453,7 @@ Double Motif::getProbThreshold (double q, int numSamples){
         //cout << i << "   " << seq << endl;
         Double prob = Motif::seqProb(seq + k);
         all_probs.push_back(prob);
-        delete seq;
+        delete [] seq;
     }
     return quantile(all_probs, q);
 }

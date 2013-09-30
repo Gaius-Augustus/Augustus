@@ -20,7 +20,6 @@
 #include <list>
 
 //forward declarations:
-class ExonCandidate;
 class Node;
 
 class OrthoExon {

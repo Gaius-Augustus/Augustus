@@ -177,6 +177,7 @@ void CompGenePred::start(){
 	geneRange->printExonCands();
 	geneRange->createOrthoExons();
 	geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
+	seqRanges.clear(); // delete sequences
 	geneRange->printOrthoExons(rsa);
 	orthograph.all_orthoex = geneRange->getOrthoExons();
 

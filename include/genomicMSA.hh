@@ -51,6 +51,7 @@ typedef boost::adjacency_list<boost::setS, // disallow parallel edges
 
 class AliPath {
 public:
+    int maxSeqRange(AlignmentGraph &g);
     list<int> path; // the nodes indices on the simple path through the alignment graph
     const MsaSignature *sig; // signature used to construct the graph (some paths differ only through sig)
     friend ostream& operator<< (ostream& strm, const AliPath &p);
@@ -108,6 +109,13 @@ public:
     void project(AlignmentGraph &g, const MsaSignature *sig);
     AliPath getBestConsensus(AlignmentGraph &g, const MsaSignature *sig, int &numNewCovered);
     int findBestPath(AlignmentGraph &g);
+    /**
+     * make several small paths from a large one that exceeds maxDNAPieceSize in one species sequence range
+     */
+    //void chunkyFyPaths(vector<AliPath> &allPaths, AlignmentGraph &g);
+    /**
+     * cut off redundand ends of path and remove paths with little extra information
+     */
     bool prunePaths(vector<AliPath> &allPaths, AlignmentGraph &g);
     template< class Iterator >
     bool prunePathWrt2Other(AliPath &p, Iterator pstart, Iterator pend, 

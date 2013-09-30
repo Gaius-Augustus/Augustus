@@ -323,7 +323,7 @@ void DbSeqAccess::connect_db(){
 template<class T>
 AnnoSequence* DbSeqAccess::getNextDBSequence(string chrName,int start,int end,vector<T>& asm_query_region)
 {
-    AnnoSequence* annoseq=new AnnoSequence();
+    AnnoSequence* annoseq = new AnnoSequence();
     mysqlpp::Query fetchseq_query=con.query();
     mysqlpp::StoreQueryResult mysqlseq; // store the chunk in a StoreQueryResult container.
 
@@ -358,7 +358,7 @@ AnnoSequence* DbSeqAccess::getNextDBSequence(string chrName,int start,int end,ve
 	iter++;
     }
     //step2: give concatenate sequence to a AnnoSequence object.
-    char* tmp_sequence=new char[concat_str.size()+1];
+    char* tmp_sequence = new char[concat_str.size()+1];
     int pos=-1;
     int i;
     int iters=concat_str.size();

@@ -371,6 +371,7 @@ int eigendecompose(gsl_matrix *Q,        // input
     if (status)
 	return status;
     gsl_eigen_symmv_free(w);
+    gsl_matrix_free(B);
 
     // reverse transformation to Q = diag(pi^{-1/2}) * B * diag(pi^{1/2}) = [diag(pi^{-1/2}) * U] * diag(lambda) * [U^t * diag(pi^{1/2})]
     // reuse space of U

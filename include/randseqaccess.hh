@@ -40,10 +40,9 @@ public:
     AnnoSequence* getSeq(size_t speciesIdx, string chrName, int start, int end, Strand strand) {
 	return getSeq(getSname(speciesIdx), chrName, start, end, strand);
     }
-
+    virtual ~RandSeqAccess() {}
 protected:
     RandSeqAccess() {};
-    virtual ~RandSeqAccess() {}
     int numSpecies;
     vector<map<string,int>> chrLen;
     vector<string> speciesNames;
@@ -57,6 +56,7 @@ protected:
 class MemSeqAccess : public RandSeqAccess {
 public:
     MemSeqAccess();
+    ~MemSeqAccess(){} // TODO: delete DNA sequences from 'sequences' map
     AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
   
 private:
@@ -71,6 +71,7 @@ private:
 class DbSeqAccess : public RandSeqAccess {
 public:
     DbSeqAccess();
+    ~DbSeqAccess(){};
     AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
     // the following function is for the BGI-style database
     AnnoSequence* getSeq2(string speciesname, string chrName, int start, int end, Strand strand);
