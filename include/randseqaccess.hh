@@ -44,7 +44,7 @@ public:
 protected:
     RandSeqAccess() {};
     int numSpecies;
-    vector<map<string,int>> chrLen;
+    vector<map<string,int> > chrLen;
     vector<string> speciesNames;
     map<string, size_t> speciesIndex; // to quickly access the index for a given species name
 };
