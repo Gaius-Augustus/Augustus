@@ -95,7 +95,7 @@ void CompGenePred::start(){
     // temporary tests of codon rate matrix stuff (Mario)
     double *pi = ExonModel::getCodonUsage();
     CodonEvo codonevo;
-    codonevo.setKappa(2);
+    codonevo.setKappa(4.0);
     codonevo.setPi(pi);
     vector<double> b; // all branch lengths occuring in the tree
     b.push_back(.5); // 50% codon substitutions between D.mel and D.pseudoo., 40% between human and mouse
@@ -115,6 +115,20 @@ void CompGenePred::start(){
     vector<string> speciesNames;
     OrthoGraph::tree->getSpeciesNames(speciesNames);
     rsa->setSpeciesNames(speciesNames);
+    if (0) {
+	vector<string> seqtuple(5,"");
+	seqtuple[0] = "aaaaaaaaaaaa";
+	seqtuple[1] = "aagaataataat";
+	seqtuple[2] = "------------";
+	seqtuple[3] = "------------";
+	seqtuple[4] = "------------";
+	int subst = 0;
+	double omega = codonevo.estOmegaOnSeqTuple(seqtuple, &tree, subst);
+	for (int i=0; i<seqtuple.size(); i++)
+	    cout << seqtuple[i]<< endl;
+	cout << "omega= " << omega << " subst= " << subst << endl;
+	exit(1);
+    }
     GenomicMSA msa(rsa);
     msa.readAlignment(Constant::alnfile);  // reads the alignment
     // rsa->printStats();

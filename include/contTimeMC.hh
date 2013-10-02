@@ -88,7 +88,7 @@ protected:
  */
 class CodonEvo : public Evo {
 public:
-    CodonEvo() : Evo(64), k(0), kappa(2) {};
+    CodonEvo() : Evo(64), k(0), kappa(4.0) {};
     ~CodonEvo();
     void setKappa(double kappa){ this->kappa = kappa;} // transition/transversion ratio
     void setPi(double *pi); // codon usage

@@ -528,7 +528,8 @@ void GenomicMSA::findGeneRanges(){
 	if (va && va->aliLen >= minGeneLen){ // discard alignments that are too short to hold at least a short gene
 	    cout << *va << endl;
 	    alignment.push_back(va);
-	}
+	} else 
+	    cout << "deleted (too short)" << endl;
     }
     int sizeBeforeCapping = alignment.size();
     capAliSize(alignment, Properties::getIntProperty( "maxDNAPieceSize" ));
