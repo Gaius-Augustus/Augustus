@@ -102,10 +102,10 @@ void CompGenePred::start(){
     codonevo.setBranchLengths(b, 10);
     // codonevo.printBranchLengths();
     
-    codonevo.setOmegas(40);
-    codonevo.setPrior(1.0);
-    //cout << "Omegas, for which substitution matrices are stored:" << endl;
-    //codonevo.printOmegas();
+    codonevo.setOmegas(20);
+    codonevo.setPrior(0.5);
+    /*cout << "Omegas, for which substitution matrices are stored:" << endl;
+      codonevo.printOmegas();*/
     codonevo.computeLogPmatrices();
     
     // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);

@@ -537,7 +537,7 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
     int maxSnameLen = rsa->getMaxSnameLen();
     int maxSeqIDLen = alignment->getMaxSeqIdLen();
     for (size_t s=0; s<k; s++)
-	cout << setw(maxSnameLen) << rsa->getSname(s) << "\t" << setw(maxSeqIDLen) << getSeqID(s) << "\t" << rowstrings[s] << endl;
+        cout << setw(maxSnameLen) << rsa->getSname(s) << "\t" << setw(maxSeqIDLen) << getSeqID(s) << "\t" << rowstrings[s] << endl;
     */
     return rowstrings;
 }
@@ -563,13 +563,13 @@ void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
 		    ++froms[s];
 		
 	vector<string> rowstrings = getCodonAlignment(*oe, seqRanges, froms);
-
+	double omega;
 	// TODO: scale branch lengths to one substitution per codon per time unit
-	//cout << "OE" << endl;
-	//printSingleOrthoExon(*oe, false);
-	double omega = codonevo->estOmegaOnSeqTuple(rowstrings, tree, subst);
-	//cout << "omega=" << omega << endl;
-	//codonevo->graphOmegaOnCodonAli(rowstrings, tree);
+	// cout << "OE" << endl;
+	//	printSingleOrthoExon(*oe, false);
+	// omega = codonevo->estOmegaOnSeqTuple(rowstrings, tree, subst);
+	//	cout << "omega=" << omega << endl;
+	omega = codonevo->graphOmegaOnCodonAli(rowstrings, tree);
 	oe->setOmega(omega);
 	oe->setSubst(subst);
     }

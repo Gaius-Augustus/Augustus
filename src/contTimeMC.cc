@@ -150,6 +150,8 @@ void CodonEvo::setPrior(double sigma ){
     double sum = 0;
     for (int i=0; i<k; i++){
 	double omega = omegas[i];
+	if (omega > 1.0)
+	    omega = 1.0 / omega;
 	double t = (omega-1.0)/sigma;
 	sum += omegaPrior[i] = exp(-t*t/2);
     }
@@ -613,6 +615,7 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 		loglik += tree->pruningAlgor(codontuple, evo, u);
 	    }
 	}
+	//	cout << "loglikelihood(omega=" << omegas[u] << ")= " << setPrecision(4) << loglik << endl;
 	if (loglik > ML){
 	    ML = loglik;
 	    maxU = u;
@@ -646,7 +649,7 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
     return omegas[maxU];
 }
 
-void CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
+double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
     if (seqtuple.size() != tree->numSpecies())
 	throw ProjectError("CodonEvo::estOmegaOnSeqTuple: inconsistent number of species.");
     for(int i=1; i<seqtuple.size();i++){
@@ -659,8 +662,8 @@ void CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
     int numCodons;
     double Eomega, loglik, sum;
     Seq2Int s2i(3);
-    
-    cout << "graph omega" << endl;
+    vector<double> logliks(k, 0.0);
+    vector<double> postprobs(k, 0.0);
     for (int i=0; i<n; i++){
 	Eomega = sum = 0.0;
 	for (int u=0; u < k; u++){ // loop over omegas
@@ -675,14 +678,28 @@ void CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
 	    }
 	    if (numCodons >= 2){
 		loglik = tree->pruningAlgor(codontuple, this, u);
-		Eomega += exp(loglik)*omegaPrior[u]*omegas[u];
-		sum += exp(loglik)*omegaPrior[u];
+		logliks[u] += loglik;
 	    }
 	}
-	Eomega /= sum;
-	cout << i << "\t" << Eomega << endl;
     }
-    
+    // posterior mean estimate of omega
+    double meanloglik(0.0);
+    for (int u=0; u < k; u++)
+	meanloglik += logliks[u];
+    meanloglik /= k;
+    sum = 0.0;
+    for (int u=0; u < k; u++)
+	sum += postprobs[u] = exp(logliks[u] + meanloglik) * omegaPrior[u];
+    //    cout << "posterior distribution of omega" << endl;
+    for (int u=0; u < k; u++){
+	postprobs[u] /= sum;
+	//	cout << omegas[u] << " " << postprobs[u] << endl;
+    }
+    Eomega = 0.0;
+    for (int u=0; u < k; u++){
+	Eomega += postprobs[u] * omegas[u];
+    }
+    //    cout << "Eomega=" << Eomega << endl;
     // count number of substitutions
     int subst;
  
@@ -691,7 +708,7 @@ void CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
     Parsimony parsi;
     parsi.computeLogPmatrices();
     Evo *parsi_base = &parsi;
-    cout << "graph substitutions" << endl;
+    /*    cout << "graph substitutions" << endl;
     for (int i=0; i<n; i++){
 	vector<int> codontuple(tree->numSpecies(), 64);
 	numCodons=0;
@@ -705,9 +722,10 @@ void CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
 	if(numCodons >= 2){
 	    PhyloTree temp(*tree); // only use a copy of the tree !!!
 	    subst = -temp.MAP(codontuple, weights, parsi_base, 1, true); // Fitch Algorithm 
-	    cout << i << "\t" << subst << endl; 
+	    //cout << i << "\t" << subst << endl; 
 	}
-    }
+	}*/
+    return Eomega;
 }
 
 void Parsimony::computeLogPmatrices(){

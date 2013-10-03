@@ -234,13 +234,12 @@ double PhyloTree::pruningAlgor(string labelpattern, Evo *evo, int u){
 
 
 double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
-
     int states = evo->getNumStates();
     
     for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if((*node)->isLeaf()){
 	    // initialization
-	    int c =tuple.at(findIndex((*node)->getSpecies()));
+	    int c = tuple.at(findIndex((*node)->getSpecies()));
 	    if(c >= states || c < 0){    
 		(*node)->resizeTable(states,1);  // in the case of unknown characters, we sum over all possibilities
 	    }
@@ -258,23 +257,22 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
 		    double sum=0;
 		    gsl_matrix *P = evo->getSubMatrixP(u,(*it)->getDist());
 		    for(int j=0; j<states; j++){
-			sum+=gsl_matrix_get(P,i,j) * (*it)->getTable(j);
+			sum += gsl_matrix_get(P, i, j) * (*it)->getTable(j);
 		    }
-		    score*=sum; 
+		    score *= sum; 
 		}
-		(*node)->setTable(i,score);	
+		(*node)->setTable(i, score);	
 	    }
 	}
     }
     //printRecursionTable();
 
     //in the root, we take the weighted average over all states
-    double tree_score=0;
+    double tree_score = 0;
     for(int i=0; i<states; i++){
 	tree_score += (evo->getPi(i) * treenodes.back()->getTable(i));
     }
     return log(tree_score);
-  
 }
 
 void PhyloTree::printRecursionTable() const{
