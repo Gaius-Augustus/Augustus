@@ -16,9 +16,7 @@
 #include <iostream>
 
 
-OrthoExon::OrthoExon(){
-    omega = -1;
-    subst = -1;
+OrthoExon::OrthoExon() : omega(-1.0) , subst(-1) {
     orthoex.resize(OrthoGraph::numSpecies);
     orthonode.resize(OrthoGraph::numSpecies);
     weights.resize(OrthoGraph::numSpecies,0);
@@ -46,6 +44,13 @@ StateType OrthoExon::getStateType() const{
     return TYPE_UNKNOWN;
 }
 
+int OrthoExon::numExons() const{
+    int k=0;
+    for (size_t s = 0; s < orthoex.size(); s++)
+	if (orthoex[s])
+	    k++;
+    return k;
+}
 
 list<OrthoExon> readOrthoExons(string filename){
 

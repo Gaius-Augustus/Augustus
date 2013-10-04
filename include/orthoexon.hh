@@ -29,18 +29,20 @@ public:
     //copy with permutation of vector entries
     OrthoExon(const OrthoExon& other, const std::vector<size_t> &permutation);
     StateType getStateType() const; // all exon candidates agree in type
-    std::vector<ExonCandidate*> orthoex;
-    std::vector<Node*> orthonode; //corresponding nodes in the graph
-    std::vector<double> weights;
-    std::vector<int> labels;
+    int numExons() const;
+    double getOmega() const { return omega; }
+    double getSubst() const { return subst; }
+    void setOmega(double o){omega=o;}
+    void setSubst(int s){ subst = s;}
+
+    vector<ExonCandidate*> orthoex;
+    vector<Node*> orthonode; //corresponding nodes in the graph
+    vector<double> weights;
+    vector<int> labels;
     //TODO: instead of an attribute write a function getLabelpattern() which returns the current
     //label pattern. This is the safer way and guarantees to always have the current label pattern.
     std::string labelpattern;
     int ID;
-    double getOmega() const { return omega; }
-    double getSubst() const { return subst; }
-    void setOmega(double o){omega=o;}
-    void setSubst(int s){subst=s;}
     
 private:
     double omega;

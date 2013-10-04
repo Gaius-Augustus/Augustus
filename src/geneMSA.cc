@@ -381,6 +381,7 @@ void GeneMSA::printOrthoExons(RandSeqAccess *rsa) {
 // writes the ortholog exons on one OrthoExon into the files 'orthoExons.species.gff3'
 // files: write each one to a file for its species, if false to stdout
 void GeneMSA::printSingleOrthoExon(const OrthoExon &oe, bool files) {
+    bool GBrowseStyle = true; // for viewing in GBrowse use this style
     streambuf *stdout = cout.rdbuf();
     for (int s=0; s < numSpecies(); s++) {
 	ExonCandidate *ec = oe.orthoex.at(s);
@@ -400,13 +401,21 @@ void GeneMSA::printSingleOrthoExon(const OrthoExon &oe, bool files) {
 		 << ((isPlusExon(ec->type) == (getStrand(s) == plusstrand))? '+' : '-');
             cout << "\t" << ec->gff3Frame() << "\t" << "ID=" << oe.ID << ";Name=" << oe.ID << ";Note=" 
 		 << stateExonTypeIdentifiers[ec->type]; // TODO: reverse type if alignment strand is "-"
+	    if (GBrowseStyle)
+		cout << "|" << oe.numExons();
+	    else 
+		cout << ";n=" << oe.numExons();
 	    if (oe.getOmega() >= 0.0){
-		cout << ";omega=" << oe.getOmega();
-		//cout << "|" << oe.getOmega();  // for viewing in GBrowse use this style instead
+		if (GBrowseStyle)
+		    cout << "|" << oe.getOmega();
+		else 
+		    cout << ";omega=" << oe.getOmega();
 	    }
-	    if (oe.getSubst() >= 0){
-		cout << ";subst=" << oe.getSubst(); // number of substitutions
-	        //cout << "|" << oe.getSubst(); // for viewing in gBrowse use this style instead
+	    if (oe.getSubst() >= 0){ // number of substitutions
+		if (GBrowseStyle)
+		    cout << "|" << oe.getSubst();
+		else
+		    cout << ";subst=" << oe.getSubst();
 	    }
 	    cout << endl;
         }
@@ -545,7 +554,7 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 
 // computes and sets the Omega = dN/dS attribute to all OrthoExons
 void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
-    int subst;
+    int subst = 0;
     // Initialize for each species the first fragment froms[s] that 
     // is not completely left of the current OrthoExon.
     // This exploits the fact that both fragments and OrthoExons are sorted
@@ -569,9 +578,9 @@ void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
 	//	printSingleOrthoExon(*oe, false);
 	// omega = codonevo->estOmegaOnSeqTuple(rowstrings, tree, subst);
 	//	cout << "omega=" << omega << endl;
+	// oe->setSubst(subst);
 	omega = codonevo->graphOmegaOnCodonAli(rowstrings, tree);
 	oe->setOmega(omega);
-	oe->setSubst(subst);
     }
 }
 
