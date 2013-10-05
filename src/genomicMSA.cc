@@ -467,7 +467,6 @@ void GenomicMSA::findGeneRanges(){
 	    aliG2[graph_bundle].topo[i++] = index[*ii];
 	}
     } catch (bad_graph &e) {
-	// TODO, remove back edges in DFS and retry until it is a DAG
 	cerr << e.what() << endl;
 	}*/
 
@@ -505,31 +504,33 @@ void GenomicMSA::findGeneRanges(){
 
     // repeat pruning until nothing changes (usually changes only in the first iteration)
     int totalNumNodes;
-    // cut paths whose gene range exceeds maxDNAPieceSize into several smaller paths at weak links
-    //chunkyFyPaths(allPaths, aliG2);
     while (prunePaths(allPaths, aliG2)){
 	cout << "allPaths after pruning:" << endl;
 	totalNumNodes = 0;
 	for (int i=0; i < allPaths.size(); i++){
-	    totalNumNodes += allPaths[i].path.size();
-	    cout << allPaths[i] << endl;
+	    if (allPaths[i].path.size() > 0){
+		totalNumNodes += allPaths[i].path.size();
+		cout << allPaths[i] << endl;
+	    }
 	}
 	cout << "aliG2 nodes " << num_vertices(aliG2) << " allPaths nodes " << totalNumNodes << " ratio: " << (float) totalNumNodes/num_vertices(aliG2) << endl;
     }
 
     // for each path, make a single alignment and add to alignment list
     for (int i=0; i < allPaths.size(); i++){
-	cout << "alignment from path " << allPaths[i] << endl;
-	list<Alignment* > plist;
-	list<int> &p = allPaths[i].path;
-	for (list<int>::iterator it = p.begin(); it != p.end(); ++it)
-	    plist.push_back(aliG2[*it].a);
-	va = mergeAliList(plist, allPaths[i].sig);
-	if (va && va->aliLen >= minGeneLen){ // discard alignments that are too short to hold at least a short gene
-	    cout << *va << endl;
-	    alignment.push_back(va);
-	} else 
-	    cout << "deleted (too short)" << endl;
+	if (allPaths[i].path.size() > 0){
+	    cout << "alignment from path " << allPaths[i] << endl;
+	    list<Alignment* > plist;
+	    list<int> &p = allPaths[i].path;
+	    for (list<int>::iterator it = p.begin(); it != p.end(); ++it)
+		plist.push_back(aliG2[*it].a);
+	    va = mergeAliList(plist, allPaths[i].sig);
+	    if (va && va->aliLen >= minGeneLen){ // discard alignments that are too short to hold at least a short gene
+		cout << *va << endl;
+		alignment.push_back(va);
+	    } else 
+		cout << "deleted (too short)" << endl;
+	}
     }
     int sizeBeforeCapping = alignment.size();
     capAliSize(alignment, Properties::getIntProperty( "maxDNAPieceSize" ));
@@ -545,22 +546,6 @@ void GenomicMSA::findGeneRanges(){
 	    delete a;
     }
 }
-/*
-void GenomicMSA::chunkyFyPaths(vector<AliPath> &allPaths, AlignmentGraph &g){
-    int maxDNAPieceSize = Properties::getIntProperty( "maxDNAPieceSize" );
-    int i, m = allPaths.size();
-    for (i=0; i<m; i++){
-	AliPath &p = allPaths[i];
-	
-    }
-}
-int AliPath::maxSeqRange(AlignmentGraph &g){
-    int n = path.size();
-    if (n == 0)
-	return 0;
-    int max = 0;
-    
-    }*/
 
 bool GenomicMSA::prunePaths(vector<AliPath> &allPaths, AlignmentGraph &g){
     bool changed = false;
@@ -591,7 +576,6 @@ bool GenomicMSA::prunePaths(vector<AliPath> &allPaths, AlignmentGraph &g){
  * p:            a4 a2 a9 a3 a5 a6 a0
  * other:        a1 a4 a2 a9 a7 a8 a0
  * afterwards p: a3 a5 a6 a0
- * TODO: remove p competely if the additionally aligned sequence ranges are not negligible wrt to the alignment length
  * p may become the empty path. Iterators can be reverse_iterators in which case the fragment is removed from the right end.
  */
 template< class Iterator >
@@ -629,7 +613,7 @@ bool GenomicMSA::prunePathWrt2Other(AliPath &p, Iterator pstart, Iterator pend,
 
 /*
  * Remove path p competely if the additionally aligned sequence ranges are not negligible wrt to the alignment length
- * p may become the empty path. Iterators can be reverse_iterators in which case the fragment is removed from the right end.
+ * p may become the empty path.
  */
 bool GenomicMSA::deletePathWrt2Other(AliPath &p, AliPath &other, AlignmentGraph &g){
     bool superfluous = false;
@@ -654,10 +638,20 @@ bool GenomicMSA::deletePathWrt2Other(AliPath &p, AliPath &other, AlignmentGraph 
 	}
     }
     set_intersection(ranges[0].begin(), ranges[0].end(), ranges[1].begin(), ranges[1].end(), std::inserter( ranges[2], ranges[2].begin()));
-    //    for (int i=0; i<3; i++)
-    //	cout << "set " << i << " has size " << ranges[i].size() << endl;
-    // check whether p has too few additional aligned regions that are not shared by 'other'
-    if (ranges[0].size() < 1.1 * ranges[2].size()){
+    int weights[3] = {0,0,0}; // weight the sets with the sequence range sizes
+    for (int i=0; i<3; i++){
+	for (set<string>::iterator it = ranges[i].begin(); it != ranges[i].end(); ++it){
+	    string s = *it;
+	    int pos1 = s.find(" ");
+	    int pos2 = s.find("-", pos1);
+	    int start =  atoi(s.substr(pos1+1, pos2-pos1-1).c_str());
+	    int stop =  atoi(s.substr(pos2+1).c_str());
+	    weights[i] += stop - start + 1;
+	}
+	// cout << "set " << i << " has size " << ranges[i].size() << " and weight " << weights[i] << endl;
+    }
+    // check whether p has too few or short additional aligned regions that are not shared by 'other'
+    if (weights[0] < 1.1 * weights[2]){
 	superfluous = true;
 	// cout << p << endl << "is superfluous because of" << endl << other << endl;
     }
