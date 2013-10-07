@@ -67,6 +67,11 @@ public:
     void printOrthoExons(RandSeqAccess *rsa);
     void computeOmegas(vector<AnnoSequence> const &seqRanges);
 
+    // calculate a columnwise conservation score and output it (for each species) in wiggle format
+    void printConsScore(vector<AnnoSequence> const &seqRanges);
+    double calcColumnScore(int a, int c, int t, int g); // input: number of a,c,t and g's in one alignment column 
+    void consToWig(vector<double> &consScore);
+
     // static functions
     static void setTree(PhyloTree *t){tree = t;}
     static void setCodonEvo(CodonEvo *c){ codonevo = c; }

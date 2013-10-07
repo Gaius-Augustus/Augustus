@@ -584,6 +584,80 @@ void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
     }
 }
 
+// calculate a columnwise conservation score and output it (for each species) in wiggle format
+void GeneMSA::printConsScore(vector<AnnoSequence> const &seqRanges){
+
+    vector<vector<fragment>::const_iterator > fragsit(numSpecies());
+    vector<size_t> seqPos(numSpecies(),0); 
+    for (size_t s=0; s < numSpecies(); s++){
+	if (alignment->rows[s])
+	    fragsit[s] = alignment->rows[s]->frags.begin();
+    }
+    vector<double> consScore; // vector of conservation scores for each position in the alignment
+    for(size_t i = 0; i < alignment->aliLen; i++){
+	int a=0,c=0,t=0,g=0; // number of bases of each type in one alignment column
+	for(size_t j = 0; j < alignment->rows.size(); j++){
+	    AlignmentRow *row = alignment->rows[j];
+	    if(row && fragsit[j] != row->frags.end()){
+		vector<fragment>::const_iterator it = fragsit[j];
+		if( i >= it->aliPos && i <= it->aliPos + it->len - 1){ // character in i-th column, j-th row is not a gap
+		    const char* base = seqRanges[j].sequence + it->chrPos - offsets[j] + seqPos[j];
+		    switch(*base){
+		    case 'a': a++; break;
+		    case 'c': c++; break;
+		    case 't': t++; break;
+		    case 'g': g++; break;
+		    }
+		    seqPos[j]++;
+		}
+		if(i == it->aliPos + it->len - 1){ // reached the end of the current fragment, move iterator to next fragment
+		    ++fragsit[j];
+		    seqPos[j]=0;
+		}
+	    }
+	}
+	consScore.push_back(calcColumnScore(a,c,t,g));
+    }
+    consToWig(consScore);
+}
+
+// calculates a conservation score for a single alignment column
+// for now, the score is the frequency of the most frequent nucleotide type divided by the total number of species
+double GeneMSA::calcColumnScore(int a, int c, int t, int g){ // input: number of a,c,t and g's in one alignment column
+    int N = numSpecies();
+    double max = 0.0;
+    max = a > c ? a : c;
+    max = max > t ? max : t;
+    max = max > g ? max : g;
+    return max/N;
+}
+
+// print conservation score to wiggle file
+void GeneMSA::consToWig(vector<double> &consScore){
+
+    for (size_t i = 0; i < alignment->rows.size(); i++){
+	AlignmentRow *row = alignment->rows[i];
+	if(row){
+	    string speciesname=rsa->getSname(i);
+	    ofstream outfile(speciesname + ".wig",fstream::app);
+	    if (outfile.is_open()){
+		outfile<<"track type=wiggle_0 name=\""<<geneRangeID-1<<"\" description=\""<<alignment->getSignature()<<"\""<<endl;
+		outfile<<"variableStep chrom="<<row->seqID<<endl;
+		for (vector<fragment>::const_iterator it = row->frags.begin(); it != row->frags.end(); ++it){
+		    int aliPos=it->aliPos;
+		    int chrPos=it->chrPos;
+		    while(chrPos < it->chrPos + it->len){
+			outfile<<chrPos+1<<" "<<consScore[aliPos]<<endl;
+			aliPos++;
+			chrPos++;
+		    }
+		}
+	    }
+	    outfile.close();
+	}
+    }
+}
+
 void GeneMSA::closeOutputFiles(){
     for (int i=0; i<tree->numSpecies(); i++) {
         if (exonCands_outfiles[i] && exonCands_outfiles[i]->is_open()) {

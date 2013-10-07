@@ -69,6 +69,10 @@ void CompGenePred::start(){
     } catch (...) {
 	maxIterations = 100;
     }
+    if(maxIterations <= 0){
+	cerr << "Warning: /CompPred/maxIterations was set to "<<maxIterations<<". At least one iteration must be made." << endl;
+	maxIterations =1;
+    }
     double dd_factor; // parameter of the dual decomposition step size function 
     try {
 	dd_factor = Properties::getdoubleProperty("/CompPred/dd_factor");
@@ -159,18 +163,18 @@ void CompGenePred::start(){
 		    
 		    // this is needed for IntronModel::dssProb in GenomicMSA::createExonCands
                     namgene.getPrepareModels(as->sequence, as->length); 
-
+		    
 		    // identifies exon candidates in the sequence for species s
                     geneRange->createExonCands(s, as->sequence);
                     list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
-
+		    
                     namgene.doViterbiPiecewise(sfc, as, bothstrands); // sampling
                     list<Gene> *alltranscripts = namgene.getAllTranscripts();
                     if (alltranscripts){
                         cout << "building Graph for " << speciesNames[s] << endl;
-                        /* build datastructure for graph representation
-                         * @stlist : list of all sampled states
-                         */
+			/* build datastructure for graph representation
+			 * @stlist : list of all sampled states
+			 */ 
                         list<Status> stlist;
                         if(!alltranscripts->empty()){
                             buildStatusList(alltranscripts, false, stlist);
@@ -179,10 +183,10 @@ void CompGenePred::start(){
                         orthograph.graphs[s] = new SpeciesGraph(&stlist, as, additionalExons, speciesNames[s], 
 								geneRange->getStrand(s), sampledExons[s]);
                         orthograph.graphs[s]->buildGraph();
-
+			
 			//save pointers to transcripts and delete them after gene list is build
-                        orthograph.ptrs_to_alltranscripts[s] = alltranscripts; 
-                    }
+                        orthograph.ptrs_to_alltranscripts[s] = alltranscripts;
+		    }
                 }
             }
         }
@@ -191,6 +195,7 @@ void CompGenePred::start(){
 	geneRange->printExonCands();
 	geneRange->createOrthoExons();
 	geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
+	geneRange->printConsScore(seqRanges);
 	geneRange->printOrthoExons(rsa);
 	orthograph.all_orthoex = geneRange->getOrthoExons();
 

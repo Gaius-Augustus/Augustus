@@ -504,7 +504,7 @@ void OrthoGraph::addScoreSelectivePressure(){
     try {
 	not_oe_penalty = Properties::getdoubleProperty("/CompPred/not_oe_penalty");
     } catch (...) {
-	not_oe_penalty = -20;
+	not_oe_penalty = 0;
     }
 
     // penalize all additional exon candidates and sampled exon candidates with a rel. sampling frequency < 0.7
@@ -611,25 +611,11 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
 	if(isConsistent || abs(best_dual - best_primal) < 1e-8)
 	    break;
     }
-    double error = best_dual - best_primal;
-    // print primal and dual values
-    /*if(v_duals.size() > 1){ 
-	ofstream outfile("gr_" + itoa(gr_ID) + ".txt");
-	if(!outfile.is_open())
-	    throw ProjectError("could not open file gr_" + itoa(gr_ID) + ".txt");
-	streambuf *coutbuf = cout.rdbuf(); //save old buf
-	cout.rdbuf(outfile.rdbuf()); //redirect std::cout to species file
-	printSummary();
-	cout.precision(10);
-	cout<<"error\t"<<error<<"\n\niter\tdual\tprimal"<<endl;
-	for(int pos = 0; pos < v_duals.size(); pos++){
-	    cout<<pos<<"\t"<<v_duals[pos]<<"\t"<<v_primals[pos]<<endl;
-	}
-	cout.rdbuf(coutbuf); //reset to standard output again
-	outfile.close();
-	}*/
-    cout<<"error: "<<error<<endl;
-    return error;
+    double initial_gap = v_duals.front() - v_primals.front();
+    double best_gap = abs(best_dual - best_primal);
+    double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
+    cout<<"dual decomposition reduced initial duality gap of "<<initial_gap<<" to "<<best_gap<<" (to "<<perc_gap<<"%)"<<endl;
+    return best_gap;
 
 }
 
