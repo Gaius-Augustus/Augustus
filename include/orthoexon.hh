@@ -24,7 +24,7 @@ class Node;
 
 class OrthoExon {
 public:
-    OrthoExon();
+    OrthoExon(int_fast64_t k);
     ~OrthoExon() {};
     //copy with permutation of vector entries
     OrthoExon(const OrthoExon& other, const std::vector<size_t> &permutation);
@@ -32,8 +32,12 @@ public:
     int numExons() const;
     double getOmega() const { return omega; }
     double getSubst() const { return subst; }
+    double getConsScore() const {return cons;}
+    int getAliStart() const {return (key>>22);} // start position of HECT in alignment
+    int getAliLen() const {int aliStart=getAliStart(); int n=key-(aliStart<<22); return (n>>7);} // length of HECT
     void setOmega(double o){omega=o;}
     void setSubst(int s){ subst = s;}
+    void setConsScore(double c){cons =c;}
 
     vector<ExonCandidate*> orthoex;
     vector<Node*> orthonode; //corresponding nodes in the graph
@@ -45,8 +49,10 @@ public:
     int ID;
     
 private:
+    int_fast64_t key; // key encodes all of: aliStart aliEnd type lenMod3
     double omega;
     int subst;
+    double cons; // conservation score
 };
 
 /*
@@ -55,8 +61,9 @@ private:
  *       - substract offset; on reverse strand, start/end positions have to be made relative to the
  *         reverse complement
  */
-std::list<OrthoExon> readOrthoExons(std::string filename); //reads list of orthologous exons from a file
-void writeOrthoExons(const std::list<OrthoExon> &all_orthoex);
+// old code:
+//std::list<OrthoExon> readOrthoExons(std::string filename); //reads list of orthologous exons from a file
+//void writeOrthoExons(const std::list<OrthoExon> &all_orthoex);
 
 
 std::ostream& operator<<(std::ostream& ostrm, const OrthoExon &ex_tuple);

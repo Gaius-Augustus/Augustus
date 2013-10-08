@@ -235,7 +235,7 @@ void GeneMSA::createOrthoExons(float consThres, int minAvLen) {
     for (aec = alignedECs.begin(); aec != alignedECs.end(); ++aec){
 	if (aec->second.size() >= minEC){
 	    float avLen = 0.0;
-	    OrthoExon oe;
+	    OrthoExon oe(aec->first);
 	    oe.orthoex.resize(k, NULL);
 	    for (list<pair<int,ExonCandidate*> >::iterator it = aec->second.begin(); it != aec->second.end(); ++it){
 		int s = it->first;
@@ -416,6 +416,12 @@ void GeneMSA::printSingleOrthoExon(const OrthoExon &oe, bool files) {
 		    cout << "|" << oe.getSubst();
 		else
 		    cout << ";subst=" << oe.getSubst();
+	    }
+	    if (oe.getConsScore() >= 0.0){ // conservation score
+		if (GBrowseStyle)
+		    cout << "|" << oe.getConsScore();
+		else
+		    cout << ";cons=" << oe.getConsScore();
 	    }
 	    cout << endl;
         }
@@ -618,6 +624,20 @@ void GeneMSA::printConsScore(vector<AnnoSequence> const &seqRanges){
 	}
 	consScore.push_back(calcColumnScore(a,c,t,g));
     }
+    // calcluate conservation score for each HECT
+    for (list<OrthoExon>::iterator oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
+	double oeConsScore=0.0;
+	int oeAliStart=oe->getAliStart();
+	int oeAliEnd=oeAliStart + oe->getAliLen();
+	for(int pos = oeAliStart; pos <= oeAliEnd; pos++){
+	    if (pos > alignment->aliLen || pos < 0)
+		throw ProjectError("Internal error in printConsScore: alignment positions of HECTs and geneRanges are inconsistent.");
+	    oeConsScore+=consScore[pos];
+	}
+	oeConsScore/=(oeAliEnd-oeAliStart+1); // average over all alignment columns within a HECT
+	oe->setConsScore(oeConsScore);
+    }
+    // output for each geneRange and each species a conservation track in wiggle format
     consToWig(consScore);
 }
 

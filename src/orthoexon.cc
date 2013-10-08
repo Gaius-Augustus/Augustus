@@ -16,7 +16,7 @@
 #include <iostream>
 
 
-OrthoExon::OrthoExon() : omega(-1.0) , subst(-1) {
+OrthoExon::OrthoExon(int_fast64_t k) : key(k), omega(-1.0) , subst(-1), cons(-1) {
     orthoex.resize(OrthoGraph::numSpecies);
     orthonode.resize(OrthoGraph::numSpecies);
     weights.resize(OrthoGraph::numSpecies,0);
@@ -24,8 +24,10 @@ OrthoExon::OrthoExon() : omega(-1.0) , subst(-1) {
 }
 //copy with permutation of vector entries
 OrthoExon::OrthoExon(const OrthoExon& other, const vector<size_t> &permutation){
+    key = other.key;
     omega = other.omega;
     subst = other.subst;
+    cons = other.cons;
     orthoex.resize(other.orthoex.size());
     for(size_t pos = 0; pos < orthoex.size(); pos++){
 	if (other.orthoex[pos]){
@@ -51,8 +53,8 @@ int OrthoExon::numExons() const{
 	    k++;
     return k;
 }
-
-list<OrthoExon> readOrthoExons(string filename){
+// old code:
+/*list<OrthoExon> readOrthoExons(string filename){
 
     list<OrthoExon> all_orthoex;
 
@@ -115,7 +117,7 @@ void writeOrthoExons(const list<OrthoExon> &all_orthoex){
 	cout << *it << endl;
     }
 }
-
+*/
 ostream& operator<<(ostream& ostrm, const OrthoExon &oe){
     ostrm << stateTypeIdentifiers[oe.getStateType()];
     for (int s = 0; s < oe.orthoex.size(); s++){
