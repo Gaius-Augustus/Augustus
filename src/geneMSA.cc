@@ -250,6 +250,7 @@ void GeneMSA::createOrthoExons(float consThres, int minAvLen) {
 	    avLen /= aec->second.size(); // compute average length of exon candidates in oe
 	    if (avLen >= minAvLen){
 		oe.ID = orthoExonID;
+		oe.setDiversity(tree->sumBranches(oe));
 		orthoExonID++;
 		numOE++;
 		orthoExonsList.push_back(oe);
@@ -422,6 +423,12 @@ void GeneMSA::printSingleOrthoExon(const OrthoExon &oe, bool files) {
 		    cout << "|" << oe.getConsScore();
 		else
 		    cout << ";cons=" << oe.getConsScore();
+	    }
+	    if (oe.getDiversity() >= 0.0){ // conservation score
+		if (GBrowseStyle)
+		    cout << "|" << oe.getDiversity();
+		else
+		    cout << ";div=" << oe.getDiversity();
 	    }
 	    cout << endl;
         }
@@ -642,14 +649,32 @@ void GeneMSA::printConsScore(vector<AnnoSequence> const &seqRanges){
 }
 
 // calculates a conservation score for a single alignment column
-// for now, the score is the frequency of the most frequent nucleotide type divided by the total number of species
 double GeneMSA::calcColumnScore(int a, int c, int t, int g){ // input: number of a,c,t and g's in one alignment column
     int N = numSpecies();
-    double max = 0.0;
-    max = a > c ? a : c;
-    max = max > t ? max : t;
-    max = max > g ? max : g;
-    return max/N;
+    /* frequency of the most frequent nucleotide type divided by the total number of species
+     *double max = 0.0;
+     *max = a > c ? a : c;
+     *max = max > t ? max : t;
+     *max = max > g ? max : g;
+     *return max/N;
+     */
+    // entropy (base 4) weighted by the percentage of rows present, scores range from 0 (non-conserved) to 1 (conserved) 
+    double sum=a+c+g+t;
+    double probA=a/sum;
+    double probC=c/sum;
+    double probG=g/sum;
+    double probT=t/sum;
+    double entropy=0.0;
+    if(probA > 0.0 && probA < 1.0)
+	entropy-=(probA*log2(probA));
+    if(probC > 0.0 && probC < 1.0)
+	entropy-=(probC*log2(probC));
+    if(probT > 0.0 && probT < 1.0)
+	entropy-=(probT*log2(probT));
+    if(probG > 0.0 && probG < 1.0)
+	entropy-=(probG*log2(probG));
+    return (1-(0.5*entropy))*(sum/N);
+
 }
 
 // print conservation score to wiggle file

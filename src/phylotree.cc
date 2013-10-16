@@ -16,6 +16,7 @@
 #include "contTimeMC.hh"
 #include "orthoexon.hh"
 #include "graph.hh"
+#include "randseqaccess.hh"
 #include <queue>
 #include <cmath>
 #include <iostream>
@@ -24,6 +25,8 @@
 #ifdef COMPGENEPRED
 #include "parser/parser.h"
 #endif
+
+RandSeqAccess *PhyloTree::rsa = NULL;
 
 void Treenode::printNode() const {
     cout<<"Species: "<<this->species<<" Distance: "<<this->distance;
@@ -60,15 +63,6 @@ void PhyloTree::printTree() const {
     for(list<Treenode*>::const_iterator node = this->treenodes.begin(); node != this->treenodes.end(); node++){
 	(*node)->printNode();
     }
-}
-
-int PhyloTree::findIndex(string name) const {
-    for(size_t pos=0; pos < species.size(); pos++){
-	if (species.at(pos) == name){
-	    return pos;
-	}
-    }
-    return species.size();
 }
 
 PhyloTree::PhyloTree(string filename){
@@ -239,7 +233,8 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
     for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if((*node)->isLeaf()){
 	    // initialization
-	    int c = tuple.at(findIndex((*node)->getSpecies()));
+	    int pos = rsa->getIdx((*node)->getSpecies());
+	    int c = tuple[pos];
 	    if(c >= states || c < 0){    
 		(*node)->resizeTable(states,1);  // in the case of unknown characters, we sum over all possibilities
 	    }
@@ -371,7 +366,7 @@ double PhyloTree::MAP(vector<int> &labels, vector<double> &weights, Evo *evo, do
     for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if((*node)->isLeaf()){
 	    // initialization
-	    int pos = findIndex((*node)->getSpecies());
+	    int pos = rsa->getIdx((*node)->getSpecies());
 	    int c = labels[pos];
 	    if(c >= states || c < 0){ //in the case that the exon does not exist, we remove the node
 		Treenode* tmp=*node;
@@ -453,7 +448,7 @@ void PhyloTree::MAPbacktrack(vector<int> &labels, Treenode* root, int bestAssign
 	Treenode *node=p.first;
 	bestAssign=p.second;
 	if(node->isLeaf()){
-	    int pos = findIndex(node->getSpecies());
+	    int pos = rsa->getIdx(node->getSpecies());
 	    if(fixLeafLabels && bestAssign != labels[pos])
 		throw ProjectError("in MAPbacktrack: fixLeafNodes is one but different node labels");
 	    labels[pos]=bestAssign;
@@ -464,4 +459,59 @@ void PhyloTree::MAPbacktrack(vector<int> &labels, Treenode* root, int bestAssign
 	    }
 	}
     }
+}
+
+// calculate diversity (sum of branch lengths) of the subtree induced by a HECT
+double PhyloTree::sumBranches(OrthoExon &oe){
+
+    for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
+        if((*node)->isLeaf()){
+            // assign leaf nodes to 1 if corresponding EC exists, otherwise to 0                                                                          
+	    int pos = rsa->getIdx((*node)->getSpecies());
+            if(oe.exonExists(pos)){
+                (*node)->label = 1;
+            }
+            else{
+                (*node)->label = 0; 
+            }
+        }
+        else{
+            // assign interior nodes to 1 if at least one of its children is assigned to 1, otherwise to 0
+            (*node)->label = 0;
+            for(list<Treenode*>::iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
+                if((*it)->label){
+                    (*node)->label = 1;
+                    break;
+                }
+            }
+        }
+    }
+    //sum all branch lengths connecting two nodes that are both assigned to 1 (starting at the root node of the subtree)
+    double sum = 0.0;
+    Treenode* root = treenodes.back();
+    if(root->label == 0) // empty subtree
+        return sum;
+    bool foundSubtreeRoot = false;
+    list< Treenode* > stack;
+    stack.push_front(root);
+    while(!stack.empty()){
+        Treenode* node = stack.front();
+        stack.pop_front();
+        if(!node->isLeaf()){
+	    double sumChild=0.0;
+	    int numChild=0; // number of children of a node in the subtree
+            for(list<Treenode*>::iterator it = node->children.begin(); it != node->children.end(); it++){
+                if((*it)->label == 1){
+                    sumChild += (*it)->getDist();
+		    numChild++;
+                    stack.push_front((*it));
+                }
+            }
+	    if(numChild>=2)
+		foundSubtreeRoot=true; 
+	    if(foundSubtreeRoot)
+		sum+=sumChild;
+        }
+    }
+    return sum;
 }

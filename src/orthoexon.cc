@@ -16,27 +16,11 @@
 #include <iostream>
 
 
-OrthoExon::OrthoExon(int_fast64_t k) : key(k), omega(-1.0) , subst(-1), cons(-1) {
+OrthoExon::OrthoExon(int_fast64_t k) : key(k), omega(-1.0) , subst(-1), cons(-1.0), diversity(-1.0) {
     orthoex.resize(OrthoGraph::numSpecies);
     orthonode.resize(OrthoGraph::numSpecies);
     weights.resize(OrthoGraph::numSpecies,0);
     labels.resize(OrthoGraph::numSpecies);
-}
-//copy with permutation of vector entries
-OrthoExon::OrthoExon(const OrthoExon& other, const vector<size_t> &permutation){
-    key = other.key;
-    omega = other.omega;
-    subst = other.subst;
-    cons = other.cons;
-    orthoex.resize(other.orthoex.size());
-    for(size_t pos = 0; pos < orthoex.size(); pos++){
-	if (other.orthoex[pos]){
-	    orthoex[permutation[pos]] = other.orthoex[pos];
-	    orthonode[permutation[pos]] = other.orthonode[pos];
-	    weights[permutation[pos]] = other.weights[pos];
-	    labels[permutation[pos]] = other.labels[pos];
-	}
-    }
 }
 
 StateType OrthoExon::getStateType() const{
@@ -53,6 +37,15 @@ int OrthoExon::numExons() const{
 	    k++;
     return k;
 }
+
+bool OrthoExon::exonExists(int pos) const{
+    if(pos >= orthoex.size() || pos < 0)
+	throw ProjectError("Internal error in OrthoExon::exonExists: out of bound access");
+    if(orthoex[pos])
+	return true;
+    return false;	    
+}
+
 // old code:
 /*list<OrthoExon> readOrthoExons(string filename){
 

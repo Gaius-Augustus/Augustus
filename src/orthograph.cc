@@ -689,3 +689,24 @@ void OrthoGraph::printSummary(){
 	cout<<it->first<<"\t"<<it->second<<endl;
     }
 }
+
+void OrthoGraph::linkToOEs(list<OrthoExon> &oes){
+
+    all_orthoex = oes;
+    for(list<OrthoExon>::iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
+	for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){ 
+	    if(it->orthoex[pos]==NULL){
+		it->labels[pos]=2;
+	    }
+	    else{
+		if(!graphs[pos])
+		    throw ProjectError("Internal error OrthoGraph::linkToOEs: graph does not exist.");
+		Node* node = graphs[pos]->getNode(it->orthoex[pos]);
+		if(!node){
+		    throw ProjectError("Internal error OrthoGraph::linkToOEs: EC has no corrpesonding node in OrthoGraph.");
+		}
+		it->orthonode[pos]=node;
+	    }
+	}
+    }  
+}

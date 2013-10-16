@@ -37,7 +37,7 @@ public:
     vector< list<Gene> *> ptrs_to_alltranscripts; //stores pointers to alltranscripts until they can be deleted (destructor of OrthoGraph)
 
     bool print_change; // only temporary flag
-
+    void linkToOEs(list<OrthoExon> &oes); // link ECs in HECTS to nodes in orthograph 
     void addScoreSelectivePressure(); //const. reward for orthologous exons and const. penalty for non-orthologous exons. Only temporary until PAML is integrated.
 
     /*

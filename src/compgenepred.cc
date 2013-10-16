@@ -119,6 +119,7 @@ void CompGenePred::start(){
     vector<string> speciesNames;
     OrthoGraph::tree->getSpeciesNames(speciesNames);
     rsa->setSpeciesNames(speciesNames);
+    PhyloTree::setRSA(rsa);
     if (0) {
 	vector<string> seqtuple(5,"");
 	seqtuple[0] = "aaaaaaaaaaaa";
@@ -166,17 +167,16 @@ void CompGenePred::start(){
 		    
 		    // identifies exon candidates in the sequence for species s
                     geneRange->createExonCands(s, as->sequence);
-                    list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
+		    list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
 		    
                     namgene.doViterbiPiecewise(sfc, as, bothstrands); // sampling
                     list<Gene> *alltranscripts = namgene.getAllTranscripts();
                     if (alltranscripts){
                         cout << "building Graph for " << speciesNames[s] << endl;
-			/* build datastructure for graph representation
-			 * @stlist : list of all sampled states
-			 */ 
-                        list<Status> stlist;
-                        if(!alltranscripts->empty()){
+			// build datastructure for graph representation
+			// @stlist : list of all sampled states
+			list<Status> stlist;
+			if(!alltranscripts->empty()){
                             buildStatusList(alltranscripts, false, stlist);
                         }
                         // build graph
@@ -190,27 +190,15 @@ void CompGenePred::start(){
                 }
             }
         }
-	
 	geneRange->printGeneRanges();
 	geneRange->printExonCands();
 	geneRange->createOrthoExons();
 	geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
 	geneRange->printConsScore(seqRanges);
 	geneRange->printOrthoExons(rsa);
-	orthograph.all_orthoex = geneRange->getOrthoExons();
 
-	for(list<OrthoExon>::iterator hects = orthograph.all_orthoex.begin(); hects != orthograph.all_orthoex.end();
-	    hects++){ //TODO: move this to createOrthoExons()
-	    for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){
-		if(hects->orthoex[pos]==NULL){
-		    hects->labels[pos]=2;
-		}
-		else{
-		    Node* node = orthograph.graphs[pos]->getNode(hects->orthoex[pos]);
-		    hects->orthonode[pos]=node;
-		}
-	    }
-	}
+	list<OrthoExon> hects = geneRange->getOrthoExons();
+	orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph
 	 
 	orthograph.outputGenes(baseGenes,base_geneid);
 	//add score for selective pressure of orthoexons

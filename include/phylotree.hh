@@ -21,6 +21,7 @@ class PhyloTree;
 class Evo;
 class ExonEvo;
 class OrthoExon;
+class RandSeqAccess;
 
 class Treenode{
 
@@ -30,6 +31,7 @@ private:
     double distance;                 // branch length to parent
     Treenode *parent;                // parent node
     std::list<Treenode*> children;   // child nodes 
+    bool label;
 
     /*
      * tables needed for storing recursion variables
@@ -52,7 +54,8 @@ public:
     Treenode(std::string s="i", double t=0.0, Treenode *p=NULL):
 	species(s),
 	distance(t),
-	parent(p)
+	parent(p),
+	label(0)
     {}
     ~Treenode(){}
     void addDistance(double dist){this->distance=dist;}
@@ -80,6 +83,7 @@ class PhyloTree{
 private:
     std::list<Treenode*> treenodes; // leaf to root order!
     std::vector<std::string> species;  //vector of species names
+    static RandSeqAccess *rsa;
 public:
     PhyloTree(std::string filename);
     //create star-like tree with unit branch length b from a set of species identifiers
@@ -91,11 +95,11 @@ public:
     /*
      * general look-up functions
      */
+    static void setRSA(RandSeqAccess *r){rsa=r;}
     void getBranchLengths(std::vector<double> &branchset) const;
     void getSpeciesNames(std::vector<std::string> &speciesnames) const {speciesnames=this->species;}
     int numSpecies() const {return species.size();}
     Treenode *getLeaf(std::string species) const;
-    int findIndex(std::string name) const;
     void printTree() const;
     void printNewick(std::string filename) const; // output tree in Newick format
     void recursiveNWK(std::ofstream &file, Treenode *node) const; // subroutine of printNewick()
@@ -126,6 +130,9 @@ public:
      */
     double MAP(std::vector<int> &labels, std::vector<double> &weights, Evo *evo, double k=1.0, bool fixLeafLabels=false);
     void MAPbacktrack(std::vector<int> &labels, Treenode* root, int bestAssign, bool fixLeafLabels);
+
+    // calculate diversity (sum of branch lengths) of the subtree induced by a HECT
+    double sumBranches(OrthoExon &oe);
 };
 
 #endif

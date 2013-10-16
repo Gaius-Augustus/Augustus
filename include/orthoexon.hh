@@ -26,18 +26,19 @@ class OrthoExon {
 public:
     OrthoExon(int_fast64_t k);
     ~OrthoExon() {};
-    //copy with permutation of vector entries
-    OrthoExon(const OrthoExon& other, const std::vector<size_t> &permutation);
     StateType getStateType() const; // all exon candidates agree in type
     int numExons() const;
     double getOmega() const { return omega; }
     double getSubst() const { return subst; }
     double getConsScore() const {return cons;}
+    double getDiversity() const {return diversity;}
     int getAliStart() const {return (key>>22);} // start position of HECT in alignment
     int getAliLen() const {int aliStart=getAliStart(); int n=key-(aliStart<<22); return (n>>7);} // length of HECT
+    bool exonExists(int pos) const; // returns true if OE has a candidate exon at position pos
     void setOmega(double o){omega=o;}
-    void setSubst(int s){ subst = s;}
-    void setConsScore(double c){cons =c;}
+    void setSubst(int s){ subst=s;}
+    void setConsScore(double c){cons=c;}
+    void setDiversity(double d){diversity=d;}
 
     vector<ExonCandidate*> orthoex;
     vector<Node*> orthonode; //corresponding nodes in the graph
@@ -53,6 +54,7 @@ private:
     double omega;
     int subst;
     double cons; // conservation score
+    double diversity; // sum of branch lengths of the subtree induced by the OrthoExon (measure of phylogenetic diversity)
 };
 
 /*
