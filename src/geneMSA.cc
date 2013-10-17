@@ -251,10 +251,63 @@ void GeneMSA::createOrthoExons(float consThres, int minAvLen) {
 	    if (avLen >= minAvLen){
 		oe.ID = orthoExonID;
 		oe.setDiversity(tree->sumBranches(oe));
+		oe.setContainment(0);
 		orthoExonID++;
 		numOE++;
 		orthoExonsList.push_back(oe);
 	    }
+	}
+    }
+    /*
+     * Determine 'containment' for each OE: The average number of extra bases (per species) of the largest OE (y) that includes this OE (x) in frame.
+     * Idea: A large containment is a sign that OE is actually not true.
+     * species
+     *  1       xxxxxxxxxxxxxxxxxxxxxxxxx           containment = 5
+     *  1     YYyyyyyyyyyyyyyyyyyyyyyyyyyYY
+     *  2       xxxxxxxxxxxxxxxxxxxxxxxxx
+     *  2     YYyyyyyyyyyyyyyyyyyyyyyyyyyYYYY
+     *  3   yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy     
+     *  Containing OE y must have ECs for all species where x has ECs, and may have ECs for additional species.
+     */
+    list<OrthoExon>::iterator oeYit, oeXit, ovlpBeginIt;
+    ovlpBeginIt = orthoExonsList.begin();
+    for (oeYit = orthoExonsList.begin(); oeYit != orthoExonsList.end();	++oeYit){
+	int YaliEnd = oeYit->getAliEnd();
+	int YaliStart = oeYit->getAliStart();
+	while (ovlpBeginIt != orthoExonsList.end() && ovlpBeginIt->getAliStart() < YaliStart)
+	    ++ovlpBeginIt;
+	// X ranges from the first OE with the same start as Y to the last OE with the start before Y's end
+	oeXit = ovlpBeginIt;
+	while (oeXit != orthoExonsList.end() && oeXit->getAliStart() <= YaliEnd){
+	    if (oeXit != oeYit && // same OE would yield a containment of 0 anyways
+		oeXit->getAliEnd() <= YaliEnd // x is contained in y in the alignment
+		&& isOnFStrand(oeXit->getStateType()) == isOnFStrand(oeYit->getStateType())){ // same strand
+		size_t containment = 0;
+		bool contained = true;
+		for (size_t s=0; s < numSpecies() && contained; s++) {
+		    if (oeXit->orthoex[s]) {
+			if (oeYit->orthoex[s]){	
+			    int leftOverhang = oeXit->orthoex[s]->getStart() - oeYit->orthoex[s]->getStart();
+			    int rightOverhang = oeYit->orthoex[s]->getEnd() - oeXit->orthoex[s]->getEnd();
+			    bool frameCompatible = ((oeYit->orthoex[s]->getFirstCodingBase() - oeXit->orthoex[s]->getFirstCodingBase()) % 3 == 0);
+			    cout << leftOverhang << "\t" << rightOverhang << "\t" << frameCompatible << endl;
+			    if (leftOverhang >= 0 && rightOverhang >= 0 && frameCompatible)
+				containment += leftOverhang + rightOverhang;
+			    else 
+				contained = false;	
+			} else {
+			    contained = false;
+			}
+		    }
+		}
+		if (contained) {
+		    // x contains y in above sense
+		    containment /= oeXit->numExons(); // average over species present in x
+		    if (oeXit->getContainment() < containment)
+			oeXit->setContainment(containment);
+		}
+	    }
+	    oeXit++;
 	}
     }
     cout << "Found " << numOE << " ortho exons" << endl;
@@ -424,12 +477,16 @@ void GeneMSA::printSingleOrthoExon(const OrthoExon &oe, bool files) {
 		else
 		    cout << ";cons=" << oe.getConsScore();
 	    }
-	    if (oe.getDiversity() >= 0.0){ // conservation score
+	    if (oe.getDiversity() >= 0.0){ // diversity
 		if (GBrowseStyle)
 		    cout << "|" << oe.getDiversity();
 		else
 		    cout << ";div=" << oe.getDiversity();
 	    }
+	    if (GBrowseStyle)
+		cout << "|" << oe.getContainment();
+	    else
+		cout << ";containment=" << oe.getContainment();
 	    cout << endl;
         }
     }
@@ -567,7 +624,6 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 
 // computes and sets the Omega = dN/dS attribute to all OrthoExons
 void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
-    int subst = 0;
     // Initialize for each species the first fragment froms[s] that 
     // is not completely left of the current OrthoExon.
     // This exploits the fact that both fragments and OrthoExons are sorted
@@ -589,6 +645,7 @@ void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
 	// TODO: scale branch lengths to one substitution per codon per time unit
 	// cout << "OE" << endl;
 	//	printSingleOrthoExon(*oe, false);
+	// int subst = 0;
 	// omega = codonevo->estOmegaOnSeqTuple(rowstrings, tree, subst);
 	//	cout << "omega=" << omega << endl;
 	// oe->setSubst(subst);
@@ -634,8 +691,8 @@ void GeneMSA::printConsScore(vector<AnnoSequence> const &seqRanges){
     // calcluate conservation score for each HECT
     for (list<OrthoExon>::iterator oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
 	double oeConsScore=0.0;
-	int oeAliStart=oe->getAliStart();
-	int oeAliEnd=oeAliStart + oe->getAliLen();
+	int oeAliStart = oe->getAliStart();
+	int oeAliEnd = oeAliStart + oe->getAliLen();
 	for(int pos = oeAliStart; pos <= oeAliEnd; pos++){
 	    if (pos > alignment->aliLen || pos < 0)
 		throw ProjectError("Internal error in printConsScore: alignment positions of HECTs and geneRanges are inconsistent.");

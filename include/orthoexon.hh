@@ -32,13 +32,17 @@ public:
     double getSubst() const { return subst; }
     double getConsScore() const {return cons;}
     double getDiversity() const {return diversity;}
+    size_t getContainment() const {return containment;}
     int getAliStart() const {return (key>>22);} // start position of HECT in alignment
-    int getAliLen() const {int aliStart=getAliStart(); int n=key-(aliStart<<22); return (n>>7);} // length of HECT
+    int getAliLen() const {int aliStart=getAliStart(); int n=key-(aliStart<<22); return (n>>7);} // length of HECT + 1
+    int getAliEnd() const {return getAliStart() + getAliLen();}
     bool exonExists(int pos) const; // returns true if OE has a candidate exon at position pos
     void setOmega(double o){omega=o;}
     void setSubst(int s){ subst=s;}
     void setConsScore(double c){cons=c;}
     void setDiversity(double d){diversity=d;}
+    void setContainment(int c) { containment = c; }
+
 
     vector<ExonCandidate*> orthoex;
     vector<Node*> orthonode; //corresponding nodes in the graph
@@ -55,6 +59,7 @@ private:
     int subst;
     double cons; // conservation score
     double diversity; // sum of branch lengths of the subtree induced by the OrthoExon (measure of phylogenetic diversity)
+    size_t containment; // how many bases overhang on average has the largest OrthoExon that includes this one in the same frame
 };
 
 /*
