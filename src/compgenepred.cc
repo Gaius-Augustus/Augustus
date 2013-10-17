@@ -49,6 +49,7 @@ void CompGenePred::start(){
     OrthoGraph::tree = &tree;
     GeneMSA::setTree(&tree);
     OrthoGraph::numSpecies = OrthoGraph::tree->numSpecies();
+    Boolean noprediction = false;
 
 #ifdef DEBUG
     cout << "-------------------------------\nparameters phylogenetic model\n-------------------------------" << endl;
@@ -79,6 +80,9 @@ void CompGenePred::start(){
     } catch (...) {
 	dd_factor = 15;
     }
+    try {
+	noprediction = Properties::getBoolProperty("noprediction");
+    } catch (...) {}
 
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(".base"); // equivalent to MEA prediction
@@ -168,9 +172,11 @@ void CompGenePred::start(){
 		    // identifies exon candidates in the sequence for species s
                     geneRange->createExonCands(s, as->sequence);
 		    list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
-		    
-                    namgene.doViterbiPiecewise(sfc, as, bothstrands); // sampling
-                    list<Gene> *alltranscripts = namgene.getAllTranscripts();
+		    list<Gene> *alltranscripts = NULL;
+		    if (!noprediction){
+			namgene.doViterbiPiecewise(sfc, as, bothstrands); // sampling
+			alltranscripts = namgene.getAllTranscripts();
+		    }
                     if (alltranscripts){
                         cout << "building Graph for " << speciesNames[s] << endl;
 			// build datastructure for graph representation
@@ -197,27 +203,29 @@ void CompGenePred::start(){
 	geneRange->printConsScore(seqRanges);
 	geneRange->printOrthoExons(rsa);
 
-	list<OrthoExon> hects = geneRange->getOrthoExons();
-	orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph
+	if (!noprediction){
+	    list<OrthoExon> hects = geneRange->getOrthoExons();
+	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph
 	 
-	orthograph.outputGenes(baseGenes,base_geneid);
-	//add score for selective pressure of orthoexons
-	orthograph.addScoreSelectivePressure();
-	//determine initial path
-	orthograph.globalPathSearch();
-	orthograph.outputGenes(initGenes,init_geneid);
-	  
-	if(!orthograph.all_orthoex.empty()){
-	    if (dualdecomp){ // optimization via dual decomposition
-		vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
-		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factor);
-		orthograph.filterGeneList(genelist,optGenes,opt_geneid);
-	    } else { // optimization by making small changes (moves)
-		orthograph.pruningAlgor(evo);
-		orthograph.printCache();
-		orthograph.optimize(evo);
-		// transfer max weight paths to genes + filter + ouput
-		orthograph.outputGenes(optGenes, opt_geneid);
+	    orthograph.outputGenes(baseGenes,base_geneid);
+	    //add score for selective pressure of orthoexons
+	    orthograph.addScoreSelectivePressure();
+	    //determine initial path
+	    orthograph.globalPathSearch();
+	    orthograph.outputGenes(initGenes,init_geneid);
+	    
+	    if(!orthograph.all_orthoex.empty()){
+		if (dualdecomp){ // optimization via dual decomposition
+		    vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
+		    orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factor);
+		    orthograph.filterGeneList(genelist,optGenes,opt_geneid);
+		} else { // optimization by making small changes (moves)
+		    orthograph.pruningAlgor(evo);
+		    orthograph.printCache();
+		    orthograph.optimize(evo);
+		    // transfer max weight paths to genes + filter + ouput
+		    orthograph.outputGenes(optGenes, opt_geneid);
+		}
 	    }
 	}
 	seqRanges.clear(); // delete sequences
