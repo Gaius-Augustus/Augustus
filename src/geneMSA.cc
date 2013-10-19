@@ -290,7 +290,6 @@ void GeneMSA::createOrthoExons(float consThres, int minAvLen) {
 			    int leftOverhang = oeXit->orthoex[s]->getStart() - oeYit->orthoex[s]->getStart();
 			    int rightOverhang = oeYit->orthoex[s]->getEnd() - oeXit->orthoex[s]->getEnd();
 			    bool frameCompatible = ((oeYit->orthoex[s]->getFirstCodingBase() - oeXit->orthoex[s]->getFirstCodingBase()) % 3 == 0);
-			    cout << leftOverhang << "\t" << rightOverhang << "\t" << frameCompatible << endl;
 			    if (leftOverhang >= 0 && rightOverhang >= 0 && frameCompatible)
 				containment += leftOverhang + rightOverhang;
 			    else 
