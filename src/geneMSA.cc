@@ -322,7 +322,8 @@ void GeneMSA::openOutputFiles(){
     }
     outputdirectory = expandHome(outputdirectory); //replace "~" by "$HOME"
     
-    exonCands_outfiles.resize(tree->numSpecies());
+    if (Constant::exoncands) // output of exon candidates into a gff file requested
+	exonCands_outfiles.resize(tree->numSpecies());
     orthoExons_outfiles.resize(tree->numSpecies());
     geneRanges_outfiles.resize(tree->numSpecies());
     omega_outfiles.resize(tree->numSpecies());
@@ -330,11 +331,14 @@ void GeneMSA::openOutputFiles(){
     tree->getSpeciesNames(species);
     for (int i=0; i<tree->numSpecies(); i++) {
         string file_exoncand = outputdirectory + "exonCands." + species[i] + ".gff3";
-        ofstream *os_ec = new ofstream(file_exoncand.c_str());
-        if (os_ec!=NULL) {
-            exonCands_outfiles[i]=os_ec;
-            (*os_ec) << PREAMBLE << endl;
-            (*os_ec) << "#\n#-----  exon candidates  -----" << endl << "#" << endl;
+        ofstream *os_ec = NULL;
+	if (Constant::exoncands){
+	    os_ec = new ofstream(file_exoncand.c_str());
+	    if (os_ec) {
+		exonCands_outfiles[i] = os_ec;
+		(*os_ec) << PREAMBLE << endl;
+		(*os_ec) << "#\n#-----  exon candidates  -----" << endl << "#" << endl;
+	    }
         }
         string file_geneRanges = outputdirectory + "geneRanges." + species[i] + ".gff3";
         ofstream *os_gr = new ofstream(file_geneRanges.c_str());
@@ -623,6 +627,7 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 
 // computes and sets the Omega = dN/dS attribute to all OrthoExons
 void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
+    // int subst = 0;
     // Initialize for each species the first fragment froms[s] that 
     // is not completely left of the current OrthoExon.
     // This exploits the fact that both fragments and OrthoExons are sorted

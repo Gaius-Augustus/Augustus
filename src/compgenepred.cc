@@ -197,7 +197,8 @@ void CompGenePred::start(){
             }
         }
 	geneRange->printGeneRanges();
-	geneRange->printExonCands();
+	if (Constant::exoncands) // by default, ECs are not printed
+	    geneRange->printExonCands();
 	geneRange->createOrthoExons();
 	geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
 	geneRange->printConsScore(seqRanges);

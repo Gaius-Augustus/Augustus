@@ -80,8 +80,8 @@ void GenomicMSA::readAlignment(string alignFilename) {
     ifstream Alignmentfile;
     Alignmentfile.open(alignFilename.c_str(), ifstream::in);
     if (!Alignmentfile) {
-        cerr << "Could not find the alignment file " << alignFilename << "." << endl;
-        throw PropertiesError( "GenomicMSA::readAlignment: Could not open this file!" );
+	string errmsg = "Could not open the alignment file " + alignFilename + ".";
+        throw PropertiesError(errmsg);
     }
 
     while (!Alignmentfile.eof()) {

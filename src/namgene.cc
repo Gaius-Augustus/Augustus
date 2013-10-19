@@ -370,11 +370,6 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
    * This probability needs to be multiplied at the appropriate places.
    */
 
-  // temporarily for development
-  if (Constant::exoncand) {
-	  //getExonCandidates(dna, 0, 0); // Alex: please make these command-line parameters like 'exoncand'
-  }
-
 } // end ViterbiAndForward
 
 StatePath* NAMGene::getSampledPath(const char *dna, const char* seqname){

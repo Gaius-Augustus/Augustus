@@ -79,7 +79,7 @@ Boolean Constant::tieIgenicIntron = true;
 Boolean Constant::proteinOutput = true;
 Boolean Constant::codSeqOutput = false;
 Boolean Constant::contentmodels = true;
-Boolean Constant::exoncand = false;
+Boolean Constant::exoncands = false;
 Integer Constant::min_intron_len = 39;
 bool Constant::MultSpeciesMode = 0; // whether we do comparative gene prediction in multiple species
 string Constant::treefile; // file name in which a tree is specified in Newick format
@@ -325,7 +325,7 @@ void Constant::init(){
     Properties::assignProperty("protein", proteinOutput);
     Properties::assignProperty("codingseq", codSeqOutput);
     Properties::assignProperty("contentmodels", contentmodels);
-    Properties::assignProperty("exoncand", exoncand);
+    Properties::assignProperty("exoncands", exoncands);
     Properties::assignProperty("min_intron_len", min_intron_len);
     Properties::assignProperty("treefile", treefile);
     Properties::assignProperty("speciesfilenames", speciesfilenames);
