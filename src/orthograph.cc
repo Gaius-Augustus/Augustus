@@ -494,52 +494,47 @@ void OrthoGraph::printHTMLgBrowse(OrthoExon &ex){
 
 void OrthoGraph::addScoreSelectivePressure(){
 
-    //double oe_score;
-    double not_oe_penalty;
-    /*try {
-	oe_score = Properties::getdoubleProperty("/CompPred/oe_score");
-    } catch (...) {
-	oe_score = 50;
-	}*/
+    double a;
+    double b;
     try {
-	not_oe_penalty = Properties::getdoubleProperty("/CompPred/not_oe_penalty");
+	a = Properties::getdoubleProperty("/CompPred/ec_addend");
     } catch (...) {
-	not_oe_penalty = 0;
+	a = 0;
     }
-
-    // penalize all additional exon candidates and sampled exon candidates with a rel. sampling frequency < 0.7
+    try {
+	b = Properties::getdoubleProperty("/CompPred/ec_factor");
+    } catch (...) {
+	b = 0;
+    }
+    
+    // reward/penalty that each EC receives
     for(size_t pos = 0; pos < numSpecies; pos++){
 	if(graphs[pos]){
 	    for(list<Node*>::iterator node = graphs[pos]->nodelist.begin(); node != graphs[pos]->nodelist.end(); node++){
-		//if( (*node)->n_type == unsampled_exon || ( (*node)->n_type == sampled && ((State*)((*node)->item))->apostprob < 0.7) ){
 		if( (*node)->n_type >= sampled ){
 		    for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
-			edge->score += not_oe_penalty;
+			// default EC-filter on:
+			// edge->score += a + (-0.988522*b);
+			// EC-filter off:
+			edge->score += a + (-0.996794*b);
 		    }
 		}
 	    }
 	}
     }
-    // reward all orthologous exon candidates (sampled exons candidates only if they have a rel. sampling frequency > 0.3) + undo penalty
+    // reward/penalty that only EC receives which are part of an OE
     if(!all_orthoex.empty()){
 	for(list<OrthoExon>::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(it->orthoex[pos]){
-		    //double omega = it->getOmega();
-		    //int  subst = it->getSubst();
 		    Node* node = graphs[pos]->getNode(it->orthoex[pos]);
-		    //int len =  node->end - node->begin + 1;
+		    int len =  node->end - node->begin + 1;
 		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
-			//if( node->n_type == unsampled_exon || ( node->n_type == sampled && ((State*)(node->item))->apostprob >= 0.3) ){
-			//  if( (omega >= 0 && omega <= 0.5 && subst > 5) || (omega >= 0 && omega <= 0.8 && subst >= 30) || len >= 300 ){
-			//	iter->score += oe_score;
-			//  }
-			//if( node->n_type == unsampled_exon || ( node->n_type == sampled && ((State*)(node->item))->apostprob < 0.7) ){
-			if( node->n_type >= sampled){
-			    iter->score += - not_oe_penalty;
-			}
+			// default EC-filter on:  
+		       	// iter->score += b*(0.005314 * len + 2.893795 * it->getConsScore() + 3.198418 * it->getDiversity() - 2.454080);
+			// EC-filter off:
+			iter->score += b*(-0.001342 * len - 0.214403 * it->getConsScore() + 2.544193 * it->getDiversity() + 0.514185);
 		    }
-
 		}
 	    }
 	}
