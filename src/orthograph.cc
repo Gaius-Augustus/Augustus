@@ -514,10 +514,8 @@ void OrthoGraph::addScoreSelectivePressure(){
 		if( (*node)->n_type >= sampled ){
 		    for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
 			// default EC-filter on:
-			// edge->score += a + (-0.988522*b);
-			// EC-filter off:
-			edge->score += a + (-0.996794*b);
-		    }
+			edge->score += a + (-1.396*b);
+			}
 		}
 	    }
 	}
@@ -531,9 +529,7 @@ void OrthoGraph::addScoreSelectivePressure(){
 		    int len =  node->end - node->begin + 1;
 		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
 			// default EC-filter on:  
-		       	// iter->score += b*(0.005314 * len + 2.893795 * it->getConsScore() + 3.198418 * it->getDiversity() - 2.454080);
-			// EC-filter off:
-			iter->score += b*(-0.001342 * len - 0.214403 * it->getConsScore() + 2.544193 * it->getDiversity() + 0.514185);
+		       	iter->score += b*(0.015 * len + 1.277 * it->getConsScore() + 4.37 * it->getDiversity() -0.92);
 		    }
 		}
 	    }
