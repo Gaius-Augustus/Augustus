@@ -109,6 +109,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/EHMMTraining/state03",
 "/EHMMTraining/statecount",
 "/EHMMTraining/trainfile",
+"emiprobs",
 "errfile",
 "evalset",
 "exoncand",

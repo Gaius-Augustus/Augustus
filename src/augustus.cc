@@ -399,7 +399,19 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
 	    if (singlestrand)
 		cout << "# Overlapping genes on opposite strand are allowed." << endl;
 
-	    genes = namgene.doViterbiPiecewise(sfc, curseq, strand); 
+	    genes = namgene.doViterbiPiecewise(sfc, curseq, strand);
+
+	    try {
+		if (Properties::getBoolProperty("emiprobs")){ // get emission probs (special request from Ingo Ebersberger)
+		    Annotation *a = new Annotation(), *olda = curseq->anno;
+		    a->genes = genes;
+		    curseq->anno = a;
+		    namgene.setPathAndProb(curseq, extrinsicFeatures); 
+		    cout << "# joint probability of gene structure and sequence in " << 
+			Properties::getProperty(SPECIES_KEY) << " model: " << curseq->anno->emiProb << endl;
+		    curseq->anno = olda;
+		}
+	    } catch (...) {}
 
 	    Gene::destroyGeneSequence(genes); // don't need them anymore after they are printed
 	    successfull++;
