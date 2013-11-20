@@ -241,17 +241,22 @@ void GeneticCode::printStartCodons(){
 void GeneticCode::trainStartCodonProbs(int startcounts[]){
     int sum = 0;
     bool first = true;
-    cout << "start codon frequencies: ";
+    if (Constant::augustus_verbosity)
+	cout << "start codon frequencies: ";
     for (int c=0; c<64; c++){
 	if (startcounts[c]>0){
-	    if (!first)
-		cout << ", ";
-	    cout << Seq2Int(3).INV(c) << "(" << startcounts[c] << ")";
+	    if (Constant::augustus_verbosity){
+		if (!first)
+		    cout << ", ";
+		cout << Seq2Int(3).INV(c) << "(" << startcounts[c] << ")";
+	    }
 	    sum += startcounts[c];
 	    first = false;
 	}
     }
-    cout << endl;
+    if (Constant::augustus_verbosity)
+	cout << endl;
+
     // estimate probabilities as relative frequencies
     if (sum > 0){
 	for (int c=0; c<64; c++){
@@ -260,7 +265,8 @@ void GeneticCode::trainStartCodonProbs(int startcounts[]){
 	    }
 	}
     } // otherwise leave default (only ATG)
-    printStartCodons();
+    if (Constant::augustus_verbosity)
+	printStartCodons();
 }
 
 void GeneticCode::writeStart(ofstream &out){

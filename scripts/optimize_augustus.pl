@@ -96,7 +96,12 @@ foreach (@ARGV) {
 	}
 	$cmdpars{$1}=$2;
     } else {
-	$cmdpars{"train.gb"}=$_;
+	if ($cmdpars{"train.gb"} eq ''){
+	    $cmdpars{"train.gb"}=$_;
+	} else {
+	    print "There can only be one parameter without an explicit name: the training genbank file name\n$usage";
+	    exit;
+	}
     }
 }
 
@@ -185,9 +190,9 @@ print "Splitting training file into $cmdpars{'kfold'} buckets...\n";
 open (TRAINGB, <$cmdpars{"train.gb"}>) or die ("Could not open $cmdpars{'train.gb'}");
 
 my @seqlist = ();
-push @seqlist, "12";
 @seqlist  = <TRAINGB>;
 my @namelines = grep /^LOCUS   +/, @seqlist;
+@seqlist = ();
 my @names=();
 
 if (@namelines < $cmdpars{"kfold"}) {
@@ -753,11 +758,13 @@ sub evalsnsp {
 	    my $pbloutfiles = "--/ExonModel/outfile=exon-tmp$k.pbl --/IntronModel/outfile=intron-tmp$k.pbl --/IGenicModel/outfile=igenic-tmp$k.pbl --/UtrModel/outfile=utr-tmp$k.pbl";
 	    my $pblinfiles = "--/ExonModel/infile=exon-tmp$k.pbl --/IntronModel/infile=intron-tmp$k.pbl --/IGenicModel/infile=igenic-tmp$k.pbl --/UtrModel/infile=utr-tmp$k.pbl";
             if (defined($cmdpars{'trainOnlyUtr'}) && $cmdpars{'trainOnlyUtr'} ne "" && $cmdpars{'trainOnlyUtr'} ne "0"){
-                $pblinfiles = "";
+                $pblinfiles = "--/UtrModel/infile=utr-tmp$k.pbl";
             }
 
 	    if ($cmdpars{'noTrainPars'} eq '') {# No need to retrain if the trans matrix is optimized or noTrainPars=1 set explicitly.
-		system("$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $be_silent $modelrestrict $pbloutfiles $optdir/curtrain-$k");
+		my $cmd = "$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars "
+		    . "$be_silent $modelrestrict $pbloutfiles $optdir/curtrain-$k";
+		system($cmd);
 #		unlink $optdir/curtrain-$k;
 	    } else {
 		$pblinfiles = ""; # training did not take place, so the $pbloutfiles have not beeen created and cannot be used for prediction
