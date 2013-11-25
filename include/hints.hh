@@ -83,6 +83,7 @@ public:
     }
    
     static FeatureType getFeatureType(string typestring);
+    static FeatureType getFeatureType(int typeint);
     double exonpartMalus(int len){
 	return pow(malus, len);
     }
@@ -91,6 +92,9 @@ public:
     bool weakerThan(Feature &other, bool &strictly);
     double conformance();
     int length() {return end - start + 1;}
+    void shiftCoordinates(int start,int end,bool rc = false);
+    void setFrame(string f);
+    void setStrand(string s);
     // fields of the GFF-format
     string seqname;
     string source;

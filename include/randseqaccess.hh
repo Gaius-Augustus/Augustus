@@ -13,6 +13,7 @@
 // project includes
 #include "gene.hh"
 #include "types.hh"
+#include "extrinsicinfo.hh"
 
 #include <map>
 #include <vector>
@@ -40,6 +41,8 @@ public:
     AnnoSequence* getSeq(size_t speciesIdx, string chrName, int start, int end, Strand strand) {
 	return getSeq(getSname(speciesIdx), chrName, start, end, strand);
     }
+    virtual SequenceFeatureCollection* getFeatures(string speciesname, string chrName, int start, int end, Strand strand) = 0;  
+    bool extrinsicOn(){return extrinsic;}
     virtual ~RandSeqAccess() {}
 protected:
     RandSeqAccess() {};
@@ -47,6 +50,8 @@ protected:
     vector<map<string,int> > chrLen;
     vector<string> speciesNames;
     map<string, size_t> speciesIndex; // to quickly access the index for a given species name
+    FeatureCollection extrinsicFeatures; // all hints
+    bool extrinsic; // if true extrinsic evidence is used for gene prediction
 };
 
 /*
@@ -58,7 +63,7 @@ public:
     MemSeqAccess();
     ~MemSeqAccess(){} // TODO: delete DNA sequences from 'sequences' map
     AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
-  
+    SequenceFeatureCollection* getFeatures(string speciesname, string chrName, int start, int end, Strand strand);
 private:
     map<string,string> filenames;
     map<string,char*> sequences;  //keys: speciesname:chrName values: dna sequence
@@ -75,6 +80,7 @@ public:
     AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
     // the following function is for the BGI-style database
     AnnoSequence* getSeq2(string speciesname, string chrName, int start, int end, Strand strand);
+    SequenceFeatureCollection* getFeatures(string speciesname, string chrName, int start, int end, Strand strand);  
 #ifdef AMYSQL
     int split_dbaccess();
     void connect_db();

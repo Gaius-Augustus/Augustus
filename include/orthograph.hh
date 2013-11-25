@@ -21,6 +21,7 @@ public:
     OrthoGraph(){
 	graphs.resize(numSpecies);
 	ptrs_to_alltranscripts.resize(numSpecies);
+	sfcs.resize(numSpecies);
 	print_change = false;
     }
     ~OrthoGraph(){
@@ -35,6 +36,7 @@ public:
     static PhyloTree *tree;
     list<OrthoExon> all_orthoex;
     vector< list<Gene> *> ptrs_to_alltranscripts; //stores pointers to alltranscripts until they can be deleted (destructor of OrthoGraph)
+    vector< SequenceFeatureCollection* > sfcs;  // stores extrinsic evidence for each species
 
     bool print_change; // only temporary flag
     void linkToOEs(list<OrthoExon> &oes); // link ECs in HECTS to nodes in orthograph 
@@ -79,7 +81,7 @@ public:
 
     // transform graph labeling into list of genes + filter + output
     void buildGeneList(vector< list<Gene>* > &genelist);
-    void filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid);
+    void filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid, bool extrinsic=false);
     void outputGenes(vector<ofstream*> &filestreams, vector<int> &geneid){
 	vector< list<Gene> *> genelist(numSpecies);
 	buildGeneList(genelist);

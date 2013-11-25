@@ -58,6 +58,7 @@ void CompGenePred::start(){
     cout << "phylo factor:\t" << evo.getPhyloFactor() <<  "\n-------------------------------" << endl;
 #endif
 
+   
     bool dualdecomp;
     try {
 	dualdecomp = Properties::getBoolProperty("/CompPred/dualdecomp");
@@ -83,6 +84,10 @@ void CompGenePred::start(){
     try {
 	noprediction = Properties::getBoolProperty("noprediction");
     } catch (...) {}
+    if(Constant::alternatives_from_evidence){
+	cerr << "Warning: The option 'alternatives_from_evidence' is only available in the single species mode. Turned it off." << endl;
+	Constant::alternatives_from_evidence=false;
+    }
 
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(".base"); // equivalent to MEA prediction
@@ -96,8 +101,6 @@ void CompGenePred::start(){
     BaseCount::init();
     PP::initConstants();
     NAMGene namgene; // creates and initializes the states
-    FeatureCollection extrinsicFeatures; // hints, empty for now, will later read in hints for sequence ranges from database
-    SequenceFeatureCollection sfc(&extrinsicFeatures);
     StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
 
     // temporary tests of codon rate matrix stuff (Mario)
@@ -165,7 +168,7 @@ void CompGenePred::start(){
                     break;
                 } else {
 		    seqRanges[s] = *as; // DNA seqs will be reused when omega is computed AND gene lists are processed for output  
-		    
+		   
 		    // this is needed for IntronModel::dssProb in GenomicMSA::createExonCands
                     namgene.getPrepareModels(as->sequence, as->length); 
 		    
@@ -173,11 +176,15 @@ void CompGenePred::start(){
                     geneRange->createExonCands(s, as->sequence);
 		    list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
 		    list<Gene> *alltranscripts = NULL;
+
 		    if (!noprediction){
-			namgene.doViterbiPiecewise(sfc, as, bothstrands); // sampling
+			SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
+			sfc->prepare(as, false);
+			namgene.doViterbiPiecewise(*sfc, as, bothstrands); // sampling
 			alltranscripts = namgene.getAllTranscripts();
+			orthograph.sfcs[s] = sfc;
 		    }
-                    if (alltranscripts){
+		     if (alltranscripts){
                         cout << "building Graph for " << speciesNames[s] << endl;
 			// build datastructure for graph representation
 			// @stlist : list of all sampled states
@@ -200,7 +207,7 @@ void CompGenePred::start(){
 	if (Constant::exoncands) // by default, ECs are not printed
 	    geneRange->printExonCands();
 	geneRange->createOrthoExons();
-	geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
+	//geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
 	geneRange->printConsScore(seqRanges);
 	geneRange->printOrthoExons(rsa);
 
@@ -219,7 +226,7 @@ void CompGenePred::start(){
 		if (dualdecomp){ // optimization via dual decomposition
 		    vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
 		    orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factor);
-		    orthograph.filterGeneList(genelist,optGenes,opt_geneid);
+		    orthograph.filterGeneList(genelist,optGenes,opt_geneid,rsa->extrinsicOn());
 		} else { // optimization by making small changes (moves)
 		    orthograph.pruningAlgor(evo);
 		    orthograph.printCache();

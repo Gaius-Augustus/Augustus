@@ -17,9 +17,9 @@
 #include <cstdlib>
 #include <set>
 
-const char* featureTypeNames[NUM_FEATURE_TYPES]= {"start", "stop", "ass", "dss", 
+const char* featureTypeNames[NUM_FEATURE_TYPES]= {"start", "stop", "ass", "dss", "tss", "tts",
 						  "exonpart", "exon", "intronpart", "intron",
-						  "tss", "tts", "irpart", "CDS", "CDSpart", "UTR", "UTRpart", "nonexonpart", "genicpart"};
+						  "irpart", "CDS", "CDSpart", "UTR", "UTRpart", "nonexonpart", "genicpart"};
 
 bool isSignalType(FeatureType type){
     return (type == startF || type == stopF || type == assF || type == dssF || type == tssF || type == ttsF);
@@ -210,6 +210,7 @@ istream& operator>>( istream& in, Feature& feature ){
 	cerr << "Error in hint line: " << copybuff << endl;
 	cerr << e.getMessage() << endl;
 	cerr << "Maybe you used spaces instead of tabulators?" << endl;
+	throw e;
     }
     return in;
 }
@@ -258,6 +259,12 @@ FeatureType Feature::getFeatureType(string typestring){
       type = (FeatureType) -1;
     }
     return type;
+}
+
+FeatureType Feature::getFeatureType(int typeint){
+    if(typeint < NUM_FEATURE_TYPES && typeint >=0)
+	return (FeatureType)typeint;
+    return (FeatureType) -1;
 }
 
 /*
@@ -457,6 +464,46 @@ bool Feature::weakerThan(Feature &other, bool &strictly){
 double Feature::conformance(){
     int pseudoSupporting = 5, pseudoContradicting = 5;
     return (double) (pseudoSupporting + numSupporting) / (pseudoContradicting + pseudoSupporting + numSupporting + numContradicting);
+}
+
+/*
+ * shift the coordinates of a feature by -seqStart
+ * if seqStrand is minusstrand, the coordinates and strand of the
+ * feature are set relative to the minusstrand 
+ */
+void Feature::shiftCoordinates(int seqStart, int seqEnd, bool rc){
+    if (!rc) {
+	end -= seqStart;
+	start -= seqStart;
+    } else {
+	int temp = end;
+	end = seqEnd - start;
+	start = end - temp;
+	if (strand == plusstrand)
+	    strand = minusstrand;
+	else if (strand == minusstrand)
+	    strand = plusstrand;
+    }
+}
+
+void Feature::setFrame(string f){
+    if(f == "0")
+	frame=0;
+    else if (f == "1")
+	frame=1;
+    else if (f == "2")
+	frame=2;
+    else
+	frame=-1;
+}
+
+void Feature::setStrand(string s){
+    if (s == "+")
+	strand=plusstrand;
+    else if (s == "-")
+	strand=minusstrand;
+    else
+	strand=STRAND_UNKNOWN;
 }
 
 /*

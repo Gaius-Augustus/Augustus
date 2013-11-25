@@ -103,6 +103,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "CRFtrainUTR",
 "CRFtrainTIS",
 "dbaccess",
+"dbhints",
 "/EHMMTraining/state00",
 "/EHMMTraining/state01",
 "/EHMMTraining/state02",

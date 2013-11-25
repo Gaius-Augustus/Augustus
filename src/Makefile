@@ -13,7 +13,7 @@ ifdef COMPGENEPRED
 	CFLAGS += -std=c++0x -DCOMPGENEPRED
 endif
 INCLS	= -I../include
-LIBS    = 
+LIBS    =
 
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
@@ -40,7 +40,7 @@ RUNTIME_LIBPATH =
 INCLS	+= -I/usr/include/mysql -I/usr/local/include/mysql++
 LIBS 	+=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
 CFLAGS  += -DAMYSQL
-PROGR   += faload2db
+PROGR   += load2db
 endif
 
 
@@ -80,9 +80,9 @@ prepareAlign: pp_prepare_align.cc
 	$(CC) $(CFLAGS) -o $@ $^
 	cp prepareAlign ../bin/
 
-faload2db: faload2db.cc fasta.o
+load2db: load2db.cc fasta.o hints.o types.o properties.o lldouble.o
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp faload2db ../bin/
+	cp load2db ../bin/
 
 info:
 	echo "$(CFLAGS)" > $(INFO)

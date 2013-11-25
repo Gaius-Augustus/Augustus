@@ -19,7 +19,31 @@ sql_create_6(genomes,
 	     int,start,
 	     int,end,
 	     string,species)
-
+sql_create_2(speciesnames,
+	     1,2,
+	     int,speciesid,
+	     string,speciesname)
+sql_create_3(seqnames,
+	     1,3,
+	     int,seqnr,
+	     int,speciesid,
+	     string,seqname)
+sql_create_14(hints,
+	      1,14,
+	      int,hintid,
+	      int,speciesid,
+	      int,seqnr,
+	      string,source,
+	      int,start,
+	      int,end,
+	      double,score,
+	      int,type,
+	      string,strand,
+	      string,frame,
+	      int,priority,
+	      string,grp,
+	      int,mult,
+	      string,esource)
 // The database schema is an excerpt from ENSEMBL:
 // http://www.ensembl.org/info/docs/api/core/core_schema.html
 // The following is calling a very complex macro which will create

@@ -86,7 +86,7 @@ void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
     }
 }
 
-void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid){
+void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid, bool extrinsic){
 
     Boolean noInFrameStop;  
 
@@ -104,6 +104,13 @@ void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream
 
 	    list<Gene> *filteredTranscripts = Gene::filterGenePrediction(genelist[pos], annoseq->sequence, bothstrands, noInFrameStop);
 	    list<AltGene> *agl = groupTranscriptsToGenes(filteredTranscripts);
+	    if(extrinsic && sfcs[pos]){
+		for (list<AltGene>::iterator git = agl->begin(); git != agl->end(); git++) {
+		    for (list<Gene*>::iterator trit = git->transcripts.begin(); trit != git->transcripts.end(); trit++) {
+			(*trit)->compileExtrinsicEvidence(sfcs[pos]->groupList);
+		    }
+		}
+	    }
 	    if(strand == minusstrand){
 		agl = reverseGeneList(agl, annoseq->length - 1);
 	    }
@@ -145,12 +152,12 @@ void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream
 		    char *DNA = annoseq->sequence;
 		    char *reverseDNA = reverseComplement(DNA);
 		    annoseq->sequence = reverseDNA;
-		    printGeneList(agl, annoseq, Constant::codSeqOutput, Constant::proteinOutput, false);
+		    printGeneList(agl, annoseq, Constant::codSeqOutput, Constant::proteinOutput, extrinsic);
 		    annoseq->sequence = DNA;
 		    delete [] reverseDNA;
 		}
 		else{
-		    printGeneList(agl, annoseq, Constant::codSeqOutput, Constant::proteinOutput, false);
+		    printGeneList(agl, annoseq, Constant::codSeqOutput, Constant::proteinOutput, extrinsic);
 		}
 	    }
 	    else{

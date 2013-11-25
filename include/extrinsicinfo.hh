@@ -370,7 +370,12 @@ public:
 	    psfc = new SequenceFeatureCollection(this);
 	return *psfc;
     }
+    SequenceFeatureCollection* getSequenceFeatureCollection(string seqname){
+	return collections[seqname];
+    }
+    bool isInCollections(string seqname){return collections.count(seqname)>0;}
     void readGFFFile(const char *filename);
+    void setBonusMalus(Feature& f);
     void readExtrinsicCFGFile();
     int getNumSeqsWithInfo() { return numSeqsWithInfo;}
     int getNumCommonSeqs(AnnoSequence *annoseq);

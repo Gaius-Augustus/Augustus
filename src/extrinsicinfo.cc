@@ -161,19 +161,7 @@ SequenceFeatureCollection::SequenceFeatureCollection(SequenceFeatureCollection& 
 	for (it = other.featureLists[type].begin(); it!=other.featureLists[type].end(); it++){
 	    if (it->end >= from && it->end <= to) {
 		Feature ff = *it;
-		if (!rc) {
-		    ff.end -= from;
-		    ff.start -= from;
-		} else {
-		    int temp = ff.end;
-		    ff.end = to - ff.start;
-		    ff.start = to - temp;
-		    if (ff.strand == plusstrand)
-			ff.strand = minusstrand;
-		    else if (ff.strand == minusstrand)
-			ff.strand = plusstrand;
-		}
-
+		ff.shiftCoordinates(from,to,rc);
 		featureLists[type].push_back(ff);
 	    }
 	}
@@ -2196,38 +2184,13 @@ void FeatureCollection::readGFFFile(const char *filename){
 	string seqname;
 	datei >> comment >> ws;
 	while (datei) {
-	    datei >> f >> comment >> ws;
+	    try{
+		datei >> f >> comment >> ws;
+	    } catch (ProjectError e){}
 	    if (f.end >= predictionStart && f.start <= predictionEnd && f.type != -1) {
 		f.start -= predictionStart;
 		f.end -= predictionStart;
-		FeatureTypeInfo& fti = typeInfo[f.type];
-		int sourcenum = esource(f.esource);
-		f.gradeclass = fti.gradeclass(sourcenum, f.score);
-		double gradequot = fti.gradequots[sourcenum][f.gradeclass];
-		// set the general values if applicable
-		if (!(fti.bonus < 0)) { // general bonus/malus
-		    f.bonus = fti.bonus * gradequot * BONUS_FACTOR;
-		    f.malus = fti.malus;
-		    // Let the intron bonus depend on the length
-		    if (f.type == intronF) {
-			int laenge = f.end - f.start + 1;
-			double intronGeoProb = IntronModel::getGeoProb(); // 1-1/1730 (mal)
-			double igenicGeoProb = IGenicModel::getGeoProb(); // 0.9999;
-			f.bonus *= pow (igenicGeoProb/intronGeoProb, laenge);
-		    }
-		    if (f.mult>1){
-		      // HACK: this corresponds to adding scores of identical hints, compare deleteEqualElements
-		      double newbonus = pow(f.bonus, f.mult);
-		      if (newbonus > f.bonus * f.mult)
-			newbonus = f.bonus * f.mult;
-		      f.bonus = newbonus;
-		    }
-		} else { // individual bonus/malus
-		    if (f.score>0){
-			f.bonus = f.score;
-		    }
-		}
-		
+		setBonusMalus(f);
 		seqname = f.seqname;
 		SequenceFeatureCollection*& psfc = collections[seqname];
 		if (psfc == NULL){
@@ -2248,7 +2211,35 @@ void FeatureCollection::readGFFFile(const char *filename){
     hasHintsFile = true;
 }
 
-
+void FeatureCollection::setBonusMalus(Feature& f){
+    FeatureTypeInfo& fti = typeInfo[f.type];
+    int sourcenum = esource(f.esource);
+    f.gradeclass = fti.gradeclass(sourcenum, f.score);
+    double gradequot = fti.gradequots[sourcenum][f.gradeclass];
+    // set the general values if applicable
+    if (!(fti.bonus < 0)) { // general bonus/malus
+	f.bonus = fti.bonus * gradequot * BONUS_FACTOR;
+	f.malus = fti.malus;
+	// Let the intron bonus depend on the length
+	if (f.type == intronF) {
+	    int laenge = f.end - f.start + 1;
+	    double intronGeoProb = IntronModel::getGeoProb(); // 1-1/1730 (mal)
+	    double igenicGeoProb = IGenicModel::getGeoProb(); // 0.9999;
+	    f.bonus *= pow (igenicGeoProb/intronGeoProb, laenge);
+	}
+	if (f.mult>1){
+	    // HACK: this corresponds to adding scores of identical hints, compare deleteEqualElements
+	    double newbonus = pow(f.bonus, f.mult);
+	    if (newbonus > f.bonus * f.mult)
+		newbonus = f.bonus * f.mult;
+	    f.bonus = newbonus;
+	}
+    } else { // individual bonus/malus
+	if (f.score>0){
+	    f.bonus = f.score;
+	}
+    }
+}
 /*
  * get the global malus for exonpart, etc depending on the length
  * precompute values the first time they are needed (for each type separately)

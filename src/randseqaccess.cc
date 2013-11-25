@@ -14,6 +14,8 @@
 
 #include "randseqaccess.hh"
 #include "genbank.hh"
+#include "intronmodel.hh"
+#include "igenicmodel.hh"
 #include <iostream>
 #include <iomanip> 
 #include <fstream>
@@ -93,16 +95,38 @@ MemSeqAccess::MemSeqAccess(){
 	GBProcessor gbank(it->second);
 	AnnoSequence *inSeq = gbank.getSequenceList();
 	while(inSeq){
-	    string key = it->first + ":" + inSeq->seqname;
+	    string key = it->first + "." + inSeq->seqname;
+	    cout<< "reading in "<<key<<endl;
 	    sequences[key] = inSeq->sequence;
 	    inSeq = inSeq->next;
 	}
+    }
+    /*
+     * reading in exintrinsic evidence into memory
+     */
+    const char *extrinsicfilename;
+    try {
+	extrinsicfilename =  Properties::getProperty("hintsfile");
+    } catch (...){
+	extrinsicfilename = NULL; 
+	extrinsic=false;
+	cout << "# No extrinsic information given." << endl;
+    }
+    if (extrinsicfilename) {
+	cout << "# reading in the file " << extrinsicfilename << " ..." << endl;
+	extrinsicFeatures.readGFFFile(extrinsicfilename);
+	extrinsic=true;
+    }
+    for(map<string, char*>::iterator it = sequences.begin(); it != sequences.end(); it++){
+	cout << "We have hints for"<<endl;
+	if(extrinsicFeatures.isInCollections(it->first))
+	    cout << it->first << endl;
     }
 }
 
 AnnoSequence* MemSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
     AnnoSequence *annoseq = NULL;
-    string key = speciesname + ":" + chrName;
+    string key = speciesname + "." + chrName;
     map<string,char*>::iterator it = sequences.find(key);
     if(it != sequences.end()){
 	annoseq = new AnnoSequence();
@@ -117,6 +141,21 @@ AnnoSequence* MemSeqAccess::getSeq(string speciesname, string chrName, int start
 	}
     }
     return annoseq;
+}
+
+SequenceFeatureCollection* MemSeqAccess::getFeatures(string speciesname, string chrName, int start, int end, Strand strand){
+
+    string key=speciesname + "." + chrName;
+    SequenceFeatureCollection *c=extrinsicFeatures.getSequenceFeatureCollection(key);
+    if(!c){
+	SequenceFeatureCollection* sfc = new SequenceFeatureCollection(&extrinsicFeatures); // empty list of hints
+	return sfc;
+    }
+    bool rc=false;
+    if(strand == minusstrand)
+	rc=true;
+    SequenceFeatureCollection* sfc = new SequenceFeatureCollection(*c,start,end,rc); // all hints that end in [start,end]
+    return sfc;
 }
 
 
@@ -150,6 +189,13 @@ DbSeqAccess::DbSeqAccess(){
     dbaccess = Constant::dbaccess;
     split_dbaccess();
     connect_db();
+    try{
+	extrinsic =  Properties::getBoolProperty("dbhints");
+    }catch(...){
+	extrinsic = false;
+    }
+    if(extrinsic)
+	extrinsicFeatures.readExtrinsicCFGFile();
 #else
     throw ProjectError("Database access not possible with this compiled version. Please recompile with flag MYSQL.");
 #endif
@@ -175,10 +221,10 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
     mysqlpp::StoreQueryResult store_res;
     string dna, querystr;
     mysqlpp::Query query = con.query();
-    query << "SELECT dnaseq,start,end FROM genomes WHERE species='" << speciesname << "' AND seqname='"
-	  << chrName << "' AND start <= " << end << " AND end >= " << start << " ORDER BY start ASC";
+    query << "SELECT dnaseq,start,end FROM genomes as G,speciesnames as S,seqnames as N WHERE speciesname='" << speciesname << "' AND seqname='"
+	  << chrName << "' AND G.speciesid=S.speciesid AND S.speciesid=N.speciesid AND G.seqnr=N.seqnr AND start <= " << end << " AND end >= " << start << " ORDER BY start ASC";
     querystr = query.str();
-    // cout << "Executing" << endl << querystr << endl;
+    //cout << "Executing" << endl << querystr << endl;
     vector<genomes> g;
     query.storein(g);
     
@@ -290,6 +336,62 @@ AnnoSequence* DbSeqAccess::getSeq2(string speciesname, string chrName, int start
     }
     return annoseq;
 }
+#endif // AMYSQL 
+#ifndef AMYSQL
+SequenceFeatureCollection* DbSeqAccess::getFeatures(string speciesname, string chrName, int start, int end, Strand strand){
+    return NULL;
+    // empty dummy for compiler, error message is created in constructor
+}
+#else // AMYSQL
+SequenceFeatureCollection* DbSeqAccess::getFeatures(string speciesname, string chrName, int start, int end, Strand strand){
+
+    SequenceFeatureCollection* sfc = new SequenceFeatureCollection(&extrinsicFeatures);
+    cout<<"extrinsic="<<extrinsic<<endl;
+    if(extrinsic){
+	mysqlpp::Query query = con.query();
+	query << "SELECT source,start,end,score,type,strand,frame,priority,grp,mult,esource FROM hints as H, speciesnames as S,seqnames as N WHERE speciesname='"
+	      << speciesname << "' AND seqname='" << chrName << "' AND H.speciesid=S.speciesid AND S.speciesid=N.speciesid AND H.seqnr=N.seqnr AND start <= "
+	      << end << " AND end >= " << start;
+	cout << "Executing" << endl << query.str() << endl;
+	vector<hints> h;
+	query.storein(h);
+	
+	if(h.empty()){
+	    cout << "no hints retrieved"<<endl;
+	}
+	else{
+	    for(vector<hints>::iterator it = h.begin(); it != h.end(); it++){
+		
+		// create new Feature
+		Feature f;
+		f.seqname=chrName;
+		f.source=it->source;
+		f.type=Feature::getFeatureType(it->type);
+		f.feature=featureTypeNames[f.type];
+		f.start=it->start;
+		f.end=it->end;
+		f.score=it->score;
+		f.setFrame(it->frame);
+		f.setStrand(it->strand);
+		f.groupname=it->grp;
+		f.priority=it->priority;
+		f.mult=it->mult;
+		f.esource=it->esource;
+		
+		// shift positions relative to gene Range
+		if(strand == plusstrand)
+		    f.shiftCoordinates(start,end);
+		else
+		    f.shiftCoordinates(start,end,true);
+		extrinsicFeatures.setBonusMalus(f);
+		sfc->addFeature(f);
+	    }
+	}
+	extrinsicFeatures.hasHintsFile = true;
+    }
+    return sfc;
+}
+
 
 int DbSeqAccess::split_dbaccess(){
     string::size_type pos1, pos2;
