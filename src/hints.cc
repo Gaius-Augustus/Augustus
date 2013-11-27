@@ -478,7 +478,7 @@ void Feature::shiftCoordinates(int seqStart, int seqEnd, bool rc){
     } else {
 	int temp = end;
 	end = seqEnd - start;
-	start = end - temp;
+	start = seqEnd - temp;
 	if (strand == plusstrand)
 	    strand = minusstrand;
 	else if (strand == minusstrand)
