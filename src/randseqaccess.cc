@@ -194,8 +194,17 @@ DbSeqAccess::DbSeqAccess(){
     }catch(...){
 	extrinsic = false;
     }
-    if(extrinsic)
+    if(extrinsic){
+	cout << "read in the configuration file for extrinsic features" << endl;
+	// if no extrinsicCfgFile filename is specified, take default file
+	if(!Properties::hasProperty(EXTRFILE_KEY)){
+	    string configPath(Properties::getProperty(CFGPATH_KEY));
+	    string cfgFileName = configPath + EXTRINSIC_SUBDIR + "extrinsic.cfg";
+	    Properties::addProperty(EXTRFILE_KEY,cfgFileName);
+	    cout << "# No extrinsicCfgFile given. Take default file: "<< cfgFileName << endl;
+	}
 	extrinsicFeatures.readExtrinsicCFGFile();
+    }
 #else
     throw ProjectError("Database access not possible with this compiled version. Please recompile with flag MYSQL.");
 #endif
@@ -346,13 +355,12 @@ SequenceFeatureCollection* DbSeqAccess::getFeatures(string speciesname, string c
 SequenceFeatureCollection* DbSeqAccess::getFeatures(string speciesname, string chrName, int start, int end, Strand strand){
 
     SequenceFeatureCollection* sfc = new SequenceFeatureCollection(&extrinsicFeatures);
-    cout<<"extrinsic="<<extrinsic<<endl;
     if(extrinsic){
 	mysqlpp::Query query = con.query();
 	query << "SELECT source,start,end,score,type,strand,frame,priority,grp,mult,esource FROM hints as H, speciesnames as S,seqnames as N WHERE speciesname='"
 	      << speciesname << "' AND seqname='" << chrName << "' AND H.speciesid=S.speciesid AND S.speciesid=N.speciesid AND H.seqnr=N.seqnr AND start <= "
 	      << end << " AND end >= " << start;
-	cout << "Executing" << endl << query.str() << endl;
+	//	cout << "Executing" << endl << query.str() << endl;
 	vector<hints> h;
 	query.storein(h);
 	

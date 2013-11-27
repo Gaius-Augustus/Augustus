@@ -88,6 +88,7 @@ void CompGenePred::start(){
 	cerr << "Warning: The option 'alternatives_from_evidence' is only available in the single species mode. Turned it off." << endl;
 	Constant::alternatives_from_evidence=false;
     }
+    bool withEvidence = rsa->extrinsicOn();
 
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(".base"); // equivalent to MEA prediction
@@ -215,18 +216,18 @@ void CompGenePred::start(){
 	    list<OrthoExon> hects = geneRange->getOrthoExons();
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph
 	 
-	    orthograph.outputGenes(baseGenes,base_geneid);
+	    orthograph.outputGenes(baseGenes,base_geneid, withEvidence);
 	    //add score for selective pressure of orthoexons
 	    orthograph.addScoreSelectivePressure();
 	    //determine initial path
 	    orthograph.globalPathSearch();
-	    orthograph.outputGenes(initGenes,init_geneid);
+	    orthograph.outputGenes(initGenes,init_geneid, withEvidence);
 	    
 	    if(!orthograph.all_orthoex.empty()){
 		if (dualdecomp){ // optimization via dual decomposition
 		    vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
 		    orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factor);
-		    orthograph.filterGeneList(genelist,optGenes,opt_geneid,rsa->extrinsicOn());
+		    orthograph.filterGeneList(genelist,optGenes,opt_geneid, withEvidence);
 		} else { // optimization by making small changes (moves)
 		    orthograph.pruningAlgor(evo);
 		    orthograph.printCache();

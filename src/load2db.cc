@@ -183,7 +183,7 @@ int main( int argc, char* argv[] ){
 		for(map<string,int>::iterator it= hintCount.begin(); it != hintCount.end(); it++){
 		    cout << it->second<<" hints for " << it->first << endl;
 		}
-		removeDuplicates();
+		//removeDuplicates(); dublicastes can only be removed when multiplicity is updated
 	    }
 	    else{
 		cout << "No hints found. Nothing inserted into database." << endl;

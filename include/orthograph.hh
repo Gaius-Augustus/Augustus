@@ -28,6 +28,7 @@ public:
 	for(int i = 0; i < numSpecies; i++){
 	    delete graphs[i];
 	    delete ptrs_to_alltranscripts[i];
+	    delete sfcs[i];
 	}
     }
 
@@ -81,11 +82,11 @@ public:
 
     // transform graph labeling into list of genes + filter + output
     void buildGeneList(vector< list<Gene>* > &genelist);
-    void filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid, bool extrinsic=false);
-    void outputGenes(vector<ofstream*> &filestreams, vector<int> &geneid){
+    void filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid, bool withEvidence=false);
+    void outputGenes(vector<ofstream*> &filestreams, vector<int> &geneid, bool withEvidence=false){
 	vector< list<Gene> *> genelist(numSpecies);
 	buildGeneList(genelist);
-	filterGeneList(genelist,filestreams, geneid);
+	filterGeneList(genelist,filestreams, geneid,withEvidence);
     }
 };
 
