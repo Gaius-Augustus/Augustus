@@ -766,7 +766,7 @@ void GeneMSA::consToWig(vector<double> &consScore){
 
 void GeneMSA::closeOutputFiles(){
     for (int i=0; i<tree->numSpecies(); i++) {
-        if (exonCands_outfiles[i] && exonCands_outfiles[i]->is_open()) {
+        if (i < exonCands_outfiles.size() && exonCands_outfiles[i] && exonCands_outfiles[i]->is_open()) {
 	    exonCands_outfiles[i]->close();
 	    delete exonCands_outfiles[i];
 	}

@@ -364,7 +364,7 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
 	cout << "# WARNING: extrinsic information given but not on any of the sequences in the input set!" << endl
 	     << "# Maybe different sequence names?" << endl;
     if (verbosity>0) {
-	int anz = extrinsicFeatures.getNumCommonSeqs(seq);
+	int anz = extrinsicFeatures.getNumSeqsWithInfo();
 	cout << "# We have hints for " << anz << " sequence" << (anz!=1? "s ": " ") << "and for " 
 	     << numC << " of the sequences in the input set." << endl;
     }

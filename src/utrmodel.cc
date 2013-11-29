@@ -729,7 +729,7 @@ void UtrModel::readAllParameters(){
     } // end for loop over GC content classes
     istrm.close();
   } else {
-      cerr << "The file with UTR parameters for " << Properties::getProperty("species") << "does not seem to exist.";
+      cerr << "The file with UTR parameters for " << Properties::getProperty("species") << " does not seem to exist.";
       cerr << " This likely means that the UTR model has not beeen trained yet for " << Properties::getProperty("species") << ".";
       throw ProjectError("UtrModel::readProbabilities: Couldn't open file " + filename);
   }
