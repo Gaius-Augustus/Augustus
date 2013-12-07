@@ -40,7 +40,7 @@ const double LLDouble::logbase = std::log(LLDouble::base);   // = 693.1471805599
 const LLDouble::exponent_type LLDouble::max_exponent = numeric_limits<exponent_type>::max();
 const LLDouble::exponent_type LLDouble::min_exponent = numeric_limits<exponent_type>::min();
 int LLDouble::output_precision = 0;
-
+double LLDouble::heat = 1.0;
 
 /* 
  * =====[ constructors ]=======================================================
@@ -176,6 +176,8 @@ LLDouble LLDouble::pow(double x) const {
 	return 1;
     if (value == 0)
 	return x>0 ? 0 : infinity();
+    if (x == 1.0)
+	return *this;
     if (value < 0 && // negative base
 	(x - 0.25) < x && x < (x + 0.25) && 
 	x == floor(x) )  // integer exponent
@@ -200,7 +202,13 @@ LLDouble LLDouble::exp(double x) {
     return result;
 }
 
+void LLDouble::setHeat(double h){
+    heat = h;
+}
 
+LLDouble LLDouble::heated(){
+    return pow(heat); // TODO: this can probably be made a little more efficient using a precomputation based on 'heat'
+}
 
 /*---------------------------------------------------------------------------*\
  |                                                                           |

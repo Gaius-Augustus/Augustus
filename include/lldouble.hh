@@ -57,7 +57,9 @@ class LLDouble{
     static const double logbase; // = log(base) = 693.15
 
     static const exponent_type max_exponent; 
-    static const exponent_type min_exponent; 
+    static const exponent_type min_exponent;
+
+    static double heat; // exponent for heating (1.0 as default)
     
  public:
     LLDouble(float x=0.0) : value(x), exponent(0) {}
@@ -163,6 +165,7 @@ class LLDouble{
     static LLDouble pow(const LLDouble& lld, double x) {
 	return lld.pow(x);
     }
+    LLDouble heated();
 
     /*
      * I/O stream operators 
@@ -194,6 +197,7 @@ class LLDouble{
     static LLDouble infinity() {
 	return LLDouble(dbl_inf, max_exponent);
     }
+    static void setHeat(double h);
 
 private:
     // for internal use: directly set the data fields

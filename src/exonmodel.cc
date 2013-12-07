@@ -1107,7 +1107,7 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 	    {
 		// transition and exon length fit with respect to reading frame
 		if (needForwardTable(algovar)) {
-		    Double fwdsummand = predForw[predState] * transEmiProb;
+		    Double fwdsummand = predForw[predState] * transEmiProb.heated();
 		    if (algovar == doSampling) {
 			if (fwdsummand > 0) 
 			    optionslist->add(predState, endOfPred, fwdsummand);
@@ -1250,7 +1250,7 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
 	  continue;
       Double transEmiProb = it->val * emiProb * lenProb * lenCorrection;
       if (needForwardTable(algovar)) {
-	  Double fwdsummand = predForw[predState] * transEmiProb;
+	  Double fwdsummand = predForw[predState] * transEmiProb.heated();
 	  if (algovar == doSampling) {
 	      if (fwdsummand > 0) 
 		  optionslist->add(predState, endOfPred, fwdsummand, endOfPred2);

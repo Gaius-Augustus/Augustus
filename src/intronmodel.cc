@@ -590,7 +590,7 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 		transEmiProb = it->val * emiProb * extrinsicQuot;
 		predProb = predVit.get(it->pos, substate) * transEmiProb;
 		if (needForwardTable(algovar)) {
-		    Double fwdsummand = forward[endOfPred].get(it->pos) * transEmiProb;
+		    Double fwdsummand = forward[endOfPred].get(it->pos) * transEmiProb.heated();
 		    if (algovar == doSampling) {
 			if (fwdsummand > 0)
 			    optionslist->add(it->pos, endOfPred, fwdsummand);
@@ -641,7 +641,7 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 			if (needForwardTable(algovar)) {
 			    // ACHTUNG: this isn't correct in the model
 			    // but the effect should be very small
-			    Double fwdsummand = forward[endOfPred].get(it->pos) * transEmiProb;
+			    Double fwdsummand = forward[endOfPred].get(it->pos) * transEmiProb.heated();
 			    if (algovar == doSampling) {
 				if (fwdsummand > 0)
 				    optionslist->add(it->pos, endOfPred, fwdsummand);
@@ -741,7 +741,7 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 	    transEmiProb = it->val * emiProb; 
 	    predProb = predVar.get(it->pos, substate) * transEmiProb;
 	    if (needForwardTable(algovar)) {
-		Double fwdsummand = forward[endOfPred].get(it->pos) * transEmiProb;
+		Double fwdsummand = forward[endOfPred].get(it->pos) * transEmiProb.heated();
 		if (algovar == doSampling) {
 		    if (fwdsummand > 0) 
 			optionslist->add(it->pos, endOfPred, fwdsummand);
@@ -795,7 +795,7 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 
     switch (algovar) {
 	case doViterbiAndForward:
-	    if (fwdsum > 0) 
+	    if (fwdsum > 0)
 		forward[base][state] = fwdsum;
 	case doViterbiOnly:
 	    if (maxPredProb > 0)

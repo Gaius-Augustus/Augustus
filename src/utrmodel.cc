@@ -996,7 +996,7 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 		predProb = predVit[it->pos] * transEmiProb;
 		if (needForwardTable(algovar)) { 
                     // endOfPred < 0 appears in left truncated state
-		    fwdsummand = forward[endOfPred>=0? endOfPred:0].get(it->pos) * transEmiProb;
+		    fwdsummand = forward[endOfPred>=0? endOfPred:0].get(it->pos) * transEmiProb.heated();
 		    fwdsum += fwdsummand;
 		    if (algovar == doSampling && fwdsummand > 0)
 			optionslist->add(it->pos, endOfPred, fwdsummand);
@@ -1045,7 +1045,7 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 		if (needForwardTable(algovar)) {
 		    // ACHTUNG: this isn't correct in the model
 		    // but the effect should be very small
-		    fwdsummand = forward[endOfPred].get(it->pos) * transEmiProb;
+		    fwdsummand = forward[endOfPred].get(it->pos) * transEmiProb.heated();
 		    fwdsum += fwdsummand;
 		    if (algovar==doSampling && fwdsummand > 0)
 			optionslist->add(it->pos, endOfPred, fwdsummand);

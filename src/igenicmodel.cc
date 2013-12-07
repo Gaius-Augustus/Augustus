@@ -237,7 +237,7 @@ void IGenicModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // viter
 	transEmiProb = it->val * emiProb;
         curmax  = viterbi[base-1].get(it->pos) * transEmiProb;
 	if (needForwardTable(algovar))
-	    fwdsummand = forward[base-1].get(it->pos) * transEmiProb;
+	    fwdsummand = forward[base-1].get(it->pos) * transEmiProb.heated();
         if( curmax > max ){
             max = curmax;
 	    oli.state = it->pos;
