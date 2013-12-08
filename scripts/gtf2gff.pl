@@ -70,6 +70,12 @@ sub parseAndStoreGTF{
 	    $txs{$txid}{"txline"} = \@f;
 	    next;
 	}
+	
+	$txs{$txid}{"CDS"} = [] if (!defined($txs{$txid}{"CDS"}));
+	$txs{$txid}{"UTR"} = [] if (!defined($txs{$txid}{"UTR"}));
+	$txs{$txid}{"exon"} = [] if (!defined($txs{$txid}{"exon"}));
+	$txs{$txid}{"rest"} = [] if (!defined($txs{$txid}{"rest"}));
+
 	# all other lines must belong to a transcript and a gene
 	if ($f[8] =~ /(transcript_id|Transcript)."?([^";]+)"?/){
 	    $txid = $2;
@@ -82,14 +88,14 @@ sub parseAndStoreGTF{
 	    die ("Not GTF format in the following line:\n$_\ngene_id not found.");
 	}
 	if (!$seen{$txid}){
-	    push @txorder, $txid; # remember the input order or transcripts for the output
+	    push @txorder, $txid; # remember the input order for transcripts for the output
 	    $seen{$txid} = 1;
 	}
 	# assign parental gene id to tx id
 	die ("transcript $txid has conflicting gene parents: and $geneid. Remember: In GTF txids need to be overall unique.")
 	    if (defined($geneOf{$txid}) && $geneOf{$txid} ne $geneid);
 	$geneOf{$txid} = $geneid;
-	
+
 	if ($feature eq "CDS" || $feature eq "coding_exon" || $feature eq "exon" || $feature =~ /UTR/i){
 	    $txs{$txid} = {"strand"=>$strand, "chr"=>$chr, "source"=>$source, "CDS"=>[], "UTR"=>[], "exon"=>[],"rest"=>[]} if (!exists($txs{$txid}));
 	    $txs{$txid}{"txstart"} = $start if (!defined($txs{$txid}{"txstart"}) || $txs{$txid}{"txstart"} > $start);
@@ -98,16 +104,12 @@ sub parseAndStoreGTF{
 	if ($feature eq "CDS" || $feature eq "coding_exon"){
 	    $txs{$txid}{"codingstart"} = $start if (!defined($txs{$txid}{"codingstart"}) || $txs{$txid}{"codingstart"} > $start);
 	    $txs{$txid}{"codingend"} = $end if (!defined($txs{$txid}{"codingend"}) || $txs{$txid}{"codingend"} < $end);
-	    $txs{$txid}{"CDS"} = [] if (!defined($txs{$txid}{"CDS"}));
 	    push @{$txs{$txid}{"CDS"}}, \@f;
 	} elsif ($feature =~ /UTR/i){
-	    $txs{$txid}{"UTR"} = [] if (!defined($txs{$txid}{"UTR"}));
 	    push @{$txs{$txid}{"UTR"}}, \@f;
 	} elsif ($feature eq "exon"){
-	    $txs{$txid}{"exon"} = [] if (!defined($txs{$txid}{"exon"}));
 	    push @{$txs{$txid}{"exon"}}, \@f;
 	} else {
-	    $txs{$txid}{"rest"} = [] if (!defined($txs{$txid}{"rest"}));
 	    push @{$txs{$txid}{"rest"}}, \@f;
 	}
     }
@@ -215,7 +217,7 @@ sub printConvertedGTF {
 	}
 	# print all other lines
 	@lines = sort {$a->[3] <=> $b->[3] || $a->[4] <=> $b->[4]}
-	(@{$txs{$txid}{"CDS"}}, @{$txs{$txid}{"UTR"}}, @{$txs{$txid}{"exon"}}, @{$txs{$txid}{"rest"}});
+	         (@{$txs{$txid}{"CDS"}}, @{$txs{$txid}{"UTR"}}, @{$txs{$txid}{"exon"}}, @{$txs{$txid}{"rest"}});
 	#[PKRK] following variable are to make the CDS and exon ID unique within the scope of the gene model
 	my $ct_exon = 0;
 	my $ct_CDS = 0;
