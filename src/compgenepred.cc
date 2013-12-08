@@ -88,7 +88,6 @@ void CompGenePred::start(){
 	cerr << "Warning: The option 'alternatives_from_evidence' is only available in the single species mode. Turned it off." << endl;
 	Constant::alternatives_from_evidence=false;
     }
-    bool withEvidence = rsa->extrinsicOn();
 
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(".base"); // equivalent to MEA prediction
@@ -180,7 +179,7 @@ void CompGenePred::start(){
 
 		    if (!noprediction){
 			SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
-			sfc->prepare(as, false);
+			sfc->prepare(as, true);
 			namgene.doViterbiPiecewise(*sfc, as, bothstrands); // sampling
 			alltranscripts = namgene.getAllTranscripts();
 			orthograph.sfcs[s] = sfc;
@@ -210,24 +209,23 @@ void CompGenePred::start(){
 	geneRange->createOrthoExons();
 	//geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
 	geneRange->printConsScore(seqRanges);
-	geneRange->printOrthoExons(rsa);
 
 	if (!noprediction){
 	    list<OrthoExon> hects = geneRange->getOrthoExons();
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph
-	 
-	    orthograph.outputGenes(baseGenes,base_geneid, withEvidence);
+
+	    orthograph.outputGenes(baseGenes,base_geneid);
 	    //add score for selective pressure of orthoexons
 	    orthograph.addScoreSelectivePressure();
 	    //determine initial path
 	    orthograph.globalPathSearch();
-	    orthograph.outputGenes(initGenes,init_geneid, withEvidence);
+	    orthograph.outputGenes(initGenes,init_geneid);
 	    
 	    if(!orthograph.all_orthoex.empty()){
 		if (dualdecomp){ // optimization via dual decomposition
 		    vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
 		    orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factor);
-		    orthograph.filterGeneList(genelist,optGenes,opt_geneid, withEvidence);
+		    orthograph.filterGeneList(genelist,optGenes,opt_geneid);
 		} else { // optimization by making small changes (moves)
 		    orthograph.pruningAlgor(evo);
 		    orthograph.printCache();
@@ -235,6 +233,10 @@ void CompGenePred::start(){
 		    // transfer max weight paths to genes + filter + ouput
 		    orthograph.outputGenes(optGenes, opt_geneid);
 		}
+	    }
+	    //geneRange->printOrthoExons(rsa); //TODO: two copies of list<OrthoExon> (class geneRange and class OrthoGraph) -> replace one copy by a pointer to the other 
+	    for(list<OrthoExon>::iterator it=orthograph.all_orthoex.begin(); it != orthograph.all_orthoex.end(); it++){
+		geneRange->printSingleOrthoExon(*it,true);
 	    }
 	}
 	seqRanges.clear(); // delete sequences

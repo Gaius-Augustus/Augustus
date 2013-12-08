@@ -87,8 +87,8 @@ public:
     // pointers to the output files
     static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles, omega_outfiles; 
 
+    void printSingleOrthoExon(OrthoExon &oe, bool files = true);
 private:
-    void printSingleOrthoExon(const OrthoExon &oe, bool files = true);
     vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence> const &seqRanges,
 				     const vector<vector<fragment>::const_iterator > &froms);
     void cutIncompleteCodons(OrthoExon &oe);

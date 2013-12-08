@@ -1948,7 +1948,27 @@ void PredictionScheme::print(int beginPos){
     for (list<PredictionRun>::iterator rit = predictionRuns.begin(); rit != predictionRuns.end(); rit++)
 	rit->print(beginPos);
 }
-
+FeatureCollection::FeatureCollection(const FeatureCollection& other){
+    // copy all simple data members
+    hasHintsFile=other.hasHintsFile;
+    offset=other.offset;
+    numSeqsWithInfo=other.numSeqsWithInfo;
+    numSources=other.numSources;
+    sourceKey = new string[numSources];
+    individual_liability = new bool[numSources];
+    oneGroupOneGene = new bool[numSources];
+    for (int i=0; i<numSources; i++) {
+	sourceKey[i] = other.sourceKey[i];
+	individual_liability[i] = other.individual_liability[i];
+	oneGroupOneGene[i] = other.oneGroupOneGene[i];
+    }
+    for(int i=0; i < NUM_FEATURE_TYPES; i++){
+	typeInfo[i]=other.typeInfo[i];
+    }
+    malustable=NULL;
+    localmalustable=NULL;
+    // TODO deep copy of all the other stuff
+}
 
 bool FeatureCollection::skeyExists(string skey){
     int sourceNum=0;
@@ -1975,8 +1995,6 @@ int FeatureCollection::esource(string skey){
 
 void FeatureCollection::readExtrinsicCFGFile(){ 
     string filename, skey;
-    char buf[256];
-    int sourcenum;
     try {
 	filename = Properties::getProperty( "extrinsicCfgFile" );
     } catch(...) {
@@ -1990,71 +2008,145 @@ void FeatureCollection::readExtrinsicCFGFile(){
 	    throw ProjectError(string("Could not find extrinsic config file ") + filename + ".");
 	}
 	datei >> comment;
-	string featureName;
-	double bonus, malus, localMalus;
-	FeatureType type;
-	datei >> goto_line_after("[SOURCES]") >> comment;
-        datei.getline( buf, 255 );
-	// numSources is the number of non-white space characters first
-	numSources=0;
-	int i=0;
-	while (i< (int) strlen(buf)){
-	    while(!isalpha(buf[i]) && i < (int) strlen(buf)){
-		i++;
-	    }
-	    if (i < (int) strlen(buf)){
-		numSources++;
-		while(isalpha(buf[i])){
-		    i++;
-		}
-	    }
-	}
-	sourceKey = new string[numSources];
-	individual_liability = new bool[numSources];
-	oneGroupOneGene = new bool[numSources];
-	for (int i=0; i<numSources; i++) {
-	    individual_liability[i] = false;
-	    oneGroupOneGene[i] = false;
-	}
-	numSources=0;
-	// construct sourceKey array
-	i=0;
-	while (i< (int) strlen(buf)){
-	    while(!isalpha(buf[i]) && i < (int) strlen(buf)){
-		i++;
-	    }
-	    if (i < (int) strlen(buf)){
-		sourceKey[numSources] = "";
-		while(isalpha(buf[i])){
-		    sourceKey[numSources] += buf[i]; 
-		    i++;
-		}
-		numSources++;
-	    }
-	}
+	readSourceRelatedCFG(datei);
+	readTypeInfo(datei);
+	datei.close();
+	datei.clear();
+    } catch (ProjectError e) {
+	cerr << e.getMessage() << endl;;
+	cerr << "Could not read in file with the configuration of hints: " << filename << endl;
+	datei.close();
+	datei.clear();
+	throw;
+    }
+}
 
-	// read in other source dependent configurations
-	streampos bufpos = datei.tellg();
-	datei >> goto_line_after("[SOURCE-PARAMETERS]") >> comment;
-	if (!datei) {
-	    datei.clear();
-	    datei.seekg(bufpos, ios::beg);
-	} else {
-	    bool done = false;
-	    while (!done){
-		bufpos = datei.tellg();
-		datei.getline(buf, 255);
-		stringstream stm(buf);
-		stm >> skey;
-		if (stm) {
-		    if (!skeyExists(skey)) {
-			done = true;
-		    } else {
-			sourcenum = esource(skey);
-			string option;
-			while(stm >> option) {
-			  int eqpos = option.find('=');
-			  if (eqpos == string::npos){ // single string option
+
+void FeatureCollection::readTypeInfo(istream& datei){
+    string featureName, skey;
+    double bonus, malus, localMalus;
+    FeatureType type;
+    datei >> goto_line_after("[GENERAL]") >> comment;
+    while (datei >> comment >> ws, datei && datei.peek() != '[') {
+	datei >> featureName >> bonus >> malus;
+	type = Feature::getFeatureType(featureName);
+	if ((int)type < 0) 
+	    cerr << "unknown Feature Type: " << featureName << endl;
+	else {
+	    // look whether there is a local malus as well after the normal malus, this is optional
+	    datei >> localMalus;
+	    if (datei.fail()) {// first source key
+		datei.clear();
+		localMalus = 1.0;
+	    }
+	    if (localMalus != 1.0){
+		if (type == UTRpartF) {
+		    cout << "# Setting UTRpart local malus: " << localMalus << endl;
+		} else if (type == CDSpartF) {
+		    cout << "# Setting CDSpart local malus: " << localMalus << endl;
+		} else if (type == dssF) {
+		    cout << "# Setting donor splice site local malus: " << localMalus << endl;
+		} else if (type == assF) {
+		    cout << "# Setting acceptor splice site local malus: " << localMalus << endl;
+		} else {
+			cerr << "Warning: local malus only supported for UTRpart, CDSpart, ass and dss. Not for " << featureName << endl;
+		}
+		if (localMalus < 0.0 || localMalus > 1.0)
+		    throw ProjectError("Local malus must be in the range 0.0-1.0.");
+	    }
+	    typeInfo[type] = FeatureTypeInfo(numSources, bonus, malus, localMalus);
+	    for (int j=0; j < numSources; j++) {
+		datei >> skey;
+		/*
+		 * now read the number of classes,
+		 * the numclasses-1 boundaries between different classes of grades
+		 * and the numclasses quotients p+(g)/p-(g) for the grades 
+		 */
+		try {
+		    typeInfo[type].read(datei, esource(skey));
+		    if (!datei) {
+			cerr << "Error in syntax for type " << featureName << " source key " << skey << "." << endl;
+			throw ProjectError("Syntax Error");
+		    }
+		} catch (ProjectError e) {
+		    throw ProjectError("FeatureCollection::readExtrinsicCFGFile: " + e.getMessage());
+		}
+	    }
+	}
+    }
+}
+ 
+
+void FeatureCollection::readSourceRelatedCFG(istream& datei){
+    char buf[256];
+    int sourcenum;
+    string skey;
+    datei >> goto_line_after("[SOURCES]") >> comment;
+    datei.getline( buf, 255 );
+    // numSources is the number of non-white space characters first
+    numSources=0;
+    int i=0;
+    while (i< (int) strlen(buf)){
+	while(!isalpha(buf[i]) && i < (int) strlen(buf)){
+	    i++;
+	}
+	if (i < (int) strlen(buf)){
+	    numSources++;
+	    while(isalpha(buf[i])){
+		i++;
+	    }
+	}
+    }
+    sourceKey = new string[numSources];
+    individual_liability = new bool[numSources];
+    oneGroupOneGene = new bool[numSources];
+    for (int i=0; i<numSources; i++) {
+	individual_liability[i] = false;
+	oneGroupOneGene[i] = false;
+    }
+    numSources=0;
+    // construct sourceKey array
+    i=0;
+    while (i< (int) strlen(buf)){
+	while(!isalpha(buf[i]) && i < (int) strlen(buf)){
+	    i++;
+	}
+	if (i < (int) strlen(buf)){
+	    sourceKey[numSources] = "";
+	    while(isalpha(buf[i])){
+		sourceKey[numSources] += buf[i]; 
+		i++;
+	    }
+	    numSources++;
+	}
+    }
+    // print sourceKey array
+    cout << "# Sources of extrinsic information: ";
+    for (int i=0; i<numSources; i++)
+ 	cout << sourceKey[i] << " ";
+    cout << endl;
+    // read in other source dependent configurations
+    streampos bufpos = datei.tellg();
+    datei >> goto_line_after("[SOURCE-PARAMETERS]") >> comment;
+    if (!datei) {
+	datei.clear();
+	datei.seekg(bufpos, ios::beg);
+    } else {
+	bool done = false;
+	while (!done){
+	    bufpos = datei.tellg();
+	    datei.getline(buf, 255);
+	    stringstream stm(buf);
+	    stm >> skey;
+	    if (stm) {
+		if (!skeyExists(skey)) {
+		    done = true;
+		} else {
+		    sourcenum = esource(skey);
+		    string option;
+		    while(stm >> option) {
+			int eqpos = option.find('=');
+			if (eqpos == string::npos){ // single string option
 			    if (option == "individual_liability"){ // an unsatisfyable hint doesn't touch the other hints of the group
 				cout << "# Setting " << option << " for " << skey << "." << endl;
 				individual_liability[sourcenum] = true;
@@ -2064,92 +2156,26 @@ void FeatureCollection::readExtrinsicCFGFile(){
 			    } else {
 				throw ProjectError(string("Unknown option: ") + option + ".");
 			    }
-			  } else { // par=value option
+			} else { // par=value option
 			    string valueStr = option.substr(eqpos+1);
 			    option = option.substr(0, eqpos);
 			    // example code for par=value option, not used yet
 			    if (option == "localMalus"){ // extra malus in a partially covered exon
-			      //double value = atof(valueStr.c_str());
+				//double value = atof(valueStr.c_str());
 			    } else {
-			      throw ProjectError(string("Unknown option: ") + option + ".");
+				throw ProjectError(string("Unknown option: ") + option + ".");
 			    }
-			  }
 			}
 		    }
-		} else 
-		    done = true;
-	    } 
-	    datei.seekg(bufpos);
-	}
-	
-	
-	datei >> goto_line_after("[GENERAL]") >> comment;
-	while (datei) {
-	    datei >> featureName >> bonus >> malus;
-	    type = Feature::getFeatureType(featureName);
-	    if ((int)type < 0) 
-		cerr << "unknown Feature Type: " << featureName << endl;
-	    else {
-	      // look whether there is a local malus as well after the normal malus, this is optional
-	      datei >> localMalus;
-	      if (datei.fail()) {// first source key
-		datei.clear();
-		localMalus = 1.0;
-	      }
-	      if (localMalus != 1.0){
-		if (type == UTRpartF) {
-		  cout << "# Setting UTRpart local malus: " << localMalus << endl;
-		} else if (type == CDSpartF) {
-		  cout << "# Setting CDSpart local malus: " << localMalus << endl;
-		} else if (type == dssF) {
-                  cout << "# Setting donor splice site local malus: " << localMalus << endl;
-                } else if (type == assF) {
-                  cout << "# Setting acceptor splice site local malus: " << localMalus << endl;
-                } else {
-		  cerr << "Warning: local malus only supported for UTRpart, CDSpart, ass and dss. Not for " << featureName << endl;
 		}
-		if (localMalus < 0.0 || localMalus > 1.0)
-		  throw ProjectError("Local malus must be in the range 0.0-1.0.");
-	      }
-	      typeInfo[type] = FeatureTypeInfo(numSources, bonus, malus, localMalus);
-	      for (int j=0; j < numSources; j++) {
-		    datei >> skey;
-		    /*
-		     * now read the number of classes,
-		     * the numclasses-1 boundaries between different classes of grades
-		     * and the numclasses quotients p+(g)/p-(g) for the grades 
-		     */
-		    try {
-			typeInfo[type].read(datei, esource(skey));
-			if (!datei) {
-			    cerr << "Error in syntax for type " << featureName << " source key " << skey << "." << endl;
-			    throw ProjectError("Syntax Error");
-			}
-		    } catch (ProjectError e) {
-			throw ProjectError("FeatureCollection::readExtrinsicCFGFile: " + e.getMessage());
-		    }
-		}
-	    }
-	    while (datei && datei.get() != '\n')
-		;
-	    datei >> comment;
+	    } else 
+		done = true;
 	} 
-	datei.close();
-	datei.clear();
-    } catch (ProjectError e) {
-      cerr << e.getMessage() << endl;;
-      cerr << "Could not read in file with the configuration of hints: " << filename << endl;
-      datei.close();
-      datei.clear();
-      throw;
+	datei.seekg(bufpos);
     }
-    // print sourceKey array
-    cout << "# Sources of extrinsic information: ";
-    for (int i=0; i<numSources; i++)
-	cout << sourceKey[i] << " ";
-    cout << endl;
 }
-
+	
+	
 void FeatureCollection::readGFFFile(const char *filename){
     /*
      * Read in the configuration file for extrinsic features.
@@ -2168,7 +2194,7 @@ void FeatureCollection::readGFFFile(const char *filename){
     } catch (...) {
       predictionEnd = INT_MAX;
     }
- 
+
     try {
 	datei.open(filename);
 	if( !datei ) {
@@ -2211,6 +2237,10 @@ void FeatureCollection::readGFFFile(const char *filename){
     hasHintsFile = true;
 }
 
+/*
+ * initialization of a feature with the info given 
+ * in the extrinsic config table
+ */
 void FeatureCollection::setBonusMalus(Feature& f){
     FeatureTypeInfo& fti = typeInfo[f.type];
     int sourcenum = esource(f.esource);

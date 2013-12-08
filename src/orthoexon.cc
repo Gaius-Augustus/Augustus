@@ -46,6 +46,19 @@ bool OrthoExon::exonExists(int pos) const{
     return false;	    
 }
 
+void OrthoExon::setLabelpattern(){
+    labelpattern.clear();
+    for(size_t pos = 0; pos < orthonode.size(); pos++){
+	if(orthonode[pos]){
+	    labelpattern+=itoa(orthonode[pos]->label);
+	}
+	else{
+	    labelpattern+="-";
+	}
+    }
+}
+
+
 // old code:
 /*list<OrthoExon> readOrthoExons(string filename){
 

@@ -82,11 +82,11 @@ public:
 
     // transform graph labeling into list of genes + filter + output
     void buildGeneList(vector< list<Gene>* > &genelist);
-    void filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid, bool withEvidence=false);
-    void outputGenes(vector<ofstream*> &filestreams, vector<int> &geneid, bool withEvidence=false){
+    void filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid);
+    void outputGenes(vector<ofstream*> &filestreams, vector<int> &geneid){
 	vector< list<Gene> *> genelist(numSpecies);
 	buildGeneList(genelist);
-	filterGeneList(genelist,filestreams, geneid,withEvidence);
+	filterGeneList(genelist,filestreams, geneid);
     }
 };
 

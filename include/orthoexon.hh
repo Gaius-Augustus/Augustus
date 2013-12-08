@@ -42,7 +42,9 @@ public:
     void setConsScore(double c){cons=c;}
     void setDiversity(double d){diversity=d;}
     void setContainment(int c) { containment = c; }
-
+    void setLabelpattern(); // updates the labelpattern
+    string getStoredLabelpattern() {return labelpattern;} // retrieving labelpattern without updating
+    string getCurrentLabelpattern() { setLabelpattern(); return labelpattern;} //retrieving labelpattern with updating
 
     vector<ExonCandidate*> orthoex;
     vector<Node*> orthonode; //corresponding nodes in the graph

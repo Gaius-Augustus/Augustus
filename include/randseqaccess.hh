@@ -3,7 +3,7 @@
  * licence: Artistic Licence, see file LICENCE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  * descr.:  random acces to sequence data, e.g. get me chr1:1000-2000 from species 'human'
- * authors: Mario Stanke, Stephanie König, yuquilin
+ * authors: Mario Stanke, Stefanie Koenig, yuquilin
  *
  *********************************************************************/
 
@@ -24,6 +24,30 @@
 #endif
 
 /*
+ * SpeciesCollection holds all extrinsic evidence given for the species.
+ * It consists of a set of group specific FeatureCollections and
+ * a default FeatureCollection. Species for which no extrinsic evidence
+ * is given, make use of the default collection (identical to ab initio
+ * gene prediction, no bonus/malus).
+ * Subsets of the species with the same extrinsic config, i.e. same feature table
+ * in the extrinsicCfgFile, share one group specific FeatureCollection.
+ */
+class SpeciesCollection{
+public:
+    FeatureCollection* getFeatureCollection(string speciesname);
+    int getGroupID(string speciesname);
+    bool withEvidence(string speciesname){return getGroupID(speciesname)>0;}
+    // reading in the extrinsicCfgFile and hintsFile
+    void readGFFFile(const char* filename); 
+    void readExtrinsicCFGFile();
+private:
+    map<int,FeatureCollection> speciesColl; // maps the group number to a FeatureCollection
+    map<string,int> groupIDs; // maps the speciesname to the group number
+    FeatureCollection defaultColl; // default FeatureColleciton
+    static int groupCount; // number of groups
+};
+
+/*
  * abstract class for quick access to an arbitrary sequence segment in genomes
  * needed for comparative gene finding
  */
@@ -42,7 +66,6 @@ public:
 	return getSeq(getSname(speciesIdx), chrName, start, end, strand);
     }
     virtual SequenceFeatureCollection* getFeatures(string speciesname, string chrName, int start, int end, Strand strand) = 0;  
-    bool extrinsicOn(){return extrinsic;}
     virtual ~RandSeqAccess() {}
 protected:
     RandSeqAccess() {};
@@ -50,8 +73,7 @@ protected:
     vector<map<string,int> > chrLen;
     vector<string> speciesNames;
     map<string, size_t> speciesIndex; // to quickly access the index for a given species name
-    FeatureCollection extrinsicFeatures; // all hints
-    bool extrinsic; // if true extrinsic evidence is used for gene prediction
+    SpeciesCollection extrinsicFeatures; // all hints
 };
 
 /*

@@ -437,8 +437,8 @@ void GeneMSA::printOrthoExons(RandSeqAccess *rsa) {
 
 // writes the ortholog exons on one OrthoExon into the files 'orthoExons.species.gff3'
 // files: write each one to a file for its species, if false to stdout
-void GeneMSA::printSingleOrthoExon(const OrthoExon &oe, bool files) {
-    bool GBrowseStyle = true; // for viewing in GBrowse use this style
+void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
+    bool GBrowseStyle = false; // for viewing in GBrowse use this style
     streambuf *stdout = cout.rdbuf();
     for (int s=0; s < numSpecies(); s++) {
 	ExonCandidate *ec = oe.orthoex.at(s);
@@ -490,6 +490,10 @@ void GeneMSA::printSingleOrthoExon(const OrthoExon &oe, bool files) {
 		cout << "|" << oe.getContainment();
 	    else
 		cout << ";containment=" << oe.getContainment();
+	    if (GBrowseStyle)
+                cout << "|" << oe.getStoredLabelpattern() <<":"<<oe.getCurrentLabelpattern();
+            else
+                cout << ";labelpattern=" <<oe.getStoredLabelpattern() <<":"<< oe.getCurrentLabelpattern();
 	    cout << endl;
         }
     }

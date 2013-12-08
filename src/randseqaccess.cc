@@ -26,6 +26,8 @@
 #include <query.h>
 #endif
 
+int SpeciesCollection::groupCount = 1;
+
 void RandSeqAccess::setLength(int idx, string chrName, int len){
     map<string,int>::iterator it = chrLen[idx].find(chrName);
     if (it == chrLen[idx].end()){
@@ -109,18 +111,29 @@ MemSeqAccess::MemSeqAccess(){
 	extrinsicfilename =  Properties::getProperty("hintsfile");
     } catch (...){
 	extrinsicfilename = NULL; 
-	extrinsic=false;
 	cout << "# No extrinsic information given." << endl;
     }
     if (extrinsicfilename) {
 	cout << "# reading in the file " << extrinsicfilename << " ..." << endl;
 	extrinsicFeatures.readGFFFile(extrinsicfilename);
-	extrinsic=true;
     }
+    // print Seqs for which hints are given
+    cout << "We have hints for"<<endl;
+    bool seqsWithInfo = false;
     for(map<string, char*>::iterator it = sequences.begin(); it != sequences.end(); it++){
-	cout << "We have hints for"<<endl;
-	if(extrinsicFeatures.isInCollections(it->first))
-	    cout << it->first << endl;
+	string completeName=it->first;
+	size_t pos = completeName.find('.');
+	string speciesname = completeName.substr(0,pos);
+	FeatureCollection *fc = extrinsicFeatures.getFeatureCollection(speciesname);
+	if(fc->isInCollections(completeName)){
+	    seqsWithInfo = true;
+	    cout << completeName << endl;
+	}
+    }
+    if(!seqsWithInfo){
+	cout << "# WARNING: extrinsic information given but not on any of the sequences in the input set!" << endl;
+	cout << "The first column in the hints file must contain the speciesID and seqID separated by '.'"<< endl;
+	cout << "(for example 'hg19.chr21')" << endl;
     }
 }
 
@@ -145,10 +158,11 @@ AnnoSequence* MemSeqAccess::getSeq(string speciesname, string chrName, int start
 
 SequenceFeatureCollection* MemSeqAccess::getFeatures(string speciesname, string chrName, int start, int end, Strand strand){
 
-    string key=speciesname + "." + chrName;
-    SequenceFeatureCollection *c=extrinsicFeatures.getSequenceFeatureCollection(key);
+    string key = speciesname + "." + chrName;
+    FeatureCollection *fc = extrinsicFeatures.getFeatureCollection(speciesname);
+    SequenceFeatureCollection *c=fc->getSequenceFeatureCollection(key);
     if(!c){
-	SequenceFeatureCollection* sfc = new SequenceFeatureCollection(&extrinsicFeatures); // empty list of hints
+	SequenceFeatureCollection* sfc = new SequenceFeatureCollection(fc); // empty list of hints
 	return sfc;
     }
     bool rc=false;
@@ -189,6 +203,7 @@ DbSeqAccess::DbSeqAccess(){
     dbaccess = Constant::dbaccess;
     split_dbaccess();
     connect_db();
+    bool extrinsic;
     try{
 	extrinsic =  Properties::getBoolProperty("dbhints");
     }catch(...){
@@ -354,13 +369,14 @@ SequenceFeatureCollection* DbSeqAccess::getFeatures(string speciesname, string c
 #else // AMYSQL
 SequenceFeatureCollection* DbSeqAccess::getFeatures(string speciesname, string chrName, int start, int end, Strand strand){
 
-    SequenceFeatureCollection* sfc = new SequenceFeatureCollection(&extrinsicFeatures);
-    if(extrinsic){
+    FeatureCollection* fc = extrinsicFeatures.getFeatureCollection(speciesname);
+    SequenceFeatureCollection* sfc = new SequenceFeatureCollection(fc);
+    if(extrinsicFeatures.withEvidence(speciesname)){ // only retrieve hints for the species specified in the extrinsicCfgFile
 	mysqlpp::Query query = con.query();
 	query << "SELECT source,start,end,score,type,strand,frame,priority,grp,mult,esource FROM hints as H, speciesnames as S,seqnames as N WHERE speciesname='"
 	      << speciesname << "' AND seqname='" << chrName << "' AND H.speciesid=S.speciesid AND S.speciesid=N.speciesid AND H.seqnr=N.seqnr AND start <= "
 	      << end << " AND end >= " << start;
-	//	cout << "Executing" << endl << query.str() << endl;
+	//cout << "Executing" << endl << query.str() << endl;
 	vector<hints> h;
 	query.storein(h);
 	
@@ -391,11 +407,11 @@ SequenceFeatureCollection* DbSeqAccess::getFeatures(string speciesname, string c
 		    f.shiftCoordinates(start,end);
 		else
 		    f.shiftCoordinates(start,end,true);
-		extrinsicFeatures.setBonusMalus(f);
+		fc->setBonusMalus(f);
 		sfc->addFeature(f);
 	    }
 	}
-	extrinsicFeatures.hasHintsFile = true;
+	fc->hasHintsFile = true;
     }
     return sfc;
 }
@@ -556,5 +572,155 @@ int DbSeqAccess::get_region_coord(int seq_region_id,int start,int end,vector<T> 
 //	throw ProjectError("No sequences found.");
 //    return seqlist;
 //}
+
+FeatureCollection* SpeciesCollection::getFeatureCollection(string speciesname){
+    int groupID = getGroupID(speciesname);
+    if(groupID <= 0)
+	return &defaultColl;
+    map<int,FeatureCollection>::iterator it = speciesColl.find(groupID);
+    if(it != speciesColl.end())
+	return &(it->second);
+    return &defaultColl;
+}
+
+int SpeciesCollection::getGroupID(string speciesname){
+    map<string,int>::iterator it = groupIDs.find(speciesname);
+    if(it != groupIDs.end())
+	return it->second;
+    return 0;
+}
+
+void SpeciesCollection::readExtrinsicCFGFile(){
+    string filename,skey;
+    char buf[256];
+    ifstream datei;
+
+    try {
+        filename = Properties::getProperty( "extrinsicCfgFile" );
+    } catch(...) {
+        cerr << "Could not find parameter 'extrinsicCfgFile'" << endl;
+        return;
+    }
+
+    try {
+        datei.open(filename.c_str());
+        if (!datei) {
+            throw ProjectError(string("Could not find extrinsic config file ") + filename + ".");
+        }
+        datei >> comment;
+	FeatureCollection fc;
+	fc.readSourceRelatedCFG(datei);
+	while(datei){
+	    FeatureCollection sc(fc);
+	    sc.readTypeInfo(datei); // reading in a bonus/malus table
+	    if(datei){
+		// reading in the species group for which the table is valid
+		getline(datei,skey);
+		if(skey == "[GROUP" + itoa(groupCount) + "]"){
+		    cout << "extrinsic group " << groupCount << ":";
+		    datei.getline(buf, 255); // reading in the set of species that belongs to the group
+		    stringstream stm(buf);
+		    if(stm >> skey){ 
+			do{
+			    map<string,int>::iterator it=groupIDs.find(skey);
+			    if(it != groupIDs.end())
+				throw ProjectError("SpeciesCollection::readExtrinsicCFGFile: species " +
+						   skey +" is assigned to more than one extrinsic config table in\n" + filename);
+			    groupIDs.insert(pair<string,int>(skey,groupCount));
+			    cout <<" "<<skey;
+			}while(stm >> skey);
+			cout << endl;
+		    }
+		    else{
+			throw ProjectError("SpeciesCollection::readExtrinsicCFGFile: Please specify a set of species for which config table " + 
+					   itoa(groupCount) +" in\n " + filename + "is valid");
+		    }
+		    speciesColl.insert(pair<int,FeatureCollection>(groupCount,sc));
+		    groupCount++;
+		    while(datei >> comment >> ws, datei && datei.peek() != '[')
+			;
+		}
+		else{
+		    throw ProjectError("SpeciesCollection::readExtrinsicCFGFile: Please specify a set of species for which config table " +
+				       itoa(groupCount) +" in\n " + filename + "is valid");
+		}
+	    }
+	    else{
+		throw ProjectError("SpeciesCollection::readExtrinsicCFGFile: Please specify a set of species for which config table " +
+				   itoa(groupCount) + " in\n " + filename + "is valid");
+	    }
+	}
+        datei.close();
+        datei.clear();
+    } catch (ProjectError e) {
+        cerr << e.getMessage() << endl;
+        cerr << "Could not read in file with the configuration of hints: " << filename << endl;
+        datei.close();
+        datei.clear();
+        throw;
+    }
+}
+
+void SpeciesCollection::readGFFFile(const char *filename){
+    /*
+     *Read in the configuration file for extrinsic features.
+     */
+    readExtrinsicCFGFile();   
+    ifstream datei;
+    try {
+        datei.open(filename);
+        if( !datei ) {
+            cerr << "FeatureCollection::readGFFFile( " << filename << " ) : Could not open the file!!!" << endl;
+            throw ProjectError();
+        }
+
+	/* 
+	 * read in line by line
+	 */
+	Feature f;
+	datei >> comment >> ws;
+        while (datei) {
+            try{
+                datei >> f >> comment >> ws;
+            } catch (ProjectError e){}
+            if (f.type != -1) {
+		// split species name and sequence ID
+		string completeName=f.seqname;
+		string speciesName,seqname;                                                                                                          
+		for (int i=0; i<completeName.length(); i++) {
+		    // seperator is the point '.' for example hg19.chr21, has to be changed                         
+		    if ((completeName[i] == '-') || (completeName[i] == '.')) {
+			speciesName = completeName.substr(0,i);
+			seqname = completeName.substr(i+1, string::npos);
+			if (i == completeName.length()-1)
+			    throw ProjectError("first column in hintfile must be the speciesname and seqname delimited by '.'");
+		    }
+		}
+		// get species specific collection
+		if(withEvidence(speciesName)){
+		    FeatureCollection *fc = getFeatureCollection(speciesName);
+		    fc->setBonusMalus(f);
+		    SequenceFeatureCollection& sfc =  fc->getSequenceFeatureCollection(completeName.c_str());
+		    sfc.addFeature(f);
+		    fc->hasHintsFile = true;
+		}
+		else{
+		    cerr << "Warning: hints are given for species " + speciesName +
+			" but no extrinsic configuration in the extrinsicCfgFile.\n" +
+			" Ignoring all hints for that species." << endl;
+			
+		}
+            }
+        }
+        datei.close();
+    } catch (ProjectError e) {
+        cerr << e.getMessage() << endl;
+        throw e;
+    } catch(...) {
+        cerr << "FeatureCollection::readGFFFile( " << filename << " ) : Could not read the file!!!" << endl;
+        datei.close();
+    }
+}
+
 
 #endif // AMYSQL

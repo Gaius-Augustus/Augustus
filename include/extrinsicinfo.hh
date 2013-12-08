@@ -337,8 +337,7 @@ public:
 	    offset = 0;
 	Feature::offset = offset;
     }
-  // TODO deep copy constructor
-  //FeatureCollection(const FeatureCollection &other){}
+    FeatureCollection(const FeatureCollection &other);
   // TODO deep assignment operator
   //FeatureCollection & operator = (const FeatureCollection & other){
   //    return *this;}
@@ -377,6 +376,9 @@ public:
     void readGFFFile(const char *filename);
     void setBonusMalus(Feature& f);
     void readExtrinsicCFGFile();
+    // reading the extrinsic config file is split into two parts:
+    void readSourceRelatedCFG(istream& datei); // reading in all source related parameters
+    void readTypeInfo(istream& datei); // reading in the bonus/malus table
     int getNumSeqsWithInfo() { return numSeqsWithInfo;}
     int getNumCommonSeqs(AnnoSequence *annoseq);
     void printAccuracyForSequenceSet(const AnnoSequence* annoseqs, bool cleanRedundancies=true);
