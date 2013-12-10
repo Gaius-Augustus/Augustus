@@ -87,14 +87,6 @@ void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
 }
 
 void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid){
-
-    Boolean noInFrameStop;  
-
-    try {
-	noInFrameStop = Properties::getBoolProperty("noInFrameStop");
-    } catch (...) {
-	noInFrameStop = false;
-    }
     
     for (size_t pos = 0; pos < numSpecies; pos++){	
 	if(genelist[pos]){
@@ -102,8 +94,7 @@ void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream
 	    AnnoSequence *annoseq = graphs[pos]->getAnnoSeq();
 	    Strand strand = graphs[pos]->getSeqStrand();
 
-	    list<Gene> *filteredTranscripts = Gene::filterGenePrediction(genelist[pos], annoseq->sequence, bothstrands, noInFrameStop);
-	    list<AltGene> *agl = groupTranscriptsToGenes(filteredTranscripts);
+	    list<AltGene> *agl = groupTranscriptsToGenes(genelist[pos]);
 
 	    bool withEvidence = false;
 	    if(sfcs[pos] && sfcs[pos]->collection->hasHintsFile){
