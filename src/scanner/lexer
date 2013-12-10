@@ -1,11 +1,12 @@
+%filenames scanner
 %%
 [ \t\n]+                                                //skip white space
-\[[^][]*\]						//skip all the junk in the square brackets
+\[[^\[]*\]						//skip all the junk in the square brackets
 [Bb]egin						return Parser::BEGIN;
 [Tt]ree[s]?						return Parser::TREE;
 [Ee]nd							return Parser::END;
 [Tt]ranslate						return Parser::TRANSLATE;
 [0-9]+							return Parser::NUM;
-[\-\+]?([0-9]*\.?[0-9]+|[0-9]+\.)([Ee][\-\+]?[0-9]+)?   return Parser::DISTANCE;
+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?			return Parser::DISTANCE;
 [A-Za-z][A-Za-z0-9_\.]*		                        return Parser::SPECIES;	
 [();,:=]                                                return matched()[0];
