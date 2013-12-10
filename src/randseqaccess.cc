@@ -265,24 +265,25 @@ MemSeqAccess::MemSeqAccess(){
     if (extrinsicfilename) {
 	cout << "# reading in the file " << extrinsicfilename << " ..." << endl;
 	extrinsicFeatures.readGFFFile(extrinsicfilename);
-    }
-    // print Seqs for which hints are given
-    cout << "We have hints for"<<endl;
-    bool seqsWithInfo = false;
-    for(map<string, char*>::iterator it = sequences.begin(); it != sequences.end(); it++){
-	string completeName=it->first;
-	size_t pos = completeName.find('.');
-	string speciesname = completeName.substr(0,pos);
-	FeatureCollection *fc = extrinsicFeatures.getFeatureCollection(speciesname);
-	if(fc->isInCollections(completeName)){
-	    seqsWithInfo = true;
-	    cout << completeName << endl;
+
+	// print Seqs for which hints are given
+	cout << "We have hints for"<<endl;
+	bool seqsWithInfo = false;
+	for(map<string, char*>::iterator it = sequences.begin(); it != sequences.end(); it++){
+	    string completeName=it->first;
+	    size_t pos = completeName.find('.');
+	    string speciesname = completeName.substr(0,pos);
+	    FeatureCollection *fc = extrinsicFeatures.getFeatureCollection(speciesname);
+	    if(fc->isInCollections(completeName)){
+		seqsWithInfo = true;
+		cout << completeName << endl;
+	    }
 	}
-    }
-    if(!seqsWithInfo){
-	cout << "# WARNING: extrinsic information given but not on any of the sequences in the input set!" << endl;
-	cout << "The first column in the hints file must contain the speciesID and seqID separated by '.'"<< endl;
-	cout << "(for example 'hg19.chr21')" << endl;
+	if(!seqsWithInfo){
+	    cout << "# WARNING: extrinsic information given but not on any of the sequences in the input set!" << endl;
+	    cout << "The first column in the hints file must contain the speciesID and seqID separated by '.'"<< endl;
+	    cout << "(for example 'hg19.chr21')" << endl;
+	}
     }
 }
 
