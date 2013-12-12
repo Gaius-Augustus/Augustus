@@ -352,7 +352,10 @@ DbSeqAccess::DbSeqAccess(){
 #ifdef AMYSQL
     dbaccess = Constant::dbaccess;
     split_dbaccess();
-    connect_db();
+    if(Constant::MultSpeciesMode)
+	connect_db();
+    else
+	connect_db(cerr);
     bool extrinsic;
     try{
 	extrinsic =  Properties::getBoolProperty("dbhints");
@@ -409,9 +412,15 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
 	throw ProjectError("Could not retrieve sequence from database using query:" + querystr);
     else if (g.size() == 1){ // segment overlaps a single dna chunk
         if (!(g[0].start <= start && g[0].end >= end)){
-   	    return NULL; // temporaryily ignore this problem introduced by Alexander
-	    throw ProjectError("Tried to retrieve a sequence that is only partially contained in database:"
+	    if(Constant::MultSpeciesMode){
+		return NULL; // temporaryily ignore this problem introduced by Alexander
+		throw ProjectError("Tried to retrieve a sequence that is only partially contained in database:"
 			       + chrName + ":" + itoa(start) + "-" + itoa(end));
+	    }
+	    else{
+		if(end > g[0].end)
+		    end=g[0].end;
+	    }
         }
 	dna = g[0].dnaseq.substr(start - g[0].start, end-start+1);
     } else {
@@ -429,8 +438,14 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
 			throw ProjectError("Segment not uniquely represented in database. Have you loaded sequences more than once?");
 		    dna.append(it->dnaseq);
 		} else { // last chunk
-		    if (it->end < end)
-			throw ProjectError("Tried to retrieve a sequence that is only partially contained in database:" + chrName + ":" + itoa(start) + "-" + itoa(end));
+		    if (it->end < end){
+			if(Constant::MultSpeciesMode){
+			    throw ProjectError("Tried to retrieve a sequence that is only partially contained in database:" + chrName + ":" + itoa(start) + "-" + itoa(end));
+			}
+			else{
+			    end = it->end;
+			}
+		    }
 		    dna.append(it->dnaseq.substr(0, end - it->start + 1)); // rest of sequence = initial part of last chunk
 		}
 	    }
@@ -580,18 +595,18 @@ int DbSeqAccess::split_dbaccess(){
     return 0;
 }
 
-void DbSeqAccess::connect_db(){
+void DbSeqAccess::connect_db(ostream& out){
     const  char* db_name = db_information[0].c_str();
     const  char* host = db_information[1].c_str();
     const  char* user = db_information[2].c_str();
     const  char* passwd = db_information[3].c_str();
     try {
-	cout << "# Opening database connection using connection data \"" << Constant::dbaccess << "\"...\t";
+	out << "# Opening database connection using connection data \"" << Constant::dbaccess << "\"...\t";
 	con.connect(db_name,host,user,passwd);
-	cout << "DB connection OK." << endl;
+	out << "DB connection OK." << endl;
     }
     catch(const mysqlpp::BadQuery& er){
-	cout << "Query error: " << er.what() << endl;
+	out << "Query error: " << er.what() << endl;
     }
 }
 

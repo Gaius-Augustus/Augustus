@@ -105,7 +105,7 @@ public:
     SequenceFeatureCollection* getFeatures(string speciesname, string chrName, int start, int end, Strand strand);  
 #ifdef AMYSQL
     int split_dbaccess();
-    void connect_db();
+    void connect_db(ostream& out=cout);
     template<class T>  
     AnnoSequence* getNextDBSequence(string charName, int start, int end, vector<T>& asm_query_region);
     // template<class T>

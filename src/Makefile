@@ -40,7 +40,7 @@ RUNTIME_LIBPATH =
 INCLS	+= -I/usr/include/mysql -I/usr/local/include/mysql++
 LIBS 	+=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
 CFLAGS  += -DAMYSQL
-PROGR   += load2db
+PROGR   += load2db getSeq
 endif
 
 
@@ -83,6 +83,10 @@ prepareAlign: pp_prepare_align.cc
 load2db: load2db.cc fasta.o hints.o types.o properties.o lldouble.o
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp load2db ../bin/
+
+getSeq: getSeq.cc $(OBJS) $(DUMOBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	cp getSeq ../bin/
 
 info:
 	echo "$(CFLAGS)" > $(INFO)
