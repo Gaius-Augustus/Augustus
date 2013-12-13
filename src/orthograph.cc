@@ -110,7 +110,6 @@ void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream
 		agl = reverseGeneList(agl, annoseq->length - 1);
 	    }
 
-	    delete genelist[pos];
 	    /*
 	     * possibly more filter steps
 	     */
@@ -159,6 +158,8 @@ void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream
 		cout << "# (none)" << endl;
 	    }
 	    cout.rdbuf(coutbuf); //reset to standard output again
+
+	    delete genelist[pos];	    
 	}
     }
 }
