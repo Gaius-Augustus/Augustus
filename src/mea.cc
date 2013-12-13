@@ -72,7 +72,9 @@ void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures,
  * MEA using graph representation
  */
 
-void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, const char* dna){
+list<Gene>* getMEAtranscripts(list<Gene> *alltranscripts, const char* dna){
+
+  list<Gene> *meaGenes = new list<Gene>;
 
   if(!alltranscripts->empty()){
 
@@ -93,12 +95,15 @@ void getMEAtranscripts(list<Gene> *meaGenes, list<Gene> *alltranscripts, const c
     AugustusGraph myGraph(&stlist, dna);
     myGraph.buildGraph();
 
+    //myGraph.printGraph("test_graph.dot");
+
     //find shortest path
     MEApath path(&myGraph);
     path.findMEApath();
-    
+        
     getMeaGenelist(path.getPath(), meaGenes);
-  }   
+  } 
+  return meaGenes;
 }
 
 void buildStatusList(list<Gene> *alltranscripts, bool utr, list<Status> &stlist){

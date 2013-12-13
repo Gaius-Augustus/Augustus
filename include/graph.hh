@@ -184,22 +184,22 @@ public:
 	try {
 	    x0_e = Properties::getdoubleProperty("/MeaPrediction/x0_E");
 	} catch (...) {
-	    x0_e = -1;
+	    x0_e = -10;
 	}
 	try {
 	    x0_i = Properties::getdoubleProperty("/MeaPrediction/x0_I");
 	} catch (...) {
-	    x0_i = -1;
+	    x0_i = -10;
 	}
 	try {
 	    x1_e = Properties::getdoubleProperty("/MeaPrediction/x1_E");
 	} catch (...) {
-	    x1_e = 1;
+	    x1_e = 10;
 	}
 	try {
 	    x1_i = Properties::getdoubleProperty("/MeaPrediction/x1_I");
 	} catch (...) {
-	    x1_i = 1;
+	    x1_i = 10;
 	}
 	try {
 	    y0_e = Properties::getdoubleProperty("/MeaPrediction/y0_E");
@@ -211,8 +211,47 @@ public:
 	} catch (...) {
 	    y0_i = 0.5;
 	}
+	try {
+	    i1_e = Properties::getdoubleProperty("/MeaPrediction/i1_E");
+	} catch (...) {
+	    i1_e = 0.25;
+	}	
+	try {
+	    i1_i = Properties::getdoubleProperty("/MeaPrediction/i1_I");
+	} catch (...) {
+	    i1_i = 0.25;
+	}
+	try {
+	    i2_e = Properties::getdoubleProperty("/MeaPrediction/i2_E");
+	} catch (...) {
+	    i2_e = 0.75;
+	}
+	try {
+	    i2_i = Properties::getdoubleProperty("/MeaPrediction/i2_I");
+	} catch (...) {
+	    i2_i = 0.75;
+	}
+	try {
+	    j1_e = Properties::getdoubleProperty("/MeaPrediction/j1_E");
+	} catch (...) {
+	    j1_e = -5;
+	}	
+	try {
+	    j1_i = Properties::getdoubleProperty("/MeaPrediction/j1_I");
+	} catch (...) {
+	    j1_i = -5;
+	}
+	try {
+	    j2_e = Properties::getdoubleProperty("/MeaPrediction/j2_E");
+	} catch (...) {
+	    j2_e = 5;
+	}
+	try {
+	    j2_i = Properties::getdoubleProperty("/MeaPrediction/j2_I");
+	} catch (...) {
+	    j2_i = 5;
+	}
 	
-
 	for(int i = 0; i < seqlength*10; i++)
 	    baseScore.push_back(0);
 
@@ -237,6 +276,7 @@ public:
     void printGraph(string filename); 
     void printGraph2(string filename);
     bool mergedStopcodon(Node* exon1, Node* exon2);
+    void getPoints(Status *st, double p, double *a1, double *a2, double *b1, double *b2);
     const char* sequence;
     int seqlength;
     vector<double> baseScore;
@@ -251,6 +291,14 @@ public:
   double x1_i;
   double y0_e;
   double y0_i;
+  double i1_e;
+  double i1_i;
+  double i2_e;
+  double i2_i;
+  double j1_e;
+  double j1_i;
+  double j2_e;
+  double j2_i;
 };
 
 bool compareNodes(Node *first, Node *second);

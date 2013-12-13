@@ -109,7 +109,6 @@ Node* Graph::addExon(Status *exon, vector<Node*> &neutralLine){
     Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item, sampled);
     nodelist.push_back(ex);
     addToHash(ex);
-
     if(exonAtGeneStart(exon)){
       // include edge from neutral line to exon
 
@@ -537,26 +536,38 @@ void AugustusGraph::calculateBaseScores(){
   } 
 }
 
+/*
+ * calculate scores for exons and introns.
+ * the scoring function is peacewise linear with 5 partially fixed points
+ * in getPoints the 2 Points used for the linear scoring function corresponding to the aposteriori probability of that state are identified.
+ */
+
 double AugustusGraph::setScore(Status *st){
   
+  double a1 = 0;
+  double a2 = 0;
+  double b1 = 0;
+  double b2 = 0;
+  
   if(st->name >= CDS && st->name < intron){
+    double s_se = 0;
+    getPoints(st,st->score,&a1,&a2,&b1,&b2);
+      
+    s_se = (st->score - a1) * (b2-a2)/(b1-a1) + a2;
+
     double s_be = 0;
     double p_b = 0;
+    
     for(int pos = st->begin; pos<=st->end; pos++){
       if(getBasetype(st, pos)>=0){
 	p_b = baseScore[getBasetype(st, pos)*seqlength + pos];
-	if(p_b < y0_e)
-	  s_be += -x0_e/y0_e * p_b + x0_e;
-	else
-	  s_be += x1_e/(1 - y0_e) * (p_b - y0_e);
+	getPoints(st,p_b,&a1,&a2,&b1,&b2);	  
       }
+      s_be += (p_b - a1) * (b2-a2)/(b1-a1) + a2;
     }
     s_be /= st->end - st->begin + 1;
-    double s_se = 0;
-    if(st->score < y0_e)
-      s_se = -x0_e/y0_e * st->score + x0_e;
-    else
-      s_se = x1_e/(1 - y0_e) * (st->score - y0_e);
+    
+    // cout<<"exon\tlength: "<<st->end-st->begin+1<<"\tapostprob: "<<st->score<<"\tstate score: "<<s_se<<"\tscore: "<<alpha_e * s_se + s_be<<"\tpoints: ("<<a1<<","<<a2<<")\t("<<b1<<","<<b2<<")"<<endl;
     return alpha_e * s_se + s_be;
   }
   else{
@@ -565,18 +576,16 @@ double AugustusGraph::setScore(Status *st){
     for(int pos = st->begin; pos<=st->end; pos++){
       if(getBasetype(st, pos)>=0){
 	p_b = baseScore[getBasetype(st, pos)*seqlength + pos];
-	if(p_b < y0_i)
-	  s_bi += -x0_i/y0_i * p_b + x0_i;
-	else
-	  s_bi += x1_i/(1 - y0_i) * (p_b - y0_i);
+	getPoints(st,p_b,&a1,&a2,&b1,&b2);
       }
+      s_bi += (p_b - a1) * (b2-a2)/(b1-a1) + a2;
     }
     s_bi /= st->end - st->begin + 1;
     double s_si = 0;
-    if(st->score < y0_i)
-      s_si = -x0_i/y0_i * st->score + x0_i;
-    else
-      s_si = x1_i/(1 - y0_i) * (st->score - y0_i);
+    getPoints(st,st->score,&a1,&a2,&b1,&b2);
+    s_si = (st->score - a1) * (b2-a2)/(b1-a1) + a2;
+       
+    // cout<<"intron\tlength: "<<st->end-st->begin+1<<"\tapostprob: "<<st->score<<"\tstate score: "<<s_si<<"\tscore: "<<alpha_i * s_si + s_bi<<"\tpoints: ("<<a1<<","<<a2<<")\t("<<b1<<","<<b2<<")"<<endl;
     return alpha_i * s_si + s_bi;
   }
 }
@@ -633,6 +642,38 @@ int AugustusGraph::getBasetype(Status *st, int pos){
     return -1;
 }
 
+void AugustusGraph::getPoints(Status *st, double p, double *a1, double *a2, double *b1, double *b2){
+
+  if(st->name >= CDS && st->name < intron){
+    if(p < i1_e){
+      *a1 = 0; *a2 = x0_e;
+      *b1 = i1_e; *b2 = j1_e;
+    } else if(p >= i1_e && p < y0_e){
+      *a1 = i1_e; *a2 = j1_e;
+      *b1 = y0_e; *b2 = 0;
+    } else if(p >= y0_e && p < i2_e){
+      *a1 = y0_e; *a2 = 0;
+      *b1 = i2_e; *b2 = j2_e;
+    } else {
+      *a1 = i2_e; *a2 = j2_e;
+      *b1 = 1; *b2 = x1_e;
+    }
+  } else {
+    if(p < i1_i){
+      *a1 = 0; *a2 = x0_i;
+      *b1 = i1_i; *b2 = j1_i;
+    } else if(p >= i1_i && p < y0_i){
+      *a1 = i1_i; *a2 = j1_i;
+      *b1 = y0_i; *b2 = 0;
+    } else if(p >= y0_i && p < i2_i){
+      *a1 = y0_i; *a2 = 0;
+      *b1 = i2_i; *b2 = j2_i;
+    } else {
+      *a1 = i2_i; *a2 = j2_i;
+      *b1 = 1; *b2 = x1_i;
+    }
+  }
+}
 
 /*
  * creates an input file for graphviz

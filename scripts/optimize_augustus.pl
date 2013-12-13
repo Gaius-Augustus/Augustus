@@ -31,7 +31,8 @@ my %cmdpars = ( 'species'              => '',
 		'noTrainPars'          => '',
                 'translation_table'    => '',
                 'genemodel'            => '',
-                '/Constant/min_coding_len' => '');
+                '/Constant/min_coding_len' => '',
+                'sens_spec_bias'       => '1');
 
 $SIG{INT} = \&got_interrupt_signal;
 
@@ -74,7 +75,7 @@ $usage .= "--aug_exec_dir=d         Path to augustus and etraining executable. I
 $usage .= "                         it must be in \$PATH environment variable.\n";
 $usage .= "--trainOnlyUtr=1         Use this option, if the exon, intron and intergenic models need not be trained. (default: 0)\n";
 $usage .= "--noTrainPars=1          Use this option, if the parameters to optimize do not affect training. The training step (etraining) is omitted completely. (default: 0)\n";
-
+$usage .= "--sens_spec_bias=f       increase sensitivity weight by factor f. (default: 1)\n";
 
 my $be_silent = "--/augustus/verbosity=0 --/ExonModel/verbosity=0 --/IGenicModel/verbosity=0 --/IntronModel/verbosity=0 --/UtrModel/verbosity=0 --/genbank/verbosity=0";
 
@@ -138,6 +139,10 @@ if ($cmdpars{'noTrainPars'} eq '') {
     }
 }
 
+if($cmdpars{'sens_spec_bias'} < 0){
+    die("sens_spec_bias parameter must be positive");
+}
+
 my $pars="";
 if ($cmdpars{"UTR"} eq "on"){
     $pars="--UTR=on";
@@ -175,6 +180,7 @@ if (!$got_ForkManager && $cmdpars{'cpus'} > 1){
     print STDERR "Will now run sequentially (--cpus=1)...\n";
     $cmdpars{'cpus'} = 1;
 }
+
 
 ##############################################################
 # Create temporary files and folders
@@ -835,7 +841,8 @@ sub evalsnsp {
 
 sub gettarget {
     my ($bsn, $bsp, $esn, $esp, $gsn, $gsp, $smd, $tmd) = @_;
-    return (3*$bsn + 3*$bsp + 4*$esn + 4*$esp + 2*$gsn + 2*$gsp + 40/($smd+40) + 40/($tmd+40))/20;
+    my $f = $cmdpars{'sens_spec_bias'};
+    return (3*$f*$bsn + (3/$f)*$bsp + 4*$f*$esn + (4/$f)*$esp + 2*$f*$gsn + (2/$f)*$gsp + 40/($smd+40) + 40/($tmd+40))/(9*($f+(1/$f))+2);
 #   return (3*$bsn + 9*$bsp + 4*$esn + 12*$esp + 2*$gsn + 6*$gsp)/36;
 }
 

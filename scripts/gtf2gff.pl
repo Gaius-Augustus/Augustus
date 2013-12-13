@@ -12,6 +12,7 @@ my $verbose = 0;
 my $printExon = 0;
 my $printUTR = 0;
 my $gff3 = 0;
+my $printIntron = 0;
 my $outfile;
 
 
@@ -21,7 +22,8 @@ GetOptions(
     'verbose!'=>\$verbose,
     'printExon!'=>\$printExon,
     'printUTR!'=>\$printUTR,
-    'gff3!'=>\$gff3);
+    'printIntron!'=>\$printIntron,
+    'gff3!'=>\$gff3,);
 
 exec("perldoc $0") if ($help || !defined($outfile));
 
@@ -40,7 +42,8 @@ my %geneLine =  (); # keys gene ids, values: array refs for the gene GTF line (i
 #                  CDS  array of arrays (lines and columns) for coding parts of exons
 #                  UTR  array of arrays for UTR exons
 #                  exon array of arrays for complete exons
-#                  rest array of arrays all other features, like intron tts,tss start_codon, stop_codon
+#                  intron array of arrays for introns
+#                  rest array of arrays all other features, like tts,tss start_codon, stop_codon
 
 my %txs = ();
 
@@ -66,7 +69,7 @@ sub parseAndStoreGTF{
 	# check whether it is a line with 'transcript' feature
 	if ($f[2] eq "transcript" && ($f[8] =~ /^(\S+)$/ || $f[8] =~ /transcript_id."?([^";]+)"?/)){
 	    $txid = $1;
-	    $txs{$txid} = {"strand"=>$strand, "chr"=>$chr, "source"=>$source, "CDS"=>[], "UTR"=>[], "exon"=>[],"rest"=>[]} if (!exists($txs{$txid}));
+	    $txs{$txid} = {"strand"=>$strand, "chr"=>$chr, "source"=>$source, "CDS"=>[], "UTR"=>[], "exon"=>[], "intron"=>[], "rest"=>[]} if (!exists($txs{$txid}));
 	    $txs{$txid}{"txline"} = \@f;
 	    next;
 	}
@@ -97,7 +100,7 @@ sub parseAndStoreGTF{
 	$geneOf{$txid} = $geneid;
 
 	if ($feature eq "CDS" || $feature eq "coding_exon" || $feature eq "exon" || $feature =~ /UTR/i){
-	    $txs{$txid} = {"strand"=>$strand, "chr"=>$chr, "source"=>$source, "CDS"=>[], "UTR"=>[], "exon"=>[],"rest"=>[]} if (!exists($txs{$txid}));
+	    $txs{$txid} = {"strand"=>$strand, "chr"=>$chr, "source"=>$source, "CDS"=>[], "UTR"=>[], "exon"=>[], "intron"=>[], "rest"=>[]} if (!exists($txs{$txid}));
 	    $txs{$txid}{"txstart"} = $start if (!defined($txs{$txid}{"txstart"}) || $txs{$txid}{"txstart"} > $start);
 	    $txs{$txid}{"txend"} = $end if (!defined($txs{$txid}{"txend"}) || $txs{$txid}{"txend"} < $end);
 	}
@@ -109,6 +112,9 @@ sub parseAndStoreGTF{
 	    push @{$txs{$txid}{"UTR"}}, \@f;
 	} elsif ($feature eq "exon"){
 	    push @{$txs{$txid}{"exon"}}, \@f;
+	} elsif ($feature eq "intron") {
+	    $txs{$txid}{"intron"} = [] if (!defined($txs{$txid}{"intron"}));
+            push @{$txs{$txid}{"intron"}}, \@f;
 	} else {
 	    push @{$txs{$txid}{"rest"}}, \@f;
 	}
@@ -119,8 +125,15 @@ sub parseAndStoreGTF{
 sub convert{
     my @f;
     foreach my $txid (keys %txs){
+	# remember whether exons were not in the input file
+	my $exonArrayWasEmpty;
+	if(@{$txs{$txid}{"exon"}} == 0){
+	    $exonArrayWasEmpty = 1;
+	}else{
+	    $exonArrayWasEmpty = 0;
+	}
 	# add exon lines if not already present and if desired in output
-	if ($printExon && @{$txs{$txid}{"exon"}} == 0){
+	if (($printExon || $printIntron) && @{$txs{$txid}{"exon"}} == 0){
 	    print "Creating exon lines for $txid\n" if ($verbose);
 	    # sort UTR and CDS lines by coordinates
 	    my @exonpartlines = sort {$a->[3] <=> $b->[3] || $a->[4] <=> $b->[4]} (@{$txs{$txid}{"CDS"}}, @{$txs{$txid}{"UTR"}});
@@ -180,13 +193,32 @@ sub convert{
 		    my @ff = @{$epl[$i]};
 		    ($ff[5], $ff[7]) = ('.', '.'); # score and frame are not defined
 		    if (($ff[3] < $txs{$txid}{"codingstart"} && $txs{$txid}{"strand"} eq "+") ||
-			 ($ff[4] > $txs{$txid}{"codingend"} && $txs{$txid}{"strand"} eq "-")){
+			($ff[4] > $txs{$txid}{"codingend"} && $txs{$txid}{"strand"} eq "-")){
 			$ff[2] = "5'-UTR";
 		    } else {
 			$ff[2] = "3'-UTR";
 		    }
 		    push @{$txs{$txid}{"UTR"}}, \@ff;
 		}
+	    }
+	}
+	# add intron lines if not already present and if desired in output                                                             
+        if ($printIntron && @{$txs{$txid}{"intron"}} == 0){
+	    my @exonlines =  sort {$a->[3] <=> $b->[3] || $a->[4] <=> $b->[4]} (@{$txs{$txid}{"exon"}});
+	    my @intronline = @{$exonlines[0]};
+	    my $start = $intronline[4]+1;
+	    my $end;
+	    shift @exonlines;
+	    foreach my $ex (@exonlines){
+		$end = $ex->[3]-1;
+		my @il = @intronline;
+		($il[2], $il[3], $il[4], $il[5], $il[7]) = ("intron",$start,$end,'.','.');
+		push @{$txs{$txid}{"intron"}}, \@il;
+		$start = $ex->[4]+1;
+	    }   
+	    if(!$printExon && $exonArrayWasEmpty){
+		@{$txs{$txid}{"exon"}} = ();
+		
 	    }
 	}
     }
@@ -217,7 +249,7 @@ sub printConvertedGTF {
 	}
 	# print all other lines
 	@lines = sort {$a->[3] <=> $b->[3] || $a->[4] <=> $b->[4]}
-	         (@{$txs{$txid}{"CDS"}}, @{$txs{$txid}{"UTR"}}, @{$txs{$txid}{"exon"}}, @{$txs{$txid}{"rest"}});
+	(@{$txs{$txid}{"CDS"}}, @{$txs{$txid}{"UTR"}}, @{$txs{$txid}{"exon"}}, @{$txs{$txid}{"intron"}}, @{$txs{$txid}{"rest"}});
 	#[PKRK] following variable are to make the CDS and exon ID unique within the scope of the gene model
 	my $ct_exon = 0;
 	my $ct_CDS = 0;
@@ -272,6 +304,7 @@ gtf2gff.pl <in.gtf --out=out.gff
   out              gff output file
   --printExon      print exon features (may include CDS and UTR parts)
   --printUTR       print 
+  --printIntron    print intron features
   --gff3           output in gff3 format
 
 =head1 DESCRIPTION

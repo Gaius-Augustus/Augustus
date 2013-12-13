@@ -780,9 +780,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   Gene *genes = NULL, *g;
   StatePath *viterbiPath;
   StatePath *condensedViterbiPath;
-
-  list<Gene> MEAtranscripts;
-
+  
   // compute the viterbi and forward table, main work done here
   viterbiAndForward(dna, profileModel);
 #ifdef DEBUG
@@ -913,32 +911,24 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
       geneit1->normPostProb(sampleiterations); // +1 wegen Viterbipfad
     }
   }
+  /*
+   * filter transcripts by probabilities, strand
+   */ 
+  filteredTranscripts = Gene::filterGenePrediction(alltranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
+
   // determine transcripts with maximum expected accuracy criterion
   if (Constant::MultSpeciesMode){
     // store alltranscripts in member variable of NAMGene
-    sampledTxs = alltranscripts;
-    filteredTranscripts = new list<Gene>;
-  } else if (mea_prediction){
-    if(mea_eval)
-      getMEAtranscripts(&MEAtranscripts, sampledGeneStructures, sampleiterations, dna);
-    else
-      getMEAtranscripts(&MEAtranscripts, alltranscripts, dna);
-    
-    /*
-     * filter transcripts by probabilities, strand
-     */
-    filteredTranscripts = Gene::filterGenePrediction(&MEAtranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
-  } else
-    filteredTranscripts = Gene::filterGenePrediction(alltranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
-
-  /*
-   * filter transcripts by maximum track number
-   */  
-
-  agl = groupTranscriptsToGenes(filteredTranscripts);
- 
-  if (!Constant::MultSpeciesMode)
-    delete alltranscripts;
+    sampledTxs = filteredTranscripts;
+    agl = new list<AltGene>;
+  } else if(mea_prediction){
+    agl = groupTranscriptsToGenes(getMEAtranscripts(filteredTranscripts, dna));
+    delete filteredTranscripts;
+  } else{ //filter transcripts by maximum track number 
+    agl = groupTranscriptsToGenes(filteredTranscripts);
+  }
+  
+  delete alltranscripts;
 
   if (sampleiterations>1) {
     /*
