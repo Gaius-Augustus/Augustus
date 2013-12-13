@@ -24,6 +24,7 @@
 
 
 int verbosity=1;
+bool mea_prediction = false;
 Boolean checkExAcc = false;
 Boolean noprediction = false;
 ofstream outputfile, errorfile;
@@ -179,6 +180,9 @@ int main( int argc, char* argv[] ){
 	      cerr << "# Unknown option for strand: " << strandstr << endl;
 	  } catch (...){} // take default strand
 	
+	  if(mea_prediction)
+	    cout <<"# Using MEA approach (Maximizing expected accuracy)."<<endl;
+
 	  if (gbank.fileType() == fasta) {
 	    /*
 	     * Just predict the genes for every sequence in the file.
@@ -448,8 +452,12 @@ void setParameters(){
     }
     try {
       noprediction = Properties::getBoolProperty("noprediction");
+    } catch (...) {}   
+    try {
+      mea_prediction = Properties::getBoolProperty("mea");
     } catch (...) {}
-    
+
+
     if (outputfilename != "") {
 	outputfile.open(outputfilename.c_str());
 	if (outputfile){
