@@ -21,8 +21,10 @@
 using namespace std;
 
 mysqlpp::Connection con;
+int fold=60; // line width of output sequence
 
 void printUsage();
+void printSeq(string sequence,int length);
 /*
  * main
  */
@@ -113,12 +115,14 @@ int main( int argc, char* argv[] ){
 		end = annoseq->offset + annoseq->length;
 		cerr <<"Retrieving "<< seqname << ":" << start << "-" << end << endl;
 	    }
+	    // print fasta header
 	    cout << ">"<< seqname << ":" << start << "-" << end;
 	    if(strand == plusstrand)
 		cout << " +" <<endl;
 	    else
 		cout << " -" <<endl;
-	    cout << annoseq->sequence << endl;
+	    // print sequence
+	    printSeq(annoseq->sequence, end-start+1);
 	}
     }
     catch(ProjectError e){
@@ -147,11 +151,14 @@ parameters:\n\
 example:\n\
      getSeq --species=hg19 --seq=chr21 --dbaccess=saeuger,localhost,cgp,AVglssd8 \n\
      getSeq --species=hg19 --seq=chr21 --start=47870612  --end=48086047 --rc --dbaccess=saeuger,localhost,cgp,AVglssd8 \n\
-\n\
-Use the UNIX fold command to set the line width of the fasta output. E.g \n\
-\n\
-    getSeq --species=hg19 --seq=chr21 --dbaccess=saeuger,localhost,cgp,AVglssd8 | fold -w 60 \n\
-\n\
-outputs the fasta sequence with at most 60 nucleotides per line\n\
 \n";
+}
+
+void printSeq(string sequence,int length){
+    int start=0, end;
+    while(start < length){
+	end = (start + fold < length)? (start + fold - 1) : length - 1;
+	cout << sequence.substr(start,end-start+1) << endl;
+	start+=fold;
+    }
 }
