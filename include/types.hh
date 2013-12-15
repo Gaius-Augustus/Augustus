@@ -313,7 +313,7 @@ public:
     static vector<Double> head2tail_ovlp;
     static vector<Double> head2head_ovlp;
     static vector<Double> tail2tail_ovlp;
-    static double heat; // heating the distribution for sampling, 1=cold, <1 heated
+    static unsigned temperature; // heating the distribution for sampling, 0=cold, 7=hottest, take probs to the power of (8-temperature)/8
 };
 
 

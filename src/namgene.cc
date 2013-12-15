@@ -149,8 +149,8 @@ NAMGene::NAMGene() {
     stateMap[i] = getStateType(i);
   }
 
-  if (Constant::heat != 1.0 && Constant::augustus_verbosity)
-      cout << "# setting heat to " << Constant::heat << " (for sampling)" << endl;
+  if (Constant::temperature && Constant::augustus_verbosity)
+      cout << "# setting temperature to " << Constant::temperature << " (for sampling)" << endl;
 }
 
 void NAMGene::setStatesInitialProbs(){  

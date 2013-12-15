@@ -228,6 +228,11 @@ class Properties{
 	    target = getIntProperty(name);
  	} catch (KeyNotFoundError e) {}
     }
+    static void assignProperty(string name, unsigned& target) {
+	try {
+	    target = (unsigned) getIntProperty(name);
+ 	} catch (KeyNotFoundError e) {}
+    }
     static void assignProperty(string name, Double& target) {
 	try {
 	    target = getDoubleProperty(name);

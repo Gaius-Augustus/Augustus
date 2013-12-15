@@ -59,8 +59,8 @@ class LLDouble{
     static const exponent_type max_exponent; 
     static const exponent_type min_exponent;
 
-    static double heat; // exponent for heating (1.0 as default)
-    
+    static unsigned temperature; // for "heating", heat = (8-temperature)/8, will later often need to compute pow(d,heat) for LLDoubles d
+    static double rest[7]; // precomputed values for heating
  public:
     LLDouble(float x=0.0) : value(x), exponent(0) {}
     LLDouble(double d) : value(d), exponent(0) {
@@ -197,7 +197,7 @@ class LLDouble{
     static LLDouble infinity() {
 	return LLDouble(dbl_inf, max_exponent);
     }
-    static void setHeat(double h);
+    static void setTemperature(unsigned t);
 
 private:
     // for internal use: directly set the data fields

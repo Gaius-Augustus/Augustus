@@ -18,6 +18,7 @@
 
 #include <iomanip>
 #include <limits>
+#include <iostream>
 
 /* =====[ LLDouble ]======================================================== */
 
@@ -40,7 +41,8 @@ const double LLDouble::logbase = std::log(LLDouble::base);   // = 693.1471805599
 const LLDouble::exponent_type LLDouble::max_exponent = numeric_limits<exponent_type>::max();
 const LLDouble::exponent_type LLDouble::min_exponent = numeric_limits<exponent_type>::min();
 int LLDouble::output_precision = 0;
-double LLDouble::heat = 1.0;
+unsigned LLDouble::temperature = 0;
+double LLDouble::rest[7] = {1.0,1.0,1.0,1.0,1.0,1.0,1.0};
 
 /* 
  * =====[ constructors ]=======================================================
@@ -184,7 +186,7 @@ LLDouble LLDouble::pow(double x) const {
 	return x/2 == floor(x/2) ? // even exponent
 	    exp(x * abs().log()) :
 	    - exp(x * abs().log());
-    return exp(x * log());
+   return exp(x * log());
 }
 
 /*
@@ -202,12 +204,70 @@ LLDouble LLDouble::exp(double x) {
     return result;
 }
 
-void LLDouble::setHeat(double h){
-    heat = h;
+void LLDouble::setTemperature(unsigned t){
+    temperature = t;
+    // precompute base^(1/8), base^(2/8), ..., base^(7/8), so heating goes faster later
+    for (size_t i=0; i<7; i++)
+	LLDouble::rest[i] = std::pow(base, (double) (i+1)/8);
 }
 
+// apply a power function, more efficient through above precomputation and by using exponents that are a fraction of 8
+// (3 'std::sqrt' calls take about 52% of the time of one 'std::pow' call)
 LLDouble LLDouble::heated(){
-    return pow(heat); // TODO: this can probably be made a little more efficient using a precomputation based on 'heat'
+    if (temperature == 0 || value == 0.0)
+	return *this; // cold: raise to the power of 1
+    double heat = (8.0 - temperature) / 8;
+    // this is the inefficient but equivalent way:
+    //return pow(heat);
+    exponent_type newexponent = (exponent_type) (heat * exponent);
+    int i = (8 - temperature) * exponent - 8 * newexponent;
+    if (exponent < 0 && i != 0){
+	newexponent--; // as C++ rounds down for positive numbers and up for negative numbers
+	i += 8;
+    }
+    double r = 1.0;
+    if (i)
+	r = rest[i-1];
+    LLDouble d(r, newexponent);
+    d.testPrecision();
+    // d needs to be multiplied with pow(value, heat)
+    switch (temperature) {
+    case 1:
+	d *= value; // do this in two steps, as the *= operator implicitly does testPrecision() to prevent underflow
+	d /= sqrt(sqrt(sqrt(value)));
+	break;
+    case 2:
+	d *= value;
+	d /= sqrt(sqrt(value));
+	break;
+    case 3:
+	{
+	    // x^5/8 = sqrt(x) * sqrt(sqrt(sqrt(x)))
+	    double x = sqrt(value);
+	    d *= x;
+	    d *= sqrt(sqrt(x));
+	}
+	break;
+    case 4:
+	d *= sqrt(value);
+	break;
+    case 5:
+	{
+	    double x = sqrt(sqrt(value));
+	    d *= x;
+	    d *= sqrt(x);
+	}
+	break;
+    case 6:
+	d *= sqrt(sqrt(value));
+	break;
+    case 7:
+	d *= sqrt(sqrt(sqrt(value)));
+	break;
+    default: // not used
+	d *= std::pow(value, heat);
+    }
+    return d;
 }
 
 /*---------------------------------------------------------------------------*\

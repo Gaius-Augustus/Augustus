@@ -485,8 +485,9 @@ void GenomicMSA::findGeneRanges(){
     writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot");
     for (list<MsaSignature*>::iterator sit = siglist.begin(); sit != siglist.end(); ++sit){
 	project(aliG2, *sit); // set weights wrt to signature
-	cout << (*sit)->sigstr() << " writing aliGraph." + itoa(itnr) + ".dot" << endl;
-	writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot", *sit);
+	cout << (*sit)->sigstr() << endl;
+	// cout << " writing aliGraph." + itoa(itnr) + ".dot" << endl;
+	// writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot", *sit);
 	int numNewCovered = 1;
 	while (numNewCovered > 0){
 	    AliPath path = getBestConsensus(aliG2, *sit, numNewCovered);
@@ -554,6 +555,8 @@ bool GenomicMSA::prunePaths(vector<AliPath> &allPaths, AlignmentGraph &g){
     // this could be more efficient, instead of a running time quadratic in the number of paths
     // one could use a hash to get from each node to a list of paths that contain the node
     for (i=0; i<m; i++){
+	if (i%10 == 0)
+	    cout << "prunePath step " << i << " of " << m << endl;
 	for (j=i+1; j<m; j++){
 	    changed |= prunePathWrt2Other(allPaths[j], allPaths[j].path.begin(), allPaths[j].path.end(),
 					  allPaths[i], allPaths[i].path.begin(), allPaths[i].path.end(), g);
@@ -582,7 +585,7 @@ template< class Iterator >
 bool GenomicMSA::prunePathWrt2Other(AliPath &p, Iterator pstart, Iterator pend, 
 				    AliPath &other, Iterator ostart, Iterator oend,
 				    AlignmentGraph &g){
-    //cout << "prunePathWrt2Other(" << p << endl << other << ")" << endl;
+    cout << "prunePathWrt2Other(" << p << endl << other << ")" << endl;
     
     // match fron the left end of p
     Iterator pa, oa;

@@ -92,7 +92,7 @@ Integer Constant::maxOvlp = 60; // maximum overlap of coding regions for bacteri
 vector<Double> Constant::head2tail_ovlp;
 vector<Double> Constant::head2head_ovlp;
 vector<Double> Constant::tail2tail_ovlp;
-double Constant::heat = 1; // heating the distribution for sampling, 1=cold, <1 heated
+unsigned Constant::temperature = 0; // heating the distribution for sampling, 0=cold, 7=hottest
 
 bool inCRFTraining = false;
 
@@ -334,8 +334,16 @@ void Constant::init(){
     Properties::assignProperty("alnfile", alnfile);
     Properties::assignProperty("orthoexons", orthoexons);
     Properties::assignProperty("maxOvlp", maxOvlp);
-    Properties::assignProperty("heat", heat);
-    LLDouble::setHeat(heat);
+    Properties::assignProperty("temperature", temperature);
+    if (temperature < 0){
+	cerr << "No negative temperature allowed. temperature must be one of 0 1 2 3 4 5 6 7. Will use temperature=0." << endl;
+	temperature = 0;
+    }
+    if (temperature > 7){
+	cerr << "No temperature >7 allowed. temperature must be one of 0 1 2 3 4 5 6 7. Will use temperature=7." << endl;
+        temperature = 7;
+    }     	
+    LLDouble::setTemperature(temperature);
  
     if (!alnfile.empty() && !treefile.empty() && (!speciesfilenames.empty() || !dbaccess.empty())){
       MultSpeciesMode = true;

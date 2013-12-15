@@ -671,6 +671,7 @@ Gene* StatePath::projectOntoGeneSequence(const char *genenames){
  *
  * Takes a list of genes and creates the path through the HMM states induced by these genes, i.e.
  * a path that backtranslates through projectOntoGeneSequence to the original list of genes.
+ * This fails for incomplete genes.
  */
 
 StatePath* StatePath::getInducedStatePath(Gene *genelist, int dnalen, bool printErrors){
@@ -703,6 +704,7 @@ StatePath* StatePath::getInducedStatePath(Gene *genelist, int dnalen, bool print
 	    if(curgene->utr3exons) {
 		end = curgene->utr3exons->begin - 1; // gene starts right with tts
 	    } else {
+		// assuming: curgene->exons->type == rsingleG || isRTerminalExon(curgene->exons->type)
 		end = curgene->exons->begin - 1; // gene starts right with stop codon
 	    }
 	}
@@ -761,7 +763,7 @@ StatePath* StatePath::getInducedStatePath(Gene *genelist, int dnalen, bool print
 	     * ... or multi CDS gene?
 	     */
 	    else {
-		// initial exon or rterminal exon 
+		// initial exon or rterminal exon
 		end = curgene->exons->end - (onFStrand? Constant::dss_start : Constant::ass_end);
 		frame = mod3(onFStrand? curgene->exons->length() : 2 - curgene->exons->length() );
 		path->push(new State(endOfPred+1, end, onFStrand? initialExon(frame) : rterminalExon(frame)));
@@ -787,7 +789,8 @@ StatePath* StatePath::getInducedStatePath(Gene *genelist, int dnalen, bool print
 		end = exon->end + (onFStrand? 0 : Constant::trans_init_window);
 		frame = mod3(frame + (onFStrand? exon->length() : -exon->length()));
 		if (((onFStrand && frame != 0) || (!onFStrand && frame != 2) ) && printErrors)
-		       throw ProjectError(string("StatePath::getInducedStatePath reading frame error in sequence ") + path->seqname );
+		       throw ProjectError(string("StatePath::getInducedStatePath reading frame error in sequence ") + path->seqname 
+					  + ":" + itoa(endOfPred+1) + ".." + itoa(end));
 		path->push(new State(endOfPred+1, end, onFStrand? terminal : rinitial));
 		endOfPred = end;
 	    }
