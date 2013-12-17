@@ -113,9 +113,9 @@ In order to call Augustus in the comparative gene prediction mode, 4 mandatory a
           data set or the identifier 'chicken' for a bird data set
 	  
 
---speciesfilenames=genomeDirectories.tbl
+--speciesfilenames=genomes.tbl
                    a file containing for each species the directory to its genome file.
-		   Each line in 'genomeDirectories.tbl' consists of two tab-separated fields.
+		   Each line in 'genomes.tbl' consists of two tab-separated fields.
 		   The first field is a species identifier (does not correspond to the
 		   identifier in --species !!!).
 		   The second field is the directory to the genome file, e.g.
@@ -137,7 +137,7 @@ ccagaggagacagttagtactaaatgcaccaa
 
 --alnfile=aln.maf
           a file containing a multiple sequence alignment of the genomes in MAF format.
-          The sequence names (first field in an 's' line) must be the species identifiers (as they appear in 'genomeDirectories.tbl')
+          The sequence names (first field in an 's' line) must be the species identifiers (as they appear in 'genomes.tbl')
           and the sequences identifiers (as they appear in  the genome files) delimited by '.', e.g.  
 
 a score=235085.000000
@@ -160,7 +160,7 @@ s rheMac2.chr3                     163875585 32 - 196418989 CCAGAGGAGACAGTTAGTAC
 ((((hg19:0.032973,rheMac2:0.036199):0.129706,mm9:0.352605):0.020666,bosTau4:0.219477):0.438357,galGal3:0.474279);
 
            All branch lengths are required and leaf nodes must be named after the species identifier (as
-           in 'aln.maf' and 'genomeDirectories.tbl'). Also a valid format (often output of phylogenetic
+           in 'aln.maf' and 'genomes.tbl'). Also a valid format (often output of phylogenetic
            tree reconstruction tools such as MrBayes, PHYLIP, ...)  is f.i.
 
 begin trees;
@@ -180,7 +180,7 @@ end;
 
 example usage:
 
-> augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomeDirectories.tbl
+> augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl
 
 a small data set for testing can be found in examples/cgp/
 
@@ -262,7 +262,7 @@ mm9.chr10    mm9_refGene     intron  50410056        50419745        0.000000   
 
    call AUGUSTUS (just as in the single species version) with the hints file and the extrinsic config file
 
-> augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomeDirectories.tbl --hintsfile=hints.gff --extrinsicCfgFile=cgp.extrinsic.cfg
+> augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl --hintsfile=hints.gff --extrinsicCfgFile=cgp.extrinsic.cfg
 
 b) retrieving hints from database
    

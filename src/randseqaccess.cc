@@ -71,7 +71,7 @@ void SpeciesCollection::readExtrinsicCFGFile(){
 	    if(datei){
 		// reading in the species group for which the table is valid
 		getline(datei,skey);
-		if(skey == "[GROUP" + itoa(groupCount) + "]"){
+		if(skey == "[GROUP]"){
 		    cout << "extrinsic group " << groupCount << ":";
 		    datei.getline(buf, 255); // reading in the set of species that belongs to the group
 		    stringstream stm(buf);
