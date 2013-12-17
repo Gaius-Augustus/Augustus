@@ -19,7 +19,7 @@ AUGUSTUS-cgp can either be used
 
 - de novo, or
 - with extrinsic evidence (such as rnaseq or EST data) for one or more species.
-  This also includes the annotation of a well-studied genome to predict genes
+  This includes already existing annotations to predict genes
   in newly sequenced, related genomes.
 
 Both genomes and extrinsic evidence can either be read in from a flat file or 
@@ -116,7 +116,7 @@ In order to call Augustus in the comparative gene prediction mode, 4 mandatory a
 --speciesfilenames=genomeDirectories.tbl
                    a file containing for each species the directory to its genome file.
 		   Each line in 'genomeDirectories.tbl' consists of two tab-separated fields.
-		   The first field is a species identifier (has nothing to do with the
+		   The first field is a species identifier (does not correspond to the
 		   identifier in --species !!!).
 		   The second field is the directory to the genome file, e.g.
                    
@@ -159,7 +159,7 @@ s rheMac2.chr3                     163875585 32 - 196418989 CCAGAGGAGACAGTTAGTAC
 
 ((((hg19:0.032973,rheMac2:0.036199):0.129706,mm9:0.352605):0.020666,bosTau4:0.219477):0.438357,galGal3:0.474279);
 
-           Note that all branch lengths are required and the leaf nodes must be named after the species identifier (as
+           All branch lengths are required and leaf nodes must be named after the species identifier (as
            in 'aln.maf' and 'genomeDirectories.tbl'). Also a valid format (often output of phylogenetic
            tree reconstruction tools such as MrBayes, PHYLIP, ...)  is f.i.
 
@@ -183,6 +183,7 @@ example usage:
 > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomeDirectories.tbl
 
 a small data set for testing can be found in examples/cgp/
+
 
 5. RETRIEVING GENOMES FROM A MYSQL DATABASE
 ------------------------------------------------
