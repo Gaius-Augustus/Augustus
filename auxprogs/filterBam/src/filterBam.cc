@@ -1070,8 +1070,14 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						}
 
 					  // If alignments not too far apart but not overlapping either, then they're mated
-  		  			  if (dist < maxIntronLen && dist>=0)
+  		  			  if (dist < maxIntronLen && (dist>=0 || (dist<0 && dist>(int32_t)(-1)*qali.at(it).Length)))
   		  			  	{
+
+						  if ((verbose && (dist<0 && dist>(int32_t)(-1)*qali.at(it).Length)))
+							{
+							  cout << "dist=" << dist << " with a query length of " << qali.at(it).Length << " indicates overlapping reads" << endl;
+							}
+
   		  			  	  //push @matepairs, [$i,$j,scoreMate($i,$j,$dist)];
   		  			  	  mp.setValues(it, jit, scoreMate(qali.at(it), qali.at(jit), dist, globalOptions)); 
 						  matepairs.push_back(mp);
