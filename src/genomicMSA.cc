@@ -22,13 +22,16 @@
 #include <cfloat>
 #include <algorithm>
 #include <boost/tuple/tuple.hpp>
-#include <boost/graph/topological_sort.hpp>
 #include <boost/graph/exception.hpp>
-#include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/bellman_ford_shortest_paths.hpp>
+//#include <boost/graph/topological_sort.hpp>
+#include <unordered_set>
 
-using namespace boost;
-
+using boost::graph_bundle;
+using boost::property_map;
+using boost::vertex_index_t;
+using boost::vertex_index;
+using boost::graph_traits;
 
 void eraseListRange(list<int> L, list<int>::reverse_iterator from, list<int>::reverse_iterator to){
     L.erase(to.base(), from.base());
@@ -402,7 +405,7 @@ void GenomicMSA::findGeneRanges(){
 	}
     }
     
-    // make a new graph, only of the active nodes with alignment (consequence of vecS as node container class)
+    // make a new graph, only of the active nodes that hold an alignment (consequence of vecS as node container class)
     // store all signatures
     AlignmentGraph aliG2(numNodes2+2); // node 0 is source, node 2 is sink
     add_edge(0, 1, aliG2); // edge from source to sink directly to allow finding the empty path
@@ -500,7 +503,7 @@ void GenomicMSA::findGeneRanges(){
     cout << "found " << allPaths.size() << " paths" << endl;
     
     for (int i=0; i<allPaths.size(); i++)
-	cout << allPaths[i] << endl;
+	cout << i << "\t" << allPaths[i] << endl;
     
 
     // repeat pruning until nothing changes (usually changes only in the first iteration)
@@ -520,17 +523,18 @@ void GenomicMSA::findGeneRanges(){
     // for each path, make a single alignment and add to alignment list
     for (int i=0; i < allPaths.size(); i++){
 	if (allPaths[i].path.size() > 0){
-	    cout << "alignment from path " << allPaths[i] << endl;
+	    //	    cout << "alignment from path " << allPaths[i] << endl;
 	    list<Alignment* > plist;
 	    list<int> &p = allPaths[i].path;
 	    for (list<int>::iterator it = p.begin(); it != p.end(); ++it)
 		plist.push_back(aliG2[*it].a);
 	    va = mergeAliList(plist, allPaths[i].sig);
 	    if (va && va->aliLen >= minGeneLen){ // discard alignments that are too short to hold at least a short gene
-		cout << *va << endl;
+		//cout << *va << endl;
 		alignment.push_back(va);
-	    } else 
-		cout << "deleted (too short)" << endl;
+	    }
+	    //else 
+	    //cout << "deleted (too short)" << endl;
 	}
     }
     int sizeBeforeCapping = alignment.size();
@@ -551,24 +555,53 @@ void GenomicMSA::findGeneRanges(){
 bool GenomicMSA::prunePaths(vector<AliPath> &allPaths, AlignmentGraph &g){
     bool changed = false;
     int i, j, m = allPaths.size();
-
-    // this could be more efficient, instead of a running time quadratic in the number of paths
-    // one could use a hash to get from each node to a list of paths that contain the node
+    
+    // first create a data structure that allows to quickly find all pairs of paths (i,j)
+    // that share any alignment (=collision)
+    int n = num_vertices(g), k;
+    vector<unordered_set<int> > pathsByAlignment(n);
+    // for each alignment indexed by 0 <= k < n store the set of indices i to
+    // allPaths of paths that contain the alignment
     for (i=0; i<m; i++){
-	if (i%10 == 0)
-	    cout << "prunePath step " << i << " of " << m << endl;
-	for (j=i+1; j<m; j++){
-	    changed |= prunePathWrt2Other(allPaths[j], allPaths[j].path.begin(), allPaths[j].path.end(),
-					  allPaths[i], allPaths[i].path.begin(), allPaths[i].path.end(), g);
-	    changed |= prunePathWrt2Other(allPaths[j], allPaths[j].path.rbegin(), allPaths[j].path.rend(),
-					  allPaths[i], allPaths[i].path.rbegin(), allPaths[i].path.rend(), g);
-	    changed |= deletePathWrt2Other(allPaths[j], allPaths[i], g);
-	    changed |= prunePathWrt2Other(allPaths[i], allPaths[i].path.begin(), allPaths[i].path.end(),
-					  allPaths[j], allPaths[j].path.begin(), allPaths[j].path.end(), g);
-	    changed |= prunePathWrt2Other(allPaths[i], allPaths[i].path.rbegin(), allPaths[i].path.rend(),
-					  allPaths[j], allPaths[j].path.rbegin(), allPaths[j].path.rend(), g);
-	    changed |= deletePathWrt2Other(allPaths[i], allPaths[j], g);
+	for (list<int>::iterator it = allPaths[i].path.begin(); it != allPaths[i].path.end(); ++it){
+	    k = *it;
+	    pathsByAlignment[k].insert(i); // path i contains alignment k
 	}
+    }
+    set<pair<int,int>> collisions; // sorted set of pair, sorted first by 'first' then by 'second'
+    for (k=0; k<n; k++){
+	if (!pathsByAlignment[k].empty()){
+	    unordered_set<int>::iterator iti, itj, it_end;
+	    it_end = pathsByAlignment[k].end();
+	    for (iti = pathsByAlignment[k].begin(); iti != it_end; ++iti){
+		itj = iti;
+		++itj;
+		for (;itj != it_end; ++itj){
+		    int i = *iti, j = *itj;
+		    if (i<j)
+			collisions.insert(pair<int,int>(i,j)); // insert pair of paths (i,j) into collision data structure
+		    else
+			collisions.insert(pair<int,int>(j,i));	// make pairs unique by sorting
+		}
+	    }
+	}
+    }
+    for (set<pair<int,int> >::iterator colit = collisions.begin(); colit != collisions.end(); ++colit){
+	i = colit->first;
+	j = colit->second;
+	//	cout << "Have collision between  path " << i << "\t"  //<< allPaths[i] << endl 
+	//     << " and path " << j << endl; //"\t" << allPaths[j] << endl;
+    
+	changed |= prunePathWrt2Other(allPaths[j], allPaths[j].path.begin(), allPaths[j].path.end(),
+				      allPaths[i], allPaths[i].path.begin(), allPaths[i].path.end(), g);
+	changed |= prunePathWrt2Other(allPaths[j], allPaths[j].path.rbegin(), allPaths[j].path.rend(),
+				      allPaths[i], allPaths[i].path.rbegin(), allPaths[i].path.rend(), g);
+	changed |= deletePathWrt2Other(allPaths[j], allPaths[i], g);
+	changed |= prunePathWrt2Other(allPaths[i], allPaths[i].path.begin(), allPaths[i].path.end(),
+				      allPaths[j], allPaths[j].path.begin(), allPaths[j].path.end(), g);
+	changed |= prunePathWrt2Other(allPaths[i], allPaths[i].path.rbegin(), allPaths[i].path.rend(),
+				      allPaths[j], allPaths[j].path.rbegin(), allPaths[j].path.rend(), g);
+	changed |= deletePathWrt2Other(allPaths[i], allPaths[j], g);
     }
     return changed;
 }
@@ -585,9 +618,9 @@ template< class Iterator >
 bool GenomicMSA::prunePathWrt2Other(AliPath &p, Iterator pstart, Iterator pend, 
 				    AliPath &other, Iterator ostart, Iterator oend,
 				    AlignmentGraph &g){
-    cout << "prunePathWrt2Other(" << p << endl << other << ")" << endl;
+    //    cout << "prunePathWrt2Other(" << p << endl << other << ")" << endl;
     
-    // match fron the left end of p
+    // match from the left end of p
     Iterator pa, oa;
     pa = pstart;
     oa = ostart;
