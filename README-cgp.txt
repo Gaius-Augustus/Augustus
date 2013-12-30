@@ -46,6 +46,7 @@ a) install all dependencies
    GSL:      download source code from http://www.gnu.org/software/gsl/ and follow the installation instructions
    Boost:    install via package manager:
              > sudo apt-get install libboost-all-dev
+   zlib:     The compression library. Download from http://www.zlib.net/ or install via package manager.
    Flexc++:  download source code from http://flexcpp.sourceforge.net/ and follow the installation instructions. (Flexc++
              has several dependencies including the bobcat library. I recommend to use bobcat-3.10.00, if you do not want to install
              the latest g++ compiler)

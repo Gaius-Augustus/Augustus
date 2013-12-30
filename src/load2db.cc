@@ -27,7 +27,13 @@
 #include <exception>
 #include <ssqls.h>
 
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/copy.hpp>
+
 using namespace std;
+using boost::iostreams::filtering_istream;
+using boost::iostreams::gzip_decompressor;
 
 //sql_create_6(genomes,1,6,int,seqid,string,sequence,string,seqname,int,start,int,end,string,species)
 
@@ -45,7 +51,7 @@ int getSpeciesID(string species);
 int getSeqNr(char* seqname,int speciesid);
 int insertSeq(string sequence, char* name, int length, string species);
 void insertHint(Feature &f, string species);
-bool isFasta(ifstream &ifstrm);
+bool isFasta(filtering_istream &zin);
 bool isGFF(ifstream &ifstrm);
 void checkConsistency(); // checks consistency of the 'hints' data with the 'genomes' data
 void removeDuplicates();
@@ -141,12 +147,27 @@ int main( int argc, char* argv[] ){
 	if( !ifstrm )
 	    throw string("Could not open input file \"") + filename + "\"!";
 
-	if(isFasta(ifstrm)){
+	filtering_istream zin;
+	try {  
+	    zin.push(gzip_decompressor());
+	    zin.push(ifstrm);
+	    zin.peek();
+	    if (!zin)
+		throw("Could not read first character assuming gzip format.");
+	    cout << "Looks like " << filename << " is a gzip file. Deflating..." << endl;
+        } catch (...) { // boost::iostreams::gzip_error& 
+	    // not a gzip file or ill-formatted
+	    zin.reset();
+	    ifstrm.seekg(0);
+	    zin.push(ifstrm);
+        }
+	
+	if(isFasta(zin)){
 	    cout << "Looks like " << filename << " is in fasta format." << endl;
 	    createTableGenomes();
 	    char *sequence = NULL, *name = NULL;
 	    int length, seqCount = 0, chunkCount = 0, lenCount = 0;
-	    readOneFastaSeq(ifstrm, sequence, name, length);
+	    readOneFastaSeq(zin, sequence, name, length);
 	    while (sequence){
 		chunkCount += insertSeq(sequence, name, length, species);
 		seqCount++;
@@ -154,7 +175,7 @@ int main( int argc, char* argv[] ){
 		delete sequence;
 		delete name;
 		sequence = name = NULL;
-		readOneFastaSeq(ifstrm, sequence, name, length);
+		readOneFastaSeq(zin, sequence, name, length);
 	    }
 	    if (seqCount > 0)
 		cout << "Inserted " << chunkCount << " chunks of " << seqCount << " sequences (total length "
@@ -179,9 +200,9 @@ int main( int argc, char* argv[] ){
 		} catch (ProjectError e){}
 	    }
 	    if(!hintCount.empty()){
-		cout << "inserted"<<endl; 
+		cout << "inserted" << endl; 
 		for(map<string,int>::iterator it= hintCount.begin(); it != hintCount.end(); it++){
-		    cout << it->second<<" hints for " << it->first << endl;
+		    cout << it->second << " hints for " << it->first << endl;
 		}
 		//removeDuplicates(); dublicastes can only be removed when multiplicity is updated
 	    }
@@ -431,27 +452,24 @@ int getSpeciesID(string species){
  */
 int getSeqNr(char* seqname,int speciesid){
     mysqlpp::Query query = con.query();
-    query << "SELECT seqnr FROM seqnames WHERE seqname='" << seqname << "' AND speciesid="<<speciesid;
-    //cout << "Executing" << endl << query.str() << endl;
+    query << "SELECT seqnr FROM seqnames WHERE seqname='" << seqname << "' AND speciesid=" << speciesid;
+    // cout << "Executing" << endl << query.str() << endl;
     mysqlpp::StoreQueryResult res = query.store();
-    if(!res.empty()){
+    if (!res.empty()){
         return res[0]["seqnr"];
-    }
-    else{
-        // insert seqname                                                                                                                                                                                    
+    } else{
         query << "INSERT INTO seqnames (speciesid,seqname) VALUES (" << speciesid << ",\"" << seqname << "\")";
-	//cout << "Executing" << endl << query.str() << endl;
+	// cout << "Executing" << endl << query.str() << endl;
         query.execute();
         return query.insert_id();
     }
 }
 
-bool isFasta(ifstream &ifstrm){
-    // skip empty lines
-    ifstrm >> ws;
-    if (!(ifstrm))
+bool isFasta(filtering_istream &zin){
+    zin >> ws;
+    if (!(zin))
 	return false;
-    char c = ifstrm.peek();
+    char c = zin.peek();
     if (c == '>')
 	return true;
     return false;

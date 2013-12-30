@@ -22,7 +22,7 @@ OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o
   fasta.o
 ifdef COMPGENEPRED
 	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o
-	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
+	LIBS += -lboost_iostreams -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
