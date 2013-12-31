@@ -21,12 +21,13 @@
 // standard C/C++ includes
 #include <list>
 #include <fstream>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/copy.hpp>
 
 #define GBMAXLINELEN 8192
 
 enum FileType {unknown, genbank, fasta};
-
-
 
 /**
  * Exception class for the GenBank classes.
@@ -112,34 +113,19 @@ struct GBPositions{
  */
 class GBSplitter{
 public:
-    /**
-     * Constructor
-     *
-     * @param fname The name of the GenBank database file (optional).
-     */
     GBSplitter( string fname );
-    /**
-     * Destructor
-     */
     ~GBSplitter( );
-
-   /**
-     * Guess whether it is fasta of genbank format.
-     */
     void determineFileType();
-
-    /**
-     *
-     */
     GBPositions* nextData( ) throw( GBError );
     AnnoSequence *getNextFASTASequence( ) throw( GBError );
-
+    void clear() {sin.clear(); sin.str(""); ifstrm.close();}
     FileType ftype;
 private:
     Boolean     findPositions( GBPositions& pos ) throw( GBError );
     Boolean     gotoEnd( );
 private:
     ifstream    ifstrm;
+    std::stringstream sin;
 };
 
 //========================================================================

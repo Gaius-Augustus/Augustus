@@ -18,7 +18,6 @@
 using boost::iostreams::filtering_istream;
 
 void readOneFastaSeq(filtering_istream &ifstrm, char* &sequence, char* &name, int &length);
-void readOneFastaSeq(std::ifstream &ifstrm, char* &sequence, char* &name, int &length);
+void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, int &length);
 
 #endif   //  _FASTA_HH
-

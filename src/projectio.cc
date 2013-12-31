@@ -12,7 +12,12 @@
  **********************************************************************/
 
 #include "projectio.hh"
+#include <sstream>
 
 istream& operator>>(istream& is, Goto_line_after gla){ 
+    return find_line_after(is, gla.keyword);
+}
+
+stringstream& operator>>(stringstream& is, Goto_line_after gla){ 
     return find_line_after(is, gla.keyword);
 }

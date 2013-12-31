@@ -23,6 +23,8 @@
 // standard C/C++ includes
 #include <iostream>
 
+using boost::iostreams::filtering_istream;
+using boost::iostreams::gzip_decompressor;
 
 GBProcessor::GBProcessor(string filename) :
     gbs(filename)
@@ -293,7 +295,7 @@ AnnoSequence* GBProcessor::getAnnoSequenceList(){
     AnnoSequence *first = NULL, *annoseq, *last = NULL;
     bool notend = true;
     int annocount = 0;
-    while(notend){
+    while (notend){
 	try {
 	    annoseq = getAnnoSequence(nextPosition( ));
 	    if ((notend = (annoseq != NULL))){
@@ -314,6 +316,7 @@ AnnoSequence* GBProcessor::getAnnoSequenceList(){
 	throw ProjectError("No genbank sequences found.");
     if (gbVerbosity)
 	cout << "# Read in " << annocount << " genbank sequences." << endl;
+    
     return first;
 }
 
@@ -327,11 +330,11 @@ AnnoSequence* GBProcessor::getSequenceList(){
 	    seqlist = seq;
 	last = seq;
     };
+    gbs.clear();
     if (seqlist == NULL)
 	throw ProjectError("No sequences found.");
     return seqlist;
 }
-
 
 char* GBProcessor::getSequence( GBPositions& pos ) throw( GBError) {
     char* seq = new char[pos.seqlength+1];
@@ -535,10 +538,27 @@ GBSplitter::GBSplitter( string fname ) : ftype(unknown) {
 	ifstrm.ios::rdbuf(cin.rdbuf());
 	ftype = fasta;
     }
+    // deflate if gzipped
+    boost::iostreams::filtering_istream zin;
+    try {  
+	zin.push(gzip_decompressor());
+	zin.push(ifstrm);
+	zin.peek();
+	if (!zin)
+	    throw("Could not read first character assuming gzip format.");
+	cout << "# Looks like " << ((fname != "-")? fname: "STDIN") 
+	     << " is in gzip format. Deflating..." << endl;
+    } catch (...) { // boost::iostreams::gzip_error& 
+	// not a gzip file or ill-formatted
+	zin.reset();
+	ifstrm.seekg(0);
+	zin.push(ifstrm);
+    }
+    boost::iostreams::copy(zin, sin);
 }
 
 GBSplitter::~GBSplitter( ){
-    if( ifstrm.is_open( ) )
+    if (ifstrm.is_open())
         ifstrm.close();
 }
 
@@ -546,77 +566,35 @@ GBSplitter::~GBSplitter( ){
 
 void GBSplitter::determineFileType(){
     ftype = unknown;
-    ifstrm >> ws;
+    sin >> ws;
     // char wrongChar=' ';
 
     // check whether it could be genbank format
     // search for at least one LOCUS and ORIGIN at the beginning of a line
-    ifstrm >> goto_line_after( "LOCUS" );
-    ifstrm >> goto_line_after( "ORIGIN" );
-    if (ifstrm)
+    sin >> goto_line_after( "LOCUS" );
+    sin >> goto_line_after( "ORIGIN" );
+    if (sin)
 	ftype = genbank;
     else 
 	ftype = fasta;
-    // commented out the FASTA autodetection since it will only
-    // result in a warning anyway
-
-    // 	// check, whether it is FASTA or plain sequence
-    // 	// only letters allowed in the sequence part, except for the end of the line
-    // 	bool whiteSpaceSeen;
-    // 	ifstrm.clear();
-    // 	ifstrm.seekg(0, ios::beg);
-    // 	string line;
-    // 	bool haveWrongChar=false;
-    // 	while (ifstrm && ! haveWrongChar) {
-    // 	    getline(ifstrm, line);
-    // 	    if (line[0]!='>') {
-    // 		whiteSpaceSeen=false;
-    // 		for (int i=0; i < line.length() && !haveWrongChar; i++) 
-    // 		    if (isspace(line[i]))
-    // 			whiteSpaceSeen = true;
-    // 		    else if (!isalpha(line[i]) && whiteSpaceSeen){
-    // 			haveWrongChar = true;
-    // 			wrongChar = line[i];
-    // 		    }
-    // 	    }
-    // 	}
-    // 	if (!haveWrongChar)
-    // 	    ftype = fasta;
-    // }
-    ifstrm.clear();
-    ifstrm.seekg(0, ios::beg);
-    // if (ftype == unknown) {
-    // 	string errmsg = "GBProcessor::determineFileType(): Couldn't determine input file type. Found bad character '";
-    // 	errmsg += wrongChar;
-    // 	errmsg += "'";
-    // 	throw GBError(errmsg);
-    // }
+    sin.clear();
+    sin.seekg(0, ios::beg);
 }
-
 
 
 GBPositions* GBSplitter::nextData( ) throw( GBError ){
-    if( !ifstrm.is_open() )
-        throw GBError( "GBSplitter::nextDate( ) : No file is given!! "
-                       "Call 'GBSPlitter::initFile( file )' first!!");
-
     GBPositions* pos = new GBPositions;
-
     if( !findPositions( *pos ) ){     // No other data available!
         delete pos;
-        ifstrm.close();
         return (GBPositions*)0;
     }
-
     return pos;
 }
-
-
 
 AnnoSequence *GBSplitter::getNextFASTASequence( ) throw( GBError ){
     char *sequence = NULL, *name = NULL;
     int length;
-    readOneFastaSeq(ifstrm, sequence, name, length);
+    readOneFastaSeq(sin, sequence, name, length);
     if (sequence == NULL || length == 0)
 	return NULL;
 
@@ -632,29 +610,29 @@ Boolean GBSplitter::gotoEnd( ){
     char buf[GBMAXLINELEN];
     do{
         int i = 0;
-        ifstrm.getline( buf, GBMAXLINELEN );
-	if ((ifstrm.rdstate() & ifstream::failbit) && !(ifstrm.rdstate() & ifstream::eofbit))
-	    ifstrm.clear(ifstrm.rdstate() & ~ifstream::failbit);
+        sin.getline( buf, GBMAXLINELEN );
+	if ((sin.rdstate() & ios_base::failbit) && !(sin.rdstate() & ios_base::eofbit))
+	    sin.clear(sin.rdstate() & ~ios_base::failbit);
         while( i < GBMAXLINELEN-1 && isspace(buf[i]))
             i++;
         if( buf[i] == '/' && buf[i+1] == '/' )
             return true;
-    } while (ifstrm);
+    } while (sin);
     return false;
 }
 
 
 Boolean GBSplitter::findPositions( GBPositions& pos ) throw( GBError ){
     int fposb, fpose;
-    fposb = ifstrm.tellg();
+    fposb = sin.tellg();
     if( !gotoEnd( ) )
         return false;
-    fpose = ifstrm.tellg();
-    ifstrm.seekg( fposb );
+    fpose = sin.tellg();
+    sin.seekg( fposb );
 
     pos.length = fpose-fposb /*+1*/;         // Without the '\0'!!
     pos.buffer = new char[pos.length+1];
-    ifstrm.read( pos.buffer, pos.length );
+    sin.read( pos.buffer, pos.length );
     pos.buffer[pos.length] = '\0';
     pos.length++;                       // Now with the '\0'!!!
     pos.seqlength = 0;
@@ -664,7 +642,7 @@ Boolean GBSplitter::findPositions( GBPositions& pos ) throw( GBError ){
         int curpos = isstrm.tellg();
         isstrm >> ws;
         isstrm.getline( buf, GBMAXLINELEN-1 );
-	if (!isstrm.eof() && (isstrm.rdstate() & ifstream::failbit)){
+	if (!sin.eof() && (sin.rdstate() & ios_base::failbit)){
 	    throw GBError(string("Could not read the following line in Genbank file.\n") + buf 
 			  + "\nMaximum line length is \n" + itoa(GBMAXLINELEN-1) + ".\n");
 	    // ignore problem by removing the failbit

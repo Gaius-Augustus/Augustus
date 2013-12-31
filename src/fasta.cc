@@ -15,6 +15,7 @@
 
 // standard C/C++ includes
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <string.h>
 #include <boost/iostreams/filtering_stream.hpp>
@@ -77,7 +78,7 @@ void readOneFastaSeq(filtering_istream &ifstrm, char* &sequence, char* &name, in
  * For some reason a template solution does not work (because of boost class structure?).
  * However, filtering_istream is supposed to generalize basic_istream.
  */
-void readOneFastaSeq(ifstream &ifstrm, char* &sequence, char* &name, int &length){
+void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, int &length){
     string line;
     string seq("");
     char   c;
