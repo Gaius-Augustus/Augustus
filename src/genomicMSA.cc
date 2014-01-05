@@ -305,9 +305,6 @@ void GenomicMSA::findGeneRanges(){
     // iterate over all nodes u
     do {
 	numNodesOld = numNodes;
-	cout << "number of nodes: " << numNodes << endl;
-	writeDot(aliG, "aliGraph." + itoa(itnr++) + ".dot");
-
 	for (uid = 0; uid < num_vertices(aliG); uid++){
 	    u = vertex(uid, aliG);
 	    ua = aliG[u].a;
@@ -387,6 +384,9 @@ void GenomicMSA::findGeneRanges(){
 	    if (aliG[vertex(uid, aliG)].a)
 		numNodes++;
     } while (numNodes < numNodesOld);
+
+    cout << "number of nodes: " << numNodes << endl;
+    // writeDot(aliG, "aliGraph." + itoa(itnr++) + ".dot");	
 
     // take all singleton alignments that are now long enough
     // at the same time, pack all alignments
@@ -488,7 +488,7 @@ void GenomicMSA::findGeneRanges(){
     writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot");
     for (list<MsaSignature*>::iterator sit = siglist.begin(); sit != siglist.end(); ++sit){
 	project(aliG2, *sit); // set weights wrt to signature
-	cout << (*sit)->sigstr() << endl;
+	// cout << (*sit)->sigstr() << endl;
 	// cout << " writing aliGraph." + itoa(itnr) + ".dot" << endl;
 	// writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot", *sit);
 	int numNewCovered = 1;
@@ -652,6 +652,7 @@ bool GenomicMSA::prunePathWrt2Other(AliPath &p, Iterator pstart, Iterator pend,
  * p may become the empty path.
  */
 bool GenomicMSA::deletePathWrt2Other(AliPath &p, AliPath &other, AlignmentGraph &g){
+    const double superfluousfrac = 1.1; // path must have at least this many times weighted alignments compared to the intersection of paths
     bool superfluous = false;
     set<string> ranges[3]; // 0:p 1:other 2:intersection
     AliPath *ap[2];
@@ -687,7 +688,7 @@ bool GenomicMSA::deletePathWrt2Other(AliPath &p, AliPath &other, AlignmentGraph 
 	// cout << "set " << i << " has size " << ranges[i].size() << " and weight " << weights[i] << endl;
     }
     // check whether p has too few or short additional aligned regions that are not shared by 'other'
-    if (weights[0] < 1.1 * weights[2]){
+    if (weights[0] < superfluousfrac * weights[2]){
 	superfluous = true;
 	// cout << p << endl << "is superfluous because of" << endl << other << endl;
     }
@@ -870,7 +871,7 @@ void GenomicMSA::writeDot(AlignmentGraph const &g, string fname, MsaSignature co
 		    sigbgcol = " BGCOLOR=\"" + colornames[NUMCOLNAMES - 1 - sig.color] + "\"";
 	    }
 	    dot << i <<  "[label=<<TABLE BORDER=\"0\">";
-	    dot << "<TR><TD COLSPAN=\"2\">" << i << "=" << g[*vi].id << "</TD><TD COLSPAN=\"3\">" << ia->aliLen << "</TD></TR>";
+	    dot << "<TR><TD COLSPAN=\"2\">" << i << "=" << g[*vi].id << "</TD><TD COLSPAN=\"3\">" << ia->aliLen << "</TD></TR>" << endl;
 	    for (size_t s = 0; s < ia->rows.size(); s++){
 		dot << "<TR>";
 		row = ia->rows[s];
@@ -884,8 +885,9 @@ void GenomicMSA::writeDot(AlignmentGraph const &g, string fname, MsaSignature co
 		    dot << "<TD" << ((!superSig || superSig->fits(*ia, s))? sigbgcol : "" ) << ">" << row->strand << "</TD>";
 		    dot << "<TD align=\"right\">" << row->chrStart() << "</TD>";
 		    dot << "<TD align=\"right\">" << row->chrEnd() << "</TD>";
-		}
-		dot << "<TD></TD><TD></TD><TD></TD><TD></TD><TD></TD></TR>";
+		} else 
+		    dot <<  "<TD></TD><TD></TD><TD></TD><TD></TD><TD></TD>";
+		dot << "</TR>" << endl;;
 	    }
 	    if (superSig) {
 		dot << "<TR><TD COLSPAN=\"3\">";
@@ -893,7 +895,7 @@ void GenomicMSA::writeDot(AlignmentGraph const &g, string fname, MsaSignature co
 		    dot << g[*vi].weight;
 		else 
 		    dot << "-infty";
-		dot << "</TD><TD COLSPAN=\"2\">" << g[*vi].covered << "</TD></TR>";
+		dot << "</TD><TD COLSPAN=\"2\">" << g[*vi].covered << "</TD></TR>" << endl;
 	    }
 	    dot << "</TABLE>>";
 	    if (superSig){
