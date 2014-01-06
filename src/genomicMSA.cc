@@ -538,9 +538,10 @@ void GenomicMSA::findGeneRanges(){
 	}
     }
     int sizeBeforeCapping = alignment.size();
-    capAliSize(alignment, Properties::getIntProperty( "maxDNAPieceSize" ));
+    int mz = Properties::getIntProperty( "maxDNAPieceSize" );
+    capAliSize(alignment, mz);
     if (alignment.size() > sizeBeforeCapping)
-	cout << "very large alignments had to be cut " << alignment.size() - sizeBeforeCapping << " times." << endl;
+	cout << "very large alignments (>" << mz << ") had to be cut " << alignment.size() - sizeBeforeCapping << " times." << endl;
     alignment.sort(SortCriterion(0)); // sort (arbitrarily) by first species
     cout << "findGeneRanges " << ((alignment.size() <= numAlis)? "reduced" : "increased") << " the number of aligments from " << numAlis << " to " 
 	 <<  alignment.size() << " (to " << setprecision(3) <<  (100.0 * alignment.size() / numAlis) << "%)." << endl;
