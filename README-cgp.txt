@@ -1,4 +1,5 @@
-# manual for AUGUSTUS in cgp (comparative gene prediction) mode
+# manual for AUGUSTUS in comparative gene prediction (cgp) mode
+# genes are predicted simulteneously in several aligned genomes
 # Stefanie Koenig, 15.12.2013
 
 1. INTRODUCTION
@@ -11,26 +12,27 @@
 
 1. INTRODUCTION
 ----------------
-The cgp mode is an extension to AUGUSTUS that takes a genome
-alignment of two or more closely related species and simultaneously
-predicts genes in all input genomes.
+The cgp mode is an extension to AUGUSTUS that takes an alignment of two or more genomes
+and simultaneously predicts genes in all of them.
 Beside the genomes and the alignment, a phylogenetic tree of the species is required input.
 AUGUSTUS-cgp can either be used
 
 - de novo, or
-- with extrinsic evidence (such as rnaseq or EST data) for one or more species.
-  This includes already existing annotations to predict genes
-  in newly sequenced, related genomes.
+- with extrinsic evidence for any subset of species
+  Such evidence includes for example already existing and trusted gene structures or hints from RNA-Seq alignments.
+
 
 Both genomes and extrinsic evidence can either be read in from a flat file or 
-alternatively retrieved from a mysql database.
-Both approaches are described below in more detail. 
+alternatively retrieved from a MYSQL database.
+Both approaches are described below in more detail.
 
 This manual assumes that you are already familiar with AUGUSTUS
 and that you know how to use AUGUSTUS for gene prediction in a single genome.
 
 2. DEPENDENCIES
 -----------------
+
+The following programs need be installed in cgp mode:
 
 - GSL (GNU Scientific Library)
 - Boost C++ Libraries (>= V1_46_1)
@@ -44,7 +46,7 @@ and that you know how to use AUGUSTUS for gene prediction in a single genome.
 a) install all dependencies
 
    GSL:      download source code from http://www.gnu.org/software/gsl/ and follow the installation instructions
-   Boost:    install via package manager:
+   Boost:    install via package manager, on UBUNTU/Debian linux:
              > sudo apt-get install libboost-all-dev
    zlib:     The compression library. Download from http://www.zlib.net/ or install via package manager.
    Flexc++:  download source code from http://flexcpp.sourceforge.net/ and follow the installation instructions. (Flexc++
@@ -56,10 +58,10 @@ a) install all dependencies
    g++       install via package manager:
              > sudo apt-get install build-essential
 
-b) generate a scanner and a parser class that parses files in Newick format
+b) generate a scanner and a parser class that parses tree files in Newick format
 
   generate a scanner class with Flexc++:
-  Switch to the directory trunks/src/scanner/ in your augustus folder and compile the file 'lexer' with Flexc++:
+  Switch to the directory src/scanner/ in your augustus folder and compile the file 'lexer' with Flexc++:
 
 >  flexc++ lexer
    
@@ -92,7 +94,7 @@ class Parser: public ParserBase
 
 c) recompile AUGUSTUS with cgp mode enabled
 
-   open the file trunks/common.mk with a text editor and uncomment following line to enable comparative gene prediction
+   open the file common.mk with a text editor and uncomment the following line to enable comparative gene prediction
 
 #COMGENEPRED = true
 
@@ -105,7 +107,7 @@ c) recompile AUGUSTUS with cgp mode enabled
 4. RUNNING AUGUSTUS IN CGP MODE
 --------------------------------  
    
-In order to call Augustus in the comparative gene prediction mode, 4 mandatory arguments need to be passed:
+In order to call AUGUSTUS in the comparative gene prediction mode, 4 mandatory arguments need to be passed:
 
 --species=identifier
           a species for which model parameters are trained. For a list of identifiers see README.txt.
@@ -115,11 +117,11 @@ In order to call Augustus in the comparative gene prediction mode, 4 mandatory a
 	  
 
 --speciesfilenames=genomes.tbl
-                   a file containing for each species the directory to its genome file.
+                   a file containing for each species the path to its genome file.
 		   Each line in 'genomes.tbl' consists of two tab-separated fields.
 		   The first field is a species identifier (does not correspond to the
 		   identifier in --species !!!).
-		   The second field is the directory to the genome file, e.g.
+		   The second field is the directory and file name for the genome file, e.g.
                    
 hg19	 /dir/to/genome/human.fa
 rheMac2	 /dir/to/genome/rhesus.fa
@@ -175,7 +177,7 @@ begin trees;
 tree con_50_majrule = [&U] ((((1:0.032973,2:0.036199):0.129706,3:0.352605):0.020666,4:0.219477):0.438357,5:0.474279);
 end;
 
-           In cases where the phylogeny is not known, a star like tree with uniform branch lengths might be used instead, e.g.
+           In cases where the phylogeny is not known, a star-like tree with uniform branch lengths might be used instead, e.g.
 
 (hg19:1,rheMac2:1,mm9:1,bosTau4:1,galGal3:1);
 
@@ -189,19 +191,20 @@ a small data set for testing can be found in examples/cgp/
 5. RETRIEVING GENOMES FROM A MYSQL DATABASE
 ------------------------------------------------
 
-Reading in the genome files from a flat file may require a lot of RAM. Instead,
-sequences can be retrieved from a mysql database.
+The flat-file option above reads in all genomes into RAM. This may require too much memory, e.g. for a large number
+of vertebrate-sized genomes. Also, this is inefficient when many parallel comparative AUGUSTUS runs are started on a
+compute cluster. Therefore, another option allows to read only the required sequences from a MYSQL database:
 
 a.) enabling mysql access:
     follow the instructions in docs/mysql.install.readme to install a mysql client and compile the mysql++ library
     
-b.) creating a mysql database (example code):
+b.) creating a mysql database (example code) and a user:
 
->mysql -u root -p
->create database saeuger;
->select password('AVglssd8');
->create user `cgp`@`%` identified by password '*9D01B966C9648BD3B72A75CEB20A7BCCD41EDE5D'; /* or whatever the password code is*/
->grant all privileges on saeuger.* to cgp@'%';
+> mysql -u root -p
+> create database saeuger;
+> select password('AVglssd8');
+> create user `cgp`@`%` identified by password '*9D01B966C9648BD3B72A75CEB20A7BCCD41EDE5D'; /* or whatever the password code is*/
+> grant all privileges on saeuger.* to cgp@'%';
 
 c.) loading sequences into the database:
     Use the program 'load2db' in the AUGUSTUS repository.
@@ -229,10 +232,10 @@ Extrinsic evidence (or hints) can be integrated using a flat file or database ac
 Note that you have to retrieve BOTH genomes and hints either from a flat file or
 from the database. Mixed combinations are not possible.
 
-Let's assume we have extrinsic evidence for human and mouse and already prepared the hints files for human and mouse in gff format
+Let's assume we have extrinsic evidence for human and mouse and already prepared the hints files for human and mouse in GFF format
 (just as you would do it in the single species version of AUGUSTUS):
 
-human.hints.gff contains hints from human rnaseq data
+human.hints.gff contains hints from human RNA-seq and repeat masking
 
 chr21   b2h     intron         	9908433	        9909046		0       .       .       pri=4;src=E
 chr21   repmask nonexonpart     10018268        10018612        0       .       .       src=RM

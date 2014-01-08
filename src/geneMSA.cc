@@ -164,7 +164,7 @@ void GeneMSA::createExonCands(int s, const char *dna){
  * createOrthoExons
  */
 void GeneMSA::createOrthoExons(float consThres, int minAvLen) {
-    cout << "Creating ortho exon for alignment" << endl << *alignment << endl;
+    //cout << "Creating ortho exons for alignment" << endl << *alignment << endl;
     int k = alignment->rows.size();
     int m = alignment->numFilledRows();; // the number of nonempty rows
     int_fast64_t aliStart, aliEnd;

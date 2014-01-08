@@ -274,7 +274,6 @@ void capAliSize(list<Alignment*> &alis, int maxRange){
 	return;
     AliIt ait = alis.begin();
     int k = (*ait)->numRows(); // number of species
-    cout << "k=" << k << endl;
     for (; ait != alis.end(); ++ait){
 	if ((*ait)->maxRange() > maxRange){
 	    Alignment *a = *ait;

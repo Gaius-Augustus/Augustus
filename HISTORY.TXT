@@ -1,3 +1,14 @@
+List of changes from version 2.7 to 3.0 (until January 8th, 2014)
+     - comparative gene prediction (cgp) mode to predict genes in several aligned genomes simultaneously (see README-cgp.txt)
+     - load2db program to load genomes and hint GFF files into a database for random access retrieval (e.g. with new program getSeq)
+     - new parameter --temperature for heating the distribution and obtaining more gene structures during sampling
+     - bacterial genes may now also be nested
+     - new script weedMaf.pl that throws out gap-only columns from MSAs
+     - added prokaryotic template parameters for training new prokaryotic species (on the basis of E_coli_K12 parameters)
+     - new species coyote_tobacco (Nicotiana attenuata), thermoanaerobacter_tengcongensis, wheat
+     - ATG is not anymore the only start codon
+     - filterMaf.pl takes an alignment in MAF format and extracts alignment blocks given a subset of species or a genomic interval
+     - bugfixes (in particular segfault on MAC, small memory leaks)
 List of changes from version 2.6.1 to 2.7 (until March 4th, 2013)
      - support for prokaryotic genomes (overlapping genes, arbitrary sets of start codons)
        --genemodel=bacterium still preliminary
@@ -189,7 +200,7 @@ List of changes from version 1.4 to version 1.5 (until 12/04):
 
 List of changes from version 1.3 to version 1.4 (after 06/04):
 
-     - New species: Arabidopsis Thaliana.
+     - New species: Arabidopsis thaliana.
      - More standard, user friendly program call. No need to specify a configuration file anymore.
      - Fixed bug for the emission probabilities of exonpart pitchfork hints in exons which are supported
        by exonpart hints. Now AUGUSTUS has an incentive to predict an exon which is as small as possible even

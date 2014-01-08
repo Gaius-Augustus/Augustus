@@ -2,14 +2,15 @@
 %                                                                                                %
 %           Gene Prediction with the Command-Line Version of AUGUSTUS                            %
 %                                                                                                %
-%             Mario Stanke                                      Oliver Keller                    %
-%             Universitaet Greifswald                           Universitaet Goettingen          %
-%             Institut fuer Mathematik und Informatik           Institut fuer Informatik         %
-%             17497 Greifswald                                  37077 Goettingen                 %
+%           Authors: Lizzy Gerischer, Oliver Keller, Stefanie Koenig, Mario Stanke               %
+%             Mario Stanke                                                                       %
+%             Universitaet Greifswald                                                            %
+%             Institut fuer Mathematik und Informatik                                            %
+%             17497 Greifswald                                                                   %
 %             Fon: +49 3834 864642                                                               %
-%             mario.stanke@uni-greifswald.de                    keller@cs.uni-goettingen.de      %
+%             mario.stanke@uni-greifswald.de                                                     %
 %                                                                                                %
-%             Date: June 9th, 2012                                                               %
+%             Date: January 8th, 2014                                                            %
 %                                                                                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -64,12 +65,14 @@ Currently, AUGUSTUS has been trained for predicting genes in:
   - Encephalitozoon cuniculi
   - Eremothecium gossypii
   - Fusarium graminearum
+  - Gallus gallus
   - Histoplasma capsulatum
   - Kluyveromyces lactis
   - Laccaria bicolor
   - Lodderomyces elongisporus
   - Magnaporthe grisea
   - Neurospora crassa
+  - Nicotiana attenuata (coyote tobacco)
   - Petromyzon marinus (sea lamprey)
   - Phanerochaete chrysosporium
   - Pichia stipitis
@@ -86,6 +89,9 @@ Currently, AUGUSTUS has been trained for predicting genes in:
   - Leishmania tarentolae (protozoa, intronless)
   - Trichinella spiralis
   - Theobroma cacao (cacao)
+  - Escherichia coli
+  - Thermoanaerobacter tengcongensis (a bacterium)
+  - Triticum aestivum (wheat)
 
 The training annotation files of the following species are a courtesy of Jason Stajich (see also http://fungal.genome.duke.edu/): 
 Aspergillus fumigatus, Aspergillus nidulans, Aspergillus oryzae, Aspergillus terreus, Botrytis cinerea, Candida albicans
@@ -125,6 +131,11 @@ examples
 scripts
 
 2. compile (if not already compiled)
+
+Install dependencies:
+   These dependencies are new in AUGUSTUS 3.0 to allow .gz file input.
+   - Boost C++ Library: libboost-iostreams-dev
+   - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager.
 
 > cd src
 > make
@@ -190,6 +201,7 @@ chaetomium_globosum                      | Chaetomium globosum
 coccidioides_immitis                     | Coccidioides immitis
 coprinus                                 | Coprinus cinereus
 coprinus_cinereus                        | Coprinus cinereus
+coyote_tobacco                           | Nicotiana attenuata
 cryptococcus_neoformans_gattii           | Cryptococcus neoformans gattii
 cryptococcus_neoformans_neoformans_B     | Cryptococcus neoformans neoformans
 cryptococcus_neoformans_neoformans_JEC21 | Cryptococcus neoformans neoformans
@@ -217,6 +229,7 @@ saccharomyces_cerevisiae_S288C           | Saccharomyces cerevisiae
 saccharomyces_cerevisiae_rm11-1a_1       | Saccharomyces cerevisiae
 (saccharomyces)                          | Saccharomyces cerevisiae
 schizosaccharomyces_pombe                | Schizosaccharomyces pombe
+thermoanaerobacter_tengcongensis         | Thermoanaerobacter tengcongensis
 trichinella                              | Trichinella spiralis
 ustilago_maydis                          | Ustilago maydis
 (ustilago)                               | Ustilago maydis
@@ -226,6 +239,8 @@ tomato                                   | Solanum lycopersicum
 chlamydomonas                            | Chlamydomonas reinhardtii
 amphimedon                               | Amphimedon queenslandica
 pneumocystis                             | Pneumocystis jirovecii
+wheat                                    | Triticum aestivum
+chicken                                  | Gallus gallus
 
 The identifiers in parentheses denote older versions for that species.
 
@@ -430,6 +445,19 @@ Output alternative transcripts and report posterior probabilities:
 
 Be aware that sampling is pseudorandom and that the results may vary from machine to machine.
 
+Heating
+-------
+The probabilistic model of AUGUSTUS can be seen as a rough approximation to reality. A consequence is that the posterior probabilities for the 
+strong exons (e.g. the ones called by the Viterbi algorithm) tend to be larger than the actually measured precision (specificity) values. For
+example, in human, only 94.5% of the exons with predicted posterior probability >= 98% (under the default --sample=100) are actually correct.
+See docs/CDS.sp.{pdf,README} for more data and an explanation. If the aim of the sampling is to produce a diverse, sensitive (including) set of gene
+structures, you can use this parameter
+
+--temperature=t
+
+where t is one of 0,1,2,3,4,5,6,7. All probabilities of the model are then taken to the power of (8-t)/8, i.e. t=0 (the default) does nothing. The larger t
+the more alternatives are sampled. t=3 is a good compromise between getting a high sensitivity but not getting too many exons sampled in total.
+For t=3, 96.1% of human exons with posterior probability >= 98% are correct.
 
               5. USING HINTS (AUGUSTUS+)
               --------------------------
@@ -844,7 +872,7 @@ http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Forum.Forum
 
 In case you need to train AUGUSTUS on a different organism consider this training web service:
 bioinf.uni-greifswald.de/trainaugustus
-Please contact Oliver for issues concerning the Protein Profile Extension.
+Please contact Oliver (keller74@googlemail.com) for issues concerning the Protein Profile Extension.
 
 
               12. REFERENCES

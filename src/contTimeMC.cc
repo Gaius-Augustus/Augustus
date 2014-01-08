@@ -701,13 +701,13 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree)
     }
     //    cout << "Eomega=" << Eomega << endl;
     // count number of substitutions
-    int subst;
+    //int subst;
  
     // settings to reduce MAP algorithm to Fitch Algorithm
-    vector<double> weights(tree->numSpecies(),0);
-    Parsimony parsi;
-    parsi.computeLogPmatrices();
-    Evo *parsi_base = &parsi;
+    //    vector<double> weights(tree->numSpecies(),0);
+    //Parsimony parsi;
+    //parsi.computeLogPmatrices();
+    //Evo *parsi_base = &parsi;
     /*    cout << "graph substitutions" << endl;
     for (int i=0; i<n; i++){
 	vector<int> codontuple(tree->numSpecies(), 64);

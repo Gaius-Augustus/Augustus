@@ -1,0 +1,10 @@
+On human chromosome 21 genes were predicted with augustus using sampling using
+
+for T in 0 1 2 3 4 5 6 7; do
+    augustus --alternatives-from-sampling=true --species=human --sample=100 chr21.fa --minexonintronprob=0 --minmeanexonintronprob=0 --temperature=$T
+done
+
+The graph shows the posterior probability reported in the 6th column of the augustus output gff file versus the actual fraction of exons (CDS) that
+match the reference annotation (RefSeq). The esimated curves for t=5,6,7 are not reliable for high posterior probabilities as they occurr too rarely.
+For large temperatures exons with high posterior probability become increasingly rare. We recommend t=3 as it comes relatively close to the ideal curve,
+the diagonal, for the most relavant range of posterior probabilities.
