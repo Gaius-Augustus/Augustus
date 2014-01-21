@@ -533,10 +533,10 @@ GBSplitter::GBSplitter( string fname ) : ftype(unknown) {
 	ifstrm.open(fname.c_str());    
 	if( !ifstrm )
 	    throw GBError("Could not open input file \"" + fname + "\"!");
-	determineFileType();
     } else { // read from standard input
-	ifstrm.ios::rdbuf(cin.rdbuf());
-	ftype = fasta;
+	throw GBError("Input from STDIN not supported anymore since the introcution of .gzipped input (with version 3.0).");
+	//ifstrm.ios::rdbuf(cin.rdbuf());
+	//ftype = fasta;
     }
     // deflate if gzipped
     boost::iostreams::filtering_istream zin;
@@ -555,6 +555,7 @@ GBSplitter::GBSplitter( string fname ) : ftype(unknown) {
 	zin.push(ifstrm);
     }
     boost::iostreams::copy(zin, sin);
+    determineFileType();
 }
 
 GBSplitter::~GBSplitter( ){
