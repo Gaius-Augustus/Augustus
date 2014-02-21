@@ -832,9 +832,9 @@ double *ExonModel::getCodonUsage(){
 	pi[s2i(sampledCDS+e.order+i*3)] += 1;
     delete [] sampledCDS;
     // normalize pi
-    int s = 0.0;
+    int s = 0;
     for (int c=0; c<64; c++)
-	s += pi[c];
+	s += (int) pi[c]; // here, the elements of pi are still integers
     
     //    cout << "codon usage: " << endl;
     for (int c=0; c<64; c++){

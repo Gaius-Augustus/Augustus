@@ -7,13 +7,13 @@ CC	= g++
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt 
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - In the current version, the order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -DDEBUG -g -ggdb -static
+CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -O2 ${CFLAGS} # -DDEBUG -g -ggdb -static
 
 ifdef COMPGENEPRED
 	CFLAGS += -std=c++0x -DCOMPGENEPRED
 endif
 INCLS	= -I../include
-LIBS    = -lboost_iostreams
+LIBS    = -lboost_iostreams -lboost_system -lboost_filesystem
 
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \

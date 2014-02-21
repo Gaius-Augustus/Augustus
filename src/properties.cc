@@ -338,9 +338,14 @@ void Properties::init( int argc, char* argv[] ){
     string& configPath = properties[CFGPATH_KEY];
     if (configPath == "") {
 	char *dir = getenv(CFGPATH_KEY);
-	if (dir == NULL)
-	    throw ProjectError("Environment variable " CFGPATH_KEY " not defined.");	
-	configPath = string(dir);
+	if (dir == NULL){
+	    //	    throw ProjectError("Environment variable " CFGPATH_KEY " not defined.");
+	    cout << "Environment variable " CFGPATH_KEY " not defined." << endl;
+	    
+
+	} else {
+	    configPath = string(dir);
+	}
     }
     if (configPath[configPath.size()-1] != '/')
 	configPath += '/';  // append slash if neccessary
@@ -574,3 +579,43 @@ void Properties::readLine( istream& strm ) {
 	    properties[name] = value;
 }
 
+void findLocationOfSelfBinary(string & location){
+    location.clear();
+ 
+    const char * self = nullptr;
+ 
+#ifdef __APPLE__
+    char path[16384];
+    uint32 size = static_cast<uint32>(sizeof(path));
+    if (_NSGetExecutablePath(path, &size) == 0){
+	self = path;
+    } else {
+	throw ProjectError("Could not determine binary path. Buffer too small?");
+	// need to program workaround with new/free.\n";
+    }
+#else
+    const static string selfpse("/proc/self/exe");         // Linux
+    const static string selfpcf("/proc/curproc/file");     // FreeBSD / DragonFlyBSD if they have /proc
+    const static string selfpce("/proc/curproc/exe");      // NetBSD
+ 
+    if (boost::filesystem::exists(selfpse)){
+	self = selfpse.c_str();
+    } else if (boost::filesystem::exists(selfpcf)){
+	self = selfpcf.c_str();
+    } else if (boost::filesystem::exists(selfpce)){
+	self = selfpce.c_str();
+    }
+#endif
+ 
+    if (!self){
+	boost::filesystem::path bpath(self);
+	while (boost::filesystem::is_symlink(bpath)) {
+	    bpath = boost::filesystem::read_symlink(bpath);
+	}
+	location = bpath.native();
+    } else {
+	throw ProjectError("Could not determine path to binary. Please set environment variable CFGPATH_KEY.");
+    }
+ 
+    return;
+}

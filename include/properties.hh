@@ -23,6 +23,11 @@
 
 // standard C/C++ includes
 #include <map>
+#include <boost/filesystem.hpp>
+
+#ifdef __APPLE__
+#include <mach-o/dyld.h>   // for _NSGetExecutablePath
+#endif
 
 
 #define NUMPARNAMES 226
@@ -270,6 +275,12 @@ class Properties{
 	static map<string, string> properties;
 	static const char* parameternames[NUMPARNAMES];
 };
+
+/*
+ * Find the path to the executable, e.g. /opt/augustus/bin/augustus, /home/mario/augustus/bin/augustus
+ * code contributed by Bastien Chevreux
+ */
+void findLocationOfSelfBinary(string &location);
 
 #endif  //  _PROPERTIES_HH
 
