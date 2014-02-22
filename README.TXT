@@ -10,7 +10,7 @@
 %             Fon: +49 3834 864642                                                               %
 %             mario.stanke@uni-greifswald.de                                                     %
 %                                                                                                %
-%             Date: January 8th, 2014                                                            %
+%             Date: February 22th, 2014                                                          %
 %                                                                                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -120,7 +120,7 @@ The parameter training for cacao was done by Don Gilbert (gilbertd at indiana.ed
 
 1. unpack
 
->tar -xzf augustus.3.0.1.tar.gz
+>tar -xzf augustus.3.0.2.tar.gz
 
 The tar-archive contains one directory 'augustus-3.0.2' with the following sub-directories:
 bin
