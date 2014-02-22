@@ -1,3 +1,10 @@
+List of changes from version 3.0 to 3.0.2 (until February 22nd, 2014)
+     - inclusion of scanner and parser code for Newick tree format (GPL licence), easier installation of 
+       comparative augustus functionality
+     - therefore release under more restrictive GPL licence (the plan is to replace this later
+       and switch back to the more permissive and non-viral artistic open source licence)
+     - drop requirement to set environment variable AUGUSTUS_CONFIG_PATH
+     - bugfixes (etraining: "not Genbank format", gtf2gff.pl, compilation warning)
 List of changes from version 2.7 to 3.0 (until January 8th, 2014)
      - comparative gene prediction (cgp) mode to predict genes in several aligned genomes simultaneously (see README-cgp.txt)
      - load2db program to load genomes and hint GFF files into a database for random access retrieval (e.g. with new program getSeq)

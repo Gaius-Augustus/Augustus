@@ -120,10 +120,9 @@ The parameter training for cacao was done by Don Gilbert (gilbertd at indiana.ed
 
 1. unpack
 
->tar -xzf augustus.2.6.1.src.tar.gz
+>tar -xzf augustus.3.0.1.tar.gz
 
-The tar-archive contains one directory 'augustus-2.4' with the following 
-sub-directories:
+The tar-archive contains one directory 'augustus-3.0.2' with the following sub-directories:
 bin
 src
 include
@@ -134,22 +133,36 @@ scripts
 2. compile (if not already compiled)
 
 Install dependencies:
-   These dependencies are new in AUGUSTUS 3.0 to allow .gz file input and automatic location of the config directory.
+   These dependencies are new since AUGUSTUS 3.0 to allow .gz file input and automatic location of the config directory.
    - Boost C++ Library: libboost-iostreams-dev, libboost-system-dev, libboost-filesystem-dev
+     (on Ubuntu: sudo apt-get install libboost-iostreams-dev libboost-system-dev libboost-filesystem-dev)
    - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager.
 
 > cd src
 > make
 
-3. set environment variable AUGUSTUS_CONFIG_PATH
+Now, the command bin/augustus should run and print a usage message.
+
+3. As a normal user, add the directory of the executables to the PATH environment variable. E.g. issue
+
+PATH=$PATH:~/augustus/bin:~/augustus/scripts
+
+As an administrator, globally install augustus by typing
+
+make install
+
+or by executing similar commands to those in the "install" section of the top-level Makefile.
+
+4. Optional: set environment variable AUGUSTUS_CONFIG_PATH
 
 > export AUGUSTUS_CONFIG_PATH=/my_path_to_AUGUSTUS/augustus/config/
 
-The program requires that the environment variable AUGUSTUS_CONFIG_PATH is set to the config directory that contains the
-configuration and parameter files. This is the directory 'augustus/config'. You probably want to add this line to a startup script (like ~/.bashrc).
-Alternatively, you can specify this directory on the command line when you run augustus:
+If the environment variable AUGUSTUS_CONFIG_PATH is set, augustus and etraining will look there for the config directory that contains the
+configuration and parameter files, e.g. '~/augustus/config'. You may want to add this line to a startup script (like ~/.bashrc).
+If this environment variable is not set, then the programs will look in the path ../config relative to the directory in which the executable lies.
+As a third alternative, you can specify this directory on the command line when you run augustus:
 --AUGUSTUS_CONFIG_PATH=/my_path_to_AUGUSTUS/augustus/config/
-You may want to add the path of the executable to the PATH environment variable or copy augustus into a common directory (e.g. /usr/bin/).
+
 
               3. RUNNING AUGUSTUS
               -------------------
@@ -489,7 +502,7 @@ hint is the smaller the more reliable the hints of this type are.
 
 Run AUGUSTUS using the --hintsfile option. Example:
 
->augustus --species=human --hintsfile=../examples/hints.gff --extrinsicCfgFile=../config/extrinsic.human.MPEC.cfg ../examples/example.fa 
+augustus --species=human --hintsfile=../examples/hints.gff --extrinsicCfgFile=../config/extrinsic/extrinsic.MPE.cfg ../examples/example.fa
 
 As an alternative to giving the option --extrinsicCfgFile you can replace augustus/config/extrinsic.cfg with the appropriate file, as this 
 file is read by default when the option --extrinsicCfgFile is not given.

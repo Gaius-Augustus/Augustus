@@ -2,7 +2,7 @@
 #
 # format convert a gtf file
 #
-# Mario Stanke, 1.2.2010, mstanke@gwdg.de
+# Mario Stanke, 1.2.2010, mario.stanke@uni-greifswald.de
 use strict;
 use Getopt::Long;
 
@@ -83,12 +83,12 @@ sub parseAndStoreGTF{
 	if ($f[8] =~ /(transcript_id|Transcript)."?([^";]+)"?/){
 	    $txid = $2;
 	} else {
-	    die ("Not GTF format in the following line:\n$_\ntranscript_id not found.");
+	    die ("Not GTF format in the following line:\n$line\ntranscript_id not found.\n");
 	}
 	if ($f[8] =~ /gene_id."?([^";]+)"?/){
 	    $geneid = $1;
 	} else {
-	    die ("Not GTF format in the following line:\n$_\ngene_id not found.");
+	    die ("Not GTF format in the following line:\n$line\ngene_id not found.\n");
 	}
 	if (!$seen{$txid}){
 	    push @txorder, $txid; # remember the input order for transcripts for the output
@@ -303,7 +303,7 @@ gtf2gff.pl <in.gtf --out=out.gff
 
   out              gff output file
   --printExon      print exon features (may include CDS and UTR parts)
-  --printUTR       print 
+  --printUTR       print UTR features
   --printIntron    print intron features
   --gff3           output in gff3 format
 
@@ -325,18 +325,18 @@ gtf2gff.pl <in.gtf --out=out.gff
 
     example output for --gff3 --printExon:
 
-    chr1 AUGUSTUS    gene    12656   14013   0.04    +       .       ID=g50;
-    chr1 AUGUSTUS    mRNA    12656   14013   0.04    +       .       ID=g50.t1;Parent=g50
-    chr1 AUGUSTUS    transcription_start_site        12656   12656   .       +       .       Parent=g50.t1;
-    chr1 AUGUSTUS    five_prime_utr  12656   12867   0.2     +       .       ID=g50.t1.5UTR1;Parent=g50.t1
-    chr1 AUGUSTUS    exon    12656   12993   .       +       .       ID=g50.t1.exon1;Parent=g50.t1;
-    chr1 AUGUSTUS    start_codon     12868   12870   .       +       0       Parent=g50.t1;
-    chr1 AUGUSTUS    CDS 12868   12993   0.8     +       0       ID=g50.t1.CDS1;Parent=g50.t1
-    chr1 AUGUSTUS    intron  12994   13248   1       +       .       Parent=g50.t1;
-    chr1 AUGUSTUS    CDS 13249   13479   1       +       0       ID=g50.t1.CDS2;Parent=g50.t1
-    chr1 AUGUSTUS    exon    13249   14013   .       +       .       ID=g50.t1.exon2;Parent=g50.t1;
-    chr1 AUGUSTUS    stop_codon      13477   13479   .       +       0       Parent=g50.t1;
-    chr1 AUGUSTUS    three_prime_utr 13480   14013   0.17    +       .       ID=g50.t1.3UTR1;Parent=g50.t1
-    chr1 AUGUSTUS    transcription_end_site  14013   14013   .       +       .       Parent=g50.t1;
+    chr1 AUGUSTUS  gene                     12656   14013   0.04    +   .   ID=g50;
+    chr1 AUGUSTUS  mRNA                     12656   14013   0.04    +   .   ID=g50.t1;Parent=g50
+    chr1 AUGUSTUS  transcription_start_site 12656   12656   .       +   .   Parent=g50.t1;
+    chr1 AUGUSTUS  five_prime_utr           12656   12867   0.2     +   .   ID=g50.t1.5UTR1;Parent=g50.t1
+    chr1 AUGUSTUS  exon                     12656   12993   .       +   .   ID=g50.t1.exon1;Parent=g50.t1;
+    chr1 AUGUSTUS  start_codon              12868   12870   .       +   0   Parent=g50.t1;
+    chr1 AUGUSTUS  CDS                      12868   12993   0.8     +   0   ID=g50.t1.CDS1;Parent=g50.t1
+    chr1 AUGUSTUS  intron                   12994   13248   1       +   .   Parent=g50.t1;
+    chr1 AUGUSTUS  CDS                      13249   13479   1       +   0   ID=g50.t1.CDS2;Parent=g50.t1
+    chr1 AUGUSTUS  exon                     13249   14013   .       +   .   ID=g50.t1.exon2;Parent=g50.t1;
+    chr1 AUGUSTUS  stop_codon               13477   13479   .       +   0   Parent=g50.t1;
+    chr1 AUGUSTUS  three_prime_utr          13480   14013   0.17    +   .   ID=g50.t1.3UTR1;Parent=g50.t1
+    chr1 AUGUSTUS  transcription_end_site   14013   14013   .       +   .   Parent=g50.t1;
 
 =cut

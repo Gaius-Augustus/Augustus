@@ -11,6 +11,18 @@ clean:
 	cd src && ${MAKE} clean
 	cd scripts && ${MAKE} clean
 
+INSTALLDIR = /opt/augustus-$(AUGVERSION)
+
+install:
+	install -d $(INSTALLDIR)
+	cp -a config bin scripts $(INSTALLDIR)
+	ln -sf $(INSTALLDIR)/bin/augustus /usr/local/bin/augustus
+	ln -sf $(INSTALLDIR)/bin/etraining /usr/local/bin/etraining
+	ln -sf $(INSTALLDIR)/bin/prepareAlign /usr/local/bin/prepareAlign
+	ln -sf $(INSTALLDIR)/bin/fastBlockSearch /usr/local/bin/fastBlockSearch
+	ln -sf $(INSTALLDIR)/bin/load2db /usr/local/bin/load2db
+	ln -sf $(INSTALLDIR)/bin/getSeq /usr/local/bin/getSeq
+
 # for internal purposes:
 release: 
 	find . -name .svn | xargs rm -rf

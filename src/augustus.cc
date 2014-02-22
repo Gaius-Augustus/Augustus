@@ -160,7 +160,7 @@ int main( int argc, char* argv[] ){
 	  }
 
 	  if (verbosity > 1) 
-	    cout << "# Initialising the parameters ..." << endl;
+	      cout << "# Initialising the parameters using config directory " << Properties::getProperty(CFGPATH_KEY) << " ..." << endl;
 	  BaseCount::init();
 	  PP::initConstants();
 	  NAMGene namgene; // creates and initializes the states

@@ -335,16 +335,18 @@ void Properties::init( int argc, char* argv[] ){
 			       + "\nparameter names must start with '--'");	
     }
     // set configPath variable
-    string& configPath = properties[CFGPATH_KEY];
+    string& configPath = properties[CFGPATH_KEY]; // first priority: command line
     if (configPath == "") {
-	char *dir = getenv(CFGPATH_KEY);
-	if (dir == NULL){
-	    //	    throw ProjectError("Environment variable " CFGPATH_KEY " not defined.");
-	    cout << "Environment variable " CFGPATH_KEY " not defined." << endl;
-	    
-
-	} else {
+	char *dir = getenv(CFGPATH_KEY); // second priority: environment variable
+	if (dir){
 	    configPath = string(dir);
+	} else { // third priority: relative to the path of the executable
+	    // cout << "Environment variable " CFGPATH_KEY " not defined." << endl;
+	    boost::filesystem::path cpath,
+		bpath = findLocationOfSelfBinary();
+	    cpath = bpath / ".." / ".." / "config"; // up "/augustus" or "/etraining" and "/bin" or "/src"
+	    cpath.normalize();
+	    configPath = cpath.native();
 	}
     }
     if (configPath[configPath.size()-1] != '/')
@@ -354,7 +356,8 @@ void Properties::init( int argc, char* argv[] ){
     struct stat buffer;
     if( stat(configPath.c_str(), &buffer) == -1 || !S_ISDIR(buffer.st_mode))
 	throw ProjectError(configPath + " is not a directory.");
-    
+    properties[CFGPATH_KEY] = configPath;
+
     // determine species
     string optCfgFile = "";
     if (hasProperty(EXTERNAL_KEY)) {
@@ -579,10 +582,8 @@ void Properties::readLine( istream& strm ) {
 	    properties[name] = value;
 }
 
-void findLocationOfSelfBinary(string & location){
-    location.clear();
- 
-    const char * self = nullptr;
+boost::filesystem::path findLocationOfSelfBinary(){
+    const char * self = NULL;
  
 #ifdef __APPLE__
     char path[16384];
@@ -606,16 +607,12 @@ void findLocationOfSelfBinary(string & location){
 	self = selfpce.c_str();
     }
 #endif
- 
-    if (!self){
-	boost::filesystem::path bpath(self);
-	while (boost::filesystem::is_symlink(bpath)) {
-	    bpath = boost::filesystem::read_symlink(bpath);
-	}
-	location = bpath.native();
-    } else {
+    if (!self)
 	throw ProjectError("Could not determine path to binary. Please set environment variable CFGPATH_KEY.");
-    }
- 
-    return;
+    
+    boost::filesystem::path bpath(self);
+    while (boost::filesystem::is_symlink(bpath)) {
+	bpath = boost::filesystem::read_symlink(bpath);
+    } 
+    return bpath;
 }

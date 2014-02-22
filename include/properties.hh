@@ -280,7 +280,7 @@ class Properties{
  * Find the path to the executable, e.g. /opt/augustus/bin/augustus, /home/mario/augustus/bin/augustus
  * code contributed by Bastien Chevreux
  */
-void findLocationOfSelfBinary(string &location);
+boost::filesystem::path findLocationOfSelfBinary();
 
 #endif  //  _PROPERTIES_HH
 
