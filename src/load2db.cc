@@ -476,6 +476,7 @@ bool isFasta(filtering_istream &zin){
 }
 
 bool isGFF(ifstream &ifstrm){
+    ifstrm.seekg(0);
     // skip comments
     ifstrm >> comment >> ws;
     if(!(ifstrm))
