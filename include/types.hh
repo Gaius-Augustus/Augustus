@@ -16,6 +16,7 @@
  * 10.05.2006 | Mario Stanke          | added 10 new species in the usage info
  * 15.05.2006 | Mario Stanke          | added 3' UTR states
  * 29.02.2012 | Mario Stanke          | added quantile function
+ * 25.02.2014 | Stefanie Koenig       | added ftoa function (double to string)
 \******************************************************************************/
 
 #ifndef _TYPES_HH
@@ -709,6 +710,15 @@ string expandHome(string filename);
  * convert int to string
  */
 inline string itoa(int n) {
+    ostringstream strm;
+    strm << n;
+    return strm.str();
+}
+
+/*
+ * convert double to string
+ */
+inline string ftoa(double n) {
     ostringstream strm;
     strm << n;
     return strm.str();

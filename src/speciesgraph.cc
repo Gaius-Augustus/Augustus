@@ -144,7 +144,7 @@ void SpeciesGraph::buildGraph(){
 
     //relax all nodes in topological order and label all nodes with 1 if on max weight path
     relax();
-
+    
 #ifdef DEBUG
     printGraph(speciesname + ".dot");
 #endif
@@ -332,7 +332,7 @@ NodeType SpeciesGraph::toNeutralLine(Node *node){
     return NOT_KNOWN;
 }
 
-void SpeciesGraph::printGraph(string filename, Node *begin, Node *end, bool only_sampled){
+void SpeciesGraph::printGraph(string filename){
 
     //creates inputfile for graphviz
     ofstream file;
@@ -341,107 +341,73 @@ void SpeciesGraph::printGraph(string filename, Node *begin, Node *end, bool only
     file<<"digraph MEAgraph {\n";
     file<<"rankdir=LR;\n";
  
-    file<<"\tnode[shape=box];\n";
-    Node *pos = begin;
-    Node *current_path = begin;
-    while(pos != end){
+    Node *pos = tail;
+    map<Node *, int> nodeIDs;
+    int IDcount = 0;
 
-	if(only_sampled && (pos->n_type == unsampled_exon && pos->label == 0)){
-	}
-	else{
+    while(pos != NULL){
+	
+	if(pos->n_type != unsampled_exon){
+	    file<<IDcount<<"[" + getDotNodeAttributes(pos) + "];\n";
+	    
 	    for(list<Edge>::iterator it=pos->edges.begin(); it!=pos->edges.end(); it++){
-
-		if(only_sampled && (it->to->n_type == unsampled_exon && it->to->label == 0)){
-		}
-		else{
-		    string name1 = "";
-		    string name2 = "";
-		    StateType type1 = pos->castToStateType();
-		    StateType type2 = it->to->castToStateType();
-
-		    if(pos == head){
-			name1 += "head";
+		if( !(pos == head && it->to == tail) && it->to->n_type != unsampled_exon){
+		    std::map<Node*,int>::iterator mit = nodeIDs.find(it->to);
+		    if(mit == nodeIDs.end()){
+			throw ProjectError("Internal error in SpeciesGraph::printGraph: topological ordering of nodes is not correct.");
 		    }
-		    else if (pos == tail){
-			name1 += "tail";
-		    }
-		    else if(pos->item != NULL)
-			name1 += "ex" + itoa(type1) +  "_" + itoa(pos->begin+1) + "_"+ itoa(pos->end+1);
-		    else
-			name1 += nodeTypeIdentifiers[pos->n_type] + "_" + itoa(pos->begin+1) + "_" + itoa(pos->end+1);
-
-		    if(it->to == head){
-			name2 += "head";
-		    }
-		    else if (it->to == tail){
-			name2 += "tail";
-		    }
-		    else if(it->to->item != NULL)
-			name2 += "ex" + itoa(type2)  + "_" + itoa(it->to->begin+1) + "_" + itoa(it->to->end+1);
-		    else
-			name2 += nodeTypeIdentifiers[it->to->n_type] + "_" + itoa(it->to->begin+1) + "_" + itoa(it->to->end+1);
-
-	   
-		    file<<name1<<"[";
-		    if(pos==head)
-			file<<"style=filled,label=head";
-		    else if(pos->item == NULL)
-			file<<"shape=point";
-		    else if(pos->n_type == unsampled_exon)
-			file<<"style=filled,fillcolor=lightgrey,";
-		    file<<"];\n";
-
-		    file<<name2<<"[";
-		    if(it->to==tail)
-			file<<"style=filled,label=tail";
-		    else if(it->to->item == NULL)
-			file<<"shape=point";
-		    else if(it->to->n_type == unsampled_exon)
-			file<<"style=filled,fillcolor=lightgrey,";
-		    file<<"];\n";
-      
-		    if( !(pos == head && it->to ==tail) ){
-			file<<name1<<"->"<<name2<<"[";
-			if(pos->begin == pos->end && it->to->begin == it->to->end){
-			    if(pos == head || it->to == tail){
-				if(it->to->label == 1 && pos == current_path){
-				    file<<"color=blue,";
-				    current_path = it->to;
-				}
-				else
-				    file<<"color=red,";
-			    }
-			    else{
-				if(it->to->label == 1 && pos == current_path){
-				    file<<"weight=100,color=blue,";
-				    current_path = it->to;
-				}
-				else
-				    file<<"weight=100,color=red,";
-			    }
-			}
-			else if(it->to->label == 1 && pos == current_path){
-			    file<<"color=blue,";
-			    current_path = it->to;
-			}
-
-			if(pos == head && it->to->n_type >= IR && it->to->n_type <=YY_minus0)
-			    file<<"label=" << nodeTypeIdentifiers[it->to->n_type] << "];\n";
-			else if(it->to == tail && pos->n_type >= IR && pos->n_type <= YY_minus0)
-			    file<<"label=" << nodeTypeIdentifiers[pos->n_type] << "];\n";
-			else if( pos->n_type >= IR && pos->n_type <= YY_minus0  &&  it->to->n_type >= IR && it->to->n_type <= YY_minus0){
-			    file<<"label=" << nodeTypeIdentifiers[pos->n_type] << "];\n";
-			}
-			else
-			    file<<"label="<<it->score<<"];\n";  
-		    }
+		    file<<IDcount<<"->"<<mit->second<<"[" + getDotEdgeAttributes(pos, &(*it)) + "];\n";
 		}
 	    }
+	    nodeIDs.insert(std::pair<Node*,int>(pos,IDcount));
+	    IDcount++;
 	}
-	pos = pos->topSort_next;
+	pos = pos->topSort_pred;
     }
     file<<"}\n";
     file.close();
+}
+
+string SpeciesGraph::getDotNodeAttributes(Node *node){
+
+    string attr = "";
+
+    if(node == head){
+	attr += "shape=box,style=filled,label=head";
+    }
+    else if (node == tail){
+	attr += "shape=box,style=filled,label=tail";
+    }
+    else if(node->item != NULL){
+	StateType type = node->castToStateType();
+	attr = "shape=box,label=ex" + itoa(type) +  "_" + itoa(node->begin+1) + "_" + itoa(node->end+1);
+    }
+    else{
+	attr += "shape=point";
+    }
+    return attr;
+}
+
+string SpeciesGraph::getDotEdgeAttributes(Node *pred, Edge *edge){
+
+    string attr = "";
+    Node *succ=edge->to;
+
+    if(succ->pred == pred && succ->label == 1)
+	attr += "color=blue, ";
+    else if (pred->item == NULL && succ->item == NULL){
+	attr += "color=red, ";
+    }
+    if(pred == head && succ->item == NULL){
+	attr = attr + "label=" + nodeTypeIdentifiers[succ->n_type] + ",";
+    }
+    else if(pred != head && succ != tail){
+	attr += "rank=same,";
+    }
+    if(pred->n_type > YY_minus0){
+	attr = attr + "label=" + ftoa(edge->score);
+    }
+    return attr;
 }
 
 void SpeciesGraph::topSort(){

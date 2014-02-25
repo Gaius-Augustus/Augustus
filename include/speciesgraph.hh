@@ -70,8 +70,7 @@ public:
     void buildGraph();
     list<NodeType> fromNeutralLine(Node *node);  // returns type of noncoding segment preceding the exon/node
     NodeType toNeutralLine(Node *node);    // returns type of noncoding segment suceeding the exon/node
-    void printGraph(string filename, Node* begin, Node* end, bool only_sampled = false); // prints graph in dot-format
-    void printGraph(string filename){printGraph(filename, head, tail, true);}
+    void printGraph(string filename); // prints graph in dot-format
     /*
      * @getKey(): if the node is a neutral node, then key = PosBegin:n_type
      * else key = PosBegin:PosEnd:StateType
@@ -116,6 +115,9 @@ public:
     Node* getPredExonOnPath(Node *node, size_t step);  // returns the i-th preceding exon on the current path
     void printNode(Node *node); //print Node with offset
 
+private:
+    string getDotNodeAttributes(Node *node);
+    string getDotEdgeAttributes(Node *pred, Edge *edge);
 };
 
 struct MoveNode{
