@@ -338,7 +338,6 @@ void evaluateOnTestSet(AnnoSequence *annoseq, NAMGene &namgene, FeatureCollectio
 	    delete annoseq->anno->condensedBackwardPath;
 	    annoseq->anno->condensedBackwardPath = NULL; // so annoseq destructor doesn't crash
 	}
-	// handleViterbiVariables( namgene.getViterbiVariables() );
 	annoseq = annoseq->next;
     }
     if (!noprediction) {
@@ -423,7 +422,6 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
 
 	    Gene::destroyGeneSequence(genes); // don't need them anymore after they are printed
 	    successfull++;
-	    //handleViterbiVariables( namgene.getViterbiVariables() );
 	} catch (ProjectError& err ){
 	    if (successfull < 1)
 		throw err;

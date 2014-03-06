@@ -854,7 +854,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
       // sample the transcripts 
       sampledPath = getSampledPath(dna, "");
       condensedsampledPath = StatePath::condenseStatePath(sampledPath);
-    
+      // condensedsampledPath->print(); // for testing
       char gr[9];
       sprintf(gr, "s%d-", (i+1));
       genes = condensedsampledPath->projectOntoGeneSequence(gr);

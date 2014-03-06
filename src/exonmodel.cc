@@ -485,7 +485,6 @@ void ExonModel::readProbabilities(int parIndex) {
 	    fillTailsOfLengthDistributions();
 	    hasLenDist = true;
 	}
-
 	    
 	/*
 	 * begin of content dependent part
@@ -650,7 +649,7 @@ void ExonModel::readAllParameters(){
       lenDistInitial.assign(Constant::max_exon_len+1, 0.0);
       lenDistInternal.assign(Constant::max_exon_len+1, 0.0);
       lenDistTerminal.assign(Constant::max_exon_len+1, 0.0);
-      double boostfactor = 1.0;
+      
       for( int i = 0; i <= exonLenD; i++ ){
 	istrm >> dummyi;
 	istrm >> dbl;
@@ -658,23 +657,23 @@ void ExonModel::readAllParameters(){
 	istrm >> dbl; 
 	lenDistInitial[i]= dbl / 1000; 
 	istrm >> dbl; 
-	if (i > lenboostL){
-	    // if requested (e.g. on bacteria), boost the probabilities of lengths > L by (1+E)^{i-L}
-	    boostfactor *= (1 + lenboostE);
-	    lenDistInitial[i] *= boostfactor;
-	    lenDistSingle[i] *= boostfactor;
-	}
 	lenDistInternal[i] = dbl / 1000;
 	istrm >> dbl;
 	lenDistTerminal[i] = dbl / 1000;
       }
       // single exon can't be shorter than min_coding_len
       for ( int i = 0; i < Constant::min_coding_len; i++) 
-	lenDistSingle[i] = 0.0;
+	  lenDistSingle[i] = 0.0;
       fillTailsOfLengthDistributions();
       hasLenDist = true;
     }
 
+    // if requested (e.g. on bacteria), boost the probabilities of lengths > L by (1+E)^{i-L}
+    double boostfactor = 1.0;
+    for (int i = lenboostL+1; i< lenDistSingle.size(); i++){
+	boostfactor *= 1 + lenboostE;
+	lenDistSingle[i] *= boostfactor;
+    }
 
     /*
      * begin of GC content dependent part
