@@ -27,7 +27,6 @@ void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
     for (size_t pos = 0; pos < numSpecies; pos++){
 	
 	if(graphs[pos]){
-
 	    // delete old genelist
 	    if(genelist[pos]){
 		delete genelist[pos];
@@ -35,53 +34,55 @@ void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
 	    list<Gene> *genes = new list<Gene>;
 	    Node* current = graphs[pos]->tail;
 	    Node* head =  graphs[pos]->head;
-	    Node* predcurrent;
-	
+	    Node* succExon= NULL;
 	    Gene *currentGene = new Gene();
 	
 	    // convert node labeling of graph into a list of genes (backtracking from tail)
-	    while(current != head){
-	    
-		while(current->item == NULL){ //skip all neutral nodes
-		    if (current == head){
-			goto end;
-		    }
-		    current = graphs[pos]->getTopSortPred(current);  //exon1
+
+	    Edge *edge=current->pred->getEdge(current);
+	    if(edge && edge->isSampledIntron())
+		addIntronToGene(currentGene,current->pred,current);  
+
+	    while(current != NULL){
+
+		if(current == head && succExon){
+		    Edge *edge= current->getEdge(succExon);
+		    if(edge && edge->isSampledIntron())
+			addIntronToGene(currentGene,current,succExon);  
+		    setGeneProperties(currentGene);
+		    genes->push_front(*currentGene);
 		}
-		State *ex;
-		if(current->n_type == sampled){
-		    ex = new State(*((State*)(current->item)));
-		}
-		else{
-		    ex = new State(current->begin, current->end, current->castToStateType());
-		}
-		addExonToGene(currentGene, ex);
-		predcurrent = graphs[pos]->getTopSortPred(current);
-		if(predcurrent->n_type  == IR){ //end of gene
+		if(current->n_type == IR && succExon){
 		    setGeneProperties(currentGene);
 		    genes->push_front(*currentGene);
 		    delete currentGene;
 		    currentGene = new Gene();
-		    current = predcurrent;
+		    succExon = NULL;
 		}
-		else{
-		    while(predcurrent->item == NULL){
-			if(predcurrent == head){
-			    setGeneProperties(currentGene);
-			    genes->push_front(*currentGene);
-			    delete currentGene;
-			    goto end;
-			}
-			predcurrent = graphs[pos]->getTopSortPred(predcurrent); //exon2
+		if(current->n_type >= utrExon){ // add an exon to the current gene
+		    State *ex;
+		    if(current->n_type == sampled || current->n_type == utrExon){
+			ex = new State(*((State*)(current->item)));
 		    }
-		    addIntronToGene(currentGene, predcurrent, current); //add intron exon2->exon1
-		    current = predcurrent;
-		}  
+		    else{
+			ex = new State(current->begin, current->end, current->castToStateType());
+		    }
+		    addExonToGene(currentGene, ex);
+		    if(succExon){ // if the current exon is not the last, add an intron from the current exon to the succeding exon
+			if(current->n_type > utrExon && succExon->n_type > utrExon){ // add intron between two CDS exons
+			    addIntronToGene(currentGene, current, succExon);
+			}
+			else if(current->end+1 < succExon->begin){
+			    addIntronToGene(currentGene, graphs[pos]->getSuccUTRSS(current), graphs[pos]->getPredUTRSS(succExon));    
+			}
+		    }
+		    succExon=current;
+		}
+		current=current->pred;
 	    }
-	end:
+	    delete currentGene;
 	    if(!genes->empty())
 		genelist[pos] = genes;
-
 	}
     }
 }
@@ -528,7 +529,7 @@ void OrthoGraph::addScoreSelectivePressure(){
 	for(list<OrthoExon>::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(it->orthoex[pos]){
-		    Node* node = graphs[pos]->getNode(it->orthoex[pos]);
+		    Node* node = it->orthonode[pos];
 		    int len =  node->end - node->begin + 1;
 		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
 			// default EC-filter on:  

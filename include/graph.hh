@@ -20,9 +20,12 @@ enum Statename{type_unknown=-1, CDS, utr3, utr5, intron, utr3Intron, utr5Intron}
  * neutral nodes: IR, plus0, plus1, plus2, minus0, minus1, minus2 (for each of the 7 neutral lines one type)
  * NOT_KNOWN: default type, for example head and tail
  */
-#define NUM_NODETYPES 16
+#define NUM_NODETYPES 25
 
-enum NodeType{NOT_KNOWN=-1, IR, plus0, plus1, plus2, minus0, minus1, minus2, T_plus1, TA_plus2, TG_plus2, T_minus1, C_minus1, YY_minus0, sampled, unsampled_exon};
+enum NodeType{NOT_KNOWN=-1, IR,
+	      plus0, plus1, plus2, minus0, minus1, minus2, T_plus1, TA_plus2, TG_plus2, T_minus1, C_minus1, YY_minus0, // intron types between two CDS exons
+	      utr5intr, TLstart, TLstop, utr3intr, rutr5intr, rTLstart, rTLstop, rutr3intr, utrExon, // utr types
+	      sampled, unsampled_exon}; // CDS types
 
 extern string nodeTypeIdentifiers[NUM_NODETYPES];
 
@@ -77,6 +80,7 @@ public:
 
     StateType castToStateType(); //casts void* back to State* and returns the StateType
     void addWeight(double weight); //add weight to all outgoing edges
+    Edge* getEdge(Node* succ);
 
 };
 
@@ -92,6 +96,10 @@ public:
     double score;
     bool neutral;
     const void *item;
+
+    inline bool isSampledIntron(){
+	return item;
+    }
 };
 
 //print functions for Nodes and Edges
@@ -123,10 +131,15 @@ public:
     template<class T> inline bool alreadyProcessed(T *temp){
 	return(existingNodes[getKey(temp)]!=NULL);    
     }
+    inline bool alreadyProcessed(string key){
+	return(existingNodes[key]!=NULL);    
+    }
     template<class T> inline Node* getNode(T *temp){
 	return existingNodes[getKey(temp)];
     }
-
+    inline Node* getNode(string key){
+	return existingNodes[key];
+    } 
     // functions needed to build the graph
 protected:
     bool edgeExists(Node *e1, Node *e2);

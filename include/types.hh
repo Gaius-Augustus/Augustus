@@ -486,6 +486,13 @@ inline Boolean is3UTRExon(StateType type){
     return is3UTR(type) && !is3UTRIntron(type);
 }
 
+inline Boolean isFirstUTRExon(StateType type){
+    return (type == utr5single || type == utr5init || type == rutr3single || type == rutr3term);
+}
+
+inline Boolean isLastUTRExon(StateType type){
+    return (type == utr3single || type == utr3term || type == rutr5single || type == rutr5init);
+}
 
 inline Boolean isLongUTRIntron(StateType type){
     return (type == utr5intronvar || type == utr3intronvar || type == rutr5intronvar || type == rutr3intronvar);

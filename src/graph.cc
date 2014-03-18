@@ -894,7 +894,7 @@ bool compareEdges(Edge first, Edge second){
 //casts node to StateType
 StateType Node::castToStateType(){
 
-  if(n_type == sampled){
+  if(n_type == sampled || n_type == utrExon){
     return ((State*)item)->type;
   }
   else if(n_type == unsampled_exon){
@@ -905,15 +905,17 @@ StateType Node::castToStateType(){
 }
 
 string nodeTypeIdentifiers[NUM_NODETYPES]=
-  {"IR", "plus0", "plus1", "plus2", "minus0", "minus1", "minus2", "T_plus1", "TA_plus2", "TG_plus2", "T_minus1", "C_minus1", "YY_minus0", "sampled", "unsampled_exon"};
+  {"IR", "plus0", "plus1", "plus2", "minus0", "minus1", "minus2", "T_plus1", "TA_plus2", "TG_plus2", "T_minus1", "C_minus1", "YY_minus0",
+   "utr5intr", "TLstart", "TLstop", "utr3intr", "rutr5intr", "rTLstart", "rTLstop", "rutr3intr", "utr",
+   "sampled", "unsampled_exon"};
 
 //print function for nodes and edges
 ostream& operator<<(ostream& ostrm, Node *node){
 
-    if(node->n_type >= IR && node->n_type <= YY_minus0){
+    if(node->n_type >= IR && node->n_type < utrExon){
 	ostrm << node->begin << "\t" << node->end << "\t" << nodeTypeIdentifiers[node->n_type]<< "\t";
     }
-    else if(node->n_type >= sampled){
+    else if(node->n_type >= utrExon){
 	ostrm << node->begin << "\t" << node->end << "\t" << stateTypeIdentifiers[node->castToStateType()]<< "\t";
     }
     else if( node->begin == -1)
@@ -961,4 +963,15 @@ void Node::addWeight(double weight){
     for(list<Edge>::iterator edge = edges.begin(); edge != edges.end(); edge++){
 	edge->score += weight;
     }
+}
+
+Edge* Node::getEdge(Node* succ){
+    Edge* e = NULL;
+    for(list<Edge>::iterator it=edges.begin(); it!=edges.end(); it++){
+	if(it->to == succ){
+	    e = &(*it);     
+	    break;
+	}
+    }
+    return e;
 }

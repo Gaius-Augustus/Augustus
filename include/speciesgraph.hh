@@ -36,6 +36,7 @@ private:
     double max_weight; // the max weight of a node/edge in the graph, used as an upper/lower bound
     double ec_score; //temp: until there are real scores for exon candidates
     ofstream *sampled_exons;        // output file of sampled exons
+    bool genesWithoutUTRs;
 
 public:
     SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> &addEx, string name, Strand s, ofstream *se) :
@@ -50,7 +51,8 @@ public:
 	count_overlap(0),
 #endif
 	max_weight(0),
-	sampled_exons(se)
+	sampled_exons(se),
+	genesWithoutUTRs(true)
     {
 	try {
 	    ec_score = Properties::getdoubleProperty("/CompPred/ec_score");
@@ -68,19 +70,15 @@ public:
      */
     
     void buildGraph();
-    list<NodeType> fromNeutralLine(Node *node);  // returns type of noncoding segment preceding the exon/node
-    NodeType toNeutralLine(Node *node);    // returns type of noncoding segment suceeding the exon/node
-    void printGraph(string filename); // prints graph in dot-format
     /*
-     * @getKey(): if the node is a neutral node, then key = PosBegin:n_type
-     * else key = PosBegin:PosEnd:StateType
+     * @getKey(): the key of auxilary nodes is 'PosBegin:n_type'
+     * the key of nodes representiong Exons is 'PosBegin:PosEnd:StateType'
      */
     string getKey(Node *n);
+    Node* getPredUTRSS(Node *node);
+    Node* getSuccUTRSS(Node *node);
+    void printGraph(string filename); // prints graph in dot-format
     double setScore(Status *st);
-    Node* addExon(Status *exon, vector< vector<Node*> > &neutralLines);        // adds a sampled exon to the graph
-    void addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines);  // adds an exon, which is not sampled
-    void addNeutralNodes(Node *node,vector< vector<Node*> > &neutralLines);    // adds neutral nodes and edges to and from an exon
-    void addIntron(Node* exon1, Node* exon2, Status *intr);                    // adds a sampled intron
     void printSampledExon(Node *node); //prints sampled exons to display them with gBrowse
     void updateMaxWeight(double weight){
 	if(abs(weight) > max_weight)
@@ -116,6 +114,21 @@ public:
     void printNode(Node *node); //print Node with offset
 
 private:
+    /*
+     * subroutines of buildGraph()
+     */
+    Node* addExon(Status *exon, vector< vector<Node*> > &neutralLines);        // add a sampled exon (CDS and UTR) to the graph
+    void addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines);  // add an additional (not sampled) exon candidate to the graph
+    void addIntron(Node* pred, Node* succ, Status *intr);                    // add a sampled intron to the graph
+    Node* addAuxilaryNode(NodeType type, int pos, vector< vector<Node*> > &neutralLines); // add an auxilary node to the graph (has no score)
+    void addAuxilaryEdge(Node *pred, Node *succ); // add an auxilary edge to the graph (has no score)
+    list<NodeType> getPredTypes(Node *node) ;  // get the types of gene features that precede an exon
+    NodeType getSuccType(Node *node) ;    // get the type of gene feature that succeeds an exon 
+    void connectToPred(Node *node,vector< vector<Node*> > &neutralLines); // link a node to its predecessors nodes by auxilary edges
+    void connectToSucc(Node *node,vector< vector<Node*> > &neutralLines); // link a node to its succesor node by an auxilary edge
+    /*
+     * subroutines of printGraph()
+     */
     string getDotNodeAttributes(Node *node);
     string getDotEdgeAttributes(Node *pred, Edge *edge);
 };

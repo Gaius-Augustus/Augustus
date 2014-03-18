@@ -190,7 +190,7 @@ void CompGenePred::start(){
 			// @stlist : list of all sampled states
 			list<Status> stlist;
 			if(!alltranscripts->empty()){
-                            buildStatusList(alltranscripts, false, stlist);
+                            buildStatusList(alltranscripts, Constant::utr_option_on, stlist);
                         }
                         // build graph
                         orthograph.graphs[s] = new SpeciesGraph(&stlist, as, additionalExons, speciesNames[s], 

@@ -11,7 +11,7 @@
  *
  * date    |   author      |  changes
  * --------|---------------|------------------------------------------
- * 18.06.12| Stefanie König| creation of the file
+ * 18.06.12| Stefanie Koenig| creation of the file
  **********************************************************************/
 
 #include "speciesgraph.hh"
@@ -19,102 +19,87 @@
 void SpeciesGraph::buildGraph(){
 
     vector< vector<Node*> > neutralLines; //represents the seven neutral lines
+    int seqlen = getSeqLength();
 
-    getSizeNeutralLine();
-
-    /*
-     * extend size of NeutralLine in case that an additional Exons has a smaller start position or a 
-     * greater end position than any sampled exon
-     */
-    if(!additionalExons.empty()){
-	for(list<ExonCandidate*>::iterator it=additionalExons.begin(); it!=additionalExons.end(); it++){
-	    if((*it)->end > max)
-		max = (*it)->end;	  
-	    if((*it)->begin < min)
-		min = (*it)->begin;	
-	}
-    }
-	
     /* the seven lines of neutral nodes, each line represents a non-coding type between to exons
      * intergenetic -> intergenetic region
      * plus -> introns on the plus strand in all three phase 0,1,2
      * minus -> introns on the minus strand in all three phase 0,1,2
      */
-    vector<Node*> intergenic;   
+    vector<Node*> intergenic(seqlen);   
     neutralLines.push_back(intergenic);
-    vector<Node*> plus0;
+    vector<Node*> plus0(seqlen);
     neutralLines.push_back(plus0);
-    vector<Node*> plus1;
+    vector<Node*> plus1(seqlen);
     neutralLines.push_back(plus1);
-    vector<Node*> plus2;
+    vector<Node*> plus2(seqlen);
     neutralLines.push_back(plus2);
-    vector<Node*> minus0;
+    vector<Node*> minus0(seqlen);
     neutralLines.push_back(minus0);
-    vector<Node*> minus1;
+    vector<Node*> minus1(seqlen);
     neutralLines.push_back(minus1);
-    vector<Node*> minus2;
+    vector<Node*> minus2(seqlen);
     neutralLines.push_back(minus2);
 
-    vector<Node*> T_plus1;                   // intron in phase 1 on forward strand with preceeding 'T' :  ..T|GT... 
+    vector<Node*> T_plus1(seqlen);                   // intron in phase 1 on forward strand with preceeding 'T' :  ..T|GT... 
     neutralLines.push_back(T_plus1);
-    vector<Node*> TA_plus2;                  // intron in phase 2 on forward strand with preceeding 'TA' : .TA|GT...
+    vector<Node*> TA_plus2(seqlen);                  // intron in phase 2 on forward strand with preceeding 'TA' : .TA|GT...
     neutralLines.push_back(TA_plus2);
-    vector<Node*> TG_plus2;                  // intron in phase 2 on forward strand with preceeding 'TG' :  .TG|GT...
+    vector<Node*> TG_plus2(seqlen);                  // intron in phase 2 on forward strand with preceeding 'TG' :  .TG|GT...
     neutralLines.push_back(TG_plus2);
-    vector<Node*> T_minus1;                  // intron in phase 1 on reverse strand with preceeding 'T' :  ..T|CT...
+    vector<Node*> T_minus1(seqlen);                  // intron in phase 1 on reverse strand with preceeding 'T' :  ..T|CT...
     neutralLines.push_back(T_minus1);
-    vector<Node*> C_minus1;                  // intron in phase 1 on reverse strand with preceeding 'C' :  ..C|CT...
+    vector<Node*> C_minus1(seqlen);                  // intron in phase 1 on reverse strand with preceeding 'C' :  ..C|CT...
     neutralLines.push_back(C_minus1);
-    vector<Node*> YY_minus0;                 // intron in phase 0 on reverse strand with preceeding 'TC', 'CT' or 'TT' :  .TC|CT..., .TT|CT... or .CT|CT 
+    vector<Node*> YY_minus0(seqlen);                 // intron in phase 0 on reverse strand with preceeding 'TC', 'CT' or 'TT' :  .TC|CT..., .TT|CT... or .CT|CT 
     neutralLines.push_back(YY_minus0);
-    
-
-	
-    for(int i=0; i<max-min+1; i++){
-	for(int j=0; j<neutralLines.size(); j++){
-	    neutralLines.at(j).push_back(NULL);
-	}
-    }
-	
+    	
     head = new Node(-1,-1); // initialize nodelist of the graph with head and tail
     nodelist.push_back(head);
-    tail = new Node(max+1,max+1);
+    tail = new Node(seqlen,seqlen);
     nodelist.push_back(tail);
 	
     calculateBaseScores();
 	
-    // add all sampled states to graph (states which are sampled in namgene)
+    // add all sampled exons and introns to the graph
 #ifdef DEBUG
     cout << "adding sampled states and additional exon candidates" << endl;
 #endif
 	
-    bool gene_end = true;
-  
+    Node *pred = NULL;
+
     for(list<Status>::iterator it=statelist->begin(); it!=statelist->end(); it++){
 		
-	if(gene_end == true && it->name == intron){ //start -> intron  (transcript incomplete at the start)
-	    Node* first = addExon(it->next, neutralLines);
-	    addIntron(head, first, &(*it));
-	}
-	if(it->name == CDS){ // CDS -> CDS   or   CDS -> end
-	    gene_end = false;
-	    Node* e1 = addExon(&(*it), neutralLines);
-	    if(it->next != NULL){
-				
-		if(it->next->name == intron && it->next->next == NULL){ //CDS -> intron -> end (transcript incomplete at the end)
-		    addIntron(e1, tail, it->next);
-		}
-				
-		if(it->next != NULL && it->next->name == intron && it->next->next != NULL){ //CDS -> intron -> CDS
-		    Node* e2 = addExon(it->next->next, neutralLines);
-		    if(!mergedStopcodon(e1,e2)){
-			addIntron(e1, e2, it->next);
-		    }
-		}
+	if(it->name == CDS || it->name == utr3 || it->name == utr5){ // add an exon (CDS or UTR)
+	    Node *node = addExon(&(*it), neutralLines);
+	    if( !isFirstUTRExon(((State*)it->item)->type) && !pred && it->name > CDS)
+		addAuxilaryEdge(head,node);
+	    pred = node;
+	    if(!it->next){ // end of gene
+		if( !isLastUTRExon(((State*)it->item)->type) && it->name > CDS )
+		    addAuxilaryEdge(pred,tail);
+		pred=NULL;
 	    }
 	}
-	if(it->next == NULL) // end of transcript
-	    gene_end = true;
+	else if(it->name == intron || it->name == utr3Intron || it->name == utr5Intron){ // add an intron and its succeeding exon
+	    Node *succ=NULL;
+	    if(it->next){
+		succ = addExon(it->next,neutralLines);
+	    }
+	    if(it->name == intron){ // CDS intron
+		if( (pred && succ && !mergedStopcodon(pred,succ)) || !(pred && succ) ){
+		    addIntron(pred, succ, &(*it));
+		}
+	    }
+	    else{ // UTR intron
+		if(pred)
+		    pred=getSuccUTRSS(pred);
+		if(succ)
+		    succ=getPredUTRSS(succ);
+		addIntron(pred,succ, &(*it));
+	    }
+	    pred = succ;
+	}
     }
 	
     //add additional exoncandidates
@@ -135,10 +120,7 @@ void SpeciesGraph::buildGraph(){
     for(int j=0; j<neutralLines.size(); j++){
 	createNeutralLine(neutralLines.at(j));
     }
-	
-    //add node weight to the edge weight of all outgoing edges
-    addWeightToEdge();
-	
+		
     //find topological order of nodes in graph and set pointers topSort_next and topSort_pred
     topSort();
 
@@ -154,15 +136,20 @@ void SpeciesGraph::buildGraph(){
 Node* SpeciesGraph::addExon(Status *exon, vector< vector<Node*> > &neutralLines){
 
     if(!alreadyProcessed(exon)){
+	//cout << "sampled\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" << (string)stateTypeIdentifiers[((State*)exon->item)->type] << "\t"<< endl;
+	NodeType ntype = utrExon;
+	if(exon->name == CDS){
+	    ntype = sampled;
 #ifdef DEBUG
-	count_sampled++;
+	    count_sampled++;
 #endif
-	//cout << "sampled_exon\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" << (string)stateTypeIdentifiers[((State*)exon->item)->type] << "\t"<< endl;
-	Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item, sampled);
-	printSampledExon(ex);
+	}
+	Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item, ntype);
+	//printSampledExon(ex);
 	nodelist.push_back(ex);
 	addToHash(ex);
-	addNeutralNodes(ex, neutralLines);    
+	connectToPred(ex, neutralLines);
+	connectToSucc(ex,neutralLines);
 	return ex;
     }
     return getNode(exon);
@@ -173,11 +160,12 @@ void SpeciesGraph::addExon(ExonCandidate *exon, vector< vector<Node*> > &neutral
     count_additional++;
 #endif
     if(!alreadyProcessed(exon)){
-	//cout << "unsampled_exon\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" <<(string)stateTypeIdentifiers[exon->getStateType()] << endl;
+	//cout << "unsampled\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" <<(string)stateTypeIdentifiers[exon->getStateType()] << endl;
 	Node *ex = new Node(exon->begin, exon->end, ec_score, exon, unsampled_exon);
 	nodelist.push_back(ex);
 	addToHash(ex);
-	addNeutralNodes(ex, neutralLines);
+	connectToPred(ex, neutralLines);
+	connectToSucc(ex,neutralLines);
     }
     else{
 #ifdef DEBUG
@@ -186,46 +174,89 @@ void SpeciesGraph::addExon(ExonCandidate *exon, vector< vector<Node*> > &neutral
     }
 }
 
-void SpeciesGraph::addNeutralNodes(Node *node,vector< vector<Node*> > &neutralLines){
-
-    list<NodeType> neut_types = fromNeutralLine(node);
-    for(list<NodeType>::iterator it = neut_types.begin(); it != neut_types.end(); it++){
-	Node *neut_to = new Node(node->begin, node->begin, 0.0, NULL, *it );
-	Edge intron(node, false);
-	if(!alreadyProcessed(neut_to)){
-	    neutralLines.at(*it).at(node->begin-min) = neut_to;
-	    neut_to->edges.push_back(intron);
-	    nodelist.push_back(neut_to);
-	    addToHash(neut_to);
-	}
-	else{
-	    getNode(neut_to)->edges.push_back(intron);
-	    delete neut_to;
-	}
-    }
-  
-    Node *neut_from = new Node(node->end, node->end, 0.0, NULL, toNeutralLine(node));
-    if(!alreadyProcessed(neut_from)){
-	neutralLines.at(neut_from->n_type).at(node->end-min) = neut_from;
-	Edge intron(neut_from, false);
-	node->edges.push_back(intron);
-	nodelist.push_back(neut_from);
-	addToHash(neut_from);
-    }
-    else{
-	Edge intron(getNode(neut_from), false);
-	node->edges.push_back(intron);      
-	delete neut_from;
+void SpeciesGraph::addAuxilaryEdge(Node *pred, Node *succ){
+    if(!edgeExists(pred,succ)){
+	Edge edge(succ,false,pred->score);
+	pred->edges.push_back(edge);
     }
 }
 
-void SpeciesGraph::addIntron(Node* exon1, Node* exon2, Status *intr){
+Node* SpeciesGraph::addAuxilaryNode(NodeType type, int pos, vector< vector<Node*> >&neutralLines){
+    string key = itoa(pos) +  ":" + itoa(type);
+    if(!alreadyProcessed(key)){
+	Node *node = new Node(pos, pos, 0.0, NULL, type);
+	if(type >=IR && type <= YY_minus0)
+	    neutralLines.at(type).at(pos) = node;
+	nodelist.push_back(node);
+	addToHash(node);
+	if(genesWithoutUTRs){
+	    if(type == TLstop || type == rTLstart){
+		addAuxilaryEdge(node,addAuxilaryNode(IR,pos,neutralLines));
+	    }
+	    if(type == TLstart || type == rTLstop){
+		addAuxilaryEdge(addAuxilaryNode(IR,pos,neutralLines),node);
+	    }
+	}
+	return node;
+    }
+    else{
+	return getNode(key);
+    }
+}
 
+void SpeciesGraph::connectToPred(Node *node,vector< vector<Node*> > &neutralLines){
 
-    if( !edgeExists(exon1,exon2) ){
+    list<NodeType> pred_types = getPredTypes(node);
+    for(list<NodeType>::iterator it = pred_types.begin(); it != pred_types.end(); it++){
+	int begin = node->begin;
+	if( *it == rTLstart || *it == TLstop )
+	    begin--;
+	Node *pred=addAuxilaryNode(*it,begin,neutralLines);
+	addAuxilaryEdge(pred,node);
+    }
+}
+
+Node* SpeciesGraph::getPredUTRSS(Node *node){
+
+    list<NodeType> pred_types = getPredTypes(node);
+    list<NodeType>::iterator it = pred_types.begin();
+    int begin = node->begin;
+    if( *it == rTLstart || *it == TLstop )
+	begin--;
+    string key = itoa(begin) +  ":" + itoa(*it);
+    if(!alreadyProcessed(key)){
+	throw ProjectError("Internal error in SpeciesGraph::getPredUTRSS: preceeding UTR is missing.");
+    }
+    return getNode(key);
+}
+
+Node* SpeciesGraph::getSuccUTRSS(Node *node){
+    return node->edges.front().to;
+}
+
+void SpeciesGraph::connectToSucc(Node *node,vector< vector<Node*> > &neutralLines){
+
+    NodeType succ_type = getSuccType(node);
+    int end = node->end;
+    if(  succ_type == TLstart ||  succ_type == rTLstop )
+	end++;
+    Node *succ = addAuxilaryNode(succ_type, end, neutralLines);
+    addAuxilaryEdge(node,succ);
+}
+
+void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
+
+    if(!pred)
+	pred = head;
+    if(!succ)
+	succ = tail;
+    if( !edgeExists(pred,succ) ){
 	//cout << "sampled_intron\t\t"<< intr->begin << "\t\t" << intr->end << "\t\t" << (string)stateTypeIdentifiers[((State*)intr->item)->type] << endl;
-	Edge in(exon2, false, setScore(intr), intr->item);
-	exon1->edges.push_back(in);
+	double intr_score = pred->score;
+	if(intr->name == intron) // only CDS introns have a posterior probability
+	    intr_score += setScore(intr);
+	Edge in(succ, false, intr_score, intr->item);
+	pred->edges.push_back(in);
     }
 }
 
@@ -246,58 +277,89 @@ void SpeciesGraph::printSampledExon(Node *node){
     cout.rdbuf(coutbuf); //reset to standard output again 
 }
 
-list<NodeType> SpeciesGraph::fromNeutralLine(Node *node){
+list<NodeType> SpeciesGraph::getPredTypes(Node *node) {
 
-   list<NodeType> fromTypes; 
+   list<NodeType> predTypes; 
 
     StateType type = node->castToStateType();
     int frame = mod3(stateReadingFrames[type]);
 
     if( isFirstExon(type) ){
-	fromTypes.push_back(IR);
+	if(!utr)
+	    predTypes.push_back(IR);
+	else if(utr && (type == singleG || isInitialExon(type) ) )
+	    predTypes.push_back(TLstart);
+	else
+	    predTypes.push_back(rTLstop);
     }
     else if(isInternalExon(type) || type == terminal){
 	NodeType ntype = (NodeType)(mod3(frame - mod3(node->end - node->begin + 1)) + 1);
-	fromTypes.push_back(ntype);
+	predTypes.push_back(ntype);
 	if(ntype == plus1 && !( strncasecmp(sequence + node->begin, "ag", 2) == 0 || strncasecmp(sequence + node->begin, "aa", 2) == 0 || strncasecmp(sequence + node->begin, "ga", 2) == 0) ){
-	    fromTypes.push_back(T_plus1);
+	    predTypes.push_back(T_plus1);
 	}
 	if(ntype == plus2){
 	    if(!(strncasecmp(sequence + node->begin, "a", 1) == 0 || strncasecmp(sequence + node->begin, "g", 1) == 0) ){
-		fromTypes.push_back(TA_plus2);
+		predTypes.push_back(TA_plus2);
 	    }
 	    if(!(strncasecmp(sequence + node->begin, "a", 1) == 0)){
-		fromTypes.push_back(TG_plus2);
+		predTypes.push_back(TG_plus2);
 	    }
 	}
     }
     else if(isRInternalExon(type) || type == rinitial){
 	NodeType ntype = (NodeType)(mod3(frame + mod3(node->end - node->begin + 1)) + 4);
-	fromTypes.push_back(ntype);
+	predTypes.push_back(ntype);
 	if(ntype == minus1){
 	    if( !( strncasecmp(sequence + node->begin, "ca", 2) == 0 || strncasecmp(sequence + node->begin, "ta", 2) == 0 ) ){
-		fromTypes.push_back(T_minus1);
+		predTypes.push_back(T_minus1);
 	    }
 	    if(!( strncasecmp(sequence + node->begin, "ta", 2) == 0) ){
-		fromTypes.push_back(C_minus1);
+		predTypes.push_back(C_minus1);
 	    }
 	}
 	if(ntype == minus0 && !( strncasecmp(sequence + node->begin, "a", 1) == 0) ){
-	    fromTypes.push_back(YY_minus0);
+	    predTypes.push_back(YY_minus0);
 	}
     }
+    else if(isFirstUTRExon(type)){
+	predTypes.push_back(IR);
+    }
+    else if(type == utr5internal || type == utr5term){
+	predTypes.push_back(utr5intr);
+    }
+    else if(type == rutr5internal || type == rutr5init){
+	predTypes.push_back(rutr5intr);
+    }
+    else if(type == rutr5single || type == rutr5term){
+	predTypes.push_back(rTLstart);
+    }
+    else if(type == utr3internal || type == utr3term){
+	predTypes.push_back(utr3intr);
+    }
+    else if(type == rutr3internal || type == rutr3init){
+	predTypes.push_back(rutr3intr);
+    }
+    else if(type == utr3single || type == utr3init){
+	predTypes.push_back(TLstop);
+    }
     else
-	throw ProjectError("in SpeciesGraph::fromNeutralLine(): node " + getKey(node)); 
-    return fromTypes;
+	throw ProjectError("in SpeciesGraph::getPredTypes(): node " + getKey(node)); 
+    return predTypes;
 }
 
-NodeType SpeciesGraph::toNeutralLine(Node *node){
+NodeType SpeciesGraph::getSuccType(Node *node) {
 
     StateType type = node->castToStateType();
     int frame = mod3(stateReadingFrames[type]);
 
     if( isLastExon(type)){
-	return IR;
+	if(!utr)
+	    return IR;
+	else if(utr && (type == terminal || type == singleG) )
+	    return TLstop;
+	else
+	    return rTLstart;
     }
     else if( isInternalExon(type) || isInitialExon(type) ){
 	if(frame == 1 && strncasecmp(sequence + node->end, "t", 1) == 0 ){
@@ -327,8 +389,29 @@ NodeType SpeciesGraph::toNeutralLine(Node *node){
 	    return (NodeType)(frame + 4);
 	}
     }
+    else if(isLastUTRExon(type)){
+	return IR;
+    }
+    else if(type == utr5internal || type == utr5init){
+	return utr5intr;
+    }
+    else if(type == rutr5internal || type == rutr5term){
+	return rutr5intr;
+    }
+    else if(type == utr5single || type == utr5term){
+	return TLstart;
+    }
+    else if(type == utr3internal || type == utr3init){
+	return utr3intr;
+    }
+    else if(type == rutr3internal || type == rutr3term){
+	return rutr3intr;
+    }
+    else if(type == rutr3single || type == rutr3init){
+	return rTLstop;
+    }
     else
-	throw ProjectError("in SpeciesGraph::toNeutralLine(): node " +  getKey(node)); 
+	throw ProjectError("in SpeciesGraph::getSuccType(): node " +  getKey(node)); 
     return NOT_KNOWN;
 }
 
@@ -373,17 +456,23 @@ string SpeciesGraph::getDotNodeAttributes(Node *node){
     string attr = "";
 
     if(node == head){
-	attr += "shape=box,style=filled,label=head";
+	attr += "shape=box,style=filled,peripheries=2,color=red,label=head";
     }
     else if (node == tail){
-	attr += "shape=box,style=filled,label=tail";
+	attr += "shape=box,style=filled,peripheries=2,color=red,label=tail";
     }
     else if(node->item != NULL){
+	if(node->n_type == utrExon)
+	    attr += "style=filled,";
 	StateType type = node->castToStateType();
-	attr = "shape=box,label=ex" + itoa(type) +  "_" + itoa(node->begin+1) + "_" + itoa(node->end+1);
+	attr = attr + "shape=box,label=" + (string)stateTypeIdentifiers[type] +  "_" + itoa(node->begin+1) + "_" + itoa(node->end+1);
     }
     else{
-	attr += "shape=point";
+	if(node->n_type == TLstart || node->n_type == TLstop || node->n_type == rTLstart || node->n_type == rTLstop )
+	    attr = attr + "shape=diamond, style=filled, color=yellow, label=" + nodeTypeIdentifiers[node->n_type];
+	else
+	    attr += "shape=point,";
+
     }
     return attr;
 }
@@ -396,16 +485,19 @@ string SpeciesGraph::getDotEdgeAttributes(Node *pred, Edge *edge){
     if(succ->pred == pred && succ->label == 1)
 	attr += "color=blue, ";
     else if (pred->item == NULL && succ->item == NULL){
-	attr += "color=red, ";
+	if(edge->item != NULL)
+	    attr += "color=green, ";
+	    else
+		attr += "color=red, ";
     }
-    if(pred == head && succ->item == NULL){
+    if( edge->score != 0.0 ){
+	attr = attr + "label=" + ftoa(edge->score) + ",";
+    }
+    else if(pred == head && succ->item == NULL){
 	attr = attr + "label=" + nodeTypeIdentifiers[succ->n_type] + ",";
     }
-    else if(pred != head && succ != tail){
-	attr += "rank=same,";
-    }
-    if(pred->n_type > YY_minus0){
-	attr = attr + "label=" + ftoa(edge->score);
+    if(pred->n_type > IR && pred->n_type < utrExon &&  succ->n_type > IR && succ->n_type < utrExon ){
+	attr += "rank=same";
     }
     return attr;
 }
@@ -505,7 +597,7 @@ Node* SpeciesGraph::getPredExonOnPath(Node *node, size_t step){
      do{
 	 node = node->topSort_pred;
      }
-     while(node->label == 0 || ( node->n_type >= IR && node->n_type <=YY_minus0 ));
+     while(node->label == 0 || ( node->n_type >= IR && node->n_type < utrExon ));
      step--;
     }
     return node;
@@ -517,13 +609,13 @@ Node* SpeciesGraph::getNextExonOnPath(Node *node, size_t step){
      do{
 	 node = node->topSort_next;
      }
-     while(node->label == 0 || ( node->n_type >= IR && node->n_type <= YY_minus0 ) );
+     while(node->label == 0 || ( node->n_type >= IR && node->n_type < utrExon ) );
      step--;
  }
  return node;
 }
 
-string SpeciesGraph::getKey(Node *n){
+string SpeciesGraph::getKey(Node *n) {
 
     if(n->item == NULL)
 	return (itoa(n->begin) +  ":" + itoa((n->n_type)));
@@ -580,10 +672,10 @@ double SpeciesGraph::getScorePath(Node *begin, Node *end){
 
 void SpeciesGraph::printNode(Node *node){
 
-    if(node->n_type >= IR && node->n_type <= YY_minus0){
+    if(node->n_type >= IR && node->n_type < utrExon){
 	cout << node->begin + getSeqOffset() << "\t" << node->end + getSeqOffset() << "\t" << nodeTypeIdentifiers[node->n_type]<< "\t" << endl;
     }
-    else if(node->n_type > YY_minus0){
+    else if(node->n_type >= utrExon){
 	if(strand == plusstrand){
 	    cout <<  node->begin + getSeqOffset() + 1 << "\t" << node->end + getSeqOffset() + 1;
 	}
@@ -654,4 +746,3 @@ void Move::initLocalHeadandTail(){
 	local_tail = graph->getNextExonOnPath(right, step_size);
     }
 }
-
