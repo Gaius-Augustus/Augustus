@@ -88,6 +88,20 @@ void CompGenePred::start(){
 	cerr << "Warning: The option 'alternatives_from_evidence' is only available in the single species mode. Turned it off." << endl;
 	Constant::alternatives_from_evidence=false;
     }
+    bool genesWithoutUTRs;
+    try {
+	genesWithoutUTRs = Properties::getBoolProperty("/CompPred/genesWithoutUTRs");
+    } catch (...) {
+	genesWithoutUTRs = true;
+    }
+    bool onlyCompleteGenes = false;
+    const char* genemodelValue = Properties::hasProperty("genemodel") ? Properties::getProperty("genemodel") : "partial";
+    if(strcmp(genemodelValue, "complete") == 0){
+	onlyCompleteGenes = true;
+    }
+    else if(strcmp(genemodelValue, "partial") != 0){
+	throw ProjectError("in cgp mode only the options --genemodel=partial and --genemodel=complete are implemented.");
+    }
 
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(".base"); // equivalent to MEA prediction
@@ -194,7 +208,7 @@ void CompGenePred::start(){
                         }
                         // build graph
                         orthograph.graphs[s] = new SpeciesGraph(&stlist, as, additionalExons, speciesNames[s], 
-								geneRange->getStrand(s), sampledExons[s]);
+								geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, sampledExons[s]);
                         orthograph.graphs[s]->buildGraph();
 			
 			//save pointers to transcripts and delete them after gene list is build
@@ -203,7 +217,7 @@ void CompGenePred::start(){
                 }
             }
         }
-	geneRange->printGeneRanges();
+	geneRange->printGeneRanges();	    
 	if (Constant::exoncands) // by default, ECs are not printed
 	    geneRange->printExonCands();
 	geneRange->createOrthoExons();

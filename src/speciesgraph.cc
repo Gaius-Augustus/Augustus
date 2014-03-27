@@ -17,7 +17,7 @@
 #include "speciesgraph.hh"
 
 void SpeciesGraph::buildGraph(){
-
+    
     vector< vector<Node*> > neutralLines; //represents the seven neutral lines
     int seqlen = getSeqLength();
 
@@ -72,12 +72,12 @@ void SpeciesGraph::buildGraph(){
 		
 	if(it->name == CDS || it->name == utr3 || it->name == utr5){ // add an exon (CDS or UTR)
 	    Node *node = addExon(&(*it), neutralLines);
-	    if( !isFirstUTRExon(((State*)it->item)->type) && !pred && it->name > CDS)
-		addAuxilaryEdge(head,node);
+	    if( !pred && !isGeneStart(node))
+		addAuxilaryEdge(head,getPredUTRSS(node));
 	    pred = node;
 	    if(!it->next){ // end of gene
-		if( !isLastUTRExon(((State*)it->item)->type) && it->name > CDS )
-		    addAuxilaryEdge(pred,tail);
+		if( !isGeneEnd(node) )
+		    addAuxilaryEdge(getSuccUTRSS(pred),tail);
 		pred=NULL;
 	    }
 	}
@@ -116,20 +116,21 @@ void SpeciesGraph::buildGraph(){
     cout << "overlap\t\t" << count_overlap << endl << endl;
 #endif
 
+    cout << "onlyCompleteGenes="<< onlyCompleteGenes << endl;
     //create neutral lines by connecting neutral nodes in the vector
     for(int j=0; j<neutralLines.size(); j++){
-	createNeutralLine(neutralLines.at(j));
+	createNeutralLine(neutralLines.at(j),onlyCompleteGenes);
     }
-		
+    	
     //find topological order of nodes in graph and set pointers topSort_next and topSort_pred
     topSort();
 
     //relax all nodes in topological order and label all nodes with 1 if on max weight path
     relax();
     
-#ifdef DEBUG
+    //#ifdef DEBUG
     printGraph(speciesname + ".dot");
-#endif
+    //#endif
     
 }
 
@@ -145,7 +146,7 @@ Node* SpeciesGraph::addExon(Status *exon, vector< vector<Node*> > &neutralLines)
 #endif
 	}
 	Node *ex = new Node(exon->begin, exon->end, setScore(exon), exon->item, ntype);
-	//printSampledExon(ex);
+	printSampledExon(ex);
 	nodelist.push_back(ex);
 	addToHash(ex);
 	connectToPred(ex, neutralLines);
@@ -176,7 +177,7 @@ void SpeciesGraph::addExon(ExonCandidate *exon, vector< vector<Node*> > &neutral
 
 void SpeciesGraph::addAuxilaryEdge(Node *pred, Node *succ){
     if(!edgeExists(pred,succ)){
-	Edge edge(succ,false,pred->score);
+	Edge edge(succ,true,pred->score);
 	pred->edges.push_back(edge);
     }
 }
@@ -263,7 +264,13 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
 void SpeciesGraph::printSampledExon(Node *node){
     streambuf *coutbuf = cout.rdbuf(); //save old buf
     cout.rdbuf(sampled_exons->rdbuf()); //redirect std::cout to species file
-    cout << getSeqID() << "\tSAMPLED_ECs\texon\t";
+    cout << getSeqID() << "\tSAMPLED_ECs\t";
+    if(node->n_type == sampled){
+	cout << "exon\t";
+    }
+    else{
+	cout << "UTR\t";
+    }
     if(strand == plusstrand){
 	cout <<  node->begin + getSeqOffset() + 1 << "\t" << node->end + getSeqOffset() + 1;
     }
@@ -271,7 +278,7 @@ void SpeciesGraph::printSampledExon(Node *node){
 	cout << getSeqLength() - node->end + getSeqOffset() << "\t" << getSeqLength() - node->begin + getSeqOffset();
     }
     cout <<"\t" << node->score << "\t.\t.\tName=" << (string)stateTypeIdentifiers[node->castToStateType()] <<"|"<< node->score << "|";
-    if (node->n_type == sampled) {
+    if (node->n_type == sampled || node->n_type == utrExon) {
 	cout << ((State*)(node->item))->apostprob << endl;
     }
     cout.rdbuf(coutbuf); //reset to standard output again 
@@ -413,6 +420,30 @@ NodeType SpeciesGraph::getSuccType(Node *node) {
     else
 	throw ProjectError("in SpeciesGraph::getSuccType(): node " +  getKey(node)); 
     return NOT_KNOWN;
+}
+
+bool SpeciesGraph::isGeneStart(Node *exon){ 
+
+    if(!utr)
+	return true;
+    StateType type = exon->castToStateType();
+    if( !isCodingExon(type) && !isFirstUTRExon(type) )
+	return false;
+    if ( !genesWithoutUTRs && isFirstExon(type) )
+	return false;
+    return true;
+}
+
+bool SpeciesGraph::isGeneEnd(Node *exon){
+
+    if(!utr)
+	return true;
+    StateType type = exon->castToStateType();
+    if( !isCodingExon(type) && !isLastUTRExon(type) )
+	return false;
+     if ( !genesWithoutUTRs && isLastExon(type) )
+	 return false;
+     return true;
 }
 
 void SpeciesGraph::printGraph(string filename){

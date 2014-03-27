@@ -161,19 +161,23 @@ void Graph::addPair(Status *exon1, Status *exon2, vector<Node*> &neutralLine){
   }
 }
 
-void Graph::createNeutralLine(vector<Node*> &neutralLine){
+void Graph::createNeutralLine(vector<Node*> &neutralLine, bool onlyComplete){
 
   Node *pos = head;
   int n = neutralLine.size();
   for(int i=0; i<n; i++){
-    if(neutralLine[i] != NULL){
-      Edge neut(neutralLine[i]);
-      pos->edges.push_back(neut);
-      pos = neutralLine[i];
-    }
+      if(neutralLine[i] != NULL){
+	  if( pos!=head || (!onlyComplete || neutralLine[i]->n_type == IR) ){
+	      Edge neut(neutralLine[i]);
+	      pos->edges.push_back(neut);
+	  }
+	  pos = neutralLine[i];
+      }
   }
-  Edge lastEdge(tail);
-  pos->edges.push_back(lastEdge);
+  if( !onlyComplete || pos->n_type == IR ){
+      Edge lastEdge(tail);
+      pos->edges.push_back(lastEdge);
+  }
 }
 
 /*

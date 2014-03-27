@@ -28,6 +28,8 @@ private:
     list<ExonCandidate*> additionalExons; //exons, which are not sampled
     string speciesname;
     Strand strand;
+    bool genesWithoutUTRs;
+    bool onlyCompleteGenes;
 #ifdef DEBUG
     int count_sampled;               // number of sampled exons
     int count_additional;            // number of additional exons
@@ -36,23 +38,23 @@ private:
     double max_weight; // the max weight of a node/edge in the graph, used as an upper/lower bound
     double ec_score; //temp: until there are real scores for exon candidates
     ofstream *sampled_exons;        // output file of sampled exons
-    bool genesWithoutUTRs;
-
+   
 public:
-    SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> &addEx, string name, Strand s, ofstream *se) :
+    SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> &addEx, string name, Strand s, bool u, bool o, ofstream *se) :
 	AugustusGraph(states, seq->sequence),
 	seqRange(seq),
 	additionalExons(addEx),
 	speciesname(name),
 	strand(s),
+	genesWithoutUTRs(u),
+	onlyCompleteGenes(o),
 #ifdef DEBUG
 	count_sampled(0),
 	count_additional(0),
 	count_overlap(0),
 #endif
 	max_weight(0),
-	sampled_exons(se),
-	genesWithoutUTRs(true)
+	sampled_exons(se)
     {
 	try {
 	    ec_score = Properties::getdoubleProperty("/CompPred/ec_score");
@@ -126,6 +128,8 @@ private:
     NodeType getSuccType(Node *node) ;    // get the type of gene feature that succeeds an exon 
     void connectToPred(Node *node,vector< vector<Node*> > &neutralLines); // link a node to its predecessors nodes by auxilary edges
     void connectToSucc(Node *node,vector< vector<Node*> > &neutralLines); // link a node to its succesor node by an auxilary edge
+    bool isGeneStart(Node *exon);
+    bool isGeneEnd(Node *exon);
     /*
      * subroutines of printGraph()
      */

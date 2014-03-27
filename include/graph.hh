@@ -148,7 +148,7 @@ protected:
     }
     Node* addExon(Status *exon, vector<Node*> &neutralLine);
     void addPair(Status *exon1, Status *exon2, vector<Node*> &neutralLine);
-    void createNeutralLine(vector<Node*> &neutralLine); 
+    void createNeutralLine(vector<Node*> &neutralLine, bool onlyComplete=false); 
     void addCompatibleEdges();
     void insertIntron(Node *exon1, Node *exon2);  
     int minInQueue(queue<Node*> *q);
