@@ -122,7 +122,7 @@ namespace cache{
 }
 
 //functions to redirect filestreams
-vector<ofstream*> initOutputFiles(string extension = string());
+vector<ofstream*> initOutputFiles(string outdir, string extension = string());
 void closeOutputFiles(vector<ofstream*> filestreams);
 
 

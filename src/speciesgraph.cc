@@ -101,11 +101,18 @@ void SpeciesGraph::buildGraph(){
 	    pred = succ;
 	}
     }
-	
+
     //add additional exoncandidates
-    if(!additionalExons.empty()){
-	for(list<ExonCandidate*>::iterator it = additionalExons.begin(); it!=additionalExons.end(); it++){
+    if(!additionalExons->empty()){
+	for(list<ExonCandidate*>::iterator it = additionalExons->begin(); it!=additionalExons->end();){
 	    addExon(*it, neutralLines);
+	    /* Node* exon=addExon(*it, neutralLines);
+	    ExonCandidate *tmp = *it;
+	    if(!exon){
+		it=additionalExons->erase(it);
+	    }
+	    else*/
+		++it;
 	}
     }
 
@@ -116,7 +123,6 @@ void SpeciesGraph::buildGraph(){
     cout << "overlap\t\t" << count_overlap << endl << endl;
 #endif
 
-    cout << "onlyCompleteGenes="<< onlyCompleteGenes << endl;
     //create neutral lines by connecting neutral nodes in the vector
     for(int j=0; j<neutralLines.size(); j++){
 	createNeutralLine(neutralLines.at(j),onlyCompleteGenes);
@@ -127,11 +133,7 @@ void SpeciesGraph::buildGraph(){
 
     //relax all nodes in topological order and label all nodes with 1 if on max weight path
     relax();
-    
-    //#ifdef DEBUG
-    printGraph(speciesname + ".dot");
-    //#endif
-    
+        
 }
 
 Node* SpeciesGraph::addExon(Status *exon, vector< vector<Node*> > &neutralLines){
@@ -156,19 +158,48 @@ Node* SpeciesGraph::addExon(Status *exon, vector< vector<Node*> > &neutralLines)
     return getNode(exon);
 }
 
-void SpeciesGraph::addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines){
+Node* SpeciesGraph::addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines){
 #ifdef DEBUG
     count_additional++;
 #endif
     if(!alreadyProcessed(exon)){
 	//cout << "unsampled\t\t"<< exon->begin << "\t\t" << exon->end << "\t\t" <<(string)stateTypeIdentifiers[exon->getStateType()] << endl;
 	Node *ex = new Node(exon->begin, exon->end, ec_score, exon, unsampled_exon);
-	nodelist.push_back(ex);
-	addToHash(ex);
-	connectToPred(ex, neutralLines);
-	connectToSucc(ex,neutralLines);
+	/*
+	if(utr && !genesWithoutUTRs && isFirstExon(ex->castToStateType()) ){
+	    try{
+		Node *node =getPredUTRSS(ex);
+		nodelist.push_back(ex);
+		addToHash(ex);
+		addAuxilaryEdge(node,ex);
+		cout << "inserted edge between " << node << " and " << ex << endl;
+	    }catch(...){
+		delete ex;
+		ex=NULL;
+	    }
+	}
+	else if(utr && !genesWithoutUTRs && isLastExon(ex->castToStateType()) ){
+	    try{
+		Node *node =getSuccUTRSS(ex);
+		nodelist.push_back(ex);
+		addToHash(ex);
+		addAuxilaryEdge(ex,node);
+		cout << "inserted edge between " << ex << " and " << node << endl;
+	    }catch(...){
+		delete ex;
+		ex =NULL;
+	    }
+	}
+	else{*/
+	    nodelist.push_back(ex);
+	    addToHash(ex);
+	    connectToPred(ex, neutralLines);
+	    connectToSucc(ex,neutralLines);
+	    //}
+	return ex;
     }
     else{
+	return getNode(exon);
 #ifdef DEBUG
 	count_overlap++;
 #endif
@@ -232,7 +263,16 @@ Node* SpeciesGraph::getPredUTRSS(Node *node){
 }
 
 Node* SpeciesGraph::getSuccUTRSS(Node *node){
-    return node->edges.front().to;
+
+    NodeType succ_type = getSuccType(node);
+    int end = node->end;
+    if(  succ_type == TLstart ||  succ_type == rTLstop )
+	end++;
+    string key = itoa(end) +  ":" + itoa(succ_type);
+    if(!alreadyProcessed(key)){
+	throw ProjectError("Internal error in SpeciesGraph::getSuccUTRSS: succeeding UTR is missing.");
+    }
+    return getNode(key);
 }
 
 void SpeciesGraph::connectToSucc(Node *node,vector< vector<Node*> > &neutralLines){
@@ -527,6 +567,8 @@ string SpeciesGraph::getDotEdgeAttributes(Node *pred, Edge *edge){
     else if(pred == head && succ->item == NULL){
 	attr = attr + "label=" + nodeTypeIdentifiers[succ->n_type] + ",";
     }
+    if(pred->n_type <= IR && succ->n_type <= IR)
+	attr +="style=bold";
     if(pred->n_type > IR && pred->n_type < utrExon &&  succ->n_type > IR && succ->n_type < utrExon ){
 	attr += "rank=same";
     }

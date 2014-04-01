@@ -68,15 +68,15 @@ public:
     void computeOmegas(vector<AnnoSequence> const &seqRanges);
 
     // calculate a columnwise conservation score and output it (for each species) in wiggle format
-    void printConsScore(vector<AnnoSequence> const &seqRanges);
+    void printConsScore(vector<AnnoSequence> const &seqRanges, string outdir);
     double calcColumnScore(int a, int c, int t, int g); // input: number of a,c,t and g's in one alignment column 
-    void consToWig(vector<double> &consScore);
+    void consToWig(vector<double> &consScore, string outdir);
 
     // static functions
     static void setTree(PhyloTree *t){tree = t;}
     static void setCodonEvo(CodonEvo *c){ codonevo = c; }
     static int numSpecies(){ return tree->numSpecies(); }
-    static void openOutputFiles();
+    static void openOutputFiles(string outdir);
     static void closeOutputFiles();
 
     // static data members

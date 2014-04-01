@@ -24,6 +24,7 @@
 #include "contTimeMC.hh"
 #include <gsl/gsl_matrix.h>
 #include <ctime>
+#include <sys/stat.h>
 
 CompGenePred::CompGenePred(){
     if (Constant::Constant::dbaccess.empty()) { // give priority to database in case both exist
@@ -102,15 +103,37 @@ void CompGenePred::start(){
     else if(strcmp(genemodelValue, "partial") != 0){
 	throw ProjectError("in cgp mode only the options --genemodel=partial and --genemodel=complete are implemented.");
     }
+    if(onlyCompleteGenes && Constant::utr_option_on)
+	genesWithoutUTRs = false;
+
+    string outdir;  //direction for output files                                                                                                                                                                    
+    try {
+        outdir = Properties::getProperty("/CompPred/outdir");
+    } catch (...) {
+        outdir = "";
+    }
+    if(outdir != ""){
+        if(outdir[outdir.size()-1] != '/')
+            outdir += '/';                   // append slash if neccessary                                                                                                                                           
+        outdir = expandHome(outdir);         // replace "~" by "$HOME"                                                                                                                                               
+        // Does the directory actually exist?                                                                                                                                                                       
+        struct stat buffer;
+        if( stat(outdir.c_str(), &buffer) == -1 || !S_ISDIR(buffer.st_mode)){
+            int err = mkdir(outdir.c_str(),0755);
+            if(err != 0)
+                throw ProjectError("could not create directory " + outdir);
+        }
+    }
+    
 
     //initialize output files of initial gene prediction and optimized gene prediction
-    vector<ofstream*> baseGenes = initOutputFiles(".base"); // equivalent to MEA prediction
+    vector<ofstream*> baseGenes = initOutputFiles(outdir,".mea"); // equivalent to MEA prediction
     vector<int> base_geneid(OrthoGraph::numSpecies, 1); // gene numbering
-    vector<ofstream*> initGenes = initOutputFiles(".init"); // score added to all orthologous exons and penalty added to all non orthologous exons, then global path search repeated
+    vector<ofstream*> initGenes = initOutputFiles(outdir,".init"); // score added to all orthologous exons and penalty added to all non orthologous exons, then global path search repeated
     vector<int> init_geneid(OrthoGraph::numSpecies, 1);
-    vector<ofstream*> optGenes = initOutputFiles();  //optimized gene prediction by applying majority rule move
+    vector<ofstream*> optGenes = initOutputFiles(outdir,".cgp");  //optimized gene prediction by applying majority rule move
     vector<int> opt_geneid(OrthoGraph::numSpecies, 1);
-    vector<ofstream*> sampledExons = initOutputFiles(".sampled_ECs");
+    vector<ofstream*> sampledExons = initOutputFiles(outdir,".sampled_ECs");
 
     BaseCount::init();
     PP::initConstants();
@@ -164,7 +187,7 @@ void CompGenePred::start(){
     //msa.printAlignment("");
     //exit(0);
 
-    GeneMSA::openOutputFiles();
+    GeneMSA::openOutputFiles(outdir);
     while (GeneMSA *geneRange = msa.getNextGene()) {
 	cout << "processing next gene range:" << endl;
 	geneRange->printStats();
@@ -188,7 +211,7 @@ void CompGenePred::start(){
 		    
 		    // identifies exon candidates in the sequence for species s
                     geneRange->createExonCands(s, as->sequence);
-		    list<ExonCandidate*> additionalExons = *(geneRange->getExonCands(s));
+		    list<ExonCandidate*> *additionalExons = geneRange->getExonCands(s);
 		    list<Gene> *alltranscripts = NULL;
 
 		    if (!noprediction){
@@ -210,6 +233,7 @@ void CompGenePred::start(){
                         orthograph.graphs[s] = new SpeciesGraph(&stlist, as, additionalExons, speciesNames[s], 
 								geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, sampledExons[s]);
                         orthograph.graphs[s]->buildGraph();
+                        //orthograph.graphs[s]->printGraph(outdir + speciesNames[s] + "." + itoa(GeneMSA::geneRangeID) + ".dot");
 			
 			//save pointers to transcripts and delete them after gene list is build
                         orthograph.ptrs_to_alltranscripts[s] = alltranscripts;
@@ -222,11 +246,11 @@ void CompGenePred::start(){
 	    geneRange->printExonCands();
 	geneRange->createOrthoExons();
 	//geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
-	geneRange->printConsScore(seqRanges);
+	//geneRange->printConsScore(seqRanges, outdir);
 
 	if (!noprediction){
 	    list<OrthoExon> hects = geneRange->getOrthoExons();
-	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph
+	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
 
 	    orthograph.outputGenes(baseGenes,base_geneid);
 	    //add score for selective pressure of orthoexons
@@ -258,7 +282,6 @@ void CompGenePred::start(){
     }
 
     GeneMSA::closeOutputFiles();
-
     closeOutputFiles(initGenes);
     closeOutputFiles(baseGenes);
     closeOutputFiles(optGenes);

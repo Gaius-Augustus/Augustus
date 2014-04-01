@@ -25,7 +25,7 @@ class SpeciesGraph : public AugustusGraph {
 
 private:
     AnnoSequence *seqRange;
-    list<ExonCandidate*> additionalExons; //exons, which are not sampled
+    list<ExonCandidate*> *additionalExons; //exons, which are not sampled
     string speciesname;
     Strand strand;
     bool genesWithoutUTRs;
@@ -40,7 +40,7 @@ private:
     ofstream *sampled_exons;        // output file of sampled exons
    
 public:
-    SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> &addEx, string name, Strand s, bool u, bool o, ofstream *se) :
+    SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> *addEx, string name, Strand s, bool u, bool o, ofstream *se) :
 	AugustusGraph(states, seq->sequence),
 	seqRange(seq),
 	additionalExons(addEx),
@@ -120,7 +120,7 @@ private:
      * subroutines of buildGraph()
      */
     Node* addExon(Status *exon, vector< vector<Node*> > &neutralLines);        // add a sampled exon (CDS and UTR) to the graph
-    void addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines);  // add an additional (not sampled) exon candidate to the graph
+    Node* addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines);  // add an additional (not sampled) exon candidate to the graph
     void addIntron(Node* pred, Node* succ, Status *intr);                    // add a sampled intron to the graph
     Node* addAuxilaryNode(NodeType type, int pos, vector< vector<Node*> > &neutralLines); // add an auxilary node to the graph (has no score)
     void addAuxilaryEdge(Node *pred, Node *succ); // add an auxilary edge to the graph (has no score)

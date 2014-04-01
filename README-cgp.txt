@@ -6,8 +6,9 @@
 2. DEPENDENCIES
 3. INSTALLATION
 4. RUNNING AUGUSTUS IN CGP MODE
-5. RETRIEVING GENOMES FROM A MYSQL DATABASE
-6. USING HINTS
+5. OPTIONAL ARGUMENTS
+6. RETRIEVING GENOMES FROM A MYSQL DATABASE
+7. USING HINTS
 
 
 1. INTRODUCTION
@@ -188,7 +189,51 @@ example usage:
 a small data set for testing can be found in examples/cgp/
 
 
-5. RETRIEVING GENOMES FROM A MYSQL DATABASE
+5. OPTIONAL ARGUMENTS
+------------------------
+
+--/CompPred/dssqthresh=q
+  threshold for the inclusion of donor splice sites based on the pattern probability (q in [0,1] )
+  q=0.05 means that only dss are considered that have a pattern, such that 5% of true splice site patterns have lower probability.
+  q=0 means that all splice site patterns are considered.
+
+--/CompPred/assqthresh=q --/CompPred/assmotifqthresh=q
+  thresholds for the inclusion of aceptor splice sites
+  (the inclusion of an acceptor splice site depends both on the ASS and the ASS motif threshold)
+
+--/CompPred/exon_gain=q_gain --/CompPred/exon_loss=q_loss
+  rate of exon gain and rate of exon loss (parameters of the phylogenetic model)
+  q_gain and q_loss are positive real numbers
+
+--/CompPred/maxIterations=n
+  the maximum number of dual decomposition iterations (default 100).
+
+--/CompPred/only_species=f
+  only predict genes for a subset of the species in the phylogenetic tree.
+  f is a file that contains the species identifiers, one per line, of the subset 
+
+--UTR=on/off
+  predict the untranslated regions in addition to the coding sequence.
+  Note that the 3'-UTR, 5'UTR or both can be absent in some genes if candidate UTRs
+  perform poorly in the ab initio model and are not supported by extrinsic evidence. Enforce the prediction
+  of UTRs with --/CompPred/genesWithoutUTRs=false
+
+--genemodel=partial/complete
+   partial      : allow prediction of incomplete genes at the sequence boundaries (default)
+   complete     : only predict complete genes
+
+--/CompPred/genesWithoutUTRs=true/false
+  if true, all predicted genes are flanked by a 5'- and 3'- untranslated region (with the exception of partial genes at the sequence boundaries).
+  this option only makes sense together with --UTR=on.
+
+--noprediction=true/false
+  If true, no prediction is made. Useful for getting the gene ranges and homologous candidate exons.
+
+--/CompPred/outdir=path
+  send all output files to this directory (default is the current directory)
+
+
+6. RETRIEVING GENOMES FROM A MYSQL DATABASE
 ------------------------------------------------
 
 The flat-file option above reads in all genomes into RAM. This may require too much memory, e.g. for a large number
@@ -225,7 +270,7 @@ d.) running AUGUSTUS with database access:
 > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=saeuger,localhost,cgp,AVglssd8
 
 
-6. USING HINTS
+7. USING HINTS
 ---------------
 
 Extrinsic evidence (or hints) can be integrated using a flat file or database access.

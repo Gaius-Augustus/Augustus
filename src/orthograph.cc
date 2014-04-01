@@ -436,16 +436,9 @@ void cache::incrementCounter(string labelpattern){
 }
 
 
-vector<ofstream*> initOutputFiles(string extension){
+vector<ofstream*> initOutputFiles(string outdir, string extension){
 
     vector<ofstream*> filestreams;
-    string outdir;  //direction for output files
-    try {
-	outdir = Properties::getProperty("/CompPred/outdir");
-    } catch (...) {
-	outdir = "";
-    }
-    outdir = expandHome(outdir); //replace "~" by "$HOME"
     filestreams.resize(OrthoGraph::numSpecies);
     vector<string> species;
     OrthoGraph::tree->getSpeciesNames(species);

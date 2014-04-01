@@ -313,14 +313,7 @@ void GeneMSA::createOrthoExons(float consThres, int minAvLen) {
 }
 
 
-void GeneMSA::openOutputFiles(){
-    string outputdirectory;  //directory for output files
-    try {
-        outputdirectory = Properties::getProperty("/CompPred/outdir_orthoexons");
-    } catch (...) {
-        outputdirectory = "";
-    }
-    outputdirectory = expandHome(outputdirectory); //replace "~" by "$HOME"
+void GeneMSA::openOutputFiles(string outdir){
     
     if (Constant::exoncands) // output of exon candidates into a gff file requested
 	exonCands_outfiles.resize(tree->numSpecies());
@@ -330,7 +323,7 @@ void GeneMSA::openOutputFiles(){
     vector<string> species;
     tree->getSpeciesNames(species);
     for (int i=0; i<tree->numSpecies(); i++) {
-        string file_exoncand = outputdirectory + "exonCands." + species[i] + ".gff3";
+        string file_exoncand = outdir + "exonCands." + species[i] + ".gff3";
         ofstream *os_ec = NULL;
 	if (Constant::exoncands){
 	    os_ec = new ofstream(file_exoncand.c_str());
@@ -340,21 +333,21 @@ void GeneMSA::openOutputFiles(){
 		(*os_ec) << "#\n#-----  exon candidates  -----" << endl << "#" << endl;
 	    }
         }
-        string file_geneRanges = outputdirectory + "geneRanges." + species[i] + ".gff3";
+        string file_geneRanges = outdir + "geneRanges." + species[i] + ".gff3";
         ofstream *os_gr = new ofstream(file_geneRanges.c_str());
         if (os_gr!=NULL) {
             geneRanges_outfiles[i]=os_gr;
             (*os_gr) << PREAMBLE << endl;
             (*os_gr) << "#\n#-----  possible gene ranges  -----" << endl << "#" << endl;
         }
-        string file_orthoexon = outputdirectory + "orthoExons." + species[i] + ".gff3";
+        string file_orthoexon = outdir + "orthoExons." + species[i] + ".gff3";
         ofstream *os_oe = new ofstream(file_orthoexon.c_str());
         if (os_oe) {
             orthoExons_outfiles[i]=os_oe;
             (*os_oe) << PREAMBLE << endl;
             (*os_oe) << "#\n#----- ortholog exons  -----" << endl << "#" << endl;
         }
-        /*string file_omega = outputdirectory + "omegaExons." + species[i] + ".gff3";
+        /*string file_omega = outdir + "omegaExons." + species[i] + ".gff3";
         ofstream *os_omega = new ofstream(file_omega.c_str());
         if (os_omega) {
             omega_outfiles[i]=os_omega;
@@ -663,7 +656,7 @@ void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
 }
 
 // calculate a columnwise conservation score and output it (for each species) in wiggle format
-void GeneMSA::printConsScore(vector<AnnoSequence> const &seqRanges){
+void GeneMSA::printConsScore(vector<AnnoSequence> const &seqRanges, string outdir){
 
     vector<vector<fragment>::const_iterator > fragsit(numSpecies());
     vector<size_t> seqPos(numSpecies(),0); 
@@ -710,7 +703,7 @@ void GeneMSA::printConsScore(vector<AnnoSequence> const &seqRanges){
 	oe->setConsScore(oeConsScore);
     }
     // output for each geneRange and each species a conservation track in wiggle format
-    consToWig(consScore);
+    consToWig(consScore, outdir);
 }
 
 // calculates a conservation score for a single alignment column
@@ -743,13 +736,13 @@ double GeneMSA::calcColumnScore(int a, int c, int t, int g){ // input: number of
 }
 
 // print conservation score to wiggle file
-void GeneMSA::consToWig(vector<double> &consScore){
+void GeneMSA::consToWig(vector<double> &consScore, string outdir){
 
     for (size_t i = 0; i < alignment->rows.size(); i++){
 	AlignmentRow *row = alignment->rows[i];
 	if(row){
 	    string speciesname=rsa->getSname(i);
-	    ofstream outfile(speciesname + ".wig",fstream::app);
+	    ofstream outfile(outdir + speciesname + ".wig",fstream::app);
 	    if (outfile.is_open()){
 		outfile<<"track type=wiggle_0 name=\""<<geneRangeID-1<<"\" description=\""<<alignment->getSignature()<<"\""<<endl;
 		outfile<<"variableStep chrom="<<row->seqID<<endl;
