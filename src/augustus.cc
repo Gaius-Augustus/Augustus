@@ -120,8 +120,11 @@ int main( int argc, char* argv[] ){
 
 	if (Constant::MultSpeciesMode){
 #ifdef COMPGENEPRED
+	    clock_t start;
+	    start = clock();
 	    CompGenePred cgp;
 	    cgp.start();
+	    cout << "# total time: " << (double) (clock()-start) / CLOCKS_PER_SEC << "s" << endl;
 #else
 	    throw ProjectError("Comparative gene prediction not possible with this compiled version. Please recompile with flag COMPGENEPRED set in common.mk.");
 #endif	  
