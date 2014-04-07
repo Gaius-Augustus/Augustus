@@ -1,8 +1,14 @@
 Installation instructions:
 
+0. Install dependencies:
+   * bcftools
+   * htslib
+   * samtools
+   * tabix
+  You find those tools at https://github.com/samtools . bam2wig has been tested with samtools 0.2.0-rc7
+
 1. Go to Makefile and modify the value of SAMTOOLS variable
 2. Type Make from command prompt
-
 
 Examples:
 A file test.bam has ben included. You can try bam2wig by trying out
