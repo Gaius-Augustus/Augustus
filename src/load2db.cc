@@ -27,13 +27,13 @@
 #include <exception>
 #include <ssqls.h>
 
-#include <boost/iostreams/filtering_stream.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
-#include <boost/iostreams/copy.hpp>
+//#include <boost/iostreams/filtering_stream.hpp>
+//#include <boost/iostreams/filter/gzip.hpp>
+//#include <boost/iostreams/copy.hpp>
 
 using namespace std;
-using boost::iostreams::filtering_istream;
-using boost::iostreams::gzip_decompressor;
+//using boost::iostreams::filtering_istream;
+//using boost::iostreams::gzip_decompressor;
 
 //sql_create_6(genomes,1,6,int,seqid,string,sequence,string,seqname,int,start,int,end,string,species)
 
@@ -49,9 +49,11 @@ void createTableHints();
 void createTableFeatureTypes();
 int getSpeciesID(string species);
 int getSeqNr(char* seqname,int speciesid);
-int insertSeq(string sequence, char* name, int length, string species);
+int insertSeqName(char* seqname,int speciesid);
+int insertSeq(string sequence, char* name, int length, int speciesid);
 void insertHint(Feature &f, string species);
-bool isFasta(filtering_istream &zin);
+//bool isFasta(filtering_istream &zin);
+bool isFasta(ifstream &ifstrm);
 bool isGFF(ifstream &ifstrm);
 void checkConsistency(); // checks consistency of the 'hints' data with the 'genomes' data
 void removeDuplicates();
@@ -147,7 +149,7 @@ int main( int argc, char* argv[] ){
 	if( !ifstrm )
 	    throw string("Could not open input file \"") + filename + "\"!";
 
-	filtering_istream zin;
+	/*filtering_istream zin;
 	try {  
 	    zin.push(gzip_decompressor());
 	    zin.push(ifstrm);
@@ -160,22 +162,27 @@ int main( int argc, char* argv[] ){
 	    zin.reset();
 	    ifstrm.seekg(0);
 	    zin.push(ifstrm);
-        }
+	    }*/
 	
-	if(isFasta(zin)){
+	//if(isFasta(zin)){
+	if(isFasta(ifstrm)){
 	    cout << "Looks like " << filename << " is in fasta format." << endl;
 	    createTableGenomes();
 	    char *sequence = NULL, *name = NULL;
-	    int length, seqCount = 0, chunkCount = 0, lenCount = 0;
-	    readOneFastaSeq(zin, sequence, name, length);
+	    int length = 0, seqCount = 0, chunkCount = 0;
+	    unsigned int lenCount = 0;
+	    //readOneFastaSeq(zin, sequence, name, length);
+	    readOneFastaSeq(ifstrm, sequence, name, length);
+	    int speciesid = getSpeciesID(species);
 	    while (sequence){
-		chunkCount += insertSeq(sequence, name, length, species);
+		chunkCount += insertSeq(sequence, name, length, speciesid);
 		seqCount++;
 		lenCount += length;
 		delete sequence;
 		delete name;
 		sequence = name = NULL;
-		readOneFastaSeq(zin, sequence, name, length);
+		//readOneFastaSeq(zin, sequence, name, length);
+		readOneFastaSeq(ifstrm, sequence, name, length);
 	    }
 	    if (seqCount > 0)
 		cout << "Inserted " << chunkCount << " chunks of " << seqCount << " sequences (total length "
@@ -301,7 +308,7 @@ void createTableGenomes(){
         PRIMARY KEY (seqid),\
         KEY region (speciesid,seqnr,start,end),\
         FOREIGN KEY (speciesid,seqnr) REFERENCES seqnames(speciesid,seqnr)\
-      ) ENGINE=MyISAM DEFAULT CHARSET=latin1 MAX_ROWS=1000000 AVG_ROW_LENGTH=50000;");
+      ) ENGINE=MyISAM DEFAULT CHARSET=latin1 MAX_ROWS=10000000 AVG_ROW_LENGTH=50000;");
    query.execute();
 }
 /*
@@ -310,7 +317,7 @@ void createTableGenomes(){
 void createTableSpeciesnames(){
     mysqlpp::Query query = con.query("CREATE TABLE IF NOT EXISTS speciesnames (\
         speciesid int(10) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,\
-        speciesname varchar(50)\
+        speciesname varchar(50) UNIQUE KEY\
       ) ENGINE=MyISAM DEFAULT CHARSET=latin1 MAX_ROWS=1000000 AVG_ROW_LENGTH=50000;");
     query.execute();
 }
@@ -322,7 +329,8 @@ void createTableSeqnames(){
         seqnr int(10) unsigned AUTO_INCREMENT,\
         speciesid int(10) unsigned REFERENCES speciesnames(speciesid),\
         seqname varchar(50),\
-        PRIMARY KEY(speciesid,seqnr)\
+        PRIMARY KEY(speciesid,seqnr),\
+        UNIQUE KEY(speciesid,seqname)\
       ) ENGINE=MyISAM DEFAULT CHARSET=latin1 MAX_ROWS=1000000 AVG_ROW_LENGTH=50000;");
     query.execute();
 }
@@ -370,14 +378,13 @@ void createTableFeatureTypes(){
  * return the number of chunks that sequence was cut into
  * start and end are 0-based and inclusive.
  */
-int insertSeq(string sequence, char *name, int length, string species){
+int insertSeq(string sequence, char *name, int length, int speciesid){
     int chunks = 0;
     int start = 0, end;
+    int seqnr = insertSeqName(name,speciesid);
     while (start < length) {
 	end = (start + chunksize < length)? (start + chunksize - 1) : length - 1;
 	mysqlpp::Query query = con.query();
-	int speciesid = getSpeciesID(species);
-	int seqnr = getSeqNr(name,speciesid);
 	query << "INSERT INTO genomes (dnaseq,seqnr,speciesid,start,end) VALUES(\""
 	      << sequence.substr(start, end-start+1) << "\"," << seqnr << "," 
 	      << speciesid << "," << start << "," << end << ")";
@@ -464,12 +471,35 @@ int getSeqNr(char* seqname,int speciesid){
         return query.insert_id();
     }
 }
+int insertSeqName(char* seqname,int speciesid){
+    try{
+	mysqlpp::Query query = con.query();
+	query << "INSERT INTO seqnames (speciesid,seqname) VALUES (" << speciesid << ",\"" << seqname << "\")";
+	//cout << "Executing" << endl << query.str() << endl;
+	query.execute();
+	return query.insert_id();
+    } catch(const mysqlpp::BadQuery& e){
+        cerr <<"sequence "<< seqname <<" already exists in database" << endl;
+	cerr <<"Please delete sequence, before reloading"<<endl;
+	exit(1);
+    }
+}
 
-bool isFasta(filtering_istream &zin){
+/*bool isFasta(filtering_istream &zin){
     zin >> ws;
     if (!(zin))
 	return false;
     char c = zin.peek();
+    if (c == '>')
+	return true;
+    return false;
+    }*/
+
+bool isFasta(ifstream &ifstrm){
+    ifstrm >> ws;
+    if (!(ifstrm))
+	return false;
+    char c = ifstrm.peek();
     if (c == '>')
 	return true;
     return false;
