@@ -9,18 +9,18 @@
   <div id="linke_spalte">
      <ul class="menu">
          <li><div id="linksMenuText">AUGUSTUS Web Server Navigation</div></li>
-         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/index.gsp"><span>Introduction</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/about.gsp"><span>About AUGUSTUS</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/accuracy.gsp"><span>Accuracy</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/trainingtutorial.gsp"><span>Training Tutorial</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/training/create"><span>Submit Training</span></a></li>
-         <li><a href= "http://bioinf.uni-greifswald.de/augustus-training-0.1/predictiontutorial.gsp"><span>Prediction Tutorial</span></a></li>
-         <li><a href= "http://bioinf.uni-greifswald.de/augustus-training-0.1/prediction/create"><span>Submit Prediction</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/help.gsp"><span>Help</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/datasets.gsp"><span>Datasets for Download</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/predictions_for_download.gsp">Predictions for Download</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1//references.gsp"><span>Links & References</span></a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/impressum.gsp"><span>Impressum</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/webaugustus/index.gsp"><span>Introduction</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/webaugustus/about.gsp"><span>About AUGUSTUS</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/webaugustus/accuracy.gsp"><span>Accuracy</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/webaugustus/trainingtutorial.gsp"><span>Training Tutorial</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/webaugustus/training/create"><span>Submit Training</span></a></li>
+         <li><a href= "http://bioinf.uni-greifswald.de/webaugustus/predictiontutorial.gsp"><span>Prediction Tutorial</span></a></li>
+         <li><a href= "http://bioinf.uni-greifswald.de/webaugustus/prediction/create"><span>Submit Prediction</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/webaugustus/help.gsp"><span>Help</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/webaugustus/datasets.gsp"><span>Datasets for Download</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/webaugustus/predictions_for_download.gsp">Predictions for Download</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/webaugustus/references.gsp"><span>Links & References</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/webaugustus/impressum.gsp"><span>Impressum</span></a></li>
          <li>&nbsp;</li>
          <li><div id="linksMenuText">Other AUGUSTUS Resources</div></li>
          <li><a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus">AUGUSTUS Wiki</a></li>

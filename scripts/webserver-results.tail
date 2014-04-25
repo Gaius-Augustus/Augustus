@@ -4,7 +4,7 @@
 
 <p>All files and folders - except for log and error file - are compressed. To unpack <tt>*.tar.gz</tt> archives, e.g. on linux type</p><p><tt>tar -xzvf *.tar.gz</tt></p><p>For unpacking <tt>*.gz</tt> files, e.g. on linux type</p><p><tt>gunzip *.gz</tt>.</p>
 
-<p>Further instructions about results contents are given at the <a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/trainingtutorial.gsp#results">Training Tutorial</a> and the <a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/predictiontutorial.gsp#results">Prediction Tutorial</a>.
+<p>Further instructions about results contents are given at the <a href="http://bioinf.uni-greifswald.de/webaugustus/trainingtutorial.gsp#results">Training Tutorial</a> and the <a href="http://bioinf.uni-greifswald.de/webaugustus/predictiontutorial.gsp#results">Prediction Tutorial</a>.
 
 </div>
 </div>
@@ -13,9 +13,9 @@
   <div id="schriftgroesse">
    <script type="text/javascript">
     //<![CDATA[
-    document.write('<a href="http://bioinf.uni-greifswald.de/trainaugustus/training-results/ABCDRZ/index.html" title="Increase size" onclick="changeFontSize(2); return false;" class="larger">bigger</a><span class="unseen">&nbsp;</span>');
-    document.write('<a href="http://bioinf.uni-greifswald.de/trainaugustus/training-results/ABCDRZ/index.html" title="Decrease size" onclick="changeFontSize(-2); return false;" class="smaller">smaller</a><span class="unseen">&nbsp;</span>');
-    document.write('<a href=""http://bioinf.uni-greifswald.de/trainaugustus/training-results/ABCDRZ/index.html" title="Revert styles to default" onclick="revertStyles(); return false;" class="reset">reset</a></p>');
+    document.write('<a href="http://bioinf.uni-greifswald.de/webaugustus/training-results/ABCDRZ/index.html" title="Increase size" onclick="changeFontSize(2); return false;" class="larger">bigger</a><span class="unseen">&nbsp;</span>');
+    document.write('<a href="http://bioinf.uni-greifswald.de/webaugustus/training-results/ABCDRZ/index.html" title="Decrease size" onclick="changeFontSize(-2); return false;" class="smaller">smaller</a><span class="unseen">&nbsp;</span>');
+    document.write('<a href=""http://bioinf.uni-greifswald.de/webaugustus/training-results/ABCDRZ/index.html" title="Revert styles to default" onclick="revertStyles(); return false;" class="reset">reset</a></p>');
     //]]>
    </script>
   </div>
@@ -35,7 +35,7 @@
  <div id="fuss_links"><p class="copyright">&copy; 2011 University of Greifswald</p></div>
  <div id="fuss_mitte">
          <table width="100%" border="0" cellpadding="0" cellspacing="1">
-                 <tr><td nowrap="nowrap"><a href="index.html" class="mainleveltop_" >Home</a>|&nbsp; </span><a href="http://bioinf.uni-greifswald.de/augustus-training-0.1/impressum.gsp" class="mainleveltop_" >Impressum</a>
+                 <tr><td nowrap="nowrap"><a href="index.html" class="mainleveltop_" >Home</a>|&nbsp; </span><a href="http://bioinf.uni-greifswald.de/webaugustus/impressum.gsp" class="mainleveltop_" >Impressum</a>
                  </td></tr>
          </table>
  <div class="bannergroup">
