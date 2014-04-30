@@ -264,6 +264,16 @@ public:
 	} catch (...) {
 	    j2_i = 5;
 	}
+	try {
+	    r_be = Properties::getdoubleProperty("/MeaPrediction/r_be"); // threshold for exons on base level
+	} catch (...) {
+	    r_be = 0.5;
+	}
+	try {
+	    r_bi = Properties::getdoubleProperty("/MeaPrediction/r_bi"); // threshold for introns on base level
+	} catch (...) {
+	    r_bi = 0.5;
+	}
 	
 	for(int i = 0; i < seqlength*10; i++)
 	    baseScore.push_back(0);
@@ -312,6 +322,8 @@ public:
   double j1_i;
   double j2_e;
   double j2_i;
+  double r_be;
+  double r_bi;  
 };
 
 bool compareNodes(Node *first, Node *second);

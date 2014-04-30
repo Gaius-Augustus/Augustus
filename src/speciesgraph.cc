@@ -103,7 +103,7 @@ void SpeciesGraph::buildGraph(){
     }
 
     //add additional exoncandidates
-    if(!additionalExons->empty()){
+    if(additionalExons && !additionalExons->empty()){
 	for(list<ExonCandidate*>::iterator it = additionalExons->begin(); it!=additionalExons->end();){
 	    addExon(*it, neutralLines);
 	    /* Node* exon=addExon(*it, neutralLines);

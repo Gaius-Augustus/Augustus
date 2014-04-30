@@ -567,7 +567,12 @@ double AugustusGraph::setScore(Status *st){
 	p_b = baseScore[getBasetype(st, pos)*seqlength + pos];
 	getPoints(st,p_b,&a1,&a2,&b1,&b2);	  
       }
-      s_be += (p_b - a1) * (b2-a2)/(b1-a1) + a2;
+      if(Constant::MultSpeciesMode){
+	  s_be += p_b - r_be;
+      }
+      else{
+	  s_be += (p_b - a1) * (b2-a2)/(b1-a1) + a2;
+      }
     }
     s_be /= st->end - st->begin + 1;
     
@@ -582,7 +587,12 @@ double AugustusGraph::setScore(Status *st){
 	p_b = baseScore[getBasetype(st, pos)*seqlength + pos];
 	getPoints(st,p_b,&a1,&a2,&b1,&b2);
       }
-      s_bi += (p_b - a1) * (b2-a2)/(b1-a1) + a2;
+      if(Constant::MultSpeciesMode){
+	  s_bi += p_b - r_bi;
+      }
+      else{
+	  s_bi += (p_b - a1) * (b2-a2)/(b1-a1) + a2;
+      }
     }
     s_bi /= st->end - st->begin + 1;
     double s_si = 0;
