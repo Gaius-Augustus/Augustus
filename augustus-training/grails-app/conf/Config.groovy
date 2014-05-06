@@ -15,7 +15,7 @@ grails {
        host = "smtp.uni-greifswald.de"
        port = 25
        username = "augustus-web"
-       password = "4549NVKD"
+       password = "dwD4(HG/"
        grails.mail.default.from= "augustus-web@uni-greifswald.de"
        props = ["mail.smtp.auth":"true", 					   
 		"mail.smtp.port":"25", 
