@@ -43,11 +43,6 @@ public:
 	strand(s),
 	genesWithoutUTRs(u),
 	onlyCompleteGenes(o),
-#ifdef DEBUG
-	count_sampled(0),
-	count_additional(0),
-	count_overlap(0),
-#endif
 	max_weight(0),
 	sampled_exons(se)
     {
