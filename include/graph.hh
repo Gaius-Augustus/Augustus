@@ -53,7 +53,14 @@ public:
     double score;
     Status *next;
     const void *item;
+
+    bool isIntron() const {return (name >= intron);}
+    bool isExon() const {return (name >= CDS && name <= utr5);}
+    bool isUTR() const {return (name == CDS);}
+    bool isCDS() const {return (name == utr3 || name == utr5);}    
 };
+
+bool isTlstartOrstop(Status *predExon, Status *succExon);
 
 class Node{
 public:
@@ -81,6 +88,8 @@ public:
     StateType castToStateType(); //casts void* back to State* and returns the StateType
     void addWeight(double weight); //add weight to all outgoing edges
     Edge* getEdge(Node* succ);
+    State* getIntron(Node* succ);
+    bool isSampled() const {return(n_type == sampled || n_type == utrExon);}
 
 };
 
@@ -173,6 +182,8 @@ protected:
     virtual void printGraph(string filename)=0;   
     virtual void printGraph2(string filename)=0;  
     virtual bool mergedStopcodon(Node* exon1, Node* exon2)=0;
+    virtual bool mergedStopcodon(Status* exon1, Status* exon2)=0;
+    virtual bool mergedStopcodon(StateType type1, StateType type2, int end1, int begin2)=0;
 };
 
 class AugustusGraph : public Graph{
@@ -299,6 +310,8 @@ public:
     void printGraph(string filename); 
     void printGraph2(string filename);
     bool mergedStopcodon(Node* exon1, Node* exon2);
+    bool mergedStopcodon(Status* exon1, Status* exon2);
+    bool mergedStopcodon(StateType type1, StateType type2, int end1, int begin2);
     void getPoints(Status *st, double p, double *a1, double *a2, double *b1, double *b2);
     const char* sequence;
     int seqlength;

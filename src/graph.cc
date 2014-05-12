@@ -946,25 +946,35 @@ ostream& operator<<(ostream& ostrm, const Edge &edge){
   return ostrm;
 }
 
-bool AugustusGraph::mergedStopcodon(Node* exon1, Node* exon2){
 
-    StateType type = exon1->castToStateType();
+bool AugustusGraph::mergedStopcodon(Node* exon1, Node* exon2){
+    return mergedStopcodon(exon1->castToStateType(), exon2->castToStateType(), exon1->end, exon2->begin);
+}
+
+bool AugustusGraph::mergedStopcodon(Status* exon1, Status* exon2){
+    if(exon1 && exon2)
+	return mergedStopcodon(((State*)exon1->item)->type, ((State*)exon2->item)->type, exon1->end, exon2->begin);
+    return false;
+}
+
+bool AugustusGraph::mergedStopcodon(StateType type1, StateType type2, int end1, int begin2){
+
     char joinedCodon[4] = "";
 
-    if(isCodingExon(type) && isCodingExon(exon2->castToStateType())){
-	if(type == initial1 || type == internal1 || type == rterminal1 || type == rinternal1 ){
-	    strncat(joinedCodon, sequence + exon1->end, 1);
-	    strncat(joinedCodon, sequence + exon2->begin, 2);
+    if(isCodingExon(type1) && isCodingExon(type2)){
+	if(type1 == initial1 || type1 == internal1 || type1 == rterminal1 || type1 == rinternal1 ){
+	    strncat(joinedCodon, sequence + end1, 1);
+	    strncat(joinedCodon, sequence + begin2, 2);
 	}
-	else if(type == initial2 || type == internal2 ||  type == rterminal0 || type == rinternal0 ){
-	    strncat(joinedCodon, sequence + exon1->end - 1, 2);
-	    strncat(joinedCodon, sequence + exon2->begin, 1);
+	else if(type1 == initial2 || type1 == internal2 ||  type1 == rterminal0 || type1 == rinternal0 ){
+	    strncat(joinedCodon, sequence + end1 - 1, 2);
+	    strncat(joinedCodon, sequence + begin2, 1);
 	}
 	if(joinedCodon[0] != '\0'){
-	    if (isOnFStrand(type) && GeneticCode::isStopcodon(joinedCodon) ){
+	    if (isOnFStrand(type1) && GeneticCode::isStopcodon(joinedCodon) ){
 		return true;
 	    }
-	    if( !isOnFStrand(type) && GeneticCode::isRCStopcodon(joinedCodon) ){
+	    if( !isOnFStrand(type1) && GeneticCode::isRCStopcodon(joinedCodon) ){
 		return true;
 	    }
 	}
@@ -988,4 +998,22 @@ Edge* Node::getEdge(Node* succ){
 	}
     }
     return e;
+}
+
+State* Node::getIntron(Node* succ){
+
+    Edge* edge = getEdge(succ);
+    State *intron = NULL;
+    if(edge && edge->item != NULL){
+	intron = new State(*((State*)edge->item));
+    }
+    return intron;
+}
+
+bool isTlstartOrstop(Status *predExon, Status *succExon){
+    if(predExon && succExon){
+	if( (predExon->isCDS() && succExon->isUTR()) || (succExon->isCDS() && predExon->isUTR()) )
+	    return true;
+    }
+    return false;
 }

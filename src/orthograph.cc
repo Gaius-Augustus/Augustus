@@ -3,11 +3,11 @@
  * licence: Artistic Licence, see file LICENCE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  * descr.:  orthologous graphs for comparative gene prediction
- * authors: Stefanie König
+ * authors: Stefanie Koenig
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 23.03.12|Stefanie König | creation of the file
+ * date    |   author       |  changes
+ * --------|----------------|------------------------------------------
+ * 23.03.12|Stefanie Koenig | creation of the file
  **********************************************************************/
 
 
@@ -39,16 +39,16 @@ void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
 	
 	    // convert node labeling of graph into a list of genes (backtracking from tail)
 
-	    Edge *edge=current->pred->getEdge(current);
-	    if(edge && edge->isSampledIntron())
-		addIntronToGene(currentGene,current->pred,current);  
+	    State *intr=current->pred->getIntron(current);
+	    if(intr)
+		addIntronToGene(currentGene,intr);  
 
 	    while(current != NULL){
 
 		if(current == head && succExon){
-		    Edge *edge= current->getEdge(succExon);
-		    if(edge && edge->isSampledIntron())
-			addIntronToGene(currentGene,current,succExon);  
+		    State *intr = current->getIntron(succExon->pred);
+		    if(intr)
+			addIntronToGene(currentGene,intr);  
 		    setGeneProperties(currentGene);
 		    genes->push_front(*currentGene);
 		}
@@ -69,11 +69,12 @@ void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
 		    }
 		    addExonToGene(currentGene, ex);
 		    if(succExon){ // if the current exon is not the last, add an intron from the current exon to the succeding exon
-			if(current->n_type > utrExon && succExon->n_type > utrExon){ // add intron between two CDS exons
-			    addIntronToGene(currentGene, current, succExon);
-			}
-			else if(current->end+1 < succExon->begin){
-			    addIntronToGene(currentGene, graphs[pos]->getSuccUTRSS(current), graphs[pos]->getPredUTRSS(succExon));    
+			if(current->end+1 < succExon->begin){
+			    State *intr = current->edges.begin()->to->getIntron(succExon->pred);
+			    if(!intr){ // if no explicit intron exists, convert auxiliary edge to an intron
+				intr = new State(current->end+1, succExon->begin-1, getIntronStateType((State*)current->item,(State*)succExon->item));
+			    }
+			    addIntronToGene(currentGene, intr);   
 			}
 		    }
 		    succExon=current;
@@ -81,6 +82,7 @@ void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
 		current=current->pred;
 	    }
 	    delete currentGene;
+	    
 	    if(!genes->empty())
 		genelist[pos] = genes;
 	}

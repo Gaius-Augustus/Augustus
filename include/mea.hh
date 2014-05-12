@@ -18,6 +18,7 @@ void printStatelist(list<Status> *list);
 void getMeaGenelist(list<Node*> meaPath, list<Gene> *meaGenes);
 void addExonToGene(Gene *gene, State *exon);
 void addIntronToGene(Gene *gene, Node *predExon, Node *succExon);
+void addIntronToGene(Gene *gene, State *intr);
 StateType getIntronStateType(State *exon1, State *exon2);
 void setGeneProperties(Gene *gene);
 #endif

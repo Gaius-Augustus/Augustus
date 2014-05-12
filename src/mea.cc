@@ -248,6 +248,11 @@ void addIntronToGene(Gene* gene, Node* predExon, Node* succExon){
   else{
     intr = new State(predExon->end+1, succExon->begin-1, getIntronStateType((State*)predExon->item,(State*)succExon->item));
   }
+  addIntronToGene(gene, intr);
+}
+
+void addIntronToGene(Gene* gene, State *intr){
+
   intr->next = NULL;
   if(isCodingIntron(intr->type) || intr->type == intron_type || intr->type == rintron_type){
     if(gene->introns == NULL)

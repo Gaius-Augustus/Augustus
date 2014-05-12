@@ -30,11 +30,6 @@ private:
     Strand strand;
     bool genesWithoutUTRs;
     bool onlyCompleteGenes;
-#ifdef DEBUG
-    int count_sampled;               // number of sampled exons
-    int count_additional;            // number of additional exons
-    int count_overlap;               // overlap between sampled and additional exons
-#endif
     double max_weight; // the max weight of a node/edge in the graph, used as an upper/lower bound
     double ec_score; //temp: until there are real scores for exon candidates
     ofstream *sampled_exons;        // output file of sampled exons
@@ -77,8 +72,6 @@ public:
      * the key of nodes representiong Exons is 'PosBegin:PosEnd:StateType'
      */
     string getKey(Node *n);
-    Node* getPredUTRSS(Node *node);
-    Node* getSuccUTRSS(Node *node);
     void printGraph(string filename); // prints graph in dot-format
     double setScore(Status *st);
     void printSampledExon(Node *node); //prints sampled exons to display them with gBrowse
@@ -119,17 +112,23 @@ private:
     /*
      * subroutines of buildGraph()
      */
-    Node* addExon(Status *exon, vector< vector<Node*> > &neutralLines);        // add a sampled exon (CDS and UTR) to the graph
-    Node* addExon(ExonCandidate *exon, vector< vector<Node*> > &neutralLines);  // add an additional (not sampled) exon candidate to the graph
-    void addIntron(Node* pred, Node* succ, Status *intr);                    // add a sampled intron to the graph
-    Node* addAuxilaryNode(NodeType type, int pos, vector< vector<Node*> > &neutralLines); // add an auxilary node to the graph (has no score)
-    void addAuxilaryEdge(Node *pred, Node *succ); // add an auxilary edge to the graph (has no score)
-    list<NodeType> getPredTypes(Node *node) ;  // get the types of gene features that precede an exon
-    NodeType getSuccType(Node *node) ;    // get the type of gene feature that succeeds an exon 
-    void connectToPred(Node *node,vector< vector<Node*> > &neutralLines); // link a node to its predecessors nodes by auxilary edges
-    void connectToSucc(Node *node,vector< vector<Node*> > &neutralLines); // link a node to its succesor node by an auxilary edge
+    template<class T> Node* addExon(T *exon, vector< vector<Node*> > &neutralLines, map<string,Node*> &auxiliaryNodes); // add an exon to the graph
+    void addIntron(Node* pred, Node* succ, Status *intr); // add an intron to the graph
+    Node* addLeftSS(Status *exon, vector< vector<Node*> > &neutralLines, map<string,Node*> &auxiliaryNodes);
+    Node* addRightSS(Status *exon, vector< vector<Node*> > &neutralLines, map<string,Node*> &auxiliaryNodes);
+    Node* addAuxilaryNode(NodeType type, int pos, vector< vector<Node*> > &neutralLines, map<string,Node*> &auxiliaryNodes); // add an auxilary node to the graph if it does not exist already
+    Node* getAuxilaryNode(NodeType type, int pos, map<string,Node*> &auxiliaryNodes) const; // get an auxilary node (returns NULL if node does not exists)
+    void addAuxilaryEdge(Node *pred, Node *succ); // add an auxilary edge to the graph
+    Node* addAuxNodeToLine(NodeType type, int pos, vector< vector<Node*> >&neutralLines); // add an auxilary node to one of the neutral lines if it does not exist already
+    NodeType getPredType(StateType type, double begin, double end) ;  // get the type of gene feature that precedes an exon
+    NodeType getSuccType(StateType type) ;    // get the type of gene feature that succeeds an exon 
+    list<NodeType> getPredTypes(Node *node) ;  // same as above, but includes stop codon types 
+    list<NodeType> getSuccTypes(Node *node) ;    // same as above, but includes stop codon types
     bool isGeneStart(Node *exon);
     bool isGeneEnd(Node *exon);
+    Node* addNode(Status *exon); // add a sampled CDS or UTR exon
+    Node* addNode(ExonCandidate *exon); // add an additional candidate exon
+    Node* addNode(NodeType type, int pos); // add an auxilary node
     /*
      * subroutines of printGraph()
      */
