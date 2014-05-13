@@ -49,7 +49,7 @@ public:
 	try {
 	    ec_score = Properties::getdoubleProperty("/CompPred/ec_score");
 	} catch (...) {
-	    ec_score = -100;
+	    ec_score = alpha_e * x0_e - r_be;
 	}
     }
     ~SpeciesGraph(){
