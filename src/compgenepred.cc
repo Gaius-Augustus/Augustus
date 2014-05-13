@@ -3,15 +3,15 @@
  * LICENCE.TXT or
  * http://www.opensource.org/licenses/artistic-license.php descr.:
  * comparative gene prediction on multiple species authors: Mario
- * Stanke, Alexander Gebauer, Stefanie König
+ * Stanke, Alexander Gebauer, Stefanie Koenig
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 07.03.12| Mario Stanke  | creation of the file
- * 06.10.12|Stefanie König | construction of an OrthoGraph from a set of
- *         |               | orthologous sequences + integration of
- *         |               | the optimization method
- **********************************************************************/
+ * date    |   author       |  changes
+ * --------|----------------|------------------------------------------
+ * 07.03.12| Mario Stanke   | creation of the file
+ * 06.10.12|Stefanie Koenig | construction of an OrthoGraph from a set of
+ *         |                | orthologous sequences + integration of
+ *         |                | the optimization method
+ ***********************************************************************/
 
 #include "compgenepred.hh"
 #include "orthograph.hh"
@@ -105,6 +105,12 @@ void CompGenePred::start(){
     }
     if(onlyCompleteGenes && Constant::utr_option_on)
 	genesWithoutUTRs = false;
+    bool featureScoreHects;
+    try {
+        featureScoreHects = Properties::getBoolProperty("/CompPred/featureScoreHects");
+    } catch (...) {
+        featureScoreHects = false;
+    }
 
     string outdir;  //direction for output files                                                                                                                                                                    
     try {
@@ -129,8 +135,10 @@ void CompGenePred::start(){
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(outdir,".mea"); // equivalent to MEA prediction
     vector<int> base_geneid(OrthoGraph::numSpecies, 1); // gene numbering
-    vector<ofstream*> initGenes = initOutputFiles(outdir,".init"); // score added to all orthologous exons and penalty added to all non orthologous exons, then global path search repeated
+    vector<ofstream*> initGenes;
     vector<int> init_geneid(OrthoGraph::numSpecies, 1);
+    if(featureScoreHects)
+	initGenes = initOutputFiles(outdir,".init"); // score added to all orthologous exons and penalty added to all non orthologous exons, then global path search repeated
     vector<ofstream*> optGenes = initOutputFiles(outdir,".cgp");  //optimized gene prediction by applying majority rule move
     vector<int> opt_geneid(OrthoGraph::numSpecies, 1);
     vector<ofstream*> sampledExons = initOutputFiles(outdir,".sampled_ECs");
@@ -253,12 +261,14 @@ void CompGenePred::start(){
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
 
 	    orthograph.outputGenes(baseGenes,base_geneid);
-	    //add score for selective pressure of orthoexons
-	    orthograph.addScoreSelectivePressure();
-	    //determine initial path
-	    orthograph.globalPathSearch();
-	    orthograph.outputGenes(initGenes,init_geneid);
 	    
+	    if(featureScoreHects){
+		//add score for selective pressure of orthoexons
+		orthograph.addScoreSelectivePressure();
+		//determine initial path
+		orthograph.globalPathSearch();
+		orthograph.outputGenes(initGenes,init_geneid);
+	    }	    
 	    if(!orthograph.all_orthoex.empty()){
 		if (dualdecomp){ // optimization via dual decomposition
 		    vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
@@ -282,7 +292,8 @@ void CompGenePred::start(){
     }
 
     GeneMSA::closeOutputFiles();
-    closeOutputFiles(initGenes);
+    if(featureScoreHects)
+	closeOutputFiles(initGenes);
     closeOutputFiles(baseGenes);
     closeOutputFiles(optGenes);
 
