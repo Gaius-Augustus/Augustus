@@ -189,7 +189,8 @@ void CompGenePred::start(){
     GenomicMSA msa(rsa);
     msa.readAlignment(Constant::alnfile);  // reads the alignment
     // rsa->printStats();
-    msa.compactify(); // trivial mergers of neighboring alignments
+    // msa.compactify(); // Mario: commented out as this excludes paths through the alignment graph 
+                         //(trivial mergers of neighboring alignments)
     msa.findGeneRanges(); // nontrivial summary of alignments
   
     //msa.printAlignment("");
