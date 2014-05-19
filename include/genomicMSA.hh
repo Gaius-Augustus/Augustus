@@ -30,6 +30,7 @@ struct AliNode {
     int weight;
     bool covered;
     int pred;
+    int topoIdx;
 };
 
 struct AliEdge {
@@ -64,8 +65,8 @@ class dfs_time_visitor: public boost::default_dfs_visitor {
     //    typedef typename property_traits < size_t* >::value_type T;
 public:
     dfs_time_visitor(size_t *fmap, size_t n) : m_ftimemap(fmap), t(n) { }
-  template < typename Vertex, typename Graph >
-    void finish_vertex(Vertex u, const Graph & g) { m_ftimemap[--t] = u; }
+    template < typename Vertex, typename Graph >
+    void finish_vertex(Vertex u, const Graph & g) { m_ftimemap[--t] = u;}
     size_t *m_ftimemap;
     size_t t;
 };
@@ -120,7 +121,7 @@ public:
     template< class Iterator >
     bool prunePathWrt2Other(AliPath &p, Iterator pstart, Iterator pend, 
 			    AliPath &other, Iterator ostart, Iterator oend,
-			    AlignmentGraph &g);
+			    AlignmentGraph &g, bool forward);
     bool deletePathWrt2Other(AliPath &p, AliPath &other, AlignmentGraph &g);
 
     static int weight(const Alignment *a, const MsaSignature *sig); // node weight when projecting a to sig
@@ -133,6 +134,7 @@ private:
     map<string, MsaSignature> signatures;
     static int maxIntronLen;
     static int minGeneLen;
+    static int maxGeneLen;
 };
 
 #endif  // _GENOMICMSA

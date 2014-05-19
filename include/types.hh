@@ -761,6 +761,7 @@ char *getRandomDNA(int len);
  * vector v. 
  */
 Double quantile(const vector<Double> &v, float q);
+int quantile(const vector<int> &v, float q);
 
 /* obtain a "hashtable" from a list of unique names, e.g.
  * [human, mouse, dog] becomes

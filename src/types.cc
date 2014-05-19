@@ -420,6 +420,20 @@ Double quantile(const vector<Double> &v, float q){
   return w[threshindex];
 }
 
+int quantile(const vector<int> &v, float q){
+    if (v.size() == 0)
+	return -numeric_limits<int>::infinity();
+    if (q<0)
+	q=0;
+    if (q>1)
+	q=1;
+    vector<int> w(v);
+    std::sort(w.begin(), w.end()); // O(n log n) but finding a quantile would be possible also in linear time                                                                                                                                                                            
+    int threshindex = (int) (q * w.size());
+    return w[threshindex];
+}                                                                                                                                                                                                                                                                                        
+ 
+
 map<string, size_t> *getMap (vector<string> names) throw(ProjectError) {
     map<string, size_t> *hashtable = new map<string, size_t>;
     for (size_t i=0; i<names.size(); i++){

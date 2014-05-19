@@ -115,6 +115,7 @@ public:
     int numFilledRows() const; // number of nonempty rows
     int getCumFragLen() const; // total length of all fragments
     int getMaxSeqIdLen() const;
+    friend int medianChrStartEndDiff(Alignment *a1, Alignment *a2);
     string getSignature() const;
     int numFitting(const MsaSignature *sig) const;
     void shiftAliPositions(int offset);
@@ -123,6 +124,8 @@ public: // should rather be private
     int aliLen; // all aligned sequences are this long when gaps are included
     vector<AlignmentRow*> rows;
 };
+
+int medianChrStartEndDiff(Alignment *a1, Alignment *a2);
 
 // sorting operator, with respect to a given species index
 struct SortCriterion {

@@ -43,7 +43,8 @@ void eraseListRange(list<int> L, list<int>::iterator from, list<int>::iterator t
 
 
 int GenomicMSA::maxIntronLen = 100000;
-int GenomicMSA::minGeneLen = 2000; // should be at least 1, otherwise empty alignments are not filtered out
+int GenomicMSA::minGeneLen = 2000;    // should be at least 1, otherwise empty alignments are not filtered out
+int GenomicMSA::maxGeneLen = 100000;  // currently only used to prune alignment paths less 
     
 ostream& operator<< (ostream& strm, const MsaSignature &sig){
     strm << sig.numAli << "\t" << sig.sumAliLen << "\t" << sig.depth << setw(15);
@@ -253,8 +254,8 @@ void GenomicMSA::findGeneRanges(){
     edge_descriptor e;
     Alignment *ua, *va;
     int uid, vid, wid;
-    //int maxGeneLen = 1000000 - 2*GeneMSA::padding;
     int numAlis = alignment.size();
+    int itnr = 0;
     alignment.sort(SortCriterion(0)); // sort by first species
     vector<Alignment*> nodesA(alignment.begin(), alignment.end()); // make vector copy of alignment list for random access
     list<int> nodesI; // indices to nodesA
@@ -291,6 +292,8 @@ void GenomicMSA::findGeneRanges(){
 	}
     }
 
+    // writeDot(aliG, "aliGraph." + itoa(itnr++) + ".dot");	
+
 
     /* a__           a      
      *  \ \           \        implode any edges u->v, where 
@@ -301,7 +304,6 @@ void GenomicMSA::findGeneRanges(){
      */
     //    AlignmentGraph::edge_iterator e;
     int numNodes = numAlis, numNodesOld;
-    int itnr = 0;
     // iterate over all nodes u
     do {
 	numNodesOld = numNodes;
@@ -386,10 +388,12 @@ void GenomicMSA::findGeneRanges(){
     } while (numNodes < numNodesOld);
 
     cout << "number of nodes: " << numNodes << endl;
-    // writeDot(aliG, "aliGraph." + itoa(itnr++) + ".dot");	
+    writeDot(aliG, "aliGraph." + itoa(itnr++) + ".dot");	
 
     // take all singleton alignments that are now long enough
     // at the same time, pack all alignments
+    // TODO: this could instead look more generally into connected components and see whether they are too small
+    // single nodes are then just a special case and this could reduce the number of signatures further
     alignment.clear();
     int numNodes2 = 0;
     for (uid = 0; uid < num_vertices(aliG); uid++){
@@ -459,8 +463,10 @@ void GenomicMSA::findGeneRanges(){
     dfs_time_visitor vis(&aliG2[graph_bundle].topo[0], numNodes2);
     depth_first_search(aliG2, visitor(vis));
     cout << "reverse DFS finishing order (approx topological): ";
-    for (int i=0; i<numNodes2; i++)
+    for (int i=0; i<numNodes2; i++){
+	aliG2[aliG2[graph_bundle].topo[i]].topoIdx = i; // store topo sorting index for each node to prevent circles below
 	cout << aliG2[graph_bundle].topo[i] << " ";
+    }
     cout << endl;
     /*    try {
 	vector<AlignmentGraph::vertex_descriptor > topo;
@@ -490,12 +496,14 @@ void GenomicMSA::findGeneRanges(){
 	project(aliG2, *sit); // set weights wrt to signature
 	// cout << (*sit)->sigstr() << endl;
 	// cout << " writing aliGraph." + itoa(itnr) + ".dot" << endl;
-	// writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot", *sit);
+	if (itnr < 10)
+	    writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot", *sit);
 	int numNewCovered = 1;
 	while (numNewCovered > 0){
 	    AliPath path = getBestConsensus(aliG2, *sit, numNewCovered);
 	    // determine additional value (e.g. weight of newly covered nodes
 	    if (numNewCovered > 0){ // and if additional value large enough
+		//cout << "found new path " << path << endl;
 		allPaths.push_back(path);
 	    }
 	}
@@ -594,55 +602,131 @@ bool GenomicMSA::prunePaths(vector<AliPath> &allPaths, AlignmentGraph &g){
 	//     << " and path " << j << endl; //"\t" << allPaths[j] << endl;
     
 	changed |= prunePathWrt2Other(allPaths[j], allPaths[j].path.begin(), allPaths[j].path.end(),
-				      allPaths[i], allPaths[i].path.begin(), allPaths[i].path.end(), g);
+				      allPaths[i], allPaths[i].path.begin(), allPaths[i].path.end(), g, true);
 	changed |= prunePathWrt2Other(allPaths[j], allPaths[j].path.rbegin(), allPaths[j].path.rend(),
-				      allPaths[i], allPaths[i].path.rbegin(), allPaths[i].path.rend(), g);
+				      allPaths[i], allPaths[i].path.rbegin(), allPaths[i].path.rend(), g, false);
 	changed |= deletePathWrt2Other(allPaths[j], allPaths[i], g);
 	changed |= prunePathWrt2Other(allPaths[i], allPaths[i].path.begin(), allPaths[i].path.end(),
-				      allPaths[j], allPaths[j].path.begin(), allPaths[j].path.end(), g);
+				      allPaths[j], allPaths[j].path.begin(), allPaths[j].path.end(), g, true);
 	changed |= prunePathWrt2Other(allPaths[i], allPaths[i].path.rbegin(), allPaths[i].path.rend(),
-				      allPaths[j], allPaths[j].path.rbegin(), allPaths[j].path.rend(), g);
+				      allPaths[j], allPaths[j].path.rbegin(), allPaths[j].path.rend(), g, false);
 	changed |= deletePathWrt2Other(allPaths[i], allPaths[j], g);
     }
     return changed;
 }
 
 /*
- * Remove from the left end of p the longest contiguous sequence of alignments that is contiguously included in 'other'
- * if node weight wrt to the respective signature is at least as large in 'other'.
+ * Remove from the left end of p the longest contiguous sequence of alignments that is contiguously included in 'other'.
+ * The part to remove from p is extended alignment by alignment as long as node the weight wrt to the respective signature
+ * is at least as large in 'other'.
  * p:            a4 a2 a9 a3 a5 a6 a0
  * other:        a1 a4 a2 a9 a7 a8 a0
  * afterwards p: a3 a5 a6 a0
+ * If at the determined cut point the sequence for at least one species ends, then it is assumed that possibly the assembly
+ * fragments a gene and the part to remove is shortened by as many aligments as cumulatively span on average maxGeneLen.
+ *
  * p may become the empty path. Iterators can be reverse_iterators in which case the fragment is removed from the right end.
+ * forward is true if the iterators are forward iterators, i.e. alignments are interated in increasing order
  */
 template< class Iterator >
 bool GenomicMSA::prunePathWrt2Other(AliPath &p, Iterator pstart, Iterator pend, 
 				    AliPath &other, Iterator ostart, Iterator oend,
-				    AlignmentGraph &g){
-    //    cout << "prunePathWrt2Other(" << p << endl << other << ")" << endl;
+				    AlignmentGraph &g, bool forward){
+    bool ausgabe = false; // TEMPorary
+    if (ausgabe)
+	cout << "prunePathWrt2Other(" << p << endl << other << ")" << endl;
     
     // match from the left end of p
     Iterator pa, oa;
     pa = pstart;
     oa = ostart;
+    
     // find start of match of first node of p in other
     while (oa != oend && (*pa != *oa))
 	++oa;
     if (oa != oend){ // match found
 	while (oa != oend && pa != pend
-	       && *pa == *oa 
+	       && *pa == *oa
 	       && weight(g[*oa].a, other.sig) >=  weight(g[*pa].a, p.sig)){
 	    ++oa;
 	    ++pa;
 	}
-	// prune path until pa
-	// a (future) alternative is introduce two iterators as members in AliPath:
-	// the interval [first, last) that is to be kept. Then a piece of the neighboring
-	// alignments can still be used to generate a better "overhang".
 	if (pstart != pa){
-	    eraseListRange(p.path, pstart, pa);
-	    //	    cout << "pruned to " << p << endl;
-	    return true;
+	    if (pa != pend){ // in this case path p is completely contained and removed
+		// check whether removing up to pa would remove too much
+		Iterator paprev = pa;
+		--paprev;
+		if (ausgabe)
+		    cout << "pa=" << *pa << " paprev= " << *paprev << endl;
+		// determine if we would possibly prune too much:
+		// Does the signature of p change only because some sequence ends in alignment pa?
+		int median_dist = 0;
+		vector<int> distances;
+		int dist;
+
+		// determine median distance (gap length) in chromosomal coordinates to previous alignment
+		for (size_t s=0; s<numSpecies; s++){
+		    dist = -1;
+		    AlignmentRow *curr = g[*pa].a->rows[s], *prev = g[*paprev].a->rows[s];
+		    if (curr && prev && curr->strand == prev->strand && curr->seqID == prev->seqID){
+			if (forward)
+			    dist = curr->chrStart() - prev->chrEnd();
+			else
+			    dist = prev->chrStart() - curr->chrEnd();
+			if (dist >= 0)
+			    distances.push_back(dist);
+		    }
+		}
+
+		if (distances.size()>0)
+		    median_dist = quantile(distances, 0.5);
+
+		bool seqEnds = false;
+		for (size_t s=0; s<numSpecies && !seqEnds; s++){
+		    seqEnds |= g[*pa].a->rows[s] && ((forward && g[*pa].a->rows[s]->chrStart() < median_dist)
+			|| (!forward && rsa->getChrLen(s, g[*pa].a->rows[s]->seqID) -
+			    g[*pa].a->rows[s]->chrEnd() < median_dist));
+		    if (seqEnds && ausgabe)
+			cout << "sequence "<< g[*pa].a->rows[s]->seqID << " ends" << endl;
+		}
+		if (seqEnds){
+		    if (ausgabe)
+			cout << "median " << (forward? "fw" :"rv") << " chromosomal distance between alignments " << *paprev << endl
+			    //<< *(g[*paprev].a) << endl
+			     << "and " << *pa << endl //<< *(g[*pa].a) << endl 
+			     << " is " << median_dist << endl;
+           
+		    // signature changes between paprev and pa because of assembly fragmentation
+		    // decrease pa iterator so that maxGeneLen additional chromosomal range is covered
+		    // before the fragmentation
+		    int range = 0;
+		    paprev = pa;
+		    while (paprev != pstart && range < GenomicMSA::maxGeneLen) {
+			paprev--;
+			if (forward)
+			    range = medianChrStartEndDiff(g[*pa].a, g[*paprev].a);
+			else 
+			    range = medianChrStartEndDiff(g[*paprev].a, g[*pa].a);
+			if (ausgabe)
+			    cout << "paprev=" << *paprev << " range=" << range << endl;
+		    }
+		    if (paprev != pa && range >= GenomicMSA::maxGeneLen)
+			paprev++; // first alignment that exceeds range threshold is not included anymore
+		    pa = paprev;
+		    if (ausgabe)
+			cout << "reducing pruning until alignment " << *paprev << endl;
+		}
+	    }
+	    // prune path until pa (exclusive pa)
+	    // a (future) alternative is introduce two iterators as members in AliPath:
+	    // the interval [first, last) that is to be kept. Then a piece of the neighboring
+	    // alignments can still be used to generate a better "overhang".
+	    if (pstart != pa){
+		eraseListRange(p.path, pstart, pa);
+		if (ausgabe)
+		    cout << "pruned to " << p << endl;
+		return true;
+	    }
 	}
     }
     return false;
@@ -699,9 +783,6 @@ bool GenomicMSA::deletePathWrt2Other(AliPath &p, AliPath &other, AlignmentGraph 
     return superfluous;
 }
 
-    
-
-
 AliPath GenomicMSA::getBestConsensus(AlignmentGraph &g, const MsaSignature *sig, int &numNewCovered){
     AliPath p;
     Alignment *a;
@@ -721,6 +802,8 @@ AliPath GenomicMSA::getBestConsensus(AlignmentGraph &g, const MsaSignature *sig,
 	    numNewCovered++;
 	    newlyids = itoa(vid) + " " + newlyids;
 	}
+	if (p.path.size()> 1000)
+	    cout << vid <<"\t";
 	vid = g[vid].pred;
     }
     if (numNewCovered>0 && false)
@@ -752,13 +835,17 @@ int GenomicMSA::findBestPath(AlignmentGraph &g){
 	    if (g[*ei].weight > -INT_MAX && g[wid].weight > -INT_MAX &&
 		maxCumW[vid] + g[*ei].weight + g[wid].weight > maxCumW[wid]){
 		//cout << "relaxed " << vid << " -> " << wid << endl;
-		maxCumW[wid] = maxCumW[vid] + g[*ei].weight + g[wid].weight;
-		g[wid].pred = v;
+		if (g[vid].topoIdx < g[wid].topoIdx) {
+		    maxCumW[wid] = maxCumW[vid] + g[*ei].weight + g[wid].weight;
+		    g[wid].pred = v;
+		} else {
+		    // cout << "error: circular predecessor path" << endl;
+		}
 	    }
 	}
     }
-    //    for (vid=0; vid<N; vid++)
-    //	cout << vid << "\t" << g[vid].pred << " " << maxCumW[vid] << endl;
+    //for (vid=0; vid<N; vid++)
+    //cout << vid << "\t" << g[vid].pred << " " << maxCumW[vid] << endl;
 
     return  maxCumW[1];
 }

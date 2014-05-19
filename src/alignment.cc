@@ -192,7 +192,7 @@ bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac
 	    misMatches++;
 	}
     }
-    return (misMatches <= ((int) (1.0 - mergeableFrac) * maxNumMatches));
+    return (misMatches <= ((int) ((1.0 - mergeableFrac) * maxNumMatches)));
 }
 
 /*
@@ -401,6 +401,20 @@ int Alignment::getMaxSeqIdLen() const {
 	    maxNameLen = rows[s]->seqID.length();
     
     return maxNameLen;
+}
+
+int medianChrStartEndDiff(Alignment *a1, Alignment *a2){
+    if (a1->numRows() != a2->numRows())
+	return 0;
+    vector<int> diffs;
+    for(size_t s=0; s<a1->numRows(); s++){
+	AlignmentRow *r1 = a1->rows[s], *r2 = a2->rows[s];
+	if (r1 && r2 && r1->strand == r2->strand && r1->seqID == r2->seqID){
+	    if (r1->chrStart() - r2->chrEnd() >=0)
+		diffs.push_back(r1->chrStart() - r2->chrEnd());
+	}
+    }
+    return quantile(diffs, 0.5);
 }
 
 string Alignment::getSignature() const {
