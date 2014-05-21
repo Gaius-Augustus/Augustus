@@ -87,6 +87,32 @@ GeneMSA::GeneMSA(RandSeqAccess *rsa, Alignment *a) {
 		int tooMuch = geneRangeLen - maxDNAPieceSize;
 		starts[s] += (tooMuch + 1)/2;
 		ends[s] -= (tooMuch + 1)/2;
+		// delete all fragments that do not overlap with the gene range  
+                AlignmentRow *row = alignment->rows[s];
+                vector<fragment>::iterator first = row->frags.begin();
+                while (first != row->frags.end() && first->chrPos + first->len - 1 < starts[s]){
+                    ++first;
+                }
+                row->frags.erase(row->frags.begin(),first);
+                vector<fragment>::iterator last = row->frags.begin();
+                while (last != row->frags.end() && last->chrPos < ends[s]){
+                    ++last;
+                }
+                row->frags.erase(last,row->frags.end());
+                // shorten fragments that are not fully included in the gene range    
+                if(!row->frags.empty()){
+                    if(row->chrStart() < starts[s]){
+                        int diff= starts[s] - row->chrStart();
+                        row->frags[0].chrPos += diff;
+                        row->frags[0].aliPos += diff;
+                        row->frags[0].len -= diff;
+                    }
+                    if(row->chrEnd() > ends[s]){
+                        int diff= row->chrEnd() - ends[s];
+                        row->frags[row->frags.size()-1].len -= diff;
+		    }
+		}
+		//TODO: update cumFragLen (probably no longer needed)
 	    }
 	    if (starts[s] < 0)
 		starts[s] = 0;
@@ -483,10 +509,13 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
 		cout << "|" << oe.getContainment();
 	    else
 		cout << ";containment=" << oe.getContainment();
-	    if (GBrowseStyle)
-                cout << "|" << oe.getStoredLabelpattern() <<":"<<oe.getCurrentLabelpattern();
-            else
-                cout << ";labelpattern=" <<oe.getStoredLabelpattern() <<":"<< oe.getCurrentLabelpattern();
+	    if (GBrowseStyle){
+                //cout << "|" << oe.labelpattern <<":"<<oe.getCurrentLabelpattern();
+	    } else{
+		string old = oe.getStoredLabelpattern();
+		string current = oe.getCurrentLabelpattern(); 
+                cout << ";labelpattern=" << old <<":"<< current;
+	    }
 	    cout << endl;
         }
     }
@@ -672,7 +701,10 @@ void GeneMSA::printConsScore(vector<AnnoSequence> const &seqRanges, string outdi
 	    if(row && fragsit[j] != row->frags.end()){
 		vector<fragment>::const_iterator it = fragsit[j];
 		if( i >= it->aliPos && i <= it->aliPos + it->len - 1){ // character in i-th column, j-th row is not a gap
-		    const char* base = seqRanges[j].sequence + it->chrPos - offsets[j] + seqPos[j];
+		    int pos = it->chrPos - offsets[j] + seqPos[j];
+                    if(pos < 0 || pos >= seqRanges[j].length)
+                        throw ProjectError("Internal error in GeneMSA::printConsScore: trying to read position" + itoa(pos+1) + "in sequence " + seqRanges[j].seqname + ".");
+		    const char* base = seqRanges[j].sequence + pos;
 		    switch(*base){
 		    case 'a': a++; break;
 		    case 'c': c++; break;
@@ -718,6 +750,8 @@ double GeneMSA::calcColumnScore(int a, int c, int t, int g){ // input: number of
      */
     // entropy (base 4) weighted by the percentage of rows present, scores range from 0 (non-conserved) to 1 (conserved) 
     double sum=a+c+g+t;
+    if(sum == 0)
+	return 0.0;
     double probA=a/sum;
     double probC=c/sum;
     double probG=g/sum;
