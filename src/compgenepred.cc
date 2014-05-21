@@ -111,6 +111,12 @@ void CompGenePred::start(){
     } catch (...) {
         featureScoreHects = false;
     }
+    bool conservationTrack;
+    try {
+        conservationTrack = Properties::getBoolProperty("/CompPred/conservation");
+    } catch (...) {
+        conservationTrack = false;
+    }
 
     string outdir;  //direction for output files                                                                                                                                                                    
     try {
@@ -255,7 +261,8 @@ void CompGenePred::start(){
 	    geneRange->printExonCands();
 	geneRange->createOrthoExons();
 	//geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
-	//geneRange->printConsScore(seqRanges, outdir);
+	if(conservationTrack)
+	    geneRange->printConsScore(seqRanges, outdir);
 
 	if (!noprediction){
 	    list<OrthoExon> hects = geneRange->getOrthoExons();
