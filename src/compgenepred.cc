@@ -231,13 +231,13 @@ void CompGenePred::start(){
 
 		    if (!noprediction){
 			SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
-			sfc->prepare(as, true);
+			sfc->prepare(as, false);
 			namgene.doViterbiPiecewise(*sfc, as, bothstrands); // sampling
 			alltranscripts = namgene.getAllTranscripts();
 			orthograph.sfcs[s] = sfc;
 		    }
 		     if (alltranscripts){
-                        cout << "building Graph for " << speciesNames[s] << endl;
+			// cout << "building Graph for " << speciesNames[s] << endl;
 			// build datastructure for graph representation
 			// @stlist : list of all sampled states
 			list<Status> stlist;

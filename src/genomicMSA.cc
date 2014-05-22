@@ -153,7 +153,7 @@ void GenomicMSA::readAlignment(string alignFilename) {
 		    delete row;
 		}
 	    }
-	    if (numSpeciesFound > 0)
+	    if (numSpeciesFound > 1) // do not consider alignments with less than 2 rows
 		alignment.push_back(alignBlock);
 	    else
 		delete alignBlock;

@@ -100,8 +100,6 @@ class Alignment {
 public:
     Alignment(size_t k) : aliLen(0), rows(k, NULL) {} // initialize with NULL, which stand for missing AlignmentRows
     ~Alignment(){
-	// Steffi: this causes a segmentation fault for more than two species. I don't know why.
-	// Mario: still?
 	for (int i=0; i<rows.size(); i++) 
 	    delete rows[i];	
     }

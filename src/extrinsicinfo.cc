@@ -92,7 +92,7 @@ void SequenceFeatureCollection::printFeatures(ostream& out){
 	    //out << endl;
 	}
     } 
-    if (!hasFeatures)
+    if (!hasFeatures && !Constant::MultSpeciesMode)
 	out << "# (none)" << endl;
 }
 
