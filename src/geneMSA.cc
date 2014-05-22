@@ -459,6 +459,8 @@ void GeneMSA::printOrthoExons(RandSeqAccess *rsa) {
 void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
     bool GBrowseStyle = false; // for viewing in GBrowse use this style
     streambuf *stdout = cout.rdbuf();
+    string stored_pattern = oe.getStoredLabelpattern();
+    string current_pattern = oe.getCurrentLabelpattern(); 
     for (int s=0; s < numSpecies(); s++) {
 	ExonCandidate *ec = oe.orthoex.at(s);
 	if (files)
@@ -509,13 +511,10 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
 		cout << "|" << oe.getContainment();
 	    else
 		cout << ";containment=" << oe.getContainment();
-	    if (GBrowseStyle){
-                //cout << "|" << oe.labelpattern <<":"<<oe.getCurrentLabelpattern();
-	    } else{
-		string old = oe.getStoredLabelpattern();
-		string current = oe.getCurrentLabelpattern(); 
-                cout << ";labelpattern=" << old <<":"<< current;
-	    }
+	    if (GBrowseStyle)
+                cout << "|" << stored_pattern <<":"<<current_pattern;
+	    else
+                cout << ";labelpattern=" << stored_pattern <<":"<< current_pattern;
 	    cout << endl;
         }
     }
