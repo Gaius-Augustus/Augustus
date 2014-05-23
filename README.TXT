@@ -138,6 +138,15 @@ Install dependencies:
      (on Ubuntu: sudo apt-get install libboost-iostreams-dev libboost-system-dev libboost-filesystem-dev)
    - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager.
 
+If comparative (multi-species) AUGUSTUS is enabled via uncommenting 
+   COMPGENEPRED = true
+   and 
+   MYSQL = true
+in common.mk then the following additional dependencies are required:
+
+   - GNU scientific library (for eigen decompositions of matrices, sudo apt-get install libgsl0-dev)
+   - mysql++ (sudo apt-get install libmysql++-dev)
+
 > cd src
 > make
 
