@@ -129,7 +129,7 @@ string ExonCandidate::key() {
 
 ostream& operator<<(ostream& strm, const ExonCandidate &ec){
     strm << ec.begin << "\t" << ec.end << "\ttype=" << ec.type << "\tscore=" << ec.score 
-	 << "\tassScore=" << ec.assScore << "\tdssScore=" << ec.dssScore;
+	 << "\tassScore=" << ec.getAssScore() << "\tdssScore=" << ec.getDssScore();
     return strm;
 }
 
@@ -248,7 +248,7 @@ list<ExonCandidate*> *findExonCands(const char *dna, int minLen, double assmotif
                         ec = new ExonCandidate;
                         ec->begin = *ritStart - 1;
                         ec->end = i - 1;
-                        ec->dssScore = computeSpliceSiteScore(p, dssminprob, dssmaxprob);
+                        ec->setDssScore(computeSpliceSiteScore(p, dssminprob, dssmaxprob));
                         if (frame == 0) {
                             ec->type = initial_0;
                         } else if (frame == 1) {
@@ -276,8 +276,8 @@ list<ExonCandidate*> *findExonCands(const char *dna, int minLen, double assmotif
 			    ec = new ExonCandidate;
 			    ec->begin = (*ritASS).first + 2;
 			    ec->end = i - 1;
-			    ec->assScore = (*ritASS).second;
-			    ec->dssScore = computeSpliceSiteScore(p, dssminprob, dssmaxprob);
+			    ec->setAssScore((*ritASS).second);
+			    ec->setDssScore(computeSpliceSiteScore(p, dssminprob, dssmaxprob));
 			    if (frame == 0) {
 				ec->type = internal_0;
 			    } else if (frame==1) {
@@ -307,7 +307,7 @@ list<ExonCandidate*> *findExonCands(const char *dna, int minLen, double assmotif
                         ec = new ExonCandidate;
                         ec->begin = (*ritASS).first + 2;
                         ec->end = i + 2;
-                        ec->assScore = (*ritASS).second;
+                        ec->setAssScore((*ritASS).second);
                         ec->type = terminal_exon;
 			if(ec->len() >= minLen)
 			    candidates->push_back(ec);
@@ -357,7 +357,7 @@ list<ExonCandidate*> *findExonCands(const char *dna, int minLen, double assmotif
                         ec = new ExonCandidate;
                         ec->begin=(*ritRDSS).first + 2;
                         ec->end=i + 2;
-                        ec->dssScore = (*ritRDSS).second;
+                        ec->setDssScore((*ritRDSS).second);
                         ec->type=rinitial_exon;
                         candidates->push_back(ec);
                     }
@@ -381,8 +381,8 @@ list<ExonCandidate*> *findExonCands(const char *dna, int minLen, double assmotif
                         ec = new ExonCandidate;
                         ec->begin = (*ritRDSS).first + 2;
                         ec->end = i - 1;
-                        ec->dssScore = (*ritRDSS).second;
-                        ec->assScore = computeSpliceSiteScore(p, assminprob, assmaxprob);
+                        ec->setDssScore((*ritRDSS).second);
+			ec->setAssScore(computeSpliceSiteScore(p, assminprob, assmaxprob));
                         if (frame==0) {
                             ec->type=rinternal_0;
                         } else if (frame==1) {
@@ -415,7 +415,7 @@ list<ExonCandidate*> *findExonCands(const char *dna, int minLen, double assmotif
                         ec = new ExonCandidate;
                         ec->begin = *ritRCStop;
                         ec->end = i - 1;
-                        ec->assScore = computeSpliceSiteScore(p, assminprob, assmaxprob);
+                        ec->setAssScore(computeSpliceSiteScore(p, assminprob, assmaxprob));
                         if (frame==0) {
                             ec->type=rterminal_2;
                         } else if (frame==1) {

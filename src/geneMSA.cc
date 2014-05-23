@@ -447,7 +447,7 @@ void GeneMSA::printExonCands() {
 
 // writes all ortholog exons of all species in the files 'orthoExons.species.gff3'
 // orthoexons are sorted by alignment start coordinate
-void GeneMSA::printOrthoExons(RandSeqAccess *rsa) {
+void GeneMSA::printOrthoExons() {
     if (orthoExonsList.empty())
 	return;
     for (list<OrthoExon>::iterator oeit = orthoExonsList.begin(); oeit != orthoExonsList.end(); ++oeit)
@@ -813,4 +813,32 @@ void GeneMSA::closeOutputFiles(){
 	    delete omega_outfiles[i];
 	}
     }
+}
+
+void GeneMSA::comparativeSignalScoring(){
+    cout << "entering comparativeSignalScoring" << endl;
+    ExonCandidate *ec;
+    for (list<OrthoExon>::iterator oeit = orthoExonsList.begin(); oeit != orthoExonsList.end(); ++oeit){
+	cout << "next OrthoExon:" << endl;
+	// loop over all exon candidates belonging to this OrthoExon
+	for (int s=0; s < numSpecies(); s++) {
+	    ec = oeit->orthoex.at(s); 
+	    if (ec != NULL) { // otherwise exon candidate is missing in  species s 
+		cout << "next ExonCandidate on sequence " << getSeqID(s) << " from species number "  << s
+		     <<  " (= " << rsa->getSname(s) << ")\t";
+		cout << *ec; // prints begin, end, type, score, assScore, dssScore
+		cout << " type as name = " << stateExonTypeIdentifiers[ec->type];
+		cout << endl;
+		// assScore is only relevant for internal and terminal exons on both strands
+		// dssScore is only relevant for internal and initial exons on both strands
+		// ec->getAssScore();
+		// ec->getDssScore();
+		// for now you will not need these methods, but later we may change the scores
+		// according to what you find
+		// ec->setAssScore(42);
+		// ec->setDssScore(42);		
+	    }
+	}
+    }
+    cout << "exiting comparativeSignalScoring" << endl;
 }

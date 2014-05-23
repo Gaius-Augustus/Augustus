@@ -260,6 +260,11 @@ void CompGenePred::start(){
 	if (Constant::exoncands) // by default, ECs are not printed
 	    geneRange->printExonCands();
 	geneRange->createOrthoExons();
+	try { // Kathrin Middendorf's playground
+	    if (Properties::getBoolProperty("/CompPred/compSigScoring"))
+		geneRange->comparativeSignalScoring(); 
+	} catch (...) {}
+	
 	//geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
 	if(conservationTrack)
 	    geneRange->printConsScore(seqRanges, outdir);
@@ -290,7 +295,7 @@ void CompGenePred::start(){
 		    orthograph.outputGenes(optGenes, opt_geneid);
 		}
 	    }
-	    //geneRange->printOrthoExons(rsa); //TODO: two copies of list<OrthoExon> (class geneRange and class OrthoGraph) -> replace one copy by a pointer to the other 
+	    //geneRange->printOrthoExons(); //TODO: two copies of list<OrthoExon> (class geneRange and class OrthoGraph) -> replace one copy by a pointer to the other 
 	    for(list<OrthoExon>::iterator it=orthograph.all_orthoex.begin(); it != orthograph.all_orthoex.end(); it++){
 		geneRange->printSingleOrthoExon(*it,true);
 	    }

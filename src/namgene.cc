@@ -677,8 +677,8 @@ Gene *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *
   delete origInitProbs;
   delete origTermProbs;
   delete synchProbs;
-  if (geneList->empty())
-      cout << "# (none)" << endl;
+  if (geneList->empty() && !Constant::MultSpeciesMode)
+      cout << "# namgene(none)" << endl;
   genes = getPtr(geneList);
   return genes;
 }

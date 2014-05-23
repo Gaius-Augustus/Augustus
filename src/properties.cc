@@ -54,6 +54,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/assmotifqthresh",
 "/CompPred/assqthresh",
 "/CompPred/dssqthresh",
+"/CompPred/compSigScoring",
 "/CompPred/conservation",
 "/CompPred/ec_score",
 "/CompPred/exon_gain",

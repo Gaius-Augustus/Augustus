@@ -64,8 +64,9 @@ public:
     void printStats(); // to stdout
     void printGeneRanges();
     void printExonCands();
-    void printOrthoExons(RandSeqAccess *rsa);
+    void printOrthoExons();
     void computeOmegas(vector<AnnoSequence> const &seqRanges);
+    void comparativeSignalScoring();
 
     // calculate a columnwise conservation score and output it (for each species) in wiggle format
     void printConsScore(vector<AnnoSequence> const &seqRanges, string outdir);

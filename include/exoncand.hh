@@ -62,10 +62,15 @@ public:
     ~ExonCandidate(){}
     ExonType type;
     int begin, end;
-    Double score, assScore, dssScore;
+    Double score;
 
     int getStart();
     int getEnd();
+    Double getAssScore() const {return assScore;}
+    Double getDssScore() const {return dssScore;}
+    void setAssScore(Double s) {assScore = s;}
+    void setDssScore(Double s) {dssScore = s;}
+
     int getFirstCodingBase();
     int getLastCodingBase();
     int gff3Frame();
@@ -76,6 +81,8 @@ public:
     StateType getStateType();
     string key();
     friend ostream& operator<<(ostream& strm, const ExonCandidate &ec);
+private:
+    Double assScore, dssScore;
 };
 
 /*
