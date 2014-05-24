@@ -13,7 +13,7 @@ ifdef COMPGENEPRED
 	CFLAGS += -std=c++0x -DCOMPGENEPRED
 endif
 INCLS	= -I../include
-LIBS    = -lboost_iostreams -lboost_system -lboost_filesystem
+LIBS    = -lboost_iostreams -lboost_system
 
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
@@ -37,7 +37,7 @@ ifdef MYSQL
 # replace RUNTIME_LIBPATH with your own run-time libpath if mysqlpp is not installed system-wide, e.g.
 # RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib 
 RUNTIME_LIBPATH = 
-INCLS	+= -I/usr/include/mysql -I/usr/local/include/mysql++
+INCLS	+= -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
 LIBS 	+=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
 CFLAGS  += -DAMYSQL
 PROGR   += load2db getSeq

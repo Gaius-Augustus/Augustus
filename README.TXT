@@ -134,8 +134,8 @@ scripts
 
 Install dependencies:
    These dependencies are new since AUGUSTUS 3.0 to allow .gz file input and automatic location of the config directory.
-   - Boost C++ Library: libboost-iostreams-dev, libboost-system-dev, libboost-filesystem-dev
-     (on Ubuntu: sudo apt-get install libboost-iostreams-dev libboost-system-dev libboost-filesystem-dev)
+   - Boost C++ Library: libboost-iostreams-dev, libboost-system-dev
+     (on Ubuntu: sudo apt-get install libboost-iostreams-dev libboost-system-dev)
    - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager.
 
 If comparative (multi-species) AUGUSTUS is enabled via uncommenting 

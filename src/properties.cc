@@ -24,7 +24,8 @@
 #include <cstdlib>     // for getenv
 #include <algorithm>   // for for_each
 #include <iostream>
-
+#include <unistd.h>
+#include <limits.h>
 
 void makelow(char& c) {
     c = tolower(c);
@@ -347,12 +348,7 @@ void Properties::init( int argc, char* argv[] ){
 	if (dir){
 	    configPath = string(dir);
 	} else { // third priority: relative to the path of the executable
-	    // cout << "Environment variable " CFGPATH_KEY " not defined." << endl;
-	    boost::filesystem::path cpath,
-		bpath = findLocationOfSelfBinary();
-	    cpath = bpath / ".." / ".." / "config"; // up "/augustus" or "/etraining" and "/bin" or "/src"
-	    cpath.normalize();
-	    configPath = cpath.native();
+	    configPath = findLocationOfSelfBinary();
 	}
     }
     if (configPath[configPath.size()-1] != '/')
@@ -361,7 +357,7 @@ void Properties::init( int argc, char* argv[] ){
     // Does the directory actually exist?
     struct stat buffer;
     if( stat(configPath.c_str(), &buffer) == -1 || !S_ISDIR(buffer.st_mode))
-	throw ProjectError(configPath + " is not a directory.");
+	throw ProjectError(configPath + " is not a directory. Could not locate directory " CFGPATH_KEY ".");
     properties[CFGPATH_KEY] = configPath;
 
     // determine species
@@ -588,9 +584,9 @@ void Properties::readLine( istream& strm ) {
 	    properties[name] = value;
 }
 
-boost::filesystem::path findLocationOfSelfBinary(){
-    const char * self = NULL;
- 
+string findLocationOfSelfBinary(){
+    string self;
+
 #ifdef __APPLE__
     char path[16384];
     uint32 size = static_cast<uint32>(sizeof(path));
@@ -600,25 +596,19 @@ boost::filesystem::path findLocationOfSelfBinary(){
 	throw ProjectError("Could not determine binary path. Buffer too small?");
 	// need to program workaround with new/free.\n";
     }
-#else
-    const static string selfpse("/proc/self/exe");         // Linux
-    const static string selfpcf("/proc/curproc/file");     // FreeBSD / DragonFlyBSD if they have /proc
-    const static string selfpce("/proc/curproc/exe");      // NetBSD
- 
-    if (boost::filesystem::exists(selfpse)){
-	self = selfpse.c_str();
-    } else if (boost::filesystem::exists(selfpcf)){
-	self = selfpcf.c_str();
-    } else if (boost::filesystem::exists(selfpce)){
-	self = selfpce.c_str();
-    }
-#endif
-    if (!self)
-	throw ProjectError("Could not determine path to binary. Please set environment variable CFGPATH_KEY.");
-    
-    boost::filesystem::path bpath(self);
-    while (boost::filesystem::is_symlink(bpath)) {
-	bpath = boost::filesystem::read_symlink(bpath);
-    } 
-    return bpath;
+#else // LINUX
+    char path[PATH_MAX];
+    ssize_t pos = readlink( "/proc/self/exe", path, PATH_MAX-1 );
+    if (pos > 0){
+        self = string(path);
+	pos = self.find_last_of("/");
+	if (pos>0)
+	    pos = self.find_last_of("/", pos-1);
+	if (pos >= 0)
+	    self.resize(pos);
+	self += "/config";
+    } else 
+	throw ProjectError("/proc/self/exe not found.\nPlease specify environment variable or parameter " CFGPATH_KEY ".");
+#endif // WINDOWS not supported 
+    return self;
 }

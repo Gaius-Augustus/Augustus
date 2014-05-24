@@ -23,7 +23,6 @@
 
 // standard C/C++ includes
 #include <map>
-#include <boost/filesystem.hpp>
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>   // for _NSGetExecutablePath
@@ -280,7 +279,7 @@ class Properties{
  * Find the path to the executable, e.g. /opt/augustus/bin/augustus, /home/mario/augustus/bin/augustus
  * code contributed by Bastien Chevreux
  */
-boost::filesystem::path findLocationOfSelfBinary();
+string findLocationOfSelfBinary();
 
 #endif  //  _PROPERTIES_HH
 
