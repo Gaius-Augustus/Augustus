@@ -1704,6 +1704,35 @@ set<HintGroup*> *SequenceFeatureCollection::getCausingGroups(PredictionRun &pr){
  * Prepare for use in predictions.
  */
 void SequenceFeatureCollection::prepare(AnnoSequence *annoseq, bool print){
+    if (Constant::softmasking){
+	// check whether RM is a source key
+	char *chr = annoseq->sequence;
+	unsigned pos = 0;
+	//annoseq->offset;
+	int start, end;
+	while (pos < annoseq->length){
+	    while (pos < annoseq->length && !islower(chr[pos])){ pos++; }
+	    if (pos < annoseq->length){
+		start = end = pos;
+		while (end+1 < annoseq->length && islower(chr[end+1])) { end++; }
+		Feature rm(start, end, nonexonpartF, bothstrands, -1, "RM");
+		rm.seqname = annoseq->seqname;
+		rm.source = "softmask";
+		rm.feature = "nep";
+		rm.score = 0;
+		rm.groupname = "";
+		rm.priority = -1;
+		rm.mult = 1;
+		rm.gradeclass = 0;
+		collection->setBonusMalus(rm);
+		addFeature(rm);
+		pos = end+1;
+	    }
+	}
+    }
+    // turn whole sequence to lowercase characters
+    for (unsigned pos = 0; pos < annoseq->length; pos++)
+	annoseq->sequence[pos] = tolower(annoseq->sequence[pos]);
     setSeqLen(annoseq->length);
     makeGroups();
     checkGroupConsistency(annoseq);
@@ -1996,16 +2025,21 @@ int FeatureCollection::esource(string skey){
 void FeatureCollection::readExtrinsicCFGFile(){ 
     string filename, skey;
     try {
-	filename = Properties::getProperty( "extrinsicCfgFile" );
+	filename = Properties::getProperty( EXTRFILE_KEY ); // = "extrinsicCfgFile"
     } catch(...) {
-	cerr << "Could not find parameter 'extrinsicCfgFile'" << endl;
+	cerr << "Could not find parameter " EXTRFILE_KEY << endl;
 	return;
     }
     
     try {
 	datei.open(filename.c_str());
-	if (!datei) {
-	    throw ProjectError(string("Could not find extrinsic config file ") + filename + ".");
+	if (!datei) { // second priority, look in config/extrinsic folder
+	    string altfname = Properties::getConfigFilename("") + "extrinsic/" + filename.c_str();
+	    datei.open(altfname);
+	    if (!datei){
+		throw ProjectError(string("Could neither find extrinsic config file ") + filename 
+				   + " nor " + altfname +".");
+	    }
 	}
 	datei >> comment;
 	readSourceRelatedCFG(datei);
@@ -2180,7 +2214,6 @@ void FeatureCollection::readGFFFile(const char *filename){
     /*
      * Read in the configuration file for extrinsic features.
      */    
-    readExtrinsicCFGFile();
     int predictionStart, predictionEnd;
     try {
       predictionStart = Properties::getIntProperty( "predictionStart" ) - 1;

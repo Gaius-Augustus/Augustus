@@ -93,7 +93,7 @@ vector<Double> Constant::head2tail_ovlp;
 vector<Double> Constant::head2head_ovlp;
 vector<Double> Constant::tail2tail_ovlp;
 unsigned Constant::temperature = 0; // heating the distribution for sampling, 0=cold, 7=hottest
-
+bool Constant::softmasking = false;
 bool inCRFTraining = false;
 
 // moved here from hints.cc

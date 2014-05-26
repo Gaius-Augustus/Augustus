@@ -226,6 +226,7 @@ HINTSFILE_KEY,
 "sample",
 "scorediffweight", // temp
 SINGLESTRAND_KEY,
+"softmasking",
 "speciesfilenames",
 "start",
 "stop",
@@ -354,7 +355,7 @@ void Properties::init( int argc, char* argv[] ){
     if (configPath[configPath.size()-1] != '/')
 	configPath += '/';  // append slash if neccessary
 
-    // Does the directory actually exist?
+    // does the directory actually exist?
     struct stat buffer;
     if( stat(configPath.c_str(), &buffer) == -1 || !S_ISDIR(buffer.st_mode))
 	throw ProjectError(configPath + " is not a directory. Could not locate directory " CFGPATH_KEY ".");
@@ -402,7 +403,7 @@ void Properties::init( int argc, char* argv[] ){
     // read in the other parameters, command line parameters have higher priority
     // than those in the config files
     arg = argc;
-    while( arg > 1 ){
+    while ( arg > 1 ){
         arg--;
  	string argstr(argv[arg]);
 	if (argstr.substr(0,2) != "--")
@@ -490,22 +491,21 @@ void Properties::init( int argc, char* argv[] ){
     }
 
     // expand the extrinsicCfgFile filename in case it is specified
-    // TODO: expand automatically to EXTRINSIC_SUBDIR if not found in current
-    //       then automatically take default file if it is not found there either
-    if (hasProperty(EXTRFILE_KEY)){    
-	string& filename =  properties[EXTRFILE_KEY];
-	filename = expandHome(filename);
-    }
+    if (hasProperty(EXTRFILE_KEY))
+	properties[EXTRFILE_KEY] = expandHome(properties[EXTRFILE_KEY]);
+
     // expand hintsfilename
-    if (hasProperty(HINTSFILE_KEY)){
-	string& filename = properties[HINTSFILE_KEY];
-	filename = expandHome(filename);
-	properties[EXTRINSIC_KEY]="true";
+    Properties::assignProperty("softmasking", Constant::softmasking);
+    if (hasProperty(HINTSFILE_KEY) || Constant::softmasking){
+	if (hasProperty(HINTSFILE_KEY)){
+	    string& filename = properties[HINTSFILE_KEY];
+	    filename = expandHome(filename);
+	    properties[EXTRINSIC_KEY] = "true";
+	}
 	if (!hasProperty(EXTRFILE_KEY)) {
-	    string& cfgFileName = properties[EXTRFILE_KEY];
-	    cfgFileName = configPath + EXTRINSIC_SUBDIR + "extrinsic.cfg";
+	    properties[EXTRFILE_KEY] = configPath + EXTRINSIC_SUBDIR + "extrinsic.cfg";
 #ifdef DEBUG
-	    cerr << "# No extrinsicCfgFile given. Take default file: "<< cfgFileName<< endl;
+	    cerr << "# No extrinsicCfgFile given. Taking default file: "<< cfgFileName<< endl;
 #endif
 	}
     }

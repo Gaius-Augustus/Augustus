@@ -350,7 +350,7 @@ char* GBProcessor::getSequence( GBPositions& pos ) throw( GBError) {
             while( isstrm.get( c ) && c != '\n' )
                 if( isalpha( c ) ){
 		    if (count++ < pos.seqlength) 
-			*seqp++ = tolower(c);
+			*seqp++ = c; // tolower now postponed to after softmasking detection
 		    else {
 			char buffer [140];
 			sprintf (buffer, "Sequence was longer than the expected %d bp. Please compare the line 'source 1..X' with the actual sequence length.", pos.seqlength);

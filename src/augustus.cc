@@ -153,15 +153,18 @@ int main( int argc, char* argv[] ){
 	    if (verbosity) 
 	      cout << "# No extrinsic information on sequences given." << endl;
 	  }
-	  if (verbosity && extrinsicfilename) {
-	    cout << "# reading in the file " << extrinsicfilename << " ..." << endl;
-	    extrinsicFeatures.readGFFFile(extrinsicfilename);
-	  
-	    if (verbosity) 
-	      cout << "# Have extrinsic information about " << extrinsicFeatures.getNumSeqsWithInfo()
-		   << " sequences (in the specified range). " << endl;
+	  if (extrinsicfilename || Constant::softmasking) {
+	      extrinsicFeatures.readExtrinsicCFGFile();
+	      if (extrinsicfilename) {
+		  if (verbosity)
+		      cout << "# reading in the file " << extrinsicfilename << " ..." << endl;
+		  extrinsicFeatures.readGFFFile(extrinsicfilename);
+		  if (verbosity) 
+		      cout << "# Have extrinsic information about " << extrinsicFeatures.getNumSeqsWithInfo()
+			   << " sequences (in the specified range). " << endl;
+	      }
 	  }
-
+	  
 	  if (verbosity > 1) 
 	      cout << "# Initialising the parameters using config directory " << Properties::getProperty(CFGPATH_KEY) << " ..." << endl;
 	  BaseCount::init();

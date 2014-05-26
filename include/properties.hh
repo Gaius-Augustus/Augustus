@@ -29,7 +29,7 @@
 #endif
 
 
-#define NUMPARNAMES 232
+#define NUMPARNAMES 233
 
 #define GENEMODEL_KEY "genemodel"
 #define SINGLESTRAND_KEY "singlestrand"
@@ -223,7 +223,10 @@ class Properties{
 
     
     static string getConfigFilename(string name) {
-	return properties[CFGPATH_KEY] + getProperty(name);
+	if (name != "")
+	    return properties[CFGPATH_KEY] + getProperty(name);
+	else
+	    return properties[CFGPATH_KEY];
     }
 
     // assign value only if key is present

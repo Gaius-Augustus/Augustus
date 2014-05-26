@@ -262,7 +262,8 @@ MemSeqAccess::MemSeqAccess(){
 	extrinsicfilename = NULL; 
 	cout << "# No extrinsic information given." << endl;
     }
-    if (extrinsicfilename) {
+    if (extrinsicfilename || Constant::softmasking) {
+	extrinsicFeatures.readExtrinsicCFGFile();
 	cout << "# reading in the file " << extrinsicfilename << " ..." << endl;
 	extrinsicFeatures.readGFFFile(extrinsicfilename);
 

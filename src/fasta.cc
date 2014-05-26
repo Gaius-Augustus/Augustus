@@ -64,7 +64,7 @@ void readOneFastaSeq(filtering_istream &ifstrm, char* &sequence, char* &name, in
     int pos = 0;
     for (int i=0; i < seq.length(); i++) 
 	if (isalpha( seq[i] ))
-	    sequence[pos++] = tolower(seq[i]);
+	    sequence[pos++] = seq[i]; // tolower now postponed to after softmasking detection
     sequence[pos] = '\0';
     length = pos;
     if (length == 0){
@@ -114,7 +114,7 @@ void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, in
     int pos = 0;
     for (int i=0; i < seq.length(); i++) 
 	if (isalpha( seq[i] ))
-	    sequence[pos++] = tolower(seq[i]);
+	    sequence[pos++] = seq[i]; // tolower now postponed to after softmasking detection
     sequence[pos] = '\0';
     length = pos;
     if (length == 0){
