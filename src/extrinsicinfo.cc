@@ -429,7 +429,7 @@ Feature *SequenceFeatureCollection::getFeatureListOvlpingRange(Bitmask featurety
  */
 Feature *SequenceFeatureCollection::getFeatureListContaining(Bitmask featuretypes, int position, Strand strand) {
     if (!collection->hasHintsFile)
-      return NULL;
+	return NULL;
     Feature *hitlist = NULL;
     list<Feature>::iterator a, e;
     for (int type=0; type<NUM_FEATURE_TYPES; type++) {
@@ -1729,6 +1729,7 @@ void SequenceFeatureCollection::prepare(AnnoSequence *annoseq, bool print){
 		pos = end+1;
 	    }
 	}
+	collection->hasHintsFile = true; // this is used as an indicator to apply malus
     }
     // turn whole sequence to lowercase characters
     for (unsigned pos = 0; pos < annoseq->length; pos++)

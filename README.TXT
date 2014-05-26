@@ -134,7 +134,7 @@ scripts
 
 Install dependencies:
    These dependencies are new since AUGUSTUS 3.0 to allow .gz file input and automatic location of the config directory.
-   - Boost C++ Library: libboost-iostreams-dev, libboost-system-dev
+   - Boost C++ Libraries: libboost-iostreams-dev, libboost-system-dev
      (on Ubuntu: sudo apt-get install libboost-iostreams-dev libboost-system-dev)
    - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager.
 
@@ -146,6 +146,7 @@ in common.mk then the following additional dependencies are required:
 
    - GNU scientific library (for eigen decompositions of matrices, sudo apt-get install libgsl0-dev)
    - mysql++ (sudo apt-get install libmysql++-dev)
+   - Boost C++ Library: libboost-graph-dev (at least version 1.45 from Nov. 2010)
 
 > cd src
 > make

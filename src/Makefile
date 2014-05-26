@@ -6,8 +6,8 @@ CC	= g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt 
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
-#        - In the current version, the order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -O2 ${CFLAGS} # -DDEBUG -g -ggdb -static
+#        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
+CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -DDEBUG -g -ggdb -static
 
 ifdef COMPGENEPRED
 	CFLAGS += -std=c++0x -DCOMPGENEPRED
@@ -30,11 +30,7 @@ PROGR	= augustus etraining consensusFinder curve2hints prepareAlign fastBlockSea
 INFO    = cflags
 
 ifdef MYSQL
-#   	 - copy mysqlpplib to a path that is registered in /etc/ld.so.conf, in most Unix-like OS,they
-#          are /usr/lib/, /lib/,/usr/share/lib/.If you you want indicate your own lib-path but have no
-#          authority to run 'ldconfig',copy 'mysqlpplib' to '/your/run-time lib/path/',compile Augustus
-#          with '-Wl,rpath=/your/run-time lib/path/'.
-# replace RUNTIME_LIBPATH with your own run-time libpath if mysqlpp is not installed system-wide, e.g.
+# replace RUNTIME_LIBPATH with your own run-time libpath if mysql++ is not installed system-wide, e.g.
 # RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib 
 RUNTIME_LIBPATH = 
 INCLS	+= -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
