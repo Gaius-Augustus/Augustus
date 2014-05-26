@@ -517,6 +517,15 @@ augustus --species=human --hintsfile=../examples/hints.gff --extrinsicCfgFile=..
 As an alternative to giving the option --extrinsicCfgFile you can replace augustus/config/extrinsic.cfg with the appropriate file, as this 
 file is read by default when the option --extrinsicCfgFile is not given.
 
+The preferable way to use repeat information is via softmasking in which the bases in repeat regions are lower case
+(a,c,g,t instead of A,C,G,T) in the input. Running augustus like this
+
+augustus --species=human --softmasking=1
+
+will interpret masked regions as evidence against exons (nonexonparts hints with a default bonus of 1.15). This is slightly more accurate
+than hard masking (with N's), which looses information. On human augustus is also more than twice as fast with softmasking=1 than on hard
+masked sequence.
+
 Explanation of the file format of the extrinsic.cfg file.
 
 The gff/gtf file containint the hints must contain somewhere in the last
