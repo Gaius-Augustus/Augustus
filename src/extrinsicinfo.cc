@@ -2035,7 +2035,7 @@ void FeatureCollection::readExtrinsicCFGFile(){
 	datei.open(filename.c_str());
 	if (!datei) { // second priority, look in config/extrinsic folder
 	    string altfname = Properties::getConfigFilename("") + "extrinsic/" + filename.c_str();
-	    datei.open(altfname);
+	    datei.open(altfname.c_str());
 	    if (!datei){
 		throw ProjectError(string("Could neither find extrinsic config file ") + filename 
 				   + " nor " + altfname +".");
