@@ -693,7 +693,7 @@ sub evalsnsp {
 	#print "argument:$argument\n";
 	# check if accuracy has already been computed for this parameter combination
 	if (exists($storedsnsp{$argument})){
-	    print "retreive accuracy from previous computation";
+	    print "retrieve accuracy from previous computation";
 	    return @{$storedsnsp{$argument}};
 	}
     }

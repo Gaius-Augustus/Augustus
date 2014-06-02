@@ -26,7 +26,7 @@ $usage .= "  --maxintronlen=n   alignments with longer gaps are discarded (defau
 $usage .= "  --maxQgaplen=n     maximum length of gap in query (cDNA) sequence (default 5)\n";
 $usage .= "  --ep_cutoff=n      this many bp are cut off of each exonpart hint at end of alignment (default 10)\n";
 $usage .= "  --source=s         source identifier (default 'E')\n";
-$usage .= "  --intronsonly      only retreive intron hints (e.g. because the exon(part) hints are retreived by converting to a wig track, default: off)\n";
+$usage .= "  --intronsonly      only retrieve intron hints (e.g. because the exon(part) hints are retreived by converting to a wig track, default: off)\n";
 $usage .= "  --nomult           do not summarize multiple identical intron hints to a single one\n";
 $usage .= "  --remove_redundant only keep the strongest hint for a region (default false)\n";
 $usage .= "  --maxcoverage=n    maximal number of hints at a given position. A high value causes long running time of\n";
