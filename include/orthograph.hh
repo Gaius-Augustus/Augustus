@@ -74,7 +74,7 @@ public:
      * leaf nodes are assigned to weights.
      */
     double dualdecomp(ExonEvo &evo,vector< list<Gene> *> &genelist, int gr_ID, int T, double c);  //main routine
-    double treeMAPInf(ExonEvo &evo);  //vertical problem
+    double treeMAPInf(ExonEvo &evo, int &numInconsistent);  //vertical problem
     double globalPathSearch(); // horizontal problem
     double getStepSize(double c,int t, int v);    // specifies a sequence of steps
     double makeConsistent(ExonEvo &evo);

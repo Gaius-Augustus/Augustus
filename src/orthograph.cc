@@ -554,33 +554,41 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
     /*
      * initialization
      */
-    vector<double> v_duals;                                  // vector of dual values
-    vector<double> v_primals;                                // vector of primal values
+    double old_dual = 0.0; // dual value of the previous iteration
     double best_dual = std::numeric_limits<double>::max();   // best dual value so far
     double best_primal = -std::numeric_limits<double>::max(); // best primal value so far
+
+    double initial_gap = std::numeric_limits<double>::max(); // initial duality gap (in 0-the iteration)
+
+    double delta = 0.0; // step size
+
     // number of iterations prior to t where the dual value increases
     int v = 0;
     cout.precision(10);
-    cout<<"iter\tstep_size\tprimal\tdual"<<endl;
+    cout<<"iter\tstep_size\tprimal\tdual\t#inconsistencies"<<endl;
     for(int t=0; t<T;t++){
-	double delta = getStepSize(c,t,v); //get next step size
 	double path_score = globalPathSearch();
-	double current_dual = path_score + treeMAPInf(evo);   // dual value of the t-th iteration 
+	int numInconsistent = 0;
+	double current_dual = path_score + treeMAPInf(evo,numInconsistent);   // dual value of the t-th iteration 
 	best_dual = min(best_dual,current_dual);              // update upper bound
-	if(!v_duals.empty()){  // update v
-	    if(v_duals.back() > current_dual)
+	if( (t >= 1) && (old_dual > current_dual) )  // update v
 		v++;
-	}
-	v_duals.push_back(current_dual);
 	double current_primal = path_score + makeConsistent(evo); // primal value of the t-the iteration
-	v_primals.push_back(current_primal);
 	if(best_primal < current_primal){
 	    best_primal = current_primal;
 	    buildGeneList(genelist); // save new record
 	}
-	cout<<t<<"\t"<<delta<<"\t"<<current_primal<<"\t"<<current_dual<<endl;
+	if(t == 0)
+	    initial_gap = current_dual - current_primal;
+
+	cout<<t<<"\t"<<delta<<"\t"<<current_primal<<"\t"<<current_dual<<"\t"<<numInconsistent<<endl;
+
+	if(numInconsistent == 0 || abs(best_dual - best_primal) < 1e-10) // exact solution is found
+	    break;
+
+	// determine new step size
+	delta = getStepSize(c,t,v);
 	// updated weights
-	bool isConsistent=true;
 	for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(hects->orthoex[pos]){
@@ -589,7 +597,6 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
 		    bool h = node->label;
 		    bool v = hects->labels[pos];
 		    if(v != h){  //shared nodes are labelled inconsistently in the two subproblems
-			isConsistent=false;
 			double weight = delta*(v-h);
 			//update weights
 			node->addWeight(weight);
@@ -598,10 +605,8 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
 		}
 	    }
 	}
-	if(isConsistent || abs(best_dual - best_primal) < 1e-8)
-	    break;
+	old_dual = current_dual;
     }
-    double initial_gap = v_duals.front() - v_primals.front();
     double best_gap = abs(best_dual - best_primal);
     double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
     cout<<"dual decomposition reduced initial duality gap of "<<initial_gap<<" to "<<best_gap<<" (to "<<perc_gap<<"%)"<<endl;
@@ -625,7 +630,7 @@ double OrthoGraph::getStepSize(double c, int t, int v){
     }
  }
 
-double OrthoGraph::treeMAPInf(ExonEvo &evo){
+double OrthoGraph::treeMAPInf(ExonEvo &evo, int &numInconsistent){
 
     double score=0;
     double k =evo.getPhyloFactor(); //scaling factor 
@@ -634,6 +639,11 @@ double OrthoGraph::treeMAPInf(ExonEvo &evo){
 	PhyloTree temp(*tree);
 	Evo *evo_base = &evo;
 	score += temp.MAP(hects->labels, hects->weights, evo_base, k);
+	for(int pos=0; pos < hects->orthonode.size(); pos++){
+            if(hects->orthonode[pos] && hects->orthonode[pos]->label != hects->labels[pos])
+                numInconsistent++;
+        }
+
     }
     return score;
 }
