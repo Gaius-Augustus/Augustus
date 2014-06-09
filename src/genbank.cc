@@ -23,8 +23,10 @@
 // standard C/C++ includes
 #include <iostream>
 
+#ifdef ZIPINPUT
 using boost::iostreams::filtering_istream;
 using boost::iostreams::gzip_decompressor;
+#endif
 
 GBProcessor::GBProcessor(string filename) :
     gbs(filename)
@@ -538,6 +540,7 @@ GBSplitter::GBSplitter( string fname ) : ftype(unknown) {
 	//ifstrm.ios::rdbuf(cin.rdbuf());
 	//ftype = fasta;
     }
+#ifdef ZIPINPUT
     // deflate if gzipped
     boost::iostreams::filtering_istream zin;
     try {  
@@ -555,6 +558,10 @@ GBSplitter::GBSplitter( string fname ) : ftype(unknown) {
 	zin.push(ifstrm);
     }
     boost::iostreams::copy(zin, sin);
+#else
+    // only normal file input available
+    sin << ifstrm.rdbuf();
+#endif
     determineFileType();
 }
 
@@ -566,9 +573,9 @@ GBSplitter::~GBSplitter( ){
 
 
 void GBSplitter::determineFileType(){
+    char wrongChar=' ';
     ftype = unknown;
     sin >> ws;
-    // char wrongChar=' ';
 
     // check whether it could be genbank format
     // search for at least one LOCUS and ORIGIN at the beginning of a line
@@ -576,8 +583,40 @@ void GBSplitter::determineFileType(){
     sin >> goto_line_after( "ORIGIN" );
     if (sin)
 	ftype = genbank;
-    else 
-	ftype = fasta;
+    else {
+	// check, whether it is FASTA or plain sequence
+	// only letters allowed in the sequence part, except for the end of the line
+	bool whiteSpaceSeen;
+	sin.clear();
+	sin.seekg(0, ios::beg);
+	string line;
+	bool haveWrongChar=false;
+	while (sin && !haveWrongChar) {
+	    getline(sin, line);
+	    if (line[0]!='>') {
+		whiteSpaceSeen=false;
+		for (int i=0; i < line.length() && !haveWrongChar; i++) 
+		    if (isspace(line[i]))
+			whiteSpaceSeen = true;
+		    else if (!isalpha(line[i]) && whiteSpaceSeen){
+			haveWrongChar = true;
+			wrongChar = line[i];
+		    }
+	    }
+	}
+	if (!haveWrongChar)
+	    ftype = fasta;
+	
+	sin.clear();
+	sin.seekg(0, ios::beg);
+    }
+    if (ftype == unknown) {
+     	string errmsg = "GBProcessor::determineFileType(): Couldn't determine input file type. Found bad character '";
+	errmsg += wrongChar;
+     	errmsg += "'";
+     	throw GBError(errmsg);
+    }
+
     sin.clear();
     sin.seekg(0, ios::beg);
 }
