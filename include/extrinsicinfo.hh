@@ -212,7 +212,7 @@ public:
     list<AltGene> *joinGenesFromPredRuns(list<list<AltGene> *> *genesOfRuns, int maxtracks, bool uniqueCDS);
     void sortIncompGroupsOfGroups(); // sort by pointers, for '==' operator of lists
     set<HintGroup*> *getCausingGroups(PredictionRun &pr);
-    void prepare(AnnoSequence *annoseq, bool print);
+    void prepare(AnnoSequence *annoseq, bool print, bool withEvidence=true);
     void prepareLocalMalus(const char* dna); // precompute tables for computing a local exonpart/UTRpart/CDSpart malus later
     int numZeroCov(int start, int end, int type, Strand strand);
     static void initHintedSplicesites(string ssList);

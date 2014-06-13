@@ -95,6 +95,7 @@ vector<Double> Constant::tail2tail_ovlp;
 unsigned Constant::temperature = 0; // heating the distribution for sampling, 0=cold, 7=hottest
 bool Constant::softmasking = false;
 bool inCRFTraining = false;
+bool Constant::dbhints = false;
 
 // moved here from hints.cc
 const int power2id[31] = {1,2,4,8,16,32,64,128,
@@ -328,10 +329,6 @@ void Constant::init(){
     Properties::assignProperty("contentmodels", contentmodels);
     Properties::assignProperty("exoncands", exoncands);
     Properties::assignProperty("min_intron_len", min_intron_len);
-    Properties::assignProperty("treefile", treefile);
-    Properties::assignProperty("speciesfilenames", speciesfilenames);
-    Properties::assignProperty("dbaccess", dbaccess);
-    Properties::assignProperty("alnfile", alnfile);
     Properties::assignProperty("orthoexons", orthoexons);
     Properties::assignProperty("maxOvlp", maxOvlp);
     Properties::assignProperty("temperature", temperature);
@@ -345,12 +342,6 @@ void Constant::init(){
     }     	
     LLDouble::setTemperature(temperature);
  
-    if (!alnfile.empty() && !treefile.empty() && (!speciesfilenames.empty() || !dbaccess.empty())){
-      MultSpeciesMode = true;
-    } else if (!(alnfile.empty() && treefile.empty() && speciesfilenames.empty() && dbaccess.empty())){
-	throw ProjectError("In comparative gene prediction mode you must specify parameters alnfile, treefile and (speciesfilenames or dbaccess).\n\
-	In single species mode specify none of these parameters.\n");
-    }
 }
 
 int howOftenOccursIt(const char* haystack, const char* needle, const char *endhaystack){

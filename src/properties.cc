@@ -490,20 +490,41 @@ void Properties::init( int argc, char* argv[] ){
 	}
     }
 
+    // check whether multi-species mode is turn on or off
+
+    Properties::assignProperty("treefile", Constant::treefile);
+    Properties::assignProperty("speciesfilenames", Constant::speciesfilenames);
+    Properties::assignProperty("dbaccess", Constant::dbaccess);
+    Properties::assignProperty("alnfile", Constant::alnfile);
+    if (!Constant::alnfile.empty() && !Constant::treefile.empty() && (!Constant::speciesfilenames.empty() || !Constant::dbaccess.empty())){
+	Constant::MultSpeciesMode = true;
+    } else if (!(Constant::alnfile.empty() && Constant::treefile.empty() && Constant::speciesfilenames.empty() && Constant::dbaccess.empty())){
+	throw ProjectError("In comparative gene prediction mode you must specify parameters alnfile, treefile and (speciesfilenames or dbaccess).\n\
+         In single species mode specify none of these parameters.\n");
+    }
+
     // expand the extrinsicCfgFile filename in case it is specified
     if (hasProperty(EXTRFILE_KEY))
 	properties[EXTRFILE_KEY] = expandHome(properties[EXTRFILE_KEY]);
 
-    // expand hintsfilename
     Properties::assignProperty("softmasking", Constant::softmasking);
-    if (hasProperty(HINTSFILE_KEY) || Constant::softmasking){
+    Properties::assignProperty("dbhints", Constant::dbhints);
+    if(!Constant::MultSpeciesMode && Constant::dbhints){
+	Constant::dbhints=false;
+	cerr << "Warning: the option dbhints is only available in comparative gene prediction. Turned it off." << endl;
+    }
+
+    // expand hintsfilename
+    if (hasProperty(HINTSFILE_KEY) || Constant::softmasking || Constant::dbhints){
 	if (hasProperty(HINTSFILE_KEY)){
 	    string& filename = properties[HINTSFILE_KEY];
 	    filename = expandHome(filename);
 	    properties[EXTRINSIC_KEY] = "true";
 	}
-	if (!hasProperty(EXTRFILE_KEY)) {
+	if (!hasProperty(EXTRFILE_KEY)) {	    
 	    properties[EXTRFILE_KEY] = configPath + EXTRINSIC_SUBDIR + "extrinsic.cfg";
+	    if (Constant::MultSpeciesMode)
+		properties[EXTRFILE_KEY] = configPath + EXTRINSIC_SUBDIR + "cgp.extrinsic.cfg";
 #ifdef DEBUG
 	    cerr << "# No extrinsicCfgFile given. Taking default file: "<< cfgFileName<< endl;
 #endif

@@ -14,6 +14,7 @@
 // project includes
 #include "extrinsicinfo.hh"
 #include "randseqaccess.hh"
+#include "phylotree.hh"
 
 class CompGenePred {
 public:
@@ -22,6 +23,7 @@ public:
 
     void start();
     RandSeqAccess *rsa;
+    PhyloTree tree;
 };
 
 #endif  // _COMPGENEPRED

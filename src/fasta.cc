@@ -159,7 +159,7 @@ void readOneFastaSeq(ifstream &ifstrm, char* &sequence, char* &name, int &length
     int pos = 0;
     for (int i=0; i < seq.length(); i++) 
         if (isalpha( seq[i] ))
-            sequence[pos++] = tolower(seq[i]);
+            sequence[pos++] = seq[i];// tolower now postponed to after softmasking detection
     sequence[pos] = '\0';
     length = pos;
     if (length == 0){

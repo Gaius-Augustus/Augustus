@@ -26,11 +26,16 @@
 #include <ctime>
 #include <sys/stat.h>
 
-CompGenePred::CompGenePred(){
+CompGenePred::CompGenePred() : tree(Constant::treefile) {
+
+    vector<string> speciesNames;
+    tree.getSpeciesNames(speciesNames);
+    
+    
     if (Constant::Constant::dbaccess.empty()) { // give priority to database in case both exist
-        rsa = new MemSeqAccess();
+        rsa = new MemSeqAccess(speciesNames);
     } else {
-        rsa = new DbSeqAccess();
+        rsa = new DbSeqAccess(speciesNames);
     }
 }
 
@@ -38,10 +43,6 @@ void CompGenePred::start(){
 
     // read in alignment, determine orthologous sequence fragments
     
-#ifdef DEBUG
-    cout << "reading in the phylogenetic tree" << endl;
-#endif
-    PhyloTree tree(Constant::treefile);  // has to be initialized before OrthoGraph
     ExonEvo evo;
     vector<double> branchset;
     tree.getBranchLengths(branchset);
@@ -173,10 +174,8 @@ void CompGenePred::start(){
     // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
     // printCodonMatrix(P);
     GeneMSA::setCodonEvo(&codonevo);
-  
     vector<string> speciesNames;
     OrthoGraph::tree->getSpeciesNames(speciesNames);
-    rsa->setSpeciesNames(speciesNames);
     PhyloTree::setRSA(rsa);
     if (0) {
 	vector<string> seqtuple(5,"");
@@ -220,22 +219,23 @@ void CompGenePred::start(){
                     break;
                 } else {
 		    seqRanges[s] = *as; // DNA seqs will be reused when omega is computed AND gene lists are processed for output  
-		   
+
+		    list<Gene> *alltranscripts = NULL;
+
+		    if (!noprediction){
+			SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
+			sfc->prepare(as, false, rsa->withEvidence(speciesNames[s]));
+			namgene.doViterbiPiecewise(*sfc, as, bothstrands); // sampling
+			alltranscripts = namgene.getAllTranscripts();
+			orthograph.sfcs[s] = sfc;
+		    }
 		    // this is needed for IntronModel::dssProb in GenomicMSA::createExonCands
                     namgene.getPrepareModels(as->sequence, as->length); 
 		    
 		    // identifies exon candidates in the sequence for species s
                     geneRange->createExonCands(s, as->sequence);
 		    list<ExonCandidate*> *additionalExons = geneRange->getExonCands(s);
-		    list<Gene> *alltranscripts = NULL;
-
-		    if (!noprediction){
-			SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
-			sfc->prepare(as, false);
-			namgene.doViterbiPiecewise(*sfc, as, bothstrands); // sampling
-			alltranscripts = namgene.getAllTranscripts();
-			orthograph.sfcs[s] = sfc;
-		    }
+		    
 		     if (alltranscripts){
 			// cout << "building Graph for " << speciesNames[s] << endl;
 			// build datastructure for graph representation

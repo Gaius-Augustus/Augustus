@@ -36,10 +36,11 @@ class SpeciesCollection{
 public:
     FeatureCollection* getFeatureCollection(string speciesname);
     int getGroupID(string speciesname);
+    void addSpeciesToGroup(string skey, int groupID);
     bool withEvidence(string speciesname){return getGroupID(speciesname)>0;}
     // reading in the extrinsicCfgFile and hintsFile
     void readGFFFile(const char* filename); 
-    void readExtrinsicCFGFile();
+    void readExtrinsicCFGFile(vector<string> &speciesNames);
 private:
     map<int,FeatureCollection> speciesColl; // maps the group number to a FeatureCollection
     map<string,int> groupIDs; // maps the speciesname to the group number
@@ -61,6 +62,7 @@ public:
     int getMaxSnameLen(); // for neat indentation into right column
     int getIdx(string speciesname);
     void printStats();
+    bool withEvidence(string speciesname) {return extrinsicFeatures.withEvidence(speciesname);}
     virtual AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand) =  0;
     AnnoSequence* getSeq(size_t speciesIdx, string chrName, int start, int end, Strand strand) {
 	return getSeq(getSname(speciesIdx), chrName, start, end, strand);
@@ -82,7 +84,7 @@ protected:
  */
 class MemSeqAccess : public RandSeqAccess {
 public:
-    MemSeqAccess();
+    MemSeqAccess(vector<string> s);
     ~MemSeqAccess(){} // TODO: delete DNA sequences from 'sequences' map
     AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
     SequenceFeatureCollection* getFeatures(string speciesname, string chrName, int start, int end, Strand strand);
@@ -97,7 +99,7 @@ private:
  */
 class DbSeqAccess : public RandSeqAccess {
 public:
-    DbSeqAccess();
+    DbSeqAccess(vector<string> s = vector<string>());
     ~DbSeqAccess(){};
     AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
     // the following function is for the BGI-style database

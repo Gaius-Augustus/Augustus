@@ -1703,8 +1703,8 @@ set<HintGroup*> *SequenceFeatureCollection::getCausingGroups(PredictionRun &pr){
  * SequenceFeatureCollection::prepare
  * Prepare for use in predictions.
  */
-void SequenceFeatureCollection::prepare(AnnoSequence *annoseq, bool print){
-    if (Constant::softmasking){
+void SequenceFeatureCollection::prepare(AnnoSequence *annoseq, bool print, bool withEvidence){
+    if (Constant::softmasking && withEvidence){
 	// check whether RM is a source key
 	char *chr = annoseq->sequence;
 	unsigned pos = 0;
@@ -2160,6 +2160,10 @@ void FeatureCollection::readSourceRelatedCFG(istream& datei){
     for (int i=0; i<numSources; i++)
  	cout << sourceKey[i] << " ";
     cout << endl;
+    // check whether RM is a source key in case that softmasking is enabled
+    if(Constant::softmasking && !skeyExists("RM"))
+       throw ProjectError("When the softmasking option is turned on, the source RM must be specified in the extrinsic config file.\n");
+
     // read in other source dependent configurations
     streampos bufpos = datei.tellg();
     datei >> goto_line_after("[SOURCE-PARAMETERS]") >> comment;
