@@ -21,9 +21,12 @@
 // standard C/C++ includes
 #include <list>
 #include <fstream>
+
+#ifdef ZIPINPUT
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/copy.hpp>
+#endif
 
 #define GBMAXLINELEN 8192
 

@@ -11,13 +11,13 @@ CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -DDEB
 
 ifdef ZIPINPUT
 	CFLAGS += -DZIPINPUT
+	LIBS    = -lboost_iostreams
 endif
 
 ifdef COMPGENEPRED
 	CFLAGS += -std=c++0x -DCOMPGENEPRED
 endif
 INCLS	= -I../include
-LIBS    = -lboost_iostreams -lboost_system
 
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \

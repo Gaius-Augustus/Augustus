@@ -18,9 +18,11 @@
 #include <sstream>
 #include <string>
 #include <string.h>
-#include <boost/iostreams/filtering_stream.hpp>
 
 using namespace std;
+
+#ifdef ZIPINPUT
+#include <boost/iostreams/filtering_stream.hpp>
 using boost::iostreams::filtering_istream;
 
 /*
@@ -72,6 +74,7 @@ void readOneFastaSeq(filtering_istream &ifstrm, char* &sequence, char* &name, in
 	sequence = NULL;
     }
 }
+#endif
 
 /*
  * This is an exact copy of above.
