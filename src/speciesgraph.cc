@@ -318,7 +318,7 @@ void SpeciesGraph::printSampledExon(Node *node){
     cout.rdbuf(coutbuf); //reset to standard output again 
 }
 
-NodeType SpeciesGraph::getPredType(StateType type, double begin, double end){
+NodeType SpeciesGraph::getPredType(StateType type, int begin, int end){
 
     int frame = mod3(stateReadingFrames[type]);
 

@@ -115,7 +115,7 @@ private:
     Node* getAuxilaryNode(NodeType type, int pos, map<string,Node*> &auxiliaryNodes) const; // get an auxilary node (returns NULL if node does not exists)
     void addAuxilaryEdge(Node *pred, Node *succ); // add an auxilary edge to the graph
     Node* addAuxNodeToLine(NodeType type, int pos, vector< vector<Node*> >&neutralLines); // add an auxilary node to one of the neutral lines if it does not exist already
-    NodeType getPredType(StateType type, double begin, double end) ;  // get the type of gene feature that precedes an exon
+    NodeType getPredType(StateType type, int begin, int end) ;  // get the type of gene feature that precedes an exon
     NodeType getSuccType(StateType type) ;    // get the type of gene feature that succeeds an exon 
     list<NodeType> getPredTypes(Node *node) ;  // same as above, but includes stop codon types 
     list<NodeType> getSuccTypes(Node *node) ;    // same as above, but includes stop codon types
