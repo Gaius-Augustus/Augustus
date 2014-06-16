@@ -13,11 +13,13 @@
 
 #include <iostream>
 #include <fstream>
+
+#ifdef ZIPINPUT
 #include <boost/iostreams/filtering_stream.hpp>
-
 using boost::iostreams::filtering_istream;
-
 void readOneFastaSeq(filtering_istream &ifstrm, char* &sequence, char* &name, int &length);
+#endif
+
 void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, int &length);
 void readOneFastaSeq(std::ifstream &ifstrm, char* &sequence, char* &name, int &length);
 
