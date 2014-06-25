@@ -64,7 +64,10 @@ class Prediction {
            return 'training.genome_file.no_genome_file'
         } else if (!(obj.genome_ftp_link == null) && !(obj.genome_file == null)) {
            return 'training.genome_file.not_both'
-        } //else if ((obj.project_id == null) && (obj.archive_file == null)) {
+        }else if (obj.genome_ftp_link =~ /dropbox/) {
+           return 'prediction.genome_ftp_link.no_dropbox'
+        }
+	 //else if ((obj.project_id == null) && (obj.archive_file == null)) {
         //   return 'prediction.genome_file.archive_or_id'
         //}
       })
@@ -75,7 +78,10 @@ class Prediction {
       est_file(nullable:true, blank:true, validator: { val, obj ->
          if (!(obj.est_file == null) && !(obj.est_ftp_link == null)) {
             return 'training.est_file.not_both'
-         }
+         } else if (obj.est_ftp_link =~ /dropbox/) {
+                return 'prediction.genome_ftp_link.no_dropbox'
+            }
+
       })
       est_ftp_link(nullable:true, blank:true, url:true)
       hint_file(nullable:true, blank:true)

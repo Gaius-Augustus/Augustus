@@ -214,7 +214,7 @@ failed to execute: No such file or directory<br></b> This error occurs when not 
              <p>
              <ul>
                 <li>For <b>small files</b>, please click on the Browse-button and select a file on your harddrive.<br>If you experience a <i>Connection timeout</i> (because your file was too large for this type of upload), please use the option for large files!</li>
-                <li><b>Large files</b> can be retrieved from a <b>public</b> web link. Specify a valid ftp or http URL to your sequence file. Our server will fetch the file from the given address.</li>
+                <li><b>Large files</b> can be retrieved from a <b>public</b> web link. Specify a valid ftp or http URL to your sequence file. Our server will fetch the file from the given address. (<b>WebAUGUSTUS does not accept dropbox links!</b>)</li>
             </ul>
 	     </p>
 	    <p>

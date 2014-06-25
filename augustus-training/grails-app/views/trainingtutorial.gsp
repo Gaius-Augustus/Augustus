@@ -335,7 +335,7 @@ TACACGGAAATCAACGGCGGTGTCATAAGCGAG
              <p>
              <ul>
                 <li>For <b>small files</b>, please click on the <i>Choose File</i> or <i>Browse</i>-button and select a file on your harddrive.<br>If you experience a <i>Connection timeout</i> (because your file was too large for this type of upload - the size is browser dependent), please use the option for large files!</li>
-                <li><b>Large files</b> can be retrieved from a <b>public</b> web link. Deposit your sequence file at a http or ftp server and specify the valid URL to your sequence file in the training submission form. Our server will fetch the file from the given address upon job submission. (File size limit: currently 1 GB. Please contact us in case you want to upload a bigger genome file.) You will be notified by e-mail when the file upload from web-link is finished (i.e. you can delete the file from the public server after you received that e-mail).</li>
+                <li><b>Large files</b> can be retrieved from a <b>public</b> web link. Deposit your sequence file at a http or ftp server and specify the valid URL to your sequence file in the training submission form. Our server will fetch the file from the given address upon job submission. (File size limit: currently 1 GB. Please contact us in case you want to upload a bigger genome file, <b>links to dropbox are not supported by WebAUGUSTUS</b>.) You will be notified by e-mail when the file upload from web-link is finished (i.e. you can delete the file from the public server after you received that e-mail).</li>
             </ul>
 	     </p>
 	    <p>

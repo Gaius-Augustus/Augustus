@@ -127,6 +127,8 @@
 
 <p>Please read the <a href="../predictiontutorial.gsp">prediction tutorial</a> before submitting a job for the first time. Example data for this form is available <a href="../predictiontutorial.gsp#exampledata">here</a>. You may also use the button below to insert sample data. Please note that you will always need to enter the verification string at the bottom of the page, yourself, in order to submit a job!</p>
 
+<p><b>Current problem:</b> Regrettably, our server is currently connected to the internet via a rather unreliable connection. This may cause connection timeouts (caused by server side) when uploading big files. Please use the web link upload option, instead, if you experience such problems. We apologize for the inconvenience!</p>
+
            <g:actionSubmit action="fillSample" value="Fill in Sample Data" />
 
 
@@ -196,6 +198,8 @@
 'Brugia malayi (animal)', 
 'Caenorhabditis elegans (animal)', 
 'Callorhinchus milii (animal)', 
+'Camponotus floridanus (animal)',
+'Danio rerio (animal)',
 'Drosophila melanogaster (animal)', 
 'Gallus gallus domesticus (animal)',
 'Heliconius melpomene (animal)',
@@ -243,7 +247,9 @@
 'Schizosaccharomyces pombe (fungus)',
 'Ustilago maydis (fungus)',
 'Verticillium longisporum (fungus)',
-'Yarrowia lipolytica (fungus)'
+'Yarrowia lipolytica (fungus)',
+'Escherichia coli (bacterium)',
+'Thermoanaerobacter tengcongensis (bacterium)'
 ]}" 
 value="${fieldValue(bean:predictionInstance,field:'species_select')}" noSelection="${['null':'Select One...']}"/>
 

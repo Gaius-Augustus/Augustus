@@ -64,7 +64,7 @@ class PredictionController {
 
         // other variables
 	def accession_id
-
+	def prokaryotic = false // flag to determine whether augustus should be run in prokaryotic mode
 	// human verification:
 	def simpleCaptchaService
 
@@ -541,6 +541,10 @@ class PredictionController {
 				predictionInstance.project_id = "rhizopus_oryzae"
 			}else if(predictionInstance.species_select == "Saccharomyces cerevisiae (fungus)"){
 				predictionInstance.project_id = "saccharomyces_cerevisiae_S288C"
+			}else if(predictionInstance.species_select == "Camponotus floridanus (animal)"){
+			      	predictionInstance.project_id = "camponotus_floridanus"
+                        }else if(predictionInstance.species_select == "Danio rerio (animal)"){
+			        predictionInstance.project_id = "zebrafish"
 			}else if(predictionInstance.species_select == "Schizosaccharomyces pombe (fungus)"){
 				predictionInstance.project_id = "schizosaccharomyces_pombe"
 			}else if(predictionInstance.species_select == "Ustilago maydis (fungus)"){
@@ -557,7 +561,13 @@ class PredictionController {
 				predictionInstance.project_id = "rhodnium"
 			}else if(predictionInstance.species_select == "Conidiobolus coronatus (fungus)"){
 				predictionInstance.project_id = "Conidiobolus_coronatus"
-			}
+			}else if(predictionInstance.species_select == "Escherichia coli (bacterium)"){
+			        predictionInstance.project_id = "E_coli_K12"
+				prokaryotic = true
+			}else if(predictionInstance.species_select == "Thermoanaerobacter tengcongensis (bacterium)"){
+                                predictionInstance.project_id = "thermoanaerobacter_tengcongensis"
+				prokaryotic = true
+                        }
 			if(predictionInstance.project_id != null && predictionInstance.species_select != "null"){
 				species = predictionInstance.project_id
 				confirmationString = "${confirmationString}AUGUSTUS parameter project identifier: ${predictionInstance.project_id}\n"
@@ -1074,7 +1084,7 @@ class PredictionController {
 					overRideUtrFlag = 0;
 				}
 			}else if(overRideUtrFlag==0 && predictionInstance.utr == true){
-				confirmationString = "${confirmationString}Server set UTR prediction: false [UTR parameters missing or conflict with allows gene structure!]\n"
+				confirmationString = "${confirmationString}Server set UTR prediction: false [UTR parameters missing or conflict with allowed gene structure!]\n"
 				radioParameterString = " --UTR=off"
 			}else{
 				radioParameterString = " --UTR=off"
@@ -1150,6 +1160,14 @@ class PredictionController {
 				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User enabled to ignore strand conflicts.\n"
 			}
 			confirmationString = "${confirmationString}Ignore conflictes with other strand: ${predictionInstance.ignore_conflicts}\n"
+			// prokaryotic predictions (log information only)
+			if(prokaryotic == false){
+				logDate = new Date()
+                                logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User selected a eukaryotic parameter set.\n"
+			}else{
+                                logDate = new Date()
+                                logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - User selected an experimental prokaryotic parameter set.\n";
+			}
 			// send confirmation email and redirect
 			if(!predictionInstance.hasErrors() && predictionInstance.save()){
 				// save new variables in database

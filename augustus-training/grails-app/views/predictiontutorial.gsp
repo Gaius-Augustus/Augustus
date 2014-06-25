@@ -305,6 +305,12 @@ Top of page
 <td><font size="1">Callorhinchus milli</font></td><td><font size="1">elephant_shark</font></td><td><font size="1">Tereza Manousaki and Shigehiro Kuraku</font></td>
 </tr>
 <tr>
+<td><font size="1">Camponotus floridanus</font></td><td><font size="1">camponotus_floridanus</font></td><td><font size="1">Shishir K Gupta</font></td>
+</tr>
+<tr>
+<td><font size="1">Danio rerio</font></td><td><font size="1">zebrafish</font></td><td><font size="1"></font></td>
+</tr>
+<tr>
 <td><font size="1">Drosophila melanogaster</font></td><td><font size="1">fly</font></td><td><font size="1"></font></td>
 </tr>
 <tr>
@@ -449,7 +455,16 @@ Top of page
 <td><font size="1">Verticillium longisporum</font></td><td><font size="1">verticillium_longisporum1</font></td><td><font size="1">Katharina Hoff and Mario Stanke</font></td>
 </tr>
 <tr>
-<td><font size="1">Yarrowia lipolytica</font></td><td><font size="1">yarrowia_lipolytica</font></td><td><font size="1">Jason Stajich</font></td>
+<td><font size="1">Yarrowia lipolytica</font></td><td><font size="1">yarrowia_lipolytica</font></td><td><font size="1">Jason Stajich, modified by Katharina Hoff</font></td>
+</tr>
+<tr>
+<td><font size="1"><b><i>Bacteria (experimental parameters)</i></b></font></td><td><font size="1"><b></b></font></td><td><font size="1"><b></b></font></td>
+</tr>
+<tr>
+<td><font size="1">Escherichia coli</font></td><td><font size="1">E_coli_K12</font></td><td><font size="1">Katharina Hoff</font></td>
+</tr>
+<tr>
+<td><font size="1">Thermoanaerobacter tencongensis</font></td><td><font size="1">thermoanaerobacter_tengcongensis</font></td><td><font size="1">Katharina Hoff</font></td>
 </tr>
 </font>
 </table>
@@ -518,7 +533,7 @@ TACACGGAAATCAACGGCGGTGTCATAAGCGAG
              <p>
              <ul>
                 <li>For <b>small files</b>, please click on the <i>Choose File</i> or <i>Browse</i>-button and select a file on your harddrive.<br>If you experience a <i>Connection timeout</i> (because your file was too large for this type of upload - the size is browser dependent), please use the option for large files!</li>
-                <li><b>Large files</b> can be retrieved from a <b>public</b> web link. Deposit your sequence file at a http or ftp server and specify the valid URL to your sequence file in the training submission form. Our server will fetch the file from the given address upon job submission. (File size limit: currently 1 GB. Please contact us in case you want to upload a bigger genome file.) You will be notified by e-mail when the file upload from web-link is finished (i.e. you can delete the file from the public server after you received that e-mail).</li>
+                <li><b>Large files</b> can be retrieved from a <b>public</b> web link. Deposit your sequence file at a http or ftp server and specify the valid URL to your sequence file in the training submission form. Our server will fetch the file from the given address upon job submission. (File size limit: currently 1 GB. Please contact us in case you want to upload a bigger genome file, <b>links to dropbox are not supported by WebAUGUSTUS</b>.) You will be notified by e-mail when the file upload from web-link is finished (i.e. you can delete the file from the public server after you received that e-mail).</li>
             </ul>
 	     </p>
 	    <p>

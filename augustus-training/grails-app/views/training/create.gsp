@@ -143,6 +143,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
 		    <p>Please read the <a href="../trainingtutorial.gsp">training tutorial</a> before submitting a job for the first time. Example data for this form is available <a href="../trainingtutorial.gsp#exampledata">here</a>. You may also use the button below to insert sample data. Please note that you will always need to enter the verification string at the bottom of the page, yourself, in order to submit a job!</p>
 		<g:actionSubmit action="fillSample" value="Fill in Sample Data" />
  		    <p>We strongly recommend that you specify an <b>E-mail address</b>! Please read the <a href="../help.gsp#email"><small>Help</small></a> page before submitting a job without e-mail address! You have to give a <b>species name</b>, and a <b>genome file</b>!</p>
+		    <p><b>Current problem:</b> Regrettably, our server is currently connected to the internet via a rather unreliable connection. This may cause connection timeouts (caused by server side) when uploading big files. Please use the web link upload option, instead, if you experience such problems. We apologize for the inconvenience!</p>
                     <table>
                         <tbody>
                         

@@ -63,19 +63,27 @@ class Training {
                 return 'training.protein_file.not_struct'
             } else if (!(obj.protein_ftp_link == null) && !(obj.struct_file == null)) {
                 return 'training.protein_file.not_struct'
-            }
+            } else if (obj.genome_ftp_link =~ /dropbox/) {
+	        return 'training.genome_ftp_link.no_dropbox'
+	    }
        })
        genome_ftp_link(nullable:true, blank:true, url:true)
        est_file(nullable:true, blank:true, validator: { val, obj ->
            if (!(obj.est_file == null) && !(obj.est_ftp_link == null)) {
                 return 'training.est_file.not_both'
+           } else if (obj.est_ftp_link =~ /dropbox/) {
+                return 'training.est_ftp_link.no_dropbox'
            }
+
+	   
        })
        est_ftp_link(nullable:true, blank:true, url:true)
        protein_file(nullable:true, blank:true, validator: { val, obj ->
            if (!(obj.protein_file == null) && !(obj.protein_ftp_link == null)) {
                 return 'training.protein_file.not_both'
-           }
+           }else if (obj.protein_ftp_link =~ /dropbox/) {
+                return 'training.protein_ftp_link.no_dropbox'
+            }
        })
        struct_file(nullable:true, blank:true)
        protein_ftp_link(nullable:true, blank:true, url:true)
