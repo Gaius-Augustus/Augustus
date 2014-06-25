@@ -9,7 +9,7 @@
 5. OPTIONAL ARGUMENTS
 6. RETRIEVING GENOMES FROM A MYSQL DATABASE
 7. USING HINTS
-
+8. SQLITE ACCESS
 
 1. INTRODUCTION
 ----------------
@@ -326,3 +326,38 @@ b) retrieving hints from database
    call AUGUSTUS with --dbhints enabled:
 
 > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=saeuger,localhost,cgp,AVglssd8 --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
+
+
+8. SQLITE ACCESS
+------------------
+
+I addition to the Mysql, sequences and hints can be accessed using an SQLite database.
+Other than the Mysql database that stores the full sequences, the SQLite database only stores
+file offsets to achieve random access to the genome files.
+
+a) Installation
+
+   To enable access to an SQLITE database, download the latest SQLite source code from http://www.sqlite.org/download.html/
+   (tested with  SQLite 3.8.5 ) and install as follows:
+
+   > tar zxvf sqlite-autoconf-3080500.tar.gz
+   > cd sqlite-autoconf-3080500
+   > ./configure
+   > sudo make
+   > sudo make install
+
+   If you encounter an "SQLite header and source version mismatch" error, try
+
+   > ./configure --disable-dynamic-extensions --enable-static --disable-shared
+
+b) create an SQLite database and populate it
+   Use the program 'load2sqlitedb' in the AUGUSTUS repository.
+   Run load2sqlitedb with the parameter "--help" to view the usage instructions
+
+   > load2sqlitedb --help
+
+   example code for loading a genome and a hints file to the database chicken.db
+   (always load the genome file first, before loading hints):
+
+   > load2sqlitedb --species=chicken --dbfile=chicken.db genome.fa
+   > load2sqlitedb --species=chicken --dbfile=chicken.db hints.gff
