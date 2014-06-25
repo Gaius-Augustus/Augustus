@@ -148,7 +148,6 @@ int main( int argc, char* argv[] ){
 	    Statement stmt2(&db);
 	    stmt2.prepare("INSERT INTO seqnames (speciesid,seqname) VALUES(?1,?2);"); // prepared statement for inserting fasta headers
 	    	    
-
 	    while (ifstrm){
 		char *name = NULL;
 		readFastaHeader(ifstrm, name);
@@ -280,17 +279,14 @@ int main( int argc, char* argv[] ){
 
 void printUsage(){
     cout << "usage:\n\
-load2sqlitedb [parameters] --species=SPECIES --dbfile=database.db fastafile namefile\n\
+load2sqlitedb [parameters] --species=SPECIES --dbfile=database.db fastafile\n\
 \n\
 fastafile refers to a genome file in FASTA format or a hints file in GFF format\n\
-namefile contains the seqnames as they appear in the FASTA headers, one per line\n\
 SPECIES is the same identifier as is used in the treefile and alnfile parameters to augustus.\n\
 \n\
-database.db is the name of the database.\n\
+database.db is the name of the database that will be opened or created if it does not exist already.\n\
 When storing genomes/hints of multiple organisms call this program repeatedly for each one.\n\
-A single table with the structure\n\
-\
-is created.\n\
+A single table with the structure is created.\n\
 \n\
 parameters:\n\
 --help        print this usage info\n\
