@@ -12,6 +12,7 @@
 
 #include "hints.hh"
 #include "properties.hh"
+#include "projectio.hh"
 
 #include <iostream>
 #include <cstdlib>
@@ -23,6 +24,25 @@ const char* featureTypeNames[NUM_FEATURE_TYPES]= {"start", "stop", "ass", "dss",
 
 bool isSignalType(FeatureType type){
     return (type == startF || type == stopF || type == assF || type == dssF || type == tssF || type == ttsF);
+}
+
+bool isGFF(ifstream &ifstrm){
+    ifstrm.seekg(0);
+    // skip comments  
+   ifstrm >> comment >> ws;
+    if(!(ifstrm))
+        return false;
+    streampos spos = ifstrm.tellg();
+    string line;
+    getline(ifstrm,line);
+    size_t pos = line.find('\t');
+    if (pos != string::npos) {
+        ifstrm.clear();
+        ifstrm.seekg(spos);
+        return true;
+    }
+    // line not tap separated   
+    return false;
 }
 
 ostream& operator<<(ostream&out, Feature& feature){

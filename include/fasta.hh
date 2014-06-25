@@ -22,5 +22,7 @@ void readOneFastaSeq(filtering_istream &ifstrm, char* &sequence, char* &name, in
 
 void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, int &length);
 void readOneFastaSeq(std::ifstream &ifstrm, char* &sequence, char* &name, int &length);
+void readFastaHeader(std::ifstream &ifstrm, char* &name);
+bool isFasta(std::ifstream &ifstrm);
 
 #endif   //  _FASTA_HH

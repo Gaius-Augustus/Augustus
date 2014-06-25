@@ -51,6 +51,7 @@ extern const char* featureTypeNames[NUM_FEATURE_TYPES];
 // nonirpart:   part of genic region
 
 bool isSignalType(FeatureType type);
+bool isGFF(ifstream &istrm);
 
 class Feature {
 public:

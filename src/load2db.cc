@@ -52,9 +52,6 @@ int getSeqNr(char* seqname,int speciesid);
 int insertSeqName(char* seqname,int speciesid);
 int insertSeq(string sequence, char* name, int length, int speciesid);
 void insertHint(Feature &f, string species);
-//bool isFasta(filtering_istream &zin);
-bool isFasta(ifstream &ifstrm);
-bool isGFF(ifstream &ifstrm);
 void checkConsistency(); // checks consistency of the 'hints' data with the 'genomes' data
 void removeDuplicates();
 
@@ -483,45 +480,6 @@ int insertSeqName(char* seqname,int speciesid){
 	cerr <<"Please delete sequence, before reloading"<<endl;
 	exit(1);
     }
-}
-
-/*bool isFasta(filtering_istream &zin){
-    zin >> ws;
-    if (!(zin))
-	return false;
-    char c = zin.peek();
-    if (c == '>')
-	return true;
-    return false;
-    }*/
-
-bool isFasta(ifstream &ifstrm){
-    ifstrm >> ws;
-    if (!(ifstrm))
-	return false;
-    char c = ifstrm.peek();
-    if (c == '>')
-	return true;
-    return false;
-}
-
-bool isGFF(ifstream &ifstrm){
-    ifstrm.seekg(0);
-    // skip comments
-    ifstrm >> comment >> ws;
-    if(!(ifstrm))
-	return false;
-    streampos spos = ifstrm.tellg();
-    string line;
-    getline(ifstrm,line);
-    size_t pos = line.find('\t');
-    if (pos != string::npos) {
-	ifstrm.clear();
-	ifstrm.seekg(spos);
-	return true;
-    }
-    // line not tap separated
-    return false;
 }
 
 void checkConsistency(){

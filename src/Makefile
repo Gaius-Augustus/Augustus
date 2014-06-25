@@ -43,6 +43,11 @@ CFLAGS  += -DAMYSQL
 PROGR   += load2db getSeq
 endif
 
+ifdef SQLITE
+LIBS 	+= -lsqlite3
+CFLAGS	+= -DSQLITE
+PROGR   += load2sqlitedb
+endif
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
@@ -83,6 +88,10 @@ prepareAlign: pp_prepare_align.cc
 load2db: load2db.cc fasta.o hints.o types.o properties.o lldouble.o
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp load2db ../bin/
+
+load2sqlitedb: load2sqlitedb.cc fasta.o hints.o types.o properties.o lldouble.o sqliteDB.o
+	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	cp load2sqlitedb ../bin/
 
 getSeq: getSeq.cc $(OBJS) $(DUMOBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
@@ -635,6 +644,10 @@ contTimeMC.o: \
 alignment.o: \
 	../include/alignment.hh \
 	alignment.cc
+
+sqliteDB.o: \
+	../include/sqliteDB.hh \
+	sqliteDB.cc
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

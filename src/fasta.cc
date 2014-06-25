@@ -129,6 +129,30 @@ void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, in
 void readOneFastaSeq(ifstream &ifstrm, char* &sequence, char* &name, int &length){
     string line;
     string seq("");
+    readFastaHeader(ifstrm,name);
+    if (!ifstrm)
+        return;
+    while(ifstrm && ifstrm.peek( ) != '>'){
+        if (getline(ifstrm, line))
+            seq.append(line);
+    }
+    sequence = new char[seq.length()+1];
+     
+    // now filter out any characters that are not letters
+    int pos = 0;
+    for (int i=0; i < seq.length(); i++) 
+        if (isalpha( seq[i] ))
+            sequence[pos++] = seq[i];// tolower now postponed to after softmasking detection
+    sequence[pos] = '\0';
+    length = pos;
+    if (length == 0){
+        delete sequence;
+        sequence = NULL;
+    }
+}
+
+void readFastaHeader(ifstream &ifstrm, char* &name){
+    string line;
     char   c;
     static int unnamedcount=1;
     // skip empty lines
@@ -150,23 +174,14 @@ void readOneFastaSeq(ifstream &ifstrm, char* &sequence, char* &name, int &length
         name = new char[14]; // at most 100000 sequences
         sprintf(name, "unnamed-%d", unnamedcount);
     }
-    if (!ifstrm)
-        return;
-    while(ifstrm && ifstrm.peek( ) != '>'){
-        if (getline(ifstrm, line))
-            seq.append(line);
-    }
-    sequence = new char[seq.length()+1];
-     
-    // now filter out any characters that are not letters
-    int pos = 0;
-    for (int i=0; i < seq.length(); i++) 
-        if (isalpha( seq[i] ))
-            sequence[pos++] = seq[i];// tolower now postponed to after softmasking detection
-    sequence[pos] = '\0';
-    length = pos;
-    if (length == 0){
-        delete sequence;
-        sequence = NULL;
-    }
+}
+
+bool isFasta(ifstream &ifstrm){
+    ifstrm >> ws;
+    if (!(ifstrm))
+        return false;
+    char c = ifstrm.peek();
+    if (c == '>')
+        return true;
+    return false;
 }
