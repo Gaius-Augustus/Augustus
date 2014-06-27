@@ -35,7 +35,34 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
     if (Constant::Constant::dbaccess.empty()) { // give priority to database in case both exist
         rsa = new MemSeqAccess(speciesNames);
     } else {
-        rsa = new DbSeqAccess(speciesNames);
+	string dbaccess = Constant::dbaccess;
+	if (dbaccess.find(',') != string::npos){ // assuming mysql access
+	    cout << "# assuming a MySQL database" << endl;
+#ifdef AMYSQL
+	    rsa = new MysqlAccess(speciesNames);
+#else
+	    throw ProjectError("Database access not possible with this compiled version. Please recompile with flag MYSQL.");
+#endif
+
+	}
+	else if(dbaccess.find('.') != string::npos){ // assuming sqlite access
+	    cout << "# assuming an SQLite database" << endl;
+	    if(Constant::speciesfilenames.empty())
+		throw ProjectError("Missing parameter speciesfilenames.");
+#ifdef SQLITE
+	    rsa = new SQLiteAccess(dbaccess.c_str(), speciesNames);
+#else
+	    throw ProjectError("Database access not possible with this compiled version. Please recompile with flag SQLITE.");
+#endif
+	    
+	}
+	else{
+	    throw ProjectError("cannot determine the type of database.\n\
+        for MySQL access, pass a comma separated list of connection details\n\
+        --dbaccess=dbname,host,user,passwd\n\
+        for SQLite access, pass the database file (file extension has to be .db)\n\
+        --dbaccess=dbname.db\n");
+	}
     }
 }
 

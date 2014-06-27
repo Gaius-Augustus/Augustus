@@ -17,11 +17,19 @@
 #include <iostream>
 #include <stdlib.h>
 
-void SQLiteDB::connect(const char* filename){
+void SQLiteDB::open(OpenMode mode){
+    
+    int flag = SQLITE_OPEN_READONLY;
+    if(mode == rw)
+	flag = SQLITE_OPEN_READWRITE;
+    else if(mode == crw)
+	flag = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 
-    cout <<  "Trying to open database " << filename << endl;
-    if(sqlite3_open(filename, &database) != SQLITE_OK){ 
-	throw error();   
+    cout <<  "Trying to open database " << dbfile << endl;
+    if(sqlite3_open_v2(dbfile, &database, flag, NULL) != SQLITE_OK){ 
+	cerr << "Could not open database "<< dbfile << endl;
+	cerr << error() << endl;
+	exit(1);
     }
 }
 
@@ -102,7 +110,7 @@ void SQLiteDB::createTableHints(){
          frame TEXT CHECK( frame IN ('0','1','2','.') ) DEFAULT '.', \
          priority INTEGER DEFAULT -1, \
          grp TEXT DEFAULT '', \
-         mult INTEGER DEFAULT 1, \
+         mult INTEGER CHECK( mult >= 1) DEFAULT 1, \
          esource TEXT NOT NULL, \
          FOREIGN KEY (speciesid,seqnr) REFERENCES seqnames(speciesid,seqnr));";
     exec(sql);
@@ -129,6 +137,25 @@ void SQLiteDB::createTableFeatureTypes(){
     }
     endTransaction();
 }
+
+int SQLiteDB::getSpeciesID(string species){
+
+    Statement stmt(this);
+    stmt.prepare("SELECT speciesid FROM speciesnames WHERE speciesname=?1;");
+    stmt.bindText(1,species.c_str());
+    if(stmt.nextResult()){
+        int id = stmt.intColumn(0);
+        stmt.finalize();
+        return id;
+    }
+    else{
+        string sql = "INSERT INTO speciesnames (speciesname) VALUES (\"" + species + "\")";
+        exec(sql.c_str());
+        return lastInsertID();
+    }
+}
+
+
 
 void Statement::prepare(const char *sql){
 

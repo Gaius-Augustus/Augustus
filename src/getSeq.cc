@@ -20,7 +20,6 @@
 
 using namespace std;
 
-mysqlpp::Connection con;
 int fold=60; // line width of output sequence
 
 void printUsage();
@@ -42,6 +41,7 @@ int main( int argc, char* argv[] ){
     static struct option long_options[] = {
 	{"dbaccess",1, 0, 'c'},
         {"species",1, 0, 's'},
+	{"speciesfilenames", 1, 0,'f'},
         {"seq",1, 0, 'q'},
         {"start",1, 0, 'a'},
         {"end",1, 0, 'b'},
@@ -50,7 +50,7 @@ int main( int argc, char* argv[] ){
         {0,0,0,0}
     };
     int option_index = 0;
-    while ((c = getopt_long(argc, argv, "c:s:q:a:b:rh", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "c:s:f:q:a:b:rh", long_options, &option_index)) != -1) {
         switch(c)
             {
 	    case 'c':
@@ -59,6 +59,9 @@ int main( int argc, char* argv[] ){
             case 's':
                 species = optarg;
                 break;
+	    case 'f':
+		Constant::speciesfilenames = optarg;
+		break;
             case 'q':
                 seqname = optarg;
                 break;
@@ -102,11 +105,35 @@ int main( int argc, char* argv[] ){
 	cerr << "Not a genomic interval. Typo in the start or end coordinate?" << endl;
 	exit(1);
     }
+    
+    DbSeqAccess *rsa=NULL;
 
-    DbSeqAccess rsa;
+    if (Constant::dbaccess.find(',') != string::npos){ // assuming mysql access
+	cerr << "assuming a MySQL database" << endl;
+#ifdef AMYSQL
+	rsa = new MysqlAccess;
+#else
+	cerr << "Database access not possible with this compiled version. Please recompile with flag MYSQL." << endl;
+	exit(1);
+#endif
+	
+    }
+    else if(Constant::dbaccess.find('.') != string::npos){ // assuming sqlite access
+	cerr << "assuming an SQLite database" << endl;
+	if(Constant::speciesfilenames.empty()){
+	    cerr << "Missing parameter speciesfilenames." << endl;
+	    exit(1);
+	}
+#ifdef SQLITE
+	rsa = new SQLiteAccess(Constant::dbaccess.c_str());
+#else
+	cerr <<"Database access not possible with this compiled version. Please recompile with flag SQLITE." << endl;
+	exit(1);
+#endif
+    }
 
     try{
-	AnnoSequence *annoseq = rsa.getSeq(species, seqname, start-1, end-1, strand);
+	AnnoSequence *annoseq = rsa->getSeq(species, seqname, start-1, end-1, strand);
 	if(annoseq){
 	    if(annoseq->offset + annoseq->length < end ){
 		if(end < intMax){
@@ -116,7 +143,7 @@ int main( int argc, char* argv[] ){
 		cerr <<"Retrieving "<< seqname << ":" << start << "-" << end << endl;
 	    }
 	    // print fasta header
-	    cout << ">"<< seqname << ":" << start << "-" << end;
+	    cout << ">"<< seqname << " " << start << " " << end;
 	    if(strand == plusstrand)
 		cout << " +" <<endl;
 	    else

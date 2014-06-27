@@ -757,6 +757,20 @@ inline char* newstrcpy(const string& s) {
     return newstrcpy(s, s.length());
 }
 
+inline void strip_newlines(char* p) {
+    char* q = p;
+    while (p != 0 && *p != '\0') {
+        if (*p == '\n') {
+            p++;
+            *q = *p;
+        } 
+        else {
+            *q++ = *p++;
+        }
+    }
+    *q = '\0';
+}
+
 char *getRandomDNA(int len);
 
 /* for 0 <= q <=1 get the q-th quantile of the values store in

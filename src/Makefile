@@ -45,8 +45,9 @@ endif
 
 ifdef SQLITE
 LIBS 	+= -lsqlite3
+OBJS	+= sqliteDB.o
 CFLAGS	+= -DSQLITE
-PROGR   += load2sqlitedb
+PROGR   += load2sqlitedb getSeq
 endif
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info

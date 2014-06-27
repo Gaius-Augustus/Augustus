@@ -499,8 +499,12 @@ void Properties::init( int argc, char* argv[] ){
     if (!Constant::alnfile.empty() && !Constant::treefile.empty() && (!Constant::speciesfilenames.empty() || !Constant::dbaccess.empty())){
 	Constant::MultSpeciesMode = true;
     } else if (!(Constant::alnfile.empty() && Constant::treefile.empty() && Constant::speciesfilenames.empty() && Constant::dbaccess.empty())){
-	throw ProjectError("In comparative gene prediction mode you must specify parameters alnfile, treefile and (speciesfilenames or dbaccess).\n\
-         In single species mode specify none of these parameters.\n");
+	throw ProjectError("In comparative gene prediction mode you must specify parameters alnfile, treefile\n\
+        and one of the following combinations of parameters\n\n\
+        - dbaccess (retrieving genomes from a MySQL db)\n\
+        - speciesfilenames and dbaccess (retrieving genomes from an SQLite db)\n\
+        - speciesfilenames (retrieving genomes from flat files)\n\n\
+        In single species mode specify none of these parameters.\n");
     }
 
     // expand the extrinsicCfgFile filename in case it is specified

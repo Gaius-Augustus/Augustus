@@ -20,22 +20,35 @@ using namespace std;
 class SQLiteDB;
 class Statement;
 
-class SQLiteDB
-{
- public:
-    SQLiteDB() : database(NULL) {}
-    ~SQLiteDB(){}
+/* database opening flags:
+ * ro (read-only mode, throws and error if db does not exist, default flag)  
+ * rw (writing only possible if db is not write protected, throws and error if db does not exist) 
+ * crw (reading and writing, creates db if it does not exist)  
+ */
+enum OpenMode{ro,rw,crw};
+
+class SQLiteDB{
+public:
+    SQLiteDB(const char* f, OpenMode m=ro) : dbfile(f), database(NULL) {
+	open(m);
+    }
+    ~SQLiteDB(){
+	close();
+    }
     
     void connect(const char* filename);
     void close();
     void exec(const char *sql);
-
+    void open(OpenMode m);
+    
     // create tables
     void createTableGenomes();
     void createTableSpeciesnames();
     void createTableSeqnames();
     void createTableHints();
     void createTableFeatureTypes();
+    int getSpeciesID(string species);
+
     void beginTransaction();
     void endTransaction();
 
@@ -46,6 +59,7 @@ class SQLiteDB
     friend class Statement;
 
 private:
+    const char* dbfile;
     sqlite3 *database;
 };
 

@@ -23,6 +23,10 @@
 #include <mysql++.h>
 #endif
 
+#ifdef SQLITE
+#include "sqliteDB.hh"
+#endif
+
 /*
  * SpeciesCollection holds all extrinsic evidence given for the species.
  * It consists of a set of group specific FeatureCollections and
@@ -88,38 +92,12 @@ public:
     ~MemSeqAccess(){} // TODO: delete DNA sequences from 'sequences' map
     AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
     SequenceFeatureCollection* getFeatures(string speciesname, string chrName, int start, int end, Strand strand);
+    void open(){}
 private:
     map<string,string> filenames;
     map<string,char*> sequences;  //keys: speciesname:chrName values: dna sequence
 };
 
-/*
- * Random access to sequence segments through a database.
- * The sequences must be stored in a database.
- */
-class DbSeqAccess : public RandSeqAccess {
-public:
-    DbSeqAccess(vector<string> s = vector<string>());
-    ~DbSeqAccess(){};
-    AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
-    // the following function is for the BGI-style database
-    AnnoSequence* getSeq2(string speciesname, string chrName, int start, int end, Strand strand);
-    SequenceFeatureCollection* getFeatures(string speciesname, string chrName, int start, int end, Strand strand);  
-#ifdef AMYSQL
-    int split_dbaccess();
-    void connect_db(ostream& out=cout);
-    template<class T>  
-    AnnoSequence* getNextDBSequence(string charName, int start, int end, vector<T>& asm_query_region);
-    // template<class T>
-    // AnnoSequence* getDBSequenceList(string charName,int start,int end,vector<T>& asm_query_region);
-    template<class T>
-    int get_region_coord(int seq_region_id, int start, int end, vector<T>& asm_query_region);
-    string dbaccess;
-private:
-    mysqlpp::Connection con;
-    vector<string> db_information;
-#endif // AMYSQL
-};
 
 /*
  * read an input file of format:
@@ -128,5 +106,64 @@ private:
  * to a map
  */
 map<string,string> getFileNames (string listfile);
+
+
+/*
+ * Random access to sequence segments through a database.
+ * The sequences must be stored in a database.
+ */
+class DbSeqAccess : public RandSeqAccess {
+public:
+    virtual AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand)=0;
+    virtual SequenceFeatureCollection* getFeatures(string speciesname, string chrName, int start, int end, Strand strand)=0;  
+    virtual ~DbSeqAccess() {}
+
+protected:
+    DbSeqAccess(vector<string> s = vector<string>());
+    string dbaccess;
+
+};
+
+#ifdef AMYSQL
+class MysqlAccess : public DbSeqAccess {
+public:
+    MysqlAccess(vector<string> s = vector<string>()) : DbSeqAccess(s){
+	open();
+    }
+    ~MysqlAccess() {}
+    AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
+    // the following function is for the BGI-style database
+    AnnoSequence* getSeq2(string speciesname, string chrName, int start, int end, Strand strand);
+    SequenceFeatureCollection* getFeatures(string speciesname, string chrName, int start, int end, Strand strand);  
+    void open();
+    int split_dbaccess();
+    void connect_db(ostream& out=cout);
+    template<class T>  
+    AnnoSequence* getNextDBSequence(string charName, int start, int end, vector<T>& asm_query_region);
+    // template<class T>
+    // AnnoSequence* getDBSequenceList(string charName,int start,int end,vector<T>& asm_query_region);
+    template<class T>
+    int get_region_coord(int seq_region_id, int start, int end, vector<T>& asm_query_region);
+
+private:
+    mysqlpp::Connection con;
+    vector<string> db_information;
+};
+#endif // AMYSQL
+
+#ifdef SQLITE
+class SQLiteAccess : public DbSeqAccess {
+public:
+    SQLiteAccess(const char* f, vector<string> s = vector<string>()) : DbSeqAccess(s), db(f) {
+	filenames = getFileNames (Constant::speciesfilenames);
+    }
+    ~SQLiteAccess() {}
+    AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
+    SequenceFeatureCollection* getFeatures(string speciesname, string chrName, int start, int end, Strand strand);
+private:
+    SQLiteDB db;
+    map<string,string> filenames;
+};
+#endif // SQLITE
 
 #endif  // _RANDSEQACCESS

@@ -30,10 +30,8 @@
 using namespace std;
 
 int chunksize = 50000;
-SQLiteDB db;
 
 void printUsage();
-int getSpeciesID(string species);
 
 /*
  * main
@@ -47,7 +45,7 @@ int main( int argc, char* argv[] ){
 
     static struct option long_options[] = {
         {"species", 1, 0, 's'},
-        {"dbfile", 1, 0, 'd'},
+        {"dbaccess", 1, 0, 'd'},
         {"help", 0, 0, 'h'},
 	{"chunksize", 1, 0, 'c'},
         {NULL, 0, NULL, 0}
@@ -97,7 +95,7 @@ int main( int argc, char* argv[] ){
 	exit(1);
     }
     if (dbfile.empty()){
-	cerr << "Missing database file. dbfile is a required parameter." << endl;
+	cerr << "Missing database file. dbaccess is a required parameter." << endl;
 	printUsage();
 	exit(1);
     }
@@ -113,21 +111,17 @@ int main( int argc, char* argv[] ){
     }
 
     // open database
-    try {
-	db.connect(dbfile.c_str());
-    } catch (const char *m) {
-	cerr << "Could not open or create database:" << endl << m << endl;
-	exit(1);
-    }
+    SQLiteDB db(dbfile.c_str(),crw);
     try {
 	db.createTableSpeciesnames();
 	db.createTableSeqnames();
 
 	ifstream ifstrm;
 	ifstrm.open(fastafile.c_str());
-	if( !ifstrm )
-	    throw string("Could not open input file \"") + fastafile + "\"!";
-
+	if( !ifstrm ){
+	    cerr << "Could not open input file " << fastafile << endl;
+	    exit(1);
+	}
 	// if input file is in Fasta format, try to load sequences
 	if(isFasta(ifstrm)){
 	    cout << "Looks like " << fastafile << " is in fasta format." << endl;
@@ -138,7 +132,7 @@ int main( int argc, char* argv[] ){
 
 	    int seqCount = 0, chunkCount = 0;
 	    unsigned int lenCount = 0;
-	    int speciesid = getSpeciesID(species);
+	    int speciesid = db.getSpeciesID(species);
 	
 	    db.beginTransaction();
 
@@ -218,8 +212,8 @@ int main( int argc, char* argv[] ){
 
 	    Statement stmt(&db);
 	    stmt.prepare("INSERT INTO hints (speciesid,seqnr,source,start,end,score,type,strand,frame,priority,grp,mult,esource) \
-		       select speciesid,seqnr,?3,?4,?5,?6,?7,coalesce(?8,'.'),coalesce(?9,'.'),coalesce(?10,-1),coalesce(?11,'') \
-                       ,coalesce(?12,1),?13 from speciesnames natural join seqnames \
+		       select speciesid,seqnr,?3,?4,?5,?6,?7,?8,?9,?10,?11 \
+                       ,?12,?13 from speciesnames natural join seqnames \
                        where speciesname=?1 and seqname=?2;");
 	    
 	    while(ifstrm){
@@ -236,16 +230,15 @@ int main( int argc, char* argv[] ){
 		switch (f.strand) {
 		case plusstrand: stmt.bindText(8,"+"); break;
 		case minusstrand: stmt.bindText(8,"-"); break;
-		default : break;
+		default : stmt.bindText(8,".");
 		}
 		if (f.frame != -1)
 		    stmt.bindText(9,itoa(f.frame).c_str());
-		if (f.priority >= 0)
-		    stmt.bindInt(10,f.priority);
-		if (f.groupname != "")
-		    stmt.bindText(11,f.groupname.c_str());
-		if (f.mult > 1)
-		    stmt.bindInt(12,f.mult);
+		else
+		    stmt.bindText(9,".");
+		stmt.bindInt(10,f.priority);
+		stmt.bindText(11,f.groupname.c_str());
+		stmt.bindInt(12,f.mult);
 		stmt.bindText(13,f.esource.c_str());
 		
 		stmt.step();
@@ -279,7 +272,7 @@ int main( int argc, char* argv[] ){
 
 void printUsage(){
     cout << "usage:\n\
-load2sqlitedb [parameters] --species=SPECIES --dbfile=database.db fastafile\n\
+load2sqlitedb [parameters] --species=SPECIES --dbaccess=database.db fastafile\n\
 \n\
 fastafile refers to a genome file in FASTA format or a hints file in GFF format\n\
 SPECIES is the same identifier as is used in the treefile and alnfile parameters to augustus.\n\
@@ -296,23 +289,6 @@ parameters:\n\
               the complete - potentially much longer - chromosome. (<= 1000000, default " << chunksize << ")\n\
 \n\
 example:\n\
-     load2sqlitedb --species=chicken --dbfile=chicken.db chickengenome.fa\n\
-     load2sqlitedb --species=chicken --dbfile=chicken.db chickenhints.gff\n";
-}
-
-int getSpeciesID(string species){
-
-    Statement stmt(&db);
-    stmt.prepare("SELECT speciesid FROM speciesnames WHERE speciesname=?1;");
-    stmt.bindText(1,species.c_str());
-    if(stmt.nextResult()){
-	int id = stmt.intColumn(0);
-	stmt.finalize();
-	return id;
-    }
-    else{
-	string sql = "INSERT INTO speciesnames (speciesname) VALUES (\"" + species + "\")";
-	db.exec(sql.c_str());
-	return db.lastInsertID();
-    }
+     load2sqlitedb --species=chicken --dbaccess=chicken.db chickengenome.fa\n\
+     load2sqlitedb --species=chicken --dbaccess=chicken.db chickenhints.gff\n";
 }

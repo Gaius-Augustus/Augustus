@@ -375,31 +375,23 @@ map<string,string> getFileNames (string listfile){
 }
 
 DbSeqAccess::DbSeqAccess(vector<string> s){
+    setSpeciesNames(s);
+  
+    if(Constant::dbhints ||  Constant::softmasking ){
+	cout << "read in the configuration file for extrinsic features" << endl;
+	extrinsicFeatures.readExtrinsicCFGFile(speciesNames);
+    }
+}
+
 #ifdef AMYSQL
+void MysqlAccess::open(){
     dbaccess = Constant::dbaccess;
     split_dbaccess();
     if(Constant::MultSpeciesMode)
 	connect_db();
     else
 	connect_db(cerr);
-    
-    setSpeciesNames(s);
-    
-    if(Constant::dbhints ||  Constant::softmasking ){
-	cout << "read in the configuration file for extrinsic features" << endl;
-	extrinsicFeatures.readExtrinsicCFGFile(speciesNames);
-    }
-#else
-    throw ProjectError("Database access not possible with this compiled version. Please recompile with flag MYSQL.");
-#endif
 }
-
-#ifndef AMYSQL
-AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
-    return NULL;
-    // empty dummy for compiler, error message is created in constructor
-}
-#else // AMYSQL
 
 /*
  * retrieve sequence directly from table genomes(seqid, dnaseq, seqname, start, end, species)
@@ -410,7 +402,7 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
  *                                   |   start                       end
  *                             g[0].start                          | 
  */
-AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
+AnnoSequence* MysqlAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
     mysqlpp::StoreQueryResult store_res;
     string dna, querystr;
     mysqlpp::Query query = con.query();
@@ -481,7 +473,7 @@ AnnoSequence* DbSeqAccess::getSeq(string speciesname, string chrName, int start,
  * retrieve sequence directly from 'dna' table. The components id and order in which
  * they are assembled can be found in table 'assembly'.
  */
-AnnoSequence* DbSeqAccess::getSeq2(string speciesname, string chrName, int start, int end, Strand strand){
+AnnoSequence* MysqlAccess::getSeq2(string speciesname, string chrName, int start, int end, Strand strand){
     mysqlpp::StoreQueryResult store_res;
     AnnoSequence* annoseq = NULL;
     int coord_id, seq_region_id, seq_region_length; 
@@ -492,7 +484,7 @@ AnnoSequence* DbSeqAccess::getSeq2(string speciesname, string chrName, int start
     store_res = detect_coord_id.store();
     try {
 	if(store_res.num_rows() == 0 ){
-	    cerr << "DbSeqAccess::getSeq : chrName\"" << chrName
+	    cerr << "MysqlAccess::getSeq : chrName\"" << chrName
 		 << "\" does not exist in database, retrieval of sequence failed." << endl;
 	} else {
 	    seq_region_id = store_res[0][0];
@@ -541,14 +533,8 @@ AnnoSequence* DbSeqAccess::getSeq2(string speciesname, string chrName, int start
     }
     return annoseq;
 }
-#endif // AMYSQL 
-#ifndef AMYSQL
-SequenceFeatureCollection* DbSeqAccess::getFeatures(string speciesname, string chrName, int start, int end, Strand strand){
-    return NULL;
-    // empty dummy for compiler, error message is created in constructor
-}
-#else // AMYSQL
-SequenceFeatureCollection* DbSeqAccess::getFeatures(string speciesname, string chrName, int start, int end, Strand strand){
+
+SequenceFeatureCollection* MysqlAccess::getFeatures(string speciesname, string chrName, int start, int end, Strand strand){
 
     FeatureCollection* fc = extrinsicFeatures.getFeatureCollection(speciesname);
     SequenceFeatureCollection* sfc = new SequenceFeatureCollection(fc);
@@ -562,7 +548,7 @@ SequenceFeatureCollection* DbSeqAccess::getFeatures(string speciesname, string c
 	query.storein(h);
 	
 	if(h.empty()){
-	    cout << "no hints retrieved"<<endl;
+	    //cout << "no hints retrieved"<<endl;
 	}
 	else{
 	    for(vector<hints>::iterator it = h.begin(); it != h.end(); it++){
@@ -598,7 +584,7 @@ SequenceFeatureCollection* DbSeqAccess::getFeatures(string speciesname, string c
 }
 
 
-int DbSeqAccess::split_dbaccess(){
+int MysqlAccess::split_dbaccess(){
     string::size_type pos1, pos2;
     pos2 = dbaccess.find(','); //string 'dbaccess' is delimited by ',' as default.
     pos1 = 0;        
@@ -611,7 +597,7 @@ int DbSeqAccess::split_dbaccess(){
     return 0;
 }
 
-void DbSeqAccess::connect_db(ostream& out){
+void MysqlAccess::connect_db(ostream& out){
     const  char* db_name = db_information[0].c_str();
     const  char* host = db_information[1].c_str();
     const  char* user = db_information[2].c_str();
@@ -629,7 +615,7 @@ void DbSeqAccess::connect_db(ostream& out){
 
 
 template<class T>
-AnnoSequence* DbSeqAccess::getNextDBSequence(string chrName,int start,int end,vector<T>& asm_query_region)
+AnnoSequence* MysqlAccess::getNextDBSequence(string chrName,int start,int end,vector<T>& asm_query_region)
 {
     AnnoSequence* annoseq = new AnnoSequence();
     mysqlpp::Query fetchseq_query=con.query();
@@ -690,7 +676,7 @@ AnnoSequence* DbSeqAccess::getNextDBSequence(string chrName,int start,int end,ve
  *       START|  query sequence range  |END   
  */
 template<class T>
-int DbSeqAccess::get_region_coord(int seq_region_id,int start,int end,vector<T> &asm_query_region){
+int MysqlAccess::get_region_coord(int seq_region_id,int start,int end,vector<T> &asm_query_region){
     mysqlpp::Query get_region_coord=con.query();
     try{
 	get_region_coord<<"select * from assembly where asm_seq_region_id=\""<<seq_region_id<<"\""
@@ -724,7 +710,7 @@ int DbSeqAccess::get_region_coord(int seq_region_id,int start,int end,vector<T> 
 }
 
 //template<class T>
-//AnnoSequence* DbSeqAccess::getDBSequenceList(string chrName,int start,int end,vector<T>& asm_query_region)
+//AnnoSequence* MysqlAccess::getDBSequenceList(string chrName,int start,int end,vector<T>& asm_query_region)
 //{
 //    int chunkcount=1;
 //    string tmpstring;
@@ -755,6 +741,122 @@ int DbSeqAccess::get_region_coord(int seq_region_id,int start,int end,vector<T> 
 //    return seqlist;
 //}
 
-
-
 #endif // AMYSQL
+
+#ifdef SQLITE
+AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
+
+    int seq_start, seq_end;
+    streampos file_start;
+    streamsize n=0; // number of characters that are read
+    
+    AnnoSequence* annoseq = new AnnoSequence();
+    annoseq->seqname = newstrcpy(chrName);
+
+    try{
+        Statement stmt(&db);
+        stmt.prepare("SELECT start,end, offset, streamsize FROM genomes as G,speciesnames as S,seqnames as N WHERE speciesname=$1 AND seqname=$2 \
+        AND G.speciesid=S.speciesid AND S.speciesid=N.speciesid AND G.seqnr=N.seqnr AND start <=?3 AND end >=?4 ORDER BY start ASC;");
+        stmt.bindText(1,speciesname.c_str());
+        stmt.bindText(2,chrName.c_str());
+	stmt.bindInt(3,end);
+	stmt.bindInt(4,start);
+	if(stmt.nextResult()){  
+	    seq_start = stmt.intColumn(0);
+	    seq_end = stmt.intColumn(1);
+	    file_start = stmt.intColumn(2);
+	    n += stmt.intColumn(3);
+	    while(stmt.nextResult()){
+		seq_end = stmt.intColumn(1);
+		n += stmt.intColumn(3);
+	    }
+	    if(start - seq_start < 0 || seq_end - end < 0)
+		throw ProjectError("failed retrieving sequence " + speciesname + "." + chrName + ":" + itoa(start) + "-" + itoa(end) + "\nout of range error\n");
+
+	    map<string,string>::iterator it = filenames.find(speciesname);
+	    if(it == filenames.end()){
+		throw ProjectError("no genome file specified for " + speciesname + " in speciesfilenames");
+	    }
+	    string file =it->second;
+	    ifstream ifstrm(file.c_str());
+	    if (ifstrm.is_open()){
+		ifstrm.seekg(file_start);
+		char* seq = new char[n+1];
+		ifstrm.read(seq,n);
+		seq[n] = '\0';
+		ifstrm.close();
+
+		strip_newlines(seq); // strip of newline characters
+		
+		annoseq->sequence = newstrcpy(seq + (start-seq_start), end-start+1);
+		annoseq->length = end - start + 1;
+		annoseq->offset = start;
+		delete [] seq;
+		if(strand == minusstrand){
+		    char *reverseDNA = reverseComplement(annoseq->sequence);
+		    delete [] annoseq->sequence;
+		    annoseq->sequence = reverseDNA;
+		}
+		return annoseq;
+	    }
+	    else
+		throw ProjectError("Could not open input file " + file);
+	}
+	else{
+	    throw ProjectError("Could not retrieve sequence from database");
+	}
+    }catch(const char* err){
+	cerr<<"could not retrieve sequences"<< endl;
+	cerr<<db.error()<< endl;
+    }
+    return NULL;
+}
+
+SequenceFeatureCollection* SQLiteAccess::getFeatures(string speciesname, string chrName, int start, int end, Strand strand){
+
+    FeatureCollection* fc = extrinsicFeatures.getFeatureCollection(speciesname);
+    SequenceFeatureCollection* sfc = new SequenceFeatureCollection(fc);
+    if(extrinsicFeatures.withEvidence(speciesname) && Constant::dbhints){ // only retrieve hints for the species specified in the extrinsicCfgFile
+	try{
+	    Statement stmt(&db);
+	    stmt.prepare("SELECT source,start,end,score,type,strand,frame,priority,grp,mult,esource FROM hints as H, speciesnames as S,seqnames as N WHERE \
+                      speciesname=?1 AND seqname=?2 AND H.speciesid=S.speciesid AND S.speciesid=N.speciesid AND H.seqnr=N.seqnr AND start <=?3 AND end >=?4;");
+	    stmt.bindText(1,speciesname.c_str());
+	    stmt.bindText(2,chrName.c_str());
+	    stmt.bindInt(3,end);
+	    stmt.bindInt(4,start);
+	    while(stmt.nextResult()){  
+		
+		// create new Feature
+		Feature f;
+		f.seqname=chrName;
+		f.source=stmt.textColumn(0);
+		f.type=Feature::getFeatureType(stmt.intColumn(4));
+		f.feature=featureTypeNames[f.type];
+		f.start=stmt.intColumn(1);
+		f.end=stmt.intColumn(2);
+		f.score=stmt.doubleColumn(3);
+		f.setFrame(stmt.textColumn(6));
+		f.setStrand(stmt.textColumn(5));
+		f.groupname=stmt.textColumn(8);
+		f.priority=stmt.intColumn(7);
+		f.mult=stmt.intColumn(9);
+		f.esource=stmt.textColumn(10);
+		
+		// shift positions relative to gene Range
+		if(strand == plusstrand)
+		    f.shiftCoordinates(start,end);
+		else
+		    f.shiftCoordinates(start,end,true);
+		fc->setBonusMalus(f);
+		sfc->addFeature(f);
+	    }
+	}catch(const char* err) {
+	    cerr << err << endl;
+	    throw ProjectError("failed retrieving hints on " + speciesname + "." + chrName + ":" + itoa(start) + "-" + itoa(end) + "\n");
+	}
+    } 
+    fc->hasHintsFile = true;
+    return sfc;
+}
+#endif
