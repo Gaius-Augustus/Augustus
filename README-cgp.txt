@@ -232,6 +232,12 @@ a small data set for testing can be found in examples/cgp/
 --/CompPred/outdir=path
   send all output files to this directory (default is the current directory)
 
+--softmasking=1
+ adds regions with lowercase nucleotides as nonexonpart hints of source "RM"
+ If --extrinsicCfgFile is not given, it used the default cgp.extrinsic.cfg with bonus 1.15, if 
+ another extrinsic config file is given, it must contain the "RM" source.
+  
+
 
 6. RETRIEVING GENOMES FROM A MYSQL DATABASE
 ------------------------------------------------
@@ -350,14 +356,25 @@ a) Installation
 
    > ./configure --disable-dynamic-extensions --enable-static --disable-shared
 
+   Turn on the flag SQLITE in augustus/trunks/common.mk and recompile AUGUSTUS
+
 b) create an SQLite database and populate it
    Use the program 'load2sqlitedb' in the AUGUSTUS repository.
    Run load2sqlitedb with the parameter "--help" to view the usage instructions
 
    > load2sqlitedb --help
 
-   example code for loading a genome and a hints file to the database chicken.db
+   example code for loading a genome and a hints file to the database vertebrates.db
    (always load the genome file first, before loading hints):
 
-   > load2sqlitedb --species=chicken --dbfile=chicken.db genome.fa
-   > load2sqlitedb --species=chicken --dbfile=chicken.db hints.gff
+   > load2sqlitedb --species=chicken --dbaccess=vertebrates.db genome.fa
+   > load2sqlitedb --species=chicken --dbaccess=vertebrates.db hints.gff
+
+c) running AUGUSUTS with SQLite db access:
+   call AUGUSTUS with parameters --dbaccess AND --speciesfilenames
+
+   > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl
+
+   in order to retrieve hints from the database, enable --dbhints and pass an extrinsic config file
+
+   > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
