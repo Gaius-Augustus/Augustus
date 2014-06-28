@@ -219,37 +219,43 @@ int main( int argc, char* argv[] ){
 	    while(ifstrm){
 		Feature f;
 		ifstrm >> f >> comment >> ws;
-		stmt.bindText(1,species.c_str());
-		stmt.bindText(2,f.seqname.c_str());
-		stmt.bindText(3,f.source.c_str());
-		stmt.bindInt(4,f.start);
-		stmt.bindInt(5,f.end);
-		stmt.bindDouble(6,f.score);
-		stmt.bindInt(7,f.type);
-		
-		switch (f.strand) {
-		case plusstrand: stmt.bindText(8,"+"); break;
-		case minusstrand: stmt.bindText(8,"-"); break;
-		default : stmt.bindText(8,".");
+		try{
+		    stmt.bindText(1,species.c_str());
+		    stmt.bindText(2,f.seqname.c_str());
+		    stmt.bindText(3,f.source.c_str());
+		    stmt.bindInt(4,f.start);
+		    stmt.bindInt(5,f.end);
+		    stmt.bindDouble(6,f.score);
+		    stmt.bindInt(7,f.type);
+		    switch (f.strand) {
+		    case plusstrand : stmt.bindText(8,"+"); break;
+		    case minusstrand : stmt.bindText(8,"-"); break;
+		    default : stmt.bindText(8,".");
+		    }
+		    switch (f.frame) {
+		    case 0 :  stmt.bindText(9,"0"); break;
+		    case 1 :  stmt.bindText(9,"1"); break;
+		    case 2 :  stmt.bindText(9,"2"); break;
+		    default :  stmt.bindText(9,".");
+		    }
+		    stmt.bindInt(10,f.priority);
+		    stmt.bindText(11,f.groupname.c_str());
+		    stmt.bindInt(12,f.mult);
+		    stmt.bindText(13,f.esource.c_str());
+		    stmt.step();
+		    stmt.reset();
+		}catch(const char* error){
+		    cerr << "insert failed on\n" << f << endl;
+		    cerr << error << endl;
+		    exit(1);
 		}
-		if (f.frame != -1)
-		    stmt.bindText(9,itoa(f.frame).c_str());
-		else
-		    stmt.bindText(9,".");
-		stmt.bindInt(10,f.priority);
-		stmt.bindText(11,f.groupname.c_str());
-		stmt.bindInt(12,f.mult);
-		stmt.bindText(13,f.esource.c_str());
-		
-		stmt.step();
-		stmt.reset();
 		if(db.numChanges() != 1){
 		    cerr << "insert failed on\n" << f << endl;
 		    cerr << "hints can only be inserted for sequences in the database." << endl;
 			exit(1);
 		}
 		hintCount++;
-	    }		    
+	    }	
 	    db.endTransaction();
 	    
 	    // rebuild index on hints table
