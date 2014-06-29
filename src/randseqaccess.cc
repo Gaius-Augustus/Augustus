@@ -770,8 +770,15 @@ AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start
 		seq_end = stmt.intColumn(1);
 		n += stmt.intColumn(3);
 	    }
-	    if(start - seq_start < 0 || seq_end - end < 0)
-		throw ProjectError("failed retrieving sequence " + speciesname + "." + chrName + ":" + itoa(start) + "-" + itoa(end) + "\nout of range error\n");
+	    if(start - seq_start < 0 || seq_end - end < 0){
+		if(Constant::MultSpeciesMode){
+		    throw ProjectError("failed retrieving sequence " + speciesname + "." + chrName + ":" + itoa(start) + "-" + itoa(end) + "\nout of range error\n");
+		}
+		else{
+		    if(end > seq_end)
+			end = seq_end;
+		}		    
+	    }
 
 	    map<string,string>::iterator it = filenames.find(speciesname);
 	    if(it == filenames.end()){
