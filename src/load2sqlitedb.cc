@@ -174,7 +174,7 @@ int main( int argc, char* argv[] ){
 		    stmt1.bindInt(3,speciesid);
 		    stmt1.bindInt(4,start);
 		    stmt1.bindInt(5,start+length-1);
-		    stmt1.bindInt(6,file_start);
+		    stmt1.bindInt64(6,(uint64_t)file_start);
 		    stmt1.bindInt(7,file_end-file_start);
 		    stmt1.step();
 		    stmt1.reset();

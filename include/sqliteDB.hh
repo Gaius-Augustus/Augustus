@@ -67,20 +67,21 @@ class Statement
 {
 public:
     Statement(SQLiteDB* db) : stmt(NULL), database(db->database) {}
-    ~Statement(){}
+    ~Statement(){finalize();}
 
     void prepare(const char *sql);
     void step();
     void bindInt(int idx, int x);
+    void bindInt64(int idx, uint64_t x);
     void bindDouble(int idx, double d);
     void bindText(int idx, const char* text);
-    void exec(const char *sql);
  
     inline void reset(){sqlite3_reset(stmt);}
     inline void finalize(){sqlite3_finalize(stmt);}
     inline bool nextResult(){ return sqlite3_step(stmt) == SQLITE_ROW; }
     inline int numCols(){return sqlite3_column_count(stmt);}
     inline int intColumn(int colNum){return sqlite3_column_int(stmt,colNum);}
+    inline uint64_t int64Column(int colNum){return (uint64_t)sqlite3_column_int64(stmt,colNum);}
     inline double doubleColumn(int colNum){return sqlite3_column_double(stmt,colNum);}
     inline char* textColumn(int colNum){return (char*)sqlite3_column_text(stmt,colNum);}
     inline const char* error(){return sqlite3_errmsg(database);}

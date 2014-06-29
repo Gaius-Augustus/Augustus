@@ -764,7 +764,7 @@ AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start
 	if(stmt.nextResult()){  
 	    seq_start = stmt.intColumn(0);
 	    seq_end = stmt.intColumn(1);
-	    file_start = stmt.intColumn(2);
+	    file_start = (std::streampos)stmt.int64Column(2);
 	    n += stmt.intColumn(3);
 	    while(stmt.nextResult()){
 		seq_end = stmt.intColumn(1);

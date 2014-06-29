@@ -38,7 +38,6 @@ void SQLiteDB::exec(const char *sql){
     Statement statement(this);
     statement.prepare(sql);
     statement.step();
-    statement.finalize();
 }
 
 void SQLiteDB::beginTransaction(){
@@ -145,7 +144,6 @@ int SQLiteDB::getSpeciesID(string species){
     stmt.bindText(1,species.c_str());
     if(stmt.nextResult()){
         int id = stmt.intColumn(0);
-        stmt.finalize();
         return id;
     }
     else{
@@ -178,6 +176,13 @@ void Statement::bindInt(int idx, int x){
     }
 }
 
+void Statement::bindInt64(int idx, uint64_t x){
+
+    if(sqlite3_bind_int64(stmt, idx, x) != SQLITE_OK){
+	throw error();
+    }
+}
+
 void Statement::bindDouble(int idx, double d){
 
     if(sqlite3_bind_double(stmt, idx, d) != SQLITE_OK){
@@ -190,11 +195,4 @@ void Statement::bindText(int idx, const char* text){
     if(sqlite3_bind_text(stmt, idx, text, strlen(text), NULL) != SQLITE_OK){
 	throw error();
     }
-}
-
-void Statement::exec(const char *sql){
-
-    prepare(sql);
-    step();
-    finalize();
 }
