@@ -1,81 +1,141 @@
-#include <iostream>	// input/output
-#include <string>	// strings
-#include <vector>	// vectors
-#include <fstream>	// input/output on hard drive
-#include <stdlib.h>	// atof (change into double)
-#include <stack>	// stack
-#include <list>		// list
+#include <iostream>		// input/output
+#include <string>		// strings
+#include <fstream>		// input/output on hard drive
+#include <list>			// list
 #include <unordered_map>		// hash
-#include <sstream>	// string stream; to convert int into string
+#include <unistd.h>		// for getopt()
+#include <getopt.h>		// for getopt() with long option
 
 #include "joingenes.h"
 #include "gp_ios.h"
 
 using namespace std;
 
+static const struct option longOpts[] = {
+    { "genesets", required_argument, NULL, 'g' },
+    { "priorities", required_argument, NULL, 'p' },
+    { "output", required_argument, NULL, 'o' },
+    { "help", no_argument, NULL, 'h' },
+    { NULL, no_argument, NULL, 0 }
+};
+
+void display_help(void)
+{
+	cout << "This is the help documentation of the joingenes programm" << endl;
+	cout << "Options:" << endl;
+	cout << "\tNecessary:" << endl;
+	cout << "\t\t--genesets=file1,file2,...\t-g file1,file2,...\twhere \"file1,file2,...,filen\" have to be datafiles with genesets in gff or gtf format" << endl;
+	cout << "\t\t--output=x\t\t\t-o ofile\t\twhere \"ofile\" have to be a name for an output datafile (gff/gtf)" << endl;
+	cout << "\tOptional:" << endl;
+	cout << "\t\t--priorities=pr1,pr2,...\t-p pr1,pr2,...\t\twhere \"pr1,pr2,...,prn\" have to be integers different from 0" << endl;
+	cout << "\t\t\t\t\t\t\t\t\thave to be as many as filenames are added" << endl;
+	cout << "\t\t\t\t\t\t\t\t\tbigger numbers means a higher priority" << endl;
+	cout << "\t\t\t\t\t\t\t\t\tif no priorities are added, the programm will set all priorties to 1" << endl;
+	cout << "\t\t\t\t\t\t\t\t\tthis option is only usefull, if there are more then one geneset" << endl;
+	cout << "\t\t--help \t\t\t\t-h\t\t\tprints the help documentation" << endl;
+	cout << endl;
+	exit( EXIT_FAILURE );
+}
+
+void display_error(string const &error)
+{
+	cerr << "Usage error: " << error << endl;
+	cerr << "Use option --help or -h for usage explanations." << endl;
+	exit( EXIT_FAILURE );
+}
+
+list<string> get_filenames(char* filename_string){
+	list<string> filenames;
+	char *temp_inside;
+	string str_temp = filename_string;
+	unsigned int n_comma = count(str_temp.begin(), str_temp.end(), ',');
+	if (n_comma){
+		temp_inside = strtok(filename_string, ",");
+		filenames.push_front(temp_inside);
+		for (unsigned int j = 1; j <= n_comma; j++){
+			temp_inside = strtok(NULL, ",");
+			filenames.push_front(temp_inside);
+		}
+	}else{
+		filenames.push_front(filename_string);
+	}
+	return filenames;
+}
+
+list<int> get_priorities(char* priority_string){
+	list<int> priorities;
+	char *temp_inside;
+	string str_temp = priority_string;
+	unsigned int n_comma = count(str_temp.begin(), str_temp.end(), ',');
+	if (n_comma){
+		temp_inside = strtok(priority_string, ",");
+		priorities.push_front(atoi(temp_inside));
+		for (unsigned int j = 1; j <= n_comma; j++){
+			temp_inside = strtok(NULL, ",");
+			priorities.push_front(atoi(temp_inside));
+		}
+	}else{
+		priorities.push_front(atoi(priority_string));
+	}
+	return priorities;
+}
+
 int main(int argc, char* argv[])
 {
-	if (argc <= 1) {
-		cerr << "Usage: " << argv[0] << " no --genesets" << endl;
-		return 1;
-	}
+int opt = 0;
+static const char *optString = "g:p:o:h?";
 	list<string> filenames;
 	list<int> priorities;
 	string filename_out;
-	for (int i = 1; i < argc; ++i) {
-		if (strstr(argv[i], "--genesets")!=NULL && strstr(argv[i], "=")!=NULL) {
-			if (filenames.size() == 0){
-				char *temp_inside;
-				string str_temp = argv[i];
-				unsigned int n_comma = count(str_temp.begin(), str_temp.end(), ',');
-				strtok(argv[i], "=");
-				for (unsigned int j = 0; j <= n_comma; j++){
-					temp_inside = strtok(NULL, ",");
-					filenames.push_front(temp_inside);
-				}
-			}else{
-				cerr << "to much times --genesets option" << endl;
-				return 1;
-			}
-		}else if (strstr(argv[i], "--priorities")!=NULL && strstr(argv[i], "=")!=NULL){
-			if (priorities.size() == 0){
-				char *temp_inside;
-				string str_temp = argv[i];
-				unsigned int n_comma = count(str_temp.begin(), str_temp.end(), ',');
-				strtok(argv[i], "=");
-				for (unsigned int j = 0; j <= n_comma; j++){
-					temp_inside = strtok(NULL, ",");
-					priorities.push_front(atoi(temp_inside));
-				}
+	int longIndex;
 
+opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
+	while (opt != -1) {
+		switch (opt) {
+			case 'g':
+				filenames = get_filenames(optarg);
+				break;
 
-			}else{
-				cerr << "to much times --priorities option" << endl;
-			}
-		}else if (strstr(argv[i], "--out")!=NULL && strstr(argv[i], "=")!=NULL){
-			strtok(argv[i], "=");
-			char *temp_inside;
-			temp_inside = strtok(NULL, ",");
-			filename_out = temp_inside;
-		}else{
-			cerr << argv[i] << " is an unknown option" << endl;
-			return 1;
-		}
-	}
+            case 'p':
+				priorities = get_priorities(optarg);
+				break;
+
+			case 'o':
+				filename_out = optarg;
+				break;
+			case 'h':
+				display_help();
+				break;
+			case '0':				// long option without short form
+				break;
+
+			case '?':
+				display_error("You entered an invalid option.");
+				break;
+
+			default:
+				break;
+        }
+        opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
+    }
 	if (filenames.size() == 0){
-		cerr << "no filenames added by --genesets=x1,x2 option" << endl;
-		return 1;
+		display_error("Missing input filenames.");
 	}
 	if (filename_out == ""){
-		cerr << "no output filename added by --out=x option" << endl;
-		return 1;
+		display_error("Missing output filename.");
 	}
 	if (priorities.size() == 0){
 		if (filenames.size()>1){
-			cout << "all priorities set to 1 (default); set priorities by --priorities=x1,x2" << endl;
+			cout << "All priorities set to 1 (default)." << endl;
 		}
 		for (list<string>::iterator it_f = filenames.begin(); it_f != filenames.end(); it_f++){
 			priorities.push_front(1);
+		}
+	}else{
+		for (list<int>::iterator it_p = priorities.begin(); it_p != priorities.end(); it_p++){
+			if ((*it_p) == 0){
+				display_error("It is forbidden that a priority is equal to 0.");
+			}
 		}
 	}
 	unordered_map<string,Gene> gene_map;
@@ -89,39 +149,13 @@ int main(int argc, char* argv[])
 			it_p++;
 		}
 	}else{
-		cerr << "number of input files and priorities dont match" << endl;
-		return 1;
+		display_error("Number of input files and priorities is not equal.");
 	}
-	//check_frame_annotation(transcript_list);
-	transcript_list.sort();
-	cout << transcript_list.size() << endl;
-	seek_overlaps(transcript_list);
-	//save(gene_map, transcript_list, filename_output);
-	cout << endl;
+	for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
+		if (!check_frame_annotation(*it)){
+			display_error("Frames are not correct.");
+		}
+	}
+	seek_overlaps(transcript_list, filename_out);
 	return 0;
 }
-
-
-
-/*int main(int argc, char* argv[])
-{
-    if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << "--destination DESTINATION SOURCE" << std::endl;
-        return 1;
-    }
-    std::vector <std::string> sources;
-    std::string destination;
-    for (int i = 1; i < argc; ++i) {
-        if (std::string(argv[i]) == "--destination") {
-            if (i + 1 < argc) { // Make sure we aren't at the end of argv!
-                destination = argv[i++]; // Increment 'i' so we don't get the argument as the next argv[i].
-            } else { // Uh-oh, there was no argument to the destination option.
-                  std::cerr << "--destination option requires one argument." << std::endl;
-                return 1;
-            }  
-        } else {
-            sources.push_back(argv[i]);
-        }
-    }
-    return move(sources, destination);
-}*/

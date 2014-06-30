@@ -3,18 +3,26 @@
 
 using namespace std;
 
-int overallnumber=0;
+// int overallnumber=0;		// only for semantic tests
+// int overallnumber2=0;	// only for semantic tests
 
-void seek_overlaps(list<Transcript> &transcript_list){			// needs a sorted list of transcripts
+void seek_overlaps(list<Transcript> &transcript_list, string &outfilename){
+// devide a transcript list in overlaps and start works at these overlaps
+	transcript_list.sort();
+	list<Transcript> new_transcripts;
 	list<Transcript*> overlap;
 	int max_base = transcript_list.front().stop;
-	
-	string filename = "overlap_out";
 	fstream outfile;
-	outfile.open(filename, ios::out);		// delete content of filename
+	outfile.open(outfilename, ios::out);		// delete content of file filename
 	outfile.close();
 
 	for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
+/*if ((*it).pred_range.first && (*it).pred_range.second){
+cout << (*it).strand << " ----------------------------" << endl;
+cout << "Transcript range: " << (*it).start << " " << (*it).stop << " (" << (*it).stop - (*it).start << ")" << endl;
+cout << "Prediction range: " << (*it).pred_range.first << " " << (*it).pred_range.second << " (" << (*it).pred_range.second - (*it).pred_range.first << ")" << endl;
+cout << "Distances: " << (*it).start - (*it).pred_range.first << " " << (*it).pred_range.second - (*it).stop << endl;
+}*/
 		if ((*it).start < max_base){
 			overlap.push_back(&*it);
 			if (max_base < (*it).stop){
@@ -22,12 +30,9 @@ void seek_overlaps(list<Transcript> &transcript_list){			// needs a sorted list 
 			}
 		}
 		else{
-			if (overlap.size() > 1)
 			{
-				//cout << overlap.size() << " changed to ";
-				decide(overlap);
-				//cout << overlap.size() << endl;
-				//save_overlap(overlap, filename);
+				work_at_overlap(overlap, new_transcripts);
+				save_overlap(overlap, outfilename);
 			}
 			overlap.clear();
 			max_base = (*it).stop;
@@ -36,15 +41,50 @@ void seek_overlaps(list<Transcript> &transcript_list){			// needs a sorted list 
 	}
 }
 
-void decide(list<Transcript*> &overlap)
+void work_at_overlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts)
 {
-	//cout << overlap.size() << " ";
+// calls methods for joining transcripts with the target that most of transcripts are complete (have start and stop codon) and delete doublings and other unwanted transcripts from the overlap
+	search_n_destroy_doublings(overlap);
+
+	list<Transcript*> new_overlap_part_stop;
+	join_stop(overlap, new_transcripts, new_overlap_part_stop);
+	overlap.merge(new_overlap_part_stop);
+
+	list<Transcript*> new_overlap_part_start;
+	join_start(overlap, new_transcripts, new_overlap_part_start);
+	overlap.merge(new_overlap_part_start);
+
+	search_n_destroy_doublings(overlap);
+
+	overlap.sort(compare_priority);
+	int highest_complete_priority = 0;
+	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+		if ((*it)->start_codon && (*it)->stop_codon){
+			highest_complete_priority = (*it)->priority;
+			break;
+		}
+	}
+	if (highest_complete_priority){
+		for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+			if (highest_complete_priority > (*it)->priority){
+				it = overlap.erase(it);
+				it--;
+			}
+			else if ((!((*it)->start_codon) || !((*it)->stop_codon)) && (highest_complete_priority == (*it)->priority)){
+				it = overlap.erase(it);
+				it--;
+			}
+		}
+	}
+}
+
+void search_n_destroy_doublings(list<Transcript*> &overlap){
+// delete all transcripts that are completly part of another transcript (in particular all exons are also in the other transcript); in case of equality the one with the lesser priority will be deleted
 	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 		list<Transcript*>::iterator it_temp = it;
 		it_temp++;
 		for (list<Transcript*>::iterator it_inside = it_temp; it_inside != overlap.end(); it_inside++){
 			if (compare_transcripts(*it, *it_inside)){
-				//cout << (*it)->t_id << " and " << (*it_inside)->t_id << " are equal" << endl;
 				(*it)->supporter.push_front(*it_inside);
 				(*it_inside)->supporter.push_front(*it);
 				if ((*it)->priority < (*it_inside)->priority){
@@ -57,15 +97,6 @@ void decide(list<Transcript*> &overlap)
 			}
 		}
 	}
-
-	/*cout << "overlap: ";
-	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-		cout << (*it)->t_id << " ";
-	}
-	cout << endl;*/
-
-	//cout << overlap.size() << " ";
-	// test für is_part_of():
 	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 		list<Transcript*>::iterator it_temp = it;
 		it_temp++;
@@ -77,82 +108,188 @@ void decide(list<Transcript*> &overlap)
 				else{
 					it = overlap.erase(it);
 					it_inside = it;
-					//cout << "t1 ist part of t2" << endl;
-					/*cout << "t2--------------- " << (*it_inside)->supporter.size() << " supporter " << (*it_inside)->t_id << endl;
-					for (list<Exon>::iterator it_iii = (*it_inside)->exon_list.begin(); it_iii != (*it_inside)->exon_list.end(); it_iii++){	
-						cout << (*it_iii).from << "\t";
-						cout << (*it_iii).to << "\t";
-						cout << endl;
-					}
-					cout << "t1--------------- " << (*it)->supporter.size() << " supporter " << (*it)->t_id << endl;
-					for (list<Exon>::iterator it_iii = (*it)->exon_list.begin(); it_iii != (*it)->exon_list.end(); it_iii++){	
-						cout << (*it_iii).from << "\t";
-						cout << (*it_iii).to << "\t";
-						cout << endl;
-					}
-					cout << "-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-" << endl;*/
 				}
 			}else{
 				if (who_is_part.second == true){
 					it_inside = overlap.erase(it_inside);
 					it_inside--;
-					//cout << "t2 ist part of t1" << endl;
-					/*cout << "t1--------------- " << (*it)->supporter.size() << " supporter " << (*it)->t_id << endl;
-					for (list<Exon>::iterator it_iii = (*it)->exon_list.begin(); it_iii != (*it)->exon_list.end(); it_iii++){	
-						cout << (*it_iii).from << "\t";
-						cout << (*it_iii).to << "\t";
-						cout << endl;
-					}
-					cout << "t2--------------- " << (*it_inside)->supporter.size() << " supporter " << (*it_inside)->t_id << endl;
-					for (list<Exon>::iterator it_iii = (*it_inside)->exon_list.begin(); it_iii != (*it_inside)->exon_list.end(); it_iii++){	
-						cout << (*it_iii).from << "\t";
-						cout << (*it_iii).to << "\t";
-						cout << endl;
-					}
-					cout << "-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-:-" << endl;*/
 				}
 			}
 		}
 	}
+}
 
-	//cout << overlap.size() << " ";
-	//cout << "---------------------------------------------------------" << endl;
-	//join:
-	overlap.sort(compare_priority);
+
+
+void join_stop(list<Transcript*> &overlap, list<Transcript> &new_transcripts, list<Transcript*> &new_overlap_part){
+// devides an overlap in a list of stop codon donors and in an other list of stop codon acceptors and joins every pair (one of each list) if they are combinable 
+	list<Transcript*> donor_stop;
+	list<Transcript*> acceptor_stop;
 	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-		//cout << (*it)->start << " " << (*it)->stop << " " << (*it)->priority << endl;
-		list<Transcript*>::iterator it_temp = it;
-		it_temp++;
-		for (list<Transcript*>::iterator it_inside = it_temp; it_inside != overlap.end(); it_inside++){
-			join(*it, *it_inside);
+		if ((*it)->stop_codon){
+			donor_stop.push_front(*it);
+		}else{
+			acceptor_stop.push_front(*it);
+		}
+	}
+	for (list<Transcript*>::iterator it = acceptor_stop.begin(); it != acceptor_stop.end(); it++){
+		for (list<Transcript*>::iterator it_donor = donor_stop.begin(); it_donor != donor_stop.end(); it_donor++){
+			if ((*it)->strand == '+' && (*it_donor)->strand == '+'){
+				if (is_combinable(*it, *it_donor, (*it)->strand, '3')){
+					Transcript tx_new;
+					joining(*it, *it_donor, (*it)->strand, '3', tx_new);
+					new_transcripts.push_back(tx_new);
+					new_overlap_part.push_back(&new_transcripts.back());
+				}
+			}
+			else if ((*it)->strand == '-' && (*it_donor)->strand == '-'){
+				if (is_combinable(*it, *it_donor, (*it)->strand, '5')){
+					Transcript tx_new;
+					joining(*it, *it_donor, (*it)->strand, '5', tx_new);
+					new_transcripts.push_back(tx_new);
+					new_overlap_part.push_back(&new_transcripts.back());
+				}
+			}
 		}
 	}
 }
 
-bool compare_transcripts(Transcript* t1, Transcript* t2)
+void join_start(list<Transcript*> &overlap, list<Transcript> &new_transcripts, list<Transcript*> &new_overlap_part){
+// devides an overlap in a list of start codon donors and in an other list of start codon acceptors and joins every pair (one of each list) if they are combinable 
+	list<Transcript*> donor_start;
+	list<Transcript*> acceptor_start;
+	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+		if ((*it)->start_codon){
+			donor_start.push_front(*it);
+		}else{
+			acceptor_start.push_front(*it);
+		}
+	}
+	for (list<Transcript*>::iterator it = acceptor_start.begin(); it != acceptor_start.end(); it++){
+		for (list<Transcript*>::iterator it_donor = donor_start.begin(); it_donor != donor_start.end(); it_donor++){
+			if ((*it)->strand == '+' && (*it_donor)->strand == '+'){
+				if (is_combinable(*it, *it_donor, (*it)->strand, '5')){
+					Transcript tx_new;
+					joining(*it, *it_donor, (*it)->strand, '5', tx_new);
+					new_transcripts.push_back(tx_new);
+					new_overlap_part.push_back(&new_transcripts.back());
+				}
+			}
+			else if ((*it)->strand == '-' && (*it_donor)->strand == '-'){
+				if (is_combinable(*it, *it_donor, (*it)->strand, '3')){
+					Transcript tx_new;
+					joining(*it, *it_donor, (*it)->strand, '3', tx_new);
+					new_transcripts.push_back(tx_new);
+					new_overlap_part.push_back(&new_transcripts.back());
+				}
+			}
+		}
+	}
+}
+
+void joining(Transcript* t1, Transcript* t2, char strand, char side, Transcript &tx_new){
+// joins transcripts in one direction so that every suitable exon will be transferred and returns a new "joined" transcript without deleting the old ones
+	int minimum_intron_length = 20;								// also defined in is_combinable
+	tx_new = *t1;
+	if ((strand == '+' && side == '3') || (strand == '-' && side == '5')){
+		tx_new.stop_codon = t2->stop_codon;
+		if (strand == '+'){tx_new.stop_codon = t2->stop_codon;}else{tx_new.start_codon = t2->start_codon;}
+		tx_new.stop = t2->stop;
+		bool are_at_add_part = false;
+		for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
+			if ((*t1).exon_list.back().to <= ((*it).from - minimum_intron_length)){
+				are_at_add_part = true;
+			}
+			if (are_at_add_part){
+				tx_new.exon_list.push_back(*it);
+			}
+		}
+	}else if ((strand == '+' && side == '5') || (strand == '-' && side == '3')){
+		if (strand == '+'){tx_new.start_codon = t2->start_codon;}else{tx_new.stop_codon = t2->stop_codon;}
+		tx_new.start = t2->start;
+		list<Exon> temp_exon_list;
+		bool are_at_add_part = true;
+		for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
+			if ((*t1).exon_list.front().from < ((*it).to + minimum_intron_length)){
+				tx_new.exon_list.merge(temp_exon_list);
+				are_at_add_part = false;
+				break;
+			}
+			if (are_at_add_part){
+				temp_exon_list.push_back(*it);
+			}
+		}
+	}
+}
+
+bool is_combinable(Transcript const* t1, Transcript const* t2, char strand, char side){
+// is true,	if the first exon which is minimal the minimum_intron_length away from the last exon of the other transcript in the appropriate direction
+// 			&& the exons at these positions are frame-compatible
+// 			&& the transcripts are overlapping					// maybe we can improve something here, that combinable non-overlaping transcripts gets true (but be carefull)
+	int minimum_intron_length = 20;								// also defined in joining
+	if ((t1->stop < t2->start) || (t1->start > t2->stop)){
+		return false;
+	}
+	if ((strand == '+' && side == '3') || (strand == '-' && side == '5')){
+		for (list<Exon>::const_iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
+			if ((*t1).exon_list.back().to <= ((*it).from - minimum_intron_length)){
+				if ((strand == '+') && ((*it).frame == (3 - ( ((*t1).exon_list.back().to - (*t1).exon_list.back().from + 1) - (*t1).exon_list.back().frame) % 3) % 3)){
+					return true;
+				}else if ((strand == '-') && ((*t1).exon_list.back().frame == (3 - ( ((*it).to - (*it).from + 1) - (*it).frame) % 3) % 3)){
+					return true;
+				}else{
+					return false;
+				}
+			}
+		}
+	}else if ((strand == '+' && side == '5') || (strand == '-' && side == '3')){
+		for (list<Exon>::const_iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
+			if ((*t1).exon_list.front().from < ((*it).to + minimum_intron_length)){
+				if (it != t2->exon_list.begin()){
+					it--;
+				}else{
+					return false;
+				}
+				if ((strand == '-') && ((*it).frame == (3 - ( ((*t1).exon_list.back().to - (*t1).exon_list.back().from + 1) - (*t1).exon_list.back().frame) % 3) % 3)){
+					return true;
+				}else if ((strand == '+') && ((*t1).exon_list.back().frame == (3 - ( ((*it).to - (*it).from + 1) - (*it).frame) % 3) % 3)){
+					return true;
+				}else{
+					return false;
+				}
+			}
+		}
+	}else{									// no '+' or '-' strand
+		return false;						// here we have an unexpected case and so we dont wanna combine
+	}
+	return false;
+}
+
+bool compare_transcripts(Transcript const* t1, Transcript const* t2)
 {
-	bool equal = false;
-	if (t1->strand == t2->strand && t1->frame == t2->frame && t1->start == t2->start && t1->stop == t2->stop && t1->exon_list.size() == t2->exon_list.size()){
-		equal = true;
-		list<Exon>::iterator it2 = t2->exon_list.begin();
-		for (list<Exon>::iterator it1 = t1->exon_list.begin(); it1 != t1->exon_list.end(); it1++){
+// is true, if both transcripts are equal in exons, strand and start/stop
+	if (t1->strand == t2->strand && t1->start == t2->start && t1->stop == t2->stop && t1->exon_list.size() == t2->exon_list.size()){
+		list<Exon>::const_iterator it2 = t2->exon_list.begin();
+		for (list<Exon>::const_iterator it1 = t1->exon_list.begin(); it1 != t1->exon_list.end(); it1++){
 			if ((*it1).from == (*it2).from && (*it1).to == (*it2).to){
 			}else{
-				equal = false;
-				break;
+				return false;
 			}
 			it2++;
 		}
+	}else{
+		return false;
 	}
-	return equal;
+	return true;
 }
 
-pair<bool,bool> is_part_of(Transcript* t1, Transcript* t2)
+pair<bool,bool> is_part_of(Transcript const* t1, Transcript const* t2)
 {
-// if ((t1->t_id == "g7213.t1" || t1->t_id == "g7215.t1") && (t2->t_id == "g7213.t1" || t2->t_id == "g7215.t1")){cout << "hello" << endl;}
+// is true,false or false,true if one transcript contains the other completely
+// is true,true if the transcripts are equal in exons			// this case could completly replace compare_transcripts
 	bool t1_is_part = false;
 	bool t2_is_part = false;
-	if (t1->strand == t2->strand && t1->frame == t2->frame){
+	if (t1->strand == t2->strand){
 		t1_is_part = true;
 		t2_is_part = true;
 		if (t1->start_codon && t2->start_codon && t1->start_codon != t2->start_codon){
@@ -163,12 +300,11 @@ pair<bool,bool> is_part_of(Transcript* t1, Transcript* t2)
 			t1_is_part = false;
 			t2_is_part = false;
 		}
-		list<Exon>::iterator it1 = t1->exon_list.begin();
-		list<Exon>::iterator it2 = t2->exon_list.begin();
+		list<Exon>::const_iterator it1 = t1->exon_list.begin();
+		list<Exon>::const_iterator it2 = t2->exon_list.begin();
 		while (t1_is_part == true || t2_is_part == true){
-// if ((t1->t_id == "g7213.t1" || t1->t_id == "g7215.t1") && (t2->t_id == "g7213.t1" || t2->t_id == "g7215.t1")){cout << "hello1" << endl;}
 			if ((*it1).from == (*it2).from){
-				if((*it1).to == (*it2).to){
+				if((*it1).to == (*it2).to && (*it1).frame == (*it2).frame){
 					it1++;
 					it2++;
 				}
@@ -178,11 +314,9 @@ pair<bool,bool> is_part_of(Transcript* t1, Transcript* t2)
 					break;
 				}
 			}else if ((*it1).from > (*it2).from){
-// if ((t1->t_id == "g7213.t1" || t1->t_id == "g7215.t1") && (t2->t_id == "g7213.t1" || t2->t_id == "g7215.t1")){cout << "hello2" << endl;}
 				t2_is_part = false;
 				it2++;
 			}else{
-// if ((t1->t_id == "g7213.t1" || t1->t_id == "g7215.t1") && (t2->t_id == "g7213.t1" || t2->t_id == "g7215.t1")){cout << "hello3" << endl;}
 				t1_is_part = false;
 				it1++;
 			}
@@ -191,13 +325,11 @@ pair<bool,bool> is_part_of(Transcript* t1, Transcript* t2)
 			}else{
 				if (it1 == t1->exon_list.end() && !(it2 == t2->exon_list.end()))
 				{
-// if ((t1->t_id == "g7213.t1" || t1->t_id == "g7215.t1") && (t2->t_id == "g7213.t1" || t2->t_id == "g7215.t1")){cout << "hello4" << endl;}
 					t2_is_part = false;
 					break;
 				}
 				if (it2 == t2->exon_list.end() && !(it1 == t1->exon_list.end()))
 				{
-// if ((t1->t_id == "g7213.t1" || t1->t_id == "g7215.t1") && (t2->t_id == "g7213.t1" || t2->t_id == "g7215.t1")){cout << "hello5" << endl;}
 					t1_is_part = false;
 					break;
 				}
@@ -207,164 +339,41 @@ pair<bool,bool> is_part_of(Transcript* t1, Transcript* t2)
 	return make_pair(t1_is_part, t2_is_part);
 }
 
-bool compare_priority(Transcript* lhs, Transcript* rhs){
+bool compare_priority(Transcript const* lhs, Transcript const* rhs){
+// is true, if the priority of the first element is higher; used to sort elements by priority
 	return ( lhs->priority > rhs->priority );
 }
 
-void join(Transcript* t1, Transcript* t2){	// (in Arbeit)
-		if (three_compatible(t1,t2)){
-			/*overallnumber++;
-			cout << overallnumber << endl;*/
-			/*if (overallnumber < 4){
-				cout << "-----------------------------" << endl;
-				cout << t1->t_id << ", Strand: " << t1->strand << ", Priority: " << t1->priority << endl;
-				for (list<Exon>::iterator it = t1->exon_list.begin(); it != t1->exon_list.end(); it++){
-					cout << (*it).from << " " << (*it).to << endl;
-				}
-				cout << t2->t_id << ", Strand: " << t2->strand << ", Priority: " << t2->priority << endl;
-				for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-					cout << (*it).from << " " << (*it).to << endl;
-				}
-				//pair<bool,bool> ttt = is_part_of(t1,t2);
-				//cout << ttt.first << " " << ttt.second << endl;
-			}*/
-			
-			/*if (t1->strand == '+'){
-				for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-				}
-			}else if (t1->strand == '-'){
-				for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-					while (t1->exon_list.front().from != (*it).from){
-						// welches ist welches??? muss vorher abgefragt werden
-					}
-				}
-			}else{}		// no '+' or '-' strand*/
-		}
-		if (five_compatible(t1,t2)){
-			overallnumber++;
-			//cout << overallnumber << endl;
-				if (overallnumber < 4){
-				cout << "-----------------------------" << endl;
-				cout << t1->t_id << ", Strand: " << t1->strand << ", Priority: " << t1->priority << endl;
-				for (list<Exon>::iterator it = t1->exon_list.begin(); it != t1->exon_list.end(); it++){
-					cout << (*it).from << " " << (*it).to << endl;
-				}
-				cout << t2->t_id << ", Strand: " << t2->strand << ", Priority: " << t2->priority << endl;
-				for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-					cout << (*it).from << " " << (*it).to << endl;
-				}
-				//pair<bool,bool> ttt = is_part_of(t1,t2);
-				//cout << ttt.first << " " << ttt.second << endl;
+bool check_frame_annotation(Transcript const &transcript){
+// returns true, if the frame annotation of the transcript is correct
+	list<Exon>::const_iterator it2;
+	if (transcript.strand == '+'){
+		for (list<Exon>::const_iterator it1 = transcript.exon_list.begin(); it1 != transcript.exon_list.end(); it1++){
+			it2 = it1;
+			it2++;
+			if (it2 == transcript.exon_list.end())
+				break;
+			if ((*it2).frame != (3 - ( ((*it1).to - (*it1).from + 1) - (*it1).frame) % 3) % 3){
+				return false;
 			}
 		}
-}
-
-bool three_compatible(Transcript* t1, Transcript* t2){		// stop_codon-Seite	// Translation 5'->3'
-	if (t1->strand == t2->strand && t1->frame == t2->frame){
-		if (!(t1->stop_codon) && t2->stop_codon)
-		{
-			if (t1->strand == '+'){
-				for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-					if (t1->exon_list.back().to == (*it).to){
-						return true;
-					}
-				}
-			}else if (t1->strand == '-'){
-				for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-					if (t1->exon_list.front().from == (*it).from){
-						return true;
-					}
-				}
-			}else{}		// no '+' or '-' strand
-		}else if(t1->stop_codon && !(t2->stop_codon)){
-			if (t1->strand == '+'){
-				for (list<Exon>::iterator it = t1->exon_list.begin(); it != t1->exon_list.end(); it++){
-					if (t2->exon_list.back().to == (*it).to){
-						return true;
-					}
-				}
-			}else if (t1->strand == '-'){
-				for (list<Exon>::iterator it = t1->exon_list.begin(); it != t1->exon_list.end(); it++){
-					if (t2->exon_list.front().from == (*it).from){
-						return true;
-					}
-				}
-			}else{}		// no '+' or '-' strand*/ return false;
-		}else{
-			return false;
-		}
-	}else{
-		return false;
-	}
-	return false;
-}
-
-
-bool five_compatible(Transcript* t1, Transcript* t2){	// (in Arbeit)		// start_codon-Seite
-	if (t1->strand == t2->strand && t1->frame == t2->frame){
-		if (!(t1->start_codon) && t2->start_codon)
-		{
-			if (t1->strand == '-'){
-				for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-					if (t1->exon_list.back().to == (*it).to){
-						return true;
-					}
-				}
-			}else if (t1->strand == '+'){
-				for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-					if (t1->exon_list.front().from == (*it).from){
-						return true;
-					}
-				}
-			}else{}		// no '+' or '-' strand
-		}else if(t1->start_codon && !(t2->start_codon)){
-			if (t1->strand == '-'){
-				for (list<Exon>::iterator it = t1->exon_list.begin(); it != t1->exon_list.end(); it++){
-					if (t2->exon_list.back().to == (*it).to){
-						return true;
-					}
-				}
-			}else if (t1->strand == '+'){
-				for (list<Exon>::iterator it = t1->exon_list.begin(); it != t1->exon_list.end(); it++){
-					if (t2->exon_list.front().from == (*it).from){
-						return true;
-					}
-				}
-			}else{}		// no '+' or '-' strand*/ return false;
-		}else{
-			return false;
-		}
-	}else{
-		return false;
-	}
-	return false;
-}
-
-void check_frame_annotation(list<Transcript> &transcript_list){	// (in Arbeit)
-	for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
-		bool in_frame = true;
-		for (list<Exon>::iterator it1 = (*it).exon_list.begin(); it1 != (*it).exon_list.end(); it1++){
-			if ((*it).frame != ((*it1).from + (*it1).frame) % 3){
-				cerr << "ERROR in Frame" << endl;
-				in_frame = false;
+	}else if (transcript.strand == '-'){
+		for (list<Exon>::const_iterator it1 = transcript.exon_list.end(); it1 != transcript.exon_list.begin(); it1--){
+			if (it1 == transcript.exon_list.end()){
+				it1--;
+				if (it1 == transcript.exon_list.begin())
+					break;
 			}
-			else
-				cerr << "Correct Frame" << endl;
+			it2 = it1;
+			it2--;
+			if (it2 == transcript.exon_list.begin())
+				break;
+			if ((*it2).frame != (3 - ( ((*it1).to - (*it1).from + 1) - (*it1).frame) % 3) % 3){
+				return false;
+			}else
+			if (it2 == transcript.exon_list.begin())
+				break;
 		}
-		cout << in_frame << endl;
 	}
+	return true;
 }
-
-// check strand:
-/*	Transcript* t1,t2;
-	if (t1->start_codon && t1->stop_codon){
-		if (t1->start_codon > t1->stop_codon){
-			if ('-' != t1->strand)
-				cerr << "Stranderror" << endl;
-		}
-		else{
-			if ('+' != t1->strand)
-				cerr << "Stranderror" << endl;
-		}
-	}
-*/

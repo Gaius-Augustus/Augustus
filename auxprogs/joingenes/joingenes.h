@@ -3,14 +3,10 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <vector>
 #include <cstring>
 #include <iostream>
-#include <vector>
-#include <stack>
 #include <list>
 #include <unordered_map>
-#include <sstream>
 #include <algorithm>
 #include <fstream>
 
@@ -28,49 +24,33 @@ class Exon{
 	int frame;
 
 	bool operator<(Exon const& rhs) const {
-		if (from != rhs.from)
 			return (from < rhs.from);
-		else
-			return (to < rhs.to);
 	}
 };
 
 class Transcript{
 	public:
-	list<Transcript*> supporter;
-	list<Exon> exon_list;
+	list<Transcript*> supporter;		// at the moment these list only consist the pointer to transcripts, who are totaly equal to this transcript (doesnt matter whether their creation is related)
+	list<Exon> exon_list;				// at the moment these list is only used for CDSs and thats the way it is used!
 	Gene* parent;
 	string source;
 	string t_id;
 	char strand;
-	string getchr();	// unused	
-	bool complete;
-	int start;
-	int stop;
-	int start_codon;
-	int stop_codon;
+	int start;							// transcript start (lowest base position in transcript) 
+	int stop;							// transcript stop (highest base position in transcript)
+	int start_codon;					// tis (translation initation site)
+	int stop_codon;						// tes (translation end site)
 	int priority;
-	int frame;
+	pair<int,int> pred_range;
 
+	void sort_exon(){
+		exon_list.sort();
+	}
 	int getstart(){
-		/*	// also gets start but dont sort list, what is needed to compare two transcripts
-		int start_temp = exon_list.front().from;
-		for (list<Exon>::iterator it = exon_list.begin(); it != exon_list.end(); it++){
-			if (start_temp > (*it).from)
-				start_temp = (*it).from;
-		}
-		return start_temp;
-		*/
-		exon_list.sort();			// takes longer but sorts exon_list
 		return exon_list.front().from;
 	}
 	int getstop(){
-		int stop_temp = exon_list.front().to;
-		for (list<Exon>::iterator it = exon_list.begin(); it != exon_list.end(); it++){
-			if (stop_temp < (*it).to)
-				stop_temp = (*it).to;
-		}
-		return stop_temp;
+		return exon_list.back().to;
 	}
 	bool operator<(Transcript const& rhs) const {
 		if (start != rhs.start)
@@ -86,39 +66,16 @@ class Gene{
 	list<Transcript*> children;
 };
 
-
-void seek_overlaps(list<Transcript> &transcript_list);
-void decide(list<Transcript*> &overlap);
-bool compare_transcripts(Transcript* t1, Transcript* t2);
-pair<bool,bool> is_part_of(Transcript* t1, Transcript* t2);
-bool compare_priority(Transcript* lhs, Transcript* rhs);
-void join(Transcript* t1, Transcript* t2);
-bool three_compatible(Transcript* t1, Transcript* t2);
-bool five_compatible(Transcript* t1, Transcript* t2);
-void check_frame_annotation(list<Transcript> &transcript_list);
-
-/*
-	string seqname;		// in Exon
-	string source;		// in Transcript
-	string feature;		// in Exon
-	unsigned int begin;	// in Exon
-	unsigned int end;	// in Exon
-	double score;		// in Exon
-	char strand;		// in Transcript
-	char frame;		// in Exon
-	string attribute;	// Transcript + Gene
-*/
-
-/*definitions out off ensemble.org:
-    seqname - name of the chromosome or scaffold; chromosome names can be given with or without the 'chr' prefix.
-    source - name of the program that generated this feature, or the data source (database or project name)
-    feature - feature type name, e.g. Gene, Variation, Similarity
-    start - Start position of the feature, with sequence numbering starting at 1.
-    end - End position of the feature, with sequence numbering starting at 1.
-    score - A floating point value.
-    strand - defined as + (forward) or - (reverse).
-    frame - One of '0', '1' or '2'. '0' indicates that the first base of the feature is the first base of a codon, '1' that the second base is the first base of a codon, and so on..
-    attribute - A semicolon-separated list of tag-value pairs, providing additional information about each feature.
-*/
+void seek_overlaps(list<Transcript> &transcript_list, string &outfilename);
+void work_at_overlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts);
+void search_n_destroy_doublings(list<Transcript*> &overlap);
+bool compare_transcripts(Transcript const* t1, Transcript const* t2);
+pair<bool,bool> is_part_of(Transcript const* t1, Transcript const* t2);
+bool compare_priority(Transcript const* lhs, Transcript const* rhs);
+void join_stop(list<Transcript*> &overlap, list<Transcript> &new_transcripts, list<Transcript*> &new_overlap_part);
+void join_start(list<Transcript*> &overlap, list<Transcript> &new_transcripts, list<Transcript*> &new_overlap_part);
+void joining(Transcript* t1, Transcript* t2, char strand, char side, Transcript &tx_new);
+bool is_combinable(Transcript const* t1, Transcript const* t2, char strand, char side);
+bool check_frame_annotation(Transcript const &transcript);
 
 #endif

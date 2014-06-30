@@ -1,14 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
-#include <vector>
 #include <cstring>
 #include <iostream>
-#include <vector>
 #include <fstream>
-#include <stack>
 #include <list>
 #include <unordered_map>
-#include <sstream>
 #include <algorithm>
 
 using namespace std;
