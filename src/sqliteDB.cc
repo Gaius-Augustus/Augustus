@@ -196,3 +196,10 @@ void Statement::bindText(int idx, const char* text){
 	throw error();
     }
 }
+
+bool Statement::nextResult(){
+    int msg = sqlite3_step(stmt);
+    if( msg != SQLITE_DONE && msg != SQLITE_ROW )
+	throw error();
+    return (msg == SQLITE_ROW);
+}

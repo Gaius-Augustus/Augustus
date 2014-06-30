@@ -321,6 +321,8 @@ void CompGenePred::start(){
 		    // transfer max weight paths to genes + filter + ouput
 		    orthograph.outputGenes(optGenes, opt_geneid);
 		}
+	    }else{
+		orthograph.outputGenes(optGenes, opt_geneid);
 	    }
 	    //geneRange->printOrthoExons(); //TODO: two copies of list<OrthoExon> (class geneRange and class OrthoGraph) -> replace one copy by a pointer to the other 
 	    for(list<OrthoExon>::iterator it=orthograph.all_orthoex.begin(); it != orthograph.all_orthoex.end(); it++){

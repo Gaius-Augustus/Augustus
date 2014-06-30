@@ -810,11 +810,12 @@ AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start
 		throw ProjectError("Could not open input file " + file);
 	}
 	else{
-	    throw ProjectError("Could not retrieve sequence from database");
+	    throw ProjectError("failed retrieving sequence " + speciesname + "." + chrName + ":" + itoa(start) + "-" + itoa(end) + "\nno such sequence in the db.\n");
+
 	}
     }catch(const char* err){
-	cerr<<"could not retrieve sequences"<< endl;
 	cerr<<db.error()<< endl;
+	throw ProjectError("failed retrieving sequence " + speciesname + "." + chrName + ":" + itoa(start) + "-" + itoa(end) + "\nsqlite error\n");
     }
     return NULL;
 }
