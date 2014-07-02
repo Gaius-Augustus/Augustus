@@ -355,13 +355,15 @@ map<string,string> getFileNames (string listfile){
     map<string,string> filenames;
     ifstream ifstrm(listfile.c_str());
     if (ifstrm.is_open()){
-	string line;
-	while(getline(ifstrm, line)){
-	    size_t pos = line.find('\t');
-	    if (pos != string::npos)
-		filenames[line.substr(0,pos)] = line.substr(pos + 1) ;
+	char buf[256];
+	while(ifstrm.getline(buf,255)){
+	    stringstream stm(buf);
+	    string species, dir;
+	    if(stm >> species >> dir){
+		filenames[species] = dir;
+	    }
 	    else
-		throw ProjectError(listfile + " has wrong format in line " + line + ". correct format:\n\n" + 
+		throw ProjectError(listfile + " has wrong format in line " + buf + ". correct format:\n\n" + 
 				   "Homo sapiens <TAB> /dir/to/genome/human.fa\n" + 
 				   "Mus musculus <TAB> /dir/to/genome/mouse.fa\n" + 
 				   "...\n");
