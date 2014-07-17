@@ -15,7 +15,8 @@ $usage .= "\n";
 $usage .= "Usage: $0 gff-file seq-file max-size-of-gene-flanking-DNA output-file [options]\n";
 $usage .= "options:\n";
 $usage .= "--bad=badfile    Specify a file with gene names. All except these are included in the output.\n";
-$usage .= "--good=goodfile  Specify a file with gene names. Only these genes are included in the output.\n";
+$usage .= "--good=goodfile  Specify a file with gene names. Only these genes are considered\n";
+$usage .= "                 from the input, also for overlap detection.\n";
 $usage .= "--overlap        Overlap filtering turned off.\n";
 $usage .= "\n";
 
