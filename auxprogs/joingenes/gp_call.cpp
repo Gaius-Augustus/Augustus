@@ -89,7 +89,7 @@ static const char *optString = "g:p:o:h?";
 	string filename_out;
 	int longIndex;
 
-opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
+	opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 	while (opt != -1) {
 		switch (opt) {
 			case 'g':
@@ -148,12 +148,16 @@ opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
 			cout << "After loading " << (*it_f) << " (Priority " << (*it_p) << ") there are " << transcript_list.size() << " transcripts in transcript_list." << endl;
 			it_p++;
 		}
+		for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
+			(*it).initiate();
+		} 
 	}else{
 		display_error("Number of input files and priorities is not equal.");
 	}
 	for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
 		if (!check_frame_annotation(*it)){
-			display_error("Frames are not correct.");
+			cerr << (*it).t_id << " has wrong frame annotation." << endl;
+			//display_error("Frames are not correct.");
 		}
 	}
 	seek_overlaps(transcript_list, filename_out);

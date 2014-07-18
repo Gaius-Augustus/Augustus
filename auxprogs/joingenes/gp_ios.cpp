@@ -62,8 +62,8 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 					exon.feature = temp;
 				else
 					load_error("Can not read feature.");
-				if (exon.feature != "CDS" && exon.feature != "start_codon" && exon.feature != "stop_codon"){
-					load_warning("There is an unexpected feature that is not equal to \"CDS\", \"start_codon\" and \"stop_codon\".");
+				if (exon.feature != "CDS" && exon.feature != "start_codon" && exon.feature != "stop_codon" && exon.feature != "exon" && exon.feature != "UTR"){
+					load_warning("There is an unexpected feature that is not equal to \"CDS\", \"UTR\", \"exon\", \"start_codon\" and \"stop_codon\".");
 				}
 				temp = strtok(NULL, "\t");
 				if (temp)
@@ -89,7 +89,7 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 					transcript.strand = '-';
 				else {
 					transcript.strand = '.';
-					load_warning("The strand of this transcript is unknown.");
+					load_error("The strand of this transcript is unknown.");
 				}
 				temp = strtok(NULL, "\t");
 				if (!temp)
@@ -125,22 +125,36 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 								load_warning("One transcript on different strands.");
 							}
 							if (exon.feature == "start_codon"){
-								if (transcript_list.front().strand == '+')
-									transcript_list.front().start_codon = exon.from;
-								if (transcript_list.front().strand == '-')
-									transcript_list.front().start_codon = exon.to;
+								if (transcript_list.front().tl_complete.first)
+									transcript_list.front().separated_codon.first = true;
+								if (transcript_list.front().strand == '+'){
+									if (!transcript_list.front().tl_complete.first || (transcript_list.front().tl_complete.first && transcript_list.front().tis > exon.from))
+										transcript_list.front().tis = exon.from;
+								}
+								if (transcript_list.front().strand == '-'){
+									if (!transcript_list.front().tl_complete.first || (transcript_list.front().tl_complete.first && transcript_list.front().tis < exon.to))
+										transcript_list.front().tis = exon.to;
+								}
+								transcript_list.front().tl_complete.first = true;
 							}else if (exon.feature == "stop_codon"){
-								if (transcript_list.front().strand == '+')
-									transcript_list.front().stop_codon = exon.to;
-								if (transcript_list.front().strand == '-')
-									transcript_list.front().stop_codon = exon.from;
+								if (transcript_list.front().tl_complete.second){
+									transcript_list.front().separated_codon.second = true;}
+								if (transcript_list.front().strand == '+'){
+									if (!transcript_list.front().tl_complete.second || (transcript_list.front().tl_complete.second && transcript_list.front().tes < exon.to))
+										transcript_list.front().tes = exon.to;
+								}
+								if (transcript_list.front().strand == '-'){
+									if (!transcript_list.front().tl_complete.second || (transcript_list.front().tl_complete.second && transcript_list.front().tes > exon.from))
+										transcript_list.front().tes = exon.from;
+								}
+								transcript_list.front().tl_complete.second = true;
 							}else{
 								transcript_list.front().exon_list.push_front(exon);
 							}
 							if (pred_range.first && pred_range.second){
 								transcript_list.front().pred_range = pred_range;
-								pred_range.first = 0;
-								pred_range.second = 0;
+								// pred_range.first = 0;
+								// pred_range.second = 0;
 							}
 						}
 						if (strstr(temp_inside, "gene_id")!=NULL){
@@ -181,11 +195,6 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 		}
 		infile.getline(buff, 1024);
 	}
-	for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
-		(*it).sort_exon();
-		(*it).start = (*it).getstart();
-		(*it).stop = (*it).getstop();
-	} 
 }
 
 void save_overlap(list<Transcript*> &overlap, string &filename)
@@ -199,26 +208,26 @@ void save_overlap(list<Transcript*> &overlap, string &filename)
 	// write by transcripts:
 	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 		outfile << "# " << (*it)->t_id << " is supported by " << (*it)->supporter.size() << " other predictions" << endl;
-		if ((*it)->strand == '+' && (*it)->start_codon){
+		if ((*it)->strand == '+' && (*it)->tl_complete.first){
 			// outfile << (*it)->exon_list.front().chr << "\t";
 			outfile << "chr" << (*it)->exon_list.front().chr << "\t";
 			outfile << (*it)->source << "\t";
 			outfile << "start_codon" << "\t";
-			outfile << (*it)->start_codon << "\t";
-			outfile << ((*it)->start_codon+2) << "\t";
+			outfile << (*it)->tis << "\t";
+			outfile << ((*it)->tis+2) << "\t";
 			outfile << '.' << "\t";
 			outfile << (*it)->strand << "\t";
 			outfile << '0' << "\t";
 			// outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << (*it)->parent->g_id << "\";" << endl;
 			outfile << "transcript_id \"" << "g" << temp_gene_number << ".t1" << "\"; gene_id \"" << "g" << temp_gene_number << "\";" << endl;
 		}
-		else if ((*it)->strand == '-' && (*it)->stop_codon){
+		else if ((*it)->strand == '-' && (*it)->tl_complete.second){
 			// outfile << (*it)->exon_list.front().chr << "\t";
 			outfile << "chr" << (*it)->exon_list.front().chr << "\t";
 			outfile << (*it)->source << "\t";
 			outfile << "stop_codon" << "\t";
-			outfile << (*it)->stop_codon << "\t";
-			outfile << ((*it)->stop_codon+2) << "\t";
+			outfile << (*it)->tes << "\t";
+			outfile << ((*it)->tes+2) << "\t";
 			outfile << '.' << "\t";
 			outfile << (*it)->strand << "\t";
 			outfile << '0' << "\t";
@@ -234,30 +243,33 @@ void save_overlap(list<Transcript*> &overlap, string &filename)
 			outfile << (*it_inside).to << "\t";
 			outfile << (*it_inside).score << "\t";
 			outfile << (*it)->strand << "\t";
-			outfile << (*it_inside).frame << "\t";
+			if ((*it_inside).frame != -1)
+				outfile << (*it_inside).frame << "\t";
+			else
+				outfile << "." << "\t";
 			// outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << (*it)->parent->g_id << "\";" << endl;
 			outfile << "transcript_id \"" << "g" << temp_gene_number << ".t1" << "\"; gene_id \"" << "g" << temp_gene_number << "\";" << endl;
 		}
-		if ((*it)->strand == '-' && (*it)->start_codon){
+		if ((*it)->strand == '-' && (*it)->tl_complete.first){
 			// outfile << (*it)->exon_list.front().chr << "\t";
 			outfile << "chr" << (*it)->exon_list.front().chr << "\t";
 			outfile << (*it)->source << "\t";
 			outfile << "start_codon" << "\t";
-			outfile << ((*it)->start_codon-2) << "\t";
-			outfile << (*it)->start_codon << "\t";
+			outfile << ((*it)->tis-2) << "\t";
+			outfile << (*it)->tis << "\t";
 			outfile << '.' << "\t";
 			outfile << (*it)->strand << "\t";
 			outfile << '0' << "\t";
 			// outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << (*it)->parent->g_id << "\";" << endl;
 			outfile << "transcript_id \"" << "g" << temp_gene_number << ".t1" << "\"; gene_id \"" << "g" << temp_gene_number << "\";" << endl;
 		}
-		else if ((*it)->strand == '+' && (*it)->stop_codon){
+		else if ((*it)->strand == '+' && (*it)->tl_complete.second){
 			// outfile << (*it)->exon_list.front().chr << "\t";
 			outfile << "chr" << (*it)->exon_list.front().chr << "\t";
 			outfile << (*it)->source << "\t";
 			outfile << "stop_codon" << "\t";
-			outfile << ((*it)->stop_codon-2) << "\t";
-			outfile << (*it)->stop_codon << "\t";
+			outfile << ((*it)->tes-2) << "\t";
+			outfile << (*it)->tes << "\t";
 			outfile << '.' << "\t";
 			outfile << (*it)->strand << "\t";
 			outfile << '0' << "\t";
@@ -285,7 +297,10 @@ void save(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 			outfile << (*it_inside).to << "\t";
 			outfile << (*it_inside).score << "\t";
 			outfile << (*it).strand << "\t";
-			outfile << (*it_inside).frame << "\t";
+			if ((*it_inside).frame != -1)
+				outfile << (*it_inside).frame << "\t";
+			else
+				outfile << "." << "\t";
 			outfile << "transcript_id \"" << (*it).t_id << "\"; gene_id \"" << (*it).parent->g_id << "\";" << endl;
 		}
 	}
@@ -301,7 +316,10 @@ void save(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 				outfile << (*it_inside).to << "\t";
 				outfile << (*it_inside).score << "\t";
 				outfile << (*it).strand << "\t";
-				outfile << (*it_inside).frame << "\t";
+				if ((*it_inside).frame != -1)
+					outfile << (*it_inside).frame << "\t";
+				else
+					outfile << "." << "\t";
 				outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << pointer->second.g_id << "\";" << endl;
 			}
 		}
