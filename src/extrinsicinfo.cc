@@ -493,7 +493,7 @@ void SequenceFeatureCollection::checkGroupConsistency(AnnoSequence *seq){
 		    } else if (hint->type == assF) {
 			bool found = false;
 			for (int pos = hint->start-1; pos < hint->end && !found; pos++) 
-			    found = validDSSPattern(seq->sequence + pos);
+			    found = validASSPattern(seq->sequence + pos);
 			plusPossible = plusPossible && found;
 			found = false;
 			for (int pos = hint->start; pos <= hint->end && !found; pos++)
