@@ -558,6 +558,7 @@ GBSplitter::GBSplitter( string fname ) : ftype(unknown) {
 	zin.push(ifstrm);
     }
     boost::iostreams::copy(zin, sin);
+
 #else
     // only normal file input available
     sin << ifstrm.rdbuf();
@@ -573,26 +574,27 @@ GBSplitter::~GBSplitter( ){
 
 
 void GBSplitter::determineFileType(){
+    std::stringstream csin(sin.str());
     char wrongChar=' ';
     ftype = unknown;
-    sin >> ws;
+    csin >> ws;
 
     // check whether it could be genbank format
     // search for at least one LOCUS and ORIGIN at the beginning of a line
-    sin >> goto_line_after( "LOCUS" );
-    sin >> goto_line_after( "ORIGIN" );
-    if (sin)
+    csin >> goto_line_after( "LOCUS" );
+    csin >> goto_line_after( "ORIGIN" );
+    if (csin)
 	ftype = genbank;
     else {
 	// check, whether it is FASTA or plain sequence
 	// only letters allowed in the sequence part, except for the end of the line
 	bool whiteSpaceSeen;
-	sin.clear();
-	sin.seekg(0, ios::beg);
+	csin.clear();
+	csin.seekg(0, ios::beg);
 	string line;
 	bool haveWrongChar=false;
-	while (sin && !haveWrongChar) {
-	    getline(sin, line);
+	while (csin && !haveWrongChar) {
+	    getline(csin, line);
 	    if (line[0]!='>') {
 		whiteSpaceSeen=false;
 		for (int i=0; i < line.length() && !haveWrongChar; i++) 
@@ -607,8 +609,8 @@ void GBSplitter::determineFileType(){
 	if (!haveWrongChar)
 	    ftype = fasta;
 	
-	sin.clear();
-	sin.seekg(0, ios::beg);
+	csin.clear();
+	csin.seekg(0, ios::beg);
     }
     if (ftype == unknown) {
      	string errmsg = "GBProcessor::determineFileType(): Couldn't determine input file type. Found bad character '";
@@ -617,8 +619,8 @@ void GBSplitter::determineFileType(){
      	throw GBError(errmsg);
     }
 
-    sin.clear();
-    sin.seekg(0, ios::beg);
+    //    csin.clear();
+    //    csin.seekg(0, ios::beg);
 }
 
 
