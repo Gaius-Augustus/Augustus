@@ -343,7 +343,8 @@ file offsets to achieve random access to the genome files.
 
 a) Installation
 
-   To enable access to an SQLITE database, download the latest SQLite source code from http://www.sqlite.org/download.html/
+   To enable access to an SQLITE database, install the package libsqlite3-dev with your package manager or 
+   download the SQLite source code from http://www.sqlite.org/download.html/ 
    (tested with  SQLite 3.8.5 ) and install as follows:
 
    > tar zxvf sqlite-autoconf-3080500.tar.gz
