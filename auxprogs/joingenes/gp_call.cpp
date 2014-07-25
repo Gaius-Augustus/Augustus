@@ -23,15 +23,15 @@ void display_help(void)
 {
 	cout << "This is the help documentation of the joingenes programm" << endl;
 	cout << "Options:" << endl;
-	cout << "\tNecessary:" << endl;
-	cout << "\t\t--genesets=file1,file2,...\t-g file1,file2,...\twhere \"file1,file2,...,filen\" have to be datafiles with genesets in gff or gtf format" << endl;
-	cout << "\t\t--output=x\t\t\t-o ofile\t\twhere \"ofile\" have to be a name for an output datafile (gff/gtf)" << endl;
-	cout << "\tOptional:" << endl;
+	cout << "\tRequired parameters:" << endl;
+	cout << "\t\t--genesets=file1,file2,...\t-g file1,file2,...\twhere \"file1,file2,...,fileN\" is a list of GFF formatted files with gene sets" << endl;
+	cout << "\t\t--output=ofile\t\t\t-o ofile\t\twhere \"ofile\" is a name for an output file in GTF format" << endl;
+	cout << "\tOptional parameters:" << endl;
 	cout << "\t\t--priorities=pr1,pr2,...\t-p pr1,pr2,...\t\twhere \"pr1,pr2,...,prn\" have to be integers different from 0" << endl;
-	cout << "\t\t\t\t\t\t\t\t\thave to be as many as filenames are added" << endl;
-	cout << "\t\t\t\t\t\t\t\t\tbigger numbers means a higher priority" << endl;
-	cout << "\t\t\t\t\t\t\t\t\tif no priorities are added, the programm will set all priorties to 1" << endl;
-	cout << "\t\t\t\t\t\t\t\t\tthis option is only usefull, if there are more then one geneset" << endl;
+	cout << "\t\t\t\t\t\t\t\t\tThere must be as many priorities as input files." << endl;
+	cout << "\t\t\t\t\t\t\t\t\tLarger numbers means a higher priority." << endl;
+	cout << "\t\t\t\t\t\t\t\t\tIf no priorities are added, all priorties are set to 1" << endl;
+	cout << "\t\t\t\t\t\t\t\t\tThis option is only useful, if there is more then one geneset." << endl;
 	cout << "\t\t--help \t\t\t\t-h\t\t\tprints the help documentation" << endl;
 	cout << endl;
 	exit( EXIT_FAILURE );
