@@ -1,19 +1,19 @@
 CC=g++
 CFLAGS=-c -Wall -std=gnu++0x
 
-all: gp_call
+all: joingenes
 
-gp_call: gp_call.o joingenes.o gp_ios.o joingenes.h gp_ios.h
-	$(CC) gp_call.o joingenes.o gp_ios.o -o gp_call
+joingenes: joingenes.o jg_transcript.o jg_ios.o jg_transcript.h jg_ios.h
+	$(CC) joingenes.o jg_transcript.o jg_ios.o -o joingenes
 
-gp_call.o: gp_call.cpp joingenes.h gp_ios.h
-	$(CC) $(CFLAGS) gp_call.cpp
-
-joingenes.o: joingenes.cpp joingenes.h
+joingenes.o: joingenes.cpp jg_transcript.h jg_ios.h
 	$(CC) $(CFLAGS) joingenes.cpp
 
-gp_ios.o: gp_ios.cpp gp_ios.h joingenes.h
-	$(CC) $(CFLAGS) gp_ios.cpp
+jg_transcript.o: jg_transcript.cpp jg_transcript.h
+	$(CC) $(CFLAGS) jg_transcript.cpp
+
+jg_ios.o: jg_ios.cpp jg_ios.h jg_transcript.h
+	$(CC) $(CFLAGS) jg_ios.cpp
 
 clean:
-	rm -rf *o gp_call
+	rm -rf *o joingenes
