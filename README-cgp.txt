@@ -10,6 +10,7 @@
 6. RETRIEVING GENOMES FROM A MYSQL DATABASE
 7. USING HINTS
 8. SQLITE ACCESS
+9. OPTIMIZING CGP PARAMETERS
 
 1. INTRODUCTION
 ----------------
@@ -379,3 +380,45 @@ c) running AUGUSUTS with SQLite db access:
    in order to retrieve hints from the database, enable --dbhints and pass an extrinsic config file
 
    > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
+
+
+9. OPTIMIZING CGP PARAMETERS
+-------------------------------
+
+The parameters specific to comparative gene prediction can be automatically optimized
+similar to the meta parameters in single species gene prediction using the script 'optimize_augustus.pl'.
+In short, a range of parameter values is specified for each parameter in a config file with the extension _metapars.cgp.cfg (e.g. human_metapars.cgp.cfg).
+Different values in these ranges are tried out in several rounds and values giving highest accuracy are chosen.
+In the evaluation step, the external program Eval¹ and a reference gene set are required.
+
+a) Installation of Eval
+
+   The software package eval by Keibler and Brent is required for retrieving accuracy values of predictions.
+   It can be downloaded from
+
+   > wget http://mblab.wustl.edu/media/software/eval-2.2.8.tar.gz
+   > tar zxvf eval-2.2.8.tar.gz
+
+   add following lines to your .bashrc file to include the perl executable evaluate_gtf.pl to your $PATH environment variable (optional),
+   and the perl modules EVAL.pm and GTF.pm to your $PERL5LIB environment variable (mandatory)
+
+   export PATH=$PATH:/path/to/eval-2.2.8
+   export PERL5LIB=$PERL5LIB:/path/to/eval-2.2.8
+
+   to check that the installation was successful, run following command
+
+   >  evaluate_gtf.pl -v /path/to/eval-2.2.8/chr22.refseq.gtf /path/to/eval-2.2.8/chr22.twinscan.gtf /path/to/eval-2.2.8/chr22.genscan.gtf
+
+b) Running optimize_augustus.pl for cgp parameter training
+   Run optimize_augustus.pl and read the instructions in USAGE 2 for further information
+
+   > optimize_augustus.pl
+
+   exampe code: 
+
+   > optimize_augustus.pl --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl --eval_against=hg19 --stopCodonExcludedFromCDS=1 eval.gtf
+   
+   the file eval.gtf contains a reference gene set for the human genome that is used for evaluation
+
+¹Keibler, E. and M.R. Brent. 2003. "Eval: A software package for analysis of genome annotations." BMC Bioinformatics 4:50.
+   

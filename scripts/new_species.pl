@@ -57,6 +57,7 @@ my $cfgfilename = $speciesdir . $species . "_parameters.cfg";
 my $weightfilename = $speciesdir . $species . "_weightmatrix.txt";
 my $metafilename = $speciesdir . $species . "_metapars.cfg";
 my $metautrfilename = $speciesdir . $species . "_metapars.utr.cfg";
+my $metacgpfilename = $speciesdir . $species . "_metapars.cgp.cfg";
 my $ovlpfilename = $speciesdir . $species . "_ovlp_len.pbl";
 my $transshadowfilename = $speciesdir . $species ."_trans_shadow_bacterium.pbl";
 
@@ -150,6 +151,7 @@ if(!$prokaryotic){
     }
     system ("cp $configdir/species/generic/generic_metapars.cfg $metafilename");
     system ("cp $configdir/species/generic/generic_metapars.utr.cfg $metautrfilename");
+    system ("cp $configdir/species/generic/generic_metapars.cgp.cfg $metacgpfilename");
 }else{
     if (stat "$configdir/species/template_prokaryotic/template_prokaryotic_metapars.cfg" == 0){
         die ("$configdir/species/template_prokaryotic/template_prokaryotic_metapars.cfg doesn't exist.");

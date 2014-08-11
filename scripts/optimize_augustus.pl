@@ -32,53 +32,116 @@ my %cmdpars = ( 'species'              => '',
                 'translation_table'    => '',
                 'genemodel'            => '',
                 '/Constant/min_coding_len' => '',
-                'sens_spec_bias'       => '1');
+                'sens_spec_bias'       => '1',
+
+                # command line arguments for optimizing cgp parameters
+		'treefile'             => '',
+		'alnfile'              => '',
+                'dbaccess'             => '',
+		'speciesfilenames'     => '',
+		'eval_exec_dir'        => '',
+                'eval_against'         => '',
+		'stopCodonExcludedFromCDS' => '',
+                'chunksize'            => '5000000');
+
+
+my $cgp = 0;
 
 $SIG{INT} = \&got_interrupt_signal;
 
 sub got_interrupt_signal {
     print STDERR "$0 was interrupted.\n";
-    if ($cmdpars{'opt_trans_matrix'} ne ''){
-	if (-s $cmdpars{'opt_trans_matrix'} . ".curopt") {
-	    system("cp $cmdpars{'opt_trans_matrix'}.curopt $cmdpars{'opt_trans_matrix'}");
-	    print STDERR "I replaced the transition matrix in $cmdpars{'opt_trans_matrix'} "
-		. "with the currently optimal matrix.\n";
+    if(!$cgp){
+	if ($cmdpars{'opt_trans_matrix'} ne ''){
+	    if (-s $cmdpars{'opt_trans_matrix'} . ".curopt") {
+		system("cp $cmdpars{'opt_trans_matrix'}.curopt $cmdpars{'opt_trans_matrix'}");
+		print STDERR "I replaced the transition matrix in $cmdpars{'opt_trans_matrix'} "
+		    . "with the currently optimal matrix.\n";
+	    }
+	} else {
+	    print STDERR "\nPlease retrain augustus with the new parameters using etraining.\n";
 	}
-    } else {
-	print STDERR "\nPlease retrain augustus with the new parameters using etraining.\n";
     }
     exit(1);
+
 }
 
-my $usage = "$0 -- train augustus and automatically optimize the meta parameters\nUsage:\n";
-$usage .= "$0 --species=myspecies train.gb [optional parameters]\n";
-$usage .= "myspecies                prefix of the species name\n";
-$usage .= "train.gb                 genbank file for training with bona fide gene structures\n\n";
-$usage .= "optional parameters:\n";
-$usage .= "--metapars=metapars.cfg  metapars.cfg contains the names and their ranges of the\n";
-$usage .= "                         meta parameters that are subject to optimization.\n";
-$usage .= "                         (default: generic_metapars.cfg)\n";
-$usage .= "--rounds=r               r is the number of rounds (default: 5)\n";
-$usage .= "--cpus=n                 n is the number of CPUs to use (default: 1) \n";
-$usage .= "--onlytrain=onlytrain.gb an optional genbank file that is used in addition to train.gb\n";
-$usage .= "                         but only for etrain not for intermediate evaluation of accuracy.\n";
-$usage .= "                         These genes may e.g. be incomplete.\n";
-$usage .= "--kfold=k                Make a k-fold cross validation (default: 8)\n";
-$usage .= "--pstep=p                For integer and floating parameters start with p tests equidistributed\n"; 
-$usage .= "                         in the allowed range of values (default: 5)\n";
-$usage .= "--AUGUSTUS_CONFIG_PATH=d Specify the config directory d if not set as environment variable\n"; 
-$usage .= "--opt_trans_matrix=s     Optimize the transition matrix file s. s must be the transition file used.\n"; 
-$usage .= "                         e.g. ../species/nt/generic/generic_trans_shadow_partial.pbl\n";
-$usage .= "--matrix_constraints=s   A file with try list, normed list and bindings.\n";
-$usage .= "--UTR=on                 Turn untranslated region model on for training and prediction.\n";
-$usage .= "--aug_exec_dir=d         Path to augustus and etraining executable. If not specified\n";
-$usage .= "                         it must be in \$PATH environment variable.\n";
-$usage .= "--trainOnlyUtr=1         Use this option, if the exon, intron and intergenic models need not be trained. (default: 0)\n";
-$usage .= "--noTrainPars=1          Use this option, if the parameters to optimize do not affect training. The training step (etraining) is omitted completely. (default: 0)\n";
-$usage .= "--sens_spec_bias=f       increase sensitivity weight by factor f. (default: 1)\n";
+my $usage = <<'ENDUSAGE';
+optimize_augustus.pl    train augustus and automatically optimize the meta parameters.
+                        Beside the conventional training of parameters subject to a single
+                        genome (USAGE 1), this script can also be used for training of cgp
+                        (comparative gene prediction) parameters (USAGE 2).
+                        The cgp parameter optimization requires the installation of the 
+                        external program Eval for the calculation of accuracy values.
+                        For download and installation instructions, see section 9 of README-cgp.txt
+
+USAGE 1 --- single species parameter training and optimization (main usage for most users)
+
+optimize_augustus.pl --species=myspecies train.gb
+
+      myspecies                prefix of the species name
+      train.gb                 genbank file for training with bona fide gene structures
+
+OPTIONS
+
+    --metapars=metapars.cfg    metapars.cfg contains the names and their ranges of the
+                               meta parameters that are subject to optimization.
+                               (default: generic_metapars.cfg)
+    --rounds=r                 r is the number of rounds (default: 5)
+    --cpus=n                   n is the number of CPUs to use (default: 1)
+    --onlytrain=onlytrain.gb   an optional genbank file that is used in addition to train.gb
+                               but only for etrain not for intermediate evaluation of accuracy.
+                               These genes may e.g. be incomplete.
+    --kfold=k                  Make a k-fold cross validation (default: 8)
+    --pstep=p                  For integer and floating parameters start with p tests equidistributed
+                               in the allowed range of values (default: 5)
+    --AUGUSTUS_CONFIG_PATH=d   Specify the config directory d if not set as environment variable
+    --opt_trans_matrix=s       Optimize the transition matrix file s. s must be the transition file used.
+                               e.g. ../species/nt/generic/generic_trans_shadow_partial.pbl
+    --matrix_constraints=s     A file with try list, normed list and bindings.
+    --UTR=on                   Turn untranslated region model on for training and prediction.
+    --aug_exec_dir=d           Path to augustus and etraining executable. If not specified
+                               it must be in \$PATH environment variable.
+    --trainOnlyUtr=1           Use this option, if the exon, intron and intergenic models need not be trained. (default: 0)
+    --noTrainPars=1            Use this option, if the parameters to optimize do not affect training. The training step (etraining) is omitted completely. (default: 0)
+    --sens_spec_bias=f         increase sensitivity weight by factor f. (default: 1)
+
+USAGE 2 --- optimizing cgp (comparative gene prediction) parameters ---
+
+optimize_augustus.pl --species=myspecies --treefile=tree.nwk --alnfile=aln.file --speciesfilenames=genomes.tbl eval.gtf
+
+   myspecies                    prefix of the model species
+   tree.nwk                     a phylogenetic tree of the species in NEWICK format
+   aln.maf                      an alignment of the genomes in MAF format
+   genomes.tbl                  a text file containing the locations of the genomes. Each line starts with the species identifier
+                                followed by the location of the corresponding genome file, e.g.
+                                hg19 /path/to/human/genome.fa
+                                mm9  /path/to/mouse/genome.fa
+                                ...
+   eval.gtf                     annotation file in GTF format. Accuracy values are computed by comparing the predictions against this reference set.
+
+OPTIONS
+
+    --stopCodonExcludedFromCDS=1 Use this option, if the stop codons are excluded from the CDS features in 'eval.gtf' (default: 0).
+    --eval_exec_dir              Directory that contains the executable evaluate_gtf.pl from the eval package.
+                                 If not specified it must be in \$PATH environment variable.
+    --eval_against=s             s is the species identifier to which 'eval.gtf' belongs to. Caution, if not specified, the
+                                 reference species in the alignment (first s-line in Maf block) is assumed.
+    --chunksize=n                when more than 1 CPU is used, the alignment is split into multiple smaller alignments each approximately covering a
+                                 sequence range of length n (in the reference genome). The prediction step is executed in parallel on these chunks (default: 5000000).
+    --dbaccess=db                retrieve genomes either from a MySQL or from an SQLITE database. In the SQLITE case, 'db' is a database file
+                                 with extension .db, e.g. --dbaccess=vertebrates.db. In the MySQL case, 'db' is a string that contains the connection
+                                 information, e.g. --dbaccess=dbname,host,user,passwd (the parameter --speciesfilenames is not required, here).
+    --metapars=metapars.cgp.cfg  see usage 1 above (default: generic_metapars.cgp.cfg)
+    --cpus=n                     see usage 1 above
+    --pstep=p                    see usage 1 above
+    --AUGUSTUS_CONFIG_PATH=d     see usage 1 above
+    --aug_exec_dir=d             see usage 1 above
+    --sens_spec_bias=f           see usage 1 above
+
+ENDUSAGE
 
 my $be_silent = "--/augustus/verbosity=0 --/ExonModel/verbosity=0 --/IGenicModel/verbosity=0 --/IntronModel/verbosity=0 --/UtrModel/verbosity=0 --/genbank/verbosity=0";
-
 
 ##############################################################
 # Check the command line
@@ -100,14 +163,54 @@ foreach (@ARGV) {
 	if ($cmdpars{"train.gb"} eq ''){
 	    $cmdpars{"train.gb"}=$_;
 	} else {
-	    print "There can only be one parameter without an explicit name: the training genbank file name\n$usage";
+	    print "There can only be one parameter without an explicit name.\n$usage";
 	    exit;
 	}
     }
 }
+ 
+# check whether training of cgp parameters is turned on
+if ($cmdpars{"alnfile"} ne "" && $cmdpars{"treefile"} ne "" && ($cmdpars{"speciesfilenames"} ne "" || $cmdpars{"dbaccess"} ne "")){
+    $cgp = 1;
+    if ($cmdpars{"eval_against"} eq ""){
+	if( qx(grep -m 1 "^s" "$cmdpars{'alnfile'}") =~ /^s\s(\S+)\.(\S+)/ ){
+	    print STDERR "no species for evaluation specified. Assuming the reference species " . $1 . " from the maf file.\n";
+	    $cmdpars{"eval_against"} = $1;
+	} else {
+	    print "no species for evaluation specified. Please specify to which species the evaluation file corresponds\n$usage";
+	    exit;
+	}
+    }
+    $cmdpars{'noTrainPars'} = 1;
+    $cmdpars{"opt_trans_matrix"}='';
+    $cmdpars{'onlytrain'}='';
+    if ($cmdpars{'eval_exec_dir'} =~ /.[^\/]$/) {
+	$cmdpars{'eval_exec_dir'} .= '/';
+    }
+    # check whether the eval package is properly installed (needed for evaluation of the gene prediction)
+    if (qx(which "$cmdpars{'eval_exec_dir'}evaluate_gtf.pl") !~ /evaluate_gtf.pl$/){
+	die ("eval is not executable. Please add the directory which contains the executable evaluate_gtf.pl to the PATH environment variable or specify the path with --eval_exec_dir.");
+    }
+    if (qx("$cmdpars{'eval_exec_dir'}evaluate_gtf.pl" 2>&1) =~ /^Can\'t\slocate\s(\w+\.pm)/ ){
+	die ("eval is not executable. The perl libary " . $1 . " cannot be located.\n" . 
+             "Please add the directory which contains " . $1 . " to the PERL5LIB environment variable, e.g. add the following line to your .bashrc file:\n\n" . 
+	     "export PERL5LIB=\$PERL5LIB:/path/to/" . $1 . "\n\n");
+    }
+} elsif (!( $cmdpars{"alnfile"} eq "" && $cmdpars{"treefile"} eq "" && $cmdpars{"speciesfilenames"} eq "" && $cmdpars{"dbaccess"} eq "") ){
+    die ("For Optimizing cgp parameters you must specify parameters alnfile, treefile\n" . 
+         "and one of the following combinations of parameters\n\n" .
+        "--dbaccess (retrieving genomes from a MySQL db)\n" .
+         "--speciesfilenames and --dbaccess (retrieving genomes from an SQLite db)\n" .
+         "--speciesfilenames (retrieving genomes from flat files)\n\n" .
+         "Otherwise, none of these parameters are specifieds.\n");
+}
 
 if ($cmdpars{"train.gb"} eq ""){
-    print "training file missing\n$usage";
+    if(!$cgp){
+	print "training file missing\n$usage";
+    } else {
+	print "annotation file missing\n$usage";
+    }
     exit;
 }
 
@@ -116,7 +219,7 @@ if ($cmdpars{"species"} eq ""){
     exit;
 }
 
-if ($cmdpars{"kfold"}<1) {
+if ($cmdpars{"kfold"}<1 && !$cgp) {
     die ("must be at least two fold cross validation");
 }
 
@@ -156,6 +259,18 @@ if (length($cmdpars{"genemodel"}) > 1){
 if (not($cmdpars{"/Constant/min_coding_len"} eq "")){
     $pars = $pars." --/Constant/min_coding_len=".$cmdpars{"/Constant/min_coding_len"};
 }
+if($cmdpars{"treefile"} ne ""){
+   $pars = $pars." --treefile=".$cmdpars{"treefile"};
+}
+if($cmdpars{"dbaccess"} ne ""){
+   $pars = $pars." --dbaccess=".$cmdpars{"dbaccess"};
+}
+if($cmdpars{"speciesfilenames"} ne ""){
+   $pars = $pars." --speciesfilenames=".$cmdpars{"speciesfilenames"};
+}
+if (defined($cmdpars{"stopCodonExcludedFromCDS"}) && $cmdpars{"stopCodonExcludedFromCDS"} ne "" && $cmdpars{"stopCodonExcludedFromCDS"} ne "0"){
+   $pars = $pars." --stopCodonExcludedFromCDS=true";
+}
 
 my $modelrestrict = "";
 if (defined($cmdpars{'trainOnlyUtr'}) && $cmdpars{'trainOnlyUtr'} ne "" && $cmdpars{'trainOnlyUtr'} ne "0"){
@@ -181,7 +296,6 @@ if (!$got_ForkManager && $cmdpars{'cpus'} > 1){
     $cmdpars{'cpus'} = 1;
 }
 
-
 ##############################################################
 # Create temporary files and folders
 ##############################################################
@@ -191,84 +305,114 @@ my $optdir = "tmp_opt_$cmdpars{'species'}";
 system("rm -rf $optdir;mkdir $optdir");
 opendir(TMPDIR, $optdir) or die ("Could not open $optdir");
 
+# only needed in cgp
+my @gfflines = ();
+
 # Split train.gb into k_fold equal portions
-print "Splitting training file into $cmdpars{'kfold'} buckets...\n";
-open (TRAINGB, <$cmdpars{"train.gb"}>) or die ("Could not open $cmdpars{'train.gb'}");
-
-my @seqlist = ();
-@seqlist  = <TRAINGB>;
-my @namelines = grep /^LOCUS   +/, @seqlist;
-@seqlist = ();
-my @names=();
-
-if (@namelines < $cmdpars{"kfold"}) {
-    print "Number of training sequences is too small\n";
-    exit;
-}
- 
-foreach (@namelines) {
-    /LOCUS +([^ ]+) */;
-    push @names, $1;
-}
-
-my $bucket=0;
-my %bucketmap=();
-srand(88);
-while ($#names >= 0) {
-    my $rand = rand (@names);
-    $bucketmap{$names[$rand]}=$bucket;
-    $bucket++;
-    if ($bucket == $cmdpars{"kfold"}){
-	$bucket = 0;
+if(!$cgp){
+    print "Splitting training file into $cmdpars{'kfold'} buckets...\n";
+    open (TRAINGB, <$cmdpars{"train.gb"}>) or die ("Could not open $cmdpars{'train.gb'}");
+    
+    my @seqlist = ();
+    @seqlist  = <TRAINGB>;
+    my @namelines = grep /^LOCUS   +/, @seqlist;
+    @seqlist = ();
+    my @names=();
+    
+    if (@namelines < $cmdpars{"kfold"}) {
+	print "Number of training sequences is too small\n";
+	exit;
     }
-    splice @names, $rand, 1;          # delete array element
-}
-my $handle;
-my @fh=();
-for ($bucket=1; $bucket<=$cmdpars{"kfold"}; $bucket++) {
-    $handle = IO::File->new(">$optdir/bucket$bucket.gb") or die("Could not open bucket$bucket.gb");
-    push @fh, $handle;
-}
-
-$/="\n//\n"; # this causes a huge single chunk when DOS carriage returns are used at line breaks
-seek (TRAINGB, 0, 0);
-my $nloci = 0;
-while(<TRAINGB>) {
-    my $gendaten=$_;
-    m/^LOCUS +(\S+) .*/;
-    my $genname=$1;
-      
-    $bucket = $bucketmap{$genname};
-    my $handle = $fh[$bucket];
-    print $handle $gendaten;
-    $nloci++;
-}
-
-foreach my $handle (@fh) {
-    close $handle;
-}
-
-if ($nloci < @namelines){
-    die ("Genbank input file appears to have fewer records than expected.\n" . 
-	 "This could be a consequence of using DOS (Windows) carriage return symbols at line breaks.");
-}
-
-# create training sets for cross-validation (parallel version)
-if ($cmdpars{'cpus'} > 1){
-    for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
-	# make the temporary training and testing files
-	system("rm -f $optdir/curtrain-$k");
-	for (my $m=1; $m <= $cmdpars{"kfold"}; $m++) {
-	    if ($m != $k) {
-		system("cat $optdir/bucket$m.gb >> $optdir/curtrain-$k");
+    
+    foreach (@namelines) {
+	/LOCUS +([^ ]+) */;
+	push @names, $1;
+    }
+    
+    my $bucket=0;
+    my %bucketmap=();
+    srand(88);
+    while ($#names >= 0) {
+	my $rand = rand (@names);
+	$bucketmap{$names[$rand]}=$bucket;
+	$bucket++;
+	if ($bucket == $cmdpars{"kfold"}){
+	    $bucket = 0;
+	}
+	splice @names, $rand, 1;          # delete array element
+    }
+    my $handle;
+    my @fh=();
+    for ($bucket=1; $bucket<=$cmdpars{"kfold"}; $bucket++) {
+	$handle = IO::File->new(">$optdir/bucket$bucket.gb") or die("Could not open bucket$bucket.gb");
+	push @fh, $handle;
+    }
+    
+    $/="\n//\n"; # this causes a huge single chunk when DOS carriage returns are used at line breaks
+    seek (TRAINGB, 0, 0);
+    my $nloci = 0;
+    while(<TRAINGB>) {
+	my $gendaten=$_;
+	m/^LOCUS +(\S+) .*/;
+	my $genname=$1;
+	
+	$bucket = $bucketmap{$genname};
+	my $handle = $fh[$bucket];
+	print $handle $gendaten;
+	$nloci++;
+    }
+    
+    foreach my $handle (@fh) {
+	close $handle;
+    }
+    
+    if ($nloci < @namelines){
+	die ("Genbank input file appears to have fewer records than expected.\n" . 
+	     "This could be a consequence of using DOS (Windows) carriage return symbols at line breaks.");
+    }
+    
+    # create training sets for cross-validation (parallel version)
+    if ($cmdpars{'cpus'} > 1){
+	for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
+	    # make the temporary training and testing files
+	    system("rm -f $optdir/curtrain-$k");
+	    for (my $m=1; $m <= $cmdpars{"kfold"}; $m++) {
+		if ($m != $k) {
+		    system("cat $optdir/bucket$m.gb >> $optdir/curtrain-$k");
+		}
 	    }
-	}
-	if ($cmdpars{'onlytrain'} ne ''){
+	    if ($cmdpars{'onlytrain'} ne ''){
 		system ("cat $cmdpars{'onlytrain'} >> $optdir/curtrain-$k");
+	    }
+	}	
+    }
+} else { # prepare training of cgp parameters
+    # splitting MAF file for parallel computing
+    splitMaf();
+    # reading in annotation file and checking if it is in a valid GTF format
+    print "reading in $cmdpars{'train.gb'}...\n";
+    open (ANNO, <$cmdpars{"train.gb"}>) or die ("Could not open $cmdpars{'train.gb'} for reading: $!");
+    while(<ANNO>){
+	if (/^\s*\#.*/ || /^\s*$/){ # skip comment lines and empty lines
+	    next;
 	}
-    }	
+	my @line = split(/\t/,$_);
+	if(@line < 9){
+	    die ("Not GTF format in the following line:\n$_\n");
+	}
+	if($line[2] eq "CDS" || $line[2] eq "stop_codon" || $line[2] eq "start_codon"){
+	    if ($line[8] !~ /transcript_id\s"?[^";]+"?;/){
+		die ("Not GTF format in the following line:\n$_\ntranscript_id not found.\n");
+	    }
+	    if ($line[8] !~ /gene_id\s"?[^";]+"?;/){
+		die ("Not GTF format in the following line:\n$_\ngene_id not found.\n");
+	    }
+	    push @gfflines, $_;
+	}	
+    }
+    close(ANNO);
+    # TODO: if stop codons are excluded from CDS features, add --stopCodonExcludedFromCDS=true to $pars
 }
-
 
 ##############################################################
 # Read in the meta parameters
@@ -300,8 +444,11 @@ my @trans; # transition matrix, array of array references
 if ($cmdpars{'opt_trans_matrix'} eq '') {# optimize meta parameters
    if ($cmdpars{'metapars'} ne '') {
        $metaparsfilename = $cmdpars{'metapars'};
-   } else {
+   } elsif(!$cgp) {
        $metaparsfilename = $configdir . "species/generic/generic_metapars.cfg";
+   }
+   else{
+        $metaparsfilename = $configdir . "species/generic/generic_metapars.cgp.cfg";
    }
    open META, '<' , <${metaparsfilename}> or die ("Could not open $metaparsfilename");
    print "Reading in the meta parameters used for optimization from $metaparsfilename...\n";
@@ -447,7 +594,7 @@ if ($cmdpars{'onlytrain'} ne ''){
 # initialize and first test
 #######################################################################################
 my @curoptmeta = @metastartvalues;
-my ($a, $b, $finished, @testlist, @testlisttargets, $opttarget, $optvalue);
+my ($finished, @testlist, @testlisttargets, $opttarget, $optvalue);
 my @snsp = evalsnsp(@curoptmeta);
 print "\n";
 my $target = sprintf("%.4f", gettarget(@snsp));
@@ -461,6 +608,7 @@ my @bindings;
 #######################################################################################
 
 if ($cmdpars{'opt_trans_matrix'} eq ''){
+    my ($a,$b);
     my (@testmeta);
     for (my $r=0; $r<$cmdpars{'rounds'}; $r++) {
 	$found_improvement = 0;
@@ -690,134 +838,136 @@ sub evalsnsp {
 	for (my $i=0; $i<= $#metaparnames; $i++) {
 	    $argument=$argument." --".$metaparnames[$i]."=".$values[$i];
 	}
-	#print "argument:$argument\n";
+	# print "argument:$argument\n";
 	# check if accuracy has already been computed for this parameter combination
 	if (exists($storedsnsp{$argument})){
 	    print "retrieve accuracy from previous computation";
 	    return @{$storedsnsp{$argument}};
 	}
     }
-    # Loop over the buckets and chose bucket k as the one for testing.
-    # All other buckets are taken for training if appropriate
-    print "bucket ";
-    if ($cmdpars{'cpus'} <= 1) {
-	for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
-	    # make the temporary training and testing files
-	    system("rm -f $optdir/curtrain $optdir/curtest");
-	    system("cp $optdir/bucket$k.gb $optdir/curtest");
-	    for (my $m=1; $m<=$cmdpars{"kfold"}; $m++) {
-		if ($m != $k) {
-		    system("cat $optdir/bucket$m.gb >> $optdir/curtrain");
+    if(!$cgp){
+	# Loop over the buckets and chose bucket k as the one for testing.
+	# All other buckets are taken for training if appropriate.
+	if ($cmdpars{'cpus'} <= 1) {
+	    print "bucket ";
+	    for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
+		# make the temporary training and testing files
+		system("rm -f $optdir/curtrain $optdir/curtest");
+		system("cp $optdir/bucket$k.gb $optdir/curtest");
+		for (my $m=1; $m<=$cmdpars{"kfold"}; $m++) {
+		    if ($m != $k) {
+			system("cat $optdir/bucket$m.gb >> $optdir/curtrain");
+		    }
 		}
+		if ($cmdpars{'onlytrain'} ne ''){
+		    system ("cat $cmdpars{'onlytrain'} >> $optdir/curtrain");
+		}
+		if ($cmdpars{'noTrainPars'} eq '') {# no need to retrain if the trans matrix is optimized or this option is otherwise explicitly set.
+		    system("$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $be_silent $modelrestrict $optdir/curtrain");
+		}
+		
+		system("$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $optdir/curtest > $optdir/predictions.txt");
+		
+		open (PRED, "<$optdir/predictions.txt");
+		while (<PRED>){
+		    if(/nucleotide level \| +(\S+) \| +(\S+) \|$/){
+			($cbsn, $cbsp) = ($1,$2);
+		    }
+		    if (/exon level \|.*-- \| +(\S+) \| +(\S+) \|$/){
+			($cesn, $cesp) = ($1,$2);
+		    }
+		    if (/gene level \|.* \| +(\S+) \| +(\S+) \|$/){
+			($cgsn, $cgsp) = ($1,$2);
+		    }
+		    if (/TSS \|.* \|.* \|.* \| +(\S+) \|$/){
+			$csmd = $1;
+		    }
+		    if (/TTS \|.* \|.* \|.* \| +(\S+) \|$/){
+			$ctmd = $1;
+		    }
+		}
+		close(PRED);
+		
+		
+		if ($cbsn eq "" || $cbsp eq "" ||$cesn eq "" ||$cesp eq "" ||$cgsn eq "" ||$cgsp eq "") {
+		    die ("Could not read the accuracy values out of predictions.txt when processing bucket $k.");
+		}
+		print "$k ";
+		#print "accuracy on bucket$k: $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd\n";
+		$gbsn += $cbsn;
+		$gbsp += $cbsp;
+		$gesn += $cesn;
+		$gesp += $cesp;
+		$ggsn += $cgsn;
+		$ggsp += $cgsp;
+		$gsmd += $csmd; 
+		$gtmd += $ctmd; 
 	    }
-	    if ($cmdpars{'onlytrain'} ne ''){
-		system ("cat $cmdpars{'onlytrain'} >> $optdir/curtrain");
-	    }
-	    if ($cmdpars{'noTrainPars'} eq '') {# no need to retrain if the trans matrix is optimized or this option is otherwise explicitly set.
-		system("$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $be_silent $modelrestrict $optdir/curtrain");
-	    }
-	    
-	    system("$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $optdir/curtest > $optdir/predictions.txt");
-	    
-	    open (PRED, "<$optdir/predictions.txt");
-	    while (<PRED>){
-		if(/nucleotide level \| +(\S+) \| +(\S+) \|$/){
-		    ($cbsn, $cbsp) = ($1,$2);
+	} else { # parallel
+	    print "bucket ";
+	    my $pm = new Parallel::ForkManager($cmdpars{'cpus'});
+	    for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
+		# fork and return the pid for the child:
+		my $pid = $pm->start and next;
+		# this part is done in parallel by the child process
+		
+		my $pbloutfiles = "--/ExonModel/outfile=exon-tmp$k.pbl --/IntronModel/outfile=intron-tmp$k.pbl --/IGenicModel/outfile=igenic-tmp$k.pbl --/UtrModel/outfile=utr-tmp$k.pbl";
+		my $pblinfiles = "--/ExonModel/infile=exon-tmp$k.pbl --/IntronModel/infile=intron-tmp$k.pbl --/IGenicModel/infile=igenic-tmp$k.pbl --/UtrModel/infile=utr-tmp$k.pbl";
+		if (defined($cmdpars{'trainOnlyUtr'}) && $cmdpars{'trainOnlyUtr'} ne "" && $cmdpars{'trainOnlyUtr'} ne "0"){
+		    $pblinfiles = "--/UtrModel/infile=utr-tmp$k.pbl";
 		}
-		if (/exon level \|.*-- \| +(\S+) \| +(\S+) \|$/){
-		    ($cesn, $cesp) = ($1,$2);
-		}
-		if (/gene level \|.* \| +(\S+) \| +(\S+) \|$/){
-		    ($cgsn, $cgsp) = ($1,$2);
-		}
-		if (/TSS \|.* \|.* \|.* \| +(\S+) \|$/){
-		    $csmd = $1;
-		}
-		if (/TTS \|.* \|.* \|.* \| +(\S+) \|$/){
-		    $ctmd = $1;
-		}
-	    }
-	    close(PRED);
-	
-	
-	    if ($cbsn eq "" || $cbsp eq "" ||$cesn eq "" ||$cesp eq "" ||$cgsn eq "" ||$cgsp eq "") {
-		die ("Could not read the accuracy values out of predictions.txt when processing bucket $k.");
-	    }
-	    print "$k ";
-	    #print "accuracy on bucket$k: $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd\n";
-	    $gbsn += $cbsn;
-	    $gbsp += $cbsp;
-	    $gesn += $cesn;
-	    $gesp += $cesp;
-	    $ggsn += $cgsn;
-	    $ggsp += $cgsp;
-	    $gsmd += $csmd; 
-	    $gtmd += $ctmd; 
-	}
-    } else { # parallel
-	my $pm = new Parallel::ForkManager($cmdpars{'cpus'});
-	for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
-	    # fork and return the pid for the child:
-	    my $pid = $pm->start and next;
-	    # this part is done in parallel by the child process
-	    
-	    my $pbloutfiles = "--/ExonModel/outfile=exon-tmp$k.pbl --/IntronModel/outfile=intron-tmp$k.pbl --/IGenicModel/outfile=igenic-tmp$k.pbl --/UtrModel/outfile=utr-tmp$k.pbl";
-	    my $pblinfiles = "--/ExonModel/infile=exon-tmp$k.pbl --/IntronModel/infile=intron-tmp$k.pbl --/IGenicModel/infile=igenic-tmp$k.pbl --/UtrModel/infile=utr-tmp$k.pbl";
-            if (defined($cmdpars{'trainOnlyUtr'}) && $cmdpars{'trainOnlyUtr'} ne "" && $cmdpars{'trainOnlyUtr'} ne "0"){
-                $pblinfiles = "--/UtrModel/infile=utr-tmp$k.pbl";
-            }
-
-	    if ($cmdpars{'noTrainPars'} eq '') {# No need to retrain if the trans matrix is optimized or noTrainPars=1 set explicitly.
-		my $cmd = "$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars "
-		    . "$be_silent $modelrestrict $pbloutfiles $optdir/curtrain-$k";
-		system($cmd);
+		
+		if ($cmdpars{'noTrainPars'} eq '') {# No need to retrain if the trans matrix is optimized or noTrainPars=1 set explicitly.
+		    my $cmd = "$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars "
+			. "$be_silent $modelrestrict $pbloutfiles $optdir/curtrain-$k";
+		    system($cmd);
 #		unlink $optdir/curtrain-$k;
-	    } else {
-		$pblinfiles = ""; # training did not take place, so the $pbloutfiles have not beeen created and cannot be used for prediction
+		} else {
+		    $pblinfiles = ""; # training did not take place, so the $pbloutfiles have not beeen created and cannot be used for prediction
+		}
+		
+		system("$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $pblinfiles $optdir/bucket$k.gb > $optdir/predictions-$k.txt");
+		print "$k ";
+		
+		$pm->finish; # terminate the child process
 	    }
-	    
-	    system("$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $pblinfiles $optdir/bucket$k.gb > $optdir/predictions-$k.txt");
-	    print "$k ";
-	    
-	    $pm->finish; # terminate the child process
-	}
-	$pm->wait_all_children;
-	# compute accuracy
-	for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
-	    open (PRED, "<$optdir/predictions-$k.txt");
-	    while (<PRED>){
-		if(/nucleotide level \| +(\S+) \| +(\S+) \|$/){
-		    ($cbsn, $cbsp) = ($1,$2);
+	    $pm->wait_all_children;
+	    # compute accuracy
+	    for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
+		open (PRED, "<$optdir/predictions-$k.txt");
+		while (<PRED>){
+		    if(/nucleotide level \| +(\S+) \| +(\S+) \|$/){
+			($cbsn, $cbsp) = ($1,$2);
+		    }
+		    if (/exon level \|.*-- \| +(\S+) \| +(\S+) \|$/){
+			($cesn, $cesp) = ($1,$2);
+		    }
+		    if (/gene level \|.* \| +(\S+) \| +(\S+) \|$/){
+			($cgsn, $cgsp) = ($1,$2);
+		    }
+		    if (/TSS \|.* \|.* \|.* \| +(\S+) \|$/){
+			$csmd = $1;
+		    }
+		    if (/TTS \|.* \|.* \|.* \| +(\S+) \|$/){
+			$ctmd = $1;
+		    }
 		}
-		if (/exon level \|.*-- \| +(\S+) \| +(\S+) \|$/){
-		    ($cesn, $cesp) = ($1,$2);
+		close(PRED);
+		
+		if ($cbsn eq "" || $cbsp eq "" ||$cesn eq "" ||$cesp eq "" ||$cgsn eq "" ||$cgsp eq "") {
+		    die ("Could not read the accuracy values out of predictions.txt when processing bucket $k.");
 		}
-		if (/gene level \|.* \| +(\S+) \| +(\S+) \|$/){
-		    ($cgsn, $cgsp) = ($1,$2);
-		}
-		if (/TSS \|.* \|.* \|.* \| +(\S+) \|$/){
-		    $csmd = $1;
-		}
-		if (/TTS \|.* \|.* \|.* \| +(\S+) \|$/){
-		    $ctmd = $1;
-		}
+		#print "accuracy on bucket$k: $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd\n";
+		$gbsn += $cbsn;
+		$gbsp += $cbsp;
+		$gesn += $cesn;
+		$gesp += $cesp;
+		$ggsn += $cgsn;
+		$ggsp += $cgsp;
+		$gsmd += $csmd;
+		$gtmd += $ctmd;
 	    }
-	    close(PRED);
-	
-	    if ($cbsn eq "" || $cbsp eq "" ||$cesn eq "" ||$cesp eq "" ||$cgsn eq "" ||$cgsp eq "") {
-		die ("Could not read the accuracy values out of predictions.txt when processing bucket $k.");
-	    }
-	    #print "accuracy on bucket$k: $cbsn, $cbsp, $cesn, $cesp, $cgsn, $cgsp, $csmd, $ctmd\n";
-	    $gbsn += $cbsn;
-	    $gbsp += $cbsp;
-	    $gesn += $cesn;
-	    $gesp += $cesp;
-	    $ggsn += $cgsn;
-	    $ggsp += $cgsp;
-	    $gsmd += $csmd;
-	    $gtmd += $ctmd;
-	}
-    }
+	} 	
     #print "\n";
     $gbsn = sprintf("%.4f", $gbsn/$cmdpars{'kfold'});
     $gbsp = sprintf("%.4f", $gbsp/$cmdpars{'kfold'});
@@ -826,10 +976,28 @@ sub evalsnsp {
     $ggsn = sprintf("%.4f", $ggsn/$cmdpars{'kfold'});
     $ggsp = sprintf("%.4f", $ggsp/$cmdpars{'kfold'});
     $gsmd = sprintf("%.2f", $gsmd/$cmdpars{'kfold'});
-    $gtmd = sprintf("%.2f", $gtmd/$cmdpars{'kfold'});
+    $gtmd = sprintf("%.2f", $gtmd/$cmdpars{'kfold'});    
 
+    } else { # cgp parameter optimization
+	print "maf ";
+	my $pm = new Parallel::ForkManager($cmdpars{'cpus'});
+	for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {
+	    # fork and return the pid for the child:
+	    my $pid = $pm->start and next;
+	    # this part is done in parallel by the child process
+	    system("rm -rf $optdir/pred$k; mkdir $optdir/pred$k");
+	    system("$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars --alnfile=$optdir/splitMaf/$k.maf --/CompPred/outdir=$optdir/pred$k >$optdir/pred$k/aug.out");
+	    print "$k ";
+	    $pm->finish; # terminate the child process
+	}
+	$pm->wait_all_children;
+	# calcuate accuracy values with eval package
+	($gbsn,$gbsp, $gesn, $gesp, $ggsn, $ggsp, $gsmd, $gtmd) = evalCGP();
+    }
+        
     my @returnarray =($gbsn, $gbsp, $gesn, $gesp, $ggsn, $ggsp, $gsmd, $gtmd);
     $storedsnsp{$argument}= \@returnarray;
+    
     return @returnarray;
 }
 
@@ -1444,4 +1612,203 @@ sub reverseMatrix {
     }
     #print "rescaled reversed chain:=\n";
     #printMatrix($rm);
+}
+
+###########################################################################
+# splitMaf:
+# splits the alignment into smaller chunks for parallel computing.
+# Splitting is done with respect to a reference genome
+# (first s-line in a MAF block). The chunk size, that is the length of the
+# sequence segment in the reference genome that covers the alignment chunk,
+# can be chosen and is approximately constant over all alignment chunks. 
+###########################################################################
+
+sub splitMaf{
+
+    if ( $cmdpars{"chunksize"} < 1000000 ) {
+	print STDERR "Warning: the chunksize must be at least 1000000bps.\n";
+	print STDERR "resuming with chunksize=1000000.\n";
+	$cmdpars{"chunksize"} = 1000000;
+    }
+
+    $cmdpars{"kfold"} = 1; # number of chunks
+
+    # directory of alignment chunks
+    my $mafDir = "$optdir/splitMaf";
+    system("rm -rf $mafDir; mkdir $mafDir");
+
+    open (MAF, <$cmdpars{"alnfile"}>) or die ("Could not open $cmdpars{'alnfile'} for reading: $!");
+    open (MAFCHUNK, ">$mafDir/$cmdpars{'kfold'}.maf") or die ("Could not open $mafDir/$cmdpars{'kfold'}.maf for writing: $!");
+    
+    if($cmdpars{'cpus'} <= 1){ # in the serial case just make a temporary copy of the whole alignment
+	system("cp $cmdpars{'alnfile'} $mafDir/$cmdpars{'kfold'}.maf");
+    } else {
+	
+	my ($chr, $start, $len); # coordinates of the previous maf block in the reference genome
+	my $seqlen = 0;
+	my $newblock = 1; # a new block starts
+		
+	while(<MAF>){
+	    if(/^\s*$/){ # end of alignment block
+		if($seqlen > $cmdpars{"chunksize"}){ # if seqlen exceeds the max chunk size, start new alignment chunk
+		    close(MAFCHUNK);
+		    $cmdpars{"kfold"}++;
+		    open (MAFCHUNK, ">$mafDir/$cmdpars{'kfold'}.maf") or die ("Could not open $mafDir/$cmdpars{'kfold'}.maf");
+		    ($chr, $start, $len);
+		    $seqlen = 0;
+		}
+		else{
+		    print MAFCHUNK $_;
+		}
+		$newblock = 1;
+	    }
+	    if(/^s\s/){
+		if($newblock){ # first-row reference species
+		    my @alnRow = split(/\s+/,$_);
+		    if(defined($chr) && $alnRow[1] eq $chr){
+			$seqlen += ( $alnRow[2] - ($start + $len) + $alnRow[3] );
+		    } else {		    
+			$seqlen += $alnRow[3];
+		    }
+		    ($chr, $start, $len) = ($alnRow[1], $alnRow[2], $alnRow[3]);
+		}
+		print MAFCHUNK $_;
+		$newblock = 0;
+	    }
+	    if(/^a\s/){
+		print MAFCHUNK $_;
+	    }
+	}
+	close(MAFCHUNK);		
+	close(MAF);
+	print "splitting Maf file in $cmdpars{'kfold'} pieces for parallel computing.\n";
+    }
+}
+
+###################################################################################################
+# evalCGP:
+# evaluates a prediction in GTF format against an annotation
+# using the external evaluation package Eval by Evan Keibler and Michael R. Brent¹
+# and returns accuracy values (SN and SP on gene, exon and nucleotide level)
+# evalCGP only compares gene features on given genomic intervals that
+# are parsed from the prediction files.
+
+# ¹(Eval: A software package for analysis of genome annotations. BMC Bioinformatics 4: 50 (2003))
+###################################################################################################
+
+sub evalCGP{
+
+    my ($cbsn,$cbsp, $cesn, $cesp, $cgsn, $cgsp); # accuracy values
+
+    # temporary directory that contains the prediction and the annotation split by seq
+    my $gffDir = "$optdir/tempGFF";
+    system ("rm -rf $gffDir; mkdir $gffDir");
+    
+    my @intervals=(); # hash of genomic intervals
+    my %seqlist=(); # hash of sequences (only keys, no values)
+    
+    # join predictions from parallel runs and make gene IDs unique
+    open (JOINPRED, ">$optdir/pred.gtf") or die("Could not open $optdir/pred.gtf for writing: $!");
+    my $geneID = 0;
+   
+    for (my $k=1; $k<=$cmdpars{"kfold"}; $k++) {    
+	open (PRED, "<$optdir/pred$k/$cmdpars{'eval_against'}.cgp.gff") or die ("Could not open $optdir/pred$k/$cmdpars{'eval_against'}.cgp.gff for reading: $!");
+	while(<PRED>){
+	    if(/prediction on sequence range (\w+):(\d+)\-(\d+)/){
+		push @intervals,[$1, $2, $3]; # store genomic intervals on which gene prediction is executed
+		print JOINPRED $_;
+	    }
+	    if(/\tgene\t/){
+		$geneID++;
+	    }
+	    s/g\d+/g$geneID/g; # replace gene ID with new unique gene ID
+	    if(/\t(CDS|stop_codon|start_codon)\t/){
+		print JOINPRED $_;
+	    }	
+	}
+	close(PRED);
+    }
+    close(JOINPRED);
+
+    # TODO: possibly filter for duplicates and join incomplete genes (Lars script)
+
+    # join overlapping genomic intervals
+    # sort intervals by 1. chromosome, 2. start
+    @intervals = sort {$a->[0] cmp $b->[0] || $a->[1] <=> $b->[1]} @intervals;
+
+    my @joined=(); # array of joined genomic intervals
+    my ($chr, $start, $end);
+    foreach (@intervals){
+	if(defined($chr) && $_->[0] eq $chr && $_->[1] - $end <= 0 ) { # overlap between the last and the current interval
+	    if($end < $_->[2]){
+		$end = $_->[2];
+	    }
+	} else {
+	    if (defined($chr)){
+		push @joined,[$chr, $start, $end];
+		if (!$seqlist{$chr}){ # add new sequences to seqlist
+		    $seqlist{$chr} = 1;
+		}
+	    }
+	    ($chr, $start, $end) = ($_->[0], $_->[1], $_->[2]);
+	}
+    }
+    push @joined,[$chr, $start, $end];
+    if (!$seqlist{$chr}){ # add new sequences to seqlist
+	$seqlist{$chr} = 1;
+    }
+    
+    # make a new annotation file that only contains features from the training set that are completely contained in one of the intervals
+    # (if necessary, this can be done faster with a single loop over the intervals, requires presorting of @gfflines)
+    open(ANNO, '>', "$optdir/anno.gtf") or die ("Could not open $optdir/anno.gtf for writing: $!");
+    foreach my $line (@gfflines){
+	my @gffline = split(/\t/,$line);
+	my ($chr, $start, $end)=($gffline[0], $gffline[3], $gffline[4]);
+	foreach my $i (@joined){
+	    if($chr eq $i->[0] && !($start > $i->[2]) && !($end < $i->[1]) ){
+		print ANNO $line;
+		last;
+	    }
+	}
+    }
+    close(ANNO);
+
+    # split annotation and prediction file by seqs and prepare
+    # list files that contain the directories of the GTF files being compared (required by eval)
+    system ("rm -f $optdir/annotation_list");
+    system ("rm -f $optdir/prediction_list");
+    foreach my $seq (keys %seqlist) {
+	system ("echo '$gffDir/$seq.anno.gtf' >> $optdir/annotation_list");
+	system ("echo '$gffDir/$seq.pred.gtf' >> $optdir/prediction_list");
+	system ("grep \"^$seq\\b\" $optdir/pred.gtf > $gffDir/$seq.pred.gtf");
+	system ("grep \"^$seq\\b\" $optdir/anno.gtf > $gffDir/$seq.anno.gtf");
+    }
+    # call evaluate_gtf
+    my @eval_report = qx(evaluate_gtf.pl $optdir/annotation_list $optdir/prediction_list);
+    # parse eval output
+    foreach (@eval_report){
+	if(/^Gene Sensitivity\s+(\S+)%/){
+	    $cgsn = $1 * 0.01;
+	}
+	if(/^Gene Specificity\s+(\S+)%/){
+	    $cgsp = $1 * 0.01;
+	}
+	if(/^Exon Sensitivity\s+(\S+)%/){
+	    $cesn = $1 * 0.01;
+	}
+	if(/^Exon Specificity\s+(\S+)%/){
+	    $cesp = $1 * 0.01;
+	}
+	if(/^Nucleotide Sensitivity\s+(\S+)%/){
+	    $cbsn = $1 * 0.01;
+	}
+	if(/^Nucleotide Specificity\s+(\S+)%/){
+	    $cbsp = $1 * 0.01;
+	    last;
+	}
+    }
+    if ($cbsn eq "" || $cbsp eq "" ||$cesn eq "" ||$cesp eq "" ||$cgsn eq "" ||$cgsp eq "") {
+	die ("Could not retrieve accuracy values from external call of eval_gtf.pl.");
+    }
+    return ($cbsn,$cbsp, $cesn, $cesp, $cgsn, $cgsp, -1, -1);
 }
