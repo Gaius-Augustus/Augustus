@@ -92,7 +92,7 @@ if (qx("$cmdpars{'eval_exec_dir'}evaluate_gtf.pl" 2>&1) =~ /^Can\'t\slocate\s(\w
 my @gfflines = ();
 
 # reading in annotation file and checking if it is in a valid GTF format
-print "reading in annotation file $cmdpars{'anno'}...\n";
+print STDERR "reading in annotation file $cmdpars{'anno'}...\n";
 open (ANNO, <$cmdpars{"anno"}>) or die ("Could not open $cmdpars{'anno'} for reading: $!");
 while(<ANNO>){
     if (/^\s*\#.*/ || /^\s*$/){ # skip comment lines and empty lines
@@ -122,7 +122,7 @@ my @intervals=(); # hash of genomic intervals
 my %seqlist=(); # hash of sequences (only keys, no values)
     
 # make gene IDs unique
-my $geneID = 0;
+# my $geneID = 0;
    
 open (PRED, <$cmdpars{"pred"}>) or die ("Could not open $cmdpars{'pred'} for reading: $!");
 open (JOINPRED, ">$gffDir/pred.gtf") or die("Could not open $gffDir/pred.gtf for writing: $!");
@@ -132,10 +132,10 @@ while(<PRED>){
 	push @intervals,[$1, $2, $3]; # store genomic intervals on which gene prediction is executed
 	print JOINPRED $_;
     }
-    if(/\tgene\t/){
-	$geneID++;
-    }
-    s/g\d+/g$geneID/g; # replace gene ID with new unique gene ID
+    # if(/\tgene\t/){
+    #    $geneID++;
+    # }
+    # s/g\d+/g$geneID/g; # replace gene ID with new unique gene ID
     if(/\t(CDS|stop_codon|start_codon)\t/){
 	print JOINPRED $_;
     }	
