@@ -13,7 +13,6 @@ int value = 0;				// only for semantic tests
 void divide_in_overlaps_and_conquer(list<Transcript> &transcript_list, string &outfilename, int errordistance){
 // devide a transcript list in overlaps and start works at these overlaps
 	transcript_list.sort();
-
 	/*for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
 		cout << (*it).t_id << " ";
 	} cout << endl;*/
@@ -29,6 +28,7 @@ void divide_in_overlaps_and_conquer(list<Transcript> &transcript_list, string &o
 	fstream outfile2;
 	outfile2.open(filename2, ios::out);
 	outfile2.close();
+
 	int max_base = max(transcript_list.front().tis,transcript_list.front().tes);
 
 	for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
@@ -40,6 +40,9 @@ void divide_in_overlaps_and_conquer(list<Transcript> &transcript_list, string &o
 		}
 		else{
 			//eval_gtf(overlap, errordistance);
+/*for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+	cout << (*(*it)).t_id << " ";
+}cout << endl;*/
 			work_at_overlap(overlap, new_transcripts, errordistance);
 			save_overlap(overlap, outfilename);
 			overlap.clear();
@@ -47,6 +50,10 @@ void divide_in_overlaps_and_conquer(list<Transcript> &transcript_list, string &o
 			overlap.push_front(&*it);
 		}
 	}
+	work_at_overlap(overlap, new_transcripts, errordistance);
+	save_overlap(overlap, outfilename);
+	overlap.clear();
+
 	// scatter_plot(points);			// depends to eval_gtf(overlap) and is only for tests about generangesites
 	//cout << "Average error of single species prediction: " << (float)value/count1 << endl;		// only for prediction evaluation
 	//cout << "Overallnumbers: " << overallnumber << " " << overallnumber2 << " " << overallnumber3 << endl;		// for semantic tests

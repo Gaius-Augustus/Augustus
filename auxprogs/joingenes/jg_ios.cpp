@@ -206,8 +206,8 @@ void save_overlap(list<Transcript*> &overlap, string &filename)
 	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 		outfile << "# " << (*it)->t_id << " is supported by " << (*it)->supporter.size() << " other predictions" << endl;
 		if ((*it)->strand == '+' && (*it)->tl_complete.first){
-			// outfile << (*it)->exon_list.front().chr << "\t";
-			outfile << "chr" << (*it)->exon_list.front().chr << "\t";
+			outfile << (*it)->exon_list.front().chr << "\t";
+			//outfile << "chr" << (*it)->exon_list.front().chr << "\t";
 			outfile << (*it)->source << "\t";
 			outfile << "start_codon" << "\t";
 			outfile << (*it)->tis << "\t";
@@ -219,8 +219,8 @@ void save_overlap(list<Transcript*> &overlap, string &filename)
 			outfile << "transcript_id \"" << "jg" << temp_gene_number << ".t1" << "\"; gene_id \"" << "jg" << temp_gene_number << "\";" << endl;
 		}
 		else if ((*it)->strand == '-' && (*it)->tl_complete.second){
-			// outfile << (*it)->exon_list.front().chr << "\t";
-			outfile << "chr" << (*it)->exon_list.front().chr << "\t";
+			outfile << (*it)->exon_list.front().chr << "\t";
+			//outfile << "chr" << (*it)->exon_list.front().chr << "\t";
 			outfile << (*it)->source << "\t";
 			outfile << "stop_codon" << "\t";
 			outfile << (*it)->tes << "\t";
@@ -232,8 +232,8 @@ void save_overlap(list<Transcript*> &overlap, string &filename)
 			outfile << "transcript_id \"" << "jg" << temp_gene_number << ".t1" << "\"; gene_id \"" << "jg" << temp_gene_number << "\";" << endl;
 		}
 		for (list<Exon>::iterator it_inside = (*it)->exon_list.begin(); it_inside != (*it)->exon_list.end(); it_inside++){
-			// outfile << (*it)->exon_list.front().chr << "\t";
-			outfile << "chr" << (*it_inside).chr << "\t";
+			outfile << (*it)->exon_list.front().chr << "\t";
+			//outfile << "chr" << (*it_inside).chr << "\t";
 			outfile << (*it)->source << "\t";
 			outfile << (*it_inside).feature << "\t";
 			outfile << (*it_inside).from << "\t";
@@ -248,8 +248,8 @@ void save_overlap(list<Transcript*> &overlap, string &filename)
 			outfile << "transcript_id \"" << "jg" << temp_gene_number << ".t1" << "\"; gene_id \"" << "jg" << temp_gene_number << "\";" << endl;
 		}
 		if ((*it)->strand == '-' && (*it)->tl_complete.first){
-			// outfile << (*it)->exon_list.front().chr << "\t";
-			outfile << "chr" << (*it)->exon_list.front().chr << "\t";
+			outfile << (*it)->exon_list.front().chr << "\t";
+			//outfile << "chr" << (*it)->exon_list.front().chr << "\t";
 			outfile << (*it)->source << "\t";
 			outfile << "start_codon" << "\t";
 			outfile << ((*it)->tis-2) << "\t";
@@ -261,8 +261,8 @@ void save_overlap(list<Transcript*> &overlap, string &filename)
 			outfile << "transcript_id \"" << "jg" << temp_gene_number << ".t1" << "\"; gene_id \"" << "jg" << temp_gene_number << "\";" << endl;
 		}
 		else if ((*it)->strand == '+' && (*it)->tl_complete.second){
-			// outfile << (*it)->exon_list.front().chr << "\t";
-			outfile << "chr" << (*it)->exon_list.front().chr << "\t";
+			outfile << (*it)->exon_list.front().chr << "\t";
+			//outfile << "chr" << (*it)->exon_list.front().chr << "\t";
 			outfile << (*it)->source << "\t";
 			outfile << "stop_codon" << "\t";
 			outfile << ((*it)->tes-2) << "\t";
