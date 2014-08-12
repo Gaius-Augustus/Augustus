@@ -81,10 +81,8 @@ void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
 		}
 		current=current->pred;
 	    }
-	    delete currentGene;
-	    
-	    if(!genes->empty())
-		genelist[pos] = genes;
+	    delete currentGene;	    
+	    genelist[pos] = genes;
 	}
     }
 }

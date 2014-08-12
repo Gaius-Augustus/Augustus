@@ -124,6 +124,7 @@ PhyloTree::PhyloTree(string filename){
 	    }
 	    else
 		throw ProjectError("Could not open input file " + only_species);
+	    printNewick("subtree.nwk");
 	}
     }
     else
