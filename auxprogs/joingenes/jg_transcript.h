@@ -17,8 +17,8 @@ class Transcript;
 
 class Exon{
  public:
-    int from, to;
     string chr;
+    int from, to;
     string feature;
     float score;
     int frame;
@@ -59,10 +59,14 @@ class Transcript{
 
     double penalty;
 
+    string getChr(){
+        return exon_list.front().chr;
+    }
+
     void initiate(){
-	exon_list.sort();				// essential for the next steps
-	exontoutr();
-	tes_to_cds();					// needs utr structure!
+        exon_list.sort();				// essential for the next steps
+        exontoutr();
+        tes_to_cds();					// needs utr structure!
     }
     int getcdsfront(){
 	for (list<Exon>::iterator it = exon_list.begin(); it != exon_list.end(); it++){

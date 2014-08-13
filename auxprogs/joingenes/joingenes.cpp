@@ -169,6 +169,19 @@ int main(int argc, char* argv[])
 	    //display_error("Frames are not correct.");
 	}
     }
-    divide_in_overlaps_and_conquer(transcript_list, filename_out, errordistance);
+	unordered_map<string,list<Transcript>> splitted_transcript_list;
+    for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
+        splitted_transcript_list[(*it).getChr()].push_back(*it);
+	}
+
+    fstream outfile;
+    outfile.open(filename_out, ios::out);		// delete content of file filename
+    outfile.close();
+
+    cout << splitted_transcript_list.size() << endl;
+    for(auto it = splitted_transcript_list.begin(); it != splitted_transcript_list.end(); it++){
+        divide_in_overlaps_and_conquer(it->second, filename_out, errordistance);
+        cout << it->second.front().getChr() << endl;
+    }
     return 0;
 }

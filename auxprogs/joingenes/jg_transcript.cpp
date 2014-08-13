@@ -20,35 +20,31 @@ void divide_in_overlaps_and_conquer(list<Transcript> &transcript_list, string &o
     list<Transcript> new_transcripts;
     list<Transcript*> overlap;
 
-    fstream outfile;
-    outfile.open(outfilename, ios::out);		// delete content of file filename
-    outfile.close();
-
-    string filename2 = "/home/lars/lars/test_data/eval_test.txt";
+/*    string filename2 = "/home/lars/lars/test_data/eval_test.txt";
     fstream outfile2;
     outfile2.open(filename2, ios::out);
-    outfile2.close();
+    outfile2.close();*/
 
     int max_base = max(transcript_list.front().tis,transcript_list.front().tes);
 
     for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
-	if (min((*it).tis,(*it).tes) < max_base){
-	    overlap.push_back(&*it);
-	    if (max_base < max((*it).tis,(*it).tes)){
-		max_base = max((*it).tis,(*it).tes);
-	    }
-	}
-	else{
-	    //eval_gtf(overlap, errordistance);
-	    /*for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-	      cout << (*(*it)).t_id << " ";
-	      }cout << endl;*/
-	    work_at_overlap(overlap, new_transcripts, errordistance);
-	    save_overlap(overlap, outfilename);
-	    overlap.clear();
-	    max_base = max((*it).tis,(*it).tes);
-	    overlap.push_front(&*it);
-	}
+        if (min((*it).tis,(*it).tes) < max_base){
+            overlap.push_back(&*it);
+            if (max_base < max((*it).tis,(*it).tes)){
+                max_base = max((*it).tis,(*it).tes);
+            }
+        }
+        else{
+            //eval_gtf(overlap, errordistance);
+            /*for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+              cout << (*(*it)).t_id << " ";
+              }cout << endl;*/
+            work_at_overlap(overlap, new_transcripts, errordistance);
+            save_overlap(overlap, outfilename);
+            overlap.clear();
+            max_base = max((*it).tis,(*it).tes);
+            overlap.push_front(&*it);
+        }
     }
     work_at_overlap(overlap, new_transcripts, errordistance);
     save_overlap(overlap, outfilename);
