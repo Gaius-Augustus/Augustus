@@ -330,7 +330,11 @@ void Properties::init( int argc, char* argv[] ){
 		name == SINGLESTRAND_KEY ||
 		name == SPECIES_KEY ||
 		name == EXTERNAL_KEY ||
-		name == CFGPATH_KEY) 
+		name == CFGPATH_KEY ||
+		name == ALN_KEY ||
+		name == TREE_KEY ||
+		name == DB_KEY ||
+		name == SEQ_KEY) 
 	    {
 		if (pos >= argstr.length()-1)
 		    throw ProjectError(string("Wrong argument format for ") +  name + ". Use: --argument=value");
@@ -342,6 +346,23 @@ void Properties::init( int argc, char* argv[] ){
 	    throw ProjectError(string("Error: 2 query files given: ") + properties[INPUTFILE_KEY] + " and " + argv[arg] +"."
 			       + "\nparameter names must start with '--'");	
     }
+
+    // check whether multi-species mode is turn on    
+    Properties::assignProperty(TREE_KEY, Constant::treefile);
+    Properties::assignProperty(SEQ_KEY, Constant::speciesfilenames);
+    Properties::assignProperty(DB_KEY, Constant::dbaccess);
+    Properties::assignProperty(ALN_KEY, Constant::alnfile);
+    if (!Constant::alnfile.empty() && !Constant::treefile.empty() && (!Constant::speciesfilenames.empty() || !Constant::dbaccess.empty())){
+	Constant::MultSpeciesMode = true;
+    } else if (!(Constant::alnfile.empty() && Constant::treefile.empty() && Constant::speciesfilenames.empty() && Constant::dbaccess.empty())){
+	throw ProjectError("In comparative gene prediction mode you must specify parameters alnfile, treefile\n\
+        and one of the following combinations of parameters\n\n\
+        - dbaccess (retrieving genomes from a MySQL db)\n\
+        - speciesfilenames and dbaccess (retrieving genomes from an SQLite db)\n\
+        - speciesfilenames (retrieving genomes from flat files)\n\n\
+        In single species mode specify none of these parameters.\n");
+    }
+  
     // set configPath variable
     string& configPath = properties[CFGPATH_KEY]; // first priority: command line
     if (configPath == "") {
@@ -393,13 +414,25 @@ void Properties::init( int argc, char* argv[] ){
 	throw ProjectError("Species-specific configuration files not found in " + configPath + SPECIES_SUBDIR + ". Type \"augustus --species=help\" to see available species.");
     }
 
+    // if mult-species mode is turned on, try to read cgp config file
+    if(Constant::MultSpeciesMode){
+	string cgpParFileName = speciesValue + "_parameters.cgp.cfg";
+	string savedSpecies = speciesValue;
+	try {
+	    readFile(configPath + speciesDir + cgpParFileName);
+	} catch (PropertiesError e){
+	    cerr <<"Resuming without "<< cgpParFileName << endl;
+	}
+	speciesValue = savedSpecies;
+    }
+
     // read in extra config file (again), but do not change species
     if (optCfgFile != "") {
 	string savedSpecies = speciesValue;
 	readFile(optCfgFile);
 	speciesValue = savedSpecies;
     }
-    
+  
     // read in the other parameters, command line parameters have higher priority
     // than those in the config files
     arg = argc;
@@ -413,7 +446,9 @@ void Properties::init( int argc, char* argv[] ){
 	name = argstr.substr(0,pos);
 	if (name == GENEMODEL_KEY || name == SINGLESTRAND_KEY ||
 	    name == SPECIES_KEY || name == CFGPATH_KEY ||
-	    name == EXTERNAL_KEY)
+	    name == EXTERNAL_KEY || name == ALN_KEY ||
+	    name == TREE_KEY || name == DB_KEY ||
+	    name == SEQ_KEY) 
 	    continue;
 	if (pos == string::npos) 
 	    throw PropertiesError(string("'=' missing for parameter: ") + name);
@@ -488,23 +523,6 @@ void Properties::init( int argc, char* argv[] ){
 	    name == "/EHMMTraining/state02" || name == "/EHMMTraining/state03"){
 	    properties[name] = argstr.substr(pos+1);
 	}
-    }
-
-    // check whether multi-species mode is turn on or off
-
-    Properties::assignProperty("treefile", Constant::treefile);
-    Properties::assignProperty("speciesfilenames", Constant::speciesfilenames);
-    Properties::assignProperty("dbaccess", Constant::dbaccess);
-    Properties::assignProperty("alnfile", Constant::alnfile);
-    if (!Constant::alnfile.empty() && !Constant::treefile.empty() && (!Constant::speciesfilenames.empty() || !Constant::dbaccess.empty())){
-	Constant::MultSpeciesMode = true;
-    } else if (!(Constant::alnfile.empty() && Constant::treefile.empty() && Constant::speciesfilenames.empty() && Constant::dbaccess.empty())){
-	throw ProjectError("In comparative gene prediction mode you must specify parameters alnfile, treefile\n\
-        and one of the following combinations of parameters\n\n\
-        - dbaccess (retrieving genomes from a MySQL db)\n\
-        - speciesfilenames and dbaccess (retrieving genomes from an SQLite db)\n\
-        - speciesfilenames (retrieving genomes from flat files)\n\n\
-        In single species mode specify none of these parameters.\n");
     }
 
     // expand the extrinsicCfgFile filename in case it is specified

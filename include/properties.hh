@@ -43,6 +43,10 @@
 #define EXTRFILE_KEY "extrinsicCfgFile"
 #define EXTERNAL_KEY "optCfgFile"
 #define HINTSFILE_KEY "hintsfile"
+#define ALN_KEY "alnfile"
+#define TREE_KEY "treefile"
+#define DB_KEY "dbaccess"
+#define SEQ_KEY "speciesfilenames"
 
 #define OVLPLENFILE "ovlp_len.pbl"
 /**
