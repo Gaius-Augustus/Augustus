@@ -22,8 +22,8 @@ class Exon{
     string feature;
     float score;
     int frame;
-    int tomany;
-    int toless; // MARIO: tooFew
+    int tooMany;
+    int tooFew;
     int penalty;
     int distance;
     bool isUtr () { return (frame == -1); }
@@ -295,10 +295,11 @@ class Point{
     }
 };
 
-void divide_in_overlaps_and_conquer(list<Transcript> &transcript_list, string &outfilename, int errordistance);
-void work_at_overlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts, int errordistance);
-void toclosetoborder(list<Transcript*> &overlap, list<Transcript> &new_transcripts, char strand, int errordistance);
+void divideInOverlapsAndConquer(list<Transcript> &transcript_list, string &outfilename, int errordistance);
+void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts, int errordistance);
+void tooCloseToBorder(list<Transcript*> &overlap, list<Transcript> &new_transcripts, char strand, int errordistance);
 void search_n_destroy_doublings(list<Transcript*> &overlap, int errordistance, bool ab_initio);
+void search_n_destroy_parts(list<Transcript*> &overlap, int errordistance);
 bool compare_transcripts(Transcript const* t1, Transcript const* t2);
 pair<bool,bool> is_part_of(Transcript const* t1, Transcript const* t2);
 bool compare_priority(Transcript const* lhs, Transcript const* rhs);
@@ -309,7 +310,6 @@ bool check_frame_annotation(Transcript const &transcript);
 void eval_gtf(list<Transcript*> &overlap, int errordistance);
 bool strandeq(Exon ex1, Exon ex2, char strand);
 void output_exon_list(Transcript const* tx);							// only for semantic tests
-void scatter_plot(list<Point> input);									// only for some tests
 void weight_info(list<Transcript*> &overlap);
 
 #endif

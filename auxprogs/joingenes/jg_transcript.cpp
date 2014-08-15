@@ -3,19 +3,12 @@
 
 using namespace std;
 
-int overallnumber=0;		// only for semantic tests
-int overallnumber2=0;		// only for semantic tests
-int overallnumber3=0;		// only for semantic tests
-list<Point> points;			// only for semantic tests
 int count1 = 0;				// only for semantic tests
 int value = 0;				// only for semantic tests
 
-void divide_in_overlaps_and_conquer(list<Transcript> &transcript_list, string &outfilename, int errordistance){
+void divideInOverlapsAndConquer(list<Transcript> &transcript_list, string &outfilename, int errordistance){
     // divide a transcript list in clusters of overlapping transcripts (transitive closure) and work on each cluster separately
     transcript_list.sort();
-    /*for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
-      cout << (*it).t_id << " ";
-      } cout << endl;*/
 
     list<Transcript> new_transcripts;
     list<Transcript*> overlap;
@@ -39,32 +32,28 @@ void divide_in_overlaps_and_conquer(list<Transcript> &transcript_list, string &o
             /*for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
               cout << (*(*it)).t_id << " ";
               }cout << endl;*/
-            work_at_overlap(overlap, new_transcripts, errordistance);
-            save_overlap(overlap, outfilename);
+            workAtOverlap(overlap, new_transcripts, errordistance);
+            saveOverlap(overlap, outfilename);
             overlap.clear();
             max_base = max((*it).tis,(*it).tes);
             overlap.push_front(&*it);
         }
     }
-    work_at_overlap(overlap, new_transcripts, errordistance);
-    save_overlap(overlap, outfilename);
+    workAtOverlap(overlap, new_transcripts, errordistance);
+    saveOverlap(overlap, outfilename);
     overlap.clear();
-
-    // scatter_plot(points);			// depends to eval_gtf(overlap) and is only for tests about generangesites
-    //cout << "Average error of single species prediction: " << (float)value/count1 << endl;		// only for prediction evaluation
-    //cout << "Overallnumbers: " << overallnumber << " " << overallnumber2 << " " << overallnumber3 << endl;		// for semantic tests
-    //cout << endl << new_transcripts.size() << endl;
 }
 
-void work_at_overlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts, int errordistance)
+void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts, int errordistance)
 {
     // calls methods for joining transcripts with the target that most of transcripts are complete (have start and stop codon) and delete duplicates and other unwanted transcripts from the overlap
 
     search_n_destroy_doublings(overlap, errordistance, true);
 
-    toclosetoborder(overlap, new_transcripts, '3', errordistance); // MARIO tooCloseToBorder
+    tooCloseToBorder(overlap, new_transcripts, '3', errordistance);
     join(overlap, new_transcripts, '3');
     search_n_destroy_doublings(overlap, errordistance, false);
+
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	if ((*it)->correction_ancestor.second && (*it)->tl_complete.second){
 	    if (!((*it)->joinpartner.second->boha.second)){
@@ -82,9 +71,10 @@ void work_at_overlap(list<Transcript*> &overlap, list<Transcript> &new_transcrip
 	}
     }
 
-    toclosetoborder(overlap, new_transcripts, '5', errordistance);
+    tooCloseToBorder(overlap, new_transcripts, '5', errordistance);
     join(overlap, new_transcripts, '5');
     search_n_destroy_doublings(overlap, errordistance, false);
+
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	if ((*it)->correction_ancestor.first && (*it)->tl_complete.first){
 	    if (!((*it)->joinpartner.first->boha.first)){
@@ -101,6 +91,8 @@ void work_at_overlap(list<Transcript*> &overlap, list<Transcript> &new_transcrip
 	    it--;
 	}
     }
+
+    search_n_destroy_parts(overlap, errordistance);
 
     overlap.sort(compare_priority);
     int highest_complete_priority = 0;
@@ -125,7 +117,7 @@ void work_at_overlap(list<Transcript*> &overlap, list<Transcript> &new_transcrip
     //	weight_info(overlap);
 }
 
-void toclosetoborder(list<Transcript*> &overlap, list<Transcript> &new_transcripts, char side, int errordistance){
+void tooCloseToBorder(list<Transcript*> &overlap, list<Transcript> &new_transcripts, char side, int errordistance){
     if (errordistance != -1){
 	list<Transcript*> new_overlap_part;
 	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
@@ -261,6 +253,32 @@ void search_n_destroy_doublings(list<Transcript*> &overlap, int errordistance, b
 		   }*/
 	    }
 	}
+    }
+}
+
+void search_n_destroy_parts(list<Transcript*> &overlap, int errordistance){
+    // delete all transcripts that are part of another transcript
+    if (overlap.size() > 1){
+	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+	    list<Transcript*>::iterator it_temp = it;
+	    it_temp++;
+	    for (list<Transcript*>::iterator it_inside = it_temp; it_inside != overlap.end(); it_inside++){
+            if (overlap.size() <= 1){return;}
+            pair<bool,bool> who_is_part = is_part_of(*it, *it_inside);
+            if (who_is_part.first == true){
+                if (who_is_part.second == true){
+                }else{
+                    it = overlap.erase(it);
+                    it_inside = it;
+                }
+            }else{
+                if (who_is_part.second == true){
+                    it_inside = overlap.erase(it_inside);
+                    it_inside--;
+                }
+	    	}
+	    }
+    }
     }
 }
 
@@ -601,10 +619,10 @@ void eval_gtf(list<Transcript*> &overlap, int errordistance){
     if (annotation.empty()){
 	for (list<Transcript*>::iterator itp = prediction.begin(); itp != prediction.end(); itp++){
 	    for (list<Exon>::iterator itpe = (*itp)->exon_list.begin(); itpe != (*itp)->exon_list.end(); itpe++){
-		(*itpe).toless = 0;
-		(*itpe).tomany = (*itpe).to - (*itpe).from + 1;
+		(*itpe).tooFew = 0;
+		(*itpe).tooMany = (*itpe).to - (*itpe).from + 1;
 
-		(*itpe).penalty = (*itpe).toless + (*itpe).tomany;
+		(*itpe).penalty = (*itpe).tooFew + (*itpe).tooMany;
 		(*itpe).distance = min((*itpe).from - (*itp)->pred_range.first, (*itp)->pred_range.second - (*itpe).to);
 		list<Exon>::iterator itpe_temp = itpe;
 		itpe_temp++;
@@ -617,10 +635,10 @@ void eval_gtf(list<Transcript*> &overlap, int errordistance){
 	}
 	for (list<Transcript*>::iterator its = single.begin(); its != single.end(); its++){
 	    for (list<Exon>::iterator itpe = (*its)->exon_list.begin(); itpe != (*its)->exon_list.end(); itpe++){
-		(*itpe).toless = 0;
-		(*itpe).tomany = (*itpe).to - (*itpe).from + 1;
+		(*itpe).tooFew = 0;
+		(*itpe).tooMany = (*itpe).to - (*itpe).from + 1;
 
-		(*itpe).penalty = (*itpe).toless + (*itpe).tomany;
+		(*itpe).penalty = (*itpe).tooFew + (*itpe).tooMany;
 		count1++;
 		value += (*itpe).penalty;
 	    }
@@ -645,17 +663,17 @@ void eval_gtf(list<Transcript*> &overlap, int errordistance){
 				more += (*itae).from - (*itpe).from;
 			    }
 			    if (min_pen == -1 || min_pen > more + lesser){
-				(*itpe).toless = lesser;
-				(*itpe).tomany = more;
-				min_pen = (*itpe).toless + (*itpe).tomany;
-				//min_pen = (*itpe).toless;
+				(*itpe).tooFew = lesser;
+				(*itpe).tooMany = more;
+				min_pen = (*itpe).tooFew + (*itpe).tooMany;
+				//min_pen = (*itpe).tooFew;
 			    }
 			}else{
 			    if (min_pen == -1 || min_pen > (*itpe).to - (*itpe).from + 1){
-				(*itpe).toless = 0;
-				(*itpe).tomany = (*itpe).to - (*itpe).from + 1;
-				min_pen = (*itpe).toless + (*itpe).tomany;
-				//min_pen = (*itpe).toless;
+				(*itpe).tooFew = 0;
+				(*itpe).tooMany = (*itpe).to - (*itpe).from + 1;
+				min_pen = (*itpe).tooFew + (*itpe).tooMany;
+				//min_pen = (*itpe).tooFew;
 			    }
 			}
 		    }
@@ -691,17 +709,17 @@ void eval_gtf(list<Transcript*> &overlap, int errordistance){
 				more += (*itae).from - (*itpe).from;
 			    }
 			    if (min_pen == -1 || min_pen > more + lesser){
-				(*itpe).toless = lesser;
-				(*itpe).tomany = more;
-				min_pen = (*itpe).toless + (*itpe).tomany;
-				//min_pen = (*itpe).toless;
+				(*itpe).tooFew = lesser;
+				(*itpe).tooMany = more;
+				min_pen = (*itpe).tooFew + (*itpe).tooMany;
+				//min_pen = (*itpe).tooFew;
 			    }
 			}else{
 			    if (min_pen == -1 || min_pen > (*itpe).to - (*itpe).from + 1){
-				(*itpe).toless = 0;
-				(*itpe).tomany = (*itpe).to - (*itpe).from + 1;
-				min_pen = (*itpe).toless + (*itpe).tomany;
-				//min_pen = (*itpe).toless;
+				(*itpe).tooFew = 0;
+				(*itpe).tooMany = (*itpe).to - (*itpe).from + 1;
+				min_pen = (*itpe).tooFew + (*itpe).tooMany;
+				//min_pen = (*itpe).tooFew;
 			    }
 			}
 		    }

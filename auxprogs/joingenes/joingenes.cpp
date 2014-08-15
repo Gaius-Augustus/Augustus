@@ -178,10 +178,8 @@ int main(int argc, char* argv[])
     outfile.open(filename_out, ios::out);		// delete content of file filename
     outfile.close();
 
-    cout << splitted_transcript_list.size() << endl;
     for(auto it = splitted_transcript_list.begin(); it != splitted_transcript_list.end(); it++){
-        divide_in_overlaps_and_conquer(it->second, filename_out, errordistance);
-        cout << it->second.front().getChr() << endl;
+        divideInOverlapsAndConquer(it->second, filename_out, errordistance);
     }
     return 0;
 }

@@ -11,5 +11,5 @@
 using namespace std;
 
 void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_list, string &filename, int &priority);
-void save_overlap(list<Transcript*> &overlap, string &filename);
+void saveOverlap(list<Transcript*> &overlap, string &filename);
 void save(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_list, string &filename);

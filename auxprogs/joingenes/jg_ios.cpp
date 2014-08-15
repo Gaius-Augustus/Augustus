@@ -194,7 +194,7 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 	}
 }
 
-void save_overlap(list<Transcript*> &overlap, string &filename)
+void saveOverlap(list<Transcript*> &overlap, string &filename)
 {
 // outputs overlap at the end of an existing file in gff format
 // every first and last outfile-line is adjusted and might be change back (to comments above)
