@@ -255,6 +255,10 @@ void CompGenePred::start(){
 			namgene.doViterbiPiecewise(*sfc, as, bothstrands); // sampling
 			alltranscripts = namgene.getAllTranscripts();
 			orthograph.sfcs[s] = sfc;
+		    } else {
+			// turn whole sequence to lowercase characters
+			for (unsigned pos = 0; pos < as->length; pos++)
+			    as->sequence[pos] = tolower(as->sequence[pos]);
 		    }
 		    // this is needed for IntronModel::dssProb in GenomicMSA::createExonCands
                     namgene.getPrepareModels(as->sequence, as->length); 
