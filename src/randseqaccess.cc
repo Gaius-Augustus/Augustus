@@ -98,6 +98,9 @@ void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
 				}
 			    }
 			    else{
+				if(find(speciesNames.begin(), speciesNames.end(), skey) == speciesNames.end()) {
+				    throw ProjectError(skey + " is not a valid species identifier.");
+				}
 				addSpeciesToGroup(skey,groupCount);
 				cout <<" "<<skey;
 			    }
