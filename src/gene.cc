@@ -3084,11 +3084,11 @@ void reverseGeneSequence(Gene* &seq, int endpos){
 	}
 	// reverse boundaries: transstart, transend, codingstart, codingend
 	int triangle = head->codingend;
-	head->codingend = (head->codingstart >0)? endpos-head->codingstart: -1;
-	head->codingstart = (triangle>0)? endpos-triangle: -1;
+	head->codingend = (head->codingstart >=0)? endpos-head->codingstart: -1;
+	head->codingstart = (triangle>=0)? endpos-triangle: -1;
 	triangle = head->transend;
-	head->transend = (head->transstart >0)? endpos-head->transstart: -1;
-	head->transstart = (triangle>0)? endpos-triangle: -1;
+	head->transend = (head->transstart >=0)? endpos-head->transstart: -1;
+	head->transstart = (triangle>=0)? endpos-triangle: -1;
 
 	// switch strand member variable
 	if (head->strand == plusstrand) 
