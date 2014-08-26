@@ -543,7 +543,7 @@ GBSplitter::GBSplitter( string fname ) : ftype(unknown) {
 #ifdef ZIPINPUT
     // deflate if gzipped
     boost::iostreams::filtering_istream zin;
-    try {  
+    try {
 	zin.push(gzip_decompressor());
 	zin.push(ifstrm);
 	zin.peek();

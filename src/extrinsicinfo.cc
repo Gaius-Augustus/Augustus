@@ -1725,7 +1725,8 @@ void SequenceFeatureCollection::prepare(AnnoSequence *annoseq, bool print, bool 
 		rm.mult = 1;
 		rm.gradeclass = 0;
 		collection->setBonusMalus(rm);
-		addFeature(rm);
+		if (rm.bonus != 1.0)
+		    addFeature(rm);
 		pos = end+1;
 	    }
 	}
@@ -2255,13 +2256,15 @@ void FeatureCollection::readGFFFile(const char *filename){
 		f.start -= predictionStart;
 		f.end -= predictionStart;
 		setBonusMalus(f);
-		seqname = f.seqname;
-		SequenceFeatureCollection*& psfc = collections[seqname];
-		if (psfc == NULL){
-		    psfc = new SequenceFeatureCollection(this);
-		    numSeqsWithInfo++;
+		if (f.bonus != 1.0){
+		    seqname = f.seqname;
+		    SequenceFeatureCollection*& psfc = collections[seqname];
+		    if (psfc == NULL){
+			psfc = new SequenceFeatureCollection(this);
+			numSeqsWithInfo++;
+		    }
+		    psfc->addFeature(f);
 		}
-		psfc->addFeature(f);
 	    }
 	}
 	datei.close();
