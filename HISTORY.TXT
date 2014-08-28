@@ -1,3 +1,13 @@
+List of changes from version 3.0.2 to 3.0.3 (until August 28th, 2014)
+     - made dependency on boost libraries an option
+     - softmasking support (--softmasking=1 improves speed by almost a factor of 2 and exon level sensitivity by 0.01 compared to hard masking on human)
+     - comparative gene finding with UTRs
+     - new sqlite database option for genome input in comparative mode besides flat files and MySQL
+     - new species: zebrafish (Danio rerio), camponotus_floridanus (an ant) contributed by Shishir K Gupta, s_aureus (Staphylococcus aureus)
+     - updated parameters: thermoanaerobacter_tengcongensis, E_coli_K12
+     - bugfix in bacterial model: length probability of very long genes was wrong
+     - other bugfixes in comparative mode
+     - removal of mysql++ code from package: this is available as Debian/Ubuntu package
 List of changes from version 3.0 to 3.0.2 (until February 22nd, 2014)
      - inclusion of scanner and parser code for Newick tree format (GPL licence), easier installation of 
        comparative augustus functionality

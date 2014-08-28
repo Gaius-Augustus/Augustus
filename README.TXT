@@ -10,7 +10,7 @@
 %             Fon: +49 3834 864642                                                               %
 %             mario.stanke@uni-greifswald.de                                                     %
 %                                                                                                %
-%             Date: February 22th, 2014                                                          %
+%             Date: August 28th, 2014                                                            %
 %                                                                                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -62,6 +62,7 @@ Currently, AUGUSTUS has been trained for predicting genes in:
   - Coccidioides immitis
   - Cryptococcus neoformans gattii
   - Cryptococcus neoformans neoformans
+  - Danio rerio
   - Debaryomyces hansenii
   - Encephalitozoon cuniculi
   - Eremothecium gossypii
@@ -80,6 +81,7 @@ Currently, AUGUSTUS has been trained for predicting genes in:
   - Rhizopus oryzae
   - Saccharomyces cerevisiae
   - Schizosaccharomyces pombe
+  - Staphylococcus aureus
   - Ustilago maydis
   - Yarrowia lipolytica
   - Nasonia vitripennis (wasp)
@@ -93,6 +95,7 @@ Currently, AUGUSTUS has been trained for predicting genes in:
   - Escherichia coli
   - Thermoanaerobacter tengcongensis (a bacterium)
   - Triticum aestivum (wheat)
+
 
 The training annotation files of the following species are a courtesy of Jason Stajich (see also http://fungal.genome.duke.edu/): 
 Aspergillus fumigatus, Aspergillus nidulans, Aspergillus oryzae, Aspergillus terreus, Botrytis cinerea, Candida albicans
@@ -120,9 +123,9 @@ The parameter training for cacao was done by Don Gilbert (gilbertd at indiana.ed
 
 1. unpack
 
->tar -xzf augustus.3.0.2.tar.gz
+>tar -xzf augustus-3.0.3.tar.gz
 
-The tar-archive contains one directory 'augustus-3.0.2' with the following sub-directories:
+The tar-archive contains one directory 'augustus-3.0.3' with the following sub-directories:
 bin
 src
 include
@@ -133,11 +136,12 @@ scripts
 2. compile (if not already compiled)
 
 Install dependencies:
-   These dependencies are new since AUGUSTUS 3.0 to allow .gz file input.
-   - Boost C++ Libraries: libboost-iostreams-dev
-     (on Ubuntu: sudo apt-get install libboost-iostreams-dev)
-   - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager.
-   If you cannot or do not want to install above libraries, you must edit common.mk and make ZIPINPUT = true a comment.
+	
+   - To turn on the optional support of gzip compressed input files you
+    1) Edit common.mk and uncomment the line ZIPINPUT = true
+    2) Install these dependencies:
+       - Boost C++ Libraries: libboost-iostreams-dev (on Ubuntu: sudo apt-get install libboost-iostreams-dev)
+       - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager.
    
 If comparative (multi-species) AUGUSTUS is enabled via uncommenting 
    COMPGENEPRED = true
@@ -266,6 +270,10 @@ amphimedon                               | Amphimedon queenslandica
 pneumocystis                             | Pneumocystis jirovecii
 wheat                                    | Triticum aestivum
 chicken                                  | Gallus gallus
+zebrafish                                | Danio rerio
+E_coli_K12                               | Escherichia coli
+s_aureus                                 | Staphylococcus aureus
+
 
 The identifiers in parentheses denote older versions for that species.
 
