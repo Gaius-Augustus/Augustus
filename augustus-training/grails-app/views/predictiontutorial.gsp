@@ -69,7 +69,7 @@
          <li><div id="linksMenuText">Other AUGUSTUS Resources</div></li>
          <li><a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus">AUGUSTUS Wiki</a></li>
          <li><a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Forum.Forum">AUGUSTUS Forum</a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/augustus/binaries/">Download AUGUSTUS</a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/augustus/downloads/index.php">Download AUGUSTUS</a></li>
          <li><a href="http://bioinf.uni-greifswald.de/augustus">Old AUGUSTUS gene prediction web server</a></li>
 	 <li>&nbsp;</li>
          <li><div id="linksMenuText">Other Links</div></li>
@@ -456,6 +456,12 @@ Top of page
 </tr>
 <tr>
 <td><font size="1">Yarrowia lipolytica</font></td><td><font size="1">yarrowia_lipolytica</font></td><td><font size="1">Jason Stajich, modified by Katharina Hoff</font></td>
+</tr>
+<tr>
+<td><font size="1"><b><i>Archaea (experimental parameters)</i></b></font></td><td><font size="1"><b></b></font></td><td><font size="1"><b></b></font></td>
+</tr>
+<tr>
+<td><font size="1">Sulfolobus solfataricus</font></td><td><font size="1">sulfolobus_solfataricus</font></td><td><font size="1">Katharina Hoff</font></td>
 </tr>
 <tr>
 <td><font size="1"><b><i>Bacteria (experimental parameters)</i></b></font></td><td><font size="1"><b></b></font></td><td><font size="1"><b></b></font></td>

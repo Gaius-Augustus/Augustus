@@ -561,6 +561,9 @@ class PredictionController {
 				predictionInstance.project_id = "rhodnium"
 			}else if(predictionInstance.species_select == "Conidiobolus coronatus (fungus)"){
 				predictionInstance.project_id = "Conidiobolus_coronatus"
+			}else if(predictionInstance.species_select == "Sulfolobus solfataricus (archaeon)"){
+			        predictionInstance.project_id = "sulfolobus_solfataricus"
+				prokaryotic = true
 			}else if(predictionInstance.species_select == "Escherichia coli (bacterium)"){
 			        predictionInstance.project_id = "E_coli_K12"
 				prokaryotic = true
