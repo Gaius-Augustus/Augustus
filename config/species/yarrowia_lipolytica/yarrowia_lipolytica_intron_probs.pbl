@@ -5,7 +5,7 @@
 #only nonpseudocount values are shown
 [ASS]
 # Size of vector
-1024
+4096
 # c_ass (ASS count)
 486
 # asspseudocount (added to all possible patterns, no matter if they occur)
@@ -251,11 +251,11 @@ tttcg	2.06
 #only nonpseudocount values are shown
 [DSS]
 # Size of vector
-4096
+16384
 # c_dss (DSS count)
 486
 # dsspseudocount (added to all possible patterns, no matter if they occur)
-0.0002
+0.0005
 # Probabilities * 1000
 aaaaaa	0.000411
 aaaaac	0.000411
@@ -4460,7 +4460,9 @@ tttttt	0.000411
 4.18
 4.16
 4.13
-4.11
+4.18
+4.09
+4.02
 4.1
 4.08
 4.07
@@ -4514,6 +4516,12 @@ tttttt	0.000411
 2.6
 2.56
 2.53
+2.57
+2.57
+2.55
+2.54
+2.53
+2.52
 2.5
 2.46
 2.43
@@ -6753,7 +6761,7 @@ ttttt	0.4366
 # motif upstream of acceptor splice site
 [ASSMOTIF]
 # width of motif, n=
-19
+37
 # order of markov model, k=
 3
 # markov chain emission probabilities
@@ -8854,7 +8862,7 @@ ttttt	0.4304
 # motif upstream of acceptor splice site
 [ASSMOTIF]
 # width of motif, n=
-19
+37
 # order of markov model, k=
 3
 # markov chain emission probabilities
@@ -10955,7 +10963,7 @@ ttttt	0.4265
 # motif upstream of acceptor splice site
 [ASSMOTIF]
 # width of motif, n=
-19
+37
 # order of markov model, k=
 3
 # markov chain emission probabilities
@@ -13056,7 +13064,7 @@ ttttt	0.4255
 # motif upstream of acceptor splice site
 [ASSMOTIF]
 # width of motif, n=
-19
+37
 # order of markov model, k=
 3
 # markov chain emission probabilities
@@ -15157,7 +15165,7 @@ ttttt	0.43
 # motif upstream of acceptor splice site
 [ASSMOTIF]
 # width of motif, n=
-19
+37
 # order of markov model, k=
 3
 # markov chain emission probabilities
