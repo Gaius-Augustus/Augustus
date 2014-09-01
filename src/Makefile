@@ -9,6 +9,14 @@ CC	= g++
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
 CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O2 ${CFLAGS} # -DDEBUG -g -ggdb -pg
 
+ifdef SQLITE
+	COMPGENEPRED = true
+endif
+
+ifdef MYSQL
+	COMPGENEPRED = true
+endif
+
 ifdef ZIPINPUT
 	CFLAGS += -DZIPINPUT
 	LIBS    = -lboost_iostreams
