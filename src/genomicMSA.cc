@@ -138,15 +138,20 @@ void GenomicMSA::readAlignment(string alignFilename) {
 		
 		index = rsa->getIdx(speciesName);
 		if (index >= 0) { // species name in the white list
-		    alignBlock->rows[index] = row; // place at the right position
-		    // store chrLen and check whether consistent with previous chrLen
-		    try {
-			rsa->setLength(index, row->seqID, lenOfChr);
-		    } catch (ProjectError e){
-			cerr << e.getMessage() << endl << "MAF file inconsistent." << endl;
-			throw e;
+		    if (!(alignBlock->rows[index])){ // first row for this species in this block
+  		        alignBlock->rows[index] = row; // place at the right position
+			// store chrLen and check whether consistent with previous chrLen
+			try {
+			    rsa->setLength(index, row->seqID, lenOfChr);
+			} catch (ProjectError e){
+			    cerr << e.getMessage() << endl << "MAF file inconsistent." << endl;
+			    throw e;
+			}
+			numSpeciesFound++;
+		    } else {
+		        // multiple rows of same species in same block, use only first for now
+		        delete row;
 		    }
-		    numSpeciesFound++;
 		} else {
 		    // "Species " << speciesName << " not in tree"
 		    notExistingSpecies.insert(pair<string, size_t>(speciesName, 1));

@@ -118,7 +118,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "emiprobs",
 "errfile",
 "evalset",
-"exoncand",
+"exoncands",
 "/ExonModel/etorder",
 "/ExonModel/etpseudocount",
 "/ExonModel/exonlengthD",

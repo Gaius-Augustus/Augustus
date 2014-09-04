@@ -220,13 +220,11 @@ void CompGenePred::start(){
     }
     GenomicMSA msa(rsa);
     msa.readAlignment(Constant::alnfile);  // reads the alignment
+    //    msa.printAlignment("");    
     // rsa->printStats();
     // msa.compactify(); // Mario: commented out as this excludes paths through the alignment graph 
                          //(trivial mergers of neighboring alignments)
     msa.findGeneRanges(); // nontrivial summary of alignments
-  
-    //msa.printAlignment("");
-    //exit(0);
 
     GeneMSA::openOutputFiles(outdir);
     while (GeneMSA *geneRange = msa.getNextGene()) {
