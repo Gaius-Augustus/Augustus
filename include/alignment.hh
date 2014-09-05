@@ -105,6 +105,7 @@ public:
     }
     friend bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac, bool strong=false);
     friend ostream& operator<< (ostream& strm, const Alignment &a);
+    void printTextGraph(ostream& strm);
     void merge(Alignment *other, const MsaSignature *sig = NULL); // append 'other' Alignment to this
     friend Alignment* mergeAliList(list<Alignment*> alis,  const MsaSignature *sig);
     friend void capAliSize(list<Alignment*> &alis, int maxRange);

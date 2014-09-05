@@ -16,6 +16,7 @@
 #include <iomanip>
 #include <queue>
 #include <climits>
+#include <bitset>
 
 using namespace std;
 
@@ -151,26 +152,59 @@ void appendRow(AlignmentRow **r1, const AlignmentRow *r2, int aliLen1, string si
 
 ostream& operator<< (ostream& strm, const AlignmentRow &row){
     strm << row.seqID << " " << row.strand << "\t" << row.chrStart() << ".." << row.chrEnd() << "\t" << row.getSeqLen() << "\t" << row.getCumFragLen();
-    if (1){
-	strm << "\t( ";
-	for (vector<fragment>::const_iterator it = row.frags.begin(); it != row.frags.end(); ++it)
-	    strm << "(" << it->chrPos << ", " << it->aliPos << ", " << it->len << ") ";
-	strm << ")";
-    }
+    strm << "\t( ";
+    for (vector<fragment>::const_iterator it = row.frags.begin(); it != row.frags.end(); ++it)
+        strm << "(" << it->chrPos << ", " << it->aliPos << ", " << it->len << ") ";
+    strm << ")";
     return strm;
 }
 
 ostream& operator<< (ostream& strm, const Alignment &a){
     strm << a.aliLen << " alignment columns" << endl;
     for (size_t i = 0; i < a.rows.size(); i++){
-	strm << "row " << setw(2) << i << "\t";
-	if (a.rows[i]) 
+	strm << "row " << setw(3) << i << "\t";
+	if (a.rows[i])
 	    strm << *a.rows[i];
 	else 
 	    strm << "missing";
 	strm << endl;
     }
     return strm;
+}
+
+// printing a summary of an alignment
+// like above variant  "cout << alignment", but with text graphics and spaces instead of tabs
+// XXXXXXXXXXXX                                                                                                                                                                                                                                                       
+// XXXXXXXXXXXXXXXXXXXXXXXXX                                                                                                                                                                                                                                          
+//     XXXXXXXXXXXXXXXXXXXXX 
+void Alignment::printTextGraph(ostream& strm){
+    const int graphWidth = 100;
+    strm << aliLen << " alignment columns" << endl;
+    
+    // determine maximal sequence id width across rows for new tabular printing
+    int maxIdLen = 2;
+    for (size_t i = 0; i < rows.size(); i++){
+        if (maxIdLen < rows[i]->seqID.length())
+	    maxIdLen = rows[i]->seqID.length();
+    }
+    for (size_t i = 0; i < rows.size(); i++){
+      strm << "row " << setw(3) << i << "\t";
+      if (rows[i]) {
+  	  AlignmentRow &row = *rows[i];
+ 	  strm << setw(maxIdLen+1) << row.seqID << " " << row.strand << setw(10) << row.chrStart() << setw(10) << row.chrEnd() << setw(10) << row.getSeqLen() << setw(8) << row.getCumFragLen();
+	  bitset<graphWidth> aligned;
+	  for (vector<fragment>::const_iterator it = row.frags.begin(); it != row.frags.end(); ++it) {
+	      for (unsigned j = graphWidth * it->aliPos/aliLen; j < graphWidth * (it->aliPos+it->len) / aliLen; j++)
+	          aligned[j] = true;
+	  }
+	  strm << "    |";
+	  for (unsigned j = 0; j < graphWidth; j++)
+	      strm << (aligned[j]? "X" : " ");
+	  strm << "|";
+      } else  
+	  strm << "missing";
+      strm << endl;
+    }
 }
 
 bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac, bool strong){

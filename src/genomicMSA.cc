@@ -89,7 +89,11 @@ void GenomicMSA::readAlignment(string alignFilename) {
     }
 
     while (!Alignmentfile.eof()) {
-        Alignmentfile >> buffer;
+        try {
+            Alignmentfile >> buffer;
+	} catch (std::ios_base::failure e) {
+   	    throw ProjectError(string("Could not open file ") + alignFilename + ". Make sure this is not a directory.\n");
+	}
         int numSpeciesFound = 0;
         if (buffer == "s") {
 	    alignBlock = new Alignment(numSpecies); // create new empty alignment block
@@ -536,14 +540,14 @@ void GenomicMSA::findGeneRanges(){
     // for each path, make a single alignment and add to alignment list
     for (int i=0; i < allPaths.size(); i++){
 	if (allPaths[i].path.size() > 0){
-	    //	    cout << "alignment from path " << allPaths[i] << endl;
+	    // cout << "alignment " << i << " from path " << allPaths[i] << endl;
 	    list<Alignment* > plist;
 	    list<int> &p = allPaths[i].path;
 	    for (list<int>::iterator it = p.begin(); it != p.end(); ++it)
 		plist.push_back(aliG2[*it].a);
 	    va = mergeAliList(plist, allPaths[i].sig);
 	    if (va && va->aliLen >= minGeneLen){ // discard alignments that are too short to hold at least a short gene
-		//cout << *va << endl;
+	        // va->printTextGraph(cout);
 		alignment.push_back(va);
 	    }
 	    //else 
