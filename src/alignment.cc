@@ -18,6 +18,7 @@
 #include <climits>
 #include <bitset>
 #include <set>
+#include <tuple>
 #include "lp_lib.h"
 
 using namespace std;
@@ -427,6 +428,12 @@ void capAliSize(list<Alignment*> &alis, int maxRange){
     } 
 }
 
+struct SegSortCriterion {
+    bool operator() (const tuple<int, set<int>, set<int> > &lhs, const tuple<int, set<int>, set<int> > &rhs) {
+        return get<0>(lhs) < get<0>(rhs);
+    }
+};
+
 /*
  * Remove an optimally chosen subset of alignments from alis based on a geneRange overlap criterion.
  * Genomic bases in any species that are covered by some alignment in the input set but not by any in the subset
@@ -483,8 +490,7 @@ void reduceOvlpRanges(list<Alignment*> &alis, size_t maxCov, float covPen){
 	string key = it->first;
 	auto &segs = it->second; // segment list for this species.chr combination, reference as list is changed
 	// sort intervals by genomic coordinate
-	segs.sort([](const tuple<int, set<int>, set<int> > &lhs, 
-		     const tuple<int, set<int>, set<int> > &rhs) -> bool { return get<0>(lhs) < get<0>(rhs); });
+	segs.sort(SegSortCriterion());
 	set<int> curSet; // set of alignment indices that cover the segment starting at current pos
 
 	for (auto lit = segs.begin(); lit != segs.end(); ){
@@ -588,50 +594,53 @@ void reduceOvlpRanges(list<Alignment*> &alis, size_t maxCov, float covPen){
     // write_LP(lp, stdout);
     set_verbose(lp, IMPORTANT);
     int ret = solve(lp);
-    // TODO check ret for error
-    cout << "MILP objective=" << get_objective(lp) << endl;
-    get_variables(lp, row);
-    cout << "removing alignments ";
-    for (i=0; i < n; i++)
-	if (row[i]<0.5)
-	    cout << i << " ";
-    cout << endl;
-    /*
-    for (r=0; r<R; r++){
-	if (row[n+r] + row[n+R+r] > 0)
-	    cout << r+1 << "\ty=" << row[n+r] << "\tz=" << row[n+R+r] << endl; 
-	    }*/
+    if (ret == 0){
+	cout << "MILP objective=" << get_objective(lp) << endl;
+	get_variables(lp, row);
+	cout << "removing alignments ";
+	for (i=0; i < n; i++)
+	    if (row[i]<0.5)
+		cout << i << " ";
+	cout << endl;
+	/*
+	  for (r=0; r<R; r++){
+	  if (row[n+r] + row[n+R+r] > 0)
+	  cout << r+1 << "\ty=" << row[n+r] << "\tz=" << row[n+R+r] << endl; 
+	  }*/
 
-    /*
-     * remove alignments from alis that are not in the optimal subset
-     * and compute some statistics
-     */ 
-    i = 0;
-    int numRemovedAlis = 0;
-    int cumFragLenBefore = 0, cumFragLenRemoved = 0;
-    for (auto ait = alis.begin(); ait != alis.end(); i++){
-	int cfl = (*ait)->getCumFragLen();
-	cumFragLenBefore += cfl;
-	if (row[i] < 0.5){
-	    cumFragLenRemoved += cfl;
-	    ait = alis.erase(ait);
-	    numRemovedAlis++;
-	} else
-	    ++ait;
-    }
-    int segLenBefore = 0, segLenRemoved = 0;
-    for (r=0; r<R; r++){
-	segLenBefore += segLen[r];
-	if (row[n + r + 1] > 0.5)
-	    segLenRemoved += segLen[r];
+	/*
+	 * remove alignments from alis that are not in the optimal subset
+	 * and compute some statistics
+	 */ 
+	i = 0;
+	int numRemovedAlis = 0;
+	int cumFragLenBefore = 0, cumFragLenRemoved = 0;
+	for (auto ait = alis.begin(); ait != alis.end(); i++){
+	    int cfl = (*ait)->getCumFragLen();
+	    cumFragLenBefore += cfl;
+	    if (row[i] < 0.5){
+		cumFragLenRemoved += cfl;
+		ait = alis.erase(ait);
+		numRemovedAlis++;
+	    } else
+		++ait;
+	}
+	int segLenBefore = 0, segLenRemoved = 0;
+	for (r=0; r<R; r++){
+	    segLenBefore += segLen[r];
+	    if (row[n + r + 1] > 0.5)
+		segLenRemoved += segLen[r];
+	}
+
+	cout << numRemovedAlis << " geneRanges=alignments (" 
+	     << (0.1 * (int) (1000.0 * numRemovedAlis / (numRemovedAlis + alis.size())))
+	     << "%) and " << (0.1 * (int) (1000.0 * cumFragLenRemoved / cumFragLenBefore))
+	     << "% of aligned bases and " << (0.1 * (int) (1000.0 * segLenRemoved / segLenBefore))
+	     << "% of aligment-range-covered bases were deleted because of too much redundancy." << endl;
+    } else { // if this sometimes does not work it is not a big deal
+	cerr << "Warning: Could not optimally solve mixed linear integer program. Return value= " << ret << endl;
     }
 
-    cout << numRemovedAlis << " geneRanges=alignments (" 
-	 << (0.1 * (int) (1000.0 * numRemovedAlis / (numRemovedAlis + alis.size())))
-	 << "%) and " << (0.1 * (int) (1000.0 * cumFragLenRemoved / cumFragLenBefore))
-	 << "% of aligned bases and " << (0.1 * (int) (1000.0 * segLenRemoved / segLenBefore))
-	 << "% of aligment-range-covered bases were deleted because of too much redundancy." << endl;
-    
     // temp for debug, output filtered alignment list
     /*
     cout << "filtered alignments: " << alis.size() << endl;
