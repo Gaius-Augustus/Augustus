@@ -471,24 +471,15 @@ void GenomicMSA::findGeneRanges(){
     // may find subtoptimal paths
     dfs_time_visitor vis(&aliG2[graph_bundle].topo[0], numNodes2);
     depth_first_search(aliG2, visitor(vis));
+    for (int i=0; i<numNodes2; i++) // store topo sorting index for each node to prevent circles below
+	aliG2[aliG2[graph_bundle].topo[i]].topoIdx = i; 
+#ifdef DEBUG
     cout << "reverse DFS finishing order (approx topological): ";
-    for (int i=0; i<numNodes2; i++){
-	aliG2[aliG2[graph_bundle].topo[i]].topoIdx = i; // store topo sorting index for each node to prevent circles below
-	cout << aliG2[graph_bundle].topo[i] << " ";
-    }
+    for (int i=0; i<numNodes2; i++)
+        cout << aliG2[graph_bundle].topo[i] << " ";
     cout << endl;
-    /*    try {
-	vector<AlignmentGraph::vertex_descriptor > topo;
-	topological_sort(aliG2, std::back_inserter(topo));
-	int i=0;
-	for ( vector<AlignmentGraph::vertex_descriptor >::reverse_iterator ii=topo.rbegin(); ii!=topo.rend(); ++ii){
-	    aliG2[graph_bundle].topo[i++] = index[*ii];
-	}
-    } catch (bad_graph &e) {
-	cerr << e.what() << endl;
-	}*/
-
-    cout << "number of signatures=" << signatures.size() << endl;
+#endif
+    cout << "number of signatures=" << signatures.size() << " first 10 signatures are " << endl;
     list<MsaSignature*> siglist;
     for (sit = signatures.begin(); sit != signatures.end(); ++sit)
 	siglist.push_back(&sit->second);
@@ -497,7 +488,8 @@ void GenomicMSA::findGeneRanges(){
     int color = 0;
     for (list<MsaSignature*>::iterator it = siglist.begin(); it != siglist.end(); ++it){
 	(*it)->color = color++;
-	cout << **it << endl;
+	if (color<10)
+	    cout << **it << endl;
     }
     vector<AliPath> allPaths;
     writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot");
@@ -519,19 +511,23 @@ void GenomicMSA::findGeneRanges(){
     }
     cout << "found " << allPaths.size() << " paths" << endl;
     
+#ifdef DEBUG
     for (int i=0; i<allPaths.size(); i++)
 	cout << i << "\t" << allPaths[i] << endl;
-    
-
+#endif
     // repeat pruning until nothing changes (usually changes only in the first iteration)
     int totalNumNodes;
     while (prunePaths(allPaths, aliG2)){
+#ifdef DEBUG
 	cout << "allPaths after pruning:" << endl;
+#endif
 	totalNumNodes = 0;
 	for (int i=0; i < allPaths.size(); i++){
 	    if (allPaths[i].path.size() > 0){
 		totalNumNodes += allPaths[i].path.size();
+#ifdef DEBUG
 		cout << allPaths[i] << endl;
+#endif
 	    }
 	}
 	cout << "aliG2 nodes " << num_vertices(aliG2) << " allPaths nodes " << totalNumNodes << " ratio: " << (float) totalNumNodes/num_vertices(aliG2) << endl;
@@ -547,7 +543,7 @@ void GenomicMSA::findGeneRanges(){
 		plist.push_back(aliG2[*it].a);
 	    va = mergeAliList(plist, allPaths[i].sig);
 	    if (va && va->aliLen >= minGeneLen){ // discard alignments that are too short to hold at least a short gene
-	        // va->printTextGraph(cout);
+	        //va->printTextGraph(cout);
 		alignment.push_back(va);
 	    }
 	    //else 
@@ -559,7 +555,24 @@ void GenomicMSA::findGeneRanges(){
     capAliSize(alignment, mz);
     if (alignment.size() > sizeBeforeCapping)
 	cout << "very large alignments (>" << mz << ") had to be cut " << alignment.size() - sizeBeforeCapping << " times." << endl;
-    alignment.sort(SortCriterion(0)); // sort (arbitrarily) by first species
+    
+    
+    float covPen;
+    size_t maxCov;
+    try {
+	covPen = Properties::getdoubleProperty( "/CompPred/covPen" );
+    } catch (...) {
+	covPen = 0.2; // default: uncovered bases are punished 5 times more than each base covered too often
+    }
+    try {
+	maxCov = Properties::getIntProperty( "/CompPred/maxCov" );
+    } catch (...) {
+	maxCov = 3; // default: the same region covered by more than 3 alignments in penalized
+    }
+
+    reduceOvlpRanges(alignment, maxCov, covPen);
+
+    //alignment.sort(SortCriterion(0)); // sort (arbitrarily) by first species
     cout << "findGeneRanges " << ((alignment.size() <= numAlis)? "reduced" : "increased") << " the number of aligments from " << numAlis << " to " 
 	 <<  alignment.size() << " (to " << setprecision(3) <<  (100.0 * alignment.size() / numAlis) << "%)." << endl;
     // delete all alignments from the graph nodes

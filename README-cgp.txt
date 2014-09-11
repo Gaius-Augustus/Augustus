@@ -41,6 +41,7 @@ The following programs need be installed in cgp mode:
 - Flexc++ (lexical scanner generator, tested with V0.94.0)
 - Bisonc++ (parser generator, tested with V2.09.03)
 - g++ compiler with C++0X support (>= V4.4)
+- lpsolve (mixed linear integer programming)
 
 3. INSTALLATION
 ----------------
@@ -50,7 +51,6 @@ a) install all dependencies
    GSL:      download source code from http://www.gnu.org/software/gsl/ and follow the installation instructions
    Boost:    install via package manager, on UBUNTU/Debian linux:
              > sudo apt-get install libboost-all-dev
-   zlib:     The compression library. Download from http://www.zlib.net/ or install via package manager.
    Flexc++:  download source code from http://flexcpp.sourceforge.net/ and follow the installation instructions. (Flexc++
              has several dependencies including the bobcat library. I recommend to use bobcat-3.10.00, if you do not want to install
              the latest g++ compiler)
@@ -59,6 +59,10 @@ a) install all dependencies
 	     > sudo apt-get install bisonc++
    g++       install via package manager:
              > sudo apt-get install build-essential
+   lpsolve   > sudo apt-get install liblpsolve55-dev	     
+
+  optional (for gzipped input):
+   zlib:     The compression library. Download from http://www.zlib.net/ or install via package manager.
 
 b) generate a scanner and a parser class that parses tree files in Newick format
 

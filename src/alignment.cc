@@ -17,6 +17,8 @@
 #include <queue>
 #include <climits>
 #include <bitset>
+#include <set>
+#include "lp_lib.h"
 
 using namespace std;
 
@@ -184,7 +186,7 @@ void Alignment::printTextGraph(ostream& strm){
     // determine maximal sequence id width across rows for new tabular printing
     int maxIdLen = 2;
     for (size_t i = 0; i < rows.size(); i++){
-        if (maxIdLen < rows[i]->seqID.length())
+        if (rows[i] && maxIdLen < rows[i]->seqID.length())
 	    maxIdLen = rows[i]->seqID.length();
     }
     for (size_t i = 0; i < rows.size(); i++){
@@ -194,7 +196,7 @@ void Alignment::printTextGraph(ostream& strm){
  	  strm << setw(maxIdLen+1) << row.seqID << " " << row.strand << setw(10) << row.chrStart() << setw(10) << row.chrEnd() << setw(10) << row.getSeqLen() << setw(8) << row.getCumFragLen();
 	  bitset<graphWidth> aligned;
 	  for (vector<fragment>::const_iterator it = row.frags.begin(); it != row.frags.end(); ++it) {
-	      for (unsigned j = graphWidth * it->aliPos/aliLen; j < graphWidth * (it->aliPos+it->len) / aliLen; j++)
+	      for (unsigned j = graphWidth * it->aliPos/aliLen; j < (float) graphWidth * (it->aliPos+it->len) / aliLen && j < graphWidth; j++)
 	          aligned[j] = true;
 	  }
 	  strm << "    |";
@@ -423,6 +425,220 @@ void capAliSize(list<Alignment*> &alis, int maxRange){
 	    }
 	}
     } 
+}
+
+/*
+ * Remove an optimally chosen subset of alignments from alis based on a geneRange overlap criterion.
+ * Genomic bases in any species that are covered by some alignment in the input set but not by any in the subset
+ * are penalized by uncovPen. Genomic bases that are covered by more than maxCov alignments 
+ * in the subset are penalized by covPen for each additional covering alignment.
+ * A minimum penalty subset of alignments is chosen and the remaining alinment are removed from alis.
+ * Increasing the coverage penalty covPen punishes long overlaps more.
+ * Decreasing maxCov punishes multiple overlapping geneRanges more.
+ */
+void reduceOvlpRanges(list<Alignment*> &alis, size_t maxCov, float covPen){
+    if (alis.empty())
+	return; 
+    float uncovPen = 1.0; // no need to change this
+
+    typedef list<Alignment*>::iterator AliIt;
+    AliIt ait = alis.begin();
+    int k = (*ait)->numRows(); // number of species
+    int n = alis.size(); // number of unfiltered alignments
+    /* segments will hold for each species.chr combination a sorted list of nonoverlapping 
+     * parts of sequence ranges together with the set of alignment indices that cover it.
+     * Before the algorithm below the triple holds 
+     *    1. a genomic coordinate
+     *    2. a singleton set of an index of an alignment that start at this coord
+     *    3. a singleton set of an index of an alignment that ends at this coord
+     * Upon finishing of the algorithm the second component is
+     *    2. the set of indices of alignments that cover coord up to and excluding the next coord
+     */
+    map<string, list<tuple<int, set<int>, set<int> > > >  segments;
+    
+    int i; // alignments are identified by their index in alis list
+    // insert alignment sequence ranges into lists
+    for (i=0; ait != alis.end(); ++ait, i++){
+	Alignment *a = *ait;
+	//cout << "i=" << i << "\t";
+	//a->printTextGraph(cout);
+	for (size_t s=0; s<k; s++){
+	    if (a->rows[s]){
+		string key = string(itoa(s)) + "." + a->rows[s]->seqID;
+		set<int> diffset, emptyset;
+		diffset.insert(i);
+		// insert the two segment boundaries
+		segments[key].push_back(make_tuple(a->rows[s]->chrStart(), diffset, emptyset)); // alignment i starts
+		segments[key].push_back(make_tuple(a->rows[s]->chrEnd()+1, emptyset, diffset)); // alignment i ends
+	    }
+	}
+    }
+
+    /* Algorithm to make segment lists overlap-free and nonredundant
+     * e.g. turn --------------         into 4 nonoverlapping segments
+     *                ---------
+     *                   -----------
+     */
+    for (auto it = segments.begin(); it != segments.end(); ++it){ // loop over species.chr
+	string key = it->first;
+	auto &segs = it->second; // segment list for this species.chr combination, reference as list is changed
+	// sort intervals by genomic coordinate
+	segs.sort([](const tuple<int, set<int>, set<int> > &lhs, 
+		     const tuple<int, set<int>, set<int> > &rhs) -> bool { return get<0>(lhs) < get<0>(rhs); });
+	set<int> curSet; // set of alignment indices that cover the segment starting at current pos
+
+	for (auto lit = segs.begin(); lit != segs.end(); ){
+	    curSet.insert(get<1>(*lit).begin(), get<1>(*lit).end()); // add alignment that starts here (if any)
+	    // remove (singleton) set of alignments ending here
+	    if (!get<2>(*lit).empty())
+		curSet.erase(*(get<2>(*lit).begin()));
+	    if (next(lit) != segs.end()	&& get<0>(*lit) == get<0>(*next(lit))){ // next segment has same coord
+		lit = segs.erase(lit); // remove -> always keep only last segment with this coord
+	    } else {
+		get<1>(*lit) = curSet;
+		++lit;
+	    }
+	}
+	/* DEBUG print alignments covering each nonoverlapping segment
+	cout << key << "\t";
+	for (auto lit = segs.begin(); lit != segs.end(); ++lit){
+	    cout << " " << get<0>(*lit) << ":";
+	    for (auto ait = get<1>(*lit).begin(); ait != get<1>(*lit).end(); ++ait)
+		cout << *ait << ",";
+	    cout << "\t";
+	}
+	cout << endl;*/
+    }
+
+    /* 
+     * set up a mixed integer linear program to be solved by the lpsolve library
+     */
+    
+    int R=0; // number of segments, two inequality constraints per segment
+    for (auto it = segments.begin(); it != segments.end(); ++it) // loop over species.chr
+	for (auto lit = it->second.begin(); next(lit) != it->second.end(); ++lit)	
+	    if (!get<1>(*lit).empty())
+		R++;
+    
+    lprec *lp; // linear program object
+    int Ncol = n + 2*R;
+    // order of variables
+    // x_1, ..., x_n    binary x_i=1 iff i-th alignment is chosen in subset
+    // y_1, ..., y_R    implicitly binary, y_j = 1 iff j-th segment is not covered (in optimal solution)
+    // z_1, ..., z_R    implicitly int, z_j = no of coverages of j-th segment in excess of maxCov (in opt. sol.)
+
+    lp = make_lp(0, Ncol); // model with Ncol columns and yet 0 rows
+    if (lp == NULL)
+	throw ProjectError("reduceOvlpRanges: Could not construct linear program");
+    
+    // create space for one row
+    int *colno = new int[Ncol];
+    REAL *row = new REAL[Ncol];
+
+    int r = 0; // 0 <= r < R running index for segment
+    int j; // j running index for constraint
+    vector<int> segLen(R); // segment lengths = weights in linear program
+    for (auto it = segments.begin(); it != segments.end(); ++it){ // loop over species.chr    
+	auto segs = it->second; // segment list for this species.chr combination
+	for (auto lit = segs.begin(); next(lit) != segs.end(); ++lit){
+	    if (!get<1>(*lit).empty()){ // intermediate segments may also be uncovered by any alignment
+		segLen[r] = get<0>(*next(lit)) - get<0>(*lit); // segment length, a multiplier
+		// TODO: this may potentially be improved if the weighting uses the actually aligned bases in the segment
+		// rather than just the length of the region spanned by the last and first aligned base.
+		// cout << "segLen[" << r << "]=" << segLen[r] << endl;
+		// add constraints like x2 + x5 + x7 + y1 >= 1 to penalize no coverage (y1 = 1)
+		j = 0;
+		for (auto ait = get<1>(*lit).begin(); ait != get<1>(*lit).end(); ++ait){
+		    colno[j] = *ait + 1;
+		    row[j++] = 1;
+		}
+		colno[j] = n + r + 1;
+		row[j++] = 1;
+		add_constraintex(lp, j, row, colno, GE, 1);
+
+		// add constraints like x2 + x5 + x7 - z1 <= 3 to penalize too much coverage (z1>0)
+		j = 0;
+		for (auto ait = get<1>(*lit).begin(); ait != get<1>(*lit).end(); ++ait){
+		    colno[j] = *ait + 1;
+		    row[j++] = 1;
+		}
+		colno[j] = n + R + r + 1;
+		row[j++] = -1;
+		add_constraintex(lp, j, row, colno, LE, maxCov);
+		r++;
+	    }
+	}
+    }
+
+    // make x_i's binary variables; x_i = 1 iff i-th alignment is chosen for subset
+    for (int i=1; i <= n; i++)
+	set_binary(lp, i, TRUE);
+
+    set_add_rowmode(lp, FALSE);
+    
+    // objective function: sum_j noCovPen * y_j + uncovPen * z_j
+    j = 0;
+    for (r=0; r<R; r++){
+	 colno[j] = n + R + r + 1;
+	 row[j++] = covPen * segLen[r];
+	 colno[j] = n + r + 1;
+	 row[j++] = uncovPen * segLen[r];
+    }
+    set_obj_fnex(lp, j, row, colno);
+    // write_LP(lp, stdout);
+    set_verbose(lp, IMPORTANT);
+    int ret = solve(lp);
+    // TODO check ret for error
+    cout << "MILP objective=" << get_objective(lp) << endl;
+    get_variables(lp, row);
+    cout << "removing alignments ";
+    for (i=0; i < n; i++)
+	if (row[i]<0.5)
+	    cout << i << " ";
+    cout << endl;
+    /*
+    for (r=0; r<R; r++){
+	if (row[n+r] + row[n+R+r] > 0)
+	    cout << r+1 << "\ty=" << row[n+r] << "\tz=" << row[n+R+r] << endl; 
+	    }*/
+
+    /*
+     * remove alignments from alis that are not in the optimal subset
+     * and compute some statistics
+     */ 
+    i = 0;
+    int numRemovedAlis = 0;
+    int cumFragLenBefore = 0, cumFragLenRemoved = 0;
+    for (auto ait = alis.begin(); ait != alis.end(); i++){
+	int cfl = (*ait)->getCumFragLen();
+	cumFragLenBefore += cfl;
+	if (row[i] < 0.5){
+	    cumFragLenRemoved += cfl;
+	    ait = alis.erase(ait);
+	    numRemovedAlis++;
+	} else
+	    ++ait;
+    }
+    int segLenBefore = 0, segLenRemoved = 0;
+    for (r=0; r<R; r++){
+	segLenBefore += segLen[r];
+	if (row[n + r + 1] > 0.5)
+	    segLenRemoved += segLen[r];
+    }
+
+    cout << numRemovedAlis << " geneRanges=alignments (" 
+	 << (0.1 * (int) (1000.0 * numRemovedAlis / (numRemovedAlis + alis.size())))
+	 << "%) and " << (0.1 * (int) (1000.0 * cumFragLenRemoved / cumFragLenBefore))
+	 << "% of aligned bases and " << (0.1 * (int) (1000.0 * segLenRemoved / segLenBefore))
+	 << "% of aligment-range-covered bases were deleted because of too much redundancy." << endl;
+    
+    // temp for debug, output filtered alignment list
+    /*
+    cout << "filtered alignments: " << alis.size() << endl;
+    for (auto ait = alis.begin(); ait != alis.end(); ++ait){
+	(*ait)->printTextGraph(cout);
+	cout << endl;
+	}*/
 }
 
 int Alignment::maxRange(){

@@ -132,6 +132,8 @@ include
 config
 examples
 scripts
+auxprogs
+docs
 
 2. compile (if not already compiled)
 
@@ -153,10 +155,9 @@ in common.mk then the following additional dependencies are required:
    - mysql++ (sudo apt-get install libmysql++-dev)
    - Boost C++ Library: libboost-graph-dev (at least version 1.45 from Nov. 2010)
 
-> cd src
 > make
 
-Now, the command bin/augustus should run and print a usage message.
+Now, the command bin/augustus should be executable and print a usage message.
 
 3. As a normal user, add the directory of the executables to the PATH environment variable. E.g. issue
 

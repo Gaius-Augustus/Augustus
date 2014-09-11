@@ -109,6 +109,7 @@ public:
     void merge(Alignment *other, const MsaSignature *sig = NULL); // append 'other' Alignment to this
     friend Alignment* mergeAliList(list<Alignment*> alis,  const MsaSignature *sig);
     friend void capAliSize(list<Alignment*> &alis, int maxRange);
+    friend void reduceOvlpRanges(list<Alignment*> &alis, size_t maxCov, float covPen);
     int maxRange(); // chromosomal range, maximized over rows
     int numRows() const { return rows.size(); }
     int numFilledRows() const; // number of nonempty rows

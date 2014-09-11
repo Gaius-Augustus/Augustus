@@ -29,7 +29,7 @@
 #endif
 
 
-#define NUMPARNAMES 233
+#define NUMPARNAMES 235
 
 #define GENEMODEL_KEY "genemodel"
 #define SINGLESTRAND_KEY "singlestrand"
