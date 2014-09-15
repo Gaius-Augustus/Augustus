@@ -96,25 +96,194 @@ void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts
 
     overlap.sort(compare_priority);
     int highest_complete_priority = 0;
+    list<Transcript*> completeHighPriorityTranscripts;
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	if ((*it)->tl_complete.first && (*it)->tl_complete.second){
-	    highest_complete_priority = (*it)->priority;
-	    break;
+        if (highest_complete_priority < (*it)->priority){
+            completeHighPriorityTranscripts.clear();
+            highest_complete_priority = (*it)->priority;
+            completeHighPriorityTranscripts.push_back(*it);
+        }else if (highest_complete_priority == (*it)->priority){
+            completeHighPriorityTranscripts.push_back(*it);
+        }
 	}
     }
     if (highest_complete_priority){
 	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	    if (highest_complete_priority > (*it)->priority){
-		it = overlap.erase(it);
-		it--;
+            it = overlap.erase(it);
+            it--;
 	    }else if ((!(*it)->tl_complete.first || !(*it)->tl_complete.second) && (highest_complete_priority == (*it)->priority)){
-		it = overlap.erase(it);
-		it--;
+            for (list<Transcript*>::iterator itInside = completeHighPriorityTranscripts.begin(); itInside != completeHighPriorityTranscripts.end(); itInside++){
+                if (areSimilar(*it,*itInside)){
+                    it = overlap.erase(it);
+                    it--;
+                }
+            }
 	    }
 	}
     }
     //if (overlap.size() > 1)
     //	weight_info(overlap);
+}
+
+bool areSimilar(Transcript const* t1, Transcript const* t2)
+{
+    // is true, if transcripts are similar
+    if (t1->strand != t2->strand){
+        return false;
+    }
+    pair<unsigned int,unsigned int> overHangNumber =  make_pair(0, 0);
+    unsigned int equalExonNumber = 0;
+    pair<int,int> whoHangOver = make_pair(0, 0);
+    pair<float,float> overHangScore = make_pair(0, 0);
+    list<Exon>::const_iterator it1 = t1->exon_list.begin();
+    list<Exon>::const_iterator it2 = t2->exon_list.begin();
+
+    //int lowestEqualExonBase;
+    //int highestEqualExonBase;
+    //bool lowestEqualExonFound = false;
+    while (it1 != t1->exon_list.end() || it2 != t2->exon_list.end()){
+        if (it1 != t1->exon_list.end() && it2 != t2->exon_list.end()){
+            if ((*it1).from == (*it2).from){
+                if ((*it1).to == (*it2).to){
+                    //if (!lowestEqualExonFound){lowestEqualExonFound = true; lowestEqualExonBase = (*it1).from;}
+                    //highestEqualExonBase = (*it1).to;
+                    equalExonNumber++; it1++; it2++;
+                }else if ((*it1).to < (*it2).to){it1++;}else{it2++;}
+            }else if ((*it1).from < (*it2).from){
+                if(it2 == t2->exon_list.begin()){whoHangOver.first = 1;}
+                if ((*it1).to < (*it2).from){
+                    if(it2 == t2->exon_list.begin()){overHangNumber.first++; overHangScore.first += (*it1).score;}
+                    it1++;
+                }else{
+                    if ((*it1).to == (*it2).to){it1++; it2++;}else if ((*it1).to < (*it2).to){it1++;}else{it2++;}
+                }
+            }else{
+                if(it1 == t1->exon_list.begin()){whoHangOver.first = 2;}
+                if ((*it1).from > (*it2).to){
+                    if(it1 == t1->exon_list.begin()){overHangNumber.first++; overHangScore.first += (*it2).score;}
+                    it2++;
+                }else{
+                    if ((*it1).to == (*it2).to){it1++; it2++;}else if ((*it1).to < (*it2).to){it1++;}else{it2++;}
+                }
+            }
+        }else if (it1 == t1->exon_list.end()){
+            whoHangOver.second = 2;
+            list<Exon>::const_iterator itemp = it1; itemp--;
+            if ((*itemp).to < (*it2).from){overHangNumber.second++; overHangScore.second += (*it2).score;} 
+            it2++;
+        }else{
+            whoHangOver.second = 1;
+            list<Exon>::const_iterator itemp = it2; itemp--;
+            if ((*itemp).to < (*it1).from){overHangNumber.second++; overHangScore.second += (*it1).score;} 
+            it1++;
+        }
+    }
+    
+    /*if (lowestEqualExonFound){
+        float scoreSum = 0;
+        int countLoopRuns = 0;
+        for (list<Exon>::const_iterator it = t1->exon_list.begin(); (it != t1->exon_list.end() && (*it).from != lowestEqualExonBase); it++){
+            scoreSum += (*it1).score;
+            countLoopRuns++;
+        }
+        if (countLoopRuns > 0){
+            cout << scoreSum/countLoopRuns << endl;
+        }
+
+        scoreSum = 0;
+        countLoopRuns = 0;
+        for (list<Exon>::const_iterator it = t2->exon_list.begin(); (it != t2->exon_list.end() && (*it).from != lowestEqualExonBase); it++){
+            scoreSum += (*it1).score;
+            countLoopRuns++;
+        }
+        if (countLoopRuns > 0){
+            cout << scoreSum/countLoopRuns << endl;
+        }
+
+        scoreSum = 0;
+        countLoopRuns = 0;
+        bool behindHighestExon = false;
+        for (list<Exon>::const_iterator it = t1->exon_list.begin(); it != t1->exon_list.end(); it++){
+            if (behindHighestExon){
+                scoreSum += (*it).score;
+                countLoopRuns++;
+            }
+            if ((*it).to == highestEqualExonBase){behindHighestExon = true;}
+        }
+        if (countLoopRuns > 0){
+            cout << scoreSum/countLoopRuns << endl;
+        }
+
+        scoreSum = 0;
+        countLoopRuns = 0;
+        behindHighestExon = false;
+        for (list<Exon>::const_iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
+            if (behindHighestExon){
+                scoreSum += (*it).score;
+                countLoopRuns++;
+            }
+            if ((*it).to == highestEqualExonBase){behindHighestExon = true;}
+        }
+        if (countLoopRuns > 0){
+            cout << scoreSum/countLoopRuns << endl;
+        }
+    }*/
+
+    float equalBorder = 0.5;            // maybe as option
+    float overHangScoreBorder = 0.5;    // maybe as option
+                                        // maybe also as option: [border = score1 - score2]; maybe output this score to use it later
+    overHangScore.first /= overHangNumber.first;
+    overHangScore.second /= overHangNumber.second;
+    if ((whoHangOver.first == 0 && overHangNumber.first != 0) || (whoHangOver.second == 0 && overHangNumber.second != 0)){cerr << "Something went wrong in areSimilar at Pos. 1" << endl;}
+    float overlapExonNumberT1 = t1->exon_list.size();
+    // float overlapExonNumberT2 = t2->exon_list.size();
+    if (whoHangOver.first == 1){overlapExonNumberT1 -= overHangNumber.first;}//else if (whoHangOver.first == 2){overlapExonNumberT2 -= overHangNumber.first;}
+    if (whoHangOver.second == 1){overlapExonNumberT1 -= overHangNumber.second;}//else if (whoHangOver.second == 2){overlapExonNumberT2 -= overHangNumber.second;}
+
+    float overlapEqualRatioT1 = (float) (equalExonNumber / overlapExonNumberT1);
+    // float overlapEqualRatioT2 = (float) (equalExonNumber / overlapExonNumberT2);
+
+    float centerScoreT1 = 0;
+    float centerScoreT2 = 0;
+    unsigned int centerNumberT1 = t1->exon_list.size();
+    unsigned int centerNumberT2 = t2->exon_list.size();
+    for (list<Exon>::const_iterator it1 = t1->exon_list.begin(); it1 != t1->exon_list.end(); it1++){centerScoreT1 += (*it1).score;}
+    for (list<Exon>::const_iterator it2 = t2->exon_list.begin(); it2 != t2->exon_list.end(); it2++){centerScoreT2 += (*it2).score;}
+    if (whoHangOver.first == 1){
+        centerScoreT1 -= overHangScore.first;
+        centerNumberT1 -= overHangNumber.first;
+    }else if (whoHangOver.first == 2){
+        centerScoreT2 -= overHangScore.first;
+        centerNumberT2 -= overHangNumber.first;
+    }
+    if (whoHangOver.second == 1){
+        centerScoreT1 -= overHangScore.second;
+        centerNumberT1 -= overHangNumber.second;
+    }else if (whoHangOver.second == 2){
+        centerScoreT2 -= overHangScore.second;
+        centerNumberT2 -= overHangNumber.second;
+    }
+
+
+    if (overlapEqualRatioT1 < equalBorder){
+        if (centerScoreT2/centerNumberT2 < 0.8 || centerScoreT2/centerNumberT2 < 2*(centerScoreT1/centerNumberT1)){
+            return false;
+        }
+    }
+
+    if ((overHangScore.first > overHangScoreBorder) && (overHangNumber.first > 2 || overHangNumber.first > centerNumberT1)){
+        if (whoHangOver.first == 1){
+            return false;
+        }
+    }
+    if ((overHangScore.second > overHangScoreBorder) && (overHangNumber.second > 2 || overHangNumber.second > centerNumberT1)){
+        if (whoHangOver.second == 1){
+            return false;
+        }
+    }
+    return true;
 }
 
 void tooCloseToBorder(list<Transcript*> &overlap, list<Transcript> &new_transcripts, char side, int errordistance){
@@ -414,17 +583,17 @@ void joining(Transcript* t1, Transcript* t2, char strand, char side, Transcript 
 	//are_at_add_part = true;
 	for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
 	    if ((*t1).exon_list.front().from < ((*it).to + minimum_intron_length)){
-		tx_new.exon_list.merge(temp_exon_list);
-		//are_at_add_part = false;
-		break;
-	    }
-	    //if (are_at_add_part){
-	    temp_exon_list.push_back(*it);
-	    //}
-	}
-	break;
+            tx_new.exon_list.merge(temp_exon_list);
+            //are_at_add_part = false;
+            break;
+        }
+        //if (are_at_add_part){
+        temp_exon_list.push_back(*it);
+        //}
+    }
+    break;
     default:
-	cerr << "WARNING: unexpected case (in joining())!" << endl;
+    cerr << "WARNING: unexpected case (in joining())!" << endl;
     }
     //cout << tx_new.exon_list.size() << endl;
 }
@@ -503,51 +672,49 @@ pair<bool,bool> is_part_of(Transcript const* t1, Transcript const* t2)
     bool t1_is_part = false;
     bool t2_is_part = false;
     if (t1->strand == t2->strand){
-	t1_is_part = true;
-	t2_is_part = true;
-	if (t1->tl_complete.first && t2->tl_complete.first && t1->tis != t2->tis){
-	    t1_is_part = false;
-	    t2_is_part = false;
-	}
-	if (t1->tl_complete.second && t2->tl_complete.second && t1->tes != t2->tes){
-	    t1_is_part = false;
-	    t2_is_part = false;
-	}
-	list<Exon>::const_iterator it1 = t1->exon_list.begin();
-	list<Exon>::const_iterator it2 = t2->exon_list.begin();
-	while (t1_is_part == true || t2_is_part == true){
-	    if ((*it1).from == (*it2).from){
-		if((*it1).to == (*it2).to && (*it1).frame == (*it2).frame){
-		    it1++;
-		    it2++;
-		}
-		else{
-		    t1_is_part = false;
-		    t2_is_part = false;
-		    break;
-		}
-	    }else if ((*it1).from > (*it2).from){
-		t2_is_part = false;
-		it2++;
-	    }else{
-		t1_is_part = false;
-		it1++;
-	    }
-	    if (it1 == t1->exon_list.end() && it2 == t2->exon_list.end()){
-		break;
-	    }else{
-		if (it1 == t1->exon_list.end() && !(it2 == t2->exon_list.end()))
-		    {
-			t2_is_part = false;
-			break;
-		    }
-		if (it2 == t2->exon_list.end() && !(it1 == t1->exon_list.end()))
-		    {
-			t1_is_part = false;
-			break;
-		    }
-	    }
-	}
+        t1_is_part = true;
+        t2_is_part = true;
+        if (t1->tl_complete.first && t2->tl_complete.first && t1->tis != t2->tis){
+            t1_is_part = false;
+            t2_is_part = false;
+        }
+        if (t1->tl_complete.second && t2->tl_complete.second && t1->tes != t2->tes){
+            t1_is_part = false;
+            t2_is_part = false;
+        }
+        list<Exon>::const_iterator it1 = t1->exon_list.begin();
+        list<Exon>::const_iterator it2 = t2->exon_list.begin();
+        while (t1_is_part == true || t2_is_part == true){
+            if ((*it1).from == (*it2).from){
+                if((*it1).to == (*it2).to && (*it1).frame == (*it2).frame){
+                    it1++;
+                    it2++;
+                }
+                else{
+                    t1_is_part = false;
+                    t2_is_part = false;
+                break;
+                }
+            }else if ((*it1).from > (*it2).from){
+                t2_is_part = false;
+                it2++;
+            }else{
+                t1_is_part = false;
+                it1++;
+            }
+            if (it1 == t1->exon_list.end() && it2 == t2->exon_list.end()){
+                break;
+            }else{
+                if (it1 == t1->exon_list.end() && !(it2 == t2->exon_list.end())){
+                    t2_is_part = false;
+                    break;
+                }
+                if (it2 == t2->exon_list.end() && !(it1 == t1->exon_list.end())){
+                    t1_is_part = false;
+                    break;
+                }
+            }
+        }
     }
     return make_pair(t1_is_part, t2_is_part);
 }

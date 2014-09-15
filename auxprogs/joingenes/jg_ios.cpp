@@ -65,7 +65,8 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 				else
 					load_error("Can not read feature.");
 				if (exon.feature != "CDS" && exon.feature != "start_codon" && exon.feature != "stop_codon" && exon.feature != "exon" && exon.feature != "UTR"){
-					load_warning("There is an unexpected feature that is not equal to \"CDS\", \"UTR\", \"exon\", \"start_codon\" and \"stop_codon\".");
+					load_warning("There is an unexpected feature that is not equal to \"CDS\", \"UTR\", \"exon\", \"start_codon\" and \"stop_codon\". This feature is going to be ignored.");
+                    continue;
 				}
 				temp = strtok(NULL, "\t");
 				if (temp)
@@ -150,8 +151,6 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 							}
 							if (pred_range.first && pred_range.second){
 								transcript_hash[transcript_id].pred_range = pred_range;
-								// pred_range.first = 0;
-								// pred_range.second = 0;
 							}
 						}
 						if (strstr(temp_inside, "gene_id")!=NULL){
