@@ -26,7 +26,7 @@ void display_help(void)
     cout << "Options:" << endl;
     cout << "\tNecessary:" << endl;
     cout << "\t\t--genesets=file1,file2,...\t-g file1,file2,...\twhere \"file1,file2,...,filen\" have to be datafiles with genesets in gff or gtf format" << endl;
-    cout << "\t\t--output=ofile\t\t\t-o ofile\t\twhere \"ofile\" have to be a name for an output datafile (gff/gtf)" << endl;
+    cout << "\t\t--output=ofile\t\t\t-o ofile\t\twhere \"ofile\" have to be a name for an output datafile (gff)" << endl;
     cout << "\tOptional:" << endl;
     cout << "\t\t--priorities=pr1,pr2,...\t-p pr1,pr2,...\t\twhere \"pr1,pr2,...,prn\" have to be positiv integers (different from 0)" << endl;
     cout << "\t\t\t\t\t\t\t\t\thave to be as many as filenames are added" << endl;
@@ -157,11 +157,11 @@ int main(int argc, char* argv[])
 	    cout << "After loading " << (*it_f) << " (Priority " << (*it_p) << ") there are " << transcript_list.size() << " transcripts in transcript_list." << endl;
 	    it_p++;
 	}
-	for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
+    for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
 	    (*it).initiate();
-	}
+    }
     }else{
-	display_error("Number of input files and priorities is not equal.");
+        display_error("Number of input files and priorities is not equal.");
     }
     for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
 	if (!check_frame_annotation(*it)){

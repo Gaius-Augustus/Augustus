@@ -28,6 +28,8 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 // if their is a notation for prediction ranges BEFORE a transcript in the form "#Xprediction on sequence rangeX:NYNYZ" it will save this for the transcript where "X" can be every char exept ":", "Y" have to be a char out of " ", "-", "(", ")", "b", "p", and "Z" can be every char and the number of X,Y and Z is arbitrary at every position and "N" are the prediction range integers with the lower one first
 	ifstream infile(filename.c_str());
 
+if(!infile){load_error("Die Datei "+filename+" exisitiert nicht");}
+
 	char buff[1024]; 
 	char copybuff[1024];
 	char *temp;
