@@ -35,7 +35,7 @@ OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o
 ifdef COMPGENEPRED
 	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
-	LIBS += -llpsolve55 -lcolamd # for mixed integer linear programming (alignment.cc)
+	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
 	INCLS += -I/usr/include/lpsolve
 endif
 DUMOBJS = dummy.o
