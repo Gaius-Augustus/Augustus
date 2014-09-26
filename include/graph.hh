@@ -56,8 +56,8 @@ public:
 
     bool isIntron() const {return (name >= intron);}
     bool isExon() const {return (name >= CDS && name <= utr5);}
-    bool isUTR() const {return (name == CDS);}
-    bool isCDS() const {return (name == utr3 || name == utr5);}    
+    bool isCDS() const {return (name == CDS);}
+    bool isUTR() const {return (name == utr3 || name == utr5);}    
 };
 
 bool isTlstartOrstop(Status *predExon, Status *succExon);
