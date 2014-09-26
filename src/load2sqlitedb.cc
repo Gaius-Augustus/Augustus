@@ -180,7 +180,7 @@ int main( int argc, char* argv[] ){
 		    stmt1.reset();
   
 		    chunkCount++;
-		    start += chunksize;
+		    start += length;
 		    lenCount +=length;
 		}
 		delete name;
