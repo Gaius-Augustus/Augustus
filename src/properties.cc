@@ -329,6 +329,7 @@ void Properties::init( int argc, char* argv[] ){
 	    string::size_type pos = argstr.find('=');
 	    name = argstr.substr(0,pos).substr(2);
 	    if( name == GENEMODEL_KEY ||
+		name == NONCODING_KEY ||
 		name == SINGLESTRAND_KEY ||
 		name == SPECIES_KEY ||
 		name == EXTERNAL_KEY ||
@@ -446,11 +447,10 @@ void Properties::init( int argc, char* argv[] ){
 	argstr.erase(0,2);
 	string::size_type pos = argstr.find('=');
 	name = argstr.substr(0,pos);
-	if (name == GENEMODEL_KEY || name == SINGLESTRAND_KEY ||
+	if (name == GENEMODEL_KEY || name == NONCODING_KEY || name == SINGLESTRAND_KEY ||
 	    name == SPECIES_KEY || name == CFGPATH_KEY ||
 	    name == EXTERNAL_KEY || name == ALN_KEY ||
-	    name == TREE_KEY || name == DB_KEY ||
-	    name == SEQ_KEY) 
+	    name == TREE_KEY || name == DB_KEY || name == SEQ_KEY) 
 	    continue;
 	if (pos == string::npos) 
 	    throw PropertiesError(string("'=' missing for parameter: ") + name);
@@ -478,9 +478,6 @@ void Properties::init( int argc, char* argv[] ){
 
     bool utr_option_on=false;
     if (hasProperty(UTR_KEY)){
-	string& utrValue = properties[UTR_KEY];
-	if (utrValue == "both") utrValue = "on";
-	else if (utrValue == "none") utrValue = "off";
 	try {
 	    utr_option_on = getBoolProperty(UTR_KEY);
 	} catch (...) {
@@ -492,6 +489,23 @@ void Properties::init( int argc, char* argv[] ){
 	    throw ProjectError("UTR only implemented with shadow and partial or complete.");
 	transfileValue += "_utr";
     }
+
+    bool nc_option_on = false;
+    if (hasProperty(NONCODING_KEY)){
+	try {
+	    nc_option_on = getBoolProperty(NONCODING_KEY);
+	} catch (...) {
+	    throw ProjectError("Unknown option for parameter " NONCODING_KEY ". Use --" 
+			       NONCODING_KEY "=on or --" NONCODING_KEY "=off.");
+	}
+    } 
+    if (nc_option_on) {
+	if (singleStrand || !(genemodelValue == "partial" || genemodelValue == "complete")
+	    || !utr_option_on)
+	    throw ProjectError("Noncoding model (--" NONCODING_KEY "=1) only implemented with --UTR=on, shadow and (partial or complete).");
+	transfileValue += "_nc";
+    }
+    
     transfileValue += ".pbl";
     properties[TRANSFILE_KEY] = transfileValue;
     
@@ -504,8 +518,12 @@ void Properties::init( int argc, char* argv[] ){
     } else if (genemodelValue == "bacterium"){
       stateCFGfilename += "_bacterium";
       Constant::overlapmode = true;
-    } else if (utr_option_on)
-      stateCFGfilename += "_utr";
+    } else if (utr_option_on) {
+	stateCFGfilename += "_utr";
+	if (nc_option_on)
+	    stateCFGfilename += "_nc";
+    }
+    
     stateCFGfilename += ".cfg";
 
     // read in config file with states

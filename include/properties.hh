@@ -32,6 +32,7 @@
 #define NUMPARNAMES 235
 
 #define GENEMODEL_KEY "genemodel"
+#define NONCODING_KEY "nc"
 #define SINGLESTRAND_KEY "singlestrand"
 #define SPECIES_KEY "species"
 #define CFGPATH_KEY "AUGUSTUS_CONFIG_PATH"

@@ -17,6 +17,7 @@
  * 15.05.2006 | Mario Stanke          | added 3' UTR states
  * 29.02.2012 | Mario Stanke          | added quantile function
  * 25.02.2014 | Stefanie Koenig       | added ftoa function (double to string)
+ * 28.09.2014 | Mario Stanke          | added noncoding (nc) states
 \******************************************************************************/
 
 #ifndef _TYPES_HH
@@ -385,7 +386,7 @@ public:
 };
 
 
-#define NUM_TYPES 74
+#define NUM_TYPES 86
 
 enum StateType{TYPE_UNKNOWN = -1, igenic, 
 	       // forward strand
@@ -403,7 +404,10 @@ enum StateType{TYPE_UNKNOWN = -1, igenic,
 	       rutr5single, rutr5init, rutr5intron, rutr5intronvar, rutr5internal, rutr5term, // 5'UTR states
 	       rutr3single, rutr3init, rutr3intron, rutr3intronvar, rutr3internal, rutr3term, // 3'UTR states
 	       
-	       intron_type, rintron_type, exon_type
+	       intron_type, rintron_type, exon_type,
+	       // non-protein-coding states
+	       ncsingle, ncinit, ncintron, ncintronvar, ncinternal, ncterm, // forward strand
+	       rncsingle, rncinit, rncintron, rncintronvar, rncinternal, nrcterm // reverse strand
 };
 
 extern const char* stateTypeNames[NUM_TYPES];

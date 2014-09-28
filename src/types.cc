@@ -144,7 +144,10 @@ const char* stateTypeIdentifiers[NUM_TYPES]=
  "rlessD2", "rlongdss2", "requalD2", "rgeometric2", "rlongass2",
  "rutr5single", "rutr5init", "rutr5intron", "rutr5intronvar", "rutr5internal", "rutr5term",
  "rutr3single", "rutr3init", "rutr3intron", "rutr3intronvar", "rutr3internal", "rutr3term",
- "intron", "rintron", "exon"};
+ "intron", "rintron", "exon",
+ "ncsingle", "ncinit", "ncintron", "ncintronvar", "ncinternal", "ncterm",
+ "rncsingle", "rncinit", "rncintron", "rncintronvar", "rncinternal", "nrcterm"
+};
 
 // don't forget to change shift the reading frames, when you introduce new states!!
 const int stateReadingFrames[NUM_TYPES]=
