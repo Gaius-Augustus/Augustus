@@ -128,8 +128,8 @@ void CompGenePred::start(){
     if(strcmp(genemodelValue, "complete") == 0){
 	onlyCompleteGenes = true;
     }
-    else if(strcmp(genemodelValue, "partial") != 0){
-	throw ProjectError("in cgp mode only the options --genemodel=partial and --genemodel=complete are implemented.");
+    else if(strcmp(genemodelValue, "partial") != 0 && strcmp(genemodelValue, "bacterium") != 0){
+	throw ProjectError("in cgp mode only the options --genemodel=partial, --genemodel=bacterium and --genemodel=complete are implemented.");
     }
     if(onlyCompleteGenes && Constant::utr_option_on)
 	genesWithoutUTRs = false;
@@ -277,7 +277,7 @@ void CompGenePred::start(){
                         orthograph.graphs[s] = new SpeciesGraph(&stlist, as, additionalExons, speciesNames[s], 
 								geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, sampledExons[s]);
                         orthograph.graphs[s]->buildGraph();
-                        //orthograph.graphs[s]->printGraph(outdir + speciesNames[s] + "." + itoa(GeneMSA::geneRangeID) + ".dot");
+                        // orthograph.graphs[s]->printGraph(outdir + speciesNames[s] + "." + itoa(GeneMSA::geneRangeID) + ".dot");
 			
 			//save pointers to transcripts and delete them after gene list is build
                         orthograph.ptrs_to_alltranscripts[s] = alltranscripts;
