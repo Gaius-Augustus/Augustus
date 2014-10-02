@@ -15,6 +15,8 @@
 #ifndef _SPECIESGRAPH
 #define _SPECIESGRAPH
 
+#include<unordered_map>
+
 //project includes
 #include "graph.hh"
 
@@ -101,12 +103,12 @@ private:
     /*
      * subroutines of buildGraph()
      */
-    template<class T> Node* addExon(T *exon, vector< vector<Node*> > &neutralLines, map<string,Node*> &auxiliaryNodes); // add an exon to the graph
+    template<class T> Node* addExon(T *exon, vector< vector<Node*> > &neutralLines, unordered_map<int32_t,Node*> &auxiliaryNodes); // add an exon to the graph
     void addIntron(Node* pred, Node* succ, Status *intr); // add an intron to the graph
-    Node* addLeftSS(Status *exon, vector< vector<Node*> > &neutralLines, map<string,Node*> &auxiliaryNodes);
-    Node* addRightSS(Status *exon, vector< vector<Node*> > &neutralLines, map<string,Node*> &auxiliaryNodes);
-    Node* addAuxilaryNode(NodeType type, int pos, vector< vector<Node*> > &neutralLines, map<string,Node*> &auxiliaryNodes); // add an auxilary node to the graph if it does not exist already
-    Node* getAuxilaryNode(NodeType type, int pos, map<string,Node*> &auxiliaryNodes) const; // get an auxilary node (returns NULL if node does not exists)
+    Node* addLeftSS(Status *exon, vector< vector<Node*> > &neutralLines, unordered_map<int32_t,Node*> &auxiliaryNodes);
+    Node* addRightSS(Status *exon, vector< vector<Node*> > &neutralLines, unordered_map<int32_t,Node*> &auxiliaryNodes);
+    Node* addAuxilaryNode(NodeType type, int pos, vector< vector<Node*> > &neutralLines, unordered_map<int32_t,Node*> &auxiliaryNodes); // add an auxilary node to the graph if it does not exist already
+    Node* getAuxilaryNode(NodeType type, int pos, unordered_map<int32_t,Node*> &auxiliaryNodes) const; // get an auxilary node (returns NULL if node does not exists)
     void addAuxilaryEdge(Node *pred, Node *succ); // add an auxilary edge to the graph
     Node* addAuxNodeToLine(NodeType type, int pos, vector< vector<Node*> >&neutralLines); // add an auxilary node to one of the neutral lines if it does not exist already
     NodeType getPredType(StateType type, int begin, int end) ;  // get the type of gene feature that precedes an exon

@@ -20,7 +20,12 @@ void SpeciesGraph::buildGraph(){
     
     vector< vector<Node*> > neutralLines; //represents the seven neutral lines
     int seqlen = getSeqLength();
-    map<string,Node*> auxiliaryNodes; // hash of auxiliary nodes
+
+    /*
+     * hash that stores all auxiliary nodes 
+     * key encodes both position and node type and uses at most 25 of the 32 bits of an int32_t
+     */
+    unordered_map<int32_t,Node*> auxiliaryNodes; // hash of auxiliary nodes
 
     /* the seven lines of neutral nodes, each line represents a non-coding type between to exons
      * intergenetic -> intergenetic region
@@ -150,7 +155,7 @@ Node* SpeciesGraph::addNode(NodeType type, int pos){
     return node;
 }
 
-template<class T> Node* SpeciesGraph::addExon(T *exon, vector< vector<Node*> > &neutralLines, map<string,Node*> &auxiliaryNodes){
+template<class T> Node* SpeciesGraph::addExon(T *exon, vector< vector<Node*> > &neutralLines, unordered_map<int32_t,Node*> &auxiliaryNodes){
     
     if(!alreadyProcessed(exon)){
 	Node *node = addNode(exon);
@@ -209,13 +214,14 @@ void SpeciesGraph::addAuxilaryEdge(Node *pred, Node *succ){
     }
 }
 
-Node* SpeciesGraph::addAuxilaryNode(NodeType type, int pos, vector< vector<Node*> >&neutralLines, map<string,Node*> &auxiliaryNodes){
+Node* SpeciesGraph::addAuxilaryNode(NodeType type, int pos, vector< vector<Node*> >&neutralLines, unordered_map<int32_t,Node*> &auxiliaryNodes){
 
-    string key = itoa(pos) +  ":" + itoa(type);
-    map<string,Node*>::iterator it = auxiliaryNodes.find(key);                                                                                                 
+    int32_t key = (pos << 5) //20 bits
+	+ type; // 5 bits
+    unordered_map<int32_t,Node*>::iterator it = auxiliaryNodes.find(key);                                                                                                 
     if(it == auxiliaryNodes.end()){ // insert new auxiliary node
 	Node *node = addNode(type, pos);
-	auxiliaryNodes.insert(pair<string,Node*>(key,node));
+	auxiliaryNodes.insert(pair<int32_t,Node*>(key,node));
 	if(genesWithoutUTRs){
 	    if(type == TLstop || type == rTLstart){
 		addAuxilaryEdge(node,addAuxNodeToLine(IR,pos,neutralLines));
@@ -231,10 +237,11 @@ Node* SpeciesGraph::addAuxilaryNode(NodeType type, int pos, vector< vector<Node*
     }
 }
 
-Node* SpeciesGraph::getAuxilaryNode(NodeType type, int pos, map<string,Node*> &auxiliaryNodes) const{
+Node* SpeciesGraph::getAuxilaryNode(NodeType type, int pos, unordered_map<int32_t,Node*> &auxiliaryNodes) const{
 
-    string key = itoa(pos) +  ":" + itoa(type);
-    map<string,Node*>::iterator it = auxiliaryNodes.find(key);                                                                                                 
+    int32_t key = (pos << 5) //20 bits
+	+ type; // 5 bits
+    unordered_map<int32_t,Node*>::iterator it = auxiliaryNodes.find(key);                                                                                                 
     if(it == auxiliaryNodes.end()){ // insert new auxiliary node
 	return NULL;
     }
@@ -272,7 +279,7 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
     }
 }
 
-Node* SpeciesGraph::addLeftSS(Status *exon, vector< vector<Node*> >&neutralLines, map<string,Node*> &auxiliaryNodes){
+Node* SpeciesGraph::addLeftSS(Status *exon, vector< vector<Node*> >&neutralLines, unordered_map<int32_t,Node*> &auxiliaryNodes){
 
     if(!exon)
 	return NULL;
@@ -283,7 +290,7 @@ Node* SpeciesGraph::addLeftSS(Status *exon, vector< vector<Node*> >&neutralLines
     return addAuxilaryNode(ntype,begin,neutralLines, auxiliaryNodes);
 }
 
-Node* SpeciesGraph::addRightSS(Status *exon, vector< vector<Node*> >&neutralLines, map<string,Node*> &auxiliaryNodes){
+Node* SpeciesGraph::addRightSS(Status *exon, vector< vector<Node*> >&neutralLines, unordered_map<int32_t,Node*> &auxiliaryNodes){
 
     if(!exon)
 	return NULL;
@@ -658,7 +665,7 @@ double SpeciesGraph::relax(Node *begin, Node *end){
 string SpeciesGraph::getKey(Node *n) {
 
     if(n->item == NULL)
-	return (itoa(n->begin) +  ":" + itoa((n->n_type)));
+	throw ProjectError("SpeciesGraph::getKey() called on an auxiliary node.");
     else
 	return (itoa(n->begin) + ":" + itoa(n->end) + ":" + itoa( (int)(n->castToStateType()) )); 
 }
