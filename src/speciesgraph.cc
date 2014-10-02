@@ -655,7 +655,19 @@ double SpeciesGraph::relax(Node *begin, Node *end){
 
 }
 
-Node* SpeciesGraph::getTopSortPred(Node *node){
+string SpeciesGraph::getKey(Node *n) {
+
+    if(n->item == NULL)
+	return (itoa(n->begin) +  ":" + itoa((n->n_type)));
+    else
+	return (itoa(n->begin) + ":" + itoa(n->end) + ":" + itoa( (int)(n->castToStateType()) )); 
+}
+
+/*
+ * old code: optimize cgp by making small moves
+ */ 
+
+/*Node* SpeciesGraph::getTopSortPred(Node *node){
 
  if(node != head){
      do{
@@ -702,39 +714,6 @@ Node* SpeciesGraph::getNextExonOnPath(Node *node, size_t step){
  return node;
 }
 
-string SpeciesGraph::getKey(Node *n) {
-
-    if(n->item == NULL)
-	return (itoa(n->begin) +  ":" + itoa((n->n_type)));
-    else
-	return (itoa(n->begin) + ":" + itoa(n->end) + ":" + itoa( (int)(n->castToStateType()) )); 
-}
-
-
-double SpeciesGraph::setScore(Status *st){
-
-  double score = AugustusGraph::setScore(st);
-  updateMaxWeight(score);
-  return score;
-}
-
-
-double SpeciesGraph::localChange(Move *move){
-
-#ifdef DEBUG
-    //cout << "\nSpecies: " << speciesname <<"\n\nbefore local change" << endl;
-#endif
-    double local_score = - getScorePath(move->getHead(), move->getTail());  //old score of local path
-    move->addWeights();
-    relax(move->getHead(), move->getTail());            // relax edges
-    move->undoAddWeights();
-#ifdef DEBUG
-    //cout << "\nafter local change" << endl;
-#endif
-    local_score += getScorePath(move->getHead(), move->getTail());  // new score of local path
-    return local_score;
-}
-
 double SpeciesGraph::getScorePath(Node *begin, Node *end){
 
     double score = 0;
@@ -777,6 +756,23 @@ void SpeciesGraph::printNode(Node *node){
 	cout << "tail" << endl;
     }
 }
+
+double SpeciesGraph::localChange(Move *move){
+
+#ifdef DEBUG
+    //cout << "\nSpecies: " << speciesname <<"\n\nbefore local change" << endl;
+#endif
+    double local_score = - getScorePath(move->getHead(), move->getTail());  //old score of local path
+    move->addWeights();
+    relax(move->getHead(), move->getTail());            // relax edges
+    move->undoAddWeights();
+#ifdef DEBUG
+    //cout << "\nafter local change" << endl;
+#endif
+    local_score += getScorePath(move->getHead(), move->getTail());  // new score of local path
+    return local_score;
+}
+
 
 void Move::addWeights(){
     for (list<MoveNode>::iterator it = nodes.begin(); it != nodes.end(); it++){
@@ -833,3 +829,4 @@ void Move::initLocalHeadandTail(){
 	local_tail = graph->getNextExonOnPath(right, step_size);
     }
 }
+*/

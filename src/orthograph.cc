@@ -165,6 +165,239 @@ void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream
     }
 }
 
+
+
+vector<ofstream*> initOutputFiles(string outdir, string extension){
+
+    vector<ofstream*> filestreams;
+    filestreams.resize(OrthoGraph::numSpecies);
+    vector<string> species;
+    OrthoGraph::tree->getSpeciesNames(species);
+    for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){
+	string filename = outdir + species[pos] + extension + ".gff";
+	if(Gene::gff3){
+	    filename += "3";	    
+	}
+	ofstream *out = new ofstream(filename.c_str());
+	if(out){
+	    filestreams[pos] = out;
+	    (*out) << PREAMBLE << endl;
+	    (*out) << "#\n#----- prediction for species '" << species[pos] << "' -----" << endl << "#" << endl;
+	}	
+    }
+    return filestreams;
+}
+
+void closeOutputFiles(vector<ofstream*> filestreams){
+
+    for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){
+	if(filestreams[pos]){
+	    if(filestreams[pos]->is_open()){
+		filestreams[pos]->close();
+		delete filestreams[pos];
+	    }
+	}
+    }
+}
+
+void OrthoGraph::addScoreSelectivePressure(){
+
+    double a;
+    double b;
+    try {
+	a = Properties::getdoubleProperty("/CompPred/ec_addend");
+    } catch (...) {
+	a = 0;
+    }
+    try {
+	b = Properties::getdoubleProperty("/CompPred/ec_factor");
+    } catch (...) {
+	b = 0;
+    }
+    
+    // reward/penalty that each EC receives
+    for(size_t pos = 0; pos < numSpecies; pos++){
+	if(graphs[pos]){
+	    for(list<Node*>::iterator node = graphs[pos]->nodelist.begin(); node != graphs[pos]->nodelist.end(); node++){
+		if( (*node)->n_type >= sampled ){
+		    for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
+			// default EC-filter on:
+			edge->score += a + (-1.396*b);
+			}
+		}
+	    }
+	}
+    }
+    // reward/penalty that only EC receives which are part of an OE
+    if(!all_orthoex.empty()){
+	for(list<OrthoExon>::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
+	    for(size_t pos = 0; pos < numSpecies; pos++){
+		if(it->orthoex[pos]){
+		    Node* node = it->orthonode[pos];
+		    int len =  node->end - node->begin + 1;
+		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
+			// default EC-filter on:  
+		       	iter->score += b*(0.015 * len + 1.277 * it->getConsScore() + 4.37 * it->getDiversity() -0.92);
+		    }
+		}
+	    }
+	}
+    }
+}
+
+double OrthoGraph::globalPathSearch(){
+
+    double score=0;
+
+    for(size_t pos = 0; pos < numSpecies; pos++){
+	if(graphs[pos]){
+	    score += graphs[pos]->relax();
+	}
+    }
+    return score;
+}
+
+double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int gr_ID, int T, double c){
+
+    cout<<"dual decomposition on gene Range "<<gr_ID<<endl;
+    /*
+     * initialization
+     */
+    double old_dual = 0.0; // dual value of the previous iteration
+    double best_dual = std::numeric_limits<double>::max();   // best dual value so far
+    double best_primal = -std::numeric_limits<double>::max(); // best primal value so far
+
+    double initial_gap = std::numeric_limits<double>::max(); // initial duality gap (in 0-the iteration)
+
+    double delta = 0.0; // step size
+
+    // number of iterations prior to t where the dual value increases
+    int v = 0;
+    cout.precision(10);
+    cout<<"iter\tstep_size\tprimal\tdual\t#inconsistencies"<<endl;
+    for(int t=0; t<T;t++){
+	double path_score = globalPathSearch();
+	int numInconsistent = 0;
+	double current_dual = path_score + treeMAPInf(evo,numInconsistent);   // dual value of the t-th iteration 
+	best_dual = min(best_dual,current_dual);              // update upper bound
+	if( (t >= 1) && (old_dual > current_dual) )  // update v
+		v++;
+	double current_primal = path_score + makeConsistent(evo); // primal value of the t-the iteration
+	if(best_primal < current_primal){
+	    best_primal = current_primal;
+	    buildGeneList(genelist); // save new record
+	}
+	if(t == 0)
+	    initial_gap = current_dual - current_primal;
+
+	cout<<t<<"\t"<<delta<<"\t"<<current_primal<<"\t"<<current_dual<<"\t"<<numInconsistent<<endl;
+
+	if(numInconsistent == 0 || abs(best_dual - best_primal) < 1e-10) // exact solution is found
+	    break;
+
+	// determine new step size
+	delta = getStepSize(c,t,v);
+	// updated weights
+	for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
+	    for(size_t pos = 0; pos < numSpecies; pos++){
+		if(hects->orthoex[pos]){
+		    // get corresponding node in graph
+		    Node* node = hects->orthonode[pos];
+		    bool h = node->label;
+		    bool v = hects->labels[pos];
+		    if(v != h){  //shared nodes are labelled inconsistently in the two subproblems
+			double weight = delta*(v-h);
+			//update weights
+			node->addWeight(weight);
+			hects->weights[pos] -= weight;     
+		    }
+		}
+	    }
+	}
+	old_dual = current_dual;
+    }
+    double best_gap = abs(best_dual - best_primal);
+    double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
+    cout<<"dual decomposition reduced initial duality gap of "<<initial_gap<<" to "<<best_gap<<" (to "<<perc_gap<<"%)"<<endl;
+    return best_gap;
+
+}
+
+/*
+ * requirement delta -> 0 for t -> infinity and
+ * sum(deltas) = infinity
+ * v ist the number of iterations prior to t where the dual value increases
+ * the purpose of v is to decrease the step size only if we move in the wrong direction
+ */
+double OrthoGraph::getStepSize(double c, int t, int v){
+    
+    if(t == 0){ //small step size
+    	return 0.0001;
+    }
+    else{
+	return c/sqrt(v+1);
+    }
+ }
+
+double OrthoGraph::treeMAPInf(ExonEvo &evo, int &numInconsistent){
+
+    double score=0;
+    double k =evo.getPhyloFactor(); //scaling factor 
+
+    for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
+	PhyloTree temp(*tree);
+	Evo *evo_base = &evo;
+	score += temp.MAP(hects->labels, hects->weights, evo_base, k);
+	for(int pos=0; pos < hects->orthonode.size(); pos++){
+            if(hects->orthonode[pos] && hects->orthonode[pos]->label != hects->labels[pos])
+                numInconsistent++;
+        }
+
+    }
+    return score;
+}
+
+double OrthoGraph::makeConsistent(ExonEvo &evo){
+
+    double score = 0;
+    double k =evo.getPhyloFactor(); //scaling factor 
+
+    for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
+	PhyloTree temp(*tree);
+	Evo *evo_base = &evo;
+	vector<int> labels(numSpecies,2);
+	for(int pos=0; pos < hects->orthonode.size(); pos++){
+	    if(hects->orthonode[pos])
+		labels[pos] = hects->orthonode[pos]->label;
+	}
+	score += temp.MAP(labels, hects->weights, evo_base, k, true);
+    }
+    return score;
+}	
+
+void OrthoGraph::linkToOEs(list<OrthoExon> &oes){
+
+    all_orthoex = oes;
+    for(list<OrthoExon>::iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
+	for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){ 
+	    if(it->orthoex[pos]==NULL){
+		it->labels[pos]=2;
+	    }
+	    else{
+		if(!graphs[pos])
+		    throw ProjectError("Internal error OrthoGraph::linkToOEs: graph does not exist.");
+		Node* node = graphs[pos]->getNode(it->orthoex[pos]);
+		if(!node){
+		    throw ProjectError("Internal error OrthoGraph::linkToOEs: EC has no corrpesonding node in OrthoGraph.");
+		}
+		it->orthonode[pos]=node;
+	    }
+	    it->setLabelpattern();
+	}
+    }  
+}
+
+/* old code: optimize cgp by making small moves
 void OrthoGraph::optimize(ExonEvo &evo){
 
     //create MoveObjects
@@ -435,40 +668,6 @@ void cache::incrementCounter(string labelpattern){
     labelscore[labelpattern].count++;
 }
 
-
-vector<ofstream*> initOutputFiles(string outdir, string extension){
-
-    vector<ofstream*> filestreams;
-    filestreams.resize(OrthoGraph::numSpecies);
-    vector<string> species;
-    OrthoGraph::tree->getSpeciesNames(species);
-    for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){
-	string filename = outdir + species[pos] + extension + ".gff";
-	if(Gene::gff3){
-	    filename += "3";	    
-	}
-	ofstream *out = new ofstream(filename.c_str());
-	if(out){
-	    filestreams[pos] = out;
-	    (*out) << PREAMBLE << endl;
-	    (*out) << "#\n#----- prediction for species '" << species[pos] << "' -----" << endl << "#" << endl;
-	}	
-    }
-    return filestreams;
-}
-
-void closeOutputFiles(vector<ofstream*> filestreams){
-
-    for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){
-	if(filestreams[pos]){
-	    if(filestreams[pos]->is_open()){
-		filestreams[pos]->close();
-		delete filestreams[pos];
-	    }
-	}
-    }
-}
-
 void OrthoGraph::printHTMLgBrowse(OrthoExon &ex){
 
     for (int j=0; j<ex.orthoex.size(); j++) {
@@ -488,224 +687,4 @@ void OrthoGraph::printHTMLgBrowse(OrthoExon &ex){
 	}
     }
 }
-
-void OrthoGraph::addScoreSelectivePressure(){
-
-    double a;
-    double b;
-    try {
-	a = Properties::getdoubleProperty("/CompPred/ec_addend");
-    } catch (...) {
-	a = 0;
-    }
-    try {
-	b = Properties::getdoubleProperty("/CompPred/ec_factor");
-    } catch (...) {
-	b = 0;
-    }
-    
-    // reward/penalty that each EC receives
-    for(size_t pos = 0; pos < numSpecies; pos++){
-	if(graphs[pos]){
-	    for(list<Node*>::iterator node = graphs[pos]->nodelist.begin(); node != graphs[pos]->nodelist.end(); node++){
-		if( (*node)->n_type >= sampled ){
-		    for(list<Edge>::iterator edge = (*node)->edges.begin(); edge != (*node)->edges.end(); edge++){
-			// default EC-filter on:
-			edge->score += a + (-1.396*b);
-			}
-		}
-	    }
-	}
-    }
-    // reward/penalty that only EC receives which are part of an OE
-    if(!all_orthoex.empty()){
-	for(list<OrthoExon>::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
-	    for(size_t pos = 0; pos < numSpecies; pos++){
-		if(it->orthoex[pos]){
-		    Node* node = it->orthonode[pos];
-		    int len =  node->end - node->begin + 1;
-		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
-			// default EC-filter on:  
-		       	iter->score += b*(0.015 * len + 1.277 * it->getConsScore() + 4.37 * it->getDiversity() -0.92);
-		    }
-		}
-	    }
-	}
-    }
-}
-
-double OrthoGraph::globalPathSearch(){
-
-    double score=0;
-
-    for(size_t pos = 0; pos < numSpecies; pos++){
-	if(graphs[pos]){
-	    score += graphs[pos]->relax();
-	}
-    }
-    return score;
-}
-
-double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int gr_ID, int T, double c){
-
-    cout<<"dual decomposition on gene Range "<<gr_ID<<endl;
-    /*
-     * initialization
-     */
-    double old_dual = 0.0; // dual value of the previous iteration
-    double best_dual = std::numeric_limits<double>::max();   // best dual value so far
-    double best_primal = -std::numeric_limits<double>::max(); // best primal value so far
-
-    double initial_gap = std::numeric_limits<double>::max(); // initial duality gap (in 0-the iteration)
-
-    double delta = 0.0; // step size
-
-    // number of iterations prior to t where the dual value increases
-    int v = 0;
-    cout.precision(10);
-    cout<<"iter\tstep_size\tprimal\tdual\t#inconsistencies"<<endl;
-    for(int t=0; t<T;t++){
-	double path_score = globalPathSearch();
-	int numInconsistent = 0;
-	double current_dual = path_score + treeMAPInf(evo,numInconsistent);   // dual value of the t-th iteration 
-	best_dual = min(best_dual,current_dual);              // update upper bound
-	if( (t >= 1) && (old_dual > current_dual) )  // update v
-		v++;
-	double current_primal = path_score + makeConsistent(evo); // primal value of the t-the iteration
-	if(best_primal < current_primal){
-	    best_primal = current_primal;
-	    buildGeneList(genelist); // save new record
-	}
-	if(t == 0)
-	    initial_gap = current_dual - current_primal;
-
-	cout<<t<<"\t"<<delta<<"\t"<<current_primal<<"\t"<<current_dual<<"\t"<<numInconsistent<<endl;
-
-	if(numInconsistent == 0 || abs(best_dual - best_primal) < 1e-10) // exact solution is found
-	    break;
-
-	// determine new step size
-	delta = getStepSize(c,t,v);
-	// updated weights
-	for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
-	    for(size_t pos = 0; pos < numSpecies; pos++){
-		if(hects->orthoex[pos]){
-		    // get corresponding node in graph
-		    Node* node = hects->orthonode[pos];
-		    bool h = node->label;
-		    bool v = hects->labels[pos];
-		    if(v != h){  //shared nodes are labelled inconsistently in the two subproblems
-			double weight = delta*(v-h);
-			//update weights
-			node->addWeight(weight);
-			hects->weights[pos] -= weight;     
-		    }
-		}
-	    }
-	}
-	old_dual = current_dual;
-    }
-    double best_gap = abs(best_dual - best_primal);
-    double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
-    cout<<"dual decomposition reduced initial duality gap of "<<initial_gap<<" to "<<best_gap<<" (to "<<perc_gap<<"%)"<<endl;
-    return best_gap;
-
-}
-
-/*
- * requirement delta -> 0 for t -> infinity and
- * sum(deltas) = infinity
- * v ist the number of iterations prior to t where the dual value increases
- * the purpose of v is to decrease the step size only if we move in the wrong direction
- */
-double OrthoGraph::getStepSize(double c, int t, int v){
-    
-    if(t == 0){ //small step size
-    	return 0.0001;
-    }
-    else{
-	return c/sqrt(v+1);
-    }
- }
-
-double OrthoGraph::treeMAPInf(ExonEvo &evo, int &numInconsistent){
-
-    double score=0;
-    double k =evo.getPhyloFactor(); //scaling factor 
-
-    for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
-	PhyloTree temp(*tree);
-	Evo *evo_base = &evo;
-	score += temp.MAP(hects->labels, hects->weights, evo_base, k);
-	for(int pos=0; pos < hects->orthonode.size(); pos++){
-            if(hects->orthonode[pos] && hects->orthonode[pos]->label != hects->labels[pos])
-                numInconsistent++;
-        }
-
-    }
-    return score;
-}
-
-double OrthoGraph::makeConsistent(ExonEvo &evo){
-
-    double score = 0;
-    double k =evo.getPhyloFactor(); //scaling factor 
-
-    for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
-	PhyloTree temp(*tree);
-	Evo *evo_base = &evo;
-	vector<int> labels(numSpecies,2);
-	for(int pos=0; pos < hects->orthonode.size(); pos++){
-	    if(hects->orthonode[pos])
-		labels[pos] = hects->orthonode[pos]->label;
-	}
-	score += temp.MAP(labels, hects->weights, evo_base, k, true);
-    }
-    return score;
-}	
-
-void OrthoGraph::printSummary(){
-    map<string,int> mymap;
-    for(auto it = all_orthoex.begin(); it != all_orthoex.end();it++){
-	string key="";
-	for(size_t pos = 0; pos < it->orthonode.size(); pos++){
-	    if(it->orthoex[pos]){
-		key+=itoa(it->orthonode[pos]->label);
-	    }
-	    else{
-		key+="2";
-	    }
-	}
-	if(mymap.find(key) != mymap.end()){
-	    mymap[key]++;
-	}
-	else{
-	    mymap[key]=1;
-	}
-    }
-    for(map<string,int>::iterator it = mymap.begin(); it != mymap.end(); it++){
-	cout<<it->first<<"\t"<<it->second<<endl;
-    }
-}
-
-void OrthoGraph::linkToOEs(list<OrthoExon> &oes){
-
-    all_orthoex = oes;
-    for(list<OrthoExon>::iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
-	for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){ 
-	    if(it->orthoex[pos]==NULL){
-		it->labels[pos]=2;
-	    }
-	    else{
-		if(!graphs[pos])
-		    throw ProjectError("Internal error OrthoGraph::linkToOEs: graph does not exist.");
-		Node* node = graphs[pos]->getNode(it->orthoex[pos]);
-		if(!node){
-		    throw ProjectError("Internal error OrthoGraph::linkToOEs: EC has no corrpesonding node in OrthoGraph.");
-		}
-		it->orthonode[pos]=node;
-	    }
-	    it->setLabelpattern();
-	}
-    }  
-}
+*/

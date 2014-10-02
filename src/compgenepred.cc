@@ -88,12 +88,6 @@ void CompGenePred::start(){
 #endif
 
    
-    bool dualdecomp;
-    try {
-	dualdecomp = Properties::getBoolProperty("/CompPred/dualdecomp");
-    } catch (...) {
-	dualdecomp = true;
-    }
     int maxIterations; // maximum number of dual decomposition iterations
     try {
 	maxIterations = Properties::getIntProperty("/CompPred/maxIterations");
@@ -312,17 +306,11 @@ void CompGenePred::start(){
 		orthograph.outputGenes(initGenes,init_geneid);
 	    }	    
 	    if(!orthograph.all_orthoex.empty()){
-		if (dualdecomp){ // optimization via dual decomposition
-		    vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
-		    orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factor);
-		    orthograph.filterGeneList(genelist,optGenes,opt_geneid);
-		} else { // optimization by making small changes (moves)
-		    orthograph.pruningAlgor(evo);
-		    orthograph.printCache();
-		    orthograph.optimize(evo);
-		    // transfer max weight paths to genes + filter + ouput
-		    orthograph.outputGenes(optGenes, opt_geneid);
-		}
+		// optimization via dual decomposition
+		vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
+		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factor);
+		orthograph.filterGeneList(genelist,optGenes,opt_geneid);
+		
 	    }else{
 		orthograph.outputGenes(optGenes, opt_geneid);
 	    }

@@ -30,7 +30,6 @@ private:
     Strand strand;
     bool genesWithoutUTRs;
     bool onlyCompleteGenes;
-    double max_weight; // the max weight of a node/edge in the graph, used as an upper/lower bound
     double ec_score; //temp: until there are real scores for exon candidates
     ofstream *sampled_exons;        // output file of sampled exons
    
@@ -43,7 +42,6 @@ public:
 	strand(s),
 	genesWithoutUTRs(u),
 	onlyCompleteGenes(o),
-	max_weight(0),
 	sampled_exons(se)
     {
 	try {
@@ -68,15 +66,7 @@ public:
      */
     string getKey(Node *n);
     void printGraph(string filename); // prints graph in dot-format
-    double setScore(Status *st);
     void printSampledExon(Node *node); //prints sampled exons to display them with gBrowse
-    void updateMaxWeight(double weight){
-	if(abs(weight) > max_weight)
-	    max_weight = abs(weight);
-    }
-    double getMaxWeight() const {                         // upper bound of a maximum weight path
-	return 2 * max_weight * nodelist.size();
-    }
     string getSpeciesname() const {return speciesname;}
     char* getSequence() const {return seqRange->sequence;}
     char* getSeqID() const {return seqRange->seqname;}
@@ -95,13 +85,17 @@ public:
     inline double relax(){
 	return relax(head, tail);
     }
-    double localChange(Move *move);                 // local path search with calculation of the score difference between new and old local path
+    /*
+     * old code
+     */
+    /*double localChange(Move *move);                 // local path search with calculation of the score difference between new and old local path
     double getScorePath(Node *begin, Node *end);          // calc. the sum of edge weights of the path: begin ~~> end
     Node* getTopSortPred(Node *node);    //get next node in topological order which is on the path
     Node* getTopSortNext(Node *node);    //get previous node in topological order which is on the path
     Node* getNextExonOnPath(Node *node, size_t step);  // returns the i-th next exon on the current path, where i is the step size (size_t step)
     Node* getPredExonOnPath(Node *node, size_t step);  // returns the i-th preceding exon on the current path
     void printNode(Node *node); //print Node with offset
+    */
 
 private:
     /*
@@ -131,7 +125,10 @@ private:
     string getDotEdgeAttributes(Node *pred, Edge *edge);
 };
 
-struct MoveNode{
+/*
+ * old code: optimize cgp by making small moves
+ */
+/*struct MoveNode{
 
     Node *node;
     double weight;
@@ -183,6 +180,6 @@ public:
     void undoAddWeights();
     void initLocalHeadandTail();  //determines local_head and local_tail
 };
-
+*/
 #endif  // _SPECIESGRAPH
  
