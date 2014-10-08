@@ -123,9 +123,17 @@ void SpeciesGraph::buildGraph(){
     for(int j=0; j<neutralLines.size(); j++){
 	createNeutralLine(neutralLines.at(j),onlyCompleteGenes);
     }
-    	
+
+    // add backedges without cycles from nodes with edge to IR to the first IR-node from which you can't reach the node again (adds auxiliary-IR-nodes if exons starts at the same position)
+    if (overlapComp)
+      addBackEdgesComp();
+
     //find topological order of nodes in graph and set pointers topSort_next and topSort_pred
     topSort();
+
+    // execute tarjan strongest component algorithm to find cycles in O(N+M)
+    if (overlapComp)
+      tarjan();
 
     //relax all nodes in topological order and label all nodes with 1 if on max weight path
     relax();
@@ -519,7 +527,7 @@ void SpeciesGraph::printGraph(string filename){
 	
 	if(pos->n_type != unsampled_exon){
 	    file<<IDcount<<"[" + getDotNodeAttributes(pos) + "];\n";
-	    
+
 	    for(list<Edge>::iterator it=pos->edges.begin(); it!=pos->edges.end(); it++){
 		if( !(pos == head && it->to == tail) && it->to->n_type != unsampled_exon){
 		    std::map<Node*,int>::iterator mit = nodeIDs.find(it->to);

@@ -34,9 +34,10 @@ private:
     bool onlyCompleteGenes;
     double ec_score; //temp: until there are real scores for exon candidates
     ofstream *sampled_exons;        // output file of sampled exons
+    bool overlapComp;
    
 public:
-    SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> *addEx, string name, Strand s, bool u, bool o, ofstream *se) :
+    SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> *addEx, string name, Strand s, bool u, bool o, ofstream *se, bool ov = false) :
 	AugustusGraph(states, seq->sequence),
 	seqRange(seq),
 	additionalExons(addEx),
@@ -44,7 +45,8 @@ public:
 	strand(s),
 	genesWithoutUTRs(u),
 	onlyCompleteGenes(o),
-	sampled_exons(se)
+	sampled_exons(se),
+	overlapComp(ov)
     {
 	try {
 	    ec_score = Properties::getdoubleProperty("/CompPred/ec_score");

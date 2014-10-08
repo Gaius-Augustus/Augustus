@@ -216,7 +216,7 @@ void Graph::addCompatibleEdges(){
  */
 
 void Graph::addBackEdges(){
-
+  // get neutral line nodes out of all nodes in the order from head to tail
   map<string,Node*> inQueue;
   list<Node*> neutralNodes;
   Node *pos = head;
@@ -233,9 +233,11 @@ void Graph::addBackEdges(){
   }
   neutralNodes.push_back(tail);
 
+  // for every neutral line node
   for(list<Node*>::iterator fromNeut=neutralNodes.begin(); fromNeut!=neutralNodes.end(); fromNeut++){  
     if(nonneutralIncomingEdge(*fromNeut)){
       bool nonNeutralLoop = false;
+      // for every neutral line node (backwards) in front of the actual neutral line node (core node)
       for(list<Node*>::iterator toNeut=fromNeut; toNeut!=neutralNodes.begin(); toNeut--){   
 	if(nonNeutralLoop)
 	  break;
@@ -243,10 +245,12 @@ void Graph::addBackEdges(){
 	queue<Node*> q;
 	inQueue.clear();
 	int nrNonNeutralEdges = 0;
+    // figure out if there are edges to nonneutral nodes
 	for(list<Edge>::iterator edge=(*toNeut)->edges.begin(); edge!=(*toNeut)->edges.end(); edge++)
 	  if(!edge->neutral)
 	    nrNonNeutralEdges++;
-	
+
+	// if there are edges to nonneutral nodes do the following to check if there is a nontrivial way to the core node
 	if(nrNonNeutralEdges > 0 && *fromNeut != *toNeut){
 	  q.push(*toNeut);
 	  while(!q.empty()){
@@ -257,9 +261,10 @@ void Graph::addBackEdges(){
 		q.push(edge->to);
 		inQueue[getKey(edge->to)] = edge->to;
 	      }
+          // if the programm finds a neutral line node which comes not later then the core node on this nontrivial way, no additional backadges will be added
 	      if(pos->item != NULL && edge->to->item == NULL && edge->to->begin <= (*fromNeut)->begin)
 		goto nextEdge;
-	      
+	      // if the programm is already farer then the core node without finding a nontrivial way to a neutral line node, a backedge can be added
 	      if(minInQueue(&q) > (*fromNeut)->begin){
 		insertIntron(*fromNeut,*toNeut);
 		nonNeutralLoop = false;
@@ -271,6 +276,177 @@ void Graph::addBackEdges(){
       nextEdge:;
       }
     }
+  }
+}
+
+void Graph::addBackEdgesComp(){
+  // get neutral line nodes out of all nodes in the order from head to tail
+  list<Node*> neutralNodes;
+  Node *pos = head;
+  while(pos != tail){
+	neutralNodes.push_back(pos);
+    for(list<Edge>::iterator edge=pos->edges.begin(); edge!=pos->edges.end(); edge++){
+      if((edge->to)->n_type == IR || (edge->to) == tail){
+	  pos = edge->to;
+	  break;
+      }
+      else if(&(*edge) == &pos->edges.back())
+	cerr<<"ERROR: (mea) neutral line has gap!"<<endl;
+    }
+  }
+  neutralNodes.push_back(tail);
+  Node *lastSource = tail;
+  // for every neutral line node backwards, starting at tail, add backedges and, if necessary, auxiliary Nodes
+  for (list<Node*>::reverse_iterator actSource=neutralNodes.rbegin(); actSource!=neutralNodes.rend(); actSource++){
+    if (*actSource == head){break;}             // maybe change the for-loop, to insert this condition in it (without this condition, the program adds unneeded auxiliary nodes on the head)
+    queue<Node*> exonQueue;
+    size_t count = 0;
+    list<Node*> actStopExons;
+    // for every "nonneutral" (start-)Edge from source go every possible new way (dont go to a node, if you already found it from another source)
+    for (list<Edge>::iterator startEdge=(*actSource)->edges.begin(); startEdge!=(*actSource)->edges.end(); startEdge++){
+      if ((startEdge->to)->prevNontrivialNeutNode == NULL && (startEdge->to)->n_type != IR){
+        (startEdge->to)->prevNontrivialNeutNode = (*actSource);
+        (startEdge->to)->index = count;
+        exonQueue.push(startEdge->to);
+        Node *actMinStopExon = NULL;            // save the actual minimum stop for this path; queue is NOT ordered with end positions, so it´s possible, that you found the minimum at the end
+        // while there is still a new node (a node that was not already found) 
+        while (!exonQueue.empty()){
+          Node *pos=exonQueue.front();
+          exonQueue.pop();
+          // for every edge from startEdge go every possible new way (dont go to a node, if you already found it from another source); add a back edge if you found a way back to IR
+          for (list<Edge>::iterator edge=pos->edges.begin(); edge!=pos->edges.end(); edge++){
+            if (pos->n_type != IR && (edge->to)->n_type == IR){
+              if(!edgeExists(pos,lastSource)){
+                actStopExons.push_back(pos);
+                if ((edge->to)->begin > lastSource->begin){             // see YY     
+                  edge->to = lastSource;                                // see YY
+                }                                                       // YY: if backedges should get a penalty, this lines has to be deleted
+                // Edge edgeNew(lastSource,false, edge->score);         // see WW
+                // pos->edges.push_back(edgeNew);                       // WW: these lines are needed, if backedges should get a penalty 
+              }
+              if (actMinStopExon){
+                if (actMinStopExon->end > pos->end){actMinStopExon = pos;}
+              }else{actMinStopExon = pos;}
+            }
+            if ((edge->to)->prevNontrivialNeutNode == NULL || ((edge->to)->prevNontrivialNeutNode == (*actSource) && (edge->to)->index != count)){
+              (edge->to)->prevNontrivialNeutNode = (*actSource);
+              (edge->to)->index = count;
+              exonQueue.push(edge->to);
+            }
+          }
+        }
+        (startEdge->to)->nextNontrivialNeutNode = actMinStopExon;
+      }
+      count++;
+    }
+
+    // if more then one exon starts from this source, add auxiliary nodes for every different transcript end
+    if ((*actSource)->edges.size()>2){
+      actStopExons.sort(compareNodeEnds);
+      list<Node*> auxiliaryNodeList;
+      // (again) for every "nonneutral" (start-)Edge from source add auxiliary nodes for every transcript with same start and different minStop
+      for (list<Edge>::iterator startEdge=(*actSource)->edges.begin(); startEdge!=(*actSource)->edges.end(); startEdge++){
+        if ((startEdge->to)->n_type == IR){continue;}                       // this condition can be extended, if auxNodes gets a new type (!=IR)
+        int auxEnd;
+        if ((startEdge->to)->nextNontrivialNeutNode){
+          auxEnd = ((startEdge->to)->nextNontrivialNeutNode)->end;
+        }else{
+          auxEnd = tail->end;
+        }
+        Node* auxiliaryNode = NULL;
+        // if there is already a auxNode with the same End, use it instead of creating a new one
+        for (list<Node*>::iterator auxNode=auxiliaryNodeList.begin(); auxNode!=auxiliaryNodeList.end(); auxNode++){
+          if ((*auxNode)->end == auxEnd){auxiliaryNode = (*auxNode);}
+        }
+        // create a new auxNode if necessary
+        if(auxiliaryNode == NULL){
+          auxiliaryNode = new Node((*actSource)->begin,auxEnd);
+          auxiliaryNode->n_type=IR;                             // maybe another node_type later
+          auxiliaryNodeList.push_back(auxiliaryNode);
+        }
+        // add edge from auxiliaryNode to startEdge->to 
+        auxiliaryNode->prevNontrivialNeutNode = (*actSource);
+        Edge edgeNew(startEdge->to,false);
+        auxiliaryNode->edges.push_back(edgeNew);
+      }
+      int lastEnd = (*actSource)->begin + 1;
+      auxiliaryNodeList.sort(compareNodeEnds);
+      Node* lastAuxNode = (*actSource);
+      for (list<Node*>::iterator auxNode=auxiliaryNodeList.begin(); auxNode!=auxiliaryNodeList.end(); auxNode++){
+        for (list<Node*>::iterator stopExon=actStopExons.begin(); stopExon!=actStopExons.end(); stopExon++){
+          if((*stopExon)->end >= lastEnd && (*stopExon)->end < (*auxNode)->end){
+            //double edgeScore = 0;                             // see XX
+            for (list<Edge>::iterator edge=(*stopExon)->edges.begin(); edge!=(*stopExon)->edges.end(); edge++){
+              if ((edge->to)->n_type == IR){
+                if ((edge->to)->begin > (*auxNode)->begin){
+                  //edgeScore = edge->score;                    // see XX
+                  edge->to = (*auxNode);                        // if backedges should get a penalty, this line has to be deleted
+                }
+              }
+            }
+            // Edge edgeNew((*auxNode),false, edgeScore);       // see XX
+            // (*stopExon)->edges.push_back(edgeNew);           // XX: these lines are needed, if backedges should get a penalty 
+          }
+        }
+        Edge edgeNew((*auxNode),false);
+        lastAuxNode->edges.push_back(edgeNew);
+
+        lastAuxNode = (*auxNode);
+        nodelist.push_back(*auxNode);
+        lastEnd = (*auxNode)->end;
+      }
+
+      // add Edge from the last auxiliary node to the neutral line
+      Edge edgeNew(lastSource,false);
+      lastAuxNode->edges.push_back(edgeNew);
+
+      for (list<Node*>::iterator auxNode=auxiliaryNodeList.begin(); auxNode!=auxiliaryNodeList.end(); auxNode++){
+        (*auxNode)->end = (*auxNode)->begin;
+      }
+    }
+    lastSource = (*actSource);
+  }
+}
+
+void Graph::tarjan(){
+  for (list<Node*>::iterator node=nodelist.begin(); node!=nodelist.end(); node++){
+    (*node)->label = 0;            // if label is 1, node is in stack
+    (*node)->index = 0;
+  }
+  stack<Node*> S;
+  size_t index = 1;
+
+  for (list<Node*>::iterator node=nodelist.begin(); node!=nodelist.end(); node++){
+    if ((*node)->index == 0){
+      tarjanAlg(*node, S, index);
+    }
+  }
+}
+
+void Graph::tarjanAlg(Node* from, stack<Node*> &S, size_t &index){
+  from->index = index;
+  from->lowlink = index;
+  index++;
+  S.push(from);
+  from->label = 1;
+  for (list<Edge>::iterator edge=from->edges.begin(); edge!=from->edges.end(); edge++){
+    if ((edge->to)->index == 0){
+      tarjanAlg(edge->to, S, index);
+      from->lowlink = std::min(from->lowlink, (edge->to)->lowlink);
+    }else if ((edge->to)->label == 1){
+      from->lowlink = std::min(from->lowlink, (edge->to)->index);
+    }
+  }
+  if (from->lowlink == from->index){
+    Node* actNode = NULL;
+    list<Node*> component;
+    do{
+      actNode = S.top();
+      S.pop();
+      actNode->label = 0;
+      component.push_back(actNode);
+    }while (from != actNode);
+    if (component.size() > 1){cerr << "There is a loop in the graph." << endl;}
   }
 }
 
@@ -903,6 +1079,11 @@ bool compareNodes(Node *first, Node *second){
 
 bool compareEdges(Edge first, Edge second){
   return(first.to->begin <= second.to->begin);
+}
+
+bool compareNodeEnds(const Node *first, const Node *second)
+{
+  return (first->end <= second->end);
 }
 
 //casts node to StateType

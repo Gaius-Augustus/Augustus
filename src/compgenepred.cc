@@ -117,6 +117,12 @@ void CompGenePred::start(){
     } catch (...) {
 	genesWithoutUTRs = true;
     }
+    bool overlapComp;
+    try {
+      overlapComp = Properties::getBoolProperty("/CompPred/overlapcomp");
+    } catch (...) {
+      overlapComp = false;
+    }
     bool onlyCompleteGenes = false;
     const char* genemodelValue = Properties::hasProperty("genemodel") ? Properties::getProperty("genemodel") : "partial";
     if(strcmp(genemodelValue, "complete") == 0){
@@ -269,7 +275,7 @@ void CompGenePred::start(){
                         }
                         // build graph
                         orthograph.graphs[s] = new SpeciesGraph(&stlist, as, additionalExons, speciesNames[s], 
-								geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, sampledExons[s]);
+								geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, sampledExons[s], overlapComp);
                         orthograph.graphs[s]->buildGraph();
                         // orthograph.graphs[s]->printGraph(outdir + speciesNames[s] + "." + itoa(GeneMSA::geneRangeID) + ".dot");
 			

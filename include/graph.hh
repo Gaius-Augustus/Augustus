@@ -5,6 +5,7 @@
 #include <sstream>
 #include <queue>
 #include <iostream>
+#include <stack>
 #include "gene.hh"
 #include "properties.hh"
 #include "exoncand.hh"
@@ -64,7 +65,7 @@ bool isTlstartOrstop(Status *predExon, Status *succExon);
 
 class Node{
 public:
-    Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, NodeType t=NOT_KNOWN, Node *p=NULL, bool b=0, Node *n=NULL, Node *r=NULL):
+    Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, NodeType t=NOT_KNOWN, Node *p=NULL, bool b=0, Node *n=NULL, Node *r=NULL, Node *nn=NULL, Node *pn=NULL):
 	begin(s),
 	end(e),
 	score(sc),
@@ -73,7 +74,9 @@ public:
 	pred(p),
 	label(b),
 	topSort_next(n),
-	topSort_pred(r)
+	topSort_pred(r),
+	nextNontrivialNeutNode(nn),
+	prevNontrivialNeutNode(pn)
     {}
     int begin, end;
     double score;
@@ -84,6 +87,10 @@ public:
     Node *topSort_next;   // pointer to next node in a topologically sorted list of nodes
     Node *topSort_pred;   // pointer to previous node in a topologically sorted list of nodes
     list<Edge> edges;
+    Node *nextNontrivialNeutNode;   // pointer to Node on neutral line, which is the nearest that can be reached by a nontrivial way (used for new back edges)
+    Node *prevNontrivialNeutNode;   // pointer to Node on neutral line, from which the actual node is the nearest that can be reached by a nontrivial way (used for new back edges)
+    size_t index;                   // (used for new back edges) (used for tarjan)
+    size_t lowlink;                 // (used for tarjan)
 
     StateType castToStateType(); //casts void* back to State* and returns the StateType
     void addWeight(double weight); //add weight to all outgoing edges
@@ -127,6 +134,9 @@ public:
     Graph(list<Status> *states) : statelist(states) {}
     virtual ~Graph(); 
     void addBackEdges();
+    void addBackEdgesComp();
+    void tarjan();          // Tarjan's strongly connected components algorithm
+    void tarjanAlg(Node* from, stack<Node*> &S, size_t &index);
 
     list<Node*> nodelist;      //stores all nodes belonging to the graph
     list<Status> *statelist;
@@ -341,6 +351,7 @@ public:
 
 bool compareNodes(Node *first, Node *second);
 bool compareEdges(Edge first, Edge second);
+bool compareNodeEnds(const Node *first, const Node *second);
 
 template <class T>
 inline string to_string (const T& t)
