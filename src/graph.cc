@@ -316,8 +316,8 @@ void Graph::addBackEdgesComp(){
           // for every edge from startEdge go every possible new way (dont go to a node, if you already found it from another source); add a back edge if you found a way back to IR
           for (list<Edge>::iterator edge=pos->edges.begin(); edge!=pos->edges.end(); edge++){
             if (pos->n_type != IR && (edge->to)->n_type == IR){
+              actStopExons.push_back(pos);
               if(!edgeExists(pos,lastSource)){
-                actStopExons.push_back(pos);
                 if ((edge->to)->begin > lastSource->begin){             // see YY     
                   edge->to = lastSource;                                // see YY
                 }                                                       // YY: if backedges should get a penalty, this lines has to be deleted
@@ -372,6 +372,7 @@ void Graph::addBackEdgesComp(){
       int lastEnd = (*actSource)->begin + 1;
       auxiliaryNodeList.sort(compareNodeEnds);
       Node* lastAuxNode = (*actSource);
+      // for every auxiliary Node, add edges from every actual (found from the actual source) stop exon if this auxiliary node leads to the nearest next stop exon
       for (list<Node*>::iterator auxNode=auxiliaryNodeList.begin(); auxNode!=auxiliaryNodeList.end(); auxNode++){
         for (list<Node*>::iterator stopExon=actStopExons.begin(); stopExon!=actStopExons.end(); stopExon++){
           if((*stopExon)->end >= lastEnd && (*stopExon)->end < (*auxNode)->end){
@@ -388,6 +389,7 @@ void Graph::addBackEdgesComp(){
             // (*stopExon)->edges.push_back(edgeNew);           // XX: these lines are needed, if backedges should get a penalty 
           }
         }
+        // connect the auxiliary nodes in the sorted order, beginning from the neutral line node at this position
         Edge edgeNew((*auxNode),false);
         lastAuxNode->edges.push_back(edgeNew);
 
