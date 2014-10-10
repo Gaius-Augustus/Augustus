@@ -212,7 +212,7 @@ bool GeneticCode::containsInFrameStopcodon(const char* dna, int begin, int end, 
 	}
     } else { // reverse
 	if ( frame >= 0 && frame <=2) {
-	    for (i=end - 3 - frame; i >= begin && !hasStop; i-=3)
+	    for (i=end - 2 - frame; i >= begin && !hasStop; i-=3)
 		if (isRCStopcodon(dna+i))
 		    hasStop = true;
 	} else {

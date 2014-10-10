@@ -120,6 +120,19 @@ int AlignmentRow::getAliPos(int chrPos, vector<fragment>::const_iterator from){
     return from->aliPos + chrPos - from->chrPos;
 }
 
+// convert from alignment to chromosomal position (inverse function of getAliPos()) 
+int AlignmentRow::getChrPos(int aliPos, vector<fragment>::const_iterator from){
+    if (from == frags.end() || from->aliPos > aliPos) // aliPos to the left of alignment
+        return -2;
+    while (from != frags.end() && from->aliPos + from->len - 1 < aliPos)
+        ++from;
+    if (from == frags.end())
+        return -1;
+    if (aliPos < from->aliPos) // aliPos falls in an aligment gap
+        return -1;
+    return from->chrPos + aliPos - from->aliPos;
+}
+
 /**
  * append row r2 to r1, thereby shifting all alignment coordinates of r2 by aliLen1
  * if signature string (chr and strand) is not empty, treat everything else as missing

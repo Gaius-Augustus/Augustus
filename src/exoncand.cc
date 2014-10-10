@@ -127,6 +127,20 @@ string ExonCandidate::key() {
     }
 }
 
+// keys encodes all of: chrStart chrEnd type lenMod3
+int_fast64_t ExonCandidate::getKey(){
+    
+    int_fast64_t start = begin;
+    int_fast64_t len = end - begin;
+    int lenMod3 = (end - begin + 1) % 3;
+    int_fast64_t key = (start << 22 ) // 42 bits
+        + ((len) << 7)                // 15 bits
+        + (type << 2)                 //  5 bits
+        + lenMod3;                    //  2 bits
+    return key;
+}
+
+
 ostream& operator<<(ostream& strm, const ExonCandidate &ec){
     strm << ec.begin << "\t" << ec.end << "\ttype=" << ec.type << "\tscore=" << ec.score 
 	 << "\tassScore=" << ec.getAssScore() << "\tdssScore=" << ec.getDssScore();
@@ -435,4 +449,82 @@ list<ExonCandidate*> *findExonCands(const char *dna, int minLen, double assmotif
     }
     candidates->sort(compBegin);
     return candidates;
+}
+
+ExonCandidate* create(int_fast64_t key, const char* dna){
+
+    int_fast64_t chrStart = (key >> 22);
+    int_fast64_t chrEnd = ((key>>7) & 0x7FFF) + chrStart; // 0x7FFF bit mask for retrieving bits 1-15 
+    int len = chrEnd - chrStart + 1;
+    ExonType type = (ExonType)((key>>2) & 0x1F); // 0x7FFF bit mask for retrieving bits 1-5
+    int lenMod3 = (key & 0x3); // bit mask for retrieving bits 1-2
+    
+    // check length
+    if( ((len) % 3) != lenMod3)
+        return NULL;
+    if(len > Constant::max_exon_len)
+    	return NULL;
+    if((type == singleGene || type == rsingleGene) && len < Constant::min_coding_len)
+    	return NULL;
+    
+    ExonCandidate *ec = new ExonCandidate;
+    ec->begin=chrStart;
+    ec->end=chrEnd;
+    ec->type=type;
+
+    // check type (TODO: allow non-canonical, hinted SS)
+    if(!ec->correctType(dna)){
+	delete ec;
+	return NULL;
+    }
+
+    // check for inFrameStop
+    if( GeneticCode::containsInFrameStopcodon(dna, ec->getFirstCodingBase(), ec->getLastCodingBase(), isPlusExon(type), 0) ){
+        delete ec;
+        return NULL;
+    }
+    return ec;
+}
+
+// verify ExonType on sequence (f.e. if type is initial , check whether
+//  left boundary is on a start codon and right boundary is on a DSS)
+bool ExonCandidate::correctType(const char* dna){
+
+    bool correctType = false;
+
+    switch(type){
+    case singleGene:
+        if(onStart(dna+begin) && GeneticCode::isStopcodon(dna+end-2))
+            correctType=true;
+        break;
+    case initial_0: case initial_1: case initial_2:
+        if(onStart(dna+begin) && onDSS(dna+end+1))
+            correctType=true;
+        break;
+    case internal_0: case internal_1: case internal_2:
+        if(onASS(dna+begin-2) && onDSS(dna+end+1))
+            correctType=true;
+        break;
+    case terminal_exon:
+	if(onASS(dna+begin-2) && GeneticCode::isStopcodon(dna+end-2))
+            correctType=true;
+        break;
+    case rsingleGene:
+        if(onRStart(dna+end-2) && GeneticCode::isRCStopcodon(dna+begin))
+            correctType=true;
+        break;
+    case rinitial_exon:
+        if(onRStart(dna+end-2) && onRDSS(dna+begin-2))
+            correctType=true;
+        break;
+    case rinternal_0: case rinternal_1: case rinternal_2:
+        if(onRASS(dna+end+1) && onRDSS(dna+begin-2))
+            correctType=true;
+        break;
+    case  rterminal_0: case rterminal_1: case rterminal_2:
+        if(onRASS(dna+end+1) && GeneticCode::isRCStopcodon(dna+begin))
+            correctType=true;
+    default :;
+    }
+    return correctType;
 }

@@ -65,6 +65,10 @@ public:
      */
     int getAliPos(int chrPos, vector<fragment>::const_iterator from);
     int getAliPos(int chrPos) { return getAliPos(chrPos, frags.begin()); }
+
+    // convert from alignment to chromosomal position (inverse function of getAliPos())
+    int getChrPos(int aliPos, vector<fragment>::const_iterator from);
+    int getChrPos(int aliPos) { return getChrPos(aliPos, frags.begin()); }
     
     // data members
     string seqID; // e.g. chr21

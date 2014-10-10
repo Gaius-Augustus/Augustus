@@ -38,6 +38,8 @@ public:
     int getEnd(int speciesIdx){ return ends[speciesIdx]; }
     list<ExonCandidate*>* getExonCands(int speciesIdx){ return exoncands.at(speciesIdx); }
     list<OrthoExon> getOrthoExons() { return orthoExonsList; }
+    Alignment * getAlignment() {return alignment;}
+    vector<int> getOffsets() {return offsets;}
  
     map<string,ExonCandidate*>* getECHash(list<ExonCandidate*> *ec); // adds the keys to the map function
 

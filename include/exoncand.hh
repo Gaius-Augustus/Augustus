@@ -80,6 +80,8 @@ public:
     int complementType();
     StateType getStateType();
     string key();
+    int_fast64_t getKey(); // keys encodes all of: chrStart chrEnd type lenMod3
+    bool correctType(const char* dna); // verify ExonType on sequence
     friend ostream& operator<<(ostream& strm, const ExonCandidate &ec);
 private:
     Double assScore, dssScore;
@@ -98,5 +100,8 @@ list<ExonCandidate*> *findExonCands(const char *dna, int minLen=1, double assmot
 //computes the score for the splice sites of an exon candidate
 Double computeSpliceSiteScore(Double exonScore, Double minProb, Double maxProb); 
 
+// create new EC from a key encoding all of: chrStart chrEnd type lenMod3
+// verification of type, noInFrameStop, etc.
+ExonCandidate* create(int_fast64_t key, const char* dna); 
 
 #endif  //  _EXONCAND_HH
