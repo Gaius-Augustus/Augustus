@@ -176,13 +176,17 @@ void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCand
     double assmotifqthresh = 0.15;
     double assqthresh = 0.3;
     double dssqthresh = 0.7;
+    bool onlySampledECs = false;
     int minEClen = 1;
-    Properties::assignProperty("/CompPred/assmotifqthresh", assmotifqthresh);
-    Properties::assignProperty("/CompPred/assqthresh", assqthresh);
-    Properties::assignProperty("/CompPred/dssqthresh", dssqthresh);
-    // TODO Properties::assignProperty("/CompPred/minExonCandLen", minEClen);
-
-    findExonCands(ecs, dna, minEClen, assmotifqthresh, assqthresh, dssqthresh); 
+    Properties::assignProperty("/CompPred/onlySampledECs", onlySampledECs);
+    if(!onlySampledECs){
+	Properties::assignProperty("/CompPred/assmotifqthresh", assmotifqthresh);
+	Properties::assignProperty("/CompPred/assqthresh", assqthresh);
+	Properties::assignProperty("/CompPred/dssqthresh", dssqthresh);
+	// TODO Properties::assignProperty("/CompPred/minExonCandLen", minEClen);
+    
+	findExonCands(ecs, dna, minEClen, assmotifqthresh, assqthresh, dssqthresh); 
+    }
     list<ExonCandidate*> *candidates = new list<ExonCandidate*>;
     for(map<int_fast64_t, ExonCandidate*>::iterator ecit=ecs.begin(); ecit!=ecs.end(); ecit++){
 	candidates->push_back(ecit->second);

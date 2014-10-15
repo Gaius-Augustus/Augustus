@@ -206,6 +206,12 @@ a small data set for testing can be found in examples/cgp/
   thresholds for the inclusion of aceptor splice sites
   (the inclusion of an acceptor splice site depends both on the ASS and the ASS motif threshold)
 
+--/CompPred/onlySampledECs=on/off
+  if on, only exons from the sampling of gene structures are taken as the set of possible candidate exons.
+  Otherwise additional candidate exons are determined by combining all possible pairs of ASS/DSS
+  start/DSS, ASS/stop and start/stop that are within the maximum length of exons (--max_exon_len, default: 12000).
+  Turn this flag on, to reduce the overall runtime memory requirements (default: off)
+
 --/CompPred/exon_gain=q_gain --/CompPred/exon_loss=q_loss
   rate of exon gain and rate of exon loss (parameters of the phylogenetic model)
   q_gain and q_loss are positive real numbers
