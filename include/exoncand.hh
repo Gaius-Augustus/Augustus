@@ -81,7 +81,7 @@ public:
     StateType getStateType();
     string key();
     int_fast64_t getKey(); // keys encodes all of: chrStart chrEnd type lenMod3
-    bool correctType(const char* dna); // verify ExonType on sequence
+    bool correctType(const char* dna, int dnalen); // verify ExonType on sequence
     friend ostream& operator<<(ostream& strm, const ExonCandidate &ec);
 private:
     Double assScore, dssScore;
@@ -95,13 +95,13 @@ private:
  * The default threshold of 0 means that all splice site patterns are considered.
  */
 
-list<ExonCandidate*> *findExonCands(const char *dna, int minLen=1, double assmotifqthresh=0.15, double assqthresh=0.3, double dssqthresh=0.7);
+void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, const char *dna, int minLen=1, double assmotifqthresh=0.15, double assqthresh=0.3, double dssqthresh=0.7);
 
 //computes the score for the splice sites of an exon candidate
 Double computeSpliceSiteScore(Double exonScore, Double minProb, Double maxProb); 
 
 // create new EC from a key encoding all of: chrStart chrEnd type lenMod3
 // verification of type, noInFrameStop, etc.
-ExonCandidate* create(int_fast64_t key, const char* dna); 
+ExonCandidate* create(int_fast64_t key, const char* dna, int dnalen); 
 
 #endif  //  _EXONCAND_HH

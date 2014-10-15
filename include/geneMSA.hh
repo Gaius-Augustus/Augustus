@@ -50,7 +50,7 @@ public:
      * that have a pattern, such that 5% of true splice site patterns have lower probability.
      * The default threshold of 0 means that all splice site patterns are considered.
      */
-    void createExonCands(int s, const char *dna);
+    void createExonCands(int s, const char *dna, map<int_fast64_t, ExonCandidate*> &ecs);
 
     /**
      * find all ortholog exon candidates, that are present in at least max(2, consThresh * m)
@@ -62,16 +62,16 @@ public:
      * - the phases at both boundaries agree (i.e. exon candidate types and length modulo 3)
      * EC coordinates are region-based, as they are used in the OrthoGraph
      */
-    void createOrthoExons(float consThres = 0.0, int minAvLen = 0);
+    void createOrthoExons(map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, float consThres = 0.0, int minAvLen = 0);
     void printStats(); // to stdout
     void printGeneRanges();
     void printExonCands();
     void printOrthoExons();
-    void computeOmegas(vector<AnnoSequence> const &seqRanges);
+    void computeOmegas(vector<AnnoSequence*> const &seqRanges);
     void comparativeSignalScoring();
 
     // calculate a columnwise conservation score and output it (for each species) in wiggle format
-    void printConsScore(vector<AnnoSequence> const &seqRanges, string outdir);
+    void printConsScore(vector<AnnoSequence*> const &seqRanges, string outdir);
     double calcColumnScore(int a, int c, int t, int g); // input: number of a,c,t and g's in one alignment column 
     void consToWig(vector<double> &consScore, string outdir);
 
@@ -92,7 +92,7 @@ public:
 
     void printSingleOrthoExon(OrthoExon &oe, bool files = true);
 private:
-    vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence> const &seqRanges,
+    vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges,
 				     const vector<vector<fragment>::const_iterator > &froms);
     void cutIncompleteCodons(OrthoExon &oe);
     static PhyloTree *tree;

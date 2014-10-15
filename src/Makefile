@@ -586,6 +586,7 @@ compgenepred.o : \
 	../include/orthoexon.hh \
 	../include/namgene.hh \
 	../include/randseqaccess.hh \
+	../include/liftover.hh \
        compgenepred.cc
 
 randseqaccess.o : \

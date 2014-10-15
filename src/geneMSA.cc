@@ -171,7 +171,8 @@ map<string,ExonCandidate*>* GeneMSA::getECHash(list<ExonCandidate*> *ec) {
 }
 
 // computes and sets the exon candidates for species s
-void GeneMSA::createExonCands(int s, const char *dna){
+// and inserts them into the hash of ECs if they do not exist already
+void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCandidate*> &ecs){
     double assmotifqthresh = 0.15;
     double assqthresh = 0.3;
     double dssqthresh = 0.7;
@@ -181,7 +182,13 @@ void GeneMSA::createExonCands(int s, const char *dna){
     Properties::assignProperty("/CompPred/dssqthresh", dssqthresh);
     // TODO Properties::assignProperty("/CompPred/minExonCandLen", minEClen);
 
-    exoncands[s] = findExonCands(dna, minEClen, assmotifqthresh, assqthresh, dssqthresh); 
+    findExonCands(ecs, dna, minEClen, assmotifqthresh, assqthresh, dssqthresh); 
+    list<ExonCandidate*> *candidates = new list<ExonCandidate*>;
+    for(map<int_fast64_t, ExonCandidate*>::iterator ecit=ecs.begin(); ecit!=ecs.end(); ecit++){
+	candidates->push_back(ecit->second);
+    }
+    exoncands[s] = candidates;
+    ecs.clear(); // not needed anymore
     cout << "Found " << exoncands[s]->size() << " ECs on species " << rsa->getSname(s) << endl; 
 }
 
@@ -189,71 +196,17 @@ void GeneMSA::createExonCands(int s, const char *dna){
 /**
  * createOrthoExons
  */
-void GeneMSA::createOrthoExons(float consThres, int minAvLen) {
+void GeneMSA::createOrthoExons(map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, float consThres, int minAvLen) {
+
     //cout << "Creating ortho exons for alignment" << endl << *alignment << endl;
     int k = alignment->rows.size();
     int m = alignment->numFilledRows();; // the number of nonempty rows
-    int_fast64_t aliStart, aliEnd;
-    int chrExonStart, chrExonEnd;
-    string key;
+
     // an ortho exon candidate must have an EC in at least this many species (any subset allowed):
     int minEC = (consThres * m > 2.0)? m * consThres + 0.9999 : 2;
     cout << "OEs in this gene range must have at least " << minEC << " ECs" << endl;
 
-    /*
-     * Store for each exon candidate in alignment space (keys encodes all of: aliStart aliEnd type lenMod3)
-     * a list of (speciesIdx, ExonCandidate*), e.g.
-     * alignedECs["100:200:1"] = {(0, ec0), (3, ec3)}
-     */
-
-    map<int_fast64_t, list<pair<int,ExonCandidate*> > > alignedECs;
     map<int_fast64_t, list<pair<int,ExonCandidate*> > >::iterator aec;
-    // map all exon candidates to alignment positions, where possible
-    // this search in LINEAR in the length of all exon candidates
-    // + the number of all alignment fragments
-
-    for (size_t s=0; s<k; s++){
-	if (alignment->rows[s] == NULL)
-	    continue;
-	int offset = offsets[s];
-	AlignmentRow *row = alignment->rows[s];
-	vector<fragment>::const_iterator from = row->frags.begin();
-	for(list<ExonCandidate*>::iterator ecit = exoncands[s]->begin(); ecit != exoncands[s]->end(); ++ecit){
-	    chrExonStart = (*ecit)->getStart() + offset;
-	    // go the the first fragment that may contain the ec start
-	    while (from != row->frags.end() && from->chrPos + from->len - 1 < chrExonStart)
-		++from;
-	    if (from == row->frags.end())
-		break; // have searched beyond the last alignment fragment => finished
-	    aliStart = row->getAliPos(chrExonStart, from);
-	    if (aliStart >= 0){ // left exon boundary mappable
-		chrExonEnd = (*ecit)->getEnd() + offset;
-		aliEnd = row->getAliPos(chrExonEnd, from);
-		if (aliEnd >= 0){
-		    // both exon boundaries were mappable
-		    // store the ec in the hash
-		    int lenMod3 = (chrExonEnd - chrExonStart + 1) % 3;
-		    // this key is at the same time the sorting criterion for printing all OrthoExons
-		    // key uses at most 42 of the 63 bits that an int_fast64_t must at least have
-		    int_fast64_t key = (aliStart << 22 ) // 20 bits
-			+ ((aliEnd-aliStart) << 7) // 15 bit
-			+ ((*ecit)->type << 2) // 5 bit
-			+ lenMod3; // 2 bit
-		    //cout << "Could map " << rsa->getSname(s) << " " << row->seqID << ":" << chrExonStart << ".." << chrExonEnd 
-		    // << " to " << " alignment coordinates " << aliStart << ".." << aliEnd << " key = " << key << endl;
-		    aec = alignedECs.find(key);
-		    if (aec == alignedECs.end()){ // insert new list
-			list<pair<int,ExonCandidate*> > e;
-			e.push_back(pair<int,ExonCandidate*> (s, *ecit));
-			alignedECs.insert(pair<int_fast64_t,list<pair<int,ExonCandidate*> > >(key, e));
-		    } else {// append new entry to existing list
-			aec->second.push_back(pair<int,ExonCandidate*> (s, *ecit));
-		    }
-		}
-	    }
-	}
-    }
-    
     /*
      * Create one ortho exon candidate for each key to which at least minEC exon candidates mapped 
      */
@@ -284,6 +237,7 @@ void GeneMSA::createOrthoExons(float consThres, int minAvLen) {
 	    }
 	}
     }
+    alignedECs.clear(); // not needed anymore
     /*
      * Determine 'containment' for each OE: The average number of extra bases (per species) of the largest OE (y) that includes this OE (x) in frame.
      * Idea: A large containment is a sign that OE is actually not true.
@@ -541,7 +495,7 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
  *                 c g t|- - -|- - -|t g a|- - -
  *
  */
-vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence> const &seqRanges,
+vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges,
 					  const vector<vector<fragment>::const_iterator > &froms) {
     //printSingleOrthoExon(oe, false);
 
@@ -628,7 +582,7 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 	    for (size_t s=0; s<k; s++){
 		chrCodon1 = acit->second[s]; // sequence position
 		if (chrCodon1 >= 0)
-		    rowstrings[s] += string(seqRanges[s].sequence + chrCodon1 - offsets[s], 3);
+		    rowstrings[s] += string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3);
 		else 
 		    rowstrings[s] += "---";
 	    }
@@ -651,7 +605,7 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 
 
 // computes and sets the Omega = dN/dS attribute to all OrthoExons
-void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
+void GeneMSA::computeOmegas(vector<AnnoSequence*> const &seqRanges) {
     // int subst = 0;
     // Initialize for each species the first fragment froms[s] that 
     // is not completely left of the current OrthoExon.
@@ -684,7 +638,7 @@ void GeneMSA::computeOmegas(vector<AnnoSequence> const &seqRanges) {
 }
 
 // calculate a columnwise conservation score and output it (for each species) in wiggle format
-void GeneMSA::printConsScore(vector<AnnoSequence> const &seqRanges, string outdir){
+void GeneMSA::printConsScore(vector<AnnoSequence*> const &seqRanges, string outdir){
 
     vector<vector<fragment>::const_iterator > fragsit(numSpecies());
     vector<size_t> seqPos(numSpecies(),0); 
@@ -701,9 +655,9 @@ void GeneMSA::printConsScore(vector<AnnoSequence> const &seqRanges, string outdi
 		vector<fragment>::const_iterator it = fragsit[j];
 		if( i >= it->aliPos && i <= it->aliPos + it->len - 1){ // character in i-th column, j-th row is not a gap
 		    int pos = it->chrPos - offsets[j] + seqPos[j];
-                    if(pos < 0 || pos >= seqRanges[j].length)
-                        throw ProjectError("Internal error in GeneMSA::printConsScore: trying to read position" + itoa(pos+1) + "in sequence " + seqRanges[j].seqname + ".");
-		    const char* base = seqRanges[j].sequence + pos;
+                    if(pos < 0 || pos >= seqRanges[j]->length)
+                        throw ProjectError("Internal error in GeneMSA::printConsScore: trying to read position" + itoa(pos+1) + "in sequence " + seqRanges[j]->seqname + ".");
+		    const char* base = seqRanges[j]->sequence + pos;
 		    switch(*base){
 		    case 'a': a++; break;
 		    case 'c': c++; break;

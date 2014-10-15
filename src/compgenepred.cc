@@ -20,8 +20,9 @@
 #include "geneMSA.hh"
 #include "orthoexon.hh"
 #include "namgene.hh"
-
 #include "contTimeMC.hh"
+#include "liftover.hh"
+
 #include <gsl/gsl_matrix.h>
 #include <ctime>
 #include <sys/stat.h>
@@ -230,8 +231,12 @@ void CompGenePred::start(){
     while (GeneMSA *geneRange = msa.getNextGene()) {
 	cout << "processing next gene range:" << endl;
 	geneRange->printStats();
+
         OrthoGraph orthograph;
-	vector<AnnoSequence> seqRanges(speciesNames.size());
+	vector<AnnoSequence*> seqRanges(speciesNames.size());
+	vector<map<int_fast64_t,ExonCandidate*> > exoncands(speciesNames.size()); // EC hash: collection of all ECs of all species
+
+	// retrieval of sequences and sampling of gene structures
         for (int s = 0; s < speciesNames.size(); s++) {
             string seqID = geneRange->getSeqID(s);
             if (!seqID.empty()) {
@@ -243,58 +248,95 @@ void CompGenePred::start(){
 			 << start << ", " << end << ", " << endl;
                     break;
                 } else {
-		    seqRanges[s] = *as; // DNA seqs will be reused when omega is computed AND gene lists are processed for output  
+		    seqRanges[s] = as; // DNA seqs will be reused when omega is computed AND gene lists are processed for output  
 
-		    list<Gene> *alltranscripts = NULL;
+		    list<Gene> *transcripts = NULL;
 
 		    if (!noprediction){
 			SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
 			sfc->prepare(as, false, rsa->withEvidence(speciesNames[s]));
 			namgene.doViterbiPiecewise(*sfc, as, bothstrands); // sampling
-			alltranscripts = namgene.getAllTranscripts();
+			transcripts = namgene.getAllTranscripts();
 			orthograph.sfcs[s] = sfc;
+	                orthograph.ptrs_to_alltranscripts[s] = transcripts;
 		    } else {
 			// turn whole sequence to lowercase characters
 			for (unsigned pos = 0; pos < as->length; pos++)
 			    as->sequence[pos] = tolower(as->sequence[pos]);
 		    }
-		    // this is needed for IntronModel::dssProb in GenomicMSA::createExonCands
-                    namgene.getPrepareModels(as->sequence, as->length); 
-		    
-		    // identifies exon candidates in the sequence for species s
-                    geneRange->createExonCands(s, as->sequence);
-		    list<ExonCandidate*> *additionalExons = geneRange->getExonCands(s);
-		    
-		     if (alltranscripts){
-			// cout << "building Graph for " << speciesNames[s] << endl;
-			// build datastructure for graph representation
-			// @stlist : list of all sampled states
-			list<Status> stlist;
-			if(!alltranscripts->empty()){
-                            buildStatusList(alltranscripts, Constant::utr_option_on, stlist);
-                        }
-                        // build graph
-                        orthograph.graphs[s] = new SpeciesGraph(&stlist, as, additionalExons, speciesNames[s], 
-								geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, sampledExons[s], overlapComp);
-                        orthograph.graphs[s]->buildGraph();
-                        // orthograph.graphs[s]->printGraph(outdir + speciesNames[s] + "." + itoa(GeneMSA::geneRangeID) + ".dot");
-			
-			//save pointers to transcripts and delete them after gene list is build
-                        orthograph.ptrs_to_alltranscripts[s] = alltranscripts;
+		    // insert sampled exons into the EC hash
+		    if(transcripts){			    
+			for (list<Gene>::iterator geneit = transcripts->begin(); geneit != transcripts->end(); geneit++) {
+			    State *st = geneit->exons;
+			    while(st){
+				ExonCandidate *ec = new ExonCandidate(toExonType(stateTypeIdentifiers[st->type]),st->begin,st->end);
+				int_fast64_t key = ec->getKey();
+				map<int_fast64_t, ExonCandidate*>::iterator ecit;
+				ecit = exoncands[s].find(key);
+				if (ecit == exoncands[s].end()){ // insert new EC
+				    exoncands[s].insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+				}
+				else{
+				    delete ec;
+				}
+				st = st->next;
+			    }
+			}
 		    }
-                }
-            }
-        }
+		}
+	    }
+	}
+	// liftover of sampled exons to other species
+	vector<int> offsets=geneRange->getOffsets();
+	LiftOver lo(geneRange->getAlignment(), offsets);
+	map<int_fast64_t, list<pair<int,ExonCandidate*> > > alignedECs; // hash of aligned ECs
+	lo.projectToAli(exoncands,alignedECs);
+	lo.projectToGenome(alignedECs, seqRanges, exoncands); // inserts ECs that are mappable to other species both into alignedECs and exoncands
+
+	// create HECTS
+	geneRange->createOrthoExons(alignedECs);
+
+	// create additional ECs for each species (only added to exoncands NOT to alignedECS!!!)
+        for (int s = 0; s < speciesNames.size(); s++) {
+	    if (seqRanges[s]) {
+		AnnoSequence *as = seqRanges[s];		
+		// this is needed for IntronModel::dssProb in GenomicMSA::createExoncands
+		namgene.getPrepareModels(as->sequence, as->length); 
+		// identifies exon candidates in the sequence for species s
+		geneRange->createExonCands(s, as->sequence, exoncands[s]);
+	    }
+	}
+	exoncands.clear(); // not needed anymore, exoncands are now stored as a vector of lists of ECs in geneRange
+
+	// build graph from sampled gene structures and additional ECs
+        for (int s = 0; s < speciesNames.size(); s++) {	    
+	    if (orthograph.ptrs_to_alltranscripts[s]){
+		list<Gene> *alltranscripts = orthograph.ptrs_to_alltranscripts[s];
+		cout << "building Graph for " << speciesNames[s] << endl;
+		// build datastructure for graph representation
+		// @stlist : list of all sampled states
+		list<Status> stlist;
+		if(!alltranscripts->empty()){
+		    buildStatusList(alltranscripts, Constant::utr_option_on, stlist);
+		}
+		// build graph
+		orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRanges[s], geneRange->getExonCands(s), speciesNames[s], 
+							geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, sampledExons[s], overlapComp);
+		orthograph.graphs[s]->buildGraph();
+		// orthograph.graphs[s]->printGraph(outdir + speciesNames[s] + "." + itoa(GeneMSA::geneRangeID) + ".dot");
+		
+	    }
+	}
+ 
 	geneRange->printGeneRanges();	    
 	if (Constant::exoncands) // by default, ECs are not printed
 	    geneRange->printExonCands();
-	geneRange->createOrthoExons();
 	try { // Kathrin Middendorf's playground
 	    if (Properties::getBoolProperty("/CompPred/compSigScoring"))
 		geneRange->comparativeSignalScoring(); 
 	} catch (...) {}
 	
-	//geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
+	// geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
 	if(conservationTrack)
 	    geneRange->printConsScore(seqRanges, outdir);
 
@@ -325,8 +367,10 @@ void CompGenePred::start(){
 		geneRange->printSingleOrthoExon(*it,true);
 	    }
 	}
-	seqRanges.clear(); // delete sequences
-	delete geneRange;
+	// delete sequences
+	for (int i=0; i<seqRanges.size(); i++) {
+		delete seqRanges[i];
+	}
     }
 
     GeneMSA::closeOutputFiles();

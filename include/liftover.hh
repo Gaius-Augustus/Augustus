@@ -68,13 +68,13 @@ public:
 
     /*
      * mapping sequence intervals from positions in the genome to positions in the alignment
-     * input:  a vector of lists of SIs that are ordered by start position
-     *         ( i-th position in the vector points to a list of SIs of species i)
+     * input:  a vector of hashes (keys encode start and length of the SIs in the genome, value are pointers to the SIs)
+     *         ( i-th position in the vector points to the hash of SIs of species i)
      * output: a hash that stores for each sequence interval T in alignment space (key encodes start and length of the SI in the alignment)
      *         a list of (speciesIdx, T*), e.g.
      *         alignedSIs["100:200"] = {(0, si0), (3, si3)}
      */
-    template <typename T> void projectToAli(vector< list<T*>* > &seqints, // input
+    template <typename T> void projectToAli(vector< map<int_fast64_t,T*> > &seqints, // input
 					    map<int_fast64_t, list<pair<int,T*> > > &alignedSIs) { // output
 
 	int k = alignment->rows.size();
@@ -93,14 +93,14 @@ public:
 	    int offset = offsets[s];
 	    AlignmentRow *row = alignment->rows[s];
 	    vector<fragment>::const_iterator from = row->frags.begin();
-	    for(typename list<T*>::iterator siit = seqints[s]->begin(); siit != seqints[s]->end(); ++siit){
+	    for(typename map<int_fast64_t,T*>::iterator siit = seqints[s].begin(); siit != seqints[s].end(); ++siit){
 
 		// go the the first fragment that may contain the SI start
-		while (from != row->frags.end() && from->chrPos + from->len - 1 < (*siit)->getStart() + offset)
+		while (from != row->frags.end() && from->chrPos + from->len - 1 < siit->second->getStart() + offset)
 		    ++from;
 		if (from == row->frags.end())
 		    break; // have searched beyond the last alignment fragment => finished 
-		SeqIntKey chrKey((*siit)->getKey()); // key encodes SI start position and length in the genome
+		SeqIntKey chrKey(siit->first); // key encodes SI start position and length in the genome
 		chrStart = chrKey.getStart() + offset;
 		aliStart = row->getAliPos(chrStart, from);
 		if (aliStart >= 0){ // left sequence boundary mappable
@@ -113,10 +113,10 @@ public:
 			asi = alignedSIs.find(aliKey.getKey()); // key encodes SI start position and length in the alignment
 			if (asi == alignedSIs.end()){ // insert new list
 			    list<pair<int,T*> > si;
-			    si.push_back(pair<int,T*> (s, *siit));
+			    si.push_back(pair<int,T*> (s, siit->second));
 			    alignedSIs.insert(pair<int_fast64_t,list<pair<int,T*> > >(aliKey.getKey(), si));
 			} else {// append new entry to existing list
-			    asi->second.push_back(pair<int,T*> (s, *siit));
+			    asi->second.push_back(pair<int,T*> (s, siit->second));
 			}
 		    }
 		}
@@ -127,12 +127,12 @@ public:
      * mapping sequence intervals from positions in the alignment to positions in the genomes
      * input:  a hash that stores for each sequence interval T in alignment space a list of (speciesIdx, T*)
      *         a vector of AnnoSeqs (necessary to verify whether an si is mappable to the genome)
-     * output: a vector of lists of mapped SIs that are ordered by start position
-     *         NOTE: lists contain only the actually mapped SIs that are NEWLY inserted in the hash.
-     *         Already existing SIs are skipped.
+     *         a vector of hashes of SIs. SIs that are mappable to other species are inserted into the
+     *         corresponding hash.
+     *         
      */
-    template <typename T> void projectToGenome(map<int_fast64_t, list<pair<int,T*> > > &alignedSIs, vector<AnnoSequence> const &seqRanges, // input
-						vector< list<T*>* > &seqints) { // output
+    template <typename T> void projectToGenome(map<int_fast64_t, list<pair<int,T*> > > &alignedSIs, vector<AnnoSequence*> const &seqRanges,
+					       vector< map<int_fast64_t,T*> > &seqints) {
 
 	int k = alignment->rows.size();
 	vector<vector<fragment>::const_iterator > fragsit(k);
@@ -155,14 +155,7 @@ public:
 	    int_fast64_t aliEnd = aliKey.getLen() + aliStart;
 
 	    typename list<pair<int,T*> >::iterator siit = asi->second.begin();
-	    
-	    /*cout << "vorher" << endl;
-	    for (typename list<pair<int,T*> >::iterator it = asi->second.begin(); it != asi->second.end(); ++it){
-		int s = it->first;
-		T *ec = it->second;
-		cout << s << "\t" << ec->getStart() + offsets[s] << ".." << ec->getEnd() + offsets[s] << "\t" << *ec << endl;
-		}*/
-       
+	           
 	    for(size_t s=0; s<k; s++){
 		if(siit != asi->second.end() && siit->first == s){ // SI is already in the hash
 		    ++siit;
@@ -183,25 +176,15 @@ public:
 		    int_fast64_t chrEnd = row->getChrPos(aliEnd, fragsit[s]) - offsets[s];
 		    if (chrEnd >= 0){ // both sequence boundaries mappable
 			SeqIntKey chrKey(chrStart,chrEnd-chrStart,aliKey.getAddInfo()); // key encodes SI start position and length in the genome
-			T* si = create(chrKey.getKey(), seqRanges[s].sequence);
+			T* si = create(chrKey.getKey(), seqRanges[s]->sequence, seqRanges[s]->length);
 			if(si){
-			    // insert into map
-			    //cout<< "insert " << s << "\t" << si->getStart() + offsets[s] << ".." << si->getEnd() + offsets[s] << "\t" << *si << endl;
 			    asi->second.insert(siit,pair<int,T*> (s, si));
-			    // insert into list of mapped SIs
-			    if(!seqints[s])
-				seqints[s] = new list<T*>;
-			    seqints[s]->push_back(si);
+			    // insert mapped SIs into hash of s-th species
+			    seqints[s].insert(pair<int_fast64_t,T*>(chrKey.getKey(), si));
 			}   
 		    }
 		}
-	    }
-	    /*cout << "nachher" << endl;
-	    for (typename list<pair<int,T*> >::iterator it = asi->second.begin(); it != asi->second.end(); ++it){
-		int s = it->first;
-		T *ec = it->second;
-		cout << s << "\t" << ec->getStart() + offsets[s] << ".." << ec->getEnd() + offsets[s] << "\t" << *ec << endl;
-		}*/		
+	    }		
 	}
     }
 };
