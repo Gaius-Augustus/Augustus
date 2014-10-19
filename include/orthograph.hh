@@ -14,6 +14,8 @@
 #include "speciesgraph.hh"
 #include "orthoexon.hh"
 #include "phylotree.hh"
+#include "orthogene.hh"
+#include "geneMSA.hh"
 
 class OrthoGraph{
 
@@ -37,6 +39,7 @@ public:
     list<OrthoExon> all_orthoex;
     vector< list<Gene> *> ptrs_to_alltranscripts; //stores pointers to alltranscripts until they can be deleted (destructor of OrthoGraph)
     vector< SequenceFeatureCollection* > sfcs;  // stores extrinsic evidence for each species
+    list<OrthoGene> all_orthogenes; // to be created by Patrick Balmerths code
 
     void linkToOEs(list<OrthoExon> &oes); // link ECs in HECTS to nodes in orthograph 
     void addScoreSelectivePressure(); //const. reward for orthologous exons and const. penalty for non-orthologous exons. Only temporary until PAML is integrated.
@@ -61,7 +64,8 @@ public:
 	buildGeneList(genelist);
 	filterGeneList(genelist,filestreams, geneid);
     }
-
+    void createOrthoGenes(const GeneMSA *geneRange); // creates all_orthogenes
+    void printOrthoGenes(); // ouputs all_orthogenes
     /*
      * old code: optimization by making small local changes called moves
      */

@@ -205,23 +205,9 @@ void CompGenePred::start(){
     vector<string> speciesNames;
     OrthoGraph::tree->getSpeciesNames(speciesNames);
     PhyloTree::setRSA(rsa);
-    if (0) {
-	vector<string> seqtuple(5,"");
-	seqtuple[0] = "aaaaaaaaaaaa";
-	seqtuple[1] = "aagaataataat";
-	seqtuple[2] = "------------";
-	seqtuple[3] = "------------";
-	seqtuple[4] = "------------";
-	int subst = 0;
-	double omega = codonevo.estOmegaOnSeqTuple(seqtuple, &tree, subst);
-	for (int i=0; i<seqtuple.size(); i++)
-	    cout << seqtuple[i]<< endl;
-	cout << "omega= " << omega << " subst= " << subst << endl;
-	exit(1);
-    }
     GenomicMSA msa(rsa);
     msa.readAlignment(Constant::alnfile);  // reads the alignment
-    //    msa.printAlignment("");    
+    // msa.printAlignment("");    
     // rsa->printStats();
     // msa.compactify(); // Mario: commented out as this excludes paths through the alignment graph 
                          //(trivial mergers of neighboring alignments)
@@ -328,7 +314,7 @@ void CompGenePred::start(){
 	    }
 	}
  
-	geneRange->printGeneRanges();	    
+	geneRange->printGeneRanges();
 	if (Constant::exoncands) // by default, ECs are not printed
 	    geneRange->printExonCands();
 	try { // Kathrin Middendorf's playground

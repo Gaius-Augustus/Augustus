@@ -688,3 +688,17 @@ void OrthoGraph::printHTMLgBrowse(OrthoExon &ex){
     }
 }
 */
+
+/* 
+ * Patrick Balmerths playground
+ */
+void OrthoGraph::createOrthoGenes(const GeneMSA *geneRange){
+    // create all_orthogenes
+
+    // In case the alignment in geneRange is actually not needed and
+    // the orthoexons are sufficient, then remove this argument.
+}
+
+void OrthoGraph::printOrthoGenes(){
+  // ouput all_orthogenes
+}
