@@ -17,6 +17,9 @@
 #include "orthogene.hh"
 #include "geneMSA.hh"
 
+// forward declarations
+class GeneMSA;
+
 class OrthoGraph{
 
 public:
