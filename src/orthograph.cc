@@ -160,7 +160,7 @@ void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream
 	    }
 	    cout.rdbuf(coutbuf); //reset to standard output again
 
-	    delete genelist[pos];	    
+	    geneLists[pos]=agl;
 	}
     }
 }
