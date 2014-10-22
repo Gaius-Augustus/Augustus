@@ -31,8 +31,7 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
 
     vector<string> speciesNames;
     tree.getSpeciesNames(speciesNames);
-    
-    
+
     if (Constant::Constant::dbaccess.empty()) { // give priority to database in case both exist
         rsa = new MemSeqAccess(speciesNames);
     } else {
@@ -147,7 +146,7 @@ void CompGenePred::start(){
         conservationTrack = false;
     }
 
-    string outdir;  //direction for output files                                                                                                                                                                    
+    string outdir;  //direction for output files 
     try {
         outdir = Properties::getProperty("/CompPred/outdir");
     } catch (...) {
@@ -155,9 +154,10 @@ void CompGenePred::start(){
     }
     if(outdir != ""){
         if(outdir[outdir.size()-1] != '/')
-            outdir += '/';                   // append slash if neccessary                                                                                                                                           
-        outdir = expandHome(outdir);         // replace "~" by "$HOME"                                                                                                                                               
-        // Does the directory actually exist?                                                                                                                                                                       
+            outdir += '/';                   // append slash if neccessary 
+	outdir = expandHome(outdir);         // replace "~" by "$HOME"
+	// Does the directory actually exist? 
+                        
         struct stat buffer;
         if( stat(outdir.c_str(), &buffer) == -1 || !S_ISDIR(buffer.st_mode)){
             int err = mkdir(outdir.c_str(),0755);
@@ -166,7 +166,6 @@ void CompGenePred::start(){
         }
     }
     
-
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(outdir,".mea"); // equivalent to MEA prediction
     vector<int> base_geneid(OrthoGraph::numSpecies, 1); // gene numbering
@@ -204,7 +203,6 @@ void CompGenePred::start(){
     GeneMSA::setCodonEvo(&codonevo);
     vector<string> speciesNames;
     OrthoGraph::tree->getSpeciesNames(speciesNames);
-    PhyloTree::setRSA(rsa);
     GenomicMSA msa(rsa);
     msa.readAlignment(Constant::alnfile);  // reads the alignment
     // msa.printAlignment("");    
@@ -280,7 +278,7 @@ void CompGenePred::start(){
 	lo.projectToGenome(alignedECs, seqRanges, exoncands); // inserts ECs that are mappable to other species both into alignedECs and exoncands
 
 	// create HECTS
-	geneRange->createOrthoExons(alignedECs);
+	geneRange->createOrthoExons(alignedECs, &evo);
 
 	// create additional ECs for each species (only added to exoncands NOT to alignedECS!!!)
         for (int s = 0; s < speciesNames.size(); s++) {
@@ -364,5 +362,11 @@ void CompGenePred::start(){
 	closeOutputFiles(initGenes);
     closeOutputFiles(baseGenes);
     closeOutputFiles(optGenes);
+
+    // delete all trees                                           
+    for(unordered_map< bit_vector, PhyloTree*>::iterator topit = GeneMSA::topologies.begin(); topit !=GeneMSA::topologies.end(); topit++){
+	delete topit->second;
+    }                                                                                                                                                              
+    GeneMSA::topologies.clear(); 
 
 }

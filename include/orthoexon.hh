@@ -12,8 +12,8 @@
 
 #include "exoncand.hh"
 #include "projectio.hh"
-#include "orthograph.hh"
 #include "types.hh"
+#include "phylotree.hh"
 
 #include <vector>
 #include <string>
@@ -24,8 +24,10 @@ class Node;
 
 class OrthoExon {
 public:
-    OrthoExon(int_fast64_t k);
+    OrthoExon(int_fast64_t k, size_t numSpecies);
     ~OrthoExon() {};
+
+    // get and and set functions
     StateType getStateType() const; // all exon candidates agree in type
     int numExons() const;
     double getOmega() const { return omega; }
@@ -33,6 +35,8 @@ public:
     double getConsScore() const {return cons;}
     double getDiversity() const {return diversity;}
     size_t getContainment() const {return containment;}
+    bit_vector getBV() const {return bv;}
+    PhyloTree* getTree() const {return tree;}
     int getAliStart() const {return (key>>22);} // start position of HECT in alignment
     int getAliLen() const {int aliStart=getAliStart(); int n=key-(aliStart<<22); return (n>>7);} // length of HECT + 1
     int getAliEnd() const {return getAliStart() + getAliLen();}
@@ -43,6 +47,8 @@ public:
     void setDiversity(double d){diversity=d;}
     void setContainment(int c) { containment = c; }
     void setLabelpattern(); // updates the labelpattern
+    void setTree(PhyloTree* t);
+    void setBV(bit_vector b){bv = b;}
     string getStoredLabelpattern() {return labelpattern;} // retrieving labelpattern without updating
     string getCurrentLabelpattern() { setLabelpattern(); return labelpattern;} //retrieving labelpattern with updating
 
@@ -62,6 +68,8 @@ private:
     double cons; // conservation score
     double diversity; // sum of branch lengths of the subtree induced by the OrthoExon (measure of phylogenetic diversity)
     size_t containment; // how many bases overhang on average has the largest OrthoExon that includes this one in the same frame
+    bit_vector bv; //  stores in one bit for each species its absence/presence (0/1)
+    PhyloTree *tree; // corresponding tree topology of an OE
 };
 
 /*

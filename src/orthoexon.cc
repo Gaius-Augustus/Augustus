@@ -11,16 +11,17 @@
  **********************************************************************/
 
 #include "orthoexon.hh"
+#include "graph.hh"
 
 #include <fstream>
 #include <iostream>
 
 
-OrthoExon::OrthoExon(int_fast64_t k) : key(k), omega(-1.0) , subst(-1), cons(-1.0), diversity(-1.0) {
-    orthoex.resize(OrthoGraph::numSpecies);
-    orthonode.resize(OrthoGraph::numSpecies);
-    weights.resize(OrthoGraph::numSpecies,0);
-    labels.resize(OrthoGraph::numSpecies);
+OrthoExon::OrthoExon(int_fast64_t k, size_t n) : key(k), omega(-1.0) , subst(-1), cons(-1.0), diversity(-1.0) {
+    orthoex.resize(n);
+    orthonode.resize(n);
+    weights.resize(n,0);
+    labels.resize(n);
 }
 
 StateType OrthoExon::getStateType() const{
@@ -58,6 +59,10 @@ void OrthoExon::setLabelpattern(){
     }
 }
 
+void OrthoExon::setTree(PhyloTree* t) {
+    tree = t;
+    setDiversity(tree->getDiversity());
+}
 
 // old code:
 /*list<OrthoExon> readOrthoExons(string filename){
@@ -142,7 +147,7 @@ istream& operator>>(istream& istrm, OrthoExon& ex_tuple){
     long int begin, length;
 
     istrm >> exontype;
-    for (int i = 0; i < OrthoGraph::numSpecies; i++){
+    for (int i = 0; i < ex_tuple.orthoex.size(); i++){
 	istrm >> begin >> length;
 	if (begin != 0 && length != 0){
 	    ExonCandidate *exoncand = new ExonCandidate(toExonType(exontype.c_str()), begin-1, begin+length-2);

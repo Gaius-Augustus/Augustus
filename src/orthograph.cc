@@ -345,9 +345,9 @@ double OrthoGraph::treeMAPInf(ExonEvo &evo, int &numInconsistent){
     double k =evo.getPhyloFactor(); //scaling factor 
 
     for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
-	PhyloTree temp(*tree);
+	PhyloTree *temp = hects->getTree();
 	Evo *evo_base = &evo;
-	score += temp.MAP(hects->labels, hects->weights, evo_base, k);
+	score += temp->MAP(hects->labels, hects->weights, evo_base, k);
 	for(int pos=0; pos < hects->orthonode.size(); pos++){
             if(hects->orthonode[pos] && hects->orthonode[pos]->label != hects->labels[pos])
                 numInconsistent++;
@@ -363,14 +363,14 @@ double OrthoGraph::makeConsistent(ExonEvo &evo){
     double k =evo.getPhyloFactor(); //scaling factor 
 
     for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
-	PhyloTree temp(*tree);
+	PhyloTree *temp = hects->getTree();
 	Evo *evo_base = &evo;
 	vector<int> labels(numSpecies,2);
 	for(int pos=0; pos < hects->orthonode.size(); pos++){
 	    if(hects->orthonode[pos])
 		labels[pos] = hects->orthonode[pos]->label;
 	}
-	score += temp.MAP(labels, hects->weights, evo_base, k, true);
+	score += temp->MAP(labels, hects->weights, evo_base, k, true);
     }
     return score;
 }	

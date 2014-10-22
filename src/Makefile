@@ -597,23 +597,29 @@ randseqaccess.o : \
 
 orthoexon.o : \
 	../include/orthoexon.hh \
+	../include/graph.hh \
 	../include/exoncand.hh \
 	../include/projectio.hh \
-	../include/orthograph.hh \
 	../include/types.hh \
+	../include/phylotree.hh \
 	orthoexon.cc
 
 orthograph.o : \
 	../include/orthograph.hh \
+	../include/contTimeMC.hh \
 	../include/mea.hh \
+	../include/speciesgraph.hh \
+	../include/phylotree.hh \
+	../include/orthogene.hh \
+	../include/geneMSA.hh \
 	orthograph.cc
 
 genomicMSA.o : \
 	../include/genomicMSA.hh \
 	../include/exoncand.hh \
-	../include/orthoexon.hh \
 	../include/randseqaccess.hh \
 	../include/alignment.hh \
+	../include/geneMSA.hh \
 	genomicMSA.cc
 
 geneMSA.o : \
@@ -625,6 +631,8 @@ geneMSA.o : \
 	../include/namgene.hh \
 	../include/randseqaccess.hh \
 	../include/alignment.hh \
+	../include/orthograph.hh \
+	../include/geneticcode.hh \
 	geneMSA.cc
 
 parser/parse.o: \
@@ -638,11 +646,13 @@ scanner/lex.o: \
 phylotree.o: \
 	../include/phylotree.hh \
 	parser/parser.h \
-	../include/properties.hh\
+	../include/properties.hh \
+	../include/contTimeMC.hh \
 	phylotree.cc
 
 speciesgraph.o: \
 	../include/speciesgraph.hh \
+	../include/graph.hh \
 	speciesgraph.cc
 
 fasta.o: \

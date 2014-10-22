@@ -12,10 +12,7 @@
  * 27.08.13| Mario Stanke       | summarization of aligmnments into gene ranges
  **********************************************************************/
 
-#include "exoncand.hh"
 #include "genomicMSA.hh"
-#include "orthoexon.hh"
-#include "phylotree.hh"
 #include <fstream>
 #include <iostream>
 #include <string>

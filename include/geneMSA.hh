@@ -14,9 +14,9 @@
 #include "alignment.hh"
 #include "exoncand.hh"
 #include "orthoexon.hh"
-#include "phylotree.hh"
 #include "randseqaccess.hh"
-#include "contTimeMC.hh"
+
+#include<unordered_map>
 
 //forward declarations
 class OrthoGraph;
@@ -62,7 +62,7 @@ public:
      * - the phases at both boundaries agree (i.e. exon candidate types and length modulo 3)
      * EC coordinates are region-based, as they are used in the OrthoGraph
      */
-    void createOrthoExons(map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, float consThres = 0.0, int minAvLen = 0);
+    void createOrthoExons(map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, Evo *evo, float consThres = 0.0, int minAvLen = 0);
     void printStats(); // to stdout
     void printGeneRanges();
     void printExonCands();
@@ -87,6 +87,7 @@ public:
     static int orthoExonID; // ID for exons of different species which are orthologous to each other
     static int geneRangeID; // stores an ID for the possible gene ranges of the different species which belong together
     static vector<int> exonCandID; // IDs for exon candidates of different species
+    static unordered_map< bit_vector, PhyloTree*> topologies;
     // pointers to the output files
     static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles, omega_outfiles; 
 

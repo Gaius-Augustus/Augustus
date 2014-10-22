@@ -11,12 +11,10 @@
  * 09.03.12|Stefanie König | creation of the file
  **********************************************************************/
 
-
+//project includes
 #include "phylotree.hh"
-#include "contTimeMC.hh"
-#include "orthoexon.hh"
-#include "graph.hh"
-#include "randseqaccess.hh"
+#include "properties.hh"
+
 #include <queue>
 #include <cmath>
 #include <iostream>
@@ -26,10 +24,8 @@
 #include "parser/parser.h"
 #endif
 
-RandSeqAccess *PhyloTree::rsa = NULL;
-
 void Treenode::printNode() const {
-    cout<<"Species: "<<this->species<<" Distance: "<<this->distance;
+    cout<<"Species: "<<this->species<<" (idx="<<this->idx <<")"<<" Distance: "<<this->distance;
     if (this->parent == NULL){
 	cout<<" root ";
     }
@@ -72,6 +68,7 @@ PhyloTree::PhyloTree(string filename){
     fb.open(filename.c_str(),ios::in);
     if (fb.is_open()){
 	istream istrm(&fb);
+	vector<string> species;
 	Parser parser(&treenodes, &species, istrm);  //define an object of the Parser class
 #ifndef DEBUG
 	parser.setDebug(false);
@@ -85,6 +82,7 @@ PhyloTree::PhyloTree(string filename){
 	if(error_message == 1){
 	    throw ProjectError("the parsing of " + filename + " has been unsuccessful. Please check, whether the syntax of your input file is correct" );
 	}
+	numSp=species.size();
 	/*
 	 * if only a subset of the species is sought, drop all leaf nodes
 	 * which are not in the given subset
@@ -100,7 +98,6 @@ PhyloTree::PhyloTree(string filename){
 		    keep.push_back(s);
 		}
 		ifstrm.close();
-		vector<string> subset_species;
 		for(int i=0; i<species.size(); i++){
 		    bool found=false;
 		    for(int j=0; j<keep.size(); j++){
@@ -111,12 +108,9 @@ PhyloTree::PhyloTree(string filename){
 		    }
 		    if(!found){ //if species name ist not in list, remove leaf
 			drop(species[i]);
-		    }
-		    else{
-			subset_species.push_back(species[i]);
+			numSp--;
 		    }
 		}
-		species=subset_species;
 		if(species.size() < 2 || species.size() < keep.size())
 		    throw ProjectError(only_species + " has the wrong format. correct format:\n\n" + 
 				       "hg19\n" + "mm9\n" + "galGal3\n" + "...\n" + 
@@ -136,7 +130,6 @@ PhyloTree::PhyloTree(string filename){
 }
 
 PhyloTree::PhyloTree(const vector<string> &speciesnames, double b){
-    this->species=speciesnames;
     Treenode *root = new Treenode;
     for(int i=0;i<speciesnames.size(); i++){
 	Treenode *leaf = new Treenode(speciesnames[i],b);
@@ -144,12 +137,12 @@ PhyloTree::PhyloTree(const vector<string> &speciesnames, double b){
 	this->treenodes.push_back(leaf);
     }
     this->treenodes.push_back(root);
+    numSp=speciesnames.size();
 }
 
 //copy constructor
 PhyloTree::PhyloTree(const PhyloTree &other){
-    this->species=other.species;
-    
+    this->numSp=other.numSp;
     if(!other.treenodes.empty()){
 	Treenode *root=other.treenodes.back();
 	if(!root->isRoot()){
@@ -168,7 +161,7 @@ PhyloTree::PhyloTree(const PhyloTree &other){
 	    stack_copy.pop_front();
 	    if(!p->isLeaf()){
 	      for(list<Treenode*>::reverse_iterator it = p->children.rbegin(); it != p->children.rend(); it++){
-		    Treenode *copy = new Treenode((*it)->getSpecies(), (*it)->getDist());
+		  Treenode *copy = new Treenode((*it)->getSpecies(), (*it)->getDist(), (*it)->getIdx());
 		    p_copy->addChild(copy);
 		    this->treenodes.push_front(copy);
 		    stack_copy.push_front(copy);
@@ -184,7 +177,6 @@ PhyloTree::~PhyloTree(){
 	delete *it;
     }
     treenodes.clear();
-    species.clear();
 }
 
 void PhyloTree::printNewick(string filename) const {
@@ -234,8 +226,7 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
     for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if((*node)->isLeaf()){
 	    // initialization
-	    int pos = rsa->getIdx((*node)->getSpecies());
-	    int c = tuple[pos];
+	    int c = tuple[(*node)->getIdx()];
 	    if(c >= states || c < 0){    
 		(*node)->resizeTable(states,1);  // in the case of unknown characters, we sum over all possibilities
 	    }
@@ -306,6 +297,17 @@ void PhyloTree::getBranchLengths(vector<double> &branchset) const {
     }
 }
 
+void PhyloTree::getSpeciesNames(vector<string> &speciesnames) {
+    for(list<Treenode*>::const_iterator node = treenodes.begin(); node != treenodes.end(); node++){
+        if((*node)->isLeaf()){
+            speciesnames.push_back((*node)->getSpecies());
+	    // set species idx
+	    int idx = speciesnames.size()-1 ;
+	    (*node)->setIdx(idx);
+	}
+    }
+}
+
 Treenode *PhyloTree::getLeaf(string species) const {
   for(list<Treenode*>::const_iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if( (*node)->getSpecies() == species)
@@ -317,7 +319,7 @@ Treenode *PhyloTree::getLeaf(string species) const {
 void PhyloTree::drop(string species){
 
     Treenode *node=getLeaf(species);
-    drop(node);
+    drop(node,NULL);
 }
 
 void PhyloTree::drop(Treenode *node, Evo *evo){
@@ -362,37 +364,25 @@ void PhyloTree::collapse(Treenode *node, Evo *evo){
 double PhyloTree::MAP(vector<int> &labels, vector<double> &weights, Evo *evo, double k ,bool fixLeafLabels){
 
     int states = evo->getNumStates();
-
- start:
+    
     for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if((*node)->isLeaf()){
 	    // initialization
-	    int pos = rsa->getIdx((*node)->getSpecies());
-	    int c = labels[pos];
-	    if(c >= states || c < 0){ //in the case that the exon does not exist, we remove the node
-		Treenode* tmp=*node;
-		if(node == treenodes.begin()){
-		    drop(tmp, evo);
-		    goto start;
-		}
-		else{
-		    node--;
-		    drop(tmp, evo);
-		}
+	    int idx = (*node)->getIdx();
+	    int c = labels[idx];
+	    if(c >= states || c < 0) // exon does not exist
+		throw ProjectError("PhyloTree::MAP(): species with index "+ itoa(idx) + " does not exist in tree");
+	    double weight = weights[idx];
+	    if(fixLeafLabels){
+		(*node)->resizeTable(states,-std::numeric_limits<double>::max());
+		(*node)->setTable(c,weight*c);
 	    }
 	    else{
-		double weight = weights[pos];
-		if(fixLeafLabels){
-		    (*node)->resizeTable(states,-std::numeric_limits<double>::max());
-		    (*node)->setTable(c,weight*c);
-		}
-		else{
-		    (*node)->resizeTable(states,0);
-		    (*node)->setTable(1,weight);
-		} 
-		(*node)->bestAssign.clear();
-		(*node)->bestAssign.resize(states);
-	    }
+		(*node)->resizeTable(states,0);
+		(*node)->setTable(1,weight);
+	    } 
+	    (*node)->bestAssign.clear();
+	    (*node)->bestAssign.resize(states);
 	}
 	else{
 	    //recursion for the interior nodes
@@ -404,7 +394,11 @@ double PhyloTree::MAP(vector<int> &labels, vector<double> &weights, Evo *evo, do
 		for(list<Treenode*>::iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
 		    double max = -std::numeric_limits<double>::max();
 		    int bestAssign = -1;
-		    gsl_matrix *P = evo->getSubMatrixLogP(0,(*it)->getDist());
+		    gsl_matrix *P = (*it)->getLogP();
+		    if(!P){ // upon the first call, set pointer to the corresponding probability matrix
+			P = evo->getSubMatrixLogP(0,(*it)->getDist());
+			(*it)->setLogP(P);
+		    }
 		    for(int j=0; j<states; j++){
 			double branch_score = (k*gsl_matrix_get(P,i,j)) + (*it)->getTable(j);
 			if(max < branch_score){
@@ -449,10 +443,10 @@ void PhyloTree::MAPbacktrack(vector<int> &labels, Treenode* root, int bestAssign
 	Treenode *node=p.first;
 	bestAssign=p.second;
 	if(node->isLeaf()){
-	    int pos = rsa->getIdx(node->getSpecies());
-	    if(fixLeafLabels && bestAssign != labels[pos])
+	    int idx = node->getIdx();
+	    if(fixLeafLabels && bestAssign != labels[idx])
 		throw ProjectError("in MAPbacktrack: fixLeafNodes is one but different node labels");
-	    labels[pos]=bestAssign;
+	    labels[idx]=bestAssign;
 	}
 	else{
 	    for(list<Treenode*>::iterator it=node->children.begin(); it!=node->children.end(); it++){
@@ -462,57 +456,37 @@ void PhyloTree::MAPbacktrack(vector<int> &labels, Treenode* root, int bestAssign
     }
 }
 
-// calculate diversity (sum of branch lengths) of the subtree induced by a HECT
-double PhyloTree::sumBranches(OrthoExon &oe){
+/*
+ * calculate diversity (sum of branch lengths)
+ */
+double PhyloTree::getDiversity(){
+    double div=0.0;
+    for(list<Treenode*>::const_iterator node = treenodes.begin(); node != treenodes.end(); node++){
+	if(!((*node)->isRoot()))
+	    div+=(*node)->getDist();
+    }
+    return div;
+}
 
+/*
+ * prune all leaf nodes of species that are not present as indicated by a bit vector
+ * (i-th bit in the vector is 1 if species i is present and 0 if species i is absent)
+ */
+void PhyloTree::prune(bit_vector &bv, Evo *evo){
+ start:
     for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
-        if((*node)->isLeaf()){
-            // assign leaf nodes to 1 if corresponding EC exists, otherwise to 0                                                                          
-	    int pos = rsa->getIdx((*node)->getSpecies());
-            if(oe.exonExists(pos)){
-                (*node)->label = 1;
-            }
-            else{
-                (*node)->label = 0; 
-            }
-        }
-        else{
-            // assign interior nodes to 1 if at least one of its children is assigned to 1, otherwise to 0
-            (*node)->label = 0;
-            for(list<Treenode*>::iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
-                if((*it)->label){
-                    (*node)->label = 1;
-                    break;
-                }
-            }
-        }
+	if((*node)->isLeaf()){
+	    if(!bv[(*node)->getIdx()]){ 
+		Treenode* tmp=*node;
+		if(node == treenodes.begin()){
+		    drop(tmp,evo);
+		    goto start;
+		}
+		else{
+		    node--;
+		    drop(tmp,evo);
+		}
+	    }
+	}
     }
-    //sum all branch lengths connecting two nodes that are both assigned to 1 (starting at the root node of the subtree)
-    double sum = 0.0;
-    Treenode* root = treenodes.back();
-    if(root->label == 0) // empty subtree
-        return sum;
-    bool foundSubtreeRoot = false;
-    list< Treenode* > stack;
-    stack.push_front(root);
-    while(!stack.empty()){
-        Treenode* node = stack.front();
-        stack.pop_front();
-        if(!node->isLeaf()){
-	    double sumChild=0.0;
-	    int numChild=0; // number of children of a node in the subtree
-            for(list<Treenode*>::iterator it = node->children.begin(); it != node->children.end(); it++){
-                if((*it)->label == 1){
-                    sumChild += (*it)->getDist();
-		    numChild++;
-                    stack.push_front((*it));
-                }
-            }
-	    if(numChild>=2)
-		foundSubtreeRoot=true; 
-	    if(foundSubtreeRoot)
-		sum+=sumChild;
-        }
-    }
-    return sum;
 }

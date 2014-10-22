@@ -13,10 +13,8 @@
  **********************************************************************/
 
 #include "geneticcode.hh"
-#include "exoncand.hh"
 #include "genomicMSA.hh"
 #include "geneMSA.hh"
-#include "orthoexon.hh"
 #include "intronmodel.hh"
 #include "namgene.hh"
 #include "orthograph.hh"
@@ -37,6 +35,7 @@ vector<ofstream*> GeneMSA::exonCands_outfiles;
 vector<ofstream*> GeneMSA::orthoExons_outfiles;
 vector<ofstream*> GeneMSA::geneRanges_outfiles;
 vector<ofstream*> GeneMSA::omega_outfiles;
+unordered_map< bit_vector, PhyloTree*> GeneMSA::topologies;
 
 /*
  * constructor of GeneMSA
@@ -200,7 +199,7 @@ void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCand
 /**
  * createOrthoExons
  */
-void GeneMSA::createOrthoExons(map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, float consThres, int minAvLen) {
+void GeneMSA::createOrthoExons(map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, Evo *evo, float consThres, int minAvLen) {
 
     //cout << "Creating ortho exons for alignment" << endl << *alignment << endl;
     int k = alignment->rows.size();
@@ -211,6 +210,7 @@ void GeneMSA::createOrthoExons(map<int_fast64_t, list<pair<int,ExonCandidate*> >
     cout << "OEs in this gene range must have at least " << minEC << " ECs" << endl;
 
     map<int_fast64_t, list<pair<int,ExonCandidate*> > >::iterator aec;
+    unordered_map<bit_vector,PhyloTree*>::iterator topit;
     /*
      * Create one ortho exon candidate for each key to which at least minEC exon candidates mapped 
      */
@@ -218,7 +218,8 @@ void GeneMSA::createOrthoExons(map<int_fast64_t, list<pair<int,ExonCandidate*> >
     for (aec = alignedECs.begin(); aec != alignedECs.end(); ++aec){
 	if (aec->second.size() >= minEC){
 	    float avLen = 0.0;
-	    OrthoExon oe(aec->first);
+	    OrthoExon oe(aec->first, numSpecies());
+	    bit_vector bv(k,0);
 	    oe.orthoex.resize(k, NULL);
 	    for (list<pair<int,ExonCandidate*> >::iterator it = aec->second.begin(); it != aec->second.end(); ++it){
 		int s = it->first;
@@ -227,13 +228,25 @@ void GeneMSA::createOrthoExons(map<int_fast64_t, list<pair<int,ExonCandidate*> >
 		if (oe.orthoex[s])
 		    throw ProjectError("createOrthoExons: Have two exon candidates from the same species " 
 				       + rsa->getSname(s) + " with the same key " + itoa(aec->first));
+		bv[s]=1;
 		oe.orthoex[s] = ec;
 		avLen += ec->len();
 	    }
 	    avLen /= aec->second.size(); // compute average length of exon candidates in oe
 	    if (avLen >= minAvLen){
 		oe.ID = orthoExonID;
-		oe.setDiversity(tree->sumBranches(oe));
+		oe.setBV(bv);
+		// link OE to tree topology
+		topit = topologies.find(bv);
+		if(topit == topologies.end()){ // insert new topology
+		    PhyloTree *t = new PhyloTree(*tree);
+		    t->prune(bv,evo);
+		    topologies.insert(pair<bit_vector,PhyloTree*>(bv,t));
+		    oe.setTree(t);
+		}
+		else{
+		    oe.setTree(topit->second);
+		}
 		oe.setContainment(0);
 		orthoExonID++;
 		numOE++;

@@ -12,7 +12,6 @@
 
 //project includes
 #include "speciesgraph.hh"
-#include "orthoexon.hh"
 #include "phylotree.hh"
 #include "orthogene.hh"
 #include "geneMSA.hh"
