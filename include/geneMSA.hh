@@ -67,7 +67,8 @@ public:
     void printGeneRanges();
     void printExonCands();
     void printOrthoExons();
-    void computeOmegas(vector<AnnoSequence*> const &seqRanges);
+  void computeOmegas(vector<AnnoSequence*> const &seqRanges);
+  void computeOmegasEff(vector<AnnoSequence*> const &seqRanges);
     void comparativeSignalScoring();
 
     // calculate a columnwise conservation score and output it (for each species) in wiggle format
@@ -93,8 +94,7 @@ public:
 
     void printSingleOrthoExon(OrthoExon &oe, bool files = true);
 private:
-    vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges,
-				     const vector<vector<fragment>::const_iterator > &froms);
+  vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, const vector<vector<fragment>::const_iterator > &froms, map<unsigned, vector<int> > *alignedCodons = NULL, bool generateString=true, vector<vector<int> > *posStoredCodons = NULL);
     void cutIncompleteCodons(OrthoExon &oe);
     static PhyloTree *tree;
     static CodonEvo *codonevo;

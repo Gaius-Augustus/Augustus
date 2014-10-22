@@ -513,9 +513,9 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
  *
  */
 vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges,
-					  const vector<vector<fragment>::const_iterator > &froms) {
-    //printSingleOrthoExon(oe, false);
-
+					  const vector<vector<fragment>::const_iterator > &froms, map<unsigned, vector<int> > *alignedCodons, bool generateString, vector<vector<int> > *posStoredCodons) {
+  //printSingleOrthoExon(oe, false);
+  cout<<"OE("<<oe.ID<<") start: "<<oe.getAliStart()<<" end: "<<oe.getAliEnd()<<endl;
     int k = alignment->rows.size();
     vector<string> rowstrings(k, "");
     // consider only codon columns with a number of codons at least this fraction of the nonempty rows 
@@ -529,7 +529,9 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
      * Values of alignedCodons are pairs of 1) species index s and 2) the chromosomal position of the 
      * first codon base.
      */
-    map<unsigned, vector<int> > alignedCodons;
+    map<unsigned, vector<int> > ac;
+    if(alignedCodons == NULL)
+      alignedCodons = &ac;
     map<unsigned, vector<int> >::iterator acit;
     
     long aliPosOf1stBase, aliPosOf2ndBase, aliPosOf3rdBase;
@@ -539,13 +541,24 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
     for (size_t s=0; s<k; s++){
 	if (alignment->rows[s] == NULL || oe.orthoex[s] == NULL)
 	    continue;
+	cout<<"species "<<s<<"|"<<getSeqID(s);
 	AlignmentRow *row = alignment->rows[s];
 	ExonCandidate *ec = oe.orthoex[s];
 	int firstCodonBase = offsets[s] + ec->getFirstCodingBase();
 	int lastCodonBase = offsets[s] + ec->getLastCodingBase();
+	cout<<" firstBase: "<<ec->begin<<" firstCodonBase: "<<firstCodonBase<<" lastCodonBase: "<<lastCodonBase<<" frame: "<<(firstCodonBase % 3)<<endl;
 	if ((lastCodonBase - firstCodonBase + 1) % 3 != 0)
 	    throw ProjectError("Internal error in getCodonAlignment: frame and length inconsistent.");
 
+	if(posStoredCodons != NULL){
+	  if((*posStoredCodons)[s][firstCodonBase % 3] >= lastCodonBase )
+	    continue;
+	  else{
+	    if(firstCodonBase < (*posStoredCodons)[s][firstCodonBase % 3] + 1)
+	      firstCodonBase = (*posStoredCodons)[s][firstCodonBase % 3] + 1;
+	    (*posStoredCodons)[s][firstCodonBase % 3] = lastCodonBase;
+	  }
+	}
 	vector<fragment>::const_iterator from = froms[s];
 	for(chrCodon1 = firstCodonBase; chrCodon1 <= lastCodonBase - 2; chrCodon1 += 3){
 	    // chrCodon1 is the chromosomal position of the first base in the codon
@@ -566,11 +579,12 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 			    + (aliPosOf3rdBase - aliPosOf2ndBase - 1);
 			//cout << chrCodon1 << " " << aliPosOf1stBase << " " << (aliPosOf2ndBase - aliPosOf1stBase - 1) << " " 
 			//     << (aliPosOf3rdBase - aliPosOf2ndBase - 1) << " " << key << endl;
-			acit = alignedCodons.find(key);
-			if (acit == alignedCodons.end()){ // insert new vector
+			acit = alignedCodons->find(key);
+			if (acit == alignedCodons->end()){ // insert new vector
 			    vector<int> cod(k, -1); // -1 missing codon
 			    cod[s] = chrCodon1;
-			    alignedCodons.insert(pair<int,vector<int> >(key, cod));
+			    alignedCodons->insert(pair<int,vector<int> >(key, cod));
+			    cout<<key<<"\t";;
 			} else {// append new entry to existing list
 			    if (acit->second[s] >= 0) // remove this later
 				throw ProjectError("Wow! Another codon has mapped to the same key!");
@@ -580,43 +594,46 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 		}
 	    }
 	}
+	cout<<endl;
     }
     
-    float minAlignedCodonFrac = 0.3;
-    int m = alignment->numFilledRows();
-    int minAlignedCodons = (m * minAlignedCodonFrac > 2)? m * minAlignedCodonFrac + 0.9999 : 2;
-    // Must have at least 'minAlignedCodons' codons in any codon column
+    if(generateString){
+      float minAlignedCodonFrac = 0.3;
+      int m = alignment->numFilledRows();
+      int minAlignedCodons = (m * minAlignedCodonFrac > 2)? m * minAlignedCodonFrac + 0.9999 : 2;
+      // Must have at least 'minAlignedCodons' codons in any codon column
 
-    /*
-     * Create one codon alignment column for each key to which at least minAlignedCodons mapped
-     */ 
-    for (acit = alignedCodons.begin(); acit != alignedCodons.end(); ++acit){
+      /*
+       * Create one codon alignment column for each key to which at least minAlignedCodons mapped
+       */ 
+      for (acit = alignedCodons->begin(); acit != alignedCodons->end(); ++acit){
 	int numCodons = 0;
 	for(size_t s=0; s<k; s++)
-	    if (acit->second[s] >=0)
-		numCodons++;
+	  if (acit->second[s] >=0)
+	    numCodons++;
 	if (numCodons >= minAlignedCodons){
-	    for (size_t s=0; s<k; s++){
-		chrCodon1 = acit->second[s]; // sequence position
-		if (chrCodon1 >= 0)
-		    rowstrings[s] += string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3);
-		else 
-		    rowstrings[s] += "---";
-	    }
+	  for (size_t s=0; s<k; s++){
+	    chrCodon1 = acit->second[s]; // sequence position
+	    if (chrCodon1 >= 0)
+	      rowstrings[s] += string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3);
+	    else 
+	      rowstrings[s] += "---";
+	  }
 	}
-    }
+      }
 
-    if (!isOnFStrand(oe.getStateType())){ // reverse complement alignment
+      if (!isOnFStrand(oe.getStateType())){ // reverse complement alignment
 	for (size_t s=0; s<k; s++)
-	    reverseComplementString(rowstrings[s]); 
-    }
+	  reverseComplementString(rowstrings[s]); 
+      }
 
-    /*cout << "codon alignment:" << endl;
-    int maxSnameLen = rsa->getMaxSnameLen();
-    int maxSeqIDLen = alignment->getMaxSeqIdLen();
-    for (size_t s=0; s<k; s++)
+      /*cout << "codon alignment:" << endl;
+	int maxSnameLen = rsa->getMaxSnameLen();
+	int maxSeqIDLen = alignment->getMaxSeqIdLen();
+	for (size_t s=0; s<k; s++)
         cout << setw(maxSnameLen) << rsa->getSname(s) << "\t" << setw(maxSeqIDLen) << getSeqID(s) << "\t" << rowstrings[s] << endl;
-    */
+      */
+    }
     return rowstrings;
 }
 
@@ -628,7 +645,9 @@ void GeneMSA::computeOmegas(vector<AnnoSequence*> const &seqRanges) {
     // is not completely left of the current OrthoExon.
     // This exploits the fact that both fragments and OrthoExons are sorted
     // left-to-right in the alignment.
-    vector<vector<fragment>::const_iterator > froms(numSpecies());
+  
+
+  vector<vector<fragment>::const_iterator > froms(numSpecies());
     for (size_t s=0; s < numSpecies(); s++)
 	if (alignment->rows[s])
 	    froms[s] = alignment->rows[s]->frags.begin();
@@ -653,6 +672,42 @@ void GeneMSA::computeOmegas(vector<AnnoSequence*> const &seqRanges) {
 	oe->setOmega(omega);
     }
 }
+
+void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
+
+  vector<vector<fragment>::const_iterator > froms(numSpecies());
+  for (size_t s=0; s < numSpecies(); s++)
+    if (alignment->rows[s])
+      froms[s] = alignment->rows[s]->frags.begin();
+  
+  map<unsigned, vector<int> > alignedCodons;
+  vector<vector<int> > posStoredCodons(numSpecies(),vector<int>(3));
+
+  for (list<OrthoExon>::iterator oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
+    //cout<<oe->getAliStart()<<" "<<oe->getAliEnd()<<endl;
+    // move fragment iterators to start of exon candidates                                                                        
+    for (size_t s=0; s < numSpecies(); s++)
+      if (alignment->rows[s] && oe->orthoex[s])
+	while(froms[s] != alignment->rows[s]->frags.end()
+	      && froms[s]->chrPos + froms[s]->len - 1 < offsets[s] + oe->orthoex[s]->getStart())
+	  ++froms[s];
+    
+    getCodonAlignment(*oe, seqRanges, froms, &alignedCodons, false, &posStoredCodons);
+  }
+  cout<<"--- list of keys for codon algnment ---"<<endl;
+  for (map<unsigned, vector<int> >::iterator acit = alignedCodons.begin(); acit != alignedCodons.end(); ++acit){
+    cout<<acit->first<<"\t=>";
+    for(size_t s = 0; s < numSpecies(); s++){
+      cout<<"\t"<<acit->second[s];
+    }
+    cout<<endl;
+  }
+  
+  
+  
+
+}
+
 
 // calculate a columnwise conservation score and output it (for each species) in wiggle format
 void GeneMSA::printConsScore(vector<AnnoSequence*> const &seqRanges, string outdir){
@@ -813,3 +868,8 @@ void GeneMSA::comparativeSignalScoring(){
     }
     cout << "exiting comparativeSignalScoring" << endl;
 }
+
+
+
+
+

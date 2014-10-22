@@ -320,7 +320,7 @@ void CompGenePred::start(){
 		geneRange->comparativeSignalScoring(); 
 	} catch (...) {}
 	
-	// geneRange->computeOmegas(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
+	//geneRange->computeOmegasEff(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
 	if(conservationTrack)
 	    geneRange->printConsScore(seqRanges, outdir);
 
