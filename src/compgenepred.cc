@@ -347,7 +347,9 @@ void CompGenePred::start(){
 		vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
 		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factor);
 		orthograph.filterGeneList(genelist,optGenes,opt_geneid);
-		
+		orthograph.createOrthoGenes(geneRange);
+		orthograph.printOrthoGenes();
+
 	    }else{
 		orthograph.outputGenes(optGenes, opt_geneid);
 	    }
