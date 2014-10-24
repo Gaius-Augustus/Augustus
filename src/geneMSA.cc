@@ -171,7 +171,7 @@ map<string,ExonCandidate*>* GeneMSA::getECHash(list<ExonCandidate*> *ec) {
 
 // computes and sets the exon candidates for species s
 // and inserts them into the hash of ECs if they do not exist already
-void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCandidate*> &ecs){
+void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, ExonCandidate*> &addECs){
     double assmotifqthresh = 0.15;
     double assqthresh = 0.3;
     double dssqthresh = 0.7;
@@ -184,7 +184,7 @@ void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCand
 	Properties::assignProperty("/CompPred/dssqthresh", dssqthresh);
 	// TODO Properties::assignProperty("/CompPred/minExonCandLen", minEClen);
     
-	findExonCands(ecs, dna, minEClen, assmotifqthresh, assqthresh, dssqthresh); 
+	findExonCands(ecs,addECs, dna, minEClen, assmotifqthresh, assqthresh, dssqthresh); 
     }
     list<ExonCandidate*> *candidates = new list<ExonCandidate*>;
     for(map<int_fast64_t, ExonCandidate*>::iterator ecit=ecs.begin(); ecit!=ecs.end(); ecit++){
