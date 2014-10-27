@@ -175,7 +175,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
     list<int> exonRCStop;
     list< pair<int, Double> > exonASS;
     list< pair<int, Double> > exonRDSS;
-    ExonCandidate *ec;
+    
     map<int_fast64_t, ExonCandidate*>::iterator ecit;
     Double assminprob, dssminprob, assmaxprob, dssmaxprob;
     bool withSplicing = (IntronModel::assBinProbs.nbins > 0); // eukaryotic species?
@@ -236,7 +236,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
             int lmb = orf.leftmostExonBegin(0, i, true);
             while ((lmb <= *ritStart) && (i - *ritStart <= Constant::max_exon_len) && (ritStart != exonStart.rend())) {
                 if ((i - *ritStart >= Constant::min_coding_len) && ((i - *ritStart+1)%3 == 0)) {
-                    ec = new ExonCandidate;
+                    ExonCandidate *ec = new ExonCandidate;
                     ec->begin = *ritStart - 1;
                     ec->end = i + 2;
                     ec->type = singleGene;
@@ -250,6 +250,9 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 			else{
                             delete ec;
                         }
+		    }
+		    else{
+			delete ec;
 		    }
                 }
                 ritStart++;
@@ -268,7 +271,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                 int lmb = orf.leftmostExonBegin(frame,i,true);
                 while((lmb <= *ritStart) && (i-*ritStart <= Constant::max_exon_len) && (ritStart!=exonStart.rend())) {
                     if ((i - *ritStart>=3) && ((i-*ritStart+1)%3==frame) && (p >= dssminprob)) {
-                        ec = new ExonCandidate;
+                        ExonCandidate *ec = new ExonCandidate;
                         ec->begin = *ritStart - 1;
                         ec->end = i - 1;
                         ec->setDssScore(computeSpliceSiteScore(p, dssminprob, dssmaxprob));
@@ -290,6 +293,9 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 				delete ec;
 			    }
 			}
+			else{
+			    delete ec;
+			}
 		    }
                     ritStart++;
                 }
@@ -305,7 +311,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 		    int lmb = orf.leftmostExonBegin(frame, i, true);
 		    while(lmb <= (*ritASS).first && i-(*ritASS).first <= Constant::max_exon_len && ritASS != exonASS.rend()) {
 			if ((i-(*ritASS).first>=5) && (p >= dssminprob)) {
-			    ec = new ExonCandidate;
+			    ExonCandidate *ec = new ExonCandidate;
 			    ec->begin = (*ritASS).first + 2;
 			    ec->end = i - 1;
 			    ec->setAssScore((*ritASS).second);
@@ -328,6 +334,9 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 				    delete ec;
 				}
 			    }
+			    else{
+				delete ec;
+			    }
 			}
 			ritASS++;
 		    }
@@ -345,7 +354,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                 ritASS_cur = ritASS;
                 while ((i-(*ritASS).first <= Constant::max_exon_len) && (ritASS!=exonASS.rend())) {
                     if ((i-(*ritASS).first>=3) && ((i-(*ritASS).first + 1)%3==frame) && ((*ritASS).first>=orf.leftmostExonBegin(0,i,true))) {
-                        ec = new ExonCandidate;
+                        ExonCandidate *ec = new ExonCandidate;
                         ec->begin = (*ritASS).first + 2;
                         ec->end = i + 2;
                         ec->setAssScore((*ritASS).second);
@@ -360,6 +369,9 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 			    else{
 				delete ec;
 			    }
+			}
+			else{
+			    delete ec;
 			}
                     }
                     ritASS++;
@@ -377,7 +389,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
             while ((i-*ritRCStop <=  Constant::max_exon_len) && (ritRCStop!=exonRCStop.rend())) {
                 if ((i-*ritRCStop)%3 == 0) {
                     if ((i-*ritRCStop) >= Constant::min_coding_len) {
-                        ec = new ExonCandidate;
+                        ExonCandidate *ec = new ExonCandidate;
                         ec->begin = *ritRCStop;
                         ec->end = i + 2;
                         ec->type=rsingleGene;
@@ -391,6 +403,9 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 			    else{
 				delete ec;
 			    }
+			}
+			else{
+			    delete ec;
 			}
                         break;
                     } else {
@@ -413,7 +428,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                 int lmb = orf.leftmostExonBegin(2,i,false);
                 while((lmb<=(*ritRDSS).first+2)&&(i-(*ritRDSS).first<= Constant::max_exon_len)&&(ritRDSS!=exonRDSS.rend())) {
                     if ((i-(*ritRDSS).first>=2)&&((i+1-(*ritRDSS).first)%3==frame)) {
-                        ec = new ExonCandidate;
+                        ExonCandidate *ec = new ExonCandidate;
                         ec->begin=(*ritRDSS).first + 2;
                         ec->end=i + 2;
                         ec->setDssScore((*ritRDSS).second);
@@ -445,7 +460,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                 int lmb = orf.leftmostExonBegin(frame,i,false);
                 while((lmb<=(*ritRDSS).first)&&(i-(*ritRDSS).first <= Constant::max_exon_len)&&(ritRDSS!=exonRDSS.rend())) {
                     if (i-(*ritRDSS).first>=5 && (p >= assminprob)) {
-                        ec = new ExonCandidate;
+                        ExonCandidate *ec = new ExonCandidate;
                         ec->begin = (*ritRDSS).first + 2;
                         ec->end = i - 1;
                         ec->setDssScore((*ritRDSS).second);
@@ -468,6 +483,9 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 				delete ec;
 			    }
 			}
+			else{
+			    delete ec;
+			}
                     }
                     ritRDSS++;
                 }
@@ -488,7 +506,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                         break;
                     }
                     if ((i-*ritRCStop>=4) && ((i-*ritRCStop)%3==frame) && (p >= assminprob)) {
-                        ec = new ExonCandidate;
+                        ExonCandidate *ec = new ExonCandidate;
                         ec->begin = *ritRCStop;
                         ec->end = i - 1;
                         ec->setAssScore(computeSpliceSiteScore(p, assminprob, assmaxprob));
@@ -510,6 +528,9 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 				delete ec;
 			    }
 			} 
+			else{
+			    delete ec;
+			}
                         break;
                     } else {
                         ritRCStop++;
