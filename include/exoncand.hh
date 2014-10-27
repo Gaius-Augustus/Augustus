@@ -21,6 +21,8 @@
 #ifndef _EXONCAND_HH
 #define _EXONCAND_HH
 
+#include <stdint.h>
+
 #include "types.hh"
 #include "exonmodel.hh" // for OpenReadingFrame
 #define EXON_TYPES 17
