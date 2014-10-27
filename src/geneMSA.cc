@@ -22,6 +22,7 @@
 #include <iostream>
 #include <string>
 #include <sys/time.h>
+#include <unordered_set>
 
 using namespace std;
 
@@ -609,7 +610,7 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
       for (acit = alignedCodons->begin(); acit != alignedCodons->end(); ++acit){
 	int numCodons = 0;
 	for(size_t s=0; s<k; s++)
-	  if (acit->second[s] >=0)
+ 	  if (acit->second[s] >=0)
 	    numCodons++;
 	if (numCodons >= minAlignedCodons){
 	  for (size_t s=0; s<k; s++){
@@ -673,6 +674,71 @@ void GeneMSA::computeOmegas(vector<AnnoSequence*> const &seqRanges) {
     }
 }
 
+
+// data to store in the map aliPos. for positions in the alignment store start and end of orthoExons and bitvectors
+struct posElements{
+  vector<OrthoExon*> oeStart;
+  vector<OrthoExon*> oeEnd; 
+};
+
+struct cumValues{
+  double sum;
+  double omega;
+  double omegaSqrt;
+  cumValues() : sum(0), omega(0), omegaSqrt(0) {}
+};
+
+
+string printBV(bit_vector bv){
+  string bvs;
+  for(bit_vector::iterator b = bv.begin(); b != bv.end(); b++){
+    if(*b)
+      bvs+= "1|";
+    else
+      bvs+= "0|";
+  }
+  return bvs;
+}
+
+void printTest(map<unsigned, vector<int> > alignedCodons, map<int, posElements> aliPos){
+
+  cout<<"--- list of keys for codon algnment ---"<<endl;
+  unordered_map<bit_vector, int> bvCount;
+  map<int, posElements>::iterator aliPosIt = aliPos.begin();
+  for(map<unsigned, vector<int> >::iterator codonIt = alignedCodons.begin(); codonIt != alignedCodons.end(); codonIt++){
+    cout<<"codon position in alignment(1): "<<(codonIt->first >> 8)<<" oe start or end in alignment(2): "<<aliPosIt->first<<endl;
+    map<unsigned, vector<int> >::iterator nextCodonIt = codonIt;
+    nextCodonIt++;
+    while((unsigned)aliPosIt->first >= (codonIt->first >> 8) && (unsigned)aliPosIt->first <= (nextCodonIt->first >> 8)){
+      for(int i=0; i<aliPosIt->second.oeStart.size(); i++)
+        cout<<"oeStart: "<<aliPosIt->second.oeStart[i]->getAliStart()<<":"<<aliPosIt->second.oeStart[i]->getAliEnd()<<endl;
+      for(int i=0; i<aliPosIt->second.oeEnd.size(); i++)
+        cout<<"oeEnd: "<<aliPosIt->second.oeEnd[i]->getAliStart()<<":"<<aliPosIt->second.oeEnd[i]->getAliEnd()<<endl;
+      aliPosIt++;
+    }
+  }
+
+}
+
+pair<vector<int>, cumValues> GeneMSA::setRFcombi(OrthoExon *oe){
+
+  bit_vector bv = oe->getBV();
+  vector<int> vecRFC(numSpecies()); // reading frame combination of OrthoExon oe
+  cumValues cv;
+  int s = 0; // species Index
+  for(bit_vector::iterator b = bv.begin(); b != bv.end(); b++){
+    if(*b){
+      vecRFC[s] = offsets[s] + oe->orthoex[s]->getFirstCodingBase() % 3;
+    }else{
+      vecRFC[s] = -1;
+    }
+    s++;
+  }
+  return make_pair(vecRFC, cv);
+}
+
+
+
 void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 
   vector<vector<fragment>::const_iterator > froms(numSpecies());
@@ -680,11 +746,37 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
     if (alignment->rows[s])
       froms[s] = alignment->rows[s]->frags.begin();
   
-  map<unsigned, vector<int> > alignedCodons;
-  vector<vector<int> > posStoredCodons(numSpecies(),vector<int>(3));
 
+  map<int, posElements> aliPos;              // contains all positions where either an orthoExon or a bitvector starts or ends
+  map<unsigned, vector<int> > alignedCodons;
+  alignedCodons.insert(pair<unsigned, vector<int> >(0,vector<int>(numSpecies(),-1))); // guaratee that codon alignment starts before first OrthoExon
+  vector<vector<int> > posStoredCodons(numSpecies(),vector<int>(3));
+  
   for (list<OrthoExon>::iterator oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
-    //cout<<oe->getAliStart()<<" "<<oe->getAliEnd()<<endl;
+  
+
+    // store start and end information
+    bool aliStart = true;
+    for (map<int, posElements>::iterator aliPosIt : { aliPos.find(oe->getAliStart()), aliPos.find(oe->getAliEnd()) }) { 
+      
+      if(aliPosIt == aliPos.end()){
+	posElements pe;
+	pair<map<int, posElements>::iterator, bool> insertResult;
+	if(aliStart)
+	  insertResult = aliPos.insert(pair<int, posElements>(oe->getAliStart(), pe));
+	else
+	  insertResult = aliPos.insert(pair<int, posElements>(oe->getAliEnd(), pe));
+	aliPosIt = insertResult.first;
+      }
+      if(aliStart){
+	aliPosIt->second.oeStart.push_back(&(*oe));
+      }else{
+	aliPosIt->second.oeEnd.push_back(&(*oe));
+      }
+      aliStart = false;
+    }
+    
+    // generate codon alignments
     // move fragment iterators to start of exon candidates                                                                        
     for (size_t s=0; s < numSpecies(); s++)
       if (alignment->rows[s] && oe->orthoex[s])
@@ -694,19 +786,112 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
     
     getCodonAlignment(*oe, seqRanges, froms, &alignedCodons, false, &posStoredCodons);
   }
-  cout<<"--- list of keys for codon algnment ---"<<endl;
-  for (map<unsigned, vector<int> >::iterator acit = alignedCodons.begin(); acit != alignedCodons.end(); ++acit){
-    cout<<acit->first<<"\t=>";
-    for(size_t s = 0; s < numSpecies(); s++){
-      cout<<"\t"<<acit->second[s];
+  
+  
+  // Merge processing
+
+  unordered_map<bit_vector, int> bvCount;
+  unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > > rfCombi; // every reading frame combination for every bitvector that exist
+  map<int, posElements>::iterator aliPosIt = aliPos.begin();
+  map<vector<string>,double> computedOmegas;
+
+  for(map<unsigned, vector<int> >::iterator codonIt = alignedCodons.begin(); codonIt != alignedCodons.end(); codonIt++){
+    cout<<"key: "<<codonIt->first<<endl;
+    
+    // compute omega for current codon alignment
+    
+    // generate array of strings representing one codon alignment
+    vector<string> codonStrings(numSpecies(),"");
+    float minAlignedCodonFrac = 0.3;
+    int m = alignment->numFilledRows();
+    int minAlignedCodons = (m * minAlignedCodonFrac > 2)? m * minAlignedCodonFrac + 0.9999 : 2;
+    // Must have at least 'minAlignedCodons' codons in any codon column
+    int numCodons = 0;
+    for(size_t s = 0; s < numSpecies(); s++)
+      if (codonIt->second[s] >=0)
+	numCodons++;
+    if (numCodons >= minAlignedCodons){
+      for (size_t s = 0; s < numSpecies(); s++){
+	int chrCodon1 = codonIt->second[s]; // sequence position
+	if (chrCodon1 >= 0)
+	  codonStrings[s] = string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3);
+	else 
+	  codonStrings[s] = "---";
+      }
     }
-    cout<<endl;
+    // TODO: think about the reverse strand!!!
+    /* if (!isOnFStrand(oe.getStateType())){ // reverse complement alignment
+      for (size_t s=0; s<k; s++)
+	reverseComplementString(codonStrings[s]); 
+	}*/
+    
+
+    // for one alignment position compute omega for all aktive bit_vectors in the correct reading frame combination
+    
+
+
+
+    // call pruning algo only once for every codonStrings and store omega in map
+    double omega;
+    map<vector<string>,double>::iterator oit = computedOmegas.find(codonStrings);
+    if(oit==computedOmegas.end()){
+      omega = codonevo->graphOmegaOnCodonAli(codonStrings, tree);
+      computedOmegas.insert(pair<vector<string>,double>(codonStrings,omega));
+    }else{
+      omega = oit->second;
+    }
+    
+
+
+    // update bit_vector constellation
+    map<unsigned, vector<int> >::iterator nextCodonIt = codonIt;
+    if(nextCodonIt != alignedCodons.end())
+      nextCodonIt++;
+    while((unsigned)aliPosIt->first >= (codonIt->first >> 8) && (unsigned)aliPosIt->first <= (nextCodonIt->first >> 8)){
+      unordered_map<bit_vector, int>::iterator bvAt;
+      for(int i=0; i<aliPosIt->second.oeStart.size(); i++){
+        bvAt = bvCount.find(aliPosIt->second.oeStart[i]->getBV());
+	if(bvAt == bvCount.end()){
+	  pair<unordered_map<bit_vector, int>::iterator,bool> result = bvCount.insert(pair<bit_vector, int>(aliPosIt->second.oeStart[i]->getBV(),0));
+	  bvAt = result.first;
+	}
+	bvAt->second++;
+
+	// add reading frame combination if new one occurs
+	unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator rfit = rfCombi.find(aliPosIt->second.oeStart[i]->getBV());
+	if(rfit == rfCombi.end()){
+	  vector<pair<vector<int>, cumValues> > vecPair;
+	  pair<unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator, bool> result = rfCombi.insert(pair<bit_vector, vector<pair<vector<int>, cumValues> > >(aliPosIt->second.oeStart[i]->getBV(), vecPair));
+	  rfit = result.first;
+	}
+	bool rfcIncluded = false;
+	pair<vector<int>, cumValues> oeRFcombi = setRFcombi(aliPosIt->second.oeStart[i]);
+	for(int rf = 0; rf <= rfit->second.size(); rf++){
+	  if(oeRFcombi.first == rfit->second[rf].first){
+	    rfcIncluded = true;
+	    break;
+	  }
+	}
+	if(! rfcIncluded)
+	  rfit->second.push_back(oeRFcombi);
+      }
+
+      for(int i=0; i<aliPosIt->second.oeEnd.size(); i++){
+        bvAt = bvCount.find(aliPosIt->second.oeEnd[i]->getBV());
+	if(bvAt == bvCount.end())
+	  throw ProjectError("Error in computeOmegaEff(): bit_vector ends that has never started!");
+	bvAt->second--;
+      }
+      aliPosIt++;
+    }
   }
-  
-  
-  
+
+  printTest(alignedCodons, aliPos);
 
 }
+
+
+
 
 
 // calculate a columnwise conservation score and output it (for each species) in wiggle format

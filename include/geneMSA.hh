@@ -20,6 +20,7 @@
 
 //forward declarations
 class OrthoGraph;
+struct cumValues; 
 
 class GeneMSA {
 public:
@@ -69,6 +70,7 @@ public:
     void printOrthoExons();
   void computeOmegas(vector<AnnoSequence*> const &seqRanges);
   void computeOmegasEff(vector<AnnoSequence*> const &seqRanges);
+  pair<vector<int>, cumValues> setRFcombi(OrthoExon *oe);
     void comparativeSignalScoring();
 
     // calculate a columnwise conservation score and output it (for each species) in wiggle format
@@ -105,5 +107,6 @@ private:
     vector< list<ExonCandidate*>* > exoncands;  // exon candidates found in the different species in a gene segment
     list<OrthoExon> orthoExonsList;		// list of ortholog exons found in a gene segment
 };
+
 
 #endif  // _GENEMSA
