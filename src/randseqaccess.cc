@@ -363,6 +363,7 @@ map<string,string> getFileNames (string listfile){
 	    stringstream stm(buf);
 	    string species, dir;
 	    if(stm >> species >> dir){
+		dir = expandHome(dir);
 		filenames[species] = dir;
 	    }
 	    else
