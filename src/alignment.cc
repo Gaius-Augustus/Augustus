@@ -661,6 +661,9 @@ void reduceOvlpRanges(list<Alignment*> &alis, size_t maxCov, float covPen){
 	(*ait)->printTextGraph(cout);
 	cout << endl;
 	}*/
+
+    delete [] colno;
+    delete [] row;
 }
 
 int Alignment::maxRange(){

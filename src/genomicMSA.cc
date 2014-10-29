@@ -543,8 +543,11 @@ void GenomicMSA::findGeneRanges(){
 	        //va->printTextGraph(cout);
 		alignment.push_back(va);
 	    }
-	    //else 
-	    //cout << "deleted (too short)" << endl;
+	    else{
+		//cout << "deleted (too short)" << endl;
+		delete va;
+		
+	    }
 	}
     }
     int sizeBeforeCapping = alignment.size();

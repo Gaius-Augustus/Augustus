@@ -1026,7 +1026,8 @@ char* Gene::getCodingSequence(AnnoSequence *annoseq) const{
 
 bool Gene::hasInFrameStop(AnnoSequence *annoseq) const{
     Seq2Int s2i(3);
-    const char * codingSeq = getCodingSequence(annoseq);
+    const char * seq = getCodingSequence(annoseq);
+    const char * codingSeq = seq;
     codingSeq += mod3(-frame); // if gene is incomplete, frame is the position of the first base
     while (strlen(codingSeq)>3){
 	try {
@@ -1037,6 +1038,7 @@ bool Gene::hasInFrameStop(AnnoSequence *annoseq) const{
 	} catch (...) {}// because of masking
 	codingSeq += 3;
     }
+    delete [] seq;
     return false;
 }
 
@@ -2141,7 +2143,8 @@ void Gene::printGFF() const{
 void Gene::printCodingSeq(AnnoSequence *annoseq) const {
     int linelength=100;
     int curlinelength=0;
-    string codingSeq = getCodingSequence(annoseq);
+    const char* seq = getCodingSequence(annoseq);
+    string codingSeq = seq;
     int offset = 0;    
     cout << "# coding sequence = [";
     curlinelength += 21;
@@ -2156,6 +2159,7 @@ void Gene::printCodingSeq(AnnoSequence *annoseq) const {
 
     }
     cout << "]" << endl;
+    delete [] seq;
 }
 
 // TODO: move this to GeneticCode
@@ -2182,7 +2186,8 @@ void Gene::printProteinSeq(AnnoSequence *annoseq) const {
     string prefix = "# protein sequence = [";
     
     // if gene is incomplete, frame is the position of the first base
-    string trans = getTranslation(getCodingSequence(annoseq) + mod3(-frame)); 
+    const char* codingSeq = getCodingSequence(annoseq);
+    string trans = getTranslation(codingSeq + mod3(-frame)); 
     int i = linelength - prefix.length();
     cout << prefix << trans.substr(0,i);
     while (i<trans.length()) {
@@ -2190,6 +2195,7 @@ void Gene::printProteinSeq(AnnoSequence *annoseq) const {
 	i += (linelength -2);
     }
     cout << "]" << endl;
+    delete [] codingSeq;
 }
 
 void Gene::printBlockSequences(AnnoSequence *annoseq) const {

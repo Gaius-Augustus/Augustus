@@ -362,6 +362,8 @@ void CompGenePred::start(){
 	for (int i=0; i<seqRanges.size(); i++) {
 		delete seqRanges[i];
 	}
+	// delete geneRange
+	delete geneRange;
     }
 
     GeneMSA::closeOutputFiles();
