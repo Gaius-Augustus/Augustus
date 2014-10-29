@@ -369,6 +369,7 @@ void CompGenePred::start(){
 	closeOutputFiles(initGenes);
     closeOutputFiles(baseGenes);
     closeOutputFiles(optGenes);
+    closeOutputFiles(sampledExons);
 
     // delete all trees                                           
     for(unordered_map< bit_vector, PhyloTree*>::iterator topit = GeneMSA::topologies.begin(); topit !=GeneMSA::topologies.end(); topit++){

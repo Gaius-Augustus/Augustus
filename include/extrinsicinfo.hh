@@ -361,6 +361,12 @@ public:
 	      delete [] localmalustable[type];
 	  delete [] localmalustable;
 	}
+	if(sourceKey)
+	    delete [] sourceKey;
+	if(individual_liability)
+	    delete [] individual_liability;
+	if(oneGroupOneGene)
+	    delete [] oneGroupOneGene;
     }
 
     SequenceFeatureCollection& getSequenceFeatureCollection(const char *seqname){
