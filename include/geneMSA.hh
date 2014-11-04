@@ -20,7 +20,14 @@
 
 //forward declarations
 class OrthoGraph;
-struct cumValues; 
+//struct cumValues;
+
+struct cumValues{
+  int count;
+  double omega;
+  double omegaSq;
+  cumValues() : count(0), omega(0), omegaSq(0) {}
+};
 
 class GeneMSA {
 public:
@@ -70,7 +77,7 @@ public:
     void printOrthoExons();
   void computeOmegas(vector<AnnoSequence*> const &seqRanges);
   void computeOmegasEff(vector<AnnoSequence*> const &seqRanges);
-  pair<vector<int>, cumValues> setRFcombi(OrthoExon *oe);
+  void printCumOmega();
     void comparativeSignalScoring();
 
     // calculate a columnwise conservation score and output it (for each species) in wiggle format
@@ -98,6 +105,7 @@ public:
 private:
   vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, const vector<vector<fragment>::const_iterator > &froms, map<unsigned, vector<int> > *alignedCodons = NULL, bool generateString=true, vector<vector<int> > *posStoredCodons = NULL);
     void cutIncompleteCodons(OrthoExon &oe);
+  cumValues* findCumValues(bit_vector bv, vector<int> rfc);
     static PhyloTree *tree;
     static CodonEvo *codonevo;
     vector<int> starts, ends; // gene ranges for each species
@@ -106,7 +114,10 @@ private:
     Alignment* alignment;            // alignment of regions which possibly belong to a gene
     vector< list<ExonCandidate*>* > exoncands;  // exon candidates found in the different species in a gene segment
     list<OrthoExon> orthoExonsList;		// list of ortholog exons found in a gene segment
+  unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > > cumOmega; // stores cumulative omega values for every reading frame combination and every bitvector that exist                                                                     
 };
+
+
 
 
 #endif  // _GENEMSA

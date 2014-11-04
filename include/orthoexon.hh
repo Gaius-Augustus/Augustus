@@ -42,6 +42,7 @@ public:
     int getAliEnd() const {return getAliStart() + getAliLen();}
     bool exonExists(int pos) const; // returns true if OE has a candidate exon at position pos
     void setOmega(double o){omega=o;}
+  void setOmega(double o, double osq, int oc, bool oeStart);
     void setSubst(int s){ subst=s;}
     void setConsScore(double c){cons=c;}
     void setDiversity(double d){diversity=d;}
@@ -49,6 +50,7 @@ public:
     void setLabelpattern(); // updates the labelpattern
     void setTree(PhyloTree* t);
     void setBV(bit_vector b){bv = b;}
+  vector<int> getRFC(vector<int> offsets);
     string getStoredLabelpattern() {return labelpattern;} // retrieving labelpattern without updating
     string getCurrentLabelpattern() { setLabelpattern(); return labelpattern;} //retrieving labelpattern with updating
 
@@ -64,6 +66,8 @@ public:
 private:
     int_fast64_t key; // key encodes all of: aliStart aliEnd type lenMod3
     double omega;
+  double omegaSquared;
+  int omegaCount;
     int subst;
     double cons; // conservation score
     double diversity; // sum of branch lengths of the subtree induced by the OrthoExon (measure of phylogenetic diversity)
