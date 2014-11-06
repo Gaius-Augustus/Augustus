@@ -8,6 +8,7 @@
  * date    |   author           |  changes
  * --------|--------------------|------------------------------------------
  * 03.08.13| Mario Stanke       | creation of the file
+ * 06.11.14| Lars Romoth        | overhaul of capAliSize
  *         |                    |                                           
  **********************************************************************/
 
@@ -343,28 +344,70 @@ void capAliSize(list<Alignment*> &alis, int maxRange){
 	     */
 
 	    priority_queue<BoundaryFragment, vector<BoundaryFragment>, CompareBoundaryFragment > q;
-	    vector<size_t> curbestidx(k, 0), bidx(k, 0); // the index into the frags vector for each row 
-	    int maxgapsize = -1, maxSeqLen = -1;
-	    int gapsize = 0;
+	    vector<int> bidx(k, -1);
+	    vector<int> aliPosCutScore(min(a->aliLen,maxRange + 1),0), maxIntraGapSize(k,0);
+	    int maxAliPos = maxRange;
+	    vector<pair<size_t,size_t>> thresholds; // <threshold,bonus>
+	    thresholds.push_back(make_pair(0,0)); thresholds.push_back(make_pair(maxRange/2,maxRange/2)); thresholds.push_back(make_pair(2*maxRange/3,2*maxRange/3));
+	    vector<size_t> actThresholdIndex(k,0);
+
 	    for (size_t s=0; s<k; s++)
 		if (a->rows[s] && !a->rows[s]->frags.empty()){
 		    q.push(BoundaryFragment(s, a->rows[s]->frags[0].aliPos)); // add first fragment of every alignment row
-		    gapsize += a->rows[s]->gapLenAfterFrag(0);
 		}
-	    
 	    while (!q.empty()){
 		// retrieve leftmost boundary fragment
 		BoundaryFragment bf = q.top();
 		size_t s = bf.first;
-		if (a->rows[s]->frags[bidx[s]].chrEnd() - a->rows[s]->frags[0].chrPos + 1 > maxRange){
+		// if the next fragment (already verified) exceeds the maxAliPos (max allowed position) cut the alignment at the position with maximum cutScore and end the while loop by emptying the queue
+		if (a->rows[s]->frags[bidx[s] + 1].chrPos - a->rows[s]->frags[0].chrPos + 1 > maxAliPos){
+		    //cout << a->rows[s]->seqID << ": " << a->rows[s]->frags[bidx[s] + 1].chrPos << " - " << a->rows[s]->frags[0].chrPos + 1 << " > " << maxRange << endl;
+
+		    /*int testMax = 0;
+		      for (size_t spe = 0; spe < k; spe++){
+		      if (a->rows[spe] && !a->rows[spe]->frags.empty()){
+		      int test = a->rows[spe]->chrEnd() - a->rows[spe]->frags[0].chrPos + 1;
+		      if (test > testMax)
+		      testMax = test;
+		      }
+		      }
+		      int testLen = a->aliLen;*/
+
+		    // update maxAliPos, if we found a smaller one
+		    if (maxAliPos > a->rows[s]->frags[bidx[s] + 1].aliPos - 1){
+			maxAliPos = a->rows[s]->frags[bidx[s] + 1].aliPos - 1;
+		    }
+		    // set every score after maxAliPos to -1 (should not be considered anymore)
+		    for (size_t actAliPos = maxAliPos + 1; actAliPos < aliPosCutScore.size(); actAliPos++){
+			aliPosCutScore[actAliPos] = -1;             // dont cut here! Because of this we set the score to a negative number 
+		    }
+		    // search for the maxCutScore and the related cutAliPos
+		    int maxCutScore = 0;
+		    //int lastScore = 0;
+		    size_t cutAliPos = 0;
+		    for (size_t actAliPos = 0; actAliPos < aliPosCutScore.size(); actAliPos++){
+			//if (/*aliPosCutScore[actAliPos] > 0 &&*/ aliPosCutScore[actAliPos] != lastScore)
+			//	cout << actAliPos << ": " << aliPosCutScore[actAliPos] << endl;
+			//    lastScore = aliPosCutScore[actAliPos];
+			if (aliPosCutScore[actAliPos] >= maxCutScore){
+			    maxCutScore = aliPosCutScore[actAliPos];
+			    cutAliPos = actAliPos;
+			}
+		    }
+
+		    /*cout << "CutAlnPart:" << endl;
+		      for (size_t sss = 0; sss < a->rows.size(); sss++){
+		      if (a->rows[sss]){
+		      for (int i = 0; i < a->rows[sss]->frags.size(); i++){
+		      if ((i+3 >= a->rows[sss]->frags.size() || (i+3 < a->rows[sss]->frags.size() && a->rows[sss]->frags[i+3].aliPos > cutAliPos)) && (i-3 < 0 || (i-3 >= 0 && a->rows[sss]->frags[i-3].aliPos < cutAliPos)))
+		      cout << "CutFragments of " << a->rows[sss]->seqID << ": ChrPos: " << a->rows[sss]->frags[i].chrPos << " bis " << a->rows[sss]->frags[i].chrEnd() << " ; AlnPos: " << a->rows[sss]->frags[i].aliPos << " bis " << a->rows[sss]->frags[i].aliPos + a->rows[sss]->frags[i].len - 1 << endl;
+		      }
+		      }
+		      }*/
 		    // with this boundary fragment the alignment becomes too long
-		    // create new alignment from initial part up to curbestidx
+		    // create new alignment from initial part up to cutAliPos
 		    Alignment *newAli = new Alignment(k);
 		    int newAliLen = 0, offset = INT_MAX;
-		    //cout << "boundary index: ";
-		    //for (size_t ss = 0; ss < k; ss++)
-		    //		cout << curbestidx[ss] << " ";
-		    //cout << endl << " maxgapsize= " << maxgapsize << endl;
 		    for (size_t ss = 0; ss < k; ss++){
 			if (a->rows[ss]){
 			    // AlignmentRow *&row = newAli->rows[ss];
@@ -372,17 +415,34 @@ void capAliSize(list<Alignment*> &alis, int maxRange){
 			    newAli->rows[ss]->seqID = a->rows[ss]->seqID;
 			    newAli->rows[ss]->strand = a->rows[ss]->strand;
 			    vector<fragment>::iterator first = a->rows[ss]->frags.begin(), 
-				last = first + curbestidx[ss] + 1, it;
-			    if (last > a->rows[ss]->frags.end())
-				last = a->rows[ss]->frags.end(); // can be 1 past the end
-			    // copy the initial part
-			    for (it = first; it != last; it++)
-				newAli->rows[ss]->addFragment(*it);
+				last = a->rows[ss]->frags.end(), it, itCutPos;
+
+			    // copy the initial part, save the cutPosIterator and test if a hardCut (cut throw fragment) is necessary
+			    bool hardCut = false;
+			    itCutPos = last;
+			    for (it = first; it != last; it++){
+				if ((*it).aliPos + (*it).len - 1 <= cutAliPos)
+				    newAli->rows[ss]->addFragment(*it);
+				else{
+				    itCutPos = it;
+				    if ((*it).aliPos <= cutAliPos)
+					hardCut = true;
+				    break;
+				}
+			    }
+			    // do the hardCut
+			    if (hardCut){
+				newAli->rows[ss]->addFragment(*itCutPos);
+				newAli->rows[ss]->frags.back().len = cutAliPos - (*itCutPos).aliPos + 1;
+				(*itCutPos).len -= newAli->rows[ss]->frags.back().len;
+				(*itCutPos).aliPos = cutAliPos + 1;
+				(*itCutPos).chrPos = (*itCutPos).chrPos + newAli->rows[ss]->frags.back().len;
+			    }
 			    // update newAliLen as maximum of all new alignment positions
 			    if (newAli->rows[ss]->aliEnd() > newAliLen)
 				newAliLen = newAli->rows[ss]->aliEnd();
 			    // delete the fragments just moved to the new alignment from the old alignment a
-			    a->rows[ss]->frags.erase(first, last);
+			    a->rows[ss]->frags.erase(first, itCutPos);
 			    a->rows[ss]->setCumFragLen(a->rows[ss]->getCumFragLen() - newAli->rows[ss]->getCumFragLen());
 			    if (a->rows[ss]->frags.empty()){
 				delete a->rows[ss]; 
@@ -398,9 +458,26 @@ void capAliSize(list<Alignment*> &alis, int maxRange){
 		    // left-shift all alignment positions in the remaining alignment fragments by offset
 		    a->shiftAliPositions(-offset);
 		    // append remaining alignment to the end, required further shortening will be done when its turn comes in the main loop
+
+
+		    /*int test1Max = 0, test2Max = 0;
+		      for (size_t spe = 0; spe < k; spe++){
+		      if (newAli->rows[spe] && !newAli->rows[spe]->frags.empty()){
+		      int test1 = newAli->rows[spe]->chrEnd() - newAli->rows[spe]->frags[0].chrPos + 1;
+		      if (test1 > test1Max)
+		      test1Max = test1;
+		      }
+		      if (a->rows[spe] && !a->rows[spe]->frags.empty()){
+		      int test2 = a->rows[spe]->chrEnd() - a->rows[spe]->frags[0].chrPos + 1;
+		      if (test2 > test2Max)
+		      test2Max = test2;
+		      }
+		      }
+		      cerr << a->rows[s]->seqID << ": " << testLen << " = " << newAli->aliLen << " + " << a->aliLen << " (" << newAli->aliLen + a->aliLen << ") " << " --- " << testMax << " >= " << test1Max << " + " << test2Max << endl;*/
+
 		    if (a->numFilledRows() > 1)
 			alis.push_back(a);
-		    else // remaining alignment empty of has just one row
+		    else // remaining alignment empty or has just one row
 			delete a;
 		    // replace old long alignment with its initial part
 		    *ait = newAli;
@@ -409,31 +486,57 @@ void capAliSize(list<Alignment*> &alis, int maxRange){
 			q.pop();
 		} else {
 		    q.pop();
-		    gapsize -= a->rows[s]->gapLenAfterFrag(bidx[s]);
+		    // actualize the fragment-index of the actual species to the actual fragment
 		    bidx[s]++;
-		    if (bidx[s] < a->rows[s]->frags.size()){
-			gapsize += a->rows[s]->gapLenAfterFrag(bidx[s]);
-			int seqlen = a->rows[s]->frags[bidx[s]].chrEnd() - a->rows[s]->frags[0].chrPos + 1;
-			if (seqlen > maxSeqLen){
-			    if (maxSeqLen < 2*maxRange/3 && seqlen >= 2*maxRange/3 && seqlen <= maxRange){
-				// reached 2/3 threshold just now,
-				// start determining the best cutoff point from scratch
-				maxgapsize = -1; // this will be updated immediately
-			    }
-			    maxSeqLen = seqlen;
+		    // if the end of the actual fragment is bigger than maxRange, then update maxAliPos
+		    if (a->rows[s]->frags[bidx[s]].chrEnd() - a->rows[s]->frags[0].chrPos + 1 > maxRange){
+			size_t tempMaxAliPos = a->rows[s]->frags[bidx[s]].aliPos + (maxRange - (a->rows[s]->frags[bidx[s]].chrPos - a->rows[s]->frags[0].chrPos + 1));
+			if (maxAliPos > tempMaxAliPos)
+			    maxAliPos = tempMaxAliPos;
+		    }
+
+		    int actFragStart = a->rows[s]->frags[bidx[s]].chrPos - a->rows[s]->frags[0].chrPos + 1;
+		    int actFragEnd = a->rows[s]->frags[bidx[s]].chrEnd() - a->rows[s]->frags[0].chrPos + 1;
+
+		    // if this is not the last fragment
+		    if (bidx[s] + 1 < a->rows[s]->frags.size()){
+			// calculate the size of the gap after this fragment until the next fragment
+			size_t tempSize = a->rows[s]->gapLenAfterFrag(bidx[s]);
+			// save the maximum gapSize of this species to add this as score for every possible cut position after the last fragment of this species
+			if (maxIntraGapSize[s] < tempSize)
+			    maxIntraGapSize[s] = tempSize;
+			int nextFragStart = a->rows[s]->frags[bidx[s] + 1].chrPos - a->rows[s]->frags[0].chrPos + 1;
+			// search for the right actual threshold (normaly this loop will only )
+			while (actThresholdIndex[s]+1 < thresholds.size() && nextFragStart >= thresholds[actThresholdIndex[s]+1].first){
+			    actThresholdIndex[s]++;
 			}
-			if (gapsize > maxgapsize){
-			    // the cut is made at the widest gap in the last third
-			    // unless there is no fragment in the last third, in which case
-			    // it is made at the widest overall gap
-			    maxgapsize = gapsize;
-			    curbestidx = bidx; 
-			    //cout << "new curbestidx: ";
-			    //for (size_t ss = 0; ss < k; ss++)
-			    //	cout << curbestidx[ss] << " ";
-			    //cout << endl;
+			// from end of actual fragment to the position before the start of the next fragment
+			for (size_t actAliPos = a->rows[s]->frags[bidx[s]].aliPos + a->rows[s]->frags[bidx[s]].len - 1; actAliPos < min(maxAliPos + 1, a->rows[s]->frags[bidx[s] + 1].aliPos); actAliPos++){
+			    aliPosCutScore[actAliPos] += tempSize + thresholds[actThresholdIndex[s]].second;
 			}
-			q.push(BoundaryFragment(s, a->rows[s]->frags[bidx[s]].aliPos));
+
+			// from start of next fragment to 1 pos before end of next fragment (or maxAliPos)
+			int tempChrPos = nextFragStart - a->rows[s]->frags[bidx[s] + 1].aliPos;
+			for (size_t actAliPos = a->rows[s]->frags[bidx[s] + 1].aliPos; actAliPos < min(maxAliPos + 1, a->rows[s]->frags[bidx[s] + 1].aliPos + a->rows[s]->frags[bidx[s] + 1].len - 1); actAliPos++){
+			    // if the fragment lies on the next threshold or it is already the last threshold, only add bonusScore until one position before the last position in the threshold (because we cut cut behind this position and for cutting behind the last position we have another score)
+			    if (actThresholdIndex[s] + 1 == thresholds.size() || (actThresholdIndex[s] + 1 < thresholds.size() && tempChrPos + actAliPos < thresholds[actThresholdIndex[s] + 1].first)){
+				aliPosCutScore[actAliPos] += thresholds[actThresholdIndex[s]].second;
+			    }else{break;}
+			}
+			// add the next fragment of this species and this alignment to the queue
+			q.push(BoundaryFragment(s, a->rows[s]->frags[bidx[s] + 1].aliPos));
+		    }else{ // if this is the last fragment add the 1 + maximum gap size of this species to score (and dont forget the threshold bonus)
+			for (size_t actAliPos = a->rows[s]->frags[bidx[s]].aliPos + a->rows[s]->frags[bidx[s]].len - 1; actAliPos < aliPosCutScore.size(); actAliPos++){
+			    aliPosCutScore[actAliPos] += maxIntraGapSize[s] + 1 + thresholds[actThresholdIndex[s]].second;
+			}
+		    }
+
+		    // if the fragment lies exactly on the threshold we had to add the threshold score for the positions of the fragment who came behind the threshold
+		    if (actFragStart < thresholds[actThresholdIndex[s]].first && actFragEnd >= thresholds[actThresholdIndex[s]].first){
+			// from fragmentCutPos to one pos before end of fragment (or maxAliPos)
+			for (size_t actAliPos = a->rows[s]->frags[bidx[s]].aliPos + (thresholds[actThresholdIndex[s]].first - actFragStart); actAliPos < min(maxAliPos + 1, a->rows[s]->frags[bidx[s]].aliPos + a->rows[s]->frags[bidx[s]].len - 1); actAliPos++){
+			    aliPosCutScore[actAliPos] += thresholds[actThresholdIndex[s]].second;
+			}
 		    }
 		}
 	    }
