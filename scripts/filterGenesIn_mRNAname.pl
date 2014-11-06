@@ -70,8 +70,8 @@ foreach(@data) {
     }
 
     if($firstPrintFlag==1 and length($head)>=2){
-
-	@line = `grep $genename $goodfilename`;
+	# correction by Simone Lange on November 6th 2014
+	@line = `grep -w $genename $goodfilename`;
 	if(length($line[0])>=2){
 		#print "Got into head printing $genename\n";
 		print $head;
