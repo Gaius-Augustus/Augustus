@@ -81,10 +81,10 @@ GeneMSA::GeneMSA(RandSeqAccess *rsa, Alignment *a) {
 		}
 	    // ensure that gene predictions on each region will be done IN ONE PIECE
 	    int geneRangeLen = ends[s]-starts[s]+1;
-	    if (geneRangeLen > maxDNAPieceSize){
+	    if (geneRangeLen > maxDNAPieceSize + 2*padding){
 		cerr << "Warning: length of gene range(" << geneRangeLen << ") is species " << rsa->getSname(s) <<  " exceeds maxDNAPieceSize(" 
-		     << maxDNAPieceSize << "). Will shorten sequence at both ends to achieve a length of " << maxDNAPieceSize << endl;
-		int tooMuch = geneRangeLen - maxDNAPieceSize;
+		     << maxDNAPieceSize << "). Will shorten sequence at both ends to achieve a length of " << maxDNAPieceSize + 2*padding << endl;
+		int tooMuch = geneRangeLen - (maxDNAPieceSize + 2*padding);
 		starts[s] += (tooMuch + 1)/2;
 		ends[s] -= (tooMuch + 1)/2;
 		// delete all fragments that do not overlap with the gene range  

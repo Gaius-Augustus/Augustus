@@ -364,10 +364,13 @@ void Graph::addBackEdgesComp(){
           auxiliaryNode->n_type=IR;                             // maybe another node_type later
           auxiliaryNodeList.push_back(auxiliaryNode);
         }
-        // add edge from auxiliaryNode to startEdge->to 
+        // add edge from auxiliaryNode to startEdge->to
         auxiliaryNode->prevNontrivialNeutNode = (*actSource);
         Edge edgeNew(startEdge->to,false);
         auxiliaryNode->edges.push_back(edgeNew);
+        // delete the startEdge (this edge is not forbidden but also not necessary and this step reduces the size of the graph)
+        startEdge = (*actSource)->edges.erase(startEdge);
+        startEdge--;
       }
       int lastEnd = (*actSource)->begin + 1;
       auxiliaryNodeList.sort(compareNodeEnds);
@@ -448,7 +451,7 @@ void Graph::tarjanAlg(Node* from, stack<Node*> &S, size_t &index){
       actNode->label = 0;
       component.push_back(actNode);
     }while (from != actNode);
-    if (component.size() > 1){cerr << "There is a loop in the graph." << endl;}
+    if (component.size() > 1){cerr << "There is a loop in the graph of the cgp. It is possible, that the result is not the optimum!" << endl;}
   }
 }
 
