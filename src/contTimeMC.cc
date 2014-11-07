@@ -649,6 +649,41 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
     return omegas[maxU];
 }
 
+// get vector of log likelihoods of omegas for one single codon tuple
+
+vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *tree, int &argmaxLoglik){
+    if (seqtuple.size() != tree->numSpecies())
+        throw ProjectError("CodonEvo::logLikForCodonTuple: inconsistent number of species.");
+    for(int i=1; i<seqtuple.size();i++){
+        if(seqtuple[0].length() != 3 || seqtuple[i].length() != 3){
+            throw ProjectError("CodonEvo::loglikForCodonTuple: codon tuple has not length 3");
+        }
+    }
+    int numCodons;
+    vector<double> logliks(k, 0.0);
+    Seq2Int s2i(3);
+    double maxLoglik = -numeric_limits<double>::max();
+    for (int u=0; u < k; u++){ // loop over omegas                                                                                
+	vector<int> codontuple(tree->numSpecies(), 64); // 64 = missing codon                                                     
+	numCodons = 0;
+	for(size_t s=0; s < tree->numSpecies(); s++){
+	    if (seqtuple[s].size()>0)
+		try {
+		    codontuple[s] = s2i(seqtuple[s].c_str());
+		    numCodons++;
+		} catch(...){} // gap or n character                                                                              
+	}
+	if (numCodons >= 2){
+	    logliks[u] = tree->pruningAlgor(codontuple, this, u);
+	    if(logliks[u] > maxLoglik){
+		maxLoglik = logliks[u];
+		argmaxLoglik = u;
+	    }
+	}
+    }
+    return logliks;
+}
+
 double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
     if (seqtuple.size() != tree->numSpecies())
 	throw ProjectError("CodonEvo::estOmegaOnSeqTuple: inconsistent number of species.");
@@ -689,7 +724,7 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree)
     meanloglik /= k;
     sum = 0.0;
     for (int u=0; u < k; u++)
-	sum += postprobs[u] = exp(logliks[u] + meanloglik) * omegaPrior[u];
+	sum += postprobs[u] = exp(logliks[u] - meanloglik) * omegaPrior[u];
     //    cout << "posterior distribution of omega" << endl;
     for (int u=0; u < k; u++){
 	postprobs[u] /= sum;

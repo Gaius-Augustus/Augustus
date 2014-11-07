@@ -23,10 +23,18 @@ class OrthoGraph;
 //struct cumValues;
 
 struct cumValues{
-  int count;
-  double omega;
-  double omegaSq;
-  cumValues() : count(0), omega(0), omegaSq(0) {}
+    int count;
+    double omega;
+    double omegaSq;
+    vector<double> logliks;
+    cumValues() : count(0), omega(0), omegaSq(0) {}
+    void addLogliks(vector<double>* ll){
+	if(logliks.size() == 0)
+	    logliks.resize(ll->size(),0.0);
+	for(int u = 0; u < ll->size(); u++){
+	    logliks[u] += (*ll)[u];
+	}
+    }
 };
 
 class GeneMSA {

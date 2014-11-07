@@ -99,6 +99,7 @@ public:
      */
     void setOmegas(int k);
     void setPrior(double sigma = 0.2);
+    double getPrior(int u){return omegaPrior[u];}
     vector<double> *getOmegas(){return &omegas;}
     double getOmega(int u){return omegas[u];}
     int getK(){ return k;}
@@ -137,6 +138,8 @@ public:
      */
     double estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 			      int &subst); // output variables
+    // store log likeliehoods for all omegas for one codon tuple
+    vector<double> loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *tree, int &argmaxLoglik);
     // for GRK proposal
     double graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree);
     /* 

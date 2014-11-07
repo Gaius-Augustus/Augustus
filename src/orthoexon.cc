@@ -66,32 +66,55 @@ void OrthoExon::setTree(PhyloTree* t) {
 
 
 vector<int> OrthoExon::getRFC(vector<int> offsets){
-  vector<int> rfc;
-  for (size_t s = 0; s < orthoex.size(); s++){
-    if(orthoex[s] == NULL)
-      rfc.push_back(-1);
-    else
-      rfc.push_back((offsets[s] + orthoex[s]->getFirstCodingBase()) % 3);
-  }
-  return rfc;
+    vector<int> rfc;
+    for (size_t s = 0; s < orthoex.size(); s++){
+	if(orthoex[s] == NULL)
+	    rfc.push_back(-1);
+	else
+	    rfc.push_back((offsets[s] + orthoex[s]->getFirstCodingBase()) % 3);
+    }
+    return rfc;
 }
 
-void OrthoExon::setOmega(double o, double osq, int oc, bool oeStart){
-  if(oeStart){
-    omega = o;
-    omegaSquared = osq;
-    omegaCount = oc;
-    cout<<"set Omega at oeStart: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\t(omega, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<endl;
-  }else{
-    // if(o == 0 || omega == o || osq == 0 || omegaSquared == osq || oc == 0 || omegaCount == oc){
-    //  cout<<"(omega, omega_squared, count) = ("<<o<<", "<<osq<<", "<<oc<<")"<<endl;
-    //  throw ProjectError("Internal error in OrthoExon::setOmega(): no omega was calculated for this orthoExon");
-    //}
-    omegaCount = oc - omegaCount;
-    omega = (o - omega)/omegaCount;
-    omegaSquared = (osq - omegaSquared)/omegaCount;
-    cout<<"set Omega at oeEnd: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\t(omega, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<endl;
-  }
+void OrthoExon::setOmega(double o, double osq, int oc, vector<double>* llo, CodonEvo* codonevo , bool oeStart){
+    if(oeStart){
+	omega = o;
+	omegaSquared = osq;
+	omegaCount = oc;
+	loglikOmegas = *llo;
+	//cout<<"set Omega at oeStart: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\t(omega, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<endl;
+    }else{
+	omegaCount = oc - omegaCount;
+	omega = (o - omega)/omegaCount;
+	omegaSquared = (osq - omegaSquared)/omegaCount;
+
+	//calculate posterior mean of omega
+	int k = llo->size();
+	double meanloglik(0.0);
+	vector<double> postprobs(k, 0.0);
+	if(loglikOmegas.size() != k)
+	    loglikOmegas.resize(k,0.0);
+	for (int u=0; u < k; u++){
+	    loglikOmegas[u] = (*llo)[u] - loglikOmegas[u];
+	    meanloglik += loglikOmegas[u];
+	}
+	meanloglik /= k;
+	double sum = 0.0;
+	for (int u=0; u < k; u++)
+	    sum += postprobs[u] = exp(loglikOmegas[u] - meanloglik) * codonevo->getPrior(u);
+	//    cout << "posterior distribution of omega" << endl;                                                                          
+	for (int u=0; u < k; u++){
+	    postprobs[u] /= sum;
+	    //      cout << omegas[u] << " " << postprobs[u] << endl;                                                                     
+	}
+	Eomega = 0.0;
+	for (int u=0; u < k; u++){
+	    Eomega += postprobs[u] * codonevo->getOmega(u);
+	}
+	omega = Eomega;
+
+	//cout<<"set Omega at oeEnd: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\t(omega, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<" Eomega: "<<Eomega<<endl;
+    }
 }
 
 
