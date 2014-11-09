@@ -51,6 +51,7 @@ GeneMSA::GeneMSA(RandSeqAccess *rsa, Alignment *a) {
     if (alignment->numRows() != rsa->getNumSpecies())
 	throw ProjectError("Error in GeneMSA: Number of species in alignment (" + itoa(alignment->numRows())
 			   + ") is not matching the one in the tree (" + itoa(rsa->getNumSpecies()) + ").");
+    ltree = NULL; // locus/gene tree, may be different from species tree
     exoncands.resize(alignment->numRows(), NULL);
     /** construct the gene ranges
      * now: simple copy. TODO: extend region when apparently part of the alignment is missing
@@ -1140,6 +1141,18 @@ void GeneMSA::comparativeSignalScoring(){
     cout << "exiting comparativeSignalScoring" << endl;
 }
 
+/* constructTree
+ * creates, stores are returns the locus tree for the sequence tuple
+ * The locus tree is specific to for the alignment and the aligned sequences.
+ * It may be different (also in topology) from the species tree of which we
+ * consider only one, because of duplications and paralogy.
+ */
+LocusTree *GeneMSA::constructTree(){
+    // Charlotte Janas playground
+    ltree = new LocusTree();
+    // construct a tree from the alignment
+    return ltree;
+} 
 
 
 

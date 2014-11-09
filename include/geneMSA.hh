@@ -83,10 +83,12 @@ public:
     void printGeneRanges();
     void printExonCands();
     void printOrthoExons();
-  void computeOmegas(vector<AnnoSequence*> const &seqRanges);
-  void computeOmegasEff(vector<AnnoSequence*> const &seqRanges);
-  void printCumOmega();
+    void computeOmegas(vector<AnnoSequence*> const &seqRanges);
+    void computeOmegasEff(vector<AnnoSequence*> const &seqRanges);
+    void printCumOmega();
     void comparativeSignalScoring();
+    // Charlotte Janas playground
+    LocusTree *constructTree(); // creates, stores are returns the locus tree for the sequence tuple
 
     // calculate a columnwise conservation score and output it (for each species) in wiggle format
     void printConsScore(vector<AnnoSequence*> const &seqRanges, string outdir);
@@ -113,8 +115,9 @@ public:
 private:
   vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, const vector<vector<fragment>::const_iterator > &froms, map<unsigned, vector<int> > *alignedCodons = NULL, bool generateString=true, vector<vector<int> > *posStoredCodons = NULL);
     void cutIncompleteCodons(OrthoExon &oe);
-  cumValues* findCumValues(bit_vector bv, vector<int> rfc);
+    cumValues* findCumValues(bit_vector bv, vector<int> rfc);
     static PhyloTree *tree;
+    LocusTree *ltree;
     static CodonEvo *codonevo;
     vector<int> starts, ends; // gene ranges for each species
     vector<int> offsets; // this many bases are upstream from the region

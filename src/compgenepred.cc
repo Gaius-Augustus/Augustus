@@ -79,6 +79,7 @@ void CompGenePred::start(){
     GeneMSA::setTree(&tree);
     OrthoGraph::numSpecies = OrthoGraph::tree->numSpecies();
     Boolean noprediction = false;
+    Boolean useLocusTrees = false; // reestimate tree for each gene range
 
 #ifdef DEBUG
     cout << "-------------------------------\nparameters phylogenetic model\n-------------------------------" << endl;
@@ -107,6 +108,10 @@ void CompGenePred::start(){
     try {
 	noprediction = Properties::getBoolProperty("noprediction");
     } catch (...) {}
+    try {
+	useLocusTrees = Properties::getBoolProperty("locustree");
+    } catch (...) {}
+    
     if(Constant::alternatives_from_evidence){
 	cerr << "Warning: The option 'alternatives_from_evidence' is only available in the single species mode. Turned it off." << endl;
 	Constant::alternatives_from_evidence=false;
@@ -215,6 +220,10 @@ void CompGenePred::start(){
     while (GeneMSA *geneRange = msa.getNextGene()) {
 	cout << "processing next gene range:" << endl;
 	geneRange->printStats();
+	
+	if (useLocusTrees){ // Charlotte Janas playground, off by default
+	    geneRange->constructTree();
+	}
 
         OrthoGraph orthograph;
 	vector<AnnoSequence*> seqRanges(speciesNames.size());

@@ -146,4 +146,13 @@ public:
     void MAPbacktrack(std::vector<int> &labels, Treenode* root, int bestAssign, bool fixLeafLabels);
 };
 
+
+/*
+ * Locus tree
+ * Charlotte Janas playground
+ */
+class LocusTree {
+
+};
+
 #endif

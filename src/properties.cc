@@ -176,6 +176,7 @@ HINTSFILE_KEY,
 "introns",
 "keep_viterbi",
 "lossweight", // temp
+"locustree",
 "maxDNAPieceSize",
 "maxOvlp",
 "maxtracks",
