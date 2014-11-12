@@ -768,9 +768,13 @@ void GeneMSA::printCumOmega(){
 void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
     cout<<"computing omega for each ortho exon."<<endl;
 
-    // treat forward and reverse strand seperately
+    // treat forward and reverse strand seperately (might be done more efficiently)
     for( bool plusStrand : {true, false}){
-
+	/*if(plusStrand){
+	    cout<<"--- processing ortho exons on forward strand ---"<<endl;
+	}else{
+	    cout<<"--- processing ortho exons on reverse strand ---"<<endl;
+	    }*/
 	vector<vector<fragment>::const_iterator > froms(numSpecies());
 	for (size_t s=0; s < numSpecies(); s++)
 	    if (alignment->rows[s])
@@ -785,7 +789,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 	for (list<OrthoExon>::iterator oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
 	    if(isOnFStrand(oe->getStateType()) != plusStrand)
 		continue;
-      
+	    //printSingleOrthoExon(*oe, false);
 	    // store start and end information
 	    bool aliStart = true;
 	    for (map<int, posElements>::iterator aliPosIt : { aliPos.find(oe->getAliStart()), aliPos.find(oe->getAliEnd()) }) { 
@@ -824,7 +828,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 	unordered_map<bit_vector, int> bvCount;
 
 	map<int, posElements>::iterator aliPosIt = aliPos.begin();
-	map<vector<string>,double> computedOmegas;
+	map<vector<string>,pair<double,vector<double> > > computedOmegas;
 
 	for(map<unsigned, vector<int> >::iterator codonIt = alignedCodons.begin(); codonIt != alignedCodons.end(); codonIt++){
 	    //cout<<"codon: "<<(codonIt->first >> 8)<<endl;
@@ -906,9 +910,6 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 		aliPosIt++;
 	    }
 
-
-
-
 	    // compute omega for current codon alignment
     
 	    // generate array of strings representing one codon alignment
@@ -952,15 +953,18 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 			double omega;
 			vector<double> loglikOmega;
 			int argmaxLoglik = -1;
-			map<vector<string>,double>::iterator oit = computedOmegas.find(codonStrings);
+			map<vector<string>,pair<double,vector<double> > >::iterator oit = computedOmegas.find(codonStrings);
 			if(oit==computedOmegas.end()){
 			    loglikOmega = codonevo->loglikForCodonTuple(codonStrings, tree, argmaxLoglik);
+			    //    omega = codonevo->graphOmegaOnCodonAli(codonStrings, tree);
 			    if(argmaxLoglik == -1)
 				throw ProjectError("Internal error in computeOmegaEff(): no maximal log likelihood found");
 			    omega = codonevo->getOmega(argmaxLoglik);
-			    computedOmegas.insert(pair<vector<string>,double>(codonStrings,omega));
+			    pair<double,vector<double> > p = make_pair(omega,loglikOmega);
+			    computedOmegas.insert(pair<vector<string>,pair<double,vector<double> > >(codonStrings,p));
 			}else{
-			    omega = oit->second;
+			    omega = oit->second.first;
+			    loglikOmega = oit->second.second;
 			    
 			}
 			//cout<<"omega: "<<omega<<endl;

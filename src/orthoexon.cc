@@ -86,10 +86,14 @@ void OrthoExon::setOmega(double o, double osq, int oc, vector<double>* llo, Codo
     }else{
 	omegaCount = oc - omegaCount;
 	omega = (o - omega)/omegaCount;
+	if(omega < 0)
+	    omega = -1;                                                                                                              
 	omegaSquared = (osq - omegaSquared)/omegaCount;
 
+	
 	//calculate posterior mean of omega
 	int k = llo->size();
+	//cout<<"number of omegas: "<<k<<endl;
 	double meanloglik(0.0);
 	vector<double> postprobs(k, 0.0);
 	if(loglikOmegas.size() != k)
@@ -102,18 +106,22 @@ void OrthoExon::setOmega(double o, double osq, int oc, vector<double>* llo, Codo
 	double sum = 0.0;
 	for (int u=0; u < k; u++)
 	    sum += postprobs[u] = exp(loglikOmegas[u] - meanloglik) * codonevo->getPrior(u);
-	//    cout << "posterior distribution of omega" << endl;                                                                          
+	//  cout << "posterior distribution of omega" << endl;                                                                          
 	for (int u=0; u < k; u++){
 	    postprobs[u] /= sum;
-	    //      cout << omegas[u] << " " << postprobs[u] << endl;                                                                     
+	    //cout << codonevo->getOmega(u) << " " << postprobs[u] << endl;
 	}
 	Eomega = 0.0;
 	for (int u=0; u < k; u++){
 	    Eomega += postprobs[u] * codonevo->getOmega(u);
 	}
-	omega = Eomega;
-
 	//cout<<"set Omega at oeEnd: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\t(omega, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<" Eomega: "<<Eomega<<endl;
+	if(omega >= 0)
+	    omega = Eomega;
+	else
+	    omega = -1;
+    
+	
     }
 }
 
