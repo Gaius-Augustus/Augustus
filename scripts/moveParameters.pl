@@ -34,12 +34,11 @@ if($@){
 
 # retrieve files that need to be copied:
 my $speciesdir = "$ARGV[0]/$species";
-print "retrieving files at $speciesdir\n";
 my %filehash;
 opendir my($specdir), $speciesdir or die "Could not open directory $ARGV[0]!\n";
 while( my $file = readdir($specdir)){
     if(not($file =~m/^\./)){
-	open(INFILE, "<", $file) or die ("Could not open file $file!\n");
+	open(INFILE, "<", "$speciesdir/$file") or die ("Could not open file $speciesdir/$file!\n");
 	$fstr = $file;
 	$fstr =~ s/$species/$ARGV[1]/;
 	open(OUTFILE, ">", "$targetdir/$fstr") or die ("Could not open output file $targetdir/$fstr!\n");
