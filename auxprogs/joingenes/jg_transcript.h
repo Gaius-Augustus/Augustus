@@ -105,6 +105,7 @@ class Transcript{
 		if (cdsback != tes){
 		    for (list<Exon>::iterator it = exon_list.begin(); it != exon_list.end(); it++){
 			if ((*it).feature == "UTR" && cdsback < (*it).from){
+			    done = true;
 			    if ((*it).from == cdsback + 1){
 				int temp = (*it).to - (*it).from + 1;
 				if (temp > 3){
@@ -152,7 +153,12 @@ class Transcript{
 			if (cdsback == tes - 3){
 			    cdsbackExon->to += 3;
 			}else{
-			    cerr << "Warning: Stop Codon is not in CDS, not in front of CDS and not inside of an UTR/exon." << endl;
+			    Exon new_cds = *cdsbackExon;
+			    new_cds.from = tes - 2;
+			    new_cds.to = tes;
+			    new_cds.feature = "CDS";
+			    new_cds.frame = 0;
+			    exon_list.push_back(new_cds);
 			}
 		    }
 		}
@@ -222,7 +228,12 @@ class Transcript{
 			if (cdsfront == tes + 3){
 			    cdsfrontExon->from -= 3;
 			}else{
-			    cerr << "Warning: Stop Codon is not in CDS, not in front of CDS and not inside of an UTR/exon." << endl;
+			    Exon new_cds = *cdsfrontExon;
+			    new_cds.from = tes;
+			    new_cds.to = tes + 2;
+			    new_cds.feature = "CDS";
+			    new_cds.frame = 0;
+			    exon_list.push_front(new_cds);
 			}
 		    }
 		}
