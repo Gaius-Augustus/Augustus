@@ -13,14 +13,16 @@ void divideInOverlapsAndConquer(list<Transcript> &transcript_list, string &outfi
     list<Transcript> new_transcripts;
     list<Transcript*> overlap;
 
-/*    string filename2 = "/home/lars/lars/test_data/eval_test.txt";
-    fstream outfile2;
-    outfile2.open(filename2, ios::out);
-    outfile2.close();*/
+    /*    string filename2 = "/home/lars/lars/test_data/eval_test.txt";
+	  fstream outfile2;
+	  outfile2.open(filename2, ios::out);
+	  outfile2.close();*/
 
     int max_base = max(transcript_list.front().tis,transcript_list.front().tes);
 
     for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
+	//cout << it->exon_list.begin()->chr << endl;
+	//sleep(1);
         if (min((*it).tis,(*it).tes) < max_base){
             overlap.push_back(&*it);
             if (max_base < max((*it).tis,(*it).tes)){
@@ -99,27 +101,27 @@ void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts
     list<Transcript*> completeHighPriorityTranscripts;
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	if ((*it)->tl_complete.first && (*it)->tl_complete.second){
-        if (highest_complete_priority < (*it)->priority){
-            completeHighPriorityTranscripts.clear();
-            highest_complete_priority = (*it)->priority;
-            completeHighPriorityTranscripts.push_back(*it);
-        }else if (highest_complete_priority == (*it)->priority){
-            completeHighPriorityTranscripts.push_back(*it);
-        }
+	    if (highest_complete_priority < (*it)->priority){
+		completeHighPriorityTranscripts.clear();
+		highest_complete_priority = (*it)->priority;
+		completeHighPriorityTranscripts.push_back(*it);
+	    }else if (highest_complete_priority == (*it)->priority){
+		completeHighPriorityTranscripts.push_back(*it);
+	    }
 	}
     }
     if (highest_complete_priority){
 	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	    if (highest_complete_priority > (*it)->priority){
-            it = overlap.erase(it);
-            it--;
+		it = overlap.erase(it);
+		it--;
 	    }else if ((!(*it)->tl_complete.first || !(*it)->tl_complete.second) && (highest_complete_priority == (*it)->priority)){
-            for (list<Transcript*>::iterator itInside = completeHighPriorityTranscripts.begin(); itInside != completeHighPriorityTranscripts.end(); itInside++){
-                if (areSimilar(*it,*itInside)){
-                    it = overlap.erase(it);
-                    it--;
-                }
-            }
+		for (list<Transcript*>::iterator itInside = completeHighPriorityTranscripts.begin(); itInside != completeHighPriorityTranscripts.end(); itInside++){
+		    if (areSimilar(*it,*itInside)){
+			it = overlap.erase(it);
+			it--;
+		    }
+		}
 	    }
 	}
     }
@@ -182,54 +184,54 @@ bool areSimilar(Transcript const* t1, Transcript const* t2)
     }
     
     /*if (lowestEqualExonFound){
-        float scoreSum = 0;
-        int countLoopRuns = 0;
-        for (list<Exon>::const_iterator it = t1->exon_list.begin(); (it != t1->exon_list.end() && (*it).from != lowestEqualExonBase); it++){
-            scoreSum += (*it1).score;
-            countLoopRuns++;
-        }
-        if (countLoopRuns > 0){
-            cout << scoreSum/countLoopRuns << endl;
-        }
+      float scoreSum = 0;
+      int countLoopRuns = 0;
+      for (list<Exon>::const_iterator it = t1->exon_list.begin(); (it != t1->exon_list.end() && (*it).from != lowestEqualExonBase); it++){
+      scoreSum += (*it1).score;
+      countLoopRuns++;
+      }
+      if (countLoopRuns > 0){
+      cout << scoreSum/countLoopRuns << endl;
+      }
 
-        scoreSum = 0;
-        countLoopRuns = 0;
-        for (list<Exon>::const_iterator it = t2->exon_list.begin(); (it != t2->exon_list.end() && (*it).from != lowestEqualExonBase); it++){
-            scoreSum += (*it1).score;
-            countLoopRuns++;
-        }
-        if (countLoopRuns > 0){
-            cout << scoreSum/countLoopRuns << endl;
-        }
+      scoreSum = 0;
+      countLoopRuns = 0;
+      for (list<Exon>::const_iterator it = t2->exon_list.begin(); (it != t2->exon_list.end() && (*it).from != lowestEqualExonBase); it++){
+      scoreSum += (*it1).score;
+      countLoopRuns++;
+      }
+      if (countLoopRuns > 0){
+      cout << scoreSum/countLoopRuns << endl;
+      }
 
-        scoreSum = 0;
-        countLoopRuns = 0;
-        bool behindHighestExon = false;
-        for (list<Exon>::const_iterator it = t1->exon_list.begin(); it != t1->exon_list.end(); it++){
-            if (behindHighestExon){
-                scoreSum += (*it).score;
-                countLoopRuns++;
-            }
-            if ((*it).to == highestEqualExonBase){behindHighestExon = true;}
-        }
-        if (countLoopRuns > 0){
-            cout << scoreSum/countLoopRuns << endl;
-        }
+      scoreSum = 0;
+      countLoopRuns = 0;
+      bool behindHighestExon = false;
+      for (list<Exon>::const_iterator it = t1->exon_list.begin(); it != t1->exon_list.end(); it++){
+      if (behindHighestExon){
+      scoreSum += (*it).score;
+      countLoopRuns++;
+      }
+      if ((*it).to == highestEqualExonBase){behindHighestExon = true;}
+      }
+      if (countLoopRuns > 0){
+      cout << scoreSum/countLoopRuns << endl;
+      }
 
-        scoreSum = 0;
-        countLoopRuns = 0;
-        behindHighestExon = false;
-        for (list<Exon>::const_iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-            if (behindHighestExon){
-                scoreSum += (*it).score;
-                countLoopRuns++;
-            }
-            if ((*it).to == highestEqualExonBase){behindHighestExon = true;}
-        }
-        if (countLoopRuns > 0){
-            cout << scoreSum/countLoopRuns << endl;
-        }
-    }*/
+      scoreSum = 0;
+      countLoopRuns = 0;
+      behindHighestExon = false;
+      for (list<Exon>::const_iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
+      if (behindHighestExon){
+      scoreSum += (*it).score;
+      countLoopRuns++;
+      }
+      if ((*it).to == highestEqualExonBase){behindHighestExon = true;}
+      }
+      if (countLoopRuns > 0){
+      cout << scoreSum/countLoopRuns << endl;
+      }
+      }*/
 
     float equalBorder = 0.5;            // maybe as option
     float overHangScoreBorder = 0.5;    // maybe as option
@@ -432,22 +434,22 @@ void search_n_destroy_parts(list<Transcript*> &overlap, int errordistance){
 	    list<Transcript*>::iterator it_temp = it;
 	    it_temp++;
 	    for (list<Transcript*>::iterator it_inside = it_temp; it_inside != overlap.end(); it_inside++){
-            if (overlap.size() <= 1){return;}
-            pair<bool,bool> who_is_part = is_part_of(*it, *it_inside);
-            if (who_is_part.first == true){
-                if (who_is_part.second == true){
-                }else{
-                    it = overlap.erase(it);
-                    it_inside = it;
-                }
-            }else{
-                if (who_is_part.second == true){
-                    it_inside = overlap.erase(it_inside);
-                    it_inside--;
-                }
+		if (overlap.size() <= 1){return;}
+		pair<bool,bool> who_is_part = is_part_of(*it, *it_inside);
+		if (who_is_part.first == true){
+		    if (who_is_part.second == true){
+		    }else{
+			it = overlap.erase(it);
+			it_inside = it;
+		    }
+		}else{
+		    if (who_is_part.second == true){
+			it_inside = overlap.erase(it_inside);
+			it_inside--;
+		    }
 	    	}
 	    }
-    }
+	}
     }
 }
 
@@ -583,17 +585,17 @@ void joining(Transcript* t1, Transcript* t2, char strand, char side, Transcript 
 	//are_at_add_part = true;
 	for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
 	    if ((*t1).exon_list.front().from < ((*it).to + minimum_intron_length)){
-            tx_new.exon_list.merge(temp_exon_list);
-            //are_at_add_part = false;
-            break;
-        }
-        //if (are_at_add_part){
-        temp_exon_list.push_back(*it);
-        //}
-    }
-    break;
+		tx_new.exon_list.merge(temp_exon_list);
+		//are_at_add_part = false;
+		break;
+	    }
+	    //if (are_at_add_part){
+	    temp_exon_list.push_back(*it);
+	    //}
+	}
+	break;
     default:
-    cerr << "WARNING: unexpected case (in joining())!" << endl;
+	cerr << "WARNING: unexpected case (in joining())!" << endl;
     }
     //cout << tx_new.exon_list.size() << endl;
 }
@@ -693,7 +695,7 @@ pair<bool,bool> is_part_of(Transcript const* t1, Transcript const* t2)
                 else{
                     t1_is_part = false;
                     t2_is_part = false;
-                break;
+		    break;
                 }
             }else if ((*it1).from > (*it2).from){
                 t2_is_part = false;
@@ -931,9 +933,9 @@ void output_exon_list(Transcript const* tx){
 	cout << "Pred_range: " << tx->pred_range.first << "\t" << tx->pred_range.second << endl;
 	cout << "Minimum distance from pred_range borders: " << min(tx->exon_list.front().from - tx->pred_range.first, tx->pred_range.second - tx->exon_list.back().to) << endl;
     }
-    cout << "from\t\tto\t\tframe\tfeature\tstart\t\tstop" << endl;
+    cout << "from\t\tto\t\tframe\tfeature\tstart\t\tstop\tchr" << endl;
     for (list<Exon>::const_iterator it = tx->exon_list.begin(); it != tx->exon_list.end(); it++){
-	cout << (*it).from << "\t" << (*it).to << "\t" << (*it).frame << "\t" << (*it).feature << "\t" << tx->tis << "\t" << tx->tes << endl;
+	cout << (*it).from << "\t" << (*it).to << "\t" << (*it).frame << "\t" << (*it).feature << "\t" << tx->tis << "\t" << tx->tes << "\t" << (*it).chr << endl;
     }
     cout << "Exon_list end----------------------------------------------------------------" << endl;
 }

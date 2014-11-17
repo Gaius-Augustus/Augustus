@@ -35,6 +35,8 @@ class Exon{
     }
 };
 
+void output_exon_list(Transcript const* tx);							// only for semantic tests
+
 class Transcript{
  public:
     list<Transcript*> supporter;		// at the moment these list only consist the pointer to transcripts, who are totaly equal to this transcript (doesnt matter whether their creation is related)
@@ -68,25 +70,36 @@ class Transcript{
         exontoutr();
         tes_to_cds();					// needs utr structure!
     }
-    int getcdsfront(){
+    Exon* getcdsfront(){
 	for (list<Exon>::iterator it = exon_list.begin(); it != exon_list.end(); it++){
 	    if ((*it).feature == "CDS"){
-		return (*it).from;
+		return &(*it);	// (*it).from
 	    }
 	}
-	return -1;
+	return NULL;
     }
-    int getcdsback(){
+    Exon* getcdsback(){
 	for (list<Exon>::reverse_iterator it = exon_list.rbegin(); it != exon_list.rend(); it++){
 	    if ((*it).feature == "CDS"){
-		return (*it).to;
+		return &(*it);	// (*it).to
 	    }
 	}
-	return -1;
+	return NULL;
     }
     void tes_to_cds(){
-	int cdsfront = getcdsfront();
-	int cdsback = getcdsback();	
+	Exon* cdsfrontExon = getcdsfront();
+	Exon* cdsbackExon = getcdsback();
+	int cdsfront;
+	if (cdsfrontExon)
+	    cdsfront = cdsfrontExon->from;
+	else
+	    cdsfront = -1;
+	int cdsback;
+	if (cdsbackExon)
+	    cdsback = cdsbackExon->to;
+	else
+	    cdsback = -1;
+	bool done = false;
 	if (strand == '+'){
 	    if (tl_complete.second){
 		if (cdsback != tes){
@@ -135,6 +148,13 @@ class Transcript{
 			    break;
 			}
 		    }
+		    if (!done){
+			if (cdsback == tes - 3){
+			    cdsbackExon->to += 3;
+			}else{
+			    cerr << "Warning: Stop Codon is not in CDS, not in front of CDS and not inside of an UTR/exon." << endl;
+			}
+		    }
 		}
 	    }else{
 		tes = cdsback;
@@ -142,58 +162,67 @@ class Transcript{
 	    if (!tl_complete.first){
 		tis = cdsfront;
 	    }
-	}else{
-	    if (tl_complete.second){
-		if (cdsfront != tes){
-
+	}else{	// strand == "-"
+	    if (tl_complete.second){	// stop codon exists
+		if (cdsfront != tes){		// stop codon is not in cds
 		    for (list<Exon>::iterator it = exon_list.begin(); it != exon_list.end(); it++){
 			if ((*it).feature == "CDS" && cdsfront == (*it).from){
-			    if(it == exon_list.end()){
+			    if (it == exon_list.end()){
 				cerr << "Fatal error: No exon for an existing codon." << endl;
 				exit( EXIT_FAILURE );
 			    }
-			    it--;
-			    if ((*it).to == cdsfront - 1){
-				int temp = (*it).to - (*it).from + 1;
-				if (temp > 3){
-				    (*it).to -= 3;
-				    it++;
-				    (*it).from -= 3;
-				}else if (temp == 3){
-				    it = exon_list.erase(it);
-				    (*it).from -= 3;
-				}else{
-				    it = exon_list.erase(it);
-				    (*it).from -= temp;
-				    it--;
-				    if ((*it).to - (*it).from + 1 > 3 - temp){
-					Exon new_cds = (*it);
-					new_cds.to = (*it).to;
-					new_cds.from = (*it).to - (3 - (temp + 1));
-					new_cds.feature = "CDS";
-					new_cds.frame = (new_cds.to - new_cds.from + 1) % 3;
-					(*it).to -= 3 - temp;
+			    //it--;
+			    if (it != exon_list.begin() && (*(it--)).feature == "UTR"){
+				done = true;
+				if ((*it).to == cdsfront - 1){
+				    int temp = (*it).to - (*it).from + 1;
+				    if (temp > 3){
+					(*it).to -= 3;
 					it++;
-					exon_list.insert(it, new_cds);
-				    }else if ((*it).to - (*it).from + 1 == 3 - temp){
-					(*it).feature = "CDS";
-					(*it).frame = 0;
+					(*it).from -= 3;
+				    }else if (temp == 3){
+					it = exon_list.erase(it);
+					(*it).from -= 3;
 				    }else{
-					cerr << "Fatal error: An exon with start/stop codon part is not even 3 bases long." << endl;
-					exit( EXIT_FAILURE );
+					it = exon_list.erase(it);
+					(*it).from -= temp;
+					it--;
+					if ((*it).to - (*it).from + 1 > 3 - temp){
+					    Exon new_cds = (*it);
+					    new_cds.to = (*it).to;
+					    new_cds.from = (*it).to - (3 - (temp + 1));
+					    new_cds.feature = "CDS";
+					    new_cds.frame = (new_cds.to - new_cds.from + 1) % 3;
+					    (*it).to -= 3 - temp;
+					    it++;
+					    exon_list.insert(it, new_cds);
+					}else if ((*it).to - (*it).from + 1 == 3 - temp){
+					    (*it).feature = "CDS";
+					    (*it).frame = 0;
+					}else{
+					    cerr << "Fatal error: An exon with start/stop codon part is not even 3 bases long." << endl;
+					    exit( EXIT_FAILURE );
+					}
 				    }
+				}else{
+				    Exon new_cds = (*it);
+				    new_cds.to = (*it).to;
+				    new_cds.from = (*it).to - 2;
+				    new_cds.feature = "CDS";
+				    new_cds.frame = 0;
+				    (*it).from -= 3;
+				    it++;
+				    exon_list.insert(it, new_cds);
 				}
-			    }else{
-				Exon new_cds = (*it);
-				new_cds.to = (*it).to;
-				new_cds.from = (*it).to - 2;
-				new_cds.feature = "CDS";
-				new_cds.frame = 0;
-				(*it).from -= 3;
-				it++;
-				exon_list.insert(it, new_cds);
 			    }
 			    break;
+			}
+		    }
+		    if (!done){
+			if (cdsfront == tes + 3){
+			    cdsfrontExon->from -= 3;
+			}else{
+			    cerr << "Warning: Stop Codon is not in CDS, not in front of CDS and not inside of an UTR/exon." << endl;
 			}
 		    }
 		}
@@ -310,7 +339,7 @@ int is_combinable(Transcript const* t1, Transcript const* t2, char strand, char 
 bool check_frame_annotation(Transcript const &transcript);
 void eval_gtf(list<Transcript*> &overlap, int errordistance);
 bool strandeq(Exon ex1, Exon ex2, char strand);
-void output_exon_list(Transcript const* tx);							// only for semantic tests
+
 void weight_info(list<Transcript*> &overlap);
 
 #endif

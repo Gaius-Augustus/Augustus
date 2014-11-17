@@ -157,22 +157,24 @@ int main(int argc, char* argv[])
 	    cout << "After loading " << (*it_f) << " (Priority " << (*it_p) << ") there are " << transcript_list.size() << " transcripts in transcript_list." << endl;
 	    it_p++;
 	}
-    for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
+
+	for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
 	    (*it).initiate();
-    }
+	}
     }else{
         display_error("Number of input files and priorities is not equal.");
     }
+
     for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
 	if (!check_frame_annotation(*it)){
 	    cerr << (*it).t_id << " has wrong frame annotation." << endl;
 	    //display_error("Frames are not correct.");
 	}
     }
-	unordered_map<string,list<Transcript>> splitted_transcript_list;
+    unordered_map<string,list<Transcript>> splitted_transcript_list;
     for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
-        splitted_transcript_list[(*it).getChr()].push_back(*it);
-	}
+	splitted_transcript_list[(*it).getChr()].push_back(*it);
+    }
 
     fstream outfile;
     outfile.open(filename_out, ios::out);		// delete content of file filename
