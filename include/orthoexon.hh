@@ -31,6 +31,8 @@ public:
     StateType getStateType() const; // all exon candidates agree in type
     int numExons() const;
     double getOmega() const { return omega; }
+    double getEomega() const { return Eomega; }
+    double getVarOmega() const { return VarOmega; }
     double getSubst() const { return subst; }
     double getConsScore() const {return cons;}
     double getDiversity() const {return diversity;}
@@ -42,7 +44,7 @@ public:
     int getAliEnd() const {return getAliStart() + getAliLen();}
     bool exonExists(int pos) const; // returns true if OE has a candidate exon at position pos
     void setOmega(double o){omega=o;}
-    void setOmega(double o, double osq, int oc, vector<double>* llo, CodonEvo* codonevo, bool oeStart);
+    void setOmega(vector<double>* llo, CodonEvo* codonevo, bool oeStart);
     void setSubst(int s){ subst=s;}
     void setConsScore(double c){cons=c;}
     void setDiversity(double d){diversity=d;}
@@ -66,10 +68,9 @@ public:
 private:
     int_fast64_t key; // key encodes all of: aliStart aliEnd type lenMod3
     double omega;
-    double omegaSquared;
-    int omegaCount;
     vector<double> loglikOmegas;
     double Eomega;
+    double VarOmega;
     int subst;
     double cons; // conservation score
     double diversity; // sum of branch lengths of the subtree induced by the OrthoExon (measure of phylogenetic diversity)

@@ -651,7 +651,7 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 
 // get vector of log likelihoods of omegas for one single codon tuple
 
-vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *tree, int &argmaxLoglik){
+vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *tree){
     if (seqtuple.size() != tree->numSpecies())
         throw ProjectError("CodonEvo::logLikForCodonTuple: inconsistent number of species.");
     for(int i=1; i<seqtuple.size();i++){
@@ -662,7 +662,6 @@ vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree
     int numCodons;
     vector<double> logliks(k, 0.0);
     Seq2Int s2i(3);
-    double maxLoglik = -numeric_limits<double>::max();
     for (int u=0; u < k; u++){ // loop over omegas                                                                                
 	vector<int> codontuple(tree->numSpecies(), 64); // 64 = missing codon                                                     
 	numCodons = 0;
@@ -675,10 +674,6 @@ vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree
 	}
 	if (numCodons >= 2){
 	    logliks[u] = tree->pruningAlgor(codontuple, this, u);
-	    if(logliks[u] > maxLoglik){
-		maxLoglik = logliks[u];
-		argmaxLoglik = u;
-	    }
 	}
     }
     return logliks;

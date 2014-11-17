@@ -139,7 +139,7 @@ public:
     double estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 			      int &subst); // output variables
     // store log likeliehoods for all omegas for one codon tuple
-    vector<double> loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *tree, int &argmaxLoglik);
+    vector<double> loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *tree);
     // for GRK proposal
     double graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree);
     /* 

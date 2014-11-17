@@ -462,6 +462,18 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
 		else 
 		    cout << ";omega=" << oe.getOmega();
 	    }
+	    if (oe.getEomega() >= 0.0){
+		if (GBrowseStyle)
+		    cout << "|" << oe.getEomega();
+		else
+		    cout << ";Eomega=" << oe.getEomega();
+	    }
+	    if (oe.getVarOmega() >= 0.0){
+		if (GBrowseStyle)
+		    cout << "|" << oe.getVarOmega();
+		else
+		    cout << ";VarOmega=" << oe.getVarOmega();
+	    }
 	    if (oe.getSubst() >= 0){ // number of substitutions
 		if (GBrowseStyle)
 		    cout << "|" << oe.getSubst();
@@ -758,7 +770,7 @@ void GeneMSA::printCumOmega(){
     for(unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator coit = cumOmega.begin(); coit != cumOmega.end(); coit++){
 	cout<<printBV(coit->first)<<endl;
 	for(int i = 0; i < coit->second.size(); i++){
-	    cout<<"\t"<<printRFC(coit->second[i].first)<<" : "<<coit->second[i].second.omega<<" "<<coit->second[i].second.omegaSq<<" "<<coit->second[i].second.count<<endl;
+	     cout<<"\t"<<printRFC(coit->second[i].first)<<endl;
 	}
     }
     cout<<"--------------------------------------------"<<endl;
@@ -828,7 +840,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 	unordered_map<bit_vector, int> bvCount;
 
 	map<int, posElements>::iterator aliPosIt = aliPos.begin();
-	map<vector<string>,pair<double,vector<double> > > computedOmegas;
+	map<vector<string>,vector<double> > computedOmegas;
 
 	for(map<unsigned, vector<int> >::iterator codonIt = alignedCodons.begin(); codonIt != alignedCodons.end(); codonIt++){
 	    //cout<<"codon: "<<(codonIt->first >> 8)<<endl;
@@ -893,7 +905,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 
 		    // store cumulative values at the begining of an OrthoExon
 		    cumValues cv = coit->second[currRFnum].second;
-		    aliPosIt->second.oeStart[i]->setOmega(cv.omega, cv.omegaSq, cv.count, &cv.logliks, codonevo, true);
+		    aliPosIt->second.oeStart[i]->setOmega(&cv.logliks, codonevo, true);
 		}
 
 		for(int i=0; i<aliPosIt->second.oeEnd.size(); i++){
@@ -904,7 +916,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 		    // calculate omega of ortho exon from cumulative sum
 		    cumValues *cv = findCumValues(aliPosIt->second.oeEnd[i]->getBV(), aliPosIt->second.oeEnd[i]->getRFC(offsets));
 		    //cout<<"pointer to cumValues: "<<cv->omega<<endl;
-		    aliPosIt->second.oeEnd[i]->setOmega(cv->omega, cv->omegaSq, cv->count, &cv->logliks, codonevo, false);
+		    aliPosIt->second.oeEnd[i]->setOmega(&cv->logliks, codonevo, false);
 		    bvit->second--;
 		}
 		aliPosIt++;
@@ -950,29 +962,17 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 		    //cout<<"after findCumValues"<<endl;
 		    if(cv != NULL){
 			// call pruning algo only once for every codonStrings and store omega in map                                                    
-			double omega;
-			vector<double> loglikOmega;
-			int argmaxLoglik = -1;
-			map<vector<string>,pair<double,vector<double> > >::iterator oit = computedOmegas.find(codonStrings);
+			vector<double> loglik;
+			map<vector<string>,vector<double> >::iterator oit = computedOmegas.find(codonStrings);
 			if(oit==computedOmegas.end()){
-			    loglikOmega = codonevo->loglikForCodonTuple(codonStrings, tree, argmaxLoglik);
-			    //    omega = codonevo->graphOmegaOnCodonAli(codonStrings, tree);
-			    if(argmaxLoglik == -1)
-				throw ProjectError("Internal error in computeOmegaEff(): no maximal log likelihood found");
-			    omega = codonevo->getOmega(argmaxLoglik);
-			    pair<double,vector<double> > p = make_pair(omega,loglikOmega);
-			    computedOmegas.insert(pair<vector<string>,pair<double,vector<double> > >(codonStrings,p));
+			    loglik = codonevo->loglikForCodonTuple(codonStrings, tree);
+			    computedOmegas.insert(pair<vector<string>,vector<double> >(codonStrings,loglik));
 			}else{
-			    omega = oit->second.first;
-			    loglikOmega = oit->second.second;
-			    
+			    loglik = oit->second;
 			}
 			//cout<<"omega: "<<omega<<endl;
 			// store cumulative sum of omega, omega squared and one
-			cv->omega += omega;
-			cv->omegaSq += pow(omega,2);
-			cv->count++;
-			cv->addLogliks(&loglikOmega);
+			cv->addLogliks(&loglik);
 			foundBV=true;
 			//printCumOmega();
 		    }

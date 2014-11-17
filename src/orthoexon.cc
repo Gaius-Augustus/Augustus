@@ -17,7 +17,7 @@
 #include <iostream>
 
 
-OrthoExon::OrthoExon(int_fast64_t k, size_t n) : key(k), omega(-1.0), omegaSquared(-1.0), omegaCount(0) , subst(-1), cons(-1.0), diversity(-1.0) {
+OrthoExon::OrthoExon(int_fast64_t k, size_t n) : key(k), omega(-1.0), Eomega(-1.0), VarOmega(-1.0), subst(-1), cons(-1.0), diversity(-1.0) {
     orthoex.resize(n);
     orthonode.resize(n);
     weights.resize(n,0);
@@ -76,21 +76,11 @@ vector<int> OrthoExon::getRFC(vector<int> offsets){
     return rfc;
 }
 
-void OrthoExon::setOmega(double o, double osq, int oc, vector<double>* llo, CodonEvo* codonevo , bool oeStart){
+void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart){
     if(oeStart){
-	omega = o;
-	omegaSquared = osq;
-	omegaCount = oc;
 	loglikOmegas = *llo;
 	//cout<<"set Omega at oeStart: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\t(omega, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<endl;
     }else{
-	omegaCount = oc - omegaCount;
-	omega = (o - omega)/omegaCount;
-	if(omega < 0)
-	    omega = -1;                                                                                                              
-	omegaSquared = (osq - omegaSquared)/omegaCount;
-
-	
 	//calculate posterior mean of omega
 	int k = llo->size();
 	//cout<<"number of omegas: "<<k<<endl;
@@ -116,12 +106,13 @@ void OrthoExon::setOmega(double o, double osq, int oc, vector<double>* llo, Codo
 	    Eomega += postprobs[u] * codonevo->getOmega(u);
 	}
 	//cout<<"set Omega at oeEnd: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\t(omega, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<" Eomega: "<<Eomega<<endl;
-	if(omega >= 0)
-	    omega = Eomega;
-	else
-	    omega = -1;
-    
 	
+	VarOmega = 0.0;
+	for (int u=0; u < k; u++){
+	    VarOmega += postprobs[u] * pow(codonevo->getOmega(u) - Eomega, 2);
+	}
+	if(Eomega > 0)
+	    omega = Eomega;
     }
 }
 
