@@ -271,9 +271,6 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
 
     double delta = 0.0; // step size
 
-    int initialInconsistent = std::numeric_limits<int>::max();
-    int minInconsistent = std::numeric_limits<int>::max();
-
     // number of iterations prior to t where the dual value increases
     int v = 0;
     cout.precision(10);
@@ -294,18 +291,16 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
 	}
 	double current_dual = path_score + hect_score;       // dual value of the t-th iteration 
 	best_dual = min(best_dual,current_dual);              // update upper bound
-	if( (t >= 1) && (old_dual > current_dual) )  // update v
+	if( (t >= 1) && (old_dual < current_dual) )  // update v
 		v++;
 	double current_primal = path_score + makeConsistent(evo); // primal value of the t-the iteration
 	if(best_primal < current_primal){
 	    best_primal = current_primal;
 	    buildGeneList(genelist); // save new record
 	}
-	if( numInconsistent < minInconsistent )
-	    minInconsistent = numInconsistent;
 	if(t == 0){
 	    initial_gap = current_dual - current_primal;
-	    initialInconsistent = numInconsistent;
+	    c*=initial_gap/numInconsistent; // adjust step size parameter to problem size
 	}
 	cout<<t<<"\t"<<delta<<"\t"<<current_primal<<"\t"<<current_dual<<"\t"<<numInconsistent<<endl;
 
@@ -313,10 +308,8 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
 	    break;
 
 	// determine new step size
-	//delta = getStepSize(c,t,v);
-	delta = 0.5* (current_dual - best_primal);
-	delta /= numInconsistent;
-
+	delta = getStepSize(c,t,v);
+       
 	// updated weights
 	for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
 	    for(size_t pos = 0; pos < numSpecies; pos++){
@@ -339,7 +332,6 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
     double best_gap = abs(best_dual - best_primal);
     double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
     cout<<"dual decomposition reduced initial duality gap of "<<initial_gap<<" to "<<best_gap<<" (to "<<perc_gap<<"%)"<<endl;
-    cout<<"dual decomposition reduced initial number of inconsistencies from " <<initialInconsistent<<" to "<< minInconsistent << endl;
     return best_gap;
 
 }
@@ -350,15 +342,9 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
  * v ist the number of iterations prior to t where the dual value increases
  * the purpose of v is to decrease the step size only if we move in the wrong direction
  */
-double OrthoGraph::getStepSize(double c, int t, int v){
-    
-    if(t == 0){ //small step size
-	return 0.0001;
-    }
-    else{
-	return c/sqrt(v+1);
-    }
- }
+double OrthoGraph::getStepSize(double c, int t, int v){    
+    return c/sqrt(v+1);
+}
 
 double OrthoGraph::init(ExonEvo &evo, int &numInconsistent){
 

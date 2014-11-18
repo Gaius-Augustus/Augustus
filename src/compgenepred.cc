@@ -103,7 +103,7 @@ void CompGenePred::start(){
     try {
 	dd_factor = Properties::getdoubleProperty("/CompPred/dd_factor");
     } catch (...) {
-	dd_factor = 15;
+	dd_factor = 0.02;
     }
     try {
 	noprediction = Properties::getBoolProperty("noprediction");
