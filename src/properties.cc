@@ -656,7 +656,7 @@ string findLocationOfSelfBinary(){
 
 #ifdef __APPLE__
     char path[16384];
-    uint32 size = static_cast<uint32>(sizeof(path));
+    uint32_t size = static_cast<uint32_t>(sizeof(path));
     if (_NSGetExecutablePath(path, &size) == 0){
 	self = path;
     } else {
