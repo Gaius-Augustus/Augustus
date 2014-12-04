@@ -479,6 +479,8 @@ class PredictionController {
 				predictionInstance.project_id = "tetrahymena"
 			}else if(predictionInstance.species_select == "Toxoplasma gondii (alveolata)"){
 				predictionInstance.project_id = "toxoplasma"
+			}else if(predictionInstance.species_select == "Leishmania tarantolae (protozoa)"){
+				predictionInstance.project_id = "leishmania_tarentolae"
 			}else if(predictionInstance.species_select == "Arabidopsis thaliana (plant)"){
 				predictionInstance.project_id = "arabidopsis"
 			}else if(predictionInstance.species_select == "Chlamydomonas reinhardtii (alga)"){
@@ -487,6 +489,8 @@ class PredictionController {
 				predictionInstance.project_id = "galdieria"
 			}else if(predictionInstance.species_select == "Solaneum lycopersicum (plant)"){
 				predictionInstance.project_id = "tomato"
+			}else if(predictionInstance.species_select == "Triticum/wheat (plant)"){
+			      	predictionInstance.project_id = "wheat"
 			}else if(predictionInstance.species_select == "Zea mays (plant)"){
 				predictionInstance.project_id = "maize"
 			}else if(predictionInstance.species_select == "Aspergillus fumigatus (fungus)"){

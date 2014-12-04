@@ -290,6 +290,9 @@ Top of page
 <td><font size="1">Amphimedon queenslandica</font></td><td><font size="1">amphimedon</font></td><td><font size="1"></font></td>
 </tr>
 <tr>
+<td><font size="1">Apis dorsata</font></td><td><font size="1">adorsata</font></td><td><font size="1">Francisco Camara Ferreira</font></td>
+</tr>
+<tr>
 <td><font size="1">Apis mellifera</font></td><td><font size="1">honeybee1</font></td><td><font size="1">Katharina Hoff and Mario Stanke</font></td>
 </tr>
 <tr>
@@ -347,6 +350,12 @@ Top of page
 <td><font size="1">Toxoplasma gondii</font></td><td><font size="1">toxoplasma</font></td><td><font size="1"></font></td>
 </tr>
 <tr>
+<td><font size="1"><b><i>Protozoa</i></b></font></td><td><font size="1"><b></b></font></td><td><font size="1"><b></b></font></td>
+</tr>
+<tr>
+<td><font size="1">Leishmania tarantolae</font></td><td><font size="1">leishmania_tarentolae</font></td><td><font size="1"></font></td>
+</tr>
+<tr>
 <td><font size="1"><b><i>Plants and algae</i></b></font></td><td><font size="1"><b></b></font></td><td><font size="1"><b></b></font></td>
 </tr>
 <tr>
@@ -357,6 +366,9 @@ Top of page
 </tr>
 <tr>
 <td><font size="1">Galdieria sulphuraria</font></td><td><font size="1">galdieria</font></td><td><font size="1"></font></td>
+</tr>
+<tr>
+<td><font size="1">Triticum aestivum</font></td><td><font size="1">wheat</font></td><td><font size="1">Stefanie K&ouml;nig</font></td>
 </tr>
 <tr>
 <td><font size="1">Zea mays</font></td><td><font size="1">maize</font></td><td><font size="1"></font></td>
