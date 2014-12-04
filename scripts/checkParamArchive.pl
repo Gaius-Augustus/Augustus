@@ -34,6 +34,21 @@ my $igenicProbsNoCRF = $prefix."_igenic_probs.pbl.withoutCRF";
 my $utrProbs = $prefix."_utr_probs.pbl";
 my $utrCfg = $prefix."_metapars.utr.cfg";
 
+my %shouldBeThere;
+$shouldBeThere{$speciesName."_metapars.cfg"} = 1;
+$shouldBeThere{$speciesName."_weightmatrix.txt"} = 1;
+$shouldBeThere{$speciesName."_parameters.cfg"} = 1;
+$shouldBeThere{$speciesName."_intron_probs.pbl"} = 1;
+$shouldBeThere{$speciesName."_intron_probs.pbl.withoutCRF"} = 1;
+$shouldBeThere{$speciesName."_exon_probs.pbl"} = 1;
+$shouldBeThere{$speciesName."_exon_probs.pbl.withoutCRF"} = 1;
+$shouldBeThere{$speciesName."_igenic_probs.pbl"} = 1;
+$shouldBeThere{$speciesName."_igenic_probs.pbl.withoutCRF"} = 1;
+$shouldBeThere{$speciesName."_utr_probs.pbl"} = 1;
+$shouldBeThere{$speciesName."_metapars.utr.cfg"} = 1; 
+$shouldBeThere{"."} = 1;
+$shouldBeThere{".."} = 1;
+
 # check whether all files exist
 if(not(-e $metaparsCfg)){
 	print STDERR "Metaparameter config file $metaparsCfg is missing!\n";
@@ -62,7 +77,19 @@ if(not(-e $igenicProbs)){
 if(not(-e $igenicProbsNoCRF)){
 	print STDERR "Intergenic probabiliy file (without CRF) $igenicProbsNoCRF is missing!\n";
 }
-if(not(-e $utrProbs)){
-	print STDOUT "UTR probability file $utrProbs is missing!\n";
-}
+# The following file is not required, because if UTR training was not performed, it does not exist!
+#if(not(-e $utrProbs)){
+#	print STDOUT "UTR probability file $utrProbs is missing!\n";
+#}
 
+# Check whether there are any other files that SHOULD NOT be there:
+
+opendir(D, "$projectDir/$speciesName") || die "Can't open directory $projectDir/$speciesName!\n";
+my @list = readdir(D);
+closedir(D);
+
+foreach my $f (@list) {
+    if(not(defined($shouldBeThere{$f}))){
+	print STDERR "File $f should not be in the archive!\n";
+    }
+}
