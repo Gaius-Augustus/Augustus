@@ -93,3 +93,10 @@ foreach my $f (@list) {
 	print STDERR "File $f should not be in the archive!\n";
     }
 }
+
+# Check whether UTR predictions are impossible due to missing parameter files:
+if(not(-e $utrProbs)){
+    print STDOUT "$utrProbs is missing, disable UTR prediction!\n";
+}elsif(not(-e $utrCfg)){
+    print STDOUT "$utrCfg is missing, disable UTR prediction!\n";
+}
