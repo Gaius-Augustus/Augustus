@@ -22,8 +22,19 @@ if(@ARGV != 3){
 opendir my($dir), $ARGV[0] or die "Could not open directory $ARGV[0]!\n";
 my @dirs = readdir $dir;
 closedir $dir;
-# params in WebAUGUSTUS contains only one folder, therefore it's the first.
-my $species = $dirs[0];
+# params in WebAUGUSTUS contains three folders: ., .., and the parameter archive. Determine which is the archive:
+my $archC = 0;
+foreach(@dirs){
+    if(not($_ eq ".") and not($_ eq "..")){
+	$species = $_;
+    }
+    $archC++;
+}
+if($archC > 3){
+    print STDERR "The parameter archive appears to have contained more than one folder, not sure which one to use!\n";
+}
+
+print "Species is $species\n";
 
 my $targetdir = $ARGV[2]."/".$ARGV[1];
 # create the target directory
