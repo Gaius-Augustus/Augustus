@@ -300,7 +300,7 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int
 	}
 	if(t == 0){
 	    initial_gap = current_dual - current_primal;
-	    c*=initial_gap/numInconsistent; // adjust step size parameter to problem size
+	    //c*=initial_gap/numInconsistent; // adjust step size parameter to problem size
 	}
 	cout<<t<<"\t"<<delta<<"\t"<<current_primal<<"\t"<<current_dual<<"\t"<<numInconsistent<<endl;
 
