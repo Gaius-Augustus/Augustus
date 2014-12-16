@@ -708,7 +708,6 @@ StatePath* StatePath::getInducedStatePath(Gene *genelist, int dnalen, bool print
 		end = curgene->exons->begin - 1; // gene starts right with stop codon
 	    }
 	}
-	
 	if (endOfPred < end || endOfPred == 0) {// have intergenic gap or first gene
 	    for (int pos = endOfPred+1; pos <= end; pos++)
 		path->push(new State(pos, pos, igenic));
@@ -2187,7 +2186,19 @@ void Gene::printProteinSeq(AnnoSequence *annoseq) const {
     
     // if gene is incomplete, frame is the position of the first base
     const char* codingSeq = getCodingSequence(annoseq);
-    string trans = getTranslation(codingSeq + mod3(-frame)); 
+    string trans = "";
+    // if genemodel is bacterium and there is a start codon, translate these with "M" irrespective of the bases
+    if ((isInitialExon(exons->type) || exons->type == singleG || exons->type == rsingleG || exons->type == rinitial) && (codingSeq[0] && codingSeq[1] && codingSeq[2])){
+	const char* genemodelValue = Properties::hasProperty("genemodel") ? Properties::getProperty("genemodel") : "partial";
+	if (strcmp(genemodelValue, "bacterium") == 0){
+	    trans += "M";
+	    trans += getTranslation(codingSeq + mod3(-frame) + 3);
+	}else{
+	    trans += getTranslation(codingSeq + mod3(-frame));	// not bacterium -> no change
+	}
+    }else{
+	trans += getTranslation(codingSeq + mod3(-frame));	// no start codon -> no change
+    }
     int i = linelength - prefix.length();
     cout << prefix << trans.substr(0,i);
     while (i<trans.length()) {
