@@ -18,6 +18,7 @@ $usage .= "--bad=badfile    Specify a file with gene names. All except these are
 $usage .= "--good=goodfile  Specify a file with gene names. Only these genes are considered\n";
 $usage .= "                 from the input, also for overlap detection.\n";
 $usage .= "--overlap        Overlap filtering turned off.\n";
+$usage .= "--connected      Do not cut a sequence into gene-pieces anymore.\n";
 $usage .= "\n";
 
 if ($#ARGV < 3) {
@@ -27,11 +28,11 @@ if ($#ARGV < 3) {
 my $badfilename = "";
 my $exceptionfilename = "";
 my $exceptiontype = "";
-my ($overlap, $good, $bad);
+my ($overlap, $good, $bad, $connected);
 my %exceptionlist=();
 my $num_ambig_utr_mgs = 0;
 
-GetOptions( 'good=s' => \$good, 'bad=s' => \$bad, 'overlap!' => \$overlap);
+GetOptions( 'good=s' => \$good, 'bad=s' => \$bad, 'overlap!' => \$overlap, 'connected!' => \$connected);
 
 my $gfffilename = $ARGV[0];
 my $seqfilename = $ARGV[1];
@@ -40,6 +41,7 @@ my $outputfilename = $ARGV[3];
 my $seqnameerrcount = 0;
 
 $overlap = 0 if (!defined($overlap));
+$connected = 0 if (!defined($connected));
 
 if (defined($good) && defined($bad)){
   die "Good and bad cannot both be specified.\n";
@@ -296,6 +298,7 @@ while(<FASTA>) {
     my @shiftedfeatures;
     my $newname;
     my @theseMRNA = ();
+    &printhead($seqname, $length) if ($connected);
     while ($i<@nr_sort_fkeyarray) {
         #print "$i:  " , join (", ", @{$nr_sort_fkeyarray[$i]}), "\n";
         
@@ -331,23 +334,23 @@ while(<FASTA>) {
 	    }
 	    if ($overlap || $currentSeqBegin < $genebegin) {# UTR not overlapping with previous gene
 		$newname = $seqname . "_${currentSeqBegin}-$currentSeqEnd";
-		&printhead($newname, $currentSeqEnd-$currentSeqBegin+1);
+		&printhead($newname, $currentSeqEnd-$currentSeqBegin+1) if (!$connected);
 		$offset = $currentSeqBegin-1;
 		foreach my $theseMRNAref (@theseMRNA) {
 		    @shiftedfeatures = @{$theseMRNAref};
 		    for($j = 3; $j < @shiftedfeatures; $j++){
-			$shiftedfeatures[$j] -= $offset;
+			$shiftedfeatures[$j] -= $offset if (!$connected);
 		    }
 		    &printdata(@shiftedfeatures);
 		}
 		
 		@shiftedfeatures = @{$nr_sort_fkeyarray[$i]};
 		for($j = 3; $j < @shiftedfeatures; $j++){
-		    $shiftedfeatures[$j] -= $offset;
+		    $shiftedfeatures[$j] -= $offset if (!$connected);
 		}
 		$newseq = substr($seq, $currentSeqBegin - 1, $currentSeqEnd - $currentSeqBegin + 1 );
 		&printdata(@shiftedfeatures);
-		&printseq($newseq, $newlength);
+		&printseq($newseq, $newlength) if (!$connected);
 	    }
 	    #reset variables
 	    $lastSeqEnd = $currentSeqEnd;
@@ -362,6 +365,7 @@ while(<FASTA>) {
 	}
         $i++;
     }
+    &printseq($seq, $length) if ($connected);
 } # while <FASTA>
 
 if ($num_ambig_utr_mgs > 0) {
