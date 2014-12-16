@@ -15,6 +15,16 @@ using namespace std;
 class Gene;
 class Transcript;
 
+struct Properties{
+public:
+    int errordistance;
+    string genemodel; 
+    bool onlyCompare;
+    list<string> filenames;
+    list<int> priorities;
+    list<int> suppList;
+};
+
 class Exon{
  public:
     string chr;
@@ -335,8 +345,9 @@ class Point{
     }
 };
 
-void divideInOverlapsAndConquer(list<Transcript> &transcript_list, string &outfilename, int errordistance);
-void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts, int errordistance);
+void divideInOverlapsAndConquer(list<Transcript> &transcript_list, string &outfilename, Properties properties);
+void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts, Properties properties);
+double simpleProkScore(Transcript const* tx);
 bool areSimilar(Transcript const* t1, Transcript const* t2);
 void tooCloseToBorder(list<Transcript*> &overlap, list<Transcript> &new_transcripts, char strand, int errordistance);
 void search_n_destroy_doublings(list<Transcript*> &overlap, int errordistance, bool ab_initio);

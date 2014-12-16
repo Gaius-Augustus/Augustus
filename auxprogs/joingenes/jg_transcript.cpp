@@ -6,7 +6,7 @@ using namespace std;
 int count1 = 0;				// only for semantic tests
 int value = 0;				// only for semantic tests
 
-void divideInOverlapsAndConquer(list<Transcript> &transcript_list, string &outfilename, int errordistance){
+void divideInOverlapsAndConquer(list<Transcript> &transcript_list, string &outfilename, Properties properties){
     // divide a transcript list in clusters of overlapping transcripts (transitive closure) and work on each cluster separately
     transcript_list.sort();
 
@@ -34,28 +34,94 @@ void divideInOverlapsAndConquer(list<Transcript> &transcript_list, string &outfi
             /*for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
               cout << (*(*it)).t_id << " ";
               }cout << endl;*/
-            workAtOverlap(overlap, new_transcripts, errordistance);
-            saveOverlap(overlap, outfilename);
+            workAtOverlap(overlap, new_transcripts, properties);
+            saveOverlap(overlap, outfilename, properties);
             overlap.clear();
             max_base = max((*it).tis,(*it).tes);
             overlap.push_front(&*it);
         }
     }
-    workAtOverlap(overlap, new_transcripts, errordistance);
-    saveOverlap(overlap, outfilename);
+    workAtOverlap(overlap, new_transcripts, properties);
+    saveOverlap(overlap, outfilename, properties);
     overlap.clear();
 }
 
-void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts, int errordistance)
+void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts, Properties properties)
 {
     // calls methods for joining transcripts with the target that most of transcripts are complete (have start and stop codon) and delete duplicates and other unwanted transcripts from the overlap
 
-    search_n_destroy_doublings(overlap, errordistance, true);
+    if (properties.onlyCompare){
+	list<Transcript*> priorityTx1;
+	list<Transcript*> priorityTx2;
+	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+	    if ((*it)->priority == *properties.priorities.begin())
+		priorityTx1.push_back(*it);
+	    else
+		priorityTx2.push_back(*it);
+	}
 
-    tooCloseToBorder(overlap, new_transcripts, '3', errordistance);
+	list<Transcript*> equal1;
+	list<Transcript*> equal2;
+	list<Transcript*> same_stop1;
+	list<Transcript*> same_stop2;
+	list<Transcript*> unequal1;
+	list<Transcript*> unequal2;
+	for (list<Transcript*>::iterator it = priorityTx1.begin(); it != priorityTx1.end(); it++){
+	    list<Transcript*>::iterator it_temp = it;
+	    it_temp++;
+	    for (list<Transcript*>::iterator it_inside = priorityTx2.begin(); it_inside != priorityTx2.end(); it_inside++){
+		pair<bool,bool> who_is_part = is_part_of(*it, *it_inside);
+		if (who_is_part.first && who_is_part.second){
+		    (*it)->boha.first = 2;
+		    (*it_inside)->boha.first = 2;
+		}else if ((*it)->tes == (*it_inside)->tes){
+		    if ((*it)->boha.first != 2)
+			(*it)->boha.first = 1;
+		    if ((*it_inside)->boha.first != 2)
+			(*it_inside)->boha.first = 1;
+
+		}else{
+		    if ((*it)->boha.first != 2 && (*it)->boha.first != 1)
+			(*it)->boha.first = 0;
+		    if ((*it_inside)->boha.first != 2 && (*it_inside)->boha.first != 1)
+			(*it_inside)->boha.first = 0;
+		}
+	    }
+	    if ((*it)->boha.first == 2)
+		equal1.push_back(*it);
+	    if ((*it)->boha.first == 1)
+		same_stop1.push_back(*it);
+	    if ((*it)->boha.first == 0)
+		unequal1.push_back(*it);
+	}
+	for (list<Transcript*>::iterator it = priorityTx2.begin(); it != priorityTx2.end(); it++){
+	    if ((*it)->boha.first == 2)
+		equal2.push_back(*it);
+	    if ((*it)->boha.first == 1)
+		same_stop2.push_back(*it);
+	    if ((*it)->boha.first == 0)
+		unequal2.push_back(*it);
+	}
+	string filenameEqual1 = "equal1.gtf", filenameEqual2 = "equal2.gtf", filenameStop1 = "same_stop1.gtf", filenameStop2 = "same_stop2.gtf", filenameUne1 = "unequal1.gtf", filenameUne2 = "unequal2.gtf";
+	saveOverlap(equal1, filenameEqual1, properties);
+	saveOverlap(equal1, filenameEqual2, properties);
+	saveOverlap(same_stop1, filenameStop1, properties);
+	saveOverlap(same_stop2, filenameStop2, properties);
+	saveOverlap(unequal1, filenameUne1, properties);
+	saveOverlap(unequal2, filenameUne2, properties);
+	return;
+    }
+
+    // search doubling and delete the ones with the lowest priority/score
+    search_n_destroy_doublings(overlap, properties.errordistance, true);
+
+    // test if some exon is to close to prediction range border
+    tooCloseToBorder(overlap, new_transcripts, '3', properties.errordistance);
+    // join stop codons
     join(overlap, new_transcripts, '3');
-    search_n_destroy_doublings(overlap, errordistance, false);
+    search_n_destroy_doublings(overlap, properties.errordistance, false);
 
+    // delete ?special? transcripts
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	if ((*it)->correction_ancestor.second && (*it)->tl_complete.second){
 	    if (!((*it)->joinpartner.second->boha.second)){
@@ -73,9 +139,10 @@ void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts
 	}
     }
 
-    tooCloseToBorder(overlap, new_transcripts, '5', errordistance);
+    // same for the start codon
+    tooCloseToBorder(overlap, new_transcripts, '5', properties.errordistance);
     join(overlap, new_transcripts, '5');
-    search_n_destroy_doublings(overlap, errordistance, false);
+    search_n_destroy_doublings(overlap, properties.errordistance, false);
 
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	if ((*it)->correction_ancestor.first && (*it)->tl_complete.first){
@@ -93,9 +160,10 @@ void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts
 	    it--;
 	}
     }
+    // searchs and destroys transcripts, which are fully in other transcripts
+    search_n_destroy_parts(overlap, properties.errordistance);
 
-    search_n_destroy_parts(overlap, errordistance);
-
+    // seek for the higherest priority with a complete transcript in the current overlap
     overlap.sort(compare_priority);
     int highest_complete_priority = 0;
     list<Transcript*> completeHighPriorityTranscripts;
@@ -110,16 +178,82 @@ void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts
 	    }
 	}
     }
+
+    // if there is such a highest priority delete transcripts with lower priority and some uncomplete ones and that ones with low score and so on...
     if (highest_complete_priority){
-	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-	    if (highest_complete_priority > (*it)->priority){
-		it = overlap.erase(it);
-		it--;
-	    }else if ((!(*it)->tl_complete.first || !(*it)->tl_complete.second) && (highest_complete_priority == (*it)->priority)){
-		for (list<Transcript*>::iterator itInside = completeHighPriorityTranscripts.begin(); itInside != completeHighPriorityTranscripts.end(); itInside++){
-		    if (areSimilar(*it,*itInside)){
+	if (properties.genemodel == "bacterium")
+	    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+		if (highest_complete_priority > (*it)->priority){
+		    if ((*it)->tl_complete.second == false){
 			it = overlap.erase(it);
 			it--;
+		    }else{
+			for (list<Transcript*>::iterator itInside = completeHighPriorityTranscripts.begin(); itInside != completeHighPriorityTranscripts.end(); itInside++){
+			    if ((*itInside)->tes == (*it)->tes && (*itInside)->strand == (*it)->strand){
+				it = overlap.erase(it);
+				it--;
+				break;
+			    }
+			    int lowInside;
+			    int highInside;
+			    int high;
+			    int low;
+			    if ((*itInside)->strand == '+'){
+				lowInside = (*itInside)->tis;
+				highInside = (*itInside)->tes;
+			    }else{
+				lowInside = (*itInside)->tes;
+				highInside = (*itInside)->tis;
+			    }
+			    if ((*it)->strand == '+'){
+				low = (*it)->tis;
+				high = (*it)->tes;
+			    }else{
+				low = (*it)->tes;
+				high = (*it)->tis;
+			    }
+			    if ((low > lowInside && low < highInside) && (high < highInside || ((*itInside)->boha.first != 1 && (*itInside)->boha.second != 1))){
+				it = overlap.erase(it);
+				it--;
+				break;
+			    }
+			    if ((high < highInside && high > lowInside) && (low > lowInside || ((*itInside)->boha.first != 1 && (*itInside)->boha.second != 1))){
+				it = overlap.erase(it);
+				it--;
+				break;
+			    }
+			}
+		    }
+		}else if (highest_complete_priority == (*it)->priority){
+		    if (!(*it)->tl_complete.first || !(*it)->tl_complete.second){
+			it = overlap.erase(it);
+			it--;		
+		    }else{
+			for (list<Transcript*>::iterator itInside = completeHighPriorityTranscripts.begin(); itInside != completeHighPriorityTranscripts.end(); itInside++){
+			    if ((*itInside)->tes == (*it)->tes && (*itInside)->strand == (*it)->strand){
+				if (simpleProkScore(*it) < simpleProkScore(*itInside)){
+				    it = overlap.erase(it);
+				    it--;
+				    break;
+				}
+			    }
+			}
+		    }
+		}
+	    }
+    }else{
+	if (highest_complete_priority){
+	    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+		if (highest_complete_priority > (*it)->priority){
+		    it = overlap.erase(it);
+		    it--;
+		}else if ((!(*it)->tl_complete.first || !(*it)->tl_complete.second) && (highest_complete_priority == (*it)->priority)){
+		    for (list<Transcript*>::iterator itInside = completeHighPriorityTranscripts.begin(); itInside != completeHighPriorityTranscripts.end(); itInside++){
+			if (areSimilar(*it,*itInside)){
+			    it = overlap.erase(it);
+			    it--;
+			    break;
+			}
 		    }
 		}
 	    }
@@ -129,8 +263,15 @@ void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts
     //	weight_info(overlap);
 }
 
-bool areSimilar(Transcript const* t1, Transcript const* t2)
-{
+double simpleProkScore(Transcript const* tx){
+    // calculates a score for comparision; completeness shouldnt be used
+    if (tx->exon_list.size() != 1)
+	return 0;
+    else
+	return tx->exon_list.front().score;
+}
+
+bool areSimilar(Transcript const* t1, Transcript const* t2){
     // is true, if transcripts are similar
     if (t1->strand != t2->strand){
         return false;
@@ -369,7 +510,7 @@ void tooCloseToBorder(list<Transcript*> &overlap, list<Transcript> &new_transcri
 }
 
 void search_n_destroy_doublings(list<Transcript*> &overlap, int errordistance, bool ab_initio){
-    // delete all transcripts that are completly part of another transcript (in particular all exons are also in the other transcript); in case of equality the one with the lesser priority will be deleted
+    // delete all transcripts that are completly part of another transcript (in particular all exons are also in the other transcript and vice versa); the one with the lesser priority will be deleted
     if (overlap.size() > 1){
 	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	    list<Transcript*>::iterator it_temp = it;
@@ -671,52 +812,58 @@ pair<bool,bool> is_part_of(Transcript const* t1, Transcript const* t2)
 {
     // is true,false or false,true if one transcript contains the other completely
     // is true,true if the transcripts are equal in exons			// this case could completly replace compare_transcripts
-    bool t1_is_part = false;
-    bool t2_is_part = false;
-    if (t1->strand == t2->strand){
-        t1_is_part = true;
-        t2_is_part = true;
-        if (t1->tl_complete.first && t2->tl_complete.first && t1->tis != t2->tis){
-            t1_is_part = false;
-            t2_is_part = false;
-        }
-        if (t1->tl_complete.second && t2->tl_complete.second && t1->tes != t2->tes){
-            t1_is_part = false;
-            t2_is_part = false;
-        }
-        list<Exon>::const_iterator it1 = t1->exon_list.begin();
-        list<Exon>::const_iterator it2 = t2->exon_list.begin();
-        while (t1_is_part == true || t2_is_part == true){
-            if ((*it1).from == (*it2).from){
-                if((*it1).to == (*it2).to && (*it1).frame == (*it2).frame){
-                    it1++;
-                    it2++;
-                }
-                else{
-                    t1_is_part = false;
-                    t2_is_part = false;
-		    break;
-                }
-            }else if ((*it1).from > (*it2).from){
-                t2_is_part = false;
-                it2++;
-            }else{
-                t1_is_part = false;
-                it1++;
-            }
-            if (it1 == t1->exon_list.end() && it2 == t2->exon_list.end()){
-                break;
-            }else{
-                if (it1 == t1->exon_list.end() && !(it2 == t2->exon_list.end())){
-                    t2_is_part = false;
-                    break;
-                }
-                if (it2 == t2->exon_list.end() && !(it1 == t1->exon_list.end())){
-                    t1_is_part = false;
-                    break;
-                }
-            }
-        }
+    bool t1_is_part = true;
+    bool t2_is_part = true;
+    if (t1->strand != t2->strand){
+        t1_is_part = false;
+        t2_is_part = false;
+    }
+    if (t1->exon_list.size() > t2->exon_list.size()){
+	t1_is_part = false;
+    }
+    if (t1->exon_list.size() < t2->exon_list.size()){
+	t2_is_part = false;
+    }
+    if (t1->tl_complete.first && t2->tl_complete.first && t1->tis != t2->tis){
+	t1_is_part = false;
+	t2_is_part = false;
+    }
+    if (t1->tl_complete.second && t2->tl_complete.second && t1->tes != t2->tes){
+	t1_is_part = false;
+	t2_is_part = false;
+    }
+    list<Exon>::const_iterator it1 = t1->exon_list.begin();
+    list<Exon>::const_iterator it2 = t2->exon_list.begin();
+    while (t1_is_part == true || t2_is_part == true){
+	if ((*it1).from == (*it2).from){
+	    if((*it1).to == (*it2).to && (*it1).frame == (*it2).frame){
+		it1++;
+		it2++;
+	    }
+	    else{
+		t1_is_part = false;
+		t2_is_part = false;
+		break;
+	    }
+	}else if ((*it1).from > (*it2).from){
+	    t2_is_part = false;
+	    it2++;
+	}else{
+	    t1_is_part = false;
+	    it1++;
+	}
+	if (it1 == t1->exon_list.end() && it2 == t2->exon_list.end()){
+	    break;
+	}else{
+	    if (it1 == t1->exon_list.end() && !(it2 == t2->exon_list.end())){
+		t2_is_part = false;
+		break;
+	    }
+	    if (it2 == t2->exon_list.end() && !(it1 == t1->exon_list.end())){
+		t1_is_part = false;
+		break;
+	    }
+	}
     }
     return make_pair(t1_is_part, t2_is_part);
 }

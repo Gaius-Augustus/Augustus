@@ -16,6 +16,9 @@ static const struct option longOpts[] = {
     { "priorities", required_argument, NULL, 'p' },
     { "output", required_argument, NULL, 'o' },
     { "errordistance", required_argument, NULL, 'e' },
+    { "genemodel", required_argument, NULL, 'm'},
+    { "onlycompare", required_argument, NULL, 'c'},
+    { "suppress", required_argument, NULL, 's' },
     { "help", no_argument, NULL, 'h' },
     { NULL, no_argument, NULL, 0 }
 };
@@ -36,6 +39,15 @@ void display_help(void)
     cout << "\t\t--errordistance=x\t\t-e x\t\t\twhere \"x\" have to be non-negativ integer" << endl;
     cout << "\t\t\t\t\t\t\t\t\tif a prediction is <=x bases nexto a prediction range border, the programm suppose, that there could be a mistake" << endl;
     cout << "\t\t\t\t\t\t\t\t\tdefault is, that it dont cares about prediction ranges" << endl;
+    cout << "\t\t--genemodel=x\t\t\t-m x\t\t\twhere \"x\" have to be a genemodel out of \"eukaryote\"." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tdefault is eukaryotic" << endl;
+    cout << "\t\t--onlycompare=x\t\t\t-c x\t\t\twhere \"x\" can be set to \"true\"." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tdefault is false." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tif this value is set to true, it disables the normal function of the program." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tactivates a compare and seperate mode to seperate equal transcripts from non equal ones." << endl;
+    cout << "\t\t--suppress=x\t\t\t-s pr1,pr2,...\t\twhere \"pr1,pr2,...,prm\" have to be positiv integers (different from 0)" << endl;
+    cout << "\t\t\t\t\t\t\t\t\tdefault is none." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tif the core of a joined/non-joined transcript has one of these priorities it will not occur in the output file." << endl;
     cout << "\t\t--help \t\t\t\t-h\t\t\tprints the help documentation" << endl;
     cout << endl;
     exit( EXIT_FAILURE );
@@ -84,15 +96,37 @@ list<int> get_priorities(char* priority_string){
     return priorities;
 }
 
+list<int> getSuppressionList(char* suppString){
+    list<int> suppList;
+    char *temp_inside;
+    string str_temp = suppString;
+    unsigned int n_comma = count(str_temp.begin(), str_temp.end(), ',');
+    if (n_comma){
+	temp_inside = strtok(suppString, ",");
+	suppList.push_back(atoi(temp_inside));
+	for (unsigned int j = 1; j <= n_comma; j++){
+	    temp_inside = strtok(NULL, ",");
+	    suppList.push_back(atoi(temp_inside));
+	}
+    }else{
+	suppList.push_back(atoi(suppString));
+    }
+    return suppList;
+}
+
 int main(int argc, char* argv[])
 {
     int opt = 0;
-    static const char *optString = "g:p:o:e:h?";
+    static const char *optString = "g:p:o:e:m:c:s:h?";
     list<string> filenames;
     list<int> priorities;
+    list<int> suppList;
     string filename_out;
     int longIndex;
-    int errordistance = -1;
+    Properties properties;
+    properties.errordistance = -1;
+    properties.genemodel = "eukaryote";
+    properties.onlyCompare = false;
 
     opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
     while (opt != -1) {
@@ -110,7 +144,18 @@ int main(int argc, char* argv[])
 	    break;
 	case 'e':
 	    if (strstr(optarg, "rror") !=NULL){display_error("You have to write two \"-\" before the optionname \"errordistance\".");}
-	    errordistance = atoi(optarg);
+	    properties.errordistance = atoi(optarg);
+	    break;
+	case 'm':
+	    if (strstr(optarg, "bacterium") == NULL){display_error("You used a wrong parameter for genemodel (allowed are \"bacterium\").");}
+	    properties.genemodel = optarg;
+	    break;
+	case 'c':
+	    if (strstr(optarg, "true") != NULL || strstr(optarg, "1") != NULL)
+		properties.onlyCompare = true;
+	    break;
+	case 's':
+	    suppList = getSuppressionList(optarg);
 	    break;
 	case 'h':
 	    display_help();
@@ -147,9 +192,17 @@ int main(int argc, char* argv[])
 	    }
 	}
     }
+
+    properties.filenames = filenames;
+    properties.priorities = priorities;
+    properties.suppList = suppList;
+
+    if (properties.onlyCompare == true && (properties.priorities.size() != 2 || properties.priorities.begin() == properties.priorities.end())){
+	display_error("CompareMode is only working with exact 2 priorities, which have to be different.");
+    }
+
     unordered_map<string,Gene> gene_map;
     list<Transcript> transcript_list;
-
     if (priorities.size() == filenames.size()){
 	list<int>::iterator it_p = priorities.begin();
 	for (list<string>::iterator it_f = filenames.begin(); it_f != filenames.end(); it_f++){
@@ -180,8 +233,25 @@ int main(int argc, char* argv[])
     outfile.open(filename_out, ios::out);		// delete content of file filename
     outfile.close();
 
+    if (properties.onlyCompare){
+	string filenameEqual1 = "equal1.gtf", filenameEqual2 = "equal2.gtf", filenameStop1 = "same_stop1.gtf", filenameStop2 = "same_stop2.gtf", filenameUne1 = "unequal1.gtf", filenameUne2 = "unequal2.gtf";
+	fstream outfile;
+	outfile.open(filenameEqual1, ios::out);
+	outfile.close();
+	outfile.open(filenameEqual2, ios::out);
+	outfile.close();
+	outfile.open(filenameStop1, ios::out);
+	outfile.close();
+	outfile.open(filenameStop2, ios::out);
+	outfile.close();
+	outfile.open(filenameUne1, ios::out);
+	outfile.close();
+	outfile.open(filenameUne2, ios::out);
+	outfile.close();
+    }
+
     for(auto it = splitted_transcript_list.begin(); it != splitted_transcript_list.end(); it++){
-        divideInOverlapsAndConquer(it->second, filename_out, errordistance);
+        divideInOverlapsAndConquer(it->second, filename_out, properties);
     }
     return 0;
 }

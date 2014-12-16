@@ -203,7 +203,7 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
     }
 }
 
-void saveOverlap(list<Transcript*> &overlap, string &filename)
+void saveOverlap(list<Transcript*> &overlap, string &filename, Properties &properties)
 {
     // outputs overlap at the end of an existing file in gff format
     // every first and last outfile-line is adjusted and might be change back (to comments above)
@@ -213,7 +213,9 @@ void saveOverlap(list<Transcript*> &overlap, string &filename)
     outfile << "# this overlap has " << overlap.size() << " different transcripts" << endl;
     // write by transcripts:
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+	if (find(properties.suppList.begin(),properties.suppList.end(),(*it)->priority) != properties.suppList.end()){continue;}
 	outfile << "# " << (*it)->t_id << " is supported by " << (*it)->supporter.size() << " other predictions" << endl;
+	outfile << "# core-transcrpit has priority " << (*it)->priority << endl;
 	if ((*it)->strand == '+' && (*it)->tl_complete.first){
 	    outfile << (*it)->exon_list.front().chr << "\t";
 	    //outfile << "chr" << (*it)->exon_list.front().chr << "\t";
