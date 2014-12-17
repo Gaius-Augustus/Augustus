@@ -329,7 +329,7 @@ State *State::getBiologicalState() {
 	default:
 	    beginShift = endShift = 0;
     }
-    
+
     bioState->begin = begin + beginShift;
     bioState->end = end + endShift;
     bioState->type = type;
@@ -358,6 +358,20 @@ void State::setTruncFlag(int end, int predEnd, int dnalen){
 	truncated |= TRUNC_LEFT;
 }
 
+void State::includeFrameModIntoType(){
+    if(framemod != 0){
+	int f = frame();
+	if(isInitialExon(type))
+	    type = (StateType)(initial0 + f);
+	if(isInternalExon(type))
+	    type = (StateType)(internal0 + f);
+	if(isRTerminalExon(type))
+	    type = (StateType)(rterminal0 + f);
+	if(isRInternalExon(type))
+	    type = (StateType)(rinternal0 + f);
+	framemod = 0;
+    }
+}
 
 /* --- StatePath methods ------------------------------------------- */
 

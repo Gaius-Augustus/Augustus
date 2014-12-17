@@ -261,7 +261,9 @@ void CompGenePred::start(){
 		    if(transcripts){			    
 			for (list<Gene>::iterator geneit = transcripts->begin(); geneit != transcripts->end(); geneit++) {
 			    State *st = geneit->exons;
-			    while(st){
+ 			    while(st){
+				// include framemod into type
+				st->includeFrameModIntoType();
 				ExonCandidate *ec = new ExonCandidate(toExonType(stateTypeIdentifiers[st->type]),st->begin,st->end);
 				int_fast64_t key = ec->getKey();
 				map<int_fast64_t, ExonCandidate*>::iterator ecit;

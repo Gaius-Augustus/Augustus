@@ -156,6 +156,7 @@ public:
   Strand strand() {return isOnFStrand(type)? plusstrand : minusstrand;}
   State *getBiologicalState();
   void setTruncFlag(int end, int predEnd, int dnalen);
+  void includeFrameModIntoType();
 };
 
 bool frame_compatible(State *ex1, State* ex2);
