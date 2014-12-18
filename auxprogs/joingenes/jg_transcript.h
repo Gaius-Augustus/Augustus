@@ -15,6 +15,11 @@ using namespace std;
 class Gene;
 class Transcript;
 
+#define NUM_TYPES 4
+enum predRangeBorderStatusType{TYPE_UNKNOWN = -1,
+    noprob, tooclose, exerased
+};
+
 struct Properties{
 public:
     int errordistance;
@@ -23,6 +28,9 @@ public:
     list<string> filenames;
     list<int> priorities;
     list<int> suppList;
+    string outFileName;
+    bool join;
+    bool selecting;
 };
 
 class Exon{
@@ -63,7 +71,7 @@ class Transcript{
     pair<bool,bool> tl_complete;		// translation end complete at <start,stop> codon
     pair<bool,bool> separated_codon;	// separated <start,stop> codon
     pair<unsigned int,unsigned int> boha;		// pred range boundary status at <start/stop> side: 0-no problem, 1-too close, 2-too close but last exon erased (MARIO)
-    pair<Transcript*,Transcript*> joinpartner;	// pointer to transcript that was used to fulfill the <start,stop> codon side
+    pair<Transcript*,Transcript*> joinpartner;	// pointer to transcript that was used to complete the <start,stop> codon side
     pair<Transcript*,Transcript*> utr_joinpartner;	// pointer to transcript that was used to fulfill the <downstream-UTR,upstream-UTR> codon side
     pair<list<Transcript*>,list<Transcript*>> descendant;		// pointer to new transcripts arise from these with <start,stop>-join
     pair<Transcript*,Transcript*> correction_ancestor;
@@ -345,8 +353,11 @@ class Point{
     }
 };
 
-void divideInOverlapsAndConquer(list<Transcript> &transcript_list, string &outfilename, Properties properties);
-void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts, Properties properties);
+void divideInOverlapsAndConquer(list<Transcript> &transcript_list, Properties &properties);
+void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts, Properties &properties);
+void selection(list<Transcript*> &overlap, Properties &properties);
+void joinCall(list<Transcript*> &overlap, list<Transcript> &new_transcripts, Properties &properties);
+void compareAndSplit(list<Transcript*> &overlap, Properties &properties);
 double simpleProkScore(Transcript const* tx);
 bool areSimilar(Transcript const* t1, Transcript const* t2);
 void tooCloseToBorder(list<Transcript*> &overlap, list<Transcript> &new_transcripts, char strand, int errordistance);

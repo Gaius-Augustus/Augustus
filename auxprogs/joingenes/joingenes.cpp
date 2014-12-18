@@ -19,36 +19,44 @@ static const struct option longOpts[] = {
     { "genemodel", required_argument, NULL, 'm'},
     { "onlycompare", required_argument, NULL, 'c'},
     { "suppress", required_argument, NULL, 's' },
+    { "join", required_argument, NULL, 'j' },
     { "help", no_argument, NULL, 'h' },
     { NULL, no_argument, NULL, 0 }
 };
 
 void display_help(void)
 {
-    cout << "This is the help documentation of the joingenes programm" << endl;
+    cout << "This is the help documentation of the joingenes program." << endl;
     cout << "Options:" << endl;
     cout << "\tNecessary:" << endl;
-    cout << "\t\t--genesets=file1,file2,...\t-g file1,file2,...\twhere \"file1,file2,...,filen\" have to be datafiles with genesets in gff or gtf format" << endl;
-    cout << "\t\t--output=ofile\t\t\t-o ofile\t\twhere \"ofile\" have to be a name for an output datafile (gff)" << endl;
+    cout << "\t\t--genesets=file1,file2,...\t-g file1,file2,...\twhere \"file1,file2,...,filen\" have to be datafiles with genesets in gtf format." << endl;
+    cout << "\t\t--output=ofile\t\t\t-o ofile\t\twhere \"ofile\" have to be a name for an output datafile (gtf)." << endl;
     cout << "\tOptional:" << endl;
-    cout << "\t\t--priorities=pr1,pr2,...\t-p pr1,pr2,...\t\twhere \"pr1,pr2,...,prn\" have to be positiv integers (different from 0)" << endl;
-    cout << "\t\t\t\t\t\t\t\t\thave to be as many as filenames are added" << endl;
-    cout << "\t\t\t\t\t\t\t\t\tbigger numbers means a higher priority" << endl;
-    cout << "\t\t\t\t\t\t\t\t\tif no priorities are added, the programm will set all priorties to 1" << endl;
-    cout << "\t\t\t\t\t\t\t\t\tthis option is only usefull, if there are more then one geneset" << endl;
+    cout << "\t\t--priorities=pr1,pr2,...\t-p pr1,pr2,...\t\twhere \"pr1,pr2,...,prn\" have to be positiv integers (different from 0)." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tHave to be as many as filenames are added." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tBigger numbers means a higher priority." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tIf no priorities are added, the program will set all priorties to 1." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tThis option is only usefull, if there are more then one geneset." << endl;
     cout << "\t\t--errordistance=x\t\t-e x\t\t\twhere \"x\" have to be non-negativ integer" << endl;
-    cout << "\t\t\t\t\t\t\t\t\tif a prediction is <=x bases nexto a prediction range border, the programm suppose, that there could be a mistake" << endl;
-    cout << "\t\t\t\t\t\t\t\t\tdefault is, that it dont cares about prediction ranges" << endl;
+    cout << "\t\t\t\t\t\t\t\t\tIf a prediction is <=x bases nexto a prediction range border, the program suppose, that there could be a mistake." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tDefault is, that it dont cares about prediction ranges." << endl;
     cout << "\t\t--genemodel=x\t\t\t-m x\t\t\twhere \"x\" have to be a genemodel out of \"eukaryote\"." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tdefault is eukaryotic" << endl;
+    cout << "\t\t\t\t\t\t\t\t\tDefault is eukaryotic." << endl;
     cout << "\t\t--onlycompare=x\t\t\t-c x\t\t\twhere \"x\" can be set to \"true\"." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tdefault is false." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tif this value is set to true, it disables the normal function of the program." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tDefault is false." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tIf this value is set to true, it disables the normal function of the program." << endl;
     cout << "\t\t\t\t\t\t\t\t\tactivates a compare and seperate mode to seperate equal transcripts from non equal ones." << endl;
-    cout << "\t\t--suppress=x\t\t\t-s pr1,pr2,...\t\twhere \"pr1,pr2,...,prm\" have to be positiv integers (different from 0)" << endl;
-    cout << "\t\t\t\t\t\t\t\t\tdefault is none." << endl;
+    cout << "\t\t--suppress=pr1,pr2,..\t\t-s pr1,pr2,...\t\twhere \"pr1,pr2,...,prm\" have to be positiv integers (different from 0)." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tDefault is none." << endl;
     cout << "\t\t\t\t\t\t\t\t\tif the core of a joined/non-joined transcript has one of these priorities it will not occur in the output file." << endl;
-    cout << "\t\t--help \t\t\t\t-h\t\t\tprints the help documentation" << endl;
+    cout << "\t\t--join=x\t\t\t-j x\t\t\twhere \"x\" is a boolean value (default is true)" << endl;
+    cout << "\t\t\t\t\t\t\t\t\tIf this parameter is set to false, the program will not join/merge/shuffle;" << endl;
+    cout << "\t\t\t\t\t\t\t\t\tit will only decide between the unchanged input transcipts and output them." << endl;
+    cout << "\t\t--selecting=x\t\t\t-l x\t\t\twhere \"x\" is a boolean value (default is true)" << endl;
+    cout << "\t\t\t\t\t\t\t\t\tIf this parameter is set to false, the program will not select at the end between \"contradictory\" transcripts." << endl;
+    cout << "\t\t\t\t\t\t\t\t\t\"contradictory\" is self defined with respect to known biological terms." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tThe selection works with a self defined scoring function." << endl;
+    cout << "\t\t--help \t\t\t\t-h\t\t\tprints the help documentation." << endl;
     cout << endl;
     exit( EXIT_FAILURE );
 }
@@ -117,7 +125,7 @@ list<int> getSuppressionList(char* suppString){
 int main(int argc, char* argv[])
 {
     int opt = 0;
-    static const char *optString = "g:p:o:e:m:c:s:h?";
+    static const char *optString = "g:p:o:e:m:c:s:j:l:h?";
     list<string> filenames;
     list<int> priorities;
     list<int> suppList;
@@ -127,6 +135,8 @@ int main(int argc, char* argv[])
     properties.errordistance = -1;
     properties.genemodel = "eukaryote";
     properties.onlyCompare = false;
+    properties.join = true;
+    properties.selecting = true;
 
     opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
     while (opt != -1) {
@@ -140,7 +150,7 @@ int main(int argc, char* argv[])
 	    break;
 
 	case 'o':
-	    filename_out = optarg;
+	    properties.outFileName = optarg;
 	    break;
 	case 'e':
 	    if (strstr(optarg, "rror") !=NULL){display_error("You have to write two \"-\" before the optionname \"errordistance\".");}
@@ -153,9 +163,23 @@ int main(int argc, char* argv[])
 	case 'c':
 	    if (strstr(optarg, "true") != NULL || strstr(optarg, "1") != NULL)
 		properties.onlyCompare = true;
+	    else
+		cerr << "Unknown option for \"--onlycompare\", so this parameter is set to default. (possible is \"true\" or \"1\")" << endl;
 	    break;
 	case 's':
 	    suppList = getSuppressionList(optarg);
+	    break;
+	case 'j':
+	    if (strstr(optarg, "false") != NULL || strstr(optarg, "0") != NULL)
+		properties.join = false;
+	    else
+		cerr << "Unknown value for \"--join\", so this parameter is set to default. (possible is \"false\" or \"0\")" << endl;
+	    break;
+	case 'l':
+	    if (strstr(optarg, "false") != NULL || strstr(optarg, "0") != NULL)
+		properties.join = false;
+	    else
+		cerr << "Unknown value for \"--selecting\", so this parameter is set to default. (possible is \"false\" or \"0\")" << endl;
 	    break;
 	case 'h':
 	    display_help();
@@ -175,7 +199,7 @@ int main(int argc, char* argv[])
     if (filenames.size() == 0){
 	display_error("Missing input filenames.");
     }
-    if (filename_out == ""){
+    if (properties.outFileName == ""){
 	display_error("Missing output filename.");
     }
     if (priorities.size() == 0){
@@ -230,7 +254,7 @@ int main(int argc, char* argv[])
     }
 
     fstream outfile;
-    outfile.open(filename_out, ios::out);		// delete content of file filename
+    outfile.open(properties.outFileName, ios::out);		// delete content of file filename
     outfile.close();
 
     if (properties.onlyCompare){
@@ -251,7 +275,7 @@ int main(int argc, char* argv[])
     }
 
     for(auto it = splitted_transcript_list.begin(); it != splitted_transcript_list.end(); it++){
-        divideInOverlapsAndConquer(it->second, filename_out, properties);
+        divideInOverlapsAndConquer(it->second, properties);
     }
     return 0;
 }

@@ -20,7 +20,7 @@ void load_warning(string const &warning)
 
 void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_list, string &filename, int &priority)
 {
-    // loads gff/gtf file in a special data structure
+    // loads gtf file in a special data structure
     // mainly there is a list where all transcripts are saved; later this programm work on pointers to this list elements
     // every transcript gets a pointer to his gene in the gene hash map and backwards
     // this function will not distinguish between first column notation "chr1" and "1" or another 
@@ -68,9 +68,11 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 		else
 		    load_error("Can not read feature.");
 		if (exon.feature != "CDS" && exon.feature != "start_codon" && exon.feature != "stop_codon" && exon.feature != "exon" && exon.feature != "UTR"){
-		    list<string>::iterator fit = find(unknownFeatures.begin(),unknownFeatures.end(),exon.feature);
-		    if (fit == unknownFeatures.end()){
-			unknownFeatures.push_back(exon.feature);
+		    if (exon.feature != "gene" && exon.feature != "transcript" && exon.feature != "intron"){
+			list<string>::iterator fit = find(unknownFeatures.begin(),unknownFeatures.end(),exon.feature);
+			if (fit == unknownFeatures.end()){
+			    unknownFeatures.push_back(exon.feature);
+			}
 		    }
 		    continue;
 		}
@@ -198,17 +200,17 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 	}
     if (!unknownFeatures.empty()){
 	for (list<string>::iterator it = unknownFeatures.begin(); it != unknownFeatures.end(); it++){
-	    load_warning("There is the unexpected feature \"" + *it + "\" that is not equal to \"CDS\", \"UTR\", \"exon\", \"start_codon\" and \"stop_codon\". This feature is going to be ignored.");
+	    load_warning("There is the unexpected feature \"" + *it + "\" that is not equal to \"CDS\", \"UTR\", \"exon\", \"intron\", \"gene\", \"transcript\", \"start_codon\" and \"stop_codon\". This feature is going to be ignored.");
 	}
     }
 }
 
-void saveOverlap(list<Transcript*> &overlap, string &filename, Properties &properties)
+void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &properties)
 {
     // outputs overlap at the end of an existing file in gff format
     // every first and last outfile-line is adjusted and might be change back (to comments above)
     fstream outfile;
-    outfile.open(filename, ios::out | ios::app);
+    outfile.open(outFileName, ios::out | ios::app);
     outfile << "# overlap start --------------------------------------------------------------------------------" << endl;
     outfile << "# this overlap has " << overlap.size() << " different transcripts" << endl;
     // write by transcripts:
@@ -290,11 +292,11 @@ void saveOverlap(list<Transcript*> &overlap, string &filename, Properties &prope
     outfile.close();
 }
 
-void save(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_list, string &filename)		// pointer to gene_map is only for "write by genes" necessary
+void save(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_list, Properties &properties)		// pointer to gene_map is only for "write by genes" necessary
 {
     // this is and old save version, which saves by transcript list or by gene hash map but only saves the exon features (no start/stop codon)
     fstream outfile;
-    outfile.open(filename, ios::out);		// delete what is allready in the file (ios::out | ios::app - dont delete what is allready in the file)
+    outfile.open(properties.outFileName, ios::out);		// delete what is allready in the file (ios::out | ios::app - dont delete what is allready in the file)
 	
     // write by transcripts:
     for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
