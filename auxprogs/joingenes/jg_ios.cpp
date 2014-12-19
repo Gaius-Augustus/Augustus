@@ -209,6 +209,7 @@ void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &pro
 {
     // outputs overlap at the end of an existing file in gff format
     // every first and last outfile-line is adjusted and might be change back (to comments above)
+    if (overlap.size() == 0) {return;}
     fstream outfile;
     outfile.open(outFileName, ios::out | ios::app);
     outfile << "# overlap start --------------------------------------------------------------------------------" << endl;

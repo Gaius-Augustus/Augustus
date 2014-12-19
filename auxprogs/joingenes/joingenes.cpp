@@ -273,7 +273,6 @@ int main(int argc, char* argv[])
 	outfile.open(filenameUne2, ios::out);
 	outfile.close();
     }
-
     for(auto it = splitted_transcript_list.begin(); it != splitted_transcript_list.end(); it++){
         divideInOverlapsAndConquer(it->second, properties);
     }

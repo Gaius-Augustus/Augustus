@@ -22,7 +22,6 @@ void divideInOverlapsAndConquer(list<Transcript> &transcript_list, Properties &p
 
     for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
 	//cout << it->exon_list.begin()->chr << endl;
-	//sleep(1);
         if (min((*it).tis,(*it).tes) < max_base){
             overlap.push_back(&*it);
             if (max_base < max((*it).tis,(*it).tes)){
@@ -42,8 +41,12 @@ void divideInOverlapsAndConquer(list<Transcript> &transcript_list, Properties &p
             overlap.push_front(&*it);
         }
     }
-    workAtOverlap(overlap, new_transcripts, properties);
-    saveOverlap(overlap, properties.outFileName, properties);
+    if (!properties.onlyCompare){
+	workAtOverlap(overlap, new_transcripts, properties);
+	saveOverlap(overlap, properties.outFileName, properties);
+    }else{
+	compareAndSplit(overlap, properties);
+    }
     overlap.clear();
 }
 
@@ -242,7 +245,7 @@ void compareAndSplit(list<Transcript*> &overlap, Properties &properties){
 	    if (who_is_part.first && who_is_part.second){
 		(*it)->boha.first = 2;
 		(*it_inside)->boha.first = 2;
-	    }else if ((*it)->tes == (*it_inside)->tes){
+	    }else if ((*it)->tes && (*it_inside)->tes && (*it)->tes == (*it_inside)->tes){
 		if ((*it)->boha.first != 2)
 		    (*it)->boha.first = 1;
 		if ((*it_inside)->boha.first != 2)
@@ -567,7 +570,7 @@ void search_n_destroy_doublings(list<Transcript*> &overlap, int errordistance, b
 			if (ab_initio){
 			    (*it_inside)->supporter.push_front(*it);
 			}
-			//it = overlap.erase(it);
+			//it = overlap.erase(it);		// deleting throws information away
 			//it_inside = it;
 		    }
 		}else{
@@ -575,7 +578,7 @@ void search_n_destroy_doublings(list<Transcript*> &overlap, int errordistance, b
 			if (ab_initio){
 			    (*it)->supporter.push_front(*it_inside);
 			}
-			//it_inside = overlap.erase(it_inside);
+			//it_inside = overlap.erase(it_inside);	// deleting throws information away
 			//it_inside--;
 		    }
 		}
