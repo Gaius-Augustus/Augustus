@@ -177,7 +177,6 @@ class Transcript{
 			    new_cds.feature = "CDS";
 			    new_cds.frame = 0;
 			    exon_list.push_back(new_cds);
-cout << new_cds.from << endl;
 			}
 		    }
 		}
@@ -253,7 +252,6 @@ cout << new_cds.from << endl;
 			    new_cds.feature = "CDS";
 			    new_cds.frame = 0;
 			    exon_list.push_front(new_cds);
-cout << new_cds.from << endl;
 			}
 		    }
 		}
