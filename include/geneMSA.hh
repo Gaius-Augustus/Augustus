@@ -20,6 +20,7 @@
 
 //forward declarations
 class OrthoGraph;
+string printRFC(vector<int>);
 //struct cumValues;
 
 struct cumValues{

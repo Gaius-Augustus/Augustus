@@ -347,11 +347,9 @@ void CompGenePred::start(){
 	    geneRange->printConsScore(seqRanges, outdir);
 
 	if (!noprediction){
-	    list<OrthoExon> hects = geneRange->getOrthoExons();
+	  list<OrthoExon> hects = geneRange->getOrthoExons();
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
-
 	    orthograph.outputGenes(baseGenes,base_geneid);
-	    
 	    if(featureScoreHects){
 		//add score for selective pressure of orthoexons
 		orthograph.addScoreSelectivePressure();

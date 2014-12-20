@@ -38,6 +38,7 @@ public:
     double getDiversity() const {return diversity;}
     size_t getContainment() const {return containment;}
     bit_vector getBV() const {return bv;}
+  vector<int> getRFC(vector<int> offsets) const;
     PhyloTree* getTree() const {return tree;}
     int getAliStart() const {return (key>>22);} // start position of HECT in alignment
     int getAliLen() const {int aliStart=getAliStart(); int n=key-(aliStart<<22); return (n>>7);} // length of HECT + 1

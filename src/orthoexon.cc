@@ -64,8 +64,8 @@ void OrthoExon::setTree(PhyloTree* t) {
     setDiversity(tree->getDiversity());
 }
 
-
-vector<int> OrthoExon::getRFC(vector<int> offsets){
+ 
+vector<int> OrthoExon::getRFC(vector<int> offsets) const{
     vector<int> rfc;
     for (size_t s = 0; s < orthoex.size(); s++){
 	if(orthoex[s] == NULL)
