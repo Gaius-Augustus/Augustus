@@ -229,15 +229,27 @@ void OrthoGraph::addScoreSelectivePressure(){
 	}
     }
     // reward/penalty that only EC receives which are part of an OE
+    static bool detection = false;
     if(!all_orthoex.empty()){
 	for(list<OrthoExon>::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(it->orthoex[pos]){
 		    Node* node = it->orthonode[pos];
 		    int len =  node->end - node->begin + 1;
+ 		    double x = b*(0.015 * len + 1.277 * it->getConsScore() + 4.37 * it->getDiversity() -0.92);
+		    if (string("honeybee1") == Properties::getProperty("species") && !detection){
+			cout << "honeybee1 detected" << endl;
+			detection = true;
+			double Eomega = it->getEomega(),
+			    cons = it->getConsScore(),
+			    cont = it->getContainment(),
+			    s = it->numExons(),
+			    len = it->getAliLen();
+			x = b*(-6.585 -3.80 * Eomega + 0.860 * Eomega * Eomega -5.147 * cons -0.0084 * cont + 1.446 * s + 1.245 * log(len));
+		    }
 		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
 			// default EC-filter on:  
-		       	iter->score += b*(0.015 * len + 1.277 * it->getConsScore() + 4.37 * it->getDiversity() -0.92);
+		       	iter->score += x;
 		    }
 		}
 	    }
