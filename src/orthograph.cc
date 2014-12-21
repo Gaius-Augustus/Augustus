@@ -245,7 +245,7 @@ void OrthoGraph::addScoreSelectivePressure(){
 			    cont = it->getContainment(),
 			    s = it->numExons(),
 			    len = it->getAliLen();
-			x = b*(-6.585 -3.80 * Eomega + 0.860 * Eomega * Eomega -5.147 * cons -0.0084 * cont + 1.446 * s + 1.245 * log(len));
+			x = b*(1.396 - 6.585 -3.80 * Eomega + 0.860 * Eomega * Eomega -5.147 * cons -0.0084 * cont + 1.446 * s + 1.245 * log(len));
 		    }
 		    for (list<Edge>::iterator iter =  node->edges.begin(); iter != node->edges.end(); iter++){
 			// default EC-filter on:  
