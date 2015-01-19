@@ -27,7 +27,7 @@ public:
     bool onlyCompare;
     list<string> filenames;
     list<int> priorities;
-    list<int> suppList;
+    list<int> supprList;
     string outFileName;
     bool join;
     bool selecting;

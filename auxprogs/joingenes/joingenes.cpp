@@ -105,21 +105,21 @@ list<int> get_priorities(char* priority_string){
 }
 
 list<int> getSuppressionList(char* suppString){
-    list<int> suppList;
+    list<int> supprList;
     char *temp_inside;
     string str_temp = suppString;
     unsigned int n_comma = count(str_temp.begin(), str_temp.end(), ',');
     if (n_comma){
 	temp_inside = strtok(suppString, ",");
-	suppList.push_back(atoi(temp_inside));
+	supprList.push_back(atoi(temp_inside));
 	for (unsigned int j = 1; j <= n_comma; j++){
 	    temp_inside = strtok(NULL, ",");
-	    suppList.push_back(atoi(temp_inside));
+	    supprList.push_back(atoi(temp_inside));
 	}
     }else{
-	suppList.push_back(atoi(suppString));
+	supprList.push_back(atoi(suppString));
     }
-    return suppList;
+    return supprList;
 }
 
 int main(int argc, char* argv[])
@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
     static const char *optString = "g:p:o:e:m:c:s:j:l:h?";
     list<string> filenames;
     list<int> priorities;
-    list<int> suppList;
+    list<int> supprList;
     string filename_out;
     int longIndex;
     Properties properties;
@@ -152,38 +152,46 @@ int main(int argc, char* argv[])
 	case 'o':
 	    properties.outFileName = optarg;
 	    break;
+
 	case 'e':
 	    if (strstr(optarg, "rror") !=NULL){display_error("You have to write two \"-\" before the optionname \"errordistance\".");}
 	    properties.errordistance = atoi(optarg);
 	    break;
+
 	case 'm':
 	    if (strstr(optarg, "bacterium") == NULL){display_error("You used a wrong parameter for genemodel (allowed are \"bacterium\").");}
 	    properties.genemodel = optarg;
 	    break;
+
 	case 'c':
 	    if (strstr(optarg, "true") != NULL || strstr(optarg, "1") != NULL)
 		properties.onlyCompare = true;
 	    else
 		cerr << "Unknown option for \"--onlycompare\", so this parameter is set to default. (possible is \"true\" or \"1\")" << endl;
 	    break;
+
 	case 's':
-	    suppList = getSuppressionList(optarg);
+	    supprList = getSuppressionList(optarg);
 	    break;
+
 	case 'j':
 	    if (strstr(optarg, "false") != NULL || strstr(optarg, "0") != NULL)
 		properties.join = false;
 	    else
 		cerr << "Unknown value for \"--join\", so this parameter is set to default. (possible is \"false\" or \"0\")" << endl;
 	    break;
+
 	case 'l':
 	    if (strstr(optarg, "false") != NULL || strstr(optarg, "0") != NULL)
 		properties.join = false;
 	    else
 		cerr << "Unknown value for \"--selecting\", so this parameter is set to default. (possible is \"false\" or \"0\")" << endl;
 	    break;
+
 	case 'h':
 	    display_help();
 	    break;
+
 	case '0':				// long option without short form
 	    break;
 
@@ -219,7 +227,7 @@ int main(int argc, char* argv[])
 
     properties.filenames = filenames;
     properties.priorities = priorities;
-    properties.suppList = suppList;
+    properties.supprList = supprList;
 
     if (properties.onlyCompare == true && (properties.priorities.size() != 2 || properties.priorities.begin() == properties.priorities.end())){
 	display_error("CompareMode is only working with exact 2 priorities, which have to be different.");

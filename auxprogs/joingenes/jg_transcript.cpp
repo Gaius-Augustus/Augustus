@@ -9,7 +9,6 @@ int value = 0;				// only for semantic tests
 void divideInOverlapsAndConquer(list<Transcript> &transcript_list, Properties &properties){
     // divide a transcript list in clusters of overlapping transcripts (transitive closure) and work on each cluster separately
     transcript_list.sort();
-
     list<Transcript> new_transcripts;
     list<Transcript*> overlap;
 
@@ -93,9 +92,10 @@ void selection(list<Transcript*> &overlap, Properties &properties){
 
     // if there is such a highest priority delete transcripts with lower priority and some uncomplete ones and that ones with low score and so on...
     if (highest_complete_priority){
-	if (properties.genemodel == "bacterium")
+	if (properties.genemodel == "bacterium"){
 	    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 		if (highest_complete_priority > (*it)->priority){
+		// delete all lower priority transcripts who are not strong enough, and those who are inconsistent with higher priority transcripts
 		    if ((*it)->tl_complete.second == false){
 			it = overlap.erase(it);
 			it--;
@@ -153,8 +153,7 @@ void selection(list<Transcript*> &overlap, Properties &properties){
 		    }
 		}
 	    }
-    }else{
-	if (highest_complete_priority){
+	}else{
 	    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 		if (highest_complete_priority > (*it)->priority){
 		    it = overlap.erase(it);
@@ -457,9 +456,8 @@ void tooCloseToBorder(list<Transcript*> &overlap, list<Transcript> &new_transcri
 		    int distance = (*it)->pred_range.second - (*it)->exon_list.back().to;
 		    if (distance <= errordistance){
 			if ((*it)->exon_list.size() == 1){
-			    if (overlap.size() <= 1){(*it)->boha.first = 1; (*it)->boha.second = 1; return;}
-			    it = overlap.erase(it);
-			    it--;
+			    (*it)->boha.first = 1;
+			    (*it)->boha.second = 1;
 			    continue;
 			}
 			Transcript tx_new = (*(*it));
@@ -492,9 +490,8 @@ void tooCloseToBorder(list<Transcript*> &overlap, list<Transcript> &new_transcri
 		    int distance = (*it)->exon_list.front().from - (*it)->pred_range.first;
 		    if (distance <= errordistance){
 			if ((*it)->exon_list.size() == 1){
-			    if (overlap.size() <= 1){(*it)->boha.first = 1; (*it)->boha.second = 1; return;}
-			    it = overlap.erase(it);
-			    it--;
+			    (*it)->boha.first = 1;
+			    (*it)->boha.second = 1;
 			    continue;
 			}
 			Transcript tx_new = (*(*it));

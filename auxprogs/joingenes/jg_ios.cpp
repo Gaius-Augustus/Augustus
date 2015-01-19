@@ -36,17 +36,17 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
     char *temp_inside;
     pair<int,int> pred_range;
     unordered_map<string,Transcript> transcript_hash;
+    unsigned int unknownCount = 0;
 
     infile.getline(buff, 1024);
     list<string> unknownFeatures;
     while (infile){
 	// if line dont starts with '#'
 	if (buff[0]!='#'){
-	    if ((strstr(buff, "gene_id")!=NULL) && (strstr(buff, "transcript_id")!=NULL)){
+	    //if ((strstr(buff, "gene_id")!=NULL) && (strstr(buff, "transcript_id")!=NULL)){
 		Exon exon;
 		Transcript transcript;
 		transcript.priority = priority;
-
 		Gene gene;
 		strncpy(copybuff, buff, 1014);
 		if (strstr(buff, "\t")==NULL) {
@@ -74,6 +74,7 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 			    unknownFeatures.push_back(exon.feature);
 			}
 		    }
+		    infile.getline(buff, 1024);
 		    continue;
 		}
 		temp = strtok(NULL, "\t");
@@ -120,64 +121,86 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 		    string gene_id;
 		    string transcript_id;
 		    temp_inside = strtok(attribute, "\"");
-		    while (temp_inside && (gene_id.empty() || transcript_id.empty())){
+		    while (/*temp_inside && */(gene_id.empty() || transcript_id.empty())){
+			if (((strstr(temp, "gene_id")==NULL) && (strstr(temp, "transcript_id")==NULL)) || !temp_inside){
+			    unknownCount++;
+			    string newIdentifier = "g" + to_string(unknownCount);
+			    if (gene_map.find(newIdentifier) == gene_map.end()){
+				gene_id = newIdentifier;
+			    }else{continue;}
+			    if (transcript_hash.find(newIdentifier + ".t1") == transcript_hash.end()){
+				transcript_id = newIdentifier + ".t1";
+			    }else{continue;}
+			}
 			if (strstr(temp_inside, "transcript_id")!=NULL){
 			    temp_inside = strtok(NULL, "\"");
 			    transcript_id = temp_inside;
-			    if (transcript_hash.find(transcript_id) == transcript_hash.end()){
-				transcript.t_id = transcript_id;
-				transcript_hash[transcript_id] = transcript;
-			    }else if (transcript.strand != transcript_hash[transcript_id].strand){
-				load_warning("One transcript on different strands.");
+			    if (strstr(buff, "gene_id")==NULL){
+				gene_id = transcript_id;
 			    }
-			    if (exon.feature == "start_codon"){
-				if (transcript_hash[transcript_id].tl_complete.first)
-				    transcript_hash[transcript_id].separated_codon.first = true;
-				if (transcript_hash[transcript_id].strand == '+'){
-				    if (!transcript_hash[transcript_id].tl_complete.first || (transcript_hash[transcript_id].tl_complete.first && transcript_hash[transcript_id].tis > exon.from))
-					transcript_hash[transcript_id].tis = exon.from;
-				}
-				if (transcript_hash[transcript_id].strand == '-'){
-				    if (!transcript_hash[transcript_id].tl_complete.first || (transcript_hash[transcript_id].tl_complete.first && transcript_hash[transcript_id].tis < exon.to))
-					transcript_hash[transcript_id].tis = exon.to;
-				}
-				transcript_hash[transcript_id].tl_complete.first = true;
-			    }else if (exon.feature == "stop_codon"){
-				if (transcript_hash[transcript_id].tl_complete.second){
-				    transcript_hash[transcript_id].separated_codon.second = true;}
-				if (transcript_hash[transcript_id].strand == '+'){
-				    if (!transcript_hash[transcript_id].tl_complete.second || (transcript_hash[transcript_id].tl_complete.second && transcript_hash[transcript_id].tes < exon.to))
-					transcript_hash[transcript_id].tes = exon.to;
-				}
-				if (transcript_hash[transcript_id].strand == '-'){
-				    if (!transcript_hash[transcript_id].tl_complete.second || (transcript_hash[transcript_id].tl_complete.second && transcript_hash[transcript_id].tes > exon.from))
-					transcript_hash[transcript_id].tes = exon.from;
-				}
-				transcript_hash[transcript_id].tl_complete.second = true;
-			    }else{
-				transcript_hash[transcript_id].exon_list.push_front(exon);
-			    }
-			    if (pred_range.first && pred_range.second){
-				transcript_hash[transcript_id].pred_range = pred_range;
-			    }
+// ,,,
 			}
 			if (strstr(temp_inside, "gene_id")!=NULL){
 			    temp_inside = strtok(NULL, "\"");
 			    gene_id = temp_inside;
-			    if (gene_map.count(gene_id) == 0)
-				{
-				    gene.g_id = gene_id;
-				    gene_map[gene_id] = gene;
-				}
+// ,,,2
+			    if (strstr(buff, "transcript_id")==NULL){
+				transcript_id = gene_id;
+			    }
 			}
 			temp_inside = strtok(NULL, "\"");
 		    }
+// :...
+		    if (transcript_hash.find(transcript_id) == transcript_hash.end()){
+			transcript.t_id = transcript_id;
+			transcript_hash[transcript_id] = transcript;
+		    }else if (transcript.strand != transcript_hash[transcript_id].strand){
+			load_warning("One transcript on different strands.");
+		    }
+		    if (exon.feature == "start_codon"){
+			if (transcript_hash[transcript_id].tl_complete.first)
+			    transcript_hash[transcript_id].separated_codon.first = true;
+			if (transcript_hash[transcript_id].strand == '+'){
+			    if (!transcript_hash[transcript_id].tl_complete.first || (transcript_hash[transcript_id].tl_complete.first && transcript_hash[transcript_id].tis > exon.from))
+				transcript_hash[transcript_id].tis = exon.from;
+			}
+			if (transcript_hash[transcript_id].strand == '-'){
+			    if (!transcript_hash[transcript_id].tl_complete.first || (transcript_hash[transcript_id].tl_complete.first && transcript_hash[transcript_id].tis < exon.to))
+				transcript_hash[transcript_id].tis = exon.to;
+			}
+			transcript_hash[transcript_id].tl_complete.first = true;
+		    }else if (exon.feature == "stop_codon"){
+			if (transcript_hash[transcript_id].tl_complete.second){
+			    transcript_hash[transcript_id].separated_codon.second = true;}
+			if (transcript_hash[transcript_id].strand == '+'){
+			    if (!transcript_hash[transcript_id].tl_complete.second || (transcript_hash[transcript_id].tl_complete.second && transcript_hash[transcript_id].tes < exon.to))
+				transcript_hash[transcript_id].tes = exon.to;
+			}
+			if (transcript_hash[transcript_id].strand == '-'){
+			    if (!transcript_hash[transcript_id].tl_complete.second || (transcript_hash[transcript_id].tl_complete.second && transcript_hash[transcript_id].tes > exon.from))
+				transcript_hash[transcript_id].tes = exon.from;
+			}
+			transcript_hash[transcript_id].tl_complete.second = true;
+		    }else{
+			transcript_hash[transcript_id].exon_list.push_front(exon);
+		    }
+		    if (pred_range.first && pred_range.second){
+			transcript_hash[transcript_id].pred_range = pred_range;
+		    }
+
+// -----------------
+
+		    if (gene_map.count(gene_id) == 0){
+			gene.g_id = gene_id;
+			gene_map[gene_id] = gene;
+		    }
+
+// ----------------2
+
 		    transcript_hash[transcript_id].parent = &gene_map[gene_id];
-		}
-		else 
+		}else 
 		    load_error("Can not read last column.");
-	    }
-	    else{}	// cerr << "A line without gene_id and/or transcript_id." << endl;
+	    //}else{}	// cerr << "A line without gene_id and/or transcript_id." << endl;
 	}else {			// if line starts with '#'
 	    strncpy(copybuff, buff, 1014);
 	    if (strstr(buff, "sequence range")!=NULL) {
@@ -216,9 +239,16 @@ void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &pro
     outfile << "# this overlap has " << overlap.size() << " different transcripts" << endl;
     // write by transcripts:
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-	if (find(properties.suppList.begin(),properties.suppList.end(),(*it)->priority) != properties.suppList.end()){continue;}
+	if (find(properties.supprList.begin(),properties.supprList.end(),(*it)->priority) != properties.supprList.end()){
+	    outfile << "# " << (*it)->t_id << " is suppressed." << endl;
+	    continue;
+	}
 	outfile << "# " << (*it)->t_id << " is supported by " << (*it)->supporter.size() << " other predictions" << endl;
-	outfile << "# core-transcrpit has priority " << (*it)->priority << endl;
+	outfile << "# core-transcrpit " << (*it)->t_id << " has priority " << (*it)->priority << endl;
+	if ((*it)->joinpartner.first != NULL)
+	    outfile << "# transcrpit has been joined at 5'-side with " << (*it)->joinpartner.first->t_id << endl;
+	if ((*it)->joinpartner.second != NULL)
+	    outfile << "# transcrpit has been joined at 3'-side with " << (*it)->joinpartner.second->t_id << endl;
 	if ((*it)->strand == '+' && (*it)->tl_complete.first){
 	    outfile << (*it)->exon_list.front().chr << "\t";
 	    //outfile << "chr" << (*it)->exon_list.front().chr << "\t";
