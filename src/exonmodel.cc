@@ -108,7 +108,7 @@ int             ExonModel::lastParIndex = -1; // GC-index of current parameter s
 int             ExonModel::verbosity;
 int             ExonModel::startcounts[64] = {0};
 int             ExonModel::lenboostL = INT_MAX; // parameters for boosting length dist of single and initial exons
-double          ExonModel::lenboostE = 0; // length above L are improved, the more the larger E is
+double          ExonModel::lenboostE = 0; // lengths above L are improved, the more the larger E is
 
 /* --- OpenReadingFrame methods ------------------------------------ */
 
@@ -1120,6 +1120,7 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 			    exonScorer->score(predVit, predState, transEmiProb);
 			    if (algovar==doBacktracking && exonScorer->hasNewMax()) {
 				oli.base = endOfPred;
+				oli.resetPredEnd();
 				oli.state = getFullStateId(predState, exonScorer->getPredSubstate());
 			    }
 			} catch(NoSubmapFoundError e) {}
@@ -1129,6 +1130,7 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 		    maxProb = predProb;
 		    if (algovar==doBacktracking && !checkSubstates) {
 			oli.base = endOfPred;
+			oli.resetPredEnd();
 			oli.state = predState;
 		    }
 		}
@@ -1261,8 +1263,8 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
       //cout << "possible predState=" << predState << " predProb=" << predProb << endl;
       if (predProb > maxProb && endOfPred2 < base) {
 	  // cout << "# overlap improves at endOfPred=" << endOfPred << " endOfPred2=" << endOfPred2 
-	  // << " state=" << state << " predState=" << predState << " ovlp=" << ovlp
-	  // << " bioOvlp=" << bioOvlp << " lenProb=" << lenProb << endl;
+	  //     << " state=" << state << " predState=" << predState << " ovlp=" << ovlp
+	  //     << " bioOvlp=" << bioOvlp << " lenProb=" << lenProb << endl;
 	  maxProb = predProb;
 	  if (algovar == doBacktracking) {
 	      oli.base = endOfPred;

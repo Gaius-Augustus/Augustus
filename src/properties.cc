@@ -210,6 +210,7 @@ HINTSFILE_KEY,
 "minmeanexonintronprob",
 "noInFrameStop",
 "noprediction",
+EXTERNAL_KEY, // optCfgFile
 "orthoexons",
 "outfile",
 "predictionEnd",

@@ -730,6 +730,7 @@ public:
 	probability = p;
     }
     void reset(){state = TYPE_UNKNOWN; base = predEnd = -INT_MAX;}
+    void resetPredEnd() {predEnd = -INT_MAX;}
     int state;
     int base;
     int predEnd; // base at which predecessor state ends, usually identical to base unless states (genes) overlap
