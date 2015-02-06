@@ -244,7 +244,12 @@ int main(int argc, char* argv[])
 	}
 
 	for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
-	    (*it).initiate();
+	    if ((*it).exon_list.size() == 0){
+		it = transcript_list.erase(it);
+		it--;
+	    }else{
+		(*it).initiate();
+	    }
 	}
     }else{
         display_error("Number of input files and priorities is not equal.");

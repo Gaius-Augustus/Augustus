@@ -67,7 +67,7 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 		    exon.feature = temp;
 		else
 		    load_error("Can not read feature.");
-		if (exon.feature != "CDS" && exon.feature != "start_codon" && exon.feature != "stop_codon" && exon.feature != "exon" && exon.feature != "UTR"){
+		if (exon.feature != "CDS" && exon.feature != "start_codon" && exon.feature != "stop_codon" && exon.feature != "exon" && exon.feature != "UTR" && exon.feature != "3'-UTR" && exon.feature != "5'-UTR"){
 		    if (exon.feature != "gene" && exon.feature != "transcript" && exon.feature != "intron"){
 			list<string>::iterator fit = find(unknownFeatures.begin(),unknownFeatures.end(),exon.feature);
 			if (fit == unknownFeatures.end()){
@@ -223,7 +223,7 @@ void load(unordered_map<string,Gene> &gene_map, list<Transcript> &transcript_lis
 	}
     if (!unknownFeatures.empty()){
 	for (list<string>::iterator it = unknownFeatures.begin(); it != unknownFeatures.end(); it++){
-	    load_warning("There is the unexpected feature \"" + *it + "\" that is not equal to \"CDS\", \"UTR\", \"exon\", \"intron\", \"gene\", \"transcript\", \"start_codon\" and \"stop_codon\". This feature is going to be ignored.");
+	    load_warning("There is the unexpected feature \"" + *it + "\" that is not equal to \"CDS\", \"UTR\", \"3'-UTR\", \"5'-UTR\", \"exon\", \"intron\", \"gene\", \"transcript\", \"start_codon\" and \"stop_codon\". This feature is going to be ignored.");
 	}
     }
 }
@@ -243,8 +243,8 @@ void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &pro
 	    outfile << "# " << (*it)->t_id << " is suppressed." << endl;
 	    continue;
 	}
-	outfile << "# " << (*it)->t_id << " is supported by " << (*it)->supporter.size() << " other predictions" << endl;
-	outfile << "# core-transcrpit " << (*it)->t_id << " has priority " << (*it)->priority << endl;
+	outfile << "# " << (*it)->t_id << " is supported by " << (*it)->supporter.size() << " other predicted genes" << endl;
+	outfile << "# core-transcript " << (*it)->t_id << " has priority " << (*it)->priority << endl;
 	if ((*it)->joinpartner.first != NULL)
 	    outfile << "# transcrpit has been joined at 5'-side with " << (*it)->joinpartner.first->t_id << endl;
 	if ((*it)->joinpartner.second != NULL)

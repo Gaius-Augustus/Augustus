@@ -96,16 +96,18 @@ void selection(list<Transcript*> &overlap, Properties &properties){
 	    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 		if (highest_complete_priority > (*it)->priority){
 		// delete all lower priority transcripts who are not strong enough, and those who are inconsistent with higher priority transcripts
-		    if ((*it)->tl_complete.second == false){
+		    if ((*it)->tl_complete.second == false){						// TODO: maybe add "|| (*it)->tl_complete.first == false"
 			it = overlap.erase(it);
 			it--;
 		    }else{
 			for (list<Transcript*>::iterator itInside = completeHighPriorityTranscripts.begin(); itInside != completeHighPriorityTranscripts.end(); itInside++){
-			    if ((*itInside)->tes == (*it)->tes && (*itInside)->strand == (*it)->strand){
+			    // if both transcript have same stop_codon and same strand, then delete the one with lower priority (only if the higher priority one is not to close to a prediction range
+			    if ((*itInside)->tes == (*it)->tes && (*itInside)->strand == (*it)->strand && ((*itInside)->boha.first != 1 && (*itInside)->boha.second != 1)){
 				it = overlap.erase(it);
 				it--;
 				break;
 			    }
+			    // delete the one with lower priority, if the other one is trustful or completely enclose it
 			    int lowInside;
 			    int highInside;
 			    int high;
@@ -134,6 +136,16 @@ void selection(list<Transcript*> &overlap, Properties &properties){
 				it--;
 				break;
 			    }
+			    // delete the transcript with higher priority, if it is not trustful and shorter than the other one in the critical direction
+			    // TODO: makes no sense here, cause at the end only the overlap vector is important; needs another loop
+			    /*if ((*it)->strand == '+' && (*itInside)->strand == '+' && (((*itInside)->tis > (*it)->tis && (*itInside)->boha.first == 1) || ((*itInside)->tes < (*it)->tes && (*itInside)->boha.second == 1))){
+				itInside = overlap.erase(itInside);
+				itInside--;
+			    }
+			    if ((*it)->strand == '-' && (*itInside)->strand == '-' && (((*itInside)->tis < (*it)->tis && (*itInside)->boha.first == 1) || ((*itInside)->tes > (*it)->tes && (*itInside)->boha.second == 1))){
+				itInside = overlap.erase(itInside);
+				itInside--;
+			    }*/
 			}
 		    }
 		}else if (highest_complete_priority == (*it)->priority){
@@ -142,6 +154,7 @@ void selection(list<Transcript*> &overlap, Properties &properties){
 			it--;		
 		    }else{
 			for (list<Transcript*>::iterator itInside = completeHighPriorityTranscripts.begin(); itInside != completeHighPriorityTranscripts.end(); itInside++){
+			    // delete the lower "simpleProkScore()" one, if both are on same strand with same stop codon
 			    if ((*itInside)->tes == (*it)->tes && (*itInside)->strand == (*it)->strand){
 				if (simpleProkScore(*it) < simpleProkScore(*itInside)){
 				    it = overlap.erase(it);
@@ -149,6 +162,12 @@ void selection(list<Transcript*> &overlap, Properties &properties){
 				    break;
 				}
 			    }
+			    // delete the not trustful one, if 2 overlaping at that position
+			    /*if (areOverlapping(*it,*itInside) && (*itInside)->boha.first == 1 && (*itInside)->boha.second == 1){
+				it = overlap.erase(it);
+				it--;
+				break;
+			    }*/
 			}
 		    }
 		}
@@ -158,7 +177,7 @@ void selection(list<Transcript*> &overlap, Properties &properties){
 		if (highest_complete_priority > (*it)->priority){
 		    it = overlap.erase(it);
 		    it--;
-		}else if ((!(*it)->tl_complete.first || !(*it)->tl_complete.second) && (highest_complete_priority == (*it)->priority)){
+		}else if ((!(*it)->tl_complete.first || !(*it)->tl_complete.second) && (highest_complete_priority == (*it)->priority)){			// TODO: not only for uncomplete transcripts... maybe handle these ones otherwise anyway!!!
 		    for (list<Transcript*>::iterator itInside = completeHighPriorityTranscripts.begin(); itInside != completeHighPriorityTranscripts.end(); itInside++){
 			if (areSimilar(*it,*itInside)){
 			    it = overlap.erase(it);
@@ -171,6 +190,10 @@ void selection(list<Transcript*> &overlap, Properties &properties){
 	}
     }
 }
+
+/*bool areOverlapping(Transcript* t1, Transcript* t2){		// TODO: only true for normal overlap... not for one transcript is completely in the other
+    return (((t2->tis - t1->tis) * (t2->tis - t1->tes)) <= 0) || (((t2->tes - t1->tis) * (t2->tes - t1->tes)) <= 0);
+}*/
 
 void joinCall(list<Transcript*> &overlap, list<Transcript> &new_transcripts, Properties &properties){
     // test if some exon is to close to prediction range border
@@ -456,8 +479,10 @@ void tooCloseToBorder(list<Transcript*> &overlap, list<Transcript> &new_transcri
 		    int distance = (*it)->pred_range.second - (*it)->exon_list.back().to;
 		    if (distance <= errordistance){
 			if ((*it)->exon_list.size() == 1){
-			    (*it)->boha.first = 1;
-			    (*it)->boha.second = 1;
+			    it = overlap.erase(it);					// TODO is no good solution, but better than doing nothing... has to be changed
+			    it--;
+			    //(*it)->boha.first = 1;
+			    //(*it)->boha.second = 1;
 			    continue;
 			}
 			Transcript tx_new = (*(*it));
@@ -470,7 +495,7 @@ void tooCloseToBorder(list<Transcript*> &overlap, list<Transcript> &new_transcri
 				    tx_new.tl_complete.second = false;
 				}
 			    }
-			}else{
+			}else{ // "-" strand
 			    (*it)->boha.first = 1;
 			    tx_new.boha.first = 2;
 			    tx_new.correction_ancestor.first = (*it);

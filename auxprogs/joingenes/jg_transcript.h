@@ -122,7 +122,7 @@ class Transcript{
 	    if (tl_complete.second){
 		if (cdsback != tes){
 		    for (list<Exon>::iterator it = exon_list.begin(); it != exon_list.end(); it++){
-			if ((*it).feature == "UTR" && cdsback < (*it).from){
+			if (((*it).feature == "UTR" || (*it).feature == "3'-UTR" || (*it).feature == "5'-UTR") && cdsback < (*it).from){
 			    done = true;
 			    if ((*it).from == cdsback + 1){
 				int temp = (*it).to - (*it).from + 1;
@@ -196,7 +196,7 @@ class Transcript{
 				exit( EXIT_FAILURE );
 			    }
 			    //it--;
-			    if (it != exon_list.begin() && (*(it--)).feature == "UTR"){
+			    if (it != exon_list.begin() && ((*(it--)).feature == "UTR" || (*it).feature == "3'-UTR" || (*it).feature == "5'-UTR")){
 				done = true;
 				if ((*it).to == cdsfront - 1){
 				    int temp = (*it).to - (*it).from + 1;
@@ -356,6 +356,7 @@ class Point{
 void divideInOverlapsAndConquer(list<Transcript> &transcript_list, Properties &properties);
 void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts, Properties &properties);
 void selection(list<Transcript*> &overlap, Properties &properties);
+bool areOverlapping(Transcript* t1, Transcript* t2);
 void joinCall(list<Transcript*> &overlap, list<Transcript> &new_transcripts, Properties &properties);
 void compareAndSplit(list<Transcript*> &overlap, Properties &properties);
 double simpleProkScore(Transcript const* tx);
