@@ -27,9 +27,9 @@ int Genome::no_genomes=0;
 void Genome::parseExtrinsicGFF(string gfffilename){
     ifstream ifstrm(gfffilename.c_str());
     if (ifstrm.is_open()){
-	try{
 	    int line_no = 0;
-	    while (ifstrm) {
+	    try{
+		while (ifstrm) {
 		string line;
 		getline(ifstrm, line);
 		line_no++;
@@ -37,7 +37,7 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		    continue;
 		vector<string> tokens = splitString(line);
 		if(tokens.size() != 9)
-		    throw ProjectError("wrong number of columns in line " + itoa(line_no) + "\n");
+		    throw ProjectError("wrong number of columns.\n");
 
 		map<string,int>::iterator it = seqnames.find(tokens[0]);
 		if(it == seqnames.end()) // no gene on that sequence
@@ -67,7 +67,7 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		    }
 		    esource = string(spos, skeylen);
 		} else {
-		    throw ProjectError("Error in hint line " + itoa(line_no) + "\nNo source specified (e.g. by source=M in the last column)\n");
+		    throw ProjectError("No source specified (e.g. by source=M in the last column).\n");
 		}
 		/*
 		 * find all gene features that are supported
@@ -105,23 +105,22 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 	    }	    
 	    
 	} catch( ProjectError& err ){
-	    cerr << "ERROR\n\t" << err.getMessage( ) << endl;
-	    exit(1);
+	    cerr << "Error in " << gfffilename << " in line " << line_no << endl;
+	    throw err;
 	}
     }
     else
-        cerr<<"Could not open input gff file "<<gfffilename << endl;
+        throw ProjectError("Could not open input gff file " + gfffilename + ".\n");
 }
 
 void Genome::parseGTF(string gtffilename){
     ifstream ifstrm(gtffilename.c_str());
     if (ifstrm.is_open()){
-	//	cout << gtffilename << " is open." << endl;
+	int line_no = 0;
 	try{
 	    Gene *gene = NULL;
 	    GeneFeature *pred_exon = NULL;
 
-	    int line_no = 0;
 	    while (ifstrm) {
 		string line;
 		getline(ifstrm, line);
@@ -130,7 +129,7 @@ void Genome::parseGTF(string gtffilename){
 		    continue;
 		vector<string> tokens = splitString(line);
 		if(tokens.size() != 9)
-		    throw ProjectError("wrong number of columns in line " + itoa(line_no) + "\n");
+		    throw ProjectError("wrong number of columns.\n");
 
 		// determine transcript and geneid
 		string attribute = tokens[8];
@@ -154,9 +153,14 @@ void Genome::parseGTF(string gtffilename){
 		    }
 		}
 		if(geneid.empty())
-		    throw ProjectError("missing gene_id in line  " + itoa(line_no) + "\n");
+		    throw ProjectError("missing gene_id.\n");
 		if(transid.empty())
-		    throw ProjectError("missing transcript_id in line  " + itoa(line_no) + "\n");
+		    throw ProjectError("missing transcript_id.\n");
+
+		if( gene && (gene->getGeneID() == geneid) && (gene->getTxID() != transid) )
+		    throw ProjectError("Gene " + geneid + " with multiple transcripts "
+				       + transid + "," + gene->getTxID() + ". "
+				       + "Current version only supports one transcript per gene");
 
 		if(!gene || (gene && gene->getGeneID() != geneid)){ // new gene starts
 
@@ -207,15 +211,17 @@ void Genome::parseGTF(string gtffilename){
 		    pred_exon = exon;
 		}
 	    }
+	    if(gene && gene->hasFeatures())
+		genes.push_back(gene);
 	} catch( ProjectError& err ){
-	    cerr << "ERROR\n\t" << err.getMessage( ) << endl;
-	    exit(1);
+	    cerr << "Error in " << gtffilename << " in line " << line_no << endl;
+	    throw err;
 	}
     }
     else
-        cerr<<"Could not open input gtf file "<<gtffilename << endl;
-
+        throw ProjectError("Could not open input gtf file " + gtffilename + ".\n");
 }
+
 
 void Genome::writeGeneFeature(GeneFeature *gf, ofstream &of) const {
     of << getSeqName(gf->getSeqID()) << "\t";
@@ -303,11 +309,9 @@ void Genome::liftOverTo(Genome &other, string halfile, string halLiftover_exec, 
 
     string cmd = halLiftover_exec + " " + halParam + halfile + " " + name + " " + tmpdir + name + ".bed " + other.getName() + " " + tmpdir + other.getName() + ".bed";
     cout << "executing " << cmd << endl;
-    string s = exec(cmd.c_str());
-    if(!s.empty()){
-	cerr << s << endl;
-	exit(1);
-    }
+    string ret = exec(cmd.c_str());
+    if(!ret.empty())
+	throw ProjectError(ret);
 }
 
 string Genome::getSeqName(int seqID) const {

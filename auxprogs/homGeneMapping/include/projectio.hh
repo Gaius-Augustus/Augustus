@@ -27,6 +27,7 @@ private:
     std::string message;
 };
 
+
 /*
  * convert int to string
  */
@@ -82,7 +83,7 @@ inline void createDir(std::string dir){
     if( stat(dir.c_str(), &buffer) == -1 || !S_ISDIR(buffer.st_mode)){
         int err = mkdir(dir.c_str(),0755);
         if(err != 0)
-	    throw ProjectError("could not create directory " + dir);
+	    throw ProjectError("Could not create directory " + dir + "\n");
     }
 }
 
@@ -96,7 +97,7 @@ inline std::vector<std::string> splitString(std::string line, char delimiter='\t
     std::string token;
     while(getline(iss, token, delimiter)){
 	if(token.empty())
-	    throw ProjectError("empty column in line\n" + line + "\n");
+	    throw ProjectError("Column " + itoa(tokens.size()+1) + " is empty.\n");
 	tokens.push_back(token);
     }
     return tokens;

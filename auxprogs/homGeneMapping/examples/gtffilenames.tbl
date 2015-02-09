@@ -1,0 +1,4 @@
+hg19	gtfs/human.gtf	gtfs/human.hints.gff
+mm9	gtfs/mouse.gtf	gtfs/mouse.hints.gff
+bosTau4	gtfs/cow.gtf
+galGal3	gtfs/chicken.gtf

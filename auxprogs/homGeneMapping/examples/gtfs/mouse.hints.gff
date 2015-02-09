@@ -1,0 +1,15 @@
+chr16	mm9_refGene	CDS	1745	2904	0.000000	-	2	source=M
+chr16	mm9_refGene	intron	2905	4519	0.000000	-	.	source=M
+chr16	mm9_refGene	CDS	4520	4784	0.000000	-	0	source=M
+chr16	mm9_refGene	intron	4785	5952	0.000000	-	.	source=M
+chr16	mm9_refGene	CDS	5953	6056	0.000000	-	2	source=M
+chr16	mm9_refGene	intron	6057	6682	0.000000	-	.	source=M
+chr16	mm9_refGene	CDS	6683	6841	0.000000	-	2	source=M
+chr16	mm9_refGene	intron	6842	8752	0.000000	-	.	source=M
+chr16	mm9_refGene	CDS	8753	8802	0.000000	-	1	source=M
+chr16	mm9_refGene	intron	8803	10153	0.000000	-	.	source=M
+chr16	mm9_refGene	CDS	10154	10302	0.000000	-	0	source=M
+chr16	mm9_refGene	intron	10303	13727	0.000000	-	.	source=M
+chr16	mm9_refGene	CDS	13728	14019	0.000000	-	1	source=M
+chr16	mm9_refGene	intron	14020	22187	0.000000	-	.	source=M
+chr16	mm9_refGene	CDS	22188	22369	0.000000	-	0	source=M

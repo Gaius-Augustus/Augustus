@@ -88,109 +88,110 @@ int main( int argc, char* argv[] ){
 		break;
 	    }
     }
-
-    if (help){
-	printUsage();
-	exit(1);
-    }
-    if (halfile.empty()){
-	cerr << "Missing input hal file. Required parameter." << endl;
-	printUsage();
-	exit(1);
-    }
-    if (tmpdir.empty())
-	tmpdir="tmp";
-    tmpdir = expandDir(tmpdir);
-    createDir(tmpdir);
- 
-    halLiftover_exec = expandDir(halLiftover_exec);
-    halLiftover_exec +="halLiftover";
-
-    if(!outdir.empty()){
-	outdir = expandDir(outdir);
-	createDir(outdir);
-    }
-
-    if (gtfs.empty()){
-	cerr << "Missing input gtf file names. Required parameter." << endl;
-	printUsage();
-	exit(1);
-    }
-
-    if(maxCpus < 1){
-	maxCpus = 1;
-	cerr << "number of cpus must be at least 1. Proceeding with --cpus=1" << endl; 
-    }
-
-    /*
-     * check if external program halLiftOver is executable
-     */
+    
     try{
+	if (help){
+	    printUsage();
+	    exit(1);
+	}
+	if (halfile.empty()){
+	    cerr << "Missing input hal file. Required parameter." << endl;
+	    printUsage();
+	    exit(1);
+	}
+	if (tmpdir.empty())
+	    tmpdir="tmp";
+	tmpdir = expandDir(tmpdir);
+	createDir(tmpdir);
+	
+	halLiftover_exec = expandDir(halLiftover_exec);
+	halLiftover_exec +="halLiftover";
+	
+	if(!outdir.empty()){
+	    outdir = expandDir(outdir);
+	    createDir(outdir);
+	}
+	
+	if (gtfs.empty()){
+	    cerr << "Missing input gtf file names. Required parameter." << endl;
+	    printUsage();
+	    exit(1);
+	}
+	
+	if(maxCpus < 1){
+	    maxCpus = 1;
+	    cerr << "number of cpus must be at least 1. Proceeding with --cpus=1" << endl; 
+	}
+	
+	/*
+	 * check if external program halLiftOver is executable
+	 */
 	string cmd = "which " + halLiftover_exec;
 	string path = exec(cmd.c_str());
 	if(path.empty())
-	    throw ProjectError("cannot execute halLiftover");
-    }catch(ProjectError& err){
-	cerr << "ERROR\n\t" << err.getMessage( ) << endl;
+	    throw ProjectError("halLiftover is not executable.\n" 
+			      "Please add the directory which contains the executable halLiftover to the\n" 
+			       "PATH environment variable or specify the path with --halLiftOver_exec_dir.\n");
+	
+	/*
+	 * parsing of input gene files
+	 */    
+	map<string, pair<string, string> > filenames = getFileNames (gtfs);
+	Genome::setNumGenomes(filenames.size());
+	
+	vector<Genome> genomes;
+	for(map<string, pair<string, string> >::iterator it = filenames.begin(); it != filenames.end(); it++){
+	    Genome genome(it->first, genomes.size());
+	    genome.parseGTF(it->second.first);
+	    if(!it->second.second.empty()) // read hints file if specified
+		genome.parseExtrinsicGFF(it->second.second);
+	    genome.setTmpDir(tmpdir);
+	    genome.printBed(); // print sequence coordinates, that need to be mapped to the other genomes, to file
+	    genomes.push_back(genome);
+	}
+	
+	/*
+	 * haLiftover from each genome to each other genome (quadratic to the number of genomes)
+	 * TODO:
+	 * check if liftover is symmetric (i.e. i -> j is the same as j -> i )
+	 * in this case, runtime can be reduced by running the second loop only for j > i 
+	 */
+	vector<thread> th;
+	for(int i = 0; i < genomes.size(); i++){
+	    for(int j = 0; j < genomes.size(); j++){
+		if(i != j){
+		    if(th.size() == maxCpus){ // wait for all running threads to finish
+			// synchronize threads
+			for(int i = 0; i < th.size(); i++){
+			    th[i].join();
+			}
+			th.clear();
+		    }
+		    // halLiftover
+		    th.push_back(thread(&Genome::liftOverTo, &genomes[i], ref(genomes[j]), halfile, halLiftover_exec, halParam));
+		}
+	    }
+	}
+	// synchronize threads
+	for(int i = 0; i < th.size(); i++){
+	    th[i].join();
+	}
+	for(int i = 0; i < genomes.size(); i++){
+	    for(int j = 0; j < genomes.size(); j++){
+		if(i != j){
+		    genomes[i].readBed(genomes[j]); // reading in bed files with mapped coordinates
+		}
+	    }
+	    // identify homologous gene features (exons/introns)
+	    genomes[i].mapGeneFeatures(genomes);
+	    // print extended gene files with homology information
+	    genomes[i].printGFF(outdir,genomes);
+	}
+    } catch( ProjectError& err ){
+	cerr << "\n" <<  argv[0] << ": ERROR\n" << err.getMessage( ) << "\n\n";
 	exit(1);
     }
-
-
-    /*
-     * parsing of input gene files
-     */    
-    map<string, pair<string, string> > filenames = getFileNames (gtfs);
-    Genome::setNumGenomes(filenames.size());
-
-    vector<Genome> genomes;
-    for(map<string, pair<string, string> >::iterator it = filenames.begin(); it != filenames.end(); it++){
-	Genome genome(it->first, genomes.size());
-	genome.parseGTF(it->second.first);
-	if(!it->second.second.empty()) // read hints file if specified
-	    genome.parseExtrinsicGFF(it->second.second);
-	genome.setTmpDir(tmpdir);
-	genome.printBed(); // print sequence coordinates, that need to be mapped to the other genomes, to file
-	genomes.push_back(genome);
-    }
-
-    /*
-     * haLiftover from each genome to each other genome (quadratic to the number of genomes)
-     * TODO:
-     * check if liftover is symmetric (i.e. i -> j is the same as j -> i )
-     * in this case, runtime can be reduced by running the second loop only for j > i 
-     */
-    vector<thread> th;
-    for(int i = 0; i < genomes.size(); i++){
-	for(int j = 0; j < genomes.size(); j++){
-	    if(i != j){
-		if(th.size() == maxCpus){ // wait for all running threads to finish
-		    // synchronize threads
-		    for(int i = 0; i < th.size(); i++){
-			th[i].join();
-		    }
-		    th.clear();
-		}
-		// halLiftover
-		th.push_back(thread(&Genome::liftOverTo, &genomes[i], ref(genomes[j]), halfile, halLiftover_exec, halParam));
-	    }
-	}
-    }
-    // synchronize threads
-    for(int i = 0; i < th.size(); i++){
-	th[i].join();
-    }
-    for(int i = 0; i < genomes.size(); i++){
-	for(int j = 0; j < genomes.size(); j++){
-	    if(i != j){
-		genomes[i].readBed(genomes[j]); // reading in bed files with mapped coordinates
-	    }
-	}
-	// identify homologous gene features (exons/introns)
-	genomes[i].mapGeneFeatures(genomes);
-	// print extended gene files with homology information
-	genomes[i].printGFF(outdir,genomes);
-    }
-    exit(1);
+    return 0;
 }
 
 void printUsage(){
@@ -249,20 +250,16 @@ map<string,pair<string,string> > getFileNames (string listfile){
 		    hintsfile=expandHome(hintsfile);
 		filenames[species] = make_pair(genefile,hintsfile);
 	    }
-	    else{
-		cerr <<listfile << " has wrong format in line\n" << buf << "\nCorrect format:\n" << endl;
-		cerr << "name_of_genome_1  path/to/gtf/of/genome_1  path/to/hintsfile/of/genome_1" << endl;
-		cerr << "name_of_genome_2  path/to/gtf/of/genome_2  path/to/hintsfile/of/genome_2\n..." << endl;
-		cerr << "name_of_genome_N  path/to/gtf/of/genome_N  path/to/hintsfile/of/genome_N\n" << endl;
-		cerr << "the last column is optional" << endl;
-		exit(1);
- 	    }
+	    else
+		throw ProjectError(listfile + " has wrong format in line\n" + buf + "\nCorrect format:\n\n"
+				   "name_of_genome_1  path/to/gtf/of/genome_1  path/to/hintsfile/of/genome_1\n"
+				   "name_of_genome_2  path/to/gtf/of/genome_2  path/to/hintsfile/of/genome_2\n...\n"
+				   "name_of_genome_N  path/to/gtf/of/genome_N  path/to/hintsfile/of/genome_N\n\n"
+				   "the last column is optional.\n");
 	}
         ifstrm.close();
     }
-    else{
-	cerr<<"Could not open input file "<<listfile << endl;
-	exit(1);
-    }
+    else
+	throw ProjectError("Could not open input file " + listfile + ".\n");
     return filenames;
 }

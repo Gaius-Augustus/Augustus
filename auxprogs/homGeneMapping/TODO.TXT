@@ -1,0 +1,14 @@
+# 9.2.2015
+
+- check if halLiftover is symmetric, meaning that mapping (genome i -> genome j)
+  is the same as maping (genome j -> genome i). If so, halLiftover
+  can be reduced to the cases above the diagonal
+
+- add support for other gene features such as UTR exons
+
+- handle multiple transcripts per gene
+
+- catch exceptions from threads
+
+- hints: handle missing frame/strand, allow hints
+  not in the predicted gene set

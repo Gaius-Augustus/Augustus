@@ -1,0 +1,1 @@
+homGeneMapping --gtfs=gtffilenames.tbl --halfile=aln.hal --halLiftover_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --outdir=outdir --cpus=4

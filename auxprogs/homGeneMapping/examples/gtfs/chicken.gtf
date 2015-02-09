@@ -1,0 +1,39 @@
+# This output was generated with AUGUSTUS (version 3.0.3).
+# AUGUSTUS is a gene prediction tool for eukaryotes written by Mario Stanke (mario.stanke@uni-greifswald.de),
+# Oliver Keller, Stefanie König and Lizzy Gerischer.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+#
+#----- prediction for species 'galGal3' -----
+#
+#----- prediction on sequence range chr1:3939-21921 (17983bp) -----
+#
+# start gene g1
+chr1	AUGUSTUS	gene	6293	20787	0	-	.	g1
+chr1	AUGUSTUS	transcript	6293	20787	.	-	.	g1.t1
+chr1	AUGUSTUS	stop_codon	6293	6295	.	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr1	AUGUSTUS	CDS	6293	6362	0.5	-	1	transcript_id "g1.t1"; gene_id "g1";
+chr1	AUGUSTUS	CDS	6805	6953	0.63	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr1	AUGUSTUS	CDS	7436	7574	0.56	-	1	transcript_id "g1.t1"; gene_id "g1";
+chr1	AUGUSTUS	CDS	9096	9327	0.19	-	2	transcript_id "g1.t1"; gene_id "g1";
+chr1	AUGUSTUS	CDS	12343	12394	0.6	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr1	AUGUSTUS	CDS	14179	14470	0.9	-	1	transcript_id "g1.t1"; gene_id "g1";
+chr1	AUGUSTUS	CDS	20606	20787	0.6	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr1	AUGUSTUS	start_codon	20785	20787	.	-	0	transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MARESGSPWAMGLLKTFEESEFGSWEKIGSGGFGQVYKVRHLHWKTWLAIKCSPSLHVDEKERMELLEEARKMEMAKF
+# RYILPVYGICKEPVGLVMEYMETGSLEKLLASEPLPWELRFRIIHETAVGMNFLHCMSPPLLHLDLKPANILLDAHYHVKDPKVSAEMLQTAKEEFGV
+# PTDVKRNCMTKYPVLCGKVILKELMKATKAVCGILLFCFSLADNTFVSSAFCSIQYVGSSAQQMNFLYFGMKPNPSHSFQLPSLRHCTNLPYPLIAKK
+# NSLCGFSVFFKPFVPLVLGSVLVGVISDFGLAKCNGLSHSHDLSMDGLCGTIAYLPPERIKEKNRCFDTKHDVYRLVLNDIHSNSLLLSDLVSVFME]
+# end gene g1
+###
+# start gene g2
+chr1	AUGUSTUS	gene	20923	21195	0	+	.	g2
+chr1	AUGUSTUS	transcript	20923	21195	.	+	.	g2.t1
+chr1	AUGUSTUS	start_codon	20923	20925	.	+	0	transcript_id "g2.t1"; gene_id "g2";
+chr1	AUGUSTUS	CDS	20923	21195	0.61	+	0	transcript_id "g2.t1"; gene_id "g2";
+chr1	AUGUSTUS	stop_codon	21193	21195	.	+	0	transcript_id "g2.t1"; gene_id "g2";
+# protein sequence = [MVLAQGGAVREFSPSVCGQRHPSFRSSGTGAKAVGEKATCLSGRELPEVVESQNIPNWKRPTRIVEFNSGLRTGPPKV
+# KPCDCQQRPNAP]
+# end gene g2
+###
