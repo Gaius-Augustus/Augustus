@@ -59,8 +59,8 @@ public:
     void printDetailed(GeneFeature *g, std::ofstream &of) const;
 
     // hash functions
-    void insertPos(int seqID, long int pos, Strand strand); // insert start/end positions of gene features in mappedPos
-    std::vector< std::list< uint_fast64_t > > findMappedPos(int seqID, long int pos, Strand strand);
+    void insertPos(int seqID, long int pos); // insert start/end positions of gene features in mappedPos
+    std::vector< std::list< uint_fast64_t > > findMappedPos(int seqID, long int pos);
     void insertSeqInt(GeneFeature* gf); // insert gene features into gfHash
     std::list<GeneFeature*> findSeqInt(uint_fast64_t key, int seqID); // retrieve gene features from gfHash
 
@@ -77,14 +77,14 @@ private:
     std::list<Gene*> genes;
     /*
      * stores all start/end positions of gene features and their homologous positions in the other genomes
-     * the key encodes sequence name,position and strand
+     * the key encodes sequence name and position
      * the value is a vector of lists of corrpesonding positions, e.g
-     * ["chr11:3133206:-"]->[{"scaffold278:54826:+", "C313481:244:-", "C426955:147702:-"}, - ,  {"chr16:4507589:+"}]
-     *                                                         ^                           ^            ^
-     *                       list of homologous positions in   |                           |            |
-     *                                                      genome 0                    genome 1     genome 2       
-     *                                                     3 homologous               no homologous  1 homologous
-     *                                                       position                   positions    position
+     * ["chr11:3133206"]->[{"scaffold278:54826", "C313481:244", "C426955:147702"}, - ,  {"chr16:4507589"}]
+     *                                                 ^                           ^            ^
+     *               list of homologous positions in   |                           |            |
+     *                                              genome 0                    genome 1     genome 2       
+     *                                             3 homologous               no homologous  1 homologous
+     *                                               position                   positions    position
      */
     std::map<uint_fast64_t, std::vector< std::list< uint_fast64_t > > > mappedPos;
     /*

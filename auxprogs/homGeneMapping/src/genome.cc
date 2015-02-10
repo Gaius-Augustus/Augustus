@@ -195,8 +195,8 @@ void Genome::parseGTF(string gtffilename){
 		    insertSeqInt(exon);
 
 		    // add exon start/end into mappedPos
-		    insertPos(exon->getSeqID(),start,exon->getStrand());
-		    insertPos(exon->getSeqID(),end,exon->getStrand());
+		    insertPos(exon->getSeqID(),start);
+		    insertPos(exon->getSeqID(),end);
 
 		    // create an intron if a predecessor exon exists
 		    if(pred_exon){
@@ -260,8 +260,7 @@ void Genome::printBed(){
 	of << getSeqName(key.getSeqID()) << "\t";
 	of << key.getPos()-1 << "\t"; // BED format uses zero-based, half-open coordinates, e.g. [1-25] -> [0,25)
 	of << key.getPos() << "\t";  
-	of << key.getKey() <<"\t0\t";
-	of << strandIdentifiers[key.getStrand()] << endl;
+	of << key.getKey() << endl;
     }
     of.close();
 }
@@ -272,26 +271,23 @@ void Genome::readBed(Genome &other){
     ifstream ifstrm(bedfilename.c_str());
     int line_no = 0;
     if (ifstrm.is_open()){
-	//	cout << gfffilename << " is open." << endl;
 	while (ifstrm) {
 	    string line;
 	    getline(ifstrm, line);
-	    //cout << line << endl;
 	    line_no++;
 	    if(line.empty() || line[0] == '#') // skip empty lines and comment lines
 		continue;
 	    vector<string> tokens = splitString(line);
-	    if(tokens.size() != 6)
+	    if(tokens.size() != 4)
 		throw ProjectError("wrong number of columns in line " + itoa(line_no) + "\n");
 	    int seqID = other.getSeqID(tokens[0]);
 	    if(seqID < 0) // no gene on that sequence
 		continue;
 	    long int start = atol(tokens[1].c_str()) + 1;
 	    uint_fast64_t key = atoll(tokens[3].c_str()); 
-	    Strand strand=getStrand(tokens[5]);
 
 	    // insert mapped position into mappedPos	    
-	    SeqPosKey mapped(seqID, start, strand);
+	    SeqPosKey mapped(seqID, start);
 	    map<uint_fast64_t, vector< list< uint_fast64_t > > >::iterator it;
 	    it = mappedPos.find(key);                                                                                                 
 	    if(it == mappedPos.end())
@@ -347,12 +343,12 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes){
 	if(features.empty())
 	    continue;
 	GeneFeature* first = features.front();
-	vector< list< uint_fast64_t > > mappedStarts = findMappedPos(first->getSeqID(), first->getStart(), first->getStrand());
+	vector< list< uint_fast64_t > > mappedStarts = findMappedPos(first->getSeqID(), first->getStart());
 
 	for(list<GeneFeature*>::iterator gfit = features.begin(); gfit != features.end(); gfit++){
 	    
 	    // get mapped end positions
-	    vector< list< uint_fast64_t > > mappedEnds = findMappedPos((*gfit)->getSeqID(), (*gfit)->getEnd(), (*gfit)->getStrand());
+	    vector< list< uint_fast64_t > > mappedEnds = findMappedPos((*gfit)->getSeqID(), (*gfit)->getEnd());
 	    
 	    for(int j = 0; j < genomes.size(); j++){
 		string other_name = genomes[j].getName();
@@ -364,32 +360,32 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes){
 		/*                                                                                       
 		 * loop over all combinations of mapped start and end positions and                                                                          
 		 * assemble start position s and an end position e to a seq interval, if they are                                                           
-		 * - on the same sequence                                                                                                                                      
-		 * - on the same strand                                                                                                                                         
-		 * - and s < e                                                                                                                                    
+		 * on the same sequence. If s > e
+		 * - reverse seq interval                                                                                                      
+		 * - set strand to the reverse strand of gene feature gf
 		 */
 		for(std::list<uint_fast64_t>::iterator msit =mappedStarts[j].begin(); msit != mappedStarts[j].end(); msit++){
 		    SeqPosKey s(*msit);
 		    for(std::list<uint_fast64_t>::iterator meit =mappedEnds[j].begin(); meit != mappedEnds[j].end(); meit++){
 			SeqPosKey e(*meit);
-			if((s.getSeqID() == e.getSeqID()) && (s.getStrand() == e.getStrand()) ){
+			if( s.getSeqID() == e.getSeqID() ){
 			    uint_fast64_t start = s.getPos();
 			    uint_fast64_t end = e.getPos();
-			    if( (*gfit)->getStrand() != s.getStrand() ){ // reverse coordinates if they map on different strand
+			    Strand strand = (*gfit)->getStrand();
+			    if( start > end ){ // reverse coordinates if they map on different strand
 				uint_fast64_t tmp = start;
 				start = end;
 				end = tmp;
+				strand = ((*gfit)->getStrand() == plusstrand)? minusstrand : plusstrand;
 			    }
-			    if(start < end){
-				/*
-				 * if the seq interval is part of a gene in genome j
-				 * append it to the list of homologs of the gene feature
-				 */
-				SeqIntKey seqInt(start,end-start+1, (*gfit)->getFeatureType(), s.getStrand());
-				list<GeneFeature*> mapped_features = genomes[j].findSeqInt(seqInt.getKey(), s.getSeqID());
-				for(list<GeneFeature*>::iterator mapped_gfit = mapped_features.begin(); mapped_gfit !=mapped_features.end();mapped_gfit++)
-				    (*gfit)->appendHomolog(*mapped_gfit,j);
-			    }
+			    /*
+			     * if the seq interval is part of a gene in genome j
+			     * append it to the list of homologs of the gene feature
+			     */
+			    SeqIntKey seqInt(start,end-start+1, (*gfit)->getFeatureType(), strand);
+			    list<GeneFeature*> mapped_features = genomes[j].findSeqInt(seqInt.getKey(), s.getSeqID());
+			    for(list<GeneFeature*>::iterator mapped_gfit = mapped_features.begin(); mapped_gfit !=mapped_features.end();mapped_gfit++)
+				(*gfit)->appendHomolog(*mapped_gfit,j);
 			}
 		    }
 		}
@@ -399,9 +395,9 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes){
     }
 }
 
-void Genome::insertPos(int seqID, long int pos, Strand strand){
+void Genome::insertPos(int seqID, long int pos){
 
-    SeqPosKey seqInt(seqID, pos, strand);
+    SeqPosKey seqInt(seqID, pos);
 
     map<uint_fast64_t, vector< list< uint_fast64_t > > >::iterator it;
     it = mappedPos.find(seqInt.getKey());
@@ -412,9 +408,9 @@ void Genome::insertPos(int seqID, long int pos, Strand strand){
 }
 
 
-vector< list< uint_fast64_t > > Genome::findMappedPos(int seqID, long int pos, Strand strand){
+vector< list< uint_fast64_t > > Genome::findMappedPos(int seqID, long int pos){
     
-    SeqPosKey seqInt(seqID, pos, strand);
+    SeqPosKey seqInt(seqID, pos);
     
     map<uint_fast64_t, vector< list< uint_fast64_t > > >::iterator it;
     it = mappedPos.find(seqInt.getKey());                                                                                                 

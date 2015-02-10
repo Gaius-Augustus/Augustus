@@ -53,31 +53,29 @@ private:
 /*
  * class SeqPosKey:
  * bit mask for sequence positions
- * encodes the sequence ID, position and strand in a 64 bit integer
+ * encodes the sequence ID and position in a 64 bit integer
  *   
- * bits            31                      32             1 
- *     |-------------------------|--------------------|-------|
- *               seq ID                position        strand
+ * bits            32                      32           
+ *     |-------------------------|--------------------|
+ *               seq ID                position        
  *
  */
 class SeqPosKey{
      
  public:
-    SeqPosKey(uint_fast64_t seqID, uint_fast64_t pos, uint_fast64_t strand){
-	key = (seqID << 33)  // 31 bits                                                                                                          
-	    + (pos << 1)     // 32 bits                                                                                                           
-	    + (strand);      //  1 bit       
+    SeqPosKey(uint_fast64_t seqID, uint_fast64_t pos){
+	key = (seqID << 32)  // 32 bits                                                                                                          
+	    + (pos);         // 32 bits                                                                                                           
 
 	// verification, only for debugging  
-	if(getSeqID() != seqID || getPos() != pos || getStrand() != strand)
+	if(getSeqID() != seqID || getPos() != pos )
 	    throw ProjectError("internal error in SeqPosKey: packing of seqID=" + itoa(seqID)
-			       + " pos=" + itoa(pos) + " strand=" + itoa(strand) + "failed.\n");
+			       + " pos=" + itoa(pos) + "failed.\n");
     }
     SeqPosKey(uint_fast64_t k) : key(k) {}
      ~SeqPosKey() {}
-    inline uint_fast64_t getSeqID() const {return (key >> 33);}
-    inline uint_fast64_t getPos() const {return ((key>>1) & 0xFFFFFFFF);}   // 0xFFFFFFFF bit mask for retrieving bits 1-32
-    inline uint_fast64_t getStrand() const {return (key & 1);}
+    inline uint_fast64_t getSeqID() const {return (key >> 32);}
+    inline uint_fast64_t getPos() const {return (key & 0xFFFFFFFF);}   // 0xFFFFFFFF bit mask for retrieving bits 1-32
     inline uint_fast64_t getKey() const {return key;}
 private:
      uint_fast64_t key;
