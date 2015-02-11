@@ -18,10 +18,12 @@
 #include <iostream>
 #include <iomanip>      // std::setprecision
 #include <string.h>     // strstr()
+#include <mutex>        // mutual exclusion (mutex) of concurrent execution (threads)
 
 using namespace std;
 
 int Genome::no_genomes=0;
+mutex mu;
 
 void Genome::destroyGeneList(){
     for(std::list<Gene*>::iterator it=genes.begin(); it!=genes.end(); it++)
@@ -159,12 +161,11 @@ void Genome::parseGTF(string gtffilename){
 		if(transid.empty())
 		    throw ProjectError("missing transcript_id.\n");
 
-		if( gene && (gene->getGeneID() == geneid) && (gene->getTxID() != transid) )
-		    throw ProjectError("Gene " + geneid + " with multiple transcripts "
-				       + transid + "," + gene->getTxID() + ". "
-				       + "Current version only supports one transcript per gene");
+		if( gene && (gene->getGeneID() != geneid) && (gene->getTxID() == transid) )
+		    throw ProjectError("Transcript " + transid + " in multiple genes "
+				       + geneid + "," + gene->getGeneID() + ".\n");
 
-		if(!gene || (gene && gene->getGeneID() != geneid)){ // new gene starts
+		if(!gene || (gene && gene->getTxID() != transid)){ // new transcript starts
 
 		    // insert new sequences both into the seqname AND seqID Hash
 		    pair<map<string,int>::iterator,bool> seqid;
@@ -307,7 +308,11 @@ void Genome::readBed(Genome &other){
 void Genome::liftOverTo(Genome &other, string halfile, string halLiftover_exec, string halParam){
 
     string cmd = halLiftover_exec + " " + halParam + halfile + " " + name + " " + tmpdir + name + ".bed " + other.getName() + " " + tmpdir + other.getName() + ".bed";
+
+    mu.lock(); // print 'cmd' mutually exclusive
     cout << "executing " << cmd << endl;
+    mu.unlock();
+
     string ret = exec(cmd.c_str());
     if(!ret.empty())
 	throw ProjectError(ret);
@@ -501,7 +506,7 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 	int numMatchingE = 0;
 	int numMatchingI = 0;
 
-	of << "# start gene " << (*git)->getGeneID() << endl;
+	of << "# start transcript " << (*git)->getTxID() << endl;
 
 	writeGene((*git), of);
 
@@ -535,8 +540,8 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 		    }
 		    
 		    GeneInfo gi(h->getGene(),h->isExon(),h->isIntron(),hasFrameShift);
-		    ret = ginfo[idx].insert(pair<string,GeneInfo>(h->getGeneID(),gi));
-		    if(!ret.second){ // geneid already in map, only update
+		    ret = ginfo[idx].insert(pair<string,GeneInfo>(h->getTxID(),gi));
+		    if(!ret.second){ // transid already in map, only update
 			if(h->isExon())
 			    ret.first->second.numMatchingEs++;
 			else if(h->isIntron())
@@ -596,7 +601,7 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 	of << "# CDS exons: "<< (numE - numMatchingE) << "/" << numE << endl;
 	of << "# CDS introns: "<< (numI - numMatchingI) << "/" << numI << endl;
 
-	of << "# end gene " << (*git)->getGeneID() << endl;
+	of << "# end transcript " << (*git)->getTxID() << endl;
 	of << "###" << endl;
 
     }
@@ -614,7 +619,12 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
     string onlyHint = "*";
 
     
-    of << "# "<<g->getEvidence() <<" (";
+    of << "# ";
+    if(g->isExon())
+	of << "CDS  ";
+    else
+	of << "Intr ";
+    of <<g->getEvidence() <<" (";
     for(list<pair<int,GeneFeature*> >::iterator hit = homologs.begin(); hit != homologs.end(); hit++){
 	
 	int idx = hit->first;
@@ -648,13 +658,13 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
 void Genome::writeGene(Gene *g, std::ofstream &of) const{
 
     // gene line
-    of << getSeqName(g->getSeqID()) << "\t";
+    /*of << getSeqName(g->getSeqID()) << "\t";
     of << g->getSource() << "\tgene\t";
     of << g->getStart() << "\t";
     of << g->getEnd() << "\t.\t";
     of << strandIdentifiers[g->getStrand()] << "\t.\t";
     of << g->getGeneID() << endl;
-
+    */
     // transcript line
     of << getSeqName(g->getSeqID()) << "\t";
     of << g->getSource() << "\ttranscript\t";
