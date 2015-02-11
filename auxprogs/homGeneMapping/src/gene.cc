@@ -23,9 +23,6 @@ string strandIdentifiers[NUM_STRAND_TYPES]=
 string featureTypeIdentifiers[NUM_FEATURE_TYPES]=
     {"CDS", "intron"};
 
-Strand GeneFeature::getStrand() const {
-    return gene->getStrand();
-}
 string GeneFeature::getGeneID() const {
     return gene->getGeneID();
 }
@@ -52,6 +49,22 @@ string GeneFeature::writeFrame() const {
 	return itoa(frame);
     else
 	return ".";
+}
+
+bool GeneFeature::sameStrand(Strand other){
+    if(this->strand == unknown || other == unknown)
+	return true;
+    else if(this->strand == other)
+	return true;
+    return false;
+}
+
+bool GeneFeature::sameFrame(int other){
+    if(this->frame == -1 || other == -1)
+	return true;
+    else if(this->frame == other)
+	return true;
+    return false;
 }
 
 Strand getStrand(string token){

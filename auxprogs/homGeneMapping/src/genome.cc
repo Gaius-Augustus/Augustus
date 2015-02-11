@@ -22,7 +22,15 @@
 using namespace std;
 
 int Genome::no_genomes=0;
- 
+
+void Genome::destroyGeneList(){
+    for(std::list<Gene*>::iterator it=genes.begin(); it!=genes.end(); it++)
+	delete *it;
+}
+void Genome::destroyHintList(){
+    for(std::list<GeneFeature*>::iterator it=hints.begin(); it!=hints.end(); it++)
+	delete *it;
+} 
 
 void Genome::parseExtrinsicGFF(string gfffilename){
     ifstream ifstrm(gfffilename.c_str());
@@ -73,37 +81,31 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		 * find all gene features that are supported
 		 * by that hint and update their extrinsic source
 		 */
-		if(tokens[2] == "CDS"){
+		if(tokens[2] == "CDS" || tokens[2] == "intron"){
 		    int frame = getFrame(tokens[7]);
-		    FeatureType type = CDS;
-		    SeqIntKey seqInt(start, end-start+1,type, strand);
-		    list<GeneFeature*> le = findSeqInt(seqInt.getKey(), seqid);
+		    FeatureType type = (tokens[2] == "CDS")? CDS : intron;
+		    if(type == intron){
+			start--;
+			end++;
+		    }
+		    SeqIntKey seqInt(start, end-start+1, type);
+		    list<GeneFeature*> le = findSeqInt(seqInt.getKey(), seqid, strand);
+		    bool isGF = false;
 		    for(list<GeneFeature*>::iterator it=le.begin(); it!=le.end(); it++){
-			if(frame == (*it)->getFrame())
+			if((*it)->sameFrame(frame)){
 			    (*it)->setEvidence(esource); // update extrinsic source
-		    }
-		}
-		else if(tokens[2] == "intron"){
-		    start--;
-		    end++;
-		    FeatureType type = intron;
-		    if(strand == unknown || strand == plusstrand){
-			SeqIntKey seqInt(start, end-start+1, type, plusstrand);
-			list<GeneFeature*> li = findSeqInt(seqInt.getKey(), seqid);
-			for(list<GeneFeature*>::iterator it=li.begin(); it!=li.end(); it++){
-			    (*it)->setEvidence(esource);	
+			    isGF = true;
 			}
 		    }
-		    if(strand == unknown || strand == minusstrand){
-			SeqIntKey seqInt(start, end-start+1, type, minusstrand);
-			list<GeneFeature*> li = findSeqInt(seqInt.getKey(), seqid);
-			for(list<GeneFeature*>::iterator it=li.begin(); it!=li.end(); it++){
-			    (*it)->setEvidence(esource);	
-			}
+		    if(!isGF){
+			GeneFeature *gf = new GeneFeature(type, start, end, strand, frame);
+			gf->setEvidence(esource);
+			insertSeqInt(gf, seqid);
+			hints.push_back(gf);
 		    }
+		    
 		}
-	    }	    
-	    
+	    }	        
 	} catch( ProjectError& err ){
 	    cerr << "Error in " << gfffilename << " in line " << line_no << endl;
 	    throw err;
@@ -187,8 +189,9 @@ void Genome::parseGTF(string gtffilename){
 		    long int start = atol(tokens[3].c_str());
 		    long int end = atol(tokens[4].c_str());
 		    double score = atof(tokens[5].c_str());
+		    Strand strand = getStrand(tokens[6]);
 		    int frame = getFrame(tokens[7]);
-		    GeneFeature *exon = new GeneFeature(type, start,end,frame,score);
+		    GeneFeature *exon = new GeneFeature(type, start,end,strand,frame,score);
 		    exon->setGene(gene);
 
 		    // add exon into gfHash
@@ -201,7 +204,7 @@ void Genome::parseGTF(string gtffilename){
 		    // create an intron if a predecessor exon exists
 		    if(pred_exon){
 			FeatureType type = intron;
-			GeneFeature *intron = new GeneFeature(type, pred_exon->getEnd(),exon->getStart(), -1, 0.0);
+			GeneFeature *intron = new GeneFeature(type, pred_exon->getEnd(),exon->getStart(),strand, -1, 0.0);
 			gene->appendFeature(intron);
 			intron->setGene(gene);
 			// add to gfHash
@@ -321,7 +324,7 @@ string Genome::getSeqName(int seqID) const {
 
 int Genome::getSeqID(string seqname) const{
 
-    map<string, int>::const_iterator it = seqnames.find(seqname);                                                                                                 
+    map<string, int>::const_iterator it = seqnames.find(seqname);                                                                                     
     if(it == seqnames.end())
 	return -1;
     return it->second;
@@ -358,8 +361,8 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes){
 		if(mappedStarts[j].empty() || mappedEnds[j].empty()) // at least one boundary is not mappable to genome j
 		    continue;
 		/*                                                                                       
-		 * loop over all combinations of mapped start and end positions and                                                                          
-		 * assemble start position s and an end position e to a seq interval, if they are                                                           
+		 * loop over all combinations of mapped start and end positions and
+		 * assemble start position s and an end position e to a seq interval, if they are  
 		 * on the same sequence. If s > e
 		 * - reverse seq interval                                                                                                      
 		 * - set strand to the reverse strand of gene feature gf
@@ -382,8 +385,8 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes){
 			     * if the seq interval is part of a gene in genome j
 			     * append it to the list of homologs of the gene feature
 			     */
-			    SeqIntKey seqInt(start,end-start+1, (*gfit)->getFeatureType(), strand);
-			    list<GeneFeature*> mapped_features = genomes[j].findSeqInt(seqInt.getKey(), s.getSeqID());
+			    SeqIntKey seqInt(start,end-start+1, (*gfit)->getFeatureType());
+			    list<GeneFeature*> mapped_features = genomes[j].findSeqInt(seqInt.getKey(), s.getSeqID(), strand);
 			    for(list<GeneFeature*>::iterator mapped_gfit = mapped_features.begin(); mapped_gfit !=mapped_features.end();mapped_gfit++)
 				(*gfit)->appendHomolog(*mapped_gfit,j);
 			}
@@ -420,7 +423,7 @@ vector< list< uint_fast64_t > > Genome::findMappedPos(int seqID, long int pos){
 }
 
  
-list<GeneFeature*> Genome::findSeqInt(uint_fast64_t key, int seqID) {
+list<GeneFeature*> Genome::findSeqInt(uint_fast64_t key, int seqID, Strand strand) {
 
     list<GeneFeature*> l;
     map< int, map< uint_fast64_t, list< GeneFeature*> > >::const_iterator ret;
@@ -431,18 +434,42 @@ list<GeneFeature*> Genome::findSeqInt(uint_fast64_t key, int seqID) {
     it = ret->second.find(key);
     if (it == ret->second.end())
 	return l;
-    return it->second;
+    for(list<GeneFeature*>::const_iterator lit=it->second.begin(); lit!=it->second.end(); lit++){
+	if((*lit)->sameStrand(strand))
+	    l.push_back(*lit);
+    }
+    return l;
 }
 
 void Genome::insertSeqInt(GeneFeature* gf){ // insert exons/introns into gfHash
-    
-    SeqIntKey seqInt(gf->getStart(), gf->getLen(), gf->getFeatureType(), gf->getStrand());
-    
+
+    SeqIntKey seqInt(gf->getStart(), gf->getLen(), gf->getFeatureType());
+        
     pair< map< int, map< uint_fast64_t, list< GeneFeature*> > >::iterator, bool> ret;
     map< uint_fast64_t, list< GeneFeature* > >::iterator it;
     map< uint_fast64_t, list< GeneFeature* > > m;
     
     ret = gfHash.insert(pair< int, map< uint_fast64_t, list< GeneFeature* > > >(gf->getSeqID(),m));
+			
+    it =ret.first->second.find(seqInt.getKey());
+    if (it == ret.first->second.end()){ // insert new exon/intron       
+	list<GeneFeature*> l;
+	l.push_back(gf);
+	ret.first->second.insert(pair<uint_fast64_t,list<GeneFeature*> >(seqInt.getKey(), l));
+    } else {                // append exon/intron to existing list                                 
+	it->second.push_back(gf);
+    }
+}
+
+void Genome::insertSeqInt(GeneFeature* gf, int seqID){ // insert exons/introns into gfHash
+
+    SeqIntKey seqInt(gf->getStart(), gf->getLen(), gf->getFeatureType());
+        
+    pair< map< int, map< uint_fast64_t, list< GeneFeature*> > >::iterator, bool> ret;
+    map< uint_fast64_t, list< GeneFeature* > >::iterator it;
+    map< uint_fast64_t, list< GeneFeature* > > m;
+    
+    ret = gfHash.insert(pair< int, map< uint_fast64_t, list< GeneFeature* > > >(seqID,m));
 			
     it =ret.first->second.find(seqInt.getKey());
     if (it == ret.first->second.end()){ // insert new exon/intron       
@@ -487,15 +514,10 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 	    printDetailed(*gfit, of);
 	    
 	    bool hasEvidence = (*gfit)->hasEvidence();
+	    bool hasMatch = false;
 
 	    list<pair<int,GeneFeature*> >homologs = (*gfit)->getHomologs();
 	      
-	    if(!homologs.empty()){
-		if((*gfit)->isExon())
-		    numMatchingE++;
-		if((*gfit)->isIntron())
-		    numMatchingI++;
-	    }
 	    for(list<pair<int,GeneFeature*> >::iterator hit = homologs.begin(); hit != homologs.end(); hit++){
 
 		bool hasFrameShift = false;
@@ -505,20 +527,23 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 		if(h->hasEvidence()){
 		    hasEvidence = true;
 		}
-		if(h->isExon()){ // check for frame shifts
-		    if ( ((*gfit)->getFrame() != h->getFrame()) || ((*gfit)->lenMod3() != h->lenMod3()) )
-			hasFrameShift = true;
-		}
-
-		GeneInfo gi(h->getGene(),h->isExon(),h->isIntron(),hasFrameShift);
-		ret = ginfo[idx].insert(pair<string,GeneInfo>(h->getGeneID(),gi));
-		if(!ret.second){ // geneid already in map, only update
-		    if(h->isExon())
- 			ret.first->second.numMatchingEs++;
-		    else if(h->isIntron())
-			ret.first->second.numMatchingIs++;
-		    if(hasFrameShift)
-			ret.first->second.frameshift = true;
+		if(h->isPartofGene()){
+		    hasMatch = true;
+		    if(h->isExon()){ // check for frame shifts
+			if ( ((*gfit)->getFrame() != h->getFrame()) || ((*gfit)->lenMod3() != h->lenMod3()) )
+			    hasFrameShift = true;
+		    }
+		    
+		    GeneInfo gi(h->getGene(),h->isExon(),h->isIntron(),hasFrameShift);
+		    ret = ginfo[idx].insert(pair<string,GeneInfo>(h->getGeneID(),gi));
+		    if(!ret.second){ // geneid already in map, only update
+			if(h->isExon())
+			    ret.first->second.numMatchingEs++;
+			else if(h->isIntron())
+			    ret.first->second.numMatchingIs++;
+			if(hasFrameShift)
+			    ret.first->second.frameshift = true;
+		    }
 		}
 	    }
 	    if(hasEvidence){
@@ -526,6 +551,12 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 		    numSupportedE++;
 		if((*gfit)->isIntron())
 		    numSupportedI++;
+	    }
+	    if(hasMatch){
+		if((*gfit)->isExon())
+		    numMatchingE++;
+		if((*gfit)->isIntron())
+		    numMatchingI++;
 	    }
 	}
 	int numHomologs = 0;
@@ -580,6 +611,7 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
     int pred_idx = 0;
     bool hasMatch = false;
     string evidence = "";
+    string onlyHint = "*";
 
     
     of << "# "<<g->getEvidence() <<" (";
@@ -589,9 +621,10 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
 	GeneFeature* h = hit->second;
 	
 	if(pred_idx < idx && hasMatch){ // next genome
-	    of << pred_idx << evidence << " ";
+	    of << pred_idx << evidence << onlyHint << " ";
 	    hasMatch = false; // reset all flags
 	    evidence = "";
+	    onlyHint = "*";
 	}
 	if(g->isExon()){ // check for frame shifts
 	    if ( !(g->getFrame() != h->getFrame()) || (g->lenMod3() != h->lenMod3()) )
@@ -601,11 +634,13 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
 	    hasMatch = true;
 	if(evidence.empty() && h->hasEvidence())
 	    evidence = h->getEvidence();
+	if(h->isPartofGene()){
+	    onlyHint = "";
+	}
 	pred_idx = idx;
     }   
-    if(hasMatch){ // next genome
-	of << pred_idx <<evidence << " ";
-    }
+    if(hasMatch)                                                                                                                                                                                                             
+	of << pred_idx << evidence << onlyHint << " ";
     of << ")" << endl;
 
 }

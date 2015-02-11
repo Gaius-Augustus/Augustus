@@ -16,34 +16,32 @@
 /*
  * class SeqInKey:
  * bit mask for sequence intervals
- * encodes the start position, length, the feature type and strand of a sequence interval in a 64 bit integer
+ * encodes the start position, length, the feature type of a sequence interval in a 64 bit integer
  *   
- * bits            31                      31                 1          1 
- *     |-------------------------|--------------------|---------------|-------|
- *            start position             length          feature type  strand
+ * bits            31                      31                 2         
+ *     |-------------------------|--------------------|---------------|
+ *            start position             length          feature type 
  *
  * the feature type is either "CDS" or "intron"
  */
 class SeqIntKey{
      
  public:
-    SeqIntKey(uint_fast64_t start, uint_fast64_t len, uint_fast64_t type, uint_fast64_t strand){
+    SeqIntKey(uint_fast64_t start, uint_fast64_t len, uint_fast64_t type){
 	key = (start << 33)  // 31 bits                                                                                                            
-	    + (len << 2 )    // 31 bits                                                                                                                                
-	    + (type << 1 )   //  1 bit                                                                                                                                             
-	    + (strand);      //  1 bit                                                                                                                             
-                  
-	// verification, only for debugging                                                                                                                        
-	if(getStart() != start || getLen() != len || getType() != type || getStrand() != strand)
+	    + (len << 2 )    // 31 bits                                                                                      
+	    + (type);        //  2 bits         
+
+	// verification, only for debugging                      
+	if(getStart() != start || getLen() != len || getType() != type)
 	    throw ProjectError("internal error in SeqIntKey: packing of start=" + itoa(start)
-			       + " len=" + itoa(len) + " type=" + itoa(type) + " strand=" + itoa(strand) + "failed.\n");
+			       + " len=" + itoa(len) + " type=" + itoa(type) + "failed.\n");
     }
     SeqIntKey(uint_fast64_t k) : key(k) {}
      ~SeqIntKey() {}
     inline uint_fast64_t getStart() const {return (key >> 33);}
     inline uint_fast64_t getLen() const {return ((key>>2) & 0x7FFFFFFF);}  // 0x7FFFFFFF bit mask for retrieving bits 1-31
-    inline uint_fast64_t getType() const {return ((key>>1) & 1);}
-    inline uint_fast64_t getStrand() const {return (key & 1);}
+    inline uint_fast64_t getType() const {return (key & 0x3);}             // 0x3 bit mask for retrieving bits 1-2
     inline uint_fast64_t getEnd() const {return (getStart()+getLen()-1);}
     inline uint_fast64_t getKey() const {return key;}
 private:

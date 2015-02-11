@@ -187,6 +187,11 @@ int main( int argc, char* argv[] ){
 	    // print extended gene files with homology information
 	    genomes[i].printGFF(outdir,genomes);
 	}
+	for(int i = 0; i < genomes.size(); i++){
+	    genomes[i].destroyGeneList();
+	    genomes[i].destroyHintList();
+	}
+
     } catch( ProjectError& err ){
 	cerr << "\n" <<  argv[0] << ": ERROR\n" << err.getMessage( ) << "\n\n";
 	exit(1);

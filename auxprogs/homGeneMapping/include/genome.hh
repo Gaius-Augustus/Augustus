@@ -32,6 +32,8 @@ public:
 	idx(_idx)
     {}
     ~Genome() {}
+    void destroyGeneList();
+    void destroyHintList();
 
     // get and set functions
     void setTmpDir(std::string tmpdir);
@@ -39,6 +41,7 @@ public:
     int getSeqID(std::string seqname) const;
     int getIdx() const {return idx;}
     std::string getName(){return name;}
+
 
     // read and write functions
     void parseGTF(std::string gtffilename);                          // reads a gene file in gtf format
@@ -62,7 +65,8 @@ public:
     void insertPos(int seqID, long int pos); // insert start/end positions of gene features in mappedPos
     std::vector< std::list< uint_fast64_t > > findMappedPos(int seqID, long int pos);
     void insertSeqInt(GeneFeature* gf); // insert gene features into gfHash
-    std::list<GeneFeature*> findSeqInt(uint_fast64_t key, int seqID); // retrieve gene features from gfHash
+    void insertSeqInt(GeneFeature* gf, int seqID); // insert hints into gfHash
+    std::list<GeneFeature*> findSeqInt(uint_fast64_t key, int seqID, Strand strand); // retrieve gene features from gfHash
 
     // static functions
     static int getNumGenomes(){return no_genomes;}
@@ -75,6 +79,7 @@ private:
     std::map<std::string, int> seqnames; // maps seqnames to seqIDs
     std::map<int, std::string> seqIDs  ; // maps seqIDs to seqnames
     std::list<Gene*> genes;
+    std::list<GeneFeature*> hints;
     /*
      * stores all start/end positions of gene features and their homologous positions in the other genomes
      * the key encodes sequence name and position

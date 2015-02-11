@@ -32,14 +32,17 @@ extern std::string featureTypeIdentifiers[NUM_FEATURE_TYPES];
  * with a start and a end position.
  * For introns the start position is start-1, e.g. the end position of the preceding exon
  * and the end position is end+1, e.g. the start position of the succeeding exon
+ * It is also possible that gene features do not belong to a gene, in this case
+ * they purely represent extrinsic evidence (either intron or CDS)
  */
 class GeneFeature {
 
 public:
-    GeneFeature(FeatureType _type, long int _start, long int _end, int _frame=-1, double _score=0.0) : 
+    GeneFeature(FeatureType _type, long int _start, long int _end, Strand _strand, int _frame=-1, double _score=0.0) : 
 	type(_type),
 	start(_start),
 	len(_end-_start+1),
+	strand(_strand),
 	frame(_frame),
 	score(_score),
 	extrinsic(""),
@@ -47,7 +50,7 @@ public:
     {}
     ~GeneFeature() {}
 
-    Strand getStrand() const;
+    Strand getStrand() const {return strand;}
     std::string getGeneID() const;
     std::string getTxID() const;
     int getSeqID() const;
@@ -67,13 +70,20 @@ public:
     bool hasEvidence() const {return !extrinsic.empty();}
     bool isExon() const {return (type == CDS);}
     bool isIntron() const {return (type == intron);}
+    bool isPartofGene() const {return gene;} // if false, gene feature purely represent extrinsic evidence
+    bool sameStrand(Strand other);
+    bool sameFrame(int other);
+
     std::list< std::pair<int,GeneFeature*> >getHomologs() const {return homologs;}
     void appendHomolog(GeneFeature *gf, int idx) {homologs.push_back(std::pair<int,GeneFeature*>(idx, gf));}
 
 private:
     FeatureType type;      // CDS exon, intron or UTR exon
     long int start;
-    int len;
+    int len;               
+    Strand strand;         // 'unknown' if both strands are possible, e.g. for GeneFeatures
+                           // that purely represent extrinsic Evidence and are
+                           // not part of a Gene
     int frame;             // -1 if gene feature has no frame
     double score;
     std::string extrinsic; // source of extrinsic info, e.g. 'M' (manual) or 'E' (EST).
