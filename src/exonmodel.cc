@@ -669,7 +669,7 @@ void ExonModel::readAllParameters(){
     }
 
     // if requested (e.g. on bacteria), boost the probabilities of lengths > L by (1+E)^{i-L}
-    double boostfactor = 1.0;
+    Double boostfactor = 1.0;
     for (int i = lenboostL+1; i< lenDistSingle.size(); i++){
 	boostfactor *= 1 + lenboostE;
 	lenDistSingle[i] *= boostfactor;
