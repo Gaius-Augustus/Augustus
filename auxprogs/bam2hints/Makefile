@@ -9,7 +9,7 @@
 
 # Variable definition
 # on greifweb1
-BAMTOOLS = /home/mario/tools/bamtools-master
+BAMTOOLS = /home/mario/tools/bamtools
 INCLUDES = $(BAMTOOLS)/include
 LIBS = $(BAMTOOLS)/lib/libbamtools.a -lz
 SOURCES = bam2hints.cc 

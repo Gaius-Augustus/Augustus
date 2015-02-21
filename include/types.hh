@@ -346,11 +346,10 @@ struct Bitmask {
 };
     
 
-/**
+/*
  * Base class for all exception classes in the project.
  *
  * @author Emmanouil Stafilarakis
- * @version 0.1
  */
 class ProjectError : public exception {
 public:

@@ -129,7 +129,7 @@ while (<GFFFILE>) {
     } else {
         $fkey = "other";
     }
-    foreach my $genename (split(",", $genename)){
+    foreach my $genename (split(",", $genename)){ # if an exon belongs to several transcripts ...
 	if (($fkey eq "CDS" || $fkey eq "mRNA" || $fkey eq "UTR") && 
 	    ($exceptiontype eq "" ||
 	     ($exceptiontype eq "good" && (exists $exceptionlist{$genename})) ||
