@@ -771,11 +771,11 @@ void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
     if (utype == utr5intron)
 	pUtr5Intron = trans[cur][cur].doubleValue();
     if (utype == utr3intron)
-	pUtr3Intron = trans[cur][cur].doubleValue();;
+	pUtr3Intron = trans[cur][cur].doubleValue();
     if (utype == rutr5intron)
-	prUtr5Intron = trans[cur][cur].doubleValue();;
+	prUtr5Intron = trans[cur][cur].doubleValue();
     if (utype == rutr3intron)
-	prUtr3Intron = trans[cur][cur].doubleValue();;
+	prUtr3Intron = trans[cur][cur].doubleValue();
 
     if (!initAlgorithmsCalled) {
       // assign GC content dependent variables to the stored values corresponding to GC content
