@@ -325,17 +325,8 @@ Double SnippetProbs::getSeqProb(int base, int len){
 	    }
 	}
     } else {
-	/*int predbase = base;
-	while (predbase > 0 && predbase > base - len && !snippetlist[predbase])
-	    predbase--;
-	if (snippetlist[predbase]) {
-	    p = getSeqProb(predbase, len-(base-predbase)) * 
-		getElemSeqProb(base, base-predbase);
-	} else { // compute completely new
-	*/
-	    p = getElemSeqProb(base, len);
-	    addProb(base, len, p);
-	    //}
+	p = getElemSeqProb(base, len);
+	addProb(base, len, p);
     }
     return p;
 }

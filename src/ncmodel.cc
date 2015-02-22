@@ -32,613 +32,51 @@ vector<Double>  NcModel::lenDistSingle;       // length distribution of single e
 Boolean         NcModel::hasLenDist = false;
 Boolean         NcModel::hasLenDist = false;
 Boolean         NcModel::initAlgorithmsCalled = false;
-int             NcModel::lastParIndex = -1;
 int             NcModel::boundSpacing = 10; // without hints 5' and 3' transcript end only every ttsSpacing bases, for speed
 
 /*
- * UtrModel constructor
+ * NcModel constructor
  */
-UtrModel::UtrModel() : gweight(1) {
-    utype = toStateType( Properties::getProperty("/UtrModel/type", utrcount++) );
+NcModel::NcModel() {
+    nctype = toStateType( Properties::getProperty("/NcModel/type", utrcount++) );
 }
 
 /*
- * UtrModel destructor
+ * destructor
  */
-UtrModel::~UtrModel( ){
-    if( --utrcount == 0 ) {
-	lastParIndex = -1;
-	delete tssMotif;
-	delete tssMotifTATA;
-	delete ttsMotif;
-	delete tataMotif;
-	if (snippetProbs5) 
-	    delete snippetProbs5;
-	if (rInitSnippetProbs5)
-	    delete rInitSnippetProbs5;
-	if (rSnippetProbs5)
-	    delete rSnippetProbs5;
-	if (rSnippetProbs3)
-	    delete rSnippetProbs3;
-	if (intronSnippetProbs)
-	    delete intronSnippetProbs;
-
-    }
+NcModel::~NcModel( ){
 }
 
 /*
- * UtrModel initialisation of class variables
+ * NcModel initialisation of class variables
  */
-void UtrModel::init() {
+void NcModel::init() {
     try {
-	if (!Properties::getBoolProperty(UTR_KEY))
+	if (!Properties::getBoolProperty(NONCODING_KEY)) // not run with --nc=On
 	    return;
     } catch(ProjectError e) {
 	return;
     }
-    try {
-	verbosity = Properties::getIntProperty("/UtrModel/verbosity");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	k = Properties::getIntProperty("/UtrModel/k");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	utr_patpseudo = Properties::getDoubleProperty("/UtrModel/patpseudocount");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	exonLenD = Properties::getIntProperty("/UtrModel/exonlengthD");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	slope_of_bandwidth = Properties::getdoubleProperty("/UtrModel/slope_of_bandwidth");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	minwindowcount = Properties::getIntProperty("/UtrModel/minwindowcount");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	max_exon_length = Properties::getIntProperty("/UtrModel/maxexonlength");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	max3singlelength = Properties::getIntProperty("/UtrModel/max3singlelength");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	max3termlength = Properties::getIntProperty("/UtrModel/max3termlength");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	tss_start = Properties::getIntProperty("/UtrModel/tss_start");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	tss_end = Properties::getIntProperty("/UtrModel/tss_end");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	tata_start = Properties::getIntProperty("/UtrModel/tata_start");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	tata_end = Properties::getIntProperty("/UtrModel/tata_end");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	d_tss_tata_min = Properties::getIntProperty("/UtrModel/d_tss_tata_min");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	d_tss_tata_max = Properties::getIntProperty("/UtrModel/d_tss_tata_max");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	tssup_k = Properties::getIntProperty("/UtrModel/tssup_k");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	tssup_patpseudo = Properties::getIntProperty("/UtrModel/tssup_patpseudocount");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	polyasig_consensus = Properties::getProperty("/UtrModel/polyasig_consensus");
-    } catch (ProjectError e) {
-	polyasig_consensus = "aataaa";
-    }
-    try {
-	d_polya_cleavage_min = Properties::getIntProperty("/UtrModel/d_polya_cleavage_min");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	d_polya_cleavage_max = Properties::getIntProperty("/UtrModel/d_polya_cleavage_max");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
-    try {
-	prob_polya = Properties::getdoubleProperty("/UtrModel/prob_polya");
-    } catch(ProjectError e) {}
-    try {
-	tata_pseudocount = Properties::getIntProperty("/UtrModel/tata_pseudocount");
-    } catch(ProjectError e) {}
-    try {
-	utr5patternweight = Properties::getdoubleProperty("/UtrModel/utr5patternweight");
-    } catch(ProjectError e) {}
-    try {
-	utr3patternweight = Properties::getdoubleProperty("/UtrModel/utr3patternweight");
-    } catch(ProjectError e) {}
-    try {
-      utr5prepatternweight = Properties::getdoubleProperty("/UtrModel/utr5prepatternweight");
-    } catch(ProjectError e) {}
-    try {
-      utr3prepatternweight = Properties::getdoubleProperty("/UtrModel/utr3prepatternweight");
-    } catch(ProjectError e) {}
-    try {
-	tts_motif_memory = Properties::getIntProperty("/UtrModel/tts_motif_memory");
-    } catch(ProjectError e) {}
-
-    aataaa_boxlen = (int) polyasig_consensus.length();
-    if (d_tss_tata_max + tata_start > Constant::tss_upwindow_size) {
-	cerr << "d_tss_tata_max=" << d_tss_tata_max << "\ttata_start=" << tata_start << "\ttss_upwindow_size=" << Constant::tss_upwindow_size << endl;
-	throw UtrModelError("Inconsistent UTR training parameters. Must have d_tss_tata_max <= tss_upwindow_size - tata_start");
-    }
-    if (d_tss_tata_min < tata_end + tss_start) {
-	cerr << "d_tss_tata_max=" << d_tss_tata_max << "\ttata_start=" << tata_start << "\ttss_upwindow_size=" << Constant::tss_upwindow_size << endl;
-	throw UtrModelError("Inconsistent UTR training parameters. Must have d_tss_tata_min >= tata_end + tss_start");
-    }
-    // reserve space for GC content dependent arrays
-    if (!GCutr5init_emiprobs)
-      GCutr5init_emiprobs = new PatMMGroup[Constant::decomp_num_steps];
-    if (!GCutr5_emiprobs)
-      GCutr5_emiprobs = new PatMMGroup[Constant::decomp_num_steps];
-    if (!GCutr3_emiprobs)
-      GCutr3_emiprobs = new PatMMGroup[Constant::decomp_num_steps];
-    if (!GCtssup_emiprobs)
-      GCtssup_emiprobs = new vector<Double>[Constant::decomp_num_steps];
-    if (!GCtssMotif)
-      GCtssMotif = new Motif[Constant::decomp_num_steps];
-    if (!GCtssMotifTATA)
-      GCtssMotifTATA = new Motif[Constant::decomp_num_steps];
-    if (!GCtataMotif)
-      GCtataMotif = new Motif[Constant::decomp_num_steps];
-    if (!GCttsMotif)
-      GCttsMotif = new Motif[Constant::decomp_num_steps];
 }
 
 
 /*
- * UtrModel::findTATA
+ * NcModel::readProbabilities (of one specific gc content class)
  */
-int UtrModel::findTATA(const char* seq, int maxpos, bool reverseComplement) const {
-  if (!reverseComplement) {
-    for (int pos=0; pos <= maxpos; pos++){
-      if (seq[pos]=='t' && seq[pos+1]=='a' && seq[pos+2]=='t' && seq[pos+3]=='a' && seq[pos+5]=='a')
-	return pos;
-    }
-    return -1;
-  } else {
-    for (int pos=0; pos >= -maxpos; pos--){
-      if (seq[pos]=='a' && seq[pos-1]=='t' && seq[pos-2]=='a' && seq[pos-3]=='t' && seq[pos-5]=='t')
-	return pos;
-    }
-    return +1;
-  }
-}
-
-/*
- * UtrModel::fillTailsOfLengthDistributions
- * Define the tail of the length distributions: from exonLenD up to max_exon_length
- * Make it so that there is no jump at exonLenD and so that the probability of huge
- * exons (>= d) is correct.
- * Probabilities for lengths greater than max_exon_length are 0.
- */
-void UtrModel::fillTailsOfLengthDistributions( ){
-    Double a,p; 
-    int k;
-    // 5'
-    a = lenDist5Single[exonLenD];
-    p = Double(1.0) - a/(Double(numHuge5Single+1)/Double(num5Single+1));
-    for (k = exonLenD+1; k <= max_exon_length; k++)
-	lenDist5Single[k] = p * lenDist5Single[k-1];
-
-    a = lenDist5Initial[exonLenD];
-    p = Double(1.0) - a/((Double(numHuge5Initial)+1)/(num5Initial+1));
-    for (k = exonLenD+1; k <= max_exon_length; k++)
-	lenDist5Initial[k] = p * lenDist5Initial[k-1];
-
-    a = lenDist5Internal[exonLenD];
-    p = Double(1.0) - a/((Double(numHuge5Internal)+1)/(num5Internal+1));
-    for (k = exonLenD+1; k <= max_exon_length; k++)
-	lenDist5Internal[k] = p * lenDist5Internal[k-1];
-
-    a = lenDist5Terminal[exonLenD];
-    p = Double(1.0) - a/((Double(numHuge5Terminal)+1)/(num5Terminal+1));
-    for (k = exonLenD+1; k <= max_exon_length; k++)
-	lenDist5Terminal[k] = p * lenDist5Terminal[k-1];
-    // 3'
-    a = lenDist3Single[exonLenD];
-    p = Double(1.0) - a/(Double(numHuge3Single+1)/Double(num3Single+1));
-    for (k = exonLenD+1; k <= max3singlelength; k++)
-	lenDist3Single[k] = p * lenDist3Single[k-1];
-
-    a = lenDist3Initial[exonLenD];
-    p = Double(1.0) - a/((Double(numHuge3Initial)+1)/(num3Initial+1));
-    for (k = exonLenD+1; k <= max_exon_length; k++)
-	lenDist3Initial[k] = p * lenDist3Initial[k-1];
-
-    a = lenDist3Internal[exonLenD];
-    p = Double(1.0) - a/((Double(numHuge3Internal)+1)/(num3Internal+1));
-    for (k = exonLenD+1; k <= max_exon_length; k++)
-	lenDist3Internal[k] = p * lenDist3Internal[k-1];
-
-    a = lenDist3Terminal[exonLenD];
-    p = Double(1.0) - a/((Double(numHuge3Terminal)+1)/(num3Terminal+1));
-    for (k = exonLenD+1; k <= max3termlength; k++)
-	lenDist3Terminal[k] = p * lenDist3Terminal[k-1];
-    
-    /*
-     * Tail of the length distribution for truncated 5' single UTR
-     */
-    tailLenDist5Single.resize(max_exon_length+1);
-    Double total(0.0), cumsum(0.0);
-    for (int i=0; i<= max_exon_length; i++)
-	total += lenDist5Single[i];
-    for (int i=max_exon_length; i>= 0; i--){
-	cumsum += lenDist5Single[i];
-	tailLenDist5Single[i] = cumsum/total;
-    }
-    /*
-     * Tail of the length distribution for truncated 3' single UTR
-     */
-    tailLenDist3Single.resize(max3singlelength+1);
-    total = 0.0;
-    cumsum = 0.0;
-    for (int i=0; i<= max3singlelength; i++)
-	total += lenDist3Single[i];
-    for (int i=max3singlelength; i>= 0; i--){
-	cumsum += lenDist3Single[i];
-	tailLenDist3Single[i] = cumsum/total;
-    }
-}
-
-
-/*
- * Initialize global count variables
- */
-void UtrModel::initCountVars( ){
-    /*
-     * Initialize global count variables
-     */
-    utr5_emicount.assign( POWER4TOTHE( k+1 ), 0 );
-    utr5init_emicount.assign( POWER4TOTHE( k+1 ), 0 );
-    utr3_emicount.assign( POWER4TOTHE( k+1 ), 0 );
-    
-    tssup_emicount.assign( POWER4TOTHE( tssup_k+1 ), 0 );
-    distCountTata.assign(d_tss_tata_max - d_tss_tata_min + 1, 0);
-}
-
-
-/*
- * UtrModel::readProbabilities
- */
-void UtrModel::readProbabilities( int parIndex ){
-  if (utrcount == 0 || parIndex == lastParIndex)
-      return;
-  
-  string filename = Constant::fullSpeciesPath() + Properties::getProperty("/UtrModel/infile");
-  ifstream istrm(filename.c_str());
-  if( istrm ){
-    int size, dummyi;
-    Double dbl;
-
-    if (!hasLenDist) {
-      // read length distributions
-      istrm >> goto_line_after( "[UTRLENGTH]" );
-      istrm >> comment >> exonLenD;
-      istrm >> comment >> slope_of_bandwidth;
-      istrm >> comment >> minwindowcount;
-      istrm >> comment >> num5Single >> num5Initial >> num5Internal >> num5Terminal >> num3Single >> num3Initial >> num3Internal >> num3Terminal;
-      istrm >> comment >> numHuge5Single >> numHuge5Initial >> numHuge5Internal >> numHuge5Terminal >> numHuge3Single >> numHuge3Initial >> numHuge3Internal >> numHuge3Terminal;
-      istrm >> comment;
-      lenDist5Single.resize(max_exon_length+1);
-      lenDist5Initial.resize(max_exon_length+1);
-      lenDist5Internal.resize(max_exon_length+1);
-      lenDist5Terminal.resize(max_exon_length+1);
-      lenDist3Single.resize(max3singlelength+1);
-      lenDist3Initial.resize(max_exon_length+1);
-      lenDist3Internal.resize(max_exon_length+1);
-      lenDist3Terminal.resize(max3termlength+1);
-      if (exonLenD>max_exon_length || exonLenD>max3singlelength || exonLenD>max3termlength)
-	  throw UtrModelError("UtrModel: exonLenD is larger than a max_exon_len.");
-      for( int i = 0; i <= exonLenD; i++ ){
-	  istrm >> dummyi;
-	  istrm >> dbl;
-	  lenDist5Single[i] = dbl / 1000;
-	  istrm >> dbl; 
-	  lenDist5Initial[i]= dbl / 1000; 
-	  istrm >> dbl; 
-	  lenDist5Internal[i] = dbl / 1000;
-	  istrm >> dbl;
-	  lenDist5Terminal[i] = dbl / 1000;
-	  istrm >> dbl;
-	  lenDist3Single[i] = dbl / 1000;
-	  istrm >> dbl; 
-	  lenDist3Initial[i]= dbl / 1000; 
-	  istrm >> dbl; 
-	  lenDist3Internal[i] = dbl / 1000;
-	  istrm >> dbl;
-	  lenDist3Terminal[i] = dbl / 1000;
-      }
-      fillTailsOfLengthDistributions();
-      
-      Seq2Int s2ib(aataaa_boxlen);
-      istrm >> goto_line_after("[AATAAA]" );
-      istrm >> comment >> size; 	    
-      aataaa_probs.assign( size, 0.0);
-      while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
-	  int pn = s2ib.read(istrm);
-	  istrm >> aataaa_probs[pn] >> comment;
-      }
-      hasLenDist = true;
-    }
-
-    char zusString[6];
-    sprintf(zusString, "[%d]", parIndex);
-    istrm >> goto_line_after(zusString);
-
-
-    // read in the emission probabilities of 5'UTR single and initial exons
-    //--------------------------------------------
-    istrm >> goto_line_after( "[EMISSION-5INITIAL]" );
-    istrm >> comment >> size; 	
-    istrm >> comment >> k;
-    istrm >> comment >> utr_patpseudo >> comment;
-    Seq2Int s2i(k+1);
-    utr5init_emiprobs.probs.assign(size, 0.0);
-    for (int i=0; i< size; i++) {
-	istrm >> comment;              // comment is needed here
-	int pn = s2i.read(istrm);
-	istrm >> utr5init_emiprobs.probs[pn];
-    }
-    
-    // read in the emission probabilities of 5'UTR internal and terminal exons
-    //--------------------------------------------
-    istrm >> goto_line_after( "[EMISSION-5]" );
-    istrm >> comment >> size; 	
-    istrm >> comment >> k;
-    istrm >> comment >> utr_patpseudo >> comment;
-    utr5_emiprobs.probs.assign(size, 0.0);
-    for (int i=0; i< size; i++) {
-	istrm >> comment;             // comment is needed here
-	int pn = s2i.read(istrm);
-	istrm >> utr5_emiprobs.probs[pn];
-    }
-
-    // read in the emission probabilities of 3'UTR exons
-    //--------------------------------------------
-    istrm >> goto_line_after( "[EMISSION-3]" );
-    istrm >> comment >> size; 	
-    istrm >> comment >> k;
-    istrm >> comment >> utr_patpseudo >> comment;
-    utr3_emiprobs.probs.assign(size, 0.0);
-    for (int i=0; i< size; i++) {
-	istrm >> comment;             // comment is needed here
-	int pn = s2i.read(istrm);
-	istrm >> utr3_emiprobs.probs[pn];
-    }
-    
-    // read in the emission probabilities of tss upwindow
-    //--------------------------------------------
-    istrm >> goto_line_after( "[EMISSION-TSSUPWIN]" );
-    istrm >> comment >> size;
-    istrm >> comment >> tssup_k;
-    istrm >> comment >> tssup_patpseudo >> comment;
-    Seq2Int s2iup(tssup_k+1);
-    tssup_emiprobs.assign(size, 0.0);
-    for (int i=0; i < size; i++) {
-	istrm >> comment;             // comment is needed here
- 	int pn = s2iup.read(istrm);
-	istrm >> tssup_emiprobs[pn];
-    }
-   
-    // motifs
-    istrm >> goto_line_after( "[TSSMOTIF]" );
-    //    if (tssMotif)
-    //	delete tssMotif; 
-    tssMotif = new Motif();
-    tssMotif->read(istrm);
-    istrm >> goto_line_after( "[TSSMOTIFTATA]" ); 
-//    if (tssMotifTATA)
-       //	delete tssMotifTATA;
-    tssMotifTATA = new Motif();
-    tssMotifTATA->read(istrm);
-    istrm >> goto_line_after( "[TATAMOTIF]" );
-    //    if (tataMotif)
-    //	delete tataMotif;
-    tataMotif = new Motif();
-    tataMotif->read(istrm);
-    istrm >> goto_line_after( "[TTSMOTIF]" );
-    //    if (ttsMotif)
-    //	delete ttsMotif;
-    ttsMotif = new Motif();
-    ttsMotif->read(istrm);
-    istrm.close();
-    lastParIndex = parIndex;
-  } else
-      throw ProjectError("UtrModel::readProbabilities: Couldn't open file " + filename);
-
-  // TEMP: change the content models so they are much closer to the intronmodel
-  for (int i=0; i<POWER4TOTHE(k+1); i++) {
-      utr5init_emiprobs.probs[i] = utr5init_emiprobs.probs[i]*utr5patternweight + IntronModel::GCemiprobs[parIndex-1].probs[i]*(1.0-utr5patternweight);
-      utr5_emiprobs.probs[i] = utr5_emiprobs.probs[i]*utr5patternweight + IntronModel::GCemiprobs[parIndex-1].probs[i]*(1.0-utr5patternweight);
-      utr3_emiprobs.probs[i] = utr3_emiprobs.probs[i]*utr3patternweight + IntronModel::GCemiprobs[parIndex-1].probs[i]*(1.0-utr3patternweight);
-  }
+void NcModel::readProbabilities( int parIndex ){
+    // there are no specific noncoding parameters (all pars are reused from intergenic and coding)
 }
 
 /*
  * readAllParameters
  */
-void UtrModel::readAllParameters(){
-  if (utrcount == 0)
-    return;
-  
-  string filename = Constant::fullSpeciesPath() + Properties::getProperty("/UtrModel/infile");
-  ifstream istrm(filename.c_str());
-  if( istrm ){
-    int size=-1, dummyi;
-    Double dbl;
-    
-    if (!hasLenDist) {
-      // read length distributions
-      istrm >> goto_line_after( "[UTRLENGTH]" );
-      istrm >> comment >> exonLenD;
-      istrm >> comment >> slope_of_bandwidth;
-      istrm >> comment >> minwindowcount;
-      istrm >> comment >> num5Single >> num5Initial >> num5Internal >> num5Terminal >> num3Single >> num3Initial >> num3Internal >> num3Terminal;
-      istrm >> comment >> numHuge5Single >> numHuge5Initial >> numHuge5Internal >> numHuge5Terminal >> numHuge3Single >> numHuge3Initial >> numHuge3Internal >> numHuge3Terminal;
-      istrm >> comment;
-      lenDist5Single.resize(max_exon_length+1);
-      lenDist5Initial.resize(max_exon_length+1);
-      lenDist5Internal.resize(max_exon_length+1);
-      lenDist5Terminal.resize(max_exon_length+1);
-      lenDist3Single.resize(max3singlelength+1);
-      lenDist3Initial.resize(max_exon_length+1);
-      lenDist3Internal.resize(max_exon_length+1);
-      lenDist3Terminal.resize(max3termlength+1);
-      if (exonLenD>max_exon_length || exonLenD>max3singlelength || exonLenD>max3termlength)
-	  throw UtrModelError("UtrModel: exonLenD is larger than a max_exon_len.");
-      for( int i = 0; i <= exonLenD; i++ ){
-	  istrm >> dummyi;
-	  istrm >> dbl;
-	  lenDist5Single[i] = dbl / 1000;
-	  istrm >> dbl; 
-	  lenDist5Initial[i]= dbl / 1000; 
-	  istrm >> dbl; 
-	  lenDist5Internal[i] = dbl / 1000;
-	  istrm >> dbl;
-	  lenDist5Terminal[i] = dbl / 1000;
-	  istrm >> dbl;
-	  lenDist3Single[i] = dbl / 1000;
-	  istrm >> dbl; 
-	  lenDist3Initial[i]= dbl / 1000; 
-	  istrm >> dbl; 
-	  lenDist3Internal[i] = dbl / 1000;
-	  istrm >> dbl;
-	  lenDist3Terminal[i] = dbl / 1000;
-      }
-      fillTailsOfLengthDistributions();
-      
-      Seq2Int s2ib(aataaa_boxlen);
-      istrm >> goto_line_after("[AATAAA]" );
-      istrm >> comment >> size;
-      if (size == -1)
-	  throw UtrModelError("Could not read in polyA signal.\n");
-      aataaa_probs.assign( size, 0.0);
-      while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
-	  int pn = s2ib.read(istrm);
-	  istrm >> aataaa_probs[pn] >> comment;
-      }
-      hasLenDist = true;
-    }
-    
-    // Start of GC content dependent parameters section
-    // ------------------------------------------------
-    char zusString[6];
-    /*    if (GCutr5init_emiprobs)
-      delete [] GCutr5init_emiprobs;
-    if (GCutr5_emiprobs)
-      delete [] GCutr3_emiprobs;
-    if (GCutr3_emiprobs)
-      delete [] GCutr5_emiprobs;
-    if (GCtssup_emiprobs)
-      delete [] GCtssup_emiprobs;
-    if (GCtssMotif)
-      delete [] GCtssMotif;
-    if (GCtssMotifTATA)
-      delete [] GCtssMotifTATA;
-    if (GCtataMotif)
-      delete [] GCtataMotif;
-    if (GCttsMotif)
-    delete [] GCttsMotif;*/
-    
-    // loop over GC content classes
-    for (int idx = 0; idx < Constant::decomp_num_steps; idx++) {
-      sprintf(zusString, "[%d]", idx+1);
-      istrm >> goto_line_after(zusString);
-      // set the names for CRF parameters for this GC content class
-      GCutr5_emiprobs[idx].setName("utr5 emiprob gc" + (idx+1));
-      GCutr5init_emiprobs[idx].setName("utr5init emiprob gc" + (idx+1));
-      GCutr3_emiprobs[idx].setName("utr3 emiprob gc" + (idx+1));
-
-      // read in the emission probabilities of 5'UTR single and initial exons
-      //--------------------------------------------
-      istrm >> goto_line_after( "[EMISSION-5INITIAL]" );
-      istrm >> comment >> size; 	
-      istrm >> comment >> k;
-      istrm >> comment >> utr_patpseudo >> comment;
-      Seq2Int s2i(k+1);
-      GCutr5init_emiprobs[idx].probs.assign(size, 0.0);
-      for (int i=0; i< size; i++) {
-	istrm >> comment;              // comment is needed here
-	int pn = s2i.read(istrm);
-	istrm >> GCutr5init_emiprobs[idx].probs[pn];
-      }
-
-      // read in the emission probabilities of 5'UTR internal and terminal exons
-      //--------------------------------------------
-      istrm >> goto_line_after( "[EMISSION-5]" );
-      istrm >> comment >> size; 	
-      istrm >> comment >> k;
-      istrm >> comment >> utr_patpseudo >> comment;
-      GCutr5_emiprobs[idx].probs.assign(size, 0.0);
-      for (int i=0; i< size; i++) {
-	istrm >> comment;             // comment is needed here
-	int pn = s2i.read(istrm);
-	istrm >> GCutr5_emiprobs[idx].probs[pn];
-      }
-
-      // read in the emission probabilities of 3'UTR exons
-      //--------------------------------------------
-      istrm >> goto_line_after( "[EMISSION-3]" );
-      istrm >> comment >> size; 	
-      istrm >> comment >> k;
-      istrm >> comment >> utr_patpseudo >> comment;
-      GCutr3_emiprobs[idx].probs.assign(size, 0.0);
-      for (int i=0; i< size; i++) {
-	istrm >> comment;             // comment is needed here
-	int pn = s2i.read(istrm);
-	istrm >> GCutr3_emiprobs[idx].probs[pn];
-      }
-    
-      // read in the emission probabilities of tss upwindow
-      //--------------------------------------------
-      istrm >> goto_line_after( "[EMISSION-TSSUPWIN]" );
-      istrm >> comment >> size;
-      istrm >> comment >> tssup_k;
-      istrm >> comment >> tssup_patpseudo >> comment;
-      Seq2Int s2iup(tssup_k+1);
-      GCtssup_emiprobs[idx].assign(size, 0.0);
-      for (int i=0; i < size; i++) {
-	istrm >> comment;             // comment is needed here
- 	int pn = s2iup.read(istrm);
-	istrm >> GCtssup_emiprobs[idx][pn];
-      }
-    
-      // motifs
-      istrm >> goto_line_after( "[TSSMOTIF]" );
-
-      GCtssMotif[idx].read(istrm);
-      istrm >> goto_line_after( "[TSSMOTIFTATA]" ); 
-      GCtssMotifTATA[idx].read(istrm);
-      istrm >> goto_line_after( "[TATAMOTIF]" );
-      GCtataMotif[idx].read(istrm);
-      istrm >> goto_line_after( "[TTSMOTIF]" );
-      GCttsMotif[idx].read(istrm);
-      // TEMP: change the content models so they are much closer to the intronmodel
-      for (int i=0; i<POWER4TOTHE(k+1); i++) {
-	GCutr5init_emiprobs[idx].probs[i] = GCutr5init_emiprobs[idx].probs[i]*utr5patternweight 
-	  + IntronModel::GCemiprobs[idx].probs[i]*(1.0-utr5patternweight);
-	GCutr5_emiprobs[idx].probs[i] = GCutr5_emiprobs[idx].probs[i]*utr5patternweight 
-	  + IntronModel::GCemiprobs[idx].probs[i]*(1.0-utr5patternweight);
-	GCutr3_emiprobs[idx].probs[i] = GCutr3_emiprobs[idx].probs[i]*utr3patternweight 
-	  + IntronModel::GCemiprobs[idx].probs[i]*(1.0-utr3patternweight);
-      }
-    } // end for loop over GC content classes
-    istrm.close();
-  } else {
-      cerr << "The file with UTR parameters for " << Properties::getProperty("species") << " does not seem to exist.";
-      cerr << " This likely means that the UTR model has not beeen trained yet for " << Properties::getProperty("species") << ".";
-      throw ProjectError("UtrModel::readProbabilities: Couldn't open file " + filename);
-  }
+void NcModel::readAllParameters(){
 }
 
 /*
- * UtrModel::initSnippetProbs
+ * NcModel::initSnippetProbs
  */
-void UtrModel::initSnippetProbs() {
+void NcModel::initSnippetProbs() {
     if (initSnippetProbs5)
 	delete initSnippetProbs5;
     if (snippetProbs5) 
@@ -662,12 +100,12 @@ void UtrModel::initSnippetProbs() {
 }
 
 /*
- * UtrModel::initAlgorithms
+ * NcModel::initAlgorithms
  *
  * makes a correction on the transition matrix "trans" and the vector of ancestors
  * this is called after initViterbiAlgorithms
  */
-void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
+void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
     if (utype == utr5intron)
 	pUtr5Intron = trans[cur][cur].doubleValue();
     if (utype == utr3intron)
@@ -678,32 +116,12 @@ void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
 	prUtr3Intron = trans[cur][cur].doubleValue();
 
     if (!initAlgorithmsCalled) {
-      // assign GC content dependent variables to the stored values corresponding to GC content
-      utr5init_emiprobs = GCutr5init_emiprobs[gcIdx];
-      utr5_emiprobs = GCutr5_emiprobs[gcIdx];
-      utr3_emiprobs = GCutr3_emiprobs[gcIdx];
-      tssup_emiprobs = GCtssup_emiprobs[gcIdx];
-      tssMotif = &GCtssMotif[gcIdx];
-      ttsMotif = &GCttsMotif[gcIdx];
-      tssMotifTATA = &GCtssMotifTATA[gcIdx];
-      tataMotif = &GCtataMotif[gcIdx];
-      
-
       seqProb(-1,-1, false, -1);
       if (tssProbsPlus.size() != dnalen+1){
 	tssProbsPlus.assign(dnalen+1, -1.0);
 	tssProbsMinus.assign(dnalen+1, -1.0);
       } 
-      for (int i=0; i <= dnalen; i++)
-	tssProbsPlus[i] = tssProbsMinus[i] = -1.0;
-      if (ttsProbPlus)
-	delete [] ttsProbPlus;
-      ttsProbPlus = new Double[dnalen+1];
-      if (ttsProbMinus)
-	delete [] ttsProbMinus;
-      ttsProbMinus = new Double[dnalen+1];
-      computeTtsProbs();
-      
+ 
       initSnippetProbs5->setEmiProbs(&utr5init_emiprobs.probs);
       snippetProbs5->setEmiProbs(&utr5_emiprobs.probs);
       rInitSnippetProbs5->setEmiProbs(&utr5init_emiprobs.probs);
@@ -716,9 +134,9 @@ void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
 }
 
 /*
- * UtrModel::viterbiForwardAndSampling
+ * NcModel::viterbiForwardAndSampling
  */
-void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
+void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 					  ViterbiMatrixType& forward,
 					  int state,
 					  int base,
@@ -726,7 +144,10 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 					  OptionListItem& oli) const {
   /* 
    *             | [begin signal]|                        | [end signal] |
-   *  pred.State |TSS            | markov chain           | DSS          |
+   *  pred.State |TSS            | markov chain           | TTS          |
+   *              ASS                                       DSS
+   *              rTTS                                      rTSS
+   *              rDSS                                      rASS
    *  --------------------------------------------------------------------------
    *  predProb   |         notEndPartProb                 | endPartProb  |
    *              <--------------------- lenPartProb -------------------->
@@ -740,11 +161,11 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
     vector<Ancestor>::const_iterator it;
     maxPredProb = fwdsum = 0.0;
     extrinsicQuot = 1.0;
-    if (algovar==doSampling)
+    if (algovar == doSampling)
 	optionslist = new OptionsList();
     
     getEndPositions(base, beginOfEndPart, endOfBioExon);
-    switch (utype) {
+    switch (nctype) {
 	case utr5single:
 	    leftMostEndOfPred = base - (max_exon_length - Constant::trans_init_window + Constant::tss_upwindow_size);
 	    rightMostEndOfPred = base - Constant::tss_upwindow_size - tss_end - 1 // normal offset so that signals do not overlap
@@ -1474,21 +895,23 @@ Double UtrModel::emiProbUnderModel (int begin, int end) const {
     return emiProb;
 }
 
-void UtrModel::getEndPositions (int end, int &beginOfEndPart, int &endOfBioExon) const {
-    switch (utype) {
-	case utr5single:
-	    beginOfEndPart = end + 1; // no end signal
-	    endOfBioExon = end + Constant::trans_init_window;
-	    break;
-	case rutr5single:
-	    beginOfEndPart = end - Constant::tss_upwindow_size - tss_end + 1;
-	    endOfBioExon = end - Constant::tss_upwindow_size;
-	    break;
-	case utr5init:
-	    beginOfEndPart = end - Constant::dss_whole_size() + 1;
-	    endOfBioExon = end - Constant::dss_end - DSS_MIDDLE;
-	    break;
-	case rutr5init:
+// 'end' is the column in the DP table
+void NcModel::getEndPositions (int end, int &beginOfEndPart, int &endOfBioExon) const {
+    switch (nctype) {
+    case ncsingle: case ncterm: // transcription end
+	beginOfEndPart = end + 1; // no end signal
+	endOfBioExon = end;
+	break;
+    case rncsingle: case rncinit: // transcription start
+	beginOfEndPart = end + 1;
+	endOfBioExon = end;
+	break;
+    case ncinternal: case ncinit: // donor splice site after exon
+	beginOfEndPart = end - Constant::dss_whole_size() + 1;
+	endOfBioExon = end - Constant::dss_end - DSS_MIDDLE;
+	break;
+
+    case rutr5init:
 	    beginOfEndPart = end - Constant::tss_upwindow_size - tss_end + 1;
 	    endOfBioExon = end - Constant::tss_upwindow_size;
 	    break;

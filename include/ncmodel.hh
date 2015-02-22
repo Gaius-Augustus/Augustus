@@ -62,7 +62,6 @@ private:
     Double seqProb            ( int left, int right, bool reverse, int type) const;
     void computeLengthDistributions( );
     void buildProbabilities ( const AnnoSequence* annoseq );
-    void initCountVars      ( );
     Double longIntronProb(int internalBegin, int internalEnd) const;
     static void initSnippetProbs();
 
@@ -75,7 +74,6 @@ private:
     static Boolean         hasLenDist;
     static bool            initAlgorithmsCalled;
 #    static double pUtr5Intron, pUtr3Intron, prUtr5Intron, prUtr3Intron;
-    static int             lastParIndex;
     static int             boundSpacing; // without hints 5' and 3' transcript end only every ttsSpacing bases, for speed
 };
 
