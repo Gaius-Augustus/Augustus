@@ -32,7 +32,13 @@ vector<Double>  NcModel::lenDistSingle;       // length distribution of single e
 Boolean         NcModel::hasLenDist = false;
 Boolean         NcModel::hasLenDist = false;
 Boolean         NcModel::initAlgorithmsCalled = false;
+Boolean         NcModel::haveSnippetProbs = false;
+SnippetProbs*   NcModel::snippetProbs = NULL;
 int             NcModel::boundSpacing = 10; // without hints 5' and 3' transcript end only every ttsSpacing bases, for speed
+vector<Double>  NcModel::ttsProbPlus;
+vector<Double>  NcModel::ttsProbMinus;
+vector<Double>  NcModel::tssProbPlus;
+vector<Double>  NcModel::tssProbMinus;
 
 /*
  * NcModel constructor
@@ -45,6 +51,10 @@ NcModel::NcModel() {
  * destructor
  */
 NcModel::~NcModel( ){
+    if (--nccount == 0){
+	if (snippetProbs) 
+	    delete snippetProbs;
+    }
 }
 
 /*
@@ -77,25 +87,10 @@ void NcModel::readAllParameters(){
  * NcModel::initSnippetProbs
  */
 void NcModel::initSnippetProbs() {
-    if (initSnippetProbs5)
-	delete initSnippetProbs5;
-    if (snippetProbs5) 
-	delete snippetProbs5;
-    if (rInitSnippetProbs5)
-	delete rInitSnippetProbs5;
-    if (rSnippetProbs5)
-	delete rSnippetProbs5;
-    if (rSnippetProbs3)
-	delete rSnippetProbs3;
-    if (intronSnippetProbs)
-	delete intronSnippetProbs;
+    if (snippetProbs)
+	delete snippetProbs;
 
-    initSnippetProbs5 = new SnippetProbs(sequence, k);
-    snippetProbs5 = new SnippetProbs(sequence, k);
-    rInitSnippetProbs5 = new SnippetProbs(sequence, k, false);
-    rSnippetProbs5 = new SnippetProbs(sequence, k, false);
-    rSnippetProbs3 = new SnippetProbs(sequence, k, false);
-    intronSnippetProbs = new SnippetProbs(sequence, IntronModel::k);
+    snippetProbs = new SnippetProbs(sequence, IntronModel::k);
     haveSnippetProbs = true;
 }
 
@@ -105,7 +100,7 @@ void NcModel::initSnippetProbs() {
  * makes a correction on the transition matrix "trans" and the vector of ancestors
  * this is called after initViterbiAlgorithms
  */
-void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
+void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){/*
     if (utype == utr5intron)
 	pUtr5Intron = trans[cur][cur].doubleValue();
     if (utype == utr3intron)
@@ -113,21 +108,11 @@ void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
     if (utype == rutr5intron)
 	prUtr5Intron = trans[cur][cur].doubleValue();
     if (utype == rutr3intron)
-	prUtr3Intron = trans[cur][cur].doubleValue();
+    prUtr3Intron = trans[cur][cur].doubleValue();*/
 
     if (!initAlgorithmsCalled) {
-      seqProb(-1,-1, false, -1);
-      if (tssProbsPlus.size() != dnalen+1){
-	tssProbsPlus.assign(dnalen+1, -1.0);
-	tssProbsMinus.assign(dnalen+1, -1.0);
-      } 
- 
-      initSnippetProbs5->setEmiProbs(&utr5init_emiprobs.probs);
-      snippetProbs5->setEmiProbs(&utr5_emiprobs.probs);
-      rInitSnippetProbs5->setEmiProbs(&utr5init_emiprobs.probs);
-      rSnippetProbs5->setEmiProbs(&utr5_emiprobs.probs);
-      rSnippetProbs3->setEmiProbs(&utr3_emiprobs.probs);
-      intronSnippetProbs->setEmiProbs(&IntronModel::emiprobs.probs);
+	seqProb(-1,-1, false, -1);
+	snippetProbs->setEmiProbs(&IntronModel::emiprobs.probs);
     }
     initAlgorithmsCalled = true;
     haveSnippetProbs = false;
@@ -165,131 +150,46 @@ void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	optionslist = new OptionsList();
     
     getEndPositions(base, beginOfEndPart, endOfBioExon);
-    switch (nctype) {
-	case utr5single:
-	    leftMostEndOfPred = base - (max_exon_length - Constant::trans_init_window + Constant::tss_upwindow_size);
-	    rightMostEndOfPred = base - Constant::tss_upwindow_size - tss_end - 1 // normal offset so that signals do not overlap
-	      + Constant::trans_init_window + tss_end; // these terms to allow 5'UTR down to a min. len. of 1 (overlapping tss and tis signals), (e.g. C.elegans has very short 5'UTRs)
-	    if (rightMostEndOfPred > base-1)
-	      rightMostEndOfPred = base-1; // prevent infinite loop in Viterbi
+    switch (nctype)
+	{
+	case ncsingle: case rncsingle:
+	    leftMostEndOfPred = base - Constant::max_exon_len;
+	    rightMostEndOfPred = base - 1;
 	    break;
-	case rutr5single:
-	    leftMostEndOfPred = base - (max_exon_length - Constant::trans_init_window + Constant::tss_upwindow_size);
-	    rightMostEndOfPred = base - Constant::tss_upwindow_size - 1 + Constant::trans_init_window; // see comment above
-            if (rightMostEndOfPred > base-1)
-              rightMostEndOfPred = base-1; 
+	case ncinit: case rncinit:
+	    leftMostEndOfPred = base - (Constant::max_exon_len + DSS_MIDDLE + Constant::dss_end);
+	    rightMostEndOfPred = base - Constant::dss_whole_size();
 	    break;
-	case utr5init:
-	    leftMostEndOfPred = base - (max_exon_length + DSS_MIDDLE + Constant::dss_end + Constant::tss_upwindow_size);
-	    rightMostEndOfPred = base - Constant::tss_upwindow_size - tss_end - Constant::dss_whole_size();
+	case ncinternal: case rncinternal:
+	    leftMostEndOfPred = base - (Constant::max_exon_len + DSS_MIDDLE + Constant::dss_end + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE);
+	    rightMostEndOfPred = base - DSS_MIDDLE - Constant::dss_end - Constant::ass_upwindow_size - Constant::ass_start - ASS_MIDDLE - 1; // => minimum exon len = 1
 	    break;
-	case rutr5init:
-	    leftMostEndOfPred = base - (max_exon_length + DSS_MIDDLE + Constant::dss_end + Constant::tss_upwindow_size);
-	    rightMostEndOfPred = base - Constant::tss_upwindow_size - tss_end - Constant::dss_whole_size();
-	    break;
-	case utr5internal:
-	    leftMostEndOfPred = base - (max_exon_length + DSS_MIDDLE + Constant::dss_end + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE);
-	    rightMostEndOfPred = base - Constant::dss_whole_size() - Constant::ass_upwindow_size - Constant::ass_whole_size();
-	    break;
-	case rutr5internal:
-	    leftMostEndOfPred = base - (max_exon_length + DSS_MIDDLE + Constant::dss_end + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE);
-	    rightMostEndOfPred = base - Constant::dss_whole_size() - Constant::ass_upwindow_size - Constant::ass_whole_size();
-	    break;
-	case utr5term:
-	    leftMostEndOfPred = base - (max_exon_length - Constant::trans_init_window + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE);
+	case ncterm: case rncterm:
+	    leftMostEndOfPred = base - (Constant::max_exon_len + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE);
 	    rightMostEndOfPred = base - Constant::ass_upwindow_size - Constant::ass_whole_size();
-	    if (- Constant::ass_upwindow_size - Constant::ass_whole_size() + Constant::trans_init_window + Constant::ass_end < 0) 
-		// this check is neccessary, otherwise endOfPred could be larger than base
-		rightMostEndOfPred = base - Constant::ass_upwindow_size - Constant::ass_whole_size()
-		    + Constant::trans_init_window + Constant::ass_end; // this is so 5' terminal exons can be shorter than trans_init_window + ass_end, negative length of state!
-	                                                               // in the most extreme case, the UTR exon has length 0
 	    break;
-	case rutr5term:
-	    leftMostEndOfPred = base - (max_exon_length - Constant::trans_init_window + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE);
-	    rightMostEndOfPred = base - Constant::ass_upwindow_size - Constant::ass_whole_size();
-	    if (- Constant::ass_upwindow_size - Constant::ass_whole_size() + Constant::trans_init_window + Constant::ass_end < 0) 
-		// this check is neccessary, otherwise endOfPred could be larger than base
-		rightMostEndOfPred = base - Constant::ass_upwindow_size - Constant::ass_whole_size()
-		    + Constant::trans_init_window + Constant::ass_end; // this is so 5' terminal exons can be shorter than trans_init_window, negative length of state!
-	    break;
-	case utr5intron: case rutr5intron: case utr3intron: case rutr3intron:
+	default: # 4 intron states
 	    leftMostEndOfPred = base - 1;
-	    rightMostEndOfPred = base -1;
-	    break;
-	case utr3single:
-	    leftMostEndOfPred = base - max3singlelength;
-	    if (base != dnalen-1)
-		rightMostEndOfPred = base - Constant::d_polyasig_cleavage - aataaa_boxlen;
-	    else
-		rightMostEndOfPred = base - 1; // right-truncated, can have any lenght>0
-	    break;
-	case rutr3single:
-	    leftMostEndOfPred = base - max3singlelength;
-	    rightMostEndOfPred = base - Constant::d_polyasig_cleavage - aataaa_boxlen;
-	    break;
-	case utr3init:
-	    leftMostEndOfPred = base - (max_exon_length + DSS_MIDDLE + Constant::dss_end);
-	    rightMostEndOfPred = base - Constant::dss_end - DSS_MIDDLE; // was: base - Constant::dss_whole_size();
-	    // allow overlap of models, so utr3init can be shorter than dss_whole_size
-	    break;
-	case rutr3init:
-	    leftMostEndOfPred = base - (max_exon_length + DSS_MIDDLE + Constant::dss_end);
-	    //rightMostEndOfPred = base - Constant::dss_whole_size();
-	    rightMostEndOfPred = base - Constant::dss_end - DSS_MIDDLE; // allow overlap of models, so rutr3init can be shorter than dss_whole_size
-	    break;
-	case utr3internal:
-	    leftMostEndOfPred = base - (max_exon_length + DSS_MIDDLE + Constant::dss_end + ASS_MIDDLE + Constant::ass_start + Constant::ass_upwindow_size );
-	    rightMostEndOfPred = base - Constant::dss_whole_size() - Constant::ass_upwindow_size - Constant::ass_whole_size();
-	    break;
-	case rutr3internal:
-	    leftMostEndOfPred = base - (max_exon_length + DSS_MIDDLE + Constant::dss_end + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE);
-	    rightMostEndOfPred = base - Constant::dss_whole_size() - Constant::ass_upwindow_size - Constant::ass_whole_size();
-	    break;
-	case utr3term:
-	    leftMostEndOfPred = base - (max3termlength + ASS_MIDDLE + Constant::ass_start + Constant::ass_upwindow_size );
-	    if (base != dnalen-1)
-		rightMostEndOfPred = base - Constant::d_polyasig_cleavage - aataaa_boxlen - Constant::ass_whole_size() - Constant::ass_upwindow_size;
-	    else 
-		rightMostEndOfPred = base - Constant::ass_whole_size() - Constant::ass_upwindow_size;
-	    break;
-	case rutr3term:
-	    leftMostEndOfPred = base - (max3termlength + ASS_MIDDLE + Constant::ass_start + Constant::ass_upwindow_size );
-	    rightMostEndOfPred = base - Constant::d_polyasig_cleavage - aataaa_boxlen - Constant::ass_whole_size() - Constant::ass_upwindow_size;
-	    break;
-	default:
-	    leftMostEndOfPred = base - 1;
-	    rightMostEndOfPred = base -1;
-    }
+	    rightMostEndOfPred = base - 1;
+	}
     
     if (beginOfEndPart >= 0)
 	endPartProb = endPartEmiProb(beginOfEndPart, base, endOfBioExon);
     else 
 	endPartProb = 0;
 
-    if (endPartProb == 0){
-	// viterbi[base].erase(state);
-	// if (needForwardTable(algovar))
-	//     forward[base].erase(state);
+    if (endPartProb == 0)
 	return;
-    }
     
-    if (!isLongUTRIntron(utype)){
-    
-	if (utype == utr5single || utype == utr5init){ // the tss window is allowed to be before the dna start
-	    if (leftMostEndOfPred < - Constant::tss_upwindow_size)
-		leftMostEndOfPred = - Constant::tss_upwindow_size;
-	} else if (utype == rutr3single || utype == rutr3term){// the reverse polyA signal is allowed to be before the dna start
-	    if (leftMostEndOfPred < - UtrModel::aataaa_boxlen - Constant::d_polyasig_cleavage)
-		leftMostEndOfPred = - UtrModel::aataaa_boxlen - Constant::d_polyasig_cleavage;
-	} else 
-	    if (leftMostEndOfPred < 0)
-		leftMostEndOfPred = 0;
+    if (nctype != ncintronvar && nctype != rncintronvar){
+	if (leftMostEndOfPred < 0)
+	    leftMostEndOfPred = 0;
 
 	/*
 	 * get the extrinsic exonpart information about parts falling in this range
 	 */
-	if (!(isIntron(utype)))
-	    extrinsicexons = seqFeatColl->getExonListOvlpingRange(leftMostEndOfPred + 1 - Constant::trans_init_window, // to be safe for all cases
+	if (!(isNcIntron(nctype)))
+	    extrinsicexons = seqFeatColl->getExonListOvlpingRange(leftMostEndOfPred,
 								  endOfBioExon,
 								  isOnFStrand(utype)? plusstrand : minusstrand);
 
@@ -306,12 +206,14 @@ void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	     */
 	    for (it = ancestor.begin(); it != ancestor.end() && predVit[it->pos]==0; ++it);
 	    if (it == ancestor.end()) continue;
+
 	    notEndPartProb = notEndPartEmiProb(endOfPred+1, beginOfEndPart-1, endOfBioExon, extrinsicexons);
 	    if (notEndPartProb <= 0.0) continue;
+
 	    emiProb = notEndPartProb * endPartProb;
 	    do {
 		transEmiProb = it->val * emiProb;
-		if ((utype == utr5intron || utype == rutr5intron || utype == utr3intron || utype == rutr3intron)
+		if ((nctype == ncintron || nctype == rncintron)
 		    && (it->pos != state || endOfPred == 0)) // transitions into an intron are punished by malus
 		    transEmiProb *= seqFeatColl->collection->malus(intronF);
 		predProb = predVit[it->pos] * transEmiProb;
@@ -331,10 +233,10 @@ void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	}
     } else if (seqFeatColl){
 	/*
-	 * UTR intron state with variable length. Only used for UTR introns exactly matching an intron hint.
+	 * UTR intron state with variable length. Only used for introns exactly matching an intron hint.
 	 */
 	int endOfBioIntron;
-	if (utype == utr5intronvar || utype == utr3intronvar)
+	if (nctype == ncintronvar)
 	    endOfBioIntron = base + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
 	else
 	    endOfBioIntron = base + Constant::dss_end + DSS_MIDDLE;
@@ -343,18 +245,16 @@ void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 							    isOnFStrand(utype)? plusstrand : minusstrand);
 	int oldEndOfPred = -INT_MAX;
 	for (Feature *ihint = intronList; ihint != NULL; ihint = ihint->next) {
-	    //cout << "UTRModel. Checking intron from hint: " << ihint->start << ".." << ihint->end << endl;
-	    if (utype == utr5intronvar || utype == utr3intronvar)
+	    if (nctype == ncintronvar)
 		endOfPred = ihint->start - 1 + DSS_MIDDLE + Constant::dss_end;
-	    else 
+	    else
 		endOfPred = ihint->start - 1 + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
-	    if (endOfPred < 0 || 
+	    if (endOfPred < 0 ||
 		ihint->end - ihint->start + 1 < Constant::ass_upwindow_size 
 		+ Constant::ass_start + ASS_MIDDLE + DSS_MIDDLE + Constant::dss_end) 
 		continue;
 	    const ViterbiColumnType& predVit = viterbi[endOfPred];
 	    emiProb = emiProbUnderModel(endOfPred+1, base);
-	    //cout << "biolen= " << ihint->end - ihint->start + 1 << " emiProb = " << emiProb << endl;
 	    if (endOfPred == oldEndOfPred)
 		extrinsicQuot *= ihint->bonus;
 	    else 
@@ -387,7 +287,7 @@ void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	    try {
 		oli = optionslist->sample();
 	    } catch (ProjectError e) {
-		cerr << "Sampling error in UTR model. state=" << state << " base=" << base << endl;
+		cerr << "Sampling error in noncoding model. state=" << state << " base=" << base << endl;
 		throw e;
 	    }
 	    delete optionslist;
@@ -406,45 +306,30 @@ void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 }
 
 /*
- * ===[ UtrModel::endPartEmiProb ]=====================================
+ * ===[ NcModel::endPartEmiProb ]=====================================
  *
  * Compute the probability that the end part ends at "end" in the test sequence.
  * Return 0 if it is impossible.   
  */
-Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
+Double NcModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
     Double endPartProb = 1, extrinsicQuot = 1;
-    switch (utype) {
-	case utr5single: case utr5term:
-	    if ((endOfBioExon + 3 <= dnalen - 1) && !GeneticCode::isStartcodon(sequence+endOfBioExon+1))
+    switch (nctype) 
+	{
+	case ncsingle: case ncterm: case rncsingle: case rncinit: 
+	    if (end % boundSpacing != 0) // allow transcript starts only on a grid for efficiency
 		endPartProb = 0.0;
 	    break;
-	case utr5internal: case utr5init: case utr3internal: case utr3init:
-	    endPartProb = IntronModel::dSSProb(end - Constant::dss_whole_size() + 1, true);
+	case ncinit: case ncinternal:
+	    endPartProb = IntronModel::dSSProb(begin, true);
 	    break;
-	case rutr5internal: case rutr5term: case rutr3internal: case rutr3term:
-	    endPartProb = IntronModel::aSSProb(end - Constant::ass_upwindow_size - Constant::ass_whole_size() + 1, false);
+	case rncterm: case ncinternal:
+	    endPartProb = IntronModel::aSSProb(begin, false);
 	    break;
-	case rutr5single: case rutr5init:
-	    endPartProb = tssProb(begin);
-	    break;
-	case utr3single: case utr3term:
-	    if (end == dnalen-1)
-		return 1.0;
-	    if (begin < 0 || begin + aataaa_boxlen -1 >= dnalen)
-		return 0.0;
-	    endPartProb = ttsProbPlus[begin];
-	    break;
-	case rutr3single: case rutr3init:
-	    if ((end + 3 > dnalen - 1) || !GeneticCode::isRCStopcodon(sequence + end + 1))
+	case ncintronvar:
+	    if (!isPossibleASS(end + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE))
 		endPartProb = 0.0;
 	    break;
-	case utr5intronvar: case utr3intronvar: {
-	    int asspos = end + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
-	    if (asspos >= dnalen || !isPossibleASS(asspos))
-		endPartProb = 0.0;
-	    break;
-	}
-	case rutr5intronvar: case rutr3intronvar:
+	case rncintronvar:
 	    if (!isPossibleRDSS(end + Constant::dss_end + DSS_MIDDLE))
 		endPartProb = 0.0;
 	    break;
@@ -455,7 +340,7 @@ Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
 	/*
 	 * dss hints
 	 */
-	if (utype == utr5internal || utype == utr5init || utype == utr3internal || utype == utr3init){
+	if (nctype == ncinternal || nctype == ncinit){
 	    Feature *feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(dssF), endOfBioExon+1, plusstrand);
 	    if (feature)
 		while (feature) {
@@ -468,7 +353,7 @@ Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
 	/*
 	 * ass hints
 	 */
-	if (utype == rutr5term || utype == rutr5internal || utype == rutr3internal || utype == rutr3term){
+	if (nctype == rncinternal || nctype == rncterm){
 	    Feature *feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(assF), endOfBioExon+1, minusstrand);
 	    if (feature)
 		while (feature) {
@@ -480,10 +365,10 @@ Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
 	}
 
 	/*
-	 * intronpart bonus for the part of the intron that is handled in the exon states	 
+	 * intronpart bonus for the part of the intron that is handled in the exon states
 	 */
-	if (utype != utr3single && utype != utr3term && utype != rutr5single && utype != rutr5init
-	    && endOfBioExon < end && !isIntron(utype)) {
+	if ((nctype == ncinit || nctype == ncinternal || nctype == rncterm || nctype == ncinternal) // splice site follows
+	    && endOfBioExon < end) {
 	    /*
 	     * an intron gets the bonus for each position covered by an intronpart hint 
 	     * (counted multiply for overlapping hints)
@@ -506,14 +391,14 @@ Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
  * notEndPartEmiProb(int begin, int end)
  * endOfMiddle is the position right before the downstream signal
  */
-Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, Feature *exonparts) const {
+Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, Feature *exonparts) const {
     Double beginPartProb = 1, middlePartProb = 1, lenProb = 1;
     Double extrinsicQuot = 1;
     int beginOfMiddle, beginOfBioExon=-1;
     Seq2Int s2i_intron(IntronModel::k+1);
 
-    switch( utype ){
-	case utr5single:
+    switch( nctype ){
+	case ncsingle:
 	    beginOfMiddle = begin + Constant::tss_upwindow_size + tss_end;
 	    if (endOfMiddle - beginOfMiddle + 1 >= 0)
 	      middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 0);
@@ -873,21 +758,20 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
     return sequenceProb * extrinsicQuot;
 }
 
-
-Double UtrModel::emiProbUnderModel (int begin, int end) const {
+// begin = endOfPred + 1
+Double NcModel::emiProbUnderModel (int begin, int end) const {
     int beginOfEndPart, endOfBioExon;
     Feature *extrinsicexons = NULL;
     Double endProb, notEndProb, emiProb;
 
     getEndPositions(end, beginOfEndPart, endOfBioExon);
 
-    if (!(isIntron(utype)))
-	extrinsicexons = seqFeatColl->getExonListInRange(begin - Constant::trans_init_window, // to be safe for all cases
+    if (!(isNcIntron(nctype)))
+	extrinsicexons = seqFeatColl->getExonListInRange(begin, // to be safe for all cases
 							 endOfBioExon,
-							 isOnFStrand(utype)? plusstrand : minusstrand);
+							 isOnFStrand(nctype)? plusstrand : minusstrand);
     if (inCRFTraining)
       seqProb(-1, -1, false, -1); // forget all saved information in static variables
-
 
     endProb = endPartEmiProb(beginOfEndPart, end, endOfBioExon);
     notEndProb = notEndPartEmiProb(begin, beginOfEndPart-1, endOfBioExon, extrinsicexons);
@@ -910,64 +794,13 @@ void NcModel::getEndPositions (int end, int &beginOfEndPart, int &endOfBioExon) 
 	beginOfEndPart = end - Constant::dss_whole_size() + 1;
 	endOfBioExon = end - Constant::dss_end - DSS_MIDDLE;
 	break;
-
-    case rutr5init:
-	    beginOfEndPart = end - Constant::tss_upwindow_size - tss_end + 1;
-	    endOfBioExon = end - Constant::tss_upwindow_size;
-	    break;
-	case utr5internal:
-	    beginOfEndPart = end - Constant::dss_whole_size() + 1;
-	    endOfBioExon = end - Constant::dss_end - DSS_MIDDLE;
-	    break;
-	case rutr5internal:
-	    beginOfEndPart = end - Constant::ass_whole_size() - Constant::ass_upwindow_size + 1;
-	    endOfBioExon = end - Constant::ass_upwindow_size - Constant::ass_start - ASS_MIDDLE;
-	    break;
-	case utr5term:
-	    beginOfEndPart = end + 1; // no end signal
-	    endOfBioExon = end + Constant::trans_init_window;	    
-	    break;
-	case rutr5term:
-	    beginOfEndPart = end - Constant::ass_whole_size() - Constant::ass_upwindow_size + 1;
-	    endOfBioExon = end - Constant::ass_upwindow_size - Constant::ass_start - ASS_MIDDLE;
-	    break;
-	case utr5intron: case rutr5intron:
+    case rncinternal: case rncterm: // reverse acceptor splice site after exon
+	beginOfEndPart = end - Constant::ass_whole_size() - Constant::ass_upwindow_size + 1;
+	endOfBioExon = end - Constant::ass_upwindow_size - Constant::ass_start - ASS_MIDDLE;
+	break;
+    default: // an intron state: ncintron, ncintronvar, rncintron, rncintronvar
 	    beginOfEndPart = end + 1;
 	    endOfBioExon = end;
-	    break;
-	case rutr3single: case rutr3init:
-	    beginOfEndPart = end + 1;
-	    endOfBioExon = end;
-	    break;
-	case utr3single: case utr3term:
-	    if (end != dnalen-1) {
-		beginOfEndPart = end - Constant::d_polyasig_cleavage - aataaa_boxlen + 1;
-		endOfBioExon = end;
-	    } else {// end part outside sequence, right-truncated 3'UTR exon
-		beginOfEndPart = dnalen;
-		endOfBioExon = dnalen-1 ;
-	    }
-	    break;	
-	case utr3init:
-	    beginOfEndPart = end - Constant::dss_whole_size() + 1;
-	    endOfBioExon = end - Constant::dss_end - DSS_MIDDLE;
-	    break;
-	case utr3internal:
-	    beginOfEndPart = end - Constant::dss_whole_size() + 1;
-	    endOfBioExon = end - Constant::dss_end - DSS_MIDDLE;	    
-	    break;
-	case rutr3internal:
-	    beginOfEndPart = end - Constant::ass_whole_size() - Constant::ass_upwindow_size + 1;
-	    endOfBioExon = end - Constant::ass_upwindow_size - Constant::ass_start - ASS_MIDDLE;
-	    break;
-	case rutr3term:
-	    beginOfEndPart = end - Constant::ass_whole_size() - Constant::ass_upwindow_size + 1;
-	    endOfBioExon = end - Constant::ass_upwindow_size - Constant::ass_start - ASS_MIDDLE;
-	    break;
-	default:
-	    beginOfEndPart = end + 1;
-	    endOfBioExon = end;
-    }
 }
 
 /*
@@ -1091,83 +924,28 @@ Double UtrModel::tssupSeqProb (int left, int right, bool reverse) const {
 
 /*
  * computes the probability of the transcription start site:
- * tss_upwindow, tata box, tss site motifs
- *
- * This Model is an exception the way it is programmed now.
- * It is not a probability distribution over the set of sequences, because
- * it distinguished the two cases: with and without TATA box
+ * here only from hints
  */
-Double UtrModel::tssProb(int left) const { // TODO: store results for later to be more efficient
-    static Double tssMotifProb, tataMotifProb, tssupwinProb, prob, extrinsicProb;
-    static bool hasTATA;
-    static int reltatapos;
-    static int tatapos;
-    static int transstart;
-    int right = left + Constant::tss_upwindow_size + tss_end - 1;
-    transstart = isOnFStrand(utype)? right - tss_end + 1 : left + tss_end - 1;
-    extrinsicProb = 1.0;
+ Double NcModel::tssProb(int tsspos) const { // TODO: store results for later to be more efficient
+     Double extrinsicProb(1.0);
 
-    Feature *tsshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(tssF), transstart, isOnFStrand(utype)? plusstrand : minusstrand);
-    if (tsshints) {
-	while (tsshints) {
-	    extrinsicProb  *= tsshints->distance_faded_bonus(transstart);
-	    tsshints = tsshints->next;
-	}
-    } else if (seqFeatColl->collection->hasHintsFile){
-	extrinsicProb = seqFeatColl->collection->malus(tssF);
-    } else
-	extrinsicProb = 1.0;
+     Feature *tsshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(tssF), tsspos, isOnFStrand(utype)? plusstrand : minusstrand);
+     if (tsshints) {
+	 while (tsshints) {
+	     extrinsicProb  *= tsshints->distance_faded_bonus(tsspos);
+	     tsshints = tsshints->next;
+	 }
+     } else if (seqFeatColl->collection->hasHintsFile){
+	 extrinsicProb = seqFeatColl->collection->malus(tssF);
+     } else
+	 extrinsicProb = 1.0;
 
-    // TEMP, for speed: let transcription start be possible only every ttsSpacing-th base
-    if (left % ttsSpacing != 0 && !(extrinsicProb > 1.0))
-	return 0.0;
+     // for speed: let transcription start be possible only every ttsSpacing-th base
+     if (tsspos % boundSpacing != 0 && !(extrinsicProb > 1.0))
+	 return 0.0;
     
-    if (isOnFStrand(utype)){
-	if (tssProbsPlus[left] > - 0.5) // have stored value
-	    return tssProbsPlus[left];
-	reltatapos = findTATA(sequence + right - tss_end - d_tss_tata_max + 1, d_tss_tata_max - d_tss_tata_min - 1);
-	hasTATA = (reltatapos >= 0);
-	if (hasTATA){
-	    tatapos = right - tss_end - d_tss_tata_max + 1 + reltatapos;
-	    tssMotifProb = tssMotifTATA->seqProb(sequence + right - tss_end - tss_start + 1);
-	    tataMotifProb = tataMotif->seqProb(sequence + tatapos - tata_start);
-	    tssupwinProb = tssupSeqProb(left, tatapos - tata_start - 1, false)*
-		tssupSeqProb(tatapos + tata_end, right - tss_end - tss_start, false);    
-	} else {
-	    tssMotifProb = tssMotif->seqProb(sequence + right - tss_end - tss_start + 1);
-	    tataMotifProb = 1.0;
-	    tssupwinProb = tssupSeqProb(left, right - tss_end - tss_start, false);
-	}
-	prob = tssMotifProb * tataMotifProb * tssupwinProb;
-	tssProbsPlus[left] = prob;
-    } else { // reverse strand
-	if (tssProbsMinus[left] > - 0.5) // have stored value
-	    return tssProbsMinus[left];
-	reltatapos = findTATA(sequence + left + tss_end + d_tss_tata_max - 1, d_tss_tata_max - d_tss_tata_min - 1, true);
-	hasTATA = (reltatapos <= 0);
-	if (hasTATA){
-	    tatapos = left + tss_end + d_tss_tata_max - 1 + reltatapos;
-	    tssMotifProb = tssMotifTATA->seqProb(sequence + left, true, true);
-	    tataMotifProb = tataMotif->seqProb(sequence + tatapos - tata_end + 1, true, true);
-	    tssupwinProb = tssupSeqProb(left + tata_end + tata_start - 1, tatapos - tata_end, true)*
-		tssupSeqProb(tatapos + tata_start + 1, right, true);
-	} else {
-	    tssMotifProb = tssMotif->seqProb(sequence + left, true, true);
-	    tataMotifProb = 1.0;
-	    tssupwinProb = tssupSeqProb(left + tss_end + tss_start, right, true);
-	}
-	prob = tssMotifProb * tataMotifProb * tssupwinProb;
-	tssProbsMinus[left] = prob;
-    }
-
-    prob *= extrinsicProb;
-    if (isOnFStrand(utype)){
-	tssProbsPlus[left] = prob;
-    } else {
-	tssProbsMinus[left] = prob;
-    }
-    return prob;
-}
+     return extrinsicProb;
+ }
 
 /*
  * Precomputes the probability of the transcription termination site:

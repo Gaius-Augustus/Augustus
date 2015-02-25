@@ -508,14 +508,23 @@ inline Boolean isCodingExon(StateType type) {
 	|| (rsingleG <= type && type <= rterminal2);
 }
 
+inline Boolean isNcIntron(StateType type) {
+    return  (type == ncintron || type == ncintronvar || type == rncintron || type == rncintronvar);
+}
+
+inline Boolean isNcExon(StateType type) {
+    return  (ncsingle <= type && !isNcIntron(type));
+}
+
 inline Boolean isExon(StateType type) {
     return (isCodingExon(type) || is5UTRExon(type) || is3UTRExon(type));
 }
-	
+
 inline Boolean isCodingIntron(StateType type) {
     return  (lessD0 <= type && type <= longass2)
 	|| (rlessD0 <= type && type <= rlongass2);
 }
+
 
 inline Boolean isIntron(StateType type) {
     return (isCodingIntron(type) || is5UTRIntron(type) || is3UTRIntron(type) 
@@ -543,7 +552,7 @@ inline Boolean isLongDssIntron(StateType type){
 }
 
 inline Boolean isOnFStrand(StateType type){
-    return (type >= singleG && type < rsingleG);
+    return ((type >= singleG && type < rsingleG) || (type >= ncsingle && type < rncsingle));
 }
 
 inline StateType initialExon(int frame){
@@ -703,15 +712,6 @@ inline StateType requalDIntron(int frame){
 int howOftenOccursIt(const char* haystack, const char* needle, const char* endhaystack=NULL);
 bool containsJustNonNucs(const char *dna, int dnalen);
 bool isNuc(const char *dna);
-
-/*TEMP for allowing state path to end in the middle of an exon
-inline Double cumulativeTailProb (vector<Double> dist, int n){
-    Double sum=0.0;
-    for (int i=0; i<n; i++)
-	sum += dist[i];
-    return Double(1.0) - sum;
-}
-*/
 
 /*
  * expand the ~ to the $Home directory

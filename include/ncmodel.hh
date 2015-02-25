@@ -45,18 +45,19 @@ public:
     Double notEndPartEmiProb  (int begin, int end, int endOfBioExon, Feature *exonparts) const;
     void getEndPositions      ( int end, int &beginOfEndPart, int &endOfBioExon) const;
     Double tssupSeqProb       ( int left, int right, bool reverse) const;  
-    Double tssProb            ( int left) const;
+    Double tssProb            ( int tsspos) const;
     void computeTtsProbs    ( );
     static void init();
     static void resetPars(){
 	if (nccount == 0)
 	    return;
+	if (!haveSnippetProbs)
+	    initSnippetProbs();
 	initAlgorithmsCalled = false;
     }
     static void readAllParameters();
     static void storeGCPars(int idx);
     static void resetModelCount(){nccount = 0;};
-    static void setTtsSpacing(int spacing){ ttsSpacing = spacing; };
     
 private:
     Double seqProb            ( int left, int right, bool reverse, int type) const;
@@ -73,8 +74,12 @@ private:
     static vector<Double>  lenDistSingle;         // length distribution of nc genes with a single exon
     static Boolean         hasLenDist;
     static bool            initAlgorithmsCalled;
+    static bool            haveSnippetProbs;
+    static SnippetProbs    *snippetProbs;
 #    static double pUtr5Intron, pUtr3Intron, prUtr5Intron, prUtr3Intron;
     static int             boundSpacing; // without hints 5' and 3' transcript end only every ttsSpacing bases, for speed
+    static vector<Double>  ttsProbPlus, ttsProbMinus;
+    static vector<Double>  tssProbPlus, tssProbMinus;
 };
 
 class NcModelError : public ProjectError {
