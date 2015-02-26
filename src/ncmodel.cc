@@ -112,7 +112,13 @@ void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){/*
 
     if (!initAlgorithmsCalled) {
 	seqProb(-1,-1, false, -1);
-	snippetProbs->setEmiProbs(&IntronModel::emiprobs.probs);
+	if (tssProbsPlus.size() != dnalen+1){
+	    tssProbsPlus.assign(dnalen+1, 0.0);
+	    tssProbsMinus.assign(dnalen+1, 0.0);
+	    ttsProbsPlus.assign(dnalen+1, 0.0);
+	    ttsProbsMinus.assign(dnalen+1, 0.0);
+	}
+	precomputeTxEndProbs();
     }
     initAlgorithmsCalled = true;
     haveSnippetProbs = false;
@@ -948,48 +954,42 @@ Double UtrModel::tssupSeqProb (int left, int right, bool reverse) const {
  }
 
 /*
- * Precomputes the probability of the transcription termination site:
- * the aataaa (polyA signal) which is shortly upstream of the actual tts.
- * plus the d_polyasig_cleavage bases downstream of the polyA signal
+ * Precomputes the probability of the transcription termination and initian sites
+ * on the whole sequence. Uses the tss and tts hints, spacing (%10) for efficiency.
+ * TODO: Disallow transcript ends that are nowhere near a hint: 
+ * Exploit that nc genes unsupported by hints are not considered.
  */
-void UtrModel::computeTtsProbs(){
+void NcModel::precomputeTxEndProbs(){
     Double extrinsicProb;
-    Double prob;
-    Double randProb = 1.0/POWER4TOTHE(aataaa_boxlen);
-    Feature *ttshints;
-    int ttspos, aataaa_box_begin;
-    Seq2Int s2i_aataaa(aataaa_boxlen);
+    Feature *f;
 
-    // plus strand
-    for (aataaa_box_begin = 0; aataaa_box_begin <= dnalen; aataaa_box_begin++) {
+    for (int pos = 0; pos <= dnalen; pos += boundSpacing) {
+	tssProbPlus[pos] = tssProbminus[pos] = ttsProbPlus[pos] = ttsProbMinus[pos] = 1.0;
+    }
+    f = seqFeatColl->getAllActiveFeatures(tssF);
+    while (f) {
+	
+	f = f->next;
+    }
+
 	// plus strand
-	ttspos = aataaa_box_begin + aataaa_boxlen + Constant::d_polyasig_cleavage - 1;
-	if (ttspos >= dnalen) {
-	    ttsProbPlus[aataaa_box_begin] = 0;
-	} else {
-	    ttspos = aataaa_box_begin + aataaa_boxlen + Constant::d_polyasig_cleavage - 1;
-	    ttshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(ttsF), ttspos, plusstrand);
-	    extrinsicProb = 1.0;
-	    if (ttshints) {
-		while (ttshints) {
-		    extrinsicProb  *= ttshints->distance_faded_bonus(ttspos);
-		    ttshints = ttshints->next;
-		}
-	    } else if (seqFeatColl->collection->hasHintsFile)
-		extrinsicProb = seqFeatColl->collection->malus(ttsF);
-	    try {
-		prob = aataaa_probs[s2i_aataaa(sequence + aataaa_box_begin)];
-		prob *= prob_polya;
-	    } catch (InvalidNucleotideError e) {
-		prob = 0.0;
+	ttshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(ttsF), ttspos, plusstrand);
+	extrinsicProb = 1.0;
+	if (ttshints) {
+	    while (ttshints) {
+		extrinsicProb  *= ttshints->distance_faded_bonus(ttspos);
+		ttshints = ttshints->next;
 	    }
-	    if ((extrinsicProb > 1.0 || aataaa_box_begin % ttsSpacing == 0) && prob == 0)//if no aataaa like pattern: allow tts every ttsSpacing-th base
-		prob = (1.0-prob_polya) * randProb; // randprob = 1/4^6
-	    if (prob > 0.0) { // compute prob of downstream window up to 'tts'
-		prob *= ttsMotif->seqProb(sequence + aataaa_box_begin + aataaa_boxlen);
-	    }
-	    ttsProbPlus[aataaa_box_begin] = prob * extrinsicProb;
+	} else if (seqFeatColl->collection->hasHintsFile)
+	    extrinsicProb = seqFeatColl->collection->malus(ttsF);
+	try {
+	    prob = aataaa_probs[s2i_aataaa(sequence + aataaa_box_begin)];
+	    prob *= prob_polya;
+	} catch (InvalidNucleotideError e) {
+	    prob = 0.0;
 	}
+	ttsProbPlus[ttspos] = extrinsicProb;
+	
 	// minus strand
 	ttspos = aataaa_box_begin - Constant::d_polyasig_cleavage;
 	if (ttspos < 0 || aataaa_box_begin + aataaa_boxlen - 1 >= dnalen) {

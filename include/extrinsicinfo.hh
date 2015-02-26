@@ -137,6 +137,7 @@ public:
     }
     Feature *getFeatureAt(FeatureType type, int endPosition, Strand strand);
     Feature *getFeatureListAt(FeatureType type, int endPosition, Strand strand);
+    Feature *getAllActiveFeatures(FeatureType type);
     Feature *getFeatureListInRange(FeatureType type, int startPosition, int endPosition, 
 				   Strand strand, int seqRelFrame=-1);
     Feature *getFeatureListBeginningInRange(FeatureType type, int startPosition, int endPosition, 

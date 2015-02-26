@@ -794,8 +794,6 @@ void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
 	tssProbsPlus.assign(dnalen+1, -1.0);
 	tssProbsMinus.assign(dnalen+1, -1.0);
       } 
-      for (int i=0; i <= dnalen; i++)
-	tssProbsPlus[i] = tssProbsMinus[i] = -1.0;
       if (ttsProbPlus)
 	delete [] ttsProbPlus;
       ttsProbPlus = new Double[dnalen+1];
@@ -1859,7 +1857,6 @@ void UtrModel::computeTtsProbs(){
     int ttspos, aataaa_box_begin;
     Seq2Int s2i_aataaa(aataaa_boxlen);
 
-    // plus strand
     for (aataaa_box_begin = 0; aataaa_box_begin <= dnalen; aataaa_box_begin++) {
 	// plus strand
 	ttspos = aataaa_box_begin + aataaa_boxlen + Constant::d_polyasig_cleavage - 1;

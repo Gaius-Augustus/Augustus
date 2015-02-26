@@ -314,6 +314,21 @@ void SequenceFeatureCollection::deleteFeatureAt(FeatureType type, int endPositio
 }
 
 /*
+ * SequenceFeatureCollection::getAllActiveFeatures
+ * 
+ */
+Feature *SequenceFeatureCollection::getAllActiveFeatures(FeatureType type){
+    Feature *head = NULL;
+    list<Feature>::iterator fit;
+    for (fit = featureLists[type].begin(); fit != featureLists[type].end(); fit++)
+	if (fit->active){
+	    fit->next = head;
+	    head = &(*fit);
+	}
+    return head;
+}
+
+/*
  * SequenceFeatureCollection::getFeatureListInRange
  * returns a pointer to a feature of type 'type' which starts at or after 'startPosition' and ends 
  * before or at 'endPosition' and is on strand
