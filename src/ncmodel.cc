@@ -100,7 +100,8 @@ void NcModel::initSnippetProbs() {
  * makes a correction on the transition matrix "trans" and the vector of ancestors
  * this is called after initViterbiAlgorithms
  */
-void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){/*
+void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
+    /*
     if (utype == utr5intron)
 	pUtr5Intron = trans[cur][cur].doubleValue();
     if (utype == utr3intron)
@@ -111,17 +112,33 @@ void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){/*
     prUtr3Intron = trans[cur][cur].doubleValue();*/
 
     if (!initAlgorithmsCalled) {
-	seqProb(-1,-1, false, -1);
-	if (tssProbsPlus.size() != dnalen+1){
-	    tssProbsPlus.assign(dnalen+1, 0.0);
-	    tssProbsMinus.assign(dnalen+1, 0.0);
-	    ttsProbsPlus.assign(dnalen+1, 0.0);
-	    ttsProbsMinus.assign(dnalen+1, 0.0);
-	}
 	precomputeTxEndProbs();
     }
     initAlgorithmsCalled = true;
     haveSnippetProbs = false;
+}
+
+/*
+ * computeLengthDistributions
+ * use a parametric distribution (negative binomial)
+ */
+void NcModel::computeLengthDistributions(){
+    Double mean = 200;
+    Double disp = 0.5; // > 0, the larger the dispersion, the larger the variance
+    double r = 1/disp;
+    Double p = mean / (mean + r);
+    // number of successes until r failures occur, success prob is p
+    // variance = mean + dispersion * mean^2
+    // use recursive formular for NB-distribution to fill in the table
+    lenDistSingle.resize(Constant::max_exon_len+1, 0.0);
+    lenDistSingle[0] = pow(1-p, r);
+    for (int k=1; i <= Constant::max_exon_len; k++){
+	lenDistSingle[k] = lenDistSingle[k-1] * p * (k+r) / (k+1);
+    }
+    cout << "lenDistSingle[100]  = " << lenDistSingle[100]  << " should be 0.003660507" << endl;
+    cout << "lenDistSingle[1000] = " << lenDistSingle[1000] << " should be 4.681851e-06" << endl;
+    cout << "lenDistSingle[5000] = " << lenDistSingle[5000] << " should be 1.212119e-22" << endl;
+    lenDistInternal = lenDistSingle;
 }
 
 /*
@@ -200,8 +217,6 @@ void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 								  isOnFStrand(utype)? plusstrand : minusstrand);
 
 	
-	seqProb(-1,-1,false,-1);      // initialize the static variables
-	
 	for (endOfPred = rightMostEndOfPred; endOfPred >= leftMostEndOfPred; endOfPred--){
 	    const ViterbiColumnType& predVit = algovar == doSampling ? 
 		(endOfPred > 0 ? forward[endOfPred] : forward[0]) :
@@ -239,7 +254,7 @@ void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	}
     } else if (seqFeatColl){
 	/*
-	 * UTR intron state with variable length. Only used for introns exactly matching an intron hint.
+	 * intron state with variable length. Only used for introns exactly matching an intron hint.
 	 */
 	int endOfBioIntron;
 	if (nctype == ncintronvar)
@@ -405,25 +420,13 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 
     switch( nctype ){
 	case ncsingle:
-	    beginOfMiddle = begin + Constant::tss_upwindow_size + tss_end;
-	    if (endOfMiddle - beginOfMiddle + 1 >= 0)
-	      middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 0);
-	    else {
-	      middlePartProb = pow (2.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between 5term and first coding exon
-	    }
-	    beginOfBioExon = begin + Constant::tss_upwindow_size;
-	    lenProb = lenDist5Single[endOfBioExon - beginOfBioExon + 1];
-	    if (begin >= 0) {
-		beginPartProb = tssProb(begin);
-	    } else {
-		beginPartProb = pow (.25, beginOfMiddle-1); // part of tss model is before start of dna
-		if (begin + Constant::tss_upwindow_size == 0) // tail probability
-		    lenProb = tailLenDist5Single[endOfMiddle - begin + 1 + Constant::trans_init_window - Constant::tss_upwindow_size];
-	    }
+	    middlePartProb = seqProb(begin, endOfMiddle);
+	    beginOfBioExon = begin;
+	    lenProb = lenDistSingle[endOfBioExon - beginOfBioExon + 1];
+	    beginPartProb = tssProbPlus[begin];
 	    break;
-	case utr5init:
-	    beginOfMiddle = begin + Constant::tss_upwindow_size + tss_end;
-	    middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 0);
+	case ncinit:
+	    middlePartProb = seqProb(begin, endOfMiddle, false);
 	    beginOfBioExon = begin + Constant::tss_upwindow_size;	    
 	    lenProb = lenDist5Initial[endOfBioExon - beginOfBioExon + 1];
 	    if (begin >= 0) {
@@ -814,96 +817,11 @@ void NcModel::getEndPositions (int end, int &beginOfEndPart, int &endOfBioExon) 
  * left and right included
  */
 
-Double UtrModel::seqProb(int left, int right, bool reverse, int type) const {
-    static Double seqProb = 1.0; 
-    static int oldleft = -1;
-    static int oldright = -1;
-    static int oldtype = -1; //type 0=5' initial/single, 1= 5', 2=3'
-    static bool oldReverse = false;
-    int curpos, pn;
-    Seq2Int s2i(k+1);
-    if (left == -1 && right == -1) {   // new initialization
-	seqProb = 1.0;
-	oldleft= -1;
-	oldright= -1;
-	oldtype=-1;
-	return 1.0;
-    }
+Double NcModel::seqProb(int left, int right) const {
     if (left > right)
 	return 1.0;
-  
-    if (utype == rutr5single || utype == rutr5init) {
-	seqProb = rInitSnippetProbs5->getSeqProb(right, right-left+1);
-	return seqProb;
-    }
-    if (utype == rutr3term) {
-	seqProb = rSnippetProbs3->getSeqProb(right, right-left+1);
-	return seqProb;
-    }
-
-    //  if (utype == rutr5internal)
-//	return rSnippetProbs->getSeqProb(right, right-left+1);
-    if (right == oldright && left <= oldleft && reverse == oldReverse && type == oldtype) {
-	for (curpos = oldleft-1; curpos >= left; curpos--){
-	    try {
-		if (curpos < 0 || (!reverse && curpos-k < 0))
-		    seqProb *= .25;
-		else {
-		    pn = reverse? s2i.rc(sequence+curpos) : s2i(sequence+curpos-k);
-		    if (type == 0){
-		      seqProb *= utr5init_emiprobs.probs[pn];
-		    } else if (type == 1){
-			seqProb *= utr5_emiprobs.probs[pn];
-		    } else if (type == 2) {
-			seqProb *= utr3_emiprobs.probs[pn];
-		    } else {
-			seqProb *= IntronModel::emiprobs.probs[pn]; //for testing purposes
-		    }
-		}
-	    } catch (InvalidNucleotideError e) {
-		seqProb *= .25; //  0.25, 1/4
-	    }
-	}
-	oldleft = left;
-	return seqProb;
-    }
     
-    // compute everything new
-    seqProb = 1.0;
-    for (curpos = right; curpos >= left; curpos--) {
-	try {
-	    if (curpos < 0 || (!reverse && curpos-k < 0))
-		seqProb *= 0.25;
-	    else {
-		pn = reverse? s2i.rc(sequence+curpos) : s2i(sequence+curpos-k);
-		if (type == 0)
-		    seqProb *= utr5init_emiprobs.probs[pn];
-		else if (type == 1)
-		    seqProb *= utr5_emiprobs.probs[pn];
-		else if (type == 2)
-		    seqProb *= utr3_emiprobs.probs[pn];
-		else
-		    seqProb *= IntronModel::emiprobs.probs[pn]; //for testing purposes
-		if (inCRFTraining && (countEnd < 0 || (curpos >= countStart && curpos <= countEnd))){
-		  if (type == 0)
-		    GCutr5init_emiprobs[gcIdx].addCount(pn);
-		  else if (type == 1)
-		    GCutr5_emiprobs[gcIdx].addCount(pn);
-		  else if (type == 2)
-		    GCutr3_emiprobs[gcIdx].addCount(pn);
-		  else
-		    IntronModel::GCemiprobs[gcIdx].addCount(pn);
-		}
-	    }
-	} catch (InvalidNucleotideError e) {
-	    seqProb *= 0.25; // 0.25 1/4
-	}
-    }
-    oldleft = left;
-    oldright = right;
-    oldReverse = reverse;
-    oldtype = type;
-    return seqProb;
+    return snippetProbs(right, right-left+1);
 }
 
 Double UtrModel::tssupSeqProb (int left, int right, bool reverse) const {
@@ -954,69 +872,69 @@ Double UtrModel::tssupSeqProb (int left, int right, bool reverse) const {
  }
 
 /*
- * Precomputes the probability of the transcription termination and initian sites
- * on the whole sequence. Uses the tss and tts hints, spacing (%10) for efficiency.
+ * Precomputes the probability of the transcription termination and initiation sites
+ * on the whole sequence. Uses the tss and tts hints, spacing (% 10) for efficiency.
  * TODO: Disallow transcript ends that are nowhere near a hint: 
  * Exploit that nc genes unsupported by hints are not considered.
  */
 void NcModel::precomputeTxEndProbs(){
-    Double extrinsicProb;
     Feature *f;
+    int pos;
 
-    for (int pos = 0; pos <= dnalen; pos += boundSpacing) {
-	tssProbPlus[pos] = tssProbminus[pos] = ttsProbPlus[pos] = ttsProbMinus[pos] = 1.0;
-    }
+    tssProbsPlus.assign(dnalen+1, 0.0);
+    tssProbsMinus.assign(dnalen+1, 0.0);
+    ttsProbsPlus.assign(dnalen+1, 0.0);
+    ttsProbsMinus.assign(dnalen+1, 0.0);
+
+    // in addition allow and incentivize transcript boundaries when hinted to
     f = seqFeatColl->getAllActiveFeatures(tssF);
     while (f) {
-	
+	for (pos = f->start; pos <= f->end; pos++){
+	    if (f->strand == plusstrand || f->strand == bothstrands){
+		if (tssProbPlus[pos] == 0)
+		    tssProbPlus[pos] = f->distance_faded_bonus(pos);
+		else 
+		    tssProbPlus[pos] *= f->distance_faded_bonus(pos);
+	    }
+	    if (f->strand == minusstrand || f->strand == bothstrands){
+		if (tssProbMinus[pos] == 0)
+		    tssProbMinus[pos] = f->distance_faded_bonus(pos);
+		else 
+		    tssProbMinus[pos] *= f->distance_faded_bonus(pos);
+	    }	    
+	}
 	f = f->next;
     }
-
-	// plus strand
-	ttshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(ttsF), ttspos, plusstrand);
-	extrinsicProb = 1.0;
-	if (ttshints) {
-	    while (ttshints) {
-		extrinsicProb  *= ttshints->distance_faded_bonus(ttspos);
-		ttshints = ttshints->next;
+    f = seqFeatColl->getAllActiveFeatures(ttsF);
+    while (f) {
+	for (pos = f->start; pos <= f->end; pos++){
+	    if (f->strand == plusstrand || f->strand == bothstrands){
+		if (ttsProbPlus[pos] == 0)
+		    ttsProbPlus[pos] = f->distance_faded_bonus(pos);
+		else 
+		    ttsProbPlus[pos] *= f->distance_faded_bonus(pos);
 	    }
-	} else if (seqFeatColl->collection->hasHintsFile)
-	    extrinsicProb = seqFeatColl->collection->malus(ttsF);
-	try {
-	    prob = aataaa_probs[s2i_aataaa(sequence + aataaa_box_begin)];
-	    prob *= prob_polya;
-	} catch (InvalidNucleotideError e) {
-	    prob = 0.0;
+	    if (f->strand == minusstrand || f->strand == bothstrands){
+		if (ttsProbMinus[pos] == 0)
+		    ttsProbMinus[pos] = f->distance_faded_bonus(pos);
+		else 
+		    ttsProbMinus[pos] *= f->distance_faded_bonus(pos);
+	    }	    
 	}
-	ttsProbPlus[ttspos] = extrinsicProb;
-	
-	// minus strand
-	ttspos = aataaa_box_begin - Constant::d_polyasig_cleavage;
-	if (ttspos < 0 || aataaa_box_begin + aataaa_boxlen - 1 >= dnalen) {
-	    ttsProbPlus[aataaa_box_begin] = 0;
-	} else {
-	    ttshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(ttsF), ttspos, minusstrand);
-	    extrinsicProb = 1.0;
-	    if (ttshints) {
-		while (ttshints) {
-		    extrinsicProb  *= ttshints->distance_faded_bonus(ttspos);
-		    ttshints = ttshints->next;
-		}
-	} else if (seqFeatColl->collection->hasHintsFile)
-	    extrinsicProb = seqFeatColl->collection->malus(ttsF);
-        try {
-	    prob = aataaa_probs[s2i_aataaa.rc(sequence + aataaa_box_begin)];
-	    prob *= prob_polya;
-	} catch (InvalidNucleotideError e) {
-	    prob = 0.0;
-	}
-	if ((extrinsicProb > 1.0 || aataaa_box_begin % ttsSpacing == 0) && prob == 0)
-	    prob = (1.0-prob_polya) * randProb;
-	if (prob > 0.0) { // compute prob of downstream window up to 'tts'
-	    prob *= ttsMotif->seqProb(sequence + ttspos, true, true);
-	}
-	ttsProbMinus[aataaa_box_begin] = prob * extrinsicProb;
-	}
+	f = f->next;
+    }
+    // allow transcript boundaries every 10th base (boundSpacing) for efficiency
+    Double tssMalus = seqFeatColl->collection->malus(tssF);
+    Double ttsMalus = seqFeatColl->collection->malus(ttsF);
+    for (pos = 0; pos <= dnalen; pos += boundSpacing) {
+	if (tssProbPlus[pos] == 0)
+	    tssProbPlus[pos] = tssMalus;
+	if (tssProbMinus[pos] == 0)
+	    tssProbMinus[pos] = tssMalus;
+	if (ttsProbPlus[pos] == 0)
+	    ttsProbPlus[pos] = ttsMalus;
+	if (ttsProbMinus[pos] == 0)
+	    ttsProbMinus[pos] = ttsMalus;
     }
 }
 
