@@ -124,6 +124,13 @@ GeneMSA::GeneMSA(RandSeqAccess *rsa, Alignment *a) {
 	    if (starts[s] >= chrLen)
 		starts[s] = chrLen-1;
 	    offsets[s] = (getStrand(s) == plusstrand)? starts[s] : rsa->getChrLen(s, getSeqID(s)) - 1 - ends[s];
+	    /*cout<<  "offset of species "<<s<<" "<<offsets[s]<<"\tstand=";
+	    if(getStrand(s) == plusstrand)
+	      cout<<"plusstrand";
+	    else
+	      cout<<"minusstrand";
+	    cout<<endl;
+	    */
 	}
     }
 }
@@ -529,7 +536,7 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
 vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges,
 					  const vector<vector<fragment>::const_iterator > &froms, map<unsigned, vector<int> > *alignedCodons, bool generateString, vector<vector<int> > *posStoredCodons) {
     //printSingleOrthoExon(oe, false);
-  //  cout<<"generate codonAlignment for OE("<<oe.ID<<") start: "<<oe.getAliStart()<<" end: "<<oe.getAliEnd()<<" RFC: "<<printRFC(oe.getRFC(offsets))<<endl;
+  //   cout<<"generate codonAlignment for OE("<<oe.ID<<") start: "<<oe.getAliStart()<<" end: "<<oe.getAliEnd()<<" RFC: "<<printRFC(oe.getRFC(offsets))<<endl;
     int k = alignment->rows.size();
     vector<string> rowstrings(k, "");
     // consider only codon columns with a number of codons at least this fraction of the nonempty rows 
@@ -610,7 +617,7 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 	}
 	//cout<<endl;
     }
-    
+    //generateString = true;
     if(generateString){
 	float minAlignedCodonFrac = 0.3;
 	int m = alignment->numFilledRows();
@@ -629,9 +636,9 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 		for (size_t s=0; s<k; s++){
 		    chrCodon1 = acit->second[s]; // sequence position
 		    if (chrCodon1 >= 0)
-			rowstrings[s] += string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3);
+			rowstrings[s] += string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3)+" ";
 		    else 
-			rowstrings[s] += "---";
+			rowstrings[s] += "--- ";
 		}
 	    }
 	}
@@ -641,13 +648,13 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 	  for (size_t s=0; s<k; s++)
 		reverseComplementString(rowstrings[s]); 
 	}
-
-	/*cout << "codon alignment:" << endl;
+ 
+	cout << "codon alignment:" << endl;
 	  int maxSnameLen = rsa->getMaxSnameLen();
 	  int maxSeqIDLen = alignment->getMaxSeqIdLen();
 	  for (size_t s=0; s<k; s++)
 	  cout << setw(maxSnameLen) << rsa->getSname(s) << "\t" << setw(maxSeqIDLen) << getSeqID(s) << "\t" << rowstrings[s] << endl;
-	*/
+	
     }
     //cout<<"exiting getCodonAlignment"<<endl;
     return rowstrings;
@@ -772,7 +779,11 @@ void GeneMSA::printCumOmega(){
     for(unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator coit = cumOmega.begin(); coit != cumOmega.end(); coit++){
 	cout<<printBV(coit->first)<<endl;
 	for(int i = 0; i < coit->second.size(); i++){
-	     cout<<"\t"<<printRFC(coit->second[i].first)<<endl;
+	  cout<<"\t"<<printRFC(coit->second[i].first)<<endl<<"logliks:";
+	     for(int j = 0; j < coit->second[i].second.logliks.size(); j++){
+	       cout<<"\t"<<coit->second[i].second.logliks[j];
+	     }
+	     cout<<endl;
 	}
     }
     cout<<"--------------------------------------------"<<endl;
@@ -784,12 +795,12 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 
     // treat forward and reverse strand seperately (might be done more efficiently)
     for( bool plusStrand : {true, false}){
-      /*if(plusStrand){
-	    cout<<"--- processing ortho exons on forward strand ---"<<endl;
-	}else{
-	    cout<<"--- processing ortho exons on reverse strand ---"<<endl;
-	    }
-      */
+      if(plusStrand){
+	cout<<"--- processing ortho exons on forward strand ---"<<endl;
+      }else{
+	cout<<"--- processing ortho exons on reverse strand ---"<<endl;
+      }
+      
 	vector<vector<fragment>::const_iterator > froms(numSpecies());
 	for (size_t s=0; s < numSpecies(); s++)
 	    if (alignment->rows[s])
@@ -801,6 +812,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 	alignedCodons.insert(pair<unsigned, vector<int> >(0,vector<int>(numSpecies(),-1))); // guaratee that codon alignment starts before first OrthoExon
 	vector<vector<int> > posStoredCodons(numSpecies(),vector<int>(3,0)); // stores the position of the last codon aligned in getCodonAlignment() for each species and reading frame
     
+	cout<<"generate codon alignment"<<endl;
 	for (list<OrthoExon>::iterator oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
 	  if(isOnFStrand(oe->getStateType()) != plusStrand)
 		continue;
@@ -838,7 +850,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 	}
   
   
-	// Merge processing: Traverse alignment left to right 
+	cout<<"Merge processing: Traverse alignment left to right"<<endl;
 
 	unordered_map<bit_vector, int> bvCount;
 
@@ -855,9 +867,10 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 	  
 	map<vector<string>,vector<double> > computedOmegas;
 
+	// walk through codon alignment left to right
 	for(map<unsigned, vector<int> >::iterator codonIt = alignedCodons.begin(); codonIt != alignedCodons.end(); codonIt++){
-	  
-	  /*cout<<"codon: "<<(codonIt->first >> 8)<<endl<<"chrom Pos / RFC : "<<endl;
+	  /*
+	  cout<<"++++codon: "<<(codonIt->first >> 8)<<endl<<"chrom Pos / RFC : "<<endl;
 	    for(vector<int>::iterator cit=codonIt->second.begin(); cit!=codonIt->second.end(); cit++){
 	      cout<<*cit<<" / "<<(*cit % 3)<<endl;
 	    }
@@ -868,142 +881,188 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 	    }
 	    cout<<endl;
 	  */
-	    // update bit_vector constellation
-	    while((unsigned)aliPosIt->first <= (codonIt->first >> 8) ){
-	      //    cout<<"next position of aliPos "<<aliPosIt->first<<endl;
-		unordered_map<bit_vector, int>::iterator bvit;
-		unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator coit;
-		for(int i=0; i<aliPosIt->second.oeStart.size(); i++){
-		  //  cout<<"ortho exon ("<<aliPosIt->second.oeStart[i]->ID<<") starts: "<<aliPosIt->second.oeStart[i]->getAliStart()<<":"<<aliPosIt->second.oeStart[i]->getAliEnd()<<endl;
-		  //  cout<<"---bv of ortho exon:  "<<printBV(aliPosIt->second.oeStart[i]->getBV())<<endl<<"---rfc of ortho exon: "<<printRFC(static_cast<const OrthoExon*>(aliPosIt->second.oeStart[i])->getRFC(offsets))<<endl;
-		     if(aliPosIt->second.oeStart[i] == NULL)
-		       throw ProjectError("Error in posElement.oestart: Pointer to orthoExon is NULL!");
-		    bvit = bvCount.find(aliPosIt->second.oeStart[i]->getBV());
-		    coit = cumOmega.find(aliPosIt->second.oeStart[i]->getBV());
-	
-		    if(bvit == bvCount.end()){
-			pair<unordered_map<bit_vector, int>::iterator,bool> result = bvCount.insert(pair<bit_vector, int>(aliPosIt->second.oeStart[i]->getBV(),0));
-			bvit = result.first;
-			if(! result.second)
-			  cerr<<"inserting bit vector "<<printBV(bvit->first)<<" into bvcount failed"<<endl;
-			//else
-			    // cout<<"inserting bit vector "<<printBV(bvit->first)<<" into bvcount done"<<endl;
-		    }else{
-			//cout<<"bit vector "<<printBV(bvit->first)<<" already inserted in bvcount"<<endl;
-			if(coit == cumOmega.end())
-			    throw ProjectError("Internal Error in computeOmegaEff(): bit_vector in bvcount but not yet in cumOmega!");
-		    }
-		    bvit->second++;
+	  // update bit_vector constellation
 
-		    // add reading frame combination if new one occurs
-		    int currRFnum; //position in cumOmega vector
-	
-		    if(coit == cumOmega.end()){
-			vector<pair<vector<int>, cumValues> > vecPair;
-			pair<unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator, bool> result = cumOmega.insert(pair<bit_vector, vector<pair<vector<int>, cumValues> > >(aliPosIt->second.oeStart[i]->getBV(), vecPair));
-			coit = result.first;
-			if(! result.second)
-			    cerr<<"inserting bit vector "<<printBV(coit->first)<<" into cumOmega failed"<<endl;
-			/*else
-			    cout<<"inserting bit vector "<<printBV(coit->first)<<" into rfCombi done"<<endl;
-			*/
-			//}else{
-			//cout<<"bit vector "<<printBV(coit->first)<<"already exists"<<endl;
-		    }
-		    bool rfcIncluded = false;
-		    cumValues cum;
-		    pair<vector<int>, cumValues> oeRFC = make_pair(const_cast<const OrthoExon*>(aliPosIt->second.oeStart[i])->getRFC(offsets),cum);
-		    for(int rf = 0; rf < coit->second.size(); rf++){
-			if(oeRFC.first == coit->second[rf].first){
-			    currRFnum = rf;
-			    rfcIncluded = true;
-			    //cout<<printRFC(oeRFC.first)<<" already in cumOmega ("<<printRFC(coit->second[rf].first)<<")"<<endl;
-			    break;
-			}
-		    }
-		    if(! rfcIncluded){
-			coit->second.push_back(oeRFC);
-			//cout<<"inserting RFC: "<<printRFC(oeRFC.first)<<" to bit_vector "<<printBV(coit->first)<<endl;
-			currRFnum = coit->second.size() - 1;
-		    }
+	  // ortho Exon starts or ends before current alignment position
+	  while((unsigned)aliPosIt->first <= (codonIt->first >> 8) ){
+	    //cout<<"next position of aliPos "<<aliPosIt->first<<endl;
+	    unordered_map<bit_vector, int>::iterator bvit;
+	    unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator coit;
+	    // process all ortho exons that start
+	    for(int i=0; i<aliPosIt->second.oeStart.size(); i++){
+	      /*cout<<"##################ortho exon ("<<aliPosIt->second.oeStart[i]->ID<<") starts: "<<aliPosIt->second.oeStart[i]->getAliStart()<<":"<<aliPosIt->second.oeStart[i]->getAliEnd()<<endl;
 
-		    // store cumulative values at the begining of an OrthoExon
-		    cumValues cv = coit->second[currRFnum].second;
-		    aliPosIt->second.oeStart[i]->setOmega(&cv.logliks, codonevo, true);
+	      cout<<"chromosomal position of each exon:"<<endl;
+	      for(int j=0; j<aliPosIt->second.oeStart[i]->orthoex.size(); j++){
+		if(aliPosIt->second.oeStart[i]->orthoex[j]){
+		  cout<<"species "<<j<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->begin<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->end<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->getStateType()<<"\t";
+
+		  ExonCandidate *ec = aliPosIt->second.oeStart[i]->orthoex[j];
+		  if (getStrand(j) == plusstrand){ // strand of alignment                                                                   		    cout << "start:" << ec->begin + offsets[j]+1 << "\tend:" << ec->end + offsets[j]+1;
+		  } else {
+		    int chrLen = rsa->getChrLen(j, getSeqID(j));
+		    cout << "start:" << chrLen - (ec->end + offsets[j]) << "\tend:" << chrLen - (ec->begin + offsets[j]);
+		  }
+		  cout<<endl;
+
+		}else
+		  cout<<"species "<<j<<endl;
+	      }
+	      */
+	      //cout<<"---bv of ortho exon:  "<<printBV(aliPosIt->second.oeStart[i]->getBV())<<endl<<"---rfc of ortho exon: "<<printRFC(static_cast<const OrthoExon*>(aliPosIt->second.oeStart[i])->getRFC(offsets))<<endl;
+	      if(aliPosIt->second.oeStart[i] == NULL)
+		throw ProjectError("Error in posElement.oestart: Pointer to orthoExon is NULL!");
+	      bvit = bvCount.find(aliPosIt->second.oeStart[i]->getBV());
+	      coit = cumOmega.find(aliPosIt->second.oeStart[i]->getBV());
+	      
+	      if(bvit == bvCount.end()){
+		pair<unordered_map<bit_vector, int>::iterator,bool> result = bvCount.insert(pair<bit_vector, int>(aliPosIt->second.oeStart[i]->getBV(),0));
+		bvit = result.first;
+		/*if(! result.second)
+		  cerr<<"inserting bit vector "<<printBV(bvit->first)<<" into bvcount failed"<<endl;
+		else
+		 cout<<"inserting bit vector "<<printBV(bvit->first)<<" into bvcount done"<<endl;
+	      }else{
+		cout<<"bit vector "<<printBV(bvit->first)<<" already inserted in bvcount"<<endl;
+		if(coit == cumOmega.end())
+		  throw ProjectError("Internal Error in computeOmegaEff(): bit_vector in bvcount but not yet in cumOmega!");
+		*/
+	      }
+	      bvit->second++;
+	      
+	      // add reading frame combination if new one occurs
+	      int currRFnum; //position in cumOmega vector
+	      
+	      if(coit == cumOmega.end()){
+		vector<pair<vector<int>, cumValues> > vecPair;
+		pair<unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator, bool> result = cumOmega.insert(pair<bit_vector, vector<pair<vector<int>, cumValues> > >(aliPosIt->second.oeStart[i]->getBV(), vecPair));
+		coit = result.first;
+		/*if(! result.second)
+		  cerr<<"inserting bit vector "<<printBV(coit->first)<<" into cumOmega failed"<<endl;
+		else
+		  cout<<"inserting bit vector "<<printBV(coit->first)<<" into cumOmega done"<<endl;
+		
+	      }else{
+		cout<<"bit vector "<<printBV(coit->first)<<"already exists in cumOmega"<<endl;
+		*/
+	      }
+	      bool rfcIncluded = false;
+	      cumValues cum;
+	      pair<vector<int>, cumValues> oeRFC = make_pair(const_cast<const OrthoExon*>(aliPosIt->second.oeStart[i])->getRFC(offsets),cum);
+	      for(int rf = 0; rf < coit->second.size(); rf++){
+		if(oeRFC.first == coit->second[rf].first){
+		  currRFnum = rf;
+		  rfcIncluded = true;
+		  //cout<<printRFC(oeRFC.first)<<" already in cumOmega ("<<printRFC(coit->second[rf].first)<<")"<<endl;
+		  break;
 		}
-
-		for(int i=0; i<aliPosIt->second.oeEnd.size(); i++){
-		  //cout<<"ortho exon ("<<aliPosIt->second.oeEnd[i]->ID<<") ends: "<<aliPosIt->second.oeEnd[i]->getAliStart()<<":"<<aliPosIt->second.oeEnd[i]->getAliEnd()<<endl;
-		    bvit = bvCount.find(aliPosIt->second.oeEnd[i]->getBV());
-		    if(bvit == bvCount.end())
-			throw ProjectError("Error in computeOmegaEff(): bit_vector ends that has never started!");
-		    // calculate omega of ortho exon from cumulative sum
-		    cumValues *cv = findCumValues(aliPosIt->second.oeEnd[i]->getBV(), const_cast<const OrthoExon*>(aliPosIt->second.oeEnd[i])->getRFC(offsets));
-		    //cout<<"pointer to cumValues: "<<cv->omega<<endl;
-		    aliPosIt->second.oeEnd[i]->setOmega(&cv->logliks, codonevo, false);
-		    bvit->second--;
-		}
-		aliPosIt++;
+	      }
+	      if(! rfcIncluded){
+		coit->second.push_back(oeRFC);
+		//cout<<"inserting RFC: "<<printRFC(oeRFC.first)<<" to bit_vector "<<printBV(coit->first)<<endl;
+		currRFnum = coit->second.size() - 1;
+	      }
+	      
+	      // store cumulative values at the begining of an OrthoExon
+	      cumValues cv = coit->second[currRFnum].second;
+	      
+	      aliPosIt->second.oeStart[i]->setOmega(&cv.logliks, codonevo, true);
 	    }
+	    // process all ortho exons that end
+	    for(int i=0; i<aliPosIt->second.oeEnd.size(); i++){
+	      /*  cout<<"################ortho exon ("<<aliPosIt->second.oeEnd[i]->ID<<") ends: "<<aliPosIt->second.oeEnd[i]->getAliStart()<<":"<<aliPosIt->second.oeEnd[i]->getAliEnd()<<endl;
 
-	    // compute omega for current codon alignment
-    
-	    // generate array of strings representing one codon alignment
-	    vector<string> codonStrings(numSpecies(),"");
-	    float minAlignedCodonFrac = 0.3;
-	    int m = alignment->numFilledRows();
-	    int minAlignedCodons = (m * minAlignedCodonFrac > 2)? m * minAlignedCodonFrac + 0.9999 : 2;
-	    // Must have at least 'minAlignedCodons' codons in any codon column
-	    int numCodons = 0;
-	    for(size_t s = 0; s < numSpecies(); s++)
-		if (codonIt->second[s] >=0)
-		    numCodons++;
-	    if(numCodons >= minAlignedCodons){
-		vector<int> rfc(numSpecies(),-1); // reading frame combination of current codon alignment
-		for (size_t s = 0; s < numSpecies(); s++){
-		    int chrCodon1 = codonIt->second[s]; // sequence position
-		    if (chrCodon1 >= 0){
-			codonStrings[s] = string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3);
-			rfc[s] = chrCodon1 % 3;
-		    }
-		    else 
-			codonStrings[s] = "---";
-		}
-      
-		if (! plusStrand){ // reverse complement alignment
-		    for (size_t s = 0; s < numSpecies(); s++)
-			reverseComplementString(codonStrings[s]); 
-		}
-      
-		// for one alignment position compute omega for all aktive bit_vectors in the correct reading frame combination
-		//cout<<"compute omega for RFC "<<printRFC(rfc)<<endl;
-		//bool foundBV = false;
-		for(unordered_map<bit_vector, int>::iterator bvit = bvCount.begin(); bvit != bvCount.end(); bvit++){
-		    if(bvit->second == 0)
-			continue;
-		    //  cout<<"next Bitvector in bvcount "<<printBV(bvit->first)<<":"<<bvit->second<<endl;
-		    cumValues *cv = findCumValues(bvit->first, rfc);    
-		    //cout<<"after findCumValues"<<endl;
-		    if(cv != NULL){
-			// call pruning algo only once for every codonStrings and store omega in map                                                    
-			vector<double> loglik;
-			map<vector<string>,vector<double> >::iterator oit = computedOmegas.find(codonStrings);
-			if(oit==computedOmegas.end()){
-			    loglik = codonevo->loglikForCodonTuple(codonStrings, tree);
-			    computedOmegas.insert(pair<vector<string>,vector<double> >(codonStrings,loglik));
-			}else{
-			    loglik = oit->second;
-			}
-			//cout<<"omega: "<<omega<<endl;
-			// store cumulative sum of omega, omega squared and one
-			cv->addLogliks(&loglik);
-			//foundBV=true;
-			//printCumOmega();
-		    }
-		}
-		//if(! foundBV)
-		  // cerr<<"no Bitvector with given RFC found!"<<endl;
+
+	      cout<<"chromosomal position of each exon:"<<endl;
+	      for(int j=0; j<aliPosIt->second.oeEnd[i]->orthoex.size(); j++){
+		if(aliPosIt->second.oeEnd[i]->orthoex[j])
+		  cout<<"species "<<j<<"\t"<<aliPosIt->second.oeEnd[i]->orthoex[j]->begin<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeEnd[i]->orthoex[j]->end<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeEnd[i]->orthoex[j]->getStateType()<<endl;
+		else
+		  cout<<"species "<<j<<endl;
+	      }
+	      */
+	      bvit = bvCount.find(aliPosIt->second.oeEnd[i]->getBV());
+	      if(bvit == bvCount.end())
+		throw ProjectError("Error in computeOmegaEff(): bit_vector ends that has never started!");
+	      // calculate omega of ortho exon from cumulative sum
+	      cumValues *cv = findCumValues(aliPosIt->second.oeEnd[i]->getBV(), const_cast<const OrthoExon*>(aliPosIt->second.oeEnd[i])->getRFC(offsets));
+	      if(cv == NULL){
+		cout<<"cum Values has NULL pointer"<<endl;
+	      }
+	      //cout<<"pointer to cumValues: "<<cv->omega<<endl;
+	      aliPosIt->second.oeEnd[i]->setOmega(&cv->logliks, codonevo, false);
+	      bvit->second--;
 	    }
+	    aliPosIt++;
+	  }
+
+	  // compute omega for current codon alignment
+	  // generate array of strings representing one codon alignment
+	  vector<string> codonStrings(numSpecies(),"");
+	  int numCodons = 0;
+	  vector<int> chrCodonPos(numSpecies(),-1);
+	  for(size_t s = 0; s < numSpecies(); s++)
+	    if (codonIt->second[s] >=0)
+	      numCodons++;
+	  if(numCodons >= 2){
+	    vector<int> rfc(numSpecies(),-1); // reading frame combination of current codon alignment
+	    for (size_t s = 0; s < numSpecies(); s++){
+	      int chrCodon1 = codonIt->second[s]; // sequence position
+	      if (chrCodon1 >= 0){
+		codonStrings[s] = string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3);
+		rfc[s] = chrCodon1 % 3;
+		chrCodonPos[s] = chrCodon1;
+	      }
+	      else 
+		codonStrings[s] = "---";
+	    }
+      
+	    if (! plusStrand){ // reverse complement alignment
+	      for (size_t s = 0; s < numSpecies(); s++)
+		reverseComplementString(codonStrings[s]); 
+	    }
+	    /*
+	      cout<<"codon alignment:"<<endl;
+	      for (size_t s = 0; s < numSpecies(); s++){
+	      cout<<"species "<<s<<"\t"<<codonStrings[s]<<"\t"<<chrCodonPos[s]<<"\t";
+	      if (getStrand(s) == plusstrand){ // strand of alignment                                                                   		    
+	      cout<<"start:" << chrCodonPos[s] - offsets[s]+1 + starts[s];
+	      } else {
+	      cout<<"start:" << ends[s] - (chrCodonPos[s] - offsets[s]+1);
+	      }
+	      cout<<endl;
+	      }
+	    */
+	  
+	    // for one alignment position compute omega for all aktive bit_vectors in the correct reading frame combination
+	    //cout<<"compute omega for RFC "<<printRFC(rfc)<<endl;
+	    //bool foundBV = false;
+	    for(unordered_map<bit_vector, int>::iterator bvit = bvCount.begin(); bvit != bvCount.end(); bvit++){
+	      if(bvit->second == 0)
+		continue;
+	      //  cout<<"next Bitvector in bvcount "<<printBV(bvit->first)<<":"<<bvit->second<<endl;
+	      cumValues *cv = findCumValues(bvit->first, rfc);    
+	      //cout<<"after findCumValues"<<endl;
+	      if(cv != NULL){
+		// call pruning algo only once for every codonStrings and store omega in map                                                    
+		vector<double> loglik;
+		map<vector<string>,vector<double> >::iterator oit = computedOmegas.find(codonStrings);
+		if(oit==computedOmegas.end()){
+		  loglik = codonevo->loglikForCodonTuple(codonStrings, tree);
+		  computedOmegas.insert(pair<vector<string>,vector<double> >(codonStrings,loglik));
+		}else{
+		  loglik = oit->second;
+		}
+		//cout<<"loglik of omega: "<<loglik<<endl;
+		// store cumulative sum of omega, omega squared and one
+		cv->addLogliks(&loglik);
+		//foundBV=true;
+		//printCumOmega();
+	      }
+	    }
+	    //if(! foundBV)
+	    // cerr<<"no Bitvector with given RFC found!"<<endl;
+	  }
 	}
     }
     cout<<"compute omegas done"<<endl;

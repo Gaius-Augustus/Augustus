@@ -43,7 +43,7 @@ public:
      * in the tree. A value of m=-1 means to store all lengths in b. Memory may be saved
      * by building m clusters roughly representing all lengths in b.
      */
-    void setBranchLengths(vector<double> &b, int m=-1);
+    void setBranchLengths(vector<double> b, int m=-1);
     void printBranchLengths();
 
     virtual void computeLogPmatrices()=0; // precomputes and stores the array of matrices

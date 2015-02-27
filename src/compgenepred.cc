@@ -31,6 +31,10 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
 
     vector<string> speciesNames;
     tree.getSpeciesNames(speciesNames);
+    cout<<"-------Speciesnames:--------"<<endl;
+    for(int j=0; j<speciesNames.size(); j++){
+      cout<<"species "<<j<<"\t"<<speciesNames[j]<<endl;
+    }
 
     if (Constant::Constant::dbaccess.empty()) { // give priority to database in case both exist
         rsa = new MemSeqAccess(speciesNames);
@@ -74,6 +78,7 @@ void CompGenePred::start(){
     vector<double> branchset;
     tree.getBranchLengths(branchset);
     evo.setBranchLengths(branchset);
+    //evo.printBranchLengths();
     evo.computeLogPmatrices();
     OrthoGraph::tree = &tree;
     GeneMSA::setTree(&tree);
@@ -187,16 +192,13 @@ void CompGenePred::start(){
     NAMGene namgene; // creates and initializes the states
     StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
 
-    // temporary tests of codon rate matrix stuff (Mario)
+    // initializing codon rate matricies, for exon evolution see code above (evo)
     double *pi = ExonModel::getCodonUsage();
     CodonEvo codonevo;
     codonevo.setKappa(4.0);
     codonevo.setPi(pi);
-    vector<double> b; // all branch lengths occuring in the tree
-    b.push_back(.5); // 50% codon substitutions between D.mel and D.pseudoo., 40% between human and mouse
-    codonevo.setBranchLengths(b, 10);
-    // codonevo.printBranchLengths();
-    
+    codonevo.setBranchLengths(branchset, 25);
+    //codonevo.printBranchLengths();
     codonevo.setOmegas(20);
     codonevo.setPrior(0.5);
     /*cout << "Omegas, for which substitution matrices are stored:" << endl;

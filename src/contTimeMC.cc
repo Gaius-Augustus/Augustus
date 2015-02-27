@@ -47,7 +47,7 @@ Evo::~Evo(){
  * in the tree. A value of m=-1 means to store all lengths in b. For large trees, memory 
  * is saved by storing only m times roughly representing all lengths in b.
  */
-void Evo::setBranchLengths(vector<double> &b, int m){
+void Evo::setBranchLengths(vector<double> b, int m){
     this->m = m;
     // make a sorted copy of the unique times in b
     times = b;
@@ -72,14 +72,16 @@ void Evo::setBranchLengths(vector<double> &b, int m){
 	    double min = times.front();
 	    double step = (times.back() - min) / (this->m-1);
 	    times.clear();
-	    for (int i=0; i < this->m; i++)
+	    for (int i=0; i < this->m; i++){
 		times.push_back(min + i*step);
+	    }
 	}
     }
 }
 
 void Evo::printBranchLengths(){
-    for (int i=0; i<times.size(); i++)
+  cout << "branch lengths: " << endl;
+  for (int i=0; i<times.size(); i++)
 	cout << i << " " << times[i] << endl;
 }
 
@@ -140,6 +142,12 @@ void CodonEvo::setOmegas(int k){
     for (int i=1; i<=rr; i++)
 	omegas.push_back(1.0 / (1 - (double) i/(c+r)));
     this->k = k;
+    /*cout<<"omega: ";
+    for(int j=0; j<omegas.size(); j++){
+      cout<<omegas[j]<<"\t";
+    }
+    cout<<endl;
+    */
 }
 
 /*
@@ -194,8 +202,8 @@ void CodonEvo::computeLogPmatrices(){
 	    allPs[u][v] = P;
 	    allLogPs[u][v] = log(P,states);
 	    //#ifdef DEBUG
-	    // cout << "codon rate matrix log P(t=" << t << ", omega=" << omega << ")" << endl;
-	    // printCodonMatrix(allLogPs[u][v]);
+	    //cout << "codon rate matrix log P(t=" << t << ", omega=" << omega << ")" << endl;
+	    //printCodonMatrix(allLogPs[u][v]);
 	    //#endif
 	}
 	gsl_matrix_free(U);

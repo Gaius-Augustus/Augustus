@@ -14,7 +14,7 @@ my $printUTR = 0;
 my $gff3 = 0;
 my $printIntron = 0;
 my $outfile;
-
+my $trcp_pattern = '\.t\d+';
 
 GetOptions(
     'out=s'=>\$outfile,
@@ -23,7 +23,8 @@ GetOptions(
     'printExon!'=>\$printExon,
     'printUTR!'=>\$printUTR,
     'printIntron!'=>\$printIntron,
-    'gff3!'=>\$gff3,);
+    'gff3!'=>\$gff3,
+    'trcp_pattern=s'=>\$trcp_pattern);
 
 exec("perldoc $0") if ($help || !defined($outfile));
 
@@ -61,13 +62,13 @@ sub parseAndStoreGTF{
 	next if (@f<8);
 	($chr,$source,$feature,$start,$end,$strand) = ($f[0],$f[1],$f[2],$f[3],$f[4],$f[6]);
 	# check whether it is a line with 'gene' feature
-	if ($f[2] eq "gene" && ($f[8] =~ /^(\S+)$/ || $f[8] =~ /gene_id."?([^";]+)"?/)){
+	if ($f[2] eq "gene" && ($f[8] =~ /ID=([^;]+)/ || $f[8] =~ /gene_id."?([^";]+)"?/ || $f[8] =~ /^(\S+)$/)){
 	    $geneid = $1;
 	    $geneLine{$geneid} = \@f;
 	    next;
 	} 
 	# check whether it is a line with 'transcript' feature
-	if ($f[2] eq "transcript" && ($f[8] =~ /^(\S+)$/ || $f[8] =~ /transcript_id."?([^";]+)"?/)){
+	if ($f[2] =~ "(transcript|mRNA)" && ($f[8] =~ /ID=([^;]+)/ || $f[8] =~ /transcript_id."?([^";]+)"?/ || $f[8] =~ /^(\S+)$/)){
 	    $txid = $1;
 	    $txs{$txid} = {"strand"=>$strand, "chr"=>$chr, "source"=>$source, "CDS"=>[], "UTR"=>[], "exon"=>[], "intron"=>[], "rest"=>[]} if (!exists($txs{$txid}));
 	    $txs{$txid}{"txline"} = \@f;
@@ -80,15 +81,23 @@ sub parseAndStoreGTF{
 	$txs{$txid}{"rest"} = [] if (!defined($txs{$txid}{"rest"}));
 
 	# all other lines must belong to a transcript and a gene
-	if ($f[8] =~ /(transcript_id|Transcript)."?([^";]+)"?/){
+	if ($f[8] =~ /(transcript_id|Transcript)."?([^";]+)"?/ ){
 	    $txid = $2;
 	} else {
-	    die ("Not GTF format in the following line:\n$line\ntranscript_id not found.\n");
+	    if($f[8] =~ /Parent=([^;]+)/){
+		$txid = $1;
+	    }else{
+		die ("Neither GTF nor GFF format in the following line:\n$line\ntranscript_id not found.\n");
+	    }
 	}
 	if ($f[8] =~ /gene_id."?([^";]+)"?/){
 	    $geneid = $1;
 	} else {
-	    die ("Not GTF format in the following line:\n$line\ngene_id not found.\n");
+	    if($f[8] =~ /Parent=([^;]+)$trcp_pattern/){
+		$geneid = $1;
+	    }else{
+		die ("Neither GTF nor GFF format in the following line:\n$line\ngene_id not found.\n");
+	    }
 	}
 	if (!$seen{$txid}){
 	    push @txorder, $txid; # remember the input order for transcripts for the output
@@ -306,6 +315,7 @@ gtf2gff.pl <in.gtf --out=out.gff
   --printUTR       print UTR features
   --printIntron    print intron features
   --gff3           output in gff3 format
+  --trcp_pattern   regex pattern that identifies trancripts (default: '\.t\d+'), only if GFF is input
 
 =head1 DESCRIPTION
     

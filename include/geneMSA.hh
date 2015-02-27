@@ -26,8 +26,12 @@ string printRFC(vector<int>);
 struct cumValues{
     vector<double> logliks;
     void addLogliks(vector<double>* ll){
-	if(logliks.size() == 0)
+      if(logliks.size() == 0){
 	    logliks.resize(ll->size(),0.0);
+	    if(logliks.size() == 0){
+	      cout<<"logliks still empty!"<<endl;
+	    }
+      }
 	for(int u = 0; u < ll->size(); u++){
 	    logliks[u] += (*ll)[u];
 	}

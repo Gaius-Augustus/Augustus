@@ -83,28 +83,47 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
     }else{
 	//calculate posterior mean of omega
 	int k = llo->size();
+
+	if(k == 0){ // no likelihood was calculated
+	  Eomega = -1;
+	  VarOmega = -1;
+	  omega = -1;
+	  //cout<<"ortho exon "<<this->ID<<" has no omega"<<endl;
+	  return;
+	}
 	//cout<<"number of omegas: "<<k<<endl;
 	double meanloglik(0.0);
 	vector<double> postprobs(k, 0.0);
 	if(loglikOmegas.size() != k)
 	    loglikOmegas.resize(k,0.0);
+	//cout<<"log likelihood of omega"<<endl;
 	for (int u=0; u < k; u++){
-	    loglikOmegas[u] = (*llo)[u] - loglikOmegas[u];
-	    meanloglik += loglikOmegas[u];
+	  // sum of likelihoods in intervall OE start and OE end
+	  loglikOmegas[u] = (*llo)[u] - loglikOmegas[u];
+	  //	  cout<<"omega "<<codonevo->getOmega(u)<<"\t"<<loglikOmegas[u]<<endl;
+	  meanloglik += loglikOmegas[u];
 	}
 	meanloglik /= k;
 	double sum = 0.0;
 	for (int u=0; u < k; u++)
-	    sum += postprobs[u] = exp(loglikOmegas[u] - meanloglik) * codonevo->getPrior(u);
-	//  cout << "posterior distribution of omega" << endl;                                                                          
+	  sum += postprobs[u] = exp(loglikOmegas[u] - meanloglik) * codonevo->getPrior(u);
+	
+	//cout << "posterior distribution and prior of omega" << endl;                                                                          
 	for (int u=0; u < k; u++){
-	    postprobs[u] /= sum;
-	    //cout << codonevo->getOmega(u) << " " << postprobs[u] << endl;
+	  //	  cout << codonevo->getOmega(u) << "\t" << postprobs[u] <<"\t"<<codonevo->getPrior(u)<< endl;
+	  postprobs[u] /= sum;
 	}
 	Eomega = 0.0;
+	/*cout<<"---------------------------------------------------------------------------------------"<<endl;
+	cout<<"wi\t\tloglikOmegas\tmeanloglik\tP(wi|x)\tP(wi)\tP(x)\tP(x|wi)"<<endl;
+	*/
 	for (int u=0; u < k; u++){
 	    Eomega += postprobs[u] * codonevo->getOmega(u);
+	    // cout<<codonevo->getOmega(u)<<"\t\t"<<loglikOmegas[u]<<"\t\t"<<meanloglik<<"\t\t"<<postprobs[u]<<"\t\t"<<codonevo->getPrior(u)<<"\t\t"<<sum<<"\t\t"<<exp(loglikOmegas[u] - meanloglik)<<endl;
+	    
 	}
+	
+	//cout<<"Eomega: "<<Eomega<<endl;
 	//cout<<"set Omega at oeEnd: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\t(omega, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<" Eomega: "<<Eomega<<endl;
 	
 	VarOmega = 0.0;

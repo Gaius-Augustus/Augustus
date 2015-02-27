@@ -237,7 +237,8 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
 	}
 	else{
 	    //recursion for the interior nodes
-	    (*node)->resizeTable(states);	
+	    (*node)->resizeTable(states);
+	    //	    cout<<"transition matrix P for omega "<<u<<endl;	
 	    for(int i=0; i<states; i++){
 		double score = 1.0;
 		for(list<Treenode*>::iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
@@ -245,9 +246,11 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
 		    gsl_matrix *P = evo->getSubMatrixP(u,(*it)->getDist());
 		    for(int j=0; j<states; j++){
 			sum += gsl_matrix_get(P, i, j) * (*it)->getTable(j);
+			//		cout<<gsl_matrix_get(P, i, j)<<"\t";
 		    }
 		    score *= sum; 
 		}
+		//		cout<<endl;
 		(*node)->setTable(i, score);	
 	    }
 	}
