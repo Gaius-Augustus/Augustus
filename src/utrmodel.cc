@@ -1421,7 +1421,6 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
         int numEPendingInExon=0, numUPendingInExon=0, nep=0; // just used for malus
 	bool UTRFSupported = false, exonFSupported = false;
 	Double partBonus = 1.0;
-	Strand strand = isOnFStrand(utype)? plusstrand : minusstrand;
 	for (Feature *part = exonparts; part!= NULL; part = part->next){
 	    if (part->type == exonpartF || part->type == UTRpartF){
 		if (part->type == exonpartF && part->end >= beginOfBioExon && part->end <= endOfBioExon)

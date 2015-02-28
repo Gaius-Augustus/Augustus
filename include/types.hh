@@ -517,14 +517,13 @@ inline Boolean isNcExon(StateType type) {
 }
 
 inline Boolean isExon(StateType type) {
-    return (isCodingExon(type) || is5UTRExon(type) || is3UTRExon(type));
+    return (isCodingExon(type) || is5UTRExon(type) || is3UTRExon(type) || isNcExon(type));
 }
 
 inline Boolean isCodingIntron(StateType type) {
     return  (lessD0 <= type && type <= longass2)
 	|| (rlessD0 <= type && type <= rlongass2);
 }
-
 
 inline Boolean isIntron(StateType type) {
     return (isCodingIntron(type) || is5UTRIntron(type) || is3UTRIntron(type) 

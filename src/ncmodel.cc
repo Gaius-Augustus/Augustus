@@ -101,15 +101,13 @@ void NcModel::initSnippetProbs() {
  * this is called after initViterbiAlgorithms
  */
 void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
-    /*
-    if (utype == utr5intron)
-	pUtr5Intron = trans[cur][cur].doubleValue();
-    if (utype == utr3intron)
-	pUtr3Intron = trans[cur][cur].doubleValue();
-    if (utype == rutr5intron)
-	prUtr5Intron = trans[cur][cur].doubleValue();
-    if (utype == rutr3intron)
-    prUtr3Intron = trans[cur][cur].doubleValue();*/
+    if (nctype == ncintron)
+	pIntron = trans[cur][cur].doubleValue();
+    if (nctype == rncintron)
+	prIntron = trans[cur][cur].doubleValue();
+    if (pIntron != prIntron)
+	cerr << "Warning in NcModel::initAlgorithms: "
+	     << "noncoding introns have different (geometric) length distributions on both strands" << endl;
 
     if (!initAlgorithmsCalled) {
 	precomputeTxEndProbs();
@@ -212,10 +210,9 @@ void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	 * get the extrinsic exonpart information about parts falling in this range
 	 */
 	if (!(isNcIntron(nctype)))
-	    extrinsicexons = seqFeatColl->getExonListOvlpingRange(leftMostEndOfPred,
-								  endOfBioExon,
-								  isOnFStrand(utype)? plusstrand : minusstrand);
-
+	    extrinsicexons = getFeatureListOvlpingRange(A_SET_FLAG(exonF) | A_SET_FLAG(exonpartF),
+							leftMostEndOfPred, endOfBioExon, 
+							isOnFStrand(utype)? plusstrand : minusstrand);
 	
 	for (endOfPred = rightMostEndOfPred; endOfPred >= leftMostEndOfPred; endOfPred--){
 	    const ViterbiColumnType& predVit = algovar == doSampling ? 
@@ -418,44 +415,30 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
     int beginOfMiddle, beginOfBioExon=-1;
     Seq2Int s2i_intron(IntronModel::k+1);
 
-    switch( nctype ){
+    switch( nctype )
+	{
 	case ncsingle:
-	    middlePartProb = seqProb(begin, endOfMiddle);
 	    beginOfBioExon = begin;
+	    middlePartProb = seqProb(begin, endOfMiddle);
 	    lenProb = lenDistSingle[endOfBioExon - beginOfBioExon + 1];
 	    beginPartProb = tssProbPlus[begin];
 	    break;
 	case ncinit:
+	    beginOfBioExon = begin;
 	    middlePartProb = seqProb(begin, endOfMiddle, false);
-	    beginOfBioExon = begin + Constant::tss_upwindow_size;	    
-	    lenProb = lenDist5Initial[endOfBioExon - beginOfBioExon + 1];
-	    if (begin >= 0) {
-		beginPartProb = tssProb(begin);  
-	    } else {
-		beginPartProb = pow (.25, beginOfMiddle-1); // part of tss model before start of dna
-		if (begin + Constant::tss_upwindow_size == 0) // tail probability
-		    lenProb = tailLenDist5Single[endOfBioExon - beginOfBioExon + 1];
-	    }
+	    lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
+	    beginPartProb = tssProbPlus[begin];  
 	    break;
-	case utr5internal:
+	case ncinternal:
 	    beginPartProb = IntronModel::aSSProb(begin, true);
 	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
 	    if (beginPartProb>0.0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 1);
-		lenProb = lenDist5Internal[endOfBioExon - beginOfBioExon + 1];
+		middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
+		lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
-	case rutr5internal:
-	    beginPartProb = IntronModel::dSSProb(begin, false);
-	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
-	    if (beginPartProb>0.0) {
-		beginOfMiddle = begin + Constant::dss_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 1);
-		lenProb = lenDist5Internal[endOfBioExon - beginOfBioExon + 1];
-	    }
-	    break;
-	case utr5term:
+	case ncterm:
 	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;	    
 	    if (beginOfBioExon >= dnalen) 
 		beginPartProb = 0.0;
@@ -466,185 +449,90 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 		if (endOfMiddle - beginOfMiddle + 1 >= 0)
 		    middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 1);
 		else {
-		    middlePartProb = pow (4.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between 5term and first coding exon 
+		    middlePartProb = pow (4.0,  -(endOfMiddle - beginOfMiddle + 1));
 		}
-		lenProb = lenDist5Terminal[endOfBioExon - beginOfBioExon + 1];
+		lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
-	case rutr5term:
-	    beginOfMiddle = begin;
-	    beginOfBioExon = begin - Constant::trans_init_window;
-	    if (endOfMiddle - beginOfMiddle + 1 >= 0)
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 1);
+	case rncsingle:
+	    beginOfBioExon = begin;
+	    middlePartProb = seqProb(begin, endOfMiddle);
+	    lenProb = lenDistSingle[endOfBioExon - beginOfBioExon + 1];
+	    break;
+	case rncinternal:
+	    beginPartProb = IntronModel::dSSProb(begin, false);
+	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
+	    if (beginPartProb>0.0) {
+		beginOfMiddle = begin + Constant::dss_whole_size();
+		middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
+		lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
+	    }
+	    break;
+	case rncterm:
+	    beginOfBioExon = begin;
+	    if (endOfMiddle - begin + 1 >= 0)
+		middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
 	    else {
-		middlePartProb = pow (4.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between 5term and first coding exon 
+		middlePartProb = pow (4.0,  -(endOfMiddle - begin + 1));
 	    }
-	    lenProb = lenDist5Terminal[endOfBioExon - beginOfBioExon + 1];
+	    lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
 	    break;
-	case utr5intron: case rutr5intron:
-	    beginPartProb = 1.0;
-	    for (int pos = begin; pos <= endOfMiddle; pos++)
-		if (pos-k >= 0)
-		    try {
-			middlePartProb *= IntronModel::emiprobs.probs[s2i_intron(sequence + pos - k)]; // strand does not matter!
-		    } catch (InvalidNucleotideError e) {
-			middlePartProb *= 0.25;
-		    }
-		else
-		   middlePartProb *= 0.25; 
-	    break;
-	case rutr5single:
-	    beginOfMiddle = begin;
-	    beginOfBioExon = begin - Constant::trans_init_window;
-	    if (endOfMiddle - beginOfMiddle + 1 >= 0)
-	      middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 0);
-            else {
-              middlePartProb = pow (2.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between 5term and first coding exon
-            }
-	    lenProb = lenDist5Single[endOfBioExon - beginOfBioExon + 1];
-	    break;
-	case rutr5init:
+	case rncinit:
 	    beginPartProb = IntronModel::dSSProb(begin, false);
 	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
 	    if (beginPartProb>0.0){
 		beginOfMiddle = begin + Constant::dss_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 0);
-		lenProb = lenDist5Initial[endOfBioExon - beginOfBioExon + 1];
+		middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
+		lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
-	case utr3single:
-	    beginOfMiddle = begin;
-	    beginOfBioExon = begin;
-	    middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
-	    if (endOfBioExon != dnalen-1)
-		lenProb = lenDist3Single[endOfBioExon - beginOfBioExon + 1];
-	    else {
-		lenProb = tailLenDist3Single[endOfBioExon - beginOfBioExon + 1];
-	    }
-	    break;
-	case rutr3single:
-	    beginOfBioExon = begin;
-	    beginOfMiddle = begin + aataaa_boxlen + Constant::d_polyasig_cleavage;
-	    if (begin > 0) {
-		beginPartProb = ttsProbMinus[begin + Constant::d_polyasig_cleavage];
-		lenProb = lenDist3Single[endOfBioExon - beginOfBioExon + 1];
-	    } else {
-		if (beginOfMiddle > 0 )
-		    beginPartProb = pow (.25, beginOfMiddle-1);// part of reverse tts model is before start of dna
-		else 
-		    beginPartProb = 1.0;
-		lenProb = tailLenDist3Single[endOfBioExon - beginOfBioExon + 1];
-	    }
-	    if (beginPartProb > 0.0)
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
-	    break;
-	case utr3init:
-	    beginOfMiddle = begin;
-	    beginOfBioExon = begin;
-	    if (endOfMiddle - beginOfMiddle + 1 >= 0)
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
-	    else
-		middlePartProb = pow (4.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between utr3init and last coding exon
-	    lenProb = lenDist3Initial[endOfBioExon - beginOfBioExon + 1];
-	    break;
-	case rutr3init:
-	    beginPartProb = IntronModel::dSSProb(begin, false);
-	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
-	    if (beginPartProb>0.0) {
-		beginOfMiddle = begin + Constant::dss_whole_size();
-		if (endOfMiddle - beginOfMiddle + 1 >= 0) {
-		    middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
-		} else {
-		    middlePartProb = pow (4.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between rutr3init and last coding exon
-		}
-		lenProb = lenDist3Initial[endOfBioExon - beginOfBioExon + 1];
-	    }
-	    break;
-	case utr3internal:
-	    beginPartProb = IntronModel::aSSProb(begin, true);
-	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
-	    if (beginPartProb>0.0) {
-		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
-		lenProb = lenDist3Internal[endOfBioExon - beginOfBioExon + 1];
-	    }
-	    break;
-	case rutr3internal:
-	    beginPartProb = IntronModel::dSSProb(begin, false);
-	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE ;
-	    if (beginPartProb>0.0) {
-		beginOfMiddle = begin + Constant::dss_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
-		lenProb = lenDist3Internal[endOfBioExon - beginOfBioExon + 1];
-	    }
-	    break;
-	case utr3term:
-	    beginPartProb = IntronModel::aSSProb(begin, true);
-	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
-	    if (beginPartProb>0.0) {
-		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
-		if (endOfBioExon != dnalen-1)
-		    lenProb = lenDist3Terminal[endOfBioExon - beginOfBioExon + 1];
-		else 
-		    lenProb = tailLenDist3Single[endOfBioExon - beginOfBioExon + 1];
-	    }
-	    break;
-	case rutr3term:
-	    beginOfBioExon = begin;
-	    beginOfMiddle = begin + aataaa_boxlen + Constant::d_polyasig_cleavage;
-	    if (begin > 0) {
-		beginPartProb = ttsProbMinus[begin + Constant::d_polyasig_cleavage];
-	    } else {
-		beginPartProb = pow (.25, beginOfMiddle-1);// part of reverse tts model is before start of dna
-	    }
-	    if (beginPartProb > 0.0){
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
-		lenProb = lenDist3Terminal[endOfBioExon - beginOfBioExon + 1];
-	    }
-	    break;
-	case utr3intron: case rutr3intron:
-	    beginPartProb = 1.0;
-	    // begin == endOfMiddle
+	case ncintron: case rncintron: // strand does not matter
 	    for (int pos = begin; pos <= endOfMiddle; pos++)
 		if (pos-k >= 0)
 		    try {
-			middlePartProb = IntronModel::emiprobs.probs[s2i_intron(sequence + pos - k)]; // strand does not matter!
+			middlePartProb *= IntronModel::emiprobs.probs[s2i_intron(sequence + pos - k)]; 
 		    } catch (InvalidNucleotideError e) {
-			middlePartProb = 0.25;
+			middlePartProb *= 0.25;
 		    }
-		else 
-		    middlePartProb = 0.25;
+		else
+		    middlePartProb *= 0.25;
 	    break;
-	case utr5intronvar: case utr3intronvar: case rutr5intronvar: case rutr3intronvar:
+	case ncintronvar: case rncintronvar: // introns that are supported by a hint
+	    int internalIntronLen = internalEnd - internalBegin + 1;
+	    double p;
+	    if (nctype == ncintron)
+		p = pIntron;
+	    else 
+		p = prIntron;
+
+	    lenProb = pow(p, internalIntronLen - 1) * (1.0-p);
+	    middlePartProb = snippetProbs->getSeqProb(internalEnd, internalIntronLen);
 	    beginPartProb = longIntronProb(begin, endOfMiddle); // includes length prob
 	    break;
 	default:;
-    }
+	}
+    
     Double sequenceProb = beginPartProb * middlePartProb * lenProb;
     if (!(sequenceProb > 0.0))
 	return 0.0;
     /*
      *                           extrinsicQuot
      */
-    Strand strand = isOnFStrand(utype)? plusstrand : minusstrand;
+    Strand strand = isOnFStrand(nctype)? plusstrand : minusstrand;
     
     /*      EXON
      *
      * Multiply a bonus/malus to extrinsicQuot for every exonpart hint that is
      * covered by this biological exon
      */
-    if (isExon(utype)) {
-        int numEPendingInExon=0, numUPendingInExon=0, nep=0; // just used for malus
-	bool UTRFSupported = false, exonFSupported = false;
+    if (isExon(nctype)) {
+        int numEPendingInExon=0, nep=0; // just used for malus
+	bool exonFSupported = false;
 	Double partBonus = 1.0;
-	Strand strand = isOnFStrand(utype)? plusstrand : minusstrand;
-	for (Feature *part = exonparts; part!= NULL; part = part->next){
-	    if (part->type == exonpartF || part->type == UTRpartF){
+	for (Feature *part = exonparts; part != NULL; part = part->next){
+	    if (part->type == exonpartF){
 		if (part->type == exonpartF && part->end >= beginOfBioExon && part->end <= endOfBioExon)
 		    numEPendingInExon++;
-		if (part->type == UTRpartF && part->end >= beginOfBioExon && part->end <= endOfBioExon)
-		    numUPendingInExon++;
 		if (strand == part->strand || part->strand == STRAND_UNKNOWN){
 		    if (part->start >= beginOfBioExon && part->end <= endOfBioExon) {
 			partBonus *= part->bonus;
@@ -936,50 +824,4 @@ void NcModel::precomputeTxEndProbs(){
 	if (ttsProbMinus[pos] == 0)
 	    ttsProbMinus[pos] = ttsMalus;
     }
-}
-
-/*
- * longIntronProb
- * Probability of a UTR intron (that is supported by a hint).
- */
-Double UtrModel::longIntronProb(int internalBegin, int internalEnd) const {
-    Double seqProb(1.0);
-    Double lenProb;
-    int internalIntronLen = internalEnd - internalBegin + 1;
-    double p;
-    switch (utype) {
-	case utr5intronvar: p = pUtr5Intron; break;
-	case utr3intronvar: p = pUtr3Intron; break;
-	case rutr5intronvar: p = prUtr5Intron; break;
-	case rutr3intronvar: p = prUtr3Intron; break;
-	default: throw ProjectError("UtrModel::longIntronProb: Unknown alternative.");
-    }
-    lenProb = pow(p, internalIntronLen - 1) * (1.0-p);
-    seqProb = intronSnippetProbs->getSeqProb(internalEnd, internalIntronLen);
-/*    
-    // malus for intron bases not covered by intronparts
-    int coveredBegin = internalEnd+1;
-    int coveredEnd = internalBegin-1;
-    Feature *part, *intronList = seqFeatColl->getFeatureListOvlpingRange(A_SET_FLAG(intronpartF) | A_SET_FLAG(nonexonpartF), internalBegin, 
-								      internalEnd, isOnFStrand(utype)? plusstrand : minusstrand);
-    for (part = intronList; part!= NULL; part = part->next){
-	if (part->start< coveredBegin)
-	    coveredBegin = part->start;
-	if (part->end > coveredEnd)
-	    coveredEnd = part->end;
-	for (int i=internalBegin; i<=internalEnd; i++) {
-	    if (part->start<=i && part->end>=i){
-		extrinsicQuot *= part->bonus;
-	    }
-	}
-    }
-    if (coveredEnd > internalEnd)
-	coveredEnd = internalEnd;
-    if (coveredBegin < internalBegin)
-	coveredBegin = internalBegin;
-    if (seqFeatColl->collection->hasHintsFile)
-	extrinsicQuot *= pow (seqFeatColl->collection->malus(intronpartF), internalEnd-coveredEnd + coveredBegin-internalBegin);
-    //cout << "iternallen " << internalIntronLen << " lenProb = " << lenProb << endl;
-    */
-    return seqProb * lenProb;
 }
