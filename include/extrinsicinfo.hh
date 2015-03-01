@@ -239,10 +239,12 @@ public:
     // lastStart[t][k] holds an iterator to featureList[t] to the list such that all following list elements f have
     // f->start > k*K, where k>=0 and k ist such that k*K <= seqlen 
     list<Feature>::iterator **lastStart;
-    vector<int> cumCovUTRpartPlus; // cumulative number of positions not covered by UTRpart or exonpart hints on the plus strand
-    vector<int> cumCovUTRpartMinus; // cumulative number of positions not covered by UTRpart or exonpart hints on the mins strand
-    vector<int> cumCovCDSpartPlus; // cumulative number of positions not covered by CDSpart or exonpart hints on the plus strand
-    vector<int> cumCovCDSpartMinus; // cumulative number of positions not covered by CDSpart or exonpart hints on the mins strand
+    vector<int> cumCovUTRpartPlus; // cumulative number of positions not covered by UTRpart hints on the plus strand
+    vector<int> cumCovUTRpartMinus; // cumulative number of positions not covered by UTRpart hints on the minus strand
+    vector<int> cumCovCDSpartPlus; // cumulative number of positions not covered by CDSpart hints on the plus strand
+    vector<int> cumCovCDSpartMinus; // cumulative number of positions not covered by CDSpart hints on the minus strand
+    vector<int> cumCovExonpartPlus; // cumulative number of positions not covered by exonpart hints on the plus strand
+    vector<int> cumCovExonpartMinus; // cumulative number of positions not covered by exonpart hints on the minus strand
 
 private:
     void addCumCov(vector<bool> &cov, const list<Feature>& flist, Strand strand);

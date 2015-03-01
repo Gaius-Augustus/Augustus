@@ -1776,14 +1776,16 @@ void SequenceFeatureCollection::prepareLocalMalus(const char* dna){
   cumCovUTRpartMinus.resize(seqlen);
   cumCovCDSpartPlus.resize(seqlen);
   cumCovCDSpartMinus.resize(seqlen);
-  for (int i=0; i<seqlen; i++){
-    cumCovUTRpartPlus[i] = cumCovUTRpartMinus[i] = 0;
-  }
+  cumCovExonpartPlus.resize(seqlen);
+  cumCovExonpartMinus.resize(seqlen);
+  for (int i=0; i<seqlen; i++)
+    cumCovUTRpartPlus[i] = cumCovUTRpartMinus[i] = cumCovExonpartMinus[i] = 0;
+
   sortFeatureLists();
   // UTR, plus
   vector<bool> covered(seqlen, false);
-  addCumCov(covered, featureLists[exonpartF], plusstrand);
   addCumCov(covered, featureLists[UTRpartF], plusstrand);
+  addCumCov(covered, featureLists[exonpartF], plusstrand);
   sum=0;
   for (int i=0; i<seqlen; i++){
     if (!covered[i]) {sum++;}
@@ -1793,8 +1795,8 @@ void SequenceFeatureCollection::prepareLocalMalus(const char* dna){
   // UTR, minus
   for (int i=0; i<seqlen; i++)
     covered[i] = false;
-  addCumCov(covered, featureLists[exonpartF], minusstrand);
   addCumCov(covered, featureLists[UTRpartF], minusstrand);
+  addCumCov(covered, featureLists[exonpartF], minusstrand);
   sum=0;
   for (int i=0; i<seqlen; i++){
     if (!covered[i]) {sum++;}
@@ -1804,8 +1806,8 @@ void SequenceFeatureCollection::prepareLocalMalus(const char* dna){
   // CDS, plus
   for (int i=0; i<seqlen; i++)
     covered[i] = false;
-  addCumCov(covered, featureLists[exonpartF], plusstrand);
   addCumCov(covered, featureLists[CDSpartF], plusstrand);
+  addCumCov(covered, featureLists[exonpartF], plusstrand);
   sum=0;
   for (int i=0; i<seqlen; i++){
     if (!covered[i]) {sum++;}
@@ -1814,12 +1816,30 @@ void SequenceFeatureCollection::prepareLocalMalus(const char* dna){
   // CDS, minus
   for (int i=0; i<seqlen; i++)
     covered[i] = false;
-  addCumCov(covered, featureLists[exonpartF], minusstrand);
   addCumCov(covered, featureLists[CDSpartF], minusstrand);
+  addCumCov(covered, featureLists[exonpartF], minusstrand);
   sum=0;
   for (int i=0; i<seqlen; i++){
     if (!covered[i]) {sum++;}
     cumCovCDSpartMinus[i] = sum;
+  }
+  // Exon, plus
+  for (int i=0; i<seqlen; i++)
+    covered[i] = false;
+  addCumCov(covered, featureLists[exonpartF], plusstrand);
+  sum=0;
+  for (int i=0; i<seqlen; i++){
+    if (!covered[i]) {sum++;}
+    cumCovExonpartPlus[i] = sum;
+  }
+  // Exon, minus
+  for (int i=0; i<seqlen; i++)
+    covered[i] = false;
+  addCumCov(covered, featureLists[exonpartF], minusstrand);
+  sum=0;
+  for (int i=0; i<seqlen; i++){
+    if (!covered[i]) {sum++;}
+    cumCovExonpartMinus[i] = sum;
   }
   // splice site local malus
   // mit heisser Nadel fuer rGASP gestrickt
@@ -1919,10 +1939,6 @@ int SequenceFeatureCollection::numZeroCov(int start, int end, int type, Strand s
     end = 0;
   if (end >= seqlen)
     end = seqlen-1;
-  if (cumCovUTRpartMinus.size() < end || end < 0 || cumCovUTRpartPlus.size() < end) {
-    cout << "calling numZeroCov[" << start << ", " << end << "], type " << type << " strand " << strand << ", seqlen " << seqlen << endl;
-    cout << "size " << cumCovUTRpartMinus.size() << endl << flush;
-  }
   int numZeroCov = 0;
   if (type == UTRpartF){
     if (strand == plusstrand){
@@ -1943,6 +1959,16 @@ int SequenceFeatureCollection::numZeroCov(int start, int end, int type, Strand s
       numZeroCov = cumCovCDSpartMinus[end];
       if (start>0)
 	numZeroCov -= cumCovCDSpartMinus[start-1];
+    }
+  } else if (type == exonpartF){
+    if (strand == plusstrand){
+      numZeroCov = cumCovExonpartPlus[end];
+      if (start>0)
+	numZeroCov -= cumCovExonpartPlus[start-1];
+    } else {
+      numZeroCov = cumCovExonpartMinus[end];
+      if (start>0)
+	numZeroCov -= cumCovExonpartMinus[start-1];
     }
   } else {
     // other types not supported

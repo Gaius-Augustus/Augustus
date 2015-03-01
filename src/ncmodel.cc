@@ -69,7 +69,6 @@ void NcModel::init() {
     }
 }
 
-
 /*
  * NcModel::readProbabilities (of one specific gc content class)
  */
@@ -537,35 +536,12 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 		    if (part->start >= beginOfBioExon && part->end <= endOfBioExon) {
 			partBonus *= part->bonus;
 			nep += 1;// TODO add multiplicity of hint here
-		    } else if (part->type == exonpartF && 
-			       (((utype == utr5single || utype == utr5term || utype == rutr3single || utype == rutr3init) &&
-				 part->start >= beginOfBioExon && part->start <= endOfBioExon) ||                         // overlaps at left end of CDS,
-				((utype == rutr5single || utype == rutr5term || utype == utr3single || utype == utr3init) &&
-				 part->end <= endOfBioExon && part->end >= beginOfBioExon))){                               // overlaps at right end of CDS,
-		      partBonus *= sqrt(part->bonus);  // give half the bonus factor
-		      nep += 1;
 		    }
 		}
 	    }
-	    if (part->type == UTRF && part->start == beginOfBioExon && part->end == endOfBioExon && strand == part->strand){
-		    extrinsicQuot *= part->bonus;
-		    UTRFSupported = true;
-	    }
-	    if (part->type == exonF && strand == part->strand) {
-		if ((utype == utr5init || utype == utr5internal || utype == utr3internal || utype == utr3term
-		     || utype == rutr5init || utype == rutr5internal || utype == rutr3internal || utype == rutr3term) &&
-		    part->start == beginOfBioExon && part->end == endOfBioExon) {
-		    extrinsicQuot *= part->bonus;
-		    exonFSupported = true;
-		}
-		if ((utype == utr3init || utr3single || utype == rutr5term || rutr5single) && (part->start < beginOfBioExon && part->end == endOfBioExon) ){
-		    extrinsicQuot *= sqrt(part->bonus);
-		    exonFSupported = true;
-		}
-		if ((utype == rutr3init || rutr3single || utype == utr5term || utr5single) && (part->start == beginOfBioExon && part->end > endOfBioExon) ){
-		    extrinsicQuot *= sqrt(part->bonus);
-		    exonFSupported = true;
-		}
+	    if (part->type == exonF && strand == part->strand && part->start == beginOfBioExon && part->end == endOfBioExon) {
+		extrinsicQuot *= part->bonus;
+		exonFSupported = true;
 	    }
 	}
 	extrinsicQuot *= partBonus;
