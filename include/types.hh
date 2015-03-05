@@ -406,7 +406,7 @@ enum StateType{TYPE_UNKNOWN = -1, igenic,
 	       intron_type, rintron_type, exon_type,
 	       // non-protein-coding states
 	       ncsingle, ncinit, ncintron, ncintronvar, ncinternal, ncterm, // forward strand
-	       rncsingle, rncinit, rncintron, rncintronvar, rncinternal, nrcterm // reverse strand
+	       rncsingle, rncinit, rncintron, rncintronvar, rncinternal, rncterm // reverse strand
 };
 
 extern const char* stateTypeNames[NUM_TYPES];

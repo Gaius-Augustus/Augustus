@@ -30,7 +30,6 @@ Integer         NcModel::nccount = 0;
 vector<Double>  NcModel::lenDistInternal;     // length distribution of non-single exons
 vector<Double>  NcModel::lenDistSingle;       // length distribution of single exons
 Boolean         NcModel::hasLenDist = false;
-Boolean         NcModel::hasLenDist = false;
 Boolean         NcModel::initAlgorithmsCalled = false;
 Boolean         NcModel::haveSnippetProbs = false;
 SnippetProbs*   NcModel::snippetProbs = NULL;
@@ -44,7 +43,8 @@ vector<Double>  NcModel::tssProbMinus;
  * NcModel constructor
  */
 NcModel::NcModel() {
-    nctype = toStateType( Properties::getProperty("/NcModel/type", utrcount++) );
+    nctype = toStateType( Properties::getProperty("/NcModel/type", nccount++) );
+    strand = isOnFStrand(nctype)? plusstrand : minusstrand;
 }
 
 /*
@@ -69,17 +69,29 @@ void NcModel::init() {
     }
 }
 
+
 /*
- * NcModel::readProbabilities (of one specific gc content class)
+ * registerPars
  */
-void NcModel::readProbabilities( int parIndex ){
-    // there are no specific noncoding parameters (all pars are reused from intergenic and coding)
+void NcModel::registerPars (Parameters* parameters){
 }
 
 /*
  * readAllParameters
  */
 void NcModel::readAllParameters(){
+}
+
+/*
+ * buildModel
+ */
+void NcModel::buildModel( const AnnoSequence* annoseq, int parIndex){
+}
+
+/*
+ * printProbabilities
+ */
+void NcModel::printProbabilities( int idx, BaseCount *bc, const char* suffix ){
 }
 
 /*
@@ -100,16 +112,14 @@ void NcModel::initSnippetProbs() {
  * this is called after initViterbiAlgorithms
  */
 void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
-    if (nctype == ncintron)
+    if (nctype == ncintron || nctype == rncintron)
 	pIntron = trans[cur][cur].doubleValue();
-    if (nctype == rncintron)
-	prIntron = trans[cur][cur].doubleValue();
-    if (pIntron != prIntron)
-	cerr << "Warning in NcModel::initAlgorithms: "
-	     << "noncoding introns have different (geometric) length distributions on both strands" << endl;
+    else 
+	pIntron = 0.999;
 
     if (!initAlgorithmsCalled) {
 	precomputeTxEndProbs();
+	computeLengthDistributions();
     }
     initAlgorithmsCalled = true;
     haveSnippetProbs = false;
@@ -120,16 +130,16 @@ void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
  * use a parametric distribution (negative binomial)
  */
 void NcModel::computeLengthDistributions(){
-    Double mean = 200;
-    Double disp = 0.5; // > 0, the larger the dispersion, the larger the variance
+    double mean = 200;
+    double disp = 0.5; // > 0, the larger the dispersion, the larger the variance
     double r = 1/disp;
-    Double p = mean / (mean + r);
+    double p = mean / (mean + r);
     // number of successes until r failures occur, success prob is p
     // variance = mean + dispersion * mean^2
     // use recursive formular for NB-distribution to fill in the table
     lenDistSingle.resize(Constant::max_exon_len+1, 0.0);
     lenDistSingle[0] = pow(1-p, r);
-    for (int k=1; i <= Constant::max_exon_len; k++){
+    for (int k=1; k <= Constant::max_exon_len; k++){
 	lenDistSingle[k] = lenDistSingle[k-1] * p * (k+r) / (k+1);
     }
     cout << "lenDistSingle[100]  = " << lenDistSingle[100]  << " should be 0.003660507" << endl;
@@ -141,12 +151,12 @@ void NcModel::computeLengthDistributions(){
 /*
  * NcModel::viterbiForwardAndSampling
  */
-void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
-					  ViterbiMatrixType& forward,
-					  int state,
-					  int base,
-					  AlgorithmVariant algovar,
-					  OptionListItem& oli) const {
+void NcModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
+					 ViterbiMatrixType& forward,
+					 int state,
+					 int base,
+					 AlgorithmVariant algovar,
+					 OptionListItem& oli) const {
   /* 
    *             | [begin signal]|                        | [end signal] |
    *  pred.State |TSS            | markov chain           | TTS          |
@@ -188,7 +198,7 @@ void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	    leftMostEndOfPred = base - (Constant::max_exon_len + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE);
 	    rightMostEndOfPred = base - Constant::ass_upwindow_size - Constant::ass_whole_size();
 	    break;
-	default: # 4 intron states
+	default: // 4 intron states
 	    leftMostEndOfPred = base - 1;
 	    rightMostEndOfPred = base - 1;
 	}
@@ -209,9 +219,8 @@ void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	 * get the extrinsic exonpart information about parts falling in this range
 	 */
 	if (!(isNcIntron(nctype)))
-	    extrinsicexons = getFeatureListOvlpingRange(A_SET_FLAG(exonF) | A_SET_FLAG(exonpartF),
-							leftMostEndOfPred, endOfBioExon, 
-							isOnFStrand(utype)? plusstrand : minusstrand);
+	    extrinsicexons = seqFeatColl->getFeatureListOvlpingRange(A_SET_FLAG(exonF) | A_SET_FLAG(exonpartF),
+							leftMostEndOfPred, endOfBioExon, strand);
 	
 	for (endOfPred = rightMostEndOfPred; endOfPred >= leftMostEndOfPred; endOfPred--){
 	    const ViterbiColumnType& predVit = algovar == doSampling ? 
@@ -259,7 +268,7 @@ void Nc::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	    endOfBioIntron = base + Constant::dss_end + DSS_MIDDLE;
 
 	Feature *intronList = seqFeatColl->getFeatureListAt(intronF, endOfBioIntron, 
-							    isOnFStrand(utype)? plusstrand : minusstrand);
+							    isOnFStrand(nctype)? plusstrand : minusstrand);
 	int oldEndOfPred = -INT_MAX;
 	for (Feature *ihint = intronList; ihint != NULL; ihint = ihint->next) {
 	    if (nctype == ncintronvar)
@@ -339,7 +348,7 @@ Double NcModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
 	case ncinit: case ncinternal:
 	    endPartProb = IntronModel::dSSProb(begin, true);
 	    break;
-	case rncterm: case ncinternal:
+	case rncterm: case rncinternal:
 	    endPartProb = IntronModel::aSSProb(begin, false);
 	    break;
 	case ncintronvar:
@@ -350,7 +359,8 @@ Double NcModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
 	    if (!isPossibleRDSS(end + Constant::dss_end + DSS_MIDDLE))
 		endPartProb = 0.0;
 	    break;
-	default:;
+	default:
+	    ;
     }
     
     if (endPartProb > 0.0) {
@@ -391,7 +401,7 @@ Double NcModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
 	     * (counted multiply for overlapping hints)
 	     */
 	    Feature *part, *intronList = seqFeatColl->getFeatureListOvlpingRange(A_SET_FLAG(intronpartF) | A_SET_FLAG(nonexonpartF), endOfBioExon+1, end,
-										 isOnFStrand(utype)? plusstrand : minusstrand);
+										 isOnFStrand(nctype)? plusstrand : minusstrand);
 	    for (int i=endOfBioExon+1; i <= end; i++) {
 		for (part = intronList; part!= NULL; part = part->next){
 		    if (part->start<=i && part->end>=i){
@@ -424,7 +434,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	    break;
 	case ncinit:
 	    beginOfBioExon = begin;
-	    middlePartProb = seqProb(begin, endOfMiddle, false);
+	    middlePartProb = seqProb(begin, endOfMiddle);
 	    lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
 	    beginPartProb = tssProbPlus[begin];  
 	    break;
@@ -446,7 +456,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	    if (beginPartProb>0.0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
 		if (endOfMiddle - beginOfMiddle + 1 >= 0)
-		    middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 1);
+		    middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
 		else {
 		    middlePartProb = pow (4.0,  -(endOfMiddle - beginOfMiddle + 1));
 		}
@@ -470,7 +480,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	case rncterm:
 	    beginOfBioExon = begin;
 	    if (endOfMiddle - begin + 1 >= 0)
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
+		middlePartProb = seqProb(begin, endOfMiddle);
 	    else {
 		middlePartProb = pow (4.0,  -(endOfMiddle - begin + 1));
 	    }
@@ -479,7 +489,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	case rncinit:
 	    beginPartProb = IntronModel::dSSProb(begin, false);
 	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
-	    if (beginPartProb>0.0){
+	    if (beginPartProb > 0.0){
 		beginOfMiddle = begin + Constant::dss_whole_size();
 		middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
 		lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
@@ -487,9 +497,9 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	    break;
 	case ncintron: case rncintron: // strand does not matter
 	    for (int pos = begin; pos <= endOfMiddle; pos++)
-		if (pos-k >= 0)
+		if (pos - IntronModel::k >= 0)
 		    try {
-			middlePartProb *= IntronModel::emiprobs.probs[s2i_intron(sequence + pos - k)]; 
+			middlePartProb *= IntronModel::emiprobs.probs[s2i_intron(sequence + pos - IntronModel::k)]; 
 		    } catch (InvalidNucleotideError e) {
 			middlePartProb *= 0.25;
 		    }
@@ -497,18 +507,13 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 		    middlePartProb *= 0.25;
 	    break;
 	case ncintronvar: case rncintronvar: // introns that are supported by a hint
-	    int internalIntronLen = internalEnd - internalBegin + 1;
-	    double p;
-	    if (nctype == ncintron)
-		p = pIntron;
-	    else 
-		p = prIntron;
-
-	    lenProb = pow(p, internalIntronLen - 1) * (1.0-p);
-	    middlePartProb = snippetProbs->getSeqProb(internalEnd, internalIntronLen);
-	    beginPartProb = longIntronProb(begin, endOfMiddle); // includes length prob
-	    break;
-	default:;
+	    {
+		int internalIntronLen = endOfMiddle - begin + 1;
+		lenProb = pow(pIntron, internalIntronLen - 1) * (1.0-pIntron);
+		middlePartProb = snippetProbs->getSeqProb(endOfMiddle, internalIntronLen);
+		break;
+	    }
+	default: ;
 	}
     
     Double sequenceProb = beginPartProb * middlePartProb * lenProb;
@@ -517,7 +522,6 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
     /*
      *                           extrinsicQuot
      */
-    Strand strand = isOnFStrand(nctype)? plusstrand : minusstrand;
     
     /*      EXON
      *
@@ -549,11 +553,11 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	 * Malus computation
 	 */
 	if (seqFeatColl && nep >=5) {
-	  int zeroCov = seqFeatColl->numZeroCov(beginOfBioExon, endOfBioExon, UTRpartF, strand);
-	  Double localPartMalus = seqFeatColl->collection->localPartMalus(UTRpartF, zeroCov, partBonus, nep);
-	  if (localPartMalus < 1.0/partBonus) // at least have ab initio probabilities
-	    localPartMalus = 1.0/partBonus;
-	  extrinsicQuot *= localPartMalus;
+	    int zeroCov = seqFeatColl->numZeroCov(beginOfBioExon, endOfBioExon, exonpartF, strand);
+	    Double localPartMalus = seqFeatColl->collection->localPartMalus(exonpartF, zeroCov, partBonus, nep);
+	    if (localPartMalus < 1.0/partBonus) // at least have ab initio probabilities
+		localPartMalus = 1.0/partBonus;
+	    extrinsicQuot *= localPartMalus;
 	}
 	if (seqFeatColl && seqFeatColl->collection->hasHintsFile) {
 	    /* We have searched for extrinsic features.
@@ -563,17 +567,13 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	     */
 	    if (endOfBioExon-beginOfBioExon + 1 - numEPendingInExon > 0)
 		extrinsicQuot *= seqFeatColl->collection->partMalus(exonpartF, endOfBioExon-beginOfBioExon + 1 - numEPendingInExon);
-	    if (endOfBioExon-beginOfBioExon + 1 - numUPendingInExon > 0)
-		extrinsicQuot *= seqFeatColl->collection->partMalus(UTRpartF, endOfBioExon-beginOfBioExon + 1 - numUPendingInExon);
 	    if (!exonFSupported)
 		extrinsicQuot *= seqFeatColl->collection->malus(exonF);
-	    if (!UTRFSupported)
-		extrinsicQuot *= seqFeatColl->collection->malus(UTRF);
 	}
 	/*
 	 * dss hints
 	 */
-	if (utype == rutr5internal || utype == rutr5init || utype == rutr3init || utype == rutr3internal){
+	if (nctype == rncinternal || nctype == rncinit){
 	    Feature *feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(dssF), beginOfBioExon-1, minusstrand);
 	    if (feature)
 		while (feature) {
@@ -586,7 +586,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	/*
 	 * ass hints
 	 */
-	if (utype == utr5internal || utype == utr5term || utype == utr3internal || utype == utr3term){
+	if (nctype == ncinternal || nctype == ncterm){
 	    Feature *feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(assF), beginOfBioExon-1, plusstrand);
 	    if (feature)
 		while (feature) {
@@ -602,7 +602,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
     /*
      *       INTRON
      */
-    if (isIntron(utype)) {
+    if (isIntron(nctype)) {
 	/*
 	 * an intron gets the bonus for each position covered by an intronpart hint 
 	 * (counted multiply for overlapping hints)
@@ -613,15 +613,14 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 		if (part->start <= i && part->end >= i)
 		    extrinsicQuot *= part->bonus;
 	}
-    } else if (utype == utr5internal || utype == utr5term || utype == utr3internal || utype == utr3term ||
-	       utype == rutr5internal || utype == rutr5init || utype == rutr3internal || utype == rutr3init)  {
+    } else if (nctype == ncinternal || nctype == ncterm || nctype == rncinternal || nctype == rncinit) {
 	/*
 	 * intronpart bonus for the part of the intron that is handled in the exon states
 	 */
 	Feature *part, *intronList = seqFeatColl->getFeatureListOvlpingRange(A_SET_FLAG(intronpartF) | A_SET_FLAG(nonexonpartF), begin, beginOfBioExon-1, strand);
 	for (int i=begin; i <= beginOfBioExon-1; i++) {
-	    for (part = intronList; part!= NULL; part = part->next){
-		if (part->start<=i && part->end>=i){
+	    for (part = intronList; part != NULL; part = part->next){
+		if (part->start <= i && part->end >= i){
 		    extrinsicQuot *= part->bonus;
 		}
 	    }
@@ -643,9 +642,10 @@ Double NcModel::emiProbUnderModel (int begin, int end) const {
 	extrinsicexons = seqFeatColl->getExonListInRange(begin, // to be safe for all cases
 							 endOfBioExon,
 							 isOnFStrand(nctype)? plusstrand : minusstrand);
-    if (inCRFTraining)
-      seqProb(-1, -1, false, -1); // forget all saved information in static variables
-
+    if (inCRFTraining){
+	// TODO; make sure there are no old values reused
+	// seqProb(-1, -1, false, -1); // forget all saved information in static variables
+    }
     endProb = endPartEmiProb(beginOfEndPart, end, endOfBioExon);
     notEndProb = notEndPartEmiProb(begin, beginOfEndPart-1, endOfBioExon, extrinsicexons);
     emiProb = notEndProb * endProb;
@@ -674,6 +674,7 @@ void NcModel::getEndPositions (int end, int &beginOfEndPart, int &endOfBioExon) 
     default: // an intron state: ncintron, ncintronvar, rncintron, rncintronvar
 	    beginOfEndPart = end + 1;
 	    endOfBioExon = end;
+    }
 }
 
 /*
@@ -685,55 +686,9 @@ Double NcModel::seqProb(int left, int right) const {
     if (left > right)
 	return 1.0;
     
-    return snippetProbs(right, right-left+1);
+    return snippetProbs->getSeqProb(right, right-left+1);
 }
 
-Double UtrModel::tssupSeqProb (int left, int right, bool reverse) const {
-    static Double seqProb;
-    static int curpos;
-    static Seq2Int s2i(tssup_k+1);
-    seqProb = 1.0;
-
-    for (curpos = right; curpos >= left; curpos--) {
-	try {
-	    if (!reverse && curpos-tssup_k >= 0)
-		seqProb *= tssup_emiprobs[s2i(sequence+curpos-tssup_k)];
-	    else if (reverse && curpos >= 0 && curpos + tssup_k < dnalen)
-		seqProb *= tssup_emiprobs[s2i.rc(sequence+curpos)];
-	    else 
-		seqProb *= 0.25;
-	} catch (InvalidNucleotideError e) {
-	    seqProb *= 0.25;
-	}
-    }
-    return seqProb;
-}
-
-
-/*
- * computes the probability of the transcription start site:
- * here only from hints
- */
- Double NcModel::tssProb(int tsspos) const { // TODO: store results for later to be more efficient
-     Double extrinsicProb(1.0);
-
-     Feature *tsshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(tssF), tsspos, isOnFStrand(utype)? plusstrand : minusstrand);
-     if (tsshints) {
-	 while (tsshints) {
-	     extrinsicProb  *= tsshints->distance_faded_bonus(tsspos);
-	     tsshints = tsshints->next;
-	 }
-     } else if (seqFeatColl->collection->hasHintsFile){
-	 extrinsicProb = seqFeatColl->collection->malus(tssF);
-     } else
-	 extrinsicProb = 1.0;
-
-     // for speed: let transcription start be possible only every ttsSpacing-th base
-     if (tsspos % boundSpacing != 0 && !(extrinsicProb > 1.0))
-	 return 0.0;
-    
-     return extrinsicProb;
- }
 
 /*
  * Precomputes the probability of the transcription termination and initiation sites
@@ -745,10 +700,10 @@ void NcModel::precomputeTxEndProbs(){
     Feature *f;
     int pos;
 
-    tssProbsPlus.assign(dnalen+1, 0.0);
-    tssProbsMinus.assign(dnalen+1, 0.0);
-    ttsProbsPlus.assign(dnalen+1, 0.0);
-    ttsProbsMinus.assign(dnalen+1, 0.0);
+    tssProbPlus.assign(dnalen+1, 0.0);
+    tssProbMinus.assign(dnalen+1, 0.0);
+    ttsProbPlus.assign(dnalen+1, 0.0);
+    ttsProbMinus.assign(dnalen+1, 0.0);
 
     // in addition allow and incentivize transcript boundaries when hinted to
     f = seqFeatColl->getAllActiveFeatures(tssF);

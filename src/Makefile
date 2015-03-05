@@ -30,8 +30,7 @@ INCLS	= -I../include
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
- meaPath.o exoncand.o randseqaccess.o \
-  fasta.o
+ meaPath.o exoncand.o randseqaccess.o fasta.o ncmodel.o
 ifdef COMPGENEPRED
 	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
@@ -480,6 +479,25 @@ utrtrain.o : \
 	../include/utrmodel.hh \
 	../include/vitmatrix.hh \
 	utrtrain.cc
+
+ncmodel.o : \
+	../include/extrinsicinfo.hh \
+	../include/gene.hh \
+	../include/geneticcode.hh \
+	../include/hints.hh \
+	../include/intronmodel.hh \
+	../include/utrmodel.hh \
+	../include/lldouble.hh \
+	../include/matrix.hh \
+	../include/merkmal.hh \
+	../include/motif.hh \
+	../include/projectio.hh \
+	../include/properties.hh \
+	../include/statemodel.hh \
+	../include/types.hh \
+	../include/utrmodel.hh \
+	../include/vitmatrix.hh \
+	ncmodel.cc
 
 merkmal.o : \
 	../include/evaluation.hh \

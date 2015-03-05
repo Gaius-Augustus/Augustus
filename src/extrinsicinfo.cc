@@ -2383,6 +2383,7 @@ double FeatureCollection::partMalus(FeatureType type, int len){
  * get the local malus for CDSpart and UTRpart depending on the length
  * CDSpart stands for (CDSpartF or exonpartF), UTRpart stands for (UTRpartF or exonpartF)
  * precompute values the first time they are needed (for each type separately)
+ * parameter 'bonus' is not used yet. (TODO)
  */
 double FeatureCollection::localPartMalus(FeatureType type, int len, Double bonus, int nindep){
   double malusfactor = typeInfo[type].localMalus;
@@ -2401,6 +2402,8 @@ double FeatureCollection::localPartMalus(FeatureType type, int len, Double bonus
       cumMalus *= malusfactor;
       localmalustable[type][i] = cumMalus;
     }
+    if (cumMalus == 0.0 && malusfactor > 0.0) // use Double instead if this happens
+	cerr << "Error: underflow in FeatureCollection::localPartMalus. Please increase malus." << endl;
   }
   if (len < maxStoreMalus)
     return localmalustable[type][len];
