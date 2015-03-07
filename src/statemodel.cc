@@ -20,6 +20,7 @@
 #include "intronmodel.hh"
 #include "igenicmodel.hh"
 #include "utrmodel.hh"
+#include "ncmodel.hh"
 #include "pp_scoring.hh"
 #include "extrinsicinfo.hh"
 
@@ -60,6 +61,7 @@ void StateModel::init() {
     IntronModel::init();
     UtrModel::init();
     IGenicModel::init();
+    NcModel::init();
 
     // by linking submaps we reach at most as far as the length of 
     // equalD state + MAX_LINKCOUNT times geometric states + splicesite states
@@ -72,11 +74,11 @@ void StateModel::init() {
  *
  * creates a new StateModel descendant; the type is determined by
  * by the string _path_, currently one of:
- *  intronmodel, exonmodel, igenicmodel, utrmodel
+ *  intronmodel, exonmodel, igenicmodel, utrmodel, ncmodel
  *
  */
 StateModel* StateModel::newStateModelPtr(const char* path) {
-    string intronMdlStr = "intronmodel", exonMdlStr = "exonmodel", igenicMdlStr = "igenicmodel", utrMdlStr = "utrmodel";
+    string intronMdlStr = "intronmodel", exonMdlStr = "exonmodel", igenicMdlStr = "igenicmodel", utrMdlStr = "utrmodel", ncMdlStr = "ncmodel";
     string pathString(path);
     try {
 	if (pathString == intronMdlStr)
@@ -87,6 +89,8 @@ StateModel* StateModel::newStateModelPtr(const char* path) {
 	    return new IGenicModel();
 	else if (pathString == utrMdlStr)
 	    return new UtrModel();
+	else if (pathString == ncMdlStr)
+	    return new NcModel();
     } catch (ProjectError e) {
 	cerr << e.getMessage() << endl;
     }
@@ -219,6 +223,7 @@ void StateModel::resetPars(){
     UtrModel::resetPars();
     IntronModel::resetPars();
     IGenicModel::resetPars();
+    NcModel::resetPars();
 }
 
 void StateModel::readAllParameters(){
@@ -226,6 +231,7 @@ void StateModel::readAllParameters(){
   IntronModel::readAllParameters();
   IGenicModel::readAllParameters();
   UtrModel::readAllParameters();
+  NcModel::readAllParameters();
 }
 
 void StateModel::storeGCPars(int idx){
@@ -240,6 +246,7 @@ void StateModel::resetModelCounts() {
     ExonModel::resetModelCount();
     IntronModel::resetModelCount();
     UtrModel::resetModelCount();
+    NcModel::resetModelCount();
 }
 
 int StateModel::getActiveWindowStart(int base) {

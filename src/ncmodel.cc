@@ -101,6 +101,7 @@ void NcModel::initSnippetProbs() {
     if (snippetProbs)
 	delete snippetProbs;
 
+    cout << "initializing snippet probs" << endl;
     snippetProbs = new SnippetProbs(sequence, IntronModel::k);
     haveSnippetProbs = true;
 }
@@ -118,6 +119,7 @@ void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
 	pIntron = 0.999;
 
     if (!initAlgorithmsCalled) {
+	snippetProbs->setEmiProbs(&IntronModel::emiprobs.probs);
 	precomputeTxEndProbs();
 	computeLengthDistributions();
     }
