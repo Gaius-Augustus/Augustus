@@ -306,6 +306,11 @@ void Constant::init(){
     } catch (ProjectError e) {
 	cerr << e.getMessage();
     }
+    try {
+	max_exon_len = Properties::getIntProperty("/ExonModel/maxexonlength");
+    } catch (ProjectError e) {
+	cerr << e.getMessage();
+    }
     Properties::assignProperty("/UtrModel/d_polyasig_cleavage", d_polyasig_cleavage);
     Properties::assignProperty("keep_viterbi", 	keep_viterbi);
     Properties::assignProperty("/Constant/gc_range_min", gc_range_min);

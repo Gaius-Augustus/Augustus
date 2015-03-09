@@ -518,7 +518,7 @@ void capAliSize(list<Alignment*> &alis, int maxRange){
 			// from start of next fragment to 1 pos before end of next fragment (or maxAliPos)
 			int tempChrPos = nextFragStart - a->rows[s]->frags[bidx[s] + 1].aliPos;
 			for (size_t actAliPos = a->rows[s]->frags[bidx[s] + 1].aliPos; actAliPos < min(maxAliPos + 1, a->rows[s]->frags[bidx[s] + 1].aliPos + a->rows[s]->frags[bidx[s] + 1].len - 1); actAliPos++){
-			    // if the fragment lies on the next threshold or it is already the last threshold, only add bonusScore until one position before the last position in the threshold (because we cut cut behind this position and for cutting behind the last position we have another score)
+			    // if the fragment lies on the next threshold or it is already the last threshold, only add bonusScore until one position before the last position in the threshold (because we cut behind this position and for cutting behind the last position we have another score)
 			    if (actThresholdIndex[s] + 1 == thresholds.size() || (actThresholdIndex[s] + 1 < thresholds.size() && tempChrPos + actAliPos < thresholds[actThresholdIndex[s] + 1].first)){
 				aliPosCutScore[actAliPos] += thresholds[actThresholdIndex[s]].second;
 			    }else{break;}
