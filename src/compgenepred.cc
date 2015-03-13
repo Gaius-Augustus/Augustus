@@ -260,11 +260,11 @@ void CompGenePred::start(){
 			    as->sequence[pos] = tolower(as->sequence[pos]);
 		    }
 		    // insert sampled exons into the EC hash
-		    if (transcripts){			    
+		    if (transcripts){		    
 			for (list<Transcript*>::iterator geneit = transcripts->begin(); geneit != transcripts->end(); geneit++) {
 			    if ((*geneit)->isCoding()){ // noncoding comparative prediction not (yet) implemented
 				State *st = (*geneit)->exons;
-				while (st){
+				while (st) {
 				    // include framemod into type
 				    st->includeFrameModIntoType();
 				    ExonCandidate *ec = new ExonCandidate(toExonType(stateTypeIdentifiers[st->type]),st->begin,st->end);

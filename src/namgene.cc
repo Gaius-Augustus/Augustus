@@ -151,6 +151,7 @@ NAMGene::NAMGene() {
 
   if (Constant::temperature && Constant::augustus_verbosity)
       cout << "# setting temperature to " << Constant::temperature << " (for sampling)" << endl;
+  sampledTxs = NULL;
 }
 
 void NAMGene::setStatesInitialProbs(){  
@@ -766,7 +767,7 @@ list<AltGene> *NAMGene::getStepGenes(AnnoSequence *annoseq, SequenceFeatureColle
 list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViterbi){
   list<AltGene> *agl;
   list<Transcript*> alltranscripts;
-  list<Transcript*> filteredTranscripts;
+  list<Transcript*> *filteredTranscripts = new list<Transcript*>;
   list<Transcript*>::iterator geneit1, geneit2;
   if (sampleiterations < 1)
       sampleiterations = 1;
@@ -906,17 +907,17 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   /*
    * filter transcripts by probabilities, strand
    */ 
-  filterGenePrediction(alltranscripts, filteredTranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
+  filterGenePrediction(alltranscripts, *filteredTranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
 
   // determine transcripts with maximum expected accuracy criterion
   if (Constant::MultSpeciesMode){
       // store alltranscripts in member variable of NAMGene
-      sampledTxs = &filteredTranscripts;
+      setAllTranscripts(filteredTranscripts);
       agl = new list<AltGene>;
   } else if (mea_prediction){
-      agl = groupTranscriptsToGenes(getMEAtranscripts(filteredTranscripts, dna));
+      agl = groupTranscriptsToGenes(getMEAtranscripts(*filteredTranscripts, dna));
   } else { //filter transcripts by maximum track number 
-      agl = groupTranscriptsToGenes(filteredTranscripts);
+      agl = groupTranscriptsToGenes(*filteredTranscripts);
   }
   
   if (sampleiterations>1) {
@@ -950,6 +951,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
        << "                                used are " << forward.used_load() << " of " << statecount << " states.\n";
 #endif
   return agl;
+  // TODO: the *filteredTranscripts has to be deleted eventually after cmpgenepred has called .getAllTranscripts()
 }
 
 
