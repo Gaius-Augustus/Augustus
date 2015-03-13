@@ -38,7 +38,7 @@ public:
      * Predict the path through the HMM and compute the predicted genes.
      * strand: plusstrand, minusstrand or bothstrands
      */
-    Gene* doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *annoseq, Strand strand);
+    Transcript* doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *annoseq, Strand strand);
 
     Double getEmissionProbability();
 
@@ -72,7 +72,7 @@ public:
     void setNeedForwardTable(bool b){needForwardTable = b;}
     // set the path and emiProbs for all annotations in annoseq (for option scoreTx)
     void setPathAndProb(AnnoSequence *annoseq, FeatureCollection &extrinsicFeatures);
-    list<Gene> *getAllTranscripts() {return sampledTxs;}
+    list<Transcript*> *getAllTranscripts() {return sampledTxs;}
     void getPrepareModels(const char *dna, int len) {prepareModels(dna, len);}
 private:
     /**
@@ -143,7 +143,7 @@ private:
     PP::SubstateModel* profileModel;
     ContentStairs cs; // holds the local GC content class per position in the currently examined DNA
     int curGCIdx; // current index of GC content class
-    list<Gene> *sampledTxs; // = alltranscripts stored for MultSpeciesMode
+    list<Transcript*> *sampledTxs; // = alltranscripts stored for MultSpeciesMode
 };
 
 

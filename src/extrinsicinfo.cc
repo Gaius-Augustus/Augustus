@@ -395,6 +395,7 @@ Feature *SequenceFeatureCollection::getFeatureListOvlpingRange(FeatureType type,
     list<Feature>::iterator a, e;
     a = getPosFirstEndAtOrAfter(type, startPosition);
     e = getPosStartAfter(type, endPosition);
+
     while (a != e) {
 	if (a->active && (((a->start >= startPosition) && (a->start <= endPosition)) ||
 			   ((a->start <= startPosition) && (a->end >= startPosition))) &&
@@ -1266,7 +1267,7 @@ void SequenceFeatureCollection::computeIndices() {
 	    /*
 	     * create the indices based on the starts
 	     * This is more complicated since the feature lists are sorted by the end positions of hints.
-	     */    
+	     */
 	    int leftmostStart = seqlen+1;
 	    int lastChanged = numBlocks;
 	    list<Feature>::iterator lastUndershootingIt = featureLists[type].end();
@@ -1337,7 +1338,7 @@ list<Feature>::iterator SequenceFeatureCollection::getPosStartAfter(int type, in
     if (i < 0)
 	i = 0;
     if (i >= seqlen/K)
-	i = seqlen/K;
+	return featureLists[type].end();
     ret = lastStart[type][i];
     if (ret != featureLists[type].end())
 	ret++;
@@ -1494,8 +1495,8 @@ void SequenceFeatureCollection::setActiveFlag(list<HintGroup*> *groups, bool fla
  */
 list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGene> *> *genesOfRuns, int maxtracks, bool uniqueCDS){
     list<AltGene> *genes;
-    list<Gene> *alltranscripts = new list<Gene>, *allFilteredTranscripts = new list<Gene>;
-    list<Gene>::iterator geneit1, geneit2;
+    list<Transcript*> alltranscripts, allFilteredTranscripts;
+    list<Transcript*>::iterator geneit1, geneit2;
     /*
      * Some transcripts need to be deleted.
      * For a PredictionRun R let G(R) be the set of groups g of hints that have R.omittedGroups == {Groups incompatible with g}
@@ -1544,15 +1545,12 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
 		git->id = str;
 		genes->push_back(*git);
 		geneNo++;
-		for (list<Gene*>::iterator trit = git->transcripts.begin(); trit != git->transcripts.end(); trit++) {
-		    //(*trit)->printGFF();//AUSGABE
-		    (*trit)->compileExtrinsicEvidence(groupList);
+		for (list<Transcript*>::iterator trit = git->transcripts.begin(); trit != git->transcripts.end(); trit++) {		    
+		    
+		    if (Gene *gene = dynamic_cast<Gene*> (*trit))
+			gene->compileExtrinsicEvidence(groupList);
 		    if (Constant::alternatives_from_evidence) {
 			// check whether transcript obeys above rule
-#ifdef DEBUG
-			bool bad = false;
-			bool good = false;
-#endif
 			bool incomplete = false;
 			double sf;
 			double bestSfG = 0;
@@ -1560,7 +1558,7 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
 			if (!(*trit)->complete && prit->begin != 0 && prit->end != seqlen){
 			    incomplete = true;
 #ifdef DEBUG
-			    cout << "remove incomplete gene of run " << endl;
+			    cout << "removing incomplete gene of run " << endl;
 #endif
 			}
 			for (list<HintGroup>::iterator grit = groupList->begin(); grit != groupList->end(); grit++){
@@ -1569,9 +1567,6 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
 				grit->print(cout);//AUSGABE
 #endif
 				sf = (*trit)->supportingFraction(&*grit);
-#ifdef DEBUG
-				cout << "supportingFraction= " << sf << endl;
-#endif
 				if (G->count(&*grit) > 0) {
 #ifdef DEBUG
 				    cout << "Following HintGroup in G supports above transcript:";
@@ -1579,50 +1574,30 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
 #endif
 				    if (sf > bestSfG)
 					bestSfG = sf;
-				    if (sf >= 0.8) {
-#ifdef DEBUG
-					good = true;
-#endif
-				    }
 				} else { 
 				    if (sf > bestSfnotG)
 					bestSfnotG = sf;
-				    if (sf > 0.0) {
-#ifdef DEBUG
-					cout << "Following HintGroup not in G supports above transcript:";
-					grit->print(cout);
-					bad = true;
-#endif
-				    }
 				}
 			    }
 			}
 #ifdef DEBUG
 			cout << "bestSfG=" << bestSfG << " bestSfnotG=" << bestSfnotG << " incomplete=" << incomplete << endl;
 #endif
-			if (/*(!bad || good)*/ (bestSfG >= 0.8 || bestSfG >= bestSfnotG) && !incomplete) {
+			if ((bestSfG >= 0.8 || bestSfG >= bestSfnotG) && !incomplete) {
 			    (*trit)->geneid = str;
-			    alltranscripts->push_back(**trit);
-#ifdef DEBUG
-// 			    cout << "transcript taken:" << endl;
-// 			    (*trit)->printGFF();
-#endif
+			    alltranscripts.push_back(*trit);
 			} else {
 #ifdef DEBUG
 			    cout << "transcript excluded: ";
 			    if (incomplete)
 				cout << "incomplete ";
-			    if (bad)
-				cout << "bad ";
-			    if (good)
-				cout << "good ";
 			    cout << endl;
 			    (*trit)->printGFF();
 #endif
 			}
 		    } else {
 			(*trit)->geneid = str;
-			alltranscripts->push_back(**trit);
+			alltranscripts.push_back(*trit);
 		    }
 		}
 	    }
@@ -1636,22 +1611,23 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
     
     
     
-    alltranscripts->sort();
+    alltranscripts.sort(ptr_comparison<Transcript>());
     // now remove multiple copies and increase apostprob instead
-    for(geneit1 = alltranscripts->begin(); geneit1 != alltranscripts->end();){
+    for (geneit1 = alltranscripts.begin(); geneit1 != alltranscripts.end();){
 	geneit2 = geneit1;
-	for (geneit2++; geneit2 != alltranscripts->end() && geneit2->geneBegin() == geneit1->geneBegin();)
-	    if (*geneit1 == *geneit2){
+	for (geneit2++; geneit2 != alltranscripts.end() && (*geneit2)->geneBegin() == (*geneit1)->geneBegin();)
+	    if (**geneit1 == **geneit2){
 		// delete the transcript with lower meanStateProb
-		if (geneit2->apostprob > geneit1->apostprob) {
+		if ((*geneit2)->apostprob > (*geneit1)->apostprob) {
 		    // replace geneit1 with geneit2
-		    geneit1 = alltranscripts->erase(geneit1);
+		    delete *geneit1;
+		    geneit1 = alltranscripts.erase(geneit1);
 		    if (geneit1 != geneit2) // transcripts were not neighbors anyway
-			alltranscripts->insert(geneit1, *geneit2);
+			alltranscripts.insert(geneit1, *geneit2);
+		} else if (geneit2 != geneit1){
+		    delete *geneit2;
+		    geneit2 = alltranscripts.erase(geneit2);
 		} else 
-		if (geneit2 != geneit1)
-		    geneit2 = alltranscripts->erase(geneit2);
-		else 
 		    geneit2++;
 	    } else
 		geneit2++;
@@ -1661,18 +1637,17 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
     /*
      * filter transcripts by maximum track number
      */
-    Gene::filterTranscriptsByMaxTracks(alltranscripts, maxtracks);
+    Transcript::filterTranscriptsByMaxTracks(alltranscripts, maxtracks);
     genes = groupTranscriptsToGenes(alltranscripts);
     // delete imperfect transcript if there are better ones
     for (list<AltGene>::iterator ait = genes->begin(); ait != genes->end(); ait++) {
 	ait->deleteSuboptimalTranscripts(uniqueCDS);
-	for (list<Gene *>::iterator it = ait->transcripts.begin(); it != ait->transcripts.end();it++) 
-	    allFilteredTranscripts->push_back(**it);
+	for (list<Transcript*>::iterator it = ait->transcripts.begin(); it != ait->transcripts.end(); it++) 
+	    allFilteredTranscripts.push_back(*it);
     }
     // group transcripts to genes AGAIN, as suboptimal transcripts could have chained two separate genes together
     delete genes;
     genes = groupTranscriptsToGenes(allFilteredTranscripts);
-    delete alltranscripts;
     return genes;
 }
 
@@ -2125,8 +2100,10 @@ void FeatureCollection::readTypeInfo(istream& datei){
 		    cout << "# Setting donor splice site local malus: " << localMalus << endl;
 		} else if (type == assF) {
 		    cout << "# Setting acceptor splice site local malus: " << localMalus << endl;
+		} else if (type == exonpartF) {
+		    cout << "# Setting exon local malus: " << localMalus << endl;
 		} else {
-			cerr << "Warning: local malus only supported for UTRpart, CDSpart, ass and dss. Not for " << featureName << endl;
+			cerr << "Warning: local malus only supported for UTRpart, CDSpart, exonpart, ass and dss. Not for " << featureName << endl;
 		}
 		if (localMalus < 0.0 || localMalus > 1.0)
 		    throw ProjectError("Local malus must be in the range 0.0-1.0.");
@@ -2448,7 +2425,8 @@ void FeatureCollection::printAccuracyForSequenceSet(const AnnoSequence* annoseqs
     int sqrExonLen = 0, codingBases = 0, allBases = 0;
    
     const AnnoSequence* curannoseq = annoseqs;
-    const Gene* curgene;
+    const Transcript* curtx;
+    const Gene* curG;
     list<Feature> flist;
     list<Feature>::iterator it;
     set<Feature>::iterator itms;
@@ -2492,38 +2470,41 @@ void FeatureCollection::printAccuracyForSequenceSet(const AnnoSequence* annoseqs
 	    set<Feature> startAS, stopAS, assAS, dssAS;
 	    list<Feature> exonAL;
 
-	    for (curgene = curannoseq->anno->genes; curgene != NULL; curgene = curgene->next) {
-		if (!curgene->complete)
+	    for (curtx = curannoseq->anno->genes; curtx != NULL; curtx = curtx->next) {
+		if (!curtx->complete)
 		    throw ProjectError("printAccuracyForGeneSet called for incompletely annotated gene");
-		codingBases += curgene->clength;
-		for (ex = curgene->exons; ex; ex = ex->next){
-		    ell_ell += ex->length() * (ex->length() + 1) / 2;
-		    exonAL.push_back(Feature(ex->begin, ex->end, exonF, curgene->strand, stateReadingFrames[ex->type], "annotrain"));
-		}
-		if (curgene->strand == plusstrand){
-		    startAS.insert(Feature(curgene->exons->begin, curgene->exons->begin+2, startF, plusstrand, 0, "annotrain"));
-		    stopAS.insert(Feature(curgene->codingend-2, curgene->codingend, stopF, plusstrand, 0, "annotrain"));
-		    for (ex = curgene->exons; ex != NULL; ex = ex->next) {
-			numExons++;
-			sqrExonLen += ex->length()*(ex->length()+1)/2;
-			if (ex->next) 
-			    dssAS.insert(Feature(ex->end+1, ex->end+1, dssF, plusstrand, -1, "annotrain"));
-			if (ex != curgene->exons)
-			    assAS.insert(Feature(ex->begin-1, ex->begin-1, assF, plusstrand, -1, "annotrain"));
+		curG = dynamic_cast<const Gene*> (curtx);
+		if (curG) {
+		    codingBases += curG->clength;
+		    for (ex = curG->exons; ex; ex = ex->next){
+			ell_ell += ex->length() * (ex->length() + 1) / 2;
+			exonAL.push_back(Feature(ex->begin, ex->end, exonF, curG->strand, stateReadingFrames[ex->type], "annotrain"));
 		    }
-		} else if (curgene->strand == minusstrand){
-		    startAS.insert(Feature(curgene->codingend-2, curgene->codingend, startF, minusstrand, 0, "annotrain"));
-		    stopAS.insert(Feature(curgene->exons->begin, curgene->exons->begin+2, stopF, minusstrand, 0, "annotrain"));
-		    for (ex = curgene->exons; ex != NULL; ex = ex->next) {
-			numExons++;
-			sqrExonLen += ex->length()*(ex->length()+1)/2;
-			if (ex->next)
-			    assAS.insert(Feature(ex->end+1, ex->end+1, assF, minusstrand, -1, "annotrain"));
-			if (ex != curgene->exons)
-			    dssAS.insert(Feature(ex->begin-1, ex->begin-1, dssF, minusstrand, -1, "annotrain"));
+		    if (curG->strand == plusstrand){
+			startAS.insert(Feature(curG->exons->begin, curG->exons->begin+2, startF, plusstrand, 0, "annotrain"));
+			stopAS.insert(Feature(curG->codingend-2, curG->codingend, stopF, plusstrand, 0, "annotrain"));
+			for (ex = curG->exons; ex != NULL; ex = ex->next) {
+			    numExons++;
+			    sqrExonLen += ex->length()*(ex->length()+1)/2;
+			    if (ex->next) 
+				dssAS.insert(Feature(ex->end+1, ex->end+1, dssF, plusstrand, -1, "annotrain"));
+			    if (ex != curG->exons)
+				assAS.insert(Feature(ex->begin-1, ex->begin-1, assF, plusstrand, -1, "annotrain"));
+			}
+		    } else if (curG->strand == minusstrand){
+			startAS.insert(Feature(curG->codingend-2, curG->codingend, startF, minusstrand, 0, "annotrain"));
+			stopAS.insert(Feature(curG->exons->begin, curG->exons->begin+2, stopF, minusstrand, 0, "annotrain"));
+			for (ex = curG->exons; ex != NULL; ex = ex->next) {
+			    numExons++;
+			    sqrExonLen += ex->length()*(ex->length()+1)/2;
+			    if (ex->next)
+				assAS.insert(Feature(ex->end+1, ex->end+1, assF, minusstrand, -1, "annotrain"));
+			    if (ex != curG->exons)
+				dssAS.insert(Feature(ex->begin-1, ex->begin-1, dssF, minusstrand, -1, "annotrain"));
+			}
+		    } else {
+			throw ProjectError("Warning: printAccuracyForSequenceSet: have annotation with unknown strand.");
 		    }
-		} else {
-		    throw ProjectError("Warning: printAccuracyForSequenceSet: have annotation with unknown strand.");
 		}
 	    }
 	    len = curannoseq->length;
@@ -2786,7 +2767,7 @@ void FeatureCollection::printAccuracyForSequenceSet(const AnnoSequence* annoseqs
 		flist = sfc.getFeatureList(intronpartF);
 		for (it = flist.begin(); it != flist.end(); it++) {
 		    correct = false;
-		    for (State *in = curgene->introns; in; in = in->next)
+		    for (State *in = curG->introns; in; in = in->next)
 			if (in->begin == it->start && in->end == it->end)
 			    correct = true;
 		    if (correct)

@@ -248,7 +248,7 @@ void evaluateOnTestSet(AnnoSequence *annoseq, NAMGene &namgene, FeatureCollectio
     int dnaproben = 0;
     Double quotient; 
     Evaluation eval;
-    Gene *genes;
+    Transcript *genes;
 
     // TEMP Zeitmessung
     double total =0;
@@ -319,7 +319,7 @@ void evaluateOnTestSet(AnnoSequence *annoseq, NAMGene &namgene, FeatureCollectio
 	/*
 	 * clean up
 	 */
-	Gene::destroyGeneSequence(genes);
+	Transcript::destroyGeneSequence(genes);
 	if (annoseq->anno->path){
 	    delete annoseq->anno->path;
 	    annoseq->anno->path = NULL;           // so annoseq destructor doesn't crash
@@ -366,7 +366,7 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
     AnnoSequence *curseq;
     //Double pathemiProb;
     Evaluation eval;
-    Gene *genes;
+    Transcript *genes;
 
     int numC = extrinsicFeatures.getNumCommonSeqs(seq);
     if (numC == 0 && extrinsicFeatures.getNumSeqsWithInfo() > 0) 
@@ -426,7 +426,7 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
 		}
 	    } catch (...) {}
 
-	    Gene::destroyGeneSequence(genes); // don't need them anymore after they are printed
+	    Transcript::destroyGeneSequence(genes); // don't need them anymore after they are printed
 	    successfull++;
 	} catch (ProjectError& err ){
 	    if (successfull < 1)

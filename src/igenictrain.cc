@@ -47,55 +47,57 @@ void IGenicModel::buildModel( const AnnoSequence* annoseq, int parIndex ){
 	const AnnoSequence *as = annoseq;
 	while (as){
 	    const char* sequence = as->sequence;
-	    curgene = as->anno->genes; // assume here that sequences with multiple genes have already been split
-	    gweight = curgene->weight;
+	    curgene = dynamic_cast<Gene*> (as->anno->genes); // assume here that sequences with multiple genes have already been split
+	    if (curgene){
+		gweight = curgene->weight;
 	    
-	    if (curgene->exons) { 
-		//cout << "gene " << curgene->id << ", weight " << gweight << " " << curgene->geneBegin() << ".." << curgene->geneEnd() << " seqlen=" << strlen(sequence) << endl;
-		// upstream UTR introns and igenic region
-		igenic_start = curgene->geneBegin() - igenic_winlen;
-		if (igenic_start<0)
-		    igenic_start=0;
-		processSequence( sequence + igenic_start + k, sequence + curgene->geneBegin()-1-20); // could be more accurate here 
-		if (curgene->utr5exons) {
-		    lastexon = curgene->utr5exons;
-		    exon = lastexon->next;
-		    while (exon) {
-			processSequence (sequence + lastexon->end + 1 + k + Constant::dss_end + DSS_MIDDLE, 
-					 sequence + exon->begin - 1 - Constant::ass_start - ASS_MIDDLE 
-					 - Constant::ass_upwindow_size);
-			lastexon = exon;
-			exon = exon->next;
+		if (curgene->exons) { 
+		    //cout << "gene " << curgene->id << ", weight " << gweight << " " << curgene->geneBegin() << ".." << curgene->geneEnd() << " seqlen=" << strlen(sequence) << endl;
+		    // upstream UTR introns and igenic region
+		    igenic_start = curgene->geneBegin() - igenic_winlen;
+		    if (igenic_start<0)
+			igenic_start=0;
+		    processSequence( sequence + igenic_start + k, sequence + curgene->geneBegin()-1-20); // could be more accurate here 
+		    if (curgene->utr5exons) {
+			lastexon = curgene->utr5exons;
+			exon = lastexon->next;
+			while (exon) {
+			    processSequence (sequence + lastexon->end + 1 + k + Constant::dss_end + DSS_MIDDLE, 
+					     sequence + exon->begin - 1 - Constant::ass_start - ASS_MIDDLE 
+					     - Constant::ass_upwindow_size);
+			    lastexon = exon;
+			    exon = exon->next;
+			}
 		    }
-		}
 	      
-		// for unknown reasons, things get significantly worse when the intron sequences are used for training
-		/* when using the human training set
-		   State *in = curgene->introns;
-	    while( in ){
-	    processSequence(sequence + in->begin + Constant::dss_end + DSS_MIDDLE + k,
-	    sequence + in->end - ASS_MIDDLE - Constant::ass_start -
-	    Constant::ass_upwindow_size);
-	    in = in->next;
-	    }*/
+		    // for unknown reasons, things get significantly worse when the intron sequences are used for training
+		    /* when using the human training set
+		       State *in = curgene->introns;
+		       while( in ){
+		       processSequence(sequence + in->begin + Constant::dss_end + DSS_MIDDLE + k,
+		       sequence + in->end - ASS_MIDDLE - Constant::ass_start -
+		       Constant::ass_upwindow_size);
+		       in = in->next;
+		       }*/
 	    
-	    // downstream UTR introns and igenic region
-		if (curgene->utr3exons) {
-		    lastexon = curgene->utr3exons;
-		    exon = lastexon->next;
-		    while (exon) {
-			processSequence (sequence + lastexon->end + 1 + k + Constant::dss_end + DSS_MIDDLE, 
-					 sequence + exon->begin - 1 - Constant::ass_start - ASS_MIDDLE 
-					 - Constant::ass_upwindow_size);
-			lastexon = exon;
-			exon = exon->next;
+		    // downstream UTR introns and igenic region
+		    if (curgene->utr3exons) {
+			lastexon = curgene->utr3exons;
+			exon = lastexon->next;
+			while (exon) {
+			    processSequence (sequence + lastexon->end + 1 + k + Constant::dss_end + DSS_MIDDLE, 
+					     sequence + exon->begin - 1 - Constant::ass_start - ASS_MIDDLE 
+					     - Constant::ass_upwindow_size);
+			    lastexon = exon;
+			    exon = exon->next;
+			}
 		    }
-		}
-		igenic_end = curgene->geneEnd() + igenic_winlen;
-		if (igenic_end > (int) strlen(sequence)-1)
-		    igenic_end = (int) strlen(sequence)-1;
-		processSequence( sequence + curgene->geneEnd() +  1 + k,
+		    igenic_end = curgene->geneEnd() + igenic_winlen;
+		    if (igenic_end > (int) strlen(sequence)-1)
+			igenic_end = (int) strlen(sequence)-1;
+		    processSequence( sequence + curgene->geneEnd() +  1 + k,
 				 sequence + igenic_end );
+		}
 	    }
 	    as = as->next;
 	}

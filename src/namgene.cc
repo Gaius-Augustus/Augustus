@@ -514,10 +514,8 @@ StatePath* NAMGene::getViterbiPath(const char *dna, const char* seqname){
 /*
  * NAMGene::doViterbiPiecewise
  * Iterate the viterbi algorithm on pieces of DNA small enough so that the DP matrices fit into memory.
- * Return only the concatenated condensed state path and the emission probability.
  */
-Gene *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *annoseq, Strand strand){
-  Gene *genes=NULL;
+Transcript *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *annoseq, Strand strand){
   list<AltGene> *geneList = new list<AltGene>;
   char *dna = annoseq->sequence;
   char *curdna;
@@ -626,12 +624,11 @@ Gene *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *
 	    pieceGenes->splice(pieceGenes->end(), *pieceReverseGenes);
 	}
     }
-
     pieceGenes->sort();
     // shift gene coordinates, set sequence name, gene and transcript names
     for (list<AltGene>::iterator agit = pieceGenes->begin(); agit != pieceGenes->end(); ++agit){
-      agit->shiftCoordinates(beginPos + annoseq->offset);
-      agit->seqname = seqname;
+	agit->shiftCoordinates(beginPos + annoseq->offset);
+	agit->seqname = seqname;
      
       
 	if (Constant::uniqueGeneId){
@@ -643,18 +640,17 @@ Gene *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *
 	} // TEMPorarily uncommented
 
       
-      agit->sortTranscripts();
+	agit->sortTranscripts();
 
-      transcriptid = 1;
-      for(list<Gene*>::iterator it = agit->transcripts.begin();it != agit->transcripts.end(); ++it ) {
-	(*it)->seqname = seqname;
-	(*it)->id = "t" + itoa(transcriptid);
-	(*it)->geneid = agit->id;
-	transcriptid++;
-      }
-      geneid++;
+	transcriptid = 1;
+	for(list<Transcript*>::iterator it = agit->transcripts.begin();it != agit->transcripts.end(); ++it ) {
+	    (*it)->seqname = seqname;
+	    (*it)->id = "t" + itoa(transcriptid);
+	    (*it)->geneid = agit->id;
+	    transcriptid++;
+	}
+	geneid++;
     }
-
     // print the genes
     printGeneList(pieceGenes, annoseq, Constant::codSeqOutput, Constant::proteinOutput, sfc.collection->hasHintsFile);
 
@@ -678,9 +674,8 @@ Gene *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *
   delete origTermProbs;
   delete synchProbs;
   if (geneList->empty() && !Constant::MultSpeciesMode)
-      cout << "# namgene(none)" << endl;
-  genes = getPtr(geneList);
-  return genes;
+      cout << "# (none)" << endl;
+  return getPtr(geneList);
 }
 
 /*
@@ -770,14 +765,13 @@ list<AltGene> *NAMGene::getStepGenes(AnnoSequence *annoseq, SequenceFeatureColle
 
 list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViterbi){
   list<AltGene> *agl;
-  list<Gene> *alltranscripts = new list<Gene>;
-  list<Gene> *filteredTranscripts;
-  list<Gene>::iterator geneit1, geneit2;
+  list<Transcript*> alltranscripts;
+  list<Transcript*> filteredTranscripts;
+  list<Transcript*>::iterator geneit1, geneit2;
   if (sampleiterations < 1)
       sampleiterations = 1;
-  Gene **sampledGeneStructures = new Gene*[sampleiterations];
   list<AltGene>::iterator agit;
-  Gene *genes = NULL, *g;
+  Transcript *genes = NULL, *g;
   StatePath *viterbiPath;
   StatePath *condensedViterbiPath;
   
@@ -799,6 +793,9 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   viterbiPath = getViterbiPath(dna, "");
   //getPathEmiProb(viterbiPath, dna); // for testing
   condensedViterbiPath = StatePath::condenseStatePath(viterbiPath);
+  //cout << "Viterbi path:" << endl;
+  //viterbiPath->print(); // for testing
+  //cout << "Condensed Viterbi path:" << endl;
   //condensedViterbiPath->print(); // for testing
   genes = condensedViterbiPath->projectOntoGeneSequence("g");
   delete viterbiPath;
@@ -815,20 +812,18 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   cerr << "Now we deleted the viterbi matrix.\n";
 #endif
 
-  sampledGeneStructures[0] = genes; // assume that the viterbi path is the first sampled path
-
-  for (g = genes; g != NULL; g=g->next) {
-    g->apostprob = 1.0;        // add the viterbi transcripts with a very light weigh
-    g->setStatePostProbs(1.0); // just to ensure that they are present when sampling
-    g->setSampleCount(1);
-    g->hasProbs = true;
-    g->throwaway = false;
-    g->viterbi = true;
-    alltranscripts->push_back(*g);
+  for (g = genes; g != NULL; g = g->next) {
+      g->apostprob = 1.0;        // add the viterbi transcripts with a very light weight
+      g->setStatePostProbs(1.0); // just to ensure that they are present when sampling
+      g->setSampleCount(1);
+      g->hasProbs = true;
+      g->throwaway = false;
+      g->viterbi = true;
+      alltranscripts.push_back(g);
   }
 
   int progress, oldprogress=0;
-  if (sampleiterations>1) {
+  if (sampleiterations > 1) {
       if (show_progress) {
 	  cerr << "sampling algorithm progress:\n[%]: ";
 	  oldprogress = 0;
@@ -837,7 +832,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
      * Sample and add the sampled genes to the list of genes
      */
     StatePath *sampledPath, *condensedsampledPath;
-    for (int i=0; i<sampleiterations-1; i++) {
+    for (int i=0; i < sampleiterations-1; i++) {
 #ifdef DEBUG
 	cerr << "Sample iteration " << i << endl;
 #endif
@@ -860,11 +855,9 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
       genes = condensedsampledPath->projectOntoGeneSequence(gr);
       delete sampledPath;
       delete condensedsampledPath;
-      // store the sampled gene structure for later
-      sampledGeneStructures[i+1] = genes;
       
       // store all sampled transcripts
-      for (g=genes; g != NULL; g=g->next) {
+      for (g = genes; g != NULL; g = g->next) {
         // initialize, all apostprobs and counts must be set to 1 
 	g->apostprob = 1.0;
 	g->setStatePostProbs(1.0);
@@ -873,97 +866,81 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
 	g->viterbi = false;
 	if (!alternatives_from_sampling)
 	  g->throwaway = true; // no alternatives requested, throw sampled gene away later
-	alltranscripts->push_back(*g);
+	alltranscripts.push_back(g);
       }
     } // for i<sampleiterations
     if (show_progress)
 	cerr << endl;
         
-    alltranscripts->sort();
- 
+    alltranscripts.sort(ptr_comparison<Transcript>());
     // now remove multiple copies and increase apostprob instead
-    for(geneit1 = alltranscripts->begin(); geneit1 != alltranscripts->end();){
-      geneit2 = geneit1;
-      for (geneit2++; geneit2 != alltranscripts->end() && geneit2->geneBegin() == geneit1->geneBegin();)
-	if (*geneit1 == *geneit2){
-	  geneit1->throwaway &= geneit2->throwaway; // throw away only if all versions should be thrown away.
-	  geneit1->viterbi |= geneit2->viterbi;
-	  geneit1->addSampleCount(1);
-	  geneit1->apostprob += 1.0;
-	  geneit1->addStatePostProbs(1.0);
-	  geneit2 = alltranscripts->erase(geneit2);
-	} else
-	  geneit2++;
-      geneit1++;
+    for (geneit1 = alltranscripts.begin(); geneit1 != alltranscripts.end();){
+	geneit2 = geneit1;
+	for (geneit2++; geneit2 != alltranscripts.end() && (*geneit2)->geneBegin() == (*geneit1)->geneBegin();)
+	    if (**geneit1 == **geneit2){
+		(*geneit1)->throwaway &= (*geneit2)->throwaway; // throw away only if all versions should be thrown away.
+		(*geneit1)->viterbi |= (*geneit2)->viterbi;
+		(*geneit1)->addSampleCount(1);
+		(*geneit1)->apostprob += 1.0;
+		(*geneit1)->addStatePostProbs(1.0);
+		delete *geneit2; // free space for duplicated transcript
+		geneit2 = alltranscripts.erase(geneit2); // remove deleted pointer from the list as well
+	    } else
+		geneit2++;
+	geneit1++;
     }
    
     /*
      * compute the posterior probabilities of the states and transcripts
      */
-    for(geneit1 = alltranscripts->begin(); geneit1 != alltranscripts->end(); geneit1++){
-      geneit2 = geneit1;
-      geneit2++;
-      for (; geneit2 != alltranscripts->end() && geneit2->codingstart <= geneit1->codingend; geneit2++){
-	geneit1->updatePostProb(&(*geneit2));
-      }
+    for (geneit1 = alltranscripts.begin(); geneit1 != alltranscripts.end(); geneit1++){
+	geneit2 = geneit1;
+	geneit2++;
+	for (; geneit2 != alltranscripts.end() && (*geneit2)->geneBegin() <= (*geneit1)->geneEnd(); geneit2++)
+	    (*geneit1)->updatePostProb(*geneit2);
     }
-    for(geneit1 = alltranscripts->begin(); geneit1 != alltranscripts->end(); geneit1++){
-      geneit1->normPostProb(sampleiterations); // +1 wegen Viterbipfad
+    for (geneit1 = alltranscripts.begin(); geneit1 != alltranscripts.end(); geneit1++){
+	(*geneit1)->normPostProb(sampleiterations); // +1 wegen Viterbipfad
     }
   }
   /*
    * filter transcripts by probabilities, strand
    */ 
-  filteredTranscripts = Gene::filterGenePrediction(alltranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
+  filterGenePrediction(alltranscripts, filteredTranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
 
   // determine transcripts with maximum expected accuracy criterion
   if (Constant::MultSpeciesMode){
-    // store alltranscripts in member variable of NAMGene
-    sampledTxs = filteredTranscripts;
-    agl = new list<AltGene>;
-  } else if(mea_prediction){
-    agl = groupTranscriptsToGenes(getMEAtranscripts(filteredTranscripts, dna));
-    delete filteredTranscripts;
-  } else{ //filter transcripts by maximum track number 
-    agl = groupTranscriptsToGenes(filteredTranscripts);
+      // store alltranscripts in member variable of NAMGene
+      sampledTxs = &filteredTranscripts;
+      agl = new list<AltGene>;
+  } else if (mea_prediction){
+      agl = groupTranscriptsToGenes(getMEAtranscripts(filteredTranscripts, dna));
+  } else { //filter transcripts by maximum track number 
+      agl = groupTranscriptsToGenes(filteredTranscripts);
   }
   
-  delete alltranscripts;
-
   if (sampleiterations>1) {
     /*
-     * compute apostprob of genes. The posterior probability of a gene is the 
-     * probability that the region of the gene contains at least one gene on 
-     * the given strand.
+     * compute apostprob of genes. The posterior 'probability' of a gene is the 
+     * expected number of transcripts overlaping the region of the gene on 
+     * the given strand. This may now be larger than 1 (changed March 15, Mario).
      */
-    bool covered;
-    for (agit=agl->begin(); agit != agl->end(); ++agit) {
-      for (int i=0; i<sampleiterations; i++) {
-	g = sampledGeneStructures[i];
-	covered = false;
-	while (g && g->codingstart <= agit->maxcodend && !covered){
-	  if (agit->overlaps(g))
-	    covered = true;
-	  g = g->next;
+    for (agit = agl->begin(); agit != agl->end(); ++agit) {
+	for (list<Transcript*>::iterator tit = alltranscripts.begin(); tit != alltranscripts.end() && (*tit)->geneBegin() <= agit->maxcodend; ++tit){
+	    if (agit->overlaps(*tit))
+		agit->apostprob += (*tit)->apostprob;
 	}
-	if (covered)
-	  agit->apostprob += 1.0/(sampleiterations);
-      }
     }
   } else { // no sampling, set hasProbs to false
-    for (agit=agl->begin(); agit != agl->end(); ++agit) {
+    for (agit = agl->begin(); agit != agl->end(); ++agit) {
       agit->hasProbs = false;
-      for (list<Gene*>::iterator git = agit->transcripts.begin(); git != agit->transcripts.end(); ++git){
+      for (list<Transcript*>::iterator git = agit->transcripts.begin(); git != agit->transcripts.end(); ++git){
 	(*git)->hasProbs = false;
 	(*git)->setStateHasScore(false);
       }
     }
   }
 
-  for (int i=0; i<sampleiterations; i++) {
-      Gene::destroyGeneSequence(sampledGeneStructures[i]);
-  }
-  delete [] sampledGeneStructures;
   delete condensedViterbiPath;
  
 #ifdef DEBUG
@@ -1069,7 +1046,7 @@ int NAMGene::getNextCutEndPoint(const char *dna, int beginPos, int maxstep, Sequ
       delete partSFC; //achtung, das muß nach getViterbiPath stehen
       delete [] curdna;
       condensedViterbiPath = StatePath::condenseStatePath(viterbiPath);
-      //condensedViterbiPath->print();
+      // condensedViterbiPath->print();
       cutendpoint = tryFindCutEndPoint(condensedViterbiPath, examIntervalStart, examIntervalEnd, groupGaps, true);
       delete viterbiPath;
       delete condensedViterbiPath;
@@ -1589,14 +1566,14 @@ void NAMGene::prepareModels(const char* dna, int dnalen) {
  */
 
 void NAMGene::setPathAndProb(AnnoSequence *annoseq, FeatureCollection &extrinsicFeatures){
-  while(annoseq){
-    annoseq->anno->path = StatePath::getInducedStatePath(annoseq->anno->genes, annoseq->length);
-    SequenceFeatureCollection &sfc = extrinsicFeatures.getSequenceFeatureCollection(annoseq->seqname);
-    sfc.prepare(annoseq, false);
-    sfc.computeHintedSites(annoseq->sequence);
-    sfc.prepareLocalMalus(annoseq->sequence);
-    prepareModels(annoseq->sequence, annoseq->length);
-    annoseq->anno->emiProb = getPathEmiProb(&(*(annoseq->anno->path)), &(*(annoseq->sequence)), sfc);
-    annoseq = annoseq->next;
-  }
+    while (annoseq){
+	annoseq->anno->path = StatePath::getInducedStatePath(annoseq->anno->genes, annoseq->length);
+	SequenceFeatureCollection &sfc = extrinsicFeatures.getSequenceFeatureCollection(annoseq->seqname);
+	sfc.prepare(annoseq, false);
+	sfc.computeHintedSites(annoseq->sequence);
+	sfc.prepareLocalMalus(annoseq->sequence);
+	prepareModels(annoseq->sequence, annoseq->length);
+	annoseq->anno->emiProb = getPathEmiProb(&(*(annoseq->anno->path)), &(*(annoseq->sequence)), sfc);
+	annoseq = annoseq->next;
+    }
 }

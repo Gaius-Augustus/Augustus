@@ -316,67 +316,68 @@ void IntronModel::buildProbabilities(const AnnoSequence* annoseq){
     const AnnoSequence *as = annoseq;
     while (as){
       sequence = as->sequence;
-      curgene = as->anno->genes; // assume here that sequences with multiple genes have already been split
-      gweight = curgene->weight;
-      if (curgene->exons){
-	  // upstream UTR introns and igenic region
-	  processSequence( sequence + k, sequence + curgene->geneBegin()-1-20); // could be more accurate here 
-	  if (curgene->utr5exons) {
-	      // UTR introns
-	      lastexon = curgene->utr5exons;
-	      exon = lastexon->next;
-	      while (exon) {
-		  processSequence (sequence + lastexon->end + 1 + k + Constant::dss_end + DSS_MIDDLE, 
-				   sequence + exon->begin - 1 - Constant::ass_start - ASS_MIDDLE 
-				   - Constant::ass_upwindow_size);
-		  lastexon = exon;
-		  exon = exon->next;
-	      }
-	  }
-	  
-	  // the intronic sequences (separately, so splice site exceptions are ignored here
-	  /*in = curgene->introns;
-	  while( in ){
-	     processSequence(sequence + in->begin + Constant::dss_end + DSS_MIDDLE + k,
-	  	      sequence + in->end - ASS_MIDDLE - Constant::ass_start -
-	  	      Constant::ass_upwindow_size);
-	     in = in->next;
-	     }*/
-	  // splice sites
-	  in = curgene->introns;
-	  while( in ) {
-	      try {
-		  processDSS(sequence, in->begin-1);
-		  processASS(sequence, in->end + 1, true);
-	      } catch (IntronModelError e) {
-		  numErrorSplicesites++;
-		  if (verbosity) {
-		      if (numErrorSplicesites <= 20) { 
-			  cerr << "Sequence " << curgene->seqname << ":" << endl;
-			  cerr << e.getMessage() << endl;
-		      } 
-		      if (numErrorSplicesites == 20) 
-			  cerr << "further detailed output of splice site errors supressed." << endl;
+      curgene = dynamic_cast<const Gene*> (as->anno->genes); // assume here that sequences with multiple genes have already been split
+      if (curgene) {
+	  gweight = curgene->weight;
+	  if (curgene->exons){
+	      // upstream UTR introns and igenic region
+	      processSequence( sequence + k, sequence + curgene->geneBegin()-1-20); // could be more accurate here 
+	      if (curgene->utr5exons) {
+		  // UTR introns
+		  lastexon = curgene->utr5exons;
+		  exon = lastexon->next;
+		  while (exon) {
+		      processSequence (sequence + lastexon->end + 1 + k + Constant::dss_end + DSS_MIDDLE, 
+				       sequence + exon->begin - 1 - Constant::ass_start - ASS_MIDDLE 
+				       - Constant::ass_upwindow_size);
+		      lastexon = exon;
+		      exon = exon->next;
 		  }
 	      }
-	      in = in->next;
+	  
+	      // the intronic sequences (separately, so splice site exceptions are ignored here
+	      /*in = curgene->introns;
+		while( in ){
+		processSequence(sequence + in->begin + Constant::dss_end + DSS_MIDDLE + k,
+		sequence + in->end - ASS_MIDDLE - Constant::ass_start -
+		Constant::ass_upwindow_size);
+		in = in->next;
+		}*/
+	      // splice sites
+	      in = curgene->introns;
+	      while( in ) {
+		  try {
+		      processDSS(sequence, in->begin-1);
+		      processASS(sequence, in->end + 1, true);
+		  } catch (IntronModelError e) {
+		      numErrorSplicesites++;
+		      if (verbosity) {
+			  if (numErrorSplicesites <= 20) { 
+			      cerr << "Sequence " << curgene->seqname << ":" << endl;
+			      cerr << e.getMessage() << endl;
+			  } 
+			  if (numErrorSplicesites == 20) 
+			      cerr << "further detailed output of splice site errors supressed." << endl;
+		      }
+		  }
+		  in = in->next;
+	      }
+	      // downstream UTR introns and igenic region
+	      if (curgene->utr3exons) {
+		  // UTR introns
+		  lastexon = curgene->utr3exons;
+		  exon = lastexon->next;
+		  while (exon) {
+		      processSequence (sequence + lastexon->end + 1 + k + Constant::dss_end + DSS_MIDDLE, 
+				       sequence + exon->begin - 1 - Constant::ass_start - ASS_MIDDLE 
+				       - Constant::ass_upwindow_size);
+		      lastexon = exon;
+		      exon = exon->next;
+		  }
+	      }
+	      processSequence( sequence + curgene->geneEnd() +  1 + k,
+			       sequence + strlen(sequence) - 1 );
 	  }
-	// downstream UTR introns and igenic region
-	if (curgene->utr3exons) {
-	    // UTR introns
-	    lastexon = curgene->utr3exons;
-	    exon = lastexon->next;
-	    while (exon) {
-		processSequence (sequence + lastexon->end + 1 + k + Constant::dss_end + DSS_MIDDLE, 
-				 sequence + exon->begin - 1 - Constant::ass_start - ASS_MIDDLE 
-				 - Constant::ass_upwindow_size);
-		lastexon = exon;
-		exon = exon->next;
-	    }
-	}
-	processSequence( sequence + curgene->geneEnd() +  1 + k,
-			 sequence + strlen(sequence) - 1 );
-
       }
       as = as->next;
     }
@@ -443,7 +444,7 @@ void IntronModel::buildLenDist(const AnnoSequence* annoseq){
     int maxintronlength = 0, len;
     State * tintron;
     for (AnnoSeqGeneIterator geneit = AnnoSeqGeneIterator(annoseq); geneit.hasMoreElements(); ++geneit) {
-	const Gene* curgene = geneit.gene;
+	const Transcript* curgene = geneit.gene;
 	tintron = curgene->introns;
 	while (tintron) {
 	    len = tintron->length();
@@ -467,7 +468,7 @@ void IntronModel::buildLenDist(const AnnoSequence* annoseq){
     // store all intron lengths in intlencount
     intlencount.assign(maxintronlength + 1, 0);   
     for (AnnoSeqGeneIterator geneit = AnnoSeqGeneIterator(annoseq); geneit.hasMoreElements(); ++geneit) {
-	const Gene* curgene = geneit.gene;
+	const Transcript* curgene = geneit.gene;
 	tintron = curgene->introns;
 	while (tintron) {
 	    intlencount[tintron->length()] += 1; //curgene->weight;

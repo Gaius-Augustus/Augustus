@@ -62,27 +62,28 @@ void ExonModel::buildModel( const AnnoSequence* annoseq, int parIndex){
 	numExonsOfType.assign(NUM_TYPES, 0);    
 	numHugeExonsOfType.assign(NUM_TYPES, 0);    
     }
-    const Gene* curgene;
+    const Gene * curgene;
     const AnnoSequence *as = annoseq;
     while (as){
-      sequence = as->sequence;
-      curgene = as->anno->genes; // assume here that sequences with multiple genes have already been split
-      gweight = curgene->weight;
-      if (curgene->clength % 3 == 0) {
-	  try{
-	      if (curgene->exons)
-		  processExons( curgene );
-	  }
-	  catch( ExonModelError& exerr ){
-	      cerr << "ExonModel::buildModel( " << curgene->id << " ):\t"
-		   << exerr.getMessage() << endl << flush;
-	  }
-      } else {
-	  if (verbosity)
-	      cerr << "gene " << curgene->geneid << " transcr. " << curgene->id << " in sequence " << curgene->seqname << ": " 
-		   << "coding length not a multiple of 3. Skipping..." << endl;
-      }
-
+	sequence = as->sequence;
+	curgene = dynamic_cast<Gene*> (as->anno->genes); // assume here that sequences with multiple genes have already been split
+	if (curgene){ // only training with coding genes
+	    gweight = curgene->weight;
+	    if (curgene->clength % 3 == 0) {
+		try{
+		    if (curgene->exons)
+			processExons( curgene );
+		}
+		catch( ExonModelError& exerr ){
+		    cerr << "ExonModel::buildModel( " << curgene->id << " ):\t"
+			 << exerr.getMessage() << endl << flush;
+		}
+	    } else {
+		if (verbosity)
+		    cerr << "gene " << curgene->geneid << " transcr. " << curgene->id << " in sequence " << curgene->seqname << ": " 
+			 << "coding length not a multiple of 3. Skipping..." << endl;
+	    }
+	}
       as = as->next;
     } 
 

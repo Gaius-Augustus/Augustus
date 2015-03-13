@@ -98,7 +98,6 @@
 81  .001    # reverse noncoding internal exon
 82  .001    # reverse noncoding terminal exon
 
-
 # Terminal probabilities (a priori probs for a state ending at
 # the last position.
 # only non-zero probabilities neccessary
@@ -106,7 +105,7 @@
 # number of states where terminating is possible
 83
 # state prob statename
-0  .76     # start intergenic region
+0  .75     # start intergenic region
 1  .003    # single Exon
 2  .001    # initial Exon win 0
 3  .001    # initial Exon win 1
@@ -196,7 +195,7 @@
 [Transition]
 #           -----  Igenic region  -----
 # intergenic region
-0 0     .9999
+0 0     .99986
 # 5' UTR single exon
 0 24	.00003
 # 5' UTR initial exon
@@ -205,9 +204,16 @@
 0 65	.00004
 # reverse 3' UTR terminal exon
 0 70    .00001
+# noncoding single
+0 71    .00001
+# noncoding initial
+0 72    .00001
+# reverse noncoding single
+0 77    .00001
+# reverse noncoding terminal
+0 82    .00001
 #           -----  Single Exon  -----
 # intergenic region
-#1 0	1.0
 # 3' UTR single exon
 1 30      0.8
 # 3' UTR initial exon
@@ -555,7 +561,7 @@
 # ------------------------ forward strand -------------------------- 
 #           -----  noncoding single exon  -----
 # igenic
-71 0     1.0
+71 0     10000000.0
 #           -----  noncoding initial exon  -----
 # noncoding intron single base
 72 73    1.0
@@ -603,8 +609,9 @@
 #           -----  reverse noncoding internal exon  -----
 # reverse noncoding intron single base
 81 79   1.0
-# reverse 5' UTR intron variable length
+# reverse intron variable length
 81 80   1.0
 #           -----  noncoding terminal exon  -----
-# igenic
-82 0     1.0
+82 79   1.0
+# reverse intron variable length
+82 80   1.0

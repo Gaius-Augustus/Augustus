@@ -22,16 +22,14 @@ PhyloTree *OrthoGraph::tree = NULL;
 size_t OrthoGraph::numSpecies;
 
 
-void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
-
+void OrthoGraph::buildGeneList(vector< list<Transcript*>* > &genelist) {
     for (size_t pos = 0; pos < numSpecies; pos++){
-	
-	if(graphs[pos]){
+	if (graphs[pos]){
 	    // delete old genelist
-	    if(genelist[pos]){
+	    if (genelist[pos]){
 		delete genelist[pos];
 	    }
-	    list<Gene> *genes = new list<Gene>;
+	    list<Transcript*> *genes = new list<Transcript*>;
 	    Node* current = graphs[pos]->tail;
 	    Node* head =  graphs[pos]->head;
 	    Node* succExon= NULL;
@@ -39,22 +37,21 @@ void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
 	
 	    // convert node labeling of graph into a list of genes (backtracking from tail)
 
-	    State *intr=current->pred->getIntron(current);
-	    if(intr)
-		addIntronToGene(currentGene,intr);  
+	    State *intr = current->pred->getIntron(current);
+	    if (intr)
+		addIntronToGene(currentGene, intr);  
 
-	    while(current != NULL){
-
-		if(current == head && succExon){
+	    while (current != NULL){
+		if (current == head && succExon){
 		    State *intr = current->getIntron(succExon->pred);
 		    if(intr)
 			addIntronToGene(currentGene,intr);  
 		    setGeneProperties(currentGene);
-		    genes->push_front(*currentGene);
+		    genes->push_front(currentGene);
 		}
 		if(current->n_type == IR && succExon){
 		    setGeneProperties(currentGene);
-		    genes->push_front(*currentGene);
+		    genes->push_front(currentGene);
 		    delete currentGene;
 		    currentGene = new Gene();
 		    succExon = NULL;
@@ -87,27 +84,28 @@ void OrthoGraph::buildGeneList(vector< list<Gene>* > &genelist) {
     }
 }
 
-void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid){
+void OrthoGraph::filterGeneList(vector< list<Transcript*> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid){
     
     for (size_t pos = 0; pos < numSpecies; pos++){	
-	if(genelist[pos]){
-
+	if (genelist[pos]){
 	    AnnoSequence *annoseq = graphs[pos]->getAnnoSeq();
 	    Strand strand = graphs[pos]->getSeqStrand();
 
-	    list<AltGene> *agl = groupTranscriptsToGenes(genelist[pos]);
+	    list<AltGene> *agl = groupTranscriptsToGenes(*genelist[pos]);
 
 	    bool withEvidence = false;
 	    if(sfcs[pos] && sfcs[pos]->collection->hasHintsFile){
 		withEvidence = true;
 		// compile extrinsic evidence
 		for (list<AltGene>::iterator git = agl->begin(); git != agl->end(); git++) {
-		    for (list<Gene*>::iterator trit = git->transcripts.begin(); trit != git->transcripts.end(); trit++) {
-			(*trit)->compileExtrinsicEvidence(sfcs[pos]->groupList);
+		    for (list<Transcript*>::iterator trit = git->transcripts.begin(); trit != git->transcripts.end(); trit++) {
+			Gene *g = dynamic_cast<Gene*> (*trit);
+			if (g)
+			    g->compileExtrinsicEvidence(sfcs[pos]->groupList);
 		    }
 		}
 	    }
-	    if(strand == minusstrand){
+	    if (strand == minusstrand){
 		agl = reverseGeneList(agl, annoseq->length - 1);
 	    }
 
@@ -126,7 +124,7 @@ void OrthoGraph::filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream
 		agit->sortTranscripts();
 
 		transcriptid = 1;
-		for(list<Gene*>::iterator it = agit->transcripts.begin();it != agit->transcripts.end(); ++it ) {
+		for (list<Transcript*>::iterator it = agit->transcripts.begin();it != agit->transcripts.end(); ++it ) {
 		    (*it)->seqname = annoseq->seqname;
 		    (*it)->id = "t" + itoa(transcriptid);
 		    (*it)->geneid = agit->id;
@@ -269,9 +267,9 @@ double OrthoGraph::globalPathSearch(){
     return score;
 }
 
-double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Gene> *> &genelist, int gr_ID, int T, double c){
+double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &genelist, int gr_ID, int T, double c){
 
-    cout<<"dual decomposition on gene Range "<<gr_ID<<endl;
+    cout << "dual decomposition on gene Range " << gr_ID << endl;
     /*
      * initialization
      */

@@ -33,8 +33,8 @@ public:
 	    delete graphs[i];
 	    delete ptrs_to_alltranscripts[i];
 	    delete sfcs[i];
-	    if(geneLists[i])
-		Gene::destroyGeneSequence(getPtr(geneLists[i]));
+	    if (geneLists[i])
+		Transcript::destroyGeneSequence(getPtr(geneLists[i]));
 	}
     }
 
@@ -42,7 +42,7 @@ public:
     vector<SpeciesGraph*> graphs;
     static PhyloTree *tree;
     list<OrthoExon> all_orthoex;
-    vector< list<Gene> *> ptrs_to_alltranscripts; // stores pointers to alltranscripts until they can be deleted (destructor of OrthoGraph)
+    vector< list<Transcript*> *> ptrs_to_alltranscripts; // stores pointers to alltranscripts until they can be deleted (destructor of OrthoGraph)
     vector< SequenceFeatureCollection* > sfcs;  // stores extrinsic evidence for each species
     vector< list<AltGene> *> geneLists; // filtered and processed genes as they appear in the gff files (input of OrthoGene class)
     list<OrthoGene> all_orthogenes; // to be created by Patrick Balmerths code
@@ -56,7 +56,7 @@ public:
      * verical problem: MAP inference on a set of disjoint phylogenetic trees whose
      * leaf nodes are assigned to weights.
      */
-    double dualdecomp(ExonEvo &evo,vector< list<Gene> *> &genelist, int gr_ID, int T, double c);  //main routine
+    double dualdecomp(ExonEvo &evo,vector< list<Transcript*> *> &genelist, int gr_ID, int T, double c);  //main routine
     double treeMAPInf(ExonEvo &evo, int &numInconsistent);  //vertical problem
     double globalPathSearch(); // horizontal problem
     double getStepSize(double c,int t, int v);    // specifies a sequence of steps
@@ -64,10 +64,10 @@ public:
     double init(ExonEvo &evo, int &numInconsistent) ;
 
     // transform graph labeling into list of genes + filter + output
-    void buildGeneList(vector< list<Gene>* > &genelist);
-    void filterGeneList(vector< list<Gene> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid);
+    void buildGeneList(vector< list<Transcript*>* > &genelist);
+    void filterGeneList(vector< list<Transcript*> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid);
     void outputGenes(vector<ofstream*> &filestreams, vector<int> &geneid){
-	vector< list<Gene> *> genelist(numSpecies);
+	vector< list<Transcript*> *> genelist(numSpecies);
 	buildGeneList(genelist);
 	filterGeneList(genelist,filestreams, geneid);
     }

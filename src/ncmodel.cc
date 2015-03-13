@@ -101,7 +101,6 @@ void NcModel::initSnippetProbs() {
     if (snippetProbs)
 	delete snippetProbs;
 
-    cout << "initializing snippet probs" << endl;
     snippetProbs = new SnippetProbs(sequence, IntronModel::k);
     haveSnippetProbs = true;
 }
@@ -141,12 +140,8 @@ void NcModel::computeLengthDistributions(){
     // use recursive formular for NB-distribution to fill in the table
     lenDistSingle.resize(Constant::max_exon_len+1, 0.0);
     lenDistSingle[0] = pow(1-p, r);
-    for (int k=1; k <= Constant::max_exon_len; k++){
-	lenDistSingle[k] = lenDistSingle[k-1] * p * (k+r) / (k+1);
-    }
-    cout << "lenDistSingle[100]  = " << lenDistSingle[100]  << " should be 0.003660507" << endl;
-    cout << "lenDistSingle[1000] = " << lenDistSingle[1000] << " should be 4.681851e-06" << endl;
-    cout << "lenDistSingle[5000] = " << lenDistSingle[5000] << " should be 1.212119e-22" << endl;
+    for (int k=1; k <= Constant::max_exon_len; k++)
+	lenDistSingle[k] = lenDistSingle[k-1] * p * (k+r-1) / k;
     lenDistInternal = lenDistSingle;
 }
 
@@ -343,10 +338,10 @@ Double NcModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
     Double endPartProb = 1, extrinsicQuot = 1;
     switch (nctype) 
 	{
-	case ncsingle: case ncterm: case rncsingle: case rncinit: 
-	    if (end % boundSpacing != 0) // allow transcript starts only on a grid for efficiency
-		endPartProb = 0.0;
-	    break;
+	case ncsingle: case ncterm: 
+	    endPartProb = ttsProbPlus[end]; break;
+	case rncsingle: case rncinit: 
+	    endPartProb = tssProbMinus[end]; break;
 	case ncinit: case ncinternal:
 	    endPartProb = IntronModel::dSSProb(begin, true);
 	    break;
@@ -554,7 +549,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	/*
 	 * Malus computation
 	 */
-	if (seqFeatColl && nep >=5) {
+	if (seqFeatColl && nep >=1) { // was 5
 	    int zeroCov = seqFeatColl->numZeroCov(beginOfBioExon, endOfBioExon, exonpartF, strand);
 	    Double localPartMalus = seqFeatColl->collection->localPartMalus(exonpartF, zeroCov, partBonus, nep);
 	    if (localPartMalus < 1.0/partBonus) // at least have ab initio probabilities
@@ -627,8 +622,8 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 		}
 	    }
 	} 
-    }
-
+    }  
+    
     return sequenceProb * extrinsicQuot;
 }
 
@@ -707,7 +702,7 @@ void NcModel::precomputeTxEndProbs(){
     ttsProbPlus.assign(dnalen+1, 0.0);
     ttsProbMinus.assign(dnalen+1, 0.0);
 
-    // in addition allow and incentivize transcript boundaries when hinted to
+    // allow and incentivize transcript boundaries when hinted to
     f = seqFeatColl->getAllActiveFeatures(tssF);
     while (f) {
 	for (pos = f->start; pos <= f->end; pos++){
@@ -744,17 +739,40 @@ void NcModel::precomputeTxEndProbs(){
 	}
 	f = f->next;
     }
-    // allow transcript boundaries every 10th base (boundSpacing) for efficiency
+
+    // allow transcript boundaries every boundSpacing-th base for efficiency
+    // but only near exonpart hint boundaries
     Double tssMalus = seqFeatColl->collection->malus(tssF);
     Double ttsMalus = seqFeatColl->collection->malus(ttsF);
-    for (pos = 0; pos <= dnalen; pos += boundSpacing) {
-	if (tssProbPlus[pos] == 0)
-	    tssProbPlus[pos] = tssMalus;
-	if (tssProbMinus[pos] == 0)
-	    tssProbMinus[pos] = tssMalus;
-	if (ttsProbPlus[pos] == 0)
-	    ttsProbPlus[pos] = ttsMalus;
-	if (ttsProbMinus[pos] == 0)
-	    ttsProbMinus[pos] = ttsMalus;
+    f = seqFeatColl->getAllActiveFeatures(exonpartF);
+    vector<int> v;
+    v.reserve(3);
+    while (f) {
+	// allow tss and tts near every exonpart boundary
+	v.clear();
+	v.push_back(f->start);
+	v.push_back(boundSpacing * (f->start/boundSpacing));
+	v.push_back(boundSpacing * (1 + f->start/boundSpacing));
+	for (vector<int>::iterator p = v.begin(); p!= v.end(); ++p) {
+	    if (*p >= 0 && *p <= dnalen){ // p a possible left boundary
+		if (tssProbPlus[*p] == 0)
+		    tssProbPlus[*p] = tssMalus;
+		if (ttsProbMinus[*p] == 0)
+		    ttsProbMinus[*p] = ttsMalus;
+	    }
+	}
+	v.clear();
+	v.push_back(f->end);
+	v.push_back(boundSpacing * (f->end/boundSpacing));
+	v.push_back(boundSpacing * (1 + f->end/boundSpacing));
+	for (vector<int>::iterator p = v.begin(); p!= v.end(); ++p){
+	    if (*p >= 0 && *p <= dnalen){ // p a possible right boundary
+		if (tssProbMinus[*p] == 0)
+		    tssProbMinus[*p] = tssMalus;
+		if (ttsProbPlus[*p] == 0)
+		    ttsProbPlus[*p] = ttsMalus;
+	    }
+	}
+	f = f->next;
     }
 }

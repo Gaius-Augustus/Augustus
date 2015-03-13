@@ -96,6 +96,7 @@ int main( int argc, char* argv[] ){
 	} catch (...) {}
 	trainannoseq = traingbank.getAnnoSequenceList();
 	singletrainannoseq = EHMMTraining::split2SingleGeneSeqs(trainannoseq);
+
 	if (!singletrainannoseq){
 	  throw ProjectError("Could not properly read Annotation.");
 	}
@@ -292,7 +293,7 @@ void EHMMTraining::saveConfig(const char* file) {
  * Prerequisite: The genes are in order and non-overlapping.
  * 
  */
-AnnoSequence * EHMMTraining::split2SingleGeneSeqs(const AnnoSequence *multiannoseq) {
+AnnoSequence* EHMMTraining::split2SingleGeneSeqs(const AnnoSequence *multiannoseq) {
   AnnoSequence *singleGeneSeqs=NULL, *singleGeneSeqsTail=NULL;
   AnnoSequence *newAS;
   Gene *g, *newG, *nextgene;
@@ -313,7 +314,7 @@ AnnoSequence * EHMMTraining::split2SingleGeneSeqs(const AnnoSequence *multiannos
 
       pieceIndex = 0;
       pieceBegin = 0;
-      g = multiannoseq->anno->genes;
+      g = dynamic_cast<Gene*> (multiannoseq->anno->genes);
       multiGene = (g && g->next);
       int skipped = 0;
       while (g) { // loop over all genes of a certain anno sequence
@@ -327,7 +328,7 @@ AnnoSequence * EHMMTraining::split2SingleGeneSeqs(const AnnoSequence *multiannos
 	// search for the next gene that is completely to the right of g
 	skipped--;
 	while (nextgene && (pieceEnd <= geneEnd)){
-	  nextgene = nextgene->next;
+	  nextgene = (Gene*) nextgene->next;
 	  skipped++;
 	  // --------**** g ****------------***** g->next ******---------
 	  //                          X

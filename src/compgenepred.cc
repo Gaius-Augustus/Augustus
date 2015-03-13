@@ -245,7 +245,7 @@ void CompGenePred::start(){
                 } else {
 		    seqRanges[s] = as; // DNA seqs will be reused when omega is computed AND gene lists are processed for output  
 
-		    list<Gene> *transcripts = NULL;
+		    list<Transcript*> *transcripts = NULL;
 
 		    if (!noprediction){
 			SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
@@ -260,23 +260,24 @@ void CompGenePred::start(){
 			    as->sequence[pos] = tolower(as->sequence[pos]);
 		    }
 		    // insert sampled exons into the EC hash
-		    if(transcripts){			    
-			for (list<Gene>::iterator geneit = transcripts->begin(); geneit != transcripts->end(); geneit++) {
-			    State *st = geneit->exons;
- 			    while(st){
-				// include framemod into type
-				st->includeFrameModIntoType();
-				ExonCandidate *ec = new ExonCandidate(toExonType(stateTypeIdentifiers[st->type]),st->begin,st->end);
-				int_fast64_t key = ec->getKey();
-				map<int_fast64_t, ExonCandidate*>::iterator ecit;
-				ecit = exoncands[s].find(key);
-				if (ecit == exoncands[s].end()){ // insert new EC
-				    exoncands[s].insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+		    if (transcripts){			    
+			for (list<Transcript*>::iterator geneit = transcripts->begin(); geneit != transcripts->end(); geneit++) {
+			    if ((*geneit)->isCoding()){ // noncoding comparative prediction not (yet) implemented
+				State *st = (*geneit)->exons;
+				while (st){
+				    // include framemod into type
+				    st->includeFrameModIntoType();
+				    ExonCandidate *ec = new ExonCandidate(toExonType(stateTypeIdentifiers[st->type]),st->begin,st->end);
+				    int_fast64_t key = ec->getKey();
+				    map<int_fast64_t, ExonCandidate*>::iterator ecit;
+				    ecit = exoncands[s].find(key);
+				    if (ecit == exoncands[s].end()){ // insert new EC
+					exoncands[s].insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+				    } else {
+					delete ec;
+				    }
+				    st = st->next;
 				}
-				else{
-				    delete ec;
-				}
-				st = st->next;
 			    }
 			}
 		    }
@@ -284,7 +285,7 @@ void CompGenePred::start(){
 	    }
 	}
 	// liftover of sampled exons to other species
-	vector<int> offsets=geneRange->getOffsets();
+	vector<int> offsets = geneRange->getOffsets();
 	LiftOver lo(geneRange->getAlignment(), offsets);
 	map<int_fast64_t, list<pair<int,ExonCandidate*> > > alignedECs; // hash of aligned ECs
 	lo.projectToAli(exoncands,alignedECs);
@@ -313,13 +314,13 @@ void CompGenePred::start(){
 	// build graph from sampled gene structures and additional ECs
         for (int s = 0; s < speciesNames.size(); s++) {	    
 	    if (orthograph.ptrs_to_alltranscripts[s]){
-		list<Gene> *alltranscripts = orthograph.ptrs_to_alltranscripts[s];
+		list<Transcript*> *alltranscripts = orthograph.ptrs_to_alltranscripts[s];
 		cout << "building Graph for " << speciesNames[s] << endl;
 		// build datastructure for graph representation
 		// @stlist : list of all sampled states
 		list<Status> stlist;
-		if(!alltranscripts->empty()){
-		    buildStatusList(alltranscripts, Constant::utr_option_on, stlist);
+		if (!alltranscripts->empty()){
+		    buildStatusList(*alltranscripts, Constant::utr_option_on, stlist);
 		}
 		// build graph
 		orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRanges[s], geneRange->getExonCands(s), speciesNames[s], 
@@ -361,7 +362,7 @@ void CompGenePred::start(){
 	    }	    
 	    if(!orthograph.all_orthoex.empty()){
 		// optimization via dual decomposition
-		vector< list<Gene> *> genelist(OrthoGraph::numSpecies);
+		vector< list<Transcript*> *> genelist(OrthoGraph::numSpecies);
 		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factor);
 		orthograph.filterGeneList(genelist,optGenes,opt_geneid);
 		orthograph.createOrthoGenes(geneRange);

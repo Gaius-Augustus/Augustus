@@ -22,28 +22,28 @@
 #include <iomanip>  // for setw, setprecision
 
 
-void Evaluation::addToEvaluation(Gene *predictedGenes, Gene *annotatedGenes, Strand strand, Double quotient){
+void Evaluation::addToEvaluation(Transcript *predictedGenes, Transcript *annotatedGenes, Strand strand, Double quotient){
     // find flanking regions on both sides (any strand)
     leftFlankEnd=-1, rightFlankBegin=-1;
-    for (Gene* a = annotatedGenes; a != NULL; a = a->next){
+    for (Transcript* a = annotatedGenes; a != NULL; a = a->next){
 	if ((leftFlankEnd == -1 && a->geneBegin() > 0) || (leftFlankEnd >=0 && a->geneBegin() - 1 < leftFlankEnd))
 	    leftFlankEnd = a->geneBegin() - 1;
 	if (rightFlankBegin == -1 || a->geneEnd() + 1 > rightFlankBegin)
 	    rightFlankBegin = a->geneEnd() + 1;
     }
     if (rightFlankBegin == -1)
-	for (Gene* p = predictedGenes; p != NULL; p = p->next)
+	for (Transcript* p = predictedGenes; p != NULL; p = p->next)
 	    if (p->geneEnd() + 1 > rightFlankBegin)
 		rightFlankBegin = p->geneEnd() + 1;
     //cout << "leftFlankEnd=" << leftFlankEnd << " rightFlankBegin=" << rightFlankBegin << endl;
 
     int oldgeneFN = geneFN;
-    Gene *predFW, *predBW, *annoFW, *annoBW;
+    Transcript *predFW, *predBW, *annoFW, *annoBW;
     
-    predFW = Gene::getGenesOnStrand(predictedGenes, plusstrand);
-    predBW = Gene::getGenesOnStrand(predictedGenes, minusstrand);
-    annoFW = Gene::getGenesOnStrand(annotatedGenes, plusstrand);
-    annoBW = Gene::getGenesOnStrand(annotatedGenes, minusstrand);  
+    predFW = Transcript::getGenesOnStrand(predictedGenes, plusstrand);
+    predBW = Transcript::getGenesOnStrand(predictedGenes, minusstrand);
+    annoFW = Transcript::getGenesOnStrand(annotatedGenes, plusstrand);
+    annoBW = Transcript::getGenesOnStrand(annotatedGenes, minusstrand);  
     if (strand == bothstrands || strand == plusstrand) {
 	addToEvaluation(predFW, annoFW);
     }
@@ -65,30 +65,26 @@ void Evaluation::addToEvaluation(Gene *predictedGenes, Gene *annotatedGenes, Str
 	quotients.push_front(quotient);
 
     // delete the gene sequences of the strands
-    Gene::destroyGeneSequence(predFW);
-    Gene::destroyGeneSequence(predBW);
-    Gene::destroyGeneSequence(annoFW);
-    Gene::destroyGeneSequence(annoBW);
+    Transcript::destroyGeneSequence(predFW);
+    Transcript::destroyGeneSequence(predBW);
+    Transcript::destroyGeneSequence(annoFW);
+    Transcript::destroyGeneSequence(annoBW);
 }
 
 
 /*
  * add one dataset to the evaluation
  */
-void Evaluation::addToEvaluation(Gene* predictedGeneList, Gene* annotatedGeneList){
+void Evaluation::addToEvaluation(Transcript* predictedGeneList, Transcript* annotatedGeneList){
 #ifdef DEBUG
     // for analysis only
     if (!predictedGeneList && annotatedGeneList)
 	cerr << "In strand containing " << annotatedGeneList->id << " nothing was found." << endl;
     // end for analysis only
-    for (Gene *pg = predictedGeneList; pg != NULL; pg = pg->next) {
-	for (State *intron = pg->introns; intron != NULL; intron = intron->next) {
-	    if (intron->length()>longestPredIntronLen){
+    for (Transcript *pg = predictedGeneList; pg != NULL; pg = pg->next)
+	for (State *intron = pg->introns; intron != NULL; intron = intron->next)
+	    if (intron->length()>longestPredIntronLen)
 		longestPredIntronLen = intron->length();
-		//cout << "new intron length record: " << pg->seqname << ", " << intron->length() << endl;
-	    }
-	}
-    }
 #endif
 
     /*
@@ -103,7 +99,7 @@ void Evaluation::addToEvaluation(Gene* predictedGeneList, Gene* annotatedGeneLis
      */
     list<State> *predictedExons=new list<State>, *annotatedExons=new list<State>;
     State *st;
-    const Gene *g;
+    const Transcript *g;
 
     g = predictedGeneList;
     while (g) {
@@ -468,19 +464,19 @@ void Evaluation::evaluateOnExonLevel(list<State> *predictedExon, list<State> *an
     }
 }
 
-void Evaluation::evaluateQuickOnGeneLevel(Gene* const predictedGeneList, Gene* const annotatedGeneList){
-   Gene *examined, *firstOverlap;
+void Evaluation::evaluateQuickOnGeneLevel(Transcript* const predictedGeneList, Transcript* const annotatedGeneList){
+   Transcript *examined, *firstOverlap;
    State *aexon, *pexon;
 
    /*
     * Check for each annotated Gene, whether it is completely correct predicted
     */
    firstOverlap = predictedGeneList;
-   for(examined = annotatedGeneList; examined != NULL; examined = examined->next) {
+   for(examined = annotatedGeneList; examined != NULL; examined = (Gene*) examined->next) {
        numAnnoGenes++;
-       while(firstOverlap && firstOverlap->exons->begin < examined->exons->begin) {
+       while (firstOverlap && firstOverlap->exons->begin < examined->exons->begin)
 	   firstOverlap = firstOverlap->next;
-       }
+
        if (firstOverlap) {
 	   aexon = examined->exons;
 	   pexon = firstOverlap->exons;
@@ -489,9 +485,6 @@ void Evaluation::evaluateQuickOnGeneLevel(Gene* const predictedGeneList, Gene* c
 	       pexon = pexon->next;
 	   }
 	   if (aexon == NULL && pexon == NULL && firstOverlap->complete) {
-#ifdef DEBUG
-	       cout << "correct gene: " << examined->geneid << endl;
-#endif
 	       geneTP++;
 	   } else {
 	       geneFN++;
@@ -504,21 +497,19 @@ void Evaluation::evaluateQuickOnGeneLevel(Gene* const predictedGeneList, Gene* c
    /*
     * Count the number of ((complete)) predicted Genes
     */
-   for(examined = predictedGeneList; examined != NULL; examined = examined->next) {
-       //if (examined->complete)
-	   numPredGenes++;
-   }
+   for (examined = predictedGeneList; examined != NULL; examined = examined->next)
+       numPredGenes++;
 }
 
-void Evaluation::evaluateOnGeneLevel(Gene* const predictedGeneList, Gene* const annotatedGeneList){
-   Gene *examined, *pred, *previous;
+void Evaluation::evaluateOnGeneLevel(Transcript* const predictedGeneList, Transcript* const annotatedGeneList){
+   Transcript *examined, *pred, *previous;
    State *aexon, *pexon;
    bool correctPredicted;
    /*
     * Check for each annotated Gene, whether it is completely correct predicted
     */
 
-   for(examined = annotatedGeneList; examined != NULL; examined = examined->next) {
+   for(examined = annotatedGeneList; examined != NULL; examined = (Gene*) examined->next) {
        numAnnoGenes++;
        correctPredicted = false;
        for (pred = predictedGeneList; pred != NULL && !correctPredicted; pred = pred->next) {
@@ -530,9 +521,6 @@ void Evaluation::evaluateOnGeneLevel(Gene* const predictedGeneList, Gene* const 
 	       pexon = pexon->next;
 	   }
 	   if (aexon == NULL && pexon == NULL && pred->complete) {
-#ifdef DEBUG
-	       cout << "correct gene: " << examined->id << endl;
-#endif
 	       correctPredicted = true;
 	   }
        }
@@ -545,10 +533,10 @@ void Evaluation::evaluateOnGeneLevel(Gene* const predictedGeneList, Gene* const 
    /*
     * Count the number of ((complete)) predicted CDS
     */
-   for(examined = predictedGeneList; examined != NULL; examined = examined->next) {
+   for (examined = predictedGeneList; examined != NULL; examined = examined->next) {
        bool seen = false;
        for (previous = predictedGeneList; previous != examined && previous != NULL && !seen; previous = previous->next) {
-	   if (previous->identicalCDS(examined))
+	   if (*previous == *examined)
 	       seen = true;
        }
        if (!seen)
@@ -556,61 +544,71 @@ void Evaluation::evaluateOnGeneLevel(Gene* const predictedGeneList, Gene* const 
    }
 }
 
-void Evaluation::evaluateOnUTRLevel(Gene* const predictedGeneList, Gene* const annotatedGeneList){
-  Gene *examined, *pred;
+void Evaluation::evaluateOnUTRLevel(Transcript* const predictedGeneList, Transcript* const annotatedGeneList){
+  Transcript *examined, *pred;
+  Gene * examinedG, *predG;
   int predTSS, annoTSS, predTIS, annoTIS, diff;
   int predTTS, annoTTS, predSTP, annoSTP;
   /*
    * Check for each predicted gene, whether it has a TSS
    * and whether an annotated gene with the same translation start site exists
    */
-  for(pred = predictedGeneList; pred != NULL; pred = pred->next) {
-    predTSS = (pred->strand == plusstrand)? pred->transstart : pred->transend;
-    predTIS = (pred->strand == plusstrand)? pred->codingstart : pred->codingend;
-    //cout << "predTIS=" << predTIS << ", predTSS=" << predTSS << endl;
-    if (predTSS >= 0){
-      numTotalPredTSS++;
-      for (examined = annotatedGeneList; examined != NULL; examined = examined->next) {
-	annoTSS = (examined->strand == plusstrand)? examined->transstart : examined->transend;
-	annoTIS = (examined->strand == plusstrand)? examined->codingstart : examined->codingend;
-	//cout << "annoTIS=" << annoTIS << ", annoTSS=" << annoTSS << endl;
-	if (annoTIS == predTIS && annoTSS >= 0){
-	  diff = predTSS - annoTSS;
-	  //cout << "TIS=" <<predTIS << ", annoTSS=" << annoTSS << ", predTSS=" << predTSS << ", diff= " << diff << endl;
-	  if (diff<0)
-	    diff = -diff;
-	  numTSS++;
-	  if (diff<= MAXUTRDIST)
-	    tssDist[diff]++;
-	}
+  for (pred = predictedGeneList; pred != NULL; pred = pred->next) {
+      predG = dynamic_cast<Gene*>(pred);
+      if (!predG)
+	  continue; // ignore non-coding genes;
+      
+      predTSS = (predG->strand == plusstrand)? predG->transstart : predG->transend;
+      predTIS = (predG->strand == plusstrand)? predG->codingstart : predG->codingend;
+      if (predTSS >= 0){
+	  numTotalPredTSS++;
+	  for (examined = annotatedGeneList; examined != NULL; examined = examined->next) {
+	      examinedG = dynamic_cast<Gene*>(examined);
+	      if (!examinedG)
+		  continue; // ignore non-coding genes;
+   
+	      annoTSS = (examinedG->strand == plusstrand)? examinedG->transstart : examinedG->transend;
+	      annoTIS = (examinedG->strand == plusstrand)? examinedG->codingstart : examinedG->codingend;
+	      if (annoTIS == predTIS && annoTSS >= 0){
+		  diff = predTSS - annoTSS;
+		  if (diff < 0)
+		      diff = -diff;
+		  numTSS++;
+		  if (diff <= MAXUTRDIST)
+		      tssDist[diff]++;
+	      }
+	  }
       }
-    }
   }
   /*
    * Check for each predicted gene, whether it has a TTS
    * and whether an annotated gene with the same stop codon exists
    */
-  for(pred = predictedGeneList; pred != NULL; pred = pred->next) {
-    predTTS = (pred->strand == plusstrand)? pred->transend : pred->transstart;
-    predSTP = (pred->strand == plusstrand)? pred->codingend : pred->codingstart;
-    //cout << "predSTP=" << predSTP << ", predTTS=" << predTTS << endl;
-    if (predTTS >= 0){
-      numTotalPredTTS++;
-      for (examined = annotatedGeneList; examined != NULL; examined = examined->next) {
-	annoTTS = (examined->strand == plusstrand)? examined->transend : examined->transstart;
-	annoSTP = (examined->strand == plusstrand)? examined->codingend : examined->codingstart;
-	//cout << "annoSTP=" << annoSTP << ", annoTTS=" << annoTTS << endl;
-	if (annoSTP == predSTP && annoTTS >= 0){
-	  diff = predTTS - annoTTS;
-	  //cout << "STP=" << predSTP << ", annoTTS=" << annoTTS << ", predTTS=" << predTTS << ", diff= " << diff << endl;
-	  if (diff<0)
-	    diff = -diff;
-	  numTTS++;
-	  if (diff <= MAXUTRDIST)
-	    ttsDist[diff]++;
-	}
+  for (pred = predictedGeneList; pred != NULL; pred = pred->next) {
+      predG = dynamic_cast<Gene*>(pred);
+      if (!predG)
+	  continue; // ignore non-coding genes;
+   
+      predTTS = (predG->strand == plusstrand)? predG->transend : predG->transstart;
+      predSTP = (predG->strand == plusstrand)? predG->codingend : predG->codingstart;
+      if (predTTS >= 0){
+	  numTotalPredTTS++;
+	  for (examined = annotatedGeneList; examined != NULL; examined = examined->next) {
+	      examinedG = dynamic_cast<Gene*>(examined);
+	      if (!examinedG)
+		  continue; // ignore non-coding genes;
+	      annoTTS = (examinedG->strand == plusstrand)? examinedG->transend : examinedG->transstart;
+	      annoSTP = (examinedG->strand == plusstrand)? examinedG->codingend : examinedG->codingstart;
+	      if (annoSTP == predSTP && annoTTS >= 0){
+		  diff = predTTS - annoTTS;
+		  if (diff<0)
+		      diff = -diff;
+		  numTTS++;
+		  if (diff <= MAXUTRDIST)
+		      ttsDist[diff]++;
+	      }
+	  }
       }
-    }
   }
 
   /* evaluate on non-coding exons
@@ -619,36 +617,43 @@ void Evaluation::evaluateOnUTRLevel(Gene* const predictedGeneList, Gene* const a
    */
   list<State> *predictedUTRExons=new list<State>, *annotatedUTRExons=new list<State>;
   State *st;
+  const Transcript *t;
   const Gene *g;
 
-  g = predictedGeneList;
-  while (g) {
-    st = g->utr5exons;
-    while (st) {
-      predictedUTRExons->push_back(*st);
-      st = st->next;
-    }
-    st = g->utr3exons;
-    while (st) {
-      predictedUTRExons->push_back(*st);
-      st = st->next;
-    }
-    g = g->next;
+  t = predictedGeneList;
+  while (t) {
+      g = dynamic_cast<const Gene*>(t);
+      if (g) {
+	  st = g->utr5exons;
+	  while (st) {
+	      predictedUTRExons->push_back(*st);
+	      st = st->next;
+	  }
+	  st = g->utr3exons;
+	  while (st) {
+	      predictedUTRExons->push_back(*st);
+	      st = st->next;
+	  }
+      }
+      t = t->next;
   }
 
-  g = annotatedGeneList;
-  while (g) {
-    st = g->utr5exons;
-    while (st) {
-      annotatedUTRExons->push_back(*st);
-      st = st->next;
-    }
-    st = g->utr3exons;
-    while (st) {
-      annotatedUTRExons->push_back(*st);
-      st = st->next;
-    }
-    g = g->next;
+  t = annotatedGeneList;
+  while (t) {
+      g = dynamic_cast<const Gene*>(t);
+      if (g) {
+	  st = g->utr5exons;
+	  while (st) {
+	      annotatedUTRExons->push_back(*st);
+	      st = st->next;
+	  }
+	  st = g->utr3exons;
+	  while (st) {
+	      annotatedUTRExons->push_back(*st);
+	      st = st->next;
+	  }
+      }
+      t = t->next;
   }
   numAnnoUTRExons += annotatedUTRExons->size();
   numPredUTRExons += predictedUTRExons->size();
@@ -860,14 +865,12 @@ Evaluation* predictAndEvaluate(vector<AnnoSequence*> trainGeneList, FeatureColle
 	sfc.prepare(evalGene, false);
 	viterbiPath = namgene.getTrainViterbiPath(evalGene->sequence, &sfc);
 	condensedViterbiPath = StatePath::condenseStatePath(viterbiPath);
-	Gene* viterbiGenes = condensedViterbiPath->projectOntoGeneSequence("v");
+	Transcript* viterbiGenes = condensedViterbiPath->projectOntoGeneSequence("v");
 	// condensedViterbiPath->print();
-	// if (viterbiGenes)
-	//   printGeneList(viterbiGenes, evalGene, false, false);
 	eval->addToEvaluation(viterbiGenes, evalGene->anno->genes, bothstrands);
 	delete viterbiPath;
 	delete condensedViterbiPath;
-	Gene::destroyGeneSequence(viterbiGenes);
+	Transcript::destroyGeneSequence(viterbiGenes);
     }
     inCRFTraining = crf;
     return eval;

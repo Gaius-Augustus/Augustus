@@ -444,7 +444,7 @@ void CRF::onlineLargeMarginTraining(Parameters* parameters, vector<AnnoSequence*
 		viterbiPath = namgene.getTrainViterbiPath(as->sequence, sfcs[i+u]);
 		condensedViterbiPath = StatePath::condenseStatePath(viterbiPath);
 		//condensedViterbiPath->print();
-		Gene* viterbiGenes = condensedViterbiPath->projectOntoGeneSequence("v");
+		Gene* viterbiGenes = (Gene*) condensedViterbiPath->projectOntoGeneSequence("v");
 		if (viterbiGenes && round < 4)
 		    printGeneList(viterbiGenes, as, false, false);
 		/*
@@ -817,7 +817,7 @@ void CRF::improvedIterativeScaling(Parameters* parameters, vector<AnnoSequence*>
 }
 
 
-double CRF::lossFct(Gene* correct, Gene* predicted){
+double CRF::lossFct(Transcript* correct, Transcript* predicted){
     Evaluation eval;
     eval.addToEvaluation(predicted, correct, bothstrands);
     cout << "nukFP=" << eval.nukFP << " nukFPinside=" << eval.nukFPinside << " nukFN=" << eval.nukFN << " nucUFPinside=" << eval.nucUFPinside << " nucUFN=" << eval.nucUFN << endl;

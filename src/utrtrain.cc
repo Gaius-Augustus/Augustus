@@ -101,32 +101,34 @@ void UtrModel::buildModel( const AnnoSequence* annoseq, int parIndex){
  * UtrModel::buildProbabilities
  */
 void UtrModel::buildProbabilities(const AnnoSequence* annoseq){
-    Gene *curgene;
+    const Gene *curgene;
     const AnnoSequence *as = annoseq;
     while (as){
 	sequence = as->sequence;
-	curgene = as->anno->genes; // assume here that sequences with multiple genes have already been split
-	gweight = curgene->weight;
-	if (curgene->utr5exons || curgene->utr3exons){
-	    try {
-		processStates(curgene);
-	    } catch (UtrModelError e) {
-		cerr << "Sequence " << curgene->seqname << ":" << endl;
-		cerr << e.getMessage() << endl;
+	curgene = dynamic_cast<const Gene*> (as->anno->genes); // assume here that sequences with multiple genes have already been split
+	if (curgene){
+	    gweight = curgene->weight;
+	    if (curgene->utr5exons || curgene->utr3exons){
+		try {
+		    processStates(curgene);
+		} catch (UtrModelError e) {
+		    cerr << "Sequence " << curgene->seqname << ":" << endl;
+		    cerr << e.getMessage() << endl;
+		}
 	    }
-	}
 	
-	/*
-	  if (curgene->utr3exons){
+	    /*
+	      if (curgene->utr3exons){
 	  
-	  if (curgene->utr3exons->next == NULL)
-	  cout << "3utr no intron. length " << curgene->utr3exons->length() << endl;
-	  else {
-	  cout << "3utr intron. distance " << curgene->utr3exons->end - curgene->lastExon()->end << endl;
-	  if (curgene->utr3exons->end - curgene->lastExon()->end > 50)
-	  cout << "gene disobeys 50 nt rule " << curgene->geneid << endl;
-	  }
-	  }*/
+	      if (curgene->utr3exons->next == NULL)
+	      cout << "3utr no intron. length " << curgene->utr3exons->length() << endl;
+	      else {
+	      cout << "3utr intron. distance " << curgene->utr3exons->end - curgene->lastExon()->end << endl;
+	      if (curgene->utr3exons->end - curgene->lastExon()->end > 50)
+	      cout << "gene disobeys 50 nt rule " << curgene->geneid << endl;
+	      }
+	      }*/
+	}
 	as = as->next;
     }
     
@@ -180,33 +182,33 @@ void UtrModel::registerPars (Parameters* parameters){
  * UtrModel::buildTSSModel
  */
 void UtrModel::buildTSSModel(const AnnoSequence* annoseq){
-  Gene *curgene;
-  int dnalen;
-  while (annoseq){
-    curgene = annoseq->anno->genes; // assume here that sequences with multiple genes have already been split
-    if (curgene->utr5exons){
-      try {
-	dnalen = strlen(annoseq->sequence);
-	int tsspos = curgene->utr5exons->begin;
-	if ((tsspos - Constant::tss_upwindow_size) > 0 && (tsspos + tss_end - 1 < dnalen)){
-	  //cout << "good TSS: " << curgene->seqname << " "; 
-	  processTSS(annoseq->sequence + tsspos - Constant::tss_upwindow_size);
+    const Gene *curgene;
+    int dnalen;
+    while (annoseq){
+	curgene = dynamic_cast<Gene*> (annoseq->anno->genes); // assume here that sequences with multiple genes have already been split
+	if (curgene && curgene->utr5exons){
+	    try {
+		dnalen = strlen(annoseq->sequence);
+		int tsspos = curgene->utr5exons->begin;
+		if ((tsspos - Constant::tss_upwindow_size) > 0 && (tsspos + tss_end - 1 < dnalen)){
+		    //cout << "good TSS: " << curgene->seqname << " "; 
+		    processTSS(annoseq->sequence + tsspos - Constant::tss_upwindow_size);
+		}
+	    } catch (UtrModelError e) {
+		cerr << "Sequence " << curgene->seqname << ":" << endl;
+		cerr << e.getMessage() << endl;
+	    }
 	}
-      } catch (UtrModelError e) {
-	cerr << "Sequence " << curgene->seqname << ":" << endl;
-	cerr << e.getMessage() << endl;
-      }
+	annoseq = annoseq->next;
     }
-    annoseq = annoseq->next;
-  }
-  /*
-   * determine emission probabilities of tss_upwindow
-   */
+    /*
+     * determine emission probabilities of tss_upwindow
+     */
 
-  vector<Double> patternprobs(tssup_emicount.size());
-  makeProbsFromCounts(patternprobs, tssup_emicount, tssup_k, tssup_patpseudo, false);
-  tssup_emiprobs.resize(tssup_emicount.size());
-  computeEmiFromPat(patternprobs, tssup_emiprobs, tssup_k);
+    vector<Double> patternprobs(tssup_emicount.size());
+    makeProbsFromCounts(patternprobs, tssup_emicount, tssup_k, tssup_patpseudo, false);
+    tssup_emiprobs.resize(tssup_emicount.size());
+    computeEmiFromPat(patternprobs, tssup_emiprobs, tssup_k);
 }
 
 /*
@@ -258,8 +260,8 @@ void UtrModel::buildTTSModel(const AnnoSequence* annoseq){
       aataaa_probs[s2i(polyasig_consensus.c_str())] = 0.01; // this needs to be extended appropriately
   }
   while (annoseq){
-      curgene = annoseq->anno->genes; // assume here that sequences with multiple genes have already been split
-      if (curgene->complete3utr && curgene->transend >= 0){
+      curgene = dynamic_cast<Gene*> (annoseq->anno->genes); // assume here that sequences with multiple genes have already been split
+      if (curgene && curgene->complete3utr && curgene->transend >= 0){
 	  // search for best matching pattern
 	  bool found = false;
 	  int bestpos = 999;

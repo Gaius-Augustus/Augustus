@@ -3,7 +3,7 @@
  * licence: Artistic Licence, see file LICENCE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  * descr.:  
- * authors: Mario Stanke, mario@gobics.de
+ * authors: Mario Stanke, mario.stanke@uni-greifswald.de
  *
  **********************************************************************/
 
@@ -17,10 +17,17 @@
 
 
 // Forward declarations
+class State;
+class Transcript;
+class Gene;
 class AltGene;
 class AnnoSequence;
-class State;
-class Gene;
+
+template<class T>
+struct ptr_comparison
+{
+    bool operator()(T* a, T* b) { return *a < *b; } 
+};
 
 class SrcEvidence {
 public:
@@ -197,8 +204,8 @@ public:
 
     void print();
     static StatePath* condenseStatePath(StatePath *oldpath);
-    Gene* projectOntoGeneSequence(const char *genenames);
-    static StatePath* getInducedStatePath(Gene *genelist, int dnalen, bool printErrors=true);
+    Transcript* projectOntoGeneSequence(const char *genenames);
+    static StatePath* getInducedStatePath(Transcript *genelist, int dnalen, bool printErrors=true);
     void reverse();
     bool operator== (const StatePath &other) const;
     bool operator< (const StatePath &other) const;
@@ -216,97 +223,160 @@ public:
 
 int lenStateList(State *head);
 
- 
 /**
- * class Gene (transcript)
+ * class Transcript
+ * a single splice version, not neccessarily coding
  */
-class Gene {
+class Transcript {
 public:
-  Gene() {
-    exons    = introns = utr5exons = utr3exons = utr5introns = utr3introns = (State*) 0;
-    length   = clength = 0;
-    seqname  = id = source = "";
-    next     = (Gene*) 0;
-    weight   = 1;
-    complete = true;
-    strand   = plusstrand;
-    frame    = 0;
-    transstart = transend = -1;
-    complete5utr = complete3utr = true;
-    apostprob = 0.0;
-    hasProbs = false;
-    throwaway = false;
-    viterbi = true;
-    codingstart = codingend = -1;
-    supportingEvidence = incompatibleEvidence = CDSexonEvidence = CDSintronEvidence = UTR5stateEvidence = UTR3stateEvidence = NULL;
-  }
-  Gene(const Gene& other);
-
-  Gene *cloneGeneSequence(){
-    Gene *erg = new Gene(*this);
-    if (next)
-      erg->next = next->cloneGeneSequence();
-    else 
-      erg->next = NULL;
-    return erg;
-  }
-  ~Gene(){
-    State* st, *tmp;
-    State* states[6];
-    states[0] = exons;
-    states[1] = introns;
-    states[2] = utr5exons;
-    states[3] = utr3exons;
-    states[4] = utr5introns;
-    states[5] = utr3introns;
-    for (int i=0; i<6; i++) {
-	st = states[i];
-	while( st ){
-	    tmp = st->next;
-	    delete st;
-	    st = tmp;
+    Transcript() {
+	exons = introns = (State*) NULL;
+	transstart = transend = -1;
+	seqname = id = source = "";
+	strand = plusstrand;
+	complete = true;
+	apostprob = 0.0;
+	hasProbs = false;
+	throwaway = false;
+	viterbi = true;
+    }
+    Transcript(const Transcript& other);
+    virtual ~Transcript(){
+	State *st, *tmp;
+	list<State*> sl = getExInInHeads();
+	for (list<State*>::iterator it = sl.begin(); it != sl.end(); ++it){
+	    st = *it;
+	    while( st ){
+		tmp = st->next;
+		delete st;
+		st = tmp;
+	    }
 	}
     }
-    if (supportingEvidence)
-	delete supportingEvidence;
-    if (incompatibleEvidence)
-	delete incompatibleEvidence;
-    if (CDSintronEvidence)
-	delete CDSintronEvidence;
-    if (CDSexonEvidence)
-	delete CDSexonEvidence;
-    if (UTR5stateEvidence)
-	delete UTR5stateEvidence;
-    if (UTR3stateEvidence)
-	delete UTR3stateEvidence;
-  }
-  char* getCodingSequence(AnnoSequence *annoseq = NULL) const;
-  bool hasInFrameStop(AnnoSequence *annoseq) const;
-  // void computeBC(char *seq);
+    virtual Transcript* clone() {return new Transcript(*this);}
+    Transcript *cloneGeneSequence(){
+	Transcript *res = clone(); // returns a Transcript or a Gene as appropriate
+	if (next)
+	    res->next = next->cloneGeneSequence();
+	else 
+	    res->next = NULL;
+	return res;
+    }
+    static void destroyGeneSequence(Transcript *head) {
+	Transcript* nextHead = head;
+	while (nextHead) {
+	    head = nextHead;
+	    nextHead = nextHead->next;
+	    delete head;
+	}
+    }
+    void addStatePostProbs(float p);
+    void setStatePostProbs(float p);
+    void addSampleCount(int k);
+    void setSampleCount(int k);
+    virtual int geneBegin() const { return transstart;}
+    virtual int geneEnd() const { return transend;}
+    virtual bool isCoding() const { return false; }
+    bool operator< (const Transcript &other) const;
+    bool operator== (const Transcript &other) const;
+    void normPostProb(float n);
+    void updatePostProb(Transcript* other);
+    virtual list<State*> getExInHeads() const {
+	list<State*> L;
+	L.push_back(exons);
+	L.push_back(introns);
+	return L;
+    }
+    virtual list<State*> getExInInHeads() const { return getExInHeads();}
+    double meanStateProb();
+    virtual void shiftCoordinates(int d);
+    virtual bool almostIdenticalTo(Transcript *other);
+    virtual void printCodingSeq(AnnoSequence *annoseq) const {}; // print nothing
+    virtual void printProteinSeq(AnnoSequence *annoseq) const {};// for noncoding
+    virtual void printBlockSequences(AnnoSequence *annoseq) const {}; // genes
+    virtual void printGFF() const;
+    virtual void printEvidence() const {}; // implemented only for coding genes
+    void setStateHasScore(bool has);
+    static Transcript* getGenesOnStrand(Transcript* genes, Strand strand);
+    static void filterTranscriptsByMaxTracks(list<Transcript*> &gl, int maxTracks);
+    virtual double supportingFraction(HintGroup *group) {return 0.0;}
+public:
+    State*      exons; // the exons (not UTR)
+    State*      introns; // the introns between 'exons'
+    int         transstart, transend; // transcription boundaries, -1 if not known
+    Transcript* next;
+    string  id;       // transcript id
+    string  seqname;
+    string  source;
+    Strand  strand;
+    Boolean complete; //coding region is complete
+    string  geneid;   // id of the AltGene
+    float   apostprob;
+    bool    hasProbs;
+    bool    throwaway;
+    bool    viterbi;
+
+    static bool gff3;
+    static bool print_tss;
+    static bool print_tts;
+};
+
+
+void filterGenePrediction(list<Transcript*> &gl, list<Transcript*> &filteredTranscripts, const char *seq, Strand strand, bool noInFrameStop, double minmeanexonintronprob=0.0, double minexonintronprob=0.0);
+
+/**
+ * class Gene
+ * a single splice version (transcript) of a coding gene
+ */
+class Gene : public Transcript {
+public:
+    Gene() {
+	utr5exons = utr3exons = utr5introns = utr3introns = (State*) 0;
+	length   = clength = 0;
+	next     = (Gene*) 0;
+	weight   = 1;
+	strand   = plusstrand;
+	frame    = 0;
+	complete5utr = complete3utr = true;
+	codingstart = codingend = -1;
+	supportingEvidence = incompatibleEvidence = CDSexonEvidence = CDSintronEvidence = UTR5stateEvidence = UTR3stateEvidence = NULL;
+    }
+    Gene(const Gene& other);
+    virtual Gene* clone() {return new Gene(*this);}
+    ~Gene(){ // this calls ~Transcript implicitly, which deletes exons and introns
+	if (supportingEvidence)
+	    delete supportingEvidence;
+	if (incompatibleEvidence)
+	    delete incompatibleEvidence;
+	if (CDSintronEvidence)
+	    delete CDSintronEvidence;
+	if (CDSexonEvidence)
+	    delete CDSexonEvidence;
+	if (UTR5stateEvidence)
+	    delete UTR5stateEvidence;
+	if (UTR3stateEvidence)
+	    delete UTR3stateEvidence;
+    }
+    list<State*> getExInHeads(){ list<State*> L; L.push_back(exons); L.push_back(introns); L.push_back(utr5exons); L.push_back(utr3exons); return L;}
+    list<State*> getExInInHeads(){ list<State*> L = getExInHeads(); L.push_back(utr5introns); L.push_back(utr3introns); return L;}
+    char* getCodingSequence(AnnoSequence *annoseq = NULL) const;
+    bool hasInFrameStop(AnnoSequence *annoseq) const;
+    // void computeBC(char *seq);
     int numExons() const;
     State *lastExon() const;
     bool identicalCDS(Gene *other);
     bool almostIdenticalTo(Gene *other);
     void shiftCoordinates(int d);
-  int geneBegin() const { return (transstart>=0)? transstart : codingstart;}
-  int geneEnd() const { return (transend>=0)? transend : codingend;}
-  void addStatePostProbs(float p);
-  void setStatePostProbs(float p);
-  void addSampleCount(int k);
-  void setSampleCount(int k);
-  void setStateHasScore(bool has);
-  void normPostProb(float n);
-  void updatePostProb(Gene* other);
-  double meanStateProb();
-  void addUTR(State *mrnaRanges, bool complete_l=true, bool complete_r=true);
-  void compileExtrinsicEvidence(list<HintGroup>  *groupList);
-  double supportingFraction(HintGroup *group);
-  void addSupportedStates(HintGroup *group);
-  double getPercentSupported();
-  int getCDSCoord(int loc, bool comp) const;  
-  bool completeCDS() const;
-  bool operator< (const Gene &other) const;
-  bool operator== (const Gene &other) const;
+    int geneBegin() const { return (transstart>=0)? transstart : codingstart;}
+    int geneEnd() const { return (transend>=0)? transend : codingend;}
+    virtual bool isCoding() const { return true; }
+    void addUTR(State *mrnaRanges, bool complete_l=true, bool complete_r=true);
+    void compileExtrinsicEvidence(list<HintGroup>  *groupList);
+    double supportingFraction(HintGroup *group);
+    void addSupportedStates(HintGroup *group);
+    double getPercentSupported();
+    int getCDSCoord(int loc, bool comp) const;  
+    bool completeCDS() const;
     void print();
     void printGFF() const;
     void printCodingSeq(AnnoSequence *annoseq) const;
@@ -316,62 +386,34 @@ public:
     void truncateMaskedUTR(AnnoSequence *annoseq);
 
     static void init();
-    static list<Gene> *filterGenePrediction(list<Gene> *gl, const char *seq, Strand strand, bool noInFrameStop, double minmeanexonintronprob=0.0, double minexonintronprob=0.0);
-    static void filterTranscriptsByMaxTracks(list<Gene> *gl, int maxTracks);
-    static Gene* getGenesOnStrand(Gene* genes, Strand strand);
-    static void destroyGeneSequence(Gene *head) {
-	Gene* nextHead = head;
-	while(nextHead) {
-	    head = nextHead;
-	    nextHead = nextHead->next;
-	    delete head;
-	}
-    }
 
-  /// The coding exons of the current gene.
-  State*  exons;
-  /// The introns in the coding region of the current gene.
-  State*  introns;
-  /// members for UnTranslated Region
-  State*  utr5exons;
-  State*  utr3exons;
-  State*  utr5introns;
-  State*  utr3introns;
-  int     transstart, transend; // transcription, -1, if no utr
-  int     codingstart, codingend; // transstart <= codingstart <= codingend <= transend, if not -1
-  bool    complete5utr;
-  bool    complete3utr;
+    /// members for UnTranslated Region
+    State*  utr5exons;
+    State*  utr3exons;
+    State*  utr5introns;
+    State*  utr3introns;
+    int     codingstart, codingend; // transstart <= codingstart <= codingend <= transend, if not -1
+    bool    complete5utr;
+    bool    complete3utr;
   
-  /// The length of the span of the coding part (with introns)
-  int     length;
-  /// The coding length of the gene
-  int     clength;
-  string  id;       // transcript id
-  string  seqname;
-  string  geneid;   // id of the AltGene
-  float   apostprob;
-  bool    hasProbs;
-  bool    throwaway;
-  bool    viterbi;
-  string   source;
-  /// The reading frame position of the first base (usually 0)
-  int     frame;
-  BaseCount bc;
-  int weight;
-  Strand strand;
-  Boolean complete; //coding region is complete
-  Gene*   next;
-  Evidence *supportingEvidence;
-  Evidence *incompatibleEvidence;
-  Evidence *CDSexonEvidence;
-  Evidence *CDSintronEvidence;
-  Evidence *UTR5stateEvidence;
-  Evidence *UTR3stateEvidence;
+    /// The length of the span of the coding part (with introns)
+    int     length;
+    /// The coding length of the gene
+    int     clength;
+    /// The reading frame position of the first base (usually 0)
+    int     frame;
+    BaseCount bc;
+    int weight;
+    Evidence *supportingEvidence;
+    Evidence *incompatibleEvidence;
+    Evidence *CDSexonEvidence;
+    Evidence *CDSintronEvidence;
+    Evidence *UTR5stateEvidence;
+    Evidence *UTR3stateEvidence;
 
-  list<PP::Match> proteinMatches;  // true if gene matches protein profile
+    list<PP::Match> proteinMatches;  // true if gene matches protein profile
 
-     /// output options
-    static bool gff3;
+    /// output options
     static bool print_start;
     static bool print_stop;
     static bool print_introns;
@@ -379,53 +421,52 @@ public:
     static bool print_exonnames;
     static bool stopCodonExcludedFromCDS;
     static bool print_utr;
-    static bool print_tss;
-    static bool print_tts;
     static bool print_blocks;
 };
 
 
 /*
- * AltGene is a gene in the original sense. It can contain several transcripts (of class Gene).
+ * AltGene is a gene in the original sense. It can contain several transcripts (coding or not).
  * 
  */
 class AltGene {
 public:
-  list<Gene*> transcripts;
-  int mincodstart;
-  int maxcodend;
-  Strand strand;
-  string id;
-  string seqname;
-  float apostprob;
-  bool hasProbs;
+    list<Transcript*> transcripts;
+    int mincodstart; // leftmost position of any start codon (if coding)
+    int maxcodend; //
+    Strand strand;
+    string id;
+    string seqname;
+    float apostprob;
+    bool hasProbs;
 
-  AltGene(){
-    mincodstart = maxcodend = -1;
-    strand = plusstrand;
-    apostprob = 0.0;
-    hasProbs = 0;
-  }
-  bool operator< (const AltGene &other) const;
-  void addGene(Gene* gene);
-  bool overlaps(Gene *gene);
-  void shiftCoordinates(int d);
-  void sortTranscripts(int numkeep=-1);
-  void deleteSuboptimalTranscripts(bool uniqueCDS);
-  int minTransBegin();
-  int maxTransEnd();
+    AltGene() {
+	mincodstart = maxcodend = -1;
+	strand = plusstrand;
+	apostprob = 0.0;
+	hasProbs = 0;
+    }
+    bool operator< (const AltGene &other) const;
+    void addGene(Transcript* tx);
+    bool overlaps(Transcript *tx);
+    void shiftCoordinates(int d);
+    void sortTranscripts(int numkeep=-1);
+    void deleteSuboptimalTranscripts(bool uniqueCDS);
+    int minTransBegin();
+    int maxTransEnd();
+    bool isCoding(){ return transcripts.empty() || dynamic_cast<Gene*> (transcripts.front());}
 };
 
-Gene* getPtr(list<AltGene> *gl);
+Transcript* getPtr(list<AltGene> *gl);
 
 void printGeneList(list<AltGene> *genelist, AnnoSequence *annoseq, bool withCS, bool withAA, bool withEvidence);
-void printGeneList(Gene* seq, AnnoSequence *annoseq, bool withCS, bool withAA);
-void printGeneSequence(Gene* seq, AnnoSequence *annoseq = NULL, bool withCS=false, bool withAA=true);
+void printGeneList(Transcript* seq, AnnoSequence *annoseq, bool withCS, bool withAA);
+void printGeneSequence(Transcript* seq, AnnoSequence *annoseq = NULL, bool withCS=false, bool withAA=true);
 list<Gene*>* sortGenePtrList(list<Gene*>);
 list<AltGene> *reverseGeneList(list<AltGene> *altGeneList, int endpos);
-list<AltGene>* groupTranscriptsToGenes(list<Gene> *transcripts);
+list<AltGene>* groupTranscriptsToGenes(list<Transcript*> &transcripts);
  
-void reverseGeneSequence(Gene* &seq, int endpos);
+void reverseGeneSequence(Transcript* &seq, int endpos);
 void postProcessGenes(list<AltGene> *genes, AnnoSequence *annoseq);
 
 
@@ -441,14 +482,14 @@ public:
     backwardEmiProb = 1.0;
   }
   ~Annotation() {
-    Gene::destroyGeneSequence(genes);
+    Transcript::destroyGeneSequence(genes);
     if (path)
       delete path;
     if (condensedPath)
       delete condensedPath;
 
-    Gene::destroyGeneSequence(forwardGenes);
-    Gene::destroyGeneSequence(backwardGenes);
+    Transcript::destroyGeneSequence(forwardGenes);
+    Transcript::destroyGeneSequence(backwardGenes);
     if (forwardPath)
       delete forwardPath;
     if (backwardPath)
@@ -459,9 +500,9 @@ public:
       delete condensedBackwardPath;
   }
 
-  void appendGene(Gene* gene);
-  void appendForwardGene(Gene* gene);
-  void appendBackwardGene(Gene* gene);
+  void appendGene(Transcript* gene);
+  void appendForwardGene(Transcript* gene);
+  void appendBackwardGene(Transcript* gene);
   const void printGFF() const;
 
   StatePath *path;
@@ -471,54 +512,59 @@ public:
   StatePath *backwardPath;           
   StatePath *condensedForwardPath;   
   StatePath *condensedBackwardPath;  
-    
-  Gene *genes;
-  Gene *forwardGenes;  
-  Gene *backwardGenes; 
+
+  Transcript *genes;
+  Transcript *forwardGenes;  
+  Transcript *backwardGenes; 
 
   Double emiProb;
   Double forwardEmiProb;  
   Double backwardEmiProb; 
 
 private:
-  Gene *lastGene;
-  Gene *lastForwardGene, *lastBackwardGene; 
+  Transcript *lastGene;
+  Transcript *lastForwardGene, *lastBackwardGene; 
 };
 
 
 class AnnoSequence {
 public:
-  AnnoSequence(){
-    length = 0;
-    sequence = 0;
-    seqname = 0;
-    next = (AnnoSequence*) 0;
-    anno = (Annotation*) 0;
-    weight = 1;
-    offset = 0;
-  }
-  ~AnnoSequence(){
-    if (sequence)
-      delete[] sequence;
-    if (seqname)
-      delete [] seqname;
-    if (anno)
-      delete anno;
-  }
-  static void deleteSequence(AnnoSequence *head){
-    AnnoSequence* nextHead = head;
-    while(nextHead) {
-      head = nextHead;
-      nextHead = nextHead->next;
-      delete head;
+    AnnoSequence(){
+	length = 0;
+	sequence = 0;
+	seqname = 0;
+	next = (AnnoSequence*) 0;
+	anno = (Annotation*) 0;
+	weight = 1;
+	offset = 0;
     }
-  }
-  void setWeight(int w) {
-    weight = w;
-    if (anno)
-      for (Gene* gene = anno->genes; gene; gene=gene->next)
-	gene->weight = w;
-  }
+    ~AnnoSequence(){
+	if (sequence)
+	    delete[] sequence;
+	if (seqname)
+	    delete [] seqname;
+	if (anno)
+	    delete anno;
+    }
+    static void deleteSequence(AnnoSequence *head){
+	AnnoSequence* nextHead = head;
+	while(nextHead) {
+	    head = nextHead;
+	    nextHead = nextHead->next;
+	    delete head;
+	}
+    }
+    void setWeight(int w) {
+	weight = w;
+	if (!anno)
+	    return;
+	
+	for (Transcript* t = anno->genes; t != NULL; t = t->next){
+	    Gene *g = dynamic_cast<Gene*> (t);
+	    if (g)
+		g->weight = w;
+	}
+    }
     /*
      * reverse complement the sequence and all genes
      */
@@ -552,7 +598,7 @@ public:
     return (annoseq != NULL && gene != NULL);
   }
   const AnnoSequence *annoseq;
-  const Gene *gene;
+  const Transcript *gene;
 };
 
 

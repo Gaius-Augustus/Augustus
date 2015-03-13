@@ -62,8 +62,8 @@ public:
 	  delete [] ttsDist;
   };
 
-  void addToEvaluation(Gene* prediction, Gene *database, Strand strand, Double quotient = -1.0);
-  void addToEvaluation(Gene* predictedGeneList, Gene* annotatedGeneList);
+  void addToEvaluation(Transcript* prediction, Transcript *database, Strand strand, Double quotient = -1.0);
+  void addToEvaluation(Transcript* predictedGeneList, Transcript* annotatedGeneList);
   void finishEvaluation();
   void print();
   void printQuotients();
@@ -75,12 +75,12 @@ private:
   void evaluateQuickOnNucleotideLevel(State* const predictedExon, int curPredBegin, 
 				      State* const annotatedExon, int curAnnoBegin);
   void evaluateQuickOnExonLevel(State* predictedExon, State* annotatedExon);
-  void evaluateQuickOnGeneLevel(Gene* const predictedGeneList, Gene* const annotatedGeneList);
+  void evaluateQuickOnGeneLevel(Transcript* const predictedGeneList, Transcript* const annotatedGeneList);
 
   void evaluateOnNucleotideLevel(list<State> *predictedExon, list<State> *annotatedExon, bool UTR=false);    
   void evaluateOnExonLevel(list<State> *predictedExon, list<State> *annotatedExon, bool UTR=false);
-  void evaluateOnGeneLevel(Gene* const predictedGeneList, Gene* const annotatedGeneList);
-  void evaluateOnUTRLevel(Gene* const predictedGeneList, Gene* const annotatedGeneList);
+  void evaluateOnGeneLevel(Transcript* const predictedGeneList, Transcript* const annotatedGeneList);
+  void evaluateOnUTRLevel(Transcript* const predictedGeneList, Transcript* const annotatedGeneList);
 public:
   // nucleotide level
   int nukTP, nukFP, nukFN,

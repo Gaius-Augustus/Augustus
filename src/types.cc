@@ -128,7 +128,10 @@ const char* stateTypeNames[NUM_TYPES]=
 "reverse intron geometric 2", "reverse long intron ass 2",
 "reverse 5'UTR single exon", "reverse 5'UTR initial exon", "reverse 5'UTR intron", "reverse 5'UTR intron var", "reverse 5'UTR internal exon", "reverse 5'UTR terminal exon", 
 "reverse 3'UTR single exon", "reverse 3'UTR initial exon", "reverse 3'UTR intron", "reverse 3'UTR intron var", "reverse 3'UTR internal exon", "reverse 3'UTR terminal exon", 
- "intron", "reverse intron", "exon"};
+ "intron", "reverse intron", "exon",
+ "noncoding single exon", "noncoding initial exon", "noncoding intron", "noncoding intron var", "noncoding internal exon", "noncoding terminal exon",
+ "reverse noncoding single exon", "reverse noncoding initial exon", "reverse noncoding intron", "reverse noncoding intron var", "reverse noncoding internal exon", "reverse noncoding terminal exon"
+};
 
 const char* stateTypeIdentifiers[NUM_TYPES]= 
 {"igenic",
@@ -146,7 +149,7 @@ const char* stateTypeIdentifiers[NUM_TYPES]=
  "rutr3single", "rutr3init", "rutr3intron", "rutr3intronvar", "rutr3internal", "rutr3term",
  "intron", "rintron", "exon",
  "ncsingle", "ncinit", "ncintron", "ncintronvar", "ncinternal", "ncterm",
- "rncsingle", "rncinit", "rncintron", "rncintronvar", "rncinternal", "nrcterm"
+ "rncsingle", "rncinit", "rncintron", "rncintronvar", "rncinternal", "rncterm"
 };
 
 // don't forget to change shift the reading frames, when you introduce new states!!
@@ -162,7 +165,9 @@ const int stateReadingFrames[NUM_TYPES]=
  1,1,1,1,1,                //   |- reverse introns
  2,2,2,2,2,                // --
  0,0,0,0,0,0,0,0,0,0,0,0,  // reverse utr
- 0,0,0};                   // other
+ 0,0,0,                    // other
+ 0,0,0,0,0,0,0,0,0,0,0,0   // noncoding
+};    
 
 char strandChar (Strand s){
     switch (s){

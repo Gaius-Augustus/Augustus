@@ -230,7 +230,7 @@ public:
     static void improvedIterativeScaling(Parameters* startPars, vector<AnnoSequence*> trainGenes, FeatureCollection &extrinsicFeatures);
     template <class U, class V>
     static void compareWeights(Parameters* parameters, vector<U> &startWeights, vector<V> &endWeights, int numPrint=100);
-    static double lossFct(Gene* correct, Gene* predicted);
+    static double lossFct(Transcript* correct, Transcript* predicted);
     static void setEvalAnnoSeqs(vector<AnnoSequence*> seqs){evalAnnoSeqs = seqs;}
     // this function is only temporary for saving intermediate parameter files
     static void setPrintPars(int ostatecount, StateModel **ostates){

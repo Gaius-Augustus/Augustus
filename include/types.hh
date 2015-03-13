@@ -69,14 +69,14 @@ ostream& operator<< (ostream& strm, const Strand s);
 #define VERSION "3.0.3"
 
 #define PREAMBLE "# This output was generated with AUGUSTUS (version " VERSION ").\n\
-# AUGUSTUS is a gene prediction tool for eukaryotes written by Mario Stanke (mario.stanke@uni-greifswald.de),\n\
+# AUGUSTUS is a gene prediction tool written by Mario Stanke (mario.stanke@uni-greifswald.de),\n\
 # Oliver Keller, Stefanie König and Lizzy Gerischer.\n\
 # Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),\n\
 # Using native and syntenically mapped cDNA alignments to improve de novo gene finding\n\
 # Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013"
 
-#define GREETING "AUGUSTUS (" VERSION ") is a gene prediction tool for eukaryotes\n\
-written by Mario Stanke (mstanke@gwdg.de) and Oliver Keller (keller@cs.uni-goettingen.de)."
+#define GREETING "AUGUSTUS (" VERSION ") is a gene prediction tool\n\
+written by Mario Stanke, Oliver Keller, Stefanie König and Lizzy Gerischer."
 
 #define SPECIES_LIST "usage:\n\
 augustus [parameters] --species=SPECIES queryfilename\n\
@@ -516,6 +516,10 @@ inline Boolean isNcExon(StateType type) {
     return  (ncsingle <= type && !isNcIntron(type));
 }
 
+inline Boolean isNc(StateType type) {
+    return  (ncsingle <= type);
+}
+
 inline Boolean isExon(StateType type) {
     return (isCodingExon(type) || is5UTRExon(type) || is3UTRExon(type) || isNcExon(type));
 }
@@ -527,7 +531,7 @@ inline Boolean isCodingIntron(StateType type) {
 
 inline Boolean isIntron(StateType type) {
     return (isCodingIntron(type) || is5UTRIntron(type) || is3UTRIntron(type) 
-	    || type == intron_type || type == rintron_type);
+	    || type == intron_type || type == rintron_type || isNcIntron(type));
 }
 
 inline Boolean isGeometricIntron(StateType type){

@@ -1440,7 +1440,8 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
     switch( etype ){
 	case singleG: case initial0: case initial1: case initial2:
 	    // start codon at the beginning?
-	    if ((beginOfBioExon >= 0) && GeneticCode::isStartcodon(sequence + beginOfBioExon)){
+	    if (beginOfBioExon >= 0 && beginOfBioExon < dnalen - 2 &&
+		GeneticCode::isStartcodon(sequence + beginOfBioExon)){
 		beginPartProb = GeneticCode::startCodonProb(sequence + beginOfStart - STARTCODON_LEN);
 		if (beginPartProb > 0.0){
 		    // two cases ... . the normal one with enough sequence space before the gene

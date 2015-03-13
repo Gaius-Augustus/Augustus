@@ -64,7 +64,7 @@ void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures,
 
   while(bestG){
     MEAtranscripts->push_back(*bestG);
-    bestG = bestG->next;
+    bestG = (Gene*) bestG->next;
   }
 }
 
@@ -72,61 +72,61 @@ void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures,
  * MEA using graph representation
  */
 
-list<Gene>* getMEAtranscripts(list<Gene> *alltranscripts, const char* dna){
+list<Transcript*> &getMEAtranscripts(list<Transcript*> &alltranscripts, const char* dna){
+    list<Transcript*> *meaGenes = new list<Transcript*>;
 
-  list<Gene> *meaGenes = new list<Gene>;
+    if (!alltranscripts.empty()){
 
-  if(!alltranscripts->empty()){
+	bool utr;
+	try {
+	    utr = Properties::getBoolProperty("UTR");
+	} catch (...) {
+	    utr = false;
+	}
 
-    bool utr;
-    try {
-      utr = Properties::getBoolProperty("UTR");
-    } catch (...) {
-      utr = false;
-    }
+	list<Status> stlist;
+	/*
+	 * builds datastructure needed for the graph representation
+	 */
+	buildStatusList(alltranscripts, utr, stlist);
 
-    list<Status> stlist;
-    /*
-     * builds datastructure needed for the graph representation
-     */
-    buildStatusList(alltranscripts, utr, stlist);
+	//build Graph
+	AugustusGraph myGraph(&stlist, dna);
+	myGraph.buildGraph();
 
-    //build Graph
-    AugustusGraph myGraph(&stlist, dna);
-    myGraph.buildGraph();
+	//myGraph.printGraph("test_graph.dot");
 
-    //myGraph.printGraph("test_graph.dot");
-
-    //find shortest path
-    MEApath path(&myGraph);
-    path.findMEApath();
+	//find shortest path
+	MEApath path(&myGraph);
+	path.findMEApath();
         
-    getMeaGenelist(path.getPath(), meaGenes);
-  } 
-  return meaGenes;
+	getMeaGenelist(path.getPath(), meaGenes);
+    } 
+    return *meaGenes;
 }
 
-void buildStatusList(list<Gene> *alltranscripts, bool utr, list<Status> &stlist){
-   list<Status> stateList;
+void buildStatusList(list<Transcript*> &alltranscripts, bool utr, list<Status> &stlist){
+    list<Status> stateList;
 
-    for(list<Gene>::iterator it=alltranscripts->begin();it!=alltranscripts->end();it++){
-      addToList(it->exons,CDS,&stateList);
-      addToList(it->introns,intron,&stateList);
-      if(utr){
-	addToList(it->utr5exons,utr5,&stateList);
-	addToList(it->utr3exons,utr3,&stateList);
-	addToList(it->utr5introns,utr5Intron,&stateList);
-	addToList(it->utr3introns,utr3Intron,&stateList);
-      }
-      // orders list after genes and startpositions of states
-      stateList.sort(compareStatus);
-      list<Status>::iterator st = stateList.begin();
-      while(st != stateList.end()){
-	st->next = &(*(++st));
-      }
-      stateList.back().next = NULL;
+    for (list<Transcript*>::iterator it = alltranscripts.begin();it != alltranscripts.end(); it++){
+	addToList ((*it)->exons, CDS, &stateList);
+	addToList ((*it)->introns, intron, &stateList);
+	Gene *g = dynamic_cast<Gene*> (*it);
+	if (utr && g){ // the transcript is coding and we have predicted UTRs
+	    addToList(g->utr5exons, utr5, &stateList);
+	    addToList(g->utr3exons, utr3, &stateList);
+	    addToList(g->utr5introns, utr5Intron, &stateList);
+	    addToList(g->utr3introns, utr3Intron, &stateList);
+	}
+	// orders list after genes and startpositions of states
+	stateList.sort(compareStatus);
+	list<Status>::iterator st = stateList.begin();
+	while (st != stateList.end()){
+	    st->next = &(*(++st));
+	}
+	stateList.back().next = NULL;
    
-      stlist.splice(stlist.end(),stateList);   
+	stlist.splice(stlist.end(), stateList);
     }
 } 
 
@@ -157,14 +157,13 @@ void printStatelist(list<Status> *stateList){
 }
 
 void addToList(State *state, Statename name, list<Status> *slist){
- 
-  while(state){
-    if(state->end >= state->begin){ // UTR exon can have length 0 when start codon comes right after splice site
-      Status someState(name, state->begin, state->end, (double)state->apostprob, state);
-      slist->push_back(someState);
+    while (state){
+	if (state->end >= state->begin){ // UTR exon can have length 0 when start codon comes right after splice site
+	    Status someState(name, state->begin, state->end, (double)state->apostprob, state);
+	    slist->push_back(someState);
+	}
+	state = state->next;
     }
-    state = state->next;
-  }
 }
 
 bool compareStatus(Status first, Status second){
@@ -175,31 +174,25 @@ bool compareStatus(Status first, Status second){
 /*
  * transfer nodelist of the graph representation to gene list for the AUGUSTUS output
  */
-
-void getMeaGenelist(list<Node*> meaPath, list<Gene> *meaGenes){
-    
-  Gene *currentGene = new Gene();
-
-  for(list<Node*>::reverse_iterator node=meaPath.rbegin(); node!=meaPath.rend(); node++){
-    if((*node)->item != NULL){
-      State *ex = new State(*((State*)(*node)->item));
-      addExonToGene(currentGene, ex);
-      if((*node)->pred == NULL)
-	cerr<<"ERROR in getMeaGenelist(): node in meaPath has no predecessor"<<endl;
-      if((*node)->pred->item != NULL){
-	if((*node)->pred->end != (*node)->begin-1){
-	  addIntronToGene(currentGene, (*node)->pred, *node);
+void getMeaGenelist(list<Node*> meaPath, list<Transcript*> *meaGenes){
+    Gene *currentGene = new Gene();
+    for (list<Node*>::reverse_iterator node = meaPath.rbegin(); node != meaPath.rend(); node++){
+	if ((*node)->item != NULL){
+	    State *ex = new State(*((State*)(*node)->item));
+	    addExonToGene(currentGene, ex);
+	    if ((*node)->pred == NULL)
+		cerr<<"ERROR in getMeaGenelist(): node in meaPath has no predecessor"<<endl;
+	    if ((*node)->pred->item != NULL){
+		if ((*node)->pred->end != (*node)->begin-1){
+		    addIntronToGene(currentGene, (*node)->pred, *node);
+		}
+	    } else {
+		setGeneProperties(currentGene);
+		meaGenes->push_front(currentGene);
+		currentGene = new Gene();
+	    }
 	}
-      }
-      else{
-	setGeneProperties(currentGene);
-	meaGenes->push_front(*currentGene);
-	delete currentGene;
-	currentGene = new Gene();
-      }
-    }
-  } 
-  delete currentGene;  
+    } 
 }
 
 void addExonToGene(Gene *gene, State *exon){
@@ -232,52 +225,52 @@ void addExonToGene(Gene *gene, State *exon){
   }
 }
 
-void addIntronToGene(Gene* gene, Node* predExon, Node* succExon){
- 
-  Edge* intron = NULL;
-  for(list<Edge>::iterator edge=predExon->edges.begin(); edge!=predExon->edges.end(); edge++){
-    if(edge->to == succExon){
-      intron = &(*edge);     
-      break;
+void addIntronToGene(Transcript* gene, Node* predExon, Node* succExon){
+    Edge* intron = NULL;
+    for(list<Edge>::iterator edge = predExon->edges.begin(); edge != predExon->edges.end(); edge++){
+	if (edge->to == succExon){
+	    intron = &(*edge);     
+	    break;
+	}
     }
-  }
-  State* intr;
-  if(intron != NULL && intron->item != NULL){
-    intr = new State(*((State*)intron->item));
-  }
-  else{
-    intr = new State(predExon->end+1, succExon->begin-1, getIntronStateType((State*)predExon->item,(State*)succExon->item));
-  }
-  addIntronToGene(gene, intr);
+    State* intr;
+    if (intron != NULL && intron->item != NULL){
+	intr = new State(*((State*)intron->item));
+    } else {
+	intr = new State(predExon->end+1, succExon->begin-1, getIntronStateType((State*)predExon->item,(State*)succExon->item));
+    }
+    addIntronToGene(gene, intr);
 }
 
-void addIntronToGene(Gene* gene, State *intr){
-
-  intr->next = NULL;
-  if(isCodingIntron(intr->type) || intr->type == intron_type || intr->type == rintron_type){
-    if(gene->introns == NULL)
-      gene->introns = intr;
-    else{
-      intr->next = gene->introns;
-      gene->introns = intr;
+void addIntronToGene(Transcript* t, State *intr){
+    Gene *gene = dynamic_cast<Gene *> (t);
+    if (gene){ // (yet) only implemented for coding genes    
+	intr->next = NULL;
+	if(isCodingIntron(intr->type) || intr->type == intron_type || intr->type == rintron_type){
+	    if(gene->introns == NULL)
+		gene->introns = intr;
+	    else{
+		intr->next = gene->introns;
+		gene->introns = intr;
+	    }
+	}
+	else if(is5UTRIntron(intr->type)){
+	    if(gene->utr5introns == NULL)
+		gene->utr5introns = intr;
+	    else{
+		intr->next = gene->utr5introns;
+		gene->utr5introns = intr;
+	    }
+	}
+	else if(is3UTRIntron(intr->type)){
+	    if(gene->utr3introns == NULL)
+		gene->utr3introns = intr;
+	    else{
+		intr->next = gene->utr3introns;
+		gene->utr3introns = intr;
+	    }
+	}
     }
-  }
-  else if(is5UTRIntron(intr->type)){
-     if(gene->utr5introns == NULL)
-      gene->utr5introns = intr;
-    else{
-      intr->next = gene->utr5introns;
-      gene->utr5introns = intr;
-    }
-  }
-  else if(is3UTRIntron(intr->type)){
-    if(gene->utr3introns == NULL)
-      gene->utr3introns = intr;
-    else{
-      intr->next = gene->utr3introns;
-      gene->utr3introns = intr;
-    }
-  }
 }
 
 StateType getIntronStateType(State *exon1, State *exon2){
