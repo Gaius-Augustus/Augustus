@@ -62,7 +62,7 @@ class LLDouble{
     static unsigned temperature; // for "heating", heat = (8-temperature)/8, will later often need to compute pow(d,heat) for LLDoubles d
     static double rest[7]; // precomputed values for heating
  public:
-    LLDouble(float x=0.0) : value(x), exponent(0) {}
+    LLDouble(float x=0.0) : value(x), exponent(0) {} // called when no argument is provided
     LLDouble(double d) : value(d), exponent(0) {
 	testPrecision();
     }
@@ -205,9 +205,9 @@ private:
 	value(v), exponent(e) {}
 //     void print( ostream& out ) const;
     void read( istream& in );
-    void testPrecision( ) {   
+    void testPrecision( ) {
 	// value is 0, or NaN: keep and set exponent=0
-	if (value == 0.0 || value != value) {
+	if (value == 0.0 || std::isnan((double) value)) {
 	    exponent = 0;
 	    return;
 	} // value is infinity: set exponent = max_exponent

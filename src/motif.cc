@@ -268,7 +268,7 @@ Motif::Motif(int length, int memory, int pseudocount, int neighbors) :
     windowProbs = new vector<Double>[n];
     windowCounts = new vector<int>[n];
     for (int i=0; i<n; i++) {
-	windowProbs[i].assign(POWER4TOTHE(k+1), 0.0);
+	windowProbs[i].assign(POWER4TOTHE(k+1), 0);
 	windowCounts[i].assign(POWER4TOTHE(k+1), pseudocount);
     }
 }
@@ -309,7 +309,7 @@ void Motif::addSequence(const char* seq, int weight, bool reverse){
  * for restrictions see addSequence
  */
 Double Motif::seqProb(const char* seq, bool reverse, bool complement){
-    Double prob = 1.0;
+    Double prob(1);
     int pn;
     for (int i=0; i<n; i++) {
 	try {
@@ -327,7 +327,7 @@ Double Motif::seqProb(const char* seq, bool reverse, bool complement){
 		prob *= windowProbs[n-1-i][pn];
 	    }
 	} catch (InvalidNucleotideError e) {
-	    prob *= 0.25;
+	    prob *= (float) 0.25;
 	}
     }
     return prob;
@@ -339,7 +339,7 @@ void Motif::makeProbs() {
 	for(int j=0; j<windowProbs[0].size(); j += 4) {
 	    sum = windowCounts[i][j] + windowCounts[i][j+1]
 		+ windowCounts[i][j+2] + windowCounts[i][j+3];
-	    if (sum>0.0) {
+	    if (sum > 0) {
 		windowProbs[i][j]   = (double)windowCounts[i][j] / sum;
 		windowProbs[i][j+1] = (double)windowCounts[i][j+1] / sum;
 		windowProbs[i][j+2] = (double)windowCounts[i][j+2] / sum;
@@ -401,7 +401,7 @@ void Motif::read(ifstream &in){
   s2i = Seq2Int(k+1);
   windowProbs = new vector<Double>[n];
   for (int i=0; i<n; i++) {
-    windowProbs[i].assign(POWER4TOTHE(k+1), 0.0);
+    windowProbs[i].assign(POWER4TOTHE(k+1), 0);
   }
   
   int dummy;

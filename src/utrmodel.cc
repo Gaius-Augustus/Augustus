@@ -107,12 +107,9 @@ Motif*          UtrModel::tssMotifTATA = NULL;
 Motif*          UtrModel::GCtssMotifTATA = NULL;
 Motif*          UtrModel::tataMotif = NULL;
 Motif*          UtrModel::GCtataMotif = NULL;
-SnippetProbs*   UtrModel::initSnippetProbs5 = NULL;
-SnippetProbs*   UtrModel::snippetProbs5 = NULL;
-SnippetProbs*   UtrModel::rInitSnippetProbs5 = NULL;
-SnippetProbs*   UtrModel::rSnippetProbs5 = NULL;
-SnippetProbs*   UtrModel::rSnippetProbs3 = NULL;
-SnippetProbs*   UtrModel::intronSnippetProbs = NULL;
+SegProbs*       UtrModel::rInitSegProbs5 = NULL;
+SegProbs*       UtrModel::rSegProbs3 = NULL;
+SegProbs*       UtrModel::intronSegProbs = NULL;
 bool            UtrModel::initAlgorithmsCalled = false;
 bool            UtrModel::haveSnippetProbs = false;
 vector<Integer> UtrModel::aataaa_count;
@@ -152,17 +149,13 @@ UtrModel::~UtrModel( ){
 	delete tssMotifTATA;
 	delete ttsMotif;
 	delete tataMotif;
-	if (snippetProbs5) 
-	    delete snippetProbs5;
-	if (rInitSnippetProbs5)
-	    delete rInitSnippetProbs5;
-	if (rSnippetProbs5)
-	    delete rSnippetProbs5;
-	if (rSnippetProbs3)
-	    delete rSnippetProbs3;
-	if (intronSnippetProbs)
-	    delete intronSnippetProbs;
 
+	if (rInitSegProbs5)
+	    delete rInitSegProbs5;
+	if (rSegProbs3)
+	    delete rSegProbs3;
+	if (intronSegProbs)
+	    delete intronSegProbs;
     }
 }
 
@@ -627,22 +620,6 @@ void UtrModel::readAllParameters(){
     // Start of GC content dependent parameters section
     // ------------------------------------------------
     char zusString[6];
-    /*    if (GCutr5init_emiprobs)
-      delete [] GCutr5init_emiprobs;
-    if (GCutr5_emiprobs)
-      delete [] GCutr3_emiprobs;
-    if (GCutr3_emiprobs)
-      delete [] GCutr5_emiprobs;
-    if (GCtssup_emiprobs)
-      delete [] GCtssup_emiprobs;
-    if (GCtssMotif)
-      delete [] GCtssMotif;
-    if (GCtssMotifTATA)
-      delete [] GCtssMotifTATA;
-    if (GCtataMotif)
-      delete [] GCtataMotif;
-    if (GCttsMotif)
-    delete [] GCttsMotif;*/
     
     // loop over GC content classes
     for (int idx = 0; idx < Constant::decomp_num_steps; idx++) {
@@ -739,26 +716,18 @@ void UtrModel::readAllParameters(){
  * UtrModel::initSnippetProbs
  */
 void UtrModel::initSnippetProbs() {
-    if (initSnippetProbs5)
-	delete initSnippetProbs5;
-    if (snippetProbs5) 
-	delete snippetProbs5;
-    if (rInitSnippetProbs5)
-	delete rInitSnippetProbs5;
-    if (rSnippetProbs5)
-	delete rSnippetProbs5;
-    if (rSnippetProbs3)
-	delete rSnippetProbs3;
-    if (intronSnippetProbs)
-	delete intronSnippetProbs;
+    if (rInitSegProbs5)
+	delete rInitSegProbs5;
+    if (rSegProbs3)
+	delete rSegProbs3;
+    if (intronSegProbs)
+	delete intronSegProbs;
 
-    initSnippetProbs5 = new SnippetProbs(sequence, k);
-    snippetProbs5 = new SnippetProbs(sequence, k);
-    rInitSnippetProbs5 = new SnippetProbs(sequence, k, false);
-    rSnippetProbs5 = new SnippetProbs(sequence, k, false);
-    rSnippetProbs3 = new SnippetProbs(sequence, k, false);
-    intronSnippetProbs = new SnippetProbs(sequence, IntronModel::k);
-    haveSnippetProbs = true;
+    rInitSegProbs5 = new SegProbs(sequence, k, false);
+    rSegProbs3 = new SegProbs(sequence, k, false);
+    intronSegProbs = new SegProbs(sequence, IntronModel::k);
+ 
+   haveSnippetProbs = true;
 }
 
 /*
@@ -802,12 +771,9 @@ void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
       ttsProbMinus = new Double[dnalen+1];
       computeTtsProbs();
       
-      initSnippetProbs5->setEmiProbs(&utr5init_emiprobs.probs);
-      snippetProbs5->setEmiProbs(&utr5_emiprobs.probs);
-      rInitSnippetProbs5->setEmiProbs(&utr5init_emiprobs.probs);
-      rSnippetProbs5->setEmiProbs(&utr5_emiprobs.probs);
-      rSnippetProbs3->setEmiProbs(&utr3_emiprobs.probs);
-      intronSnippetProbs->setEmiProbs(&IntronModel::emiprobs.probs);
+       rInitSegProbs5->setEmiProbs(&utr5init_emiprobs.probs);
+       rSegProbs3->setEmiProbs(&utr3_emiprobs.probs);
+       intronSegProbs->setEmiProbs(&IntronModel::emiprobs.probs);
     }
     initAlgorithmsCalled = true;
     haveSnippetProbs = false;
@@ -836,9 +802,9 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
     Double fwdsum, fwdsummand;
     Double emiProb, extrinsicQuot, transEmiProb;
     vector<Ancestor>::const_iterator it;
-    maxPredProb = fwdsum = 0.0;
-    extrinsicQuot = 1.0;
-    if (algovar==doSampling)
+    maxPredProb = fwdsum = 0;
+    extrinsicQuot = 1;
+    if (algovar == doSampling)
 	optionslist = new OptionsList();
     
     getEndPositions(base, beginOfEndPart, endOfBioExon);
@@ -984,7 +950,7 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	    for (it = ancestor.begin(); it != ancestor.end() && predVit[it->pos]==0; ++it);
 	    if (it == ancestor.end()) continue;
 	    notEndPartProb = notEndPartEmiProb(endOfPred+1, beginOfEndPart-1, endOfBioExon, extrinsicexons);
-	    if (notEndPartProb <= 0.0) continue;
+	    if (notEndPartProb <= 0) continue;
 	    emiProb = notEndPartProb * endPartProb;
 	    do {
 		transEmiProb = it->val * emiProb;
@@ -1093,7 +1059,7 @@ Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
     switch (utype) {
 	case utr5single: case utr5term:
 	    if ((endOfBioExon + 3 <= dnalen - 1) && !GeneticCode::isStartcodon(sequence+endOfBioExon+1))
-		endPartProb = 0.0;
+		endPartProb = 0;
 	    break;
 	case utr5internal: case utr5init: case utr3internal: case utr3init:
 	    endPartProb = IntronModel::dSSProb(end - Constant::dss_whole_size() + 1, true);
@@ -1106,29 +1072,29 @@ Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
 	    break;
 	case utr3single: case utr3term:
 	    if (end == dnalen-1)
-		return 1.0;
+		return 1;
 	    if (begin < 0 || begin + aataaa_boxlen -1 >= dnalen)
-		return 0.0;
+		return 0;
 	    endPartProb = ttsProbPlus[begin];
 	    break;
 	case rutr3single: case rutr3init:
 	    if ((end + 3 > dnalen - 1) || !GeneticCode::isRCStopcodon(sequence + end + 1))
-		endPartProb = 0.0;
+		endPartProb = 0;
 	    break;
 	case utr5intronvar: case utr3intronvar: {
 	    int asspos = end + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
 	    if (asspos >= dnalen || !isPossibleASS(asspos))
-		endPartProb = 0.0;
+		endPartProb = 0;
 	    break;
 	}
 	case rutr5intronvar: case rutr3intronvar:
 	    if (!isPossibleRDSS(end + Constant::dss_end + DSS_MIDDLE))
-		endPartProb = 0.0;
+		endPartProb = 0;
 	    break;
 	default:;
     }
     
-    if (endPartProb > 0.0) {
+    if (endPartProb > 0) {
 	/*
 	 * dss hints
 	 */
@@ -1184,8 +1150,8 @@ Double UtrModel::endPartEmiProb(int begin, int end, int endOfBioExon) const {
  * endOfMiddle is the position right before the downstream signal
  */
 Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, Feature *exonparts) const {
-    Double beginPartProb = 1, middlePartProb = 1, lenProb = 1;
-    Double extrinsicQuot = 1;
+    Double beginPartProb(1), middlePartProb(1), lenProb(1);
+    Double extrinsicQuot(1);
     int beginOfMiddle, beginOfBioExon=-1;
     Seq2Int s2i_intron(IntronModel::k+1);
 
@@ -1223,7 +1189,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	case utr5internal:
 	    beginPartProb = IntronModel::aSSProb(begin, true);
 	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
-	    if (beginPartProb>0.0) {
+	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
 		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 1);
 		lenProb = lenDist5Internal[endOfBioExon - beginOfBioExon + 1];
@@ -1232,7 +1198,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	case rutr5internal:
 	    beginPartProb = IntronModel::dSSProb(begin, false);
 	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
-	    if (beginPartProb>0.0) {
+	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::dss_whole_size();
 		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 1);
 		lenProb = lenDist5Internal[endOfBioExon - beginOfBioExon + 1];
@@ -1241,10 +1207,10 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	case utr5term:
 	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;	    
 	    if (beginOfBioExon >= dnalen) 
-		beginPartProb = 0.0;
+		beginPartProb = 0;
 	    else
 		beginPartProb = IntronModel::aSSProb(begin, true);
-	    if (beginPartProb>0.0) {
+	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
 		if (endOfMiddle - beginOfMiddle + 1 >= 0)
 		    middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 1);
@@ -1265,16 +1231,16 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	    lenProb = lenDist5Terminal[endOfBioExon - beginOfBioExon + 1];
 	    break;
 	case utr5intron: case rutr5intron:
-	    beginPartProb = 1.0;
+	    beginPartProb = 1;
 	    for (int pos = begin; pos <= endOfMiddle; pos++)
 		if (pos-k >= 0)
 		    try {
 			middlePartProb *= IntronModel::emiprobs.probs[s2i_intron(sequence + pos - k)]; // strand does not matter!
 		    } catch (InvalidNucleotideError e) {
-			middlePartProb *= 0.25;
+			middlePartProb *= (float) 0.25;
 		    }
 		else
-		   middlePartProb *= 0.25; 
+		    middlePartProb *= (float) 0.25;
 	    break;
 	case rutr5single:
 	    beginOfMiddle = begin;
@@ -1289,7 +1255,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	case rutr5init:
 	    beginPartProb = IntronModel::dSSProb(begin, false);
 	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
-	    if (beginPartProb>0.0){
+	    if (beginPartProb > 0){
 		beginOfMiddle = begin + Constant::dss_whole_size();
 		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 0);
 		lenProb = lenDist5Initial[endOfBioExon - beginOfBioExon + 1];
@@ -1315,10 +1281,10 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 		if (beginOfMiddle > 0 )
 		    beginPartProb = pow (.25, beginOfMiddle-1);// part of reverse tts model is before start of dna
 		else 
-		    beginPartProb = 1.0;
+		    beginPartProb = 1;
 		lenProb = tailLenDist3Single[endOfBioExon - beginOfBioExon + 1];
 	    }
-	    if (beginPartProb > 0.0)
+	    if (beginPartProb > 0)
 		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
 	    break;
 	case utr3init:
@@ -1333,7 +1299,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	case rutr3init:
 	    beginPartProb = IntronModel::dSSProb(begin, false);
 	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
-	    if (beginPartProb>0.0) {
+	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::dss_whole_size();
 		if (endOfMiddle - beginOfMiddle + 1 >= 0) {
 		    middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
@@ -1346,7 +1312,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	case utr3internal:
 	    beginPartProb = IntronModel::aSSProb(begin, true);
 	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
-	    if (beginPartProb>0.0) {
+	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
 		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
 		lenProb = lenDist3Internal[endOfBioExon - beginOfBioExon + 1];
@@ -1355,7 +1321,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	case rutr3internal:
 	    beginPartProb = IntronModel::dSSProb(begin, false);
 	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE ;
-	    if (beginPartProb>0.0) {
+	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::dss_whole_size();
 		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
 		lenProb = lenDist3Internal[endOfBioExon - beginOfBioExon + 1];
@@ -1364,7 +1330,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	case utr3term:
 	    beginPartProb = IntronModel::aSSProb(begin, true);
 	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
-	    if (beginPartProb>0.0) {
+	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
 		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
 		if (endOfBioExon != dnalen-1)
@@ -1381,23 +1347,23 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	    } else {
 		beginPartProb = pow (.25, beginOfMiddle-1);// part of reverse tts model is before start of dna
 	    }
-	    if (beginPartProb > 0.0){
+	    if (beginPartProb > 0){
 		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
 		lenProb = lenDist3Terminal[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
 	case utr3intron: case rutr3intron:
-	    beginPartProb = 1.0;
+	    beginPartProb = 1;
 	    // begin == endOfMiddle
 	    for (int pos = begin; pos <= endOfMiddle; pos++)
 		if (pos-k >= 0)
 		    try {
 			middlePartProb = IntronModel::emiprobs.probs[s2i_intron(sequence + pos - k)]; // strand does not matter!
 		    } catch (InvalidNucleotideError e) {
-			middlePartProb = 0.25;
+			middlePartProb = (float) 0.25;
 		    }
 		else 
-		    middlePartProb = 0.25;
+		    middlePartProb = (float) 0.25;
 	    break;
 	case utr5intronvar: case utr3intronvar: case rutr5intronvar: case rutr3intronvar:
 	    beginPartProb = longIntronProb(begin, endOfMiddle); // includes length prob
@@ -1405,8 +1371,8 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	default:;
     }
     Double sequenceProb = beginPartProb * middlePartProb * lenProb;
-    if (!(sequenceProb > 0.0))
-	return 0.0;
+    if (!(sequenceProb > 0))
+	return 0;
     /*
      *                           extrinsicQuot
      */
@@ -1420,7 +1386,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
     if (isExon(utype)) {
         int numEPendingInExon=0, numUPendingInExon=0, nep=0; // just used for malus
 	bool UTRFSupported = false, exonFSupported = false;
-	Double partBonus = 1.0;
+	Double partBonus(1);
 	for (Feature *part = exonparts; part!= NULL; part = part->next){
 	    if (part->type == exonpartF || part->type == UTRpartF){
 		if (part->type == exonpartF && part->end >= beginOfBioExon && part->end <= endOfBioExon)
@@ -1650,7 +1616,7 @@ void UtrModel::getEndPositions (int end, int &beginOfEndPart, int &endOfBioExon)
  */
 
 Double UtrModel::seqProb(int left, int right, bool reverse, int type) const {
-    static Double seqProb = 1.0; 
+    static Double seqProb(1); 
     static int oldleft = -1;
     static int oldright = -1;
     static int oldtype = -1; //type 0=5' initial/single, 1= 5', 2=3'
@@ -1662,27 +1628,22 @@ Double UtrModel::seqProb(int left, int right, bool reverse, int type) const {
 	oldleft= -1;
 	oldright= -1;
 	oldtype=-1;
-	return 1.0;
+	return 1;
     }
     if (left > right)
-	return 1.0;
+	return 1;
   
-    if (utype == rutr5single || utype == rutr5init) {
-	seqProb = rInitSnippetProbs5->getSeqProb(right, right-left+1);
-	return seqProb;
-    }
-    if (utype == rutr3term) {
-	seqProb = rSnippetProbs3->getSeqProb(right, right-left+1);
-	return seqProb;
-    }
+    if (utype == rutr5single || utype == rutr5init)
+	return rInitSegProbs5->getSeqProb(left, right);
 
-    //  if (utype == rutr5internal)
-//	return rSnippetProbs->getSeqProb(right, right-left+1);
+    if (utype == rutr3term)
+	return rSegProbs3->getSeqProb(left, right);
+
     if (right == oldright && left <= oldleft && reverse == oldReverse && type == oldtype) {
 	for (curpos = oldleft-1; curpos >= left; curpos--){
 	    try {
 		if (curpos < 0 || (!reverse && curpos-k < 0))
-		    seqProb *= .25;
+		    seqProb *= (float) .25;
 		else {
 		    pn = reverse? s2i.rc(sequence+curpos) : s2i(sequence+curpos-k);
 		    if (type == 0){
@@ -1696,7 +1657,7 @@ Double UtrModel::seqProb(int left, int right, bool reverse, int type) const {
 		    }
 		}
 	    } catch (InvalidNucleotideError e) {
-		seqProb *= .25; //  0.25, 1/4
+		seqProb *= (float) .25; //  0.25, 1/4
 	    }
 	}
 	oldleft = left;
@@ -1704,11 +1665,11 @@ Double UtrModel::seqProb(int left, int right, bool reverse, int type) const {
     }
     
     // compute everything new
-    seqProb = 1.0;
+    seqProb = 1;
     for (curpos = right; curpos >= left; curpos--) {
 	try {
 	    if (curpos < 0 || (!reverse && curpos-k < 0))
-		seqProb *= 0.25;
+		seqProb *= (float) 0.25;
 	    else {
 		pn = reverse? s2i.rc(sequence+curpos) : s2i(sequence+curpos-k);
 		if (type == 0)
@@ -1731,7 +1692,7 @@ Double UtrModel::seqProb(int left, int right, bool reverse, int type) const {
 		}
 	    }
 	} catch (InvalidNucleotideError e) {
-	    seqProb *= 0.25; // 0.25 1/4
+	    seqProb *= (float) 0.25; // 0.25 1/4
 	}
     }
     oldleft = left;
@@ -1745,7 +1706,7 @@ Double UtrModel::tssupSeqProb (int left, int right, bool reverse) const {
     static Double seqProb;
     static int curpos;
     static Seq2Int s2i(tssup_k+1);
-    seqProb = 1.0;
+    seqProb = 1;
 
     for (curpos = right; curpos >= left; curpos--) {
 	try {
@@ -1754,9 +1715,9 @@ Double UtrModel::tssupSeqProb (int left, int right, bool reverse) const {
 	    else if (reverse && curpos >= 0 && curpos + tssup_k < dnalen)
 		seqProb *= tssup_emiprobs[s2i.rc(sequence+curpos)];
 	    else 
-		seqProb *= 0.25;
+		seqProb *= (float) 0.25;
 	} catch (InvalidNucleotideError e) {
-	    seqProb *= 0.25;
+	    seqProb *= (float) 0.25;
 	}
     }
     return seqProb;
@@ -1779,7 +1740,7 @@ Double UtrModel::tssProb(int left) const { // TODO: store results for later to b
     static int transstart;
     int right = left + Constant::tss_upwindow_size + tss_end - 1;
     transstart = isOnFStrand(utype)? right - tss_end + 1 : left + tss_end - 1;
-    extrinsicProb = 1.0;
+    extrinsicProb = 1;
 
     Feature *tsshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(tssF), transstart, isOnFStrand(utype)? plusstrand : minusstrand);
     if (tsshints) {
@@ -1790,14 +1751,14 @@ Double UtrModel::tssProb(int left) const { // TODO: store results for later to b
     } else if (seqFeatColl->collection->hasHintsFile){
 	extrinsicProb = seqFeatColl->collection->malus(tssF);
     } else
-	extrinsicProb = 1.0;
+	extrinsicProb = 1;
 
     // TEMP, for speed: let transcription start be possible only every ttsSpacing-th base
-    if (left % ttsSpacing != 0 && !(extrinsicProb > 1.0))
-	return 0.0;
+    if (left % ttsSpacing != 0 && !(extrinsicProb > 1))
+	return 0;
     
     if (isOnFStrand(utype)){
-	if (tssProbsPlus[left] > - 0.5) // have stored value
+	if (tssProbsPlus[left] > (float) -0.5) // have stored value
 	    return tssProbsPlus[left];
 	reltatapos = findTATA(sequence + right - tss_end - d_tss_tata_max + 1, d_tss_tata_max - d_tss_tata_min - 1);
 	hasTATA = (reltatapos >= 0);
@@ -1809,13 +1770,13 @@ Double UtrModel::tssProb(int left) const { // TODO: store results for later to b
 		tssupSeqProb(tatapos + tata_end, right - tss_end - tss_start, false);    
 	} else {
 	    tssMotifProb = tssMotif->seqProb(sequence + right - tss_end - tss_start + 1);
-	    tataMotifProb = 1.0;
+	    tataMotifProb = 1;
 	    tssupwinProb = tssupSeqProb(left, right - tss_end - tss_start, false);
 	}
 	prob = tssMotifProb * tataMotifProb * tssupwinProb;
 	tssProbsPlus[left] = prob;
     } else { // reverse strand
-	if (tssProbsMinus[left] > - 0.5) // have stored value
+	if (tssProbsMinus[left] > (float) -0.5) // have stored value
 	    return tssProbsMinus[left];
 	reltatapos = findTATA(sequence + left + tss_end + d_tss_tata_max - 1, d_tss_tata_max - d_tss_tata_min - 1, true);
 	hasTATA = (reltatapos <= 0);
@@ -1827,7 +1788,7 @@ Double UtrModel::tssProb(int left) const { // TODO: store results for later to b
 		tssupSeqProb(tatapos + tata_start + 1, right, true);
 	} else {
 	    tssMotifProb = tssMotif->seqProb(sequence + left, true, true);
-	    tataMotifProb = 1.0;
+	    tataMotifProb = 1;
 	    tssupwinProb = tssupSeqProb(left + tss_end + tss_start, right, true);
 	}
 	prob = tssMotifProb * tataMotifProb * tssupwinProb;
@@ -1864,7 +1825,7 @@ void UtrModel::computeTtsProbs(){
 	} else {
 	    ttspos = aataaa_box_begin + aataaa_boxlen + Constant::d_polyasig_cleavage - 1;
 	    ttshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(ttsF), ttspos, plusstrand);
-	    extrinsicProb = 1.0;
+	    extrinsicProb = 1;
 	    if (ttshints) {
 		while (ttshints) {
 		    extrinsicProb  *= ttshints->distance_faded_bonus(ttspos);
@@ -1876,11 +1837,11 @@ void UtrModel::computeTtsProbs(){
 		prob = aataaa_probs[s2i_aataaa(sequence + aataaa_box_begin)];
 		prob *= prob_polya;
 	    } catch (InvalidNucleotideError e) {
-		prob = 0.0;
+		prob = 0;
 	    }
-	    if ((extrinsicProb > 1.0 || aataaa_box_begin % ttsSpacing == 0) && prob == 0)//if no aataaa like pattern: allow tts every ttsSpacing-th base
-		prob = (1.0-prob_polya) * randProb; // randprob = 1/4^6
-	    if (prob > 0.0) { // compute prob of downstream window up to 'tts'
+	    if ((extrinsicProb > 1 || aataaa_box_begin % ttsSpacing == 0) && prob == 0)//if no aataaa like pattern: allow tts every ttsSpacing-th base
+		prob = (1 - prob_polya) * randProb; // randprob = 1/4^6
+	    if (prob > 0) { // compute prob of downstream window up to 'tts'
 		prob *= ttsMotif->seqProb(sequence + aataaa_box_begin + aataaa_boxlen);
 	    }
 	    ttsProbPlus[aataaa_box_begin] = prob * extrinsicProb;
@@ -1891,7 +1852,7 @@ void UtrModel::computeTtsProbs(){
 	    ttsProbPlus[aataaa_box_begin] = 0;
 	} else {
 	    ttshints = seqFeatColl->getFeatureListContaining(A_SET_FLAG(ttsF), ttspos, minusstrand);
-	    extrinsicProb = 1.0;
+	    extrinsicProb = 1;
 	    if (ttshints) {
 		while (ttshints) {
 		    extrinsicProb  *= ttshints->distance_faded_bonus(ttspos);
@@ -1903,11 +1864,11 @@ void UtrModel::computeTtsProbs(){
 	    prob = aataaa_probs[s2i_aataaa.rc(sequence + aataaa_box_begin)];
 	    prob *= prob_polya;
 	} catch (InvalidNucleotideError e) {
-	    prob = 0.0;
+	    prob = 0;
 	}
-	if ((extrinsicProb > 1.0 || aataaa_box_begin % ttsSpacing == 0) && prob == 0)
+	if ((extrinsicProb > 1 || aataaa_box_begin % ttsSpacing == 0) && prob == 0)
 	    prob = (1.0-prob_polya) * randProb;
-	if (prob > 0.0) { // compute prob of downstream window up to 'tts'
+	if (prob > 0) { // compute prob of downstream window up to 'tts'
 	    prob *= ttsMotif->seqProb(sequence + ttspos, true, true);
 	}
 	ttsProbMinus[aataaa_box_begin] = prob * extrinsicProb;
@@ -1920,7 +1881,7 @@ void UtrModel::computeTtsProbs(){
  * Probability of a UTR intron (that is supported by a hint).
  */
 Double UtrModel::longIntronProb(int internalBegin, int internalEnd) const {
-    Double seqProb(1.0);
+    Double seqProb(1);
     Double lenProb;
     int internalIntronLen = internalEnd - internalBegin + 1;
     double p;
@@ -1932,8 +1893,8 @@ Double UtrModel::longIntronProb(int internalBegin, int internalEnd) const {
 	default: throw ProjectError("UtrModel::longIntronProb: Unknown alternative.");
     }
     lenProb = pow(p, internalIntronLen - 1) * (1.0-p);
-    seqProb = intronSnippetProbs->getSeqProb(internalEnd, internalIntronLen);
-/*    
+    seqProb = intronSegProbs->getSeqProb(internalBegin, internalEnd);
+/*
     // malus for intron bases not covered by intronparts
     int coveredBegin = internalEnd+1;
     int coveredEnd = internalBegin-1;

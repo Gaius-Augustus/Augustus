@@ -74,6 +74,7 @@ private:
     static bool            initAlgorithmsCalled;
     static bool            haveSnippetProbs;
     static SnippetProbs    *snippetProbs;
+    static SegProbs        *segProbs;
     static int             boundSpacing; // without hints 5' and 3' transcript end only every ttsSpacing bases, for speed
     static vector<Double>  ttsProbPlus, ttsProbMinus;
     static vector<Double>  tssProbPlus, tssProbMinus;

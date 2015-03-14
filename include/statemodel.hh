@@ -207,5 +207,36 @@ private:
     Double getElemSeqProb(int base, int len);
 };
 
+/*
+ * SegProbs - another class for caching probabilities of sequence segments
+ * idea: cumulative product => get segment prob in constant time via a ratio 
+ */
+class SegProbs {
+public:
+    SegProbs(const char* dna, int k, bool forwardStrand=true) : s2i(k+1) {
+	this->dna = dna;
+	this->k = k;
+	this->forwardStrand = forwardStrand;
+	if (dna)
+	    n = strlen(dna);
+	else 
+	    n = 0;
+	cumProds = new Double[n+1];
+    }
+    ~SegProbs () { delete cumProds; }
+    void setEmiProbs(vector<Double> *emiprobs);
+    Double getSeqProb(int from, int to);
+protected:
+    const char *dna;
+    int n;
+    int k;
+    Seq2Int s2i;
+    vector<Double> *emiprobs;
+    Double *cumProds;
+    bool forwardStrand;
+};
+
+
+
 
 #endif  //  _STATEMODEL_HH

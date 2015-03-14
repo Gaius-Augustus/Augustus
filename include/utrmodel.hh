@@ -183,7 +183,8 @@ private:
   static vector<Integer> intron_emicount;
   //static vector<Double>  intron_emiprobs;
   //static Integer         intron_k;            // order of the markov chain
-  static SnippetProbs    *initSnippetProbs5, *snippetProbs5, *rInitSnippetProbs5, *rSnippetProbs5, *rSnippetProbs3, *intronSnippetProbs;
+  //  static SnippetProbs    *rInitSnippetProbs5, *rSnippetProbs3, *intronSnippetProbs;
+  static SegProbs        *initSegProbs5, *segProbs5, *rInitSegProbs5, *rSegProbs5, *rSegProbs3, *intronSegProbs;
   static bool            initAlgorithmsCalled, haveSnippetProbs;
   static vector<Integer> aataaa_count;
   static vector<Double>  aataaa_probs;

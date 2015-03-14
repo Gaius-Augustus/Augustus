@@ -76,7 +76,7 @@ Motif*         IntronModel::GCassMotif = NULL;          // array of Motifs, one 
 Boolean        IntronModel::hasSpliceSites = false;
 Double         IntronModel::asspseudo = .1;                  // pseudocount for patterns in acceptor splice sites
 Double         IntronModel::dsspseudo = .1;                  // pseudocount for patterns in donor splice sites 
-Double         IntronModel::dssneighborfactor = 0.01; 
+Double         IntronModel::dssneighborfactor = (float) 0.01; 
 SnippetProbs*  IntronModel::snippetProbs;
 SnippetProbs*  IntronModel::rSnippetProbs;
 bool           IntronModel::initAlgorithmsCalled = false;
@@ -223,7 +223,7 @@ void IntronModel::readProbabilities( int parIndex ){
 
 	    istrm >> goto_line_after( "[DSS]" );
 	    istrm >> comment >> size >> comment >> c_dss >> comment >> dsspseudo; 	    
-	    dssprobs.assign( size, 0.0);
+	    dssprobs.assign( size, 0);
 	    istrm >> comment >> ws;
 	    for (int pn=0; pn<size; pn++){
 		int dummy_pn = s2i_d.read(istrm);
@@ -251,7 +251,7 @@ void IntronModel::readProbabilities( int parIndex ){
 	    //------------------------------------------
 	    istrm >> goto_line_after( "[LENGTH]" );
 	    istrm >> comment >> d;
-	    lenDist.assign(d+1, 0.0);
+	    lenDist.assign(d+1, 0);
 	    for( int i = 0; i < lenDist.size(); i++ ){
 		istrm >> comment >> dbl;
 		lenDist[i] = dbl / 1000;
@@ -341,7 +341,7 @@ void IntronModel::readAllParameters(){
 
 	    istrm >> goto_line_after( "[DSS]" );
 	    istrm >> comment >> size >> comment >> c_dss >> comment >> dsspseudo; 	    
-	    dssprobs.assign( size, 0.0);
+	    dssprobs.assign( size, 0);
 	    istrm >> comment >> ws;
 	    for (int pn=0; pn<size; pn++){
 		int dummy_pn = s2i_d.read(istrm);
@@ -369,7 +369,7 @@ void IntronModel::readAllParameters(){
 	    //------------------------------------------
 	    istrm >> goto_line_after( "[LENGTH]" );
 	    istrm >> comment >> d;
-	    lenDist.assign(d+1, 0.0);
+	    lenDist.assign(d+1, 0);
 	    for( int i = 0; i < lenDist.size(); i++ ){
 		istrm >> comment >> dbl;
 		lenDist[i] = dbl / 1000;
@@ -452,8 +452,13 @@ void IntronModel::initAlgorithms( Matrix<Double>& trans, int cur){
 	assMotif = &GCassMotif[gcIdx];
 	probShortIntron = GCprobShortIntron[gcIdx];
 	mal = GCmal[gcIdx];
+	aSSProb(-1, false); // initialize ass probs
+	snippetProbs->setEmiProbs(&emiprobs.probs);
+	rSnippetProbs->setEmiProbs(&emiprobs.probs);
+	haveSnippetProbs = false;
+	initAlgorithmsCalled = true;
     }
-
+    // state-dependent (cur) stuff follows
     /*
      * correction of the transition probabilities into lessDx and equalx (x=0,1,2)
      * which are considered parameters of the intron model
@@ -461,14 +466,14 @@ void IntronModel::initAlgorithms( Matrix<Double>& trans, int cur){
      * and each state i only nonzero transitions in both lessD and equalD or in none of them
      *
      */
-    Double factor = 0.0;
+    Double factor = 0;
     if (itype == lessD0 || itype == lessD1 || itype == lessD2 || 
 	itype == rlessD0 || itype == rlessD1 || itype == rlessD2)
 	factor = probShortIntron;
     else if (itype == equalD0  || itype == equalD1 || itype == equalD2 || 
 	     itype == requalD0  || itype == requalD1 || itype == requalD2)
-	factor = (Double(1.0) - probShortIntron);
-    if (factor > 0.0) 
+	factor = (1 - probShortIntron);
+    if (factor > 0) 
 	for (int i = 0; i < trans.getColSize(); i++) 
 	    if (trans[i][cur] > 0)
 		trans[i][cur] = factor;
@@ -484,24 +489,18 @@ void IntronModel::initAlgorithms( Matrix<Double>& trans, int cur){
   	    geoProb = trans[cur][cur].doubleValue();
 	}
 	// normalize the rest of the line
-	Double sum = 0.0;
+	Double sum = 0;
 	for (int i = 0; i < trans.getRowSize(); i++) {
 	    if (i != cur)
 		sum += trans[cur][i];
 	}
-	if (sum > 0.0) {
+	if (sum > 0) {
 	    for (int i = 0; i < trans.getRowSize(); i++) {
 		if (i != cur)
 		    trans[cur][i] /= mal * sum;
 	    }
 	}
     }
-    snippetProbs->setEmiProbs(&emiprobs.probs);
-    rSnippetProbs->setEmiProbs(&emiprobs.probs);
-    aSSProb(-1, false); // initialize ass probs
-
-    initAlgorithmsCalled = true;
-    haveSnippetProbs = false;
 }
 
 
@@ -522,8 +521,8 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 	- ASS_MIDDLE - ass_upwindow_size;
     int endOfBioIntron; // right end of biological intron
     Double predProb;
-    Double fwdsum(0.0); 
-    Double emiProb, extrinsicQuot = 1.0;
+    Double fwdsum(0); 
+    Double emiProb, extrinsicQuot(1);
     Double transEmiProb;
     vector<Ancestor>::const_iterator it;
     int endOfPred;
@@ -844,7 +843,7 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 Double IntronModel::emiProbUnderModel (int begin, int end) const {
     Seq2Int s2i(k+1);
     static Double returnProb, extrinsicQuot;
-    returnProb = extrinsicQuot = 1.0;
+    returnProb = extrinsicQuot = 1;
     if (inCRFTraining){
 	seqProb(-1, -1); // forget all saved information in static variables
 	if (itype == longass0 || itype == longass1 || itype == longass2 || itype == rlongass0 || itype == rlongass1 || itype == rlongass2)
@@ -878,7 +877,7 @@ Double IntronModel::emiProbUnderModel (int begin, int end) const {
 	     * compute the pure emission probabilities of the intron model 
 	     * of the sequence from begin to end. in viterbi: begin=end
 	     */
-	    returnProb = 1.0;
+	    returnProb = 1;
 	    for(; begin<=end; begin++) {
 		if (begin >= k) {
 		    try {
@@ -909,13 +908,13 @@ Double IntronModel::emiProbUnderModel (int begin, int end) const {
 		     !isPossibleDSS(begin - Constant::dss_end - DSS_MIDDLE)) || 
 		    (end + Constant::ass_upwindow_size + Constant::ass_start + 1 < dnalen -1 &&
 		     !isPossibleASS(end + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE)))
-		    return 0.0;
+		    return 0;
 	    } else {
 		if ((begin - Constant::ass_upwindow_size - Constant::ass_start - ASS_MIDDLE >=0 &&
 		    !isPossibleRASS(begin - Constant::ass_upwindow_size - Constant::ass_start - ASS_MIDDLE)) ||
 		    (end + Constant::dss_end + DSS_MIDDLE < dnalen &&
 		    !isPossibleRDSS(end + Constant::dss_end + DSS_MIDDLE)))
-		    return 0.0;
+		    return 0;
 	    }
 	    Double restSeqProb, lenPartProb;
 	    int intronLength = end - begin + 1 + Constant::dss_end + DSS_MIDDLE 
@@ -930,7 +929,7 @@ Double IntronModel::emiProbUnderModel (int begin, int end) const {
 	        // |---- d ------|-----------------geo---------------------
 	        //    use this:  ^    use local gc index here
 		lenPartProb = lenDist[d] * pow(1.0 - 1.0/mal.doubleValue(), (int) (intronLength-d));
-		restSeqProb = 1.0;
+		restSeqProb = 1;
 		Seq2Int s2i(k+1);
 		int idx = getGCIdx((begin+d < dnalen)? begin+d : dnalen-1);
 		for (int a=begin; a < begin+d; a++)
@@ -945,7 +944,7 @@ Double IntronModel::emiProbUnderModel (int begin, int end) const {
 		  try {
 		    restSeqProb *= (a >= k && a < dnalen - 1)? GCemiprobs[idx].probs[s2i(sequence + a - k)] : 0.25;
 		  } catch(...) {
-		    restSeqProb *= .25;
+		      restSeqProb *= (float) .25;
 		  }
 		}
 	    }
@@ -997,21 +996,21 @@ Double IntronModel::emiProbUnderModel (int begin, int end) const {
  */
 
 Double IntronModel::seqProb(int left, int right) const {
-    static Double seqProb = 1.0;
+    static Double seqProb = 1;
     static int oldleft=-1, oldright=-1;
     static vector<Double> seqProbs;
     
     int curpos;
     Seq2Int s2i(k+1);
     if (left < 0) {   // new initialisation
-	seqProb = 1.0;
+	seqProb = 1;
 	oldleft = oldright = -1;
 	seqProbs.assign(d - DSS_MIDDLE - Constant::dss_end - Constant::ass_start 
-			- ASS_MIDDLE - ass_upwindow_size + 1, 0.0);
-	return 1.0;
+			- ASS_MIDDLE - ass_upwindow_size + 1, 0);
+	return 1;
     }
     if (left > right)
-	return 1.0;
+	return 1;
     
     if (!inCRFTraining){
 	if (itype == lessD0 || itype == lessD1 || itype == lessD2 /*|| itype == equalD0 || itype == equalD1 || itype == equalD2*/)
@@ -1024,7 +1023,7 @@ Double IntronModel::seqProb(int left, int right) const {
 		try {
 		    seqProb *= emiprobs.probs[s2i(sequence + curpos - k)];
 		} catch (InvalidNucleotideError e) {
-		    seqProb *= 0.25;
+		    seqProb *= (float) 0.25;
 		}
 		seqProbs[right-curpos] = seqProb;
 	    }
@@ -1039,7 +1038,7 @@ Double IntronModel::seqProb(int left, int right) const {
     
     // compute everything new
     //cerr << "IntronModel:: seqProb: compute everything new: " << right - left << endl;
-    seqProb = 1.0;
+    seqProb = 1;
     for (curpos = right; curpos >= left; curpos--){
 	try {
 	    if (curpos - k >= 0){
@@ -1048,9 +1047,9 @@ Double IntronModel::seqProb(int left, int right) const {
 		if (inCRFTraining && (countEnd < 0 || (curpos >= countStart && curpos <= countEnd)))
 		    GCemiprobs[gcIdx].addCount(pn);
 	    } else
-		seqProb *= 0.25;
+		seqProb *= (float) 0.25;
 	} catch (InvalidNucleotideError e) {
-	    seqProb *= 0.25;
+	    seqProb *= (float) 0.25;
 	}
 	if ( right-curpos < seqProbs.size())
 	    seqProbs[right-curpos] = seqProb;
@@ -1069,42 +1068,43 @@ Double IntronModel::seqProb(int left, int right) const {
 Double IntronModel::aSSProb(int base, bool forwardStrand){
     static char *astr = new char[Constant::ass_size()+1]; // forget the delete
     static Seq2Int s2i(Constant::ass_size());
-    static Double patternProb(1.0), motifProb(1.0), emiProb(1.0);
-    static int oldPos=-1;
-    static bool oldFstrand=false;
+    static Double patternProb(1), motifProb(1), emiProb(1);
+    static map<int, Double> memoF, memoR; // red-black trees to memoize values that have been computed before
+    static map<int, Double>::const_iterator got;
 
     if (base < 0) {
         // reset static values
 	// otherwise it may reuse values from the previous sequence
-	oldPos = -1;
-	emiProb= 0.0;
-	return 0.0;
+	memoF.clear();
+        memoR.clear();
+	emiProb = 0;
+	return 0;
     }
 
-    if (oldPos == base && forwardStrand == oldFstrand)
-    	return emiProb;
-
-    oldFstrand = forwardStrand;
+    // return memoized values, if available
+    if (forwardStrand && (got = memoF.find(base), got != memoF.end()))
+	return got->second;
+    if (!forwardStrand && (got = memoR.find(base), got != memoR.end()))
+    	return got->second;
+    
     bool nonAG;
-    if (oldFstrand) {
+    if (forwardStrand) {
 	int asspos = base + ass_upwindow_size + Constant::ass_start;
 	if (!isPossibleASS(asspos +1)) {
-	    emiProb = 0.0;
-	    oldPos = base;
-	    return emiProb;
+	    //memoF[base] = 0;
+	    return 0;
 	}
 	nonAG = !onASS(sequence + asspos);
 	strncpy(astr, sequence + base + ass_upwindow_size, Constant::ass_start);
 	strncpy(astr + Constant::ass_start, sequence + asspos + ASS_MIDDLE, Constant::ass_end);
 	// determine motifProb, the probability of the motif
 	motifProb = (base >= assMotif->k)  ? 
-	    assMotif->seqProb(sequence + base) : 0.0;
+	    assMotif->seqProb(sequence + base) : 0;
     } else {
 	int asspos = base + Constant::ass_end;
 	if (!isPossibleRASS(asspos)) {
-	    oldPos = base;
-	    emiProb = 0.0;
-	    return emiProb;
+	    //memoR[base] = 0;
+	    return 0;
 	}
 	nonAG = !onRASS(sequence + asspos);
 	putReverseComplement(astr, sequence + asspos + ASS_MIDDLE, Constant::ass_start);
@@ -1137,7 +1137,10 @@ Double IntronModel::aSSProb(int base, bool forwardStrand){
     }
 
     emiProb = motifProb * patternProb;
-    oldPos = base;
+    if (forwardStrand)
+	memoF[base] = emiProb;	
+    else
+	memoR[base] = emiProb;
     return emiProb;
 }
 
@@ -1150,19 +1153,19 @@ Double IntronModel::dSSProb(int base, bool forwardStrand){
     static char *astr = new char[Constant::dss_size()+1]; // forget the delete
     static Seq2Int s2i(Constant::dss_size());
     if (base < 0)
-	return 0.0;
+	return 0;
     bool nonGT;
     if (forwardStrand) { // forward strand
 	int dsspos = base + Constant::dss_start;
 	if (!isPossibleDSS(dsspos))
-	    return 0.0;
+	    return 0;
 	nonGT = !onDSS(sequence + dsspos);
 	strncpy(astr, sequence + base, Constant::dss_start);
 	strncpy(astr + Constant::dss_start, sequence + dsspos + DSS_MIDDLE, Constant::dss_end);
     } else { // reverse complement
 	int dsspos = base + Constant::dss_end;
 	if (!isPossibleRDSS(dsspos + 1))
-	    return 0.0;
+	    return 0;
 	nonGT = !onRDSS(sequence + dsspos);
 	putReverseComplement(astr, sequence + dsspos + DSS_MIDDLE, Constant::dss_start);
 	putReverseComplement(astr + Constant::dss_start, sequence + base, Constant::dss_end);
@@ -1179,7 +1182,7 @@ Double IntronModel::dSSProb(int base, bool forwardStrand){
 	//cout << "dssprob= " << dssprob << " idx= " << idx << " avprobs=" << dssBinProbs.avprobs[idx] << endl;
 	return dssBinProbs.avprobs[idx];
     } catch (InvalidNucleotideError e) {
-	return 0.0; // don't predict splice site when there is an unknown nucleotide
+	return 0; // don't predict splice site when there is an unknown nucleotide
     }
 }
 

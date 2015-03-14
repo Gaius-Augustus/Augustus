@@ -388,3 +388,55 @@ Double SnippetList::getProb(int base, int &partlen) {
 	return s->next->prob;
     }
 }
+
+/*
+ * SegProbs::setEmiProbs
+ */
+void SegProbs::setEmiProbs(vector<Double> *emiprobs) {
+    this->emiprobs = emiprobs;
+    cumProds[0] = .25;
+    Double p;
+    for (int i=1; i<=n; i++){
+	if (forwardStrand) {
+	    try {
+		if (i<k)
+		    throw InvalidNucleotideError('\0');
+		p = (*emiprobs)[s2i(dna + i - k)];
+	    } catch (InvalidNucleotideError){
+		p = 0.25;
+	    }
+	} else {
+	    try {
+		if (i >= n-k)
+		    throw InvalidNucleotideError('\0');
+		p = (*emiprobs)[s2i.rc(dna + i)];
+	    } catch (InvalidNucleotideError){
+		p = 0.25;
+	    }
+	}
+	cumProds[i] = cumProds[i-1] * p;
+    }
+} 
+
+/*
+ * SegProbs::getSeqProb
+ */
+Double SegProbs::getSeqProb(int from, int to) {
+    if (from == to){
+	try {
+	    if (forwardStrand)
+		return (*emiprobs)[s2i(dna + to - k)];
+	    else
+		return (*emiprobs)[s2i.rc(dna + to)];
+	} catch (InvalidNucleotideError) {
+	    return .25;
+	}
+    }
+    if (to > n)
+	to = n;
+    Double r = cumProds[to];
+    if (from < 1)
+	return r;
+    else
+	return r / cumProds[from - 1];
+}

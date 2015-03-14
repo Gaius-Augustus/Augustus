@@ -33,6 +33,7 @@ Boolean         NcModel::hasLenDist = false;
 Boolean         NcModel::initAlgorithmsCalled = false;
 Boolean         NcModel::haveSnippetProbs = false;
 SnippetProbs*   NcModel::snippetProbs = NULL;
+SegProbs*       NcModel::segProbs = NULL;
 int             NcModel::boundSpacing = 10; // without hints 5' and 3' transcript end only every ttsSpacing bases, for speed
 vector<Double>  NcModel::ttsProbPlus;
 vector<Double>  NcModel::ttsProbMinus;
@@ -54,6 +55,9 @@ NcModel::~NcModel( ){
     if (--nccount == 0){
 	if (snippetProbs) 
 	    delete snippetProbs;
+	if (segProbs)
+	    delete
+		segProbs;
     }
 }
 
@@ -68,7 +72,6 @@ void NcModel::init() {
 	return;
     }
 }
-
 
 /*
  * registerPars
@@ -100,8 +103,11 @@ void NcModel::printProbabilities( int idx, BaseCount *bc, const char* suffix ){
 void NcModel::initSnippetProbs() {
     if (snippetProbs)
 	delete snippetProbs;
+    if (segProbs)
+	delete segProbs;
 
     snippetProbs = new SnippetProbs(sequence, IntronModel::k);
+    segProbs = new SegProbs(sequence, IntronModel::k);
     haveSnippetProbs = true;
 }
 
@@ -119,6 +125,7 @@ void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
 
     if (!initAlgorithmsCalled) {
 	snippetProbs->setEmiProbs(&IntronModel::emiprobs.probs);
+	segProbs->setEmiProbs(&IntronModel::emiprobs.probs);
 	precomputeTxEndProbs();
 	computeLengthDistributions();
     }
@@ -507,7 +514,8 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	    {
 		int internalIntronLen = endOfMiddle - begin + 1;
 		lenProb = pow(pIntron, internalIntronLen - 1) * (1.0-pIntron);
-		middlePartProb = snippetProbs->getSeqProb(endOfMiddle, internalIntronLen);
+		middlePartProb = //snippetProbs->getSeqProb(endOfMiddle, internalIntronLen);
+		    segProbs->getSeqProb(begin, endOfMiddle);
 		break;
 	    }
 	default: ;
@@ -683,9 +691,9 @@ Double NcModel::seqProb(int left, int right) const {
     if (left > right)
 	return 1.0;
     
-    return snippetProbs->getSeqProb(right, right-left+1);
+    return //snippetProbs->getSeqProb(right, right-left+1);
+	segProbs->getSeqProb(left, right);
 }
-
 
 /*
  * Precomputes the probability of the transcription termination and initiation sites

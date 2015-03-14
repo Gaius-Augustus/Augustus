@@ -310,7 +310,7 @@ void ExonModel::init() {
      * Default values for the parameters.
      */
     k = 4;
-    patpseudo  = Double(1.0);   
+    patpseudo  = Double(1);   
     slope_of_bandwidth = 0.1;   // for smoothing
     minwindowcount=3;           // see class Smooth in commontrain.hh	
     try{
@@ -457,10 +457,10 @@ void ExonModel::readProbabilities(int parIndex) {
 	    istrm >> comment >> numSingle >> numInitial >> numInternal >> numTerminal;
 	    istrm >> comment >> numHugeSingle >> numHugeInitial >> numHugeInternal >> numHugeTerminal;
 	    istrm >> comment;
-	    lenDistSingle.assign(Constant::max_exon_len+1, 0.0);
-	    lenDistInitial.assign(Constant::max_exon_len+1, 0.0);
-	    lenDistInternal.assign(Constant::max_exon_len+1, 0.0);
-	    lenDistTerminal.assign(Constant::max_exon_len+1, 0.0);
+	    lenDistSingle.assign(Constant::max_exon_len+1, 0);
+	    lenDistInitial.assign(Constant::max_exon_len+1, 0);
+	    lenDistInternal.assign(Constant::max_exon_len+1, 0);
+	    lenDistTerminal.assign(Constant::max_exon_len+1, 0);
 	    double boostfactor = 1.0;
 	    for( int i = 0; i <= exonLenD; i++ ){
 		istrm >> dummyi;
@@ -481,7 +481,7 @@ void ExonModel::readProbabilities(int parIndex) {
 	    }
 	    // single exon can't be shorter than min_coding_len
 	    for ( int i = 0; i < Constant::min_coding_len; i++) 
-		lenDistSingle[i] = 0.0;
+		lenDistSingle[i] = 0;
 	    fillTailsOfLengthDistributions();
 	    hasLenDist = true;
 	}
@@ -645,10 +645,10 @@ void ExonModel::readAllParameters(){
       istrm >> comment >> numSingle >> numInitial >> numInternal >> numTerminal;
       istrm >> comment >> numHugeSingle >> numHugeInitial >> numHugeInternal >> numHugeTerminal;
       istrm >> comment;
-      lenDistSingle.assign(Constant::max_exon_len+1, 0.0);
-      lenDistInitial.assign(Constant::max_exon_len+1, 0.0);
-      lenDistInternal.assign(Constant::max_exon_len+1, 0.0);
-      lenDistTerminal.assign(Constant::max_exon_len+1, 0.0);
+      lenDistSingle.assign(Constant::max_exon_len+1, 0);
+      lenDistInitial.assign(Constant::max_exon_len+1, 0);
+      lenDistInternal.assign(Constant::max_exon_len+1, 0);
+      lenDistTerminal.assign(Constant::max_exon_len+1, 0);
       
       for( int i = 0; i <= exonLenD; i++ ){
 	istrm >> dummyi;
@@ -663,13 +663,13 @@ void ExonModel::readAllParameters(){
       }
       // single exon can't be shorter than min_coding_len
       for ( int i = 0; i < Constant::min_coding_len; i++) 
-	  lenDistSingle[i] = 0.0;
+	  lenDistSingle[i] = 0;
       fillTailsOfLengthDistributions();
       hasLenDist = true;
     }
 
     // if requested (e.g. on bacteria), boost the probabilities of lengths > L by (1+E)^{i-L}
-    Double boostfactor = 1.0;
+    Double boostfactor = 1;
     for (int i = lenboostL+1; i< lenDistSingle.size(); i++){
 	boostfactor *= 1 + lenboostE;
 	lenDistSingle[i] *= boostfactor;
@@ -855,25 +855,25 @@ void ExonModel::fillTailsOfLengthDistributions( ){
     int k;
     
     a = lenDistSingle[exonLenD];
-    p = Double(1.0) - a/(Double(numHugeSingle+1)/Double(numSingle+1));
+    p = Double(1) - a/(Double(numHugeSingle+1)/Double(numSingle+1));
     for (k = exonLenD+1; k <= Constant::max_exon_len; k++){
 	lenDistSingle[k] = p * lenDistSingle[k-1];
-    } 
+    }
 
     a = lenDistInitial[exonLenD];
-    p = Double(1.0) - a/((Double(numHugeInitial)+1)/(numInitial+1));
+    p = Double(1) - a/((Double(numHugeInitial)+1)/(numInitial+1));
     for (k = exonLenD+1; k <= Constant::max_exon_len; k++){
 	lenDistInitial[k] = p * lenDistInitial[k-1];
-    } 
+    }
 
     a = lenDistInternal[exonLenD];
-    p = Double(1.0) - a/((Double(numHugeInternal)+1)/(numInternal+1));
+    p = Double(1) - a/((Double(numHugeInternal)+1)/(numInternal+1));
     for (k = exonLenD+1; k <= Constant::max_exon_len; k++){
 	lenDistInternal[k] = p * lenDistInternal[k-1];
-    } 
+    }
 
     a = lenDistTerminal[exonLenD];
-    p = Double(1.0) - a/((Double(numHugeTerminal)+1)/(numTerminal+1));
+    p = Double(1) - a/((Double(numHugeTerminal)+1)/(numTerminal+1));
     for (k = exonLenD+1; k <= Constant::max_exon_len; k++){
 	lenDistTerminal[k] = p * lenDistTerminal[k-1];
     }
@@ -1074,7 +1074,7 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 	// main work done in this funcion call
 	int endOfPred = beginOfStart - beginPartLen -1;
 	Double notEndPartProb = notEndPartEmiProb(beginOfStart, right, frameOfRight, extrinsicexons);
-	if (notEndPartProb <= 0.0 || endOfPred >= dnalen) 
+	if (notEndPartProb <= 0 || endOfPred >= dnalen) 
 	    continue;
 	// - initial or single exon starts right at pos 1
 	// - left truncated internal or terminal exon
@@ -1217,7 +1217,7 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
     int endOfPred2 = endOfPred + ovlp;
     int endOfBioExon; // of left gene, depends on endOfPred2 and on type of exon
     int bioOvlp; // actual number of bases shared in the two exons
-    Double lenCorrection = Double(4.0).pow(ovlp); // heuristic, because bases in overlap are evaluated twice
+    Double lenCorrection = Double(4).pow(ovlp); // heuristic, because bases in overlap are evaluated twice
     Double lenProb;
     const ViterbiColumnType& predForw =  forward[endOfPred2 >= 0 ? endOfPred2 : 0];
     ViterbiColumnType& predVit = viterbi[endOfPred2 >= 0 ? endOfPred2 : 0]; 
@@ -1237,7 +1237,7 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
       endOfBioExon = endOfPred2  + getBaseOffset(predStateType);
       bioOvlp = endOfBioExon - beginOfBioExon + 1;
       if (bioOvlp < 0)
-	  lenProb = 1.0;
+	  lenProb = 1;
       else if (bioOvlp <= Constant::maxOvlp) {
 	  if (isOnFStrand(etype) == isOnFStrand(predStateType))
 	      lenProb = Constant::head2tail_ovlp[bioOvlp];
@@ -1246,7 +1246,7 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
 	  else 
 	      lenProb = Constant::tail2tail_ovlp[bioOvlp];
       } else
-	  lenProb = 0.0;
+	  lenProb = 0;
       if (lenProb == 0)
 	  continue;
       Double transEmiProb = it->val * emiProb * lenProb * lenCorrection;
@@ -1284,15 +1284,15 @@ void ExonModel::processOvlpOption(ViterbiMatrixType& viterbi, ViterbiMatrixType&
  */
 
 Double ExonModel::endPartEmiProb(int end) const {
-    static Double endPartProb = 0.0;
+    static Double endPartProb(0);
     Feature *feature;
-    Double extrinsicEmiQuot = 1.0;
+    Double extrinsicEmiQuot(1);
     switch( etype ){
         case singleG: case terminal:
   	{
 	    int stppos = end - STOPCODON_LEN + 1;
 	    if( stppos < 0 || stppos > dnalen-3 || !GeneticCode::isStopcodon(sequence + stppos) )
-	      endPartProb = 0.0;
+	      endPartProb = 0;
 	    else { 
 		// assign probabilities to the stop codons
 		// human: taa 28%, tga 48%, tag 24%
@@ -1329,7 +1329,7 @@ Double ExonModel::endPartEmiProb(int end) const {
 	    int startpos = end - trans_init_window - STARTCODON_LEN + 1;
 	    if (startpos >= 0 && GeneticCode::isStartcodon(sequence + startpos, true)) {
 		endPartProb = GeneticCode::startCodonProb(sequence + startpos, true);
-		if (endPartProb > 0.0){
+		if (endPartProb > 0){
 		    if (startpos + STARTCODON_LEN + trans_init_window - 1 + tis_motif_memory < dnalen){
 			endPartProb *= transInitMotif->seqProb(sequence + startpos + STARTCODON_LEN, true, true);// HMM
 			if (transInitBinProbs.nbins >= 1) {
@@ -1343,7 +1343,7 @@ Double ExonModel::endPartEmiProb(int end) const {
 			endPartProb = pow(0.25, (double)(dnalen-(startpos + STARTCODON_LEN)));
 		}
 	    } else 
-		endPartProb = 0.0;
+		endPartProb = 0;
 	    // check if we have extrinsic information about a reverse start codon
 	    feature = seqFeatColl->getFeatureListOvlpingRange(startF, startpos, startpos + STARTCODON_LEN - 1 , minusstrand); 
 	    if (feature) {
@@ -1366,13 +1366,13 @@ Double ExonModel::endPartEmiProb(int end) const {
 	{
 	    int dsspos = end + Constant::dss_start + 1;
 	    if (end == dnalen-1) {// exon is longer than dna, right truncated exon
-	      endPartProb = 1.0;  // in this case allow that there is no splice site consensus
+	      endPartProb = 1;  // in this case allow that there is no splice site consensus
 	    } else if ((dsspos + DSS_MIDDLE - 1 < dnalen && !isPossibleDSS(dsspos)) || 
 		       end + Constant::dss_start >= dnalen || 
 		       orf->leftmostExonBegin(win - 1, end + Constant::dss_start, true) >= end)
-		endPartProb = 0.0;
+		endPartProb = 0;
 	    else 
-		endPartProb = 1.0;
+		endPartProb = 1;
 	    feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(dssF), dsspos, plusstrand);
 	    if (feature) {
 		while (feature) {
@@ -1387,15 +1387,15 @@ Double ExonModel::endPartEmiProb(int end) const {
 	{
 	    int asspos = end + Constant::ass_end + 1;
 	    if (end == dnalen-1){ // exon is longer than dna, right truncated exon
-	      endPartProb = 1.0;  // in this case allow that there is no splice site consensus
+	      endPartProb = 1;  // in this case allow that there is no splice site consensus
 	    } else if (end + Constant::ass_end + ASS_MIDDLE < dnalen && isPossibleRASS(asspos)){
 #ifdef DEBUG
 		if (!seqFeatColl->validRASSPattern(sequence + asspos))
 		    throw ProjectError("pattern found is not valid");
 #endif
-		endPartProb = 1.0;
+		endPartProb = 1;
 	    } else 
-		endPartProb = 0.0;
+		endPartProb = 0;
 	    feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(assF), asspos, minusstrand);
 	    if (feature)
 		while (feature) {
@@ -1408,7 +1408,7 @@ Double ExonModel::endPartEmiProb(int end) const {
 	    break;
 	default:
 	    cerr << "ExonModel::viterbiAlgorithm: unknown alternative." << endl;
-	    endPartProb =  0.0;
+	    endPartProb =  0;
     }
     return endPartProb * extrinsicEmiQuot;
 }
@@ -1429,7 +1429,7 @@ Double ExonModel::endPartEmiProb(int end) const {
  */
 
 Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRight, Feature *exonparts) const {
-    Double beginPartProb, restSeqProb, lenPartProb;
+    Double beginPartProb;
     Feature *feature;
     Double extrinsicQuot = 1;
 
@@ -1443,7 +1443,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 	    if (beginOfBioExon >= 0 && beginOfBioExon < dnalen - 2 &&
 		GeneticCode::isStartcodon(sequence + beginOfBioExon)){
 		beginPartProb = GeneticCode::startCodonProb(sequence + beginOfStart - STARTCODON_LEN);
-		if (beginPartProb > 0.0){
+		if (beginPartProb > 0){
 		    // two cases ... . the normal one with enough sequence space before the gene
 		    int transInitStart = beginOfBioExon - trans_init_window;
 		    if (transInitStart > transInitMotif->k){
@@ -1473,17 +1473,17 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 			extrinsicQuot = seqFeatColl->collection->malus(startF);
 		}
 	    } else 
-		beginPartProb = 0.0; 
+		beginPartProb = 0; 
 	    break;
 	case terminal: case internal0: case internal1: case internal2:
 	    if (beginOfStart > 0) {
 		// only a shortcut if there is no possible ass at the right position:
 		if ((beginOfBioExon < 0) || 
 		    ((beginOfBioExon - ASS_MIDDLE >=0 ) && !isPossibleASS(beginOfBioExon - 1)))
-		    beginPartProb = 0.0;
+		    beginPartProb = 0;
 		else 
-		    beginPartProb = 1.0; // splice site is evaluated in other state
-		if (beginPartProb > 0.0){
+		    beginPartProb = 1; // splice site is evaluated in other state
+		if (beginPartProb > 0){
 		    feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(assF), beginOfBioExon - 1, plusstrand);
 		    if (feature) {
 			while (feature) {
@@ -1494,14 +1494,14 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 		        extrinsicQuot = seqFeatColl->collection->malus(assF) * seqFeatColl->localSSMalus(assF, beginOfBioExon - 1, plusstrand);
 		}
 	    } else if (beginOfStart == 0) // left truncated
-	        beginPartProb = 1.0;
+	        beginPartProb = 1;
 	    else 
-	        beginPartProb = 0.0;
+	        beginPartProb = 0;
 	    break;
 	case rsingleG: case rterminal0: case rterminal1: case rterminal2:
 	    // reverse stop codon
 	    if (beginOfBioExon < 0)
-		beginPartProb = 0.0;
+		beginPartProb = 0;
 	    else if (strncmp(sequence + beginOfBioExon, "tta", 3)==0)
 		beginPartProb = Constant::ochreprob;
 	    else if (strncmp(sequence + beginOfBioExon, "cta", 3)==0)
@@ -1509,9 +1509,9 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 	    else if (strncmp(sequence + beginOfBioExon, "tca", 3)==0)
 		    beginPartProb = Constant::opalprob;
 	    else 
-		beginPartProb = 0.0;
+		beginPartProb = 0;
 	    // extrinsic info about a reverse stop codon?
-	    if (beginPartProb > 0.0){
+	    if (beginPartProb > 0){
 	       feature = seqFeatColl->getFeatureListOvlpingRange(stopF, beginOfStart-3, beginOfStart-1 , minusstrand); 
 	       if (feature) {
 		 while (feature) {
@@ -1532,12 +1532,12 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 	case rinitial: case rinternal0: case rinternal1: case rinternal2:
 	    // reverse donor splice site
 	    if (beginOfStart == 0)
-	      beginPartProb = 1.0; // left truncated
+	      beginPartProb = 1; // left truncated
 	    else if (beginOfBioExon < 0 || (beginOfBioExon - DSS_MIDDLE > 0 && !isPossibleRDSS(beginOfBioExon - 1)))
-		beginPartProb = 0.0;
+		beginPartProb = 0;
 	    else 
-		beginPartProb = 1.0; // splice site is evaluated in other state
-	    if (beginPartProb > 0.0){
+		beginPartProb = 1; // splice site is evaluated in other state
+	    if (beginPartProb > 0){
 		feature = seqFeatColl->getFeatureListContaining(A_SET_FLAG(dssF), beginOfBioExon - 1, minusstrand);
 		if (feature) {
 		    while (feature) {
@@ -1553,13 +1553,13 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 	    break;
     }
 
-    if (!(beginPartProb > 0.0)) 
-	return 0.0;
+    if (!(beginPartProb > 0)) 
+	return 0;
 	
     /*
      * sequence emission probability: restSeqProb
      */
-
+    Double restSeqProb;
     if (beginOfStart > right) {
 	/*
 	 * inner sequence empty or negative length = overlapping begin and end part
@@ -1574,7 +1574,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 	/*
 	 *  inner sequence has length <= k+1, a short exon but with inner sequence of positive length
 	 */
-	restSeqProb = 1.0;
+	restSeqProb = 1;
 	Seq2Int s2i(right-beginOfStart+1);
 	try {
 	    if (isOnFStrand(etype))
@@ -1727,30 +1727,31 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
     /*
      * compute the probability of the length
      */
+    Double lenPartProb;
     int endOfBioExon = right + innerPartEndOffset;
     int exonLength = endOfBioExon - beginOfBioExon + 1;
 
     if (exonLength < 1) {
-	lenPartProb = 0.0;
+	lenPartProb = 0;
     } else{
 	switch( etype ){
 	    case singleG: case rsingleG:
 		if (exonLength%3 == 0)
 		    lenPartProb = 3*lenDistSingle[exonLength];
 		else
-		    lenPartProb = 0.0;
+		    lenPartProb = 0;
 		break;
 	    case initial0: case initial1: case initial2:
 		if (exonLength%3 == win && exonLength > 2) 
 		    lenPartProb = 3*lenDistInitial[exonLength];
 		else
-		    lenPartProb = 0.0;
+		    lenPartProb = 0;
 		break;
 	    case rinitial:
 		if (exonLength > 2)
 		    lenPartProb = 3*lenDistInitial[exonLength];
 		else 
-		    lenPartProb = 0.0;
+		    lenPartProb = 0;
 		break;
 	    case internal0: case internal1: case internal2: case rinternal0: case rinternal1: case rinternal2:
 		/*
@@ -1766,7 +1767,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 		if (mod3(2-exonLength) == win) 
 		    lenPartProb = 3*lenDistTerminal[exonLength];
 		else 
-		    lenPartProb = 0.0;
+		    lenPartProb = 0;
 		break;
 	    default:
 		throw ExonModelError("Wrong ExonType");
@@ -1781,7 +1782,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
     bool CDSSupport = false;  // used for malus
     int numEPendingInExon=0, numCPendingInExon=0, nep=0; // just used for malus. 
     bool strandOK;
-    Double partBonus = 1.0;
+    Double partBonus = 1;
     for (Feature *part = exonparts; part!= NULL; part = part->next){
 	strandOK = part->strand == bothstrands || part->strand == STRAND_UNKNOWN || isOnFStrand(etype) == (part->strand == plusstrand);
 	if (part->type == exonpartF || part->type == CDSpartF){
@@ -1850,8 +1851,8 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
       if (nep >= 5){// local malus for partially and unevenly supported CDS
 	int zeroCov = seqFeatColl->numZeroCov(beginOfBioExon, endOfBioExon, CDSpartF, isOnFStrand(etype)? plusstrand : minusstrand);
 	Double localPartMalus = seqFeatColl->collection->localPartMalus(CDSpartF, zeroCov, partBonus, nep);
-	if (localPartMalus < 1.0/partBonus) // at least have ab initio probabilities
-	  localPartMalus = 1.0/partBonus;
+	if (localPartMalus < 1 / partBonus) // at least have ab initio probabilities
+	  localPartMalus = 1 / partBonus;
 	// cout << "partBonus[" << beginOfBioExon << ", " << endOfBioExon << "]= " << partBonus << " zeroCov = " << zeroCov << " localPartMalus = " << localPartMalus << endl;
 	extrinsicQuot *= localPartMalus;
       }
@@ -1881,7 +1882,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 
 Double ExonModel::emiProbUnderModel(int begin, int end) const {
     if (begin > end)
-	return 1.0;
+	return 1;
 
     /*
      * endPartProb
@@ -1900,7 +1901,7 @@ Double ExonModel::emiProbUnderModel(int begin, int end) const {
     int beginOfBioExon = beginOfStart - innerPartOffset;
     
     if( !(endPartProb > 0) || (right < 0))
-	return 0.0;
+	return 0;
     
      /*
      * Reading frame of the position "right"
@@ -1915,7 +1916,7 @@ Double ExonModel::emiProbUnderModel(int begin, int end) const {
     int left = orf->leftmostExonBegin(frameOfRight, right, isOnFStrand(etype));
     
     if (beginOfStart < left) // e.g. a stop codon in the reading frame
-	return 0.0;
+	return 0;
     /*
      * get the extrinsic exonpart information about parts falling in this range
      * and with fitting reading frame
@@ -1946,10 +1947,10 @@ Double ExonModel::seqProb(int left, int right, int frameOfRight) const {
 	seqProb = 1;
         oldleft = oldright = oldframe = -1;
         oldtype = TYPE_UNKNOWN;
-	return 1.0;
+	return 1;
     }
     if (left > right) 
-        return 1.0;
+        return 1;
 
     if (right == oldright && frameOfRight == oldframe && left <= oldleft && etype == oldtype) {
         for (int curpos = oldleft-1; curpos >= left; curpos--){
@@ -2030,8 +2031,8 @@ Double ExonModel::eTermSeqProb(int left, int right, int frameOfRight) const {
  */ 
 Double ExonModel::initialSeqProb(int left, int right, int frameOfRight) const {
     if (left > right) 
-        return 1.0;
-    Double seqProb = 1.0; 
+        return 1;
+    Double seqProb = 1;
     Seq2Int s2i(k+1);
     bool reverse = !isOnFStrand(etype);
     for (int curpos = right; curpos >= left; curpos--) {
