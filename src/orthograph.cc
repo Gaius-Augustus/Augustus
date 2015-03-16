@@ -33,27 +33,30 @@ void OrthoGraph::buildGeneList(vector< list<Transcript*>* > &genelist) {
 	    Node* current = graphs[pos]->tail;
 	    Node* head =  graphs[pos]->head;
 	    Node* succExon= NULL;
-	    Gene *currentGene = new Gene();
+	    Gene *currentGene = NULL;;
 	
 	    // convert node labeling of graph into a list of genes (backtracking from tail)
 
 	    State *intr = current->pred->getIntron(current);
-	    if (intr)
+	    if (intr){
+		currentGene = new Gene();
 		addIntronToGene(currentGene, intr);  
-
+	    }
 	    while (current != NULL){
 		if (current == head && succExon){
 		    State *intr = current->getIntron(succExon->pred);
 		    if(intr)
-			addIntronToGene(currentGene,intr);  
+			addIntronToGene(currentGene,intr); 
 		    setGeneProperties(currentGene);
-		    genes->push_front(currentGene);
+		    Transcript *tx = currentGene;
+		    genes->push_front(tx);
+		    currentGene = NULL;
 		}
 		if(current->n_type == IR && succExon){
 		    setGeneProperties(currentGene);
-		    genes->push_front(currentGene);
-		    delete currentGene;
-		    currentGene = new Gene();
+		    Transcript *tx = currentGene;
+		    genes->push_front(tx);
+		    currentGene = NULL;
 		    succExon = NULL;
 		}
 		if(current->n_type >= utrExon){ // add an exon to the current gene
@@ -64,6 +67,8 @@ void OrthoGraph::buildGeneList(vector< list<Transcript*>* > &genelist) {
 		    else{
 			ex = new State(current->begin, current->end, current->castToStateType());
 		    }
+		    if(!currentGene)
+			currentGene = new Gene();
 		    addExonToGene(currentGene, ex);
 		    if(succExon){ // if the current exon is not the last, add an intron from the current exon to the succeding exon
 			if(current->end+1 < succExon->begin){
@@ -78,7 +83,6 @@ void OrthoGraph::buildGeneList(vector< list<Transcript*>* > &genelist) {
 		}
 		current=current->pred;
 	    }
-	    delete currentGene;	    
 	    genelist[pos] = genes;
 	}
     }

@@ -28,9 +28,7 @@ public:
 class NAMGene {
 public:
     NAMGene();
-    ~NAMGene() {
-	if (sampledTxs) delete sampledTxs;
-    }
+    ~NAMGene() {}
 
     void readModelProbabilities( int number = 1);
     StatePath* getSampledPath(const char *dna, const char* seqname = NULL);
@@ -74,7 +72,7 @@ public:
     void setNeedForwardTable(bool b){needForwardTable = b;}
     // set the path and emiProbs for all annotations in annoseq (for option scoreTx)
     void setPathAndProb(AnnoSequence *annoseq, FeatureCollection &extrinsicFeatures);
-    void setAllTranscripts(list<Transcript*> *tl) {if (sampledTxs) delete sampledTxs; sampledTxs = tl;}
+    void setAllTranscripts(list<Transcript*> *tl) {sampledTxs = tl;}
     list<Transcript*> *getAllTranscripts() {return sampledTxs;}
     void getPrepareModels(const char *dna, int len) {prepareModels(dna, len);}
 private:

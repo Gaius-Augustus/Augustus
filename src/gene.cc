@@ -3049,7 +3049,9 @@ void printGeneList(list<AltGene> *genelist, AnnoSequence *annoseq, bool withCS, 
 		}
 	    }
 	    if (withEvidence){
-		(*trit)->printEvidence();
+		Gene *g = dynamic_cast<Gene*> (*trit);
+		if (g)
+		    g->printEvidence();
 	    }
 	}
 	cout << "# end gene " << geneit->id << endl << "###" << endl;
