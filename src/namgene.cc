@@ -857,8 +857,10 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
       delete sampledPath;
       delete condensedsampledPath;
       
+      //cout << "i=" << i << endl;
       // store all sampled transcripts
       for (g = genes; g != NULL; g = g->next) {
+	  //  g->printGFF();
         // initialize, all apostprobs and counts must be set to 1 
 	g->apostprob = 1.0;
 	g->setStatePostProbs(1.0);

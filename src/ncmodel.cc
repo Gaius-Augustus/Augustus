@@ -142,14 +142,17 @@ void NcModel::computeLengthDistributions(){
     double disp = 0.5; // > 0, the larger the dispersion, the larger the variance
     double r = 1/disp;
     double p = mean / (mean + r);
+    int minSingleExonLen = 11; // a more or less random lower bound
     // number of successes until r failures occur, success prob is p
     // variance = mean + dispersion * mean^2
     // use recursive formular for NB-distribution to fill in the table
-    lenDistSingle.resize(Constant::max_exon_len+1, 0.0);
+    lenDistSingle.resize(Constant::max_exon_len+1, 0);
     lenDistSingle[0] = pow(1-p, r);
     for (int k=1; k <= Constant::max_exon_len; k++)
 	lenDistSingle[k] = lenDistSingle[k-1] * p * (k+r-1) / k;
     lenDistInternal = lenDistSingle;
+    for (int k=0; k < minSingleExonLen; k++)
+	lenDistSingle[k] = 0;
 }
 
 /*

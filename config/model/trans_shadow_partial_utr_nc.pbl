@@ -561,7 +561,7 @@
 # ------------------------ forward strand -------------------------- 
 #           -----  noncoding single exon  -----
 # igenic
-71 0     10000000.0
+71 0     1.0
 #           -----  noncoding initial exon  -----
 # noncoding intron single base
 72 73    1.0

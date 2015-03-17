@@ -231,8 +231,8 @@ class Transcript {
 public:
     Transcript() {
 	exons = introns = (State*) NULL;
+	next = NULL;
 	transstart = transend = -1;
-	next  = (Transcript*) NULL;
 	seqname = id = source = "";
 	strand = plusstrand;
 	complete = true;
@@ -334,7 +334,6 @@ public:
     Gene() {
 	utr5exons = utr3exons = utr5introns = utr3introns = (State*) 0;
 	length   = clength = 0;
-	next     = (Gene*) 0;
 	weight   = 1;
 	strand   = plusstrand;
 	frame    = 0;
