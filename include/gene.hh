@@ -232,6 +232,7 @@ public:
     Transcript() {
 	exons = introns = (State*) NULL;
 	transstart = transend = -1;
+	next  = (Transcript*) NULL;
 	seqname = id = source = "";
 	strand = plusstrand;
 	complete = true;
