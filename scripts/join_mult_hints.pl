@@ -27,7 +27,7 @@ my ($lm,$m);
 
 while (<>) {
     @f = split /\t/;
-    if (!defined(@lf)){
+    if (!(@lf)){
 	@lf = @f;	
     } elsif (!(($f[0] == $lf[0]) && ($f[2] == $lf[2]) && ($f[3] == $lf[3]) && ($f[4] == $lf[4])  && ($f[6] == $lf[6]))){
 	print join("\t",@lf);
@@ -49,4 +49,4 @@ while (<>) {
 	$lf[8] = "mult=" . ($lm+$m) . ";" . $lf[8];
     }
 }
-print join("\t",@lf) if (defined(@lf));
+print join("\t",@lf) if (@lf);
