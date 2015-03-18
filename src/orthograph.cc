@@ -33,13 +33,19 @@ void OrthoGraph::buildGeneList(vector< list<Transcript*>* > &genelist) {
 	    Node* current = graphs[pos]->tail;
 	    Node* head =  graphs[pos]->head;
 	    Node* succExon= NULL;
-	    Gene *currentGene = NULL;;
+	    Transcript *currentGene = NULL;
 	
 	    // convert node labeling of graph into a list of genes (backtracking from tail)
 
 	    State *intr = current->pred->getIntron(current);
 	    if (intr){
-		currentGene = new Gene();
+		// this is a bit messy, but the problem is that
+		// the type of a non-coding intron is wrong
+		// so its hard to figure out if the intron ins between coding or non-coding exons
+		if(current->pred->pred->n_type == ncintr || current->pred->pred->n_type == rncintr) // non-coding gene
+		    currentGene = new Transcript();
+		else
+		    currentGene = new Gene();
 		addIntronToGene(currentGene, intr);  
 	    }
 	    while (current != NULL){
@@ -48,14 +54,12 @@ void OrthoGraph::buildGeneList(vector< list<Transcript*>* > &genelist) {
 		    if(intr)
 			addIntronToGene(currentGene,intr); 
 		    setGeneProperties(currentGene);
-		    Transcript *tx = currentGene;
-		    genes->push_front(tx);
+		    genes->push_front(currentGene);
 		    currentGene = NULL;
 		}
 		if(current->n_type == IR && succExon){
 		    setGeneProperties(currentGene);
-		    Transcript *tx = currentGene;
-		    genes->push_front(tx);
+		    genes->push_front(currentGene);
 		    currentGene = NULL;
 		    succExon = NULL;
 		}
@@ -67,8 +71,12 @@ void OrthoGraph::buildGeneList(vector< list<Transcript*>* > &genelist) {
 		    else{
 			ex = new State(current->begin, current->end, current->castToStateType());
 		    }
-		    if(!currentGene)
-			currentGene = new Gene();
+		    if(!currentGene){
+			if(isNcExon(ex->type))
+			    currentGene = new Transcript();
+			else
+			    currentGene = new Gene();
+		    }
 		    addExonToGene(currentGene, ex);
 		    if(succExon){ // if the current exon is not the last, add an intron from the current exon to the succeding exon
 			if(current->end+1 < succExon->begin){

@@ -817,7 +817,7 @@ int AugustusGraph::getBasetype(Status *st, int pos){
       }
     }
   }
-
+  // TODO: add 4 more cases: ncExon+ ncExon- ncIntron+ ncIntron-
   else if(st->name==utr3 || st->name==utr5){
     if(Type >= utr5single && Type <= utr3term)
       return 6; //UTR+
@@ -1106,6 +1106,7 @@ StateType Node::castToStateType(){
 
 string nodeTypeIdentifiers[NUM_NODETYPES]=
   {"IR", "plus0", "plus1", "plus2", "minus0", "minus1", "minus2", "T_plus1", "TA_plus2", "TG_plus2", "T_minus1", "C_minus1", "YY_minus0",
+   "ncintr", "rncintr",
    "utr5intr", "TLstart", "TLstop", "utr3intr", "rutr5intr", "rTLstart", "rTLstop", "rutr3intr", "utr",
    "sampled", "unsampled_exon"};
 

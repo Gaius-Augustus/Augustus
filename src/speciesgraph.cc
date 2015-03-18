@@ -59,6 +59,13 @@ void SpeciesGraph::buildGraph(){
     neutralLines.push_back(C_minus1);
     vector<Node*> YY_minus0(seqlen);                 // intron in phase 0 on reverse strand with preceeding 'TC', 'CT' or 'TT' :  .TC|CT..., .TT|CT... or .CT|CT 
     neutralLines.push_back(YY_minus0);
+
+    vector<Node*> ncintr(seqlen);                   // intron between two non-coding exons on forward strand
+    neutralLines.push_back(ncintr);
+    vector<Node*> rncintr(seqlen);                  // intron between two non-coding exons on reverse strand
+    neutralLines.push_back(rncintr);
+
+
     	
     head = new Node(-1,-1); // initialize nodelist of the graph with head and tail
     nodelist.push_back(head);
@@ -183,7 +190,7 @@ template<class T> Node* SpeciesGraph::addExon(T *exon, vector< vector<Node*> > &
 		    addAuxilaryEdge(pred,node);
 	    }
 	    //}
-	if(pred_type >= IR && pred_type <= YY_minus0){ // add auxiliary nodes to the neutral lines
+	if(pred_type >= IR && pred_type <= rncintr){ // add auxiliary nodes to the neutral lines
 	    list<NodeType> pred_types = getPredTypes(node);
 	    for(list<NodeType>::iterator it = pred_types.begin(); it != pred_types.end(); it++){
 		Node *pred = addAuxNodeToLine(*it, begin, neutralLines);
@@ -203,7 +210,7 @@ template<class T> Node* SpeciesGraph::addExon(T *exon, vector< vector<Node*> > &
 		    addAuxilaryEdge(node,succ);
 	    }
 	    // }
-	if(succ_type >= IR && succ_type <= YY_minus0){ // add auxiliary nodes to the neutral lines
+	if(succ_type >= IR && succ_type <= rncintr){ // add auxiliary nodes to the neutral lines
 	    list<NodeType> succ_types = getSuccTypes(node);
 	    for(list<NodeType>::iterator it = succ_types.begin(); it != succ_types.end(); it++){
 		Node *succ = addAuxNodeToLine(*it, end, neutralLines);
@@ -337,7 +344,16 @@ NodeType SpeciesGraph::getPredType(StateType type, int begin, int end){
 
     int frame = mod3(stateReadingFrames[type]);
 
-    if( isFirstExon(type) ){
+
+    if(isNcExon(type)){
+	if(type == ncsingle || type == ncinit || type == rncsingle || type == rncterm)
+	    return IR;
+	else if(type == ncinternal || type == ncterm)
+	    return ncintr;
+	else if(type == rncinternal || type == rncinit)
+	    return rncintr;
+    }
+    else if( isFirstExon(type) ){
         if(!utr)
             return IR;
         else if(utr && (type == singleG || isInitialExon(type) ) )
@@ -415,7 +431,15 @@ NodeType SpeciesGraph::getSuccType(StateType type){
 
     int frame = mod3(stateReadingFrames[type]);
 
-    if( isLastExon(type)){
+    if(isNcExon(type)){
+	if(type == ncsingle || type == ncterm || type == rncsingle || type == rncinit)
+	    return IR;
+	else if(type == ncinternal || type == ncinit)
+	    return ncintr;
+	else if(type == rncinternal || type == rncterm)
+	    return rncintr;
+    }
+    else if( isLastExon(type)){
 	if(!utr)
 	    return IR;
 	else if(utr && (type == terminal || type == singleG) )
@@ -491,6 +515,8 @@ bool SpeciesGraph::isGeneStart(Node *exon){
     if(!utr)
 	return true;
     StateType type = exon->castToStateType();
+    if(isNcExon(type))
+	return true;
     if( !isCodingExon(type) && !isFirstUTRExon(type) )
 	return false;
     if ( !genesWithoutUTRs && isFirstExon(type) )
@@ -503,6 +529,8 @@ bool SpeciesGraph::isGeneEnd(Node *exon){
     if(!utr)
 	return true;
     StateType type = exon->castToStateType();
+    if(isNcExon(type))
+	return true;
     if( !isCodingExon(type) && !isLastUTRExon(type) )
 	return false;
      if ( !genesWithoutUTRs && isLastExon(type) )

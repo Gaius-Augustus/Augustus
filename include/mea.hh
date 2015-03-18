@@ -16,9 +16,9 @@ bool compareStatus(Status first, Status second);
 bool compareGenes(Gene first, Gene second);
 void printStatelist(list<Status> *list);
 void getMeaGenelist(list<Node*> meaPath, list<Transcript*> *meaGenes);
-void addExonToGene(Gene *gene, State *exon);
-void addIntronToGene(Transcript *gene, Node *predExon, Node *succExon);
-void addIntronToGene(Transcript *gene, State *intr);
+void addExonToGene(Transcript *tx, State *exon);
+void addIntronToGene(Transcript *tx, Node *predExon, Node *succExon);
+void addIntronToGene(Transcript *tx, State *intr);
 StateType getIntronStateType(State *exon1, State *exon2);
-void setGeneProperties(Gene *gene);
+void setGeneProperties(Transcript *tx);
 #endif

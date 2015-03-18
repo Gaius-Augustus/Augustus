@@ -21,10 +21,11 @@ enum Statename{type_unknown=-1, CDS, utr3, utr5, intron, utr3Intron, utr5Intron}
  * neutral nodes: IR, plus0, plus1, plus2, minus0, minus1, minus2 (for each of the 7 neutral lines one type)
  * NOT_KNOWN: default type, for example head and tail
  */
-#define NUM_NODETYPES 25
+#define NUM_NODETYPES 27
 
 enum NodeType{NOT_KNOWN=-1, IR,
 	      plus0, plus1, plus2, minus0, minus1, minus2, T_plus1, TA_plus2, TG_plus2, T_minus1, C_minus1, YY_minus0, // intron types between two CDS exons
+	      ncintr, rncintr, // intron between two non-coding exons
 	      utr5intr, TLstart, TLstop, utr3intr, rutr5intr, rTLstart, rTLstop, rutr3intr, utrExon, // utr types
 	      sampled, unsampled_exon}; // CDS types
 
