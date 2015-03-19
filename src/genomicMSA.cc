@@ -150,8 +150,15 @@ void GenomicMSA::readAlignment(string alignFilename) {
 			}
 			numSpeciesFound++;
 		    } else {
-		        // multiple rows of same species in same block, use only first for now
-		        delete row;
+		        // multiple rows of same species in same block
+			// compare row with the old row for this species and overwrite if 'row' has more non-gap characters
+			if(alignBlock->rows[index]->getSeqLen() >= seqLen ){
+			    delete row;
+			}
+			else{
+			    delete alignBlock->rows[index];
+			    alignBlock->rows[index] = row;
+		        }
 		    }
 		} else {
 		    // "Species " << speciesName << " not in tree"
