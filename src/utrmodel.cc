@@ -108,8 +108,11 @@ Motif*          UtrModel::GCtssMotifTATA = NULL;
 Motif*          UtrModel::tataMotif = NULL;
 Motif*          UtrModel::GCtataMotif = NULL;
 SegProbs*       UtrModel::rInitSegProbs5 = NULL;
+SegProbs*       UtrModel::initSegProbs5 = NULL;
 SegProbs*       UtrModel::rSegProbs3 = NULL;
 SegProbs*       UtrModel::intronSegProbs = NULL;
+SegProbs*       UtrModel::segProbs5 = NULL;
+SegProbs*       UtrModel::rSegProbs5 = NULL;
 bool            UtrModel::initAlgorithmsCalled = false;
 bool            UtrModel::haveSnippetProbs = false;
 vector<Integer> UtrModel::aataaa_count;
@@ -152,10 +155,16 @@ UtrModel::~UtrModel( ){
 
 	if (rInitSegProbs5)
 	    delete rInitSegProbs5;
+	if (initSegProbs5)
+	    delete initSegProbs5;
 	if (rSegProbs3)
 	    delete rSegProbs3;
 	if (intronSegProbs)
 	    delete intronSegProbs;
+	if (segProbs5)
+	    delete segProbs5;
+	if (rSegProbs5)
+	    delete rSegProbs5;
     }
 }
 
@@ -164,7 +173,7 @@ UtrModel::~UtrModel( ){
  */
 void UtrModel::init() {
     try {
-	if (!Properties::getBoolProperty(UTR_KEY))
+	if (!Constant::utr_option_on)
 	    return;
     } catch(ProjectError e) {
 	return;
@@ -718,14 +727,23 @@ void UtrModel::readAllParameters(){
 void UtrModel::initSnippetProbs() {
     if (rInitSegProbs5)
 	delete rInitSegProbs5;
+    if (initSegProbs5)
+	delete initSegProbs5;
     if (rSegProbs3)
 	delete rSegProbs3;
     if (intronSegProbs)
 	delete intronSegProbs;
+    if (segProbs5)
+	delete segProbs5;
+    if (rSegProbs5)
+	delete rSegProbs5;
 
     rInitSegProbs5 = new SegProbs(sequence, k, false);
+    initSegProbs5 = new SegProbs(sequence, k, true);
     rSegProbs3 = new SegProbs(sequence, k, false);
     intronSegProbs = new SegProbs(sequence, IntronModel::k);
+    segProbs5 = new SegProbs(sequence, k, false);
+    rSegProbs5 = new SegProbs(sequence, k, true);
  
    haveSnippetProbs = true;
 }
@@ -772,8 +790,11 @@ void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
       computeTtsProbs();
       
        rInitSegProbs5->setEmiProbs(&utr5init_emiprobs.probs);
+       initSegProbs5->setEmiProbs(&utr5init_emiprobs.probs);
        rSegProbs3->setEmiProbs(&utr3_emiprobs.probs);
        intronSegProbs->setEmiProbs(&IntronModel::emiprobs.probs);
+       segProbs5->setEmiProbs(&utr5_emiprobs.probs);
+       rSegProbs5->setEmiProbs(&utr5_emiprobs.probs);
     }
     initAlgorithmsCalled = true;
     haveSnippetProbs = false;
@@ -1635,10 +1656,16 @@ Double UtrModel::seqProb(int left, int right, bool reverse, int type) const {
   
     if (utype == rutr5single || utype == rutr5init)
 	return rInitSegProbs5->getSeqProb(left, right);
-
     if (utype == rutr3term)
 	return rSegProbs3->getSeqProb(left, right);
-
+    if (type == 1)
+	if (reverse)
+	    return rSegProbs5->getSeqProb(left, right);
+	else
+	    return segProbs5->getSeqProb(left, right);
+    if (type == 0)
+	if (!reverse)
+	    return initSegProbs5->getSeqProb(left, right);
     if (right == oldright && left <= oldleft && reverse == oldReverse && type == oldtype) {
 	for (curpos = oldleft-1; curpos >= left; curpos--){
 	    try {

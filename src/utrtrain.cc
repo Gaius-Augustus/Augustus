@@ -846,7 +846,7 @@ void UtrModel::processTssupSequence( const char* start, const char* end){
  */
 void UtrModel::storeGCPars(int idx){
   try {
-    if (!Properties::getBoolProperty(UTR_KEY))
+    if (!Constant::utr_option_on)
       return;
   } catch(ProjectError e) {
     return;

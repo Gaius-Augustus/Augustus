@@ -481,20 +481,14 @@ void Properties::init( int argc, char* argv[] ){
         throw ProjectError(string("Unknown value for parameter ") + GENEMODEL_KEY + ": " + genemodelValue);
     string transfileValue = "trans_" + strandCFGName + "_" + genemodelValue;
 
-    bool utr_option_on=false;
+    bool utr_option_on = false;
     if (hasProperty(UTR_KEY)){
 	try {
 	    utr_option_on = getBoolProperty(UTR_KEY);
 	} catch (...) {
 	    throw ProjectError("Unknown option for parameter UTR. Use --UTR=on or --UTR=off.");
 	}
-    } 
-    if (utr_option_on) {
-	if (singleStrand || !(genemodelValue == "partial" || genemodelValue == "complete"))
-	    throw ProjectError("UTR only implemented with shadow and partial or complete.");
-	transfileValue += "_utr";
     }
-
     bool nc_option_on = false;
     if (hasProperty(NONCODING_KEY)){
 	try {
@@ -503,14 +497,25 @@ void Properties::init( int argc, char* argv[] ){
 	    throw ProjectError("Unknown option for parameter " NONCODING_KEY ". Use --" 
 			       NONCODING_KEY "=on or --" NONCODING_KEY "=off.");
 	}
-    } 
-    if (nc_option_on) {
-	if (singleStrand || !(genemodelValue == "partial" || genemodelValue == "complete")
-	    || !utr_option_on)
-	    throw ProjectError("Noncoding model (--" NONCODING_KEY "=1) only implemented with --UTR=on, shadow and (partial or complete).");
-	transfileValue += "_nc";
     }
-    
+    if (nc_option_on) {
+	if (singleStrand || !(genemodelValue == "partial" || genemodelValue == "complete"))
+	    throw ProjectError("Noncoding model (--" NONCODING_KEY "=1) only implemented with shadow and --genemodel=partial or --genemodel=complete.");
+	if (!utr_option_on){
+	    cerr << "Noncoding model (--" NONCODING_KEY "=1) only implemented with --UTR=on. Will turn UTR prediction on..." << endl;
+	    utr_option_on = true;
+	    properties[UTR_KEY] = "on";
+	}
+    }
+ 
+    if (utr_option_on) {
+	if (singleStrand || !(genemodelValue == "partial" || genemodelValue == "complete"))
+	    throw ProjectError("UTR only implemented with shadow and partial or complete.");
+	transfileValue += "_utr";
+    } 
+    if (nc_option_on)
+	transfileValue += "_nc";
+
     transfileValue += ".pbl";
     properties[TRANSFILE_KEY] = transfileValue;
     
