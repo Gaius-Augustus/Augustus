@@ -256,7 +256,7 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
   for( int j = 1; j < dnalen; j++ ) { // TODO: this ignores the first nucleotide
       if (cs.idx[j] != curGCIdx) {// check whether GC content has changed, this is in particular the case at the very start
           curGCIdx = cs.idx[j];
-          initAlgorithms(curGCIdx); // update GC content dependent parameters
+	  initAlgorithms(curGCIdx, j, cs.getNextStep(j) - 1); // update GC content dependent parameters
       }
       if (show_progress) {
 	  progress = 1+100*j/dnalen;
@@ -1540,11 +1540,11 @@ void NAMGene::createStateModels( ){
     }
 }
 
-void NAMGene::initAlgorithms(int idx){
+void NAMGene::initAlgorithms(int idx, int from, int to){
   StateModel::resetPars();
   StateModel::setGCIdx(idx);
-  for( int i = 0; i < statecount; ++i ){
-    states[i]->initAlgorithms(transitions, i);
+  for ( int i = 0; i < statecount; ++i ){
+      states[i]->initAlgorithms(transitions, i, from, to);
   }
   /*
    * give the states the possibly implicitly changed transition matrix above 

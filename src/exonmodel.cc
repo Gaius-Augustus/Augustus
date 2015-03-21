@@ -883,7 +883,7 @@ void ExonModel::fillTailsOfLengthDistributions( ){
 /*
  * ===[ ExonModel::initAlgorithms ]=======================================
  */
-void ExonModel::initAlgorithms(Matrix<Double>& trans, int cur) {
+void ExonModel::initAlgorithms(Matrix<Double>& trans, int cur, int from, int to) {
   if (!initAlgorithmsCalled) {
     // stuff that needs to be called once for all exon states
     // set these parameters to the one of the GC content index gcIdx    

@@ -151,10 +151,13 @@ private:
 class ContentStairs {
 public:
   ContentStairs();
+  ~ContentStairs();
   void computeStairs(const char* dna);
+  int getNextStep(int from);
   int *idx; // GC content class index for each position of dna
   const char *dna; // just a pointer, to check whether update is necessary
   int n; // dna length
+  map<int,int> nextStep;
 private:
   int GCwinsize;
 };

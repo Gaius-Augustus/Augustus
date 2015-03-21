@@ -109,6 +109,7 @@ Motif*          UtrModel::tataMotif = NULL;
 Motif*          UtrModel::GCtataMotif = NULL;
 SegProbs*       UtrModel::rInitSegProbs5 = NULL;
 SegProbs*       UtrModel::initSegProbs5 = NULL;
+SegProbs*       UtrModel::segProbs3 = NULL;
 SegProbs*       UtrModel::rSegProbs3 = NULL;
 SegProbs*       UtrModel::intronSegProbs = NULL;
 SegProbs*       UtrModel::segProbs5 = NULL;
@@ -152,19 +153,7 @@ UtrModel::~UtrModel( ){
 	delete tssMotifTATA;
 	delete ttsMotif;
 	delete tataMotif;
-
-	if (rInitSegProbs5)
-	    delete rInitSegProbs5;
-	if (initSegProbs5)
-	    delete initSegProbs5;
-	if (rSegProbs3)
-	    delete rSegProbs3;
-	if (intronSegProbs)
-	    delete intronSegProbs;
-	if (segProbs5)
-	    delete segProbs5;
-	if (rSegProbs5)
-	    delete rSegProbs5;
+	clearSegProbs();
     }
 }
 
@@ -725,27 +714,33 @@ void UtrModel::readAllParameters(){
  * UtrModel::initSnippetProbs
  */
 void UtrModel::initSnippetProbs() {
+    clearSegProbs();
+    rInitSegProbs5 = new SegProbs(sequence, k, false);
+    initSegProbs5 = new SegProbs(sequence, k, true);
+    segProbs3 = new SegProbs(sequence, k, true);
+    rSegProbs3 = new SegProbs(sequence, k, false);
+    intronSegProbs = new SegProbs(sequence, IntronModel::k);
+    segProbs5 = new SegProbs(sequence, k, true);
+    rSegProbs5 = new SegProbs(sequence, k, false);
+ 
+    haveSnippetProbs = true;
+}
+
+void UtrModel::clearSegProbs(){
     if (rInitSegProbs5)
 	delete rInitSegProbs5;
     if (initSegProbs5)
 	delete initSegProbs5;
     if (rSegProbs3)
 	delete rSegProbs3;
+    if (segProbs3)
+	delete segProbs3;
     if (intronSegProbs)
 	delete intronSegProbs;
     if (segProbs5)
 	delete segProbs5;
     if (rSegProbs5)
 	delete rSegProbs5;
-
-    rInitSegProbs5 = new SegProbs(sequence, k, false);
-    initSegProbs5 = new SegProbs(sequence, k, true);
-    rSegProbs3 = new SegProbs(sequence, k, false);
-    intronSegProbs = new SegProbs(sequence, IntronModel::k);
-    segProbs5 = new SegProbs(sequence, k, false);
-    rSegProbs5 = new SegProbs(sequence, k, true);
- 
-   haveSnippetProbs = true;
 }
 
 /*
@@ -754,7 +749,7 @@ void UtrModel::initSnippetProbs() {
  * makes a correction on the transition matrix "trans" and the vector of ancestors
  * this is called after initViterbiAlgorithms
  */
-void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
+void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur, int from, int to){
     if (utype == utr5intron)
 	pUtr5Intron = trans[cur][cur].doubleValue();
     if (utype == utr3intron)
@@ -775,7 +770,6 @@ void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
       tssMotifTATA = &GCtssMotifTATA[gcIdx];
       tataMotif = &GCtataMotif[gcIdx];
       
-
       seqProb(-1,-1, false, -1);
       if (tssProbsPlus.size() != dnalen+1){
 	tssProbsPlus.assign(dnalen+1, -1.0);
@@ -789,15 +783,15 @@ void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
       ttsProbMinus = new Double[dnalen+1];
       computeTtsProbs();
       
-       rInitSegProbs5->setEmiProbs(&utr5init_emiprobs.probs);
-       initSegProbs5->setEmiProbs(&utr5init_emiprobs.probs);
-       rSegProbs3->setEmiProbs(&utr3_emiprobs.probs);
-       intronSegProbs->setEmiProbs(&IntronModel::emiprobs.probs);
-       segProbs5->setEmiProbs(&utr5_emiprobs.probs);
-       rSegProbs5->setEmiProbs(&utr5_emiprobs.probs);
+      rInitSegProbs5->setEmiProbs(&utr5init_emiprobs.probs, from, to + 5); // 5 is just a safety distance
+      initSegProbs5->setEmiProbs(&utr5init_emiprobs.probs, from, to + 5);
+      segProbs3->setEmiProbs(&utr3_emiprobs.probs, from, to + 5);
+      rSegProbs3->setEmiProbs(&utr3_emiprobs.probs, from, to + 5);
+      intronSegProbs->setEmiProbs(&IntronModel::emiprobs.probs, from, to + 5);
+      segProbs5->setEmiProbs(&utr5_emiprobs.probs, from, to + 5);
+      rSegProbs5->setEmiProbs(&utr5_emiprobs.probs, from, to + 5);
     }
     initAlgorithmsCalled = true;
-    haveSnippetProbs = false;
 }
 
 /*
@@ -1179,10 +1173,11 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
     switch( utype ){
 	case utr5single:
 	    beginOfMiddle = begin + Constant::tss_upwindow_size + tss_end;
-	    if (endOfMiddle - beginOfMiddle + 1 >= 0)
-	      middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 0);
-	    else {
-	      middlePartProb = pow (2.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between 5term and first coding exon
+	    if (endOfMiddle - beginOfMiddle + 1 >= 0){
+		middlePartProb = initSegProbs5->getSeqProb(beginOfMiddle, endOfMiddle);
+		// middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 0);
+	    } else {
+		middlePartProb = pow (2.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between 5term and first coding exon
 	    }
 	    beginOfBioExon = begin + Constant::tss_upwindow_size;
 	    lenProb = lenDist5Single[endOfBioExon - beginOfBioExon + 1];
@@ -1196,7 +1191,8 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	    break;
 	case utr5init:
 	    beginOfMiddle = begin + Constant::tss_upwindow_size + tss_end;
-	    middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 0);
+	    middlePartProb = initSegProbs5->getSeqProb(beginOfMiddle, endOfMiddle);
+	    //middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 0);
 	    beginOfBioExon = begin + Constant::tss_upwindow_size;	    
 	    lenProb = lenDist5Initial[endOfBioExon - beginOfBioExon + 1];
 	    if (begin >= 0) {
@@ -1212,7 +1208,8 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
 	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 1);
+		middlePartProb = segProbs5->getSeqProb(beginOfMiddle, endOfMiddle);
+		// middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 1);
 		lenProb = lenDist5Internal[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
@@ -1221,7 +1218,8 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
 	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::dss_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 1);
+		middlePartProb = rSegProbs5->getSeqProb(beginOfMiddle, endOfMiddle);
+		// middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 1);
 		lenProb = lenDist5Internal[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
@@ -1234,7 +1232,8 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
 		if (endOfMiddle - beginOfMiddle + 1 >= 0)
-		    middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 1);
+		    middlePartProb = segProbs5->getSeqProb(beginOfMiddle, endOfMiddle);
+		// middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 1);
 		else {
 		    middlePartProb = pow (4.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between 5term and first coding exon 
 		}
@@ -1244,9 +1243,10 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	case rutr5term:
 	    beginOfMiddle = begin;
 	    beginOfBioExon = begin - Constant::trans_init_window;
-	    if (endOfMiddle - beginOfMiddle + 1 >= 0)
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 1);
-	    else {
+	    if (endOfMiddle - beginOfMiddle + 1 >= 0){
+		middlePartProb = rSegProbs5->getSeqProb(beginOfMiddle, endOfMiddle);
+	    // middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 1);
+	    } else {
 		middlePartProb = pow (4.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between 5term and first coding exon 
 	    }
 	    lenProb = lenDist5Terminal[endOfBioExon - beginOfBioExon + 1];
@@ -1266,10 +1266,11 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	case rutr5single:
 	    beginOfMiddle = begin;
 	    beginOfBioExon = begin - Constant::trans_init_window;
-	    if (endOfMiddle - beginOfMiddle + 1 >= 0)
-	      middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 0);
-            else {
-              middlePartProb = pow (2.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between 5term and first coding exon
+	    if (endOfMiddle - beginOfMiddle + 1 >= 0){
+		middlePartProb = rInitSegProbs5->getSeqProb(beginOfMiddle, endOfMiddle);
+		// middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 0);
+	    } else {
+		middlePartProb = pow (2.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between 5term and first coding exon
             }
 	    lenProb = lenDist5Single[endOfBioExon - beginOfBioExon + 1];
 	    break;
@@ -1278,14 +1279,16 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
 	    if (beginPartProb > 0){
 		beginOfMiddle = begin + Constant::dss_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 0);
+		middlePartProb = rInitSegProbs5->getSeqProb(beginOfMiddle, endOfMiddle);
+		// middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 0);
 		lenProb = lenDist5Initial[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
 	case utr3single:
 	    beginOfMiddle = begin;
 	    beginOfBioExon = begin;
-	    middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
+	    middlePartProb = segProbs3->getSeqProb(beginOfMiddle, endOfMiddle);
+	    // middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
 	    if (endOfBioExon != dnalen-1)
 		lenProb = lenDist3Single[endOfBioExon - beginOfBioExon + 1];
 	    else {
@@ -1305,15 +1308,18 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 		    beginPartProb = 1;
 		lenProb = tailLenDist3Single[endOfBioExon - beginOfBioExon + 1];
 	    }
-	    if (beginPartProb > 0)
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
+	    if (beginPartProb > 0) {
+		middlePartProb = rSegProbs3->getSeqProb(beginOfMiddle, endOfMiddle);
+		// middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
+	    }
 	    break;
 	case utr3init:
 	    beginOfMiddle = begin;
 	    beginOfBioExon = begin;
-	    if (endOfMiddle - beginOfMiddle + 1 >= 0)
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
-	    else
+	    if (endOfMiddle - beginOfMiddle + 1 >= 0) {
+		middlePartProb = segProbs3->getSeqProb(beginOfMiddle, endOfMiddle);
+		// middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
+	    } else
 		middlePartProb = pow (4.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between utr3init and last coding exon
 	    lenProb = lenDist3Initial[endOfBioExon - beginOfBioExon + 1];
 	    break;
@@ -1323,7 +1329,8 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::dss_whole_size();
 		if (endOfMiddle - beginOfMiddle + 1 >= 0) {
-		    middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
+		    middlePartProb = rSegProbs3->getSeqProb(beginOfMiddle, endOfMiddle);
+		    // middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
 		} else {
 		    middlePartProb = pow (4.0,  -(endOfMiddle - beginOfMiddle + 1)); // overlap between rutr3init and last coding exon
 		}
@@ -1335,7 +1342,8 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
 	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
+		middlePartProb = segProbs3->getSeqProb(beginOfMiddle, endOfMiddle);
+		// middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
 		lenProb = lenDist3Internal[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
@@ -1344,7 +1352,8 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE ;
 	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::dss_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
+		middlePartProb = rSegProbs3->getSeqProb(beginOfMiddle, endOfMiddle);
+		// middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
 		lenProb = lenDist3Internal[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
@@ -1353,7 +1362,8 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
 	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
+		middlePartProb = segProbs3->getSeqProb(beginOfMiddle, endOfMiddle);
+		// middlePartProb = seqProb(beginOfMiddle, endOfMiddle, false, 2);
 		if (endOfBioExon != dnalen-1)
 		    lenProb = lenDist3Terminal[endOfBioExon - beginOfBioExon + 1];
 		else 
@@ -1369,7 +1379,8 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 		beginPartProb = pow (.25, beginOfMiddle-1);// part of reverse tts model is before start of dna
 	    }
 	    if (beginPartProb > 0){
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
+		middlePartProb = rSegProbs3->getSeqProb(beginOfMiddle, endOfMiddle);
+		// middlePartProb = seqProb(beginOfMiddle, endOfMiddle, true, 2);
 		lenProb = lenDist3Terminal[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
@@ -1634,8 +1645,8 @@ void UtrModel::getEndPositions (int end, int &beginOfEndPart, int &endOfBioExon)
 /*
  * computes the probability of the emission of the sequence from left to right
  * left and right included
+ * DEPRECATED: this is done with SegProbs now
  */
-
 Double UtrModel::seqProb(int left, int right, bool reverse, int type) const {
     static Double seqProb(1); 
     static int oldleft = -1;
@@ -1653,19 +1664,7 @@ Double UtrModel::seqProb(int left, int right, bool reverse, int type) const {
     }
     if (left > right)
 	return 1;
-  
-    if (utype == rutr5single || utype == rutr5init)
-	return rInitSegProbs5->getSeqProb(left, right);
-    if (utype == rutr3term)
-	return rSegProbs3->getSeqProb(left, right);
-    if (type == 1)
-	if (reverse)
-	    return rSegProbs5->getSeqProb(left, right);
-	else
-	    return segProbs5->getSeqProb(left, right);
-    if (type == 0)
-	if (!reverse)
-	    return initSegProbs5->getSeqProb(left, right);
+
     if (right == oldright && left <= oldleft && reverse == oldReverse && type == oldtype) {
 	for (curpos = oldleft-1; curpos >= left; curpos--){
 	    try {

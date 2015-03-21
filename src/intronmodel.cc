@@ -444,7 +444,7 @@ void IntronModel::initSnippetProbs() {
  *
  * makes a correction on the transition matrix "trans" and on the vector of ancestors
  */
-void IntronModel::initAlgorithms( Matrix<Double>& trans, int cur){
+void IntronModel::initAlgorithms( Matrix<Double>& trans, int cur, int from, int to){
     if (!initAlgorithmsCalled) {
 	seqProb(-1,0);
 	// set these parameters to the one of the GC content index

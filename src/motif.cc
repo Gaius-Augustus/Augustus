@@ -520,6 +520,15 @@ ContentStairs::ContentStairs(){
     // GCwinsize = -1 means the same as infinity, take whole sequence.
   }
 }
+
+/*
+ * ContentStairs destructor
+ */
+ContentStairs::~ContentStairs(){
+    if (idx)
+	delete idx;
+}
+
 /*
  * ContentStairs constructor
  *
@@ -538,6 +547,7 @@ void ContentStairs::computeStairs(const char* dna){
   ContentDecomposition cd;
   n = strlen(dna);
   this->dna = dna; // keep only the pointer
+  nextStep.clear();
   int totterywin = 200; // to smooth out when GC content teeter-totters between two classes
   if (idx)
     delete [] idx;
@@ -588,12 +598,24 @@ void ContentStairs::computeStairs(const char* dna){
       lastStep = i;
       x = idx[i];
     }
-  /* output result
-  x = -2;
-  cout << "after second smoothing:" << endl;
-  for (int i=0; i < n; i++)
-    if (idx[i] != x) {
-      x = idx[i];
-      cout << i << " -  :" << x << endl;
-      }*/
+  // store nextSteps
+  x = 0;
+  for (int i=1; i < n; i++)
+      if (idx[i] != idx[x]) {
+	  nextStep[x] = i;
+	  x = i;
+      }
+  if (nextStep[1] == 0)
+      nextStep[1] = nextStep[0]; // this is an exception so the Viterbi algorithm can start at 1 instead of 0
+  nextStep[x] = n;
+  // for (map<int,int>::iterator it = nextStep.begin(); it != nextStep.end(); ++it)
+  //    cout << it->first << " => " << it->second << '\n';
+}
+
+int ContentStairs::getNextStep(int from) {
+    map<int, int>::iterator it = nextStep.find(from);
+    if (it != nextStep.end())
+	return it->second;
+    else 
+	return n;
 }

@@ -117,7 +117,7 @@ void NcModel::initSnippetProbs() {
  * makes a correction on the transition matrix "trans" and the vector of ancestors
  * this is called after initViterbiAlgorithms
  */
-void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
+void NcModel::initAlgorithms( Matrix<Double>& trans, int cur, int from, int to){
     if (nctype == ncintron || nctype == rncintron)
 	pIntron = trans[cur][cur].doubleValue();
     else 

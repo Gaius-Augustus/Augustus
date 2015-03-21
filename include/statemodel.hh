@@ -74,7 +74,7 @@ public:
     virtual void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int,
 					   AlgorithmVariant, OptionListItem&) const = 0;
     virtual Double emiProbUnderModel(int , int) const = 0;
-    virtual void initAlgorithms(Matrix<Double>&, int) = 0;
+    virtual void initAlgorithms(Matrix<Double>&, int, int from = -1, int to = -1) = 0;
     virtual ~StateModel() {} // nothing to do here since class is purely abstract
 
     // class functions
@@ -224,7 +224,7 @@ public:
 	cumProds = new Double[n+1];
     }
     ~SegProbs () { delete cumProds; }
-    void setEmiProbs(vector<Double> *emiprobs);
+    void setEmiProbs(vector<Double> *emiprobs, int from = -1, int to = -1);
     Double getSeqProb(int from, int to);
 protected:
     const char *dna;

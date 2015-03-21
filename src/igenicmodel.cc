@@ -62,7 +62,7 @@ void IGenicModel::init() {
  * this is called before running the inference algorithms and whenever the
  * gc content class changes
  */
-void IGenicModel::initAlgorithms (Matrix<Double>& trans, int cur) {
+void IGenicModel::initAlgorithms (Matrix<Double>& trans, int cur, int from, int to) {
   // set these parameters to the one of the GC content index gcIdx
   if (!Constant::tieIgenicIntron 
       || IntronModel::GCemiprobs == NULL 

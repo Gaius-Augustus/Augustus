@@ -392,18 +392,29 @@ Double SnippetList::getProb(int base, int &partlen) {
 /*
  * SegProbs::setEmiProbs
  */
-void SegProbs::setEmiProbs(vector<Double> *emiprobs) {
+void SegProbs::setEmiProbs(vector<Double> *emiprobs, int from, int to) {
     this->emiprobs = emiprobs;
-    cumProds[0] = .25;
     Double p;
-    for (int i=1; i<=n; i++){
+    if (from < 0 || to < 0) { // if nothing else is requested, use the whole sequence
+	from = 1;
+	to = n;
+    }
+    if (from == 1)
+	cumProds[0] = (float) .25;
+    if (to > n)
+	to = n;
+    if (cumProds[from-1] == 0){
+	cerr << "SegProbs::setEmiProbs: previous emiprobs not computed. This should not happen." << endl;
+	cumProds[from-1] = 1;
+    }
+    for (int i = from; i <= to; i++){
 	if (forwardStrand) {
 	    try {
 		if (i<k)
 		    throw InvalidNucleotideError('\0');
 		p = (*emiprobs)[s2i(dna + i - k)];
 	    } catch (InvalidNucleotideError){
-		p = 0.25;
+		p = (float) 0.25;
 	    }
 	} else {
 	    try {
@@ -411,12 +422,13 @@ void SegProbs::setEmiProbs(vector<Double> *emiprobs) {
 		    throw InvalidNucleotideError('\0');
 		p = (*emiprobs)[s2i.rc(dna + i)];
 	    } catch (InvalidNucleotideError){
-		p = 0.25;
+		p = (float) 0.25;
 	    }
 	}
 	cumProds[i] = cumProds[i-1] * p;
     }
-} 
+    // cout << "setEmiProbs " << "comProds[" << from << "]= " << cumProds[from] << "\t" << "comProds[" << to << "]= " << cumProds[to] << endl;
+}
 
 /*
  * SegProbs::getSeqProb
@@ -424,6 +436,14 @@ void SegProbs::setEmiProbs(vector<Double> *emiprobs) {
 Double SegProbs::getSeqProb(int from, int to) {
     if (from == to){
 	try {
+
+	    if (forwardStrand){
+		if ((*emiprobs)[s2i(dna + to - k)] == 0)
+		    cout << "verschwindet + " << to << endl;
+	    } else {
+		if ((*emiprobs)[s2i.rc(dna + to)] == 0)
+		    cout << "verschwindet + " << to << endl;
+	    }
 	    if (forwardStrand)
 		return (*emiprobs)[s2i(dna + to - k)];
 	    else

@@ -59,7 +59,7 @@ public:
      * the Properties object /UtrModel/outfile
      */
     void printProbabilities   ( int zusNumber, BaseCount *bc, const char* suffix = NULL );
-    void initAlgorithms       ( Matrix<Double>&, int);
+    void initAlgorithms       ( Matrix<Double>&, int, int from = -1, int to = -1);
     void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int, 
 				   AlgorithmVariant, OptionListItem&) const;
     Double emiProbUnderModel  (int begin, int end) const;
@@ -77,6 +77,7 @@ public:
 	    initSnippetProbs();
 	initAlgorithmsCalled = false;
     }
+    static void clearSegProbs();
     static void readProbabilities(int zusNumber);
     static void readAllParameters();
     static void storeGCPars(int idx);
@@ -84,16 +85,13 @@ public:
     static void setTtsSpacing(int spacing){ ttsSpacing = spacing; };
     
 private:
-  Double seqProb            ( int left, int right, bool reverse, int type) const;
+  Double seqProb            ( int left, int right, bool reverse, int type) const; // deprecated
   void computeLengthDistributions( );
   static void fillTailsOfLengthDistributions( );
   void process5InitSequence( const char* start, const char* end);
   void process5Sequence( const char* start, const char* end);
   void process3Sequence( const char* start, const char* end);
   void processTssupSequence( const char* start, const char* end);
-  /**
-   *
-   */
   void buildProbabilities ( const AnnoSequence* annoseq );
   void buildTSSModel( const AnnoSequence* annoseq );
   void buildTTSModel( const AnnoSequence* annoseq );
@@ -184,7 +182,7 @@ private:
   //static vector<Double>  intron_emiprobs;
   //static Integer         intron_k;            // order of the markov chain
   //  static SnippetProbs    *rInitSnippetProbs5, *rSnippetProbs3, *intronSnippetProbs;
-  static SegProbs        *initSegProbs5, *segProbs5, *rInitSegProbs5, *rSegProbs5, *rSegProbs3, *intronSegProbs;
+  static SegProbs        *initSegProbs5, *segProbs5, *rInitSegProbs5, *rSegProbs5, *rSegProbs3, *segProbs3, *intronSegProbs;
   static bool            initAlgorithmsCalled, haveSnippetProbs;
   static vector<Integer> aataaa_count;
   static vector<Double>  aataaa_probs;

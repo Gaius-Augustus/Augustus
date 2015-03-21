@@ -85,7 +85,7 @@ public:
     Double emiProbUnderModel(int begin, int end) const;
     Double endPartEmiProb(int end) const;
     Double notEndPartEmiProb(int beginOfStart, int right, int frameOfRight, Feature *exonparts) const;
-    void initAlgorithms(Matrix<Double>&, int);
+    void initAlgorithms(Matrix<Double>&, int, int from = -1, int to = -1);
     static void storeGCPars(int idx);
 	
     // class functions
