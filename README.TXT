@@ -95,7 +95,7 @@ Currently, AUGUSTUS has been trained for predicting genes in:
   - Escherichia coli
   - Thermoanaerobacter tengcongensis (a bacterium)
   - Triticum aestivum (wheat)
-
+  - Ancylostoma ceylanicum
 
 The training annotation files of the following species are a courtesy of Jason Stajich (see also http://fungal.genome.duke.edu/): 
 Aspergillus fumigatus, Aspergillus nidulans, Aspergillus oryzae, Aspergillus terreus, Botrytis cinerea, Candida albicans
@@ -117,6 +117,8 @@ Keller L, Taffé P, Sanglard D, Pagni M., Comparative Genomics Suggests that the
 Scavenging Amino Acids from Its Host's Lungs. PLoS One. 2010, Dec 20;5(12):e15152. PubMed PMID: 21188143; PubMed Central PMCID: PMC3004796. 
 
 The parameter training for cacao was done by Don Gilbert (gilbertd at indiana.edu).
+
+Parameters for Ancylostoma ceylanicum were trained by Erich Schwarz (Cornell University).
 
               2. INSTALLATION
               ---------------
