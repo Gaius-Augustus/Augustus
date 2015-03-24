@@ -65,7 +65,7 @@ class TrainingController {
 
 	// human verification:
 	def simpleCaptchaService
-
+	        
 	// check whether the server is buisy
 	def beforeInterceptor = {
 		def String prefixChars ="ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
@@ -433,10 +433,15 @@ class TrainingController {
 					def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
 					try{
 						def String inputLine=null
-						def lineCounter = 1;
-						while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 20)) {
-							if(!(inputLine =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(inputLine =~ /^$/)){ genomeFastaFlag = 1 }
-								lineCounter = lineCounter + 1
+						def char inputChar=null
+						def charCounter = 1
+						while ( ((inputChar = br.read()) != null) && (charCounter <= 1000)) {
+							if(inputChar =~ />/){
+								     inputLine = br.readLine();
+							}else if(!(inputChar =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(inputChar =~ /^$/)){ 
+							genomeFastaFlag = 1 
+							}
+							charCounter = charCounter + 1
 						}
 					}finally{
 						br.close()
@@ -610,17 +615,22 @@ class TrainingController {
 					}
 					// checking web file for DNA fasta format: 
 					def URLConnection uc = url .openConnection()
-					def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
-					try{
-						def String inputLine=null
-						def lineCounter = 1
-						while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 20)) {
-							if(!(inputLine =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(inputLine =~ /^$/)){ estFastaFlag = 1 }
-							lineCounter = lineCounter + 1
-						}
-					}finally{
-						br.close()
-					}
+                                        def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
+                                        try{
+                                                def String inputLine=null
+                                                def char inputChar=null
+                                                def charCounter = 1
+                                                while ( ((inputChar = br.read()) != null) && (charCounter <= 1000)) {
+                                                        if(inputChar =~ />/){
+                                                                     inputLine = br.readLine();
+                                                        }else if(!(inputChar =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(inputChar =~ /^$/)){
+                                                        estFastaFlag = 1
+                                                        }
+                                                        charCounter = charCounter + 1
+                                                }
+                                        }finally{
+                                                br.close()
+                                        }
 					if(estFastaFlag == 1) {
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The cDNA file was not fasta.\n"
@@ -915,15 +925,22 @@ class TrainingController {
 					def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
 					try{
 						def String inputLine=null
-						def lineCounter = 1;
+						def charCounter = 1;
+						def char inputChar = null;
 						def cytosinCounter = 0 // C is cysteine in amino acids, and cytosine in DNA.
 						def allAminoAcidsCounter = 0
-						while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 50)) {
-							if(!(inputLine =~ /^[>AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/) && !(inputLine =~ /^$/)){ proteinFastaFlag = 1 }
-							if(!(inputLine =~ /^>/)){
-								inputLine.eachMatch(/[AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/){allAminoAcidsCounter = allAminoAcidsCounter + 1}
-								inputLine.eachMatch(/[Cc]/){cytosinCounter = cytosinCounter + 1}
-							}
+						while ( ((inputLine = br.read()) != null) && (charCounter <= 2000)) {
+						      if(inputChar =~ />/){
+						         inputLine = br.readLine();
+						      }else if(!(inputChar =~ /^[AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/) && !(inputChar =~ /^$/)){  
+						         proteinFastaFlag = 1 
+						      }else{
+						          allAminoAcidsCounter += 1;
+							  if(inputChar =~ /[Cc]/){
+						             cytosinCounter += 1;		
+							  }
+						      }
+						      charCounter++;
 						}
 						cRatio = cytosinCounter/allAminoAcidsCounter
 					}finally{

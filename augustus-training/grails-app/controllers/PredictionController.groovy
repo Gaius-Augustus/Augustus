@@ -749,11 +749,16 @@ class PredictionController {
 	         			def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
 					try{
 	         				def String inputLine=null
-	         				def lineCounter = 1;
-	         				while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 20)) {
-	            					if(!(inputLine =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(inputLine =~ /^$/)){ genomeFastaFlag = 1 }
-	            					lineCounter = lineCounter + 1
-	         				}
+                                                def char inputChar=null
+                                                def charCounter = 1
+                                                while ( ((inputChar = br.read()) != null) && (charCounter <= 1000)) {
+                                                        if(inputChar =~ />/){
+                                                                     inputLine = br.readLine();
+                                                        }else if(!(inputChar =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(inputChar =~ /^$/)){
+                                                        genomeFastaFlag = 1
+                                                        }
+                                                        charCounter = charCounter + 1
+                                                }
 					}finally{
 	         				br.close()
 					}
@@ -930,11 +935,16 @@ class PredictionController {
          				def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
 					try{
          					def String inputLine=null
-         					def lineCounter = 1
-         					while ( ((inputLine = br.readLine()) != null) && (lineCounter <= 20)) {
-            						if(!(inputLine =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNnUu]/) && !(inputLine =~ /^$/)){ estFastaFlag = 1 }
-            						lineCounter = lineCounter + 1
-         					}
+                                                def char inputChar=null
+                                                def charCounter = 1
+                                                while ( ((inputChar = br.read()) != null) && (charCounter <= 1000)) {
+                                                        if(inputChar =~ />/){
+                                                                     inputLine = br.readLine();
+                                                        }else if(!(inputChar =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(inputChar =~ /^$/)){
+                                                        estFastaFlag = 1
+                                                        }
+                                                        charCounter = charCounter + 1
+                                                }
 					}finally{
          					br.close()
 					}
