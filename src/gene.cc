@@ -2992,7 +2992,7 @@ Transcript* getPtr(list<AltGene> *agl){
     
     for (ait = agl->begin(); ait != agl->end(); ait++){
 	for (it = ait->transcripts.begin(); it != ait->transcripts.end(); it++){
-	    Transcript *t = new Transcript(**it);
+	    Transcript *t = (*it)->clone();
 	    if (head == NULL) {
 		head = t;
 		prev = head;

@@ -48,7 +48,8 @@ public:
      * the Properties object /IntronModel/outfile
      */
     void printProbabilities( int parIndex, BaseCount *bc, const char* suffix = NULL );
-    void initAlgorithms(Matrix<Double>&, int, int from = -1, int to = -1);
+    void initAlgorithms(Matrix<Double>&, int);
+    virtual void updateToLocalGCEach( Matrix<Double>& trans, int cur);
     void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int, 
 				   AlgorithmVariant, OptionListItem&) const;
     Double emiProbUnderModel  (int begin, int end) const;
@@ -57,11 +58,10 @@ public:
     static Double aSSProb     (int base, bool forwardStrand);
     static void init();
     static void resetPars() {
-	if (!haveSnippetProbs) 
-	    initSnippetProbs();
+	initSnippetProbs();
 	initAlgorithmsCalled = false;
     }
-  	
+    static void updateToLocalGC(int from = -1, int to = -1);
     static void readProbabilities(int parIndex);
     static void readAllParameters();
     static void updateParameters(int idx);

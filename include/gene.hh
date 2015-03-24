@@ -342,7 +342,7 @@ public:
 	supportingEvidence = incompatibleEvidence = CDSexonEvidence = CDSintronEvidence = UTR5stateEvidence = UTR3stateEvidence = NULL;
     }
     Gene(const Gene& other);
-    virtual Gene* clone() {return new Gene(*this);}
+    virtual Gene* clone() { return new Gene(*this); }
     ~Gene(){ // this calls ~Transcript implicitly, which deletes exons and introns
 	if (supportingEvidence)
 	    delete supportingEvidence;

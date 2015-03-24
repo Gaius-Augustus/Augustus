@@ -605,11 +605,14 @@ void ContentStairs::computeStairs(const char* dna){
 	  nextStep[x] = i;
 	  x = i;
       }
+  nextStep[x] = n;
+  if (nextStep[0] == 0)
+      nextStep[0] = n;
   if (nextStep[1] == 0)
       nextStep[1] = nextStep[0]; // this is an exception so the Viterbi algorithm can start at 1 instead of 0
-  nextStep[x] = n;
-  // for (map<int,int>::iterator it = nextStep.begin(); it != nextStep.end(); ++it)
-  //    cout << it->first << " => " << it->second << '\n';
+
+  //  for (map<int,int>::iterator it = nextStep.begin(); it != nextStep.end(); ++it)
+  //     cout << it->first << " => " << it->second << '\n';
 }
 
 int ContentStairs::getNextStep(int from) {

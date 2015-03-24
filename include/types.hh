@@ -283,6 +283,7 @@ public:
     static double amberprob;
     static double ochreprob;
     static bool utr_option_on;
+    static bool nc_option_on;
     static Integer augustus_verbosity;
     static bool alternatives_from_evidence;
     static double subopt_transcript_threshold;

@@ -59,10 +59,17 @@ void IGenicModel::init() {
 
 /*
  * initAlgorithms
- * this is called before running the inference algorithms and whenever the
- * gc content class changes
+ * this is called before running the inference algorithms
  */
-void IGenicModel::initAlgorithms (Matrix<Double>& trans, int cur, int from, int to) {
+void IGenicModel::initAlgorithms (Matrix<Double>& trans, int cur) {
+    geoProb = trans[cur][cur].doubleValue();
+}
+
+/*
+ * updateToLocalGC
+ * this is called when the GC index changes
+ */
+void IGenicModel::updateToLocalGC(int from, int to){
   // set these parameters to the one of the GC content index gcIdx
   if (!Constant::tieIgenicIntron 
       || IntronModel::GCemiprobs == NULL 
@@ -74,7 +81,6 @@ void IGenicModel::initAlgorithms (Matrix<Double>& trans, int cur, int from, int 
   }
   
   Pls = GCPls[gcIdx];
-  geoProb = trans[cur][cur].doubleValue();
 }
 
 /*

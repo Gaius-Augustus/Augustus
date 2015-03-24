@@ -220,7 +220,8 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
     cout << "#warning: sequence contains just letters different from a,c,g,t: " << dnalen << " of them." << endl;
 #endif
     curGCIdx = cs.idx[0];
-    initAlgorithms(curGCIdx); // this indirectly calls initPredecessors required for backtracking later
+    initAlgorithms(); // this indirectly calls initPredecessors required for backtracking later
+    updateToLocalGCEach(curGCIdx);
     for( int j = 1; j < dnalen; j++ ) {
       for( int i = 0; i < statecount; i++ ){
 	if (i == synchstate) {
@@ -252,11 +253,11 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
   int mincount = 1000;
 #endif
 
-
+  initAlgorithms(); // update GC content dependent parameters
   for( int j = 1; j < dnalen; j++ ) { // TODO: this ignores the first nucleotide
       if (cs.idx[j] != curGCIdx) {// check whether GC content has changed, this is in particular the case at the very start
           curGCIdx = cs.idx[j];
-	  initAlgorithms(curGCIdx, j, cs.getNextStep(j) - 1); // update GC content dependent parameters
+	  updateToLocalGCEach(curGCIdx, j, cs.getNextStep(j) - 1); // update GC content dependent parameters
       }
       if (show_progress) {
 	  progress = 1+100*j/dnalen;
@@ -392,7 +393,7 @@ StatePath* NAMGene::getSampledPath(const char *dna, const char* seqname){
   if (containsJustNonNucs(dna, dnalen)) {
       sampledPath->push(new State(0, dnalen-1, getStateType(synchstate)));
     for (int i=0; i<dnalen; i++) 
-      pathEmiProb *= .25;
+	pathEmiProb *= (float) .25;
   } else { // normal case
       const ViterbiColumnType& lastCol = forward[dnalen-1];
       OptionsList ol;
@@ -409,9 +410,11 @@ StatePath* NAMGene::getSampledPath(const char *dna, const char* seqname){
       oli.reset();
 
       while (base>0) {
-	  if (cs.idx[base] != curGCIdx) { // chech whether GC content has changed
+	  if (cs.idx[base] != curGCIdx) { // check whether GC content has changed
 	    curGCIdx = cs.idx[base];
-	    initAlgorithms(curGCIdx); // update GC content dependent parameters
+	    // update GC content dependent parameters,
+	    // no new computation of SegProbs (empty interval [2,1]
+	    updateToLocalGCEach(curGCIdx, 2,1);
 	  }
 	  states[state]->viterbiForwardAndSampling( viterbi, forward, state, base, 
 						    doSampling, oli);
@@ -491,6 +494,15 @@ StatePath* NAMGene::getViterbiPath(const char *dna, const char* seqname){
 		cerr << endl;
 	}
 #endif
+	// NEW: is this a bugfix? need to test on long example  seqs with index changes
+	/*
+	if (cs.idx[base] != curGCIdx) { // check whether GC content has changed
+	    curGCIdx = cs.idx[base];
+	    // update GC content dependent parameters,
+	    // no new computation of SegProbs (empty interval [2,1]
+	    updateToLocalGCEach(curGCIdx, 2, 1);
+	    cout << "getViterbiPath: changing GC index at base " << base << endl;
+	    }*/
 	states[stateidx]->viterbiForwardAndSampling( viterbi, forward, state, base, 
 						     doBacktracking, oli );
 	if (!Constant::overlapmode && ((oli.base >= base && oli.state == state) || (oli.base > base + 10))) {
@@ -798,6 +810,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   //viterbiPath->print(); // for testing
   //cout << "Condensed Viterbi path:" << endl;
   //condensedViterbiPath->print(); // for testing
+  //printDPMatrix();
   genes = condensedViterbiPath->projectOntoGeneSequence("g");
   delete viterbiPath;
 
@@ -1050,7 +1063,8 @@ int NAMGene::getNextCutEndPoint(const char *dna, int beginPos, int maxstep, Sequ
       delete partSFC; //achtung, das muß nach getViterbiPath stehen
       delete [] curdna;
       condensedViterbiPath = StatePath::condenseStatePath(viterbiPath);
-      // condensedViterbiPath->print();
+      //cout << "getNextCutEndPoint viterbi path:" << endl;
+      //condensedViterbiPath->print();
       cutendpoint = tryFindCutEndPoint(condensedViterbiPath, examIntervalStart, examIntervalEnd, groupGaps, true);
       delete viterbiPath;
       delete condensedViterbiPath;
@@ -1268,7 +1282,7 @@ Double NAMGene::getPathEmiProb(StatePath *path, const char *dna, SequenceFeature
 	    pos = 0; // can happen with a start codon at the very beginning of the sequence
 	if (cs.idx[pos] != curGCIdx) {
           curGCIdx = cs.idx[pos];
-          initAlgorithms(curGCIdx); // update GC content dependent parameters
+	  updateToLocalGCEach(curGCIdx, 2, 1); // update GC content dependent parameters
 	}
 	emi = states[stateidx]->emiProbUnderModel(curstate->begin, curstate->end);
 	curstate->prob = emi;
@@ -1540,11 +1554,10 @@ void NAMGene::createStateModels( ){
     }
 }
 
-void NAMGene::initAlgorithms(int idx, int from, int to){
+void NAMGene::initAlgorithms(){
   StateModel::resetPars();
-  StateModel::setGCIdx(idx);
   for ( int i = 0; i < statecount; ++i ){
-      states[i]->initAlgorithms(transitions, i, from, to);
+      states[i]->initAlgorithms(transitions, i);
   }
   /*
    * give the states the possibly implicitly changed transition matrix above 
@@ -1553,6 +1566,20 @@ void NAMGene::initAlgorithms(int idx, int from, int to){
    */
   for( int i = 0; i < statecount; i++ )
     states[i]->initPredecessors(transitions, i);
+}
+
+void NAMGene::updateToLocalGCEach(int idx, int from, int to){
+    StateModel::updateToLocalGC(idx, from, to); 
+    for ( int i = 0; i < statecount; ++i )
+	states[i]->updateToLocalGCEach(transitions, i);
+    /*
+     * give the states the possibly implicitly changed transition matrix above 
+     * in order to contruct the lists of predecessors
+     *
+     */
+    for( int i = 0; i < statecount; i++ )
+	states[i]->initPredecessors(transitions, i);
+
 }
 
 void NAMGene::prepareModels(const char* dna, int dnalen) {
@@ -1581,3 +1608,14 @@ void NAMGene::setPathAndProb(AnnoSequence *annoseq, FeatureCollection &extrinsic
 	annoseq = annoseq->next;
     }
 }
+
+void NAMGene::printDPMatrix(){
+    cout << "----- Viterbi matrix: -----" << endl;
+    for (int t=0; t <viterbi.size(); t++){
+	cout << t;
+	for (int s = 0; s < statecount; s++)
+	    cout << "\t" << stateTypeIdentifiers[stateMap[s]] << ": " << viterbi[t][s];
+	cout << endl;
+    }
+}
+ 

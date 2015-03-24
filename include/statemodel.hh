@@ -74,7 +74,8 @@ public:
     virtual void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int,
 					   AlgorithmVariant, OptionListItem&) const = 0;
     virtual Double emiProbUnderModel(int , int) const = 0;
-    virtual void initAlgorithms(Matrix<Double>&, int, int from = -1, int to = -1) = 0;
+    virtual void initAlgorithms(Matrix<Double>&, int) = 0;
+    virtual void updateToLocalGCEach(Matrix<Double>& trans, int cur) { };
     virtual ~StateModel() {} // nothing to do here since class is purely abstract
 
     // class functions
@@ -87,6 +88,8 @@ public:
     static void prepareViterbi(const char* dna, int len, const vector<StateType> &stateMap);
     static void readProbabilities(int);
     static void resetPars();
+    // this is done when gcIdx changes once per state class
+    static void updateToLocalGC(int idx, int from = -1, int to = -1);
     static void readAllParameters();
     static void storeGCPars(int);
     static void resetModelCounts();

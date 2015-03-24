@@ -37,7 +37,7 @@ public:
     void registerPars( Parameters* parameters);
   
     void printProbabilities   ( int zusNumber, BaseCount *bc, const char* suffix = NULL );
-    void initAlgorithms       ( Matrix<Double>&, int, int from = -1, int to = -1);
+    void initAlgorithms       ( Matrix<Double>&, int);
     void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int, 
 				   AlgorithmVariant, OptionListItem&) const;
     Double emiProbUnderModel  (int begin, int end) const;
@@ -53,6 +53,7 @@ public:
 	    initSnippetProbs();
 	initAlgorithmsCalled = false;
     }
+    static void updateToLocalGC(int from = -1, int to = -1);
     static void readAllParameters();
     static void resetModelCount(){nccount = 0;};
     

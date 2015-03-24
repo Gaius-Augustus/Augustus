@@ -117,20 +117,25 @@ void NcModel::initSnippetProbs() {
  * makes a correction on the transition matrix "trans" and the vector of ancestors
  * this is called after initViterbiAlgorithms
  */
-void NcModel::initAlgorithms( Matrix<Double>& trans, int cur, int from, int to){
+void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
     if (nctype == ncintron || nctype == rncintron)
 	pIntron = trans[cur][cur].doubleValue();
     else 
 	pIntron = 0.999;
 
     if (!initAlgorithmsCalled) {
-	snippetProbs->setEmiProbs(&IntronModel::emiprobs.probs);
-	segProbs->setEmiProbs(&IntronModel::emiprobs.probs);
 	precomputeTxEndProbs();
 	computeLengthDistributions();
     }
     initAlgorithmsCalled = true;
-    haveSnippetProbs = false;
+}
+
+/*
+ * NcModel::updateToLocalGC
+ */
+void NcModel::updateToLocalGC(int from, int to){
+    snippetProbs->setEmiProbs(&IntronModel::emiprobs.probs);
+    segProbs->setEmiProbs(&IntronModel::emiprobs.probs);
 }
 
 /*

@@ -41,7 +41,7 @@ public:
     void registerPars       ( Parameters* parameters);
     void printProbabilities ( int zusNumber, BaseCount *bc, const char* suffix = NULL );
 
-    void initAlgorithms     ( Matrix<Double>&, int, int from = -1, int to = -1);
+    void initAlgorithms     ( Matrix<Double>&, int);
     void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int,
 				   AlgorithmVariant, OptionListItem&) const;
     Double emiProbUnderModel(int begin, int end) const;
@@ -50,6 +50,7 @@ public:
 	seqFeatColl = sfc;
     }
     static void resetPars() {}
+    static void updateToLocalGC(int from, int to);
     static void readProbabilities(int zusNumber);
     static void readAllParameters();
     static void storeGCPars(int idx);

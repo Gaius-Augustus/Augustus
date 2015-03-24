@@ -749,7 +749,7 @@ void UtrModel::clearSegProbs(){
  * makes a correction on the transition matrix "trans" and the vector of ancestors
  * this is called after initViterbiAlgorithms
  */
-void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur, int from, int to){
+void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
     if (utype == utr5intron)
 	pUtr5Intron = trans[cur][cur].doubleValue();
     if (utype == utr3intron)
@@ -759,39 +759,48 @@ void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur, int from, int to)
     if (utype == rutr3intron)
 	prUtr3Intron = trans[cur][cur].doubleValue();
 
-    if (!initAlgorithmsCalled) {
-      // assign GC content dependent variables to the stored values corresponding to GC content
-      utr5init_emiprobs = GCutr5init_emiprobs[gcIdx];
-      utr5_emiprobs = GCutr5_emiprobs[gcIdx];
-      utr3_emiprobs = GCutr3_emiprobs[gcIdx];
-      tssup_emiprobs = GCtssup_emiprobs[gcIdx];
-      tssMotif = &GCtssMotif[gcIdx];
-      ttsMotif = &GCttsMotif[gcIdx];
-      tssMotifTATA = &GCtssMotifTATA[gcIdx];
-      tataMotif = &GCtataMotif[gcIdx];
-      
-      seqProb(-1,-1, false, -1);
-      if (tssProbsPlus.size() != dnalen+1){
-	tssProbsPlus.assign(dnalen+1, -1.0);
-	tssProbsMinus.assign(dnalen+1, -1.0);
-      } 
-      if (ttsProbPlus)
-	delete [] ttsProbPlus;
-      ttsProbPlus = new Double[dnalen+1];
-      if (ttsProbMinus)
-	delete [] ttsProbMinus;
-      ttsProbMinus = new Double[dnalen+1];
-      computeTtsProbs();
-      
-      rInitSegProbs5->setEmiProbs(&utr5init_emiprobs.probs, from, to + 5); // 5 is just a safety distance
-      initSegProbs5->setEmiProbs(&utr5init_emiprobs.probs, from, to + 5);
-      segProbs3->setEmiProbs(&utr3_emiprobs.probs, from, to + 5);
-      rSegProbs3->setEmiProbs(&utr3_emiprobs.probs, from, to + 5);
-      intronSegProbs->setEmiProbs(&IntronModel::emiprobs.probs, from, to + 5);
-      segProbs5->setEmiProbs(&utr5_emiprobs.probs, from, to + 5);
-      rSegProbs5->setEmiProbs(&utr5_emiprobs.probs, from, to + 5);
-    }
+    if (!initAlgorithmsCalled)
+	seqProb(-1,-1, false, -1);
+
     initAlgorithmsCalled = true;
+}
+
+/*
+ * UtrModel::updateToLocalGC
+ *
+ */
+void UtrModel::updateToLocalGC(int from, int to){
+    // assign GC content dependent variables to the stored values corresponding to GC content
+    utr5init_emiprobs = GCutr5init_emiprobs[gcIdx];
+    utr5_emiprobs = GCutr5_emiprobs[gcIdx];
+    utr3_emiprobs = GCutr3_emiprobs[gcIdx];
+    tssup_emiprobs = GCtssup_emiprobs[gcIdx];
+    tssMotif = &GCtssMotif[gcIdx];
+    ttsMotif = &GCttsMotif[gcIdx];
+    tssMotifTATA = &GCtssMotifTATA[gcIdx];
+    tataMotif = &GCtataMotif[gcIdx];
+      
+    // TODO: restrict new computations to range [from, to]
+    if (tssProbsPlus.size() != dnalen+1){
+	tssProbsPlus.assign(dnalen+1, -1);
+	tssProbsMinus.assign(dnalen+1, -1);
+    } 
+    if (ttsProbPlus)
+	delete [] ttsProbPlus;
+    ttsProbPlus = new Double[dnalen+1];
+    if (ttsProbMinus)
+	delete [] ttsProbMinus;
+    ttsProbMinus = new Double[dnalen+1];
+    UtrModel::computeTtsProbs();
+    
+
+    rInitSegProbs5->setEmiProbs(&utr5init_emiprobs.probs, from, to + 5); // 5 is just a safety distance
+    initSegProbs5->setEmiProbs(&utr5init_emiprobs.probs, from, to + 5);
+    segProbs3->setEmiProbs(&utr3_emiprobs.probs, from, to + 5);
+    rSegProbs3->setEmiProbs(&utr3_emiprobs.probs, from, to + 5);
+    intronSegProbs->setEmiProbs(&IntronModel::emiprobs.probs, from, to + 5);
+    segProbs5->setEmiProbs(&utr5_emiprobs.probs, from, to + 5);
+    rSegProbs5->setEmiProbs(&utr5_emiprobs.probs, from, to + 5);
 }
 
 /*
@@ -973,6 +982,7 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 		    && (it->pos != state || endOfPred == 0)) // transitions into an intron are punished by malus
 		    transEmiProb *= seqFeatColl->collection->malus(intronF);
 		predProb = predVit[it->pos] * transEmiProb;
+
 		if (needForwardTable(algovar)) { 
                     // endOfPred < 0 appears in left truncated state
 		    fwdsummand = forward[endOfPred>=0? endOfPred:0].get(it->pos) * transEmiProb.heated();
@@ -1038,7 +1048,7 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	    oldEndOfPred = endOfPred;
 	}
     }
-
+   
     switch (algovar) {
 	case doSampling:
 	    optionslist->prepareSampling();

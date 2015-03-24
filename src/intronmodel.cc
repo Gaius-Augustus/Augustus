@@ -444,21 +444,16 @@ void IntronModel::initSnippetProbs() {
  *
  * makes a correction on the transition matrix "trans" and on the vector of ancestors
  */
-void IntronModel::initAlgorithms( Matrix<Double>& trans, int cur, int from, int to){
+void IntronModel::initAlgorithms( Matrix<Double>& trans, int cur){
+}
+
+// call state-dependent (cur) stuff after gcIdx was set correctly
+void IntronModel::updateToLocalGCEach( Matrix<Double>& trans, int cur ) {
     if (!initAlgorithmsCalled) {
-	seqProb(-1,0);
-	// set these parameters to the one of the GC content index
-	emiprobs = GCemiprobs[gcIdx];
-	assMotif = &GCassMotif[gcIdx];
-	probShortIntron = GCprobShortIntron[gcIdx];
-	mal = GCmal[gcIdx];
+	seqProb(-1, 0);
 	aSSProb(-1, false); // initialize ass probs
-	snippetProbs->setEmiProbs(&emiprobs.probs);
-	rSnippetProbs->setEmiProbs(&emiprobs.probs);
-	haveSnippetProbs = false;
 	initAlgorithmsCalled = true;
     }
-    // state-dependent (cur) stuff follows
     /*
      * correction of the transition probabilities into lessDx and equalx (x=0,1,2)
      * which are considered parameters of the intron model
@@ -501,6 +496,21 @@ void IntronModel::initAlgorithms( Matrix<Double>& trans, int cur, int from, int 
 	    }
 	}
     }
+}
+
+/*
+ * IntronModel::initAlgorithms
+ *
+ * makes a correction on the transition matrix "trans" and on the vector of ancestors
+ */
+void IntronModel::updateToLocalGC(int from, int to){
+    // set these parameters to the one of the GC content index
+    emiprobs = GCemiprobs[gcIdx];
+    assMotif = &GCassMotif[gcIdx];
+    probShortIntron = GCprobShortIntron[gcIdx];
+    mal = GCmal[gcIdx];
+    snippetProbs->setEmiProbs(&emiprobs.probs);
+    rSnippetProbs->setEmiProbs(&emiprobs.probs);
 }
 
 

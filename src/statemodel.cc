@@ -220,10 +220,21 @@ void StateModel::readProbabilities(int newParIndex) {
 
 void StateModel::resetPars(){
     ExonModel::resetPars();
-    UtrModel::resetPars();
     IntronModel::resetPars();
     IGenicModel::resetPars();
+    UtrModel::resetPars();
     NcModel::resetPars();
+}
+
+void StateModel::updateToLocalGC(int idx, int from, int to){
+    gcIdx = idx;
+    ExonModel::updateToLocalGC(from, to);
+    IntronModel::updateToLocalGC(from, to);
+    IGenicModel::updateToLocalGC(from, to);
+    if (Constant::utr_option_on)
+	UtrModel::updateToLocalGC(from, to);
+    if (Constant::nc_option_on)
+	NcModel::updateToLocalGC(from, to);
 }
 
 void StateModel::readAllParameters(){
@@ -311,7 +322,7 @@ Double SnippetProbs::getSeqProb(int base, int len){
     if (len == 0)
 	return 1.0;
     if (base<0 || base > n-1)
-	throw ProjectError("SnippetProbs::getSeqProb: Index out of range.");
+	throw ProjectError(string("SnippetProbs::getSeqProb: Index out of range: ") + itoa(base));
     SnippetList * sl = snippetlist[base];
     if (sl != NULL) {
 	if (sl->last->len < len) {
@@ -427,7 +438,7 @@ void SegProbs::setEmiProbs(vector<Double> *emiprobs, int from, int to) {
 	}
 	cumProds[i] = cumProds[i-1] * p;
     }
-    // cout << "setEmiProbs " << "comProds[" << from << "]= " << cumProds[from] << "\t" << "comProds[" << to << "]= " << cumProds[to] << endl;
+    //    cout << "setEmiProbs " << "cumProds[" << from << "]= " << cumProds[from] << "\t" << "cumProds[" << to << "]= " << cumProds[to] << endl;
 }
 
 /*
@@ -436,14 +447,6 @@ void SegProbs::setEmiProbs(vector<Double> *emiprobs, int from, int to) {
 Double SegProbs::getSeqProb(int from, int to) {
     if (from == to){
 	try {
-
-	    if (forwardStrand){
-		if ((*emiprobs)[s2i(dna + to - k)] == 0)
-		    cout << "verschwindet + " << to << endl;
-	    } else {
-		if ((*emiprobs)[s2i.rc(dna + to)] == 0)
-		    cout << "verschwindet + " << to << endl;
-	    }
 	    if (forwardStrand)
 		return (*emiprobs)[s2i(dna + to - k)];
 	    else

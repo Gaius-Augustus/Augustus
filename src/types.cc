@@ -56,6 +56,7 @@ double Constant::opalprob = 0.333;  // default value, was 0.24
 double Constant::amberprob = 0.333; // default value, was 0.48
 double Constant::ochreprob = 0.333; // default value, was 0.28
 bool Constant::utr_option_on = false;
+bool Constant::nc_option_on = false;
 Integer Constant::augustus_verbosity = 1;
 bool Constant::alternatives_from_evidence = true;
 double Constant::subopt_transcript_threshold = 0.94;
@@ -335,6 +336,7 @@ void Constant::init(){
     Properties::assignProperty("/Constant/max_contra_supp_ratio", max_contra_supp_ratio);
     Properties::assignProperty("reportUtrOnlyGenes", reportUtrOnlyGenes);
     Properties::assignProperty(UTR_KEY, utr_option_on);
+    Properties::assignProperty(NONCODING_KEY, nc_option_on);
     Properties::assignProperty("/IntronModel/allow_dss_consensus_gc", dss_gc_allowed);
     Properties::assignProperty("tieIgenicIntron", tieIgenicIntron);
     Properties::assignProperty("protein", proteinOutput);

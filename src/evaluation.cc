@@ -35,7 +35,6 @@ void Evaluation::addToEvaluation(Transcript *predictedGenes, Transcript *annotat
 	for (Transcript* p = predictedGenes; p != NULL; p = p->next)
 	    if (p->geneEnd() + 1 > rightFlankBegin)
 		rightFlankBegin = p->geneEnd() + 1;
-    //cout << "leftFlankEnd=" << leftFlankEnd << " rightFlankBegin=" << rightFlankBegin << endl;
 
     int oldgeneFN = geneFN;
     Transcript *predFW, *predBW, *annoFW, *annoBW;
@@ -611,7 +610,7 @@ void Evaluation::evaluateOnUTRLevel(Transcript* const predictedGeneList, Transcr
       }
   }
 
-  /* evaluate on non-coding exons
+  /* evaluate on UTR exons
    * First make two lists just of all UTR exons
    * Then let them contain only the unique exons.
    */

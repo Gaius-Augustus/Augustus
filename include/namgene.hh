@@ -97,8 +97,9 @@ private:
     void computeReachableStates( );
     void createStateModels( );
     void setStatesInitialProbs();
-    void initAlgorithms(int idx, int from = -1, int to = -1); // [from,to] is an optional range, to be processed next, in which the idx stays constant
-
+    void initAlgorithms(); // called for new DNA
+    void updateToLocalGCEach(int idx, int from = -1, int to = -1);
+    void printDPMatrix(); // print Viterbi matrix
     /**
      * Read in the parameters for all the models from files
      *

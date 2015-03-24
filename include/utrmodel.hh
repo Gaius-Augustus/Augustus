@@ -59,7 +59,7 @@ public:
      * the Properties object /UtrModel/outfile
      */
     void printProbabilities   ( int zusNumber, BaseCount *bc, const char* suffix = NULL );
-    void initAlgorithms       ( Matrix<Double>&, int, int from = -1, int to = -1);
+    void initAlgorithms       ( Matrix<Double>&, int);
     void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int, 
 				   AlgorithmVariant, OptionListItem&) const;
     Double emiProbUnderModel  (int begin, int end) const;
@@ -68,15 +68,15 @@ public:
     void getEndPositions      ( int end, int &beginOfEndPart, int &endOfBioExon) const;
     Double tssupSeqProb       ( int left, int right, bool reverse) const;  
     Double tssProb            ( int left) const;
-    void computeTtsProbs    ( );
+    static void computeTtsProbs    ( );
     static void init();
     static void resetPars(){
 	if (utrcount == 0)
 	    return;
-	if (!haveSnippetProbs)
-	    initSnippetProbs();
+	initSnippetProbs();
 	initAlgorithmsCalled = false;
     }
+    static void updateToLocalGC(int from = -1, int to = -1);
     static void clearSegProbs();
     static void readProbabilities(int zusNumber);
     static void readAllParameters();
@@ -86,7 +86,7 @@ public:
     
 private:
   Double seqProb            ( int left, int right, bool reverse, int type) const; // deprecated
-  void computeLengthDistributions( );
+  static void computeLengthDistributions( );
   static void fillTailsOfLengthDistributions( );
   void process5InitSequence( const char* start, const char* end);
   void process5Sequence( const char* start, const char* end);

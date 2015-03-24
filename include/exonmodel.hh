@@ -85,7 +85,7 @@ public:
     Double emiProbUnderModel(int begin, int end) const;
     Double endPartEmiProb(int end) const;
     Double notEndPartEmiProb(int beginOfStart, int right, int frameOfRight, Feature *exonparts) const;
-    void initAlgorithms(Matrix<Double>&, int, int from = -1, int to = -1);
+    void initAlgorithms(Matrix<Double>&, int);
     static void storeGCPars(int idx);
 	
     // class functions
@@ -93,6 +93,7 @@ public:
     static void resetPars() {
 	initAlgorithmsCalled = false;
     }
+    static void updateToLocalGC(int from = -1, int to = -1);
     static void readProbabilities(int parIndex);
     static void readAllParameters();
     static double *getCodonUsage();
