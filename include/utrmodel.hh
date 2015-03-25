@@ -68,7 +68,7 @@ public:
     void getEndPositions      ( int end, int &beginOfEndPart, int &endOfBioExon) const;
     Double tssupSeqProb       ( int left, int right, bool reverse) const;  
     Double tssProb            ( int left) const;
-    static void computeTtsProbs    ( );
+    static void computeTtsProbs    (int from, int to);
     static void init();
     static void resetPars(){
 	if (utrcount == 0)

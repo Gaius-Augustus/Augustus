@@ -759,9 +759,19 @@ void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
     if (utype == rutr3intron)
 	prUtr3Intron = trans[cur][cur].doubleValue();
 
-    if (!initAlgorithmsCalled)
+    if (!initAlgorithmsCalled){
 	seqProb(-1,-1, false, -1);
-
+	if (tssProbsPlus.size() != dnalen+1){
+	    tssProbsPlus.assign(dnalen+1, -1);
+	    tssProbsMinus.assign(dnalen+1, -1);
+	}
+	if (ttsProbPlus)
+	    delete ttsProbPlus;
+	ttsProbPlus = new Double[dnalen+1];
+	if (ttsProbMinus)
+	    delete ttsProbMinus;
+	ttsProbMinus = new Double[dnalen+1];
+    }
     initAlgorithmsCalled = true;
 }
 
@@ -780,19 +790,10 @@ void UtrModel::updateToLocalGC(int from, int to){
     tssMotifTATA = &GCtssMotifTATA[gcIdx];
     tataMotif = &GCtataMotif[gcIdx];
       
-    // TODO: restrict new computations to range [from, to]
-    if (tssProbsPlus.size() != dnalen+1){
-	tssProbsPlus.assign(dnalen+1, -1);
-	tssProbsMinus.assign(dnalen+1, -1);
-    } 
-    if (ttsProbPlus)
-	delete [] ttsProbPlus;
-    ttsProbPlus = new Double[dnalen+1];
-    if (ttsProbMinus)
-	delete [] ttsProbMinus;
-    ttsProbMinus = new Double[dnalen+1];
-    UtrModel::computeTtsProbs();
-    
+    // restrict new computations to range [from, to]
+    for (int i=from; i < to && i>=0; i++)
+	tssProbsPlus[i] = tssProbsMinus[i] = -1;
+    UtrModel::computeTtsProbs(from, to ); 
 
     rInitSegProbs5->setEmiProbs(&utr5init_emiprobs.probs, from, to + 5); // 5 is just a safety distance
     initSegProbs5->setEmiProbs(&utr5init_emiprobs.probs, from, to + 5);
@@ -1845,7 +1846,14 @@ Double UtrModel::tssProb(int left) const { // TODO: store results for later to b
  * the aataaa (polyA signal) which is shortly upstream of the actual tts.
  * plus the d_polyasig_cleavage bases downstream of the polyA signal
  */
-void UtrModel::computeTtsProbs(){
+void UtrModel::computeTtsProbs(int from, int to){
+   if (from < 0 || to < 0) { // if nothing else is requested, use the whole sequence
+	from = 0;
+	to = dnalen;
+    }
+   if (to > dnalen)
+	to = dnalen;
+
     Double extrinsicProb;
     Double prob;
     Double randProb = 1.0/POWER4TOTHE(aataaa_boxlen);
@@ -1853,7 +1861,7 @@ void UtrModel::computeTtsProbs(){
     int ttspos, aataaa_box_begin;
     Seq2Int s2i_aataaa(aataaa_boxlen);
 
-    for (aataaa_box_begin = 0; aataaa_box_begin <= dnalen; aataaa_box_begin++) {
+    for (aataaa_box_begin = from; aataaa_box_begin <= to; aataaa_box_begin++) {
 	// plus strand
 	ttspos = aataaa_box_begin + aataaa_boxlen + Constant::d_polyasig_cleavage - 1;
 	if (ttspos >= dnalen) {

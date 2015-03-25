@@ -548,7 +548,8 @@ void ContentStairs::computeStairs(const char* dna){
   n = strlen(dna);
   this->dna = dna; // keep only the pointer
   nextStep.clear();
-  int totterywin = 200; // to smooth out when GC content teeter-totters between two classes
+  // to smooth out when GC content teeter-totters between two classes
+  int totterywin = 1000; // a little more accurate than 200 and also than 2000
   if (idx)
     delete [] idx;
   idx = new int[n];
@@ -612,7 +613,7 @@ void ContentStairs::computeStairs(const char* dna){
       nextStep[1] = nextStep[0]; // this is an exception so the Viterbi algorithm can start at 1 instead of 0
 
   //  for (map<int,int>::iterator it = nextStep.begin(); it != nextStep.end(); ++it)
-  //     cout << it->first << " => " << it->second << '\n';
+  //    cout << "# " << it->first << " => " << it->second << " : " << idx[it->first] << '\n';
 }
 
 int ContentStairs::getNextStep(int from) {

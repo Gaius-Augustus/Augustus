@@ -494,15 +494,13 @@ StatePath* NAMGene::getViterbiPath(const char *dna, const char* seqname){
 		cerr << endl;
 	}
 #endif
-	// NEW: is this a bugfix? need to test on long example  seqs with index changes
-	/*
+	// need to test on long example  seqs with index changes (bug fixed on Mar 25th, 2015)
 	if (cs.idx[base] != curGCIdx) { // check whether GC content has changed
 	    curGCIdx = cs.idx[base];
 	    // update GC content dependent parameters,
 	    // no new computation of SegProbs (empty interval [2,1]
 	    updateToLocalGCEach(curGCIdx, 2, 1);
-	    cout << "getViterbiPath: changing GC index at base " << base << endl;
-	    }*/
+	}
 	states[stateidx]->viterbiForwardAndSampling( viterbi, forward, state, base, 
 						     doBacktracking, oli );
 	if (!Constant::overlapmode && ((oli.base >= base && oli.state == state) || (oli.base > base + 10))) {
