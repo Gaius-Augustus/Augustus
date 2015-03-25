@@ -447,12 +447,14 @@ void SegProbs::setEmiProbs(vector<Double> *emiprobs, int from, int to) {
 Double SegProbs::getSeqProb(int from, int to) {
     if (from == to){
 	try {
-	    if (forwardStrand)
+	    if (forwardStrand) {
+		if (to < k)
+		    return (float) .25;
 		return (*emiprobs)[s2i(dna + to - k)];
-	    else
+	    } else
 		return (*emiprobs)[s2i.rc(dna + to)];
 	} catch (InvalidNucleotideError) {
-	    return .25;
+	    return (float) .25;
 	}
     }
     if (to > n)

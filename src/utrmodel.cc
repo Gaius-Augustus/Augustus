@@ -766,10 +766,10 @@ void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
 	    tssProbsMinus.assign(dnalen+1, -1);
 	}
 	if (ttsProbPlus)
-	    delete ttsProbPlus;
+	    delete [] ttsProbPlus;
 	ttsProbPlus = new Double[dnalen+1];
 	if (ttsProbMinus)
-	    delete ttsProbMinus;
+	    delete [] ttsProbMinus;
 	ttsProbMinus = new Double[dnalen+1];
     }
     initAlgorithmsCalled = true;
@@ -1776,6 +1776,8 @@ Double UtrModel::tssProb(int left) const { // TODO: store results for later to b
     static int tatapos;
     static int transstart;
     int right = left + Constant::tss_upwindow_size + tss_end - 1;
+    if (right >= dnalen)
+	return 0;
     transstart = isOnFStrand(utype)? right - tss_end + 1 : left + tss_end - 1;
     extrinsicProb = 1;
 

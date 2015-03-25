@@ -226,7 +226,7 @@ public:
 	    n = 0;
 	cumProds = new Double[n+1];
     }
-    ~SegProbs () { delete cumProds; }
+    ~SegProbs () { delete [] cumProds; }
     void setEmiProbs(vector<Double> *emiprobs, int from = -1, int to = -1);
     Double getSeqProb(int from, int to);
 protected:

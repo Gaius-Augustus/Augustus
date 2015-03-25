@@ -526,7 +526,7 @@ ContentStairs::ContentStairs(){
  */
 ContentStairs::~ContentStairs(){
     if (idx)
-	delete idx;
+	delete [] idx;
 }
 
 /*
