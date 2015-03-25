@@ -23,6 +23,8 @@ use IO::File;
 
 my %cmdpars = ( 'pred'              => '',
 		'anno'              => '',
+		'joingenes'         => '',
+		'jg_exec_dir'       => '',
 		'eval_exec_dir'     => '');
 
 
@@ -45,6 +47,7 @@ OPTIONS
 
     --eval_exec_dir=d          Directory that contains the executable evaluate_gtf.pl from the eval package.
                                If not specified it must be in \$PATH environment variable.
+    --joingenes=1              Use this option to merge genes in the prediction set and filter out duplicates (default: 0)
 
 
 ENDUSAGE
@@ -78,6 +81,20 @@ if ($cmdpars{"anno"} eq ""){
 if ($cmdpars{'eval_exec_dir'} =~ /.[^\/]$/) {
     $cmdpars{'eval_exec_dir'} .= '/';
 }
+
+if ($cmdpars{'jg_exec_dir'} =~ /.[^\/]$/) {
+    $cmdpars{'jg_exec_dir'} .= '/';
+}
+
+my $joingenes=0;
+if ($cmdpars{'joingenes'} eq '1'){
+    $joingenes=1;
+}
+
+# check whether joingenes is properly installed
+if ($joingenes && qx(which "$cmdpars{'jg_exec_dir'}joingenes") !~ /joingenes$/){
+    die ("joingenes is not executable. Please add the directory which contains the executable joingenes to the PATH environment variable or specify the path with --jg_exec_dir.");
+} 
 
 # check whether the eval package is properly installed
 if (qx(which "$cmdpars{'eval_exec_dir'}evaluate_gtf.pl") !~ /evaluate_gtf.pl$/){
@@ -122,7 +139,7 @@ my @intervals=(); # hash of genomic intervals
 my %seqlist=(); # hash of sequences (only keys, no values)
     
 # make gene IDs unique
-# my $geneID = 0;
+my $geneID = 0;
    
 open (PRED, <$cmdpars{"pred"}>) or die ("Could not open $cmdpars{'pred'} for reading: $!");
 open (JOINPRED, ">$gffDir/pred.gtf") or die("Could not open $gffDir/pred.gtf for writing: $!");
@@ -132,15 +149,16 @@ while(<PRED>){
 	push @intervals,[$1, $2, $3]; # store genomic intervals on which gene prediction is executed
 	print JOINPRED $_;
     }
-    # if(/\tgene\t/){
-    #    $geneID++;
-    # }
-    # s/g\d+/g$geneID/g; # replace gene ID with new unique gene ID
+    if(/\tgene\t/){
+        $geneID++;
+    }
+    s/g\d+/g$geneID/g; # replace gene ID with new unique gene ID
     if(/\t(CDS|stop_codon|start_codon)\t/){
 	print JOINPRED $_;
     }	
 }
 close(PRED);
+close(JOINPRED);
 
 # join overlapping genomic intervals
 # sort intervals by 1. chromosome, 2. start
@@ -182,6 +200,12 @@ foreach my $line (@gfflines){
     }
 }
 close(ANNO);
+
+# join genes
+if($joingenes){
+    system("mv $gffDir/pred.gtf $gffDir/pred.unfiltered.gtf");
+    system("$cmdpars{'jg_exec_dir'}joingenes -g $gffDir/pred.unfiltered.gtf -o $gffDir/pred.gtf");
+}
 
 # split annotation and prediction file by seqs and prepare
 # list files that contain the directories of the GTF files being compared (required by eval)

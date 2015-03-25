@@ -41,11 +41,14 @@ my %cmdpars = ( 'species'              => '',
 		'speciesfilenames'     => '',
 		'eval_exec_dir'        => '',
                 'eval_against'         => '',
+		'jg'                   => '',
+                'jg_exec_dir'          => '',
 		'stopCodonExcludedFromCDS' => '',
                 'chunksize'            => '5000000');
 
 
 my $cgp = 0;
+my $joingenes=0;
 
 $SIG{INT} = \&got_interrupt_signal;
 
@@ -123,7 +126,7 @@ optimize_augustus.pl --species=myspecies --treefile=tree.nwk --alnfile=aln.file 
 OPTIONS
 
     --stopCodonExcludedFromCDS=1 Use this option, if the stop codons are excluded from the CDS features in 'eval.gtf' (default: 0).
-    --eval_exec_dir              Directory that contains the executable evaluate_gtf.pl from the eval package.
+    --eval_exec_dir=d            Directory that contains the executable evaluate_gtf.pl from the eval package.
                                  If not specified it must be in \$PATH environment variable.
     --eval_against=s             s is the species identifier to which 'eval.gtf' belongs to. Caution, if not specified, the
                                  reference species in the alignment (first s-line in Maf block) is assumed.
@@ -132,6 +135,9 @@ OPTIONS
     --dbaccess=db                retrieve genomes either from a MySQL or from an SQLITE database. In the SQLITE case, 'db' is a database file
                                  with extension .db, e.g. --dbaccess=vertebrates.db. In the MySQL case, 'db' is a string that contains the connection
                                  information, e.g. --dbaccess=dbname,host,user,passwd (the parameter --speciesfilenames is not required, here).
+    --jg=1                       Use this option, if you want to filter out duplicates from the prediction with the external tool 'joingenes' (default: 0,
+                                 however --jg=1 is recommended). The tool 'joingenes' is part of the augustus package and can be found in the 'auxprogs' folder.
+    --jg_exec_dir=d              Directory that contains the exectuable 'joingenes' (only required when --jg=1)
     --metapars=metapars.cgp.cfg  see usage 1 above (default: generic_metapars.cgp.cfg)
     --cpus=n                     see usage 1 above
     --pstep=p                    see usage 1 above
@@ -196,6 +202,18 @@ if ($cmdpars{"alnfile"} ne "" && $cmdpars{"treefile"} ne "" && ($cmdpars{"specie
              "Please add the directory which contains " . $1 . " to the PERL5LIB environment variable, e.g. add the following line to your .bashrc file:\n\n" . 
 	     "export PERL5LIB=\$PERL5LIB:/path/to/" . $1 . "\n\n");
     }
+    # join genes
+    if ($cmdpars{'jg_exec_dir'} =~ /.[^\/]$/) {
+	$cmdpars{'jg_exec_dir'} .= '/';
+    }
+    if ($cmdpars{'jg'} eq '1'){
+	$joingenes=1;
+    }
+    # check whether joingenes is properly installed
+    if ($joingenes && qx(which "$cmdpars{'jg_exec_dir'}joingenes") !~ /joingenes$/){
+	die ("joingenes is not executable. Please add the directory which contains the executable joingenes to the PATH environment variable or specify the pa
+th with --jg_exec_dir.");
+    } 
 } elsif (!( $cmdpars{"alnfile"} eq "" && $cmdpars{"treefile"} eq "" && $cmdpars{"speciesfilenames"} eq "" && $cmdpars{"dbaccess"} eq "") ){
     die ("For Optimizing cgp parameters you must specify parameters alnfile, treefile\n" . 
          "and one of the following combinations of parameters\n\n" .
@@ -1733,8 +1751,6 @@ sub evalCGP{
     }
     close(JOINPRED);
 
-    # TODO: possibly filter for duplicates and join incomplete genes (Lars script)
-
     # join overlapping genomic intervals
     # sort intervals by 1. chromosome, 2. start
     @intervals = sort {$a->[0] cmp $b->[0] || $a->[1] <=> $b->[1]} @intervals;
@@ -1776,6 +1792,12 @@ sub evalCGP{
     }
     close(ANNO);
 
+    # filter prediction for duplicates and merge genes (uses external tool 'joingenes')
+    if($joingenes){
+	system("mv $optdir/pred.gtf $optdir/pred.unfiltered.gtf");
+	system("$cmdpars{'jg_exec_dir'}joingenes -g $optdir/pred.unfiltered.gtf -o $optdir/pred.gtf");
+    }
+    
     # split annotation and prediction file by seqs and prepare
     # list files that contain the directories of the GTF files being compared (required by eval)
     system ("rm -f $optdir/annotation_list");
