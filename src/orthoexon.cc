@@ -88,7 +88,7 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 	  Eomega = -1;
 	  VarOmega = -1;
 	  omega = -1;
-	  //cout<<"ortho exon "<<this->ID<<" has no omega"<<endl;
+	  cerr<<"ortho exon "<<this->ID<<" has no omega"<<endl;
 	  return;
 	}
 	//cout<<"number of omegas: "<<k<<endl;

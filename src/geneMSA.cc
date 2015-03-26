@@ -890,9 +890,9 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 	    unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator coit;
 	    // process all ortho exons that start
 	    for(int i=0; i<aliPosIt->second.oeStart.size(); i++){
-	      /*cout<<"##################ortho exon ("<<aliPosIt->second.oeStart[i]->ID<<") starts: "<<aliPosIt->second.oeStart[i]->getAliStart()<<":"<<aliPosIt->second.oeStart[i]->getAliEnd()<<endl;
+	      //cout<<"##################ortho exon ("<<aliPosIt->second.oeStart[i]->ID<<") starts: "<<aliPosIt->second.oeStart[i]->getAliStart()<<":"<<aliPosIt->second.oeStart[i]->getAliEnd()<<endl;
 
-	      cout<<"chromosomal position of each exon:"<<endl;
+		/*      cout<<"chromosomal position of each exon:"<<endl;
 	      for(int j=0; j<aliPosIt->second.oeStart[i]->orthoex.size(); j++){
 		if(aliPosIt->second.oeStart[i]->orthoex[j]){
 		  cout<<"species "<<j<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->begin<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->end<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->getStateType()<<"\t";
@@ -970,9 +970,9 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 	    }
 	    // process all ortho exons that end
 	    for(int i=0; i<aliPosIt->second.oeEnd.size(); i++){
-	      /*  cout<<"################ortho exon ("<<aliPosIt->second.oeEnd[i]->ID<<") ends: "<<aliPosIt->second.oeEnd[i]->getAliStart()<<":"<<aliPosIt->second.oeEnd[i]->getAliEnd()<<endl;
+	      //cout<<"################ortho exon ("<<aliPosIt->second.oeEnd[i]->ID<<") ends: "<<aliPosIt->second.oeEnd[i]->getAliStart()<<":"<<aliPosIt->second.oeEnd[i]->getAliEnd()<<endl;
 
-
+		  /*
 	      cout<<"chromosomal position of each exon:"<<endl;
 	      for(int j=0; j<aliPosIt->second.oeEnd[i]->orthoex.size(); j++){
 		if(aliPosIt->second.oeEnd[i]->orthoex[j])
@@ -987,7 +987,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 	      // calculate omega of ortho exon from cumulative sum
 	      cumValues *cv = findCumValues(aliPosIt->second.oeEnd[i]->getBV(), const_cast<const OrthoExon*>(aliPosIt->second.oeEnd[i])->getRFC(offsets));
 	      if(cv == NULL){
-		cout<<"cum Values has NULL pointer"<<endl;
+		cerr<<"cum Values has NULL pointer"<<endl;
 	      }
 	      //cout<<"pointer to cumValues: "<<cv->omega<<endl;
 	      aliPosIt->second.oeEnd[i]->setOmega(&cv->logliks, codonevo, false);
@@ -1063,6 +1063,23 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 	    //if(! foundBV)
 	    // cerr<<"no Bitvector with given RFC found!"<<endl;
 	  }
+	}
+	while(aliPosIt != aliPos.end()){ // process remaining orthoExon ends
+	  if(aliPosIt->second.oeStart.size() > 0){
+	    cerr<<"Warning: there are still orthoexon(s) beginning although codon alignment ended"<<endl; 
+	    
+	  }
+	  for(int i=0; i<aliPosIt->second.oeEnd.size(); i++){
+	    //cout<<"################ortho exon ("<<aliPosIt->second.oeEnd[i]->ID<<") ends: "<<aliPosIt->second.oeEnd[i]->getAliStart()<<":"<<aliPosIt->second.oeEnd[i]->getAliEnd()<<endl;
+
+	    cumValues *cv = findCumValues(aliPosIt->second.oeEnd[i]->getBV(), const_cast<const OrthoExon*>(aliPosIt->second.oeEnd[i])->getRFC(offsets));
+	    if(cv == NULL){
+	      cerr<<"cum Values has NULL pointer, no omega was calculated"<<endl;
+	    }else{
+	      aliPosIt->second.oeEnd[i]->setOmega(&cv->logliks, codonevo, false);
+	    }
+	  }
+	  aliPosIt++;
 	}
     }
     cout<<"compute omegas done"<<endl;
