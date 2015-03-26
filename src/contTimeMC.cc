@@ -495,7 +495,7 @@ void ExonEvo::setLambda(){
     try {
 	lambda = Properties::getdoubleProperty("/CompPred/exon_gain");
     } catch (...) {
-	lambda = 2.0;
+	lambda = 0.0001;
     }
     if(lambda <= 0.0){
 	throw ProjectError("the rates for exon loss/gain have to be positive");
@@ -507,7 +507,7 @@ void ExonEvo::setMu(){
     try {
 	mu  = Properties::getdoubleProperty("/CompPred/exon_loss");
     } catch (...) {
-	mu  = 2.0;
+	mu  = 0.0001;
     }
     if(mu <= 0.0){
 	throw ProjectError("the rates for exon loss/gain have to be positive");
@@ -519,7 +519,7 @@ void ExonEvo::setPhyloFactor(){
     try {
 	phylo_factor  = Properties::getdoubleProperty("/CompPred/phylo_factor");
     } catch (...) {
-	phylo_factor = 1.0;
+	phylo_factor = 3;
     }
     if(phylo_factor <= 0.0){
 	throw ProjectError("phylogenetic factor needs to be real positive number");

@@ -93,12 +93,19 @@ void CompGenePred::start(){
     cout << "phylo factor:\t" << evo.getPhyloFactor() <<  "\n-------------------------------" << endl;
 #endif
 
-   
+    Constant::temperature = 3;
+    Properties::assignProperty("temperature", Constant::temperature);
+    if (Constant::temperature < 0){
+	Constant::temperature = 0;
+    }
+    if (Constant::temperature > 7){
+	Constant::temperature = 7;
+    }
     int maxIterations; // maximum number of dual decomposition iterations
     try {
 	maxIterations = Properties::getIntProperty("/CompPred/maxIterations");
     } catch (...) {
-	maxIterations = 100;
+	maxIterations = 500;
     }
     if(maxIterations <= 0){
 	cerr << "Warning: /CompPred/maxIterations was set to "<<maxIterations<<". At least one iteration must be made." << endl;
@@ -108,7 +115,7 @@ void CompGenePred::start(){
     try {
 	dd_factor = Properties::getdoubleProperty("/CompPred/dd_factor");
     } catch (...) {
-	dd_factor = 0.02;
+	dd_factor = 20;
     }
     try {
 	noprediction = Properties::getBoolProperty("noprediction");
