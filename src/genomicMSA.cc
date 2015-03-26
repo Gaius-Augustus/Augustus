@@ -158,6 +158,12 @@ void GenomicMSA::readAlignment(string alignFilename) {
 			else{
 			    delete alignBlock->rows[index];
 			    alignBlock->rows[index] = row;
+			    try {
+				rsa->setLength(index, row->seqID, lenOfChr);
+			    } catch (ProjectError e){
+				cerr << e.getMessage() << endl << "MAF file inconsistent." << endl;
+				throw e;
+			    }
 		        }
 		    }
 		} else {

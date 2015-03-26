@@ -349,7 +349,10 @@ void CompGenePred::start(){
 	if(conservationTrack)
 	    geneRange->printConsScore(seqRanges, outdir);
 
-	if (!noprediction){
+	if (noprediction){
+	    geneRange->printOrthoExons();
+	}
+	else{
 	  list<OrthoExon> hects = geneRange->getOrthoExons();
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
 	    orthograph.outputGenes(baseGenes,base_geneid);
