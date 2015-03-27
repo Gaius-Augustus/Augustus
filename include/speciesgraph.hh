@@ -33,11 +33,11 @@ private:
     bool genesWithoutUTRs;
     bool onlyCompleteGenes;
     double ec_score; //temp: until there are real scores for exon candidates
-    ofstream *sampled_exons;        // output file of sampled exons
+    ofstream *sampled_GFs;        // output file of sampled exons/introns
     bool overlapComp;
    
 public:
-    SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> *addEx, string name, Strand s, bool u, bool o, ofstream *se, bool ov = false) :
+    SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> *addEx, string name, Strand s, bool u, bool o, ofstream *gf, bool ov = false) :
 	AugustusGraph(states, seq->sequence),
 	seqRange(seq),
 	additionalExons(addEx),
@@ -45,7 +45,7 @@ public:
 	strand(s),
 	genesWithoutUTRs(u),
 	onlyCompleteGenes(o),
-	sampled_exons(se),
+	sampled_GFs(gf),
 	overlapComp(ov)
     {
 	try {
@@ -70,7 +70,7 @@ public:
      */
     string getKey(Node *n);
     void printGraph(string filename); // prints graph in dot-format
-    void printSampledExon(Node *node); //prints sampled exons to display them with gBrowse
+    void printSampledGF(Status *st); //prints sampled exons/introns to display them with gBrowse
     string getSpeciesname() const {return speciesname;}
     char* getSequence() const {return seqRange->sequence;}
     char* getSeqID() const {return seqRange->seqname;}
@@ -78,7 +78,7 @@ public:
     int getSeqLength() const {return seqRange->length;}
     Strand getSeqStrand() const {return strand;}
     AnnoSequence* getAnnoSeq() const {return seqRange;}
-
+    void printCurrentPath();
     /*
      * maximum weight path problem related functions
      */

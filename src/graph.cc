@@ -1104,6 +1104,10 @@ StateType Node::castToStateType(){
 
 }
 
+string stateNameIdentifiers[NUM_STATENAMES]={
+    "CDS","3'UTR","5'UTR","intron","intron","intron"
+};
+
 string nodeTypeIdentifiers[NUM_NODETYPES]=
   {"IR", "plus0", "plus1", "plus2", "minus0", "minus1", "minus2", "T_plus1", "TA_plus2", "TG_plus2", "T_minus1", "C_minus1", "YY_minus0",
    "ncintr", "rncintr",
@@ -1203,4 +1207,17 @@ bool isTlstartOrstop(Status *predExon, Status *succExon){
 	    return true;
     }
     return false;
+}
+
+float AugustusGraph::getAvgBaseProb(Status *st){
+    if(st->isExon() || st->isIntron()){
+	float prob = 0.0;
+	for(int pos = st->begin; pos<=st->end; pos++){
+	    if(getBasetype(st, pos)>=0){
+		prob += baseScore[getBasetype(st, pos)*seqlength + pos];
+	    }
+	}
+	return prob /= st->getLen();
+    }
+    return 0.0;
 }

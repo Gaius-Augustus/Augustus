@@ -192,7 +192,7 @@ void CompGenePred::start(){
 	initGenes = initOutputFiles(outdir,".init"); // score added to all orthologous exons and penalty added to all non orthologous exons, then global path search repeated
     vector<ofstream*> optGenes = initOutputFiles(outdir,".cgp");  //optimized gene prediction by applying majority rule move
     vector<int> opt_geneid(OrthoGraph::numSpecies, 1);
-    vector<ofstream*> sampledExons = initOutputFiles(outdir,".sampled_ECs");
+    vector<ofstream*> sampledGFs = initOutputFiles(outdir,".sampled_GFs"); // prints sampled exons/introns and their posterior probs to file
 
     BaseCount::init();
     PP::initConstants();
@@ -331,7 +331,7 @@ void CompGenePred::start(){
 		}
 		// build graph
 		orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRanges[s], geneRange->getExonCands(s), speciesNames[s], 
-							geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, sampledExons[s], overlapComp);
+							geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, sampledGFs[s], overlapComp);
 		orthograph.graphs[s]->buildGraph();
 		// orthograph.graphs[s]->printGraph(outdir + speciesNames[s] + "." + itoa(GeneMSA::geneRangeID) + ".dot");
 		
@@ -399,7 +399,7 @@ void CompGenePred::start(){
 	closeOutputFiles(initGenes);
     closeOutputFiles(baseGenes);
     closeOutputFiles(optGenes);
-    closeOutputFiles(sampledExons);
+    closeOutputFiles(sampledGFs);
 
     // delete all trees                                           
     for(unordered_map< bit_vector, PhyloTree*>::iterator topit = GeneMSA::topologies.begin(); topit !=GeneMSA::topologies.end(); topit++){

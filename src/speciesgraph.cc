@@ -144,14 +144,14 @@ void SpeciesGraph::buildGraph(){
 
     //relax all nodes in topological order and label all nodes with 1 if on max weight path
     relax();
-        
 }
+
 Node* SpeciesGraph::addNode(Status *exon){
     NodeType ntype = utrExon;
     if(exon->name == CDS)
 	ntype = sampled;
     Node *node = new Node(exon->begin, exon->end, setScore(exon), exon->item, ntype);
-    printSampledExon(node);
+    printSampledGF(exon);
     nodelist.push_back(node);
     addToHash(node);
     return node;
@@ -291,6 +291,7 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
             intr_score += setScore(intr);
 	Edge in(succ, false, intr_score, intr->item);
 	pred->edges.push_back(in);
+	printSampledGF(intr);
     }
 }
 
@@ -317,26 +318,18 @@ Node* SpeciesGraph::addRightSS(Status *exon, vector< vector<Node*> >&neutralLine
 }
 
 
-void SpeciesGraph::printSampledExon(Node *node){
+void SpeciesGraph::printSampledGF(Status *st){
     streambuf *coutbuf = cout.rdbuf(); //save old buf
-    cout.rdbuf(sampled_exons->rdbuf()); //redirect std::cout to species file
-    cout << getSeqID() << "\tSAMPLED_ECs\t";
-    if(node->n_type == sampled){
-	cout << "exon\t";
-    }
-    else{
-	cout << "UTR\t";
-    }
+    cout.rdbuf(sampled_GFs->rdbuf()); //redirect std::cout to species file
+    cout << getSeqID() << "\tSAMPLING\t";
+    cout << stateNameIdentifiers[st->name] << "\t";
     if(strand == plusstrand){
-	cout <<  node->begin + getSeqOffset() + 1 << "\t" << node->end + getSeqOffset() + 1;
+	cout <<  st->begin + getSeqOffset() + 1 << "\t" << st->end + getSeqOffset() + 1;
     }
     else{
-	cout << getSeqLength() - node->end + getSeqOffset() << "\t" << getSeqLength() - node->begin + getSeqOffset();
+	cout << getSeqLength() - st->end + getSeqOffset() << "\t" << getSeqLength() - st->begin + getSeqOffset();
     }
-    cout <<"\t" << node->score << "\t.\t.\tName=" << (string)stateTypeIdentifiers[node->castToStateType()] <<"|"<< node->score << "|";
-    if (node->n_type == sampled || node->n_type == utrExon) {
-	cout << ((State*)(node->item))->apostprob << endl;
-    }
+    cout <<"\t0\t.\t.\tName=" << (string)stateTypeIdentifiers[((State*)st->item)->type] <<";postProb="<< st->getPostProb() << ";avgBaseProb=" <<getAvgBaseProb(st)<< endl;
     cout.rdbuf(coutbuf); //reset to standard output again 
 }
 
@@ -696,6 +689,21 @@ double SpeciesGraph::relax(Node *begin, Node *end){
     next->label = 1;
     return end->score;
 
+}
+
+void SpeciesGraph::printCurrentPath(){
+
+    Node *next = tail;
+    
+    cout << "-------------------------------" << endl;
+    while(next != head){
+	if(next->isSampled())
+	    cout << next << endl;
+	else if(next->n_type == IR)
+	    cout << "gene end" << endl;
+	next = next->pred;
+    }
+    cout << "-------------------------------" << endl;
 }
 
 string SpeciesGraph::getKey(Node *n) {

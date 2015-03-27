@@ -12,8 +12,11 @@
 
 using namespace std;
 
+#define NUM_STATENAMES 6
+
 enum Statename{type_unknown=-1, CDS, utr3, utr5, intron, utr3Intron, utr5Intron};
 
+extern string stateNameIdentifiers[NUM_STATENAMES];
 
 /* types of nodes:
  * sampled exons and introns: sampled
@@ -60,6 +63,8 @@ public:
     bool isExon() const {return (name >= CDS && name <= utr5);}
     bool isCDS() const {return (name == CDS);}
     bool isUTR() const {return (name == utr3 || name == utr5);}    
+    float getPostProb() const {return (item)? ((State*)item)->apostprob : 0.0;}
+    int getLen() const {return end-begin+1;}
 };
 
 bool isTlstartOrstop(Status *predExon, Status *succExon);
@@ -195,6 +200,7 @@ protected:
     virtual bool mergedStopcodon(Node* exon1, Node* exon2)=0;
     virtual bool mergedStopcodon(Status* exon1, Status* exon2)=0;
     virtual bool mergedStopcodon(StateType type1, StateType type2, int end1, int begin2)=0;
+    virtual float getAvgBaseProb(Status *st) =0;
 };
 
 class AugustusGraph : public Graph{
@@ -324,6 +330,7 @@ public:
     bool mergedStopcodon(Status* exon1, Status* exon2);
     bool mergedStopcodon(StateType type1, StateType type2, int end1, int begin2);
     void getPoints(Status *st, double p, double *a1, double *a2, double *b1, double *b2);
+    float getAvgBaseProb(Status *st);
     const char* sequence;
     int seqlength;
     vector<double> baseScore;
