@@ -48,10 +48,10 @@ class PredictionController {
 	// sgeLen length of SGE queue, when is reached "the server is buisy" will be displayed
 	def sgeLen = 20;
 	// max button filesize
-	def int maxButtonFileSize = 104857600 // 100 MB = 13107200 bytes = 104857600 bit, getFile etc. gives size in bit
-	def preUploadSize
+	def long maxButtonFileSize = 104857600 // 100 MB = 13107200 bytes = 104857600 bit, getFile etc. gives size in bit
+	def long preUploadSize
 	// max ftp/http filesize
-	def int maxFileSizeByWget = 1073741824 // 1 GB = 1073741824 bytes, curl gives size in bytes
+	def long maxFileSizeByWget = 1073741824 // 1 GB = 1073741824 bytes, curl gives size in bytes
 	// EST sequence properties (length)
 	def int estMinLen = 250
 	def int estMaxLen = 20000
@@ -295,7 +295,7 @@ class PredictionController {
 			//def uploadedParamArch = request.getFile('ArchiveFile')
 			if(!uploadedParamArch.empty){
 				// check file size
-				def preUploadSize = uploadedParamArch.getSize()
+				preUploadSize = uploadedParamArch.getSize()
 				if(preUploadSize <= maxButtonFileSize){
 					// actually upload the file
 					projectDir.mkdirs()
@@ -597,7 +597,7 @@ class PredictionController {
      			def seqNames = []
 			if(!uploadedGenomeFile.empty){
 				// check file size
-				def preUploadSize = uploadedGenomeFile.getSize()
+				preUploadSize = uploadedGenomeFile.getSize()
          			projectDir.mkdirs()
 				if(preUploadSize <= maxButtonFileSize){
          				uploadedGenomeFile.transferTo( new File (projectDir, "genome.fa"))
@@ -971,7 +971,7 @@ class PredictionController {
 					uploadedStructFile.transferTo( new File (projectDir, "hints.gff"))
 					//predictionInstance.hint_file = uploadedStructFile.originalFilename
 				}else{
-					def allowedHintsSize = maxButtonFileSize * 2
+					def long allowedHintsSize = maxButtonFileSize * 2
 					logDate = new Date()
 					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The selected Hints file was bigger than ${allowedHintsSize}.\n"
 					flash.error = "Hints file is bigger than ${allowedHintsSize} bytes, which is our maximal size for file upload from local harddrives via web browser. Please select a smaller file or use the ftp/http web link file upload option."
@@ -1270,8 +1270,8 @@ class PredictionController {
 					delSzCrProc.waitFor()
 					content = new File("${projectDir}/genomeFileSize").text
 					st = new Scanner(content)//works for exactly one number in a file
-					def int genome_size;
-					genome_size = st.nextInt();
+					def long genome_size;
+					genome_size = st.nextLong();
 					if(genome_size < maxFileSizeByWget){//1 GB
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Retrieving genome file ${predictionInstance.genome_ftp_link}\n"
@@ -1602,8 +1602,8 @@ class PredictionController {
 					delSzCrProc.waitFor()
 					content = new File("${projectDir}/estFileSize").text
 					st = new Scanner(content)//works for exactly one number in a file
-					def int est_size;
-					est_size = st.nextInt();
+					def long est_size;
+					est_size = st.nextLong();
 					if(est_size < maxFileSizeByWget){//1 GB
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Retrieving EST/cDNA file ${predictionInstance.est_ftp_link}\n"

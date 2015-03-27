@@ -48,10 +48,10 @@ class TrainingController {
 	// sgeLen length of SGE queue, when is reached "the server is buisy" will be displayed
 	def sgeLen = 20;
 	// max button filesize
-	def int maxButtonFileSize = 104857600 // 100 MB = 13107200 bytes = 104857600 bit, getFile etc. gives size in bit
-	def preUploadSize
+	def long maxButtonFileSize = 104857600 // 100 MB = 13107200 bytes = 104857600 bit, getFile etc. gives size in bit
+	def long preUploadSize
 	// max ftp/http filesize
-	def int maxFileSizeByWget = 1073741824 // 1 GB = 1073741824 bytes, curl gives size in bytes
+	def long maxFileSizeByWget = 1073741824 // 1 GB = 1073741824 bytes, curl gives size in bytes
 	// EST sequence properties (length)
 	def int estMinLen = 250
 	def int estMaxLen = 20000
@@ -1048,8 +1048,8 @@ class TrainingController {
 					delSzCrProc.waitFor()
 					content = new File("${projectDir}/genomeFileSize").text
 					st = new Scanner(content)//works for exactly one number in a file
-					def int genome_size;
-					genome_size = st.nextInt();
+					def long genome_size;
+					genome_size = st.nextLong();
 					if(genome_size < maxFileSizeByWget){//1 GB
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Retrieving genome file ${trainingInstance.genome_ftp_link}\n"
@@ -1379,8 +1379,8 @@ class TrainingController {
 					delSzCrProc.waitFor()
 					content = new File("${projectDir}/estFileSize").text
 					st = new Scanner(content)//works for exactly one number in a file
-					def int est_size;
-					est_size = st.nextInt();
+					def long est_size;
+					est_size = st.nextLong();
 					if(est_size < maxFileSizeByWget){//1 GB
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Retrieving EST/cDNA file ${trainingInstance.est_ftp_link}\n"
@@ -1661,8 +1661,8 @@ class TrainingController {
 					delSzCrProc.waitFor()
 					content = new File("${projectDir}/proteinFileSize").text
 					st = new Scanner(content)//works for exactly one number in a file
-					def int protein_size;
-					protein_size = st.nextInt();
+					def long protein_size;
+					protein_size = st.nextLong();
 					if(protein_size < maxFileSizeByWget){//1 GB
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Retrieving protein file ${trainingInstance.protein_ftp_link}\n"
