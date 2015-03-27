@@ -65,6 +65,7 @@ public:
     bool isUTR() const {return (name == utr3 || name == utr5);}    
     float getPostProb() const {return (item)? ((State*)item)->apostprob : 0.0;}
     int getLen() const {return end-begin+1;}
+    int getFrame() const {return isCDS()? ((State*)item)->frame() : -1;}
 };
 
 bool isTlstartOrstop(Status *predExon, Status *succExon);

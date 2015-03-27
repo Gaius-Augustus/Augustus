@@ -329,7 +329,18 @@ void SpeciesGraph::printSampledGF(Status *st){
     else{
 	cout << getSeqLength() - st->end + getSeqOffset() << "\t" << getSeqLength() - st->begin + getSeqOffset();
     }
-    cout <<"\t0\t.\t.\tName=" << (string)stateTypeIdentifiers[((State*)st->item)->type] <<";postProb="<< st->getPostProb() << ";avgBaseProb=" <<getAvgBaseProb(st)<< endl;
+    cout << "\t0" ; //score
+    StateType type = ((State*)st->item)->type;
+    // the gff strand of the exon is the "strand product" of the alignment strand and exon type strand
+    // e.g. "-" x "-" = "+"
+    cout << "\t" << (((isOnFStrand(type) || type == intron_type) == (strand == plusstrand))? '+' : '-');
+    if(!st->isCDS()) // frame
+	cout << "\t.";
+    else if (isOnFStrand(type))
+	cout << "\t" << mod3(3-(st->getFrame() - st->getLen()));
+    else
+	cout << "\t" << mod3(2-st->getFrame());
+    cout << "\tName=" << (string)stateTypeIdentifiers[((State*)st->item)->type] <<";postProb="<< st->getPostProb() << ";avgBaseProb=" <<getAvgBaseProb(st)<< endl;
     cout.rdbuf(coutbuf); //reset to standard output again 
 }
 
