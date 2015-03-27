@@ -472,6 +472,19 @@ double PhyloTree::getDiversity(){
 }
 
 /*
+ * scale tree by multiplying each branch length by a factor
+ */
+void PhyloTree::scaleTree(double factor){
+    for(list<Treenode*>::const_iterator node = treenodes.begin(); node != treenodes.end(); node++){
+	if(!((*node)->isRoot())){
+	    double dist = (*node)->getDist();
+	    dist*=factor;
+	    (*node)->addDistance(dist);
+	}
+    }
+}
+
+/*
  * prune all leaf nodes of species that are not present as indicated by a bit vector
  * (i-th bit in the vector is 1 if species i is present and 0 if species i is absent)
  */

@@ -662,7 +662,7 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 
 
 // computes and sets the Omega = dN/dS attribute to all OrthoExons
-void GeneMSA::computeOmegas(vector<AnnoSequence*> const &seqRanges) {
+void GeneMSA::computeOmegas(vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree) {
     // int subst = 0;
     // Initialize for each species the first fragment froms[s] that 
     // is not completely left of the current OrthoExon.
@@ -688,10 +688,10 @@ void GeneMSA::computeOmegas(vector<AnnoSequence*> const &seqRanges) {
 	// cout << "OE" << endl;
 	//	printSingleOrthoExon(*oe, false);
 	// int subst = 0;
-	// omega = codonevo->estOmegaOnSeqTuple(rowstrings, tree, subst);
+	// omega = codonevo->estOmegaOnSeqTuple(rowstrings, ctree, subst);
 	//	cout << "omega=" << omega << endl;
 	// oe->setSubst(subst);
-	omega = codonevo->graphOmegaOnCodonAli(rowstrings, tree);
+	omega = codonevo->graphOmegaOnCodonAli(rowstrings, ctree);
 	oe->setOmega(omega);
     }
 }
@@ -790,7 +790,7 @@ void GeneMSA::printCumOmega(){
 }
 
 
-void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
+void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree) {
     cout<<"computing omega for each ortho exon."<<endl;
 
     // treat forward and reverse strand seperately (might be done more efficiently)
@@ -1048,7 +1048,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges) {
 		vector<double> loglik;
 		map<vector<string>,vector<double> >::iterator oit = computedOmegas.find(codonStrings);
 		if(oit==computedOmegas.end()){
-		  loglik = codonevo->loglikForCodonTuple(codonStrings, tree);
+		  loglik = codonevo->loglikForCodonTuple(codonStrings, ctree);
 		  computedOmegas.insert(pair<vector<string>,vector<double> >(codonStrings,loglik));
 		}else{
 		  loglik = oit->second;

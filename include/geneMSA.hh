@@ -84,8 +84,8 @@ public:
     void printGeneRanges();
     void printExonCands();
     void printOrthoExons();
-    void computeOmegas(vector<AnnoSequence*> const &seqRanges);
-    void computeOmegasEff(vector<AnnoSequence*> const &seqRanges);
+    void computeOmegas(vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
+    void computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
     void printCumOmega();
     void comparativeSignalScoring();
     // Charlotte Janas playground

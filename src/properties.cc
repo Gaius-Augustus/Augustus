@@ -68,6 +68,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/genesWithoutUTRs",
 "/CompPred/maxCov",
 "/CompPred/omegaEff",
+"/CompPred/scale_codontree",
 "/CompPred/onlySampledECs",
 "/CompPred/only_species",
 "/CompPred/outdir_orthoexons",

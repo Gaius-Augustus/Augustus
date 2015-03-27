@@ -101,6 +101,16 @@ void CompGenePred::start(){
     if (Constant::temperature > 7){
 	Constant::temperature = 7;
     }
+    double ctree_scaling_factor = 1; // scaling factor to scale branch lengths in codon tree to one codon substitution per time unit
+    try {
+	ctree_scaling_factor = Properties::getdoubleProperty("/CompPred/scale_codontree");
+    } catch (...) {
+	ctree_scaling_factor = 1;
+    }
+    if(ctree_scaling_factor <= 0.0){
+	cerr << "No negative scaling factor allowed. /CompPred/scale_codontree must be a positive real number. Will use =1." << endl;	
+	ctree_scaling_factor=1;
+    }
     int maxIterations; // maximum number of dual decomposition iterations
     try {
 	maxIterations = Properties::getIntProperty("/CompPred/maxIterations");
@@ -200,11 +210,15 @@ void CompGenePred::start(){
     StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
 
     // initializing codon rate matricies, for exon evolution see code above (evo)
+    PhyloTree ctree(tree); // codon tree
+    ctree.scaleTree(ctree_scaling_factor); // scale branch lengths to codon substitutions 
+    vector<double> ct_branchset;
+    ctree.getBranchLengths(ct_branchset);
     double *pi = ExonModel::getCodonUsage();
     CodonEvo codonevo;
     codonevo.setKappa(4.0);
     codonevo.setPi(pi);
-    codonevo.setBranchLengths(branchset, 25);
+    codonevo.setBranchLengths(ct_branchset, 25);
     //codonevo.printBranchLengths();
     codonevo.setOmegas(20);
     codonevo.setPrior(0.5);
@@ -348,9 +362,9 @@ void CompGenePred::start(){
 	
 	try{
 	    if(Properties::getBoolProperty("/CompPred/omegaEff"))
-		geneRange->computeOmegasEff(seqRanges); // omega and number of substitutions is stored as OrthoExon attribute
+		geneRange->computeOmegasEff(seqRanges, &ctree); // omega and number of substitutions is stored as OrthoExon attribute
 	    else
-		geneRange->computeOmegas(seqRanges);
+		geneRange->computeOmegas(seqRanges, &ctree);
 	}catch(...){}
 
 	if(conservationTrack)
