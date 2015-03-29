@@ -95,6 +95,8 @@ public:
 private:
     StateType              itype;
     Integer                gweight;
+    char*                  codon;
+    static int beginOfBioIntron, endOfBioIntron;
     static vector<Integer> emicount;
     static vector<Integer> intlencount;
     static Integer         introns;         // number of introns
@@ -134,6 +136,7 @@ private:
     static int             lastParIndex; // GC-index of current parameter set
     static Integer         verbosity;
     static double          geoProb;
+    static int             ass_outside; // Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
 };
 
 class IntronModelError : public ProjectError {

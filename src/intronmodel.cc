@@ -85,12 +85,16 @@ int            IntronModel::lastParIndex = -1;
 Integer        IntronModel::verbosity;
 BinnedMMGroup  IntronModel::dssBinProbs("dss", 1); // features from binned dss probs (for CRF training), monotonic increasing
 BinnedMMGroup  IntronModel::assBinProbs("ass", 1); // features from binned ass probs (for CRF training), monotonic increasing
-
+int            IntronModel::beginOfBioIntron = 0;
+int            IntronModel::endOfBioIntron = 0;
+int            IntronModel::ass_outside = 0;
 /*
  * IntronModel constructor
  */
 IntronModel::IntronModel() : gweight (1) {
     itype = toStateType( Properties::getProperty("/IntronModel/type", introncount++) );
+    codon = new char[4];
+    codon[4] = '\0';
 }
 
 /*
@@ -108,6 +112,7 @@ IntronModel::~IntronModel( ){
 	delete rSnippetProbs;
       assMotif = GCassMotif = NULL;
       snippetProbs = rSnippetProbs = NULL;
+      delete [] codon;
     }
 }
 
@@ -163,6 +168,7 @@ void IntronModel::init() {
     Properties::assignProperty("/IntronModel/non_ag_ass_prob", non_ag_ass_prob);
 
     ass_upwindow_size = Constant::ass_upwindow_size;
+    ass_outside = ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
 
     if (d < DSS_MIDDLE + Constant::dss_end + ass_upwindow_size + Constant::ass_start + ASS_MIDDLE) {
 	throw IntronModelError("Inconsistent intron length parameters. Please increase /IntronModel/d or decrease /IntronModel/ass_motif_memory.");
@@ -529,7 +535,6 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
      */
     int dStateLen = d - DSS_MIDDLE - Constant::dss_end - Constant::ass_start 
 	- ASS_MIDDLE - ass_upwindow_size;
-    int endOfBioIntron; // right end of biological intron
     Double predProb;
     Double fwdsum(0); 
     Double emiProb, extrinsicQuot(1);
@@ -555,21 +560,37 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 	 * State with variable length
 	 */
 	if (isOnFStrand(itype))
-	    endOfBioIntron = base + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
+	    endOfBioIntron = base + ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
 	else
 	    endOfBioIntron = base + Constant::dss_end + DSS_MIDDLE;
 
 	/*
-	 * Hack for performance: check whether an acceptor/donor splice site could follow
+	 * For performance: check whether an acceptor/donor splice site could follow
 	 */
 	if ((isOnFStrand(itype) && (endOfBioIntron - ASS_MIDDLE + 1 < dnalen - 1 && !isPossibleASS(endOfBioIntron))) ||
 	    (!isOnFStrand(itype) && (endOfBioIntron - DSS_MIDDLE + 1 < dnalen - 1 && !isPossibleRDSS(endOfBioIntron)))){
-// 	    viterbi[base].erase(state);
-// 	    if (needForwardTable(algovar))
-// 		forward[base].erase(state);
 	    return;
 	}
-
+	if (itype != lessD0 && itype != rlessD2 && endOfBioIntron < dnalen - 2){ // a codon is spliced, fill bases in second exon
+	   switch (itype)
+	      {
+	      case lessD1: // *|....|**
+		 codon[1] = *(sequence + endOfBioIntron + 1);
+		 codon[2] = *(sequence + endOfBioIntron + 2);
+		 break;
+	      case lessD2: // **|....|*
+		 codon[2] = *(sequence + endOfBioIntron + 1);
+		 break;
+	      case rlessD0: // **|....|*
+		 codon[0] = wcComplement(*(sequence + endOfBioIntron + 1));
+		 break;
+	      case rlessD1: // *|....|**
+		 codon[0] = wcComplement(*(sequence + endOfBioIntron + 2));
+		 codon[1] = wcComplement(*(sequence + endOfBioIntron + 1));
+		 break;
+	      default:;
+	      }
+	}
 	/*
 	 * maximal length of intron state with specific length distribution
 	 * see also seqProb!!
@@ -634,8 +655,8 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 		if (isOnFStrand(itype))
 		    endOfPred = ihint->start - 1 + DSS_MIDDLE + Constant::dss_end;
 		else 
-		    endOfPred = ihint->start - 1 + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
-		if (endOfPred >= 0 && ihint->end - ihint->start + 1 >= Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE + DSS_MIDDLE + Constant::dss_end) {
+		    endOfPred = ihint->start - 1 + ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
+		if (endOfPred >= 0 && ihint->end - ihint->start + 1 >= ass_upwindow_size + Constant::ass_start + ASS_MIDDLE + DSS_MIDDLE + Constant::dss_end) {
 		    ViterbiColumnType& predVit = viterbi[endOfPred];
 		    emiProb = emiProbUnderModel(endOfPred+1, base);
 		    if (endOfPred == oldEndOfPred)
@@ -693,7 +714,7 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 		// compute the maximum over the (two) predecessor states probs times transition probability
 		break;
 	    case longass0: case longass1: case longass2:
-		endOfPred = base - Constant::ass_whole_size() - Constant::ass_upwindow_size;
+		endOfPred = base - Constant::ass_whole_size() - ass_upwindow_size;
 		abort = (endOfPred < 0 || !isPossibleASS(base - Constant::ass_end));
 		break;
 	    case rlongdss0: case rlongdss1: case rlongdss2:
@@ -701,8 +722,8 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 		abort = ((endOfPred < 0) || !isPossibleRDSS(base - Constant::dss_start));
 		break;
 	    case rlongass0: case rlongass1: case rlongass2:
-		endOfPred = base - Constant::ass_whole_size() - Constant::ass_upwindow_size;
-		abort = (endOfPred < 0 || !isPossibleRASS(base - Constant::ass_upwindow_size - Constant::ass_start - ASS_MIDDLE + 1));
+		endOfPred = base - Constant::ass_whole_size() - ass_upwindow_size;
+		abort = (endOfPred < 0 || !isPossibleRASS(base - ass_upwindow_size - Constant::ass_start - ASS_MIDDLE + 1));
 		break;
 	    default:
 		throw IntronModelError("Unknown intron type.");
@@ -852,7 +873,7 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 
 Double IntronModel::emiProbUnderModel (int begin, int end) const {
     Seq2Int s2i(k+1);
-    static Double returnProb, extrinsicQuot;
+    static Double returnProb, extrinsicQuot, restSeqProb, lenPartProb;
     returnProb = extrinsicQuot = 1;
     if (inCRFTraining){
 	seqProb(-1, -1); // forget all saved information in static variables
@@ -896,67 +917,84 @@ Double IntronModel::emiProbUnderModel (int begin, int end) const {
 			if (inCRFTraining && (countEnd < 0 || (begin >= countStart && begin <= countEnd)))
 			    GCemiprobs[gcIdx].addCount(pn);
 		    } catch (InvalidNucleotideError e) {
-			returnProb *= 0.25;
+		       returnProb *= (float) 0.25;
 		    }
 		} else { // at the very beginning of the sequence
-		    returnProb *= 0.25;
+		   returnProb *= (float) 0.25;
 		}
 	    }
 	    break;
 	case longass0: case longass1: case longass2:
-	    returnProb = aSSProb(end - Constant::ass_whole_size() - Constant::ass_upwindow_size + 1, true);
+	    returnProb = aSSProb(end - Constant::ass_whole_size() - ass_upwindow_size + 1, true);
 	    intronEnd = end - Constant::ass_end;
 	    break;
 	case rlongass0: case rlongass1: case rlongass2:
-	    returnProb = aSSProb(end - Constant::ass_whole_size() - Constant::ass_upwindow_size + 1, false);
+	    returnProb = aSSProb(end - Constant::ass_whole_size() - ass_upwindow_size + 1, false);
 	    intronBegin = begin + Constant::ass_end;
 	    break;
 	case lessD0: case lessD1: case lessD2: case rlessD0: case rlessD1: case rlessD2:
-	{ 
-	    if (isOnFStrand(itype)) {
-		if ((begin - Constant::dss_end - DSS_MIDDLE>=0 && 
-		     !isPossibleDSS(begin - Constant::dss_end - DSS_MIDDLE)) || 
-		    (end + Constant::ass_upwindow_size + Constant::ass_start + 1 < dnalen -1 &&
-		     !isPossibleASS(end + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE)))
+	   { 
+	      if (isOnFStrand(itype)) {
+		 beginOfBioIntron = begin - Constant::dss_end - DSS_MIDDLE;
+		 if (beginOfBioIntron >= 0 && !isPossibleDSS(beginOfBioIntron))
 		    return 0;
-	    } else {
-		if ((begin - Constant::ass_upwindow_size - Constant::ass_start - ASS_MIDDLE >=0 &&
-		    !isPossibleRASS(begin - Constant::ass_upwindow_size - Constant::ass_start - ASS_MIDDLE)) ||
-		    (end + Constant::dss_end + DSS_MIDDLE < dnalen &&
-		    !isPossibleRDSS(end + Constant::dss_end + DSS_MIDDLE)))
+	      } else {
+		 beginOfBioIntron = begin - ass_outside; // ass_outside = ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
+		 if (beginOfBioIntron >=0 && !isPossibleRASS(beginOfBioIntron))
 		    return 0;
-	    }
-	    Double restSeqProb, lenPartProb;
-	    int intronLength = end - begin + 1 + Constant::dss_end + DSS_MIDDLE 
-		+ Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
+	      }
+	      if (itype != lessD0 && itype != rlessD2 && beginOfBioIntron > 1){ // a codon is spliced, check whether it is a stop codon
+		 switch (itype)
+		    {
+		    case lessD1: // *|....|**
+		       codon[0] = *(sequence + beginOfBioIntron - 1);
+		       break;
+		    case lessD2: // **|....|*
+		       codon[0] = *(sequence + beginOfBioIntron - 2);
+		       codon[1] = *(sequence + beginOfBioIntron - 1);
+		       break;
+		    case rlessD0: // **|....|*
+		       codon[1] = wcComplement(*(sequence + beginOfBioIntron - 1));
+		       codon[2] = wcComplement(*(sequence + beginOfBioIntron - 2));
+		       break;
+		    case rlessD1: // *|....|**
+		       codon[2] = wcComplement(*(sequence + beginOfBioIntron - 1));
+		       break;
+		    default:;
+		    }
+		 if (GeneticCode::isStopcodon(codon)) // prevent in-frame stop codons spliced by SHORT or HINTED introns (not other long ones)
+		    return 0;
+	      }
+	    int intronLength = endOfBioIntron - beginOfBioIntron + 1;
+	    
 	    if (intronLength <= d){
-	        restSeqProb = seqProb(begin, end);
-		lenPartProb = lenDist[intronLength];
+	       restSeqProb = seqProb(begin, end);
+	       lenPartProb = lenDist[intronLength];
 	    } else {
-		// this case applies only for long introns supported by hints as other long introns
-		// are handled by a geometric state
-	        // Use gc index as in the normal case
-	        // |---- d ------|-----------------geo---------------------
-	        //    use this:  ^    use local gc index here
-		lenPartProb = lenDist[d] * pow(1.0 - 1.0/mal.doubleValue(), (int) (intronLength-d));
-		restSeqProb = 1;
-		Seq2Int s2i(k+1);
-		int idx = getGCIdx((begin+d < dnalen)? begin+d : dnalen-1);
-		for (int a=begin; a < begin+d; a++)
+	       // this case applies only for long introns supported by hints as other long introns
+	       // are handled by a geometric state
+	       // Use gc index as in the normal case
+	       // |---- d ------|-----------------geo---------------------
+	       //    use this:  ^    use local gc index here
+	       lenPartProb = lenDist[d] * pow(1.0 - 1.0/mal.doubleValue(), (int) (intronLength-d));
+	       restSeqProb = 1;
+	       Seq2Int s2i(k+1);
+	       int idx = getGCIdx((begin+d < dnalen)? begin+d : dnalen-1);
+	       for (int a=begin; a < begin+d; a++)
 		  try {
-		    restSeqProb *= (a >= k && a < dnalen - 1)? GCemiprobs[idx].probs[s2i(sequence + a - k)] : 0.25;
+		     restSeqProb *= (a >= k && a < dnalen - 1)? GCemiprobs[idx].probs[s2i(sequence + a - k)] : 0.25;
 		  } catch(...) {
-		    restSeqProb *= .25;
+		     restSeqProb *= .25;
 		  }
-		for (int a=begin+d; a <=end; a++){
+	       for (int a=begin+d; a <=end; a++){
 		  if (idx != getGCIdx(a))
-		  idx = getGCIdx(a);
+		     idx = getGCIdx(a);
 		  try {
-		    restSeqProb *= (a >= k && a < dnalen - 1)? GCemiprobs[idx].probs[s2i(sequence + a - k)] : 0.25;
+		     restSeqProb *= (a >= k && a < dnalen - 1)? GCemiprobs[idx].probs[s2i(sequence + a - k)] : 0.25;
 		  } catch(...) {
-		      restSeqProb *= (float) .25;
+		     restSeqProb *= (float) .25;
 		  }
-		}
+	       }
 	    }
 	    returnProb = lenPartProb * restSeqProb;
 	    break;
@@ -1123,7 +1161,7 @@ Double IntronModel::aSSProb(int base, bool forwardStrand){
 	int motifend =  motifstart + ass_upwindow_size;
 	motifProb = motifend + assMotif->k < dnalen ? 
 	    assMotif->seqProb(sequence + motifstart, true, true) :
-	    pow(.25, (int)ass_upwindow_size);
+	    pow(.25, (int) ass_upwindow_size);
     }
     astr[Constant::ass_size()] = '\0';
     try {
