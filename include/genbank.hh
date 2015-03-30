@@ -28,7 +28,7 @@
 #include <boost/iostreams/copy.hpp>
 #endif
 
-#define GBMAXLINELEN 8192
+#define GBMAXLINELEN 10002
 
 enum FileType {unknown, genbank, fasta};
 

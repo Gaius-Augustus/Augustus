@@ -70,12 +70,12 @@ AnnoSequence* GBProcessor::getAnnoSequence( GBPositions* pos ){
     if (idtmp == NULL) {
 	annoseq->seqname = newstrcpy("unknown");
     } else {
-	annoseq->seqname = new char[50];
+	annoseq->seqname = new char[100];
 	idtmp += strlen("LOCUS");
 	while( isspace(*idtmp) )
 	    idtmp++;
 	int i;
-	for( i = 0; i < 49 && !isspace(*idtmp); i++, idtmp++ ){
+	for( i = 0; i < 99 && !isspace(*idtmp); i++, idtmp++ ){
 	    annoseq->seqname[i] = *idtmp;
 	}
 	annoseq->seqname[i] = '\0';
@@ -181,9 +181,9 @@ AnnoSequence* GBProcessor::getAnnoSequence( GBPositions* pos ){
 	    intron->begin = exon_old->end+1;
 	    intron->end   = st->begin-1;
 	    if (intron->begin > intron->end){
-		cerr << "Error: In sequence " << annoseq->seqname <<": One CDS exon begins before the previous CDS exon ends."
+		cerr << "Error: In sequence " << annoseq->seqname << ": One CDS exon does not begin properly after the previous CDS exon."
 		     << exon_old->end << " >= " << st->begin << endl;  
-		throw GBError("Intron has negative length.");
+		throw GBError("Intron has non-positive length.");
 	    }
 		
 	    intron->type = intron_type;
@@ -684,11 +684,9 @@ Boolean GBSplitter::findPositions( GBPositions& pos ) throw( GBError ){
         int curpos = isstrm.tellg();
         isstrm >> ws;
         isstrm.getline( buf, GBMAXLINELEN-1 );
-	if (!sin.eof() && (sin.rdstate() & ios_base::failbit)){
+	if ((!sin.eof() && (sin.rdstate() & ios_base::failbit)) || strlen(buf) >= GBMAXLINELEN-2){
 	    throw GBError(string("Could not read the following line in Genbank file.\n") + buf 
-			  + "\nMaximum line length is \n" + itoa(GBMAXLINELEN-1) + ".\n");
-	    // ignore problem by removing the failbit
-	    // isstrm.clear(isstrm.rdstate() & ~ifstream::failbit);
+			  + "\nMaximum line length is \n" + itoa(GBMAXLINELEN-2) + ".\n");
 	}
         char *src;
         char *rna;
@@ -727,6 +725,8 @@ Boolean GBSplitter::findPositions( GBPositions& pos ) throw( GBError ){
 	}
 	seq = strstr( buf, "ORIGIN" );
 	if( seq && seq == buf ){
+	    if (curpos >= pos.length)
+		cerr << "In gene " << pos.CDS.front().geneid << " a coordinate points after the sequence." << endl;
 	  pos.seqbegin = pos.buffer+curpos;
 	  break;
 	}

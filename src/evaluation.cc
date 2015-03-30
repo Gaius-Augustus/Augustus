@@ -559,7 +559,7 @@ void Evaluation::evaluateOnUTRLevel(Transcript* const predictedGeneList, Transcr
       
       predTSS = (predG->strand == plusstrand)? predG->transstart : predG->transend;
       predTIS = (predG->strand == plusstrand)? predG->codingstart : predG->codingend;
-      if (predTSS >= 0){
+      if (predTSS >= 0 && predG->complete5utr){
 	  numTotalPredTSS++;
 	  for (examined = annotatedGeneList; examined != NULL; examined = examined->next) {
 	      examinedG = dynamic_cast<Gene*>(examined);
@@ -587,10 +587,10 @@ void Evaluation::evaluateOnUTRLevel(Transcript* const predictedGeneList, Transcr
       predG = dynamic_cast<Gene*>(pred);
       if (!predG)
 	  continue; // ignore non-coding genes;
-   
+
       predTTS = (predG->strand == plusstrand)? predG->transend : predG->transstart;
       predSTP = (predG->strand == plusstrand)? predG->codingend : predG->codingstart;
-      if (predTTS >= 0){
+      if (predTTS >= 0 && predG->complete3utr){
 	  numTotalPredTTS++;
 	  for (examined = annotatedGeneList; examined != NULL; examined = examined->next) {
 	      examinedG = dynamic_cast<Gene*>(examined);
