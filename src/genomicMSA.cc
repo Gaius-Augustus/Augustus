@@ -44,7 +44,7 @@ int GenomicMSA::minGeneLen = 2000;    // should be at least 1, otherwise empty a
 int GenomicMSA::maxGeneLen = 100000;  // currently only used to prune alignment paths less 
     
 ostream& operator<< (ostream& strm, const MsaSignature &sig){
-    strm << sig.numAli << "\t" << sig.sumAliLen << "\t" << sig.depth << setw(15);
+    strm << sig.numAli << "\t" << sig.sumCumFragLen << "\t" << sig.sumAliLen << "\t" << sig.depth << setw(15);
     if (sig.color < NUMCOLNAMES)
 	cout << colornames[NUMCOLNAMES - 1 - sig.color];
     else 
@@ -288,8 +288,9 @@ void GenomicMSA::findGeneRanges(){
     property_map<AlignmentGraph, vertex_index_t>::type index = get(vertex_index, aliG);
 
     int numSortRefs = numSpecies; // sort wrt to at most this many species
-
-    for (int i=0; i< numSortRefs; i++){
+    if (numSortRefs > 30)
+	numSortRefs = 30;
+    for (int i=0; i < numSortRefs; i++){
 	size_t s = i * numSpecies / numSortRefs;
 	if (i>0) // no need to sort again by 1st species
 	    nodesI.sort(IdxSortCriterion(nodesA, s)); // sort indices by species number s
@@ -459,6 +460,7 @@ void GenomicMSA::findGeneRanges(){
 	    }
 	    sig.numAli += 1;
 	    sig.sumAliLen += a->aliLen;
+	    sig.sumCumFragLen += a->getCumFragLen();
 	    //sig.nodes.push_back(uid);
 	    tie(e, esucc) = add_edge(0, numNodes2, aliG2); // edge from source to any other node
 	    aliG2[e].weight = 0;
@@ -489,41 +491,48 @@ void GenomicMSA::findGeneRanges(){
         cout << aliG2[graph_bundle].topo[i] << " ";
     cout << endl;
 #endif
-    cout << "number of signatures=" << signatures.size() << " first 10 signatures are " << endl;
     list<MsaSignature*> siglist;
     for (sit = signatures.begin(); sit != signatures.end(); ++sit)
 	siglist.push_back(&sit->second);
     
     siglist.sort(cmpSigPtr);
     int color = 0;
+    cout << "number of signatures=" << signatures.size() << ". First 10 signatures are:" << endl;
+    cout << "numAli\tsumCumFragLen\tsumAliLen\tdepth\tcolor\tsignature" << endl;
     for (list<MsaSignature*>::iterator it = siglist.begin(); it != siglist.end(); ++it){
 	(*it)->color = color++;
-	if (color<10)
+	if (color <= 10)
 	    cout << **it << endl;
     }
     vector<AliPath> allPaths;
     writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot");
+    int i=0;
+    int maxSignatures = 100; // in addition to maxSignatures signatures, take only those, which
+    int minAvCumFragLen = 1000; // cover on average minAvCumFragLen bp per species
     for (list<MsaSignature*>::iterator sit = siglist.begin(); sit != siglist.end(); ++sit){
-	project(aliG2, *sit); // set weights wrt to signature
-	// cout << (*sit)->sigstr() << endl;
-	// cout << " writing aliGraph." + itoa(itnr) + ".dot" << endl;
-	if (itnr < 10)
-	    writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot", *sit);
-	int numNewCovered = 1;
-	while (numNewCovered > 0){
-	    AliPath path = getBestConsensus(aliG2, *sit, numNewCovered);
-	    // determine additional value (e.g. weight of newly covered nodes
-	    if (numNewCovered > 0){ // and if additional value large enough
-		//cout << "found new path " << path << endl;
-		allPaths.push_back(path);
+	if (i < maxSignatures || (*sit)->sumCumFragLen / numSpecies >= minAvCumFragLen){
+	    project(aliG2, *sit); // set weights wrt to signature
+	    // cout << (*sit)->sigstr() << endl;
+	    // cout << " writing aliGraph." + itoa(itnr) + ".dot" << endl;
+	    if (itnr < 6)
+		writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot", *sit);
+	    int numNewCovered = 1;
+	    while (numNewCovered > 0){
+		AliPath path = getBestConsensus(aliG2, *sit, numNewCovered);
+		// determine additional value (e.g. weight of newly covered nodes
+		if (numNewCovered > 0){ // and if additional value large enough
+		    // cout << "found new path " << path << endl;
+		    allPaths.push_back(path);
+		}
 	    }
+	    i++;
 	}
     }
     cout << "found " << allPaths.size() << " paths" << endl;
     
 #ifdef DEBUG
-    for (int i=0; i<allPaths.size(); i++)
-	cout << i << "\t" << allPaths[i] << endl;
+    //    for (int i=0; i<allPaths.size(); i++)
+    //	cout << i << "\t" << allPaths[i] << endl;
 #endif
     // repeat pruning until nothing changes (usually changes only in the first iteration)
     int totalNumNodes;
@@ -536,7 +545,7 @@ void GenomicMSA::findGeneRanges(){
 	    if (allPaths[i].path.size() > 0){
 		totalNumNodes += allPaths[i].path.size();
 #ifdef DEBUG
-		cout << allPaths[i] << endl;
+//		cout << allPaths[i] << endl;
 #endif
 	    }
 	}
@@ -615,6 +624,8 @@ bool GenomicMSA::prunePaths(vector<AliPath> &allPaths, AlignmentGraph &g){
     set<pair<int,int>> collisions; // sorted set of pair, sorted first by 'first' then by 'second'
     for (k=0; k<n; k++){
 	if (!pathsByAlignment[k].empty()){
+	    //	    cout << "alignment " << k << " is shared by " << pathsByAlignment[k].size() << " paths" 
+	    //<< " paths." << endl;
 	    unordered_set<int>::iterator iti, itj, it_end;
 	    it_end = pathsByAlignment[k].end();
 	    for (iti = pathsByAlignment[k].begin(); iti != it_end; ++iti){
@@ -630,22 +641,28 @@ bool GenomicMSA::prunePaths(vector<AliPath> &allPaths, AlignmentGraph &g){
 	    }
 	}
     }
+    cout << "Have " << collisions.size() << " collisions." << endl;
     for (set<pair<int,int> >::iterator colit = collisions.begin(); colit != collisions.end(); ++colit){
 	i = colit->first;
 	j = colit->second;
-	//	cout << "Have collision between  path " << i << "\t"  //<< allPaths[i] << endl 
-	//     << " and path " << j << endl; //"\t" << allPaths[j] << endl;
-    
-	changed |= prunePathWrt2Other(allPaths[j], allPaths[j].path.begin(), allPaths[j].path.end(),
-				      allPaths[i], allPaths[i].path.begin(), allPaths[i].path.end(), g, true);
-	changed |= prunePathWrt2Other(allPaths[j], allPaths[j].path.rbegin(), allPaths[j].path.rend(),
-				      allPaths[i], allPaths[i].path.rbegin(), allPaths[i].path.rend(), g, false);
-	changed |= deletePathWrt2Other(allPaths[j], allPaths[i], g);
-	changed |= prunePathWrt2Other(allPaths[i], allPaths[i].path.begin(), allPaths[i].path.end(),
-				      allPaths[j], allPaths[j].path.begin(), allPaths[j].path.end(), g, true);
-	changed |= prunePathWrt2Other(allPaths[i], allPaths[i].path.rbegin(), allPaths[i].path.rend(),
-				      allPaths[j], allPaths[j].path.rbegin(), allPaths[j].path.rend(), g, false);
-	changed |= deletePathWrt2Other(allPaths[i], allPaths[j], g);
+	bool mods[6] = {false, false, false, false, false, false}, mod;
+	mods[0] = prunePathWrt2Other(allPaths[j], allPaths[j].path.begin(), allPaths[j].path.end(),
+				  allPaths[i], allPaths[i].path.begin(), allPaths[i].path.end(), g, true);
+	mods[1] = prunePathWrt2Other(allPaths[j], allPaths[j].path.rbegin(), allPaths[j].path.rend(),
+				  allPaths[i], allPaths[i].path.rbegin(), allPaths[i].path.rend(), g, false);
+	mods[2] = deletePathWrt2Other(allPaths[j], allPaths[i], g);
+	mods[3] = prunePathWrt2Other(allPaths[i], allPaths[i].path.begin(), allPaths[i].path.end(),
+				  allPaths[j], allPaths[j].path.begin(), allPaths[j].path.end(), g, true);
+	mods[4] = prunePathWrt2Other(allPaths[i], allPaths[i].path.rbegin(), allPaths[i].path.rend(),
+				  allPaths[j], allPaths[j].path.rbegin(), allPaths[j].path.rend(), g, false);
+	mods[5]= deletePathWrt2Other(allPaths[i], allPaths[j], g);
+	mod = mods[0] || mods[1] || mods[2] || mods[3] || mods[4] || mods[5];
+	if (mod && false)
+	    cout << "Have pruned a path from collision " << i << "\t"  //<< allPaths[i] << endl 
+		 << " and " << j << "\t"
+		 << mods[0] << mods[1] << mods[2] << mods[3] << mods[4] << mods[5]
+		 << endl; //"\t" << allPaths[j] << endl;
+	changed |= mod;
     }
     return changed;
 }
@@ -758,6 +775,7 @@ bool GenomicMSA::prunePathWrt2Other(AliPath &p, Iterator pstart, Iterator pend,
 	    // alignments can still be used to generate a better "overhang".
 	    if (pstart != pa){
 		eraseListRange(p.path, pstart, pa);
+		p.ranges.clear();
 		if (ausgabe)
 		    cout << "pruned to " << p << endl;
 		return true;
@@ -772,9 +790,11 @@ bool GenomicMSA::prunePathWrt2Other(AliPath &p, Iterator pstart, Iterator pend,
  * p may become the empty path.
  */
 bool GenomicMSA::deletePathWrt2Other(AliPath &p, AliPath &other, AlignmentGraph &g){
+    if (p.path.empty() || other.path.empty())
+	return false;
     const double superfluousfrac = 1.1; // path must have at least this many times weighted alignments compared to the intersection of paths
     bool superfluous = false;
-    set<string> ranges[3]; // 0:p 1:other 2:intersection
+    //    set<string> ranges[3]; // 0:p 1:other 2:intersection
     AliPath *ap[2];
     ap[0] = &p;
     ap[1] = &other;
@@ -783,37 +803,42 @@ bool GenomicMSA::deletePathWrt2Other(AliPath &p, AliPath &other, AlignmentGraph 
     sigs[1] = other.sig;
     Alignment *a;
     for (int i=0; i<2; i++){
-	for (list<int>::iterator it = ap[i]->path.begin(); it != ap[i]->path.end(); ++it){
-	    for (int s=0; s<numSpecies; s++){
-		a = g[*it].a;
-		if (a->rows[s] && sigs[i]->fits(*a, s)){
-		    string key = itoa(s) + ":" + a->rows[s]->seqID + itoa(a->rows[s]->strand) + " "
-			+ itoa(a->rows[s]->chrStart()) + "-" + itoa(a->rows[s]->chrEnd());
-		    ranges[i].insert(key);
+	if (ap[i]->ranges.empty()){
+	    ap[i]->weights = 0;
+	    for (list<int>::iterator it = ap[i]->path.begin(); it != ap[i]->path.end(); ++it){
+		for (int s=0; s<numSpecies; s++){
+		    a = g[*it].a;
+		    if (a->rows[s] && sigs[i]->fits(*a, s)){
+			string key = itoa(s) + ":" + a->rows[s]->seqID + itoa(a->rows[s]->strand) + " "
+			    + itoa(a->rows[s]->chrStart()) + "-" + itoa(a->rows[s]->chrEnd());
+			ap[i]->ranges.insert(key);
+			ap[i]->weights += a->rows[s]->chrEnd() - a->rows[s]->chrStart() + 1;
+		    }
 		}
 	    }
 	}
     }
-    set_intersection(ranges[0].begin(), ranges[0].end(), ranges[1].begin(), ranges[1].end(), std::inserter( ranges[2], ranges[2].begin()));
-    int weights[3] = {0,0,0}; // weight the sets with the sequence range sizes
-    for (int i=0; i<3; i++){
-	for (set<string>::iterator it = ranges[i].begin(); it != ranges[i].end(); ++it){
-	    string s = *it;
-	    int pos1 = s.find(" ");
-	    int pos2 = s.find("-", pos1);
-	    int start =  atoi(s.substr(pos1+1, pos2-pos1-1).c_str());
-	    int stop =  atoi(s.substr(pos2+1).c_str());
-	    weights[i] += stop - start + 1;
-	}
-	// cout << "set " << i << " has size " << ranges[i].size() << " and weight " << weights[i] << endl;
+    set<string> intersection;
+    set_intersection(p.ranges.begin(), p.ranges.end(), other.ranges.begin(), other.ranges.end(), std::inserter( intersection, intersection.begin()));
+    int weights = 0; // weight the sets with the sequence range sizes
+    for (set<string>::iterator it = intersection.begin(); it != intersection.end(); ++it){
+	string s = *it;
+	int pos1 = s.find(" ");
+	int pos2 = s.find("-", pos1);
+	int start =  atoi(s.substr(pos1+1, pos2-pos1-1).c_str());
+	int stop =  atoi(s.substr(pos2+1).c_str());
+	weights += stop - start + 1;
     }
+
     // check whether p has too few or short additional aligned regions that are not shared by 'other'
-    if (weights[0] < superfluousfrac * weights[2]){
+    if (p.weights < superfluousfrac * weights){
 	superfluous = true;
 	// cout << p << endl << "is superfluous because of" << endl << other << endl;
     }
-    if (superfluous)
+    if (superfluous){
 	p.path.clear(); // delete all alignments from path, will be discarded later
+	p.ranges.clear();
+    }
     
     return superfluous;
 }
@@ -837,8 +862,6 @@ AliPath GenomicMSA::getBestConsensus(AlignmentGraph &g, const MsaSignature *sig,
 	    numNewCovered++;
 	    newlyids = itoa(vid) + " " + newlyids;
 	}
-	if (p.path.size()> 1000)
-	    cout << vid <<"\t";
 	vid = g[vid].pred;
     }
     if (numNewCovered>0 && false)

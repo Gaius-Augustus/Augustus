@@ -55,6 +55,8 @@ public:
     int maxSeqRange(AlignmentGraph &g);
     list<int> path; // the nodes indices on the simple path through the alignment graph
     const MsaSignature *sig; // signature used to construct the graph (some paths differ only through sig)
+    set<string> ranges;
+    int weights;
     friend ostream& operator<< (ostream& strm, const AliPath &p);
 };
 

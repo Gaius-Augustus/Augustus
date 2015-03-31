@@ -750,8 +750,10 @@ void reduceOvlpRanges(list<Alignment*> &alis, size_t maxCov, float covPen){
 
 	cout << numRemovedAlis << " geneRanges=alignments (" 
 	     << (0.1 * (int) (1000.0 * numRemovedAlis / (numRemovedAlis + alis.size())))
-	     << "%) and " << (0.1 * (int) (1000.0 * cumFragLenRemoved / cumFragLenBefore))
-	     << "% of aligned bases and " << (0.1 * (int) (1000.0 * segLenRemoved / segLenBefore))
+	     << "%) and " << cumFragLenRemoved << " / " << cumFragLenBefore
+	     << " = " << (0.1 * (int) (1000.0 * cumFragLenRemoved / cumFragLenBefore))
+	     << "% of aligned bases and " << segLenRemoved << " / " << segLenBefore << " = "
+	     << (0.1 * (int) (1000.0 * segLenRemoved / segLenBefore))
 	     << "% of aligment-range-covered bases were deleted because of too much redundancy." << endl;
     } else { // if this sometimes does not work it is not a big deal
 	cerr << "Warning: Could not optimally solve mixed linear integer program. Return value= " << ret << endl;

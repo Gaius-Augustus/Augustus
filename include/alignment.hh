@@ -202,11 +202,13 @@ public:
     vector<string> sigrows; // each row contains seqID and strand, e.g. chr21+
     int numAli;
     int sumAliLen;
+    int sumCumFragLen;
     int depth;
     int color;
-    // list<int> nodes;
     bool operator< (const MsaSignature &other) const {
-	return (depth > other.depth || (depth == other.depth && sumAliLen > other.sumAliLen));
+	return (sumCumFragLen > other.sumCumFragLen);
+	// before: sorting by 1) number of species and 2) sumAliLen
+	// return (depth > other.depth || (depth == other.depth && sumAliLen > other.sumAliLen));
     }
     bool fits(const Alignment &a, size_t s) const {
 	return a.rows[s] && (sigrows[s] == a.rows[s]->seqID + strandChar(a.rows[s]->strand));
