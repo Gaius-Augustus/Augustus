@@ -458,6 +458,7 @@ void IntronModel::updateToLocalGCEach( Matrix<Double>& trans, int cur ) {
     if (!initAlgorithmsCalled) {
 	seqProb(-1, 0);
 	aSSProb(-1, false); // initialize ass probs
+	dSSProb(-1, false); // initialize dss probs
 	initAlgorithmsCalled = true;
     }
     /*
@@ -877,8 +878,10 @@ Double IntronModel::emiProbUnderModel (int begin, int end) const {
     returnProb = extrinsicQuot = 1;
     if (inCRFTraining){
 	seqProb(-1, -1); // forget all saved information in static variables
-	if (itype == longass0 || itype == longass1 || itype == longass2 || itype == rlongass0 || itype == rlongass1 || itype == rlongass2)
+	if (itype == longass0 || itype == longass1 || itype == longass2 || itype == rlongass0 || itype == rlongass1 || itype == rlongass2){
 	    aSSProb(-1, false);
+	    dSSProb(-1, false);
+	}
     }
     // intron range for extrinsic bonus: intronic positions with (begin,end) boundaries
     int intronBegin=begin, intronEnd=end;
@@ -1116,17 +1119,17 @@ Double IntronModel::seqProb(int left, int right) const {
 Double IntronModel::aSSProb(int base, bool forwardStrand){
     static char *astr = new char[Constant::ass_size()+1]; // forget the delete
     static Seq2Int s2i(Constant::ass_size());
-    static Double patternProb(1), motifProb(1), emiProb(1);
+    static Double patternProb(1), motifProb(1), emiProb(0);
     static map<int, Double> memoF, memoR; // red-black trees to memoize values that have been computed before
     static map<int, Double>::const_iterator got;
 
-    if (base < 0) {
+    if (base < 0 || memoF.size() > 1000) {
         // reset static values
 	// otherwise it may reuse values from the previous sequence
 	memoF.clear();
         memoR.clear();
-	emiProb = 0;
-	return 0;
+	if (base < 0)
+	    return 0;
     }
 
     // return memoized values, if available
@@ -1200,8 +1203,22 @@ Double IntronModel::aSSProb(int base, bool forwardStrand){
 Double IntronModel::dSSProb(int base, bool forwardStrand){
     static char *astr = new char[Constant::dss_size()+1]; // forget the delete
     static Seq2Int s2i(Constant::dss_size());
-    if (base < 0)
-	return 0;
+    static map<int, Double> memoF, memoR; // red-black trees to memoize values that have been computed before
+    static map<int, Double>::const_iterator got;
+    
+    if (base < 0 || memoF.size() > 500){
+	memoF.clear(); // reset static values
+	memoR.clear();
+	if (base < 0)
+	    return 0;
+    }
+    
+    // return memoized values, if available
+    if (forwardStrand && (got = memoF.find(base), got != memoF.end()))
+	return got->second;
+    if (!forwardStrand && (got = memoR.find(base), got != memoR.end()))
+    	return got->second;
+
     bool nonGT;
     if (forwardStrand) { // forward strand
 	int dsspos = base + Constant::dss_start;
@@ -1222,13 +1239,17 @@ Double IntronModel::dSSProb(int base, bool forwardStrand){
     try {
 	Double dssprob = dssprobs[ s2i(astr) ];
 	if (nonGT) dssprob *= non_gt_dss_prob;
-	if (dssBinProbs.nbins < 1)
-	    return dssprob; // standard HMM probabilities
-	int idx = dssBinProbs.getIndex(dssprob);
-	if (inCRFTraining && (countEnd < 0 || (base >= countStart && base <= countEnd)))
-	    dssBinProbs.addCount(idx);
-	//cout << "dssprob= " << dssprob << " idx= " << idx << " avprobs=" << dssBinProbs.avprobs[idx] << endl;
-	return dssBinProbs.avprobs[idx];
+	if (dssBinProbs.nbins >= 1) {
+	    int idx = dssBinProbs.getIndex(dssprob);
+	    if (inCRFTraining && (countEnd < 0 || (base >= countStart && base <= countEnd)))
+		dssBinProbs.addCount(idx);
+	    dssprob = dssBinProbs.avprobs[idx];
+	}
+	if (forwardStrand)
+	    memoF[base] = dssprob;
+	else
+	    memoR[base] = dssprob;
+	return dssprob; // standard HMM probabilities
     } catch (InvalidNucleotideError e) {
 	return 0; // don't predict splice site when there is an unknown nucleotide
     }
