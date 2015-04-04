@@ -72,7 +72,7 @@ public:
     virtual void printProbabilities(int zusNumber=1, BaseCount *bc = NULL, const char* suffix = NULL) =0;
     virtual StateType getStateType() const = 0;
     virtual void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int,
-					   AlgorithmVariant, OptionListItem&) const = 0;
+					   AlgorithmVariant, OptionListItem&) = 0;
     virtual Double emiProbUnderModel(int , int) const = 0;
     virtual void initAlgorithms(Matrix<Double>&, int) = 0;
     virtual void updateToLocalGCEach(Matrix<Double>& trans, int cur) { };

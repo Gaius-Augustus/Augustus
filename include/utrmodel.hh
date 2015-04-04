@@ -18,7 +18,7 @@
 
 
 /**
- * The utr model class.
+ * The UTR model class.
  *
  * author Mario Stanke
  */
@@ -61,7 +61,7 @@ public:
     void printProbabilities   ( int zusNumber, BaseCount *bc, const char* suffix = NULL );
     void initAlgorithms       ( Matrix<Double>&, int);
     void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int, 
-				   AlgorithmVariant, OptionListItem&) const;
+				   AlgorithmVariant, OptionListItem&);
     Double emiProbUnderModel  (int begin, int end) const;
     Double endPartEmiProb     (int begin, int end, int endOfBioExon) const;
     Double notEndPartEmiProb  (int begin, int end, int endOfBioExon, Feature *exonparts) const;
@@ -97,15 +97,15 @@ private:
   void buildTTSModel( const AnnoSequence* annoseq );
   int findTATA(const char* seq, int maxpos, bool reverseComplement=false) const;
   void processTSS(const char* start);
-  //  void buildLenDist       ( const AnnoSequence* annoseq );
-  //  void storeUtrLengths ( const AnnoSequence* annoseq);
   void initCountVars      ( );
   Double longIntronProb(int internalBegin, int internalEnd) const;
   static void initSnippetProbs();
-
+  void decrementEndOfPred( int &endOfPred, list<int>::iterator &eopit, bool inCache);
+  void updatePossibleEOPs(list<int>::iterator &eopit, int endOfBioExon, bool &inCache);
 private:
   StateType              utype;
   Integer                gweight;
+  list<int>              possibleEndOfPreds;
   static Integer         utrcount;
   static vector<Integer> utr5_emicount;
   static vector<Integer> utr5init_emicount;

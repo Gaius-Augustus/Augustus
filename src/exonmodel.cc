@@ -915,7 +915,7 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 					  int state,
 					  int base,                   // end of the exon state
 					  AlgorithmVariant algovar,   // doViterbiOnly, doViterbiAndForward, doSampling or doBacktracking
-					  OptionListItem& oli) const {
+					  OptionListItem& oli) {
 /* 
  *  an example:
  *  pred.State |ATG               | <= (k+1)     | *** ... ***   | STP        |

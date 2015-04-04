@@ -529,7 +529,7 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 					    int state,
 					    int base,
 					    AlgorithmVariant algovar,
-					    OptionListItem& oli) const {
+					    OptionListItem& oli) {
     /*
      * maximal length of intron state with specific length distribution
      * see also seqProb!!

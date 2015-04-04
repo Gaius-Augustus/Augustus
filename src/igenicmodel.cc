@@ -228,7 +228,7 @@ void IGenicModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // viter
 					    int state,               // current state
 					    int base,                // position in the dna
 					    AlgorithmVariant algovar,
-					    OptionListItem& oli) const {
+					    OptionListItem& oli) {
     vector<Ancestor>::const_iterator it;
     Double max(-1.0), curmax; // for viterbi table
     Double fwdsum(0.0), fwdsummand;  // for forward table

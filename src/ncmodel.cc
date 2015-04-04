@@ -168,7 +168,7 @@ void NcModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 					 int state,
 					 int base,
 					 AlgorithmVariant algovar,
-					 OptionListItem& oli) const {
+					 OptionListItem& oli) {
   /* 
    *             | [begin signal]|                        | [end signal] |
    *  pred.State |TSS            | markov chain           | TTS          |

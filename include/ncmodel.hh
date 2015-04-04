@@ -38,8 +38,8 @@ public:
   
     void printProbabilities   ( int zusNumber, BaseCount *bc, const char* suffix = NULL );
     void initAlgorithms       ( Matrix<Double>&, int);
-    void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int, 
-				   AlgorithmVariant, OptionListItem&) const;
+    void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int,
+				   AlgorithmVariant, OptionListItem&);
     Double emiProbUnderModel  (int begin, int end) const;
     Double endPartEmiProb     (int begin, int end, int endOfBioExon) const;
     Double notEndPartEmiProb  (int begin, int end, int endOfBioExon, Feature *exonparts) const;

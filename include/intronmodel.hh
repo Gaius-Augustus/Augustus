@@ -51,7 +51,7 @@ public:
     void initAlgorithms(Matrix<Double>&, int);
     virtual void updateToLocalGCEach( Matrix<Double>& trans, int cur);
     void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int, 
-				   AlgorithmVariant, OptionListItem&) const;
+				   AlgorithmVariant, OptionListItem&);
     Double emiProbUnderModel  (int begin, int end) const;
     Double seqProb            (int left, int right) const;
     static Double dSSProb     (int base, bool forwardStrand);

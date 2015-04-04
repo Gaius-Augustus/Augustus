@@ -43,7 +43,7 @@ public:
 
     void initAlgorithms     ( Matrix<Double>&, int);
     void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int,
-				   AlgorithmVariant, OptionListItem&) const;
+				   AlgorithmVariant, OptionListItem&);
     Double emiProbUnderModel(int begin, int end) const;
     static void init();
     static void setSFC(SequenceFeatureCollection *sfc) {

@@ -78,7 +78,7 @@ public:
     void registerPars       ( Parameters* parameters);
     void printProbabilities ( int parIndex, BaseCount *bc, const char* suffix = NULL );
     void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int,
-				   AlgorithmVariant, OptionListItem&) const;
+				   AlgorithmVariant, OptionListItem&);
     void processOvlpOption(ViterbiMatrixType& , ViterbiMatrixType&, AlgorithmVariant&,
 			   int state, int endOfPred, int beginOfBioExon, Double &maxProb,
 			   Double emiProb, Double &fwdsum, OptionsList *, OptionListItem &oli, int base) const;

@@ -158,7 +158,7 @@ UtrModel::~UtrModel( ){
 }
 
 /*
- * UtrModel initialisation of class variables
+ * UtrModel initialization of class variables
  */
 void UtrModel::init() {
     try {
@@ -772,6 +772,7 @@ void UtrModel::initAlgorithms( Matrix<Double>& trans, int cur){
 	    delete [] ttsProbMinus;
 	ttsProbMinus = new Double[dnalen+1];
     }
+    possibleEndOfPreds.clear();
     initAlgorithmsCalled = true;
 }
 
@@ -812,7 +813,7 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 					  int state,
 					  int base,
 					  AlgorithmVariant algovar,
-					  OptionListItem& oli) const {
+					  OptionListItem& oli) {
   /* 
    *             | [begin signal]|                        | [end signal] |
    *  pred.State |TSS            | markov chain           | DSS          |
@@ -963,19 +964,24 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 
 	
 	seqProb(-1,-1,false,-1);      // initialize the static variables
-	
-	for (endOfPred = rightMostEndOfPred; endOfPred >= leftMostEndOfPred; endOfPred--){
+	if (algovar == doBacktracking || algovar == doSampling)
+	    possibleEndOfPreds.clear();
+	list<int>::iterator eopit = possibleEndOfPreds.begin(); 	// initialize iterator on list with possible endOfPreds
+	bool inCache = false;
+	for (endOfPred = rightMostEndOfPred; endOfPred >= leftMostEndOfPred;
+	     decrementEndOfPred (endOfPred, eopit, inCache)){
 	    const ViterbiColumnType& predVit = algovar == doSampling ? 
 		(endOfPred > 0 ? forward[endOfPred] : forward[0]) :
 		(endOfPred > 0 ? viterbi[endOfPred] : viterbi[0]);
 	    // compute the maximum over the predecessor states probs times transition probability
-	    /*
-	     * check whether the starting position has a positive entry at all
-	     */
+
+	    // check whether the starting position has a positive entry at all, and go to the first non-zero state
 	    for (it = ancestor.begin(); it != ancestor.end() && predVit[it->pos]==0; ++it);
 	    if (it == ancestor.end()) continue;
 	    notEndPartProb = notEndPartEmiProb(endOfPred+1, beginOfEndPart-1, endOfBioExon, extrinsicexons);
-	    if (notEndPartProb <= 0) continue;
+	    if (notEndPartProb == 0)
+		continue;
+	    updatePossibleEOPs(eopit, endOfPred, inCache);
 	    emiProb = notEndPartProb * endPartProb;
 	    do {
 		transEmiProb = it->val * emiProb;
@@ -1072,6 +1078,60 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	    // backtracking: do nothing here
 	    return;
     }
+}
+
+/*
+ * make the Viterbi and Forward loop more efficient by memoizing the possible
+ * endOfPred (left interval boundaries) for each state
+ *    |     |        |  |   |           |
+ *                   |  |   |           |    |  |  | (next time endPartProb > 0)
+ * C                        A          D1      D2  B
+ *  possibleEndOfPred is a decreasingly sorted list of endOfPred positions, for 
+ *  which notEndPartProb > 0
+ *  eopit points to the current list element and iterates from right to left
+ */
+void UtrModel::decrementEndOfPred( int &endOfPred, list<int>::iterator &eopit, bool inCache){
+    if (inCache && eopit != possibleEndOfPreds.end() && *eopit == endOfPred
+	&& ++eopit != possibleEndOfPreds.end())
+	endOfPred = *eopit;
+    else
+	endOfPred--;
+}
+
+void UtrModel::updatePossibleEOPs(list<int>::iterator &eopit, int endOfPred, bool &inCache){
+    if (possibleEndOfPreds.empty()) {
+	possibleEndOfPreds.push_front(endOfPred);
+	return;
+    }
+    if (endOfPred == *eopit) // case A
+	return;
+    if (endOfPred >= possibleEndOfPreds.front()){ // case B
+	if (endOfPred > possibleEndOfPreds.front())
+	    possibleEndOfPreds.push_front(endOfPred);
+	eopit = possibleEndOfPreds.begin();
+	return;
+    }
+    if (endOfPred < possibleEndOfPreds.back()){ // case C
+	eopit = possibleEndOfPreds.insert(possibleEndOfPreds.end(), endOfPred);
+	return;
+    }
+    if (endOfPred < *eopit){ // case D
+	list<int>::iterator nxt = eopit;
+	++nxt;
+	if (nxt != possibleEndOfPreds.end() && endOfPred == *nxt){ // D1
+	    eopit = nxt;
+	    inCache = true;
+	    return;
+	}
+	if (nxt == possibleEndOfPreds.end() || endOfPred > *nxt){ // D2
+	    eopit = possibleEndOfPreds.insert(nxt, endOfPred);
+	    return;
+	}
+    // this line should never be reached
+	throw ProjectError("Error 1 in UtrModel::updatePossibleEOPs");
+    }
+    // this neither
+    throw ProjectError("Error 2 in UtrModel::updatePossibleEOPs");
 }
 
 /*
