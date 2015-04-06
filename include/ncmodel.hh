@@ -49,8 +49,7 @@ public:
     static void resetPars(){
 	if (nccount == 0)
 	    return;
-	if (!haveSnippetProbs)
-	    initSnippetProbs();
+	initSnippetProbs();
 	initAlgorithmsCalled = false;
     }
     static void updateToLocalGC(int from = -1, int to = -1);
@@ -68,6 +67,7 @@ private:
     Strand                 strand;
     Integer                gweight;
     double                 pIntron; // geometric intron probability for states ncintron, rncintron
+    EOPList                eop;
     static Integer         nccount;
     static vector<Double>  lenDistInternal;       // length distribution of internal, initial and terminal
     static vector<Double>  lenDistSingle;         // length distribution of nc genes with a single exon

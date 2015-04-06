@@ -105,7 +105,7 @@ private:
 private:
   StateType              utype;
   Integer                gweight;
-  list<int>              possibleEndOfPreds;
+  EOPList                eop;
   static Integer         utrcount;
   static vector<Integer> utr5_emicount;
   static vector<Integer> utr5init_emicount;

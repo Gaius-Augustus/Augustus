@@ -229,6 +229,7 @@ public:
     ~SegProbs () { delete [] cumProds; }
     void setEmiProbs(vector<Double> *emiprobs, int from = -1, int to = -1);
     Double getSeqProb(int from, int to);
+    int getN() { return n; }
 protected:
     const char *dna;
     int n;
@@ -239,7 +240,24 @@ protected:
     bool forwardStrand;
 };
 
-
+/*
+ * data structure to store possible endOfPred positions to iterate directly
+ * only over those endOfPred positions, that are possible in the inner loop of
+ * the Viterbi algorithm
+ */
+class EOPList {
+public:
+   void clear() { possibleEndOfPreds.clear(); }
+   void init() {
+      eopit = possibleEndOfPreds.begin();
+      inCache = false;
+   }
+   void decrement(int &endOfPred);
+   void update(int endOfPred);
+   list<int> possibleEndOfPreds;
+   list<int>::iterator eopit;
+   bool inCache;
+};
 
 
 #endif  //  _STATEMODEL_HH

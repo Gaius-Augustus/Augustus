@@ -417,6 +417,8 @@ Feature *SequenceFeatureCollection::getFeatureListOvlpingRange(FeatureType type,
  */
 Feature *SequenceFeatureCollection::getFeatureListOvlpingRange(Bitmask featuretypes, int startPosition, 
 							       int endPosition, Strand strand) {
+   if (!collection->hasHintsFile)
+      return NULL;
     Feature *hitlist = NULL;
     list<Feature>::iterator a, e;
     for (int type=0; type<NUM_FEATURE_TYPES; type++) {

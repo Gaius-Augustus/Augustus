@@ -32,7 +32,6 @@ vector<Double>  NcModel::lenDistSingle;       // length distribution of single e
 Boolean         NcModel::hasLenDist = false;
 Boolean         NcModel::initAlgorithmsCalled = false;
 Boolean         NcModel::haveSnippetProbs = false;
-SnippetProbs*   NcModel::snippetProbs = NULL;
 SegProbs*       NcModel::segProbs = NULL;
 int             NcModel::boundSpacing = 10; // without hints 5' and 3' transcript end only every ttsSpacing bases, for speed
 vector<Double>  NcModel::ttsProbPlus;
@@ -53,11 +52,8 @@ NcModel::NcModel() {
  */
 NcModel::~NcModel( ){
     if (--nccount == 0){
-	if (snippetProbs) 
-	    delete snippetProbs;
 	if (segProbs)
-	    delete
-		segProbs;
+	    delete segProbs;
     }
 }
 
@@ -101,12 +97,8 @@ void NcModel::printProbabilities( int idx, BaseCount *bc, const char* suffix ){
  * NcModel::initSnippetProbs
  */
 void NcModel::initSnippetProbs() {
-    if (snippetProbs)
-	delete snippetProbs;
     if (segProbs)
 	delete segProbs;
-
-    snippetProbs = new SnippetProbs(sequence, IntronModel::k);
     segProbs = new SegProbs(sequence, IntronModel::k);
     haveSnippetProbs = true;
 }
@@ -127,6 +119,7 @@ void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
 	precomputeTxEndProbs();
 	computeLengthDistributions();
     }
+    eop.clear();
     initAlgorithmsCalled = true;
 }
 
@@ -134,8 +127,7 @@ void NcModel::initAlgorithms( Matrix<Double>& trans, int cur){
  * NcModel::updateToLocalGC
  */
 void NcModel::updateToLocalGC(int from, int to){
-    snippetProbs->setEmiProbs(&IntronModel::emiprobs.probs);
-    segProbs->setEmiProbs(&IntronModel::emiprobs.probs);
+   segProbs->setEmiProbs(&IntronModel::emiprobs.probs, from, to);
 }
 
 /*
@@ -230,23 +222,49 @@ void NcModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	/*
 	 * get the extrinsic exonpart information about parts falling in this range
 	 */
-	if (!(isNcIntron(nctype)))
+	if (!(isNcIntron(nctype))){
 	    extrinsicexons = seqFeatColl->getFeatureListOvlpingRange(A_SET_FLAG(exonF) | A_SET_FLAG(exonpartF),
-							leftMostEndOfPred, endOfBioExon, strand);
+								     leftMostEndOfPred, endOfBioExon, strand);
+	    if (true) { // TODO option: allowOnlyExonHintedNCExons
+	       // determine first hinted exon
+	       int minE = rightMostEndOfPred + 1;
+	       for (Feature *f = extrinsicexons; f != NULL; f = f->next)
+		  if (f->start < minE)
+		     minE = f->start;
+	       if (minE > leftMostEndOfPred){
+		  leftMostEndOfPred = minE;
+		  if (leftMostEndOfPred > rightMostEndOfPred - 200){
+		     leftMostEndOfPred = rightMostEndOfPred - 200;
+		     if (leftMostEndOfPred < 0)
+			leftMostEndOfPred = 0;
+		  }
+	       }
+	    }
+	}
+	if (algovar == doBacktracking || algovar == doSampling)
+	   eop.clear();
+	eop.init(); // initialize iterator on list with possible endOfPreds
 	
-	for (endOfPred = rightMostEndOfPred; endOfPred >= leftMostEndOfPred; endOfPred--){
+	for (endOfPred = rightMostEndOfPred; endOfPred >= leftMostEndOfPred; eop.decrement(endOfPred)){
 	    const ViterbiColumnType& predVit = algovar == doSampling ? 
 		(endOfPred > 0 ? forward[endOfPred] : forward[0]) :
 		(endOfPred > 0 ? viterbi[endOfPred] : viterbi[0]);
 	    // compute the maximum over the predecessor states probs times transition probability
-	    /*
-	     * check whether the starting position has a positive entry at all
-	     */
+
+	    // check whether the starting position has a positive entry at all
 	    for (it = ancestor.begin(); it != ancestor.end() && predVit[it->pos]==0; ++it);
 	    if (it == ancestor.end()) continue;
 
 	    notEndPartProb = notEndPartEmiProb(endOfPred+1, beginOfEndPart-1, endOfBioExon, extrinsicexons);
-	    if (notEndPartProb <= 0.0) continue;
+	    if (notEndPartProb == 0)
+	       continue;
+	    try {
+	       eop.update(endOfPred);
+	    } catch (ProjectError e) {
+	       cerr << "Error in EOPList::update.\tbase=" << base << "\t" << stateTypeNames[nctype]
+		    << "\tnotEndPartProb=" << notEndPartProb << endl;
+	       throw e;
+	    }
 
 	    emiProb = notEndPartProb * endPartProb;
 	    do {
@@ -453,7 +471,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	case ncinternal:
 	    beginPartProb = IntronModel::aSSProb(begin, true);
 	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
-	    if (beginPartProb>0.0) {
+	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
 		middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
 		lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
@@ -465,7 +483,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 		beginPartProb = 0.0;
 	    else
 		beginPartProb = IntronModel::aSSProb(begin, true);
-	    if (beginPartProb>0.0) {
+	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
 		if (endOfMiddle - beginOfMiddle + 1 >= 0)
 		    middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
@@ -477,13 +495,14 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	    break;
 	case rncsingle:
 	    beginOfBioExon = begin;
+	    beginPartProb = ttsProbMinus[beginOfBioExon];
 	    middlePartProb = seqProb(begin, endOfMiddle);
 	    lenProb = lenDistSingle[endOfBioExon - beginOfBioExon + 1];
 	    break;
 	case rncinternal:
 	    beginPartProb = IntronModel::dSSProb(begin, false);
 	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
-	    if (beginPartProb>0.0) {
+	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::dss_whole_size();
 		middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
 		lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
@@ -491,6 +510,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	    break;
 	case rncterm:
 	    beginOfBioExon = begin;
+	    beginPartProb = ttsProbMinus[beginOfBioExon];
 	    if (endOfMiddle - begin + 1 >= 0)
 		middlePartProb = seqProb(begin, endOfMiddle);
 	    else {
@@ -522,15 +542,14 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	    {
 		int internalIntronLen = endOfMiddle - begin + 1;
 		lenProb = pow(pIntron, internalIntronLen - 1) * (1.0-pIntron);
-		middlePartProb = //snippetProbs->getSeqProb(endOfMiddle, internalIntronLen);
-		    segProbs->getSeqProb(begin, endOfMiddle);
+		middlePartProb = segProbs->getSeqProb(begin, endOfMiddle);
 		break;
 	    }
 	default: ;
 	}
     
     Double sequenceProb = beginPartProb * middlePartProb * lenProb;
-    if (!(sequenceProb > 0.0))
+    if (!(sequenceProb > 0))
 	return 0.0;
     /*
      *                           extrinsicQuot
@@ -631,14 +650,16 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	 * intronpart bonus for the part of the intron that is handled in the exon states
 	 */
 	Feature *part, *intronList = seqFeatColl->getFeatureListOvlpingRange(A_SET_FLAG(intronpartF) | A_SET_FLAG(nonexonpartF), begin, beginOfBioExon-1, strand);
-	for (int i=begin; i <= beginOfBioExon-1; i++) {
-	    for (part = intronList; part != NULL; part = part->next){
-		if (part->start <= i && part->end >= i){
+	if (intronList){
+	   for (int i=begin; i <= beginOfBioExon-1; i++) {
+	      for (part = intronList; part != NULL; part = part->next){
+		 if (part->start <= i && part->end >= i){
 		    extrinsicQuot *= part->bonus;
-		}
-	    }
-	} 
-    }  
+		 }
+	      }
+	   } 
+	}
+    }
     
     return sequenceProb * extrinsicQuot;
 }
@@ -699,8 +720,7 @@ Double NcModel::seqProb(int left, int right) const {
     if (left > right)
 	return 1.0;
     
-    return //snippetProbs->getSeqProb(right, right-left+1);
-	segProbs->getSeqProb(left, right);
+    return segProbs->getSeqProb(left, right);
 }
 
 /*
