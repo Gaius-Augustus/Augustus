@@ -57,7 +57,7 @@ public:
     static void resetModelCount(){nccount = 0;};
     
 private:
-    Double seqProb            ( int left, int right) const;
+   //    Double seqProb            ( int left, int right) const;
     void computeLengthDistributions( );
     Double longIntronProb(int internalBegin, int internalEnd) const;
     static void initSnippetProbs();

@@ -458,35 +458,39 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	{
 	case ncsingle:
 	    beginOfBioExon = begin;
-	    middlePartProb = seqProb(begin, endOfMiddle);
-	    lenProb = lenDistSingle[endOfBioExon - beginOfBioExon + 1];
 	    beginPartProb = tssProbPlus[begin];
+	    if (beginPartProb > 0) {
+	       middlePartProb = segProbs->getSeqProb(begin, endOfMiddle);
+	       lenProb = lenDistSingle[endOfBioExon - beginOfBioExon + 1];
+	    }
 	    break;
 	case ncinit:
 	    beginOfBioExon = begin;
-	    middlePartProb = seqProb(begin, endOfMiddle);
-	    lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
-	    beginPartProb = tssProbPlus[begin];  
+	    beginPartProb = tssProbPlus[beginOfBioExon];
+	    if (beginPartProb > 0) {
+	       middlePartProb = segProbs->getSeqProb(begin, endOfMiddle);
+	       lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
+	    }
 	    break;
 	case ncinternal:
 	    beginPartProb = IntronModel::aSSProb(begin, true);
 	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
 	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
+		middlePartProb = segProbs->getSeqProb(beginOfMiddle, endOfMiddle);
 		lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
 	case ncterm:
 	    beginOfBioExon = begin + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;	    
 	    if (beginOfBioExon >= dnalen) 
-		beginPartProb = 0.0;
+		beginPartProb = 0;
 	    else
 		beginPartProb = IntronModel::aSSProb(begin, true);
 	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::ass_upwindow_size + Constant::ass_whole_size();
 		if (endOfMiddle - beginOfMiddle + 1 >= 0)
-		    middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
+		    middlePartProb = segProbs->getSeqProb(beginOfMiddle, endOfMiddle);
 		else {
 		    middlePartProb = pow (4.0,  -(endOfMiddle - beginOfMiddle + 1));
 		}
@@ -496,34 +500,38 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	case rncsingle:
 	    beginOfBioExon = begin;
 	    beginPartProb = ttsProbMinus[beginOfBioExon];
-	    middlePartProb = seqProb(begin, endOfMiddle);
-	    lenProb = lenDistSingle[endOfBioExon - beginOfBioExon + 1];
+	    if (beginPartProb > 0) {
+	       middlePartProb = segProbs->getSeqProb(begin, endOfMiddle);
+	       lenProb = lenDistSingle[endOfBioExon - beginOfBioExon + 1];
+	    }
 	    break;
 	case rncinternal:
 	    beginPartProb = IntronModel::dSSProb(begin, false);
 	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
 	    if (beginPartProb > 0) {
 		beginOfMiddle = begin + Constant::dss_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
+		middlePartProb = segProbs->getSeqProb(beginOfMiddle, endOfMiddle);
 		lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
 	case rncterm:
 	    beginOfBioExon = begin;
 	    beginPartProb = ttsProbMinus[beginOfBioExon];
-	    if (endOfMiddle - begin + 1 >= 0)
-		middlePartProb = seqProb(begin, endOfMiddle);
-	    else {
-		middlePartProb = pow (4.0,  -(endOfMiddle - begin + 1));
+	    if (beginPartProb > 0) {
+	       if (endOfMiddle - begin + 1 >= 0)
+		  middlePartProb = segProbs->getSeqProb(begin, endOfMiddle);
+	       else {
+		  middlePartProb = pow (4.0,  -(endOfMiddle - begin + 1));
+	       }
+	       lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
 	    }
-	    lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
 	    break;
 	case rncinit:
 	    beginPartProb = IntronModel::dSSProb(begin, false);
 	    beginOfBioExon = begin + Constant::dss_end + DSS_MIDDLE;
-	    if (beginPartProb > 0.0){
+	    if (beginPartProb > 0){
 		beginOfMiddle = begin + Constant::dss_whole_size();
-		middlePartProb = seqProb(beginOfMiddle, endOfMiddle);
+		middlePartProb = segProbs->getSeqProb(beginOfMiddle, endOfMiddle);
 		lenProb = lenDistInternal[endOfBioExon - beginOfBioExon + 1];
 	    }
 	    break;
@@ -533,10 +541,10 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 		    try {
 			middlePartProb *= IntronModel::emiprobs.probs[s2i_intron(sequence + pos - IntronModel::k)]; 
 		    } catch (InvalidNucleotideError e) {
-			middlePartProb *= 0.25;
+		       middlePartProb *= (float) 0.25;
 		    }
 		else
-		    middlePartProb *= 0.25;
+		   middlePartProb *= (float) 0.25;
 	    break;
 	case ncintronvar: case rncintronvar: // introns that are supported by a hint
 	    {
@@ -550,7 +558,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
     
     Double sequenceProb = beginPartProb * middlePartProb * lenProb;
     if (!(sequenceProb > 0))
-	return 0.0;
+       return sequenceProb;
     /*
      *                           extrinsicQuot
      */
@@ -563,7 +571,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
     if (isExon(nctype)) {
         int numEPendingInExon=0, nep=0; // just used for malus
 	bool exonFSupported = false;
-	Double partBonus = 1.0;
+	Double partBonus = 1;
 	for (Feature *part = exonparts; part != NULL; part = part->next){
 	    if (part->type == exonpartF){
 		if (part->type == exonpartF && part->end >= beginOfBioExon && part->end <= endOfBioExon)
@@ -714,14 +722,14 @@ void NcModel::getEndPositions (int end, int &beginOfEndPart, int &endOfBioExon) 
 /*
  * computes the probability of the emission of the sequence from left to right
  * left and right included
- */
+ *
 
 Double NcModel::seqProb(int left, int right) const {
     if (left > right)
-	return 1.0;
+	return 1;
     
     return segProbs->getSeqProb(left, right);
-}
+    }*/
 
 /*
  * Precomputes the probability of the transcription termination and initiation sites
@@ -733,10 +741,10 @@ void NcModel::precomputeTxEndProbs(){
     Feature *f;
     int pos;
 
-    tssProbPlus.assign(dnalen+1, 0.0);
-    tssProbMinus.assign(dnalen+1, 0.0);
-    ttsProbPlus.assign(dnalen+1, 0.0);
-    ttsProbMinus.assign(dnalen+1, 0.0);
+    tssProbPlus.assign(dnalen+1, 0);
+    tssProbMinus.assign(dnalen+1, 0);
+    ttsProbPlus.assign(dnalen+1, 0);
+    ttsProbMinus.assign(dnalen+1, 0);
 
     // allow and incentivize transcript boundaries when hinted to
     f = seqFeatColl->getAllActiveFeatures(tssF);

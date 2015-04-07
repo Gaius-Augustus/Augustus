@@ -456,7 +456,8 @@ Double SegProbs::getSeqProb(int from, int to) {
 	} catch (InvalidNucleotideError) {
 	    return (float) .25;
 	}
-    }
+    } else if (from > to)
+       return 1;
     if (to > n)
 	to = n;
     Double r = cumProds[to];
