@@ -241,7 +241,8 @@ public:
 	throwaway = false;
 	viterbi = true;
     }
-    Transcript(const Transcript& other);
+    Transcript (const Transcript& other);
+    Transcript& operator= (const Transcript& other);
     virtual ~Transcript(){
 	State *st, *tmp;
 	list<State*> sl = getExInInHeads();

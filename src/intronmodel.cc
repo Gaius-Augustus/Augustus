@@ -1179,12 +1179,7 @@ Double IntronModel::aSSProb(int base, bool forwardStrand){
 	    patternProb = assBinProbs.avprobs[idx];
 	}
     } catch (InvalidNucleotideError e) {
-      // cerr << "got invalid nucleotide when checking for aSS: " << astr << endl;
-      //oldPos = base;
-      // TODO: use the available unmasked bases
-      patternProb = 0.001 * pow(.25, (int) Constant::ass_size());
-      //was: emiProb = 0.0; don't predict splice site when there is an unknown nucleotide
-      //return emiProb;
+	patternProb = 0.001 * pow(.25, (int) Constant::ass_size());
     }
 
     emiProb = motifProb * patternProb;

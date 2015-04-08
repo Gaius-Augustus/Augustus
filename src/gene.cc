@@ -388,6 +388,7 @@ bool StatePath::operator== (const StatePath &other) const {
     else 
 	return false;
 }
+
 /*
  * comparison operator for StatePath's
  * p1 < p2 iff the a posteriori probability of p1 is greater than that of p2
@@ -396,18 +397,16 @@ bool StatePath::operator< (const StatePath &other) const{
     return (pathemiProb < other.pathemiProb);
 }
 
-
 /*
  * StatePath::projectOntoGeneSequence
  * makes a sequence of (possibly partial) genes out of this state path
- *
  */
 Transcript* StatePath::projectOntoGeneSequence (const char *genenames){
-    State* curState = first, *anIntron, *lastIntron = NULL, *lastExon;
+    State* curState = first, *anIntron = NULL, *lastIntron = NULL, *lastExon = NULL;
     int genenumber = 1;
     Gene *aGene = NULL;
     Transcript *aTx = NULL, *firstGene = NULL, *lastGene = NULL;
-    State *last5utrexon, *last3utrexon, *utrexon;
+    State *last5utrexon = NULL, *last3utrexon = NULL, *utrexon = NULL;
     list<PP::Match>::iterator protIt = proteinMatches.begin();
     // check whether we have an incomplete gene beginning with an intron in the CDS
     if (curState && isCodingIntron(curState->type)){
@@ -435,7 +434,7 @@ Transcript* StatePath::projectOntoGeneSequence (const char *genenames){
 		    lastExon = aTx->exons = curState->getBiologicalState();
 		    curState = curState->next;
 		} else { // multi-exon noncoding gene
-		    lastExon = 0;
+		    lastExon = NULL;
 		    if (curState->type != ncinit && ! curState->type != rncterm)
 			aTx->complete = false;
 		    aTx->exons = lastExon = curState->getBiologicalState();
@@ -685,7 +684,7 @@ Transcript* StatePath::projectOntoGeneSequence (const char *genenames){
 	    if (aGene || aTx){
 		if (aGene)
 		    aTx = aGene;
-	    
+
 		aTx->source = "AUGUSTUS";
 		aTx->id = genenames + itoa(genenumber++);
 		aTx->seqname = seqname;
@@ -1035,6 +1034,44 @@ Transcript::Transcript(const Transcript& other){
 	introns = other.introns->cloneStateSequence();
 }
 
+/*
+ * assignment operator
+ */
+Transcript &Transcript::operator=(const Transcript& other){
+    if (this != &other)	{
+	strand = other.strand;
+	complete = other.complete;
+	viterbi = other.viterbi;
+	throwaway = other.throwaway;
+	hasProbs = other.hasProbs;
+	apostprob = other.apostprob;
+	geneid = other.geneid;
+	seqname = other.seqname;
+	source = other.source;
+	next = other.next; // simply copy the pointer to the next gene
+	id = other.id;
+	transstart = other.transstart;
+	transend = other.transend;
+	// first delete the old and then copy the exons and introns
+	State *tmp;
+	while (exons){
+	    tmp = exons->next;
+	    delete exons;
+	    exons = tmp;
+	}
+	while (introns){
+	    tmp = introns->next;
+	    delete introns;
+	    introns = tmp;
+	}
+	if (other.exons)
+	    exons = other.exons->cloneStateSequence();
+	if (other.introns)
+	    introns = other.introns->cloneStateSequence();
+    }
+    return *this;
+}
+
 void Transcript::addStatePostProbs(float p){
     State *st;
     list<State*> sl = getExInHeads();
@@ -1213,10 +1250,9 @@ double Transcript::meanStateProb(){
 	return 0.0;
     double meanstateprob = 1.0;
     int numstates = 0;
-    State *s;
     list<State*> sl = getExInHeads();
     for (list<State*>::iterator it = sl.begin(); it != sl.end(); ++it){
-	for (s = *it; s != NULL; s = s->next){
+	for (State *s = *it; s != NULL; s = s->next){
 	    meanstateprob *= s->apostprob;
 	    numstates++;
 	}
