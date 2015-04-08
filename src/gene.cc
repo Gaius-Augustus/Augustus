@@ -1185,7 +1185,7 @@ void Transcript::updatePostProb(Transcript* other){
 	otherst = *it2;
 	// now mergecompare the two lists, assuming that they are sorted
 	while (st && otherst){
-	    if (st->begin == otherst->begin && st->end == otherst->end){
+	    if (st->begin == otherst->begin && st->end == otherst->end && st->type == otherst->type){
 		// add to the apostprob of each state the sampleCount of the other
 		st->apostprob += otherst->sampleCount;
 		otherst->apostprob += st->sampleCount;

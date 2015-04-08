@@ -365,7 +365,7 @@ void GeneMSA::openOutputFiles(string outdir){
 
 void GeneMSA::printStats(){
     for(int s=0; s<numSpecies(); s++){
-	cout << rsa->getSname(s) << "\t";
+      cout << rsa->getSname(s) << "." << getSeqID(s) << "\t";
 	if (alignment->rows[s])
 	    cout << alignment->rows[s]->strand << "\t" << getStart(s) << "\t" << getEnd(s);
 	cout << endl;
