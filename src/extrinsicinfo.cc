@@ -1614,28 +1614,23 @@ list<AltGene> *SequenceFeatureCollection::joinGenesFromPredRuns(list<list<AltGen
     
     
     alltranscripts.sort(ptr_comparison<Transcript>());
-    // now remove multiple copies and increase apostprob instead
-    for (geneit1 = alltranscripts.begin(); geneit1 != alltranscripts.end();){
-	geneit2 = geneit1;
-	for (geneit2++; geneit2 != alltranscripts.end() && (*geneit2)->geneBegin() == (*geneit1)->geneBegin();)
-	    if (**geneit1 == **geneit2){
-		// delete the transcript with lower meanStateProb
-		if ((*geneit2)->apostprob > (*geneit1)->apostprob) {
-		    // replace geneit1 with geneit2
-		    delete *geneit1;
-		    geneit1 = alltranscripts.erase(geneit1);
-		    if (geneit1 != geneit2) // transcripts were not neighbors anyway
-			alltranscripts.insert(geneit1, *geneit2);
-		} else if (geneit2 != geneit1){
-		    delete *geneit2;
-		    geneit2 = alltranscripts.erase(geneit2);
-		} else 
-		    geneit2++;
-	    } else
-		geneit2++;
-	geneit1++;
+    // now remove multiple copies
+    for (geneit1 = alltranscripts.begin(); geneit1 != alltranscripts.end(); geneit1++){
+       geneit2 = geneit1;
+       for (geneit2++; geneit2 != alltranscripts.end() && (*geneit2)->geneBegin() == (*geneit1)->geneBegin();)
+	  if (**geneit1 == **geneit2){
+	     // delete the transcript with lower meanStateProb
+	     if ((*geneit2)->apostprob > (*geneit1)->apostprob) {
+		// replace geneit1 with geneit2
+		delete *geneit1; // delete the first transcript (deep)
+		*geneit1 = *geneit2; // assignment of pointer
+	     } else {
+		delete *geneit2; // delete the second transcript (deep)
+	     }
+	     geneit2 = alltranscripts.erase(geneit2); // delete tx pointer only
+	  } else
+	     geneit2++;
     }
-
     /*
      * filter transcripts by maximum track number
      */

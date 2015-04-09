@@ -94,7 +94,7 @@ int            IntronModel::ass_outside = 0;
 IntronModel::IntronModel() : gweight (1) {
     itype = toStateType( Properties::getProperty("/IntronModel/type", introncount++) );
     codon = new char[4];
-    codon[4] = '\0';
+    codon[3] = '\0';
 }
 
 /*

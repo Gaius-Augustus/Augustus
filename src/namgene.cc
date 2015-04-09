@@ -641,7 +641,6 @@ Transcript *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequ
 	agit->shiftCoordinates(beginPos + annoseq->offset);
 	agit->seqname = seqname;
      
-      
 	if (Constant::uniqueGeneId){
 	    char buf[38];
 	    sprintf(buf, "%.30s.g%d", seqname, geneid);
@@ -649,7 +648,6 @@ Transcript *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequ
 	} else {
 	    agit->id = "g"+itoa(geneid);
 	} // TEMPorarily uncommented
-
       
 	agit->sortTranscripts();
 
