@@ -433,40 +433,43 @@ Transcript* StatePath::projectOntoGeneSequence (const char *genenames){
 		if (curState->type == ncsingle || curState->type == rncsingle) { // no introns, just 1 exon
 		    lastExon = aTx->exons = curState->getBiologicalState();
 		    curState = curState->next;
-		} else { // multi-exon noncoding gene
+		} else { // multi-exon or incomplete noncoding gene
 		    lastExon = NULL;
 		    if (curState->type != ncinit && ! curState->type != rncterm)
 			aTx->complete = false;
 		    aTx->exons = lastExon = curState->getBiologicalState();
 		    curState = curState->next;
-		    while (curState && curState->type != ncterm && curState->type != rncinit) {
-			if (isIntron(curState->type)) {
-			    anIntron = new State();
-			    anIntron->begin = curState->begin;
-			    anIntron->type = isOnFStrand(curState->type)? intron_type : rintron_type;
-			    while (curState->next && isIntron(curState->next->type))
+		    if (isNc(curState->type)){ //my be intergenic if starting with incomplete noncoding gene
+		       while (curState && curState->type != ncterm && curState->type != rncinit) {
+			  if (isIntron(curState->type)) {
+			     anIntron = new State();
+			     anIntron->begin = curState->begin;
+			     anIntron->type = isOnFStrand(curState->type)? intron_type : rintron_type;
+			     while (curState->next && isIntron(curState->next->type))
 				curState = curState->next;
- 			    anIntron->end = curState->end;
-			    anIntron->truncated = curState->truncated;
-			    if (aTx->introns == NULL) {
+			     anIntron->end = curState->end;
+			     anIntron->truncated = curState->truncated;
+			     if (aTx->introns == NULL) {
 				aTx->introns = lastIntron = anIntron->getBiologicalState();
-			    } else {
+			     } else {
 				lastIntron = lastIntron->next = anIntron->getBiologicalState();
-			    }
-			    if (lastIntron->end > aTx->transstart)
+			     }
+			     if (lastIntron->end > aTx->transstart)
 				aTx->transend = lastIntron->end; // if gene ends with intron then let this be the transcript end
-			} else if (curState->type == ncinternal || curState->type == rncinternal) {
-			    lastExon = lastExon->next = curState->getBiologicalState();
-			} else {
-			    throw ProjectError("state path doesn't constitute a valid gene");
-			}
-			curState = curState->next;
-		    }
-		    if (curState == NULL) {
-			aTx->complete = false;
-		    } else { // ncterminal or rncinitial
-			lastExon = lastExon->next = curState->getBiologicalState();
-			curState = curState->next;
+			  } else if (curState->type == ncinternal || curState->type == rncinternal) {
+			     lastExon = lastExon->next = curState->getBiologicalState();
+			  } else {
+			     print();
+			     throw ProjectError("state path doesn't constitute a valid gene (noncoding)");
+			  }
+			  curState = curState->next;
+		       }
+		       if (curState == NULL) {
+			  aTx->complete = false;
+		       } else { // ncterminal or rncinitial
+			  lastExon = lastExon->next = curState->getBiologicalState();
+			  curState = curState->next;
+		       }
 		    }
 		}
 		aTx->transstart = aTx->exons->begin;
