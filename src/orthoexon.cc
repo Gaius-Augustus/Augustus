@@ -139,6 +139,10 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 double OrthoExon::getLogRegScore(){
     
     if (string("fly") == Properties::getProperty("species")){
+
+	Eomega = (Eomega != Eomega)? -1 : Eomega; // temporary bugfix: if omega is not a number, set it to the default value
+	VarOmega = (VarOmega != VarOmega)? -1 : VarOmega;
+
 	return  (- 0.2558400 * Eomega * hasOmega()
 		 - 4.4260235 * VarOmega * hasOmega()
 		 - 7.8187760 * cons
