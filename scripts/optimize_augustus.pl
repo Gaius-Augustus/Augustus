@@ -541,9 +541,6 @@ if ($cmdpars{'opt_trans_matrix'} eq '') {# optimize meta parameters
 my (@spcfilelines, @transfilelines);
 my  $speciesdir = $configdir . "species/$cmdpars{'species'}/";
 my  $species_cfg_filename = $speciesdir . $cmdpars{'species'} . "_parameters.cfg";
-if($cgp){
-    $species_cfg_filename = $speciesdir . $cmdpars{'species'} . "_parameters.cgp.cfg";
-}
 if ($cmdpars{'opt_trans_matrix'} eq ''){
     # make a copy of the original parameter file
     my $y=1;
