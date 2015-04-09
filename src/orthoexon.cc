@@ -136,6 +136,21 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 }
 
 
+double OrthoExon::getLogRegScore(){
+    
+    if (string("fly") == Properties::getProperty("species")){
+	return  (- 0.2558400 * Eomega * hasOmega()
+		 - 4.4260235 * VarOmega * hasOmega()
+		 - 7.8187760 * cons
+		 - 0.0039834 * containment
+		 + 0.2847667 * diversity
+		 + 0.7911388 * numExons()
+		 + 1.5578776 * hasOmega() 
+		 + 1.9190608 ); // for being a HECT
+    }
+    return 0.0;
+}
+
 // old code:
 /*list<OrthoExon> readOrthoExons(string filename){
 

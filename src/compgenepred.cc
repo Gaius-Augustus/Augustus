@@ -172,7 +172,20 @@ void CompGenePred::start(){
     } catch (...) {
         conservationTrack = false;
     }
-
+    double thold;
+    try {
+	thold = Properties::getdoubleProperty("/CompPred/ec_thold");
+    } catch (...) {
+	thold = 0.0;
+    }
+    SpeciesGraph::setECThold(thold);
+    try {
+	thold = Properties::getdoubleProperty("/CompPred/ic_thold");
+    } catch (...) {
+	thold = 0.0;
+    }
+    SpeciesGraph::setICThold(thold);
+   
     string outdir;  //direction for output files 
     try {
         outdir = Properties::getProperty("/CompPred/outdir");
@@ -347,7 +360,7 @@ void CompGenePred::start(){
 		orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRanges[s], geneRange->getExonCands(s), speciesNames[s], 
 							geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, sampledGFs[s], overlapComp);
 		orthograph.graphs[s]->buildGraph();
-		// orthograph.graphs[s]->printGraph(outdir + speciesNames[s] + "." + itoa(GeneMSA::geneRangeID) + ".dot");
+		//orthograph.graphs[s]->printGraph(outdir + speciesNames[s] + "." + itoa(GeneMSA::geneRangeID) + ".dot");
 		
 	    }
 	}
@@ -376,6 +389,7 @@ void CompGenePred::start(){
 	else{
 	  list<OrthoExon> hects = geneRange->getOrthoExons();
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
+	    orthograph.globalPathSearch();
 	    orthograph.outputGenes(baseGenes,base_geneid);
 	    if(featureScoreHects){
 		//add score for selective pressure of orthoexons

@@ -311,6 +311,7 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &geneli
 	else{
 	    hect_score += treeMAPInf(evo,numInconsistent);
 	}
+	//cout <<"path="<<path_score<<" tree=" << hect_score << endl;
 	double current_dual = path_score + hect_score;       // dual value of the t-th iteration 
 	best_dual = min(best_dual,current_dual);              // update upper bound
 	if( (t >= 1) && (old_dual < current_dual) )  // update v
@@ -441,6 +442,7 @@ void OrthoGraph::linkToOEs(list<OrthoExon> &oes){
 
     all_orthoex = oes;
     for(list<OrthoExon>::iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
+	double oe_score = it->getLogRegScore();
 	for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){ 
 	    if(it->orthoex[pos]==NULL){
 		it->labels[pos]=2;
@@ -453,9 +455,10 @@ void OrthoGraph::linkToOEs(list<OrthoExon> &oes){
 		    throw ProjectError("Internal error OrthoGraph::linkToOEs: EC has no corrpesonding node in OrthoGraph.");
 		}
 		it->orthonode[pos]=node;
+		node->addWeight(oe_score); // add OE score to all outgoing edges
 	    }
 	    it->setLabelpattern();
-	}
+	}	
     }  
 }
 

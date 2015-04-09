@@ -37,6 +37,7 @@ public:
     double getConsScore() const {return cons;}
     double getDiversity() const {return diversity;}
     size_t getContainment() const {return containment;}
+    bool hasOmega() const {return Eomega >= 0.0;}
     bit_vector getBV() const {return bv;}
   vector<int> getRFC(vector<int> offsets) const;
     PhyloTree* getTree() const {return tree;}
@@ -56,6 +57,7 @@ public:
     vector<int> getRFC(vector<int> offsets);
     string getStoredLabelpattern() {return labelpattern;} // retrieving labelpattern without updating
     string getCurrentLabelpattern() { setLabelpattern(); return labelpattern;} //retrieving labelpattern with updating
+    double getLogRegScore();
 
     vector<ExonCandidate*> orthoex;
     vector<Node*> orthonode; //corresponding nodes in the graph

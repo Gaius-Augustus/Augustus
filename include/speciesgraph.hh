@@ -89,6 +89,21 @@ public:
     inline double relax(){
 	return relax(head, tail);
     }
+
+    // static functions
+    static void setECThold(double t){ec_thold=t;}
+    static void setICThold(double t){ic_thold=t;}
+
+    /*
+     * parameters that define the scoring function of exons and introns
+     * score of exons: ec_thold + a_0x_0 + a_1x_1 + ... + a_nx_n,
+     * where x_i are derived from the following set of features: posterior prob, average base prob, log length
+     * diversity, omega, variance of omega, conseration, containment, #species in a HECT
+     * and the a_i are parameters trained by logistic regression
+     */
+    static double ec_thold; // ec_thold + a_0*x_0 + a_1*x_1 + ... + a_n*x_n 
+    static double ic_thold; // ic_thold + a_0*x_0 + a_1*x_1 + ... + a_n*x_n 
+
     /*
      * old code
      */

@@ -64,6 +64,8 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/maxIterations",
 "/CompPred/ec_factor",
 "/CompPred/ec_addend",
+"/CompPred/ec_thold",
+"/CompPred/ic_thold",
 "/CompPred/featureScoreHects",
 "/CompPred/genesWithoutUTRs",
 "/CompPred/maxCov",
@@ -423,8 +425,8 @@ void Properties::init( int argc, char* argv[] ){
 	throw ProjectError("Species-specific configuration files not found in " + configPath + SPECIES_SUBDIR + ". Type \"augustus --species=help\" to see available species.");
     }
 
-    // if mult-species mode is turned on, try to read cgp config file
-    if(Constant::MultSpeciesMode){
+    // if mult-species mode is turned on, try to read cgp config file (not needed anymore)
+    /*if(Constant::MultSpeciesMode){
 	string cgpParFileName = speciesValue + "_parameters.cgp.cfg";
 	string savedSpecies = speciesValue;
 	try {
@@ -433,7 +435,7 @@ void Properties::init( int argc, char* argv[] ){
 	    cerr <<"Resuming without "<< cgpParFileName << endl;
 	}
 	speciesValue = savedSpecies;
-    }
+	}*/
 
     // read in extra config file (again), but do not change species
     if (optCfgFile != "") {

@@ -16,6 +16,9 @@
 
 #include "speciesgraph.hh"
 
+double SpeciesGraph::ec_thold = 0.0;
+double SpeciesGraph::ic_thold = 0.0;
+
 void SpeciesGraph::buildGraph(){
     
     vector< vector<Node*> > neutralLines; //represents the seven neutral lines
@@ -150,7 +153,10 @@ Node* SpeciesGraph::addNode(Status *exon){
     NodeType ntype = utrExon;
     if(exon->name == CDS)
 	ntype = sampled;
-    Node *node = new Node(exon->begin, exon->end, setScore(exon), exon->item, ntype);
+    double score = setScore(exon);
+    if (string("fly") == Properties::getProperty("species"))
+	score=ec_thold - 9.9121118 + 7.2057311 * exon->getPostProb() + 2.9993128 * getAvgBaseProb(exon) + 0.3998047 * log(exon->getLen());
+    Node *node = new Node(exon->begin, exon->end, score, exon->item, ntype);
     printSampledGF(exon);
     nodelist.push_back(node);
     addToHash(node);
@@ -158,7 +164,10 @@ Node* SpeciesGraph::addNode(Status *exon){
 }
 
 Node* SpeciesGraph::addNode(ExonCandidate *exon){
-    Node *node = new Node(exon->begin, exon->end, ec_score, exon, unsampled_exon);
+    double score = ec_score;
+    if (string("fly") == Properties::getProperty("species"))
+	score =ec_thold - 9.9121118 + 0.3998047 * log(exon->len());
+    Node *node = new Node(exon->begin, exon->end, score, exon, unsampled_exon);
     nodelist.push_back(node);
     addToHash(node);
     return node;
@@ -288,7 +297,9 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
 	//cout << "intron\t\t"<< intr->begin << "\t\t" << intr->end << "\t\t" << (string)stateTypeIdentifiers[((State*)intr->item)->type] << endl;
 	double intr_score = 0.0;
 	if(intr->name == intron) // only CDS introns have a posterior probability                                                                                                
-            intr_score += setScore(intr);
+	    intr_score = setScore(intr);
+	if (intr->name == intron && string("fly") == Properties::getProperty("species"))
+	    intr_score = ic_thold - 5.64405 + 5.640821 * intr->getPostProb() + 4.740363 * getAvgBaseProb(intr) - 0.155695 * log(intr->getLen());
 	Edge in(succ, false, intr_score, intr->item);
 	pred->edges.push_back(in);
 	printSampledGF(intr);
