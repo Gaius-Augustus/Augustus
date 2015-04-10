@@ -660,6 +660,10 @@ void SpeciesGraph::topSort(){
 	next->topSort_next->topSort_pred = next;
 	next = 	next->topSort_next;
     }
+    // reset all node labels
+    for(list<Node*>::iterator it=nodelist.begin(); it!=nodelist.end(); it++){
+	(*it)->label=0;
+    }
 }
 
 void SpeciesGraph::dfs(Node *node){
