@@ -190,15 +190,15 @@ template<class T> Node* SpeciesGraph::addExon(T *exon, vector< vector<Node*> > &
 	/*
 	 * connect to the preceeding features
 	 */
-	//if(node->isSampled()){
-	    if(pred_type > IR){
-		if( pred_type == rTLstart || pred_type == TLstop )
-		    begin--;
-		Node *pred = getAuxilaryNode(pred_type,begin, auxiliaryNodes);
-		if(pred)
-		    addAuxilaryEdge(pred,node);
-	    }
-	    //}
+	if(pred_type > IR){
+	    if( pred_type == rTLstart || pred_type == TLstop )
+		begin--;
+	    Node *pred = getAuxilaryNode(pred_type,begin, auxiliaryNodes);
+	    if(pred)
+		addAuxilaryEdge(pred,node);
+	    else if(genesWithoutUTRs && (pred_type == TLstart || pred_type == rTLstop))
+		addAuxilaryEdge(addAuxNodeToLine(IR,begin,neutralLines),node);
+	}
 	if(pred_type >= IR && pred_type <= rncintr){ // add auxiliary nodes to the neutral lines
 	    list<NodeType> pred_types = getPredTypes(node);
 	    for(list<NodeType>::iterator it = pred_types.begin(); it != pred_types.end(); it++){
@@ -210,15 +210,15 @@ template<class T> Node* SpeciesGraph::addExon(T *exon, vector< vector<Node*> > &
 	/*
 	 * connect to the succeeding features
 	 */
-	// if(node->isSampled()){
-	    if(succ_type > IR){
-		if(  succ_type == TLstart ||  succ_type == rTLstop )
-		    end++;
-		Node *succ = getAuxilaryNode(succ_type, end, auxiliaryNodes);
-		if(succ)
-		    addAuxilaryEdge(node,succ);
-	    }
-	    // }
+	if(succ_type > IR){
+	    if(  succ_type == TLstart ||  succ_type == rTLstop )
+		end++;
+	    Node *succ = getAuxilaryNode(succ_type, end, auxiliaryNodes);
+	    if(succ)
+		addAuxilaryEdge(node,succ);   
+	    else if(genesWithoutUTRs && (succ_type == rTLstart || succ_type == TLstop))
+		addAuxilaryEdge(node,addAuxNodeToLine(IR,end,neutralLines));
+	}
 	if(succ_type >= IR && succ_type <= rncintr){ // add auxiliary nodes to the neutral lines
 	    list<NodeType> succ_types = getSuccTypes(node);
 	    for(list<NodeType>::iterator it = succ_types.begin(); it != succ_types.end(); it++){
