@@ -59,7 +59,7 @@ char* InFileName;
 char* OutFileName;
 int Pri = 4;
 int MaxGapLen = 14;
-int MinIntLen = 41;
+int MinIntLen = 32;
 int MaxIntLen = 350000;
 int MaxQGapLen = 5;
 int EpCutoff = 10;
