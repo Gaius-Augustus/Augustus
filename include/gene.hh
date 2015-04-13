@@ -358,8 +358,8 @@ public:
 	if (UTR3stateEvidence)
 	    delete UTR3stateEvidence;
     }
-    list<State*> getExInHeads(){ list<State*> L; L.push_back(exons); L.push_back(introns); L.push_back(utr5exons); L.push_back(utr3exons); return L;}
-    list<State*> getExInInHeads(){ list<State*> L = getExInHeads(); L.push_back(utr5introns); L.push_back(utr3introns); return L;}
+    list<State*> getExInHeads() const { list<State*> L; L.push_back(exons); L.push_back(introns); L.push_back(utr5exons); L.push_back(utr3exons); return L;}
+    list<State*> getExInInHeads() const { list<State*> L = getExInHeads(); L.push_back(utr5introns); L.push_back(utr3introns); return L;}
     char* getCodingSequence(AnnoSequence *annoseq = NULL) const;
     bool hasInFrameStop(AnnoSequence *annoseq) const;
     // void computeBC(char *seq);

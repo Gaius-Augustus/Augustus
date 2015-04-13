@@ -1216,7 +1216,7 @@ void Transcript::updatePostProb(Transcript* other){
     if (other->geneBegin() > geneEnd() || geneBegin() > other->geneEnd())
 	return;
     State *st, *otherst;
-    list<State*> sl1 = getExInHeads(), sl2 = other->getExInHeads();
+    list<State*> sl1 = this->getExInHeads(), sl2 = other->getExInHeads();
     list<State*>::iterator it1 = sl1.begin();
     list<State*>::iterator it2 = sl2.begin();
 
