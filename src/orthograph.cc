@@ -279,84 +279,98 @@ double OrthoGraph::globalPathSearch(){
     return score;
 }
 
-double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &genelist, int gr_ID, int T, double c){
+double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &genelist, int gr_ID, int T, vector<double> &c){
 
     cout << "dual decomposition on gene Range " << gr_ID << endl;
-    /*
-     * initialization
-     */
-    double old_dual = 0.0; // dual value of the previous iteration
+    cout<<"round\titer\tstep_size\tprimal\tdual\t#inconsistencies"<<endl;
+
     double best_dual = std::numeric_limits<double>::max();   // best dual value so far
     double best_primal = -std::numeric_limits<double>::max(); // best primal value so far
-
     double initial_gap = std::numeric_limits<double>::max(); // initial duality gap (in 0-the iteration)
+	
+    for(size_t r=0; r < c.size(); r++){ // number of rounds
+	
+	/*
+	 * initialization
+	 */
+	double old_dual = 0.0; // dual value of the previous iteration
+	double delta = 0.0; // step size	
+	int v = 0; 	// number of iterations prior to t where the dual value increases
 
-    double delta = 0.0; // step size
-
-    // number of iterations prior to t where the dual value increases
-    int v = 0;
-    cout.precision(10);
-    cout<<"iter\tstep_size\tprimal\tdual\t#inconsistencies"<<endl;
-    for(int t=0; t<T;t++){
-	double path_score = globalPathSearch();
-	int numInconsistent = 0;
-	double hect_score = 0;
-	if(t == 0){
-	    // initially set labels of hects by a simple majority rule
-	    // set all labels of a hect to 1, if the majority
-	    // iff the corresponding labels in the graph are labelled with one/
-	    // otherwise, set all labels to 0
-	    hect_score += init(evo,numInconsistent);
-	}
-	else{
-	    hect_score += treeMAPInf(evo,numInconsistent);
-	}
-	//cout <<"path="<<path_score<<" tree=" << hect_score << endl;
-	double current_dual = path_score + hect_score;       // dual value of the t-th iteration 
-	best_dual = min(best_dual,current_dual);              // update upper bound
-	if( (t >= 1) && (old_dual < current_dual) )  // update v
+	cout.precision(10);
+	for(int t=0; t<T;t++){
+	    double path_score = globalPathSearch();
+	    int numInconsistent = 0;
+	    double hect_score = 0;
+	    if(t == 0){
+		// initially set labels of hects by a simple majority rule
+		// set all labels of a hect to 1, if the majority
+		// iff the corresponding labels in the graph are labelled with one/
+		// otherwise, set all labels to 0
+		hect_score += init(evo,numInconsistent);
+	    }
+	    else{
+		hect_score += treeMAPInf(evo,numInconsistent);
+	    }
+	    double current_dual = path_score + hect_score;       // dual value of the t-th iteration 
+	    best_dual = min(best_dual,current_dual);              // update upper bound
+	    if( (t >= 1) && (old_dual < current_dual) )  // update v
 		v++;
-	double current_primal = path_score + makeConsistent(evo); // primal value of the t-the iteration
-	if(best_primal < current_primal){
-	    best_primal = current_primal;
-	    buildGeneList(genelist); // save new record
-	}
-	if(t == 0){
-	    initial_gap = current_dual - current_primal;
-	    //c*=initial_gap/numInconsistent; // adjust step size parameter to problem size
-	}
-	cout<<t<<"\t"<<delta<<"\t"<<current_primal<<"\t"<<current_dual<<"\t"<<numInconsistent<<endl;
-
-	if(numInconsistent == 0 || abs(best_dual - best_primal) < 1e-6) // exact solution is found
-	    break;
-
-	// determine new step size
-	delta = getStepSize(c,t,v);
-       
-	// updated weights
-	for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
-	    for(size_t pos = 0; pos < numSpecies; pos++){
-		if(hects->orthoex[pos]){
-		    // get corresponding node in graph
-		    Node* node = hects->orthonode[pos];
-		    bool h = node->label;
-		    bool v = hects->labels[pos];
-		    if(v != h){  //shared nodes are labelled inconsistently in the two subproblems
-			double weight = delta*(v-h);
-			//update weights
-			node->addWeight(weight);
-			hects->weights[pos] -= weight;     
+	    double current_primal = path_score + makeConsistent(evo); // primal value of the t-the iteration
+	    if(best_primal < current_primal){
+		best_primal = current_primal;
+		buildGeneList(genelist); // save new record
+	    }
+	    if(t == 0 && r == 0){
+		initial_gap = current_dual - current_primal;
+		//c*=initial_gap/numInconsistent; // adjust step size parameter to problem size
+	    }
+	    cout<<r<<"\t"<<t<<"\t"<<delta<<"\t"<<current_primal<<"\t"<<current_dual<<"\t"<<numInconsistent<<endl;
+	    
+	    if(numInconsistent == 0 || abs(best_dual - best_primal) < 1e-8){ // exact solution is found
+		double best_gap = abs(best_dual - best_primal);
+		double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
+		cout<<"dual decomposition reduced initial duality gap of "<<initial_gap<<" to "<<best_gap<<" (to "<<perc_gap<<"%)"<<endl;
+		return best_gap;
+	    }
+	    
+	    // determine new step size
+	    delta = getStepSize(c[r],t,v);
+	    
+	    // updated weights
+	    for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
+		for(size_t pos = 0; pos < numSpecies; pos++){
+		    if(hects->orthoex[pos]){
+			// get corresponding node in graph
+			Node* node = hects->orthonode[pos];
+			bool h = node->label;
+			bool v = hects->labels[pos];
+			if(v != h){  //shared nodes are labelled inconsistently in the two subproblems
+			    double weight = delta*(v-h);
+			    //update weights
+			    node->addWeight(weight);
+			    hects->weights[pos] -= weight;     
+			}
 		    }
 		}
 	    }
+	    old_dual = current_dual;
 	}
-	old_dual = current_dual;
+	// reset weights
+	for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
+	    for(size_t pos = 0; pos < numSpecies; pos++){
+		if(hects->orthoex[pos]){
+		    Node* node = hects->orthonode[pos];
+		    node->addWeight(hects->weights[pos]);
+		    hects->weights[pos] = 0;     
+		}
+	    }
+	}
     }
     double best_gap = abs(best_dual - best_primal);
     double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
     cout<<"dual decomposition reduced initial duality gap of "<<initial_gap<<" to "<<best_gap<<" (to "<<perc_gap<<"%)"<<endl;
     return best_gap;
-
 }
 
 /*

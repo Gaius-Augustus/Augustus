@@ -56,7 +56,7 @@ public:
      * verical problem: MAP inference on a set of disjoint phylogenetic trees whose
      * leaf nodes are assigned to weights.
      */
-    double dualdecomp(ExonEvo &evo,vector< list<Transcript*> *> &genelist, int gr_ID, int T, double c);  //main routine
+    double dualdecomp(ExonEvo &evo,vector< list<Transcript*> *> &genelist, int gr_ID, int T, vector<double> &c);  //main routine
     double treeMAPInf(ExonEvo &evo, int &numInconsistent);  //vertical problem
     double globalPathSearch(); // horizontal problem
     double getStepSize(double c,int t, int v);    // specifies a sequence of steps

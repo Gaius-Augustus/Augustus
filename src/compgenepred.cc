@@ -111,7 +111,7 @@ void CompGenePred::start(){
 	cerr << "No negative scaling factor allowed. /CompPred/scale_codontree must be a positive real number. Will use =1." << endl;	
 	ctree_scaling_factor=1;
     }
-    int maxIterations; // maximum number of dual decomposition iterations
+    int maxIterations; // maximum number of dual decomposition iterations in each round
     try {
 	maxIterations = Properties::getIntProperty("/CompPred/maxIterations");
     } catch (...) {
@@ -121,11 +121,53 @@ void CompGenePred::start(){
 	cerr << "Warning: /CompPred/maxIterations was set to "<<maxIterations<<". At least one iteration must be made." << endl;
 	maxIterations =1;
     }
-    double dd_factor; // parameter of the dual decomposition step size function 
+    int rounds; // number of dual decomposition rounds
     try {
-	dd_factor = Properties::getdoubleProperty("/CompPred/dd_factor");
+	rounds = Properties::getIntProperty("/CompPred/dd_rounds");
     } catch (...) {
-	dd_factor = 20;
+	rounds = 5;
+    }
+    if(rounds <= 0){
+	cerr << "Warning: /CompPred/rounds was set to "<<rounds<<". At least one round must be made." << endl;
+	rounds =1;
+    }
+    string dd_param_s; 
+    // parameter that defines the step size in dual decomposition.
+    // If a range is given, all values in that range are tried until convergence is achieved
+    vector<double> dd_factors; 
+    try {
+        dd_param_s = Properties::getProperty("/CompPred/dd_factor");
+    } catch (...) {
+        dd_param_s = "";
+    }
+    try{
+	if(!dd_param_s.empty()){
+	    size_t i = dd_param_s.find('-');
+	    if(i != std::string::npos){
+		double start;
+		if( !(stringstream(dd_param_s.substr(0,i)) >> start))
+		    throw ProjectError("Cannot read interval start.");
+		double end;
+		if( !(stringstream(dd_param_s.substr(i+1, string::npos)) >> end))
+		    throw ProjectError("Cannot read interval end.");
+		if(start > end)
+		    throw ProjectError("Interval start greater than interval end.");
+		for (int i=0; i < rounds; i++){
+		    dd_factors.push_back(start+i*(end-start)/(rounds-1));
+		}	
+	    }
+	    else{
+		double pos;	    
+		if( !(stringstream(dd_param_s) >> pos))
+		    throw ProjectError("Is not numeric.");
+		dd_factors.push_back(pos);
+	    }
+	}
+	else{
+	    dd_factors.push_back(20); // by default, only do one round with dd parameter set to 20.
+	}
+    } catch (ProjectError e) {
+	throw ProjectError("Format error parsing parameter --/CompPred/dd_factor=" + dd_param_s +".\n" + e.getMessage());
     }
     try {
 	noprediction = Properties::getBoolProperty("noprediction");
@@ -401,7 +443,7 @@ void CompGenePred::start(){
 	    if(!orthograph.all_orthoex.empty()){
 		// optimization via dual decomposition
 		vector< list<Transcript*> *> genelist(OrthoGraph::numSpecies);
-		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factor);
+		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factors);
 		orthograph.filterGeneList(genelist,optGenes,opt_geneid);
 		orthograph.createOrthoGenes(geneRange);
 		orthograph.printOrthoGenes();
