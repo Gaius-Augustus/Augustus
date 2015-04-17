@@ -233,23 +233,25 @@ relevant, non-neutral lines could look like this:</P>
 <pre><div class="code">[SOURCES]
 M RM E W
 
-exonpart    1   .992    M 1 1e+100 RM 1 1    E 1 1   W 1 1.005
-intron      1   .34     M 1 1e+100 RM 1 1    E 1 1e5 W 1 1
-CDSpart     1   1 0.985 M 1 1e+100 RM 1 1    E 1 1   W 1 1
-UTRpart     1   1 0.985 M 1 1e+100 RM 1 1    E 1 1   W 1 1
-nonexonpart 1   1       M 1 1e+100 RM 1 1.01 E 1 1   W 1 1
+[GENERAL]
+        ass   1      1 0.1  M    1  1e+100  RM  1   1    E 1    1    W 1    1
+        dss   1      1 0.1  M    1  1e+100  RM  1   1    E 1    1    W 1    1
+   exonpart   1  .992 .985  M    1  1e+100  RM  1   1    E 1    1    W 1    1.02
+     intron   1        .34  M    1  1e+100  RM  1   1    E 1  1e4    W 1    1
+    CDSpart   1     1 .985  M    1  1e+100  RM  1   1    E 1    1    W 1    1
+    UTRpart   1     1 .985  M    1  1e+100  RM  1   1    E 1    1    W 1    1
+nonexonpart   1          1  M    1  1e+100  RM  1   1.15 E 1    1    W 1    1
 </div></pre>
 
 <P STYLE="margin-bottom: 0in">The <I>exonpart</I> malus of .992 means
 a weak penalty factor for every predicted exonic base that is not
 supported by any <I>exonpart</I> hints. The <I>exonpart</I> bonus for hints of
-source W of 1.005 mean that gene structures get this bonus factor for
+source W of 1.02 means that gene structures get this bonus factor for
 every <I>exonpart</I> hint of multiplicity 1 that is completely included in an
 exon. Introns that are not supported by any <I>intron</I> hint are
 penalized by .34, and introns that are supported by RNA-Seq hints are
-rewarded by a factor of 100,000. The <FONT FACE="Times New Roman,serif">0.985</FONT> are <FONT FACE="Times New Roman, serif"><I><SPAN STYLE="font-weight: normal">local</SPAN></I></FONT>
-malus factors. The concept of a local malus was recently introduced to
-account for different levels of missing information, that becomes
+rewarded by a factor of 10,000. The <FONT FACE="Times New Roman,serif">0.985</FONT> are <FONT FACE="Times New Roman, serif"><I><SPAN STYLE="font-weight: normal">local</SPAN></I></FONT>
+malus factors. The concept of a local malus was accounts for different levels of missing information, that becomes
 more important with with higher general coverage of RNA-Seq. Like the (normal)
   malus, the local malus also applies to exonic bases that are unsupported by
 hints. In contract to the normal malus, the <I>local</I>
@@ -258,7 +260,7 @@ supported at another region of the same exon. The following picture
 illustrates a typical case where the local malus applies.</P>
 <BR>
 <P STYLE="margin-bottom: 0in">
-<IMG SRC="exonlocalmalus.png" NAME="graphics1" ALIGN=LEFT HSPACE=20 WIDTH=600 BORDER=0>
+<IMG SRC="/augustus/images/exonlocalmalus.png" NAME="graphics1" ALIGN=LEFT HSPACE=20 WIDTH=600 BORDER=0>
 This UTR exon candidate is very unevenly supported by RNA-Seq coverage and therefore likely to be too
 long. For every base that is not covered by any exonpart hint a local UTRpart malus
 factor of 0.985 is applied in addition to the normal exonpart malus
@@ -266,10 +268,11 @@ of 0.992.</P>
 <BR clear=left>
 <BR>
 The nonexonpart bonus of the RM source in this case is for
-incorporating hints from repeat masking (src=RM). Augustus is run on
-unmasked sequence with the repeat mask intervals given as nonexonpart
+incorporating hints from repeat masking (src=RM). 
+Augustus is run on unmasked sequence with the repeat mask intervals given as nonexonpart
 hints. In this regions, introns and intergenic regions are rewarded by
-1.01 for each base.
+1.15 for each base. When run on softmasked genomes (in which the repeats are in lower case),
+with the option <i>--softmasking=1</i> then hints are generated automatically internally.
 <P STYLE="margin-bottom: 0in">Above parameters have to be seen as an
 example. The optimal values will depend on various parameters,
 including</P>
