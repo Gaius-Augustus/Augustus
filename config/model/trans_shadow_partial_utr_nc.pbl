@@ -195,7 +195,7 @@
 [Transition]
 #           -----  Igenic region  -----
 # intergenic region
-0 0     .99986
+0 0     .9999
 # 5' UTR single exon
 0 24	.00003
 # 5' UTR initial exon
