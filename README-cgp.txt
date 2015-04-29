@@ -1,6 +1,6 @@
 # manual for AUGUSTUS in comparative gene prediction (cgp) mode
 # genes are predicted simulteneously in several aligned genomes
-# Stefanie Koenig, 15.12.2013
+# Stefanie Koenig, April 29th, 2015
 
 1. INTRODUCTION
 2. DEPENDENCIES

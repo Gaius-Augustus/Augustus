@@ -1,3 +1,23 @@
+List of changes from version 3.0.3 to 3.1 (until April 29th, 2015)
+     - prediction of noncoding genes (ncRNA) with option --nc=on, requires input of hints, e.g. from RNA-Seq,
+       predicts coding genes (with UTRs) and noncoding genes simultaneously
+     - speed improvement with --UTR=1 (by 83% on human without sampling, by 18% on fly with sampling)
+     - softmasking support: --softmasking=1 is a little more accurate and much faster on human
+     - small overall accuracy improvement
+     - prevent the prediction of spliced in-frame stop codons (for SHORT or HINTED introns only)
+     - new species: rice, Danio rerio (zebrafish), s_aureus (Staphylococcus aureus),
+       camponotus_floridanus (ant) contributed by Shishir K Gupta,
+       sulfolobus_solfataricus (archaeon), Parasteatoda tepidariorum (house spider), Apis dorsata (from Francisco Camara Ferreira)
+     - update to parameters of Thermoanaerobacter tencongensis, E.coli, Yarrowia lipolytica, schistosoma2 (Schistosoma mansoni)
+     - remove dependency on libboost-filesystems, boost is now completely optional in single-species mode
+     - new auxiliary program 'homGeneMapping' for identification of homologous genes in a set of gene predictions
+     - new auxiliary program 'joingenes' for combining gene sets
+     - bugfixes in load2db, length distribution skew of bacteria, comparative mode (findGeneRanges,
+       Alignment::mergeable, memory leak), some ass hints were previously not used although possible
+     - decreased minintronlen default of bam2hints to 32 as the old threshold tended to be too large
+     - computing of omega = dN/dS more efficiently
+     - hints can be loaded to the sqlite database
+     - update of bam2wig to latest samtools
 List of changes from version 3.0.2 to 3.0.3 (until August 28th, 2014)
      - made dependency on boost libraries an option
      - softmasking support (--softmasking=1 improves speed by almost a factor of 2 and exon level sensitivity by 0.01 compared to hard masking on human)

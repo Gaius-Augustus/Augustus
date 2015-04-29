@@ -10,7 +10,7 @@
 %             Fon: +49 3834 864642                                                               %
 %             mario.stanke@uni-greifswald.de                                                     %
 %                                                                                                %
-%             Date: August 28th, 2014                                                            %
+%             Date: April 29th, 2015                                                             %
 %                                                                                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -120,14 +120,18 @@ The parameter training for cacao was done by Don Gilbert (gilbertd at indiana.ed
 
 Parameters for Ancylostoma ceylanicum were trained by Erich Schwarz (Cornell University).
 
+Parameters for camponotus_floridanus (ant) were contributed by Shishir K Gupta.
+
+Parameters for Apis dorsata were contributed by Francisco Camara Ferreira.
+
               2. INSTALLATION
               ---------------
 
 1. unpack
 
->tar -xzf augustus-3.0.3.tar.gz
+>tar -xzf augustus-3.1.tar.gz
 
-The tar-archive contains one directory 'augustus-3.0.3' with the following sub-directories:
+The tar-archive contains one directory 'augustus-3.1' with the following sub-directories:
 bin
 src
 include
@@ -150,16 +154,16 @@ Install dependencies:
 If comparative (multi-species) AUGUSTUS is enabled via uncommenting 
    COMPGENEPRED = true
    and 
-   MYSQL = true
+   MYSQL = true or SQLITE = true
 in common.mk then the following additional dependencies are required:
 
    - GNU scientific library (for eigen decompositions of matrices, sudo apt-get install libgsl0-dev)
-   - mysql++ (sudo apt-get install libmysql++-dev)
+   - libsqlite3-dev or mysql++ (sudo apt-get install libmysql++-dev)
    - Boost C++ Library: libboost-graph-dev (at least version 1.45 from Nov. 2010)
 
 > make
 
-Now, the command bin/augustus should be executable and print a usage message.
+After compilation has finished, the command bin/augustus should be executable and print a usage message.
 
 3. As a normal user, add the directory of the executables to the PATH environment variable. E.g. issue
 
@@ -204,6 +208,7 @@ or if you want to output to be redirected to a file (see also outfile parameter)
 augustus [parameters] --species=SPECIES queryfilename > output.gff
 
 SPECIES is one of the following identifiers
+The directory names under config/species constitutes the complete list.
 
 identifier                               | species
 -----------------------------------------|----------------------
