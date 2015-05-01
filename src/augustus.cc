@@ -17,8 +17,9 @@
 #include "namgene.hh"
 #include "evaluation.hh"
 #include "statemodel.hh"
+#ifdef COMPGENEPRED
 #include "compgenepred.hh"
-
+#endif
 // standard C/C++ includes
 #include <fstream>
 
