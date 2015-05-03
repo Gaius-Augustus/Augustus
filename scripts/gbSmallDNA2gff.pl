@@ -85,7 +85,7 @@ while(<GB>){
         $CDSstr = $CDSstr.$_;
     }elsif(m/gene/ && $inmRNA==1 && $stopReading == 0){
 	$inmRNA = 0;
-	m/gene=\"(\S+)\"/;
+	m/gene=\"(.+)\"/;
 	$geneName = $1;
 	@t = split(/,/, $mRNAstr);
 	foreach(@t){
@@ -107,8 +107,8 @@ while(<GB>){
 	$mRNAbeg = 0;     
     }elsif(m/gene/ && $inCDS==1){
         $inCDS = 0;
-        m/gene=\"(\S+)\"/;
-#        $geneName = $1;
+        m/gene=\"(.+)\"/;
+        $geneName = $1;
         @t = split(/,/, $CDSstr);
         foreach(@t){
             m/(\d+)\.\.(\d+)/;
