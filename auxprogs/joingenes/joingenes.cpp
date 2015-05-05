@@ -20,6 +20,9 @@ static const struct option longOpts[] = {
     { "onlycompare", required_argument, NULL, 'c'},
     { "suppress", required_argument, NULL, 's' },
     { "join", required_argument, NULL, 'j' },
+    { "selection", required_argument, NULL, 'l' },
+    { "mergeTaxa", required_argument, NULL, 't' },
+    { "alternatives", required_argument, NULL, 'a' },
     { "help", no_argument, NULL, 'h' },
     { NULL, no_argument, NULL, 0 }
 };
@@ -39,7 +42,8 @@ void display_help(void)
     cout << "\t\t\t\t\t\t\t\t\tThis option is only usefull, if there are more then one geneset." << endl;
     cout << "\t\t--errordistance=x\t\t-e x\t\t\twhere \"x\" have to be non-negativ integer" << endl;
     cout << "\t\t\t\t\t\t\t\t\tIf a prediction is <=x bases nexto a prediction range border, the program suppose, that there could be a mistake." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tDefault is, that it dont cares about prediction ranges." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tDefault is 1000." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tTo disable the function, set errordistance to a negative number (e.g. -1)." << endl;
     cout << "\t\t--genemodel=x\t\t\t-m x\t\t\twhere \"x\" have to be a genemodel out of \"eukaryote\"." << endl;
     cout << "\t\t\t\t\t\t\t\t\tDefault is eukaryotic." << endl;
     cout << "\t\t--onlycompare=x\t\t\t-c x\t\t\twhere \"x\" can be set to \"true\"." << endl;
@@ -56,6 +60,10 @@ void display_help(void)
     cout << "\t\t\t\t\t\t\t\t\tIf this parameter is set to false, the program will not select at the end between \"contradictory\" transcripts." << endl;
     cout << "\t\t\t\t\t\t\t\t\t\"contradictory\" is self defined with respect to known biological terms." << endl;
     cout << "\t\t\t\t\t\t\t\t\tThe selection works with a self defined scoring function." << endl;
+//    cout << "\t\t--mergetaxa=x\t\t\t-t x\t\t\twhere \"x\" is a boolean value (default is false)" << endl;
+//    cout << "\t\t\t\t\t\t\t\t\tIf this parameter is set to true, the program merges the genes and transcripts with same taxa from different input data." << endl;
+    cout << "\t\t--alternatives=x\t\t-a\t\t\tis a flag" << endl;
+    cout << "\t\t\t\t\t\t\t\t\tIf this flag is set, the program joines different genes, if the transcripts of the genes are alternative variants." << endl;
     cout << "\t\t--help \t\t\t\t-h\t\t\tprints the help documentation." << endl;
     cout << endl;
     exit( EXIT_FAILURE );
@@ -122,21 +130,51 @@ list<int> getSuppressionList(char* suppString){
     return supprList;
 }
 
+void check_cds_stop_combination(Transcript* tx, pair<string,string> &stopVariants){
+    if (tx->strand == '+'){
+	if ((tx->tl_complete.second && tx->stop_list.empty()) || (!tx->tl_complete.second && !tx->stop_list.empty())){display_error("Semantic Error: stop-complete but no stop_codon.");}
+	if (!tx->stop_list.empty()){
+	    if (tx->tes == tx->stop_list.back().to){
+		stopVariants.first = tx->t_id;
+	    }else{
+		stopVariants.second = tx->t_id;
+	    }
+	}
+    }else{
+	if (!tx->stop_list.empty()){
+	    if (tx->tis == tx->stop_list.front().from){
+		stopVariants.first = tx->t_id;
+	    }else{
+		stopVariants.second = tx->t_id;
+	    }
+	}
+    }
+
+    if (!stopVariants.first.empty() && !stopVariants.second.empty()){
+	display_error("E.g. the stop_codon of "+stopVariants.first+" is inside of the CDS and the stop_codon of "+stopVariants.second+" is outside of the CDS. You have to make it equally!");
+    }
+}
+
 int main(int argc, char* argv[])
 {
     int opt = 0;
-    static const char *optString = "g:p:o:e:m:c:s:j:l:h?";
+    static const char *optString = "g:p:o:e:m:c:s:j:l:t:ah?";
     list<string> filenames;
     list<int> priorities;
     list<int> supprList;
     string filename_out;
     int longIndex;
     Properties properties;
-    properties.errordistance = -1;
+    properties.errordistance = 1000;
     properties.genemodel = "eukaryote";
     properties.onlyCompare = false;
     properties.join = true;
     properties.selecting = true;
+    properties.mergeTaxa = false;
+    properties.alternatives = false;
+    properties.nrOfPrintedGenes = 0;
+    properties.unknownCount = 1;
+    properties.minimumIntronLength = 20; // hard coded (not optional at the moment)
 
     opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
     while (opt != -1) {
@@ -183,9 +221,20 @@ int main(int argc, char* argv[])
 
 	case 'l':
 	    if (strstr(optarg, "false") != NULL || strstr(optarg, "0") != NULL)
-		properties.join = false;
+		properties.selecting = false;
 	    else
 		cerr << "Unknown value for \"--selecting\", so this parameter is set to default. (possible is \"false\" or \"0\")" << endl;
+	    break;
+
+	case 't':
+	    if (strstr(optarg, "true") != NULL || strstr(optarg, "1") != NULL)
+		properties.mergeTaxa = true;
+	    else
+		cerr << "Unknown value for \"--mergetaxa\", so this parameter is set to default. (possible is \"true\" or \"1\")" << endl;
+	    break;
+
+	case 'a':
+	    properties.alternatives = true;
 	    break;
 
 	case 'h':
@@ -228,54 +277,81 @@ int main(int argc, char* argv[])
     properties.filenames = filenames;
     properties.priorities = priorities;
     properties.supprList = supprList;
+    properties.minimumIntronLength = 20;
 
     if (properties.onlyCompare == true && (properties.priorities.size() != 2 || properties.priorities.begin() == properties.priorities.end())){
 	display_error("CompareMode is only working with exact 2 priorities, which have to be different.");
     }
 
-    unordered_map<string,Gene> gene_map;
-    list<Transcript> transcript_list;
+    unordered_map<string,Gene*> geneMap;
+    properties.geneMap = &geneMap;
+    unordered_map<string,Transcript*> transcriptMap;
+    properties.transcriptMap = &transcriptMap;
+
+//    list<Transcript> transcript_list;
+//    properties.txList = &transcript_list;
+
     if (priorities.size() == filenames.size()){
+	unordered_map<string,bool> taxaMap;
 	list<int>::iterator it_p = priorities.begin();
 	for (list<string>::iterator it_f = filenames.begin(); it_f != filenames.end(); it_f++){
-	    load(gene_map, transcript_list, (*it_f) ,(*it_p));
-	    cout << "After loading " << (*it_f) << " (Priority " << (*it_p) << ") there are " << transcript_list.size() << " transcripts in transcript_list." << endl;
+	    load(geneMap, (*it_f) ,(*it_p), taxaMap, properties);
+	    cout << "After loading " << (*it_f) << " (Priority " << (*it_p) << ") there are " << (*properties.transcriptMap).size() << " transcripts in transcript list." << endl;
 	    it_p++;
 	}
 
-	for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
-	    if ((*it).exon_list.size() == 0){
-		it = transcript_list.erase(it);
-		it--;
+
+//(*properties.transcriptMap)
+
+//(*(pointer->second))
+
+	for (auto pointer = (*properties.transcriptMap).begin(); pointer != (*properties.transcriptMap).end(); pointer++){
+	//for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
+	    if ((*(pointer->second)).exon_list.size() == 0){
+		deleteTx(pointer->second, properties);
 	    }else{
-		(*it).initiate();
+		(*(pointer->second)).initiate(properties);
 	    }
 	}
     }else{
         display_error("Number of input files and priorities is not equal.");
     }
 
-    for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
-	if (!check_frame_annotation(*it)){
-	    cerr << (*it).t_id << " has wrong frame annotation." << endl;
+// just for tests:
+/*    for (auto pointer = (*properties.transcriptMap).begin(); pointer != (*properties.transcriptMap).end(); pointer++){
+	if (pointer->second->parent->children.size() > 0){
+	    cout << pointer->second->parent->children.size() << endl;
+	    for (list<Transcript*>::iterator it_f = pointer->second->parent->children.begin(); it_f != pointer->second->parent->children.end(); it_f++){
+		cout << (*it_f)->t_id << ": " << (*it_f)->exon_list.size() << " " << (*it_f)->tes << endl;
+	    }
+	}
+    }cout << "URFURFURF" << endl; sleep(10);*/
+
+
+    pair<string,string> stopVariants;		// <stop_codon is in CDS, stop_codon is not in CDS>
+
+    for (auto pointer = (*properties.transcriptMap).begin(); pointer != (*properties.transcriptMap).end(); pointer++){
+	check_cds_stop_combination(pointer->second, stopVariants);
+	if (!check_frame_annotation(*pointer->second)){
+	    pointer->second->isNotFrameCorrect = true;
+	    cerr << pointer->second->t_id << " has wrong frame annotation and will be ignored in joining step." << endl;
 	    //display_error("Frames are not correct.");
 	}
     }
-    unordered_map<string,list<Transcript>> splitted_transcript_list;
-    for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
-	splitted_transcript_list[(*it).getChr()].push_back(*it);
+    unordered_map<string,list<Transcript*>> splitted_transcript_list;
+    for (auto pointer = (*properties.transcriptMap).begin(); pointer != (*properties.transcriptMap).end(); pointer++){
+	splitted_transcript_list[(*pointer->second).getChr()].push_back(pointer->second);
     }
 
     fstream outfile;
     outfile.open(properties.outFileName, ios::out);		// delete content of file filename
     outfile.close();
 
+
     if (properties.onlyCompare){
-	string filenameEqual1 = "equal1.gtf", filenameEqual2 = "equal2.gtf", filenameStop1 = "same_stop1.gtf", filenameStop2 = "same_stop2.gtf", filenameUne1 = "unequal1.gtf", filenameUne2 = "unequal2.gtf";
+	string filenameEqual = "cEqual.gtf", filenameStop1 = "cSameStop1.gtf", filenameStop2 = "cSameStop2.gtf", filenameUne1 = "cUnequal1.gtf", filenameUne2 = "cUnequal2.gtf";
 	fstream outfile;
-	outfile.open(filenameEqual1, ios::out);
-	outfile.close();
-	outfile.open(filenameEqual2, ios::out);
+	outfile.open(filenameEqual, ios::out);
 	outfile.close();
 	outfile.open(filenameStop1, ios::out);
 	outfile.close();

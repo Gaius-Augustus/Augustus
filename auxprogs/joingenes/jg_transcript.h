@@ -16,9 +16,14 @@ class Gene;
 class Transcript;
 
 #define NUM_TYPES 4
-enum predRangeBorderStatusType{TYPE_UNKNOWN = -1,
-    noprob, tooclose, exerased
+enum boundaryStatusType{TYPE_UNKNOWN = -1,		// predRange-boundaryStatusType
+    NO_PROB=0, FREED=1, INDIRECT_PROBLEM=2, TOO_CLOSE=3		// INDIRECT_PROBLEM means that it is not too close, but there is an other transcript, which transcend its boundary
+								// FREED means that the problem exon was erased
 };
+
+enum compareType{UNEQUAL=0, SAME_STOP=1, EQUAL=2
+};
+
 
 struct Properties{
 public:
@@ -31,6 +36,13 @@ public:
     string outFileName;
     bool join;
     bool selecting;
+    bool mergeTaxa;
+    int nrOfPrintedGenes;
+    unsigned int unknownCount;
+    unordered_map<string,Gene*>* geneMap;
+    unordered_map<string,Transcript*>* transcriptMap;
+    unsigned int minimumIntronLength;
+    bool alternatives;
 };
 
 class Exon{
@@ -40,6 +52,9 @@ class Exon{
     string feature;
     float score;
     int frame;
+    int rangeToBoundary;
+    boundaryStatusType boundaryProblem;
+
     int tooMany;
     int tooFew;
     int penalty;
@@ -55,10 +70,34 @@ class Exon{
 
 void output_exon_list(Transcript const* tx);							// only for semantic tests
 
+class Gene{
+ public:
+    Gene(string geneID=""){
+	    this->nrOfTx = 1;
+	    this->nrOfPrintedTx = 0;
+	    this->g_id = geneID;
+    }
+    string g_id;
+    list<Transcript*> children;
+    int nrOfTx;
+    int nrOfPrintedTx;
+};
+
 class Transcript{
  public:
-    list<Transcript*> supporter;		// at the moment these list only consist the pointer to transcripts, who are totaly equal to this transcript (doesnt matter whether their creation is related)
+    Transcript(string txID = "", Gene* gene=NULL){
+	this->parent = gene;
+	this->t_id = txID;
+	this->tx_complete.first = false;
+	this->tx_complete.second = false;
+	this->tl_complete.first = false;
+	this->tl_complete.second = false;
+	this->isNotFrameCorrect = false;
+    }
+
+    list<string> supporter;		// at the moment these list only consist the pointer to transcripts, who are totaly equal to this transcript (doesnt matter whether their creation is related)
     list<Exon> exon_list;				// saves every feature (cds, utr, exon [cds+utr]
+    list<Exon> stop_list;
     Gene* parent;
     string source;
     string t_id;
@@ -66,29 +105,88 @@ class Transcript{
     int tis;							// position of first base in translation sequence (translation initation site)
     int tes;							// position of last base in translation sequence (translation end site)
     int priority;
-    pair<int,int> pred_range;
+    pair<int,int> pred_range;			// prediction range borders: <low,high> sequence position
     pair<bool,bool> tx_complete;		// transcript end complete at <lower,higher> base number
     pair<bool,bool> tl_complete;		// translation end complete at <start,stop> codon
-    pair<bool,bool> separated_codon;	// separated <start,stop> codon
-    pair<unsigned int,unsigned int> boha;		// pred range boundary status at <start/stop> side: 0-no problem, 1-too close, 2-too close but last exon erased (MARIO)
-    pair<Transcript*,Transcript*> joinpartner;	// pointer to transcript that was used to complete the <start,stop> codon side
-    pair<Transcript*,Transcript*> utr_joinpartner;	// pointer to transcript that was used to fulfill the <downstream-UTR,upstream-UTR> codon side
-    pair<list<Transcript*>,list<Transcript*>> descendant;		// pointer to new transcripts arise from these with <start,stop>-join
-    pair<Transcript*,Transcript*> correction_ancestor;
-    bool must_be_deleted;
+    pair<bool,bool> separated_codon;		// separated <start,stop> codon
+
+    pair<string,string> joinpartner;	// pointer to transcript that was used to complete the <start,stop> codon side
+    pair<string,string> utr_joinpartner;	// pointer to transcript that was used to fulfill the <downstream-UTR,upstream-UTR> codon side
+    bool must_be_deleted;				// a transcript with this flag must be deleted
+    pair<Exon*,Exon*> outerCds;				// CDS with the <lowest,highest> sequence position
+    int qualityScore;
+    float predictionScore;
+    list<string> consistent;
+    bool isNotFrameCorrect;
+    string originalId;
+    string inputFile;
 
     double penalty;
+
+    compareType compareValue;
+
+    boundaryStatusType startBoundaryType(){
+	if (strand == '+'){
+	    return exon_list.front().boundaryProblem;
+	}else{
+	    return exon_list.back().boundaryProblem;
+	}
+    }
+
+    boundaryStatusType stopBoundaryType(){
+	if (strand == '+'){
+	    return exon_list.back().boundaryProblem;
+	}else{
+	    return exon_list.front().boundaryProblem;
+	}
+    }
+
+    bool hasCommonExon(Transcript* tx){
+	list<Exon>::const_iterator it1 = exon_list.begin();
+	list<Exon>::const_iterator it2 = tx->exon_list.begin();
+
+	while (it1 != exon_list.end() && it2 != tx->exon_list.end()){
+	    if ((*it1).from == (*it2).from){
+		if((*it1).to == (*it2).to){
+		    if ((*it1).frame == (*it2).frame){
+			return true;
+		    }else{
+			it1++; it2++;
+		    }
+		}else if ((*it1).to < (*it2).to){
+		    it1++;
+		}else{
+		    it2++;
+		}
+	    }else if ((*it1).from > (*it2).from){
+		it2++;
+	    }else{
+		it1++;
+	    }
+	}
+	return false;
+    }
+
+    bool hasCommonTlStart(Transcript* tx){
+	if (tis == tx->tis && tl_complete.first && tx->tl_complete.first && strand == tx->strand){return true;}else{return false;}
+    }
+
+    bool hasCommonTlStop(Transcript* tx){
+	if (tes == tx->tes && tl_complete.second && tx->tl_complete.second && strand == tx->strand){return true;}{return false;}
+    }
 
     string getChr(){
         return exon_list.front().chr;
     }
 
-    void initiate(){
-        exon_list.sort();				// essential for the next steps
-        exontoutr();
-        tes_to_cds();					// needs utr structure!
+    int getTxStart(){
+        return exon_list.front().from;
     }
-    Exon* getcdsfront(){
+    int getTxEnd(){
+        return exon_list.back().to;
+    }
+
+    Exon* getCdsFront(){
 	for (list<Exon>::iterator it = exon_list.begin(); it != exon_list.end(); it++){
 	    if ((*it).feature == "CDS"){
 		return &(*it);	// (*it).from
@@ -96,7 +194,8 @@ class Transcript{
 	}
 	return NULL;
     }
-    Exon* getcdsback(){
+
+    Exon* getCdsBack(){
 	for (list<Exon>::reverse_iterator it = exon_list.rbegin(); it != exon_list.rend(); it++){
 	    if ((*it).feature == "CDS"){
 		return &(*it);	// (*it).to
@@ -104,17 +203,62 @@ class Transcript{
 	}
 	return NULL;
     }
+
+    void initiate(Properties &properties){
+        exon_list.sort();				// essential for the other steps, so it should be the first one
+	stop_list.sort();
+	calcRangeToBoundary(properties);
+	outerCds.first = getCdsFront();
+	outerCds.second = getCdsBack();
+
+        exontoutr();
+
+	if (strand == '+'){
+	    tis = (outerCds.first)->from;
+	    tes = (outerCds.second)->to;
+	}else{
+	    tis = (outerCds.second)->to;
+	    tes = (outerCds.first)->from;
+	}
+        //tes_to_cds();					// needs utr structure!
+    }
+
+    void calcRangeToBoundary(Properties &properties){
+	exon_list.front().rangeToBoundary = -1;
+	exon_list.back().rangeToBoundary = -1;
+	if (pred_range.second){
+	    exon_list.back().rangeToBoundary = pred_range.second - getTxEnd();
+
+	    if (exon_list.back().rangeToBoundary > properties.errordistance){
+		//boundaryProblem.second = NO_PROB;
+		exon_list.back().boundaryProblem = NO_PROB;
+	    }else{
+		//boundaryProblem.second = TOO_CLOSE;
+		exon_list.back().boundaryProblem = TOO_CLOSE;
+	    }
+	}
+	if (pred_range.first){
+	    exon_list.front().rangeToBoundary = getTxStart() - pred_range.first;
+
+	    if (exon_list.front().rangeToBoundary > properties.errordistance){
+		//boundaryProblem.first = NO_PROB;
+		exon_list.front().boundaryProblem = NO_PROB;
+	    }else{
+		//boundaryProblem.first = TOO_CLOSE;
+		exon_list.front().boundaryProblem = TOO_CLOSE;
+	    }
+	}
+    }
+
     void tes_to_cds(){
-	Exon* cdsfrontExon = getcdsfront();
-	Exon* cdsbackExon = getcdsback();
 	int cdsfront;
-	if (cdsfrontExon)
-	    cdsfront = cdsfrontExon->from;
+	if (outerCds.first)
+	    cdsfront = (outerCds.first)->from;
 	else
 	    cdsfront = -1;
 	int cdsback;
-	if (cdsbackExon)
-	    cdsback = cdsbackExon->to;
+	if (outerCds.second)
+	    cdsback = (outerCds.second)->to;
 	else
 	    cdsback = -1;
 	bool done = false;
@@ -169,9 +313,9 @@ class Transcript{
 		    }
 		    if (!done){
 			if (cdsback == tes - 3){
-			    cdsbackExon->to += 3;
+			    (outerCds.second)->to += 3;
 			}else{
-			    Exon new_cds = *cdsbackExon;
+			    Exon new_cds = *(outerCds.second);
 			    new_cds.from = tes - 2;
 			    new_cds.to = tes;
 			    new_cds.feature = "CDS";
@@ -244,9 +388,9 @@ class Transcript{
 		    }
 		    if (!done){
 			if (cdsfront == tes + 3){
-			    cdsfrontExon->from -= 3;
+			    (outerCds.first)->from -= 3;
 			}else{
-			    Exon new_cds = *cdsfrontExon;
+			    Exon new_cds = *(outerCds.first);
 			    new_cds.from = tes;
 			    new_cds.to = tes + 2;
 			    new_cds.feature = "CDS";
@@ -314,9 +458,6 @@ class Transcript{
 		(*it).feature = "UTR";
 	    }
 	}
-	//				cout << t_id << endl;
-	//				for (list<Exon>::iterator it2 = exon_list.begin(); it2 != exon_list.end(); it2++){cout << (*it2).feature << " ";}
-	//				cout << endl;
     }
     bool operator<(Transcript const& rhs) const {
 	if (min(tis,tes) != min(rhs.tis,rhs.tes))
@@ -324,18 +465,6 @@ class Transcript{
 	else
 	    return (max(tis,tes) < max(rhs.tis,rhs.tes));
     }
-    Transcript(){
-	tx_complete.first = false;
-	tx_complete.second = false;
-	tl_complete.first = false;
-	tl_complete.second = false;
-    }
-};
-
-class Gene{
- public:
-    string g_id;
-    list<Transcript*> children;
 };
 
 class Point{
@@ -353,27 +482,42 @@ class Point{
     }
 };
 
-void divideInOverlapsAndConquer(list<Transcript> &transcript_list, Properties &properties);
-void workAtOverlap(list<Transcript*> &overlap, list<Transcript> &new_transcripts, Properties &properties);
+void divideInOverlapsAndConquer(list<Transcript*> &transcript_list, Properties &properties);
+void workAtOverlap(list<Transcript*> &overlap, Properties &properties);
 void selection(list<Transcript*> &overlap, Properties &properties);
+void bactSelection(list<Transcript*> &overlap, Properties &properties);
+void eukaSelection(list<Transcript*> &overlap, Properties &properties);
 bool areOverlapping(Transcript* t1, Transcript* t2);
-void joinCall(list<Transcript*> &overlap, list<Transcript> &new_transcripts, Properties &properties);
+void joinCall(list<Transcript*> &overlap, Properties &properties);
 void compareAndSplit(list<Transcript*> &overlap, Properties &properties);
 double simpleProkScore(Transcript const* tx);
 bool areSimilar(Transcript const* t1, Transcript const* t2);
-void tooCloseToBorder(list<Transcript*> &overlap, list<Transcript> &new_transcripts, char strand, int errordistance);
-void search_n_destroy_doublings(list<Transcript*> &overlap, int errordistance, bool ab_initio);
-void search_n_destroy_parts(list<Transcript*> &overlap, int errordistance);
+void tooCloseToBoundary(list<Transcript*> &overlap, Properties &properties);
+void search_n_destroy_doublings(list<Transcript*> &overlap, Properties &properties, bool ab_initio);
+void search_n_destroy_parts(list<Transcript*> &overlap, Properties &properties);
 bool compare_transcripts(Transcript const* t1, Transcript const* t2);
 pair<bool,bool> is_part_of(Transcript const* t1, Transcript const* t2);
 bool compare_priority(Transcript const* lhs, Transcript const* rhs);
-void join(list<Transcript*> &overlap, list<Transcript> &new_transcripts, char side);
-void joining(Transcript* t1, Transcript* t2, char strand, char side, Transcript &tx_new, int fitting_case);
-int is_combinable(Transcript const* t1, Transcript const* t2, char strand, char side);
+void join(list<Transcript*> &overlap, char side, Properties &properties);
+void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Properties &properties);
+int is_combinable(Transcript const* t1, Transcript const* t2, char strand, bool frontSide, Properties &properties);
 bool check_frame_annotation(Transcript const &transcript);
-void eval_gtf(list<Transcript*> &overlap, int errordistance);
+void eval_gtf(list<Transcript*> &overlap, Properties &properties);
 bool strandeq(Exon ex1, Exon ex2, char strand);
 
 void weight_info(list<Transcript*> &overlap);
+
+bool overlapping(Transcript* t1, Transcript* t2);
+bool overlappingCdsWithAnything(Transcript* t1, Transcript* t2);
+bool overlappingCdsWithCds(Transcript* t1, Transcript* t2);
+bool overlappingCdsOnlyWithUtr(Transcript* t1, Transcript* t2);
+bool overlappingUtrOnly(Transcript* t1, Transcript* t2);
+int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &properties);
+
+void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties);
+void recursiv(list<list<Transcript*>> &groups, list<Transcript*> actGroup, list<string> openTx, Properties &properties, unordered_map<string,Transcript*> &txMap, list<string> selectedTx);
+
+void deleteTx(Transcript* tx, Properties &properties);
+bool compare_quality(Transcript const* lhs, Transcript const* rhs);
 
 #endif
