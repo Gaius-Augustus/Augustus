@@ -339,6 +339,9 @@ void CompGenePred::start(){
 		    if (transcripts){		    
 			for (list<Transcript*>::iterator geneit = transcripts->begin(); geneit != transcripts->end(); geneit++) {
 			    if ((*geneit)->isCoding()){ // noncoding comparative prediction not (yet) implemented
+				Gene *g = dynamic_cast<Gene*> (*geneit);
+				if (g && orthograph.sfcs[s])
+				    g->compileExtrinsicEvidence(orthograph.sfcs[s]->groupList);
 				State *st = (*geneit)->exons;
 				while (st) {
 				    // include framemod into type

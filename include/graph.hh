@@ -66,6 +66,8 @@ public:
     float getPostProb() const {return (item)? ((State*)item)->apostprob : 0.0;}
     int getLen() const {return end-begin+1;}
     int getFrame() const {return isCDS()? ((State*)item)->frame() : -1;}
+    bool hasEvidence() const {return ((State*)item)->evidence;}
+    int numEvidence() const {return hasEvidence()? ((State*)item)->evidence->numEvidence : 0;}
 };
 
 bool isTlstartOrstop(Status *predExon, Status *succExon);
