@@ -214,6 +214,7 @@ public:
     gsl_matrix *computeP(double t); //computes transition matrix P for time t
     void computeLogPmatrices();
     void addBranchLength(double b); //add new branch length b and matrix P(b)
+    double minBranchLength() const {return times.front();}
    
 private:
     double mu;            // rate for exon loss

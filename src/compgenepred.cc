@@ -86,6 +86,12 @@ void CompGenePred::start(){
     Boolean noprediction = false;
     Boolean useLocusTrees = false; // reestimate tree for each gene range
 
+    // used for mapping an existing annotation to the other genomes
+    // each CDSexon/intron that is supported by a hint (e.g. CDSexon/intron from the annotation) gets this
+    // additional score to make sure that it is transferred to the other genomes and not the
+    // other way round. It has to be at least has high as the maximum cost of an exon gain or loss event
+    SpeciesGraph::maxCostOfExonLoss = - log((evo.getMu()+evo.getLambda())*evo.minBranchLength())*evo.getPhyloFactor();
+
 #ifdef DEBUG
     cout << "-------------------------------\nparameters phylogenetic model\n-------------------------------" << endl;
     cout << "rate exon loss:\t" << evo.getMu() << endl;

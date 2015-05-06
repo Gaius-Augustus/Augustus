@@ -18,6 +18,7 @@
 
 double SpeciesGraph::ec_thold = 0.0;
 double SpeciesGraph::ic_thold = 0.0;
+double SpeciesGraph::maxCostOfExonLoss = 0.0;
 
 void SpeciesGraph::buildGraph(){
     
@@ -157,7 +158,7 @@ Node* SpeciesGraph::addNode(Status *exon){
     if (string("fly") == Properties::getProperty("species")){
 	score=ec_thold - 9.9121118 + 7.2057311 * exon->getPostProb() + 2.9993128 * getAvgBaseProb(exon) + 0.3998047 * log(exon->getLen());
 	if(exon->hasEvidence() && exon->name == CDS)
-	    score+=50;
+	    score+=maxCostOfExonLoss;
     }
     Node *node = new Node(exon->begin, exon->end, score, exon->item, ntype);
     printSampledGF(exon);
@@ -304,7 +305,7 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
 	if (intr->name == intron && string("fly") == Properties::getProperty("species")){
 	    intr_score = ic_thold - 5.64405 + 5.640821 * intr->getPostProb() + 4.740363 * getAvgBaseProb(intr) - 0.155695 * log(intr->getLen());
 	    if(intr->hasEvidence())
-		intr_score+=50;
+		intr_score+=maxCostOfExonLoss;
 	}
 	Edge in(succ, false, intr_score, intr->item);
 	pred->edges.push_back(in);

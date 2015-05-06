@@ -103,6 +103,7 @@ public:
      */
     static double ec_thold; // ec_thold + a_0*x_0 + a_1*x_1 + ... + a_n*x_n 
     static double ic_thold; // ic_thold + a_0*x_0 + a_1*x_1 + ... + a_n*x_n 
+    static double maxCostOfExonLoss;
 
     /*
      * old code
