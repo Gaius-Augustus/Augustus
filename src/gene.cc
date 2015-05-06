@@ -3155,6 +3155,8 @@ list<AltGene> *reverseGeneList(list<AltGene> *altGeneList, int endpos){
 	    reverseGeneSequence(*git, endpos);
 	    ag.addGene(*git);
 	}
+	ag.seqname = ait->seqname;
+	ag.id = ait->id;
 	reversedList->push_back(ag);
     }
     return reversedList;

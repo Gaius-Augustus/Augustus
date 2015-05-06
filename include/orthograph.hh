@@ -65,11 +65,13 @@ public:
 
     // transform graph labeling into list of genes + filter + output
     void buildGeneList(vector< list<Transcript*>* > &genelist);
-    void filterGeneList(vector< list<Transcript*> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid);
+    void filterGeneList(vector< list<Transcript*> *> &genelist,  vector<int> &geneid);
+    void printGenelist(vector<ofstream*> &filestreams);
     void outputGenes(vector<ofstream*> &filestreams, vector<int> &geneid){
 	vector< list<Transcript*> *> genelist(numSpecies);
 	buildGeneList(genelist);
-	filterGeneList(genelist,filestreams, geneid);
+	filterGeneList(genelist,geneid);
+	printGenelist(filestreams);
     }
     void createOrthoGenes(const GeneMSA *geneRange); // creates all_orthogenes
     void printOrthoGenes(); // ouputs all_orthogenes

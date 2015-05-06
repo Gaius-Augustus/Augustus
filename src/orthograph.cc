@@ -96,18 +96,17 @@ void OrthoGraph::buildGeneList(vector< list<Transcript*>* > &genelist) {
     }
 }
 
-void OrthoGraph::filterGeneList(vector< list<Transcript*> *> &genelist, vector<ofstream*> &filestreams, vector<int> &geneid){
+void OrthoGraph::filterGeneList(vector< list<Transcript*> *> &genelist, vector<int> &geneid){
     
+    vector< list<AltGene> *> agls(numSpecies);
+
     for (size_t pos = 0; pos < numSpecies; pos++){	
 	if (genelist[pos]){
 	    AnnoSequence *annoseq = graphs[pos]->getAnnoSeq();
-	    Strand strand = graphs[pos]->getSeqStrand();
 
 	    list<AltGene> *agl = groupTranscriptsToGenes(*genelist[pos]);
 
-	    bool withEvidence = false;
 	    if(sfcs[pos] && sfcs[pos]->collection->hasHintsFile){
-		withEvidence = true;
 		// compile extrinsic evidence
 		for (list<AltGene>::iterator git = agl->begin(); git != agl->end(); git++) {
 		    for (list<Transcript*>::iterator trit = git->transcripts.begin(); trit != git->transcripts.end(); trit++) {
@@ -117,20 +116,13 @@ void OrthoGraph::filterGeneList(vector< list<Transcript*> *> &genelist, vector<o
 		    }
 		}
 	    }
-	    if (strand == minusstrand){
-		agl = reverseGeneList(agl, annoseq->length - 1);
-	    }
 
-	    /*
-	     * possibly more filter steps
-	     */
 	    agl->sort();
 
 	    int transcriptid;
 
 	    // shift gene coordinates, set sequence name, gene and transcript names
 	    for (list<AltGene>::iterator agit = agl->begin(); agit != agl->end(); ++agit){
-		agit->shiftCoordinates(annoseq->offset);
 		agit->seqname =  annoseq->seqname;
 		agit->id = "g"+itoa(geneid[pos]);
 		agit->sortTranscripts();
@@ -144,6 +136,34 @@ void OrthoGraph::filterGeneList(vector< list<Transcript*> *> &genelist, vector<o
 		}
 		geneid[pos]++;
 	    }
+	    geneLists[pos]=agl;
+	}
+    }
+}
+    
+
+void OrthoGraph::printGenelist(vector<ofstream*> &filestreams){
+
+    for (size_t pos = 0; pos < numSpecies; pos++){	
+	if (geneLists[pos]){
+	    AnnoSequence *annoseq = graphs[pos]->getAnnoSeq();
+	    Strand strand = graphs[pos]->getSeqStrand();
+
+	    bool withEvidence = false;
+	    if(sfcs[pos] && sfcs[pos]->collection->hasHintsFile)
+		withEvidence = true;
+
+	    list<AltGene> *agl = geneLists[pos];
+	    
+	    if (strand == minusstrand){
+ 		agl = reverseGeneList(agl, annoseq->length - 1);
+		agl->sort();
+	    }
+
+	    // shift gene coordinates
+	    for (list<AltGene>::iterator agit = agl->begin(); agit != agl->end(); ++agit)
+		agit->shiftCoordinates(annoseq->offset);
+	    
 	    //print the genes
 	    streambuf *coutbuf = cout.rdbuf(); //save old buf
 	    cout.rdbuf(filestreams[pos]->rdbuf()); //redirect std::cout to species file
@@ -169,8 +189,6 @@ void OrthoGraph::filterGeneList(vector< list<Transcript*> *> &genelist, vector<o
 		cout << "# (none)" << endl;
 	    }
 	    cout.rdbuf(coutbuf); //reset to standard output again
-
-	    geneLists[pos]=agl;
 	}
     }
 }

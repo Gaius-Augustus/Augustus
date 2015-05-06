@@ -447,9 +447,10 @@ void CompGenePred::start(){
 		// optimization via dual decomposition
 		vector< list<Transcript*> *> genelist(OrthoGraph::numSpecies);
 		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factors);
-		orthograph.filterGeneList(genelist,optGenes,opt_geneid);
+		orthograph.filterGeneList(genelist,opt_geneid);
 		orthograph.createOrthoGenes(geneRange);
 		orthograph.printOrthoGenes();
+		orthograph.printGenelist(optGenes);
 
 	    }else{
 		orthograph.outputGenes(optGenes, opt_geneid);
