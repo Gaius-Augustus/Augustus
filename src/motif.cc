@@ -40,6 +40,7 @@ BaseCount::BaseCount(int a, int c, int g, int t) {
 }
 BaseCount::BaseCount(const char *sequence, int len) {
     a = c = g = t = 0;
+    ra = rc = rg = rt = 0.25;
     if (len<0) 
 	len = strlen(sequence);
     addSequence(sequence, len);

@@ -17,6 +17,7 @@
 #include "randseqaccess.hh"
 
 #include<unordered_map>
+#include<boost/functional/hash.hpp>
 
 //forward declarations
 class OrthoGraph;
@@ -108,7 +109,7 @@ public:
     static int orthoExonID; // ID for exons of different species which are orthologous to each other
     static int geneRangeID; // stores an ID for the possible gene ranges of the different species which belong together
     static vector<int> exonCandID; // IDs for exon candidates of different species
-    static unordered_map< bit_vector, PhyloTree*> topologies;
+    static unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>> topologies;
     // pointers to the output files
     static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles, omega_outfiles; 
 
@@ -126,7 +127,7 @@ private:
     Alignment* alignment;            // alignment of regions which possibly belong to a gene
     vector< list<ExonCandidate*>* > exoncands;  // exon candidates found in the different species in a gene segment
     list<OrthoExon> orthoExonsList;		// list of ortholog exons found in a gene segment
-  unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > > cumOmega; // stores cumulative omega values for every reading frame combination and every bitvector that exist                                                                     
+    unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> > cumOmega; // stores cumulative omega values for every reading frame combination and every bitvector that exist                                                                     
 };
 
 

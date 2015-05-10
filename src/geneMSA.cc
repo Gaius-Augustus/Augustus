@@ -36,7 +36,7 @@ vector<ofstream*> GeneMSA::exonCands_outfiles;
 vector<ofstream*> GeneMSA::orthoExons_outfiles;
 vector<ofstream*> GeneMSA::geneRanges_outfiles;
 vector<ofstream*> GeneMSA::omega_outfiles;
-unordered_map< bit_vector, PhyloTree*> GeneMSA::topologies;
+unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>> GeneMSA::topologies;
 
 /*
  * constructor of GeneMSA
@@ -219,7 +219,7 @@ void GeneMSA::createOrthoExons(map<int_fast64_t, list<pair<int,ExonCandidate*> >
     cout << "OEs in this gene range must have at least " << minEC << " ECs" << endl;
 
     map<int_fast64_t, list<pair<int,ExonCandidate*> > >::iterator aec;
-    unordered_map<bit_vector,PhyloTree*>::iterator topit;
+    unordered_map<bit_vector,PhyloTree*, boost::hash<bit_vector>>::iterator topit;
     /*
      * Create one ortho exon candidate for each key to which at least minEC exon candidates mapped 
      */
@@ -726,7 +726,7 @@ string printRFC(vector<int> rfc){
 void printTest(map<unsigned, vector<int> > alignedCodons, map<int, posElements> aliPos){
 
     cout<<"--- list of keys for codon algnment ---"<<endl;
-    unordered_map<bit_vector, int> bvCount;
+    unordered_map<bit_vector, int, boost::hash<bit_vector>> bvCount;
     map<int, posElements>::iterator aliPosIt = aliPos.begin();
     for(map<unsigned, vector<int> >::iterator codonIt = alignedCodons.begin(); codonIt != alignedCodons.end(); codonIt++){
 	cout<<"codon position in alignment(1): "<<(codonIt->first >> 8)<<" oe start or end in alignment(2): "<<aliPosIt->first<<endl;
@@ -749,7 +749,8 @@ cumValues* GeneMSA::findCumValues(bit_vector bv, vector<int> rfc){
 	    rfc[b] = -1;
     //cout<<"in findCumValues, Parameters after reduction "<<printBV(bv)<<" : "<<printRFC(rfc)<<endl;
     //  vector<cumValues*> allMatchingRFC;
-    unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator it = cumOmega.find(bv);
+
+    unordered_map<bit_vector, vector<pair<vector<int>,cumValues>>, boost::hash<vector<bool>>>::iterator it = cumOmega.find(bv);
     if(it == cumOmega.end())
 	throw ProjectError("Internal error in findCumValues(): requested bit vector does not exist!");
     //cout<<"bitvector in cumOmega: "<<printBV(it->first)<<endl;
@@ -774,9 +775,9 @@ cumValues* GeneMSA::findCumValues(bit_vector bv, vector<int> rfc){
 }
 
 
-void GeneMSA::printCumOmega(){
+void GeneMSA::printCumOmega(){ 
     cout<<"-------------- cumOmega -------------------"<<endl;
-    for(unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator coit = cumOmega.begin(); coit != cumOmega.end(); coit++){
+    for(unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> >::iterator coit = cumOmega.begin(); coit != cumOmega.end(); coit++){
 	cout<<printBV(coit->first)<<endl;
 	for(int i = 0; i < coit->second.size(); i++){
 	  cout<<"\t"<<printRFC(coit->second[i].first)<<endl<<"logliks:";
@@ -789,12 +790,12 @@ void GeneMSA::printCumOmega(){
     cout<<"--------------------------------------------"<<endl;
 }
 
-
 void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree) {
     cout<<"computing omega for each ortho exon."<<endl;
 
     // treat forward and reverse strand seperately (might be done more efficiently)
-    for( bool plusStrand : {true, false}){
+    for (int s=0; s<=1; s++){
+      bool plusStrand = (bool) s;
       if(plusStrand){
 	cout<<"--- processing ortho exons on forward strand ---"<<endl;
       }else{
@@ -819,7 +820,8 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 	    //printSingleOrthoExon(*oe, false);
 	    // store start and end information
 	    bool aliStart = true;
-	    for (map<int, posElements>::iterator aliPosIt : { aliPos.find(oe->getAliStart()), aliPos.find(oe->getAliEnd()) }) { 
+	    map<int, posElements>::iterator end = aliPos.find(oe->getAliEnd());
+	    for (map<int, posElements>::iterator aliPosIt = aliPos.find(oe->getAliStart()); aliPosIt != end; ++aliPosIt) { 
       
 		if(aliPosIt == aliPos.end()){
 		    posElements pe;
@@ -852,7 +854,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
   
 	cout<<"Merge processing: Traverse alignment left to right"<<endl;
 
-	unordered_map<bit_vector, int> bvCount;
+	unordered_map<bit_vector, int, boost::hash<bit_vector>> bvCount;
 
 	map<int, posElements>::iterator aliPosIt = aliPos.begin();
 	if(aliPosIt == aliPos.end()){
@@ -875,27 +877,27 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 	      cout<<*cit<<" / "<<(*cit % 3)<<endl;
 	    }
 	    cout<<"active bit vectors: ";
-	    for(unordered_map<bit_vector, int>::iterator bit=bvCount.begin(); bit!=bvCount.end(); bit++){
+	    for(unordered_map<bit_vector, int, boost::hash<bit_vector>>::iterator bit=bvCount.begin(); bit!=bvCount.end(); bit++){
 	      if(bit->second > 0)
 		cout<<printBV(bit->first)<<":"<<bit->second<<"\t";
 	    }
 	    cout<<endl;
 	  */
 	  // update bit_vector constellation
-
 	  // ortho Exon starts or ends before current alignment position
 	  while((unsigned)aliPosIt->first <= (codonIt->first >> 8) ){
 	    //cout<<"next position of aliPos "<<aliPosIt->first<<endl;
-	    unordered_map<bit_vector, int>::iterator bvit;
-	    unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator coit;
+	    unordered_map<bit_vector, int, boost::hash<bit_vector>>::iterator bvit;
+	    unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> >::iterator coit;
 	    // process all ortho exons that start
 	    for(int i=0; i<aliPosIt->second.oeStart.size(); i++){
 	      //cout<<"##################ortho exon ("<<aliPosIt->second.oeStart[i]->ID<<") starts: "<<aliPosIt->second.oeStart[i]->getAliStart()<<":"<<aliPosIt->second.oeStart[i]->getAliEnd()<<endl;
 
-		/*      cout<<"chromosomal position of each exon:"<<endl;
-	      for(int j=0; j<aliPosIt->second.oeStart[i]->orthoex.size(); j++){
-		if(aliPosIt->second.oeStart[i]->orthoex[j]){
-		  cout<<"species "<<j<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->begin<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->end<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->getStateType()<<"\t";
+	      if (false){
+	        cout<<"chromosomal position of each exon:"<<endl;
+	        for(int j=0; j<aliPosIt->second.oeStart[i]->orthoex.size(); j++){
+	          if(aliPosIt->second.oeStart[i]->orthoex[j]){
+	          cout<<"species "<<j<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->begin<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->end<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->getStateType()<<"\t";
 
 		  ExonCandidate *ec = aliPosIt->second.oeStart[i]->orthoex[j];
 		  if (getStrand(j) == plusstrand){ // strand of alignment                                                                   		    cout << "start:" << ec->begin + offsets[j]+1 << "\tend:" << ec->end + offsets[j]+1;
@@ -907,8 +909,8 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 
 		}else
 		  cout<<"species "<<j<<endl;
+	        }
 	      }
-	      */
 	      //cout<<"---bv of ortho exon:  "<<printBV(aliPosIt->second.oeStart[i]->getBV())<<endl<<"---rfc of ortho exon: "<<printRFC(static_cast<const OrthoExon*>(aliPosIt->second.oeStart[i])->getRFC(offsets))<<endl;
 	      if(aliPosIt->second.oeStart[i] == NULL)
 		throw ProjectError("Error in posElement.oestart: Pointer to orthoExon is NULL!");
@@ -916,17 +918,17 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 	      coit = cumOmega.find(aliPosIt->second.oeStart[i]->getBV());
 	      
 	      if(bvit == bvCount.end()){
-		pair<unordered_map<bit_vector, int>::iterator,bool> result = bvCount.insert(pair<bit_vector, int>(aliPosIt->second.oeStart[i]->getBV(),0));
+		pair<unordered_map<bit_vector, int, boost::hash<bit_vector>>::iterator,bool> result = bvCount.insert(pair<bit_vector, int>(aliPosIt->second.oeStart[i]->getBV(),0));
 		bvit = result.first;
-		/*if(! result.second)
-		  cerr<<"inserting bit vector "<<printBV(bvit->first)<<" into bvcount failed"<<endl;
-		else
-		 cout<<"inserting bit vector "<<printBV(bvit->first)<<" into bvcount done"<<endl;
-	      }else{
-		cout<<"bit vector "<<printBV(bvit->first)<<" already inserted in bvcount"<<endl;
-		if(coit == cumOmega.end())
-		  throw ProjectError("Internal Error in computeOmegaEff(): bit_vector in bvcount but not yet in cumOmega!");
-		*/
+		//if(! result.second)
+		//  cerr<<"inserting bit vector "<<printBV(bvit->first)<<" into bvcount failed"<<endl;
+		//else
+		// cout<<"inserting bit vector "<<printBV(bvit->first)<<" into bvcount done"<<endl;
+	        //}else{
+		//cout<<"bit vector "<<printBV(bvit->first)<<" already inserted in bvcount"<<endl;
+		//if(coit == cumOmega.end())
+		//  throw ProjectError("Internal Error in computeOmegaEff(): bit_vector in bvcount but not yet in cumOmega!");
+		
 	      }
 	      bvit->second++;
 	      
@@ -935,16 +937,16 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 	      
 	      if(coit == cumOmega.end()){
 		vector<pair<vector<int>, cumValues> > vecPair;
-		pair<unordered_map<bit_vector, vector<pair<vector<int>, cumValues> > >::iterator, bool> result = cumOmega.insert(pair<bit_vector, vector<pair<vector<int>, cumValues> > >(aliPosIt->second.oeStart[i]->getBV(), vecPair));
+		pair<unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> >::iterator, bool> result = cumOmega.insert(pair<bit_vector, vector<pair<vector<int>, cumValues> > >(aliPosIt->second.oeStart[i]->getBV(), vecPair));
 		coit = result.first;
-		/*if(! result.second)
-		  cerr<<"inserting bit vector "<<printBV(coit->first)<<" into cumOmega failed"<<endl;
-		else
-		  cout<<"inserting bit vector "<<printBV(coit->first)<<" into cumOmega done"<<endl;
-		
-	      }else{
-		cout<<"bit vector "<<printBV(coit->first)<<"already exists in cumOmega"<<endl;
-		*/
+		//if(! result.second)
+		//  cerr<<"inserting bit vector "<<printBV(coit->first)<<" into cumOmega failed"<<endl;
+		//else
+		//  cout<<"inserting bit vector "<<printBV(coit->first)<<" into cumOmega done"<<endl;
+		//
+	        //}else{
+		//cout<<"bit vector "<<printBV(coit->first)<<"already exists in cumOmega"<<endl;
+
 	      }
 	      bool rfcIncluded = false;
 	      cumValues cum;
@@ -972,15 +974,15 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 	    for(int i=0; i<aliPosIt->second.oeEnd.size(); i++){
 	      //cout<<"################ortho exon ("<<aliPosIt->second.oeEnd[i]->ID<<") ends: "<<aliPosIt->second.oeEnd[i]->getAliStart()<<":"<<aliPosIt->second.oeEnd[i]->getAliEnd()<<endl;
 
-		  /*
-	      cout<<"chromosomal position of each exon:"<<endl;
-	      for(int j=0; j<aliPosIt->second.oeEnd[i]->orthoex.size(); j++){
-		if(aliPosIt->second.oeEnd[i]->orthoex[j])
-		  cout<<"species "<<j<<"\t"<<aliPosIt->second.oeEnd[i]->orthoex[j]->begin<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeEnd[i]->orthoex[j]->end<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeEnd[i]->orthoex[j]->getStateType()<<endl;
-		else
-		  cout<<"species "<<j<<endl;
+	      if (false){
+		cout<<"chromosomal position of each exon:"<<endl;
+		for(int j=0; j<aliPosIt->second.oeEnd[i]->orthoex.size(); j++){
+		  if(aliPosIt->second.oeEnd[i]->orthoex[j])
+		    cout<<"species "<<j<<"\t"<<aliPosIt->second.oeEnd[i]->orthoex[j]->begin<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeEnd[i]->orthoex[j]->end<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeEnd[i]->orthoex[j]->getStateType()<<endl;
+		  else
+		    cout<<"species "<<j<<endl;
+		}
 	      }
-	      */
 	      bvit = bvCount.find(aliPosIt->second.oeEnd[i]->getBV());
 	      if(bvit == bvCount.end())
 		throw ProjectError("Error in computeOmegaEff(): bit_vector ends that has never started!");
@@ -1037,7 +1039,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 	    // for one alignment position compute omega for all aktive bit_vectors in the correct reading frame combination
 	    //cout<<"compute omega for RFC "<<printRFC(rfc)<<endl;
 	    //bool foundBV = false;
-	    for(unordered_map<bit_vector, int>::iterator bvit = bvCount.begin(); bvit != bvCount.end(); bvit++){
+	    for(unordered_map<bit_vector, int, boost::hash<bit_vector>>::iterator bvit = bvCount.begin(); bvit != bvCount.end(); bvit++){
 	      if(bvit->second == 0)
 		continue;
 	      //  cout<<"next Bitvector in bvcount "<<printBV(bvit->first)<<":"<<bvit->second<<endl;

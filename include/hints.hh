@@ -144,7 +144,7 @@ class HintGroup{
 public:
     HintGroup(){
 	hints = NULL;
-	name == "";
+	name = "";
 	incompGroups = strongerGroups = NULL;
 	begin = end = -1;
 	geneBegin = geneEnd = -1;
