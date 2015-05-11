@@ -482,7 +482,7 @@ void CompGenePred::start(){
     closeOutputFiles(sampledGFs);
 
     // delete all trees                                           
-    for(unordered_map< bit_vector, PhyloTree*>::iterator topit = GeneMSA::topologies.begin(); topit !=GeneMSA::topologies.end(); topit++){
+    for(unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>>::iterator topit = GeneMSA::topologies.begin(); topit !=GeneMSA::topologies.end(); topit++){
 	delete topit->second;
     }                                                                                                                                                              
     GeneMSA::topologies.clear(); 
