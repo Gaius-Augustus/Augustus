@@ -232,8 +232,8 @@ int Parameters::addMMGroup(MMGroup* mmgroup, double alphavalue){
     // check consistency of offset 
     if (mmgroups && mmgroups->size() > 0){
 	MMGroup* lastMMGroup = (*mmgroups)[mmgroups->size()-1];
-	if (!offset ==  lastMMGroup->getOffset() + lastMMGroup->getNumPars())
-		throw ProjectError("Parameters::addMMGroup: inconsistency detected");
+	if (offset !=  lastMMGroup->getOffset() + lastMMGroup->getNumPars())
+	   throw ProjectError("Parameters::addMMGroup: inconsistency detected");
     }
     mmgroup->registerPars(this, alphavalue);
     if (!mmgroups)

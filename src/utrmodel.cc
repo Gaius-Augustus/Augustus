@@ -624,9 +624,9 @@ void UtrModel::readAllParameters(){
       sprintf(zusString, "[%d]", idx+1);
       istrm >> goto_line_after(zusString);
       // set the names for CRF parameters for this GC content class
-      GCutr5_emiprobs[idx].setName("utr5 emiprob gc" + (idx+1));
-      GCutr5init_emiprobs[idx].setName("utr5init emiprob gc" + (idx+1));
-      GCutr3_emiprobs[idx].setName("utr3 emiprob gc" + (idx+1));
+      GCutr5_emiprobs[idx].setName(string("utr5 emiprob gc ") + itoa(idx+1));
+      GCutr5init_emiprobs[idx].setName(string("utr5init emiprob gc ") + itoa(idx+1));
+      GCutr3_emiprobs[idx].setName(string("utr3 emiprob gc ") + itoa(idx+1));
 
       // read in the emission probabilities of 5'UTR single and initial exons
       //--------------------------------------------

@@ -724,7 +724,7 @@ void ExonModel::readAllParameters(){
 	Constant::tis_maxbinsize = 0; // no binning at all
       } else {
 	GCtransInitBinProbs[idx].read(istrm);
-	GCtransInitBinProbs[idx].setName("tis bin gc" + (idx+1)); // maybe this gives the wrong name?
+	GCtransInitBinProbs[idx].setName(string("tis bin gc") + itoa(idx+1));
 	//cout << "tis number of bins: " << GCtransInitBinProbs[idx].nbins << endl;
 	//GCtransInitBinProbs[idx].write(cout);
       }
@@ -737,7 +737,7 @@ void ExonModel::readAllParameters(){
 
       // EMISSION
       // make the emission probabilities
-      GCemiprobs[idx].setName("exon emiprob gc" + (idx+1));
+      GCemiprobs[idx].setName(string("exon emiprob gc") + itoa(idx+1));
       for (int f=0; f<3; f++) {
 	GCemiprobs[idx].probs[f].resize( GCPls[idx][k][f].size() );
 	GCemiprobs[idx].order = k;

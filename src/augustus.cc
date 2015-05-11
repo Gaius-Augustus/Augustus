@@ -333,15 +333,15 @@ void evaluateOnTestSet(AnnoSequence *annoseq, NAMGene &namgene, FeatureCollectio
 	    delete annoseq->anno->backwardPath;
 	    annoseq->anno->backwardPath = NULL;           // so annoseq destructor doesn't crash
 	}	
-	if (annoseq->anno->condensedPath); {
+	if (annoseq->anno->condensedPath){
 	    delete annoseq->anno->condensedPath;
 	    annoseq->anno->condensedPath = NULL; // so annoseq destructor doesn't crash
 	}
-	if (annoseq->anno->condensedForwardPath); {
+	if (annoseq->anno->condensedForwardPath){
 	    delete annoseq->anno->condensedForwardPath;
 	    annoseq->anno->condensedForwardPath = NULL; // so annoseq destructor doesn't crash
 	}
-	if (annoseq->anno->condensedBackwardPath); {
+	if (annoseq->anno->condensedBackwardPath){
 	    delete annoseq->anno->condensedBackwardPath;
 	    annoseq->anno->condensedBackwardPath = NULL; // so annoseq destructor doesn't crash
 	}

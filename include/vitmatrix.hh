@@ -737,7 +737,7 @@ public:
     Double probability;
 };
 
-inline bool operator< (OptionListItem& first, OptionListItem& second) {
+inline bool operator< (const OptionListItem& first, const OptionListItem& second) {
     // the largest probability comes first
     return (first.probability > second.probability);
 }

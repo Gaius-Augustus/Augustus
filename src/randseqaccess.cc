@@ -158,35 +158,33 @@ void SpeciesCollection::readGFFFile(const char *filename){
             try{
                 datei >> f >> comment >> ws;
             } catch (ProjectError e){}
-            if (f.type != -1) {
-		// split species name and sequence ID
-		string completeName=f.seqname;
-		string speciesName,seqname;                                                                                                          
-		for (int i=0; i<completeName.length(); i++) {
-		    // seperator is the point '.' for example hg19.chr21, has to be changed                         
-		    if ((completeName[i] == '-') || (completeName[i] == '.')) {
-			speciesName = completeName.substr(0,i);
-			seqname = completeName.substr(i+1, string::npos);
-			if (i == completeName.length()-1)
-			    throw ProjectError("first column in hintfile must be the speciesname and seqname delimited by '.'");
-		    }
-		}
-		f.seqname=seqname;
-		// get species specific collection
-		if(withEvidence(speciesName)){
-		    FeatureCollection *fc = getFeatureCollection(speciesName);
-		    fc->setBonusMalus(f);
-		    SequenceFeatureCollection& sfc =  fc->getSequenceFeatureCollection(completeName.c_str());
-		    sfc.addFeature(f);
-		    fc->hasHintsFile = true;
-		}
-		else{
-		    cerr << "Warning: hints are given for species " + speciesName +
-			" but no extrinsic configuration in the extrinsicCfgFile.\n" +
-			" Ignoring all hints for that species." << endl;
+	    // split species name and sequence ID
+	    string completeName=f.seqname;
+	    string speciesName,seqname;                                                                                                          
+	    for (int i=0; i<completeName.length(); i++) {
+	       // seperator is the point '.' for example hg19.chr21, has to be changed                         
+	       if ((completeName[i] == '-') || (completeName[i] == '.')) {
+		  speciesName = completeName.substr(0,i);
+		  seqname = completeName.substr(i+1, string::npos);
+		  if (i == completeName.length()-1)
+		     throw ProjectError("first column in hintfile must be the speciesname and seqname delimited by '.'");
+	       }
+	    }
+	    f.seqname=seqname;
+	    // get species specific collection
+	    if(withEvidence(speciesName)){
+	       FeatureCollection *fc = getFeatureCollection(speciesName);
+	       fc->setBonusMalus(f);
+	       SequenceFeatureCollection& sfc =  fc->getSequenceFeatureCollection(completeName.c_str());
+	       sfc.addFeature(f);
+	       fc->hasHintsFile = true;
+	    }
+	    else{
+	       cerr << "Warning: hints are given for species " + speciesName +
+		  " but no extrinsic configuration in the extrinsicCfgFile.\n" +
+		  " Ignoring all hints for that species." << endl;
 			
-		}
-            }
+	    }
         }
         datei.close();
     } catch (ProjectError e) {

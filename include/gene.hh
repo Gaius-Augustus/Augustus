@@ -366,7 +366,8 @@ public:
     int numExons() const;
     State *lastExon() const;
     bool identicalCDS(Gene *other);
-    bool almostIdenticalTo(Gene *other);
+    using Transcript::almostIdenticalTo; // not really, but to prevent the compiler warning on MAC
+    virtual bool almostIdenticalTo(Gene *other);
     void shiftCoordinates(int d);
     int geneBegin() const { return (transstart>=0)? transstart : codingstart;}
     int geneEnd() const { return (transend>=0)? transend : codingend;}
@@ -375,7 +376,7 @@ public:
     void compileExtrinsicEvidence(list<HintGroup>  *groupList);
     double supportingFraction(HintGroup *group);
     void addSupportedStates(HintGroup *group);
-    double getPercentSupported();
+    double getPercentSupported() const;
     int getCDSCoord(int loc, bool comp) const;  
     bool completeCDS() const;
     void print();
@@ -383,7 +384,7 @@ public:
     void printCodingSeq(AnnoSequence *annoseq) const;
     void printProteinSeq(AnnoSequence *annoseq) const;
     void printBlockSequences(AnnoSequence *annoseq) const;
-    void printEvidence();
+    virtual void printEvidence() const;
     void truncateMaskedUTR(AnnoSequence *annoseq);
 
     static void init();

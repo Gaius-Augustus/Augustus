@@ -140,12 +140,9 @@ private:
   int numDataSets;
   // nukleotide level
   int nukTPBK, nukFPBK, nukFPBKinside, nukFNBK;
-  double nukSensBK, nukSpecBK;       // sensitivity and specifity
            
   // exon level
   int exonTPBK, exonFPBK, exonFNBK;
-  double exonSpecBK, exonSensBK;   // exon specifity and sensitivity
-
 };
 
 /*

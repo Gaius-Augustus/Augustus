@@ -118,13 +118,9 @@ ExonType toExonType(const char* str){
     return UNKNOWN_EXON;
 }
 
-// create a key for a map function to find orthologue exons quickly
+// create a key for a map function to find ortholog exons quickly
 string ExonCandidate::key() {
-    if(this == NULL) {
-        return "no candidate";
-    } else {
-        return (itoa(this->begin) + ":" + itoa(this->end) + ":" + itoa(this->type));
-    }
+   return (itoa(this->begin) + ":" + itoa(this->end) + ":" + itoa(this->type));
 }
 
 // keys encodes all of: chrStart chrEnd type lenMod3

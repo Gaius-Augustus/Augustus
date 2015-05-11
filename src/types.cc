@@ -347,10 +347,6 @@ void Constant::init(){
     Properties::assignProperty("orthoexons", orthoexons);
     Properties::assignProperty("maxOvlp", maxOvlp);
     Properties::assignProperty("temperature", temperature);
-    if (temperature < 0){
-	cerr << "No negative temperature allowed. temperature must be one of 0 1 2 3 4 5 6 7. Will use temperature=0." << endl;
-	temperature = 0;
-    }
     if (temperature > 7){
 	cerr << "No temperature >7 allowed. temperature must be one of 0 1 2 3 4 5 6 7. Will use temperature=7." << endl;
         temperature = 7;

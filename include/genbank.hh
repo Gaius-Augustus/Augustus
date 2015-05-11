@@ -69,7 +69,7 @@ public:
   }
   GBFeature(const char *) throw( GBError);
   bool checkRange(int len);
-  bool operator<(const GBFeature &other){
+  bool operator<(const GBFeature &other) const{
     return (begin<other.begin || (begin==other.begin && end<other.end));
   }
   bool matches(GBFeature &other);

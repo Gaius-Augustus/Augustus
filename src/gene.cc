@@ -435,7 +435,7 @@ Transcript* StatePath::projectOntoGeneSequence (const char *genenames){
 		    curState = curState->next;
 		} else { // multi-exon or incomplete noncoding gene
 		    lastExon = NULL;
-		    if (curState->type != ncinit && ! curState->type != rncterm)
+		    if (curState->type != ncinit && curState->type != rncterm)
 			aTx->complete = false;
 		    aTx->exons = lastExon = curState->getBiologicalState();
 		    curState = curState->next;
@@ -1933,7 +1933,7 @@ void Gene::addSupportedStates(HintGroup *group){
  * Gene::getPercentSupported
  * in [0,1]
  */
-double Gene::getPercentSupported(){
+double Gene::getPercentSupported() const{
     int numStates = lenStateList(exons) + lenStateList(introns) + lenStateList(utr5exons) + lenStateList(utr5introns) + lenStateList(utr3exons) + lenStateList(utr3introns);
     if (numStates <= 0)
 	return 0.0;
@@ -2423,7 +2423,7 @@ void Gene::printBlockSequences(AnnoSequence *annoseq) const {
     }
 }
     
-void Gene::printEvidence() {
+void Gene::printEvidence() const {
     cout << "# Evidence for and against this transcript:" << endl;
     // compatibility by transcript
     int numCDS=0, numCDSintron=0, num5UTR=0, num3UTR=0;

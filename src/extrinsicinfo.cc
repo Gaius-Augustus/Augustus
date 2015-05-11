@@ -2267,7 +2267,7 @@ void FeatureCollection::readGFFFile(const char *filename){
 	    try{
 		datei >> f >> comment >> ws;
 	    } catch (ProjectError e){}
-	    if (f.end >= predictionStart && f.start <= predictionEnd && f.type != -1) {
+	    if (f.end >= predictionStart && f.start <= predictionEnd) {
 		f.start -= predictionStart;
 		f.end -= predictionStart;
 		setBonusMalus(f);

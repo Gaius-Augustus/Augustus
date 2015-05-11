@@ -405,7 +405,7 @@ void IntronModel::readAllParameters(){
 	  
 	  
 	  // read in the emission probabilities
-	  GCemiprobs[idx].setName("intron emiprob gc" + (idx+1));
+	  GCemiprobs[idx].setName(string("intron emiprob gc") + itoa(idx+1));
 	  istrm >> goto_line_after( "[EMISSION]" );
 	  istrm >> comment >> size; 	
 	  istrm >> comment >> k;

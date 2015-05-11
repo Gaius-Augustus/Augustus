@@ -518,7 +518,7 @@ using namespace std;
 	  //check for separation by both space and tab
 	  found1=temp_string.find('\t');
 	  found=temp_string.find(' ');
-	  if( (found>0 && found>found1)||found<0 )
+	  if(found>0 && found>found1)
 	    found=found1;
 	  start=atoi(temp_string.substr(6,found-6).c_str());
 	}
@@ -573,7 +573,7 @@ using namespace std;
 	 */
 	found1=fileline.find('\t');
 	found=fileline.find(' ');
-	if( (found>0 && found>found1)||found<0 )
+	if(found>0 && found>found1)
 	  found=found1;
 	/* in case of other than fixedstep type store the position and value
 	 */

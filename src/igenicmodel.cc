@@ -161,7 +161,7 @@ void IGenicModel::readAllParameters(){
 	
 	// loop over GC content classes
 	for (int idx = 0; idx < Constant::decomp_num_steps; idx++) {
-	  GCemiprobs[idx].setName("igenic emiprob gc" + (idx+1));
+	  GCemiprobs[idx].setName(string("igenic emiprob gc") + itoa(idx+1));
 	  sprintf(zusString, "[%d]", idx+1);
 	  istrm >> goto_line_after(zusString);
 	  istrm >> comment >> k;
