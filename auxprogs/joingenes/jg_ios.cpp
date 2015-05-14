@@ -144,7 +144,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 			    if (temp_inside){
 				gene_id = temp_inside;
 			    }else{
-				load_error("Missing id behind the flag gene_id in file "+filename+" at "+exon.chr+" from "+to_string(exon.from)+" to "+to_string(exon.to)+".");
+				load_error("Missing id behind the flag gene_id in file "+filename+" at "+exon.chr+" from "+to_string((long long int) exon.from)+" to "+to_string((long long int) exon.to)+".");
 			    }
 			}
 			temp_inside = strtok(NULL, "\"");
@@ -313,10 +313,10 @@ void renameTaxa(list<Transcript*> &overlap, Properties &properties){
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	if ((*it)->parent->nrOfPrintedTx == 0){
 	    properties.nrOfPrintedGenes++;
-	    (*it)->parent->g_id = "jg" + to_string(properties.nrOfPrintedGenes);
+	    (*it)->parent->g_id = "jg" + to_string((long long int) properties.nrOfPrintedGenes);
 	}
 	(*it)->parent->nrOfPrintedTx++;
-	(*it)->t_id = (*it)->parent->g_id + ".t" + to_string((*it)->parent->nrOfPrintedTx);
+	(*it)->t_id = (*it)->parent->g_id + ".t" + to_string((long long int) (*it)->parent->nrOfPrintedTx);
     }
 }
 
@@ -480,7 +480,7 @@ void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &pro
 string nextFreeGeneID(Properties &properties, unordered_map<string,Gene*>* addGeneMap){
     string geneID;
     while (geneID == "" || (*properties.geneMap).find(geneID) != (*properties.geneMap).end() || (addGeneMap != NULL && (*addGeneMap).find(geneID) != (*addGeneMap).end())){
-	geneID = "g" + to_string(properties.unknownCount);
+	geneID = "g" + to_string((long long int) properties.unknownCount);
 	properties.unknownCount++;
     }
     return geneID;
@@ -489,7 +489,7 @@ string nextFreeGeneID(Properties &properties, unordered_map<string,Gene*>* addGe
 string nextFreeTxID(Gene* gene, Properties &properties, unordered_map<string,Transcript*>* addTranscriptMap){
     string txID;
     while (txID == "" || (*properties.transcriptMap).find(txID) != (*properties.transcriptMap).end() || (addTranscriptMap != NULL && (*addTranscriptMap).find(txID) != (*addTranscriptMap).end())){
-	txID = gene->g_id + ".t" + to_string(gene->nrOfTx);
+	txID = gene->g_id + ".t" + to_string((long long int) gene->nrOfTx);
 	gene->nrOfTx++;
     }
     return txID;

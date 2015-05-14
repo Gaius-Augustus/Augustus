@@ -744,7 +744,7 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 	}
 	are_at_add_part = false;
 	for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-	    if (lastPositionInOriginal <= ((*it).from - properties.minimumIntronLength)){
+	    if (lastPositionInOriginal <= ((*it).from - (int) properties.minimumIntronLength)){
 		are_at_add_part = true;
 	    }
 	    if (are_at_add_part){
@@ -787,7 +787,7 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 	    txNew->joinpartner.second = t2->originalId;
 	}
 	for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-	    if (firstPositionInOriginal < ((*it).to + properties.minimumIntronLength)){
+	    if (firstPositionInOriginal < ((*it).to + (int) properties.minimumIntronLength)){
 		txNew->exon_list.merge(temp_exon_list);
 		break;
 	    }
@@ -820,7 +820,7 @@ int is_combinable(Transcript const* t1, Transcript const* t2, char strand, char 
 		    return 0;
 		}
 	    }else{
-		if ((*t1).exon_list.back().to <= ((*it).from - properties.minimumIntronLength)){
+		if ((*t1).exon_list.back().to <= ((*it).from - (int) properties.minimumIntronLength)){
 		    if ((strand == '+') && ((*it).frame == (3 - ( ((*t1).exon_list.back().to - (*t1).exon_list.back().from + 1) - (*t1).exon_list.back().frame) % 3) % 3)){
 			return 2;
 		    }else if ((strand == '-') && ((*t1).exon_list.back().frame == (3 - ( ((*it).to - (*it).from + 1) - (*it).frame) % 3) % 3)){
@@ -844,7 +844,7 @@ int is_combinable(Transcript const* t1, Transcript const* t2, char strand, char 
 		    return 0;
 		}
 	    }else{
-		if ((*t1).exon_list.front().from < ((*it).to + properties.minimumIntronLength)){
+		if ((*t1).exon_list.front().from < ((*it).to + (int) properties.minimumIntronLength)){
 		    if (it != t2->exon_list.begin()){
 			it--;
 		    }else{
@@ -1431,7 +1431,7 @@ int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &pro
 		    return 0;
 		}
 	    }else{
-		if ((*t1).exon_list.back().to <= ((*it).from - properties.minimumIntronLength)){
+		if ((*t1).exon_list.back().to <= ((*it).from - (int) properties.minimumIntronLength)){
 		    if ((*t1).exon_list.back().frame == -1 && (*it).frame == -1){return 2;}
 		    else if (((*t1).exon_list.back().frame != -1 && (*it).frame == -1) || ((*t1).exon_list.back().frame == -1 && (*it).frame != -1)){return 0;}
 		    if ((t1->strand == '+') && ((*it).frame == (3 - ( ((*t1).exon_list.back().to - (*t1).exon_list.back().from + 1) - (*t1).exon_list.back().frame) % 3) % 3)){
@@ -1459,7 +1459,7 @@ int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &pro
 		    return 0;
 		}
 	    }else{
-		if ((*t1).exon_list.front().from < ((*it).to + properties.minimumIntronLength)){
+		if ((*t1).exon_list.front().from < ((*it).to + (int) properties.minimumIntronLength)){
 		    if ((*t1).exon_list.front().frame == -1 && (*it).frame == -1){return 4;}
 		    else if (((*t1).exon_list.back().frame != -1 && (*it).frame == -1) || ((*t1).exon_list.back().frame == -1 && (*it).frame != -1)){return 0;}
 		    if (it != t2->exon_list.begin()){
