@@ -247,7 +247,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 
     if (!unknownFeatures.empty()){
 	for (list<string>::iterator it = unknownFeatures.begin(); it != unknownFeatures.end(); it++){
-	    load_warning("There is the unexpected feature \"" + *it + "\" that is not equal to \"CDS\", \"UTR\", \"3'-UTR\", \"5'-UTR\", \"exon\", \"intron\", \"gene\", \"transcript\", \"start_codon\" and \"stop_codon\". This feature is going to be ignored.");
+	    load_warning("Did not expect feature \"" + *it + "\". Known features are \"CDS\", \"UTR\", \"3'-UTR\", \"5'-UTR\", \"exon\", \"intron\", \"gene\", \"transcript\", \"start_codon\" and \"stop_codon\". This feature is going to be ignored.");
 	}
     }
     taxaMap.insert(taxaMapTemp.begin(),taxaMapTemp.end());

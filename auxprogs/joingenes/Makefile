@@ -5,6 +5,7 @@ all: joingenes
 
 joingenes: joingenes.o jg_transcript.o jg_ios.o jg_transcript.h jg_ios.h
 	$(CC) joingenes.o jg_transcript.o jg_ios.o -o joingenes
+	cp joingenes ../../bin/
 
 joingenes.o: joingenes.cpp jg_transcript.h jg_ios.h
 	$(CC) $(CFLAGS) joingenes.cpp

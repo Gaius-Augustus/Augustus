@@ -151,7 +151,7 @@ void check_cds_stop_combination(Transcript* tx, pair<string,string> &stopVariant
     }
 
     if (!stopVariants.first.empty() && !stopVariants.second.empty()){
-	display_error("E.g. the stop_codon of "+stopVariants.first+" is inside of the CDS and the stop_codon of "+stopVariants.second+" is outside of the CDS. You have to make it equally!");
+	display_error("E.g. the stop_codon of "+stopVariants.first+" is inside of the CDS and the stop_codon of "+stopVariants.second+" is outside of the CDS. Please harmonize the inclusion/exclusion of stop codons into the CDS.");
     }
 }
 
