@@ -29,22 +29,22 @@ static const struct option longOpts[] = {
 
 void display_help(void)
 {
-    cout << "This is the help documentation of the joingenes program." << endl;
+    cout << "joingenes - merging several gene sets into one, including the combination of transcripts to new ones not present in input" << endl;
     cout << "Options:" << endl;
     cout << "\tNecessary:" << endl;
-    cout << "\t\t--genesets=file1,file2,...\t-g file1,file2,...\twhere \"file1,file2,...,filen\" have to be datafiles with genesets in gtf format." << endl;
-    cout << "\t\t--output=ofile\t\t\t-o ofile\t\twhere \"ofile\" have to be a name for an output datafile (gtf)." << endl;
+    cout << "\t\t--genesets=file1,file2,...\t-g file1,file2,...\twhere \"file1,file2,...,filen\" have to be data files with genesets in GTF format." << endl;
+    cout << "\t\t--output=ofile\t\t\t-o ofile\t\twhere \"ofile\" is the name for an output file (GTF)." << endl;
     cout << "\tOptional:" << endl;
     cout << "\t\t--priorities=pr1,pr2,...\t-p pr1,pr2,...\t\twhere \"pr1,pr2,...,prn\" have to be positiv integers (different from 0)." << endl;
     cout << "\t\t\t\t\t\t\t\t\tHave to be as many as filenames are added." << endl;
     cout << "\t\t\t\t\t\t\t\t\tBigger numbers means a higher priority." << endl;
     cout << "\t\t\t\t\t\t\t\t\tIf no priorities are added, the program will set all priorties to 1." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tThis option is only usefull, if there are more then one geneset." << endl;
-    cout << "\t\t--errordistance=x\t\t-e x\t\t\twhere \"x\" have to be non-negativ integer" << endl;
-    cout << "\t\t\t\t\t\t\t\t\tIf a prediction is <=x bases nexto a prediction range border, the program suppose, that there could be a mistake." << endl;
+    cout << "\t\t\t\t\t\t\t\t\tThis option is only useful, if there is more then one geneset." << endl;
+    cout << "\t\t--errordistance=x\t\t-e x\t\t\twhere \"x\" is a non-negative integer" << endl;
+    cout << "\t\t\t\t\t\t\t\t\tIf a prediction is <=x bases next to a prediction range border, the program supposes, that there could be a mistake." << endl;
     cout << "\t\t\t\t\t\t\t\t\tDefault is 1000." << endl;
     cout << "\t\t\t\t\t\t\t\t\tTo disable the function, set errordistance to a negative number (e.g. -1)." << endl;
-    cout << "\t\t--genemodel=x\t\t\t-m x\t\t\twhere \"x\" have to be a genemodel out of \"eukaryote\"." << endl;
+    cout << "\t\t--genemodel=x\t\t\t-m x\t\t\twhere \"x\" is a genemodel from the set {eukaryote} (currently only eukyarotes implemented)." << endl;
     cout << "\t\t\t\t\t\t\t\t\tDefault is eukaryotic." << endl;
     cout << "\t\t--onlycompare=x\t\t\t-c x\t\t\twhere \"x\" can be set to \"true\"." << endl;
     cout << "\t\t\t\t\t\t\t\t\tDefault is false." << endl;
