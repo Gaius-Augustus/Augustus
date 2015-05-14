@@ -8,5 +8,5 @@
 [Tt]ranslate						return Parser::TRANSLATE;
 [0-9]+							return Parser::NUM;
 [-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?			return Parser::DISTANCE;
-[A-Za-z0-9]*[A-Za-z][A-Za-z0-9]*                        return Parser::SPECIES;	
+[A-Za-z0-9_-]*[A-Za-z][A-Za-z0-9_-]*                    return Parser::SPECIES;	
 [();,:=]                                                return matched()[0];
