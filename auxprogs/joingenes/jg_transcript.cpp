@@ -65,13 +65,16 @@ void workAtOverlap(list<Transcript*> &overlap, Properties &properties)
     if (properties.join && properties.genemodel != "bacterium"){
 	joinCall(overlap, properties);
     }
+
     // searchs and destroys transcripts, which are fully in other transcripts
     if (properties.genemodel != "bacterium")
         search_n_destroy_parts(overlap, properties);
+
     //........................
     if (properties.selecting){
 	selection(overlap, properties);
     }
+
 }
 
 void selection(list<Transcript*> &overlap, Properties &properties){
@@ -183,9 +186,11 @@ void joinCall(list<Transcript*> &overlap, Properties &properties){
     tooCloseToBoundary(overlap, properties);
     // join stop codons
     join(overlap, '3', properties);
+
     search_n_destroy_doublings(overlap, properties, false);
 
     join(overlap, '5', properties);
+
     search_n_destroy_doublings(overlap, properties, false);
 }
 
@@ -638,6 +643,12 @@ void search_n_destroy_parts(list<Transcript*> &overlap, Properties &properties){
 	    for (list<Transcript*>::iterator itInside = it_temp; itInside != overlap.end(); itInside++){
 		if (overlap.size() <= 1){return;}
 		pair<bool,bool> who_is_part = is_part_of(*it, *itInside);
+
+		if ((*it)->tl_complete.first && (*it)->tl_complete.second){who_is_part.first = false;}
+		if ((*itInside)->tl_complete.first && (*itInside)->tl_complete.second){who_is_part.second = false;}
+
+//if ((*it)->t_id == "g5837.t1"){cout << "AAA: " << who_is_part.first << " " << who_is_part.second << endl << (*it)->tes << " " << (*it)->tis << " " << (*it)->priority << endl << (*itInside)->tes << " " << (*itInside)->tis << " " << (*itInside)->priority << endl; sleep(1);}
+
 		if (who_is_part.first == true){
 		    if (who_is_part.second == true){
 		    }else{
@@ -699,6 +710,19 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
     int lastPositionInOriginal = txNew->exon_list.back().to;
     int firstPositionInOriginal = txNew->exon_list.front().from;
 
+    int nrOfJoinedCDS = 0;
+    int nrOfCoreCDS = 0;
+    bool inside = false;
+    for (list<Exon>::iterator it = txNew->exon_list.begin(); it != txNew->exon_list.end(); it++){
+	if (!inside && txNew->outerCds.first && txNew->outerCds.first->from == (*it).from && txNew->outerCds.first->to == (*it).to && txNew->outerCds.first->frame == (*it).frame){
+	    inside = true;
+	}
+	if (inside){
+	    nrOfCoreCDS++;
+	    if (txNew->outerCds.second->from == (*it).from && txNew->outerCds.second->to == (*it).to && txNew->outerCds.second->frame == (*it).frame){break;}
+	}
+    }
+
     bool are_at_add_part;
     list<Exon> temp_exon_list;
     temp_exon_list.clear();
@@ -721,6 +745,7 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 	for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
 	    if (are_at_add_part){
 		txNew->exon_list.push_back(*it);
+		if ((*it).feature == "CDS"){nrOfJoinedCDS++;}
 	    }
 	    if (lastPositionInOriginal >= (*it).from && lastPositionInOriginal <= (*it).to){
 		txNew->exon_list.back().to = (*it).to;
@@ -749,6 +774,7 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 	    }
 	    if (are_at_add_part){
 		txNew->exon_list.push_back(*it);
+		if ((*it).feature == "CDS"){nrOfJoinedCDS++;}
 	    }
 	}
 	break;
@@ -773,6 +799,7 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 		break;
 	    }
 	    temp_exon_list.push_back(*it);
+	    if ((*it).feature == "CDS"){nrOfJoinedCDS++;}
 	}
 	break;
     case 4:
@@ -792,10 +819,15 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 		break;
 	    }
 	    temp_exon_list.push_back(*it);
+	    if ((*it).feature == "CDS"){nrOfJoinedCDS++;}
 	}
 	break;
     default:
 	cerr << "WARNING: unexpected case (in joining())!" << endl;
+    }
+
+    if (nrOfJoinedCDS > nrOfCoreCDS){
+	txNew->priority = t2->priority;
     }
 }
 
@@ -876,6 +908,7 @@ pair<bool,bool> is_part_of(Transcript const* t1, Transcript const* t2)
         t1_is_part = false;
         t2_is_part = false;
     }
+
     if (t1->exon_list.size() > t2->exon_list.size()){
 	t1_is_part = false;
     }
@@ -1251,9 +1284,17 @@ bool alternativeVariants(Gene* g1, Gene* g2){
 }
 
 void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties){
+
     search_n_destroy_doublings(overlap, properties, false);
     // calculate score to compare the quality of transcripts
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+	if (find(properties.supprList.begin(),properties.supprList.end(),(*it)->priority) != properties.supprList.end()){
+	    deleteTx(*it, properties);
+	    it = overlap.erase(it);
+	    it--;
+	    continue;
+	}
+
 	calculatePredictionScore(*it);
 //	calculateQualityScore(*it);
     }

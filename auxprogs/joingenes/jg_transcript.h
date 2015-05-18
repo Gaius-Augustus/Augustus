@@ -43,6 +43,7 @@ public:
     unordered_map<string,Transcript*>* transcriptMap;
     unsigned int minimumIntronLength;
     bool alternatives;
+    bool stopincoding;
 };
 
 class Exon{
@@ -220,7 +221,9 @@ class Transcript{
 	    tis = (outerCds.second)->to;
 	    tes = (outerCds.first)->from;
 	}
-        //tes_to_cds();					// needs utr structure!
+	if (properties.stopincoding){
+            tes_to_cds();					// needs utr structure!
+	}
     }
 
     void calcRangeToBoundary(Properties &properties){
@@ -251,7 +254,7 @@ class Transcript{
     }
 
     void tes_to_cds(){
-	int cdsfront;
+	/*int cdsfront;
 	if (outerCds.first)
 	    cdsfront = (outerCds.first)->from;
 	else
@@ -260,15 +263,16 @@ class Transcript{
 	if (outerCds.second)
 	    cdsback = (outerCds.second)->to;
 	else
-	    cdsback = -1;
+	    cdsback = -1;*/
 	bool done = false;
+//if (t_id == "g10104.t1"){cout << "HIER" << endl; sleep(1);}
 	if (strand == '+'){
 	    if (tl_complete.second){
-		if (cdsback != tes){
+		if (tes != stop_list.back().to){
 		    for (list<Exon>::iterator it = exon_list.begin(); it != exon_list.end(); it++){
-			if (((*it).feature == "UTR" || (*it).feature == "3'-UTR" || (*it).feature == "5'-UTR") && cdsback < (*it).from){
+			if (((*it).feature == "UTR" || (*it).feature == "3'-UTR" || (*it).feature == "5'-UTR") && tes < (*it).from){
 			    done = true;
-			    if ((*it).from == cdsback + 1){
+			    if ((*it).from == tes + 1){
 				int temp = (*it).to - (*it).from + 1;
 				if (temp > 3){
 				    (*it).from += 3;
@@ -312,29 +316,32 @@ class Transcript{
 			}
 		    }
 		    if (!done){
-			if (cdsback == tes - 3){
+			if (tes == stop_list.back().to - 3){
 			    (outerCds.second)->to += 3;
 			}else{
 			    Exon new_cds = *(outerCds.second);
-			    new_cds.from = tes - 2;
-			    new_cds.to = tes;
+			    new_cds.from = stop_list.back().to - 2;
+			    new_cds.to = stop_list.back().to;
 			    new_cds.feature = "CDS";
 			    new_cds.frame = 0;
 			    exon_list.push_back(new_cds);
 			}
 		    }
+		    tes = stop_list.back().to;
 		}
-	    }else{
+	    }/*else{
 		tes = cdsback;
 	    }
 	    if (!tl_complete.first){
 		tis = cdsfront;
-	    }
+	    }*/
 	}else{	// strand == "-"
 	    if (tl_complete.second){	// stop codon exists
-		if (cdsfront != tes){		// stop codon is not in cds
+//if (t_id == "g10104.t1"){cout << "HIER2" << endl; sleep(1);}
+		if (tes != stop_list.front().from){		// stop codon is not in cds
+//if (t_id == "g10104.t1"){cout << "HIER4" << endl; sleep(1);}
 		    for (list<Exon>::iterator it = exon_list.begin(); it != exon_list.end(); it++){
-			if ((*it).feature == "CDS" && cdsfront == (*it).from){
+			if ((*it).feature == "CDS" && tes == (*it).from){
 			    if (it == exon_list.end()){
 				cerr << "Fatal error: No exon for an existing codon." << endl;
 				exit( EXIT_FAILURE );
@@ -342,7 +349,7 @@ class Transcript{
 			    //it--;
 			    if (it != exon_list.begin() && ((*(it--)).feature == "UTR" || (*it).feature == "3'-UTR" || (*it).feature == "5'-UTR")){
 				done = true;
-				if ((*it).to == cdsfront - 1){
+				if ((*it).to == tes - 1){
 				    int temp = (*it).to - (*it).from + 1;
 				    if (temp > 3){
 					(*it).to -= 3;
@@ -387,24 +394,26 @@ class Transcript{
 			}
 		    }
 		    if (!done){
-			if (cdsfront == tes + 3){
+			if (tes == stop_list.front().from + 3){
 			    (outerCds.first)->from -= 3;
 			}else{
 			    Exon new_cds = *(outerCds.first);
-			    new_cds.from = tes;
-			    new_cds.to = tes + 2;
+			    new_cds.from = stop_list.front().from;
+			    new_cds.to = stop_list.front().from + 2;
 			    new_cds.feature = "CDS";
 			    new_cds.frame = 0;
 			    exon_list.push_front(new_cds);
 			}
 		    }
+//if (t_id == "g10104.t1"){cout << "HIER3" << endl; sleep(1);}
+		    tes = stop_list.front().from;
 		}
-	    }else{
+	    }/*else{
 		tes = cdsfront;
 	    }
 	    if (!tl_complete.first){
 		tis = cdsback;
-	    }
+	    }*/
 	}
     }
 
