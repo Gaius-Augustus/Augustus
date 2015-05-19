@@ -820,9 +820,18 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 	    //printSingleOrthoExon(*oe, false);
 	    // store start and end information
 	    bool aliStart = true;
+	    
+	    // this iteration over two iterators was more elegant before, but not understood by gcc 4.4.7 in Santa Cruz
+	    //	old code equivalent to the next 7 lines:
+	    // for (map<int, posElements>::iterator aliPosIt :  { aliPos.find(oe->getAliStart()), aliPos.find(oe->getAliEnd()) }) { 
+	    map<int, posElements>::iterator start = aliPos.find(oe->getAliStart());
 	    map<int, posElements>::iterator end = aliPos.find(oe->getAliEnd());
-	    for (map<int, posElements>::iterator aliPosIt = aliPos.find(oe->getAliStart()); aliPosIt != end; ++aliPosIt) { 
-      
+	    list<map<int, posElements>::iterator> tlist; 
+	    tlist.push_back(start);
+	    tlist.push_back(end);
+	    for (list<map<int, posElements>::iterator>::iterator lit = tlist.begin(); lit != tlist.end(); ++lit){
+	       map<int, posElements>::iterator aliPosIt = *lit;
+
 		if(aliPosIt == aliPos.end()){
 		    posElements pe;
 		    pair<map<int, posElements>::iterator, bool> insertResult;
