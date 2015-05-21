@@ -1070,7 +1070,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						}
 
 					  // If alignments not too far apart but not overlapping either, then they're mated
-  		  			  if (dist < maxIntronLen && (dist>=0 || (dist<0 && dist>(int32_t)(-1)*qali.at(it).Length)))
+  		  			  if (dist < maxIntronLen) // Steffi commented this out: && (dist>=0 || (dist<0 && dist>(int32_t)(-1)*qali.at(it).Length)))
   		  			  	{
 
 						  if ((verbose && (dist<0 && dist>(int32_t)(-1)*qali.at(it).Length)))
