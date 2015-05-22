@@ -24,6 +24,8 @@ use IO::File;
 my %cmdpars = ( 'pred'              => '',
 		'anno'              => '',
 		'joingenes'         => '',
+		'wholeGenome'       => '',
+                'alternatives'      => '',
 		'jg_exec_dir'       => '',
 		'eval_exec_dir'     => '');
 
@@ -48,6 +50,12 @@ OPTIONS
     --eval_exec_dir=d          Directory that contains the executable evaluate_gtf.pl from the eval package.
                                If not specified it must be in \$PATH environment variable.
     --joingenes=1              Use this option to merge genes in the prediction set and filter out duplicates (default: 0)
+    --wholeGenome=1            If this flag is set evaluation is on the whole genome. Per default, evaluation
+                               is restricted to the gene ranges
+    --alternatives=1           Parameter of joingenes. If this flag is set, joingenes keeps alternative splice forms of a gene, otherwise
+                               it only keeps the best splicing form. Per definition, alternative splice forms are either transcripts
+                               with the same gene ID or the same coding start AND end coordinates (default: 0).
+                               
 
 
 ENDUSAGE
@@ -89,6 +97,16 @@ if ($cmdpars{'jg_exec_dir'} =~ /.[^\/]$/) {
 my $joingenes=0;
 if ($cmdpars{'joingenes'} eq '1'){
     $joingenes=1;
+}
+
+my $wholegenome=0;
+if ($cmdpars{'wholeGenome'} eq '1'){
+    $wholegenome=1;
+}
+
+my $jg_pars="";
+if ($cmdpars{'alternatives'} eq '1'){
+    $jg_pars="-a";
 }
 
 # check whether joingenes is properly installed
@@ -139,7 +157,7 @@ my @intervals=(); # hash of genomic intervals
 my %seqlist=(); # hash of sequences (only keys, no values)
     
 # make gene IDs unique
-my $geneID = 0;
+#my $geneID = 0;
    
 open (PRED, <$cmdpars{"pred"}>) or die ("Could not open $cmdpars{'pred'} for reading: $!");
 open (JOINPRED, ">$gffDir/pred.gtf") or die("Could not open $gffDir/pred.gtf for writing: $!");
@@ -149,10 +167,10 @@ while(<PRED>){
 	push @intervals,[$1, $2, $3]; # store genomic intervals on which gene prediction is executed
 	print JOINPRED $_;
     }
-    if(/\tgene\t/){
-        $geneID++;
-    }
-    s/g\d+/g$geneID/g; # replace gene ID with new unique gene ID
+ #   if(/\tgene\t/){
+  #      $geneID++;
+   # }
+    #s/g\d+/g$geneID/g; # replace gene ID with new unique gene ID
     if(/\t(CDS|stop_codon|start_codon)\t/){
 	print JOINPRED $_;
     }	
@@ -189,13 +207,20 @@ if (!$seqlist{$chr}){ # add new sequences to seqlist
 # make a new annotation file that only contains features from the training set that are completely contained in one of the intervals
 # (if necessary, this can be done faster with a single loop over the intervals, requires presorting of @gfflines)
 open(ANNO, '>', "$gffDir/anno.gtf") or die ("Could not open $gffDir/anno.gtf for writing: $!");
-foreach my $line (@gfflines){
-    my @gffline = split(/\t/,$line);
-    my ($chr, $start, $end)=($gffline[0], $gffline[3], $gffline[4]);
-    foreach my $i (@joined){
-	if($chr eq $i->[0] && !($start > $i->[2]) && !($end < $i->[1]) ){
-	    print ANNO $line;
-	    last;
+if($wholegenome){
+    foreach my $line (@gfflines){
+	print ANNO $line;
+    }
+}
+else{
+    foreach my $line (@gfflines){
+	my @gffline = split(/\t/,$line);
+	my ($chr, $start, $end)=($gffline[0], $gffline[3], $gffline[4]);
+	foreach my $i (@joined){
+	    if($chr eq $i->[0] && !($start > $i->[2]) && !($end < $i->[1]) ){
+		print ANNO $line;
+		last;
+	    }
 	}
     }
 }
@@ -204,7 +229,7 @@ close(ANNO);
 # join genes
 if($joingenes){
     system("mv $gffDir/pred.gtf $gffDir/pred.unfiltered.gtf");
-    system("$cmdpars{'jg_exec_dir'}joingenes -g $gffDir/pred.unfiltered.gtf -o $gffDir/pred.gtf");
+    system("$cmdpars{'jg_exec_dir'}joingenes $jg_pars -g $gffDir/pred.unfiltered.gtf -o $gffDir/pred.gtf");
 }
 
 # split annotation and prediction file by seqs and prepare
