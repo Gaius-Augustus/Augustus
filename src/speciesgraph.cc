@@ -224,6 +224,10 @@ template<class T> Node* SpeciesGraph::addExon(T *exon, vector< vector<Node*> > &
 		addAuxilaryEdge(node,addAuxNodeToLine(IR,end,neutralLines));
 	}
 	if(succ_type >= IR && succ_type <= rncintr){ // add auxiliary nodes to the neutral lines
+	    if(succ_type>IR)
+		end+=Constant::min_intron_len+1; // min intron length
+	    if(end > getSeqLength()-1)
+		end = getSeqLength()-1;
 	    list<NodeType> succ_types = getSuccTypes(node);
 	    for(list<NodeType>::iterator it = succ_types.begin(); it != succ_types.end(); it++){
 		Node *succ = addAuxNodeToLine(*it, end, neutralLines);
