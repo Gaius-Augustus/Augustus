@@ -66,7 +66,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 		    exon.feature = temp;
 		else
 		    load_error("Can not read feature.");
-		if (exon.feature != "CDS" && exon.feature != "start_codon" && exon.feature != "stop_codon" && exon.feature != "exon" && exon.feature != "UTR" && exon.feature != "3'-UTR" && exon.feature != "5'-UTR"){
+		if (exon.feature != "CDS" && exon.feature != "start_codon" && exon.feature != "stop_codon" && exon.feature != "exon" && exon.feature != "UTR" && exon.feature != "3'-UTR" && exon.feature != "5'-UTR" && exon.feature != "tss" && exon.feature != "tts"){
 		    if (exon.feature != "gene" && exon.feature != "transcript" && exon.feature != "intron"){
 			list<string>::iterator fit = find(unknownFeatures.begin(),unknownFeatures.end(),exon.feature);
 			if (fit == unknownFeatures.end()){
@@ -183,6 +183,12 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 			}
 			thisFileTranscriptMap[transcript_id]->tl_complete.second = true;
 			thisFileTranscriptMap[transcript_id]->stop_list.push_back(exon);		// TESTLARS
+		    }else if (exon.feature == "tss"){
+			if (exon.from != exon.to){load_error("\"tss\" can only take place on one position.");}
+			thisFileTranscriptMap[transcript_id]->tss = exon.from;
+		    }else if (exon.feature == "tts"){
+			if (exon.from != exon.to){load_error("\"tts\" can only take place on one position.");}
+			thisFileTranscriptMap[transcript_id]->tts = exon.to;
 		    }else{
 			thisFileTranscriptMap[transcript_id]->exon_list.push_front(exon);
 		    }
@@ -247,7 +253,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 
     if (!unknownFeatures.empty()){
 	for (list<string>::iterator it = unknownFeatures.begin(); it != unknownFeatures.end(); it++){
-	    load_warning("Did not expect feature \"" + *it + "\". Known features are \"CDS\", \"UTR\", \"3'-UTR\", \"5'-UTR\", \"exon\", \"intron\", \"gene\", \"transcript\", \"start_codon\" and \"stop_codon\". This feature is going to be ignored.");
+	    load_warning("Did not expect feature \"" + *it + "\". Known features are \"CDS\", \"UTR\", \"3'-UTR\", \"5'-UTR\", \"exon\", \"intron\", \"gene\", \"transcript\", \"tss\", \"tts\", \"start_codon\" and \"stop_codon\". This feature is going to be ignored.");
 	}
     }
     taxaMap.insert(taxaMapTemp.begin(),taxaMapTemp.end());
@@ -346,6 +352,29 @@ void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &pro
 	    outfile << "# transcrpit has been joined at 5'-side with " << (*it)->joinpartner.first << endl;
 	if (!(*it)->joinpartner.second.empty())
 	    outfile << "# transcrpit has been joined at 3'-side with " << (*it)->joinpartner.second << endl;
+
+	if ((*it)->strand == '+' && (*it)->tss!=-1){
+	    outfile << (*it)->exon_list.front().chr << "\t";
+	    outfile << (*it)->source << "\t";
+	    outfile << "tss" << "\t";
+	    outfile << (*it)->tss << "\t";
+	    outfile << (*it)->tss << "\t";
+	    outfile << '.' << "\t";
+	    outfile << (*it)->strand << "\t";
+	    outfile << "." << "\t";
+	    outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << (*it)->parent->g_id << "\";" << endl;
+	}
+	if ((*it)->strand == '-' && (*it)->tts!=-1){
+	    outfile << (*it)->exon_list.front().chr << "\t";
+	    outfile << (*it)->source << "\t";
+	    outfile << "tts" << "\t";
+	    outfile << (*it)->tts << "\t";
+	    outfile << (*it)->tts << "\t";
+	    outfile << '.' << "\t";
+	    outfile << (*it)->strand << "\t";
+	    outfile << "." << "\t";
+	    outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << (*it)->parent->g_id << "\";" << endl;
+	}
 	for (list<Exon>::iterator it_inside = (*it)->exon_list.begin(); it_inside != (*it)->exon_list.end(); it_inside++){
 	    if ((*it_inside).feature == "CDS"){break;}
 	    outfile << (*it_inside).chr << "\t";
@@ -471,6 +500,28 @@ void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &pro
 		outfile << (*it_inside).frame << "\t";
 	    else
 		outfile << "." << "\t";
+	    outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << (*it)->parent->g_id << "\";" << endl;
+	}
+	if ((*it)->strand == '+' && (*it)->tts!=-1){
+	    outfile << (*it)->exon_list.front().chr << "\t";
+	    outfile << (*it)->source << "\t";
+	    outfile << "tts" << "\t";
+	    outfile << (*it)->tts << "\t";
+	    outfile << (*it)->tts << "\t";
+	    outfile << '.' << "\t";
+	    outfile << (*it)->strand << "\t";
+	    outfile << "." << "\t";
+	    outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << (*it)->parent->g_id << "\";" << endl;
+	}
+	if ((*it)->strand == '-' && (*it)->tss!=-1){
+	    outfile << (*it)->exon_list.front().chr << "\t";
+	    outfile << (*it)->source << "\t";
+	    outfile << "tss" << "\t";
+	    outfile << (*it)->tss << "\t";
+	    outfile << (*it)->tss << "\t";
+	    outfile << '.' << "\t";
+	    outfile << (*it)->strand << "\t";
+	    outfile << "." << "\t";
 	    outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << (*it)->parent->g_id << "\";" << endl;
 	}
     }

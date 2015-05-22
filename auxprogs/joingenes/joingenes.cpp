@@ -17,13 +17,13 @@ static const struct option longOpts[] = {
     { "output", required_argument, NULL, 'o' },
     { "errordistance", required_argument, NULL, 'e' },
     { "genemodel", required_argument, NULL, 'm'},
-    { "onlycompare", required_argument, NULL, 'c'},
+    { "onlycompare", no_argument, NULL, 'c'},
     { "suppress", required_argument, NULL, 's' },
-    { "join", required_argument, NULL, 'j' },
-    { "selection", required_argument, NULL, 'l' },
+    { "join", no_argument, NULL, 'j' },
+    { "selection", no_argument, NULL, 'l' },
 //    { "mergeTaxa", required_argument, NULL, 't' },
-    { "alternatives", required_argument, NULL, 'a' },
-    { "stopincoding", required_argument, NULL, 'i' },
+    { "alternatives", no_argument, NULL, 'a' },
+    { "stopincoding", no_argument, NULL, 'i' },
     { "help", no_argument, NULL, 'h' },
     { NULL, no_argument, NULL, 0 }
 };

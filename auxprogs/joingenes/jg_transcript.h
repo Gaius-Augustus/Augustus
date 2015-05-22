@@ -94,6 +94,8 @@ class Transcript{
 	this->tl_complete.first = false;
 	this->tl_complete.second = false;
 	this->isNotFrameCorrect = false;
+	this->tss = -1;
+	this->tts = -1;
     }
 
     list<string> supporter;		// at the moment these list only consist the pointer to transcripts, who are totaly equal to this transcript (doesnt matter whether their creation is related)
@@ -105,6 +107,8 @@ class Transcript{
     char strand;
     int tis;							// position of first base in translation sequence (translation initation site)
     int tes;							// position of last base in translation sequence (translation end site)
+    int tss;
+    int tts;
     int priority;
     pair<int,int> pred_range;			// prediction range borders: <low,high> sequence position
     pair<bool,bool> tx_complete;		// transcript end complete at <lower,higher> base number
@@ -435,7 +439,7 @@ class Transcript{
 				(*it).from = (*it_prev).to + 1;
 				(*it).feature = "UTR";
 				continue;
-			    }else{cout << "unexpected case in exontoutr() nr 1" << endl;}
+			    }else{cerr << "unexpected case in exontoutr() nr 1 with: " << originalId << " from " << inputFile << " because there is an exon from " << (*it).from << " to " << (*it).to << " and a CDS from " << (*it_prev).from << " to " << (*it_prev).to << endl;}
 			}
 		    }
 		}
@@ -460,7 +464,7 @@ class Transcript{
 				it_next++;
 				exon_list.insert(it_next, new_utr);
 				continue;
-			    }else{cout << "unexpected case in exontoutr() nr 2" << endl;}
+			    }else{cerr << "unexpected case in exontoutr() nr 2" << originalId << " from " << inputFile << " because there is an exon from " << (*it).from << " to " << (*it).to << " and a CDS from " << (*it_next).from << " to " << (*it_next).to << endl;}
 			}
 		    }
 		}
@@ -525,6 +529,7 @@ int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &pro
 
 void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties);
 void recursiv(list<list<Transcript*>> &groups, list<Transcript*> actGroup, list<string> openTx, Properties &properties, unordered_map<string,Transcript*> &txMap, list<string> selectedTx);
+list<Transcript*> calcGeneStructur(list<Transcript*> overlap, Properties &properties);
 
 void deleteTx(Transcript* tx, Properties &properties);
 bool compare_quality(Transcript const* lhs, Transcript const* rhs);

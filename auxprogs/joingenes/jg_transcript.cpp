@@ -54,7 +54,7 @@ void divideInOverlapsAndConquer(list<Transcript*> &transcript_list, Properties &
 
 void workAtOverlap(list<Transcript*> &overlap, Properties &properties)
 {
-    if (overlap.size() > 200){
+    if (overlap.size() > 300){
 	cerr << "WARNING: the size of the actual overlap is very big (" << overlap.size() << "). This can lead to a long computation time." << endl; 
     }
 
@@ -69,7 +69,6 @@ void workAtOverlap(list<Transcript*> &overlap, Properties &properties)
     // searchs and destroys transcripts, which are fully in other transcripts
     if (properties.genemodel != "bacterium")
         search_n_destroy_parts(overlap, properties);
-
     //........................
     if (properties.selecting){
 	selection(overlap, properties);
@@ -733,10 +732,12 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
     case 1:
 	if (strand == '+'){
 	    if (txNew->stop_list.empty()){txNew->stop_list = t2->stop_list;}else{cerr << "WARNING: existing stop list should be replaced (in joining())!1" << endl;}
+	    txNew->tts = t2->tts;
 	    txNew->tes = t2->tes;
 	    txNew->tl_complete.second = t2->tl_complete.second;
 	    txNew->joinpartner.second = t2->originalId;
 	}else{
+	    txNew->tss = t2->tss;
 	    txNew->tis = t2->tis;
 	    txNew->tl_complete.first = t2->tl_complete.first;
 	    txNew->joinpartner.first = t2->originalId;
@@ -759,10 +760,12 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
     case 2:
 	if (strand == '+'){
 	    if (txNew->stop_list.empty()){txNew->stop_list = t2->stop_list;}else{cerr << "WARNING: existing stop list should be replaced (in joining())!2" << endl;}
+	    txNew->tts = t2->tts;
 	    txNew->tes = t2->tes;
 	    txNew->tl_complete.second = t2->tl_complete.second;
 	    txNew->joinpartner.second = t2->originalId;
 	}else{
+	    txNew->tss = t2->tss;
 	    txNew->tis = t2->tis;
 	    txNew->tl_complete.first = t2->tl_complete.first;
 	    txNew->joinpartner.first = t2->originalId;
@@ -780,11 +783,13 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 	break;
     case 3:
 	if (strand == '+'){
+	    txNew->tss = t2->tss;
 	    txNew->tis = t2->tis;
 	    txNew->tl_complete.first = t2->tl_complete.first;
 	    txNew->joinpartner.first = t2->originalId;
 	}else{
 	    if (txNew->stop_list.empty()){txNew->stop_list = t2->stop_list;}else{cerr << "WARNING: existing stop list should be replaced (in joining())!3" << endl;}
+	    txNew->tts = t2->tts;
 	    txNew->tes = t2->tes;
 	    txNew->tl_complete.second = t2->tl_complete.second;
 	    txNew->joinpartner.second = t2->originalId;
@@ -804,11 +809,13 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 	break;
     case 4:
 	if (strand == '+'){
+	    txNew->tss = t2->tss;
 	    txNew->tis = t2->tis;
 	    txNew->tl_complete.first = t2->tl_complete.first;
 	    txNew->joinpartner.first = t2->originalId;
 	}else{
 	    if (txNew->stop_list.empty()){txNew->stop_list = t2->stop_list;}else{cerr << "WARNING: existing stop list should be replaced (in joining())!4" << endl;}
+	    txNew->tts = t2->tts;
 	    txNew->tes = t2->tes;
 	    txNew->tl_complete.second = t2->tl_complete.second;
 	    txNew->joinpartner.second = t2->originalId;
@@ -1286,7 +1293,7 @@ bool alternativeVariants(Gene* g1, Gene* g2){
 void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties){
 
     search_n_destroy_doublings(overlap, properties, false);
-    // calculate score to compare the quality of transcripts
+
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	if (find(properties.supprList.begin(),properties.supprList.end(),(*it)->priority) != properties.supprList.end()){
 	    deleteTx(*it, properties);
@@ -1294,7 +1301,7 @@ void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties
 	    it--;
 	    continue;
 	}
-
+    	// calculate score to compare the quality of transcripts
 	calculatePredictionScore(*it);
 //	calculateQualityScore(*it);
     }
@@ -1368,19 +1375,44 @@ void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties
 	    itInside++;
 	}
     }
-    list<string> openTx;
+/*    list<string> openTx;
     unordered_map<string,Transcript*> txMap;
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	openTx.push_back((*it)->t_id);
 	txMap[(*it)->t_id] = (*it);
+    }*/
+//    list<list<Transcript*>> groups;
+//    list<Transcript*> actGroup;
+//    list<string> selectedTx;
+
+//    recursiv(groups, actGroup, openTx, properties, txMap, selectedTx);
+
+    //overlap = groups.front();
+    overlap.sort(compare_quality);
+    overlap = calcGeneStructur(overlap, properties);
+
+}
+
+list<Transcript*> calcGeneStructur(list<Transcript*> overlap, Properties &properties){
+    list<Transcript*> newOvlp;
+    list<string> openTx;
+
+    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+	openTx.push_back((*it)->t_id);
     }
-    list<list<Transcript*>> groups;
-    list<Transcript*> actGroup;
-    list<string> selectedTx;
 
-    recursiv(groups, actGroup, openTx, properties, txMap, selectedTx);
-
-    overlap = groups.front();
+    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+	if ((find(openTx.begin(), openTx.end(), (*it)->t_id) != openTx.end())){
+	    newOvlp.push_back(*it);
+	    for (list<string>::iterator iti = openTx.begin(); iti != openTx.end(); iti++){
+		if ((find((*it)->consistent.begin(), (*it)->consistent.end(), (*iti)) == (*it)->consistent.end())){
+		    openTx.erase(iti);
+		    iti--;
+		}
+	    }
+	}
+    }
+    return newOvlp;
 }
 
 void recursiv(list<list<Transcript*>> &groups, list<Transcript*> actGroup, list<string> openTx, Properties &properties, unordered_map<string,Transcript*> &txMap, list<string> selectedTx){
