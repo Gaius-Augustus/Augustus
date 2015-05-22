@@ -88,7 +88,7 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 	  Eomega = -1;
 	  VarOmega = -1;
 	  omega = -1;
-	  cerr<<"ortho exon "<<this->ID<<" has no omega"<<endl;
+	  //cerr<<"ortho exon "<<this->ID<<" has no omega"<<endl;
 	  return;
 	}
 	//cout<<"number of omegas: "<<k<<endl;
@@ -126,13 +126,16 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 
 	//cout<<"Eomega: "<<Eomega<<endl;
 	//cout<<"set Omega at oeEnd: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\t(omega, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<" Eomega: "<<Eomega<<endl;
-	
+	double omega_maxML = 0;
 	VarOmega = 0.0;
 	for (int u=0; u < k; u++){
 	    VarOmega += postprobs[u] * pow(codonevo->getOmega(u) - Eomega, 2);
+	    if(loglikOmegas[u] == maxloglik){
+	      omega_maxML = codonevo->getOmega(u);
+	    }
 	}
-	if(Eomega > 0)
-	    omega = Eomega;
+	if(omega_maxML > 0)
+	  omega = omega_maxML;
     }
 }
 

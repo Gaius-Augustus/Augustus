@@ -819,8 +819,10 @@ void ExonModel::readAllParameters(){
 double *ExonModel::getCodonUsage(){
     int numCodons = 20000; // number of sampled codons
     double *pi = new double[64];
-    for (int c=0; c<64; c++)
-	pi[c] = 0;
+    for (int c=0; c<64; c++){
+      pi[c] = 0;
+    }
+    
     if (!GCemiprobs)
     	throw ProjectError("ExonModel::getCodonUsage emission probabilities not initialized?");
     FramedPatMMGroup &e = GCemiprobs[Constant::decomp_num_steps/2]; // assume average GC content
@@ -840,6 +842,7 @@ double *ExonModel::getCodonUsage(){
 	pi[c] /= s;
 	// cout << c << "\t" << s2i.inv(c) << "\t" << pi[c] << endl;
     }
+    
     return pi;
 }
 

@@ -205,6 +205,11 @@ void CodonEvo::computeLogPmatrices(){
 	    //cout << "codon rate matrix log P(t=" << t << ", omega=" << omega << ")" << endl;
 	    //printCodonMatrix(allLogPs[u][v]);
 	    //#endif
+
+	    /*for(int i=0; i<64; i++){
+	       cout<<"vvv\t"<<Seq2Int(3).inv(i)<<"\t"<<omega<<"\t"<<t<<"\t"<<gsl_matrix_get(allPs[u][v],i,i)<<endl;
+	       }*/
+
 	}
 	gsl_matrix_free(U);
 	gsl_matrix_free(Uinv);
@@ -294,6 +299,11 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
     gsl_matrix* Q = gsl_matrix_calloc (64, 64); // initialize Q as the zero-matrix
     Seq2Int s2i(3);
 
+    // store and print number of synonymous and nonsynonymous substitutions for each codon                                           
+    vector<int> num_syn(64,0);
+    vector<int> num_nonsyn(64,0);
+    vector<int> num_wk(64,0);
+
     // initialize off-diagonal elements
     // codon i (row)    abc
     // codon j (col)    dbc
@@ -318,10 +328,18 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
 			    double qij = pi[j];
 			    if (!(pi[i] > 0.0))
 				qij = 0.0; // rows corresponding to stop codons are also set to 0
-			    if (GeneticCode::is_purine(codonj[f]) == GeneticCode::is_purine(codoni[f]))
+			    if (GeneticCode::is_purine(codonj[f]) == GeneticCode::is_purine(codoni[f])){
 				qij *= kappa; // transition
-			    if (GeneticCode::translate(i) != GeneticCode::translate(j))
+			    }
+			    if (GeneticCode::translate(i) != GeneticCode::translate(j)){
 				qij *= omega; // non-synonymous subst.
+				num_nonsyn[i]++;
+			    }else{
+			      num_syn[i]++;
+			    }
+			    if(GeneticCode::is_purine(codonj[f]) == GeneticCode::is_purine(codoni[f]) && GeneticCode::translate(i) != GeneticCode::translate(j)){
+			      num_wk[i]++;
+			    }
 			    gsl_matrix_set (Q, i, j, qij);
 			}
 		    }
@@ -329,6 +347,14 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
 	    }
 	}
     }
+    /*
+    cout<<"------------ number of synonymous and nonsynonymous substitutions for each codon ----------------"<<endl;
+    cout<<"codon\tnum_syn\tnum_nonsyn\tnum_wk\tcodon_usage"<<endl;
+    for(int i=0; i<64; i++){
+      cout<<Seq2Int(3).inv(i)<<"\t"<<num_syn[i]<<"\t"<<num_nonsyn[i]<<"\t"<<num_wk[i]<<"\t"<<pi[i]<<endl;
+    }
+    */
+
 
     // initialize diagonal elements (each row must sum to 0)
     double rowsum;

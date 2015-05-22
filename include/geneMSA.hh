@@ -30,7 +30,7 @@ struct cumValues{
       if(logliks.size() == 0){
 	    logliks.resize(ll->size(),0.0);
 	    if(logliks.size() == 0){
-	      cout<<"logliks still empty!"<<endl;
+	      cerr<<"logliks still empty!"<<endl;
 	    }
       }
 	for(int u = 0; u < ll->size(); u++){
@@ -86,7 +86,7 @@ public:
     void printExonCands();
     void printOrthoExons();
     void computeOmegas(vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
-    void computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
+    void computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli);
     void printCumOmega();
     void comparativeSignalScoring();
     // Charlotte Janas playground
@@ -115,7 +115,7 @@ public:
 
     void printSingleOrthoExon(OrthoExon &oe, bool files = true);
 private:
-  vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, const vector<vector<fragment>::const_iterator > &froms, map<unsigned, vector<int> > *alignedCodons = NULL, bool generateString=true, vector<vector<int> > *posStoredCodons = NULL);
+  vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, const vector<vector<fragment>::const_iterator > &froms, map<unsigned, vector<int> > *alignedCodons = NULL, bool generateString=true, vector<vector<int> > *posStoredCodons = NULL, ofstream *codonAli = NULL);
     void cutIncompleteCodons(OrthoExon &oe);
     cumValues* findCumValues(bit_vector bv, vector<int> rfc);
     static PhyloTree *tree;
@@ -129,7 +129,6 @@ private:
     list<OrthoExon> orthoExonsList;		// list of ortholog exons found in a gene segment
     unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> > cumOmega; // stores cumulative omega values for every reading frame combination and every bitvector that exist                                                                     
 };
-
 
 
 

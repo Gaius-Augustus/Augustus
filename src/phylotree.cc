@@ -244,6 +244,8 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
 		for(list<Treenode*>::iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
 		    double sum=0;
 		    gsl_matrix *P = evo->getSubMatrixP(u,(*it)->getDist());
+		    //cout<<"---------- codon Matrix for omega nr "<<u<<" and branch lenght = "<<(*it)->getDist()<<"---------"<<endl;
+		    //printCodonMatrix(P);
 		    for(int j=0; j<states; j++){
 			sum += gsl_matrix_get(P, i, j) * (*it)->getTable(j);
 			//		cout<<gsl_matrix_get(P, i, j)<<"\t";

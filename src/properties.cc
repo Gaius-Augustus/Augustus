@@ -75,7 +75,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/only_species",
 "/CompPred/outdir_orthoexons",
 "/CompPred/outdir",
-"/CompPred/paml",
+"/CompPred/printOrthoExonAli",
 "/CompPred/phylo_factor",
 "/CompPred/dd_factor",
 "/CompPred/dd_rounds",

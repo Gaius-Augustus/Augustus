@@ -265,6 +265,17 @@ void CompGenePred::start(){
     vector<int> opt_geneid(OrthoGraph::numSpecies, 1);
     vector<ofstream*> sampledGFs = initOutputFiles(outdir,".sampled_GFs"); // prints sampled exons/introns and their posterior probs to file
 
+    bool printCodons;
+    try {
+      printCodons =  Properties::getBoolProperty("/CompPred/printOrthoExonAli");
+    } catch(...){
+      printCodons = 0;
+    }
+    ofstream codonAli;   // prints codon alignments of all orthoexons in maf format
+    if(printCodons){
+      codonAli.open(outdir + "orthoexons_codonAlignment.maf");
+    }
+    
     BaseCount::init();
     PP::initConstants();
     NAMGene namgene; // creates and initializes the states
@@ -426,7 +437,7 @@ void CompGenePred::start(){
 	
 	try{
 	    if(Properties::getBoolProperty("/CompPred/omegaEff"))
-		geneRange->computeOmegasEff(seqRanges, &ctree); // omega and number of substitutions is stored as OrthoExon attribute
+	      geneRange->computeOmegasEff(seqRanges, &ctree, &codonAli); // omega and number of substitutions is stored as OrthoExon attribute
 	    else
 		geneRange->computeOmegas(seqRanges, &ctree);
 	}catch(...){}
