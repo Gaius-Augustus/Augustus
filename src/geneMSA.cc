@@ -34,7 +34,8 @@ int GeneMSA::geneRangeID = 1;
 vector<int> GeneMSA::exonCandID;
 vector<ofstream*> GeneMSA::exonCands_outfiles;
 vector<ofstream*> GeneMSA::orthoExons_outfiles;
-vector<ofstream*> GeneMSA::geneRanges_outfiles;
+vector<ofstream*> GeneMSA::geneRanges_outfiles_gff;
+vector<ofstream*> GeneMSA::geneRanges_outfiles_bed;
 vector<ofstream*> GeneMSA::omega_outfiles;
 unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>> GeneMSA::topologies;
 
@@ -324,7 +325,8 @@ void GeneMSA::openOutputFiles(string outdir){
     if (Constant::exoncands) // output of exon candidates into a gff file requested
 	exonCands_outfiles.resize(tree->numSpecies());
     orthoExons_outfiles.resize(tree->numSpecies());
-    geneRanges_outfiles.resize(tree->numSpecies());
+    geneRanges_outfiles_gff.resize(tree->numSpecies());
+    geneRanges_outfiles_bed.resize(tree->numSpecies());
     omega_outfiles.resize(tree->numSpecies());
     vector<string> species;
     tree->getSpeciesNames(species);
@@ -339,13 +341,24 @@ void GeneMSA::openOutputFiles(string outdir){
 		(*os_ec) << "#\n#-----  exon candidates  -----" << endl << "#" << endl;
 	    }
         }
-        string file_geneRanges = outdir + "geneRanges." + species[i] + ".gff3";
+        string file_geneRanges = outdir + "geneRanges." + species[i] + ".bed";
         ofstream *os_gr = new ofstream(file_geneRanges.c_str());
-        if (os_gr!=NULL) {
-            geneRanges_outfiles[i]=os_gr;
-            (*os_gr) << PREAMBLE << endl;
-            (*os_gr) << "#\n#-----  possible gene ranges  -----" << endl << "#" << endl;
-        }
+        if (os_gr && (os_gr->rdstate() & std::ofstream::failbit) == 0) {
+            geneRanges_outfiles_bed[i] = os_gr;
+            (*os_gr) << "#\n#-----  gene ranges  -----" << endl << "#" << endl;
+        } else {
+	    cerr << "Error writing " << file_geneRanges << endl;
+	}
+	// same in gff format
+        file_geneRanges = outdir + "geneRanges." + species[i] + ".gff"; // was .gff3 before, although it was only GFF format, not .gff3
+	os_gr = new ofstream(file_geneRanges.c_str());
+        if (os_gr && (os_gr->rdstate() & std::ofstream::failbit) == 0) {
+            geneRanges_outfiles_gff[i] = os_gr;
+            (*os_gr) << "#\n#-----  gene ranges  -----" << endl << "#" << endl;
+        } else {
+	    cerr << "Error writing " << file_geneRanges << endl;
+	} 
+	
         string file_orthoexon = outdir + "orthoExons." + species[i] + ".gff3";
         ofstream *os_oe = new ofstream(file_orthoexon.c_str());
         if (os_oe) {
@@ -372,14 +385,20 @@ void GeneMSA::printStats(){
     }
 }
 
-// appends the gene range of each species to the file 'geneRanges.speciesnames.gff3'
+// appends the gene range of each species to the file 'geneRanges.speciesnames.bed'
 void GeneMSA::printGeneRanges() {
     for (size_t s=0; s < numSpecies(); s++) {
-	ofstream &fstrm = *geneRanges_outfiles[s]; // write to 'geneRanges.speciesname[s].gff3'
 	if (getStart(s) >= 0) {
-	    fstrm << getSeqID(s) << "\tGeneRange\t" << "exon\t" << getStart(s) + 1 << "\t" << getEnd(s) + 1 << "\t0\t"
-		  << getStrand(s) << "\t" << ".\t" << "Name=" << geneRangeID;
-	    fstrm << ";Note=" << alignment->getSignature() << endl;
+	    // output in .bed format 
+	    ofstream &fstrm_bed = *geneRanges_outfiles_bed[s]; // write to 'geneRanges.speciesname[s].bed'
+	    fstrm_bed << getSeqID(s) << "\t" << getStart(s) + 1 << "\t" << getEnd(s) + 1 << "\t" << alignment->getSignature()
+		      << "\t0\t" << getStrand(s) << endl;
+	    
+	    // GFF output
+	    ofstream &fstrm_gff = *geneRanges_outfiles_gff[s]; // write to 'geneRanges.speciesname[s].gff'    
+	    fstrm_gff << getSeqID(s) << "\tGeneRange\t" << "exon\t" << getStart(s) + 1 << "\t" << getEnd(s) + 1 << "\t0\t"
+		      << getStrand(s) << "\t" << ".\t" << "Name=" << geneRangeID;
+	    fstrm_gff << ";Note=" << alignment->getSignature() << endl;
 	}
     }
     geneRangeID++;
@@ -820,13 +839,13 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
     cout<<"computing omega for each ortho exon."<<endl;
 
     // treat forward and reverse strand seperately (might be done more efficiently)
-    for (int s=0; s<=1; s++){
-      bool plusStrand = (bool) s;
-      if(plusStrand){
-	cout<<"--- processing ortho exons on forward strand ---"<<endl;
-      }else{
-	cout<<"--- processing ortho exons on reverse strand ---"<<endl;
-      }
+    for (int strnd=1; strnd>=0; strnd--){
+	bool plusStrand = (bool) strnd;
+	if (plusStrand){
+	    cout << "--- processing ortho exons on forward strand ---" << endl;
+	} else {
+	    cout << "--- processing ortho exons on reverse strand ---" << endl;
+	}
       
 	vector<vector<fragment>::const_iterator > froms(numSpecies());
 	for (size_t s=0; s < numSpecies(); s++)
@@ -839,7 +858,8 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 	alignedCodons.insert(pair<unsigned, vector<int> >(0,vector<int>(numSpecies(),-1))); // guaratee that codon alignment starts before first OrthoExon
 	vector<vector<int> > posStoredCodons(numSpecies(),vector<int>(3,0)); // stores the position of the last codon aligned in getCodonAlignment() for each species and reading frame
     
-	cout<<"generate codon alignment"<<endl;
+	cout << "generating codon alignment" << endl;
+	cout << "number of orthoExons: " << orthoExonsList.size() << endl;
 	for (list<OrthoExon>::iterator oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
 	  if(isOnFStrand(oe->getStateType()) != plusStrand)
 		continue;
@@ -1243,9 +1263,13 @@ void GeneMSA::closeOutputFiles(){
 	    exonCands_outfiles[i]->close();
 	    delete exonCands_outfiles[i];
 	}
-        if (geneRanges_outfiles[i] && geneRanges_outfiles[i]->is_open()) {
-	    geneRanges_outfiles[i]->close();
-	    delete geneRanges_outfiles[i];
+        if (geneRanges_outfiles_gff[i] && geneRanges_outfiles_gff[i]->is_open()) {
+	    geneRanges_outfiles_gff[i]->close();
+	    delete geneRanges_outfiles_gff[i];
+	}
+        if (geneRanges_outfiles_bed[i] && geneRanges_outfiles_bed[i]->is_open()) {
+	    geneRanges_outfiles_bed[i]->close();
+	    delete geneRanges_outfiles_bed[i];
 	}
         if (orthoExons_outfiles[i] && orthoExons_outfiles[i]->is_open()) {
 	    orthoExons_outfiles[i]->close();

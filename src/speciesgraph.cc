@@ -159,7 +159,17 @@ Node* SpeciesGraph::addNode(Status *exon){
 	score=ec_thold - 9.9121118 + 7.2057311 * exon->getPostProb() + 2.9993128 * getAvgBaseProb(exon) + 0.3998047 * log(exon->getLen());
 	if(exon->hasEvidence() && exon->name == CDS)
 	    score+=maxCostOfExonLoss;
+    } else if (string("arabidopsis") == Properties::getProperty("species")){
+	score = ec_thold 
+	    - 3.6803 // intercept
+	    - 5.1385 // for not having omega
+	    + 0.9453 * log(exon->getLen())
+	    + 4.2741 * exon->getPostProb() 
+	    + 2.5422 * getAvgBaseProb(exon);
+	if (exon->hasEvidence() && exon->name == CDS)
+	    score += maxCostOfExonLoss;
     }
+
     Node *node = new Node(exon->begin, exon->end, score, exon->item, ntype);
     printSampledGF(exon);
     nodelist.push_back(node);
@@ -171,6 +181,11 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
     double score = ec_score;
     if (string("fly") == Properties::getProperty("species"))
 	score =ec_thold - 9.9121118 + 0.3998047 * log(exon->len());
+    else if (string("arabidopsis") == Properties::getProperty("species"))
+	score = ec_thold 
+	    - 3.6803  // intercept
+	    - 5.1385 // for not having omega
+	    + 0.9453 * log(exon->len());
     Node *node = new Node(exon->begin, exon->end, score, exon, unsampled_exon);
     nodelist.push_back(node);
     addToHash(node);
@@ -306,11 +321,20 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
 	double intr_score = 0.0;
 	if(intr->name == intron) // only CDS introns have a posterior probability                                                                                                
 	    intr_score = setScore(intr);
-	if (intr->name == intron && string("fly") == Properties::getProperty("species")){
-	    intr_score = ic_thold - 5.64405 + 5.640821 * intr->getPostProb() + 4.740363 * getAvgBaseProb(intr) - 0.155695 * log(intr->getLen());
+	if (intr->name == intron){
+	    if (string("fly") == Properties::getProperty("species")){
+		intr_score = ic_thold - 5.64405 + 5.640821 * intr->getPostProb() + 4.740363 * getAvgBaseProb(intr) - 0.155695 * log(intr->getLen());
+	    } else if (intr->name == intron && string("arabidopsis") == Properties::getProperty("species")){
+		intr_score = ic_thold 
+		    - 4.65897
+		    + 3.50353 * intr->getPostProb()
+		    + 1.93823 * getAvgBaseProb(intr)
+		    - 0.11402 * log(intr->getLen());
+	    }
 	    if(intr->hasEvidence())
 		intr_score+=maxCostOfExonLoss;
 	}
+
 	Edge in(succ, false, intr_score, intr->item);
 	pred->edges.push_back(in);
 	printSampledGF(intr);

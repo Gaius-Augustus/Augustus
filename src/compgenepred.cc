@@ -183,7 +183,8 @@ void CompGenePred::start(){
     } catch (...) {}
     
     if(Constant::alternatives_from_evidence){
-	cerr << "Warning: The option 'alternatives_from_evidence' is only available in the single species mode. Turned it off." << endl;
+	cerr << "Warning: The option 'alternatives-from-evidence' is only available in single species mode. Turned it off." << endl
+	     << "Rerun with --alternatives-from-evidence=0 to remove this warning." << endl;
 	Constant::alternatives_from_evidence=false;
     }
     bool genesWithoutUTRs;
@@ -239,19 +240,6 @@ void CompGenePred::start(){
         outdir = Properties::getProperty("/CompPred/outdir");
     } catch (...) {
         outdir = "";
-    }
-    if(outdir != ""){
-        if(outdir[outdir.size()-1] != '/')
-            outdir += '/';                   // append slash if neccessary 
-	outdir = expandHome(outdir);         // replace "~" by "$HOME"
-	// Does the directory actually exist? 
-                        
-        struct stat buffer;
-        if( stat(outdir.c_str(), &buffer) == -1 || !S_ISDIR(buffer.st_mode)){
-            int err = mkdir(outdir.c_str(),0755);
-            if(err != 0)
-                throw ProjectError("could not create directory " + outdir);
-        }
     }
     
     //initialize output files of initial gene prediction and optimized gene prediction
@@ -442,7 +430,7 @@ void CompGenePred::start(){
 		geneRange->computeOmegas(seqRanges, &ctree);
 	}catch(...){}
 
-	if(conservationTrack)
+	if (conservationTrack)
 	    geneRange->printConsScore(seqRanges, outdir);
 
 	if (noprediction){

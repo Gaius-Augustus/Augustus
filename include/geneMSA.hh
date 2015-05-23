@@ -111,7 +111,7 @@ public:
     static vector<int> exonCandID; // IDs for exon candidates of different species
     static unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>> topologies;
     // pointers to the output files
-    static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles, omega_outfiles; 
+    static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles_bed, geneRanges_outfiles_gff, omega_outfiles; 
 
     void printSingleOrthoExon(OrthoExon &oe, bool files = true);
 private:

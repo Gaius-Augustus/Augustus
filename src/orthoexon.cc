@@ -155,6 +155,17 @@ double OrthoExon::getLogRegScore(){
 		 + 0.7911388 * numExons()
 		 + 1.5578776 * hasOmega() 
 		 + 1.9190608 ); // for being a HECT
+    } else if (string("arabidopsis") == Properties::getProperty("species")){
+
+	Eomega = (Eomega != Eomega)? -1 : Eomega; // temporary bugfix: if omega is not a number, set it to the default value
+	VarOmega = (VarOmega != VarOmega)? -1 : VarOmega;
+
+	return  (- 3.4717 * Eomega * hasOmega()
+		 - 5.6222 * cons
+		 - 8.1274 * diversity
+		 + 4.1816 * numExons()
+		 + 5.1385 * hasOmega() 
+		 ); // for being a HECT
     }
     return 0.0;
 }

@@ -22,7 +22,7 @@
 #endif
 // standard C/C++ includes
 #include <fstream>
-
+#include <sys/stat.h>
 
 int verbosity=1;
 bool mea_prediction = false;
@@ -466,6 +466,25 @@ void setParameters(){
       mea_prediction = Properties::getBoolProperty("mea");
     } catch (...) {}
 
+    // directory for output files of comparative gene prediction
+    // create this before outfile because outfile could be in this directory
+    try {
+        string outdir = Properties::getProperty("/CompPred/outdir");
+	if (outdir != ""){
+	    outdir = expandHome(outdir);         // replace "~" by "$HOME"
+	    if(outdir[outdir.size()-1] != '/')
+		outdir += '/';                   // append slash if neccessary 
+	    
+	    Properties::addProperty("/CompPred/outdir", outdir);
+	    // the directory actually exists? 
+	    struct stat buffer;
+	    if( stat(outdir.c_str(), &buffer) == -1 || !S_ISDIR(buffer.st_mode)){
+		int err = mkdir(outdir.c_str(),0755); // create it, if not
+		if (err != 0)
+		    throw ProjectError("Could not create output directory " + outdir);
+	    }
+	}
+    } catch (...) { }
 
     if (outputfilename != "") {
 	outputfile.open(outputfilename.c_str());

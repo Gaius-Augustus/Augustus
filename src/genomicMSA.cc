@@ -408,7 +408,7 @@ void GenomicMSA::findGeneRanges(){
     } while (numNodes < numNodesOld);
 
     cout << "number of nodes: " << numNodes << endl;
-    writeDot(aliG, "aliGraph." + itoa(itnr++) + ".dot");	
+    // writeDot(aliG, "aliGraph." + itoa(itnr++) + ".dot");	
 
     // take all singleton alignments that are now long enough
     // at the same time, pack all alignments
@@ -505,7 +505,7 @@ void GenomicMSA::findGeneRanges(){
 	    cout << **it << endl;
     }
     vector<AliPath> allPaths;
-    writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot");
+    // writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot");
     int i=0;
     int maxSignatures = 100; // in addition to maxSignatures signatures, take only those, which
     int minAvCumFragLen = 1000; // cover on average minAvCumFragLen bp per species
@@ -514,7 +514,7 @@ void GenomicMSA::findGeneRanges(){
 	    project(aliG2, *sit); // set weights wrt to signature
 	    // cout << (*sit)->sigstr() << endl;
 	    // cout << " writing aliGraph." + itoa(itnr) + ".dot" << endl;
-	    if (itnr < 6)
+	    if (itnr < 0)
 		writeDot(aliG2, "aliGraph." + itoa(itnr++) + ".dot", *sit);
 	    int numNewCovered = 1;
 	    while (numNewCovered > 0){
