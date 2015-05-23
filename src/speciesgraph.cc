@@ -23,7 +23,7 @@ double SpeciesGraph::maxCostOfExonLoss = 0.0;
 void SpeciesGraph::buildGraph(){
     
     vector< vector<Node*> > neutralLines; //represents the seven neutral lines
-    int seqlen = getSeqLength();
+    int seqlen = getSeqLength()+1;
 
     /*
      * hash that stores all auxiliary nodes 
@@ -205,13 +205,11 @@ template<class T> Node* SpeciesGraph::addExon(T *exon, vector< vector<Node*> > &
 	NodeType pred_type = getPredType(node->castToStateType(), node->begin, node->end);
 	int begin = node->begin;
 	NodeType succ_type = getSuccType(node->castToStateType());
-	int end = node->end;
+	int end = node->end + 1;
 	/*
 	 * connect to the preceeding features
 	 */
 	if(pred_type > IR){
-	    if( pred_type == rTLstart || pred_type == TLstop )
-		begin--;
 	    Node *pred = getAuxilaryNode(pred_type,begin, auxiliaryNodes);
 	    if(pred)
 		addAuxilaryEdge(pred,node);
@@ -230,8 +228,6 @@ template<class T> Node* SpeciesGraph::addExon(T *exon, vector< vector<Node*> > &
 	 * connect to the succeeding features
 	 */
 	if(succ_type > IR){
-	    if(  succ_type == TLstart ||  succ_type == rTLstop )
-		end++;
 	    Node *succ = getAuxilaryNode(succ_type, end, auxiliaryNodes);
 	    if(succ)
 		addAuxilaryEdge(node,succ);   
@@ -240,9 +236,9 @@ template<class T> Node* SpeciesGraph::addExon(T *exon, vector< vector<Node*> > &
 	}
 	if(succ_type >= IR && succ_type <= rncintr){ // add auxiliary nodes to the neutral lines
 	    if(succ_type>IR)
-		end+=Constant::min_intron_len+1; // min intron length
-	    if(end > getSeqLength()-1)
-		end = getSeqLength()-1;
+		end+=Constant::min_intron_len; // min intron length
+	    if(end > getSeqLength())
+		end = getSeqLength();
 	    list<NodeType> succ_types = getSuccTypes(node);
 	    for(list<NodeType>::iterator it = succ_types.begin(); it != succ_types.end(); it++){
 		Node *succ = addAuxNodeToLine(*it, end, neutralLines);
@@ -347,8 +343,6 @@ Node* SpeciesGraph::addLeftSS(Status *exon, vector< vector<Node*> >&neutralLines
 	return NULL;
     NodeType ntype = getPredType(((State*)exon->item)->type, exon->begin, exon->end);
     int begin = exon->begin;
-    if( ntype == rTLstart || ntype == TLstop )
-	    begin--;
     return addAuxilaryNode(ntype,begin,neutralLines, auxiliaryNodes);
 }
 
@@ -357,9 +351,7 @@ Node* SpeciesGraph::addRightSS(Status *exon, vector< vector<Node*> >&neutralLine
     if(!exon)
 	return NULL;
     NodeType ntype = getSuccType(((State*)exon->item)->type);
-    int end = exon->end;
-    if(  ntype == TLstart ||  ntype == rTLstop )
-	end++;
+    int end = exon->end + 1;
     return addAuxilaryNode(ntype, end, neutralLines, auxiliaryNodes);	
 }
 
