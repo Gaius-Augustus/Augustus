@@ -22,31 +22,30 @@
 using namespace std;
 using namespace BamTools;
 
-
 // type that holds hint information
 struct hint_t {
-  int start;   // 1-based begin coordinate on the reference
-  int end;     // 1-based last coordinate on the reference
-  char strand; // one of +-.
-  unsigned short int mult;    // multiplicity for intron hints
-    // sufficient data type, as the number of alignments at one location is bounded by the (maximum) alignment coverage (unsigned short int)
-  // constructor
-  hint_t(){
-    strand = '.';
-    mult = 1;
-  };
-} ;
+   int start;   // 1-based begin coordinate on the reference
+   int end;     // 1-based last coordinate on the reference
+   char strand; // one of +-.
+   unsigned short int mult;    // multiplicity for intron hints
+   // unsigned short is sufficient, as the number of alignments at one location is bounded by the (maximum) alignment coverage (unsigned short int)
+   // constructor
+   hint_t(){
+      strand = '.';
+      mult = 1;
+   };
+};
 
 // type to label the hint lists with their IDs (see RefNameByID)
 struct hintListLabel_t {
-  list<hint_t>* ref;
-  char* label;
-  // constructor
-  hintListLabel_t(list<hint_t>& r, const char* l){
-    ref = &r;
-    label = (char*) l;
-  }
-} ;
+   list<hint_t>* ref;
+   char* label; // e.g. exonpart, intron
+   // constructor
+   hintListLabel_t(list<hint_t>& r, const char* l){
+      ref = &r;
+      label = (char*) l;
+   }
+};
 
 
 /*
@@ -65,10 +64,10 @@ int MaxQGapLen = 5;
 int EpCutoff = 10;
 int MinEndBlockLen = 8;
 const char* Source = "E";   //causes deprecation warning without 'const'
-bool IntOnly = false;
+bool IntOnly = true;
 bool Mult = true;
 bool RemRed = false;
-unsigned short int MaxCov = 3000;
+unsigned short int MaxCov = 0; // was 3000 before (from PSL and EST times)
 bool SSOn = false;
 bool TrunkSS = false;
 double Score = 0;
@@ -437,6 +436,7 @@ int main(int argc, char* argv[])
     {"maxintronlen", 1, 0, 'M'},
     {"MinEndBlockLen", 1, 0, 'b'},
     {"maxQgaplen", 1, 0, 'q'},
+    {"exonhints", 0, 0, 'x'},
     {"ep_cutoff", 1, 0, 'e'},
     {"source", 1, 0, 's'},
     {"intronsonly", 0, 0, 'I'},
@@ -457,7 +457,7 @@ int main(int argc, char* argv[])
 
   // receive the input options
 
-  while((opt = getopt_long(argc, argv, "i:o:p:g:m:M:q:e:s:InrC:STv:c:t:G:b:h", long_options, &option_index)) != -1)
+  while((opt = getopt_long(argc, argv, "i:o:p:g:m:M:q:xe:s:InrC:STv:c:t:G:b:h", long_options, &option_index)) != -1)
   {
     switch(opt)
     {
@@ -472,7 +472,8 @@ int main(int argc, char* argv[])
     case 'q': MaxQGapLen    = atoi(optarg); break;
     case 'e': EpCutoff      = atoi(optarg); break;
     case 's': Source        = optarg;       break;
-    case 'I': IntOnly       = true;         break;
+    case 'x': IntOnly       = false;        break;
+    case 'I': IntOnly       = true;         break; // if contradicting options -x and -I are specified, the later is preferred
     case 'n': Mult          = false;        break;
     case 'r': RemRed        = true;         break;
     case 'C': MaxCov        = atoi(optarg); break;
@@ -510,12 +511,15 @@ int main(int argc, char* argv[])
          << "  --maxintronlen=n   -M   alignments with longer gaps are discarded (set to " << MaxIntLen << ")\n"
          << "  --MinEndBlockLen=n -b   [whatever this parameter may represent]" << MinEndBlockLen << ")\n"
          << "  --maxQgaplen=n     -q   maximum length of gap in query (cDNA) sequence (set to " << MaxQGapLen << ")\n"
+       	 << "  --exonhints        -x   compute exonpart, exon and splice site hints in addition to intron hints (set to " << OnOff(!IntOnly) << ")\n"
+	 << "                          You should generate exonpart hints from RNA-Seq using wiggle (.wig) input to wig2hints.\n"
          << "  --ep_cutoff=n      -e   this many bp are cut off of each exonpart hint at end of alignment (set to " << EpCutoff << ")\n"
          << "  --source=s         -s   source identifier (set to '" << Source << "')\n"
          << "  --intronsonly      -I   only retreive intron hints (e.g. because the exon(part) hints are retreived by converting to a wig track, set to " << OnOff(IntOnly) << ")\n"
+	 << "                          deprecated as this is the default now\n"
          << "  --nomult           -n   do not summarize multiple identical intron hints to a single one (set to " << OnOff(!Mult) << ")\n"
          << "  --remove_redundant -r   only keep the strongest hint for a region (set to " << OnOff(RemRed) << ")\n"
-         << "  --maxcoverage=n    -C   maximal number of hints at a given position. A high value causes long running time of\n"
+         << "  --maxcoverage=n    -C   maximal number of hints at a given position (0: filtering deactivated). A high value causes long running time of\n"
          << "                          AUGUSTUS in regions with thousands of cDNA alignments. (set to " << MaxCov << ")\n"
          << "  --ssOn             -S   include splice site (dss, ass) hints in output (set to " << OnOff(SSOn) << ")\n"
          << "  --trunkSS          -T   include splice sites hints from the ends of a truncated alignment (contig too short, set to " << OnOff(TrunkSS) << ")\n"
@@ -862,14 +866,10 @@ int main(int argc, char* argv[])
 
 
     // apply a coverage threshold
-  	// cout << "PSLt[0]/10=" << PSLt[0]/10 << endl;
-  	// cout << "(PSLt[block-1]=" << PSLt[block-1] << endl;
-  	// cout << "PSLb[block-1]=" << PSLb[block-1] << endl;
-  	// cout << "(PSLt[block-1] + PSLb[block-1] - 1)/10=" << (PSLt[block-1] + PSLb[block-1] - 1)/10 << endl;
     // check each 10bp bin for too high abundance of alignments
     for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
     {
-      if(alnCoverage[CovIter] >= MaxCov)
+      if(MaxCov > 0 && alnCoverage[CovIter] >= MaxCov)
       {
   	// stop scanning and ...
   	badAlignment = true;
@@ -888,7 +888,10 @@ int main(int argc, char* argv[])
     // update the coverage data with the accepted alignment
     for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
     {
-      alnCoverage[CovIter]++;
+       if (CovIter < maxCovBins)
+	  alnCoverage[CovIter]++;
+       // there is a bug here because above range check is not always satisfied
+       // however, this maxCov filtering is not active by default since May25th, 2015
     }
 
 
