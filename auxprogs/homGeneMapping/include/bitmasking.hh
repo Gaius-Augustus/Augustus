@@ -35,7 +35,7 @@ class SeqIntKey{
 	// verification, only for debugging                      
 	if(getStart() != start || getLen() != len || getType() != type)
 	    throw ProjectError("internal error in SeqIntKey: packing of start=" + itoa(start)
-			       + " len=" + itoa(len) + " type=" + itoa(type) + "failed.\n");
+			       + " len=" + itoa(len) + " type=" + itoa(type) + " failed.\n");
     }
     SeqIntKey(uint_fast64_t k) : key(k) {}
      ~SeqIntKey() {}
@@ -68,7 +68,7 @@ class SeqPosKey{
 	// verification, only for debugging  
 	if(getSeqID() != seqID || getPos() != pos )
 	    throw ProjectError("internal error in SeqPosKey: packing of seqID=" + itoa(seqID)
-			       + " pos=" + itoa(pos) + "failed.\n");
+			       + " pos=" + itoa(pos) + " failed.\n");
     }
     SeqPosKey(uint_fast64_t k) : key(k) {}
      ~SeqPosKey() {}
