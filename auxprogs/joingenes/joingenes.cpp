@@ -19,9 +19,8 @@ static const struct option longOpts[] = {
     { "genemodel", required_argument, NULL, 'm'},
     { "onlycompare", no_argument, NULL, 'c'},
     { "suppress", required_argument, NULL, 's' },
-    { "join", no_argument, NULL, 'j' },
-    { "selection", no_argument, NULL, 'l' },
-//    { "mergeTaxa", required_argument, NULL, 't' },
+    { "nojoin", no_argument, NULL, 'j' },
+    { "noselection", no_argument, NULL, 'l' },
     { "alternatives", no_argument, NULL, 'a' },
     { "stopincoding", no_argument, NULL, 'i' },
     { "help", no_argument, NULL, 'h' },
@@ -31,42 +30,61 @@ static const struct option longOpts[] = {
 void display_help(void)
 {
     cout << "joingenes - merging several gene sets into one, including the combination of transcripts to new ones not present in input" << endl;
-    cout << "Options:" << endl;
-    cout << "\tNecessary:" << endl;
-    cout << "\t\t--genesets=file1,file2,...\t-g file1,file2,...\twhere \"file1,file2,...,filen\" have to be data files with genesets in GTF format." << endl;
-    cout << "\t\t--output=ofile\t\t\t-o ofile\t\twhere \"ofile\" is the name for an output file (GTF)." << endl;
-    cout << "\tOptional:" << endl;
-    cout << "\t\t--priorities=pr1,pr2,...\t-p pr1,pr2,...\t\twhere \"pr1,pr2,...,prn\" have to be positiv integers (different from 0)." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tHave to be as many as filenames are added." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tBigger numbers means a higher priority." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tIf no priorities are added, the program will set all priorties to 1." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tThis option is only useful, if there is more then one geneset." << endl;
-    cout << "\t\t--errordistance=x\t\t-e x\t\t\twhere \"x\" is a non-negative integer" << endl;
-    cout << "\t\t\t\t\t\t\t\t\tIf a prediction is <=x bases next to a prediction range border, the program supposes, that there could be a mistake." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tDefault is 1000." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tTo disable the function, set errordistance to a negative number (e.g. -1)." << endl;
-    cout << "\t\t--genemodel=x\t\t\t-m x\t\t\twhere \"x\" is a genemodel from the set {eukaryote} (currently only eukyarotes implemented)." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tDefault is eukaryotic." << endl;
-    cout << "\t\t--onlycompare\t\t\t-c\t\t\tis a flag." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tIf this flag is set, it disables the normal function of the program and" << endl;
-    cout << "\t\t\t\t\t\t\t\t\tactivates a compare and seperate mode to seperate equal transcripts from non equal ones." << endl;
-    cout << "\t\t--suppress=pr1,pr2,..\t\t-s pr1,pr2,...\t\twhere \"pr1,pr2,...,prm\" have to be positiv integers (different from 0)." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tDefault is none." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tif the core of a joined/non-joined transcript has one of these priorities it will not occur in the output file." << endl;
-    cout << "\t\t--join\t\t\t-j\t\t\tis a flag (to disable joining)." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tIf this flag is set, the program will not join/merge/shuffle;" << endl;
-    cout << "\t\t\t\t\t\t\t\t\tit will only decide between the unchanged input transcipts and output them." << endl;
-    cout << "\t\t--selecting\t\t\t-l\t\t\tis a flag (to disable selection)." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tIf this flag is set, the program will NOT select at the end between \"contradictory\" transcripts." << endl;
-    cout << "\t\t\t\t\t\t\t\t\t\"contradictory\" is self defined with respect to known biological terms." << endl;
-    cout << "\t\t\t\t\t\t\t\t\tThe selection works with a self defined scoring function." << endl;
-//    cout << "\t\t--mergetaxa=x\t\t\t-t x\t\t\twhere \"x\" is a boolean value (default is false)" << endl;
-//    cout << "\t\t\t\t\t\t\t\t\tIf this parameter is set to true, the program merges the genes and transcripts with same taxa from different input data." << endl;
-    cout << "\t\t--alternatives\t\t-a\t\t\tis a flag" << endl;
-    cout << "\t\t\t\t\t\t\t\t\tIf this flag is set, the program joines different genes, if the transcripts of the genes are alternative variants." << endl;
-    cout << "\t\t--stopincoding\t\t-i\t\t\tis a flag" << endl;
-    cout << "\t\t\t\t\t\t\t\t\tIf this flag is set, the program joines the stop_codons to the CDS." << endl;
-    cout << "\t\t--help \t\t\t\t-h\t\t\tprints the help documentation." << endl;
+    cout << "This program works in several steps:" << endl;
+    cout << "  1. devide the set of all transcripts into smaller sets, where all transcripts are on the same sequence and are overlapping at least with one other transcript in this set (set is called \"overlap\")" << endl;
+    cout << "  2. deletes all duplications of transcripts and saves the variant with the highest \"score\"" << endl;
+    cout << "  3. if sequence ranges are set for some transcripts, the program detects, whether the distance to that range is dangerously close" << endl;
+    cout << "  4. join:" << endl;
+    cout << "    4.1. if there is a transcript dangerously close to one/both end(s) of a sequence range, the program creates a copy without the corresponding terminal exon" << endl;
+    cout << "    4.2. if there is a transcript with start or stop codon in a set and a second one without this codon and they are \"joinable\", than this step joines the corresponesponding terminal exons" << endl;
+    cout << "  5. selection: selects the \"best\" gene structure out of all possible \"maximum\" gene structures" << endl;
+    cout << "    - \"maximum\" gene structure is a set of transcripts from an overlap so that there is no other transcript in the overlap, which can be added to the set without producing a \"contradiction\"" << endl;
+    cout << "    - a gene structure is \"better\" than another one, if it has the transcript with the highest \"score\", which is not present in the other gene structure" << endl;
+    cout << endl;
+    cout << "  Options:" << endl;
+    cout << "    Necessary:" << endl;
+    cout << "\t--genesets=file1,file2,...\t-g file1,file2,...\twhere \"file1,file2,...,filen\" have to be data files with genesets in GTF format." << endl;
+    cout << "\t--output=ofile\t\t\t-o ofile\t\twhere \"ofile\" is the name for an output file (GTF)." << endl;
+    cout << "    Optional:" << endl;
+    cout << "      Parameters:" << endl;
+    cout << "\t--priorities=pr1,pr2,...\t-p pr1,pr2,...\t\twhere \"pr1,pr2,...,prn\" have to be positiv integers (different from 0)." << endl;
+    cout << "\t\t\t\t\t\t\t\tHave to be as many as filenames are added." << endl;
+    cout << "\t\t\t\t\t\t\t\tBigger numbers means a higher priority." << endl;
+    cout << "\t\t\t\t\t\t\t\tIf no priorities are added, the program will set all priorties to 1." << endl;
+    cout << "\t\t\t\t\t\t\t\tThis option is only useful, if there is more than one geneset." << endl;
+    cout << "\t\t\t\t\t\t\t\tIf there is a conflict between two transcripts, so that they can not be picked in the same genestructure, joingenes decides for the one with the highest priority." << endl;
+    cout << "\t--errordistance=x\t\t-e x\t\t\twhere \"x\" is a non-negative integer" << endl;
+    cout << "\t\t\t\t\t\t\t\tIf a prediction is <=x bases next to a prediction range border, the program supposes, that there could be a mistake." << endl;
+    cout << "\t\t\t\t\t\t\t\tDefault is 1000." << endl;
+    cout << "\t\t\t\t\t\t\t\tTo disable the function, set errordistance to a negative number (e.g. -1)." << endl;
+    cout << "\t--genemodel=x\t\t\t-m x\t\t\twhere \"x\" is a genemodel from the set {eukaryote, bacterium}." << endl;
+    cout << "\t\t\t\t\t\t\t\tDefault is eukaryotic." << endl;
+    cout << "\t--alternatives\t\t\t-a\t\t\tis a flag" << endl;
+    cout << "\t\t\t\t\t\t\t\tIf this flag is set, the program joines different genes, if the transcripts of the genes are alternative variants." << endl;
+    cout << endl;
+    cout << "      Format changes of input/output:" << endl;
+    cout << "\t--suppress=pr1,pr2,..\t\t-s pr1,pr2,...\t\twhere \"pr1,pr2,...,prm\" have to be positiv integers (different from 0)." << endl;
+    cout << "\t\t\t\t\t\t\t\tDefault is none." << endl;
+    cout << "\t\t\t\t\t\t\t\tif the core of a joined/non-joined transcript has one of these priorities it will not occur in the output file." << endl;
+    cout << "\t--stopincoding\t\t\t-i\t\t\tis a flag" << endl;
+    cout << "\t\t\t\t\t\t\t\tIf this flag is set, the program joines the stop_codons to the CDS." << endl;
+    cout << endl;
+    cout << "      Enable/Disable program parts:" << endl;
+    cout << "\t--nojoin\t\t\t-j\t\t\tis a flag (to disable joining)." << endl;
+    cout << "\t\t\t\t\t\t\t\tIf this flag is set, the program will not join/merge/shuffle;" << endl;
+    cout << "\t\t\t\t\t\t\t\tit will only decide between the unchanged input transcipts and output them." << endl;
+    cout << "\t--noselection\t\t\t-l\t\t\tis a flag (to disable selection)." << endl;
+    cout << "\t\t\t\t\t\t\t\tIf this flag is set, the program will NOT select at the end between \"contradictory\" transcripts." << endl;
+    cout << "\t\t\t\t\t\t\t\t\"contradictory\" is self defined with respect to known biological terms." << endl;
+    cout << "\t\t\t\t\t\t\t\tThe selection works with a self defined scoring function." << endl;
+    cout << endl;
+    cout << "      Secondary program functions:" << endl;
+    cout << "\t--onlycompare\t\t\t-c\t\t\tis a flag." << endl;
+    cout << "\t\t\t\t\t\t\t\tIf this flag is set, it disables the normal function of the program and" << endl;
+    cout << "\t\t\t\t\t\t\t\tactivates a compare and seperate mode to seperate equal transcripts from non equal ones." << endl;
+    cout << endl;
+    cout << "      This help:" << endl;
+    cout << "\t--help \t\t\t\t-h\t\t\tprints the help documentation." << endl;
     cout << endl;
     exit( EXIT_FAILURE );
 }
@@ -74,7 +92,7 @@ void display_help(void)
 void display_error(string const &error)
 {
     cerr << "Usage error: " << error << endl;
-    cerr << "Use option --help or -h for usage explanations." << endl;
+    display_help();
     exit( EXIT_FAILURE );
 }
 
@@ -173,7 +191,6 @@ int main(int argc, char* argv[])
     properties.onlyCompare = false;
     properties.join = true;
     properties.selecting = true;
-    properties.mergeTaxa = false;
     properties.alternatives = false;
     properties.nrOfPrintedGenes = 0;
     properties.unknownCount = 1;
@@ -220,10 +237,6 @@ int main(int argc, char* argv[])
 	case 'l':
 	    properties.selecting = false;
 	    break;
-
-/*	case 't':
-	    properties.mergeTaxa = true;
-	    break;*/
 
 	case 'a':
 	    properties.alternatives = true;
@@ -284,9 +297,6 @@ int main(int argc, char* argv[])
     unordered_map<string,Transcript*> transcriptMap;
     properties.transcriptMap = &transcriptMap;
 
-//    list<Transcript> transcript_list;
-//    properties.txList = &transcript_list;
-
     if (priorities.size() == filenames.size()){
 	unordered_map<string,bool> taxaMap;
 	list<int>::iterator it_p = priorities.begin();
@@ -297,7 +307,6 @@ int main(int argc, char* argv[])
 	}
 
 	for (auto pointer = (*properties.transcriptMap).begin(); pointer != (*properties.transcriptMap).end(); pointer++){
-	//for (list<Transcript>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
 	    if ((*(pointer->second)).exon_list.size() == 0){
 		deleteTx(pointer->second, properties);
 	    }else{

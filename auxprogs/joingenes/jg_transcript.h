@@ -36,7 +36,6 @@ public:
     string outFileName;
     bool join;
     bool selecting;
-    bool mergeTaxa;
     int nrOfPrintedGenes;
     unsigned int unknownCount;
     unordered_map<string,Gene*>* geneMap;

@@ -69,6 +69,7 @@ void workAtOverlap(list<Transcript*> &overlap, Properties &properties)
     // searchs and destroys transcripts, which are fully in other transcripts
     if (properties.genemodel != "bacterium")
         search_n_destroy_parts(overlap, properties);
+
     //........................
     if (properties.selecting){
 	selection(overlap, properties);
@@ -643,11 +644,6 @@ void search_n_destroy_parts(list<Transcript*> &overlap, Properties &properties){
 		if (overlap.size() <= 1){return;}
 		pair<bool,bool> who_is_part = is_part_of(*it, *itInside);
 
-		if ((*it)->tl_complete.first && (*it)->tl_complete.second){who_is_part.first = false;}
-		if ((*itInside)->tl_complete.first && (*itInside)->tl_complete.second){who_is_part.second = false;}
-
-//if ((*it)->t_id == "g5837.t1"){cout << "AAA: " << who_is_part.first << " " << who_is_part.second << endl << (*it)->tes << " " << (*it)->tis << " " << (*it)->priority << endl << (*itInside)->tes << " " << (*itInside)->tis << " " << (*itInside)->priority << endl; sleep(1);}
-
 		if (who_is_part.first == true){
 		    if (who_is_part.second == true){
 		    }else{
@@ -672,7 +668,15 @@ void join(list<Transcript*> &overlap, char side, Properties &properties){
     //list<Transcript*> new_overlap_part;
     list<Transcript*> donor;
     list<Transcript*> acceptor;
+//bool wahr = true;
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+
+/*if (wahr && (*it)->tis == 1001473){
+wahr = false;
+for (list<Transcript*>::iterator iti = overlap.begin(); iti != overlap.end(); iti++){
+output_exon_list(*iti);
+}
+}*/
 	if ((*it)->isNotFrameCorrect){continue;}
 	if (side == '3'){
 	    if ((*it)->tl_complete.second){
@@ -700,6 +704,45 @@ void join(list<Transcript*> &overlap, char side, Properties &properties){
 	    }
 	}
     }
+
+
+
+
+    // UTR joining:
+/*    list<Transcript*> donorUTR;
+    list<Transcript*> acceptorUTR;
+    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+	if (side == '3'){
+	    if ((*it)->tx_complete.second){
+		donorUTR.push_front(*it);
+	    }else if ((*it)->tl_complete.second){
+		acceptorUTR.push_front(*it);
+	    }
+	}else if (side == '5'){
+	    if ((*it)->tx_complete.first){
+		donorUTR.push_front(*it);
+	    }else if ((*it)->tl_complete.first){
+		acceptorUTR.push_front(*it);
+	    }
+	}
+    }
+    for (list<Transcript*>::iterator it = acceptorUTR.begin(); it != acceptorUTR.end(); it++){
+	for (list<Transcript*>::iterator it_donor = donorUTR.begin(); it_donor != donorUTR.end(); it_donor++){
+	    if ((*it)->strand == (*it_donor)->strand){
+		bool frontSide = ((*it)->strand == '+' && side == '5') || ((*it)->strand == '-' && side == '3');
+		int fittingCase;
+		if (frontSide){
+		    fittingCase = 2;
+		}else{
+		    fittingCase = 4;
+		}
+		if (fittingCase){
+		    Transcript* txNew = createCopyOf((*it), properties, overlap);
+		    joining(*it_donor, (*it)->strand, txNew, fittingCase, properties);
+		}
+	    }
+	}
+    }*/
 }
 
 void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Properties &properties){
@@ -708,6 +751,8 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 
     int lastPositionInOriginal = txNew->exon_list.back().to;
     int firstPositionInOriginal = txNew->exon_list.front().from;
+    string lastPosfeature = txNew->exon_list.back().feature;
+    string firstPosfeature = txNew->exon_list.front().feature;
 
     int nrOfJoinedCDS = 0;
     int nrOfCoreCDS = 0;
@@ -733,11 +778,13 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 	if (strand == '+'){
 	    if (txNew->stop_list.empty()){txNew->stop_list = t2->stop_list;}else{cerr << "WARNING: existing stop list should be replaced (in joining())!1" << endl;}
 	    txNew->tts = t2->tts;
+	    txNew->tx_complete.second = t2->tx_complete.second;
 	    txNew->tes = t2->tes;
 	    txNew->tl_complete.second = t2->tl_complete.second;
 	    txNew->joinpartner.second = t2->originalId;
 	}else{
 	    txNew->tss = t2->tss;
+	    txNew->tx_complete.first = t2->tx_complete.first;
 	    txNew->tis = t2->tis;
 	    txNew->tl_complete.first = t2->tl_complete.first;
 	    txNew->joinpartner.first = t2->originalId;
@@ -759,20 +806,22 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 	break;
     case 2:
 	if (strand == '+'){
-	    if (txNew->stop_list.empty()){txNew->stop_list = t2->stop_list;}else{cerr << "WARNING: existing stop list should be replaced (in joining())!2" << endl;}
+	    if (txNew->stop_list.empty()){txNew->stop_list = t2->stop_list;}else{/*cerr << "WARNING: existing stop list should be replaced (in joining())!2" << endl;*/}
 	    txNew->tts = t2->tts;
+	    txNew->tx_complete.second = t2->tx_complete.second;
 	    txNew->tes = t2->tes;
 	    txNew->tl_complete.second = t2->tl_complete.second;
 	    txNew->joinpartner.second = t2->originalId;
 	}else{
 	    txNew->tss = t2->tss;
+	    txNew->tx_complete.first = t2->tx_complete.first;
 	    txNew->tis = t2->tis;
 	    txNew->tl_complete.first = t2->tl_complete.first;
 	    txNew->joinpartner.first = t2->originalId;
 	}
 	are_at_add_part = false;
 	for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-	    if (lastPositionInOriginal <= ((*it).from - (int) properties.minimumIntronLength)){
+	    if (lastPositionInOriginal <= ((*it).from - (int) properties.minimumIntronLength) || ( (*it).feature != "CDS" && lastPosfeature == "CDS" && lastPositionInOriginal <= ((*it).from - 1) )){
 		are_at_add_part = true;
 	    }
 	    if (are_at_add_part){
@@ -784,12 +833,14 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
     case 3:
 	if (strand == '+'){
 	    txNew->tss = t2->tss;
+	    txNew->tx_complete.first = t2->tx_complete.first;
 	    txNew->tis = t2->tis;
 	    txNew->tl_complete.first = t2->tl_complete.first;
 	    txNew->joinpartner.first = t2->originalId;
 	}else{
 	    if (txNew->stop_list.empty()){txNew->stop_list = t2->stop_list;}else{cerr << "WARNING: existing stop list should be replaced (in joining())!3" << endl;}
 	    txNew->tts = t2->tts;
+	    txNew->tx_complete.second = t2->tx_complete.second;
 	    txNew->tes = t2->tes;
 	    txNew->tl_complete.second = t2->tl_complete.second;
 	    txNew->joinpartner.second = t2->originalId;
@@ -810,18 +861,20 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
     case 4:
 	if (strand == '+'){
 	    txNew->tss = t2->tss;
+	    txNew->tx_complete.first = t2->tx_complete.first;
 	    txNew->tis = t2->tis;
 	    txNew->tl_complete.first = t2->tl_complete.first;
 	    txNew->joinpartner.first = t2->originalId;
 	}else{
-	    if (txNew->stop_list.empty()){txNew->stop_list = t2->stop_list;}else{cerr << "WARNING: existing stop list should be replaced (in joining())!4" << endl;}
+	    if (txNew->stop_list.empty()){txNew->stop_list = t2->stop_list;}else{/*cerr << "WARNING: existing stop list should be replaced (in joining())!4" << endl;*/}
 	    txNew->tts = t2->tts;
+	    txNew->tx_complete.second = t2->tx_complete.second;
 	    txNew->tes = t2->tes;
 	    txNew->tl_complete.second = t2->tl_complete.second;
 	    txNew->joinpartner.second = t2->originalId;
 	}
 	for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-	    if (firstPositionInOriginal < ((*it).to + (int) properties.minimumIntronLength)){
+	    if (firstPositionInOriginal < ((*it).to + (int) properties.minimumIntronLength) || ( (*it).feature != "CDS" && firstPosfeature == "CDS" && firstPositionInOriginal < ((*it).to + 1) )){
 		txNew->exon_list.merge(temp_exon_list);
 		break;
 	    }
@@ -909,6 +962,7 @@ pair<bool,bool> is_part_of(Transcript const* t1, Transcript const* t2)
 {
     // is true,false or false,true if one transcript contains the other completely
     // is true,true if the transcripts are equal in exons			// this case could completly replace compare_transcripts
+    int UTRtoleranceWindow = 10;
     bool t1_is_part = true;
     bool t2_is_part = true;
     if (t1->strand != t2->strand){
@@ -934,35 +988,53 @@ pair<bool,bool> is_part_of(Transcript const* t1, Transcript const* t2)
     list<Exon>::const_iterator it2 = t2->exon_list.begin();
     while (t1_is_part == true || t2_is_part == true){
 	if ((*it1).from == (*it2).from){
-	    if((*it1).to == (*it2).to && (*it1).frame == (*it2).frame){
+	    if((*it1).to == (*it2).to && (*it1).frame == (*it2).frame){		// same start and same stop of exon
 		it1++;
 		it2++;
 	    }
-	    else{
+	    else{								// same start but diffrent stop of exon
+		if ((*it1).feature != "CDS" && (*it2).feature != "CDS" && (*it1).to <= (*it2).to+UTRtoleranceWindow && (*it1).to >= (*it2).to-UTRtoleranceWindow){
+		    it1++;
+		    it2++;
+		}else{
+		    t1_is_part = false;
+		    t2_is_part = false;
+		    break;
+		}
+	    }
+	}else if ((*it1).to == (*it2).to){					// different start but same stop of exon
+	    if ((*it1).feature != "CDS" && (*it2).feature != "CDS" && (*it1).from <= (*it2).from+UTRtoleranceWindow && (*it1).from >= (*it2).from-UTRtoleranceWindow){
+		it1++;
+		it2++;
+	    }else{
 		t1_is_part = false;
 		t2_is_part = false;
 		break;
 	    }
-	}else if ((*it1).to == (*it2).to){
-	    t1_is_part = false;
-	    t2_is_part = false;
-	    break;
-	}else if ((*it1).from > (*it2).from){
-	    t2_is_part = false;
+	}else if ((*it1).from > (*it2).from){					// different start and different stop of exon AND exon1 is behind exon2
+	    if ((*it1).feature != "CDS" && (*it2).feature != "CDS" && (*it1).from <= (*it2).from+UTRtoleranceWindow && (*it1).from >= (*it2).from-UTRtoleranceWindow && (*it1).to <= (*it2).to+UTRtoleranceWindow && (*it1).to >= (*it2).to-UTRtoleranceWindow){
+		it1++;
+	    }else{
+		t2_is_part = false;
+	    }
 	    it2++;
-	}else{
-	    t1_is_part = false;
+	}else{									// different start and different stop of exon AND exon1 is in front of exon2
+	    if ((*it1).feature != "CDS" && (*it2).feature != "CDS" && (*it1).from <= (*it2).from+UTRtoleranceWindow && (*it1).from >= (*it2).from-UTRtoleranceWindow && (*it1).to <= (*it2).to+UTRtoleranceWindow && (*it1).to >= (*it2).to-UTRtoleranceWindow){
+		it2++;
+	    }else{
+		t1_is_part = false;
+	    }
 	    it1++;
 	}
-	if (!t1_is_part && !t1_is_part){break;}
-	if (it1 == t1->exon_list.end() && it2 == t2->exon_list.end()){
+	if (!t1_is_part && !t2_is_part){break;}					// both transcripts are not part of the other one
+	if (it1 == t1->exon_list.end() && it2 == t2->exon_list.end()){		// no more exon in both exon lists
 	    break;
 	}else{
-	    if (it1 == t1->exon_list.end() && !(it2 == t2->exon_list.end())){
+	    if (it1 == t1->exon_list.end() && !(it2 == t2->exon_list.end())){	// no more exon in exon1 list
 		t2_is_part = false;
 		break;
 	    }
-	    if (it2 == t2->exon_list.end() && !(it1 == t1->exon_list.end())){
+	    if (it2 == t2->exon_list.end() && !(it1 == t1->exon_list.end())){	// no more exon in exon2 list
 		t1_is_part = false;
 		break;
 	    }
@@ -1173,7 +1245,7 @@ void output_exon_list(Transcript const* tx){
     // just for semantic tests
     cout << ">> Exon_list of " << tx->t_id << ": " << endl;
     cout << "Priority: " << tx->priority << endl;
-    cout << tx->exon_list.size() << " elements, complete start: " << tx->tl_complete.first << ", complete stop: " << tx->tl_complete.second << ", strand: " << tx->strand << endl;
+    cout << tx->exon_list.size() << " elements, complete start: " << tx->tl_complete.first << ", complete stop: " << tx->tl_complete.second << endl;
     cout << "start codon of: ";
     if (!tx->joinpartner.first.empty()){cout << tx->joinpartner.first;}else{cout << "noone";}
     cout << ", stop codon of: ";
@@ -1183,27 +1255,52 @@ void output_exon_list(Transcript const* tx){
 	cout << "Pred_range: " << tx->pred_range.first << "\t" << tx->pred_range.second << endl;
 	cout << "Minimum distance from pred_range borders: " << min(tx->exon_list.front().from - tx->pred_range.first, tx->pred_range.second - tx->exon_list.back().to) << endl;
     }
-    cout << "from\t\tto\t\tframe\tfeature\tstart\t\tstop\tchr\tscore" << endl;
+    double x = 0.0;
     for (list<Exon>::const_iterator it = tx->exon_list.begin(); it != tx->exon_list.end(); it++){
-	cout << (*it).from << "\t" << (*it).to << "\t" << (*it).frame << "\t" << (*it).feature << "\t" << tx->tis << "\t" << tx->tes << "\t" << (*it).chr << "\t" << (*it).score << endl;
+	cout << (*it).chr << "\tTESTOUTPUT\t" << (*it).feature << "\t" << (*it).from << "\t" << (*it).to << "\t" << (*it).score << "\t" << tx->strand << "\t" << (*it).frame << "\ttranscript_id \"" << tx->t_id << "\"; gene_id \"" << tx->parent->g_id << "\";" << endl;
+	x += (*it).score;
     }
+    x /= tx->exon_list.size();
+    cout << "Mean score: " << x << endl;
     cout << "Exon_list end----------------------------------------------------------------" << endl;
 }
 
 void calculatePredictionScore(Transcript* tx){
-    float cumExonScore = 0;
+    float cumScoreCDS = 0;
+    float countCDS = 0;
+    float cumScoreUTR = 0;
+    float countUTR = 0;
     for (list<Exon>::const_iterator iex = tx->exon_list.begin(); iex != tx->exon_list.end(); iex++){
-	if (iex->score){
-	    if (iex->score <= 1){
-		cumExonScore += iex->score;
+	if (iex->feature == "CDS"){
+	    if (iex->score >= 0 && iex->score <= 1){
+		cumScoreCDS += iex->score;
+		countCDS++;
 	    }else{
-		//cerr << "WARNING: A value of column 6 is above 1 (100%) and will be counted as 0." << endl;
+		cerr << "WARNING: A value of column 6 is above 1 (100%) or below 0 (0%) and will be counted as 0." << endl;
+		countCDS++;
 	    }
-	}else{
-	    // cerr << "WARNING: A value of column 6 is NaN and will be counted as 0." << endl;
+	}else if (iex->feature == "UTR"){
+	    if (iex->score >= 0 && iex->score <= 1){
+		cumScoreUTR += iex->score;
+		countUTR++;
+	    }else{
+		cerr << "WARNING: A value of column 6 is above 1 (100%) or below 0 (0%) and will be counted as 0." << endl;
+		countUTR++;
+	    }
 	}
     }
-    tx->predictionScore = (cumExonScore/tx->exon_list.size());
+    if (countCDS == 0){
+	cumScoreCDS = 0;
+    }else{
+	cumScoreCDS /= countCDS;
+    }
+    if (countUTR == 0){
+	cumScoreUTR = 0;
+    }else{
+	cumScoreUTR /= countUTR;
+    }
+
+    tx->predictionScore = (4*cumScoreCDS + cumScoreUTR)/5;
 }
 
 bool compare_quality(Transcript const* lhs, Transcript const* rhs){

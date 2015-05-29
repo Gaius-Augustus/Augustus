@@ -186,9 +186,11 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 		    }else if (exon.feature == "tss"){
 			if (exon.from != exon.to){load_error("\"tss\" can only take place on one position.");}
 			thisFileTranscriptMap[transcript_id]->tss = exon.from;
+			thisFileTranscriptMap[transcript_id]->tx_complete.first = true;
 		    }else if (exon.feature == "tts"){
 			if (exon.from != exon.to){load_error("\"tts\" can only take place on one position.");}
 			thisFileTranscriptMap[transcript_id]->tts = exon.to;
+			thisFileTranscriptMap[transcript_id]->tx_complete.second = true;
 		    }else{
 			thisFileTranscriptMap[transcript_id]->exon_list.push_front(exon);
 		    }
@@ -223,16 +225,9 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
     for(auto pointer = thisFileGeneMap.begin(); pointer != thisFileGeneMap.end(); pointer++)
     {
 	if ((*properties.geneMap).find( pointer->second->g_id ) != (*properties.geneMap).end()){
-	    //if (properties.mergeTaxa == false){
-		pointer->second->g_id = nextFreeGeneID(properties, &thisFileGeneMap);
-		(*properties.geneMap)[pointer->second->g_id] = (*pointer).second;
-		// maybe fill thisFileGeneMap with new gene, but is not necessary
-	    /*}else{
-		mergeGenes(properties, (*properties.geneMap)[pointer->second->g_id], pointer->second);
-		Gene* geneDelete = pointer->second;
-		thisFileGeneMap.erase(geneDelete->g_id);
-		delete geneDelete;
-	    }*/
+	    pointer->second->g_id = nextFreeGeneID(properties, &thisFileGeneMap);
+	    (*properties.geneMap)[pointer->second->g_id] = (*pointer).second;
+	    // maybe fill thisFileGeneMap with new gene, but is not necessary
 	}else{
 	    (*properties.geneMap)[pointer->second->g_id] = (*pointer).second;
 	}
@@ -328,9 +323,7 @@ void renameTaxa(list<Transcript*> &overlap, Properties &properties){
 
 void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &properties)
 {
-    //if (!properties.mergeTaxa){
-        renameTaxa(overlap, properties);
-    //}
+    renameTaxa(overlap, properties);
     // outputs overlap at the end of an existing file in gff format
     // every first and last outfile-line is adjusted and might be change back (to comments above)
     if (overlap.size() == 0) {return;}
