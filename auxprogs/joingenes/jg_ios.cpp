@@ -156,6 +156,15 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 		    }else if ((*transcript).strand != thisFileTranscriptMap[transcript_id]->strand){
 			load_warning("One transcript on different strands.");
 		    }
+
+
+
+
+		    if (pred_range.first && pred_range.second){
+			exon.predRange = pred_range;
+		    }
+
+
 		    if (exon.feature == "start_codon"){
 			if (thisFileTranscriptMap[transcript_id]->tl_complete.first)
 			    thisFileTranscriptMap[transcript_id]->separated_codon.first = true;

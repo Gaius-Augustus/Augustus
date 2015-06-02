@@ -307,6 +307,18 @@ int main(int argc, char* argv[])
 	}
 
 	for (auto pointer = (*properties.transcriptMap).begin(); pointer != (*properties.transcriptMap).end(); pointer++){
+	    bool hasCDS = false;
+	    for (list<Exon>::iterator it = pointer->second->exon_list.begin(); it != pointer->second->exon_list.end(); it++){
+		if ((*it).feature == "CDS"){
+		    hasCDS = true;
+		    break;
+		}
+	    }
+	    if (!hasCDS){
+		cerr << (*properties.transcriptMap)[pointer->second->t_id]->originalId << " from file " << (*properties.transcriptMap)[pointer->second->t_id]->inputFile << " has no CDS and will be deleted." << endl;
+		deleteTx(pointer->second, properties);
+		continue;
+	    }
 	    if ((*(pointer->second)).exon_list.size() == 0){
 		deleteTx(pointer->second, properties);
 	    }else{

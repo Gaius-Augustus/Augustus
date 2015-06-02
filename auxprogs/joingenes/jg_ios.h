@@ -15,4 +15,4 @@ void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &pro
 
 string nextFreeGeneID(Properties &properties, unordered_map<string,Gene*>* addGeneMap);
 string nextFreeTxID(Gene* gene, Properties &properties, unordered_map<string,Transcript*>* addTranscriptMap);
-void mergeGenes(Properties &properties, Gene* acc, Gene* don);
+//void mergeGenes(Properties &properties, Gene* acc, Gene* don);

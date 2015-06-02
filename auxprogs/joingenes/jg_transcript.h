@@ -59,6 +59,7 @@ class Exon{
     int tooFew;
     int penalty;
     int distance;
+    pair<int,int> predRange;
     bool isUtr () { return (frame == -1); }
     bool operator<(Exon const& rhs) const {
 	if (from != rhs.from)
@@ -211,7 +212,7 @@ class Transcript{
     void initiate(Properties &properties){
         exon_list.sort();				// essential for the other steps, so it should be the first one
 	stop_list.sort();
-	calcRangeToBoundary(properties);
+
 	outerCds.first = getCdsFront();
 	outerCds.second = getCdsBack();
 
@@ -227,11 +228,16 @@ class Transcript{
 	if (properties.stopincoding){
             tes_to_cds();					// needs utr structure!
 	}
+
+	calcRangeToBoundary(properties);
     }
 
     void calcRangeToBoundary(Properties &properties){
-	exon_list.front().rangeToBoundary = -1;
-	exon_list.back().rangeToBoundary = -1;
+	for (list<Exon>::iterator it = exon_list.begin(); it != exon_list.end(); it++){
+	    (*it).rangeToBoundary = -1;
+	}
+//	exon_list.front().rangeToBoundary = -1;
+//	exon_list.back().rangeToBoundary = -1;
 	if (pred_range.second){
 	    exon_list.back().rangeToBoundary = pred_range.second - getTxEnd();
 
