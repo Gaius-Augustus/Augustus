@@ -166,7 +166,17 @@ double OrthoExon::getLogRegScore(){
 		 + 4.1816 * numExons()
 		 + 5.1385 * hasOmega() 
 		 ); // for being a HECT
+    } else if (string("human") == Properties::getProperty("species") && orthoex.size() == 12){ // 12 way alignment from CONTRAST paper
+        Eomega = (Eomega != Eomega)? -1 : Eomega; // temporary bugfix: if omega is not a number, set it to the default value
+        VarOmega = (VarOmega != VarOmega)? -1 : VarOmega;
+        return  (- 4.0198 * Eomega * hasOmega()
+                 - 10.6047 * cons
+                 + 3.0542 * diversity
+                 + 0.5781 * numExons()
+                 + 4.8556 * hasOmega() // for being a HECT
+                 ); 
     }
+
     return 0.0;
 }
 

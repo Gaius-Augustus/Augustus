@@ -527,6 +527,8 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
                 cout << "|" << stored_pattern <<":"<<current_pattern;
 	    else
                 cout << ";labelpattern=" << stored_pattern <<":"<< current_pattern;
+	    // output logistic regression score for analysis
+	    cout << ";oescore=" << oe.getLogRegScore();
 	    cout << endl;
         }
     }

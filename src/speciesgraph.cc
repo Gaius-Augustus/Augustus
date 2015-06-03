@@ -168,6 +168,14 @@ Node* SpeciesGraph::addNode(Status *exon){
 	    + 2.5422 * getAvgBaseProb(exon);
 	if (exon->hasEvidence() && exon->name == CDS)
 	    score += maxCostOfExonLoss;
+    } else if (string("human") == Properties::getProperty("species")){ // need to be more specific if another human alignment is used, length not significant
+	score = ec_thold 
+	    - 4.2444 // intercept
+	    - 4.8556 // for not having omega
+	    + 5.4296 * exon->getPostProb() 
+	    + 4.3545 * getAvgBaseProb(exon);
+	if (exon->hasEvidence() && exon->name == CDS)
+	    score += maxCostOfExonLoss;
     }
 
     Node *node = new Node(exon->begin, exon->end, score, exon->item, ntype);
@@ -186,6 +194,11 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
 	    - 3.6803  // intercept
 	    - 5.1385 // for not having omega
 	    + 0.9453 * log(exon->len());
+    else if (string("human") == Properties::getProperty("species"))
+        score = ec_thold
+            - 4.2444 // intercept
+            - 4.8556; // for not having omega 
+
     Node *node = new Node(exon->begin, exon->end, score, exon, unsampled_exon);
     nodelist.push_back(node);
     addToHash(node);
@@ -261,7 +274,7 @@ Node* SpeciesGraph::addAuxilaryNode(NodeType type, int pos, vector< vector<Node*
 
     int32_t key = (pos << 5) //20 bits
 	+ type; // 5 bits
-    unordered_map<int32_t,Node*>::iterator it = auxiliaryNodes.find(key);                                                                                                 
+    unordered_map<int32_t,Node*>::iterator it = auxiliaryNodes.find(key);
     if(it == auxiliaryNodes.end()){ // insert new auxiliary node
 	Node *node = addNode(type, pos);
 	auxiliaryNodes.insert(pair<int32_t,Node*>(key,node));
@@ -284,7 +297,7 @@ Node* SpeciesGraph::getAuxilaryNode(NodeType type, int pos, unordered_map<int32_
 
     int32_t key = (pos << 5) //20 bits
 	+ type; // 5 bits
-    unordered_map<int32_t,Node*>::iterator it = auxiliaryNodes.find(key);                                                                                                 
+    unordered_map<int32_t,Node*>::iterator it = auxiliaryNodes.find(key);
     if(it == auxiliaryNodes.end()){ // insert new auxiliary node
 	return NULL;
     }
@@ -315,20 +328,26 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
     if( !edgeExists(pred,succ) ){
 	//cout << "intron\t\t"<< intr->begin << "\t\t" << intr->end << "\t\t" << (string)stateTypeIdentifiers[((State*)intr->item)->type] << endl;
 	double intr_score = 0.0;
-	if(intr->name == intron) // only CDS introns have a posterior probability                                                                                                
+	if(intr->name == intron) // only CDS introns have a posterior probability                    
 	    intr_score = setScore(intr);
 	if (intr->name == intron){
 	    if (string("fly") == Properties::getProperty("species")){
 		intr_score = ic_thold - 5.64405 + 5.640821 * intr->getPostProb() + 4.740363 * getAvgBaseProb(intr) - 0.155695 * log(intr->getLen());
-	    } else if (intr->name == intron && string("arabidopsis") == Properties::getProperty("species")){
+	    } else if (string("arabidopsis") == Properties::getProperty("species")){
 		intr_score = ic_thold 
-		    - 4.65897
-		    + 3.50353 * intr->getPostProb()
-		    + 1.93823 * getAvgBaseProb(intr)
-		    - 0.11402 * log(intr->getLen());
+		    -1.34679
+		    + 5.20390 * intr->getPostProb()
+		    + 4.08664 * getAvgBaseProb(intr)
+		    - 0.70702 * log(intr->getLen());
+	    } else if (string("human") == Properties::getProperty("species")){
+		intr_score = ic_thold 
+		    - 2.03403
+		    + 4.89456 * intr->getPostProb()
+		    + 3.59555 * getAvgBaseProb(intr)
+		    - 0.42217 * log(intr->getLen());
 	    }
-	    if(intr->hasEvidence())
-		intr_score+=maxCostOfExonLoss;
+	    if (intr->hasEvidence())
+		intr_score += maxCostOfExonLoss;
 	}
 
 	Edge in(succ, false, intr_score, intr->item);

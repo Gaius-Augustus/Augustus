@@ -2133,7 +2133,7 @@ void FeatureCollection::readSourceRelatedCFG(istream& datei){
     int sourcenum;
     string skey;
     datei >> goto_line_after("[SOURCES]") >> comment;
-    datei.getline( buf, 255 );
+    datei.getline( buf, 2048 );
     // numSources is the number of non-white space characters first
     numSources=0;
     int i=0;
