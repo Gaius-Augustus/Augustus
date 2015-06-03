@@ -56,7 +56,7 @@ void SpeciesCollection::addSpeciesToGroup(string skey, int groupID){
 
 void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
     string filename,skey;
-    char buf[256];
+    char buf[1024];
     ifstream datei;
 
     try {
@@ -82,7 +82,7 @@ void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
 		getline(datei,skey);
 		if(skey == "[GROUP]"){
 		    cout << "extrinsic group " << groupCount << ":";
-		    datei.getline(buf, 255); // reading in the set of species that belongs to the group
+		    datei.getline(buf, 1024); // reading in the set of species that belongs to the group
 		    stringstream stm(buf);
 		    if(stm >> skey){ 
 			do{
