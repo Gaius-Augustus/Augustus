@@ -39,6 +39,8 @@ void printUsage();
 int main( int argc, char* argv[] ){
     int c;
     int help = 0;
+    int noIdx = 0;
+    int makeIdx = 0;
     string species;
     string dbfile;
     string fastafile;
@@ -48,10 +50,12 @@ int main( int argc, char* argv[] ){
         {"dbaccess", 1, 0, 'd'},
         {"help", 0, 0, 'h'},
 	{"chunksize", 1, 0, 'c'},
+        {"noIdx", 0, 0, 'i'},
+        {"makeIdx", 0, 0, 'm'},	
         {NULL, 0, NULL, 0}
     };
     int option_index = 0;
-    while ((c = getopt_long(argc, argv, "s:d:hc:", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "s:d:hc:im", long_options, &option_index)) != -1) {
         switch (c) {
         case 's':
 	    species = optarg;
@@ -65,9 +69,31 @@ int main( int argc, char* argv[] ){
         case 'c':
 	    chunksize = atoi(optarg);
             break;
+	case 'i':
+            noIdx = 1;
+	    break;
+	case 'm':
+            makeIdx = 1;
+	    break;
         default:
             break;
         }
+    }
+    if (dbfile.empty()){
+	cerr << "Missing database file. dbaccess is a required parameter." << endl;
+	printUsage();
+	exit(1);
+    }
+    if (noIdx && makeIdx){
+	cerr << "You can only use one of the options --noIdx or --makeIdx at a time." << endl;
+	exit(1);
+    }
+    if(makeIdx){ // only build indices
+	SQLiteDB db(dbfile.c_str(),crw);
+	cout << "Creating indices on database tables."<< endl;
+	db.exec("CREATE INDEX IF NOT EXISTS gidx ON genomes(speciesid,seqnr,start,end);");
+	db.exec("CREATE INDEX IF NOT EXISTS hidx ON hints(speciesid,seqnr,start,end);");
+	exit(1);
     }
     if (optind < argc-2) {
         cerr << "More than two options without name: ";
@@ -91,11 +117,6 @@ int main( int argc, char* argv[] ){
     }
     if (species.empty()){
 	cerr << "Missing species name. Required parameter." << endl;
-	printUsage();
-	exit(1);
-    }
-    if (dbfile.empty()){
-	cerr << "Missing database file. dbaccess is a required parameter." << endl;
 	printUsage();
 	exit(1);
     }
@@ -189,7 +210,8 @@ int main( int argc, char* argv[] ){
 	    db.endTransaction();
 		
 	    // rebuild index on genomes table
-	    db.exec("CREATE INDEX gidx ON genomes(speciesid,seqnr,start,end);");
+	    if(!noIdx)
+		db.exec("CREATE INDEX gidx ON genomes(speciesid,seqnr,start,end);");
 
 	    if (seqCount > 0)
 		cout << "Inserted " << chunkCount << " chunks of " << seqCount << " sequences (total length "
@@ -259,7 +281,8 @@ int main( int argc, char* argv[] ){
 	    db.endTransaction();
 	    
 	    // rebuild index on hints table
-	    db.exec("CREATE INDEX hidx ON hints(speciesid,seqnr,start,end);");
+	    if(!noIdx)
+		db.exec("CREATE INDEX hidx ON hints(speciesid,seqnr,start,end);");
 
 	    if(hintCount > 0)
 		cout << "Inserted " << hintCount<< " hints for species " << species << endl; 
@@ -293,8 +316,16 @@ parameters:\n\
               the sequences in the input genome are split into chunks of this size so\n\
               that subsequent retrievals of small sequence ranges do not require to read\n\
               the complete - potentially much longer - chromosome. (<= 1000000, default " << chunksize << ")\n\
+--noIdx       use this flag to suppress the building of indices on the database tables.\n\
+              If you are going to load several genomes and/or hint files in a row, this option\n\
+              is recommended to speed up the loading. But make sure to build indices with\n\
+              --makeIdx after all genomes/hints are loaded. Otherwise, data retrieval opterations\n\
+              can be very slow.\n\
+--makeIdx     use this flag to build the indices on the database tables after loading several\n\
+              genomes and/or hint files with --noIdx. Only call this once for all species, e.g.\n\
+              load2sqlitedb --makeIdx --dbaccess=database.db\n\
 \n\
-example:\n\
+examples:\n\
      load2sqlitedb --species=chicken --dbaccess=chicken.db chickengenome.fa\n\
      load2sqlitedb --species=chicken --dbaccess=chicken.db chickenhints.gff\n";
 }
