@@ -70,7 +70,7 @@ public:
      */
     string getKey(Node *n);
     void printGraph(string filename); // prints graph in dot-format
-    void printSampledGF(Status *st); //prints sampled exons/introns to display them with gBrowse
+    void printSampledGF(Status *st, double score=0); //prints sampled exons/introns to display them with gBrowse
     string getSpeciesname() const {return speciesname;}
     char* getSequence() const {return seqRange->sequence;}
     char* getSeqID() const {return seqRange->seqname;}

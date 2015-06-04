@@ -120,7 +120,8 @@ void SpeciesGraph::buildGraph(){
     //add additional exoncandidates
     if(additionalExons && !additionalExons->empty()){
 	for(list<ExonCandidate*>::iterator it = additionalExons->begin(); it!=additionalExons->end();it++){
-	    addExon(*it, neutralLines, auxiliaryNodes);
+	    Node *node = addExon(*it, neutralLines, auxiliaryNodes);
+	    (*it)->setScore(node->score);
 	}
     }
 
@@ -179,7 +180,7 @@ Node* SpeciesGraph::addNode(Status *exon){
     }
 
     Node *node = new Node(exon->begin, exon->end, score, exon->item, ntype);
-    printSampledGF(exon);
+    printSampledGF(exon,score);
     nodelist.push_back(node);
     addToHash(node);
     return node;
@@ -352,7 +353,7 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
 
 	Edge in(succ, false, intr_score, intr->item);
 	pred->edges.push_back(in);
-	printSampledGF(intr);
+	printSampledGF(intr,intr_score);
     }
 }
 
@@ -375,7 +376,7 @@ Node* SpeciesGraph::addRightSS(Status *exon, vector< vector<Node*> >&neutralLine
 }
 
 
-void SpeciesGraph::printSampledGF(Status *st){
+void SpeciesGraph::printSampledGF(Status *st, double score){
     streambuf *coutbuf = cout.rdbuf(); //save old buf
     cout.rdbuf(sampled_GFs->rdbuf()); //redirect std::cout to species file
     cout << getSeqID() << "\tSAMPLING\t";
@@ -386,7 +387,7 @@ void SpeciesGraph::printSampledGF(Status *st){
     else{
 	cout << getSeqLength() - st->end + getSeqOffset() << "\t" << getSeqLength() - st->begin + getSeqOffset();
     }
-    cout << "\t0" ; //score
+    cout << "\t" << score;
     StateType type = ((State*)st->item)->type;
     // the gff strand of the exon is the "strand product" of the alignment strand and exon type strand
     // e.g. "-" x "-" = "+"

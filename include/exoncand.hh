@@ -72,6 +72,7 @@ public:
     Double getDssScore() const {return dssScore;}
     void setAssScore(Double s) {assScore = s;}
     void setDssScore(Double s) {dssScore = s;}
+    void setScore(Double s) {score = s;}
 
     int getFirstCodingBase();
     int getLastCodingBase();
