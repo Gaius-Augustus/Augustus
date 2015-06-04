@@ -26,6 +26,8 @@ my %cmdpars = ( 'pred'              => '',
 		'joingenes'         => '',
 		'wholeGenome'       => '',
                 'alternatives'      => '',
+		'noselection'       => '',
+		'nojoin'            => '',
 		'jg_exec_dir'       => '',
 		'eval_exec_dir'     => '');
 
@@ -55,6 +57,13 @@ OPTIONS
     --alternatives=1           Parameter of joingenes. If this flag is set, joingenes keeps alternative splice forms of a gene, otherwise
                                it only keeps the best splicing form. Per definition, alternative splice forms are either transcripts
                                with the same gene ID or the same coding start AND end coordinates (default: 0).
+    --noselection=1            Parameter of joingenes. If this flag is set, joingenes does NOT select a single best transcripts
+                               among multiple conflicting transcripts. Two transcripts are confliciting if they overlap
+                               each other and are no alternative splice forms.
+                               considered as conflicting.
+    --nojoin=1                 Parameter of joingenes. If this flag is set, joingenes does NOT create new
+                               transcripts by merging input transcripts, f.i. it does NOT combine two
+                               incomplete transcripts to a single complete transcript, where possible.
                                
 
 
@@ -106,7 +115,13 @@ if ($cmdpars{'wholeGenome'} eq '1'){
 
 my $jg_pars="";
 if ($cmdpars{'alternatives'} eq '1'){
-    $jg_pars="-a";
+    $jg_pars.=" -a";
+}
+if ($cmdpars{'noselection'} eq '1'){
+    $jg_pars.=" -l";
+}
+if ($cmdpars{'nojoin'} eq '1'){
+    $jg_pars.=" -j";
 }
 
 # check whether joingenes is properly installed
