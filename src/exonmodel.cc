@@ -549,7 +549,7 @@ void ExonModel::readProbabilities(int parIndex) {
 	    emiprobs.probs[f].resize( Pls[k][f].size() );
 	    emiprobs.order = k;
 	}
-	// for backward compatibility, check whether EMISSION parameters exist at all, if not compute them from the Psl (old version)
+	// for backward compatibility, check whether EMISSION parameters exist at all, if not compute them from the Pls (old version)
 	spos = istrm.tellg();
 	istrm >> goto_line_after( "[EMISSION]" );
 	if (!istrm){

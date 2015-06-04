@@ -2235,18 +2235,24 @@ void FeatureCollection::readGFFFile(const char *filename){
     /*
      * Read in the configuration file for extrinsic features.
      */    
-    int predictionStart, predictionEnd;
+    int predictionStart, predictionEnd, offset;
     try {
       predictionStart = Properties::getIntProperty( "predictionStart" ) - 1;
     } catch (...) {
       predictionStart = 0;
     }   
-    if (predictionStart < 0)
-	predictionStart = 0;
     try {
       predictionEnd = Properties::getIntProperty( "predictionEnd" ) - 1;
     } catch (...) {
       predictionEnd = INT_MAX;
+    }
+    
+    if (predictionStart == predictionEnd && predictionStart < 0)
+       offset = predictionStart + 1; // left shift input by this amount (sequence is not shifted and cut, though)
+    else {
+       if (predictionStart < 0)
+	predictionStart = 0;
+       offset = -predictionStart;
     }
 
     try {
@@ -2267,9 +2273,9 @@ void FeatureCollection::readGFFFile(const char *filename){
 	    try{
 		datei >> f >> comment >> ws;
 	    } catch (ProjectError e){}
-	    if (f.end >= predictionStart && f.start <= predictionEnd) {
-		f.start -= predictionStart;
-		f.end -= predictionStart;
+	    if ((f.end >= predictionStart && f.start <= predictionEnd) || predictionStart < 0) {
+		f.start += offset;
+		f.end += offset;
 		setBonusMalus(f);
 		if (f.bonus != 1.0){
 		    seqname = f.seqname;

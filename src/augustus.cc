@@ -549,7 +549,8 @@ void cutRelevantPiece(AnnoSequence *annoseq){
 	predictionEnd = seqlen - 1;
     }
 
-    if (predictionStart != 0 || predictionEnd != seqlen - 1) {
+    if ((predictionStart != 0 || predictionEnd != seqlen - 1) 
+	&& !(predictionEnd < 0 && predictionStart < 0)) {
 	if (predictionStart < 0)
 	    predictionStart = 0;
 	if (predictionEnd > seqlen - 1)
@@ -573,5 +574,10 @@ void cutRelevantPiece(AnnoSequence *annoseq){
 	delete [] annoseq->sequence;
 	annoseq->sequence = seq;
 	annoseq->offset = predictionStart;
+    } else if (predictionStart < 0 && predictionEnd < 0 && predictionEnd == predictionStart){ 
+       // this is intended for applications in which a sequence fragment is cut out of a chromosome for input to augustus
+       // and the hints have still original coordinates
+       // => use the whole input sequence and just left-shift hints and right-shift output coordinates
+       annoseq->offset = -predictionStart - 1;
     }
 }
