@@ -352,7 +352,7 @@ void createTableHints(){
         esource varchar(10) NOT NULL,\
         KEY region (speciesid,seqnr,start,end),\
         FOREIGN KEY (speciesid,seqnr) REFERENCES seqnames(speciesid,seqnr)\
- ) ENGINE=MyISAM DEFAULT CHARSET=latin1 MAX_ROWS=1000000 AVG_ROW_LENGTH=50000;");
+ ) ENGINE=MyISAM DEFAULT CHARSET=latin1 MAX_ROWS=1000000000 AVG_ROW_LENGTH=50000;");
     query.execute();
 }
 
