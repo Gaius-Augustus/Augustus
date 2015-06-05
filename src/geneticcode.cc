@@ -194,6 +194,7 @@ char GeneticCode::revtranslate(const char* t) {
 /*
  * containsInFrameStopcodon:
  * Check whether the interval from begin to end contains a stop codon.
+ * Also stop codons at the end are considered inframe stop codons.
  * If frame is specified, it is as in the gff format.
  * If frame is not specified (-1), then all reading frames are checked.
  */
@@ -202,11 +203,11 @@ bool GeneticCode::containsInFrameStopcodon(const char* dna, int begin, int end, 
     int i;
     if (forward) {
 	if ( frame >= 0 && frame <=2) {
-	    for (i=begin + frame; i < end-2 && !hasStop; i+=3)
+	    for (i=begin + frame; i <= end-2 && !hasStop; i+=3)
 		if (isStopcodon(dna+i))
 		    hasStop = true;
 	} else {
-	    for (i=begin; i < end-2 && !hasStop; i++)
+	    for (i=begin; i <= end-2 && !hasStop; i++)
 		if (isStopcodon(dna+i))
 		    hasStop = true;
 	}
@@ -216,7 +217,7 @@ bool GeneticCode::containsInFrameStopcodon(const char* dna, int begin, int end, 
 		if (isRCStopcodon(dna+i))
 		    hasStop = true;
 	} else {
-	    for (i=begin; i < end-2 && !hasStop; i++)
+	    for (i=begin; i <= end-2 && !hasStop; i++)
 		if (isRCStopcodon(dna+i))
 		    hasStop = true;
 	}

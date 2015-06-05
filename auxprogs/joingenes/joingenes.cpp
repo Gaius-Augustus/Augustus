@@ -172,7 +172,7 @@ void check_cds_stop_combination(Transcript* tx, pair<string,string> &stopVariant
     }
 
     if (!stopVariants.first.empty() && !stopVariants.second.empty()){
-	display_error("E.g. the stop_codon of "+(*properties.transcriptMap)[stopVariants.first]->originalId+" is inside of the CDS and the stop_codon of "+(*properties.transcriptMap)[stopVariants.second]->originalId+" is outside of the CDS. You have to make it equally!");
+	display_error("E.g. the stop_codon of "+(*properties.transcriptMap)[stopVariants.first]->originalId+" from "+(*properties.transcriptMap)[stopVariants.first]->inputFile+" is inside of the CDS and the stop_codon of "+(*properties.transcriptMap)[stopVariants.second]->originalId+" from "+(*properties.transcriptMap)[stopVariants.second]->inputFile+" is outside of the CDS. You have to make it equally!");
     }
 }
 
