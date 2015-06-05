@@ -281,6 +281,7 @@ void Graph::addBackEdges(){
 
 void Graph::addBackEdgesComp(){
   // get neutral line nodes out of all nodes in the order from head to tail
+  bool strongOverlap = false;
   list<Node*> neutralNodes;
   Node *pos = head;
   while(pos != tail){
@@ -296,9 +297,11 @@ void Graph::addBackEdgesComp(){
   }
   neutralNodes.push_back(tail);
   Node *lastSource = tail;
+  tail->nextNontrivialNeutNode = tail;
   // for every neutral line node backwards, starting at tail, add backedges and, if necessary, auxiliary Nodes
   for (list<Node*>::reverse_iterator actSource=neutralNodes.rbegin(); actSource!=neutralNodes.rend(); actSource++){
     if (*actSource == head){break;}             // maybe change the for-loop, to insert this condition in it (without this condition, the program adds unneeded auxiliary nodes on the head)
+    (*actSource)->nextNontrivialNeutNode = lastSource->nextNontrivialNeutNode;
     queue<Node*> exonQueue;
     size_t count = 0;
     list<Node*> actStopExons;
@@ -316,11 +319,35 @@ void Graph::addBackEdgesComp(){
           // for every edge from startEdge go every possible new way (dont go to a node, if you already found it from another source); add a back edge if you found a way back to IR
           for (list<Edge>::iterator edge=pos->edges.begin(); edge!=pos->edges.end(); edge++){
             if (pos->n_type != IR && (edge->to)->n_type == IR){
+
+
               actStopExons.push_back(pos);
               if(!edgeExists(pos,lastSource)){
-                if ((edge->to)->begin > lastSource->begin){             // see YY     
-                  edge->to = lastSource;                                // see YY
-                }                                                       // YY: if backedges should get a penalty, this lines has to be deleted
+		// if strong overlap is wanted (one transcript can overlap a whole transcript)
+		if (strongOverlap){
+                  if ((edge->to)->begin > lastSource->begin){             // see YY     
+		    edge->to = lastSource;                                // see YY
+		  }                                                       // YY: if backedges should get a penalty, this lines has to be deleted
+                }else{	// only weak overlap
+		  Node *suitableTarget = lastSource;
+		    while (suitableTarget->nextNontrivialNeutNode != NULL && suitableTarget->nextNontrivialNeutNode->end + 1 <= edge->to->end && !(suitableTarget == tail)){
+		      Node* tempNode = NULL;
+		      for (list<Edge>::iterator targetEdge=suitableTarget->edges.begin(); targetEdge!=suitableTarget->edges.end(); targetEdge++){
+		        if ((targetEdge->to)->n_type == IR){
+			  tempNode = targetEdge->to;
+		        }
+		        if ((targetEdge->to) == tail){
+			  tempNode = edge->to;
+		        }
+		      }
+		      if (tempNode != NULL){
+			suitableTarget = tempNode;
+		      }
+		    }
+		    if ((edge->to)->begin > suitableTarget->begin){
+		      edge->to = suitableTarget;
+		    }
+		}
                 // Edge edgeNew(lastSource,false, edge->score);         // see WW
                 // pos->edges.push_back(edgeNew);                       // WW: these lines are needed, if backedges should get a penalty 
               }
@@ -328,6 +355,8 @@ void Graph::addBackEdgesComp(){
                 if (actMinStopExon->end > pos->end){actMinStopExon = pos;}
               }else{actMinStopExon = pos;}
             }
+
+
             if ((edge->to)->prevNontrivialNeutNode == NULL || ((edge->to)->prevNontrivialNeutNode == (*actSource) && (edge->to)->index != count)){
               (edge->to)->prevNontrivialNeutNode = (*actSource);
               (edge->to)->index = count;
@@ -335,13 +364,22 @@ void Graph::addBackEdgesComp(){
             }
           }
         }
-        (startEdge->to)->nextNontrivialNeutNode = actMinStopExon;
+	if (actMinStopExon){
+          (startEdge->to)->nextNontrivialNeutNode = actMinStopExon;
+	  if ((*actSource)->nextNontrivialNeutNode == NULL){
+	    (*actSource)->nextNontrivialNeutNode = actMinStopExon;
+	  }else{
+	    if ((*actSource)->nextNontrivialNeutNode->end > actMinStopExon->end){
+	      (*actSource)->nextNontrivialNeutNode = actMinStopExon;
+	    }
+	  }
+	}
       }
       count++;
     }
 
-    // if more then one exon starts from this source, add auxiliary nodes for every different transcript end
-    if ((*actSource)->edges.size()>2){
+    // if more then one exon starts from this source, add auxiliary nodes for every different transcript end (only if strongOverlap is true)
+    if ((*actSource)->edges.size()>2 && strongOverlap){
       actStopExons.sort(compareNodeEnds);
       list<Node*> auxiliaryNodeList;
       // (again) for every "nonneutral" (start-)Edge from source add auxiliary nodes for every transcript with same start and different minStop
