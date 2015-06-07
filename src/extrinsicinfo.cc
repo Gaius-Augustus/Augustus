@@ -81,15 +81,26 @@ void SequenceFeatureCollection::printFeatures(ostream& out){
     int t, size;
     list<Feature>::iterator f;
     sortFeatureLists();
+    Feature sf;
     bool hasFeatures = false;
+    int offset = 0;
+    try {
+	int predictionStart = Properties::getIntProperty( "predictionStart" );
+	int predictionEnd = Properties::getIntProperty( "predictionEnd" );
+	if (predictionStart == predictionEnd && predictionStart < 0)
+	    offset = predictionStart;
+    } catch (...) { }
+
     for (t=0; t < NUM_FEATURE_TYPES; t++) {
 	size = featureLists[t].size();
 	if (size>0) {
 	    hasFeatures = true;
 	    for (f=featureLists[t].begin(); f!=featureLists[t].end(); f++) {
-		out << *f << endl;
+		sf = *f;
+		if (offset != 0)
+		    sf.shiftCoordinates(offset, offset, false);
+		out << sf << endl;
 	    }
-	    //out << endl;
 	}
     } 
     if (!hasFeatures && !Constant::MultSpeciesMode)

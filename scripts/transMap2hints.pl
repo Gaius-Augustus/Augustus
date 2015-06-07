@@ -90,7 +90,7 @@ my (@f,@s,@e,@in);
 #my (@blockbegins, @blockends);
 my $numBlocks;
 my ($from, $to, $ifrom, $ito, $i);
-# hint lists are sorted by by increasing begin position
+# hint lists are sorted by increasing begin position
 my @hint; # (begin, end, strand, tname, qname)
 my $hintref;
 my ($targetname, $oldtargetname);
@@ -112,7 +112,7 @@ while (<TRANSMAP>) {
     $line++;
     s/#.*//;
     next unless /\S/;
-    if ($line%1000==1){
+    if ($line % 10000 == 0){
 	print "line $line\n";
     }
 
@@ -122,10 +122,11 @@ while (<TRANSMAP>) {
     $qname = $f[0];      # mRNA       
     $targetname = $f[1]; # chromosome
     $strand = $f[2];
-    $txStart=$f[3];
-    $txEnd=$f[4];
-    $cdsStart=$f[5];
-    $cdsEnd=$f[6];
+    $txStart = $f[3];
+    $txEnd = $f[4];
+    $cdsStart = $f[5];
+    $cdsEnd = $f[6];
+    # $f[7] not used (number of exons?)
     $exonstarts = $f[8];
     $exonends = $f[9];
     $unknown = $f[10];
@@ -135,7 +136,9 @@ while (<TRANSMAP>) {
     $hasIntrons = $f[15];
 
     # filter alignments
-    if ($have_idfile && !exists $goodids{$qname}) { 
+    my $qnameuniq = $qname;
+    $qnameuniq =~ s/-\d+$//; # transMap adds -1 -2 -3 etc to the diffent alignments of the same query
+    if ($have_idfile && !exists $goodids{$qnameuniq}) { 
 	next;
     }
     if ($targetname ne $oldtargetname) {
@@ -148,8 +151,15 @@ while (<TRANSMAP>) {
     $hasIntrons =~ s/[, ]$//;
     @s = split /,/, $exonstarts;
     @e = split /,/, $exonends;
-    @in = split /,/, $hasIntrons;
-    #print "exonstarts ", (join ", ", @s), " exonends ", (join ", ", @e) , " hasintrons ", (join ", ", @i) , "\n";
+    if ($hasIntrons ne ""){
+	@in = split /,/, $hasIntrons;
+    } else {
+	# not all transMap output has the intron information about gaps
+	# assume that all of the gaps within size are introns
+	@in = (1) x (@s-1);
+    }
+
+    # print "exonstarts ", (join ", ", @s), " exonends ", (join ", ", @e) , " hasintrons ", (join ", ", @in) , "\n";
 
     $numBlocks = scalar @s;
     # start and stop hint
@@ -219,7 +229,7 @@ while (<TRANSMAP>) {
             }
 	}
 	if ($ephintbegin<0 || $ephintend <0) {
-	    $ephintbegin= $from;
+	    $ephintbegin = $from;
 	    $ephintend = $to;
 	} elsif ((($ephintend < $cdsStart || $ephintbegin>$cdsEnd) && ($ephintend + $min_intron_len_utr + 1 >= $from))||
 		 ($ephintend + $min_intron_len + 1 >= $from)){
@@ -330,9 +340,9 @@ sub printHints {
     foreach $hintref (@intronhints) {
 	print HINTS "$oldtargetname\t$prgname\tintron\t$hintref->[0]\t$hintref->[1]\t0\t$hintref->[2]\t.\tgrp=$hintref->[3];src=$source;pri=$priority\n";
     } 
-    foreach $hintref (@intronparthints) {
-	print HINTS "$oldtargetname\t$prgname\tintronpart\t$hintref->[0]\t$hintref->[1]\t0\t$hintref->[2]\t.\tgrp=$hintref->[3];src=$source;pri=$priority\n";
-    }
+#    foreach $hintref (@intronparthints) {
+#	print HINTS "$oldtargetname\t$prgname\tintronpart\t$hintref->[0]\t$hintref->[1]\t0\t$hintref->[2]\t.\tgrp=$hintref->[3];src=$source;pri=$priority\n";
+#   }
     foreach $hintref (@CDSparthints) {
 	print HINTS "$oldtargetname\t$prgname\tCDSpart\t$hintref->[0]\t$hintref->[1]\t$hintref->[4]\t$hintref->[2]\t.\tgrp=$hintref->[3];src=$source;pri=$priority\n";
     }
