@@ -21,7 +21,7 @@ double SpeciesGraph::ic_thold = 0.0;
 double SpeciesGraph::maxCostOfExonLoss = 0.0;
 
 void SpeciesGraph::buildGraph(){
-    
+  
     vector< vector<Node*> > neutralLines; //represents the seven neutral lines
     int seqlen = getSeqLength()+1;
 
@@ -155,7 +155,23 @@ Node* SpeciesGraph::addNode(Status *exon){
     NodeType ntype = utrExon;
     if(exon->name == CDS)
 	ntype = sampled;
-    double score = setScore(exon);
+    double score;
+    if(!Constant::logreg){
+      score = setScore(exon);
+    }else{
+      score = ec_thold 
+	+ Constant::ex_sc0 // intercept  
+	+ Constant::ex_sc1 // for not having omega
+	+ Constant::ex_sc2 // for not beeing an OE
+	+ Constant::ex_sc3 * log(exon->getLen())
+	+ Constant::ex_sc4 * exon->getPostProb()
+	+ Constant::ex_sc5 * getAvgBaseProb(exon);
+      if (exon->hasEvidence() && exon->name == CDS)
+        score += maxCostOfExonLoss;
+    }
+   
+    /*
+
     if (string("fly") == Properties::getProperty("species")){
 	score=ec_thold - 9.9121118 + 7.2057311 * exon->getPostProb() + 2.9993128 * getAvgBaseProb(exon) + 0.3998047 * log(exon->getLen());
 	if(exon->hasEvidence() && exon->name == CDS)
@@ -168,16 +184,29 @@ Node* SpeciesGraph::addNode(Status *exon){
 	    + 4.2741 * exon->getPostProb() 
 	    + 2.5422 * getAvgBaseProb(exon);
 	if (exon->hasEvidence() && exon->name == CDS)
-	    score += maxCostOfExonLoss;
+	  score += maxCostOfExonLoss;
     } else if (string("human") == Properties::getProperty("species")){ // need to be more specific if another human alignment is used, length not significant
-	score = ec_thold 
-	    - 4.2444 // intercept
-	    - 4.8556 // for not having omega
-	    + 5.4296 * exon->getPostProb() 
-	    + 4.3545 * getAvgBaseProb(exon);
-	if (exon->hasEvidence() && exon->name == CDS)
-	    score += maxCostOfExonLoss;
+      score = ec_thold 
+	- 4.2444 // intercept
+	- 4.8556 // for not having omega
+	+ 5.4296 * exon->getPostProb() 
+	+ 4.3545 * getAvgBaseProb(exon);
+      if (exon->hasEvidence() && exon->name == CDS)
+	score += maxCostOfExonLoss;
+    } else {
+      score = ec_thold
+	- 6.2313204 // intercept
+	- 3.6918148 // for not having omega
+	- 0.3606701 // for not beeing an OE
+	+ 0.3235385 * log(exon->getLen())
+	+ 5.3554965 * exon->getPostProb()
+	+ 4.9943482 * getAvgBaseProb(exon);
+      if (exon->hasEvidence() && exon->name == CDS)
+	score += maxCostOfExonLoss;
     }
+
+    */
+
 
     Node *node = new Node(exon->begin, exon->end, score, exon->item, ntype);
     printSampledGF(exon,score);
@@ -187,7 +216,19 @@ Node* SpeciesGraph::addNode(Status *exon){
 }
 
 Node* SpeciesGraph::addNode(ExonCandidate *exon){
-    double score = ec_score;
+
+  double score;
+  if(!Constant::logreg){
+    score = ec_score;
+  }else{
+    score = ec_thold
+      + Constant::ex_sc0 // intercept
+      + Constant::ex_sc1 // for not having omega
+      + Constant::ex_sc2 // for not beeing an OE
+      + Constant::ex_sc3 * log(exon->len());
+  }
+
+  /*
     if (string("fly") == Properties::getProperty("species"))
 	score =ec_thold - 9.9121118 + 0.3998047 * log(exon->len());
     else if (string("arabidopsis") == Properties::getProperty("species"))
@@ -195,10 +236,19 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
 	    - 3.6803  // intercept
 	    - 5.1385 // for not having omega
 	    + 0.9453 * log(exon->len());
+    
     else if (string("human") == Properties::getProperty("species"))
-        score = ec_thold
-            - 4.2444 // intercept
-            - 4.8556; // for not having omega 
+      score = ec_thold
+	- 4.2444 // intercept
+	- 4.8556; // for not having omega 
+    
+    else
+      score = ec_thold
+	- 6.2313204 // intercept
+        - 3.6918148 // for not having omega
+        - 0.3606701 // for not beeing an OE
+	+ 0.3235385 * log(exon->len());
+  */
 
     Node *node = new Node(exon->begin, exon->end, score, exon, unsampled_exon);
     nodelist.push_back(node);
@@ -329,9 +379,18 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
     if( !edgeExists(pred,succ) ){
 	//cout << "intron\t\t"<< intr->begin << "\t\t" << intr->end << "\t\t" << (string)stateTypeIdentifiers[((State*)intr->item)->type] << endl;
 	double intr_score = 0.0;
-	if(intr->name == intron) // only CDS introns have a posterior probability                    
+	if(intr->name == intron){ // only CDS introns have a posterior probability                    
+	  if(!Constant::logreg)
 	    intr_score = setScore(intr);
-	if (intr->name == intron){
+	  else
+	    intr_score = ic_thold
+	      + Constant::in_sc0 // intercept
+	      + Constant::in_sc1 * intr->getPostProb()
+	      + Constant::in_sc2 * getAvgBaseProb(intr)
+	      + Constant::in_sc3 * log(intr->getLen());
+	  
+	  /*
+
 	    if (string("fly") == Properties::getProperty("species")){
 		intr_score = ic_thold - 5.64405 + 5.640821 * intr->getPostProb() + 4.740363 * getAvgBaseProb(intr) - 0.155695 * log(intr->getLen());
 	    } else if (string("arabidopsis") == Properties::getProperty("species")){
@@ -346,9 +405,18 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
 		    + 4.89456 * intr->getPostProb()
 		    + 3.59555 * getAvgBaseProb(intr)
 		    - 0.42217 * log(intr->getLen());
+	    }else{
+	      intr_score = ic_thold
+		- 4.693283
+		+ 5.772046 * intr->getPostProb()
+		+ 4.170951 * getAvgBaseProb(intr)
+		- 0.261357 * log(intr->getLen());
 	    }
-	    if (intr->hasEvidence())
-		intr_score += maxCostOfExonLoss;
+
+	  */
+
+	  if (intr->hasEvidence())
+	    intr_score += maxCostOfExonLoss;
 	}
 
 	Edge in(succ, false, intr_score, intr->item);

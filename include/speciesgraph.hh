@@ -35,7 +35,28 @@ private:
     double ec_score; //temp: until there are real scores for exon candidates
     ofstream *sampled_GFs;        // output file of sampled exons/introns
     bool overlapComp;
-   
+
+  /*
+  // scores from logistic regression
+  bool logreg;
+  double ex_sc0;
+  double ex_sc1;
+  double ex_sc2;
+  double ex_sc3;
+  double ex_sc4;
+  double ex_sc5;
+  double ex_sc6;
+  double ex_sc7;
+  double ex_sc8;
+  double ex_sc9;
+  double ex_sc10;
+  double ex_sc11;
+  double in_sc0;
+  double in_sc1;
+  double in_sc2;
+  double in_sc3;
+  */
+
 public:
     SpeciesGraph(list<Status> *states, AnnoSequence *seq, list<ExonCandidate*> *addEx, string name, Strand s, bool u, bool o, ofstream *gf, bool ov = false) :
 	AugustusGraph(states, seq->sequence),
@@ -53,6 +74,95 @@ public:
 	} catch (...) {
 	    ec_score = alpha_e * x0_e - r_be;
 	}
+
+	/*	
+	// scores from logistic regression
+	try {
+          logreg = Properties::getBoolProperty("/CompPred/logreg");
+        } catch (...) {
+          logreg = false;
+        }
+	try {
+	  ex_sc0 = Properties::getdoubleProperty("/CompPred/exon_score0");
+        } catch (...) {
+	  ex_sc0 = -6.2313204;
+        }
+	try {
+          ex_sc1 = Properties::getdoubleProperty("/CompPred/exon_score1");
+        } catch (...) {
+          ex_sc1 = -3.6918148;
+        }
+	try {
+          ex_sc2 = Properties::getdoubleProperty("/CompPred/exon_score2");
+        } catch (...) {
+          ex_sc2 = -0.3606701;
+        }
+	try {
+          ex_sc3 = Properties::getdoubleProperty("/CompPred/exon_score3");
+        } catch (...) {
+          ex_sc3 = 0.3235385;
+        }
+	try {
+          ex_sc4 = Properties::getdoubleProperty("/CompPred/exon_score4");
+        } catch (...) {
+          ex_sc4 = 5.3554965;
+        }
+	try {
+          ex_sc5 = Properties::getdoubleProperty("/CompPred/exon_score5");
+        } catch (...) {
+          ex_sc5 = 4.9943482;
+        }
+	try {
+          ex_sc6 = Properties::getdoubleProperty("/CompPred/exon_score6");
+        } catch (...) {
+          ex_sc6 = -3.0756863;
+        }
+	try {
+          ex_sc7 = Properties::getdoubleProperty("/CompPred/exon_score7");
+        } catch (...) {
+          ex_sc7 = -1.9089841;
+        }
+	try {
+          ex_sc8 = Properties::getdoubleProperty("/CompPred/exon_score8");
+        } catch (...) {
+          ex_sc8 = 1.1666486;
+        }
+	try {
+          ex_sc9 = Properties::getdoubleProperty("/CompPred/exon_score9");
+        } catch (...) {
+          ex_sc9 = -0.0046283;
+        }
+	try {
+          ex_sc10 = Properties::getdoubleProperty("/CompPred/exon_score10");
+        } catch (...) {
+          ex_sc10 = 1.3124238;
+        }
+	try {
+          ex_sc11 = Properties::getdoubleProperty("/CompPred/exon_score11");
+        } catch (...) {
+          ex_sc11 = 0.0137427;
+        }
+	try {
+          in_sc0 = Properties::getdoubleProperty("/CompPred/intron_score0");
+        } catch (...) {
+          in_sc0 = -4.693283;
+        }
+	try {
+          in_sc1 = Properties::getdoubleProperty("/CompPred/intron_score1");
+        } catch (...) {
+          in_sc1 = 5.772046;
+        }
+	try {
+          in_sc2 = Properties::getdoubleProperty("/CompPred/intron_score2");
+        } catch (...) {
+          in_sc2 = 4.170951;
+        }
+	try {
+          in_sc3 = Properties::getdoubleProperty("/CompPred/intron_score3");
+        } catch (...) {
+          in_sc3 = -0.261357;
+        }
+	*/
     }
     ~SpeciesGraph(){
 	// AnnoSequence must be deleted by caller (it is needed at other places)

@@ -187,6 +187,13 @@ void CompGenePred::start(){
 	     << "Rerun with --alternatives-from-evidence=0 to remove this warning." << endl;
 	Constant::alternatives_from_evidence=false;
     }
+    // optional config file should contain feature scores from a logistic regression (otherwise defaults are used)
+    if (Properties::hasProperty(EXTERNAL_KEY)) {
+      string optCfgFile = expandHome(Properties::getProperty(EXTERNAL_KEY));
+      cout << "# Optional config file " << optCfgFile << " is used." << endl;
+    }else if(Constant::MultSpeciesMode && Constant::logreg){
+      cerr << "No optional config file specified. Using default scores from logistic regression with multiple species." << endl;
+    }
     bool genesWithoutUTRs;
     try {
 	genesWithoutUTRs = Properties::getBoolProperty("/CompPred/genesWithoutUTRs");
@@ -219,6 +226,9 @@ void CompGenePred::start(){
     try {
         conservationTrack = Properties::getBoolProperty("/CompPred/conservation");
     } catch (...) {
+      if(Constant::logreg)
+	conservationTrack = true;
+      else
         conservationTrack = false;
     }
     double thold;
@@ -423,13 +433,20 @@ void CompGenePred::start(){
 		geneRange->comparativeSignalScoring(); 
 	} catch (...) {}
 	
-	try{
-	    if(Properties::getBoolProperty("/CompPred/omegaEff"))
-	      geneRange->computeOmegasEff(seqRanges, &ctree, &codonAli); // omega and number of substitutions is stored as OrthoExon attribute
-	    else
-		geneRange->computeOmegas(seqRanges, &ctree);
-	}catch(...){}
-
+	bool use_omega;
+	try{ 
+	    use_omega = Properties::getBoolProperty("/CompPred/omega");
+	} catch (...){
+	  if(Constant::logreg)
+	    use_omega = true;
+	  else
+	    use_omega = false;
+	}
+	if(use_omega)
+	    geneRange->computeOmegasEff(seqRanges, &ctree, &codonAli); // omega and number of substitutions is stored as OrthoExon attribute
+	    //inefficient omega calculation, only use for debugging purpose 
+	    //geneRange->computeOmegas(seqRanges, &ctree);
+	
 	if (conservationTrack)
 	    geneRange->printConsScore(seqRanges, outdir);
 

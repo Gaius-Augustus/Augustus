@@ -142,6 +142,16 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 
 double OrthoExon::getLogRegScore(){
     
+  return (  Constant::ex_sc6  * Eomega * hasOmega()
+	    + Constant::ex_sc7  * VarOmega * hasOmega()
+	    + Constant::ex_sc8  * cons
+	    + Constant::ex_sc9  * containment
+	    + Constant::ex_sc10 * diversity
+	    + Constant::ex_sc11 * numExons()
+	    + Constant::ex_sc1  * -1 * hasOmega()
+	    + Constant::ex_sc2  * -1 ); // for being a HECT
+
+  /*
     if (string("fly") == Properties::getProperty("species")){
 
 	Eomega = (Eomega != Eomega)? -1 : Eomega; // temporary bugfix: if omega is not a number, set it to the default value
@@ -156,16 +166,17 @@ double OrthoExon::getLogRegScore(){
 		 + 1.5578776 * hasOmega() 
 		 + 1.9190608 ); // for being a HECT
     } else if (string("arabidopsis") == Properties::getProperty("species")){
-
-	Eomega = (Eomega != Eomega)? -1 : Eomega; // temporary bugfix: if omega is not a number, set it to the default value
-	VarOmega = (VarOmega != VarOmega)? -1 : VarOmega;
-
-	return  (- 3.4717 * Eomega * hasOmega()
-		 - 5.6222 * cons
-		 - 8.1274 * diversity
-		 + 4.1816 * numExons()
-		 + 5.1385 * hasOmega() 
-		 ); // for being a HECT
+      
+      Eomega = (Eomega != Eomega)? -1 : Eomega; // temporary bugfix: if omega is not a number, set it to the default value
+      VarOmega = (VarOmega != VarOmega)? -1 : VarOmega;
+      
+      return  (- 3.4717 * Eomega * hasOmega()
+	       - 5.6222 * cons
+	       - 8.1274 * diversity
+	       + 4.1816 * numExons()
+	       + 5.1385 * hasOmega() 
+	       ); // for being a HECT
+      
     } else if (string("human") == Properties::getProperty("species") && orthoex.size() == 12){ // 12 way alignment from CONTRAST paper
         Eomega = (Eomega != Eomega)? -1 : Eomega; // temporary bugfix: if omega is not a number, set it to the default value
         VarOmega = (VarOmega != VarOmega)? -1 : VarOmega;
@@ -175,9 +186,19 @@ double OrthoExon::getLogRegScore(){
                  + 0.5781 * numExons()
                  + 4.8556 * hasOmega() // for being a HECT
                  ); 
+    } else {
+      return (- 3.0756863 * Eomega * hasOmega()
+	      - 1.9089841 * VarOmega * hasOmega()
+	      + 1.1666486 * cons
+	      - 0.0046283 * containment
+	      + 1.3124238 * diversity
+	      + 0.0137427 * numExons()
+	      + 3.6918148 * hasOmega()
+	      + 0.3606701 ); // for being a HECT
     }
-
     return 0.0;
+  */
+
 }
 
 // old code:

@@ -319,6 +319,24 @@ public:
     static unsigned temperature; // heating the distribution for sampling, 0=cold, 7=hottest, take probs to the power of (8-temperature)/8
     static bool softmasking; // if true, lower-case character regions give rise to nonexonpart hints
     static bool dbhints;
+  // scores from logistic regression  
+  static bool logreg;
+  static double ex_sc0;
+  static double ex_sc1;
+  static double ex_sc2;
+  static double ex_sc3;
+  static double ex_sc4;
+  static double ex_sc5;
+  static double ex_sc6;
+  static double ex_sc7;
+  static double ex_sc8;
+  static double ex_sc9;
+  static double ex_sc10;
+  static double ex_sc11;
+  static double in_sc0;
+  static double in_sc1;
+  static double in_sc2;
+  static double in_sc3;
 };
 
 
