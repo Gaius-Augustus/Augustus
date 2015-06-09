@@ -1196,7 +1196,11 @@ void GeneMSA::printConsScore(vector<AnnoSequence*> const &seqRanges, string outd
 	oe->setConsScore(oeConsScore);
     }
     // output for each geneRange and each species a conservation track in wiggle format
-    consToWig(consScore, outdir);
+
+    try {
+	if (Properties::getBoolProperty( "/CompPred/printConservationWig" ))
+	    consToWig(consScore, outdir);
+    } catch (...) {}
 }
 
 // calculates a conservation score for a single alignment column
