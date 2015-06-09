@@ -34,11 +34,7 @@ ifdef COMPGENEPRED
 	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
-	LIBS += -L/cluster/home/mario/tools/boost_1_58_0/stage/lib # for current boost version, rather than the 6 years old
-	LIBS += -L/cluster/home/mario/tools/lp_solve_5.5/lpsolve55/bin/ux64/ # for lpsolve not installed on hgwdev
-	LIBS += -L/cluster/home/mario/tools/lp_solve_5.5/colamd # is normally a package, not present on hgwdev
-	INCLS += -I/usr/include/lpsolve -I/cluster/home/mario/tools/boost_1_58_0
-	INCLS += -I/cluster/home/mario/tools/lp_solve_5.5/
+	INCLS += -I/usr/include/lpsolve
 endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
@@ -631,6 +627,7 @@ orthograph.o : \
 	../include/mea.hh \
 	../include/speciesgraph.hh \
 	../include/phylotree.hh \
+	../include/orthogene.hh \
 	../include/geneMSA.hh \
 	orthograph.cc
 
