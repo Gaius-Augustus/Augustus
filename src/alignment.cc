@@ -121,6 +121,19 @@ int AlignmentRow::getAliPos(int chrPos, vector<fragment>::const_iterator from){
     return from->aliPos + chrPos - from->chrPos;
 }
 
+//same as above, but lets you pass the iterator, which makes multiple use possible
+int AlignmentRow::getAliPos(int chrPos, vector<fragment>::const_iterator *from){
+    if (*from == frags.end() || (*from)->chrPos > chrPos)
+	return -2;
+    while (*from != frags.end() && (*from)->chrPos + (*from)->len - 1 < chrPos)
+	++*from;
+    if (*from == frags.end())
+	return -1;
+    if (chrPos < (*from)->chrPos)
+	return -1;
+    return (*from)->aliPos + chrPos - (*from)->chrPos;
+}
+
 // convert from alignment to chromosomal position (inverse function of getAliPos()) 
 int AlignmentRow::getChrPos(int aliPos, vector<fragment>::const_iterator from){
     if (from == frags.end() || from->aliPos > aliPos) // aliPos to the left of alignment

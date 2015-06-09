@@ -64,6 +64,8 @@ public:
      * return -2, if position is otherwise not mappable: no fragment contains the chrPos, i.e. chrPos is in a gap
      */
     int getAliPos(int chrPos, vector<fragment>::const_iterator from);
+    int getAliPos(int chrPos, vector<fragment>::const_iterator *from); // variant from Patrick Balmerth
+
     int getAliPos(int chrPos) { return getAliPos(chrPos, frags.begin()); }
 
     // convert from alignment to chromosomal position (inverse function of getAliPos())
