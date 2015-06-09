@@ -222,14 +222,14 @@ void CompGenePred::start(){
     } catch (...) {
         featureScoreHects = false;
     }
-    bool conservationTrack;
+    bool conservation;
     try {
-        conservationTrack = Properties::getBoolProperty("/CompPred/conservation");
+        conservation = Properties::getBoolProperty("/CompPred/conservation");
     } catch (...) {
       if(Constant::logreg)
-	conservationTrack = true;
+	conservation = true;
       else
-        conservationTrack = false;
+        conservation = false;
     }
     double thold;
     try {
@@ -447,8 +447,8 @@ void CompGenePred::start(){
 	    //inefficient omega calculation, only use for debugging purpose 
 	    //geneRange->computeOmegas(seqRanges, &ctree);
 	
-	if (conservationTrack)
-	    geneRange->printConsScore(seqRanges, outdir);
+	if (conservation)
+	    geneRange->calcConsScore(seqRanges, outdir);
 
 	if (noprediction){
 	    geneRange->printOrthoExons();

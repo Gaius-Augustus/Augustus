@@ -1146,7 +1146,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 
 
 // calculate a columnwise conservation score and output it (for each species) in wiggle format
-void GeneMSA::printConsScore(vector<AnnoSequence*> const &seqRanges, string outdir){
+void GeneMSA::calcConsScore(vector<AnnoSequence*> const &seqRanges, string outdir){
 
     vector<vector<fragment>::const_iterator > fragsit(numSpecies());
     vector<size_t> seqPos(numSpecies(),0); 

@@ -93,7 +93,7 @@ public:
     LocusTree *constructTree(); // creates, stores are returns the locus tree for the sequence tuple
 
     // calculate a columnwise conservation score and output it (for each species) in wiggle format
-    void printConsScore(vector<AnnoSequence*> const &seqRanges, string outdir);
+    void calcConsScore(vector<AnnoSequence*> const &seqRanges, string outdir);
     double calcColumnScore(int a, int c, int t, int g); // input: number of a,c,t and g's in one alignment column 
     void consToWig(vector<double> &consScore, string outdir);
 
