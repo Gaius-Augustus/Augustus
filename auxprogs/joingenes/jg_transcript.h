@@ -100,6 +100,7 @@ class Transcript{
 
     list<string> supporter;		// at the moment these list only consist the pointer to transcripts, who are totaly equal to this transcript (doesnt matter whether their creation is related)
     list<Exon> exon_list;				// saves every feature (cds, utr, exon [cds+utr]
+    list<Exon> intron_list;
     list<Exon> stop_list;
     Gene* parent;
     string source;

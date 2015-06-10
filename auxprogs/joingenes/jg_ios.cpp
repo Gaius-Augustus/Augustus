@@ -66,8 +66,8 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 		    exon.feature = temp;
 		else
 		    load_error("Can not read feature.");
-		if (exon.feature != "CDS" && exon.feature != "start_codon" && exon.feature != "stop_codon" && exon.feature != "exon" && exon.feature != "UTR" && exon.feature != "3'-UTR" && exon.feature != "5'-UTR" && exon.feature != "tss" && exon.feature != "tts"){
-		    if (exon.feature != "gene" && exon.feature != "transcript" && exon.feature != "intron"){
+		if (exon.feature != "CDS" && exon.feature != "start_codon" && exon.feature != "stop_codon" && exon.feature != "exon" && exon.feature != "UTR" && exon.feature != "3'-UTR" && exon.feature != "5'-UTR" && exon.feature != "tss" && exon.feature != "tts"  && exon.feature != "intron"){
+		    if (exon.feature != "gene" && exon.feature != "transcript"){
 			list<string>::iterator fit = find(unknownFeatures.begin(),unknownFeatures.end(),exon.feature);
 			if (fit == unknownFeatures.end()){
 			    unknownFeatures.push_back(exon.feature);
@@ -200,6 +200,8 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 			if (exon.from != exon.to){load_error("\"tts\" can only take place on one position.");}
 			thisFileTranscriptMap[transcript_id]->tts = exon.to;
 			thisFileTranscriptMap[transcript_id]->tx_complete.second = true;
+		    }else if (exon.feature == "intron"){
+			thisFileTranscriptMap[transcript_id]->intron_list.push_front(exon);
 		    }else{
 			thisFileTranscriptMap[transcript_id]->exon_list.push_front(exon);
 		    }
@@ -431,6 +433,24 @@ void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &pro
 		outfile << "." << "\t";
 	    outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << (*it)->parent->g_id << "\";" << endl;
 	  }
+	}
+
+	if ((*it)->intron_list.size() > 0 && !properties.join){
+	    (*it)->intron_list.sort();
+	    for (list<Exon>::iterator it_inside = (*it)->intron_list.begin(); it_inside != (*it)->intron_list.end(); it_inside++){
+		outfile << (*it_inside).chr << "\t";
+		outfile << (*it)->source << "\t";
+		outfile << (*it_inside).feature << "\t";
+		outfile << (*it_inside).from << "\t";
+		outfile << (*it_inside).to << "\t";
+		outfile << (*it_inside).score << "\t";
+		outfile << (*it)->strand << "\t";
+		if ((*it_inside).frame != -1)
+		    outfile << (*it_inside).frame << "\t";
+		else
+		    outfile << "." << "\t";
+		outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << (*it)->parent->g_id << "\";" << endl;
+	    }
 	}
 
 	for (list<Exon>::iterator it_inside = (*it)->exon_list.begin(); it_inside != (*it)->exon_list.end(); it_inside++){
