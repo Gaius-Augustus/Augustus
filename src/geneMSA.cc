@@ -861,7 +861,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 	vector<vector<int> > posStoredCodons(numSpecies(),vector<int>(3,0)); // stores the position of the last codon aligned in getCodonAlignment() for each species and reading frame
     
 	cout << "generating codon alignment" << endl;
-	cout << "number of orthoExons: " << orthoExonsList.size() << endl;
+	//cout << "number of orthoExons: " << orthoExonsList.size() << endl;
 	for (list<OrthoExon>::iterator oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
 	  if(isOnFStrand(oe->getStateType()) != plusStrand)
 		continue;
@@ -1048,7 +1048,6 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 	      if(cv == NULL){
 		cerr<<"cum Values has NULL pointer"<<endl;
 	      }
-	      //cout<<"pointer to cumValues: "<<cv->omega<<endl;
 	      aliPosIt->second.oeEnd[i]->setOmega(&cv->logliks, codonevo, false);
 	      bvit->second--;
 	    }
@@ -1099,7 +1098,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 	    for(unordered_map<bit_vector, int, boost::hash<bit_vector>>::iterator bvit = bvCount.begin(); bvit != bvCount.end(); bvit++){
 	      if(bvit->second == 0)
 		continue;
-	      //  cout<<"next Bitvector in bvcount "<<printBV(bvit->first)<<":"<<bvit->second<<endl;
+	      //cout<<"next Bitvector in bvcount "<<printBV(bvit->first)<<":"<<bvit->second<<endl;
 	      cumValues *cv = findCumValues(bvit->first, rfc);    
 	      //cout<<"after findCumValues"<<endl;
 	      if(cv != NULL){
@@ -1123,18 +1122,21 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 	    // cerr<<"no Bitvector with given RFC found!"<<endl;
 	  }
 	}
+	//cout << "+++ process orthoExon that start or end after the end of the codon alignment!"<<endl;
+	int lastPos = aliPosIt->first;
 	while(aliPosIt != aliPos.end()){ // process remaining orthoExon ends
-	  /*if(aliPosIt->second.oeStart.size() > 0){
-	    cerr<<"Warning: there are still orthoexon(s) beginning although codon alignment ended"<<endl; 
-	    }*/
+	  if(aliPosIt->second.oeStart.size() > 0){
+	    //cerr<<"Warning: there are still orthoexon(s) beginning although codon alignment ended"<<endl; 
+	  }
 	  for(int i=0; i<aliPosIt->second.oeEnd.size(); i++){
 	    //cout<<"################ortho exon ("<<aliPosIt->second.oeEnd[i]->ID<<") ends: "<<aliPosIt->second.oeEnd[i]->getAliStart()<<":"<<aliPosIt->second.oeEnd[i]->getAliEnd()<<endl;
-
-	    cumValues *cv = findCumValues(aliPosIt->second.oeEnd[i]->getBV(), const_cast<const OrthoExon*>(aliPosIt->second.oeEnd[i])->getRFC(offsets));
-	    /*if(cv == NULL){ 
-	      cerr<<"cum Values has NULL pointer, no omega was calculated"<<endl;
-	      }*/
-	      if(cv != NULL){
+	    cumValues *cv;
+	    if(aliPosIt->second.oeEnd[i]->getAliStart() >= lastPos){
+	      cv = NULL;
+	    }else{
+	      cv = findCumValues(aliPosIt->second.oeEnd[i]->getBV(), const_cast<const OrthoExon*>(aliPosIt->second.oeEnd[i])->getRFC(offsets));
+	    }
+	    if(cv != NULL){
 	      aliPosIt->second.oeEnd[i]->setOmega(&cv->logliks, codonevo, false);
 	    }
 	  }
