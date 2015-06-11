@@ -1532,7 +1532,7 @@ bool alternativeVariants(Gene* g1, Gene* g2){
 	if (!(*it)->tl_complete.first || !(*it)->tl_complete.second){continue;}
 	for (list<Transcript*>::iterator itInside = g2->children.begin(); itInside != g2->children.end(); itInside++){
 	    if (!(*itInside)->tl_complete.first || !(*itInside)->tl_complete.second){continue;}
-	    if (overlappingCdsWithAnything((*it), (*itInside)) && (*it)->strand == (*itInside)->strand && (/*(*it)->hasCommonExon(*itInside) || */((*it)->hasCommonTlStart(*itInside) && (*it)->hasCommonTlStop(*itInside)))){
+	    if (overlappingCdsWithAnything((*it), (*itInside)) && (*it)->strand == (*itInside)->strand && (/*(*it)->hasCommonExon(*itInside) || */((*it)->hasCommonTlStart(*itInside) || (*it)->hasCommonTlStop(*itInside)))){
 		return true;
 	    }
 	}
