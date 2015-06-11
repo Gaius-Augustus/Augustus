@@ -29,10 +29,10 @@ static const struct option longOpts[] = {
 
 void display_help(void)
 {
-    cout << "joingenes - merging several gene sets into one, including the combination of transcripts to new ones not present in input" << endl;
+    cout << "joingenes - merge several gene sets into one, including the combination of transcripts to new ones not present in input" << endl;
     cout << "This program works in several steps:" << endl;
-    cout << "  1. devide the set of all transcripts into smaller sets, where all transcripts are on the same sequence and are overlapping at least with one other transcript in this set (set is called \"overlap\")" << endl;
-    cout << "  2. deletes all duplications of transcripts and saves the variant with the highest \"score\"" << endl;
+    cout << "  1. divide the set of all transcripts into smaller sets, in which all transcripts are on the same sequence and are overlapping at least with one other transcript in this set (set is called \"overlap\")" << endl;
+    cout << "  2. delete all duplications of transcripts and save the variant with the highest \"score\"" << endl;
     cout << "  3. if sequence ranges are set for some transcripts, the program detects, whether the distance to that range is dangerously close" << endl;
     cout << "  4. join:" << endl;
     cout << "    4.1. if there is a transcript dangerously close to one/both end(s) of a sequence range, the program creates a copy without the corresponding terminal exon" << endl;
