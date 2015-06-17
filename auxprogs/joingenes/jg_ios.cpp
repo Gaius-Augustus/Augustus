@@ -357,6 +357,34 @@ void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &pro
 	if (!(*it)->joinpartner.second.empty())
 	    outfile << "# transcrpit has been joined at 3'-side with " << (*it)->joinpartner.second << endl;
 
+/*	if (!(*it)->parent->printed){
+	    outfile << (*it)->exon_list.front().chr << "\t";
+	    outfile << (*it)->source << "\t";
+	    outfile << "gene" << "\t";
+	    int minStart = getTxStart();
+	    int maxStop = getTxEnd();
+
+
+	    outfile << (*it)->getTxStart() << "\t";
+	    outfile << (*it)->getTxEnd() << "\t";
+	    outfile << '.' << "\t";
+	    outfile << (*it)->strand << "\t";
+	    outfile << "." << "\t";
+	    outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << (*it)->parent->g_id << "\";" << endl;
+	}*/
+
+	if (!(*it)->exon_list.empty()){
+	    outfile << (*it)->exon_list.front().chr << "\t";
+	    outfile << (*it)->source << "\t";
+	    outfile << "transcript" << "\t";
+	    outfile << (*it)->getTxStart() << "\t";
+	    outfile << (*it)->getTxEnd() << "\t";
+	    outfile << '.' << "\t";
+	    outfile << (*it)->strand << "\t";
+	    outfile << "." << "\t";
+	    outfile << (*it)->t_id << endl;
+	}
+
 	if ((*it)->strand == '+' && (*it)->tss!=-1){
 	    outfile << (*it)->exon_list.front().chr << "\t";
 	    outfile << (*it)->source << "\t";

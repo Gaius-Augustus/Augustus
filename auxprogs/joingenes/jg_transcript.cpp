@@ -205,8 +205,8 @@ void compareAndSplit(list<Transcript*> &overlap, Properties &properties){
     }
 
     list<Transcript*> equal;
-    list<Transcript*> same_stop1;
-    list<Transcript*> same_stop2;
+    list<Transcript*> alternatives1;
+    list<Transcript*> alternatives2;
     list<Transcript*> unequal1;
     list<Transcript*> unequal2;
 
@@ -218,12 +218,11 @@ void compareAndSplit(list<Transcript*> &overlap, Properties &properties){
 	    if (who_is_part.first && who_is_part.second){
 		(*it)->compareValue = EQUAL;
 		(*it_inside)->compareValue = EQUAL;
-	    }else if ((*it)->tes && (*it_inside)->tes && (*it)->tes == (*it_inside)->tes){
+	    }else if ((properties.genemodel == "bacterium" && (*it)->tes && (*it_inside)->tes && (*it)->tes == (*it_inside)->tes) || (properties.genemodel != "bacterium" && alternativeVariants((*it), (*it_inside)))){
 		if ((*it)->compareValue != 2)
-		    (*it)->compareValue = SAME_STOP;
+		    (*it)->compareValue = ALTERNATIVE;
 		if ((*it_inside)->compareValue != 2)
-		    (*it_inside)->compareValue = SAME_STOP;
-
+		    (*it_inside)->compareValue = ALTERNATIVE;
 	    }else{
 		if ((*it)->compareValue != 2 && (*it)->compareValue != 1)
 		    (*it)->compareValue = UNEQUAL;
@@ -234,20 +233,20 @@ void compareAndSplit(list<Transcript*> &overlap, Properties &properties){
 	if ((*it)->compareValue == 2)
 	    equal.push_back(*it);
 	if ((*it)->compareValue == 1)
-	    same_stop1.push_back(*it);
+	    alternatives1.push_back(*it);
 	if ((*it)->compareValue == 0)
 	    unequal1.push_back(*it);
     }
     for (list<Transcript*>::iterator it = priorityTx2.begin(); it != priorityTx2.end(); it++){
 	if ((*it)->compareValue == 1)
-	    same_stop2.push_back(*it);
+	    alternatives2.push_back(*it);
 	if ((*it)->compareValue == 0)
 	    unequal2.push_back(*it);
     }
-    string filenameEqual = "cEqual.gtf", filenameStop1 = "cSameStop1.gtf", filenameStop2 = "cSameStop2.gtf", filenameUne1 = "cUnequal1.gtf", filenameUne2 = "cUnequal2.gtf";
+    string filenameEqual = "cEqual.gtf", filenameStop1 = "cAlternative1.gtf", filenameStop2 = "cAlternative2.gtf", filenameUne1 = "cUnequal1.gtf", filenameUne2 = "cUnequal2.gtf";
     saveOverlap(equal, filenameEqual, properties);
-    saveOverlap(same_stop1, filenameStop1, properties);
-    saveOverlap(same_stop2, filenameStop2, properties);
+    saveOverlap(alternatives1, filenameStop1, properties);
+    saveOverlap(alternatives2, filenameStop2, properties);
     saveOverlap(unequal1, filenameUne1, properties);
     saveOverlap(unequal2, filenameUne2, properties);
 }
@@ -1527,15 +1526,24 @@ bool compare_quality(Transcript const* lhs, Transcript const* rhs){
     }
 }*/
 
-bool alternativeVariants(Gene* g1, Gene* g2){
+bool shareAlternativeVariant(Gene* g1, Gene* g2){
     for (list<Transcript*>::iterator it = g1->children.begin(); it != g1->children.end(); it++){
 	if (!(*it)->tl_complete.first || !(*it)->tl_complete.second){continue;}
 	for (list<Transcript*>::iterator itInside = g2->children.begin(); itInside != g2->children.end(); itInside++){
 	    if (!(*itInside)->tl_complete.first || !(*itInside)->tl_complete.second){continue;}
-	    if (overlappingCdsWithAnything((*it), (*itInside)) && (*it)->strand == (*itInside)->strand && (/*(*it)->hasCommonExon(*itInside) || */((*it)->hasCommonTlStart(*itInside) || (*it)->hasCommonTlStop(*itInside)))){
+	    if (alternativeVariants((*it), (*itInside))){
 		return true;
 	    }
 	}
+    }
+    return false;
+}
+
+bool alternativeVariants(Transcript* t1, Transcript* t2){
+//    if (!t1->tl_complete.first || !t1->tl_complete.second){return false;}
+//    if (!t2->tl_complete.first || !t2->tl_complete.second){return false;}
+    if (overlappingCdsWithAnything(t1, t2) && t1->strand == t2->strand && (/*t1->hasCommonExon(t2) || */(t1->hasCommonTlStart(t2) || t1->hasCommonTlStop(t2)))){
+	return true;
     }
     return false;
 }
@@ -1598,7 +1606,7 @@ void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties
 	    list<Gene*>::iterator itInside = it;
 	    itInside++;
 	    while (itInside != genes.end()){
-		if (alternativeVariants((*it), (*itInside))){
+		if (shareAlternativeVariant((*it), (*itInside))){
 
 		    // Transfer all transcripts of itInside to it and delete itInside
 		    for (list<Transcript*>::iterator tit = (*itInside)->children.begin(); tit != (*itInside)->children.end(); tit++){

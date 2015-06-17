@@ -21,7 +21,7 @@ enum boundaryStatusType{TYPE_UNKNOWN = -1,		// predRange-boundaryStatusType
 								// FREED means that the problem exon was erased
 };
 
-enum compareType{UNEQUAL=0, SAME_STOP=1, EQUAL=2
+enum compareType{UNEQUAL=0, ALTERNATIVE=1, EQUAL=2
 };
 
 
@@ -82,6 +82,7 @@ class Gene{
     list<Transcript*> children;
     int nrOfTx;
     int nrOfPrintedTx;
+    bool printed;
 };
 
 class Transcript{
@@ -174,11 +175,11 @@ class Transcript{
     }
 
     bool hasCommonTlStart(Transcript* tx){
-	if (tis == tx->tis && tl_complete.first && tx->tl_complete.first && strand == tx->strand){return true;}else{return false;}
+	if (tis == tx->tis && strand == tx->strand){return true;}else{return false;}
     }
 
     bool hasCommonTlStop(Transcript* tx){
-	if (tes == tx->tes && tl_complete.second && tx->tl_complete.second && strand == tx->strand){return true;}{return false;}
+	if (tes == tx->tes && strand == tx->strand){return true;}{return false;}
     }
 
     string getChr(){
@@ -533,6 +534,7 @@ bool overlappingCdsOnlyWithUtr(Transcript* t1, Transcript* t2);
 bool overlappingUtrOnly(Transcript* t1, Transcript* t2);
 int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &properties);
 
+bool alternativeVariants(Transcript* t1, Transcript* t2);
 void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties);
 void recursiv(list<list<Transcript*>> &groups, list<Transcript*> actGroup, list<string> openTx, Properties &properties, unordered_map<string,Transcript*> &txMap, list<string> selectedTx);
 list<Transcript*> calcGeneStructur(list<Transcript*> overlap, Properties &properties);

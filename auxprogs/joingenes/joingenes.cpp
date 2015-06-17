@@ -350,7 +350,7 @@ int main(int argc, char* argv[])
 
 
     if (properties.onlyCompare){
-	string filenameEqual = "cEqual.gtf", filenameStop1 = "cSameStop1.gtf", filenameStop2 = "cSameStop2.gtf", filenameUne1 = "cUnequal1.gtf", filenameUne2 = "cUnequal2.gtf";
+	string filenameEqual = "cEqual.gtf", filenameStop1 = "cAlternative1.gtf", filenameStop2 = "cAlternative2.gtf", filenameUne1 = "cUnequal1.gtf", filenameUne2 = "cUnequal2.gtf";
 	fstream outfile;
 	outfile.open(filenameEqual, ios::out);
 	outfile.close();
