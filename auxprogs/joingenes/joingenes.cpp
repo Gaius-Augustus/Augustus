@@ -302,7 +302,7 @@ int main(int argc, char* argv[])
 	list<int>::iterator it_p = priorities.begin();
 	for (list<string>::iterator it_f = filenames.begin(); it_f != filenames.end(); it_f++){
 	    load(geneMap, (*it_f) ,(*it_p), taxaMap, properties);
-	    cout << "After loading " << (*it_f) << " (Priority " << (*it_p) << ") there are " << (*properties.transcriptMap).size() << " transcripts in transcript list." << endl;
+	    cout << "# After loading " << (*it_f) << " (Priority " << (*it_p) << ") there are " << (*properties.transcriptMap).size() << " transcripts in transcript list." << endl;
 	    it_p++;
 	}
 
@@ -335,10 +335,34 @@ int main(int argc, char* argv[])
 	check_cds_stop_combination(pointer->second, stopVariants, properties);
 	if (!check_frame_annotation(*pointer->second)){
 	    pointer->second->isNotFrameCorrect = true;
-	    cerr << (*properties.transcriptMap)[pointer->second->t_id]->originalId << " from file " << (*properties.transcriptMap)[pointer->second->t_id]->inputFile << " has wrong frame annotation and will be ignored in joining step." << endl;
+	    displayWarning((*properties.transcriptMap)[pointer->second->t_id]->originalId+" from file "+(*properties.transcriptMap)[pointer->second->t_id]->inputFile+" has wrong frame annotation and will be ignored in joining step.", properties, "frame");
 	    //display_error("Frames are not correct.");
 	}
     }
+    warningSummary("There are ", " transcripts with wrong frame in the input files.", properties, "frame");
+
+    // tests, if the alternatives definition in the input is more strict than the one in this program or not
+//    testInputAlternatives(properties);
+
+    // take a look at length of introns
+/*    list<int> intronLengths;
+    for (auto pointer = (*properties.transcriptMap).begin(); pointer != (*properties.transcriptMap).end(); pointer++){
+	for (list<Exon>::iterator it1 = pointer->second->exon_list.begin(); it1 != pointer->second->exon_list.end(); it1++){
+	    list<Exon>::iterator it2 = it1;
+	    it2++;
+	    if (it2 != pointer->second->exon_list.end()){
+		int intronLength = (*it2).from - (*it1).to - 1;
+		intronLengths.push_back(intronLength);
+if (intronLength == 89114){cout << pointer->first << " " << intronLength << endl;}
+	    }
+	}
+    }
+    intronLengths.sort();
+    for (list<int>::iterator it = intronLengths.begin(); it != intronLengths.end(); it++){
+	cout << (*it) << endl;
+    }*/
+
+    // splits the transcript list by the scaffold of the transcript
     unordered_map<string,list<Transcript*>> splitted_transcript_list;
     for (auto pointer = (*properties.transcriptMap).begin(); pointer != (*properties.transcriptMap).end(); pointer++){
 	splitted_transcript_list[(*pointer->second).getChr()].push_back(pointer->second);

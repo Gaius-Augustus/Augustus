@@ -43,6 +43,7 @@ public:
     unsigned int minimumIntronLength;
     bool alternatives;
     bool stopincoding;
+    unordered_map<string,unsigned int> warningCount;
 };
 
 class Exon{
@@ -77,6 +78,7 @@ class Gene{
 	    this->nrOfTx = 1;
 	    this->nrOfPrintedTx = 0;
 	    this->g_id = geneID;
+	    this->printed = false;
     }
     string g_id;
     list<Transcript*> children;
@@ -175,10 +177,12 @@ class Transcript{
     }
 
     bool hasCommonTlStart(Transcript* tx){
+	if (!this->tl_complete.first || !tx->tl_complete.first){return false;}
 	if (tis == tx->tis && strand == tx->strand){return true;}else{return false;}
     }
 
     bool hasCommonTlStop(Transcript* tx){
+	if (!this->tl_complete.second || !tx->tl_complete.second){return false;}
 	if (tes == tx->tes && strand == tx->strand){return true;}{return false;}
     }
 
@@ -541,5 +545,10 @@ list<Transcript*> calcGeneStructur(list<Transcript*> overlap, Properties &proper
 
 void deleteTx(Transcript* tx, Properties &properties);
 bool compare_quality(Transcript const* lhs, Transcript const* rhs);
+
+void testInputAlternatives(Properties &properties);
+
+void displayWarning(string const &warning, Properties &properties, string warningString);
+void warningSummary(string const &warning, string const &warning2, Properties &properties, string warningString);
 
 #endif

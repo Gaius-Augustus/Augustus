@@ -357,20 +357,23 @@ void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &pro
 	if (!(*it)->joinpartner.second.empty())
 	    outfile << "# transcrpit has been joined at 3'-side with " << (*it)->joinpartner.second << endl;
 
-/*	if (!(*it)->parent->printed){
+	/*if (!(*it)->parent->printed){
 	    outfile << (*it)->exon_list.front().chr << "\t";
 	    outfile << (*it)->source << "\t";
 	    outfile << "gene" << "\t";
-	    int minStart = getTxStart();
-	    int maxStop = getTxEnd();
-
-
-	    outfile << (*it)->getTxStart() << "\t";
-	    outfile << (*it)->getTxEnd() << "\t";
+	    int minStart = (*it)->getTxStart();
+	    int maxStop = (*it)->getTxEnd();
+	    for (list<Transcript*>::iterator it_inside = (*it)->parent->children.begin(); it_inside != (*it)->parent->children.end(); it_inside++){
+		if (minStart > (*it_inside)->getTxStart()){minStart=(*it_inside)->getTxStart();}
+		if (maxStop < (*it_inside)->getTxEnd()){maxStop=(*it_inside)->getTxEnd();}
+	    }
+	    outfile << minStart << "\t";
+	    outfile << maxStop << "\t";
 	    outfile << '.' << "\t";
 	    outfile << (*it)->strand << "\t";
 	    outfile << "." << "\t";
-	    outfile << "transcript_id \"" << (*it)->t_id << "\"; gene_id \"" << (*it)->parent->g_id << "\";" << endl;
+	    outfile << (*it)->parent->g_id << endl;
+	    (*it)->parent->printed = true;
 	}*/
 
 	if (!(*it)->exon_list.empty()){
@@ -453,7 +456,7 @@ void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &pro
 	    outfile << (*it_inside).feature << "\t";
 	    outfile << (*it_inside).from << "\t";
 	    outfile << (*it_inside).to << "\t";
-	    outfile << (*it_inside).score << "\t";
+	    outfile << '.' << "\t";
 	    outfile << (*it)->strand << "\t";
 	    if ((*it_inside).frame != -1)
 		outfile << (*it_inside).frame << "\t";
@@ -526,7 +529,7 @@ void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &pro
 	    outfile << (*it_inside).feature << "\t";
 	    outfile << (*it_inside).from << "\t";
 	    outfile << (*it_inside).to << "\t";
-	    outfile << (*it_inside).score << "\t";
+	    outfile << '.' << "\t";
 	    outfile << (*it)->strand << "\t";
 	    if ((*it_inside).frame != -1)
 		outfile << (*it_inside).frame << "\t";

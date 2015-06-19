@@ -1437,25 +1437,48 @@ void calculatePredictionScore(Transcript* tx){
     float countCDS = 0;
     float cumScoreUTR = 0;
     float countUTR = 0;
+    float cumScoreIntron = 0;
+    float countIntron = 0;
+
+    int maxIntronSize = 0;
+
     for (list<Exon>::const_iterator iex = tx->exon_list.begin(); iex != tx->exon_list.end(); iex++){
+
+
+	list<Exon>::const_iterator iexNext = iex;
+	iexNext++;
+	if (iexNext != tx->exon_list.end()){
+	    int intronSize = (*iexNext).from - (*iex).to - 1;
+	    if (maxIntronSize < intronSize){maxIntronSize = intronSize;}
+	    if (intronSize > 0){
+	        countIntron++;
+	    }
+	}
+
+
 	if (iex->feature == "CDS"){
-	    if (iex->score >= 0 && iex->score <= 1){
-		cumScoreCDS += iex->score;
-		countCDS++;
-	    }else{
-		cerr << "WARNING: A value of column 6 is above 1 (100%) or below 0 (0%) and will be counted as 0." << endl;
-		countCDS++;
+	    cumScoreCDS += iex->score;
+	    countCDS++;
+	    if (iex->score < 0 && iex->score > 1){
+		cerr << "WARNING: A value of column 6 is above 1 (100%) or below 0 (0%)." << endl;
 	    }
 	}else if (iex->feature == "UTR"){
-	    if (iex->score >= 0 && iex->score <= 1){
-		cumScoreUTR += iex->score;
-		countUTR++;
-	    }else{
-		cerr << "WARNING: A value of column 6 is above 1 (100%) or below 0 (0%) and will be counted as 0." << endl;
-		countUTR++;
+	    cumScoreUTR += iex->score;
+	    countUTR++;
+	    if (iex->score < 0 && iex->score > 1){
+		cerr << "WARNING: A value of column 6 is above 1 (100%) or below 0 (0%)." << endl;
 	    }
 	}
     }
+
+    for (list<Exon>::const_iterator iin = tx->intron_list.begin(); iin != tx->intron_list.end(); iin++){
+	cumScoreIntron += iin->score;
+	//countIntron++;
+	if (iin->score < 0 && iin->score > 1){
+	    cerr << "WARNING: A value of column 6 is above 1 (100%) or below 0 (0%)." << endl;
+	}
+    }
+
     if (countCDS == 0){
 	cumScoreCDS = 0;
     }else{
@@ -1466,8 +1489,13 @@ void calculatePredictionScore(Transcript* tx){
     }else{
 	cumScoreUTR /= countUTR;
     }
+    if (countIntron == 0){
+	cumScoreIntron = 0;
+    }else{
+	cumScoreIntron /= countIntron;
+    }
 
-    tx->predictionScore = (4*cumScoreCDS + cumScoreUTR)/5;
+    tx->predictionScore = (4*cumScoreCDS + 4*cumScoreIntron + cumScoreUTR)/9;
 }
 
 bool compare_quality(Transcript const* lhs, Transcript const* rhs){
@@ -1528,9 +1556,7 @@ bool compare_quality(Transcript const* lhs, Transcript const* rhs){
 
 bool shareAlternativeVariant(Gene* g1, Gene* g2){
     for (list<Transcript*>::iterator it = g1->children.begin(); it != g1->children.end(); it++){
-	if (!(*it)->tl_complete.first || !(*it)->tl_complete.second){continue;}
 	for (list<Transcript*>::iterator itInside = g2->children.begin(); itInside != g2->children.end(); itInside++){
-	    if (!(*itInside)->tl_complete.first || !(*itInside)->tl_complete.second){continue;}
 	    if (alternativeVariants((*it), (*itInside))){
 		return true;
 	    }
@@ -1540,9 +1566,7 @@ bool shareAlternativeVariant(Gene* g1, Gene* g2){
 }
 
 bool alternativeVariants(Transcript* t1, Transcript* t2){
-//    if (!t1->tl_complete.first || !t1->tl_complete.second){return false;}
-//    if (!t2->tl_complete.first || !t2->tl_complete.second){return false;}
-    if (overlappingCdsWithAnything(t1, t2) && t1->strand == t2->strand && (/*t1->hasCommonExon(t2) || */(t1->hasCommonTlStart(t2) || t1->hasCommonTlStop(t2)))){
+    if (overlappingCdsWithAnything(t1, t2) && t1->strand == t2->strand && (t1->hasCommonExon(t2) || (t1->hasCommonTlStart(t2) || t1->hasCommonTlStop(t2)))){
 	return true;
     }
     return false;
@@ -1601,7 +1625,9 @@ void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties
 
     // if flag alternatives is on, try to combine transcripts to one gene, if they look like alternative spliced variants
     if (properties.alternatives && genes.size() >= 2){
-	for (list<Gene*>::iterator it = genes.begin(); it != genes.end(); it++){
+
+
+/*	for (list<Gene*>::iterator it = genes.begin(); it != genes.end(); it++){
 
 	    list<Gene*>::iterator itInside = it;
 	    itInside++;
@@ -1610,7 +1636,6 @@ void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties
 
 		    // Transfer all transcripts of itInside to it and delete itInside
 		    for (list<Transcript*>::iterator tit = (*itInside)->children.begin(); tit != (*itInside)->children.end(); tit++){
-
 			(*tit)->parent = (*it);
 			(*it)->children.push_back(*tit);
 			(*it)->nrOfTx += (*itInside)->nrOfTx;
@@ -1626,6 +1651,38 @@ void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties
 	    }
 
 	    // sort children 
+	    (*it)->children.sort(compare_quality);
+	}*/
+
+
+	for (list<Gene*>::iterator it = genes.begin(); it != genes.end(); it++){
+
+	    list<Gene*>::iterator itInside = it;
+	    itInside++;
+
+	    while (itInside != genes.end()){
+
+		if (shareAlternativeVariant((*it), (*itInside))){
+
+		    // Transfer all transcripts of itInside to it and delete itInside
+		    for (list<Transcript*>::iterator tit = (*it)->children.begin(); tit != (*it)->children.end(); tit++){
+			(*tit)->parent = (*itInside);
+			(*itInside)->children.push_back(*tit);
+			(*itInside)->nrOfTx += (*it)->nrOfTx;
+			(*itInside)->nrOfPrintedTx += (*it)->nrOfPrintedTx;
+			tit = (*it)->children.erase(tit);
+			tit--;
+		    }
+		    deleteGene((*it), properties);
+		    it = genes.erase(it);
+		    it--;
+		    break;
+		}
+		itInside++;
+	    }
+	}
+	// sort children
+	for (list<Gene*>::iterator it = genes.begin(); it != genes.end(); it++){ 
 	    (*it)->children.sort(compare_quality);
 	}
     }
@@ -1820,4 +1877,45 @@ int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &pro
 	}
     }
     return 0;
+}
+
+void testInputAlternatives(Properties &properties){
+    for (auto pointer = (*properties.geneMap).begin(); pointer != (*properties.geneMap).end(); pointer++){
+	if (pointer->second->children.size() <= 1){continue;}
+	for (list<Transcript*>::iterator it = pointer->second->children.begin(); it != pointer->second->children.end(); it++){
+	    bool x = false;
+            if (!(*it)->tl_complete.first || !(*it)->tl_complete.second){continue;}
+
+	    for (list<Transcript*>::iterator itI = pointer->second->children.begin(); itI != pointer->second->children.end(); itI++){
+		if (!(*itI)->tl_complete.first || !(*itI)->tl_complete.second){continue;}
+		if ((*it)->t_id == (*itI)->t_id){continue;}
+		if (alternativeVariants((*it), (*itI))){
+		    x = true;
+		}
+	    }
+    	    if (!x){
+	       cerr << "The transkript " << (*it)->originalId << " from file " << (*it)->inputFile << " is not an alternative variant in its gene in the definition of this program!" << endl;
+	    }
+	}
+    }
+}
+
+void displayWarning(string const &warning, Properties &properties, string warningString){
+    int unsigned n = 2;
+    properties.warningCount[warningString]++;
+    if (properties.warningCount[warningString] <= n){
+        cerr << "WARNING: " << warning << endl;
+	if (properties.warningCount[warningString] == n){
+	    cerr << "(This problem occured already " << n << " times and will not be printed further)..." << endl;
+	}
+    }
+}
+
+void warningSummary(string const &warning, string const &warning2, Properties &properties, string warningString){
+    if (properties.warningCount[warningString] == 0){return;}
+    if (warning.empty()){
+	cerr << "The " << warningString << " problem occured " << properties.warningCount[warningString] << " times." << endl;
+    }else{
+	cerr << warning << properties.warningCount[warningString] << warning2 << endl;
+    }
 }
