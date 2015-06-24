@@ -1,0 +1,288 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html><head><title>Iterative Training</title>
+<link rel="stylesheet" type="text/css" href="augustus.css">
+<script src="tutorial.js" type="text/javascript"></script>
+</head><body>
+<font size=-1>
+Navigate to <a href="index.html">Tutorial Home</a>. 
+<a href="ittrain.html">Iterative Training Set Construction</a>
+<a href="training.html">Training AUGUSTUS</a>.
+<a href="prediction.html">Predicting Genes</a>.
+</font>
+<div align="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
+
+<h1>Iterative Training Set Construction</h1>
+
+<p>This page describes a method to construct a training set of gene structure using AUGUSTUS itself and RNA-Seq data. The training genes are selected from among AUGUSTUS genes predicted with previously existing parameters.<br>
+</p>
+
+<a href="javascript:onoff('da')" class="dlink"><span id="da" title="dad" class="dcross">[+]</span>
+<span class="dtitle">Some comments about when this option may be appropriate...</span></a> <br>
+<div id="dad" class="details" style="display:none;">
+xx
+</div><br>
+
+<h2>1. Align RNA-Seq to genome</h2>
+
+We will here use the <a href="http://code.google.com/p/rna-star/">STAR</a> spliced aligner as it is fast. We first make a genome index, in our case just for chr2L, then run STAR using the index.
+
+<span class="assignment">Run STAR:</span>
+<pre class="code">mkdir gindex
+STAR --runThreadN 4 --runMode genomeGenerate --genomeDir gindex --genomeFastaFiles chr2L.sm.fa # ~1m
+STAR --runThreadN 4 --genomeDir gindex --readFilesIn rnaseq1.fq rnaseq2.fq --alignIntronMax 100000 \
+  --outSAMtype BAM  SortedByCoordinate --outWigType wiggle --outWigStrand Unstranded # ~2m
+</pre>
+
+These commands will create a file <tt class="result">Aligned.sortedByCoord.out.bam</tt> with the alignments and a file
+<tt class="result">Signal.Unique.str1.out.wig</tt> with coverage per base information, among others. The files will be used below for display and to generate hints for AUGUSTUS.
+
+<h2>2. Find an appropriate existing AUGUSTUS parameter set</h2>
+
+<a href="javascript:onoff('nx')" class="dlink"><span id="nx" title="nxd" class="dcross">[+]</span>
+<span class="dtitle"><i>Cross species-training</i>,...</span></a> <br>
+<div id="nxd" class="details" style="display:none;">
+in which the parameters estimated using genes from one species are used to predict genes in another, may give acceptable results. If the two species are close, it may not be necessary to have a separate parameter set (example: human and mouse). As a rule of thumb - if large parts of the genomes are alignable, then it is not necessary to retrain. Prediction on the zebrafish genome with human parameters results roughly in a loss of 8 percent points on exon level sensitivity. If all available parameters are from very distant species only, one may have to try a few. Not necessarily the closest species gives the best results.
+</div><br>
+
+<span class="assignment">Run AUGUSTUS with a few existing parameter sets:</span>
+<pre class="code">
+for s in nasonia zebrafish tomato; do
+  augustus --species=$s chr2L.sm.fa --softmasking=on --predictionEnd=1000000 > aug.$s.1-1M.gff &
+done
+</pre>
+Above command will run AUGUSTUS in the background with three different parameter sets on the first megabase of chr2L of <i>Drosophila melanogaster</i>. The species
+selection is just an example. For <i>Drosophila</i> and many other insects there are already parameter sets (<tt>fly</tt>), which we chose to ignore for the purpose of the tutorial. 
+The options <tt>--predictionEnd</tt> and <tt>--predictionStart</tt> can be used to cut out a window for prediction. We do this here to save time and as we will only visually
+inspect a small region. 
+
+The files <tt class="result">aug.nasonia.1-1M.gff, aug.tomato.1-1M.gff, aug.zebrafish.1-1M.gff</tt> now contain the coordinates and protein sequences of predicted genes.<br><br>
+
+<pre class="code">
+...
+chr2L   AUGUSTUS    gene        6693    9276    0.51    +    .    g1
+chr2L   AUGUSTUS    transcript  6693    9276    0.51    +    .    g1.t1
+chr2L   AUGUSTUS    start_codon 6693    6695    .       +    0    transcript_id "g1.t1"; gene_id "g1";
+chr2L   AUGUSTUS    intron      6809    7573    0.94    +    .    transcript_id "g1.t1"; gene_id "g1";
+chr2L   AUGUSTUS    intron      8117    8192    1       +    .    transcript_id "g1.t1"; gene_id "g1";
+chr2L   AUGUSTUS    intron      8590    8667    1       +    .    transcript_id "g1.t1"; gene_id "g1";
+chr2L   AUGUSTUS    CDS         6693    6808    0.57    +    0    transcript_id "g1.t1"; gene_id "g1";
+chr2L   AUGUSTUS    CDS         7574    8116    0.96    +    1    transcript_id "g1.t1"; gene_id "g1";
+chr2L   AUGUSTUS    CDS         8193    8589    1       +    1    transcript_id "g1.t1"; gene_id "g1";
+chr2L   AUGUSTUS    CDS         8668    9276    1       +    0    transcript_id "g1.t1"; gene_id "g1";
+chr2L   AUGUSTUS    stop_codon  9274    9276    .       +    0    transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MMKRDRFYWDKNDRSRERSGLNFTLTKMLAIQNGGGMKSNREENPRLNKYRRVDNSYPRFITNEAAEDLIYKKSMGER
+...
+</pre>
+
+
+
+<h2>3. Visualize alignments and gene predictions in a browser</h2>
+
+We will here use the UCSC genome browser, which conveniently already exists for the genome assembly that we use (dm6). There will usually no browser for a new genome, but nevertheless
+the UCSC genome browser may be used to display the genome and other tracks using <a href="https://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html">Track Hubs</a>.
+
+<span class="assignment">Make "big" indexed files:</span>
+<pre class="code">
+echo "chr2L   23513712" > chrom.sizes # size of chromosomes
+mv Signal.Unique.str1.out.wig rnaseq.wig    # rename for convenience
+mv Aligned.sortedByCoord.out.bam rnaseq.bam 
+wigToBigWig rnaseq.wig chrom.sizes rnaseq.bw
+bamtools index -in rnaseq.bam # index required by UCSC browser
+scp rnaseq.bw rnaseq.bam rnaseq.bam.bai mario@hgwdev:~/public_html/tutorial2015/results/ # copy to web space
+</pre>
+
+The data is now web-accessible through the URL <a href="http://hgwdev.cse.ucsc.edu/~mario/tutorial2015/results/">http://hgwdev.cse.ucsc.edu/~mario/tutorial2015/results/</a>. The UCSC browser will load the parts requested through browsing only.
+
+<span class="assignment">Create a custom track file:</span>
+<pre class="code">
+echo "browser hide all" > customtrack
+echo "track name=\"STAR RNA-Seq alignments\" type=bam visibility=4 bigDataUrl=http://hgwdev.cse.ucsc.edu/~mario/tutorial2015/results/rnaseq.bam" >> customtrack
+echo "track name=\"STAR coverage\" type=bigWig visibility=2 bigDataUrl=http://hgwdev.cse.ucsc.edu/~mario/tutorial2015/results/rnaseq.bw" >> customtrack
+
+for s in nasonia zebrafish tomato; do
+   echo "track name=\"AUGUSTUS $s abinitio\"  db=dm6 visibility=3" >> customtrack
+   grep -P "AUGUSTUS\t(CDS|exon)\t" aug.$s.1-1M.gff >> customtrack # use only the relevant coordinate lines
+done
+</pre>
+
+The file <span class="result"><tt>customtrack</tt></span> will now look like this (<tt>grep -B 1 -A 2 track customtrack</tt>):
+<pre class="code">
+browser hide all
+track name="STAR RNA-Seq alignments" type=bam visibility=4 bigDataUrl=http://hgwdev.cse.ucsc.edu/~mario/tutorial2015/results/rnaseq.bam
+track name="STAR coverage" type=bigWig visibility=2 bigDataUrl=http://hgwdev.cse.ucsc.edu/~mario/tutorial2015/results/rnaseq.bw
+track name="AUGUSTUS nasonia abinitio"  db=dm6 visibility=3
+chr2L   AUGUSTUS        CDS     6693    6808    0.57    +       0       transcript_id "g1.t1"; gene_id "g1";
+chr2L   AUGUSTUS        CDS     7574    8116    0.96    +       1       transcript_id "g1.t1"; gene_id "g1";
+--
+chr2L   AUGUSTUS        CDS     995604  995891  0.59    +       0       transcript_id "g159.t1"; gene_id "g159";
+track name="AUGUSTUS zebrafish abinitio"  db=dm6 visibility=3
+chr2L   AUGUSTUS        CDS     7574    8116    0.98    +       1       transcript_id "g1.t1"; gene_id "g1";
+chr2L   AUGUSTUS        CDS     8193    8589    0.85    +       1       transcript_id "g1.t1"; gene_id "g1";
+--
+chr2L   AUGUSTUS        CDS     957279  957449  1       +       0       transcript_id "g135.t1"; gene_id "g135";
+track name="AUGUSTUS tomato abinitio"  db=dm6 visibility=3
+chr2L   AUGUSTUS        exon    6486    6808    .       +       .       transcript_id "g1.t1"; gene_id "g1";
+chr2L   AUGUSTUS        CDS     6591    6808    0.76    +       0       transcript_id "g1.t1"; gene_id "g1";
+</pre>
+
+This is a format that the UCSC Genome Browser understands. The first line tell it to hide the existing tracks (no cheating).
+The first two track lines refer to the RNA-Seq tracks and specify the URL where the data lies. The AUGUSTUS tracks are included in the file as
+they are small enough.
+<ol>
+<li><span class="assignment">open the <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6" target="_blank">browser for <i>Drosophila melanogaster</i></a>,</span></li> 
+<li> <span class="assignment">click on "add custom tracks" or "manage custom tracks"</span>,</li>
+<li> <span class="assignment">upload the file <tt>customtrack</tt></span> and
+<li> <span class="assignment">click on the link in the column "Pos" in the table
+of custom tracks</tt></span>. 
+</ol>
+
+The lazy ones can look at the results by clicking this link to a previously
+<a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&hgt.customText=http://hgwdev.cse.ucsc.edu/~mario/tutorial2015/results/customtrack.gz" target="_blank">prepared custom track</a>.
+
+<p>
+The UCSC Genome Browser group has an excellent <a href="http://genome.ucsc.edu/goldenPath/help/hgTracksHelp.html#CustomTracks">help page for setting up UCSC custom tracks</a>.</p>
+
+<span class="assignment">Browse the predictions and alignments and pick a parameter set for which the genes match the evidence best.</span>
+Let us assume here that the <span class="result"<tt>nasonia</tt></span> parameter set is best.
+
+<h2>4. Predict the genes again using the best parameters and RNA-Seq evidence</h2>
+
+<p>When predicting genes, AUGUSTUS can incorporate evidence on the location and structure of genes in the form of <i>hints</i>.
+Hints are extrinsic evidence a particular GFF format and will change the likelihood of gene structures candidates. AUGUSTUS will tend to 
+predict gene structures that are in agreement with the hints. For more information see <a href="prediction.html#extr">this tutorial</a> and <a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus">our Wiki page</a></p>
+
+<span class="assignment">Create hints from RNA-Seq:</span>
+<pre class="code">
+bam2hints --intronsonly --in=rnaseq.bam --out=hints.intron.gff
+cat rnaseq.wig | wig2hints.pl --width=10 --margin=10 --minthresh=2 --minscore=4 --prune=0.1 --src=W --type=ep \
+  --radius=4.5 --pri=4 --strand="." > hints.ep.gff
+cat hints.intron.gff hints.ep.gff > hints.gff
+</pre>
+
+Above commands have the effect that spliced reads are used as evidence for introns, and coverage as evidence for exons. Both types of evidence are joined in one file <span class="result"><tt>hints.gff</tt></span>.<br>
+<p>
+<span class="assignment">Predict genes using hints:</span>
+<pre class="code">
+for i in {0..3}; do
+    augustus --species=nasonia chr2L.sm.fa --softmasking=on --predictionStart=$((i*2000000)) --predictionEnd=$(((i+1)*2000000+50000)) \
+    --hintsfile=hints.gff --extrinsicCfgFile=extrinsic.M.RM.E.W.cfg  > aug.nasonia.hints.$i.gff &
+done
+# wait ~6m until done
+cat aug.nasonia.hints.{0..3}.gff | join_aug_pred.pl > aug.nasonia.hints.gff
+</pre>
+
+For quick results during the tutorial we restrict the prediction to the first 8 Mb of chr2L instead of predicting genome-wide (4x2Mb each + 50Kb overlap).
+The overlap would not strictly be necessary here, but it is common practice for genome-wide predictions in parallel. This way genes that are broken by the region boundary
+can often be predicted completely in the neighboring region if the overlap is larger than most genes. The script <tt>join_aug_pred.pl</tt> 'repairs' the break and also renumbers
+genes sequentially so that their names are unique again.
+<p>
+The files <tt class="result">aug.nasonia.hints.gff</tt> also contain a summary for each transcrip how well it matches the evidence:<br><br>
+
+<pre class="code">
+...
+chr2L   AUGUSTUS        transcript      11215   17136   1       -       .       g2.t1
+...
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 100
+# CDS exons: 8/8
+#      W:   8 
+# CDS introns: 7/7
+#      E:   7 
+</pre>
+
+<p>
+<span class="assignment">Add the browser track of genes with evidence:</span>
+<pre class="code">
+echo "track name=\"AUGUSTUS nasonia hints\"  db=dm6 visibility=3" >> customtrack
+grep -P "AUGUSTUS\t(CDS|exon)\t" aug.nasonia.hints.gff  >> customtrack
+gzip -c customtrack > customtrack.whints.gz
+scp customtrack.whints.gz mario@hgwdev:~/public_html/tutorial2015/results/ # copy to web space
+</pre>
+
+This will add the newly predicted track after the upload to the UCSC genome browser (replace the existing custom tracks). Click this link to see
+all the tracks including the new predictions with hints:
+<a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm6&hgt.customText=http://hgwdev.cse.ucsc.edu/~mario/tutorial2015/results/customtrack.whints.gz" target="_blank">customtrack.whints.gz</a>.
+
+The predictions <span class="results"><tt>aug.nasonia.hints.gff</tt></span> should be our best shot so far for the genome annotation. However, they still include genes
+unsupported by RNA-Seq that are likely to have a larger error rate. We follow the strategy to select a subset of gene structures with higher reliability. This selection
+can include 
+<ol>
+<li> a homology search of predicted proteins (has hit, coverage query, coverage target)
+<li> RNA-Seq support
+<li> manual selection.
+</ol>
+Be aware: We are likely to introduce a bias when we restrict ourselves to this set, e.g. to the highly expressed genes. Also, we are introducing a bias towards genes that fit the 
+previous model well. I usually condone these biases.<br>
+In this tutorial we apply a very simple filter: Select all transcripts that are fully supported by RNA-Seq, i.e. every intron has support from an exactly matching RNA-Seq gap and every exon has some coverage.
+
+<span class="assignment">Select subset of well-supported transcripts:</span>
+<pre class="code">
+cat aug.nasonia.hints.gff | perl -ne 'if (/\ttranscript\t.*\t(\S+)/){$tx=$1;} if (/transcript supported.*100/) {print "$tx\n";}' | tee supported.lst | wc -l
+</pre>
+
+Above one line script prints the transcript id of all <span class="result">492 transcripts</span> with 100 percent suppport (they may still be too short or otherwise wrong).
+
+
+<h2>5. Create a training set</h2>
+
+The training program <tt>etraining</tt> of the AUGUSTUS package requires input in the form of Genbank format,
+that includes both the genomic sequences and the sequence coordinates of the coding regions CDS and optionally
+of the UTR. In  many cases the coordinates of the gene structures are available in 
+<a href="http://www.sanger.ac.uk/resources/software/gff/spec.html">GFF</a> format or 
+<a href="http://mblab.wustl.edu/GTF22.html">GTF format</a>.
+The tool <tt>gff2gbSmallDNA.pl</tt> that comes with AUGUSTUS can be used to <span class="assignment">convert</span> files in some <span class="assignment">GFF</span> formats or
+GTF <span class="assignment">to Genbank format</span>:<br>
+
+<pre class="code">gff2gbSmallDNA.pl --good=supported.lst aug.nasonia.hints.gff chr2L.sm.fa 5000 genes.gb</pre>
+
+This command takes each gene in <tt>aug.nasonia.hints.gff</tt> together with up to 5000 bp flanking intergenic region upstream
+and downstream of the gene and creates a LOCUS in Genbank format.<br><br>
+
+<a href="javascript:onoff('if')" class="dlink"><span id="if" title="ifd" class="dcross">[+]</span>
+<span class="dtitle">Input format of gff2gbSmallDNA.pl...</span></a> <br>
+<div id="ifd" class="details" style="display:none;">
+The last column (column 9) of the GFF input file is used to group exons of the same transcript together. For an example
+see the <tt>scipio.gff</tt> from above. In GTF format this is based on whether they agree on the <tt>transcript_id</tt> field. 
+If the last column contains the string <tt>Parent=</tt> (as in GFF3) then this is used for grouping. If no grouping 
+from the standard formats is detected then the whole 9th column is used for grouping exons to genes.
+It is possible to convert genes just containing the coding regions (CDS in the third column) but also 
+to convert <b>genes including UTR annotation</b> (keyword UTR or exon) in the third column.
+
+It is also possible to restrict output using lists of gene names to include or exclude:
+<pre class="code">Usage: gff2gbSmallDNA.pl gff-file seq-file max-size-of-gene-flanking-DNA output-file [options]
+options:
+--bad=badfile    Specify a file with gene names. All except these are included in the output.
+--good=goodfile  Specify a file with gene names. Only these genes are included in the output.
+--overlap        Overlap filtering turned off.
+</pre>
+</div><br>
+
+<a href="javascript:onoff('fr')" class="dlink"><span id="fr" title="frd" class="dcross">[+]</span>
+<span class="dtitle">Size of flanking regions...</span></a> <br>
+<div id="frd" class="details" style="display:none;">
+
+The flanking regions upstream and downstream of each gene are used to train non-coding DNA content, i.e. estimate <i>k</i>-mer 
+frequencies in these regions. When two neighboring genes in the gff file are closer to each other
+than 2*<tt>max-size-of-gene-flanking-DNA</tt>, then then flanking region is decreased such that half of the intergenic
+region between the two genes is included in each locus. This avoids to some extend to have overlapping non-coding regions for training
+and to include genes in the "intergenic" region.
+The choice of the parameter <tt>max-size-of-gene-flanking-DNA</tt> is important for several reasons.
+<ul>
+<li> The flanking region should be large enough to allow a prepresentative estimate of non coding regions.
+When the GFF file only contains CDS, then part of the flanking regions are UTR and may not be representative of
+intergenic region (e.g. CpG islands in vertebrates).</li>
+<li>Usually the gff file is not complete and genes are missing from it. In that case the flanking regions may contain genic regions
+of genes that are missing in the gff file. Apart from the bias on <i>k</i>-mer frequencies this will yield a bad specificity when
+these loci are used for assessing accuracy.
+<li>A small flanking region may lead to an overestimation of gene level sensitivity if it is used for assessing accuracy. Generally,
+gene finders may be more accurate on sequences that contain exactly one locus and only little flanking regions.
+</li>
+<li>A large flanking region may increase the running time of <tt>optimize_augustus.pl</tt> substantially.</li>
+</li>
+</ul>
+A compromise between above conflicting aims needs to be sought.
+</div>
+
+<p>The file <span class="result"><tt><a href="results/genes.gb">genes.gb</a></tt> now contains 492 training genes</span> in the right format for AUGUSTUS training.
+Continue with <a href="training.html#split">Training AUGUSTUS</a>.
+</body></html>

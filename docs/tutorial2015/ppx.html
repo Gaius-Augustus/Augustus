@@ -1,0 +1,390 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html><head><title>AUGUSTUS-PPX</title>
+<link rel="stylesheet" type="text/css" href="augustus.css">
+<script src="tutorial.js" type="text/javascript"></script>
+</head><body>
+<font size=-1>
+Navigate to <a href="index.html">Tutorial Home</a>. 
+<a href="scipio.html">Using Scipio</a>.
+<a href="training.html">Training AUGUSTUS</a>.
+<a href="ppx.html">AUGUSTUS-PPX</a>.
+</font>
+<div align="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
+
+<h1>AUGUSTUS-PPX: Using protein profiles</h1>
+
+This tutorial describes how to prepare and use protein profiles that
+can be provided as an additional input to AUGUSTUS. AUGUSTUS will then
+use its <b>P</b>rotein <b>P</b>rofile e<b>X</b>tension (PPX) to
+identify and better predict genes matching the profile.<br><br>
+
+This way, collections of related protein sequences, represented by
+<b>multiple sequence alignments</b>, can be extended by adding
+sequences predicted on newly sequenced genomes.<br><br>
+
+The profiles AUGUSTUS uses are <i>block profiles</i>; a <i>block</i>
+is a conserved region in a multiple sequence alignment of related
+protein sequences that has no insertions or deletions. The block
+<i>profile</i> is a matrix containing the position-specific frequencies of
+block columns.
+ 
+
+<h2>1. COLLECT AND PREPARE MULTIPLE SEQUENCE ALIGNMENTS</h2>
+
+The first step in using the protein extension is to prepare a Multiple
+Sequence Alignment. If you are working in a group specialized on
+particular protein families, you may already have Multiple Sequence
+Alignments of the protein sequences of interest at hand. As examples,
+we will use Multiple Sequence Alignments <span class="assignment">downloaded from 
+<a href="http://pfam.sanger.ac.uk/" target="_blank">PFAM</a></span>. It is important that the
+MSAs contain enough blocks in order to be convertible into useful
+profiles.<br><br>
+
+Click on "Keyword Search" and enter "Kinesin". The first item "Kinesin
+motor domain" will lead to the
+<a href=http://pfam.sanger.ac.uk/family/PF00225 target="_blank">Kinesin</a> family.  By
+clicking on "Alignments", the Mulitple Sequence Alignments can be
+downloaded directly.
+
+
+Choose "FASTA" in the Formatting options and clicking on "Generate"
+will produce the following example files:
+<ul>
+<li><a href=data/PF00225_seed.txt>PF00225_seed.txt</a></li>
+<li><a href=data/PF00225_full.txt>PF00225_full.txt</a></li>
+</ul>
+
+Similarly, you can access the
+<a href=http://pfam.sanger.ac.uk/family/PF00171 target="_blank">Aldedh</a> (Aldehyde
+dehydrogenase) family as another example:
+<ul>
+<li><a href=data/PF00171_seed.txt>PF00171_seed.txt</a></li>
+<li><a href=data/PF00171_full.txt>PF00171_full.txt</a></li>
+</ul>
+
+
+Now, convert the MSA into a profile by <span class="assignment">issuing the command</span>:
+<pre class="code">
+msa2prfl.pl --prefix_from_seqnames --max_entropy=0.75 \
+ --blockscorefile=PF00225_seed.blocks.txt PF00225_seed.txt > PF00225_seed.prfl
+</pre>
+
+This will give the message
+<pre class="code">
+Determining block columns...
+done
+Profile has 13 blocks with 138 columns.
+Minimum admissible sequence length: 238
+</pre>
+
+and create a file <span class="result"><tt>PF00225_seed.prfl</tt></span> that looks like this:
+<pre class="code" style="font-size:small">
+[name]
+unknown
+
+[dist]
+# distance from previous block
+# &lt;min&gt; &lt;max&gt;
+8	1272
+
+[block]
+# block no. 0 follows, 87 sequences, length 9
+# corresponding to MSA columns:
+# 0-8
+name=unknown_A
+#
+# &lt;colnr&gt; &lt;probs for GDERKNQSTAVLIFYWHMCP&gt;
+#	G	D	E	R	K	...
+0	0.00627	0.00591	0.00999	0.82584	0.07328	...
+1	0.00559	0.00377	0.00473	0.00489	0.04273	...
+...
+
+[dist]
+# distance from previous block
+# &lt;min&gt; &lt;max&gt;
+17	84
+
+[block]
+...
+
+[dist]
+# distance from previous block
+# &lt;min&gt; &lt;max&gt;
+0	*
+
+# created by:
+# msa2prfl.pl --prefix_from_seqnames --max_entropy=0.75 --blockscorefile=PF00225_seed.blocks PF00225_seed.fa
+</pre>
+This file is in the <i>block profile</i> format that AUGUSTUS-PPX can process.<br><br>
+The file starts with a <tt>[name]</tt> section, stating the name of
+the profile, which is followed by alternating <tt>[dist]</tt>
+and <tt>[block]</tt> sections. The <tt>[dist]</tt> sections contain
+the maximum and minimum distance of the blocks in the sequences of the
+alignment, while the <tt>[block]</tt> section contains the position
+specific frequencies, one line containing 20 values, one for each amino acid
+describing one column of the alignment. Each line starting with <tt>#</tt> 
+is considered a comment and ignored.<br><br>
+
+
+<a href="javascript:onoff('fr')" class="dlink"><span id="fr" title="frd" class="dcross">[+]</span>
+<span class="dtitle">Parameters for <tt>msa2prfl.pl</tt> ...</span></a> <br>
+<div id="frd" class="details" style="display:none;">
+
+Three parameters were specified in the example; all of them are optional:
+<ul>
+<li> <tt>prefix_from_seqnames</tt> </li>
+useful for PFAM alignments which are usually <i>partial</i> alignments
+that do not cover the full member sequences, with sequence names
+followed by the coordinates in the form <tt>/NNN-NNN</tt>. If the parameter
+is specified, these coordinates are added to the profile coordinates.
+
+<li> <tt>max_entropy=0.75</tt> </li> ensures that the columns of the
+blocks are indeed conserved. High entropy means a highly random
+distribution of amino acids. This way, block parts with a entropy of
+more than 75% of the random entropy are discarded.
+
+<li> <tt>blockscorefile=PF00225_seed.blocks.txt</tt> </li>
+ creates a file
+ <span class="result"><tt>PF00225_seed.blocks.txt</tt></span> that looks as follows:
+<pre class="code" style="font-size:small">
+KIF7_DICDI:
+33	unknown_A	 4.63754	 6.41905	   33 RVRPLTELE 42
+25	unknown_B	 7.20572	 6.42577	   67 FTFDRIF 74
+16	unknown_C	 2.64746	 3.25498	   90 IVNDFL 96
+...
+8	unknown_K	 8.90132	10.07313	  300 YRDSKLTRVLQDSLG 315
+1	unknown_L	 4.88459	 6.74977	  316 NSKTSLIINCSP 328
+8	unknown_M	 3.49252	 6.13358	  336 ITTLQFGTRAKTI 349
+--
+KINH_HUMAN:
+13	unknown_A	 4.82384	 6.52148	   13 RFRPLNESE 22
+23	unknown_B	 6.53722	 6.22901	   45 YAFDRVF 52
+...
+</pre>
+This is useful to reconstruct the block motif in the original sequences
+of the alignment, in the format
+<pre class="code">
+seqname:
+(dist) (block) (score) (spec) (start) (motif) (end)
+</pre>
+<ul>
+<li>dist: distance from previous block</li>
+<li>block: name of block</li>
+<li>score: mean odds-ratio score of block motif</li>
+<li>spec:  specificity (measured in standard deviations above the mean score)</li>
+<li>start: start of the motif in the sequence</li>
+<li>motif: the block motif</li>
+<li>end:   end of the motif in the sequence</li>
+</ul>       
+</ul>
+
+A short usage explanation of all parameters is 
+displayed when you type:
+
+<pre class="code">
+msa2prfl.pl --help
+</pre>
+For example, you can specify a name and accession number to be used
+in the profile. If you don't, it will simply be called "unknown".
+</div>
+<br>
+
+In the PFAM website, there is a choice between the seed and the full
+alignment.  An alignment with fewer sequences is more likely to
+contain a good number of blocks: since no gaps are allowed in blocks,
+already a single sequence can make a block impossible at a particular
+position if it has a gap there. Trying to run <tt>msa2prfl.pl</tt> on
+the full alignment results in the message
+<pre class="code">
+No blocks found in MSA. Use "prepareAlign" to eliminate sequences.
+</pre>
+
+This alignment contains too many sequences: in each column, at least
+one of the sequences has a gap. This can be resolved by deleting
+gap-rich sequences from the alignment by using the
+program <tt>prepareAlign</tt>, as follows:
+<pre class="code">
+prepareAlign < PF00225_full.txt > PF00225_filtered.txt
+...
+msa2prfl.pl --prefix_from_seqnames --max_entropy=0.75 --blockscorefile=PF00225_full.blocks.txt PF00225_filtered.txt > PF00225.prfl
+</pre>
+or, in one step:
+<pre class="code">
+prepareAlign < PF00225_full.txt | msa2prfl.pl --prefix_from_seqnames --max_entropy=0.75 --blockscorefile=PF00225_full.blocks.txt - > PF00225.prfl
+</pre>
+<tt>prepareAlign</tt> has some logging output, showing the columns that will go into blocks, ending with 
+<pre class="code">
+...
+Deleted 2154 sequences, 1632 sequences remaining.
+</pre>
+This means that from the original alignment, 1632 sequences are used to create 
+the profile.
+<br><br>
+
+
+In the same way, <span class="assignment">prepare a file <tt>PF00171.prfl</tt> from <tt>PF00171_seed.txt</tt> or
+<tt>PF00171_full.txt</tt></span>.
+
+<h2>2. USE A FINGERPRINT SIGNATURE</h2>
+
+As an alternative to Multiple Sequence Alignments, 
+<i>fingerprints</i> can be used as resource for protein signatures.
+These are collected by the
+<a href="http://www.bioinf.manchester.ac.uk/dbbrowser/PRINTS/index.php"
+ target="_blank">
+PRINTS</a> database. They offer the full database for download
+<a href="ftp://ftp.bioinf.man.ac.uk/pub/prints/" 
+target="_blank">via ftp</a>.<br><br>
+
+An example file containing a data sets is provided here:
+<ul><li><a href=data/PRINTS-example.txt>PRINTS-example.txt</a></li></ul>
+Converting the PRINTS database to block profiles is straightforward: <span class="assignment">Running</span>
+<pre class="code">
+prints2prfl.pl PRINTS-example.txt
+</pre>
+
+converts it into a block profile <span class="result"><tt>PR00249.prfl</tt></span>.
+<br><br>
+
+The full database contains about 2000 datasets (packed size: 11 MB).
+The <tt>prints2prfl.pl</tt> script can be used to convert them
+simultaneously into block profiles.<br><br>
+
+<h2>3. RUN A PRELIMINARY PROFILE SEARCH</h2>
+
+Now that the profiles are ready, they need to be located in the genome.
+AUGUSTUS-PPX could already be run with the profiles, but it will take too
+much time on a whole chromosome when equipped with a protein profile. Therefore,
+we will perform a <i>fast block search</i> to determine regions containing
+profile hits.<br><br>
+
+Run a fast block search with the three profiles (PF00225, PF00171 and PR00249) on
+the following example genome sequences:
+<ul>
+<li> <a href="data/chr3.42M.fa"> chr3.42M.fa </a> </li>
+<li> <a href="data/chr4.103M.fa"> chr4.103M.fa </a> </li>
+<li> <a href="data/chr5.124M.fa"> chr5.124M.fa </a> </li>
+</ul>
+
+The command to <span class="assignment">run the fast block search</span> is
+<pre class="code">
+fastBlockSearch --cutoff=1.1 chr4.103M.fa PF00225_seed.prfl
+</pre>
+(replace the genome and profile names as needed). The cutoff can be used to
+adjust the sensitivity of the block search. The standard cutoff is 0.7, which
+is very sensitive but can give many false positive hits for smaller profiles.
+In any case, hits are sorted by score, so the last displayed hit is the best
+one found in the region. Play with the cutoff in order to have more or less
+hits displayed. (The cutoff is the average log score of the motifs found.)
+<br><br>
+
+The output should look like this:
+<pre class="code" style="font-size:small">
+Hits found in chr4 103000000 105000000
+Score:207.987
+Mult. score:4.83391
+1081586 unknown_M[5,13] -       2.32574 5.04633 .....YATRLKNI
+1103952 unknown_L       -       4.85363 6.75245 NAKTRIICTITP
+1103991 unknown_K       -       8.38065 9.92928 YRDSKLTRILQNSLG
+1104375 unknown_J       -       3.96065 6.79408 RSLFILGQVIKKL
+1106992 unknown_I       -       9.22487 7.64306 LVDLAGSE
+1115567 unknown_H[5,16] -       2.31869 5.58986 .....ESRHYGETKMN
+1116319 unknown_G       -       7.34282 8.29425 EIYNETITDLL
+1117092 unknown_F       -       5.10694 6.10274 VIPRAIHDIF
+1117146 unknown_E       -       9.43596 9.18891 QTASGKTYTM
+1117176 unknown_D[1,8]  -       5.73796 6.31532 .GTIFAYG
+1117399 unknown_B[1,7]  -       3.59083 5.03059 .CLDRVF
+1119420 unknown_A[0,8]  -       4.64107 6.44285 RVRPLNSR.
+--
+</pre>
+(You can suppress any logging output by putting &quot;<tt>2> /dev/null</tt>&quot;
+after the command). The format is similar to that of the blockscore file
+(which is optionally generated by <tt>msa2prfl.pl</tt>): It shows coordinate, strand, mean
+odds-ratio score, and specificity of score, and the motif.
+<br><br>
+
+With this, you can <span class="assignment">choose a region around the hit for the final AUGUSTUS run</span>.
+
+<h2>4. RUN AUGUSTUS-PPX</h2>
+
+Call
+<pre class="code">
+augustus --optCfgFile=ppx.cfg --predictionStart=1070000 --predictionEnd=1130000 \
+ --proteinprofile=PF00225_seed.prfl chr4.103M.fa > augustus-ppx.gff
+</pre>
+
+(Again, replace the profile and region coordinates as needed). In this example, we added approximately 
+10 Kpbs around the profile hit, since the actual gene may be larger. The
+config file <tt><a href="data/ppx.cfg">ppx.cfg</a></tt> contains additional parameters for
+AUGUSTUS:
+<pre class="code" style="font-size:small">
+sample          0
+species         human
+progress        true
+gff3            true
+
+/ProteinModel/block_threshold_spec      4.0
+/ProteinModel/block_threshold_sens      0.4
+/ProteinModel/blockpart_threshold_spec  4.5
+print_blocks    true
+
+/IntronModel/allow_dss_consensus_gc     true
+/IntronModel/non_gt_dss_prob    0.01
+</pre>
+
+Here, we do not use sampling (sampling is not supported in the protein extension), 
+we use the human training parameter set, and we want the output in gff3 format.<br><br>
+The second part contains the PPX-specific parameters. These are the default values 
+(given here since defaults are subject to change in future versions of AUGUSTUS),
+adjusting the search for block hits. Lowering the spec parameter may result in
+more false positive block hits, but is mostly safe (will only make runs slower).
+Since insignificant blocks are discarded in the AUGUSTUS and fastBlockSearch runs before the prediction,
+reducing the specificity can make more blocks be used in the prediction. Try this
+by adding the parameter
+<pre class="code">
+--/ProteinModel/block_threshold_spec=2.5
+</pre>
+to AUGUSTUS or the fast block search.
+<br><br>
+The last two parameters allow AUGUSTUS to predict introns that have a gc-ag splice
+site (with a probability of 1%). This is not specific for the protein extension.
+<br><br>
+
+In order to compare the result with the ab-initio variant, run AUGUSTUS with the
+same command, but without the <tt>proteinprofile</tt> parameter, to create a file
+<tt>output-abinitio.gff</tt>:
+<pre class="code">
+augustus --optCfgFile=ppx.cfg --predictionStart=1070000 --predictionEnd=1130000 chr4.103M.fa > output-abinitio.gff
+</pre>
+
+Repeat this with the other profiles at the genomic regions for which the fast block search has found
+a hit.
+
+<h2>5. VIEW THE RESULTS IN THE UCSC BROWSER</h2>
+
+In order to format the results for
+the <a href="http://genome.ucsc.edu/cgi-bin/hgGateway"
+target="_blank">UCSC browser</a>, run the <tt><a href="data/gff2browser.pl"> gff2browser.pl</a></tt>
+script:
+
+<pre class="code">
+./gff2browser.pl 102999999 augustus-ppx.gff > augustus-ppx.browser
+</pre>
+This adds an offset of 103 Mbps to the genome coordinates (since the provided example genome starts at
+42Mbps of chromosome 3), and reformats the output so the browser can read it.<br><br>
+
+You can also call AUGUSTUS and <tt>gff2browser.pl</tt> in one step:
+<pre class="code">
+augustus [...] chr4.103M.fa | ./gff2browser.pl 102999999 > browser-output.gff
+</pre>
+
+Add the files created from AUGUSTUS-PPX and AUGUSTUS abinitio as 
+<a href="http://genome.ucsc.edu/cgi-bin/hgCustom?clade=mammal&org=Human&db=hg19" 
+target="_blank">custom tracks</a>,
+in order to compare the predictions. The difference is not always obvious, and
+they may generate the same output. Predictions are likely to differ around the
+blocks, so you may have to zoom to where block hits are displayed.
+
+
+
+
