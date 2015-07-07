@@ -166,8 +166,8 @@ Node* SpeciesGraph::addNode(Status *exon){
 	+ Constant::ex_sc3 * log(exon->getLen())
 	+ Constant::ex_sc4 * exon->getPostProb()
 	+ Constant::ex_sc5 * getAvgBaseProb(exon);
-      if (exon->hasEvidence() && exon->name == CDS)
-        score += maxCostOfExonLoss;
+      // if (exon->hasEvidence() && exon->name == CDS)
+      //  score += maxCostOfExonLoss;
     }
    
     /*
@@ -415,8 +415,8 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
 
 	  */
 
-	  if (intr->hasEvidence())
-	    intr_score += maxCostOfExonLoss;
+	  // if (intr->hasEvidence())
+	  // intr_score += maxCostOfExonLoss;
 	}
 
 	Edge in(succ, false, intr_score, intr->item);
