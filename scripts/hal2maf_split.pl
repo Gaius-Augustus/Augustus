@@ -23,6 +23,9 @@ SYNOPSIS
 
 hal2maf_split.pl --halfile aln.hal --refGenome genome
 
+    --halfile F                         F is the input hal file
+    --refGenome S                       S is the name of the reference genome
+
 OPTIONS
 
     --help             			output this help message
