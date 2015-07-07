@@ -1,5 +1,10 @@
 #!/usr/bin/perl
-# export a hal alignment to overlapping maf alignment chunks
+# this script works on top of the 'halTools' toolbox
+# and exports a hal alignment to maf by splitting the alignment into several smaller
+# alignment chunks of a certain size. An overlap between two consecutive alignment chunks can
+# be specified. Furthermore, a list of 'genic' regions/intervals can be passed.
+# In this case, the splitting is restricted to intergenic regions, e.g. position
+# outside of the given intervals.
 # Stefanie Koenig 2.06.2015
 
 use strict;
@@ -8,7 +13,12 @@ use warnings;
 use Getopt::Long; # for parameter specification on the command line
 
 my $usage = <<'ENDUSAGE';
-hal2maf_split.pl	...
+hal2maf_split.pl                        this script works on top of the 'halTools' toolbox
+                                        and exports a hal alignment to maf by splitting the alignment into several smaller      
+                                        alignment chunks of a certain size. An overlap between two consecutive alignment chunks can
+                                        be specified. Furthermore, a list of 'genic' regions/intervals can be passed.    
+                                        In this case, the splitting is restricted to intergenic regions, e.g. position
+                                        outside of the given intervals.  	
 SYNOPSIS
 
 hal2maf_split.pl --halfile aln.hal --refGenome genome
@@ -16,16 +26,19 @@ hal2maf_split.pl --halfile aln.hal --refGenome genome
 OPTIONS
 
     --help             			output this help message
-    --keepDupes                         keep paralogs
-    --keepAnncestors                    write ancestral sequences
-    --refSequence                       name of reference sequence within reference genome (default: whole genome)
-    --chunksize N                       size of the aligment chunk, e.g. sequence segment in the reference genome that covers the alignment chunk
-    --overlap N                         length of overlap between the alignment chunks
-    --cpus N                            number of cpus
-    --hal_exec_dir                      path to hal executables. If not specified
-                                        it must be in \$PATH environment variable.
-    --no_split_list                     list of genomic intervals, in which genes are assumed.
-                                        If such a list is given, the splitting of the alignmnet is outside of these regions. Format:
+    --keepDupes                         keep duplicates, i.e. alignments of a sequence with itself (default: off)
+    --keepAncestors                     export ancestral sequences (default: off)
+    --refSequence S                     S is the name of the reference sequence within the reference genome
+                                        (default: all sequences in the reference genome)
+    --chunksize N                       size of the aligment chunk. N is the number of bases in the reference
+                                        genome that are covered by the alignment chunks (default: 2500000)
+    --overlap N                         overlap between to consecutive alignment chunks. N is the nunber of overlapping
+                                        bases in the reference genome (default: 500000)
+    --cpus N                            number of cpus (default: 1)
+    --hal_exec_dir D                    D is the path to the hal executables. If not specified it must be in \$PATH environment variable.
+    --no_split_list L                   list of 'genic' intervals. The splitting of the alignment is not allowed
+                                        within these regions.  L is a file with the following format:
+                                        seqname <tab> start <tab> end <newline>. Example:
 
                                         chr2 120567671 120601255
                                         chr2 120604238 120609520
@@ -36,19 +49,21 @@ OPTIONS
 DESCRIPTION
       
   Example:
-    hal2maf_split.pl --halfile flies.hal --refGenome dmel
+    hal2maf_split.pl --halfile flies.hal --refGenome dmel --refSequence 3L --cpus 8 --hal_exec_dir /home/stefanie/tools/progressiveCactus/submodules/hal/bin
 
 ENDUSAGE
 
 sub cannot_overlap;
-sub find_splitting_point;
 
 my ($halfile, $refGenome, $keepDupes, $keepAncestors, $refSequence, $no_split_list, $help); # options
 my $h2m_param = "";
 my $hal_exec_dir;
-my $chunksize = 1500000;
+my $chunksize = 2500000;
 my $overlap = 500000;
-my $padding = 10000;
+my $padding = 500;         # must be smaller than min_intergenic, splitting point is this number of bases
+                           # upstream/downstream of a genic interval
+my $min_intergenic = 1000; # when a list of genic intervals is given,
+                           # all intervals that are within this distance are combined to a single interval
 my $cpus = 1;
 
 GetOptions('halfile:s'=>\$halfile,
@@ -126,21 +141,23 @@ if (qx(which "$hal2maf") !~ /hal2maf$/){
  die ("$hal2maf is not executable. Please add the directory which contains the executable hal2maf to the PATH environment variable or specify the path with --hal_exec_dir.");
 }
 
+# reading in the name and length of each sequence in the reference genome ...
 my @seqlist = qx($halStats --chromSizes $refGenome $halfile);
 my $r_c = $?; # return code
 if($r_c != 0){
     print "terminated after an error in halStats.\n";
     exit(1);
 }
-
+# ... and store it in a hash
 my %seqHash = ();
 foreach(@seqlist){
     chomp;
     my($seqname,$len)=split("\t",$_);
-    next if(defined($refSequence) && $refSequence ne $seqname);
+    next if(defined($refSequence) && $refSequence ne $seqname); # if a reference sequence is specified, skip all others
     $seqHash{$seqname}=$len;
 }
 
+# reading in no_split_list
 my @intervals = ();
 if(defined($no_split_list)){
     open(IN, "<$no_split_list") or die ("Could not open $no_split_list");
@@ -152,15 +169,15 @@ if(defined($no_split_list)){
     close(IN);
 }
 
-# join overlapping genomic intervals
+# join neighboring genic intervals within a distance of atmost $min_intergenic bases
 # sort intervals by 1. chromosome, 2. start
 @intervals = sort {$a->[0] cmp $b->[0] || $a->[1] <=> $b->[1]} @intervals;
 
-my @joined=(); # array of joined genomic intervals
+my @joined=(); # array of sorted, joined genic intervals
 my ($chr, $start, $end);
 
 foreach (@intervals){
-    if(defined($chr) && $_->[0] eq $chr && $_->[1] - $end <= 0 ) { # overlap between the last and the current interval
+    if(defined($chr) && $_->[0] eq $chr && $_->[1] - $end <= $min_intergenic ) {
         if($end < $_->[2]){
             $end = $_->[2];
         }
@@ -173,50 +190,45 @@ foreach (@intervals){
 }
 push @joined,[$chr, $start, $end];
 
-#print "no split intervals\n";
-#foreach (@joined){
-#    print "$_->[0]\t$_->[1]\t$_->[2]\n";
-#}
-
 # calculate start and end positions of alignment chunks
-my @aln_chunks = ();
+my @aln_chunks = (); # each element is one alignment chunk, e.g. sequence segment (seqname:start-end) in the reference
 
 foreach my $seq (sort {$a cmp $b} keys %seqHash ){
     my $seqlen = $seqHash{$seq};
     my $start = 0;
-    my $pred = 0;
     while($start + $chunksize <= $seqlen){
 	my $end = $start + $chunksize - 1;
+        # go to first genic interval that may contain the start position of the alignment chunk 
 	while (@joined && cannot_overlap($joined[0], [$seq, $start, $end])){
-	    $pred=$joined[0]->[2];
 	    shift @joined;
-	}
-	
+	}	
 	foreach(@joined) {
 	    last if($_->[0] gt $seq || ($_->[0] eq $seq && $_->[1] > $start));
-	    if($_->[0] eq $seq && $_->[1] <= $start && $_->[2] >= $start){
-		#print "overlapping start\n";
-		#print "$seq:$start-$end\t$_->[0]:$_->[1]-$_->[2]\tpred=$pred\n";
-		find_splitting_point($start, [$pred,$_->[1]]);
+	    if($_->[0] eq $seq && $_->[1] <= $start && $_->[2] >= $start){ # start position of alignment chunk within a genic interval
+		$start=$_->[1]-$padding; # shift start to $padding bases upstream of genic interval
 		last;
 	    }
-	    $pred=$_->[2];
 	}
 	foreach(@joined) {
 	    last if($_->[0] gt $seq || ($_->[0] eq $seq && $_->[1] > $end));
-	    if($_->[0] eq $seq && $_->[1] <= $end && $_->[2] >= $end){
-		#print "overlapping end\n";
-		#print "$seq:$start-$end\t$_->[0]:$_->[1]-$_->[2]\tpred=$pred\n";
-		find_splitting_point($end, [$pred,$_->[1]]);
+	    if($_->[0] eq $seq && $_->[1] <= $end && $_->[2] >= $end){ # end position of alignment chunk within a genic interval
+		$end=$_->[2]+$padding; # shift end to $padding bases downstream of genic interval 
 		last;
 	    }
-	    $pred=$_->[2];
 	}
-	push @aln_chunks,[$seq, $start, $end];
-	$start = $end + 1 - $overlap;
+	push @aln_chunks,[$seq, $start, $end]; # add alignment chunk
+	$start = $end + 1 - $overlap; # start position of next alignment chunk
     }
+    # last alignment chunk
     my $end = $seqlen - 1;
-    push @aln_chunks,[$seq, $start, $end];
+    foreach(@joined) {
+	last if($_->[0] gt $seq || ($_->[0] eq $seq && $_->[1] > $start));
+	if($_->[0] eq $seq && $_->[1] <= $start && $_->[2] >= $start){
+	    $start=$_->[1]-$padding;
+	    last;
+	}
+    }
+    push @aln_chunks,[$seq, $start, $end]; # add alignment chunk
 }
 
 # export alignment chunks in parallel to maf format
@@ -254,6 +266,9 @@ else{ # export alignment chunks sequentially to maf format
     }
 }
 
+# returns true if interval a
+# - comes before interval b in the sorting order and
+# - does not overlap with b
 sub cannot_overlap { 
     my $a = shift;
     my $b = shift;
@@ -261,20 +276,4 @@ sub cannot_overlap {
         return 1;
     }
     return 0;
-}
-
-sub find_splitting_point {
-    my $pos = shift;
-    my $left = shift; # intergenic region left of pos
-    my $left_start=$left->[0];
-    my $left_end=$left->[1];
-    my $split_point = $left_end - $padding;
-    if($split_point < 0){
-	$split_point = 0;
-    }
-    if($left_end > $split_point){
-	$split_point = ($left_end + $left_start) / 2;
-    }
-#    print "splitpoint=$split_point\n$left_start-$left_end\n"; 
-    return $split_point;
 }
