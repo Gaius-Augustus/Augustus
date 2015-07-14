@@ -131,7 +131,7 @@ int main( int argc, char* argv[] ){
 	if(path.empty())
 	    throw ProjectError("halLiftover is not executable.\n" 
 			      "Please add the directory which contains the executable halLiftover to the\n" 
-			       "PATH environment variable or specify the path with --halLiftOver_exec_dir.\n");
+			       "PATH environment variable or specify the path with --halLiftover_exec_dir.\n");
 	
 	/*
 	 * parsing of input gene files
@@ -157,10 +157,10 @@ int main( int argc, char* argv[] ){
 	 * in this case, runtime can be reduced by running the second loop only for j > i 
 	 */
 	cout << "halLiftover starts. Processing" << endl;
-	if(maxCpus > 1){ // in parallel
+        if(maxCpus > 1){ // in parallel
 	    vector<thread> th;
 	    for(int i = 0; i < genomes.size(); i++){
-		cout << genomes[i].getName() << endl;		
+		cout << genomes[i].getName() << endl;
 		for(int j = 0; j < genomes.size(); j++){
 		    if(i != j){
 			if(th.size() == maxCpus){ // wait for all running threads to finish
@@ -181,16 +181,16 @@ int main( int argc, char* argv[] ){
 	    }
 	}
 	else{ // sequentially
-	    for(int i = 0; i < genomes.size(); i++){
-		cout << genomes[i].getName() << endl;		
-		for(int j = 0; j < genomes.size(); j++){
-		    if(i != j){
-			// halLiftover
-			genomes[i].liftOverTo(genomes[j], halfile, halLiftover_exec, halParam);
-		    }
-		}
-	    }
-	}
+            for(int i = 0; i < genomes.size(); i++){
+                cout << genomes[i].getName() << endl;           
+                for(int j = 0; j < genomes.size(); j++){
+                    if(i != j){
+                        // halLiftover
+                        genomes[i].liftOverTo(genomes[j], halfile, halLiftover_exec, halParam);
+                    }
+                }
+            }
+        }
 	for(int i = 0; i < genomes.size(); i++){
 	    for(int j = 0; j < genomes.size(); j++){
 		if(i != j){
@@ -243,7 +243,7 @@ OPTIONS:\n\
 --outdir=DIR                  file direcory that stores output gene files. (default: current directory)\n\
 \n\
 example:\n\
-homGeneMapping --noDupes --halLiftOver_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal\n\
+homGeneMapping --noDupes --halLiftover_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal\n\
 \n";
 }
 

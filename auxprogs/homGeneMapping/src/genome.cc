@@ -19,7 +19,6 @@
 #include <iomanip>      // std::setprecision
 #include <string.h>     // strstr()
 #include <mutex>        // mutual exclusion (mutex) of concurrent execution (threads)
-#include <set>
 
 using namespace std;
 
@@ -38,9 +37,9 @@ void Genome::destroyHintList(){
 void Genome::parseExtrinsicGFF(string gfffilename){
     ifstream ifstrm(gfffilename.c_str());
     if (ifstrm.is_open()){
-	    int line_no = 0;
-	    try{
-		while (ifstrm) {
+	int line_no = 0;
+	try{
+	    while (ifstrm) {
 		string line;
 		getline(ifstrm, line);
 		line_no++;
@@ -49,7 +48,7 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		vector<string> tokens = splitString(line);
 		if(tokens.size() != 9)
 		    throw ProjectError("wrong number of columns.\n");
-
+		
 		map<string,int>::iterator it = seqnames.find(tokens[0]);
 		if(it == seqnames.end()) // no gene on that sequence
 		    continue;
@@ -57,7 +56,7 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		long int start = atol(tokens[3].c_str());
 		long int end = atol(tokens[4].c_str());
 		Strand strand = getStrand(tokens[6]);
-
+		
 		/*
 		 * find source of extrinsic info, specified in gff as: source=X or src=X
 		 */
@@ -104,9 +103,8 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 			GeneFeature *gf = new GeneFeature(type, start, end, strand, frame);
 			gf->setEvidence(esource);
 			insertSeqInt(gf, seqid);
-			hints.push_back(gf);
+			hints.push_back(gf);		 
 		    }
-		    
 		}
 	    }	        
 	} catch( ProjectError& err ){
@@ -313,7 +311,6 @@ void Genome::liftOverTo(Genome &other, string halfile, string halLiftover_exec, 
     // mu.lock(); // print 'cmd' mutually exclusive
     // cout << "executing " << cmd << endl;
     // mu.unlock();
-
     string ret = exec(cmd.c_str());
     if(!ret.empty())
 	throw ProjectError(ret);
@@ -345,11 +342,6 @@ int Genome::getSeqID(string seqname) const{
  * it is appended to the list of homologs of gf
  */
 void Genome::mapGeneFeatures(vector<Genome> &genomes){
-
-    string filename = name + ".gtf";
-    ofstream of;
-
-    of.open(filename.c_str());
 
     for(list<Gene*>::iterator git = genes.begin(); git != genes.end(); git++){	
 	list<GeneFeature*> features = (*git)->getFeatureList();
@@ -401,10 +393,8 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes){
 			    for(list<GeneFeature*>::iterator mapped_gfit = mapped_features.begin(); mapped_gfit !=mapped_features.end();mapped_gfit++){
 				if((*gfit)->isIntron()) // append Introns
 				    (*gfit)->appendHomolog(*mapped_gfit,j);
-				else if((*gfit)->sameFrame((*mapped_gfit)->getFrame()) && ((*gfit)->lenMod3() == (*mapped_gfit)->lenMod3())){ // append CDS, if they are in the same frame
+				else if((*gfit)->sameFrame((*mapped_gfit)->getFrame()) && ((*gfit)->lenMod3() == (*mapped_gfit)->lenMod3())) // append CDS, if they are in the same frame
 				    (*gfit)->appendHomolog(*mapped_gfit,j);				    		    
-				    writeGeneFeature(*gfit,of);
-				}
 			    }
 			}
 		    }
@@ -413,7 +403,6 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes){
 	    mappedStarts = mappedEnds;
 	}
     }
-    of.close();
 }
 
 void Genome::insertPos(int seqID, long int pos){
@@ -513,8 +502,6 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 
     // summary stats (over all genes)
     vector<int> total_mappedStatsG(no_genomes);   // number of transcripts with exact homologs in at least k other genomes
-    vector<set <string> > total_mappedStatsT(no_genomes);
-    vector<set <string> > total_mappedStatsT2(no_genomes);
     vector<int> total_mappedStatsE(no_genomes);   // number of CDS with exact homologs in at least k other genomes
     vector<int> total_mappedStatsI(no_genomes);   // number of Intr ...
     vector<int> total_extrinStatsE(no_genomes+1); // number of CDS supported by evidence in at least k other genomes
@@ -645,8 +632,6 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 		numHomologs++;	
 	}
  	total_mappedStatsG[numHomologs]++;
-	total_mappedStatsT[numHomologs].insert((*git)->getGeneID());
-	total_mappedStatsT2[numHomologs].insert((*git)->getTxID());
 
 	of << "#" << endl;
 	of << "# transcript has an exact homolog in " << numHomologs << " other genomes." <<endl;
@@ -684,15 +669,6 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
     of << "#   k            tx" << endl;
     of << "#-----------------------------------------------" << endl;
     writePictograph(total_mappedStatsG,of);
-    of << "#-----------------------------------------------" << endl;       
-    of << "#   k            tx" << endl;
-    of << "#-----------------------------------------------" << endl;
-    for(int j=0; j<total_mappedStatsT.size();j++){
-	of << j << "\t" << total_mappedStatsT[j].size() << endl;
-    }
-    for(int j=0; j<total_mappedStatsT2.size();j++){
-	of << j << "\t" << total_mappedStatsT2[j].size() << endl;
-    }
     of.close();
 }
 
