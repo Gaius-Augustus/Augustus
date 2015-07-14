@@ -156,25 +156,37 @@ int main( int argc, char* argv[] ){
 	 * check if liftover is symmetric (i.e. i -> j is the same as j -> i )
 	 * in this case, runtime can be reduced by running the second loop only for j > i 
 	 */
-	vector<thread> th;
-	for(int i = 0; i < genomes.size(); i++){
-	    for(int j = 0; j < genomes.size(); j++){
-		if(i != j){
-		    if(th.size() == maxCpus){ // wait for all running threads to finish
-			// synchronize threads
-			for(int i = 0; i < th.size(); i++){
-			    th[i].join();
+	if(maxCpus > 1){ // in parallel
+	    vector<thread> th;
+	    for(int i = 0; i < genomes.size(); i++){
+		for(int j = 0; j < genomes.size(); j++){
+		    if(i != j){
+			if(th.size() == maxCpus){ // wait for all running threads to finish
+			    // synchronize threads
+			    for(int i = 0; i < th.size(); i++){
+				th[i].join();
+			    }
+			    th.clear();
 			}
-			th.clear();
+			// halLiftover
+			th.push_back(thread(&Genome::liftOverTo, &genomes[i], ref(genomes[j]), halfile, halLiftover_exec, halParam));
 		    }
-		    // halLiftover
-		    th.push_back(thread(&Genome::liftOverTo, &genomes[i], ref(genomes[j]), halfile, halLiftover_exec, halParam));
 		}
 	    }
+	    // synchronize threads
+	    for(int i = 0; i < th.size(); i++){
+		th[i].join();
+	    }
 	}
-	// synchronize threads
-	for(int i = 0; i < th.size(); i++){
-	    th[i].join();
+	else{ // sequentially
+	    for(int i = 0; i < genomes.size(); i++){
+		for(int j = 0; j < genomes.size(); j++){
+		    if(i != j){
+			// halLiftover
+			genomes[i].liftOverTo(genomes[j], halfile, halLiftover_exec, halParam);
+		    }
+		}
+	    }
 	}
 	for(int i = 0; i < genomes.size(); i++){
 	    for(int j = 0; j < genomes.size(); j++){
