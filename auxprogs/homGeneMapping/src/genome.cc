@@ -310,9 +310,9 @@ void Genome::liftOverTo(Genome &other, string halfile, string halLiftover_exec, 
 
     string cmd = halLiftover_exec + " " + halParam + halfile + " " + name + " " + tmpdir + name + ".bed " + other.getName() + " " + tmpdir + other.getName() + ".bed";
 
-    //mu.lock(); // print 'cmd' mutually exclusive
-    cout << "executing " << cmd << endl;
-    //mu.unlock();
+    // mu.lock(); // print 'cmd' mutually exclusive
+    // cout << "executing " << cmd << endl;
+    // mu.unlock();
 
     string ret = exec(cmd.c_str());
     if(!ret.empty())
