@@ -159,6 +159,11 @@ foreach(@seqlist){
     $seqHash{$seqname}=$len;
 }
 
+if(defined($refSequence) && !exists($seqHash{$refSequence})){
+    print "Reference sequence $refSequence not found in reference genome $refGenome\n";
+    exit(1);
+}
+
 # reading in no_split_list
 my @intervals = ();
 if(defined($no_split_list)){
@@ -200,8 +205,10 @@ foreach (@intervals){
         ($chr, $start, $end) = ($_->[0], $_->[1], $_->[2]);
     }
 }
-my $succ_start = $seqHash{$chr} - 1;
-push @joined,[$chr, $start, $end, $pred_end, $succ_start];
+if (defined($chr)){
+    my $succ_start = $seqHash{$chr} - 1;
+    push @joined,[$chr, $start, $end, $pred_end, $succ_start];
+}
 
 
 # calculate start and end positions of alignment chunks
