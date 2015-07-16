@@ -879,7 +879,7 @@ aacag	0.193
 aacat	0.275
 aacca	0.391
 aaccc	0.177
-aaccg	0.136
+aaccg	0.137
 aacct	0.296
 aacga	0.344
 aacgc	0.159
@@ -1000,7 +1000,7 @@ agagt	0.298
 agata	0.302
 agatc	0.168
 agatg	0.222
-agatt	0.308
+agatt	0.309
 agcaa	0.303
 agcac	0.187
 agcag	0.221
@@ -1061,7 +1061,7 @@ ataga	0.318
 atagc	0.158
 atagg	0.18
 atagt	0.344
-atata	0.335
+atata	0.336
 atatc	0.165
 atatg	0.178
 atatt	0.321
@@ -1137,7 +1137,7 @@ cacca	0.41
 caccc	0.149
 caccg	0.14
 cacct	0.301
-cacga	0.378
+cacga	0.379
 cacgc	0.156
 cacgg	0.157
 cacgt	0.309
@@ -1184,7 +1184,7 @@ ccaat	0.285
 ccaca	0.314
 ccacc	0.204
 ccacg	0.146
-ccact	0.335
+ccact	0.336
 ccaga	0.3
 ccagc	0.159
 ccagg	0.198
@@ -1269,7 +1269,7 @@ cgcga	0.328
 cgcgc	0.22
 cgcgg	0.132
 cgcgt	0.32
-cgcta	0.237
+cgcta	0.236
 cgctc	0.202
 cgctg	0.202
 cgctt	0.36
@@ -1373,7 +1373,7 @@ gaaaa	0.345
 gaaac	0.186
 gaaag	0.171
 gaaat	0.298
-gaaca	0.377
+gaaca	0.378
 gaacc	0.168
 gaacg	0.148
 gaact	0.306
@@ -1447,7 +1447,7 @@ gcagg	0.148
 gcagt	0.384
 gcata	0.271
 gcatc	0.237
-gcatg	0.169
+gcatg	0.168
 gcatt	0.323
 gccaa	0.299
 gccac	0.216
@@ -1488,7 +1488,7 @@ gctat	0.285
 gctca	0.355
 gctcc	0.203
 gctcg	0.148
-gctct	0.293
+gctct	0.294
 gctga	0.354
 gctgc	0.168
 gctgg	0.187
@@ -1531,7 +1531,7 @@ ggctg	0.24
 ggctt	0.309
 gggaa	0.332
 gggac	0.196
-gggag	0.196
+gggag	0.195
 gggat	0.276
 gggca	0.363
 gggcc	0.161
@@ -1551,7 +1551,7 @@ ggtag	0.215
 ggtat	0.283
 ggtca	0.362
 ggtcc	0.167
-ggtcg	0.18
+ggtcg	0.179
 ggtct	0.291
 ggtga	0.323
 ggtgc	0.143
@@ -1634,7 +1634,7 @@ taacc	0.186
 taacg	0.127
 taact	0.332
 taaga	0.307
-taagc	0.169
+taagc	0.168
 taagg	0.181
 taagt	0.343
 taata	0.308
@@ -1914,7 +1914,7 @@ aacag	0.193
 aacat	0.275
 aacca	0.391
 aaccc	0.177
-aaccg	0.136
+aaccg	0.137
 aacct	0.296
 aacga	0.344
 aacgc	0.159
@@ -2035,7 +2035,7 @@ agagt	0.298
 agata	0.302
 agatc	0.168
 agatg	0.222
-agatt	0.308
+agatt	0.309
 agcaa	0.303
 agcac	0.187
 agcag	0.221
@@ -2096,7 +2096,7 @@ ataga	0.318
 atagc	0.158
 atagg	0.18
 atagt	0.344
-atata	0.335
+atata	0.336
 atatc	0.165
 atatg	0.178
 atatt	0.321
@@ -2172,7 +2172,7 @@ cacca	0.41
 caccc	0.149
 caccg	0.14
 cacct	0.301
-cacga	0.378
+cacga	0.379
 cacgc	0.156
 cacgg	0.157
 cacgt	0.309
@@ -2219,7 +2219,7 @@ ccaat	0.285
 ccaca	0.314
 ccacc	0.204
 ccacg	0.146
-ccact	0.335
+ccact	0.336
 ccaga	0.3
 ccagc	0.159
 ccagg	0.198
@@ -2304,7 +2304,7 @@ cgcga	0.328
 cgcgc	0.22
 cgcgg	0.132
 cgcgt	0.32
-cgcta	0.237
+cgcta	0.236
 cgctc	0.202
 cgctg	0.202
 cgctt	0.36
@@ -2408,7 +2408,7 @@ gaaaa	0.345
 gaaac	0.186
 gaaag	0.171
 gaaat	0.298
-gaaca	0.377
+gaaca	0.378
 gaacc	0.168
 gaacg	0.148
 gaact	0.306
@@ -2482,7 +2482,7 @@ gcagg	0.148
 gcagt	0.384
 gcata	0.271
 gcatc	0.237
-gcatg	0.169
+gcatg	0.168
 gcatt	0.323
 gccaa	0.299
 gccac	0.216
@@ -2523,7 +2523,7 @@ gctat	0.285
 gctca	0.355
 gctcc	0.203
 gctcg	0.148
-gctct	0.293
+gctct	0.294
 gctga	0.354
 gctgc	0.168
 gctgg	0.187
@@ -2566,7 +2566,7 @@ ggctg	0.24
 ggctt	0.309
 gggaa	0.332
 gggac	0.196
-gggag	0.196
+gggag	0.195
 gggat	0.276
 gggca	0.363
 gggcc	0.161
@@ -2586,7 +2586,7 @@ ggtag	0.215
 ggtat	0.283
 ggtca	0.362
 ggtcc	0.167
-ggtcg	0.18
+ggtcg	0.179
 ggtct	0.291
 ggtga	0.323
 ggtgc	0.143
@@ -2669,7 +2669,7 @@ taacc	0.186
 taacg	0.127
 taact	0.332
 taaga	0.307
-taagc	0.169
+taagc	0.168
 taagg	0.181
 taagt	0.343
 taata	0.308
@@ -2949,7 +2949,7 @@ aacag	0.193
 aacat	0.275
 aacca	0.391
 aaccc	0.177
-aaccg	0.136
+aaccg	0.137
 aacct	0.296
 aacga	0.344
 aacgc	0.159
@@ -3070,7 +3070,7 @@ agagt	0.298
 agata	0.302
 agatc	0.168
 agatg	0.222
-agatt	0.308
+agatt	0.309
 agcaa	0.303
 agcac	0.187
 agcag	0.221
@@ -3131,7 +3131,7 @@ ataga	0.318
 atagc	0.158
 atagg	0.18
 atagt	0.344
-atata	0.335
+atata	0.336
 atatc	0.165
 atatg	0.178
 atatt	0.321
@@ -3207,7 +3207,7 @@ cacca	0.41
 caccc	0.149
 caccg	0.14
 cacct	0.301
-cacga	0.378
+cacga	0.379
 cacgc	0.156
 cacgg	0.157
 cacgt	0.309
@@ -3254,7 +3254,7 @@ ccaat	0.285
 ccaca	0.314
 ccacc	0.204
 ccacg	0.146
-ccact	0.335
+ccact	0.336
 ccaga	0.3
 ccagc	0.159
 ccagg	0.198
@@ -3339,7 +3339,7 @@ cgcga	0.328
 cgcgc	0.22
 cgcgg	0.132
 cgcgt	0.32
-cgcta	0.237
+cgcta	0.236
 cgctc	0.202
 cgctg	0.202
 cgctt	0.36
@@ -3443,7 +3443,7 @@ gaaaa	0.345
 gaaac	0.186
 gaaag	0.171
 gaaat	0.298
-gaaca	0.377
+gaaca	0.378
 gaacc	0.168
 gaacg	0.148
 gaact	0.306
@@ -3517,7 +3517,7 @@ gcagg	0.148
 gcagt	0.384
 gcata	0.271
 gcatc	0.237
-gcatg	0.169
+gcatg	0.168
 gcatt	0.323
 gccaa	0.299
 gccac	0.216
@@ -3558,7 +3558,7 @@ gctat	0.285
 gctca	0.355
 gctcc	0.203
 gctcg	0.148
-gctct	0.293
+gctct	0.294
 gctga	0.354
 gctgc	0.168
 gctgg	0.187
@@ -3601,7 +3601,7 @@ ggctg	0.24
 ggctt	0.309
 gggaa	0.332
 gggac	0.196
-gggag	0.196
+gggag	0.195
 gggat	0.276
 gggca	0.363
 gggcc	0.161
@@ -3621,7 +3621,7 @@ ggtag	0.215
 ggtat	0.283
 ggtca	0.362
 ggtcc	0.167
-ggtcg	0.18
+ggtcg	0.179
 ggtct	0.291
 ggtga	0.323
 ggtgc	0.143
@@ -3704,7 +3704,7 @@ taacc	0.186
 taacg	0.127
 taact	0.332
 taaga	0.307
-taagc	0.169
+taagc	0.168
 taagg	0.181
 taagt	0.343
 taata	0.308
