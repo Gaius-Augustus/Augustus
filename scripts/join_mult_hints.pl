@@ -11,7 +11,7 @@ my $usage = "$0 -- summarize multiple identical hints to one with mult=n\n";
 $usage .= "\n";
 $usage .= "Usage: $0 <in.psl >joined.psl\n";
 $usage .= "  PREREQUISITE: input GFF file must be sorted so that hints that should be summarized are below each other\n";
-$usage .= "  e.g. do a cat hints.gff | sort -n -k 4,4 | sort -s -n -k 5,5 | sort -s -n -k 3,3 | sort -s -k 1,1 | join_mult_hints.gff\n";
+$usage .= "  e.g. do a cat hints.gff | sort -n -k 4,4 | sort -s -n -k 5,5 | sort -s -k 3,3 | sort -s -k 1,1 | join_mult_hints.gff\n";
 
 
 my $help=0;
