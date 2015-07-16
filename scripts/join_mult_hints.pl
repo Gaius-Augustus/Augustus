@@ -29,7 +29,7 @@ while (<>) {
     @f = split(/\t/,$_);
     if (!(@lf)){
 	@lf = @f;	
-    } elsif (!(($f[0] eq $lf[0]) && ($f[2] eq $lf[2]) && ($f[3] == $lf[3]) && ($f[4] == $lf[4])  && ($f[6] eq $lf[6]))){
+    } elsif (!(($f[0] eq $lf[0]) && ($f[2] eq $lf[2]) && ($f[3] == $lf[3]) && ($f[4] == $lf[4])  && ($f[6] eq $lf[6]) && ($f[7] eq $lf[7]))){
 	print join("\t",@lf);
 	@lf = @f;
     } else {
