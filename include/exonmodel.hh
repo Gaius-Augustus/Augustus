@@ -105,6 +105,10 @@ public:
       orf = new OpenReadingFrame(sequence, Constant::max_exon_len, dnalen);
       initAlgorithmsCalled = false;
     }
+    static vector<Double> lenDistSingle;   // Length distribution of Single exons (length of biol. exon)
+    static vector<Double> lenDistInitial;  // Length distribution of Initial exons (length of biol. exon)
+    static vector<Double> lenDistInternal; // Length distribution of Internal exons (length of biol. exon)
+    static vector<Double> lenDistTerminal; // Length distribution of Terminal exons (length of biol. exon)
 
 private:
     void processExons(const Gene* gene);
@@ -156,10 +160,6 @@ private:
     static vector<Integer>  numExonsOfType;
     static vector<Integer>  numHugeExonsOfType;  // number of exons exceeding the maximal length 
                                                  // modelled by the length distribution
-    static vector<Double> lenDistSingle;   // Length distribution of Single exons (length of biol. exon)
-    static vector<Double> lenDistInitial;  // Length distribution of Initial exons (length of biol. exon)
-    static vector<Double> lenDistInternal; // Length distribution of Internal exons (length of biol. exon)
-    static vector<Double> lenDistTerminal; // Length distribution of Terminal exons (length of biol. exon)
     static Integer numSingle, numInitial, numInternal, numTerminal; 
     static Integer numHugeSingle, numHugeInitial, numHugeInternal, numHugeTerminal; 
     static Matrix<vector<Double> > Pls;

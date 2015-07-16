@@ -18,6 +18,7 @@
 #include "motif.hh"
 #include "intronmodel.hh" // so splice sites models can be reused here
 #include "utrmodel.hh"    // so TSS/TTS signal models can be reused here
+#include "exonmodel.hh"   // so coding exon length distributions can be reused here
 #include "extrinsicinfo.hh"
 #include "merkmal.hh"
 
@@ -147,7 +148,7 @@ void NcModel::computeLengthDistributions(){
     lenDistSingle[0] = pow(1-p, r);
     for (int k=1; k <= Constant::max_exon_len; k++)
 	lenDistSingle[k] = lenDistSingle[k-1] * p * (k+r-1) / k;
-    lenDistInternal = lenDistSingle;
+    lenDistInternal = ExonModel::lenDistInternal; // was: = lenDistSingle; causes problems in distinguishing coding from nc
     for (int k=0; k < minSingleExonLen; k++)
 	lenDistSingle[k] = 0;
 }

@@ -523,6 +523,6 @@ void EOPList::update(int endOfPred){
 	update(endOfPred);
 	return;
     }
-    // this should not happen neither
+    // this should not happen either
     throw ProjectError("Error 2 in UtrModel::updatePossibleEOPs");
 }
