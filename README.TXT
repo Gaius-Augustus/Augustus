@@ -706,35 +706,6 @@ splicing, including nested genes contained in introns of other genes, overlappin
 translation starts and variation in UTR.
 
 
-WARNING: The rest of section 5. is intended for internal use.
-
-             (Retraining the hint parameters)
-	     --------------------------------
-When the process (the program) that genenerates the hints is new, then the bonuses and maluses must be adapted.
-Take some training set of annotated genes in genbank format (multiple genes per sequence possible, but must be sorted).
-Obtain the hints for this training set.
-Create of copy the file augustus/config/extrinsic.cfg, so that it contains the sources of only those hints 
-that have been obtained for the training set. The numbers in the table do not matter, they are ignored. Nevertheless 
-the format must be correct.
-Run augustus on the training set with the hints as parameters, e.g.
-
->augustus --species=HUMAN --checkExAcc=true ../config/h178.test --hintsfile=~/human/extrinsic/h178est/agrippa.h178.E.gff
-
-At the top of the output a summary of how many hints are compatible with the annotated gene structure (good) and 
-how many hints are incompatible with the annotated gene structure (bad) is given. This is just for info.
-after a line reading '-----------configfile-------------' a table of bonuses and maluses is output. Copy these 6 lines to the 
-extrinsic.cfg file and replace the corresponding 6 lines. 
-
-In the case when there are hints that can occur multiple times, for example a dss hint from an EST search and the 
-same dss hint from a protein search, there is an additional step. When several hints are identical, except for the source, 
-then AUGUSTUS uses just that hint, that is most reliable. The others are considered redundant and are deleted.
-When there are redundant hints in your data you must first run AUGUSTUS with the option --checkExAcc=true.
-Then no redundant hints are deleted. Take the resulting table (even if some values are negetive), 
-replace the one in extrinsic.cfg with it and run AUGUSTUS another time without turning this option on.
-Again replace the table in extrinsic.cfg with the one from the program output. Remark: In the second run, AUGUSTUS knows 
-in the case of collisions of which source the hints should be deleted.
-
-
               6. PREDICTIONS USING CDNA
               -------------------------
 

@@ -516,13 +516,13 @@ void EOPList::update(int endOfPred){
 	    eopit = possibleEndOfPreds.insert(nxt, endOfPred);
 	    return;
 	}
-    // this line should never be reached
-	cerr << "Error: endOfPred = " << endOfPred << "\teopit=" << *eopit << "\tinCache=" << inCache << endl;
-	for (list<int>::iterator it = possibleEndOfPreds.begin(); it != possibleEndOfPreds.end(); ++it)
-	   cerr << *it << "\t";
-	cerr << endl;
-	throw ProjectError("Error 1 in UtrModel::updatePossibleEOPs");
+	// this line should very rarely be reached (e.g. when the support of the length distribution is not an interval)
+	//cerr << "EOPList::update. Error: endOfPred = " << endOfPred << "\teopit=" << *eopit << "\tinCache=" << inCache << endl;
+	while (eopit != possibleEndOfPreds.end() && *eopit > endOfPred)
+	    ++eopit;
+	update(endOfPred);
+	return;
     }
-    // this neither
+    // this should not happen neither
     throw ProjectError("Error 2 in UtrModel::updatePossibleEOPs");
 }
