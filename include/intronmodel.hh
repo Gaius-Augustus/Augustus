@@ -67,6 +67,7 @@ public:
     static void updateParameters(int idx);
     static void storeGCPars(int idx);
     static Integer getD() {return d;}
+    static double getMAL() {return mal.doubleValue();}
     static void resetModelCount(){introncount = 0;};
     static double getGeoProb(){return geoProb;}
     static Double getAssMotifProbThreshold(double q) {return assMotif->getProbThreshold(q);}
@@ -92,6 +93,7 @@ public:
     static PatMMGroup      *GCemiprobs;
     static BinnedMMGroup   dssBinProbs;
     static BinnedMMGroup   assBinProbs;
+    static vector<Double>  lenDist;
 private:
     StateType              itype;
     Integer                gweight;
@@ -110,7 +112,6 @@ private:
     static Double          mal;             // mean additional length (if longer than d)
     static Double          *GCmal;             // array for each GC content class
     static Integer         introncount;
-    static vector<Double>  lenDist;
     static Integer         gesbasen;
 
     // variables related to splicing

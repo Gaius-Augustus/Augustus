@@ -549,8 +549,16 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 	    break;
 	case ncintronvar: case rncintronvar: // introns that are supported by a hint
 	    {
-		int internalIntronLen = endOfMiddle - begin + 1;
-		lenProb = pow(pIntron, internalIntronLen - 1) * (1.0-pIntron);
+   	        int intronLen = endOfBioExon - begin + 1;
+	        if (nctype == ncintronvar)
+		  intronLen += Constant::dss_end + DSS_MIDDLE;
+		else 
+		    intronLen += Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
+		lenProb = IntronModel::lenDist[IntronModel::getD()] * pow(1.0 - 1.0/IntronModel::getMAL(), (int) (intronLen-IntronModel::getD()));
+		// was before an independent distribution for nc introns:
+		// int internalIntronLen = endOfMiddle - begin + 1;
+		// lenProb = pow(pIntron, internalIntronLen - 1) * (1.0-pIntron);
+		// it appears to be better for distinguishing coding from nc to use the same distribution
 		middlePartProb = segProbs->getSeqProb(begin, endOfMiddle);
 		break;
 	    }
