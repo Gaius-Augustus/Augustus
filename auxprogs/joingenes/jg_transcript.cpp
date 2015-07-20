@@ -1857,7 +1857,7 @@ int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &pro
 		    return 0;
 		}
 	    }else{
-		if ((*t1).exon_list.front().from < ((*it).to + (int) properties.minimumIntronLength)){
+		if ((*t1).exon_list.front().from >= ((*it).to + (int) properties.minimumIntronLength)){
 		    if ((*t1).exon_list.front().frame == -1 && (*it).frame == -1){return 4;}
 		    else if (((*t1).exon_list.back().frame != -1 && (*it).frame == -1) || ((*t1).exon_list.back().frame == -1 && (*it).frame != -1)){return 0;}
 		    if (it != t2->exon_list.begin()){
