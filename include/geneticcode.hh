@@ -275,6 +275,17 @@ inline char Seq2Int::int2BASE(int i) {
     }
 }
 
+class ORF {
+public:
+    ORF() { start = end = -1; complete5prime = complete3prime = 0; strand = plusstrand; }
+    int len() {return abs(end - start) + 1;}
+    int start;
+    int end;
+    Strand strand;
+    bool complete5prime;
+    bool complete3prime;
+};
+
 class GeneticCode {
 public:
      static void init() {
@@ -331,7 +342,7 @@ public:
 	    if (start_codons[pn])
 		return start_codon_probs[pn];
 	} catch (InvalidNucleotideError){}
-	return 0.0;
+	return 0;
     }
     static Double startCodonProb(int pn){
 	return start_codon_probs[pn];
@@ -347,6 +358,7 @@ public:
     static bool is_purine(int b){
 	return (b==0 || b==2); // 0=a, 1=c, 2=g, 3=t, a and g are purines
     }
+    static ORF longestORF(const char* dna);
 };
 
 // getSampledCDS: sample a coding region from emission probabilities

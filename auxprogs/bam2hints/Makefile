@@ -14,7 +14,7 @@ INCLUDES = $(BAMTOOLS)/include
 LIBS = $(BAMTOOLS)/lib/libbamtools.a -lz
 SOURCES = bam2hints.cc 
 OBJECTS = $(SOURCES:.cc=.o)
-CFLAGS = -Wall -O0 # -g -p
+CFLAGS = -Wall -O0 -g -ggdb # -g -p
 
 LINK.cc = g++
 
@@ -23,6 +23,7 @@ LINK.cc = g++
 # $<: .c file of target. 
 bam2hints : $(OBJECTS) 
 	$(LINK.cc) $(CFLAGS) -o $@ $(OBJECTS) $(LIBS) 
+	cp bam2hints ../../bin
 
 all:$(OBJECTS) # Compiles each foo.cc into foo.o
 

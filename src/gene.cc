@@ -1402,40 +1402,36 @@ Gene::Gene(const Gene& other) : Transcript(other){ // use copy constuctor of Tra
 }
 
 /* 
- * getCodingSequence
+ * getExonicSequence (CDS for coding genes)
  *
  * creates a new string consisting of the concatenation of all exons
  * includes the stop codon, ends with a terminating character
  */ 
-char* Gene::getCodingSequence(AnnoSequence *annoseq) const{
-    char *codingseq = new char[clength+1];
+char* Transcript::getExonicSequence(AnnoSequence *annoseq, bool noOffset) const{
+    int cumlength = 0;
+    State *exon;
+    for (exon = exons; exon != NULL; exon = exon->next)
+	cumlength += exon->length();
+    char *exonseq = new char[cumlength+1];
     int curpos = 0;
-    State *exon = exons;
-    while (exon) {
+    for (exon = exons; exon != NULL; exon = exon->next){
 	int cplength = exon->length();
-	if (curpos + cplength <= clength) {
-	    strncpy(codingseq + curpos, annoseq->sequence - annoseq->offset + exon->begin, cplength);
-	    curpos += cplength;
-	} else {
-	    // shouldn't happen
-	    throw ProjectError("Gene::getCodingSequence(): wrong coding length");
-	}    
-	exon = exon->next;
+	strncpy(exonseq + curpos, annoseq->sequence - (noOffset? 0 : annoseq->offset) + exon->begin, cplength);
+	curpos += cplength;
     }
-    codingseq[clength]='\0';
+    exonseq[cumlength] = '\0';
     if (strand == plusstrand){
-	return codingseq;
-    }
-    else {
-	char* res = reverseComplement(codingseq);
-	delete [] codingseq;
+	return exonseq;
+    } else {
+	char* res = reverseComplement(exonseq);
+	delete [] exonseq;
 	return res;
     }
 }
 
 bool Gene::hasInFrameStop(AnnoSequence *annoseq) const{
     Seq2Int s2i(3);
-    const char * seq = getCodingSequence(annoseq);
+    const char * seq = getExonicSequence(annoseq);
     const char * codingSeq = seq;
     codingSeq += mod3(-frame); // if gene is incomplete, frame is the position of the first base
     while (strlen(codingSeq)>3){
@@ -2329,7 +2325,7 @@ void Gene::printGFF() const {
 void Gene::printCodingSeq(AnnoSequence *annoseq) const {
     int linelength=100;
     int curlinelength=0;
-    const char* seq = getCodingSequence(annoseq);
+    const char* seq = getExonicSequence(annoseq); // CDS
     string codingSeq = seq;
     int offset = 0;    
     cout << "# coding sequence = [";
@@ -2372,7 +2368,7 @@ void Gene::printProteinSeq(AnnoSequence *annoseq) const {
     string prefix = "# protein sequence = [";
     
     // if gene is incomplete, frame is the position of the first base
-    const char* codingSeq = getCodingSequence(annoseq);
+    const char* codingSeq = getExonicSequence(annoseq);
     string trans = "";
     // if genemodel is bacterium and there is a start codon, translate these with "M" irrespective of the bases
     if ((isInitialExon(exons->type) || exons->type == singleG || exons->type == rsingleG || exons->type == rinitial) && (codingSeq[0] && codingSeq[1] && codingSeq[2])){
@@ -3351,17 +3347,41 @@ void reverseGeneSequence(Transcript* &seq, int endpos){
 void postProcessGenes(list<AltGene> *genes, AnnoSequence *annoseq){
     if (!genes || !annoseq)
 	return;
+    bool truncateMaskedUTRs = false;
     try {
-	if (Properties::getBoolProperty("truncateMaskedUTRs")){
-	    for (list<AltGene>::iterator agit = genes->begin(); agit != genes->end(); ++agit){
-		for (list<Transcript*>::iterator git = agit->transcripts.begin(); git != agit->transcripts.end(); ++git){
-		    Gene *g = dynamic_cast<Gene*> (*git);
-		    if (g)
-			g->truncateMaskedUTR(annoseq);
+	Properties::getBoolProperty("truncateMaskedUTRs");
+    } catch(...){}
+    for (list<AltGene>::iterator agit = genes->begin(); agit != genes->end(); ++agit){
+	list<Transcript*> &txs = agit->transcripts;
+	for (list<Transcript*>::iterator git = txs.begin(); git != txs.end(); ++git){
+	    Gene *g = dynamic_cast<Gene*> (*git);
+	    if (g) {
+		if (truncateMaskedUTRs)
+		    g->truncateMaskedUTR(annoseq);
+	    } else {// noncoding gene
+		g = NULL; // promoteToCoding(*git, annoseq);
+		if (g) { // replace noncoding genes with its promoted coding gene
+		    git = txs.erase(git); // TODO erase memory
+		    txs.insert(git, g);
 		}
 	    }
 	}
-    } catch(...){}
+    }
+}
+
+/*
+ * make a coding gene from a non-coding if it contains a good ORF
+ * return NULL, if no long ORF was found
+ */
+Gene* promoteToCoding(Transcript* tx, AnnoSequence *annoseq){
+    cout << "checking whether this nc gene is promotable:" << endl;
+    tx->printGFF();
+    const char * txseq = tx->getExonicSequence(annoseq, true); // offset is added only later
+    cout << "RNA:" << txseq << endl;
+    ORF orf = GeneticCode::longestORF(txseq);
+    cout << "longest ORF: " << orf.start << ".." << orf.end << "\t" << orf.strand << "\t5complete" << 
+	orf.complete5prime << "\t3complete" << orf.complete3prime << endl;
+    return NULL;
 }
 
 void Gene::truncateMaskedUTR(AnnoSequence *annoseq){

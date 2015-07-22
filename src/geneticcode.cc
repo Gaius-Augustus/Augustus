@@ -313,6 +313,79 @@ void GeneticCode::readStart(ifstream &in){
 }
 
 /*
+ * find a longest ORF in a given DNA sequence
+ * At the 3' end it is delineated by a stop codon or the sequence end (then complete3prime is false).
+ * At the 5' end it is delineated by the most upstream start codon (preferred) or the sequence end
+ * (if none). complete5prime is true iff the ORF starts with a start codon and there is an upstream
+ * in-frame stop codon.
+ */
+
+ORF GeneticCode::longestORF(const char* dna){
+    ORF orf, longestOrf;
+    unsigned n = strlen(dna);
+    Double startPthresh = 0.01; // minimal start codon probability for ORF finding
+    
+    for (Strand s : {plusstrand, minusstrand}){//= plusstrand; s != minusstrand; s = minusstrand){
+	int dir = (s == plusstrand)? 1 : -1;
+	for (unsigned rf = 0; rf < 3; rf++){
+	    int from = (s == plusstrand)? rf : n - 3 - rf;
+	    orf = ORF();
+	    orf.strand = s;
+	    orf.complete5prime = false; // first ORF is always 5' incomplete
+	    for (int pos = from; pos >= 0 && pos <= n-3; pos += dir * 3){
+		if ((!orf.complete5prime && orf.start < 0) || 
+		    ((startCodonProb(dna + pos, s == minusstrand) > startPthresh &&
+		      ((orf.start >= 0 && startCodonProb(dna + orf.start, s == minusstrand) <= startPthresh)
+		       || orf.start < 0)))){
+		orf.start = pos; // let ORF start with most 5' ATG (if it exist`s)
+	    }
+	    if (orf.start >= 0){
+		    if ((s == plusstrand && isStopcodon(dna + pos))
+			|| (s == minusstrand && isRCStopcodon(dna + pos))){
+			orf.end = pos;
+			orf.complete3prime = true;
+			if (orf.len() > longestOrf.len() && 
+			    (startCodonProb(dna + orf.start, s == minusstrand) > startPthresh || !orf.complete5prime)){
+			    longestOrf = orf;
+			}
+			orf = ORF();
+			orf.complete5prime = true; // every ORF but the first is complete
+			orf.strand = s;
+		    } else if (pos + dir*3 >= n || pos + dir*3 < 0) {
+			orf.end = pos;
+			orf.complete3prime = false;
+			if (orf.len() > longestOrf.len()){
+			    longestOrf = orf;
+			}
+		    }
+		}
+	    }
+	}
+    }
+    if (longestOrf.strand == minusstrand)
+	swap(longestOrf.start, longestOrf.end);
+    // shift thickEnd +2 as above coordinates are codon positions
+    if (longestOrf.start >= 0){
+	if (longestOrf.strand == plusstrand){
+	    if (longestOrf.complete3prime)
+		longestOrf.end += 2;
+	    else 
+		longestOrf.end = n-1;
+	    if (!longestOrf.complete5prime)
+		longestOrf.start = 0;
+	} else {
+	    if (longestOrf.complete5prime || startCodonProb(dna + longestOrf.end, minusstrand) > startPthresh)
+		longestOrf.end += 2;
+	    else 
+		longestOrf.end = n-1;
+	     if (!longestOrf.complete3prime)
+		longestOrf.start = 0;
+	}
+    }
+    return longestOrf;
+}
+
+/*
  * getSampledSeq
  * ****|***|***|***|***|***|
  * k bases from uniform distribution, then numCodons codons

@@ -291,6 +291,8 @@ public:
     }
     virtual list<State*> getExInInHeads() const { return getExInHeads();}
     double meanStateProb();
+    char* getExonicSequence(AnnoSequence *annoseq = NULL,
+			    bool noOffset = false) const; // CDS or whole RNA, respectively
     virtual void shiftCoordinates(int d);
     virtual bool almostIdenticalTo(Transcript *other);
     virtual void printCodingSeq(AnnoSequence *annoseq) const {}; // print nothing
@@ -360,7 +362,6 @@ public:
     }
     list<State*> getExInHeads() const { list<State*> L; L.push_back(exons); L.push_back(introns); L.push_back(utr5exons); L.push_back(utr3exons); return L;}
     list<State*> getExInInHeads() const { list<State*> L = getExInHeads(); L.push_back(utr5introns); L.push_back(utr3introns); return L;}
-    char* getCodingSequence(AnnoSequence *annoseq = NULL) const;
     bool hasInFrameStop(AnnoSequence *annoseq) const;
     // void computeBC(char *seq);
     int numExons() const;
@@ -470,7 +471,7 @@ list<AltGene>* groupTranscriptsToGenes(list<Transcript*> &transcripts);
  
 void reverseGeneSequence(Transcript* &seq, int endpos);
 void postProcessGenes(list<AltGene> *genes, AnnoSequence *annoseq);
-
+Gene* promoteToCoding(Transcript* tx, AnnoSequence *as); // make a coding gene from a non-coding if it contains a good ORF
 
 class Annotation {
 public:
