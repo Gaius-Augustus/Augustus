@@ -337,6 +337,10 @@ public:
   static double in_sc1;
   static double in_sc2;
   static double in_sc3;
+  static double lg_es0;
+  static double lg_es1;
+  static double lg_es2;
+  static double lg_es3;
 };
 
 

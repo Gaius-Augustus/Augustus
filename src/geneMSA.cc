@@ -655,28 +655,23 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
  
     if(generateString){
       
-	float minAlignedCodonFrac = 0.3;
-	int m = alignment->numFilledRows();
-	int minAlignedCodons = (m * minAlignedCodonFrac > 2)? m * minAlignedCodonFrac + 0.9999 : 2;
+      // want to print all ortho exon alignments
+      //float minAlignedCodonFrac = 0.3;
+      //int m = alignment->numFilledRows();
+      //int minAlignedCodons = (m * minAlignedCodonFrac > 2)? m * minAlignedCodonFrac + 0.9999 : 2;
 	// Must have at least 'minAlignedCodons' codons in any codon column
 
 	/*
 	 * Create one codon alignment column for each key to which at least minAlignedCodons mapped
 	 */ 
 	for (acit = codonAliOE.begin(); acit != codonAliOE.end(); ++acit){
-	    int numCodons = 0;
-	    for(size_t s=0; s<k; s++)
-		if (acit->second[s] >=0)
-		    numCodons++;
-	    if (numCodons >= minAlignedCodons){
-		for (size_t s=0; s<k; s++){
-		    chrCodon1 = acit->second[s]; // sequence position
-		    if (chrCodon1 >= 0)
-			rowstrings[s] += string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3)+" ";
-		    else 
-			rowstrings[s] += "... ";
-		}
-	    }
+	  for (size_t s=0; s<k; s++){
+	    chrCodon1 = acit->second[s]; // sequence position
+	    if (chrCodon1 >= 0)
+	      rowstrings[s] += string(seqRanges[s]->sequence + chrCodon1 - offsets[s], 3)+" ";
+	    else 
+	      rowstrings[s] += "--- ";
+	  }
 	}
 
 	if (!isOnFStrand(oe.getStateType())){ // reverse complement alignment
@@ -686,7 +681,11 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 	}
  
 	//cout << "codon alignment:" << endl;
-	//  int maxSnameLen = rsa->getMaxSnameLen();
+
+	vector<string> speciesNames;
+	tree->getSpeciesNames(speciesNames);
+
+          int maxSnameLen = rsa->getMaxSnameLen();
 	  int maxSeqIDLen = alignment->getMaxSeqIdLen();
 	  int numSp = 0;
 	  for (size_t s=0; s<k; s++)
@@ -696,8 +695,8 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 	  *codonAli << "\t" << numSp << "\t" << rowstrings[0].size() - rowstrings[0].size()/4 << endl;
 	  for (size_t s=0; s<k; s++){
 	    if(oe.orthoex[s]){
-	      string st = getSeqID(s) + "-" + to_string(oe.orthoex[s]->getStart()) + "-" + to_string(oe.orthoex[s]->getEnd()) + "-" + to_string(oe.orthoex[s]->gff3Frame()) + "-" + to_string(oe.orthoex[s]->getStateType());  
-	      *codonAli << setw(maxSeqIDLen+20) << left << st << "\t" << rowstrings[s] << endl;
+	      string st = speciesNames[s] + "." + getSeqID(s) + ":" + to_string(oe.orthoex[s]->getStart() + offsets[s] + 1) + "-" + to_string(oe.orthoex[s]->getEnd() + offsets[s] + 1) + "(frame=" + to_string(oe.orthoex[s]->gff3Frame()) + ",type=" + to_string(oe.orthoex[s]->getStateType()) + ",ID=" + to_string(oe.ID) + ")";  
+	      *codonAli << setw(maxSeqIDLen + maxSnameLen + 30) << left << st << "\t" << rowstrings[s] << endl;
 	    }
 	  }
 	  *codonAli << endl;

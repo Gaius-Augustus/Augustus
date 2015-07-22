@@ -767,59 +767,75 @@ void AugustusGraph::calculateBaseScores(){
 
 double AugustusGraph::setScore(Status *st){
   
-  double a1 = 0;
-  double a2 = 0;
-  double b1 = 0;
-  double b2 = 0;
-  
-  if(st->name >= CDS && st->name < intron){
-    double s_se = 0;
-    getPoints(st,st->score,&a1,&a2,&b1,&b2);
-      
-    s_se = (st->score - a1) * (b2-a2)/(b1-a1) + a2;
+  if(Constant::logreg){
 
-    double s_be = 0;
-    double p_b = 0;
+    if(st->name >= CDS && st->name < intron){
+      return (   Constant::lg_es0
+	       + Constant::lg_es1 * st->score
+	       + Constant::lg_es2 * getAvgBaseProb(st)
+	       + Constant::lg_es3 * log(st->end - st->begin + 1) );
+    }else{
+      return (   Constant::in_sc0
+	       + Constant::in_sc1 * st->score
+	       + Constant::in_sc2 * getAvgBaseProb(st)
+	       + Constant::in_sc3 * log(st->end - st->begin + 1) );
+    }
+  }else{
+
+    double a1 = 0;
+    double a2 = 0;
+    double b1 = 0;
+    double b2 = 0;
+  
+    if(st->name >= CDS && st->name < intron){
+      double s_se = 0;
+      getPoints(st,st->score,&a1,&a2,&b1,&b2);
+      
+      s_se = (st->score - a1) * (b2-a2)/(b1-a1) + a2;
+
+      double s_be = 0;
+      double p_b = 0;
     
-    for(int pos = st->begin; pos<=st->end; pos++){
-      if(getBasetype(st, pos)>=0){
-	p_b = baseScore[getBasetype(st, pos)*seqlength + pos];
-	getPoints(st,p_b,&a1,&a2,&b1,&b2);	  
-      }
-      if(Constant::MultSpeciesMode){
+      for(int pos = st->begin; pos<=st->end; pos++){
+	if(getBasetype(st, pos)>=0){
+	  p_b = baseScore[getBasetype(st, pos)*seqlength + pos];
+	  getPoints(st,p_b,&a1,&a2,&b1,&b2);	  
+	}
+	if(Constant::MultSpeciesMode){
 	  s_be += p_b - r_be;
-      }
-      else{
+	}
+	else{
 	  s_be += (p_b - a1) * (b2-a2)/(b1-a1) + a2;
+	}
       }
-    }
-    s_be /= st->end - st->begin + 1;
+      s_be /= st->end - st->begin + 1;
     
-    // cout<<"exon\tlength: "<<st->end-st->begin+1<<"\tapostprob: "<<st->score<<"\tstate score: "<<s_se<<"\tscore: "<<alpha_e * s_se + s_be<<"\tpoints: ("<<a1<<","<<a2<<")\t("<<b1<<","<<b2<<")"<<endl;
-    return alpha_e * s_se + s_be;
-  }
-  else{
-    double s_bi = 0;
-    double p_b = 0;
-    for(int pos = st->begin; pos<=st->end; pos++){
-      if(getBasetype(st, pos)>=0){
-	p_b = baseScore[getBasetype(st, pos)*seqlength + pos];
-	getPoints(st,p_b,&a1,&a2,&b1,&b2);
-      }
-      if(Constant::MultSpeciesMode){
-	  s_bi += p_b - r_bi;
-      }
-      else{
-	  s_bi += (p_b - a1) * (b2-a2)/(b1-a1) + a2;
-      }
+      // cout<<"exon\tlength: "<<st->end-st->begin+1<<"\tapostprob: "<<st->score<<"\tstate score: "<<s_se<<"\tscore: "<<alpha_e * s_se + s_be<<"\tpoints: ("<<a1<<","<<a2<<")\t("<<b1<<","<<b2<<")"<<endl;
+      return alpha_e * s_se + s_be;
     }
-    s_bi /= st->end - st->begin + 1;
-    double s_si = 0;
-    getPoints(st,st->score,&a1,&a2,&b1,&b2);
-    s_si = (st->score - a1) * (b2-a2)/(b1-a1) + a2;
+    else{
+      double s_bi = 0;
+      double p_b = 0;
+      for(int pos = st->begin; pos<=st->end; pos++){
+	if(getBasetype(st, pos)>=0){
+	  p_b = baseScore[getBasetype(st, pos)*seqlength + pos];
+	  getPoints(st,p_b,&a1,&a2,&b1,&b2);
+	}
+	if(Constant::MultSpeciesMode){
+	  s_bi += p_b - r_bi;
+	}
+	else{
+	  s_bi += (p_b - a1) * (b2-a2)/(b1-a1) + a2;
+	}
+      }
+      s_bi /= st->end - st->begin + 1;
+      double s_si = 0;
+      getPoints(st,st->score,&a1,&a2,&b1,&b2);
+      s_si = (st->score - a1) * (b2-a2)/(b1-a1) + a2;
        
-    // cout<<"intron\tlength: "<<st->end-st->begin+1<<"\tapostprob: "<<st->score<<"\tstate score: "<<s_si<<"\tscore: "<<alpha_i * s_si + s_bi<<"\tpoints: ("<<a1<<","<<a2<<")\t("<<b1<<","<<b2<<")"<<endl;
-    return alpha_i * s_si + s_bi;
+      // cout<<"intron\tlength: "<<st->end-st->begin+1<<"\tapostprob: "<<st->score<<"\tstate score: "<<s_si<<"\tscore: "<<alpha_i * s_si + s_bi<<"\tpoints: ("<<a1<<","<<a2<<")\t("<<b1<<","<<b2<<")"<<endl;
+      return alpha_i * s_si + s_bi;
+    }
   }
 }
 

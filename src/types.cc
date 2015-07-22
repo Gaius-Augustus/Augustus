@@ -115,6 +115,11 @@ double Constant::in_sc0;
 double Constant::in_sc1;
 double Constant::in_sc2;
 double Constant::in_sc3;
+double Constant::lg_es0;
+double Constant::lg_es1;
+double Constant::lg_es2;
+double Constant::lg_es3;
+
 
 // moved here from hints.cc
 const int power2id[31] = {1,2,4,8,16,32,64,128,
@@ -420,6 +425,26 @@ void Constant::init(){
       in_sc3 = Properties::getdoubleProperty("/CompPred/intron_score3");
     } catch (...) {
       in_sc3 = -0.261357;
+    }
+    try {
+      lg_es0 = Properties::getdoubleProperty("lg_exon_score0");
+    } catch (...) {
+      lg_es0 = -9.25162;
+    }
+    try {
+      lg_es1 = Properties::getdoubleProperty("lg_exon_score1");
+    } catch (...) {
+      lg_es1 = 4.85176;
+    }
+    try {
+      lg_es2 = Properties::getdoubleProperty("lg_exon_score2");
+    } catch (...) {
+      lg_es2 = 6.69845;
+    }
+    try {
+      lg_es3 = Properties::getdoubleProperty("lg_exon_score3");
+    } catch (...) {
+      lg_es3 = 0.22179;
     }
 
     Properties::assignProperty("/UtrModel/d_polyasig_cleavage", d_polyasig_cleavage);
