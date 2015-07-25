@@ -622,11 +622,13 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 		of << setw(4) << right << i << " ";
 		of << setw(12) << left << giit->first;
 		of << setw(3) << right << giit->second.numMatchingEs;
-		of << "/"<< numE << " CDS";
+ 		of << "/"<< numE << " CDS";
 		of <<setw(3) << right << giit->second.numMatchingIs;
 		of <<"/"<< numI << " Intr" << endl;
-		if(numE == giit->second.numMatchingEs && numI == giit->second.numMatchingIs && (numE+numI) == (*git)->numGFs())
+		if(numE == giit->second.numMatchingEs && numI == giit->second.numMatchingIs && (numE+numI) == (*git)->numGFs()){
 		    hasHomolog = true;
+		    (*git)->appendHomolog(giit->second.gene,i);		    
+		}
 	    }
 	    if(hasHomolog)
 		numHomologs++;	
@@ -774,4 +776,35 @@ void Genome::writeTLEnd(Gene *g, std::ofstream &of) const{
     }
 }
 
+void printHomGeneList(string outfile, vector<Genome> &genomes){
+    ofstream of;
+    of.open(outfile.c_str());
+    if(of.is_open()){
 
+	// print header
+	for(int i=0; i < genomes.size(); i++){
+	    of << "# " << genomes[i].getIdx() << "\t" << genomes[i].getName() << endl;
+	}
+
+	// print list of homologous Tx Ids
+	// TODO: join all lists of homologs that have at least one pair (idx,txid) in common
+	// -> connected components in graph in which all pairs (idx,txid) are nodes and edges are between
+	//    each two pairs if they are in the same list of homologs
+	for(int i = 0; i < genomes.size(); i++){
+	    for(list<Gene*>::iterator git = genomes[i].genes.begin(); git != genomes[i].genes.end(); git++){
+		list<pair<int,Gene*> >homologs = (*git)->getHomologs();
+		of << "(" << i << ", " << (*git)->getTxID() << ")";
+		for(list<pair<int,Gene*> >::iterator hgit = homologs.begin(); hgit != homologs.end(); hgit++){
+		    int idx = hgit->first;
+		    Gene* g = hgit->second;
+		    of << ", (" << idx << ", " << g->getTxID() << ")"; 
+		}
+		of << endl;
+	    }
+	}
+	of.close();
+    }
+    else{
+	cerr << "Could not open output file " << outfile << endl;
+    }
+}

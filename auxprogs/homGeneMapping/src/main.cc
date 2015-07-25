@@ -41,6 +41,7 @@ int main( int argc, char* argv[] ){
     string gtfs;
     string halParam = "";
     string halLiftover_exec = "";
+    string homGeneFile = ""; 
     size_t maxCpus=1;
 
     static struct option long_options[] = {
@@ -52,11 +53,12 @@ int main( int argc, char* argv[] ){
  	{"halLiftover_exec_dir",1, 0, 'e'},
 	{"cpus",1, 0, 'n'},
 	{"noDupes",0,0,'d'},
+	{"printHomologs",1,0,'m'},
 	{"help",0,0,'h'},
         {0,0,0,0}
     };
     int option_index = 0;
-    while ((c = getopt_long(argc, argv, "g:s:a:t:o:e:n:dh", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "g:s:a:t:o:e:n:dm:h", long_options, &option_index)) != -1) {
         switch(c)
             {
 	    case 'g':
@@ -83,6 +85,9 @@ int main( int argc, char* argv[] ){
 	    case 'd':
 		halParam+="--noDupes ";
 		break;
+	    case 'm':
+		homGeneFile = optarg;
+		break;   
 	    case 'h':
 		help=1;
 		break;
@@ -202,6 +207,19 @@ int main( int argc, char* argv[] ){
 	    // print extended gene files with homology information
 	    genomes[i].printGFF(outdir,genomes);
 	}
+	// print a list with homologous transcript IDs, e.g.
+	// # 0     dana
+	// # 1     dere
+	// # 2     dgri
+	// # 3     dmel
+	// # 4     dmoj
+	// # 5     dper
+	// (0, jg4139.t1), (0, jg4140.t1), (1, jg7797.t1), (2, jg3247.t1), (4, jg6720.t1), (5, jg313.t1)
+	// (1, jg14269.t1), (3, jg89.t1) (5, jg290.t1)
+	// ...
+	if(!homGeneFile.empty()){
+	    printHomGeneList(homGeneFile,genomes);
+	}
 	for(int i = 0; i < genomes.size(); i++){
 	    genomes[i].destroyGeneList();
 	    genomes[i].destroyHintList();
@@ -241,6 +259,16 @@ OPTIONS:\n\
                               If not specified it must be in $PATH environment variable.\n\
 --tmpdir=DIR                  a temporary file directory that stores lifted over files. (default 'tmp/' in current directory)\n\
 --outdir=DIR                  file direcory that stores output gene files. (default: current directory)\n\
+--printHomologs=FILE          prints a list of transcript IDs of homologous genes to FILE, e.g.\n\
+                              # 0     dana\n\
+                              # 1     dere\n\
+                              # 2     dgri\n\
+                              # 3     dmel\n\
+                              # 4     dmoj\n\
+                              # 5     dper\n\
+                              (0, jg4139.t1), (0, jg4140.t1), (1, jg7797.t1), (2, jg3247.t1), (4, jg6720.t1), (5, jg313.t1)\n\
+                              (1, jg14269.t1), (3, jg89.t1) (5, jg290.t1)\n\
+                              ...\n\
 \n\
 example:\n\
 homGeneMapping --noDupes --halLiftover_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal\n\
