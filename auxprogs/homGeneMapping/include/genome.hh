@@ -13,12 +13,24 @@
 #include <map>
 #include <vector>
 
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/connected_components.hpp>
+
 //project includes
 #include "gene.hh"
 
 // Forward declarations
 class GeneFeature;
 struct GeneInfo;
+
+
+struct VertexProperty
+{
+    std::string name;
+};
+
+typedef boost::adjacency_list <boost::vecS, boost::vecS, boost::undirectedS, VertexProperty> Graph;
+
 
 /*
  * class Genome:

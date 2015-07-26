@@ -787,21 +787,46 @@ void printHomGeneList(string outfile, vector<Genome> &genomes){
 	}
 
 	// print list of homologous Tx Ids
-	// TODO: join all lists of homologs that have at least one pair (idx,txid) in common
-	// -> connected components in graph in which all pairs (idx,txid) are nodes and edges are between
-	//    each two pairs if they are in the same list of homologs
+
+	map<string,int> txs; // keys: "(idx,txid)", values: vertex indices in boost Graph
+	pair<map<string,int>::iterator,bool> txit;
+
+        Graph G;
+
 	for(int i = 0; i < genomes.size(); i++){
 	    for(list<Gene*>::iterator git = genomes[i].genes.begin(); git != genomes[i].genes.end(); git++){
 		list<pair<int,Gene*> >homologs = (*git)->getHomologs();
-		of << "(" << i << ", " << (*git)->getTxID() << ")";
+   
+		string u_name = "(" + itoa(i) + ", " + (*git)->getTxID() + ")"; 
+		txit = txs.insert(make_pair(u_name, txs.size()));
+		int u = txit.first->second;
+		if(homologs.empty()){
+		    boost::add_edge(u,u, G);
+		    G[u].name = u_name;
+		}
 		for(list<pair<int,Gene*> >::iterator hgit = homologs.begin(); hgit != homologs.end(); hgit++){
 		    int idx = hgit->first;
 		    Gene* g = hgit->second;
-		    of << ", (" << idx << ", " << g->getTxID() << ")"; 
+		    string v_name = "(" + itoa(idx) + ", " + g->getTxID() + ")"; 
+		    txit = txs.insert(make_pair(v_name, txs.size()));
+		    int v = txit.first->second;
+		    boost::add_edge(u,v,G);
+		    G[u].name=u_name;
+		    G[v].name=v_name;
 		}
-		of << endl;
 	    }
 	}
+	std::vector<int> component(num_vertices(G));
+        connected_components(G, &component[0]);
+
+        int c = 0;
+        for (std::vector<int>::size_type i = 0; i != component.size(); ++i){
+	    if(component[i] != c)
+		of << endl;
+	    of << G[i].name << " ";
+	    c = component[i];
+	}
+        of << endl;
 	of.close();
     }
     else{
