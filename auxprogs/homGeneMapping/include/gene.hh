@@ -137,6 +137,9 @@ public:
     long int getEnd() const;   // gene end
     bool hasFeatures() const {return !features.empty();}
 
+    std::list< std::pair<int,Gene*> >getHomologs() const {return homologs;}
+    void appendHomolog(Gene *g, int idx) {homologs.push_back(std::pair<int,Gene*>(idx, g));}
+
 private:
     std::string geneID;
     std::string txID;
@@ -146,6 +149,16 @@ private:
     long int tlStart; // translation start
     long int tlEnd;   // translation end
     std::list<GeneFeature*> features;
+
+    /*
+     * homologous genes:
+     * two genes are homologous if all their gene features are
+     * homologs and they have no additional gene features.
+     * the first value in the pair is the index of the genome, e.g.
+     * (0,g2), (2,g3), (3,g4)
+     * means that gene feature has 3 homologs in genome 0,2 and 3, respectively.
+     */
+    std::list<std::pair<int,Gene*> >homologs;
 };
 
 Strand getStrand(std::string token);

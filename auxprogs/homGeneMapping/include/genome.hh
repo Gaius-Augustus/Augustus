@@ -78,7 +78,6 @@ private:
     int idx; // index of the genome
     std::map<std::string, int> seqnames; // maps seqnames to seqIDs
     std::map<int, std::string> seqIDs  ; // maps seqIDs to seqnames
-    std::list<Gene*> genes;
     std::list<GeneFeature*> hints;
     /*
      * stores all start/end positions of gene features and their homologous positions in the other genomes
@@ -101,9 +100,22 @@ private:
     std::map<int,std::map<uint_fast64_t, std::list<GeneFeature*> > > gfHash;
 
     static int no_genomes; // number of genomes
+
+public:
+    std::list<Gene*> genes;
 };
 
-
+// print a list with homologous transcript IDs, e.g.                                                                                    
+// # 0     dana                                                                                                                         
+// # 1     dere                                                                                                                         
+// # 2     dgri                                                                                                                         
+// # 3     dmel                                                                                                                         
+// # 4     dmoj                                                                                                                         
+// # 5     dper                                                                                                                         
+// (0, jg4139.t1), (0, jg4140.t1), (1, jg7797.t1), (2, jg3247.t1), (4, jg6720.t1), (5, jg313.t1)                                        
+// (1, jg14269.t1), (3, jg89.t1) (5, jg290.t1)                                                                                          
+// ...  
+void printHomGeneList(std::string outfile, std::vector<Genome> &genomes);
 
 struct GeneInfo{
 
