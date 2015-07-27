@@ -127,7 +127,15 @@ int main( int argc, char* argv[] ){
 	    maxCpus = 1;
 	    cerr << "number of cpus must be at least 1. Proceeding with --cpus=1" << endl; 
 	}
-	
+	// check if the boost library is installed (only required for option --printHomologs)
+	if(!homGeneFile.empty()){
+#ifndef BOOST
+	    throw ProjectError("The option --printHomologs requires the boost C++ libary.\n"
+                               "Please install the boost library, e.g. using the APT package manager\n\n"
+                               "sudo apt-get install libboost-graph-dev\n\n"
+                               "Then edit the Makefile by setting the flag BOOST = true and recompile homGeneMapping.\n");
+#endif
+	}
 	/*
 	 * check if external program halLiftOver is executable
 	 */
@@ -217,9 +225,11 @@ int main( int argc, char* argv[] ){
 	// (0, jg4139.t1), (0, jg4140.t1), (1, jg7797.t1), (2, jg3247.t1), (4, jg6720.t1), (5, jg313.t1)
 	// (1, jg14269.t1), (3, jg89.t1) (5, jg290.t1)
 	// ...
+#ifdef BOOST
 	if(!homGeneFile.empty()){
 	    printHomGeneList(homGeneFile,genomes);
 	}
+#endif
 	for(int i = 0; i < genomes.size(); i++){
 	    genomes[i].destroyGeneList();
 	    genomes[i].destroyHintList();
@@ -259,16 +269,19 @@ OPTIONS:\n\
                               If not specified it must be in $PATH environment variable.\n\
 --tmpdir=DIR                  a temporary file directory that stores lifted over files. (default 'tmp/' in current directory)\n\
 --outdir=DIR                  file direcory that stores output gene files. (default: current directory)\n\
---printHomologs=FILE          prints a list of transcript IDs of homologous genes to FILE, e.g.\n\
+--printHomologs=FILE          prints disjunct sets of homologous transcripts to FILE, e.g.\n\
                               # 0     dana\n\
                               # 1     dere\n\
                               # 2     dgri\n\
                               # 3     dmel\n\
                               # 4     dmoj\n\
                               # 5     dper\n\
-                              (0, jg4139.t1), (0, jg4140.t1), (1, jg7797.t1), (2, jg3247.t1), (4, jg6720.t1), (5, jg313.t1)\n\
-                              (1, jg14269.t1), (3, jg89.t1) (5, jg290.t1)\n\
+                              (0, jg4139.t1) (0, jg4140.t1) (1, jg7797.t1) (2, jg3247.t1) (4, jg6720.t1) (5, jg313.t1)\n\
+                              (1, jg14269.t1) (3, jg89.t1) (5, jg290.t1)\n\
                               ...\n\
+                              Two transcripts are in the same set, if all their exons/introns are homologs and their are\n\
+                              no additional exons/introns.\n\
+                              This option requires the Boost C++ Library\n\
 \n\
 example:\n\
 homGeneMapping --noDupes --halLiftover_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal\n\

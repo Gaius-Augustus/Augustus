@@ -1,16 +1,23 @@
 #
 # Makefile for homGeneMapping
 #
+# BOOST = true
+
 CC      = g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt 
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -std=c++0x -pthread -lboost_system -g -ggdb -O2 ${CFLAGS} # -DDEBUG -g -ggdb -pg
+CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -std=c++11 -pthread -g -ggdb -O2 ${CFLAGS} # -DDEBUG -g -ggdb -pg
 
 INCLS	= -I../include
 
 OBJS	= gene.o genome.o 
+
+ifdef BOOST
+	CFLAGS += -DBOOST
+	INCLS +=  # add the boost include path here, if boost ist not installed system-wide
+endif
 
 all: homGeneMapping
 

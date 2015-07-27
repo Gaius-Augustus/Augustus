@@ -13,24 +13,24 @@
 #include <map>
 #include <vector>
 
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/connected_components.hpp>
-
 //project includes
 #include "gene.hh"
 
-// Forward declarations
-class GeneFeature;
-struct GeneInfo;
-
+#ifdef BOOST
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/connected_components.hpp>
 
 struct VertexProperty
 {
     std::string name;
 };
 
-typedef boost::adjacency_list <boost::vecS, boost::vecS, boost::undirectedS, VertexProperty> Graph;
+typedef boost::adjacency_list <boost::setS, boost::vecS, boost::undirectedS, VertexProperty> Graph;
+#endif
 
+// Forward declarations
+class GeneFeature;
+struct GeneInfo;
 
 /*
  * class Genome:
@@ -127,7 +127,9 @@ public:
 // (0, jg4139.t1), (0, jg4140.t1), (1, jg7797.t1), (2, jg3247.t1), (4, jg6720.t1), (5, jg313.t1)                                        
 // (1, jg14269.t1), (3, jg89.t1) (5, jg290.t1)                                                                                          
 // ...  
+#ifdef BOOST
 void printHomGeneList(std::string outfile, std::vector<Genome> &genomes);
+#endif
 
 struct GeneInfo{
 

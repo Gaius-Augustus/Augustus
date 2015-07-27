@@ -776,6 +776,7 @@ void Genome::writeTLEnd(Gene *g, std::ofstream &of) const{
     }
 }
 
+#ifdef BOOST
 void printHomGeneList(string outfile, vector<Genome> &genomes){
     ofstream of;
     of.open(outfile.c_str());
@@ -833,3 +834,4 @@ void printHomGeneList(string outfile, vector<Genome> &genomes){
 	cerr << "Could not open output file " << outfile << endl;
     }
 }
+#endif
