@@ -509,7 +509,7 @@ int main(int argc, char* argv[])
          << "  --maxgaplen=n      -g   gaps at most this length are simply closed (set to " << MaxGapLen << ")\n"
          << "  --minintronlen=n   -m   alignments with gaps shorter than this and longer than maxgaplen are discarded (set to " << MinIntLen << ")\n"
          << "  --maxintronlen=n   -M   alignments with longer gaps are discarded (set to " << MaxIntLen << ")\n"
-         << "  --MinEndBlockLen=n -b   [whatever this parameter may represent]" << MinEndBlockLen << ")\n"
+         << "  --MinEndBlockLen=n -b   minimum length of a 'dangling' exon (set to " << MinEndBlockLen << ")\n"
          << "  --maxQgaplen=n     -q   maximum length of gap in query (cDNA) sequence (set to " << MaxQGapLen << ")\n"
        	 << "  --exonhints        -x   compute exonpart, exon and splice site hints in addition to intron hints (set to " << OnOff(!IntOnly) << ")\n"
 	 << "                          You should generate exonpart hints from RNA-Seq using wiggle (.wig) input to wig2hints.\n"
