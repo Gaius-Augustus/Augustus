@@ -798,7 +798,7 @@ void printHomGeneList(string outfile, vector<Genome> &genomes){
 	    for(list<Gene*>::iterator git = genomes[i].genes.begin(); git != genomes[i].genes.end(); git++){
 		list<pair<int,Gene*> >homologs = (*git)->getHomologs();
    
-		string u_name = "(" + itoa(i) + ", " + (*git)->getTxID() + ")"; 
+		string u_name = itoa(i) + "," + (*git)->getTxID(); 
 		txit = txs.insert(make_pair(u_name, txs.size()));
 		int u = txit.first->second;
 		if(homologs.empty()){
@@ -808,7 +808,7 @@ void printHomGeneList(string outfile, vector<Genome> &genomes){
 		for(list<pair<int,Gene*> >::iterator hgit = homologs.begin(); hgit != homologs.end(); hgit++){
 		    int idx = hgit->first;
 		    Gene* g = hgit->second;
-		    string v_name = "(" + itoa(idx) + ", " + g->getTxID() + ")"; 
+		    string v_name = itoa(idx) + "," + g->getTxID(); 
 		    txit = txs.insert(make_pair(v_name, txs.size()));
 		    int v = txit.first->second;
 		    boost::add_edge(u,v,G);
@@ -824,7 +824,7 @@ void printHomGeneList(string outfile, vector<Genome> &genomes){
         for (std::vector<int>::size_type i = 0; i != component.size(); ++i){
 	    if(component[i] != c)
 		of << endl;
-	    of << G[i].name << " ";
+	    of << "(" << G[i].name <<") ";
 	    c = component[i];
 	}
         of << endl;
