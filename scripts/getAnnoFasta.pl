@@ -18,10 +18,11 @@ $usage .= "   --seqfile=s  Input a fasta file with the genomic sequences that AU
 $usage .= "                When this option is given, an additional file with the individual\n";
 $usage .= "                coding exon sequences (augustus.cdsexons) is output.\n";
 $usage .= "                and a file with the complete mRNA including UTRs (augustus.mrna) is output.\n";
+$usage .= "   --chop_cds   for incomplete transcripts: cut off bases before first codon.\n";
 
-my ($seqname, $trid, $status, $haveCod, $haveAA, $haveCDS, $haveRNA, $seq, $seqfile);
+my ($seqname, $trid, $status, $haveCod, $haveAA, $haveCDS, $haveRNA, $seq, $seqfile, $chop_cds);
 
-GetOptions('seqfile=s'=>\$seqfile);
+GetOptions('seqfile=s'=>\$seqfile, 'chop_cds!'=>\$chop_cds);
 
 if ($#ARGV != 0) {
     print $usage;
@@ -69,17 +70,19 @@ my %cdsnr = ();
 my %cdsTx = (); #keys transcript id, values concatenated coding exon sequences
 my %mrnaTx = (); #keys transcript id, values concatenated exon sequences (including UTR)
 my %strandTx = (); #keys transcript id, values strands
+my %frameTx = (); #keys transcript id, values frames
 
 while(<AUG>) {
-    if ($seqfile && (/^(\S+)\t\S+\t(\S+)\t(\d+)\t(\d+)\t\S+\t(\S+)\t\S+\ttranscript_id "([^"]*)"; gene_id "([^"]*)";$/
-                 || /^(\S+)\t\S+\t(\S+)\t(\d+)\t(\d+)\t\S+\t(\S+)\t\S+\t.*Parent=([^;]+)/)){
+    if ($seqfile && (/^(\S+)\t\S+\t(\S+)\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\S+)\ttranscript_id "([^"]*)"; gene_id "([^"]*)";$/
+                 || /^(\S+)\t\S+\t(\S+)\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\S+)\t.*Parent=([^;]+)/)){
 	my $feat = $2;
 	$seqname = $1;
 	my $start = $3;
 	my $end = $4;
 	my $strand = $5;
-	$trid=$6;
-	$trid =~ s/\s$//;	
+	my $frame = $6;
+	$trid=$7;
+	$trid =~ s/\s$//;
 	next unless ($feat eq "CDS" || $feat =~ /UTR/ || $feat eq "exon");
 	# decide whether to use exon or UTR format for mRNA by whether we see UTR or exon first
 	$UTRFormat = 1 if (!$exonUTRFormat && $feat =~ /UTR/);
@@ -101,6 +104,7 @@ while(<AUG>) {
 		}
 		$cdsTx{$trid} = "" if (!defined($cdsTx{$trid}));
 		$cdsTx{$trid} .= $seqpart;
+		push(@{$frameTx{$trid}}, $frame);
 		if ($strand eq '-') {
 		    $seqpart = rc($seqpart);
 		    $strandTx{$trid} = $strand;
@@ -175,7 +179,18 @@ if (!$haveCod && scalar(keys %cdsTx)>0){
     foreach my $trid (sort by_id keys %cdsTx){
 	print COD ">$trid\n";
 	my $codingseq = $cdsTx{$trid};
-	$codingseq = rc($codingseq) if ($strandTx{$trid} eq "-");
+	$codingseq = rc($codingseq)  if ($strandTx{$trid} eq "-");
+	if($chop_cds){
+	    if ($strandTx{$trid} eq "-"){
+		if($frameTx{$trid}[-1] != 0){
+		    $codingseq = substr($codingseq, $frameTx{$trid}[-1]);
+		}
+	    }else{
+		if($frameTx{$trid}[0] != 0){
+		    $codingseq = substr($codingseq, $frameTx{$trid}[0]);
+		}
+	    } 
+	}
 	print COD getFa($codingseq);
     }
 }
