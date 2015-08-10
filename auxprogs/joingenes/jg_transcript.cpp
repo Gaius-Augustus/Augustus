@@ -1814,6 +1814,7 @@ int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &pro
 
     // backSide ("+" && "3'" and "-" && "5'")
     if (!frontSide){
+	if ((*t1).tes < (*t2).tis){return 0;}
 	// for every exon in t2
 	for (list<Exon>::const_iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
 	    if ((*it).feature != "CDS"){continue;}
@@ -1843,6 +1844,7 @@ int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &pro
 	    }
 	}
     }else{		// frontSide
+	if ((*t1).tis > (*t2).tes){return 0;}
 	for (list<Exon>::const_iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
 	    if ((*it).feature != "CDS"){continue;}
 	    // return 3: if t1.front() ends in an exon of t2 such that they are combinable; return 4 if t1.front() does not end ...
