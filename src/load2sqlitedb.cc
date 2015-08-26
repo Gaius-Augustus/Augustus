@@ -188,7 +188,10 @@ int main( int argc, char* argv[] ){
 		    while(length < chunksize && ifstrm && ifstrm.peek( ) != '>'){
 			if(getline(ifstrm, line)){
 			    length+=line.size();
-			    file_end = ifstrm.tellg();
+			    if(ifstrm.tellg() == EOF) // if file does not end properly with newline, tellg() fails
+				file_end = line.size() + file_end + 1;
+			    else
+				file_end = ifstrm.tellg();
 			}
 		    }
 		    stmt1.bindInt(2,seqnr);
