@@ -324,8 +324,8 @@ ORF GeneticCode::longestORF(const char* dna){
     ORF orf, longestOrf;
     unsigned n = strlen(dna);
     Double startPthresh = 0.01; // minimal start codon probability for ORF finding
-    
-    for (Strand s : {plusstrand, minusstrand}){//= plusstrand; s != minusstrand; s = minusstrand){
+    for (int si=0; si<=1; si++){ // the more elegant loop does not compile at UCSC:  for (Strand s : {plusstrand, minusstrand})
+	Strand s = (Strand) si;
 	int dir = (s == plusstrand)? 1 : -1;
 	for (unsigned rf = 0; rf < 3; rf++){
 	    int from = (s == plusstrand)? rf : n - 3 - rf;
