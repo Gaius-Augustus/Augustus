@@ -45,21 +45,21 @@ ExonType toExonType(const char* str);
 
 class ExonCandidate {
 public:
-    ExonCandidate(ExonType s=UNKNOWN_EXON, long int b=0, long int e=0, Double sc=0.0, Double ass_sc=1.0, Double dss_sc=1.0):
+    ExonCandidate(ExonType s=UNKNOWN_EXON, long int b=0, long int e=0, Double sc=0.0, Double up_sc=1.0, Double down_sc=1.0):
         type(s),
         begin(b),
         end(e),
         score(sc),
-        assScore(ass_sc),
-        dssScore(dss_sc)
+        upScore(up_sc),
+        downScore(down_sc)
     {}
     ExonCandidate(ExonCandidate* other){
         begin = other->begin;
         end = other->end;
         type = other->type;
         score = other->score;
-        assScore = other->assScore;
-        dssScore = other->dssScore;
+        upScore = other->upScore;
+        downScore = other->downScore;
     }
     ~ExonCandidate(){}
     ExonType type;
@@ -68,10 +68,10 @@ public:
 
     int getStart();
     int getEnd();
-    Double getAssScore() const {return assScore;}
-    Double getDssScore() const {return dssScore;}
-    void setAssScore(Double s) {assScore = s;}
-    void setDssScore(Double s) {dssScore = s;}
+    Double getUpScore() const {return upScore;}
+    Double getDownScore() const {return downScore;}
+    void setUpScore(Double s) {upScore = s;}
+    void setDownScore(Double s) {downScore = s;}
     void setScore(Double s) {score = s;}
 
     int getFirstCodingBase();
@@ -87,7 +87,7 @@ public:
     bool correctType(const char* dna, int dnalen); // verify ExonType on sequence
     friend ostream& operator<<(ostream& strm, const ExonCandidate &ec);
 private:
-    Double assScore, dssScore;
+    Double upScore, downScore;
 };
 
 /*

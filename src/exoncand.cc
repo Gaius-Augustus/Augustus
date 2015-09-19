@@ -139,7 +139,7 @@ int_fast64_t ExonCandidate::getKey(){
 
 ostream& operator<<(ostream& strm, const ExonCandidate &ec){
     strm << ec.begin << "\t" << ec.end << "\ttype=" << ec.type << "\tscore=" << ec.score 
-	 << "\tassScore=" << ec.getAssScore() << "\tdssScore=" << ec.getDssScore();
+	 << "\tupScore=" << ec.getUpScore() << "\tdownScore=" << ec.getDownScore();
     return strm;
 }
 
@@ -270,7 +270,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                         ExonCandidate *ec = new ExonCandidate;
                         ec->begin = *ritStart - 1;
                         ec->end = i - 1;
-                        ec->setDssScore(computeSpliceSiteScore(p, dssminprob, dssmaxprob));
+                        ec->setDownScore(computeSpliceSiteScore(p, dssminprob, dssmaxprob));
                         if (frame == 0) {
                             ec->type = initial_0;
                         } else if (frame == 1) {
@@ -310,8 +310,8 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 			    ExonCandidate *ec = new ExonCandidate;
 			    ec->begin = (*ritASS).first + 2;
 			    ec->end = i - 1;
-			    ec->setAssScore((*ritASS).second);
-			    ec->setDssScore(computeSpliceSiteScore(p, dssminprob, dssmaxprob));
+			    ec->setUpScore((*ritASS).second);
+			    ec->setDownScore(computeSpliceSiteScore(p, dssminprob, dssmaxprob));
 			    if (frame == 0) {
 				ec->type = internal_0;
 			    } else if (frame==1) {
@@ -353,7 +353,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                         ExonCandidate *ec = new ExonCandidate;
                         ec->begin = (*ritASS).first + 2;
                         ec->end = i + 2;
-                        ec->setAssScore((*ritASS).second);
+                        ec->setUpScore((*ritASS).second);
                         ec->type = terminal_exon;
 			if(ec->len() >= minLen){
 			    int_fast64_t key = ec->getKey();
@@ -427,7 +427,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                         ExonCandidate *ec = new ExonCandidate;
                         ec->begin=(*ritRDSS).first + 2;
                         ec->end=i + 2;
-                        ec->setDssScore((*ritRDSS).second);
+                        ec->setDownScore((*ritRDSS).second);
                         ec->type=rinitial_exon;
 			int_fast64_t key = ec->getKey();
 			ecit = ecs.find(key);
@@ -459,8 +459,8 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                         ExonCandidate *ec = new ExonCandidate;
                         ec->begin = (*ritRDSS).first + 2;
                         ec->end = i - 1;
-                        ec->setDssScore((*ritRDSS).second);
-			ec->setAssScore(computeSpliceSiteScore(p, assminprob, assmaxprob));
+                        ec->setDownScore((*ritRDSS).second);
+			ec->setUpScore(computeSpliceSiteScore(p, assminprob, assmaxprob));
                         if (frame==0) {
                             ec->type=rinternal_0;
                         } else if (frame==1) {
@@ -505,7 +505,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                         ExonCandidate *ec = new ExonCandidate;
                         ec->begin = *ritRCStop;
                         ec->end = i - 1;
-                        ec->setAssScore(computeSpliceSiteScore(p, assminprob, assmaxprob));
+                        ec->setUpScore(computeSpliceSiteScore(p, assminprob, assmaxprob));
                         if (frame==0) {
                             ec->type=rterminal_2;
                         } else if (frame==1) {

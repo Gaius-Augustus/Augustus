@@ -430,7 +430,9 @@ void GeneMSA::printExonCands() {
 		    // e.g. "-" x "-" = "+" << '+' << "\t";
 		    fstrm << ((isPlusExon((*ecit)->type) == (getStrand(s) == plusstrand))? '+' : '-');
                     fstrm << "\t" << (*ecit)->gff3Frame() << "\t" << "ID=" << exonCandID[s] << ";"
-			  << "Name=" <<stateExonTypeIdentifiers[(*ecit)->type] << endl;
+			  << "Name=" <<stateExonTypeIdentifiers[(*ecit)->type];
+		    fstrm << ";upSig=" << (*ecit)->getUpScore() << ";downSig=" << (*ecit)->getDownScore();
+		    fstrm << endl;
 		    // TODO: adjust type on reverse alignment setrand (compate comment in printSingleOrthoExon)
 
                     exonCandID[s]++;
