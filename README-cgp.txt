@@ -2,15 +2,17 @@
 # genes are predicted simulteneously in several aligned genomes
 # Stefanie Koenig, April 29th, 2015
 
-1. INTRODUCTION
-2. DEPENDENCIES
-3. INSTALLATION
-4. RUNNING AUGUSTUS IN CGP MODE
-5. OPTIONAL ARGUMENTS
-6. RETRIEVING GENOMES FROM A MYSQL DATABASE
-7. USING HINTS
-8. SQLITE ACCESS
-9. OPTIMIZING CGP PARAMETERS
+ 1. INTRODUCTION
+ 2. DEPENDENCIES
+ 3. INSTALLATION
+ 4. RUNNING AUGUSTUS IN CGP MODE
+ 5. OPTIONAL ARGUMENTS
+ 6. RETRIEVING GENOMES FROM A MYSQL DATABASE
+ 7. USING HINTS
+ 8. SQLITE ACCESS
+ 9. OPTIMIZING CGP PARAMETERS
+10. BUILDING THE NEWICK PARSER FROM SCRATCH
+    (not needed unless you run into compiler errors related to 'parse.cc' or 'lex.cc')
 
 1. INTRODUCTION
 ----------------
@@ -25,8 +27,8 @@ AUGUSTUS-cgp can either be used
 
 
 Both genomes and extrinsic evidence can either be read in from a flat file or 
-alternatively retrieved from a MYSQL database.
-Both approaches are described below in more detail.
+alternatively retrieved from a MYSQL or SQLITE database.
+All three approaches are described below in more detail.
 
 This manual assumes that you are already familiar with AUGUSTUS
 and that you know how to use AUGUSTUS for gene prediction in a single genome.
@@ -38,8 +40,6 @@ The following programs need be installed in cgp mode:
 
 - GSL (GNU Scientific Library)
 - Boost C++ Libraries (>= V1_46_1)
-- Flexc++ (lexical scanner generator, tested with V0.94.0)
-- Bisonc++ (parser generator, tested with V2.09.03)
 - g++ compiler with C++0X support (>= V4.4)
 - lpsolve (mixed linear integer programming)
 
@@ -51,12 +51,6 @@ a) install all dependencies
    GSL:      download source code from http://www.gnu.org/software/gsl/ and follow the installation instructions
    Boost:    install via package manager, on UBUNTU/Debian linux:
              > sudo apt-get install libboost-all-dev
-   Flexc++:  download source code from http://flexcpp.sourceforge.net/ and follow the installation instructions. (Flexc++
-             has several dependencies including the bobcat library. I recommend to use bobcat-3.10.00, if you do not want to install
-             the latest g++ compiler)
-   Bisonc++: download source code from http://bisoncpp.sourceforge.net/ and follow the installation instructions or, alternatively,
-             install bisonc++ via package manager:
-	     > sudo apt-get install bisonc++
    g++       install via package manager:
              > sudo apt-get install build-essential
    lpsolve   > sudo apt-get install liblpsolve55-dev	     
@@ -64,41 +58,7 @@ a) install all dependencies
   optional (for gzipped input):
    zlib:     The compression library. Download from http://www.zlib.net/ or install via package manager.
 
-b) generate a scanner and a parser class that parses tree files in Newick format
-
-  generate a scanner class with Flexc++:
-  Switch to the directory src/scanner/ in your augustus folder and compile the file 'lexer' with Flexc++:
-
->  flexc++ lexer
-   
-  The following files are generated: lex.cc scanner.h scanner.ih scannerbase.h
-  Add the include directive '#include "../parser/parserbase.h"' to scanner.ih
-
-> echo '#include "../parser/parserbase.h"' >>scanner.ih
-
-  generate a parser class with Bisonc++:
-  Switch to the directory trunks/src/parser/ in your augustus folder and compile the file 'grammar' with Bisonc++
-
->  bisonc++ grammar
-
-  The following files are generated: parse.cc parser.h  parser.ih  parserbase.h
-  Edit the 'public' part of parser.h such that it looks as follows
-
-class Parser: public ParserBase
-{
-    public:
-        Parser(std::list<Treenode*> *tree, std::vector<std::string> *species, std::istream &in):d_scanner(in), ptree(tree), pspecies(species) {}
-        Scanner d_scanner;
-        std::list<Treenode*> *ptree;
-        std::vector<std::string> *pspecies;
-
-        int parse();
-
-    private:
-    ... // more code
-};
-
-c) recompile AUGUSTUS with cgp mode enabled
+b) recompile AUGUSTUS with cgp mode enabled
 
    open the file common.mk with a text editor and uncomment the following line to enable comparative gene prediction
 
@@ -348,7 +308,8 @@ b) retrieving hints from database
 8. SQLITE ACCESS
 ------------------
 
-I addition to the Mysql, sequences and hints can be accessed using an SQLite database.
+Alternatively to Mysql, sequences and hints can also be accessed using an SQLite database
+(in our experience the sqlite access runs more stabe than the mysql).
 Other than the Mysql database that stores the full sequences, the SQLite database only stores
 file offsets to achieve random access to the genome files.
 
@@ -432,3 +393,73 @@ b) Running optimize_augustus.pl for cgp parameter training
 
 ¹Keibler, E. and M.R. Brent. 2003. "Eval: A software package for analysis of genome annotations." BMC Bioinformatics 4:50.
    
+
+10. BUILDING THE NEWICK PARSER FROM SCRATCH
+    (not needed unless you run into compiler errors related to 'parse.cc' or 'lex.cc')
+---------------------------------------------------------------------------------------
+
+To parse phylogenetic trees in Newick format, AUGUSTUS-cgp uses a scanner and parser class, generated by Flexc++ and Bisonc++, respectively.
+These classes are part of the AUGUSTUS package and can be used in most applications without the need for changing them.
+However, if you have trouble compiling the Augustus source code and the compiler error is related to these classes (parse.cc' and 'lex.cc'), it is recommended to
+rebuild the scanner and parser class from scratch.
+The following will give you a step-by-step instruction, how to do this:
+
+a) installation of Flexc++ and Bisonc++
+b) creation of a scanner class with Flexc++
+c) creation of a parser  class with Bisonc++
+d) recompilation of AUGUSTUS-cgp
+
+a) installation of Flexc++ and Bisonc++
+
+- Flexc++ (lexical scanner generator, tested with V0.94.0) 
+
+  download source code from http://flexcpp.sourceforge.net/ and follow the installation instructions. (Flexc++
+  has several dependencies including the bobcat library. I recommend to use bobcat-3.10.00, if you do not want to install
+  the latest g++ compiler)
+
+-  Bisonc++ (parser generator, tested with V2.09.03)
+
+   download source code from http://bisoncpp.sourceforge.net/ and follow the installation instructions or, alternatively,
+   install bisonc++ via package manager:
+   > sudo apt-get install bisonc++
+
+b) creation of a scanner class with Flexc++:
+
+   Switch to the directory src/scanner/ in your augustus folder and compile the file 'lexer' with Flexc++:
+
+> flexc++ lexer
+   
+  The following files are generated: lex.cc scanner.h scanner.ih scannerbase.h
+  Add the include directive '#include "../parser/parserbase.h"' to scanner.ih
+
+> echo '#include "../parser/parserbase.h"' >>scanner.ih
+
+c) creation of a parser class with Bisonc++
+
+   Switch to the directory trunks/src/parser/ in your augustus folder and compile the file 'grammar' with Bisonc++
+
+>  bisonc++ grammar
+
+  The following files are generated: parse.cc parser.h  parser.ih  parserbase.h
+  Edit the 'public' part of parser.h such that it looks as follows
+
+class Parser: public ParserBase
+{
+    public:
+        Parser(std::list<Treenode*> *tree, std::vector<std::string> *species, std::istream &in):d_scanner(in), ptree(tree), pspecies(species) {}
+        Scanner d_scanner;
+        std::list<Treenode*> *ptree;
+        std::vector<std::string> *pspecies;
+
+        int parse();
+
+    private:
+    ... // more code
+};
+
+d) recompilation of AUGUSTUS-cgp
+   
+   Switch to the directory 'trunks' in your augustus folder and type 
+
+>  make clean all
+
