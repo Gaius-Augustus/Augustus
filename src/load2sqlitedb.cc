@@ -90,10 +90,19 @@ int main( int argc, char* argv[] ){
     }
     if(makeIdx){ // only build indices
 	SQLiteDB db(dbfile.c_str(),crw);
-	cout << "Creating indices on database tables."<< endl;
-	db.exec("CREATE INDEX IF NOT EXISTS gidx ON genomes(speciesid,seqnr,start,end);");
-	db.exec("CREATE INDEX IF NOT EXISTS hidx ON hints(speciesid,seqnr,start,end);");
-	exit(1);
+	try{
+	    cout << "Creating indices on genomes tables."<< endl;	    
+	    db.exec("CREATE INDEX IF NOT EXISTS gidx ON genomes(speciesid,seqnr,start,end);");
+	    if(db.tableExists("hints")){
+		cout << "Creating indices on hints tables."<< endl;	    		
+		db.exec("CREATE INDEX IF NOT EXISTS hidx ON hints(speciesid,seqnr,start,end);");
+	    }
+	}catch(const char* err){
+	    cerr << "Failed creating indices." << endl;
+	    cerr << err << endl;
+	    exit(1);
+	}
+	exit(0);
     }
     if (optind < argc-2) {
         cerr << "More than two options without name: ";
@@ -300,6 +309,7 @@ int main( int argc, char* argv[] ){
         cerr << "\n" <<  argv[0] << ": ERROR\n\t" << err << "\n\n";
 	exit(1);
     }
+    exit(0);
 }
 
 void printUsage(){

@@ -53,6 +53,19 @@ void SQLiteDB::close(){
     sqlite3_close(database);   
 }
 
+bool SQLiteDB::tableExists(string table_name){
+
+    Statement stmt(this);
+    stmt.prepare("SELECT count(*) FROM sqlite_master WHERE type='table' AND name=?1;");
+    stmt.bindText(1,table_name.c_str());
+    if(stmt.nextResult()){
+        if (stmt.boolColumn(0)){
+	    return true;
+	}
+    }
+    return false;
+}
+
 /*
  * create table `genomes` if it does not already exist
  * the offset is the start position in the file

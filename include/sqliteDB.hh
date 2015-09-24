@@ -42,6 +42,7 @@ public:
     void open(OpenMode m);
     
     // create tables
+    bool tableExists(string table_name);
     void createTableGenomes();
     void createTableSpeciesnames();
     void createTableSeqnames();
@@ -81,6 +82,7 @@ public:
     inline void finalize(){sqlite3_finalize(stmt);}
     inline int numCols(){return sqlite3_column_count(stmt);}
     inline int intColumn(int colNum){return sqlite3_column_int(stmt,colNum);}
+    inline bool boolColumn(int colNum){return sqlite3_column_int(stmt,colNum) != 0;}
     inline uint64_t int64Column(int colNum){return (uint64_t)sqlite3_column_int64(stmt,colNum);}
     inline double doubleColumn(int colNum){return sqlite3_column_double(stmt,colNum);}
     inline char* textColumn(int colNum){return (char*)sqlite3_column_text(stmt,colNum);}
