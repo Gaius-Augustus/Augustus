@@ -225,7 +225,8 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
       + Constant::ex_sc0 // intercept
       + Constant::ex_sc1 // for not having omega
       + Constant::ex_sc2 // for not beeing an OE
-      + Constant::ex_sc3 * log(exon->len());
+      + Constant::ex_sc3 * log(exon->len())
+      + Constant::ex_sc12; // for not beeing sampled
   }
 
   /*

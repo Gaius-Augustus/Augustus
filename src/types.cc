@@ -111,6 +111,9 @@ double Constant::ex_sc8;
 double Constant::ex_sc9;
 double Constant::ex_sc10;
 double Constant::ex_sc11;
+double Constant::ex_sc12;
+double Constant::ex_sc13;
+double Constant::ex_sc14;
 double Constant::in_sc0;
 double Constant::in_sc1;
 double Constant::in_sc2;
@@ -349,62 +352,77 @@ void Constant::init(){
     try {
       ex_sc0 = Properties::getdoubleProperty("/CompPred/exon_score0");
     } catch (...) {
-      ex_sc0 = -6.2313204;
+      ex_sc0 = -3.5769278;
     }
     try {
       ex_sc1 = Properties::getdoubleProperty("/CompPred/exon_score1");
     } catch (...) {
-      ex_sc1 = -3.6918148;
+      ex_sc1 = -2.4597280;
     }
     try {
       ex_sc2 = Properties::getdoubleProperty("/CompPred/exon_score2");
     } catch (...) {
-      ex_sc2 = -0.3606701;
+      ex_sc2 = 0.5009572;
     }
     try {
       ex_sc3 = Properties::getdoubleProperty("/CompPred/exon_score3");
     } catch (...) {
-      ex_sc3 = 0.3235385;
+      ex_sc3 = 0.3228047;
     }
     try {
       ex_sc4 = Properties::getdoubleProperty("/CompPred/exon_score4");
     } catch (...) {
-      ex_sc4 = 5.3554965;
+      ex_sc4 = 4.7887919;
     }
     try {
       ex_sc5 = Properties::getdoubleProperty("/CompPred/exon_score5");
     } catch (...) {
-      ex_sc5 = 4.9943482;
+      ex_sc5 = 0.4727347;
     }
     try {
       ex_sc6 = Properties::getdoubleProperty("/CompPred/exon_score6");
     } catch (...) {
-      ex_sc6 = -3.0756863;
+      ex_sc6 = 0.3175849;
     }
     try {
       ex_sc7 = Properties::getdoubleProperty("/CompPred/exon_score7");
     } catch (...) {
-      ex_sc7 = -1.9089841;
+      ex_sc7 = -2.5411494;
     }
     try {
       ex_sc8 = Properties::getdoubleProperty("/CompPred/exon_score8");
     } catch (...) {
-      ex_sc8 = 1.1666486;
+      ex_sc8 = -5.4283278;
     }
     try {
       ex_sc9 = Properties::getdoubleProperty("/CompPred/exon_score9");
     } catch (...) {
-      ex_sc9 = -0.0046283;
+      ex_sc9 = -0.0028231;
     }
     try {
       ex_sc10 = Properties::getdoubleProperty("/CompPred/exon_score10");
     } catch (...) {
-      ex_sc10 = 1.3124238;
+      ex_sc10 = 4.4241493;
     }
     try {
       ex_sc11 = Properties::getdoubleProperty("/CompPred/exon_score11");
     } catch (...) {
-      ex_sc11 = 0.0137427;
+      ex_sc11 = 5.0224288;
+    }
+    try {
+      ex_sc12 = Properties::getdoubleProperty("/CompPred/exon_score12");
+    } catch (...) {
+      ex_sc12 = -1.9212818;
+    }
+    try {
+      ex_sc13 = Properties::getdoubleProperty("/CompPred/exon_score14");
+    } catch (...) {
+      ex_sc13 = -2.9764014;
+    }
+    try {
+      ex_sc14 = Properties::getdoubleProperty("/CompPred/exon_score14");
+    } catch (...) {
+      ex_sc14 = -1.4184841;
     }
     try {
       in_sc0 = Properties::getdoubleProperty("/CompPred/intron_score0");

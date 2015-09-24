@@ -147,7 +147,9 @@ double OrthoExon::getLogRegScore(){
 	    + Constant::ex_sc8  * cons
 	    + Constant::ex_sc9  * containment
 	    + Constant::ex_sc10 * diversity
-	    + Constant::ex_sc11 * numExons()
+	    + Constant::ex_sc11 * numExons() / orthoex.size()
+	    + Constant::ex_sc13 * cons * diversity 
+	    + Constant::ex_sc14 * Eomega * hasOmega() * diversity
 	    + Constant::ex_sc1  * -1 * hasOmega()
 	    + Constant::ex_sc2  * -1 ); // for being a HECT
 

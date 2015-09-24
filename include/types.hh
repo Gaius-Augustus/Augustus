@@ -333,6 +333,9 @@ public:
   static double ex_sc9;
   static double ex_sc10;
   static double ex_sc11;
+  static double ex_sc12;
+  static double ex_sc13;
+  static double ex_sc14;
   static double in_sc0;
   static double in_sc1;
   static double in_sc2;
