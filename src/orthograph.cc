@@ -304,7 +304,7 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &geneli
 
     double best_dual = std::numeric_limits<double>::max();   // best dual value so far
     double best_primal = -std::numeric_limits<double>::max(); // best primal value so far
-    double initial_gap = std::numeric_limits<double>::max(); // initial duality gap (in 0-the iteration)
+    double initial_primal = std::numeric_limits<double>::max(); // initial primal value (in 0-the iteration)
 	
     for(size_t r=0; r < c.size(); r++){ // number of rounds
 	
@@ -340,13 +340,14 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &geneli
 		buildGeneList(genelist); // save new record
 	    }
 	    if(t == 0 && r == 0){
-		initial_gap = current_dual - current_primal;
+		initial_primal = current_primal;
 		//c*=initial_gap/numInconsistent; // adjust step size parameter to problem size
 	    }
 	    cout<<r<<"\t"<<t<<"\t"<<delta<<"\t"<<current_primal<<"\t"<<current_dual<<"\t"<<numInconsistent<<endl;
 	    
 	    if(numInconsistent == 0 || abs(best_dual - best_primal) < 1e-8){ // exact solution is found
 		double best_gap = abs(best_dual - best_primal);
+		double initial_gap = abs(best_dual - initial_primal);
 		double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
 		cout<<"dual decomposition reduced initial duality gap of "<<initial_gap<<" to "<<best_gap<<" (to "<<perc_gap<<"%)"<<endl;
 		return best_gap;
@@ -386,6 +387,7 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &geneli
 	}
     }
     double best_gap = abs(best_dual - best_primal);
+    double initial_gap = abs(best_dual - initial_primal);
     double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
     cout<<"dual decomposition reduced initial duality gap of "<<initial_gap<<" to "<<best_gap<<" (to "<<perc_gap<<"%)"<<endl;
     return best_gap;
