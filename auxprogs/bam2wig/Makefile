@@ -8,11 +8,12 @@
 
 PROGRAM = bam2wig
 SOURCES = $(PROGRAM) bam_index.o 
-OBJECTS = $(SOURCES:.c=.o) 
-SAMTOOLS=/home/penat/git/samtools/
-HTSLIB=/home/penat/git/htslib/
-BCFTOOLS=/home/penat/git/bcftools/
-TABIX=/home/penat/git/tabix/
+OBJECTS = $(SOURCES:.c=.o)
+TOOLDIR=/home/mario/tools
+SAMTOOLS=$(TOOLDIR)/samtools/
+HTSLIB=$(TOOLDIR)/htslib/
+BCFTOOLS=$(TOOLDIR)/bcftools/
+TABIX=$(TOOLDIR)/tabix/
 INCLUDES=-I$(SAMTOOLS) -I. -I$(HTSLIB) -I$(BCFTOOLS) -I$(TABIX)
 VPATH=$(SAMTOOLS)
 LIBS=$(SAMTOOLS)/libbam.a $(HTSLIB)/libhts.a -lcurses -lm -lz -lpthread
