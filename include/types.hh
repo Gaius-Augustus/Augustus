@@ -66,11 +66,11 @@ ostream& operator<< (ostream& strm, const Strand s);
 #define MODEL_SUBDIR "model/"
 #define EXTRINSIC_SUBDIR "extrinsic/"
 
-#define VERSION "3.1.0"
+#define VERSION "3.2.0"
 
 #define PREAMBLE "# This output was generated with AUGUSTUS (version " VERSION ").\n\
 # AUGUSTUS is a gene prediction tool written by Mario Stanke (mario.stanke@uni-greifswald.de),\n\
-# Oliver Keller, Stefanie König and Lizzy Gerischer.\n\
+# Oliver Keller, Stefanie König, Lizzy Gerischer and Lars Romoth.\n\
 # Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),\n\
 # Using native and syntenically mapped cDNA alignments to improve de novo gene finding\n\
 # Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013"

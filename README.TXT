@@ -2,7 +2,7 @@
 %                                                                                                %
 %           Gene Prediction with the Command-Line Version of AUGUSTUS                            %
 %                                                                                                %
-%           Authors: Lizzy Gerischer, Oliver Keller, Stefanie König, Mario Stanke                %
+%           Authors: Lizzy Gerischer, Oliver Keller, Stefanie König, Lars Romoth, Mario Stanke   %
 %             Mario Stanke                                                                       %
 %             Universitaet Greifswald                                                            %
 %             Institut fuer Mathematik und Informatik                                            %
@@ -10,7 +10,7 @@
 %             Fon: +49 3834 864642                                                               %
 %             mario.stanke@uni-greifswald.de                                                     %
 %                                                                                                %
-%             Date: April 29th, 2015                                                             %
+%             Date: September 25th, 2015                                                         %
 %                                                                                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -129,7 +129,7 @@ Parameters for Apis dorsata were contributed by Francisco Camara Ferreira.
 
 1. unpack
 
->tar -xzf augustus-3.1.tar.gz
+>tar -xzf augustus-3.2.tar.gz
 
 The tar-archive contains one directory 'augustus-3.1' with the following sub-directories:
 bin
@@ -893,11 +893,13 @@ http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Forum.Forum
 
 In case you need to train AUGUSTUS on a different organism consider this training web service:
 bioinf.uni-greifswald.de/trainaugustus
-Please contact Oliver (keller74@googlemail.com) for issues concerning the Protein Profile Extension.
 
 
               12. REFERENCES
               -------------
+
+Stefanie König, Lars Romoth, Lizzy Gerischer, and Mario Stanke (2015)
+Simultaneous gene finding in multiple genomes. PeerJ PrePrints, e1594
 
 Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008)
 "Using native and syntenically mapped cDNA alignments to improve de novo gene finding"

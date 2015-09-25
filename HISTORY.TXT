@@ -1,3 +1,14 @@
+List of changes from version 3.1 to 3.2 (until September 25th, 2015)
+     - comparative gene prediction (CGP option) has sensible default parameters of the logistic regression model
+     - new tool hal2maf_split.pl for splitting an alignment for parallel comparative prediction
+     - bugfixes to augustus (compiler warnings on MaxOS)
+     - improvements to prediction of noncoding genes
+     - homGeneMapping can determine homologous sets of transcripts
+     - bugfixes in joingenes and bam2hints (rare segmentation fault)
+     - made load2sqlitedb more robust, new option to skip index building when loading many species
+     - new tutorial that includes iterative training
+     - new option to shift coordinates in hint input when sequence window is cut out
+     - adapted cegma2gff.pl to cegma version 2.5
 List of changes from version 3.0.3 to 3.1 (until April 29th, 2015)
      - prediction of noncoding genes (ncRNA) with option --nc=on, requires input of hints, e.g. from RNA-Seq,
        predicts coding genes (with UTRs) and noncoding genes simultaneously
