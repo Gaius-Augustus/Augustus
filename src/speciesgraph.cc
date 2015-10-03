@@ -140,7 +140,7 @@ void SpeciesGraph::buildGraph(){
     if (overlapComp)
       addBackEdgesComp();
 
-    //find topological order of nodes in graph and set pointers topSort_next and topSort_pred
+    //topological sorting of nodelist
     topSort();
 
     // execute tarjan strongest component algorithm to find cycles in O(N+M)
@@ -678,12 +678,12 @@ void SpeciesGraph::printGraph(string filename){
     file<<"digraph MEAgraph {\n";
     file<<"rankdir=LR;\n";
  
-    Node *pos = tail;
     map<Node *, int> nodeIDs;
     int IDcount = 0;
 
-    while(pos != NULL){
+    for(list<Node*>::reverse_iterator rit=nodelist.rbegin(); rit!=nodelist.rend(); ++rit){
 	
+	Node *pos = (*rit);
 	if(pos->n_type != unsampled_exon){
 	    file<<IDcount<<"[" + getDotNodeAttributes(pos) + "];\n";
 
@@ -704,7 +704,6 @@ void SpeciesGraph::printGraph(string filename){
 	    nodeIDs.insert(std::pair<Node*,int>(pos,IDcount));
 	    IDcount++;
 	}
-	pos = pos->topSort_pred;
     }
     file<<"}\n";
     file.close();
@@ -765,72 +764,54 @@ string SpeciesGraph::getDotEdgeAttributes(Node *pred, Edge *edge){
 
 void SpeciesGraph::topSort(){
 
-    for(list<Node*>::iterator node=nodelist.begin(); node!=nodelist.end(); node++){   
-	if((*node)->label == 0){
+    list<Node*> unsorted = nodelist;
+    nodelist.clear();
+
+    for(list<Node*>::iterator node=unsorted.begin(); node!=unsorted.end(); node++){   
+	if((*node)->label == 0){ // not visited, yet
 	    dfs(*node);
 	}
-    }
-    // set pointers to the preceding nodes in topSort
-    Node *next = head;
-    while(next != tail){
-	next->topSort_next->topSort_pred = next;
-	next = 	next->topSort_next;
-    }
-    // reset all node labels
-    for(list<Node*>::iterator it=nodelist.begin(); it!=nodelist.end(); it++){
-	(*it)->label=0;
     }
 }
 
 void SpeciesGraph::dfs(Node *node){
 
-    static Node* next = NULL;
-
-    node->label = 1;
+    node->label = 1; // mark es visited
     for(list<Edge>::iterator edge=node->edges.begin(); edge!=node->edges.end(); edge++){
-	if(edge->to->label == 0)
+	if(edge->to->label == 0) 
 	    dfs(edge->to);
     }
-    if(node != tail){
-	node->topSort_next = next;
-    }
-    next = node;
+    nodelist.push_front(node);
 }
 
-double SpeciesGraph::relax(Node *begin, Node *end){
-
-    Node *next = begin;
+double SpeciesGraph::relax(){
   
     //initialize
-    while(next != end){
-	next = next->topSort_next;
-	next->score =  - numeric_limits<double>::max();  // reset node distances
-	next->label = 0;                                 // reset path labels  
+    for(list<Node*>::iterator it=nodelist.begin(); it!=nodelist.end(); it++){
+	(*it)->score =  - numeric_limits<double>::max();  // reset node distances
+	(*it)->label = 0;                                 // reset path labels  
     }
-    begin->score = 0;
-    begin->label= 0;
+    head->score = 0;
 
     //relax
-    next = begin;
-    while(next != end){
-	for(list<Edge>::iterator edge = next->edges.begin(); edge != next->edges.end(); edge++){
-	    if(next->score + edge->score > edge->to->score){
+    for(list<Node*>::iterator it=nodelist.begin(); it!=nodelist.end(); it++){
+	for(list<Edge>::iterator edge = (*it)->edges.begin(); edge != (*it)->edges.end(); edge++){
+	    if((*it)->score + edge->score > edge->to->score){
 		// update node distance
-		edge->to->score = next->score + edge->score;
-		edge->to->pred = next;
+		edge->to->score = (*it)->score + edge->score;
+		edge->to->pred = (*it);
 	    }
 	}
-	next = next->topSort_next;
     } 
 
     //set new path labels
-    while(next != begin){
+    Node *next = tail;
+    while(next != head){
 	next->label = 1;
 	next = next->pred;
     }
     next->label = 1;
-    return end->score;
-
+    return tail->score;
 }
 
 void SpeciesGraph::printCurrentPath(){

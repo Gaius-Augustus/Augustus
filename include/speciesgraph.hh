@@ -84,12 +84,9 @@ public:
      * maximum weight path problem related functions
      */
 
-    void topSort();                                       // sorts nodelist of graph topologically
+    void topSort();         // sorts nodelist of graph topologically
     void dfs(Node* node);   // depth first search, subroutine of topSort()                                
-    double relax(Node* begin, Node *end);                   // relaxation of all nodes "in between" begin and end ("in between" in terms of the topological ordering)
-    inline double relax(){
-	return relax(head, tail);
-    }
+    double relax();         // relaxation of all nodes
 
     // static functions
     static void setECThold(double t){ec_thold=t;}

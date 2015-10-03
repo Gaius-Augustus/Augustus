@@ -74,7 +74,7 @@ bool isTlstartOrstop(Status *predExon, Status *succExon);
 
 class Node{
 public:
-    Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, NodeType t=NOT_KNOWN, Node *p=NULL, bool b=0, Node *n=NULL, Node *r=NULL, Node *nn=NULL, Node *pn=NULL):
+    Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, NodeType t=NOT_KNOWN, Node *p=NULL, bool b=0, Node *nn=NULL, Node *pn=NULL):
 	begin(s),
 	end(e),
 	score(sc),
@@ -82,8 +82,6 @@ public:
 	n_type(t),
 	pred(p),
 	label(b),
-	topSort_next(n),
-	topSort_pred(r),
 	nextNontrivialNeutNode(nn),
 	prevNontrivialNeutNode(pn)
     {}
@@ -93,8 +91,6 @@ public:
     NodeType n_type;
     Node *pred;
     bool label;           // label is 1, if node is in path, else label is 0
-    Node *topSort_next;   // pointer to next node in a topologically sorted list of nodes
-    Node *topSort_pred;   // pointer to previous node in a topologically sorted list of nodes
     list<Edge> edges;
     Node *nextNontrivialNeutNode;   // pointer to Node on neutral line, which is the nearest that can be reached by a nontrivial way (used for new back edges)
     Node *prevNontrivialNeutNode;   // pointer to Node on neutral line, from which the actual node is the nearest that can be reached by a nontrivial way (used for new back edges)
