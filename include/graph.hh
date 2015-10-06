@@ -74,7 +74,7 @@ bool isTlstartOrstop(Status *predExon, Status *succExon);
 
 class Node{
 public:
-    Node(int s=0, int e=0, double sc=0.0, const void *it=NULL, NodeType t=NOT_KNOWN, Node *p=NULL, bool b=0, Node *nn=NULL, Node *pn=NULL):
+    Node(int s=0, int e=0, float sc=0.0, const void *it=NULL, NodeType t=NOT_KNOWN, Node *p=NULL, bool b=0, Node *nn=NULL, Node *pn=NULL):
 	begin(s),
 	end(e),
 	score(sc),
@@ -86,7 +86,7 @@ public:
 	prevNontrivialNeutNode(pn)
     {}
     int begin, end;
-    double score;
+    float score;
     const void *item;
     NodeType n_type;
     Node *pred;
@@ -107,14 +107,14 @@ public:
 
 class Edge{
 public:
-    Edge(Node *t=NULL, bool n=true, double sc=0.0, const void *it=NULL):
+    Edge(Node *t=NULL, bool n=true, float sc=0.0, const void *it=NULL):
 	to(t),
 	score(sc),
 	neutral(n),
 	item(it)
     {}
     Node *to;
-    double score;
+    float score;
     bool neutral;
     const void *item;
 
