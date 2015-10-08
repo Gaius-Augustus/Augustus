@@ -512,7 +512,7 @@ int howOftenOccursIt(const char* haystack, const char* needle, const char *endha
     const char* pos = haystack;
     while (pos && pos <= endhaystack) {
 	pos = strstr(pos, needle);
-	if (pos !='\0')
+	if (pos)
 	    pos++;
 	n++;
     }

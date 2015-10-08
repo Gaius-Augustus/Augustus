@@ -10,7 +10,7 @@
 %             Fon: +49 3834 864642                                                               %
 %             mario.stanke@uni-greifswald.de                                                     %
 %                                                                                                %
-%             Date: September 25th, 2015                                                         %
+%             Date: October 8th, 2015                                                            %
 %                                                                                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -26,6 +26,7 @@
   10. MEA: USING THE MAXIMUM EXPECTED ACCURACY APPROACH
   11. CONTACT ME
   12. REFERENCES
+  13. LICENCES
 
               1. INTRODUCTION
               ---------------
@@ -129,7 +130,7 @@ Parameters for Apis dorsata were contributed by Francisco Camara Ferreira.
 
 1. unpack
 
->tar -xzf augustus-3.2.tar.gz
+>tar -xzf augustus-3.2.1.tar.gz
 
 The tar-archive contains one directory 'augustus-3.1' with the following sub-directories:
 bin
@@ -896,7 +897,7 @@ bioinf.uni-greifswald.de/trainaugustus
 
 
               12. REFERENCES
-              -------------
+              --------------
 
 Stefanie König, Lars Romoth, Lizzy Gerischer, and Mario Stanke (2015)
 Simultaneous gene finding in multiple genomes. PeerJ PrePrints, e1594
@@ -931,3 +932,14 @@ http://webdoc.sub.gwdg.de/diss/2004/stanke/
 
 Mario Stanke and Stephan Waack (2003),
 Gene Prediction with a Hidden-Markov Model and a new Intron Submodel. Bioinformatics, Vol. 19, Suppl. 2, pages ii215-ii225 
+
+
+              13. LICENCES
+              ------------
+
+All source code, i.e.
+  - the AUGUSTUS source code (src/*.cc, include/*.hh)
+  - the scripts (scripts/*.pl)
+  - the auxiliary programs (auxprogs/)
+  - the tree-parser (src/scanner,src/parser)
+are under the Artistic Licence (see src/LICENCE.TXT).
