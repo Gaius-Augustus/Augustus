@@ -4,7 +4,7 @@
 #	a) "-g" option allows for debugging
 #	b) libbamtools.a and lz library are used during the linking process
 #
-# 	Created: 14-December-2011 by Tonatiuh Pena Centeno
+# 	Created: 14-December-2011
 #	Last modified:  09-October-2015 by Katharina J. Hoff
 
 # Variable definition
