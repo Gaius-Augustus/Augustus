@@ -1,7 +1,30 @@
-Prior to "bam2hints" you need to have BAMTools on your system.
+=== README ===
 
+This file was created by Tonatiuh Pena Cenetno and last modified by Katharina J. Hoff on October 9th 2015.
 
---- Installing BAMTools ---
+Prior to compiling "bam2hints" you need to have BAMTools on your system.
+
+--- If you have Ubuntu ---
+
+Make sure that the repository universe is in your '/etc/apt/sources.list'. It should contain a line like:
+
+     deb http://us.archive.ubuntu.com/ubuntu vivid main universe
+
+In case you had to add that line, run (otherwise skip):
+
+   sudo apt-get update
+
+Install bamtools and libbamtools-dev:
+
+   sudo apt-get install bamtools libbamtools-dev
+
+Afterwards, go to the auxprogs/bam2hints directory and run 
+
+   make clean
+
+This produces a bam2hints binary that is located in auxprogs/bam2hints.
+
+--- If for some reason you want to install BAMTools manually ---
 
 Get the latest version of BAMTools directly from GitHub (https://github.com/pezmaster31/bamtools).
 The download link is:
@@ -24,10 +47,23 @@ cmake ..
 make
 
 
---- Installing bam2hints ---
+--- Installing bam2hints after manual BAMtools installation ---
 
-For this step, you only need to adjust one line of the makefile. Open "Makefile" with any editor and search for the line beginning with 'BAMTOOLS = '.
-Insert the path to your BAMTools directory here (e.g. 'BAMTOOLS = /home/<user_name>/pezmaster31-bamtools-466bc50', if you unzipped BAMTools to your home directory).
-Save and exit the makefile. Then, running the command:
+For this step, you only need to adjust three lines in the Makefile.
+
+Add:
+   BAMTOOLS = /your/path/to/bamtools
+
+Replace:
+   INCLUDES = /usr/include/bamtools
+By:
+   INCLUDES = $(BAMTOOLS)/include
+
+Replace:
+   LIBS = -lbamtools -lz
+By:
+   LIBS = $(BAMTOOLS)/lib/libbamtools.a -lz
+
+Save and exit the Makefile. Then, running the command:
   make clean
-should result in a executable named "bam2hints".
+should result in a executable named "bam2hints" that is located in auxprogs/bam2hints.
