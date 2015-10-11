@@ -161,23 +161,28 @@ void Graph::addPair(Status *exon1, Status *exon2, vector<Node*> &neutralLine){
   }
 }
 
-void Graph::createNeutralLine(vector<Node*> &neutralLine, bool onlyComplete){
+void Graph::createNeutralLine(vector<Node*> &neutralLine, double weight, bool onlyComplete){
 
-  Node *pos = head;
-  int n = neutralLine.size();
-  for(int i=0; i<n; i++){
-      if(neutralLine[i] != NULL){
-	  if( pos!=head || (!onlyComplete || neutralLine[i]->n_type == IR) ){
-	      Edge neut(neutralLine[i]);
-	      pos->edges.push_back(neut);
-	  }
-	  pos = neutralLine[i];
-      }
-  }
-  if( !onlyComplete || pos->n_type == IR ){
-      Edge lastEdge(tail);
-      pos->edges.push_back(lastEdge);
-  }
+    Node *pos = head;
+    int i = 0;
+    int n = neutralLine.size();
+
+    for(int j=0; j<n; j++){
+	if(neutralLine[j] != NULL){
+	    if( pos!=head || (!onlyComplete || neutralLine[j]->n_type == IR) ){
+		double w = weight *(j-i);
+		Edge neut(neutralLine[j], true, w);
+		pos->edges.push_back(neut);
+	    }
+	    pos = neutralLine[j];
+	    i = j;
+	}
+    }
+    if( !onlyComplete || pos->n_type == IR ){
+	double w = weight *(n-i);
+	Edge lastEdge(tail, true, w);
+	pos->edges.push_back(lastEdge);
+    }
 }
 
 /*
@@ -1227,7 +1232,7 @@ bool AugustusGraph::mergedStopcodon(StateType type1, StateType type2, int end1, 
     return false;
 }
 
-void Node::addWeight(double weight){
+void Node::addWeight(float weight){
 
     for(list<Edge>::iterator edge = edges.begin(); edge != edges.end(); edge++){
 	edge->score += weight;

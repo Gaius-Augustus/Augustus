@@ -71,6 +71,7 @@ public:
     static void resetModelCount(){introncount = 0;};
     static double getGeoProb(){return geoProb;}
     static Double getAssMotifProbThreshold(double q) {return assMotif->getProbThreshold(q);}
+    static double getMeanIntrLen();
 private:
     static void initSnippetProbs();
     void processSequence( const char* start, const char* end);

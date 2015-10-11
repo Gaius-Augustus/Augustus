@@ -365,7 +365,7 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &geneli
 			bool h = node->label;
 			bool v = hects->labels[pos];
 			if(v != h){  //shared nodes are labelled inconsistently in the two subproblems
-			    double weight = delta*(v-h);
+			    float weight = delta*(v-h);
 			    //update weights
 			    node->addWeight(weight);
 			    hects->weights[pos] -= weight;     

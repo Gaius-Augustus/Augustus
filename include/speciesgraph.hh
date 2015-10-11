@@ -64,7 +64,7 @@ public:
      * functions to build graph
      */
     
-    void buildGraph();
+    void buildGraph(double meanIntrLen=numeric_limits<double>::max());
     /*
      * @getKey(): the key of auxilary nodes is 'PosBegin:n_type'
      * the key of nodes representiong Exons is 'PosBegin:PosEnd:StateType'

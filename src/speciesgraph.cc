@@ -20,7 +20,7 @@ double SpeciesGraph::ec_thold = 0.0;
 double SpeciesGraph::ic_thold = 0.0;
 double SpeciesGraph::maxCostOfExonLoss = 0.0;
 
-void SpeciesGraph::buildGraph(){
+void SpeciesGraph::buildGraph(double meanIntrLen){
   
     vector< vector<Node*> > neutralLines; //represents the seven neutral lines
     int seqlen = getSeqLength()+1;
@@ -133,7 +133,11 @@ void SpeciesGraph::buildGraph(){
 
     //create neutral lines by connecting neutral nodes in the vector
     for(int j=0; j<neutralLines.size(); j++){
-	createNeutralLine(neutralLines.at(j),onlyCompleteGenes);
+	double weight = 0.0;
+	if(j>0 && j<13){ // neutralLines representing introns between coding exons
+	    weight = log(1.0 - 1.0/meanIntrLen);
+	}
+	createNeutralLine(neutralLines.at(j),weight,onlyCompleteGenes);
     }
 
     // add backedges without cycles from nodes with edge to IR to the first IR-node from which you can't reach the node again (adds auxiliary-IR-nodes if exons starts at the same position)
@@ -788,8 +792,9 @@ double SpeciesGraph::relax(){
   
     //initialize
     for(list<Node*>::iterator it=nodelist.begin(); it!=nodelist.end(); it++){
-	(*it)->score =  - numeric_limits<double>::max();  // reset node distances
+	(*it)->score =  - numeric_limits<float>::max();   // reset node distances
 	(*it)->label = 0;                                 // reset path labels  
+	(*it)->pred = NULL;
     }
     head->score = 0;
 

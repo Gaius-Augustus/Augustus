@@ -22,6 +22,7 @@
 #include "namgene.hh"
 #include "contTimeMC.hh"
 #include "liftover.hh"
+#include "intronmodel.hh"
 
 #include <gsl/gsl_matrix.h>
 #include <ctime>
@@ -251,6 +252,13 @@ void CompGenePred::start(){
     } catch (...) {
         outdir = "";
     }
+    double mil_factor; // mean intron length factor (>=1), the higher the less are long introns penalized 
+    try {
+        mil_factor = Properties::getdoubleProperty("/CompPred/mil_factor");
+    } catch (...) {
+        mil_factor = 50.0; // default: no penalty for long introns
+    }
+    double meanIntrLen = -1.0; // initialized later
     
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(outdir,".mea"); // equivalent to MEA prediction
@@ -405,6 +413,9 @@ void CompGenePred::start(){
 	// create HECTS
 	geneRange->createOrthoExons(alignedECs, &evo);
 
+	if(meanIntrLen<0.0)
+	    meanIntrLen = mil_factor * IntronModel::getMeanIntrLen(); // initialize mean intron length
+
 	// build graph from sampled gene structures and additional ECs
         for (int s = 0; s < speciesNames.size(); s++) {	    
 	    if (orthograph.ptrs_to_alltranscripts[s]){
@@ -419,7 +430,7 @@ void CompGenePred::start(){
 		// build graph
 		orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRanges[s], geneRange->getExonCands(s), speciesNames[s], 
 							geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, sampledGFs[s], overlapComp);
-		orthograph.graphs[s]->buildGraph();
+		orthograph.graphs[s]->buildGraph(meanIntrLen);
 		//orthograph.graphs[s]->printGraph(outdir + speciesNames[s] + "." + itoa(GeneMSA::geneRangeID) + ".dot");
 		
 	    }

@@ -1250,3 +1250,13 @@ Double IntronModel::dSSProb(int base, bool forwardStrand){
     }
 }
 
+double IntronModel::getMeanIntrLen(){
+
+    Double mil_long_intr = (mal + d);
+    Double mil_short_intr = 0.0;
+    for( int i = 0; i < lenDist.size(); i++ ){
+	mil_short_intr += (lenDist[i]*i);
+    }
+    Double mil = (mil_long_intr * (1.0 - probShortIntron)) + (mil_short_intr * probShortIntron);
+    return mil.doubleValue();
+}

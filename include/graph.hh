@@ -98,7 +98,7 @@ public:
     size_t lowlink;                 // (used for tarjan)
 
     StateType castToStateType(); //casts void* back to State* and returns the StateType
-    void addWeight(double weight); //add weight to all outgoing edges
+    void addWeight(float weight); //add weight to all outgoing edges
     Edge* getEdge(Node* succ);
     State* getIntron(Node* succ);
     bool isSampled() const {return(n_type == sampled || n_type == utrExon);}
@@ -172,7 +172,7 @@ protected:
     }
     Node* addExon(Status *exon, vector<Node*> &neutralLine);
     void addPair(Status *exon1, Status *exon2, vector<Node*> &neutralLine);
-    void createNeutralLine(vector<Node*> &neutralLine, bool onlyComplete=false); 
+    void createNeutralLine(vector<Node*> &neutralLine, double weight=0.0, bool onlyComplete=false); 
     void addCompatibleEdges();
     void insertIntron(Node *exon1, Node *exon2);  
     int minInQueue(queue<Node*> *q);
