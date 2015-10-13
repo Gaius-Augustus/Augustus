@@ -4,7 +4,7 @@ AUGVERSION = 3.1.1
 
 # make this a comment if you get compilation errors about the boost iostreams library
 # cannot install this library and do not need to input gzipped input genome files
-#ZIPINPUT = true
+#ZIPINPUT = false
 
 # uncomment this line to enable comparative gene finding (requires young compiler which supports C++11 standard)
 COMPGENEPRED = true

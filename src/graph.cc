@@ -775,15 +775,15 @@ double AugustusGraph::setScore(Status *st){
   if(Constant::logreg){
 
     if(st->name >= CDS && st->name < intron){
-      return (   Constant::lg_es0
-	       + Constant::lg_es1 * st->score
-	       + Constant::lg_es2 * getAvgBaseProb(st)
-	       + Constant::lg_es3 * log(st->end - st->begin + 1) );
+      return (   Constant::lg_es[0]
+	       + Constant::lg_es[1] * st->score
+	       + Constant::lg_es[2] * getAvgBaseProb(st)
+	       + Constant::lg_es[3] * log(st->end - st->begin + 1) );
     }else{
-      return (   Constant::in_sc0
-	       + Constant::in_sc1 * st->score
-	       + Constant::in_sc2 * getAvgBaseProb(st)
-	       + Constant::in_sc3 * log(st->end - st->begin + 1) );
+      return (   Constant::in_sc[0]
+	       + Constant::in_sc[1] * st->score
+	       + Constant::in_sc[2] * getAvgBaseProb(st)
+	       + Constant::in_sc[3] * log(st->end - st->begin + 1) );
     }
   }else{
 

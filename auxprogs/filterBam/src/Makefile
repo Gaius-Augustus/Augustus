@@ -3,7 +3,7 @@
 # 	Created: 11-November-2011
 #	Last modified: 4-March-2012
 
-
+BAMTOOLS = /home/lizzy/tools/bamtools-master/
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
 			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam

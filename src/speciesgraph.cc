@@ -164,12 +164,12 @@ Node* SpeciesGraph::addNode(Status *exon){
       score = setScore(exon);
     }else{
       score = ec_thold 
-	+ Constant::ex_sc0 // intercept  
-	+ Constant::ex_sc1 // for not having omega
-	+ Constant::ex_sc2 // for not beeing an OE
-	+ Constant::ex_sc3 * log(exon->getLen())
-	+ Constant::ex_sc4 * exon->getPostProb()
-	+ Constant::ex_sc5 * getAvgBaseProb(exon);
+	+ Constant::ex_sc[0] // intercept  
+	+ Constant::ex_sc[1] // for not having omega
+	+ Constant::ex_sc[2] // for not beeing an OE
+	+ Constant::ex_sc[3] * log(exon->getLen())
+	+ Constant::ex_sc[4] * exon->getPostProb()
+	+ Constant::ex_sc[5] * getAvgBaseProb(exon);
       // if (exon->hasEvidence() && exon->name == CDS)
       //  score += maxCostOfExonLoss;
     }
@@ -226,11 +226,11 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
     score = ec_score;
   }else{
     score = ec_thold
-      + Constant::ex_sc0 // intercept
-      + Constant::ex_sc1 // for not having omega
-      + Constant::ex_sc2 // for not beeing an OE
-      + Constant::ex_sc3 * log(exon->len())
-      + Constant::ex_sc12; // for not beeing sampled
+      + Constant::ex_sc[0] // intercept
+      + Constant::ex_sc[1] // for not having omega
+      + Constant::ex_sc[2] // for not beeing an OE
+      + Constant::ex_sc[3] * log(exon->len())
+      + Constant::ex_sc[12]; // for not beeing sampled
   }
 
   /*
@@ -389,10 +389,10 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
 	    intr_score = setScore(intr);
 	  else
 	    intr_score = ic_thold
-	      + Constant::in_sc0 // intercept
-	      + Constant::in_sc1 * intr->getPostProb()
-	      + Constant::in_sc2 * getAvgBaseProb(intr)
-	      + Constant::in_sc3 * log(intr->getLen());
+	      + Constant::in_sc[0] // intercept
+	      + Constant::in_sc[1] * intr->getPostProb()
+	      + Constant::in_sc[2] * getAvgBaseProb(intr)
+	      + Constant::in_sc[3] * log(intr->getLen());
 	  
 	  /*
 

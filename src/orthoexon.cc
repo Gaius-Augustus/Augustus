@@ -142,16 +142,17 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 
 double OrthoExon::getLogRegScore(){
     
-  return (  Constant::ex_sc6  * Eomega * hasOmega()
-	    + Constant::ex_sc7  * VarOmega * hasOmega()
-	    + Constant::ex_sc8  * cons
-	    + Constant::ex_sc9  * containment
-	    + Constant::ex_sc10 * diversity
-	    + Constant::ex_sc11 * numExons() / orthoex.size()
-	    + Constant::ex_sc13 * cons * diversity 
-	    + Constant::ex_sc14 * Eomega * hasOmega() * diversity
-	    + Constant::ex_sc1  * -1 * hasOmega()
-	    + Constant::ex_sc2  * -1 ); // for being a HECT
+  return (    Constant::ex_sc[6]  * Eomega * hasOmega()
+	    + Constant::ex_sc[7]  * VarOmega * hasOmega()
+	    + Constant::ex_sc[8]  * cons
+	    + Constant::ex_sc[9]  * containment
+	    + Constant::ex_sc[10] * diversity
+	    + Constant::ex_sc[11] * numExons()
+	    + Constant::ex_sc[15] * numExons() / orthoex.size()
+	    + Constant::ex_sc[13] * cons * diversity 
+	    + Constant::ex_sc[14] * Eomega * hasOmega() * diversity
+	    + Constant::ex_sc[1]  * -1 * hasOmega()
+	    + Constant::ex_sc[2]  * -1 ); // for being a HECT
 
   /*
     if (string("fly") == Properties::getProperty("species")){

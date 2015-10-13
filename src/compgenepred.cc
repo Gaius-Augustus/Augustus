@@ -190,10 +190,8 @@ void CompGenePred::start(){
     }
     // optional config file should contain feature scores from a logistic regression (otherwise defaults are used)
     if (Properties::hasProperty(EXTERNAL_KEY)) {
-      string optCfgFile = expandHome(Properties::getProperty(EXTERNAL_KEY));
-      cout << "# Optional config file " << optCfgFile << " is used." << endl;
-    }else if(Constant::MultSpeciesMode && Constant::logreg){
-      cerr << "No optional config file specified. Using default scores from logistic regression with multiple species." << endl;
+	string optCfgFile = expandHome(Properties::getProperty(EXTERNAL_KEY));
+	cout << "# Optional config file " << optCfgFile << " is used." << endl;
     }
     bool genesWithoutUTRs;
     try {

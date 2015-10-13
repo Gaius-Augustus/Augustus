@@ -404,7 +404,15 @@ void Properties::init( int argc, char* argv[] ){
 	if (!hasProperty(SPECIES_KEY))
 	// read in species from extra config file
 	    readFile(optCfgFile);
+    } else if (Constant::MultSpeciesMode) {
+	optCfgFile = expandHome(configPath + "cgp/log_reg_parameters_default.cfg");
+	try {
+	    readFile(optCfgFile);
+	} catch (PropertiesError e){
+	    throw ProjectError("Default configuration file with parameters from logistic regression " + optCfgFile + " not found!");
+	}
     }
+
     if (!hasProperty(SPECIES_KEY)) 
 	throw ProjectError("No species specified. Type \"augustus --species=help\" to see available species.");
     string& speciesValue = properties[SPECIES_KEY];

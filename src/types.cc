@@ -99,30 +99,10 @@ bool inCRFTraining = false;
 bool Constant::dbhints = false;
 // scores from logistic regression                                                                                                  
 bool Constant::logreg;
-double Constant::ex_sc0;
-double Constant::ex_sc1;
-double Constant::ex_sc2;
-double Constant::ex_sc3;
-double Constant::ex_sc4;
-double Constant::ex_sc5;
-double Constant::ex_sc6;
-double Constant::ex_sc7;
-double Constant::ex_sc8;
-double Constant::ex_sc9;
-double Constant::ex_sc10;
-double Constant::ex_sc11;
-double Constant::ex_sc12;
-double Constant::ex_sc13;
-double Constant::ex_sc14;
-double Constant::in_sc0;
-double Constant::in_sc1;
-double Constant::in_sc2;
-double Constant::in_sc3;
-double Constant::lg_es0;
-double Constant::lg_es1;
-double Constant::lg_es2;
-double Constant::lg_es3;
-
+// features are explaned in the default config file config/cgp/log_reg_parameters_default.cfg
+vector<double>Constant::ex_sc;
+vector<double>Constant::in_sc;
+vector<double>Constant::lg_es;
 
 // moved here from hints.cc
 const int power2id[31] = {1,2,4,8,16,32,64,128,
@@ -343,128 +323,35 @@ void Constant::init(){
     } catch (ProjectError e) {
 	cerr << e.getMessage();
     }
+    
     // scores for logistic regression
     try {
-      logreg = Properties::getBoolProperty("/CompPred/logreg");
+	logreg = Properties::getBoolProperty("/CompPred/logreg");
     } catch (...) {
-      logreg = true;
+	logreg = true;
     }
-    try {
-      ex_sc0 = Properties::getdoubleProperty("/CompPred/exon_score0");
-    } catch (...) {
-      ex_sc0 = -3.5769278;
+    for(int i=0; i<16; i++){
+	try {
+	    ex_sc.push_back(Properties::getdoubleProperty("/CompPred/exon_score" + itoa(i) ));
+	} catch (...) {
+	    ex_sc.push_back(0);
+	}
     }
-    try {
-      ex_sc1 = Properties::getdoubleProperty("/CompPred/exon_score1");
-    } catch (...) {
-      ex_sc1 = -2.4597280;
+    for(int i=0; i<4; i++){
+	try {
+	    in_sc.push_back(Properties::getdoubleProperty("/CompPred/intron_score" + itoa(i) ));
+	} catch (...) {
+	    in_sc.push_back(0);
+	}
     }
-    try {
-      ex_sc2 = Properties::getdoubleProperty("/CompPred/exon_score2");
-    } catch (...) {
-      ex_sc2 = 0.5009572;
+    for(int i=0; i<4; i++){
+	try {
+	    lg_es.push_back(Properties::getdoubleProperty("lg_exon_score" + itoa(i) ));
+	} catch (...) {
+	    lg_es.push_back(0);
+	}
     }
-    try {
-      ex_sc3 = Properties::getdoubleProperty("/CompPred/exon_score3");
-    } catch (...) {
-      ex_sc3 = 0.3228047;
-    }
-    try {
-      ex_sc4 = Properties::getdoubleProperty("/CompPred/exon_score4");
-    } catch (...) {
-      ex_sc4 = 4.7887919;
-    }
-    try {
-      ex_sc5 = Properties::getdoubleProperty("/CompPred/exon_score5");
-    } catch (...) {
-      ex_sc5 = 0.4727347;
-    }
-    try {
-      ex_sc6 = Properties::getdoubleProperty("/CompPred/exon_score6");
-    } catch (...) {
-      ex_sc6 = 0.3175849;
-    }
-    try {
-      ex_sc7 = Properties::getdoubleProperty("/CompPred/exon_score7");
-    } catch (...) {
-      ex_sc7 = -2.5411494;
-    }
-    try {
-      ex_sc8 = Properties::getdoubleProperty("/CompPred/exon_score8");
-    } catch (...) {
-      ex_sc8 = -5.4283278;
-    }
-    try {
-      ex_sc9 = Properties::getdoubleProperty("/CompPred/exon_score9");
-    } catch (...) {
-      ex_sc9 = -0.0028231;
-    }
-    try {
-      ex_sc10 = Properties::getdoubleProperty("/CompPred/exon_score10");
-    } catch (...) {
-      ex_sc10 = 4.4241493;
-    }
-    try {
-      ex_sc11 = Properties::getdoubleProperty("/CompPred/exon_score11");
-    } catch (...) {
-      ex_sc11 = 5.0224288;
-    }
-    try {
-      ex_sc12 = Properties::getdoubleProperty("/CompPred/exon_score12");
-    } catch (...) {
-      ex_sc12 = -1.9212818;
-    }
-    try {
-      ex_sc13 = Properties::getdoubleProperty("/CompPred/exon_score14");
-    } catch (...) {
-      ex_sc13 = -2.9764014;
-    }
-    try {
-      ex_sc14 = Properties::getdoubleProperty("/CompPred/exon_score14");
-    } catch (...) {
-      ex_sc14 = -1.4184841;
-    }
-    try {
-      in_sc0 = Properties::getdoubleProperty("/CompPred/intron_score0");
-    } catch (...) {
-      in_sc0 = -4.693283;
-    }
-    try {
-      in_sc1 = Properties::getdoubleProperty("/CompPred/intron_score1");
-    } catch (...) {
-      in_sc1 = 5.772046;
-    }
-    try {
-      in_sc2 = Properties::getdoubleProperty("/CompPred/intron_score2");
-    } catch (...) {
-      in_sc2 = 4.170951;
-    }
-    try {
-      in_sc3 = Properties::getdoubleProperty("/CompPred/intron_score3");
-    } catch (...) {
-      in_sc3 = -0.261357;
-    }
-    try {
-      lg_es0 = Properties::getdoubleProperty("lg_exon_score0");
-    } catch (...) {
-      lg_es0 = -9.25162;
-    }
-    try {
-      lg_es1 = Properties::getdoubleProperty("lg_exon_score1");
-    } catch (...) {
-      lg_es1 = 4.85176;
-    }
-    try {
-      lg_es2 = Properties::getdoubleProperty("lg_exon_score2");
-    } catch (...) {
-      lg_es2 = 6.69845;
-    }
-    try {
-      lg_es3 = Properties::getdoubleProperty("lg_exon_score3");
-    } catch (...) {
-      lg_es3 = 0.22179;
-    }
-
+    
     Properties::assignProperty("/UtrModel/d_polyasig_cleavage", d_polyasig_cleavage);
     Properties::assignProperty("keep_viterbi", 	keep_viterbi);
     Properties::assignProperty("/Constant/gc_range_min", gc_range_min);

@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
   	while (reader.GetNextAlignment(al)) 
 	  {
 		line++;
-	   
+	  }
        if (line%100000==1)
 	   { 
 	   	 printf("\r processed line %d", line);
