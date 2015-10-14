@@ -286,6 +286,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 				addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 			    }
 			    else{
+				ecit->second->setDownScore(ec->getDownScore());
 				delete ec;
 			    }
 			}
@@ -327,6 +328,8 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 				    addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 				}
 				else{
+				    ecit->second->setDownScore(ec->getDownScore());
+				    ecit->second->setUpScore(ec->getUpScore());
 				    delete ec;
 				}
 			    }
@@ -363,6 +366,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 				addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 			    }
 			    else{
+				ecit->second->setUpScore(ec->getUpScore());
 				delete ec;
 			    }
 			}
@@ -436,6 +440,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                             addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
                         }
 			else{
+			    ecit->second->setDownScore(ec->getDownScore());
                             delete ec;
                         }
                     }
@@ -476,6 +481,8 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 				addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 			    }
 			    else{
+				ecit->second->setDownScore(ec->getDownScore());
+				ecit->second->setUpScore(ec->getUpScore());
 				delete ec;
 			    }
 			}
@@ -521,6 +528,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 				addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 			    }
 			    else{
+				ecit->second->setUpScore(ec->getUpScore());
 				delete ec;
 			    }
 			} 
