@@ -254,7 +254,7 @@ void CompGenePred::start(){
     try {
         mil_factor = Properties::getdoubleProperty("/CompPred/mil_factor");
     } catch (...) {
-        mil_factor = 50.0; // default: no penalty for long introns
+        mil_factor = 1.0; // a value of 100 roughly corresponds to not penalizing long introns
     }
     double meanIntrLen = -1.0; // initialized later
     
