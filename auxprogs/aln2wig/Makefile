@@ -9,4 +9,4 @@ psl2wig.o : aln2wig.c
 all : psl2wig
 
 clean : 
-	rm -f aln2wig aln2wig.o 
+	rm -f aln2wig aln2wig.o; rm -f ../../bin/aln2wig 
