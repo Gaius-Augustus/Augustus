@@ -29,4 +29,4 @@ bam2hints.o : $(SOURCES)
 	$(LINK.cc) $(CFLAGS) -c $< -o $@ -I$(INCLUDES) 
 
 clean: 
-	rm -f bam2hints.o bam2hints
+	rm -f bam2hints.o bam2hints ../../bin/bam2hints
