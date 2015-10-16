@@ -34,6 +34,7 @@ release:
 	make clean
 	cd auxprogs/filterBam/; make clean all; cd -
 	cd auxprogs/bam2hints; make clean; make ; cd -
+	cd auxprogs/aln2wig; make clean; make; cd -
 	cd config/species; rm -rf tobacco xeno1 bombus_terrestris{1,3} symsag xenoturbella meara pavar newest humannew
 	tar -czf ../augustus-$(AUGVERSION).tar.gz .
 	cd src/parser; rm Makefile; cd -
