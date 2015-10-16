@@ -17,4 +17,4 @@ jg_ios.o: jg_ios.cpp jg_ios.h jg_transcript.h
 	$(CC) $(CFLAGS) jg_ios.cpp
 
 clean:
-	rm -rf *o joingenes
+	rm -rf *o joingenes; rm -rf ../../bin/joingenes
