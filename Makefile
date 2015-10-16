@@ -5,11 +5,11 @@ include common.mk
 
 all: 
 	cd src && ${MAKE}
-	cd scripts && ${MAKE}
+	cd auxprogs && ${Make}
 
 clean: 
 	cd src && ${MAKE} clean
-	cd scripts && ${MAKE} clean
+	cd auxprogs && ${MAKE} clean
 
 INSTALLDIR = /opt/augustus-$(AUGVERSION)
 
@@ -27,7 +27,7 @@ install:
 release: 
 	find . -name .svn | xargs rm -rf
 	find . -name "*~" | xargs rm -f
-	rm -rf scripts/compileSpliceCands
+	rm -rf bin/compileSpliceCands
 	rm -f src/.kdbgrc*      
 	rm -f src/makedepend.pl
 	make clean all
