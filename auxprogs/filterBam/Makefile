@@ -7,4 +7,4 @@ all:
 	(cd src;make)
 
 clean:
-	(cd src; make clean; cd ../bin; rm -f filterBam)
+	(cd src; make clean; cd ../bin; rm -f filterBam; cd ../../../bin; rm -f filterBam)

@@ -20,6 +20,7 @@ all : $(PROGRAM) $(OBJECTS) CHECKBAM BIN
 BIN : $(PROGRAM) CHECKBAM
 	mkdir -p $(INSTDIR);\
 	mv filterBam $(INSTDIR);
+	cp $(INSTDIR)/filterBam ../../../bin/filterBam
 
 CHECKBAM: 
 	@if [ -z "${BAMTOOLS}" ]; then \
