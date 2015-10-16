@@ -7,4 +7,4 @@ all:
 	(cd src; make)
 
 clean:
-	(cd src; make clean; cd ../bin; rm -f homGeneMapping)
+	(cd src; make clean; cd ../bin; rm -f homGeneMapping; cd ../../../bin; rm -f homGeneMapping)
