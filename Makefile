@@ -5,7 +5,7 @@ include common.mk
 
 all: 
 	cd src && ${MAKE}
-	cd auxprogs && ${Make}
+	cd auxprogs && ${MAKE}
 
 clean: 
 	cd src && ${MAKE} clean

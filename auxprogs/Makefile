@@ -7,4 +7,4 @@ all:
 	(cd bam2hints; make; cd ../compileSpliceCands; make; cd ../filterBam; make; cd ../homGeneMapping; make; cd ../joingenes; make;)
 
 clean:
-	(cds bam2hints; make clean; cd ../compileSpliceCands; make clean; cd ../filterBam; make clean; cd ../homGeneMapping; make clean; cd ../joingenes; make clean;)
+	(cd bam2hints; make clean; cd ../compileSpliceCands; make clean; cd ../filterBam; make clean; cd ../homGeneMapping; make clean; cd ../joingenes; make clean;)
