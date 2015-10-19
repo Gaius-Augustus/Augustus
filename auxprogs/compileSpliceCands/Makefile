@@ -7,4 +7,4 @@ compileSpliceCands.o : compileSpliceCands.c
 all : compileSpliceCands
 
 clean : 
-	rm -f compileSpliceCands compileSpliceCands.o ../../bin/compileSpliceCands
+	rm -f compileSpliceCands compileSpliceCands.o ../../bin/compileSpliceCands list.o
