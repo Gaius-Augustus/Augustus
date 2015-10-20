@@ -1,0 +1,207 @@
+# default overlap length distribution when using option --genemodel=bacterium
+# This can be overriden by a species-specific length distribution when a file
+# myspecies_ovlp_len.pbl exists in the parameter folder for species 'myspecies'.
+# The probability of observing an overlap at all is set in config/model/trans_shadow_bacterium.pbl
+# This file only specifies the probability of an overlap length, GIVEN that
+# an overlap of the given type occurs.
+# The overlap length is the number of bases that are common to the coding sequence of two neighboring genes.
+# The bases in the stop codon are thereby counted as part of the coding sequence.
+# maximum overlap length, this parameter should be set in myspecies_parameters.cfg
+# (or on the command line)
+# maxOvlp = 60
+[HEAD2TAIL]
+# >--------->           or    <--------------<
+#       >----------->                   <-------------<
+# index ranges from 0 to maxOvlp
+0.0354100
+0.15679
+0.00001
+0
+0.48884
+0
+0
+0.00913
+0.065
+0
+0.01033
+0.05363
+0
+0.00887
+0.03514
+0
+0.00705
+0.02443
+0
+0.00535
+0.01797
+0
+0.00421
+0.01328
+0
+0.0036
+0.01018
+0
+0.00288
+0.00791
+0
+0.00222
+0.00617
+0
+0.00183
+0.00479
+0
+0.00163
+0.00378
+0
+0.00141
+0.00304
+0
+0.0013
+0.00259
+0
+0.00108
+0.0021
+0
+0.00085
+0.00178
+0
+0.00068
+0.0015
+0
+0.00055
+0.00132
+0
+0.00036
+0.00101
+0
+#
+[HEAD2HEAD]
+# <---------<
+#       >----------->
+# index ranges from 0 to maxOvlp
+0.0363699999999999
+0.02733
+0.20831
+0
+0.00015
+0.01088
+0.01271
+0.01448
+0.01612
+0.01758
+0.01883
+0.01983
+0.02059
+0.02111
+0.02142
+0.02154
+0.0215
+0.02133
+0.02104
+0.02067
+0.02024
+0.01976
+0.01925
+0.01871
+0.01816
+0.0176
+0.01703
+0.01646
+0.01587
+0.01529
+0.0147
+0.01413
+0.01357
+0.01303
+0.01253
+0.01206
+0.01164
+0.01125
+0.0109
+0.01058
+0.01029
+0.01001
+0.00975
+0.0095
+0.00924
+0.00896
+0.00867
+0.00835
+0.008
+0.00763
+0.00723
+0.00681
+0.00637
+0.00593
+0.00548
+0.00502
+0.00456
+0.0041
+0.00364
+0.00318
+0.00273
+[TAIL2TAIL]
+# >--------->
+#       <-----------<
+# index ranges from 0 to maxOvlp
+0.08337
+0.00002
+0
+0.00834999999999997
+0.3332
+0
+0.01644
+0.00804
+0.02152
+0.01245
+0.01112
+0.02779
+0.01509
+0.01272
+0.03019
+0.01566
+0.01269
+0.02915
+0.01471
+0.01168
+0.02639
+0.01318
+0.01039
+0.02339
+0.01166
+0.00919
+0.0207
+0.01033
+0.00814
+0.01832
+0.00913
+0.00718
+0.01612
+0.00801
+0.00628
+0.01405
+0.00696
+0.00544
+0.01216
+0.00601
+0.0047
+0.01053
+0.00522
+0.0041
+0.00919
+0.00457
+0.00359
+0.00803
+0.00398
+0.0031
+0.0069
+0.00338
+0.0026
+0.0057
+0.00274
+0.00207
+0.00442
+0.00206
+0.0015
+0.00305
+0.00135
