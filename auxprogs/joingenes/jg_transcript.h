@@ -55,6 +55,7 @@ class Exon{
     int frame;
     int rangeToBoundary;
     boundaryStatusType boundaryProblem;
+    list <Transcript*> indirectBoundProbEnemies;
 
     int tooMany;
     int tooFew;
@@ -488,6 +489,20 @@ class Transcript{
 	    return (min(tis,tes) < min(rhs.tis,rhs.tes));
 	else
 	    return (max(tis,tes) < max(rhs.tis,rhs.tes));
+    }
+
+    bool indirectBoundaryProblem(Transcript* tx){
+	for(list<Transcript*>::iterator it = this->exon_list.front().indirectBoundProbEnemies.begin(); it != this->exon_list.front().indirectBoundProbEnemies.end(); it++){
+	    if ( (*it) == tx ){
+		return true;
+	    }
+	}
+	for(list<Transcript*>::iterator it = this->exon_list.back().indirectBoundProbEnemies.begin(); it != this->exon_list.back().indirectBoundProbEnemies.end(); it++){
+	    if ( (*it) == tx ){
+		return true;
+	    }
+	}
+	return false;
     }
 };
 

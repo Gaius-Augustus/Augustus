@@ -55,7 +55,7 @@ void divideInOverlapsAndConquer(list<Transcript*> &transcript_list, Properties &
 void workAtOverlap(list<Transcript*> &overlap, Properties &properties)
 {
     if (overlap.size() > 300){
-	cerr << "WARNING: the size of the actual overlap is very big (" << overlap.size() << "). This can lead to a long computation time." << endl; 
+	cerr << "WARNING: the size of the actual overlap is very big (" << overlap.size() << "). This may lead to a long computation time." << endl; 
     }
 
     // calls methods for joining transcripts with the target that most of transcripts are complete (have start and stop codon) and delete duplicates and other unwanted transcripts from the overlap
@@ -476,21 +476,25 @@ void tooCloseToBoundary(list<Transcript*> &overlap, Properties &properties){
 		if ((*itInside)->pred_range.second && (*it)->getTxEnd() > (*itInside)->pred_range.second){
 //		    (*itInside)->boundaryProblem.second = INDIRECT_PROBLEM;
 		    (*itInside)->exon_list.back().boundaryProblem = INDIRECT_PROBLEM;
+		    (*itInside)->exon_list.back().indirectBoundProbEnemies.push_back(*it);
 		}
 		// does *it transcend the predictionBoundary of *itInside in front direction
 		if ((*itInside)->pred_range.first && (*it)->getTxStart() < (*itInside)->pred_range.first){
 //		    (*itInside)->boundaryProblem.first = INDIRECT_PROBLEM;
 		    (*itInside)->exon_list.front().boundaryProblem = INDIRECT_PROBLEM;
+		    (*itInside)->exon_list.front().indirectBoundProbEnemies.push_back(*it);
 		}
 		// does *itInside transcend the predictionBoundary of *it in tail direction
 		if ((*it)->pred_range.second && (*itInside)->getTxEnd() > (*it)->pred_range.second){
 //		    (*it)->boundaryProblem.second = INDIRECT_PROBLEM;
 		    (*it)->exon_list.back().boundaryProblem = INDIRECT_PROBLEM;
+		    (*it)->exon_list.back().indirectBoundProbEnemies.push_back(*itInside);
 		}
 		// does *itInside transcend the predictionBoundary of *it in front direction
 		if ((*it)->pred_range.first && (*itInside)->getTxStart() < (*it)->pred_range.first){
 //		    (*it)->boundaryProblem.first = INDIRECT_PROBLEM;
 		    (*it)->exon_list.front().boundaryProblem = INDIRECT_PROBLEM;
+		    (*it)->exon_list.front().indirectBoundProbEnemies.push_back(*itInside);
 		}
 	    }
 	    itInside++;
@@ -1684,6 +1688,30 @@ void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties
 	// sort children
 	for (list<Gene*>::iterator it = genes.begin(); it != genes.end(); it++){ 
 	    (*it)->children.sort(compare_quality);
+	}
+    }
+
+    // look for indirect boundary problems
+    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+	list<Transcript*>::iterator itInside = it;
+	itInside++;
+	while (itInside != overlap.end()){
+	    if ((*it)->parent == (*itInside)->parent){
+		bool b1 = (*it)->indirectBoundaryProblem(*itInside);
+		bool b2 = (*itInside)->indirectBoundaryProblem(*it);
+		if ( b1 && !b2 ){
+		    // DELETE *it
+		    deleteTx(*it, properties);
+		    it = overlap.erase(it);
+		    it--;
+		}
+		if ( b2 && !b1 ){
+		    deleteTx(*itInside, properties);
+		    itInside = overlap.erase(itInside);
+		    itInside--;
+		}
+	    }
+	    itInside++;
 	}
     }
 
