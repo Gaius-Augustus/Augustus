@@ -162,6 +162,13 @@ in common.mk then the following additional dependencies are required:
    - libsqlite3-dev or mysql++ (sudo apt-get install libmysql++-dev)
    - Boost C++ Library: libboost-graph-dev (at least version 1.45 from Nov. 2010)
 
+Compiling bam2hints and filterBam requires:
+
+   - The ubuntu packages bamtools and libbamtools-dev
+     (sudo apt-get install bamtools libbamtools-dev)
+   - (Possibly, you will need to add the repository http://us.archive.ubuntu.com/ubuntu vivid main universe to your /etc/apt/sources.lst, first: 
+      deb http://us.archive.ubuntu.com/ubuntu vivid main universe
+
 > make
 
 After compilation has finished, the command bin/augustus should be executable and print a usage message.
