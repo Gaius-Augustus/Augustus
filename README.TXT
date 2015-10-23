@@ -152,10 +152,10 @@ Install dependencies:
        - Boost C++ Libraries: libboost-iostreams-dev (on Ubuntu: sudo apt-get install libboost-iostreams-dev)
        - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager.
    
-If comparative (multi-species) AUGUSTUS is enabled via uncommenting 
+If comparative (multi-species, CGP) AUGUSTUS is enabled via uncommenting 
    COMPGENEPRED = true
    and 
-   MYSQL = true or SQLITE = true
+   SQLITE = true or MYSQL = true
 in common.mk then the following additional dependencies are required:
 
    - GNU scientific library (for eigen decompositions of matrices, sudo apt-get install libgsl0-dev)
@@ -164,10 +164,11 @@ in common.mk then the following additional dependencies are required:
 
 Compiling bam2hints and filterBam requires:
 
-   - The ubuntu packages bamtools and libbamtools-dev
-     (sudo apt-get install bamtools libbamtools-dev)
-   - (Possibly, you will need to add the repository http://us.archive.ubuntu.com/ubuntu vivid main universe to your /etc/apt/sources.lst, first: 
-      deb http://us.archive.ubuntu.com/ubuntu vivid main universe
+   - The packages bamtools and libbamtools-dev
+     (Ubuntu: sudo apt-get install bamtools libbamtools-dev,
+      Possibly, you will need to add the repository http://us.archive.ubuntu.com/ubuntu vivid main universe
+      to your /etc/apt/sources.lst, first: 
+      deb http://us.archive.ubuntu.com/ubuntu vivid main universe)
 
 > make
 
