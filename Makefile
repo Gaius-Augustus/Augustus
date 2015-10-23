@@ -31,6 +31,8 @@ release:
 	rm -rf bin/compileSpliceCands
 	rm -f src/.kdbgrc*
 	rm -f src/makedepend.pl
+	rm -r augustus-training
+	ls docs/tutorial2015/results | grep -v do.sh | grep -v README | xargs rm
 	make clean all
 	make clean
 	cd auxprogs/filterBam/; make clean all; cd -
