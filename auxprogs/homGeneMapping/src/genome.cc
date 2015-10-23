@@ -620,7 +620,8 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 		
 		of << "#";
 		of << setw(4) << right << i << " ";
-		of << setw(12) << left << giit->first;
+		of << "gene_id="<< setw(12) << left << giit->second.gene->getGeneID();
+		of << "tx_id="<< setw(12) << left << giit->first;
 		of << setw(3) << right << giit->second.numMatchingEs;
  		of << "/"<< numE << " CDS";
 		of <<setw(3) << right << giit->second.numMatchingIs;
