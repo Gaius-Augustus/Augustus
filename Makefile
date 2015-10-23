@@ -3,11 +3,12 @@
 #
 include common.mk
 
-all: 
+all:
+	mkdir -p bin
 	cd src && ${MAKE}
 	cd auxprogs && ${MAKE}
 
-clean: 
+clean:
 	cd src && ${MAKE} clean
 	cd auxprogs && ${MAKE} clean
 
@@ -24,11 +25,11 @@ install:
 	ln -sf $(INSTALLDIR)/bin/getSeq /usr/local/bin/getSeq
 
 # for internal purposes:
-release: 
+release:
 	find . -name .svn | xargs rm -rf
 	find . -name "*~" | xargs rm -f
 	rm -rf bin/compileSpliceCands
-	rm -f src/.kdbgrc*      
+	rm -f src/.kdbgrc*
 	rm -f src/makedepend.pl
 	make clean all
 	make clean

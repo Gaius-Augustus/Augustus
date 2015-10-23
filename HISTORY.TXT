@@ -1,3 +1,8 @@
+List of changes from version 3.1 to 3.2.1 (until October 23rd, 2015)
+     - comparative gene prediction (CGP): make the parameters from the GCB proceedings paper match again
+     - new CGP default parameters (tested on 5 clades)
+     - CGP version penalizes very long introns equivalently to a geometric distribution
+     - code now under artistic licence only
 List of changes from version 3.1 to 3.2 (until September 25th, 2015)
      - comparative gene prediction (CGP option) has sensible default parameters of the logistic regression model
      - new tool hal2maf_split.pl for splitting an alignment for parallel comparative prediction

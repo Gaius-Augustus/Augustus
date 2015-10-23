@@ -1,12 +1,12 @@
 /**********************************************************************
  * file:    properties.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
+ * licence: Artistic Licence, see file LICENCE.TXT or
  *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  
+ * descr.:
  * authors: Stafilarakis, Mario Stanke (mario@gobics.de)
- * 
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------ 
+ *
+ * date    |   author      |  changes
+ * --------|---------------|------------------------------------------
  * 26.09.01| Stafilarakis  | creations of the class
  * 04.08.03| Stanke        | changed operator Boolean( )
  * 01.08.05| Stanke        | added new species
@@ -34,7 +34,7 @@ void downcase(string& s) {
     for_each(s.begin(), s.end(), makelow);
 }
 
- 
+
 map<string, string> Properties::properties;
 const char* Properties::parameternames[NUMPARNAMES]= 
 {
@@ -149,7 +149,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/ExonModel/tis_motif_memory",
 "/ExonModel/tis_motif_radius",
 "/ExonModel/verbosity",
-"exonnames", 
+"exonnames",
 EXTRFILE_KEY,
 "GCwinsize",
 "/genbank/verbosity",
@@ -304,7 +304,7 @@ void Properties::readFile( string filename ) throw( PropertiesError ){
 	    if (!strm)  cerr << " not";
 	    cerr << " found." << endl;
 	}
-	if (!strm) 
+	if (!strm)
 	    throw PropertiesError( "Properties::readFile: "
 				   "Could not open the this file!" );
     }
@@ -315,7 +315,7 @@ void Properties::readFile( string filename ) throw( PropertiesError ){
 
 void Properties::init( int argc, char* argv[] ){
     string name;
-    int arg; 
+    int arg;
 
 /*
  * The rightmost parameter without '--' is the input file, unless
@@ -349,20 +349,20 @@ void Properties::init( int argc, char* argv[] ){
 		name == ALN_KEY ||
 		name == TREE_KEY ||
 		name == DB_KEY ||
-		name == SEQ_KEY) 
+		name == SEQ_KEY)
 	    {
 		if (pos >= argstr.length()-1)
 		    throw ProjectError(string("Wrong argument format for ") +  name + ". Use: --argument=value");
 		properties[name] = argstr.substr(pos+1);
-	    } 
-	} else if (!hasProperty(INPUTFILE_KEY)) 
+	    }
+	} else if (!hasProperty(INPUTFILE_KEY))
 	    properties[INPUTFILE_KEY] = argv[arg];
 	else
 	    throw ProjectError(string("Error: 2 query files given: ") + properties[INPUTFILE_KEY] + " and " + argv[arg] +"."
-			       + "\nparameter names must start with '--'");	
+			       + "\nparameter names must start with '--'");
     }
 
-    // check whether multi-species mode is turn on    
+    // check whether multi-species mode is turned on
     Properties::assignProperty(TREE_KEY, Constant::treefile);
     Properties::assignProperty(SEQ_KEY, Constant::speciesfilenames);
     Properties::assignProperty(DB_KEY, Constant::dbaccess);
@@ -377,7 +377,7 @@ void Properties::init( int argc, char* argv[] ){
         - speciesfilenames (retrieving genomes from flat files)\n\n\
         In single species mode specify none of these parameters.\n");
     }
-  
+
     // set configPath variable
     string& configPath = properties[CFGPATH_KEY]; // first priority: command line
     if (configPath == "") {
@@ -413,12 +413,12 @@ void Properties::init( int argc, char* argv[] ){
 	}
     }
 
-    if (!hasProperty(SPECIES_KEY)) 
+    if (!hasProperty(SPECIES_KEY))
 	throw ProjectError("No species specified. Type \"augustus --species=help\" to see available species.");
     string& speciesValue = properties[SPECIES_KEY];
     string speciesParFileName = speciesValue + "_parameters.cfg";
 
-    if (speciesValue == "help") 
+    if (speciesValue == "help")
 	throw HelpException(SPECIES_LIST);
 
     // check query filename
@@ -455,7 +455,7 @@ void Properties::init( int argc, char* argv[] ){
 	readFile(optCfgFile);
 	speciesValue = savedSpecies;
     }
-  
+
     // read in the other parameters, command line parameters have higher priority
     // than those in the config files
     arg = argc;
@@ -470,9 +470,9 @@ void Properties::init( int argc, char* argv[] ){
 	if (name == GENEMODEL_KEY || name == NONCODING_KEY || name == SINGLESTRAND_KEY ||
 	    name == SPECIES_KEY || name == CFGPATH_KEY ||
 	    name == EXTERNAL_KEY || name == ALN_KEY ||
-	    name == TREE_KEY || name == DB_KEY || name == SEQ_KEY) 
+	    name == TREE_KEY || name == DB_KEY || name == SEQ_KEY)
 	    continue;
-	if (pos == string::npos) 
+	if (pos == string::npos)
 	    throw PropertiesError(string("'=' missing for parameter: ") + name);
 	
 	// check that name is actually the name of a parameter
@@ -509,7 +509,7 @@ void Properties::init( int argc, char* argv[] ){
 	try {
 	    nc_option_on = getBoolProperty(NONCODING_KEY);
 	} catch (...) {
-	    throw ProjectError("Unknown option for parameter " NONCODING_KEY ". Use --" 
+	    throw ProjectError("Unknown option for parameter " NONCODING_KEY ". Use --"
 			       NONCODING_KEY "=on or --" NONCODING_KEY "=off.");
 	}
     }
@@ -522,7 +522,7 @@ void Properties::init( int argc, char* argv[] ){
 	    properties[UTR_KEY] = "on";
 	}
     }
- 
+
     if (utr_option_on) {
 	if (singleStrand || !(genemodelValue == "partial" || genemodelValue == "complete"))
 	    throw ProjectError("UTR only implemented with shadow and partial or complete.");
@@ -533,7 +533,7 @@ void Properties::init( int argc, char* argv[] ){
 
     transfileValue += ".pbl";
     properties[TRANSFILE_KEY] = transfileValue;
-    
+
     // determine state config file
     string stateCFGfilename = "states" + ("_" + strandCFGName);
     if (genemodelValue == "atleastone" || genemodelValue == "exactlyone")
@@ -548,7 +548,7 @@ void Properties::init( int argc, char* argv[] ){
 	if (nc_option_on)
 	    stateCFGfilename += "_nc";
     }
-    
+
     stateCFGfilename += ".cfg";
 
     // read in config file with states
@@ -588,7 +588,7 @@ void Properties::init( int argc, char* argv[] ){
 	    filename = expandHome(filename);
 	    properties[EXTRINSIC_KEY] = "true";
 	}
-	if (!hasProperty(EXTRFILE_KEY)) {	    
+	if (!hasProperty(EXTRFILE_KEY)) {
 	    properties[EXTRFILE_KEY] = configPath + EXTRINSIC_SUBDIR + "extrinsic.cfg";
 	    if (Constant::MultSpeciesMode)
 		properties[EXTRFILE_KEY] = configPath + EXTRINSIC_SUBDIR + "cgp.extrinsic.cfg";
@@ -667,7 +667,7 @@ void Properties::readLine( istream& strm ) {
 	 * 
 	 */
 	readFile(properties[CFGPATH_KEY] + value);
-    } else 
+    } else
 	if( name != "" && value != "" && name[0] != '#')
 	    properties[name] = value;
 }
@@ -697,6 +697,6 @@ string findLocationOfSelfBinary(){
 	self += "/config";
     } else 
 	throw ProjectError("/proc/self/exe not found.\nPlease specify environment variable or parameter " CFGPATH_KEY ".");
-#endif // WINDOWS not supported 
+#endif // WINDOWS not supported
     return self;
 }

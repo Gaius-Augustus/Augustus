@@ -4,7 +4,7 @@
 include ../common.mk
 CC	= g++
 
-# Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt 
+# Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
 CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O3 ${CFLAGS} # -DDEBUG -g -ggdb -pg -DDEBUG_STATES -DDEBUG 
@@ -37,7 +37,7 @@ ifdef COMPGENEPRED
 	INCLS += -I/usr/include/lpsolve
 endif
 DUMOBJS = dummy.o
-TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o 
+TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
 PROGR	= augustus etraining consensusFinder curve2hints prepareAlign fastBlockSearch
 INFO    = cflags
 
@@ -67,50 +67,50 @@ all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 	$(CC) -c $(CFLAGS) -o $@ $< $(INCLS)
 
 augustus: augustus.cc $(OBJS) $(DUMOBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp augustus ../bin/
 
-etraining: etraining.cc $(TOBJS) $(OBJS) 
-	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+etraining: etraining.cc $(TOBJS) $(OBJS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp etraining ../bin/
 
 evaluate: evaluate.cc $(OBJS) $(DUMOBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 
-consensusFinder: consensusFinder.cc consensus.o 
-	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+consensusFinder: consensusFinder.cc consensus.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp consensusFinder ../bin/
 
-curve2hints: curve2hints.cc exon_seg.o 
-	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+curve2hints: curve2hints.cc exon_seg.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp curve2hints ../bin/
 
 fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	types.o properties.o geneticcode.o pp_profile.o lldouble.o
-	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp fastBlockSearch ../bin/
 
 prepareAlign: pp_prepare_align.cc
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^
 	cp prepareAlign ../bin/
 
 load2db: load2db.cc fasta.o hints.o types.o properties.o lldouble.o
-	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp load2db ../bin/
 
 load2sqlitedb: load2sqlitedb.cc fasta.o hints.o types.o properties.o lldouble.o sqliteDB.o
-	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp load2sqlitedb ../bin/
 
 getSeq: getSeq.cc $(OBJS) $(DUMOBJS)
-	$(CC) $(CFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp getSeq ../bin/
 
 info:
 	echo "$(CFLAGS)" > $(INFO)
 
 clean:
-	rm -f $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o  $(INFO) 
+	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o  $(INFO)
 
 tidy: clean
 	rm -f *~ *.o *.rej *.orig ../include/*~ ../include/*.orig ../include/*.rej $(INFO)
