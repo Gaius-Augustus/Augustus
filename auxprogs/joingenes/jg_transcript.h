@@ -24,6 +24,7 @@ enum boundaryStatusType{TYPE_UNKNOWN = -1,		// predRange-boundaryStatusType
 enum compareType{UNEQUAL=0, ALTERNATIVE=1, EQUAL=2
 };
 
+bool overlappingCdsWithAnything(Transcript* t1, Transcript* t2);
 
 struct Properties{
 public:
@@ -492,16 +493,30 @@ class Transcript{
     }
 
     bool indirectBoundaryProblem(Transcript* tx){
+
+	if (overlappingCdsWithAnything(this, tx) /*&& this->strand == tx->strand*/){
+	    // does *it transcend the predictionBoundary of *itInside in tail direction
+	    if (this->pred_range.second && tx->getTxEnd() > this->pred_range.second){
+		return true;
+	    }
+
+	    // does *it transcend the predictionBoundary of *itInside in front direction
+	    if (this->pred_range.first && tx->getTxStart() < this->pred_range.first){
+		return true; // tx->exon_list.front().boundaryProblem = INDIRECT_PROBLEM;
+	    }
+	}
+/*cout << "INSIDE: " << this->exon_list.front().indirectBoundProbEnemies.size() << " " << this->exon_list.front().indirectBoundProbEnemies.size() << endl;
 	for(list<Transcript*>::iterator it = this->exon_list.front().indirectBoundProbEnemies.begin(); it != this->exon_list.front().indirectBoundProbEnemies.end(); it++){
 	    if ( (*it) == tx ){
 		return true;
 	    }
 	}
 	for(list<Transcript*>::iterator it = this->exon_list.back().indirectBoundProbEnemies.begin(); it != this->exon_list.back().indirectBoundProbEnemies.end(); it++){
-	    if ( (*it) == tx ){
+cout << (*it) << " " << tx << " " << (*it)->t_id << " " << tx->t_id << " " << (*it)->originalId << " " << tx->originalId << endl;
+	    if ( (*it)->t_id == tx->t_id ){
 		return true;
 	    }
-	}
+	}*/
 	return false;
     }
 };
@@ -547,7 +562,7 @@ bool strandeq(Exon ex1, Exon ex2, char strand);
 void weight_info(list<Transcript*> &overlap);
 
 bool overlapping(Transcript* t1, Transcript* t2);
-bool overlappingCdsWithAnything(Transcript* t1, Transcript* t2);
+// see top:  bool overlappingCdsWithAnything(Transcript* t1, Transcript* t2);
 bool overlappingCdsWithCds(Transcript* t1, Transcript* t2);
 bool overlappingCdsOnlyWithUtr(Transcript* t1, Transcript* t2);
 bool overlappingUtrOnly(Transcript* t1, Transcript* t2);

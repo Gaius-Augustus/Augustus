@@ -29,8 +29,7 @@ void divideInOverlapsAndConquer(list<Transcript*> &transcript_list, Properties &
             if (max_base < max((*it)->tis,(*it)->tes)){
                 max_base = max((*it)->tis,(*it)->tes);
             }
-        }
-        else{
+        }else{
             //eval_gtf(overlap, errordistance);
 	    if (!properties.onlyCompare){
 		workAtOverlap(overlap, properties);
@@ -74,7 +73,6 @@ void workAtOverlap(list<Transcript*> &overlap, Properties &properties)
     if (properties.selecting){
 	selection(overlap, properties);
     }
-
 }
 
 void selection(list<Transcript*> &overlap, Properties &properties){
@@ -471,30 +469,29 @@ void tooCloseToBoundary(list<Transcript*> &overlap, Properties &properties){
 	itInside++;
 	while (itInside != overlap.end()){
 	    if (overlappingCdsWithAnything((*it), (*itInside)) /*&& (*it)->strand == (*itInside)->strand*/){
-
 		// does *it transcend the predictionBoundary of *itInside in tail direction
 		if ((*itInside)->pred_range.second && (*it)->getTxEnd() > (*itInside)->pred_range.second){
 //		    (*itInside)->boundaryProblem.second = INDIRECT_PROBLEM;
 		    (*itInside)->exon_list.back().boundaryProblem = INDIRECT_PROBLEM;
-		    (*itInside)->exon_list.back().indirectBoundProbEnemies.push_back(*it);
+//		    (*itInside)->exon_list.back().indirectBoundProbEnemies.push_back(*it);
 		}
 		// does *it transcend the predictionBoundary of *itInside in front direction
 		if ((*itInside)->pred_range.first && (*it)->getTxStart() < (*itInside)->pred_range.first){
 //		    (*itInside)->boundaryProblem.first = INDIRECT_PROBLEM;
 		    (*itInside)->exon_list.front().boundaryProblem = INDIRECT_PROBLEM;
-		    (*itInside)->exon_list.front().indirectBoundProbEnemies.push_back(*it);
+//		    (*itInside)->exon_list.front().indirectBoundProbEnemies.push_back(*it);
 		}
 		// does *itInside transcend the predictionBoundary of *it in tail direction
 		if ((*it)->pred_range.second && (*itInside)->getTxEnd() > (*it)->pred_range.second){
 //		    (*it)->boundaryProblem.second = INDIRECT_PROBLEM;
 		    (*it)->exon_list.back().boundaryProblem = INDIRECT_PROBLEM;
-		    (*it)->exon_list.back().indirectBoundProbEnemies.push_back(*itInside);
+//		    (*it)->exon_list.back().indirectBoundProbEnemies.push_back(*itInside);
 		}
 		// does *itInside transcend the predictionBoundary of *it in front direction
 		if ((*it)->pred_range.first && (*itInside)->getTxStart() < (*it)->pred_range.first){
 //		    (*it)->boundaryProblem.first = INDIRECT_PROBLEM;
 		    (*it)->exon_list.front().boundaryProblem = INDIRECT_PROBLEM;
-		    (*it)->exon_list.front().indirectBoundProbEnemies.push_back(*itInside);
+//		    (*it)->exon_list.front().indirectBoundProbEnemies.push_back(*itInside);
 		}
 	    }
 	    itInside++;
@@ -767,6 +764,7 @@ void join(list<Transcript*> &overlap, char side, Properties &properties){
     // list<Transcript*> new_overlap_part;
     list<Transcript*> donor;
     list<Transcript*> acceptor;
+
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
 	if ((*it)->isNotFrameCorrect){continue;}
 	if (side == '3'){
@@ -783,10 +781,11 @@ void join(list<Transcript*> &overlap, char side, Properties &properties){
 	    }
 	}
     }
+
     for (list<Transcript*>::iterator it = acceptor.begin(); it != acceptor.end(); it++){
 	for (list<Transcript*>::iterator it_donor = donor.begin(); it_donor != donor.end(); it_donor++){
 	    if ((*it)->strand == (*it_donor)->strand){
-		bool frontSide = ((*it)->strand == '+' && side == '5') || ((*it)->strand == '-' && side == '3');
+		bool frontSide = ((*it)->strand == '+' && side == '5') || ((*it)->strand == '-' && side == '3');	// closer to the first base on the dna strand (NOT the start codon position!)
 		int fittingCase = isCombinable(*it, *it_donor, frontSide, properties);
 		if (fittingCase){
 		    Transcript* txNew = createCopyOf((*it), properties, overlap);
@@ -795,9 +794,6 @@ void join(list<Transcript*> &overlap, char side, Properties &properties){
 	    }
 	}
     }
-
-
-
 
     // UTR joining:
     list<Transcript*> donorUTR;
@@ -816,7 +812,9 @@ void join(list<Transcript*> &overlap, char side, Properties &properties){
 		acceptorUTR.push_front(*it);
 	    }
 	}
+
     }
+
     for (list<Transcript*>::iterator it = acceptorUTR.begin(); it != acceptorUTR.end(); it++){
 	for (list<Transcript*>::iterator it_donor = donorUTR.begin(); it_donor != donorUTR.end(); it_donor++){
 	    if ((*it)->strand == (*it_donor)->strand){
@@ -1697,8 +1695,14 @@ void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties
 	itInside++;
 	while (itInside != overlap.end()){
 	    if ((*it)->parent == (*itInside)->parent){
+
+//cout << "HIER: " << (*it)->exon_list.back().boundaryProblem << " " << (*itInside)->exon_list.back().boundaryProblem << " " << (*it)->exon_list.back().indirectBoundProbEnemies.front() << " " << (*itInside)->exon_list.back().indirectBoundProbEnemies.front()->originalId << endl;
+
 		bool b1 = (*it)->indirectBoundaryProblem(*itInside);
 		bool b2 = (*itInside)->indirectBoundaryProblem(*it);
+
+//cout << "RESULT: " << b1 << " " << b2 << " " << (*it)->originalId << " " << (*itInside)->originalId << " " << (*it)->exon_list.back().feature << " " << (*itInside)->exon_list.back().feature << endl;
+
 		if ( b1 && !b2 ){
 		    // DELETE *it
 		    deleteTx(*it, properties);
@@ -1838,11 +1842,11 @@ bool overlappingUtrOnly(Transcript* t1, Transcript* t2){
 int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &properties){
 // return 0 if t1 and t2 are not combinable (joinable), otherwise return the joining case
     // if not overlapping, they are not combinable
-    if (!overlapping(t1, t2)){return 0;}
+    if (!overlapping(t1, t2)){ return 0; }
 
     // backSide ("+" && "3'" and "-" && "5'")
     if (!frontSide){
-	if ((*t1).tes < (*t2).tis){return 0;}
+	if ( ( (*t1).tes < (*t2).tis && (*t1).strand == '+' ) || ( (*t1).tes > (*t2).tis && (*t1).strand == '-' ) ){ return 0; }
 	// for every exon in t2
 	for (list<Exon>::const_iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
 	    if ((*it).feature != "CDS"){continue;}
@@ -1872,10 +1876,11 @@ int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &pro
 	    }
 	}
     }else{		// frontSide
-	if ((*t1).tis > (*t2).tes){return 0;}
-	for (list<Exon>::const_iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
+	if ( ((*t1).tis > (*t2).tes && (*t1).strand == '+') || ((*t1).tis < (*t2).tes && (*t1).strand == '-') ){ return 0; }
+	for (list<Exon>::reverse_iterator it = t2->exon_list.rbegin(); it != t2->exon_list.rend(); it++){
 	    if ((*it).feature != "CDS"){continue;}
 	    // return 3: if t1.front() ends in an exon of t2 such that they are combinable; return 4 if t1.front() does not end ...
+
 	    if (((*t1).exon_list.front().from >= (*it).from) && ((*t1).exon_list.front().from <= (*it).to)){
 		if ((*t1).exon_list.front().frame == -1 && (*it).frame == -1){return 3;}
 		else if (((*t1).exon_list.back().frame != -1 && (*it).frame == -1) || ((*t1).exon_list.back().frame == -1 && (*it).frame != -1)){return 0;}
@@ -1890,11 +1895,11 @@ int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &pro
 		if ((*t1).exon_list.front().from >= ((*it).to + (int) properties.minimumIntronLength)){
 		    if ((*t1).exon_list.front().frame == -1 && (*it).frame == -1){return 4;}
 		    else if (((*t1).exon_list.back().frame != -1 && (*it).frame == -1) || ((*t1).exon_list.back().frame == -1 && (*it).frame != -1)){return 0;}
-		    if (it != t2->exon_list.begin()){
+/*		    if (it != t2->exon_list.begin()){
 			it--;
 		    }else{
 			return 0;
-		    }
+		    }*/
 		    if ((t1->strand == '-') && ((*it).frame == (3 - ( ((*t1).exon_list.front().to - (*t1).exon_list.front().from + 1) - (*t1).exon_list.front().frame) % 3) % 3)){
 			return 4;
 		    }else if ((t1->strand == '+') && ((*t1).exon_list.front().frame == (3 - ( ((*it).to - (*it).from + 1) - (*it).frame) % 3) % 3)){
