@@ -68,8 +68,11 @@ public:
 
     int getStart();
     int getEnd();
-    int frame() const { return exonTypeReadingFrames[type]; }         // frame of the exon
-    int frame(int p) const { return mod3( frame() - (end-p+1)%3 ); }  // frame at position p within the exon
+    int frame() const { return exonTypeReadingFrames[type]; }  // frame of the exon
+    int frame(int p) const { return isPlusExon(type) ?         // frame at position p within the exon
+	    mod3(frame() - (end + 1) + p) :
+	    mod3(frame() +  end + 1  - p);
+    }
     Double getUpScore() const {return upScore;}
     Double getDownScore() const {return downScore;}
     void setUpScore(Double s) {upScore = s;}

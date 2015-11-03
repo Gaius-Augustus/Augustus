@@ -849,7 +849,12 @@ int AugustusGraph::getBasetype(Status *st, int pos){
   StateType Type = ((State*)st->item)->type;
 
   if(st->name==CDS){
-    int frameAtPos = mod3(((State*)st->item)->frame() - (st->end-pos+1)%3);
+
+      int frame = ((State*)st->item)->frame();
+      int frameAtPos = isOnFStrand(Type) ? 
+	  mod3(frame - (st->end + 1) + pos) : 
+	  mod3(frame +  st->end + 1  - pos);
+
     if(Type >= singleG && Type <= terminal){
 
       switch(frameAtPos){

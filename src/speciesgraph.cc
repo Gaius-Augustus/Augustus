@@ -258,8 +258,9 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
   */
 
   Node *node = new Node(exon->begin, exon->end, score, exon, unsampled_exon);
-  if(avgBaseProb>0.0)
-	printGF(exon, score, avgBaseProb);
+  // average base probs of not sampled ECs
+  //if(avgBaseProb>0.0) 
+  //	printGF(exon, score, avgBaseProb);
   nodelist.push_back(node);
   addToHash(node);
   
