@@ -200,6 +200,8 @@ protected:
     virtual bool mergedStopcodon(Status* exon1, Status* exon2)=0;
     virtual bool mergedStopcodon(StateType type1, StateType type2, int end1, int begin2)=0;
     virtual float getAvgBaseProb(Status *st) =0;
+    virtual float getAvgBaseProb(ExonCandidate *ec)=0;
+
 };
 
 class AugustusGraph : public Graph{
@@ -330,6 +332,8 @@ public:
     bool mergedStopcodon(StateType type1, StateType type2, int end1, int begin2);
     void getPoints(Status *st, double p, double *a1, double *a2, double *b1, double *b2);
     float getAvgBaseProb(Status *st);
+    float getAvgBaseProb(ExonCandidate *ec);
+
     const char* sequence;
     int seqlength;
     vector<double> baseScore;

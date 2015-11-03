@@ -1280,3 +1280,16 @@ float AugustusGraph::getAvgBaseProb(Status *st){
     }
     return 0.0;
 }
+
+float AugustusGraph::getAvgBaseProb(ExonCandidate *ec){
+
+    float prob = 0.0;
+    for(int pos = ec->begin; pos<=ec->end; pos++){
+	int baseType = ec->frame(pos)*2;
+	if(!isPlusExon(ec->getExonType())){
+	    baseType+=1;
+	}
+	prob += baseScore[baseType*seqlength + pos];
+    }
+    return prob /= ec->len();
+}

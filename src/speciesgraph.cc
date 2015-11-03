@@ -222,6 +222,8 @@ Node* SpeciesGraph::addNode(Status *exon){
 Node* SpeciesGraph::addNode(ExonCandidate *exon){
 
   double score;
+  float avgBaseProb = getAvgBaseProb(exon);
+
   if(!Constant::logreg){
     score = ec_score;
   }else{
@@ -232,7 +234,7 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
       + Constant::ex_sc[3] * log(exon->len())
       + Constant::ex_sc[12]; // for not beeing sampled
   }
-
+  
   /*
     if (string("fly") == Properties::getProperty("species"))
 	score =ec_thold - 9.9121118 + 0.3998047 * log(exon->len());
@@ -255,10 +257,13 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
 	+ 0.3235385 * log(exon->len());
   */
 
-    Node *node = new Node(exon->begin, exon->end, score, exon, unsampled_exon);
-    nodelist.push_back(node);
-    addToHash(node);
-    return node;
+  Node *node = new Node(exon->begin, exon->end, score, exon, unsampled_exon);
+  if(avgBaseProb>0.0)
+	printGF(exon, score, avgBaseProb);
+  nodelist.push_back(node);
+  addToHash(node);
+  
+  return node;
 }
 
 Node* SpeciesGraph::addNode(NodeType type, int pos){
@@ -472,6 +477,26 @@ void SpeciesGraph::printSampledGF(Status *st, double score){
     else
 	cout << "\t" << mod3(2-st->getFrame());
     cout << "\tName=" << (string)stateTypeIdentifiers[((State*)st->item)->type] <<";postProb="<< st->getPostProb() << ";avgBaseProb=" <<getAvgBaseProb(st)<< endl;
+    cout.rdbuf(coutbuf); //reset to standard output again 
+}
+
+
+void SpeciesGraph::printGF(ExonCandidate *ec, double score, float avgBaseProb){
+    streambuf *coutbuf = cout.rdbuf(); //save old buf
+    cout.rdbuf(sampled_GFs->rdbuf()); //redirect std::cout to species file
+    cout << getSeqID() << "\tEC\tCDS\t";
+    if(strand == plusstrand){
+	cout <<  ec->begin + getSeqOffset() + 1 << "\t" << ec->end + getSeqOffset() + 1;
+    }
+    else{
+	cout << getSeqLength() - ec->end + getSeqOffset() << "\t" << getSeqLength() - ec->begin + getSeqOffset();
+    }
+    cout << "\t" << score;
+    // the gff strand of the exon is the "strand product" of the alignment strand and exon type strand
+    // e.g. "-" x "-" = "+"
+    cout << "\t" << ((isPlusExon(ec->type) == (strand == plusstrand))? '+' : '-');
+    cout << "\t" << ec->gff3Frame();
+    cout << "\tName=" << (string)stateTypeIdentifiers[ec->getStateType()] << ";postProb=0;avgBaseProb=" << avgBaseProb << endl;
     cout.rdbuf(coutbuf); //reset to standard output again 
 }
 
