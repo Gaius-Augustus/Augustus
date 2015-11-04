@@ -222,7 +222,7 @@ Node* SpeciesGraph::addNode(Status *exon){
 Node* SpeciesGraph::addNode(ExonCandidate *exon){
 
   double score;
-  float avgBaseProb = getAvgBaseProb(exon);
+  //float avgBaseProb = getAvgBaseProb(exon);
 
   if(!Constant::logreg){
     score = ec_score;
@@ -232,6 +232,7 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
       + Constant::ex_sc[1] // for not having omega
       + Constant::ex_sc[2] // for not beeing an OE
       + Constant::ex_sc[3] * log(exon->len())
+	//+ Constant::ex_sc[5] * avgBaseProb // average base prob
       + Constant::ex_sc[12]; // for not beeing sampled
   }
   
@@ -258,9 +259,9 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
   */
 
   Node *node = new Node(exon->begin, exon->end, score, exon, unsampled_exon);
-  // average base probs of not sampled ECs
+  // print average base probs of not sampled ECs
   //if(avgBaseProb>0.0) 
-  //	printGF(exon, score, avgBaseProb);
+  //  printGF(exon, score, avgBaseProb);
   nodelist.push_back(node);
   addToHash(node);
   
