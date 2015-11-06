@@ -46,6 +46,7 @@ public:
 	frame(_frame),
 	score(_score),
 	extrinsic(""),
+	mult(0),
 	gene(NULL)
     {}
     ~GeneFeature() {}
@@ -64,7 +65,9 @@ public:
     std::string writeFrame() const;
     double getScore() const {return score;}
     void setEvidence(std::string e){ if(extrinsic.empty()){extrinsic=e;}}
+    void setMult(int m){mult=m;}
     std::string getEvidence() const {return extrinsic;}
+    int getMult() const {return mult;}
     FeatureType getFeatureType() const {return type;}
     int lenMod3() const {return ((len) % 3);}
     bool hasEvidence() const {return !extrinsic.empty();}
@@ -88,6 +91,7 @@ private:
     double score;
     std::string extrinsic; // source of extrinsic info, e.g. 'M' (manual) or 'E' (EST).
                            // empty, if gene feature is not supported by extrinsic evidence, 
+    int mult;
     Gene *gene;            // pointer to the gene the feature belongs to
     /*
      * homologous gene features, e.g. gene features that map

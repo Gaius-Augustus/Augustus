@@ -1,4 +1,3 @@
-
 /**********************************************************************
  * file:    genome.cc
  * licence: Artistic Licence, see file LICENCE.TXT or 
@@ -62,6 +61,8 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		 */
 		const char *spos;
 		string esource;
+		int mult = 0;
+
 		spos = strstr(tokens[8].c_str(), "source=");
 		if (spos)
 		    spos += 7;
@@ -79,6 +80,11 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		} else {
 		    throw ProjectError("No source specified (e.g. by source=M in the last column).\n");
 		}
+		spos = strstr(tokens[8].c_str(), "mult=");
+		if (spos)
+		    spos += 5;
+		if (spos)
+		    mult = atoi(spos);
 		/*
 		 * find all gene features that are supported
 		 * by that hint and update their extrinsic source
@@ -102,6 +108,7 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		    if(!isGF){
 			GeneFeature *gf = new GeneFeature(type, start, end, strand, frame);
 			gf->setEvidence(esource);
+			gf->setMult(mult);
 			insertSeqInt(gf, seqid);
 			hints.push_back(gf);		 
 		    }
@@ -620,8 +627,8 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 		
 		of << "#";
 		of << setw(4) << right << i << " ";
-		of << "gene_id="<< setw(12) << left << giit->second.gene->getGeneID();
-		of << "tx_id="<< setw(12) << left << giit->first;
+		of << "gene_id="<< setw(30) << left << giit->second.gene->getGeneID();
+		of << "tx_id="<< setw(30) << left << giit->first;
 		of << setw(3) << right << giit->second.numMatchingEs;
  		of << "/"<< numE << " CDS";
 		of <<setw(3) << right << giit->second.numMatchingIs;
@@ -682,6 +689,7 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
     int pred_idx = 0;
     bool hasMatch = false;
     string evidence = "";
+    int mult = 0;
     string onlyHint = "*";
 
     
@@ -691,7 +699,7 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
     else
 	of << "Intr ";
     if(g->hasEvidence())
-	of << g->getEvidence() <<" (";
+	of << g->getEvidence() << "-" << g->getMult() <<" (";
     else
 	of <<"  (";
     for(list<pair<int,GeneFeature*> >::iterator hit = homologs.begin(); hit != homologs.end(); hit++){
@@ -703,18 +711,21 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
 	    of << pred_idx << evidence << onlyHint << " ";
 	    hasMatch = false; // reset all flags
 	    evidence = "";
+	    mult = 0;
 	    onlyHint = "*";
 	}
 	hasMatch = true;
-	if(evidence.empty() && h->hasEvidence())
+	if(evidence.empty() && h->hasEvidence()){
 	    evidence = h->getEvidence();
+	    mult = h->getMult();
+	}
 	if(h->isPartofGene()){
 	    onlyHint = "";
 	}
 	pred_idx = idx;
     }   
     if(hasMatch)      
-	of << pred_idx << evidence << onlyHint << " ";
+	of << pred_idx << evidence << "-" << mult << onlyHint << " ";
     of << ")" << endl;
 
 }
