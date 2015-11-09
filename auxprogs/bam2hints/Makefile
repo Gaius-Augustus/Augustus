@@ -20,13 +20,13 @@ LINK.cc = g++
 # $@: full target name of current target. 
 # $<: .c file of target. 
 bam2hints : $(OBJECTS) 
-	$(LINK.cc) $(CFLAGS) -o $@ $(OBJECTS) $(LIBS) 
+	$(LINK.cc) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBS) 
 	cp bam2hints ../../bin
 
 all:$(OBJECTS) # Compiles each foo.cc into foo.o
 
 bam2hints.o : $(SOURCES)
-	$(LINK.cc) $(CFLAGS) -c $< -o $@ -I$(INCLUDES) 
+	$(LINK.cc) $(CFLAGS) $(CPPFLAGS) -c $< -o $@ -I$(INCLUDES) 
 
 clean: 
 	rm -f bam2hints.o bam2hints ../../bin/bam2hints
