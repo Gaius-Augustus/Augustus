@@ -31,10 +31,10 @@ CHECKBAM:
 	fi
 
 $(PROGRAM) : $(OBJECTS) 
-	$(LINK.cc) $(CFLAGS) $^ -o $@ $(LIBS) 
+	$(LINK.cc) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS) 
 
 $(OBJECTS) : %.o:%.cc
-	$(LINK.cc) $(CFLAGS) -c $^ -o $@ $(INCLUDES) 
+	$(LINK.cc) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(INCLUDES) 
 
 
 clean: 
