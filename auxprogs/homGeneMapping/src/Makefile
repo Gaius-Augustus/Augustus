@@ -25,10 +25,10 @@ all: homGeneMapping
 .SUFFIXES: .cc .o .so
 
 .cc.o:
-	$(CC) -c $(CFLAGS) -o $@ $< $(INCLS)
+	$(CC) -c $(CFLAGS) $(LDFLAGS) -o $@ $< $(INCLS)
 
 homGeneMapping: main.cc $(OBJS)
-	 $(CC) $(CFLAGS) -o $@ $^ $(INCLS)
+	 $(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $^ $(INCLS)
 	mv homGeneMapping ../bin/
 	cp ../bin/homGeneMapping ../../../bin/homGeneMapping
 clean:	
