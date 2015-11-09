@@ -531,6 +531,17 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
                 cout << ";labelpattern=" << stored_pattern <<":"<< current_pattern;
 	    // output logistic regression score for analysis
 	    cout << ";oescore=" << oe.getLogRegScore();
+	    // output postprobs of all exons in OE
+	    cout << ";ec_postProbs=";
+	    for(int i=0; i < numSpecies(); i++){
+	      if(oe.orthonode[i] != NULL){
+		if(oe.orthonode[i]->n_type == sampled){
+		  cout << ((State*)oe.orthonode[i]->item)->apostprob << ",";
+		}else{
+		  cout << "0,";
+		}
+	      }
+	    }
 	    cout << endl;
         }
     }
