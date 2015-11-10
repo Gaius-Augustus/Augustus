@@ -276,8 +276,8 @@ OPTIONS:\n\
                               # 3     dmel\n\
                               # 4     dmoj\n\
                               # 5     dper\n\
-                              (0, jg4139.t1) (0, jg4140.t1) (1, jg7797.t1) (2, jg3247.t1) (4, jg6720.t1) (5, jg313.t1)\n\
-                              (1, jg14269.t1) (3, jg89.t1) (5, jg290.t1)\n\
+                              (0,jg4139.t1) (0,jg4140.t1) (1,jg7797.t1) (2,jg3247.t1) (4,jg6720.t1) (5,jg313.t1)\n\
+                              (1,jg14269.t1) (3,jg89.t1) (5,jg290.t1)\n\
                               ...\n\
                               Two transcripts are in the same set, if all their exons/introns are homologs and their are\n\
                               no additional exons/introns.\n\

@@ -102,6 +102,7 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		    for(list<GeneFeature*>::iterator it=le.begin(); it!=le.end(); it++){
 			if((*it)->sameFrame(frame)){
 			    (*it)->setEvidence(esource); // update extrinsic source
+			    (*it)->setMult(mult);
 			    isGF = true;
 			}
 		    }
@@ -701,14 +702,17 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
     if(g->hasEvidence())
 	of << g->getEvidence() << "-" << g->getMult() <<" (";
     else
-	of <<"  (";
+	of <<"    (";
     for(list<pair<int,GeneFeature*> >::iterator hit = homologs.begin(); hit != homologs.end(); hit++){
 	
 	int idx = hit->first;
 	GeneFeature* h = hit->second;
 	
 	if(pred_idx < idx && hasMatch){ // next genome
-	    of << pred_idx << evidence << onlyHint << " ";
+	    of << pred_idx;
+	    if(!evidence.empty())
+		of << evidence << onlyHint << "-" << mult;
+	    of << " ";
 	    hasMatch = false; // reset all flags
 	    evidence = "";
 	    mult = 0;
@@ -724,8 +728,12 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
 	}
 	pred_idx = idx;
     }   
-    if(hasMatch)      
-	of << pred_idx << evidence << "-" << mult << onlyHint << " ";
+    if(hasMatch){      
+	of << pred_idx;
+	if(!evidence.empty())
+	    of << evidence << onlyHint << "-" << mult;
+	of << " ";
+    }
     of << ")" << endl;
 
 }
