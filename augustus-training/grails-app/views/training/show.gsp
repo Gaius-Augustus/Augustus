@@ -72,7 +72,7 @@
          <li><a href="http://bioinf.uni-greifswald.de/bioinf/forum">AUGUSTUS Forum</a></li>
          <li><a href="http://bioinf.uni-greifswald.de/augustus/downloads/index.php">Download AUGUSTUS</a></li>
          <li><a href="http://bioinf.uni-greifswald.de/augustus">Old AUGUSTUS gene prediction web server</a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/braker">BRAKER</a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/bioinf/braker">BRAKER</a></li>
 	  <li>&nbsp;</li>
          <li><div id="linksMenuText">Other Links</div></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group Greifswald</span></a></li>
