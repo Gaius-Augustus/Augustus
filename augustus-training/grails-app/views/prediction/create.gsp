@@ -84,9 +84,10 @@
 	  <li>&nbsp;</li>
          <li><div id="linksMenuText">Other AUGUSTUS Resources</div></li>
          <li><a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus">AUGUSTUS Wiki</a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Forum.Forum">AUGUSTUS Forum</a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/bioinf/forum">AUGUSTUS Forum</a></li>
          <li><a href="http://bioinf.uni-greifswald.de/augustus/downloads/index.php">Download AUGUSTUS</a></li>
          <li><a href="http://bioinf.uni-greifswald.de/augustus">Old AUGUSTUS gene prediction web server</a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/braker">BRAKER</a></li>
 	  <li>&nbsp;</li>
          <li><div id="linksMenuText">Other Links</div></li>
          <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group Greifswald</span></a></li>
@@ -128,7 +129,6 @@
 <p>Please read the <a href="../predictiontutorial.gsp">prediction tutorial</a> before submitting a job for the first time. Example data for this form is available <a href="../predictiontutorial.gsp#exampledata">here</a>. You may also use the button below to insert sample data. Please note that you will always need to enter the verification string at the bottom of the page, yourself, in order to submit a job!</p>
 
 <p><b>Current problem:</b> Regrettably, our server is currently connected to the internet via a rather unreliable connection. This may cause connection timeouts (caused by server side) when uploading big files. Please use the web link upload option, instead, if you experience such problems. We apologize for the inconvenience!</p>
-
            <g:actionSubmit action="fillSample" value="Fill in Sample Data" />
 
 
