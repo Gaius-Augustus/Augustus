@@ -66,6 +66,10 @@ GeneMSA::GeneMSA(RandSeqAccess *rsa, Alignment *a) {
     ends.resize(alignment->numRows(), -1);
     offsets.resize(alignment->numRows(), 0);
     for (size_t s=0; s < alignment->numRows(); s++){
+	if (alignment->rows[s] && alignment->rows[s]->frags.empty()){
+	    delete alignment->rows[s];
+	    alignment->rows[s] = NULL;
+	}
 	if (alignment->rows[s]){
 	    int chrLen = rsa->getChrLen(s, alignment->rows[s]->seqID);
 	    switch (getStrand(s))
