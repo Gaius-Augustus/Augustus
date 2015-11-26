@@ -320,7 +320,7 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &geneli
 	    double path_score = globalPathSearch();
 	    int numInconsistent = 0;
 	    double hect_score = 0;
-	    if(t == 0){
+	    if(t == 0 && r == 0){
 		// initially set labels of hects by a simple majority rule
 		// set all labels of a hect to 1, if the majority
 		// iff the corresponding labels in the graph are labelled with one/
@@ -376,7 +376,7 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &geneli
 	    old_dual = current_dual;
 	}
 	// reset weights
-	for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
+	/*for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
 	    for(size_t pos = 0; pos < numSpecies; pos++){
 		if(hects->orthoex[pos]){
 		    Node* node = hects->orthonode[pos];
@@ -384,7 +384,7 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &geneli
 		    hects->weights[pos] = 0;     
 		}
 	    }
-	}
+	    }*/
     }
     double best_gap = abs(best_dual - best_primal);
     double initial_gap = abs(best_dual - initial_primal);
