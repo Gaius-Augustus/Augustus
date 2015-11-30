@@ -55,7 +55,7 @@ public:
     int getStart(int speciesIdx){ return starts[speciesIdx]; }
     int getEnd(int speciesIdx){ return ends[speciesIdx]; }
     list<ExonCandidate*>* getExonCands(int speciesIdx){ return exoncands.at(speciesIdx); }
-    list<OrthoExon> getOrthoExons() { return orthoExonsList; }
+    //list<OrthoExon> getOrthoExons() { return orthoExonsList; }
     Alignment * getAlignment() {return alignment;}
     vector<int> getOffsets() {return offsets;}
  
@@ -80,20 +80,20 @@ public:
      * - the phases at both boundaries agree (i.e. exon candidate types and length modulo 3)
      * EC coordinates are region-based, as they are used in the OrthoGraph
      */
-    void createOrthoExons(map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, Evo *evo, float consThres = 0.0, int minAvLen = 0);
+    void createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, Evo *evo, float consThres = 0.0, int minAvLen = 0);
     void printStats(); // to stdout
     void printGeneRanges();
     void printExonCands();
-    void printOrthoExons();
-    void computeOmegas(vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
-    void computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli);
+    void printOrthoExons(list<OrthoExon> &orthoExonsList);
+    void computeOmegas(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
+    void computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli);
     void printCumOmega();
-    void comparativeSignalScoring();
+    void comparativeSignalScoring(list<OrthoExon> &orthoExonsList);
     // Charlotte Janas playground
     LocusTree *constructTree(); // creates, stores are returns the locus tree for the sequence tuple
 
     // calculate a columnwise conservation score and output it (for each species) in wiggle format
-    void calcConsScore(vector<AnnoSequence*> const &seqRanges, string outdir);
+    void calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, string outdir);
     double calcColumnScore(int a, int c, int t, int g); // input: number of a,c,t and g's in one alignment column 
     void consToWig(vector<double> &consScore, string outdir);
 
@@ -126,8 +126,8 @@ private:
     RandSeqAccess *rsa;
     Alignment* alignment;            // alignment of regions which possibly belong to a gene
     vector< list<ExonCandidate*>* > exoncands;  // exon candidates found in the different species in a gene segment
-    list<OrthoExon> orthoExonsList;		// list of ortholog exons found in a gene segment
-    unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> > cumOmega; // stores cumulative omega values for every reading frame combination and every bitvector that exist                                                                     
+    //list<OrthoExon> orthoExonsList;		// Steffi: due to multiple copying, I remove this as attribute of any class. Instead it can be passed from compgenepred.cc by reference, whenever necessary.
+    unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> > cumOmega; // stores cumulative omega values for every reading frame combination and every bitvector that exist 
 };
 
 

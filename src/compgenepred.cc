@@ -215,12 +215,6 @@ void CompGenePred::start(){
     }
     if(onlyCompleteGenes && Constant::utr_option_on)
 	genesWithoutUTRs = false;
-    bool featureScoreHects;
-    try {
-        featureScoreHects = Properties::getBoolProperty("/CompPred/featureScoreHects");
-    } catch (...) {
-        featureScoreHects = false;
-    }
     bool conservation;
     try {
         conservation = Properties::getBoolProperty("/CompPred/conservation");
@@ -261,10 +255,6 @@ void CompGenePred::start(){
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(outdir,".mea"); // equivalent to MEA prediction
     vector<int> base_geneid(OrthoGraph::numSpecies, 1); // gene numbering
-    vector<ofstream*> initGenes;
-    vector<int> init_geneid(OrthoGraph::numSpecies, 1);
-    if(featureScoreHects)
-	initGenes = initOutputFiles(outdir,".init"); // score added to all orthologous exons and penalty added to all non orthologous exons, then global path search repeated
     vector<ofstream*> optGenes = initOutputFiles(outdir,".cgp");  //optimized gene prediction by applying majority rule move
     vector<int> opt_geneid(OrthoGraph::numSpecies, 1);
     vector<ofstream*> sampledGFs = initOutputFiles(outdir,".sampled_GFs"); // prints sampled exons/introns and their posterior probs to file
@@ -409,7 +399,8 @@ void CompGenePred::start(){
 	addECs.clear(); // not needed anymore
 
 	// create HECTS
-	geneRange->createOrthoExons(alignedECs, &evo);
+	list<OrthoExon> hects;  // list of ortholog exons found in a gene Range
+	geneRange->createOrthoExons(hects, alignedECs, &evo);
 
 	if(meanIntrLen<0.0)
 	    meanIntrLen = mil_factor * IntronModel::getMeanIntrLen(); // initialize mean intron length
@@ -439,7 +430,7 @@ void CompGenePred::start(){
 	    geneRange->printExonCands();
 	try { // Kathrin Middendorf's playground
 	    if (Properties::getBoolProperty("/CompPred/compSigScoring"))
-		geneRange->comparativeSignalScoring(); 
+		geneRange->comparativeSignalScoring(hects); 
 	} catch (...) {}
 	
 	bool use_omega;
@@ -452,32 +443,25 @@ void CompGenePred::start(){
 	    use_omega = false;
 	}
 	if(use_omega)
-	    geneRange->computeOmegasEff(seqRanges, &ctree, &codonAli); // omega and number of substitutions is stored as OrthoExon attribute
+	    geneRange->computeOmegasEff(hects, seqRanges, &ctree, &codonAli); // omega and number of substitutions is stored as OrthoExon attribute
 	    //inefficient omega calculation, only use for debugging purpose 
-	    //geneRange->computeOmegas(seqRanges, &ctree);
+	    //geneRange->computeOmegas(hects, seqRanges, &ctree);
 	
 	if (conservation)
-	    geneRange->calcConsScore(seqRanges, outdir);
+	    geneRange->calcConsScore(hects, seqRanges, outdir);
 
 	if (noprediction){
-	    geneRange->printOrthoExons();
+	    geneRange->printOrthoExons(hects);
 	}
 	else{
-	  list<OrthoExon> hects = geneRange->getOrthoExons();
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
 	    orthograph.globalPathSearch();
 	    orthograph.outputGenes(baseGenes,base_geneid);
-	    if(featureScoreHects){
-		//add score for selective pressure of orthoexons
-		orthograph.addScoreSelectivePressure();
-		//determine initial path
-		orthograph.globalPathSearch();
-		orthograph.outputGenes(initGenes,init_geneid);
-	    }	    
-	    if(!orthograph.all_orthoex.empty()){
+	    	    
+	    if(!hects.empty()){
 		// optimization via dual decomposition
 		vector< list<Transcript*> *> genelist(OrthoGraph::numSpecies);
-		orthograph.dualdecomp(evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factors);
+		orthograph.dualdecomp(hects,evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factors);
 		orthograph.filterGeneList(genelist,opt_geneid);
 		orthograph.createOrthoGenes(geneRange);
 		orthograph.printOrthoGenes();
@@ -486,10 +470,7 @@ void CompGenePred::start(){
 	    }else{
 		orthograph.outputGenes(optGenes, opt_geneid);
 	    }
-	    //geneRange->printOrthoExons(); //TODO: two copies of list<OrthoExon> (class geneRange and class OrthoGraph) -> replace one copy by a pointer to the other 
-	    for(list<OrthoExon>::iterator it=orthograph.all_orthoex.begin(); it != orthograph.all_orthoex.end(); it++){
-		geneRange->printSingleOrthoExon(*it,true);
-	    }
+	    geneRange->printOrthoExons(hects);
 	}
 	// delete sequences
 	for (int i=0; i<seqRanges.size(); i++) {
@@ -500,8 +481,6 @@ void CompGenePred::start(){
     }
 
     GeneMSA::closeOutputFiles();
-    if(featureScoreHects)
-	closeOutputFiles(initGenes);
     closeOutputFiles(baseGenes);
     closeOutputFiles(optGenes);
     closeOutputFiles(sampledGFs);

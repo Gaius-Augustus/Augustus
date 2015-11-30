@@ -227,8 +227,8 @@ void closeOutputFiles(vector<ofstream*> filestreams){
 	}
     }
 }
-
-void OrthoGraph::addScoreSelectivePressure(){
+/* old code
+  void OrthoGraph::addScoreSelectivePressure(){
 
     double a;
     double b;
@@ -283,7 +283,7 @@ void OrthoGraph::addScoreSelectivePressure(){
 	    }
 	}
     }
-}
+    }*/
 
 double OrthoGraph::globalPathSearch(){
 
@@ -297,7 +297,7 @@ double OrthoGraph::globalPathSearch(){
     return score;
 }
 
-double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &genelist, int gr_ID, int T, vector<double> &c){
+double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector< list<Transcript*> *> &genelist, int gr_ID, int T, vector<double> &c){
 
     cout << "dual decomposition on gene Range " << gr_ID << endl;
     cout<<"round\titer\tstep_size\tprimal\tdual\t#inconsistencies"<<endl;
@@ -325,16 +325,16 @@ double OrthoGraph::dualdecomp(ExonEvo &evo, vector< list<Transcript*> *> &geneli
 		// set all labels of a hect to 1, if the majority
 		// iff the corresponding labels in the graph are labelled with one/
 		// otherwise, set all labels to 0
-		hect_score += init(evo,numInconsistent);
+		hect_score += init(all_orthoex,evo,numInconsistent);
 	    }
 	    else{
-		hect_score += treeMAPInf(evo,numInconsistent);
+		hect_score += treeMAPInf(all_orthoex,evo,numInconsistent);
 	    }
 	    double current_dual = path_score + hect_score;       // dual value of the t-th iteration 
 	    best_dual = min(best_dual,current_dual);              // update upper bound
 	    if( (t >= 1) && (old_dual < current_dual) )  // update v
 		v++;
-	    double current_primal = path_score + makeConsistent(evo); // primal value of the t-the iteration
+	    double current_primal = path_score + makeConsistent(all_orthoex,evo); // primal value of the t-the iteration
 	    if(best_primal < current_primal){
 		best_primal = current_primal;
 		buildGeneList(genelist); // save new record
@@ -403,7 +403,7 @@ double OrthoGraph::getStepSize(double c, int t, int v){
     return c/sqrt(v+1);
 }
 
-double OrthoGraph::init(ExonEvo &evo, int &numInconsistent){
+double OrthoGraph::init(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &numInconsistent){
 
     double score = 0;
     double k =evo.getPhyloFactor(); //scaling factor 
@@ -436,7 +436,7 @@ double OrthoGraph::init(ExonEvo &evo, int &numInconsistent){
     
 }
 
-double OrthoGraph::treeMAPInf(ExonEvo &evo, int &numInconsistent){
+double OrthoGraph::treeMAPInf(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &numInconsistent){
 
     double score=0;
     double k =evo.getPhyloFactor(); //scaling factor 
@@ -454,7 +454,7 @@ double OrthoGraph::treeMAPInf(ExonEvo &evo, int &numInconsistent){
     return score;
 }
 
-double OrthoGraph::makeConsistent(ExonEvo &evo){
+double OrthoGraph::makeConsistent(list<OrthoExon> &all_orthoex, ExonEvo &evo){
 
     double score = 0;
     double k =evo.getPhyloFactor(); //scaling factor 
@@ -472,9 +472,8 @@ double OrthoGraph::makeConsistent(ExonEvo &evo){
     return score;
 }	
 
-void OrthoGraph::linkToOEs(list<OrthoExon> &oes){
+void OrthoGraph::linkToOEs(list<OrthoExon> &all_orthoex){
 
-    all_orthoex = oes;
     for(list<OrthoExon>::iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
 	double oe_score = it->getLogRegScore();
 	for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){ 

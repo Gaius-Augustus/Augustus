@@ -29,7 +29,7 @@
 #endif
 
 
-#define NUMPARNAMES 247
+#define NUMPARNAMES 246
 
 #define GENEMODEL_KEY "genemodel"
 #define NONCODING_KEY "nc"

@@ -213,7 +213,7 @@ void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCand
 /**
  * createOrthoExons
  */
-void GeneMSA::createOrthoExons(map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, Evo *evo, float consThres, int minAvLen) {
+void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, Evo *evo, float consThres, int minAvLen) {
 
     //cout << "Creating ortho exons for alignment" << endl << *alignment << endl;
     int k = alignment->rows.size();
@@ -452,7 +452,7 @@ void GeneMSA::printExonCands() {
 
 // writes all ortholog exons of all species in the files 'orthoExons.species.gff3'
 // orthoexons are sorted by alignment start coordinate
-void GeneMSA::printOrthoExons() {
+void GeneMSA::printOrthoExons(list<OrthoExon> &orthoExonsList) {
     if (orthoExonsList.empty())
 	return;
     for (list<OrthoExon>::iterator oeit = orthoExonsList.begin(); oeit != orthoExonsList.end(); ++oeit)
@@ -725,7 +725,7 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 
 
 // computes and sets the Omega = dN/dS attribute to all OrthoExons
-void GeneMSA::computeOmegas(vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree) {
+void GeneMSA::computeOmegas(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree) {
     // int subst = 0;
     // Initialize for each species the first fragment froms[s] that 
     // is not completely left of the current OrthoExon.
@@ -853,7 +853,7 @@ void GeneMSA::printCumOmega(){
     cout<<"--------------------------------------------"<<endl;
 }
 
-void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli) {
+void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli) {
     cout<<"computing omega for each ortho exon."<<endl;
 
     // treat forward and reverse strand seperately (might be done more efficiently)
@@ -1164,7 +1164,7 @@ void GeneMSA::computeOmegasEff(vector<AnnoSequence*> const &seqRanges, PhyloTree
 
 
 // calculate a columnwise conservation score and output it (for each species) in wiggle format
-void GeneMSA::calcConsScore(vector<AnnoSequence*> const &seqRanges, string outdir){
+void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, string outdir){
 
     vector<vector<fragment>::const_iterator > fragsit(numSpecies());
     vector<size_t> seqPos(numSpecies(),0); 
@@ -1306,7 +1306,7 @@ void GeneMSA::closeOutputFiles(){
     }
 }
 
-void GeneMSA::comparativeSignalScoring(){
+void GeneMSA::comparativeSignalScoring(list<OrthoExon> &orthoExonsList){
     cout << "entering comparativeSignalScoring" << endl;
     ExonCandidate *ec;
     for (list<OrthoExon>::iterator oeit = orthoExonsList.begin(); oeit != orthoExonsList.end(); ++oeit){

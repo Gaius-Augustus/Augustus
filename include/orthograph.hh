@@ -41,14 +41,15 @@ public:
     static size_t numSpecies; //the number of species
     vector<SpeciesGraph*> graphs;
     static PhyloTree *tree;
-    list<OrthoExon> all_orthoex;
     vector< list<Transcript*> *> ptrs_to_alltranscripts; // stores pointers to alltranscripts until they can be deleted (destructor of OrthoGraph)
     vector< SequenceFeatureCollection* > sfcs;  // stores extrinsic evidence for each species
     vector< list<AltGene> *> geneLists; // filtered and processed genes as they appear in the gff files (input of OrthoGene class)
     list<OrthoGene> all_orthogenes; // to be created by Patrick Balmerths code
 
     void linkToOEs(list<OrthoExon> &oes); // link ECs in HECTS to nodes in orthograph 
-    void addScoreSelectivePressure(); //const. reward for orthologous exons and const. penalty for non-orthologous exons. Only temporary until PAML is integrated.
+    // old code
+    // void addScoreSelectivePressure(); //const. reward for orthologous exons and const. penalty for non-orthologous exons. Only temporary until PAML is integrated.
+     
     /*
      * optimization via dual decomposition
      * problem is decomposed into two subproblems whith can be solved efficiently:
@@ -56,12 +57,12 @@ public:
      * verical problem: MAP inference on a set of disjoint phylogenetic trees whose
      * leaf nodes are assigned to weights.
      */
-    double dualdecomp(ExonEvo &evo,vector< list<Transcript*> *> &genelist, int gr_ID, int T, vector<double> &c);  //main routine
-    double treeMAPInf(ExonEvo &evo, int &numInconsistent);  //vertical problem
+    double dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo,vector< list<Transcript*> *> &genelist, int gr_ID, int T, vector<double> &c);  //main routine
+    double treeMAPInf(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &numInconsistent);  //vertical problem
     double globalPathSearch(); // horizontal problem
     double getStepSize(double c,int t, int v);    // specifies a sequence of steps
-    double makeConsistent(ExonEvo &evo);
-    double init(ExonEvo &evo, int &numInconsistent) ;
+    double makeConsistent(list<OrthoExon> &all_orthoex, ExonEvo &evo);
+    double init(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &numInconsistent) ;
 
     // transform graph labeling into list of genes + filter + output
     void buildGeneList(vector< list<Transcript*>* > &genelist);
