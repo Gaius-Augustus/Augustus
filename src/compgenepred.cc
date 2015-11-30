@@ -374,29 +374,32 @@ void CompGenePred::start(){
 		}
 	    }
 	}
-	// liftover of sampled exons to other species
-	vector<int> offsets = geneRange->getOffsets();
-	LiftOver lo(geneRange->getAlignment(), offsets);
-	map<int_fast64_t, list<pair<int,ExonCandidate*> > > alignedECs; // hash of aligned ECs
-	lo.projectToAli(exoncands,alignedECs);
-	lo.projectToGenome(alignedECs, seqRanges, exoncands); // inserts ECs that are mappable to other species both into alignedECs and exoncands
-
-	// create additional ECs for each species and  insert them into exoncands and alignedECs
-	vector<map<int_fast64_t,ExonCandidate*> > addECs(speciesNames.size()); // new ECs that need to be mapped to the alignment
+	
+	// create additional ECs for each species and  insert them into exoncands
         for (int s = 0; s < speciesNames.size(); s++) {
 	    if (seqRanges[s]) {
 		AnnoSequence *as = seqRanges[s];		
 		// this is needed for IntronModel::dssProb in GenomicMSA::createExoncands
 		namgene.getPrepareModels(as->sequence, as->length); 
 		// identifies exon candidates in the sequence for species s
-		geneRange->createExonCands(s, as->sequence, exoncands[s], addECs[s]);
+		geneRange->createExonCands(s, as->sequence, exoncands[s]);
 	    }
 	}
-	exoncands.clear(); // not needed anymore, exoncands are now stored as a vector of lists of ECs in geneRange
 
-	// map additional ECs to alignment space and insert them into alignedECs
-	lo.projectToAli(addECs,alignedECs);
-	addECs.clear(); // not needed anymore
+	// liftover
+	vector<int> offsets = geneRange->getOffsets();
+	LiftOver lo(geneRange->getAlignment(), offsets);
+	map<int_fast64_t, list<pair<int,ExonCandidate*> > > alignedECs; // hash of aligned ECs
+
+	// liftover of ECs from genome to alignment space
+	lo.projectToAli(exoncands,alignedECs);
+
+	// liftover of ECs from alignment space to genome space
+	// inserts missing ECs, that f.e. didn't pass the splice site filter
+	lo.projectToGenome(alignedECs, seqRanges, exoncands);
+	
+	geneRange->setExonCands(exoncands);
+	exoncands.clear(); // not needed anymore, exoncands are now stored as a vector of lists of ECs in geneRange
 
 	// create HECTS
 	list<OrthoExon> hects;  // list of ortholog exons found in a gene Range

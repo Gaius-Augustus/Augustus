@@ -185,7 +185,7 @@ map<string,ExonCandidate*>* GeneMSA::getECHash(list<ExonCandidate*> *ec) {
 
 // computes and sets the exon candidates for species s
 // and inserts them into the hash of ECs if they do not exist already
-void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, ExonCandidate*> &addECs){
+void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCandidate*> &ecs){
     double assmotifqthresh = 0.15;
     double assqthresh = 0.3;
     double dssqthresh = 0.7;
@@ -198,17 +198,23 @@ void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCand
 	Properties::assignProperty("/CompPred/dssqthresh", dssqthresh);
 	// TODO Properties::assignProperty("/CompPred/minExonCandLen", minEClen);
     
-	findExonCands(ecs,addECs, dna, minEClen, assmotifqthresh, assqthresh, dssqthresh); 
+	findExonCands(ecs, dna, minEClen, assmotifqthresh, assqthresh, dssqthresh); 
     }
-    list<ExonCandidate*> *candidates = new list<ExonCandidate*>;
-    for(map<int_fast64_t, ExonCandidate*>::iterator ecit=ecs.begin(); ecit!=ecs.end(); ecit++){
-	candidates->push_back(ecit->second);
-    }
-    exoncands[s] = candidates;
-    ecs.clear(); // not needed anymore
-    cout << "Found " << exoncands[s]->size() << " ECs on species " << rsa->getSname(s) << endl; 
 }
 
+void GeneMSA::setExonCands(vector<map<int_fast64_t, ExonCandidate*> > &ecs){
+    for (int s = 0; s < ecs.size(); s++) {
+        if (!ecs[s].empty()){
+	    list<ExonCandidate*> *candidates = new list<ExonCandidate*>;
+	    for(map<int_fast64_t, ExonCandidate*>::iterator ecit=ecs[s].begin(); ecit!=ecs[s].end(); ecit++){
+		candidates->push_back(ecit->second);
+	    }
+	    exoncands[s] = candidates;
+	    ecs[s].clear(); // not needed anymore
+	    cout << "Found " << exoncands[s]->size() << " ECs on species " << rsa->getSname(s) << endl; 
+	}
+    }
+}
 
 /**
  * createOrthoExons

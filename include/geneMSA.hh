@@ -68,7 +68,8 @@ public:
      * that have a pattern, such that 5% of true splice site patterns have lower probability.
      * The default threshold of 0 means that all splice site patterns are considered.
      */
-    void createExonCands(int s, const char *dna, map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, ExonCandidate*> &addECs);
+    void createExonCands(int s, const char *dna, map<int_fast64_t, ExonCandidate*> &ecs);
+    void setExonCands(vector<map<int_fast64_t, ExonCandidate*> > &ecs);
 
     /**
      * find all ortholog exon candidates, that are present in at least max(2, consThresh * m)

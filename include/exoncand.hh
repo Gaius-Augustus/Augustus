@@ -103,7 +103,7 @@ private:
  * The default threshold of 0 means that all splice site patterns are considered.
  */
 
-void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, ExonCandidate*> &addECs, const char *dna, int minLen=1, double assmotifqthresh=0.15, double assqthresh=0.3, double dssqthresh=0.7);
+void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, const char *dna, int minLen=1, double assmotifqthresh=0.15, double assqthresh=0.3, double dssqthresh=0.7);
 
 //computes the score for the splice sites of an exon candidate
 Double computeSpliceSiteScore(Double exonScore, Double minProb, Double maxProb); 
