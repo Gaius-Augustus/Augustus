@@ -19,6 +19,8 @@ $usage .= "                When this option is given, an additional file with th
 $usage .= "                coding exon sequences (augustus.cdsexons) is output.\n";
 $usage .= "                and a file with the complete mRNA including UTRs (augustus.mrna) is output.\n";
 $usage .= "   --chop_cds   for incomplete transcripts: cut off bases before first codon.\n";
+$usage .= "                This flag only takes effect if coding sequence is not included in the\n";
+$usage .= "                AUGUSTUS output.\n";
 
 my ($seqname, $trid, $status, $haveCod, $haveAA, $haveCDS, $haveRNA, $seq, $seqfile, $chop_cds);
 
