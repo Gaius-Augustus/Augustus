@@ -172,6 +172,12 @@ a small data set for testing can be found in examples/cgp/
   start/DSS, ASS/stop and start/stop that are within the maximum length of exons (--max_exon_len, default: 12000).
   Turn this flag on, to reduce the overall runtime memory requirements (default: off)
 
+--/CompPred/liftover_all_ECs=on/off
+  by default only likely exon candidates (the ones from sampling) are lifted over to
+  the other genomes. If this flag is turned on ALL exon candidates are lifted over to
+  the other genomes. This increases the runtime and memory requirement, but is potentially
+  more accurate (default: off)
+
 --/CompPred/exon_gain=q_gain --/CompPred/exon_loss=q_loss
   rate of exon gain and rate of exon loss (parameters of the phylogenetic model)
   q_gain and q_loss are positive real numbers
