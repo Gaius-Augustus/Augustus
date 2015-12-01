@@ -185,7 +185,7 @@ map<string,ExonCandidate*>* GeneMSA::getECHash(list<ExonCandidate*> *ec) {
 
 // computes and sets the exon candidates for species s
 // and inserts them into the hash of ECs if they do not exist already
-void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCandidate*> &ecs){
+void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, ExonCandidate*> &addECs){
     double assmotifqthresh = 0.15;
     double assqthresh = 0.3;
     double dssqthresh = 0.7;
@@ -198,21 +198,21 @@ void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCand
 	Properties::assignProperty("/CompPred/dssqthresh", dssqthresh);
 	// TODO Properties::assignProperty("/CompPred/minExonCandLen", minEClen);
     
-	findExonCands(ecs, dna, minEClen, assmotifqthresh, assqthresh, dssqthresh); 
+	findExonCands(ecs, addECs, dna, minEClen, assmotifqthresh, assqthresh, dssqthresh); 
     }
 }
 
 void GeneMSA::setExonCands(vector<map<int_fast64_t, ExonCandidate*> > &ecs){
     for (int s = 0; s < ecs.size(); s++) {
         if (!ecs[s].empty()){
-	    list<ExonCandidate*> *candidates = new list<ExonCandidate*>;
-	    for(map<int_fast64_t, ExonCandidate*>::iterator ecit=ecs[s].begin(); ecit!=ecs[s].end(); ecit++){
-		candidates->push_back(ecit->second);
-	    }
-	    exoncands[s] = candidates;
-	    ecs[s].clear(); // not needed anymore
-	    cout << "Found " << exoncands[s]->size() << " ECs on species " << rsa->getSname(s) << endl; 
-	}
+            list<ExonCandidate*> *candidates = new list<ExonCandidate*>;
+            for(map<int_fast64_t, ExonCandidate*>::iterator ecit=ecs[s].begin(); ecit!=ecs[s].end(); ecit++){
+                candidates->push_back(ecit->second);
+            }
+            exoncands[s] = candidates;
+            ecs[s].clear(); // not needed anymore
+            cout << "Found " << exoncands[s]->size() << " ECs on species " << rsa->getSname(s) << endl; 
+        }
     }
 }
 
@@ -236,32 +236,50 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
      */
     int numOE = 0;
     for (aec = alignedECs.begin(); aec != alignedECs.end(); ++aec){
+
+	// first remove "absent" ECs, e.g. all tuples (speciesIdx,NULL) from the list        
+        bit_vector absent(k,0); // bit 1 for EC absent, but genome aligned
+        list<pair<int,ExonCandidate*> >::iterator it = aec->second.begin();
+	while (it != aec->second.end()){
+	    if(!it->second){
+                absent[it->first]=1;
+                it = aec->second.erase(it);
+            }
+            else{
+                it++;
+            }
+        }
+
 	if (aec->second.size() >= minEC){
 	    float avLen = 0.0;
 	    OrthoExon oe(aec->first, numSpecies());
-	    bit_vector bv(k,0);
+	    bit_vector present(k,0);      // bit 1 for ECs that are present
+	    bit_vector aligned = present; // bit 1 for ECs that are aligned, ToDo: initialize with "absent"
 	    oe.orthoex.resize(k, NULL);
-	    for (list<pair<int,ExonCandidate*> >::iterator it = aec->second.begin(); it != aec->second.end(); ++it){
+	    for (it = aec->second.begin(); it != aec->second.end(); ++it){
 		int s = it->first;
 		ExonCandidate *ec = it->second;
 		// cout << rsa->getSname(s) << "\t" << ec->getStart() + offsets[s] << ".." << ec->getEnd() + offsets[s] << "\t" << *ec << endl;
 		if (oe.orthoex[s])
 		    throw ProjectError("createOrthoExons: Have two exon candidates from the same species " 
 				       + rsa->getSname(s) + " with the same key " + itoa(aec->first));
-		bv[s]=1;
+		present[s]=1;
+		aligned[s]=1;
 		oe.orthoex[s] = ec;
 		avLen += ec->len();
 	    }
 	    avLen /= aec->second.size(); // compute average length of exon candidates in oe
 	    if (avLen >= minAvLen){
 		oe.ID = orthoExonID;
-		oe.setBV(bv);
+		oe.setBV(present);
+		oe.setPresent(present);
+		oe.setAbsent(absent);
 		// link OE to tree topology
-		topit = topologies.find(bv);
+		topit = topologies.find(aligned);
 		if(topit == topologies.end()){ // insert new topology
 		    PhyloTree *t = new PhyloTree(*tree);
-		    t->prune(bv,evo);
-		    topologies.insert(pair<bit_vector,PhyloTree*>(bv,t));
+		    t->prune(aligned,evo);
+		    topologies.insert(pair<bit_vector,PhyloTree*>(aligned,t));
 		    oe.setTree(t);
 		}
 		else{

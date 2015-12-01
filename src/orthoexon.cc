@@ -21,7 +21,7 @@ OrthoExon::OrthoExon(int_fast64_t k, size_t n) : key(k), omega(-1.0), Eomega(-1.
     orthoex.resize(n);
     orthonode.resize(n);
     weights.resize(n,0);
-    labels.resize(n);
+    labels.resize(n,3); // initialize all species as "unaligned" (label 3)
 }
 
 StateType OrthoExon::getStateType() const{
@@ -47,15 +47,39 @@ bool OrthoExon::exonExists(int pos) const{
     return false;	    
 }
 
+/*
+ * setPresent() and setAbsent()
+ * initialization of 'labels'
+ */
+
+void OrthoExon::setPresent(bit_vector v){
+    for(int i=0; i<v.size(); i++){
+        if(v[i] == 1)
+            labels[i] = 0;
+    }
+}
+
+void OrthoExon::setAbsent(bit_vector v){
+    for(int i=0; i<v.size(); i++){
+        if(v[i] == 1)
+            labels[i] = 2;
+    }
+}
+
 void OrthoExon::setLabelpattern(){
     labelpattern.clear();
     for(size_t pos = 0; pos < orthonode.size(); pos++){
 	if(orthonode[pos]){
 	    labelpattern+=itoa(orthonode[pos]->label);
 	}
-	else{
+	else if(isAbsent(pos)){
 	    labelpattern+="-";
 	}
+	else if(isUnaligned(pos)){
+	    labelpattern+="_";
+	}
+	else
+	    throw ProjectError("Internal error in OrthoExon::setLabelpattern: unkown label");
     }
 }
 

@@ -39,12 +39,16 @@ public:
     size_t getContainment() const {return containment;}
     bool hasOmega() const {return Eomega >= 0.0;}
     bit_vector getBV() const {return bv;}
-  vector<int> getRFC(vector<int> offsets) const;
+    vector<int> getRFC(vector<int> offsets) const;
     PhyloTree* getTree() const {return tree;}
     int getAliStart() const {return (key>>22);} // start position of HECT in alignment
     int getAliLen() const {int aliStart=getAliStart(); int n=key-(aliStart<<22); return (n>>7);} // length of HECT + 1
     int getAliEnd() const {return getAliStart() + getAliLen();}
     bool exonExists(int pos) const; // returns true if OE has a candidate exon at position pos
+    bool isUnaligned(int i) const {return labels[i] == 3;} // true, if species i is not aligned
+    bool isAbsent(int i) const {return labels[i] == 2;}    // true, if species i is aligned, but ECs is absent
+    void setPresent(bit_vector v);
+    void setAbsent(bit_vector v);
     void setOmega(double o){omega=o;}
     void setOmega(vector<double>* llo, CodonEvo* codonevo, bool oeStart);
     void setSubst(int s){ subst=s;}
@@ -62,6 +66,13 @@ public:
     vector<ExonCandidate*> orthoex;
     vector<Node*> orthonode; //corresponding nodes in the graph
     vector<double> weights;
+    /*
+     * labels:
+     * 0 - EC present, but not predicted as exon
+     * 1 - EC present and predicted as exon
+     * 2 - EC absent, but alignment present
+     * 3 - alignment not present
+     */
     vector<int> labels;
     //TODO: instead of an attribute write a function getLabelpattern() which returns the current
     //label pattern. This is the safer way and guarantees to always have the current label pattern.

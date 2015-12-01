@@ -127,12 +127,24 @@ public:
      * mapping sequence intervals from positions in the alignment to positions in the genomes
      * input:  a hash that stores for each sequence interval T in alignment space a list of (speciesIdx, T*)
      *         a vector of AnnoSeqs (necessary to verify whether an si is mappable to the genome)
-     *         a vector of hashes of SIs. SIs that are mappable to other species are inserted into the
-     *         corresponding hash.
+     *         a vector of hashes of SIs.
+     *
+     * version 1)  'insertMissingSIs'=true
+     *
+     *         - tuple (i,*si) is inserted both in alignment space ('aligendSIs') and in genome space ('seqInts').
+     *           if an SI is mappable to species i (e.g. both boundaries are aligned to i and boundary signals are present).
+     *         - tuple (i,NULL) is inserted in alignment space, if an SI is not mappable, but aligned to species i
+     *         - (e.g. both boundaries are aligned to i, but a boundary signal is missing in i)
+     *
+     * version 2) 'insertMissingSIs'=false
+     *
+     *        - no new tuples (i,*si) are created
+     *        - tuple (i,NULL) is inserted in alignment space, if an SI is aligned to species i (e.g. both boundaries are aligned to i,
+     *          boundary signal can be present or not.)
      *         
      */
     template <typename T> void projectToGenome(map<int_fast64_t, list<pair<int,T*> > > &alignedSIs, vector<AnnoSequence*> const &seqRanges,
-					       vector< map<int_fast64_t,T*> > &seqints) {
+					       vector< map<int_fast64_t,T*> > &seqints, bool insertMissingSIs=true) {
 
 	int k = alignment->rows.size();
 	vector<vector<fragment>::const_iterator > fragsit(k);
@@ -172,20 +184,23 @@ public:
 		    continue; // searched beyond the last fragment
 		}
 		int_fast64_t chrStart = row->getChrPos(aliStart,fragsit[s]) - offsets[s];
-		if (chrStart >= 0){ // left sequence boundary mappable
-		    int_fast64_t chrEnd = row->getChrPos(aliEnd, fragsit[s]) - offsets[s];
-		    if (chrEnd >= 0){ // both sequence boundaries mappable
+		int_fast64_t chrEnd = row->getChrPos(aliEnd, fragsit[s]) - offsets[s];
+
+		if (chrStart >= 0 && chrEnd >= 0){ // both sequence boundaries are aligned to s
+		    T* si = NULL;
+		    if(insertMissingSIs){ // check if SI exists in species s (e.g. check if boundary signals are present)
 			SeqIntKey chrKey(chrStart,chrEnd-chrStart,aliKey.getAddInfo()); // key encodes SI start position and length in the genome
-			T* si = create(chrKey.getKey(), seqRanges[s]->sequence, seqRanges[s]->length);
+			si = create(chrKey.getKey(), seqRanges[s]->sequence, seqRanges[s]->length);
 			if(si){
-			    asi->second.insert(siit,pair<int,T*> (s, si));
-			    // insert mapped SIs into hash of s-th species
+			    // insert mapped SI in genome space
 			    seqints[s].insert(pair<int_fast64_t,T*>(chrKey.getKey(), si));
-			}   
+			}
 		    }
+		    // insert mapped/aligned SI in alignment space
+		    asi->second.insert(siit,pair<int,T*> (s, si));
 		}
-	    }		
-	}
+	    }
+	}	       
     }
 };
 

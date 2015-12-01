@@ -251,6 +251,17 @@ void CompGenePred::start(){
         mil_factor = 1.0; // a value of 100 roughly corresponds to not penalizing long introns
     }
     double meanIntrLen = -1.0; // initialized later
+    /*
+     * by default only likely exon candidates (the ones from sampling) are lifted over to
+     *  the other genomes. If this flag is turned on ALL exon candidates are lifted over
+     */
+    bool liftover_all_ECs;
+    try {
+        liftover_all_ECs = Properties::getBoolProperty("/CompPred/liftover_all_ECs");
+    } catch (...) {
+	liftover_all_ECs = false;
+    }
+
     
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(outdir,".mea"); // equivalent to MEA prediction
@@ -374,29 +385,39 @@ void CompGenePred::start(){
 		}
 	    }
 	}
+	// liftover of sampled exons to other species
+	vector<int> offsets = geneRange->getOffsets();
+	LiftOver lo(geneRange->getAlignment(), offsets);
+	map<int_fast64_t, list<pair<int,ExonCandidate*> > > alignedECs; // hash of aligned ECs
+	// liftover of sampled ECs from genome to alignment space
+	lo.projectToAli(exoncands,alignedECs);
 	
-	// create additional ECs for each species and  insert them into exoncands
+	/*
+	 * liftover of sampled ECs from alignment to genome space
+	 * - creates new ECs e_j that are sampled in a subset of species i != j
+	 * - marks e_j as "absent", if both boundaries of some EC e_i, i != j are aligned to j,
+	 *   but the exon signals (e.g. splice sites, open reading frame) are missing
+	 */
+	lo.projectToGenome(alignedECs, seqRanges, exoncands, true);
+
+	// create additional ECs for each species and  insert them into exoncands and alignedECs
+	vector<map<int_fast64_t,ExonCandidate*> > addECs(speciesNames.size()); // new ECs that need to be mapped to the alignment
         for (int s = 0; s < speciesNames.size(); s++) {
 	    if (seqRanges[s]) {
 		AnnoSequence *as = seqRanges[s];		
 		// this is needed for IntronModel::dssProb in GenomicMSA::createExoncands
 		namgene.getPrepareModels(as->sequence, as->length); 
 		// identifies exon candidates in the sequence for species s
-		geneRange->createExonCands(s, as->sequence, exoncands[s]);
+		geneRange->createExonCands(s, as->sequence, exoncands[s], addECs[s]);
 	    }
 	}
 
-	// liftover
-	vector<int> offsets = geneRange->getOffsets();
-	LiftOver lo(geneRange->getAlignment(), offsets);
-	map<int_fast64_t, list<pair<int,ExonCandidate*> > > alignedECs; // hash of aligned ECs
-
-	// liftover of ECs from genome to alignment space
-	lo.projectToAli(exoncands,alignedECs);
-
-	// liftover of ECs from alignment space to genome space
-	// inserts missing ECs, that f.e. didn't pass the splice site filter
-	lo.projectToGenome(alignedECs, seqRanges, exoncands);
+	// liftover of additional ECs from genome to alignment space
+	lo.projectToAli(addECs,alignedECs);
+	addECs.clear(); // not needed anymore
+	
+	// liftover of additional ECs from alignment to genomes space 
+	lo.projectToGenome(alignedECs, seqRanges, exoncands, liftover_all_ECs);
 	
 	geneRange->setExonCands(exoncands);
 	exoncands.clear(); // not needed anymore, exoncands are now stored as a vector of lists of ECs in geneRange

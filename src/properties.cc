@@ -68,6 +68,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/ec_thold",
 "/CompPred/ic_thold",
 "/CompPred/genesWithoutUTRs",
+"/CompPred/liftover_all_ECs",
 "/CompPred/logreg",
 "/CompPred/maxCov",
 "/CompPred/omega",
