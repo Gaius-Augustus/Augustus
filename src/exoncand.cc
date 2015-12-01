@@ -163,7 +163,7 @@ Double computeSpliceSiteScore(Double exonScore, Double minProb, Double maxProb) 
 
 
 // computes exon candidates and inserts them into the hash of ECs if they do not exist already
-void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, const char *dna, int minLen, double assmotifqthresh, double assqthresh, double dssqthresh){
+void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, ExonCandidate*> &addECs, const char *dna, int minLen, double assmotifqthresh, double assqthresh, double dssqthresh){
     int n = strlen(dna);
     int frame;
     Double p;
@@ -241,6 +241,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, const char *dna, int 
 			ecit = ecs.find(key);
 			if (ecit == ecs.end()){ // insert new EC                                                                                                                                
                             ecs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+                            addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
                         }
 			else{
                             delete ec;
@@ -282,6 +283,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, const char *dna, int 
 			    ecit = ecs.find(key);
 			    if (ecit == ecs.end()){ // insert new EC                                                                                                                                
 				ecs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+				addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 			    }
 			    else{
 				ecit->second->setDownScore(ec->getDownScore());
@@ -323,6 +325,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, const char *dna, int 
 				ecit = ecs.find(key);
 				if (ecit == ecs.end()){ // insert new EC                                                                                                                                
 				    ecs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+				    addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 				}
 				else{
 				    ecit->second->setDownScore(ec->getDownScore());
@@ -360,6 +363,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, const char *dna, int 
 			    ecit = ecs.find(key);
 			    if (ecit == ecs.end()){ // insert new EC                                                                                                                                
 				ecs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+				addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 			    }
 			    else{
 				ecit->second->setUpScore(ec->getUpScore());
@@ -394,6 +398,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, const char *dna, int 
 			    ecit = ecs.find(key);
 			    if (ecit == ecs.end()){ // insert new EC                                                                                                                                
 				ecs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+				addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 			    }
 			    else{
 				delete ec;
@@ -432,6 +437,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, const char *dna, int 
 			ecit = ecs.find(key);
 			if (ecit == ecs.end()){ // insert new EC                                                                                                                                
                             ecs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+                            addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
                         }
 			else{
 			    ecit->second->setDownScore(ec->getDownScore());
@@ -472,6 +478,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, const char *dna, int 
 			    ecit = ecs.find(key);
 			    if (ecit == ecs.end()){ // insert new EC                                                                                                                                
 				ecs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+				addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 			    }
 			    else{
 				ecit->second->setDownScore(ec->getDownScore());
@@ -518,6 +525,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, const char *dna, int 
 			    ecit = ecs.find(key);
 			    if (ecit == ecs.end()){ // insert new EC                                                                                                                                
 				ecs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+				addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 			    }
 			    else{
 				ecit->second->setUpScore(ec->getUpScore());
