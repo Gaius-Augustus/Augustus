@@ -91,13 +91,12 @@ void CompGenePred::start(){
     // each CDSexon/intron that is supported by a hint (e.g. CDSexon/intron from the annotation) gets this
     // additional score to make sure that it is transferred to the other genomes and not the
     // other way round. It has to be at least has high as the maximum cost of an exon gain or loss event
-    SpeciesGraph::maxCostOfExonLoss = - log((evo.getMu()+evo.getLambda())*evo.minBranchLength())*evo.getPhyloFactor();
+    //SpeciesGraph::maxCostOfExonLoss = - log((evo.getMu()+evo.getLambda())*evo.minBranchLength())*phylo_factor;
 
 #ifdef DEBUG
     cout << "-------------------------------\nparameters phylogenetic model\n-------------------------------" << endl;
     cout << "rate exon loss:\t" << evo.getMu() << endl;
     cout << "rate exon gain:\t" << evo.getLambda() << endl;
-    cout << "phylo factor:\t" << evo.getPhyloFactor() <<  "\n-------------------------------" << endl;
 #endif
 
     Constant::temperature = 3;
@@ -107,6 +106,15 @@ void CompGenePred::start(){
     }
     if (Constant::temperature > 7){
 	Constant::temperature = 7;
+    }
+    double phylo_factor;
+    try {
+	phylo_factor  = Properties::getdoubleProperty("/CompPred/phylo_factor");
+    } catch (...) {
+	phylo_factor = 1;
+    }
+    if(phylo_factor <= 0.0){
+	throw ProjectError("/CompPred/phylo_factor must to be real positive number.");
     }
     double ctree_scaling_factor = 1; // scaling factor to scale branch lengths in codon tree to one codon substitution per time unit
     try {
@@ -125,8 +133,8 @@ void CompGenePred::start(){
 	maxIterations = 500;
     }
     if(maxIterations <= 0){
-	cerr << "Warning: /CompPred/maxIterations was set to "<<maxIterations<<". At least one iteration must be made." << endl;
-	maxIterations =1;
+	cerr << "Warning: /CompPred/maxIterations must be a pos. Will use =500." << endl;
+	maxIterations = 500;
     }
     int rounds; // number of dual decomposition rounds
     try {
@@ -145,33 +153,28 @@ void CompGenePred::start(){
     try {
         dd_param_s = Properties::getProperty("/CompPred/dd_factor");
     } catch (...) {
-        dd_param_s = "";
+        dd_param_s = "1-5"; // default, do 5 rounds with parameters 1,2,3,4,5
     }
     try{
-	if(!dd_param_s.empty()){
-	    size_t i = dd_param_s.find('-');
-	    if(i != std::string::npos){
-		double start;
-		if( !(stringstream(dd_param_s.substr(0,i)) >> start))
-		    throw ProjectError("Cannot read interval start.");
-		double end;
-		if( !(stringstream(dd_param_s.substr(i+1, string::npos)) >> end))
-		    throw ProjectError("Cannot read interval end.");
-		if(start > end)
-		    throw ProjectError("Interval start greater than interval end.");
-		for (int i=0; i < rounds; i++){
-		    dd_factors.push_back(start+i*(end-start)/(rounds-1));
-		}	
-	    }
-	    else{
-		double pos;	    
-		if( !(stringstream(dd_param_s) >> pos))
-		    throw ProjectError("Is not numeric.");
-		dd_factors.push_back(pos);
-	    }
+	size_t i = dd_param_s.find('-');
+	if(i != std::string::npos){
+	    double start;
+	    if( !(stringstream(dd_param_s.substr(0,i)) >> start))
+		throw ProjectError("Cannot read interval start.");
+	    double end;
+	    if( !(stringstream(dd_param_s.substr(i+1, string::npos)) >> end))
+		throw ProjectError("Cannot read interval end.");
+	    if(start > end)
+		throw ProjectError("Interval start greater than interval end.");
+	    for (int i=0; i < rounds; i++){
+		dd_factors.push_back(start+i*(end-start)/(rounds-1));
+	    }	
 	}
 	else{
-	    dd_factors.push_back(20); // by default, only do one round with dd parameter set to 20.
+	    double pos;	    
+	    if( !(stringstream(dd_param_s) >> pos))
+		throw ProjectError("Is not numeric.");
+	    dd_factors.push_back(pos);
 	}
     } catch (ProjectError e) {
 	throw ProjectError("Format error parsing parameter --/CompPred/dd_factor=" + dd_param_s +".\n" + e.getMessage());
@@ -485,7 +488,7 @@ void CompGenePred::start(){
 	    if(!hects.empty()){
 		// optimization via dual decomposition
 		vector< list<Transcript*> *> genelist(OrthoGraph::numSpecies);
-		orthograph.dualdecomp(hects,evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factors);
+		orthograph.dualdecomp(hects,evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factors, phylo_factor);
 		orthograph.filterGeneList(genelist,opt_geneid);
 		orthograph.createOrthoGenes(geneRange);
 		orthograph.printOrthoGenes();

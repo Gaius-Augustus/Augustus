@@ -297,7 +297,7 @@ double OrthoGraph::globalPathSearch(){
     return score;
 }
 
-double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector< list<Transcript*> *> &genelist, int gr_ID, int T, vector<double> &c){
+double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector< list<Transcript*> *> &genelist, int gr_ID, int T, vector<double> &c, double phylo_factor){
 
     cout << "dual decomposition on gene Range " << gr_ID << endl;
     cout<<"round\titer\tstep_size\tprimal\tdual\t#inconsistencies"<<endl;
@@ -330,11 +330,11 @@ double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector
 	    else{
 		hect_score += treeMAPInf(all_orthoex,evo,numInconsistent);
 	    }
-	    double current_dual = path_score + hect_score;       // dual value of the t-th iteration 
+	    double current_dual = path_score + (phylo_factor * hect_score);       // dual value of the t-th iteration 
 	    best_dual = min(best_dual,current_dual);              // update upper bound
 	    if( (t >= 1) && (old_dual < current_dual) )  // update v
 		v++;
-	    double current_primal = path_score + makeConsistent(all_orthoex,evo); // primal value of the t-the iteration
+	    double current_primal = path_score + (phylo_factor * makeConsistent(all_orthoex,evo)); // primal value of the t-the iteration
 	    if(best_primal < current_primal){
 		best_primal = current_primal;
 		buildGeneList(genelist); // save new record
@@ -406,7 +406,6 @@ double OrthoGraph::getStepSize(double c, int t, int v){
 double OrthoGraph::init(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &numInconsistent){
 
     double score = 0;
-    double k =evo.getPhyloFactor(); //scaling factor 
 
     for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
 	//count number of zeros   
@@ -427,7 +426,7 @@ double OrthoGraph::init(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &numInco
 	}
 	PhyloTree *temp = hects->getTree();
 	Evo *evo_base = &evo;
-	score += temp->MAP(hects->labels, hects->weights, evo_base, k, true);
+	score += temp->MAP(hects->labels, hects->weights, evo_base, true);
 	double maxi =  max(numOnes,numZeros);
 	numInconsistent += ((numOnes+numZeros) - maxi);
 	
@@ -439,12 +438,11 @@ double OrthoGraph::init(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &numInco
 double OrthoGraph::treeMAPInf(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &numInconsistent){
 
     double score=0;
-    double k =evo.getPhyloFactor(); //scaling factor 
 
     for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
 	PhyloTree *temp = hects->getTree();
 	Evo *evo_base = &evo;
-	score += temp->MAP(hects->labels, hects->weights, evo_base, k);
+	score += temp->MAP(hects->labels, hects->weights, evo_base);
 	for(int pos=0; pos < hects->orthonode.size(); pos++){
             if(hects->orthonode[pos] && hects->orthonode[pos]->label != hects->labels[pos])
                 numInconsistent++;
@@ -457,7 +455,6 @@ double OrthoGraph::treeMAPInf(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &n
 double OrthoGraph::makeConsistent(list<OrthoExon> &all_orthoex, ExonEvo &evo){
 
     double score = 0;
-    double k =evo.getPhyloFactor(); //scaling factor 
 
     for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
 	PhyloTree *temp = hects->getTree();
@@ -467,7 +464,7 @@ double OrthoGraph::makeConsistent(list<OrthoExon> &all_orthoex, ExonEvo &evo){
 	    if(hects->orthonode[pos])
 		labels[pos] = hects->orthonode[pos]->label;
 	}
-	score += temp->MAP(labels, hects->weights, evo_base, k, true);
+	score += temp->MAP(labels, hects->weights, evo_base, true);
     }
     return score;
 }	

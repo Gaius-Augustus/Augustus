@@ -366,7 +366,7 @@ void PhyloTree::collapse(Treenode *node, Evo *evo){
  * if the flag 'fixLeafLabels' is turned on MAP inference is carried out
  * with leaf labels fixed to the labels in the vector
  */
-double PhyloTree::MAP(vector<int> &labels, vector<double> &weights, Evo *evo, double k ,bool fixLeafLabels){
+double PhyloTree::MAP(vector<int> &labels, vector<double> &weights, Evo *evo, bool fixLeafLabels){
 
     int states = evo->getNumStates();
     
@@ -405,7 +405,7 @@ double PhyloTree::MAP(vector<int> &labels, vector<double> &weights, Evo *evo, do
 			(*it)->setLogP(P);
 		    }
 		    for(int j=0; j<states; j++){
-			double branch_score = (k*gsl_matrix_get(P,i,j)) + (*it)->getTable(j);
+			double branch_score = (gsl_matrix_get(P,i,j)) + (*it)->getTable(j);
 			if(max < branch_score){
 			    max = branch_score;
 			    bestAssign=j;
@@ -425,7 +425,7 @@ double PhyloTree::MAP(vector<int> &labels, vector<double> &weights, Evo *evo, do
 	int bestAssign = -1;
 	Treenode* root = treenodes.back();	
 	for(int i=0; i<states; i++){
-	    double root_score = (k*evo->getLogPi(i)) + root->getTable(i);
+	    double root_score = (evo->getLogPi(i)) + root->getTable(i);
 	    if(max < root_score){
 		max = root_score;
 		bestAssign=i;

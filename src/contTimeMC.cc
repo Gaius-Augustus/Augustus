@@ -540,18 +540,6 @@ void ExonEvo::setMu(){
     }
 }
 
-void ExonEvo::setPhyloFactor(){
-
-    try {
-	phylo_factor  = Properties::getdoubleProperty("/CompPred/phylo_factor");
-    } catch (...) {
-	phylo_factor = 3;
-    }
-    if(phylo_factor <= 0.0){
-	throw ProjectError("phylogenetic factor needs to be real positive number");
-    }
-    
-}
 void ExonEvo::computeLogPmatrices(){
 
     allPs.assign(1, m, NULL);
@@ -677,7 +665,7 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 	}
 	if(numCodons >= 2){
 	    PhyloTree temp(*tree); // only use a copy of the tree !!!
-	    subst += -temp.MAP(codontuple, weights, parsi_base, 1, true); // Fitch Algorithm 
+	    subst += -temp.MAP(codontuple, weights, parsi_base, true); // Fitch Algorithm 
 	}
     }
     return omegas[maxU];

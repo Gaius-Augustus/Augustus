@@ -143,7 +143,7 @@ public:
      * (needed in 'optimization via dual decomposition' to make the solutions
      * of the two subproblems consistent)
      */
-    double MAP(std::vector<int> &labels, std::vector<double> &weights, Evo *evo, double k=1.0, bool fixLeafLabels=false);
+    double MAP(std::vector<int> &labels, std::vector<double> &weights, Evo *evo, bool fixLeafLabels=false);
     void MAPbacktrack(std::vector<int> &labels, Treenode* root, int bestAssign, bool fixLeafLabels);
 };
 

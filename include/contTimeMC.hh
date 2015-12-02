@@ -200,13 +200,9 @@ public:
     ExonEvo() : Evo(2)  {
 	setLambda();
 	setMu();
-	setPhyloFactor();
 	setPi();
     };
     void setPi();
-    void setPhyloFactor();
-    void setPhyloFactor(double k){phylo_factor=k;}
-    double getPhyloFactor() const{return phylo_factor;}
     void setMu();
     double getMu() const{return mu;}
     void setLambda();
@@ -219,8 +215,6 @@ public:
 private:
     double mu;            // rate for exon loss
     double lambda;        // rate for exon gain
-    double phylo_factor;  // tuning parameter to fit phylogenetic score to scores in the graph
-
 };
 
 /*
