@@ -1298,3 +1298,14 @@ float AugustusGraph::getAvgBaseProb(ExonCandidate *ec){
     }
     return prob /= ec->len();
 }
+
+bool Status::hasEvidence(string srcname) const {
+    if(hasEvidence()){
+	Evidence *e = ((State*)item)->evidence;
+	for (list<SrcEvidence>::iterator seit = e->sourceEvidence.begin(); seit != e->sourceEvidence.end(); seit++) {
+	    if(seit->srcname == srcname)
+		return true;
+	}
+    }
+    return false;
+}

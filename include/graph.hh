@@ -67,6 +67,7 @@ public:
     int getLen() const {return end-begin+1;}
     int getFrame() const {return isCDS()? ((State*)item)->frame() : -1;}
     bool hasEvidence() const {return ((State*)item)->evidence;}
+    bool hasEvidence(string srcname) const; //returns true if the exon/intron has evidence from src="srcname"
     int numEvidence() const {return hasEvidence()? ((State*)item)->evidence->numEvidence : 0;}
 };
 
