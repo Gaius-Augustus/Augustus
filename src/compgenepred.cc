@@ -87,11 +87,6 @@ void CompGenePred::start(){
     Boolean noprediction = false;
     Boolean useLocusTrees = false; // reestimate tree for each gene range
 
-    // used for mapping an existing annotation to the other genomes
-    // each CDSexon/intron that is supported by a hint (e.g. CDSexon/intron from the annotation) gets this
-    // additional score to make sure that it is transferred to the other genomes and not the
-    // other way round. It has to be at least has high as the maximum cost of an exon gain or loss event
-    //SpeciesGraph::maxCostOfExonLoss = - log((evo.getMu()+evo.getLambda())*evo.minBranchLength())*phylo_factor;
 
 #ifdef DEBUG
     cout << "-------------------------------\nparameters phylogenetic model\n-------------------------------" << endl;
@@ -116,6 +111,13 @@ void CompGenePred::start(){
     if(phylo_factor <= 0.0){
 	throw ProjectError("/CompPred/phylo_factor must to be real positive number.");
     }
+    
+    // used for mapping an existing annotation to the other genomes
+    // each exon/intron that is supported by a hint (e.g. exon/intron from the annotation) gets this
+    // additional score to make sure that it is transferred to the other genomes and not the
+    // other way round. It has to be at least has high as the maximum cost of an exon gain or loss event
+    SpeciesGraph::maxCostOfExonLoss = - log((evo.getMu()+evo.getLambda())*evo.minBranchLength())*phylo_factor;
+
     double ctree_scaling_factor = 1; // scaling factor to scale branch lengths in codon tree to one codon substitution per time unit
     try {
 	ctree_scaling_factor = Properties::getdoubleProperty("/CompPred/scale_codontree");

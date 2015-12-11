@@ -168,18 +168,20 @@ Node* SpeciesGraph::addNode(Status *exon){
     double score;
     if(!Constant::logreg){
       score = setScore(exon);
-    }else{
-      score = ec_thold 
+    }
+    else{
+	score = ec_thold 
 	+ Constant::ex_sc[0] // intercept  
 	+ Constant::ex_sc[1] // for not having omega
 	+ Constant::ex_sc[2] // for not beeing an OE
 	+ Constant::ex_sc[3] * log(exon->getLen())
 	+ Constant::ex_sc[4] * exon->getPostProb()
 	+ Constant::ex_sc[5] * getAvgBaseProb(exon);
-      // if (exon->hasEvidence() && exon->name == CDS)
-      //  score += maxCostOfExonLoss;
     }
-   
+    if (exon->hasEvidence("M"))
+	score += maxCostOfExonLoss;
+
+    
     /*
 
     if (string("fly") == Properties::getProperty("species")){
@@ -216,7 +218,6 @@ Node* SpeciesGraph::addNode(Status *exon){
     }
 
     */
-
 
     Node *node = new Node(exon->begin, exon->end, score, exon->item, ntype);
     printSampledGF(exon,score);
@@ -398,16 +399,16 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
 	//cout << "intron\t\t"<< intr->begin << "\t\t" << intr->end << "\t\t" << (string)stateTypeIdentifiers[((State*)intr->item)->type] << endl;
 	double intr_score = 0.0;
 	if(intr->name == intron){ // only CDS introns have a posterior probability                    
-	  if(!Constant::logreg)
-	    intr_score = setScore(intr);
-	  else
-	    intr_score = ic_thold
-	      + Constant::in_sc[0] // intercept
-	      + Constant::in_sc[1] * intr->getPostProb()
-	      + Constant::in_sc[2] * getAvgBaseProb(intr)
-	      + Constant::in_sc[3] * log(intr->getLen());
+	    if(!Constant::logreg)
+		intr_score = setScore(intr);
+	    else
+		intr_score = ic_thold
+		    + Constant::in_sc[0] // intercept
+		    + Constant::in_sc[1] * intr->getPostProb()
+		    + Constant::in_sc[2] * getAvgBaseProb(intr)
+		    + Constant::in_sc[3] * log(intr->getLen());
 	  
-	  /*
+	    /*
 
 	    if (string("fly") == Properties::getProperty("species")){
 		intr_score = ic_thold - 5.64405 + 5.640821 * intr->getPostProb() + 4.740363 * getAvgBaseProb(intr) - 0.155695 * log(intr->getLen());
@@ -432,10 +433,10 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
 	    }
 
 	  */
-
-	  // if (intr->hasEvidence())
-	  // intr_score += maxCostOfExonLoss;
+	    
 	}
+	if (intr->hasEvidence("M"))
+	    intr_score += maxCostOfExonLoss;
 
 	Edge in(succ, false, intr_score, intr->item);
 	pred->edges.push_back(in);
