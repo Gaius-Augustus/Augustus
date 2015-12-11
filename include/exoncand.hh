@@ -45,7 +45,7 @@ ExonType toExonType(const char* str);
 
 class ExonCandidate {
 public:
-    ExonCandidate(ExonType s=UNKNOWN_EXON, long int b=0, long int e=0, Double sc=0.0, Double up_sc=1.0, Double down_sc=1.0):
+    ExonCandidate(ExonType s=UNKNOWN_EXON, long int b=0, long int e=0, double sc=0.0, Double up_sc=1.0, Double down_sc=1.0):
         type(s),
         begin(b),
         end(e),
@@ -64,7 +64,7 @@ public:
     ~ExonCandidate(){}
     ExonType type;
     int begin, end;
-    Double score;
+    double score;
 
     int getStart();
     int getEnd();
@@ -75,16 +75,16 @@ public:
     }
     Double getUpScore() const {return upScore;}
     Double getDownScore() const {return downScore;}
+    double getScore() const {return score;}
     void setUpScore(Double s) {upScore = s;}
     void setDownScore(Double s) {downScore = s;}
-    void setScore(Double s) {score = s;}
+    void setScore(double s) {score = s;}
 
     int getFirstCodingBase();
     int getLastCodingBase();
     int gff3Frame();
     int len() {return end-begin+1;}
     ExonType getExonType();
-    Double getScore();
     int complementType();
     StateType getStateType();
     string key();

@@ -264,7 +264,6 @@ void CompGenePred::start(){
     } catch (...) {
 	liftover_all_ECs = false;
     }
-
     
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(outdir,".mea"); // equivalent to MEA prediction
@@ -427,7 +426,7 @@ void CompGenePred::start(){
 
 	// create HECTS
 	list<OrthoExon> hects;  // list of ortholog exons found in a gene Range
-	geneRange->createOrthoExons(hects, alignedECs, &evo);
+	geneRange->createOrthoExons(hects, alignedECs, &evo, phylo_factor);
 
 	if(meanIntrLen<0.0)
 	    meanIntrLen = mil_factor * IntronModel::getMeanIntrLen(); // initialize mean intron length

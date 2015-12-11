@@ -46,10 +46,6 @@ ExonType ExonCandidate::getExonType() {
     return type;
 }
 
-Double ExonCandidate::getScore() {
-    return score;
-}
-
 StateType ExonCandidate::getStateType(){
     if(type >= singleGene && type <= terminal_exon)
         return StateType (type + 1);

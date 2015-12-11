@@ -219,7 +219,7 @@ void GeneMSA::setExonCands(vector<map<int_fast64_t, ExonCandidate*> > &ecs){
 /**
  * createOrthoExons
  */
-void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, Evo *evo, float consThres, int minAvLen) {
+void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, Evo *evo, double phylo_factor, float consThres, int minAvLen) {
 
     //cout << "Creating ortho exons for alignment" << endl << *alignment << endl;
     int k = alignment->rows.size();
@@ -227,6 +227,10 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 
     // an ortho exon candidate must have an EC in at least this many species (any subset allowed):
     int minEC = (consThres * m > 2.0)? m * consThres + 0.9999 : 2;
+    if(minEC != 2){
+	cerr << "Warning: minEC=2, required by current version." << endl;
+	minEC = 2;
+    }
     cout << "OEs in this gene range must have at least " << minEC << " ECs" << endl;
 
     map<int_fast64_t, list<pair<int,ExonCandidate*> > >::iterator aec;
@@ -239,59 +243,76 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 
 	// first remove "absent" ECs, e.g. all tuples (speciesIdx,NULL) from the list        
         bit_vector absent(k,0); // bit 1 for EC absent, but genome aligned
+	int numAbsent = 0; // number of absent ECs
         list<pair<int,ExonCandidate*> >::iterator it = aec->second.begin();
 	while (it != aec->second.end()){
 	    if(!it->second){
-                absent[it->first]=1;
+		// turned of the "absent" state, until parameters are re-trained for the new model
+		/*
+		 * absent[it->first]=1;
+		 * numAbsent++;
+		 */
                 it = aec->second.erase(it);
             }
             else{
                 it++;
             }
         }
-
-	if (aec->second.size() >= minEC){
-	    float avLen = 0.0;
-	    OrthoExon oe(aec->first, numSpecies());
-	    bit_vector present(k,0);      // bit 1 for ECs that are present
-	    bit_vector aligned = present; // bit 1 for ECs that are aligned, ToDo: initialize with "absent"
-	    oe.orthoex.resize(k, NULL);
-	    for (it = aec->second.begin(); it != aec->second.end(); ++it){
-		int s = it->first;
-		ExonCandidate *ec = it->second;
-		// cout << rsa->getSname(s) << "\t" << ec->getStart() + offsets[s] << ".." << ec->getEnd() + offsets[s] << "\t" << *ec << endl;
-		if (oe.orthoex[s])
-		    throw ProjectError("createOrthoExons: Have two exon candidates from the same species " 
-				       + rsa->getSname(s) + " with the same key " + itoa(aec->first));
-		present[s]=1;
-		aligned[s]=1;
-		oe.orthoex[s] = ec;
-		avLen += ec->len();
-	    }
-	    avLen /= aec->second.size(); // compute average length of exon candidates in oe
-	    if (avLen >= minAvLen){
-		oe.ID = orthoExonID;
-		oe.setBV(present);
-		oe.setPresent(present);
-		oe.setAbsent(absent);
-		// link OE to tree topology
-		topit = topologies.find(aligned);
-		if(topit == topologies.end()){ // insert new topology
-		    PhyloTree *t = new PhyloTree(*tree);
-		    t->prune(aligned,evo);
-		    topologies.insert(pair<bit_vector,PhyloTree*>(aligned,t));
-		    oe.setTree(t);
-		}
-		else{
-		    oe.setTree(topit->second);
-		}
-		oe.setContainment(0);
-		orthoExonID++;
-		numOE++;
-		orthoExonsList.push_back(oe);
+	
+	// float avLen = 0.0; // not needed anymore
+	OrthoExon oe(aec->first, numSpecies());
+	bit_vector present(k,0);      // bit 1 for ECs that are present
+	bit_vector aligned = absent;  // bit 1 for ECs that are aligned ("present" or "absent")
+	oe.orthoex.resize(k, NULL);
+	for (it = aec->second.begin(); it != aec->second.end(); ++it){
+	    int s = it->first;
+	    ExonCandidate *ec = it->second;
+	    // cout << rsa->getSname(s) << "\t" << ec->getStart() + offsets[s] << ".." << ec->getEnd() + offsets[s] << "\t" << *ec << endl;
+	    if (oe.orthoex[s])
+		throw ProjectError("createOrthoExons: Have two exon candidates from the same species " 
+				   + rsa->getSname(s) + " with the same key " + itoa(aec->first));
+	    present[s]=1;
+	    aligned[s]=1;
+	    oe.orthoex[s] = ec;
+	    // avLen += ec->len();
+	}
+	// avLen /= aec->second.size(); // compute average length of exon candidates in oe
+	oe.setPresent(present);
+	oe.setAbsent(absent);
+	// link OE to tree topology
+	PhyloTree *t = NULL;
+	topit = topologies.find(aligned);
+	if(topit == topologies.end()){ // insert new topology
+	    t = new PhyloTree(*tree);
+	    t->prune(aligned,evo); // remove all leaf nodes of "unaligned" species
+	    topologies.insert(pair<bit_vector,PhyloTree*>(aligned,t));
+	}
+	else{
+	    t = topit->second;
+	}
+	if (aec->second.size() >= minEC){ // if the number of exons >=2, create an OrthoExon
+	    oe.ID = orthoExonID;
+	    oe.setBV(present);
+	    oe.setTree(t);	
+	    oe.setContainment(0);
+	    orthoExonID++;
+	    numOE++;
+	    orthoExonsList.push_back(oe);
+	}
+	else { // if the number of exons ==1 , no OrthoExon is needed, the phylogenetic score is constant and can be pre-computed
+	    if(numAbsent > 0){ // otherwise the tree has only a single node
+		int s = aec->second.begin()->first;
+		ExonCandidate *ec = aec->second.begin()->second;
+		vector<int> fix_0 = oe.labels; // EC is not predicted
+		vector<int> fix_1 = oe.labels; // EC is predicted
+		fix_1[s]=1;
+		// phylogenetic score, difference bewteen the scores of "EC is predicted" and "EC is not predicted"
+		double score = phylo_factor * (t->MAP(fix_1, oe.weights, evo, true) - t->MAP(fix_0, oe.weights, evo, true));
+		ec->setScore(score);
 	    }
 	}
     }
+
     alignedECs.clear(); // not needed anymore
     /*
      * Determine 'containment' for each OE: The average number of extra bases (per species) of the largest OE (y) that includes this OE (x) in frame.

@@ -121,7 +121,13 @@ void SpeciesGraph::buildGraph(double meanIntrLen){
     if(additionalExons && !additionalExons->empty()){
 	for(list<ExonCandidate*>::iterator it = additionalExons->begin(); it!=additionalExons->end();it++){
 	    Node *node = addExon(*it, neutralLines, auxiliaryNodes);
-	    (*it)->setScore(node->score);
+	    /*
+	     * if the EC has no homologs in other species, the phylogenetic score is constant
+	     * and can be directly added to the node weight
+	     */
+	    double score =  (*it)->getScore(); // phylogenetic score, is 0 if EC has at least one homolog
+            node->score += score;
+            (*it)->setScore(node->score);
 	}
     }
 
