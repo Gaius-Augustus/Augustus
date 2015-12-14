@@ -116,7 +116,7 @@ void CompGenePred::start(){
     // each exon/intron that is supported by a hint (e.g. exon/intron from the annotation) gets this
     // additional score to make sure that it is transferred to the other genomes and not the
     // other way round. It has to be at least has high as the maximum cost of an exon gain or loss event
-    SpeciesGraph::maxCostOfExonLoss = - log((evo.getMu()+evo.getLambda())*evo.minBranchLength())*phylo_factor;
+    SpeciesGraph::maxCostOfExonLoss = - log((evo.getMu()+evo.getLambda())*evo.minBranchLength())*phylo_factor*100;
 
     double ctree_scaling_factor = 1; // scaling factor to scale branch lengths in codon tree to one codon substitution per time unit
     try {
