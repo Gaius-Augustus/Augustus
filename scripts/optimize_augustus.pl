@@ -26,6 +26,7 @@ my %cmdpars = ( 'species'              => '',
 		'opt_trans_matrix'     => '',
 		'matrix_constraints'   => '',
 		'UTR'                  => '',
+		'optCfgFile'           => '',
 		'aug_exec_dir'         => '',
 		'trainOnlyUtr'         => '',
 		'noTrainPars'          => '',
@@ -267,6 +268,9 @@ if($cmdpars{'sens_spec_bias'} < 0){
 my $pars="";
 if ($cmdpars{"UTR"} eq "on"){
     $pars="--UTR=on";
+}
+if($cmdpars{"optCfgFile"} ne ""){
+    $pars = $pars." --optCfgFile=".$cmdpars{"optCfgFile"};
 }
 if ($cmdpars{"translation_table"} > 1){
     $pars = $pars." --translation_table=".$cmdpars{"translation_table"};
