@@ -170,10 +170,7 @@ system ("rm -rf $gffDir; mkdir $gffDir");
     
 my @intervals=(); # hash of genomic intervals
 my %seqlist=(); # hash of sequences (only keys, no values)
-    
-# make gene IDs unique
-#my $geneID = 0;
-   
+       
 open (PRED, <$cmdpars{"pred"}>) or die ("Could not open $cmdpars{'pred'} for reading: $!");
 open (JOINPRED, ">$gffDir/pred.gtf") or die("Could not open $gffDir/pred.gtf for writing: $!");
 
@@ -182,12 +179,12 @@ while(<PRED>){
 	push @intervals,[$1, $2, $3]; # store genomic intervals on which gene prediction is executed
 	print JOINPRED $_;
     }
- #   if(/\tgene\t/){
-  #      $geneID++;
-   # }
-    #s/g\d+/g$geneID/g; # replace gene ID with new unique gene ID
     if(/\t(CDS|stop_codon|start_codon)\t/){
 	print JOINPRED $_;
+	my $chr = (split /\t/, $_)[0];
+	if (!$seqlist{$chr}){ # add new sequences to seqlist                                                                                                                         
+	    $seqlist{$chr} = 1;
+	}
     }	
 }
 close(PRED);
@@ -207,17 +204,11 @@ foreach (@intervals){
     } else {
 	if (defined($chr)){
 	    push @joined,[$chr, $start, $end];
-	    if (!$seqlist{$chr}){ # add new sequences to seqlist
-		$seqlist{$chr} = 1;
-	    }
 	}
 	($chr, $start, $end) = ($_->[0], $_->[1], $_->[2]);
     }
 }
 push @joined,[$chr, $start, $end];
-if (!$seqlist{$chr}){ # add new sequences to seqlist
-    $seqlist{$chr} = 1;
-}
 
 # make a new annotation file that only contains features from the training set that are completely contained in one of the intervals
 # (if necessary, this can be done faster with a single loop over the intervals, requires presorting of @gfflines)
@@ -225,6 +216,10 @@ open(ANNO, '>', "$gffDir/anno.gtf") or die ("Could not open $gffDir/anno.gtf for
 if($wholegenome){
     foreach my $line (@gfflines){
 	print ANNO $line;
+	my $chr = (split /\t/, $line)[0];
+	if (!$seqlist{$chr}){ # add new sequences to seqlist                                                                                                                         
+	    $seqlist{$chr} = 1;
+	}
     }
 }
 else{
