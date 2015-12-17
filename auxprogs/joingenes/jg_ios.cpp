@@ -154,7 +154,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 			(*transcript).t_id = transcript_id;
 			thisFileTranscriptMap[transcript_id] = transcript;
 		    }else if ((*transcript).strand != thisFileTranscriptMap[transcript_id]->strand){
-			load_warning("One transcript on different strands.");
+			load_warning("Transcript "+thisFileTranscriptMap[transcript_id]->t_id+" on different strands.");
 		    }
 
 
