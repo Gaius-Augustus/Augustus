@@ -3,7 +3,16 @@
 - check if halLiftover is symmetric, meaning that mapping (genome i -> genome j)
   is the same as mapping (genome j -> genome i). If so, halLiftover
   can be reduced to the cases above the diagonal
-
 - add support for other gene features such as UTR exons
-
 - catch exceptions from threads
+
+# 18.12.2015
+
+- write an explanation for the output
+- add support for alternative splice froms, e.g. multiple Tx per Gene
+- homologous gene clustering: currently 2 transcripts are in the same cluster,
+  if all their exons/introns are homologs and their are no additional exons/introns.
+  Change this to a less stringend criterion, e.g. at least half of the exon boundaries
+  of both transcripts are aligned.
+- statistic on exon/intron level: count an exon or intron that occurs in multiple
+  transcripts only once
