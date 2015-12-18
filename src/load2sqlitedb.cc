@@ -113,8 +113,12 @@ int main( int argc, char* argv[] ){
 	    printUsage();
 	exit(1);
     }
-    if (optind == argc-1)
+    if (optind == argc-1){
 	fastafile = argv[optind];
+	// expand the ~ to the $Home directory
+	if (fastafile.length()>0 && fastafile[0]=='~')
+	    fastafile.replace(0,1,getenv("HOME"));
+    }
     else {
 	cerr << "Missing sequence/hints file name." << endl;
 	printUsage();
