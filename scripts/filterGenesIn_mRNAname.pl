@@ -3,11 +3,14 @@
 #############################################################
 # filterGenes
 # filter genes from a genbank flat file database
-# usage: fileterGenes namefile dbfile
+# usage: fileterGenesIn_mRNAname.pl namefile dbfile
 #
 #
-# Mario Stanke, 13.08.2002
+# Mario Stanke, Simone Lange, Katharina Hoff; 21.12.2015
 #############################################################
+
+use strict;
+use warnings;
 
 if ($#ARGV != 1) {
     print "usage:filterGenes namefile dbfile\n";
@@ -15,12 +18,12 @@ if ($#ARGV != 1) {
     print "the first parameter. Only the the first of identical loci is kept\n";
     exit;
 } 
-$origfilename = $ARGV[1];
-$goodfilename = $ARGV[0];
+my $origfilename = $ARGV[1];
+my $goodfilename = $ARGV[0];
 
-open(origfile, "$origfilename") || die "Couldn't open dbfile\n";
-@data = <origfile>;
-close(origfile);
+open(my $ORIGFILE, "$origfilename") || die "Couldn't open dbfile\n";
+my @data = <$ORIGFILE>;
+close($ORIGFILE);
 
 
 $/="\n//\n";
@@ -31,7 +34,7 @@ my $cdsFlag = 0;
 my $genename;
 my $printFlag = 0;
 my $firstPrintFlag = 0;
-
+my %goodids;
 
 foreach(@data) {
     if($_=~m/^LOCUS/){
@@ -55,7 +58,7 @@ foreach(@data) {
     }
     if($cdsFlag==1){
         if($_=~m/gene="/){
-		@tmp = split(/\"/);
+		my @tmp = split(/\"/);
 		$genename = $tmp[1];
 		$cdsFlag = 0;
 		$firstPrintFlag = 1;
@@ -68,21 +71,24 @@ foreach(@data) {
         $head = $head.$_;
 	$cdsFlag = 1;
     }
-
     if($firstPrintFlag==1 and length($head)>=2){
-	# correction by Simone Lange on November 6th 2014
-	@line = `grep -w $genename $goodfilename`;
-	if(length($line[0])>=2){
-		#print "Got into head printing $genename\n";
+	open(my $GOODFILE, "$goodfilename") || die "Couldn't open goodfile $goodfilename\n";
+	my @gooddata = <$GOODFILE>;
+	close($GOODFILE) || die "Couldn't close goodfile $goodfilename!\n";
+	foreach(@gooddata) {
+	    if($_ =~ m/transcript_id \"(.*)\"/) {
+		$goodids{$1} = 1;
+	    }
+	}
+	
+	if($goodids{$genename}){
 		print $head;
 		$head = "";
 		$printFlag = 1;
         }
 	$firstPrintFlag = 0;
-	@line = ();
     }
     if($printFlag==1){
-	#print "Got into body printing $genename\n";
 	print $_;
     }
 }
