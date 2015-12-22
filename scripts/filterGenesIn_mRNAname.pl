@@ -21,6 +21,15 @@ if ($#ARGV != 1) {
 my $origfilename = $ARGV[1];
 my $goodfilename = $ARGV[0];
 
+my %goodids;
+open(GOODFILE, "<", "$goodfilename") || die "Couldn't open goodfile $goodfilename\n";
+while(<GOODFILE>) {
+            if($_ =~ m/transcript_id \"(.*)\"/) {                                                         
+                $goodids{$1} = 1;                                                                         
+            }                                                                                             
+}
+close(GOODFILE) || die "Couldn't close goodfile $goodfilename!\n";
+
 open(my $ORIGFILE, "$origfilename") || die "Couldn't open dbfile\n";
 my @data = <$ORIGFILE>;
 close($ORIGFILE);
@@ -34,7 +43,6 @@ my $cdsFlag = 0;
 my $genename;
 my $printFlag = 0;
 my $firstPrintFlag = 0;
-my %goodids;
 
 foreach(@data) {
     if($_=~m/^LOCUS/){
@@ -72,15 +80,6 @@ foreach(@data) {
 	$cdsFlag = 1;
     }
     if($firstPrintFlag==1 and length($head)>=2){
-	open(my $GOODFILE, "$goodfilename") || die "Couldn't open goodfile $goodfilename\n";
-	my @gooddata = <$GOODFILE>;
-	close($GOODFILE) || die "Couldn't close goodfile $goodfilename!\n";
-	foreach(@gooddata) {
-	    if($_ =~ m/transcript_id \"(.*)\"/) {
-		$goodids{$1} = 1;
-	    }
-	}
-	
 	if($goodids{$genename}){
 		print $head;
 		$head = "";
