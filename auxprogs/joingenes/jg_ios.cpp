@@ -221,13 +221,17 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 	}else {			// if line starts with '#'
 	    strncpy(copybuff, buff, 1014);
 	    if (strstr(buff, "sequence range")!=NULL) {
+                string sss = buff;
+                int cnt=count(sss.begin(),sss.end(),':'); 
 		temp = strtok(buff, ":");
+                for (int i=1; i<cnt; i++){ temp = strtok(NULL, ":"); }
 		temp = strtok(NULL, ":- ()bp");
 		pred_range.first = atoi(temp);
 		temp = strtok(NULL, ":- ()bp");
 		pred_range.second = atoi(temp);
 		if ((pred_range.second - pred_range.first) <= 0){
-		    load_warning("There is a non positiv prediction range.");
+                    cerr << "ErrorLine: " << copybuff << endl;
+		    load_warning("There is a non positiv prediction range: ");
 		}
 	    } // at this position other optional options could be read from gff-#-lines with else if
 	}
