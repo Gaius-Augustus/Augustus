@@ -39,6 +39,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
     infile.getline(buff, 1024);
     list<string> unknownFeatures;
     while (infile){
+        string lineStr = buff;
 	// if line dont starts with '#'
 	if (buff[0]!='#'){
 	    //if ((strstr(buff, "gene_id")!=NULL) && (strstr(buff, "transcript_id")!=NULL)){
@@ -48,24 +49,23 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 		(*transcript).priority = priority;
 		strncpy(copybuff, buff, 1014);
 		if (strstr(buff, "\t")==NULL) {
-		    cerr << "ErrorLine: " << buff << endl;
-		    load_error("Line not tab separated.");
+		    load_error("Line not tab separated in file "+filename+":\nProblemLine: "+lineStr);
 		}
 		temp = strtok(buff, "\t");
 		if (temp){
 		    exon.chr = temp;
 		}else 
-		    load_error("Can not read sequence name.");
+		    load_error("Can not read sequence name in file "+filename+":\nProblemLine: "+lineStr);
 		temp = strtok(NULL, "\t");
 		if (temp)
 		    (*transcript).source = temp;
 		else
-		    load_error("Can not read second column.");
+		    load_error("Can not read second column in file "+filename+":\nProblemLine: "+lineStr);
 		temp = strtok(NULL, "\t");
 		if (temp)
 		    exon.feature = temp;
 		else
-		    load_error("Can not read feature.");
+		    load_error("Can not read feature in file "+filename+":\nProblemLine: "+lineStr);
 		if (exon.feature != "CDS" && exon.feature != "start_codon" && exon.feature != "stop_codon" && exon.feature != "exon" && exon.feature != "UTR" && exon.feature != "3'-UTR" && exon.feature != "5'-UTR" && exon.feature != "tss" && exon.feature != "tts"  && exon.feature != "intron"){
 		    if (exon.feature != "gene" && exon.feature != "transcript"){
 			list<string>::iterator fit = find(unknownFeatures.begin(),unknownFeatures.end(),exon.feature);
@@ -80,27 +80,27 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 		if (temp)
 		    exon.from = atoi(temp);
 		else 
-		    load_error("Can not read start position.");
+		    load_error("Can not read start position in file "+filename+":\nProblemLine: "+lineStr);
 		temp = strtok(NULL, "\t");
 		if (temp)
 		    exon.to = atoi(temp);
 		else
-		    load_error("Can not read end position.");
+		    load_error("Can not read end position in file "+filename+":\nProblemLine: "+lineStr);
 		temp = strtok(NULL, "\t");
 		if (temp) 
 		    exon.score = atof(temp);
 		else 
-		    load_error("Can not read score.");
+		    load_error("Can not read score in file "+filename+":\nProblemLine: "+lineStr);
 		temp = strtok(NULL, "\t");
 		if (!temp)
-		    load_error("Can not read strand.");
+		    load_error("Can not read strand in file "+filename+":\nProblemLine: "+lineStr);
 		if (strcmp(temp, "+") == 0)
 		    (*transcript).strand = '+';
 		else if (strcmp(temp, "-") == 0)
 		    (*transcript).strand = '-';
 		else {
 		    (*transcript).strand = '.';
-		    load_error("The strand of this transcript is unknown.");
+		    load_error("The strand of this transcript is unknown in file "+filename+":\nProblemLine: "+lineStr);
 		}
 		temp = strtok(NULL, "\t");
 		if (!temp)
@@ -136,7 +136,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 				transcript_id = temp_inside;
 				transcript->originalId = temp_inside;
 			    }else{
-				load_error("Missing id behind the flag transcript_id.");
+				load_error("Missing id behind the flag transcript_id in file "+filename+":\nProblemLine: "+lineStr);
 			    }
 			}
 			if (strstr(temp_inside, "gene_id")!=NULL){
@@ -221,18 +221,15 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 	}else {			// if line starts with '#'
 	    strncpy(copybuff, buff, 1014);
 	    if (strstr(buff, "sequence range")!=NULL) {
-		string sss = buff;
-		int cnt=count(sss.begin(),sss.end(),':'); 
+		int cnt=count(lineStr.begin(),lineStr.end(),':'); 
 		temp = strtok(buff, ":");
 		for (int i=1; i<cnt; i++){ temp = strtok(NULL, ":"); }
 		temp = strtok(NULL, ":- ()bp");
 		pred_range.first = atoi(temp);
 		temp = strtok(NULL, ":- ()bp");
 		pred_range.second = atoi(temp);
-		cerr << buff << "\t" << pred_range.first << "\t" << pred_range.first << endl;
 		if ((pred_range.second - pred_range.first) <= 0){
-                    cerr << "ErrorLine: " << copybuff << endl;
-		    load_warning("There is a non positiv prediction range: ");
+		    load_warning("There is a non positiv prediction range in file "+filename+":\nProblemLine: "+lineStr);
 		}
 	    } // at this position other optional options could be read from gff-#-lines with else if
 	}
