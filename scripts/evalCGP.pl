@@ -254,4 +254,4 @@ foreach my $seq (keys %seqlist) {
 }
 
 # call evaluate_gtf
-system ("evaluate_gtf.pl $gffDir/annotation_list $gffDir/prediction_list");
+system ("$cmdpars{'eval_exec_dir'}evaluate_gtf.pl $gffDir/annotation_list $gffDir/prediction_list");
