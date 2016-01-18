@@ -156,9 +156,6 @@ void SpeciesGraph::buildGraph(double meanIntrLen){
     // execute tarjan strongest component algorithm to find cycles in O(N+M)
     if (overlapComp)
       tarjan();
-
-    //relax all nodes in topological order and label all nodes with 1 if on max weight path
-    relax();
 }
 
 Node* SpeciesGraph::addNode(Status *exon){

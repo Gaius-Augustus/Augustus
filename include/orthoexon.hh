@@ -19,6 +19,8 @@
 #include <string>
 #include <list>
 
+extern const char*  phyleticPatternIdentifiers[6];
+
 //forward declarations:
 class Node;
 
@@ -55,12 +57,11 @@ public:
     void setConsScore(double c){cons=c;}
     void setDiversity(double d){diversity=d;}
     void setContainment(int c) { containment = c; }
-    void setLabelpattern(); // updates the labelpattern
     void setTree(PhyloTree* t);
     void setBV(bit_vector b){bv = b;}
+    string getPhyleticPattern() const; // phyletic pattern: for an explanation, see .cc file
+    void setPhyleticPattern(map<int, list<int> > &pp_init, map<int, list<int> > &pp_opt);
     vector<int> getRFC(vector<int> offsets);
-    string getStoredLabelpattern() {return labelpattern;} // retrieving labelpattern without updating
-    string getCurrentLabelpattern() { setLabelpattern(); return labelpattern;} //retrieving labelpattern with updating
     double getLogRegScore();
 
     vector<ExonCandidate*> orthoex;
@@ -74,9 +75,6 @@ public:
      * 3 - alignment not present
      */
     vector<int> labels;
-    //TODO: instead of an attribute write a function getLabelpattern() which returns the current
-    //label pattern. This is the safer way and guarantees to always have the current label pattern.
-    std::string labelpattern;
     int ID;
     
 private:

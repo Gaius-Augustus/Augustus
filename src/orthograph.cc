@@ -305,6 +305,13 @@ double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector
     double best_dual = std::numeric_limits<double>::max();   // best dual value so far
     double best_primal = -std::numeric_limits<double>::max(); // best primal value so far
     double initial_primal = std::numeric_limits<double>::max(); // initial primal value (in 0-the iteration)
+
+    /* 
+     * key: orthoexon ID
+     * value: list of indices of species, in which the exon is predicted
+     */
+    map<int, list<int> >pp_init; // stores predicted HECTs in first iteration
+    map<int, list<int> >pp_opt;  // ...................... in  best iteration
 	
     for(size_t r=0; r < c.size(); r++){ // number of rounds
 	
@@ -338,20 +345,26 @@ double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector
 	    if(best_primal < current_primal){
 		best_primal = current_primal;
 		buildGeneList(genelist); // save new record
+		// update pp_opt
+		pp_opt.clear();
+		for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
+		    list<int> pp;
+		    for(int pos=0; pos < hects->orthonode.size(); pos++){
+			if(hects->orthonode[pos] && hects->orthonode[pos]->label == 1)
+			    pp.push_back(pos);
+		    }
+		    if(!pp.empty())
+			pp_opt.insert(pair< int, list<int> > (hects->ID , pp));
+		}
 	    }
-	    if(t == 0 && r == 0){
+	    if(t == 0 && r == 0){ // first iteration
 		initial_primal = current_primal;
-		//c*=initial_gap/numInconsistent; // adjust step size parameter to problem size
+		pp_init = pp_opt;
 	    }
 	    cout<<r<<"\t"<<t<<"\t"<<delta<<"\t"<<current_primal<<"\t"<<current_dual<<"\t"<<numInconsistent<<endl;
 	    
-	    if(numInconsistent == 0 || abs(best_dual - best_primal) < 1e-8){ // exact solution is found
-		double best_gap = abs(best_dual - best_primal);
-		double initial_gap = abs(best_dual - initial_primal);
-		double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
-		cout<<"dual decomposition reduced initial duality gap of "<<initial_gap<<" to "<<best_gap<<" (to "<<perc_gap<<"%)"<<endl;
-		return best_gap;
-	    }
+	    if(numInconsistent == 0 || abs(best_dual - best_primal) < 1e-8) // exact solution is found
+		goto END;
 	    
 	    // determine new step size
 	    delta = getStepSize(c[r],t,v);
@@ -386,6 +399,13 @@ double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector
 	    }
 	    }*/
     }
+
+ END:
+    // set phyletic pattern (only used as output information in orthoExon files)
+    for(list<OrthoExon>::iterator hects=all_orthoex.begin(); hects!=all_orthoex.end(); hects++){
+	hects->setPhyleticPattern(pp_init, pp_opt);
+    }
+
     double best_gap = abs(best_dual - best_primal);
     double initial_gap = abs(best_dual - initial_primal);
     double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
@@ -485,7 +505,6 @@ void OrthoGraph::linkToOEs(list<OrthoExon> &all_orthoex){
 		node->addWeight(oe_score); // add OE score to all outgoing edges
 	    }
 	}
-	it->setLabelpattern();	
     }  
 }
 
