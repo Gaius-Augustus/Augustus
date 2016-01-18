@@ -16,6 +16,7 @@
 #include <fstream>
 #include <iostream>
 
+const char* phyleticPatternIdentifiers[6]={"0", "1", "-", "_", "g", "l"};
 
 OrthoExon::OrthoExon(int_fast64_t k, size_t n) : key(k), omega(-1.0), Eomega(-1.0), VarOmega(-1.0), subst(-1), cons(-1.0), diversity(-1.0) {
     orthoex.resize(n);
@@ -66,20 +67,52 @@ void OrthoExon::setAbsent(bit_vector v){
     }
 }
 
-void OrthoExon::setLabelpattern(){
-    labelpattern.clear();
-    for(size_t pos = 0; pos < orthonode.size(); pos++){
-	if(orthonode[pos]){
-	    labelpattern+=itoa(orthonode[pos]->label);
+/*
+ * phyletic patterns
+ *-----------------------
+ * label of Species i in {0,1,2,3,4,5} equiv. {"0","1","-","_","g","l"}
+ * 
+ * 0 - EC present in i, but not predicted as exon
+ * 1 - EC present and predicted as exon in i
+ * 2 - EC absent in i, but alignment present
+ * 3 - alignment not present in i
+ * 4 - EC present in i and "gained" through dual decomposition
+ * 5 - EC present in i and "lost" through dual decomposition
+ */
+string OrthoExon::getPhyleticPattern() const {
+    string phyletic_pattern = "";
+    for(size_t pos = 0; pos < labels.size(); pos++){
+	phyletic_pattern+=phyleticPatternIdentifiers[labels[pos]];
+    }
+    return phyletic_pattern;
+}
+
+void OrthoExon::setPhyleticPattern(map<int, list<int> > &pp_init, map<int, list<int> > &pp_opt){
+            
+    int numSpecies = labels.size();
+    vector<int> labels_opt(numSpecies,0);
+    vector<int> labels_init(numSpecies,0);
+
+    map<int, list<int> >::iterator it = pp_opt.find(ID);
+    if(it != pp_opt.end()){
+	for(list<int>::iterator lit = it->second.begin(); lit != it->second.end(); lit++)
+	    labels_opt[*lit]=1;
+    }
+    it = pp_init.find(ID);
+    if(it != pp_init.end()){
+	for(list<int>::iterator lit = it->second.begin(); lit != it->second.end(); lit++)
+	    labels_init[*lit]=1;
+    }
+    for(size_t pos = 0; pos < labels.size(); pos++){
+	if(exonExists(pos)){
+	    if(labels_init[pos] == 0 && labels_opt[pos] == 1)
+		labels[pos]=4; // exon gain through dual decomposition
+	    else if(labels_init[pos] == 1 && labels_opt[pos] == 0)
+		labels[pos]=5; // exon lost through dual decomposition
+	    else{ // labels_init[pos] == labels_opt[pos]
+		labels[pos]=labels_opt[pos]; 
+	    }
 	}
-	else if(isAbsent(pos)){
-	    labelpattern+="-";
-	}
-	else if(isUnaligned(pos)){
-	    labelpattern+="_";
-	}
-	else
-	    throw ProjectError("Internal error in OrthoExon::setLabelpattern: unkown label");
     }
 }
 

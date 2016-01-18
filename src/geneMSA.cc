@@ -510,8 +510,6 @@ void GeneMSA::printOrthoExons(list<OrthoExon> &orthoExonsList) {
 void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
     bool GBrowseStyle = false; // for viewing in GBrowse use this style
     streambuf *stdout = cout.rdbuf();
-    string stored_pattern = oe.getStoredLabelpattern();
-    string current_pattern = oe.getCurrentLabelpattern(); 
     for (int s=0; s < numSpecies(); s++) {
 	ExonCandidate *ec = oe.orthoex.at(s);
 	if (files)
@@ -575,9 +573,9 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
 	    else
 		cout << ";containment=" << oe.getContainment();
 	    if (GBrowseStyle)
-                cout << "|" << stored_pattern <<":"<<current_pattern;
+                cout << "|" << oe.getPhyleticPattern();
 	    else
-                cout << ";labelpattern=" << stored_pattern <<":"<< current_pattern;
+                cout << ";phyloPat=" << oe.getPhyleticPattern();
 	    // output logistic regression score for analysis
 	    cout << ";oescore=" << oe.getLogRegScore();
 	    // output postprobs of all exons in OE
