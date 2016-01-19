@@ -478,10 +478,7 @@ void CompGenePred::start(){
 	if (conservation)
 	    geneRange->calcConsScore(hects, seqRanges, outdir);
 
-	if (noprediction){
-	    geneRange->printOrthoExons(hects);
-	}
-	else{
+	if(!noprediction){
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
 	    orthograph.globalPathSearch();
 	    orthograph.outputGenes(baseGenes,base_geneid);
@@ -498,8 +495,10 @@ void CompGenePred::start(){
 	    }else{
 		orthograph.outputGenes(optGenes, opt_geneid);
 	    }
-	    geneRange->printOrthoExons(hects);
 	}
+	if(Constant::printOEs)
+	    geneRange->printOrthoExons(hects);
+
 	// delete sequences
 	for (int i=0; i<seqRanges.size(); i++) {
 		delete seqRanges[i];

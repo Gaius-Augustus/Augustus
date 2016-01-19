@@ -311,7 +311,7 @@ public:
     static string dbaccess; // comma separated string with database access (hostname, database name, table name, user, passwd
     static string alnfile; // name of file that contains MSA of genomes
     static bool overlapmode; // whether overlapping exons are allowed in Viterbi algorithm
-    static string orthoexons; //name of file that contains list of orthologous exons
+    static Boolean printOEs; //output ortho exons to file
     static Integer maxOvlp; // parameters for overlapping coding regions in bacteria
     static vector<Double> head2tail_ovlp;
     static vector<Double> head2head_ovlp;

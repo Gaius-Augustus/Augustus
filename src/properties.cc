@@ -218,7 +218,7 @@ HINTSFILE_KEY,
 "noInFrameStop",
 "noprediction",
 EXTERNAL_KEY, // optCfgFile
-"orthoexons",
+"printOEs",
 "outfile",
 "predictionEnd",
 "predictionStart",

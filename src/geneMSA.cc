@@ -373,7 +373,8 @@ void GeneMSA::openOutputFiles(string outdir){
     
     if (Constant::exoncands) // output of exon candidates into a gff file requested
 	exonCands_outfiles.resize(tree->numSpecies());
-    orthoExons_outfiles.resize(tree->numSpecies());
+    if(Constant::printOEs)
+	orthoExons_outfiles.resize(tree->numSpecies());
     geneRanges_outfiles_gff.resize(tree->numSpecies());
     geneRanges_outfiles_bed.resize(tree->numSpecies());
     omega_outfiles.resize(tree->numSpecies());
@@ -409,12 +410,14 @@ void GeneMSA::openOutputFiles(string outdir){
 	} 
 	
         string file_orthoexon = outdir + "orthoExons." + species[i] + ".gff3";
-        ofstream *os_oe = new ofstream(file_orthoexon.c_str());
-        if (os_oe) {
-            orthoExons_outfiles[i]=os_oe;
-            (*os_oe) << PREAMBLE << endl;
-            (*os_oe) << "#\n#----- ortholog exons  -----" << endl << "#" << endl;
-        }
+	if(Constant::printOEs){
+	    ofstream *os_oe = new ofstream(file_orthoexon.c_str());
+	    if (os_oe) {
+		orthoExons_outfiles[i]=os_oe;
+		(*os_oe) << PREAMBLE << endl;
+		(*os_oe) << "#\n#----- ortholog exons  -----" << endl << "#" << endl;
+	    }
+	}
         /*string file_omega = outdir + "omegaExons." + species[i] + ".gff3";
         ofstream *os_omega = new ofstream(file_omega.c_str());
         if (os_omega) {

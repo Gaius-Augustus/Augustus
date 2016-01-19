@@ -88,7 +88,7 @@ string Constant::speciesfilenames; // file name to file which contains the names
 string Constant::dbaccess; // comma separated string with database access (database name,host name,user,passwd, table name"
 string Constant::alnfile; // name of file that contains MSA of genomes
 bool Constant::overlapmode = false;
-string Constant::orthoexons; //name of file that contains list of orthologous exons
+Boolean Constant::printOEs = true; // output ortho exons
 Integer Constant::maxOvlp = 60; // maximum overlap of coding regions for bacteria
 vector<Double> Constant::head2tail_ovlp;
 vector<Double> Constant::head2head_ovlp;
@@ -379,7 +379,7 @@ void Constant::init(){
     Properties::assignProperty("contentmodels", contentmodels);
     Properties::assignProperty("exoncands", exoncands);
     Properties::assignProperty("min_intron_len", min_intron_len);
-    Properties::assignProperty("orthoexons", orthoexons);
+    Properties::assignProperty("printOEs", printOEs);
     Properties::assignProperty("maxOvlp", maxOvlp);
     Properties::assignProperty("temperature", temperature);
     if (temperature > 7){
