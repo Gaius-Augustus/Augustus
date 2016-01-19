@@ -1341,7 +1341,7 @@ void GeneMSA::closeOutputFiles(){
 	    geneRanges_outfiles_bed[i]->close();
 	    delete geneRanges_outfiles_bed[i];
 	}
-        if (orthoExons_outfiles[i] && orthoExons_outfiles[i]->is_open()) {
+        if (i < orthoExons_outfiles.size() && orthoExons_outfiles[i] && orthoExons_outfiles[i]->is_open()) {
 	    orthoExons_outfiles[i]->close();
 	    delete orthoExons_outfiles[i];
 	}
