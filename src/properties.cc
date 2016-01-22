@@ -61,6 +61,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/ec_score",
 "/CompPred/exon_gain",
 "/CompPred/exon_loss",
+"/CompPred/ali_error",
 "/CompPred/maxIterations",
 "/CompPred/mil_factor",
 "/CompPred/ec_factor",

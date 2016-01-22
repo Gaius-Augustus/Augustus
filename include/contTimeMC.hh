@@ -201,12 +201,15 @@ public:
 	setLambda();
 	setMu();
 	setPi();
+	setAliErr();
     };
     void setPi();
     void setMu();
+    void setAliErr();
     double getMu() const{return mu;}
     void setLambda();
     double getLambda() const{return lambda;}
+    double getAliErr() const{return ali_error;}
     gsl_matrix *computeP(double t); //computes transition matrix P for time t
     void computeLogPmatrices();
     void addBranchLength(double b); //add new branch length b and matrix P(b)
@@ -215,6 +218,7 @@ public:
 private:
     double mu;            // rate for exon loss
     double lambda;        // rate for exon gain
+    double ali_error;     // rate for alignment error
 };
 
 /*

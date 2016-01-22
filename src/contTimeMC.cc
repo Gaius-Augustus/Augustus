@@ -540,6 +540,18 @@ void ExonEvo::setMu(){
     }
 }
 
+void ExonEvo::setAliErr(){
+  
+    try {
+	ali_error = Properties::getdoubleProperty("/CompPred/ali_error");
+    } catch (...) {
+	ali_error  = 0.1;
+    }
+    if(ali_error <= 0.0){
+	throw ProjectError("the rate for alignment errors has to be positive");
+    }
+}
+
 void ExonEvo::computeLogPmatrices(){
 
     allPs.assign(1, m, NULL);
