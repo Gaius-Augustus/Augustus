@@ -446,14 +446,17 @@ int eigendecompose(gsl_matrix *Q,        // input
  * where Q is given by U, diag(lambda) and U^{-1} as computed by eigendecompose
  * Values of P are stored in log-space, i.e. ln P is stored (elementwise natural logarithm).
  */
-gsl_matrix *expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv){
-    gsl_matrix* P = gsl_matrix_alloc (64, 64);    
+gsl_matrix *Evo::expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv){
+
+    int N = states;
+
+    gsl_matrix* P = gsl_matrix_alloc (N, N);    
     double Pij;
     // P(t) = exp(Q*t) = U * diag(exp(lambda_1 * t), ..., exp(lambda_n * t)) * Uinv
-    for (int i=0; i<64; i++){
-	for (int j=0; j<64; j++){
+    for (int i=0; i<N; i++){
+	for (int j=0; j<N; j++){
 	    Pij = 0;
-	    for (int k=0; k<64; k++)
+	    for (int k=0; k<N; k++)
 		Pij += gsl_matrix_get(U, i, k) * exp(gsl_vector_get(lambda, k)*t) * gsl_matrix_get(Uinv, k, j);
 	    if (Pij>0.0)
 		gsl_matrix_set(P, i, j, Pij);
@@ -554,11 +557,23 @@ void ExonEvo::setAliErr(){
 
 void ExonEvo::computeLogPmatrices(){
 
+    gsl_matrix *Q = getExonRateMatrix();
+
+    // decompose rate matrix Q = U * diag(l_1,...,l_n) * Uinv
+    int status = eigendecompose(Q);
+    if (status) {
+	stringstream s;
+	s << "Spectral decomposition of exon rate matrix for failed.";
+	throw ProjectError(s.str());
+    }
+    gsl_matrix_free(Q);
+
+    // for all branch lengths t, compute transition matrices P(t) and logP(t)
     allPs.assign(1, m, NULL);
     allLogPs.assign(1, m, NULL);
     for (int v=0; v<m; v++){
 	double t = times[v]; // time
-	gsl_matrix *P = computeP(t);
+	gsl_matrix *P = expQt(t);
         allPs[0][v]=P;
 	allLogPs[0][v]=log(P,states); 
     }
@@ -584,7 +599,7 @@ void ExonEvo::addBranchLength(double b){
     }
     if(!isIncluded){ // add branch length
 	times.push_back(b);
-	gsl_matrix *P=computeP(b);
+	gsl_matrix *P= expQt(b);
 	vector<gsl_matrix*> row = allPs.getRow(0);
 	row.push_back(P);
 	allPs.assign(1, row.size(), NULL);
@@ -601,13 +616,87 @@ void ExonEvo::addBranchLength(double b){
     }
 }
 
-gsl_matrix *ExonEvo::computeP(double t){
-    gsl_matrix* P = gsl_matrix_calloc(states, states);
-    gsl_matrix_set(P, 0, 1, (lambda / (lambda + mu)) * (1 - exp(-(mu + lambda) * t)));
-    gsl_matrix_set(P, 1, 0, (mu / (lambda + mu)) * (1 - exp(-(mu + lambda) * t)));
-    gsl_matrix_set(P, 0, 0, 1 - gsl_matrix_get(P,0,1));
-    gsl_matrix_set(P, 1, 1, 1 - gsl_matrix_get(P,1,0));
-    return P;
+gsl_matrix *ExonEvo::getExonRateMatrix(){
+
+    const int N = states;
+
+    gsl_matrix *Q = gsl_matrix_alloc (N, N);
+
+    gsl_matrix_set (Q, 0, 1, lambda); // exon gain with rate lambda
+    gsl_matrix_set (Q, 1, 0, mu);     // exon log with rate mu
+    if(N > 2){                        // rate for alignment errors: ali_error >> mu,lambda 
+	gsl_matrix_set (Q, 0, 2, ali_error);
+	gsl_matrix_set (Q, 1, 2, ali_error);
+	gsl_matrix_set (Q, 2, 0, ali_error);
+	gsl_matrix_set (Q, 2, 1, ali_error);
+    }
+    // set diagonal elements to the negative sum of the other rates in the row
+    for (int i = 0; i < N; ++i){
+	double Pii = 0;
+	for(int j = 0 ; j < N; j++){
+	    if(i != j)
+		Pii -= gsl_matrix_get (Q, i, j);
+	}
+	gsl_matrix_set (Q, i, i, Pii);
+    }
+    return Q;
+}
+    
+
+int ExonEvo::eigendecompose(gsl_matrix *Q){
+
+    const int N = states; // dimension of matrices: N x N
+
+    // allocate memory for temporary matrices/vectors ...
+    gsl_vector_complex *l_complex = gsl_vector_complex_alloc (N);    // complex vector of eigenvalues
+    gsl_matrix_complex *U_complex = gsl_matrix_complex_alloc (N, N); // complex matrix of eigenvectors 
+    gsl_matrix *U_LU_decomp = gsl_matrix_alloc (N, N);               // LU decomposition of matrix U (required for calcuating Uinv)
+    gsl_eigen_nonsymmv_workspace * w = gsl_eigen_nonsymmv_alloc (N);
+
+    // ... and permanent stuff: Q = U * diag(l_1,...,l_n) * Uinv 
+    l = gsl_vector_alloc (N);                                        // real vector of eigenvalues
+    U = gsl_matrix_alloc (N, N);                                     // real matrix of eigenvectors
+    Uinv = gsl_matrix_alloc (N, N);                                  // inverse of U
+
+    int s; // signum for LU decomposition
+    gsl_permutation * perm = gsl_permutation_alloc (N); // permutation matrix of LU decomposition
+    
+    int status = gsl_eigen_nonsymmv (Q, l_complex, U_complex, w); // eigen decomposition
+    if (status)
+	return status;
+    
+    // check if all eigenvalues and eigenvectors have real values
+    for (int i = 0; i < N; ++i){
+	gsl_complex z = gsl_vector_complex_get (l_complex, i);
+	if(GSL_IMAG(z) != 0)
+	    throw ProjectError("Matrix diagonalization: complex eigen values.");
+	gsl_vector_set (l, i, GSL_REAL(z));
+        for(int j = 0 ; j < N; j++){
+	    z = gsl_matrix_complex_get(U_complex, i, j);
+	    if(GSL_IMAG(z) != 0)
+		throw ProjectError("Matrix diagonalization: complex eigen vector.");
+	    gsl_matrix_set (U, i, j, GSL_REAL(z)); 
+	    gsl_matrix_set (U_LU_decomp, i, j, GSL_REAL(z));
+	}
+    }
+
+    status = gsl_linalg_LU_decomp (U_LU_decomp, perm, &s); // LU decomposition (required for calculating Uinv)
+    if (status) 
+        return status;
+
+    // Invert matrix U_LU_decomp
+    status = gsl_linalg_LU_invert (U_LU_decomp, perm, Uinv);
+    if (status)
+        return status;
+
+    // free memory of temporary stuff
+    gsl_permutation_free (perm);
+    gsl_vector_complex_free(l_complex);
+    gsl_matrix_complex_free(U_complex);
+    gsl_matrix_free(U_LU_decomp);
+    gsl_eigen_nonsymmv_free (w);
+    
+    return 0;
 }
 
 /* 

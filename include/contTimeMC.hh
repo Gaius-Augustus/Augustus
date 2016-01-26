@@ -23,6 +23,7 @@
 #include <iostream>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_eigen.h>
+#include <gsl/gsl_linalg.h>
 
 // forward declarations
 class PhyloTree;
@@ -64,16 +65,23 @@ public:
     gsl_matrix *getSubMatrixP(int u, double t); 
     gsl_matrix *getSubMatrixLogP(int u, double t); 
 
+    /*
+     * compute the matrix exponential P(t) = exp(Q*t),
+     * where Q is given by U, diag(lambda) and U^{-1} as computed by eigendecompose
+     */
+    gsl_matrix *expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv);
+
 protected:
     int findClosestIndex(vector<double> &v, double val);
 
 protected:
-    int states; //number of states (64 in codon model and (currently) 2 in exon model)
+    const int states; //number of states (64 in codon model and (currently) 2 in exon model)
     int m; // number of branch lengths (times) for which P's are stored
     double *pi;
     vector<double> times; // sorted vector of branch lengths
     Matrix<gsl_matrix *> allPs; // parametrized probability matrices
     Matrix<gsl_matrix *> allLogPs; // parametrized log probability matrices
+
 };
 
 /*
@@ -173,13 +181,6 @@ int eigendecompose(gsl_matrix *Q,       // input
 		   gsl_matrix *&U,      // output
 		   gsl_matrix *&Uinv);  // output
 
-/*
- * compute the matrix exponential P(t) = exp(Q*t),
- * where Q is given by U, diag(lambda) and U^{-1} as computed by eigendecompose
- */
-
-gsl_matrix *expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv);
-
 void printCodonMatrix(gsl_matrix *M);
 
 /*
@@ -203,6 +204,11 @@ public:
 	setPi();
 	setAliErr();
     };
+    ~ExonEvo(){
+	gsl_matrix_free(U);
+	gsl_matrix_free(Uinv);
+	gsl_vector_free(l);
+    }
     void setPi();
     void setMu();
     void setAliErr();
@@ -210,15 +216,22 @@ public:
     void setLambda();
     double getLambda() const{return lambda;}
     double getAliErr() const{return ali_error;}
-    gsl_matrix *computeP(double t); //computes transition matrix P for time t
     void computeLogPmatrices();
     void addBranchLength(double b); //add new branch length b and matrix P(b)
     double minBranchLength() const {return times.front();}
+    int eigendecompose(gsl_matrix *Q);
+    gsl_matrix *expQt(double t) {return Evo::expQt(t,l,U,Uinv);}
+    gsl_matrix *getExonRateMatrix();
    
 private:
     double mu;            // rate for exon loss
     double lambda;        // rate for exon gain
     double ali_error;     // rate for alignment error
+
+    // eigen decomposition of exon rate matrix Q = U * diag(l_1,...,l_n) * Uinv
+    gsl_matrix *U;
+    gsl_matrix *Uinv;
+    gsl_vector *l;
 };
 
 /*
