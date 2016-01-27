@@ -181,6 +181,9 @@ int eigendecompose(gsl_matrix *Q,       // input
 		   gsl_matrix *&U,      // output
 		   gsl_matrix *&Uinv);  // output
 
+// eigen decomposition was successful, if Q - U * diag(lambda) * Uinv is close to the 0-matrix
+void validateEigenDecomp(gsl_matrix *Q, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv, int states);
+
 void printCodonMatrix(gsl_matrix *M);
 
 /*
@@ -222,6 +225,7 @@ public:
     int eigendecompose(gsl_matrix *Q);
     gsl_matrix *expQt(double t) {return Evo::expQt(t,l,U,Uinv);}
     gsl_matrix *getExonRateMatrix();
+    void validateEigenDecomp(gsl_matrix *Q){::validateEigenDecomp(Q,l,U,Uinv,states);}
    
 private:
     double mu;            // rate for exon loss

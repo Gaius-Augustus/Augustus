@@ -425,20 +425,24 @@ int eigendecompose(gsl_matrix *Q,        // input
 	    gsl_matrix_set(U, i, j, factor * gsl_matrix_get(U, i, j));
 	}
     }
-    // to test whether the decomposition is correct, look at whether Q - U * diag(lambda) * Uinv is close to the 0-matrix
-    /*cout << "residue Q - U * diag(lambda) * Uinv" << endl;
-    for (int i=0; i<64; i++){
-	for (int j=0; j<64; j++){
+    //validateEigenDecomp(Q,lambda,U,Uinv,64);
+    return 0;
+}
+
+// to test whether the decomposition is correct, look at whether Q - U * diag(lambda) * Uinv is close to the 0-matrix
+void validateEigenDecomp(gsl_matrix *Q, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *Uinv, int states){
+    int N = states;
+    cout << "residue Q - U * diag(lambda) * Uinv" << endl;
+    for (int i=0; i<N; i++){
+	for (int j=0; j<N; j++){
 	    double residue = gsl_matrix_get(Q, i, j);
-	    for (int k=0; k<64; k++){
+	    for (int k=0; k<N; k++){
 		residue -= gsl_matrix_get(U, i, k) * gsl_vector_get(lambda, k) * gsl_matrix_get(Uinv, k, j);
 	    }
 	    cout << setw(6) << fixed << setprecision(3) << residue << " ";
 	}
 	cout << endl;
     }
-    */
-    return 0;
 }
 
 /*
@@ -695,7 +699,10 @@ int ExonEvo::eigendecompose(gsl_matrix *Q){
     gsl_matrix_complex_free(U_complex);
     gsl_matrix_free(U_LU_decomp);
     gsl_eigen_nonsymmv_free (w);
-    
+
+    // check if decomposition is correct
+    //validateEigenDecomp(Q);
+
     return 0;
 }
 
