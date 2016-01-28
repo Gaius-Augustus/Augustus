@@ -204,8 +204,9 @@ public:
     ExonEvo() : Evo(2)  {
 	setLambda();
 	setMu();
-	setPi();
 	setAliErr();
+	// mu, lambda and ali_error have to be set before calculating equilibrium frequencies Pi
+	setPi();
     };
     ~ExonEvo(){
 	gsl_matrix_free(U);

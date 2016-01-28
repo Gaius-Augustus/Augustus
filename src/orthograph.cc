@@ -479,7 +479,7 @@ double OrthoGraph::makeConsistent(list<OrthoExon> &all_orthoex, ExonEvo &evo){
     for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
 	PhyloTree *temp = hects->getTree();
 	Evo *evo_base = &evo;
-	vector<int> labels(numSpecies,2);
+	vector<int> labels = hects->labels;
 	for(int pos=0; pos < hects->orthonode.size(); pos++){
 	    if(hects->orthonode[pos])
 		labels[pos] = hects->orthonode[pos]->label;

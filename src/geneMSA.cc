@@ -247,11 +247,10 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
         list<pair<int,ExonCandidate*> >::iterator it = aec->second.begin();
 	while (it != aec->second.end()){
 	    if(!it->second){
-		// turned of the "absent" state, until parameters are re-trained for the new model
-		/*
-		 * absent[it->first]=1;
-		 * numAbsent++;
-		 */
+		if(evo->getNumStates() > 2){ // additional state "EC is absent", only if ExonEvo model is initialized with 3 states
+		    absent[it->first]=1;
+		    numAbsent++;
+		}
                 it = aec->second.erase(it);
             }
             else{

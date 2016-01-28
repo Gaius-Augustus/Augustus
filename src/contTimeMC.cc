@@ -472,6 +472,11 @@ gsl_matrix *Evo::expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *
 	    }
 	}
     }
+    if(states == 3){
+	double P01 = gsl_matrix_get(P, 0, 1);
+	gsl_matrix_set(P, 0, 0,  (1-P01));
+	gsl_matrix_set(P, 0, 2,  (1-P01));     
+    }
     return P;
 }
 
@@ -585,11 +590,25 @@ void ExonEvo::computeLogPmatrices(){
 
 void ExonEvo::setPi(){
 
-    this->pi = new double[2];
-    this->pi[0] = (mu / (lambda + mu));
-    this->pi[1] = (lambda / (lambda + mu));
-}
-    
+    if(states == 2){
+	this->pi = new double[2];
+	this->pi[0] = (mu / (lambda + mu));
+	this->pi[1] = (lambda / (lambda + mu));
+    }
+    else if(states == 3){
+	this->pi = new double[3];
+	this->pi[0] = (mu / (lambda + mu));
+        this->pi[1] = (lambda / (lambda + mu));
+	this->pi[2] = 0.0;
+	/*double denominator = 3.0 * (lambda + mu + ali_error);
+        this->pi[0] = (ali_error + (2*mu)) / denominator;
+        this->pi[1] = (ali_error + (2*lambda)) / denominator;
+	this->pi[2] = 1.0 / 3.0;*/
+    }
+    else{
+	throw ProjectError("internal error: wrong number of states in ExonEvo model: choose either 2 or 3.");
+    }
+}  
 
 void ExonEvo::addBranchLength(double b){
 
@@ -629,10 +648,10 @@ gsl_matrix *ExonEvo::getExonRateMatrix(){
     gsl_matrix_set (Q, 0, 1, lambda); // exon gain with rate lambda
     gsl_matrix_set (Q, 1, 0, mu);     // exon log with rate mu
     if(N > 2){                        // rate for alignment errors: ali_error >> mu,lambda 
-	gsl_matrix_set (Q, 0, 2, ali_error);
+	gsl_matrix_set (Q, 0, 2, -lambda/2);
 	gsl_matrix_set (Q, 1, 2, ali_error);
-	gsl_matrix_set (Q, 2, 0, ali_error);
-	gsl_matrix_set (Q, 2, 1, ali_error);
+	gsl_matrix_set (Q, 2, 0, 0);
+	gsl_matrix_set (Q, 2, 1, 0);
     }
     // set diagonal elements to the negative sum of the other rates in the row
     for (int i = 0; i < N; ++i){
