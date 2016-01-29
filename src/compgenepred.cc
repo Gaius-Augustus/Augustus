@@ -74,8 +74,16 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
 void CompGenePred::start(){
 
     // read in alignment, determine orthologous sequence fragments
-    
-    ExonEvo evo;
+
+    int num_phylo_states; // number of states in ExonEvo model
+    try {
+	num_phylo_states = Properties::getIntProperty("/CompPred/phylo_model");
+    } catch (...) {
+	num_phylo_states = 2;
+    }
+    if( num_phylo_states > 4 || num_phylo_states < 2)
+	throw ProjectError("/CompPred/phylo_model must be 2,3 or 4");
+    ExonEvo evo(num_phylo_states);
     vector<double> branchset;
     tree.getBranchLengths(branchset);
     evo.setBranchLengths(branchset);

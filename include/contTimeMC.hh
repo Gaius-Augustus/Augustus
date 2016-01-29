@@ -201,7 +201,7 @@ gsl_matrix *log(gsl_matrix *P, int states);
 class ExonEvo : public Evo{
 
 public:
-    ExonEvo() : Evo(2)  {
+    ExonEvo(int num_states=2) : Evo(num_states)  {
 	setLambda();
 	setMu();
 	setAliErr();
