@@ -472,10 +472,14 @@ gsl_matrix *Evo::expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *
 	    }
 	}
     }
-    if(states == 3){
-	double P01 = gsl_matrix_get(P, 0, 1);
-	gsl_matrix_set(P, 0, 0,  (1-P01));
-	gsl_matrix_set(P, 0, 2,  (1-P01));     
+    if(states == 3 || states == 4){
+	gsl_matrix_set(P, 0, 0, gsl_matrix_get(P, 0, 0));
+	gsl_matrix_set(P, 0, 2, gsl_matrix_get(P, 0, 0));     
+    }
+    if(states == 4){
+	gsl_matrix_set(P, 0, 3, gsl_matrix_get(P, 0, 2));     
+	gsl_matrix_set(P, 1, 3, gsl_matrix_get(P, 1, 2));
+	gsl_matrix_set(P, 2, 3, 1);
     }
     return P;
 }
@@ -583,6 +587,13 @@ void ExonEvo::computeLogPmatrices(){
     for (int v=0; v<m; v++){
 	double t = times[v]; // time
 	gsl_matrix *P = expQt(t);
+	/*cout << "printing P for t=" << t << endl;
+	for (int i = 0; i < states; ++i){
+	    for(int j = 0 ; j < states; j++){
+		cout << gsl_matrix_get (P, i, j) << " ";
+	    }
+	    cout << endl;
+	    }*/
         allPs[0][v]=P;
 	allLogPs[0][v]=log(P,states); 
     }
@@ -605,8 +616,19 @@ void ExonEvo::setPi(){
         this->pi[1] = (ali_error + (2*lambda)) / denominator;
 	this->pi[2] = 1.0 / 3.0;*/
     }
+    else if(states == 4){
+	this->pi = new double[4];
+	this->pi[0] = (mu / (lambda + mu));
+        this->pi[1] = (lambda / (lambda + mu));
+	this->pi[2] = 0.0;
+	this->pi[3] = 0.0;
+	/*double denominator = 3.0 * (lambda + mu + ali_error);
+        this->pi[0] = (ali_error + (2*mu)) / denominator;
+        this->pi[1] = (ali_error + (2*lambda)) / denominator;
+	this->pi[2] = 1.0 / 3.0;*/
+    }
     else{
-	throw ProjectError("internal error: wrong number of states in ExonEvo model: choose either 2 or 3.");
+	throw ProjectError("internal error: wrong number of states in ExonEvo model: choose either 2,3 or 4.");
     }
 }  
 
@@ -648,10 +670,18 @@ gsl_matrix *ExonEvo::getExonRateMatrix(){
     gsl_matrix_set (Q, 0, 1, lambda); // exon gain with rate lambda
     gsl_matrix_set (Q, 1, 0, mu);     // exon log with rate mu
     if(N > 2){                        // rate for alignment errors: ali_error >> mu,lambda 
-	gsl_matrix_set (Q, 0, 2, -lambda/2);
+	gsl_matrix_set (Q, 0, 2, ali_error);
 	gsl_matrix_set (Q, 1, 2, ali_error);
 	gsl_matrix_set (Q, 2, 0, 0);
 	gsl_matrix_set (Q, 2, 1, 0);
+    }
+    if(N > 3){
+	gsl_matrix_set (Q, 0, 3, 0);
+	gsl_matrix_set (Q, 1, 3, 0);
+	gsl_matrix_set (Q, 2, 3, 0);
+	gsl_matrix_set (Q, 3, 0, 0);
+	gsl_matrix_set (Q, 3, 1, 0);
+	gsl_matrix_set (Q, 3, 2, 0);
     }
     // set diagonal elements to the negative sum of the other rates in the row
     for (int i = 0; i < N; ++i){
@@ -662,6 +692,13 @@ gsl_matrix *ExonEvo::getExonRateMatrix(){
 	}
 	gsl_matrix_set (Q, i, i, Pii);
     }
+    /*cout << "printing Q" << endl;
+    for (int i = 0; i < N; ++i){
+	for(int j = 0 ; j < N; j++){
+	    cout << gsl_matrix_get (Q, i, j) << " ";
+	}
+	cout << endl;
+	}*/
     return Q;
 }
     
