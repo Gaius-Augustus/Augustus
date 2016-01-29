@@ -243,13 +243,11 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 
 	// first remove "absent" ECs, e.g. all tuples (speciesIdx,NULL) from the list        
         bit_vector absent(k,0); // bit 1 for EC absent, but genome aligned
-	int numAbsent = 0; // number of absent ECs
         list<pair<int,ExonCandidate*> >::iterator it = aec->second.begin();
 	while (it != aec->second.end()){
 	    if(!it->second){
 		if(evo->getNumStates() > 2){ // additional state "EC is absent", only if ExonEvo model is initialized with 3 states
 		    absent[it->first]=1;
-		    numAbsent++;
 		}
                 it = aec->second.erase(it);
             }
@@ -261,7 +259,13 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 	// float avLen = 0.0; // not needed anymore
 	OrthoExon oe(aec->first, numSpecies());
 	bit_vector present(k,0);      // bit 1 for ECs that are present
-	bit_vector aligned = absent;  // bit 1 for ECs that are aligned ("present" or "absent")
+	/*
+	 * leaves: bit 1 if the corresponding leaf node is present in the tree
+	 * ExonEvo(2) -> only leaves for "present" ECs
+	 * ExonEvo(3) -> leaves for "present" and "absent" ECs
+	 * ExonEvo(4) -> all leaves
+	 */
+	bit_vector leaves = absent; 
 	oe.orthoex.resize(k, NULL);
 	for (it = aec->second.begin(); it != aec->second.end(); ++it){
 	    int s = it->first;
@@ -271,7 +275,7 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 		throw ProjectError("createOrthoExons: Have two exon candidates from the same species " 
 				   + rsa->getSname(s) + " with the same key " + itoa(aec->first));
 	    present[s]=1;
-	    aligned[s]=1;
+	    leaves[s]=1;
 	    oe.orthoex[s] = ec;
 	    // avLen += ec->len();
 	}
@@ -280,11 +284,13 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 	oe.setAbsent(absent);
 	// link OE to tree topology
 	PhyloTree *t = NULL;
-	topit = topologies.find(aligned);
+	if(evo->getNumStates() > 3) // additional state "unaligned", only if ExonEvo model is initialized with 4 states
+	    leaves = bit_vector(k,1); // original tree, no pruning necessary
+	topit = topologies.find(leaves);
 	if(topit == topologies.end()){ // insert new topology
 	    t = new PhyloTree(*tree);
-	    t->prune(aligned,evo); // remove all leaf nodes of "unaligned" species
-	    topologies.insert(pair<bit_vector,PhyloTree*>(aligned,t));
+	    t->prune(leaves,evo); // remove all leaf nodes of "unaligned" species
+	    topologies.insert(pair<bit_vector,PhyloTree*>(leaves,t));
 	}
 	else{
 	    t = topit->second;
@@ -299,7 +305,7 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 	    orthoExonsList.push_back(oe);
 	}
 	else { // if the number of exons ==1 , no OrthoExon is needed, the phylogenetic score is constant and can be pre-computed
-	    if(numAbsent > 0){ // otherwise the tree has only a single node
+	    if(t->numSpecies() > 1){ // otherwise the tree has only a single node
 		int s = aec->second.begin()->first;
 		ExonCandidate *ec = aec->second.begin()->second;
 		vector<int> fix_0 = oe.labels; // EC is not predicted

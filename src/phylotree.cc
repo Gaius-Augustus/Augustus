@@ -375,11 +375,11 @@ double PhyloTree::MAP(vector<int> &labels, vector<double> &weights, Evo *evo, bo
 	    // initialization
 	    int idx = (*node)->getIdx();
 	    int c = labels[idx];
-	    if(c >= 3 || c < 0) // exon does not exist
+	    if(c >= 4 || c < 0)
 		throw ProjectError("PhyloTree::MAP(): species with index "+ itoa(idx) + " does not exist in tree");
 	    double weight = weights[idx];
 	    (*node)->resizeTable(states,-std::numeric_limits<double>::max());
-	    if(fixLeafLabels || c == 2){ // c=2: EC absent, but aligned is always a fixed state
+	    if(fixLeafLabels || c >= 2){ // c=2: EC absent, but aligned is always a fixed state
 		(c == 1)? (*node)->setTable(c,weight) : (*node)->setTable(c,0);
 	    }
 	    else{
@@ -449,7 +449,7 @@ void PhyloTree::MAPbacktrack(vector<int> &labels, Treenode* root, int bestAssign
 	bestAssign=p.second;
 	if(node->isLeaf()){
 	    int idx = node->getIdx();
-	    if( (fixLeafLabels || labels[idx] == 2 ) && bestAssign != labels[idx])
+	    if( (fixLeafLabels || labels[idx] >= 2 ) && bestAssign != labels[idx])
 		throw ProjectError("in MAPbacktrack: fixLeafNodes is one but different node labels");
 	    labels[idx]=bestAssign;
 	}
@@ -498,11 +498,13 @@ void PhyloTree::prune(bit_vector &bv, Evo *evo){
 		Treenode* tmp=*node;
 		if(node == treenodes.begin()){
 		    drop(tmp,evo);
+		    numSp--;
 		    goto start;
 		}
 		else{
 		    node--;
 		    drop(tmp,evo);
+		    numSp--;
 		}
 	    }
 	}
