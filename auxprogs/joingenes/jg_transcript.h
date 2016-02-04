@@ -56,7 +56,6 @@ class Exon{
     int frame;
     int rangeToBoundary;
     boundaryStatusType boundaryProblem;
-    list <Transcript*> indirectBoundProbEnemies;
 
     int tooMany;
     int tooFew;
@@ -132,11 +131,13 @@ class Transcript{
     string originalId;
     string inputFile;
 
+    pair<boundaryStatusType,boundaryStatusType> boundaryProblem;
+
     double penalty;
 
     compareType compareValue;
 
-    boundaryStatusType startBoundaryType(){
+/*    boundaryStatusType startBoundaryType(){
 	if (strand == '+'){
 	    return exon_list.front().boundaryProblem;
 	}else{
@@ -151,7 +152,7 @@ class Transcript{
 	    return exon_list.front().boundaryProblem;
 	}
     }
-
+*/
     bool hasCommonExon(Transcript* tx){
 	list<Exon>::const_iterator it1 = exon_list.begin();
 	list<Exon>::const_iterator it2 = tx->exon_list.begin();
@@ -237,35 +238,30 @@ class Transcript{
             tes_to_cds();					// needs utr structure!
 	}
 
-	calcRangeToBoundary(properties);
+	calcDistToBoundary(properties);
     }
 
-    void calcRangeToBoundary(Properties &properties){
+    void calcDistToBoundary(Properties &properties){
+
 	for (list<Exon>::iterator it = exon_list.begin(); it != exon_list.end(); it++){
 	    (*it).rangeToBoundary = -1;
 	}
-//	exon_list.front().rangeToBoundary = -1;
-//	exon_list.back().rangeToBoundary = -1;
-	if (pred_range.second){
-	    exon_list.back().rangeToBoundary = pred_range.second - getTxEnd();
 
-	    if (exon_list.back().rangeToBoundary > properties.errordistance){
-		//boundaryProblem.second = NO_PROB;
-		exon_list.back().boundaryProblem = NO_PROB;
+	if (pred_range.second){
+            int boundaryDist = pred_range.second - getTxEnd();
+	    if (boundaryDist > properties.errordistance){
+		boundaryProblem.second = NO_PROB;
+
 	    }else{
-		//boundaryProblem.second = TOO_CLOSE;
-		exon_list.back().boundaryProblem = TOO_CLOSE;
+		boundaryProblem.second = TOO_CLOSE;
 	    }
 	}
 	if (pred_range.first){
-	    exon_list.front().rangeToBoundary = getTxStart() - pred_range.first;
-
-	    if (exon_list.front().rangeToBoundary > properties.errordistance){
-		//boundaryProblem.first = NO_PROB;
-		exon_list.front().boundaryProblem = NO_PROB;
+            int boundaryDist = getTxStart() - pred_range.first;
+	    if (boundaryDist > properties.errordistance){
+                boundaryProblem.first = NO_PROB;
 	    }else{
-		//boundaryProblem.first = TOO_CLOSE;
-		exon_list.front().boundaryProblem = TOO_CLOSE;
+                boundaryProblem.first = TOO_CLOSE;
 	    }
 	}
     }
@@ -493,31 +489,32 @@ class Transcript{
     }
 
     bool indirectBoundaryProblem(Transcript* tx){
-
-	if (overlappingCdsWithAnything(this, tx) /*&& this->strand == tx->strand*/){
-	    // does *it transcend the predictionBoundary of *itInside in tail direction
+	if (overlappingCdsWithAnything(this, tx) && this->strand == tx->strand){
+            bool problem = false;
+	    // does "this" transcend the predictionBoundary of tx in tail direction
 	    if (this->pred_range.second && tx->getTxEnd() > this->pred_range.second){
-		return true;
+                if (!(this->boundaryProblem.second > 2)){ this->boundaryProblem.second = INDIRECT_PROBLEM; }
+                problem = true;
 	    }
 
-	    // does *it transcend the predictionBoundary of *itInside in front direction
+	    // does "this" transcend the predictionBoundary of tx in front direction
 	    if (this->pred_range.first && tx->getTxStart() < this->pred_range.first){
-		return true; // tx->exon_list.front().boundaryProblem = INDIRECT_PROBLEM;
+                if (!(this->boundaryProblem.first > 2)){ this->boundaryProblem.first = INDIRECT_PROBLEM; }
+                problem = true;
 	    }
+            return problem;
 	}
-/*cout << "INSIDE: " << this->exon_list.front().indirectBoundProbEnemies.size() << " " << this->exon_list.front().indirectBoundProbEnemies.size() << endl;
-	for(list<Transcript*>::iterator it = this->exon_list.front().indirectBoundProbEnemies.begin(); it != this->exon_list.front().indirectBoundProbEnemies.end(); it++){
-	    if ( (*it) == tx ){
-		return true;
-	    }
-	}
-	for(list<Transcript*>::iterator it = this->exon_list.back().indirectBoundProbEnemies.begin(); it != this->exon_list.back().indirectBoundProbEnemies.end(); it++){
-cout << (*it) << " " << tx << " " << (*it)->t_id << " " << tx->t_id << " " << (*it)->originalId << " " << tx->originalId << endl;
-	    if ( (*it)->t_id == tx->t_id ){
-		return true;
-	    }
-	}*/
-	return false;
+        return false;
+    }
+
+    void updateExonSpecificValues(Transcript* t2, int fittingCase){
+        if (fittingCase <= 2){
+            this->boundaryProblem.second = t2->boundaryProblem.second;
+            this->pred_range.second = t2->pred_range.second;
+        }else{
+            this->boundaryProblem.first = t2->boundaryProblem.first;
+            this->pred_range.first = t2->pred_range.first;
+        }
     }
 };
 
@@ -540,7 +537,6 @@ void divideInOverlapsAndConquer(list<Transcript*> &transcript_list, Properties &
 void workAtOverlap(list<Transcript*> &overlap, Properties &properties);
 void selection(list<Transcript*> &overlap, Properties &properties);
 void bactSelection(list<Transcript*> &overlap, Properties &properties);
-void eukaSelection(list<Transcript*> &overlap, Properties &properties);
 bool areOverlapping(Transcript* t1, Transcript* t2);
 void joinCall(list<Transcript*> &overlap, Properties &properties);
 void compareAndSplit(list<Transcript*> &overlap, Properties &properties);

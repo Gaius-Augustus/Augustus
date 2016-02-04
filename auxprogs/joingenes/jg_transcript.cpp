@@ -75,109 +75,6 @@ void workAtOverlap(list<Transcript*> &overlap, Properties &properties)
     }
 }
 
-void selection(list<Transcript*> &overlap, Properties &properties){
-    // seek for the higherest priority with a complete transcript in the current overlap
-    if (properties.genemodel == "bacterium"){
-	bactSelection(overlap, properties);
-    }else{
-	eukaSelectionDevelopment(overlap, properties);
-    }
-}
-
-void bactSelection(list<Transcript*> &overlap, Properties &properties){
-    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-	if ((*it)->exon_list.front().rangeToBoundary <= properties.errordistance && (*it)->exon_list.front().rangeToBoundary != -1){
-	    it = overlap.erase(it);
-	    it--;
-	    continue;
-	}
-	if ((*it)->exon_list.back().rangeToBoundary <= properties.errordistance && (*it)->exon_list.back().rangeToBoundary != -1){
-	    it = overlap.erase(it);
-	    it--;
-	    continue;
-	}
-	if (!(*it)->tl_complete.second || !(*it)->tl_complete.first){
-	    it = overlap.erase(it);
-	    it--;
-	    continue;
-	}
-    }
-    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-	list<Transcript*>::iterator itInside = it;
-	itInside++;
-	while (itInside != overlap.end()){
-	    if ((*it)->strand == (*itInside)->strand && (*it)->tes == (*itInside)->tes){
-		if ((*it)->priority < (*itInside)->priority)
-		{
-		    it = overlap.erase(it);
-		    it--;
-		    break;
-		}else if ((*it)->priority > (*itInside)->priority){
-		    itInside = overlap.erase(itInside);
-		    continue;
-		}else{	// priorities equal
-		    if (simpleProkScore(*it) < simpleProkScore(*itInside)){
-			it = overlap.erase(it);
-			it--;
-			break;
-		    }else{
-			itInside = overlap.erase(itInside);
-			continue;
-		    }
-		}
-	    }else if((*it)->strand == (*itInside)->strand && (*it)->getCdsFront()->from > (*itInside)->getCdsFront()->from && (*it)->getCdsBack()->to < (*itInside)->getCdsBack()->to){
-		if ((*it)->getCdsFront()->score < 0.1){
-		    it = overlap.erase(it);
-		    it--;
-		    break;
-		}
-	    }else if((*it)->strand == (*itInside)->strand && (*it)->getCdsFront()->from < (*itInside)->getCdsFront()->from && (*it)->getCdsBack()->to > (*itInside)->getCdsBack()->to){
-		if ((*itInside)->getCdsFront()->score < 0.1){
-		    itInside = overlap.erase(itInside);
-		    continue;
-		}
-	    }
-	    itInside++;
-	}
-    }
-}
-
-void eukaSelection(list<Transcript*> &overlap, Properties &properties){
-    // seek for the higherest priority with a complete transcript in the current overlap
-    overlap.sort(compare_priority);
-    int highest_complete_priority = 0;
-    list<Transcript*> completeHighPriorityTranscripts;
-    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-	if ((*it)->tl_complete.first && (*it)->tl_complete.second){
-	    if (highest_complete_priority < (*it)->priority){
-		completeHighPriorityTranscripts.clear();
-		highest_complete_priority = (*it)->priority;
-		completeHighPriorityTranscripts.push_back(*it);
-	    }else if (highest_complete_priority == (*it)->priority){
-		completeHighPriorityTranscripts.push_back(*it);
-	    }
-	}
-    }
-
-    // if there is such a highest priority delete transcripts with lower priority and some uncomplete ones and that ones with low score and so on...
-    if (highest_complete_priority){
-	for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-	    if (highest_complete_priority > (*it)->priority){
-		it = overlap.erase(it);
-		it--;
-	    }else if ((!(*it)->tl_complete.first || !(*it)->tl_complete.second) && (highest_complete_priority == (*it)->priority)){			// TODO: not only for uncomplete transcripts... maybe handle these ones otherwise anyway!!!
-		for (list<Transcript*>::iterator itInside = completeHighPriorityTranscripts.begin(); itInside != completeHighPriorityTranscripts.end(); itInside++){
-		    if (areSimilar(*it,*itInside)){
-			it = overlap.erase(it);
-			it--;
-			break;
-		    }
-		}
-	    }
-	}
-    }
-}
-
 void joinCall(list<Transcript*> &overlap, Properties &properties){
     // if there are transcripts with and without start/stop codon, they can be joined here, if they fit together; the old transcript remain for the moment
     // test if some exon is to close to prediction range boundary
@@ -464,35 +361,13 @@ void tooCloseToBoundary(list<Transcript*> &overlap, Properties &properties){
     }
     // find out, if there are indirect boundary problems
     for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-
 	list<Transcript*>::iterator itInside = it;
 	itInside++;
 	while (itInside != overlap.end()){
 	    if (overlappingCdsWithAnything((*it), (*itInside)) /*&& (*it)->strand == (*itInside)->strand*/){
 		// does *it transcend the predictionBoundary of *itInside in tail direction
-		if ((*itInside)->pred_range.second && (*it)->getTxEnd() > (*itInside)->pred_range.second){
-//		    (*itInside)->boundaryProblem.second = INDIRECT_PROBLEM;
-		    (*itInside)->exon_list.back().boundaryProblem = INDIRECT_PROBLEM;
-//		    (*itInside)->exon_list.back().indirectBoundProbEnemies.push_back(*it);
-		}
-		// does *it transcend the predictionBoundary of *itInside in front direction
-		if ((*itInside)->pred_range.first && (*it)->getTxStart() < (*itInside)->pred_range.first){
-//		    (*itInside)->boundaryProblem.first = INDIRECT_PROBLEM;
-		    (*itInside)->exon_list.front().boundaryProblem = INDIRECT_PROBLEM;
-//		    (*itInside)->exon_list.front().indirectBoundProbEnemies.push_back(*it);
-		}
-		// does *itInside transcend the predictionBoundary of *it in tail direction
-		if ((*it)->pred_range.second && (*itInside)->getTxEnd() > (*it)->pred_range.second){
-//		    (*it)->boundaryProblem.second = INDIRECT_PROBLEM;
-		    (*it)->exon_list.back().boundaryProblem = INDIRECT_PROBLEM;
-//		    (*it)->exon_list.back().indirectBoundProbEnemies.push_back(*itInside);
-		}
-		// does *itInside transcend the predictionBoundary of *it in front direction
-		if ((*it)->pred_range.first && (*itInside)->getTxStart() < (*it)->pred_range.first){
-//		    (*it)->boundaryProblem.first = INDIRECT_PROBLEM;
-		    (*it)->exon_list.front().boundaryProblem = INDIRECT_PROBLEM;
-//		    (*it)->exon_list.front().indirectBoundProbEnemies.push_back(*itInside);
-		}
+                (*it)->indirectBoundaryProblem(*itInside);
+                (*itInside)->indirectBoundaryProblem(*it);
 	    }
 	    itInside++;
 	}
@@ -509,7 +384,7 @@ void tooCloseToBoundary(list<Transcript*> &overlap, Properties &properties){
 	}
 
 
-	if ((*it)->exon_list.front().boundaryProblem >= 2 && (*it)->exon_list.back().boundaryProblem < 2){
+	if ((*it)->boundaryProblem.first >= 2 && (*it)->boundaryProblem.second < 2){
 	    // erase the transcript, if it has problem boundary exons only
 	    if ((*it)->exon_list.size() == 1 || ((*it)->exon_list.front().feature == "CDS" && countCDS <= 1)){
 		deleteTx(*it, properties);
@@ -544,9 +419,9 @@ void tooCloseToBoundary(list<Transcript*> &overlap, Properties &properties){
 		    txNew->tts = -1;
 		}
 	    }
-	    txNew->exon_list.front().boundaryProblem = FREED;
+            txNew->boundaryProblem.first = FREED;
 
-	}else if ((*it)->exon_list.front().boundaryProblem < 2 && (*it)->exon_list.back().boundaryProblem >= 2){
+	}else if ((*it)->boundaryProblem.first < 2 && (*it)->boundaryProblem.second >= 2){
 	    // erase the transcript, if it has problem boundary exons only
 	    if ((*it)->exon_list.size() == 1 || ((*it)->exon_list.back().feature == "CDS" && countCDS <= 1)){
 		deleteTx(*it, properties);
@@ -581,9 +456,9 @@ void tooCloseToBoundary(list<Transcript*> &overlap, Properties &properties){
 		    txNew->tts = -1;
 		}
 	    }
-	    txNew->exon_list.back().boundaryProblem = FREED;
+            txNew->boundaryProblem.second = FREED;
 
-	}else if ((*it)->exon_list.front().boundaryProblem >= 2 && (*it)->exon_list.back().boundaryProblem >= 2){
+	}else if ((*it)->boundaryProblem.first >= 2 && (*it)->boundaryProblem.second >= 2){
 	    // erase the transcript, if it has problem boundary exons only
 	    if ((*it)->exon_list.size() <= 2  || ((*it)->exon_list.front().feature == "CDS" && countCDS <= 1) || ((*it)->exon_list.back().feature == "CDS" && countCDS <= 1) || ((*it)->exon_list.front().feature == "CDS" && (*it)->exon_list.back().feature == "CDS" && countCDS <= 2)){
 		deleteTx(*it, properties);
@@ -617,7 +492,8 @@ void tooCloseToBoundary(list<Transcript*> &overlap, Properties &properties){
 		    txNew->tts = -1;
 		}
 	    }
-	    txNew->exon_list.front().boundaryProblem = FREED;
+
+            txNew->boundaryProblem.first = FREED;
 
 	    string tempFeatureBack = txNew->exon_list.back().feature;
 
@@ -643,7 +519,8 @@ void tooCloseToBoundary(list<Transcript*> &overlap, Properties &properties){
 		    txNew->tts = -1;
 		}
 	    }
-	    txNew->exon_list.back().boundaryProblem = FREED;
+
+            txNew->boundaryProblem.first = FREED;
 	}
     }
 }
@@ -674,41 +551,6 @@ void search_n_destroy_doublings(list<Transcript*> &overlap, Properties &properti
 			    it = overlap.erase(it);
 			    itInside = it;
 			}
-
-			// calculate minimal distance to the closest pred range boundary
-			/*int mindist = -1;
-			int mindistInside = -1;
-			if ((*it)->pred_range.first && (*it)->pred_range.second){
-			    mindist = min((*it)->exon_list.front().rangeToBoundary, (*it)->exon_list.back().rangeToBoundary);
-			}
-			if ((*itInside)->pred_range.first && (*itInside)->pred_range.second){
-			    mindistInside = min((*itInside)->exon_list.front().rangeToBoundary, (*itInside)->exon_list.back().rangeToBoundary);
-			}
-
-			// delete a transcript if: less trustful (errordistance), lower priority, smaller score
-			if ((mindist == -1 || mindist > properties.errordistance) && !(mindistInside == -1 || mindistInside > properties.errordistance)){
-			    itInside = overlap.erase(itInside);
-			    itInside--;
-			}else if ((mindistInside == -1 || mindistInside > properties.errordistance) && !(mindist == -1 || mindist > properties.errordistance)){
-			    it = overlap.erase(it);
-			    itInside = it;
-			}else{		// both in our both not in the error distance
-			    if ((*it)->priority < (*itInside)->priority){
-				it = overlap.erase(it);
-				itInside = it;
-			    }else if ((*it)->priority > (*itInside)->priority){
-			        itInside = overlap.erase(itInside);
-			        itInside--;
-			    }else{	// priorities equal
-				if (mindist < mindistInside){
-				    it = overlap.erase(it);
-				    itInside = it;
-				}else{
-				    itInside = overlap.erase(itInside);
-				    itInside--;
-				}
-			    }
-			}*/
 		    }else{
 			if (abInitio){
 			    (*itInside)->supporter.push_front((*it)->originalId);
@@ -962,13 +804,14 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 		if ((*it).feature == "CDS"){nrOfJoinedCDS++;}
 	    }
 	    if (lastPositionInOriginal >= (*it).from && lastPositionInOriginal <= (*it).to){
-		txNew->exon_list.back().to = (*it).to;
-    		txNew->exon_list.back().score = (*it).score;
-		txNew->exon_list.back().rangeToBoundary = (*it).rangeToBoundary;
+//		txNew->exon_list.back().to = (*it).to;
+//    		txNew->exon_list.back().score = (*it).score;
+//		txNew->exon_list.back().rangeToBoundary = (*it).rangeToBoundary;
 		if (strand == '-'){txNew->exon_list.back().frame = (*it).frame;}
 		are_at_add_part = true;
 	    }
 	}
+        txNew->updateExonSpecificValues(t2, fittingCase);
 	break;
     case 2:
 	if (strand == '+'){
@@ -995,6 +838,7 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 		if ((*it).feature == "CDS"){nrOfJoinedCDS++;}
 	    }
 	}
+        txNew->updateExonSpecificValues(t2, fittingCase);
 	break;
     case 3:
 	if (strand == '+'){
@@ -1013,9 +857,9 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 	}
 	for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
 	    if (firstPositionInOriginal >= (*it).from && firstPositionInOriginal <= (*it).to){
-		txNew->exon_list.front().from = (*it).from;
-    		txNew->exon_list.front().score = (*it).score;
-		txNew->exon_list.front().rangeToBoundary = (*it).rangeToBoundary;
+//		txNew->exon_list.front().from = (*it).from;
+//    		txNew->exon_list.front().score = (*it).score;
+//		txNew->exon_list.front().rangeToBoundary = (*it).rangeToBoundary;
 		if (strand == '+'){txNew->exon_list.front().frame = (*it).frame;}
 		txNew->exon_list.merge(temp_exon_list);
 		break;
@@ -1023,6 +867,7 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 	    temp_exon_list.push_back(*it);
 	    if ((*it).feature == "CDS"){nrOfJoinedCDS++;}
 	}
+        txNew->updateExonSpecificValues(t2, fittingCase);
 	break;
     case 4:
 	if (strand == '+'){
@@ -1047,6 +892,7 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 	    temp_exon_list.push_back(*it);
 	    if ((*it).feature == "CDS"){nrOfJoinedCDS++;}
 	}
+        txNew->updateExonSpecificValues(t2, fittingCase);
 	break;
     default:
 	cerr << "WARNING: unexpected case (in joining())!" << endl;
@@ -1421,8 +1267,7 @@ void output_exon_list(Transcript const* tx){
 	cout << "Pred_range: " << tx->pred_range.first << "\t" << tx->pred_range.second << endl;
 	cout << "Pred_range EXON: " << tx->exon_list.front().predRange.first << "\t" << tx->exon_list.back().predRange.second << endl;
 	cout << "Minimum distance from pred_range borders: " << min(tx->exon_list.front().from - tx->pred_range.first, tx->pred_range.second - tx->exon_list.back().to) << endl;
-	cout << "Boundary problem: " << tx->exon_list.front().boundaryProblem << " " << tx->exon_list.back().boundaryProblem << endl;
-	cout << "Distances from pred_range borders: " << tx->exon_list.front().rangeToBoundary << " " << tx->exon_list.back().rangeToBoundary << endl;
+	cout << "Boundary problem: " << tx->boundaryProblem.first << " " << tx->boundaryProblem.second << endl;
     }
     double x = 0.0;
     for (list<Exon>::const_iterator it = tx->exon_list.begin(); it != tx->exon_list.end(); it++){
@@ -1517,10 +1362,10 @@ bool compare_quality(Transcript const* lhs, Transcript const* rhs){
     }
 
     // closeness to prediction range border
-    if ((lhs->exon_list.front().boundaryProblem <= 1 && lhs->exon_list.back().boundaryProblem <= 1) && !(rhs->exon_list.front().boundaryProblem <= 1 && rhs->exon_list.back().boundaryProblem <= 1)){
+    if ((lhs->boundaryProblem.first <= 1 && lhs->boundaryProblem.second <= 1) && !(rhs->boundaryProblem.first <= 1 && rhs->boundaryProblem.second <= 1)){
 	return true;
     }
-    if (!(lhs->exon_list.front().boundaryProblem <= 1 && lhs->exon_list.back().boundaryProblem <= 1) && (rhs->exon_list.front().boundaryProblem <= 1 && rhs->exon_list.back().boundaryProblem <= 1)){
+    if (!(lhs->boundaryProblem.first <= 1 && lhs->boundaryProblem.second <= 1) && (rhs->boundaryProblem.first <= 1 && rhs->boundaryProblem.second <= 1)){
 	return false;
     }
 
@@ -1540,22 +1385,6 @@ bool compare_quality(Transcript const* lhs, Transcript const* rhs){
     }
 }
 
-/*bool isCopyOfSameOriginal(Transcript* t1,Transcript* t2){
-    Transcript* tmp1 = t1;
-    while (tmp1->isCopyOf != NULL){
-	tmp1 = tmp1->isCopyOf;
-    }
-    Transcript* tmp2 = t2;
-    while (tmp2->isCopyOf != NULL){
-	tmp2 = tmp2->isCopyOf;
-    }
-    if (tmp1->t_id == tmp2->t_id){
-	return true;
-    }else{
-	return false;
-    }
-}*/
-
 bool shareAlternativeVariant(Gene* g1, Gene* g2){
     for (list<Transcript*>::iterator it = g1->children.begin(); it != g1->children.end(); it++){
 	for (list<Transcript*>::iterator itInside = g2->children.begin(); itInside != g2->children.end(); itInside++){
@@ -1574,7 +1403,77 @@ bool alternativeVariants(Transcript* t1, Transcript* t2){
     return false;
 }
 
-void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties){
+void solveIndirectProblems(list<Transcript*> &overlap, Properties &properties){
+    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+	list<Transcript*>::iterator itInside = it;
+	itInside++;
+	while (itInside != overlap.end()){
+	    if ((*it)->parent == (*itInside)->parent){
+
+		bool b1 = (*it)->indirectBoundaryProblem(*itInside);
+		bool b2 = (*itInside)->indirectBoundaryProblem(*it);
+
+		if ( b1 && !b2 ){
+		    // DELETE *it
+		    deleteTx(*it, properties);
+		    it = overlap.erase(it);
+		    it--;
+		}
+		if ( b2 && !b1 ){
+		    deleteTx(*itInside, properties);
+		    itInside = overlap.erase(itInside);
+		    itInside--;
+		}
+	    }
+	    itInside++;
+	}
+    }
+}
+
+void txCoexBact(list<Transcript*> &overlap, Properties &properties){
+    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+	list<Transcript*>::iterator itInside = it;
+	itInside++;
+	while (itInside != overlap.end()){
+	    if (!((*it), (*itInside)) || (*it)->strand != (*itInside)->strand || ((*it)->parent == (*itInside)->parent && (*it)->originalId != (*itInside)->originalId) || (*it)->tes != (*itInside)->tes){
+	        (*it)->consistent.push_back((*itInside)->t_id);
+		(*itInside)->consistent.push_back((*it)->t_id);
+	    }
+	    itInside++;
+	}
+    }
+
+// a transcript shouldn't be 100% in another transcript if it's score is very small:
+/*	    if((*it)->strand == (*itInside)->strand && (*it)->getCdsFront()->from > (*itInside)->getCdsFront()->from && (*it)->getCdsBack()->to < (*itInside)->getCdsBack()->to){
+		if ((*it)->getCdsFront()->score < 0.1){
+		    it = overlap.erase(it);
+		    it--;
+		    break;
+		}
+	    }else if((*it)->strand == (*itInside)->strand && (*it)->getCdsFront()->from < (*itInside)->getCdsFront()->from && (*it)->getCdsBack()->to > (*itInside)->getCdsBack()->to){
+		if ((*itInside)->getCdsFront()->score < 0.1){
+		    itInside = overlap.erase(itInside);
+		    continue;
+		}
+	    }*/
+}
+
+void txCoexEuka(list<Transcript*> &overlap, Properties &properties){
+    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+	list<Transcript*>::iterator itInside = it;
+	itInside++;
+	while (itInside != overlap.end()){
+	    if (!overlappingCdsWithAnything((*it), (*itInside)) || (*it)->strand != (*itInside)->strand || ((*it)->parent == (*itInside)->parent && (*it)->originalId != (*itInside)->originalId)){
+	        (*it)->consistent.push_back((*itInside)->t_id);
+		(*itInside)->consistent.push_back((*it)->t_id);
+	    }
+	    itInside++;
+	}
+    }
+}
+
+
+void selection(list<Transcript*> &overlap, Properties &properties){
 
     search_n_destroy_doublings(overlap, properties, false);
 
@@ -1626,36 +1525,7 @@ void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties
     }
 
     // if flag alternatives is on, try to combine transcripts to one gene, if they look like alternative spliced variants
-    if (properties.alternatives && genes.size() >= 2){
-
-
-/*	for (list<Gene*>::iterator it = genes.begin(); it != genes.end(); it++){
-
-	    list<Gene*>::iterator itInside = it;
-	    itInside++;
-	    while (itInside != genes.end()){
-		if (shareAlternativeVariant((*it), (*itInside))){
-
-		    // Transfer all transcripts of itInside to it and delete itInside
-		    for (list<Transcript*>::iterator tit = (*itInside)->children.begin(); tit != (*itInside)->children.end(); tit++){
-			(*tit)->parent = (*it);
-			(*it)->children.push_back(*tit);
-			(*it)->nrOfTx += (*itInside)->nrOfTx;
-			(*it)->nrOfPrintedTx += (*itInside)->nrOfPrintedTx;
-			tit = (*itInside)->children.erase(tit);
-			tit--;
-		    }
-		    deleteGene((*itInside), properties);
-		    itInside = genes.erase(itInside);
-		    continue;
-		}
-		itInside++;
-	    }
-
-	    // sort children 
-	    (*it)->children.sort(compare_quality);
-	}*/
-
+    if (properties.alternatives && genes.size() >= 2 && properties.genemodel != "bacterium"){
 
 	for (list<Gene*>::iterator it = genes.begin(); it != genes.end(); it++){
 
@@ -1690,65 +1560,19 @@ void eukaSelectionDevelopment(list<Transcript*> &overlap, Properties &properties
     }
 
     // look for indirect boundary problems
-    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-	list<Transcript*>::iterator itInside = it;
-	itInside++;
-	while (itInside != overlap.end()){
-	    if ((*it)->parent == (*itInside)->parent){
-
-//cout << "HIER: " << (*it)->exon_list.back().boundaryProblem << " " << (*itInside)->exon_list.back().boundaryProblem << " " << (*it)->exon_list.back().indirectBoundProbEnemies.front() << " " << (*itInside)->exon_list.back().indirectBoundProbEnemies.front()->originalId << endl;
-
-		bool b1 = (*it)->indirectBoundaryProblem(*itInside);
-		bool b2 = (*itInside)->indirectBoundaryProblem(*it);
-
-//cout << "RESULT: " << b1 << " " << b2 << " " << (*it)->originalId << " " << (*itInside)->originalId << " " << (*it)->exon_list.back().feature << " " << (*itInside)->exon_list.back().feature << endl;
-
-		if ( b1 && !b2 ){
-		    // DELETE *it
-		    deleteTx(*it, properties);
-		    it = overlap.erase(it);
-		    it--;
-		}
-		if ( b2 && !b1 ){
-		    deleteTx(*itInside, properties);
-		    itInside = overlap.erase(itInside);
-		    itInside--;
-		}
-	    }
-	    itInside++;
-	}
-    }
+    solveIndirectProblems(overlap, properties);
 
     // find out, which transcripts can coexist in a gene structure ("consistent")
-    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-	list<Transcript*>::iterator itInside = it;
-	itInside++;
-	while (itInside != overlap.end()){
-	    if (!overlappingCdsWithAnything((*it), (*itInside)) || (*it)->strand != (*itInside)->strand || ((*it)->parent == (*itInside)->parent && (*it)->originalId != (*itInside)->originalId)){
-	        (*it)->consistent.push_back((*itInside)->t_id);
-		(*itInside)->consistent.push_back((*it)->t_id);
-	    }
-	    itInside++;
-	}
+    if (properties.genemodel == "bacterium"){
+	txCoexBact(overlap, properties);
+    }else{
+	txCoexEuka(overlap, properties);
     }
 
-/*    list<string> openTx;
-    unordered_map<string,Transcript*> txMap;
-    for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
-	openTx.push_back((*it)->t_id);
-	txMap[(*it)->t_id] = (*it);
-    }*/
-//    list<list<Transcript*>> groups;
-//    list<Transcript*> actGroup;
-//    list<string> selectedTx;
-
-//    recursiv(groups, actGroup, openTx, properties, txMap, selectedTx);
-
-    //overlap = groups.front();
     overlap.sort(compare_quality);
     overlap = calcGeneStructur(overlap, properties);
-
 }
+
 
 list<Transcript*> calcGeneStructur(list<Transcript*> overlap, Properties &properties){
     list<Transcript*> newOvlp;
@@ -1770,36 +1594,6 @@ list<Transcript*> calcGeneStructur(list<Transcript*> overlap, Properties &proper
 	}
     }
     return newOvlp;
-}
-
-void recursiv(list<list<Transcript*>> &groups, list<Transcript*> actGroup, list<string> openTx, Properties &properties, unordered_map<string,Transcript*> &txMap, list<string> selectedTx){
-    // start at every possible
-    for (list<string>::iterator it = openTx.begin(); it != openTx.end(); it++){
-
-	// if a transcript should be add to the group, which was already the start point (selectedTx), then we skip that case in order to get no redundant solutions
-	if (find(selectedTx.begin(), selectedTx.end(), (*it)) != selectedTx.end()){
-	    continue;
-	}
-	selectedTx.push_back(txMap[*it]->t_id);
-
-	list<Transcript*> tmpGroup = actGroup;
-	tmpGroup.push_back(txMap[*it]);
-	list<string> openTemp;
-	openTemp.clear();
-	for (list<string>::iterator itInside = openTx.begin(); itInside != openTx.end(); itInside++){
-	    if (find((txMap[*it])->consistent.begin(), (txMap[*it])->consistent.end(), (*itInside)) != (txMap[*it])->consistent.end()){
-		openTemp.push_back(*itInside);
-	    }
-	}
-
-	// tests, whether there are no transcripts in this overlap left that are consistent to all already taken transcripts
-	if (openTemp.empty()){
-	    groups.push_back(tmpGroup);
-	}
-	else{
-	    recursiv(groups, tmpGroup, openTemp, properties, txMap, selectedTx);
-	}
-    }
 }
 
 bool overlapping(Transcript* t1, Transcript* t2){
