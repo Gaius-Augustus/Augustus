@@ -159,8 +159,9 @@ If comparative (multi-species, CGP) AUGUSTUS is enabled via uncommenting
 in common.mk then the following additional dependencies are required:
 
    - GNU scientific library (for eigen decompositions of matrices, sudo apt-get install libgsl0-dev)
-   - libsqlite3-dev or mysql++ (sudo apt-get install libmysql++-dev)
+   - libsqlite3-dev or mysql++ (sudo apt-get install libmysql++-dev or sudo apt-get install libsqlite3-dev)
    - Boost C++ Library: libboost-graph-dev (at least version 1.45 from Nov. 2010)
+   - sudo apt-get install liblpsolve55-dev
 
 Compiling bam2hints and filterBam requires:
 
