@@ -19,6 +19,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 
 #ifdef COMPGENEPRED
 #include "parser/parser.h"
