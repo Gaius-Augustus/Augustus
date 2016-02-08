@@ -168,7 +168,7 @@ Compiling bam2hints and filterBam requires:
    - The packages bamtools and libbamtools-dev
      (Ubuntu: sudo apt-get install bamtools libbamtools-dev,
       Possibly, you will need to add the repository http://us.archive.ubuntu.com/ubuntu vivid main universe
-      to your /etc/apt/sources.lst, first: 
+      to your /etc/apt/sources.list, first: 
       deb http://us.archive.ubuntu.com/ubuntu vivid main universe)
 
 > make
