@@ -28,23 +28,18 @@ install:
 release:
 	find . -name .svn | xargs rm -rf
 	find . -name "*~" | xargs rm -f
-	rm -rf bin/compileSpliceCands
-	rm -f src/.kdbgrc*
+	rm -f src/.kdbgrc* TODO
 	rm -f src/makedepend.pl
 	rm -r augustus-training
-	ls docs/tutorial2015/results | grep -v do.sh | grep -v README | xargs rm
+	cd docs/tutorial2015/results; ls | grep -v do.sh | grep -v README | xargs rm; cd -
 	make clean all
 	make clean
-	cd auxprogs/filterBam/; make clean all; cd -
-	cd auxprogs/bam2hints; make clean; make ; cd -
-	cd auxprogs/aln2wig; make clean; make; cd -
-	cd auxprogs/homGeneMapping; make clean; make; cd -
-	cd auxprogs/joingenes; make clean; make; cd -
-	cd auxprogs/compileSpliceCands; make clean; make; cd -
-	cd config/species; rm -rf tobacco xeno1 bombus_terrestris{1,3} symsag xenoturbella meara pavar newest humannew
-	tar -czf ../augustus-$(AUGVERSION).tar.gz .
+	cd config/species; rm -rf tobacco xeno1 bombus_terrestris{1,3} symsag xenoturbella meara pavar newest maker2_*
+	rm generic/*.pbl
 	cd src/parser; rm Makefile; cd -
-	cd src/scanner; rm Makefile; cd -
+	tar -czf ../augustus-$(AUGVERSION).tar.gz .
+
 
 # remove -static from src/Makefile for MAC users
-# remove -g -gdb from CFLAGS
+# remove -g -gdb from CXXFLAGS
+# make COMPGENEPRED = true and SQLITE = true and MYSQL = true and ZIPINPUT = true a comment

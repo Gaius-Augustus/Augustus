@@ -321,6 +321,12 @@ Alignment* mergeAliList(list<Alignment*> alis,  const MsaSignature *sig){
 	ma->merge(*it, extSig);
     }
     delete extSig;
+    for (int i=0; i<k; i++){ // remove alignment rows which are factually empty
+	if (ma->rows[i] && (ma->rows[i]->frags.empty() || ma->rows[i]->getCumFragLen() < 1)){
+	    delete ma->rows[i];
+	    ma->rows[i] = NULL;
+	}
+    }
     // cout << "merged alignment:" << *ma << endl;
     return ma;
 }

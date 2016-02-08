@@ -2,12 +2,12 @@
 # Makefile for Augustus
 #
 include ../common.mk
-CC	= g++
+CXX	= g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -g -ggdb -O3 ${CFLAGS} # -DDEBUG -g -ggdb -pg -DDEBUG_STATES -DDEBUG 
+CXXFLAGS := -Wall -Wno-sign-compare -Wno-strict-overflow -ansi -pedantic -g -ggdb -O3 ${CXXFLAGS} # -DDEBUG -g -ggdb -pg -DDEBUG_STATES -DDEBUG 
 ifdef SQLITE
 	COMPGENEPRED = true
 endif
@@ -17,12 +17,12 @@ ifdef MYSQL
 endif
 
 ifdef ZIPINPUT
-	CFLAGS += -DZIPINPUT
+	CXXFLAGS += -DZIPINPUT
 	LIBS    = -lboost_iostreams
 endif
 
 ifdef COMPGENEPRED
-	CFLAGS += -std=c++0x -DCOMPGENEPRED
+	CXXFLAGS += -std=c++0x -DCOMPGENEPRED
 endif
 INCLS	= -I../include
 
@@ -39,7 +39,7 @@ endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
 PROGR	= augustus etraining consensusFinder curve2hints prepareAlign fastBlockSearch
-INFO    = cflags
+INFO    = cxxflags
 
 ifdef MYSQL
 # replace RUNTIME_LIBPATH with your own run-time libpath if mysql++ is not installed system-wide, e.g.
@@ -47,15 +47,15 @@ ifdef MYSQL
 RUNTIME_LIBPATH = 
 INCLS	+= -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
 LIBS 	+=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
-CFLAGS  += -DAMYSQL
+CXXFLAGS  += -DAMYSQL
 PROGR   += load2db getSeq
 endif
 
 ifdef SQLITE
-LIBS 	+= -lsqlite3
-OBJS	+= sqliteDB.o
-CFLAGS	+= -DSQLITE
-PROGR   += load2sqlitedb getSeq
+LIBS	  += -lsqlite3
+OBJS	  += sqliteDB.o
+CXXFLAGS  += -DSQLITE
+PROGR     += load2sqlitedb getSeq
 endif
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
@@ -64,50 +64,50 @@ all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 .SUFFIXES: .cc .o .so
 
 .cc.o:
-	$(CC) -c $(CFLAGS) -o $@ $< $(INCLS)
+	$(CXX) -c $(CXXFLAGS) -o $@ $< $(INCLS)
 
 augustus: augustus.cc $(OBJS) $(DUMOBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp augustus ../bin/
 
 etraining: etraining.cc $(TOBJS) $(OBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp etraining ../bin/
 
 evaluate: evaluate.cc $(OBJS) $(DUMOBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 
 consensusFinder: consensusFinder.cc consensus.o
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp consensusFinder ../bin/
 
 curve2hints: curve2hints.cc exon_seg.o
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp curve2hints ../bin/
 
 fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	types.o properties.o geneticcode.o pp_profile.o lldouble.o
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp fastBlockSearch ../bin/
 
 prepareAlign: pp_prepare_align.cc
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 	cp prepareAlign ../bin/
 
 load2db: load2db.cc fasta.o hints.o types.o properties.o lldouble.o
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp load2db ../bin/
 
 load2sqlitedb: load2sqlitedb.cc fasta.o hints.o types.o properties.o lldouble.o sqliteDB.o
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp load2sqlitedb ../bin/
 
 getSeq: getSeq.cc $(OBJS) $(DUMOBJS)
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp getSeq ../bin/
 
 info:
-	echo "$(CFLAGS)" > $(INFO)
+	echo "$(CXXFLAGS)" > $(INFO)
 
 clean:
 	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o  $(INFO)

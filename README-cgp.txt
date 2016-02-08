@@ -53,7 +53,7 @@ a) install all dependencies
              > sudo apt-get install libboost-all-dev
    g++       install via package manager:
              > sudo apt-get install build-essential
-   lpsolve   > sudo apt-get install liblpsolve55-dev	     
+   lpsolve   > sudo apt-get install libsuitesparse-dev liblpsolve55-dev 
 
   optional (for gzipped input):
    zlib:     The compression library. Download from http://www.zlib.net/ or install via package manager.
