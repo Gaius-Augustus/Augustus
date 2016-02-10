@@ -150,7 +150,8 @@ Install dependencies:
     1) Edit common.mk and uncomment the line ZIPINPUT = true
     2) Install these dependencies:
        - Boost C++ Libraries: libboost-iostreams-dev (on Ubuntu: sudo apt-get install libboost-iostreams-dev)
-       - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager.
+       - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager
+         (sudo apt-get install zlib1g-dev).
    
 If comparative (multi-species, CGP) AUGUSTUS is enabled via uncommenting 
    COMPGENEPRED = true
@@ -160,7 +161,7 @@ in common.mk then the following additional dependencies are required:
 
    - GNU scientific library (for eigen decompositions of matrices, sudo apt-get install libgsl0-dev)
    - libsqlite3-dev or mysql++ (sudo apt-get install libmysql++-dev or sudo apt-get install libsqlite3-dev)
-   - Boost C++ Library: libboost-graph-dev (at least version 1.45 from Nov. 2010)
+   - Boost C++ Library: sudo apt-get install libboost-graph-dev (at least version 1.45 from Nov. 2010)
    - sudo apt-get install liblpsolve55-dev
 
 Compiling bam2hints and filterBam requires:
