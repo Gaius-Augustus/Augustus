@@ -297,7 +297,7 @@ double OrthoGraph::globalPathSearch(){
     return score;
 }
 
-double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector< list<Transcript*> *> &genelist, int gr_ID, int T, vector<double> &c, double phylo_factor){
+double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector< list<Transcript*> *> &genelist, int gr_ID, int T, vector<double> &c){
 
     cout << "dual decomposition on gene Range " << gr_ID << endl;
     cout<<"round\titer\tstep_size\tprimal\tdual\t#inconsistencies"<<endl;
@@ -337,11 +337,11 @@ double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector
 	    else{
 		hect_score += treeMAPInf(all_orthoex,evo,numInconsistent);
 	    }
-	    double current_dual = path_score + (phylo_factor * hect_score);       // dual value of the t-th iteration 
+	    double current_dual = path_score + hect_score;       // dual value of the t-th iteration 
 	    best_dual = min(best_dual,current_dual);              // update upper bound
 	    if( (t >= 1) && (old_dual < current_dual) )  // update v
 		v++;
-	    double current_primal = path_score + (phylo_factor * makeConsistent(all_orthoex,evo)); // primal value of the t-the iteration
+	    double current_primal = path_score + makeConsistent(all_orthoex,evo); // primal value of the t-the iteration
 	    if(best_primal < current_primal){
 		best_primal = current_primal;
 		buildGeneList(genelist); // save new record

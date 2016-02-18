@@ -219,7 +219,7 @@ void GeneMSA::setExonCands(vector<map<int_fast64_t, ExonCandidate*> > &ecs){
 /**
  * createOrthoExons
  */
-void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, Evo *evo, double phylo_factor, float consThres, int minAvLen) {
+void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t, list<pair<int,ExonCandidate*> > > &alignedECs, Evo *evo, float consThres, int minAvLen) {
 
     //cout << "Creating ortho exons for alignment" << endl << *alignment << endl;
     int k = alignment->rows.size();
@@ -312,7 +312,7 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 		vector<int> fix_1 = oe.labels; // EC is predicted
 		fix_1[s]=1;
 		// phylogenetic score, difference bewteen the scores of "EC is predicted" and "EC is not predicted"
-		double score = phylo_factor * (t->MAP(fix_1, oe.weights, evo, true) - t->MAP(fix_0, oe.weights, evo, true));
+		double score = t->MAP(fix_1, oe.weights, evo, true) - t->MAP(fix_0, oe.weights, evo, true);
 		ec->setScore(score);
 	    }
 	}

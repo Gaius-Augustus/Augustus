@@ -95,6 +95,9 @@ private:
     std::list<Treenode*> treenodes; // leaf to root order!
     int numSp; // number of species
 public:
+
+    static double phylo_factor;
+
     PhyloTree(std::string filename);
     //create star-like tree with unit branch length b from a set of species identifiers
     PhyloTree(const std::vector<std::string> &speciesnames, double b=1);

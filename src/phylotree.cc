@@ -25,6 +25,8 @@
 #include "parser/parser.h"
 #endif
 
+double PhyloTree::phylo_factor=1;
+
 void Treenode::printNode() const {
     cout<<"Species: "<<this->species<<" (idx="<<this->idx <<")"<<" Distance: "<<this->distance;
     if (this->parent == NULL){
@@ -406,7 +408,7 @@ double PhyloTree::MAP(vector<int> &labels, vector<double> &weights, Evo *evo, bo
 			(*it)->setLogP(P);
 		    }
 		    for(int j=0; j<states; j++){
-			double branch_score = (gsl_matrix_get(P,i,j)) + (*it)->getTable(j);
+			double branch_score = (PhyloTree::phylo_factor*(gsl_matrix_get(P,i,j))) + (*it)->getTable(j);
 			if(max < branch_score){
 			    max = branch_score;
 			    bestAssign=j;
@@ -426,7 +428,7 @@ double PhyloTree::MAP(vector<int> &labels, vector<double> &weights, Evo *evo, bo
 	int bestAssign = -1;
 	Treenode* root = treenodes.back();	
 	for(int i=0; i<states; i++){
-	    double root_score = (evo->getLogPi(i)) + root->getTable(i);
+	    double root_score = (PhyloTree::phylo_factor*(evo->getLogPi(i))) + root->getTable(i);
 	    if(max < root_score){
 		max = root_score;
 		bestAssign=i;

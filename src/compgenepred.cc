@@ -110,13 +110,12 @@ void CompGenePred::start(){
     if (Constant::temperature > 7){
 	Constant::temperature = 7;
     }
-    double phylo_factor;
     try {
-	phylo_factor  = Properties::getdoubleProperty("/CompPred/phylo_factor");
+	PhyloTree::phylo_factor  = Properties::getdoubleProperty("/CompPred/phylo_factor");
     } catch (...) {
-	phylo_factor = 1;
+	PhyloTree::phylo_factor = 1;
     }
-    if(phylo_factor <= 0.0){
+    if(PhyloTree::phylo_factor <= 0.0){
 	throw ProjectError("/CompPred/phylo_factor must to be real positive number.");
     }
     
@@ -124,7 +123,7 @@ void CompGenePred::start(){
     // each exon/intron that is supported by a hint (e.g. exon/intron from the annotation) gets this
     // additional score to make sure that it is transferred to the other genomes and not the
     // other way round. It has to be at least has high as the maximum cost of an exon gain or loss event
-    SpeciesGraph::maxCostOfExonLoss = - log((evo.getMu()+evo.getLambda())*evo.minBranchLength())*phylo_factor*100;
+    SpeciesGraph::maxCostOfExonLoss = - log((evo.getMu()+evo.getLambda())*evo.minBranchLength())*PhyloTree::phylo_factor*100;
 
     double ctree_scaling_factor = 1; // scaling factor to scale branch lengths in codon tree to one codon substitution per time unit
     try {
@@ -436,7 +435,7 @@ void CompGenePred::start(){
 
 	// create HECTS
 	list<OrthoExon> hects;  // list of ortholog exons found in a gene Range
-	geneRange->createOrthoExons(hects, alignedECs, &evo, phylo_factor);
+	geneRange->createOrthoExons(hects, alignedECs, &evo);
 
 	if(meanIntrLen<0.0)
 	    meanIntrLen = mil_factor * IntronModel::getMeanIntrLen(); // initialize mean intron length
@@ -494,7 +493,7 @@ void CompGenePred::start(){
 	    if(!hects.empty()){
 		// optimization via dual decomposition
 		vector< list<Transcript*> *> genelist(OrthoGraph::numSpecies);
-		orthograph.dualdecomp(hects,evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factors, phylo_factor);
+		orthograph.dualdecomp(hects,evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factors);
 		orthograph.filterGeneList(genelist,opt_geneid);
 		orthograph.createOrthoGenes(geneRange);
 		orthograph.printOrthoGenes();
