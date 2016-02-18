@@ -409,6 +409,7 @@ double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector
     double best_gap = abs(best_dual - best_primal);
     double initial_gap = abs(best_dual - initial_primal);
     double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
+    perc_gap*=100;
     cout<<"dual decomposition reduced initial duality gap of "<<initial_gap<<" to "<<best_gap<<" (to "<<perc_gap<<"%)"<<endl;
     return best_gap;
 }
