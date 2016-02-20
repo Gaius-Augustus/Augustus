@@ -148,7 +148,7 @@ void SubstateModel::clearLowScoring(ViterbiSubmapType& submap) {
     bool complement = stateStrands[submap.getMainState()];
     bool hasCopies = (submap.begin(MAX_BLOCKCOUNT) != submap.end());
     
-    for (int b=0; b<=blockCount(); b++) {
+    for (int b=0; b<blockCount(); b++) {
 	DistanceType dist = interBlockDist(b, complement);
 	ViterbiSubmapType::iterator 
 	    begin = submap.begin(b), // bound(SubstateId(b, -dist.r.max-1)),
