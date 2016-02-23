@@ -839,16 +839,14 @@ void printHomGeneList(string outfile, vector<Genome> &genomes){
 	}
 	std::vector<int> component(num_vertices(G));
         connected_components(G, &component[0]);
-
-        int c = 0;
-        for (std::vector<int>::size_type i = 0; i != component.size(); ++i){
-	    if(component[i] != c)
-		of << endl;
-	    of << "(" << G[i].name <<") ";
-	    c = component[i];
-	}
-        of << endl;
-	of.close();
+	for (std::vector<int>::size_type i = 0; i != component.size(); ++i){
+            for (size_t j = 0; j < boost::num_vertices (G); ++j){
+                if (component[j] == i)
+                    of << "(" << G[j].name <<") ";
+            }
+            of << endl;
+        }
+        of.close();
     }
     else{
 	cerr << "Could not open output file " << outfile << endl;
