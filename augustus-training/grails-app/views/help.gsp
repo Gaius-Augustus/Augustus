@@ -334,6 +334,7 @@ TACACGGAAATCAACGGCGGTGTCATAAGCGAG
 .....
             </pre>
 	    </p>
+            <p>The maximal number of scaffolds allowed in a genome file is 250000. If your file contains more scaffolds, please remove all short scaffolds. For training AUGUSTUS short scaffolds are worthless because no complete training genes can be generated from them. In terms of prediction, it is possible to predict genes in short scaffolds. However, those genes will in most cases be incomplete and probably unreliable.</p>
 	                <p><a href="#seitenanfang">
               <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
               Top of page

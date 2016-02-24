@@ -59,9 +59,8 @@ class PredictionController {
 	def verb = 2 // 1 only basic log messages, 2 all issued commands, 3 also script content
 	def cmd2Script
 	def cmdStr
-
 	def logDate
-
+        def maxNSeqs = 250000 // maximal number of scaffolds allowed in genome file
         // other variables
 	def accession_id
 	def prokaryotic = false // flag to determine whether augustus should be run in prokaryotic mode
@@ -633,6 +632,27 @@ class PredictionController {
 				}
 				logDate = new Date()
          			logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - uploaded genome file ${uploadedGenomeFile.originalFilename} was renamed to genome.fa and moved to ${projectDir}\n"
+				// check number of scaffolds
+                                def nSeqFile = new File("${projectDir}/genome_nSeq.sh")
+                                cmd2Script = 'grep -c ">" ${projectDir}/genome.fa > ${projectDir}/genome.nSeq'
+                                nSeqFile << "${cmd2Script}"
+                                def nSeqStatus = "${cmdStr}".execute()
+                                nSeqStatus.waitFor()
+                                def nSeqResult = new File("${projectDir}/genome.nSeq").text
+                                def nSeq_array = nSeqResult =~ /(\d*)/
+                                def nSeqNumber
+                                (1..nSeq_array.groupCount()).each{nSeqNumber = "${nSeq_array[0][it]}"}
+                                cmdStr = "rm ${nSeqFile} ${projectDir}/genome.nSeq &> /dev/null"
+                                delProc = "${cmdStr}".execute();
+                                delProc.waitFor()
+                                if(nSeqNumber > maxNSeqs){
+                                       logDate = new Date()
+                                       logFile << "${logDate} ${predictionInstance.accession_id} v1 - genome file contains more than ${maxNSeqs} scaffolds. Aborting job."
+                                       flash.error = "Genome file contains more than ${maxNSeqs} scaffolds, which is the maximal number of scaffolds that we permit for submission with WebAUGUSTUS. Please remove all short scaffolds from your genome file."
+                                       cleanRedirect()
+                                       return
+                                }
+
         			// check for fasta format & extract fasta headers for gff validation:
          			new File("${projectDir}/genome.fa").eachLine{line -> 
             			if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }
@@ -1323,6 +1343,48 @@ class PredictionController {
 						}
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - genome file upload finished, file stored as genome.fa at ${projectDir}\n"
+                                                // check number of scaffolds (to avoid Java heapspace error in the next step)
+                                                def nSeqFile = new File("${projectDir}/genome_nSeq.sh")
+                                                cmd2Script = 'grep -c ">" ${projectDir}/genome.fa > ${projectDir}/genome.nSeq'
+                                                nSeqFile << "${cmd2Script}"
+                                                def nSeqStatus = "${cmdStr}".execute()
+                                                nSeqStatus.waitFor()
+                                                def nSeqResult = new File("${projectDir}/genome.nSeq").text
+                                                def nSeq_array = nSeqResult =~ /(\d*)/
+                                                def nSeqNumber
+                                                (1..nSeq_array.groupCount()).each{nSeqNumber = "${nSeq_array[0][it]}"}
+                                                cmdStr = "rm ${nSeqFile} ${projectDir}/genome.nSeq &> /dev/null"
+                                                delProc = "${cmdStr}".execute();
+                                                delProc.waitFor()
+                                                if(nSeqNumber > maxNSeqs){
+                                                        logDate = new Date()
+                                                        logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file contains more than ${maxNSeqs} scaffolds. Aborting job.\n";
+                                                        deleteDir()
+                                                        logAbort()
+                                                        mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} for species\n${predictionInstance.project_name} was aborted\nbecause the provided genome file\n${predictionInstance.genome_ftp_link}\ncontains more than ${maxNSeqs} scaffolds. This is not allowed.\n\n"
+                                                        logDate = new Date()
+                                                        predictionInstance.message = "${predictionInstance.message}-----------------------------"
+                                                        predictionInstance.message = "${predictionInstance.message}-----------------\n${logDate}"
+                                                        predictionInstance.message = "${predictionInstance.message} - Error Message:\n-----------"
+                                                        predictionInstance.message = "${predictionInstance.message}-----------------------------"
+                                                        predictionInstance.message = "------\n\n${mailStr}"
+                                                        preidctionInstance = predictionInstance.merge()
+                                                        predictionInstance.save()
+                                                        if(predictionInstance.email_adress != null){
+                                                                msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+                                                                sendMail {
+                                                                        to "${predictionInstance.email_adress}"
+                                                                        subject "Your AUGUSTUS training job ${predictionInstance.accession_id} was aborted"
+                                                                        body """${msgStr}${footer}"""
+                                                                }
+                                                        }
+                                                        predictionInstance.results_urls = null
+                                                        predictionInstance.job_status = 5
+                                                        predictionInstance = predictionInstance.merge()
+                                                        predictionInstance.save()
+                                                        return
+                                                }
+
 						// check for fasta format & get seq names for gff validation:
 						new File("${projectDir}/genome.fa").eachLine{line -> 
 							if(line =~ /\*/ || line =~ /\?/){

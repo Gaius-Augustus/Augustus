@@ -173,7 +173,7 @@ atik"><img src="../images/header.gif" alt="Directly to home" /> </a>
                          <tbody>
                             <tr class="prop">
                                 <td valign="top" class="name">
-                                    <label for="GenomeFile"><b>Genome file</b> <font color="#FF0000">*</font>&nbsp; <a href="../help.gsp#genome_file"><small>Help</small></a></label>
+                                    <label for="GenomeFile"><b>Genome file</b> <font color="#FF0000">*</font>&nbsp; (max. 250000 scaffolds) <a href="../help.gsp#genome_file"><small>Help</small></a></label>
                                 </td>
 				<td valign="top">
 				</td>
