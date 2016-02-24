@@ -60,9 +60,8 @@ class TrainingController {
 	def cmd2Script
 	def cmdStr
 	def msgStr
-
 	def logDate
-
+	def maxNSeqs = 250000 // maximal number of scaffolds allowed in genome file
 	// human verification:
 	def simpleCaptchaService
 	        
@@ -307,6 +306,26 @@ class TrainingController {
 					}
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - uploaded genome file ${uploadedGenomeFile.originalFilename} was renamed to genome.fa and moved to ${projectDir}\n"
+					// check number of scaffolds
+					def nSeqFile = new File("${projectDir}/genome_nSeq.sh")
+					cmd2Script = 'grep -c ">" ${projectDir}/genome.fa > ${projectDir}/genome.nSeq'
+					nSeqFile << "${cmd2Script}"
+					def nSeqStatus = "${cmdStr}".execute()
+					nSeqStatus.waitFor()
+					def nSeqResult = new File("${projectDir}/genome.nSeq").text
+					def nSeq_array = nSeqResult =~ /(\d*)/
+					def nSeqNumber
+					(1..nSeq_array.groupCount()).each{nSeqNumber = "${nSeq_array[0][it]}"}
+					cmdStr = "rm ${nSeqFile} ${projectDir}/genome.nSeq &> /dev/null"
+					delProc = "${cmdStr}".execute();
+					delProc.waitFor()
+					if(nSeqNumber > maxNSeqs){
+						logDate = new Date()
+						logFile << "${logDate} ${trainingInstance.accession_id} v1 - genome file contains more than ${maxNSeqs} scaffolds. Aborting job."
+						flash.error = "Genome file contains more than ${maxNSeqs} scaffolds, which is the maximal number of scaffolds that we permit for submission with WebAUGUSTUS. Please remove all short scaffolds from your genome file."
+						cleanRedirect()
+						return
+					}
 					// check for fasta format & extract fasta headers for gff validation:
 					new File("${projectDir}/genome.fa").eachLine{line -> 
 						if(line =~ /\*/ || line =~ /\?/){
@@ -414,7 +433,7 @@ class TrainingController {
 				delProc.waitFor()
 				content = new File("${projectDir}/genomeExists").text
 				st = new Scanner(content)//works for exactly one number in a file
-				error_code = st.nextInt();
+				error_code = st.nextInt()
 				if(!(error_code == 200)){
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome URL is not accessible. Response code: ${error_code}.\n"
@@ -1096,6 +1115,47 @@ class TrainingController {
 						}
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - genome file upload finished, file stored as genome.fa at ${projectDir}\n"
+						// check number of scaffolds (to avoid Java heapspace error in the next step)
+						def nSeqFile = new File("${projectDir}/genome_nSeq.sh")
+						cmd2Script = 'grep -c ">" ${projectDir}/genome.fa > ${projectDir}/genome.nSeq'
+                                        	nSeqFile << "${cmd2Script}"
+                                        	def nSeqStatus = "${cmdStr}".execute()
+                                        	nSeqStatus.waitFor()
+                                        	def nSeqResult = new File("${projectDir}/genome.nSeq").text
+                                        	def nSeq_array = nSeqResult =~ /(\d*)/
+                                        	def nSeqNumber
+                                        	(1..nSeq_array.groupCount()).each{nSeqNumber = "${nSeq_array[0][it]}"}
+                                        	cmdStr = "rm ${nSeqFile} ${projectDir}/genome.nSeq &> /dev/null"
+                                        	delProc = "${cmdStr}".execute();
+                                        	delProc.waitFor()
+						if(nSeqNumber > maxNSeqs){
+							logDate = new Date()
+                                                        logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file contains more than ${maxNSeqs} scaffolds. Aborting job.\n";
+                                                        deleteDir()
+                                                        logAbort()
+							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name} was aborted\nbecause the provided genome file\n${trainingInstance.genome_ftp_link}\ncontains more than ${maxNSeqs} scaffolds. This is not allowed.\n\n"
+							logDate = new Date()
+                                                        trainingInstance.message = "${trainingInstance.message}-----------------------------"
+                                                        trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
+                                                        trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
+                                                        trainingInstance.message = "${trainingInstance.message}-----------------------------"
+                                                        trainingInstance.message = "------\n\n${mailStr}"
+                                                        trainingInstance = trainingInstance.merge()
+                                                        trainingInstance.save()
+                                                        if(trainingInstance.email_adress != null){
+                                                                msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
+                                                                sendMail {
+                                                                        to "${trainingInstance.email_adress}"
+                                                                        subject "Your AUGUSTUS training job ${trainingInstance.accession_id} was aborted"
+                                                                        body """${msgStr}${footer}"""
+                                                                }
+                                                        }
+                                                        trainingInstance.results_urls = null
+                                                        trainingInstance.job_status = 5
+                                                        trainingInstance = trainingInstance.merge()
+                                                        trainingInstance.save()
+                                                        return
+						}
 						// check for fasta format & get seq names for gff validation:
 						new File("${projectDir}/genome.fa").eachLine{line -> 
 							if(line =~ /\*/ || line =~ /\?/){
