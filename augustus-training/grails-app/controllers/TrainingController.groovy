@@ -306,10 +306,11 @@ class TrainingController {
 					}
 					logDate = new Date()
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - uploaded genome file ${uploadedGenomeFile.originalFilename} was renamed to genome.fa and moved to ${projectDir}\n"
+					logFile << "${logDate} ${trainingInstance.accession_id} v1 - trying: grep -c '>' ${projectDir}/genome.fa > ${projectDir}/genome.nSeq\n"
 					// check number of scaffolds
-					def nSeqFile = new File("${projectDir}/genome_nSeq.sh")
-					cmd2Script = 'grep -c ">" ${projectDir}/genome.fa > ${projectDir}/genome.nSeq'
-					nSeqFile << "${cmd2Script}"
+					def nSeqFile = new File(projectDir, "nSeq.sh")
+					nSeqFile << "grep -c '>' ${projectDir}/genome.fa > ${projectDir}/genome.nSeq"
+					cmdStr = "bash ${nSeqFile}"
 					def nSeqStatus = "${cmdStr}".execute()
 					nSeqStatus.waitFor()
 					def nSeqResult = new File("${projectDir}/genome.nSeq").text
@@ -1116,9 +1117,9 @@ class TrainingController {
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - genome file upload finished, file stored as genome.fa at ${projectDir}\n"
 						// check number of scaffolds (to avoid Java heapspace error in the next step)
-						def nSeqFile = new File("${projectDir}/genome_nSeq.sh")
-						cmd2Script = 'grep -c ">" ${projectDir}/genome.fa > ${projectDir}/genome.nSeq'
-                                        	nSeqFile << "${cmd2Script}"
+						def nSeqFile = new File("${projectDir}/nSeq.sh")
+						nSeqFile << "grep -c '>' ${projectDir}/genome.fa > ${projectDir}/genome.nSeq"
+						cmdStr = "bash ${nSeqFile}"
                                         	def nSeqStatus = "${cmdStr}".execute()
                                         	nSeqStatus.waitFor()
                                         	def nSeqResult = new File("${projectDir}/genome.nSeq").text
@@ -1139,7 +1140,7 @@ class TrainingController {
                                                         trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
                                                         trainingInstance.message = "${trainingInstance.message} - Error Message:\n-----------"
                                                         trainingInstance.message = "${trainingInstance.message}-----------------------------"
-                                                        trainingInstance.message = "------\n\n${mailStr}"
+                                                        trainingInstance.message = "${trainingInstance.message}------\n\n${mailStr}"
                                                         trainingInstance = trainingInstance.merge()
                                                         trainingInstance.save()
                                                         if(trainingInstance.email_adress != null){

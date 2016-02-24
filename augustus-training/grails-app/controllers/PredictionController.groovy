@@ -633,9 +633,9 @@ class PredictionController {
 				logDate = new Date()
          			logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - uploaded genome file ${uploadedGenomeFile.originalFilename} was renamed to genome.fa and moved to ${projectDir}\n"
 				// check number of scaffolds
-                                def nSeqFile = new File("${projectDir}/genome_nSeq.sh")
-                                cmd2Script = 'grep -c ">" ${projectDir}/genome.fa > ${projectDir}/genome.nSeq'
-                                nSeqFile << "${cmd2Script}"
+                                def nSeqFile = new File("${projectDir}/nSeq.sh")
+                                nSeqFile << "grep -c '>' ${projectDir}/genome.fa > ${projectDir}/genome.nSeq"
+                        	cmdStr = "bash ${nSeqFile}"
                                 def nSeqStatus = "${cmdStr}".execute()
                                 nSeqStatus.waitFor()
                                 def nSeqResult = new File("${projectDir}/genome.nSeq").text
@@ -1345,8 +1345,8 @@ class PredictionController {
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - genome file upload finished, file stored as genome.fa at ${projectDir}\n"
                                                 // check number of scaffolds (to avoid Java heapspace error in the next step)
                                                 def nSeqFile = new File("${projectDir}/genome_nSeq.sh")
-                                                cmd2Script = 'grep -c ">" ${projectDir}/genome.fa > ${projectDir}/genome.nSeq'
-                                                nSeqFile << "${cmd2Script}"
+                                                nSeqFile << "grep -c '>' ${projectDir}/genome.fa > ${projectDir}/genome.nSeq"
+                                                cmdStr = "bash ${nSeqFile}"
                                                 def nSeqStatus = "${cmdStr}".execute()
                                                 nSeqStatus.waitFor()
                                                 def nSeqResult = new File("${projectDir}/genome.nSeq").text
@@ -1361,20 +1361,20 @@ class PredictionController {
                                                         logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The genome file contains more than ${maxNSeqs} scaffolds. Aborting job.\n";
                                                         deleteDir()
                                                         logAbort()
-                                                        mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} for species\n${predictionInstance.project_name} was aborted\nbecause the provided genome file\n${predictionInstance.genome_ftp_link}\ncontains more than ${maxNSeqs} scaffolds. This is not allowed.\n\n"
+                                                        mailStr = "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted\nbecause the provided genome file\n${predictionInstance.genome_ftp_link}\ncontains more than ${maxNSeqs} scaffolds. This is not allowed.\n\n"
                                                         logDate = new Date()
                                                         predictionInstance.message = "${predictionInstance.message}-----------------------------"
                                                         predictionInstance.message = "${predictionInstance.message}-----------------\n${logDate}"
                                                         predictionInstance.message = "${predictionInstance.message} - Error Message:\n-----------"
                                                         predictionInstance.message = "${predictionInstance.message}-----------------------------"
-                                                        predictionInstance.message = "------\n\n${mailStr}"
-                                                        preidctionInstance = predictionInstance.merge()
+                                                        predictionInstance.message = "${predictionInstance.message}------\n\n${mailStr}"
+                                                        predictionInstance = predictionInstance.merge()
                                                         predictionInstance.save()
                                                         if(predictionInstance.email_adress != null){
                                                                 msgStr = "Hello!\n\n${mailStr}Best regards,\n\nthe AUGUSTUS webserver team"
                                                                 sendMail {
                                                                         to "${predictionInstance.email_adress}"
-                                                                        subject "Your AUGUSTUS training job ${predictionInstance.accession_id} was aborted"
+                                                                        subject "Your AUGUSTUS prediction job ${predictionInstance.accession_id} was aborted"
                                                                         body """${msgStr}${footer}"""
                                                                 }
                                                         }

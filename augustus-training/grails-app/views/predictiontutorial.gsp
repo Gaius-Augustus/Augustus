@@ -538,7 +538,7 @@ TACACGGAAATCAACGGCGGTGTCATAAGCGAG
 
 </p>
 
-<p>The maximal number of scaffolds allowed in a genome fileis 250000. If your filecontains more scaffolds, please remove allshort scaffolds. For training AUGUSTUS short scaffolds are worthless because nocomplete training genescan  be generated from them. In terms of prediction, it is possibleto predict genes in short scaffolds. However, those genes will in most cases be incomplete and probably unreliable.</p>
+<p>The maximal number of scaffolds allowed in a genome file is 250000. If your file contains more scaffolds, please remove all short scaffolds. For training AUGUSTUS, short scaffolds are worthless because no complete training genes can  be generated from them. In terms of prediction, it is possibleto predict genes in short scaffolds. However, those genes will in most cases be incomplete and probably unreliable.</p>
 
 <p>Besides plain fasta format, our server accepts <b>gzipped-fasta</b> format for genome file upload. You find more information about gzip at the <a href="http://www.gzip.org/">gzip homepage</a>. Gzipped files have the file ending <tt>*.gz</tt>.</p>
 
