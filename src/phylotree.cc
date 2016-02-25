@@ -369,6 +369,7 @@ void PhyloTree::collapse(Treenode *node, Evo *evo){
  * if the flag 'fixLeafLabels' is turned on MAP inference is carried out
  * with leaf labels fixed to the labels in the vector
  */
+
 double PhyloTree::MAP(vector<int> &labels, vector<double> &weights, Evo *evo, bool fixLeafLabels){
 
     int states = evo->getNumStates();
@@ -512,4 +513,56 @@ void PhyloTree::prune(bit_vector &bv, Evo *evo){
 	    }
 	}
     }
+}
+
+int PhyloTree::fitch(vector<int> &labels, int states){
+    
+    for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
+	if((*node)->isLeaf()){
+	    // initialization
+	    int idx = (*node)->getIdx();
+	    int c = labels[idx];
+	    if(c >= states || c < 0)
+		throw ProjectError("PhyloTree::fith(): index "+ itoa(c) + " out of bounds.");
+
+	    (*node)->resizeTable(states, 100000); // any number > 1
+	    (*node)->setTable(c,0);
+	    (*node)->bestAssign.clear();
+	    (*node)->bestAssign.resize(states);
+	}
+	else{
+	    //recursion for the interior nodes
+	    (*node)->resizeTable(states);
+	    (*node)->bestAssign.clear();
+	    (*node)->bestAssign.resize(states);
+	    for(int i=0; i<states; i++){
+		double score = 0.0;
+		for(list<Treenode*>::iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
+		    double min = std::numeric_limits<double>::max();
+		    int bestAssign = -1;
+		    for(int j=0; j<states; j++){
+			double branch_score = (*it)->getTable(j);
+			if(i != j)
+			    branch_score++; // count one substitution
+			if(min > branch_score){
+			    min = branch_score;
+			    bestAssign=j;
+			}
+		    }
+		    score+=min;
+		    (*it)->bestAssign[i]=bestAssign;
+		}
+		(*node)->setTable(i,score);
+	    }
+	}
+    }
+    double min = std::numeric_limits<double>::max();
+    if(!treenodes.empty()){
+	Treenode* root = treenodes.back();	
+	for(int i=0; i<states; i++){
+	    if(min > root->getTable(i))
+		min = root->getTable(i);
+	}
+    }
+    return min;
 }

@@ -148,6 +148,7 @@ public:
      */
     double MAP(std::vector<int> &labels, std::vector<double> &weights, Evo *evo, bool fixLeafLabels=false);
     void MAPbacktrack(std::vector<int> &labels, Treenode* root, int bestAssign, bool fixLeafLabels);
+    int fitch(vector<int> &labels, int states=64); // Fitch Algorithm, to count number of substitutions
 };
 
 
