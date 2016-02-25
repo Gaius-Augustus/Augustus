@@ -314,16 +314,15 @@ class TrainingController {
 					def nSeqStatus = "${cmdStr}".execute()
 					nSeqStatus.waitFor()
 					def nSeqResult = new File("${projectDir}/genome.nSeq").text
-					def nSeq_array = nSeqResult =~ /(\d*)/
-					def nSeqNumber
-					(1..nSeq_array.groupCount()).each{nSeqNumber = "${nSeq_array[0][it]}"}
+					def nSeq_scanner = new Scanner(nSeqResult)
+					def long nSeqNumber = nSeq_scanner.nextLong();
 					cmdStr = "rm ${nSeqFile} ${projectDir}/genome.nSeq &> /dev/null"
 					delProc = "${cmdStr}".execute();
 					delProc.waitFor()
 					if(nSeqNumber > maxNSeqs){
 						logDate = new Date()
-						logFile << "${logDate} ${trainingInstance.accession_id} v1 - genome file contains more than ${maxNSeqs} scaffolds. Aborting job."
-						flash.error = "Genome file contains more than ${maxNSeqs} scaffolds, which is the maximal number of scaffolds that we permit for submission with WebAUGUSTUS. Please remove all short scaffolds from your genome file."
+						logFile << "${logDate} ${trainingInstance.accession_id} v1 - genome file contains more than ${maxNSeqs} scaffolds: ${nSeqNumber}. Aborting job."
+						flash.error = "Genome file contains more than ${maxNSeqs} scaffolds (${nSeqNumber} scaffolds), which is the maximal number of scaffolds that we permit for submission with WebAUGUSTUS. Please remove all short scaffolds from your genome file."
 						cleanRedirect()
 						return
 					}
@@ -1123,18 +1122,17 @@ class TrainingController {
                                         	def nSeqStatus = "${cmdStr}".execute()
                                         	nSeqStatus.waitFor()
                                         	def nSeqResult = new File("${projectDir}/genome.nSeq").text
-                                        	def nSeq_array = nSeqResult =~ /(\d*)/
-                                        	def nSeqNumber
-                                        	(1..nSeq_array.groupCount()).each{nSeqNumber = "${nSeq_array[0][it]}"}
+                                        	def nSeq_scanner = new Scanner(nSeqResult)
+                                        	def long nSeqNumber = nSeq_scanner.nextLong()
                                         	cmdStr = "rm ${nSeqFile} ${projectDir}/genome.nSeq &> /dev/null"
                                         	delProc = "${cmdStr}".execute();
                                         	delProc.waitFor()
 						if(nSeqNumber > maxNSeqs){
 							logDate = new Date()
-                                                        logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file contains more than ${maxNSeqs} scaffolds. Aborting job.\n";
+                                                        logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The genome file contains more than ${maxNSeqs} scaffolds: ${nSeqNumber}. Aborting job.\n";
                                                         deleteDir()
                                                         logAbort()
-							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name} was aborted\nbecause the provided genome file\n${trainingInstance.genome_ftp_link}\ncontains more than ${maxNSeqs} scaffolds. This is not allowed.\n\n"
+							mailStr = "Your AUGUSTUS training job ${trainingInstance.accession_id} for species\n${trainingInstance.project_name} was aborted\nbecause the provided genome file\n${trainingInstance.genome_ftp_link}\ncontains more than ${maxNSeqs} scaffolds (${nSeqNumber} scaffolds). This is not allowed.\n\n"
 							logDate = new Date()
                                                         trainingInstance.message = "${trainingInstance.message}-----------------------------"
                                                         trainingInstance.message = "${trainingInstance.message}-----------------\n${logDate}"
