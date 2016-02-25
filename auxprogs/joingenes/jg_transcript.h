@@ -130,6 +130,7 @@ class Transcript{
     bool isNotFrameCorrect;
     string originalId;
     string inputFile;
+    list<Transcript*> alternatives;
 
     pair<boundaryStatusType,boundaryStatusType> boundaryProblem;
 
@@ -178,6 +179,32 @@ class Transcript{
 	}
 	return false;
     }
+
+    bool hasExonInSameReadingFrame(Transcript* tx){
+	list<Exon>::const_iterator it1 = exon_list.begin();
+	list<Exon>::const_iterator it2 = tx->exon_list.begin();
+	if (strand != tx->strand){ return false; }
+	while (it1 != exon_list.end() && it2 != tx->exon_list.end()){
+	  if ( !((*it1).to <= (*it2).from) && !((*it1).from >= (*it2).to) ){
+	    if (strand=='+'){
+	      if ( ((*it1).frame + (*it1).from) % 3 == ((*it2).frame + (*it2).from) % 3 ){
+		return true;
+	      }
+	    }else{
+	      if ( ((*it1).frame + (*it1).to) % 3 == ((*it2).frame + (*it2).to) % 3 ){
+		return true;
+	      }
+	    }
+	  }
+	  if ((*it1).to <= (*it2).to){
+	    it1++;
+	  }else{
+	    it2++;
+	  }
+	}
+	return false;
+    }
+
 
     bool hasCommonTlStart(Transcript* tx){
 	if (!this->tl_complete.first || !tx->tl_complete.first){return false;}

@@ -386,6 +386,9 @@ if (intronLength == 89114){cout << pointer->first << " " << intronLength << endl
 	outfile.close();
 	outfile.open(filenameUne2, ios::out);
 	outfile.close();
+
+	outfile.open("cLizzy1.gtf", ios::out);
+	outfile.close();
     }
 
     for(auto it = splitted_transcript_list.begin(); it != splitted_transcript_list.end(); it++){

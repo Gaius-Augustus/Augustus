@@ -601,3 +601,38 @@ string nextFreeTxID(Gene* gene, Properties &properties, unordered_map<string,Tra
     return txID;
 }
 
+
+
+
+void saveNew(list<Transcript*> &overlap, string outFileName, Properties &properties)
+{
+  renameTaxa(overlap, properties);
+  // outputs overlap at the end of an existing file in gff format
+  // every first and last outfile-line is adjusted and might be change back (to comments above)
+  if (overlap.size() == 0) {return;}
+  fstream outfile;
+  outfile.open(outFileName, ios::out | ios::app);
+  // write by transcripts:
+  for (list<Transcript*>::iterator it = overlap.begin(); it != overlap.end(); it++){
+
+    for (list<Transcript*>::iterator iti = (*it)->alternatives.begin(); iti != (*it)->alternatives.end(); iti++){
+      if (!(*it)->exon_list.empty()){
+	outfile << (*it)->exon_list.front().chr << "\t";
+	outfile << (*it)->originalId << "\t";
+	outfile << (*it)->getTxStart() << "\t";
+	outfile << (*it)->getTxEnd() << "\t";
+	outfile << (*it)->exon_list.front().frame << "\t";
+	outfile << (*it)->strand << "\t";
+
+	outfile << (*iti)->originalId << "\t";
+	outfile << (*iti)->getTxStart() << "\t";
+	outfile << (*iti)->getTxEnd() << "\t";
+	outfile << (*iti)->exon_list.front().frame << "\t";
+
+	outfile << (*iti)->getTxStart() - (*it)->getTxStart() << "\t";
+	outfile << (*it)->getTxEnd() - (*iti)->getTxEnd() << endl;
+      }
+    }
+    outfile.close();
+  }
+}

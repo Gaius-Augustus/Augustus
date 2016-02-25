@@ -113,11 +113,21 @@ void compareAndSplit(list<Transcript*> &overlap, Properties &properties){
 	    if (who_is_part.first && who_is_part.second){
 		(*it)->compareValue = EQUAL;
 		(*it_inside)->compareValue = EQUAL;
-	    }else if ((properties.genemodel == "bacterium" && (*it)->tes && (*it_inside)->tes && (*it)->tes == (*it_inside)->tes) || (properties.genemodel != "bacterium" && alternativeVariants((*it), (*it_inside)))){
-		if ((*it)->compareValue != 2)
-		    (*it)->compareValue = ALTERNATIVE;
-		if ((*it_inside)->compareValue != 2)
-		    (*it_inside)->compareValue = ALTERNATIVE;
+	    }else if ((properties.genemodel == "bacterium" && (*it)->tes && (*it_inside)->tes && (*it)->tes == (*it_inside)->tes) || (properties.genemodel != "bacterium" && alternativeVariants((*it), (*it_inside))) || (overlappingCdsWithAnything((*it), (*it_inside)) && (*it)->strand == (*it_inside)->strand && (*it)->hasExonInSameReadingFrame((*it_inside)) ) ){
+	      if ((*it)->compareValue != 2){
+		if ((*it)->compareValue == 0){
+		  (*it)->alternatives.clear();
+		}
+		(*it)->alternatives.push_back(*it_inside);
+		(*it)->compareValue = ALTERNATIVE;
+	      }
+	      if ((*it_inside)->compareValue != 2){
+		if ((*it_inside)->compareValue == 0){
+		  (*it_inside)->alternatives.clear();
+		}
+		(*it_inside)->alternatives.push_back(*it);
+		(*it_inside)->compareValue = ALTERNATIVE;
+	      }
 	    }else{
 		if ((*it)->compareValue != 2 && (*it)->compareValue != 1)
 		    (*it)->compareValue = UNEQUAL;
@@ -144,6 +154,8 @@ void compareAndSplit(list<Transcript*> &overlap, Properties &properties){
     saveOverlap(alternatives2, filenameStop2, properties);
     saveOverlap(unequal1, filenameUne1, properties);
     saveOverlap(unequal2, filenameUne2, properties);
+
+    saveNew(alternatives1, "cLizzy1.gtf", properties);
 }
 
 double simpleProkScore(Transcript const* tx){
@@ -1397,7 +1409,7 @@ bool shareAlternativeVariant(Gene* g1, Gene* g2){
 }
 
 bool alternativeVariants(Transcript* t1, Transcript* t2){
-    if (overlappingCdsWithAnything(t1, t2) && t1->strand == t2->strand && (t1->hasCommonExon(t2) || (t1->hasCommonTlStart(t2) || t1->hasCommonTlStop(t2)))){
+    if (overlappingCdsWithAnything(t1, t2) && t1->strand == t2->strand && (t1->hasCommonExon(t2) || (t1->hasCommonTlStart(t2) || t1->hasCommonTlStop(t2) ))){
 	return true;
     }
     return false;
