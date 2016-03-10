@@ -28,6 +28,7 @@
 #include <ctime>
 #include <sys/stat.h>
 
+
 CompGenePred::CompGenePred() : tree(Constant::treefile) {
 
     vector<string> speciesNames;
@@ -273,6 +274,16 @@ void CompGenePred::start(){
     } catch (...) {
 	liftover_all_ECs = false;
     }
+
+    bool use_omega;
+    try{ 
+      use_omega = Properties::getBoolProperty("/CompPred/omega");
+    } catch (...){
+      if(Constant::logreg)
+	use_omega = true;
+      else
+	use_omega = false;
+    }
     
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes = initOutputFiles(outdir,".mea"); // equivalent to MEA prediction
@@ -467,16 +478,7 @@ void CompGenePred::start(){
 	    if (Properties::getBoolProperty("/CompPred/compSigScoring"))
 		geneRange->comparativeSignalScoring(hects); 
 	} catch (...) {}
-	
-	bool use_omega;
-	try{ 
-	    use_omega = Properties::getBoolProperty("/CompPred/omega");
-	} catch (...){
-	  if(Constant::logreg)
-	    use_omega = true;
-	  else
-	    use_omega = false;
-	}
+       
 	if(use_omega)
 	    geneRange->computeOmegasEff(hects, seqRanges, &ctree, &codonAli); // omega and number of substitutions is stored as OrthoExon attribute
 	    //inefficient omega calculation, only use for debugging purpose 

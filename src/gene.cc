@@ -3443,7 +3443,7 @@ void examineBaseCountOfGeneSeq(AnnoSequence  *as){
 }
 
 
-/* --- CodonUsage: not used right now ------------------------------ 
+/* --- CodonUsage: not used right now ------------------------------ used
 
 double CodonUsage::meanLogProb(char *seq, int len, int frame){
     double logProb=0;

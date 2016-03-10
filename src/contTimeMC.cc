@@ -18,13 +18,13 @@
 #include "geneticcode.hh"
 #include "properties.hh"
 #include "phylotree.hh"
+#include "geneMSA.hh"
 
 // standard C/C++ includes
 #include <iostream>
 #include <iomanip>
 #include <vector> 
 #include <algorithm>
-
 
 // destructor
 Evo::~Evo(){
@@ -837,8 +837,8 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 
 // get vector of log likelihoods of omegas for one single codon tuple
 
-vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *tree){
-    if (seqtuple.size() != tree->numSpecies())
+vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *ctree, PhyloTree *tree, int &subs){
+    if (seqtuple.size() != ctree->numSpecies())
         throw ProjectError("CodonEvo::logLikForCodonTuple: inconsistent number of species.");
     for(int i=1; i<seqtuple.size();i++){
         if(seqtuple[0].length() != 3 || seqtuple[i].length() != 3){
@@ -848,19 +848,39 @@ vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree
     int numCodons;
     vector<double> logliks(k, 0.0);
     Seq2Int s2i(3);
-    for (int u=0; u < k; u++){ // loop over omegas                                                                                
-	vector<int> codontuple(tree->numSpecies(), 64); // 64 = missing codon                                                     
-	numCodons = 0;
-	for(size_t s=0; s < tree->numSpecies(); s++){
-	    if (seqtuple[s].size()>0)
-		try {
-		    codontuple[s] = s2i(seqtuple[s].c_str());
-		    numCodons++;
-		} catch(...){} // gap or n character                                                                              
-	}
-	if (numCodons >= 2){
-	    logliks[u] = tree->pruningAlgor(codontuple, this, u);
-	}
+    vector<int> codontuple(ctree->numSpecies(), 64); // 64 = missing codon                                                     
+    bit_vector bv(ctree->numSpecies(), 0);
+    numCodons = 0;
+    //cout << "codontuple(int): ";
+    for(size_t s=0; s < ctree->numSpecies(); s++){
+      if (seqtuple[s].size()>0)
+	try {
+	  codontuple[s] = s2i(seqtuple[s].c_str());
+	  numCodons++;
+	  bv[s] = 1;
+	} catch(...){} // gap or n character                                                                              
+      //cout << codontuple[s] << "|";
+    }
+    //cout << endl;
+    if (numCodons >= 2){
+      if(tree){
+	//cout << "### original species tree = ";
+	//tree->printTree();
+	// calculate number of substitutions by fitch algorithm
+	PhyloTree *tr;       
+	unordered_map<bit_vector,PhyloTree*, boost::hash<bit_vector>>::iterator topit = GeneMSA::topologies.find(bv);
+	if(topit == GeneMSA::topologies.end()) // insert new topology
+	  tr = new PhyloTree(*tree);
+	else
+	  tr  = new PhyloTree(*topit->second);
+	tr->prune(bv,NULL);
+	GeneMSA::topologies.insert(pair<bit_vector,PhyloTree*>(bv,tr));
+	subs = tr->fitch(codontuple);
+      }
+      // calculate log likelihood of omegas
+      for (int u=0; u < k; u++){ // loop over omegas	
+	logliks[u] = ctree->pruningAlgor(codontuple, this, u);
+      }
     }
     return logliks;
 }

@@ -103,7 +103,8 @@ bool Constant::logreg;
 vector<double>Constant::ex_sc;
 vector<double>Constant::in_sc;
 vector<double>Constant::lg_es;
-
+int Constant::oeExtensionWidth;
+bool Constant::computeNumSubs; // cumpute number of substitutions in OE
 // moved here from hints.cc
 const int power2id[31] = {1,2,4,8,16,32,64,128,
 			   256,512,1024,2048,4096,8192,16384,32768,
@@ -351,6 +352,20 @@ void Constant::init(){
 	    lg_es.push_back(0);
 	}
     }
+
+    try {
+      oeExtensionWidth = Properties::getIntProperty("/CompPred/oeExtensionWidth");
+    } catch (...) {
+      oeExtensionWidth = 30;
+    }
+
+    try {
+      computeNumSubs = Properties::getBoolProperty("/CompPred/computeNumSubs");
+    } catch (...) {
+      computeNumSubs = false;
+    }
+
+
     
     Properties::assignProperty("/UtrModel/d_polyasig_cleavage", d_polyasig_cleavage);
     Properties::assignProperty("keep_viterbi", 	keep_viterbi);

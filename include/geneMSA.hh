@@ -22,21 +22,29 @@
 //forward declarations
 class OrthoGraph;
 string printRFC(vector<int>);
-//struct cumValues;
 
+/* store cumulative sums of log likelihoods for each omega (optional: cumulative sum of number of substitutions) 
+ * we create an object of cumValues for each bit_vector and reading frame combination  
+ */
 struct cumValues{
-    vector<double> logliks;
-    void addLogliks(vector<double>* ll){
+  vector<double> logliks;
+  int numSubs;
+  int id;
+  cumValues(int i, int s=-1):numSubs(s), id(i){};
+  void addLogliks(vector<double>* ll){
+    if(logliks.size() == 0){
+      logliks.resize(ll->size(),0.0);
       if(logliks.size() == 0){
-	    logliks.resize(ll->size(),0.0);
-	    if(logliks.size() == 0){
-	      cerr<<"logliks still empty!"<<endl;
-	    }
+	cerr<<"logliks still empty!"<<endl;
       }
-	for(int u = 0; u < ll->size(); u++){
-	    logliks[u] += (*ll)[u];
-	}
     }
+    for(int u = 0; u < ll->size(); u++){
+      logliks[u] += (*ll)[u];
+    }
+  }
+  void addNumSubs(int subs){
+    numSubs += subs;
+   }
 };
 
 class GeneMSA {
@@ -88,6 +96,7 @@ public:
     void printOrthoExons(list<OrthoExon> &orthoExonsList);
     void computeOmegas(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
     void computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli);
+    vector<string> pruneToBV(vector<string> *cs, bit_vector bv);
     void printCumOmega();
     void comparativeSignalScoring(list<OrthoExon> &orthoExonsList);
     // Charlotte Janas playground
@@ -113,6 +122,9 @@ public:
     static unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>> topologies;
     // pointers to the output files
     static vector< ofstream* > exonCands_outfiles, orthoExons_outfiles, geneRanges_outfiles_bed, geneRanges_outfiles_gff, omega_outfiles; 
+    // map that stored all codon combinations on which fitch and pruning algorithm already have been run (for calculation of omega and number of substitutions)
+    static map<vector<string>, pair<vector<double>, int> > computedCumValues;
+
 
     void printSingleOrthoExon(OrthoExon &oe, bool files = true);
 private:

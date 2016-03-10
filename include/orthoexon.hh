@@ -35,8 +35,12 @@ public:
     double getOmega() const { return omega; }
     double getEomega() const { return Eomega; }
     double getVarOmega() const { return VarOmega; }
+    double getLeftOmega() const { return leftBoundaryOmega;}
+    double getRightOmega() const { return rightBoundaryOmega;}
     double getSubst() const { return subst; }
     double getConsScore() const {return cons;}
+    double getLeftConsScore() const {return leftCons;}
+    double getRightConsScore() const {return rightCons;}
     double getDiversity() const {return diversity;}
     size_t getContainment() const {return containment;}
     bool hasOmega() const {return Eomega >= 0.0;}
@@ -46,6 +50,8 @@ public:
     int getAliStart() const {return (key>>22);} // start position of HECT in alignment
     int getAliLen() const {int aliStart=getAliStart(); int n=key-(aliStart<<22); return (n>>7);} // length of HECT + 1
     int getAliEnd() const {return getAliStart() + getAliLen();}
+    int getStartInWindow(int s) const {return firstAlignedPos[s];}
+    int getEndInWindow(int s) const {return lastAlignedPos[s];}
     bool exonExists(int pos) const; // returns true if OE has a candidate exon at position pos
     bool isUnaligned(int i) const {return labels[i] == 3;} // true, if species i is not aligned
     bool isAbsent(int i) const {return labels[i] == 2;}    // true, if species i is aligned, but ECs is absent
@@ -53,8 +59,12 @@ public:
     void setAbsent(bit_vector v);
     void setOmega(double o){omega=o;}
     void setOmega(vector<double>* llo, CodonEvo* codonevo, bool oeStart);
+    void storeOmega(double currOmega);
     void setSubst(int s){ subst=s;}
+    void setSubst(int subs, bool oeStart);
     void setConsScore(double c){cons=c;}
+    void setLeftConsScore(double c){leftCons=c;}
+    void setRightConsScore(double c){rightCons=c;}
     void setDiversity(double d){diversity=d;}
     void setContainment(int c) { containment = c; }
     void setTree(PhyloTree* t);
@@ -76,15 +86,22 @@ public:
      */
     vector<int> labels;
     int ID;
+    vector<int> firstAlignedPos;
+    vector<int> lastAlignedPos;
     
 private:
     int_fast64_t key; // key encodes all of: aliStart aliEnd type lenMod3
     double omega;
-    vector<double> loglikOmegas;
     double Eomega;
     double VarOmega;
+    double leftBoundaryOmega;
+    double rightBoundaryOmega;
+    vector<double> loglikOmegas;
+    int intervalCount;
     int subst;
     double cons; // conservation score
+    double leftCons; // conservation score of left boundary feature
+    double rightCons; // conservation score of right boundary feature
     double diversity; // sum of branch lengths of the subtree induced by the OrthoExon (measure of phylogenetic diversity)
     size_t containment; // how many bases overhang on average has the largest OrthoExon that includes this one in the same frame
     bit_vector bv; //  stores in one bit for each species its absence/presence (0/1)

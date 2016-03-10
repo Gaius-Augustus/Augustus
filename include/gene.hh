@@ -659,23 +659,24 @@ class CodonUsage {
 public:
   CodonUsage(){
     init();
-  };
+  }
   CodonUsage(char *seq, int len, int frame=0){
     init();
     addCUofSeq(seq, len, frame);
-  };
+  }
   CodonUsage(char *seq, int frame=0){
     init();
     addCUofSeq(seq, strlen(seq), frame=0);
-  };
-  CodonUsage(TrainingData *genedata) {	
+  }
+
+  CodonUsage(TrainingData *genedata){	
     init();
     while (genedata) {
       addCUofSeq(genedata->seq, genedata->seqLen, 0);
       genedata = genedata->next;
     }
     computeUsage();
-  };
+  }
 
   double meanLogProb(char *seq, int len, int frame=0);
   void addCUofSeq(char *seq, int len, int frame=0);
@@ -689,8 +690,8 @@ private:
   double logcodonusage[64];
   double aaFrequencies[20];
 };
-*/ // class CodonUsage
-
+ //class CodonUsage
+*/
 
 class FreqSegment{
 public:

@@ -324,6 +324,8 @@ public:
     static vector<double> ex_sc;
     static vector<double> in_sc;
     static vector<double> lg_es;
+    static int oeExtensionWidth;
+    static bool computeNumSubs;
 };
 
 

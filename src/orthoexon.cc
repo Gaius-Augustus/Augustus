@@ -18,7 +18,7 @@
 
 const char* phyleticPatternIdentifiers[6]={"0", "1", "-", "_", "g", "l"};
 
-OrthoExon::OrthoExon(int_fast64_t k, size_t n) : key(k), omega(-1.0), Eomega(-1.0), VarOmega(-1.0), subst(-1), cons(-1.0), diversity(-1.0) {
+OrthoExon::OrthoExon(int_fast64_t k, size_t n) : key(k), omega(-1.0), Eomega(-1.0), VarOmega(-1.0), leftBoundaryOmega(-1.0), rightBoundaryOmega(-1.0), intervalCount(0), subst(-1), cons(-1.0), diversity(-1.0) {
     orthoex.resize(n);
     orthonode.resize(n);
     weights.resize(n,0);
@@ -141,10 +141,14 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 	//calculate posterior mean of omega
 	int k = llo->size();
 
+	double currOmega;
+	double currVarOmega;
+
 	if(k == 0){ // no likelihood was calculated
-	  Eomega = -1;
-	  VarOmega = -1;
+	  currOmega = -1;
+	  currVarOmega = -1;
 	  omega = -1;
+	  storeOmega(currOmega);
 	  //cerr<<"ortho exon "<<this->ID<<" has no omega"<<endl;
 	  return;
 	}
@@ -170,30 +174,66 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 	  //	  cout << codonevo->getOmega(u) << "\t" << postprobs[u] <<"\t"<<codonevo->getPrior(u)<< endl;
 	  postprobs[u] /= sum;
 	}
-	Eomega = 0;
+	currOmega = 0;
 
 	//cout<<"---------------------------------------------------------------------------"<<endl;
 	//cout<<"wi\t\tloglikOmegas\tmaxloglik\tpostprobs/sum\tprior\tsum\texp(loglik - maxloglik)"<<endl;
  
         for (int u=0; u < k; u++){
-	  Eomega += postprobs[u] * codonevo->getOmega(u);
+	  currOmega += postprobs[u] * codonevo->getOmega(u);
 	  //cout<<codonevo->getOmega(u)<<"\t\t"<<loglikOmegas[u]<<"\t\t"<<maxloglik<<"\t\t"<<postprobs[u]<<"\t\t"<<codonevo->getPrior(u)<<"\t\t"<<sum<<"\t\t"<<exp(loglikOmegas[u] - maxloglik)<<endl;                                                     
         }
 
 
-	//cout<<"Eomega: "<<Eomega<<endl;
-	//cout<<"set Omega at oeEnd: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\t(omega, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<" Eomega: "<<Eomega<<endl;
+	//cout<<"curOmega: "<<currOmega<<endl;
+	//cout<<"set Omega at oeEnd: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\t(omega, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<" Eomega: "<<currOmega<<endl;
 	double omega_maxML = 0;
-	VarOmega = 0.0;
+	currVarOmega = 0.0;
 	for (int u=0; u < k; u++){
-	    VarOmega += postprobs[u] * pow(codonevo->getOmega(u) - Eomega, 2);
+	    currVarOmega += postprobs[u] * pow(codonevo->getOmega(u) - currOmega, 2);
 	    if(loglikOmegas[u] == maxloglik){
 	      omega_maxML = codonevo->getOmega(u);
 	    }
 	}
 	if(omega_maxML > 0)
 	  omega = omega_maxML;
+
+	storeOmega(currOmega);
+	loglikOmegas.clear();
     }
+}
+
+void OrthoExon::storeOmega(double currOmega){
+
+  switch(intervalCount){
+  case 0: leftBoundaryOmega = currOmega;
+    break;
+  case 1: Eomega = currOmega;
+    break;
+  case 2: rightBoundaryOmega = currOmega;
+    break;
+  default: throw ProjectError("Error in setOmega(): too many intervals were calculated.");
+    break;
+  }
+  intervalCount++;
+}
+
+void OrthoExon::setSubst(int subs, bool oeStart){
+  if(oeStart){
+    if(intervalCount == 1)
+	subst = subs;
+  }else{
+    if(subs != -1 && intervalCount == 2){
+      if(subst >= 0)
+	subst = subs - subst;
+      else
+	subst = subs - subst - 1;
+    }
+    else{
+      if(subst >= 0 && intervalCount == 2)
+	throw ProjectError("Error in setSubs(): numSubs was defined at OE start but is not at OE end!");
+    }
+  }
 }
 
 

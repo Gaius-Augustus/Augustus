@@ -38,6 +38,8 @@ vector<ofstream*> GeneMSA::geneRanges_outfiles_gff;
 vector<ofstream*> GeneMSA::geneRanges_outfiles_bed;
 vector<ofstream*> GeneMSA::omega_outfiles;
 unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>> GeneMSA::topologies;
+map<vector<string>, pair<vector<double>, int> > GeneMSA::computedCumValues;
+
 
 /*
  * constructor of GeneMSA
@@ -558,6 +560,18 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
 		else
 		    cout << ";VarOmega=" << oe.getVarOmega();
 	    }
+	    if (oe.getLeftOmega() >= 0.0){
+	      if (GBrowseStyle)
+		cout << "|" << oe.getLeftOmega();
+	      else
+		cout << ";leftBoundaryOmega=" << oe.getLeftOmega();
+            }
+	    if (oe.getRightOmega() >= 0.0){
+              if (GBrowseStyle)
+                cout << "|" << oe.getRightOmega();
+              else
+                cout << ";rightBoundaryOmega=" << oe.getRightOmega();
+            }
 	    if (oe.getSubst() >= 0){ // number of substitutions
 		if (GBrowseStyle)
 		    cout << "|" << oe.getSubst();
@@ -569,6 +583,18 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
 		    cout << "|" << oe.getConsScore();
 		else
 		    cout << ";cons=" << oe.getConsScore();
+	    }
+	    if (oe.getLeftConsScore() >= 0.0){ // conservation score of left boundary feature
+		if (GBrowseStyle)
+		    cout << "|" << oe.getLeftConsScore();
+		else
+		    cout << ";LeftCons=" << oe.getLeftConsScore();
+	    }
+	    if (oe.getRightConsScore() >= 0.0){ // conservation score of right boundary feature
+		if (GBrowseStyle)
+		    cout << "|" << oe.getRightConsScore();
+		else
+		    cout << ";rightCons=" << oe.getRightConsScore();
 	    }
 	    if (oe.getDiversity() >= 0.0){ // diversity
 		if (GBrowseStyle)
@@ -657,9 +683,10 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 	//	cout<<"species "<<s<<"|"<<getSeqID(s);
 	AlignmentRow *row = alignment->rows[s];
 	ExonCandidate *ec = oe.orthoex[s];
-	int firstCodonBase = offsets[s] + ec->getFirstCodingBase();
-	int lastCodonBase = offsets[s] + ec->getLastCodingBase();
-	//cout<<" firstBase: "<<ec->begin<<" firstCodonBase: "<<firstCodonBase<<" lastCodonBase: "<<lastCodonBase<<" frame: "<<(firstCodonBase % 3)<<endl;
+	int firstCodonBase = oe.getStartInWindow(s) + ( (offsets[s] + ec->getFirstCodingBase() - oe.getStartInWindow(s)) % 3);
+	int lastCodonBase = oe.getEndInWindow(s) - ( (oe.getEndInWindow(s) - (offsets[s] + ec->getLastCodingBase())) % 3);
+	//cout << " firstCodingBase: " << ec->getFirstCodingBase() + offsets[s] << " lastCodingBase: " << ec->getLastCodingBase() + offsets[s] << endl;
+	//cout<<" firstCodonBase in window: "<<firstCodonBase<<" lastCodonBase in window: "<<lastCodonBase<<" frame: "<<(firstCodonBase % 3)<<endl;
 	if ((lastCodonBase - firstCodonBase + 1) % 3 != 0)
 	    throw ProjectError("Internal error in getCodonAlignment: frame and length inconsistent.");
 	/* TODO: safe computational time by storing already calculated positions
@@ -839,7 +866,7 @@ string printRFC(vector<int> rfc){
 
 void printTest(map<unsigned, vector<int> > alignedCodons, map<int, posElements> aliPos){
 
-    cout<<"--- list of keys for codon algnment ---"<<endl;
+  cout<<"--- list of keys for codon algnment ---"<<endl;
     unordered_map<bit_vector, int, boost::hash<bit_vector>> bvCount;
     map<int, posElements>::iterator aliPosIt = aliPos.begin();
     for(map<unsigned, vector<int> >::iterator codonIt = alignedCodons.begin(); codonIt != alignedCodons.end(); codonIt++){
@@ -848,12 +875,13 @@ void printTest(map<unsigned, vector<int> > alignedCodons, map<int, posElements> 
 	nextCodonIt++;
 	while((unsigned)aliPosIt->first >= (codonIt->first >> 8) && (unsigned)aliPosIt->first <= (nextCodonIt->first >> 8)){
 	    for(int i=0; i<aliPosIt->second.oeStart.size(); i++)
-		cout<<"oeStart: "<<aliPosIt->second.oeStart[i]->getAliStart()<<":"<<aliPosIt->second.oeStart[i]->getAliEnd()<<endl;
+	      cout<<"oe " << aliPosIt->second.oeStart[i]->ID << " Start: "<<aliPosIt->second.oeStart[i]->getAliStart()<<":"<<aliPosIt->second.oeStart[i]->getAliEnd()<<endl;
 	    for(int i=0; i<aliPosIt->second.oeEnd.size(); i++)
-		cout<<"oeEnd: "<<aliPosIt->second.oeEnd[i]->getAliStart()<<":"<<aliPosIt->second.oeEnd[i]->getAliEnd()<<endl;
+	      cout<<"oe " << aliPosIt->second.oeEnd[i]->ID << " End: "<<aliPosIt->second.oeEnd[i]->getAliStart()<<":"<<aliPosIt->second.oeEnd[i]->getAliEnd()<<endl;
 	    aliPosIt++;
 	}
     }
+    cout << "--------------------------------------" << endl;
 }
 
 cumValues* GeneMSA::findCumValues(bit_vector bv, vector<int> rfc){
@@ -881,7 +909,7 @@ cumValues* GeneMSA::findCumValues(bit_vector bv, vector<int> rfc){
 	    }	
 	}
 	if(isRFC){
-	    //cout<<"return cumValues: "<<it->second[i].second.omega<<endl;
+	  //cout<<"return cumValues"<<endl;
 	    return &it->second[i].second;
 	}
     }
@@ -927,54 +955,107 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	alignedCodons.insert(pair<unsigned, vector<int> >(0,vector<int>(numSpecies(),-1))); // guaratee that codon alignment starts before first OrthoExon
 	vector<vector<int> > posStoredCodons(numSpecies(),vector<int>(3,0)); // stores the position of the last codon aligned in getCodonAlignment() for each species and reading frame
     
+	int cvID=0;
+
 	cout << "generating codon alignment" << endl;
 	//cout << "number of orthoExons: " << orthoExonsList.size() << endl;
 	for (list<OrthoExon>::iterator oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
 	  if(isOnFStrand(oe->getStateType()) != plusStrand)
-		continue;
-	    //printSingleOrthoExon(*oe, false);
-	    // store start and end information
-	    bool aliStart = true;
-	    
-	    // this iteration over two iterators was more elegant before, but not understood by gcc 4.4.7 in Santa Cruz
-	    //	old code equivalent to the next 7 lines:
-	    // for (map<int, posElements>::iterator aliPosIt :  { aliPos.find(oe->getAliStart()), aliPos.find(oe->getAliEnd()) }) { 
-	    map<int, posElements>::iterator start = aliPos.find(oe->getAliStart());
-	    map<int, posElements>::iterator end = aliPos.find(oe->getAliEnd());
-	    list<map<int, posElements>::iterator> tlist; 
-	    tlist.push_back(start);
-	    tlist.push_back(end);
-	    for (list<map<int, posElements>::iterator>::iterator lit = tlist.begin(); lit != tlist.end(); ++lit){
-	       map<int, posElements>::iterator aliPosIt = *lit;
+	    continue;
+	  //printSingleOrthoExon(*oe, false);
+	  // store start and end information
+	  bool aliStart = true;
+	  oe->firstAlignedPos.resize(numSpecies());
+	  oe->lastAlignedPos.resize(numSpecies());
+	  // this iteration over two iterators was more elegant before, but not understood by gcc 4.4.7 in Santa Cruz
+	  //	old code equivalent to the next 7 lines:
+	  // for (map<int, posElements>::iterator aliPosIt :  { aliPos.find(oe->getAliStart()), aliPos.find(oe->getAliEnd()) }) { 
+	  
+	  // chop window at borders of alignment
+	  int windowStart = min(oe->getAliStart(), Constant::oeExtensionWidth);
+	  int windowEnd = min(alignment->aliLen - oe->getAliEnd(), Constant::oeExtensionWidth);
+	  map<int, posElements>::iterator start = aliPos.find(oe->getAliStart());
+	  map<int, posElements>::iterator end = aliPos.find(oe->getAliEnd());
+	  map<int, posElements>::iterator leftBoundaryWindowStart = aliPos.find(oe->getAliStart() - windowStart);
+	  map<int, posElements>::iterator leftBoundaryWindowEnd = aliPos.find(oe->getAliStart() - 1);
+	  map<int, posElements>::iterator rightBoundaryWindowStart = aliPos.find(oe->getAliEnd() + 1);
+	  map<int, posElements>::iterator rightBoundaryWindowEnd = aliPos.find(oe->getAliEnd() + windowEnd);
+	  list<pair<map<int, posElements>::iterator, int> > tlist; 
+	  tlist.push_back(make_pair(start, oe->getAliStart()));
+	  tlist.push_back(make_pair(end, oe->getAliEnd()));
+	  tlist.push_back(make_pair(leftBoundaryWindowStart, oe->getAliStart() - windowStart));
+	  tlist.push_back(make_pair(leftBoundaryWindowEnd, oe->getAliStart() - 1));
+          tlist.push_back(make_pair(rightBoundaryWindowStart, oe->getAliEnd() + 1));
+          tlist.push_back(make_pair(rightBoundaryWindowEnd, oe->getAliEnd() + windowEnd));
+	  for (list<pair<map<int, posElements>::iterator, int> >::iterator lit = tlist.begin(); lit != tlist.end(); ++lit){
+	    pair<map<int, posElements>::iterator, int> aliPosIt = *lit;
 
-		if(aliPosIt == aliPos.end()){
-		    posElements pe;
-		    pair<map<int, posElements>::iterator, bool> insertResult;
-		    if(aliStart)
-			insertResult = aliPos.insert(pair<int, posElements>(oe->getAliStart(), pe));
-		    else
-			insertResult = aliPos.insert(pair<int, posElements>(oe->getAliEnd(), pe));
-		    aliPosIt = insertResult.first;
-		}
-		if(aliStart){
-		    aliPosIt->second.oeStart.push_back(&(*oe));
-		}else{
-		    aliPosIt->second.oeEnd.push_back(&(*oe));
-		}
-		aliStart = false;
+	    if(aliPosIt.first == aliPos.end()){
+	      posElements pe;
+	      pair<map<int, posElements>::iterator, bool> insertResult;
+	      insertResult = aliPos.insert(pair<int, posElements>(aliPosIt.second, pe));
+	      aliPosIt.first = insertResult.first;
 	    }
+	    if(aliStart){
+	      aliPosIt.first->second.oeStart.push_back(&(*oe));
+	    }else{
+	      aliPosIt.first->second.oeEnd.push_back(&(*oe));
+	    }
+	    aliStart = !aliStart;
+	  }
+
+	  
     
-	    // generate codon alignments
-	    // move fragment iterators to start of exon candidates                                                                        
-	    for (size_t s=0; s < numSpecies(); s++)
-		if (alignment->rows[s] && oe->orthoex[s])
-		    while(froms[s] != alignment->rows[s]->frags.end()
-			  && froms[s]->chrPos + froms[s]->len - 1 < offsets[s] + oe->orthoex[s]->getStart())
-			++froms[s];
-    
-	    getCodonAlignment(*oe, seqRanges, froms, &alignedCodons, false, &posStoredCodons, codonAli);
+	  // generate codon alignments
+	  // move fragment iterators to start of exon candidates                                                                        
+	  //cout << "+++OE " << oe->ID << " - coordinates in alignment: " << oe->getAliStart() << ":" << oe->getAliEnd() << endl;
+	  for (size_t s=0; s < numSpecies(); s++){
+	    if (alignment->rows[s] && oe->orthoex[s]){
+	      //cout << "EC of species " << s << " = " << oe->orthoex[s]->begin + offsets[s] << ":" << oe->orthoex[s]->end + offsets[s] << endl;
+	      //cout << "alignment ends at: " << alignment->rows[s]->aliEnd() << endl;
+
+	      int ww = min(oe->getAliStart(), Constant::oeExtensionWidth);	    
+	      //cout << "windowsize left: " << ww << endl;
+	      oe->firstAlignedPos[s] = alignment->rows[s]->getChrPos(oe->getAliStart() - ww, froms[s]);
+
+	      while(oe->firstAlignedPos[s] < 0){
+		ww--;
+		oe->firstAlignedPos[s] = alignment->rows[s]->getChrPos(oe->getAliStart() - ww, froms[s]);
+	      }
+	      vector<fragment>::const_iterator to = froms[s];
+	      ww = min(alignment->rows[s]->aliEnd() - oe->getAliEnd(), Constant::oeExtensionWidth);
+	      //cout << "windowsize right: " << ww << endl;
+	      oe->lastAlignedPos[s] = alignment->rows[s]->getChrPos(oe->getAliEnd() + ww, to);
+              //cout << "chrom. position of first/last aligned base of OE: " << oe->firstAlignedPos[s] << "/" << oe->lastAlignedPos[s] << endl;
+	      while(oe->lastAlignedPos[s] < 0){
+		ww--;
+		oe->lastAlignedPos[s] = alignment->rows[s]->getChrPos(oe->getAliEnd() + ww, to);
+	      }
+	    }
+	    /*if (alignment->rows[s] && oe->orthoex[s])
+	      while(froms[s] != alignment->rows[s]->frags.end()
+	      && froms[s]->chrPos + froms[s]->len - 1 < lbwPos)
+	      ++froms[s];
+	    */
+	  }
+	    
+	  getCodonAlignment(*oe, seqRanges, froms, &alignedCodons, false, &posStoredCodons, codonAli);
 	}
   
+	/* print aliPos
+	  cout << "============ aliPos ==============" << endl;
+	  for(map<int, posElements>::iterator aliPosIt = aliPos.begin(); aliPosIt != aliPos.end(); aliPosIt++){
+	    cout << "## " << aliPosIt->first << endl << "starts" << endl;
+	    for(int i=0; i < aliPosIt->second.oeStart.size(); i++){
+	      cout << aliPosIt->second.oeStart[i]->ID << "\t";
+	    }
+	    cout << endl << "ends" << endl;
+	    for(int i=0; i < aliPosIt->second.oeEnd.size(); i++){
+              cout << aliPosIt->second.oeEnd[i]->ID << "\t";
+            }
+            cout << endl;
+	  }
+	*/
   
 	cout<<"Merge processing: Traverse alignment left to right"<<endl;
 
@@ -990,17 +1071,16 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	  cout<<" strand in current gene range!"<<endl;
 	  continue;
 	}
-	  
-	map<vector<string>,vector<double> > computedOmegas;
 
 	// walk through codon alignment left to right
 	for(map<unsigned, vector<int> >::iterator codonIt = alignedCodons.begin(); codonIt != alignedCodons.end(); codonIt++){
-	  /*
-	  cout<<"++++codon: "<<(codonIt->first >> 8)<<endl<<"chrom Pos / RFC : "<<endl;
+	  
+	  /*cout<<"++++codon: "<<(codonIt->first >> 8)<<endl<<"chrom Pos / RFC : "<<endl;
 	    for(vector<int>::iterator cit=codonIt->second.begin(); cit!=codonIt->second.end(); cit++){
 	      cout<<*cit<<" / "<<(*cit % 3)<<endl;
 	    }
 	    cout<<"active bit vectors: ";
+	  
 	    for(unordered_map<bit_vector, int, boost::hash<bit_vector>>::iterator bit=bvCount.begin(); bit!=bvCount.end(); bit++){
 	      if(bit->second > 0)
 		cout<<printBV(bit->first)<<":"<<bit->second<<"\t";
@@ -1011,6 +1091,7 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	  // ortho Exon starts or ends before current alignment position
 	  while((unsigned)aliPosIt->first <= (codonIt->first >> 8) ){
 	    //cout<<"next position of aliPos "<<aliPosIt->first<<endl;
+	    
 	    unordered_map<bit_vector, int, boost::hash<bit_vector>>::iterator bvit;
 	    unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> >::iterator coit;
 	    // process all ortho exons that start
@@ -1021,18 +1102,18 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	        cout<<"chromosomal position of each exon:"<<endl;
 	        for(int j=0; j<aliPosIt->second.oeStart[i]->orthoex.size(); j++){
 	          if(aliPosIt->second.oeStart[i]->orthoex[j]){
-	          cout<<"species "<<j<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->begin<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->end<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->getStateType()<<"\t";
+		    cout<<"species "<<j<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->begin<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->end<<"\toffset: "<<offsets[j]<<"\t"<<aliPosIt->second.oeStart[i]->orthoex[j]->getStateType()<<"\t";
 
 		  ExonCandidate *ec = aliPosIt->second.oeStart[i]->orthoex[j];
-		  if (getStrand(j) == plusstrand){ // strand of alignment                                                                   		    cout << "start:" << ec->begin + offsets[j]+1 << "\tend:" << ec->end + offsets[j]+1;
+		  if (getStrand(j) == plusstrand){ // strand of alignment                                                                   		   cout << "start:" << ec->begin + offsets[j]+1 << "\tend:" << ec->end + offsets[j]+1;
 		  } else {
 		    int chrLen = rsa->getChrLen(j, getSeqID(j));
-		    cout << "start:" << chrLen - (ec->end + offsets[j]) << "\tend:" << chrLen - (ec->begin + offsets[j]);
+		     cout << "start:" << chrLen - (ec->end + offsets[j]) << "\tend:" << chrLen - (ec->begin + offsets[j]);
 		  }
-		  cout<<endl;
+		   cout<<endl;
 
 		}else
-		  cout<<"species "<<j<<endl;
+		    cout<<"species "<<j<<endl;
 	        }
 	      }
 	      //cout<<"---bv of ortho exon:  "<<printBV(aliPosIt->second.oeStart[i]->getBV())<<endl<<"---rfc of ortho exon: "<<printRFC(static_cast<const OrthoExon*>(aliPosIt->second.oeStart[i])->getRFC(offsets))<<endl;
@@ -1073,7 +1154,10 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 
 	      }
 	      bool rfcIncluded = false;
-	      cumValues cum;
+	      // add new cumValue
+	      cumValues cum(cvID);
+	      cvID++;
+	      //cout << "created cv " << cvID-1 << " with RFC " << printRFC(static_cast<const OrthoExon*>(aliPosIt->second.oeStart[i])->getRFC(offsets)) << endl;
 	      pair<vector<int>, cumValues> oeRFC = make_pair(const_cast<const OrthoExon*>(aliPosIt->second.oeStart[i])->getRFC(offsets),cum);
 	      for(int rf = 0; rf < coit->second.size(); rf++){
 		if(oeRFC.first == coit->second[rf].first){
@@ -1093,6 +1177,10 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	      cumValues cv = coit->second[currRFnum].second;
 	      
 	      aliPosIt->second.oeStart[i]->setOmega(&cv.logliks, codonevo, true);
+	      if(Constant::computeNumSubs){
+		aliPosIt->second.oeStart[i]->setSubst(cv.numSubs, true);
+		//cout << "call setSubst() with cv " << cv.id << endl;
+	      }
 	    }
 	    // process all ortho exons that end
 	    for(int i=0; i<aliPosIt->second.oeEnd.size(); i++){
@@ -1116,6 +1204,10 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 		cerr<<"cum Values has NULL pointer"<<endl;
 	      }
 	      aliPosIt->second.oeEnd[i]->setOmega(&cv->logliks, codonevo, false);
+	      if(Constant::computeNumSubs){
+		//cout << "call setSubst() with cv " << cv->id << endl;
+		aliPosIt->second.oeEnd[i]->setSubst(cv->numSubs, false);
+	      }
 	      bvit->second--;
 	    }
 	    aliPosIt++;
@@ -1169,18 +1261,28 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	      cumValues *cv = findCumValues(bvit->first, rfc);    
 	      //cout<<"after findCumValues"<<endl;
 	      if(cv != NULL){
-		// call pruning algo only once for every codonStrings and store omega in map                                                    
+		// call pruning algo only once for every codonStrings and store omega in map
+		int subs = 0; // store number of substitutions
 		vector<double> loglik;
-		map<vector<string>,vector<double> >::iterator oit = computedOmegas.find(codonStrings);
-		if(oit==computedOmegas.end()){
-		  loglik = codonevo->loglikForCodonTuple(codonStrings, ctree);
-		  computedOmegas.insert(pair<vector<string>,vector<double> >(codonStrings,loglik));
+		vector<string> cs = pruneToBV(&codonStrings, bvit->first);
+		map<vector<string>, pair<vector<double>, int> >::iterator oit = computedCumValues.find(cs);
+		if(oit==computedCumValues.end()){
+		  if(Constant::computeNumSubs)
+		    loglik = codonevo->loglikForCodonTuple(cs, ctree, tree, subs);
+		  else
+		    loglik = codonevo->loglikForCodonTuple(cs, ctree);
+		  pair<vector<double>, int> store_cv = make_pair(loglik, subs);
+		  computedCumValues.insert(pair<vector<string>,pair<vector<double>, int> >(cs,store_cv));
 		}else{
-		  loglik = oit->second;
+		  loglik = oit->second.first;
+		  subs = oit->second.second;
 		}
+	      
 		//cout<<"loglik of omega: "<<loglik<<endl;
 		// store cumulative sum of omega, omega squared and one
 		cv->addLogliks(&loglik);
+		if(Constant::computeNumSubs)
+		  cv->addNumSubs(subs);
 		//foundBV=true;
 		//printCumOmega();
 	      }
@@ -1205,6 +1307,10 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	    }
 	    if(cv != NULL){
 	      aliPosIt->second.oeEnd[i]->setOmega(&cv->logliks, codonevo, false);
+	      if(Constant::computeNumSubs){
+		aliPosIt->second.oeEnd[i]->setSubst(cv->numSubs, false);
+                //cout << "call setSubst() with cv " << cv->id << endl;
+	      }
 	    }
 	  }
 	  aliPosIt++;
@@ -1213,6 +1319,14 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
     cout<<"compute omegas done"<<endl;
 }
 
+// prune Codon Strings so that only aligned codons of species in bv are used for omega and numSubst calculation 
+vector<string> GeneMSA::pruneToBV(vector<string> *cs, bit_vector bv){
+  vector<string> cs_pruned(numSpecies(),"---");
+  for(int s = 0; s < numSpecies(); s++)
+    if(bv[s])
+      cs_pruned[s] = (*cs)[s];
+  return cs_pruned;
+}
 
 // calculate a columnwise conservation score and output it (for each species) in wiggle format
 void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, string outdir){
@@ -1263,6 +1377,29 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
 	}
 	oeConsScore/=(oeAliEnd-oeAliStart+1); // average over all alignment columns within a HECT
 	oe->setConsScore(oeConsScore);
+	// conservation score for left boundary feature
+	oeConsScore=0.0;
+        int oeLeftBoundAliStart = max(oeAliStart - Constant::oeExtensionWidth, 0);
+        int oeLeftBoundAliEnd = max(oeAliStart - 1, 0);
+        for(int pos = oeLeftBoundAliStart; pos <= oeLeftBoundAliEnd; pos++){
+	  if (pos > alignment->aliLen || pos < 0)
+	    throw ProjectError("Internal error in printConsScore: alignment positions of HECTs and geneRanges are inconsistent.");
+	  oeConsScore+=consScore[pos];
+        }
+        oeConsScore/=(oeLeftBoundAliEnd-oeLeftBoundAliStart+1); // average over all alignment columns within a HECT
+        oe->setLeftConsScore(oeConsScore);
+	// conservation score for right boundary feature
+	oeConsScore=0.0;
+        int oeRightBoundAliStart = min(oeAliEnd + 1, alignment->aliLen);
+        int oeRightBoundAliEnd = min(oeAliEnd + 1 + Constant::oeExtensionWidth, alignment->aliLen);
+        for(int pos = oeRightBoundAliStart; pos <= oeRightBoundAliEnd; pos++){
+          if (pos > alignment->aliLen || pos < 0)
+            throw ProjectError("Internal error in printConsScore: alignment positions of HECTs and geneRanges are inconsistent.");
+          oeConsScore+=consScore[pos];
+        }
+        oeConsScore/=(oeRightBoundAliEnd-oeRightBoundAliStart+1); // average over all alignment columns within a HECT                   
+        oe->setRightConsScore(oeConsScore);
+
     }
     // output for each geneRange and each species a conservation track in wiggle format
 
