@@ -34,7 +34,7 @@ release:
 	cd docs/tutorial2015/results; ls | grep -v do.sh | grep -v README | xargs rm; cd -
 	make clean all
 	make clean
-	cd config/species; rm -rf tobacco xeno1 bombus_terrestris{1,3} symsag xenoturbella meara pavar newest maker2_*
+	cd config/species; rm -rf tobacco xeno1 bombus_terrestris{1,3} symsag xenoturbella meara pavar newest elegans maker2_*
 	rm generic/*.pbl
 	cd src/parser; rm Makefile; cd -
 	tar -czf ../augustus-$(AUGVERSION).tar.gz .

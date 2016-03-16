@@ -108,7 +108,10 @@ Aspergillus fumigatus, Aspergillus nidulans, Aspergillus oryzae, Aspergillus ter
 
 The training for lamprey (Petromyzon marinus) was performed by Falk Hildebrand and Shigehiro Kuraku, based on the
 genome assembly (PMAR3.0) provided by the Genome Sequencing Center at Washington University School of Medicine (WUGSC)
-in St. Louis.
+in St. Louis. The training is described in: "Molecular Evolution in the Lamprey Genomes and Its Relevance to the Timing of Whole Genome Duplications"
+T. Manousaki, H. Qiu, M. Noro, F. Hildebrand, A. Meyer and S. Kuraku in 'Jawless Fishes of the World, Volume 1', Cambridge Scholars Publishing
+http://www.cambridgescholars.com/jawless-fishes-of-the-world
+
 
 The training for elephant shark (Callorhinchus milii) was performed by Tereza Manousaki and Shigehiro Kuraku, based on the genome assembly
 (made up of 1.4x whole genome shotgun reads) available at http://esharkgenome.imcb.a-star.edu.sg/resources.html.
