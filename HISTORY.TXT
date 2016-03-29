@@ -1,4 +1,15 @@
-List of changes from version 3.1 to 3.2.1 (until October 23rd, 2015)
+List of changes from version 3.2.1 to 3.2.2 (until March 30th, 2016)
+     - added extrinsic.M.RM.PB.cfg for PacBio CCS hints with GMAP
+       (see http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.PacBioGMAP )
+     - standardization of Makefile
+     - improvements in auxiliary program joingenes
+     - added missing program load2sqlitedb
+     - comparative gene predictions (CGP):
+         - hints with source=M (e.g. existing annotations) are fixed
+	 - new standard parameters for exon_gain, exon_loss and others
+     - bugfixes, in particular a double free or corruption bug in PPX that occured with BUSCO
+     - new species Volvox carteri (volvox)
+List of changes from version 3.2 to 3.2.1 (until October 23rd, 2015)
      - comparative gene prediction (CGP): make the parameters from the GCB proceedings paper match again
      - new CGP default parameters (tested on 5 clades)
      - CGP version penalizes very long introns equivalently to a geometric distribution
