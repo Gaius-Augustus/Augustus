@@ -633,7 +633,7 @@ class TrainingController {
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The EST URL is accessible. Response code: ${error_code}.\n"
 					}
 					// checking web file for DNA fasta format: 
-					def URLConnection uc = url .openConnection()
+					def URLConnection uc = url.openConnection()
                                         def BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()))
                                         try{
                                                 def String inputLine=null
