@@ -38,7 +38,6 @@ release:
 	cd src/parser; rm Makefile; cd -
 	tar -czf ../augustus-$(AUGVERSION).tar.gz .
 
-
 # remove -static from src/Makefile for MAC users
 # remove -g -gdb from CXXFLAGS
-# make COMPGENEPRED = true and SQLITE = true and MYSQL = true and ZIPINPUT = true a comment
+# make COMPGENEPRED = true and SQLITE = true and MYSQL = true a comment

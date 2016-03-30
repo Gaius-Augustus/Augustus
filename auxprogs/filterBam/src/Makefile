@@ -13,14 +13,11 @@ INCLUDES = -I$(BAMTOOLS) -Iheaders -I./bamtools
 LIBS = -lbamtools -lz
 CFLAGS = -std=c++0x
 VPATH = functions
-INSTDIR = ../bin
 
 all : $(PROGRAM) $(OBJECTS) CHECKBAM BIN
 
 BIN : $(PROGRAM) CHECKBAM
-	mkdir -p $(INSTDIR);\
-	mv filterBam $(INSTDIR);
-	cp $(INSTDIR)/filterBam ../../../bin/filterBam
+	cp filterBam ../../../bin/filterBam
 
 CHECKBAM:
 	@if [ -z "${BAMTOOLS}" ]; then \

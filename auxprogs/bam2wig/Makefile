@@ -7,7 +7,7 @@
 #
 
 PROGRAM = bam2wig
-SOURCES = $(PROGRAM) bam_index.o 
+SOURCES = $(PROGRAM) bam_index.o
 OBJECTS = $(SOURCES:.c=.o)
 TOOLDIR=/home/mario/tools
 SAMTOOLS=$(TOOLDIR)/samtools/
@@ -17,14 +17,14 @@ TABIX=$(TOOLDIR)/tabix/
 INCLUDES=-I$(SAMTOOLS) -I. -I$(HTSLIB) -I$(BCFTOOLS) -I$(TABIX)
 VPATH=$(SAMTOOLS)
 LIBS=$(SAMTOOLS)/libbam.a $(HTSLIB)/libhts.a -lcurses -lm -lz -lpthread
-CFLAGS= -g -Wall -O2 $(INCLUDES)
+CFLAGS=-Wall -O2 $(INCLUDES)
 CC=gcc
 
 $(PROGRAM) : bam2wig.o bam_index.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
 
-bam2wig.o : bam2wig.c 
+bam2wig.o : bam2wig.c
 	$(CC) $(CFLAGS) -c $^ -o $@ $(INCLUDES)
 
-clean: 
+clean:
 	rm -f $(OBJECTS) bam2wig.o

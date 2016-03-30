@@ -38,7 +38,7 @@ ifdef COMPGENEPRED
 endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
-PROGR	= augustus etraining consensusFinder curve2hints prepareAlign fastBlockSearch
+PROGR	= augustus etraining prepareAlign fastBlockSearch
 INFO    = cxxflags
 
 ifdef MYSQL

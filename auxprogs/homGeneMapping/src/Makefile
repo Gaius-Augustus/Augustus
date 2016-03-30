@@ -29,8 +29,7 @@ all: homGeneMapping
 
 homGeneMapping: main.cc $(OBJS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $^ $(INCLS)
-	mv homGeneMapping ../bin/
-	cp ../bin/homGeneMapping ../../../bin/homGeneMapping
+	cp homGeneMapping ../../../bin/homGeneMapping
 
 clean:
 	rm -f homGeneMapping $(OBJS)

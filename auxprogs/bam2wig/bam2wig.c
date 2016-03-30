@@ -15,7 +15,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "sam.h"  
+#include "sam.h"
 #include "bam.h"
 
 // Auxiliary data structure
