@@ -515,7 +515,7 @@ int main(int argc, char* argv[])
 	 << "                          You should generate exonpart hints from RNA-Seq using wiggle (.wig) input to wig2hints.\n"
          << "  --ep_cutoff=n      -e   this many bp are cut off of each exonpart hint at end of alignment (set to " << EpCutoff << ")\n"
          << "  --source=s         -s   source identifier (set to '" << Source << "')\n"
-         << "  --intronsonly      -I   only retreive intron hints (e.g. because the exon(part) hints are retreived by converting to a wig track, set to " << OnOff(IntOnly) << ")\n"
+         << "  --intronsonly      -I   only retrieve intron hints (e.g. because the exon(part) hints are retrieved by converting to a wig track, set to " << OnOff(IntOnly) << ")\n"
 	 << "                          deprecated as this is the default now\n"
          << "  --nomult           -n   do not summarize multiple identical intron hints to a single one (set to " << OnOff(!Mult) << ")\n"
          << "  --remove_redundant -r   only keep the strongest hint for a region (set to " << OnOff(RemRed) << ")\n"

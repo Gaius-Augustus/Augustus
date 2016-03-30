@@ -935,7 +935,7 @@ void GeneMSA::printCumOmega(){
 void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli) {
     cout<<"computing omega for each ortho exon."<<endl;
 
-    // treat forward and reverse strand seperately (might be done more efficiently)
+    // treat forward and reverse strand separately (might be done more efficiently)
     for (int strnd=1; strnd>=0; strnd--){
 	bool plusStrand = (bool) strnd;
 	if (plusStrand){
@@ -1173,7 +1173,7 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 		currRFnum = coit->second.size() - 1;
 	      }
 	      
-	      // store cumulative values at the begining of an OrthoExon
+	      // store cumulative values at the beginning of an OrthoExon
 	      cumValues cv = coit->second[currRFnum].second;
 	      
 	      aliPosIt->second.oeStart[i]->setOmega(&cv.logliks, codonevo, true);

@@ -28,7 +28,6 @@ install:
 release:
 	find . -name .svn | xargs rm -rf
 	find . -name "*~" | xargs rm -f
-	rm -f src/.kdbgrc* TODO
 	rm -f src/makedepend.pl
 	rm -r augustus-training
 	cd docs/tutorial2015/results; ls | grep -v do.sh | grep -v README | xargs rm; cd -

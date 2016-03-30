@@ -144,7 +144,7 @@ protected:
 
 /*
  * classes Snippet*
- * intelligently store and retreive the sequence emission probabilities of the sequence from a to b
+ * intelligently store and retrieve the sequence emission probabilities of the sequence from a to b
  * for common pairs of a and b
  */
 class SnippetListItem {

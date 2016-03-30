@@ -147,7 +147,7 @@ sub read_genome {
 	    $_=~s/^>//; # remove the leading header sign
 	    $seqName=$_;
 	    if(defined($seq{$seqName})){
-		die("ERROR: the same sequence name occured twice in the genome file $fname!\n");
+		die("ERROR: the same sequence name occurred twice in the genome file $fname!\n");
 	    }
 	}else{	
 	    chomp $_;

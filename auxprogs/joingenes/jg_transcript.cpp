@@ -159,7 +159,7 @@ void compareAndSplit(list<Transcript*> &overlap, Properties &properties){
 }
 
 double simpleProkScore(Transcript const* tx){
-    // calculates a score for comparision; completeness shouldnt be used
+    // calculates a score for comparision; completeness shouldn't be used
     if (tx->exon_list.size() != 1)
 	return 0;
     else
@@ -792,7 +792,7 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
     temp_exon_list.clear();
     switch (fittingCase){
     case 0:
-	cerr << "WARNING: shouldnt happen (in joining())!" << endl;
+	cerr << "WARNING: shouldn't happen (in joining())!" << endl;
 	break;
     case 1:
 	if (strand == '+'){
@@ -1747,7 +1747,7 @@ void displayWarning(string const &warning, Properties &properties, string warnin
     if (properties.warningCount[warningString] <= n){
         cerr << "WARNING: " << warning << endl;
 	if (properties.warningCount[warningString] == n){
-	    cerr << "(This problem occured already " << n << " times and will not be printed further)..." << endl;
+	    cerr << "(This problem occurred already " << n << " times and will not be printed further)..." << endl;
 	}
     }
 }
@@ -1755,7 +1755,7 @@ void displayWarning(string const &warning, Properties &properties, string warnin
 void warningSummary(string const &warning, string const &warning2, Properties &properties, string warningString){
     if (properties.warningCount[warningString] == 0){return;}
     if (warning.empty()){
-	cerr << "The " << warningString << " problem occured " << properties.warningCount[warningString] << " times." << endl;
+	cerr << "The " << warningString << " problem occurred " << properties.warningCount[warningString] << " times." << endl;
     }else{
 	cerr << warning << properties.warningCount[warningString] << warning2 << endl;
     }

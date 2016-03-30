@@ -25,7 +25,7 @@ open(MAP, ">", $mapFile) or die("Could not open map file $mapFile, check whether
 while(<INPUT>){
     if(not($_=~m/\n$/)){
         if($wrongNL < 1){
-            print STDERR "Warning: something seems to be wrong with the newline character! This is likely to cause problems with the autoAug.pl pipeline and the AUGUSTUS web service! Please adapt your file to UTF8! This warning will be supressed from now on!\n";
+            print STDERR "Warning: something seems to be wrong with the newline character! This is likely to cause problems with the autoAug.pl pipeline and the AUGUSTUS web service! Please adapt your file to UTF8! This warning will be suppressed from now on!\n";
             $wrongNL++;
         }
     }
@@ -51,7 +51,7 @@ while(<INPUT>){
 	    }
 	}else{
 	    if($emptyC < 1){
-		print STDERR "Warning: empty line was removed! This warning will supressed from now on!\n";
+		print STDERR "Warning: empty line was removed! This warning will suppressed from now on!\n";
 	    } 
 	    $emptyC++;
 	}

@@ -10,7 +10,7 @@
 %             Fon: +49 3834 864642                                                               %
 %             mario.stanke@uni-greifswald.de                                                     %
 %                                                                                                %
-%             Date: October 23rd, 2015                                                           %
+%             Date: March 30th, 2016                                                             %
 %                                                                                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -97,6 +97,7 @@ Currently, AUGUSTUS has been trained for predicting genes in:
   - Thermoanaerobacter tengcongensis (a bacterium)
   - Triticum aestivum (wheat)
   - Ancylostoma ceylanicum
+  - Volvox carteri
 
 The training annotation files of the following species are a courtesy of Jason Stajich (see also http://fungal.genome.duke.edu/): 
 Aspergillus fumigatus, Aspergillus nidulans, Aspergillus oryzae, Aspergillus terreus, Botrytis cinerea, Candida albicans
@@ -111,7 +112,6 @@ genome assembly (PMAR3.0) provided by the Genome Sequencing Center at Washington
 in St. Louis. The training is described in: "Molecular Evolution in the Lamprey Genomes and Its Relevance to the Timing of Whole Genome Duplications"
 T. Manousaki, H. Qiu, M. Noro, F. Hildebrand, A. Meyer and S. Kuraku in 'Jawless Fishes of the World, Volume 1', Cambridge Scholars Publishing
 http://www.cambridgescholars.com/jawless-fishes-of-the-world
-
 
 The training for elephant shark (Callorhinchus milii) was performed by Tereza Manousaki and Shigehiro Kuraku, based on the genome assembly
 (made up of 1.4x whole genome shotgun reads) available at http://esharkgenome.imcb.a-star.edu.sg/resources.html.
@@ -133,7 +133,7 @@ Parameters for Apis dorsata were contributed by Francisco Camara Ferreira.
 
 1. unpack
 
->tar -xzf augustus-3.2.1.tar.gz
+>tar -xzf augustus-3.2.2.tar.gz
 
 The tar-archive contains one directory 'augustus-3.1' with the following sub-directories:
 bin
@@ -295,7 +295,7 @@ chicken                                  | Gallus gallus
 zebrafish                                | Danio rerio
 E_coli_K12                               | Escherichia coli
 s_aureus                                 | Staphylococcus aureus
-
+volvox                                   | Volvox carteri
 
 The identifiers in parentheses denote older versions for that species.
 

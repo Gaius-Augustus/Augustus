@@ -130,7 +130,7 @@ int main( int argc, char* argv[] ){
 	// check if the boost library is installed (only required for option --printHomologs)
 	if(!homGeneFile.empty()){
 #ifndef BOOST
-	    throw ProjectError("The option --printHomologs requires the boost C++ libary.\n"
+	    throw ProjectError("The option --printHomologs requires the boost C++ library.\n"
                                "Please install the boost library, e.g. using the APT package manager\n\n"
                                "sudo apt-get install libboost-graph-dev\n\n"
                                "Then edit the Makefile by setting the flag BOOST = true and recompile homGeneMapping.\n");

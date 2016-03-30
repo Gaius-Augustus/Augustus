@@ -5,14 +5,14 @@
 
 CC      = g++
 
-# Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt 
+# Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -std=c++0x -pthread -g -ggdb -O2 ${CFLAGS} # -DDEBUG -g -ggdb -pg
+CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -std=c++0x -pthread -O2 ${CFLAGS} # -DDEBUG -g -ggdb -pg
 
 INCLS	= -I../include
 
-OBJS	= gene.o genome.o 
+OBJS	= gene.o genome.o
 
 ifdef BOOST
 	CFLAGS += -DBOOST
@@ -25,13 +25,14 @@ all: homGeneMapping
 .SUFFIXES: .cc .o .so
 
 .cc.o:
-	$(CC) -c $(CFLAGS) $(LDFLAGS) -o $@ $< $(INCLS)
+	$(CC) -c $(CFLAGS) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $< $(INCLS)
 
 homGeneMapping: main.cc $(OBJS)
-	 $(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $^ $(INCLS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $^ $(INCLS)
 	mv homGeneMapping ../bin/
 	cp ../bin/homGeneMapping ../../../bin/homGeneMapping
-clean:	
+
+clean:
 	rm -f homGeneMapping $(OBJS)
 
 main.o : \

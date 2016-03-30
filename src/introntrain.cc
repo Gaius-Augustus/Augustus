@@ -357,7 +357,7 @@ void IntronModel::buildProbabilities(const AnnoSequence* annoseq){
 			      cerr << e.getMessage() << endl;
 			  } 
 			  if (numErrorSplicesites == 20) 
-			      cerr << "further detailed output of splice site errors supressed." << endl;
+			      cerr << "further detailed output of splice site errors suppressed." << endl;
 		      }
 		  }
 		  in = in->next;

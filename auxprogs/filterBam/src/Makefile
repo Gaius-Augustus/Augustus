@@ -1,5 +1,5 @@
 #	Makefile for filterBam
-#	
+#
 # 	Created: 11-November-2011
 #	Last modified: 4-March-2012
 
@@ -12,7 +12,7 @@ BAMTOOLS = /usr/include/bamtools
 INCLUDES = -I$(BAMTOOLS) -Iheaders -I./bamtools
 LIBS = -lbamtools -lz
 CFLAGS = -std=c++0x
-VPATH = functions 
+VPATH = functions
 INSTDIR = ../bin
 
 all : $(PROGRAM) $(OBJECTS) CHECKBAM BIN
@@ -22,7 +22,7 @@ BIN : $(PROGRAM) CHECKBAM
 	mv filterBam $(INSTDIR);
 	cp $(INSTDIR)/filterBam ../../../bin/filterBam
 
-CHECKBAM: 
+CHECKBAM:
 	@if [ -z "${BAMTOOLS}" ]; then \
 		echo '[Makefile]: $${BAMTOOLS} has not been set.'; \
 		exit 101; \
@@ -30,12 +30,12 @@ CHECKBAM:
 		echo "filterBam compiled with BAMTOOLS=${BAMTOOLS}"; \
 	fi
 
-$(PROGRAM) : $(OBJECTS) 
+$(PROGRAM) : $(OBJECTS)
 	$(LINK.cc) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS) 
 
 $(OBJECTS) : %.o:%.cc
-	$(LINK.cc) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(INCLUDES) 
+	$(LINK.cc) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(INCLUDES)
 
 
-clean: 
-	rm -f *~ $(OBJECTS) 
+clean:
+	rm -f *~ $(OBJECTS)

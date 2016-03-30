@@ -66,7 +66,7 @@ ostream& operator<< (ostream& strm, const Strand s);
 #define MODEL_SUBDIR "model/"
 #define EXTRINSIC_SUBDIR "extrinsic/"
 
-#define VERSION "3.2.1"
+#define VERSION "3.2.2"
 
 #define PREAMBLE "# This output was generated with AUGUSTUS (version " VERSION ").\n\
 # AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),\n\

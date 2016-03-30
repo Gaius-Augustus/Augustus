@@ -377,11 +377,11 @@ using namespace std;
     /* Initialize the vector to store the smooth data
      */
     smooth_data.resize(input_set[0][0].size(),0.0);
-    /* For the begining the code is written just to wrok on the
+    /* For the beginning the code is written just to wrok on the
      * first track of the + strand only
      */
     for(l=0;l<smooth_data.size();l++){// loop over position on track
-      /* Dont change the values for the begining values and end values
+      /* Dont change the values for the beginning values and end values
        * which cannot be covered by the window
        */
       if(l<moving_window/2){

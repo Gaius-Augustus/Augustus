@@ -134,7 +134,7 @@ if (qx(which "$cmdpars{'eval_exec_dir'}evaluate_gtf.pl") !~ /evaluate_gtf.pl$/){
     die ("eval is not executable. Please add the directory which contains the executable evaluate_gtf.pl to the PATH environment variable or specify the path with --eval_exec_dir.");
 }
 if (qx("$cmdpars{'eval_exec_dir'}evaluate_gtf.pl" 2>&1) =~ /^Can\'t\slocate\s(\w+\.pm)/ ){
-    die ("eval is not executable. The perl libary " . $1 . " cannot be located.\n" . 
+    die ("eval is not executable. The perl library " . $1 . " cannot be located.\n" . 
 	 "Please add the directory which contains " . $1 . " to the PERL5LIB environment variable, e.g. add the following line to your .bashrc file:\n\n" . 
 	 "export PERL5LIB=\$PERL5LIB:/path/to/" . $1 . "\n\n");
 }

@@ -20,8 +20,6 @@ int main(int argc, char *argv[])
 
   	const char *fn; 
 	fn = argv[1];
-	const char *_fnidx;
-	_fnidx = 0;
 	bamFile fp;
 	bam_index_t *idx; 
 	if ((fp = bam_open(fn, "r")) == 0) {

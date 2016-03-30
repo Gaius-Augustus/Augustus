@@ -302,7 +302,7 @@ void Genome::readBed(Genome &other){
 	    map<uint_fast64_t, vector< list< uint_fast64_t > > >::iterator it;
 	    it = mappedPos.find(key);                                                                                                 
 	    if(it == mappedPos.end())
-		throw ProjectError("internal error: unkown SeqIntKey" + itoa(key) + " in genome " + name + "\n");
+		throw ProjectError("internal error: unknown SeqIntKey" + itoa(key) + " in genome " + name + "\n");
 	    it->second[other.getIdx()].push_back(mapped.getKey());
 	}
     }
@@ -328,7 +328,7 @@ string Genome::getSeqName(int seqID) const {
 
     map<int,string>::const_iterator it = seqIDs.find(seqID);                                                                                                 
     if(it == seqIDs.end())
-	throw ProjectError("internal error: unkown sequence ID seqID=" + itoa(seqID) + " in genome " + name + "\n");
+	throw ProjectError("internal error: unknown sequence ID seqID=" + itoa(seqID) + " in genome " + name + "\n");
     return it->second;
 
 }
@@ -433,7 +433,7 @@ vector< list< uint_fast64_t > > Genome::findMappedPos(int seqID, long int pos){
     map<uint_fast64_t, vector< list< uint_fast64_t > > >::iterator it;
     it = mappedPos.find(seqInt.getKey());                                                                                                 
     if(it == mappedPos.end())
-	throw ProjectError("internal error: unkown SeqIntKey" + itoa(seqInt.getKey()) + " in genome " + name + "\n");
+	throw ProjectError("internal error: unknown SeqIntKey" + itoa(seqInt.getKey()) + " in genome " + name + "\n");
     return it->second;
 }
 

@@ -118,7 +118,7 @@ struct HelpException {
  *      methods, where TYPE is one of Int, Double, Bool or String. 
  *
  *      The format of the properties file is line based. Each line contains
- *      the property name and the property value, seperated by whitespaces.
+ *      the property name and the property value, separated by whitespaces.
  *      Comments begin with a '#' and end an the end of line.
  *
  *      Example: Listing of a properties file

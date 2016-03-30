@@ -81,7 +81,7 @@ void display_help(void)
     cout << "      Secondary program functions:" << endl;
     cout << "\t--onlycompare\t\t\t-c\t\t\tis a flag." << endl;
     cout << "\t\t\t\t\t\t\t\tIf this flag is set, it disables the normal function of the program and" << endl;
-    cout << "\t\t\t\t\t\t\t\tactivates a compare and seperate mode to seperate equal transcripts from non equal ones." << endl;
+    cout << "\t\t\t\t\t\t\t\tactivates a compare and separate mode to separate equal transcripts from non equal ones." << endl;
     cout << endl;
     cout << "      This help:" << endl;
     cout << "\t--help \t\t\t\t-h\t\t\tprints the help documentation." << endl;

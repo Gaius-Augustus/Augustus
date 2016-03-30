@@ -647,7 +647,7 @@ void consensus::plot_histogram(){
     cout<<max_line_len<<'\t'<<max_freq<<endl;
     cout<< " The scale is "<< (float)max_line_len/max_freq <<" * = one occurence"<< endl;
     if(starting==0)
-      cout <<" and it starts from begining of sequence." <<endl;
+      cout <<" and it starts from beginning of sequence." <<endl;
     else
       cout <<" and it begins from position "<< starting <<"."<<endl;
     for(j=0;j<max_string_length;j++){      
