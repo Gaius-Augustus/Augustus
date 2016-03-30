@@ -10,6 +10,11 @@ struct Node
 	Position    Next;
 };
 
+int FatalError (char* ErrorMessage) 
+{
+	printf ("%s\n", ErrorMessage);
+	exit;
+}
 
 List MakeEmpty(List L) 
 {
@@ -27,11 +32,6 @@ List MakeEmpty(List L)
 	return L;
 }
 
-int FatalError (char* ErrorMessage) 
-{
-	printf ("%s\n", ErrorMessage);
-	exit;
-}
 
 /* Return "true" if L is empty */
 int IsEmpty(List L) 
