@@ -1,0 +1,75 @@
+# bam2hints(1)
+
+## NAME
+
+bam2hints - convert mRNA-to-genome alignments in BAM format into a hint file for AUGUSTUS
+
+## SYNOPSIS
+
+*bam2hints* [parameters] --in=example.bam --out=hints.gff
+
+## OPTIONS
+
+The input BAM file must be sorted by target (=genome) sequence names and within the sequences by begin coordinates.
+
+###  Parameters:
+
+*--priority=n*/*-p*::
+  priority of hint group (set to 4)
+
+*--maxgaplen=n*/*-g*::
+   gaps at most this length are simply closed (set to 14)
+
+*--minintronlen=n*/*-m*::
+   alignments with gaps shorter than this and longer than maxgaplen are discarded (set to 32)
+
+*--maxintronlen=n*/*-M*::
+   alignments with longer gaps are discarded (set to 350000)
+
+*--MinEndBlockLen=n*/*-b*::
+   minimum length of a 'dangling' exon (set to 8)
+
+*--maxQgaplen=n*/*-q*::
+   maximum length of gap in query (cDNA) sequence (set to 5)
+
+*--exonhints*/*-x*::
+   compute exonpart, exon and splice site hints in addition to intron hints (set to 0=Off). You should generate exonpart hints from RNA-Seq using wiggle (.wig) input to wig2hints.
+
+*--ep_cutoff=n*/*-e*::
+   this many bp are cut off of each exonpart hint at end of alignment (set to 10)
+
+*--source=s*/*-s*::
+   source identifier (set to 'E')
+
+*--intronsonly*/*-I*::
+   only retrieve intron hints (e.g. because the exon(part) hints are retrieved by converting to a wig track, set to 1=On). Deprecated as this is the default now.
+
+*--nomult*/*-n*::
+   do not summarize multiple identical intron hints to a single one (set to 0=Off)
+
+*--remove_redundant*/*-r*::
+   only keep the strongest hint for a region (set to 0=Off)
+
+*--maxcoverage=n*/*-C*::
+   maximal number of hints at a given position (0: filtering deactivated). A high value causes long running time of AUGUSTUS in regions with thousands of cDNA alignments. (set to 0)
+
+*--ssOn*/*-S*::
+   include splice site (dss, ass) hints in output (set to 0=Off)
+
+*--trunkSS*/*-T*::
+   include splice sites hints from the ends of a truncated alignment (contig too short, set to 0=Off)
+
+*--score=f*/*-s*::
+   fill this number in in the score column (set to 0)
+
+*--maxgenelen=n*/*-G*::
+   alignments of the same clone are considered to be of the same gene if not separeted by more than this (set to 400000). Alignments that span more than this are ignored, but better filter long introns through an alignment program.
+
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+
+## ADDITIONAL DOCUMENTATION
+
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.
+

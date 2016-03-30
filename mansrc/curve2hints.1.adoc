@@ -1,0 +1,47 @@
+# curve2hints(1)
+
+## NAME
+
+curve2hints - tool to make exon segmentation and grouping the exons together to form AUGUSTUS hints
+
+## SYNOPSIS
+
+*curve2hints* --in=file --outexons=out.gff --c=int --s=float
+
+## OPTIONS
+
+*--in=s*::
+   iput file is single file containing tracks in wig format
+
+*--outexons=s*::
+   file for the output segmentaion
+
+*--c*::
+   specify the threshold to distinguish between introns and exons in terms of coverage depths (default 4)
+
+*--s*::
+   specify the ratio *(1-lambda1)/(1-lambda2)* It should be >1 (default 1.12)
+
+*--z*::
+  specify the chunk size (default value 50000)
+
+*--r*::
+  To enable re-estimation of distribution from the output produced
+
+*--train_file*::
+  Specify the gff file to be used for training the distributions.It should contain the position of both introns and exons
+
+*--bed_file*::
+  Specify the output bedfile which contains the position of gene jumps (default: output.bed)
+
+*--augustus_hints*::
+  Specify the output augustus hint file(default: augustus_hints.gff)
+
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+
+## ADDITIONAL DOCUMENTATION
+
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.
+

@@ -1,0 +1,165 @@
+'\" t
+.\"     Title: filterbam
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: Asciidoctor 1.5.5.dev
+.\"      Date: 
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "FILTERBAM" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.LINKSTYLE blue R < >
+.SH "NAME"
+filterbam \- filter BAM file for use with AUGUSTUS tools
+.SH "SYNOPSIS"
+.sp
+\fBfilterBam\fP \-\-in in.bam \-\-out out.bam [options]
+.SH "DESCRIPTION"
+.sp
+The input file must be sorted lexicographically by \(aqqueryname\(aq, with e.g.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBsort \-k 1,1\fP [be aware: \(aqexport LC_ALL=C\(aq might be used  because sort ignores characters like \(aq:\(aq]
+Also, please bear in mind that this will require converting your BAM file into SAM.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fBsamtools\fP and \fBbamtools\fP provide facilities to do the sorting,
+but they are not guaranteed to work because of the problem mentioned above.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+In the case of \fBsamtools\fP, the command is: \(aqsamtools sort [\-n] file.bam\(aq.
+The option [\-n] should sort by query name, just as \(aqsort \-k 10,10\(aq would do in a PSL file.
+Without options, the sorting will be done by reference name and target coordinate, just as a  \(aqsort \-n \-k 16,16 | sort \-k 14,14\(aq would do with PSL.
+For more information check the man page included in samtools distribution.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+bamtools can also sort bam files: \fBbamtools sort \-queryname \-in file.bam\fP,
+but only provides the option to do it by queryname.
+.RE
+.sp
+If the option \(aqpaired\(aq is used, then alignment names must include suffixes /1,/2 or /f,/r.
+.SH "OPTIONS"
+.sp
+\fB\-\-best\fP
+.RS 4
+output all best matches that satisfy minId and minCover (default 0)
+.RE
+.sp
+\fB\-\-noIntrons\fP
+.RS 4
+do not allow longer gaps \-for RNA\-RNA alignments\- (default 0)
+.RE
+.sp
+\fB\-\-paired\fP
+.RS 4
+require that paired reads are on opposite strands of same target
+(default 0). NOTE: see prerequisite section above.
+.RE
+.sp
+\fB\-\-uniq\fP
+.RS 4
+take only best match, iff, second best is much worse  (default 0)
+.RE
+.sp
+\fB\-\-verbose\fP
+.RS 4
+output debugging info (default 0)
+.RE
+.sp
+\fB\-\-insertLimit n\fP
+.RS 4
+maximum assumed size of inserts (default 10)
+.RE
+.sp
+\fB\-\-maxIntronLen n\fP
+.RS 4
+maximal separation of paired reads (default 500000)
+.RE
+.sp
+\fB\-\-maxSortesTest n\fP
+.RS 4
+maximal sortedness (default 100000)
+.RE
+.sp
+\fB\-\-minCover n\fP
+.RS 4
+minimal percentage of coverage of the query read (default 80)
+.RE
+.sp
+\fB\-\-minId n\fP
+.RS 4
+minimal percentage of identity (default 92)
+.RE
+.sp
+\fB\-\-minIntronLen n\fP
+.RS 4
+minimal intron length  (default 35)
+.RE
+.sp
+\fB\-\-uniqThresh n\fP
+.RS 4
+threshold % for uniq, second best must be at most this fraction of best (default 0.96)
+.RE
+.sp
+\fB\-\-commonGeneFile s\fP
+.RS 4
+file name in which to write cases where one read maps several different genes
+.RE
+.sp
+\fB\-\-pairBedFile s\fP
+.RS 4
+file name of pairedness coverage: a BED format file in which for each position the number of
+filtered read pairs is reported that contain the position in
+or between the reads
+.RE
+.sp
+\fB\-\-pairwiseAlignments\fP
+.RS 4
+use in case alignments were done in pairwise fashion (default:  0)
+.RE
+.SH "AUTHORS"
+.sp
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+.SH "ADDITIONAL DOCUMENTATION"
+.sp
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.

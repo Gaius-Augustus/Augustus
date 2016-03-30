@@ -1,0 +1,47 @@
+# consensusFinder(1)
+
+## NAME
+
+consensusFinder - consensus finder
+
+## SYNOPSIS
+
+*consensusFinder* input_fasta_file [options]
+
+## OPTIONS
+
+*-l*::
+  pattern length
+
+*-p*::
+  p-value for finding the significant strings
+
+*-d*::
+  delta to find the relevant strings
+
+*-s*::
+  starting position
+
+*-e*::
+  ending position
+
+*-m*::
+  no. of mismatches to consider while finding neighbours
+
+*-c*::
+  string to consider for analysis
+
+*-n*::
+  specify the number of consensus patterns to store
+
+*-t*::
+  print the histogram
+
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+
+## ADDITIONAL DOCUMENTATION
+
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.
+

@@ -1,0 +1,28 @@
+# etraining(1)
+
+## NAME
+
+etraining - train AUGUSTUS models
+
+## SYNOPSIS
+
+*etraining* [parameters] --species=SPECIES trainfilename
+
+## OPTIONS
+
+'trainfilename' is the filename (including relative path) to the file in genbank format containing the training sequences. These can be multi-gene sequences.
+SPECIES is a name for your species.
+
+### Further parameters:
+
+*--/genbank/verbosity=n*::
+  Choose one of 0,1,2 or 3. The larger the verbosity, the more (error) messages you get.
+
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+
+## ADDITIONAL DOCUMENTATION
+
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.
+

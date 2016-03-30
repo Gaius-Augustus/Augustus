@@ -1,0 +1,29 @@
+# aln2wig(1)
+
+## NAME
+
+aln2wig - convert alignments to wig files
+
+## SYNOPSIS
+
+*aln2wig* [parameters] -f filename
+
+## OPTIONS
+
+*-f*::
+  Input filename (in psl or shrimp format)
+
+*-s*::
+  Use span notation
+
+*-t*::
+  Name of the track
+
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+
+## ADDITIONAL DOCUMENTATION
+
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.
+

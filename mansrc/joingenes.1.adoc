@@ -1,0 +1,83 @@
+# joingenes(1)
+
+## NAME
+
+joingenes - merge several gene sets into one
+
+## SYNOPSIS
+
+*joingenes* [parameters] --genesets=file1,file2,...	 --output=ofile
+
+## DESCRIPTION
+
+This program works in several steps:
+
+  1. divide the set of all transcripts into smaller sets, in which all transcripts are on the same sequence and are overlapping at least with one other transcript in this set (set is called "overlap")
+
+  2. delete all duplications of transcripts and save the variant with the highest "score"
+
+  3. if sequence ranges are set for some transcripts, the program detects, whether the distance to that range is dangerously close
+
+  4. join:
+    - if there is a transcript dangerously close to one/both end(s) of a sequence range, the program creates a copy without the corresponding terminal exon
+    - if there is a transcript with start or stop codon in a set and a second one without this codon and they are "joinable", than this step joins the corresponding terminal exons
+
+  	5. selection: selects the "best" gene structure out of all possible "maximum" gene structures
+    - "maximum" gene structure is a set of transcripts from an overlap so that there is no other transcript in the overlap, which can be added to the set without producing a "contradiction"
+    - a gene structure is "better" than another one, if it has the transcript with the highest "score", which is not present in the other gene structure.
+
+## OPTIONS
+
+### Mandatory parameters:
+
+*--genesets=file1,file2,...*/*-g file1,file2,...*::
+	where "file1,file2,...,filen" have to be data files with genesets in GTF format
+
+*--output=ofile*/*-o ofile*::
+	where "ofile" is the name for an output file (GTF)
+
+### Optional parameters:
+
+*--priorities=pr1,pr2,...*/*-p pr1,pr2,...*::
+		where "pr1,pr2,...,prn" have to be positiv integers (different from 0).
+		Have to be as many as filenames are added. Bigger numbers means a higher priority.
+		If no priorities are added, the program will set all priorties to 1.
+		This option is only useful if there is more than one geneset.
+		If there is a conflict between two transcripts, so that they can not be picked in the same genestructure, joingenes decides for the one with the highest priority.
+
+*--errordistance=x*/*-e x*::
+			where "x" is a non-negative integer. If a prediction is <=x bases next to a prediction range border, the program supposes, that there could be a mistake. Default is 1000.
+			To disable the function, set errordistance to a negative number (e.g. -1).
+
+*--genemodel=x*/*-m x*::
+			where "x" is a genemodel from the set {eukaryote, bacterium}. Default is eukaryotic.
+
+*--alternatives*/*-a*::
+			If this flag is set, the program joins different genes if the transcripts of the genes are alternative variants.
+
+*--suppress=pr1,pr2,..*/*-s pr1,pr2,...*::
+		where "pr1,pr2,...,prm" have to be positive integers (different from 0). Default is none.
+		If the core of a joined/non-joined transcript has one of these priorities it will not occur in the output file.
+
+*--stopincoding*/*-i*::
+		If this flag is set, the program joins the stop_codons to the CDS.
+
+*--nojoin*/*-j*::
+		If this flag is set, the program will not join/merge/shuffle; it will only decide between the unchanged input transcripts and output them.
+
+*--noselection*/*-l*::
+		If this flag is set, the program will NOT select at the end between "contradictory" transcripts. "contradictory" is self defined with respect to known biological terms.
+		The selection works with a self defined scoring function.
+
+*--onlycompare*/*-c*::
+		If this flag is set, it disables the normal function of the program and
+		activates a compare and separate mode to separate equal transcripts from non equal ones.
+
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+
+## ADDITIONAL DOCUMENTATION
+
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.
+

@@ -1,0 +1,199 @@
+'\" t
+.\"     Title: joingenes
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: Asciidoctor 1.5.5.dev
+.\"      Date: 
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "JOINGENES" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.LINKSTYLE blue R < >
+.SH "NAME"
+joingenes \- merge several gene sets into one
+.SH "SYNOPSIS"
+.sp
+\fBjoingenes\fP [parameters] \-\-genesets=file1,file2,...         \-\-output=ofile
+.SH "DESCRIPTION"
+.sp
+This program works in several steps:
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP " 1." 4.2
+.\}
+divide the set of all transcripts into smaller sets, in which all transcripts are on the same sequence and are overlapping at least with one other transcript in this set (set is called "overlap")
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP " 2." 4.2
+.\}
+delete all duplications of transcripts and save the variant with the highest "score"
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 3.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP " 3." 4.2
+.\}
+if sequence ranges are set for some transcripts, the program detects, whether the distance to that range is dangerously close
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 4.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP " 4." 4.2
+.\}
+join:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+if there is a transcript dangerously close to one/both end(s) of a sequence range, the program creates a copy without the corresponding terminal exon
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+if there is a transcript with start or stop codon in a set and a second one without this codon and they are "joinable", than this step joins the corresponding terminal exons
+.RE
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 5.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP " 5." 4.2
+.\}
+selection: selects the "best" gene structure out of all possible "maximum" gene structures
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+"maximum" gene structure is a set of transcripts from an overlap so that there is no other transcript in the overlap, which can be added to the set without producing a "contradiction"
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+a gene structure is "better" than another one, if it has the transcript with the highest "score", which is not present in the other gene structure.
+.RE
+.RE
+.SH "OPTIONS"
+.SS "Mandatory parameters:"
+.sp
+\fB\-\-genesets=file1,file2,...\fP/\fB\-g file1,file2,...\fP
+.RS 4
+where "file1,file2,...,filen" have to be data files with genesets in GTF format
+.RE
+.sp
+\fB\-\-output=ofile\fP/\fB\-o ofile\fP
+.RS 4
+where "ofile" is the name for an output file (GTF)
+.RE
+.SS "Optional parameters:"
+.sp
+\fB\-\-priorities=pr1,pr2,...\fP/\fB\-p pr1,pr2,...\fP
+.RS 4
+where "pr1,pr2,...,prn" have to be positiv integers (different from 0).
+Have to be as many as filenames are added. Bigger numbers means a higher priority.
+If no priorities are added, the program will set all priorties to 1.
+This option is only useful if there is more than one geneset.
+If there is a conflict between two transcripts, so that they can not be picked in the same genestructure, joingenes decides for the one with the highest priority.
+.RE
+.sp
+\fB\-\-errordistance=x\fP/\fB\-e x\fP
+.RS 4
+where "x" is a non\-negative integer. If a prediction is \(lAx bases next to a prediction range border, the program supposes, that there could be a mistake. Default is 1000.
+To disable the function, set errordistance to a negative number (e.g. \-1).
+.RE
+.sp
+\fB\-\-genemodel=x\fP/\fB\-m x\fP
+.RS 4
+where "x" is a genemodel from the set {eukaryote, bacterium}. Default is eukaryotic.
+.RE
+.sp
+\fB\-\-alternatives\fP/\fB\-a\fP
+.RS 4
+If this flag is set, the program joins different genes if the transcripts of the genes are alternative variants.
+.RE
+.sp
+\fB\-\-suppress=pr1,pr2,..\fP/\fB\-s pr1,pr2,...\fP
+.RS 4
+where "pr1,pr2,...,prm" have to be positive integers (different from 0). Default is none.
+If the core of a joined/non\-joined transcript has one of these priorities it will not occur in the output file.
+.RE
+.sp
+\fB\-\-stopincoding\fP/\fB\-i\fP
+.RS 4
+If this flag is set, the program joins the stop_codons to the CDS.
+.RE
+.sp
+\fB\-\-nojoin\fP/\fB\-j\fP
+.RS 4
+If this flag is set, the program will not join/merge/shuffle; it will only decide between the unchanged input transcripts and output them.
+.RE
+.sp
+\fB\-\-noselection\fP/\fB\-l\fP
+.RS 4
+If this flag is set, the program will NOT select at the end between "contradictory" transcripts. "contradictory" is self defined with respect to known biological terms.
+The selection works with a self defined scoring function.
+.RE
+.sp
+\fB\-\-onlycompare\fP/\fB\-c\fP
+.RS 4
+If this flag is set, it disables the normal function of the program and
+activates a compare and separate mode to separate equal transcripts from non equal ones.
+.RE
+.SH "AUTHORS"
+.sp
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+.SH "ADDITIONAL DOCUMENTATION"
+.sp
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.

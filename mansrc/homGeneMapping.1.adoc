@@ -1,0 +1,81 @@
+# homGeneMapping(1)
+
+## NAME
+
+homGeneMapping - create summary of gene homology
+
+## SYNOPSIS
+
+*homGeneMapping* [options] --gtfs=gffilenames.tbl --halfile=aln.hal
+
+## DESCRIPTION
+
+*homGeneMapping* takes a set of gene predictions of different genomes and a hal
+alignment of the genomes and prints a summary for each gene, e.g.
+
+  - how many of its exons/introns are in agreement with genes of other genomes
+  - how many of its exons/introns are supported by extrinsic evidence from any of the genomes
+  - a list of geneids of homologous genes
+
+## OPTIONS
+
+### Mandatory parameters
+
+*--halfile=aln.hal*::
+   input hal file
+
+*--gtfs=gtffilenames.tbl*::
+   a text file containing the locations of the input gene files
+   and optionally the hints files (both in GTF format).
+   The file is formatted as follows:
+
+      name_of_genome_1  path/to/genefile/of/genome_1  path/to/hintsfile/of/genome_1
+      name_of_genome_2  path/to/genefile/of/genome_2  path/to/hintsfile/of/genome_2
+      ...
+      name_of_genome_N  path/to/genefile/of/genome_N  path/to/hintsfile/of/genome_N
+
+### Additional options
+
+*--cpus=N*::
+  N is the number of CPUs to use (default: 1)
+
+*--noDupes*::
+  do not map between duplications in hal graph. (default: off)
+
+*--halLiftover_exec_dir=DIR*::
+  Directory that contains the executable halLiftover
+  If not specified it must be in $PATH environment variable.
+
+*--tmpdir=DIR*::
+  a temporary file directory that stores lifted over files. (default 'tmp/' in current directory)
+
+*--outdir=DIR*::
+  file direcory that stores output gene files. (default: current directory)
+
+*--printHomologs=FILE*::
+  prints disjunct sets of homologous transcripts to FILE, e.g.
+
+     # 0     dana
+     # 1     dere
+     # 2     dgri
+     # 3     dmel
+     # 4     dmoj
+     # 5     dper
+     (0, jg4139.t1) (0, jg4140.t1) (1, jg7797.t1) (2, jg3247.t1) (4, jg6720.t1) (5, jg313.t1)
+     (1, jg14269.t1) (3, jg89.t1) (5, jg290.t1)
+     ...
+     Two transcripts are in the same set, if all their exons/introns are homologs and their are
+     no additional exons/introns.
+     This option requires the Boost C++ Library
+
+## EXAMPLE
+
+homGeneMapping --noDupes --halLiftover_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal
+
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+
+## ADDITIONAL DOCUMENTATION
+
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.

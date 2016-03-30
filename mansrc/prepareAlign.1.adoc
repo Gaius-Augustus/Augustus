@@ -1,0 +1,31 @@
+# prepareAlign(1)
+
+## NAME
+
+prepareAlign - prepare an alignment for block profile creation by deleting gap-rich rows
+
+## SYNOPSIS
+
+*prepareAlign* < input.fa  > output.fa
+
+## DESCRIPTION
+   An input multiple alignment of proteins is read from standard input. prepareAlign removes rows from it
+   with the aim of producing fully conserved blocks in the remaining alignment which is then output to standard output.
+
+   When an alignment contains many sequences and too many gaps, e.g. a full PFAM alignment, trying to run msa2prfl.pl
+   results in the message "No blocks found in MSA". Then use "prepareAlign" first to eliminate sequences.
+
+## AUTHORS
+
+Oliver Keller
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,85 @@
+# augustus(1)
+
+## NAME
+
+augustus - a gene prediction tool
+
+## SYNOPSIS
+
+*augustus* [parameters] --species=SPECIES queryfilename
+
+## OPTIONS
+
+The mandatory option 'queryfilename' specifies the filename (including relative path) to the file containing the query sequence(s) in FASTA format.
+
+SPECIES is an identifier for the species. Use *--species=help* to see a list.
+
+### Further parameters:
+
+*--strand=both*, *--strand=forward* or *--strand=backward*::
+  define the strand to search on
+
+*--genemodel=genemodel*::
+  where genemodel is one of:
+    - partial      - allow prediction of incomplete genes at the sequence boundaries (default)
+    - intronless   - only predict single-exon genes like in prokaryotes and some eukaryotes
+    - complete     - only predict complete genes
+    - atleastone   - predict at least one complete gene
+    - exactlyone   - predict exactly one complete gene
+
+*--singlestrand=true*::
+  predict genes independently on each strand, allow overlapping genes on opposite strands.
+  This option is turned off by default.
+
+*--hintsfile=hintsfilenam*e::
+  When this option is used the prediction considering hints (extrinsic information) is turned on.
+  hintsfilename contains the hints in gff format.
+
+*--AUGUSTUS_CONFIG_PATH=path*::
+  path to config directory (if not specified as environment variable)
+
+*--alternatives-from-evidence=true/false*::
+  report alternative transcripts when they are suggested by hints
+
+*--alternatives-from-sampling=true/false*::
+  report alternative transcripts generated through probabilistic sampling
+
+*--maxtracks=n*::
+  For a description of these parameters see section 4 of README.TXT.
+
+*--proteinprofile=filename*::
+  When this option is used the prediction will consider the protein profile provided as parameter.
+  The protein profile extension is described in section 7 of README.TXT.
+
+*--progress=true*::
+  show a progressmeter
+
+*--gff3=on/off*::
+  output in gff3 format
+
+*--predictionStart=A*, *--predictionEnd=B*::
+  A and B define the range of the sequence for which predictions should be found.
+
+*--UTR=on/off*::
+  predict the untranslated regions in addition to the coding sequence. This currently works only for a subset of species.
+
+*--noInFrameStop=true/false*::
+  Do not report transcripts with in-frame stop codons. Otherwise, intron-spanning stop codons could occur. Default: false
+
+*--noprediction=true/false*::
+  If true and input is in genbank format, no prediction is made. Useful for getting the annotated protein sequences.
+
+*--uniqueGeneId=true/false*::
+  If true, output gene identifyers like this: seqname.gN
+
+*--paramlist*::
+  Show full list of supported parameters.
+
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+
+## ADDITIONAL DOCUMENTATION
+
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.
+

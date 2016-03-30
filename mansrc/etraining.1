@@ -1,0 +1,41 @@
+'\" t
+.\"     Title: etraining
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: Asciidoctor 1.5.5.dev
+.\"      Date: 
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "ETRAINING" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.LINKSTYLE blue R < >
+.SH "NAME"
+etraining \- train AUGUSTUS models
+.SH "SYNOPSIS"
+.sp
+\fBetraining\fP [parameters] \-\-species=SPECIES trainfilename
+.SH "OPTIONS"
+.sp
+\(aqtrainfilename\(aq is the filename (including relative path) to the file in genbank format containing the training sequences. These can be multi\-gene sequences.
+SPECIES is a name for your species.
+.SS "Further parameters:"
+.sp
+\fB\-\-/genbank/verbosity=n\fP
+.RS 4
+Choose one of 0,1,2 or 3. The larger the verbosity, the more (error) messages you get.
+.RE
+.SH "AUTHORS"
+.sp
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+.SH "ADDITIONAL DOCUMENTATION"
+.sp
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.

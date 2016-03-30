@@ -1,0 +1,151 @@
+'\" t
+.\"     Title: homgenemapping
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: Asciidoctor 1.5.5.dev
+.\"      Date: 
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "HOMGENEMAPPING" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.LINKSTYLE blue R < >
+.SH "NAME"
+homgenemapping \- create summary of gene homology
+.SH "SYNOPSIS"
+.sp
+\fBhomGeneMapping\fP [options] \-\-gtfs=gffilenames.tbl \-\-halfile=aln.hal
+.SH "DESCRIPTION"
+.sp
+\fBhomGeneMapping\fP takes a set of gene predictions of different genomes and a hal
+alignment of the genomes and prints a summary for each gene, e.g.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+how many of its exons/introns are in agreement with genes of other genomes
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+how many of its exons/introns are supported by extrinsic evidence from any of the genomes
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+a list of geneids of homologous genes
+.RE
+.SH "OPTIONS"
+.SS "Mandatory parameters"
+.sp
+\fB\-\-halfile=aln.hal\fP
+.RS 4
+input hal file
+.RE
+.sp
+\fB\-\-gtfs=gtffilenames.tbl\fP
+.RS 4
+a text file containing the locations of the input gene files
+and optionally the hints files (both in GTF format).
+The file is formatted as follows:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+name_of_genome_1  path/to/genefile/of/genome_1  path/to/hintsfile/of/genome_1
+name_of_genome_2  path/to/genefile/of/genome_2  path/to/hintsfile/of/genome_2
+\&...
+name_of_genome_N  path/to/genefile/of/genome_N  path/to/hintsfile/of/genome_N
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.SS "Additional options"
+.sp
+\fB\-\-cpus=N\fP
+.RS 4
+N is the number of CPUs to use (default: 1)
+.RE
+.sp
+\fB\-\-noDupes\fP
+.RS 4
+do not map between duplications in hal graph. (default: off)
+.RE
+.sp
+\fB\-\-halLiftover_exec_dir=DIR\fP
+.RS 4
+Directory that contains the executable halLiftover
+If not specified it must be in $PATH environment variable.
+.RE
+.sp
+\fB\-\-tmpdir=DIR\fP
+.RS 4
+a temporary file directory that stores lifted over files. (default \(aqtmp/\(aq in current directory)
+.RE
+.sp
+\fB\-\-outdir=DIR\fP
+.RS 4
+file direcory that stores output gene files. (default: current directory)
+.RE
+.sp
+\fB\-\-printHomologs=FILE\fP
+.RS 4
+prints disjunct sets of homologous transcripts to FILE, e.g.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+# 0     dana
+# 1     dere
+# 2     dgri
+# 3     dmel
+# 4     dmoj
+# 5     dper
+(0, jg4139.t1) (0, jg4140.t1) (1, jg7797.t1) (2, jg3247.t1) (4, jg6720.t1) (5, jg313.t1)
+(1, jg14269.t1) (3, jg89.t1) (5, jg290.t1)
+\&...
+Two transcripts are in the same set, if all their exons/introns are homologs and their are
+no additional exons/introns.
+This option requires the Boost C++ Library
+.fi
+.if n \{\
+.RE
+.\}
+.RE
+.SH "EXAMPLE"
+.sp
+homGeneMapping \-\-noDupes \-\-halLiftover_exec_dir=~/tools/progressiveCactus/submodules/hal/bin \-\-gtfs=gtffilenames.tbl \-\-halfile=msca.hal
+.SH "AUTHORS"
+.sp
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+.SH "ADDITIONAL DOCUMENTATION"
+.sp
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.

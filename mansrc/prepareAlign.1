@@ -1,0 +1,51 @@
+'\" t
+.\"     Title: preparealign
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: Asciidoctor 1.5.5.dev
+.\"      Date: 
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "PREPAREALIGN" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.LINKSTYLE blue R < >
+.SH "NAME"
+preparealign \- prepare an alignment for block profile creation by deleting gap\-rich rows
+.SH "SYNOPSIS"
+.sp
+\fBprepareAlign\fP < input.fa  > output.fa
+.SH "DESCRIPTION"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+An input multiple alignment of proteins is read from standard input. prepareAlign removes rows from it
+with the aim of producing fully conserved blocks in the remaining alignment which is then output to standard output.
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+When an alignment contains many sequences and too many gaps, e.g. a full PFAM alignment, trying to run msa2prfl.pl
+results in the message "No blocks found in MSA". Then use "prepareAlign" first to eliminate sequences.
+.fi
+.if n \{\
+.RE
+.\}
+.SH "AUTHORS"
+.sp
+Oliver Keller

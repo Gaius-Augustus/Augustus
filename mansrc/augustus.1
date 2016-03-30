@@ -1,0 +1,180 @@
+'\" t
+.\"     Title: augustus
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: Asciidoctor 1.5.5.dev
+.\"      Date: 
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "AUGUSTUS" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.LINKSTYLE blue R < >
+.SH "NAME"
+augustus \- a gene prediction tool
+.SH "SYNOPSIS"
+.sp
+\fBaugustus\fP [parameters] \-\-species=SPECIES queryfilename
+.SH "OPTIONS"
+.sp
+The mandatory option \(aqqueryfilename\(aq specifies the filename (including relative path) to the file containing the query sequence(s) in FASTA format.
+.sp
+SPECIES is an identifier for the species. Use \fB\-\-species=help\fP to see a list.
+.SS "Further parameters:"
+.sp
+\fB\-\-strand=both\fP, \fB\-\-strand=forward\fP or \fB\-\-strand=backward\fP
+.RS 4
+define the strand to search on
+.RE
+.sp
+\fB\-\-genemodel=genemodel\fP
+.RS 4
+where genemodel is one of:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+partial      \- allow prediction of incomplete genes at the sequence boundaries (default)
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+intronless   \- only predict single\-exon genes like in prokaryotes and some eukaryotes
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+complete     \- only predict complete genes
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+atleastone   \- predict at least one complete gene
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+exactlyone   \- predict exactly one complete gene
+.RE
+.RE
+.sp
+\fB\-\-singlestrand=true\fP
+.RS 4
+predict genes independently on each strand, allow overlapping genes on opposite strands.
+This option is turned off by default.
+.RE
+.sp
+*\-\-hintsfile=hintsfilenam*e
+.RS 4
+When this option is used the prediction considering hints (extrinsic information) is turned on.
+hintsfilename contains the hints in gff format.
+.RE
+.sp
+\fB\-\-AUGUSTUS_CONFIG_PATH=path\fP
+.RS 4
+path to config directory (if not specified as environment variable)
+.RE
+.sp
+\fB\-\-alternatives\-from\-evidence=true/false\fP
+.RS 4
+report alternative transcripts when they are suggested by hints
+.RE
+.sp
+\fB\-\-alternatives\-from\-sampling=true/false\fP
+.RS 4
+report alternative transcripts generated through probabilistic sampling
+.RE
+.sp
+\fB\-\-maxtracks=n\fP
+.RS 4
+For a description of these parameters see section 4 of README.TXT.
+.RE
+.sp
+\fB\-\-proteinprofile=filename\fP
+.RS 4
+When this option is used the prediction will consider the protein profile provided as parameter.
+The protein profile extension is described in section 7 of README.TXT.
+.RE
+.sp
+\fB\-\-progress=true\fP
+.RS 4
+show a progressmeter
+.RE
+.sp
+\fB\-\-gff3=on/off\fP
+.RS 4
+output in gff3 format
+.RE
+.sp
+\fB\-\-predictionStart=A\fP, \fB\-\-predictionEnd=B\fP
+.RS 4
+A and B define the range of the sequence for which predictions should be found.
+.RE
+.sp
+\fB\-\-UTR=on/off\fP
+.RS 4
+predict the untranslated regions in addition to the coding sequence. This currently works only for a subset of species.
+.RE
+.sp
+\fB\-\-noInFrameStop=true/false\fP
+.RS 4
+Do not report transcripts with in\-frame stop codons. Otherwise, intron\-spanning stop codons could occur. Default: false
+.RE
+.sp
+\fB\-\-noprediction=true/false\fP
+.RS 4
+If true and input is in genbank format, no prediction is made. Useful for getting the annotated protein sequences.
+.RE
+.sp
+\fB\-\-uniqueGeneId=true/false\fP
+.RS 4
+If true, output gene identifyers like this: seqname.gN
+.RE
+.sp
+\fB\-\-paramlist\fP
+.RS 4
+Show full list of supported parameters.
+.RE
+.SH "AUTHORS"
+.sp
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+.SH "ADDITIONAL DOCUMENTATION"
+.sp
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.

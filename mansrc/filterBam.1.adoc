@@ -1,0 +1,87 @@
+# filterBam(1)
+
+## NAME
+
+filterBam - filter BAM file for use with AUGUSTUS tools
+
+## SYNOPSIS
+
+*filterBam* --in in.bam --out out.bam [options]
+
+## DESCRIPTION
+
+The input file must be sorted lexicographically by 'queryname', with e.g.
+
+  - *sort -k 1,1* [be aware: 'export LC_ALL=C' might be used  because sort ignores characters like ':']
+      Also, please bear in mind that this will require converting your BAM file into SAM.
+
+  - *samtools* and *bamtools* provide facilities to do the sorting,
+      but they are not guaranteed to work because of the problem mentioned above.
+
+  - In the case of *samtools*, the command is: 'samtools sort [-n] file.bam'.
+    The option [-n] should sort by query name, just as 'sort -k 10,10' would do in a PSL file.
+    Without options, the sorting will be done by reference name and target coordinate, just as a  'sort -n -k 16,16 | sort -k 14,14' would do with PSL.
+    For more information check the man page included in samtools distribution.
+
+  - bamtools can also sort bam files: *bamtools sort -queryname -in file.bam*,
+    but only provides the option to do it by queryname.
+
+If the option 'paired' is used, then alignment names must include suffixes /1,/2 or /f,/r.
+
+## OPTIONS
+  
+*--best*::
+   output all best matches that satisfy minId and minCover (default 0)
+
+*--noIntrons*::
+   do not allow longer gaps -for RNA-RNA alignments- (default 0)
+
+*--paired*::
+   require that paired reads are on opposite strands of same target
+   (default 0). NOTE: see prerequisite section above.
+
+*--uniq*::
+   take only best match, iff, second best is much worse  (default 0)
+
+*--verbose*::
+   output debugging info (default 0)
+
+*--insertLimit n*::
+   maximum assumed size of inserts (default 10)
+
+*--maxIntronLen n*::
+   maximal separation of paired reads (default 500000)
+
+*--maxSortesTest n*::
+   maximal sortedness (default 100000)
+
+*--minCover n*::
+   minimal percentage of coverage of the query read (default 80)
+
+*--minId n*::
+   minimal percentage of identity (default 92)
+
+*--minIntronLen n*::
+   minimal intron length  (default 35)
+
+*--uniqThresh n*::
+   threshold % for uniq, second best must be at most this fraction of best (default 0.96)
+
+*--commonGeneFile s*::
+    file name in which to write cases where one read maps several different genes
+
+*--pairBedFile s*::
+    file name of pairedness coverage: a BED format file in which for each position the number of
+    filtered read pairs is reported that contain the position in
+    or between the reads
+
+*--pairwiseAlignments*::
+    use in case alignments were done in pairwise fashion (default:  0)
+
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+
+## ADDITIONAL DOCUMENTATION
+
+An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.

@@ -1,0 +1,2 @@
+# requires asciidoctor version 1.5.3 or higher
+asciidoctor -a docdate='' -b manpage *adoc
