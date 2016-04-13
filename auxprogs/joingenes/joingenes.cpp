@@ -306,7 +306,7 @@ int main(int argc, char* argv[])
 	    it_p++;
 	}
 
-	for (auto pointer = (*properties.transcriptMap).begin(); pointer != (*properties.transcriptMap).end(); pointer++){
+	for (auto pointer = (*properties.transcriptMap).begin(); pointer != (*properties.transcriptMap).end(); ){
 	    bool hasCDS = false;
 	    for (list<Exon>::iterator it = pointer->second->exon_list.begin(); it != pointer->second->exon_list.end(); it++){
 		if ((*it).feature == "CDS"){
@@ -315,8 +315,10 @@ int main(int argc, char* argv[])
 		}
 	    }
 	    if (!hasCDS){
+		Transcript* tx=pointer->second;
 		cerr << (*properties.transcriptMap)[pointer->second->t_id]->originalId << " from file " << (*properties.transcriptMap)[pointer->second->t_id]->inputFile << " has no CDS and will be deleted." << endl;
-		deleteTx(pointer->second, properties);
+		pointer++;
+		deleteTx(tx, properties);
 		continue;
 	    }
 	    if ((*(pointer->second)).exon_list.size() == 0){
@@ -324,11 +326,11 @@ int main(int argc, char* argv[])
 	    }else{
 		(*(pointer->second)).initiate(properties);
 	    }
+	    pointer++;
 	}
     }else{
         display_error("Number of input files and priorities is not equal.");
     }
-
     pair<string,string> stopVariants;		// <stop_codon is in CDS, stop_codon is not in CDS>
 
     for (auto pointer = (*properties.transcriptMap).begin(); pointer != (*properties.transcriptMap).end(); pointer++){

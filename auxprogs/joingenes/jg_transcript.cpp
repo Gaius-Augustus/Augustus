@@ -155,7 +155,7 @@ void compareAndSplit(list<Transcript*> &overlap, Properties &properties){
     saveOverlap(unequal1, filenameUne1, properties);
     saveOverlap(unequal2, filenameUne2, properties);
 
-    saveNew(alternatives1, "cLizzy1.gtf", properties);
+    saveNew(alternatives1, "cExtra1.gtf", properties);
 }
 
 double simpleProkScore(Transcript const* tx){
