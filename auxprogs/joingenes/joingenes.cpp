@@ -389,7 +389,7 @@ if (intronLength == 89114){cout << pointer->first << " " << intronLength << endl
 	outfile.open(filenameUne2, ios::out);
 	outfile.close();
 
-	outfile.open("cLizzy1.gtf", ios::out);
+	outfile.open("cExtra1.gtf", ios::out);
 	outfile.close();
     }
 
