@@ -25,7 +25,7 @@ void divideInOverlapsAndConquer(list<Transcript*> &transcript_list, Properties &
 
   int max_base = max(transcript_list.front()->tis,transcript_list.front()->tes);
   for (list<Transcript*>::iterator it = transcript_list.begin(); it != transcript_list.end(); it++){
-    if ( min((*it)->tis,(*it)->tes) < max_base || ( min((*it)->tis,(*it)->tes) < max_base + 10000 && (((*it)->strand=='+' && !(*it)->tl_complete.first) || ((*it)->strand=='-' && !(*it)->tl_complete.second) ) && overlap.size() < 300 ) ){
+    if ( min((*it)->tis,(*it)->tes) < max_base || ( min((*it)->tis,(*it)->tes) < max_base + 5000 && (((*it)->strand=='+' && !(*it)->tl_complete.first) || ((*it)->strand=='-' && !(*it)->tl_complete.second) ) && overlap.size() < 300 ) ){
       overlap.push_back(*it);
       if (max_base < max((*it)->tis,(*it)->tes)){
 	max_base = max((*it)->tis,(*it)->tes);
@@ -874,12 +874,13 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
 	//    		txNew->exon_list.front().score = (*it).score;
 	//		txNew->exon_list.front().rangeToBoundary = (*it).rangeToBoundary;
 	if (strand == '+'){txNew->exon_list.front().frame = (*it).frame;}
-	txNew->exon_list.merge(temp_exon_list);
 	break;
       }
       temp_exon_list.push_back(*it);
       if ((*it).feature == "CDS"){nrOfJoinedCDS++;}
     }
+    txNew->exon_list.merge(temp_exon_list);
+
     txNew->updateExonSpecificValues(t2, fittingCase);
     break;
   case 4:
@@ -898,13 +899,14 @@ void joining(Transcript* t2, char strand, Transcript* txNew, int fittingCase, Pr
       txNew->joinpartner.second = t2->originalId;
     }
     for (list<Exon>::iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
-      if ((!((*it).feature != "CDS" && firstPosfeature == "CDS") && firstPositionInOriginal < ((*it).to + (int) properties.minimumIntronLength)) || ( (*it).feature != "CDS" && firstPosfeature == "CDS" && firstPositionInOriginal < ((*it).to + 1) )){
-	txNew->exon_list.merge(temp_exon_list);
+      if ((!((*it).feature != "CDS" && firstPosfeature == "CDS") && firstPositionInOriginal < ((*it).to + (int) properties.minimumIntronLength)) || ( (*it).feature != "CDS" && firstPosfeature == "CDS" && firstPositionInOriginal < ((*it).to + 1) ) ){
 	break;
       }
       temp_exon_list.push_back(*it);
       if ((*it).feature == "CDS"){nrOfJoinedCDS++;}
     }
+    txNew->exon_list.merge(temp_exon_list);
+
     txNew->updateExonSpecificValues(t2, fittingCase);
     break;
   default:
@@ -1649,11 +1651,12 @@ bool overlappingUtrOnly(Transcript* t1, Transcript* t2){
 int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &properties){
   // return 0 if t1 and t2 are not combinable (joinable), otherwise return the joining case
   // if not overlapping, they are not combinable
-  if (!overlapping(t1, t2)){ return 0; }
-
+  if ( !overlapping(t1, t2) ){
+    if ( ( (*t1).strand=='+' && frontSide && !(*t2).tl_complete.second && (*t1).tis-(*t2).tes<=5000 ) || ( (*t1).strand=='-' && !frontSide && !(*t2).tl_complete.second && (*t2).tes-(*t1).tis<=5000 ) || ( (*t1).strand=='-' && frontSide && !(*t2).tl_complete.first && (*t1).tes-(*t2).tis<=5000 ) || ( (*t1).strand=='+' && !frontSide && !(*t2).tl_complete.first && (*t2).tis-(*t1).tes<=5000 ) ){  }else{ return 0; }
+  }
   // backSide ("+" && "3'" and "-" && "5'")
   if (!frontSide){
-    if ( ( (*t1).tes < (*t2).tis && (*t1).strand == '+' ) || ( (*t1).tes > (*t2).tis && (*t1).strand == '-' ) ){ return 0; }
+    if ( ( (*t1).tes < (*t2).tis && (*t1).strand == '+' ) || ( (*t1).tes > (*t2).tis && (*t1).strand == '-' ) ){ return 0; }    // maybe better more restrictive: tis<tis OR tis>tis, DEPENDS
     // for every exon in t2
     for (list<Exon>::const_iterator it = t2->exon_list.begin(); it != t2->exon_list.end(); it++){
       if ((*it).feature != "CDS"){continue;}
@@ -1683,7 +1686,7 @@ int isCombinable(Transcript* t1, Transcript* t2, bool frontSide, Properties &pro
       }
     }
   }else{		// frontSide
-    if ( ((*t1).tis > (*t2).tes && (*t1).strand == '+') || ((*t1).tis < (*t2).tes && (*t1).strand == '-') ){ return 0; }
+    if ( ((*t1).tis > (*t2).tes && (*t1).strand == '+') || ((*t1).tis < (*t2).tes && (*t1).strand == '-') ){ return 0; }    // maybe better more restrictive: tis<tis OR tis>tis, DEPENDS
     for (list<Exon>::reverse_iterator it = t2->exon_list.rbegin(); it != t2->exon_list.rend(); it++){
       if ((*it).feature != "CDS"){continue;}
       // return 3: if t1.front() ends in an exon of t2 such that they are combinable; return 4 if t1.front() does not end ...
