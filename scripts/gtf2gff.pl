@@ -15,6 +15,7 @@ my $gff3 = 0;
 my $printIntron = 0;
 my $outfile;
 my $trcp_pattern = '\.t\d+';
+my $includeStopInCDS = 0;
 
 GetOptions(
     'out=s'=>\$outfile,
@@ -24,6 +25,7 @@ GetOptions(
     'printUTR!'=>\$printUTR,
     'printIntron!'=>\$printIntron,
     'gff3!'=>\$gff3,
+    'includeStopInCDS!'=>\$includeStopInCDS,
     'trcp_pattern=s'=>\$trcp_pattern);
 
 exec("perldoc $0") if ($help || !defined($outfile));
@@ -56,7 +58,7 @@ close OUT;
 
 sub parseAndStoreGTF{
     my %seen = ();
-    my ($txid, $geneid, $chr, $start, $end, $feature, $strand, $source);
+    my ($txid, $geneid, $chr, $start, $end, $feature, $strand, $source, $stop_codon);
     foreach my $line (<STDIN>){
 	my @f = split /\t/, $line;
 	next if (@f<8);
@@ -99,6 +101,8 @@ sub parseAndStoreGTF{
 		die ("Neither GTF nor GFF format in the following line:\n$line\ngene_id not found.\n");
 	    }
 	}
+	$txs{$txid} = {"strand"=>$strand, "chr"=>$chr, "source"=>$source, "CDS"=>[], "UTR"=>[], "exon"=>[], "intron"=>[], "rest"=>[]} if (!exists($txs{$txid}));
+
 	if (!$seen{$txid}){
 	    push @txorder, $txid; # remember the input order for transcripts for the output
 	    $seen{$txid} = 1;
@@ -127,6 +131,9 @@ sub parseAndStoreGTF{
 	} else {
 	    push @{$txs{$txid}{"rest"}}, \@f;
 	}
+	if ($feature eq "stop_codon"){
+	    $txs{$txid}{"stop_codon"} = $start
+	}
     }
 }
 
@@ -134,6 +141,19 @@ sub parseAndStoreGTF{
 sub convert{
     my @f;
     foreach my $txid (keys %txs){
+	
+	# optionally, include stop codon in CDS
+	if($includeStopInCDS){
+	    my @cdslines = sort {$a->[3] <=> $b->[3] || $a->[4] <=> $b->[4]} @{$txs{$txid}{"CDS"}};
+	    if( $txs{$txid}{"strand"} eq '-' && $txs{$txid}{"stop_codon"}+3 == $txs{$txid}{"codingstart"}){
+		$cdslines[0]->[3]-=3;
+	    }
+	    if( $txs{$txid}{"strand"} eq '+' && $txs{$txid}{"stop_codon"} == $txs{$txid}{"codingend"}+1){
+		$cdslines[$#cdslines]->[4]+=3;
+	    }
+	    # TODO: if stop_codon is a separate CDS exon, then insert new CDS exon
+	}
+	
 	# remember whether exons were not in the input file
 	my $exonArrayWasEmpty;
 	if(@{$txs{$txid}{"exon"}} == 0){
@@ -290,7 +310,6 @@ sub printConvertedGTF {
 	}
     }
 }
-
 
 __END__
 
