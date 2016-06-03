@@ -33,6 +33,7 @@ OPTIONS
     --keepAncestors                     export ancestral sequences (default: off)
     --refSequence S                     S is the name of the reference sequence within the reference genome
                                         (default: all sequences in the reference genome)
+    --outdir D                          D is the directory to which the output MAF files are written (default: current directory)
     --chunksize N                       size of the aligment chunk. N is the number of bases in the reference
                                         genome that are covered by the alignment chunks (default: 2500000)
     --overlap N                         overlap between to consecutive alignment chunks. N is the nunber of overlapping
@@ -64,6 +65,7 @@ my $hal_exec_dir;
 my $chunksize = 2500000;
 my $overlap = 500000;
 my $padding = 10000; 
+my $outdir;
 my $min_intergenic = 2000; # when a list of genic intervals is given,
                            # all intervals that are within this distance are combined to a single interval
 my $cpus = 1;
@@ -78,6 +80,7 @@ GetOptions('halfile:s'=>\$halfile,
 	   'cpus:i' =>\$cpus,
 	   'no_split_list:s' =>\$no_split_list,
 	   'hal_exec_dir:s' =>\$hal_exec_dir,
+	   'outdir:s'  =>\$outdir,
            'help!'=>\$help);
 
 if ($help){
@@ -104,6 +107,18 @@ if(!defined($keepDupes)){
 }
 if(!defined($keepAncestors)){
     $h2m_param.=" --noAncestors";
+}
+
+if(defined($outdir)){
+    if($outdir =~/[^\/]$/){
+	$outdir .= '/';
+    }
+    unless (-e $outdir) {
+	mkdir $outdir;
+    }
+}
+else{
+    $outdir = "";
 }
 
 # check whether this perl module for paralell execution is installed
@@ -293,7 +308,7 @@ if($cpus > 1){
 	my $pid = $pm->start and next;
 	my ($seq, $start, $end) = ($_->[0], $_->[1], $_->[2]);
 	my $chunksize = $end - $start + 1;
-	my $cmd = "$hal2maf --refGenome $refGenome $h2m_param --refSequence $seq --start $start --length $chunksize $halfile $seq.$start-$end.maf";
+	my $cmd = "$hal2maf --refGenome $refGenome $h2m_param --refSequence $seq --start $start --length $chunksize $halfile $outdir$seq.$start-$end.maf";
 	print "$cmd\n";
 	qx($cmd);
 	my $r_c = $?; # return code
@@ -309,7 +324,7 @@ else{ # export alignment chunks sequentially to maf format
     foreach(@aln_chunks){
 	my ($seq, $start, $end) = ($_->[0], $_->[1], $_->[2]);
 	my $chunksize = $end - $start + 1;
-	my $cmd = "$hal2maf --refGenome $refGenome $h2m_param --refSequence $seq --start $start --length $chunksize $halfile $seq.$start-$end.maf";
+	my $cmd = "$hal2maf --refGenome $refGenome $h2m_param --refSequence $seq --start $start --length $chunksize $halfile $outdir$seq.$start-$end.maf";
 	print "$cmd\n";
 	qx($cmd);
 	my $r_c = $?;
