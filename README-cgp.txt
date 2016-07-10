@@ -48,7 +48,7 @@ The following programs need be installed in cgp mode:
 
 a) install all dependencies
 
-   GSL:      download source code from http://www.gnu.org/software/gsl/ and follow the installation instructions
+   GSL:      use package manager or install from source from http://www.gnu.org/software/gsl/
    Boost:    install via package manager, on UBUNTU/Debian linux:
              > sudo apt-get install libboost-all-dev
    g++       install via package manager:
