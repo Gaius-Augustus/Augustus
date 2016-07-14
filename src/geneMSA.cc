@@ -40,13 +40,13 @@ vector<ofstream*> GeneMSA::omega_outfiles;
 unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>> GeneMSA::topologies;
 map<vector<string>, pair<vector<double>, int> > GeneMSA::computedCumValues;
 
+		
 
 /*
  * constructor of GeneMSA
  */
 GeneMSA::GeneMSA(RandSeqAccess *rsa, Alignment *a) {
     int maxDNAPieceSize = Properties::getIntProperty( "maxDNAPieceSize" );
-
     this->rsa = rsa;
     alignment = a;
     if (!alignment)
@@ -56,6 +56,7 @@ GeneMSA::GeneMSA(RandSeqAccess *rsa, Alignment *a) {
 			   + ") is not matching the one in the tree (" + itoa(rsa->getNumSpecies()) + ").");
     ltree = NULL; // locus/gene tree, may be different from species tree
     exoncands.resize(alignment->numRows(), NULL);
+
     /** construct the gene ranges
      * now: simple copy. TODO: extend region when apparently part of the alignment is missing
      * human   ***********---*******************
@@ -560,17 +561,29 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
 		else
 		    cout << ";VarOmega=" << oe.getVarOmega();
 	    }
-	    if (oe.getLeftOmega() >= 0.0){
+	    if (oe.getLeftExtOmega() >= 0.0){
 	      if (GBrowseStyle)
-		cout << "|" << oe.getLeftOmega();
+		cout << "|" << oe.getLeftExtOmega();
 	      else
-		cout << ";leftBoundaryOmega=" << oe.getLeftOmega();
+		cout << ";leftBoundaryExtOmega=" << oe.getLeftExtOmega();
             }
-	    if (oe.getRightOmega() >= 0.0){
+	    if (oe.getRightExtOmega() >= 0.0){
               if (GBrowseStyle)
-                cout << "|" << oe.getRightOmega();
+                cout << "|" << oe.getRightExtOmega();
               else
-                cout << ";rightBoundaryOmega=" << oe.getRightOmega();
+                cout << ";rightBoundaryExtOmega=" << oe.getRightExtOmega();
+            }
+	    if (oe.getLeftIntOmega() >= 0.0){
+              if (GBrowseStyle)
+                cout << "|" << oe.getLeftIntOmega();
+              else
+                cout << ";leftBoundaryIntOmega=" << oe.getLeftIntOmega();
+            }
+            if (oe.getRightIntOmega() >= 0.0){
+              if (GBrowseStyle)
+                cout << "|" << oe.getRightIntOmega();
+              else
+                cout << ";rightBoundaryIntOmega=" << oe.getRightIntOmega();
             }
 	    if (oe.getSubst() >= 0){ // number of substitutions
 		if (GBrowseStyle)
@@ -950,8 +963,20 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 		froms[s] = alignment->rows[s]->frags.begin();
         
 	cumOmega.clear();
+	codonOmega.clear();
+
 	map<int, posElements> aliPos;  // contains all positions where either an orthoExon or a bitvector starts or ends
-	map<unsigned, vector<int> > alignedCodons;
+	map<unsigned, vector<int> > alignedCodons; 
+	/*
+	 * Store for each aligned codon the triplet of alignment columns encoded in a single long integer
+	 * key = aliPosOf1stBase * 2^8 + gapsTo2ndBase * 2^4 + gapsTo3rdBase
+	 * This assumes even on a rare 32 bit machine only that the alignment is shorter than 16,777,216,
+	 * and that gaps within a codon are at most 15bp. Where this is violated, wrong codon alignments
+	 * may happen.
+	 * Values of alignedCodons are pairs of 1) species index s and 2) the chromosomal position of the
+	 * first codon base.
+	 */
+
 	alignedCodons.insert(pair<unsigned, vector<int> >(0,vector<int>(numSpecies(),-1))); // guaratee that codon alignment starts before first OrthoExon
 	vector<vector<int> > posStoredCodons(numSpecies(),vector<int>(3,0)); // stores the position of the last codon aligned in getCodonAlignment() for each species and reading frame
     
@@ -976,10 +1001,19 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	  int windowEnd = min(alignment->aliLen - oe->getAliEnd(), Constant::oeExtensionWidth);
 	  map<int, posElements>::iterator start = aliPos.find(oe->getAliStart());
 	  map<int, posElements>::iterator end = aliPos.find(oe->getAliEnd());
+	  // add  two windows that extend the OE at both bounadries
 	  map<int, posElements>::iterator leftBoundaryWindowStart = aliPos.find(oe->getAliStart() - windowStart);
 	  map<int, posElements>::iterator leftBoundaryWindowEnd = aliPos.find(oe->getAliStart() - 1);
 	  map<int, posElements>::iterator rightBoundaryWindowStart = aliPos.find(oe->getAliEnd() + 1);
 	  map<int, posElements>::iterator rightBoundaryWindowEnd = aliPos.find(oe->getAliEnd() + windowEnd);
+	  // add two windows inside OE at both boundaries
+	  map<int, posElements>::iterator leftBoundaryWindowStartInside = start;
+          map<int, posElements>::iterator leftBoundaryWindowEndInside = aliPos.find(oe->getAliStart() + min(oe->getAliLen(), Constant::oeExtensionWidth));
+          map<int, posElements>::iterator rightBoundaryWindowStartInside = aliPos.find(oe->getAliEnd() - min(oe->getAliLen(), Constant::oeExtensionWidth));
+          map<int, posElements>::iterator rightBoundaryWindowEndInside = end;
+
+
+	  // order is important! iterative start and end positions are assumed
 	  list<pair<map<int, posElements>::iterator, int> > tlist; 
 	  tlist.push_back(make_pair(start, oe->getAliStart()));
 	  tlist.push_back(make_pair(end, oe->getAliEnd()));
@@ -987,6 +1021,11 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	  tlist.push_back(make_pair(leftBoundaryWindowEnd, oe->getAliStart() - 1));
           tlist.push_back(make_pair(rightBoundaryWindowStart, oe->getAliEnd() + 1));
           tlist.push_back(make_pair(rightBoundaryWindowEnd, oe->getAliEnd() + windowEnd));
+	  tlist.push_back(make_pair(leftBoundaryWindowStartInside, oe->getAliStart()));
+	  tlist.push_back(make_pair(leftBoundaryWindowEndInside, oe->getAliStart() + min(oe->getAliLen(), Constant::oeExtensionWidth)));
+	  tlist.push_back(make_pair(rightBoundaryWindowStartInside, oe->getAliEnd() - min(oe->getAliLen(), Constant::oeExtensionWidth)));
+	  tlist.push_back(make_pair(rightBoundaryWindowEndInside, oe->getAliEnd()));
+
 	  for (list<pair<map<int, posElements>::iterator, int> >::iterator lit = tlist.begin(); lit != tlist.end(); ++lit){
 	    pair<map<int, posElements>::iterator, int> aliPosIt = *lit;
 
@@ -1071,11 +1110,11 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	  cout<<" strand in current gene range!"<<endl;
 	  continue;
 	}
-
+       
 	// walk through codon alignment left to right
 	for(map<unsigned, vector<int> >::iterator codonIt = alignedCodons.begin(); codonIt != alignedCodons.end(); codonIt++){
-	  
-	  /*cout<<"++++codon: "<<(codonIt->first >> 8)<<endl<<"chrom Pos / RFC : "<<endl;
+	  /*
+	  cout<<"++++codon: "<<(codonIt->first >> 8)<<endl<<"chrom Pos / RFC : "<<endl;
 	    for(vector<int>::iterator cit=codonIt->second.begin(); cit!=codonIt->second.end(); cit++){
 	      cout<<*cit<<" / "<<(*cit % 3)<<endl;
 	    }
@@ -1212,7 +1251,7 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	    }
 	    aliPosIt++;
 	  }
-
+          
 	  // compute omega for current codon alignment
 	  // generate array of strings representing one codon alignment
 	  vector<string> codonStrings(numSpecies(),"");
@@ -1265,6 +1304,10 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 		int subs = 0; // store number of substitutions
 		vector<double> loglik;
 		vector<string> cs = pruneToBV(&codonStrings, bvit->first);
+		// scipt the next step if cs only consists of "---" entries
+		if(cs[0] == "---" && adjacent_find(cs.begin(), cs.end(), not_equal_to<string>()) == cs.end())
+		  continue;
+		
 		map<vector<string>, pair<vector<double>, int> >::iterator oit = computedCumValues.find(cs);
 		if(oit==computedCumValues.end()){
 		  if(Constant::computeNumSubs)
@@ -1277,7 +1320,30 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 		  loglik = oit->second.first;
 		  subs = oit->second.second;
 		}
-	      
+		// calculate columnwise omega and store in appropriate data structure
+		//cout << "calculate omega for codon " << (codonIt->first >> 8) << " ...";
+		vector<int> pruned_rfc = pruneToBV(&rfc, bvit->first);
+		//cout << "current (reduced) RFC " << printRFC(pruned_rfc) << endl; 
+		map<bit_vector, map<vector<int>, vector<double> > >::iterator omegaIt = codonOmega.find(bvit->first);
+	        if(omegaIt==codonOmega.end()){
+		  map<vector<int>, vector<double> > currRFC;
+		  vector<double> o(alignment->aliLen,-1);
+		  o[codonIt->first >> 8] = omegaForCodonTuple(&loglik);
+		  currRFC.insert(pair<vector<int>, vector<double> >(pruned_rfc, o));
+		  codonOmega.insert(pair<bit_vector, map<vector<int>, vector<double> > >(bvit->first, currRFC));
+		}else{
+		  map<vector<int>, vector<double> >::iterator rfcIt = omegaIt->second.find(pruned_rfc);
+		  if(rfcIt == omegaIt->second.end()){
+		    vector<double> o(alignment->aliLen,-1);
+		    o[codonIt->first >> 8] = omegaForCodonTuple(&loglik);
+		    omegaIt->second.insert(pair<vector<int>, vector<double> >(pruned_rfc, o));
+		  }else{
+		    if(rfcIt->second[codonIt->first >> 8] != -1)
+		      cerr << "Warning: omega was already calculated for same alignment position of first codon, bit_vector and RFC!" << endl;
+		    rfcIt->second[codonIt->first >> 8] = omegaForCodonTuple(&loglik);
+		  }
+		}
+		//cout << "done" << endl;
 		//cout<<"loglik of omega: "<<loglik<<endl;
 		// store cumulative sum of omega, omega squared and one
 		cv->addLogliks(&loglik);
@@ -1294,11 +1360,11 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	//cout << "+++ process orthoExon that start or end after the end of the codon alignment!"<<endl;
 	int lastPos = aliPosIt->first;
 	while(aliPosIt != aliPos.end()){ // process remaining orthoExon ends
-	  if(aliPosIt->second.oeStart.size() > 0){
-	    //cerr<<"Warning: there are still orthoexon(s) beginning although codon alignment ended"<<endl; 
-	  }
+	  //if(aliPosIt->second.oeStart.size() > 0)
+	  //cerr<<"Warning: there are still orthoexon(s) beginning although codon alignment ended"<<endl; 
+	  
 	  for(int i=0; i<aliPosIt->second.oeEnd.size(); i++){
-	    //cout<<"################ortho exon ("<<aliPosIt->second.oeEnd[i]->ID<<") ends: "<<aliPosIt->second.oeEnd[i]->getAliStart()<<":"<<aliPosIt->second.oeEnd[i]->getAliEnd()<<endl;
+	    //cout<<"################ortho exon ("<<aliPosIt->second.oeEnd[i]->ID<<") ends after aliEnd: "<<aliPosIt->second.oeEnd[i]->getAliStart()<<":"<<aliPosIt->second.oeEnd[i]->getAliEnd()<<endl;
 	    cumValues *cv;
 	    if(aliPosIt->second.oeEnd[i]->getAliStart() >= lastPos){
 	      cv = NULL;
@@ -1315,6 +1381,7 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	  }
 	  aliPosIt++;
 	}
+	//printOmegaForCodon(outdir); need to parse outdir
     }
     cout<<"compute omegas done"<<endl;
 }
@@ -1327,6 +1394,66 @@ vector<string> GeneMSA::pruneToBV(vector<string> *cs, bit_vector bv){
       cs_pruned[s] = (*cs)[s];
   return cs_pruned;
 }
+
+// prune RFC so that only active bitvector is used
+vector<int> GeneMSA::pruneToBV(vector<int> *rfc, bit_vector bv){
+  vector<int> rfc_pruned(numSpecies(),-1);
+  for(int s = 0; s < numSpecies(); s++)
+    if(bv[s])
+      rfc_pruned[s] = (*rfc)[s];
+  return rfc_pruned;
+}
+
+
+
+double GeneMSA::omegaForCodonTuple(vector<double> *loglik){
+
+  if(loglik==NULL)
+    cerr << "no likelihood was calculated in this pruning step" << endl;
+  double sum = 0;
+  int k = codonevo->getK();
+  vector<double> postprobs(k, 0.0);
+  double maxloglik = *max_element(loglik->begin(), loglik->end());
+  for (int u=0; u < k; u++){
+    sum += postprobs[u] = exp((*loglik)[u] - maxloglik) * codonevo->getPrior(u);
+  }
+  
+  //cout << "posterior distribution and prior of omega" << endl;
+  for (int u=0; u < k; u++){
+	  // cout << codonevo->getOmega(u) << "\t" << postprobs[u] <<"\t"<<codonevo->getPrior(u)<< endl;
+    postprobs[u] /= sum;
+  }
+  double omega = 0;
+  
+  //cout<<"---------------------------------------------------------------------------"<<endl;
+  //cout<<"wi\t\tloglikOmegas\tmaxloglik\tpostprobs/sum\tprior\tsum\texp(loglik - maxloglik)"<<endl;
+  
+  for (int u=0; u < k; u++){
+    omega += postprobs[u] * codonevo->getOmega(u);
+    //cout<<codonevo->getOmega(u)<<"\t\t"<<loglikOmegas[u]<<"\t\t"<<maxloglik<<"\t\t"<<postprobs[u]<<"\t\t"<<codonevo->getPrior(u)<<"\t\t"<<sum<<"\t\t"<<exp(loglikOmegas[u] - maxloglik)<<endl;                                                     
+  }
+  
+  return omega;
+}
+
+void GeneMSA::printOmegaForCodon(string outdir){
+  
+  for(map<bit_vector, map<vector<int>, vector<double> > >::iterator bvIt = codonOmega.begin(); bvIt != codonOmega.end(); bvIt++){
+    int bvToDecimal = 0;
+    for(int s = 0; s<numSpecies(); s++)
+      bvToDecimal += pow(3,s) * bvIt->first[s]+1;
+    string bvStr = "BV" + to_string(bvToDecimal);
+    for(map<vector<int>, vector<double> >::iterator rfcIt = bvIt->second.begin(); rfcIt != bvIt->second.end(); rfcIt++){
+      int rfcToDecimal = 0;
+      for(int s = 0; s<numSpecies(); s++)
+	rfcToDecimal += pow(4,s) * rfcIt->first[s]+1;
+      string rfcStr = "RFC" + to_string(rfcToDecimal);
+      consToWig(rfcIt->second, outdir + "omega." + bvStr + rfcStr);
+    }
+  }
+}
+
+
 
 // calculate a columnwise conservation score and output it (for each species) in wiggle format
 void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, string outdir){

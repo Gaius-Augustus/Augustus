@@ -35,8 +35,10 @@ public:
     double getOmega() const { return omega; }
     double getEomega() const { return Eomega; }
     double getVarOmega() const { return VarOmega; }
-    double getLeftOmega() const { return leftBoundaryOmega;}
-    double getRightOmega() const { return rightBoundaryOmega;}
+    double getLeftExtOmega() const { return leftBoundaryExtOmega;}
+    double getRightExtOmega() const { return rightBoundaryExtOmega;}
+    double getLeftIntOmega() const { return leftBoundaryIntOmega;}
+    double getRightIntOmega() const { return rightBoundaryIntOmega;}   
     double getSubst() const { return subst; }
     double getConsScore() const {return cons;}
     double getLeftConsScore() const {return leftCons;}
@@ -94,9 +96,11 @@ private:
     double omega;
     double Eomega;
     double VarOmega;
-    double leftBoundaryOmega;
-    double rightBoundaryOmega;
-    vector<double> loglikOmegas;
+    double leftBoundaryExtOmega;
+    double rightBoundaryExtOmega;
+    double leftBoundaryIntOmega;
+    double rightBoundaryIntOmega;
+    list<vector<double> > loglikOmegaStarts;
     int intervalCount;
     int subst;
     double cons; // conservation score

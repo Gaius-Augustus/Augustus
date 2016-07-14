@@ -96,7 +96,10 @@ public:
     void printOrthoExons(list<OrthoExon> &orthoExonsList);
     void computeOmegas(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
     void computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli);
-    vector<string> pruneToBV(vector<string> *cs, bit_vector bv);
+    vector<string> pruneToBV(vector<string> *cs, bit_vector bv); // prune codon strings to bit_vector
+    vector<int> pruneToBV(vector<int> *rfc, bit_vector bv); // prune RFC to bit_vector
+    double omegaForCodonTuple(vector<double> *loglik);
+    void printOmegaForCodon(string outdir);
     void printCumOmega();
     void comparativeSignalScoring(list<OrthoExon> &orthoExonsList);
     // Charlotte Janas playground
@@ -141,6 +144,7 @@ private:
     vector< list<ExonCandidate*>* > exoncands;  // exon candidates found in the different species in a gene segment
     //list<OrthoExon> orthoExonsList;		// Steffi: due to multiple copying, I remove this as attribute of any class. Instead it can be passed from compgenepred.cc by reference, whenever necessary.
     unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> > cumOmega; // stores cumulative omega values for every reading frame combination and every bitvector that exist 
+    map<bit_vector, map<vector<int>, vector<double> > > codonOmega;
 };
 
 

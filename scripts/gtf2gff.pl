@@ -14,7 +14,6 @@ my $printUTR = 0;
 my $gff3 = 0;
 my $printIntron = 0;
 my $outfile;
-my $trcp_pattern = '\.t\d+';
 my $includeStopInCDS = 0;
 
 GetOptions(
@@ -74,6 +73,9 @@ sub parseAndStoreGTF{
 	    $txid = $1;
 	    $txs{$txid} = {"strand"=>$strand, "chr"=>$chr, "source"=>$source, "CDS"=>[], "UTR"=>[], "exon"=>[], "intron"=>[], "rest"=>[]} if (!exists($txs{$txid}));
 	    $txs{$txid}{"txline"} = \@f;
+	    if($f[8] =~ /Parent=([^;]+)/ || $f[8] =~ /gene_id."?([^";]+)"?/){
+		$geneOf{$txid} = $1;
+	    }
 	    next;
 	}
 	
@@ -95,8 +97,8 @@ sub parseAndStoreGTF{
 	if ($f[8] =~ /gene_id."?([^";]+)"?/){
 	    $geneid = $1;
 	} else {
-	    if($f[8] =~ /Parent=([^;]+)$trcp_pattern/){
-		$geneid = $1;
+	    if($f[8] =~ /Parent=([^;]+)/){
+		$geneid = $geneOf{$1};
 	    }else{
 		die ("Neither GTF nor GFF format in the following line:\n$line\ngene_id not found.\n");
 	    }
@@ -110,8 +112,7 @@ sub parseAndStoreGTF{
 	# assign parental gene id to tx id
 	die ("transcript $txid has conflicting gene parents: and $geneid. Remember: In GTF txids need to be overall unique.")
 	    if (defined($geneOf{$txid}) && $geneOf{$txid} ne $geneid);
-	$geneOf{$txid} = $geneid;
-
+	
 	if ($feature eq "CDS" || $feature eq "coding_exon" || $feature eq "exon" || $feature =~ /UTR/i){
 	    $txs{$txid} = {"strand"=>$strand, "chr"=>$chr, "source"=>$source, "CDS"=>[], "UTR"=>[], "exon"=>[], "intron"=>[], "rest"=>[]} if (!exists($txs{$txid}));
 	    $txs{$txid}{"txstart"} = $start if (!defined($txs{$txid}{"txstart"}) || $txs{$txid}{"txstart"} > $start);

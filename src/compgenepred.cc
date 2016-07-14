@@ -479,11 +479,13 @@ void CompGenePred::start(){
 		geneRange->comparativeSignalScoring(hects); 
 	} catch (...) {}
        
-	if(use_omega)
+	if(use_omega){
 	    geneRange->computeOmegasEff(hects, seqRanges, &ctree, &codonAli); // omega and number of substitutions is stored as OrthoExon attribute
+	    // calculates an omega for every single codon alignment and prints wiggle trac for ever reding frame and species combination that exists in an ortho exon
+	    //geneRange->printOmegaForCodon(outdir);
 	    //inefficient omega calculation, only use for debugging purpose 
 	    //geneRange->computeOmegas(hects, seqRanges, &ctree);
-	
+	}
 	if (conservation)
 	    geneRange->calcConsScore(hects, seqRanges, outdir);
 
@@ -493,7 +495,7 @@ void CompGenePred::start(){
 	    orthograph.outputGenes(baseGenes,base_geneid);
 	    	    
 	    if(!hects.empty()){
-		// optimization via dual decomposition
+	    	// optimization via dual decomposition
 		vector< list<Transcript*> *> genelist(OrthoGraph::numSpecies);
 		orthograph.dualdecomp(hects,evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factors);
 		orthograph.filterGeneList(genelist,opt_geneid);
