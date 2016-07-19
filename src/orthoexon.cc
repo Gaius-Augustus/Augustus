@@ -267,6 +267,7 @@ double OrthoExon::getLogRegScore(){
 	    + Constant::ex_sc[13] * cons * diversity 
 	    + Constant::ex_sc[14] * Eomega * hasOmega() * diversity
 	    + Constant::ex_sc[1]  * -1 * hasOmega()
+	    + Constant::ex_sc[16]  * min( abs(getLeftExtOmega() - getLeftIntOmega()), abs(getRightExtOmega() - getRightIntOmega()) )
 	    + Constant::ex_sc[2]  * -1 ); // for being a HECT
 
   /*

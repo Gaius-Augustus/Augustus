@@ -51,6 +51,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "cds",
 "checkExAcc",
 "codingseq",
+"codonAlignmentFile",
 "complete_genes",
 "/CompPred/assmotifqthresh",
 "/CompPred/assqthresh",
@@ -353,7 +354,8 @@ void Properties::init( int argc, char* argv[] ){
 		name == ALN_KEY ||
 		name == TREE_KEY ||
 		name == DB_KEY ||
-		name == SEQ_KEY)
+		name == SEQ_KEY ||
+		name == CODONALN_KEY)
 	    {
 		if (pos >= argstr.length()-1)
 		    throw ProjectError(string("Wrong argument format for ") +  name + ". Use: --argument=value");
@@ -474,7 +476,7 @@ void Properties::init( int argc, char* argv[] ){
 	if (name == GENEMODEL_KEY || name == NONCODING_KEY || name == SINGLESTRAND_KEY ||
 	    name == SPECIES_KEY || name == CFGPATH_KEY ||
 	    name == EXTERNAL_KEY || name == ALN_KEY ||
-	    name == TREE_KEY || name == DB_KEY || name == SEQ_KEY)
+	    name == TREE_KEY || name == DB_KEY || name == SEQ_KEY || name == CODONALN_KEY)
 	    continue;
 	if (pos == string::npos)
 	    throw PropertiesError(string("'=' missing for parameter: ") + name);
