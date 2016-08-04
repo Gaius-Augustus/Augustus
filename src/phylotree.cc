@@ -90,15 +90,23 @@ PhyloTree::PhyloTree(string filename){
 	 * if only a subset of the species is sought, drop all leaf nodes
 	 * which are not in the given subset
 	 */
-	string only_species;
-	Properties::assignProperty("/CompPred/only_species", only_species);
+	string only_species = Constant::speciesfilenames; // by default use only the species from speciesfilenames
+	/* old code: read in species list from separate file
+	 * only required with mysql dbaccess
+	 * if(only_species.empty())
+	 *    Properties::assignProperty("/CompPred/only_species", only_species);
+	 */
 	if(!only_species.empty()){
+
 	    ifstream ifstrm(only_species.c_str());
 	    if (ifstrm.is_open()){
 		vector<string> keep; // the subset of species to be kept
-		string s;
-		while(std::getline(ifstrm,s,'\n')){
-		    keep.push_back(s);
+		char buf[256];
+		while(ifstrm.getline(buf,255)){
+		    stringstream stm(buf);
+		    string s;
+		    if(stm >> s)
+			keep.push_back(s);
 		}
 		ifstrm.close();
 		for(int i=0; i<species.size(); i++){
@@ -121,7 +129,7 @@ PhyloTree::PhyloTree(string filename){
 	    }
 	    else
 		throw ProjectError("Could not open input file " + only_species);
-	    printNewick("subtree.nwk");
+	    //printNewick("subtree.nwk");
 	}
     }
     else
