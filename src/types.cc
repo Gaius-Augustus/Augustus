@@ -87,6 +87,7 @@ string Constant::treefile; // file name in which a tree is specified in Newick f
 string Constant::speciesfilenames; // file name to file which contains the names of species and the corresponding file names
 string Constant::dbaccess; // comma separated string with database access (database name,host name,user,passwd, table name"
 string Constant::alnfile; // name of file that contains MSA of genomes
+string Constant::codonalnfile; // name of file that contains MSA of codon sequences
 bool Constant::overlapmode = false;
 Boolean Constant::printOEs = true; // output ortho exons
 Integer Constant::maxOvlp = 60; // maximum overlap of coding regions for bacteria

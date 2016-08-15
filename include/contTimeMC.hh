@@ -35,7 +35,7 @@ using namespace std;
  */
 class Evo {
 public:
-    Evo(int s) : states(s), m(0) {};
+  Evo(int s) : states(s), m(0), pi(NULL) {};
     virtual ~Evo();
     int getNumStates(){return states;}
 

@@ -373,17 +373,18 @@ void Properties::init( int argc, char* argv[] ){
     Properties::assignProperty(SEQ_KEY, Constant::speciesfilenames);
     Properties::assignProperty(DB_KEY, Constant::dbaccess);
     Properties::assignProperty(ALN_KEY, Constant::alnfile);
-    if (!Constant::alnfile.empty() && !Constant::treefile.empty() && (!Constant::speciesfilenames.empty() || !Constant::dbaccess.empty())){
+    if(Constant::codonalnfile.empty()){
+      if (!Constant::alnfile.empty() && !Constant::treefile.empty() && (!Constant::speciesfilenames.empty() || !Constant::dbaccess.empty())){
 	Constant::MultSpeciesMode = true;
-    } else if (!(Constant::alnfile.empty() && Constant::treefile.empty() && Constant::speciesfilenames.empty() && Constant::dbaccess.empty())){
+      } else if (!(Constant::alnfile.empty() && Constant::speciesfilenames.empty() && Constant::dbaccess.empty()) ){
 	throw ProjectError("In comparative gene prediction mode you must specify parameters alnfile, treefile\n\
-        and one of the following combinations of parameters\n\n\
-        - dbaccess (retrieving genomes from a MySQL db)\n\
-        - speciesfilenames and dbaccess (retrieving genomes from an SQLite db)\n\
-        - speciesfilenames (retrieving genomes from flat files)\n\n\
+        and one of the following combinations of parameters\n\n		\
+        - dbaccess (retrieving genomes from a MySQL db)\n		\
+        - speciesfilenames and dbaccess (retrieving genomes from an SQLite db)\n \
+        - speciesfilenames (retrieving genomes from flat files)\n\n	\
         In single species mode specify none of these parameters.\n");
+      }
     }
-
     // set configPath variable
     string& configPath = properties[CFGPATH_KEY]; // first priority: command line
     if (configPath == "") {

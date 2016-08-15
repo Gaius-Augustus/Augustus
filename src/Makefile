@@ -29,7 +29,7 @@ INCLS	= -I../include
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
- meaPath.o exoncand.o randseqaccess.o fasta.o ncmodel.o
+ meaPath.o exoncand.o randseqaccess.o fasta.o ncmodel.o codonMSA.o
 ifdef COMPGENEPRED
 	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
@@ -38,7 +38,7 @@ ifdef COMPGENEPRED
 endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
-PROGR	= augustus etraining prepareAlign fastBlockSearch
+PROGR	= augustus etraining prepareAlign fastBlockSearch espoca
 INFO    = cxxflags
 
 ifdef MYSQL
@@ -106,6 +106,10 @@ getSeq: getSeq.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp getSeq ../bin/
 
+espoca: espoca.cc $(OBJS) $(DUMOBJS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	cp espoca ../bin/ 
+
 info:
 	echo "$(CXXFLAGS)" > $(INFO)
 
@@ -132,6 +136,7 @@ augustus.o : \
 	../include/properties.hh \
 	../include/statemodel.hh \
 	../include/types.hh \
+	../include/codonMSA.hh \
 	augustus.cc
 
 dummy.o : \
@@ -687,6 +692,10 @@ alignment.o: \
 sqliteDB.o: \
 	../include/sqliteDB.hh \
 	sqliteDB.cc
+
+codonMSA.o: \
+	../include/codonMSA.hh \
+	codonMSA.cc
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

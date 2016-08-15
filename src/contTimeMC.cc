@@ -39,7 +39,8 @@ Evo::~Evo(){
     	    gsl_matrix_free(allLogPs[i][j]);
     	}
     allLogPs.assign(0, 0, NULL);
-    delete[] pi;
+    if(pi != NULL)
+      delete[] pi;
 }
 
 /* Determine the branch lengths for which matrices P should be stored, at most m.
@@ -886,81 +887,137 @@ vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree
 }
 
 double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
-    if (seqtuple.size() != tree->numSpecies())
-	throw ProjectError("CodonEvo::estOmegaOnSeqTuple: inconsistent number of species.");
-    for(int i=1; i<seqtuple.size();i++){
-	if(seqtuple[0].length() != seqtuple[i].length()){
-	    throw ProjectError("CodonEvo::estOmegaOnSeqTuple: wrong exon lengths");
-	}
+  if (seqtuple.size() != tree->numSpecies())
+    throw ProjectError("CodonEvo::graphOmegaOnCodonAli: inconsistent number of species.");
+  for(int i=1; i<seqtuple.size();i++){
+    if(seqtuple[0].length() != seqtuple[i].length()){
+      throw ProjectError("CodonEvo::graphOmegaOnCodonAli: wrong exon lengths");
     }
+  }
 
-    int n = seqtuple[0].length()/3; // number of nucleotide triples
-    int numCodons;
-    double Eomega, loglik, sum;
-    Seq2Int s2i(3);
-    vector<double> logliks(k, 0.0);
-    vector<double> postprobs(k, 0.0);
-    for (int i=0; i<n; i++){
-	Eomega = sum = 0.0;
-	for (int u=0; u < k; u++){ // loop over omegas
-	    vector<int> codontuple(tree->numSpecies(), 64); // 64 = missing codon
-	    numCodons = 0;
-	    for(size_t s=0; s < tree->numSpecies(); s++){
-		if (seqtuple[s].size()>0)
-		    try {
-			codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
-			numCodons++;
-		    } catch(...){} // gap or n character
-	    }
-	    if (numCodons >= 2){
-		loglik = tree->pruningAlgor(codontuple, this, u);
-		logliks[u] += loglik;
-	    }
-	}
+  int n = seqtuple[0].length()/3; // number of nucleotide triples
+  int numCodons;
+  double Eomega, loglik, sum;
+  Seq2Int s2i(3);
+  vector<double> logliks(k, 0.0);
+  vector<double> postprobs(k, 0.0);
+  // output: stats of codon alignment sites 
+  vector<char> aminoAcidsRef(n,'\0');
+  vector<int> refPos(n,-1);
+  vector<int> numSubst(n,-1);
+  vector<double> postmeanSite(n,0.0);
+  vector<double> stdPostmeanSite(n,0.0);
+  vector<double> postProb_gt1(n,0.0);
+  int codonIdx = 0;
+  int refCodonIdx = 0;  
+
+  vector<string> speciesnames;
+  tree->getSpeciesNames(speciesnames);
+
+  for (int i=0; i<n; i++){
+    vector<double> logliksSite(k,0.0);
+    Eomega = sum = 0.0;      
+    vector<int> codontuple(tree->numSpecies(), 64); // 64 = missing codon
+    numCodons = 0;
+    PhyloTree pruned_tr = *tree;
+        
+    for(size_t s=0; s < tree->numSpecies(); s++){
+      if (seqtuple[s].size()>0)
+	try {
+	  codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
+	  numCodons++;
+	  if(s == 0){
+	    refPos[codonIdx] = refCodonIdx;
+	    refCodonIdx++;
+	  }
+	} catch(...){
+	  pruned_tr.drop(speciesnames[s]);
+	} // gap or n character
     }
+    if(codontuple[0] == 64)
+      aminoAcidsRef[codonIdx] = '-';
+    else
+      aminoAcidsRef[codonIdx] = GeneticCode::translate(codontuple[0]);
+    
+    numSubst[codonIdx] = pruned_tr.fitch(codontuple);
+    if (numCodons >= 2){
+      for (int u=0; u < k; u++){ // loop over omegas
+	loglik = tree->pruningAlgor(codontuple, this, u);
+  	logliks[u] += loglik;
+	logliksSite[u] += loglik;
+      }    
+      double meanloglik(0.0);
+      for (int u=0; u < k; u++)
+	meanloglik += logliksSite[u];
+      meanloglik /= k;
+      
+      for (int u=0; u < k; u++){
+	sum += postprobs[u] = exp(logliksSite[u]) * omegaPrior[u];
+      }
+      for (int u=0; u < k; u++){
+	postprobs[u] /= sum;
+      }
+      for (int u=0; u < k; u++){
+	Eomega += postprobs[u] * omegas[u];
+      }
+      postmeanSite[codonIdx] = Eomega;
+      for (int u=0; u < k; u++)
+	stdPostmeanSite[codonIdx] += postprobs[u] * pow(omegas[u] - Eomega, 2);
+      
+      /***
+      for(size_t s=0; s < tree->numSpecies(); s++){
+	if (seqtuple[s].size()>0)
+	  cout << codontuple[s] << "\t" << seqtuple[s].substr(i*3,3) << endl;
+      }
+            cout << "index\tomega\tloglik\tmeanloglik\tpostProb\tsum\tpostMean" << endl;
+      for(int u=0; u < k; u++){
+	cout << u << "\t" << omegas[u] << "\t" << logliksSite[u] << "\t" << meanloglik << "\t" << postprobs[u] << "\t" << sum << "\t" << Eomega << endl;
+      }
+      ***/
+     
+      for(int u=0; u<k; u++){
+	if(omegas[u] > 1){
+	  postProb_gt1[codonIdx] += postprobs[u];
+	}
+      }    
+    }
+    codonIdx++;
+  }
+  
+  cout << setw(10) << "ali_pos" << setw(10) << "ref_pos" << setw(10) << "AS_ref" << setw(10) << "Pr(w>1)" << setw(10) << "post_mean" << setw(4) << "+-" << setw(10) << "SE_for_w" << setw(10) << "num_subst" << endl;
+  for(int i = 0; i < codonIdx; i++){
+    cout << setw(10)<< i << setw(10) << refPos[i] << setw(10) << aminoAcidsRef[i] << setw(10) << postProb_gt1[i];
+    if(postProb_gt1[i] > 0.95)
+      cout << "*";
+    if(postProb_gt1[i] > 0.99)
+      cout << "*";
+    cout << setw(10) << postmeanSite[i] << setw(4) << "+-" << setw(10) << stdPostmeanSite[i] << setw(10) << numSubst[i] << endl;
+  }
+
     // posterior mean estimate of omega
     double meanloglik(0.0);
     for (int u=0; u < k; u++)
-	meanloglik += logliks[u];
+      meanloglik += logliks[u];
     meanloglik /= k;
     sum = 0.0;
     for (int u=0; u < k; u++)
-	sum += postprobs[u] = exp(logliks[u] - meanloglik) * omegaPrior[u];
-    //    cout << "posterior distribution of omega" << endl;
+      sum += postprobs[u] = exp(logliks[u] - meanloglik) * omegaPrior[u];
+    //        cout << "posterior distribution of omega" << endl;
     for (int u=0; u < k; u++){
-	postprobs[u] /= sum;
-	//	cout << omegas[u] << " " << postprobs[u] << endl;
+      postprobs[u] /= sum;
+      //	cout << omegas[u] << " " << postprobs[u] << endl;
     }
     Eomega = 0.0;
     for (int u=0; u < k; u++){
-	Eomega += postprobs[u] * omegas[u];
+      Eomega += postprobs[u] * omegas[u];
     }
-    //    cout << "Eomega=" << Eomega << endl;
-    // count number of substitutions
-    //int subst;
- 
-    // settings to reduce MAP algorithm to Fitch Algorithm
-    //    vector<double> weights(tree->numSpecies(),0);
-    //Parsimony parsi;
-    //parsi.computeLogPmatrices();
-    //Evo *parsi_base = &parsi;
-    /*    cout << "graph substitutions" << endl;
-    for (int i=0; i<n; i++){
-	vector<int> codontuple(tree->numSpecies(), 64);
-	numCodons=0;
-	for(size_t s=0; s < tree->numSpecies(); s++){
-	    if (seqtuple[s].size() > 0)
-		try {
-		    codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
-		    numCodons++;
-		} catch(...){} // gap or n character
-	}
-	if(numCodons >= 2){
-	    PhyloTree temp(*tree); // only use a copy of the tree !!!
-	    subst = -temp.MAP(codontuple, weights, parsi_base, 1, true); // Fitch Algorithm 
-	    //cout << i << "\t" << subst << endl; 
-	}
-	}*/
+
+    /*    cout << "whole alignment: " << endl << "index\tomega\tloglik\tmeanloglik\tpostProb\tsum\tpostMean" << endl;
+    for(int u=0; u < k; u++){
+      cout << u << "\t" << omegas[u] << "\t" << logliks[u] << "\t" << meanloglik << "\t" << postprobs[u] << "\t" << sum << "\t" << Eomega << endl;
+    }
+    */
+    cout << endl << "omega of whole alignment : " << Eomega << endl;
     return Eomega;
 }
 

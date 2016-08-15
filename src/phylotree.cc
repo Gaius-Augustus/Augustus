@@ -85,6 +85,7 @@ PhyloTree::PhyloTree(string filename){
 	if(error_message == 1){
 	    throw ProjectError("the parsing of " + filename + " has been unsuccessful. Please check, whether the syntax of your input file is correct" );
 	}
+
 	numSp=species.size();
 	/*
 	 * if only a subset of the species is sought, drop all leaf nodes
@@ -255,15 +256,15 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
 		for(list<Treenode*>::iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
 		    double sum=0;
 		    gsl_matrix *P = evo->getSubMatrixP(u,(*it)->getDist());
-		    //cout<<"---------- codon Matrix for omega nr "<<u<<" and branch lenght = "<<(*it)->getDist()<<"---------"<<endl;
+		    //cout<<"---------- Transition Matrix for omega nr "<<u<<" and branch lenght = "<<(*it)->getDist()<<"---------"<<endl;
 		    //printCodonMatrix(P);
 		    for(int j=0; j<states; j++){
-			sum += gsl_matrix_get(P, i, j) * (*it)->getTable(j);
-			//		cout<<gsl_matrix_get(P, i, j)<<"\t";
+		      sum += gsl_matrix_get(P, i, j) * (*it)->getTable(j);
+		      //cout<<gsl_matrix_get(P, i, j)<<"\t";
 		    }
 		    score *= sum; 
 		}
-		//		cout<<endl;
+		//cout<<endl;
 		(*node)->setTable(i, score);	
 	    }
 	}
@@ -273,7 +274,8 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
     //in the root, we take the weighted average over all states
     double tree_score = 0;
     for(int i=0; i<states; i++){
-	tree_score += (evo->getPi(i) * treenodes.back()->getTable(i));
+	double ts = (evo->getPi(i) * treenodes.back()->getTable(i));
+	tree_score += ts;
     }
     return log(tree_score);
 }
@@ -531,7 +533,7 @@ int PhyloTree::fitch(vector<int> &labels, int states){
 	    int idx = (*node)->getIdx();
 	    int c = labels[idx];
 	    if(c >= states || c < 0)
-		throw ProjectError("PhyloTree::fith(): index "+ itoa(c) + " out of bounds.");
+		throw ProjectError("PhyloTree::fitch(): index "+ itoa(c) + " out of bounds.");
 
 	    (*node)->resizeTable(states, 100000); // any number > 1
 	    (*node)->setTable(c,0);

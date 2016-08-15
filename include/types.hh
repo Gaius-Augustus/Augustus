@@ -310,6 +310,7 @@ public:
     static string speciesfilenames; // file name to file which contains the names of species and the corresponding file names
     static string dbaccess; // comma separated string with database access (hostname, database name, table name, user, passwd
     static string alnfile; // name of file that contains MSA of genomes
+    static string codonalnfile; // name of file that contains MSA of codon sequences
     static bool overlapmode; // whether overlapping exons are allowed in Viterbi algorithm
     static Boolean printOEs; //output ortho exons to file
     static Integer maxOvlp; // parameters for overlapping coding regions in bacteria

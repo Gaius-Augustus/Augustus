@@ -1,0 +1,127 @@
+/**********************************************************************
+ * file:    codonMSA.cc
+ * licence: Artistic Licence, see file LICENCE.TXT or 
+ *          http://www.opensource.org/licenses/artistic-license.php
+ * descr.:  datastructure for the codon alignment
+ * author:  Lizzy Gerischer
+ *
+ * date    |   author           |  changes
+ * --------|--------------------|------------------------------------------
+ * 14.07.16| Lizzy Gerischer    | creation of the file
+ **********************************************************************/
+
+#include "codonMSA.hh"
+#include "exonmodel.hh"
+#include <iostream>
+#include <unistd.h>
+
+using namespace std;
+
+CodonMSA::CodonMSA(string codonAliFilename){
+
+  aliLen = 0;
+  readAlignment(codonAliFilename);
+
+  if(Properties::hasProperty(TREE_KEY)){
+    string treeFilename =  Properties::getProperty(TREE_KEY);
+    ctree = new PhyloTree(treeFilename);
+  }else{
+    ctree = new PhyloTree(speciesNames);
+  }
+
+  vector<string> species;
+  ctree->getSpeciesNames(species);
+  //for(int i = 0; i<species.size();i++)
+  //cout << "species: " << species[i] << " speciesNames: " << speciesNames[i] << endl;
+
+  if(species != speciesNames)
+    throw ProjectError("inconsistent species name vectors");
+
+  /*  double ctree_scaling_factor = 1; // scaling factor to scale branch lengths in codon tree to one codon substitution per time unit
+  try {
+    ctree_scaling_factor = Properties::getdoubleProperty("/CompPred/scale_codontree");
+  } catch (...) {
+    ctree_scaling_factor = 1;
+  }
+  if(ctree_scaling_factor <= 0.0){
+    cerr << "No negative scaling factor allowed. /CompPred/scale_codontree must be a positive real number. Will use =1." << endl;   
+    ctree_scaling_factor=1;
+  }
+  
+  ctree->scaleTree(ctree_scaling_factor); // scale branch lengths to codon substitutions                                             
+  */  
+
+vector<double> ct_branchset;
+  ctree->getBranchLengths(ct_branchset);
+  int k = 20; // number of omegas
+  // TODO: codonusage
+
+  //  BaseCount::init();
+  //  PP::initConstants();
+  //  NAMGene namgene; // creates and initializes the states                                                                            
+  StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl                       
+
+  double *pi = ExonModel::getCodonUsage();
+  /**********
+  double pi[64];
+  cout << "pi: ";
+  for (int i=0; i<64; i++){
+    pi[i] = (double)1/64;
+    cout << pi[i] << " ";
+  }
+  cout << endl;
+  ***********/
+  codonevo.setKappa(4.0);
+  codonevo.setPi(pi);
+  codonevo.setBranchLengths(ct_branchset, 25);
+  codonevo.setOmegas(k);
+  codonevo.setPrior(0.5);
+  /*cout << "Omegas, for which substitution matrices are stored:" << endl;                                                          
+    codonevo.printOmegas();*/
+  codonevo.computeLogPmatrices();
+
+  // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);                                                                          
+  // printCodonMatrix(P);                                                                                                           
+  //GeneMSA::setCodonEvo(&codonevo);
+}
+
+void CodonMSA::readAlignment(string filename){
+  
+  string rowseq;
+  string speciesName;
+   
+  ifstream Alignmentfile;
+  Alignmentfile.open(filename.c_str(), ifstream::in);
+  if (!Alignmentfile) {
+    string errmsg = "Could not open the codon alignment file " + filename + ".";
+    throw PropertiesError(errmsg);
+  }
+  while (!Alignmentfile.eof()) {
+    try {
+      Alignmentfile >> speciesName >> rowseq;
+      if(!Alignmentfile.eof()){
+	aliRows.push_back(rowseq);
+	speciesName.erase(0,1);
+	speciesNames.push_back(speciesName);
+      }
+      // cout << "species name: " << speciesName << "\t rowseq: " << rowseq << endl;
+    } catch (std::ios_base::failure e) {
+      throw ProjectError(string("Could not open file ") + filename + ". Make sure this is not a directory.\n");
+    }
+    if(aliLen){
+      if(aliLen != rowseq.length()){
+	throw ProjectError("codon alignment rows have different size.");
+      }
+    }else{
+      aliLen = rowseq.size();
+    }
+  }
+}
+
+
+void CodonMSA::printOmegaStats(){
+
+  codonevo.graphOmegaOnCodonAli(aliRows, ctree);
+}
+
+
