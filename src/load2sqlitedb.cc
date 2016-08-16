@@ -193,7 +193,7 @@ int main( int argc, char* argv[] ){
 		}catch(const char* err){
 		    cerr << "failed inserting sequence "<< name << " for species "<< species <<" (ID="<<speciesid<<")"<< endl;
 		    cerr << "Is it possible that the sequence is already in the database?" << endl;
-		    cerr << "If so, please delete it, before reloading it" << endl;
+		    cerr << "If you want to replace the existing genome, please make a clean load with option --clean" << endl;
 		    throw err;
 		}
 		int seqnr = db.lastInsertID();
