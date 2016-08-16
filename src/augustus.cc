@@ -17,7 +17,6 @@
 #include "namgene.hh"
 #include "evaluation.hh"
 #include "statemodel.hh"
-#include "codonMSA.hh"
 #ifdef COMPGENEPRED
 #include "compgenepred.hh"
 #endif
@@ -224,13 +223,6 @@ int main( int argc, char* argv[] ){
 	    throw ProjectError("File format of " + filename + " not recognized.");
 	  }
 	} // single species mode
-	
-	// calculate omega on input codon alignment
-	if(Properties::hasProperty(CODONALN_KEY)){
-	  string codonAliFilename =  Properties::getProperty(CODONALN_KEY);
-	  CodonMSA cAli(codonAliFilename);
-	  cAli.printOmegaStats();
-	}
 	
 	//	if (verbosity>2)
 	cout << "# command line:" << endl << "# " << commandline << endl;
