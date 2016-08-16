@@ -41,6 +41,7 @@ int main( int argc, char* argv[] ){
     int help = 0;
     int noIdx = 0;
     int makeIdx = 0;
+    bool clean = false;
     string species;
     string dbfile;
     string fastafile;
@@ -51,11 +52,12 @@ int main( int argc, char* argv[] ){
         {"help", 0, 0, 'h'},
 	{"chunksize", 1, 0, 'c'},
         {"noIdx", 0, 0, 'i'},
-        {"makeIdx", 0, 0, 'm'},	
+        {"makeIdx", 0, 0, 'm'},
+	{"clean", 0, 0, 'r'},
         {NULL, 0, NULL, 0}
     };
     int option_index = 0;
-    while ((c = getopt_long(argc, argv, "s:d:hc:im", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "s:d:hc:imr", long_options, &option_index)) != -1) {
         switch (c) {
         case 's':
 	    species = optarg;
@@ -75,6 +77,8 @@ int main( int argc, char* argv[] ){
 	case 'm':
             makeIdx = 1;
 	    break;
+	case 'r':
+	    clean = true;
         default:
             break;
         }
@@ -149,6 +153,9 @@ int main( int argc, char* argv[] ){
     try {
 	db.createTableSpeciesnames();
 	db.createTableSeqnames();
+	db.createTableGenomes();
+	db.createTableHints();
+	db.createTableFeatureTypes();
 
 	ifstream ifstrm;
 	ifstrm.open(fastafile.c_str());
@@ -159,14 +166,13 @@ int main( int argc, char* argv[] ){
 	// if input file is in Fasta format, try to load sequences
 	if(isFasta(ifstrm)){
 	    cout << "Looks like " << fastafile << " is in fasta format." << endl;
-	    db.createTableGenomes();
 
 	    // drop index on genomes table for faster insertion
 	    db.exec("DROP INDEX IF EXISTS gidx;");
 
 	    int seqCount = 0, chunkCount = 0;
 	    unsigned int lenCount = 0;
-	    int speciesid = db.getSpeciesID(species);
+	    int speciesid = db.getSpeciesID(species,clean);
 	
 	    db.beginTransaction();
 
@@ -238,13 +244,19 @@ int main( int argc, char* argv[] ){
 	}
 	else if(isGFF(ifstrm)){ // if input file is in GFF format, try to load hints
 	    cout << "Looks like " << fastafile << " is in gff format." << endl;
-	    db.createTableHints();
-	    db.createTableFeatureTypes();
+
 	    int hintCount=0; // number of hints inserted into the database
 	    
 	    // drop index on hints table (for faster insertion)
 	    db.exec("DROP INDEX IF EXISTS hidx");
 
+	    if(clean){
+	      int id = db.getSpeciesID(species,false,true);
+	      if(id >= 0){
+		db.deleteHints(id); // delete existing hints from DB
+	        cout << "Deleted existing hints for " << species << " from database." << endl;
+	      }
+	    }
 	    // bulk insert of all hints
 	    db.beginTransaction();
 
@@ -341,6 +353,9 @@ parameters:\n\
 --makeIdx     use this flag to build the indices on the database tables after loading several\n\
               genomes and/or hint files with --noIdx. Only call this once for all species, e.g.\n\
               load2sqlitedb --makeIdx --dbaccess=database.db\n\
+--clean       makes a clean load deleting existing hints/genome for the species from the dabase.\n\
+              When called with a gff file, only the hints for the species are delete, but not the genome.\n\
+              When called with a fasta file, both hints and genome for the species are deleted.\n\
 \n\
 examples:\n\
      load2sqlitedb --species=chicken --dbaccess=chicken.db chickengenome.fa\n\

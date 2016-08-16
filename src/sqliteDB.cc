@@ -150,23 +150,45 @@ void SQLiteDB::createTableFeatureTypes(){
     endTransaction();
 }
 
-int SQLiteDB::getSpeciesID(string species){
+int SQLiteDB::getSpeciesID(string species, bool clean, bool noInsert){
 
     Statement stmt(this);
     stmt.prepare("SELECT speciesid FROM speciesnames WHERE speciesname=?1;");
     stmt.bindText(1,species.c_str());
     if(stmt.nextResult()){
         int id = stmt.intColumn(0);
+        if(clean){ // remove all existing entries for that species
+	    deleteHints(id);
+	    deleteGenome(id);
+	    deleteSeqNames(id);
+	    cout << "Deleted existing genome + hints for " << species << " from database " << endl;
+        }      
         return id;
     }
     else{
+        if(noInsert)
+	  return -1;
         string sql = "INSERT INTO speciesnames (speciesname) VALUES (\"" + species + "\")";
         exec(sql.c_str());
         return lastInsertID();
     }
 }
 
+void SQLiteDB::deleteHints(int speciesid){
+    string sql = "DELETE FROM hints WHERE speciesid = (\"" + itoa(speciesid) + "\")";
+    exec(sql.c_str());
+}
 
+void SQLiteDB::deleteGenome(int speciesid){
+    string sql = "DELETE FROM genomes WHERE speciesid = (\"" + itoa(speciesid) + "\")";
+    exec(sql.c_str());
+
+}
+
+void SQLiteDB::deleteSeqNames(int speciesid){
+    string sql = "DELETE FROM seqnames WHERE speciesid = (\"" + itoa(speciesid) + "\")";
+    exec(sql.c_str());
+}
 
 void Statement::prepare(const char *sql){
 

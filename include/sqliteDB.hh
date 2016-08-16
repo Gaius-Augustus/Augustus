@@ -48,7 +48,12 @@ public:
     void createTableSeqnames();
     void createTableHints();
     void createTableFeatureTypes();
-    int getSpeciesID(string species);
+    int getSpeciesID(string species, bool clean=false, bool noInsert=false);
+
+    void deleteHints(int speciesid);
+    void deleteGenome(int speciesid);
+    void deleteSeqNames(int speciesid);
+
 
     void beginTransaction();
     void endTransaction();
