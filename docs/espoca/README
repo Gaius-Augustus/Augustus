@@ -1,0 +1,52 @@
+ESPOCA - Estimate Selective Pressure on Codon Alignments
+
+This directory contains example input files:
+example.fa    codon alignment file in multi fasta format
+tree.nwk      phylogenetik tree file in newick format with branch length
+
+Example Command:
+
+espoca --species=fly --alnfile=example.fa --treefile=tree.nwk
+
+Output: 
+
+#
+# ESPOCA - Estimate Selective Preassure on Codon Alignments.
+#
+# Description of the table columns:
+# ali_pos   ref_pos   AS_ref    Pr(w>1)   post_mean +-  SE_for_w  num_subst
+# 1. ali_pos     position of codon site in the alignment
+# 2. ref_pos     position of codon in reference species (first species in the alignment file), -1 if gap in reference
+# 3. AS_ref      amino acid of reference sequence at ref_pos
+# 4. Pr(w>1)     probability of omega > 1 at alipos (*: Pr(w>1) > 0.90, **: Pr(w>1) > 0.95)
+# 5. post_mean   posterior mean estimate of omega at ali_pos
+# 6. SE_for_w    standard deviation of omega at ali_pos
+# 7. num_subst   number of subsitution calculated by the fitch algorithm
+
+   ali_pos   ref_pos    AS_ref   Pr(w>1) post_mean  +-  SE_for_w num_subst
+         0         0         M  0.249188  0.814206  +-  0.362779         0
+         1         1         I  0.489331   1.22654  +-  0.606094         0
+         2         2         M  0.278273  0.865713  +-  0.391453         0
+         3        -1         -  0.375208   1.02205  +-  0.387321         2
+         4        -1         -  0.510076   1.22844  +-  0.484266         3
+         5        -1         -  0.520523   1.27867  +-  0.620131         1
+         6        -1         -   0.42937   1.12316  +-  0.538455         0
+         7        -1         -  0.479403   1.20924  +-  0.595183         0
+         8         3         M  0.249188  0.814206  +-  0.362779         0
+         9         4         I  0.495239   1.23701  +-  0.613456         0
+        10         5         M  0.270909  0.852741  +-  0.384469         0
+        11         6         M  0.249188  0.814206  +-  0.362779         0
+        12         7         L  0.592153   1.41444  +-  0.726155         0
+        13         8         L  0.556823   1.34642  +-  0.677838         0
+        14         9         Y  0.286488  0.879981  +-    0.3289         1
+        15        10         L  0.556823   1.34642  +-  0.677838         0
+        16        11         A   0.48803   1.22396  +-  0.594927         1
+        17        12         K  0.475777   1.20248  +-  0.578938         1
+        18        13         N  0.417649   1.10366  +-   0.53543         0
+        19        -1         -  0.489014   1.22646  +-  0.609409         0
+        20        14         *  0.604201   1.18131  +-  0.528847         0
+
+# posterior mean estimate of omega for whole alignment : 0.543365
+# total time: 4.73954s
+# command line:
+# espoca --species=fly --alnfile=example.fa --treefile=tree.nwk

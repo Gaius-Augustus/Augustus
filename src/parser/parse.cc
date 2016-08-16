@@ -644,7 +644,7 @@ void Parser::executeAction(int production)
 #line 76 "grammar"
         {
          pspecies->push_back(d_scanner.matched());
-         }
+	 }
         break;
 
         case 7:
@@ -675,7 +675,7 @@ void Parser::executeAction(int production)
          Treenode *temp = new Treenode(pspecies->at(atoi(d_scanner.matched().c_str())-1));
          ptree->push_back(temp);
          d_val__.nodeptr = temp;
-         }
+	 }
         break;
 
         case 11:
@@ -685,7 +685,7 @@ void Parser::executeAction(int production)
          ptree->push_back(temp);
          pspecies->push_back(d_scanner.matched());
          d_val__.nodeptr = temp;
-         }
+	 }
         break;
 
         case 12:
@@ -710,7 +710,6 @@ void Parser::executeAction(int production)
         { 
          d_vsp__[-2].nodeptr->addDistance(atof(d_scanner.matched().c_str())); 
          d_val__.nodeptr=d_vsp__[-2].nodeptr;
-         
          }
         break;
 

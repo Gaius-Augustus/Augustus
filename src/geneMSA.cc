@@ -698,6 +698,8 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 	ExonCandidate *ec = oe.orthoex[s];
 	int firstCodonBase = oe.getStartInWindow(s) + ( (offsets[s] + ec->getFirstCodingBase() - oe.getStartInWindow(s)) % 3);
 	int lastCodonBase = oe.getEndInWindow(s) - ( (oe.getEndInWindow(s) - (offsets[s] + ec->getLastCodingBase())) % 3);
+	int firstCodonBaseOE = ec->getFirstCodingBase() + offsets[s];
+	int lastCodonBaseOE = ec->getLastCodingBase() + offsets[s];
 	//cout << " firstCodingBase: " << ec->getFirstCodingBase() + offsets[s] << " lastCodingBase: " << ec->getLastCodingBase() + offsets[s] << endl;
 	//cout<<" firstCodonBase in window: "<<firstCodonBase<<" lastCodonBase in window: "<<lastCodonBase<<" frame: "<<(firstCodonBase % 3)<<endl;
 	if ((lastCodonBase - firstCodonBase + 1) % 3 != 0)
@@ -731,7 +733,6 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 			    + (aliPosOf3rdBase - aliPosOf2ndBase - 1);
 			//cout << "key:" << chrCodon1 << " " << aliPosOf1stBase << " " << (aliPosOf2ndBase - aliPosOf1stBase - 1) << " " << (aliPosOf3rdBase - aliPosOf2ndBase - 1) << " / " << key << endl;
 			acit = alignedCodons->find(key);
-			oeit = codonAliOE.find(key);
 			if (acit == alignedCodons->end()){ // insert new vector
 			  vector<int> cod(k, -1); // -1 missing codon
 			    cod[s] = chrCodon1;
@@ -743,12 +744,15 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 			  }
 			    acit->second[s] = chrCodon1;
 			}
-			if(oeit == codonAliOE.end()){
-			  vector<int> cod(k, -1); // -1 missing codon
-			  cod[s] = chrCodon1;
-			  codonAliOE.insert(pair<unsigned,vector<int> >(key, cod));
-			}else{
-			  oeit->second[s] = chrCodon1;
+			if(firstCodonBaseOE >= firstCodonBase && lastCodonBaseOE <= lastCodonBase){
+			  oeit = codonAliOE.find(key);
+			  if(oeit == codonAliOE.end()){
+			    vector<int> cod(k, -1); // -1 missing codon
+			    cod[s] = chrCodon1;
+			    codonAliOE.insert(pair<unsigned,vector<int> >(key, cod));
+			  }else{
+			    oeit->second[s] = chrCodon1;
+			  }
 			}
 		    }
 		}

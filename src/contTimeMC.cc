@@ -1017,7 +1017,7 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree)
       cout << u << "\t" << omegas[u] << "\t" << logliks[u] << "\t" << meanloglik << "\t" << postprobs[u] << "\t" << sum << "\t" << Eomega << endl;
     }
     */
-    cout << endl << "omega of whole alignment : " << Eomega << endl;
+    cout << endl << "# posterior mean estimate of omega for whole alignment : " << Eomega << endl;
     return Eomega;
 }
 
