@@ -201,7 +201,7 @@ int main( int argc, char* argv[] ){
 		string line;
 		
   
-		while (ifstrm && ifstrm.peek( ) != '>'){
+		while (ifstrm && ifstrm.peek( ) != '>' && !ifstrm.eof()){
 		    streampos file_start = ifstrm.tellg(), file_end = ifstrm.tellg();
 		    int length = 0;
 		    while(length < chunksize && ifstrm && ifstrm.peek( ) != '>'){
