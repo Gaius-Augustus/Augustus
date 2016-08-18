@@ -230,8 +230,7 @@ int main( int argc, char* argv[] ){
 			file_start = file_end;
 			length = 0;
 		    }
-		}
-			
+		}			
 		// last chunk
 		stmt1.bindInt(2,seqnr);
 		stmt1.bindInt(3,speciesid);
