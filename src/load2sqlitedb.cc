@@ -198,36 +198,56 @@ int main( int argc, char* argv[] ){
 		}
 		int seqnr = db.lastInsertID();
 		int start = 0;
+		int length = 0;
 		string line;
+		char c;
 		
-  
-		while (ifstrm && ifstrm.peek( ) != '>' && !ifstrm.eof()){
-		    streampos file_start = ifstrm.tellg(), file_end = ifstrm.tellg();
-		    int length = 0;
-		    while(length < chunksize && ifstrm && ifstrm.peek( ) != '>'){
-			if(getline(ifstrm, line)){
-			    length+=line.size();
-			    if(ifstrm.tellg() == EOF) // if file does not end properly with newline, tellg() fails
-				file_end = line.size() + file_end + 1;
-			    else
-				file_end = ifstrm.tellg();
-			}
+		streampos file_start = ifstrm.tellg();
+		streampos file_end = file_start;
+		streampos pos = file_end + streamoff(1);
+			
+		while (ifstrm && ifstrm.peek() != '>' && ifstrm.peek() != EOF){
+		    ifstrm.get(c);
+		    pos += streamoff(1);
+		    if(isalpha(c)){
+			length++;
+			file_end = pos;
 		    }
-		    stmt1.bindInt(2,seqnr);
-		    stmt1.bindInt(3,speciesid);
-		    stmt1.bindInt(4,start);
-		    stmt1.bindInt(5,start+length-1);
-		    stmt1.bindInt64(6,(uint64_t)file_start);
-		    stmt1.bindInt(7,file_end-file_start);
-		    stmt1.step();
-		    stmt1.reset();
+		    if(length >= chunksize){
+			stmt1.bindInt(2,seqnr);
+			stmt1.bindInt(3,speciesid);
+			stmt1.bindInt(4,start);
+			stmt1.bindInt(5,start+length-1);
+			stmt1.bindInt64(6,(uint64_t)file_start);
+			stmt1.bindInt(7,file_end-file_start);
+			stmt1.step();
+			stmt1.reset();
   
-		    chunkCount++;
-		    start += length;
-		    lenCount +=length;
+			chunkCount++;
+			lenCount +=length;
+
+			start += length;
+			file_start = file_end;
+			length = 0;
+		    }
 		}
+			
+		// last chunk
+		stmt1.bindInt(2,seqnr);
+		stmt1.bindInt(3,speciesid);
+		stmt1.bindInt(4,start);
+		stmt1.bindInt(5,start+length-1);
+		stmt1.bindInt64(6,(uint64_t)file_start);
+		stmt1.bindInt(7,file_end-file_start);
+		stmt1.step();
+		stmt1.reset();
+		    
+		chunkCount++;
+		lenCount +=length;
+		
 		delete name;
 		seqCount++;
+		
 	    }
 	    db.endTransaction();
 		
