@@ -12,6 +12,7 @@
 
 #include <string>
 #include <list> 
+#include <set>
 
 // Forward declarations
 class GeneFeature;
@@ -45,7 +46,6 @@ public:
 	strand(_strand),
 	frame(_frame),
 	score(_score),
-	extrinsic(""),
 	mult(0),
 	gene(NULL)
     {}
@@ -64,9 +64,14 @@ public:
     int getFrame() const {return frame;}
     std::string writeFrame() const;
     double getScore() const {return score;}
-    void setEvidence(std::string e){ if(extrinsic.empty()){extrinsic=e;}}
+    void setEvidence(std::string e){ extrinsic.insert(e);}
     void setMult(int m){mult=m;}
-    std::string getEvidence() const {return extrinsic;}
+    std::string getEvidence() const {
+      std::string e = "";
+      for (std::set<std::string>::iterator it = extrinsic.begin(); it != extrinsic.end(); ++it)
+	(e.empty())? e=*it : e= e + ":" + *it;
+      return e;
+    }
     int getMult() const {return mult;}
     FeatureType getFeatureType() const {return type;}
     int lenMod3() const {return ((len) % 3);}
@@ -89,7 +94,7 @@ private:
                            // not part of a Gene
     int frame;             // -1 if gene feature has no frame
     double score;
-    std::string extrinsic; // source of extrinsic info, e.g. 'M' (manual) or 'E' (EST).
+    std::set< std::string > extrinsic; // list of sources of extrinsic info, e.g. 'M' (manual) or 'E' (EST).
                            // empty, if gene feature is not supported by extrinsic evidence, 
     int mult;
     Gene *gene;            // pointer to the gene the feature belongs to

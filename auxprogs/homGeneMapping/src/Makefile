@@ -24,12 +24,11 @@ ifdef BOOST
 endif
 
 ifdef SQLITE
-INCLS	+= # add the sqlite include path here, if sqlite is not installed system-wide
-LIBS    += -lsqlite3 # add the sqlite library path here, if sqlite is not install system-wide
+INCLS	+= -I/hive/users/skoenig/tools/sqlite# add the sqlite include path here, if sqlite is not installed system-wide
+LIBS    += -lsqlite3 -L/hive/users/skoenig/tools/sqlite/.libs # add the sqlite library path here, if sqlite is not install system-wide
 OBJS    += sqliteDB.o
 CFLAGS  += -DSQLITE
 endif
-
 
 all: homGeneMapping
 

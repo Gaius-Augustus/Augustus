@@ -16,6 +16,10 @@
 //project includes
 #include "gene.hh"
 
+#ifdef SQLITE
+#include "sqliteDB.hh"
+#endif
+
 #ifdef BOOST
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/connected_components.hpp>
@@ -58,6 +62,10 @@ public:
     // read and write functions
     void parseGTF(std::string gtffilename);                          // reads a gene file in gtf format
     void parseExtrinsicGFF(std::string gfffilename);                 // reads a hints file in gff format
+    void insertHint(string seqname, long int start, long int end, Strand strand, string esource, int mult, int frame, string type); // inserts a single hint
+#ifdef SQLITE
+    void getDbHints(SQLiteDB &db);
+#endif
     void printGFF(std::string outdir, std::vector<Genome> &genomes); // output a gene in gtf format with
     void printBed();
     void readBed(Genome &other);

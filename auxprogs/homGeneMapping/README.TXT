@@ -15,13 +15,32 @@ alignment of the genomes and prints a summary for each gene, e.g.
      INSTALLATION
 =====================
 
-### Requirements
+### Requirements ###
 * gcc 4.6 or newer
 * HAL Tools (available at https://github.com/glennhickey/hal)
 
-
 From within the src directory, type "make"
 
+### Optional Requirements """
+* Boost graph library for option --printHomologs that clusters
+  transcripts into groups of homologs
+
+* SQLite library for option --dbaccess that enables the retrieval hints from a database:
+  Install the package libsqlite3-dev with your package manager or 
+  download the SQLite source code from http://www.sqlite.org/download.html/ 
+  (tested with  SQLite 3.8.5 ) and install as follows:
+
+   > tar zxvf sqlite-autoconf-3080500.tar.gz
+   > cd sqlite-autoconf-3080500
+   > ./configure
+   > sudo make
+   > sudo make install
+
+   If you encounter an "SQLite header and source version mismatch" error, try
+
+   > ./configure --disable-dynamic-extensions --enable-static --disable-shared
+
+   Turn on the flag SQLITE in src/Makefile and recompile
 
 
         USAGE

@@ -43,6 +43,8 @@ int main( int argc, char* argv[] ){
     string halLiftover_exec = "";
     string homGeneFile = ""; 
     size_t maxCpus=1;
+    string dbfile;
+    bool dbhints = false;
 
     static struct option long_options[] = {
 	{"gtfs", 1, 0,'g'},
@@ -54,11 +56,12 @@ int main( int argc, char* argv[] ){
 	{"cpus",1, 0, 'n'},
 	{"noDupes",0,0,'d'},
 	{"printHomologs",1,0,'m'},
+	{"dbaccess", 1, 0, 'c'},
 	{"help",0,0,'h'},
         {0,0,0,0}
     };
     int option_index = 0;
-    while ((c = getopt_long(argc, argv, "g:s:a:t:o:e:n:dm:h", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "g:s:a:t:o:e:n:dm:c:h", long_options, &option_index)) != -1) {
         switch(c)
             {
 	    case 'g':
@@ -87,6 +90,9 @@ int main( int argc, char* argv[] ){
 		break;
 	    case 'm':
 		homGeneFile = optarg;
+		break;
+	    case 'c':
+		dbfile = optarg;
 		break;   
 	    case 'h':
 		help=1;
@@ -122,7 +128,13 @@ int main( int argc, char* argv[] ){
 	    printUsage();
 	    exit(1);
 	}
-	
+	if (!dbfile.empty()){
+#ifdef SQLITE
+	    dbhints = true;
+#else
+	    throw ProjectError("Retrieval of hints from database not possible with this compiled version. Please recompile with flag SQLITE set in common.mk.\n");
+#endif
+	}
 	if(maxCpus < 1){
 	    maxCpus = 1;
 	    cerr << "number of cpus must be at least 1. Proceeding with --cpus=1" << endl; 
@@ -151,13 +163,19 @@ int main( int argc, char* argv[] ){
 	 */    
 	map<string, pair<string, string> > filenames = getFileNames (gtfs);
 	Genome::setNumGenomes(filenames.size());
-	
+
 	vector<Genome> genomes;
 	for(map<string, pair<string, string> >::iterator it = filenames.begin(); it != filenames.end(); it++){
 	    Genome genome(it->first, genomes.size());
 	    genome.parseGTF(it->second.first);
 	    if(!it->second.second.empty()) // read hints file if specified
 		genome.parseExtrinsicGFF(it->second.second);
+#ifdef SQLITE
+	    if(dbhints){
+		SQLiteDB db(dbfile.c_str());
+		genome.getDbHints(db);
+	    }
+#endif
 	    genome.setTmpDir(tmpdir);
 	    genome.printBed(); // print sequence coordinates, that need to be mapped to the other genomes, to file
 	    genomes.push_back(genome);
@@ -282,6 +300,8 @@ OPTIONS:\n\
                               Two transcripts are in the same set, if all their exons/introns are homologs and their are\n\
                               no additional exons/introns.\n\
                               This option requires the Boost C++ Library\n\
+--dbaccess=db                 retrieve hints from an SQLite database.\n\
+                              This option requires the sqlite3 package\n\
 \n\
 example:\n\
 homGeneMapping --noDupes --halLiftover_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal\n\
@@ -324,3 +344,4 @@ map<string,pair<string,string> > getFileNames (string listfile){
 	throw ProjectError("Could not open input file " + listfile + ".\n");
     return filenames;
 }
+

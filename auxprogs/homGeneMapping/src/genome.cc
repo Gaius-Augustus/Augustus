@@ -47,21 +47,19 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		vector<string> tokens = splitString(line);
 		if(tokens.size() != 9)
 		    throw ProjectError("wrong number of columns.\n");
-		
-		map<string,int>::iterator it = seqnames.find(tokens[0]);
-		if(it == seqnames.end()) // no gene on that sequence
-		    continue;
-		int seqid = it->second;
+
+		string seqname = tokens[0];
 		long int start = atol(tokens[3].c_str());
 		long int end = atol(tokens[4].c_str());
 		Strand strand = getStrand(tokens[6]);
-		
+		int frame = getFrame(tokens[7]);
+
 		/*
 		 * find source of extrinsic info, specified in gff as: source=X or src=X
 		 */
 		const char *spos;
 		string esource;
-		int mult = 0;
+		int mult = 1;
 
 		spos = strstr(tokens[8].c_str(), "source=");
 		if (spos)
@@ -85,35 +83,10 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		    spos += 5;
 		if (spos)
 		    mult = atoi(spos);
-		/*
-		 * find all gene features that are supported
-		 * by that hint and update their extrinsic source
-		 */
-		if(tokens[2] == "CDS" || tokens[2] == "intron"){
-		    int frame = getFrame(tokens[7]);
-		    FeatureType type = (tokens[2] == "CDS")? CDS : intron;
-		    if(type == intron){
-			start--;
-			end++;
-		    }
-		    SeqIntKey seqInt(start, end-start+1, type);
-		    list<GeneFeature*> le = findSeqInt(seqInt.getKey(), seqid, strand);
-		    bool isGF = false;
-		    for(list<GeneFeature*>::iterator it=le.begin(); it!=le.end(); it++){
-			if((*it)->sameFrame(frame)){
-			    (*it)->setEvidence(esource); // update extrinsic source
-			    (*it)->setMult(mult);
-			    isGF = true;
-			}
-		    }
-		    if(!isGF){
-			GeneFeature *gf = new GeneFeature(type, start, end, strand, frame);
-			gf->setEvidence(esource);
-			gf->setMult(mult);
-			insertSeqInt(gf, seqid);
-			hints.push_back(gf);		 
-		    }
-		}
+
+		string type = tokens[2];
+		if(type == "CDS" || type == "intron") // currently only CDS and intron hints
+		    insertHint(seqname,start,end,strand,esource,mult,frame,type);
 	    }	        
 	} catch( ProjectError& err ){
 	    cerr << "Error in " << gfffilename << " in line " << line_no << endl;
@@ -636,6 +609,9 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 		of <<"/"<< numI << " Intr" << endl;
 		if(numE == giit->second.numMatchingEs && numI == giit->second.numMatchingIs && (numE+numI) == (*git)->numGFs()){
 		    hasHomolog = true;
+		    //(*git)->appendHomolog(giit->second.gene,i);		    
+		}
+		if(giit->second.numMatchingEs >=1){
 		    (*git)->appendHomolog(giit->second.gene,i);		    
 		}
 	    }
@@ -700,7 +676,7 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
     else
 	of << "Intr ";
     if(g->hasEvidence())
-	of << g->getEvidence() << "-" << g->getMult() <<" (";
+      of << this->idx << g->getEvidence() << "-" << g->getMult() <<" (";
     else
 	of <<"    (";
     for(list<pair<int,GeneFeature*> >::iterator hit = homologs.begin(); hit != homologs.end(); hit++){
@@ -852,4 +828,71 @@ void printHomGeneList(string outfile, vector<Genome> &genomes){
 	cerr << "Could not open output file " << outfile << endl;
     }
 }
+
+void Genome::insertHint(string seqname, long int start, long int end, Strand strand, string esource, int mult, int frame, string f_type){
+	    
+    // insert new sequences both into the seqname AND seqID Hash
+    pair<map<string,int>::iterator,bool> seqid;
+    seqid = seqnames.insert(make_pair(seqname, seqnames.size()));
+    if(seqid.second)
+	seqIDs.insert(make_pair(seqid.first->second, seqid.first->first));
+	     
+    FeatureType type = (f_type == "CDS")? CDS : intron;
+    if(type == intron){
+	start--;
+	end++;
+    }
+    
+    SeqIntKey seqInt(start, end-start+1, type);
+    list<GeneFeature*> le = findSeqInt(seqInt.getKey(), seqid.first->second, strand);
+    bool isGF = false;
+    for(list<GeneFeature*>::iterator it=le.begin(); it!=le.end(); it++){
+	if((*it)->sameFrame(frame)){
+	    (*it)->setEvidence(esource); // update extrinsic source
+	    (*it)->setMult(mult);
+		    isGF = true;
+	}
+    }
+    if(!isGF){ // add new gene feature
+	GeneFeature *gf = new GeneFeature(type, start, end, strand, frame);
+	gf->setEvidence(esource);
+	gf->setMult(mult);
+	insertSeqInt(gf, seqid.first->second);
+	hints.push_back(gf);	 
+    }    
+}
+
+#ifdef SQLITE
+void Genome::getDbHints(SQLiteDB &db){
+
+    try{
+	Statement stmt(&db);
+	
+	stmt.prepare("SELECT seqname,start,end,typename,strand,frame,mult,esource FROM featuretypes JOIN \
+                     (SELECT seqname,start,end,type,strand,frame,mult,esource FROM hints NATURAL JOIN \
+                     (SELECT * FROM speciesnames NATURAL JOIN seqnames WHERE speciesname=$1)) ON typeid=type WHERE typename=\"CDS\" OR typename=\"intron\";");
+
+	stmt.bindText(1,name.c_str());
+	
+	while(stmt.nextResult()){  
+	    // create new Feature	
+	    string seqname = stmt.textColumn(0);
+	    long int start=stmt.intColumn(1)+1; // make coordinates 1-based (DB coordinates are 0-based)
+	    long int end=stmt.intColumn(2)+1;
+	    Strand strand = getStrand(stmt.textColumn(4));
+	    string esource = stmt.textColumn(7);
+	    int mult = stmt.intColumn(6);
+	    string type = stmt.textColumn(3);
+	    int frame = stmt.intColumn(5);
+	    insertHint(seqname,start,end,strand,esource,mult,frame,type);
+	}
+    }catch(const char* err) {
+	cerr << err << endl;
+	throw ProjectError("failed retrieving hints from DB for " + name + "."  + "\n");
+    }
+}
 #endif
+
+#endif
+
+		
