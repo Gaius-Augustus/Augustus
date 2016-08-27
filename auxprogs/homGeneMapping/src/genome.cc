@@ -87,6 +87,7 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		string type = tokens[2];
 		if(type == "CDS" || type == "intron") // currently only CDS and intron hints
 		    insertHint(seqname,start,end,strand,esource,mult,frame,type);
+
 	    }	        
 	} catch( ProjectError& err ){
 	    cerr << "Error in " << gfffilename << " in line " << line_no << endl;
@@ -828,6 +829,7 @@ void printHomGeneList(string outfile, vector<Genome> &genomes){
 	cerr << "Could not open output file " << outfile << endl;
     }
 }
+#endif
 
 void Genome::insertHint(string seqname, long int start, long int end, Strand strand, string esource, int mult, int frame, string f_type){
 	    
@@ -892,7 +894,4 @@ void Genome::getDbHints(SQLiteDB &db){
     }
 }
 #endif
-
-#endif
-
 		

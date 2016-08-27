@@ -1,11 +1,11 @@
 #
 # Makefile for homGeneMapping
 #
-BOOST = false
+# BOOST = true
 
 # set this flag to enable
 # database access for retrieval of hints
-SQLITE = false
+# SQLITE = true
 
 CC      = g++
 
@@ -24,8 +24,8 @@ ifdef BOOST
 endif
 
 ifdef SQLITE
-INCLS	+= -I/hive/users/skoenig/tools/sqlite# add the sqlite include path here, if sqlite is not installed system-wide
-LIBS    += -lsqlite3 -L/hive/users/skoenig/tools/sqlite/.libs # add the sqlite library path here, if sqlite is not install system-wide
+INCLS	+=           # add the sqlite include path here, if sqlite is not installed system-wide
+LIBS    += -lsqlite3 # add the sqlite library path here, if sqlite is not install system-wide
 OBJS    += sqliteDB.o
 CFLAGS  += -DSQLITE
 endif

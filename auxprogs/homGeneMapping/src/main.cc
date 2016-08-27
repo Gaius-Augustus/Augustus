@@ -44,7 +44,6 @@ int main( int argc, char* argv[] ){
     string homGeneFile = ""; 
     size_t maxCpus=1;
     string dbfile;
-    bool dbhints = false;
 
     static struct option long_options[] = {
 	{"gtfs", 1, 0,'g'},
@@ -129,10 +128,11 @@ int main( int argc, char* argv[] ){
 	    exit(1);
 	}
 	if (!dbfile.empty()){
-#ifdef SQLITE
-	    dbhints = true;
-#else
-	    throw ProjectError("Retrieval of hints from database not possible with this compiled version. Please recompile with flag SQLITE set in common.mk.\n");
+#ifndef SQLITE
+	    throw ProjectError("The option --dbaccess requires the SQLite library.\n"
+                               "Please install the SQLite library, e.g. using the APT package manager\n\n"
+                               "sudo apt-get install libsqlite3-dev\n\n"
+                               "Then edit the Makefile by setting the flag SQLITE = true and recompile homGeneMapping.\n");
 #endif
 	}
 	if(maxCpus < 1){
@@ -171,7 +171,7 @@ int main( int argc, char* argv[] ){
 	    if(!it->second.second.empty()) // read hints file if specified
 		genome.parseExtrinsicGFF(it->second.second);
 #ifdef SQLITE
-	    if(dbhints){
+	    if(!dbfile.empty()){
 		SQLiteDB db(dbfile.c_str());
 		genome.getDbHints(db);
 	    }
@@ -300,8 +300,11 @@ OPTIONS:\n\
                               Two transcripts are in the same set, if all their exons/introns are homologs and their are\n\
                               no additional exons/introns.\n\
                               This option requires the Boost C++ Library\n\
---dbaccess=db                 retrieve hints from an SQLite database.\n\
-                              This option requires the sqlite3 package\n\
+--dbaccess=db                 retrieve hints from an SQLite database. In order to set up a database and populate it with hints\n\
+                              a separate tool 'load2sqlitedb' is provided. For more information, see the documentation in\n\
+                              README-cgp.txt (section 8a+b) in the Augustus package. If both a database and hint files in 'gtffilenames.tbl'\n\
+                              are specified, hints are retrieved from both sources.\n\
+                              This option requires the SQLite3 library\n\
 \n\
 example:\n\
 homGeneMapping --noDupes --halLiftover_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal\n\

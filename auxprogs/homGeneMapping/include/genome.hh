@@ -62,7 +62,7 @@ public:
     // read and write functions
     void parseGTF(std::string gtffilename);                          // reads a gene file in gtf format
     void parseExtrinsicGFF(std::string gfffilename);                 // reads a hints file in gff format
-    void insertHint(string seqname, long int start, long int end, Strand strand, string esource, int mult, int frame, string type); // inserts a single hint
+    void insertHint(std::string seqname, long int start, long int end, Strand strand, std::string esource, int mult, int frame, std::string f_type);
 #ifdef SQLITE
     void getDbHints(SQLiteDB &db);
 #endif
