@@ -19,12 +19,12 @@ class GeneFeature;
 class Gene;
 
 #define NUM_STRAND_TYPES 2
-#define NUM_FEATURE_TYPES 2
+#define NUM_FEATURE_TYPES 6
 
 enum Strand{unknown=-1,plusstrand,minusstrand};
 extern std::string strandIdentifiers[NUM_STRAND_TYPES];
 
-enum FeatureType{CDS=0, intron};
+enum FeatureType{unkown=-1, CDS, intron, UTR, exon, start, stop};
 extern std::string featureTypeIdentifiers[NUM_FEATURE_TYPES];
 
 /*
@@ -60,12 +60,14 @@ public:
     Gene* getGene();
     long int getStart() const {return start;}
     int getLen() const {return len;}
+    void setLen(int l) {len = l;}
     long int getEnd() const {return (start+len-1);}
     int getFrame() const {return frame;}
     std::string writeFrame() const;
     double getScore() const {return score;}
     void setEvidence(std::string e){ extrinsic.insert(e);}
     void setMult(int m){mult=m;}
+    void setStart(long int s) {start=s;}
     std::string getEvidence() const {
       std::string e = "";
       for (std::set<std::string>::iterator it = extrinsic.begin(); it != extrinsic.end(); ++it)
@@ -76,8 +78,11 @@ public:
     FeatureType getFeatureType() const {return type;}
     int lenMod3() const {return ((len) % 3);}
     bool hasEvidence() const {return !extrinsic.empty();}
-    bool isExon() const {return (type == CDS);}
+    bool isExon() const {return (type == exon);}
+    bool isCDS() const {return (type == CDS);}
     bool isIntron() const {return (type == intron);}
+    bool isUTR() const {return (type == UTR);}
+    bool isType(FeatureType t) const {return (type == t);}
     bool isPartofGene() const {return gene;} // if false, gene feature purely represent extrinsic evidence
     bool sameStrand(Strand other);
     bool sameFrame(int other);
@@ -109,6 +114,8 @@ private:
     std::list<std::pair<int,GeneFeature*> >homologs;
 };
 
+bool compareGFs(GeneFeature *a, GeneFeature *b);
+
 /*
  * class Gene:
  * a gene is basically a list of gene features
@@ -138,17 +145,22 @@ public:
     std::string getSource() const {return source;}
     std::list<GeneFeature*> getFeatureList() const {return features;}
     int numGFs() const {return features.size();}
-    void setTLstart(long int s) {tlStart = s;}
-    void setTLend(long int e) {tlEnd = e;}
+    int numGFs(FeatureType t) const;
+    bool hasFeatures() const {return !features.empty();}
+    void sortGFs() {features.sort(compareGFs);}
+    void includeStopInCDS();
+    void setTLstart(long int s){tlStart=s;}
+    void setTLend(long int e){tlEnd=e;}
     long int getTLstart() const {return tlStart;}
     long int getTLend() const {return tlEnd;}
-    long int getStart() const; // gene start
-    long int getEnd() const;   // gene end
-    bool hasFeatures() const {return !features.empty();}
+    void insertExons();
+    void insertIntrons();
 
     std::list< std::pair<int,Gene*> >getHomologs() const {return homologs;}
     void appendHomolog(Gene *g, int idx) {homologs.push_back(std::pair<int,Gene*>(idx, g));}
 
+
+    std::list<GeneFeature*> features;
 private:
     std::string geneID;
     std::string txID;
@@ -157,8 +169,6 @@ private:
     std::string source;
     long int tlStart; // translation start
     long int tlEnd;   // translation end
-    std::list<GeneFeature*> features;
-
     /*
      * homologous genes:
      * two genes are homologous if all their gene features are
@@ -172,5 +182,6 @@ private:
 
 Strand getStrand(std::string token);
 int getFrame(std::string token);
+FeatureType getType(std::string token);
     
 #endif   //  _GENE_HH

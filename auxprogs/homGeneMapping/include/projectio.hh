@@ -154,13 +154,15 @@ inline void writePictograph(std::vector<int> v, std::ofstream &of){
 /*
  * print a pictograph from the sum of values of two vectors
  */
-inline void writePictograph(std::vector<int> u, std::vector<int> v, std::ofstream &of){
+inline void writePictograph(std::vector<int> u, std::vector<int> v, std::vector<int> w,  std::ofstream &of){
 
     u = reverse_accumulate(u);
     v = reverse_accumulate(v);
+    w = reverse_accumulate(w);
     int sumV = v.front();
     int sumU = u.front();
-    std::vector<int> w = sum(u,v);
+    int sumW = w.front();
+    std::vector<int> x = sum(v,w);
     
     
     of.setf(std::ios::showpoint|std::ios::fixed, std::ios::floatfield);
@@ -169,8 +171,9 @@ inline void writePictograph(std::vector<int> u, std::vector<int> v, std::ofstrea
     for(int i=0; i<v.size(); i++){
 	double percV = (sumV>0)? (((double)v[i]*100)/sumV) : 0.0;
 	double percU = (sumU>0)? (((double)u[i]*100)/sumU) : 0.0;
-	double percW = ((sumV+sumU)>0)? (((double)w[i]*100)/(sumU+sumV)) : 0.0;
-	double numStars = ((sumV+sumU)>0)? ((w[i]*25)/(sumV+sumU)) : 0.0;
+	double percW = (sumW>0)? (((double)w[i]*100)/sumW) : 0.0;
+	double percX = ((sumV+sumW)>0)? (((double)x[i]*100)/(sumV+sumW)) : 0.0;
+	double numStars = ((sumV+sumW)>0)? ((x[i]*25)/(sumV+sumW)) : 0.0;
 
         of << "#";
 	of.width(4); of << i;
@@ -180,7 +183,8 @@ inline void writePictograph(std::vector<int> u, std::vector<int> v, std::ofstrea
 	of.width(6); of << percV << "%";
 	of.width(10); of << w[i];
 	of.width(6); of << percW << "% ";
-
+	of.width(10); of << x[i];
+	of.width(6); of << percX << "% ";
         of << std::string(numStars, '*') << std::endl; // pictograph
     }
 }

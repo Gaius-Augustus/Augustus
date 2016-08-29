@@ -120,7 +120,9 @@ void Genome::parseGTF(string gtffilename){
 		string attribute = tokens[8];
 		stringstream ss(attribute);
 		string geneid, transid, token;
-		if(tokens[2] != "start_codon" && tokens[2] != "stop_codon" && tokens[2] != "CDS") // skip all features not in {CDS,start_codon,stop_codon}
+
+		FeatureType type = getType(tokens[2]);
+		if(type == unkown) // skip all features not in {CDS,start_codon,stop_codon,exon,UTR,intron}
 		    continue;
 		while(ss >> token){
 		    if( token.compare("gene_id") == 0 ){
@@ -153,51 +155,44 @@ void Genome::parseGTF(string gtffilename){
 		    seqid = seqnames.insert(make_pair(tokens[0], seqnames.size()));
 		    if(seqid.second)
 			seqIDs.insert(make_pair(seqid.first->second, seqid.first->first));
-
+		    
 		    Strand strand = getStrand(tokens[6]);
-		    if(gene && gene->hasFeatures())
+		    if(gene && gene->hasFeatures()){
+			gene->includeStopInCDS();
+			gene->insertIntrons();
 			genes.push_back(gene);
+			insertSeqInts(gene);
+		    }
 		    gene= new Gene(geneid,transid, seqid.first->second, strand, tokens[1]);
 		    pred_exon = NULL;
 		}
-		if(tokens[2] == "start_codon"){
+		if(type == start){
 		    gene->setTLstart(atol(tokens[3].c_str()));
 		}
-		if(tokens[2] == "stop_codon"){
-		    gene->setTLend(atol(tokens[4].c_str()));
+		if(type == stop){
+		    gene->setTLend(atol(tokens[3].c_str()));
 		}
-		if(tokens[2] == "CDS"){ // add exon to gene
-		    FeatureType type = CDS;
+		if(type == CDS || type == UTR || type == exon || type == intron){ // add exon to gene
 		    long int start = atol(tokens[3].c_str());
 		    long int end = atol(tokens[4].c_str());
+		    if(type == intron){
+			start-=1;
+			end+=1;
+		    }
 		    double score = atof(tokens[5].c_str());
 		    Strand strand = getStrand(tokens[6]);
 		    int frame = getFrame(tokens[7]);
-		    GeneFeature *exon = new GeneFeature(type, start,end,strand,frame,score);
-		    exon->setGene(gene);
-
-		    // add exon into gfHash
-		    insertSeqInt(exon);
-
-		    // add exon start/end into mappedPos
-		    insertPos(exon->getSeqID(),start);
-		    insertPos(exon->getSeqID(),end);
-
-		    // create an intron if a predecessor exon exists
-		    if(pred_exon){
-			FeatureType type = intron;
-			GeneFeature *intron = new GeneFeature(type, pred_exon->getEnd(),exon->getStart(),strand, -1, 0.0);
-			gene->appendFeature(intron);
-			intron->setGene(gene);
-			// add to gfHash
-			insertSeqInt(intron);
-		    }
-		    gene->appendFeature(exon);
-		    pred_exon = exon;
+		    GeneFeature *gf = new GeneFeature(type, start,end,strand,frame,score);
+		    gene->appendFeature(gf);
+		    gf->setGene(gene);
 		}
 	    }
-	    if(gene && gene->hasFeatures())
+	    if(gene && gene->hasFeatures()){
+		gene->includeStopInCDS();
+		gene->insertIntrons();
 		genes.push_back(gene);
+		insertSeqInts(gene);
+	    }
 	} catch( ProjectError& err ){
 	    cerr << "Error in " << gtffilename << " in line " << line_no << endl;
 	    throw err;
@@ -300,7 +295,7 @@ void Genome::liftOverTo(Genome &other, string halfile, string halLiftover_exec, 
 
 string Genome::getSeqName(int seqID) const {
 
-    map<int,string>::const_iterator it = seqIDs.find(seqID);                                                                                                 
+    map<int,string>::const_iterator it = seqIDs.find(seqID);                                                                     
     if(it == seqIDs.end())
 	throw ProjectError("internal error: unknown sequence ID seqID=" + itoa(seqID) + " in genome " + name + "\n");
     return it->second;
@@ -309,7 +304,7 @@ string Genome::getSeqName(int seqID) const {
 
 int Genome::getSeqID(string seqname) const{
 
-    map<string, int>::const_iterator it = seqnames.find(seqname);                                                                                     
+    map<string, int>::const_iterator it = seqnames.find(seqname);                                             
     if(it == seqnames.end())
 	return -1;
     return it->second;
@@ -330,12 +325,12 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes){
 
 	if(features.empty())
 	    continue;
-	GeneFeature* first = features.front();
-	vector< list< uint_fast64_t > > mappedStarts = findMappedPos(first->getSeqID(), first->getStart());
+	//GeneFeature* first = features.front();
 
 	for(list<GeneFeature*>::iterator gfit = features.begin(); gfit != features.end(); gfit++){
 	    
-	    // get mapped end positions
+	    // get mapped start and end positions
+	    vector< list< uint_fast64_t > > mappedStarts = findMappedPos((*gfit)->getSeqID(), (*gfit)->getStart());
 	    vector< list< uint_fast64_t > > mappedEnds = findMappedPos((*gfit)->getSeqID(), (*gfit)->getEnd());
 	    
 	    for(int j = 0; j < genomes.size(); j++){
@@ -349,7 +344,7 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes){
 		 * loop over all combinations of mapped start and end positions and
 		 * assemble start position s and an end position e to a seq interval, if they are  
 		 * on the same sequence. If s > e
-		 * - reverse seq interval                                                                                                      
+		 * - reverse seq interval                                                                        
 		 * - set strand to the reverse strand of gene feature gf
 		 */
 		for(std::list<uint_fast64_t>::iterator msit =mappedStarts[j].begin(); msit != mappedStarts[j].end(); msit++){
@@ -373,7 +368,7 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes){
 			    SeqIntKey seqInt(start,end-start+1, (*gfit)->getFeatureType());
 			    list<GeneFeature*> mapped_features = genomes[j].findSeqInt(seqInt.getKey(), s.getSeqID(), strand);
 			    for(list<GeneFeature*>::iterator mapped_gfit = mapped_features.begin(); mapped_gfit !=mapped_features.end();mapped_gfit++){
-				if((*gfit)->isIntron()) // append Introns
+				if((*gfit)->isIntron() || (*gfit)->isExon()) // append Introns and Exons
 				    (*gfit)->appendHomolog(*mapped_gfit,j);
 				else if((*gfit)->sameFrame((*mapped_gfit)->getFrame()) && ((*gfit)->lenMod3() == (*mapped_gfit)->lenMod3())) // append CDS, if they are in the same frame
 				    (*gfit)->appendHomolog(*mapped_gfit,j);				    		    
@@ -382,7 +377,7 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes){
 		    }
 		}
 	    }
-	    mappedStarts = mappedEnds;
+	    //mappedStarts = mappedEnds;
 	}
     }
 }
@@ -450,6 +445,20 @@ void Genome::insertSeqInt(GeneFeature* gf){ // insert exons/introns into gfHash
     }
 }
 
+void Genome::insertSeqInts(Gene *g){
+    
+    for(list<GeneFeature*>::const_iterator it = g->features.begin(); it != g->features.end(); it++){
+	// add to gfHash                                                                                                                                             
+	insertSeqInt(*it);
+	
+	// add exon start/end into mappedPos
+	if(!(*it)->isIntron()){
+	    insertPos((*it)->getSeqID(),(*it)->getStart());
+	    insertPos((*it)->getSeqID(),(*it)->getEnd());
+	}
+    }
+}
+
 void Genome::insertSeqInt(GeneFeature* gf, int seqID){ // insert exons/introns into gfHash
 
     SeqIntKey seqInt(gf->getStart(), gf->getLen(), gf->getFeatureType());
@@ -465,7 +474,7 @@ void Genome::insertSeqInt(GeneFeature* gf, int seqID){ // insert exons/introns i
 	list<GeneFeature*> l;
 	l.push_back(gf);
 	ret.first->second.insert(pair<uint_fast64_t,list<GeneFeature*> >(seqInt.getKey(), l));
-    } else {                // append exon/intron to existing list                                                                                                 
+    } else {                // append exon/intron to existing list                                                                  
 	it->second.push_back(gf);
     }
 }
@@ -486,8 +495,10 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
     vector<int> total_mappedStatsG(no_genomes);   // number of transcripts with exact homologs in at least k other genomes
     vector<int> total_mappedStatsE(no_genomes);   // number of CDS with exact homologs in at least k other genomes
     vector<int> total_mappedStatsI(no_genomes);   // number of Intr ...
+    vector<int> total_mappedStatsU(no_genomes);   // number of UTRs ...
     vector<int> total_extrinStatsE(no_genomes+1); // number of CDS supported by evidence in at least k other genomes
     vector<int> total_extrinStatsI(no_genomes+1); // number of Intr ...
+    vector<int> total_extrinStatsU(no_genomes+1); // number of UTRs ...
 
     
     for(list<Gene*>::iterator git = genes.begin(); git != genes.end(); git++){	
@@ -503,8 +514,10 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 	// stats for a single gene
 	vector<int> mappedStatsE(no_genomes);   // number of CDS with exact homologs in at least k other genomes
 	vector<int> mappedStatsI(no_genomes);   // number of Intr ...
+	vector<int> mappedStatsU(no_genomes);   // number of UTRs ...
 	vector<int> extrinStatsE(no_genomes+1); // number of CDS supported by evidence in at least k other genomes
 	vector<int> extrinStatsI(no_genomes+1); // number of Intr ...
+	vector<int> extrinStatsU(no_genomes+1); // number of UTRs ...
 
 	of << "#\n# gene feature level:\n#" << endl;
 	for(list<GeneFeature*>::iterator gfit = features.begin(); gfit != features.end(); gfit++){
@@ -541,13 +554,15 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 		}
 		if(h->isPartofGene()){
 		    hasMatch = true;
-		    GeneInfo gi(h->getGene(),h->isExon(),h->isIntron(),false);
+		    GeneInfo gi(h->getGene(),h->isCDS(),h->isIntron(),h->isExon(),false);
 		    ret = ginfo[idx].insert(pair<string,GeneInfo>(h->getTxID(),gi));
 		    if(!ret.second){ // transid already in map, only update
-			if(h->isExon())
+			if(h->isCDS())
 			    ret.first->second.numMatchingEs++;
 			else if(h->isIntron())
 			    ret.first->second.numMatchingIs++;
+			else if(h->isExon())
+			    ret.first->second.numMatchingUs++;
 		    }
 		}
 		pred_idx = idx;
@@ -557,13 +572,19 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 	    if(hasEvidence)
 		numEvidence++;
 
-	    if((*gfit)->isExon()){
+	    if((*gfit)->isCDS()){
 		total_mappedStatsE[numMatches]++;
 		total_extrinStatsE[numEvidence]++;
 		mappedStatsE[numMatches]++;
 		extrinStatsE[numEvidence]++;
 
 	    }
+	    else if((*gfit)->isExon()){
+                total_mappedStatsU[numMatches]++;
+                total_extrinStatsU[numEvidence]++;
+                mappedStatsU[numMatches]++;
+                extrinStatsU[numEvidence]++;
+            }
 	    else{
 		total_mappedStatsI[numMatches]++;
 		total_extrinStatsI[numEvidence]++;
@@ -575,19 +596,19 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 	of << "#" << endl;
 	of << "# number/% of features with exact homologs in at least k other genomes:" << endl;
 	of << "#" << endl;
-	of << "#---------------------------------------------------------------------------------" << endl;       
-	of << "#   k           CDS             Intr             Both" << endl;
-	of << "#---------------------------------------------------------------------------------" << endl;
+	of << "#---------------------------------------------------------------------------------------------------" << endl;       
+	of << "#   k           CDS             Intr             Exon              Intr+Exon" << endl;
+	of << "#---------------------------------------------------------------------------------------------------" << endl;
 	of << "#" << endl;
-	writePictograph(mappedStatsE,mappedStatsI,of);
+	writePictograph(mappedStatsE,mappedStatsI,mappedStatsU,of);
 	of << "#" << endl;
 	of << "# number/% of features supported by extrinsic evidence in at least k genomes :" << endl;
 	of << "#" << endl;
-	of << "#---------------------------------------------------------------------------------" << endl;       
-	of << "#   k           CDS             Intr             Both" << endl;
-	of << "#---------------------------------------------------------------------------------" << endl;       
+	of << "#---------------------------------------------------------------------------------------------------" << endl;       
+	of << "#   k           CDS             Intr             Exon              Intr+Exon" << endl;
+	of << "#---------------------------------------------------------------------------------------------------" << endl;       
 	of << "#" << endl;
-	writePictograph(extrinStatsE,extrinStatsI,of);
+	writePictograph(extrinStatsE,extrinStatsI,extrinStatsU,of);
 	of << "#\n# transcript level:\n#" << endl;
 	
 	int numHomologs = 0;
@@ -597,9 +618,14 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 	    bool hasHomolog = false;
 	    for(map<string,GeneInfo>::iterator giit = ginfo[i].begin(); giit != ginfo[i].end(); giit++){
 		
-		int numE = 1 + (giit->second.gene->numGFs()/2);
-		int numI = (giit->second.gene->numGFs()/2);
-		
+		//int numE = 1 + (giit->second.gene->numGFs()/2);
+		//int numI = (giit->second.gene->numGFs()/2);
+		//int numU = (giit->second.gene->numGFs()/2);		
+
+		int numE = giit->second.gene->numGFs(CDS);
+		int numI = giit->second.gene->numGFs(intron);
+		int numU = giit->second.gene->numGFs(exon);		
+
 		of << "#";
 		of << setw(4) << right << i << " ";
 		of << "gene_id="<< setw(30) << left << giit->second.gene->getGeneID();
@@ -607,12 +633,14 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
 		of << setw(3) << right << giit->second.numMatchingEs;
  		of << "/"<< numE << " CDS";
 		of <<setw(3) << right << giit->second.numMatchingIs;
-		of <<"/"<< numI << " Intr" << endl;
-		if(numE == giit->second.numMatchingEs && numI == giit->second.numMatchingIs && (numE+numI) == (*git)->numGFs()){
+		of <<"/"<< numI << " Intr";
+		of <<setw(3) << right << giit->second.numMatchingUs;
+		of <<"/"<< numU << " exon" << endl;
+		if(numU == giit->second.numMatchingUs && numU == (*git)->numGFs(exon)){
 		    hasHomolog = true;
 		    //(*git)->appendHomolog(giit->second.gene,i);		    
 		}
-		if(giit->second.numMatchingEs >=1){
+		if(giit->second.numMatchingUs >=1){
 		    (*git)->appendHomolog(giit->second.gene,i);		    
 		}
 	    }
@@ -635,19 +663,19 @@ void Genome::printGFF(string outdir, vector<Genome> &genomes){
     of << "#" << endl;
     of << "# number/% of features with exact homologs in at least k other genomes:" << endl;
     of << "#" << endl;
-    of << "#---------------------------------------------------------------------------------" << endl;       
-    of << "#   k           CDS             Intr             Both" << endl;
-    of << "#---------------------------------------------------------------------------------" << endl;
+    of << "#---------------------------------------------------------------------------------------------------" << endl;       
+    of << "#   k           CDS             Intr             Exon              Intr+Exon" << endl;
+    of << "#---------------------------------------------------------------------------------------------------" << endl;
     of << "#" << endl;
-    writePictograph(total_mappedStatsE,total_mappedStatsI,of);
+    writePictograph(total_mappedStatsE,total_mappedStatsI,total_mappedStatsU,of);
     of << "#" << endl;
     of << "# number/% of features supported by extrinsic evidence in at least k genomes :" << endl;
     of << "#" << endl;
-    of << "#---------------------------------------------------------------------------------" << endl;       
-    of << "#   k           CDS             Intr             Both" << endl;
-    of << "#---------------------------------------------------------------------------------" << endl;       
+    of << "#---------------------------------------------------------------------------------------------------" << endl;       
+    of << "#   k           CDS             Intr             Exon              Intr+Exon" << endl;
+    of << "#---------------------------------------------------------------------------------------------------" << endl;
     of << "#" << endl;
-    writePictograph(total_extrinStatsE,total_extrinStatsI,of);
+    writePictograph(total_extrinStatsE,total_extrinStatsI,total_extrinStatsU,of);
     of << "#" << endl;
     of << "# transcript level:" << endl;
     of << "#" << endl;
@@ -672,8 +700,10 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
 
     
     of << "# ";
-    if(g->isExon())
+    if(g->isCDS())
 	of << "CDS  ";
+    else if(g->isExon())
+	of << "Exon ";
     else
 	of << "Intr ";
     if(g->hasEvidence())
@@ -712,7 +742,6 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
 	of << " ";
     }
     of << ")" << endl;
-
 }
 
 void Genome::writeGene(Gene *g, std::ofstream &of) const{
@@ -728,50 +757,30 @@ void Genome::writeGene(Gene *g, std::ofstream &of) const{
     // transcript line
     of << getSeqName(g->getSeqID()) << "\t";
     of << g->getSource() << "\ttranscript\t";
-    of << g->getStart() << "\t";
-    of << g->getEnd() << "\t.\t";
+    of << g->features.front()->getStart() << "\t";
+    of << g->features.back()->getEnd() << "\t.\t";
     of << strandIdentifiers[g->getStrand()] << "\t.\t";
     of << g->getTxID() << endl;
-    
-    if(g->getStrand() == plusstrand)
-	writeTLStart(g, of);
-    else
-	writeTLEnd(g,of);
 
-    // print exons and introns
-    list<GeneFeature*> features = g->getFeatureList();
-    for(list<GeneFeature*>::iterator gfit = features.begin(); gfit != features.end(); gfit++){
-	writeGeneFeature(*gfit, of);
+    if(g->getTLstart() >= 0){
+	FeatureType type = start;
+	GeneFeature *start = new GeneFeature(type, g->getTLstart(), g->getTLstart()+2, g->getStrand());
+	g->appendFeature(start);
+	start->setGene(g);
     }
-    if(g->getStrand() == plusstrand)
-	writeTLEnd(g, of);
-    else
-	writeTLStart(g,of);
-}
-
-void Genome::writeTLStart(Gene *g, std::ofstream &of) const{
-  if(g->getTLstart() >= 0){
-	of << getSeqName(g->getSeqID()) << "\t";
-	of << g->getSource() << "\tstart_codon\t";
-	of << g->getTLstart() << "\t";
-	of << g->getTLstart()+2 << "\t.\t";
-	of << strandIdentifiers[g->getStrand()] << "\t.\t";
-	of << "transcript_id \"" << g->getTxID() << "\"; ";
-	of << "gene_id \"" << g->getGeneID() << "\";" << endl;
-    }
- 
-}
-void Genome::writeTLEnd(Gene *g, std::ofstream &of) const{
     if( g->getTLend() >= 0){
-	of << getSeqName(g->getSeqID()) << "\t";
-	of << g->getSource() << "\tstop_codon\t";
-	of << g->getTLend()-2 << "\t";
-	of << g->getTLend() << "\t.\t";
-	of << strandIdentifiers[g->getStrand()] << "\t.\t";
-	of << "transcript_id \"" << g->getTxID() << "\"; ";
-	of << "gene_id \"" << g->getGeneID() << "\";" << endl;
+	FeatureType type = stop;
+	GeneFeature *stop = new GeneFeature(type, g->getTLend(), g->getTLend()+2, g->getStrand());
+	g->appendFeature(stop);
+	stop->setGene(g);
     }
+    g->sortGFs();
+
+    // print gene features
+    for(list<GeneFeature*>::iterator gfit = g->features.begin(); gfit != g->features.end(); gfit++)
+	writeGeneFeature(*gfit, of);
 }
+
 
 #ifdef BOOST
 void printHomGeneList(string outfile, vector<Genome> &genomes){
@@ -863,6 +872,7 @@ void Genome::insertHint(string seqname, long int start, long int end, Strand str
 	hints.push_back(gf);	 
     }    
 }
+
 
 #ifdef SQLITE
 void Genome::getDbHints(SQLiteDB &db){

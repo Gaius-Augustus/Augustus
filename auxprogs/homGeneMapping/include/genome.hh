@@ -58,7 +58,6 @@ public:
     int getIdx() const {return idx;}
     std::string getName(){return name;}
 
-
     // read and write functions
     void parseGTF(std::string gtffilename);                          // reads a gene file in gtf format
     void parseExtrinsicGFF(std::string gfffilename);                 // reads a hints file in gff format
@@ -86,6 +85,7 @@ public:
     std::vector< std::list< uint_fast64_t > > findMappedPos(int seqID, long int pos);
     void insertSeqInt(GeneFeature* gf); // insert gene features into gfHash
     void insertSeqInt(GeneFeature* gf, int seqID); // insert hints into gfHash
+    void insertSeqInts(Gene *g); // inserts all gene features of g into gfHash and mappedPos
     std::list<GeneFeature*> findSeqInt(uint_fast64_t key, int seqID, Strand strand); // retrieve gene features from gfHash
 
     // static functions
@@ -142,10 +142,11 @@ void printHomGeneList(std::string outfile, std::vector<Genome> &genomes);
 struct GeneInfo{
 
 public:
-    GeneInfo(Gene *_gene, int _numMatchingEs, int _numMatchingIs, bool _frameshift) :
+    GeneInfo(Gene *_gene, int _numMatchingEs, int _numMatchingIs, int _numMatchingUs, bool _frameshift) :
 	gene(_gene),
 	numMatchingEs(_numMatchingEs),
 	numMatchingIs(_numMatchingIs),
+	numMatchingUs(_numMatchingUs),
 	frameshift(_frameshift)
     {}
     ~GeneInfo(){}
@@ -153,6 +154,7 @@ public:
     Gene *gene;
     int numMatchingEs;
     int numMatchingIs;
+    int numMatchingUs;
     bool frameshift;
 };
 
