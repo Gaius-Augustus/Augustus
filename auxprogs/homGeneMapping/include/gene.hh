@@ -24,7 +24,7 @@ class Gene;
 enum Strand{unknown=-1,plusstrand,minusstrand};
 extern std::string strandIdentifiers[NUM_STRAND_TYPES];
 
-enum FeatureType{unkown=-1, CDS, intron, UTR, exon, start, stop};
+enum FeatureType{unkown=-1, CDS, intron, exon, UTR, start, stop};
 extern std::string featureTypeIdentifiers[NUM_FEATURE_TYPES];
 
 /*
@@ -86,8 +86,6 @@ public:
     bool isPartofGene() const {return gene;} // if false, gene feature purely represent extrinsic evidence
     bool sameStrand(Strand other);
     bool sameFrame(int other);
-
-    std::list< std::pair<int,GeneFeature*> >getHomologs() const {return homologs;}
     void appendHomolog(GeneFeature *gf, int idx) {homologs.push_back(std::pair<int,GeneFeature*>(idx, gf));}
 
 private:
@@ -111,6 +109,7 @@ private:
      * means that gene feature has 4 homologs:
      * 2 in genome 0 (gf1 and gf2), 1 in genome 2 (gf3) and 1 in genome 3 (gf4)
      */
+public:
     std::list<std::pair<int,GeneFeature*> >homologs;
 };
 
@@ -143,7 +142,6 @@ public:
     std::string getTxID() const {return txID;}
     int getSeqID() const {return seqID;}
     std::string getSource() const {return source;}
-    std::list<GeneFeature*> getFeatureList() const {return features;}
     int numGFs() const {return features.size();}
     int numGFs(FeatureType t) const;
     bool hasFeatures() const {return !features.empty();}
@@ -155,12 +153,9 @@ public:
     long int getTLend() const {return tlEnd;}
     void insertExons();
     void insertIntrons();
-
-    std::list< std::pair<int,Gene*> >getHomologs() const {return homologs;}
     void appendHomolog(Gene *g, int idx) {homologs.push_back(std::pair<int,Gene*>(idx, g));}
 
 
-    std::list<GeneFeature*> features;
 private:
     std::string geneID;
     std::string txID;
@@ -169,6 +164,7 @@ private:
     std::string source;
     long int tlStart; // translation start
     long int tlEnd;   // translation end
+public:
     /*
      * homologous genes:
      * two genes are homologous if all their gene features are
@@ -178,6 +174,7 @@ private:
      * means that gene feature has 3 homologs in genome 0,2 and 3, respectively.
      */
     std::list<std::pair<int,Gene*> >homologs;
+    std::list<GeneFeature*> features;
 };
 
 Strand getStrand(std::string token);

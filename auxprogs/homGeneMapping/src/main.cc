@@ -44,6 +44,7 @@ int main( int argc, char* argv[] ){
     string homGeneFile = ""; 
     size_t maxCpus=1;
     string dbfile;
+    bool print_details = false;
 
     static struct option long_options[] = {
 	{"gtfs", 1, 0,'g'},
@@ -54,13 +55,14 @@ int main( int argc, char* argv[] ){
  	{"halLiftover_exec_dir",1, 0, 'e'},
 	{"cpus",1, 0, 'n'},
 	{"noDupes",0,0,'d'},
+	{"details",0,0,'i'},
 	{"printHomologs",1,0,'m'},
 	{"dbaccess", 1, 0, 'c'},
 	{"help",0,0,'h'},
         {0,0,0,0}
     };
     int option_index = 0;
-    while ((c = getopt_long(argc, argv, "g:s:a:t:o:e:n:dm:c:h", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "g:s:a:t:o:e:n:dim:c:h", long_options, &option_index)) != -1) {
         switch(c)
             {
 	    case 'g':
@@ -86,6 +88,9 @@ int main( int argc, char* argv[] ){
 		break;   
 	    case 'd':
 		halParam+="--noDupes ";
+		break;
+	    case 'i':
+		print_details=true;
 		break;
 	    case 'm':
 		homGeneFile = optarg;
@@ -231,7 +236,7 @@ int main( int argc, char* argv[] ){
 	    // identify homologous gene features (exons/introns)
 	    genomes[i].mapGeneFeatures(genomes);
 	    // print extended gene files with homology information
-	    genomes[i].printGFF(outdir,genomes);
+	    genomes[i].printGFF(outdir,genomes,print_details);
 	}
 	// print a list with homologous transcript IDs, e.g.
 	// # 0     dana
@@ -283,6 +288,7 @@ OPTIONS:\n\
 --help                        print this usage info\n\
 --cpus=N                      N is the number of CPUs to use (default: 1)\n\
 --noDupes                     do not map between duplications in hal graph. (default: off)\n\
+--details                     print detailed output (default: off)\n\
 --halLiftover_exec_dir=DIR    Directory that contains the executable halLiftover\n\
                               If not specified it must be in $PATH environment variable.\n\
 --tmpdir=DIR                  a temporary file directory that stores lifted over files. (default 'tmp/' in current directory)\n\

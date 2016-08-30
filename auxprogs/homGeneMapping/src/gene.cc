@@ -21,7 +21,7 @@ string strandIdentifiers[NUM_STRAND_TYPES]=
     {"+", "-"};
 
 string featureTypeIdentifiers[NUM_FEATURE_TYPES]=
-    {"CDS", "intron","UTR", "exon", "start_codon", "stop_codon"};
+    {"CDS", "intron","exon", "UTR", "start_codon", "stop_codon"};
 
 string GeneFeature::getGeneID() const {
     return gene->getGeneID();
@@ -177,6 +177,16 @@ void Gene::insertExons(){
             pred_exon = exon;
         }
     }
+}
+
+void Gene::insertIntrons(){
+
+    int numIntr = numGFs(intron);
+    int numEx = numGFs(exon);
+
+    if(numEx == 0)
+        insertExons();
+
     // delete UTR GeneFeatures - not needed anymore
     for(list<GeneFeature*>::iterator it=features.begin(); it!=features.end();){
 	if ((*it)->isUTR()){
@@ -188,16 +198,8 @@ void Gene::insertExons(){
 	}
     }
     sortGFs();
-}
-
-void Gene::insertIntrons(){
-
-    int numIntr = numGFs(intron);
-    int numEx = numGFs(exon);
-
-    if(numEx == 0)
-        insertExons();
-    if(numIntr == 0){
+    numEx = numGFs(exon);
+    if(numIntr == 0 && numEx > 1){
         GeneFeature *pred_exon = NULL;
         for(list<GeneFeature*>::iterator it=features.begin(); it!=features.end();it++){
             if (!(*it)->isExon())

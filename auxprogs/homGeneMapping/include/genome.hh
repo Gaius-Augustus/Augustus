@@ -65,7 +65,7 @@ public:
 #ifdef SQLITE
     void getDbHints(SQLiteDB &db);
 #endif
-    void printGFF(std::string outdir, std::vector<Genome> &genomes); // output a gene in gtf format with
+    void printGFF(std::string outdir, std::vector<Genome> &genomes, bool detailed=false); // output a gene in gtf format with
     void printBed();
     void readBed(Genome &other);
     void writeGeneFeature(GeneFeature *gf, std::ofstream &of) const;
