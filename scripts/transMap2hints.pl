@@ -164,20 +164,20 @@ while (<TRANSMAP>) {
     $numBlocks = scalar @s;
     # start and stop hint
     if ($strand eq '+') {
-	if ($txStart != $cdsStart && $cdsStart > 0) {
+	if ($txStart != $cdsStart && $cdsStart > 0 && $leftcmpl == 'cmpl') {
 	    @hint = ($cdsStart+1-$start_stop_radius, $cdsStart+3+$start_stop_radius, '+', $qname);
 	    addSignalHint(\@starthints, [@hint]);
 	}
-	if ($txEnd != $cdsEnd && $cdsEnd > 0) {
+	if ($txEnd != $cdsEnd && $cdsEnd > 0 && $rightcmpl == 'cmpl') {
 	    @hint = ($cdsEnd-2-$start_stop_radius, $cdsEnd+$start_stop_radius, '+', $qname);
 	    addSignalHint(\@stophints, [@hint]);
 	}
     } else{
-	if ($txStart != $cdsStart && $cdsStart > 0) {
+	if ($txStart != $cdsStart && $cdsStart > 0 && $leftcmpl == 'cmpl') {
 	    @hint = ($cdsStart+1-$start_stop_radius, $cdsStart+3+$start_stop_radius, '-', $qname);
 	    addSignalHint(\@stophints, [@hint]);
 	}
-	if ($txEnd != $cdsEnd && $cdsEnd > 0) {
+	if ($txEnd != $cdsEnd && $cdsEnd > 0 && $rightcmpl == 'cmpl') {
 	    @hint = ($cdsEnd-2-$start_stop_radius, $cdsEnd+$start_stop_radius, '-', $qname);
 	    addSignalHint(\@starthints, [@hint]);
 	}
@@ -208,72 +208,74 @@ while (<TRANSMAP>) {
     for ($i=0; $i<$numBlocks; $i++) {
 	$from = $s[$i]+1;
 	$to   = $e[$i];
-	if ($i==0) {
-	    if ($from + $utrend_cutoff <= $to) { 
-		$from += $utrend_cutoff;
-	    } else {
-		$from = $to;
-	    } 
-	    if ($from > $cdsStart && $cdsStart >= $txStart ) {
-                $from = $cdsStart;
+	if ($in[$i] == 1) {
+        if ($i==0) {
+            if ($from + $utrend_cutoff <= $to) {
+            $from += $utrend_cutoff;
+            } else {
+            $from = $to;
             }
-	}
-	if ($i == $numBlocks-1) {
-	    if ($to - $utrend_cutoff >= $from) {
-		$to -= $utrend_cutoff;
-	    } else {
-		$to = $from;
-	    } 
-	    if ($to < $cdsEnd && $cdsEnd <= $txEnd) {
-                $to = $cdsEnd;
+            if ($from > $cdsStart && $cdsStart >= $txStart ) {
+                    $from = $cdsStart;
+                }
+        }
+        if ($i == $numBlocks-1) {
+            if ($to - $utrend_cutoff >= $from) {
+            $to -= $utrend_cutoff;
+            } else {
+            $to = $from;
             }
-	}
-	if ($ephintbegin<0 || $ephintend <0) {
-	    $ephintbegin = $from;
-	    $ephintend = $to;
-	} elsif ((($ephintend < $cdsStart || $ephintbegin>$cdsEnd) && ($ephintend + $min_intron_len_utr + 1 >= $from))||
-		 ($ephintend + $min_intron_len + 1 >= $from)){
-	    $ephintend = $to;
-	} else { # large gap 
-	    $ifrom = $ephintend+1;
-	    $ito = $from-1;
-	    if ($ito-$ifrom+1 >= $min_intron_len && $in[$i-1]) {
-		@hint = ($ifrom, $ito, $strand, $qname);
-		addIntervalHint(\@intronhints, [@hint]);
-		# also add dss and ass hints in case it is an utr intron. those intron hints don't help
-		if ($ifrom < $cdsStart || $ifrom  > $cdsEnd ) {
-		    @hint = ($ifrom, $ifrom, $strand, $qname);
-		    if ($strand eq '+') {
-			addSignalHint(\@dsshints, [@hint]);
-		    } else {
-			addSignalHint(\@asshints, [@hint]);
-		    }
-		}
-		if ($ito < $cdsStart || $ito  > $cdsEnd ) {
-		    @hint = ($ito, $ito, $strand, $qname);
-		    if ($strand eq '+') {
-			addSignalHint(\@asshints, [@hint]);
-		    } else {
-			addSignalHint(\@dsshints, [@hint]);
-		    }
-		}
-		$ifrom += $ip_cutoff;
-		$ito -= $ip_cutoff;
-		if ($ifrom < $ito && $ifrom > $cdsStart && $ito < $cdsEnd && $ito-$ifrom+1 <= $max_intronpart_len) {
-		    @hint = ($ifrom, $ito, $strand, $qname);
-		    addIntervalHint(\@intronparthints, [@hint]);
-		}
-	    }
-	    addExonpartFuzzyHint($ephintbegin, $ephintend, $strand, $qname);
-	    $ephintbegin = $from;
-	    $ephintend = $to;
-	}
-    }
-    addExonpartFuzzyHint($ephintbegin, $ephintend, $strand, $qname);
-    $ephintbegin = $from;
-    $ephintend = $to;
+            if ($to < $cdsEnd && $cdsEnd <= $txEnd) {
+                    $to = $cdsEnd;
+                }
+        }
+        if ($ephintbegin<0 || $ephintend <0) {
+            $ephintbegin = $from;
+            $ephintend = $to;
+        } elsif ((($ephintend < $cdsStart || $ephintbegin>$cdsEnd) && ($ephintend + $min_intron_len_utr + 1 >= $from))||
+             ($ephintend + $min_intron_len + 1 >= $from)){
+            $ephintend = $to;
+        } else { # large gap
+            $ifrom = $ephintend+1;
+            $ito = $from-1;
+            if ($ito-$ifrom+1 >= $min_intron_len && $in[$i-1]) {
+            @hint = ($ifrom, $ito, $strand, $qname);
+            addIntervalHint(\@intronhints, [@hint]);
+            # also add dss and ass hints in case it is an utr intron. those intron hints don't help
+            if ($ifrom < $cdsStart || $ifrom  > $cdsEnd ) {
+                @hint = ($ifrom, $ifrom, $strand, $qname);
+                if ($strand eq '+') {
+                addSignalHint(\@dsshints, [@hint]);
+                } else {
+                addSignalHint(\@asshints, [@hint]);
+                }
+            }
+            if ($ito < $cdsStart || $ito  > $cdsEnd ) {
+                @hint = ($ito, $ito, $strand, $qname);
+                if ($strand eq '+') {
+                addSignalHint(\@asshints, [@hint]);
+                } else {
+                addSignalHint(\@dsshints, [@hint]);
+                }
+            }
+            $ifrom += $ip_cutoff;
+            $ito -= $ip_cutoff;
+            if ($ifrom < $ito && $ifrom > $cdsStart && $ito < $cdsEnd && $ito-$ifrom+1 <= $max_intronpart_len) {
+                @hint = ($ifrom, $ito, $strand, $qname);
+                addIntervalHint(\@intronparthints, [@hint]);
+            }
+            }
+            addExonpartFuzzyHint($ephintbegin, $ephintend, $strand, $qname);
+            $ephintbegin = $from;
+            $ephintend = $to;
+        }
+        }
+        addExonpartFuzzyHint($ephintbegin, $ephintend, $strand, $qname);
+        $ephintbegin = $from;
+        $ephintend = $to;
 
-    $oldtargetname = $targetname;
+        $oldtargetname = $targetname;
+    }
 }
 
 printHints();
