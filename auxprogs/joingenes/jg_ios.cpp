@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void load_error(string const &error)
+void loadError(string const &error)
 {
   cerr << "Load error: " << error << endl;
   cerr << "The file is not in a correct gff or gtf format." << endl;
@@ -16,6 +16,35 @@ void load_warning(string const &warning)
   cerr << "This warning may affect the result." << endl;
 }
 
+map<string,int> getFileNames (string fofn){
+  map<string,int> filenames;
+  ifstream ifstrm(fofn.c_str());
+  if (ifstrm.is_open()){
+    char buf[256];
+    while(ifstrm.getline(buf,255)){
+      stringstream stm(buf);
+      string genefile;
+      int priority;
+      if(stm >> genefile){
+	if (stm >> priority)  
+	  filenames[genefile] = priority;
+	else
+	  filenames[genefile] = 1;
+      }
+      else
+	loadError(fofn + " has wrong format in line\n" + buf + "\nCorrect format:\n\n"
+                                   "path/to/gtf/of/genome_1  priority_of_genome_1\n"
+                                   "path/to/gtf/of/genome_2  priority_of_genome_2\n...\n"
+                                   "path/to/gtf/of/genome_N  priority_of_genome_N\n\n"
+			   "the last column is optional.\n");
+    }
+    ifstrm.close();
+  }
+  else
+    loadError("Could not open input file " + fofn + ".\n");
+  return filenames;
+}
+
 void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority, unordered_map<string,bool> &taxaMap, Properties &properties)
 {
   // loads gtf file in a special data structure
@@ -26,7 +55,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
   // if their is a notation for prediction ranges BEFORE a transcript in the form "#Xprediction on sequence rangeX:NYNYZ" it will save this for the transcript where "X" can be every char exept ":", "Y" have to be a char out of " ", "-", "(", ")", "b", "p", and "Z" can be every char and the number of X,Y and Z is arbitrary at every position and "N" are the prediction range integers with the lower one first
   ifstream infile(filename.c_str());
 
-  if(!infile){load_error("Die Datei "+filename+" exisitiert nicht");}
+  if(!infile){loadError("Could not open file "+filename+".\n");}
   char buff[1024]; 
   char copybuff[1024];
   char *temp;
@@ -49,23 +78,23 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
       (*transcript).priority = priority;
       strncpy(copybuff, buff, 1014);
       if (strstr(buff, "\t")==NULL) {
-	load_error("Line not tab separated in file "+filename+":\nProblemLine: "+lineStr);
+	loadError("Line not tab separated in file "+filename+":\nProblemLine: "+lineStr);
       }
       temp = strtok(buff, "\t");
       if (temp){
 	exon.chr = temp;
       }else 
-	load_error("Can not read sequence name in file "+filename+":\nProblemLine: "+lineStr);
+	loadError("Can not read sequence name in file "+filename+":\nProblemLine: "+lineStr);
       temp = strtok(NULL, "\t");
       if (temp)
 	(*transcript).source = temp;
       else
-	load_error("Can not read second column in file "+filename+":\nProblemLine: "+lineStr);
+	loadError("Can not read second column in file "+filename+":\nProblemLine: "+lineStr);
       temp = strtok(NULL, "\t");
       if (temp)
 	exon.feature = temp;
       else
-	load_error("Can not read feature in file "+filename+":\nProblemLine: "+lineStr);
+	loadError("Can not read feature in file "+filename+":\nProblemLine: "+lineStr);
       if (exon.feature != "CDS" && exon.feature != "start_codon" && exon.feature != "stop_codon" && exon.feature != "exon" && exon.feature != "UTR" && exon.feature != "3'-UTR" && exon.feature != "5'-UTR" && exon.feature != "tss" && exon.feature != "tts"  && exon.feature != "intron"){
 	if (exon.feature != "gene" && exon.feature != "transcript"){
 	  list<string>::iterator fit = find(unknownFeatures.begin(),unknownFeatures.end(),exon.feature);
@@ -80,31 +109,31 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
       if (temp)
 	exon.from = atoi(temp);
       else 
-	load_error("Can not read start position in file "+filename+":\nProblemLine: "+lineStr);
+	loadError("Can not read start position in file "+filename+":\nProblemLine: "+lineStr);
       temp = strtok(NULL, "\t");
       if (temp)
 	exon.to = atoi(temp);
       else
-	load_error("Can not read end position in file "+filename+":\nProblemLine: "+lineStr);
+	loadError("Can not read end position in file "+filename+":\nProblemLine: "+lineStr);
       temp = strtok(NULL, "\t");
       if (temp) 
 	exon.score = atof(temp);
       else 
-	load_error("Can not read score in file "+filename+":\nProblemLine: "+lineStr);
+	loadError("Can not read score in file "+filename+":\nProblemLine: "+lineStr);
       temp = strtok(NULL, "\t");
       if (!temp)
-	load_error("Can not read strand in file "+filename+":\nProblemLine: "+lineStr);
+	loadError("Can not read strand in file "+filename+":\nProblemLine: "+lineStr);
       if (strcmp(temp, "+") == 0)
 	(*transcript).strand = '+';
       else if (strcmp(temp, "-") == 0)
 	(*transcript).strand = '-';
       else {
 	(*transcript).strand = '.';
-	load_error("The strand of this transcript is unknown in file "+filename+":\nProblemLine: "+lineStr);
+	loadError("The strand of this transcript is unknown in file "+filename+":\nProblemLine: "+lineStr);
       }
       temp = strtok(NULL, "\t");
       if (!temp)
-	load_error("Can not read frame.");
+	loadError("Can not read frame.");
       if (strcmp(temp, "0") == 0)
 	exon.frame = 0;
       else if (strcmp(temp, "1") == 0)
@@ -136,7 +165,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 	      transcript_id = temp_inside;
 	      transcript->originalId = temp_inside;
 	    }else{
-	      load_error("Missing id behind the flag transcript_id in file "+filename+":\nProblemLine: "+lineStr);
+	      loadError("Missing id behind the flag transcript_id in file "+filename+":\nProblemLine: "+lineStr);
 	    }
 	  }
 	  if (strstr(temp_inside, "gene_id")!=NULL){
@@ -144,7 +173,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 	    if (temp_inside){
 	      gene_id = temp_inside;
 	    }else{
-	      load_error("Missing id behind the flag gene_id in file "+filename+" at "+exon.chr+" from "+to_string((long long int) exon.from)+" to "+to_string((long long int) exon.to)+".");
+	      loadError("Missing id behind the flag gene_id in file "+filename+" at "+exon.chr+" from "+to_string((long long int) exon.from)+" to "+to_string((long long int) exon.to)+".");
 	    }
 	  }
 	  temp_inside = strtok(NULL, "\"");
@@ -193,11 +222,11 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 	  thisFileTranscriptMap[transcript_id]->tl_complete.second = true;
 	  thisFileTranscriptMap[transcript_id]->stop_list.push_back(exon);		// TESTLARS
 	}else if (exon.feature == "tss"){
-	  if (exon.from != exon.to){load_error("\"tss\" can only take place on one position.");}
+	  if (exon.from != exon.to){loadError("\"tss\" can only take place on one position.");}
 	  thisFileTranscriptMap[transcript_id]->tss = exon.from;
 	  thisFileTranscriptMap[transcript_id]->tx_complete.first = true;
 	}else if (exon.feature == "tts"){
-	  if (exon.from != exon.to){load_error("\"tts\" can only take place on one position.");}
+	  if (exon.from != exon.to){loadError("\"tts\" can only take place on one position.");}
 	  thisFileTranscriptMap[transcript_id]->tts = exon.to;
 	  thisFileTranscriptMap[transcript_id]->tx_complete.second = true;
 	}else if (exon.feature == "intron"){
@@ -215,8 +244,8 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 	}
 
 	thisFileTranscriptMap[transcript_id]->parent = thisFileGeneMap[gene_id];
-      }else 
-	load_error("Can not read last column.");
+      }else
+	loadError("Can not read last column.");
       //}else{}	// cerr << "A line without gene_id and/or transcript_id." << endl;
     }else {			// if line starts with '#'
       strncpy(copybuff, buff, 1014);
@@ -248,7 +277,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
   for(auto pointer = thisFileTranscriptMap.begin(); pointer != thisFileTranscriptMap.end(); pointer++)
     {
       /*if (thisFileGeneMap.find(pointer->second->parent->g_id) == thisFileGeneMap.end()){
-	load_error("Something went wrong in the load function, because one transcript is part of an unknown gene.");
+	loadError("Something went wrong in the load function, because one transcript is part of an unknown gene.");
 	}*/
       (*properties.geneMap)[pointer->second->parent->g_id]->children.push_front(pointer->second);
       if ((*properties.transcriptMap).find(pointer->second->t_id) != (*properties.transcriptMap).end()){
@@ -265,6 +294,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
     }
   }
   taxaMap.insert(taxaMapTemp.begin(),taxaMapTemp.end());
+  infile.close();
 }
 
 /*bool taxonInList(list<Transcript*> List, string Taxon){
@@ -278,16 +308,16 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 
   void mergeTranscripts(Properties &properties, Transcript* acc, Transcript* don){
   if (acc->parent->g_id != don->parent->g_id){
-  load_error("Only Transcripts from same gene can be merged.");
+  loadError("Only Transcripts from same gene can be merged.");
   }
   if (acc->t_id != don->t_id){
-  load_error("Something went wrong in the mergeTranscript function, because only transcripts with same name should be merged.");
+  loadError("Something went wrong in the mergeTranscript function, because only transcripts with same name should be merged.");
   }
   if (acc->strand != don->strand){
-  load_error("Transcripts on different strands are not mergeable.");
+  loadError("Transcripts on different strands are not mergeable.");
   }
   if (acc->priority != don->priority){
-  load_error("Transcripts with different priorities are not mergeable.");
+  loadError("Transcripts with different priorities are not mergeable.");
   }
   if (){}
 
@@ -303,7 +333,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 
   void mergeGenes(Properties &properties, Gene* acc, Gene* don){
   if (acc->g_id != don->g_id){
-  load_error("Something went wrong in the mergeGenes function, because only genes with same name should be joined.");
+  loadError("Something went wrong in the mergeGenes function, because only genes with same name should be joined.");
   }
   if (acc->nrOfTx < don->nrOfTx){
   acc->nrOfTx = don->nrOfTx;
@@ -316,7 +346,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
   acc->children.push_front(*it);
 		
   }else{
-  load_error("Something went wrong in the load function, because one transcript is part of two different gene. (maybe enable option newTaxa)");
+  loadError("Something went wrong in the load function, because one transcript is part of two different gene. (maybe enable option newTaxa)");
   }
 
   }

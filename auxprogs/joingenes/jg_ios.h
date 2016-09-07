@@ -6,10 +6,12 @@
 #include <list>
 #include <unordered_map>
 #include <algorithm>
-#include <unordered_map>
+#include <map>
+#include <sstream>
 
 using namespace std;
 
+map<string,int> getFileNames (string fofn);
 void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority, unordered_map<string,bool> &taxaMap, Properties &properties);
 void saveOverlap(list<Transcript*> &overlap, string outFileName, Properties &properties);
 void saveNew(list<Transcript*> &overlap, string outFileName, Properties &properties);

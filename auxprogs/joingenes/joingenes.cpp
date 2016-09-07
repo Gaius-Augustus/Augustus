@@ -2,7 +2,8 @@
 #include <string>		// strings
 #include <fstream>		// input/output on hard drive
 #include <list>			// list
-#include <unordered_map>		// hash
+#include <map>		        // hash
+#include <unordered_map>	// unordered hash
 #include <unistd.h>		// for getopt()
 #include <getopt.h>		// for getopt() with long option
 
@@ -14,6 +15,7 @@ using namespace std;
 static const struct option longOpts[] = {
   { "genesets", required_argument, NULL, 'g' },
   { "priorities", required_argument, NULL, 'p' },
+  { "inputfile", required_argument, NULL, 'f' },
   { "output", required_argument, NULL, 'o' },
   { "errordistance", required_argument, NULL, 'e' },
   { "genemodel", required_argument, NULL, 'm'},
@@ -48,6 +50,7 @@ void display_help(void)
   cout << "    Optional:" << endl;
   cout << "      Parameters:" << endl;
   cout << "\t--priorities=pr1,pr2,...\t-p pr1,pr2,...\t\twhere \"pr1,pr2,...,prn\" have to be positiv integers (different from 0)." << endl;
+  cout << "\t--inputfile=file\t\t-f file\t\twhere \"file\" is the path of a file containing paths to GTF files and corresponding priorities in a tab-separated list (2 columns). Use this option instead of -g and -p" << endl;
   cout << "\t\t\t\t\t\t\t\tHave to be as many as filenames are added." << endl;
   cout << "\t\t\t\t\t\t\t\tBigger numbers means a higher priority." << endl;
   cout << "\t\t\t\t\t\t\t\tIf no priorities are added, the program will set all priorties to 1." << endl;
@@ -179,7 +182,7 @@ void check_cds_stop_combination(Transcript* tx, pair<string,string> &stopVariant
 int main(int argc, char* argv[])
 {
   int opt = 0;
-  static const char *optString = "g:p:o:e:m:s:jlaich?";
+  static const char *optString = "g:p:f:o:e:m:s:jlaich?";
   list<string> filenames;
   list<int> priorities;
   list<int> supprList;
@@ -196,6 +199,7 @@ int main(int argc, char* argv[])
   properties.unknownCount = 1;
   properties.minimumIntronLength = 20; // hard coded (not optional at the moment)
   properties.stopincoding = false;
+  map<string,int> input;
 
   opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
   while (opt != -1) {
@@ -206,6 +210,14 @@ int main(int argc, char* argv[])
 
     case 'p':
       priorities = get_priorities(optarg);
+      break;
+
+    case 'f':
+      input = getFileNames(optarg);
+      for(map<string,int>::iterator itF = input.begin(); itF != input.end(); itF++) {
+	filenames.push_back(itF->first);
+	priorities.push_back(itF->second);
+      }
       break;
 
     case 'o':
@@ -262,10 +274,11 @@ int main(int argc, char* argv[])
     }
     opt = getopt_long(argc, argv, optString, longOpts, &longIndex);
   }
+
   if (filenames.size() == 0){
     display_error("Missing input filenames.");
   }
-  if (properties.outFileName == ""){
+  if (properties.outFileName == "" && !properties.onlyCompare){
     display_error("Missing output filename.");
   }
   if (priorities.size() == 0){
@@ -370,12 +383,11 @@ int main(int argc, char* argv[])
     splitted_transcript_list[(*pointer->second).getChr()].push_back(pointer->second);
   }
 
-  fstream outfile;
-  outfile.open(properties.outFileName, ios::out);		// delete content of file filename
-  outfile.close();
-
-
-  if (properties.onlyCompare){
+  if(!properties.onlyCompare){
+    fstream outfile;
+    outfile.open(properties.outFileName, ios::out);		// delete content of file filename
+    outfile.close();
+  }else{
     string filenameEqual = "cEqual.gtf", filenameStop1 = "cAlternative1.gtf", filenameStop2 = "cAlternative2.gtf", filenameUne1 = "cUnequal1.gtf", filenameUne2 = "cUnequal2.gtf";
     fstream outfile;
     outfile.open(filenameEqual, ios::out);
