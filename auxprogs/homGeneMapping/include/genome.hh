@@ -59,11 +59,12 @@ public:
     std::string getName(){return name;}
 
     // read and write functions
+    void parse(std::string genefile, std::string hintsfile);
     void parseGTF(std::string gtffilename);                          // reads a gene file in gtf format
     void parseExtrinsicGFF(std::string gfffilename);                 // reads a hints file in gff format
     void insertHint(std::string seqname, long int start, long int end, Strand strand, std::string esource, int mult, int frame, std::string f_type);
 #ifdef SQLITE
-    void getDbHints(SQLiteDB &db);
+    void getDbHints(SQLiteDB *db);
 #endif
     void printGFF(std::string outdir, std::vector<Genome> &genomes, bool detailed=false); // output a gene in gtf format with
     void printBed();
@@ -123,6 +124,9 @@ private:
 
 public:
     std::list<Gene*> genes;
+#ifdef SQLITE
+    static SQLiteDB *db;
+#endif    
 };
 
 // print a list with homologous transcript IDs, e.g.                                                                                    

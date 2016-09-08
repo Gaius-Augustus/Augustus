@@ -21,6 +21,11 @@
 
 using namespace std;
 
+
+#ifdef SQLITE
+SQLiteDB *Genome::db = NULL;
+#endif
+
 int Genome::no_genomes=0;
 mutex mu;
 
@@ -32,6 +37,17 @@ void Genome::destroyHintList(){
     for(std::list<GeneFeature*>::iterator it=hints.begin(); it!=hints.end(); it++)
 	delete *it;
 } 
+
+void Genome::parse(string genefile, string hintsfile){
+    parseGTF(genefile);
+    if(!hintsfile.empty()) // read hints file if specified
+	parseExtrinsicGFF(hintsfile);
+#ifdef SQLITE
+    if(db)
+	getDbHints(db);
+#endif
+    printBed(); // print sequence coordinates, that need to be mapped to the other genomes, to file
+}
 
 void Genome::parseExtrinsicGFF(string gfffilename){
     ifstream ifstrm(gfffilename.c_str());
@@ -875,10 +891,10 @@ void Genome::insertHint(string seqname, long int start, long int end, Strand str
 
 
 #ifdef SQLITE
-void Genome::getDbHints(SQLiteDB &db){
+void Genome::getDbHints(SQLiteDB *db){
 
     try{
-	Statement stmt(&db);
+	Statement stmt(db);
 	
 	stmt.prepare("SELECT seqname,start,end,typename,strand,frame,mult,esource FROM featuretypes JOIN \
                      (SELECT seqname,start,end,type,strand,frame,mult,esource FROM hints NATURAL JOIN \

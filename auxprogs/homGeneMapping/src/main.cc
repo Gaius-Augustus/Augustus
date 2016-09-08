@@ -25,6 +25,7 @@ using namespace std;
 
 
 void printUsage();
+void syncThreads(vector<thread> &th);
 map<string, pair<string,string> > getFileNames(string listfile);
 
 /*
@@ -133,7 +134,9 @@ int main( int argc, char* argv[] ){
 	    exit(1);
 	}
 	if (!dbfile.empty()){
-#ifndef SQLITE
+#ifdef SQLITE
+	    Genome::db = new SQLiteDB(dbfile.c_str());
+#else	    
 	    throw ProjectError("The option --dbaccess requires the SQLite library.\n"
                                "Please install the SQLite library, e.g. using the APT package manager\n\n"
                                "sudo apt-get install libsqlite3-dev\n\n"
@@ -170,22 +173,29 @@ int main( int argc, char* argv[] ){
 	Genome::setNumGenomes(filenames.size());
 
 	vector<Genome> genomes;
+	vector<thread> th;
+	
+	// initialize genomes
 	for(map<string, pair<string, string> >::iterator it = filenames.begin(); it != filenames.end(); it++){
 	    Genome genome(it->first, genomes.size());
-	    genome.parseGTF(it->second.first);
-	    if(!it->second.second.empty()) // read hints file if specified
-		genome.parseExtrinsicGFF(it->second.second);
-#ifdef SQLITE
-	    if(!dbfile.empty()){
-		SQLiteDB db(dbfile.c_str());
-		genome.getDbHints(db);
-	    }
-#endif
 	    genome.setTmpDir(tmpdir);
-	    genome.printBed(); // print sequence coordinates, that need to be mapped to the other genomes, to file
 	    genomes.push_back(genome);
 	}
-	
+	// parse input files
+	for(int g = 0; g < genomes.size(); g++){
+	    if(th.size() == maxCpus) // wait for all running threads to finish
+		syncThreads(th);
+	    map<string, pair<string, string> >::iterator it = filenames.find(genomes[g].getName());
+	    if (it != filenames.end())
+		th.push_back(thread(&Genome::parse, &genomes[g], it->second.first,it->second.second));
+	}
+	// synchronize threads
+	syncThreads(th);
+
+#ifdef SQLITE
+	delete Genome::db;
+	Genome::db = NULL;
+#endif
 	/*
 	 * haLiftover from each genome to each other genome (quadratic to the number of genomes)
 	 * TODO:
@@ -194,27 +204,19 @@ int main( int argc, char* argv[] ){
 	 */
 	cout << "halLiftover starts. Processing" << endl;
         if(maxCpus > 1){ // in parallel
-	    vector<thread> th;
 	    for(int i = 0; i < genomes.size(); i++){
 		cout << genomes[i].getName() << endl;
 		for(int j = 0; j < genomes.size(); j++){
 		    if(i != j){
-			if(th.size() == maxCpus){ // wait for all running threads to finish
-			    // synchronize threads
-			    for(int i = 0; i < th.size(); i++){
-				th[i].join();
-			    }
-			    th.clear();
-			}
+			if(th.size() == maxCpus) // wait for all running threads to finish
+			    syncThreads(th);
 			// halLiftover
 			th.push_back(thread(&Genome::liftOverTo, &genomes[i], ref(genomes[j]), halfile, halLiftover_exec, halParam));
 		    }
 		}
 	    }
 	    // synchronize threads
-	    for(int i = 0; i < th.size(); i++){
-		th[i].join();
-	    }
+	    syncThreads(th);
 	}
 	else{ // sequentially
             for(int i = 0; i < genomes.size(); i++){
@@ -354,3 +356,10 @@ map<string,pair<string,string> > getFileNames (string listfile){
     return filenames;
 }
 
+
+// synchronize threads
+void syncThreads(vector<thread> &th){
+    for(int i = 0; i < th.size(); i++)
+	th[i].join();
+    th.clear();
+}
