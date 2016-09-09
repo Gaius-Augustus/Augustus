@@ -134,9 +134,7 @@ int main( int argc, char* argv[] ){
 	    exit(1);
 	}
 	if (!dbfile.empty()){
-#ifdef SQLITE
-	    Genome::db = new SQLiteDB(dbfile.c_str());
-#else	    
+#ifndef SQLITE
 	    throw ProjectError("The option --dbaccess requires the SQLite library.\n"
                                "Please install the SQLite library, e.g. using the APT package manager\n\n"
                                "sudo apt-get install libsqlite3-dev\n\n"
@@ -187,15 +185,11 @@ int main( int argc, char* argv[] ){
 		syncThreads(th);
 	    map<string, pair<string, string> >::iterator it = filenames.find(genomes[g].getName());
 	    if (it != filenames.end())
-		th.push_back(thread(&Genome::parse, &genomes[g], it->second.first,it->second.second));
+		th.push_back(thread(&Genome::parse, &genomes[g], it->second.first,it->second.second, dbfile));
 	}
 	// synchronize threads
 	syncThreads(th);
 
-#ifdef SQLITE
-	delete Genome::db;
-	Genome::db = NULL;
-#endif
 	/*
 	 * haLiftover from each genome to each other genome (quadratic to the number of genomes)
 	 * TODO:
@@ -230,16 +224,13 @@ int main( int argc, char* argv[] ){
             }
         }
 	for(int i = 0; i < genomes.size(); i++){
-	    for(int j = 0; j < genomes.size(); j++){
-		if(i != j){
-		    genomes[i].readBed(genomes[j]); // reading in bed files with mapped coordinates
-		}
-	    }
-	    // identify homologous gene features (exons/introns)
-	    genomes[i].mapGeneFeatures(genomes);
-	    // print extended gene files with homology information
-	    genomes[i].printGFF(outdir,genomes,print_details);
+	    if(th.size() == maxCpus) // wait for all running threads to finish
+		syncThreads(th);
+	    th.push_back(thread(&Genome::write_hgm_gff, &genomes[i], ref(genomes), outdir));
 	}
+	// synchronize threads
+	syncThreads(th);
+
 	// print a list with homologous transcript IDs, e.g.
 	// # 0     dana
 	// # 1     dere

@@ -1,4 +1,4 @@
- /**********************************************************************
+/**********************************************************************
  * file:    genome.hh
  * licence: Artistic Licence, see file LICENCE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
@@ -59,18 +59,19 @@ public:
     std::string getName(){return name;}
 
     // read and write functions
-    void parse(std::string genefile, std::string hintsfile);
+    void parse(std::string genefile, std::string hintsfile, std::string dbfile);
     void parseGTF(std::string gtffilename);                          // reads a gene file in gtf format
     void parseExtrinsicGFF(std::string gfffilename);                 // reads a hints file in gff format
     void insertHint(std::string seqname, long int start, long int end, Strand strand, std::string esource, int mult, int frame, std::string f_type);
 #ifdef SQLITE
-    void getDbHints(SQLiteDB *db);
+    void getDbHints(SQLiteDB &db);
 #endif
-    void printGFF(std::string outdir, std::vector<Genome> &genomes, bool detailed=false); // output a gene in gtf format with
+    //void printGFF(std::string outdir, std::vector<Genome> &genomes, bool detailed=false); // output a gene in gtf format with
     void printBed();
     void readBed(Genome &other);
     void writeGeneFeature(GeneFeature *gf, std::ofstream &of) const;
     void writeGene(Gene *g, std::ofstream &of) const;
+    void writeTxLine(Gene *g, std::ofstream &of) const;
     void writeTLStart(Gene *g, std::ofstream &of) const;
     void writeTLEnd(Gene *g, std::ofstream &of) const;
 
@@ -78,7 +79,8 @@ public:
     void liftOverTo(Genome& other, std::string halfile, std::string halLiftover_exec, std::string halParam);
 
     // mapping of homologous gene features
-    void mapGeneFeatures(std::vector<Genome> &genomes);
+    void write_hgm_gff(vector<Genome> &genomes, string outdir);
+    void mapGeneFeatures(std::vector<Genome> &genomes, string outdir);
     void printDetailed(GeneFeature *g, std::ofstream &of) const;
 
     // hash functions
@@ -124,9 +126,6 @@ private:
 
 public:
     std::list<Gene*> genes;
-#ifdef SQLITE
-    static SQLiteDB *db;
-#endif    
 };
 
 // print a list with homologous transcript IDs, e.g.                                                                                    

@@ -1,4 +1,3 @@
-
 /**********************************************************************
  * file:    gene.cc
  * licence: Artistic Licence, see file LICENCE.TXT or 
@@ -67,6 +66,24 @@ bool GeneFeature::sameFrame(int other){
     return false;
 }
 
+void GeneFeature::setEvidence(string e){
+    if(!hasEvidence(e))
+	extrinsic.push_back(e);
+}
+string GeneFeature::getEvidence() const {
+    string e = "";
+    for (int i = 0; i<extrinsic.size(); i++)
+	(e.empty())? e=extrinsic[i] : e = e + ":" + extrinsic[i];
+    return e;
+}
+bool GeneFeature::hasEvidence(string e) const {
+    for(int i = 0; i < extrinsic.size(); i++){
+	if(extrinsic[i] == e)
+	    return true;
+    }
+    return false;
+}
+
 Strand getStrand(string token){
     Strand strand = unknown;
     if(token == "+")
@@ -112,18 +129,33 @@ int Gene::numGFs(FeatureType t) const {
     return num;
 }
 
+GeneFeature* Gene::getFirstGF(FeatureType t){
+    for(std::list<GeneFeature*>::iterator it=features.begin(); it!=features.end(); it++){
+	if((*it)->isType(t))
+	    return *it;
+    }
+    return NULL;
+}
+
+GeneFeature* Gene::getLastGF(FeatureType t){
+    for(std::list<GeneFeature*>::reverse_iterator it=features.rbegin(); it!=features.rend(); it++){
+	if((*it)->isType(t))
+	    return *it;
+    }
+    return NULL;
+}
+
 void Gene::includeStopInCDS(){
     sortGFs();
     if(tlEnd >= 0){
 	if(strand == plusstrand){
-	    for(std::list<GeneFeature*>::reverse_iterator it=features.rbegin(); it!=features.rend(); it++){
-		if(!(*it)->isCDS())
-		    continue;
-		long int cdsEnd = (*it)->getEnd();
+	    GeneFeature *last = getLastGF(CDS);
+	    if(last){
+		long int cdsEnd = last->getEnd();
 		if(cdsEnd == tlEnd+2){ // stop already included
 		}
 		else if( cdsEnd == tlEnd-1){ // include stop
-		    (*it)->setLen((*it)->getLen()+3);
+		    last->setLen(last->getLen()+3);
 		}
 		else if( cdsEnd < tlEnd-1){ // stop codon is a separate CDS exon
 		    FeatureType type = CDS;
@@ -131,20 +163,18 @@ void Gene::includeStopInCDS(){
 		    appendFeature(exon);
 		    exon->setGene(this);
 		}
-		break;
 	    }
 	}
 	else if(strand == minusstrand){
-	    for(std::list<GeneFeature*>::iterator it=features.begin(); it!=features.end(); it++){
-		if(!(*it)->isCDS())
-		    continue;
-		long int cdsStart = (*it)->getStart();
+	    GeneFeature *first = getFirstGF(CDS);
+	    if(first){
+		long int cdsStart = first->getStart();
 		if(cdsStart == tlEnd){ // stop already included
 
 		}
 		else if( cdsStart == tlEnd+3){ // include stop
-		    (*it)->setStart(cdsStart-3);
-		    (*it)->setLen((*it)->getLen()+3);
+		    first->setStart(cdsStart-3);
+		    first->setLen(first->getLen()+3);
 		}
 		else if( cdsStart > tlEnd+3){ // stop codon is a separate CDS exon
 		    FeatureType type = CDS;
@@ -152,7 +182,6 @@ void Gene::includeStopInCDS(){
 		    appendFeature(exon);
 		    exon->setGene(this);
 		}
-		break;
 	    }
 	}
     }
@@ -179,11 +208,12 @@ void Gene::insertExons(){
     }
 }
 
-void Gene::insertIntrons(){
+void Gene::insertMissingGFs(){
 
     int numIntr = numGFs(intron);
     int numEx = numGFs(exon);
 
+    // insert exons if missing
     if(numEx == 0)
         insertExons();
 
@@ -199,6 +229,7 @@ void Gene::insertIntrons(){
     }
     sortGFs();
     numEx = numGFs(exon);
+    // insert introns if missing
     if(numIntr == 0 && numEx > 1){
         GeneFeature *pred_exon = NULL;
         for(list<GeneFeature*>::iterator it=features.begin(); it!=features.end();it++){
@@ -214,6 +245,20 @@ void Gene::insertIntrons(){
             pred_exon = exon;
         }
     }
+    // insert start_codon
+    if(getTLstart() >= 0){
+        FeatureType type = start;
+        GeneFeature *start = new GeneFeature(type, getTLstart(), getTLstart()+2, strand);
+        appendFeature(start);
+        start->setGene(this);
+    }
+    // insert stop_codon
+    if( getTLend() >= 0){
+        FeatureType type = stop;
+        GeneFeature *stop = new GeneFeature(type, getTLend(), getTLend()+2, strand);
+        appendFeature(stop);
+        stop->setGene(this);
+    }
     sortGFs();
 }
 
@@ -221,5 +266,7 @@ void Gene::insertIntrons(){
 bool compareGFs(GeneFeature *a, GeneFeature *b){
     if( a->getStart() != b->getStart() )
 	return ( a->getStart() < b->getStart() );
-    return ( a->getLen() <= b->getLen() );
+    if ( a->getLen() != b->getLen() )
+	return ( a->getLen() >= b->getLen() );
+    return a->getFeatureType() <= b->getFeatureType();
 }

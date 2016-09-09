@@ -12,7 +12,7 @@
 
 #include <string>
 #include <list> 
-#include <set>
+#include <vector>
 
 // Forward declarations
 class GeneFeature;
@@ -65,23 +65,20 @@ public:
     int getFrame() const {return frame;}
     std::string writeFrame() const;
     double getScore() const {return score;}
-    void setEvidence(std::string e){ extrinsic.insert(e);}
+    void setEvidence(std::string e);
     void setMult(int m){mult=m;}
     void setStart(long int s) {start=s;}
-    std::string getEvidence() const {
-      std::string e = "";
-      for (std::set<std::string>::iterator it = extrinsic.begin(); it != extrinsic.end(); ++it)
-	(e.empty())? e=*it : e= e + ":" + *it;
-      return e;
-    }
+    std::string getEvidence() const;
     int getMult() const {return mult;}
     FeatureType getFeatureType() const {return type;}
     int lenMod3() const {return ((len) % 3);}
+    bool hasEvidence(std::string e) const;
     bool hasEvidence() const {return !extrinsic.empty();}
     bool isExon() const {return (type == exon);}
     bool isCDS() const {return (type == CDS);}
     bool isIntron() const {return (type == intron);}
     bool isUTR() const {return (type == UTR);}
+    bool isMapped() const {return (type == exon || type == CDS || type == intron);}
     bool isType(FeatureType t) const {return (type == t);}
     bool isPartofGene() const {return gene;} // if false, gene feature purely represent extrinsic evidence
     bool sameStrand(Strand other);
@@ -97,7 +94,7 @@ private:
                            // not part of a Gene
     int frame;             // -1 if gene feature has no frame
     double score;
-    std::set< std::string > extrinsic; // list of sources of extrinsic info, e.g. 'M' (manual) or 'E' (EST).
+    std::vector< std::string > extrinsic; // list of sources of extrinsic info, e.g. 'M' (manual) or 'E' (EST).
                            // empty, if gene feature is not supported by extrinsic evidence, 
     int mult;
     Gene *gene;            // pointer to the gene the feature belongs to
@@ -151,8 +148,12 @@ public:
     void setTLend(long int e){tlEnd=e;}
     long int getTLstart() const {return tlStart;}
     long int getTLend() const {return tlEnd;}
+    GeneFeature* getFirstGF(FeatureType t);
+    GeneFeature* getLastGF(FeatureType t);
+    long int getTXstart() {return getFirstGF(exon)->getStart();}
+    long int getTXend() {return getLastGF(exon)->getEnd();}
     void insertExons();
-    void insertIntrons();
+    void insertMissingGFs();
     void appendHomolog(Gene *g, int idx) {homologs.push_back(std::pair<int,Gene*>(idx, g));}
 
 
