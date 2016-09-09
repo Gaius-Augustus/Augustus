@@ -147,6 +147,7 @@ int main( int argc, char* argv[] ){
 	}
 	// check if the boost library is installed (only required for option --printHomologs)
 	if(!homGeneFile.empty()){
+	    print_details = true;
 #ifndef BOOST
 	    throw ProjectError("The option --printHomologs requires the boost C++ library.\n"
                                "Please install the boost library, e.g. using the APT package manager\n\n"
@@ -226,7 +227,7 @@ int main( int argc, char* argv[] ){
 	for(int i = 0; i < genomes.size(); i++){
 	    if(th.size() == maxCpus) // wait for all running threads to finish
 		syncThreads(th);
-	    th.push_back(thread(&Genome::write_hgm_gff, &genomes[i], ref(genomes), outdir));
+	    th.push_back(thread(&Genome::write_hgm_gff, &genomes[i], ref(genomes), outdir, print_details));
 	}
 	// synchronize threads
 	syncThreads(th);

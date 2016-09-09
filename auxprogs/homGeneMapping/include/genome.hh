@@ -79,9 +79,9 @@ public:
     void liftOverTo(Genome& other, std::string halfile, std::string halLiftover_exec, std::string halParam);
 
     // mapping of homologous gene features
-    void write_hgm_gff(vector<Genome> &genomes, string outdir);
-    void mapGeneFeatures(std::vector<Genome> &genomes, string outdir);
-    void printDetailed(GeneFeature *g, std::ofstream &of) const;
+    void write_hgm_gff(vector<Genome> &genomes, string outdir, bool detailed=false);
+    void mapGeneFeatures(std::vector<Genome> &genomes, string outdir, bool detailed=false);
+    void print_hgm_info(GeneFeature *g, std::ofstream &of) const;
 
     // hash functions
     void insertPos(int seqID, long int pos); // insert start/end positions of gene features in mappedPos
@@ -145,20 +145,44 @@ void printHomGeneList(std::string outfile, std::vector<Genome> &genomes);
 struct GeneInfo{
 
 public:
-    GeneInfo(Gene *_gene, int _numMatchingEs, int _numMatchingIs, int _numMatchingUs, bool _frameshift) :
+    GeneInfo(Gene *_gene, int _numMatchingCs, int _numMatchingIs, int _numMatchingEs, bool _frameshift) :
 	gene(_gene),
-	numMatchingEs(_numMatchingEs),
+	numMatchingCs(_numMatchingCs),
 	numMatchingIs(_numMatchingIs),
-	numMatchingUs(_numMatchingUs),
+	numMatchingEs(_numMatchingEs),
 	frameshift(_frameshift)
     {}
     ~GeneInfo(){}
 
     Gene *gene;
-    int numMatchingEs;
+    int numMatchingCs;
     int numMatchingIs;
-    int numMatchingUs;
+    int numMatchingEs;
     bool frameshift;
+};
+
+struct GeneInfoCollection{
+
+ public:
+    GeneInfoCollection(int no_genomes){
+	ginfo.resize(no_genomes);
+	mappedStatsC.resize(no_genomes);
+	mappedStatsI.resize(no_genomes);
+	mappedStatsE.resize(no_genomes);
+	extrinStatsC.resize(no_genomes+1);
+	extrinStatsI.resize(no_genomes+1);
+	extrinStatsE.resize(no_genomes+1);
+    }
+    ~GeneInfoCollection(){}
+    void createCollection(GeneFeature *g);
+    void printDetailedStats(Gene *g, std::ofstream &of);
+    vector<map<string,GeneInfo> > ginfo;
+    vector<int> mappedStatsC;   // number of CDS with exact homologs in at least k other genomes                                                                    
+    vector<int> mappedStatsI;   // number of Intr ...                                                                                                               
+    vector<int> mappedStatsE;   // number of Exons ...                                                                                                               
+    vector<int> extrinStatsC;   // number of CDS supported by evidence in at least k other genomes                                                                  
+    vector<int> extrinStatsI;   // number of Intr ...                                                                                                               
+    vector<int> extrinStatsE;   // number of Exons ... 
 };
 
 #endif   //  _GENOME_HH

@@ -235,7 +235,7 @@ void Genome::writeGeneFeature(GeneFeature *gf, ofstream &of) const {
     of << "gene_id \"" << gf->getGeneID() << "\"; " ;
     if(!gf->isType(stop) && !gf->isType(start)){
 	of << "hgm_info \"";	
-	printDetailed(gf,of);
+	print_hgm_info(gf,of);
 	of  << "\"; ";
     }
     of << endl;
@@ -330,12 +330,12 @@ int Genome::getSeqID(string seqname) const{
 
 }
 
-void Genome::write_hgm_gff(vector<Genome> &genomes, string outdir){
+void Genome::write_hgm_gff(vector<Genome> &genomes, string outdir, bool details){
     for(int j = 0; j < genomes.size(); j++){
 	if(idx != j)
 	    readBed(genomes[j]); // reading in bed files with mapped coordinates
     }
-    mapGeneFeatures(genomes, outdir);
+    mapGeneFeatures(genomes, outdir, details);
 }
 
 /*
@@ -345,7 +345,7 @@ void Genome::write_hgm_gff(vector<Genome> &genomes, string outdir){
  * If an assembled seq interval is part of a gene in genome j,
  * it is appended to the list of homologs of gf
  */
-void Genome::mapGeneFeatures(vector<Genome> &genomes, string outdir){
+void Genome::mapGeneFeatures(vector<Genome> &genomes, string outdir, bool detailed){
     string filename = outdir + name + ".gtf";
     ofstream of;
     
@@ -363,7 +363,7 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes, string outdir){
 	if(features.empty())
 	    continue;
 	writeTxLine(*git,of);
-
+	GeneInfoCollection gfc(no_genomes);
 	for(list<GeneFeature*>::iterator gfit = features.begin(); gfit != features.end(); gfit++){
 	    
 	    if(!(*gfit)->isMapped()){
@@ -412,15 +412,18 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes, string outdir){
 				if((*gfit)->isIntron() || (*gfit)->isExon()) // append Introns and Exons
 				    (*gfit)->appendHomolog(*mapped_gfit,j);
 				else if((*gfit)->sameFrame((*mapped_gfit)->getFrame()) && ((*gfit)->lenMod3() == (*mapped_gfit)->lenMod3())) // append CDS, if they are in the same frame
-				    (*gfit)->appendHomolog(*mapped_gfit,j);				    		    
+				    (*gfit)->appendHomolog(*mapped_gfit,j);
 			    }
 			}
 		    }
 		}
 	    }
 	    writeGeneFeature(*gfit, of);
+	    gfc.createCollection(*gfit);
 	    (*gfit)->homologs.clear();
 	}
+	if(detailed)
+	    gfc.printDetailedStats(*git, of);
     }
     mappedPos.clear();
     of.close();
@@ -525,7 +528,9 @@ void Genome::insertSeqInt(GeneFeature* gf, int seqID){ // insert exons/introns i
     }
 }
 
-/*void Genome::blub(GeneFeature *g){
+void GeneInfoCollection::createCollection(GeneFeature *g){
+    
+    pair<map<string,GeneInfo>::iterator, bool> ret;
 
     bool hasEvidence = false;
     bool hasMatch = false;
@@ -561,11 +566,11 @@ void Genome::insertSeqInt(GeneFeature* gf, int seqID){ // insert exons/introns i
 	    ret = ginfo[idx].insert(pair<string,GeneInfo>(h->getTxID(),gi));
 	    if(!ret.second){ // transid already in map, only update
 		if(h->isCDS())
-		    ret.first->second.numMatchingEs++;
+		    ret.first->second.numMatchingCs++;
 		else if(h->isIntron())
 		    ret.first->second.numMatchingIs++;
 		else if(h->isExon())
-		    ret.first->second.numMatchingUs++;
+		    ret.first->second.numMatchingEs++;
 	    }
 	}
 	pred_idx = idx;
@@ -576,13 +581,13 @@ void Genome::insertSeqInt(GeneFeature* gf, int seqID){ // insert exons/introns i
 	numEvidence++;
     
     if(g->isCDS()){
-	mappedStatsE[numMatches]++;
-	extrinStatsE[numEvidence]++;
+	mappedStatsC[numMatches]++;
+	extrinStatsC[numEvidence]++;
 	
     }
     else if(g->isExon()){
-	mappedStatsU[numMatches]++;
-	extrinStatsU[numEvidence]++;
+	mappedStatsE[numMatches]++;
+	extrinStatsE[numEvidence]++;
     }
     else{
 	mappedStatsI[numMatches]++;
@@ -590,93 +595,64 @@ void Genome::insertSeqInt(GeneFeature* gf, int seqID){ // insert exons/introns i
     }
 }
 
-void Genome::printGFF(string outdir, vector<Genome> &genomes, bool detailed){
+void GeneInfoCollection::printDetailedStats(Gene *g, std::ofstream &of){
 
-    for(list<Gene*>::iterator git = genes.begin(); git != genes.end(); git++){	
-	list<GeneFeature*> features = (*git)->features;
-
+    of << "#\n# gene feature level:\n#" << endl;
+    of << "#" << endl;
+    of << "# number/% of features with exact homologs in at least k other genomes:" << endl;
+    of << "#" << endl;
+    of << "#---------------------------------------------------------------------------------------------------" << endl;       
+    of << "#   k           CDS             Intr             Exon              Intr+Exon" << endl;
+    of << "#---------------------------------------------------------------------------------------------------" << endl;
+    of << "#" << endl;
+    writePictograph(mappedStatsC,mappedStatsI,mappedStatsE,of);
+    of << "#" << endl;
+    of << "# number/% of features supported by extrinsic evidence in at least k genomes :" << endl;
+    of << "#" << endl;
+    of << "#---------------------------------------------------------------------------------------------------" << endl;       
+    of << "#   k           CDS             Intr             Exon              Intr+Exon" << endl;
+    of << "#---------------------------------------------------------------------------------------------------" << endl;       
+    of << "#" << endl;
+    writePictograph(extrinStatsC,extrinStatsI,extrinStatsE,of);
+    of << "#\n# transcript level:\n#" << endl;
+    
+    int numHomologs = 0;
+    
+    for(int i=0; i < ginfo.size(); i++){
 	
-	writeGene((*git), of);
-
-	if(detailed){
-	    vector<map<string,GeneInfo> > ginfo(no_genomes);
-	    pair<map<string,GeneInfo>::iterator, bool> ret;
-
-	    // stats for a single gene
-	    vector<int> mappedStatsE(no_genomes);   // number of CDS with exact homologs in at least k other genomes
-	    vector<int> mappedStatsI(no_genomes);   // number of Intr ...
-	    vector<int> mappedStatsU(no_genomes);   // number of UTRs ...
-	    vector<int> extrinStatsE(no_genomes+1); // number of CDS supported by evidence in at least k other genomes
-	    vector<int> extrinStatsI(no_genomes+1); // number of Intr ...
-	    vector<int> extrinStatsU(no_genomes+1); // number of UTRs ...
-
-	    of << "#\n# gene feature level:\n#" << endl;
-	    for(list<GeneFeature*>::iterator gfit = features.begin(); gfit != features.end(); gfit++){
-		blub
+	bool hasHomolog = false;
+	for(map<string,GeneInfo>::iterator giit = ginfo[i].begin(); giit != ginfo[i].end(); giit++){
+	    
+	    int numC = giit->second.gene->numGFs(CDS);
+	    int numI = giit->second.gene->numGFs(intron);
+	    int numE = giit->second.gene->numGFs(exon);		
+	    
+	    of << "#";
+	    of << setw(4) << right << i << " ";
+	    of << "gene_id="<< setw(30) << left << giit->second.gene->getGeneID();
+	    of << "tx_id="<< setw(30) << left << giit->first;
+	    of << setw(3) << right << giit->second.numMatchingCs;
+	    of << "/"<< numC << " CDS";
+	    of <<setw(3) << right << giit->second.numMatchingIs;
+	    of <<"/"<< numI << " Intr";
+	    of <<setw(3) << right << giit->second.numMatchingEs;
+	    of <<"/"<< numE << " exon" << endl;
+	    if(numE == giit->second.numMatchingEs && numE == g->numGFs(exon)){
+		hasHomolog = true;
+		//(*git)->appendHomolog(giit->second.gene,i);		    
 	    }
-	    of << "#" << endl;
-	    of << "# number/% of features with exact homologs in at least k other genomes:" << endl;
-	    of << "#" << endl;
-	    of << "#---------------------------------------------------------------------------------------------------" << endl;       
-	    of << "#   k           CDS             Intr             Exon              Intr+Exon" << endl;
-	    of << "#---------------------------------------------------------------------------------------------------" << endl;
-	    of << "#" << endl;
-	    writePictograph(mappedStatsE,mappedStatsI,mappedStatsU,of);
-	    of << "#" << endl;
-	    of << "# number/% of features supported by extrinsic evidence in at least k genomes :" << endl;
-	    of << "#" << endl;
-	    of << "#---------------------------------------------------------------------------------------------------" << endl;       
-	    of << "#   k           CDS             Intr             Exon              Intr+Exon" << endl;
-	    of << "#---------------------------------------------------------------------------------------------------" << endl;       
-	    of << "#" << endl;
-	    writePictograph(extrinStatsE,extrinStatsI,extrinStatsU,of);
-	    of << "#\n# transcript level:\n#" << endl;
-	    
-	    int numHomologs = 0;
-	    
-	    for(int i=0; i < ginfo.size(); i++){
-		
-		bool hasHomolog = false;
-		for(map<string,GeneInfo>::iterator giit = ginfo[i].begin(); giit != ginfo[i].end(); giit++){
-		    
-		    //int numE = 1 + (giit->second.gene->numGFs()/2);
-		    //int numI = (giit->second.gene->numGFs()/2);
-		    //int numU = (giit->second.gene->numGFs()/2);		
-		    
-		    int numE = giit->second.gene->numGFs(CDS);
-		    int numI = giit->second.gene->numGFs(intron);
-		    int numU = giit->second.gene->numGFs(exon);		
-		    
-		    of << "#";
-		    of << setw(4) << right << i << " ";
-		    of << "gene_id="<< setw(30) << left << giit->second.gene->getGeneID();
-		    of << "tx_id="<< setw(30) << left << giit->first;
-		    of << setw(3) << right << giit->second.numMatchingEs;
-		    of << "/"<< numE << " CDS";
-		    of <<setw(3) << right << giit->second.numMatchingIs;
-		    of <<"/"<< numI << " Intr";
-		    of <<setw(3) << right << giit->second.numMatchingUs;
-		    of <<"/"<< numU << " exon" << endl;
-		    if(numU == giit->second.numMatchingUs && numU == (*git)->numGFs(exon)){
-			hasHomolog = true;
-			//(*git)->appendHomolog(giit->second.gene,i);		    
-		    }
-		    if(giit->second.numMatchingUs >=1){
-			(*git)->appendHomolog(giit->second.gene,i);		    
-		    }
-		}
-		if(hasHomolog)
-		    numHomologs++;	
+	    if(giit->second.numMatchingEs >=1){ // TODO: make this more reasonable, e.g. half of splice sites coincide
+		g->appendHomolog(giit->second.gene,i);		    
 	    }
-	    total_mappedStatsG[numHomologs]++;
-	    
-	    of << "#" << endl;
-	    of << "# transcript has an exact homolog in " << numHomologs << " other genomes.\n#" <<endl;    
-	}	
+	}
+	if(hasHomolog)
+	    numHomologs++;	
     }
-    }*/
+    of << "#" << endl;
+    of << "# transcript has an exact homolog in " << numHomologs << " other genomes.\n#" <<endl;    
+}	
 
-void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
+void Genome::print_hgm_info(GeneFeature *g, std::ofstream &of) const{
 
     list<pair<int,GeneFeature*> >homologs = g->homologs;
 
@@ -690,17 +666,16 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
     of << this->idx;
     if(g->hasEvidence())
 	of  << g->getEvidence() << "-" << g->getMult();
-    of << ",";	    
+   	    
     for(list<pair<int,GeneFeature*> >::iterator hit = homologs.begin(); hit != homologs.end(); hit++){
 	
 	int idx = hit->first;
 	GeneFeature* h = hit->second;
 	
 	if(pred_idx < idx && hasMatch){ // next genome
-	    of << pred_idx;
+	    of <<","<< pred_idx;
 	    if(!evidence.empty())
 		of << evidence << onlyHint << "-" << mult;
-	    of << ",";
 	    hasMatch = false; // reset all flags
 	    evidence = "";
 	    mult = 0;
@@ -717,7 +692,7 @@ void Genome::printDetailed(GeneFeature *g, std::ofstream &of) const{
 	pred_idx = idx;
     }   
     if(hasMatch){      
-	of << pred_idx;
+	of <<","<< pred_idx;
 	if(!evidence.empty())
 	    of << evidence << onlyHint << "-" << mult;
     }

@@ -19,11 +19,11 @@
 
 void SQLiteDB::open(OpenMode mode){
     
-    int flag = SQLITE_OPEN_READONLY;
+    int flag = SQLITE_OPEN_READONLY | SQLITE_OPEN_NOMUTEX;
     if(mode == rw)
-	flag = SQLITE_OPEN_READWRITE;
+	flag = SQLITE_OPEN_READWRITE | SQLITE_OPEN_NOMUTEX;
     else if(mode == crw)
-	flag = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+	flag = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX;
 
     if(sqlite3_open_v2(dbfile, &database, flag, NULL) != SQLITE_OK){ 
 	cerr << "Could not open database "<< dbfile << endl;
