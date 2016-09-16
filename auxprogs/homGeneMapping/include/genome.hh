@@ -35,6 +35,7 @@ typedef boost::adjacency_list <boost::setS, boost::vecS, boost::undirectedS, Ver
 // Forward declarations
 class GeneFeature;
 struct GeneInfo;
+struct GeneInfoCollection;
 
 /*
  * class Genome:
@@ -79,8 +80,8 @@ public:
     void liftOverTo(Genome& other, std::string halfile, std::string halLiftover_exec, std::string halParam);
 
     // mapping of homologous gene features
-    void write_hgm_gff(vector<Genome> &genomes, string outdir, bool detailed=false);
-    void mapGeneFeatures(std::vector<Genome> &genomes, string outdir, bool detailed=false);
+    void write_hgm_gff(std::vector<Genome> &genomes, std::string outdir, bool detailed=false);
+    void mapGeneFeatures(std::vector<Genome> &genomes, std::string outdir, bool detailed=false);
     void print_hgm_info(GeneFeature *g, std::ofstream &of) const;
 
     // hash functions
@@ -176,13 +177,13 @@ struct GeneInfoCollection{
     ~GeneInfoCollection(){}
     void createCollection(GeneFeature *g);
     void printDetailedStats(Gene *g, std::ofstream &of);
-    vector<map<string,GeneInfo> > ginfo;
-    vector<int> mappedStatsC;   // number of CDS with exact homologs in at least k other genomes                                                                    
-    vector<int> mappedStatsI;   // number of Intr ...                                                                                                               
-    vector<int> mappedStatsE;   // number of Exons ...                                                                                                               
-    vector<int> extrinStatsC;   // number of CDS supported by evidence in at least k other genomes                                                                  
-    vector<int> extrinStatsI;   // number of Intr ...                                                                                                               
-    vector<int> extrinStatsE;   // number of Exons ... 
+    std::vector<std::map<std::string,GeneInfo> > ginfo;
+    std::vector<int> mappedStatsC;   // number of CDS with exact homologs in at least k other genomes                                                                    
+    std::vector<int> mappedStatsI;   // number of Intr ...                                                                                                               
+    std::vector<int> mappedStatsE;   // number of Exons ...                                                                                                               
+    std::vector<int> extrinStatsC;   // number of CDS supported by evidence in at least k other genomes                                                                  
+    std::vector<int> extrinStatsI;   // number of Intr ...                                                                                                               
+    std::vector<int> extrinStatsE;   // number of Exons ... 
 };
 
 #endif   //  _GENOME_HH
