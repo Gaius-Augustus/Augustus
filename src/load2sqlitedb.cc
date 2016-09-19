@@ -204,8 +204,8 @@ int main( int argc, char* argv[] ){
 		
 		streampos file_start = ifstrm.tellg();
 		streampos file_end = file_start;
-		streampos pos = file_end + streamoff(1);
-			
+		streampos pos = file_end;
+	
 		while (ifstrm && ifstrm.peek() != '>' && ifstrm.peek() != EOF){
 		    ifstrm.get(c);
 		    pos += streamoff(1);
@@ -227,7 +227,13 @@ int main( int argc, char* argv[] ){
 			lenCount +=length;
 
 			start += length;
-			file_start = file_end;
+			// next file_start position is the character preceeding
+			// the next non-whitespace character
+			while (ifstrm && !isalpha(ifstrm.peek()) && ifstrm.peek() != EOF){
+			    ifstrm.get(c);
+			    pos += streamoff(1);
+			}
+			file_start = pos;
 			length = 0;
 		    }
 		}			
