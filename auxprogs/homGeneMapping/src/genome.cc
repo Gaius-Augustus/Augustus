@@ -117,8 +117,6 @@ void Genome::parseGTF(string gtffilename){
 	int line_no = 0;
 	try{
 	    Gene *gene = NULL;
-	    GeneFeature *pred_exon = NULL;
-
 	    while (ifstrm) {
 		string line;
 		getline(ifstrm, line);
@@ -177,7 +175,6 @@ void Genome::parseGTF(string gtffilename){
 			insertSeqInts(gene);
 		    }
 		    gene= new Gene(geneid,transid, seqid.first->second, strand, tokens[1]);
-		    pred_exon = NULL;
 		}
 		if(type == start){
 		    gene->setTLstart(atol(tokens[3].c_str()));
