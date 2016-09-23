@@ -193,20 +193,20 @@ sub printBed {
 
 	foreach my $line (@lines){
 	    push @blockSizes, $line->[4] - $line->[3] + 1;
-	    push @blockStarts,  $line->[3];
+	    push @blockStarts,  $line->[3] - $txs{$txid}{"txstart"};
 	}
 	
 	print $txs{$txid}{"chr"} . "\t";
-	print $txs{$txid}{"txstart"} . "\t";
+	print $txs{$txid}{"txstart"}-1 . "\t";
 	print $txs{$txid}{"txend"} . "\t";
 	print $txid . "\t0\t";
 	print $txs{$txid}{"strand"} . "\t";
 	if(@{$txs{$txid}{"CDS"}} == 0){
-	    print $txs{$txid}{"txstart"} . "\t";
+	    print $txs{$txid}{"txstart"}-1 . "\t";
 	    print $txs{$txid}{"txend"} . "\t";
 	}
 	else{
-	    print $txs{$txid}{"codingstart"} . "\t";
+	    print $txs{$txid}{"codingstart"}-1 . "\t";
 	    print $txs{$txid}{"codingend"} . "\t";
 	}
 	print "$itemRgb\t";
@@ -254,6 +254,6 @@ gtf2bed.pl <in.gtf >out.bed
 
     example output :
 
-    chr16   100472  160062  jg7.t1  0       -       101159  160062  0,0,255 10      814,168,108,231,171,530,138,97,141,878  100472,102477,104227,106525,110093,110759,117341,123010,127580,159185
+    chr16   100471  160062  jg7.t1  0       -       101158  160062  0,0,255 10      814,168,108,231,171,530,138,97,141,878  100471,102476,104226,106524,110092,110758,117340,123009,127579,159184
 
 =cut
