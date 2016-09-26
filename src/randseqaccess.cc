@@ -81,12 +81,16 @@ void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
 		// reading in the species group for which the table is valid
 		getline(datei,skey);
 		if(skey == "[GROUP]"){
-		    cout << "extrinsic group " << groupCount << ":";
+		    cout << "extrinsic group " << groupCount << ":";	    
 		    datei.getline(buf, 1024); // reading in the set of species that belongs to the group
 		    stringstream stm(buf);
 		    if(stm >> skey){ 
 			do{
-			    if(skey == "all" || skey == "other"){ // this config table is valid for all other species
+			    if(skey == "none" || skey == "None"){
+				cout <<" none ... is deleted";
+				continue;
+			    }
+			    if(skey == "all" || skey == "All" || skey == "other" || skey == "Other"){ // this config table is valid for all other species
 				for(int i=0; i<speciesNames.size(); i++){
 				    try{
 					addSpeciesToGroup(speciesNames[i],groupCount);
@@ -111,8 +115,10 @@ void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
 			throw ProjectError("SpeciesCollection::readExtrinsicCFGFile: Please specify a set of species for which config table " + 
 					   itoa(groupCount) +" in\n " + filename + "is valid");
 		    }
-		    speciesColl.insert(pair<int,FeatureCollection>(groupCount,sc));
-		    groupCount++;
+		    if(skey != "none" && skey != "None"){
+			speciesColl.insert(pair<int,FeatureCollection>(groupCount,sc));
+			groupCount++;
+		    }
 		    while(datei >> comment >> ws, datei && datei.peek() != '[')
 			;
 		}
