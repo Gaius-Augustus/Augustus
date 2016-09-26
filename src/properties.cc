@@ -598,7 +598,7 @@ void Properties::init( int argc, char* argv[] ){
 	if (!hasProperty(EXTRFILE_KEY)) {
 	    properties[EXTRFILE_KEY] = configPath + EXTRINSIC_SUBDIR + "extrinsic.cfg";
 	    if (Constant::MultSpeciesMode)
-		properties[EXTRFILE_KEY] = configPath + EXTRINSIC_SUBDIR + "cgp.extrinsic.cfg";
+		properties[EXTRFILE_KEY] = configPath + EXTRINSIC_SUBDIR + "extrinsic-cgp.cfg";
 #ifdef DEBUG
 	    cerr << "# No extrinsicCfgFile given. Taking default file: " << properties[EXTRFILE_KEY] << endl;
 #endif
