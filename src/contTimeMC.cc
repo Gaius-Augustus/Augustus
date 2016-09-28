@@ -19,6 +19,7 @@
 #include "properties.hh"
 #include "phylotree.hh"
 #include "geneMSA.hh"
+#include "igenicmodel.hh"
 
 // standard C/C++ includes
 #include <iostream>
@@ -142,7 +143,12 @@ void CodonEvo::setOmegas(int k){
     omegas.push_back(1);
     for (int i=1; i<=rr; i++)
 	omegas.push_back(1.0 / (1 - (double) i/(c+r)));
-    this->k = k;
+    if(Constant::useNonCodingModel){
+      this->k = k+1;
+      omegas.push_back(0);
+    }
+    else
+      this->k = k;
     /*cout<<"omega: ";
     for(int j=0; j<omegas.size(); j++){
       cout<<omegas[j]<<"\t";
@@ -174,6 +180,80 @@ void CodonEvo::printOmegas(){
 	cout << i << " " << omegas[i] << endl;
 }
 
+/*
+ * Read BLOSUM from file. BLOSUM file contains joint probabilities of pairs.
+ * Use them to calculate posterior probabilities of AA substitutions.
+ */
+
+void CodonEvo::setAAPostProbs(){
+  aaUsage.resize(20,0);
+  vector<vector<double> > b(20, vector<double>(20));
+  ifstream blosumfile;
+  string filename = Constant::configPath + "profile/default.qij";
+  string buffer = "";
+  //char aaNames[20] = {""};
+  int aaIndex[20] = {-1};
+  char aa = 'X';
+  blosumfile.open(filename.c_str(), ifstream::in);
+  if(!blosumfile){
+    string errmsg = "Could not open the BLOSUM file " + filename + ".";
+    throw PropertiesError(errmsg);
+  }
+  while(blosumfile >> buffer && buffer.substr(0,1) == "#"){
+    blosumfile.ignore( numeric_limits<streamsize>::max(), '\n');
+  }
+  //aaNames[GeneticCode::get_aa_from_symbol(buffer[0])] = buffer[0];
+  aaIndex[0] = GeneticCode::get_aa_from_symbol(buffer[0]);
+  for(int i=1; i<20; i++){
+    blosumfile >> aa;
+    //aaNames[GeneticCode::get_aa_from_symbol(aa)] = aa;
+    aaIndex[i] = GeneticCode::get_aa_from_symbol(aa);
+  }
+  
+  for(int i = 0; i < 20; i++){
+    for(int j = 0; j <= i; j++){
+      blosumfile >> b[aaIndex[i]][aaIndex[j]];
+    }
+  }
+  for(int i = 0; i < 20; i++){
+    for(int j = i+1; j < 20; j++){
+      b[aaIndex[i]][aaIndex[j]] = b[aaIndex[j]][aaIndex[i]];
+    }
+  }
+
+  for(int i = 0; i < 20; i++){
+    for(int j = 0; j < 20; j++){
+      aaUsage[aaIndex[i]] += b[aaIndex[j]][aaIndex[i]];  // set aaUsage 
+    }
+  }
+   
+  /***
+  // print Matrix
+  cout << "blosum: " << endl << "\t";
+  for (int i = 0; i < 20; i++)
+    cout << aaNames[i] << "\t";
+  cout << endl;
+  for(int i = 0; i < 20; i++) {
+    cout << aaNames[i] << "\t";                                                                                                   
+    for (int j = 0; j < 20; j++) {
+      cout << b[i][j] << "\t";
+    }
+    cout << endl;
+  }
+  ***/
+  
+  // compute posterior probabilities: P(i|j) = P(i,j)/P(j)
+  for(int i = 0; i < 20; i++){
+    for(int j = 0; j < 20; j++){
+      b[i][j] = (b[i][j] / aaUsage[j]); 
+    }
+  }
+
+  aaPostProb = b;
+}
+
+
+
 /* 
  * Precompute and store the array of matrices.
  * Takes approximate k * m * 0.015 seconds on greif1: Time for eigendecompose is small compared to time for expQt.
@@ -189,7 +269,15 @@ void CodonEvo::computeLogPmatrices(){
     for (int u=0; u<k; u++){
 	omega = omegas[u];
 	// compute decomposition of Q, which does not require t yet
-	Q = getCodonRateMatrix(pi, omega, kappa);
+	if(u < k){
+	  if(!aaPostProb.empty()) // use amino acid score in codon rate matrix 
+	    Q = getCodonRateMatrix(pi, omega, kappa, &aaPostProb);
+	  else
+	    Q = getCodonRateMatrix(pi, omega, kappa);
+	}else{
+	  vector<double> pi_nuc = IGenicModel::getNucleotideProbs();
+	  Q = getNonCodingRateMatrix(&pi_nuc, kappa);
+	}
 	status = eigendecompose(Q, pi, lambda, U, Uinv);
 	if (status) {
 	    stringstream s;
@@ -296,7 +384,8 @@ CodonEvo::~CodonEvo(){
 
 gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector with 64 elements
 			       double omega,  // dN/dS, nonsynonymous/synonymous ratio
-			       double kappa){ // transition/transversion ratio, usually >1
+			       double kappa, // transition/transversion ratio, usually >1
+			       vector<vector<double> > *aaPostProb){ // posterior probabilities of aa substitutions
     gsl_matrix* Q = gsl_matrix_calloc (64, 64); // initialize Q as the zero-matrix
     Seq2Int s2i(3);
 
@@ -304,6 +393,10 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
     vector<int> num_syn(64,0);
     vector<int> num_nonsyn(64,0);
     vector<int> num_wk(64,0);
+
+    // numerator and denominator of lambda, the normalizing factor for using amino acid scores in codon rate matrix
+    vector<double> lambda1(64,0);
+    vector<double> lambda2(64,0);
 
     // initialize off-diagonal elements
     // codon i (row)    abc
@@ -333,8 +426,13 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
 				qij *= kappa; // transition
 			    }
 			    if (GeneticCode::translate(i) != GeneticCode::translate(j)){
-				qij *= omega; // non-synonymous subst.
-				num_nonsyn[i]++;
+			      qij *= omega; // non-synonymous subst.
+			      if(aaPostProb != NULL && GeneticCode::map[i] != -1 && GeneticCode::map[j] != -1){
+				//qij *= (*aaPostProb)[GeneticCode::map[i]][GeneticCode::map[j]];
+				lambda1[i] += pi[j];  
+				lambda2[i] += pi[j] * (*aaPostProb)[GeneticCode::map[i]][GeneticCode::map[j]];
+			      }
+			      num_nonsyn[i]++;
 			    }else{
 			      num_syn[i]++;
 			    }
@@ -356,6 +454,19 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
     }
     */
 
+    // add posterior prob. of AAs and lambda to non-syn. substitutions if animo acid score is used
+    if(aaPostProb != NULL){
+      double qij = 0;
+      for (int i=0; i<64; i++){
+	for (int j=0; j<64; j++){
+          if (GeneticCode::translate(i) != GeneticCode::translate(j) && GeneticCode::map[i] != -1 && GeneticCode::map[j] != -1){
+            qij = gsl_matrix_get(Q, i, j);
+    	    qij *= (*aaPostProb)[GeneticCode::map[i]][GeneticCode::map[j]] * lambda1[i]/lambda2[i];
+    	    gsl_matrix_set(Q, i, j, qij);
+          }
+        }
+      }
+    }
 
     // initialize diagonal elements (each row must sum to 0)
     double rowsum;
@@ -375,6 +486,72 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
     gsl_matrix_scale(Q, scale);
     return Q;
 }
+
+/*
+ * compute rate matrix for non-codong model
+ */
+
+gsl_matrix *getNonCodingRateMatrix(vector<double> *pi_nuc, double kappa){
+
+  gsl_matrix* Q = gsl_matrix_calloc (64, 64); // initialize Q as the zero-matrix
+  Seq2Int s2i(3);
+  vector<double> pi(64,0);
+
+  // initialize off-diagonal elements                                                                                               
+  // codon i (row)    abc                                                                                                           
+  // codon j (col)    dbc                                                                                                           
+  // f                012                                                                                                           
+  int codoni[3], codonj[3];
+  for (int a=0; a<4; a++){
+    codoni[0] = a;
+    for (int b=0; b<4; b++){
+      codoni[1] = b;
+      for (int c=0; c<4; c++){
+	codoni[2] = c;
+	int i = 16*codoni[0] + 4*codoni[1] + codoni[2]; // in {0,...63}                                                       
+	// go through the 3x3 codons that differ from codon i by a single mutation
+	for (int f=0;f<3; f++){ // position of mutation
+	  for (int d=0; d<4; d++){ // d = substituted base
+	    if (d != codoni[f]){
+	      codonj[0] = codoni[0];
+	      codonj[1] = codoni[1];
+	      codonj[2] = codoni[2];
+	      codonj[f] = d;
+	      int j = 16*codonj[0] + 4*codonj[1] + codonj[2]; // in {0,...63}
+	      double qij = (*pi_nuc)[codonj[f]];
+	      pi[i] = (*pi_nuc)[codonj[f]];
+	      if (GeneticCode::is_purine(codonj[f]) == GeneticCode::is_purine(codoni[f])){
+		qij *= kappa; // transition
+	      }
+	      gsl_matrix_set (Q, i, j, qij);
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+  // initialize diagonal elements (each row must sum to 0)
+  double rowsum;
+  double scale = 0.0; // factor by which matrix must be scaled to achieve one expected mutation per time unit                       
+  for (int i=0; i<64; i++){
+    rowsum = 0.0;
+    for (int j=0; j<64; j++)
+      rowsum += gsl_matrix_get(Q, i, j);
+    gsl_matrix_set(Q, i, i, -rowsum); // q_{i,i} = - sum_{j!=i} q_{i,j}                                                           
+    scale += rowsum * pi[i];
+  }
+  if (scale != 0.0)
+    scale = 1.0/scale;
+  else
+    scale = 1.0; // should not happen                                                                                             
+  // normalize Q so that the exptected number of codon mutations per time unit is 1                                                 
+  gsl_matrix_scale(Q, scale);
+
+  return Q;
+
+}
+
 
 /*
  * perform a decompososition of the rate matrix as Q = U * diag(lambda) * U^{-1}
@@ -888,7 +1065,7 @@ vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree
 
 double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
   if (seqtuple.size() != tree->numSpecies())
-    throw ProjectError("CodonEvo::graphOmegaOnCodonAli: inconsistent number of species.");
+    throw ProjectError("CodonEvo::graphOmegaOnCodonAli: inconsistent number of species. Tree and alignment file must have the same (number of) species.");
   for(int i=1; i<seqtuple.size();i++){
     if(seqtuple[0].length() != seqtuple[i].length()){
       throw ProjectError("CodonEvo::graphOmegaOnCodonAli: wrong exon lengths");

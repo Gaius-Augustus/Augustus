@@ -327,6 +327,8 @@ public:
     static vector<double> lg_es;
     static int oeExtensionWidth;
     static bool computeNumSubs;
+    static bool useAArates;
+    static bool useNonCodingModel;
 };
 
 

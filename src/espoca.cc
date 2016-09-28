@@ -45,6 +45,7 @@ int main( int argc, char* argv[] ){
     string     species;
     int        help = 0;
 
+
     LLDouble::setOutputPrecision(3);
 
 
@@ -59,12 +60,13 @@ int main( int argc, char* argv[] ){
       {"alnfile",1, 0, 'a'},
       {"treefile",1, 0, 't'},
       {"help",0,0,'h'},
+      {"useAminoAcidRates",1,0,'r'},
       {0,0,0,0}
     };
 
     int option_index = 0;
     int c; 
-    while ((c = getopt_long(argc, argv, "s:a:t:h", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "s:a:t:r:h", long_options, &option_index)) != -1) {
       switch(c)
 	{
 	case 's':
@@ -75,6 +77,9 @@ int main( int argc, char* argv[] ){
 	  break;
 	case 't':
 	  Constant::treefile = optarg;
+	  break;
+	case 'r':
+	  Constant::useAArates = optarg;
 	  break;
 	case 'h':
 	  help=1;
@@ -99,8 +104,7 @@ int main( int argc, char* argv[] ){
     if(Constant::treefile.empty()){
       cerr << "Warning: No treefile spezified. Using startree with branchlength of one." << endl;
     }
-    
-  
+
     try{
       Properties::init( argc, argv );
       Constant::init();
@@ -115,9 +119,8 @@ int main( int argc, char* argv[] ){
 	start = clock();
 	//  CompGenePred cgp;
 	//cgp.start();
-	
-	CodonMSA cAli(Constant::codonalnfile);
 
+	CodonMSA cAli(Constant::codonalnfile);
 	printIntro();
 
 	cAli.printOmegaStats();
@@ -163,5 +166,5 @@ void printIntro(){
   cout << "# 4. Pr(w>1)     probability of omega > 1 at alipos (*: Pr(w>1) > 0.90, **: Pr(w>1) > 0.95)\n";
   cout << "# 5. post_mean   posterior mean estimate of omega at ali_pos\n";
   cout << "# 6. SE_for_w    standard deviation of omega at ali_pos\n";
-  cout << "# 7. num_subst   number of subsitution calculated by the fitch algorithm\n\n";
+  cout << "# 7. num_subst   number of subsitution calculated by the Fitch algorithm\n\n";
 }

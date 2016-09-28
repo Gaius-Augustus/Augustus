@@ -37,6 +37,7 @@ PatMMGroup*     IGenicModel::GCemiprobs = NULL;
 int IGenicModel::lastParIndex = -1;
 vector<vector<Double> > IGenicModel::Pls;
 vector<vector<Double> >* IGenicModel::GCPls = NULL;
+vector<vector<double> > IGenicModel::nucProbs;
 int IGenicModel::verbosity;
 double IGenicModel::geoProb = 0.9999;
 
@@ -153,7 +154,7 @@ void IGenicModel::readProbabilities( int parIndex ) {
 void IGenicModel::readAllParameters(){
     string filename = Constant::fullSpeciesPath() + Properties::getProperty("/IGenicModel/infile");
     ifstream istrm(filename.c_str());
-
+    
     if( istrm ){
         // all GC content dependent parameters
         int l;
@@ -169,11 +170,14 @@ void IGenicModel::readAllParameters(){
 	    throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename + ". Truncated?");
 	  
 	  GCPls[idx].resize( k+1 );
+	  nucProbs.resize(k+1);
 	  istrm >> goto_line_after( "[P_ls]" );
 	  for( int i = 0; i <= k; i++ ){
             istrm >> comment >> l >> comment;
 	    int size = POWER4TOTHE(l+1);
             GCPls[idx][i].assign( size, 0.0 );
+	    if(idx == 0)
+	      nucProbs[i].assign( size, 0.0 );
 	    Seq2Int s2i(i+1);
 	    for( int j = 0; j < size; j++ ) {
 	      istrm >> comment;
@@ -181,7 +185,12 @@ void IGenicModel::readAllParameters(){
 	      if (pn != j)
 		throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
 				   " at P_ls, pattern " + s2i.INV(pn));
-	      istrm >> GCPls[idx][i][j];
+	      if(idx == 0){
+		istrm >> nucProbs[i][j];
+		GCPls[0][i][j] = nucProbs[i][j];
+	      }else
+		istrm >> GCPls[idx][i][j];
+	      
 	      if (!Constant::contentmodels)
 		  GCPls[idx][i][j] = 1.0/size; // use uniform distribution
             }
@@ -350,3 +359,4 @@ Double IGenicModel::emiProbUnderModel(int begin, int end) const {
     }
     return p * extrinsicProb;
 }
+

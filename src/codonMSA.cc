@@ -56,8 +56,9 @@ vector<double> ct_branchset;
   int k = 20; // number of omegas
   // TODO: codonusage
 
-  //  BaseCount::init();
-  //  PP::initConstants();
+  //BaseCount::init();
+    
+  //PP::initConstants();
   //  NAMGene namgene; // creates and initializes the states                                                                            
   StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl                       
 
@@ -76,6 +77,9 @@ vector<double> ct_branchset;
   codonevo.setBranchLengths(ct_branchset, 25);
   codonevo.setOmegas(k);
   codonevo.setPrior(0.5);
+  if(Constant::useAArates){
+    codonevo.setAAPostProbs();
+  }
   /*cout << "Omegas, for which substitution matrices are stored:" << endl;                                                          
     codonevo.printOmegas();*/
   codonevo.computeLogPmatrices();

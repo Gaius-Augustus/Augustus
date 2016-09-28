@@ -234,7 +234,7 @@ double PhyloTree::pruningAlgor(string labelpattern, Evo *evo, int u){
 
 double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
     int states = evo->getNumStates();
-    
+
     for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
 	if((*node)->isLeaf()){
 	    // initialization

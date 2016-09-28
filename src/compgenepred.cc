@@ -302,7 +302,7 @@ void CompGenePred::start(){
     if(printCodons){
       codonAli.open(outdir + "orthoexons_codonAlignment.maf");
     }
-    
+
     BaseCount::init();
     PP::initConstants();
     NAMGene namgene; // creates and initializes the states
@@ -320,7 +320,11 @@ void CompGenePred::start(){
     codonevo.setBranchLengths(ct_branchset, 25);
     //codonevo.printBranchLengths();
     codonevo.setOmegas(20);
+    // TODO: different prior for coding and noncoding
     codonevo.setPrior(0.5);
+    if(Constant::useAArates){
+      codonevo.setAAPostProbs();
+    }
     /*cout << "Omegas, for which substitution matrices are stored:" << endl;
       codonevo.printOmegas();*/
     codonevo.computeLogPmatrices();

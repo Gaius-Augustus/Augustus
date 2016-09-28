@@ -29,16 +29,16 @@ INCLS	= -I../include
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
- meaPath.o exoncand.o randseqaccess.o fasta.o ncmodel.o codonMSA.o
+ meaPath.o exoncand.o randseqaccess.o fasta.o ncmodel.o
 ifdef COMPGENEPRED
-	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o
+	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
 	INCLS += -I/usr/include/lpsolve
 endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
-PROGR	= augustus etraining prepareAlign fastBlockSearch espoca
+PROGR	= augustus etraining prepareAlign fastBlockSearch
 INFO    = cxxflags
 
 ifdef MYSQL
@@ -56,6 +56,10 @@ LIBS	  += -lsqlite3
 OBJS	  += sqliteDB.o
 CXXFLAGS  += -DSQLITE
 PROGR     += load2sqlitedb getSeq
+endif
+
+ifdef COMPGENEPRED
+PROGR     += espoca
 endif
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info

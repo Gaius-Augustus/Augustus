@@ -106,6 +106,8 @@ vector<double>Constant::in_sc;
 vector<double>Constant::lg_es;
 int Constant::oeExtensionWidth;
 bool Constant::computeNumSubs; // cumpute number of substitutions in OE
+bool Constant::useAArates;
+bool Constant::useNonCodingModel;
 // moved here from hints.cc
 const int power2id[31] = {1,2,4,8,16,32,64,128,
 			   256,512,1024,2048,4096,8192,16384,32768,
@@ -366,8 +368,20 @@ void Constant::init(){
       computeNumSubs = false;
     }
 
-
+    try {
+      useAArates =  Properties::getBoolProperty("useAminoAcidRates");
+    } catch(...){
+      useAArates = false;
+    }
     
+    try {
+      useNonCodingModel =  Properties::getBoolProperty("useNonCodingModel");
+    } catch(...){
+      useNonCodingModel = false;
+    }
+
+
+
     Properties::assignProperty("/UtrModel/d_polyasig_cleavage", d_polyasig_cleavage);
     Properties::assignProperty("keep_viterbi", 	keep_viterbi);
     Properties::assignProperty("/Constant/gc_range_min", gc_range_min);

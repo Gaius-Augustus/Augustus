@@ -112,7 +112,7 @@ public:
     double getOmega(int u){return omegas[u];}
     int getK(){ return k;}
     void printOmegas();
-
+    void setAAPostProbs();
     void computeLogPmatrices(); // precomputes and stores the array of matrices
 
     /*
@@ -166,6 +166,8 @@ private:
     double kappa;
     vector<double> omegas; // sorted vector of omegas (contains values below, around and above 1)
     vector<double> omegaPrior; // prior distribution on omega, centered at 1
+    vector<double> aaUsage; // amino acid usage for incorporation into rate matrix
+    vector<vector<double> > aaPostProb; // retreived from BLOSUM (amino acid substitution rate matrix)
 };
 
 /*
@@ -174,7 +176,10 @@ private:
 
 gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector with 64 elements
 			       double omega,  // dN/dS, nonsynonymous/synonymous ratio
-			       double kappa); // transition/transversion ratio, usually >1
+			       double kappa, // transition/transversion ratio, usually >1
+			       vector<vector<double> > *aaPostProb = NULL); // posterior probs for AA substitutions
+
+gsl_matrix *getNonCodingRateMatrix(vector<double> *pi_nuc, double kappa); // rate matrix for non-coding model
 
 /*
  * perform a decompososition of the rate matrix as Q = U * diag(lambda) * U^{-1}

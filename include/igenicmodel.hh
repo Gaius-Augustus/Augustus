@@ -40,7 +40,6 @@ public:
     void buildModel         ( const AnnoSequence* annoseq, int parIndex );
     void registerPars       ( Parameters* parameters);
     void printProbabilities ( int zusNumber, BaseCount *bc, const char* suffix = NULL );
-
     void initAlgorithms     ( Matrix<Double>&, int);
     void viterbiForwardAndSampling(ViterbiMatrixType&, ViterbiMatrixType&, int, int,
 				   AlgorithmVariant, OptionListItem&);
@@ -55,6 +54,8 @@ public:
     static void readAllParameters();
     static void storeGCPars(int idx);
     static double getGeoProb(){return geoProb;}
+    static vector<double> getNucleotideProbs(){return nucProbs[0];}
+
 private:
     void processSequence( const char* start, const char* end );
 public:    
@@ -68,6 +69,7 @@ private:
   static vector<Integer> emicount;
   static vector<vector<Double> > Pls;
   static vector<vector<Double> >* GCPls;
+  static vector<vector<double> > nucProbs;
   static int             lastParIndex; // GC-index of current parameter set
   static int             verbosity;
   static double          geoProb;
