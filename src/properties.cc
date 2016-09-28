@@ -681,6 +681,29 @@ void Properties::readLine( istream& strm ) {
 	    properties[name] = value;
 }
 
+static char* get_self(void){
+    char *path = NULL;
+    size_t allocated = 256;
+
+    while (1) {
+	ssize_t pos = 0;
+	if (!(path = (char*) malloc(allocated)))
+	    abort();
+	if ((pos = readlink( "/proc/self/exe", path, allocated - 1 )) != -1)
+	    path[pos] = '\0';
+	else {
+	    free(path);
+	    return NULL;
+	}
+	if (pos < allocated - 1)
+	    break;
+	free(path);
+	allocated *= 2;
+    }
+    return path;
+}
+
+
 string findLocationOfSelfBinary(){
     string self;
 
@@ -694,18 +717,23 @@ string findLocationOfSelfBinary(){
 	// need to program workaround with new/free.\n";
     }
 #else // LINUX
-    char path[PATH_MAX];
-    ssize_t pos = readlink( "/proc/self/exe", path, PATH_MAX-1 );
+    char *path = get_self();
+    ssize_t pos = 0;
+    if (path)
+	pos = strlen(path);
     if (pos > 0){
-        self = string(path);
+	self = string(path);
+	free(path);
 	pos = self.find_last_of("/");
 	if (pos>0)
 	    pos = self.find_last_of("/", pos-1);
 	if (pos >= 0)
 	    self.resize(pos);
 	self += "/config";
-    } else 
+    } else {
+	free(path);
 	throw ProjectError("/proc/self/exe not found.\nPlease specify environment variable or parameter " CFGPATH_KEY ".");
+    }
 #endif // WINDOWS not supported
     return self;
 }
