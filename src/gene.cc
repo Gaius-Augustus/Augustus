@@ -2485,7 +2485,8 @@ void filterGenePrediction(list<Transcript*> &gl, list<Transcript*> &filteredTran
 	// delete gene if the combined CDS is too short, unless a CDS exon is truncated
 	Gene *g = dynamic_cast<Gene *>(*git);
 	if (g && ((g->clength < Constant::min_coding_len && g->completeCDS())
-		  || (g->hasInFrameStop(annoseq) && noInFrameStop)))
+		  || (g->hasInFrameStop(annoseq) && noInFrameStop)
+		  || (g->clength < 4 && g->clength < Constant::min_coding_len && !g->completeCDS())))
 	    keep = false;
 
 	if (keep && (*git)->hasProbs) {
