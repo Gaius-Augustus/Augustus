@@ -104,6 +104,22 @@ void OrthoGraph::filterGeneList(vector< list<Transcript*> *> &genelist, vector<i
 	if (genelist[pos]){
 	    AnnoSequence *annoseq = graphs[pos]->getAnnoSeq();
 
+	    // filter criteria that apply to coding genes only
+	    // delete gene if the combined CDS is too short, unless a CDS exon is truncated
+	    for(list<Transcript*>::iterator git = genelist[pos]->begin(); git != genelist[pos]->end();){
+		Gene *g = dynamic_cast<Gene *>(*git);
+		if (g && ((g->clength < Constant::min_coding_len && g->completeCDS())
+			  || (g->clength < 4 && g->clength < Constant::min_coding_len && !g->completeCDS()))){
+		    //(*git)->printGFF();
+		    //cout << "Gene deleted! (clength " << g->clength << ")" << endl;
+		    delete *git;
+		    git = genelist[pos]->erase(git);
+		}
+		else{
+		    ++git;
+		}
+	    }
+
 	    list<AltGene> *agl = groupTranscriptsToGenes(*genelist[pos]);
 
 	    if(sfcs[pos] && sfcs[pos]->collection->hasHintsFile){
