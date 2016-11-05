@@ -68,6 +68,6 @@ while (<SEQ>) {
     }
     print SPLIT;
     if (!/^>/) {
-	$cursize += length $_;
+	$cursize += (length $_) - 1;
     }
 }
