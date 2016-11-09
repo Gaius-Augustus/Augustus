@@ -24,8 +24,7 @@ GetOptions(
     'printUTR!'=>\$printUTR,
     'printIntron!'=>\$printIntron,
     'gff3!'=>\$gff3,
-    'includeStopInCDS!'=>\$includeStopInCDS,
-    'trcp_pattern=s'=>\$trcp_pattern);
+    'includeStopInCDS!'=>\$includeStopInCDS);
 
 exec("perldoc $0") if ($help || !defined($outfile));
 
@@ -73,7 +72,7 @@ sub parseAndStoreGTF{
 	    $txid = $1;
 	    $txs{$txid} = {"strand"=>$strand, "chr"=>$chr, "source"=>$source, "CDS"=>[], "UTR"=>[], "exon"=>[], "intron"=>[], "rest"=>[]} if (!exists($txs{$txid}));
 	    $txs{$txid}{"txline"} = \@f;
-	    if($f[8] =~ /Parent=([^;]+)/ || $f[8] =~ /gene_id."?([^";]+)"?/){
+	    if($f[8] =~ /Parent=([^;]+)/ || $f[8] =~ /gene_id."?([^";]+)"?/ || $f[8] =~ /(g\d+)\.t\d+/){
 		$geneOf{$txid} = $1;
 	    }
 	    next;
@@ -335,7 +334,6 @@ gtf2gff.pl <in.gtf --out=out.gff
   --printUTR       print UTR features
   --printIntron    print intron features
   --gff3           output in gff3 format
-  --trcp_pattern   regex pattern that identifies trancripts (default: '\.t\d+'), only if GFF is input
 
 =head1 DESCRIPTION
     
