@@ -1,3 +1,4 @@
+
 /**********************************************************************
  * file:    geneMSA.cc
  * licence: Artistic Licence, see file LICENCE.TXT or 
@@ -1325,6 +1326,7 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 		  subs = oit->second.second;
 		}
 		// calculate columnwise omega and store in appropriate data structure
+		/*
 		//cout << "calculate omega for codon " << (codonIt->first >> 8) << " ...";
 		vector<int> pruned_rfc = pruneToBV(&rfc, bvit->first);
 		//cout << "current (reduced) RFC " << printRFC(pruned_rfc) << endl; 
@@ -1335,6 +1337,11 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 		  o[codonIt->first >> 8] = omegaForCodonTuple(&loglik);
 		  currRFC.insert(pair<vector<int>, vector<double> >(pruned_rfc, o));
 		  codonOmega.insert(pair<bit_vector, map<vector<int>, vector<double> > >(bvit->first, currRFC));
+		  int sum_of_rfc = 0;
+		  for(map<bit_vector, map<vector<int>, vector<double> > >::iterator oi = codonOmega.begin(); oi != codonOmega.end(); oi++){
+		    sum_of_rfc += oi->second.size();
+		  }
+		  cout << "size of codonOmega: " << codonOmega.size() << "\tsum of RFCs: " << sum_of_rfc << endl;
 		}else{
 		  map<vector<int>, vector<double> >::iterator rfcIt = omegaIt->second.find(pruned_rfc);
 		  if(rfcIt == omegaIt->second.end()){
@@ -1347,6 +1354,7 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 		    rfcIt->second[codonIt->first >> 8] = omegaForCodonTuple(&loglik);
 		  }
 		}
+		*/
 		//cout << "done" << endl;
 		//cout<<"loglik of omega: "<<loglik<<endl;
 		// store cumulative sum of omega, omega squared and one
