@@ -289,9 +289,9 @@ OPTIONS:\n\
 --noDupes                     do not map between duplications in hal graph. (default: off)\n\
 --details                     print detailed output (default: off)\n\
 --halLiftover_exec_dir=DIR    Directory that contains the executable halLiftover\n\
+                              If not specified it must be in $PATH environment variable.\n\
 --unmapped                    print a GTF attribute with a list of all genomes, that are not aligned to the\n\
                               corresponding gene feature, e.g. hgm_unmapped \"1,4,5\"; (default; off)\n\
-                              If not specified it must be in $PATH environment variable.\n\
 --tmpdir=DIR                  a temporary file directory that stores lifted over files. (default 'tmp/' in current directory)\n\
 --outdir=DIR                  file direcory that stores output gene files. (default: current directory)\n\
 --printHomologs=FILE          prints disjunct sets of homologous transcripts to FILE, e.g.\n\
