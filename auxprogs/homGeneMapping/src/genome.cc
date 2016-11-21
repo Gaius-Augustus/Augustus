@@ -213,7 +213,7 @@ void Genome::parseGTF(string gtffilename){
 }
 
 
-void Genome::writeGeneFeature(GeneFeature *gf, ofstream &of) const {
+void Genome::writeGeneFeature(GeneFeature *gf, ofstream &of, bool unmapped) const {
     of << getSeqName(gf->getSeqID()) << "\t";
     of << gf->getSource() << "\t";
     of << featureTypeIdentifiers[gf->getFeatureType()] << "\t";
@@ -231,9 +231,14 @@ void Genome::writeGeneFeature(GeneFeature *gf, ofstream &of) const {
     of << "transcript_id \"" << gf->getTxID() << "\"; ";
     of << "gene_id \"" << gf->getGeneID() << "\"; " ;
     if(!gf->isType(stop) && !gf->isType(start)){
-	of << "hgm_info \"";	
+	of << "hgm_info \"";
 	print_hgm_info(gf,of);
 	of  << "\"; ";
+	if(unmapped){
+	    of << "hgm_mapped \"";
+	    print_hgm_unaligned(gf,of);
+	    of  << "\"; ";
+	}
     }
     of << endl;
 }
@@ -327,12 +332,12 @@ int Genome::getSeqID(string seqname) const{
 
 }
 
-void Genome::write_hgm_gff(vector<Genome> &genomes, string outdir, bool details){
+void Genome::write_hgm_gff(vector<Genome> &genomes, string outdir, bool details, bool unmapped){
     for(int j = 0; j < genomes.size(); j++){
 	if(idx != j)
 	    readBed(genomes[j]); // reading in bed files with mapped coordinates
     }
-    mapGeneFeatures(genomes, outdir, details);
+    mapGeneFeatures(genomes, outdir, details, unmapped);
 }
 
 /*
@@ -342,7 +347,7 @@ void Genome::write_hgm_gff(vector<Genome> &genomes, string outdir, bool details)
  * If an assembled seq interval is part of a gene in genome j,
  * it is appended to the list of homologs of gf
  */
-void Genome::mapGeneFeatures(vector<Genome> &genomes, string outdir, bool detailed){
+void Genome::mapGeneFeatures(vector<Genome> &genomes, string outdir, bool detailed, bool unmapped){
     string filename = outdir + name + ".gtf";
     ofstream of;
     
@@ -376,8 +381,10 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes, string outdir, bool detail
 		if (other_name == this->name)
 		    continue;
 
-		if(mappedStarts[j].empty() || mappedEnds[j].empty()) // at least one boundary is not mappable to genome j
+		if(mappedStarts[j].empty() || mappedEnds[j].empty()){ // at least one boundary is not mappable to genome j
+		    (*gfit)->appendHomolog(NULL,j);
 		    continue;
+		}
 		/*                                                                                       
 		 * loop over all combinations of mapped start and end positions and
 		 * assemble start position s and an end position e to a seq interval, if they are  
@@ -415,7 +422,7 @@ void Genome::mapGeneFeatures(vector<Genome> &genomes, string outdir, bool detail
 		    }
 		}
 	    }
-	    writeGeneFeature(*gfit, of);
+	    writeGeneFeature(*gfit, of, unmapped);
 	    gfc.createCollection(*gfit);
 	    (*gfit)->homologs.clear();
 	}
@@ -541,6 +548,9 @@ void GeneInfoCollection::createCollection(GeneFeature *g){
     int pred_idx = 0;
 
     for(list<pair<int,GeneFeature*> >::iterator hit = homologs.begin(); hit != homologs.end(); hit++){
+
+	if(!hit->second)
+	    continue;
 	
 	int idx = hit->first;
 	GeneFeature* h = hit->second;
@@ -647,6 +657,22 @@ void GeneInfoCollection::printDetailedStats(Gene *g, std::ofstream &of){
     }
     of << "#" << endl;
     of << "# transcript has an exact homolog in " << numHomologs << " other genomes.\n#" <<endl;    
+}
+
+void Genome::print_hgm_unaligned(GeneFeature *g, std::ofstream &of) const{
+
+    bool isFirst = true;
+    for(list<pair<int,GeneFeature*> >::iterator hit = g->homologs.begin(); hit != g->homologs.end(); hit++){
+	if(!hit->second){
+	    if(isFirst){
+		of << hit->first;
+		isFirst = false;
+	    }
+	    else{
+		of <<","<< hit->first;
+	    }
+	}
+    }
 }	
 
 void Genome::print_hgm_info(GeneFeature *g, std::ofstream &of) const{
@@ -666,6 +692,9 @@ void Genome::print_hgm_info(GeneFeature *g, std::ofstream &of) const{
    	    
     for(list<pair<int,GeneFeature*> >::iterator hit = homologs.begin(); hit != homologs.end(); hit++){
 	
+	if(!hit->second)
+	    continue;
+
 	int idx = hit->first;
 	GeneFeature* h = hit->second;
 	

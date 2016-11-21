@@ -66,7 +66,7 @@ public:
     std::string writeFrame() const;
     double getScore() const {return score;}
     void setEvidence(std::string e);
-    void setMult(int m){mult=m;}
+    void setMult(int m){mult+=m;}
     void setStart(long int s) {start=s;}
     std::string getEvidence() const;
     int getMult() const {return mult;}

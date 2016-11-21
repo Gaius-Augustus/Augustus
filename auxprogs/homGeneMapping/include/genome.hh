@@ -70,7 +70,7 @@ public:
     //void printGFF(std::string outdir, std::vector<Genome> &genomes, bool detailed=false); // output a gene in gtf format with
     void printBed();
     void readBed(Genome &other);
-    void writeGeneFeature(GeneFeature *gf, std::ofstream &of) const;
+    void writeGeneFeature(GeneFeature *gf, std::ofstream &of, bool unmapped=false) const;
     void writeGene(Gene *g, std::ofstream &of) const;
     void writeTxLine(Gene *g, std::ofstream &of) const;
     void writeTLStart(Gene *g, std::ofstream &of) const;
@@ -80,9 +80,10 @@ public:
     void liftOverTo(Genome& other, std::string halfile, std::string halLiftover_exec, std::string halParam);
 
     // mapping of homologous gene features
-    void write_hgm_gff(std::vector<Genome> &genomes, std::string outdir, bool detailed=false);
-    void mapGeneFeatures(std::vector<Genome> &genomes, std::string outdir, bool detailed=false);
+    void write_hgm_gff(std::vector<Genome> &genomes, std::string outdir, bool detailed=false, bool unmapped=false);
+    void mapGeneFeatures(std::vector<Genome> &genomes, std::string outdir, bool detailed=false, bool unmapped=false);
     void print_hgm_info(GeneFeature *g, std::ofstream &of) const;
+    void print_hgm_unaligned(GeneFeature *g, std::ofstream &of) const;
 
     // hash functions
     void insertPos(int seqID, long int pos); // insert start/end positions of gene features in mappedPos

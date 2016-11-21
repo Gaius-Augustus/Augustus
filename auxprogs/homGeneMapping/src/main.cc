@@ -46,6 +46,7 @@ int main( int argc, char* argv[] ){
     size_t maxCpus=1;
     string dbfile;
     bool print_details = false;
+    bool print_unaligned = false;
 
     static struct option long_options[] = {
 	{"gtfs", 1, 0,'g'},
@@ -57,13 +58,14 @@ int main( int argc, char* argv[] ){
 	{"cpus",1, 0, 'n'},
 	{"noDupes",0,0,'d'},
 	{"details",0,0,'i'},
+	{"unmapped",0,0,'u'},
 	{"printHomologs",1,0,'m'},
 	{"dbaccess", 1, 0, 'c'},
 	{"help",0,0,'h'},
         {0,0,0,0}
     };
     int option_index = 0;
-    while ((c = getopt_long(argc, argv, "g:s:a:t:o:e:n:dim:c:h", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "g:s:a:t:o:e:n:dium:c:h", long_options, &option_index)) != -1) {
         switch(c)
             {
 	    case 'g':
@@ -92,6 +94,9 @@ int main( int argc, char* argv[] ){
 		break;
 	    case 'i':
 		print_details=true;
+		break;
+	    case 'u':
+		print_unaligned=true;
 		break;
 	    case 'm':
 		homGeneFile = optarg;
@@ -227,7 +232,7 @@ int main( int argc, char* argv[] ){
 	for(int i = 0; i < genomes.size(); i++){
 	    if(th.size() == maxCpus) // wait for all running threads to finish
 		syncThreads(th);
-	    th.push_back(thread(&Genome::write_hgm_gff, &genomes[i], ref(genomes), outdir, print_details));
+	    th.push_back(thread(&Genome::write_hgm_gff, &genomes[i], ref(genomes), outdir, print_details, print_unaligned));
 	}
 	// synchronize threads
 	syncThreads(th);
@@ -284,6 +289,8 @@ OPTIONS:\n\
 --noDupes                     do not map between duplications in hal graph. (default: off)\n\
 --details                     print detailed output (default: off)\n\
 --halLiftover_exec_dir=DIR    Directory that contains the executable halLiftover\n\
+--unmapped                    print a GTF attribute with a list of all genomes, that are not aligned to the\n\
+                              corresponding gene feature, e.g. hgm_unmapped \"1,4,5\"; (default; off)\n\
                               If not specified it must be in $PATH environment variable.\n\
 --tmpdir=DIR                  a temporary file directory that stores lifted over files. (default 'tmp/' in current directory)\n\
 --outdir=DIR                  file direcory that stores output gene files. (default: current directory)\n\
