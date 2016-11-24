@@ -229,7 +229,7 @@ int main( int argc, char* argv[] ){
 			start += length;
 			// next file_start position is the character preceeding
 			// the next non-whitespace character
-			while (ifstrm && !isalpha(ifstrm.peek()) && ifstrm.peek() != EOF){
+			while (ifstrm && !isalpha(ifstrm.peek()) && ifstrm.peek() != '>' && ifstrm.peek() != EOF){
 			    ifstrm.get(c);
 			    pos += streamoff(1);
 			}
@@ -238,18 +238,19 @@ int main( int argc, char* argv[] ){
 		    }
 		}			
 		// last chunk
-		stmt1.bindInt(2,seqnr);
-		stmt1.bindInt(3,speciesid);
-		stmt1.bindInt(4,start);
-		stmt1.bindInt(5,start+length-1);
-		stmt1.bindInt64(6,(uint64_t)file_start);
-		stmt1.bindInt(7,file_end-file_start);
-		stmt1.step();
-		stmt1.reset();
-		    
-		chunkCount++;
-		lenCount +=length;
+		if(length > 0){
+		    stmt1.bindInt(2,seqnr);
+		    stmt1.bindInt(3,speciesid);
+		    stmt1.bindInt(4,start);
+		    stmt1.bindInt(5,start+length-1);
+		    stmt1.bindInt64(6,(uint64_t)file_start);
+		    stmt1.bindInt(7,file_end-file_start);
+		    stmt1.step();
+		    stmt1.reset();
 		
+		    chunkCount++;
+		    lenCount +=length;
+		}
 		delete name;
 		seqCount++;
 		
