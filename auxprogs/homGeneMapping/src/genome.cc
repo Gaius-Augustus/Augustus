@@ -98,7 +98,7 @@ void Genome::parseExtrinsicGFF(string gfffilename){
 		    mult = atoi(spos);
 
 		string type = tokens[2];
-		if(type == "CDS" || type == "intron") // currently only CDS and intron hints
+		if(type == "CDS" || type == "intron" || type == "exon") // currently only CDS , exon and intron hints
 		    insertHint(seqname,start,end,strand,esource,mult,frame,type);
 
 	    }	        
@@ -807,7 +807,7 @@ void Genome::insertHint(string seqname, long int start, long int end, Strand str
     if(seqid.second)
 	seqIDs.insert(make_pair(seqid.first->second, seqid.first->first));
 	     
-    FeatureType type = (f_type == "CDS")? CDS : intron;
+    FeatureType type = getType(f_type);
     if(type == intron){
 	start--;
 	end++;
@@ -841,7 +841,7 @@ void Genome::getDbHints(SQLiteDB &db){
 	
 	stmt.prepare("SELECT seqname,start,end,typename,strand,frame,mult,esource FROM featuretypes JOIN \
                      (SELECT seqname,start,end,type,strand,frame,mult,esource FROM hints NATURAL JOIN \
-                     (SELECT * FROM speciesnames NATURAL JOIN seqnames WHERE speciesname=$1)) ON typeid=type WHERE typename=\"CDS\" OR typename=\"intron\";");
+                     (SELECT * FROM speciesnames NATURAL JOIN seqnames WHERE speciesname=$1)) ON typeid=type WHERE typename=\"CDS\" OR typename=\"exon\" OR typename=\"intron\";");
 
 	stmt.bindText(1,name.c_str());
 	
