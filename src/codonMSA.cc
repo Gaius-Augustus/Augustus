@@ -20,12 +20,14 @@ using namespace std;
 CodonMSA::CodonMSA(string codonAliFilename){
 
   aliLen = 0;
-  readAlignment(codonAliFilename);
+  ctree=NULL;
 
   if(Properties::hasProperty(TREE_KEY)){
     string treeFilename =  Properties::getProperty(TREE_KEY);
     ctree = new PhyloTree(treeFilename);
+    readAlignment(codonAliFilename);
   }else{
+    readAlignment(codonAliFilename);
     ctree = new PhyloTree(speciesNames);
   }
 
@@ -93,7 +95,12 @@ void CodonMSA::readAlignment(string filename){
   
   string rowseq;
   string speciesName;
-   
+
+  if(ctree != NULL){
+    ctree->getSpeciesNames(speciesNames);
+    aliRows.resize(speciesNames.size(),"");
+  }
+  
   ifstream Alignmentfile;
   Alignmentfile.open(filename.c_str(), ifstream::in);
   if (!Alignmentfile) {
@@ -104,9 +111,17 @@ void CodonMSA::readAlignment(string filename){
     try {
       Alignmentfile >> speciesName >> rowseq;
       if(!Alignmentfile.eof()){
-	aliRows.push_back(rowseq);
 	speciesName.erase(0,1);
-	speciesNames.push_back(speciesName);
+	if(ctree == NULL){
+	  aliRows.push_back(rowseq);
+	  speciesNames.push_back(speciesName);
+	}else{
+	  int pos = find(speciesNames.begin(), speciesNames.end(), speciesName) - speciesNames.begin();
+	  if(pos >= speciesNames.size()){
+	    throw ProjectError( string("Species ") + speciesName + " not found in phylogenetik tree.");
+	  }
+	  aliRows[pos] = rowseq;
+	}
       }
       // cout << "species name: " << speciesName << "\t rowseq: " << rowseq << endl;
     } catch (std::ios_base::failure e) {

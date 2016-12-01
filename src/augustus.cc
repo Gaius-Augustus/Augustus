@@ -508,7 +508,7 @@ void setParameters(){
 	cerr << "Warning: The gff3 standard requires that the stop codon is included in the CDS. "
 	     << "Unless this is your intention, set stopCodonExcludedFromCDS to false in your "
 	     << "species' configuration file or on the command line." << endl;
-    
+     
     if (Properties::hasProperty("translation_table")){
         GeneticCode::chooseTranslationTable(Properties::getIntProperty("translation_table"));
     }

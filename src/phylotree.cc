@@ -120,7 +120,6 @@ PhyloTree::PhyloTree(string filename){
 		    }
 		    if(!found){ //if species name ist not in list, remove leaf
 			drop(species[i]);
-			numSp--;
 		    }
 		}
 		if(species.size() < 2 || species.size() < keep.size())
@@ -352,6 +351,7 @@ void PhyloTree::drop(Treenode *node, Evo *evo){
 	}
 	treenodes.remove(node);
 	delete node;
+	numSp--;
     }
 }
 
@@ -512,13 +512,11 @@ void PhyloTree::prune(bit_vector &bv, Evo *evo){
 		Treenode* tmp=*node;
 		if(node == treenodes.begin()){
 		    drop(tmp,evo);
-		    numSp--;
 		    goto start;
 		}
 		else{
 		    node--;
 		    drop(tmp,evo);
-		    numSp--;
 		}
 	    }
 	}
