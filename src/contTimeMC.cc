@@ -1066,13 +1066,17 @@ vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree
 double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
   if (seqtuple.size() != tree->numSpecies())
     throw ProjectError("CodonEvo::graphOmegaOnCodonAli: inconsistent number of species. Tree and alignment file must have the same (number of) species.");
-  for(int i=1; i<seqtuple.size();i++){
-    if(seqtuple[0].length() != seqtuple[i].length()){
-      throw ProjectError("CodonEvo::graphOmegaOnCodonAli: wrong exon lengths");
+  
+  vector<string> speciesnames;
+  tree->getSpeciesNames(speciesnames);
+  int n = 0;  // number of nucleotide triples
+
+  for(int i=0; i<seqtuple.size();i++){
+    if(seqtuple[i].length() != 0){
+      n = seqtuple[i].length()/3;
+      break;
     }
   }
-
-  int n = seqtuple[0].length()/3; // number of nucleotide triples
   int numCodons;
   double Eomega, loglik, sum;
   Seq2Int s2i(3);
@@ -1088,18 +1092,14 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree)
   int codonIdx = 0;
   int refCodonIdx = 0;  
 
-  vector<string> speciesnames;
-  tree->getSpeciesNames(speciesnames);
-
   for (int i=0; i<n; i++){
     vector<double> logliksSite(k,0.0);
     Eomega = sum = 0.0;      
     vector<int> codontuple(tree->numSpecies(), 64); // 64 = missing codon
     numCodons = 0;
-    PhyloTree pruned_tr = *tree;
-        
+    PhyloTree pruned_tr(*tree);
     for(size_t s=0; s < tree->numSpecies(); s++){
-      if (seqtuple[s].size()>0)
+      if (seqtuple[s].size()>0){
 	try {
 	  codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
 	  numCodons++;
@@ -1107,9 +1107,12 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree)
 	    refPos[codonIdx] = refCodonIdx;
 	    refCodonIdx++;
 	  }
-	} catch(...){
+	} catch(...){ // gap or n character
 	  pruned_tr.drop(speciesnames[s]);
-	} // gap or n character
+	} 
+      }else{ // species missing in alignfile
+	pruned_tr.drop(speciesnames[s]);
+      }
     }
     if(codontuple[0] == 64)
       aminoAcidsRef[codonIdx] = '-';
@@ -1119,7 +1122,7 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree)
     numSubst[codonIdx] = pruned_tr.fitch(codontuple);
     if (numCodons >= 2){
       for (int u=0; u < k; u++){ // loop over omegas
-	loglik = tree->pruningAlgor(codontuple, this, u);
+	loglik = pruned_tr.pruningAlgor(codontuple, this, u);
   	logliks[u] += loglik;
 	logliksSite[u] += loglik;
       }    
@@ -1142,7 +1145,7 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree)
 	stdPostmeanSite[codonIdx] += postprobs[u] * pow(omegas[u] - Eomega, 2);
       
       /***
-      for(size_t s=0; s < tree->numSpecies(); s++){
+      for(size_t s=0; s < pruned_tr.numSpecies(); s++){
 	if (seqtuple[s].size()>0)
 	  cout << codontuple[s] << "\t" << seqtuple[s].substr(i*3,3) << endl;
       }
