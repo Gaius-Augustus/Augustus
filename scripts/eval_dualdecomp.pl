@@ -82,7 +82,6 @@ if(!defined($DIR) && !defined($FILE)){
 if ($outdir ne ""){
     system ("rm -rf $outdir; mkdir $outdir");
     $outdir =~ s/([^\/])$/$1\//g;
-    print "outdir $outdir\n";
 }
 
 
