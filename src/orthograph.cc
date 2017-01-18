@@ -18,6 +18,7 @@
 using namespace std;
 
 PhyloTree *OrthoGraph::tree = NULL;
+StepRule OrthoGraph::step_rule = square_root;
 
 size_t OrthoGraph::numSpecies;
 
@@ -383,7 +384,7 @@ double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector
 		goto END;
 	    
 	    // determine new step size
-	    delta = getStepSize(c[r],t,v);
+	    delta = getStepSize(c[r], t, v, numInconsistent, current_dual, best_primal, best_dual);
 	    
 	    // updated weights
 	    for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
@@ -436,7 +437,17 @@ double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector
  * v ist the number of iterations prior to t where the dual value increases
  * the purpose of v is to decrease the step size only if we move in the wrong direction
  */
-double OrthoGraph::getStepSize(double c, int t, int v){    
+double OrthoGraph::getStepSize(double c, int t, int v, int numInconsistent, double current_dual, double best_primal, double best_dual){
+    if(step_rule == harmonic)
+	return c/(v+1);
+    if(step_rule == square_root)
+	return c/sqrt(v+1);
+    if(step_rule == base_2)
+	return c/pow(2,v);
+    if(step_rule == base_e)
+	return c/exp(v);
+    if(step_rule == polyak)
+	return c * (current_dual - best_primal)/numInconsistent;
     return c/sqrt(v+1);
 }
 
@@ -829,4 +840,28 @@ void OrthoGraph::createOrthoGenes(const GeneMSA *geneRange){
 
 void OrthoGraph::printOrthoGenes(){
   // ouput all_orthogenes
+}
+
+void OrthoGraph::setStepRule(const char* r){
+    
+    if(strcmp(r, "harmonic") == 0){
+	step_rule = harmonic;
+    }
+    else if(strcmp(r, "square_root") == 0){
+	step_rule = square_root;
+    }
+    else if(strcmp(r, "base_2") == 0){
+	step_rule = base_2;
+    }
+    else if(strcmp(r, "base_e") == 0){
+	step_rule = base_e;
+    }
+    else if(strcmp(r, "polyak") == 0){
+	step_rule = polyak;
+    }
+    else{
+	std::string s(r);
+	throw ProjectError("Warning: " + s + "is not a valid dd_step_rule. Choose one of the step_rules from below\n"
+			   "harmonic\nsquare_root\nbase_2\nbase_e\npolyak\n");
+    }
 }

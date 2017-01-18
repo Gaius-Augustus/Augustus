@@ -156,6 +156,9 @@ void CompGenePred::start(){
 	cerr << "Warning: /CompPred/rounds was set to "<<rounds<<". At least one round must be made." << endl;
 	rounds =1;
     }
+    const char* dd_step_rule = Properties::hasProperty("/CompPred/dd_step_rule") ? Properties::getProperty("/CompPred/dd_step_rule") : "square_root";
+    OrthoGraph::setStepRule(dd_step_rule);
+    
     string dd_param_s; 
     // parameter that defines the step size in dual decomposition.
     // If a range is given, all values in that range are tried until convergence is achieved

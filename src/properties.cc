@@ -87,6 +87,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/phylo_model",
 "/CompPred/dd_factor",
 "/CompPred/dd_rounds",
+"/CompPred/dd_step_rule",
 "/CompPred/dualdecomp",
 "/CompPred/overlapcomp",
 "/Constant/almost_identical_maxdiff",

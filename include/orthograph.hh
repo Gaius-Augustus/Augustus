@@ -19,6 +19,8 @@
 // forward declarations
 class GeneMSA;
 
+enum StepRule{harmonic=0, square_root, base_2, base_e, polyak};
+
 class OrthoGraph{
 
 public:
@@ -39,6 +41,7 @@ public:
     }
 
     static size_t numSpecies; //the number of species
+    static StepRule step_rule;
     vector<SpeciesGraph*> graphs;
     static PhyloTree *tree;
     vector< list<Transcript*> *> ptrs_to_alltranscripts; // stores pointers to alltranscripts until they can be deleted (destructor of OrthoGraph)
@@ -60,7 +63,7 @@ public:
     double dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo,vector< list<Transcript*> *> &genelist, int gr_ID, int T, vector<double> &c);  //main routine
     double treeMAPInf(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &numInconsistent);  //vertical problem
     double globalPathSearch(); // horizontal problem
-    double getStepSize(double c,int t, int v);    // specifies a sequence of steps
+    double getStepSize(double c,int t, int v, int numInconsistent, double current_dual, double best_primal, double best_dual);  // specifies a sequence of steps
     double makeConsistent(list<OrthoExon> &all_orthoex, ExonEvo &evo);
     double init(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &numInconsistent) ;
 
@@ -76,6 +79,8 @@ public:
     }
     void createOrthoGenes(const GeneMSA *geneRange); // creates all_orthogenes
     void printOrthoGenes(); // ouputs all_orthogenes
+    
+    static void setStepRule(const char* r);
     /*
      * old code: optimization by making small local changes called moves
      */
