@@ -447,7 +447,9 @@ double OrthoGraph::getStepSize(double c, int t, int v, int numInconsistent, doub
     if(step_rule == base_e)
 	return c/exp(v);
     if(step_rule == polyak)
-	return c * (current_dual - best_primal)/numInconsistent;
+	return (current_dual - best_primal)/numInconsistent;
+    if(step_rule == constant)
+	return c;
     return c/sqrt(v+1);
 }
 
@@ -859,9 +861,12 @@ void OrthoGraph::setStepRule(const char* r){
     else if(strcmp(r, "polyak") == 0){
 	step_rule = polyak;
     }
+    else if(strcmp(r, "constant") == 0){
+	step_rule = constant;
+    }
     else{
 	std::string s(r);
 	throw ProjectError("Warning: " + s + "is not a valid dd_step_rule. Choose one of the step_rules from below\n"
-			   "harmonic\nsquare_root\nbase_2\nbase_e\npolyak\n");
+			   "constant\nharmonic\nsquare_root\nbase_2\nbase_e\npolyak\n");
     }
 }

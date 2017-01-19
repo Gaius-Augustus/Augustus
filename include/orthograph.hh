@@ -19,7 +19,7 @@
 // forward declarations
 class GeneMSA;
 
-enum StepRule{harmonic=0, square_root, base_2, base_e, polyak};
+enum StepRule{constant=0, harmonic, square_root, base_2, base_e, polyak};
 
 class OrthoGraph{
 
