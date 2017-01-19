@@ -380,7 +380,7 @@ double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector
 	    }
 	    cout<<r<<"\t"<<t<<"\t"<<delta<<"\t"<<current_primal<<"\t"<<current_dual<<"\t"<<numInconsistent<<endl;
 	    
-	    if(numInconsistent == 0 || abs(best_dual - best_primal) < 1e-8) // exact solution is found
+	    if(numInconsistent == 0 || best_dual - best_primal < 1e-8) // exact solution is found
 		goto END;
 	    
 	    // determine new step size
@@ -423,8 +423,8 @@ double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector
 	hects->setPhyleticPattern(pp_init, pp_opt);
     }
 
-    double best_gap = abs(best_dual - best_primal);
-    double initial_gap = abs(best_dual - initial_primal);
+    double best_gap = (best_dual - best_primal > 0) ? (best_dual - best_primal) : 0;
+    double initial_gap = (best_dual - initial_primal > 0) ? (best_dual - initial_primal) : 0;
     double perc_gap = (initial_gap > 0 )? best_gap/initial_gap : 0;
     perc_gap*=100;
     cout<<"dual decomposition reduced initial duality gap of "<<initial_gap<<" to "<<best_gap<<" (to "<<perc_gap<<"%)"<<endl;

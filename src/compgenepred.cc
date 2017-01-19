@@ -168,6 +168,8 @@ void CompGenePred::start(){
     } catch (...) {
         dd_param_s = "1-5"; // default, do 5 rounds with parameters 1,2,3,4,5
     }
+    if(OrthoGraph::step_rule == polyak) // only one round possible for this step size rule
+	dd_param_s = "1";
     try{
 	size_t i = dd_param_s.find('-');
 	if(i != std::string::npos){
