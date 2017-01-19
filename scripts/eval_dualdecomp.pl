@@ -193,7 +193,10 @@ foreach my $file (@docs) {
 my @iter = (@conv_iter, @not_conv_iter);
 my @best_p = (@conv_best_p, @not_conv_best_p);
 
-my ($idx_error, $max_error) = findMaxValueIndex(\@not_conv_error);
+my ($idx_error, $max_error) = (0,0);
+if(@not_conv_error){
+ ($idx_error, $max_error) = findMaxValueIndex(\@not_conv_error);
+}
 my @total_error = (@not_conv_error, ((0) x (scalar @conv_iter)));
 
 print "\n$alreadyOpt gene Ranges were discarded, because they were already optimal prior to Dual Decomposition\n\n";
@@ -226,7 +229,7 @@ if(defined($hist_iter)){
 }
 
 # plot histogram of errors
-if(defined($hist_err)){
+if(defined($hist_err) && @not_conv_error){
     my $R = Statistics::R->new();
     $R->set('filename', $outdir . $hist_err);
     $R->set('font',"Helvetica");
@@ -313,9 +316,12 @@ sub findMinValueIndex{
 
 sub avg{
     my @array = @{$_[0]};
-    my $sum = sum(\@array);
-    $sum /= scalar @array;
-    return $sum;
+    if(@array){
+	my $sum = sum(\@array);
+	$sum /= scalar @array;
+	return $sum;
+    }
+    return 0;
 }
 
 sub sum{
