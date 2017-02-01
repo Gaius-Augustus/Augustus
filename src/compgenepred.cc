@@ -181,9 +181,15 @@ void CompGenePred::start(){
 		throw ProjectError("Cannot read interval end.");
 	    if(start > end)
 		throw ProjectError("Interval start greater than interval end.");
-	    for (int i=0; i < rounds; i++){
-		dd_factors.push_back(start+i*(end-start)/(rounds-1));
-	    }	
+	    if(OrthoGraph::step_rule == mixed){ // 1st round: polyak, 2nd round and onwards: square_root
+		dd_factors.push_back(1);        // dummy, not required in first round
+		for (int i=0; i < rounds-1; i++)
+                    dd_factors.push_back(start+i*(end-start)/(rounds-2));
+	    }
+	    else{
+		for (int i=0; i < rounds; i++)
+		    dd_factors.push_back(start+i*(end-start)/(rounds-1));	
+	    }
 	}
 	else{
 	    double pos;	    

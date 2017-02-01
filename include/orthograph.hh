@@ -19,7 +19,7 @@
 // forward declarations
 class GeneMSA;
 
-enum StepRule{constant=0, harmonic, square_root, base_2, base_e, polyak};
+enum StepRule{constant=0, harmonic, square_root, base_2, base_e, polyak, mixed};
 
 class OrthoGraph{
 
@@ -63,7 +63,7 @@ public:
     double dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo,vector< list<Transcript*> *> &genelist, int gr_ID, int T, vector<double> &c);  //main routine
     double treeMAPInf(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &numInconsistent);  //vertical problem
     double globalPathSearch(); // horizontal problem
-    double getStepSize(double c,int t, int v, int numInconsistent, double current_dual, double best_primal, double best_dual);  // specifies a sequence of steps
+    double getStepSize(int r, double c,int t, int v, int numInconsistent, double current_dual, double best_primal, double best_dual);  // specifies a sequence of steps
     double makeConsistent(list<OrthoExon> &all_orthoex, ExonEvo &evo);
     double init(list<OrthoExon> &all_orthoex, ExonEvo &evo, int &numInconsistent) ;
 

@@ -384,7 +384,7 @@ double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector
 		goto END;
 	    
 	    // determine new step size
-	    delta = getStepSize(c[r], t, v, numInconsistent, current_dual, best_primal, best_dual);
+	    delta = getStepSize(r,c[r], t, v, numInconsistent, current_dual, best_primal, best_dual);
 	    
 	    // updated weights
 	    for(list<OrthoExon>::iterator hects = all_orthoex.begin(); hects != all_orthoex.end(); hects++){
@@ -437,16 +437,16 @@ double OrthoGraph::dualdecomp(list<OrthoExon> &all_orthoex, ExonEvo &evo, vector
  * v ist the number of iterations prior to t where the dual value increases
  * the purpose of v is to decrease the step size only if we move in the wrong direction
  */
-double OrthoGraph::getStepSize(double c, int t, int v, int numInconsistent, double current_dual, double best_primal, double best_dual){
+double OrthoGraph::getStepSize(int r, double c, int t, int v, int numInconsistent, double current_dual, double best_primal, double best_dual){
     if(step_rule == harmonic)
 	return c/(v+1);
-    if(step_rule == square_root)
+    if(step_rule == square_root || (step_rule == mixed && r > 0))
 	return c/sqrt(v+1);
     if(step_rule == base_2)
 	return c/pow(2,v);
     if(step_rule == base_e)
 	return c/exp(v);
-    if(step_rule == polyak)
+    if(step_rule == polyak || (step_rule == mixed && r == 0))
 	return (current_dual - best_primal)/numInconsistent;
     if(step_rule == constant)
 	return c;
@@ -864,9 +864,12 @@ void OrthoGraph::setStepRule(const char* r){
     else if(strcmp(r, "constant") == 0){
 	step_rule = constant;
     }
+    else if(strcmp(r, "mixed") == 0){
+	step_rule = mixed;
+    }
     else{
 	std::string s(r);
 	throw ProjectError("Warning: " + s + "is not a valid dd_step_rule. Choose one of the step_rules from below\n"
-			   "constant\nharmonic\nsquare_root\nbase_2\nbase_e\npolyak\n");
+			   "constant\nharmonic\nsquare_root\nbase_2\nbase_e\npolyak\tmixed\n");
     }
 }
