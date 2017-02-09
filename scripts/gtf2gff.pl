@@ -329,11 +329,12 @@ gtf2gff.pl <in.gtf --out=out.gff
     
 =head1 OPTIONS
 
-  out              gff output file
-  --printExon      print exon features (may include CDS and UTR parts)
-  --printUTR       print UTR features
-  --printIntron    print intron features
-  --gff3           output in gff3 format
+  out                 gff output file
+  --printExon         print exon features (may include CDS and UTR parts)
+  --printUTR          print UTR features
+  --printIntron       print intron features
+  --gff3              output in gff3 format
+  --includeStopInCDS  include stop codon in the CDS
 
 =head1 DESCRIPTION
     
