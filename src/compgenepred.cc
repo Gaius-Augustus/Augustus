@@ -1,3 +1,4 @@
+
 /**********************************************************************
  * file: compgenepred.cc licence: Artistic Licence, see file
  * LICENCE.TXT or
@@ -23,6 +24,7 @@
 #include "contTimeMC.hh"
 #include "liftover.hh"
 #include "intronmodel.hh"
+#include "train_logReg_param.hh"
 
 #include <gsl/gsl_matrix.h>
 #include <ctime>
@@ -200,13 +202,29 @@ void CompGenePred::start(){
     } catch (ProjectError e) {
 	throw ProjectError("Format error parsing parameter --/CompPred/dd_factor=" + dd_param_s +".\n" + e.getMessage());
     }
+    bool onlySampling = false;
     try {
 	noprediction = Properties::getBoolProperty("noprediction");
     } catch (...) {}
+    if(Properties::hasProperty("referenceFile")){
+      onlySampling = true;
+      cout << "# AUGUSTUS is running in training mode. No prediction will be done!" << endl;
+      try {
+	Constant::refSpecies = Properties::getProperty("refSpecies");
+	if(Properties::hasProperty("param_outfile")){
+	  cout << "# Using file " << Properties::getProperty("param_outfile") << " to store logReg parameters." << endl;
+	}else{
+	  cout << "# No outfile for logReg parameters specified. Writing parameters to " << Constant::configPath <<  "/cgp/log_reg_parameters_trained.cfg" << endl;
+	}
+      } catch (ProjectError e) {
+	throw ProjectError("For parameter training a reference species must be specified. Use --refSpecies=<SPECIES> and note, that <SPECIES> must be identical to one of the species names provided in the alignment and tree files.");
+      }
+    }
     try {
 	useLocusTrees = Properties::getBoolProperty("locustree");
     } catch (...) {}
     
+
     if(Constant::alternatives_from_evidence){
 	cerr << "Warning: The option 'alternatives-from-evidence' is only available in single species mode. Turned it off." << endl
 	     << "Rerun with --alternatives-from-evidence=0 to remove this warning." << endl;
@@ -383,16 +401,16 @@ void CompGenePred::start(){
 		    list<Transcript*> *transcripts = NULL;
 
 		    if (!noprediction){
-			SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
-			sfc->prepare(as, false, rsa->withEvidence(speciesNames[s]));
-			namgene.doViterbiPiecewise(*sfc, as, bothstrands); // sampling
-			transcripts = namgene.getAllTranscripts();
-			orthograph.sfcs[s] = sfc;
-	                orthograph.ptrs_to_alltranscripts[s] = transcripts;
+		      SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
+		      sfc->prepare(as, false, rsa->withEvidence(speciesNames[s]));
+		      namgene.doViterbiPiecewise(*sfc, as, bothstrands); // sampling
+		      transcripts = namgene.getAllTranscripts();
+		      orthograph.sfcs[s] = sfc;
+		      orthograph.ptrs_to_alltranscripts[s] = transcripts;
 		    } else {
-			// turn whole sequence to lowercase characters
-			for (unsigned pos = 0; pos < as->length; pos++)
-			    as->sequence[pos] = tolower(as->sequence[pos]);
+		      // turn whole sequence to lowercase characters
+		      for (unsigned pos = 0; pos < as->length; pos++)
+			as->sequence[pos] = tolower(as->sequence[pos]);
 		    }
 		    // insert sampled exons into the EC hash
 		    if (transcripts){		    
@@ -504,7 +522,7 @@ void CompGenePred::start(){
 	if (conservation)
 	    geneRange->calcConsScore(hects, seqRanges, outdir);
 
-	if(!noprediction){
+	if(!noprediction && !onlySampling){
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
 	    orthograph.globalPathSearch();
 	    orthograph.outputGenes(baseGenes,base_geneid);
@@ -525,6 +543,17 @@ void CompGenePred::start(){
 	if(Constant::printOEs)
 	    geneRange->printOrthoExons(hects);
 
+	// store hect features globally for training
+	if(Properties::hasProperty("referenceFile")){
+	  cout << "collect sample features" << endl;
+	  int speciesID = find(speciesNames.begin(), speciesNames.end(), Constant::refSpecies) - speciesNames.begin();
+	  if(speciesID >= speciesNames.size()){
+	    throw ProjectError("Species " + Constant::refSpecies + " not found. Use one of the names specified in the alignment file as a reference!");
+	  }else{
+	    geneRange->collect_features(speciesID, &hects, orthograph.graphs[speciesID]);
+	  }
+	}
+
 	// delete sequences
 	for (int i=0; i<seqRanges.size(); i++) {
 		delete seqRanges[i];
@@ -544,4 +573,15 @@ void CompGenePred::start(){
     }                                                                                                                                                              
     GeneMSA::topologies.clear(); 
 
+    
+    if(Properties::hasProperty("referenceFile")){
+      // initialise training of log reg parameters
+      unordered_map<string,int> ref_class;
+      reference_from_file(&ref_class);
+
+      train_data data(&Constant::logReg_feature, &ref_class);
+      optimize_parameters(&data);
+    }
+
 }
+

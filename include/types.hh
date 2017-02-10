@@ -36,6 +36,7 @@
 #include <limits>
 #include <algorithm> // for std:sort
 #include <map>
+#include <unordered_map>
 
 using namespace std;
 
@@ -322,6 +323,10 @@ public:
     static bool dbhints;
     // scores from logistic regression  
     static bool logreg;
+    static string referenceFile;
+    static string refSpecies;
+    static double GD_stepsize;
+    static unordered_map<string, pair<int, vector<double> > > logReg_feature;
     static vector<double> ex_sc;
     static vector<double> in_sc;
     static vector<double> lg_es;

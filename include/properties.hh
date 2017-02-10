@@ -29,7 +29,7 @@
 #endif
 
 
-#define NUMPARNAMES 255
+#define NUMPARNAMES 259
 
 #define GENEMODEL_KEY "genemodel"
 #define NONCODING_KEY "nc"
@@ -49,6 +49,7 @@
 #define DB_KEY "dbaccess"
 #define SEQ_KEY "speciesfilenames"
 #define CODONALN_KEY "codonAlignmentFile"
+#define REF_EXON_KEY "referenceFile"
 
 #define OVLPLENFILE "ovlp_len.pbl"
 /**

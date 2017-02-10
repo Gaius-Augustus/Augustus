@@ -168,12 +168,11 @@ Node* SpeciesGraph::addNode(Status *exon){
     }
     else{
 	score = ec_thold 
-	+ Constant::ex_sc[0] // intercept  
-	+ Constant::ex_sc[1] // for not having omega
-	+ Constant::ex_sc[2] // for not beeing an OE
-	+ Constant::ex_sc[3] * log(exon->getLen())
-	+ Constant::ex_sc[4] * exon->getPostProb()
-	+ Constant::ex_sc[5] * getAvgBaseProb(exon);
+	+ Constant::ex_sc[0]  // intercept  
+	- Constant::ex_sc[12] // for not beeing an OE
+	+ Constant::ex_sc[1] * log(exon->getLen())
+	+ Constant::ex_sc[2] * exon->getPostProb()
+	+ Constant::ex_sc[3] * getAvgBaseProb(exon);
     }
     if (exon->hasEvidence("M"))
 	score += maxCostOfExonLoss;
@@ -233,11 +232,10 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
   }else{
     score = ec_thold
       + Constant::ex_sc[0] // intercept
-      + Constant::ex_sc[1] // for not having omega
-      + Constant::ex_sc[2] // for not beeing an OE
-      + Constant::ex_sc[3] * log(exon->len())
+      - Constant::ex_sc[12] // for not beeing an OE
+      + Constant::ex_sc[1] * log(exon->len())
 	//+ Constant::ex_sc[5] * avgBaseProb // average base prob
-      + Constant::ex_sc[12]; // for not beeing sampled
+      + Constant::ex_sc[13]; // for not beeing sampled
   }
   
   /*
@@ -484,6 +482,44 @@ void SpeciesGraph::printSampledGF(Status *st, double score){
 	cout << "\t" << mod3(2-st->getFrame());
     cout << "\tName=" << (string)stateTypeIdentifiers[((State*)st->item)->type] <<";postProb="<< st->getPostProb() << ";avgBaseProb=" <<getAvgBaseProb(st)<< endl;
     cout.rdbuf(coutbuf); //reset to standard output again 
+
+    if(Properties::hasProperty("referenceFile") && speciesname == Constant::refSpecies && (stateNameIdentifiers[st->name] == "CDS" || stateNameIdentifiers[st->name] == "intron") ){
+      if(stateNameIdentifiers[st->name] == "intron" && st->getPostProb() == 0)
+	return;
+      stringstream key;
+      key << stateNameIdentifiers[st->name] << "\t" << getSeqID() << "\t";
+      if(strand == plusstrand){
+        key << st->begin + getSeqOffset() + 1 << "\t" << st->end + getSeqOffset() + 1;
+      }
+      else{
+        key << getSeqLength() - st->end + getSeqOffset() << "\t" << getSeqLength() - st->begin + getSeqOffset();
+      }
+      key << "\t" << (((isOnFStrand(type) || type == intron_type) == (strand == plusstrand))? '+' : '-');
+      if(!st->isCDS()) // frame
+        key << "\t0";
+      else if (isOnFStrand(type))
+        key << "\t" << mod3(3-(st->getFrame() - st->getLen()));
+      else
+        key << "\t" << mod3(2-st->getFrame());
+      
+      string k = key.str();
+      //      cout << "sampled_GFs: " << k << endl;
+      unordered_map<string, pair<int, vector<double> > >::const_iterator got = Constant::logReg_feature.find(k);
+      if ( got == Constant::logReg_feature.end() ){
+	vector<double> feature(10,0);
+	feature[0] = st->end - st->begin + 1; // exon length
+	feature[1] = st->getPostProb();       // posterior probability
+	feature[2] = getAvgBaseProb(st);      // average base score
+	if(!st->isCDS())
+	  feature[9] = 1;
+	pair<int, vector<double> > p;
+	p = make_pair(-1, feature);
+	pair<string, pair<int, vector<double> > > entry;
+	entry = make_pair(k, p);
+	Constant::logReg_feature.insert(entry);
+      }
+    }
+
 }
 
 

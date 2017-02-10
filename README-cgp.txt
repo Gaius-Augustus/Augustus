@@ -13,6 +13,7 @@
  9. OPTIMIZING CGP PARAMETERS
 10. BUILDING THE NEWICK PARSER FROM SCRATCH
     (not needed unless you run into compiler errors related to 'parse.cc' or 'lex.cc')
+11. TRAINING CGP SCORE PARAMETERS 
 
 1. INTRODUCTION
 ----------------
@@ -469,3 +470,18 @@ d) recompilation of AUGUSTUS-cgp
 
 >  make clean all
 
+
+11. TRAINING CGP SCORE PARAMETERS 
+---------------------------------
+
+To train the parameters used to score exon and intron candidates run AUGUSTUS as shown in the following example
+
+ > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl --referenceFile=referenceFeature.gff --refSpecies=hg19 --param_outfile=params.cfg
+
+This command will not predict genes. Specifying a reference file with --referenceFile will make augustus train feature parameters used to score exon and intron candidates using reference coding exons (CDS) and introns provided by the reference file. referenceFeature.gff needs to be in gtf, gff or gff3 format. All lines with type "intron" or "CDS" are used for training. Other lines will be ignored. Note, that the program is case sensitive. Stop codons need to be included in terminal coding exons. Specify the reference species with --refSpecies. The reference species must be one of the clade species and is denoted by the identifier used in the tree or alignment file. intron and CDS features in referenceFeature.gff must be from the reference species. 
+
+The trained parameters are written to the file params.cfg. After training, run augustus in cgp mode with params.cfg as optional config file
+
+ > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl --optCfgFile=params.cfg 
+
+If --param_outfile is not specified parameters will be written to $AUGUSTUS_CONFIG_PATH/cgp/log_reg_parameters_trained.cfg. Of course the genomes can also be stored in mySQL or SQLite databases. Adjust the commands accordingly.

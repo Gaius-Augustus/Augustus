@@ -257,18 +257,20 @@ void OrthoExon::setSubst(int subs, bool oeStart){
 
 double OrthoExon::getLogRegScore(){
     
-  return (    Constant::ex_sc[6]  * Eomega * hasOmega()
-	    + Constant::ex_sc[7]  * VarOmega * hasOmega()
-	    + Constant::ex_sc[8]  * cons
-	    + Constant::ex_sc[9]  * containment
-	    + Constant::ex_sc[10] * diversity
-	    + Constant::ex_sc[11] * numExons()
-	    + Constant::ex_sc[15] * numExons() / orthoex.size()
-	    + Constant::ex_sc[13] * cons * diversity 
-	    + Constant::ex_sc[14] * Eomega * hasOmega() * diversity
-	    + Constant::ex_sc[1]  * -1 * hasOmega()
-	    + Constant::ex_sc[16]  * min( abs(getLeftExtOmega() - getLeftIntOmega()), abs(getRightExtOmega() - getRightIntOmega()) )
-	    + Constant::ex_sc[2]  * -1 ); // for being a HECT
+  //if(Eomega > 0)
+  //  Eomega = log(Eomega);
+  
+  return (    Constant::ex_sc[4]  * Eomega * hasOmega()
+	 // + Constant::ex_sc[5]  * VarOmega * hasOmega()
+	    + Constant::ex_sc[6]  * cons
+	    + Constant::ex_sc[8]  * log(containment+1)
+	    + Constant::ex_sc[7]  * diversity
+	    + Constant::ex_sc[9]  * numExons()
+	    + Constant::ex_sc[10] * cons * diversity 
+	    + Constant::ex_sc[11] * Eomega * hasOmega() * diversity
+	 // + Constant::ex_sc[12] * hasOmega()
+	 // + Constant::ex_sc[16]  * min( abs(getLeftExtOmega() - getLeftIntOmega()), abs(getRightExtOmega() - getRightIntOmega()) )
+	    + Constant::ex_sc[12] ); // for being a HECT
 
   /*
     if (string("fly") == Properties::getProperty("species")){

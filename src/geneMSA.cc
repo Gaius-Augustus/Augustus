@@ -1,4 +1,3 @@
-
 /**********************************************************************
  * file:    geneMSA.cc
  * licence: Artistic Licence, see file LICENCE.TXT or 
@@ -497,7 +496,7 @@ void GeneMSA::printExonCands() {
 		    // TODO: adjust type on reverse alignment setrand (compate comment in printSingleOrthoExon)
 
                     exonCandID[s]++;
-                }
+		}
             } else {
                 fstrm << "#  no exon candidates found " << endl;
             }
@@ -642,6 +641,69 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
     }
    cout.rdbuf(stdout); // reset to standard output again 
 }
+
+ 
+void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph *speciesgraph){
+
+  if (!exoncands.empty() && exoncands[species] != NULL){
+    list<ExonCandidate*>* ec = exoncands[species];
+    for (list<ExonCandidate*>::iterator ecit = ec->begin(); ecit != ec->end(); ++ecit){
+      stringstream key;
+      key << "CDS\t" << getSeqID(species)<< "\t";
+      if (getStrand(species) == plusstrand) {
+	key << (*ecit)->begin + offsets[species] + 1 << "\t" << (*ecit)->end + offsets[species] + 1 << "\t";
+      } else {
+	int chrLen = rsa->getChrLen(species, getSeqID(species));
+	key << chrLen - ((*ecit)->end + offsets[species]) << "\t" << chrLen - ((*ecit)->begin+ offsets[species]) << "\t" << (*ecit)->score << "\t";
+      }
+      key << ((isPlusExon((*ecit)->type) == (getStrand(species) == plusstrand))? '+' : '-');
+      key << "\t" << (*ecit)->gff3Frame();
+      
+      string k = key.str();
+      //      cout << "EC: " << k << endl;
+      unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(k);
+      if ( got == Constant::logReg_feature.end() ){
+	vector<double> feature(10,0);
+	feature[0] = (*ecit)->end - (*ecit)->begin + 1;   // exon length
+      
+	pair<int, vector<double> > p;
+	p = make_pair(-1, feature);
+	pair<string, pair<int, vector<double> > > entry;
+	entry = make_pair(k, p);
+	Constant::logReg_feature.insert(entry);
+      }
+    }
+  }
+  
+  for(list<OrthoExon>::iterator oeit = hects->begin(); oeit != hects->end(); ++oeit){
+    ExonCandidate *ec = oeit->orthoex.at(species);
+    if(ec == NULL)
+      continue;
+    stringstream key;
+    key << "CDS\t" << getSeqID(species) << "\t" << ec->begin + offsets[species]+1 << "\t" << ec->end + offsets[species]+1 << "\t";
+    if(isPlusExon(ec->type))
+      key << "+";
+    else
+      key << "-";
+    key << "\t" << ec->gff3Frame();
+    //    cout << "OE: " << key.str() << endl;
+    unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(key.str());
+    if ( got == Constant::logReg_feature.end() ){
+      throw ProjectError("ortho exon is not an exon candidate!");
+    }else{
+      vector<double>* feature = &got->second.second;
+      if(oeit->getEomega()      > 0){ (*feature)[3] = oeit->getEomega(); }        // omega
+      if(oeit->getVarOmega()    > 0){ (*feature)[4] = oeit->getVarOmega(); }      // variance of omega
+      if(oeit->getConsScore()   > 0){ (*feature)[5] = oeit->getConsScore(); }     // conservation
+      if(oeit->getDiversity()   > 0){ (*feature)[6] = oeit->getDiversity(); }     // diversity
+      if(oeit->getContainment() > 0){ (*feature)[7] = oeit->getContainment(); }   // containment
+      if(oeit->numExons()       > 0){ (*feature)[8] = oeit->numExons(); }         // number of species involved in OE
+      (*feature)[9] = 1;                                                          // is ortho exon?
+    }
+  }
+}
+
+
 
 /** 
  * Two codons are considered aligned, when all 3 of their bases are aligned with each other.
@@ -1673,7 +1735,6 @@ LocusTree *GeneMSA::constructTree(){
     // construct a tree from the alignment
     return ltree;
 } 
-
 
 
 

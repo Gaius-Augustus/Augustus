@@ -158,6 +158,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "exonnames",
 EXTRFILE_KEY,
 "GCwinsize",
+"GD_stepsize",
 "/genbank/verbosity",
 "gff3",
 HINTSFILE_KEY,
@@ -226,6 +227,7 @@ HINTSFILE_KEY,
 EXTERNAL_KEY, // optCfgFile
 "printOEs",
 "outfile",
+"param_outfile",
 "predictionEnd",
 "predictionStart",
 "print_blocks",
@@ -243,6 +245,8 @@ EXTERNAL_KEY, // optCfgFile
 "/ProteinModel/invalid_score",
 "/ProteinModel/weight",
 "proteinprofile",
+"referenceFile",
+"refSpecies",
 "sample",
 "scorediffweight", // temp
 SINGLESTRAND_KEY,
@@ -358,7 +362,8 @@ void Properties::init( int argc, char* argv[] ){
 		name == TREE_KEY ||
 		name == DB_KEY ||
 		name == SEQ_KEY ||
-		name == CODONALN_KEY)
+		name == CODONALN_KEY ||
+		name == REF_EXON_KEY)
 	    {
 		if (pos >= argstr.length()-1)
 		    throw ProjectError(string("Wrong argument format for ") +  name + ". Use: --argument=value");
@@ -376,6 +381,7 @@ void Properties::init( int argc, char* argv[] ){
     Properties::assignProperty(SEQ_KEY, Constant::speciesfilenames);
     Properties::assignProperty(DB_KEY, Constant::dbaccess);
     Properties::assignProperty(ALN_KEY, Constant::alnfile);
+    Properties::assignProperty(REF_EXON_KEY, Constant::referenceFile);
     if(Constant::codonalnfile.empty()){
       if (!Constant::alnfile.empty() && !Constant::treefile.empty() && (!Constant::speciesfilenames.empty() || !Constant::dbaccess.empty())){
 	Constant::MultSpeciesMode = true;
@@ -480,7 +486,7 @@ void Properties::init( int argc, char* argv[] ){
 	if (name == GENEMODEL_KEY || name == NONCODING_KEY || name == SINGLESTRAND_KEY ||
 	    name == SPECIES_KEY || name == CFGPATH_KEY ||
 	    name == EXTERNAL_KEY || name == ALN_KEY ||
-	    name == TREE_KEY || name == DB_KEY || name == SEQ_KEY || name == CODONALN_KEY)
+	    name == TREE_KEY || name == DB_KEY || name == SEQ_KEY || name == CODONALN_KEY || name == REF_EXON_KEY)
 	    continue;
 	if (pos == string::npos)
 	    throw PropertiesError(string("'=' missing for parameter: ") + name);

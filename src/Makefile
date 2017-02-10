@@ -31,7 +31,7 @@ OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
  meaPath.o exoncand.o randseqaccess.o fasta.o ncmodel.o
 ifdef COMPGENEPRED
-	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o
+	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
 	INCLS += -I/usr/include/lpsolve
@@ -613,6 +613,7 @@ compgenepred.o : \
 	../include/namgene.hh \
 	../include/randseqaccess.hh \
 	../include/liftover.hh \
+	../include/train_logReg_param.hh \
        compgenepred.cc
 
 randseqaccess.o : \
@@ -700,6 +701,10 @@ sqliteDB.o: \
 codonMSA.o: \
 	../include/codonMSA.hh \
 	codonMSA.cc
+
+train_logReg_param.o: \
+	../include/train_logReg_param.hh \
+	train_logReg_param.cc
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

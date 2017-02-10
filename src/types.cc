@@ -100,6 +100,10 @@ bool inCRFTraining = false;
 bool Constant::dbhints = false;
 // scores from logistic regression                                                                                                  
 bool Constant::logreg;
+string Constant::referenceFile;
+string Constant::refSpecies;
+double Constant::GD_stepsize = 0.01; // stepsize of gradient descent algorithm 
+unordered_map<string, pair<int, vector<double> > > Constant::logReg_feature;
 // features are explaned in the default config file config/cgp/log_reg_parameters_default.cfg
 vector<double>Constant::ex_sc;
 vector<double>Constant::in_sc;

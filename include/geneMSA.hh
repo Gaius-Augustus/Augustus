@@ -15,6 +15,7 @@
 #include "exoncand.hh"
 #include "orthoexon.hh"
 #include "randseqaccess.hh"
+#include "speciesgraph.hh"
 
 #include<unordered_map>
 #include<boost/functional/hash.hpp>
@@ -128,8 +129,9 @@ public:
     // map that stored all codon combinations on which fitch and pruning algorithm already have been run (for calculation of omega and number of substitutions)
     static map<vector<string>, pair<vector<double>, int> > computedCumValues;
 
-
     void printSingleOrthoExon(OrthoExon &oe, bool files = true);
+  void collect_features(int species, list<OrthoExon> *hects, SpeciesGraph *speciesgraph);
+
 private:
   vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, const vector<vector<fragment>::const_iterator > &froms, map<unsigned, vector<int> > *alignedCodons = NULL, bool generateString=true, vector<vector<int> > *posStoredCodons = NULL, ofstream *codonAli = NULL);
     void cutIncompleteCodons(OrthoExon &oe);
