@@ -85,7 +85,15 @@ PhyloTree::PhyloTree(string filename){
 	if(error_message == 1){
 	    throw ProjectError("the parsing of " + filename + " has been unsuccessful. Please check, whether the syntax of your input file is correct" );
 	}
-
+	/*
+	 * check if all branch lengths >0
+	 */
+	vector<double> bs;
+	getBranchLengths(bs);
+	for(int i=0; i < bs.size(); i++){
+	    if(bs[i] <= 0)
+		throw ProjectError("Branch lengths must be > 0 in " + filename + "."); 
+	}
 	numSp=species.size();
 	/*
 	 * if only a subset of the species is sought, drop all leaf nodes
