@@ -56,7 +56,7 @@ public:
     string getSignature() const {return seqID + ((strand == minusstrand)? "-" : "+");}
     void pack();
     friend ostream& operator<< (ostream& strm, const AlignmentRow &row);
-    friend void appendRow(AlignmentRow **r1, const AlignmentRow *r2, int aliLen1, string sigstr = "");
+    friend void appendRow(AlignmentRow **r1, const AlignmentRow *r2, int aliLen1, string sigstr);
 
     /** convert from chromosomal to alignment position
      * start search from the fragment 'from' on, i.e. assume that aliPos is not to the left of fragment *from
@@ -109,7 +109,7 @@ public:
 	for (int i=0; i<rows.size(); i++) 
 	    delete rows[i];	
     }
-    friend bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac, bool strong=false);
+    friend bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac, bool strong);
     friend ostream& operator<< (ostream& strm, const Alignment &a);
     void printTextGraph(ostream& strm);
     void merge(Alignment *other, const MsaSignature *sig = NULL); // append 'other' Alignment to this

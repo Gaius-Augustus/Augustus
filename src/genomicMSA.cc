@@ -250,7 +250,7 @@ void GenomicMSA::compactify(){
 		break;
 	    // ait and bit point to neighbors in this order
 	    // all rows present in both alignments must be very close neighbors (at most 3 codons distance)
-	    if (mergeable(*ait, *bit, 9, 1.0)){ 
+	    if (mergeable(*ait, *bit, 9, 1.0, false)){ 
 		(*ait)->merge(*bit);
 		alignment.erase(bit);
 	    } else {
@@ -305,7 +305,7 @@ void GenomicMSA::findGeneRanges(){
 	    ua = aliG[vertex(uid, aliG)].a;
 	    va = aliG[vertex(vid, aliG)].a;
 	    // u and v index neighbors in this order
-	    if (ua && ua->rows[s] && va && va->rows[s] && mergeable(ua, va, maxIntronLen, 0.6)){
+	    if (ua && ua->rows[s] && va && va->rows[s] && mergeable(ua, va, maxIntronLen, 0.6, false)){
 		// add edge if not already present
 		add_edge(uid, vid, aliG);
 	    }

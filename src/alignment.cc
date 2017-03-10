@@ -275,7 +275,7 @@ void Alignment::merge(Alignment *other, const MsaSignature *sig){
 	if (sig)
 	    appendRow(&rows[s], other->rows[s], aliLen, sig->sigrows[s]);
 	else
-	    appendRow(&rows[s], other->rows[s], aliLen);
+	    appendRow(&rows[s], other->rows[s], aliLen, "");
     aliLen += other->aliLen;
 }
 
