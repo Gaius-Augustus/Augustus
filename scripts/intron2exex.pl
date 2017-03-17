@@ -51,7 +51,7 @@ while (<GFFFILE>) {
 	$allintrons{$chr} = [] if (!defined($allintrons{$chr}));
 	push @{$allintrons{$chr}}, {"start"=> $begin, "end" => $end, "strand" => "."}; # create hash ref
     } else {
-	split /\t/, $_, 9;
+	@f = split /\t/, $_, 9;
 	if (@f < 8) { warn @f,"Neither simple nor GFF format"; next }
 	$chr = $f[0];
 	$type = $f[2];
