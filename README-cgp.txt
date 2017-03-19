@@ -103,7 +103,9 @@ galGal3	 /dir/to/genome/chicken.fa
 AGCTCGCAGTGTTGATGCTTCAGTCTC
 >chr3
 ccagaggagacagttagtactaaatgcaccaa
-
+   
+                   For running Augustus-cgp on a subset of genomes, simply delete all lines of non-target genomes in --speciesfilenames.
+		   The alignment and phylogenetic tree need no modification.
 
 --alnfile=aln.maf
           a file containing a multiple sequence alignment of the genomes in MAF format.
@@ -122,7 +124,8 @@ s hg19.chr21                        15725796 32 +  48129895 CCAGAGGAGAGGGTTAGTAC
 s bosTau4.chr1                     138520070 30 - 161106243 CCAGAGGAGA--GTTCATATTGAGTGCACCAA
 s mm9.chr16                         75744536 30 +  98319150 TCAGAGAAGA--ACTTGGACAAAGTGCACCCA
 s rheMac2.chr3                     163875585 32 - 196418989 CCAGAGGAGACAGTTAGTACTAAATGCACCAA
-  
+
+         Alignment rows of species that are not listed in --speciesfilenames are ignored.
          
 --treefile=tree.nwk
            a phylogenetic tree of the species in Newick format, e.g.   
@@ -146,7 +149,9 @@ end;
 
            In cases where the phylogeny is not known, a star-like tree with uniform branch lengths might be used instead, e.g.
 
-(hg19:1,rheMac2:1,mm9:1,bosTau4:1,galGal3:1);
+(hg19:0.01,rheMac2:0.01,mm9:0.01,bosTau4:0.01,galGal3:0.01);
+
+           If --speciesfilenames only contains a subset of the species in --treefile, a subtree of is extracted.
 
 example usage:
 
@@ -158,14 +163,8 @@ a small data set for testing can be found in examples/cgp/
 5. OPTIONAL ARGUMENTS
 ------------------------
 
---/CompPred/dssqthresh=q
-  threshold for the inclusion of donor splice sites based on the pattern probability (q in [0,1] )
-  q=0.05 means that only dss are considered that have a pattern, such that 5% of true splice site patterns have lower probability.
-  q=0 means that all splice site patterns are considered.
-
---/CompPred/assqthresh=q --/CompPred/assmotifqthresh=q
-  thresholds for the inclusion of aceptor splice sites
-  (the inclusion of an acceptor splice site depends both on the ASS and the ASS motif threshold)
+a) General Options:
+-------------------
 
 --/CompPred/onlySampledECs=on/off
   if on, only exons from the sampling of gene structures are taken as the set of possible candidate exons.
@@ -179,26 +178,21 @@ a small data set for testing can be found in examples/cgp/
   the other genomes. This increases the runtime and memory requirement, but is potentially
   more accurate (default: off)
 
---/CompPred/exon_gain=q_gain --/CompPred/exon_loss=q_loss
-  rate of exon gain and rate of exon loss (parameters of the phylogenetic model)
-  q_gain and q_loss are positive real numbers
-
---/CompPred/maxIterations=n
-  the maximum number of dual decomposition iterations (default 100).
-
---/CompPred/only_species=f
-  only predict genes for a subset of the species in the phylogenetic tree.
-  f is a file that contains the species identifiers, one per line, of the subset 
-
 --UTR=on/off
   predict the untranslated regions in addition to the coding sequence.
   Note that the 3'-UTR, 5'UTR or both can be absent in some genes if candidate UTRs
   perform poorly in the ab initio model and are not supported by extrinsic evidence. Enforce the prediction
   of UTRs with --/CompPred/genesWithoutUTRs=false
 
+--nc=on/off
+  simultaneous prediction of coding genes and non-coding genes (mostly lincRNA) (default: off)
+  Non-coding genes are only predicted if they have RNA-Seq support.
+  This option is experimental, as the scores of exons/introns of non-coding genes in the gene structure graph still need to be defined.
+  Usage only intended for developers!
+
 --genemodel=partial/complete
-   partial      : allow prediction of incomplete genes at the sequence boundaries (default)
-   complete     : only predict complete genes
+  partial      : allow prediction of incomplete genes at the sequence boundaries (default)
+  complete     : only predict complete genes
 
 --/CompPred/genesWithoutUTRs=true/false
   if true, all predicted genes are flanked by a 5'- and 3'- untranslated region (with the exception of partial genes at the sequence boundaries).
@@ -210,11 +204,172 @@ a small data set for testing can be found in examples/cgp/
 --/CompPred/outdir=path
   send all output files to this directory (default is the current directory)
 
+--printOEs=true/false
+  print all homologous candidate exons to the file orthoExons.<species>.gff3 (default: off)
+
+--/CompPred/printOrthoExonAli=true/false
+   prints codon alignments of all tuples of homologous candidate exons to the file 'orthoexons_codonAlignment.maf'
+   (default: false)
+
+--/CompPred/printConservationWig=true/false
+  prints conservation tracks (in wiggle format) of all syntenic regions to the file <species>.wig
+  (default: off)
+
+--exoncands=true/false
+  print all candidate exons to the file exonCands.<species>.gff3 (default: off)
+
 --softmasking=1
  adds regions with lowercase nucleotides as nonexonpart hints of source "RM"
  If --extrinsicCfgFile is not given, it used the default cgp.extrinsic.cfg with bonus 1.15, if 
  another extrinsic config file is given, it must contain the "RM" source.
+
+--temperature=t
+  heat the posterior distribution for sampling, 0=cold, 7=hottest, take probs to the power of (8-temperature)/8
+  (default: 3)
+
+--optCfgFile=cgp_parameters.cfg
+  include parameter file from training. The training uses logistic regression to classify candidate exons
+  based on cross-species features like selective pressure (dN/dS), conservation, phylogenetic diversity, etc.
+  (default: config/cgp/log_reg_parameters_default.cfg)
+
+--allow_hinted_splicesites=atac
+  comma-separated list of non-canonical splice site pairs that enables the prediction of rare introns with
+  unusual splice sites in addition to the GT-AG and GC-AG introns that are allowed by default.
   
+
+b) Options to adjust the generation of geneRanges (syntenic regions) from the input alignment
+---------------------------------------------------------------------------------------------
+
+--maxDNAPieceSize=n
+  This value specifies the maximal length of a sequence chunk in a geneRange. For longer sequence chunks, the
+  geneRange is cut into several pieces that are processed separately. (default: 200000)
+
+--/CompPred/maxCov
+  Decreasing maxCov punishes multiple overlapping geneRanges more.
+  By default, maxCov = 3 penalizes the same region covered by more than 3 alignments
+
+--/CompPred/covPen
+  Increasing the coverage penalty covPen punishes long overlaps between geneRanges more.
+  By default, covPen = 0.2 punishes uncovered bases 5 times more than each base covered too often
+
+
+c) Options to adjust properties of splice sites, exons, introns and genes
+-------------------------------------------------------------------------
+
+--max_exon_len=n
+  maximum length of a candidate exon (default: 12000)
+
+--min_intron_len=n
+  minimum length of a candidate intron (default: 39)
+
+--min_coding_len=n
+  minimum length of a coding region (default: 102)
+
+--/CompPred/mil_factor=f
+  mean intron length factor (>=1), the higher the less are long introns penalized (default: 1).
+  A value of 100 roughly corresponds to not penalizing long introns.
+  (does not concern explicit introns from sampling whose lengths are modeled explicitly by a geometric-tail
+  distribution. This only concerns implicit introns that are constructed along auxiliary bars in the gene structure graph).
+
+--/CompPred/dssqthresh=q
+  threshold for the inclusion of donor splice sites based on the pattern probability (q in [0,1] )
+  q=0.05 means that only dss are considered that have a pattern, such that 5% of true splice site patterns have lower probability.
+  q=0 means that all splice site patterns are considered.
+
+--/CompPred/assqthresh=q --/CompPred/assmotifqthresh=q
+  thresholds for the inclusion of aceptor splice sites
+  (the inclusion of an acceptor splice site depends both on the ASS and the ASS motif threshold)
+
+  
+d) Options to adjust the scoring function of candidate exons/introns:
+---------------------------------------------------------------------
+
+--/CompPred/omega=on/off
+  estimate selective pressure (non-synonymous to synonymous rate ration dN/dS) for each codon alignment
+  of homologous candidate exons (default: on)
+
+--/CompPred/conservation=on/off
+  compute an average columnwise conservation score for each tuple of homologous candidate exons (default: on)
+
+--/CompPred/ec_thold=a
+  parameter that is added to the scoring function of candidate exons (default: 0). Enables the shifting
+  of the scoring function such that sensitivity (SN) and specificity (SP) are in balance.
+  If t>0 is the threshold from logistic regresission for which SN and SP are in balance on the training
+  set, then set
+  a = log((1/t) - 1)
+   
+--/CompPred/ic_thold=b
+  parameter that is added to the scoring function of candidate introns (default: 0).
+  Analogous to parameter --/CompPred/ec_thold above.
+
+--/CompPred/scale_codontree=f
+  scaling factor to scale branch lengths in the codon tree to one codon substitution per time unit
+  (default: 1)
+
+
+e) Options to adjust the phylogenetic model:
+--------------------------------------------
+
+--/CompPred/phylo_model=2,3 or 4
+  number of states in the phylogenetic model (default: 2)
+  model 2: state 1: EC present but not predicted
+           state 2: EC present and predicted
+	   rate Matrix Q = [(-lambda, lambda), (mu, -mu)]
+	   depends on parameters --/CompPred/exon_gain (lambda) and --/CompPred/exon_loss (mu)
+	   (see next parameters)	   
+  model 3: model 2 + state 3: EC not present but alignment present
+           additionally depends on --/CompPred/ali_error
+	   (see next parameters)
+  model 4: model 3 + state 4: no alignment present
+  models 3 and 4 are experimental as the rate matrices are not well defined.
+  (usage only recommended for developers that want to play around with the rate matrices)
+
+--/CompPred/exon_loss=r
+  rate r>0 of exon loss (parameter of the phylogenetic models, see above)
+  (default: )
+
+--/CompPred/exon_loss=r
+  rate r>0 of exon gain (parameter of the phylogenetic models, see above)
+  (default: )
+
+--/CompPred/ali_error=r
+  rate r of alignment errors (parameter of the phylogenetic model 3 and 4, see above)
+
+--/CompPred/phylo_factor=f
+  specifies the influence of the phylogenetic model (default: 1).
+  The higher f is chosen, the more weight is given to the phylogenetic model, i.e.
+  the more consistent the gene structures are across the species.
+  
+
+f) Options to adjust the DD algorithm:
+--------------------------------------
+
+--/CompPred/dd_rounds=r
+  the number of Dual Decomposition rounds (default: 5).
+
+--/CompPred/maxIterations=n
+  the maximum number of Dual Decomposition iterations per round (default: 500).
+
+--/CompPred/dd_step_rule=harmonic/square_root/base_2/base_e/polyak/constant/mixed
+  the step size function (default: square_root)
+  - constant:       c
+  - harmonic:       c / (v+1)
+  - square_root:    c / sqrt(v+1)
+  - base_2:         c / (2^v)
+  - base_6:         c / (e^v)
+  - polyak:         (d_t - p_best) / numInconsistencies
+  - mixed:          1. round: polyak, all other rounds: square_root
+  where c is the step size parameter (see next parameter) and v is the number of iterations prior
+  to the current iteration, in which the value of the dual problem increases. The polyak step
+  size adjusts the step size dynamically from quantities computed in previous iterations:
+  d_t is the current dual value, p_best is the best primal value, seen so far and
+  numInconsistencies is the current number of inconsistencies between the complicating variables.
+
+--/CompPred/dd_factor=a-b
+  value range of the step size parameter c (default: 1-5). When only a single round of DD (--/CompPred/dd_rounds=1)
+  is chosen, specify a single value for the step size parameter, e.g. --/CompPred/dd_factor=a. For r>1 rounds of
+  DD, the value range [a-b] is split into r equidistant values, e.g. for r=5, a=1 and b=5, the
+  values 1,2,3,4 and 5 are used for the first, second, ... and fifth round of DD, respectively.
 
 
 6. RETRIEVING GENOMES FROM A MYSQL DATABASE
