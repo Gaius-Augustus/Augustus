@@ -337,6 +337,13 @@ void CompGenePred::start(){
     NAMGene namgene; // creates and initializes the states
     StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
 
+    int k; // number of omega values for which rate matrices are stored
+    try {
+      k = Properties::getIntProperty("/CompPred/num_omega");
+    } catch(...){
+      k = 20;
+    }
+
     // initializing codon rate matricies, for exon evolution see code above (evo)
     PhyloTree ctree(tree); // codon tree
     ctree.scaleTree(ctree_scaling_factor); // scale branch lengths to codon substitutions 
@@ -348,14 +355,14 @@ void CompGenePred::start(){
     codonevo.setPi(pi);
     codonevo.setBranchLengths(ct_branchset, 25);
     //codonevo.printBranchLengths();
-    codonevo.setOmegas(20);
+    codonevo.setOmegas(k);
     // TODO: different prior for coding and noncoding
     codonevo.setPrior(0.5);
     if(Constant::useAArates){
       codonevo.setAAPostProbs();
     }
-    cout << "Omegas, for which substitution matrices are stored:" << endl;
-    codonevo.printOmegas();
+    //cout << "Omegas, for which substitution matrices are stored:" << endl;
+    //codonevo.printOmegas();
     codonevo.computeLogPmatrices();
     
     // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);

@@ -55,7 +55,12 @@ CodonMSA::CodonMSA(string codonAliFilename){
 
 vector<double> ct_branchset;
   ctree->getBranchLengths(ct_branchset);
-  int k = 40; // number of omegas
+  int k; // number of omegas
+  try {
+    k = Properties::getIntProperty("/CompPred/num_omega");
+  }catch(...){
+    k = 20;
+  }
   // TODO: codonusage
 
   //BaseCount::init();

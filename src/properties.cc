@@ -75,6 +75,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/logreg",
 "/CompPred/maxCov",
 "/CompPred/omega",
+"/CompPred/num_omega",
 "/CompPred/scale_codontree",
 "/CompPred/oeExtensionWidth",
 "/CompPred/onlySampledECs",
