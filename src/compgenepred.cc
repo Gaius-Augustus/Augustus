@@ -308,7 +308,7 @@ void CompGenePred::start(){
     try{ 
       use_omega = Properties::getBoolProperty("/CompPred/omega");
     } catch (...){
-      if(Constant::logreg)
+      if(Constant::logreg && Constant::ex_sc[6] != 0)
 	use_omega = true;
       else
 	use_omega = false;
@@ -354,8 +354,8 @@ void CompGenePred::start(){
     if(Constant::useAArates){
       codonevo.setAAPostProbs();
     }
-    /*cout << "Omegas, for which substitution matrices are stored:" << endl;
-      codonevo.printOmegas();*/
+    cout << "Omegas, for which substitution matrices are stored:" << endl;
+    codonevo.printOmegas();
     codonevo.computeLogPmatrices();
     
     // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
@@ -542,7 +542,7 @@ void CompGenePred::start(){
 	}
 	if(Constant::printOEs)
 	    geneRange->printOrthoExons(hects);
-
+	    
 	// store hect features globally for training
 	if(Properties::hasProperty("referenceFile")){
 	  cout << "collect sample features" << endl;
@@ -579,7 +579,7 @@ void CompGenePred::start(){
       unordered_map<string,int> ref_class;
       reference_from_file(&ref_class);
 
-      train_data data(&Constant::logReg_feature, &ref_class);
+      train_data data(&Constant::logReg_feature, &ref_class, speciesNames.size());
       optimize_parameters(&data);
     }
 

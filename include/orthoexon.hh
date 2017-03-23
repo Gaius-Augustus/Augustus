@@ -45,7 +45,11 @@ public:
     double getRightConsScore() const {return rightCons;}
     double getDiversity() const {return diversity;}
     size_t getContainment() const {return containment;}
-    bool hasOmega() const {return Eomega >= 0.0;}
+    bool hasOmega() const {return Eomega >= 0;}
+    bool hasVarOmega() const {return VarOmega >= 0;}
+    bool hasConservation() const {return cons >= 0;}
+    bool hasContainment() const {return containment >= 0;}
+    bool hasDiversity() const {return diversity >= 0;}
     bit_vector getBV() const {return bv;}
     vector<int> getRFC(vector<int> offsets) const;
     PhyloTree* getTree() const {return tree;}
@@ -61,7 +65,7 @@ public:
     void setAbsent(bit_vector v);
     void setOmega(double o){omega=o;}
     void setOmega(vector<double>* llo, CodonEvo* codonevo, bool oeStart);
-    void storeOmega(double currOmega);
+    void storeOmega(double currOmega, double currVarOmega);
     void setSubst(int s){ subst=s;}
     void setSubst(int subs, bool oeStart);
     void setConsScore(double c){cons=c;}

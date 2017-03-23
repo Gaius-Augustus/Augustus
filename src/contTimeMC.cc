@@ -165,8 +165,10 @@ void CodonEvo::setPrior(double sigma ){
     double sum = 0;
     for (int i=0; i<k; i++){
 	double omega = omegas[i];
-	if (omega > 1.0)
-	    omega = 1.0 / omega;
+	if (omega > 1.0){
+	  //omega = 1.0 / omega;
+	  omega = sqrt(-2*log(1/omega) * pow(sigma,2) + pow(1/omega - 1,2)) + 1;
+	}
 	double t = (omega-1.0)/sigma;
 	sum += omegaPrior[i] = exp(-t*t/2);
     }
@@ -176,8 +178,9 @@ void CodonEvo::setPrior(double sigma ){
 }
 
 void CodonEvo::printOmegas(){
+  cout << "index\tomega\tprior" << endl;
     for (int i=0; i < omegas.size(); i++)
-	cout << i << " " << omegas[i] << endl;
+      cout << i << "\t" << omegas[i] << "\t" << omegaPrior[i] << endl;
 }
 
 /*
@@ -1063,7 +1066,7 @@ vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree
     return logliks;
 }
 
-double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree){
+double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree, int refSpeciesIdx){
   if (seqtuple.size() != tree->numSpecies())
     throw ProjectError("CodonEvo::graphOmegaOnCodonAli: inconsistent number of species. Tree and alignment file must have the same (number of) species.");
   
@@ -1119,20 +1122,16 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree)
     else
       aminoAcidsRef[codonIdx] = GeneticCode::translate(codontuple[0]);
     
-    numSubst[codonIdx] = pruned_tr.fitch(codontuple);
     if (numCodons >= 2){
+      numSubst[codonIdx] = pruned_tr.fitch(codontuple);
       for (int u=0; u < k; u++){ // loop over omegas
 	loglik = pruned_tr.pruningAlgor(codontuple, this, u);
   	logliks[u] += loglik;
 	logliksSite[u] += loglik;
       }    
-      double meanloglik(0.0);
-      for (int u=0; u < k; u++)
-	meanloglik += logliksSite[u];
-      meanloglik /= k;
-      
+      double max_loglik = *max_element(logliksSite.begin(), logliksSite.end());
       for (int u=0; u < k; u++){
-	sum += postprobs[u] = exp(logliksSite[u]) * omegaPrior[u];
+	sum += postprobs[u] = exp(logliksSite[u] - max_loglik) * omegaPrior[u];
       }
       for (int u=0; u < k; u++){
 	postprobs[u] /= sum;
@@ -1144,17 +1143,21 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree)
       for (int u=0; u < k; u++)
 	stdPostmeanSite[codonIdx] += postprobs[u] * pow(omegas[u] - Eomega, 2);
       
-      /***
-      for(size_t s=0; s < pruned_tr.numSpecies(); s++){
+      
+      for(size_t s=0; s < tree->numSpecies(); s++){
 	if (seqtuple[s].size()>0)
 	  cout << codontuple[s] << "\t" << seqtuple[s].substr(i*3,3) << endl;
       }
-            cout << "index\tomega\tloglik\tmeanloglik\tpostProb\tsum\tpostMean" << endl;
+      cout << "index\tomega\tloglik\tmaxloglik\tpostProb\tsum\tpostMean" << endl;
       for(int u=0; u < k; u++){
-	cout << u << "\t" << omegas[u] << "\t" << logliksSite[u] << "\t" << meanloglik << "\t" << postprobs[u] << "\t" << sum << "\t" << Eomega << endl;
+	cout << u << "\t" << omegas[u] << "\t" << logliksSite[u] << "\t" << max_loglik << "\t" << postprobs[u] << "\t" << sum << "\t" << Eomega << endl;
       }
-      ***/
-     
+      double omega_times_prior = 0;
+      for(int u=0; u<k; u++){
+	omega_times_prior += omegas[u] * omegaPrior[u];
+      }
+      cout << "sum omega * prior = " << omega_times_prior << endl;
+
       for(int u=0; u<k; u++){
 	if(omegas[u] > 1){
 	  postProb_gt1[codonIdx] += postprobs[u];
@@ -1166,22 +1169,26 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree)
   
   cout << setw(10) << "ali_pos" << setw(10) << "ref_pos" << setw(10) << "AS_ref" << setw(10) << "Pr(w>1)" << setw(10) << "post_mean" << setw(4) << "+-" << setw(10) << "SE_for_w" << setw(10) << "num_subst" << endl;
   for(int i = 0; i < codonIdx; i++){
-    cout << setw(10)<< i << setw(10) << refPos[i] << setw(10) << aminoAcidsRef[i] << setw(10) << postProb_gt1[i];
-    if(postProb_gt1[i] > 0.95)
-      cout << "*";
-    if(postProb_gt1[i] > 0.99)
-      cout << "*";
-    cout << setw(10) << postmeanSite[i] << setw(4) << "+-" << setw(10) << stdPostmeanSite[i] << setw(10) << numSubst[i] << endl;
+    cout << setw(10)<< i << setw(10) << refPos[i] << setw(10) << aminoAcidsRef[i];
+    if(postProb_gt1[i] > 0){
+      cout << setw(13) << postProb_gt1[i];
+      if(postProb_gt1[i] > 0.95)
+	cout << "*";
+      if(postProb_gt1[i] > 0.99)
+	cout << "*";
+      cout << setw(10) << postmeanSite[i] << setw(4) << "+-" << setw(13) << stdPostmeanSite[i] << setw(11) << numSubst[i] << endl;  
+    }
+    else{
+      cout << setw(13) << -1 << setw(10) << -1 << setw(4) << "+-" << setw(13) << -1 << setw(11) << -1 << endl;
+    }  
   }
-
+  
     // posterior mean estimate of omega
-    double meanloglik(0.0);
-    for (int u=0; u < k; u++)
-      meanloglik += logliks[u];
-    meanloglik /= k;
     sum = 0.0;
-    for (int u=0; u < k; u++)
-      sum += postprobs[u] = exp(logliks[u] - meanloglik) * omegaPrior[u];
+    double max_loglik = *max_element(logliks.begin(), logliks.end());
+    for (int u=0; u < k; u++){
+      sum += postprobs[u] = exp(logliks[u] - max_loglik) * omegaPrior[u];
+    }
     //        cout << "posterior distribution of omega" << endl;
     for (int u=0; u < k; u++){
       postprobs[u] /= sum;
@@ -1192,12 +1199,13 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree)
       Eomega += postprobs[u] * omegas[u];
     }
 
-    /*    cout << "whole alignment: " << endl << "index\tomega\tloglik\tmeanloglik\tpostProb\tsum\tpostMean" << endl;
+        cout << "whole alignment: " << endl << "index\tomega\tloglik\tmaxloglik\tpostProb\tsum\tpostMean" << endl;
     for(int u=0; u < k; u++){
-      cout << u << "\t" << omegas[u] << "\t" << logliks[u] << "\t" << meanloglik << "\t" << postprobs[u] << "\t" << sum << "\t" << Eomega << endl;
+      cout << u << "\t" << omegas[u] << "\t" << logliks[u] << "\t" << max_loglik << "\t" << postprobs[u] << "\t" << sum << "\t" << Eomega << endl;
     }
-    */
-    cout << endl << "# posterior mean estimate of omega for whole alignment : " << Eomega << endl;
+    
+ 
+    cout << endl << "# reference species: " << speciesnames[refSpeciesIdx] << endl << "# posterior mean estimate of omega for whole alignment : " << Eomega << endl;
     return Eomega;
 }
 

@@ -103,6 +103,8 @@ bool Constant::logreg;
 string Constant::referenceFile;
 string Constant::refSpecies;
 double Constant::GD_stepsize = 0.01; // stepsize of gradient descent algorithm 
+bool Constant::rLogReg = false; // for robust logistic regression
+double Constant::label_flip_prob = 0.1; // probability of a reference label to be wrong (robust logistic regression) 
 unordered_map<string, pair<int, vector<double> > > Constant::logReg_feature;
 // features are explaned in the default config file config/cgp/log_reg_parameters_default.cfg
 vector<double>Constant::ex_sc;

@@ -28,7 +28,7 @@ CodonMSA::CodonMSA(string codonAliFilename){
     readAlignment(codonAliFilename);
   }else{
     readAlignment(codonAliFilename);
-    ctree = new PhyloTree(speciesNames);
+    ctree = new PhyloTree(speciesNames,0.2);
   }
 
   vector<string> species;
@@ -55,7 +55,7 @@ CodonMSA::CodonMSA(string codonAliFilename){
 
 vector<double> ct_branchset;
   ctree->getBranchLengths(ct_branchset);
-  int k = 20; // number of omegas
+  int k = 40; // number of omegas
   // TODO: codonusage
 
   //BaseCount::init();
@@ -79,6 +79,8 @@ vector<double> ct_branchset;
   codonevo.setBranchLengths(ct_branchset, 25);
   codonevo.setOmegas(k);
   codonevo.setPrior(0.5);
+  cout << "Omegas, for which substitution matrices are stored:" << endl;
+  codonevo.printOmegas();
   if(Constant::useAArates){
     codonevo.setAAPostProbs();
   }
@@ -95,6 +97,7 @@ void CodonMSA::readAlignment(string filename){
   
   string rowseq;
   string speciesName;
+  int c = 0;
 
   if(ctree != NULL){
     ctree->getSpeciesNames(speciesNames);
@@ -118,9 +121,15 @@ void CodonMSA::readAlignment(string filename){
 	}else{
 	  int pos = find(speciesNames.begin(), speciesNames.end(), speciesName) - speciesNames.begin();
 	  if(pos >= speciesNames.size()){
-	    throw ProjectError( string("Species ") + speciesName + " not found in phylogenetik tree.");
+	    throw ProjectError( string("Species ") + speciesName + " not found in phylogenetic tree.");
 	  }
-	  aliRows[pos] = rowseq;
+	  if(aliRows[pos] == "")
+	    aliRows[pos] = rowseq;
+	  else
+	    cerr << "Warning: Multiple sequences for species " << speciesName << " found! Paralogs will be ignored. Run ESPOCA with a gene tree that includes all paralogs or use the default star tree if paralogs shall be considered." << endl;
+	  if(c == 0)
+	    refSpeciesIdx = pos;
+	  c++;
 	}
       }
       // cout << "species name: " << speciesName << "\t rowseq: " << rowseq << endl;
@@ -140,7 +149,7 @@ void CodonMSA::readAlignment(string filename){
 
 void CodonMSA::printOmegaStats(){
 
-  codonevo.graphOmegaOnCodonAli(aliRows, ctree);
+  codonevo.graphOmegaOnCodonAli(aliRows, ctree, refSpeciesIdx);
 }
 
 

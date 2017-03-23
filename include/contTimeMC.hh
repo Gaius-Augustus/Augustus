@@ -154,7 +154,7 @@ public:
   }
   vector<double> loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *ctree, PhyloTree *tree, int &subs);
     // for GRK proposal
-    double graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree);
+  double graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree, int refSpeciesIdx = 0);
     /* 
      * add new branch length b
      * this function is currently not needed, since the pruning algorithm does change the phylogenetic tree

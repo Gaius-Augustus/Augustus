@@ -511,8 +511,9 @@ void GeneMSA::printExonCands() {
 void GeneMSA::printOrthoExons(list<OrthoExon> &orthoExonsList) {
     if (orthoExonsList.empty())
 	return;
-    for (list<OrthoExon>::iterator oeit = orthoExonsList.begin(); oeit != orthoExonsList.end(); ++oeit)
-	printSingleOrthoExon(*oeit, true);
+    for (list<OrthoExon>::iterator oeit = orthoExonsList.begin(); oeit != orthoExonsList.end(); ++oeit){
+        printSingleOrthoExon(*oeit, true);
+    }
 }
 
 
@@ -686,7 +687,7 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
     else
       key << "-";
     key << "\t" << ec->gff3Frame();
-    //    cout << "OE: " << key.str() << endl;
+    //cout << "OE: " << key.str() << endl;
     unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(key.str());
     if ( got == Constant::logReg_feature.end() ){
       throw ProjectError("ortho exon is not an exon candidate!");

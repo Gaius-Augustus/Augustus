@@ -579,6 +579,8 @@ int PhyloTree::fitch(vector<int> &labels, int states){
 	    if(min > root->getTable(i))
 		min = root->getTable(i);
 	}
+    }else{
+      min = -1;
     }
     return min;
 }

@@ -168,11 +168,12 @@ Node* SpeciesGraph::addNode(Status *exon){
     }
     else{
 	score = ec_thold 
-	+ Constant::ex_sc[0]  // intercept  
-	- Constant::ex_sc[12] // for not beeing an OE
-	+ Constant::ex_sc[1] * log(exon->getLen())
-	+ Constant::ex_sc[2] * exon->getPostProb()
-	+ Constant::ex_sc[3] * getAvgBaseProb(exon);
+	+ Constant::ex_sc[0]  // intercept
+	+ Constant::ex_sc[1]  // for not having Omega
+	+ Constant::ex_sc[2]  // for not beeing an OE
+	+ Constant::ex_sc[3] * log(exon->getLen())
+	+ Constant::ex_sc[4] * exon->getPostProb()
+	+ Constant::ex_sc[5] * getAvgBaseProb(exon);
     }
     if (exon->hasEvidence("M"))
 	score += maxCostOfExonLoss;
@@ -232,10 +233,10 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
   }else{
     score = ec_thold
       + Constant::ex_sc[0] // intercept
-      - Constant::ex_sc[12] // for not beeing an OE
-      + Constant::ex_sc[1] * log(exon->len())
-	//+ Constant::ex_sc[5] * avgBaseProb // average base prob
-      + Constant::ex_sc[13]; // for not beeing sampled
+      + Constant::ex_sc[1] // for not having omega 
+      + Constant::ex_sc[2] // for not beeing an OE
+      + Constant::ex_sc[3] * log(exon->len())
+      + Constant::ex_sc[12]; // for not beeing sampled
   }
   
   /*
@@ -510,8 +511,6 @@ void SpeciesGraph::printSampledGF(Status *st, double score){
 	feature[0] = st->end - st->begin + 1; // exon length
 	feature[1] = st->getPostProb();       // posterior probability
 	feature[2] = getAvgBaseProb(st);      // average base score
-	if(!st->isCDS())
-	  feature[9] = 1;
 	pair<int, vector<double> > p;
 	p = make_pair(-1, feature);
 	pair<string, pair<int, vector<double> > > entry;

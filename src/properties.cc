@@ -189,6 +189,7 @@ HINTSFILE_KEY,
 "/IntronModel/verbosity",
 "introns",
 "keep_viterbi",
+"label_flip_prob",
 "lossweight", // temp
 "locustree",
 "maxDNAPieceSize",
@@ -247,6 +248,7 @@ EXTERNAL_KEY, // optCfgFile
 "proteinprofile",
 "referenceFile",
 "refSpecies",
+"rLogReg",
 "sample",
 "scorediffweight", // temp
 SINGLESTRAND_KEY,
@@ -418,7 +420,7 @@ void Properties::init( int argc, char* argv[] ){
     if (hasProperty(EXTERNAL_KEY)) {
 	optCfgFile = expandHome(properties[EXTERNAL_KEY]);
 	if (!hasProperty(SPECIES_KEY))
-	// read in species from extra config file
+	// read in species and logReg parameters from extra config file
 	    readFile(optCfgFile);
     } else if (Constant::MultSpeciesMode) {
 	optCfgFile = expandHome(configPath + "cgp/log_reg_parameters_default.cfg");

@@ -33,6 +33,7 @@ public:
   vector<string> aliRows;
   vector<string> speciesNames;
   size_t aliLen;
+  int refSpeciesIdx;
   CodonEvo codonevo;
   PhyloTree* ctree;
 };
