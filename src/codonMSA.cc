@@ -84,8 +84,8 @@ vector<double> ct_branchset;
   codonevo.setBranchLengths(ct_branchset, 25);
   codonevo.setOmegas(k);
   codonevo.setPrior(0.5);
-  cout << "Omegas, for which substitution matrices are stored:" << endl;
-  codonevo.printOmegas();
+  //cout << "Omegas, for which substitution matrices are stored:" << endl;
+  //codonevo.printOmegas();
   if(Constant::useAArates){
     codonevo.setAAPostProbs();
   }
