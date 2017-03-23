@@ -36,7 +36,9 @@
 #include <limits>
 #include <algorithm> // for std:sort
 #include <map>
+#ifdef COMPGENEPRED
 #include <unordered_map>
+#endif
 
 using namespace std;
 
@@ -328,11 +330,13 @@ public:
     static double GD_stepsize;
     static bool rLogReg;
     static double label_flip_prob;
+    #ifdef COMPGENEPRED
     static unordered_map<string, pair<int, vector<double> > > logReg_feature;
+    #endif
     static vector<double> ex_sc;
     static vector<double> in_sc;
-    static vector<double> lg_es;
     static int oeExtensionWidth;
+    static vector<double> lg_es;
     static bool computeNumSubs;
     static bool useAArates;
     static bool useNonCodingModel;

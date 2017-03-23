@@ -105,8 +105,9 @@ string Constant::refSpecies;
 double Constant::GD_stepsize = 0.01; // stepsize of gradient descent algorithm 
 bool Constant::rLogReg = false; // for robust logistic regression
 double Constant::label_flip_prob = 0.1; // probability of a reference label to be wrong (robust logistic regression) 
+#ifdef COMPGENEPRED
 unordered_map<string, pair<int, vector<double> > > Constant::logReg_feature;
-// features are explaned in the default config file config/cgp/log_reg_parameters_default.cfg
+#endif
 vector<double>Constant::ex_sc;
 vector<double>Constant::in_sc;
 vector<double>Constant::lg_es;
@@ -335,7 +336,7 @@ void Constant::init(){
     }
     
     // scores for logistic regression
-    try {
+       try {
 	logreg = Properties::getBoolProperty("/CompPred/logreg");
     } catch (...) {
 	logreg = true;
@@ -355,19 +356,19 @@ void Constant::init(){
 	}
     }
     for(int i=0; i<4; i++){
-	try {
-	    lg_es.push_back(Properties::getdoubleProperty("lg_exon_score" + itoa(i) ));
-	} catch (...) {
-	    lg_es.push_back(0);
-	}
+      try {
+	lg_es.push_back(Properties::getdoubleProperty("lg_exon_score" + itoa(i) ));
+      } catch (...) {
+	lg_es.push_back(0);
+      }
     }
-
+    
     try {
       oeExtensionWidth = Properties::getIntProperty("/CompPred/oeExtensionWidth");
     } catch (...) {
       oeExtensionWidth = 30;
     }
-
+    
     try {
       computeNumSubs = Properties::getBoolProperty("/CompPred/computeNumSubs");
     } catch (...) {
