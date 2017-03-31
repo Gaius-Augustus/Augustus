@@ -307,7 +307,7 @@ sub train{
 	!(-f "$configDir/${species}_exon_probs.pbl")){
 	# set "stopCodonExcludedFromCDS" to true
 	chdir "$configDir" or die ("Can not chdir to $configDir.\n");
-	print "2 Seting value of \"stopCodonExcludedFromCDS\" in $paraName to \"true\"\n" if ($verbose>=2);
+	print "2 Setting value of \"stopCodonExcludedFromCDS\" in $paraName to \"true\"\n" if ($verbose>=2);
 	setParInConfig($paraName, "stopCodonExcludedFromCDS", "true");
 	
 	# first try with etraining
@@ -325,7 +325,7 @@ sub train{
 	if($err_rate>=0.5){
 	    print "3 The appropriate value for \"stopCodonExcludedFromCDS\" seems to be \"false\".\n" if ($verbose>=3);
 	    chdir "$configDir" or die ("Can not chdir to $configDir.\n");
-	    print "2 Seting value of \"stopCodonExcludedFromCDS\" in $paraName to \"false\"\n" if ($verbose>=2);
+	    print "2 Setting value of \"stopCodonExcludedFromCDS\" in $paraName to \"false\"\n" if ($verbose>=2);
 	    setParInConfig($paraName, "stopCodonExcludedFromCDS", "false");
 	    print "3 Trying etraining again: etraining --species=$species training.gb.train >train.out ..." if ($verbose>=3);
 	    chdir "$workDir/training/" or die ("Can not change directory to $workDir/training.");
@@ -355,7 +355,7 @@ sub train{
 		  ["$workDir/training/test/augustus.1.out"])){
 	# first test with augustus
 	$cmdString = "augustus --species=$species $workDir/training/training.gb.test > $workDir/training/test/augustus.1.out";
-	print "2 First evaluation of parameters ...\n2 Excuting \"$cmdString\" ..." if ($verbose>=2);
+	print "2 First evaluation of parameters ...\n2 Executing \"$cmdString\" ..." if ($verbose>=2);
 	system("$cmdString")==0 or die("failed to execute: $cmdString!\n");
 	print " Finished!\n" if ($verbose>=2);
     }
@@ -375,7 +375,7 @@ sub train{
 	    $cmdString="perl $string --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --onlytrain=$workDir/training/training.gb.onlytrain --metapars=$configDir/$metaName > optimize.out";
 	}
 	print "1 Optimizing meta parameters of AUGUSTUS\n" if ($verbose>=1);
-	print "2 Excuting \"$cmdString\" ..." if ($verbose>=2);
+	print "2 Executing \"$cmdString\" ..." if ($verbose>=2);
 	system("$cmdString")==0 or die("failed to execute: $cmdString!\n"); 
 	print " Finished!\n" if ($verbose>=2);
 	print "2 You can find all info about optimizing in $workDir/training/optimize.out!\n" if ($verbose>=2);
