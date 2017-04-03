@@ -751,7 +751,7 @@ class PredictionController {
 				content = new File("${projectDir}/genomeExists").text
 				st = new Scanner(content)//works for exactly one number in a file
 				error_code = st.nextInt();
-				if(!(error_code == 200)){
+				if(!(error_code == 200) && !(error_code == 302)){
 					logDate = new Date()
 					logFile << "${logDate} ${predictionInstance.accession_id} v1 - The genome URL is not accessible. Response code: ${error_code}.\n"
 					deleteDir()
@@ -938,7 +938,7 @@ class PredictionController {
 					content = new File("${projectDir}/estExists").text
 					st = new Scanner(content)//works for exactly one number in a file
 					error_code = st.nextInt();
-					if(!(error_code == 200)){
+					if(!(error_code == 200) && !(error_code == 302)){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - The EST URL is not accessible. Response code: ${error_code}.\n"
 						deleteDir()
