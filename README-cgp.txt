@@ -351,7 +351,7 @@ f) Options to adjust the DD algorithm:
   the maximum number of Dual Decomposition iterations per round (default: 500).
 
 --/CompPred/dd_step_rule=harmonic/square_root/base_2/base_e/polyak/constant/mixed
-  the step size function (default: square_root)
+  the step size function (default: mixed)
   - constant:       c
   - harmonic:       c / (v+1)
   - square_root:    c / sqrt(v+1)
@@ -366,10 +366,10 @@ f) Options to adjust the DD algorithm:
   numInconsistencies is the current number of inconsistencies between the complicating variables.
 
 --/CompPred/dd_factor=a-b
-  value range of the step size parameter c (default: 1-5). When only a single round of DD (--/CompPred/dd_rounds=1)
-  is chosen, specify a single value for the step size parameter, e.g. --/CompPred/dd_factor=a. For r>1 rounds of
-  DD, the value range [a-b] is split into r equidistant values, e.g. for r=5, a=1 and b=5, the
-  values 1,2,3,4 and 5 are used for the first, second, ... and fifth round of DD, respectively.
+  value range of the step size parameter c (default: 1-4). Only required for step size rules other than "polyak".
+  When only a single round of DD (--/CompPred/dd_rounds=1) is chosen, specify a single value for the step size parameter,
+  e.g. --/CompPred/dd_factor=a. For r>1 rounds of DD, the value range [a-b] is split into r equidistant values,
+  e.g. for r=4, a=1 and b=4, the values 1,2,3 and 4 are used for the first, second, ... and fourth round of DD, respectively.
 
 
 6. RETRIEVING GENOMES FROM A MYSQL DATABASE

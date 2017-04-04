@@ -158,7 +158,7 @@ void CompGenePred::start(){
 	cerr << "Warning: /CompPred/rounds was set to "<<rounds<<". At least one round must be made." << endl;
 	rounds =1;
     }
-    const char* dd_step_rule = Properties::hasProperty("/CompPred/dd_step_rule") ? Properties::getProperty("/CompPred/dd_step_rule") : "square_root";
+    const char* dd_step_rule = Properties::hasProperty("/CompPred/dd_step_rule") ? Properties::getProperty("/CompPred/dd_step_rule") : "mixed";
     OrthoGraph::setStepRule(dd_step_rule);
     
     string dd_param_s; 
@@ -168,7 +168,7 @@ void CompGenePred::start(){
     try {
         dd_param_s = Properties::getProperty("/CompPred/dd_factor");
     } catch (...) {
-        dd_param_s = "1-5"; // default, do 5 rounds with parameters 1,2,3,4,5
+        dd_param_s = "1-4"; // default: 1st round "polyak", 2nd-5th round "square_root" with c=1,2,3,4
     }
     if(OrthoGraph::step_rule == polyak) // only one round possible for this step size rule
 	dd_param_s = "1";
