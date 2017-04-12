@@ -288,6 +288,7 @@ void optimize_parameters(train_data *data){
 
   try{
     Constant::rLogReg = Properties::getBoolProperty("rLogReg");
+    Constant::label_flip_prob = Properties::getdoubleProperty("label_flip_prob");
   }catch(...){}
 
   gsl_multimin_function_fdf CE_error_f;
@@ -308,7 +309,7 @@ void optimize_parameters(train_data *data){
 
   //cout << "cross entropy test error: " << cross_entropy_error_f(theta, data->exon_samples) << endl;
 
-  T = gsl_multimin_fdfminimizer_conjugate_fr;
+  T = gsl_multimin_fdfminimizer_vector_bfgs2;
   s = gsl_multimin_fdfminimizer_alloc (T, n);
 
   try{
@@ -356,7 +357,7 @@ void optimize_parameters(train_data *data){
 
   cout << "cross entropy test error: " << cross_entropy_error_f(theta, data->intron_samples) << endl;
 
-  T = gsl_multimin_fdfminimizer_conjugate_fr;
+  T = gsl_multimin_fdfminimizer_vector_bfgs2;
   s = gsl_multimin_fdfminimizer_alloc (T, n);
 
   gsl_multimin_fdfminimizer_set (s, &CE_error_f, theta, Constant::GD_stepsize, 1e-4);

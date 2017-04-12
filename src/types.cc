@@ -104,7 +104,7 @@ string Constant::referenceFile;
 string Constant::refSpecies;
 double Constant::GD_stepsize = 0.01; // stepsize of gradient descent algorithm 
 bool Constant::rLogReg = false; // for robust logistic regression
-double Constant::label_flip_prob = 0.1; // probability of a reference label to be wrong (robust logistic regression) 
+double Constant::label_flip_prob = 0.01; // probability of a reference label to be wrong (robust logistic regression) 
 #ifdef COMPGENEPRED
 unordered_map<string, pair<int, vector<double> > > Constant::logReg_feature;
 #endif
