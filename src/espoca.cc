@@ -44,7 +44,7 @@ int main( int argc, char* argv[] ){
     int        errorcode = 0;
     string     species;
     int        help = 0;
-
+    double     branchlength = 0.2;
 
     LLDouble::setOutputPrecision(3);
 
@@ -61,12 +61,13 @@ int main( int argc, char* argv[] ){
       {"treefile",1, 0, 't'},
       {"help",0,0,'h'},
       {"useAminoAcidRates",1,0,'r'},
+      {"branchlength",1,0,'b'},
       {0,0,0,0}
     };
 
     int option_index = 0;
     int c; 
-    while ((c = getopt_long(argc, argv, "s:a:t:r:h", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "s:a:t:rb:h", long_options, &option_index)) != -1) {
       switch(c)
 	{
 	case 's':
@@ -79,7 +80,10 @@ int main( int argc, char* argv[] ){
 	  Constant::treefile = optarg;
 	  break;
 	case 'r':
-	  Constant::useAArates = optarg;
+	  Constant::useAArates = true;
+	  break;
+	case 'b':
+	  branchlength = atof(optarg);
 	  break;
 	case 'h':
 	  help=1;
@@ -124,9 +128,8 @@ int main( int argc, char* argv[] ){
 	//  CompGenePred cgp;
 	//cgp.start();
 
-	CodonMSA cAli(Constant::codonalnfile);
+	CodonMSA cAli(Constant::codonalnfile, branchlength);
 	printIntro();
-
 	cAli.printOmegaStats();
 	cout << "# total time: " << (double) (clock()-start) / CLOCKS_PER_SEC << "s" << endl;
 	

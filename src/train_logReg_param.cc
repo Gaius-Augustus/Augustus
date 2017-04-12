@@ -288,12 +288,13 @@ void optimize_parameters(train_data *data){
 
   try{
     Constant::rLogReg = Properties::getBoolProperty("rLogReg");
+    Constant::label_flip_prob = Properties::getdoubleProperty("label_flip_prob");
   }catch(...){}
 
   gsl_multimin_function_fdf CE_error_f;
   CE_error_f.n = n;
   if(Constant::rLogReg){
-    cout << "# using lable-noise robust logistic regression" << endl;
+    cout << "# using lable-noise robust logistic regression with label flip probability " << Constant::label_flip_prob << endl;
     CE_error_f.f = &rob_cross_entropy_error_f;
     CE_error_f.df = &rob_cross_entropy_error_df;
     CE_error_f.fdf = &rob_cross_entropy_error_fdf;

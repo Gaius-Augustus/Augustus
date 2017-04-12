@@ -17,7 +17,7 @@
 
 using namespace std;
 
-CodonMSA::CodonMSA(string codonAliFilename){
+CodonMSA::CodonMSA(string codonAliFilename, double branchlength){
 
   aliLen = 0;
   ctree=NULL;
@@ -28,7 +28,7 @@ CodonMSA::CodonMSA(string codonAliFilename){
     readAlignment(codonAliFilename);
   }else{
     readAlignment(codonAliFilename);
-    ctree = new PhyloTree(speciesNames,0.2);
+    ctree = new PhyloTree(speciesNames,branchlength);
   }
 
   vector<string> species;

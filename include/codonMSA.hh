@@ -22,7 +22,7 @@
 
 class CodonMSA{
 public:
-  CodonMSA(string filename);
+  CodonMSA(string filename, double branchlength);
   ~CodonMSA(){
     delete ctree;
   }
