@@ -52,6 +52,12 @@ if ($configdir !~ /\/$/){
     $configdir .= "/";
 }
 
+if (not(-d "$configdir/species/")){
+   die "Directory $configdir/species does not exist (or is a file). Please check whether AUGUSTUS_CONFIG_PATH is set, correctly.\n";
+}elsif(not(-w "$configdir/species")){
+   die "Directory $configdir/species is not writable. Cannot create new species. Please check whether AUGUSTUS_CONFIG_PATH is set, correctly.\n";
+}
+
 my $speciesdir = $configdir . "species/" . $species . "/";
 my $cfgfilename = $speciesdir . $species . "_parameters.cfg";
 my $weightfilename = $speciesdir . $species . "_weightmatrix.txt";
