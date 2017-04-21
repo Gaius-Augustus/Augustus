@@ -21,6 +21,8 @@
 #include "train_logReg_param.hh"
 
 int num_species;
+vector<double> mean;
+vector<double> se;
 
 train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, unordered_map<string,int> *ref_class, int numSp){
   
@@ -60,8 +62,12 @@ train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, un
    */
 
   num_features = 15;
+  mean.resize(num_features);
+  se.resize(num_features);
 
-
+  exon_feature_idx   = {0,0,0,1,1,1,1,1,1,1,1,1,0,1,1};
+  intron_feature_idx = {0,0,0,1,1,1,0,0,0,0,0,0,0,0,0};
+  
   /***  
 
   cout << "exon samples:" << endl << "class\t";
@@ -91,14 +97,48 @@ train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, un
 
 }
 
+/*
+ * get mean and std of sample features for standardization
+ */
+void train_data::set_mean_std(vector<pair<int, vector<double> > > *samples, vector<int> feature_idx){
+
+  fill(mean.begin(), mean.end(), 0);
+  fill(se.begin(), se.end(), 0);
+
+  int m = samples->size();
+  for(int i=0; i<m; i++){
+    for(int j=0; j<num_features; j++){
+      if(feature_idx[j]){
+	double f = get_feature(&(*samples)[i].second, j);
+	mean[j] += f;
+	se[j] += pow(f, 2);
+      }else{
+	se[j] = 1;
+      }
+    }
+  }
+  for(int j=0; j<num_features; j++){
+    if(feature_idx[j]){
+      mean[j] /= m;
+      se[j] = sqrt( se[j]/m - pow(mean[j], 2) );
+    }
+  }
+  /*
+  cout << "mean and std of features" << endl;
+  for(int i=0; i<num_features; i++){
+    cout << i << "\t" << mean[i] << "\t" << se[i] << endl;
+  } 
+  */ 
+}
+
 double activation_f(const gsl_vector *theta, vector<double> *f){
 
-  double theta_x = 0;
+  double theta_x = gsl_vector_get(theta, 0);
   int n = theta->size;
 
-  for(int i=0; i<n; i++){
-    theta_x += gsl_vector_get(theta, i) * get_feature(f, i);
-    //    cout << "f" << i << ":" << setw(10) << gsl_vector_get(theta, i) << ":" << get_feature(f, i) << "\t"; 
+  for(int i=1; i<n; i++){
+    theta_x += gsl_vector_get(theta, i) * ( (get_feature(f, i) - mean[i]) / se[i] ) ;
+    //    cout << "f" << i << ":" << setw(10) << gsl_vector_get(theta, i) << ":" << get_feature(f, i) << "(" << ( (get_feature(f, i) - mean[i]) / se[i] ) << ")\t"; 
   }
   //cout << endl;
   if(theta_x < -700) // work around to avoid nummerical problems when calculating exp(-theta_x)
@@ -109,42 +149,44 @@ double activation_f(const gsl_vector *theta, vector<double> *f){
 
 double get_feature(vector<double> *f, int i){
 
+  double x;
   switch(i){
-  case 0: return 1;                                          // intercept
+  case 0: x = 1;                                          // intercept
     break;
-  case 1: return ( ((*f)[3] > 0) ? 0 : 1 );                  // not having omega
+  case 1: x = ( ((*f)[3] > 0) ? 0 : 1 );                  // not having omega
     break;
-  case 2: return ( 1 - (*f)[9] );                            // is not an OE 
+  case 2: x = ( 1 - (*f)[9] );                            // is not an OE 
     break;
-  case 3: return log((*f)[0]);                               // log exon length
+  case 3: x = log((*f)[0]);                               // log exon length
     break;
-  case 4: return (*f)[1];                                    // posterior probability  
+  case 4: x = (*f)[1];                                    // posterior probability  
     break;
-  case 5: return (*f)[2];                                    // mean base probability 
+  case 5: x = (*f)[2];                                    // mean base probability 
     break;
-  case 6: return (*f)[3];                                    // omega
+  case 6: x = (*f)[3];                                    // omega
     break;
-  case 7: return (*f)[4];                                    // variance of omega
+  case 7: x = (*f)[4];                                    // variance of omega
     break;
-  case 8: return (*f)[5];                                    // conservation
+  case 8: x = (*f)[5];                                    // conservation
     break;
-  case 9: return (*f)[7];                                    // containment
+  case 9: x = (*f)[7];                                    // containment
     break;
-  case 10: return (*f)[6];                                   // diversity
+  case 10: x = (*f)[6];                                   // diversity
     break;
-  case 11: return (*f)[8];                                   // number of exons involved in OE 
+  case 11: x = (*f)[8];                                   // number of exons involved in OE 
     break;
-  case 12: return ( ((*f)[1] <= 0) ? 1 : 0 );                // is not sampled 
+  case 12: x = ( ((*f)[1] <= 0) ? 1 : 0 );                // is not sampled 
     break;
-  case 13: return (*f)[5] * (*f)[6];                         // conservation * diversity
+  case 13: x = (*f)[5] * (*f)[6];                         // conservation * diversity
     break; 
-  case 14: return (*f)[3] * (*f)[6];                         // omega * diversity 
+  case 14: x = (*f)[3] * (*f)[6];                         // omega * diversity 
     break;
-  case 15: return (*f)[8]/num_species;                       // number of species involved in this ortho exon divided by clade size
+  case 15: x = (*f)[8]/num_species;                       // number of species involved in this ortho exon divided by clade size
     break;
   default: throw ProjectError("feature number " + itoa(i) + " does not exist!");
     break;
   }
+  return x;
 }
 
 
@@ -185,7 +227,7 @@ void cross_entropy_error_df(const gsl_vector *theta, void *features, gsl_vector 
   for(int i=0; i<m; i++){
     double sigma = 1/(1 + exp(-1 * activation_f(theta, &(*x)[i].second)));
     for(int j=0; j<n; j++){
-      grad[j] += get_feature(&(*x)[i].second, j) * (sigma - (*x)[i].first);
+      grad[j] += ( (get_feature(&(*x)[i].second, j) - mean[j]) / se[j] ) * (sigma - (*x)[i].first);
       //cout << "gradient of exon 0 ... " << i << " for feature " << j << ": " << grad[j] << endl;
     }
   }
@@ -232,7 +274,7 @@ void rob_cross_entropy_error_df(const gsl_vector *theta, void *features, gsl_vec
     double sigma = 1/(1 + exp(-1 * activation_f(theta, &(*x)[i].second)));
     double g = -1 * ( (*x)[i].first * (1 - 2*epsilon) / (epsilon + sigma * (1 - 2*epsilon)) + (1 - (*x)[i].first)*(2*epsilon - 1) / (1 - epsilon - sigma*(1 - 2*epsilon)) ) * sigma * (1 - sigma);
     for(int j=0; j<n; j++){
-      grad[j] += get_feature(&(*x)[i].second, j) * g;
+      grad[j] += ( (get_feature(&(*x)[i].second, j) - mean[j]) / se[j] ) * g;
       //cout << "gradient of exon 0 ... " << i << " for feature " << j << ": " << grad[j] << endl;
     }
    
@@ -269,22 +311,14 @@ void optimize_parameters(train_data *data){
   theta = gsl_vector_alloc(n);
   gsl_vector_set_all(theta, 0);
   
-  /*
-  gsl_vector_set(theta,0,-6.32947);
-  gsl_vector_set(theta,1,0.313288);
-  gsl_vector_set(theta,2,5.02714);
-  gsl_vector_set(theta,3,-0.502507);
-  gsl_vector_set(theta,4,1.0033);
-  gsl_vector_set(theta,5,1);
-  gsl_vector_set(theta,6,-1.3373);
-  gsl_vector_set(theta,7,1.78828);
-  gsl_vector_set(theta,8,-0.355301);
-  gsl_vector_set(theta,9,0.736222);
-  gsl_vector_set(theta,10,-3.4335);
-  gsl_vector_set(theta,11,1.00091);
-  gsl_vector_set(theta,12,1.04766);
-  gsl_vector_set(theta,13,-3.59645);
-  */
+  // random allocation
+  cout << "random theta: ";
+  for(int i =0; i<n; i++){
+    double r = ( (double) rand() / RAND_MAX );
+    gsl_vector_set(theta, i, r);
+    cout << r << "\t";
+  }
+  cout << endl;
 
   try{
     Constant::rLogReg = Properties::getBoolProperty("rLogReg");
@@ -307,7 +341,9 @@ void optimize_parameters(train_data *data){
   // exon parameter optimization
   CE_error_f.params = (void *)data->exon_samples;
 
-  //cout << "cross entropy test error: " << cross_entropy_error_f(theta, data->exon_samples) << endl;
+  data->set_mean_std(data->exon_samples, data->exon_feature_idx);
+
+  cout << "cross entropy test error: " << cross_entropy_error_f(theta, data->exon_samples) << endl;
 
   T = gsl_multimin_fdfminimizer_vector_bfgs2;
   s = gsl_multimin_fdfminimizer_alloc (T, n);
@@ -333,14 +369,20 @@ void optimize_parameters(train_data *data){
     
     cout << setw(10) << iter;
     for(int i=0; i<n; i++)
-      cout << setw(10) << gsl_vector_get (s->x, i);
+      cout << setw(10) << gsl_vector_get(s->x, i);
     cout << setw(10) << s->f << endl;
     
 
   }while (status == GSL_CONTINUE && iter < 10000);
 
-  for(int i=0; i<n; i++)
-    paramfile << "/CompPred/exon_score" << i << "\t" << gsl_vector_get (s->x, i) << endl;
+  // output back transformed coefficients
+  double theta_sum = 0;
+  for(int i=1; i<n; i++){
+    theta_sum += gsl_vector_get(s->x, i) * mean[i] / se[i];
+  }
+  paramfile << "/CompPred/exon_score0\t" << ( gsl_vector_get(s->x, 0) - theta_sum ) << endl; 
+  for(int i=1; i<n; i++)
+    paramfile << "/CompPred/exon_score" << i << "\t" << ( gsl_vector_get(s->x, i) / se[i] ) << endl;
   
   gsl_multimin_fdfminimizer_free (s);
 
@@ -348,17 +390,19 @@ void optimize_parameters(train_data *data){
   CE_error_f.params = (void *)data->intron_samples;
 
   gsl_vector_set_all(theta, 0);
-  /*
-  gsl_vector_set(theta,0,-1.70697);
-  gsl_vector_set(theta,1,-0.43752);
-  gsl_vector_set(theta,2,4.99468);
-  gsl_vector_set(theta,3,1.84305);
-  */
+
+  // random allocation
+  for(int i =0; i<n; i++){
+    double r = ( (double) rand() / RAND_MAX );
+    gsl_vector_set(theta, i, r);
+  }
 
   cout << "cross entropy test error: " << cross_entropy_error_f(theta, data->intron_samples) << endl;
 
   T = gsl_multimin_fdfminimizer_vector_bfgs2;
   s = gsl_multimin_fdfminimizer_alloc (T, n);
+
+  data->set_mean_std(data->intron_samples, data->intron_feature_idx);
 
   gsl_multimin_fdfminimizer_set (s, &CE_error_f, theta, Constant::GD_stepsize, 1e-4);
   cout << "# intron parameter training" << endl;
@@ -385,12 +429,18 @@ void optimize_parameters(train_data *data){
     
 
   }while (status == GSL_CONTINUE && iter < 10000);
+  
+  // output back transformed coefficients
+  theta_sum = 
+      (gsl_vector_get(s->x, 4) * mean[4] / se[4])
+    + (gsl_vector_get(s->x, 5) * mean[5] / se[5]) 
+    + (gsl_vector_get(s->x, 3) * mean[3] / se[3]);
+  
 
-
-  paramfile << "/CompPred/intron_score" << 0 << "\t" << gsl_vector_get (s->x, 0) << endl;
-  paramfile << "/CompPred/intron_score" << 1 << "\t" << gsl_vector_get (s->x, 4) << endl;
-  paramfile << "/CompPred/intron_score" << 2 << "\t" << gsl_vector_get (s->x, 5) << endl;
-  paramfile << "/CompPred/intron_score" << 3 << "\t" << gsl_vector_get (s->x, 3) << endl;
+  paramfile << "/CompPred/intron_score" << 0 << "\t" << ( gsl_vector_get (s->x, 0) - theta_sum ) << endl;
+  paramfile << "/CompPred/intron_score" << 1 << "\t" << ( gsl_vector_get (s->x, 4) / se[4] ) << endl;
+  paramfile << "/CompPred/intron_score" << 2 << "\t" << ( gsl_vector_get (s->x, 5) / se[5] ) << endl;
+  paramfile << "/CompPred/intron_score" << 3 << "\t" << ( gsl_vector_get (s->x, 3) / se[3] ) << endl;
   
 paramfile.close();
 
