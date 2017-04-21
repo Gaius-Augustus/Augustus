@@ -34,7 +34,8 @@ my %cmdpars = ( 'species'              => '',
                 'genemodel'            => '',
                 '/Constant/min_coding_len' => '',
                 'sens_spec_bias'       => '1',
-
+                'nice'             => 0,
+		
                 # command line arguments for optimizing cgp parameters
 		'treefile'             => '',
 		'alnfile'              => '',
@@ -109,6 +110,8 @@ OPTIONS
     --trainOnlyUtr=1           Use this option, if the exon, intron and intergenic models need not be trained. (default: 0)
     --noTrainPars=1            Use this option, if the parameters to optimize do not affect training. The training step (etraining) is omitted completely. (default: 0)
     --sens_spec_bias=f         increase sensitivity weight by factor f. (default: 1)
+    --nice=1                   execute all time consuming system calls with bash nice (default nice level)
+                               Default value for execution of optmize_augustus.pl is --nice=0.
 
 USAGE 2 --- optimizing cgp (comparative gene prediction) parameters ---
 
@@ -829,7 +832,11 @@ if ($cmdpars{'noTrainPars'} eq ''){
     if ($cmdpars{'onlytrain'} ne ''){
 	system ("cat $cmdpars{'onlytrain'} >> $optdir/curtrain");
     }
-    my $cmd = "etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $be_silent $optdir/curtrain $pars $modelrestrict";
+    my $cmd = "";
+    if($cmdpars{'nice'}==1){
+	$cmd .= "nice ";
+    }
+    $cmd .= "etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $be_silent $optdir/curtrain $pars $modelrestrict";
     print "$cmd\n";
     system($cmd);
     system("rm -f $optdir/curtrain");
@@ -885,10 +892,19 @@ sub evalsnsp {
 		    system ("cat $cmdpars{'onlytrain'} >> $optdir/curtrain");
 		}
 		if ($cmdpars{'noTrainPars'} eq '') {# no need to retrain if the trans matrix is optimized or this option is otherwise explicitly set.
-		    system("$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $be_silent $modelrestrict $optdir/curtrain");
+		    my $cmd = "";
+		    if($cmdpars{'nice'}==1){
+			$cmd .="nice ";
+		    }
+		    $cmd .= "$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $be_silent $modelrestrict $optdir/curtrain";
+		    system($cmd);                                                                                                                     ;
 		}
-		
-		system("$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $optdir/curtest > $optdir/predictions.txt");
+		my $cmd = "";
+		if($cmdpars{'nice'}==1){
+		    $cmd .="nice ";
+		}
+		$cmd .= "$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $optdir/curtest > $optdir/predictions.txt";
+		system($cmd);
 		
 		open (PRED, "<$optdir/predictions.txt");
 		while (<PRED>){
@@ -940,15 +956,23 @@ sub evalsnsp {
 		}
 		
 		if ($cmdpars{'noTrainPars'} eq '') {# No need to retrain if the trans matrix is optimized or noTrainPars=1 set explicitly.
-		    my $cmd = "$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars "
+		    my $cmd = "";
+		    if($cmdpars{'nice'}==1){
+			$cmd .= "nice ";
+		    }
+		    $cmd .= "$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars "
 			. "$be_silent $modelrestrict $pbloutfiles $optdir/curtrain-$k";
 		    system($cmd);
 #		unlink $optdir/curtrain-$k;
 		} else {
 		    $pblinfiles = ""; # training did not take place, so the $pbloutfiles have not beeen created and cannot be used for prediction
 		}
-		
-		system("$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $pblinfiles $optdir/bucket$k.gb > $optdir/predictions-$k.txt");
+		my $cmd = "";
+		if($cmdpars{'nice'}==1){
+		    $cmd .= "nice ";
+		}
+		$cmd .= "$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars $pblinfiles $optdir/bucket$k.gb > $optdir/predictions-$k.txt";
+		system($cmd);
 		print "$k ";
 		
 		$pm->finish; # terminate the child process
@@ -1008,7 +1032,12 @@ sub evalsnsp {
 	    my $pid = $pm->start and next;
 	    # this part is done in parallel by the child process
 	    system("rm -rf $optdir/pred$k; mkdir $optdir/pred$k");
-	    system("$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars --alnfile=$optdir/splitMaf/$k.maf --/CompPred/outdir=$optdir/pred$k >$optdir/pred$k/aug.out");
+	    my $cmd = "";
+	    if($cmdpars{'nice'}==1){
+		$cmd .= "nice ";
+	    }
+	    $cmd .= "$cmdpars{'aug_exec_dir'}augustus --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $argument $pars --alnfile=$optdir/splitMaf/$k.maf --/CompPred/outdir=$optdir/pred$k >$optdir/pred$k/aug.out";
+	    system($cmd);
 	    print "$k ";
 	    $pm->finish; # terminate the child process
 	}
@@ -1796,7 +1825,12 @@ sub evalCGP{
     # filter prediction for duplicates and merge genes (uses external tool 'joingenes')
     if($joingenes){
 	system("mv $optdir/pred.gtf $optdir/pred.unfiltered.gtf");
-	system("$cmdpars{'jg_exec_dir'}joingenes -g $optdir/pred.unfiltered.gtf -o $optdir/pred.gtf");
+	my $cmd = "";
+	if($cmdpars{'nice'}==1){
+	    $cmd .= "nice ";
+	}
+	$cmd .= "$cmdpars{'jg_exec_dir'}joingenes -g $optdir/pred.unfiltered.gtf -o $optdir/pred.gtf";
+	system($cmd);
     }
     
     # split annotation and prediction file by seqs and prepare
@@ -1810,7 +1844,12 @@ sub evalCGP{
 	system ("grep \"^$seq\\b\" $optdir/anno.gtf > $gffDir/$seq.anno.gtf");
     }
     # call evaluate_gtf
-    my @eval_report = qx(evaluate_gtf.pl $optdir/annotation_list $optdir/prediction_list);
+    my @eval_report;
+    if($cmdpars{'nice'}==1){
+	@eval_report = qx(nice evaluate_gtf.pl $optdir/annotation_list $optdir/prediction_list);
+    }else{
+	@eval_report = qx(evaluate_gtf.pl $optdir/annotation_list $optdir/prediction_list);
+    }
     # parse eval output
     foreach (@eval_report){
 	if(/^Gene Sensitivity\s+(\S+)%/){
