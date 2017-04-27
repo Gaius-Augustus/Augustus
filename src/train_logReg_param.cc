@@ -21,12 +21,14 @@
 #include "train_logReg_param.hh"
 
 int num_species;
+int prob_true_false;
 vector<double> mean;
 vector<double> se;
 
 train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, unordered_map<string,int> *ref_class, int numSp){
   
-  int numRef = 0;
+  int numExonRef = 0;
+  int numIntronRef = 0;
   num_species = numSp;
   exon_samples = new vector<pair<int, vector<double> > >;
   intron_samples = new vector<pair<int, vector<double> > >;
@@ -37,7 +39,10 @@ train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, un
       samp->second.first = 0;
     else{
       samp->second.first = 1;
-      numRef++;
+      if(samp->first.at(0) == 'C')
+	numExonRef++;
+      else
+	numIntronRef++;
     }
     if(samp->first.at(0) == 'C')
       exon_samples->push_back(samp->second);
@@ -45,7 +50,7 @@ train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, un
       intron_samples->push_back(samp->second);
     s->erase(samp);
   }
-  cout << "# " << numRef << " reference samples in training set." << endl;
+  cout << "# " << numExonRef << " reference exon samples and " << numIntronRef << " reference intron samples in training set." << endl;
   int num_samples = exon_samples->size();
   for(int i=0; i<num_samples-1; i++){
     try{
@@ -67,7 +72,10 @@ train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, un
 
   exon_feature_idx   = {0,0,0,1,1,1,1,1,1,1,1,1,0,1,1};
   intron_feature_idx = {0,0,0,1,1,1,0,0,0,0,0,0,0,0,0};
-  
+
+  prob_true_false_exons =  numExonRef / exon_samples->size();
+  prob_true_false_introns = numIntronRef / intron_samples->size();
+
   /***  
 
   cout << "exon samples:" << endl << "class\t";
@@ -252,10 +260,11 @@ double rob_cross_entropy_error_f(const gsl_vector *theta, void *features){
   double curr_CEE = 0;
   vector<pair<int, vector<double> > > *x  = (vector<pair<int, vector<double> > > *)features;
   double epsilon = Constant::label_flip_prob; 
+  double gamma = prob_true_false;
   int m = x->size();
   for(int i=0; i<m; i++){
     double sigma = 1/(1 + exp(-1 * activation_f(theta, &(*x)[i].second)));
-    curr_CEE = (*x)[i].first * log( (1 - sigma)*epsilon + sigma*(1 - epsilon) ) + (1-(*x)[i].first) * log( (1 - sigma)*(1 - epsilon) + sigma*epsilon );
+    curr_CEE = (*x)[i].first * log( (1 - sigma)*epsilon*gamma + sigma*(1 - epsilon) ) + (1-(*x)[i].first) * log( (1 - sigma)*(1 - epsilon*gamma) + sigma*epsilon );
     //cout << "feature_" << i << "\t" << (*x)[i].first << "\t" << sigma << "\t" << curr_CEE << endl;
     cross_entropy_error += curr_CEE;
   }
@@ -268,11 +277,11 @@ void rob_cross_entropy_error_df(const gsl_vector *theta, void *features, gsl_vec
   int m = x->size();
   int n = theta->size;
   double epsilon = Constant::label_flip_prob;
-
+  double gamma = prob_true_false;
   vector<double> grad(n,0);
   for(int i=0; i<m; i++){
     double sigma = 1/(1 + exp(-1 * activation_f(theta, &(*x)[i].second)));
-    double g = -1 * ( (*x)[i].first * (1 - 2*epsilon) / (epsilon + sigma * (1 - 2*epsilon)) + (1 - (*x)[i].first)*(2*epsilon - 1) / (1 - epsilon - sigma*(1 - 2*epsilon)) ) * sigma * (1 - sigma);
+    double g = -1 * ( (*x)[i].first * (1 - epsilon - epsilon*gamma) / (epsilon*gamma + sigma * (1 - epsilon - epsilon*gamma)) + (1 - (*x)[i].first)*(epsilon + epsilon*gamma - 1) / (1 - epsilon*gamma + sigma*(epsilon + epsilon*gamma - 1)) ) * sigma * (1 - sigma);
     for(int j=0; j<n; j++){
       grad[j] += ( (get_feature(&(*x)[i].second, j) - mean[j]) / se[j] ) * g;
       //cout << "gradient of exon 0 ... " << i << " for feature " << j << ": " << grad[j] << endl;
@@ -329,6 +338,15 @@ void optimize_parameters(train_data *data){
   CE_error_f.n = n;
   if(Constant::rLogReg){
     cout << "# using lable-noise robust logistic regression" << endl;
+    bool useTFprob;
+    try{
+      useTFprob = Properties::getBoolProperty("useTFprob");
+    } catch(...){
+      useTFprob = 0;
+    }
+    if(useTFprob)
+      prob_true_false = data->prob_true_false_exons;
+
     CE_error_f.f = &rob_cross_entropy_error_f;
     CE_error_f.df = &rob_cross_entropy_error_df;
     CE_error_f.fdf = &rob_cross_entropy_error_fdf;
@@ -388,6 +406,8 @@ void optimize_parameters(train_data *data){
 
   // intron parameter optimization
   CE_error_f.params = (void *)data->intron_samples;
+  if(Constant::rLogReg)
+    prob_true_false = data->prob_true_false_introns;
 
   gsl_vector_set_all(theta, 0);
 
