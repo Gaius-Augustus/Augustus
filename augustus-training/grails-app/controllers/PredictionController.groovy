@@ -1263,17 +1263,34 @@ class PredictionController {
 				// retrieve genome file
 				if(!(predictionInstance.genome_ftp_link == null)){
 					logDate = new Date()
-					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Checking genome file size with curl prior upload\n"
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Checking genome file size with wget spider prior upload\n"
 					projectDir.mkdirs()
 					// check whether the genome file is small enough for upload
-					def fileSizeScript = new File("${projectDir}/filzeSize.sh")
-					cmd2Script = "curl -sI ${predictionInstance.genome_ftp_link} | grep Content-Length | cut -d ' ' -f 2 > ${projectDir}/genomeFileSize 2> /dev/null"
-					fileSizeScript << "${cmd2Script}"
+					def spiderScript = new File("${projectDir}/spider.sh")
+					cmd2Script = "wget --spider ${predictionInstance.genome_ftp_link} &> wget_spider_genome.out"
+					spiderScript << "${cmd2Script}"
+					if(verb > 2){
+						logDate = new Date();
+						logFile << "${logDate} ${predictionInstance.accession_id} v3 - spiderScript << \"${spiderScript}\"\n"
+					}
+					cmdStr = "bash ${spiderScript}"
+					def retrieveSpider = "${cmdStr}".execute()
+					if(verb > 1){
+						logDate = new Date();
+						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+					}
+					retrieveSpider.waitFor()
+					cmdStr = "rm ${spiderScript} &> /dev/null"
+					delSzCrProc = "${cmdStr}".execute()
+					delSzCrProc.waitFor()
+					def screenSpider = new File("${projectDir}/screenSpider.sh")
+					cmd2Script = "grep Length: wget_spider_genome.out | cut -d ' ' -f s > ${projectDir}/genomeFileSize 2> /dev/null"
+					screenSpider << "${cmd2Script}"
 					if(verb > 2){
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - fileSizeScript << \"${cmd2Script}\"\n"
 					}
-					cmdStr = "bash ${fileSizeScript}"
+					cmdStr = "bash ${screenSpider}"
 					def retrieveFileSize = "${cmdStr}".execute()
 					if(verb > 1){
 						logDate = new Date()
@@ -1638,28 +1655,45 @@ class PredictionController {
 				if(!(predictionInstance.est_ftp_link == null)){
 					// check whether the EST file is small enough for upload
 					logDate = new Date()
-					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Checking cDNA file size with curl prior upload\n"
-					def fileSizeScript = new File("${projectDir}/filzeSize.sh")
-					cmd2Script = "curl -sI ${predictionInstance.est_ftp_link} | grep Content-Length | cut -d ' ' -f 2 > ${projectDir}/estFileSize 2> /dev/null"
-					fileSizeScript << "${cmd2Script}"
+					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Checking cDNA file size with wget spider prior upload\n"
+					def spiderScript = new File("${projectDir}/spider.sh")
+					cmd2Script = "wget --spider ${predictionInstance.est_ftp_link} &> wget_spider_est.out"
+                                        spiderScript <<	"${cmd2Script}"
 					if(verb > 2){
-						logDate = new Date()
-						logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - fileSizeScript << \"${cmd2Script}\"\n"
-					}
-					cmdStr = "bash ${fileSizeScript}"
-					def retrieveFileSize = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
-					retrieveFileSize.waitFor()	
-					cmdStr = "rm ${fileSizeScript} &> /dev/null"		
-					def delSzCrProc = "${cmdStr}".execute()
-					if(verb > 1){
-						logDate = new Date()
-						logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
-					}
+						logDate = new Date();
+						logFile << "${logDate} ${predictionInstance.accession_id} v3 - spiderScript << \"${spiderScript}\"\n"
+                                        }
+					cmdStr = "bash ${spiderScript}"
+					def retrieveSpider = "${cmdStr}".execute()
+					if(verb	> 1){
+						logDate = new Date();
+						logFile << "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+                                        }
+					retrieveSpider.waitFor()
+					cmdStr = "rm ${spiderScript} &> /dev/null"
+					delSzCrProc  = "${cmdStr}".execute()
 					delSzCrProc.waitFor()
+					def screenSpider = new File("${projectDir}/screenSpider.sh")
+					cmd2Script = "grep Length: wget_spider_est.out | cut -d ' ' -f s > ${projectDir}/estFileSize 2> /dev/null"
+                                        screenSpider << "${cmd2Script}"
+                                        if(verb > 2){
+                                                logDate = new Date()
+                                                logFile <<  "${logDate} ${predictionInstance.accession_id} v3 - fileSizeScript << \"${cmd2Script}\"\n"
+                                        }
+                                        cmdStr = "bash ${screenSpider}"
+                                        def retrieveFileSize = "${cmdStr}".execute()
+					if(verb > 1){
+                                                logDate = new Date()
+                                                logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+                                        }
+                                        retrieveFileSize.waitFor()
+                                        cmdStr = "rm ${fileSizeScript} &> /dev/null"
+                                        def delSzCrProc = "${cmdStr}".execute()
+                                        if(verb > 1){
+                                                logDate = new Date()
+                                                logFile <<  "${logDate} ${predictionInstance.accession_id} v2 - \"${cmdStr}\"\n"
+                                        }
+                                        delSzCrProc.waitFor()
 					content = new File("${projectDir}/estFileSize").text
 					st = new Scanner(content)//works for exactly one number in a file
 					def long est_size;
