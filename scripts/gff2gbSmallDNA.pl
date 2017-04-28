@@ -6,6 +6,7 @@
 # the DNA only flanking a gene and not the whole sequence
 #
 # Mario Stanke, 18.09.2006
+# Last modified by Katharina J. Hoff on April 28th 2017
 
 use strict;
 use Getopt::Long;
@@ -19,6 +20,7 @@ $usage .= "--good=goodfile  Specify a file with gene names. Only these genes are
 $usage .= "                 from the input, also for overlap detection.\n";
 $usage .= "--overlap        Overlap filtering turned off.\n";
 $usage .= "--connected      Do not cut a sequence into gene-pieces anymore.\n";
+$usage .= "--softmasked     Keep softmasking information from intput sequence\n";
 $usage .= "\n";
 
 if ($#ARGV < 3) {
@@ -28,11 +30,11 @@ if ($#ARGV < 3) {
 my $badfilename = "";
 my $exceptionfilename = "";
 my $exceptiontype = "";
-my ($overlap, $good, $bad, $connected);
+my ($overlap, $good, $bad, $connected, $softmasked);
 my %exceptionlist=();
 my $num_ambig_utr_mgs = 0;
 
-GetOptions( 'good=s' => \$good, 'bad=s' => \$bad, 'overlap!' => \$overlap, 'connected!' => \$connected);
+GetOptions( 'good=s' => \$good, 'bad=s' => \$bad, 'overlap!' => \$overlap, 'connected!' => \$connected, 'softmasked!' => \$softmasked);
 
 my $gfffilename = $ARGV[0];
 my $seqfilename = $ARGV[1];
@@ -510,18 +512,19 @@ sub printseq {
 
     my $seq = shift;
     my $length = shift;
+    if(not($softmasked)){
+	$seq =~ s/A/a/g;
+	$seq =~ s/C/c/g;
+	$seq =~ s/G/g/g;
+	$seq =~ s/T/t/g;
+	$seq =~ s/N/n/g;
+    }
+    $an = $seq =~ s/a/a/gi;
+    $cn = $seq =~ s/c/c/gi;
+    $gn = $seq =~ s/g/g/gi;
+    $tn = $seq =~ s/t/t/gi;
+    $nn = $seq =~ s/n/n/gi;
 
-    $seq =~ s/A/a/g;
-    $seq =~ s/C/c/g;
-    $seq =~ s/G/g/g;
-    $seq =~ s/T/t/g;
-    $seq =~ s/N/n/g;
-
-    $an = $seq =~ s/a/a/g;
-    $cn = $seq =~ s/c/c/g;
-    $gn = $seq =~ s/g/g/g;
-    $tn = $seq =~ s/t/t/g;
-    $nn = $seq =~ s/n/n/g;
     $rest = $length - $an - $cn - $gn - $tn -$nn;
     print OUTPUT "BASE COUNT     $an a   $cn c  $gn g   $tn t";
     if ($nn>0) {
