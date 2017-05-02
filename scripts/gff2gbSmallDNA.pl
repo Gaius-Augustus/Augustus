@@ -518,13 +518,24 @@ sub printseq {
 	$seq =~ s/G/g/g;
 	$seq =~ s/T/t/g;
 	$seq =~ s/N/n/g;
+	$an = $seq =~ s/a/a/g;
+	$cn = $seq =~ s/c/c/g;
+	$gn = $seq =~ s/g/g/g;
+	$tn = $seq =~ s/t/t/g;
+	$nn = $seq =~ s/n/n/g;
+    }else{
+	$an = $seq =~ s/a/a/g;
+	$an += $seq =~ s/A/A/g;
+	$cn = $seq =~ s/c/c/g;
+	$cn += $seq =~ s/C/C/g;
+	$gn = $seq =~ s/g/g/g;
+	$gn += $seq =~ s/G/G/g;
+	$tn = $seq =~ s/t/t/g;
+	$tn += $seq =~ s/T/T/g;
+	$nn = $seq =~ s/n/n/g;
+	$nn += $seq =~ s/N/N/g;
     }
-    $an = $seq =~ s/a/a/gi;
-    $cn = $seq =~ s/c/c/gi;
-    $gn = $seq =~ s/g/g/gi;
-    $tn = $seq =~ s/t/t/gi;
-    $nn = $seq =~ s/n/n/gi;
-
+    
     $rest = $length - $an - $cn - $gn - $tn -$nn;
     print OUTPUT "BASE COUNT     $an a   $cn c  $gn g   $tn t";
     if ($nn>0) {
