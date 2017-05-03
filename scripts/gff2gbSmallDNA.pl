@@ -20,7 +20,8 @@ $usage .= "--good=goodfile  Specify a file with gene names. Only these genes are
 $usage .= "                 from the input, also for overlap detection.\n";
 $usage .= "--overlap        Overlap filtering turned off.\n";
 $usage .= "--connected      Do not cut a sequence into gene-pieces anymore.\n";
-$usage .= "--softmasked     Keep softmasking information from intput sequence\n";
+$usage .= "--softmasked     Keep softmasking information from input sequence\n";
+$usage .= "--hardmask       Convert softmasking information from input sequence to hardmasking in output file\n";
 $usage .= "\n";
 
 if ($#ARGV < 3) {
@@ -30,11 +31,11 @@ if ($#ARGV < 3) {
 my $badfilename = "";
 my $exceptionfilename = "";
 my $exceptiontype = "";
-my ($overlap, $good, $bad, $connected, $softmasked);
+my ($overlap, $good, $bad, $connected, $softmasked, $hardmask);
 my %exceptionlist=();
 my $num_ambig_utr_mgs = 0;
 
-GetOptions( 'good=s' => \$good, 'bad=s' => \$bad, 'overlap!' => \$overlap, 'connected!' => \$connected, 'softmasked!' => \$softmasked);
+GetOptions( 'good=s' => \$good, 'bad=s' => \$bad, 'overlap!' => \$overlap, 'connected!' => \$connected, 'softmasked!' => \$softmasked, 'hardmask' => \$hardmask);
 
 my $gfffilename = $ARGV[0];
 my $seqfilename = $ARGV[1];
@@ -512,6 +513,9 @@ sub printseq {
 
     my $seq = shift;
     my $length = shift;
+    if($hardmask){
+	$seq =~ s/[actg]/N/g;
+    }
     if(not($softmasked)){
 	$seq =~ s/A/a/g;
 	$seq =~ s/C/c/g;
