@@ -6,7 +6,7 @@
 # the DNA only flanking a gene and not the whole sequence
 #
 # Mario Stanke, 18.09.2006
-# Last modified by Katharina J. Hoff on April 28th 2017
+# Last modified by Katharina J. Hoff on May 3rd 2017
 
 use strict;
 use Getopt::Long;
