@@ -115,6 +115,7 @@ int Constant::oeExtensionWidth;
 bool Constant::computeNumSubs; // cumpute number of substitutions in OE
 bool Constant::useAArates;
 bool Constant::useNonCodingModel;
+bool Constant::rescaleBoni = true;
 // moved here from hints.cc
 const int power2id[31] = {1,2,4,8,16,32,64,128,
 			   256,512,1024,2048,4096,8192,16384,32768,
@@ -387,6 +388,11 @@ void Constant::init(){
       useNonCodingModel = false;
     }
 
+    try {
+      rescaleBoni =  Properties::getBoolProperty("rescaleBoni");
+    } catch(...){
+      rescaleBoni = true;
+    }
 
 
     Properties::assignProperty("/UtrModel/d_polyasig_cleavage", d_polyasig_cleavage);

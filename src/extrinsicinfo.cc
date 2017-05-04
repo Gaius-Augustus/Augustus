@@ -1740,7 +1740,8 @@ void SequenceFeatureCollection::prepare(AnnoSequence *annoseq, bool print, bool 
     determineInterGroupRelations();
     sortFeatureLists();
     computeIndices();
-    rescaleBoniByConformance();
+    if (Constant::rescaleBoni)
+       rescaleBoniByConformance();
     findGroupGaps();
     //cleanRedundantFeatures();
     if (print) {

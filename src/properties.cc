@@ -249,6 +249,7 @@ EXTERNAL_KEY, // optCfgFile
 "proteinprofile",
 "referenceFile",
 "refSpecies",
+"rescaleBoni",
 "rLogReg",
 "sample",
 "scorediffweight", // temp

@@ -340,6 +340,7 @@ public:
     static bool computeNumSubs;
     static bool useAArates;
     static bool useNonCodingModel;
+    static bool rescaleBoni;
 };
 
 

@@ -129,7 +129,7 @@ of custom tracks</tt></span>.
 </div><br>
 
 The lazy ones can look at the result by clicking this link to a previously
-<a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://augustus.gobics.de/tutorial/customtracks/abinitio.browser" target="_blank">prepared custom track</a>.
+<a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://bioinf.uni-greifswald.de/augustus/binaries/tutorial/results/abinitio.browser" target="_blank">prepared custom track</a>.
 
 <h2 id="prephints">3. PREPARE HINTS</h2>
 
@@ -203,7 +203,7 @@ cat est.f.psl >> ests.browser
 gzip ests.browser
 </pre>
 
-<p>You can now <span class="assignment">upload <span class="result"><tt>ests.browser.gz</tt></span> as another custom track</span> or <span class="assignment">click on this <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://augustus.gobics.de/tutorial/customtracks/ests.browser.gz" target="_blank">prepared custom track</a></span></p>
+<p>You can now <span class="assignment">upload <span class="result"><tt>ests.browser.gz</tt></span> as another custom track</span> or <span class="assignment">click on this <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://bioinf.uni-greifswald.de/augustus/binaries/tutorial/results/ests.browser.gz" target="_blank">prepared custom track</a></span></p>
 
 Next, <span class="assignment">generate hints from the EST alignments</span>:
 
@@ -240,12 +240,12 @@ contains likely intron positions, inferred from gaps in the query of the read al
 counts the number of alignments that support the given intron candidate, if there is more than one.</li>
 </ol>
 
-In this <a href="http://augustus.gobics.de/binaries/readme.rnaseq.html">readme
+In this <a href="http://bioinf.uni-greifswald.de/augustus/binaries/readme.rnaseq.html">readme
 about AUGUSTUS in the RGASP assessment</a> a method is described that would produce two such files. TopHat is a spliced read mapper for RNA-Seq that also produces 
 a coverage grap and reports introns with their multiplicity.
  
 <p>
-<span class="assignment">Upload the file <tt>chr2R.7M-8M.wig</tt> as a UCSC custom track</span> (<tt>gzip</tt>ing would speed up upload) or <span class="assignment">click on this <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://augustus.gobics.de/tutorial/customtracks/chr2R.7M-8M.wig.gz" target="_blank">prepared custom track</a></span>.</p>
+<span class="assignment">Upload the file <tt>chr2R.7M-8M.wig</tt> as a UCSC custom track</span> (<tt>gzip</tt>ing would speed up upload) or <span class="assignment">click on this <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://bioinf.uni-greifswald.de/augustus/binaries/tutorial/data/chr2R.7M-8M.wig.gz" target="_blank">prepared custom track</a></span>.</p>
 
 <p><span class="assignment">Generate hints about exonic regions from the coverage graph</span> (wig file):
 
@@ -417,6 +417,6 @@ grep -P "AUGUSTUS\t(CDS|exon)" augustus.hints.gff >> withhints.browser
 In the last line we are filering out from the predictions just the lines specifying exons and CDS. The additional exon lines identify the UTR (if you used <tt>fly</tt>)
 by subtracting the CDS ranges.
 
-<p>Again, you may also just click on this like to a <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://augustus.gobics.de/tutorial/customtracks/withhints.browser" target="_blank">prepared custom track</a> with the preditions.</p>
+<p>Again, you may also just click on this like to a <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=dm3&hgt.customText=http://bioinf.uni-greifswald.de/augustus/binaries/tutorial/results/withhints.browser" target="_blank">prepared custom track</a> with the preditions.</p>
 
 </body></html>
