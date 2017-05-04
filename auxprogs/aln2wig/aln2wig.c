@@ -29,7 +29,7 @@ typedef char** stringArray;
 #define SHRIMP_CHROM_LENGTH 250000000
 #define START_TOKEN_SIZE 128
 #define SIZE_TOKEN_SIZE 128
-#define TOKEN_SIZE 512
+#define TOKEN_SIZE 4096
 
 
  /* chomp */
@@ -50,7 +50,7 @@ int strtoken(char ***target, char *in, char sep) {
 	int si = 0;
 	char **out = *target;
 
- 	while (in[i] != '\0') 
+ 	while (in[i] != '\0') /* && i < TOKEN_SIZE)*/
 	{
 		if (in[i] != sep) 
 		{
