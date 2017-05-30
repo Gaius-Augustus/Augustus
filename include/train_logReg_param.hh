@@ -33,7 +33,13 @@ public:
   train_data(unordered_map<string, pair<int, vector<double> > > *samples, unordered_map<string,int> *ref_class, int numSp);
   vector<pair<int, vector<double> > > *exon_samples;
   vector<pair<int, vector<double> > > *intron_samples;
-    int num_features;
+  int num_features;
+  int prob_true_false_exons;
+  int prob_true_false_introns;
+  vector<int> exon_feature_idx;
+  vector<int> intron_feature_idx;
+  void set_mean_std(vector<pair<int, vector<double> > > *samples, vector<int> feature_idx);
+
 };
 
 double activation_f(const gsl_vector *theta, vector<double> *f);
