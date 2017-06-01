@@ -221,12 +221,11 @@ void PhyloTree::recursiveNWK(ofstream &file, Treenode *node) const {
 	    recursiveNWK(file,*it);
 	}
 	if(node->isRoot()){
-	    file<<");";
+	    file<<")"<<node->getSpecies()<<";";
 	}
 	else{
-	    file<<"):"<<node->getDist();
-	}
-	    
+	    file<<")"<<node->getSpecies()<<":"<<node->getDist();
+	}    
     }
 }
 

@@ -56,7 +56,7 @@ private:
     std::vector<double> table;
  
 public:  
-    Treenode(std::string s="i", double t=0.0, int i=-1, Treenode *p=NULL):
+    Treenode(std::string s="", double t=0.0, int i=-1, Treenode *p=NULL):
 	species(s),
 	distance(t),
 	idx(i),
@@ -66,6 +66,7 @@ public:
     {}
     ~Treenode(){}
     void addDistance(double dist){this->distance=dist;}
+    void addSpecies(string s){this->species=s;}
     void addChild(Treenode *child); 
     void removeChild(Treenode *child){children.remove(child);}
     void makeRoot();

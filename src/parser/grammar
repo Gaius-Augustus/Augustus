@@ -18,7 +18,7 @@ type of semantic value of non-terminal symbols
 /*
 tokens: terminal symbols, which the scanner returns, need to be in upper case letters
 */
-%token DISTANCE SPECIES NUM BEGIN END TRANSLATE TREE
+%token DISTANCE SPECIES NUM BEGIN END TRANSLATE TREE ANC
 
 /*
 nonterminal symbols, need to be in lower case letters
@@ -98,6 +98,18 @@ subtree:
     {	
 	ptree->push_back($2);
 	$$ = $2;
+    }
+|   
+    '('
+    branchset
+    ANC
+    {
+     	Treenode *temp = new Treenode(d_scanner.matched().substr(1,d_scanner.matched().size()-1), 0.00000001);
+	ptree->push_back(temp);
+ 	pspecies->push_back(temp->getSpecies());
+	$2->addChild(temp);
+	ptree->push_back($2);
+        $$ = $2;
     }
 ;
 
