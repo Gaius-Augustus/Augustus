@@ -32,6 +32,7 @@ class Parser: public ParserBase
         void errorRecovery();
         int lookup(bool recovery);
         void nextToken();
+	void print__();
 };
 
 inline void Parser::error(char const *msg)
