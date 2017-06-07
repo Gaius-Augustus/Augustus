@@ -10,7 +10,7 @@
  6. RETRIEVING GENOMES FROM A MYSQL DATABASE
  7. USING HINTS
  8. SQLITE ACCESS
- 9. OPTIMIZING CGP PARAMETERS
+ 9. TRAINING OF CLADE-SPECIFIC PARAMETERS (USUALLY NOT REQUIRED!!!)
 10. BUILDING THE NEWICK PARSER FROM SCRATCH
     (not needed unless you run into compiler errors related to 'parse.cc' or 'lex.cc')
 11. TRAINING CGP SCORE PARAMETERS 
@@ -515,11 +515,19 @@ c) running AUGUSUTS with SQLite db access:
    > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
 
 
-9. OPTIMIZING CGP PARAMETERS
--------------------------------
+9. TRAINING OF CLADE-SPECIFIC PARAMETERS (USUALLY NOT REQUIRED!!!)
+------------------------------------------------------------------
 
-The parameters specific to comparative gene prediction can be automatically optimized
-similar to the meta parameters in single species gene prediction using the script 'optimize_augustus.pl'.
+Clade-specific parameters include the rates for exon gain and loss
+
+--/CompPred/exon_loss=r
+--/CompPred/exon_loss=r
+
+as well as the scaling factor
+
+--/CompPred/phylo_factor=f
+
+If necessary, these parameters can be optimized similar to the meta parameters in single species gene prediction using the script 'optimize_augustus.pl'.
 In short, a range of parameter values is specified for each parameter in a config file with the extension _metapars.cgp.cfg (e.g. human_metapars.cgp.cfg).
 Different values in these ranges are tried out in several rounds and values giving highest accuracy are chosen.
 In the evaluation step, the external program Eval¹ and a reference gene set are required.
@@ -549,7 +557,7 @@ b) Running optimize_augustus.pl for cgp parameter training
 
    exampe code: 
 
-   > optimize_augustus.pl --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl --eval_against=hg19 --stopCodonExcludedFromCDS=1 eval.gtf
+   > optimize_augustus.pl --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=db.vertebrates --speciesfilenames=genomes.tbl --eval_against=hg19 --stopCodonExcludedFromCDS=1 eval.gtf
    
    the file eval.gtf contains a reference gene set for the human genome that is used for evaluation
 
@@ -640,3 +648,4 @@ The trained parameters are written to the file params.cfg. After training, run a
  > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl --optCfgFile=params.cfg 
 
 If --param_outfile is not specified parameters will be written to $AUGUSTUS_CONFIG_PATH/cgp/log_reg_parameters_trained.cfg. Of course the genomes can also be stored in mySQL or SQLite databases. Adjust the commands accordingly.
+
