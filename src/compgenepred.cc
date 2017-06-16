@@ -33,12 +33,18 @@
 
 CompGenePred::CompGenePred() : tree(Constant::treefile) {
 
+    rsa = NULL;
     vector<string> speciesNames;
     tree.getSpeciesNames(speciesNames);
     cout<<"-------Speciesnames:--------"<<endl;
     for(int j=0; j<speciesNames.size(); j++){
       cout<<"species "<<j<<"\t"<<speciesNames[j]<<endl;
     }
+
+    if (Properties::hasProperty("trainFeatureFile")) {
+      trainFeature_from_file();
+      train_OEscore_params(speciesNames.size());
+    } else {
 
     if (Constant::Constant::dbaccess.empty()) { // give priority to database in case both exist
         rsa = new MemSeqAccess(speciesNames);
@@ -72,9 +78,15 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
         --dbaccess=dbname.db\n");
 	}
     }
+    }
 }
 
 void CompGenePred::start(){
+
+
+  // check if training mode is turned on and logreg features shall be read from file
+  
+  if(!Properties::hasProperty("trainFeatureFile")){
 
     // read in alignment, determine orthologous sequence fragments
 
@@ -95,6 +107,8 @@ void CompGenePred::start(){
     OrthoGraph::tree = &tree;
     GeneMSA::setTree(&tree);
     OrthoGraph::numSpecies = OrthoGraph::tree->numSpecies();
+    vector<string> speciesNames;
+    OrthoGraph::tree->getSpeciesNames(speciesNames);    
     Boolean noprediction = false;
     Boolean useLocusTrees = false; // reestimate tree for each gene range
 
@@ -368,8 +382,6 @@ void CompGenePred::start(){
     // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
     // printCodonMatrix(P);
     GeneMSA::setCodonEvo(&codonevo);
-    vector<string> speciesNames;
-    OrthoGraph::tree->getSpeciesNames(speciesNames);
     GenomicMSA msa(rsa);
     msa.readAlignment(Constant::alnfile);  // reads the alignment
     // msa.printAlignment("");    
@@ -579,16 +591,11 @@ void CompGenePred::start(){
 	delete topit->second;
     }                                                                                                                                                              
     GeneMSA::topologies.clear(); 
-
-    
+  
     if(Properties::hasProperty("referenceFile")){
       // initialise training of log reg parameters
-      unordered_map<string,int> ref_class;
-      reference_from_file(&ref_class);
-
-      train_data data(&Constant::logReg_feature, &ref_class, speciesNames.size());
-      optimize_parameters(&data);
+      train_OEscore_params(speciesNames.size());
     }
-
+  } 
 }
 

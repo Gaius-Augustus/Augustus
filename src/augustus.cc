@@ -118,6 +118,9 @@ int main( int argc, char* argv[] ){
 	setParameters(); // NOTE: need Constant and GeneticCode to be initialised first
 	StateModel::init();   // set global parameters of state models	  
 
+	if(Properties::hasProperty("trainFeatureFile"))
+	  Constant::MultSpeciesMode = true;
+
 	if (Constant::MultSpeciesMode){
 #ifdef COMPGENEPRED
 	    clock_t start;

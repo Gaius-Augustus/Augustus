@@ -484,6 +484,10 @@ void SpeciesGraph::printSampledGF(Status *st, double score){
     cout << "\tName=" << (string)stateTypeIdentifiers[((State*)st->item)->type] <<";postProb="<< st->getPostProb() << ";avgBaseProb=" <<getAvgBaseProb(st)<< endl;
     cout.rdbuf(coutbuf); //reset to standard output again 
 
+    /*
+     * this is done when augustus is run in training mode (features of sampled exons and introns are collected)
+     */
+
     if(Properties::hasProperty("referenceFile") && speciesname == Constant::refSpecies && (stateNameIdentifiers[st->name] == "CDS" || stateNameIdentifiers[st->name] == "intron") ){
       if(stateNameIdentifiers[st->name] == "intron" && st->getPostProb() == 0)
 	return;
@@ -505,7 +509,7 @@ void SpeciesGraph::printSampledGF(Status *st, double score){
       
       string k = key.str();
       //      cout << "sampled_GFs: " << k << endl;
-      unordered_map<string, pair<int, vector<double> > >::const_iterator got = Constant::logReg_feature.find(k);
+      unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(k);
       if ( got == Constant::logReg_feature.end() ){
 	vector<double> feature(10,0);
 	feature[0] = st->end - st->begin + 1; // exon length
@@ -516,6 +520,9 @@ void SpeciesGraph::printSampledGF(Status *st, double score){
 	pair<string, pair<int, vector<double> > > entry;
 	entry = make_pair(k, p);
 	Constant::logReg_feature.insert(entry);
+      }else{
+	got->second.second[1] = st->getPostProb();  // posterior probability
+	got->second.second[2] = getAvgBaseProb(st); // average base score
       }
     }
 

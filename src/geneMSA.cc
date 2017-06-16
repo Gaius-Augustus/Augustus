@@ -655,13 +655,13 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
 	key << (*ecit)->begin + offsets[species] + 1 << "\t" << (*ecit)->end + offsets[species] + 1 << "\t";
       } else {
 	int chrLen = rsa->getChrLen(species, getSeqID(species));
-	key << chrLen - ((*ecit)->end + offsets[species]) << "\t" << chrLen - ((*ecit)->begin+ offsets[species]) << "\t" << (*ecit)->score << "\t";
+	key << chrLen - ((*ecit)->end + offsets[species]) << "\t" << chrLen - ((*ecit)->begin+ offsets[species]) << "\t";
       }
       key << ((isPlusExon((*ecit)->type) == (getStrand(species) == plusstrand))? '+' : '-');
       key << "\t" << (*ecit)->gff3Frame();
       
       string k = key.str();
-      //      cout << "EC: " << k << endl;
+      //cout << "EC: " << k << endl;
       unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(k);
       if ( got == Constant::logReg_feature.end() ){
 	vector<double> feature(10,0);

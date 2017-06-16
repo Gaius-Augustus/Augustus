@@ -52,5 +52,8 @@ void rob_cross_entropy_error_df(const gsl_vector *theta, void *features, gsl_vec
 void rob_cross_entropy_error_fdf(const gsl_vector *params, void *features, double *f, gsl_vector *df);
 void optimize_parameters(train_data *data);
 void reference_from_file(unordered_map<string,int> *ref_class);
+void trainFeature_from_file();
+void train_OEscore_params(int numSpecies);
+
 
 #endif
