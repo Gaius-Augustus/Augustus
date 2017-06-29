@@ -501,7 +501,7 @@ void SpeciesGraph::printSampledGF(Status *st, double score){
       }
       key << "\t" << (((isOnFStrand(type) || type == intron_type) == (strand == plusstrand))? '+' : '-');
       if(!st->isCDS()) // frame
-        key << "\t0";
+        key << "\t.";
       else if (isOnFStrand(type))
         key << "\t" << mod3(3-(st->getFrame() - st->getLen()));
       else

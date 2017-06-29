@@ -22,7 +22,7 @@
 #include "train_logReg_param.hh"
 
 int num_species;
-int prob_true_false;
+double prob_true_false;
 vector<double> mean;
 vector<double> se;
 
@@ -63,6 +63,8 @@ train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, un
     s->erase(samp);
   }
   cout << "# " << numExonRef << " reference exon samples and " << numIntronRef << " reference intron samples in training set." << endl;
+  cout << "# " << exon_samples->size() << " exon and " << intron_samples->size() << " intron candidates are used for training." << endl;
+
   int num_samples = exon_samples->size();
   for(int i=0; i<num_samples-1; i++){
     try{
@@ -85,9 +87,9 @@ train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, un
   exon_feature_idx   = {0,0,0,1,1,1,1,1,1,1,1,1,0,1,1};
   intron_feature_idx = {0,0,0,1,1,1,0,0,0,0,0,0,0,0,0};
 
-  prob_true_false_exons =  numExonRef / exon_samples->size();
-  prob_true_false_introns = numIntronRef / intron_samples->size();
-
+  prob_true_false_exons = (double) numExonRef / exon_samples->size();
+  prob_true_false_introns = (double) numIntronRef / intron_samples->size();
+  prob_true_false = 1;
   
   cout << "exon samples:" << endl << "class\t";
   for(int i=0; i<10;i++)
@@ -333,6 +335,7 @@ void optimize_parameters(train_data *data){
   gsl_vector_set_all(theta, 0);
   
   // random allocation
+  srand(time(NULL));
   cout << "random theta: ";
   for(int i =0; i<n; i++){
     double r = ( (double) rand() / RAND_MAX );
@@ -418,12 +421,20 @@ void optimize_parameters(train_data *data){
 
   // intron parameter optimization
   CE_error_f.params = (void *)data->intron_samples;
-  if(Constant::rLogReg)
+ 
+  bool useTFprob;
+  try{
+    useTFprob = Properties::getBoolProperty("useTFprob");
+  } catch(...){
+    useTFprob = 0;
+  }
+  if(Constant::rLogReg && useTFprob)
     prob_true_false = data->prob_true_false_introns;
 
   gsl_vector_set_all(theta, 0);
 
   // random allocation
+  srand(time(NULL));
   for(int i =0; i<n; i++){
     double r = ( (double) rand() / RAND_MAX );
     gsl_vector_set(theta, i, r);

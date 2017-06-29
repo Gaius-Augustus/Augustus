@@ -34,8 +34,8 @@ public:
   vector<pair<int, vector<double> > > *exon_samples;
   vector<pair<int, vector<double> > > *intron_samples;
   int num_features;
-  int prob_true_false_exons;
-  int prob_true_false_introns;
+  double prob_true_false_exons;
+  double prob_true_false_introns;
   vector<int> exon_feature_idx;
   vector<int> intron_feature_idx;
   void set_mean_std(vector<pair<int, vector<double> > > *samples, vector<int> feature_idx);
