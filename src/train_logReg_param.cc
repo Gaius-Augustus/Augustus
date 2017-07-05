@@ -91,7 +91,7 @@ train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, un
   prob_true_false_introns = (double) numIntronRef / intron_samples->size();
   prob_true_false = 1;
   
-  cout << "exon samples:" << endl << "class\t";
+  /*  cout << "exon samples:" << endl << "class\t";
   for(int i=0; i<10;i++)
     cout << i << "\t";
   cout << endl;
@@ -114,7 +114,7 @@ train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, un
     }
     cout << endl;
   }
- 
+  */
 
 }
 
@@ -163,8 +163,6 @@ double activation_f(const gsl_vector *theta, vector<double> *f){
     //    cout << "f" << i << ":" << setw(10) << gsl_vector_get(theta, i) << ":" << get_feature(f, i) << "(" << ( (get_feature(f, i) - mean[i]) / se[i] ) << ")\t"; 
   }
   //cout << endl;
-  if(theta_x < -700) // work around to avoid nummerical problems when calculating exp(-theta_x)
-    theta_x = -700;
   
   return theta_x;
 }
@@ -606,7 +604,7 @@ void reference_from_file(unordered_map<string,int> *ref_class){
       stringstream str;
       str << type << "\t" << chr << "\t" << startPos<< "\t" << endPos << "\t" << strand << "\t" << frame;
       string key = str.str();
-      cout << "ref_feature: " << key << endl;
+      //cout << "ref_feature: " << key << endl;
       pair<string, int> k(key,1);
       ref_class->insert(k);
     }
