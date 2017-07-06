@@ -686,7 +686,7 @@ void join(list<Transcript*> &overlap, char side, Properties &properties){
 		eraseExon = true;
 	      }
 	      if (eraseExon){
-		temp.exon_list.erase(iti);
+		iti = temp.exon_list.erase(iti);
 		iti--;
 	      }
 	    }
@@ -696,7 +696,7 @@ void join(list<Transcript*> &overlap, char side, Properties &properties){
 		eraseExon = true;
 	      }
 	      if (eraseExon){
-		tempD.exon_list.erase(iti);
+		iti = tempD.exon_list.erase(iti);
 		iti--;
 	      }
 	    }
@@ -727,7 +727,7 @@ void join(list<Transcript*> &overlap, char side, Properties &properties){
 		break;
 	      }
 	      lastFeature = (*iti).feature;
-	      temp.exon_list.erase(iti);
+	      iti = temp.exon_list.erase(iti);
 	      iti--;
 	    }
 	    lastFeature = "";
@@ -736,7 +736,7 @@ void join(list<Transcript*> &overlap, char side, Properties &properties){
 		break;
 	      }
 	      lastFeature = (*iti).feature;
-	      tempD.exon_list.erase(iti);
+	      iti = tempD.exon_list.erase(iti);
 	      iti--;
 	    }
 	    if ((*it)->strand == '+'){
@@ -1602,7 +1602,7 @@ list<Transcript*> calcGeneStructur(list<Transcript*> overlap, Properties &proper
       newOvlp.push_back(*it);
       for (list<string>::iterator iti = openTx.begin(); iti != openTx.end(); iti++){
 	if ((find((*it)->consistent.begin(), (*it)->consistent.end(), (*iti)) == (*it)->consistent.end())){
-	  openTx.erase(iti);
+	  iti = openTx.erase(iti);
 	  iti--;
 	}
       }
