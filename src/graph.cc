@@ -773,7 +773,6 @@ void AugustusGraph::calculateBaseScores(){
 double AugustusGraph::setScore(Status *st){
   
   if(Constant::logreg){
-      cerr << "logreg is TRUE" << endl;
     if(st->name >= CDS && st->name < intron){
       return (   Constant::lg_es[0]
 	       + Constant::lg_es[1] * st->score
