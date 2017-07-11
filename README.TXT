@@ -111,7 +111,7 @@ Aspergillus fumigatus, Aspergillus nidulans, Aspergillus oryzae, Aspergillus ter
 , Phanerochaete chrysosporium, Pichia stipitis, Rhizopus oryzae, Saccharomyces cerevisiae, Schizosaccharomyces pombe, Ustilago maydis
 , Yarrowia lipolytica.
 
-The training for lamprey (Petromyzon marinus) was performed by Falk Hildebrand and Shigehiro Kuraku, based on the
+The training for 'sealamprey' (Petromyzon marinus) was performed by Falk Hildebrand and Shigehiro Kuraku, based on the
 genome assembly (PMAR3.0) provided by the Genome Sequencing Center at Washington University School of Medicine (WUGSC)
 in St. Louis. The training is described in: "Molecular Evolution in the Lamprey Genomes and Its Relevance to the Timing of Whole Genome Duplications"
 T. Manousaki, H. Qiu, M. Noro, F. Hildebrand, A. Meyer and S. Kuraku in 'Jawless Fishes of the World, Volume 1', Cambridge Scholars Publishing
@@ -119,6 +119,7 @@ http://www.cambridgescholars.com/jawless-fishes-of-the-world
 
 The training for elephant shark (Callorhinchus milii) was performed by Tereza Manousaki and Shigehiro Kuraku, based on the genome assembly
 (made up of 1.4x whole genome shotgun reads) available at http://esharkgenome.imcb.a-star.edu.sg/resources.html.
+The training for 'japaneselamprey' (Lethenteron japonicum or Lethenteron camtschaticum) was performed by Shigehiro Kuraku.
 
 The training for Pneumocystis jirovecii was performed by Marco Pagni, Philippe Hauser et al as described in Hauser PM, Burdet FX, Cissé OH,
 Keller L, Taffé P, Sanglard D, Pagni M., Comparative Genomics Suggests that the Fungal Pathogen Pneumocystis Is an Obligate Parasite

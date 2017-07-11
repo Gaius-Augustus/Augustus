@@ -37,7 +37,7 @@ release:
 	cd config/species; rm -rf tobacco xeno1 bombus_terrestris{1,3} symsag xenoturbella meara pavar newest elegans maker2_* lizard
 	rm generic/*.pbl
 	cd src/parser; rm Makefile; cd -
-	tar -czf ../augustus-$(AUGVERSION).tar.gz .
+	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus
 
 # remove -static from src/Makefile for MAC users
 # remove -g -gdb from CXXFLAGS

@@ -10,8 +10,8 @@ PROGRAM = bam2wig
 SOURCES = $(PROGRAM)
 OBJECTS = $(SOURCES:.c=.o)
 TOOLDIR=/home/mario/tools
-SAMTOOLS=$(TOOLDIR)/samtools-1.3.1/
-HTSLIB=$(TOOLDIR)/htslib-1.3.2/
+SAMTOOLS=$(TOOLDIR)/samtools/
+HTSLIB=$(TOOLDIR)/htslib/
 BCFTOOLS=$(TOOLDIR)/bcftools-1.2/
 TABIX=$(TOOLDIR)/tabix/
 INCLUDES=-I$(SAMTOOLS) -I. -I$(HTSLIB) -I$(BCFTOOLS) -I$(TABIX)
