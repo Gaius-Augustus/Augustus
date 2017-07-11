@@ -637,15 +637,43 @@ d) recompilation of AUGUSTUS-cgp
 11. TRAINING CGP SCORE PARAMETERS 
 ---------------------------------
 
-To train the parameters used to score exon and intron candidates run AUGUSTUS as shown in the following example
+To train the parameters used to score exon and intron candidates you have two options:
+
+1)  if your training set (input alignment) is small, run AUGUSTUS as shown in the following example
 
  > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl --referenceFile=referenceFeature.gff --refSpecies=hg19 --param_outfile=params.cfg
 
 This command will not predict genes. Specifying a reference file with --referenceFile will make augustus train feature parameters used to score exon and intron candidates using reference coding exons (CDS) and introns provided by the reference file. referenceFeature.gff needs to be in gtf, gff or gff3 format. All lines with type "intron" or "CDS" are used for training. Other lines will be ignored. Note, that the program is case sensitive. Stop codons need to be included in terminal coding exons. Specify the reference species with --refSpecies. The reference species must be one of the clade species and is denoted by the identifier used in the tree or alignment file. intron and CDS features in referenceFeature.gff must be from the reference species. 
 
-The trained parameters are written to the file params.cfg. After training, run augustus in cgp mode with params.cfg as optional config file
+The trained parameters are written to the file params.cfg. 
+
+After training, run augustus in cgp mode with params.cfg as optional config file
 
  > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl --optCfgFile=params.cfg 
+
+If --param_outfile is not specified parameters will be written to $AUGUSTUS_CONFIG_PATH/cgp/log_reg_parameters_trained.cfg. Of course the genomes can also be stored in mySQL or SQLite databases. Adjust the commands accordingly.
+
+
+2) if option 1) takes to long you can parallelize the training by spliting the alignment file and run AUGUSTUS in parallel to collect all relevant attributes of all exon and intron candidates in the training set as follows
+
+ > mkdir run1 run2 ...
+ > for dir in run*; do
+     > augustus --species=human --treefile=tree.nwk --alnfile=$dir/aln.maf --speciesfilenames=genomes.tbl --exoncands=1 --/CompPred/outdir=$dir --outfile=$dir/aug.out --errfile=$dir/aug.err &
+ > done
+
+concatenate the following files after all jobs are done 
+
+ > cat run*/exonCands.refSpecies.gff3 run*/refSpecies.sampled_GFs.gff run*/orthoExons.refSpecies.gff3 > all_exon_intron_candidates.gff
+
+run AUGUSTUS again, now in training mode using all_exon_intron_candidates.gff (this is fast)
+
+ > augustus --species=human --treefile=tree.nwk --referenceFile=referenceFeature.gff --refSpecies=hg19 --trainFeatureFile=all_exon_intron_candidates.gff --param_outfile=params.cfg
+
+The trained parameters are written to the file params.cfg.
+
+After training, run augustus in cgp mode with params.cfg as optional config file
+
+ > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl --optCfgFile=params.cfg
 
 If --param_outfile is not specified parameters will be written to $AUGUSTUS_CONFIG_PATH/cgp/log_reg_parameters_trained.cfg. Of course the genomes can also be stored in mySQL or SQLite databases. Adjust the commands accordingly.
 
