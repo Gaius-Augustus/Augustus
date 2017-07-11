@@ -288,8 +288,13 @@ namespace PP {
 	                               // but we don't deal here with pseudocounts
     }; // class PP::Column
 
-
-
+    ostream& operator<<(ostream&, const Column&);
+    istream& operator>>(istream&, Column& c);
+    /* Without above two lines we get a compiler warning since C++14. 
+     * Reason found on http://en.cppreference.com/w/cpp/language/namespace:
+     * "Names introduced by friend declarations [...] do not become visible to lookup [...] unless a
+     * matching declaration is provided at namespace scope, either before or after the class definition."
+     */
     struct Position {
 	Position() :  b(-1), i(0) {}
 

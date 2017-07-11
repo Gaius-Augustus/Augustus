@@ -19,6 +19,7 @@
  **********************************************************************/
 
 #include "gene.hh"
+#include "mea.hh"
 
 // project includes
 #include "intronmodel.hh"  // for getD
@@ -2468,7 +2469,11 @@ void Gene::init() {
     Properties::assignProperty("print_blocks", Gene::print_blocks);
 }
 
-void filterGenePrediction(list<Transcript*> &gl, list<Transcript*> &filteredTranscripts, const char *seq, Strand strand, bool noInFrameStop, double minmeanexonintronprob, double minexonintronprob){
+/* filterGenePrediction
+ * noInFrameStop: no in-frame stop codons allowed
+ * return variable hasInFrameStop: whether at least one transcript has an in-frame stop codon
+ */
+void filterGenePrediction(list<Transcript*> &gl, list<Transcript*> &filteredTranscripts, const char *seq, Strand strand, bool noInFrameStop, bool &hasInFrameStop, double minmeanexonintronprob, double minexonintronprob){
     State *s;
     AnnoSequence *annoseq = new AnnoSequence();
     annoseq->sequence = newstrcpy(seq);
@@ -2484,8 +2489,16 @@ void filterGenePrediction(list<Transcript*> &gl, list<Transcript*> &filteredTran
 	// filter criteria that apply to coding genes only
 	// delete gene if the combined CDS is too short, unless a CDS exon is truncated
 	Gene *g = dynamic_cast<Gene *>(*git);
+        bool inFrameStop = g->hasInFrameStop(annoseq);
+        if (inFrameStop){
+            list<Transcript*> badTx;
+            badTx.push_back(*git);
+            list<Transcript*> mt = getMEAtranscripts(badTx, seq);
+            cerr << "replaced tx with " << mt.size() << " MEA txs" << endl;
+        }
+        hasInFrameStop |= inFrameStop;
 	if (g && ((g->clength < Constant::min_coding_len && g->completeCDS())
-		  || (g->hasInFrameStop(annoseq) && noInFrameStop)
+		  || (inFrameStop && noInFrameStop)
 		  || (g->clength < 4 && g->clength < Constant::min_coding_len && !g->completeCDS())))
 	    keep = false;
 

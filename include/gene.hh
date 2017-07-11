@@ -326,7 +326,7 @@ public:
 };
 
 
-void filterGenePrediction(list<Transcript*> &gl, list<Transcript*> &filteredTranscripts, const char *seq, Strand strand, bool noInFrameStop, double minmeanexonintronprob=0.0, double minexonintronprob=0.0);
+void filterGenePrediction(list<Transcript*> &gl, list<Transcript*> &filteredTranscripts, const char *seq, Strand strand, bool noInFrameStop, bool &hasInFrameStop, double minmeanexonintronprob=0.0, double minexonintronprob=0.0);
 
 /**
  * class Gene

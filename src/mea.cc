@@ -74,7 +74,7 @@ void getMEAtranscripts(list<Gene> *MEAtranscripts, Gene **sampledGeneStructures,
 
 list<Transcript*> &getMEAtranscripts(list<Transcript*> &alltranscripts, const char* dna){
     list<Transcript*> *meaGenes = new list<Transcript*>;
-
+    // static int i=0;
     if (!alltranscripts.empty()){
 
 	bool utr;
@@ -94,7 +94,7 @@ list<Transcript*> &getMEAtranscripts(list<Transcript*> &alltranscripts, const ch
 	AugustusGraph myGraph(&stlist, dna);
 	myGraph.buildGraph();
 
-	//myGraph.printGraph("test_graph.dot");
+	// myGraph.printGraph(string("test_graph.dot") + itoa(++i));
 
 	//find shortest path
 	MEApath path(&myGraph);

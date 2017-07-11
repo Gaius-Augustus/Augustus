@@ -917,16 +917,26 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   }
   /*
    * filter transcripts by probabilities, strand
-   */ 
-  filterGenePrediction(alltranscripts, *filteredTranscripts, dna, strand, noInFrameStop, minmeanexonintronprob, minexonintronprob);
+   */
+  bool hasInFrameStop = false;
+  filterGenePrediction(alltranscripts, *filteredTranscripts, dna, strand, noInFrameStop, hasInFrameStop,
+                       minmeanexonintronprob, minexonintronprob);
 
+#ifdef DEBUG
+  if (hasInFrameStop)
+      cerr << "have at least one gene with in-frame stop codon" << endl;
+  else
+      cerr << "have no gene with in-frame stop codon" << endl;
+#endif
+  
   // determine transcripts with maximum expected accuracy criterion
   if (Constant::MultSpeciesMode){
       // store alltranscripts in member variable of NAMGene
       setAllTranscripts(filteredTranscripts);
       agl = new list<AltGene>;
   } else if (mea_prediction){
-      agl = groupTranscriptsToGenes(getMEAtranscripts(*filteredTranscripts, dna));
+      list<Transcript*> mt = getMEAtranscripts(*filteredTranscripts, dna);
+      agl = groupTranscriptsToGenes(mt);
   } else { //filter transcripts by maximum track number 
       agl = groupTranscriptsToGenes(*filteredTranscripts);
   }

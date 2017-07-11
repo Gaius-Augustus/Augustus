@@ -1,3 +1,15 @@
+List of changes from version 3.2.2 to 3.3 (until July 11th, 2017)
+     - new program ESPOCA to estimate selective pressure on codon alignments
+     - gene finding on ancestral genomes is enabled
+     - new default parameters for comparative gene prediction (CGP)
+     - clade parameters training for CGP
+     - compatibility to Ian Fiddes' Comparative Annotation Toolkit (CAT)
+     - new scripts eval_dualdecomp.pl, gtf2bed.pl
+     - more tolerant tree parsing
+     - bugfixes in augustus, joingenes, load2sqlitedb, transMap2hints.pl, splitMfasta.pl, intron2exex.pl,
+       aln2wig
+     - new functionality in homGeneMapping, joingenes
+     - new species ciona, mnemiopsis_leidyi, nematostella_vectensis, strongylocentrotus_purpuratus
 List of changes from version 3.2.1 to 3.2.2 (until March 30th, 2016)
      - added extrinsic.M.RM.PB.cfg for PacBio CCS hints with GMAP
        (see http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.PacBioGMAP )

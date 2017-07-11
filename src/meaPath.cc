@@ -29,7 +29,8 @@ void MEApath::findMEApath(){
     (*node)->pred = NULL;
     nextNode:;
     }
-  //  graph->printGraph("/fs1.data/lizzy/species/tribolium/param_training/train_log/tmp_opt_triboliumMEA/MEA_graph.dot");
+  // static int i=0;
+  // graph->printGraph(string("/home/mario/temp/noSplicedStop/MEA_graph_path.dot") + itoa(++i));
 }
 
 /*

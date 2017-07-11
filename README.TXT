@@ -10,7 +10,7 @@
 %             Fon: +49 3834 864642                                                               %
 %             mario.stanke@uni-greifswald.de                                                     %
 %                                                                                                %
-%             Date: March 30th, 2016                                                             %
+%             Date: July 11th, 2017                                                              %
 %                                                                                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -43,7 +43,7 @@ Currently, AUGUSTUS has been trained for predicting genes in:
   - Brugia malayi (nematode),
   - Aedes aegypti (mosquito),
   - Coprinus cinereus (fungus),
-  - Tribolium castaneum (bug)
+  - Tribolium castaneum (beetle)
   - Schistosoma mansoni (worm)
   - Tetrahymena thermophila (ciliate)
   - Galdieria sulphuraria (red algae)
@@ -98,7 +98,11 @@ Currently, AUGUSTUS has been trained for predicting genes in:
   - Triticum aestivum (wheat)
   - Ancylostoma ceylanicum
   - Volvox carteri
-
+  - Mnemiopsis leidyi (Ctenophora)
+  - Nematostella vectensis (Cnidaria)
+  - Ciona intestinalis (Chordata)
+  - Strongylocentrotus purpuratus (Echinodermata)
+  
 The training annotation files of the following species are a courtesy of Jason Stajich (see also http://fungal.genome.duke.edu/): 
 Aspergillus fumigatus, Aspergillus nidulans, Aspergillus oryzae, Aspergillus terreus, Botrytis cinerea, Candida albicans
 , Candida guilliermondii, Candida tropicalis, Chaetomium globosum, Coccidioides immitis, Coprinus cinereus, Cryptococcus neoformans gattii
@@ -128,14 +132,16 @@ Parameters for camponotus_floridanus (ant) were contributed by Shishir K Gupta.
 
 Parameters for Apis dorsata were contributed by Francisco Camara Ferreira.
 
+Parameters for Mnemiopsis leidyi, Nematostella vectensis, Ciona intestinalis and Strongylocentrotus purpuratus were contributed by Joseph Ryan (University of Florida).
+
               2. INSTALLATION
               ---------------
 
 1. unpack
 
->tar -xzf augustus-3.2.2.tar.gz
+>tar -xzf augustus-3.3.tar.gz
 
-The tar-archive contains one directory 'augustus-3.1' with the following sub-directories:
+The tar-archive contains one directory 'augustus-3.3' with the following sub-directories:
 bin
 src
 include
