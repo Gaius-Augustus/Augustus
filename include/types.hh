@@ -147,8 +147,12 @@ tomato                                   | Solanum lycopersicum\n\
 chlamydomonas                            | Chlamydomonas reinhardtii\n\
 amphimedon                               | Amphimedon queenslandica\n\
 pea_aphid                                | Acyrthosiphon pisum\n\
+mnemiopsis_leidyi                        | Mnemiopsis leidyi\n\
+nematostella_vectensis                   | Nematostella vectensis\n\
+ciona                                    | Ciona intestinalis\n\
+strongylocentrotus_purpuratus            | Strongylocentrotus purpuratus\n\
 \n"
-
+  
 #define HELP_USAGE "usage:\n\
 augustus [parameters] --species=SPECIES queryfilename\n\
 \n\
