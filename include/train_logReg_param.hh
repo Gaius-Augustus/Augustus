@@ -54,6 +54,7 @@ void optimize_parameters(train_data *data);
 void reference_from_file(unordered_map<string,int> *ref_class);
 void trainFeature_from_file();
 void train_OEscore_params(int numSpecies);
-
+void sgd(vector<pair<int, vector<double> > > *samples, gsl_vector *theta, int n);
+void gsl_minimizer(vector<pair<int, vector<double> > > *samples, gsl_vector *theta, int n);
 
 #endif

@@ -1106,7 +1106,7 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree,
 	try {
 	  codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
 	  numCodons++;
-	  if(s == 0){
+	  if(s == refSpeciesIdx){
 	    refPos[codonIdx] = refCodonIdx;
 	    refCodonIdx++;
 	  }
@@ -1117,10 +1117,10 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree,
 	pruned_tr.drop(speciesnames[s]);
       }
     }
-    if(codontuple[0] == 64)
+    if(codontuple[refSpeciesIdx] == 64)
       aminoAcidsRef[codonIdx] = '-';
     else
-      aminoAcidsRef[codonIdx] = GeneticCode::translate(codontuple[0]);
+      aminoAcidsRef[codonIdx] = GeneticCode::translate(codontuple[refSpeciesIdx]);
     
     if (numCodons >= 2){
       numSubst[codonIdx] = pruned_tr.fitch(codontuple);

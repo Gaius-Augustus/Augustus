@@ -511,7 +511,7 @@ void SpeciesGraph::printSampledGF(Status *st, double score){
       //      cout << "sampled_GFs: " << k << endl;
       unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(k);
       if ( got == Constant::logReg_feature.end() ){
-	vector<double> feature(10,0);
+	vector<double> feature(14,0);
 	feature[0] = st->end - st->begin + 1; // exon length
 	feature[1] = st->getPostProb();       // posterior probability
 	feature[2] = getAvgBaseProb(st);      // average base score

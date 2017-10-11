@@ -334,6 +334,7 @@ public:
     static double GD_stepsize;
     static bool rLogReg;
     static double label_flip_prob;
+    static double lambda;
     #ifdef COMPGENEPRED
     static unordered_map<string, pair<int, vector<double> > > logReg_feature;
     #endif

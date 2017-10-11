@@ -80,19 +80,25 @@ train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, un
    *  number of features
    */
 
-  num_features = 15;
+  try{
+    num_features = Properties::getIntProperty("/CompPred/num_features");
+  }catch(...){
+    num_features = 15;
+  }
   mean.resize(num_features);
   se.resize(num_features);
 
-  exon_feature_idx   = {0,0,0,1,1,1,1,1,1,1,1,1,0,1,1};
-  intron_feature_idx = {0,0,0,1,1,1,0,0,0,0,0,0,0,0,0};
+  // feaures that are included in standardization
+  exon_feature_idx   = {0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,1};
+  intron_feature_idx = {0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0};
 
   prob_true_false_exons = (double) numExonRef / exon_samples->size();
   prob_true_false_introns = (double) numIntronRef / intron_samples->size();
   prob_true_false = 1;
-  
-  /*  cout << "exon samples:" << endl << "class\t";
-  for(int i=0; i<10;i++)
+
+  /*      
+    cout << "exon samples:" << endl << "class\t";
+  for(int i=0; i<num_features; i++)
     cout << i << "\t";
   cout << endl;
   for(int i=0; i<exon_samples->size(); i++){
@@ -104,7 +110,7 @@ train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, un
   }
 
   cout << "intron samples:" << endl << "class\t" << endl;
-  for(int i=0; i<10;i++)
+  for(int i=0; i<num_features; i++)
     cout << i << "\t";
   cout << endl;
   for(int i=0; i<intron_samples->size(); i++){
@@ -114,6 +120,7 @@ train_data::train_data(unordered_map<string, pair<int, vector<double> > > *s, un
     }
     cout << endl;
   }
+  
   */
 
 }
@@ -145,12 +152,12 @@ void train_data::set_mean_std(vector<pair<int, vector<double> > > *samples, vect
       se[j] = sqrt( se[j]/m - pow(mean[j], 2) );
     }
   }
-  /*
+  
   cout << "mean and std of features" << endl;
   for(int i=0; i<num_features; i++){
     cout << i << "\t" << mean[i] << "\t" << se[i] << endl;
   } 
-  */ 
+   
 }
 
 double activation_f(const gsl_vector *theta, vector<double> *f){
@@ -160,10 +167,9 @@ double activation_f(const gsl_vector *theta, vector<double> *f){
 
   for(int i=1; i<n; i++){
     theta_x += gsl_vector_get(theta, i) * ( (get_feature(f, i) - mean[i]) / se[i] ) ;
-    //    cout << "f" << i << ":" << setw(10) << gsl_vector_get(theta, i) << ":" << get_feature(f, i) << "(" << ( (get_feature(f, i) - mean[i]) / se[i] ) << ")\t"; 
+    //cout << "f" << i << ":" << setw(10) << gsl_vector_get(theta, i) << ":" << get_feature(f, i) << "(" << ( (get_feature(f, i) - mean[i]) / se[i] ) << ")\t"; 
   }
   //cout << endl;
-  
   return theta_x;
 }
 
@@ -201,7 +207,9 @@ double get_feature(vector<double> *f, int i){
     break; 
   case 14: x = (*f)[3] * (*f)[6];                         // omega * diversity 
     break;
-  case 15: x = (*f)[8]/num_species;                       // number of species involved in this ortho exon divided by clade size
+    //  case 15: x = (*f)[8]/num_species;                       // number of species involved in this ortho exon divided by clade size
+    //break;
+  case 15: x = ((*f)[10]>0 && (*f)[11]>0 && (*f)[12]>0 && (*f)[13]>0) ? ( (log((*f)[11]) - log((*f)[10])) * exp(Constant::lambda * (log((*f)[11]) - log((*f)[10]))) + (log((*f)[12]) - log((*f)[13])) * exp(Constant::lambda * (log((*f)[12]) - log((*f)[13]))) )/( exp(Constant::lambda * (log((*f)[11]) - log((*f)[10]))) + exp(Constant::lambda * (log((*f)[12]) - log((*f)[13]))) ) : 0;
     break;
   default: throw ProjectError("feature number " + itoa(i) + " does not exist!");
     break;
@@ -322,16 +330,27 @@ void optimize_parameters(train_data *data){
   else
     paramfile.open(Constant::configPath + "/cgp/log_reg_parameters_trained.cfg");
 
-  int iter = 0;
-  int status;
-  int n = data->num_features;  
-  const gsl_multimin_fdfminimizer_type *T;
-  gsl_multimin_fdfminimizer *s;
+  int n = data->num_features;
 
   gsl_vector *theta;
   theta = gsl_vector_alloc(n);
   gsl_vector_set_all(theta, 0);
   
+  bool useTFprob = 0;
+    
+  if(Constant::rLogReg){
+    cout << "# using lable-noise robust logistic regression with label flip probability " << Constant::label_flip_prob << endl;
+    try{
+      useTFprob = Properties::getBoolProperty("useTFprob");
+    } catch(...){
+      useTFprob = 0;
+    }
+    if(useTFprob)
+      prob_true_false = data->prob_true_false_exons;
+  }
+
+  cout << "# exon parameter training" << endl;
+ 
   // random allocation
   srand(time(NULL));
   cout << "random theta: ";
@@ -342,6 +361,78 @@ void optimize_parameters(train_data *data){
   }
   cout << endl;
 
+  data->set_mean_std(data->exon_samples, data->exon_feature_idx);
+
+  bool use_sgd;
+  try{
+    use_sgd = Properties::getBoolProperty("use_sgd");
+  } catch(...){
+    use_sgd = 0;
+  }
+  
+  if(use_sgd)
+    sgd(data->exon_samples, theta, n);
+  else
+    gsl_minimizer(data->exon_samples, theta, n);
+
+  // output back transformed coefficients
+  double theta_sum = 0;
+  for(int i=1; i<n; i++){
+    theta_sum += gsl_vector_get(theta, i) * mean[i] / se[i];
+  }
+  paramfile << "/CompPred/exon_score0\t" << ( gsl_vector_get(theta, 0) - theta_sum ) << endl; 
+  for(int i=1; i<n; i++)
+    paramfile << "/CompPred/exon_score" << i << "\t" << ( gsl_vector_get(theta, i) / se[i] ) << endl;
+  
+
+  cout << "# intron parameter training" << endl;
+
+  // random allocation                                                                                                                
+  srand(time(NULL));
+  cout << "random theta: ";
+  for(int i =0; i<n; i++){
+    double r = ( (double) rand() / RAND_MAX );
+    gsl_vector_set(theta, i, r);
+    cout << r << "\t";
+  }
+  cout << endl;
+
+  data->set_mean_std(data->intron_samples, data->intron_feature_idx);
+
+  if(Constant::rLogReg && useTFprob)
+    prob_true_false = data->prob_true_false_introns;
+
+  if(use_sgd)
+    sgd(data->intron_samples, theta, n);
+  else
+    gsl_minimizer(data->intron_samples, theta, n);
+  
+  // output back transformed coefficients
+  theta_sum = 
+      (gsl_vector_get(theta, 4) * mean[4] / se[4])
+    + (gsl_vector_get(theta, 5) * mean[5] / se[5]) 
+    + (gsl_vector_get(theta, 3) * mean[3] / se[3]);
+  
+
+  paramfile << "/CompPred/intron_score" << 0 << "\t" << ( gsl_vector_get (theta, 0) - theta_sum ) << endl;
+  paramfile << "/CompPred/intron_score" << 1 << "\t" << ( gsl_vector_get (theta, 4) / se[4] ) << endl;
+  paramfile << "/CompPred/intron_score" << 2 << "\t" << ( gsl_vector_get (theta, 5) / se[5] ) << endl;
+  paramfile << "/CompPred/intron_score" << 3 << "\t" << ( gsl_vector_get (theta, 3) / se[3] ) << endl;
+  
+  paramfile.close();
+
+  
+}
+
+void gsl_minimizer(vector<pair<int, vector<double> > > *samples, gsl_vector *theta, int n){
+
+  int iter = 0;
+  int status;
+
+  const gsl_multimin_fdfminimizer_type *T;
+  gsl_multimin_fdfminimizer *s;
+
+
   try{
     Constant::rLogReg = Properties::getBoolProperty("rLogReg");
     Constant::label_flip_prob = Properties::getdoubleProperty("label_flip_prob");
@@ -350,16 +441,6 @@ void optimize_parameters(train_data *data){
   gsl_multimin_function_fdf CE_error_f;
   CE_error_f.n = n;
   if(Constant::rLogReg){
-    cout << "# using lable-noise robust logistic regression with label flip probability " << Constant::label_flip_prob << endl;
-    bool useTFprob;
-    try{
-      useTFprob = Properties::getBoolProperty("useTFprob");
-    } catch(...){
-      useTFprob = 0;
-    }
-    if(useTFprob)
-      prob_true_false = data->prob_true_false_exons;
-
     CE_error_f.f = &rob_cross_entropy_error_f;
     CE_error_f.df = &rob_cross_entropy_error_df;
     CE_error_f.fdf = &rob_cross_entropy_error_fdf;
@@ -369,12 +450,9 @@ void optimize_parameters(train_data *data){
     CE_error_f.fdf = &cross_entropy_error_fdf;  
   }
   
-  // exon parameter optimization
-  CE_error_f.params = (void *)data->exon_samples;
+  CE_error_f.params = (void *)samples;
 
-  data->set_mean_std(data->exon_samples, data->exon_feature_idx);
-
-  cout << "cross entropy test error: " << cross_entropy_error_f(theta, data->exon_samples) << endl;
+  cout << "cross entropy test error: " << cross_entropy_error_f(theta, samples) << endl;
 
   T = gsl_multimin_fdfminimizer_vector_bfgs2;
   s = gsl_multimin_fdfminimizer_alloc (T, n);
@@ -383,7 +461,6 @@ void optimize_parameters(train_data *data){
     Constant::GD_stepsize = Properties::getdoubleProperty("GD_stepsize");
   }catch(...){}
   gsl_multimin_fdfminimizer_set (s, &CE_error_f, theta, Constant::GD_stepsize, 1e-4);
-  cout << "# exon parameter training" << endl;
   
   do{
     iter++;
@@ -406,90 +483,65 @@ void optimize_parameters(train_data *data){
 
   }while (status == GSL_CONTINUE && iter < 10000);
 
-  // output back transformed coefficients
-  double theta_sum = 0;
-  for(int i=1; i<n; i++){
-    theta_sum += gsl_vector_get(s->x, i) * mean[i] / se[i];
-  }
-  paramfile << "/CompPred/exon_score0\t" << ( gsl_vector_get(s->x, 0) - theta_sum ) << endl; 
-  for(int i=1; i<n; i++)
-    paramfile << "/CompPred/exon_score" << i << "\t" << ( gsl_vector_get(s->x, i) / se[i] ) << endl;
-  
-  gsl_multimin_fdfminimizer_free (s);
-
-  // intron parameter optimization
-  CE_error_f.params = (void *)data->intron_samples;
- 
-  bool useTFprob;
-  try{
-    useTFprob = Properties::getBoolProperty("useTFprob");
-  } catch(...){
-    useTFprob = 0;
-  }
-  if(Constant::rLogReg && useTFprob)
-    prob_true_false = data->prob_true_false_introns;
-
-  gsl_vector_set_all(theta, 0);
-
-  // random allocation
-  srand(time(NULL));
-  for(int i =0; i<n; i++){
-    double r = ( (double) rand() / RAND_MAX );
-    gsl_vector_set(theta, i, r);
-  }
-
-  cout << "cross entropy test error: " << cross_entropy_error_f(theta, data->intron_samples) << endl;
-
-  T = gsl_multimin_fdfminimizer_vector_bfgs2;
-  s = gsl_multimin_fdfminimizer_alloc (T, n);
-
-  data->set_mean_std(data->intron_samples, data->intron_feature_idx);
-
-  gsl_multimin_fdfminimizer_set (s, &CE_error_f, theta, Constant::GD_stepsize, 1e-4);
-  cout << "# intron parameter training" << endl;
-  iter = 0;
-  do{
-    iter++;
-    status = gsl_multimin_fdfminimizer_iterate (s);
-
-    if (status){
-      cout << "gsl error_code: " << status << endl;
-      break;
-    }
-
-    status = gsl_multimin_test_gradient (s->gradient, 1e-3);
-
-    
-    if (status == GSL_SUCCESS)
-      cout << "Minimum found at:\n";
-
-    cout << setw(10) << iter;
-    for(int i=0; i<n; i++)
-      cout << setw(10) << gsl_vector_get (s->x, i);
-    cout << setw(10) << s->f << endl;
-    
-
-  }while (status == GSL_CONTINUE && iter < 10000);
-  
-  // output back transformed coefficients
-  theta_sum = 
-      (gsl_vector_get(s->x, 4) * mean[4] / se[4])
-    + (gsl_vector_get(s->x, 5) * mean[5] / se[5]) 
-    + (gsl_vector_get(s->x, 3) * mean[3] / se[3]);
-  
-
-  paramfile << "/CompPred/intron_score" << 0 << "\t" << ( gsl_vector_get (s->x, 0) - theta_sum ) << endl;
-  paramfile << "/CompPred/intron_score" << 1 << "\t" << ( gsl_vector_get (s->x, 4) / se[4] ) << endl;
-  paramfile << "/CompPred/intron_score" << 2 << "\t" << ( gsl_vector_get (s->x, 5) / se[5] ) << endl;
-  paramfile << "/CompPred/intron_score" << 3 << "\t" << ( gsl_vector_get (s->x, 3) / se[3] ) << endl;
-  
-paramfile.close();
+  for(int i=0; i<n; i++)
+    gsl_vector_set(theta, i, gsl_vector_get(s->x, i));
 
   gsl_multimin_fdfminimizer_free (s);  
   
 }
 
 
+void sgd(vector<pair<int, vector<double> > > *samples, gsl_vector *theta, int n){
+
+  random_shuffle ( samples->begin(), samples->end() );
+
+  double learning_rate;
+  try{
+    learning_rate = Properties::getdoubleProperty("learning_rate");
+  }catch(...){
+    learning_rate = 0.001;
+  }
+  int maxInter;
+  try{
+    maxInter = Properties::getIntProperty("max_sgd_inter");
+  }catch(...){
+    maxInter = 10;
+  }
+  int iter = 0;
+  int num_samples = samples->size();
+  double curr_lowest_error = numeric_limits<double>::max();
+  gsl_vector *best_theta = gsl_vector_alloc(n);
+
+  if(iter < maxInter*num_samples){
+    for(vector<pair<int, vector<double> > >::iterator it = samples->begin(); it != samples->end(); it++){
+      //cout << "++++++++++ exon with class " <<  it->first << endl;
+      for(int i=0; i<n; i++){
+	double sigma = 1/(1 + exp(-1 * activation_f(theta, &it->second)));
+	//cout << "x_" << i << " = " << ( (get_feature(&it->second, i) - mean[i]) / se[i] ) << "; pred = " << sigma << endl;
+	double grad = ( it->first - sigma ) * ( (get_feature(&it->second, i) - mean[i]) / se[i] );
+	//      cout << "gradient = " << grad << endl;
+	double new_theta_i =  gsl_vector_get(theta, i) + learning_rate * grad;
+	gsl_vector_set(theta, i, new_theta_i);
+	//      cout << "theta[" << i << "] = " << gsl_vector_get(theta, i) << endl;
+      }
+      
+      if(iter % 1000 == 0){
+	double cee = cross_entropy_error_f(theta, samples);
+	if(cee < curr_lowest_error){
+	  gsl_vector_memcpy(best_theta, theta);
+	  curr_lowest_error = cee;
+	}
+	cout << setw(10) << iter;
+	for(int i=0; i<n; i++)
+	  cout << setw(10) << gsl_vector_get(theta, i);
+	cout << setw(10) << cee << endl;
+      }
+      iter++;
+    }
+  }
+  gsl_vector_memcpy(theta, best_theta);
+  gsl_vector_free(best_theta);
+}
 
 void trainFeature_from_file(){
 
@@ -523,7 +575,7 @@ void trainFeature_from_file(){
       
       unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(key);
       if ( got == Constant::logReg_feature.end() ){
-	vector<double> feature(10,0);
+	vector<double> feature(14,0);
 	feature[0] = endPos - startPos + 1;   // exon length	
 	pair<int, vector<double> > p;
 	p = make_pair(-1, feature);
@@ -547,22 +599,30 @@ void trainFeature_from_file(){
 	
 	if (attr_pair[0] == "postProb")
 	  got->second.second[1] = stod(attr_pair[1]); 
-	else if (attr_pair[0] == "avgBaseProb")
+	else if (attr_pair[0] == "avgBaseProb" || attr_pair[0] == "mbp")
 	  got->second.second[2] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "Eomega")
+	else if (attr_pair[0] == "Eomega" || attr_pair[0] == "PMomega")
 	  got->second.second[3] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "VarOmega")
+	else if (attr_pair[0] == "VarOmega" || attr_pair[0] == "varOmega")
 	  got->second.second[4] = stod(attr_pair[1]);
 	else if (attr_pair[0] == "cons")
           got->second.second[5] = stod(attr_pair[1]);
 	else if (attr_pair[0] == "div")
           got->second.second[6] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "containment")
+	else if (attr_pair[0] == "containment" || attr_pair[0] == "contain")
           got->second.second[7] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "n")
+	else if (attr_pair[0] == "n" || attr_pair[0] == "numSpecies")
           got->second.second[8] = stod(attr_pair[1]);
 	else if (attr_pair[0] == "oescore")
 	  got->second.second[9] = 1;
+	else if (attr_pair[0] == "leftBoundaryExtOmega")
+	  got->second.second[10] = stod(attr_pair[1]);
+	else if (attr_pair[0] == "leftBoundaryIntOmega")
+          got->second.second[11] = stod(attr_pair[1]);
+	else if (attr_pair[0] == "rightBoundaryIntOmega")
+	  got->second.second[12] = stod(attr_pair[1]);
+	else if (attr_pair[0] == "rightBoundaryExtOmega")
+	  got->second.second[13] = stod(attr_pair[1]);
       }
     }
   }
@@ -604,7 +664,7 @@ void reference_from_file(unordered_map<string,int> *ref_class){
       stringstream str;
       str << type << "\t" << chr << "\t" << startPos<< "\t" << endPos << "\t" << strand << "\t" << frame;
       string key = str.str();
-      //cout << "ref_feature: " << key << endl;
+      //      cout << "ref_feature: " << key << endl;
       pair<string, int> k(key,1);
       ref_class->insert(k);
     }

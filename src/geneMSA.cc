@@ -664,7 +664,7 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
       //cout << "EC: " << k << endl;
       unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(k);
       if ( got == Constant::logReg_feature.end() ){
-	vector<double> feature(10,0);
+	vector<double> feature(14,0);
 	feature[0] = (*ecit)->end - (*ecit)->begin + 1;   // exon length
       
 	pair<int, vector<double> > p;
@@ -693,13 +693,17 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
       throw ProjectError("ortho exon is not an exon candidate!");
     }else{
       vector<double>* feature = &got->second.second;
-      if(oeit->getEomega()      > 0){ (*feature)[3] = oeit->getEomega(); }        // omega
-      if(oeit->getVarOmega()    > 0){ (*feature)[4] = oeit->getVarOmega(); }      // variance of omega
-      if(oeit->getConsScore()   > 0){ (*feature)[5] = oeit->getConsScore(); }     // conservation
-      if(oeit->getDiversity()   > 0){ (*feature)[6] = oeit->getDiversity(); }     // diversity
-      if(oeit->getContainment() > 0){ (*feature)[7] = oeit->getContainment(); }   // containment
-      if(oeit->numExons()       > 0){ (*feature)[8] = oeit->numExons(); }         // number of species involved in OE
-      (*feature)[9] = 1;                                                          // is ortho exon?
+      if(oeit->getEomega()       > 0){ (*feature)[3] = oeit->getEomega(); }        // omega
+      if(oeit->getVarOmega()     > 0){ (*feature)[4] = oeit->getVarOmega(); }      // variance of omega
+      if(oeit->getConsScore()    > 0){ (*feature)[5] = oeit->getConsScore(); }     // conservation
+      if(oeit->getDiversity()    > 0){ (*feature)[6] = oeit->getDiversity(); }     // diversity
+      if(oeit->getContainment()  > 0){ (*feature)[7] = oeit->getContainment(); }   // containment
+      if(oeit->numExons()        > 0){ (*feature)[8] = oeit->numExons(); }         // number of species involved in OE
+      (*feature)[9] = 1;                                                           // is ortho exon?
+      if(oeit->getLeftExtOmega() > 0){ (*feature)[10] = oeit->getLeftExtOmega();}  // LeftExtOmega
+      if(oeit->getLeftIntOmega() > 0){ (*feature)[11] = oeit->getLeftIntOmega();}  // LeftIntOmega
+      if(oeit->getRightIntOmega()> 0){ (*feature)[12] = oeit->getRightIntOmega();} // RightIntOmega
+      if(oeit->getRightExtOmega()> 0){ (*feature)[13] = oeit->getRightExtOmega();} // RightExtOmega
     }
   }
 }

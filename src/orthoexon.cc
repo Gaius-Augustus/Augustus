@@ -258,6 +258,16 @@ void OrthoExon::setSubst(int subs, bool oeStart){
 
 double OrthoExon::getLogRegScore(){
     
+  // pre-definitions for the boundary feature
+  double b_l;
+  double b_r;
+  if(getLeftIntOmega() > 0 && getLeftExtOmega() > 0 && getRightIntOmega() > 0 && getRightExtOmega() > 0){
+    b_l = log(getLeftIntOmega()) - log(getLeftExtOmega());
+    b_r = log(getRightIntOmega()) - log(getRightExtOmega());
+  }else{
+    b_l = 0;
+    b_r = 0;
+  }
 
   return (    Constant::ex_sc[6]  * Eomega * hasOmega()
 	    + Constant::ex_sc[7]  * VarOmega * hasVarOmega()
@@ -269,7 +279,7 @@ double OrthoExon::getLogRegScore(){
 	    + Constant::ex_sc[13] * cons * diversity * hasConservation() * hasDiversity() 
 	    + Constant::ex_sc[14] * Eomega * hasOmega() * diversity * hasDiversity()
 	    - Constant::ex_sc[1]  * hasOmega()
-	 // + Constant::ex_sc[16] * min( abs(getLeftExtOmega() - getLeftIntOmega()), abs(getRightExtOmega() - getRightIntOmega()) )
+	    + Constant::ex_sc[16] * ( b_l * exp(Constant::lambda*b_l) + b_r * exp(Constant::lambda*b_r) ) / ( exp(Constant::lambda*b_l) + exp(Constant::lambda*b_r) )
 	    - Constant::ex_sc[2] ); // for being a HECT
 
   /*

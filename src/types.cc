@@ -105,6 +105,7 @@ string Constant::refSpecies;
 double Constant::GD_stepsize = 0.01; // stepsize of gradient descent algorithm 
 bool Constant::rLogReg = false; // for robust logistic regression
 double Constant::label_flip_prob = 0.01; // probability of a reference label to be wrong (robust logistic regression) 
+double Constant::lambda = 0; // parameter used in softmax function for exon boundary feature
 #ifdef COMPGENEPRED
 unordered_map<string, pair<int, vector<double> > > Constant::logReg_feature;
 #endif
@@ -337,11 +338,17 @@ void Constant::init(){
     }
     
     // scores for logistic regression
-       try {
-	logreg = Properties::getBoolProperty("/CompPred/logreg");
+    try {
+        logreg = Properties::getBoolProperty("/CompPred/logreg");
     } catch (...) {
-	logreg = true;
+        logreg = true;
     }
+    try {
+        lambda = Properties::getdoubleProperty("/CompPred/lambda");
+    } catch (...) {
+        lambda = 1;
+    }
+
     for(int i=0; i<17; i++){
 	try {
 	    ex_sc.push_back(Properties::getdoubleProperty("/CompPred/exon_score" + itoa(i) ));
