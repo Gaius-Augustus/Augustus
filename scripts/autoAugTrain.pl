@@ -550,12 +550,16 @@ sub trainWithUTR{
 	system("mv tr_temp.lst tr.lst")==0 or die("failed to execute: $!\n");
 	open(TR, "tr.lst") or die ("Can not open tr.lst!\n");
 	open(BOTH, "> bothutr.lst");
-	my $g;
+	# the following bugfix is curtesey of AUGUSTUS forum user xvazquezc
+	my $Fld1;
+	my $prev;
 	while(<TR>){
-	    split; 
-	    print BOTH "$_[0]\n" if ($g eq $_[0]); 
-	    $g=$_[0];
+	    ($Fld1) = split('\t', $_, -1);
+	    if($Fld1 eq $prev){
+		print BOTH "$prev\n";
+	    }
 	}
+	# end of bugfix
 	close(TR);
 	close(BOTH);
 	print "3 The subset of genes, where we have both UTRs is bothutr.lst.\n" if ($verbose>=3);
