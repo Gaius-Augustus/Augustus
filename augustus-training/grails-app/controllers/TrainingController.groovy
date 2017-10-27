@@ -20,7 +20,9 @@ import java.io.Writer
 import java.net.URL
 import java.util.zip.GZIPInputStream
 import java.net.UnknownHostException
-import java.net.HttpURLConnection;
+import java.net.HttpURLConnection
+//import groovy.transform.ToString
+
 
 class TrainingController {
 	// need to adjust the output dir to whatever working dir! This is where uploaded files and results will be saved.
@@ -56,7 +58,7 @@ class TrainingController {
 	def int estMinLen = 250
 	def int estMaxLen = 20000
 	// logging verbosity-level
-	def verb = 2 // 1 only basic log messages, 2 all issued commands, 3 also script content
+	def verb = 3 // 1 only basic log messages, 2 all issued commands, 3 also script content
 	def cmd2Script
 	def cmdStr
 	def msgStr
@@ -281,7 +283,6 @@ class TrainingController {
 			// upload of genome file
 			// check file size
 		        preUploadSize = uploadedGenomeFile.getSize()
-			def seqNames = []
 			if(!uploadedGenomeFile.empty){
 				if(preUploadSize <= maxButtonFileSize){
 					projectDir.mkdirs()
@@ -326,16 +327,13 @@ class TrainingController {
 						cleanRedirect()
 						return
 					}
-					// check for fasta format & extract fasta headers for gff validation:
+					// check for fasta format
 					new File("${projectDir}/genome.fa").eachLine{line -> 
 						if(line =~ /\*/ || line =~ /\?/){
 							metacharacterFlag = 1
 						}else{
 							if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }
-							if(line =~ /^>/){
-								def len = line.length()
-								seqNames << line[1..(len-1)]
-							}
+							
 						}
 					}
 					if(metacharacterFlag == 1){
@@ -676,10 +674,12 @@ class TrainingController {
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Uploaded training gene structure file ${uploadedStructFile.originalFilename} was renamed to training-gene-structure.gff and moved to ${projectDir}\n"
 					def gffColErrorFlag = 0
 					def gffNameErrorFlag = 0
-					if(!uploadedGenomeFile.empty){ // if seqNames already exists
+					if(!uploadedGenomeFile.empty){
 						// gff format validation: number of columns 9, + or - in column 7, column 1 muss member von seqNames sein
-						def gffArray
-						def isElement
+						if(verb > 1){
+                                                      logDate = new Date()
+                                                      logFile << "${logDate} ${trainingInstance.accession_id} v2 - Checking training-gene-structure.gff file format\n"
+                                                }
 						new File("${projectDir}/training-gene-structure.gff").eachLine{line -> 
 							// check whether weird metacharacters are included
 							if(line =~ /\*/ || line =~ /\?/){
@@ -688,19 +688,35 @@ class TrainingController {
 								if(line =~ /^LOCUS/){
 									structureGbkFlag = 1 
 								}
-								if(structureGbkFlag == 0){
-									gffArray = line.split("\t")
-									if(!(gffArray.size() == 9)){ gffColErrorFlag = 1 }
-									isElement = 0
-									seqNames.each{ seq ->
-										if(seq =~ /${gffArray[0]}/){ isElement = isElement + 1}
-									}
-									if(isElement == 0){ gffNameErrorFlag = 1 
-										logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - ${gffArray[0]} is not contained in genome.fa\n"
-									}
-								}
-							}
+							}							
 						}
+						if(structureGbkFlag == 0){
+                                                        def checkGffScript = new File(projectDir, "checkGff.sh")
+                                                        def gffChkOutFile = "${projectDir}/gffCheck.out"
+                                                        def gffChkColsFile = "${projectDir}/gffCols.out"
+                                                        checkGffScript << "/usr/bin/perl ${AUGUSTUS_SCRIPTS_PATH}/findGffNamesInFasta.pl --gff=${projectDir}/training-gene-structure.gff --genome=${projectDir}/genome.fa --out=${gffChkColsFile} &> ${gffChkOutFile}"
+                                                        cmdStr = "bash ${projectDir}/checkGff.sh"
+                                                        logFile << "${cmdStr}"
+                                                        def ckStr = "${cmdStr}".execute()
+                                                        ckStr.waitFor()
+                                                        def ckContent = new File("${gffChkOutFile}").text
+                                                        def stContent = new Scanner(ckContent)
+                                                        def long gffErrorStatus
+                                                        gffErrorStatus = stContent.nextLong();
+                                                        ckContent = new File("${gffChkColsFile}").text
+                                                        stContent = new Scanner(ckContent)
+                                                        def long gffColStatus
+                                                        gffColStatus = stContent.nextLong()
+                                                        if(gffErrorStatus == 1){
+                                                            gffNameErrorFlag = 1
+                                                        }
+                                                        if(gffColStatus == 1){
+                                                            gffColErrorFlag = 1
+                                                        }
+                                                        cmdStr = "rm ${projectDir}/checkGff.sh ${gffChkOutFile} ${gffChkColsFile}"
+                                                        delProc = "${cmdStr}".execute()
+                                                        delProc.waitFor()
+                                                }
 						if(metacharacterFlag == 1){
 							logDate = new Date()
 							logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - The gene structure file contains metacharacters (e.g. * or ?).\n";
@@ -1141,7 +1157,7 @@ class TrainingController {
                                         	def nSeqResult = new File("${projectDir}/genome.nSeq").text
                                         	def nSeq_scanner = new Scanner(nSeqResult)
                                         	def long nSeqNumber = nSeq_scanner.nextLong()
-                                        	cmdStr = "rm ${nSeqFile} ${projectDir}/genome.nSeq &> /dev/null"
+                                        	cmdStr = "rm ${projectDir}/nSeq.sh ${projectDir}/genome.nSeq &> /dev/null"
                                         	delProc = "${cmdStr}".execute();
                                         	delProc.waitFor()
 						if(nSeqNumber > maxNSeqs){
@@ -1178,10 +1194,6 @@ class TrainingController {
 								metacharacterFlag = 1
 							}else{
 								if(!(line =~ /^[>AaTtGgCcHhXxRrYyWwSsMmKkBbVvDdNn]/) && !(line =~ /^$/)){ genomeFastaFlag = 1 }	
-								if(line =~ /^>/){
-									def len = line.length()
-									seqNames << line[1..(len-1)]
-								}
 							}
 						}
 						if(metacharacterFlag == 1){
@@ -1276,31 +1288,47 @@ class TrainingController {
 					// check gff format
 					def gffColErrorFlag = 0
 					def gffNameErrorFlag = 0
-					if((!uploadedStructFile.empty) &&(!(trainingInstance.genome_ftp_link == null))){ // if seqNames already exists
+					if((!uploadedStructFile.empty) &&(!(trainingInstance.genome_ftp_link == null))){ //
 						// gff format validation: number of columns 9, + or - in column 7, column 1 muss member von seqNames sein
-						def gffArray
-						def isElement
+						if(verb > 1){
+						      logDate = new Date()
+						      logFile << "${logDate} ${trainingInstance.accession_id} v2 - Checking training-gene-structure.gff file format\n"   
+                                                }
 						new File("${projectDir}/training-gene-structure.gff").eachLine{line -> 
-
 							if(line =~ /\*/ || line =~ /\?/){
 								metacharacterFlag = 1
 							}else{
-
 								if(line =~ /^LOCUS/){
-									structureGbkFlag = 1 
-								}
-								if(structureGbkFlag == 0){
-									gffArray = line.split("\t")
-									if(!(gffArray.size() == 9)){ gffColErrorFlag = 1 }
-									isElement = 0
-									seqNames.each{ seq ->
-										if(seq =~ /${gffArray[0]}/){ isElement = isElement + 1}
-									}
-									if(isElement == 0){ gffNameErrorFlag = 1 
-										logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - ${gffArray[0]} is not contained in genome.fa\n"
-									}
+									structureGbkFlag = 1
 								}
 							}
+						}
+						if(structureGbkFlag == 0){
+							def checkGffScript = new File(projectDir, "checkGff.sh")							
+							def gffChkOutFile = "${projectDir}/gffCheck.out"
+							def gffChkColsFile = "${projectDir}/gffCols.out"
+					                checkGffScript << "/usr/bin/perl ${AUGUSTUS_SCRIPTS_PATH}/findGffNamesInFasta.pl --gff=${projectDir}/training-gene-structure.gff --genome=${projectDir}/genome.fa --out=${gffChkColsFile} &> ${gffChkOutFile}"
+							cmdStr = "bash ${projectDir}/checkGff.sh"
+							logFile << "${cmdStr}"
+							def ckStr = "${cmdStr}".execute()
+							ckStr.waitFor()
+							def ckContent = new File("${gffChkOutFile}").text
+							def stContent = new Scanner(ckContent)
+							def long gffErrorStatus
+							gffErrorStatus = stContent.nextLong();
+							ckContent = new File("${gffChkColsFile}").text
+							stContent = new Scanner(ckContent)
+							def long gffColStatus
+							gffColStatus = stContent.nextLong()
+							if(gffErrorStatus == 1){
+							    gffNameErrorFlag = 1
+							}
+							if(gffColStatus == 1){
+							    gffColErrorFlag = 1
+							}
+							cmdStr = "rm ${projectDir}/checkGff.sh ${gffChkOutFile} ${gffChkColsFile}"
+							delProc = "${cmdStr}".execute()
+							delProc.waitFor()
 						}
 						if(metacharacterFlag == 1){
 							logDate = new Date()
@@ -1395,6 +1423,7 @@ class TrainingController {
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v3 - genomeCksumScript << \"${cmd2Script}\"\n"
 					}
 					cmdStr = "bash ${projectDir}/genome_cksum.sh"
+					logFile << "15\n" // DELETE LATER
 					def genomeCksumProcess = "${cmdStr}".execute()
 					if(verb > 1){
 						logDate = new Date()
@@ -1413,6 +1442,7 @@ class TrainingController {
 					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - genome.fa is ${trainingInstance.genome_size} big and has a cksum of ${genomeCksum}.\n"
 					cmdStr = "rm ${projectDir}/genome.cksum &> /dev/null"
 					delProc = "${cmdStr}".execute()
+					logFile << "16\n" // DELETE LATER
 					if(verb > 1){
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
@@ -1425,6 +1455,7 @@ class TrainingController {
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v2 - \"${cmdStr}\"\n"
 					}
 					delProc.waitFor()
+					logFile << "17\n" // DELETE LATER
 				} // end of if(!(trainingInstance.genome_ftp_link == null))
 
 				// retrieve EST file
