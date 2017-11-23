@@ -15,7 +15,7 @@ my $help;
 
 GetOptions( 'AUGUSTUS_CONFIG_PATH=s'  => \$AUGUSTUS_CONFIG_PATH,
 	    'species=s'              => \$species,
-	    'etrainOut'              => \$etrainOut,
+	    'etrainOut=s'              => \$etrainOut,
 	    'help!'                  => \$help);
 	    
 if($help){
