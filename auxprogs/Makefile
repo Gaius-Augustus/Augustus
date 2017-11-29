@@ -9,9 +9,11 @@ all:
 	cd filterBam; make;
 	cd homGeneMapping; make;
 	cd joingenes; make;
+	cd bam2wig; make;
 clean:
 	cd bam2hints; make clean;
 	cd compileSpliceCands; make clean;
 	cd filterBam; make clean;
 	cd homGeneMapping; make clean;
 	cd joingenes; make clean;
+	cd bam2wig; make clean;
