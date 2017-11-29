@@ -182,6 +182,18 @@ Compiling bam2hints and filterBam requires:
       to your /etc/apt/sources.list, first: 
       deb http://us.archive.ubuntu.com/ubuntu vivid main universe)
 
+Compiling bam2wig requires:
+
+   -htslib
+   -bcftools
+   -tabix
+   -samtools
+   For bam2wig, these four packages must be installed from github. An installation via Ubuntu packages is not sufficient.
+   See detailed installation & compilation instructions at auxprogs/bam2wig/README.TXT
+   Also, the environment variable TOOLDIR (directory in which htslib, bcftools, tabix and samtools reside) must be exported:
+
+   export TOOLDIR=/path/where/dependencies/reside
+
 > make
 
 After compilation has finished, the command bin/augustus should be executable and print a usage message.
