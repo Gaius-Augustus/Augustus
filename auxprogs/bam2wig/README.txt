@@ -11,6 +11,37 @@ Installation instructions:
   TOOLDIR. For example, you can install all tools into your home directory, which will result into
   four folders in your home directory: bcftools, htslib, samtools and tabix.
 
+  Installation example:
+
+  git clone https://github.com/samtools/htslib.git
+  cd htslib
+  autoheader
+  autoconf
+  ./configure
+  make
+  sudo make install
+  cd ..
+  git clone https://github.com/samtools/bcftools.git
+  cd bcftools
+  autoheader
+  autoconf
+  ./configure
+  make
+  sudo make install
+  cd ..
+  git clone https://github.com/samtools/tabix.git
+  cd tabix
+  make
+  cd ..
+  git clone https://github.com/samtools/samtools.git
+  cd samtools
+  autoheader
+  autoconf -Wno-syntax
+  ./configure
+  make
+  sudo make install
+  cd ..
+
 1. Export TOOLDIR path
 
   export TOOLDIR=/path/where/four/dependencies/reside
