@@ -81,7 +81,7 @@ if ($exceptionfilename ne "") {
 # annos: hash of annotations
 # annotation: hash of gbfkeys, keys: CDS:genename or mRNA:genename
 # gbfkey: list:
-#         {name, strand, exon1start, exon1start, ..., exonXstart, exonXstart}
+#         {name, strand, exon1start, exon1end, ..., exonXstart, exonXend}
 #         name is "mRNA" or "CDS"
 #
 my %annos; # keys: sequences, elements: annotations
@@ -226,30 +226,30 @@ while(<FASTA>) {
 		     # print "CDS " , (join " ", @$cdsref), "\n";
                        my @newgbfkey = ();
 	               push @newgbfkey, ("mRNA", $genename, $gbfkeyref->[2]);
-                       my $utrindex = 4;
+                       my $utrindex = 4;		    
                        while ($utrindex < @$gbfkeyref && $fehler == 0) {
-			   if ($gbfkeyref->[$utrindex] < $cdsref->[3] - 1) {
+			   if ($gbfkeyref->[$utrindex] < ($cdsref->[3]-1)) {
 			       # UTR interval completely before begin of CDS
 			       push @newgbfkey, ($gbfkeyref->[$utrindex-1], $gbfkeyref->[$utrindex]);
 			       $utrindex += 2;
-			   } elsif ($gbfkeyref->[$utrindex] == $cdsref->[3] - 1) {
+			   } elsif ($gbfkeyref->[$utrindex] == ($cdsref->[3]-1)) {
 			       # UTR interval ends exactly before begin of CDS
 			       push @newgbfkey, $gbfkeyref->[$utrindex-1];
 			       for (my $cdsindex = 4; $cdsindex < @$cdsref-1; $cdsindex++) { # multi CDS gene
 				   push @newgbfkey, $cdsref->[$cdsindex];
 			       }
-			       if ($utrindex+2 < @$gbfkeyref && $cdsref->[-1] + 1 == $gbfkeyref->[$utrindex+1]) {
+			       if ($utrindex+2 < @$gbfkeyref && (($cdsref->[-1] + 1) == $gbfkeyref->[$utrindex+1])) {
 				   push @newgbfkey, $gbfkeyref->[$utrindex+2];
                                    $utrindex += 4;
 			       } else {
 				  push @newgbfkey, $cdsref->[-1];
 				  $utrindex += 2;
 			       }
-			   } elsif ($gbfkeyref->[$utrindex-1] > $cdsref->[-1] + 1) {
+			   } elsif ($gbfkeyref->[$utrindex-1] > ($cdsref->[-1] + 1)) {
 			       # UTR interval ends completely after end of CDS
 			       push @newgbfkey, ($gbfkeyref->[$utrindex-1], $gbfkeyref->[$utrindex]);
 			       $utrindex += 2;
-			   } elsif ($utrindex == 4 && $gbfkeyref->[$utrindex-1] == $cdsref->[-1] + 1) {
+			   } elsif (($gbfkeyref->[$utrindex-1] == ($cdsref->[-1] + 1))) { # removed $utrindex==4 condition; Katharina Hoff Dec 11th 2017
 			       # first UTR interval ends begins directly after end of CDS
 			       for (my $cdsindex = 3; $cdsindex < @$cdsref-1; $cdsindex++) {
 				   push @newgbfkey, $cdsref->[$cdsindex];
