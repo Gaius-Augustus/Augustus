@@ -559,7 +559,7 @@ sub trainWithUTR{
 	open(BOTH, "> bothutr.lst");
 	while (my ($key, $value) = each(%utr_seen)) {
 	    if($value>1){
-		print $BOTH $key."\n";
+		print BOTH $key."\n";
 	    }
 	}
 
