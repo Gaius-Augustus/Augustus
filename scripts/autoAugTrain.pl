@@ -127,7 +127,7 @@ system("mkdir -p $workDir");
 my $AUGUSTUS_CONFIG_PATH = $ENV{'AUGUSTUS_CONFIG_PATH'};          # the environment varialbe AUGUSTUS_CONFIG_PATH
 $AUGUSTUS_CONFIG_PATH=relToAbs($AUGUSTUS_CONFIG_PATH);
 die("Error: The environment variable AUGUSTUS_CONFIG_PATH haven't be evaluated.\n") unless $AUGUSTUS_CONFIG_PATH;
-die("Error: The environment variable AUGUSTUS_CONFIG_PATH coudn't be found.\n") unless (-d $AUGUSTUS_CONFIG_PATH);
+die("Error: The environment variable AUGUSTUS_CONFIG_PATH couldn't be found.\n") unless (-d $AUGUSTUS_CONFIG_PATH);
 
 my $configDir="$AUGUSTUS_CONFIG_PATH"."/species/$species";        # the config directory
 my $matName = "$species".'_weightmatrix.txt';                     # species_weightmatrix.txt
