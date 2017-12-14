@@ -648,8 +648,8 @@ sub trainWithUTR{
 	close TS;
 	print "1 Have constructed a training set train.gb for UTRs with $counter_gen genes\n" if ($verbose>=1);
 	system("rm t.gb.train t.gb t.gb.test t.nomrna.test.gb")==0 or die("failed to execute: $!\n");
-	system("grep LOCUS train.gb | perl -pe 's/^LOCUS\s+(\S+)\s+.*/$1/' > train.gb.lst")==0 or die("failed to execute: $!\n");
-	print "3 Made file train.gb.lst under $workDir/training/utr/\n" if ($verbose>=3);
+#	system("grep LOCUS train.gb | perl -pe 's/^LOCUS\s+(\S+)\s+.*/$1/' > train.gb.lst")==0 or die("failed to execute: $!\n");
+#	print "3 Made file train.gb.lst under $workDir/training/utr/\n" if ($verbose>=3);
 	#why do we need train.gb.lst ???#
     
 	########################################################
@@ -675,15 +675,17 @@ sub trainWithUTR{
 	open(TRAIN, "train.gb") or die ("Error: could not open the file train.gb");
 	open(REMOVE, " > remove.lst");
 	$/="\n//\n";
+	my $locustag = 0;
 	while(<TRAIN>){
-	    if (/LOCUS\s+(\S+)_\d+-\d+ .*gene="(\S+)\.t\d+"/s){print REMOVE "$1_$2\n"}
+	    if(m/LOCUS\s+(\S+)_\d+-\d+/){$locustag = 0; print REMOVE "$1_"}elsif(m/gene="(\S+)\.t\d+/){if($locustag==0){print REMOVE $1."\n";} $locustag = 1;}
+#	    if (/LOCUS\s+(\S+)_\d+-\d+ .*gene="(\S+)\.t\d+"/s){print REMOVE "$1_$2\n"} # THIS IS SO BUGGY....
 	}
 	close(TRAIN);
 	close(REMOVE);
 	$/="\n";
 	$string=find("filterGenes.pl");
 	print "3 Found script $string.\n" if ($verbose>=3);
-	$perlCmdString="perl $string remove.lst utr.gb > train.utronly.gb";
+	$perlCmdString="perl $string remove.lst bothutr.test.gb > train.utronly.gb";
 	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
 	system("cat cdsonly.gb train.utronly.gb > onlytrain.gb")==0 or die("failed to execute: $!\n");
 	print "2 Made onlytrain.gb under $workDir/training/utr/\n" if ($verbose>=2);
