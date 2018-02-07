@@ -167,8 +167,8 @@ int State::frame(){
 }
 
 bool State::frame_compatible(const Feature *hint){
-  return ((hint->strand == plusstrand && strand() == plusstrand && mod3(end - hint->start + 1 - hint->frame - frame())==0)
-	  || (hint->strand == minusstrand && strand() == minusstrand && mod3(end - hint->end + hint->frame + frame() + 1)==0));
+  return ((hint->strand == plusstrand && strand() == plusstrand && (hint->frame <0 || mod3(end - hint->start + 1 - hint->frame - frame())==0))
+	  || (hint->strand == minusstrand && strand() == minusstrand && (hint->frame <0 || mod3(end - hint->end + hint->frame + frame() + 1)==0)));
 }
 
 bool frame_compatible(State *ex1, State* ex2){
