@@ -129,7 +129,8 @@ while (<SEQ>) {
         $wholecommand = "";
         if( $partitionHints ) {
             $localHints = "$outputdir/$seqnr.$chunkid.${name}.$predStart..$pE.hints";
-            $wholecommand .= "grep ^${name} $hints | awk ' {if (\$4 >= $predStart ) print \$0 } ' | awk ' {if (\$5 <= $pE) print \$0 } ' > $localHints\n";
+            my $locus = ${name} =~ s/\.*//;
+            $wholecommand .= "grep ^$locus $hints | awk ' {if (\$4 >= $predStart ) print \$0 } ' | awk ' {if (\$5 <= $pE) print \$0 } ' > $localHints\n";
         } else {
             $localHints = $hints;
         }
