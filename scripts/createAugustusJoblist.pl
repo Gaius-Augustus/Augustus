@@ -30,107 +30,146 @@ $usage .= "--errordir errdir    directory, in which later the AUGUSTUS error mes
 $usage .= "--check              insert parasol input/output checks.\n";
 $usage .= "--wrap=s             have each job in a separate file, preceded by command s.\n";
 $usage .= "--jobprefix=s        prefix of job name (default: \"job.\")\n";
+$usage .= "--partitionHints     partition hints files according to genomic locus of single augustus runs,\n";
+$usage .= "                     add a command to the augustus job that will create and delete this hints file\n";
+$usage .= "                     in the output directory of the augustus job. This option also will automatically\n";
+$usage .= "                     delete empty error files of augustus.\n";
 
-if (@ARGV < 2) {
+if ( @ARGV < 2 ) {
     print $usage;
     exit;
 }
 
-my ($seqfilename, $chunksize, $overlap, $outputdir, $errordir, $command, $joblist, $seqnr, $name, $predStart, $predEnd, $pE, $chunkid, $padding, $check, $wrap, $wholecommand);
+my ($seqfilename, $chunksize,    $overlap, $outputdir, $errordir,
+    $command,     $joblist,      $seqnr,   $name,      $predStart,
+    $predEnd,     $pE,           $chunkid, $padding,   $check,
+    $wrap,        $wholecommand, $partitionHints,      $localHints
+);
 my $jobnr = 0;
 $padding = 0;
-$check = 0;
-$wrap = "";
+$check   = 0;
+$wrap    = "";
 my $jobprefix = "job.";
 
-GetOptions('sequences=s'=>\$seqfilename,
-	   'chunksize=i'=>\$chunksize,
-	   'overlap:i'=>\$overlap,
-	   'outputdir=s'=>\$outputdir,
-	   'errordir=s'=>\$errordir,
-	   'command=s'=>\$command,
-	   'padding:i'=>\$padding,
-	   'joblist=s'=>\$joblist,
-	   'check!'=>\$check,
-	   'wrap=s'=>\$wrap,
-	   'jobprefix:s'=>\$jobprefix);
+GetOptions(
+    'sequences=s' => \$seqfilename,
+    'chunksize=i' => \$chunksize,
+    'overlap:i'   => \$overlap,
+    'outputdir=s' => \$outputdir,
+    'errordir=s'  => \$errordir,
+    'command=s'   => \$command,
+    'padding:i'   => \$padding,
+    'joblist=s'   => \$joblist,
+    'check!'      => \$check,
+    'wrap=s'      => \$wrap,
+    'jobprefix:s' => \$jobprefix,
+    'partitionHints!' => \$partitionHints
+);
 
-die ("Need to specify chunksize.\n") unless (defined $chunksize);
-die ("Need to specify command.\n") unless (defined $command);
-die ("Need to specify joblist.\n") unless (defined $joblist);
-die ("Need to specify chunksize.\n") unless (defined $chunksize);
-die ("Need to specify outputdir.\n") unless (defined $outputdir);
+die("Need to specify chunksize.\n") unless ( defined $chunksize );
+die("Need to specify command.\n")   unless ( defined $command );
+die("Need to specify joblist.\n")   unless ( defined $joblist );
+die("Need to specify chunksize.\n") unless ( defined $chunksize );
+die("Need to specify outputdir.\n") unless ( defined $outputdir );
 
-open(SEQ, "<$seqfilename") or die ("Could not open $seqfilename");
-open (BATCH, ">$joblist") or die "Couldn't open $joblist\n";
+open( SEQ,   "<$seqfilename" ) or die("Could not open $seqfilename");
+open( BATCH, ">$joblist" )     or die "Couldn't open $joblist\n";
 
 $outputdir =~ s/\/$//;
 $seqnr = 1;
 while (<SEQ>) {
-    my ($path, $start, $end, $hints);
+    my ( $path, $start, $end, $hints );
     if (/(.+)\s+(.+)\s+(.+)\s+(.+)/) {
-	$path = $1;
-	$hints = $2;
-	$start = $3;
-	$end = $4;
-    } elsif (/(.+)\s+(.+)\s+(.+)/){
-	$path = $1;
-	$start = $2;
-	$end = $3;
-	undef $hints;
+        $path  = $1;
+        $hints = $2;
+        $start = $3;
+        $end   = $4;
+    }
+    elsif (/(.+)\s+(.+)\s+(.+)/) {
+        $path  = $1;
+        $start = $2;
+        $end   = $3;
+        undef $hints;
     }
     $start -= $padding;
     $end += $padding;
 
     my $ovlp;
-    if (!$overlap) {
-	$ovlp = (($chunksize > 3000000)? 500000 : $$chunksize/6);
-    } else {
-	$ovlp = $overlap;
+    if ( !$overlap ) {
+        $ovlp = ( ( $chunksize > 3000000 ) ? 500000 : $$chunksize / 6 );
+    }
+    else {
+        $ovlp = $overlap;
     }
     my $chunknr = 0;
     $name = $path;
     $name =~ s/.*\///;
     $predEnd = -1;
-    for ($predStart = $start; $predStart <= $end && $predEnd < $end; $predStart = $predEnd+1-$ovlp) {
-	$chunknr++;
-	$predEnd = $predStart + $chunksize-1;
-	$pE = $predEnd;
-	if ($pE > $end){
-	    $pE = $end;
-	}
-	$chunkid = sprintf ("%03d", $chunknr);
-	my $gfffilename = "$outputdir/$seqnr.$chunkid.${name}.$predStart..$pE.gff";
-	my $errorfilename;
-	if (defined $errordir) {
-	    $errorfilename = "$errordir/$seqnr.$chunkid.${name}.$predStart..$predEnd.err";
-	} else {
-	    $errorfilename = "$outputdir/$seqnr.$chunkid.${name}.$predStart..$pE.err";
-	}
-	$wholecommand = $command;
-	if (defined $hints) {
-	    if ($check){
-		$wholecommand .= " --hintsfile={check in exists $hints}";
-	    } else {
-		$wholecommand .= " --hintsfile=$hints";
-	    }
-	}
-	if ($check) {
-	    $wholecommand .=  " --predictionStart=$predStart --predictionEnd=$pE {check in line+ $path} --outfile={check out line+ $gfffilename} --errfile=$errorfilename\n";
-	} else {
-	    $wholecommand .=  " --predictionStart=$predStart --predictionEnd=$pE $path --outfile=$gfffilename --errfile=$errorfilename\n";
-	}
-	if ($wrap eq "") {
-	    print BATCH $wholecommand;
-	} else {
-	    $jobnr++;
-	    my $jobname = "$jobprefix$jobnr";
-	    open (JOB, ">$jobname");
-	    print JOB "$wrap\n" . $wholecommand;
-	    print BATCH "$jobname\n";
-	    close JOB;
-	    system("chmod +x $jobname");
-	}
+    for (
+        $predStart = $start;
+        $predStart <= $end && $predEnd < $end;
+        $predStart = $predEnd + 1 - $ovlp
+        )
+    {
+        $chunknr++;
+        $predEnd = $predStart + $chunksize - 1;
+        $pE      = $predEnd;
+        if ( $pE > $end ) {
+            $pE = $end;
+        }
+        $chunkid = sprintf( "%03d", $chunknr );
+        my $gfffilename = "$outputdir/$seqnr.$chunkid.${name}.$predStart..$pE.gff";
+        my $errorfilename;
+        if ( defined $errordir ) {
+            $errorfilename = "$errordir/$seqnr.$chunkid.${name}.$predStart..$pE.err";
+        }
+        else {
+            $errorfilename = "$outputdir/$seqnr.$chunkid.${name}.$predStart..$pE.err";
+        }
+        $wholecommand = "";
+        if( $partitionHints ) {
+            $localHints = "$outputdir/$seqnr.$chunkid.${name}.$start..$end.hints";
+            $wholecommand .= "grep ^${name} $hints | awk ' {if (\$4 >= $start ) print \$0 } ' | awk ' {if (\$5 <= $end) print \$0 } ' > $localHints\n";
+        } else {
+            $localHints = $hints;
+        }
+        $wholecommand .= $command;
+        if ( defined $hints ) {
+            if ($check) {
+                $wholecommand .= " --hintsfile={check in exists $localHints}";
+            }
+            else {
+                $wholecommand .= " --hintsfile=$localHints";
+            }
+        }
+        if ($check) {
+            $wholecommand .= " --predictionStart=$predStart --predictionEnd=$pE"
+                          . " {check in line+ $path} "
+                          . "--outfile={check out line+ $gfffilename} "
+                          . "--errfile=$errorfilename\n";
+        }
+        else {
+            $wholecommand .= " --predictionStart=$predStart --predictionEnd=$pE"
+                          . " $path --outfile=$gfffilename "
+                          . "--errfile=$errorfilename\n";
+        }
+        if( $partitionHints ) {
+            $wholecommand .= "rm $outputdir/$seqnr.$chunkid.${name}.$start..$end.hints\n";
+            # for braker.pl (where we use partitionHints) I want to delete empty error files
+            $wholecommand .= "[ -s $errorfilename ] || rm $errorfilename\n";
+        }
+        if ( $wrap eq "" ) {
+            print BATCH $wholecommand;
+        }
+        else {
+            $jobnr++;
+            my $jobname = "$jobprefix$jobnr";
+            open( JOB, ">$jobname" );
+            print JOB "$wrap\n" . $wholecommand;
+            print BATCH "$jobname\n";
+            close JOB;
+            system("chmod +x $jobname");
+        }
     }
     $seqnr++;
 }
