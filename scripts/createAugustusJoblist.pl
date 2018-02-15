@@ -128,8 +128,8 @@ while (<SEQ>) {
         }
         $wholecommand = "";
         if( $partitionHints ) {
-            $localHints = "$outputdir/$seqnr.$chunkid.${name}.$start..$end.hints";
-            $wholecommand .= "grep ^${name} $hints | awk ' {if (\$4 >= $start ) print \$0 } ' | awk ' {if (\$5 <= $end) print \$0 } ' > $localHints\n";
+            $localHints = "$outputdir/$seqnr.$chunkid.${name}.$predStart..$pE.hints";
+            $wholecommand .= "grep ^${name} $hints | awk ' {if (\$4 >= $predStart ) print \$0 } ' | awk ' {if (\$5 <= $pE) print \$0 } ' > $localHints\n";
         } else {
             $localHints = $hints;
         }
