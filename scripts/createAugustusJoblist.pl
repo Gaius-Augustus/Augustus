@@ -75,6 +75,8 @@ die("Need to specify outputdir.\n") unless ( defined $outputdir );
 open( SEQ,   "<$seqfilename" ) or die("Could not open $seqfilename");
 open( BATCH, ">$joblist" )     or die "Couldn't open $joblist\n";
 
+if ($partitionHints){ print "Status is on\n"}else{print "Status is off\n"};
+
 $outputdir =~ s/\/$//;
 $seqnr = 1;
 while (<SEQ>) {
