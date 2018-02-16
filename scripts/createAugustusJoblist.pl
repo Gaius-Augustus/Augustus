@@ -2,7 +2,7 @@
 #
 # createAugustusJoblist.pl
 # Create a joblist with overlapping sequence chunks from multiple fasta files.
-# Mario Stanke, 22.01.2007
+# Mario Stanke & Katharina J. Hoff, last changes on Feb 17th 2018
 #
 #
 
