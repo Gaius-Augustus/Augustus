@@ -6,6 +6,12 @@
 # Last modified: 10-NOV-2017
 #
 
+ifndef TOOLDIR
+	TOOLDIR = ~/tools
+# replace with your own parent directory of samtools, htslib, bcftools, tabix
+# if TOOLDIR is not specified as environment variable
+endif
+
 PROGRAM = bam2wig
 SOURCES = $(PROGRAM)
 OBJECTS = $(SOURCES:.c=.o)
