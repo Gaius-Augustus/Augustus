@@ -222,7 +222,6 @@ sub set_BLAST_PATH {
         $prtStr .= " executable that is available in your \$PATH.\n";
         print STDOUT $prtStr;
         my $epath = which 'blastp';
-        print STDOUT "After the which! $epath\n"
         if ( -d dirname($epath) ) {
             $prtStr
                 = "\# "
