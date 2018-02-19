@@ -90,7 +90,7 @@ if ($wublast) {
 else {
     ## NCBI blast
     system("$BLAST_PATH/makeblastdb -in $inputfilename -dbtype prot -parse_seqids -out $tempdbname");
-    system("$BLAST_PATH/blastp -query $inputfilename -db $tempdbname > $tempoutfile"
+    system("$BLAST_PATH/blastp -query $inputfilename -db $tempdbname > $tempoutfile");
 }
 
 
