@@ -24,8 +24,8 @@ $usage
     . "availability of evaluate_gtf.pl, but if that does not work because you "
     . "don't have this script in your path, set with this command line option.\n";
 
-if ( $#ARGV != 2 ) {
-    die "Unknown option\n\n$usage";
+if ( $#ARGV < 2 ) {
+    die "Too few options\n\n$usage";
 }
 my $seqlistfilename = $ARGV[0];
 my $annofilename    = $ARGV[1];
