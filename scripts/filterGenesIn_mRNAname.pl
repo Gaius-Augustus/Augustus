@@ -18,7 +18,7 @@ use warnings;
 if ( $#ARGV != 1 ) {
     print "usage: filterGenesIn_mRNAname.pl namefile dbfile\n\n";
     print "namefile        names of the loci to be kept come from\n";
-    print "dbfile          genbank file\n\n"
+    print "dbfile          genbank file\n\n";
     print "Only the the first of identically named RNA loci is kept\n";
     exit;
 }
