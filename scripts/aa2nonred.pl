@@ -269,4 +269,11 @@ sub set_BLAST_PATH {
         print STDERR $blast_err;
         exit(1);
     }
+    if ( not ( -x "$BLAST_PATH/blastall" ) ) {
+        print STDERR "\# " . (localtime) . " ERROR: $BLAST_PATH/blastall is not an executable file!\n";
+        exit(1);
+    }elsif( not ( -x "$BLAST_PATH/formatdb" ) ){
+        print STDERR "\# " . (localtime) . " ERROR: $BLAST_PATH/formatdb is not an executable file!\n";
+        exit(1);
+    }
 }
