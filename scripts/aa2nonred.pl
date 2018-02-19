@@ -220,6 +220,7 @@ sub set_BLAST_PATH {
             . (localtime)
             . ": Trying to guess \$BLAST_PATH from location of blastall";
         $prtStr .= " executable that is available in your \$PATH.\n";
+        print STDOUT $prtStr;
         my $epath = which 'blastall';
         if ( -d dirname($epath) ) {
             $prtStr
