@@ -89,8 +89,8 @@ if ($wublast) {
 }
 else {
     ## NCBI blast
-    system("$BLAST_PATH/formatdb -p T -i $tempdbname");
-    system("$BLAST_PATH/blastall -p blastp -d $tempdbname -i $tempdbname > $tempoutfile");
+    system("$BLAST_PATH/makeblastdb -in $inputfilename -dbtype prot -parse_seqids -out $tempdbname");
+    system("$BLAST_PATH/blastp -query $inputfilename -db $tempdbname > $tempoutfile"
 }
 
 
@@ -160,7 +160,7 @@ unlink ( rel2abs($tempoutfile) );
 
 ###########################################################################################
 #
-# finding blastp and blastall executables
+# finding blastp and makeblastdb executables
 #
 ###########################################################################################
 sub set_BLAST_PATH {
@@ -180,7 +180,7 @@ sub set_BLAST_PATH {
         $prtStr
             = "\# "
             . (localtime)
-            . ": Did not find environment variable \$BLAST_PATH ";
+            . ": Did not find environment variable \$BLAST_PATH\n";
         print STDOUT $prtStr;
     }
 
@@ -218,10 +218,11 @@ sub set_BLAST_PATH {
         $prtStr
             = "\# "
             . (localtime)
-            . ": Trying to guess \$BLAST_PATH from location of blastall";
+            . ": Trying to guess \$BLAST_PATH from location of blastp";
         $prtStr .= " executable that is available in your \$PATH.\n";
         print STDOUT $prtStr;
-        my $epath = which 'blastall';
+        my $epath = which 'blastp';
+        print STDOUT "After the which! $epath\n"
         if ( -d dirname($epath) ) {
             $prtStr
                 = "\# "
@@ -258,23 +259,23 @@ sub set_BLAST_PATH {
                    .  "bash sessions.\n";
         $blast_err .= "   c) aa2nonred.pl can try guessing the location of "
                    .  "\$BLAST_PATH from the\n";
-        $blast_err .= "      location of a blastall executable that is "
+        $blast_err .= "      location of a blastp executable that is "
                    .  "available in your \$PATH variable.\n";
         $blast_err .= "      If you try to rely on this option, you can check "
                    .  "by typing\n";
-        $blast_err .= "           which blastall\n";
-        $blast_err .= "      in your shell, whether there is a blastall "
+        $blast_err .= "           which blastp\n";
+        $blast_err .= "      in your shell, whether there is a blastp "
                    .  "executable in your \$PATH\n";
         $prtStr = "\# " . (localtime) . " ERROR: \$BLAST_PATH not set!\n";
         print STDERR $prtStr;
         print STDERR $blast_err;
         exit(1);
     }
-    if ( not ( -x "$BLAST_PATH/blastall" ) ) {
-        print STDERR "\# " . (localtime) . " ERROR: $BLAST_PATH/blastall is not an executable file!\n";
+    if ( not ( -x "$BLAST_PATH/blastp" ) ) {
+        print STDERR "\# " . (localtime) . " ERROR: $BLAST_PATH/blastp is not an executable file!\n";
         exit(1);
-    }elsif( not ( -x "$BLAST_PATH/formatdb" ) ){
-        print STDERR "\# " . (localtime) . " ERROR: $BLAST_PATH/formatdb is not an executable file!\n";
+    }elsif( not ( -x "$BLAST_PATH/makeblastdb" ) ){
+        print STDERR "\# " . (localtime) . " ERROR: $BLAST_PATH/makeblastdb is not an executable file!\n";
         exit(1);
     }
 }
