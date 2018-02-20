@@ -13,7 +13,7 @@ use Getopt::Long;
 use File::Which qw(which where);
 use File::Spec::Functions qw(rel2abs);
 use Cwd 'abs_path';
-use File::Path qw(remove_tree make_path);
+use File::Path qw(rmtree make_path);
 use File::Basename qw(dirname basename);
 use Parallel::ForkManager; # native blastp parallelization keeps most nodes idle most of the time, therefore data parallelize in perl
 use Scalar::Util qw(openhandle);
@@ -208,7 +208,7 @@ unlink ( rel2abs($tempdbname).".psi" );
 unlink ( rel2abs($tempdbname).".psq" );
 unlink ( rel2abs($tempoutfile) );
 if ($CPU > 1) {
-    rm_tree( ["$splitDir"] );
+    rmtree( ["$splitDir"] );
 }
 
 
