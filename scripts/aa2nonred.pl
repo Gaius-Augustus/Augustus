@@ -16,7 +16,7 @@ use Cwd 'abs_path';
 use File::Path qw(remove_tree);
 use File::Basename qw(dirname basename);
 use Parallel::ForkManager; # native blastp parallelization keeps most nodes idle most of the time, therefore data parallelize in perl
-use Scalar::Util;
+use Scalar::Util qw(openhandle);
 
 #
 # The maximum percent identiy allowed between any two sequences.
