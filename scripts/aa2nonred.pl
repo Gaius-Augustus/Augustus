@@ -187,11 +187,14 @@ close (BLASTOUT) or die("Could not close $tempoutfile!\n");
 # output the nonredundant file
 #
 ###########################################################################################
+print "Will print results to $outputfilname\n";
 open( OUTPUT, ">$outputfilename" ) or die("Could not open $outputfilename!\n");
 
 print "Number of keys in seqnames hash is ".scalar(keys %seqnames)."\n";
 
 foreach $seqname ( keys %seqnames ) {
+    print OUTPUT "Hello, I have a key!\n";
+    print OUTOUT "The key is $seqname\n";
     print OUTPUT ">$seqname\n" . $seqnames{$seqname} . "\n";
 }
 
