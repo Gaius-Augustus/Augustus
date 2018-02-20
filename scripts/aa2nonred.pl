@@ -111,6 +111,7 @@ while (<INPUT>) {
     $seqname = $1;
     if ( !exists( $seqnames{$seqname} ) ) {
         $seqnames{$seqname} = $';    #'
+        print "Making hash entry $seqname with value ".$'."\n";
         print TEMP ">$seqname\n" . $seqnames{$seqname} . "\n";
     }
 }
@@ -126,14 +127,14 @@ close (TEMP) or die("Could not close $tempdbname!\n");
 my $tempoutfile = "$inputfilename.blastout";
 
 ## NCBI blast
-system("$BLAST_PATH/makeblastdb -in $inputfilename -dbtype prot -parse_seqids -out $tempdbname");
+system("$BLAST_PATH/makeblastdb -in $tempdbname -dbtype prot -parse_seqids -out $tempdbname"."_db");
 if ( $CPU == 1 ) {
-    system("$BLAST_PATH/blastp -query $inputfilename -db $tempdbname > $tempoutfile");
+    system("$BLAST_PATH/blastp -query $tempdbname -db $tempdbname"."_db > $tempoutfile");
 }else{
     my $pm = new Parallel::ForkManager($CPU);
     foreach ( @splitFiles ) {
         my $pid = $pm->start and next;
-        system("$BLAST_PATH/blastp -query $_ -db $tempdbname -num_threads $CPU > $_.blastout");
+        system("$BLAST_PATH/blastp -query $tempdbname -db $tempdbname"."_db > $_.blastout");
         $pm->finish;
     }
     $pm->wait_all_children;
@@ -149,7 +150,6 @@ if ( $CPU == 1 ) {
 #
 ###########################################################################################
 
-print "Opening $tempoutfile for parsing\n";
 open( BLASTOUT, "<$tempoutfile" ) or die("Could not open $tempoutfile!\n");
 $/ = "\nQuery= ";
 my ( $query, $target, $qlen, $tlen, $numid, $minlen );
@@ -163,11 +163,9 @@ while (<BLASTOUT>) {
         $target = $1;
         $tlen   = $2;
         $numid  = $3;
-        print "!!!$query!!!$target!!!\n";
         print STDOUT "target=$target, tlen=$tlen, numid=$numid\n";
         $minlen = ( $qlen < $tlen ) ? $qlen : $tlen;
         if ( $minlen == 0 ) { $minlen = 0.0000001; }
-                print "minlen is $minlen\n";
         if ( $numid / $minlen > $max_percent_id ) {    # conflict: too similar
             if ( $query ne $target ) {
                 print STDOUT "$query and $target are similar\n";
