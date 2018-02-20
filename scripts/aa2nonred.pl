@@ -69,7 +69,7 @@ my $filename;
 my $SPLITF;
 if ( $CPU > 1 ) {
     $splitDir = dirname( abs_path($inputfilename) ) . "/split_blast";
-    makepath ($splitDir) or die ("Failed to create directory $splitDir!\n");
+    make_path ($splitDir) or die ("Failed to create directory $splitDir!\n");
     open( INPUT, "<$inputfilename" ) or die("Could not open $inputfilename!\n");
     while (<INPUT>) {
         if ($_ =~ m/^>(\S+)/) {
