@@ -156,11 +156,11 @@ my ( $query, $target, $qlen, $tlen, $numid, $minlen );
 while (<BLASTOUT>) {
     next unless / producing /;
     $_ =~ m/(\S+)\n\nLength=(\d+)/;
-    $query = $1;
+    $query = chomp($1);
     $qlen  = $2;
     print STDOUT "query=$query, qlen=$qlen\n";
     while ( $_ =~ m/>(.*)\nLength=(\d+)\n.*\n.*\n Identities = (\d+)/g ) {
-        $target = $1;
+        $target = chomp($1);
         $tlen   = $2;
         $numid  = $3;
         print STDOUT "target=$target, tlen=$tlen, numid=$numid\n";
