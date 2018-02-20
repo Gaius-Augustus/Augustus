@@ -201,7 +201,7 @@ foreach $seqname ( keys %seqnames ) {
     print OUT ">$seqname\n" . $seqnames{$seqname} . "\n";
 }
 
-open( OUT, ">$outputfilename" ) or die("Could not close $outputfilename!\n");
+close( OUT ) or die("Could not close $outputfilename!\n");
 ###########################################################################################
 #
 # Clean up
