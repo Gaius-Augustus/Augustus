@@ -17,6 +17,7 @@ use File::Path qw(rmtree make_path);
 use File::Basename qw(dirname basename);
 use Parallel::ForkManager; # native blastp parallelization keeps most nodes idle most of the time, therefore data parallelize in perl
 use Scalar::Util qw(openhandle);
+use POSIX;
 
 #
 # The maximum percent identiy allowed between any two sequences.
@@ -75,18 +76,36 @@ my $outputfilename = $ARGV[1];
 
 my $splitDir; # for parallelization
 my @splitFiles;
-my $filename;
 my $SPLITF;
 if ( $CPU > 1 ) {
+
+    my $nFastaEntries = 0;
+    # counter number of fasta entries
+    open( INPUT, "<$inputfilename" ) or die("Could not open $inputfilename!\n");
+    while (<INPUT>) {
+        if ($_ =~ m/^>/) {
+            $nFastaEntries++;
+        }
+    }
+    close ( INPUT ) or die("Could not close $inputfilename!\n");
+
+
     $splitDir = dirname( abs_path($inputfilename) ) . "/split_blast";
     make_path ($splitDir) or die ("Failed to create directory $splitDir!\n");
+    my $maxEntries = ceil($nFastaEntries/$CPU);
+    my $fileNr = 1;
+    my $nEntries = 0;
+    my $filename;
     open( INPUT, "<$inputfilename" ) or die("Could not open $inputfilename!\n");
     while (<INPUT>) {
         if ($_ =~ m/^>(\S+)/) {
-            if ( defined ( openhandle($SPLITF)) ) {
+            if ( defined ( openhandle($SPLITF)) && $nEntries == $maxEntries) {
                 close ($SPLITF) or die ("Could not close file $filename!\n");
+                $fileNr++;
+                $nEntries = 0;
             }
-            $filename = "$splitDir/$1.fa";
+            $nEntries++;
+            $filename = "$splitDir/split_$fileNr.fa";
             push @splitFiles, $filename;
             open ( $SPLITF, ">", $filename) or die ("Could not open file $filename!\n");
             print $SPLITF $_;
