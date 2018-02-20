@@ -12,6 +12,7 @@ use strict;
 use Getopt::Long;
 use File::Which qw(which where);
 use File::Spec::Functions qw(rel2abs);
+use Cwd 'abs_path';
 use File::Path qw(remove_tree);
 use File::Basename qw(dirname basename);
 use Parallel::ForkManager; # native blastp parallelization keeps most nodes idle most of the time, therefore data parallelize in perl
