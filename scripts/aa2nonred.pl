@@ -13,7 +13,7 @@ use Getopt::Long;
 use File::Which qw(which where);
 use File::Spec::Functions qw(rel2abs);
 use Cwd 'abs_path';
-use File::Path qw(remove_tree);
+use File::Path qw(remove_tree make_path);
 use File::Basename qw(dirname basename);
 use Parallel::ForkManager; # native blastp parallelization keeps most nodes idle most of the time, therefore data parallelize in perl
 use Scalar::Util qw(openhandle);
@@ -69,6 +69,7 @@ my $filename;
 my $SPLITF;
 if ( $CPU > 1 ) {
     $splitDir = dirname( abs_path($inputfilename) ) . "/split_blast";
+    makepath ($splitDir) or die ("Failed to create directory $splitDir!\n");
     open( INPUT, "<$inputfilename" ) or die("Could not open $inputfilename!\n");
     while (<INPUT>) {
         if ($_ =~ m/^>(\S+)/) {
