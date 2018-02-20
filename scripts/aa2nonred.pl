@@ -215,11 +215,11 @@ open( OUTPUT, ">$outputfilename" ) or die("Could not close $outputfilename!\n");
 # Clean up
 #
 ###########################################################################################
-unlink ( rel2abs($tempdbname) );
-unlink ( rel2abs($tempoutfile) );
-if ($CPU > 1) {
-    rmtree( ["$splitDir"] );
-}
+#unlink ( rel2abs($tempdbname) );
+#unlink ( rel2abs($tempoutfile) );
+#if ($CPU > 1) {
+#    rm_tree( ["$splitDir"] );
+#}
 
 
 ###########################################################################################
