@@ -243,7 +243,7 @@ unlink ( rel2abs($tempdbname).".psq" );
 unlink ( rel2abs($tempoutfile) );
 if ($CPU > 1) {
     rmtree( ["$splitDir"] );
-
+}
 
 ###########################################################################################
 #
