@@ -166,6 +166,7 @@ while (<BLASTOUT>) {
         print "!!!$query!!!$target!!!\n";
         print STDOUT "target=$target, tlen=$tlen, numid=$numid\n";
         $minlen = ( $qlen < $tlen ) ? $qlen : $tlen;
+        print "minlen is $minlen\n";
         if ( $minlen == 0 ) { $minlen = 0.0000001; }
         if ( $numid / $minlen > $max_percent_id ) {    # conflict: too similar
             if ( $query ne $target ) {
