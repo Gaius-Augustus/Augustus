@@ -159,7 +159,7 @@ while (<BLASTOUT>) {
     $query = $1;
     $qlen  = $2;
     print STDOUT "query=$query, qlen=$qlen\n";
-    while ( $_ =~ m/>(.*)\nLength=(\d+)\n.*\n.*\n Identities = (\d+)/g ) {
+    while ( $_ =~ m/>(\S+).*\nLength=(\d+)\n.*\n.*\n Identities = (\d+)/g) {
         $target = $1;
         $tlen   = $2;
         $numid  = $3;
