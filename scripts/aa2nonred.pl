@@ -104,10 +104,12 @@ if ( $CPU > 1 ) {
                 $fileNr++;
                 $nEntries = 0;
             }
+            if($nEntries==0){
+                $filename = "$splitDir/split_$fileNr.fa";
+                push @splitFiles, $filename;
+                open ( $SPLITF, ">", $filename) or die ("Could not open file $filename!\n");
+            }
             $nEntries++;
-            $filename = "$splitDir/split_$fileNr.fa";
-            push @splitFiles, $filename;
-            open ( $SPLITF, ">", $filename) or die ("Could not open file $filename!\n");
             print $SPLITF $_;
 
         }else{
@@ -121,6 +123,9 @@ if ( $CPU > 1 ) {
         close ($SPLITF) or die ("Could not close file $filename!\n");
     }
     close ( INPUT ) or die("Could not close $inputfilename!\n");
+    foreach(@splitFiles){
+        print "$_\n";
+    }
 }
 
 ###########################################################################################
@@ -228,17 +233,17 @@ close( OUT ) or die("Could not close $outputfilename!\n");
 # Clean up
 #
 ###########################################################################################
-unlink ( rel2abs($tempdbname) );
-unlink ( rel2abs($tempdbname).".phr" );
-unlink ( rel2abs($tempdbname).".pin" );
-unlink ( rel2abs($tempdbname).".pog" );
-unlink ( rel2abs($tempdbname).".psd" );
-unlink ( rel2abs($tempdbname).".psi" );
-unlink ( rel2abs($tempdbname).".psq" );
-unlink ( rel2abs($tempoutfile) );
-if ($CPU > 1) {
-    rmtree( ["$splitDir"] );
-}
+#unlink ( rel2abs($tempdbname) );
+#unlink ( rel2abs($tempdbname).".phr" );
+#unlink ( rel2abs($tempdbname).".pin" );
+#unlink ( rel2abs($tempdbname).".pog" );
+#unlink ( rel2abs($tempdbname).".psd" );
+#unlink ( rel2abs($tempdbname).".psi" );
+#unlink ( rel2abs($tempdbname).".psq" );
+#unlink ( rel2abs($tempoutfile) );
+#if ($CPU > 1) {
+#    rmtree( ["$splitDir"] );
+#}
 
 
 ###########################################################################################
