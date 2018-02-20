@@ -105,7 +105,7 @@ my %seqnames = ();
 my $seqname;
 $/ = "\n\>";
 while (<INPUT>) {
-    $_ =~ s/>\n//g;;
+    $_ =~ s/>//g;
     $_ =~ m/^(\S+)/;
     $seqname = $1;
 
