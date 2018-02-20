@@ -27,6 +27,7 @@ my $BLAST_PATH;
 my $blast_path;
 my $CPU = 1;
 my $v = 0;
+my $help;
 
 my $usage = "aa2nonred.pl -- make a protein file non-redundant\n";
 $usage .= "Usage: aa2nonred.pl input.fa output.fa\n";
@@ -38,16 +39,25 @@ $usage .= "                (#identical aa) / (length of shorter sequence) defaul
 $usage .= "--BLAST_PATH=s  path to blast (only implemented for NCBI BLAST)\n";
 $usage .= "--cores=n       number of cores to be used by NCBI BLAST\n";
 $usage .= "--verbosity=n   verbosity level for information printed to stdout\n";
+$usage .= "--help          print this help message\n";
 
 GetOptions(
     'maxid:f'  => \$max_percent_id,
     'BLAST_PATH=s' => \$blast_path,
     'cores=i'  => \$CPU,
-    'verbosity=i' => \$v
+    'verbosity=i' => \$v,
+    'help!'    => \$help
 );
 
-if ( $#ARGV != 1 ) {
-    die "Unknown option\n\n$usage";
+if ($help) {
+    print $usage;
+    exit(1);
+}
+
+if (scalar(@ARGV) < 2){
+    print "Too few input arguments!\n";
+    print $usage;
+    exit(1);
 }
 
 
