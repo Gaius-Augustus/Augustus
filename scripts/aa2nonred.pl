@@ -12,6 +12,9 @@ use strict;
 use Getopt::Long;
 use File::Which qw(which where);
 use File::Spec::Functions qw(rel2abs);
+use File::Path qw(remove_tree);
+use Parallel::ForkManager; # native blastp parallelization keeps most nodes idle most of the time, therefore data parallelize in perl
+use Scalar::Util;
 
 #
 # The maximum percent identiy allowed between any two sequences.
@@ -54,13 +57,49 @@ my $outputfilename = $ARGV[1];
 
 ###########################################################################################
 #
+# split input file
+#
+###########################################################################################
+
+my $splitDir; # for parallelization
+my @splitFiles;
+my $filename;
+my $SPLITF;
+if ( $CPU > 1 ) {
+    $splitDir = dirname( abs_path($inputfilename) ) . "/split_blast";
+    open( INPUT, "<$inputfilename" ) or die("Could not open $inputfilename!\n");
+    while (<INPUT>) {
+        if ($_ =~ m/^>(\S+)/) {
+            if ( defined ( openhandle($SPLITF)) ) {
+                close ($SPLITF) or die ("Could not close file $filename!\n");
+            }
+            $filename = "$splitDir/$1.fa";
+            push @splitFiles, $filename;
+            open ( $SPLITF, ">", $filename) or die ("Could not open file $filename!\n");
+            print $SPLITF $_;
+
+        }else{
+            if ( defined ( openhandle($SPLITF) ) ) {
+                print $SPLITF $_;
+            }
+        }
+
+    }
+    if ( defined ( openhandle($SPLITF)) ) {
+        close ($SPLITF) or die ("Could not close file $filename!\n");
+    }
+    close ( INPUT ) or die("Could not close $inputfilename!\n");
+}
+
+###########################################################################################
+#
 # make a file with unique sequence names
 #
 ###########################################################################################
 
-open( INPUT, "<$inputfilename" ) or die("Could not open $inputfilename");
+open( INPUT, "<$inputfilename" ) or die("Could not open $inputfilename!\n");
 my $tempdbname = "$inputfilename.nonreddb";
-open( TEMP, ">$tempdbname " ) or die("Could not open $tempdbname");
+open( TEMP, ">$tempdbname " ) or die("Could not open $tempdbname!\n");
 
 my %seqnames = ();
 my $seqname;
@@ -75,6 +114,8 @@ while (<INPUT>) {
         print TEMP ">$seqname\n" . $seqnames{$seqname} . "\n";
     }
 }
+close (INPUT) or die("Could not close $inputfilename!\n");
+close (TEMP) or die("Could not close $tempdbname!\n");
 
 ###########################################################################################
 #
@@ -93,7 +134,20 @@ if ($wublast) {
 else {
     ## NCBI blast
     system("$BLAST_PATH/makeblastdb -in $inputfilename -dbtype prot -parse_seqids -out $tempdbname");
-    system("$BLAST_PATH/blastp -query $inputfilename -db $tempdbname -num_threads $CPU > $tempoutfile");
+    if ( $CPU == 1 ) {
+        system("$BLAST_PATH/blastp -query $inputfilename -db $tempdbname > $tempoutfile");
+    }else{
+        my $pm = new Parallel::ForkManager($CPU);
+        foreach ( @splitFiles ) {
+            my $pid = $pm->start and next;
+            system("$BLAST_PATH/blastp -query $_ -db $tempdbname -num_threads $CPU > $_.blastout");
+            $pm->finish;
+        }
+        $pm->wait_all_children;
+        foreach ( @splitFiles ) {
+            system("cat $_.blastout >> $tempoutfile");
+        }
+    }
 }
 
 
@@ -103,7 +157,7 @@ else {
 #
 ###########################################################################################
 
-open( BLASTOUT, "<$tempoutfile" ) or die("Could not open $tempoutfile");
+open( BLASTOUT, "<$tempoutfile" ) or die("Could not open $tempoutfile!\n");
 $/ = "\nQuery= ";
 my ( $query, $target, $qlen, $tlen, $numid, $minlen );
 while (<BLASTOUT>) {
@@ -139,19 +193,20 @@ while (<BLASTOUT>) {
         }
     }
 }
+close (BLASTOUT) or die("Could not close $tempoutfile!\n");
 
 ###########################################################################################
 #
 # output the nonredundant file
 #
 ###########################################################################################
-open( OUTPUT, ">$outputfilename" ) or die("Could not open $outputfilename");
+open( OUTPUT, ">$outputfilename" ) or die("Could not open $outputfilename!\n");
 
 foreach $seqname ( keys %seqnames ) {
     print OUTPUT ">$seqname\n" . $seqnames{$seqname} . "\n";
 }
 
-
+open( OUTPUT, ">$outputfilename" ) or die("Could not close $outputfilename!\n");
 ###########################################################################################
 #
 # Clean up
@@ -159,6 +214,9 @@ foreach $seqname ( keys %seqnames ) {
 ###########################################################################################
 unlink ( rel2abs($tempdbname) );
 unlink ( rel2abs($tempoutfile) );
+if ($CPU > 1) {
+    rmtree( ["$splitDir"] );
+}
 
 
 ###########################################################################################
