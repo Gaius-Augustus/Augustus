@@ -103,7 +103,7 @@ open( TEMP, ">$tempdbname " ) or die("Could not open $tempdbname!\n");
 
 my %seqnames = ();
 my $seqname;
-$/ = "\n>";
+$/ = "\n\>";
 while (<INPUT>) {
     /^(.*)\n/g;
     $seqname = $1;
