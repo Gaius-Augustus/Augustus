@@ -192,6 +192,8 @@ open( OUTPUT, ">", $outputfilename ) or die("Could not open $outputfilename!\n")
 
 print "Number of keys in seqnames hash is ".scalar(keys %seqnames)."\n";
 
+print OUTPUT "I am here!";
+
 foreach $seqname ( keys %seqnames ) {
     print "I am in the loop\n";
     print OUTPUT "Hello, I have a key!\n";
