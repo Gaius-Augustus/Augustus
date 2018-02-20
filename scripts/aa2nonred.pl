@@ -158,10 +158,8 @@ while (<BLASTOUT>) {
     $_ =~ m/(\S+)\n\nLength=(\d+)/;
     $query = $1;
     $qlen  = $2;
-    $_ = ~ m/(\S+)/;
-    print "Matching test: $1\n";
     print STDOUT "query=$query, qlen=$qlen\n";
-    while ( $_ =~ m/>(.*)\n\s+Length = (\d+)\n.*\n.*\n Identities = (\d+)/g ) {
+    while ( $_ =~ m/>(.*)\nLength=(\d+)\n.*\n.*\n Identities = (\d+)/g ) {
         $target = $1;
         $tlen   = $2;
         $numid  = $3;
