@@ -108,12 +108,9 @@ while (<INPUT>) {
     $_ =~ s/\>//g;
     $_ =~ m/^(\S+)/;
     $seqname = $1;
-
-    print "seqname is $seqname\n";
     if ( !exists( $seqnames{$seqname} )  && length($seqname) > 1) {
         $seqnames{$seqname} = $';    #'
-        print "Making hash entry $seqname with value ".$'."\n";
-        print TEMP ">$seqname\n" . $seqnames{$seqname} . "\n";
+        print TEMP ">$seqname" . $seqnames{$seqname} . "";
     }
 }
 close (INPUT) or die("Could not close $inputfilename!\n");
