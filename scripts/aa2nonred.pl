@@ -188,11 +188,12 @@ close (BLASTOUT) or die("Could not close $tempoutfile!\n");
 #
 ###########################################################################################
 print "Will print results to $outputfilename\n";
-open( OUTPUT, ">$outputfilename" ) or die("Could not open $outputfilename!\n");
+open( OUTPUT, ">", $outputfilename ) or die("Could not open $outputfilename!\n");
 
 print "Number of keys in seqnames hash is ".scalar(keys %seqnames)."\n";
 
 foreach $seqname ( keys %seqnames ) {
+    print "I am in the loop\n";
     print OUTPUT "Hello, I have a key!\n";
     print OUTOUT "The key is $seqname\n";
     print OUTPUT ">$seqname\n" . $seqnames{$seqname} . "\n";
