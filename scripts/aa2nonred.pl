@@ -81,33 +81,33 @@ if ( $CPU > 1 ) {
 
     my $nFastaEntries = 0;
     # counter number of fasta entries
-    open( INPUT, "<$inputfilename" ) or die("Could not open $inputfilename!\n");
+    open( INPUT, "<$inputfilename" ) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not open $inputfilename!\n");
     while (<INPUT>) {
         if ($_ =~ m/^>/) {
             $nFastaEntries++;
         }
     }
-    close ( INPUT ) or die("Could not close $inputfilename!\n");
+    close ( INPUT ) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not close $inputfilename!\n");
 
 
     $splitDir = dirname( abs_path($inputfilename) ) . "/split_blast";
-    make_path ($splitDir) or die ("Failed to create directory $splitDir!\n");
+    make_path ($splitDir) or die ("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nFailed to create directory $splitDir!\n");
     my $maxEntries = ceil($nFastaEntries/$CPU);
     my $fileNr = 1;
     my $nEntries = 0;
     my $filename;
-    open( INPUT, "<$inputfilename" ) or die("Could not open $inputfilename!\n");
+    open( INPUT, "<$inputfilename" ) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not open $inputfilename!\n");
     while (<INPUT>) {
         if ($_ =~ m/^>(\S+)/) {
             if ( defined ( openhandle($SPLITF)) && $nEntries == $maxEntries) {
-                close ($SPLITF) or die ("Could not close file $filename!\n");
+                close ($SPLITF) or die ("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not close file $filename!\n");
                 $fileNr++;
                 $nEntries = 0;
             }
             if($nEntries==0){
                 $filename = "$splitDir/split_$fileNr.fa";
                 push @splitFiles, $filename;
-                open ( $SPLITF, ">", $filename) or die ("Could not open file $filename!\n");
+                open ( $SPLITF, ">", $filename) or die ("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not open file $filename!\n");
             }
             $nEntries++;
             print $SPLITF $_;
@@ -120,9 +120,9 @@ if ( $CPU > 1 ) {
 
     }
     if ( defined ( openhandle($SPLITF)) ) {
-        close ($SPLITF) or die ("Could not close file $filename!\n");
+        close ($SPLITF) or die ("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not close file $filename!\n");
     }
-    close ( INPUT ) or die("Could not close $inputfilename!\n");
+    close ( INPUT ) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not close $inputfilename!\n");
     foreach(@splitFiles){
         print "$_\n";
     }
@@ -134,9 +134,9 @@ if ( $CPU > 1 ) {
 #
 ###########################################################################################
 
-open( INPUT, "<$inputfilename" ) or die("Could not open $inputfilename!\n");
+open( INPUT, "<$inputfilename" ) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not open $inputfilename!\n");
 my $tempdbname = "$inputfilename.nonreddb";
-open( TEMP, ">$tempdbname " ) or die("Could not open $tempdbname!\n");
+open( TEMP, ">$tempdbname " ) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not open $tempdbname!\n");
 
 my %seqnames = ();
 my $seqname;
@@ -150,8 +150,8 @@ while (<INPUT>) {
         print TEMP ">$seqname" . $seqnames{$seqname} . "";
     }
 }
-close (INPUT) or die("Could not close $inputfilename!\n");
-close (TEMP) or die("Could not close $tempdbname!\n");
+close (INPUT) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not close $inputfilename!\n");
+close (TEMP) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not close $tempdbname!\n");
 
 ###########################################################################################
 #
@@ -185,7 +185,7 @@ if ( $CPU == 1 ) {
 #
 ###########################################################################################
 
-open( BLASTOUT, "<$tempoutfile" ) or die("Could not open $tempoutfile!\n");
+open( BLASTOUT, "<$tempoutfile" ) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not open $tempoutfile!\n");
 $/ = "\nQuery= ";
 my ( $query, $target, $qlen, $tlen, $numid, $minlen );
 while (<BLASTOUT>) {
@@ -214,20 +214,20 @@ while (<BLASTOUT>) {
         }
     }
 }
-close (BLASTOUT) or die("Could not close $tempoutfile!\n");
+close (BLASTOUT) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not close $tempoutfile!\n");
 
 ###########################################################################################
 #
 # output the nonredundant file
 #
 ###########################################################################################
-open( OUT, ">", $outputfilename ) or die("Could not open $outputfilename!\n");
+open( OUT, ">", $outputfilename ) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not open $outputfilename!\n");
 
 foreach $seqname ( keys %seqnames ) {
     print OUT ">$seqname" . $seqnames{$seqname} ;
 }
 
-close( OUT ) or die("Could not close $outputfilename!\n");
+close( OUT ) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not close $outputfilename!\n");
 ###########################################################################################
 #
 # Clean up
@@ -332,36 +332,36 @@ sub set_BLAST_PATH {
     if ( not( defined($BLAST_PATH) ) ) {
         my $blast_err;
         $blast_err .= "There are 3 alternative ways to set this variable for "
-                   .  " aa2nonred.pl:\n";
-        $blast_err .= "   a) provide command-line argument "
-                   .  "--BLAST_PATH=/your/path\n";
-        $blast_err .= "   b) use an existing environment variable "
-                   .  "\$BLAST_PATH\n";
-        $blast_err .= "      for setting the environment variable, run\n";
-        $blast_err .= "           export BLAST_PATH=/your/path\n";
-        $blast_err .= "      in your shell. You may append this to your "
-                   .  ".bashrc or .profile file in\n";
-        $blast_err .= "      order to make the variable available to all your "
-                   .  "bash sessions.\n";
-        $blast_err .= "   c) aa2nonred.pl can try guessing the location of "
-                   .  "\$BLAST_PATH from the\n";
-        $blast_err .= "      location of a blastp executable that is "
-                   .  "available in your \$PATH variable.\n";
-        $blast_err .= "      If you try to rely on this option, you can check "
-                   .  "by typing\n";
-        $blast_err .= "           which blastp\n";
-        $blast_err .= "      in your shell, whether there is a blastp "
+                   .  " aa2nonred.pl:\n"
+                   .  "   a) provide command-line argument "
+                   .  "--BLAST_PATH=/your/path\n"
+                   .  "   b) use an existing environment variable "
+                   .  "\$BLAST_PATH\n"
+                   .  "      for setting the environment variable, run\n"
+                   .  "           export BLAST_PATH=/your/path\n"
+                   .  "      in your shell. You may append this to your "
+                   .  ".bashrc or .profile file in\n"
+                   .  "      order to make the variable available to all your "
+                   .  "bash sessions.\n"
+                   .  "   c) aa2nonred.pl can try guessing the location of "
+                   .  "\$BLAST_PATH from the\n"
+                   .  "      location of a blastp executable that is "
+                   .  "available in your \$PATH variable.\n"
+                   .  "      If you try to rely on this option, you can check "
+                   .  "by typing\n"
+                   .  "           which blastp\n"
+                   .  "      in your shell, whether there is a blastp "
                    .  "executable in your \$PATH\n";
-        $prtStr = "\# " . (localtime) . " ERROR: \$BLAST_PATH not set!\n";
+        $prtStr = "\# " . (localtime) . " ERROR in file " . __FILE__ ." at line ". __LINE__ ."\n\$BLAST_PATH not set!\n";
         print STDERR $prtStr;
         print STDERR $blast_err;
         exit(1);
     }
     if ( not ( -x "$BLAST_PATH/blastp" ) ) {
-        print STDERR "\# " . (localtime) . " ERROR: $BLAST_PATH/blastp is not an executable file!\n";
+        print STDERR "\# " . (localtime) . " ERROR in file " . __FILE__ ." at line ". __LINE__ ."\n$BLAST_PATH/blastp is not an executable file!\n";
         exit(1);
     }elsif( not ( -x "$BLAST_PATH/makeblastdb" ) ){
-        print STDERR "\# " . (localtime) . " ERROR: $BLAST_PATH/makeblastdb is not an executable file!\n";
+        print STDERR "\# " . (localtime) . " ERROR in file " . __FILE__ ." at line ". __LINE__ ."\n$BLAST_PATH/makeblastdb is not an executable file!\n";
         exit(1);
     }
 }
