@@ -23,7 +23,6 @@ use Scalar::Util qw(openhandle);
 # Here defined as (number of identical aa)/(length of shorter sequence)
 #
 my $max_percent_id = 0.8;
-my $wublast        = 0;
 my $BLAST_PATH;
 my $blast_path;
 my $CPU = 1;
@@ -35,13 +34,11 @@ $usage .= "When removing redundant sequences, priority is given to the sequence 
 $usage .= "Options:\n";
 $usage .= "--maxid=f       maximum percent identity between to sequences\n";
 $usage .= "                (#identical aa) / (length of shorter sequence) default: 0.8\n";
-$usage .= "--wublast       flag to turn on WUBLAST instead of NCBI-BLAST (i.e. setdb, blastp)\n";
 $usage .= "--BLAST_PATH=s  path to blast (only implemented for NCBI BLAST)\n";
 $usage .= "--cores=n       number of cores to be used by NCBI BLAST\n";
 
 GetOptions(
     'maxid:f'  => \$max_percent_id,
-    'wublast!' => \$wublast,
     'BLAST_PATH=s' => \$blast_path,
     'cores=i'  => \$CPU
 );
@@ -50,9 +47,9 @@ if ( $#ARGV != 1 ) {
     die "Unknown option\n\n$usage";
 }
 
-if ( !$wublast ) {
-    set_BLAST_PATH();
-}
+
+set_BLAST_PATH();
+
 
 my $inputfilename  = $ARGV[0];
 my $outputfilename = $ARGV[1];
@@ -128,28 +125,20 @@ close (TEMP) or die("Could not close $tempdbname!\n");
 
 my $tempoutfile = "$inputfilename.blastout";
 
-if ($wublast) {
-
-    #my $blastdir = "~/wublast";
-    system("setdb $tempdbname");
-    system("blastp $tempdbname $tempdbname -E=1e-5 -B=100 > $tempoutfile");
-}
-else {
-    ## NCBI blast
-    system("$BLAST_PATH/makeblastdb -in $inputfilename -dbtype prot -parse_seqids -out $tempdbname");
-    if ( $CPU == 1 ) {
-        system("$BLAST_PATH/blastp -query $inputfilename -db $tempdbname > $tempoutfile");
-    }else{
-        my $pm = new Parallel::ForkManager($CPU);
-        foreach ( @splitFiles ) {
-            my $pid = $pm->start and next;
-            system("$BLAST_PATH/blastp -query $_ -db $tempdbname -num_threads $CPU > $_.blastout");
-            $pm->finish;
-        }
-        $pm->wait_all_children;
-        foreach ( @splitFiles ) {
-            system("cat $_.blastout >> $tempoutfile");
-        }
+## NCBI blast
+system("$BLAST_PATH/makeblastdb -in $inputfilename -dbtype prot -parse_seqids -out $tempdbname");
+if ( $CPU == 1 ) {
+    system("$BLAST_PATH/blastp -query $inputfilename -db $tempdbname > $tempoutfile");
+}else{
+    my $pm = new Parallel::ForkManager($CPU);
+    foreach ( @splitFiles ) {
+        my $pid = $pm->start and next;
+        system("$BLAST_PATH/blastp -query $_ -db $tempdbname -num_threads $CPU > $_.blastout");
+        $pm->finish;
+    }
+    $pm->wait_all_children;
+    foreach ( @splitFiles ) {
+        system("cat $_.blastout >> $tempoutfile");
     }
 }
 
@@ -165,18 +154,13 @@ $/ = "\nQuery= ";
 my ( $query, $target, $qlen, $tlen, $numid, $minlen );
 while (<BLASTOUT>) {
     next unless / producing /;
-    $_ = ~ m/Query=\s(\S+)\n\nLength=(\d+)/;
+    $_ =~ m/Query= (\S+).+Length=(\d+)/;
     $query = $1;
     $qlen  = $2;
+    $_ = ~ m/(Query = \S+)/;
+    print "Matching test: $1\n";
     print STDOUT "query=$query, qlen=$qlen\n";
-    while (
-        (   $wublast
-            && />(.*)\n\s+Length = (\d+)\n.*\n.*\n Identities = (\d+)/g
-        )
-        || ( !$wublast
-            && />(.*)\n\s+Length = (\d+)\n.*\n.*\n Identities = (\d+)/g )
-        )
-    {
+    while ( $_ =~ m/>(.*)\n\s+Length = (\d+)\n.*\n.*\n Identities = (\d+)/g ) {
         $target = $1;
         $tlen   = $2;
         $numid  = $3;
