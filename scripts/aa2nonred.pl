@@ -233,17 +233,16 @@ close( OUT ) or die("Could not close $outputfilename!\n");
 # Clean up
 #
 ###########################################################################################
-#unlink ( rel2abs($tempdbname) );
-#unlink ( rel2abs($tempdbname).".phr" );
-#unlink ( rel2abs($tempdbname).".pin" );
-#unlink ( rel2abs($tempdbname).".pog" );
-#unlink ( rel2abs($tempdbname).".psd" );
-#unlink ( rel2abs($tempdbname).".psi" );
-#unlink ( rel2abs($tempdbname).".psq" );
-#unlink ( rel2abs($tempoutfile) );
-#if ($CPU > 1) {
-#    rmtree( ["$splitDir"] );
-#}
+unlink ( rel2abs($tempdbname) );
+unlink ( rel2abs($tempdbname).".phr" );
+unlink ( rel2abs($tempdbname).".pin" );
+unlink ( rel2abs($tempdbname).".pog" );
+unlink ( rel2abs($tempdbname).".psd" );
+unlink ( rel2abs($tempdbname).".psi" );
+unlink ( rel2abs($tempdbname).".psq" );
+unlink ( rel2abs($tempoutfile) );
+if ($CPU > 1) {
+    rmtree( ["$splitDir"] );
 
 
 ###########################################################################################
