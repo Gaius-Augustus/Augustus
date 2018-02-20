@@ -21,6 +21,7 @@ my $max_percent_id = 0.8;
 my $wublast        = 0;
 my $BLAST_PATH;
 my $blast_path;
+my $CPU = 1;
 
 my $usage = "aa2nonred.pl -- make a protein file non-redundant\n";
 $usage .= "Usage: aa2nonred.pl input.fa output.fa\n";
@@ -31,11 +32,13 @@ $usage .= "--maxid=f       maximum percent identity between to sequences\n";
 $usage .= "                (#identical aa) / (length of shorter sequence) default: 0.8\n";
 $usage .= "--wublast       flag to turn on WUBLAST instead of NCBI-BLAST (i.e. setdb, blastp)\n";
 $usage .= "--BLAST_PATH=s  path to blast (only implemented for NCBI BLAST)\n";
+$usage .= "--cores=n       number of cores to be used by NCBI BLAST\n";
 
 GetOptions(
     'maxid:f'  => \$max_percent_id,
     'wublast!' => \$wublast,
-    'BLAST_PATH=s' => \$blast_path
+    'BLAST_PATH=s' => \$blast_path,
+    'cores=i'  => \$CPU
 );
 
 if ( $#ARGV != 1 ) {
@@ -90,7 +93,7 @@ if ($wublast) {
 else {
     ## NCBI blast
     system("$BLAST_PATH/makeblastdb -in $inputfilename -dbtype prot -parse_seqids -out $tempdbname");
-    system("$BLAST_PATH/blastp -query $inputfilename -db $tempdbname > $tempoutfile");
+    system("$BLAST_PATH/blastp -query $inputfilename -db $tempdbname -num_threads $CPU > $tempoutfile");
 }
 
 
