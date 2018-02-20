@@ -26,6 +26,7 @@ my $max_percent_id = 0.8;
 my $BLAST_PATH;
 my $blast_path;
 my $CPU = 1;
+my $v = 0;
 
 my $usage = "aa2nonred.pl -- make a protein file non-redundant\n";
 $usage .= "Usage: aa2nonred.pl input.fa output.fa\n";
@@ -36,11 +37,13 @@ $usage .= "--maxid=f       maximum percent identity between to sequences\n";
 $usage .= "                (#identical aa) / (length of shorter sequence) default: 0.8\n";
 $usage .= "--BLAST_PATH=s  path to blast (only implemented for NCBI BLAST)\n";
 $usage .= "--cores=n       number of cores to be used by NCBI BLAST\n";
+$usage .= "--verbosity=n   verbosity level for information printed to stdout\n";
 
 GetOptions(
     'maxid:f'  => \$max_percent_id,
     'BLAST_PATH=s' => \$blast_path,
-    'cores=i'  => \$CPU
+    'cores=i'  => \$CPU,
+    'verbosity=i' => \$v
 );
 
 if ( $#ARGV != 1 ) {
@@ -156,22 +159,22 @@ while (<BLASTOUT>) {
     $_ =~ m/(\S+)\n\nLength=(\d+)/;
     $query = $1;
     $qlen  = $2;
-    print STDOUT "query=$query, qlen=$qlen\n";
+    print STDOUT "query=$query, qlen=$qlen\n" if ($v>0);
     while ( $_ =~ m/>(\S+).*\nLength=(\d+)\n.*\n.*\n Identities = (\d+)/g) {
         $target = $1;
         $tlen   = $2;
         $numid  = $3;
-        print STDOUT "target=$target, tlen=$tlen, numid=$numid\n";
+        print STDOUT "target=$target, tlen=$tlen, numid=$numid\n" if ($v>0);
         $minlen = ( $qlen < $tlen ) ? $qlen : $tlen;
         if ( $minlen == 0 ) { $minlen = 0.0000001; }
         if ( $numid / $minlen > $max_percent_id ) {    # conflict: too similar
             if ( $query ne $target ) {
-                print STDOUT "$query and $target are similar\n";
+                print STDOUT "$query and $target are similar\n" if ($v>0);
                 if (   exists( $seqnames{$query} )
                     && exists( $seqnames{$target} ) )
                 {
                     delete( $seqnames{$query} );
-                    print STDOUT "delete $query\n";
+                    print STDOUT "delete $query\n" if ($v>0);
                 }
             }
         }
@@ -185,6 +188,8 @@ close (BLASTOUT) or die("Could not close $tempoutfile!\n");
 #
 ###########################################################################################
 open( OUTPUT, ">$outputfilename" ) or die("Could not open $outputfilename!\n");
+
+print "Number of keys in seqnames hash is ".scalar(keys %seqnames)."\n";
 
 foreach $seqname ( keys %seqnames ) {
     print OUTPUT ">$seqname\n" . $seqnames{$seqname} . "\n";
