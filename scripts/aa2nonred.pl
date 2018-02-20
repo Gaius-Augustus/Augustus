@@ -105,7 +105,7 @@ my %seqnames = ();
 my $seqname;
 $/ = "\n\>";
 while (<INPUT>) {
-    $_ =~ s/>//g;
+    $_ =~ s/\>//g;
     $_ =~ m/^(\S+)/;
     $seqname = $1;
 
@@ -128,14 +128,14 @@ close (TEMP) or die("Could not close $tempdbname!\n");
 my $tempoutfile = "$inputfilename.blastout";
 
 ## NCBI blast
-system("$BLAST_PATH/makeblastdb -in $tempdbname -dbtype prot -parse_seqids -out $tempdbname"."_db");
+system("$BLAST_PATH/makeblastdb -in $tempdbname -dbtype prot -parse_seqids -out $tempdbname");
 if ( $CPU == 1 ) {
-    system("$BLAST_PATH/blastp -query $tempdbname -db $tempdbname"."_db > $tempoutfile");
+    system("$BLAST_PATH/blastp -query $tempdbname -db $tempdbname > $tempoutfile");
 }else{
     my $pm = new Parallel::ForkManager($CPU);
     foreach ( @splitFiles ) {
         my $pid = $pm->start and next;
-        system("$BLAST_PATH/blastp -query $tempdbname -db $tempdbname"."_db > $_.blastout");
+        system("$BLAST_PATH/blastp -query $tempdbname -db $tempdbname > $_.blastout");
         $pm->finish;
     }
     $pm->wait_all_children;
