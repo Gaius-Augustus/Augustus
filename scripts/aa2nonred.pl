@@ -165,7 +165,7 @@ $/ = "\nQuery= ";
 my ( $query, $target, $qlen, $tlen, $numid, $minlen );
 while (<BLASTOUT>) {
     next unless / producing /;
-    /\s*(.*)\n.*\((\d+) letters.*\)/;
+    $_ = ~ m/Query=\s(\S+)\n\nLength=(\d+)/;
     $query = $1;
     $qlen  = $2;
     print STDOUT "query=$query, qlen=$qlen\n";
