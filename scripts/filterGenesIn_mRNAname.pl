@@ -3,21 +3,22 @@
 #############################################################
 # filterGenesIn_mRNAname.pl
 # filter genes from a genbank flat file database
-# those genes whose mRNA names are given in namefile
+# those genes whose mRNA names are given in a gtf file
 # are printed to STDOUT..
 #
-# usage: fileterGenesIn_mRNAname.pl namefile dbfile
+# usage: fileterGenesIn_mRNAname.pl gtffile dbfile
 #
 #
-# Mario Stanke, Simone Lange, Katharina Hoff; 17.02.2018
+# Mario Stanke, Simone Lange, Katharina Hoff; 20.02.2018
 #############################################################
 
 use strict;
 use warnings;
 
 if ( $#ARGV != 1 ) {
-    print "usage: filterGenesIn_mRNAname.pl namefile dbfile\n\n";
-    print "namefile        names of the loci to be kept come from\n";
+    print "usage: filterGenesIn_mRNAname.pl gtffile dbfile\n\n";
+    print "gtffile         genes to be kept in genbank file in gtf format\n";
+    print "                (transcript_id "...") is essential.\n";
     print "dbfile          genbank file\n\n";
     print "Only the the first of identically named RNA loci is kept\n";
     exit;
@@ -33,11 +34,11 @@ while (<GOODFILE>) {
         $goodids{$1} = 1;
     }
 }
-close(GOODFILE) || die "Couldn't close goodfile $goodfilename!\n";
+close(GOODFILE) || die ( "Couldn't close goodfile $goodfilename!\n" );
 
-open( my $ORIGFILE, "$origfilename" ) || die "Couldn't open dbfile\n";
+open( my $ORIGFILE, "$origfilename" ) || die ( "Couldn't open dbfile $origfilename!\n" );
 my @data = <$ORIGFILE>;
-close($ORIGFILE);
+close($ORIGFILE) || die ( "Couldn't close dbfile $origfilename!\n" );
 
 $/ = "\n//\n";
 
