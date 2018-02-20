@@ -187,7 +187,7 @@ close (BLASTOUT) or die("Could not close $tempoutfile!\n");
 # output the nonredundant file
 #
 ###########################################################################################
-print "Will print results to $outputfilname\n";
+print "Will print results to $outputfilename\n";
 open( OUTPUT, ">$outputfilename" ) or die("Could not open $outputfilename!\n");
 
 print "Number of keys in seqnames hash is ".scalar(keys %seqnames)."\n";
