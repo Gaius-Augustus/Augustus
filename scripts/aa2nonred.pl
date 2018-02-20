@@ -105,10 +105,9 @@ my %seqnames = ();
 my $seqname;
 $/ = "\n>";
 while (<INPUT>) {
-    s/\n>//g;
-    s/^>//g;
     /^(.*)\n/g;
     $seqname = $1;
+    print "seqname is $seqname\n";
     if ( !exists( $seqnames{$seqname} ) ) {
         $seqnames{$seqname} = $';    #'
         print "Making hash entry $seqname with value ".$'."\n";
