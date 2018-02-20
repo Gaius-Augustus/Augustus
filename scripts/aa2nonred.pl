@@ -149,15 +149,16 @@ if ( $CPU == 1 ) {
 #
 ###########################################################################################
 
+print "Opening $tempoutfile for parsing\n";
 open( BLASTOUT, "<$tempoutfile" ) or die("Could not open $tempoutfile!\n");
 $/ = "\nQuery= ";
 my ( $query, $target, $qlen, $tlen, $numid, $minlen );
 while (<BLASTOUT>) {
     next unless / producing /;
-    $_ =~ m/Query= (\S+).+Length=(\d+)/;
+    $_ =~ m/(\S+)\n\nLength=(\d+)/;
     $query = $1;
     $qlen  = $2;
-    $_ = ~ m/(Query = \S+)/;
+    $_ = ~ m/(\S+)/;
     print "Matching test: $1\n";
     print STDOUT "query=$query, qlen=$qlen\n";
     while ( $_ =~ m/>(.*)\n\s+Length = (\d+)\n.*\n.*\n Identities = (\d+)/g ) {
