@@ -31,7 +31,9 @@ open( GOODFILE, "<", "$goodfilename" )
     || die "Couldn't open goodfile $goodfilename\n";
 while (<GOODFILE>) {
     if ( $_ =~ m/transcript_id \"(.*)\"/ ) {
-        $goodids{$1} = 1;
+        if (not (defined $goodids{$1})){
+	    $goodids{$1} = 1;
+	}
     }
 }
 close(GOODFILE) || die ( "Couldn't close goodfile $goodfilename!\n" );
@@ -56,21 +58,21 @@ foreach (@data) {
         $genename  = "";
         $head      = $head . $_;
     }
-    if ( $_ =~ m/FEATURES/ ) {
+    if ( $_ =~ m/^FEATURES/ ) {
         $head = $head . $_;
     }
-    if ( $_ =~ m/source/ ) {
+    if ( $_ =~ m/\s+source/ ) {
         $head = $head . $_;
     }
     if ( $mRNAflag == 1 and not( $_ =~ m/CDS/ ) ) {
         $head = $head . $_;
     }
-    if ( $_ =~ m/mRNA/ ) {
+    if ( $_ =~ m/\s+mRNA/ ) {
         $mRNAflag = 1;
         $head     = $head . $_;
     }
     if ( $cdsFlag == 1 ) {
-        if ( $_ =~ m/gene="/ ) {
+        if ( $_ =~ m/\s+\/gene="/ ) {
             my @tmp = split(/\"/);
             $genename       = $tmp[1];
             $cdsFlag        = 0;
@@ -80,7 +82,7 @@ foreach (@data) {
             $head = $head . $_;
         }
     }
-    if ( $_ =~ m/CDS/ ) {
+    if ( $_ =~ m/\s+CDS/ ) {
         $mRNAflag = 0;
         $head     = $head . $_;
         $cdsFlag  = 1;

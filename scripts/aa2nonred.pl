@@ -89,7 +89,6 @@ if ( $CPU > 1 ) {
     }
     close ( INPUT ) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not close $inputfilename!\n");
 
-
     $splitDir = dirname( abs_path($inputfilename) ) . "/split_blast";
     make_path ($splitDir) or die ("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nFailed to create directory $splitDir!\n");
     my $maxEntries = ceil($nFastaEntries/$CPU);
