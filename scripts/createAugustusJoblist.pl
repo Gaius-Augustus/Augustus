@@ -156,9 +156,9 @@ while (<SEQ>) {
                           . "--errfile=$errorfilename\n";
         }
         if( $partitionHints ) {
-            $wholecommand .= "[ -e $outputdir/$seqnr.$chunkid.${name}.$start..$end.hints ] && rm $outputdir/$seqnr.$chunkid.${name}.$start..$end.hints\n";
+            $wholecommand .= "if [ -e $outputdir/$seqnr.$chunkid.${name}.$start..$end.hints ]\nthen\nrm $outputdir/$seqnr.$chunkid.${name}.$start..$end.hints\nfi\n";
             # for braker.pl (where we use partitionHints) I want to delete empty error files
-            $wholecommand .= "[ -s $errorfilename ] && rm $errorfilename\n";
+            $wholecommand .= "if [ -s $errorfilename ]\nthen\nrm $errorfilename\nfi\n";
         }
         if ( $wrap eq "" ) {
             print BATCH $wholecommand;
