@@ -2,7 +2,12 @@
 #
 # summarize multiple identical hints to one with mult=n
 #
-# Mario Stanke, 4.1.2010
+# This script is used by the braker.pl pipeline.
+# Please be extremely careful when changing this script because the braker.pl
+# pipeline may fail upon custom modification of this script.
+# In case of doubt, contact katharina.hoff@uni-greifswald.de
+#
+# Mario Stanke, 4.1.2010, last modification by Katharina J. Hoff on Feb 21st 2018
 
 use strict;
 use Getopt::Long;

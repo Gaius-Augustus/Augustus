@@ -3,8 +3,12 @@
 # splitMfasta.pl
 # split a multiple fasta file in smaller multiple fasta files
 # 
+# This script is used by the braker.pl pipeline.
+# Please be extremely careful when changing this script because the braker.pl
+# pipeline may fail upon custom modification of this script.
+# In case of doubt, contact katharina.hoff@uni-greifswald.de 
 # 
-# Mario Stanke, 2.04.2007
+# Mario Stanke, 2.04.2007, last modification by Katharina J. Hoff on Feb 21st 2018
 #
 #
 

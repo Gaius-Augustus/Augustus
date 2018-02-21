@@ -2,7 +2,14 @@
 #
 # format convert a gtf file
 #
+# This script is used by the braker.pl pipeline.
+# Please be extremely careful when changing this script because the braker.pl
+# pipeline may fail upon custom modification of this script.
+# In case of doubt, contact katharina.hoff@uni-greifswald.de 
+#
 # Mario Stanke, 1.2.2010, mario.stanke@uni-greifswald.de
+# last modification on Feb 21st 2018 by Katharina J. Hoff
+
 use strict;
 use Getopt::Long;
 

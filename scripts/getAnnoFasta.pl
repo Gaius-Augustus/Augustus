@@ -1,8 +1,14 @@
 #!/usr/bin/perl
+#
 # getAnnoFast.pl
 # Creates fasta sequence files from the AUGUSTUS output.
-# 
-# Mario Stanke, 10.05.2007
+#
+# This script is used by the braker.pl pipeline.
+# Please be extremely careful when changing this script because the braker.pl
+# pipeline may fail upon custom modification of this script.
+# In case of doubt, contact katharina.hoff@uni-greifswald.de  
+#
+# Mario Stanke, 10.05.2007, last modification by Katharina J. Hoff on Feb 21st 2018
 #
 
 use strict;

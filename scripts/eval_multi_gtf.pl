@@ -3,7 +3,10 @@
 # compute the accuracy values of a set of predictions
 # against a set of annotations
 #
-#
+# This script is used by the braker.pl pipeline.
+# Please be extremely careful when changing this script because the braker.pl
+# pipeline may fail upon custom modification of this script.
+# In case of doubt, contact katharina.hoff@uni-greifswald.de 
 #
 # Katharina Hoff & Mario Stanke, February 16th 2018
 

@@ -6,6 +6,11 @@
 # the percent identity value between each pair of different sequence is below a threshold
 # and each sequence name occurrs only once
 #
+# This script is used by the braker.pl pipeline.
+# Please be extremely careful when changing this script because the braker.pl
+# pipeline may fail upon custom modification of this script.
+# In case of doubt, contact katharina.hoff@uni-greifswald.de
+#
 # Mario Stanke & Katharina Hoff, last modification on Feb 19th 2018
 
 use strict;

@@ -1,15 +1,19 @@
 #!/usr/bin/perl
 
-#############################################################
+##################################################################################
 # optimize_augustus
 # train augustus and automatically optimize the meta parameters
 #
 # usage: optimize_augustus.pl --species=myspecies train.gb [parameters]
 #
 #
+# This script is used by the braker.pl pipeline.
+# Please be extremely careful when changing this script because the braker.pl
+# pipeline may fail upon custom modification of this script.
+# In case of doubt, contact katharina.hoff@uni-greifswald.de 
 #
-# Mario Stanke, 23.04.2007
-#############################################################
+# Mario Stanke, 23.04.2007, last modification by Katharina J. Hoff on Feb 21st 2018
+###################################################################################
 
 use strict;
 use IO::File;

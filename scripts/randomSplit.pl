@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#############################################################
+##############################################################################
 # randomSplit
 # randomly split a genbank file
 #
@@ -11,9 +11,13 @@
 # output: two files are created with names ending in .train 
 #         and .test, being a training set and test set, respectively.
 #
+# This script is used by the braker.pl pipeline.
+# Please be extremely careful when changing this script because the braker.pl
+# pipeline may fail upon custom modification of this script.
+# In case of doubt, contact katharina.hoff@uni-greifswald.de
 #
 # Mario Stanke, 24.06.2002
-#############################################################
+#############################################################################
 
 srand 4;
 

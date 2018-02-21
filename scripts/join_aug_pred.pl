@@ -2,7 +2,13 @@
 #
 # join_aug_pred.pl
 # Join AUGUSTUS predictions from separate runs of possibly overlapping sequence segments.
-# Mario Stanke, 25.10.2006
+#
+# This script is used by the braker.pl pipeline.
+# Please be extremely careful when changing this script because the braker.pl
+# pipeline may fail upon custom modification of this script.
+# In case of doubt, contact katharina.hoff@uni-greifswald.de 
+#
+# Mario Stanke, 25.10.2006, last modification by Katharina J. Hoff on Feb 21st 2018
 #
 use strict;
 use Getopt::Long;

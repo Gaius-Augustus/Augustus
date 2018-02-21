@@ -1,12 +1,17 @@
 #!/usr/bin/perl
 #
+# This script is used by the braker.pl pipeline.
+# Please be extremely careful when changing this script because the braker.pl
+# pipeline may fail upon custom modification of this script.
+# In case of doubt, contact katharina.hoff@uni-greifswald.de
+#
 # convert a gff/gtf file with CDS and mrna/exon annotations together with a 
 # fasta file containing the sequences to a short genbank
 # file that can be read by augustus and etraining containing
 # the DNA only flanking a gene and not the whole sequence
 #
 # Mario Stanke, 18.09.2006
-# Last modified by Katharina J. Hoff on May 3rd 2017
+# Last modified by Katharina J. Hoff on Feb 21st 2018
 
 use strict;
 use Getopt::Long;

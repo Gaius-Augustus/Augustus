@@ -1,5 +1,10 @@
 #!/usr/bin/perl
 #
+# This script is used by the braker.pl pipeline.
+# Please be extremely careful when changing this script because the braker.pl
+# pipeline may fail upon custom modification of this script.
+# In case of doubt, contact katharina.hoff@uni-greifswald.de
+#
 # newspecies.pl
 # Create the parameter files necessary for training AUGUSTUS for a new species.
 #
