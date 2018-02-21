@@ -282,7 +282,8 @@ sub training_set_dirs {
     $trainDir="$rootDir/trainingSet";
     if (! -d $trainDir){
 	print "3 mkdir $trainDir\n" if ($verbose>=3);
-	mkdir "$trainDir" or die("\nError: Could not create directory $trainDir.\n");
+	mkdir "$trainDir" or die("\nError: Could not create directory $trainDir under " 
+				 . cwd() .".\n");
     }
     if (! -d "seq"){
 	print "3 mkdir seq\n" if ($verbose>=3);

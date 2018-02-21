@@ -572,25 +572,29 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 	    (!isOnFStrand(itype) && (endOfBioIntron - DSS_MIDDLE + 1 < dnalen - 1 && !isPossibleRDSS(endOfBioIntron)))){
 	    return;
 	}
-	if (itype != lessD0 && itype != rlessD2 && endOfBioIntron < dnalen - 2){ // a codon is spliced, fill bases in second exon
-	   switch (itype)
-	      {
-	      case lessD1: // *|....|**
-		 codon[1] = *(sequence + endOfBioIntron + 1);
-		 codon[2] = *(sequence + endOfBioIntron + 2);
-		 break;
-	      case lessD2: // **|....|*
-		 codon[2] = *(sequence + endOfBioIntron + 1);
-		 break;
-	      case rlessD0: // **|....|*
-		 codon[0] = wcComplement(*(sequence + endOfBioIntron + 1));
-		 break;
-	      case rlessD1: // *|....|**
-		 codon[0] = wcComplement(*(sequence + endOfBioIntron + 2));
-		 codon[1] = wcComplement(*(sequence + endOfBioIntron + 1));
-		 break;
-	      default:;
-	      }
+	if (itype != lessD0 && itype != rlessD2){
+	    if (endOfBioIntron < dnalen - 2){ // a codon is spliced, fill bases in second exon
+		switch (itype)
+		    {
+		    case lessD1: // *|....|**
+			codon[1] = *(sequence + endOfBioIntron + 1);
+			codon[2] = *(sequence + endOfBioIntron + 2);
+			break;
+		    case lessD2: // **|....|*
+			codon[2] = *(sequence + endOfBioIntron + 1);
+			break;
+		    case rlessD0: // **|....|*
+			codon[0] = wcComplement(*(sequence + endOfBioIntron + 1));
+			break;
+		    case rlessD1: // *|....|**
+			codon[0] = wcComplement(*(sequence + endOfBioIntron + 2));
+			codon[1] = wcComplement(*(sequence + endOfBioIntron + 1));
+			break;
+		    default:;
+		    }
+	    } else {
+		codon[0] = codon[1] = codon[2] = 'n'; // codon extending past sequence end, assume no stop codon
+	    }
 	}
 	/*
 	 * maximal length of intron state with specific length distribution
@@ -965,8 +969,10 @@ Double IntronModel::emiProbUnderModel (int begin, int end) const {
 		       break;
 		    default:;
 		    }
-		 if (GeneticCode::isStopcodon(codon)) // prevent in-frame stop codons spliced by SHORT or HINTED introns (not other long ones)
-		    return 0;
+		 if (GeneticCode::isStopcodon(codon)) {
+		   // prevent in-frame stop codons spliced by SHORT or HINTED introns (not other long ones)
+		   return 0;
+		 }
 	      }
 	    int intronLength = endOfBioIntron - beginOfBioIntron + 1;
 	    
