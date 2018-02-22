@@ -16,7 +16,7 @@ use Getopt::Long;
 my $usage = "$0 -- join AUGUSTUS predictions from separate runs of possibly overlapping sequence segments.\n\n";
 $usage .= "Usage: $0 < augustus.concat > augustus.joined\n\n";
 $usage .= "Reads from standard input a file with AUGUSTUS outputs. This file will typically be the concatenation\n";
-$usage .= "of the outputs of several simulaneous runs of AUGUSTUS of different sequence segments on a computer cluster.\n";
+$usage .= "of the outputs of several simultaneous runs of AUGUSTUS of different sequence segments on a computer cluster.\n";
 $usage .= "The sequence segments can be overlapping, in which case this script intelligently omits one version of\n";
 $usage .= "overlapping genes from different runs. The outputs from the runs must have been concatenated IN ORDER.\n";
 $usage .= "The lines '# This output was generated with AUGUSTUS' must still be present in the input file so the\n";
