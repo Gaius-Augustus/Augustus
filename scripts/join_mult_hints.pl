@@ -43,9 +43,6 @@ while ( <STDIN> ) {
 
     if ( !(@lf) ) {
         @lf = @f;
-        print "Source key when pushing is $srcKey\n";
-        print "Pushing:\n";
-        print join ("\t", @f);
         my @to_be_pushed = @f;
     	push(@{$identical{$srcKey}}, \@to_be_pushed);
     }
@@ -59,12 +56,6 @@ while ( <STDIN> ) {
         )
         )
     {
-    	#print "The script believes that hint\n";
-    	#print join ("\t", @f);
-    	#print "and\n";
-    	#print join ("\t", @lf);
-    	#print "are not identical and proceeds to summarize\n";
-    	#print "At this point, the keys are:\n";
     	my @s = keys %identical;
     	foreach(@s) {
     		print "key $_\n";
@@ -74,14 +65,6 @@ while ( <STDIN> ) {
         @lf = @f;
     }
     else {
-    	#print "script believes that hint\n";
-    	#print join ("\t", @f);
-    	#print "and\n";
-    	#print join ("\t", @lf);
-    	#print "are identical and pushes according to key $srcKey\n";
-    	print "Source key when pushing is $srcKey\n";
-    	print "Pushing:\n";
-        print join ("\t", @f);
     	my @to_be_pushed = @f;
     	push(@{$identical{$srcKey}}, \@to_be_pushed);
     }
@@ -91,10 +74,7 @@ summarizeHint(\%identical);
 
 sub summarizeHint {
 	my $hints = shift;
-	print "Script is in summarizeHints\n";
-	print "Number of keys is ". scalar(keys %{$hints})."\n";
 	foreach my $src (keys %{$hints}) {
-		print "Source key when processing is $src\n";
 		my @h = @{${$hints->{$src}}[0]};
 		# if there is only one hint, print exactly as it was
 		if(scalar(@{$hints->{$src}}) == 1 ) {
@@ -103,7 +83,6 @@ sub summarizeHint {
 			my $mult = 0;
 			for (my $i = 0; $i < scalar (@{$hints->{$src}}); $i++ ) {
 				my @l = @{${$hints->{$src}}[$i]};
-				print "Field 8 is $l[8]\n";
 				if($l[8] =~ m/mult=(\d+)/) {
 					$mult += $1;
 				}else{
