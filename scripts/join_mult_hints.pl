@@ -65,7 +65,7 @@ print join( "\t", @lf ) if (@lf);
 sub summarizeHint {
 	my $hints = shift;
 	foreach my $src (keys %{$hints}) {
-		my @h = ${$hints->{$src}}[0];
+		my @h = @{${$hints->{$src}}[0]};
 		foreach(@h){
 			print "The line is $_\n";
 		}
