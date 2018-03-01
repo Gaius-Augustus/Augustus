@@ -60,6 +60,11 @@ while ( <STDIN> ) {
     	print "and\n";
     	print join ("\t", @lf);
     	print "are not identical and proceeds to summarize\n";
+    	print "At this point, the keys are:\n";
+    	my @s = keys %identical;
+    	foreach(@s) {
+    		print "key $_\n";
+    	}
         summarizeHint(\%identical);
         undef %identical;
         @lf = @f;
