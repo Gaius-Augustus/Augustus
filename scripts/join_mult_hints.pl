@@ -54,6 +54,7 @@ while ( <STDIN> ) {
     }
     else {
     	if( $f[9] =~ m/s?o?urc?e=(\w)/ ) {
+    		print "Source key when pushing is $1\n";
     		push(@{$identical{$1}}, \@f);
     	}else{
     		push(@{$identical{'no_src'}}, \@f);
@@ -66,6 +67,7 @@ summarizeHint(\%identical);
 sub summarizeHint {
 	my $hints = shift;
 	foreach my $src (keys %{$hints}) {
+		print "Source key when processing is $src\n";
 		my @h = @{${$hints->{$src}}[0]};
 		# if there is only one hint, print exactly as it was
 		if(scalar(@{$hints->{$src}}) == 1 ) {
