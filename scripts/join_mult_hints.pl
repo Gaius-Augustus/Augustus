@@ -34,6 +34,12 @@ my %identical; # holds all hints with identical coordinates, locus, strand & fra
 
 while ( <STDIN> ) {
     @f = split( /\t/, $_ );
+    my $srcKey;
+    if($f[8] =~ m/so?u?rce?=(\w)/){
+    	$srcKey = $1;
+    }else{
+    	$srcKey = 'no_src';
+    }
 
     if ( !(@lf) ) {
         @lf = @f;
@@ -53,12 +59,8 @@ while ( <STDIN> ) {
         @lf = @f;
     }
     else {
-    	if( $f[8] =~ m/so?u?rce?=(\w)/ ) {
-    		print "Source key when pushing is $1\n";
-    		push(@{$identical{$1}}, \@f);
-    	}else{
-    		push(@{$identical{'no_src'}}, \@f);
-    	}
+    		print "Source key when pushing is $srcKey\n";
+    		push(@{$identical{$srcKey}}, \@f);
     }
 }
 
