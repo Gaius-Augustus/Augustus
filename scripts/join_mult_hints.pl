@@ -81,7 +81,7 @@ sub summarizeHint {
 				}
 			}
 			$h[8] =~ s/gro?u?p=[^;]*;//;
-			$h[8] =~ s/mult=\d;//;
+			$h[8] =~ s/mult=\d+;//;
 			for (my $i = 0; $i < 9; $i++) {
 				if( not($i==5) && not ($i==8) ) {
 					print $h[$i]."\t";
