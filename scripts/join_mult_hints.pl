@@ -103,7 +103,7 @@ sub summarizeHint {
 			my $mult = 1;
 			for (my $i = 1; $i < scalar (@{$hints->{$src}}); $i++ ) {
 				my @l = split(/\t/, ${$hints->{$src}}[$i]);
-				if($l[9] =~ m/mult=(\d+)/) {
+				if($l[8] =~ m/mult=(\d+)/) {
 					$mult += $1;
 				}else{
 					$mult++;
