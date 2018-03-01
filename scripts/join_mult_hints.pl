@@ -54,6 +54,7 @@ while ( <STDIN> ) {
         )
         )
     {
+    	print "Do I ever end up here?\n";
         summarizeHint(\%identical);
         undef %identical;
         @lf = @f;
