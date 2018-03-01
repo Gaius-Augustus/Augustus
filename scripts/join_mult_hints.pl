@@ -59,12 +59,12 @@ while ( <STDIN> ) {
         )
         )
     {
-    	print "The script believes that hint\n";
-    	print join ("\t", @f);
-    	print "and\n";
-    	print join ("\t", @lf);
-    	print "are not identical and proceeds to summarize\n";
-    	print "At this point, the keys are:\n";
+    	#print "The script believes that hint\n";
+    	#print join ("\t", @f);
+    	#print "and\n";
+    	#print join ("\t", @lf);
+    	#print "are not identical and proceeds to summarize\n";
+    	#print "At this point, the keys are:\n";
     	my @s = keys %identical;
     	foreach(@s) {
     		print "key $_\n";
@@ -74,11 +74,11 @@ while ( <STDIN> ) {
         @lf = @f;
     }
     else {
-    	print "script believes that hint\n";
-    	print join ("\t", @f);
-    	print "and\n";
-    	print join ("\t", @lf);
-    	print "are identical and pushes according to key $srcKey\n";
+    	#print "script believes that hint\n";
+    	#print join ("\t", @f);
+    	#print "and\n";
+    	#print join ("\t", @lf);
+    	#print "are identical and pushes according to key $srcKey\n";
     	print "Source key when pushing is $srcKey\n";
     	print "Pushing:\n";
         print join ("\t", @f);
