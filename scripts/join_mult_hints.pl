@@ -79,6 +79,8 @@ summarizeHint(\%identical);
 
 sub summarizeHint {
 	my $hints = shift;
+	print "Script is in summarizeHints\n";
+	print "Number of keys is ". scalar(keys %{$hints})."\n";
 	foreach my $src (keys %{$hints}) {
 		print "Source key when processing is $src\n";
 		my @h = @{${$hints->{$src}}[0]};
