@@ -69,6 +69,7 @@ summarizeHint(\%identical);
 
 sub summarizeHint {
 	my $hints = shift;
+	print "In summarize Hints\n";
 	foreach my $src (keys %{$hints}) {
 		my @h = @{${$hints->{$src}}[0]};
 		# if there is only one hint, print exactly as it was
