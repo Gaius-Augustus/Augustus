@@ -44,6 +44,8 @@ while ( <STDIN> ) {
     if ( !(@lf) ) {
         @lf = @f;
         print "Source key when pushing is $srcKey\n";
+        print "Pushing:\n";
+        print join ("\t", @f);
         my @to_be_pushed = @f;
     	push(@{$identical{$srcKey}}, \@to_be_pushed);
     }
@@ -78,6 +80,8 @@ while ( <STDIN> ) {
     	print join ("\t", @lf);
     	print "are identical and pushes according to key $srcKey\n";
     	print "Source key when pushing is $srcKey\n";
+    	print "Pushing:\n";
+        print join ("\t", @f);
     	my @to_be_pushed = @f;
     	push(@{$identical{$srcKey}}, \@to_be_pushed);
     }
