@@ -27,13 +27,12 @@ if ($help) {
     exit(0);
 }
 
-my @f;
 my @lf;
 my ( $lm, $m );
 my %identical; # holds all hints with identical coordinates, locus, strand & frame
 
 while ( <STDIN> ) {
-    @f = split( /\t/, $_ );
+    my @f = split( /\t/, $_ );
     my $srcKey;
     if($f[8] =~ m/so?u?rce?=(\w)/){
     	$srcKey = $1;
