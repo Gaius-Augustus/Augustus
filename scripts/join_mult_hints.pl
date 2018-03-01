@@ -53,7 +53,7 @@ while ( <STDIN> ) {
         @lf = @f;
     }
     else {
-    	if( $f[9] =~ m/s?o?urc?e=(\w)/ ) {
+    	if( $f[9] =~ m/so?u?rce?=(\w)/ ) {
     		print "Source key when pushing is $1\n";
     		push(@{$identical{$1}}, \@f);
     	}else{
