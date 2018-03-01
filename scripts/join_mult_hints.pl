@@ -66,9 +66,6 @@ sub summarizeHint {
 	my $hints = shift;
 	foreach my $src (keys %{$hints}) {
 		my @h = @{${$hints->{$src}}[0]};
-		foreach(@h){
-			print "The line is $_\n";
-		}
 		# if there is only one hint, print exactly as it was
 		if(scalar(@{$hints->{$src}}) == 1 ) {
 			print join ("\t", @h);
