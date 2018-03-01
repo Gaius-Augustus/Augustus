@@ -54,9 +54,9 @@ while ( <STDIN> ) {
     }
     else {
     	if( $f[9] =~ m/s?o?urc?e=(\w)/ ) {
-    		push(@{$identical{$1}}, @f);
+    		push(@{$identical{$1}}, \@f);
     	}else{
-    		push(@{$identical{'no_src'}}, @f);
+    		push(@{$identical{'no_src'}}, \@f);
     	}
     }
 }
