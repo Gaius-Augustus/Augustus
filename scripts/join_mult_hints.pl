@@ -44,6 +44,8 @@ while ( <STDIN> ) {
 
     if ( !(@lf) ) {
         @lf = @f;
+        print "Source key when pushing is $srcKey\n";
+    	push(@{$identical{$srcKey}}, \@f);
     }
     elsif (
         !(     ( $f[0] eq $lf[0] )
