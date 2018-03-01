@@ -103,6 +103,7 @@ sub summarizeHint {
 			my $mult = 1;
 			for (my $i = 1; $i < scalar (@{$hints->{$src}}); $i++ ) {
 				my @l = ${$hints->{$src}}[$i];
+				print "Field 8 is $l[8]\n";
 				if($l[8] =~ m/mult=(\d+)/) {
 					$mult += $1;
 				}else{
