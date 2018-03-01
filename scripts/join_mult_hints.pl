@@ -39,8 +39,6 @@ while ( <STDIN> ) {
     }else{
     	$srcKey = 'no_src';
     }
-    print $srcKey ." is $srcKey\n";
-
     if ( !(@lf) ) {
         @lf = @f;
         my @to_be_pushed = @f;
@@ -56,10 +54,6 @@ while ( <STDIN> ) {
         )
         )
     {
-    	my @s = keys %identical;
-    	foreach(@s) {
-    		print "key $_\n";
-    	}
         summarizeHint(\%identical);
         undef %identical;
         @lf = @f;
