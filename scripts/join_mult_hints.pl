@@ -40,6 +40,7 @@ while ( <STDIN> ) {
     }else{
     	$srcKey = 'no_src';
     }
+    print $srcKey ." is $srcKey\n";
 
     if ( !(@lf) ) {
         @lf = @f;
