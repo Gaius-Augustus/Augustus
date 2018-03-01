@@ -60,7 +60,8 @@ while ( <STDIN> ) {
     	}
     }
 }
-print join( "\t", @lf ) if (@lf);
+
+summarizeHint(\%identical);
 
 sub summarizeHint {
 	my $hints = shift;
@@ -80,9 +81,9 @@ sub summarizeHint {
 				}
 			}
 			$h[8] =~ s/gro?u?p=[^;]*;//;
-			$h[8] =~ s/mult=\d?;//;
+			$h[8] =~ s/mult=\d;//;
 			for (my $i = 0; $i < 9; $i++) {
-				if( not($i==5) && not ($i==8)) {
+				if( not($i==5) && not ($i==8) ) {
 					print $h[$i]."\t";
 				}elsif($i==5){
 					print $mult."\t";
