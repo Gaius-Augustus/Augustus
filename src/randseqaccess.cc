@@ -113,7 +113,7 @@ void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
 		    }
 		    else{
 			throw ProjectError("SpeciesCollection::readExtrinsicCFGFile: Please specify a set of species for which config table " + 
-					   itoa(groupCount) +" in\n " + filename + "is valid");
+					   itoa(groupCount) +" in\n" + filename + " is valid");
 		    }
 		    if(skey != "none" && skey != "None"){
 			speciesColl.insert(pair<int,FeatureCollection>(groupCount,sc));
@@ -124,12 +124,12 @@ void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
 		}
 		else{
 		    throw ProjectError("SpeciesCollection::readExtrinsicCFGFile: Please specify a set of species for which config table " +
-				       itoa(groupCount) +" in\n " + filename + "is valid");
+				       itoa(groupCount) +" in\n" + filename + " is valid");
 		}
 	    }
 	    else{
 		throw ProjectError("SpeciesCollection::readExtrinsicCFGFile: Please specify a set of species for which config table " +
-				   itoa(groupCount) + " in\n " + filename + "is valid");
+				   itoa(groupCount) + " in\n" + filename + " is valid");
 	    }
 	}
         datei.close();
