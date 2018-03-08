@@ -25,7 +25,7 @@ $usage .= "Options:\n";
 $usage
     .= "--EVAL_PATH   path to eval package (will try to guess from "
     . "availability of evaluate_gtf.pl, but if that does not work because you "
-    . "don't have this script in your path, set with this command line option.\n";
+    . "don't have this script in your path, set with this command line option).\n";
 
 if ( $#ARGV < 2 ) {
     die "Too few options\n\n$usage";
