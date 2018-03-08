@@ -6,9 +6,9 @@
 # This script is used by the braker.pl pipeline.
 # Please be extremely careful when changing this script because the braker.pl
 # pipeline may fail upon custom modification of this script.
-# In case of doubt, contact katharina.hoff@uni-greifswald.de 
+# In case of doubt, contact katharina.hoff@uni-greifswald.de
 #
-# Katharina Hoff & Mario Stanke, February 16th 2018
+# Katharina Hoff & Mario Stanke, March 8th 2018
 
 use strict;
 use warnings;
@@ -80,15 +80,13 @@ close(SEQLIST) or die("Could not close $seqlistfilename");
 
 foreach my $seq (@seqlist) {
     chomp $seq;
-    my $cmdStr
-        = "grep \"^$seq\\b\" $annofilename | grep -P \"\\t\\+\\t\" > "
-        . "$dirname/$seq"
-        . "_plus.anno.gtf";
+    my $cmdStr = "grep \"^$seq\\b\" $annofilename | grep -P \"\\t\\+\\t\" > "
+               . "$dirname/$seq"
+               . "_plus.anno.gtf";
     system($cmdStr);
-    $cmdStr
-        = "grep \"^$seq\\b\" $predfilename | grep -P \"\\t\\+\\t\" > "
-        . "$dirname/$seq"
-        . "_plus.pred.gtf";
+    $cmdStr = "grep \"^$seq\\b\" $predfilename | grep -P \"\\t\\+\\t\" > "
+            . "$dirname/$seq"
+            . "_plus.pred.gtf";
     system($cmdStr);
     system( "echo '$dirname/$seq" . "_plus.anno.gtf' >> annotation_list" );
     system( "echo '$dirname/$seq" . "_plus.pred.gtf' >> prediction_list" );
@@ -105,9 +103,7 @@ foreach my $seq (@seqlist) {
 
 # call evaluate_gtf
 #
-system(
-    "perl -I $evalpath $evalpath/evaluate_gtf.pl annotation_list prediction_list"
-);
+system( "perl -I $evalpath $evalpath/evaluate_gtf.pl annotation_list prediction_list 2> /dev/null" );
 
 # clean up
 unlink("annotation_list");
