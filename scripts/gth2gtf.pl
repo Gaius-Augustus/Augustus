@@ -79,4 +79,3 @@ close(GTHGTF) or die("ERROR in file " . __FILE__ ." at line ". __LINE__
     . "\nCould not close file $out!\n");
 close(GTH)    or die("ERROR in file " . __FILE__ ." at line ". __LINE__
     . "\nCould not close file $align!\n");
-}
