@@ -36,10 +36,10 @@ while(<GEN>){
 		}
 	}elsif($_=~m/\tCDS\t/){
 		if($printedWarn==0){
-			print STDERR "Warning: transcript_id was not detected in the last column. Will assumet hat the entire last column serves as transcript identifier!\n";
+			print STDERR "Warning: transcript_id was not detected in the last column. Will assume that the entire last column serves as transcript identifier!\n";
 			$printedWarn = 1;
 		}
-		if($_=~m/^(.*)\t.*\tCDS\t(\d*)\t(\d*)\t.*\t(\+|-)\t(0|1|2)\t(.*)/){
+		if($_=~m/^(.*)\t.*\tCDS\t(\d*)\t(\d*)\t.*\t(\+|-)\t(0|1|2|\.)\t(.*)/){
 			if(not(($1.$6) eq $lastgenename)){
 	    		$numberofgenes++;
 	    		$lastgenename=($1.$6);
