@@ -1,12 +1,12 @@
 #!/usr/bin/perl
 # Author: Katharina J. Hoff
-# Date: November 22nd 2017
+# Date: February 19th 2018
 # set stop codon frequencies in parameters.cfg of a particular species
 
 use strict;
 use Getopt::Long;
 
-my $usage = "filterSpliceHints.pl --AUGUSTUS_CONFIG_PATH=path --species=someName --etrainOut=file\n";
+my $usage = "setStopCodonFreqs.pl --AUGUSTUS_CONFIG_PATH=path --species=someName --etrainOut=file\n";
 
 my $AUGUSTUS_CONFIG_PATH;
 my $species;
