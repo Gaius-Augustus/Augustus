@@ -33,86 +33,86 @@ sub gtf2fasta {
     my %gtf;
     my %genome;
     open (GTF, "<", $gtf_file ) or die ("ERROR: in file " . __FILE__ ." at line ". __LINE__
-					. "\nCould not close file $gtf_file!\n");
+                    . "\nCould not close file $gtf_file!\n");
     while ( <GTF> ) {
-	if ( $_ =~ m/\tCDS\t/ ) {
-	    $_ =~ m/transcript_id \"(\S+)\"/;
-	    my $txid = $1;
-	    my @line = split(/\t/);
-	    push @{$gtf{$line[0]}{$txid}}, $_;
-	}
+    if ( $_ =~ m/\tCDS\t/ ) {
+        $_ =~ m/transcript_id \"(\S+)\"/;
+        my $txid = $1;
+        my @line = split(/\t/);
+        push @{$gtf{$line[0]}{$txid}}, $_;
+    }
     }
     close (GTF) or die ("ERROR: in file " . __FILE__ ." at line ". __LINE__
-			. "\nCould not close file $gtf_file!\n");
+            . "\nCould not close file $gtf_file!\n");
     open (GENOME, "<", $genome_file ) or die ("ERROR: in file " . __FILE__
-					      . " at line ". __LINE__ ."\nCould not close file $genome_file!\n");
+                          . " at line ". __LINE__ ."\nCould not close file $genome_file!\n");
     my $seq = "";
     my $locus;
     my %cds_seq;
     while (<GENOME>) {
-	chomp;
-	if( not ($_ =~ m/^>/ ) ) {
-	    $seq .= $_;
-	} elsif ( $_ =~ m/^>(\S+)/ ) {
-	    if (defined ($locus) ) {
-		while ( my ( $txid, $txgtf ) = each %{$gtf{$locus}} ) {
-		    foreach ( @{$txgtf} ) {
-			my @line = split(/\t/);
-			if ( not( defined( $cds_seq{$txid} ) ) ) {
-			    $cds_seq{$txid} = substr ( $seq, ( $line[3] -1 ),
-						       ( $line[4] - $line[3] + 1 ) );
-			    if ( $line[6] eq '-' ) {
-				$cds_seq{$txid} = reverse_complement ( $cds_seq{$txid} );
-			    }
-			}else {
-			    if ( $line[6] eq '+') {
-				$cds_seq{$txid} .= substr ( $seq, ( $line[3] -1 ),
-							    ( $line[4] - $line[3] + 1 ) );
-			    } else {
-				$cds_seq{$txid} = reverse_complement(
-				    substr ( $seq, ( $line[3] -1 ), ( $line[4] - $line[3] + 1 ) ) )
-				    . $cds_seq{$txid};
-			    }
-			}
-		    }
-		}
-	    }
-	    $locus = $1;
-	    $seq = "";
-	}
+    chomp;
+    if( not ($_ =~ m/^>/ ) ) {
+        $seq .= $_;
+    } elsif ( $_ =~ m/^>(\S+)/ ) {
+        if (defined ($locus) ) {
+        while ( my ( $txid, $txgtf ) = each %{$gtf{$locus}} ) {
+            foreach ( @{$txgtf} ) {
+            my @line = split(/\t/);
+            if ( not( defined( $cds_seq{$txid} ) ) ) {
+                $cds_seq{$txid} = substr ( $seq, ( $line[3] -1 ),
+                               ( $line[4] - $line[3] + 1 ) );
+                if ( $line[6] eq '-' ) {
+                $cds_seq{$txid} = reverse_complement ( $cds_seq{$txid} );
+                }
+            }else {
+                if ( $line[6] eq '+') {
+                $cds_seq{$txid} .= substr ( $seq, ( $line[3] -1 ),
+                                ( $line[4] - $line[3] + 1 ) );
+                } else {
+                $cds_seq{$txid} = reverse_complement(
+                    substr ( $seq, ( $line[3] -1 ), ( $line[4] - $line[3] + 1 ) ) )
+                    . $cds_seq{$txid};
+                }
+            }
+            }
+        }
+        }
+        $locus = $1;
+        $seq = "";
+    }
     }
     # excise seqs for last contig:
     if (defined ($locus) ) {
-	while ( my ( $txid, $txgtf ) = each %{$gtf{$locus}} ) {
-	    foreach ( @{$txgtf} ) {
-		my @line = split(/\t/);
-		if ( not( defined( $cds_seq{$txid} ) ) ) {
-		    $cds_seq{$txid} = substr ( $seq, ( $line[3] -1 ), ( $line[4] - $line[3] + 1 ) );
-		    if ( $line[6] eq '-' ) {
-			$cds_seq{$txid} = reverse_complement ( $cds_seq{$txid} );
-		    }
-		}else {
-		    if ( $line[6] eq '+') {
-			$cds_seq{$txid} .= substr ( $seq, ( $line[3] -1 ),
-						    ( $line[4] - $line[3] + 1 ) );
-		    } else {
-			$cds_seq{$txid} = reverse_complement(
-			    substr ( $seq, ( $line[3] -1 ), ( $line[4] - $line[3] + 1 ) ) )
-			    . $cds_seq{$txid}
-		    }
-		}
-	    }
-	}
+    while ( my ( $txid, $txgtf ) = each %{$gtf{$locus}} ) {
+        foreach ( @{$txgtf} ) {
+        my @line = split(/\t/);
+        if ( not( defined( $cds_seq{$txid} ) ) ) {
+            $cds_seq{$txid} = substr ( $seq, ( $line[3] -1 ), ( $line[4] - $line[3] + 1 ) );
+            if ( $line[6] eq '-' ) {
+            $cds_seq{$txid} = reverse_complement ( $cds_seq{$txid} );
+            }
+        }else {
+            if ( $line[6] eq '+') {
+            $cds_seq{$txid} .= substr ( $seq, ( $line[3] -1 ),
+                            ( $line[4] - $line[3] + 1 ) );
+            } else {
+            $cds_seq{$txid} = reverse_complement(
+                substr ( $seq, ( $line[3] -1 ), ( $line[4] - $line[3] + 1 ) ) )
+                . $cds_seq{$txid}
+            }
+        }
+        }
+    }
     }
     close(GENOME) or die ("ERROR: in file " . __FILE__ ." at line ". __LINE__
-			  . "\nCould not close file $genome_file!\n");
+              . "\nCould not close file $genome_file!\n");
     open (FASTA, ">", $fasta_file) or die ("ERROR: in file " . __FILE__ ." at line " . __LINE__
-					   . "\nCould not close file $fasta_file!\n");
+                       . "\nCould not close file $fasta_file!\n");
     while ( my ( $txid, $dna ) = each %cds_seq ) {
-	print FASTA ">$txid\n".dna2aa($dna)."\n";
+    print FASTA ">$txid\n".dna2aa($dna)."\n";
     }
     close (FASTA) or die ("ERROR: in file " . __FILE__ ." at line ". __LINE__
-			  . "\nCould not close file $fasta_file!\n");
+              . "\nCould not close file $fasta_file!\n");
 }
 
 ####################################################################################################
@@ -202,7 +202,11 @@ sub dna2aa {
     my @codons = $seq =~ /(.{1,3})/g;
     my $aa = "";
     foreach ( @codons ) {
-        $aa .= $genetic_code{$_};
+        if($_ =~ m/N/i){
+            $aa .= "X";
+        }else{
+            $aa .= $genetic_code{$_};
+        }
     }
     return $aa;
 }
