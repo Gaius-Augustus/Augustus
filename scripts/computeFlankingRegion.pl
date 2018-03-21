@@ -23,16 +23,23 @@ if(scalar @ARGV<1){
 my $printedWarn = 0;
 
 my $filename = $ARGV[0];
+
+my %gene;
+
 open(GEN, "<", $filename) or die("Could not open file ".$filename."\n");
 while(<GEN>){
 	if($_ =~ m/transcript_id/){
     	if($_=~m/^(.*)\t.*\tCDS\t(\d*)\t(\d*)\t.*\t(\+|-)\t(0|1|2)\t.*transcript_id "(.*)"/){
-			if(not(($1.$6) eq $lastgenename)){
-	    		$numberofgenes++;
-	    		$lastgenename=($1.$6);
-			}
-			my $diff=max($2,$3)-min($2,$3)+1;
-			$totalgenelength+=$diff;
+    		if(not(defined($gene{$1.$6}{'start'}))) {
+    			$gene{$1.$6}{'start'} = min($2, $3);
+    		}elsif($gene{$1.$6}{'start'} > min($2, $3)){
+    			$gene{$1.$6}{'start'} = min($2, $3);
+    		}
+    		if(not(defined($gene{$1.$6}{'stop'}))) {
+    			$gene{$1.$6}{'stop'} = max($2, $3);
+    		}elsif($gene{$1.$6}{'stop'} < max($2, $3)){
+    			$gene{$1.$6}{'stop'} = max($2, $3);
+    		}
 		}
 	}elsif($_=~m/\tCDS\t/){
 		if($printedWarn==0){
@@ -40,19 +47,28 @@ while(<GEN>){
 			$printedWarn = 1;
 		}
 		if($_=~m/^(.*)\t.*\tCDS\t(\d*)\t(\d*)\t.*\t(\+|-)\t(0|1|2|\.)\t(.*)/){
-			if(not(($1.$6) eq $lastgenename)){
-	    		$numberofgenes++;
-	    		$lastgenename=($1.$6);
-			}
-			my $diff=max($2,$3)-min($2,$3)+1;
-			$totalgenelength+=$diff;
+    		if(not(defined($gene{$1.$6}{'start'}))) {
+    			$gene{$1.$6}{'start'} = min($2, $3);
+    		}elsif($gene{$1.$6}{'start'} > min($2, $3)){
+    			$gene{$1.$6}{'start'} = min($2, $3);
+    		}
+    		if(not(defined($gene{$1.$6}{'stop'}))) {
+    			$gene{$1.$6}{'stop'} = max($2, $3);
+    		}elsif($gene{$1.$6}{'stop'} < max($2, $3)){
+    			$gene{$1.$6}{'stop'} = max($2, $3);
+    		}
 		}
 	}
 }
 close(GEN) or die("Could not close file ".$filename."\n");
 
+foreach(keys %gene){
+	$numberofgenes++;
+	$totalgenelength += $gene{$_}{'stop'} - $gene{$_}{'start'} + 1;
+}
+
 my $average_length = $totalgenelength/$numberofgenes;
-print "\nTotal length: ".$totalgenelength.". Number of genes: ".$numberofgenes.". Average Length: ".$average_length."\n\n";
+print "\nTotal length gene length (including introns): ".$totalgenelength.". Number of genes: ".$numberofgenes.". Average Length: ".$average_length."\n\n";
 # calculate the flanking DNA value
 my $flanking_DNA = min(floor($average_length/2), 10000);
 print "The flanking_DNA value is: ".$flanking_DNA." (the Minimum of 10 000 and ".floor($average_length/2).")\n";
