@@ -9,7 +9,7 @@ ucsc_gtf2gff3.pl --in=genes_with_utrs.gtf --out=genes_with_utrs.gff3
 cat genes_with_utrs.gff3 | perl -pe "s/five_prime_utr/5'-UTR/; s/three_prime_utr/3'-UTR/;" > genes_with_utrs.f.gff3
 
 cat genes_with_utrs.f.gff3 | perl -ne 'if(not($_=~m/\tgene\t/) and not($_=~m/\tmRNA\t/)){
-@t = split(/\t/); print "$t[0]\t$t[1]\t$t[2]\t";
+@t = split(/\t/); print "$t[0]\t$t[1]\t$t[2]\t$t[3]\t";
 print "$t[4]\t$t[5]\t$t[6]\t$t[7]\t"; $_=~m/Parent=(\S+)/; print "gene_id \"$1\"; transcript_id \"$1\";\n";
 }' > genes_with_utrs.gtf
 
