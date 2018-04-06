@@ -1,0 +1,20 @@
+# Katharina J. Hoff
+# April 5th 2018
+# Example data set for demonstration of AUGUSTUS UTR training
+
+# Downloaded NCBI genes from UCSC genome browser for dm6 via table browser -> genes_with_utrs.gtf
+
+ucsc_gtf2gff3.pl --in=genes_with_utrs.gtf --out=genes_with_utrs.gff3
+
+cat genes_with_utrs.gff3 | perl -pe "s/five_prime_utr/5'-UTR/; s/three_prime_utr/3'-UTR/;" > genes_with_utrs.f.gff3
+
+cat genes_with_utrs.f.gff3 | perl -ne 'if(not($_=~m/\tgene\t/) and not($_=~m/\tmRNA\t/)){
+@t = split(/\t/); print "$t[0]\t$t[1]\t$t[2]\t";
+print "$t[4]\t$t[5]\t$t[6]\t$t[7]\t"; $_=~m/Parent=(\S+)/; print "gene_id \"$1\"; transcript_id \"$1\";\n";
+}' > genes_with_utrs.gtf
+
+# Downloaded genome from UCSC dm6
+
+gunzip dm6.fa.gz
+cdbfasta dm6.fa -o dm6.fa.idx
+cdbyank dm6.fa.idx -d dm6.fa -a chr2R > genome.fa
