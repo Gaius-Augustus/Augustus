@@ -1,0 +1,446 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html><head><title>BRAKER2 and AUGUSTUS</title>
+<link rel="stylesheet" type="text/css" href="augustus.css">
+<script src="tutorial.js" type="text/javascript"></script>
+</head><body>
+
+<h1>Using BRAKER2 and AUGUSTUS</h1>
+
+This page describes how to use BRAKER2 and AUGUSTUS for training of AUGUSTUS and for gene prediction. <br><br>
+
+
+<h2>General remarks</h2>
+
+<ul>
+  <li> This tutorial is designed in a way that persons with no exprience in Linux should be able to follow. In case someone gets bored, he or she can try to get the code of this tutorial on his own laptop running.
+  <li> Here some manuals:
+  <ul>
+    <li> <a href="README_augustus.TXT">AUGUSTUS readme</a>
+    <li> <a href="BRAKER_userguide.pdf">BRAKER manual</a>
+    <li> <a href="STARmanual_2.3.0.1.pdf">STAR manual</a>
+   </ul>
+</ul>
+<br>
+
+
+<h2>0. Preparation </h2>
+
+<h3>Introduction to Linux </h3>
+
+1. Navigate to the directory <tt>/home/mstanke</tt> on the genotoul server	 and display the content of the file <tt>.gm_key</tt> on your screen. <br><br>
+
+Helpful commands:
+<ul>
+  <li> <tt>ssh</tt> Connect to a server via SSH. The command <tt>ssh genotoul.toulouse.inra.fr -l user_name</tt> should connect you to the genotoul server if you fill in your user name for <tt>user_name</tt> 
+</tt>
+  <li> <tt>pwd</tt> Print working directory. Prints out the absolute path of the directory where you are right now.
+  <li> <tt>cd</tt> Change directory
+  <ul>
+    <li> <tt>cd work</tt> Change to the directory <tt>work</tt> given that it is a sub-directory of your current directory.
+    <li> <tt>cd /</tt> Change to the root directory.
+    <li> <tt>cd ~</tt> Change to your home directory.
+    <li> <tt>cd ..</tt> Change to the parent directory of your current directory.
+    <li> <tt>cd /usr</tt> Change to the directory <tt>usr</tt> which is located in the root directory.
+  </ul>	
+  <li> <tt>ls</tt> List directory. Lists the content of your current directory.
+  <ul>
+    <li> <tt>ls</tt> List the content of your current directory.
+    <li> <tt>ls work</tt> List the content of the directory <tt>work</tt> given it is a sub-directory of your current directory.
+    <li> <tt>ls -l</tt> Lists additional information about the content of your current directory
+    <li> <tt>ls -a ~</tt> List all files in your home directory, including hidden ones, beginning with a dot.
+    <li> <tt>ll</tt> Short form for <tt>ls -l</tt> 
+  </ul>	
+  <li> <tt>man</tt> Display reference manual of a command. Try e.g. <tt>man ls</tt>
+  <li> <tt>less</tt> Display a given file, allowing to navigate it. Try e.g. <tt>less .bashrc</tt>
+</ul>
+<br>	
+
+2. Create a directory <tt>test</tt> in the directory <tt>work</tt> of your home directory. Create a file <tt>test.txt</tt> in this newly created directory. Edit this file using a text editor, i.e., write something into this file. Then delete the directory <tt>test</tt> including <tt>test.txt</tt>. <br><br>
+
+Helpful commands:
+
+<ul>
+  <li> <tt>mkdir</tt> Make directory. Creates the given directory. E.g. <tt>mkdir abc</tt> creates the directory <tt>acb</tt> as a sub-directory of your current directory.
+  <li> <tt>touch</tt> Change a file timestamp. The command <tt>touch file.txt</tt> changes the timestamp of a file <tt>file.txt</tt> to the current time and date. If <tt>file.txt</tt> does not exist yet, it is created.
+  <li> <tt>emacs</tt> Opens the editor emacs. 
+  <ul>
+    <li> <tt>emacs -nw file.txt</tt> Opens the file <tt>file.txt</tt> with emacs in command line mode. That is, if you drop the option <tt>-nw</tt>, emacs is opened as a GUI, which does not work if you connected to a server using <tt>ssh</tt> without the option <tt>-X</tt>.
+    <li> <tt>Ctrl-x Ctrl-s</tt> Save the current file.
+    <li> <tt>Ctrl-x Ctrl-c</tt> Close the emacs.
+  </ul>	
+  <li> <tt>rm</tt> Remove file / directory. 
+  <ul>
+    <li> <tt>rm file.txt</tt> Removes the file <tt>file.txt</tt> in your current directory
+    <li> <tt>rm dir</tt> Removes the directory <tt>dir</tt> given it is a sub-directory of your current directory and <tt>dir</tt> is empty. 
+    <li> <tt>rm -r dir</tt> Removes the directory <tt>dir</tt> even it is not empty.
+  </ul>	
+</ul>
+<br><br>
+
+3. Execute the following commands
+
+<pre class="code">
+/usr/local/bioinfo/src/augustus/augustus-3.2.3/bin/augustus --version
+augustus --version
+./augustus --version
+cd /usr/local/bioinfo/src/augustus/augustus-3.2.3/bin/; ./augustus --version
+</pre>
+
+These commands do the following:
+<ol>
+  <li> Execute <tt>augustus</tt> (with the option <tt>--version</tt>) using the executable <tt>augustus</tt> in <tt>/usr/local/bioinfo/src/augustus/augustus-3.2.3/bin</tt>
+  <li> Execute <tt>augustus</tt> using the executable which linux finds by itself using the environment variable <tt>$PATH</tt>
+  <li> Execute <tt>augustus</tt> using the executable <tt>augustus</tt> in the current directory. This fails because there is no executable <tt>augustus</tt> in the current directory.
+  <li> Change the directory to <tt>cd /usr/local/bioinfo/src/augustus/augustus-3.2.3/bin</tt> and then execute <tt>augustus</tt> using the executable <tt>augustus</tt> in the current directory.
+</ol>
+
+You can find out which file is executed with a given command using <tt>which</tt>:
+
+<pre class="code">
+which augustus
+# /usr/local/bioinfo/src/augustus/current/bin/augustus
+
+which exonerate
+# /usr/local/bioinfo/bin/exonerate
+</pre>
+<br>
+
+
+<h3>Specific preparation </h3>
+
+1. Copy the directory <tt>/home/mstanke/work/tutorial</tt> into your directory <tt>~/work</tt><br><br>
+
+Helpful commands:
+<ul>
+  <li> <tt>cp</tt> Copy files / directory
+  <ul>
+    <li> <tt>cp src.txt dest.txt</tt> Copies the file <tt>cp src.txt</tt> onto the file <tt>dest.txt</tt>
+    <li> <tt>cp -r src dest</tt> Copies the directory <tt>src</tt> including its entire content onto the directory <tt>dest</tt>
+  </ul>	
+</ul>
+
+If not stated differently, <u>it is assumed that the commands provided in this tutorial are executed in the directory <tt>~/work/tutuorial</tt>.</u><br><br>
+
+2. To improve readability of the shell commands that we will use subsequently, generate the following symbolic links in the folder <tt>tutorial/data</tt>:
+<ul>
+  <li> A link <tt>genome.fa</tt> for the file <tt>RCC4221_Ot_outlier.fasta</tt> 
+  <li> A link <tt>proteins.fa</tt> for the file <tt>osttaV2_active_pep_2015_ch02_ch19.tfa</tt> 
+</ul>	
+
+Check whether your commands worked using <tt>less</tt>.<br><br>
+
+Helpful commands:
+<ul>
+  <li> <tt>ln</tt> Make link between files. The command <tt>ln -s file.txt link.txt</tt> creates a symbolic link <tt>link.txt</tt> for the file <tt>file.txt</tt>. That is, you can use <tt>link.txt</tt> everywhere instead of <tt>file.txt</tt>.
+</ul>
+<br>
+
+
+3. Export some additional folders to the <tt>PATH</tt> variable. <u>This has to be repeated if you close and re-open your terminal.</u>
+
+<pre class="code">
+export PATH=$PATH:/usr/local/bioinfo/src/RepeatScout/current:/usr/local/bioinfo/src/GeneMark-ET/current/gmes_petap
+</pre>
+<br><br>
+
+
+
+
+
+<h2>1. Repeat-mask the genome </h2>
+
+For 
+<ul>
+   <li>the prediction of genes using AUGUSTUS</li>
+   <li>the alignment of RNA-seq reads to the genome</li>
+</ul>
+we need to mask the repeats in the target genome. This involves several steps, in which we employ RepeatScout and RepeatMasker.<br><br>
+
+First, we compile a repeat library using RepeatScout.
+
+<pre class="code">
+mkdir -p masking
+build_lmer_table -sequence data/genome.fa -freq masking/genome.freq
+RepeatScout -sequence data/genome.fa -output masking/genome.repseq.fa -freq masking/genome.freq   # takes ~30s
+</pre>
+
+The file <tt>masking/genome.freq</tt> contains a list of ostensibe repeat sequences.
+
+<pre class="code">
+head -n 100 masking/genome.freq
+</pre>
+<pre class="code">
+AAAAAGTGTGAA	4	351047
+AAAACATGTGAA	8	758672
+AAAAAACCTGAA	5	1473666
+AAAAAGTATGAA	4	1470478
+AAAACTGATGAA	3	336101
+AAAACTACTTTT	5	1478803
+AAAAGTTATGAA	7	822634
+AAAATCGCTGAA	3	819533
+AAAACTTTGGAA	3	1424203
+AAAATACATTTT	3	504310
+...
+</pre>
+If you want to have a look at the entire file, you can use 
+
+<pre class="code">
+less masking/genome.freq
+</pre>
+
+The repeat library generated by RepeatScout is stored in <tt>masking/genome.repseq.fa</tt>
+
+<pre class="code">
+>R=0
+GCGCGCGCGCGCGTAGGCCACGCGAACGCCTCCACACGCGTCGTCGCGCTGTCACGGTGGGCAGTACACGTCGCCACGGG
+CGCGTGATGATACGTGCGAGTGCGCGACGTAGAAATACGTGCGCACGCGACTCACGTCGGGTCACCCAAAGCTCGCGCGC
+TTGGCCGCGTCGCCTCGCGTCCATCCCCAGGATGCGCTCGTCGTGACGCACACGCTGTCGAGACGTATTTGAAGTGCGTT
+TTCACAGACGATCTGGTACGTGTGATGGACGAACGTCGCATAGGACACAGTGTCGGCTATGAAACACGCCCAGCGGCGAT
+GCGGCGTCGTTCCGCGCGCGTCCATTTTGATGGGCGCGCGCGGGCGTCACGTCTGGAAACTGCGTGCGCGCGTCGCTCGA
+...
+>R=1
+GGATTTTGACTAATCTCGGTGTTGGTTGTGCACACCTTTTCTTGAGTCATAATCCGTCACGTCATGTATGGGTAAACAGT
+ATGATCGGGGTACTCCAACTTGTGTTTTACCTTGTACAAATTTCGGCAAGTTTTCGCAACACGCGACATGTGTGCGCGGA
+TAACGCGCCGACGAGGCAGCGAGGACGTGCGCAGCCATGAACAGTTGTAGATACATCCATGTTACATCAGATTCATCCAG
+TTTCTGTGGCGTACGACGGACATAGCGACGTCCTCACGCAGTTCCTCGCGCTCTGGTACTCCACGCCAAGCTCTCAAGAA
+ACCACGTCTAAACCCTACCTAAACCCTACCTAAACCCTAGTTAGGGTTTATGTCACATGTACACCACGTGCACTACGCGC
+...
+</pre>
+<br><br>
+
+Next, we remove repeats detected by RepeatScout that are too short or of low complexity.
+
+<pre class="code">
+cat masking/genome.repseq.fa | filter-stage-1.prl > masking/genome.repseq.f1.fa
+</pre>
+
+Comparing the repeat library before and after the execution of <tt>filter-stage-1.prl</tt> shows that three repeats has been removed.
+
+<pre class="code">
+diff masking/genome.repseq.fa masking/genome.repseq.f1.fa
+</pre>
+
+<pre class="code">
+1c1
+< >R=0
+---
+> >R=0 (RR=1.  TRF=0.015 NSEG=0.009)
+169c169
+< >R=1
+---
+> >R=1 (RR=2.  TRF=0.087 NSEG=0.000)
+
+...
+
+1087,1089c1087
+< >R=82
+< CGTATTATATCACTCATTGGAGCATAACGATACATATTACATCTGAACAC
+< >R=83
+---
+> >R=83 (RR=83.  TRF=0.000 NSEG=0.000)
+</pre>
+
+This can be confirmed with <tt>grep</tt>.
+
+<pre class="code">
+grep -c ">" masking/genome.repseq.fa masking/genome.repseq.f1.fa
+# masking/genome.repseq.fa:156
+# masking/genome.repseq.f1.fa:153
+</pre>
+<br><br>
+
+Next, we mask the genome with RepeatMasker, using the repeat library generated by RepeatScout.
+
+<pre class="code">
+RepeatMasker data/genome.fa -e ncbi -lib masking/genome.repseq.f1.fa -dir masking   # takes  ~1m
+</pre>
+
+The file <tt>masking/genome.fa.masked</tt> contains the masked genome.
+
+<pre class="code">
+>ch02_Contig_2T
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNGCGACAAGAGACG
+CACACAATGACAGACCCCGGCCAACATTGAGGGTGTACCAAGGCGCACAC
+CACAAAACGAGGCACTAAGACACGTCTGGGGGAACCCTTATTCAAGAAAT
+...
+</pre>
+<br><br>
+
+Then, we filter out repeats which do not occur often enough.
+
+<pre class="code">
+cat masking/genome.repseq.f1.fa | filter-stage-2.prl --cat=masking/genome.fa.out > masking/genome.repseq.f2.fa
+</pre>
+
+<pre class="code">
+grep -c ">" masking/genome.repseq.fa masking/genome.repseq.f1.fa masking/genome.repseq.f2.fa
+# masking/genome.repseq.fa:156
+# masking/genome.repseq.f1.fa:153
+# masking/genome.repseq.f2.fa:36
+</pre>
+<br><br>
+
+Finally, we run RepeatMasker using the final repeat library. Since the alignment tool STAR needs a hard-masked genome, whereas AUGUSTUS and BRAKER need it soft-masked, we generate both a soft- and a hard-masked genome.
+
+<pre class="code">
+RepeatMasker data/genome.fa -e ncbi -lib masking/genome.repseq.f2.fa -dir masking   # takes ~1m
+mv masking/genome.fa.masked masking/genome.fa.hardmasked
+RepeatMasker data/genome.fa -e ncbi -lib masking/genome.repseq.f2.fa -dir masking -xsmall  # takes ~1m
+mv masking/genome.fa.masked masking/genome.fa.softmasked
+</pre>
+<br><br>
+
+
+
+<h2>2. Alignment of RNA-seq reads </h2>
+
+We use the first ??? reads from the RNA-seq library with the SRA accession number SRX3142169 for the gene prediction (run SRR5986291). As a preparatory step, we need to align these RNA-seq reads to our target genome. For this purpose, we use STAR. The application of STAR comprises two steps: First, the genome to which the reads will be aligned to is processed. Second, the reads are aligned and the result is output as a sorted BAM file.
+
+<pre class="code">
+mkdir -p star
+STAR --runMode genomeGenerate --genomeDir star --genomeFastaFiles masking/genome.fa.hardmasked --genomeSAindexNbases 9 
+STAR --genomeDir star --readFilesIn data/rna-seq.fa --outFileNamePrefix star/ --outSAMtype BAM SortedByCoordinate   # takes ~12m
+mv star/Aligned.sortedByCoord.out.bam star/rna-seq.bam
+</pre>
+
+You can have a look at the result with the command
+
+<pre class="code">
+samtools view star/rna-seq.bam | less
+</pre>
+<br><br>
+
+
+
+<h2>3. Gene prediction </h2>
+
+As preparation, we carry out three steps. First, we set two environment variables. <u>This has to be repeated if you close and re-open your terminal.</u>
+
+<pre class="code">
+export GENEMARK_PATH=/usr/local/bioinfo/src/GeneMark-ET/current/gmes_petap
+export BAMTOOLS_PATH=/usr/local/bioinfo/bin
+</pre>
+
+Second, in order to use GeneMark a valid key file has to be put into the home directory. and copy configuration data of Augustus into the home directory.
+
+<pre class="code">
+cp /home/mstanke/.gm_key ~/.gm_key 
+mkdir -p /work/tutorial/augustus
+cp /home/mstanke/work/tutorial/augustus/config ~/work/tutorial/augustus/config
+</pre>
+
+Finally, we make the <tt>species</tt> directory writable to everyone so that BRAKER and AUGUSTUS can write into them. Moreover, we remove two directories which if existed would lead to BRAKER and AUGUSTUS aborting once called. It is important to recall to remove these two directories when havnig to repeat the first call of BRAKER below in the situation that previous calls were not successful. 
+
+<pre class="code">
+chmod a+w -R augustus/config/species 
+rm -rf augustus/config/species/o.tauri
+rm -rf braker
+</pre>
+<br><br>
+
+
+Now, we can begin with the gene prediction itself. For this purpose, we use BRAKER and AUGUSTUS. <br><br>
+
+The effect of our first call of BRAKER is trifold:
+<ul>
+  <li> Generate a set of training genes, based on the RNA-seq data we prepared, using GeneMark
+  <li> Train AUGUSTUS with these training genes
+  <li> Predict genes using the RNA-seq data as hints using AUGUSTUS
+</ul>
+
+<pre class="code">
+/home/mstanke/work/BRAKER_v2.0.4+/braker.pl --species=o.tauri --genome=masking/genome.fa.softmasked --bam=star/rna-seq.bam --softmasking --skipOptimize --cores 1 \
+--AUGUSTUS_SCRIPTS_PATH=/usr/local/bioinfo/src/augustus/augustus-3.2.3/scripts --AUGUSTUS_BIN_PATH=/usr/local/bioinfo/src/augustus/augustus-3.2.3/bin \
+--AUGUSTUS_CONFIG_PATH=/home/[user name]/work/tutorial/augustus/config   # takes ~ 7m
+</pre>
+
+The options in the BRAKE call have the follownig meanings:
+<ul>
+  <li> <tt>--species</tt>: The name of the species on which we carry out our gene prediction. <br> 
+  <i>The parameters AUGUSTUS infers from the training data and uses to parametrize its internal model for the gene prediciton is located in AUGUSTUS_CONFIG_PATH/species/[value of --species]. The term "species" is used in this option although AUGUSTUS can also be used for gene predictions on different strains of the same species.</i>
+  <li> <tt>--genome</tt>: The genomic data on which the gene prediction is carried out.
+  <li> <tt>--bam</tt>: The BAM file containign the aligned RNA-seq reads used for inference of the training genes by GeneMark and as hints for the gene prediction by AUGUSTUS
+  <li> <tt>--softmasking</tt>: Flag indicating that the genome is softmasked. <br>
+  <i>It is possible to use a hardmasked genome but this leads to an inferior performance of AUGUSTUS.</i>
+  <li> <tt>--skipOptimize</tt> Flag indicating that AUGUSTUS should not try to optimize the parameters it derives from the training genes. <br>
+  <i>One should not use the parameters AUGUSTUS infers without optimization to generate a gene set used in a scientific project. We skip optimization here because it is very time-consuming</i>
+  <li> <tt>--cores</tt>: The number of cores used by BRAKER and AUGUSTUS. <br>
+  <i> To reduce running time, once can increase the number of cores. Nevertheless, for this session this is probably not advisable as the genotoul server only has 32 cores. </i>
+  <li> <tt>--AUGUSTUS_SCRIPTS_PATH</tt>, <tt>--AUGUSTUS_BIN_PATH</tt>, <tt>--AUGUSTUS_CONFIG_PATH</tt>: These pathes specify where to find various files and executables. <br>
+  <i>When you install BRAKER and AUGUSTUS on a computer for which you have administrator rights, you very probably will not need to set these paths.</i>
+</ul>
+<br>
+
+You can determine the number of training genes generated by BRAKER using the command
+
+<pre class="code">
+grep -c LOCUS braker/o.tauri/genbank.good.gb	
+</pre>
+
+<br><br>
+
+We now carry out two further gene predictions, using hints differing form the ones just used in the prediction step. Nevertheless, to inspect the results just obtained, it is advisable to proceed to the next section and first visualize the results and then come back later to this section. <br><br>
+
+Next, we want to carry out a gene prediction not only using RNA-seq data as hints but also protein data. Since we have already trained AUGUSTUS in the first run of BRAKER, we can now reuse the output from the first run.
+
+<pre class="code">
+/home/mstanke/work/BRAKER_v2.0.4+/braker.pl --species=o.tauri --genome=masking/genome.fa.softmasked --hints=braker/o.tauri/hintsfile.gff --prot_seq=data/proteins.fa \
+--prg=exonerate --softmasking --skipOptimize --skipAllTraining --cores 1 --workingdir braker_proteins \
+--AUGUSTUS_SCRIPTS_PATH=/usr/local/bioinfo/src/augustus/augustus-3.2.3/scripts --AUGUSTUS_BIN_PATH=/usr/local/bioinfo/src/augustus/augustus-3.2.3/bin \
+--AUGUSTUS_CONFIG_PATH=/home/[user name]/work/tutorial/augustus/config   # takes ~11m	
+</pre>
+
+The following options were not used in the first run:
+<ul>
+  <li> <tt>--hints</tt>: In the first run we provided a BAM file as hints. This file was processed and converted into a hint file. Instead of passing the BAM file to BRAKER we therefore now can usen the hint file.
+  <li> <tt>--prot_seq</tt>: The protein data used as hints by AUGUSTUS.
+  <li> <tt>--prg</tt>: The program used to algin the proteins. <br>
+  <i>We use exonerate here out of convenience but GenomeThreader should be chosen for research projects.</i>
+  <li> <tt>--skipAllTraining</tt>: No training is done by GeneMark or AUGUSTUS.
+  <li> <tt>--workingdir</tt>: The output directory used by BRAKER. <br>
+  <i> Since we do not want to override the results from the first run of BRAKER, we specify the output directory for this run.</i> 
+ </ul>
+<br>
+
+Finally, we carry out an ab initio gene prediction using AUGUSTUS directly.
+
+<pre class="code">
+augustus --species=o.tauri masking/genome.fa.softmasked > augustus/augustus.abinitio.gff --AUGUSTUS_CONFIG_PATH=/home/[user name]/work/tutorial/augustus/config   # takes ~2m
+</pre>
+
+Since we specify the species as o.tauri, AUGUSTUS automatically retrieves the parameter we estimated in the first run of BRAKER and uses them to carry out the gene prediction.
+<br><br><br>
+
+
+
+<h2>4. Visualization using UCSC browser </h2>
+
+The results of the gene prediction can be displayed via an assembly hub of the UCSC browser. Go to <a href="https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect">https://genome-euro.ucsc.edu/cgi-bin/hgHubConnect</a>, select the "My Hubs" tab, enter <tt>http://bioinf.uni-greifswald.de/bioinf/otauri/hub/hub.txt</tt> into the field "URL" and click "Add Hub". Once you habe been redirected to Genome Browser Gateway site, click "GO" in the top part of the page. This will show you the RNA-Seq coverage and, if you zoom in far enough, the nucleotides of the genome as well as their translation in all frames. <br><br>
+
+To display the results of the gene prediction and the data we used for it, click on "add custom track". Then click on the upper "Browse..." and click "Submit". Then click on the link "User Track" in the table and enter a meaningful name instead of "User Track". Click again "Submit" and then click "Go". <br><br>
+
+The GFF files to be displayed in the UCSC genome browser can be found here:
+<ul>
+<li> <a href="data/introns.gff">Introns GFF</a>
+<li> <a href="data/proteins.gff">Proteins GFF</a>
+<li> <a href="data/augustus_ab_initio.gff">GFF of AUGUSTUS ab initio prediction</a>
+<li> <a href="data/augustus_rna.gtf">GFF of BRAKER prediction using RNA-Seq data</a>
+<li> <a href="data/augustus_rna_prot.gtf">GFF of BRAKER prediction using RNA-Seq and protein data</a>
+</ul>
+<br><br>
+
+
+
+<h2>5. Miscellanous </h2>
+
+An AUGUSTUS service allowing for parameter training and gene prediction is available on <a href="http://bioinf.uni-greifswald.de/webaugustus/">http://bioinf.uni-greifswald.de/webaugustus/</a>.<br><br>
+
+The version of BRAKER used in this tutorial has been modified in a way that it is possible to use it with rna-seq data too small to obtain a gene prediction of reasonable quality. If a release version of BRAKER is applied to the tutorial data, this probably will result in BRAKER aborting with an error message. <br><br>
+
+The presentation Ingo Bulla gave during the morning session on 13 February 2018 in Banyuls can be found <a href="presentation.pdf">here</a>.
+
+</body></html>
+
