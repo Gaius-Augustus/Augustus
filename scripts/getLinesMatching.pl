@@ -1,4 +1,9 @@
 #!/usr/bin/perl
+
+# Author: Mario Stanke
+# Contact: mario.stanke@uni-greifswald.de
+# Last modification: May 1st 2018
+
 use Getopt::Long;
 use strict;
 
@@ -6,6 +11,7 @@ my $complement = 0;
 my $whitespace = 0;
 my $patfrom    = "";
 my $patto      = "";
+
 GetOptions(
     'v!'          => \$complement,
     'patfrom:s'   => \$patfrom,
@@ -14,21 +20,22 @@ GetOptions(
 );
 
 if ( @ARGV != 2 ) {
-    print "usage: cat input | $0 match.lst n > output\n";
-    print
-        "prints only those lines where the n-th column is a word in the match.lst file\n";
+    print "Efficient script for printing only those lines where the n-th "
+        . " column is a word in the match.lst file\n\n";
+    print "Usage:\n\n";
+    print "cat input | $0 match.lst n > output\n\n";
     print "Columns are based on tab-separation and are 1-based.\n";
     print "Options:\n";
-    print "     --v   Use complement. Print all lines NOT matching.\n";
-    print
-        "     --patfrom --patto   Apply query replace regular expression to the entry in the n-th column first before checking for membership in the list.\n";
-    print
-        "                         Will use the pattern s/\$patfrom/\$patto/\n";
-    print
-        "                         Useful for removing modifications, e.g. tripping a trailing -1 before performing the check.\n";
-    print "                         Both default to empty patterns.\n";
-    print
-        "     --whitespace        split columns at whitespace rather than tab.\n";
+    print "  --v               Use complement. Print all lines NOT matching.\n";
+    print "  --patfrom --patto Apply query replace regular expression to the \n"
+        . "                    entry in the n-th column first before \n"
+        . "                    checking for membership in the list.\n"
+        . "                    Will use the pattern s/\$patfrom/\$patto/\n"
+        . "                    Useful for removing modifications, e.g.\n"
+        . "                    tripping a trailing -1 before performing the\n"
+        . "                    check.\n"
+        . "                    Both default to empty patterns.\n";
+    print "  --whitespace      Split columns at whitespace rather than tab.\n";
     exit(1);
 }
 
@@ -50,8 +57,7 @@ while (<STDIN>) {
     chomp;
     if ($whitespace) {
         @f = split( /\s+/, $_, $n + 1 );
-    }
-    else {
+    } else {
         @f = split( /\t/, $_, $n + 1 );
     }
     $field = $f[ $n - 1 ];
