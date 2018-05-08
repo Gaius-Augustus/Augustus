@@ -10,6 +10,7 @@ all:
 	cd homGeneMapping; make;
 	cd joingenes; make;
 	cd bam2wig; make;
+	cd utrrnaseq/Debug; make -B all;
 clean:
 	cd bam2hints; make clean;
 	cd compileSpliceCands; make clean;
@@ -17,3 +18,4 @@ clean:
 	cd homGeneMapping; make clean;
 	cd joingenes; make clean;
 	cd bam2wig; make clean;
+	cd utrrnaseq/Debug; make clean;
