@@ -1,3 +1,9 @@
+List of changes from version 3.3 to 3.3.1 (until May 8th, 2018)
+     - new species pisaster (Pisaster ochraceus, ochre starfish)
+     - bugfixes of sampling error in intron model and in check of
+       frame-compatibility of CDSpart hints without frame
+     - new auxiliary program utrrnaseq to find training UTRs
+     - new script setStopCodonFreqs.pl
 List of changes from version 3.2.3 to 3.3 (until July 11th, 2017)
      - new program ESPOCA to estimate selective pressure on codon alignments
      - gene finding on ancestral genomes is enabled

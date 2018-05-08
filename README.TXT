@@ -2,15 +2,15 @@
 %                                                                                                %
 %           Gene Prediction with the Command-Line Version of AUGUSTUS                            %
 %                                                                                                %
-%           Authors: Lizzy Gerischer, Oliver Keller, Stefanie König, Lars Romoth, Mario Stanke   %
-%             Mario Stanke                                                                       %
+%           Authors: Lizzy Gerischer, Oliver Keller, Stefanie König, Lars Romoth, Katharina Hoff %
+%             and Mario Stanke                                                                   %
 %             Universitaet Greifswald                                                            %
 %             Institut fuer Mathematik und Informatik                                            %
 %             17497 Greifswald                                                                   %
-%             Fon: +49 3834 864642                                                               %
+%             Fon: +49 3834 4204642                                                              %
 %             mario.stanke@uni-greifswald.de                                                     %
 %                                                                                                %
-%             Date: July 11th, 2017                                                              %
+%             Date: May 8th, 2018                                                                %
 %                                                                                                %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -30,8 +30,7 @@
 
               1. INTRODUCTION
               ---------------
-AUGUSTUS is a gene prediction program for eukaryotes written by Mario Stanke, Oliver Keller, Stefanie König
-and Lizzy Gerischer. It can be used as an ab initio program, which means it bases its prediction purely on the
+AUGUSTUS is a gene prediction program for eukaryotes written by Mario Stanke, Oliver Keller, Stefanie König, Lizzy Gerischer and Katharina Hoff. It can be used as an ab initio program, which means it bases its prediction purely on the
 sequence. AUGUSTUS may also incorporate hints on the gene structure coming from extrinsic sources
 such as EST, MS/MS, protein alignments and syntenic genomic alignments. Since version 3.0 AUGUSTUS
 can also predict the genes simultaneously in several aligned genomes (see README-cgp.txt).
@@ -102,6 +101,7 @@ Currently, AUGUSTUS has been trained for predicting genes in:
   - Nematostella vectensis (Cnidaria)
   - Ciona intestinalis (Chordata)
   - Strongylocentrotus purpuratus (Echinodermata)
+  - Pisaster ochraceus (starfish)
   
 The training annotation files of the following species are a courtesy of Jason Stajich (see also http://fungal.genome.duke.edu/): 
 Aspergillus fumigatus, Aspergillus nidulans, Aspergillus oryzae, Aspergillus terreus, Botrytis cinerea, Candida albicans
@@ -140,9 +140,9 @@ Parameters for Mnemiopsis leidyi, Nematostella vectensis, Ciona intestinalis and
 
 1. unpack
 
->tar -xzf augustus-3.3.tar.gz
+>tar -xzf augustus-3.3.1.tar.gz
 
-The tar-archive contains one directory 'augustus-3.3' with the following sub-directories:
+The tar-archive contains one directory 'augustus-3.3.1' with the following sub-directories:
 bin
 src
 include
