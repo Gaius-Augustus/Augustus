@@ -1,0 +1,19 @@
+************************************************
+* README of trimmed-wig
+************************************************
+Author: Maria Hartmann
+Date: 15 March 2013
+SVN-REVISION: 211
+************************************************
+
+* trimmed.sf.wig - 	This file contains coverage created from 
+				the trimmed RNA-Seq data in wiggle-format (variableStep)
+
+* trimmed01_singleton.gsnap.ffs.var.wig - 	This file contains coverage created 
+								from the trimmed (1%) RNA-Seq data in wiggle-format (variableStep)
+
+* trimmed01_singleton.gsnap.ffs.wig - 	This file contains coverage created 
+							from the trimmed (1%) RNA-Seq data in wiggle-format (fixedStep)
+
+* trimmed05.blat.sf.wig - 	This file contains the for the evaluation used coverage created
+					from the aligned and trimmed (5%) RNA-Seq data in wiggle-format (variableStep)

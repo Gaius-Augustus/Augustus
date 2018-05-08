@@ -1,0 +1,53 @@
+************************************************
+* README of trunks
+************************************************
+Author: Maria Hartmann
+Date: 31 May 2013
+************************************************
+
+* Installation:
+As long as the preprocessor directive TEST_MODE is not set, boost_unit_test_framework is not needed. I.e. under this condition, the 
+program can be compiled without -l boost_unit_test_framework.
+
+* Compile:
+
+In Debug folder
+
+make -B all 
+
+* execute/run the tool:
+
+In Debug folder
+
+./main 
+
+* Boost Library:
+
+A version of the boost library (e.g. Boost_1_49_0) must be installed or at least downloaded, for Ubuntu e.g. type "sudo apt-get install libboost-all-dev"
+
+*************************************************
+
+This folder contains the following folders:
+
+* Debug - This folder contains the makefile and includes the executable main (if compiled the way described in INSTALL).
+
+* doc - The file ./doc/utrrnaseq.doxyfile serves as a configuration file for Doxygen.
+        The folder ./doc/html and ./doc/latex contain the automatically by Doxygen created files.		
+        This folder also contains all the source code and data used for my bachelor thesis and my thesis itself.
+
+* evaluation - This folder contains files used for test, training and evaluation purposes.
+
+* for-test-cases - This folder contains files used as input for the test cases in the BOOST_TEST_SUITEs and some for 
+									 comparison purposes.
+
+* input - This folder contains all the used input files and additional data files.
+
+* scripts - This folder contains additional Perl-scripts used for evaluation.
+
+* src - This folder contains all the source code of the tool.
+
+************************************************
+
+This folder contains the following files:
+
+* output.example - This file serves as an example for the format of the output file.

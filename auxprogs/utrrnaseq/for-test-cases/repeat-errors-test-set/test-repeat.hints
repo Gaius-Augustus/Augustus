@@ -1,0 +1,6 @@
+scaffold	repmask	nonexonpart	53	55	0	.	.
+scaffold1	repmask	nonexonpart	175	178	0	.	.	src=RM
+scaffold	repmask	exonpart	520	525	0	.	.	src=RM
+scaffold	repmask	nonexonpart	700	790.7	0	.	.	src=RM
+scaffold	repmask	nonexonpart	960.0	999	0	.	.	src=RM
+scaffold	repmask	nonexonpart	start	end	0	.	.	src=RM

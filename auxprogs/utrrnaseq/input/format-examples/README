@@ -1,0 +1,19 @@
+************************************************
+* README of format-examples
+************************************************
+Author: Maria Hartmann
+Date: 15 March 2013
+SVN-REVISION: 207
+************************************************
+
+* fake.wig - 	This file serves as an example for a wiggle-formated file containing RNA-Seq coverage
+
+* genome.fa - 	This file contains an example for a genome sequence in FASTA-format
+
+* intron.hints - This file contains an example for a file containg introns in GFF-format
+
+* mini-start-stop.gtf - 	This file contains an example for genes in GTF-format
+
+* mini-start-stop2.gtf - 	This file contains an modified example for genes in GTF-format
+
+* repeat.hints - 	This file contains an example for repeats in GFF-format

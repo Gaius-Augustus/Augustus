@@ -1,0 +1,33 @@
+************************************************
+* README of input
+************************************************
+Author: Maria Hartmann
+Date: 11 April 2013
+************************************************
+
+* trimmed-wig - This folder contains some coverage files created from 
+                the trimmed RNA-Seq data in wiggle-format (both formats)
+                
+************************************************
+
+This folder contains the following files:
+
+* chr19.fa - This file contains the for the evaluation used genome sequence
+             The sequence is a human chromosome 19 sequence
+             The file is formatted in FASTA-format
+
+* lib1.introns.ff.gff - This file contains the intron hints created from the aligned and filtered
+                        BLAT alignments of the used RNA-Seq data 
+                        This file contains only introns with a GTAC splice-site
+				
+* ref-introns.gff - This file contains the introns of all the RefSeq UTRs
+
+* repeats.gff - This file contains the repeats hints created with RepMasker from the used RNA-Seq data
+
+* start_stop.gff - This file contains start and stop codons from human chromosome 19
+
+* trimmed05.blat.sf.gff - Unfiltered introns with all splice sites (no specific splice site)
+													Trimmed (5%)
+
+* trimmed05.blat.sf.gtag.gff - This file contains introns (GTAG splice-site) created 
+                               from the aligned and trimmed (5%) RNA-Seq data in GFF-format

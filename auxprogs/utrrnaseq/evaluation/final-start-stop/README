@@ -1,0 +1,16 @@
+************************************************
+* README of test-start-stop
+************************************************
+Author: Maria Hartmann
+Date: 15 March 2013
+SVN-REVISION: 208
+************************************************
+
+* final.start_stop.gff - 	This file contains the start and stop codons belonging to the UTRs in
+					../final-ref-utrs/final.ref.utrs.lst
+
+* final.start_stop.test.gff - 	This file contains the start and stop codons belonging to the UTRs in
+					../final-ref-utrs/final.ref.utrs.test.lst
+
+* final.start_stop.train.gff - 	This file contains the start and stop codons belonging to the UTRs in
+					../final-ref-utrs/final.ref.utrs.train.lst

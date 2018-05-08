@@ -1,0 +1,23 @@
+************************************************
+* README of src
+************************************************
+Author: Maria Hartmann
+Date: 31 May 2013
+************************************************
+
+list of abbreviations
+
+* acceptor_site: acc_site
+* attributes: att
+* coding region boundary: crb
+* current: curr
+* donor site: don_site
+* filename: fname
+* genomic data: gen_data
+* group: grp
+* index: idx
+* multiplicity: mult
+* number: no
+* scaffold: scaff
+* seperator: sep
+* splice site: sp_site

@@ -1,0 +1,16 @@
+************************************************
+* README of evaluation
+************************************************
+Author: Maria Hartmann
+Date: 11 April 2013
+************************************************
+
+* final-ref-utrs - This folder contains the RefSeq UTRs used for training and testing for the bachelor thesis
+
+* final-start-stop - This folder contains the start and stop belonging to the UTRs in ../final-ref-utrs
+
+************************************************
+
+This folder contains the following files:
+
+* reference-utrs-for-eval.gff - This file contains the RefSeq UTRs

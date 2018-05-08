@@ -1,0 +1,13 @@
+scaffold	b2h_lib1	intron	775	780	0	-	.	mult=10_GTAG
+scaffold	b2h_lib1	intron	772	785	0	-	.	mult=8_GTAG
+scaffold	b2h_lib1	intron	175	178	0	+	.	mult=10_GTAG
+scaffold	b2h_lib1	intron	160	176	0	+	.	mult=8_GTAG
+scaffold1	b2h_lib1	intron	775	780	0	-	.	mult=10_GTAG
+scaffold1	b2h_lib1	intron	777	790	0	-	.	mult=8_GTAG
+scaffold1	b2h_lib1	intron	175	178	0	+	.	mult=10_GTAG
+scaffold1	b2h_lib1	intron	176	177	0	+	.	mult=8_GTAG
+scaffold2	b2h_lib1	intron	775	780	0	-	.	mult=10_GTAG
+scaffold2	b2h_lib1	intron	760	820	0	-	.	mult=8_GTAG
+scaffold2	b2h_lib1	intron	800	810	0	-	.	mult=7_GTAG
+scaffold2	b2h_lib1	intron	175	178	0	+	.	mult=10_GTAG
+scaffold2	b2h_lib1	intron	160	175	0	+	.	mult=8_GTAG

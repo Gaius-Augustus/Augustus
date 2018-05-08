@@ -1,0 +1,32 @@
+************************************************
+* README of for-test-cases
+************************************************
+Author: Maria Hartmann
+Date: 09 April 2013
+************************************************
+
+* comparison-files - This folder contains files used for comparison purposes in some test cases
+
+* genome-errors-test-set - This folder contains the files used for the Genome_Errors_Test_Case, which
+                           has every error message in the method "read_genome_file" as a result
+													
+* intron-errors-test-set - This folder contains the files used for the Intron_Errors_Test_Case, which
+                           has every error message in the method "read_intron_hints_file" as a result
+													
+* overlap-introns-test-set - This folder contains the test set for the test case, that tests if the removal of
+                             overlapping introns still works
+															
+* repeat-errors-test-set - This folder contains the files used for the Repeat_Errors_Test_Case, which
+                           has every error message in the method "read_repeat_file" as a result
+
+* repeat-test-set - This folder contains the used test files for the repeat test case
+                    These files should not be changed
+			
+* standard-test-set - 	This folder contains the used test files for the standard test case
+												These files should not be changed
+												
+* start-stop-errors-test-set - This folder contains the files used for the Start_Stop_Errors_Test_Case, which
+                               has every error message in the method "read_orf_boundary_file" as a result
+					
+* wiggle-errors-test-set - This folder contains the files used for the Wiggle_Errors_Test_Case, which
+                           has every error message of the class Process_Wiggle as a result

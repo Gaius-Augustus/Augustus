@@ -1,0 +1,18 @@
+************************************************
+* README of scripts
+************************************************
+Author: Maria Hartmann
+Date: 09 April 2013
+************************************************
+
+This folder contains the following files:
+
+* gff2lst.pl - This Perl-script was written by Katharina Hoff
+               This script converts a gff output from Maria Hartmann's tool 
+               for identification of UTRs from RNA-seq data to a list for evaluation 
+               the identified UTRs with the overlapStat.pl script (not included on this CD)
+
+* test_utr_wrapper - This perl-script was written by Katharina Hoff
+                     This script runs Maria Hartmann's UTR finding tool with a set of given 
+                     parameters (aim: find optimal parameters)
+

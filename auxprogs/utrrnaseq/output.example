@@ -1,0 +1,4 @@
+scaffold1 makeUtr 5'-UTR  668440  668445  61      +       .       transcript_id "au2.g267.t1"; gene_id "au2.g267";
+scaffold1 makeUtr 5'-UTR  781033  781041  56      -       .       transcript_id "au2.g307.t1"; gene_id "au2.g307";
+scaffold1 makeUtr 5'-UTR  1008850 1008960 49      -       .       transcript_id "au2.g392.t1"; gene_id "au2.g392";
+

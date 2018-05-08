@@ -1,0 +1,18 @@
+************************************************
+* README of final-ref-utrs
+************************************************
+Author: Maria Hartmann
+Date: 15 March 2013
+SVN-REVISION: 208
+************************************************
+
+* final.ref.utrs.lst - 	This file contains the filtered RefSeq UTRs
+				Only UTRs with a minimal coverage of 3
+
+* final.ref.utrs.test.lst - 	This file contains the RefSeq UTRs used for testing
+					The file contains the half of the filtered RefSeq UTRs,
+					which is not used parameter training
+
+* final.ref.utrs.train.lst - 	This file contains the RefSeq UTRs used for parameter training
+					The file contains the half of the filtered RefSeq UTRs, 
+					which is not used for testing

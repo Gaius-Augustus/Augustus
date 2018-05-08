@@ -1,0 +1,4 @@
+scaffold1	repmask	nonexonpart	1	568	0	.	.	src=RM
+scaffold1	repmask	nonexonpart	560	612	0	.	.	src=RM
+scaffold1	repmask	nonexonpart	569	612	0	.	.	src=RM
+scaffold1	repmask	nonexonpart	675	829	0	.	.	src=RMq

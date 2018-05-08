@@ -1,0 +1,8 @@
+scaffold	makeUTR	3'-UTR	511	529	.	-	.	transcript_id "au13.g2.t1"; gene_id "au13.g2";
+scaffold	makeUTR	5'-UTR	763	774	.	-	.	transcript_id "au13.g2.t1"; gene_id "au13.g2";
+scaffold	makeUTR	intron	775	780	.	-	.	transcript_id "au13.g2.t1"; gene_id "au13.g2";
+scaffold	makeUTR	5'-UTR	781	798	.	-	.	transcript_id "au13.g2.t1"; gene_id "au13.g2";
+scaffold	makeUTR	5'-UTR	51	59	.	+	.	transcript_id "au13.g1.t1"; gene_id "au13.g1";
+scaffold	makeUTR	3'-UTR	171	174	.	+	.	transcript_id "au13.g1.t1"; gene_id "au13.g1";
+scaffold	makeUTR	intron	175	178	.	+	.	transcript_id "au13.g1.t1"; gene_id "au13.g1";
+scaffold	makeUTR	3'-UTR	179	270	.	+	.	transcript_id "au13.g1.t1"; gene_id "au13.g1";

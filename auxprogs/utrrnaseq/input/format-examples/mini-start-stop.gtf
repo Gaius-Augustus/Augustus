@@ -1,0 +1,9 @@
+scaffold1	AUGUSTUS	stop_codon	108	110	.	+	0	transcript_id "au13.g1.t1"; gene_id "au13.g1";
+scaffold1	AUGUSTUS	start_codon	648	650	.	+	0	transcript_id "au13.g2.t1"; gene_id "au13.g2";
+scaffold1	AUGUSTUS	stop_codon	1920	1922	.	+	0	transcript_id "au13.g2.t1"; gene_id "au13.g2";
+scaffold1	AUGUSTUS	stop_codon	2797	2799	.	-	0	transcript_id "au13.g3.t1"; gene_id "au13.g33";
+scaffold1	AUGUSTUS	stop_codon	2797	2799	.	-	0	transcript_id "au13.g3.t1"; gene_id "au13.g3";
+scaffold	AUGUSTUS	start_codon	5633	5635	.	-	0	transcript_id "au13.g3.t1"; gene_id "au13.g3";
+scaffold	AUGUSTUS	start_codon	5633	5635	.	-	0	transcript_id "au13.g3.t1"; gene_id "au13.g3";
+scaffold2	AUGUSTUS	start_codon	5633	5635	.	-	0	transcript_id "au13.g3.t1"; gene_id "au13.g3";
+scaffold2	AUGUSTUS	start_codon	5633	5635	.	-	0	transcript_id "au13.g3.t1"; gene_id "au13.g3";

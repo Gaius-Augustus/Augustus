@@ -1,0 +1,82 @@
+\documentclass[pdftex,12pt,a4paper]{scrartcl}
+
+\linespread{1}
+\setlength{\parindent}{0pt}
+
+ %%Kopfzeile formatieren
+\usepackage[automark, headsepline]{scrpage2}
+\pagestyle{scrheadings}
+\renewcommand*{\headfont}{\normalfont\footnotesize}
+\ihead[]{} %linke Kopfzeile
+\chead[]{} %mittlere Kopfzeile
+\ohead[]{\pagemark} %rechte Kopfzeile: Seitenzahl
+\ifoot[]{} %linke Fußzeile
+\cfoot[]{} %mittlere Fußzeile
+\ofoot[]{} %rechte Fußzeile
+
+\usepackage[utf8]{inputenc}
+\usepackage{url}
+%\usepackage{ngerman}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{exscale}
+\usepackage[pdftex]{graphicx}
+
+\begin{document}
+
+\title{Finding likely transcript ends based on RNA-Seq coverage}
+
+\author{Ingo Bulla, Maria Hartmann, Katharina Hoff, Mario Stanke}
+
+\maketitle
+
+Let $c[i]$ be the RNA-Seq coverage at position $i$, such that position 0 is known to be in the gene and when increasing $i$, eventually, $i$ will be outside of the gene. This is the case for forward strand 3'UTRs and reverse strand 5'UTRs. (The two other cases - forward 5'UTRs and reverse 3'UTRs - reduce to this one by considering $c'[i] = c[s - 1]$, where $s$ is a position known to be in the gene.)\\
+\\
+Let $w \geq 1$ be a smoothing window size (e.g. $w = 20, w = 1$ means no smoothing). Define\\
+\begin{equation}
+ d[i] := \frac{\sum\limits_{k=1}^w(c[i+k] - c[i + w + k])}{w^2} . \end{equation}
+ 
+$d[i]$ is the smoothed drop-off in coverage between position $i$ and $i+1$. For example, for $c[i]$ = const, we have $d[i]$ = 0. For example, for $c[i] = 100 - i$ we have $d[i] = -1$ for $i = w,...,100 - w$. \\
+\\
+\textbf{Criteria for UTR end:} Consider position $j$ a likely transcript end for training if
+\begin{enumerate}
+\item $d[j] = \min\limits_i d[i]$, i.e. we have the steepest decline in coverage after position $j$, and
+\item the average coverage in the window $j + 1 .. j + W$ of size $W$ (e.g. $W = 100$) after the putative end point $j$ is at most $p$ percent (e.g. $p = 10$) of the average coverage in $0..i$ (excluding introns).\end{enumerate}
+
+\textbf{Efficient implementation:} Computing $d[i]$ for all $i$'s is inefficient with a straightforward implementation of (1) if $w$ is large. Instead, first compute the \textbf{cumulative coverage}
+\[ C[i] = \sum\limits_{k=0}^i c[i] \]
+using the recursion $C[i] = c[i] + C[i-1]$ and then compute
+\begin{equation}
+d[i] = \frac{C[i+w]+C[i-w]-2 \cdot C[i]}{w^2}
+\end{equation}
+
+Similarly, the average coverage in the window $j+1..j+W$ is then efficiently computed as
+\[ (C[j+W]-C[j])/W. \]
+\\
+
+\textbf{Reasons for discarding a UTR:}
+
+\begin{itemize}
+\item The average coverage of the UTR (excluding intragenic regions) is lower than \texttt{min\_average\_cov} (e.g. \texttt{min\_average\_cov} = 10). The lower the coverage the less accurate the UTR.
+\item If at least one of the following properties applies to one or more introns in the UTR, the UTR is discarded because the intron is implausible:
+
+\begin{itemize}
+\item The multiplicity of an intron in the UTR is lower than a percentage of \texttt{p\_mult} (e.g. \texttt{p\_mult} = 0.1) of the average exon coverage of the UTR (see item above). The multiplicity for each intron is the number of reads which support the intron. The higher the multiplicity the more likely the intron. 
+\item The average intron coverage is greater than a percentage of \texttt{p\_int} (e.g. \texttt{p\_int} = 0.5) of the average exon coverage of the UTR (see item above).
+\end{itemize}
+
+\item The UTR contains an N-Region at the likely transcript end. The steepest decline in coverage than could be due to the N-Region and not because of the correct transcript end.
+\item At least one repetitive region is located in the UTR.
+\item The UTR is shorter than \texttt{min\_length} (e.g. \texttt{min\_length} = 20), i.e., short UTRs are extremely unlikely.
+
+\end{itemize}
+
+The length of the reads of the RNA-Seq data has to be provided because the coverage decreases in the region which has the length of the reads and lies upstream of the end of the scaffold. Hence, one should not look for transcript ends in these regions.\\[2ex]
+
+
+\textbf{Splice site filtering:}\\
+
+The splice donor site is a sequence at the 5' end of the intron and the splice acceptor site at the 3' end. If the splice donor and splice acceptor site of an intron is not in the list of accepted splice donor and acceptor site pairs (e.g. splice donor site = 'gt' and splice acceptor site = 'ag') the intron is discarded.
+
+\end{document}

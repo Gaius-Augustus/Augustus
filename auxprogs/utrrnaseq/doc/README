@@ -1,0 +1,11 @@
+************************************************
+* README of doc
+************************************************
+Author: Maria Hartmann
+Date: 03 September 2013
+************************************************
+
+This folder contains the following files:
+
+* reference.txt - The external documentation. 
+									"Finding likely transcript ends based on RNA-Seq coverage - a suggestion" by Mario Stanke.
