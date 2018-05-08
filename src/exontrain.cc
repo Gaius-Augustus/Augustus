@@ -595,25 +595,6 @@ void ExonModel::computeLengthDistributions( ){
 	    cout << "n.a." << endl;
     }
 
-
-/*
-    if (numHugeSingle>0) {
-	cerr << numHugeSingle << " single exons were "
-	     << " longer than " << exonLenD << endl;
-    }
-    if (numHugeInitial>0) {
-	cerr << numHugeInitial << " initial exons were "
-	     << " longer than " << exonLenD << endl;
-    }
-    if (numHugeInternal>0) {
-	cerr << numHugeInternal << " internal exons were "
-	     << " longer than " << exonLenD << endl;
-    } 
-    if (numHugeTerminal>0) {
-	cerr << numHugeTerminal << " terminal exons were "
-	     << " longer than " << exonLenD << endl;
-    }
-*/
     sm.smoothCounts(lenCountSingle, lenDistSingle);
     sm.smoothCounts(lenCountInitial, lenDistInitial);
     sm.smoothCounts(lenCountInternal, lenDistInternal);

@@ -1465,11 +1465,11 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 		    extrinsicQuot *= part->bonus;
 		    exonFSupported = true;
 		}
-		if ((utype == utr3init || utr3single || utype == rutr5term || rutr5single) && (part->start < beginOfBioExon && part->end == endOfBioExon) ){
+		if ((utype == utr3init || utype == utr3single || utype == rutr5term || utype == rutr5single) && (part->start < beginOfBioExon && part->end == endOfBioExon) ){
 		    extrinsicQuot *= sqrt(part->bonus);
 		    exonFSupported = true;
 		}
-		if ((utype == rutr3init || rutr3single || utype == utr5term || utr5single) && (part->start == beginOfBioExon && part->end > endOfBioExon) ){
+		if ((utype == rutr3init || utype == rutr3single || utype == utr5term || utype == utr5single) && (part->start == beginOfBioExon && part->end > endOfBioExon) ){
 		    extrinsicQuot *= sqrt(part->bonus);
 		    exonFSupported = true;
 		}

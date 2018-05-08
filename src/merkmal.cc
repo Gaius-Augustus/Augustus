@@ -345,7 +345,7 @@ void CRF::onlineLargeMarginTraining(Parameters* parameters, vector<AnnoSequence*
     vector<int> a; // count vector of correct features minus viterbi features
     vector<double> h(parameters->size(), 0.0); // weight difference vector
     vector<double> v(parameters->size(), 0.0); // accumulated weights for averaging at the end
-    int N; // number of rounds
+    unsigned N; // number of rounds
     int m; // training set size
     int numiterations=0, u; // at most Nm
     bool termination=false;
@@ -400,7 +400,7 @@ void CRF::onlineLargeMarginTraining(Parameters* parameters, vector<AnnoSequence*
     viterbiCounts.resize(chunksize);
     correctCounts.resize(chunksize);
 
-    for (int round = 1; round <= N && !termination; round++){
+    for (unsigned round = 1; round <= N && !termination; round++){
 	/*
 	 * evaluate parameters
 	 */

@@ -722,7 +722,7 @@ HS04636	blat2hints	exonpart	500	599	.	+	.	priority=2; source=E
 HS04636	blat2hints	intron		550	650	.	+	.	priority=5; source=mRNA
 
 When two hints or hint groups contradict each other then the hints with the lower priority number
-are ignored. This is especially usefull if for a genome several sources of hints are available,
+are ignored. This is especially useful if for a genome several sources of hints are available,
 where one source should be trusted when in doubt. For example, the rhesus macaque currently has few native ESTs
 but human ESTs often also align to rhesus. Giving the hints from native ESTs a higher priority means
 that AUGUSTUS uses only them for genes with support by native ESTs and uses the alien EST alignments
