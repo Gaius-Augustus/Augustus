@@ -8,12 +8,10 @@ Date: 11 April 2013
 This folder contains the following folders:
 
 * format-examples - This folder contains files with format examples for all of the used file types
-										and formats
+                    and formats.
 
-* human-chr19 - This folder contains all used genomic data from the human chromosome 19
+* human-chr19 - This folder contains genomic data from human chromosome 19.
 										
-* tribolium - This folder contains genomic data from tribolium
-		
 ************************************************
 
 

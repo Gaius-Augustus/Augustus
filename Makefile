@@ -2,7 +2,7 @@
 # Makefile for Augustus
 #
 include common.mk
-
+q
 all:
 	mkdir -p bin
 	cd src && ${MAKE}
@@ -38,6 +38,7 @@ release:
 	rm generic/*.pbl
 	cd src/parser; rm Makefile; cd -
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus
+	rm -r auxprogs/utrrnaseq/input/human-chr19
 
 # remove -static from src/Makefile for MAC users
 # remove -g -gdb from CXXFLAGS
