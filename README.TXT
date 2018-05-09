@@ -194,6 +194,9 @@ Compiling bam2wig requires:
 
    export TOOLDIR=/path/where/dependencies/reside
 
+   Compiling utrrnaseq requires Boost library >Boost_1_49_0.  For Ubuntu e.g. install with
+      sudo apt-get install libboost-all-dev
+
 > make
 
 After compilation has finished, the command bin/augustus should be executable and print a usage message.
