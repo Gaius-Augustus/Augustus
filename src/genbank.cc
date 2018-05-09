@@ -38,7 +38,7 @@ GBProcessor::GBProcessor(string filename) :
     }
 }
 
-GBPositions* GBProcessor::nextPosition( ) throw( GBError ){
+GBPositions* GBProcessor::nextPosition( ){
     return gbs.nextData( );
 }
 
@@ -338,7 +338,7 @@ AnnoSequence* GBProcessor::getSequenceList(){
     return seqlist;
 }
 
-char* GBProcessor::getSequence( GBPositions& pos ) throw( GBError) {
+char* GBProcessor::getSequence( GBPositions& pos ){
     char* seq = new char[pos.seqlength+1];
     if( seq ){
         char* seqp = seq;
@@ -371,7 +371,7 @@ char* GBProcessor::getSequence( GBPositions& pos ) throw( GBError) {
 }
 
 
-GBFeature::GBFeature(const char *pos) throw( GBError ){
+GBFeature::GBFeature(const char *pos){
   begin = end = -1;
   ranges= NULL;
   complete_r=complete_l=true;
@@ -624,7 +624,7 @@ void GBSplitter::determineFileType(){
 }
 
 
-GBPositions* GBSplitter::nextData( ) throw( GBError ){
+GBPositions* GBSplitter::nextData( ){
     GBPositions* pos = new GBPositions;
     if( !findPositions( *pos ) ){     // No other data available!
         delete pos;
@@ -633,7 +633,7 @@ GBPositions* GBSplitter::nextData( ) throw( GBError ){
     return pos;
 }
 
-AnnoSequence *GBSplitter::getNextFASTASequence( ) throw( GBError ){
+AnnoSequence *GBSplitter::getNextFASTASequence( ){
     char *sequence = NULL, *name = NULL;
     int length;
     readOneFastaSeq(sin, sequence, name, length);
@@ -664,7 +664,7 @@ Boolean GBSplitter::gotoEnd( ){
 }
 
 
-Boolean GBSplitter::findPositions( GBPositions& pos ) throw( GBError ){
+Boolean GBSplitter::findPositions( GBPositions& pos ){
     int fposb, fpose;
     fposb = sin.tellg();
     if( !gotoEnd( ) )

@@ -521,7 +521,7 @@ int quantile(const vector<int> &v, float q){
 }                                                                                                                                                                                                                                                                                        
  
 
-map<string, size_t> *getMap (vector<string> names) throw(ProjectError) {
+map<string, size_t> *getMap (vector<string> names){
     map<string, size_t> *hashtable = new map<string, size_t>;
     for (size_t i=0; i<names.size(); i++){
 	if (hashtable->find(names[i]) != hashtable->end())

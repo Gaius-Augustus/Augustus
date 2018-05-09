@@ -175,7 +175,7 @@ class Properties{
          * @param   file The file with the programm properties
          * @exception PropertiesError
          */
-        static void        readFile    ( string file ) throw( PropertiesError );
+        static void        readFile    ( string file );
         /**
          * @memo    Parse the commandline arguments.
          *

@@ -310,7 +310,7 @@ UTR_KEY,
 "/UtrModel/verbosity"};
 
 
-void Properties::readFile( string filename ) throw( PropertiesError ){
+void Properties::readFile( string filename ){
     ifstream strm;
     strm.open( filename.c_str() );
     if (!strm) {

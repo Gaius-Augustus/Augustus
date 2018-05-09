@@ -819,7 +819,7 @@ int quantile(const vector<int> &v, float q);
  * Mario: This could become an unordered_map (expected constant time) once we commit to C++11,
  * rather than a logarithmic tree data structure
  */
-map<string, size_t> *getMap (vector<string> names) throw(ProjectError);
+map<string, size_t> *getMap (vector<string> names);
 
 /*
  * functions used in earlier versions

@@ -67,7 +67,7 @@ public:
     strand=plusstrand;
     complete_l=complete_r=true;
   }
-  GBFeature(const char *) throw( GBError);
+    GBFeature(const char *);
   bool checkRange(int len);
   bool operator<(const GBFeature &other) const{
     return (begin<other.begin || (begin==other.begin && end<other.end));
@@ -119,12 +119,12 @@ public:
     GBSplitter( string fname );
     ~GBSplitter( );
     void determineFileType();
-    GBPositions* nextData( ) throw( GBError );
-    AnnoSequence *getNextFASTASequence( ) throw( GBError );
+    GBPositions* nextData( );
+    AnnoSequence *getNextFASTASequence( );
     void clear() {sin.clear(); sin.str(""); ifstrm.close();}
     FileType ftype;
 private:
-    Boolean     findPositions( GBPositions& pos ) throw( GBError );
+    Boolean     findPositions( GBPositions& pos );
     Boolean     gotoEnd( );
 private:
     ifstream    ifstrm;
@@ -153,7 +153,7 @@ public:
     /**
      *
      */
-    GBPositions* nextPosition() throw( GBError );
+    GBPositions* nextPosition();
     /**
      * Get the gene information of the current data section.
      * param pos A pointer to a GBPosition object with all needed
@@ -167,8 +167,8 @@ public:
     AnnoSequence* getAnnoSequenceList();
     AnnoSequence* getSequenceList();
 private:
-    char*   getSequence( GBPositions& pos ) throw( GBError );
-    char*   getJoin( const char* pos, Strand &strand, char *& genename ) throw( GBError );
+    char*   getSequence( GBPositions& pos );
+    char*   getJoin( const char* pos, Strand &strand, char *& genename );
 private:
     /// The internal GenBank datafile splitter
     GBSplitter  gbs;
