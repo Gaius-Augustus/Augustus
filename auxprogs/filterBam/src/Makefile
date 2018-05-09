@@ -17,7 +17,7 @@ VPATH = functions
 all : $(PROGRAM) $(OBJECTS) CHECKBAM BIN
 
 BIN : $(PROGRAM) CHECKBAM
-	cp filterBam ../../../bin/filterBam
+	mv filterBam ../../../bin/filterBam
 
 CHECKBAM:
 	@if [ -z "${BAMTOOLS}" ]; then \
@@ -36,4 +36,4 @@ $(OBJECTS) : %.o:%.cc
 
 clean:
 	rm -f *~ $(OBJECTS)
-	rm ../../../bin/filterBam
+	rm -f ../../../bin/filterBam

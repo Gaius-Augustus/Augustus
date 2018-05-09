@@ -7,7 +7,7 @@
 #
 
 ifndef TOOLDIR
-	TOOLDIR = ~/tools
+	TOOLDIR=$(HOME)/tools
 # replace with your own parent directory of samtools, htslib, bcftools, tabix
 # if TOOLDIR is not specified as environment variable
 endif
@@ -30,8 +30,8 @@ $(PROGRAM) : bam2wig.o
 	cp bam2wig ../../bin/bam2wig
 
 bam2wig.o : bam2wig.c
-	$(CC) $(CFLAGS) -c $^ -o $@ $(INCLUDES)
+	$(CC) $(CFLAGS) -c $^ -o $@
 
 clean:
 	rm -f $(OBJECTS) bam2wig.o
-	rm ../../bin/bam2wig
+	rm -f ../../bin/bam2wig
