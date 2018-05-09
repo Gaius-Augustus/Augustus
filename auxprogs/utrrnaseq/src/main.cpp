@@ -188,7 +188,12 @@ int main(int argc, char* argv[]) {
 	//help printed if no option was set or a required option was missing or the option for help was set
 	if ( ( help || required_option_missing || no_options )) {
 		cout << endl;
-		cout << "main - a tool for identifying UTRs of annotated genes on the basis of RNA-Seq data" << endl;
+		cout << "utrrnaseq - A tool for identifying UTRs of annotated genes on the basis of RNA-Seq data." << endl;
+		cout << "            Starting from known start/stop codons of genes, coverage with RNA-Seq data in" << endl;
+		cout << "            potential UTRs is monitored for a drastic drop, and such points are defined as" << endl;
+		cout << "	     ends of UTRs. Spliced alignments are incorported as introns into UTRs. Drops" << endl;
+		cout << "            in coverage due to repeat masking are not reported as UTR endpoints. Only UTR" << endl;
+		cout << "            models with evidence from RNA-Seq coverage are reported." << endl;
 		cout << endl;
 		cout << "Obligatory arguments are" << endl;
 		cout << endl;
