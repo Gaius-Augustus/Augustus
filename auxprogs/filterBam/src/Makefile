@@ -1,7 +1,7 @@
 #	Makefile for filterBam
 #
 # 	Created: 11-November-2011
-#	Last modified: 4-March-2012
+#	Last modified: 09-May-2018
 
 
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
@@ -36,3 +36,4 @@ $(OBJECTS) : %.o:%.cc
 
 clean:
 	rm -f *~ $(OBJECTS)
+	rm ../../../bin/filterBam
