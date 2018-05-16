@@ -12,11 +12,11 @@
 
 grails {
    mail {
-       host = "smtp.uni-greifswald.de"
+       host = "xxx"
        port = 25
-       username = "augustus-web"
-       password = "dwD4(HG/"
-       grails.mail.default.from= "augustus-web@uni-greifswald.de"
+       username = "xxx"
+       password = "xxx"
+       grails.mail.default.from= "xxx"
        props = ["mail.smtp.auth":"true", 					   
 		"mail.smtp.port":"25", 
 		]
