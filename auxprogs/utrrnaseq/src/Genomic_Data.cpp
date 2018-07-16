@@ -79,7 +79,7 @@ void Genomic_Data::initialize(string scaff_fname, string crb_fname, string intro
 	if (use_repeat_file)
 		read_repeat_file(repeat_fname);
 
-	cout << "Input Data procession finished successfully!" << endl;
+	cout << "Input Data processing finished successfully!" << endl;
 	//cout << __FILE__ << " " << __FUNCTION__ << " " << __LINE__ << endl;
 }
 
