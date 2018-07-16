@@ -21,7 +21,7 @@ BCFTOOLS=$(TOOLDIR)/bcftools/
 TABIX=$(TOOLDIR)/tabix/
 INCLUDES=-I$(SAMTOOLS) -I. -I$(HTSLIB) -I$(BCFTOOLS) -I$(TABIX)
 VPATH=$(SAMTOOLS)
-LIBS=$(SAMTOOLS)/libbam.a $(HTSLIB)/libhts.a -lcurses -lm -lz -lpthread
+LIBS=$(SAMTOOLS)/libbam.a $(HTSLIB)/libhts.a -lcurses -lm -lz -lpthread -lcurl -lssl -lcrypto
 CFLAGS=-Wall -O2 $(INCLUDES)
 CC=gcc
 
