@@ -1,0 +1,8 @@
+auxprogs/utrrnaseq/.cproject
+auxprogs/utrrnaseq/.project
+auxprogs/utrrnaseq/.settings/
+auxprogs/utrrnaseq/Debug/src/*.d
+auxprogs/utrrnaseq/Debug/src/*.o
+auxprogs/utrrnaseq/Debug/utrrnaseq
+auxprogs/utrrnaseq/*.gff
+

@@ -10,8 +10,8 @@
 
 #ifdef TEST_MODE
 	#define TEST_CASES ///< Flag. When set, the normal test cases are executed.
-//	#define TEST_ERRORS ///< Flag. When set, the error message test cases are executed.
-//	#define TEST_BUGS ///< Flag. When set, the test cases for bug testing are executed.
+	#define TEST_ERRORS ///< Flag. When set, the error message test cases are executed.
+	#define TEST_BUGS ///< Flag. When set, the test cases for bug testing are executed.
 //	#define TEST_HUMAN19 ///< Flag. When set, the test case with the human chr19 is run.
 #endif
 

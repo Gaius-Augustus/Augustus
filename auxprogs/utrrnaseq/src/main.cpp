@@ -295,14 +295,28 @@ int main(int argc, char* argv[]) {
 	UTRs::parameters().p_mult = p_mult;
 	UTRs::parameters().zero_cov = zero_cov; //for optional computation
 
-	if (repeat_fname.empty())
-		Genomic_Data::initialize(scaffold_fname, coding_region_fname, introns_fname, "", splice_sites, false);
-	else
-		Genomic_Data::initialize(scaffold_fname, coding_region_fname, introns_fname, repeat_fname, splice_sites, true);
 
-	compute_UTRs(wiggle_fname);
-	cout << "Computation of UTRs finished!" << endl;
-	UTRs::output(); //output printed
+	char* em_mem = new char[16384];   // Reserve emergency memory that can be deleted just in case we run out of memory
+	try {
+		if (repeat_fname.empty())
+			Genomic_Data::initialize(scaffold_fname, coding_region_fname, introns_fname, "", splice_sites, false);
+		else
+			Genomic_Data::initialize(scaffold_fname, coding_region_fname, introns_fname, repeat_fname, splice_sites, true);
+
+		compute_UTRs(wiggle_fname);
+		cout << "Computation of UTRs finished!" << endl;
+		UTRs::output(); //output printed
+	}
+	catch (bad_alloc& ex) {
+		delete[] em_mem;
+        cerr << "utrrnaseq ran out of memory";
+        exit(1);
+	}
+	catch (exception& ex) {
+		delete[] em_mem;
+        cerr << "utrrnaseq crashed for unknown reasons";
+        exit(1);
+	}
 
 	cout << "Finished!" << endl;
 	return 0;
