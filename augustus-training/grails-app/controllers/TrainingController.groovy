@@ -117,9 +117,9 @@ class TrainingController {
 			// get date
 			def todayTried = new Date()
 			// get IP-address
-			String userIPTried = request.remoteAddr
+			//String userIPTried = request.remoteAddr
 			logDate = new Date()
-			logFile <<  "${logDate} SGE          v1 - On ${todayTried} somebody with IP ${userIPTried} tried to invoke the Training webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
+			logFile <<  "${logDate} SGE          v1 - On ${todayTried} somebody tried to invoke the Training webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
 			render "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><meta name=\"layout\" content=\"main\" /><title>Submitt Training</title><script type=\"text/javascript\" src=\"js/md_stylechanger.js\"></script></head><body><!-- Start: Kopfbereich --><p class=\"unsichtbar\"><a href=\"#inhalt\" title=\"Directly to Contents\">Directly to Contents</a></p><div id=\"navigation_oben\"><a name=\"seitenanfang\"></a><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"1\"><tr><td nowrap=\"nowrap\"><a href=\"http://www.uni-greifswald.de\" target=\"_blank\" class=\"mainleveltop_\" >University of Greifswald</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.mnf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Faculty</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.math-inf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Institute</a><span class=\"mainleveltop_\">&nbsp;|&nbsp;</span><a href=\"http://bioinf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\">Bioinformatics Group</a></td></tr></table></div><div id=\"banner\"><div id=\"banner_links\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php\" title=\"Institut f&uuml;r Mathematik und Informatik\"><img src=\"../images/header.gif\" alt=\"Directly to home\" /> </a></div><div id=\"banner_mitte\"><div id=\"bannertitel1\">Bioinformatics Web Server at University of Greifswald</div><div id=\"bannertitel2\">Gene Prediction with AUGUSTUS</div></div><div id=\"banner_rechts\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167\" title=\"Voderberg-Doppelspirale\"><img src=\"../images/spirale.gif\" align=\"left\" /></a></div></div><div id=\"wegweiser\">Navigation for: &nbsp; &nbsp;<span class=\"breadcrumbs pathway\">Submitt Training</span><div class=\"beendeFluss\"></div></div><!-- Ende: Kopfbereich --><!-- Start: Koerper --><div id=\"koerper\"><div id=\"linke_spalte\"><ul class=\"menu\"><li><div id=\"linksMenuText\">AUGUSTUS Web Server Navigation</div></li><li><a href=\"../index.gsp\"><span>Introduction</span></a></li><li><a href=\"../about.gsp\"><span>About AUGUSTUS</span></a></li><li><a href=\"../accuracy.gsp\"><span>Accuracy</span></a></li><li><a href=\"../trainingtutorial.gsp\"><span>Training Tutorial</span></a></li><li><a href=\"/webaugustus/training/create\"><span>Submit Training</span></a></li><li><a href=\"../predictiontutorial.gsp\"><span>Prediction Tutorial</span></a></li><li><a href=\"/webaugustus/prediction/create\"><span>Submit Prediction</span></a></li><li><a href=\"../help.gsp\"><span>Help</span></a></li><li><a href=\"../datasets.gsp\"><span>Datasets for Download</span></a></li><li><a href=\"../predictions_for_download.gsp\"><span>Predictions for Download</span></a></li><li><a href=\"../references.gsp\"><span>Links & References</span></a></li><li><a href=\"../impressum.gsp\"><span>Impressum</span></a></li><li>&nbsp;</li><li><div id=\"linksMenuText\">Other AUGUSTUS Resources</div></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus\"><span>AUGUSTUS Wiki</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Forum.Forum\"><span><AUGUSTUS Forum</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/augustus/binaries/\"><span>Download AUGUSTUS</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/augustus/\"><span>Old AUGUSTUS gene prediction web server</span></a></li><li>&nbsp;</li><li><div id=\"linksMenuText\">Other Links</div></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/\"><span>Bioinformatics Group Greifswald</span></a></li></ul></div><div id=\"mittel_spalte\"><div class=\"main\" id=\"main\"><h1><font color=\"#006699\">The Server is Busy</font></h1><p>You tried to access the AUGUSTUS training job submission page.</p><p>Training parameters for gene training can be a process that takes a lot of computation time. We estimate that one training process requires approximately up to ten days. Our web server is able to process a certain number of jobs in parallel, and we established a waiting queue. The waiting queue has a limited length, though. Currently, all slots for computation and for waiting are occupied.</p><p>We apologize for the inconvenience! Please try to submitt your job later.</p><p>Feel free to contact us in case your job is particularly urgent.</p></div><p>&nbsp;</p>           </div><div id=\"rechte_spalte\"><div class=\"linien_div\"><h5 class=\"ueberschrift_spezial\">CONTACT</h5><strong>Institute for Mathematics und Computer Sciences</strong><br/><strong>Bioinformatics Group</strong><br />Walther-Rathenau-Stra&szlig;e 47<br />17487 Greifswald<br />Germany<br />Tel.: +49 (0)3834 86 - 46 24<br/>Fax:  +49 (0)3834 86 - 46 40<br /><br /><a href=\"mailto:augustus-web@uni-greifswald.de\" title=\"E-Mail augustus-web@uni-greifswald.de, opens the standard mail program\">augustus-web@uni-greifswald.de</a></div></div><div class=\"beendeFluss\"></div></div><!-- Ende: Koerper --><!-- Start: Fuss --><div id=\"fuss\"><div id=\"fuss_links\"><p class=\"copyright\">&copy; 2011 University of Greifswald</p></div><div id=\"fuss_mitte\"><div class=\"bannergroup\"></div></div><div id=\"fuss_rechts\" ><ul><li><a href=\"#seitenanfang\"><img hspace=\"5\" height=\"4\" border=\"0\" width=\"7\" alt=\"Seitenanfang\" src=\"../images/top.gif\" />Top of page</a></li></ul></div><div class=\"beendeFluss\"></div></div><!-- Ende: Fuss --></body></html>"
 			return
 		}		
@@ -189,9 +189,9 @@ class TrainingController {
 			logDate = new Date()
 			logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - AUGUSTUS training webserver starting on ${today}\n"
 			// get IP-address
-			String userIP = request.remoteAddr
+			//String userIP = request.remoteAddr
 			logDate = new Date()
-			logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - user IP: ${userIP}\n"
+			//logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - user IP: ${userIP}\n"
 
 			// flags for redirect to submission form, display warning in appropriate places
 			trainingInstance.warn = true
@@ -225,14 +225,23 @@ class TrainingController {
 			if(trainingInstance.struct_file != null){
 				redirParams["has_struct_file"] = "${trainingInstance.warn}"
 			}
+			if(trainingInstance.agree_email == true){
+                                redirParams["agree_email"] = true
+                        }
+			if(trainingInstance.agree_nonhuman == true){
+			        redirParams["agree_nonhuman"] = true
+			}
+
 
 			// redirect function
 			def cleanRedirect = {
 				logDate = new Date()
 				if(trainingInstance.email_adress == null){
-					logFile << "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+					//logFile << "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+					logFile << "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user is aborted!\n"
 				}else{
-					logFile << "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+                                        // logFile << "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+					logFile << "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} is aborted!\n"
 				}
 				flash.message = "Info: Please check all fields marked in blue for completeness before starting the training job!"
 				redirect(action:create, params:redirParams)
@@ -255,9 +264,12 @@ class TrainingController {
 			def logAbort = {
 				logDate = new Date()
 					if(trainingInstance.email_adress == null){
-           					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+           					//logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by anonymous user is aborted!\n"
 					}else{
-           					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+                                                //logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} by user ${trainingInstance.email_adress} is aborted!\n"
+
+           					logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - Job ${trainingInstance.accession_id} is aborted!\n"
 					}
 			}
 
@@ -2106,7 +2118,7 @@ def spiderScript = new File("${projectDir}/spider.sh")
 					return
 				} // end of job was submitted before check
 				//Write DB file: 
-				dbFile << "Date: [${today}] User-IP: [${userIP}] Grails-ID: [${trainingInstance.id}] Accession-ID: [${trainingInstance.accession_id}] Genome-File: [${trainingInstance.genome_file}] Genome-FTP-Link: [${trainingInstance.genome_ftp_link}] Genome-Cksum: [${trainingInstance.genome_cksum}] Genome-Filesize: [${trainingInstance.genome_size}] EST-File: [${trainingInstance.est_file}] EST-FTP-Link: [${trainingInstance.est_ftp_link}] EST-Cksum: [${trainingInstance.est_cksum}] EST-Filesize: [${trainingInstance.est_size}] Protein-File: [${trainingInstance.protein_file}] Protein-FTP-Link: [${trainingInstance.protein_ftp_link}] Protein-Cksum: [${trainingInstance.protein_cksum}] Protein-Filesize: [${trainingInstance.protein_size}] Training-Structure-File: [${trainingInstance.struct_file}] Struct-Cksum: [${trainingInstance.struct_cksum}] Struct-Filesize: [${trainingInstance.struct_size}]\n"
+				dbFile << "Date: [${today}] Grails-ID: [${trainingInstance.id}] Accession-ID: [${trainingInstance.accession_id}] Genome-File: [${trainingInstance.genome_file}] Genome-FTP-Link: [${trainingInstance.genome_ftp_link}] Genome-Cksum: [${trainingInstance.genome_cksum}] Genome-Filesize: [${trainingInstance.genome_size}] EST-File: [${trainingInstance.est_file}] EST-FTP-Link: [${trainingInstance.est_ftp_link}] EST-Cksum: [${trainingInstance.est_cksum}] EST-Filesize: [${trainingInstance.est_size}] Protein-File: [${trainingInstance.protein_file}] Protein-FTP-Link: [${trainingInstance.protein_ftp_link}] Protein-Cksum: [${trainingInstance.protein_cksum}] Protein-Filesize: [${trainingInstance.protein_size}] Training-Structure-File: [${trainingInstance.struct_file}] Struct-Cksum: [${trainingInstance.struct_cksum}] Struct-Filesize: [${trainingInstance.struct_size}]\n"
 				//Create a test sge script:
 				logDate = new Date()
 				logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  Writing SGE submission script.\n"
@@ -2431,7 +2443,7 @@ def spiderScript = new File("${projectDir}/spider.sh")
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  an error occured when autoAug.pl was executed!\n"; 
 						msgStr = "Hi ${admin_email}!\n\nJob: ${trainingInstance.accession_id}\n"
-						msgStr = "${msgStr}IP: ${userIP}\n"
+						//msgStr = "${msgStr}IP: ${userIP}\n"
 						msgStr = "${msgStr}E-Mail: ${trainingInstance.email_adress}\n"
 						msgStr = "${msgStr}Link: ${war_url}training/show/${trainingInstance.id}\n\n"
 						msgStr = "${msgStr}An error occured in the autoAug pipeline. "
@@ -2489,8 +2501,8 @@ def spiderScript = new File("${projectDir}/spider.sh")
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 - a SGE error occured!\n";
 						msgStr = "Hi ${admin_email}!\n\nJob: ${trainingInstance.accession_id}\n"
-						msgStr = "${msgStr}IP: ${userIP}\n"
-						msgStr = "${msgStr}E-Mail: ${trainingInstance.email_adress}\n"
+						//msgStr = "${msgStr}IP: ${userIP}\n"
+						//msgStr = "${msgStr}E-Mail: ${trainingInstance.email_adress}\n"
 						msgStr = "${msgStr}Link: ${war_url}training/show/${trainingInstance.id}\n\n"
 						msgStr = "${msgStr}An SGE error occured. Please check manually what's wrong. "
 						if(trainingInstance.email_adress == null){
@@ -2518,8 +2530,8 @@ def spiderScript = new File("${projectDir}/spider.sh")
 						logDate = new Date()
 						logFile <<  "${logDate} ${trainingInstance.accession_id} v1 -  an error occured during writing results!\n";
 						msgStr = "Hi ${admin_email}!\n\nJob: ${trainingInstance.accession_id}\n"
-						msgStr = "${msgStr}IP: ${userIP}\n"
-						msgStr = "${msgStr}E-Mail: ${trainingInstance.email_adress}\n"
+						//msgStr = "${msgStr}IP: ${userIP\n"
+						//msgStr = "${msgStr}E-Mail: ${trainingInstance.email_adress}\n"
 						msgStr = "${msgStr}Link: ${war_url}training/show/${trainingInstance.id}\n\n"
 						msgStr = "${msgStr}An error occured during writing results. Please check manually what's wrong. "
 						if(trainingInstance.email_adress == null){

@@ -116,9 +116,9 @@ class PredictionController {
 			// get date
 			def todayTried = new Date()
 			// get IP-address
-			String userIPTried = request.remoteAddr
+			//String userIPTried = request.remoteAddr
 			logDate = new Date()
-			logFile <<  "${logDate} SGE          v1 - On ${todayTried} somebody with IP ${userIPTried} tried to invoke the Prediction webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
+			logFile <<  "${logDate} SGE          v1 - On ${todayTried} somebody tried to invoke the Prediction webserver but the SGE queue was longer than ${sgeLen} and the user was informed that submission is currently not possible\n"
 			render "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/><meta name=\"layout\" content=\"main\" /><title>Submitt Prediction</title><script type=\"text/javascript\" src=\"js/md_stylechanger.js\"></script></head><body><!-- Start: Kopfbereich --><p class=\"unsichtbar\"><a href=\"#inhalt\" title=\"Directly to Contents\">Directly to Contents</a></p><div id=\"navigation_oben\"><a name=\"seitenanfang\"></a><table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"1\"><tr><td nowrap=\"nowrap\"><a href=\"http://www.uni-greifswald.de\" target=\"_blank\" class=\"mainleveltop_\" >University of Greifswald</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.mnf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Faculty</a><span class=\"mainleveltop_\">&nbsp;|&nbsp; </span><a href=\"http://www.math-inf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\" >Institute</a><span class=\"mainleveltop_\">&nbsp;|&nbsp;</span><a href=\"http://bioinf.uni-greifswald.de/\" target=\"_blank\" class=\"mainleveltop_\">Bioinformatics Group</a></td></tr></table></div><div id=\"banner\"><div id=\"banner_links\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php\" title=\"Institut f&uuml;r Mathematik und Informatik\"><img src=\"../images/header.gif\" alt=\"Directly to home\" /> </a></div><div id=\"banner_mitte\"><div id=\"bannertitel1\">Bioinformatics Web Server at University of Greifswald</div><div id=\"bannertitel2\">Gene Prediction with AUGUSTUS</div></div><div id=\"banner_rechts\"><a href=\"http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167\" title=\"Voderberg-Doppelspirale\"><img src=\"../images/spirale.gif\" align=\"left\" /></a></div></div><div id=\"wegweiser\">Navigation for: &nbsp; &nbsp;<span class=\"breadcrumbs pathway\">Submitt Prediction</span><div class=\"beendeFluss\"></div></div><!-- Ende: Kopfbereich --><!-- Start: Koerper --><div id=\"koerper\"><div id=\"linke_spalte\"><ul class=\"menu\"><li><div id=\"linksMenuText\">AUGUSTUS Web Server Navigation</div></li><li><a href=\"../index.gsp\"><span>Introduction</span></a></li><li><a href=\"../about.gsp\"><span>About AUGUSTUS</span></a></li><li><a href=\"../accuracy.gsp\"><span>Accuracy</span></a></li><li><a href=\"../trainingtutorial.gsp\"><span>Training Tutorial</span></a></li><li><a href=\"/webaugustus/training/create\"><span>Submit Training</span></a></li><li><a href=\"../predictiontutorial.gsp\"><span>Prediction Tutorial</span></a></li><li><a href=\"/webaugustus/prediction/create\"><span>Submit Prediction</span></a></li><li><a href=\"../help.gsp\"><span>Help</span></a></li><li><a href=\"../datasets.gsp\"><span>Datasets for Download</span></a></li><li><a href=\"../predictions_for_download.gsp\"><span>Predictions for Download</span></a></li><li><a href=\"../references.gsp\"><span>Links & References</span></a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/impressum.html\"><span>Impressum</span></a></li><li>&nbsp;</li><li><div id=\"linksMenuText\">Other AUGUSTUS Resources</div></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus\">AUGUSTUS Wiki</a></li><li><a href=\"http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Forum.Forum\">AUGUSTUS Forum</a></li><li><a href=\"http://bioinf.uni-greifswald.de/augustus/binaries/\">Download AUGUSTUS</a></li><li><a href=\"http://bioinf.uni-greifswald.de/augustus\">Old AUGUSTUS gene prediction web server</a></li><li>&nbsp;</li><li><div id=\"linksMenuText\">Other Links</div></li><li><a href=\"http://bioinf.uni-greifswald.de\"><span>Bioinformatics Group Greifswald</span></a></li></ul></div><div id=\"mittel_spalte\"><div class=\"main\" id=\"main\"><h1><font color=\"#006699\">The Server is Busy</font></h1><p>You tried to access the AUGUSTUS prediction job submission page.</p><p>Predicting genes with AUGUSTUS is a process that takes a lot of computation time. We estimate that one prediction process requires at most approximately 7 days. Our web server is able to process a certain number of jobs in parallel, and we established a waiting queue. The waiting queue has a limited length, though. Currently, all slots for computation and for waiting are occupied.</p><p>We apologize for the inconvenience! Please try to submitt your job later.</p><p>Feel free to contact us in case your job is particularly urgent.</p></div><p>&nbsp;</p>           </div><div id=\"rechte_spalte\"><div class=\"linien_div\"><h5 class=\"ueberschrift_spezial\">CONTACT</h5><strong>Institute for Mathematics und Computer Sciences</strong><br/><strong>Bioinformatics Group</strong><br />Walther-Rathenau-Stra&szlig;e 47<br />17487 Greifswald<br />Germany<br />Tel.: +49 (0)3834 86 - 46 24<br/>Fax:  +49 (0)3834 86 - 46 40<br /><br /><a href=\"mailto:augustus-web@uni-greifswald.de\" title=\"E-Mail augustus-web@uni-greifswald.de, opens the standard mail program\">augustus-web@uni-greifswald.de</a></div></div><div class=\"beendeFluss\"></div></div><!-- Ende: Koerper --><!-- Start: Fuss --><div id=\"fuss\"><div id=\"fuss_links\"><p class=\"copyright\">&copy; 2011 University of Greifswald</p></div><div id=\"fuss_mitte\"><div class=\"bannergroup\"></div></div><div id=\"fuss_rechts\" ><ul><li><a href=\"#seitenanfang\"><img hspace=\"5\" height=\"4\" border=\"0\" width=\"7\" alt=\"Seitenanfang\" src=\"../images/top.gif\" />Top of page</a></li></ul></div><div class=\"beendeFluss\"></div></div><!-- Ende: Fuss --></body></html>"
 			return
 		}		
@@ -187,9 +187,9 @@ class PredictionController {
 			def today = new Date()
 			logFile << "${today} ${predictionInstance.accession_id} v1 - AUGUSTUS prediction webserver starting on ${today}\n"
       			// get IP-address
-      			String userIP = request.remoteAddr
+      			// String userIP = request.remoteAddr
 			logDate = new Date()
-      			logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - user IP: ${userIP}\n"
+      			//logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - user IP: ${userIP}\n"
 
 			// flag for redirect to submission form, display warning in appropriate places
 			predictionInstance.warn = true
@@ -237,14 +237,21 @@ class PredictionController {
 			if(predictionInstance.ignore_conflicts == true){
 				redirParams["has_conflicts"]="${predictionInstance.warn}"
 			}
+			if(predictionInstance.agree_email == true){
+                                redirParams["agree_email"] = true
+                        }
+                        if(predictionInstance.agree_nonhuman == true){
+                                redirParams["agree_nonhuman"] = true
+                        }
+
 			redirParams["warn"]="${predictionInstance.warn}"
 			// put redirect procedure into a function
 			def cleanRedirect = {
 				logDate = new Date()
 				if(predictionInstance.email_adress == null){
-           				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+           				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous is aborted!\n"
 				}else{
-           				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+           				logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} is aborted!\n"
 				}
 				flash.message = "Info: Please check all fields marked in blue for completeness before starting the prediction job!"
             			redirect(action:create, params:redirParams)
@@ -266,9 +273,9 @@ class PredictionController {
 			def logAbort = {
 				logDate = new Date()
 					if(predictionInstance.email_adress == null){
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user with IP ${userIP} is aborted!\n"
+           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by anonymous user is aborted!\n"
 					}else{
-           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} by user ${predictionInstance.email_adress} is aborted!\n"
+           					logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - Job ${predictionInstance.accession_id} is aborted!\n"
 					}
 			}
 			//verify that the submitter is a person
@@ -2024,7 +2031,7 @@ class PredictionController {
 				} // end of job was submitted before check
 
 				//Write DB file: 
-				dbFile << "Date: [${today}] User-IP: [${userIP}] Grails-ID: [${predictionInstance.id}] Accession-ID: [${predictionInstance.accession_id}] Genome-File: [${predictionInstance.genome_file}] Genome-FTP-Link: [${predictionInstance.genome_ftp_link}] Genome-Cksum: [${predictionInstance.genome_cksum}] Genome-Filesize: [${predictionInstance.genome_size}] EST-File: [${predictionInstance.est_file}] EST-FTP-Link: [${predictionInstance.est_ftp_link}] EST-Cksum: [${predictionInstance.est_cksum}] EST-Filesize: [${predictionInstance.est_size}] Hint-File: [${predictionInstance.hint_file}] Hint-Cksum: [${predictionInstance.hint_cksum}] Hint-Filesize: [${predictionInstance.hint_size}] Parameter-String: [${predictionInstance.project_id}] Parameter-File: [${predictionInstance.archive_file}] Parameter-Cksum: [${predictionInstance.archive_cksum}] Parameter-Size: [${predictionInstance.archive_size}] Server-Set-UTR-Flag: [${overRideUtrFlag}] User-Set-UTR-Flag: [${predictionInstance.utr}] Report-Genes: [${predictionInstance.pred_strand}] Alternative-Transcripts: [${predictionInstance.alt_transcripts}] Gene-Structures: [${predictionInstance.allowed_structures}] Ignore-Conflicts: [${predictionInstance.ignore_conflicts}]\n"
+				dbFile << "Date: [${today}] Grails-ID: [${predictionInstance.id}] Accession-ID: [${predictionInstance.accession_id}] Genome-File: [${predictionInstance.genome_file}] Genome-FTP-Link: [${predictionInstance.genome_ftp_link}] Genome-Cksum: [${predictionInstance.genome_cksum}] Genome-Filesize: [${predictionInstance.genome_size}] EST-File: [${predictionInstance.est_file}] EST-FTP-Link: [${predictionInstance.est_ftp_link}] EST-Cksum: [${predictionInstance.est_cksum}] EST-Filesize: [${predictionInstance.est_size}] Hint-File: [${predictionInstance.hint_file}] Hint-Cksum: [${predictionInstance.hint_cksum}] Hint-Filesize: [${predictionInstance.hint_size}] Parameter-String: [${predictionInstance.project_id}] Parameter-File: [${predictionInstance.archive_file}] Parameter-Cksum: [${predictionInstance.archive_cksum}] Parameter-Size: [${predictionInstance.archive_size}] Server-Set-UTR-Flag: [${overRideUtrFlag}] User-Set-UTR-Flag: [${predictionInstance.utr}] Report-Genes: [${predictionInstance.pred_strand}] Alternative-Transcripts: [${predictionInstance.alt_transcripts}] Gene-Structures: [${predictionInstance.allowed_structures}] Ignore-Conflicts: [${predictionInstance.ignore_conflicts}]\n"
 
 				//rename and move parameters
 				if(!uploadedParamArch.empty){
@@ -2226,8 +2233,8 @@ class PredictionController {
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - a SGE error occured!\n";
 						msgStr = "Hi ${admin_email}!\n\nJob: ${predictionInstance.accession_id}\n"
-						msgStr = "${msgStr}IP: ${userIP}\n"
-						msgStr = "${msgStr}E-Mail: ${predictionInstance.email_adress}\n"
+						//msgStr = "${msgStr}IP: ${userIP}\n"
+						//msgStr = "${msgStr}E-Mail: ${predictionInstance.email_adress}\n"
 						msgStr = "${msgStr}Link: ${war_url}prediction/show/${predictionInstance.id}\n\n"
 						msgStr = "${msgStr}An SGE error occured. Please check manually what's wrong. "
 						if(predictionInstance.email_adress == null){
@@ -2252,8 +2259,8 @@ class PredictionController {
 						logDate = new Date()
 						logFile <<  "${logDate} ${predictionInstance.accession_id} v1 - an error occured during writing results!\n";
 						msgStr = "Hi ${admin_email}!\n\nJob: ${predictionInstance.accession_id}\n"
-						msgStr = "${msgStr}IP: ${userIP}\n"
-						msgStr = "${msgStr}E-Mail: ${predictionInstance.email_adress}\n"
+						//msgStr = "${msgStr}IP: ${userIP}\n"
+						//msgStr = "${msgStr}E-Mail: ${predictionInstance.email_adress}\n"
 						msgStr = "${msgStr}Link: ${war_url}prediction/show/${predictionInstance.id}\n\n"
 						msgStr = "${msgStr}An error occured during writing results.. Please check manually what's wrong. "
 						if(predictionInstance.email_adress == null){

@@ -67,7 +67,8 @@
          <li><a href="datasets.gsp"><span>Datasets for Download</span></a></li>
          <li id="current"><a href="predictions_for_download.gsp"><span>Predictions for Download</span></a></li>
          <li><a href="references.gsp"><span>Links & References</span></a></li>
-         <li><a href="impressum.gsp"><span>Impressum</span></a></li>
+         <li><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html"><span>Impressum</span></a></li>
+	  <li><a href="http://bioinf.uni-greifswald.de/bioinf/datenschutz.html"><span>Data Privacy</span></a></li>
 	 <li>&nbsp;</li>
          <li><div id="linksMenuText">Other AUGUSTUS Resources</div></li>
 	 <li><a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus">AUGUSTUS Wiki</a></li>

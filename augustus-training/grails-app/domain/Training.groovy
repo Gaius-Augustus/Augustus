@@ -8,6 +8,8 @@ class Training {
 	id generator:'uuid'
    }
    String email_adress
+   Boolean agree_email = false
+   Boolean agree_nonhuman = false
    String project_name
    String genome_file
    String genome_ftp_link
@@ -51,6 +53,16 @@ class Training {
    static constraints ={
       // accession_id(unique:false) // may (unlikely) cause problems if the grails database ever gets lost.
        email_adress(email:true,blank:true,nullable:true)
+       agree_email(validator: {val, obj ->
+       			      if(obj.email_adress != null && obj.agree_email!=true){
+			      			  return 'training.not_email_agreed'
+			      }
+			      })
+        agree_nonhuman(validator: { val, obj ->
+              if(obj.agree_nonhuman == false){
+	      			    return 'training.not_nonhuman_agreed'
+	      }
+	})
        project_name(blank:false, unique:false, maxSize:30)
        genome_file(nullable:true, blank:true, validator: { val, obj ->
             if (obj.genome_file == null && obj.genome_ftp_link == null) {

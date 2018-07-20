@@ -1,146 +1,205 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de-de" lang="de-de" dir="ltr" >
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	<meta name="layout" content="main" />
-        <title>Create Training</title>
-	<script type="text/javascript" src="js/md_stylechanger.js"></script>
-    </head>
-    <body>
 
-<!-- ***** Start: Kopfbereich ********************************************// -->
-<p class="unsichtbar">
-  <a href="#inhalt" title="Directly to Contents">Directly to Contents</a>
-</p>
 
-<div id="navigation_oben">
-  <a name="seitenanfang"></a>
-  <table width="100%" border="0" cellpadding="0" cellspacing="1">
-    <tr>
-      <td nowrap="nowrap">
-	<a href="http://www.uni-greifswald.de" target="_blank" class="mainleveltop_" >University of Greifswald</a><span class="mainleveltop_">&nbsp;|&nbsp; </span><a href="http://www.mnf.uni-greifswald.de/" target="_blank" class="mainleveltop_" >Faculty</a><span class="mainleveltop_">&nbsp;|&nbsp; </span><a href="http://www.math-inf.uni-greifswald.de/" target="_blank" class="mainleveltop_" >Institute</a><span class="mainleveltop_">&nbsp;|&nbsp;</span><a href="http://bioinf.uni-greifswald.de/" target="_blank" class="mainleveltop_">Bioinformatics Group</a>
-      </td>
-    </tr>
-  </table>
-</div>
-
-<div id="banner">
-   <div id="banner_links">
-       <a href="http://www.math-inf.uni-greifswald.de/mathe/index.php" title="Institut f&uuml;r Mathematik und Informatik"><img src="images/header.gif" alt="Directly to home" /> </a>
-   </div>
-   <div id="banner_mitte">
-      <div id="bannertitel1">
-        Bioinformatics Web Server at University of Greifswald
+<!DOCTYPE html>
+<html lang="de">
+   <head>
+      <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+      <meta charset="utf-8">
+      <meta name="robots" content="INDEX,FOLLOW">
+      <meta name="revisit-after" content="7 days">
+      <meta name="abstract" content="Bioinformatics Greifswald">
+      <meta name="keywords" content="Bioinformatics Greifswald">
+      <meta name="description" content="University of Greifswald">
+      <meta property="author" content="University of Greifswald">
+      <meta name="date" content="2018-07-17">
+      <link rel="stylesheet" href="${resource(dir: 'css', file: 'new1.css')}" type="text/css">
+      <link rel="stylesheet" href="${resource(dir: 'css', file: 'new2.css')}" type="text/css">
+      <title>Bioinformatics Web Server - University of Greifswald</title>
+      <meta name="lastModified" content="2018-07-16">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+      <style>.stickyFixed {position: fixed !important;  top:0 !important;} </style>
+   </head>
+   <body id="page-6289" class="">
+      <!-- dark header topbar -->
+      <div class="topbar">
       </div>
-      <div id="bannertitel2">
-        Gene Prediction with AUGUSTUS
+      <!-- header with uni logo -->
+      <header class="header">
+         <div class="header__content">
+            <div class="header__top-wrapper">
+               <!-- left side banner white spacer -->
+               <div class="header__submenu"></div>
+               <div class="logo">
+                  <a href="https://www.uni-greifswald.de/" title="Universität Greifswald" class="logo-main">
+                  <img src="http://bioinf.uni-greifswald.de/bioinf/img/uni-greifswald_opt.svg" width="400" height="118"   alt="Universität Greifswald" title="Universität Greifswald" >
+                  </a>
+               </div>
+               <!-- middle part of header -->
+               <div class="organization">
+                  <a href="http://bioinf.uni-greifswald.de/">
+                     <h3>Bioinformatics Web Server</h3>
+                  </a>
+               </div>
+            </div>
+            <nav id="nav" class="navigation">
+               <ul class="navigation-list navigation-list--table">
+                  <li class="navigation-list__item navigation-list__item--level-1 navigation-list__item--active" data-dropdown="true"><a href="http://bioinf.uni-greifswald.de/">Bioinformatics Group</a></li>
+                  <li class="navigation-list__item navigation-list__item--level-1" data-dropdown="true"><a href="http://math-inf.uni-greifswald.de/">Mathematics and Computer Science</a></li>
+                  <li class="navigation-list__item navigation-list__item--level-1" data-dropdown="true"><a href="https://mnf.uni-greifswald.de/en/faculty/">Faculty of Math and Natural Sciences</a></li>
+               </ul>
+            </nav>
+         </div>
+      </header>
+      <div class="container">
+         <div class="grid">
+            <div class="column-1 grid__column grid__column--md-3">
+               <ul class="navigation-sub">
+                  <li class="navigation-sub__item">
+                     <span class="navigation-sub__headline">AUGUSTUS Web Server Navigation</span>
+                     <ul class="navigation-sub">
+                        <li class="navigation-sub__item"><a href="index.gsp">Introduction</a></li>
+                        <li class="navigation-sub__item"><a href="about.gsp">About AUGUSTUS</a></li>
+                        <li class="navigation-sub__item"><a href="accuracy.gsp">Accuracy</a></li>
+                        <li class="navigation-sub__item">
+                           <g:link controller="training" action="create">Training Tutorial</g:link>
+                        </li>
+                        <li class="navigation-sub__item"><a href="index.gsp">Submit Training</a></li>
+                        <li class="navigation-sub__item"><a href="predictiontutorial.gsp">Prediction Tutorial</a></li>
+                        <li class="navigation-sub__item">
+                           <g:link controller="prediction" action="create">Submit Prediction</g:link>
+                        </li>
+                        <li class="navigation-sub__item"><a href="datasets.gsp">Datasets for Download</a></li>
+                        <li class="navigation-sub__item"><a href="references.gsp">Links & References</a></li>
+                        <li class="navigation-sub__item"><a href="http://bioinf.uni-greifswald.de/bioinf/impressum.html">Impressum</a></li>
+                        <li class="navigation-sub__item"><a href="http://bioinf.uni-greifswald.de/bioinf/datenschutz.html">Data Privacy Protection</a></li>
+                     </ul>
+                  </li>
+                  <li class="navigation-sub__item">
+                     <span class="navigation-sub__headline">Other AUGUSTUS Resources</span>
+                     <ul class="navigation-sub">
+                        <li class="navigation-sub__item"><a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus">AUGUSTUS Wiki</a></li>
+                        <li class="navigation-sub__item"><a href="http://bioinf.uni-greifswald.de/bioinf/forum">AUGUSTUS Forum</a></li>
+                        <li class="navigation-sub__item"><a href="http://bioinf.uni-greifswald.de/augustus/downloads/index.php">Download AUGUSTUS</a></li>
+                        <li class="navigation-sub__item"><a href="http://bioinf.uni-greifswald.de/augustus">Old AUGUSTUS web server</a></li>
+                        <li class="navigation-sub__item"><a href="http://bioinf.uni-greifswald.de/bioinf/braker">BRAKER</a></li>
+                     </ul>
+                  </li>
+                  <li class="navigation-sub__item">
+                     <span class="navigation-sub__headline">Other Links</span>
+                     <ul class="navigation-sub">
+                        <li class="navigation-sub__item"><a href="http://bioinf.uni-greifswald.de">Bioinformatics Greifswald</a></li>
+                     </ul>
+                  </li>
+               </ul>
+            </div>
+            <div class="column-2 grid__column grid__column--md-9">
+               <main class="main-content">
+                  <div id="c180465" class="csc-default">
+                     <div class="csc-header csc-header-n1">
+                        <h1 class="csc-firstHeader">Datasets for Download</h1>
+                     </div>
+                  </div>
+                  <div id="c261665" class="csc-default">
+                     <div class="csc-default">
+                        <div class="divider">
+                           <hr>
+                        </div>
+                     </div>
+                     <p>The following sequence files were used to <em>train</em> AUGUSTUS
+                        or to <em>test</em> its accuracy. Some of the datasets are described in the
+                        paper &ldquo;Gene Prediction with a Hidden Markov Model and a new Intron Submodel&rdquo;,
+                        which was presented at the European Conference on Computational Biology
+                        in September 2003 and appeared in the proceedings.
+                     </p>
+                     <h2>Test sets:</h2>
+                     <br>
+                     <h3>human:</h3>
+                     <br>
+                     <h4>h178:</h4>
+                     <p>178 single-gene short human sequences <br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/h178.gb.gz">h178.gb.gz</a> (gzipped genbank format)
+                     </p>
+                     <h4>sag178:</h4>
+                     <p>
+                        semi artificial genomic sequences from Guigo et al.:<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/sag178.gb.gz">sag178.gb.gz</a> (gzipped genbank format)<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/sag178.fa.gz">sag178.fa.gz</a> (gzipped fasta format)<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/sag178.gff">sag178.gff</a> (annotation in gff format)
+                     </p>
+                     <h3>fly:</h3>
+                     <br>
+                     <h4>fly100:</h4>
+                     <p>100 single gene sequences from FlyBase:<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/fly100.gb.gz">fly100.gb.gz</a> (gzipped Genbank format)
+                     </p>
+                     <h4>adh122:</h4>
+                     <p>
+                        A 2.9 Mb long sequence from the Drosophila adh region (copied from the
+                        <a href="http://www.fruitfly.org/GASP1/data/standard.html">GASP dataset page</a>)<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/adh.fa.gz">adh.fa.gz</a> (gzipped fasta format)<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/adh.std1.gff_corrected">adh.std1.gff_corrected</a> (gff format)<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/adh.std1+3.gff">adh.std1+3.gff</a> (gff format)
+                     </p>
+                     <h3>Arabidopsis thaliana:</h3>
+                     <p>Araset. 74 sequences with 168 genes.<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/araset.gb.gz">araset.gb.gz</a> (gzipped genbank format)
+                     </p>
+                     <h2>Training sets:</h2>
+                     <br>
+                     <h3>human:</h3>
+                     <p>
+                        single gene sequences from genbank (1284 genes):<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/human.train.gb.gz">human.train.gb.gz</a> (gzipped genbank format)
+                     <p>11739 human splice sites, originally from Guig&oacute; et al., but filtered for similarities to h178, sag178:<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/splicesites.gz">splicesites.gz</a> (gzipped flat file)
+                     </p>
+                     <h3>fly:</h3>
+                     <p>
+                        320 single gene sequences from FlyBase, disjoint with fly100:<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/fly.train.gb.gz">fly.train.gb.gz</a> (gzipped genbank format)
+                     </p>
+                     <p>
+                        400 single gene sequences from FlyBase, disjoint with adh122:<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/adh.train.gb.gz">adh.train.gb.gz</a> (gzipped genbank format)
+                     </p>
+                     <h3>Arabidopsis:</h3>
+                     <p>249 single gene sequences obtained by deleting the sequences from the Araball set which overlap with the sequences from Araset:<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/araball.train.gb.gz">araball.train.gb</a> (gzipped Genbank format)
+                     </p>
+                     <h3>Coprinus cinereus (a fungus):</h3>
+                     <p>
+                        851 single gene sequences predicted by genewise and compiled by Jason Stajich. 261 genes are complete, 590 genes are incomplete at the 3' end.
+                        Genes redundand with those in the Genbank annotations were deleted:<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/cop.genomewise.gb.gz">cop.genomewise.gb.gz</a> (gzipped Genbank format)
+                     </p>
+                     <p>
+                        91 sequences containing 93 genes from Genbank. Genes in Genbank with nothing else than the coding sequence were omitted. Identical or extremely 
+                        similar genes in genbank were used only once. This set has first been used as a test set for above training set. The Coprinus version
+                        here used :<br>
+                        <a href="http://bioinf.uni-greifswald.de/augustus/datasets/cop.gb.clean.gb.gz">cop.gb.clean.gb.gz</a> (gzipped Genbank format)
+                     </p>
+                     <div class="csc-default">
+                        <div class="divider">
+                           <hr>
+                        </div>
+                     </div>
+                  </div>
+               </main>
+            </div>
+         </div>
       </div>
-   </div>
-   <div id="banner_rechts">
-     <a href="http://www.math-inf.uni-greifswald.de/mathe/index.php/geschichte-und-kultur/167" title="Voderberg-Doppelspirale">
-     <img src="images/spirale.gif" align="left" />
-     </a>
-   </div>
-</div>
-
-<div id="wegweiser">
-  Navigation for: &nbsp; &nbsp;<span class="breadcrumbs pathway">
-    Datasets</span>
-
-  <div class="beendeFluss"></div>
-</div>
-<!-- ***** Ende: Kopfbereich *********************************************// -->
-
-<!-- ***** Start: Koerper ************************************************// -->
-<div id="koerper">
-
-  <div id="linke_spalte">
-     <ul class="menu">
-         <li><div id="linksMenuText">AUGUSTUS Web Server Navigation</div></li>
-         <li><a href="index.gsp"><span>Introduction</span></a></li>
-         <li><a href="about.gsp"><span>About AUGUSTUS</span></a></li>
-         <li><a href="accuracy.gsp"><span>Accuracy</span></a></li>
-         <li><a href="trainingtutorial.gsp"><span>Training Tutorial</span></a></li>
-         <li><g:link controller="training" action="create"><span>Submit Training</span></g:link></li>
-         <li><a href="predictiontutorial.gsp"><span>Prediction Tutorial</span></a></li>
-         <li><g:link controller="prediction" action="create"><span>Submit Prediction</span></g:link></li>
-         <li><a href="help.gsp"><span>Help</span></a></li>
-         <li id="current"><a href="datasets.gsp"><span>Datasets for Download</span></a></li>
-         <li><a href="predictions_for_download.gsp"><span>Predictions for Download</span></a></li>
-         <li><a href="references.gsp"><span>Links & References</span></a></li>
-         <li><a href="impressum.gsp"><span>Impressum</span></a></li>
-	 <li>&nbsp;</li>
-         <li><div id="linksMenuText">Other AUGUSTUS Resources</div></li>
-	 <li><a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus">AUGUSTUS Wiki</a></li>
-	 <li><a href="http://bioinf.uni-greifswald.de/bioinf/forum">AUGUSTUS Forum</a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/augustus/downloads/index.php">Download AUGUSTUS</a></li>
-	 <li><a href="http://bioinf.uni-greifswald.de/augustus">Old AUGUSTUS gene prediction web server</a></li>
-         <li><a href="http://bioinf.uni-greifswald.de/bioinf/braker">BRAKER</a></li>
-	 <li>&nbsp;</li>
-         <li><div id="linksMenuText">Other Links</div></li>
-	 <li><a href="http://bioinf.uni-greifswald.de"><span>Bioinformatics Group Greifswald</span></a></li>
-	 
-     </ul>
-  </div>
-
-  <div id="mittel_spalte">
-    <a name="inhalt" id="inhalt"></a>
-    <table class="contentpaneopen">
-      <tr>
-	<td class="contentheading" width="100%">
-	  <a href="datasets.gsp" class="contentpagetitle">Datasets</a>
-        </td>
-      </tr>
-    </table>
-<object height="4000px" width="660px" data="http://bioinf.uni-greifswald.de/trainaugustus/training-results/dynamic/datasets.html"></object>
-  </div>
-
-  <div id="rechte_spalte">
-    <div id="schriftgroesse">
-      <script type="text/javascript">
-	//<![CDATA[
-                  document.write('<a href="http://www.math-inf.uni-greifswald.de/mathe/index.php" title="Increase size" onclick="changeFontSize(2); return false;" class="larger">bigger</a><span class="unseen">&nbsp;</span>');
-                  document.write('<a href="http://www.math-inf.uni-greifswald.de/mathe/index.php" title="Decrease size" onclick="changeFontSize(-2); return false;" class="smaller">smaller</a><span class="unseen">&nbsp;</span>');
-                  document.write('<a href="http://www.math-inf.uni-greifswald.de/mathe/index.php" title="Revert styles to default" onclick="revertStyles(); return false;" class="reset">reset</a></p>');
-        //]]>
-      </script>
-    </div>
-    <div class="linien_div">
-      <h5 class="ueberschrift_spezial">CONTACT</h5>
-      <strong>Institute for Mathematics und Computer Sciences</strong><br/>
-      <strong>Bioinformatics Group</strong><br />
-      Walther-Rathenau-Stra&szlig;e 47<br /> 
-      17487 Greifswald<br /> 
-      Germany<br />
-      Tel.: +49 (0)3834 86 - 46 24<br/> 
-      Fax:  +49 (0)3834 86 - 46 40<br /><br /> 
-      <a href="mailto:augustus-web@uni-greifswald.de" title="E-Mail augustus-web@uni-greifswald.de, opens the standard mail program">augustus-web@uni-greifswald.de</a>
-    </div>
-    </div>
-
-    <div class="beendeFluss"></div>
-</div>
-<!-- ***** Ende: Koerper *************************************************// -->
-
-<!-- ***** Start: Fuss ***************************************************// -->
-<div id="fuss">
-  <div id="fuss_links"><p class="copyright">&copy; 2011 University of Greifswald</p></div>
-  <div id="fuss_mitte">
-  <div class="bannergroup">
- </div>
- </div>
- <div id="fuss_rechts" >
-  <ul>
-   <li>
-    <a href="#seitenanfang">
-     <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="images/top.gif" />
-     Top of page
-    </a>
-   </li>
-  </ul>
- </div>
- <div class="beendeFluss"></div>
-</div>
-<!-- ***** Ende: Fuss ***************************************************// -->
-
-    </body>
+      <footer class="footer footer--padding-bottom">
+         <div class="footer-column footer-column--dark">
+            <div class="footer__content-wrapper">
+               <div class="footer-bottom">
+                  <div class="footer-bottom__copyright">
+                     <p>&copy;&nbsp;2018&nbsp; Universität Greifswald</p>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </footer>
+   </body>
 </html>
+

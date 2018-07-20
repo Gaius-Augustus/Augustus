@@ -8,6 +8,8 @@ class Prediction {
 	id generator:'uuid'
    }
    String email_adress
+   Boolean agree_email = false
+   Boolean agree_nonhuman = false
    String project_id // the species name according to a formerly computed webserver training run (random 8 character string)
    String genome_file
    String genome_ftp_link
@@ -58,7 +60,18 @@ class Prediction {
    Boolean has_conflicts
    static constraints = {
       //accession_id(unique:true) // may (unlikely) cause problems if the grails database ever gets lost.
-      email_adress(email:true,blank:true,nullable:true)
+       email_adress(email:true,blank:true,nullable:true)
+       agree_email(validator: {val, obj ->
+                              if(obj.email_adress != null && obj.agree_email!=true){
+                                                  return 'prediction.not_email_agreed'
+                              }
+                              })
+        agree_nonhuman(validator: { val, obj ->
+              if(obj.agree_nonhuman == false){
+                                    return 'prediction.not_nonhuman_agreed'
+              }
+        })
+
       genome_file(nullable:true, blank:true, validator: { val, obj ->
         if (obj.genome_file == null && obj.genome_ftp_link == null) {
            return 'training.genome_file.no_genome_file'
