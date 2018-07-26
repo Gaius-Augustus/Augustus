@@ -122,11 +122,13 @@ void buildStatusList(list<Transcript*> &alltranscripts, bool utr, list<Status> &
 	stateList.sort(compareStatus);
 	list<Status>::iterator st = stateList.begin();
 	while (st != stateList.end()){
-	    st->next = &(*(++st));
+	    auto stnext = st;
+	    ++stnext;
+	    st-> next = (stnext == stateList.end())? NULL : &(*stnext);
+	    st++;
 	}
 	stateList.back().next = NULL;
-   
-	stlist.splice(stlist.end(), stateList);
+	stlist.splice(stlist.end(), stateList); // remove and append all elements of stateList to stlist
     }
 } 
 

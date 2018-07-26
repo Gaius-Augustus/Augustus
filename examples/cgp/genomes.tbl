@@ -1,4 +1,4 @@
-hg19	/home/lizzy/augustus/trunks/examples/cgp/human.fa
-mm9	/home/lizzy/augustus/trunks/examples/cgp/mouse.fa
-bosTau4	/home/lizzy/augustus/trunks/examples/cgp/cow.fa
-galGal3	/home/lizzy/augustus/trunks/examples/cgp/chicken.fa
+hg19	human.fa
+mm9	mouse.fa
+bosTau4	cow.fa
+galGal3	chicken.fa

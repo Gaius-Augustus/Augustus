@@ -597,7 +597,8 @@ NodeType SpeciesGraph::getPredType(StateType type, int begin, int end){
 	return TLstop;
     }
     else
-	throw ProjectError("in SpeciesGraph::getPredTypes()"); 
+	throw ProjectError(string("Error in SpeciesGraph::getPredTypes(): Undefined type: ") +
+			   stateTypeNames[type]); 
     return NOT_KNOWN;
 
 }
