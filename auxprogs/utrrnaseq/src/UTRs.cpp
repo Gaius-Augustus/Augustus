@@ -272,7 +272,6 @@ void UTRs::compute_UTRs(const Genomic_Data::Scaff_plus_Gen_Data& curr_scaffold, 
 
 	const map<unsigned,double>& wd = wiggle_data; //wd[i] = c[i]
 	const unsigned GENOME_SIZE = curr_genome.sequence.size();
-
 	for (unsigned i = 0; i < curr_genome.crbs.size(); ++i) {
 		//setting direction of computation, left -> right 1 or right -> left -1
 		const int DIR =
@@ -426,14 +425,13 @@ void UTRs::compute_UTRs(const Genomic_Data::Scaff_plus_Gen_Data& curr_scaffold, 
 		//========= INTRON TEST ===============
 		vector<int> intron_indices = find_introns_in_range(POS, Coord_Trans.pos_transform(j), DIR, &curr_introns);
 		//could be less than in the interval (POS, POS+TRUE_LIMIT)
-
 		for (unsigned l = 0; l < intron_indices.size(); ++l) {
 			unsigned start =
-				(curr_genome.crbs[l].strand == "+") ? curr_introns[intron_indices[l]].start :
-																curr_introns[intron_indices[l]].end;
+				(curr_genome.crbs[i].strand == "+") ? curr_introns[intron_indices[l]].start :
+				         											curr_introns[intron_indices[l]].end;
 			unsigned end =
-				(curr_genome.crbs[l].strand == "+") ? curr_introns[intron_indices[l]].end :
-																curr_introns[intron_indices[l]].start;
+				(curr_genome.crbs[i].strand == "+") ? curr_introns[intron_indices[l]].end :
+					        										curr_introns[intron_indices[l]].start;
 
 			double sum_int_cov = 0;
 			for (unsigned m = start; m <= end; ++m) {
@@ -450,7 +448,6 @@ void UTRs::compute_UTRs(const Genomic_Data::Scaff_plus_Gen_Data& curr_scaffold, 
 			}
 
 			double aic = sum_int_cov / (end-start+1);//average intron coverage
-
 			//average intron <= P_INT*average exon coverage
 			if (aec*s_parameters.p_int >= aic) {
 
