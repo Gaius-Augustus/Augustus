@@ -123,7 +123,8 @@ template <class Intron> struct finding_intron_greater_e : binary_function<Genomi
  */
 template <class Intron> struct finding_intron_lesser_e : binary_function<Genomic_Data::Intron,unsigned,bool> {
 	bool operator() (const Genomic_Data::Intron& i, const unsigned j) const
-	{ return i.end < j; }
+	{
+	  return i.end < j; }
 };
 
 /**
@@ -145,15 +146,29 @@ void UTRs::clear() {
 void UTRs::remove_overlapping_introns(vector<Genomic_Data::Intron>* introns) {
 	//cannot be empty (because otherwise this function will not be called)
 	sort (introns->begin(), introns->end(), sorting_intron_mult);
-
-	for (vector<Genomic_Data::Intron>::iterator i = introns->begin(); i < introns->end(); ++i) {
-		for (vector<Genomic_Data::Intron>::iterator j = i + 1; j < introns->end(); ++j) {
-			bool remove = Genomic_Data::Intron::is_overlapping((*j), (*i));
-			if (remove) {
-				introns->erase(j);
-			}
+	vector<int> to_delete(introns->size(),0);
+	for (unsigned i = 0; i<introns->size(); ++i){
+	  for(unsigned j = i+1; j<introns->size(); ++j){
+	    if(to_delete[i] != 1 && to_delete[j] != 1){
+	      bool remove = Genomic_Data::Intron::is_overlapping((*introns)[i], (*introns)[j]);
+	      if (remove) {
+		if((*introns)[i].mult > (*introns)[j].mult){
+		  to_delete[j] = 1;
+		}else{
+		  to_delete[i] = 1;
 		}
+	      }
+	    }
+	  }
 	}
+	int erase_offset = 0;
+	for (unsigned i = 0; i< to_delete.size(); ++i){
+	  if(to_delete[i] == 1){
+	    introns->erase (introns->begin()+i-erase_offset);
+	    erase_offset++;
+	  }
+	}
+	
 }
 
 
@@ -247,6 +262,12 @@ vector<int> UTRs::find_introns_in_range(unsigned start, unsigned end, int dir, v
 				++it;
 			}
 		}
+		// reverse indices (because they refer to reverse_introns, but later, the indices are used to access unreversed introns
+		vector<int> reversed_indices;
+		for(unsigned w=0; w<indices.size(); ++w){
+		  reversed_indices += reverse_introns.size()-indices[w]-1;
+		}
+		indices = reversed_indices;
 	}
 	return indices;
 }
@@ -287,18 +308,22 @@ void UTRs::compute_UTRs(const Genomic_Data::Scaff_plus_Gen_Data& curr_scaffold, 
 
 		const unsigned POS = curr_genome.crbs[i].codon_pos;
 		//starting window size in the gene so the computed values are more accurate
-
 		//======== W out of bounds ==========
 		//W is to big, POS - W*DIR outside of genome
 		if ( (int)(POS -s_parameters.window_size*DIR) <= 0 || (int)(POS - s_parameters.window_size*DIR) >= (int)GENOME_SIZE) {
 			continue;
 		}
 
-		//======= RESETTING LIMIT= ==========
+		//======= RESETTING LIMIT= ==========	    
 		const unsigned MAX_POS = get_max_pos(POS, DIR, GENOME_SIZE, s_parameters.read_length, &curr_orfs);
 
 		//=========== REMOVING OVERLAPPING INTRONS ===========
+		//		cout << "Before filtering, we have the following introns in the list:" << endl;
+		//for(unsigned v=0; v< curr_introns.size();++v){
+		//  cout << "start " << curr_introns[v].start << " end " << curr_introns[v].end << " strand " << curr_introns[v].strand << endl;
+		//}
 		vector<int> poss_intron_idx = find_introns_in_range(POS, MAX_POS, DIR, &curr_introns);
+		//cout << POS << " " << MAX_POS << " " << DIR << endl;
 		if (poss_intron_idx.empty()) {
 			curr_introns.clear(); //no introns in the computation range -> no introns overlap in this range
 		}
@@ -309,9 +334,17 @@ void UTRs::compute_UTRs(const Genomic_Data::Scaff_plus_Gen_Data& curr_scaffold, 
 			}
 			curr_introns = new_introns;
 			if (curr_introns.size() > 1) { //with only one intron, no overlapping introns possible
+			  //for(unsigned q=0; q<curr_introns.size();++q){
+			  //  cout << curr_introns[q].start << " " << curr_introns[q].end << endl;
+			  //}
 				remove_overlapping_introns(&curr_introns);
 				sort(curr_introns.begin(), curr_introns.end(), sorting_introns_s);
 			}
+			//			cout << "after filtering we have the following introns in the list:" << endl;
+			//for(unsigned v=0; v< curr_introns.size();++v){
+			//  cout << "start " << curr_introns[v].start << " end " << curr_introns[v].end << " strand " << curr_introns[v].strand << endl;
+			//}
+
 		}
 
 		//========= COORD TRANSFORMATION =============
@@ -487,6 +520,25 @@ void UTRs::compute_UTRs(const Genomic_Data::Scaff_plus_Gen_Data& curr_scaffold, 
 		for (unsigned n = 0; n < intron_indices.size(); ++n) {
 			this_utr.all_introns += curr_introns[intron_indices[n]];
 		}
+		//========== TEST whether UTR begins or ends with an intron  ================
+		// It is - in theory - possible that a UTR begins with an intron but
+		// for simplicity, we discard those introns, too (ending in an intron is
+		// impossible).
+		//cout << "The potential end of this UTR is : "	<< this_utr.end	<< endl;
+		bool ends_in_intron = false;
+		bool begins_in_intron = false;
+		  for (unsigned m = 0; m < this_utr.all_introns.size(); ++m){
+		  //cout << "An intron from " << this_utr.all_introns[m].start << " to " << this_utr.all_introns[m].end << endl;
+		  if(this_utr.end == this_utr.all_introns[m].end){
+		    ends_in_intron = true;
+		  }else if(this_utr.start >= this_utr.all_introns[m].start){
+		    begins_in_intron = true;
+		  }
+		}
+		if((ends_in_intron == true) || (begins_in_intron == true)){
+		  continue;
+		}
+		//UTR not discarded
 		UTRs::s_all_UTRs += this_utr;
 
 	}
@@ -519,7 +571,7 @@ void UTRs::output() {
 				sort(s_all_UTRs[i].all_introns.begin(), s_all_UTRs[i].all_introns.end(), sorting_introns_s);  //sorting introns into right order
 				start = s_all_UTRs[i].start;
 
-				//for each intron two output lines, til intron and than the intron itself
+				//for each intron two output lines, til intron and then the intron itself
 				for (unsigned j = 0; j < s_all_UTRs[i].all_introns.size(); ++j) {
 					output << s_all_UTRs[i].name << "\t" << "makeUTR" << "\t" << s_all_UTRs[i].feature << "\t" <<  start << "\t"
 						   << s_all_UTRs[i].all_introns[j].start-1 << "\t" << "." << "\t" << s_all_UTRs[i].strand << "\t" << "." << "\t" << s_all_UTRs[i].group << endl;
