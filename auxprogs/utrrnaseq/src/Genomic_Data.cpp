@@ -1,4 +1,4 @@
-/**
+ /*
  * \file Genomic_Data.cpp
  */
 
@@ -594,20 +594,20 @@ void Genomic_Data::read_repeat_file(string repeat_fname) {
 
 
 bool Genomic_Data::Intron::is_overlapping(Intron i, Intron j) {
-	int i_first =
-		(i.strand == "+") ? i.start : i.end;
-	int i_second =
-		(i.strand == "+") ? i.end : i.start;
-	int j_first =
-		(j.strand == "+") ? j.start : j.end;
-	int j_second =
-		(j.strand == "+") ? j.end : j.start;
-
-	bool first_opt = (j_first <= i_second) && (j_first >= i_first);
-	bool second_opt = (j_second <= i_second) && (j_second >= i_first);
-	bool third_opt = (j_first <= i_first) && (j_second >= i_second);
-
-	return first_opt || second_opt || third_opt;
+  int i_first = 
+	  (i.strand == "+") ? i.start : i.end;
+  int i_second =
+	  (i.strand == "+") ? i.end : i.start;
+  int j_first =
+	  (j.strand == "+") ? j.start : j.end;
+  int j_second = 
+	  (j.strand == "+") ? j.end : j.start;       													  
+  bool first_opt = (j_first <= i_second) && (j_first >= i_first);
+  bool second_opt = (j_second <= i_second) && (j_second >= i_first);
+  bool third_opt = (j_first <= i_first) && (j_second >= i_second);
+  // introns are not allowed to be immediate neighbours without spacer (this is not an overlap)
+  bool fourth_opt = (i_second == (j_first - 1)) || (j_second == (i_first - 1)); 
+  return first_opt || second_opt || third_opt || fourth_opt;
 }
 
 
