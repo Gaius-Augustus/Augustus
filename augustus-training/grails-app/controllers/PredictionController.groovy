@@ -478,7 +478,7 @@ class PredictionController {
 			}else if(predictionInstance.species_select == "Schistosoma mansoni (animal)"){
 				predictionInstance.project_id = "schistosoma"
 			}else if(predictionInstance.species_select == "Tribolium castaneum (animal)"){
-				predictionInstance.project_id = "tribolium"
+				predictionInstance.project_id = "tribolium2012"
 			}else if(predictionInstance.species_select == "Trichinella spiralis (animal)"){
 				predictionInstance.project_id = "trichinella"
 			}else if(predictionInstance.species_select == "Tetrahymena thermophila (alveolata)"){
