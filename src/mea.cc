@@ -122,7 +122,7 @@ void buildStatusList(list<Transcript*> &alltranscripts, bool utr, list<Status> &
 	stateList.sort(compareStatus);
 	list<Status>::iterator st = stateList.begin();
 	while (st != stateList.end()){
-	    auto stnext = st;
+	    list<Status>::iterator stnext = st;
 	    ++stnext;
 	    st-> next = (stnext == stateList.end())? NULL : &(*stnext);
 	    st++;
