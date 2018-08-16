@@ -18,6 +18,7 @@
  * 29.02.2012 | Mario Stanke          | added quantile function
  * 25.02.2014 | Stefanie Koenig       | added ftoa function (double to string)
  * 28.09.2014 | Mario Stanke          | added noncoding (nc) states
+ * 16.08.2018 | Katharina Hoff        | updated species list
 \******************************************************************************/
 
 #ifndef _TYPES_HH
@@ -88,69 +89,112 @@ where SPECIES is one of the following identifiers\n\
 \n\
 identifier                               | species\n\
 -----------------------------------------|----------------------\n\
-human                                    | Homo sapiens\n\
-fly                                      | Drosophila melanogaster\n\
-arabidopsis                              | Arabidopsis thaliana\n\
-brugia                                   | Brugia malayi\n\
+pea_aphid                                | Acyrthosiphon pisum\n\
 aedes                                    | Aedes aegypti\n\
-tribolium                                | Tribolium castaneum\n\
-schistosoma                              | Schistosoma mansoni\n\
-tetrahymena                              | Tetrahymena thermophila\n\
-galdieria                                | Galdieria sulphuraria\n\
-maize                                    | Zea mays\n\
-toxoplasma                               | Toxoplasma gondii\n\
-caenorhabditis                           | Caenorhabditis elegans\n\
-(elegans)                                | Caenorhabditis elegans \n\
+amphimedon                               | Amphimedon queenslandica\n\
+ancylostoma_ceylanicum                   | Ancylostoma ceylanicum\n\
+adorsata                                 | Apis dorsata\n\
+honeybee1                                | Apis mellifera\n\
+arabidopsis                              | Arabidopsis thaliana\n\
 aspergillus_fumigatus                    | Aspergillus fumigatus\n\
 aspergillus_nidulans                     | Aspergillus nidulans\n\
 (anidulans)                              | Aspergillus nidulans\n\
 aspergillus_oryzae                       | Aspergillus oryzae\n\
 aspergillus_terreus                      | Aspergillus terreus\n\
+bombus_impatiens1                        | Bombus impatiens\n\
+bombus_terrestris2                       | Bombus terrestris\n\
 botrytis_cinerea                         | Botrytis cinerea\n\
+brugia                                   | Brugia malayi\n\
+b_pseudomallei                           | Burkholderia pseudomallei\n\
+caenorhabditis                           | Caenorhabditis elegans\n\
+(c_elegans_trsk)                         | Caenorhabditis elegans\n\
+(elegans)                                | Caenorhabditis elegans\n\
+elephant_shark                           | Callorhinchus milii\n\
+camponotus_floridanus                    | Camponotus floridanus\n\
 candida_albicans                         | Candida albicans\n\
 candida_guilliermondii                   | Candida guilliermondii\n\
 candida_tropicalis                       | Candida tropicalis\n\
 chaetomium_globosum                      | Chaetomium globosum\n\
+chlamy2011                               | Chlamydomonas reinhardtii\n\
+(chlamydomonas)                          | Chlamydomonas reinhardtii\n\
+chlorella                                | Chlorella sp.\n\
+ciona                                    | Ciona intestinalis\n\
 coccidioides_immitis                     | Coccidioides immitis\n\
-coprinus                                 | Coprinus cinereus\n\
+coccidioides_immitis                     | Coccidioides immitis\n\
+Conidiobolus_coronatus                   | Conidiobolus coronatus\n\
 coprinus_cinereus                        | Coprinus cinereus\n\
+coprinus_cinereus                        | Coprinus cinereus\n\
+(coprinus)                               | Coprinus cinereus\n\
+coprinus                                 | Coprinus cinereus\n\
 cryptococcus_neoformans_gattii           | Cryptococcus neoformans gattii\n\
 cryptococcus_neoformans_neoformans_B     | Cryptococcus neoformans neoformans\n\
-cryptococcus_neoformans_neoformans_JEC21 | Cryptococcus neoformans neoformans\n\
 (cryptococcus)                           | Cryptococcus neoformans\n\
+culex                                    | Culex pipiens\n\
+zebrafish                                | Danio rerio\n\
 debaryomyces_hansenii                    | Debaryomyces hansenii\n\
+fly                                      | Drosophila melanogaster\n\
+(fly_exp)                                | Drosophila melanogaster\n\
 encephalitozoon_cuniculi_GB              | Encephalitozoon cuniculi\n\
 eremothecium_gossypii                    | Eremothecium gossypii\n\
-fusarium_graminearum                     | Fusarium graminearum\n\
+E_coli_K12                               | Escherichia coli K12\n\
+fusarium_graminearum                     | Fusarium graminearium\n\
 (fusarium)                               | Fusarium graminearium\n\
+galdieria                                | Galdieria sulphuraria\n\
+chicken                                  | Gallus gallus domesticus\n\
+heliconius_melpomene1                    | Heliconius melpomene\n\
 histoplasma_capsulatum                   | Histoplasma capsulatum\n\
 (histoplasma)                            | Histoplasma capsulatum\n\
+human                                    | Homo sapiens\n\
 kluyveromyces_lactis                     | Kluyveromyces lactis\n\
 laccaria_bicolor                         | Laccaria bicolor\n\
+leishmania_tarentolae                    | Leishmania tarentolae\n\
+japaneselamprey                          | Lethenteron camtschaticum\n\
 lodderomyces_elongisporus                | Lodderomyces elongisporus\n\
 magnaporthe_grisea                       | Magnaporthe grisea\n\
+mnemiopsis_leidyi                        | Mnemiopsis leidyi\n\
+nasonia                                  | Nasonia vitripennis\n\
+nematostella_vectensis                   | Nematostella vectensis\n\
 neurospora_crassa                        | Neurospora crassa\n\
 (neurospora)                             | Neurospora crassa\n\
+coyote_tobacco                           | Nicotiana attenuata\n\
+rice                                     | Oryza sativa\n\
+parasteatoda                             | Parasteatoda sp.\n\
+sealamprey                               | Petromyzon marinus\n\
 phanerochaete_chrysosporium              | Phanerochaete chrysosporium\n\
 (pchrysosporium)                         | Phanerochaete chrysosporium\n\
 pichia_stipitis                          | Pichia stipitis\n\
+pisaster                                 | Pisaster ochraceus\n\
+pfalciparum                              | Plasmodium falciparum\n\
+pneumocystis                             | Pneumocystis jirovecii\n\
 rhizopus_oryzae                          | Rhizopus oryzae\n\
-saccharomyces_cerevisiae_S288C           | Saccharomyces cerevisiae\n\
+rhodnius                                 | Rhodnius prolixus\n\
 saccharomyces_cerevisiae_rm11-1a_1       | Saccharomyces cerevisiae\n\
+saccharomyces_cerevisiae_S288C           | Saccharomyces cerevisiae\n\
 (saccharomyces)                          | Saccharomyces cerevisiae\n\
+schistosoma                              | Schistosoma mansoni\n\
+(schistosoma2)                           | Schistosoma mansoni\n\
 schizosaccharomyces_pombe                | Schizosaccharomyces pombe\n\
+tomato                                   | Solanum lycopersicum\n\
+s_aureus                                 | Staphylococcus aureus\n\
+s_pneumoniae                             | Streptococcus pneumoniae\n\
+strongylocentrotus_purpuratus            | Strongylocentrotus purpuratus\n\
+sulfolobus_solfataricus                  | Sulfolobus solfataricus\n\
+tetrahymena                              | Tetrahymena thermophila\n\
+cacao                                    | Theobroma cacao\n\
+thermoanaerobacter_tengcongensis         | Thermoanaerobacter tengcongensis\n\
+toxoplasma                               | Toxoplasma gondii\n\
+tribolium2012                            | Tribolium castaneum\n\
+trichinella                              | Trichinella sp.\n\
+wheat                                    | Triticum sp.\n\
 ustilago_maydis                          | Ustilago maydis\n\
 (ustilago)                               | Ustilago maydis\n\
+verticillium_albo_atrum1                 | Verticillium albo atrum\n\
+verticillium_longisporum1                | Verticillium longisporum\n\
+volvox                                   | Volvox sp.\n\
+Xipophorus_maculatus                     | Xipophorus maculatus\n\
 yarrowia_lipolytica                      | Yarrowia lipolytica\n\
-nasonia                                  | Nasonia vitripennis\n\
-tomato                                   | Solanum lycopersicum\n\
-chlamydomonas                            | Chlamydomonas reinhardtii\n\
-amphimedon                               | Amphimedon queenslandica\n\
-pea_aphid                                | Acyrthosiphon pisum\n\
-mnemiopsis_leidyi                        | Mnemiopsis leidyi\n\
-nematostella_vectensis                   | Nematostella vectensis\n\
-ciona                                    | Ciona intestinalis\n\
-strongylocentrotus_purpuratus            | Strongylocentrotus purpuratus\n\
+maize                                    | Zea mays\n\
+(maize5)                                 | Zea mays\n\
 \n"
   
 #define HELP_USAGE "usage:\n\
