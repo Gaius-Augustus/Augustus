@@ -102,6 +102,9 @@ Currently, AUGUSTUS has been trained for predicting genes in:
   - Ciona intestinalis (Chordata)
   - Strongylocentrotus purpuratus (Echinodermata)
   - Pisaster ochraceus (starfish)
+  - Chiloscyllium punctatum (bamboo shark)
+  - Scyliorhinus torazame (cat shark)
+  - Rhincodon typus (whale shark)
   
 The training annotation files of the following species are a courtesy of Jason Stajich (see also http://fungal.genome.duke.edu/): 
 Aspergillus fumigatus, Aspergillus nidulans, Aspergillus oryzae, Aspergillus terreus, Botrytis cinerea, Candida albicans
@@ -134,6 +137,9 @@ Parameters for camponotus_floridanus (ant) were contributed by Shishir K Gupta.
 Parameters for Apis dorsata were contributed by Francisco Camara Ferreira.
 
 Parameters for Mnemiopsis leidyi, Nematostella vectensis, Ciona intestinalis and Strongylocentrotus purpuratus were contributed by Joseph Ryan (University of Florida).
+
+Parameters for Chiloscyllium punctatum (brownbanded bamboo shark), Scyliorhinus torazame (cloudy catshark) and Rhincodon typus (whale shark) were contributed by Shigehiro Kuraku.
+
 
               2. INSTALLATION
               ---------------
