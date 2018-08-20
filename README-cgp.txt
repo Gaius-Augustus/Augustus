@@ -1,4 +1,4 @@
-# manual for AUGUSTUS in comparative gene prediction (cgp) mode
+# Manual for AUGUSTUS in comparative gene prediction (cgp) mode
 # genes are predicted simulteneously in several aligned genomes
 # Stefanie Koenig, September 25th, 2015
 
@@ -7,13 +7,12 @@
  3. INSTALLATION
  4. RUNNING AUGUSTUS IN CGP MODE
  5. OPTIONAL ARGUMENTS
- 6. RETRIEVING GENOMES FROM A MYSQL DATABASE
+ 6. DATABASE ACCESS
  7. USING HINTS
- 8. SQLITE ACCESS
- 9. TRAINING OF CLADE-SPECIFIC PARAMETERS (USUALLY NOT REQUIRED!!!)
-10. BUILDING THE NEWICK PARSER FROM SCRATCH
+ 8. TRAINING OF CLADE-SPECIFIC PARAMETERS (USUALLY NOT REQUIRED!!!)
+ 9. BUILDING THE NEWICK PARSER FROM SCRATCH
     (not needed unless you run into compiler errors related to 'parse.cc' or 'lex.cc')
-11. TRAINING CGP SCORE PARAMETERS 
+10. TRAINING CGP SCORE PARAMETERS 
 
 1. INTRODUCTION
 ----------------
@@ -49,12 +48,13 @@ The following programs need be installed in cgp mode:
 
 a) install all dependencies
 
-   GSL:      use package manager or install from source from http://www.gnu.org/software/gsl/
+   GSL:      GNU Sciencific Library. Install from source from http://www.gnu.org/software/gsl/ or via package manager:
+             > sudo apt install libgsl-dev
    Boost:    install via package manager, on UBUNTU/Debian linux:
-             > sudo apt-get install libboost-all-dev
+             > sudo apt install libboost-all-dev
    g++       install via package manager:
-             > sudo apt-get install build-essential
-   lpsolve   > sudo apt-get install libsuitesparse-dev liblpsolve55-dev 
+             > sudo apt install build-essential
+   lpsolve   > sudo apt install libsuitesparse-dev liblpsolve55-dev 
 
   optional (for gzipped input):
    zlib:     The compression library. Download from http://www.zlib.net/ or install via package manager.
@@ -86,7 +86,7 @@ In order to call AUGUSTUS in the comparative gene prediction mode, 4 mandatory a
 --speciesfilenames=genomes.tbl
                    a file containing for each species the path to its genome file.
 		   Each line in 'genomes.tbl' consists of two tab-separated fields.
-		   The first field is a species identifier (does not correspond to the
+		   The first field is a genome or species identifier (does not correspond to the
 		   identifier in --species !!!).
 		   The second field is the directory and file name for the genome file, e.g.
                    
@@ -105,7 +105,7 @@ AGCTCGCAGTGTTGATGCTTCAGTCTC
 ccagaggagacagttagtactaaatgcaccaa
    
                    For running Augustus-cgp on a subset of genomes, simply delete all lines of non-target genomes in --speciesfilenames.
-		   The alignment and phylogenetic tree need no modification.
+		   The alignment and phylogenetic tree need no modification if only a subset of genomes is used.
 
 --alnfile=aln.maf
           a file containing a multiple sequence alignment of the genomes in MAF format.
@@ -132,9 +132,9 @@ s rheMac2.chr3                     163875585 32 - 196418989 CCAGAGGAGACAGTTAGTAC
 
 ((((hg19:0.032973,rheMac2:0.036199):0.129706,mm9:0.352605):0.020666,bosTau4:0.219477):0.438357,galGal3:0.474279);
 
-           All branch lengths are required and leaf nodes must be named after the species identifier (as
+           All branch lengths are required and leaf nodes must be named after the genome/species identifier (as
            in 'aln.maf' and 'genomes.tbl'). Also a valid format (often output of phylogenetic
-           tree reconstruction tools such as MrBayes, PHYLIP, ...)  is f.i.
+           tree reconstruction tools such as MrBayes, PHYLIP, ...)  is for instance
 
 begin trees;
         translate
@@ -170,7 +170,8 @@ a) General Options:
   if on, only exons from the sampling of gene structures are taken as the set of possible candidate exons.
   Otherwise additional candidate exons are determined by combining all possible pairs of ASS/DSS
   start/DSS, ASS/stop and start/stop that are within the maximum length of exons (--max_exon_len, default: 12000).
-  Turn this flag on, to reduce the overall runtime memory requirements (default: off)
+  Turn this flag on, to reduce the overall runtime memory requirements at the cost of a potential decrease in
+  accuracy (default: off)
 
 --/CompPred/liftover_all_ECs=on/off
   by default only likely exon candidates (the ones from sampling) are lifted over to
@@ -180,9 +181,10 @@ a) General Options:
 
 --UTR=on/off
   predict the untranslated regions in addition to the coding sequence.
-  Note that the 3'-UTR, 5'UTR or both can be absent in some genes if candidate UTRs
+  Note that the 3'-UTR, 5'UTR or both can be absent in some predicted genes if candidate UTRs
   perform poorly in the ab initio model and are not supported by extrinsic evidence. Enforce the prediction
   of UTRs with --/CompPred/genesWithoutUTRs=false
+  This option requires that a UTR model was trained for the species specified with --species=...
 
 --nc=on/off
   simultaneous prediction of coding genes and non-coding genes (mostly lincRNA) (default: off)
@@ -219,12 +221,14 @@ a) General Options:
   print all candidate exons to the file exonCands.<species>.gff3 (default: off)
 
 --softmasking=1
- adds regions with lowercase nucleotides as nonexonpart hints of source "RM"
+ adds regions with lowercase nucleotides as nonexonpart hints of source "RM".
+ This is the preferrable way to deal with repeat (soft) masked genomes.
  If --extrinsicCfgFile is not given, it used the default cgp.extrinsic.cfg with bonus 1.15, if 
  another extrinsic config file is given, it must contain the "RM" source.
 
 --temperature=t
   heat the posterior distribution for sampling, 0=cold, 7=hottest, take probs to the power of (8-temperature)/8
+  A higher temperature tends to include more suboptimal gene structures during sampling.
   (default: 3)
 
 --optCfgFile=cgp_parameters.cfg
@@ -258,6 +262,7 @@ c) Options to adjust properties of splice sites, exons, introns and genes
 
 --max_exon_len=n
   maximum length of a candidate exon (default: 12000)
+  Typically, this needs not be changed.
 
 --min_intron_len=n
   minimum length of a candidate intron (default: 39)
@@ -303,7 +308,9 @@ d) Options to adjust the scoring function of candidate exons/introns:
   Analogous to parameter --/CompPred/ec_thold above.
 
 --/CompPred/scale_codontree=f
-  scaling factor to scale branch lengths in the codon tree to one codon substitution per time unit
+  scaling factor to scale branch lengths in the codon tree to one codon substitution per time unit.
+  After applying this factor to each branch length for the input tree, the tree should be scaled for
+  the expected number of CODON substitutions.
   (default: 1)
 
 
@@ -326,15 +333,16 @@ e) Options to adjust the phylogenetic model:
 
 --/CompPred/exon_loss=r
   rate r>0 of exon loss (parameter of the phylogenetic models, see above)
-  (default: )
+  (default: 0.0001)
 
---/CompPred/exon_loss=r
+--/CompPred/exon_gain=r
   rate r>0 of exon gain (parameter of the phylogenetic models, see above)
-  (default: )
+  (default: 0.0001)
 
 --/CompPred/ali_error=r
   rate r of alignment errors (parameter of the phylogenetic model 3 and 4, see above)
-
+  (default: 0.1)
+  
 --/CompPred/phylo_factor=f
   specifies the influence of the phylogenetic model (default: 1).
   The higher f is chosen, the more weight is given to the phylogenetic model, i.e.
@@ -372,12 +380,64 @@ f) Options to adjust the DD algorithm:
   e.g. for r=4, a=1 and b=4, the values 1,2,3 and 4 are used for the first, second, ... and fourth round of DD, respectively.
 
 
-6. RETRIEVING GENOMES FROM A MYSQL DATABASE
-------------------------------------------------
+6. DATABASE ACCESS
+------------------
 
 The flat-file option above reads in all genomes into RAM. This may require too much memory, e.g. for a large number
 of vertebrate-sized genomes. Also, this is inefficient when many parallel comparative AUGUSTUS runs are started on a
-compute cluster. Therefore, another option allows to read only the required sequences from a MYSQL database:
+compute cluster. Therefore, another option allows to read only the required sequences from a database.
+
+Option 1: SQLITE
+----------------
+
+Sequences and hints can be accessed using an SQLite database (in our experience the sqlite access runs more stabe than MySQL).
+Other than the MySQL database that stores the full sequences, the SQLite database only stores
+file offsets to achieve random access to the genome files.
+
+a) Installation
+
+   To enable access to an SQLITE database, install the package libsqlite3-dev with your package manager or 
+   download the SQLite source code from http://www.sqlite.org/download.html/ 
+   (tested with  SQLite 3.8.5 ) and install as follows:
+
+   > tar zxvf sqlite-autoconf-3080500.tar.gz
+   > cd sqlite-autoconf-3080500
+   > ./configure
+   > sudo make
+   > sudo make install
+
+   If you encounter an "SQLite header and source version mismatch" error, try
+
+   > ./configure --disable-dynamic-extensions --enable-static --disable-shared
+
+   Turn on the flag SQLITE in augustus/trunks/common.mk and recompile AUGUSTUS
+
+b) create an SQLite database and populate it
+   Use the program 'load2sqlitedb' in the AUGUSTUS repository.
+   Run load2sqlitedb with the parameter "--help" to view the usage instructions
+
+   > load2sqlitedb --help
+
+   example code for loading a genome and a hints file to the database vertebrates.db
+   (always load the genome file first, before loading hints):
+
+   > load2sqlitedb --species=chicken --dbaccess=vertebrates.db genome.fa
+   > load2sqlitedb --species=chicken --dbaccess=vertebrates.db hints.gff
+
+c) running AUGUSUTS with SQLite db access:
+   call AUGUSTUS with parameters --dbaccess AND --speciesfilenames
+
+   > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl
+
+   in order to retrieve hints from the database, enable --dbhints and pass an extrinsic config file
+
+   > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
+
+
+Option 2: MySQL
+---------------
+
+This is an alternative to the SQLITE flat file database from above.
 
 a.) enabling mysql access:
     follow the instructions in docs/mysql.install.readme to install a mysql client and compile the mysql++ library
@@ -467,55 +527,7 @@ b) retrieving hints from database
 > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=saeuger,localhost,cgp,AVglssd8 --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
 
 
-8. SQLITE ACCESS
-------------------
-
-Alternatively to Mysql, sequences and hints can also be accessed using an SQLite database
-(in our experience the sqlite access runs more stabe than the mysql).
-Other than the Mysql database that stores the full sequences, the SQLite database only stores
-file offsets to achieve random access to the genome files.
-
-a) Installation
-
-   To enable access to an SQLITE database, install the package libsqlite3-dev with your package manager or 
-   download the SQLite source code from http://www.sqlite.org/download.html/ 
-   (tested with  SQLite 3.8.5 ) and install as follows:
-
-   > tar zxvf sqlite-autoconf-3080500.tar.gz
-   > cd sqlite-autoconf-3080500
-   > ./configure
-   > sudo make
-   > sudo make install
-
-   If you encounter an "SQLite header and source version mismatch" error, try
-
-   > ./configure --disable-dynamic-extensions --enable-static --disable-shared
-
-   Turn on the flag SQLITE in augustus/trunks/common.mk and recompile AUGUSTUS
-
-b) create an SQLite database and populate it
-   Use the program 'load2sqlitedb' in the AUGUSTUS repository.
-   Run load2sqlitedb with the parameter "--help" to view the usage instructions
-
-   > load2sqlitedb --help
-
-   example code for loading a genome and a hints file to the database vertebrates.db
-   (always load the genome file first, before loading hints):
-
-   > load2sqlitedb --species=chicken --dbaccess=vertebrates.db genome.fa
-   > load2sqlitedb --species=chicken --dbaccess=vertebrates.db hints.gff
-
-c) running AUGUSUTS with SQLite db access:
-   call AUGUSTUS with parameters --dbaccess AND --speciesfilenames
-
-   > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl
-
-   in order to retrieve hints from the database, enable --dbhints and pass an extrinsic config file
-
-   > augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
-
-
-9. TRAINING OF CLADE-SPECIFIC PARAMETERS (USUALLY NOT REQUIRED!!!)
+8. TRAINING OF CLADE-SPECIFIC PARAMETERS (USUALLY NOT REQUIRED!!!)
 ------------------------------------------------------------------
 
 Clade-specific parameters include the rates for exon gain and loss
@@ -564,7 +576,7 @@ b) Running optimize_augustus.pl for cgp parameter training
 ¹Keibler, E. and M.R. Brent. 2003. "Eval: A software package for analysis of genome annotations." BMC Bioinformatics 4:50.
    
 
-10. BUILDING THE NEWICK PARSER FROM SCRATCH
+ 9. BUILDING THE NEWICK PARSER FROM SCRATCH
     (not needed unless you run into compiler errors related to 'parse.cc' or 'lex.cc')
 ---------------------------------------------------------------------------------------
 
@@ -634,7 +646,7 @@ d) recompilation of AUGUSTUS-cgp
 >  make clean all
 
 
-11. TRAINING CGP SCORE PARAMETERS 
+10. TRAINING CGP SCORE PARAMETERS 
 ---------------------------------
 
 To train the parameters used to score exon and intron candidates you have two options:
