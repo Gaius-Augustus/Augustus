@@ -115,6 +115,7 @@ candida_albicans                         | Candida albicans\n\
 candida_guilliermondii                   | Candida guilliermondii\n\
 candida_tropicalis                       | Candida tropicalis\n\
 chaetomium_globosum                      | Chaetomium globosum\n\
+chiloscyllium                            | Chiloscyllium punctatum\n\
 chlamy2011                               | Chlamydomonas reinhardtii\n\
 (chlamydomonas)                          | Chlamydomonas reinhardtii\n\
 chlorella                                | Chlorella sp.\n\
@@ -166,6 +167,7 @@ pichia_stipitis                          | Pichia stipitis\n\
 pisaster                                 | Pisaster ochraceus\n\
 pfalciparum                              | Plasmodium falciparum\n\
 pneumocystis                             | Pneumocystis jirovecii\n\
+rhincodon                                | Rhincodon typus\n\
 rhizopus_oryzae                          | Rhizopus oryzae\n\
 rhodnius                                 | Rhodnius prolixus\n\
 saccharomyces_cerevisiae_rm11-1a_1       | Saccharomyces cerevisiae\n\
@@ -174,6 +176,7 @@ saccharomyces_cerevisiae_S288C           | Saccharomyces cerevisiae\n\
 schistosoma                              | Schistosoma mansoni\n\
 (schistosoma2)                           | Schistosoma mansoni\n\
 schizosaccharomyces_pombe                | Schizosaccharomyces pombe\n\
+scyliorhinus                             | Scyliorhinus torazame\n\
 tomato                                   | Solanum lycopersicum\n\
 s_aureus                                 | Staphylococcus aureus\n\
 s_pneumoniae                             | Streptococcus pneumoniae\n\
