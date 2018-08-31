@@ -1,0 +1,167 @@
+# This output was generated with AUGUSTUS (version 3.3.1).
+# AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),
+# O. Keller, S. König, L. Gerischer, L. Romoth and Katharina Hoff.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+#
+#----- prediction for species 'hg38' -----
+#
+#----- prediction on sequence range chr16:74001-126000 (52000bp) -----
+#
+# start gene g1
+chr16	AUGUSTUS	gene	74421	78059	0	+	.	g1
+chr16	AUGUSTUS	transcript	74421	78059	.	+	.	g1.t1
+chr16	AUGUSTUS	CDS	74421	74551	0.95	+	2	transcript_id "g1.t1"; gene_id "g1";
+chr16	AUGUSTUS	CDS	75130	75262	0.9	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr16	AUGUSTUS	CDS	75461	75590	1	+	2	transcript_id "g1.t1"; gene_id "g1";
+chr16	AUGUSTUS	CDS	76299	76439	1	+	1	transcript_id "g1.t1"; gene_id "g1";
+chr16	AUGUSTUS	CDS	76737	76812	1	+	1	transcript_id "g1.t1"; gene_id "g1";
+chr16	AUGUSTUS	CDS	77053	77208	0.44	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr16	AUGUSTUS	CDS	77651	77753	0.71	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr16	AUGUSTUS	CDS	77848	78059	0.88	+	2	transcript_id "g1.t1"; gene_id "g1";
+chr16	AUGUSTUS	stop_codon	78057	78059	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [ETLWNHSSSFSGNASILSPLLQVPDVDGDGAPDLLVLTQEREEVSGHLYSGSTGHQIGLRGSLGVDGESGFLLHVTRT
+# GAHYILFPCASSLCGCSVKGLYEKVTGSGGPFKSDPHWESMLNATTRRMLSHSSGAVRYLMHVPGNAGADVLLVGSEAFVLLDGQELTPRWTPKAAHV
+# LRKPIFGRYKPDTLAVAVENGTGTDRQILFLDLGTGAVLCSLALPSLPGGPLSASLPTADHRSAFFFWGLHELGSTSETETGEARHSLYMFHPTLPRV
+# LLELANVSTHIVAFDAVLFEPSRHAAYILLTGPADSEAPGLVSVIKHKVRDLVPSSRVVRLGEGGPDSDQAIRDRFSRLRYQSEA]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/8
+# CDS introns: 0/8
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 1
+#     RM:   1 
+# incompatible hint groups: 0
+# end gene g1
+###
+# start gene g2
+chr16	AUGUSTUS	gene	82306	88948	0	-	.	g2
+chr16	AUGUSTUS	transcript	82306	88948	.	-	.	g2.t1
+chr16	AUGUSTUS	stop_codon	82306	82308	.	-	0	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	82306	82420	0.84	-	1	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	82540	82622	0.92	-	0	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	83560	83698	1	-	1	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	83781	83868	0.96	-	2	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	84021	84136	0.96	-	1	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	84239	84352	0.87	-	1	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	84436	84497	0.7	-	0	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	84577	84606	0.47	-	0	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	85900	85968	0.41	-	0	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	86512	86593	0.16	-	1	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	86797	86873	0.47	-	0	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	87080	87138	0.51	-	2	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	87251	87302	.	-	0	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	88013	88119	0.4	-	2	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	88320	88370	0.14	-	2	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	88439	88535	0.59	-	0	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	CDS	88886	88948	0.53	-	0	transcript_id "g2.t1"; gene_id "g2";
+chr16	AUGUSTUS	start_codon	88946	88948	.	-	0	transcript_id "g2.t1"; gene_id "g2";
+# protein sequence = [MAAGPAPPPGRPRAQMPHLRKMERVVVSMQDPDQGVKMRSQRLLVTVIPHAVTGSDVVQWLAQKFCVSEEEALHLGAV
+# LVQHGYIYPLRDPRSLMLRPDETPYRFQTPYFWTSTLRPAAELDYAIYLAKKNIRKRGTLVDYEKDCYDRLHKKINHAWDLVLMQAREQLRAAKQRSK
+# GDRLVIACQEQTYWLVNRPPPGAPDVLEQGPGRGSCAASRVLMTKSADFHKREIEYFRKALGRTRVKSSVCLEAYLSFCGQRGPHDPLVSGCLPSNPW
+# ISDNDAYWVMNAPTVAAPTKLRVERWGFSFRELLEDPVGRAHFMDFLGKEFSGENLSFWEACEELRYGAQAQVPTLVDAVYEQFLAPGAAHWVNIDSR
+# TMEQTLEGLRQPHRYVLDDAQLHIYMLMKKDSYPRFLKSDMYKALLAEAGIPLEMKRRVFPFTWRPRHSSPSPALLPTPVEPTAACGPGGGDGVA]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/17
+# CDS introns: 0/16
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 6
+#     RM:   6 
+# incompatible hint groups: 0
+# end gene g2
+###
+# start gene g3
+chr16	AUGUSTUS	gene	93718	95851	0	+	.	g3
+chr16	AUGUSTUS	transcript	93718	95851	.	+	.	g3.t1
+chr16	AUGUSTUS	start_codon	93718	93720	.	+	0	transcript_id "g3.t1"; gene_id "g3";
+chr16	AUGUSTUS	CDS	93718	93790	1	+	0	transcript_id "g3.t1"; gene_id "g3";
+chr16	AUGUSTUS	CDS	94783	94962	1	+	2	transcript_id "g3.t1"; gene_id "g3";
+chr16	AUGUSTUS	CDS	95062	95145	0.97	+	2	transcript_id "g3.t1"; gene_id "g3";
+chr16	AUGUSTUS	CDS	95334	95410	0.98	+	2	transcript_id "g3.t1"; gene_id "g3";
+chr16	AUGUSTUS	CDS	95504	95567	0.98	+	0	transcript_id "g3.t1"; gene_id "g3";
+chr16	AUGUSTUS	CDS	95652	95851	0.98	+	2	transcript_id "g3.t1"; gene_id "g3";
+chr16	AUGUSTUS	stop_codon	95849	95851	.	+	0	transcript_id "g3.t1"; gene_id "g3";
+# protein sequence = [MLGLDACELGAQLLELLRLALCARVLLADKEGGPPAVDEVLDEAVPEYRAPGRKSLLEIRQLDPDDRSLAKYKRVLLG
+# PLPPAVDPSLPNVQVTRLTLLSEQAPGPVVMDLTGDLAVLKDQVFVLKEGVDYRVKISFKVHREIVSGLKCLHHTYRRGLRVDKTVYMVGSYGPSAQE
+# YEFVTPVEEAPRGALVRGPYLVVSLFTDDDRTHHLSWEWGLCICQDWKD]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/6
+# CDS introns: 0/5
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 1
+#     RM:   1 
+# incompatible hint groups: 0
+# end gene g3
+###
+# start gene g4
+chr16	AUGUSTUS	gene	96207	100150	0	+	.	g4
+chr16	AUGUSTUS	transcript	96207	100150	.	+	.	g4.t1
+chr16	AUGUSTUS	start_codon	96207	96209	.	+	0	transcript_id "g4.t1"; gene_id "g4";
+chr16	AUGUSTUS	CDS	96207	96405	0.03	+	0	transcript_id "g4.t1"; gene_id "g4";
+chr16	AUGUSTUS	CDS	97424	97630	0.03	+	2	transcript_id "g4.t1"; gene_id "g4";
+chr16	AUGUSTUS	CDS	97696	97829	1	+	2	transcript_id "g4.t1"; gene_id "g4";
+chr16	AUGUSTUS	CDS	97915	98052	0.05	+	0	transcript_id "g4.t1"; gene_id "g4";
+chr16	AUGUSTUS	CDS	98121	98237	0.97	+	0	transcript_id "g4.t1"; gene_id "g4";
+chr16	AUGUSTUS	CDS	98349	98474	1	+	0	transcript_id "g4.t1"; gene_id "g4";
+chr16	AUGUSTUS	CDS	98543	98740	1	+	0	transcript_id "g4.t1"; gene_id "g4";
+chr16	AUGUSTUS	CDS	99390	99510	0.9	+	0	transcript_id "g4.t1"; gene_id "g4";
+chr16	AUGUSTUS	CDS	99591	99772	0.99	+	2	transcript_id "g4.t1"; gene_id "g4";
+chr16	AUGUSTUS	CDS	99872	99982	0.94	+	0	transcript_id "g4.t1"; gene_id "g4";
+chr16	AUGUSTUS	CDS	100106	100150	0.86	+	0	transcript_id "g4.t1"; gene_id "g4";
+chr16	AUGUSTUS	stop_codon	100148	100150	.	+	0	transcript_id "g4.t1"; gene_id "g4";
+# protein sequence = [MSRQLLPVLLLLLLRASCPWGQEQGARSPSEEPPEEEIPKEDGILVLSRHTLGLALREHPALLVEFYAPWCGHCQALA
+# PEYSKAAAVLAAESMVVTLAKVDGPAQRELAEEFGVTEYPTLKFFRNGNRTHPEEYTGPRDAEGIAEWLRRRVGPSAMRLEDEAAAQALIGGRDLVVI
+# GFFQDLQDEDVATFLALAQDALDMTFGLTDRPRLFQQFGLTKDTVVLFKKFDEGRADFPVDEELGLDLGDLSRFLVTHSMRLVTEFNSQTSAKIFAAR
+# ILNHLLLFVNQTLAAHRELLAGFGEAAPRFRGQVLFVVVDVAADNEHVLQYFGLKAEAAPTLRLVNLETTKKYAPVDGGPVTAASITAFCHAVLNGQV
+# KPYLLSQEIPPDWDQRPVKTLVGKNFEQVAFDETKNVFVKFYAPWCTHCKEMAPAWEALAEKYQDHEDIIIAELDATANELDAFAVHGFPTLKYFPAG
+# PGRKVIEYKSTRDLETFSKFLDNGGVLPTEEPPEEPAAPFPEPPANSTMGSKEEL]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/11
+# CDS introns: 0/10
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 2
+#     RM:   2 
+# incompatible hint groups: 1
+#     RM:   1 
+# end gene g4
+###
+# start gene g5
+chr16	AUGUSTUS	gene	101159	125232	0	-	.	g5
+chr16	AUGUSTUS	transcript	101159	125232	.	-	.	g5.t1
+chr16	AUGUSTUS	stop_codon	101159	101161	.	-	0	transcript_id "g5.t1"; gene_id "g5";
+chr16	AUGUSTUS	CDS	101159	101285	1	-	1	transcript_id "g5.t1"; gene_id "g5";
+chr16	AUGUSTUS	CDS	102477	102644	0.88	-	1	transcript_id "g5.t1"; gene_id "g5";
+chr16	AUGUSTUS	CDS	104227	104334	0.5	-	1	transcript_id "g5.t1"; gene_id "g5";
+chr16	AUGUSTUS	CDS	106525	106755	0.23	-	1	transcript_id "g5.t1"; gene_id "g5";
+chr16	AUGUSTUS	CDS	110093	110263	1	-	1	transcript_id "g5.t1"; gene_id "g5";
+chr16	AUGUSTUS	CDS	110759	111288	0.72	-	0	transcript_id "g5.t1"; gene_id "g5";
+chr16	AUGUSTUS	CDS	117341	117478	0.7	-	0	transcript_id "g5.t1"; gene_id "g5";
+chr16	AUGUSTUS	CDS	123010	123106	0.97	-	1	transcript_id "g5.t1"; gene_id "g5";
+chr16	AUGUSTUS	CDS	125192	125232	0.93	-	0	transcript_id "g5.t1"; gene_id "g5";
+chr16	AUGUSTUS	start_codon	125230	125232	.	-	0	transcript_id "g5.t1"; gene_id "g5";
+# protein sequence = [MALERLWAVDTDVGDGIPPYRIRKQHRREMQESVQVNGRVPLPHIPRTYRVPKEVRVEPQKFAEELIHRLEAVQRTRE
+# AEEKLEERLKRVRMEEEGEDGDPSSGPPGPCHKLPPAPAWHHFPPRCVDMGCAGLRDAHEENPESILDEHVQRVLRTPGRQSPGPGHRSPDSGHVAKM
+# PVALGGAASGHGKHVPKSGAKLDAAGLHHHRHVHHHVHHSTARPKEQVEAEATRRAQSSFAWGLEPHSHGARSRGYSESVGAAPNASDGLAHSGKVGV
+# ACKRNAKKAESGKSASTEVPGASEDAEKNQKIMQWIIEGEKEISRHRRTGHGSSGTRKPQPHENSRPLSLEHPWAGPQLRTSVQPSHLFIQDPTMPPH
+# PAPNPLTQLEEARRRLEEEEKRASRAPSKQRYVQEVMRRGRACVRPACAPVLHVVPAVSDMELSETETRSQRKVGGGSAQPCDSIVVAYYFCGEPIPY
+# RTLVRGRAVTLGQFKELLTKKGSYRYYFKKVSDEFDCGVVFEEVREDEAVLPVFEEKIIGKVEKVD]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/9
+# CDS introns: 0/8
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 30
+#     RM:  30 
+# incompatible hint groups: 1
+#     RM:   1 
+# end gene g5
+###

@@ -1,0 +1,15 @@
+/* styles for tutorial, Mario Stanke */
+body{background:#c0e9ff;color:black;font-family:'Bitstream Vera Sans','Verdana',sans-serif;}
+/*min-width:70em;max-width:70em;}*/
+/* link to box with details */
+.dlink{text-decoration:none;}
+/* [+] for opening details box */
+.dcross{font-family:monospace;font-weight:bold;}
+/* title of details box */
+.dtitle{font-weight:bold;font-style:italic;color:black;}
+/* details box */
+.details{padding:10px;margin:20px;background:#d0e6ff;border-width:1px;border-style:dotted;}
+/* source code */
+.code{font-size:medium;font-family:Fixedsys,Courier,monospace;margin:10px;padding:5px;padding-left:20px;background:#80d0ff;border-width:1px;border-style:dashed;}
+.assignment{font-weight:bold;color:#800040;}
+.result{font-weight:bold;color:#FF5032;}

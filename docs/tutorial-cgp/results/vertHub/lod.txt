@@ -1,0 +1,7 @@
+0 vertebrates.hal
+3122 lod/vertebrates_lod_37.hal
+8251 lod/vertebrates_lod_92.hal
+20516 lod/vertebrates_lod_231.hal
+51513 lod/vertebrates_lod_578.hal
+128894 lod/vertebrates_lod_1446.hal
+322458 lod/vertebrates_lod_3615.hal

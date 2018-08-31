@@ -1,0 +1,87 @@
+# This output was generated with AUGUSTUS (version 3.3.1).
+# AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),
+# O. Keller, S. König, L. Gerischer, L. Romoth and Katharina Hoff.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+#
+#----- prediction for species 'bosTau8' -----
+#
+#----- prediction on sequence range chr25:15655-59382 (43728bp) -----
+#
+# start gene g1
+chr25	AUGUSTUS	gene	22489	33610	0	-	.	g1
+chr25	AUGUSTUS	transcript	22489	33610	.	-	.	g1.t1
+chr25	AUGUSTUS	CDS	22489	22613	0.88	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	exon	22489	22613	.	-	.	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	24872	24970	0.93	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	exon	24872	24970	.	-	.	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	31588	31682	0.68	-	2	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	exon	31588	31682	.	-	.	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	33550	33610	0.73	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	exon	33550	33610	.	-	.	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	start_codon	33608	33610	.	-	0	transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MSAQAQMRALLDQLMGTARDGDETRQRVKFTDDRVCKSHLLDCCPHDILAGTRMDLGECTKIHDLALRADYEIASKER
+# DLFFELDNTPAALRPADSIREGLGRVIALHSGMMCGCGKRAEAVKLCP]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/4
+# CDS introns: 0/3
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 7
+#     RM:   7 
+# incompatible hint groups: 0
+# end gene g1
+###
+# start gene g2
+chr25	AUGUSTUS	gene	58422	58686	0	+	.	g2
+chr25	AUGUSTUS	transcript	58422	58686	.	+	.	g2.t1
+chr25	AUGUSTUS	start_codon	58422	58424	.	+	0	transcript_id "g2.t1"; gene_id "g2";
+chr25	AUGUSTUS	CDS	58422	58686	0.45	+	0	transcript_id "g2.t1"; gene_id "g2";
+chr25	AUGUSTUS	exon	58422	58686	.	+	.	transcript_id "g2.t1"; gene_id "g2";
+# protein sequence = [MTDGKDLEAEIHPLKSENRKVPENAGALAGKEPRGTPAPQTRLSHCRTAAFFLSLFACLLVVFVVSFIIPCPDRPALQ
+# GVWRIDYNAA]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/1
+# CDS introns: 0/1
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 0
+# incompatible hint groups: 0
+# end gene g2
+###
+#----- prediction on sequence range chr25:57386-64869 (7484bp) -----
+#
+# start gene g3
+chr25	AUGUSTUS	gene	62383	64851	0	+	.	g3
+chr25	AUGUSTUS	transcript	62383	64851	.	+	.	g3.t1
+chr25	AUGUSTUS	CDS	62383	62502	0.9	+	2	transcript_id "g3.t1"; gene_id "g3";
+chr25	AUGUSTUS	exon	62383	62502	.	+	.	transcript_id "g3.t1"; gene_id "g3";
+chr25	AUGUSTUS	CDS	62697	62888	0.99	+	2	transcript_id "g3.t1"; gene_id "g3";
+chr25	AUGUSTUS	exon	62697	62888	.	+	.	transcript_id "g3.t1"; gene_id "g3";
+chr25	AUGUSTUS	CDS	63568	63698	1	+	2	transcript_id "g3.t1"; gene_id "g3";
+chr25	AUGUSTUS	exon	63568	63698	.	+	.	transcript_id "g3.t1"; gene_id "g3";
+chr25	AUGUSTUS	CDS	63892	64024	1	+	0	transcript_id "g3.t1"; gene_id "g3";
+chr25	AUGUSTUS	exon	63892	64024	.	+	.	transcript_id "g3.t1"; gene_id "g3";
+chr25	AUGUSTUS	CDS	64168	64297	0.98	+	2	transcript_id "g3.t1"; gene_id "g3";
+chr25	AUGUSTUS	exon	64168	64297	.	+	.	transcript_id "g3.t1"; gene_id "g3";
+chr25	AUGUSTUS	CDS	64599	64851	0.71	+	1	transcript_id "g3.t1"; gene_id "g3";
+chr25	AUGUSTUS	exon	64599	64851	.	+	.	transcript_id "g3.t1"; gene_id "g3";
+chr25	AUGUSTUS	stop_codon	64849	64851	.	+	0	transcript_id "g3.t1"; gene_id "g3";
+# protein sequence = [AYDFLAAEDVNKDKIQDILFLYKNTNSSRGNSSFSCADEGFSCPCTFVAAVSGASGSVLWERPVAQDRAFVECGILQP
+# RGSAAPSACVVLGRPGSLVAVDTLTGKTLWSQPSSFGGNASVLSPLLRVPDLDADGAPDLLVLIQEENQVNGSIYSGGTGQQVSPPDSLGVDGTSGSI
+# LHVTRAGAHYVLIPCGTALCSRSVKGLYEKVSRRDSPLKSDPLWEDMLSAASHRLVVHSSGAIRYLMNVPGKAGDDLLLVSTEAYMLLDGQDLTPRWT
+# FGTTQVLRYGVLLQGAGPPSLSPCGDLGTTPLPVTWCHPAGGGR]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/6
+# CDS introns: 0/5
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 1
+#     RM:   1 
+# incompatible hint groups: 0
+# end gene g3
+###

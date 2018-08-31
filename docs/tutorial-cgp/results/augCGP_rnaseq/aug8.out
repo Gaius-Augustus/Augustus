@@ -1,0 +1,159 @@
+-------Speciesnames:--------
+species 0	monDom5
+species 1	hg38
+species 2	rheMac3
+species 3	mm10
+species 4	rn6
+species 5	bosTau8
+species 6	canFam3
+species 7	galGal4
+# assuming an SQLite database
+read in the configuration file for extrinsic features
+# Sources of extrinsic information: M RM E W 
+# Setting acceptor splice site local malus: 0.1
+# Setting donor splice site local malus: 0.1
+# Setting exon local malus: 0.985
+# Setting CDSpart local malus: 0.985
+# Setting UTRpart local malus: 0.985
+extrinsic group 1: hg38 mm10 rheMac3 galGal4
+extrinsic group 2: none ... is deleted
+extrinsic group 2: monDom5 rn6 bosTau8 canFam3
+Trying to open database ../vertebrates_rnaseq.db
+# human version. Using species specific transition matrix: /home/mario/augustus/git/Augustus/config/species/human/human_trans_shadow_partial_utr.pbl
+# setting temperature to 3 (for sampling)
+number of nodes: 141
+number of signatures=28. First 10 signatures are:
+numAli	sumCumFragLen	sumAliLen	depth	color	signature
+17	86289	17288	7     royalblue3 0:chr6+1:chr16+2:chr20+3:chr17-5:chr25+6:chr6-7:chr14-
+18	19104	6950	5      seagreen1                1:chr16+2:chr20+3:chr17-5:chr25+6:chr6-
+19	14001	5124	4         brown4                        1:chr16+2:chr20+5:chr25+6:chr6-
+5	9324	4053	4  darkturquoise                        1:chr16+2:chr20+3:chr17-6:chr6-
+7	6532	2826	5         grey40                1:chr16+2:chr20+5:chr25+6:chr6-7:chr14-
+9	6500	2968	3        maroon2                                1:chr16+2:chr20+6:chr6-
+6	4513	1264	6       skyblue4         0:chr6+1:chr16+2:chr20+5:chr25+6:chr6-7:chr14-
+11	4274	1273	6     olivedrab1        1:chr16+2:chr20+3:chr17-5:chr25+6:chr6-7:chr14-
+1	4048	2107	4          khaki                         0:chr6+1:chr16+2:chr20+6:chr6-
+3	3045	975	6         gray66        0:chr6+1:chr16+2:chr20+3:chr17-5:chr25+7:chr14-
+found 3 paths
+Have 3 collisions.
+aliG2 nodes 143 allPaths nodes 152 ratio: 1.06294
+Have 0 collisions.
+MILP objective=0
+removing alignments 
+0 geneRanges=alignments (0%) and 0 / 170695 = 0% of aligned bases and 0 / 414463 = 0% of aligment-range-covered bases were deleted because of too much redundancy.
+findGeneRanges reduced the number of aligments from 1508 to 1 (to 0.0663%).
+processing next gene range:
+monDom5.chr6	+	167819	318654
+hg38.chr16	+	74000	125999
+rheMac3.chr20	+	82440	138065
+mm10.chr17	-	76019	112759
+rn6.	
+bosTau8.chr25	+	62869	102722
+canFam3.chr6	-	68813	112372
+galGal4.chr14	-	91866	141711
+# Delete group HintGroup , 3102-3662, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 4583-4731, mult= 1, priority= 4 1 features
+# Error: intron hint is too short.
+# chr16	b2h	intron	4685	4721	0	.	.	mult=4;pri=4;src=E "40057.6;0.34;0:0"
+# Delete group HintGroup , 4684-4720, mult= 4, priority= 4 1 features
+# Delete group HintGroup , 44657-48313, mult= 2, priority= 4 1 features
+# Forced unstranded hint group to the only possible strand for 87 groups.
+# Deleted 4 groups because some hint was not satisfiable.
+# Delete group HintGroup , 4050-4291, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 4083-50931, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 6951-11604, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 11105-11158, mult= 2, priority= 4 1 features
+# Delete group HintGroup , 14689-14948, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 36303-36640, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 40405-43287, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 42537-45115, mult= 1, priority= 4 1 features
+# Forced unstranded hint group to the only possible strand for 90 groups.
+# Deleted 8 groups because some hint was not satisfiable.
+# Delete group HintGroup , 355-1085, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 361-1085, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 370-1477, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 1025-1123, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 1057-1494, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 1092-2968, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 1104-1406, mult= 2, priority= 4 1 features
+# Delete group HintGroup , 1139-1379, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 2514-2971, mult= 4, priority= 4 1 features
+# Delete group HintGroup , 2754-2853, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 3896-4029, mult= 11, priority= 4 1 features
+# Delete group HintGroup , 4017-4321, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 4288-4615, mult= 2, priority= 4 1 features
+# Delete group HintGroup , 4404-4599, mult= 2, priority= 4 1 features
+# Delete group HintGroup , 10162-10240, mult= 2, priority= 4 1 features
+# Delete group HintGroup , 11998-12231, mult= 1, priority= 4 1 features
+# Error: intron hint is too short.
+# chr17	b2h	intron	16442	16475	0	.	.	pri=4;src=E "10013.2;0.34;0:0"
+# Delete group HintGroup , 16441-16474, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 17929-18022, mult= 1, priority= 4 1 features
+# Error: intron hint is too short.
+# chr17	b2h	intron	18410	18445	0	.	.	pri=4;src=E "10014;0.34;0:0"
+# Delete group HintGroup , 18409-18444, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 20245-20639, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 22323-22469, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 24295-27502, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 27508-28997, mult= 2, priority= 4 1 features
+# Delete group HintGroup , 27538-27639, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 28996-29510, mult= 2, priority= 4 1 features
+# Forced unstranded hint group to the only possible strand for 106 groups.
+# Deleted 25 groups because some hint was not satisfiable.
+# Delete group HintGroup , 4646-30556, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 13328-13944, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 14605-14706, mult= 2, priority= 4 1 features
+# Delete group HintGroup , 14768-14931, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 14804-14887, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 19417-19468, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 19429-19569, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 26281-46592, mult= 1, priority= 4 1 features
+# Forced unstranded hint group to the only possible strand for 66 groups.
+# Deleted 8 groups because some hint was not satisfiable.
+Found 12551 ECs on species monDom5
+Found 6237 ECs on species hg38
+Found 6061 ECs on species rheMac3
+Found 4054 ECs on species mm10
+Found 4682 ECs on species bosTau8
+Found 4349 ECs on species canFam3
+Found 6146 ECs on species galGal4
+OEs in this gene range must have at least 2 ECs
+Found 1947 ortho exons
+building Graph for monDom5
+building Graph for hg38
+building Graph for rheMac3
+building Graph for mm10
+building Graph for bosTau8
+building Graph for canFam3
+building Graph for galGal4
+computing omega for each ortho exon.
+--- processing ortho exons on forward strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+--- processing ortho exons on reverse strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+compute omegas done
+dual decomposition on gene Range 1
+round	iter	step_size	primal	dual	#inconsistencies
+0	0	0	1260.812998	1705.48311	44
+0	1	10.10613891	1529.64611	2018.389624	374
+0	2	1.306800842	1414.820812	1792.469863	185
+0	3	1.420668936	1391.720061	1680.747528	72
+0	4	2.098630809	1299.933574	1642.705075	42
+0	5	2.69188013	1502.613112	1625.916449	50
+0	6	1.925406783	1321.282297	1613.869927	28
+0	7	3.007993473	1599.352548	1616.040335	41
+0	8	0.4070192061	1523.920231	1606.853304	14
+0	9	0.5357683114	1494.715084	1601.802854	11
+0	10	0.2227551137	1549.502224	1600.387906	5
+0	11	0.20707162	1569.190417	1599.680284	2
+0	12	0.16386801	1587.579599	1599.461904	9
+0	13	0.01215075122	1587.579611	1599.384121	7
+0	14	0.004510533331	1569.190394	1599.364676	2
+0	15	0.006063968176	1587.579614	1599.354501	1
+0	16	0.001953124535	1599.352578	1599.352578	0
+dual decomposition reduced initial duality gap of 338.53958 to 0 (to 0%)
+# total time: 283s
+# command line:
+# augustus --species=human --softmasking=1 --treefile=../tree.nwk --alnfile=8.maf --dbaccess=../vertebrates_rnaseq.db --speciesfilenames=../genomes.tbl --alternatives-from-evidence=0 --dbhints=1 --UTR=1 --allow_hinted_splicesites=atac --extrinsicCfgFile=../extrinsic-rnaseq.cfg --/CompPred/outdir=pred8

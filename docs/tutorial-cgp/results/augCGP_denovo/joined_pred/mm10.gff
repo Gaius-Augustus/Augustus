@@ -1,0 +1,147 @@
+# overlap start --------------------------------------------------------------------------------
+# this overlap has 1 different transcripts
+# This transcript jg1.t1 is derived from g3.t1 from the input file pred4/mm10.cgp.gff
+# It is supported by 0 other predicted genes
+# the core of this joined transcript has priority 1
+chr17	AUGUSTUS	transcript	1390	17296	.	+	.	jg1.t1
+chr17	AUGUSTUS	start_codon	1390	1392	.	+	0	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	1390	1528	0.68	+	0	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	11821	11995	1	+	2	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	12081	12288	0.77	+	1	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	12473	12600	0.98	+	0	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	12801	13069	0.28	+	1	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	13172	13491	0.11	+	2	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	13924	14014	0.9	+	0	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	14095	14218	0.93	+	2	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	14461	14597	0.95	+	1	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	15346	15524	0.97	+	2	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	15601	15747	0.24	+	0	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	16602	16718	0.99	+	0	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	CDS	17000	17296	0.91	+	0	transcript_id "jg1.t1"; gene_id "jg1";
+chr17	AUGUSTUS	stop_codon	17294	17296	.	+	0	transcript_id "jg1.t1"; gene_id "jg1";
+# overlap start --------------------------------------------------------------------------------
+# this overlap has 1 different transcripts
+# This transcript jg2.t1 is derived from g2.t1 from the input file pred4/mm10.cgp.gff
+# It is supported by 1 other predicted genes
+# the core of this joined transcript has priority 1
+chr17	AUGUSTUS	transcript	18624	21443	.	+	.	jg2.t1
+chr17	AUGUSTUS	start_codon	18624	18626	.	+	0	transcript_id "jg2.t1"; gene_id "jg2";
+chr17	AUGUSTUS	CDS	18624	18911	0.94	+	0	transcript_id "jg2.t1"; gene_id "jg2";
+chr17	AUGUSTUS	CDS	19618	19770	0	+	0	transcript_id "jg2.t1"; gene_id "jg2";
+chr17	AUGUSTUS	CDS	20319	20453	0.15	+	0	transcript_id "jg2.t1"; gene_id "jg2";
+chr17	AUGUSTUS	CDS	20540	20626	1	+	0	transcript_id "jg2.t1"; gene_id "jg2";
+chr17	AUGUSTUS	CDS	21333	21443	0.53	+	0	transcript_id "jg2.t1"; gene_id "jg2";
+chr17	AUGUSTUS	stop_codon	21441	21443	.	+	0	transcript_id "jg2.t1"; gene_id "jg2";
+# overlap start --------------------------------------------------------------------------------
+# this overlap has 1 different transcripts
+# This transcript jg3.t1 is derived from g2.t1 from the input file pred2/mm10.cgp.gff
+# It is supported by 1 other predicted genes
+# the core of this joined transcript has priority 1
+# transcrpit has been joined at 5'-side with g1.t1
+chr17	AUGUSTUS	transcript	37761	90123	.	+	.	jg3.t1
+chr17	AUGUSTUS	start_codon	37761	37763	.	+	0	transcript_id "jg3.t1"; gene_id "jg3";
+chr17	AUGUSTUS	CDS	37761	38638	0.32	+	0	transcript_id "jg3.t1"; gene_id "jg3";
+chr17	AUGUSTUS	CDS	68702	68842	1	+	1	transcript_id "jg3.t1"; gene_id "jg3";
+chr17	AUGUSTUS	CDS	77552	77648	0.99	+	1	transcript_id "jg3.t1"; gene_id "jg3";
+chr17	AUGUSTUS	CDS	79239	79376	0.55	+	0	transcript_id "jg3.t1"; gene_id "jg3";
+chr17	AUGUSTUS	CDS	82766	83283	0.63	+	0	transcript_id "jg3.t1"; gene_id "jg3";
+chr17	AUGUSTUS	CDS	83636	83806	0.99	+	1	transcript_id "jg3.t1"; gene_id "jg3";
+chr17	AUGUSTUS	CDS	85048	85293	0.99	+	1	transcript_id "jg3.t1"; gene_id "jg3";
+chr17	AUGUSTUS	CDS	87578	87685	0.9	+	1	transcript_id "jg3.t1"; gene_id "jg3";
+chr17	AUGUSTUS	CDS	89001	89168	0.99	+	1	transcript_id "jg3.t1"; gene_id "jg3";
+chr17	AUGUSTUS	CDS	89997	90123	0.99	+	1	transcript_id "jg3.t1"; gene_id "jg3";
+chr17	AUGUSTUS	stop_codon	90121	90123	.	+	0	transcript_id "jg3.t1"; gene_id "jg3";
+# overlap start --------------------------------------------------------------------------------
+# this overlap has 1 different transcripts
+# This transcript jg4.t1 is derived from g4.t1 from the input file pred8/mm10.cgp.gff
+# It is supported by 1 other predicted genes
+# the core of this joined transcript has priority 1
+chr17	AUGUSTUS	transcript	91144	94095	.	-	.	jg4.t1
+chr17	AUGUSTUS	stop_codon	91144	91146	.	-	0	transcript_id "jg4.t1"; gene_id "jg4";
+chr17	AUGUSTUS	CDS	91144	91188	0.01	-	0	transcript_id "jg4.t1"; gene_id "jg4";
+chr17	AUGUSTUS	CDS	91286	91393	0.01	-	0	transcript_id "jg4.t1"; gene_id "jg4";
+chr17	AUGUSTUS	CDS	91482	91663	0.98	-	2	transcript_id "jg4.t1"; gene_id "jg4";
+chr17	AUGUSTUS	CDS	91744	91864	0.99	-	0	transcript_id "jg4.t1"; gene_id "jg4";
+chr17	AUGUSTUS	CDS	91954	92151	0.66	-	0	transcript_id "jg4.t1"; gene_id "jg4";
+chr17	AUGUSTUS	CDS	92224	92349	0.78	-	0	transcript_id "jg4.t1"; gene_id "jg4";
+chr17	AUGUSTUS	CDS	92495	92611	0	-	0	transcript_id "jg4.t1"; gene_id "jg4";
+chr17	AUGUSTUS	CDS	92679	92816	0.99	-	0	transcript_id "jg4.t1"; gene_id "jg4";
+chr17	AUGUSTUS	CDS	92894	93027	1	-	2	transcript_id "jg4.t1"; gene_id "jg4";
+chr17	AUGUSTUS	CDS	93116	93322	0.97	-	2	transcript_id "jg4.t1"; gene_id "jg4";
+chr17	AUGUSTUS	CDS	93888	94095	0.98	-	0	transcript_id "jg4.t1"; gene_id "jg4";
+chr17	AUGUSTUS	start_codon	94093	94095	.	-	0	transcript_id "jg4.t1"; gene_id "jg4";
+# overlap start --------------------------------------------------------------------------------
+# this overlap has 1 different transcripts
+# This transcript jg5.t1 is derived from g3.t1 from the input file pred8/mm10.cgp.gff
+# It is supported by 1 other predicted genes
+# the core of this joined transcript has priority 1
+chr17	AUGUSTUS	transcript	94392	96205	.	-	.	jg5.t1
+chr17	AUGUSTUS	stop_codon	94392	94394	.	-	0	transcript_id "jg5.t1"; gene_id "jg5";
+chr17	AUGUSTUS	CDS	94392	94591	0.99	-	2	transcript_id "jg5.t1"; gene_id "jg5";
+chr17	AUGUSTUS	CDS	94675	94738	0.99	-	0	transcript_id "jg5.t1"; gene_id "jg5";
+chr17	AUGUSTUS	CDS	94814	94890	0.97	-	2	transcript_id "jg5.t1"; gene_id "jg5";
+chr17	AUGUSTUS	CDS	95077	95160	1	-	2	transcript_id "jg5.t1"; gene_id "jg5";
+chr17	AUGUSTUS	CDS	95253	95432	0.99	-	2	transcript_id "jg5.t1"; gene_id "jg5";
+chr17	AUGUSTUS	CDS	96133	96205	1	-	0	transcript_id "jg5.t1"; gene_id "jg5";
+chr17	AUGUSTUS	start_codon	96203	96205	.	-	0	transcript_id "jg5.t1"; gene_id "jg5";
+# overlap start --------------------------------------------------------------------------------
+# this overlap has 1 different transcripts
+# This transcript jg6.t1 is derived from g2.t1 from the input file pred8/mm10.cgp.gff
+# It is supported by 1 other predicted genes
+# the core of this joined transcript has priority 1
+chr17	AUGUSTUS	transcript	98041	105792	.	+	.	jg6.t1
+chr17	AUGUSTUS	start_codon	98041	98043	.	+	0	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	98041	98103	0	+	0	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	98358	98454	0.54	+	0	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	98524	98574	0	+	2	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	98640	98746	0.04	+	2	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	99394	99445	0	+	0	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	99549	99607	0.91	+	2	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	99913	99989	0.95	+	0	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	100170	100251	0.89	+	1	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	100769	100837	0.57	+	0	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	102458	102519	0.89	+	0	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	102608	102721	0.92	+	1	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	102821	102936	0.99	+	1	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	103054	103141	1	+	2	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	103226	103364	1	+	1	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	105519	105601	0.54	+	0	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	CDS	105681	105792	0.48	+	1	transcript_id "jg6.t1"; gene_id "jg6";
+chr17	AUGUSTUS	stop_codon	105790	105792	.	+	0	transcript_id "jg6.t1"; gene_id "jg6";
+# overlap start --------------------------------------------------------------------------------
+# this overlap has 1 different transcripts
+# This transcript jg7.t1 is derived from g1.t1 from the input file pred7/mm10.cgp.gff
+# It is supported by 1 other predicted genes
+# the core of this joined transcript has priority 1
+chr17	AUGUSTUS	transcript	108568	115607	.	-	.	jg7.t1
+chr17	AUGUSTUS	stop_codon	108568	108570	.	-	0	transcript_id "jg7.t1"; gene_id "jg7";
+chr17	AUGUSTUS	CDS	108568	108779	0.95	-	2	transcript_id "jg7.t1"; gene_id "jg7";
+chr17	AUGUSTUS	CDS	108866	108968	0.98	-	0	transcript_id "jg7.t1"; gene_id "jg7";
+chr17	AUGUSTUS	CDS	109390	109545	0.3	-	0	transcript_id "jg7.t1"; gene_id "jg7";
+chr17	AUGUSTUS	CDS	109714	109789	0.89	-	1	transcript_id "jg7.t1"; gene_id "jg7";
+chr17	AUGUSTUS	CDS	110247	110387	0.9	-	1	transcript_id "jg7.t1"; gene_id "jg7";
+chr17	AUGUSTUS	CDS	111251	111380	1	-	2	transcript_id "jg7.t1"; gene_id "jg7";
+chr17	AUGUSTUS	CDS	111621	111753	0.99	-	0	transcript_id "jg7.t1"; gene_id "jg7";
+chr17	AUGUSTUS	CDS	112356	112492	0.99	-	2	transcript_id "jg7.t1"; gene_id "jg7";
+chr17	AUGUSTUS	CDS	113186	113380	0.51	-	2	transcript_id "jg7.t1"; gene_id "jg7";
+chr17	AUGUSTUS	CDS	113697	113813	0	-	2	transcript_id "jg7.t1"; gene_id "jg7";
+chr17	AUGUSTUS	CDS	115343	115607	0.35	-	0	transcript_id "jg7.t1"; gene_id "jg7";
+chr17	AUGUSTUS	start_codon	115605	115607	.	-	0	transcript_id "jg7.t1"; gene_id "jg7";
+# overlap start --------------------------------------------------------------------------------
+# this overlap has 1 different transcripts
+# This transcript jg8.t1 is derived from g1.t1 from the input file pred1/mm10.cgp.gff
+# It is supported by 0 other predicted genes
+# the core of this joined transcript has priority 1
+chr17	AUGUSTUS	transcript	148094	176829	.	+	.	jg8.t1
+chr17	AUGUSTUS	start_codon	148094	148096	.	+	0	transcript_id "jg8.t1"; gene_id "jg8";
+chr17	AUGUSTUS	CDS	148094	148154	0.54	+	0	transcript_id "jg8.t1"; gene_id "jg8";
+chr17	AUGUSTUS	CDS	150094	150188	0.54	+	2	transcript_id "jg8.t1"; gene_id "jg8";
+chr17	AUGUSTUS	CDS	152989	153087	0.98	+	0	transcript_id "jg8.t1"; gene_id "jg8";
+chr17	AUGUSTUS	CDS	159436	159519	0.99	+	0	transcript_id "jg8.t1"; gene_id "jg8";
+chr17	AUGUSTUS	CDS	161346	161456	0.98	+	0	transcript_id "jg8.t1"; gene_id "jg8";
+chr17	AUGUSTUS	CDS	162278	162421	0.01	+	0	transcript_id "jg8.t1"; gene_id "jg8";
+chr17	AUGUSTUS	CDS	170737	170913	0.98	+	0	transcript_id "jg8.t1"; gene_id "jg8";
+chr17	AUGUSTUS	CDS	172609	172697	0.96	+	0	transcript_id "jg8.t1"; gene_id "jg8";
+chr17	AUGUSTUS	CDS	175024	175191	0	+	1	transcript_id "jg8.t1"; gene_id "jg8";
+chr17	AUGUSTUS	CDS	176688	176829	0.57	+	1	transcript_id "jg8.t1"; gene_id "jg8";
+chr17	AUGUSTUS	stop_codon	176827	176829	.	+	0	transcript_id "jg8.t1"; gene_id "jg8";

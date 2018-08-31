@@ -1,0 +1,5 @@
+hub vertCompHub
+shortLabel VertebratesCompHub
+longLabel Vertebrates Comparative Assembly Hub
+genomesFile genomes.txt
+email NoEmail

@@ -1,0 +1,58 @@
+# This output was generated with AUGUSTUS (version 3.3.1).
+# AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),
+# O. Keller, S. König, L. Gerischer, L. Romoth and Katharina Hoff.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+#
+#----- prediction for species 'rheMac3' -----
+#
+#----- prediction on sequence range chr20:24587-73860 (49274bp) -----
+#
+# start gene g1
+chr20	AUGUSTUS	gene	35057	45360	0	-	.	g1
+chr20	AUGUSTUS	transcript	35057	45360	.	-	.	g1.t1
+chr20	AUGUSTUS	CDS	35057	35155	0.65	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr20	AUGUSTUS	CDS	43271	43365	0.96	-	2	transcript_id "g1.t1"; gene_id "g1";
+chr20	AUGUSTUS	CDS	45300	45360	0.75	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr20	AUGUSTUS	start_codon	45358	45360	.	-	0	transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MSAQAQMRALLDQLMGTARDGDETRQRVKFTDDRVCKSHLLDCCPHDILAGTRMDLGECTKIHDLALRADYEIASKER
+# DLFFELD]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/3
+# CDS introns: 0/2
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 15
+#     RM:  15 
+# incompatible hint groups: 0
+# end gene g1
+###
+#----- prediction on sequence range chr20:71861-84440 (12580bp) -----
+#
+# start gene g2
+chr20	AUGUSTUS	gene	73137	83934	0	+	.	g2
+chr20	AUGUSTUS	transcript	73137	83934	.	+	.	g2.t1
+chr20	AUGUSTUS	start_codon	73137	73139	.	+	0	transcript_id "g2.t1"; gene_id "g2";
+chr20	AUGUSTUS	CDS	73137	73164	0.91	+	0	transcript_id "g2.t1"; gene_id "g2";
+chr20	AUGUSTUS	CDS	80846	80929	0.68	+	2	transcript_id "g2.t1"; gene_id "g2";
+chr20	AUGUSTUS	CDS	81009	81125	1	+	2	transcript_id "g2.t1"; gene_id "g2";
+chr20	AUGUSTUS	CDS	81500	81691	1	+	2	transcript_id "g2.t1"; gene_id "g2";
+chr20	AUGUSTUS	CDS	82873	83003	1	+	2	transcript_id "g2.t1"; gene_id "g2";
+chr20	AUGUSTUS	CDS	83478	83610	0.88	+	0	transcript_id "g2.t1"; gene_id "g2";
+chr20	AUGUSTUS	CDS	83805	83934	0.81	+	2	transcript_id "g2.t1"; gene_id "g2";
+# protein sequence = [MWRIDYNAAGRTLLIRVRKKPPSSLGDLTGAGSTEQRIIYDFLAVDDINGDRIQDVLFLYKNTNSSNNFNRSCVDEGF
+# SSPCAFAAAVSGANGSTLWERPVAQDVALVECAVPQPRGSEAPSACILVGRPGSFIAVDSFTGETLWNHSSSFSRNASILSPLLQVPDVDSDGAPDLL
+# VFTQEQEEVSGHLYSGSTGHQIGLRGGLGVDGESGFLLHVTRTGAHYILFPCASSLCGCSVKGLYEKVTGRDGPFKNDPHWESMLNATTRRMLSH]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/7
+# CDS introns: 0/6
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 10
+#     RM:  10 
+# incompatible hint groups: 0
+# end gene g2
+###

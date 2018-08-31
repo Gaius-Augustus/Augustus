@@ -1,0 +1,165 @@
+genome Anc0
+twoBitPath Anc0/Anc0.2bit
+trackDb Anc0/trackDb.txt
+groups groups.txt
+htmlPath Anc0/description.html
+description Anc0
+organism Anc0
+orderKey 4800
+scientificName Anc0
+defaultPos Anc0refChr0:1-1000
+
+genome Anc1
+twoBitPath Anc1/Anc1.2bit
+trackDb Anc1/trackDb.txt
+groups groups.txt
+htmlPath Anc1/description.html
+description Anc1
+organism Anc1
+orderKey 4800
+scientificName Anc1
+defaultPos Anc1refChr0:1-1000
+
+genome Anc2
+twoBitPath Anc2/Anc2.2bit
+trackDb Anc2/trackDb.txt
+groups groups.txt
+htmlPath Anc2/description.html
+description Anc2
+organism Anc2
+orderKey 4800
+scientificName Anc2
+defaultPos Anc2refChr0:1-1000
+
+genome Anc3
+twoBitPath Anc3/Anc3.2bit
+trackDb Anc3/trackDb.txt
+groups groups.txt
+htmlPath Anc3/description.html
+description Anc3
+organism Anc3
+orderKey 4800
+scientificName Anc3
+defaultPos Anc3refChr0:1-1000
+
+genome Anc4
+twoBitPath Anc4/Anc4.2bit
+trackDb Anc4/trackDb.txt
+groups groups.txt
+htmlPath Anc4/description.html
+description Anc4
+organism Anc4
+orderKey 4800
+scientificName Anc4
+defaultPos Anc4refChr0:1-1000
+
+genome Anc5
+twoBitPath Anc5/Anc5.2bit
+trackDb Anc5/trackDb.txt
+groups groups.txt
+htmlPath Anc5/description.html
+description Anc5
+organism Anc5
+orderKey 4800
+scientificName Anc5
+defaultPos Anc5refChr0:1-1000
+
+genome Anc6
+twoBitPath Anc6/Anc6.2bit
+trackDb Anc6/trackDb.txt
+groups groups.txt
+htmlPath Anc6/description.html
+description Anc6
+organism Anc6
+orderKey 4800
+scientificName Anc6
+defaultPos Anc6refChr0:1-1000
+
+genome bosTau8
+twoBitPath bosTau8/bosTau8.2bit
+trackDb bosTau8/trackDb.txt
+groups groups.txt
+htmlPath bosTau8/description.html
+description bosTau8
+organism bosTau8
+orderKey 4800
+scientificName bosTau8
+defaultPos chr25:1-1000
+
+genome canFam3
+twoBitPath canFam3/canFam3.2bit
+trackDb canFam3/trackDb.txt
+groups groups.txt
+htmlPath canFam3/description.html
+description canFam3
+organism canFam3
+orderKey 4800
+scientificName canFam3
+defaultPos chr6:1-1000
+
+genome galGal4
+twoBitPath galGal4/galGal4.2bit
+trackDb galGal4/trackDb.txt
+groups groups.txt
+htmlPath galGal4/description.html
+description galGal4
+organism galGal4
+orderKey 4800
+scientificName galGal4
+defaultPos chr14:1-1000
+
+genome hg38
+twoBitPath hg38/hg38.2bit
+trackDb hg38/trackDb.txt
+groups groups.txt
+htmlPath hg38/description.html
+description hg38
+organism hg38
+orderKey 4800
+scientificName hg38
+defaultPos chr16:1-1000
+
+genome mm10
+twoBitPath mm10/mm10.2bit
+trackDb mm10/trackDb.txt
+groups groups.txt
+htmlPath mm10/description.html
+description mm10
+organism mm10
+orderKey 4800
+scientificName mm10
+defaultPos chr17:1-1000
+
+genome monDom5
+twoBitPath monDom5/monDom5.2bit
+trackDb monDom5/trackDb.txt
+groups groups.txt
+htmlPath monDom5/description.html
+description monDom5
+organism monDom5
+orderKey 4800
+scientificName monDom5
+defaultPos chr6:1-1000
+
+genome rheMac3
+twoBitPath rheMac3/rheMac3.2bit
+trackDb rheMac3/trackDb.txt
+groups groups.txt
+htmlPath rheMac3/description.html
+description rheMac3
+organism rheMac3
+orderKey 4800
+scientificName rheMac3
+defaultPos chr20:1-1000
+
+genome rn6
+twoBitPath rn6/rn6.2bit
+trackDb rn6/trackDb.txt
+groups groups.txt
+htmlPath rn6/description.html
+description rn6
+organism rn6
+orderKey 4800
+scientificName rn6
+defaultPos chr10:1-1000
+

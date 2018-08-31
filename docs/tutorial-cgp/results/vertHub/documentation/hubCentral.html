@@ -1,0 +1,83 @@
+<H1>Alignments</H1>
+<H2>Description</H2>
+<P>
+An alignment track, or <em>snake</em> track, shows the relationship between the chosen browser genome, termed the reference (genome), and another genome, termed the query (genome).
+The <em>snake</em> display is capable of showing all possible types of structural rearrangement.
+</P>
+
+<H2>Display Convention and Configuration</H2>
+<P>
+In <em>full</em> display mode, a <em>snake</em> track can be decomposed into two primitive drawing elements, segments, which are the colored rectangles, and adjacencies, which are the lines connecting the segments. Segments represent subsequences of the query genome aligned to the given portion of the reference genome. Adjacencies represent the covalent bonds between the aligned subsequences of the query genome. Segments can be configured to be colored by chromosome, strand or left a single color under the <em>Select track Type</em>, <em>Alignments</em>, then <em>Block coloring method</em>.
+</P>
+<P>
+Red tick-marks within segments represent substitutions with respect to the reference, shown in windows of the reference of (by default) up to 50 kilo-bases. This default can be adjusted under <em>Select track Type</em>, <em>Alignments</em>, then <em>Maximum window size in which to show mismatches</em>. Zoomed in to the base-level these substitutions are labeled with the non-reference base.
+</P>
+<P>
+An insertion in the reference relative to the query creates a gap between abutting segment sides that is connected by an adjacency. An insertion in the query relative to the reference is represented by an orange tick mark that splits a segment at the location the extra bases would be inserted. Simultaneous independent insertions in both query and reference look like an insertion in the reference relative to the query, except that the corresponding adjacency connecting the two segments is colored orange. More complex structural rearrangements create adjacencies that connect the sides of non-abutting segments in a natural fashion.
+</P>
+<P>
+Duplications within the query genome create extra segments that overlap along the reference genome axis. Duplications within the reference imply self-alignments, intervals of the reference genome that align to other intervals of the reference genome. To show these self-alignments within the reference genome we draw colored coded sets of lines along the reference genome axis that indicate these self homologies, and align any query segments that align to these regions arbitrarily to just one copy of the reference self alignment.
+</P>
+<P>
+The <em>pack</em> display option can be used to display a larger number of Snake tracks in limited vertical browser. This mode eliminates the adjacencies from the display and forces the segments onto as few rows as possible, given the constraint of still showing duplications in the query sequence.
+</P>
+<P>
+The <em>dense</em> display further eliminates these duplications so that each Snake track is compactly represented along just one row.
+</P>
+<P>
+To ensure that the <em>snake</em> alignments track loads quickly at any resolution, from windows showing individual bases up to entire scaffolds or chromosomes, the LOD (Levels-Of-Detail) algorithm (part of the HAL tools package) is used, which creates scaleable levels of detail for the alignments. The additional use of the hdf5 caching scheme further aides scaling.
+</P>
+<P>
+Various mouse overs are implemented and clicking on segments navigates to the corresponding region in the query genome, making it simple to instantly switch the alignment view between reference points.
+</P>
+
+<H2>Methods</H2>
+<P>
+A <em>snake</em> is a way of viewing a set of pairwise gap-less alignments that may overlap on both the reference and query genomes. Alignments are always represented as being on the positive strand of the reference species, but can be on either strand on the query sequence.
+</P>
+
+<P>
+A <em>snake</em> plot puts all the query segments within a reference chromosome range on a set of one or more levels. All the segments on a level are on the same strand, do not overlap in reference coordinate space, and are in the same order and orientation in both sequences. This is the same requirement as the alignments in a chain on the UCSC browser. Before the algorithm is started, all the segments are sorted by their starting coordinate on the query, and the current level is set to one. Then in a recursive fashion, the algorithm places the first segment on the current list on the current level, and then adds all the rest of the segments on the list that will fit onto the current level with the requirements that all the segments on a level are on the same strand, and that the proposed segment be non-overlapping and have a reference start address that is greater than the query end address of the previously added segment on that level. All segments that will not fit on the current level are then added to subsequent levels following the same rules. Once all the segments have been assigned a level, lines are drawn between the segments to show the adjacencies in the list when sorted by query start address.
+</P>
+
+<H2>Credits</H2>
+<P>
+The <em>snake</em> alignment display was implemented by <a href="mailto:braney@soe.ucsc.edu">Brian Raney</a>.<br>
+HAL supports and track generations: Glenn Hickey, Ngan Nguyen, Joel Armstrong, Benedict Paten.
+</P>
+
+<H2>References</H2>
+<P>
+Paten <i>et al.</i>.
+<a href="http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3166836/">Cactus: Algorithms for genome multiple sequence alignment.</a>
+<em>Genome research</em>. 2011;21:1512-1528.
+</P>
+
+<H1>Lifted-over Annotations</H1>
+<H2>Description</H2>
+<P>
+Lifted-over annotation tracks show the annotations of any genome translated onto the reference genome, via a process of lift-over.
+All the alignments and lifted over annotations shown are mutually consistent with one another, because the annotation lift over and alignment display is symmetrically driven by one reference free alignment process, rather than a mixture of different pairwise and reference based multiple alignments.
+</P>
+
+<H2>Methods</H2>
+<P>
+The lifted-over tracks were generated using the <em>halLiftover</em> and/or the <em>halWiggleLiftover</em> scripts of the <a href="https://github.com/glennhickey/hal">HAL tools package</a>.
+</P>
+
+<H2>Credits</H2>
+<P>
+Glenn Hickey, Ngan Nguyen, Joel Armstrong, Benedict Paten.
+</P>
+
+<H2>References</H2>
+<P>
+Hickey <i>et al.</i>.
+<a href="http://bioinformatics.oxfordjournals.org/content/29/10/1341.short">HAL: a hierarchical format for storing and analyzing multiple genome alignments.</a>
+<em>Bioinformatics</em>. 2013 May;29(10):1341-1342.
+</P>
+
+<P>
+Comparative Assembly Hubs: Web Accessible Browsers for Comparative Genomics
+</P>
+

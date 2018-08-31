@@ -1,0 +1,55 @@
+# This output was generated with AUGUSTUS (version 3.3.1).
+# AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),
+# O. Keller, S. König, L. Gerischer, L. Romoth and Katharina Hoff.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+#
+#----- prediction for species 'canFam3' -----
+#
+#----- prediction on sequence range chr6:117174-165559 (48386bp) -----
+#
+# start gene g1
+chr6	AUGUSTUS	gene	147701	154643	.	+	.	g1
+chr6	AUGUSTUS	transcript	147701	154643	.	+	.	g1.t1
+chr6	AUGUSTUS	start_codon	147701	147703	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr6	AUGUSTUS	CDS	147701	147761	0.99	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr6	AUGUSTUS	CDS	149575	149669	0.96	+	2	transcript_id "g1.t1"; gene_id "g1";
+chr6	AUGUSTUS	CDS	154545	154643	1	+	0	transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MSAQAQMRALLDQLMGTARDGDETRQRVKFTDDRVCKSHLLDCCPHDILAGTRMDLGECTKIHDLALRADYEIASKER
+# DLFFELD]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/3
+# CDS introns: 0/2
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 10
+#     RM:  10 
+# incompatible hint groups: 0
+# end gene g1
+###
+#----- prediction on sequence range chr6:110374-119173 (8800bp) -----
+#
+# start gene g2
+chr6	AUGUSTUS	gene	111604	118133	.	-	.	g2
+chr6	AUGUSTUS	transcript	111604	118133	.	-	.	g2.t1
+chr6	AUGUSTUS	CDS	111604	111734	0.48	-	2	transcript_id "g2.t1"; gene_id "g2";
+chr6	AUGUSTUS	CDS	112817	113008	1	-	2	transcript_id "g2.t1"; gene_id "g2";
+chr6	AUGUSTUS	CDS	113264	113380	0.87	-	2	transcript_id "g2.t1"; gene_id "g2";
+chr6	AUGUSTUS	CDS	117869	118133	0.19	-	0	transcript_id "g2.t1"; gene_id "g2";
+chr6	AUGUSTUS	start_codon	118131	118133	.	-	0	transcript_id "g2.t1"; gene_id "g2";
+# protein sequence = [MDSKDLEAEIHPLRNEDKRLPETPGNPGHADEKLKSSPRQPRLSRCRTVVFFLSLFVCLFVVFVVSFIIPCPERPVSQ
+# GMWRIDYSAAVTYDFLATEDINRDRIQDVLFLYKNANGSNNFNLSCTDEGFSSPCTFVAAVSGASGSVLWERPAAQDGALVRCSVPQTQGSRMSSACI
+# LVGRPSSFVAVDLFTGETLWSQPPGFDRNTSDLSSLLQLPDVDADGAPDLLLLAQEDKE]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/4
+# CDS introns: 0/3
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 8
+#     RM:   8 
+# incompatible hint groups: 0
+# end gene g2
+###

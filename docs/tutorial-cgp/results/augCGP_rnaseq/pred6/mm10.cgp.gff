@@ -1,0 +1,91 @@
+# This output was generated with AUGUSTUS (version 3.3.1).
+# AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),
+# O. Keller, S. König, L. Gerischer, L. Romoth and Katharina Hoff.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+#
+#----- prediction for species 'mm10' -----
+#
+#----- prediction on sequence range chr17:114647-160060 (45414bp) -----
+#
+# start gene g2
+chr17	AUGUSTUS	gene	115343	115607	.	-	.	g2
+chr17	AUGUSTUS	transcript	115343	115607	.	-	.	g2.t1
+chr17	AUGUSTUS	CDS	115343	115607	0.91	-	0	transcript_id "g2.t1"; gene_id "g2";
+chr17	AUGUSTUS	exon	115343	115607	.	-	.	transcript_id "g2.t1"; gene_id "g2";
+chr17	AUGUSTUS	start_codon	115605	115607	.	-	0	transcript_id "g2.t1"; gene_id "g2";
+# protein sequence = [MDNKDLEAEIHPLKNEDKKSQENPGNLPRNEDNLKSKPVPSRLSRCRTVAFFLSLFTCLFVVFVLSFIIPCPDRPSSQ
+# GTWKLDYNNA]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 50
+# CDS exons: 1/1
+#      W:   1 
+# CDS introns: 0/1
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 0
+# incompatible hint groups: 28
+#      W:  28 
+# end gene g2
+###
+# start gene g1
+chr17	AUGUSTUS	gene	148093	150187	.	+	.	g1
+chr17	AUGUSTUS	transcript	148093	150187	.	+	.	g1.t1
+chr17	AUGUSTUS	start_codon	148093	148095	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	CDS	148093	148153	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	exon	148093	148153	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	CDS	150093	150187	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	exon	150093	150187	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MSAQAQMRALLDQLMGTARDGDETRQRVKFTDDRVCKSHLLDCCPHDILAGT]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 100
+# CDS exons: 2/2
+#      W:   2 
+# CDS introns: 0/0
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 0
+# incompatible hint groups: 212
+#      E:   3 
+#      W: 209 
+# end gene g1
+###
+#----- prediction on sequence range chr17:111228-116646 (5419bp) -----
+#
+# start gene g3
+chr17	AUGUSTUS	gene	111621	115732	.	-	.	g3
+chr17	AUGUSTUS	transcript	111621	115732	.	-	.	g3.t1
+chr17	AUGUSTUS	CDS	111621	111753	0.73	-	0	transcript_id "g3.t1"; gene_id "g3";
+chr17	AUGUSTUS	exon	111621	111753	.	-	.	transcript_id "g3.t1"; gene_id "g3";
+chr17	AUGUSTUS	CDS	112356	112492	1	-	2	transcript_id "g3.t1"; gene_id "g3";
+chr17	AUGUSTUS	exon	112356	112492	.	-	.	transcript_id "g3.t1"; gene_id "g3";
+chr17	AUGUSTUS	CDS	113186	113380	1	-	2	transcript_id "g3.t1"; gene_id "g3";
+chr17	AUGUSTUS	exon	113186	113380	.	-	.	transcript_id "g3.t1"; gene_id "g3";
+chr17	AUGUSTUS	CDS	113697	113813	1	-	2	transcript_id "g3.t1"; gene_id "g3";
+chr17	AUGUSTUS	exon	113697	113813	.	-	.	transcript_id "g3.t1"; gene_id "g3";
+chr17	AUGUSTUS	CDS	115343	115607	0.93	-	0	transcript_id "g3.t1"; gene_id "g3";
+chr17	AUGUSTUS	exon	115343	115732	.	-	.	transcript_id "g3.t1"; gene_id "g3";
+chr17	AUGUSTUS	start_codon	115605	115607	.	-	0	transcript_id "g3.t1"; gene_id "g3";
+# protein sequence = [MDNKDLEAEIHPLKNEDKKSQENPGNLPRNEDNLKSKPVPSRLSRCRTVAFFLSLFTCLFVVFVLSFIIPCPDRPSSQ
+# GTWKLDYNNAVMYDFLALGDINKDKVQDVLFLYKNTNSSNNLTRSCADEGFSTPCAFVVAVSGANGSVLWERPVAQDVALVKCAMPQTLDSDEVSSAC
+# IVVGRAGSFVAVSFFTGETLWSHPSSFSGNVSILSPLLQVPDIDGDGDGTPDLLILAQEGQEVSGALYSGSTGYQIGHRGSLGVDGDGVALLHVTRTG
+# AQYILLPC]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 100
+# CDS exons: 5/5
+#      W:   5 
+# CDS introns: 4/4
+#      E:   4 
+# 5'UTR exons and introns: 1/1
+#      W:   1 
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 37
+#      E:   4 
+#     RM:   3 
+#      W:  30 
+# incompatible hint groups: 65
+#      E:   3 
+#      W:  62 
+# end gene g3
+###

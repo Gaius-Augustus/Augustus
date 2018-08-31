@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html><head><title>Predicting Genes with AUGUSTUS</title>
+<link rel="stylesheet" type="text/css" href="augustus.css">
+<script src="tutorial.js" type="text/javascript"></script>
+</head><body>
+<font size=-1>
+Navigate to <a href="index.html">main AugCGP tutorial</a>.
+<a href="cactus.html">Cactus alignments and assembly Hubs</a>.
+<a href="de_novo.html">AugCGP de novo</a>.
+<a href="rnaseq.html">AugCGP with RNA-Seq</a>.
+<a href="rnaseq+liftover.html">Combining RNA-Seq and annotation evidence</a>.
+<a href="hgm.html">Cross-species consistency of gene sets</a>.
+</font>
+<div align="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
+
+<h1>Annotation Liftover with Augustus-cgp</h1>
+
+An increasingly important strategy in genome annotation is the transfer of annotations from
+well-annotated genomes to genomes of closely related species.<br>
+In this tutorial, we will show how Augustus-cgp can be utilized for this particular application by
+compiling the RefSeq annotation for human into 'CDS' and 'intron' hints.
+
+
+<h2 id="refseq2hints">1. Generate 'CDS' and 'intron' hints from annotations</h2>
+
+Use the <a href="data/refseq/refseq.hg38.gtf">hg38 RefSeq annotation</a> (in gtf format) and convert it into gff format by
+<span class="assignment">moving</span> stop codons into the coding sequence and <span class="assignment">including</span> intron lines.
+<pre class="code" style="font-size:small">
+grep -P "\t(CDS|stop_codon|start_codon)\t" refseq/refseq.hg38.gtf | gtf2gff.pl --printIntron --includeStopInCDS --out=refseq/refseq.hg38.gff
+</pre>
+<a href="javascript:onoff('anno')" class="dlink"><span id="anno" title="annod" class="dcross">[+]</span>
+<span class="dtitle">What if my annotation is not in GTF format? ...</span></a> <br>
+<div id="annod" class="details" style="display:none;">
+You may have to adjust the previous command for annotations in any other format (GFF3, BED, GenePred, etc.).
+Ensure that following items are respected
+<ul>
+<li> the stop codon is included in the terminal exon</li>
+<li> 'CDS' and 'intron' features are required</li>
+<li> ony include 'intron' features for introns between two CDS exons</li>
+<li> coordinates are 1-based [start,end]</li>
+</ul>
+</div>
+</br>
+<span class="assignment">Grep</span> all CDS and intron lines and
+<span class="assignment">replace</span> the last column in the gff by a manual source
+<pre class="code">
+grep -P "\t(CDS|intron)\t" refseq/refseq.hg38.gff | cut -f1-8 | perl -pe 's/$/\tsource=M/' &gtrefseq/hg38.hints.gff
+</pre>
+Finally, <span class="assignment">summarize</span> multiple identical hints into a single one with multiplicity
+<pre class="code">
+sort -n -k 4,4 refseq/hg38.hints.gff | sort -s -n -k 5,5 | sort -s -n -k 3,3 | sort -s -k 1,1 | join_mult_hints.pl &gttemp
+mv temp refseq/hg38.hints.gff
+</pre>
+
+<h2 id="loadAnno">2. Load annotation hints into the database</h2>
+
+If you don't have a database with the genomes, yet, <span class="assignment">follow</span> the instructions in 
+<a href="de_novo.html#loadFa">1. Load genomes ...</a><br>
+to create the database <tt>vertebrates.db</tt>.<br><br>
+<span class="assignment">Make</span> a copy of the database
+<pre class="code">
+cp vertebrates.db vertebrates_anno.db
+</pre>
+and <span class="assignment">load</span> the annotation hints into the new database
+<pre class="code">
+load2sqlitedb --species=hg38 --dbaccess=vertebrates_anno.db refseq/hg38.hints.gff
+</pre>
+
+You can <span class="assignment">check</span> if loading was successful with following
+database query
+<pre class="code">
+sqlite3 -header -column vertebrates_anno.db "SELECT count(*) AS '#hints',typename,speciesname FROM 
+(hints as H join featuretypes as F on H.type=F.typeid) natural join speciesnames group by speciesid,typename;"
+</pre>
+that returns a summary of how many hints of each type are in the database for each species.
+<pre class="code">
+#hints      typename    speciesname
+----------  ----------  -----------
+86          CDS         hg38       
+78          intron      hg38       
+</pre>
+
+<h2 id="extrinsic">3. Prepare an extrinsic config file</h2>
+
+Start by <span class="assignment">copying</span> following extrinsic configuration file:
+<pre class="code">
+cp ${AUGUSTUS_CONFIG_PATH}extrinsic/extrinsic-cgp.cfg extrinsic-anno.cfg 
+</pre>
+<span class="assignment">Open</span> the <tt>extrinsic-anno.cfg</tt> file with a text editor, 
+<span class="assignment">go</span> to the second <tt>[GROUP]</tt> section and replace the following line
+<pre class="code">
+[GROUP] # replace 'none' by the names of genomes with src=M hints in the database
+none
+</pre>
+as instruced by the names of genomes with annotation hints, i.e.
+<pre class="code">
+[GROUP] # replace 'none' by the names of genomes with src=M hints in the database
+hg38
+</pre>
+<a href="javascript:onoff('cfg')" class="dlink"><span id="cfg" title="cfgd" class="dcross">[+]</span>
+<span class="dtitle">format of the extrinsic.cfg file in cgp mode ...</span></a> <br>
+<div id="cfgd" class="details" style="display:none;">
+In cgp mode hints can be integrated for multiple species.
+In order to have different extrinsic config settings for different species,
+multiple <tt>[GENERAL]</tt> tables are specified. Each table is followed by a <tt>[GROUP]</tt> section,
+a single line, in which a subset of the species is listed, for which the table is valid.
+Use the same species identifiers as in the genome alignment and in the phylogenetic tree.
+If a species is not assigned to any of the tables, all hints for that species are
+ignored. To assign all species to a single table, the key 'all' can be used instead of itemizing
+every single species identifier. Use the key 'other' to specify a table for all species, not
+listed in any previous table.
+Note that the source RM must be specified in case that the softmasking option is turned on.
+Also note that all tables have the same dimension, i.e. each table must contain all sources
+listed in the section <tt>[SOURCES]</tt>, even sources for which no hints exist for any of species
+in group.
+</div>
+</br>
+
+<h2 id="runAug">4. Run AUGUSTUS-CGP with annotation hints</h2>
+
+<span class="assignment">Create</span> a new folder for the liftover experiments and
+<span class="assignment">switch</span> to the new directory
+<pre class="code">
+mkdir augCGP_liftover
+cd augCGP_liftover
+</pre>
+For convenience <span class="assignment">assign</span> each alignment chunk to a job ID by
+creating softlinks
+<pre class="code">
+num=1
+for f in ../mafs/*.maf; do ln -s $f $num.maf; ((num++)); done
+</pre>
+<span class="assignment">Run</span> Augustus with retrieval of hints from the 
+database (~3min).<br>
+<pre class="code">
+for id in *.maf
+do
+augustus \
+--species=human \
+--softmasking=1 \
+--treefile=../tree.nwk \
+--alnfile=$id \
+--dbaccess=../vertebrates_anno.db \
+--speciesfilenames=../genomes.tbl \
+--alternatives-from-evidence=0 \
+--dbhints=1 \
+--allow_hinted_splicesites=atac \
+--extrinsicCfgFile=../extrinsic-anno.cfg \
+--/CompPred/outdir=pred${id%.maf} &gt aug${id%.maf}.out 2&gt err${id%.maf}.out &
+done
+</pre>
+This will generate the folders <span class="result"><tt>pred*/</tt></span> (one for each alignment chunk)
+that contain gff files with gene predictions for each input genome.
+<pre class="code">
+bosTau8.cgp.gff
+canFam3.cgp.gff
+galGal4.cgp.gff
+hg38.cgp.gff
+mm10.cgp.gff
+monDom5.cgp.gff
+rheMac3.cgp.gff
+rn6.cgp.gff
+</pre>
+
+Note that the parallelization with the bash '&' command  above is quite simple and rather for demonstration purposes.<br>
+For real applications with several hundreds or thousands of alignment chunks, we recommend to
+run job arrays on a compute cluster.
+
+<h2 id="abinitiopred"><a href="de_novo.html#merge">5. Merge gene predictions from parallel runs</a></h2>
+
+<h2 id="makeBeds">6. Upload gene predictions into the assembly hub</h2>
+<span class="assignment">Convert</span> the final gene predictions from gff to BED format and place
+each BED file in a separate folder with the name of the corresponding genome. It is important that directory names are consistent with the names in the HAL alignment.
+<pre class="code">
+for f in joined_pred/*.gff
+do
+mkdir "$(basename $f .gff)"
+gtf2bed.pl <$f >$(basename $f .gff)/augCGP_liftover.bed --itemRgb=0,0,225
+done
+</pre>
+Specify any RGB color you like for the track with option <tt>--itemRgb</tt>, e.g. <span style="color:rgb(0,0,225);">0,0,225.</span><br>
+The name of the current directory (i.e. <tt>augCGP_liftover</tt>) will be used as track name on the browser.<br>
+
+<span class="assignment">Switch</span> back to the main working directory <tt>data/</tt>
+<pre class="code">
+cd ..
+</pre>
+and rerun the <tt>hal2assemblyHub.py</tt> script. Include gene tracks with option <tt>--bedDirs</tt>
+
+<pre class="code">
+hal2assemblyHub.py vertebrates.hal vertHub --lod \
+--alignability --gcContent \
+--hub vertCompHub --shortLabel VertebratesCompHub \
+--bedDirs augCGP_liftover \
+--tabBed \
+--maxThreads=10 --longLabel "Vertebrates Comparative Assembly Hub"
+</pre>
+You can also include gene tracks from other exercises by passing a comma-separated list of directories e.g.
+<tt>--bedDirs refseq,augCGP_denovo,augCGP_rnaseq,augCGP_liftover,...</tt><br><br>
+<span class="assignment">Repeat</span> <a href="cactus.html#loadHub">4. Load the hub and browser the alignment</a>.<br>
+</body></html>

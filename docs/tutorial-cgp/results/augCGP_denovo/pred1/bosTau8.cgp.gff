@@ -1,0 +1,41 @@
+# This output was generated with AUGUSTUS (version 3.3.1).
+# AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),
+# O. Keller, S. König, L. Gerischer, L. Romoth and Katharina Hoff.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+#
+#----- prediction for species 'bosTau8' -----
+#
+#----- prediction on sequence range chr25:1-48670 (48670bp) -----
+#
+# start gene g1
+chr25	AUGUSTUS	gene	1571	33610	0	-	.	g1
+chr25	AUGUSTUS	transcript	1571	33610	.	-	.	g1.t1
+chr25	AUGUSTUS	stop_codon	1571	1573	.	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	1571	1712	0.81	-	1	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	2335	2502	0.09	-	1	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	2863	2892	0.13	-	1	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	7589	7677	1	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	9956	10132	0.91	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	13453	13596	0.08	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	14576	14686	0.06	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	24872	24970	1	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	31588	31682	0.87	-	2	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	CDS	33550	33610	1	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr25	AUGUSTUS	start_codon	33608	33610	.	-	0	transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MSAQAQMRALLDQLMGTARDGDETRQRVKFTDDRVCKSHLLDCCPHDILAGTRMDLGECTKIHDLALRADYEIASKER
+# DLFFELDAMDHLESFIAECDRRTELAKKRLAETQEEISAEVSAKAEKVHELNEEIGKLLAKAEQLGAEGNVDESQKILMEVEKVRAKKKEAEEEYRNS
+# MPASSFQQQKLRVCEVCSAYLGLHDNDRRLADHFGGKLHLGFIQIREKLDQLRKTVAEKQEKRNQDRLRRREEREREERLSRRSGSRTRDRRRSRSRD
+# RRRRRSRSTSRERRKSSRSRSRDRHRRHRSRSRSHSRGHRRASRDRSSKYKFSRERTSREESWERGRSERGATDWRLESANGKAASRRSEEKEAGEI]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/10
+# CDS introns: 0/9
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 29
+#     RM:  29 
+# incompatible hint groups: 0
+# end gene g1
+###

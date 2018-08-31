@@ -1,0 +1,121 @@
+-------Speciesnames:--------
+species 0	monDom5
+species 1	hg38
+species 2	rheMac3
+species 3	mm10
+species 4	rn6
+species 5	bosTau8
+species 6	canFam3
+species 7	galGal4
+# assuming an SQLite database
+read in the configuration file for extrinsic features
+# Sources of extrinsic information: M RM E W 
+# Setting acceptor splice site local malus: 0.1
+# Setting donor splice site local malus: 0.1
+# Setting exon local malus: 0.985
+# Setting CDSpart local malus: 0.985
+# Setting UTRpart local malus: 0.985
+extrinsic group 1: hg38 mm10 rheMac3 galGal4
+extrinsic group 2: none ... is deleted
+extrinsic group 2: monDom5 rn6 bosTau8 canFam3
+Trying to open database ../vertebrates_rnaseq.db
+# human version. Using species specific transition matrix: /home/mario/augustus/git/Augustus/config/species/human/human_trans_shadow_partial_utr.pbl
+# setting temperature to 3 (for sampling)
+number of nodes: 63
+number of signatures=23. First 10 signatures are:
+numAli	sumCumFragLen	sumAliLen	depth	color	signature
+9	63103	11962	8     royalblue3 0:chr6+1:chr16+2:chr20+3:chr17-4:chr10-5:chr25+6:chr6-7:chr14-
+12	40304	12754	6      seagreen1                1:chr16+2:chr20+3:chr17-4:chr10-5:chr25+6:chr6-
+4	7549	3656	5         brown4                        1:chr16+2:chr20+3:chr17-4:chr10-6:chr6-
+1	1887	1624	5  darkturquoise                         0:chr6+1:chr16+3:chr17-4:chr10-6:chr6-
+4	1827	386	7         grey40        1:chr16+2:chr20+3:chr17-4:chr10-5:chr25+6:chr6-7:chr14-
+4	1535	383	5        maroon2                       1:chr16+2:chr20+3:chr17-4:chr10-5:chr25+
+3	1397	587	3       skyblue4                                        1:chr16+2:chr20+6:chr6-
+4	1250	414	4     olivedrab1                                1:chr16+2:chr20+5:chr25+6:chr6-
+1	1077	546	4          khaki                                1:chr16+3:chr17-4:chr10-6:chr6-
+1	1059	1024	2         gray66                                                1:chr16+6:chr6-
+found 2 paths
+Have 1 collisions.
+aliG2 nodes 65 allPaths nodes 62 ratio: 0.953846
+Have 0 collisions.
+MILP objective=0
+removing alignments 
+0 geneRanges=alignments (0%) and 0 / 126222 = 0% of aligned bases and 0 / 248634 = 0% of aligment-range-covered bases were deleted because of too much redundancy.
+findGeneRanges reduced the number of aligments from 1025 to 1 (to 0.0976%).
+processing next gene range:
+monDom5.chr6	+	479047	540518
+hg38.chr16	+	174000	210154
+rheMac3.chr20	+	187423	220639
+mm10.chr17	-	0	26954
+rn6.chr10	-	1813	33715
+bosTau8.chr25	+	133367	153145
+canFam3.chr6	-	0	25631
+galGal4.chr14	-	0	23656
+# Delete group HintGroup , 7431-7657, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 13927-14167, mult= 1, priority= 4 1 features
+# Forced unstranded hint group to the only possible strand for 48 groups.
+# Deleted 2 groups because some hint was not satisfiable.
+# Delete group HintGroup , 14139-14279, mult= 1, priority= 4 1 features
+# Error: intron hint is too short.
+# chr20	b2h	intron	19724	19760	0	.	.	mult=6;pri=4;src=E "60086.4;0.34;0:0"
+# Delete group HintGroup , 19723-19759, mult= 6, priority= 4 1 features
+# Delete group HintGroup , 24070-24836, mult= 1, priority= 4 1 features
+# Forced unstranded hint group to the only possible strand for 39 groups.
+# Deleted 3 groups because some hint was not satisfiable.
+# Delete group HintGroup , 8083-8137, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 8191-20868, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 9146-9198, mult= 2, priority= 4 1 features
+# Delete group HintGroup , 11253-11341, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 11334-11430, mult= 74, priority= 4 1 features
+# Delete group HintGroup , 11465-12445, mult= 2, priority= 4 1 features
+# Delete group HintGroup , 12411-12770, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 12414-12756, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 12475-12960, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 14027-14442, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 15030-15090, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 18134-18193, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 18338-18407, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 18351-18525, mult= 2, priority= 4 1 features
+# Delete group HintGroup , 18379-18507, mult= 1, priority= 4 1 features
+# Forced unstranded hint group to the only possible strand for 108 groups.
+# Deleted 15 groups because some hint was not satisfiable.
+# Forced unstranded hint group to the only possible strand for 11 groups.
+Found 5091 ECs on species monDom5
+Found 4318 ECs on species hg38
+Found 4308 ECs on species rheMac3
+Found 2947 ECs on species mm10
+Found 2967 ECs on species rn6
+Found 2639 ECs on species bosTau8
+Found 2653 ECs on species canFam3
+Found 2887 ECs on species galGal4
+OEs in this gene range must have at least 2 ECs
+Found 1390 ortho exons
+building Graph for monDom5
+building Graph for hg38
+building Graph for rheMac3
+building Graph for mm10
+building Graph for rn6
+building Graph for bosTau8
+building Graph for canFam3
+building Graph for galGal4
+computing omega for each ortho exon.
+--- processing ortho exons on forward strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+--- processing ortho exons on reverse strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+compute omegas done
+dual decomposition on gene Range 1
+round	iter	step_size	primal	dual	#inconsistencies
+0	0	0	278.5110975	437.6289113	16
+0	1	9.944863364	409.6512711	558.8242209	170
+0	2	0.8774879399	397.7851189	490.9922804	77
+0	3	1.056376744	373.0689088	444.8851464	23
+0	4	1.531907621	397.785158	424.1821109	19
+0	5	0.7647810396	409.6513122	415.5863384	8
+0	6	0.7418782711	409.6513103	409.6513103	8
+dual decomposition reduced initial duality gap of 131.1402128 to 0 (to 0%)
+# total time: 197s
+# command line:
+# augustus --species=human --softmasking=1 --treefile=../tree.nwk --alnfile=5.maf --dbaccess=../vertebrates_rnaseq.db --speciesfilenames=../genomes.tbl --alternatives-from-evidence=0 --dbhints=1 --UTR=1 --allow_hinted_splicesites=atac --extrinsicCfgFile=../extrinsic-rnaseq.cfg --/CompPred/outdir=pred5

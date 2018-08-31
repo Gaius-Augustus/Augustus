@@ -1,0 +1,9 @@
+((monDom5:0.340786,(((hg38:0.035974,rheMac3:0.043601):0.109934,(mm10:0.084509,rn6:0.091589):0.271974):0.020593,(bosTau8:0.18908,canFam3:0.13303):0.032898):0.258392):0.181168,galGal4:0.559442);
+bosTau8	/home/mario/augustus/git/Augustus/docs/tutorial-cgp/data/genomes/bosTau8.fa
+canFam3	/home/mario/augustus/git/Augustus/docs/tutorial-cgp/data/genomes/canFam3.fa
+galGal4	/home/mario/augustus/git/Augustus/docs/tutorial-cgp/data/genomes/galGal4.fa
+hg38	/home/mario/augustus/git/Augustus/docs/tutorial-cgp/data/genomes/hg38.fa
+mm10	/home/mario/augustus/git/Augustus/docs/tutorial-cgp/data/genomes/mm10.fa
+monDom5	/home/mario/augustus/git/Augustus/docs/tutorial-cgp/data/genomes/monDom5.fa
+rheMac3	/home/mario/augustus/git/Augustus/docs/tutorial-cgp/data/genomes/rheMac3.fa
+rn6	/home/mario/augustus/git/Augustus/docs/tutorial-cgp/data/genomes/rn6.fa

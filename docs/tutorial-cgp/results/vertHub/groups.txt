@@ -1,0 +1,30 @@
+name user
+label Custom
+priority 1
+defaultIsClosed 1
+
+name map
+label Mapping
+priority 2
+defaultIsClosed 0
+
+name comphub
+label Vertebrates Comparative Assembly Hub
+priority 3
+defaultIsClosed 0
+
+name snake
+label Alignment Snakes
+priority 3
+defaultIsClosed 0
+
+name annotationrefseq
+label Refseq Annotations
+priority 3
+defaultIsClosed 1
+
+name exp
+label Experimental
+priority 4
+defaultIsClosed 1
+

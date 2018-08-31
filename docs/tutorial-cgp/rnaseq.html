@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html><head><title>Predicting Genes with AUGUSTUS</title>
+<link rel="stylesheet" type="text/css" href="augustus.css">
+<script src="tutorial.js" type="text/javascript"></script>
+</head><body>
+<font size=-1>
+Navigate to <a href="index.html">main AugCGP tutorial</a>.
+<a href="cactus.html">Cactus alignments and assembly Hubs</a>.
+<a href="de_novo.html">AugCGP de novo</a>.
+<a href="liftover.html">Annotation transfer with AugCGP</a>.
+<a href="rnaseq+liftover.html">Combining RNA-Seq and annotation evidence</a>.
+<a href="hgm.html">Cross-species consistency of gene sets</a>.
+</font>
+<div align="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
+
+<h1>RNA-Seq-based prediction with Augustus-cgp</h1>
+
+This tutorial describes how RNA-Seq data can be incorporated into Augustus-cgp.
+In general, the same types of extrinsic evidence can be incorporated as in single-species gene finding with Augustus (including RNA-Seq, cDNA, ESTs, protein sequences, etc). In cgp mode, evidence is species-specific an can be incorporated for each or a subset of genomes.
+
+<h2 id="rnaseq2hints">1. Generate hints from RNA-Seq</h2>
+
+For most species raw RNA-Seq data (in fastq format) is readly available and can be downloaded
+from the <a href="http://www.ncbi.nlm.nih.gov/sra">NCBI Sequence Read Archive (SRA)</a>.<br><br>
+
+
+<a href="javascript:onoff('tp')" class="dlink"><span id="tp" title="tpd" class="dcross">[+]</span>
+<span class="dtitle">Some advice on how to choose the RNA-Seq libraries...</span></a> <br>
+<div id="tpd" class="details" style="display:none;">
+<ul>
+<li> whenever possible, choose paired-end RNA-Seq reads</li>
+<li> pay attention to the timeliness of the data. More recent studies generally use
+better sequencing technologies and can produce longer reads.<br>
+A read length of at least 2x100 bps is recommended.</li>
+<li> check in the protocol, how rRNA is removed. Rather use Poly(A) tagged libraries than
+Ribo-Zero depleted libraries, as the latter contain all kinds of non-coding elements and may also
+have a high coverage in introns and intergenic regions.</li>
+</ul>
+</div>
+<br>
+
+In order to integrate RNA-Seq into Augustus, the usual procedure involves 
+<ul>
+<li> aligning RNA-Seq reads to the source genome with a spliced-aligner (f.e. <a href="https://github.com/alexdobin/STAR">STAR</a>)</li>
+<li> quality and uniqueness filtering of alignments with <tt>filterBam</tt></li>
+<li> generation of intron hints with <tt>bam2hints</tt></li>
+<li> generation of exonpart hints with <tt>bam2wig</tt> and <tt>wig2hints.pl</tt></li>
+</ul>
+We will skip this procedure as it is explained in detail in other tutorials (see section 'RNA-Seq integration' in the <a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus">Augustus Wiki</a>)<br>
+and assume that we have generated <a href="data/hints/" >hints files</a> for some of the species (chicken, human, mouse and rhesus) in our clade.
+
+<h2 id="loadRNASeq">2. Load RNA-Seq hints into the SQLite database</h2>
+
+<span class="assignment">Prepare</span> a text file with a list of species names and location of
+the corresponding hints files.<br><br>
+
+<a href="javascript:onoff('cft')" class="dlink"><span id="cft" title="cftd" class="dcross">[+]</span>
+<span class="dtitle">file format...</span></a> <br>
+<div id="cftd" class="details" style="display:none;">
+<pre class="code">
+name_of_genome_1  path/to/hintsfile_1
+name_of_genome_2  path/to/hintsfile_2
+...
+name_of_genome_N  path/to/hintsfile_N
+</pre>
+</div>
+</br>
+
+<pre class="code">
+for f in $PWD/hints/*.gff; do echo -ne "$(basename $f .hints.gff)\t$f\n"; done >hints.tbl
+</pre>
+
+The file  <span class="result"><tt>hints.tbl</tt></span> will now look like this (except for the parent directory)<br>
+<pre class="code">
+galGal4 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/hints/galGal4.hints.gff
+hg38    /var/www/augustus/htdocs/binaries/tutorial-cgp/data/hints/hg38.hints.gff
+mm10    /var/www/augustus/htdocs/binaries/tutorial-cgp/data/hints/mm10.hints.gff
+rheMac3 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/hints/rheMac3.hints.gff
+</pre>
+
+If you don't have a database with the genomes, yet, <span class="assignment">follow</span> the instructions in 
+<a href="de_novo.html#loadFa">1. Load genomes ...</a><br>
+to create the database <tt>vertebrates.db</tt>.<br><br>
+<span class="assignment">Make</span> a copy of the database
+<pre class="code">
+cp vertebrates.db vertebrates_rnaseq.db
+</pre>
+and <span class="assignment">load</span> the hints into the new database
+<pre class="code">
+while read line
+do
+  species=$(echo "$line" | cut -f 1)
+  hints=$(echo "$line" | cut -f 2)
+  load2sqlitedb --noIdx --species=$species --dbaccess=vertebrates_rnaseq.db $hints
+done &lthints.tbl
+</pre>
+<span class="assignment">Finalize</span>  database by creating indices on the tables
+<pre class="code">
+load2sqlitedb --makeIdx --dbaccess=vertebrates_rnaseq.db
+</pre>
+You can <span class="assignment">check</span> if loading was successful with following
+database query
+<pre class="code">
+sqlite3 -header -column vertebrates_rnaseq.db "\
+  SELECT count(*) AS '#hints',typename,speciesname\
+  FROM (hints as H join featuretypes as F on H.type=F.typeid)\
+        natural join speciesnames\
+  GROUP BY speciesid,typename;"
+</pre>
+that returns a summary of how many hints of each type are in the database for each species.
+<pre class="code">
+#hints      typename    speciesname
+----------  ----------  -----------
+3368        exonpart    galGal4
+129         intron      galGal4
+7905        exonpart    hg38
+267         intron      hg38
+7930        exonpart    mm10
+378         intron      mm10
+11050       exonpart    rheMac3
+265         intron      rheMac3
+</pre>
+
+<h2 id="extrinsic">3. Prepare an extrinsic config file</h2>
+
+Start by <span class="assignment">copying</span> following extrinsic configuration file:
+<pre class="code">
+cp ${AUGUSTUS_CONFIG_PATH}/extrinsic/extrinsic-cgp.cfg extrinsic-rnaseq.cfg
+</pre>
+<span class="assignment">Open</span> the <tt>extrinsic-rnaseq.cfg</tt> file with a text editor, 
+<span class="assignment">go</span> to the first <tt>[GROUP]</tt> section and replace the next line
+<pre class="code">
+[GROUP] # replace 'none' by the names of genomes with src=W and src=E hints in the database
+none
+</pre>
+as instruced by the names of genomes with RNA-Seq hints, i.e.
+<pre class="code">
+[GROUP] # replace 'none' by the names of genomes with src=W and src=E hints in the database
+hg38 mm10 rheMac3 galGal4
+</pre>
+<a href="javascript:onoff('cfg')" class="dlink"><span id="cfg" title="cfgd" class="dcross">[+]</span>
+<span class="dtitle">format of the extrinsic.cfg file in cgp mode ...</span></a> <br>
+<div id="cfgd" class="details" style="display:none;">
+In cgp mode hints can be integrated for multiple species.
+In order to have different extrinsic config settings for different species,
+multiple <tt>[GENERAL]</tt> tables are specified. Each table is followed by a <tt>[GROUP]</tt> section,
+a single line, in which a subset of the species is listed, for which the table is valid.
+Use the same species identifiers as in the genome alignment and in the phylogenetic tree.
+If a species is not assigned to any of the tables, all hints for that species are
+ignored. To assign all species to a single table, the key 'all' can be used instead of itemizing
+every single species identifier. Use the key 'other' to specify a table for all species, not
+listed in any previous table.
+Note that the source RM must be specified in case that the softmasking option is turned on.
+Also note that all tables have the same dimension, i.e. each table must contain all sources
+listed in the section <tt>[SOURCES]</tt>, even sources for which no hints exist for any of species
+in group.
+</div>
+</br>
+
+<h2 id="runAug">4. Run AUGUSTUS-CGP with RNA-Seq hints</h2>
+
+<span class="assignment">Create</span> a new folder for the rnaseq experiments and
+<span class="assignment">switch</span> to the new directory
+<pre class="code">
+mkdir augCGP_rnaseq
+cd augCGP_rnaseq
+</pre>
+For convenience <span class="assignment">assign</span> each alignment chunk to a job ID by
+creating softlinks
+<pre class="code">
+num=1
+for f in ../mafs/*.maf; do ln -s $f $num.maf; ((num++)); done
+</pre>
+<span class="assignment">Run</span> Augustus with retrieval of hints from the 
+database (~3min).<br>
+<pre class="code">
+for ali in *.maf
+do
+ id=${ali%.maf} # remove .maf suffix
+ augustus \
+  --species=human \
+  --softmasking=1 \
+  --treefile=../tree.nwk \
+  --alnfile=$ali \
+  --dbaccess=../vertebrates_rnaseq.db \
+  --speciesfilenames=../genomes.tbl \
+  --alternatives-from-evidence=0 \
+  --dbhints=1 \
+  --UTR=1 \
+  --allow_hinted_splicesites=atac \
+  --extrinsicCfgFile=../extrinsic-rnaseq.cfg \
+  --/CompPred/outdir=pred$id &gt aug$id.out 2&gt err$id.out &
+done
+</pre>
+The option <tt>UTR=1</tt> enables the UTR model and is recommended whenever 'exonpart' hints are incorporated.<br><br>
+
+This will generate the folders <span class="result"><tt>pred*/</tt></span> (one for each alignment chunk)
+that contain gff files with gene predictions for each input genome.
+<pre class="code">
+bosTau8.cgp.gff
+canFam3.cgp.gff
+galGal4.cgp.gff
+hg38.cgp.gff
+mm10.cgp.gff
+monDom5.cgp.gff
+rheMac3.cgp.gff
+rn6.cgp.gff
+</pre>
+
+Note that the parallelization with the bash '&' command  above is quite simple and rather for demonstration purposes.<br>
+For real applications with several hundreds or thousands of alignment chunks, we recommend to
+run job arrays on a compute cluster.
+
+<h2 id="abinitiopred"><a href="de_novo.html#merge">5. Merge gene predictions from parallel runs</a></h2>
+
+<h2 id="makeBeds">6. Upload gene predictions into the assembly hub</h2>
+<span class="assignment">Convert</span> the final gene predictions from gff to BED format and place
+each BED file in a separate folder with the name of the corresponding genome. It is important that directory names are consistent with the names in the HAL alignment.
+<pre class="code">
+for f in joined_pred/*.gff
+do
+mkdir "$(basename $f .gff)"
+gtf2bed.pl <$f >$(basename $f .gff)/augCGP_rnaseq.bed --itemRgb=34,139,34
+done
+</pre>
+Specify any RGB color you like for the track with option <tt>--itemRgb</tt>, e.g. <span style="color:rgb(34,139,34);">34,139,34.</span><br>
+The name of the current directory (i.e. <tt>augCGP_rnaseq</tt>) will be used as track name on the browser.<br>
+
+<span class="assignment">Switch</span> back to the main working directory <tt>data/</tt>
+<pre class="code">
+cd ..
+</pre>
+and rerun the <tt>hal2assemblyHub.py</tt> script. Include gene tracks with option <tt>--bedDirs</tt>
+
+<pre class="code">
+hal2assemblyHub.py vertebrates.hal vertHub --lod \
+--alignability --gcContent \
+--hub vertCompHub --shortLabel VertebratesCompHub \
+--bedDirs augCGP_rnaseq \
+--tabBed \
+--maxThreads=10 --longLabel "Vertebrates Comparative Assembly Hub"
+</pre>
+You can also include gene tracks from other exercises by passing a comma-separated list of directories e.g.
+<tt>--bedDirs refseq,augCGP_denovo,augCGP_rnaseq,augCGP_liftover,...</tt><br><br>
+<span class="assignment">Repeat</span> <a href="cactus.html#loadHub">4. Load the hub and browser the alignment</a>.<br>
+</body></html>

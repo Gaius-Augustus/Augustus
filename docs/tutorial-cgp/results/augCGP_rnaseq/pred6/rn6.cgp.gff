@@ -1,0 +1,34 @@
+# This output was generated with AUGUSTUS (version 3.3.1).
+# AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),
+# O. Keller, S. König, L. Gerischer, L. Romoth and Katharina Hoff.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+#
+#----- prediction for species 'rn6' -----
+#
+#----- prediction on sequence range chr10:36527-82844 (46318bp) -----
+#
+# start gene g1
+chr10	AUGUSTUS	gene	68941	74804	.	+	.	g1
+chr10	AUGUSTUS	transcript	68941	74804	.	+	.	g1.t1
+chr10	AUGUSTUS	start_codon	68941	68943	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr10	AUGUSTUS	CDS	68941	69001	0.89	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr10	AUGUSTUS	exon	68941	69001	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+chr10	AUGUSTUS	CDS	70925	71019	0.85	+	2	transcript_id "g1.t1"; gene_id "g1";
+chr10	AUGUSTUS	exon	70925	71019	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+chr10	AUGUSTUS	CDS	74706	74804	0.95	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr10	AUGUSTUS	exon	74706	74804	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MSAQAQMRALLDQLMGTARDGDETRQRVKFTDDRVCKSHLLDCCPHDILAGTRMDLGECTKIHDLALRADYEIASKER
+# DLFFELD]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/3
+# CDS introns: 0/3
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 16
+#     RM:  16 
+# incompatible hint groups: 0
+# end gene g1
+###

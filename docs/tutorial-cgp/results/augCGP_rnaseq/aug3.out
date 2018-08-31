@@ -1,0 +1,165 @@
+-------Speciesnames:--------
+species 0	monDom5
+species 1	hg38
+species 2	rheMac3
+species 3	mm10
+species 4	rn6
+species 5	bosTau8
+species 6	canFam3
+species 7	galGal4
+# assuming an SQLite database
+read in the configuration file for extrinsic features
+# Sources of extrinsic information: M RM E W 
+# Setting acceptor splice site local malus: 0.1
+# Setting donor splice site local malus: 0.1
+# Setting exon local malus: 0.985
+# Setting CDSpart local malus: 0.985
+# Setting UTRpart local malus: 0.985
+extrinsic group 1: hg38 mm10 rheMac3 galGal4
+extrinsic group 2: none ... is deleted
+extrinsic group 2: monDom5 rn6 bosTau8 canFam3
+Trying to open database ../vertebrates_rnaseq.db
+# human version. Using species specific transition matrix: /home/mario/augustus/git/Augustus/config/species/human/human_trans_shadow_partial_utr.pbl
+# setting temperature to 3 (for sampling)
+number of nodes: 53
+number of signatures=21. First 10 signatures are:
+numAli	sumCumFragLen	sumAliLen	depth	color	signature
+5	26035	7008	7     royalblue3         0:chr6+1:chr16+2:chr20+3:chr17-5:chr25+6:chr6-7:chr14-
+4	24871	10247	6      seagreen1                 0:chr6+1:chr16+2:chr20+5:chr25+6:chr6-7:chr14-
+5	21087	6057	6         brown4                 0:chr6+1:chr16+2:chr20+3:chr17-5:chr25+6:chr6-
+2	15676	8199	3  darkturquoise                                        0:chr6+1:chr16+2:chr20+
+1	14421	2084	8         grey40 0:chr6+1:chr16+2:chr20+3:chr17-4:chr10-5:chr25+6:chr6-7:chr14-
+3	12764	4897	5        maroon2                         0:chr6+1:chr16+2:chr20+5:chr25+6:chr6-
+7	10985	5048	4       skyblue4                                1:chr16+2:chr20+5:chr25+6:chr6-
+5	5412	1442	5     olivedrab1                        1:chr16+2:chr20+3:chr17-5:chr25+6:chr6-
+3	4349	959	6          khaki                1:chr16+2:chr20+3:chr17-4:chr10-5:chr25+6:chr6-
+1	3463	1437	5         gray66                        1:chr16+3:chr17-4:chr10-5:chr25+6:chr6-
+found 5 paths
+Have 4 collisions.
+aliG2 nodes 55 allPaths nodes 102 ratio: 1.85455
+Have 0 collisions.
+MILP objective=0
+removing alignments 
+0 geneRanges=alignments (0%) and 0 / 140791 = 0% of aligned bases and 0 / 461747 = 0% of aligment-range-covered bases were deleted because of too much redundancy.
+findGeneRanges reduced the number of aligments from 1117 to 2 (to 0.179%).
+processing next gene range:
+monDom5.chr6	+	318147	471648
+hg38.chr16	+	124000	170589
+rheMac3.chr20	+	136066	186227
+mm10.chr17	-	30905	77252
+rn6.	
+bosTau8.chr25	+	100723	131035
+canFam3.chr6	-	27630	70811
+galGal4.chr14	-	36562	93811
+# Forced unstranded hint group to the only possible strand for 16 groups.
+# Delete group HintGroup , 7710-7813, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 7967-8177, mult= 28, priority= 4 1 features
+# Delete group HintGroup , 15031-15314, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 15310-15351, mult= 1, priority= 4 1 features
+# Delete group HintGroup , 17247-17285, mult= 1, priority= 4 1 features
+# Forced unstranded hint group to the only possible strand for 22 groups.
+# Deleted 5 groups because some hint was not satisfiable.
+# Forced unstranded hint group to the only possible strand for 14 groups.
+# Forced unstranded hint group to the only possible strand for 3 groups.
+Found 12037 ECs on species monDom5
+Found 4675 ECs on species hg38
+Found 4382 ECs on species rheMac3
+Found 4154 ECs on species mm10
+Found 2863 ECs on species bosTau8
+Found 3606 ECs on species canFam3
+Found 4989 ECs on species galGal4
+OEs in this gene range must have at least 2 ECs
+Found 1181 ortho exons
+building Graph for monDom5
+building Graph for hg38
+building Graph for rheMac3
+building Graph for mm10
+building Graph for bosTau8
+building Graph for canFam3
+building Graph for galGal4
+computing omega for each ortho exon.
+--- processing ortho exons on forward strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+--- processing ortho exons on reverse strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+compute omegas done
+dual decomposition on gene Range 1
+round	iter	step_size	primal	dual	#inconsistencies
+0	0	0	-815.1562094	-713.6717228	10
+0	1	10.14844866	-734.3304457	-642.9944052	29
+0	2	3.149518638	-841.5379392	-711.8487224	20
+0	3	1.124086165	-808.6859377	-717.1391248	24
+0	4	0.7163050373	-849.0240448	-726.9646734	10
+0	5	0.7365772247	-795.3242434	-725.8550879	17
+0	6	0.4985504606	-826.0666175	-730.5520438	9
+0	7	0.4198224346	-835.7439724	-730.6038253	10
+0	8	0.3726620376	-810.1816555	-732.1260384	7
+0	9	0.3149153335	-795.324246	-732.4413904	7
+0	10	0.2698650445	-779.5209013	-733.5186968	10
+0	11	0.08117489219	-814.8046889	-733.6852885	7
+0	12	0.09216531685	-786.6670541	-734.0649983	4
+0	13	0.06636184268	-757.4005008	-734.1610079	7
+0	14	0.02420540048	-814.4657181	-734.2536595	6
+0	15	0.01279769993	-757.4005007	-734.31577	2
+0	16	0.007337847724	-734.3304426	-734.3249826	7
+0	17	0.0007799986218	-757.4005008	-734.3296658	7
+0	18	0.0001109668353	-757.4005008	-734.3297768	2
+0	19	0.0003329004467	-734.3304425	-734.3304425	0
+dual decomposition reduced initial duality gap of 80.82576695 to 0 (to 0%)
+processing next gene range:
+monDom5.chr6	+	469654	479704
+hg38.chr16	+	168616	175999
+rheMac3.chr20	+	184228	189422
+mm10.chr17	-	24955	32900
+rn6.chr10	-	31716	38506
+bosTau8.chr25	+	129040	135366
+canFam3.chr6	-	23632	29428
+galGal4.chr14	-	23052	37960
+# Forced unstranded hint group to the only possible strand for 3 groups.
+# Forced unstranded hint group to the only possible strand for 2 groups.
+Found 670 ECs on species monDom5
+Found 857 ECs on species hg38
+Found 516 ECs on species rheMac3
+Found 861 ECs on species mm10
+Found 680 ECs on species rn6
+Found 752 ECs on species bosTau8
+Found 495 ECs on species canFam3
+Found 1578 ECs on species galGal4
+OEs in this gene range must have at least 2 ECs
+Found 173 ortho exons
+building Graph for monDom5
+building Graph for hg38
+building Graph for rheMac3
+building Graph for mm10
+building Graph for rn6
+building Graph for bosTau8
+building Graph for canFam3
+building Graph for galGal4
+computing omega for each ortho exon.
+--- processing ortho exons on forward strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+--- processing ortho exons on reverse strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+compute omegas done
+dual decomposition on gene Range 2
+round	iter	step_size	primal	dual	#inconsistencies
+0	0	0	-141.5128493	-119.4094029	2
+0	1	11.05172321	-119.9191423	-97.81569536	14
+0	2	1.57881764	-142.6671049	-116.9523061	12
+0	3	0.2472363512	-156.7454138	-116.8615461	3
+0	4	1.019198755	-142.6671049	-118.4357245	7
+0	5	0.2119168341	-156.611459	-119.0123609	4
+0	6	0.2266953439	-142.6671048	-119.6560116	2
+0	7	0.1315653622	-131.7066872	-119.623003	13
+0	8	0.02277994844	-146.294056	-119.8154103	2
+0	9	0.05186599493	-131.7066872	-119.8137751	6
+0	10	0.01756120225	-131.7066872	-119.8759574	1
+0	11	0.04318487644	-119.9191423	-119.9191423	0
+dual decomposition reduced initial duality gap of 21.59370697 to 0 (to 0%)
+# total time: 219.090973s
+# command line:
+# augustus --species=human --softmasking=1 --treefile=../tree.nwk --alnfile=3.maf --dbaccess=../vertebrates_rnaseq.db --speciesfilenames=../genomes.tbl --alternatives-from-evidence=0 --dbhints=1 --UTR=1 --allow_hinted_splicesites=atac --extrinsicCfgFile=../extrinsic-rnaseq.cfg --/CompPred/outdir=pred3

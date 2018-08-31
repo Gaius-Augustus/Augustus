@@ -1,0 +1,43 @@
+# This output was generated with AUGUSTUS (version 3.3.1).
+# AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),
+# O. Keller, S. König, L. Gerischer, L. Romoth and Katharina Hoff.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+#
+#----- prediction for species 'mm10' -----
+#
+#----- prediction on sequence range chr17:30906-77253 (46348bp) -----
+#
+# start gene g1
+chr17	AUGUSTUS	gene	37761	68846	.	+	.	g1
+chr17	AUGUSTUS	transcript	37761	68846	.	+	.	g1.t1
+chr17	AUGUSTUS	start_codon	37761	37763	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	CDS	37761	38638	0.14	+	0	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	exon	37761	38638	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	CDS	68702	68846	0.57	+	1	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	exon	68702	68846	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	stop_codon	68844	68846	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MNVQEQGFPLDLGASFTEDAPRPPVPGEEGELVSTDSRPVNHSFCSGKGTSIKSETSTATPRRSDLDLGYEPEGSASP
+# TPPYLRWAESLHSLLDDQDGISLFRTFLKQEGCADLLDFWFACSGFRKLEPCDSNEEKRLKLARAIYRKYILDSNGIVSRQTKPATKSFIKDCVMKQQ
+# IDPAMFDQAQTEIQSTMEENTYPSFLKSDIYLEYTRTGSESPKVCSDQSSGSGTGKGMSGYLPTLNEDEEWKCDQDADEDDGRDPLPPSRLTQKLLLE
+# TAAPRAPSSRRYNEGRELRYGSWREPVNPYYVNSGYALAPATSANDSEQQSLSSDADTLSLTDSSV]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 100
+# CDS exons: 2/2
+#      W:   2 
+# CDS introns: 1/1
+#      E:   1 
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 88
+#      E:   1 
+#     RM:  87 
+# incompatible hint groups: 101
+#      E:   1 
+#      W: 100 
+# end gene g1
+###
+#----- prediction on sequence range chr17:24956-32901 (7946bp) -----
+#
+# (none)

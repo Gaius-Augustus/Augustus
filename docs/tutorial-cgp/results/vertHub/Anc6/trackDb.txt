@@ -1,0 +1,260 @@
+track gcPercent
+longLabel GC Percent in 5-base Window
+shortLabel GC Percent
+type bigWig 0 100
+group map
+visibility dense
+windowingFunction Mean
+bigDataUrl Anc6.gc.bw
+priority 2
+autoScale Off
+maxHeightPixels 128:36:16
+graphTypeDefault Bar
+gridDefault OFF
+color 0,0,0
+altColor 128,128,128
+viewLimits 30:70
+html ../documentation/gcPercent
+
+track alignability
+longLabel Alignability
+shortLabel Alignability
+type bigWig 0 15
+group map
+visibility dense
+windowingFunction Mean
+bigDataUrl Anc6.alignability.bw
+priority 2
+autoScale On
+maxHeightPixels 128:36:16
+graphTypeDefault Bar
+gridDefault OFF
+color 0,0,0
+altColor 128,128,128
+viewLimits 0:15
+html ../documentation/alignability
+
+track hubCentral
+compositeTrack on
+shortLabel VertebratesCompHub
+longLabel Vertebrates Comparative Assembly Hub
+group comphub
+subGroup1 view Track_Type Snake=Alignments refseq=refseq 
+subGroup2 orgs Organisms Anc0=Anc0 Anc1=Anc1 monDom5=monDom5 Anc2=Anc2 Anc3=Anc3 Anc5=Anc5 hg38=hg38 rheMac3=rheMac3 Anc6=Anc6 mm10=mm10 rn6=rn6 Anc4=Anc4 bosTau8=bosTau8 canFam3=canFam3 galGal4=galGal4
+dragAndDrop subTracks
+#allButtonPair on
+dimensions dimensionX=view dimensionY=orgs
+noInherit on
+priority 0
+centerLabelsDense on
+visibility full
+html ../documentation/hubCentral
+type bigBed 3
+
+	track hubCentralrefseq
+	shortLabel refseq
+	view refseq
+	visibility dense
+	subTrack hubCentral
+
+		track refseqhg38
+		longLabel hg38 Lifted-over refseq
+		priority 8
+		type bigBed 12 .
+		group annotationrefseq
+		searchIndex name
+		itemRgb On
+		visibility hide
+		shortLabel hg38refseq
+		bigDataUrl ../liftoverbed/refseq/hg38/Anc6.bb
+		parent hubCentralrefseq off
+		subGroups view=refseq orgs=hg38
+
+	track hubCentralAlignments
+	shortLabel Alignments
+	view Alignments
+	visibility full
+	subTrack hubCentral
+
+		track snakeAnc0
+		longLabel Anc0
+		shortLabel Anc0
+		otherSpecies Anc0
+		visibility hide
+		parent hubCentralAlignments off
+		showSnpWidth 3121
+		priority 2
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=Anc0
+
+		track snakeAnc1
+		longLabel Anc1
+		shortLabel Anc1
+		otherSpecies Anc1
+		visibility hide
+		parent hubCentralAlignments off
+		showSnpWidth 3121
+		priority 3
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=Anc1
+
+		track snakemonDom5
+		longLabel monDom5
+		shortLabel monDom5
+		otherSpecies monDom5
+		visibility hide
+		parent hubCentralAlignments off
+		showSnpWidth 3121
+		priority 4
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=monDom5
+
+		track snakeAnc2
+		longLabel Anc2
+		shortLabel Anc2
+		otherSpecies Anc2
+		visibility hide
+		parent hubCentralAlignments off
+		showSnpWidth 3121
+		priority 5
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=Anc2
+
+		track snakeAnc3
+		longLabel Anc3
+		shortLabel Anc3
+		otherSpecies Anc3
+		visibility full
+		parent hubCentralAlignments
+		showSnpWidth 3121
+		priority 6
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=Anc3
+
+		track snakeAnc5
+		longLabel Anc5
+		shortLabel Anc5
+		otherSpecies Anc5
+		visibility hide
+		parent hubCentralAlignments off
+		showSnpWidth 3121
+		priority 7
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=Anc5
+
+		track snakehg38
+		longLabel hg38
+		shortLabel hg38
+		otherSpecies hg38
+		visibility full
+		parent hubCentralAlignments
+		showSnpWidth 3121
+		priority 8
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=hg38
+
+		track snakerheMac3
+		longLabel rheMac3
+		shortLabel rheMac3
+		otherSpecies rheMac3
+		visibility full
+		parent hubCentralAlignments
+		showSnpWidth 3121
+		priority 9
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=rheMac3
+
+		track snakemm10
+		longLabel mm10
+		shortLabel mm10
+		otherSpecies mm10
+		visibility full
+		parent hubCentralAlignments
+		showSnpWidth 3121
+		priority 11
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=mm10
+
+		track snakern6
+		longLabel rn6
+		shortLabel rn6
+		otherSpecies rn6
+		visibility hide
+		parent hubCentralAlignments off
+		showSnpWidth 3121
+		priority 12
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=rn6
+
+		track snakeAnc4
+		longLabel Anc4
+		shortLabel Anc4
+		otherSpecies Anc4
+		visibility hide
+		parent hubCentralAlignments off
+		showSnpWidth 3121
+		priority 13
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=Anc4
+
+		track snakebosTau8
+		longLabel bosTau8
+		shortLabel bosTau8
+		otherSpecies bosTau8
+		visibility full
+		parent hubCentralAlignments
+		showSnpWidth 3121
+		priority 14
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=bosTau8
+
+		track snakecanFam3
+		longLabel canFam3
+		shortLabel canFam3
+		otherSpecies canFam3
+		visibility hide
+		parent hubCentralAlignments off
+		showSnpWidth 3121
+		priority 15
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=canFam3
+
+		track snakegalGal4
+		longLabel galGal4
+		shortLabel galGal4
+		otherSpecies galGal4
+		visibility full
+		parent hubCentralAlignments
+		showSnpWidth 3121
+		priority 16
+		bigDataUrl ../lod.txt
+		type halSnake
+		group snake
+		subGroups view=Snake orgs=galGal4
+

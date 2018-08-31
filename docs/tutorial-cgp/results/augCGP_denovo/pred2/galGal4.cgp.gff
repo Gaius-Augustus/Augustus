@@ -1,0 +1,67 @@
+# This output was generated with AUGUSTUS (version 3.3.1).
+# AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),
+# O. Keller, S. König, L. Gerischer, L. Romoth and Katharina Hoff.
+# Please cite: Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008),
+# Using native and syntenically mapped cDNA alignments to improve de novo gene finding
+# Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
+#
+#----- prediction for species 'galGal4' -----
+#
+#----- prediction on sequence range chr14:51747-124691 (72945bp) -----
+#
+# start gene g2
+chr14	AUGUSTUS	gene	76087	121012	.	+	.	g2
+chr14	AUGUSTUS	transcript	76087	121012	.	+	.	g2.t1
+chr14	AUGUSTUS	CDS	76087	76227	1	+	1	transcript_id "g2.t1"; gene_id "g2";
+chr14	AUGUSTUS	CDS	90773	90913	0.99	+	1	transcript_id "g2.t1"; gene_id "g2";
+chr14	AUGUSTUS	CDS	98845	98941	0.91	+	1	transcript_id "g2.t1"; gene_id "g2";
+chr14	AUGUSTUS	CDS	106256	106393	1	+	0	transcript_id "g2.t1"; gene_id "g2";
+chr14	AUGUSTUS	CDS	111306	111859	1	+	0	transcript_id "g2.t1"; gene_id "g2";
+chr14	AUGUSTUS	CDS	113915	114091	0.14	+	1	transcript_id "g2.t1"; gene_id "g2";
+chr14	AUGUSTUS	CDS	115264	115509	0.84	+	1	transcript_id "g2.t1"; gene_id "g2";
+chr14	AUGUSTUS	CDS	119766	119933	1	+	1	transcript_id "g2.t1"; gene_id "g2";
+chr14	AUGUSTUS	CDS	120886	121012	1	+	1	transcript_id "g2.t1"; gene_id "g2";
+chr14	AUGUSTUS	stop_codon	121010	121012	.	+	0	transcript_id "g2.t1"; gene_id "g2";
+# protein sequence = [HGSWREPVNPYYVNTGYAMAPATSANDSEQQSMSSDADTMSLTDSSMHGSWREPVNPYYVNTGYAMAPATSANDSEQQ
+# SMSSDADTMSLTDSSIDGIPPYRLRKQHRREMQESAKANGRVPLPHIPRTYRMPKDIHVEPEKFAAELINRLEEVQKEREAEEKLEERLKRVRAEEEG
+# EDADISSGPSVISHKMPSAQPFHHFAPRYSEMGCAGMQMRDAHEENPESILDEHVQRVMKTPGCQSPGPGRHSPKPRSPESGHLGKLSGTLGTIPPGH
+# GKHTTKSGMKLDAANLYHHKHVYHHIHHHSMMKPKEQIEAEATQRVQNSFAWNVDSHNYATKSRNYSENLGMAPVPMDSLGYSGKASLLSKRNIKKTD
+# SGKSDGANYEMPGSPEDVERNQKILQWIIEGEKEISRHKKTNHGSSGAKKQLSHDMVRPLSIERPVAVHPWVSAQLRNVVQPSHPFIQDPTMPPNPAP
+# NPLTQLEEARRRLEEEEKRAGKLPLKQRLKPQKRPGSGASQPCENIVVAYYFCGEPIPYRTLVKGRVVTLGQFKELLTKKGNYRYYFKKVSDEFDCGV
+# VFEEVREDDTILPIFEEKIIGKVEKID]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/9
+# CDS introns: 0/9
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 186
+#     RM: 186 
+# incompatible hint groups: 5
+#     RM:   5 
+# end gene g2
+###
+# start gene g1
+chr14	AUGUSTUS	gene	123542	124691	.	-	.	g1
+chr14	AUGUSTUS	transcript	123542	124691	.	-	.	g1.t1
+chr14	AUGUSTUS	stop_codon	123542	123544	.	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr14	AUGUSTUS	CDS	123542	123616	0.92	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr14	AUGUSTUS	CDS	123733	123819	1	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr14	AUGUSTUS	CDS	123921	124102	0.99	-	2	transcript_id "g1.t1"; gene_id "g1";
+chr14	AUGUSTUS	CDS	124241	124361	0.99	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr14	AUGUSTUS	CDS	124456	124691	0.47	-	2	transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [GDHGLSAAHRPLQVLFVVVDVDGYGATVLPFFGLKPSDAPTLRFIKMENNRKYRMEEDAFSATAVRDFVRAVLDGKVK
+# PQLLSAEPPEDWDTRPVKVLVGKTFEQVAFDETKNVFVKFYAPWCTHCQEMAAAWEELGERYKDHEDIVIAEMDATANELENITISGYPTLHYFPAGP
+# GRKMVEYRSARDVETFSKFLENGGKLPEEPPTVSKAPENSTESPSPSGAAEAREEL]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 0
+# CDS exons: 0/5
+# CDS introns: 0/4
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 2
+#     RM:   2 
+# incompatible hint groups: 1
+#     RM:   1 
+# end gene g1
+###

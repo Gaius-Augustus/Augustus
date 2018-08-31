@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html><head><title>Predicting Genes with AUGUSTUS</title>
+<link rel="stylesheet" type="text/css" href="augustus.css">
+<script src="tutorial.js" type="text/javascript"></script>
+</head><body>
+<font size=-1>
+Navigate to <a href="index.html">main AugCGP tutorial</a>.
+<a href="cactus.html">Cactus alignments and assembly Hubs</a>.
+<a href="de_novo.html">AugCGP de novo</a>.
+<a href="rnaseq.html">AugCGP with RNA-Seq</a>.
+<a href="liftover.html">Annotation transfer with AugCGP</a>.
+<a href="rnaseq+liftover.html">Combining RNA-Seq and annotation evidence</a>.
+</font>
+<div align="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
+
+<h1>cross-species comparison of gene sets</h1>
+The consistency of gene sets within a clade is very important, in particular, when
+studying the genomic differences.<br>
+We developed the tool 'homGeneMapping' for evaluation of consistency
+of gene sets across species. HomGeneMapping uses a whole-genome alignment of the species to map
+coordinates between genomes. Furthermore, accuracy can be measured by incorporating evidence from RNA-Seq and evaluating how well a gene structure agrees with the supporting RNA-Seq data. 
+
+<h2 id="runHgm">1. Run HomGeneMapping to map coordinates between genomes</h2>
+
+<span class="assignment">Prepare</span> a text file with a list of genome names and locations of
+the corresponding input gene files in GTF format.<br><br>
+
+<a href="javascript:onoff('cft')" class="dlink"><span id="cft" title="cftd" class="dcross">[+]</span>
+<span class="dtitle">file format...</span></a> <br>
+<div id="cftd" class="details" style="display:none;">
+<pre class="code">
+name_of_genome_1  path/to/genefile/of/genome_1
+name_of_genome_2  path/to/genefile/of/genome_2
+...
+name_of_genome_N  path/to/genefile/of/genome_N
+</pre>
+The name of genomes must be the same as the ones used in the HAL alignment.
+</div>
+</br>
+
+<pre class="code">
+for f in $PWD/augCGP_rnaseq+liftover/joined_pred/*.gff; do echo -ne "$(basename $f .gff)\t$f\n"; done &gtgtfs.tbl
+</pre>
+
+The file  <span class="result"><tt>gtfs.tbl</tt></span> will now look like this (except for the parent directory)<br>
+<pre class="code">
+bosTau8 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/augCGP_rnaseq+liftover/joined_pred/bosTau8.gff
+canFam3 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/augCGP_rnaseq+liftover/joined_pred/canFam3.gff
+galGal4 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/augCGP_rnaseq+liftover/joined_pred/galGal4.gff
+hg38    /var/www/augustus/htdocs/binaries/tutorial-cgp/data/augCGP_rnaseq+liftover/joined_pred/hg38.gff
+mm10    /var/www/augustus/htdocs/binaries/tutorial-cgp/data/augCGP_rnaseq+liftover/joined_pred/mm10.gff
+monDom5 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/augCGP_rnaseq+liftover/joined_pred/monDom5.gff
+rheMac3 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/augCGP_rnaseq+liftover/joined_pred/rheMac3.gff
+rn6     /var/www/augustus/htdocs/binaries/tutorial-cgp/data/augCGP_rnaseq+liftover/joined_pred/rn6.gff
+</pre>
+
+<span class="assignment">Run</span> <tt>homGeneMapping</tt> as follows
+<pre class="code">
+homGeneMapping --halfile=vertebrates.hal --gtfs=gtfs.tbl --cpus=8 --outdir=hgm --dbaccess=vertebrates_rnaseq+anno.db --details
+</pre>
+When a database is passed with the parameter <tt>--dbaccess</tt>, 'CDS' and 'intron' hints are imported from the database and
+information is printed which and how many of a transcript's CDS exons and introns have hints support.
+
+<h2 id="explainHgm">2. homGeneMapping output explained</h2>
+
+The folder <span class="result"><tt>hgm/</tt></span>. contains one gtf file for each of the input gtf files.
+<pre class="code">
+-rw-r--r--  1 stefanie bioinf  55K Sep 21 12:27 bosTau8.gtf
+-rw-r--r--  1 stefanie bioinf  55K Sep 21 12:27 canFam3.gtf
+-rw-r--r--  1 stefanie bioinf  42K Sep 21 12:27 galGal4.gtf
+-rw-r--r--  1 stefanie bioinf  63K Sep 21 12:27 hg38.gtf
+-rw-r--r--  1 stefanie bioinf  51K Sep 21 12:27 mm10.gtf
+-rw-r--r--  1 stefanie bioinf  54K Sep 21 12:27 monDom5.gtf
+-rw-r--r--  1 stefanie bioinf  54K Sep 21 12:27 rheMac3.gtf
+-rw-r--r--  1 stefanie bioinf  22K Sep 21 12:27 rn6.gtf
+</pre>
+Each of the files starts with a header
+<pre class="code">
+# 0     bosTau8
+# 1     canFam3
+# 2     galGal4
+# 3     hg38
+# 4     mm10
+# 5     monDom5
+# 6     rheMac3
+# 7     rn6
+###
+</pre>
+that assigns each genome name to a unique identification number that is used as a shortcut. The header is followed by a list of transcripts.
+The output for each transcript T can be split into three sections<br><br>
+<a href="javascript:onoff('gtf')" class="dlink"><span id="gtf" title="gtfd" class="dcross">[1]</span>
+<span class="dtitle">extended gtf format...</span></a> <br>
+<div id="gtfd" class="details" style="display:none;">
+<pre class="code" style="font-size:16px;">
+chr16   AUGUSTUS        transcript      93718   96048   .       +       .       jg6.t1
+chr16   AUGUSTUS        CDS     93718   93790   1.0     +       0       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3M-1,5"; 
+chr16   AUGUSTUS        exon    93718   93790   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3,5"; 
+chr16   AUGUSTUS        start_codon     93718   93720   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; 
+chr16   AUGUSTUS        intron  93791   94782   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3E:M-6,5"; 
+chr16   AUGUSTUS        CDS     94783   94962   1.0     +       2       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3M-1,0,1,2,5,6"; 
+chr16   AUGUSTUS        exon    94783   94962   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3,0,1,2,5,6"; 
+chr16   AUGUSTUS        intron  94963   95061   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3E:M-6,0,1,2E-2335,5,6E-53"; 
+chr16   AUGUSTUS        CDS     95062   95145   1.0     +       2       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3M-1,0,2,5,6"; 
+chr16   AUGUSTUS        exon    95062   95145   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3,0,2,5,6"; 
+chr16   AUGUSTUS        intron  95146   95333   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3E:M-29,0,2E-1908,5,6E-65"; 
+chr16   AUGUSTUS        CDS     95334   95410   1.0     +       2       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3M-1,0,1,2,5,6"; 
+chr16   AUGUSTUS        exon    95334   95410   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3,0,1,2,5,6"; 
+chr16   AUGUSTUS        intron  95411   95503   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3E:M-28,0,1,2E-1877,5,6E*-108"; 
+chr16   AUGUSTUS        CDS     95504   95567   1.0     +       0       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3M-1,0,1,2,5"; 
+chr16   AUGUSTUS        exon    95504   95567   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3,0,1,2,5"; 
+chr16   AUGUSTUS        intron  95568   95651   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3E:M-18,0,1,2E-1823,5"; 
+chr16   AUGUSTUS        exon    95652   96048   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3"; 
+chr16   AUGUSTUS        CDS     95652   95851   1.0     +       2       transcript_id "jg6.t1"; gene_id "jg6"; hgm_info "3M-1,0,1,2,5"; 
+chr16   AUGUSTUS        stop_codon      95849   95851   0.0     +       .       transcript_id "jg6.t1"; gene_id "jg6"; 
+</pre>
+In the extended gtf format CDS, exon and intron features of T have an additional attribute 'hgm_info' in the last column that encodes a comma-separated list of
+tuples of genome name, sources of evidence and multiplicity, e.g the tuple
+<pre class="code">
+2E-1908
+</pre>
+encodes genome_name=galGal4 (see header), source=E and mult=1908.
+The 'hgm_info' string of the second intron 
+<pre class="code">
+hgm_info "3E:M-6,0,1,2E-2335,5,6E-53";
+</pre>
+states that the introns is consistent with an intron in the gene sets of species 3 (=hg38), 0 (=bosTau8), 1 (=canFam3), 2 (=galGal4), 5 (=monDom5) and 6 (=rheMac3).
+An intron/exon of species A is considered consistent with an intron/exon of species B, if both boundaries are aligned. CDS exons must
+additionally be in the same reading frame to be consistent with one another.
+In species 3,2 and 6 the intron is supported by RNA-Seq splice junctions (source E) with multiplicities 6, 2335 and 53, respectively. 
+Furthermore, there is even evidence from an existing annotation in species 3 (source M) for the intron. 
+If a source is followed by '*', the gene feature is not present in that particular species, although there is evidence for it, e.g.
+<pre class="code">
+hgm_info "...,6E*-108";
+</pre>
+means that the gene feature is not present in the gene set of species 6, but has RNA-Seq support - a sign for a false negative in species 6, in particular if
+the gene feature is present and has strong evidence in many of the other species.
+</div> 
+
+<a href="javascript:onoff('gli')" class="dlink"><span id="gli" title="glid" class="dcross">[2]</span>
+<span class="dtitle">info on gene feature level...</span></a> <br>
+<div id="glid" class="details" style="display:none;">
+<pre class="code">
+# gene feature level:
+#
+#
+# number/% of features with exact homologs in at least k other genomes:
+#
+#---------------------------------------------------------------------------------------------------
+#   k           CDS             Intr             Exon              Intr+Exon
+#---------------------------------------------------------------------------------------------------
+#
+#   0         6 100.0%         5 100.0%         6 100.0%         11 100.0% *************************
+#   1         6 100.0%         5 100.0%         5  83.3%         10  90.9% **********************
+#   2         5  83.3%         4  80.0%         4  66.7%          8  72.7% ******************
+#   3         5  83.3%         4  80.0%         4  66.7%          8  72.7% ******************
+#   4         5  83.3%         4  80.0%         4  66.7%          8  72.7% ******************
+#   5         2  33.3%         1  20.0%         2  33.3%          3  27.3% ******
+#   6         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   7         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#
+# number/% of features supported by extrinsic evidence in at least k genomes :
+#
+#---------------------------------------------------------------------------------------------------
+#   k           CDS             Intr             Exon              Intr+Exon
+#---------------------------------------------------------------------------------------------------
+#
+#   0         6 100.0%         5 100.0%         6 100.0%         11 100.0% *************************
+#   1         6 100.0%         5 100.0%         0   0.0%          5  45.5% ***********
+#   2         0   0.0%         4  80.0%         0   0.0%          4  36.4% *********
+#   3         0   0.0%         3  60.0%         0   0.0%          3  27.3% ******
+#   4         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   5         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   6         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   7         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   8         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+</pre>
+The gene feature level displays the cumulative sum of percentages of CDS/intron/exon features of the transcript T, that are
+<ul>
+<li>consistent with CDS/intron/exon features in k other genomes (first table)</li>
+<li>are supported by hints in at least k genomes (second table)</li>
+</ul>
+Let's have a closer look at the first table. For k=3
+<pre class="code">
+#---------------------------------------------------------------------------------------------------
+#   k           CDS             Intr             Exon              Intr+Exon
+#---------------------------------------------------------------------------------------------------
+#
+#   0         6 100.0%         5 100.0%         6 100.0%         11 100.0% *************************
+#   1         6 100.0%         5 100.0%         5  83.3%         10  90.9% **********************
+#   2         5  83.3%         4  80.0%         4  66.7%          8  72.7% ******************
+<span style="background-color: #FFFF00">#   3         5  83.3%         4  80.0%         4  66.7%          8  72.7% ******************</span>
+#   4         5  83.3%         4  80.0%         4  66.7%          8  72.7% ******************
+#   5         2  33.3%         1  20.0%         2  33.3%          3  27.3% ******
+#   6         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   7         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+</pre>
+we can see that
+<ul>
+<li>5 out of the 6 CDS exons (83.3%) are consistent with a CDS exon</li>
+<li>4 out of the 5 introns (80.0%) are consistent with an intron</li>
+<li>4 out of the 6 exons (66.7%) are consistent with an exon</li>
+</ul>
+in at least k=3 of the other gene sets.
+For k=1, the second table shows that
+<pre class="code">
+#---------------------------------------------------------------------------------------------------
+#   k           CDS             Intr             Exon              Intr+Exon
+#---------------------------------------------------------------------------------------------------
+#
+#   0         6 100.0%         5 100.0%         6 100.0%         11 100.0% *************************
+<span style="background-color: #FFFF00">#   1         6 100.0%         5 100.0%         0   0.0%          5  45.5% ***********</span>
+#   2         0   0.0%         4  80.0%         0   0.0%          4  36.4% *********
+#   3         0   0.0%         3  60.0%         0   0.0%          3  27.3% ******
+#   4         0   0.0%         0   0.0%         0   0.0%          0   0.0%
+#   5         0   0.0%         0   0.0%         0   0.0%          0   0.0%
+#   6         0   0.0%         0   0.0%         0   0.0%          0   0.0%
+#   7         0   0.0%         0   0.0%         0   0.0%          0   0.0%
+#   8         0   0.0%         0   0.0%         0   0.0%          0   0.0%
+</pre>
+<ul>
+<li>6 out of the 6 CDS exons (100.0%)</li>
+<li>5 out of the 5 introns (100.0%)</li>
+</ul>
+are supported by evidence (any source) in at least k=1 of the gene sets.
+Note that the database contains no 'exon' hints. Thus, none of the exon features have support.
+</div>
+
+<a href="javascript:onoff('tli')" class="dlink"><span id="tli" title="tlid" class="dcross">[3]</span>
+<span class="dtitle">info on transcript level...</span></a> <br>
+<div id="tlid" class="details" style="display:none;">
+<pre class="code">
+# transcript level:
+#
+#   0 gene_id=jg4                           tx_id=jg4.t1                          5/6 CDS  4/5 Intr  4/6 exon
+#   1 gene_id=jg7                           tx_id=jg7.t1                          4/6 CDS  3/5 Intr  3/6 exon
+#   2 gene_id=jg5                           tx_id=jg5.t1                          5/6 CDS  4/5 Intr  4/6 exon
+#   5 gene_id=jg4                           tx_id=jg4.t1                          6/6 CDS  5/5 Intr  5/6 exon
+#   6 gene_id=jg5                           tx_id=jg5.t1                          3/5 CDS  2/4 Intr  3/5 exon
+#
+# transcript has an exact homolog in 0 other genomes.
+</pre>
+The transcript itemizes all transcripts in any of the other genomes that are partly consistent with transcript T.
+For example the transcript jg7.t1 in species 1 (=canFam3) has
+<ul>
+<li> 4 out of 6 CDS exons</li>
+<li> 3 out of 5 introns</li>
+<li> 3 out of 6 exons</li>
+</ul>
+that are consistent with T. A transcript is only considered an 'exact homolog' of T, if all its exons
+are consistent with T and it has the same number of exons as T. 
+</div><br>
+sections 2 and 3 are only printed if the <tt>--details</tt> option is turned on.
+</body></html>
