@@ -460,6 +460,8 @@ Node* SpeciesGraph::addRightSS(Status *exon, vector< vector<Node*> >&neutralLine
 
 
 void SpeciesGraph::printSampledGF(Status *st, double score){
+    if (!sampled_GFs)
+	return; // output of samples not requested in this case
     streambuf *coutbuf = cout.rdbuf(); //save old buf
     cout.rdbuf(sampled_GFs->rdbuf()); //redirect std::cout to species file
     cout << getSeqID() << "\tSAMPLING\t";
@@ -530,6 +532,8 @@ void SpeciesGraph::printSampledGF(Status *st, double score){
 
 
 void SpeciesGraph::printGF(ExonCandidate *ec, double score, float avgBaseProb){
+    if (!sampled_GFs)
+	return; // output of samples not requested in this case
     streambuf *coutbuf = cout.rdbuf(); //save old buf
     cout.rdbuf(sampled_GFs->rdbuf()); //redirect std::cout to species file
     cout << getSeqID() << "\tEC\tCDS\t";

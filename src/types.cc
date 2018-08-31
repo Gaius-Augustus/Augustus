@@ -89,7 +89,11 @@ string Constant::dbaccess; // comma separated string with database access (datab
 string Constant::alnfile; // name of file that contains MSA of genomes
 string Constant::codonalnfile; // name of file that contains MSA of codon sequences
 bool Constant::overlapmode = false;
-Boolean Constant::printOEs = true; // output ortho exons
+Boolean Constant::printOEs = false; // output ortho exons
+Boolean Constant::printMEA = false; // output .mea files (base genes) during CGP
+Boolean Constant::printSampled = false; // output .sampled_GFs during CGP 
+Boolean Constant::printGeneRangesBED = false;
+Boolean Constant::printGeneRangesGFF = false;
 Integer Constant::maxOvlp = 60; // maximum overlap of coding regions for bacteria
 vector<Double> Constant::head2tail_ovlp;
 vector<Double> Constant::head2head_ovlp;
@@ -430,6 +434,10 @@ void Constant::init(){
     Properties::assignProperty("exoncands", exoncands);
     Properties::assignProperty("min_intron_len", min_intron_len);
     Properties::assignProperty("printOEs", printOEs);
+    Properties::assignProperty("printMEA", printMEA);
+    Properties::assignProperty("printSampled", printSampled);
+    Properties::assignProperty("printGeneRangesBED", printGeneRangesBED);
+    Properties::assignProperty("printGeneRangesGFF", printGeneRangesGFF);
     Properties::assignProperty("maxOvlp", maxOvlp);
     Properties::assignProperty("temperature", temperature);
     if (temperature > 7){
@@ -518,7 +526,7 @@ int quantile(const vector<int> &v, float q){
     std::sort(w.begin(), w.end()); // O(n log n) but finding a quantile would be possible also in linear time                                                                                                                                                                            
     int threshindex = (int) (q * w.size());
     return w[threshindex];
-}                                                                                                                                                                                                                                                                                        
+}
  
 
 map<string, size_t> *getMap (vector<string> names){

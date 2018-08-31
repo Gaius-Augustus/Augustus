@@ -366,7 +366,11 @@ public:
     static string alnfile; // name of file that contains MSA of genomes
     static string codonalnfile; // name of file that contains MSA of codon sequences
     static bool overlapmode; // whether overlapping exons are allowed in Viterbi algorithm
-    static Boolean printOEs; //output ortho exons to file
+    static Boolean printOEs; // output ortho exons to file
+    static Boolean printMEA; // output .mea files (base genes) during CGP
+    static Boolean printSampled; // output .sampled_GFs during CGP
+    static Boolean printGeneRangesBED;
+    static Boolean printGeneRangesGFF;
     static Integer maxOvlp; // parameters for overlapping coding regions in bacteria
     static vector<Double> head2tail_ovlp;
     static vector<Double> head2head_ovlp;

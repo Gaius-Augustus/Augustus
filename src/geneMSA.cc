@@ -399,23 +399,29 @@ void GeneMSA::openOutputFiles(string outdir){
 		(*os_ec) << "#\n#-----  exon candidates  -----" << endl << "#" << endl;
 	    }
         }
-        string file_geneRanges = outdir + "geneRanges." + species[i] + ".bed";
-        ofstream *os_gr = new ofstream(file_geneRanges.c_str());
-        if (os_gr && (os_gr->rdstate() & std::ofstream::failbit) == 0) {
-            geneRanges_outfiles_bed[i] = os_gr;
-            (*os_gr) << "#\n#-----  gene ranges  -----" << endl << "#" << endl;
-        } else {
-	    cerr << "Error writing " << file_geneRanges << endl;
+	string file_geneRanges;
+	ofstream *os_gr;
+	if (Constant::printGeneRangesBED){
+	    file_geneRanges = outdir + "geneRanges." + species[i] + ".bed";
+	    os_gr = new ofstream(file_geneRanges.c_str());
+	    if (os_gr && (os_gr->rdstate() & std::ofstream::failbit) == 0) {
+		geneRanges_outfiles_bed[i] = os_gr;
+		(*os_gr) << "#\n#-----  gene ranges  -----" << endl << "#" << endl;
+	    } else {
+		cerr << "Error writing " << file_geneRanges << endl;
+	    }
 	}
 	// same in gff format
-        file_geneRanges = outdir + "geneRanges." + species[i] + ".gff"; // was .gff3 before, although it was only GFF format, not .gff3
-	os_gr = new ofstream(file_geneRanges.c_str());
-        if (os_gr && (os_gr->rdstate() & std::ofstream::failbit) == 0) {
-            geneRanges_outfiles_gff[i] = os_gr;
-            (*os_gr) << "#\n#-----  gene ranges  -----" << endl << "#" << endl;
-        } else {
-	    cerr << "Error writing " << file_geneRanges << endl;
-	} 
+	if (Constant::printGeneRangesGFF){
+	    file_geneRanges = outdir + "geneRanges." + species[i] + ".gff";
+	    os_gr = new ofstream(file_geneRanges.c_str());
+	    if (os_gr && (os_gr->rdstate() & std::ofstream::failbit) == 0) {
+		geneRanges_outfiles_gff[i] = os_gr;
+		(*os_gr) << "#\n#-----  gene ranges  -----" << endl << "#" << endl;
+	    } else {
+		cerr << "Error writing " << file_geneRanges << endl;
+	    }
+	}
 	
         string file_orthoexon = outdir + "orthoExons." + species[i] + ".gff3";
 	if(Constant::printOEs){
@@ -449,16 +455,19 @@ void GeneMSA::printStats(){
 void GeneMSA::printGeneRanges() {
     for (size_t s=0; s < numSpecies(); s++) {
 	if (getStart(s) >= 0) {
-	    // output in .bed format 
-	    ofstream &fstrm_bed = *geneRanges_outfiles_bed[s]; // write to 'geneRanges.speciesname[s].bed'
-	    fstrm_bed << getSeqID(s) << "\t" << getStart(s) + 1 << "\t" << getEnd(s) + 1 << "\t" << alignment->getSignature()
-		      << "\t0\t" << getStrand(s) << endl;
-	    
+	    // output in .bed format
+	    if (Constant::printGeneRangesBED) {
+		ofstream &fstrm_bed = *geneRanges_outfiles_bed[s]; // write to 'geneRanges.speciesname[s].bed'
+		fstrm_bed << getSeqID(s) << "\t" << getStart(s) + 1 << "\t" << getEnd(s) + 1 << "\t" << alignment->getSignature()
+			  << "\t0\t" << getStrand(s) << endl;
+	    }
 	    // GFF output
-	    ofstream &fstrm_gff = *geneRanges_outfiles_gff[s]; // write to 'geneRanges.speciesname[s].gff'    
-	    fstrm_gff << getSeqID(s) << "\tGeneRange\t" << "exon\t" << getStart(s) + 1 << "\t" << getEnd(s) + 1 << "\t0\t"
-		      << getStrand(s) << "\t" << ".\t" << "Name=" << geneRangeID;
-	    fstrm_gff << ";Note=" << alignment->getSignature() << endl;
+	    if (Constant::printGeneRangesGFF) {
+		ofstream &fstrm_gff = *geneRanges_outfiles_gff[s]; // write to 'geneRanges.speciesname[s].gff'    
+		fstrm_gff << getSeqID(s) << "\tGeneRange\t" << "exon\t" << getStart(s) + 1 << "\t" << getEnd(s) + 1 << "\t0\t"
+			  << getStrand(s) << "\t" << ".\t" << "Name=" << geneRangeID;
+		fstrm_gff << ";Note=" << alignment->getSignature() << endl;
+	    }
 	}
     }
     geneRangeID++;
@@ -1681,11 +1690,11 @@ void GeneMSA::closeOutputFiles(){
 	    exonCands_outfiles[i]->close();
 	    delete exonCands_outfiles[i];
 	}
-        if (geneRanges_outfiles_gff[i] && geneRanges_outfiles_gff[i]->is_open()) {
+        if (geneRanges_outfiles_gff.size() > i && geneRanges_outfiles_gff[i] && geneRanges_outfiles_gff[i]->is_open()) {
 	    geneRanges_outfiles_gff[i]->close();
 	    delete geneRanges_outfiles_gff[i];
 	}
-        if (geneRanges_outfiles_bed[i] && geneRanges_outfiles_bed[i]->is_open()) {
+        if (geneRanges_outfiles_bed.size() > i && geneRanges_outfiles_bed[i] && geneRanges_outfiles_bed[i]->is_open()) {
 	    geneRanges_outfiles_bed[i]->close();
 	    delete geneRanges_outfiles_bed[i];
 	}

@@ -329,11 +329,14 @@ void CompGenePred::start(){
     }
     
     //initialize output files of initial gene prediction and optimized gene prediction
-    vector<ofstream*> baseGenes = initOutputFiles(outdir,".mea"); // equivalent to MEA prediction
+    vector<ofstream*> baseGenes, optGenes, sampledGFs;
+    if (Constant::printMEA)
+	baseGenes = initOutputFiles(outdir,".mea"); // equivalent to MEA prediction
     vector<int> base_geneid(OrthoGraph::numSpecies, 1); // gene numbering
-    vector<ofstream*> optGenes = initOutputFiles(outdir,".cgp");  //optimized gene prediction by applying majority rule move
+    optGenes = initOutputFiles(outdir,".cgp");  //optimized gene prediction by applying majority rule move
     vector<int> opt_geneid(OrthoGraph::numSpecies, 1);
-    vector<ofstream*> sampledGFs = initOutputFiles(outdir,".sampled_GFs"); // prints sampled exons/introns and their posterior probs to file
+    if (Constant::printSampled)
+	sampledGFs = initOutputFiles(outdir,".sampled_GFs"); // prints sampled exons/introns and their posterior probs to file
 
     bool printCodons;
     try {
@@ -515,8 +518,11 @@ void CompGenePred::start(){
 		    buildStatusList(*alltranscripts, Constant::utr_option_on, stlist);
 		}
 		// build graph
+		ofstream *gf = NULL;
+		if (Constant::printSampled)
+		    gf = sampledGFs[s];
 		orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRanges[s], geneRange->getExonCands(s), speciesNames[s], 
-							geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, sampledGFs[s], overlapComp);
+							geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, gf, overlapComp);
 		orthograph.graphs[s]->buildGraph(meanIntrLen);
 		//orthograph.graphs[s]->printGraph(outdir + speciesNames[s] + "." + itoa(GeneMSA::geneRangeID) + ".dot");
 		
@@ -544,7 +550,8 @@ void CompGenePred::start(){
 	if(!noprediction && !onlySampling){
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
 	    orthograph.globalPathSearch();
-	    orthograph.outputGenes(baseGenes,base_geneid);
+	    if (Constant::printMEA)
+		orthograph.outputGenes(baseGenes,base_geneid);
 	    	    
 	    if(!hects.empty()){
 	    	// optimization via dual decomposition
@@ -582,9 +589,11 @@ void CompGenePred::start(){
     }
 
     GeneMSA::closeOutputFiles();
-    closeOutputFiles(baseGenes);
+    if (Constant::printMEA)
+	closeOutputFiles(baseGenes);
     closeOutputFiles(optGenes);
-    closeOutputFiles(sampledGFs);
+    if (Constant::printSampled)
+	closeOutputFiles(sampledGFs);
 
     // delete all trees                                           
     for(unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>>::iterator topit = GeneMSA::topologies.begin(); topit !=GeneMSA::topologies.end(); topit++){
