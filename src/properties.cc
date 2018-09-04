@@ -231,6 +231,7 @@ HINTSFILE_KEY,
 "noInFrameStop",
 "noprediction",
 EXTERNAL_KEY, // optCfgFile
+"printHints",
 "printMEA",
 "printOEs",
 "printSampled",

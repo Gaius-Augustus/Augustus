@@ -90,6 +90,7 @@ string Constant::alnfile; // name of file that contains MSA of genomes
 string Constant::codonalnfile; // name of file that contains MSA of codon sequences
 bool Constant::overlapmode = false;
 Boolean Constant::printOEs = false; // output ortho exons
+Boolean Constant::printHints = false; // output hint lines at start of prediction GFF
 Boolean Constant::printMEA = false; // output .mea files (base genes) during CGP
 Boolean Constant::printSampled = false; // output .sampled_GFs during CGP 
 Boolean Constant::printGeneRangesBED = false;
@@ -434,6 +435,7 @@ void Constant::init(){
     Properties::assignProperty("exoncands", exoncands);
     Properties::assignProperty("min_intron_len", min_intron_len);
     Properties::assignProperty("printOEs", printOEs);
+    Properties::assignProperty("printHints", printHints);
     Properties::assignProperty("printMEA", printMEA);
     Properties::assignProperty("printSampled", printSampled);
     Properties::assignProperty("printGeneRangesBED", printGeneRangesBED);

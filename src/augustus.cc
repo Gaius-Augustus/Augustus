@@ -298,7 +298,7 @@ void evaluateOnTestSet(AnnoSequence *annoseq, NAMGene &namgene, FeatureCollectio
 	 * check for extrinsic information about this sequence
 	 */
 	SequenceFeatureCollection& sfc = extrinsicFeatures.getSequenceFeatureCollection(annoseq->seqname);
-	sfc.prepare(annoseq, verbosity>0 && !(Gene::gff3));
+	sfc.prepare(annoseq, Constant::printHints && !(Gene::gff3));
 	
 	bool singlestrand = false; // use not the shadow states
 	try {
@@ -396,7 +396,7 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
 	     * check for extrinsic information about this sequence
 	     */
 	    SequenceFeatureCollection& sfc = extrinsicFeatures.getSequenceFeatureCollection(curseq->seqname);
-	    sfc.prepare(curseq, verbosity>0 && !(Gene::gff3));
+	    sfc.prepare(curseq, Constant::printHints && !(Gene::gff3));
 	    bool singlestrand = false; // use not the shadow states
 	    try {
 		singlestrand = (Properties::getIntProperty("singlestrand") == 1);

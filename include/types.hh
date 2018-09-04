@@ -367,6 +367,7 @@ public:
     static string codonalnfile; // name of file that contains MSA of codon sequences
     static bool overlapmode; // whether overlapping exons are allowed in Viterbi algorithm
     static Boolean printOEs; // output ortho exons to file
+    static Boolean printHints;
     static Boolean printMEA; // output .mea files (base genes) during CGP
     static Boolean printSampled; // output .sampled_GFs during CGP
     static Boolean printGeneRangesBED;
