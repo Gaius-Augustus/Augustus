@@ -17,13 +17,23 @@
 # are printed to a file bad_genes.lst. Option -s allows to exclude bad genes
 # from the FASTA output file, automatically.
 
-import argparse
-import os.path
-import re
-from Bio.Seq import Seq
-from Bio.Alphabet import generic_dna, generic_protein
-from Bio import SeqIO
-from Bio.SeqRecord import SeqRecord
+try:
+    import argparse
+except ImportError:
+    raise ImportError('Failed to import argparse. Try installing with \"pip3 install argparse\"')
+
+try:
+    import re
+except ImportError:
+    raise ImportError('Failed to import argparse. Try installing with \"pip3 install re\"')
+
+try:
+    from Bio.Seq import Seq
+    from Bio.Alphabet import generic_dna, generic_protein
+    from Bio import SeqIO
+    from Bio.SeqRecord import SeqRecord
+except ImportError:
+    raise ImportError('Failed to import biophython modules. Try installing with \"pip3 install biopython\"')
 
 
 parser = argparse.ArgumentParser(
@@ -55,9 +65,9 @@ try:
     with open(args.gtf, "r") as gtf_handle:
         for line in gtf_handle:
             if re.match(
-                    r"\S+\t\S+\tCDS\t\d+\t\d+\t\S+\t\S+\t\d\ttranscript_id \"(\S+)\";", line):
+                    r"\S+\t\S+\tCDS\t\d+\t\d+\t\S+\t\S+\t\d\t.*transcript_id \"(\S+)\";", line):
                 seq_id, st, en, stx, fr, tx_id = re.match(
-                    r"(\S+)\t\S+\tCDS\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\d)\ttranscript_id \"(\S+)\";", line).groups()
+                    r"(\S+)\t\S+\tCDS\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\d)\t.*transcript_id \"(\S+)\";", line).groups()
                 if seq_id not in cds:
                     cds[seq_id] = {}
                 if tx_id not in cds[seq_id]:
