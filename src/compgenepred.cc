@@ -42,8 +42,8 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
     }
 
     if (Properties::hasProperty("trainFeatureFile")) {
-      trainFeature_from_file();
-      train_OEscore_params(speciesNames.size());
+      LogReg::trainFeature_from_file();
+      LogReg::train_OEscore_params(speciesNames.size());
     } else {
 
     if (Constant::Constant::dbaccess.empty()) { // give priority to database in case both exist
@@ -87,7 +87,7 @@ void CompGenePred::start(){
   // check if training mode is turned on and logreg features shall be read from file
   
   if(!Properties::hasProperty("trainFeatureFile")){
-
+   
     // read in alignment, determine orthologous sequence fragments
 
     int num_phylo_states; // number of states in ExonEvo model
@@ -327,6 +327,8 @@ void CompGenePred::start(){
       else
 	use_omega = false;
     }
+
+
     
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes, optGenes, sampledGFs;
@@ -340,7 +342,7 @@ void CompGenePred::start(){
 
     bool printCodons;
     try {
-      printCodons =  Properties::getBoolProperty("/CompPred/printOrthoExonAli");
+      printCodons =  Properties::getBoolProperty("/CompPred/printOEcodonAli");
     } catch(...){
       printCodons = 0;
     }
@@ -348,6 +350,17 @@ void CompGenePred::start(){
     if(printCodons){
       codonAli.open(outdir + "orthoexons_codonAlignment.maf");
     }
+
+    try {
+      string bb (Properties::getProperty("/CompPred/binning_boundaries"));
+      istringstream ss(bb);
+      string b;
+      while (getline(ss, b, ',')){
+	cout << "quantile: " << b << endl;
+	Constant::binQuantiles.push_back(stod(b));
+      }
+    }catch (...){}
+
 
     BaseCount::init();
     PP::initConstants();
@@ -603,7 +616,7 @@ void CompGenePred::start(){
   
     if(Properties::hasProperty("referenceFile")){
       // initialise training of log reg parameters
-      train_OEscore_params(speciesNames.size());
+      LogReg::train_OEscore_params(speciesNames.size());
     }
   } 
 }

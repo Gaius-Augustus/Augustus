@@ -249,8 +249,8 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
 		(*node)->resizeTable(states,1);  // in the case of unknown characters, we sum over all possibilities
 	    }
 	    else{
-		(*node)->resizeTable(states,0);
-		(*node)->setTable(c,1); 
+	      (*node)->resizeTable(states,0);
+	      (*node)->setTable(c,1); 
 	    }
 	}
 	else{

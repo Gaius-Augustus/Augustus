@@ -322,6 +322,7 @@ MemSeqAccess::MemSeqAccess(vector<string> s){
     }
 }
 
+
 AnnoSequence* MemSeqAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
     AnnoSequence *annoseq = NULL;
     string key = speciesname + "." + chrName;

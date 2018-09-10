@@ -12,13 +12,14 @@
 
 #include "orthoexon.hh"
 #include "graph.hh"
+#include "train_logReg_param.hh"
 
 #include <fstream>
 #include <iostream>
 
 const char* phyleticPatternIdentifiers[6]={"0", "1", "-", "_", "g", "l"};
 
-OrthoExon::OrthoExon(int_fast64_t k, size_t n) : key(k), omega(-1.0), Eomega(-1.0), VarOmega(-1.0), leftBoundaryExtOmega(-1.0), rightBoundaryExtOmega(-1.0), leftBoundaryIntOmega(-1.0), rightBoundaryIntOmega(-1.0), intervalCount(0), subst(-1), cons(-1.0), diversity(-1.0) {
+OrthoExon::OrthoExon(int_fast64_t k, size_t n) : oeTraits(n), key(k), intervalCount(0) {
     orthoex.resize(n);
     orthonode.resize(n);
     weights.resize(n,0);
@@ -118,7 +119,7 @@ void OrthoExon::setPhyleticPattern(map<int, list<int> > &pp_init, map<int, list<
 
 void OrthoExon::setTree(PhyloTree* t) {
     tree = t;
-    setDiversity(tree->getDiversity());
+    oeTraits.setDiversity(tree->getDiversity());
 }
 
  
@@ -161,7 +162,7 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 	if(k == 0){ // no likelihood was calculated
 	  currOmega = -1;
 	  currVarOmega = -1;
-	  omega = -1;
+	  oeTraits.setMLomega(-1);
 	  storeOmega(currOmega, currVarOmega);
 	  //cerr<<"ortho exon "<<this->ID<<" has no omega"<<endl;
 	  return;
@@ -188,17 +189,30 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 	  //	  cout << codonevo->getOmega(u) << "\t" << postprobs[u] <<"\t"<<codonevo->getPrior(u)<< endl;
 	  postprobs[u] /= sum;
 	}
-	currOmega = 0;
 
-        //cout<<"---------------------------------------------------------------------------"<<endl;
-	//cout<<"wi\t\tloglikOmegas\tmaxloglik\tpostprobs/sum\tprior\tsum\texp(loglik - maxloglik)"<<endl;
- 
+	// calculate posterior probability for being a coding exon and store in OE
+	if(Constant::useNonCodingModel && intervalCount == 2){
+	  double r = Constant::priorCodingExon;
+	  oeTraits.setCodingPostProb(1 - ( exp(loglikOmegas[k-1] - maxloglik) * (1-r) / (r * sum + (1-r) * exp(loglikOmegas[k-1] - maxloglik)) ));
+	}
+
+	currOmega = 0;
+	/*
+        cout<<"---------------------------------------------------------------------------"<<endl;
+	cout << "ID: " << ID << " Interval: " << intervalCount << " species_BV: ";
+	for(int i=0; i<bv.size(); i++)
+	  cout << bv[i] << "|";
+	cout << " numSubst: " << subst << " contain: " << containment << endl; 
+	cout<<"wi\t\tloglikOmegas\tlikOmegas\tmaxloglik\tpostprobs/sum\tprior\tsum\texp(loglik - maxloglik)"<<endl;
+	*/
+
         for (int u=0; u < k; u++){
 	  currOmega += postprobs[u] * codonevo->getOmega(u);
-	  //cout<<codonevo->getOmega(u)<<"\t\t"<<loglikOmegas[u]<<"\t\t"<<maxloglik<<"\t\t"<<postprobs[u]<<"\t\t"<<codonevo->getPrior(u)<<"\t\t"<<sum<<"\t\t"<<exp(loglikOmegas[u] - maxloglik)<<endl;                                                     
+	  //cout<<codonevo->getOmega(u)<<"\t\t"<<loglikOmegas[u]<<"\t\t"<<exp(loglikOmegas[u])<<"\t\t"<<maxloglik<<"\t\t"<<postprobs[u]<<"\t\t"<<codonevo->getPrior(u)<<"\t\t"<<sum<<"\t\t"<<exp(loglikOmegas[u] - maxloglik)<<endl;                                                     
         }
-
-
+	
+	//cout << "codingPostProb = " << codingPostProb << endl;
+	
 	//cout<<"curOmega: "<<currOmega<<endl;
 	//cout<<"set Omega at oeEnd: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\t(omega, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<" Eomega: "<<currOmega<<endl;
 	double omega_maxML = 0;
@@ -211,7 +225,7 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 	}
 	//cout<<"curVarOmega: "<<currVarOmega<<endl;
 	if(omega_maxML > 0)
-	  omega = omega_maxML;
+	  oeTraits.setMLomega(omega_maxML);
 
 	storeOmega(currOmega, currVarOmega);
 	loglikOmegas.clear();
@@ -221,15 +235,16 @@ void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart)
 void OrthoExon::storeOmega(double currOmega, double currVarOmega){
   
   switch(intervalCount){
-  case 0: leftBoundaryExtOmega = currOmega;
+  case 0: oeTraits.setLeftExtOmega(currOmega);
     break;
-  case 1: leftBoundaryIntOmega = currOmega;
+  case 1: oeTraits.setLeftIntOmega(currOmega);
     break;
-  case 2: Eomega = currOmega; VarOmega = currVarOmega;
+  case 2: oeTraits.setOmega(currOmega);
+    oeTraits.setVarOmega(currVarOmega);
     break;
-  case 3:rightBoundaryIntOmega = currOmega;
+  case 3: oeTraits.setRightIntOmega(currOmega);
     break;
-  case 4: rightBoundaryExtOmega = currOmega;
+  case 4: oeTraits.setRightExtOmega(currOmega);
     break;
   default: throw ProjectError("Error in setOmega(): too many intervals were calculated.");
     break;
@@ -238,9 +253,10 @@ void OrthoExon::storeOmega(double currOmega, double currVarOmega){
 }
 
 void OrthoExon::setSubst(int subs, bool oeStart){
+  int subst = oeTraits.getSubst();
   if(oeStart){
     if(intervalCount == 1)
-	subst = subs;
+      subst = subs;
   }else{
     if(subs != -1 && intervalCount == 3){
       if(subst >= 0)
@@ -253,11 +269,20 @@ void OrthoExon::setSubst(int subs, bool oeStart){
 	throw ProjectError("Error in setSubs(): numSubs was defined at OE start but is not at OE end!");
     }
   }
+  oeTraits.setSubst(subst);
 }
 
 
 double OrthoExon::getLogRegScore(){
-    
+ 
+  Traits* t = &oeTraits;
+  double score = Properties::calculate_OE_feature_score(t);
+  // undo malus for not being a HECT
+  auto fg = Properties::findFeatureGroup(5);
+  if(fg != NULL)
+    score -= fg->weight;
+
+  /* former calculation
   // pre-definitions for the boundary feature
   double b_l;
   double b_r;
@@ -269,18 +294,27 @@ double OrthoExon::getLogRegScore(){
     b_r = 0;
   }
 
-  return (    Constant::ex_sc[6]  * Eomega * hasOmega()
-	    + Constant::ex_sc[7]  * VarOmega * hasVarOmega()
-	    + Constant::ex_sc[8]  * cons * hasConservation()
-	    + Constant::ex_sc[9]  * containment * hasContainment()
-            + Constant::ex_sc[10] * diversity * hasDiversity()
-	    + Constant::ex_sc[11] * numExons()
-	    + Constant::ex_sc[15] * numExons() / orthoex.size()
-	    + Constant::ex_sc[13] * cons * diversity * hasConservation() * hasDiversity() 
-	    + Constant::ex_sc[14] * Eomega * hasOmega() * diversity * hasDiversity()
-	    - Constant::ex_sc[1]  * hasOmega()
-	    + Constant::ex_sc[16] * ( b_l * exp(Constant::lambda*b_l) + b_r * exp(Constant::lambda*b_r) ) / ( exp(Constant::lambda*b_l) + exp(Constant::lambda*b_r) )
-	    - Constant::ex_sc[2] ); // for being a HECT
+  double score 
+    = Constant::ex_sc[6]  * Eomega * hasOmega()
+    + Constant::ex_sc[7]  * VarOmega * hasVarOmega()
+    + Constant::ex_sc[8]  * cons * hasConservation()
+    + Constant::ex_sc[9]  * containment * hasContainment()
+    + Constant::ex_sc[10] * diversity * hasDiversity()
+    + Constant::ex_sc[11] * numExons()
+    + Constant::ex_sc[15] * numExons() / orthoex.size()
+    + Constant::ex_sc[13] * cons * diversity * hasConservation() * hasDiversity() 
+    + Constant::ex_sc[14] * Eomega * hasOmega() * diversity * hasDiversity()
+    - Constant::ex_sc[1]  * hasOmega()
+    + Constant::ex_sc[16] * ( b_l * exp(Constant::lambda*b_l) + b_r * exp(Constant::lambda*b_r) ) / ( exp(Constant::lambda*b_l) + exp(Constant::lambda*b_r) )
+    + Constant::ex_sc[17] * (codingPostProb > 0 && codingPostProb < 1 )? (-log(1/codingPostProb -1)) : ((codingPostProb == 0)? -50 : 50)
+    - Constant::ex_sc[2]; // for being a HECT
+  
+  for(int i=18; i<Constant::ex_sc.size(); i++){
+    if(hasCodingPostProb())
+      score += Constant::ex_sc[i] * LogReg::get_binning_feature(i-18, codingPostProb);
+  }
+  */
+  return score;
 
   /*
     if (string("fly") == Properties::getProperty("species")){

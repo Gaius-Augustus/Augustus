@@ -27,29 +27,11 @@ class Node;
 class OrthoExon {
 public:
     OrthoExon(int_fast64_t k, size_t numSpecies);
-    ~OrthoExon() {};
+  ~OrthoExon() {};
 
     // get and and set functions
     StateType getStateType() const; // all exon candidates agree in type
     int numExons() const;
-    double getOmega() const { return omega; }
-    double getEomega() const { return Eomega; }
-    double getVarOmega() const { return VarOmega; }
-    double getLeftExtOmega() const { return leftBoundaryExtOmega;}
-    double getRightExtOmega() const { return rightBoundaryExtOmega;}
-    double getLeftIntOmega() const { return leftBoundaryIntOmega;}
-    double getRightIntOmega() const { return rightBoundaryIntOmega;}   
-    double getSubst() const { return subst; }
-    double getConsScore() const {return cons;}
-    double getLeftConsScore() const {return leftCons;}
-    double getRightConsScore() const {return rightCons;}
-    double getDiversity() const {return diversity;}
-    size_t getContainment() const {return containment;}
-    bool hasOmega() const {return Eomega >= 0;}
-    bool hasVarOmega() const {return VarOmega >= 0;}
-    bool hasConservation() const {return cons >= 0;}
-    bool hasContainment() const {return containment >= 0;}
-    bool hasDiversity() const {return diversity >= 0;}
     bit_vector getBV() const {return bv;}
     vector<int> getRFC(vector<int> offsets) const;
     PhyloTree* getTree() const {return tree;}
@@ -63,16 +45,11 @@ public:
     bool isAbsent(int i) const {return labels[i] == 2;}    // true, if species i is aligned, but ECs is absent
     void setPresent(bit_vector v);
     void setAbsent(bit_vector v);
-    void setOmega(double o){omega=o;}
+    
     void setOmega(vector<double>* llo, CodonEvo* codonevo, bool oeStart);
     void storeOmega(double currOmega, double currVarOmega);
-    void setSubst(int s){ subst=s;}
     void setSubst(int subs, bool oeStart);
-    void setConsScore(double c){cons=c;}
-    void setLeftConsScore(double c){leftCons=c;}
-    void setRightConsScore(double c){rightCons=c;}
-    void setDiversity(double d){diversity=d;}
-    void setContainment(int c) { containment = c; }
+      
     void setTree(PhyloTree* t);
     void setBV(bit_vector b){bv = b;}
     string getPhyleticPattern() const; // phyletic pattern: for an explanation, see .cc file
@@ -94,25 +71,12 @@ public:
     int ID;
     vector<int> firstAlignedPos;
     vector<int> lastAlignedPos;
-    
+    OEtraits oeTraits;
 private:
     int_fast64_t key; // key encodes all of: aliStart aliEnd type lenMod3
-    double omega;
-    double Eomega;
-    double VarOmega;
-    double leftBoundaryExtOmega;
-    double rightBoundaryExtOmega;
-    double leftBoundaryIntOmega;
-    double rightBoundaryIntOmega;
-    list<vector<double> > loglikOmegaStarts;
-    int intervalCount;
-    int subst;
-    double cons; // conservation score
-    double leftCons; // conservation score of left boundary feature
-    double rightCons; // conservation score of right boundary feature
-    double diversity; // sum of branch lengths of the subtree induced by the OrthoExon (measure of phylogenetic diversity)
-    size_t containment; // how many bases overhang on average has the largest OrthoExon that includes this one in the same frame
-    bit_vector bv; //  stores in one bit for each species its absence/presence (0/1)
+  list<vector<double> > loglikOmegaStarts;
+  int intervalCount;   
+  bit_vector bv; //  stores in one bit for each species its absence/presence (0/1)
     PhyloTree *tree; // corresponding tree topology of an OE
 };
 

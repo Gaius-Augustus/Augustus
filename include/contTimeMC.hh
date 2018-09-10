@@ -179,7 +179,7 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
 			       double kappa, // transition/transversion ratio, usually >1
 			       vector<vector<double> > *aaPostProb = NULL); // posterior probs for AA substitutions
 
-gsl_matrix *getNonCodingRateMatrix(vector<double> *pi_nuc, double kappa); // rate matrix for non-coding model
+gsl_matrix *getNonCodingRateMatrix(double *pi_nuc, double kappa); // rate matrix for non-coding model
 
 /*
  * perform a decompososition of the rate matrix as Q = U * diag(lambda) * U^{-1}
@@ -217,11 +217,16 @@ public:
 	setAliErr();
 	// mu, lambda and ali_error have to be set before calculating equilibrium frequencies Pi
 	setPi();
+	isAllocated=false;
     };
     ~ExonEvo(){
+      cout << "ExonEvo destructor" << endl;
+      if(isAllocated){
+	cout << "gsl_matrix_free" << endl;
 	gsl_matrix_free(U);
 	gsl_matrix_free(Uinv);
 	gsl_vector_free(l);
+	}
     }
     void setPi();
     void setMu();
@@ -242,7 +247,7 @@ private:
     double mu;            // rate for exon loss
     double lambda;        // rate for exon gain
     double ali_error;     // rate for alignment error
-
+    bool isAllocated;
     // eigen decomposition of exon rate matrix Q = U * diag(l_1,...,l_n) * Uinv
     gsl_matrix *U;
     gsl_matrix *Uinv;

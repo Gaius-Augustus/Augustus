@@ -47,6 +47,9 @@ using namespace std;
 enum Strand {STRAND_UNKNOWN=-1, plusstrand, minusstrand, bothstrands};
 char strandChar (Strand s);
 ostream& operator<< (ostream& strm, const Strand s);
+class LRfeatureGroup;
+class Traits;
+class OEtraits;
 
 /**
  * ASS       = acceptor splice site, between intron and exon
@@ -387,8 +390,11 @@ public:
     static bool rLogReg;
     static double label_flip_prob;
     static double lambda;
+    static double alpha;
+    static double priorCodingExon;
+    static double mutationRate;
     #ifdef COMPGENEPRED
-    static unordered_map<string, pair<int, vector<double> > > logReg_feature;
+    static unordered_map<string, OEtraits> logReg_samples;
     #endif
     static vector<double> ex_sc;
     static vector<double> in_sc;
@@ -397,7 +403,11 @@ public:
     static bool computeNumSubs;
     static bool useAArates;
     static bool useNonCodingModel;
+    static vector<double> binQuantiles;
+    static vector<LRfeatureGroup*> lr_features;
     static bool rescaleBoni;
+    static string cgpConfigFile; // config file with features listed for exon and intron scores
+    static string cgpParsFile; // weight parameters for exon and intron feature scores
 };
 
 
@@ -872,6 +882,176 @@ int quantile(const vector<int> &v, float q);
  * rather than a logarithmic tree data structure
  */
 map<string, size_t> *getMap (vector<string> names);
+
+
+
+class LRfeatureGroup  {
+public:
+  LRfeatureGroup(int number, string name, bool std, int nb);
+    
+  int id;                  // unique feature id
+  string descript;         // plain-test description 
+  bool if_std;             // does this feature need to be standardized?
+  int num_bins;            // number of bins
+  int num_features;            // number of features        
+  double weight;
+  void setWeight(double w){weight = w;}
+  virtual void print();
+  virtual void print(ofstream *file);
+};
+
+class LRbinnedFeatureGroup : public LRfeatureGroup {
+public:
+  LRbinnedFeatureGroup(int number, string name, bool std, int nb) : LRfeatureGroup(number,name,std,nb), bb(nb-1,0), weights(nb-1,0){
+    num_features = nb-1;
+  };
+  vector<double> bb;       // binning boundaries
+  vector<double> weights;  // weights for each bin
+  void print();
+  void print(ofstream *file);
+};
+
+
+class Traits {
+
+public:
+  Traits(int l) : length(l), postprob(0), mbp(0), isoe(false){} // single species EC
+  Traits(int l, double pp, double m) : length(l), postprob(pp), mbp(m), isoe(false){} // single species sampled EC
+  void print();
+  
+  int getLength() const {return length;}
+  double getPostProb() const {return postprob;}
+  double getMeanBaseProb() const {return mbp;}
+  bool hasPostProb() const { return postprob>0; }
+  bool hasMeanBaseProb() const { return mbp>0; }
+  bool isSampled() { return hasPostProb(); }
+  bool isOE() { return isoe;}
+
+protected:
+  int length;
+  double postprob;
+  double mbp;
+  bool isoe;
+};
+
+
+// for training OEtraits represents all properties a reference exon can have including all members of Traits
+
+class OEtraits : public Traits {
+
+public:
+  OEtraits(int ne) : Traits(0), numExons(ne){ // OE traits
+    omega 
+      = varOmega 
+      = leftBoundaryExtOmega 
+      = rightBoundaryExtOmega 
+      = leftBoundaryIntOmega 
+      = rightBoundaryIntOmega 
+      = subst
+      = codingPostProb
+      = cons
+      = leftCons
+      = rightCons
+      = diversity
+      = -1;
+    isoe = true;
+  }
+
+  OEtraits(int ne, int l, double pp, double m) : Traits(l, pp, m), numExons(ne){ // OE traits of a reference exon
+    omega
+      = varOmega
+      = leftBoundaryExtOmega
+      = rightBoundaryExtOmega
+      = leftBoundaryIntOmega
+      = rightBoundaryIntOmega
+      = subst
+      = codingPostProb
+      = cons
+      = leftCons
+      = rightCons
+      = diversity
+      = -1;
+    isoe = false;
+  }
+
+
+  void setSingleTraits(Traits* t){
+    length = t->getLength();
+    postprob = t->getPostProb();
+    mbp = t->getMeanBaseProb();
+    isoe = true;
+  }
+  int getLength() const {return length;}
+  int getNumExons() const {return numExons;}
+  int getSubst() const { return subst; }
+  double getPostProb() const {return postprob;}
+  double getMeanBaseProb() const {return mbp;}
+  double getOmega() const { return omega; }
+  double getMLomega() const { return mlOmega; } 
+  double getVarOmega() const { return varOmega; }
+  double getLeftExtOmega() const { return leftBoundaryExtOmega;}
+  double getRightExtOmega() const { return rightBoundaryExtOmega;}
+  double getLeftIntOmega() const { return leftBoundaryIntOmega;}
+  double getRightIntOmega() const { return rightBoundaryIntOmega;}   
+  double getConsScore() const {return cons;}
+  double getLeftConsScore() const {return leftCons;}
+  double getRightConsScore() const {return rightCons;}
+  double getDiversity() const {return diversity;}
+  double getCodingPostProb() const {return codingPostProb;}
+  size_t getContainment() const {return containment;}
+  bool hasPostProb() const { return postprob>0; }
+  bool hasMeanBaseProb() const { return mbp>0; }
+  bool hasOmega() const {return omega >= 0;}
+  bool hasBoundaryOmegas() const { return (leftBoundaryExtOmega>0 && rightBoundaryExtOmega>0 && leftBoundaryIntOmega>0 && rightBoundaryIntOmega>0); }
+  bool hasVarOmega() const {return varOmega >= 0;}
+  bool hasCodingPostProb() const {return codingPostProb > 0;}
+  bool hasConservation() const {return cons >= 0;}
+  bool hasContainment() const {return containment >= 0;}
+  bool hasDiversity() const {return diversity >= 0;}
+  void setLength(int l){length=l;}
+  void setNumExons(int n){numExons=n;}
+  void setPostProb(double p){postprob=p;}
+  void setMBP(double p){mbp=p;}
+  void setOmega(double o){omega=o;}
+  void setMLomega(double o){mlOmega=o;}
+  void setVarOmega(double vo){varOmega = vo;}
+  void setSubst(int s){ subst=s;}
+  void setConsScore(double c){cons=c;}
+  void setLeftConsScore(double c){leftCons=c;}
+  void setRightConsScore(double c){rightCons=c;}
+  void setDiversity(double d){diversity=d;}
+  void setContainment(int c) { containment = c; }
+  void setCodingPostProb(double c) {codingPostProb = c;}
+  void setLeftExtOmega(double o) { leftBoundaryExtOmega = o;}
+  void setRightExtOmega(double o) { rightBoundaryExtOmega = o;}
+  void setLeftIntOmega(double o) { leftBoundaryIntOmega = o;}
+  void setRightIntOmega(double o) { rightBoundaryIntOmega = o;}   
+  void setIsOE(bool oe){isoe=oe;}  
+
+  bool isSampled() { return hasPostProb(); }
+  bool isOE() { return numExons > 1; };
+
+  void print();
+
+private:
+  int numExons;
+  double mlOmega;
+  double omega;
+  double varOmega;
+  double leftBoundaryExtOmega;
+  double rightBoundaryExtOmega;
+  double leftBoundaryIntOmega;
+  double rightBoundaryIntOmega;
+  int subst;
+  double codingPostProb; // posterior probability of being coding
+  double cons; // conservation score
+  double leftCons; // conservation score of left boundary feature
+  double rightCons; // conservation score of right boundary feature
+  double diversity; // sum of branch lengths of the subtree induced by the OrthoExon (measure of phylogenetic diversity)
+  size_t containment; // how many bases overhang on average has the largest OrthoExon that includes this one in the same frame
+  
+};
+
 
 /*
  * functions used in earlier versions

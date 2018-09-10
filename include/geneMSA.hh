@@ -95,7 +95,7 @@ public:
     void printGeneRanges();
     void printExonCands();
     void printOrthoExons(list<OrthoExon> &orthoExonsList);
-    void computeOmegas(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
+  //void computeOmegas(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
     void computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli);
     vector<string> pruneToBV(vector<string> *cs, bit_vector bv); // prune codon strings to bit_vector
     vector<int> pruneToBV(vector<int> *rfc, bit_vector bv); // prune RFC to bit_vector

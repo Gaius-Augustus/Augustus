@@ -167,6 +167,10 @@ Node* SpeciesGraph::addNode(Status *exon){
       score = setScore(exon);
     }
     else{
+      Traits t(exon->getLen(), exon->getPostProb(), getAvgBaseProb(exon));
+      score = ec_thold + Properties::calculate_single_feature_score(&t);
+
+      /*
 	score = ec_thold 
 	+ Constant::ex_sc[0]  // intercept
 	+ Constant::ex_sc[1]  // for not having Omega
@@ -174,6 +178,7 @@ Node* SpeciesGraph::addNode(Status *exon){
 	+ Constant::ex_sc[3] * log(exon->getLen())
 	+ Constant::ex_sc[4] * exon->getPostProb()
 	+ Constant::ex_sc[5] * getAvgBaseProb(exon);
+      */
     }
     if (exon->hasEvidence("M"))
 	score += maxCostOfExonLoss;
@@ -231,12 +236,17 @@ Node* SpeciesGraph::addNode(ExonCandidate *exon){
   if(!Constant::logreg){
     score = ec_score;
   }else{
+    Traits t(exon->len());
+    score = ec_thold + Properties::calculate_single_feature_score(&t);
+    
+    /*
     score = ec_thold
       + Constant::ex_sc[0] // intercept
       + Constant::ex_sc[1] // for not having omega 
       + Constant::ex_sc[2] // for not beeing an OE
       + Constant::ex_sc[3] * log(exon->len())
       + Constant::ex_sc[12]; // for not beeing sampled
+    */  
   }
   
   /*
@@ -397,12 +407,10 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
 	if(intr->name == intron){ // only CDS introns have a posterior probability                    
 	    if(!Constant::logreg)
 		intr_score = setScore(intr);
-	    else
-		intr_score = ic_thold
-		    + Constant::in_sc[0] // intercept
-		    + Constant::in_sc[1] * intr->getPostProb()
-		    + Constant::in_sc[2] * getAvgBaseProb(intr)
-		    + Constant::in_sc[3] * log(intr->getLen());
+	    else{
+	      Traits t(intr->getLen(), intr->getPostProb(), getAvgBaseProb(intr));
+	      intr_score = ic_thold + Properties::calculate_intron_feature_score(&t);
+	    }
 	  
 	    /*
 
@@ -430,7 +438,7 @@ void SpeciesGraph::addIntron(Node* pred, Node* succ, Status *intr){
 
 	  */
 	    
-	}
+ 	}
 	if (intr->hasEvidence("M"))
 	    intr_score += maxCostOfExonLoss;
 
@@ -511,20 +519,17 @@ void SpeciesGraph::printSampledGF(Status *st, double score){
       
       string k = key.str();
       //      cout << "sampled_GFs: " << k << endl;
-      unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(k);
-      if ( got == Constant::logReg_feature.end() ){
-	vector<double> feature(14,0);
-	feature[0] = st->end - st->begin + 1; // exon length
-	feature[1] = st->getPostProb();       // posterior probability
-	feature[2] = getAvgBaseProb(st);      // average base score
-	pair<int, vector<double> > p;
-	p = make_pair(-1, feature);
-	pair<string, pair<int, vector<double> > > entry;
-	entry = make_pair(k, p);
-	Constant::logReg_feature.insert(entry);
+      auto got = Constant::logReg_samples.find(k);
+      if ( got == Constant::logReg_samples.end() ){
+	OEtraits t(-1, st->end - st->begin + 1, st->getPostProb(), getAvgBaseProb(st));
+	//fature[0] = st->end - st->begin + 1; // exon length
+	//feature[1] = st->getPostProb();       // posterior probability
+	//feature[2] = getAvgBaseProb(st);      // average base score
+	pair<string, OEtraits> entry (k, t);
+	Constant::logReg_samples.insert(entry);
       }else{
-	got->second.second[1] = st->getPostProb();  // posterior probability
-	got->second.second[2] = getAvgBaseProb(st); // average base score
+	got->second.setPostProb(st->getPostProb());  // posterior probability
+	got->second.setMBP(getAvgBaseProb(st)); // average base score
       }
     }
 

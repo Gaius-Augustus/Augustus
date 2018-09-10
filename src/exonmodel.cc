@@ -821,6 +821,7 @@ double *ExonModel::getCodonUsage(){
     double *pi = new double[64];
     for (int c=0; c<64; c++){
       pi[c] = 0;
+      //pi[c] = (double)1/64;
     }
     
     if (!GCemiprobs)
@@ -845,6 +846,38 @@ double *ExonModel::getCodonUsage(){
     
     return pi;
 }
+
+double *ExonModel::getNucleotideUsage(){
+    int numCodons = 20000; // number of sampled nucleotides
+    double *pi = new double[4];
+    for (int c=0; c<4; c++){
+      pi[c] = 0;
+      //  pi[c] = (double)1/4;
+    }
+    
+    if (!GCemiprobs)
+    	throw ProjectError("ExonModel::getCodonUsage emission probabilities not initialized?");
+    FramedPatMMGroup &e = GCemiprobs[Constant::decomp_num_steps/2]; // assume average GC content
+    char *sampledCDS = getSampledCDS(e.probs, e.order, numCodons);
+    //cout << "sampled cds " << sampledCDS << endl;
+    Seq2Int s2i(1);
+    for (int i=0; i<numCodons; i++)
+	pi[s2i(sampledCDS+e.order+i)] += 1;
+    delete [] sampledCDS;
+    // normalize pi
+    int s = 0;
+    for (int c=0; c<4; c++)
+	s += (int) pi[c]; // here, the elements of pi are still integers
+    
+    cout << "nucleotide usage: " << endl;
+    for (int c=0; c<4; c++){
+	pi[c] /= s;
+	cout << c << "\t" << s2i.inv(c) << "\t" << pi[c] << endl;
+    }
+    
+    return pi;
+}
+
 
 /*
  * ===[ ExonModel::fillTailsOfLengthDistributions]====================================

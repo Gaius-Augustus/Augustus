@@ -97,6 +97,7 @@ public:
     static void readProbabilities(int parIndex);
     static void readAllParameters();
     static double *getCodonUsage();
+    static double *getNucleotideUsage();
     static void resetModelCount(){exoncount = 0;};
     static int getMaxStateLen() { return Constant::max_exon_len + trans_init_window; }
     static void setORF() {
