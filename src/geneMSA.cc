@@ -189,9 +189,10 @@ map<string,ExonCandidate*>* GeneMSA::getECHash(list<ExonCandidate*> *ec) {
 // computes and sets the exon candidates for species s
 // and inserts them into the hash of ECs if they do not exist already
 void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, ExonCandidate*> &addECs){
-    double assmotifqthresh = 0.15;
-    double assqthresh = 0.3;
-    double dssqthresh = 0.7;
+  cout << "createexoncands" << endl;
+  double assmotifqthresh = 0; // 0.15;
+  double assqthresh = 0; // 0.3;
+  double dssqthresh = 0; // 0.7;
     bool onlySampledECs = false;
     int minEClen = 1;
     Properties::assignProperty("/CompPred/onlySampledECs", onlySampledECs);
@@ -302,7 +303,7 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 	    oe.ID = orthoExonID;
 	    oe.setBV(present);
 	    oe.setTree(t);	
-	    oe.setContainment(0);
+	    oe.oeTraits.setContainment(0);
 	    orthoExonID++;
 	    numOE++;
 	    orthoExonsList.push_back(oe);
@@ -366,8 +367,8 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 		if (contained) {
 		    // x contains y in above sense
 		    containment /= oeXit->numExons(); // average over species present in x
-		    if (oeXit->getContainment() < containment)
-			oeXit->setContainment(containment);
+		    if (oeXit->oeTraits.getContainment() < containment)
+			oeXit->oeTraits.setContainment(containment);
 		}
 	    }
 	    oeXit++;
@@ -437,6 +438,7 @@ void GeneMSA::openOutputFiles(string outdir){
 }
 
 void GeneMSA::printStats(){
+  cout << "in printStats" << endl;
     for(int s=0; s<numSpecies(); s++){
       cout << rsa->getSname(s) << "." << getSeqID(s) << "\t";
 	if (alignment->rows[s])
@@ -470,7 +472,7 @@ void GeneMSA::printExonCands() {
 
     if (!exoncands.empty()) {
         for (int s=0; s < numSpecies(); s++) {
-	    ofstream &fstrm = *exonCands_outfiles[s]; // write to 'exonCands.speciesname[i].gff3'
+	  ostream &fstrm = (exonCands_outfiles.empty())? cout : *exonCands_outfiles[s]; // write to 'exonCands.speciesname[i].gff3' or cout if no files are specified
 	    list<ExonCandidate*>* sec = exoncands[s];
             if (sec) {
                 fstrm << "# sequence:\t" << rsa->getSname(s) << "\t" << getStart(s) + 1 << "-" 
@@ -512,7 +514,7 @@ void GeneMSA::printOrthoExons(list<OrthoExon> &orthoExonsList) {
     if (orthoExonsList.empty())
 	return;
     for (list<OrthoExon>::iterator oeit = orthoExonsList.begin(); oeit != orthoExonsList.end(); ++oeit){
-        printSingleOrthoExon(*oeit, true);
+        printSingleOrthoExon(*oeit, false);
     }
 }
 
@@ -544,82 +546,90 @@ void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
 		cout << "|" << oe.numExons();
 	    else 
 		cout << ";n=" << oe.numExons();
-	    if (oe.getOmega() >= 0.0){
+	    if (oe.oeTraits.getOmega() >= 0.0){
 		if (GBrowseStyle)
-		    cout << "|" << oe.getOmega();
+		    cout << "|" << oe.oeTraits.getOmega();
 		else 
-		    cout << ";MLomega=" << oe.getOmega();
+		    cout << ";MLomega=" << oe.oeTraits.getOmega();
 	    }
-	    if (oe.getEomega() >= 0.0){
+	    if (oe.oeTraits.hasOmega()){
 		if (GBrowseStyle)
-		    cout << "|" << oe.getEomega();
+		    cout << "|" << oe.oeTraits.getOmega();
 		else
-		    cout << ";Eomega=" << oe.getEomega();
+		    cout << ";Eomega=" << oe.oeTraits.getOmega();
 	    }
-	    if (oe.getVarOmega() >= 0.0){
-		if (GBrowseStyle)
-		    cout << "|" << oe.getVarOmega();
-		else
-		    cout << ";VarOmega=" << oe.getVarOmega();
-	    }
-	    if (oe.getLeftExtOmega() >= 0.0){
+	    if (oe.oeTraits.getVarOmega() >= 0.0){
+	      if(oe.oeTraits.getVarOmega() < numeric_limits<double>::min())
+		oe.oeTraits.setVarOmega(0);
 	      if (GBrowseStyle)
-		cout << "|" << oe.getLeftExtOmega();
+		cout << "|" << oe.oeTraits.getVarOmega();
 	      else
-		cout << ";leftBoundaryExtOmega=" << oe.getLeftExtOmega();
+		cout << ";VarOmega=" << oe.oeTraits.getVarOmega();
+	    }
+	    if (oe.oeTraits.getLeftExtOmega() >= 0.0){
+	      if (GBrowseStyle)
+		cout << "|" << oe.oeTraits.getLeftExtOmega();
+	      else
+		cout << ";leftBoundaryExtOmega=" << oe.oeTraits.getLeftExtOmega();
             }
-	    if (oe.getRightExtOmega() >= 0.0){
+	    if (oe.oeTraits.getRightExtOmega() >= 0.0){
               if (GBrowseStyle)
-                cout << "|" << oe.getRightExtOmega();
+                cout << "|" << oe.oeTraits.getRightExtOmega();
               else
-                cout << ";rightBoundaryExtOmega=" << oe.getRightExtOmega();
+                cout << ";rightBoundaryExtOmega=" << oe.oeTraits.getRightExtOmega();
             }
-	    if (oe.getLeftIntOmega() >= 0.0){
+	    if (oe.oeTraits.getLeftIntOmega() >= 0.0){
               if (GBrowseStyle)
-                cout << "|" << oe.getLeftIntOmega();
+                cout << "|" << oe.oeTraits.getLeftIntOmega();
               else
-                cout << ";leftBoundaryIntOmega=" << oe.getLeftIntOmega();
+                cout << ";leftBoundaryIntOmega=" << oe.oeTraits.getLeftIntOmega();
             }
-            if (oe.getRightIntOmega() >= 0.0){
+            if (oe.oeTraits.getRightIntOmega() >= 0.0){
               if (GBrowseStyle)
-                cout << "|" << oe.getRightIntOmega();
+                cout << "|" << oe.oeTraits.getRightIntOmega();
               else
-                cout << ";rightBoundaryIntOmega=" << oe.getRightIntOmega();
+                cout << ";rightBoundaryIntOmega=" << oe.oeTraits.getRightIntOmega();
             }
-	    if (oe.getSubst() >= 0){ // number of substitutions
+	    if (oe.oeTraits.getCodingPostProb() >= 0.0){
+              if (GBrowseStyle)
+                cout << "|" << oe.oeTraits.getCodingPostProb();
+              else
+                cout << ";codingPostProb=" << oe.oeTraits.getCodingPostProb();
+            }
+	    if (oe.oeTraits.getSubst() >= 0){ // number of substitutions
 		if (GBrowseStyle)
-		    cout << "|" << oe.getSubst();
+		    cout << "|" << oe.oeTraits.getSubst();
 		else
-		    cout << ";subst=" << oe.getSubst();
+		    cout << ";subst=" << oe.oeTraits.getSubst();
 	    }
-	    if (oe.getConsScore() >= 0.0){ // conservation score
+	    if (oe.oeTraits.getConsScore() >= 0.0){ // conservation score
 		if (GBrowseStyle)
-		    cout << "|" << oe.getConsScore();
+		    cout << "|" << oe.oeTraits.getConsScore();
 		else
-		    cout << ";cons=" << oe.getConsScore();
+		    cout << ";cons=" << oe.oeTraits.getConsScore();
 	    }
-	    if (oe.getLeftConsScore() >= 0.0){ // conservation score of left boundary feature
+	    if (oe.oeTraits.getLeftConsScore() >= 0.0){ // conservation score of left boundary feature
 		if (GBrowseStyle)
-		    cout << "|" << oe.getLeftConsScore();
+		    cout << "|" << oe.oeTraits.getLeftConsScore();
 		else
-		    cout << ";LeftCons=" << oe.getLeftConsScore();
+		    cout << ";LeftCons=" << oe.oeTraits.getLeftConsScore();
 	    }
-	    if (oe.getRightConsScore() >= 0.0){ // conservation score of right boundary feature
+	    if (oe.oeTraits.getRightConsScore() >= 0.0){ // conservation score of right boundary feature
 		if (GBrowseStyle)
-		    cout << "|" << oe.getRightConsScore();
+		    cout << "|" << oe.oeTraits.getRightConsScore();
 		else
-		    cout << ";rightCons=" << oe.getRightConsScore();
+		    cout << ";rightCons=" << oe.oeTraits.getRightConsScore();
 	    }
-	    if (oe.getDiversity() >= 0.0){ // diversity
+	    if (oe.oeTraits.getDiversity() >= 0.0){ // diversity
 		if (GBrowseStyle)
-		    cout << "|" << oe.getDiversity();
+		    cout << "|" << oe.oeTraits.getDiversity();
 		else
-		    cout << ";div=" << oe.getDiversity();
+		    cout << ";div=" << oe.oeTraits.getDiversity();
 	    }
 	    if (GBrowseStyle)
-		cout << "|" << oe.getContainment();
+		cout << "|" << oe.oeTraits.getContainment();
 	    else
-		cout << ";containment=" << oe.getContainment();
+		cout << ";containment=" << oe.oeTraits.getContainment();
 	    if (GBrowseStyle)
                 cout << "|" << oe.getPhyleticPattern();
 	    else
@@ -662,16 +672,11 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
       
       string k = key.str();
       //cout << "EC: " << k << endl;
-      unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(k);
-      if ( got == Constant::logReg_feature.end() ){
-	vector<double> feature(14,0);
-	feature[0] = (*ecit)->end - (*ecit)->begin + 1;   // exon length
-      
-	pair<int, vector<double> > p;
-	p = make_pair(-1, feature);
-	pair<string, pair<int, vector<double> > > entry;
-	entry = make_pair(k, p);
-	Constant::logReg_feature.insert(entry);
+      auto got = Constant::logReg_samples.find(k);
+      if ( got == Constant::logReg_samples.end() ){
+	OEtraits t(-1, (*ecit)->end - (*ecit)->begin + 1, -1, -1); // add only length so far
+      	pair<string, OEtraits > entry (k, t);
+	Constant::logReg_samples.insert(entry);
       }
     }
   }
@@ -688,12 +693,14 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
       key << "-";
     key << "\t" << ec->gff3Frame();
     //cout << "OE: " << key.str() << endl;
-    unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(key.str());
-    if ( got == Constant::logReg_feature.end() ){
+    auto got = Constant::logReg_samples.find(key.str());
+    if ( got == Constant::logReg_samples.end() ){
       throw ProjectError("ortho exon is not an exon candidate!");
     }else{
-      vector<double>* feature = &got->second.second;
-      if(oeit->getEomega()       > 0){ (*feature)[3] = oeit->getEomega(); }        // omega
+      oeit->oeTraits.setSingleTraits(&got->second);
+      got->second = oeit->oeTraits;
+
+      /*if(oeit->getEomega()       > 0){ (*feature)[3] = oeit->getEomega(); }        // omega
       if(oeit->getVarOmega()     > 0){ (*feature)[4] = oeit->getVarOmega(); }      // variance of omega
       if(oeit->getConsScore()    > 0){ (*feature)[5] = oeit->getConsScore(); }     // conservation
       if(oeit->getDiversity()    > 0){ (*feature)[6] = oeit->getDiversity(); }     // diversity
@@ -704,6 +711,8 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
       if(oeit->getLeftIntOmega() > 0){ (*feature)[11] = oeit->getLeftIntOmega();}  // LeftIntOmega
       if(oeit->getRightIntOmega()> 0){ (*feature)[12] = oeit->getRightIntOmega();} // RightIntOmega
       if(oeit->getRightExtOmega()> 0){ (*feature)[13] = oeit->getRightExtOmega();} // RightExtOmega
+      if(oeit->getCodingPostProb()> 0){ (*feature)[14] = oeit->getCodingPostProb();} // coding posterior probability 
+      */    
     }
   }
 }
@@ -812,7 +821,7 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 			  }
 			    acit->second[s] = chrCodon1;
 			}
-			if(firstCodonBaseOE >= firstCodonBase && lastCodonBaseOE <= lastCodonBase){
+			if(firstCodonBaseOE <= chrCodon1 && lastCodonBaseOE >= chrCodon1){
 			  oeit = codonAliOE.find(key);
 			  if(oeit == codonAliOE.end()){
 			    vector<int> cod(k, -1); // -1 missing codon
@@ -830,7 +839,7 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 	//cout<<endl;
 
     }
-    if(codonAli->is_open())
+    if(codonAli != NULL && codonAli->is_open())
       generateString = true;
  
     if(generateString){
@@ -886,7 +895,9 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
     return rowstrings;
 }
 
-
+/* deprecated - inefficient implementation 
+ * keep it only for debugging purposes
+ *
 // computes and sets the Omega = dN/dS attribute to all OrthoExons
 void GeneMSA::computeOmegas(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree) {
     // int subst = 0;
@@ -921,7 +932,7 @@ void GeneMSA::computeOmegas(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
 	oe->setOmega(omega);
     }
 }
-
+*/
 
 // data to store in the map aliPos. for positions in the alignment store start and end of orthoExons and bitvectors
 struct posElements{
@@ -1207,7 +1218,7 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	    unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> >::iterator coit;
 	    // process all ortho exons that start
 	    for(int i=0; i<aliPosIt->second.oeStart.size(); i++){
-	      //cout<<"##################ortho exon ("<<aliPosIt->second.oeStart[i]->ID<<") starts: "<<aliPosIt->second.oeStart[i]->getAliStart()<<":"<<aliPosIt->second.oeStart[i]->getAliEnd()<<endl;
+	      // cout<<"##################ortho exon ("<<aliPosIt->second.oeStart[i]->ID<<") starts: "<<aliPosIt->second.oeStart[i]->getAliStart()<<":"<<aliPosIt->second.oeStart[i]->getAliEnd()<<endl;
 
 	      if (false){
 	        cout<<"chromosomal position of each exon:"<<endl;
@@ -1314,6 +1325,7 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	      if(cv == NULL){
 		cerr<<"cum Values has NULL pointer"<<endl;
 	      }
+	      //cout << "RFC of exon " << aliPosIt->second.oeEnd[i]->ID << ": " << printRFC(const_cast<const OrthoExon*>(aliPosIt->second.oeEnd[i])->getRFC(offsets)) << endl;
 	      aliPosIt->second.oeEnd[i]->setOmega(&cv->logliks, codonevo, false);
 	      if(Constant::computeNumSubs){
 		//cout << "call setSubst() with cv " << cv->id << endl;
@@ -1436,7 +1448,7 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 	    // cerr<<"no Bitvector with given RFC found!"<<endl;
 	  }
 	}
-	//cout << "+++ process orthoExon that start or end after the end of the codon alignment!"<<endl;
+	cout << "+++ process orthoExon that start or end after the end of the codon alignment!"<<endl;
 	int lastPos = aliPosIt->first;
 	while(aliPosIt != aliPos.end()){ // process remaining orthoExon ends
 	  //if(aliPosIt->second.oeStart.size() > 0)
@@ -1582,7 +1594,7 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
 	    oeConsScore+=consScore[pos];
 	}
 	oeConsScore/=(oeAliEnd-oeAliStart+1); // average over all alignment columns within a HECT
-	oe->setConsScore(oeConsScore);
+	oe->oeTraits.setConsScore(oeConsScore);
 	// conservation score for left boundary feature
 	oeConsScore=0.0;
         int oeLeftBoundAliStart = max(oeAliStart - Constant::oeExtensionWidth, 0);
@@ -1593,7 +1605,7 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
 	  oeConsScore+=consScore[pos];
         }
         oeConsScore/=(oeLeftBoundAliEnd-oeLeftBoundAliStart+1); // average over all alignment columns within a HECT
-        oe->setLeftConsScore(oeConsScore);
+        oe->oeTraits.setLeftConsScore(oeConsScore);
 	// conservation score for right boundary feature
 	oeConsScore=0.0;
         int oeRightBoundAliStart = min(oeAliEnd + 1, alignment->aliLen);
@@ -1604,7 +1616,7 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
           oeConsScore+=consScore[pos];
         }
         oeConsScore/=(oeRightBoundAliEnd-oeRightBoundAliStart+1); // average over all alignment columns within a HECT                   
-        oe->setRightConsScore(oeConsScore);
+        oe->oeTraits.setRightConsScore(oeConsScore);
 
     }
     // output for each geneRange and each species a conservation track in wiggle format

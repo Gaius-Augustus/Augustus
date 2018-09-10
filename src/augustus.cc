@@ -121,6 +121,7 @@ int main( int argc, char* argv[] ){
 	if(Properties::hasProperty("trainFeatureFile"))
 	  Constant::MultSpeciesMode = true;
 
+
 	if (Constant::MultSpeciesMode){
 #ifdef COMPGENEPRED
 	    clock_t start;

@@ -19,23 +19,31 @@
 #include "properties.hh"
 #include "phylotree.hh"
 #include "contTimeMC.hh"
+#include "alignment.hh"
 
 class CodonMSA{
 public:
   CodonMSA(string filename, double branchlength);
   ~CodonMSA(){
     delete ctree;
+    for(auto it = speciesSeqs.begin(); it != speciesSeqs.end(); it++)
+      delete[] it->second;
   }
   
   void readAlignment(string filename);
+  void addAliRow(string speciesName, string rowseq, int &numSpeciesFound, map<string, size_t> *notExistingSpecies);
+  string removeGaps(string row);
   void printOmegaStats();
 
   vector<string> aliRows;
+  map<string, char*> speciesSeqs;
+  map<string, int> seqLengths;
   vector<string> speciesNames;
-  size_t aliLen;
+  Alignment *alignment;
   int refSpeciesIdx;
   CodonEvo codonevo;
   PhyloTree* ctree;
+  string seqname;
 };
 
 #endif

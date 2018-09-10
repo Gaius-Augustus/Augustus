@@ -1,3 +1,4 @@
+
 /**********************************************************************
  * file:    properties.cc
  * licence: Artistic Licence, see file LICENCE.TXT or
@@ -49,6 +50,8 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "canCauseAltSplice",
 "capthresh",
 "cds",
+CGP_CONFIG_KEY,
+CGP_PARS_KEY,
 "checkExAcc",
 "codingseq",
 "codonAlignmentFile",
@@ -75,6 +78,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/logreg",
 "/CompPred/maxCov",
 "/CompPred/omega",
+"/CompPred/num_bins",
 "/CompPred/num_omega",
 "/CompPred/num_features",
 "/CompPred/scale_codontree",
@@ -83,7 +87,7 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/only_species",
 "/CompPred/outdir_orthoexons",
 "/CompPred/outdir",
-"/CompPred/printOrthoExonAli",
+"/CompPred/printOEcodonAli",
 "/CompPred/printConservationWig",
 "/CompPred/phylo_factor",
 "/CompPred/phylo_model",
@@ -93,6 +97,9 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/dualdecomp",
 "/CompPred/overlapcomp",
 "/CompPred/lambda",
+"/CompPred/alpha",
+"/CompPred/configFile",
+"/CompPred/parsFile",
 "/Constant/almost_identical_maxdiff",
 "/Constant/amberprob",
 "/Constant/ass_end",
@@ -199,7 +206,7 @@ HINTSFILE_KEY,
 "maxDNAPieceSize",
 "maxOvlp",
 "maxtracks",
-"max_sgd_inter",
+"max_sgd_epoch",
 "mea",
 "mea_evaluation",
 "/MeaPrediction/no_compatible_edges",
@@ -228,6 +235,7 @@ HINTSFILE_KEY,
 "minexonintronprob",
 "min_intron_len",
 "minmeanexonintronprob",
+"mutationRate",
 "noInFrameStop",
 "noprediction",
 EXTERNAL_KEY, // optCfgFile
@@ -310,7 +318,7 @@ UTR_KEY,
 "/UtrModel/verbosity"};
 
 
-void Properties::readFile( string filename ) throw( PropertiesError ){
+void Properties::readFile( string filename, int fileTypeNr ) throw( PropertiesError ){
     ifstream strm;
     strm.open( filename.c_str() );
     if (!strm) {
@@ -331,8 +339,14 @@ void Properties::readFile( string filename ) throw( PropertiesError ){
 	    throw PropertiesError( "Properties::readFile: "
 				   "Could not open the this file!" );
     }
-    while( strm )
+    if(fileTypeNr == 0){
+      while( strm )
 	readLine( strm );
+    }else if(fileTypeNr == 1){
+      readCGPconfigFile(strm);
+    }else if(fileTypeNr == 2){
+      readCGPparsFile(strm);
+    }
     strm.close();
 }
 
@@ -374,7 +388,9 @@ void Properties::init( int argc, char* argv[] ){
 		name == DB_KEY ||
 		name == SEQ_KEY ||
 		name == CODONALN_KEY ||
-		name == REF_EXON_KEY)
+		name == REF_EXON_KEY ||
+		name == CGP_CONFIG_KEY ||
+		name == CGP_PARS_KEY)
 	    {
 		if (pos >= argstr.length()-1)
 		    throw ProjectError(string("Wrong argument format for ") +  name + ". Use: --argument=value");
@@ -387,12 +403,13 @@ void Properties::init( int argc, char* argv[] ){
 			       + "\nparameter names must start with '--'");
     }
 
-    // check whether multi-species mode is turned on
     Properties::assignProperty(TREE_KEY, Constant::treefile);
     Properties::assignProperty(SEQ_KEY, Constant::speciesfilenames);
     Properties::assignProperty(DB_KEY, Constant::dbaccess);
     Properties::assignProperty(ALN_KEY, Constant::alnfile);
     Properties::assignProperty(REF_EXON_KEY, Constant::referenceFile);
+    Properties::assignProperty(CGP_CONFIG_KEY, Constant::cgpConfigFile);
+    Properties::assignProperty(CGP_PARS_KEY, Constant::cgpParsFile);
     if(Constant::codonalnfile.empty()){
       if (!Constant::alnfile.empty() && !Constant::treefile.empty() && (!Constant::speciesfilenames.empty() || !Constant::dbaccess.empty())){
 	Constant::MultSpeciesMode = true;
@@ -424,7 +441,6 @@ void Properties::init( int argc, char* argv[] ){
 	throw ProjectError(configPath + " is not a directory. Could not locate directory " CFGPATH_KEY ".");
     properties[CFGPATH_KEY] = configPath;
 
-    // determine species
     string optCfgFile = "";
     if (hasProperty(EXTERNAL_KEY)) {
 	optCfgFile = expandHome(properties[EXTERNAL_KEY]);
@@ -436,10 +452,12 @@ void Properties::init( int argc, char* argv[] ){
 	try {
 	    readFile(optCfgFile);
 	} catch (PropertiesError e){
-	    throw ProjectError("Default configuration file with parameters from logistic regression " + optCfgFile + " not found!");
+	  //throw ProjectError("Default configuration file with parameters from logistic regression " + optCfgFile + " not found!");
 	}
     }
-
+  
+    
+    // determine species
     if (!hasProperty(SPECIES_KEY))
 	throw ProjectError("No species specified. Type \"augustus --species=help\" to see available species.");
     string& speciesValue = properties[SPECIES_KEY];
@@ -464,7 +482,34 @@ void Properties::init( int argc, char* argv[] ){
 	throw ProjectError("Species-specific configuration files not found in " + configPath + SPECIES_SUBDIR + ". Type \"augustus --species=help\" to see available species.");
     }
 
-    // if mult-species mode is turned on, try to read cgp config file (not needed anymore)
+
+    if (Constant::MultSpeciesMode || hasProperty(REF_EXON_KEY)){
+      string cgp_file = "";
+      Constant::lr_features.push_back(new LRfeatureGroup(0, "intercept", 0, 1)); // exon intercept
+      Constant::lr_features.push_back(new LRfeatureGroup(20, "intron_intercept", 0, 1)); // intron intercept
+      if (hasProperty(CGP_CONFIG_KEY))
+	cgp_file = expandHome(properties[CGP_CONFIG_KEY]);
+      else     
+	cgp_file = expandHome(configPath + "cgp/logReg_feature.cfg");
+      readFile(cgp_file, 1);
+      
+      if(!hasProperty(REF_EXON_KEY)){
+	if (hasProperty(CGP_PARS_KEY))
+	  cgp_file = expandHome(properties[CGP_PARS_KEY]);
+	else
+	  cgp_file = expandHome(configPath + "cgp/logReg_feature.pars");
+	readFile(cgp_file, 2);
+      }
+
+      struct sortFeature {
+	bool operator() (LRfeatureGroup *i,LRfeatureGroup *j) { return (i->id < j->id);}
+      } featureSort;
+
+      sort(Constant::lr_features.begin(), Constant::lr_features.end(), featureSort);
+    }
+    
+
+// if mult-species mode is turned on, try to read cgp config file (not needed anymore)
     /*if(Constant::MultSpeciesMode){
 	string cgpParFileName = speciesValue + "_parameters.cgp.cfg";
 	string savedSpecies = speciesValue;
@@ -497,7 +542,7 @@ void Properties::init( int argc, char* argv[] ){
 	if (name == GENEMODEL_KEY || name == NONCODING_KEY || name == SINGLESTRAND_KEY ||
 	    name == SPECIES_KEY || name == CFGPATH_KEY ||
 	    name == EXTERNAL_KEY || name == ALN_KEY ||
-	    name == TREE_KEY || name == DB_KEY || name == SEQ_KEY || name == CODONALN_KEY || name == REF_EXON_KEY)
+	    name == TREE_KEY || name == DB_KEY || name == SEQ_KEY || name == CODONALN_KEY || name == REF_EXON_KEY || name == CGP_CONFIG_KEY || name == CGP_PARS_KEY)
 	    continue;
 	if (pos == string::npos)
 	    throw PropertiesError(string("'=' missing for parameter: ") + name);
@@ -695,9 +740,372 @@ void Properties::readLine( istream& strm ) {
 	 */
 	readFile(properties[CFGPATH_KEY] + value);
     } else
-	if( name != "" && value != "" && name[0] != '#')
-	    properties[name] = value;
+      if( name != "" && value != "" && name[0] != '#')
+	properties[name] = value;
 }
+
+void Properties::readCGPconfigFile(ifstream& strm){
+  
+  while( strm ){
+    string line, feature_nr, feature_name, if_std, num_bins;
+    getline( strm, line );
+    if(line[0] == '#')
+      continue;
+    istringstream istrm( line.c_str() );
+    istrm >> feature_nr >> feature_name >> if_std >> num_bins;
+    if(feature_nr != "" && feature_name != "" && if_std != "" && num_bins != ""){
+      int nb = stoi(num_bins);
+      bool std;
+      if(nb == 2)
+	throw PropertiesError("Properties::readCGPconfigFile: "
+                              "number of bins must be either 1 or at least 3.");
+      if(if_std == "1")
+	std = true;
+      else if(if_std == "0")
+	std = false;
+      else
+	throw PropertiesError("Properties::readCGPconfigFile: "
+			      "CGP config file format error: standartization values need to be 1 or 0.");
+      LRfeatureGroup* f;
+      if(nb == 1)
+	f = new LRfeatureGroup(stoi(feature_nr), feature_name, std, nb);
+      else
+	f = new LRbinnedFeatureGroup (stoi(feature_nr), feature_name, std, nb);
+      Constant::lr_features.push_back(f);
+      
+    }else{
+      if(feature_nr[0] != '#' && feature_nr != "")
+	throw PropertiesError("Properties::readCGPconfigFile: "
+			      "CGP config file has wrong format!");
+    }
+  }
+}
+
+void Properties::readCGPparsFile(ifstream& strm){
+  
+  while( strm ){
+    string line, feature_nr, feature_name, num_bins, binning_bounds, weight_list;
+    getline( strm, line );
+    if(line[0] == '#')
+      continue;
+    istringstream istrm( line.c_str() );
+    istrm >> feature_nr >> feature_name >> num_bins >> binning_bounds >> weight_list;
+    if(feature_nr != "" && feature_name != "" && num_bins != "" && binning_bounds != "" && weight_list != ""){
+      int id = stoi(feature_nr);
+      int nb = stoi(num_bins);
+      for(int i=0; i<Constant::lr_features.size(); i++){
+	if(Constant::lr_features[i]->id == id){
+	  if(Constant::lr_features[i]->descript != feature_name || Constant::lr_features[i]->num_bins < nb)
+	    throw PropertiesError("Properties::readCGPparsFile: "
+				  "Error in readCGPparsFile: number of bins and/or feature description not consistent with the CGP config file.");
+	  
+	  if(nb == 1){
+	    int str_length;
+	    if(weight_list[weight_list.size()-1] == ',')
+	      str_length = weight_list.size()-1;
+	    else
+	      str_length = weight_list.size();
+	    Constant::lr_features[i]->setWeight(stod(weight_list.substr(0, str_length)));
+	  }else{
+	    LRbinnedFeatureGroup* bf;
+	    try{
+	      bf = static_cast<LRbinnedFeatureGroup*>(Constant::lr_features[i]);
+	    }catch(...){
+              throw PropertiesError("Properties::readCGPparsFile: "
+                                    "number of bins does not agree with the number of bins in the config file.");
+            }
+	    if(bf->num_bins != nb){
+	      bf->num_bins = nb;
+	      bf->num_features = nb-1;
+	      bf->bb.resize(nb-1, 0);
+	      bf->weights.resize(nb-1, 0);
+	    }
+	    vector<double> items;
+	    istringstream b(binning_bounds);
+	    string buffer;
+	    while(getline(b, buffer, ',')){
+	      items.push_back(stod(buffer));
+	    }
+	    if(items.size() != bf->bb.size())
+	      throw PropertiesError("Properties::readCGPparsFile: "
+				    "number of bins does not agree with the number of provided binning boundaries.");
+	    bf->bb = items;
+	    items.clear();
+	    istringstream w(weight_list);
+	    while(getline(w, buffer, ',')){
+	      items.push_back(stod(buffer));
+	    }
+	    if(items.size() != bf->weights.size())
+              throw PropertiesError("Properties::readCGPparsFile: "
+                                    "number of bins does not agree with the number of provided weights.");
+	    bf->weights = items;
+	    break;
+	  }
+	}
+      }
+    }else{
+      if(feature_nr[0] != '#' && feature_nr != "")
+	throw PropertiesError("Properties::readCGPparsFile: "
+			      "CGP parameter file has wrong format! Make sure the first character in each line is not a white space.");
+    }
+  }  
+}
+
+LRfeatureGroup* Properties::findFeatureGroup(int id){
+  
+  for(int i = 0; i < Constant::lr_features.size(); i++){
+    if(Constant::lr_features[i]->id == id)
+      return Constant::lr_features[i];
+  }
+  return NULL;
+}
+
+double Properties::calculate_feature_score(Traits* t){
+
+  double score = 0;
+  for(int i = 0; i < Constant::lr_features.size(); i++)
+    score += calculate_feature_score(Constant::lr_features[i], t);
+  return score;
+}
+
+double Properties::calculate_feature_score(LRfeatureGroup* lr_feature, Traits* t){
+
+  int id = lr_feature->id;
+  bool hasTrait = true;
+  double x = getFeature(id, t, &hasTrait);
+  
+  if(hasTrait){
+    if(lr_feature->num_bins==1) // not binned features
+      return (x * lr_feature->weight);
+    else{        // binned features
+      double score = 0;
+      LRbinnedFeatureGroup* lr_bf = static_cast<LRbinnedFeatureGroup*>(lr_feature);
+      vector<double> bf = getBinnedFeature(lr_bf, x);
+      if(bf.size() != lr_bf->weights.size())
+	throw ProjectError("Error in Properties::calculate_feature_score: Size of binned feature vector is not equal to size of weight vector!");
+      for(int i = 0; i < bf.size(); i++)
+	score += bf[i] * lr_bf->weights[i];
+      return score;
+    }
+  }else{
+    return 0;
+  }
+}
+
+
+// for prediction devide into single and ortho exon feature sets
+double Properties::calculate_single_feature_score(Traits* t){
+  double score = 0;
+  for(int i = 0; i < Constant::lr_features.size(); i++)
+    if( Constant::lr_features[i]->id <= 5 )
+      score += calculate_feature_score(Constant::lr_features[i], t);
+  return score;
+}
+
+double Properties::calculate_OE_feature_score(Traits* t){
+  double score = 0;
+  for(int i = 0; i < Constant::lr_features.size(); i++)
+    if( Constant::lr_features[i]->id > 5 && Constant::lr_features[i]->id < 20 )
+      score += calculate_feature_score(Constant::lr_features[i], t);
+  return score;
+}
+
+double Properties::calculate_intron_feature_score(Traits* t){
+  double score = 0;
+  for(int i = 0; i < Constant::lr_features.size(); i++)
+    if( Constant::lr_features[i]->id >= 20 )
+      score += calculate_feature_score(Constant::lr_features[i], t);
+  return score;
+}
+
+
+
+double Properties::getFeature(int id, Traits *t, bool *hasTrait){
+  if(id <= 5)
+    return getSingleFeature(id,t, hasTrait);
+  else if(id < 20)
+    return getOEfeature(id,static_cast<OEtraits*>(t), hasTrait);
+  else
+    return getIntronFeature(id,t, hasTrait);
+}
+
+vector<double> Properties::getBinnedFeature(LRbinnedFeatureGroup *lr_bf, double x){
+
+  int curr_bin = 0;
+  int num_features = lr_bf->num_features;
+  vector<double> f;
+  // find bin x is in
+  for(int j = 0; j < num_features; j++)
+    if(x <= lr_bf->bb[j]){
+      curr_bin = j;
+      break;
+    }
+  if(x > lr_bf->bb.back())
+    curr_bin = num_features;
+  
+  for(int j = 0; j < num_features; j++){	    
+    if( (j == 0 && curr_bin == 0) || (j == num_features - 1 && curr_bin == num_features) )
+      f.push_back(1);
+    else if(curr_bin == j+1 && j >= 0 && j < num_features - 1)
+      f.push_back((lr_bf->bb[j+1] - x) / (lr_bf->bb[j+1] - lr_bf->bb[j]));
+    else if(curr_bin == j && j > 0 && j <= num_features - 1)
+      f.push_back((x - lr_bf->bb[j-1]) / (lr_bf->bb[j] - lr_bf->bb[j-1]));
+    else
+      f.push_back(0);
+  }
+  return f;
+}
+
+double Properties::getSingleFeature(int id, Traits *t, bool *hasTrait){
+  bool ht = true;
+  double x = 0;
+  switch(id){
+  case 0: x = 1;                           // intercept
+    break;
+  case 1: x = log( t->getLength() );       // log exon length 
+    break;
+  case 2:                                  // posterior probability
+    if(t->hasPostProb())          
+      x = t->getPostProb(); 
+    else
+      ht = false;
+    break;
+  case 3:                                  // mean base probability
+    if(t->hasMeanBaseProb())
+      x = t->getMeanBaseProb();
+    else
+      ht = false;
+    break;
+  case 4: x = ( t->isSampled() ) ? 1 : 0;  // is not sampled
+    break;
+  case 5: x = ( t->isOE() ) ? 0 : 1;       // is not an OE
+    break;
+  default:
+    throw ProjectError("feature number " + to_string(id) + " does not exist!");
+    break;
+  }
+  if(hasTrait)
+    *hasTrait = ht;
+  return x;
+}
+
+
+double Properties::getOEfeature(int id, OEtraits* t, bool *hasTrait){
+
+  bool ht = true;
+  double x = 0;
+  switch(id){
+  case 6: x = ( t->hasOmega() ) ? 0 : 1;   // not having omega
+    break;
+  case 7:                                  // omega
+    if(t->hasOmega())
+      x = log(t->getOmega());
+    else
+      ht = false;
+    break;
+  case 8:                                  // variance of omega
+    if(t->hasVarOmega())
+      x = t->getVarOmega();
+    else
+      ht = false;
+    break;
+  case 9:                                  // conservation
+    if(t->hasConservation())
+      x = t->getConsScore();
+    else
+      ht = false;
+    break;
+  case 10:                                  // containment
+    if(t->hasContainment())
+      x = t->getContainment();
+    else
+      ht = false;
+    break;
+  case 11:                                 // diversity
+    if(t->hasDiversity())
+      x = t->getDiversity();
+    else
+      ht = false;
+    break;
+  case 12: x = t->getNumExons();           // number of exons involved in OE
+    break;
+  case 13:                                 // conservation * diversity
+    if(t->hasConservation() && t->hasDiversity())
+      x = t->getConsScore() * t->getDiversity();
+    else
+      ht = false;
+    break;
+  case 14:                                 // omega * diversity
+    if(t->hasOmega() && t->hasDiversity())
+      x = t->getOmega() * t->getDiversity();
+    else
+      ht = false;
+    break;
+  case 15:                                 // boundary omega
+    if(t->hasBoundaryOmegas()){
+      double left_bs =  log( t->getLeftIntOmega() ) - log( t->getLeftExtOmega() );
+      double right_bs = log( t->getRightIntOmega() ) - log( t->getRightExtOmega() );
+      x = ( left_bs * exp( Constant::lambda * left_bs ) + right_bs * exp( Constant::lambda * right_bs ) )
+	/ ( exp( Constant::lambda * left_bs ) + exp( Constant::lambda * right_bs ) );
+    } else
+      ht = false;
+    break;
+  case 16:                                // coding posterior probability
+    if(t->hasCodingPostProb())
+      x = t->getCodingPostProb();
+    else
+      ht = false;
+    break;
+  case 17:  // score using inverse sigmoid value of coding posterior probability
+    if(t->hasCodingPostProb()){
+      if(t->getCodingPostProb() > 0 && t->getCodingPostProb() < 1)
+	x = -log(1/t->getCodingPostProb() - 1);
+      else if(t->getCodingPostProb() == 0)
+	x = -50;
+      else
+	x= 50;
+    }else
+      ht = false;
+    break;
+  default:
+    throw ProjectError("feature number " + to_string(id) + " does not exist!");
+    break;
+  }
+ if(hasTrait)
+    *hasTrait = ht;
+  return x;
+}
+
+double Properties::getIntronFeature(int id, Traits* t, bool *hasTrait){
+
+  bool ht = true;
+  double x = 0;
+  switch(id){
+  case 20: x = 1;                           // intercept
+    break;
+  case 21: x = log( t->getLength() );       // log exon length 
+    break;
+  case 22:                                  // posterior probability
+    if(t->hasPostProb())          
+      x = t->getPostProb(); 
+    else
+      ht = false;
+    break;
+  case 23:                                  // mean base probability
+    if(t->hasMeanBaseProb())
+      x = t->getMeanBaseProb();
+    else
+      ht = false;  
+    break;
+  default:
+    throw ProjectError("feature number " + to_string(id) + " does not exist!");
+    break;
+  }
+ if(hasTrait)
+    *hasTrait = ht;
+  return x;
+}
+
 
 static char* get_self(void){
     char *path = NULL;
@@ -755,3 +1163,4 @@ string findLocationOfSelfBinary(){
 #endif // WINDOWS not supported
     return self;
 }
+

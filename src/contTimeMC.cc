@@ -29,6 +29,7 @@
 
 // destructor
 Evo::~Evo(){
+  cout << "destructor of Evo" << endl;
     times.clear();
     for (int i=0; i < allPs.getColSize(); i++)
 	for (int j=0; j< allPs.getRowSize(); j++){
@@ -72,10 +73,13 @@ void Evo::setBranchLengths(vector<double> b, int m){
 	} else {
 	    // For now, very simply take m equidistant branch lengths between min and max
 	    double min = times.front();
-	    double step = (times.back() - min) / (this->m-1);
+	    double max = times.back();
+	    //double step = (times.back() - min) / (this->m-1);
 	    times.clear();
 	    for (int i=0; i < this->m; i++){
-		times.push_back(min + i*step);
+	      //times.push_back(min + i*step);
+	      // smaler values are more closely together
+	      times.push_back( min + (max-min)*pow(i/(this->m-1),2) );
 	    }
 	}
     }
@@ -144,6 +148,7 @@ void CodonEvo::setOmegas(int k){
     for (int i=1; i<=rr; i++)
 	omegas.push_back(1.0 / (1 - (double) i/(c+r)));
     if(Constant::useNonCodingModel){
+      cout << "using non coding model" << endl;
       this->k = k+1;
       omegas.push_back(0);
     }
@@ -169,8 +174,12 @@ void CodonEvo::setPrior(double sigma ){
 	  //omega = 1.0 / omega;
 	  omega = sqrt(-2*log(1/omega) * pow(sigma,2) + pow(1/omega - 1,2)) + 1;
 	}
-	double t = (omega-1.0)/sigma;
-	sum += omegaPrior[i] = exp(-t*t/2);
+	if(Constant::useNonCodingModel && i==k-1){
+	  omegaPrior[i] = 0;
+	}else{
+	  double t = (omega-1.0)/sigma;
+	  sum += omegaPrior[i] = exp(-t*t/2);
+	}
     }
     // normalize
     for (int i=0; i<k; i++)
@@ -270,16 +279,17 @@ void CodonEvo::computeLogPmatrices(){
     allPs.assign(k, m, NULL); // omegas index the rows, times index the columns
     allLogPs.assign(k, m, NULL);
     for (int u=0; u<k; u++){
-	omega = omegas[u];
-	// compute decomposition of Q, which does not require t yet
-	if(u < k){
+          // compute decomposition of Q, which does not require t yet
+          omega = omegas[u];
+	  if(Constant::useNonCodingModel && u == k-1){
+	  double *pi_nuc = ExonModel::getNucleotideUsage();
+	  Q = getNonCodingRateMatrix(pi_nuc, kappa);
+	}else{
 	  if(!aaPostProb.empty()) // use amino acid score in codon rate matrix 
 	    Q = getCodonRateMatrix(pi, omega, kappa, &aaPostProb);
 	  else
 	    Q = getCodonRateMatrix(pi, omega, kappa);
-	}else{
-	  vector<double> pi_nuc = IGenicModel::getNucleotideProbs();
-	  Q = getNonCodingRateMatrix(&pi_nuc, kappa);
+	  
 	}
 	status = eigendecompose(Q, pi, lambda, U, Uinv);
 	if (status) {
@@ -297,11 +307,11 @@ void CodonEvo::computeLogPmatrices(){
 	    //cout << "codon rate matrix log P(t=" << t << ", omega=" << omega << ")" << endl;
 	    //printCodonMatrix(allLogPs[u][v]);
 	    //#endif
-
-	    /*for(int i=0; i<64; i++){
+	    /*
+	    for(int i=0; i<64; i++){
 	       cout<<"vvv\t"<<Seq2Int(3).inv(i)<<"\t"<<omega<<"\t"<<t<<"\t"<<gsl_matrix_get(allPs[u][v],i,i)<<endl;
-	       }*/
-
+	       }
+	    */
 	}
 	gsl_matrix_free(U);
 	gsl_matrix_free(Uinv);
@@ -389,7 +399,7 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
 			       double omega,  // dN/dS, nonsynonymous/synonymous ratio
 			       double kappa, // transition/transversion ratio, usually >1
 			       vector<vector<double> > *aaPostProb){ // posterior probabilities of aa substitutions
-    gsl_matrix* Q = gsl_matrix_calloc (64, 64); // initialize Q as the zero-matrix
+    gsl_matrix* Q = gsl_matrix_calloc (64, 64); // initialize Q as the zero-matrix  
     Seq2Int s2i(3);
 
     // store and print number of synonymous and nonsynonymous substitutions for each codon                                           
@@ -449,8 +459,8 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
 	    }
 	}
     }
-    /*
-    cout<<"------------ number of synonymous and nonsynonymous substitutions for each codon ----------------"<<endl;
+    
+    /*    cout<<"------------ number of synonymous and nonsynonymous substitutions for each codon ----------------"<<endl;
     cout<<"codon\tnum_syn\tnum_nonsyn\tnum_wk\tcodon_usage"<<endl;
     for(int i=0; i<64; i++){
       cout<<Seq2Int(3).inv(i)<<"\t"<<num_syn[i]<<"\t"<<num_nonsyn[i]<<"\t"<<num_wk[i]<<"\t"<<pi[i]<<endl;
@@ -471,6 +481,8 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
       }
     }
 
+    
+
     // initialize diagonal elements (each row must sum to 0)
     double rowsum;
     double scale = 0.0; // factor by which matrix must be scaled to achieve one expected mutation per time unit
@@ -487,6 +499,10 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
 	scale = 1.0; // should not happen
     // normalize Q so that the exptected number of codon mutations per time unit is 1
     gsl_matrix_scale(Q, scale);
+
+    //cout << "codon rate matrix Q with omega = " << omega << endl;
+    //printCodonMatrix(Q);
+
     return Q;
 }
 
@@ -494,7 +510,7 @@ gsl_matrix *getCodonRateMatrix(double *pi,    // codon usage, normalized vector 
  * compute rate matrix for non-codong model
  */
 
-gsl_matrix *getNonCodingRateMatrix(vector<double> *pi_nuc, double kappa){
+gsl_matrix *getNonCodingRateMatrix(double *pi_nuc, double kappa){
 
   gsl_matrix* Q = gsl_matrix_calloc (64, 64); // initialize Q as the zero-matrix
   Seq2Int s2i(3);
@@ -511,7 +527,8 @@ gsl_matrix *getNonCodingRateMatrix(vector<double> *pi_nuc, double kappa){
       codoni[1] = b;
       for (int c=0; c<4; c++){
 	codoni[2] = c;
-	int i = 16*codoni[0] + 4*codoni[1] + codoni[2]; // in {0,...63}                                                       
+	int i = 16*codoni[0] + 4*codoni[1] + codoni[2]; // in {0,...63}
+	pi[i] = pi_nuc[codoni[0]] * pi_nuc[codoni[1]] * pi_nuc[codoni[2]]; // equilibrium frequency of codon i
 	// go through the 3x3 codons that differ from codon i by a single mutation
 	for (int f=0;f<3; f++){ // position of mutation
 	  for (int d=0; d<4; d++){ // d = substituted base
@@ -521,8 +538,7 @@ gsl_matrix *getNonCodingRateMatrix(vector<double> *pi_nuc, double kappa){
 	      codonj[2] = codoni[2];
 	      codonj[f] = d;
 	      int j = 16*codonj[0] + 4*codonj[1] + codonj[2]; // in {0,...63}
-	      double qij = (*pi_nuc)[codonj[f]];
-	      pi[i] = (*pi_nuc)[codonj[f]];
+	      double qij = pi_nuc[codonj[0]] * pi_nuc[codonj[1]] * pi_nuc[codonj[2]];
 	      if (GeneticCode::is_purine(codonj[f]) == GeneticCode::is_purine(codoni[f])){
 		qij *= kappa; // transition
 	      }
@@ -533,6 +549,7 @@ gsl_matrix *getNonCodingRateMatrix(vector<double> *pi_nuc, double kappa){
       }
     }
   }
+
 
   // initialize diagonal elements (each row must sum to 0)
   double rowsum;
@@ -547,9 +564,12 @@ gsl_matrix *getNonCodingRateMatrix(vector<double> *pi_nuc, double kappa){
   if (scale != 0.0)
     scale = 1.0/scale;
   else
-    scale = 1.0; // should not happen                                                                                             
-  // normalize Q so that the exptected number of codon mutations per time unit is 1                                                 
-  gsl_matrix_scale(Q, scale);
+    scale = 1.0; // should not happen
+  // normalize Q so that the exptected number of codon mutations per time unit is 1
+  gsl_matrix_scale(Q, scale); 
+
+  gsl_matrix_scale(Q, Constant::mutationRate);
+
 
   return Q;
 
@@ -662,6 +682,17 @@ gsl_matrix *Evo::expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *
 	gsl_matrix_set(P, 1, 3, gsl_matrix_get(P, 1, 2));
 	gsl_matrix_set(P, 2, 3, 1);
     }
+    // set all stop codon transitions to zero
+    if(states == 64){
+      for(int i : {48, 50, 56}){
+	for(int j=0; j<64; j++){
+	  if(i != j){
+	    gsl_matrix_set(P, i, j, 0);
+	    gsl_matrix_set(P, j, i, 0);
+	  }
+	}
+      }
+    }
     return P;
 }
 
@@ -681,7 +712,7 @@ void printCodonMatrix(gsl_matrix *M) {    // M is usually Q or P = exp(Qt)
 	for (int j=0; j<64; j++){
 	    double m = gsl_matrix_get(M,i,j);
 	    if ( 0 <= m && m < 1e-6)
-		cout << setw(7) << " "; // probability 0
+		cout << setw(8) << " "; // probability 0
 	    else if (m == -numeric_limits<double>::max())
 		cout << setw(8) << " -inf "; // probability 0 in log-space
 	    else
@@ -695,17 +726,21 @@ void printCodonMatrix(gsl_matrix *M) {    // M is usually Q or P = exp(Qt)
  * computes the element-wise natrual logarithm of a matrix P
  */
 gsl_matrix *log(gsl_matrix *P, int states){
-
+  //  cout << "computes the element-wise natrual logarithm of a matrix P "<< endl;
     gsl_matrix* LogP = gsl_matrix_calloc(states, states); 
     for (int i=0; i<states; i++){
      	for (int j=0; j<states; j++){
      	    double Pij = gsl_matrix_get(P,i,j);
-    	    if (Pij>0.0)
+	    // cout << i << "," << j << " -> " << Pij << ": ";
+    	    if (Pij>0.0){
     		gsl_matrix_set(LogP, i, j, log(Pij));
+		//cout << log(Pij) << endl;
+	    }
     	    else if (Pij < -0.001){
     		cerr << Pij << endl;
     		throw ProjectError("negative probability in substitution matrix");
     	    } else {
+	      //cout << "-inf" << endl;
     		gsl_matrix_set(LogP, i, j, -numeric_limits<double>::max()); // ln 0 = -infty       
     	    }
      	}	
@@ -898,6 +933,7 @@ int ExonEvo::eigendecompose(gsl_matrix *Q){
     l = gsl_vector_alloc (N);                                        // real vector of eigenvalues
     U = gsl_matrix_alloc (N, N);                                     // real matrix of eigenvectors
     Uinv = gsl_matrix_alloc (N, N);                                  // inverse of U
+    isAllocated=true;
 
     int s; // signum for LU decomposition
     gsl_permutation * perm = gsl_permutation_alloc (N); // permutation matrix of LU decomposition
@@ -1019,15 +1055,21 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 // get vector of log likelihoods of omegas for one single codon tuple
 
 vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *ctree, PhyloTree *tree, int &subs){
+  
+    vector<double> logliks(k, 0.0);
+    
     if (seqtuple.size() != ctree->numSpecies())
         throw ProjectError("CodonEvo::logLikForCodonTuple: inconsistent number of species.");
     for(int i=1; i<seqtuple.size();i++){
         if(seqtuple[0].length() != 3 || seqtuple[i].length() != 3){
             throw ProjectError("CodonEvo::loglikForCodonTuple: codon tuple has not length 3");
         }
+	// if any codon is a stop codon ignore this codon tuple
+	if(seqtuple[i] == "tga" || seqtuple[i] == "tag" || seqtuple[i] == "taa"){
+	  return logliks;
+	}
     }
     int numCodons;
-    vector<double> logliks(k, 0.0);
     Seq2Int s2i(3);
     vector<int> codontuple(ctree->numSpecies(), 64); // 64 = missing codon                                                     
     bit_vector bv(ctree->numSpecies(), 0);
@@ -1040,7 +1082,7 @@ vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree
 	  numCodons++;
 	  bv[s] = 1;
 	} catch(...){} // gap or n character                                                                              
-      //cout << codontuple[s] << "|";
+      //cout << codontuple[s] << "(" << seqtuple[s] << ") | ";
     }
     //cout << endl;
     if (numCodons >= 2){
@@ -1066,12 +1108,15 @@ vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree
     return logliks;
 }
 
+// used in ESPOCA
 double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree, int refSpeciesIdx){
+  cout << "num species: " << seqtuple.size() << " " << tree->numSpecies() << endl;
   if (seqtuple.size() != tree->numSpecies())
     throw ProjectError("CodonEvo::graphOmegaOnCodonAli: inconsistent number of species. Tree and alignment file must have the same (number of) species.");
   
   vector<string> speciesnames;
   tree->getSpeciesNames(speciesnames);
+  double tree_div = tree->getDiversity();
   int n = 0;  // number of nucleotide triples
 
   for(int i=0; i<seqtuple.size();i++){
@@ -1101,6 +1146,7 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree,
     vector<int> codontuple(tree->numSpecies(), 64); // 64 = missing codon
     numCodons = 0;
     PhyloTree pruned_tr(*tree);
+    bool contains_stop_codon = false;
     for(size_t s=0; s < tree->numSpecies(); s++){
       if (seqtuple[s].size()>0){
 	try {
@@ -1116,13 +1162,16 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree,
       }else{ // species missing in alignfile
 	pruned_tr.drop(speciesnames[s]);
       }
+      if(codontuple[s] == 48 || codontuple[s] == 50 || codontuple[s] == 56){
+	contains_stop_codon = true;
+      }
     }
     if(codontuple[refSpeciesIdx] == 64)
       aminoAcidsRef[codonIdx] = '-';
     else
       aminoAcidsRef[codonIdx] = GeneticCode::translate(codontuple[refSpeciesIdx]);
     
-    if (numCodons >= 2){
+    if (numCodons >= 2 && !contains_stop_codon){
       numSubst[codonIdx] = pruned_tr.fitch(codontuple);
       for (int u=0; u < k; u++){ // loop over omegas
 	loglik = pruned_tr.pruningAlgor(codontuple, this, u);
@@ -1143,7 +1192,7 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree,
       for (int u=0; u < k; u++)
 	stdPostmeanSite[codonIdx] += postprobs[u] * pow(omegas[u] - Eomega, 2);
       
-      /*** 
+      /******
       for(size_t s=0; s < tree->numSpecies(); s++){
 	if (seqtuple[s].size()>0)
 	  cout << codontuple[s] << "\t" << seqtuple[s].substr(i*3,3) << endl;
@@ -1152,7 +1201,7 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree,
       for(int u=0; u < k; u++){
 	cout << u << "\t" << omegas[u] << "\t" << logliksSite[u] << "\t" << max_loglik << "\t" << postprobs[u] << "\t" << sum << "\t" << Eomega << endl;
       }
-      ***/
+      ******/
 
       for(int u=0; u<k; u++){
 	if(omegas[u] > 1){
@@ -1162,8 +1211,10 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree,
     }
     codonIdx++;
   }
-  
-  cout << setw(10) << "ali_pos" << setw(10) << "ref_pos" << setw(10) << "AS_ref" << setw(10) << "Pr(w>1)" << setw(10) << "post_mean" << setw(4) << "+-" << setw(10) << "SE_for_w" << setw(10) << "num_subst" << endl;
+
+  double subst_div = 0;
+  int numc = 0;
+  cout << setw(10) << "ali_pos" << setw(10) << "ref_pos" << setw(10) << "AS_ref" << setw(10) << "Pr(w>1)" << setw(10) << "post_mean" << setw(4) << "+-" << setw(10) << "SE_for_w" << setw(10) << "num_subst"<< setw(10) << "num_subst/tree_div" << endl;
   for(int i = 0; i < codonIdx; i++){
     cout << setw(10)<< i << setw(10) << refPos[i] << setw(10) << aminoAcidsRef[i];
     if(postProb_gt1[i] > 0){
@@ -1172,12 +1223,15 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree,
 	cout << "*";
       if(postProb_gt1[i] > 0.99)
 	cout << "*";
-      cout << setw(10) << postmeanSite[i] << setw(4) << "+-" << setw(13) << stdPostmeanSite[i] << setw(11) << numSubst[i] << endl;  
+      cout << setw(10) << postmeanSite[i] << setw(4) << "+-" << setw(13) << stdPostmeanSite[i] << setw(11) << numSubst[i] << setw(11) << numSubst[i]/tree_div << endl;  
+      subst_div += numSubst[i]/tree_div;
+      numc++;
     }
     else{
-      cout << setw(13) << -1 << setw(10) << -1 << setw(4) << "+-" << setw(13) << -1 << setw(11) << -1 << endl;
+      cout << setw(13) << -1 << setw(10) << -1 << setw(4) << "+-" << setw(13) << -1 << setw(11) << -1 << setw(11) << -1 << endl;
     }  
   }
+  subst_div /= numc;
   
     // posterior mean estimate of omega
     sum = 0.0;
@@ -1194,14 +1248,25 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree,
     for (int u=0; u < k; u++){
       Eomega += postprobs[u] * omegas[u];
     }
-    /***
+   
         cout << "whole alignment: " << endl << "index\tomega\tloglik\tmaxloglik\tpostProb\tsum\tpostMean" << endl;
     for(int u=0; u < k; u++){
       cout << u << "\t" << omegas[u] << "\t" << logliks[u] << "\t" << max_loglik << "\t" << postprobs[u] << "\t" << sum << "\t" << Eomega << endl;
     }
-    ***/
+   
+    // calculate posterior probability for being a coding exon
+    double codingPostProb = -1;
+    if(Constant::useNonCodingModel){
+      double r = Constant::priorCodingExon;
+      codingPostProb = 1 - ( exp(logliks[k-1] - max_loglik) * (1-r) / (r * sum + (1-r) * exp(logliks[k-1] - max_loglik)) );
+    }
+
  
     cout << endl << "# reference species: " << speciesnames[refSpeciesIdx] << endl << "# posterior mean estimate of omega for whole alignment : " << Eomega << endl;
+    if(codingPostProb > -1){
+      cout << "# probability of being coding : " << codingPostProb << endl;
+      cout << "# average proportion of number of fitch substitutions and phylogenetic diversity : " << subst_div << endl;
+    }
     return Eomega;
 }
 

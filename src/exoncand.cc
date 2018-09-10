@@ -160,6 +160,8 @@ Double computeSpliceSiteScore(Double exonScore, Double minProb, Double maxProb) 
 
 // computes exon candidates and inserts them into the hash of ECs if they do not exist already
 void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, ExonCandidate*> &addECs, const char *dna, int minLen, double assmotifqthresh, double assqthresh, double dssqthresh){
+  cout << "entering findexoncands with dna " << *dna << endl;
+
     int n = strlen(dna);
     int frame;
     Double p;
@@ -172,11 +174,14 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
     Double assminprob, dssminprob, assmaxprob, dssmaxprob;
     bool withSplicing = (IntronModel::assBinProbs.nbins > 0); // eukaryotic species?
     if (withSplicing){
-	assminprob = IntronModel::assBinProbs.getMinProb(assqthresh) * IntronModel::getAssMotifProbThreshold(assmotifqthresh);
+      	assminprob = IntronModel::assBinProbs.getMinProb(assqthresh) * IntronModel::getAssMotifProbThreshold(assmotifqthresh);
 	dssminprob = IntronModel::dssBinProbs.getMinProb(dssqthresh);
 	assmaxprob = IntronModel::assBinProbs.getMinProb(0.99) * IntronModel::getAssMotifProbThreshold(0.9999);
 	dssmaxprob = IntronModel::dssBinProbs.getMinProb(0.99);
     } // otherwise it is a bacterium and exon candidates with splice sites don't exist
+
+    withSplicing = true;
+      
     OpenReadingFrame orf(dna, Constant::max_exon_len, n);
     // preprocessing all left coordinates of an exon candidate interval
     for (int i=0; i<=n - 1; i++) {
@@ -184,6 +189,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
         // positions of all startcodons "atg"
         if (onStart(dna+i)) {
             exonStart.push_back(i + 1);
+	    cout << "start codon at position " << i << endl;
         }
         // positons of all ASSs "ag"
         if (withSplicing && onASS(dna+i) && (i + Constant::ass_whole_size() - Constant::ass_start < n)) {
@@ -192,6 +198,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                 ssWithScore.first = i;
                 ssWithScore.second = computeSpliceSiteScore(p, assminprob, assmaxprob);
                 exonASS.push_back(ssWithScore);
+		cout << "ASS at position " << i << endl;
             }
         }
         // positions of all reverse DSS "ac"
@@ -201,11 +208,13 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
                 ssWithScore.first = i;
                 ssWithScore.second = computeSpliceSiteScore(p, dssminprob, dssmaxprob);
                 exonRDSS.push_back(ssWithScore);
+		cout << "RDSS at position " << i << endl;
             }
         }
         // positions of all reverse complementary stop codons, usually "cta, tta, tca"
         if (GeneticCode::isRCStopcodon(dna+i)) {
             exonRCStop.push_back(i);
+	    cout << "RCStop at position " << i << endl;
         }
     }
     list<int>::reverse_iterator ritStart = exonStart.rbegin();
@@ -235,7 +244,8 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 		    if(ec->len() >= minLen){
 			int_fast64_t key = ec->getKey();
 			ecit = ecs.find(key);
-			if (ecit == ecs.end()){ // insert new EC                                                                                                                                
+			if (ecit == ecs.end()){ // insert new EC
+			    cout << "insert new single EC" << endl;
                             ecs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
                             addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
                         }
@@ -280,6 +290,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 			    if (ecit == ecs.end()){ // insert new EC                                                                                                                                
 				ecs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 				addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+				cout << "insert new initial EC" << endl;
 			    }
 			    else{
 				ecit->second->setDownScore(ec->getDownScore());
@@ -322,6 +333,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 				if (ecit == ecs.end()){ // insert new EC                                                                                                                                
 				    ecs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 				    addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+				    cout << "insert new internal EC" << endl;
 				}
 				else{
 				    ecit->second->setDownScore(ec->getDownScore());
@@ -360,6 +372,7 @@ void findExonCands(map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, Exo
 			    if (ecit == ecs.end()){ // insert new EC                                                                                                                                
 				ecs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
 				addECs.insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
+				cout << "insert new terminal EC" << endl;
 			    }
 			    else{
 				ecit->second->setUpScore(ec->getUpScore());

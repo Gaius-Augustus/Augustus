@@ -24,6 +24,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdlib>
+#include <fstream>
 
 // declaration of "global" variables
 //---------------------------------------
@@ -106,8 +107,11 @@ double Constant::GD_stepsize = 0.01; // stepsize of gradient descent algorithm
 bool Constant::rLogReg = false; // for robust logistic regression
 double Constant::label_flip_prob = 0.01; // probability of a reference label to be wrong (robust logistic regression) 
 double Constant::lambda = 0; // parameter used in softmax function for exon boundary feature
+double Constant::alpha = 0; // malus factor used for regularization in logistic regression
+double Constant::priorCodingExon;
+double Constant::mutationRate;
 #ifdef COMPGENEPRED
-unordered_map<string, pair<int, vector<double> > > Constant::logReg_feature;
+unordered_map<string, OEtraits> Constant::logReg_samples;
 #endif
 vector<double>Constant::ex_sc;
 vector<double>Constant::in_sc;
@@ -116,7 +120,11 @@ int Constant::oeExtensionWidth;
 bool Constant::computeNumSubs; // cumpute number of substitutions in OE
 bool Constant::useAArates;
 bool Constant::useNonCodingModel;
+vector<double> Constant::binQuantiles;
+vector<LRfeatureGroup*>  Constant::lr_features;
 bool Constant::rescaleBoni = true;
+string Constant::cgpConfigFile;
+string Constant::cgpParsFile;
 // moved here from hints.cc
 const int power2id[31] = {1,2,4,8,16,32,64,128,
 			   256,512,1024,2048,4096,8192,16384,32768,
@@ -349,7 +357,7 @@ void Constant::init(){
         lambda = 1;
     }
 
-    for(int i=0; i<17; i++){
+    for(int i=0; i<30; i++){
 	try {
 	    ex_sc.push_back(Properties::getdoubleProperty("/CompPred/exon_score" + itoa(i) ));
 	} catch (...) {
@@ -393,6 +401,18 @@ void Constant::init(){
       useNonCodingModel =  Properties::getBoolProperty("useNonCodingModel");
     } catch(...){
       useNonCodingModel = false;
+    }
+
+    try {
+      priorCodingExon =  Properties::getdoubleProperty("priorCodingExon");
+    } catch(...){
+      priorCodingExon = 0.004;
+    }
+    
+    try {
+      mutationRate =  Properties::getdoubleProperty("mutationRate");
+    } catch(...){
+      mutationRate = 2;
     }
 
     try {
@@ -518,8 +538,8 @@ int quantile(const vector<int> &v, float q){
     std::sort(w.begin(), w.end()); // O(n log n) but finding a quantile would be possible also in linear time                                                                                                                                                                            
     int threshindex = (int) (q * w.size());
     return w[threshindex];
-}                                                                                                                                                                                                                                                                                        
- 
+}                                                                                                                                                  
+
 
 map<string, size_t> *getMap (vector<string> names) throw(ProjectError) {
     map<string, size_t> *hashtable = new map<string, size_t>;
@@ -530,6 +550,57 @@ map<string, size_t> *getMap (vector<string> names) throw(ProjectError) {
     }
     return hashtable;
 }
+
+
+LRfeatureGroup::LRfeatureGroup(int number, string name, bool std, int nb){
+  id = number;
+  descript = name;
+  if_std = std;
+  num_bins = nb;
+  num_features = nb;
+  weight = 0;
+}
+ 
+void LRfeatureGroup::print(){
+  cout << id << "\t" << descript << "\t" << if_std << "\t" << num_bins << "\t,\t" << weight << endl;
+}
+
+void LRfeatureGroup::print(ofstream *file){
+  (*file) << id << "\t" << descript << "\t" << num_bins << "\t,\t" << weight << endl;
+}
+
+void LRbinnedFeatureGroup::print(){
+  cout << id << "\t" << descript << "\t" << if_std << "\t" << num_bins << "\t";
+  for(int i=0; i<bb.size(); i++)
+    cout << bb[i] << ",";
+  cout << "\t";
+  for(int i=0; i<weights.size(); i++)
+    cout << weights[i] << ",";
+  cout << endl;
+}
+
+void LRbinnedFeatureGroup::print(ofstream *file){
+  (*file) << id << "\t" << descript << "\t" << num_bins << "\t";
+  for(int i=0; i<bb.size(); i++)
+    (*file) << bb[i] << ",";
+  (*file) << "\t";
+  for(int i=0; i<weights.size(); i++)
+    (*file) << weights[i] << ",";
+  (*file) << endl;
+}
+
+void Traits::print(){
+  cout << "length\tpostprob\tmbp\tisoe" << endl;
+  cout << length << "\t" << postprob << "\t" << mbp << "\t" << isoe << endl;
+}
+
+
+void OEtraits::print(){
+
+  cout << "isoe\tpostprob\tmbp\tnumExons\tomega\tvarOmega\tcodingPostProb\tcons\tdiversity\tcontainment" << endl;
+  cout << isoe << "\t" << postprob << "\t" << mbp << "\t" << numExons << "\t" << omega << "\t" << varOmega << "\t" << codingPostProb << "\t" << cons << "\t" << diversity << "\t" << containment << endl;
+}
+
 
 /*
  * functions used in earlier versions of AUGUSTUS

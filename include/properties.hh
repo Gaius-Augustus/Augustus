@@ -29,7 +29,7 @@
 #endif
 
 
-#define NUMPARNAMES 270
+#define NUMPARNAMES 277
 
 #define GENEMODEL_KEY "genemodel"
 #define NONCODING_KEY "nc"
@@ -50,6 +50,8 @@
 #define SEQ_KEY "speciesfilenames"
 #define CODONALN_KEY "codonAlignmentFile"
 #define REF_EXON_KEY "referenceFile"
+#define CGP_CONFIG_KEY "/CompPred/configFile"
+#define CGP_PARS_KEY "/CompPred/parsFile"
 
 #define OVLPLENFILE "ovlp_len.pbl"
 /**
@@ -175,7 +177,7 @@ class Properties{
          * @param   file The file with the programm properties
          * @exception PropertiesError
          */
-        static void        readFile    ( string file ) throw( PropertiesError );
+        static void        readFile    ( string file, int fileTypeNr = 0 ) throw( PropertiesError );
         /**
          * @memo    Parse the commandline arguments.
          *
@@ -191,7 +193,7 @@ class Properties{
          *
          */
         static Boolean hasProperty( string name);
-    
+     
         /**
          * @doc     Add a new property to the Properties object.
          *
@@ -273,13 +275,26 @@ class Properties{
 	} catch (KeyNotFoundError e) {}
     }
     
+  static double calculate_feature_score(LRfeatureGroup* lr_features, Traits* t);
+  static double calculate_feature_score(Traits* t);
+  static double calculate_single_feature_score(Traits* t);
+  static double calculate_OE_feature_score(Traits* t);
+  static double calculate_intron_feature_score(Traits* t);
+  static LRfeatureGroup* findFeatureGroup(int id);
+  static double getFeature(int id, Traits* t, bool *hasTrait=NULL);
+  static vector<double> getBinnedFeature(LRbinnedFeatureGroup *lr_bf, double x);
+  static double getSingleFeature(int id, Traits* t, bool *hasTrait=NULL);
+  static double getOEfeature(int id, OEtraits* t, bool *hasTrait=NULL);
+  static double getIntronFeature(int id, Traits* t, bool *hasTrait=NULL);
 
     private:
 	Properties() {}  // do not construct objects!
         /**
          *
          */
-	static void            readLine    (istream& strm );
+	static void readLine (istream& strm );
+        static void readCGPconfigFile(ifstream& strm);
+        static void readCGPparsFile(ifstream& strm);
     private:
 	static map<string, string> properties;
 	static const char* parameternames[NUMPARNAMES];

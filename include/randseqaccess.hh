@@ -89,6 +89,17 @@ protected:
 class MemSeqAccess : public RandSeqAccess {
 public:
     MemSeqAccess(vector<string> s);
+    // read sequences from alignment file (used in espoca)
+  MemSeqAccess(map<string, char*> speciesSeqs, map<string, int> seqLengths, vector<string> s){
+      setSpeciesNames(s);
+      sequences = speciesSeqs;
+      for(int i=0; i<s.size(); i++){
+	map<string, int>::iterator it = seqLengths.find(s[i]);
+	if(it == seqLengths.end())
+	  throw ProjectError("MemSeqAccess: could not find species " + s[i]);
+	setLength(getIdx(s[i]), "chr1", it->second);
+      }
+    }
     ~MemSeqAccess(){} // TODO: delete DNA sequences from 'sequences' map
     AnnoSequence* getSeq(string speciesname, string chrName, int start, int end, Strand strand);
     SequenceFeatureCollection* getFeatures(string speciesname, string chrName, int start, int end, Strand strand);
