@@ -4,10 +4,15 @@
 
 Lizzy Gerischer, Oliver Keller, Stefanie König, Lars Romoth, Katharina Hoff
 and Mario Stanke
+
 Universitaet Greifswald
+
 Institut fuer Mathematik und Informatik
+
 17497 Greifswald
+
 Fon: +49 3834 4204642
+
 mario.stanke@uni-greifswald.de
 
 ## Structure of this README
