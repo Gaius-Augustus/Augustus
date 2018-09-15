@@ -130,8 +130,9 @@ public:
     static map<vector<string>, pair<vector<double>, int> > computedCumValues;
 
     void printSingleOrthoExon(OrthoExon &oe, bool files = true);
-  void collect_features(int species, list<OrthoExon> *hects, SpeciesGraph *speciesgraph);
-
+    void collect_features(int species, list<OrthoExon> *hects, SpeciesGraph *speciesgraph);
+    void getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_class, vector<AnnoSequence*> const &seqRanges);
+    void getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges);
 private:
   vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, const vector<vector<fragment>::const_iterator > &froms, map<unsigned, vector<int> > *alignedCodons = NULL, bool generateString=true, vector<vector<int> > *posStoredCodons = NULL, ofstream *codonAli = NULL);
     void cutIncompleteCodons(OrthoExon &oe);
