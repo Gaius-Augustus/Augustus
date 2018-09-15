@@ -712,7 +712,76 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
   }
 }
 
+/*
+ * Darwin Mertsch: 
+ * This function obtains multiple sequence alignments (MSAs) and their label y=0,1, whether
+ * it constitutes a real CDS or not in the refernce species.
+ */
+void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_class, vector<AnnoSequence*> const &seqRanges){ 
+    for(list<OrthoExon>::iterator oeit = hects->begin(); oeit != hects->end(); ++oeit){
+	ExonCandidate *ec = oeit->orthoex.at(species);
+	if(ec == NULL)
+	    continue; // can not consider alignments where the reference species has no exon candidate
+	stringstream key;
+	key << "CDS\t" << getSeqID(species) << "\t" << ec->begin + offsets[species]+1 << "\t" << ec->end + offsets[species]+1 << "\t";
+	if(isPlusExon(ec->type))
+	    key << "+";
+	else
+	    key << "-";
+	key << "\t" << ec->gff3Frame();
+	unordered_map<string, int>::iterator got = ref_class->find(key.str());
+	bool y=0;
+	if (got != ref_class->end())
+	    y=1;
+	cout << "\ny=" << y << "\tOE: " << key.str() << endl;
+	getMsa(*oeit, seqRanges);
+    }
+}
 
+
+/*
+ * Darwin Mertsch: 
+ * This function currently prints the MSA as strings. Darwin, you can make it return a suitable data structure
+ * and then construct a training data structure.
+ */
+void GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges) {
+    int k = alignment->rows.size();
+    vector<string> rowstrings(k, "");
+    size_t flanking = 10;
+    int aliStart = oe.getAliStart() - flanking;
+    int aliEnd = oe.getAliEnd() + flanking;
+    int aliLen = aliEnd - aliStart + 1;
+    int gaplen, matchlen, loverhang, prevAliEnd;
+    
+    for (size_t s=0; s<k; s++){
+	if (alignment->rows[s] == NULL || oe.orthoex[s] == NULL)
+	    continue;
+	AlignmentRow *row = alignment->rows[s];
+	vector<fragment>::const_iterator from = row->frags.begin(); // this could be more efficient exploiting sortedness
+
+	// search first fragment that is not strictly to the left of the alignment start
+	while (from != row->frags.end() && from->aliPos + from->len < aliStart)
+	    from++;
+	prevAliEnd = aliStart - 1;
+	while (from != row->frags.end() && from->aliPos <= aliEnd){
+	    // insert gap characters between previous and this fragment
+	    gaplen = from->aliPos - prevAliEnd - 1;
+	    if (gaplen > 0)
+		rowstrings[s] += string(gaplen, '-');
+	    
+	    loverhang = (from->aliPos < aliStart)? aliStart - from->aliPos : 0;
+	    matchlen = from->len - loverhang;
+	    if (matchlen > aliEnd - from->aliPos - loverhang + 1)
+		matchlen = aliEnd - from->aliPos - loverhang + 1;
+	    rowstrings[s] += string(seqRanges[s]->sequence + from->chrPos + loverhang - offsets[s], matchlen);
+	    prevAliEnd = from->aliPos + loverhang + matchlen - 1;
+	    from++;
+	}
+	if (rowstrings[s].size() < aliLen)
+	    rowstrings[s] += string(aliLen - rowstrings[s].size(), '-');
+	cout << s << "\t" << offsets[s] << "\t" << "\t" << rowstrings[s] << endl;
+    }
+}
 
 /** 
  * Two codons are considered aligned, when all 3 of their bases are aligned with each other.
