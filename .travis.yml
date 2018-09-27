@@ -1,0 +1,10 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - printenv | grep -E '^TRAVIS_' > .env
+  
+script:
+  - docker build -t augustus .
