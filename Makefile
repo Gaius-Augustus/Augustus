@@ -43,6 +43,9 @@ release:
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus
 	rm TODO.TXT
 
+test:
+	./bin/augustus --species=human --UTR=on examples/example.fa
+
 # remove -static from src/Makefile for MAC users
 # remove -g -gdb from CXXFLAGS
 # make COMPGENEPRED = true and SQLITE = true and MYSQL = true a comment
