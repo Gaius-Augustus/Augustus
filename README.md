@@ -1,4 +1,6 @@
- # Gene Prediction with the Command-Line Version of AUGUSTUS
+[![Build Status](https://travis-ci.org/Gaius-Augustus/Augustus.svg?branch=master)](https://travis-ci.org/Gaius-Augustus/Augustus)
+
+# Gene Prediction with the Command-Line Version of AUGUSTUS
  
 ## Authors and Contact Information
 
