@@ -293,7 +293,7 @@ OPTIONS:\n\
 --unmapped                    print a GTF attribute with a list of all genomes, that are not aligned to the\n\
                               corresponding gene feature, e.g. hgm_unmapped \"1,4,5\"; (default; off)\n\
 --tmpdir=DIR                  a temporary file directory that stores lifted over files. (default 'tmp/' in current directory)\n\
---outdir=DIR                  file direcory that stores output gene files. (default: current directory)\n\
+--outdir=DIR                  file directory that stores output gene files. (default: current directory)\n\
 --printHomologs=FILE          prints disjunct sets of homologous transcripts to FILE, e.g.\n\
                               # 0     dana\n\
                               # 1     dere\n\

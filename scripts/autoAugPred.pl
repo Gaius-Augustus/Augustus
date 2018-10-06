@@ -470,7 +470,7 @@ sub noninteractive{
 	chdir "$workDir" or die ("Error: Could not change directory to $workDir. Please specify a valid one!\n");
     }
     else{
-	die("Error: Missing working direcory!\n$usage");
+	die("Error: Missing working directory!\n$usage");
     }
 
     if(-f "your_job.tmp"){
