@@ -66,7 +66,7 @@ OPTIONS:
 --halLiftover_exec_dir=DIR    Directory that contains the executable halLiftover from the HAL Tools package
                               If not specified it must be in $PATH environment variable.
 --tmpdir=DIR                  a temporary file directory that stores lifted over files. (default 'tmp/' in current directory)
---outdir=DIR                  file direcory that stores output gene files. (default: current directory)
+--outdir=DIR                  file directory that stores output gene files. (default: current directory)
 
 example:
 homGeneMapping --noDupes --halLiftOver_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal

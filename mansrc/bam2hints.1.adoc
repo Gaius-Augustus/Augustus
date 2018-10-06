@@ -63,7 +63,7 @@ The input BAM file must be sorted by target (=genome) sequence names and within 
    fill this number in in the score column (set to 0)
 
 *--maxgenelen=n*/*-G*::
-   alignments of the same clone are considered to be of the same gene if not separeted by more than this (set to 400000). Alignments that span more than this are ignored, but better filter long introns through an alignment program.
+   alignments of the same clone are considered to be of the same gene if not separated by more than this (set to 400000). Alignments that span more than this are ignored, but better filter long introns through an alignment program.
 
 ## AUTHORS
 
