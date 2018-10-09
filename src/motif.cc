@@ -193,7 +193,7 @@ void BaseCount::setWeightMatrix(string matrixFileName){
 	// cout <<"Gewichtungsmatrix: \n" << weighingMatrix << endl;
 	istrm.close();
     } else {
-	string errorMess("Could't open the file with the weight matrix: ");
+	string errorMess("Couldn't open the file with the weight matrix: ");
 	errorMess.append(matrixFileName);
 	throw ProjectError(errorMess.c_str());
     }

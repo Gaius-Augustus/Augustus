@@ -1399,7 +1399,7 @@ void NAMGene::readTransAndInitProbs( ){
 
     istrm.close();
   } else {
-    throw NAMGeneError( "Could't open the file with transition probabilities." );
+    throw NAMGeneError( "Couldn't open the file with transition probabilities." );
   }
 }
 
@@ -1449,7 +1449,7 @@ void NAMGene::readOvlpLenDist( ){
       istrm >> Constant::tail2tail_ovlp[i];
     istrm.close();
   } else {
-    throw NAMGeneError( "Could't open the file with the overlap length distribution." );
+    throw NAMGeneError( "Couldn't open the file with the overlap length distribution." );
   }
 }
 

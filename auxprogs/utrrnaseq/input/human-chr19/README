@@ -12,10 +12,6 @@ Date: 11 April 2013
 
 This folder contains the following files:
 
-* chr19.fa - This file contains the for the evaluation used genome sequence
-             The sequence is a human chromosome 19 sequence
-             The file is formatted in FASTA-format
-
 * lib1.introns.ff.gff - This file contains the intron hints created from the aligned and filtered
                         BLAT alignments of the used RNA-Seq data 
                         This file contains only introns with a GTAC splice-site
@@ -31,3 +27,11 @@ This folder contains the following files:
 
 * trimmed05.blat.sf.gtag.gff - This file contains introns (GTAG splice-site) created 
                                from the aligned and trimmed (5%) RNA-Seq data in GFF-format
+
+* The file chr19.fa for testing can be downloaded with
+
+wget http://bioinf.uni-greifswald.de/augustus/binaries/auxprogs/utrrnaseq/input/human-chr19/chr19.fa
+  
+             This file contains the for the evaluation used genome sequence.
+             The sequence is a human chromosome 19 sequence.
+             The file is formatted in FASTA-format.

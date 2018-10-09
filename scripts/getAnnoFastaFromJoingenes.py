@@ -2,26 +2,38 @@
 
 # Author: Katharina J. Hoff
 # E-Mail: katharina.hoff@uni-greifswald.de
-# Last modified on August 23rd 2018
+# Last modified on September 10th 2018
 #
 # This Python script extracts CDS features from a GTF file, excises
 # corresponding sequence windows from a genome FASTA file, stitches the
 # codingseq parts together, adds letters N at the ends if bases are
 # annotated as missing by frame in the GTF file, makes reverse complement
 # if required, and translates to protein sequence.
-# Output file contains protein sequences in FASTA format.
+# Output files are:
+#    * file with protein sequences in FASTA format,
+#    * file with coding squences in FASTA format
 # The script automatically checks for in-frame stop codons and prints a
 # warning to STDOUT if such genes are in the GTF-file. The IDs of bad genes
 # are printed to a file bad_genes.lst. Option -s allows to exclude bad genes
 # from the FASTA output file, automatically.
 
-import argparse
-import os.path
-import re
-from Bio.Seq import Seq
-from Bio.Alphabet import generic_dna, generic_protein
-from Bio import SeqIO
-from Bio.SeqRecord import SeqRecord
+try:
+    import argparse
+except ImportError:
+    raise ImportError('Failed to import argparse. Try installing with \"pip3 install argparse\"')
+
+try:
+    import re
+except ImportError:
+    raise ImportError('Failed to import argparse. Try installing with \"pip3 install re\"')
+
+try:
+    from Bio.Seq import Seq
+    from Bio.Alphabet import generic_dna, generic_protein
+    from Bio import SeqIO
+    from Bio.SeqRecord import SeqRecord
+except ImportError:
+    raise ImportError('Failed to import biophython modules. Try installing with \"pip3 install biopython\"')
 
 
 parser = argparse.ArgumentParser(
@@ -33,7 +45,9 @@ parser.add_argument('-g', '--genome', required=True,
 parser.add_argument('-f', '--gtf', required=True,
                     type=str, help='file with CDS coordinates (GTF-format)')
 parser.add_argument('-o', '--out', required=True, type=str,
-                    help="output file with protein sequences (FASTA-format)")
+                    help="name stem pf output file with coding sequences and \
+                    protein sequences (FASTA-format); will be extended by \
+                    .codingseq/.aa")
 parser.add_argument('-t', '--table', dest='translation_table', default=1,
                     type=int, help='Translational code table number (INT)')
 parser.add_argument('-s', '--filter_out_invalid_stops', dest='filter',
@@ -41,21 +55,26 @@ parser.add_argument('-s', '--filter_out_invalid_stops', dest='filter',
                     that contain internal stop codons.', default=False)
 args = parser.parse_args()
 
+# output file names:
+codingseqFile = args.out + ".codingseq"
+proteinFile = args.out + ".aa"
+
 # Read GTF file CDS entries for transcripts
 cds = {}
 try:
     with open(args.gtf, "r") as gtf_handle:
         for line in gtf_handle:
             if re.match(
-                    r"\S+\t\S+\tCDS\t\d+\t\d+\t\S+\t\S+\t\d\ttranscript_id \"(\S+)\";", line):
+                    r"\S+\t\S+\tCDS\t\d+\t\d+\t\S+\t\S+\t\d\t.*transcript_id \"(\S+)\";", line):
                 seq_id, st, en, stx, fr, tx_id = re.match(
-                    r"(\S+)\t\S+\tCDS\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\d)\ttranscript_id \"(\S+)\";", line).groups()
+                    r"(\S+)\t\S+\tCDS\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\d)\t.*transcript_id \"(\S+)\";", line).groups()
                 if seq_id not in cds:
                     cds[seq_id] = {}
                 if tx_id not in cds[seq_id]:
                     cds[seq_id][tx_id] = []
                 cds[seq_id][tx_id].append(
-                    {'start': int(st), 'end': int(en), 'strand': stx, 'frame': int(fr)})
+                    {'start': int(st), 'end': int(en), 'strand': stx,
+                     'frame': int(fr)})
 except IOError:
     print("Error: Failed to open file " + args.gtf + "!")
 
@@ -96,23 +115,29 @@ try:
 except IOError:
     print("Error: Failed to open file " + args.genome + "!")
 
+# Print coding sequences to file
+try:
+    with open(codingseqFile, "w") as codingseq_handle:
+        for tx_id, seq_rec in codingseq.items():
+            SeqIO.write(seq_rec, codingseq_handle, "fasta")
+except IOError:
+    print("Error: Failed to open file " + codingseqFile + "!")
+
+
 # Translate coding sequences, identify sequences with in-frame stop codons,
 # print proteins in FASTA format
 bad_tx = {}
 try:
-    with open(args.out, "w") as protein_handle:
+    with open(proteinFile, "w") as protein_handle:
         for tx_id, seq_rec in codingseq.items():
             is_good = True
-            print(seq_rec.seq)
             seq_rec.seq = seq_rec.seq.translate(table=args.translation_table)
             if re.search(r"\*\w", str(seq_rec.seq)):
                 bad_tx[tx_id] = 1
-            if (args.filter == True) and (tx_id not in bad_tx):
-                SeqIO.write(seq_rec, protein_handle, "fasta")
-            elif args.filter == False:
+            if ((args.filter == True) and (tx_id not in bad_tx)) or args.filter == False:
                 SeqIO.write(seq_rec, protein_handle, "fasta")
 except IOError:
-    print("Error: Failed to open file " + args.out + "!")
+    print("Error: Failed to open file " + proteinFile + "!")
 
 # Print IDs of genes with in-frame stop codons if any were found
 if len(bad_tx) > 0:

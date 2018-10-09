@@ -1,3 +1,7 @@
+List of changes from version 3.3.1 to 3.3.2 (until Oct 5th, 2018)
+     - bugfixes in comparative augustus, utrrnaseq
+     - new species Chiloscyllium punctatum (bamboo shark), Scyliorhinus torazame (cat shark), Rhincodon typus (whale shark)
+     - updated comparative augustus (CGP) tutorial 
 List of changes from version 3.3 to 3.3.1 (until May 8th, 2018)
      - new species pisaster (Pisaster ochraceus, ochre starfish)
      - bugfixes of sampling error in intron model and in check of
