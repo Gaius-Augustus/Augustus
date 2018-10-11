@@ -1,14 +1,9 @@
-/**********************************************************************
- * file:    baumwelch.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  Implementation of a special case of Baum-Welch parameter estimation
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * baumwelch.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 15.08.02|               |
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "baumwelch.hh"
 
