@@ -1,11 +1,9 @@
-/***********************************************************************
- * file:    commontrain.cc
- * licence: Artistic Licence, see file LICENCE.TXT or
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  used in training of all models
- * authors: Mario Stanke (mario@gobics.de)
+/*
+ * commontrain.cc
  *
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "commontrain.hh"
 
