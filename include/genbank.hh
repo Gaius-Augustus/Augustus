@@ -1,15 +1,9 @@
-/*****************************************************************************\
- * Filename : genbank.hh
- * Authors  : Emmanouil Stafilarakis, Mario Stanke
+/*
+ * genbank.hh
  *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|----------------------------------------
- * 20.09.2001 | Stafilarakis Emm.     | Creation of the file
- * 13.02.2002 | Mario Stanke          | Enabling multiple genes per sequence
- * 05.08.2003 | Mario Stanke          | corrected rInternal frame in GBProcessor::getAnnoSequence
- * 19.09.2005 | Mario Stanke          | GBFeature and reading in UTRs
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _GENBANK_HH
 #define _GENBANK_HH
@@ -33,9 +27,9 @@
 enum FileType {unknown, genbank, fasta};
 
 /**
- * Exception class for the GenBank classes.
+ * @brief Exception class for the GenBank classes.
  *
- * author  Emmanouil Stafilarakis
+ * @author Emmanouil Stafilarakis
  */
 class GBError : public ProjectError{
 public:
@@ -48,9 +42,9 @@ public:
 };
 
 /**
- * GBFeature: a genbank feature entry (e.g. CDS, mRNA, TATA_signal)
+ * @brief a genbank feature entry (e.g. CDS, mRNA, TATA_signal)
  *
- * author  Mario Stanke
+ * @author Mario Stanke
  */
 class GBFeature{
 public:
@@ -79,11 +73,12 @@ public:
 //========================================================================
 
 /**
- * A genbank data structure with the information about a gene.
+ * @brief A genbank data structure with the information about a gene.
  *
- * authors Emmanouil Stafilarakis, Mario Stanke
- * see     GBSplitter
- * see     GBProcessor
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
+ * @see     GBSplitter
+ * @see     GBProcessor
  */
 struct GBPositions{
   /// The entire information in GenBank format.
@@ -109,10 +104,10 @@ struct GBPositions{
 //========================================================================
 
 /**
- * A GenBank database splitter.
+ * @brief A GenBank database splitter.
  *
- * author Emmanouil Stafilarakis
- * see GBProcessor
+ * @author Emmanouil Stafilarakis
+ * @see GBProcessor
  */
 class GBSplitter{
 public:
@@ -134,10 +129,10 @@ private:
 //========================================================================
 
 /**
- * A GenBank data processor.
+ * @brief A GenBank data processor.
  *
- * author  Emmanouil Stafilarakis
- * see     GBSplitter
+ * @author  Emmanouil Stafilarakis
+ * @see     GBSplitter
  */
 class GBProcessor{
 public:
