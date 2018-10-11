@@ -1,14 +1,9 @@
-/**********************************************************************
- * file:    exontrain.cc
- * licence: 
- *          
- * descr.:  training for exon model parameters
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * exontrain.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 2.1.06  | Mario Stanke  | creating of file
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "exonmodel.hh"
 
@@ -26,6 +21,8 @@
 
 /*
  * ===[ ExonModel::buildModel ]===========================================
+ * 
+ * training for exon model parameters
  */
 void ExonModel::buildModel( const AnnoSequence* annoseq, int parIndex){
     if (!annoseq->anno) 
