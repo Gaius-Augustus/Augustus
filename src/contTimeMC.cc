@@ -1,17 +1,9 @@
-/*****************************************************************************\
- * Filename : contTimeMC.cc
- * licence  : Artistic Licence, see file LICENCE.TXT or 
- *            http://www.opensource.org/licenses/artistic-license.php
- * Authors  : Mario Stanke, mario.stanke@uni-greifswald.de
+/*
+ * contTimeMC.cc
  *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|------------------------------------------
- * 19.02.2013 | Mario Stanke          | creation of the class
- * 27.05.2013 | Stefanie König        | creation of the class ExonEvo
- *            |                       | and a base class Evo from which ExonEvo
- *            |                       | and CodonEvo inherit
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 // project includes
 #include "contTimeMC.hh"
