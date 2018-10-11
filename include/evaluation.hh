@@ -1,18 +1,9 @@
-/***************************************************************************\
- * Filename : evaluation.hh
- * Author   : Mario Stanke
- * Email    : stanke@math.uni-goettingen.de
+/*
+ * evaluation.hh
  *
- * Copyright: (C) 2002 by Mario Stanke
- *
- * Description: 
- *
- *
- * Date       |   Author      |  Changes
- *------------+---------------+---------------------------------
- * 19.06.2002 | Mario Stanke  | Creation of the file
- * 11.04.2007 | Mario Stanke  | Evaluation of the pred. of the transcription termination site (tts)
- \**************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _EVALUATION_HH
 #define _EVALUATION_HH
@@ -28,6 +19,12 @@
 
 
 #define MAXUTRDIST 5000
+
+/**
+ * @brief evaluation of the prediction
+ * 
+ * @author Mario Stanke
+ */
 class Evaluation {
 public:
   Evaluation(){
