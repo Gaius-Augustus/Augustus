@@ -1,32 +1,11 @@
-/**********************************************************************
- * file:    extrinsicinfo.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  extrinsic information/hints, user constraints
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * extrinsicinfo.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 26.11.02| Mario Stanke  | creation of the file
- * 27.08.03| Mario Stanke  | grades of hints
- * 27.05.04| Mario Stanke  | renewed printAccuracyForSequenceSet for multi-gene sequences
- * 27.07.04| Mario Stanke  | exonpartmalus does not assume P-(pitchfork)=1 anymore
- * 24.01.05| Mario Stanke  | sort exons, so hints can be trained on nested genes
- * 11.02.05| Mario Stanke  | rename intron to intronpart
- * 23.03.05| Mario Stanke  | introduce intron hints + getFeatureListAt
- * 20.06.06| Mario Stanke  | introduce irpart, tss, tts hints, start and stop hints can be a range
- * 23.06.06| Mario Stanke  | introduce CDS, CDSpart, UTR, UTRpart hints
- * 26.07.06| Mario Stanke  | introcude nonexonpart hints
- * 28.08.06| Mario Stanke  | HintGroup
- * 10.09.06| Mario Stanke  | {Feature::,HintGroup::}compatibleWith
- * 18.10.06| Mario Stanke  | making an index to the feature lists for quick access
- * 09.02.07| Mario Stanke  | some syntax check in extrinsic.cfg file
- * 10.02.07| Mario Stanke  | enabled individual_liability for different sources
- * 07.05.07| Mario Stanke  | fixed bug in getPosFirstEndAtOrAfter. Occurred when not indexed.
- * 12.05.07| Mario Stanke  | fixed bug in computeHintedDSS that could lead to a crash when an intron hint ended exactly one base after the right sequence end
- * 22.04.08| Mario Stanke  | rewrote getExonListOvlpingRange: more efficient and now also check frame
- * 02.07.08| Mario Stanke  | 1group1gene: fill hint gaps within one group with genic hints
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: extrinsic information/hints, user constraints
+ */
 
 #include "extrinsicinfo.hh"
 
