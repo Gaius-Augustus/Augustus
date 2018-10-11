@@ -1,22 +1,9 @@
-/*****************************************************************************\
- * Filename : exoncand.hh
- * Author   : Alexander Gebauer
+/*
+ * exoncand.hh
  *
- * Description: Generation of exon candidates (=possible exons)
- *
- * An exon candidate is a sequence interval with frame and strand information
- * such that 
- * at the 5' end is either an ASS or a start codon and
- * at the 3' end is either a DSS or a stop codon.
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|------------------------------------------
- * 3.11.2011  | Mario Stanke          | creation of the file
- * 06.12.2011 | Alexander Gebauer     | definition of the stop codons
- * 17.01.2012 | Alexander Gebauer     | add class AlignSeq und struct block
- * 27.02.2012 | Alexander Gebauer     | add class ExonCandidate
- * 13.01.2011 | Mario Stanke          | revision: general set of stop codons
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _EXONCAND_HH
 #define _EXONCAND_HH
@@ -42,7 +29,18 @@ extern const char* stateExonTypeIdentifiers[EXON_TYPES-1];
 // converts a stateTypeIdentifier to the ExonType
 ExonType toExonType(const char* str);
 
-
+/**
+ * @brief Generation of exon candidates (=possible exons)
+ *
+ * @details An exon candidate is a sequence interval with frame and strand information
+ * such that <br>
+ * at the 5' end is either an ASS or a start codon and<br>
+ * at the 3' end is either a DSS or a stop codon.
+ * 
+ * @author Mario Stanke
+ * @author Alexander Gebauer
+ * 
+ */
 class ExonCandidate {
 public:
     ExonCandidate(ExonType s=UNKNOWN_EXON, long int b=0, long int e=0, double sc=0.0, Double up_sc=1.0, Double down_sc=1.0):
