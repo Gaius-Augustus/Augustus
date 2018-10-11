@@ -1,16 +1,11 @@
-/**********************************************************************
- * file:    genbank.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  sequence and gene struture input from file
- * authors: Mario Stanke, mario@gobics.de, Stafilarakis
+/*
+ * genbank.cc
  *
- * date     |   author      |  changes
- * ---------|---------------|------------------------------------------
- * 03.01.07 | Mario Stanke  | fixed bug with clength (was 3 too long for every exon except the last)
- * 05.04.07 | Mario Stanke  | Do not read out incomplete mRNA if it does not have a 
- *          |               | matching but an overlapping CDS. Usefull for training with 3'incompete genes.
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: sequence and gene struture input from file
+ */
 
 #include "genbank.hh"
 #include "fasta.hh"
