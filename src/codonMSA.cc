@@ -1,14 +1,9 @@
-/**********************************************************************
- * file:    codonMSA.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  datastructure for the codon alignment
- * author:  Lizzy Gerischer
+/*
+ * codonMSA.cc
  *
- * date    |   author           |  changes
- * --------|--------------------|------------------------------------------
- * 14.07.16| Lizzy Gerischer    | creation of the file
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "codonMSA.hh"
 #include "exonmodel.hh"
