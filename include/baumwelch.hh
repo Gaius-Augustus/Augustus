@@ -1,17 +1,9 @@
-/*****************************************************************************\
- * Filename : baumwelch.hh
- * Author   : Mario Stanke
- * Project  : HMM
- * Version  : 0.1
+/*
+ * baumwelch.hh
  *
- *
- * Description: Implementation of a special case of Baum-Welch parameter estimation
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|------------------------------------------
- * 15.08.2002 | Stanke                | creation of the class
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _BAUMWELCH_HH
 #define _BAUMWELCH_HH
@@ -25,9 +17,10 @@
 #include <iostream>
 
 
-/*
- * class TrainingData
- * a sequence together with some information
+/**
+ * @brief a sequence together with some information
+ * 
+ * @author Mario Stanke
  */
 class TrainingData {
 public:
@@ -46,7 +39,12 @@ public:
     TrainingData *next;
 };
 
-
+/**
+ * @brief Implementation of a special case of Baum-Welch parameter estimation
+ * 
+ * @version 0.1
+ * @author Mario Stanke
+ */
 class BaumWelch {
 public:
 
