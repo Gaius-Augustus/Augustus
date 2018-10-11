@@ -1,16 +1,9 @@
-/**********************************************************************
- * file:    alignment.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  Generation of exon candidates
- * author:  Mario Stanke
+/*
+ * alignment.cc
  *
- * date    |   author           |  changes
- * --------|--------------------|------------------------------------------
- * 03.08.13| Mario Stanke       | creation of the file
- * 06.11.14| Lars Romoth        | overhaul of capAliSize
- *         |                    |                                           
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "alignment.hh"
 #include <string>
