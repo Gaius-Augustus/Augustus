@@ -1,17 +1,9 @@
-/**********************************************************************
- * file:    exoncand.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  Generation of exon candidates
- * author:  Alexander Gebauer
+/*
+ * exoncand.cc
  *
- * date    |   author           |  changes
- * --------|--------------------|------------------------------------------
- * 03.11.11| Mario Stanke       | creation of the file
- * 06.12.11| Alexander Gebauer  | implementation of getExonCands
- * 29.02.12| Alexander Gebauer  | implementation of summarizeAlignments
- * 27.03.12| Alexander Gebauer  | (implementation of computeIntervals referring to SequenceFeatureCollection::computeIndices)
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "exoncand.hh"
 #include "intronmodel.hh"
