@@ -1,22 +1,9 @@
-/**********************************************************************
- * file:    gene.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * gene.cc
  *
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------
- * 17.06.02| Mario Stanke  | creation of the file
- * 29.11.02| Mario Stanke  | making partial genes possible
- * 21.08.05| Mario Stanke  | added Gene::printCodingSeq
- * 23.10.06| Mario Stanke  | Evidence, SrcEvidence to attach hint summary to genes
- * 29.05.07| Mario Stanke  | introduce frame modifier, so truncated exons get the right frame
- * 25.07.08| Mario Stanke  | updated getInducedStatePath to deal with UTRs
- * 11.03.12| Mario Stanke  | frame_compatible for overlapping coding regions (bacteria)
- * 25.03.12| Mario Stanke  | frame_compatible for exon and hint (corrected compatibility for peptide hints)
- * 08.09.12| Stefanie König| reverse type of reverse strand exons added in reverseGeneSequence
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "gene.hh"
 #include "mea.hh"
