@@ -1,3 +1,10 @@
+/*
+ * consensusFinder.cc
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+
 #include "consensus.hh"
 
 #include <getopt.h>

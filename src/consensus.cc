@@ -1,10 +1,9 @@
-/**********************************************************************
- * file:    consensus.cc
+/*
+ * consensus.cc
  *
- * descr.:  finds the consensus pattern
- * authors: Sukadeb Acharya, sukadeb@gmail.com
- *
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "consensus.hh"
 

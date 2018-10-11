@@ -1,11 +1,9 @@
-/**********************************************************************
- * file:    gene.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  
- * authors: Mario Stanke, mario.stanke@uni-greifswald.de
+/*
+ * gene.hh
  *
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _GENE_HH
 #define _GENE_HH
@@ -17,10 +15,34 @@
 
 
 // Forward declarations
+
+/**
+ * @author Mario Stanke
+ */
 class State;
+
+/**
+ * @brief a single splice version, not necessarily coding
+ * @author Mario Stanke
+ */
 class Transcript;
+
+/**
+ * @brief a single splice version (transcript) of a coding gene
+ * 
+ * @author Mario Stanke
+ */
 class Gene;
+
+/**
+ * @brief AltGene is a gene in the original sense. It can contain several transcripts (coding or not).
+ * 
+ * @author Mario Stanke
+ */
 class AltGene;
+/**
+ * @author Mario Stanke
+ */
 class AnnoSequence;
 
 template<class T>
@@ -29,6 +51,10 @@ struct ptr_comparison
     bool operator()(T* a, T* b) { return *a < *b; } 
 };
 
+
+/**
+ * @author Mario Stanke
+ */
 class SrcEvidence {
 public:
     SrcEvidence(string srcname){
@@ -42,15 +68,15 @@ public:
 
 bool operator<(const SrcEvidence& e1, const SrcEvidence& e2);
 
-
-/*
- * class SrcEvidence
- * A summary of extrinsic evidence by source of evidence.
- * Example:
- * E : 7 (e1,e2,e3,e4,e5,e6,e7)
- * P : 2 (p1,p2)
- * T : 1 (t1)
+/**
+ * @brief A summary of extrinsic evidence by source of evidence.
+ * @details Example:<br>
+ * E : 7 (e1,e2,e3,e4,e5,e6,e7)<br>
+ * P : 2 (p1,p2)<br>
+ * T : 1 (t1)<br>
  * numEvidence = 10. numSources = 3. srcnames = [E,P,T], freq= [7,2,1], groupnames[0]= {e1,e2,...,e7}
+ * 
+ * @author Mario Stanke
  */
 class Evidence {
 public:
@@ -71,10 +97,6 @@ public:
 Evidence *stateEvidenceSummary(State *state1, State *state2 = NULL);
 
 
-/**
- * class State
- * 
- */
 class State {
 public:
   /**
@@ -169,8 +191,9 @@ public:
 bool frame_compatible(State *ex1, State* ex2);
 
 /**
- * A path through the Hidden-Markov-Model states
- * author Mario Stanke
+ * @brief A path through the Hidden-Markov-Model states
+ * 
+ * @author Mario Stanke
  */
 class StatePath {
 public:
@@ -223,10 +246,6 @@ public:
 
 int lenStateList(State *head);
 
-/**
- * class Transcript
- * a single splice version, not neccessarily coding
- */
 class Transcript {
 public:
     Transcript() {
@@ -328,10 +347,6 @@ public:
 
 void filterGenePrediction(list<Transcript*> &gl, list<Transcript*> &filteredTranscripts, const char *seq, Strand strand, bool noInFrameStop, bool &hasInFrameStop, double minmeanexonintronprob=0.0, double minexonintronprob=0.0);
 
-/**
- * class Gene
- * a single splice version (transcript) of a coding gene
- */
 class Gene : public Transcript {
 public:
     Gene() {
@@ -428,10 +443,6 @@ public:
 };
 
 
-/*
- * AltGene is a gene in the original sense. It can contain several transcripts (coding or not).
- * 
- */
 class AltGene {
 public:
     list<Transcript*> transcripts;
@@ -473,6 +484,9 @@ void reverseGeneSequence(Transcript* &seq, int endpos);
 void postProcessGenes(list<AltGene> *genes, AnnoSequence *annoseq);
 Gene* promoteToCoding(Transcript* tx, AnnoSequence *as); // make a coding gene from a non-coding if it contains a good ORF
 
+/**
+ * @author Mario Stanke
+ */
 class Annotation {
 public:
   Annotation() {
@@ -584,6 +598,10 @@ public:
     int          weight;
 };
 
+/**
+ * 
+ * @author Mario Stanke
+ */
 class AnnoSeqGeneIterator {
 public:
   AnnoSeqGeneIterator(const AnnoSequence* annoseqHead){
@@ -604,7 +622,9 @@ public:
   const Transcript *gene;
 };
 
-
+/**
+ * @author Mario Stanke
+ */
 class CompareStatePathPtr{
 public: 
   CompareStatePathPtr(){ }
@@ -614,6 +634,9 @@ public:
   }
 };
 
+/**
+ * @author Mario Stanke
+ */
 class StatePathCollection {
 public:
   StatePathCollection(){
@@ -693,6 +716,9 @@ private:
  //class CodonUsage
 */
 
+/**
+ * @author Mario Stanke
+ */
 class FreqSegment{
 public:
     FreqSegment(int s, int f){

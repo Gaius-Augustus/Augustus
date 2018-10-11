@@ -1,3 +1,10 @@
+/*
+ * curve2hints.cc
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+
 #include <iostream>
 #include <string>
 #include <vector>

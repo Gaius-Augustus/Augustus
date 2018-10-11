@@ -1,11 +1,9 @@
-/**********************************************************************
- * file:    alignment.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  global multiple sequence alignment with efficiently stored long gaps
- * authors: Mario Stanke
+/*
+ * alignment.hh
  *
- *********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _ALIGNMENT
 #define _ALIGNMENT
@@ -18,7 +16,11 @@
 
 class MsaSignature; // forward declaration
 
-// gapless alignment fragment
+/**
+ * @brief gapless alignment fragment
+ * 
+ * @author Mario Stanke
+ */
 class fragment {
 public:
     fragment(int chrPos, int aliPos, int len) : chrPos(chrPos), aliPos(aliPos), len(len) {}
@@ -31,8 +33,12 @@ public:
 };
 
 /**
- * global multiple sequence alignment
- * alignment does not contain the sequence itself, but the info, where gaps are
+ * @brief global multiple sequence alignment
+ * 
+ * @details alignment does not contain the sequence itself, but the info, where gaps are.<br>
+ * Generation of exon candidates.
+ * 
+ * @author Mario Stanke
  */
 class AlignmentRow {
 public:
@@ -83,6 +89,10 @@ private:
 
 
 /**
+ * @brief global multiple sequence alignment with efficiently stored long gaps.
+ * 
+ * @details Generation of exon candidates
+ * 
  *          1000      1010       1020      1030       1040      1050    chromosomal
  * chr21       |.........|..........|.........|..........|.........|    positions
  *               *********                 ************                 in species 1
@@ -101,6 +111,8 @@ private:
  *       a.rows[0].chrEnd() = 1037
  *
  * Coordinates are LEFT TO RIGHT, for reverse strand alignments, they refer to the REVERSE COMPLEMENT of the sequence.
+ * 
+ * @author Mario Stanke
  */
 class Alignment {
 public:
@@ -188,9 +200,10 @@ inline bool isGap(char c){
     return (c == '-' || c == '.');
 }
 
-/*
- * MsaSignature is a summary of the seqId/strand combinations of the alignment
+/**
+ * @brief MsaSignature is a summary of the seqId/strand combinations of the alignment
  *
+ * @author Mario Stanke
  */
 class MsaSignature {
 public:
@@ -222,6 +235,10 @@ bool cmpSigPtr(const MsaSignature *s1, const MsaSignature *s2);
 
 typedef pair<size_t, int> BoundaryFragment; // (s, chrPos), where s= species index
 
+/**
+ * 
+ * @author Mario Stanke
+ */
 class CompareBoundaryFragment {
 public:
     bool operator()(BoundaryFragment& bf1, BoundaryFragment& bf2) {

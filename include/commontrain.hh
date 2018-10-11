@@ -1,11 +1,9 @@
-/***********************************************************************
- * file:    commontrain.hh
- * licence: Artistic Licence, see file LICENCE.TXT or
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  used in training of all models
- * authors: Mario Stanke (mario@gobics.de)
+/*
+ * commontrain.hh
  *
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _COMMONTRAIN_HH
 #define _COMMONTRAIN_HH
@@ -17,18 +15,16 @@
 #include <vector>
 
 
+// everything below this is considered 0, for performance
+#define SMOOTH_EPSILON Double(1e-20)
+
 /**
- * @memo A class for smoothing distributions
- *
- * @doc
+ * @brief A class for smoothing distributions
+ * @details used in training of all models
  *
  * @author  Mario Stanke
  * @version 0.1
  */
-
-// everything below this is considered 0, for performance
-#define SMOOTH_EPSILON Double(1e-20)
-
 class Smooth {
 public:
     Smooth (Integer minwindowcount = 0, double slope_of_bandwidth = 0.1) {
