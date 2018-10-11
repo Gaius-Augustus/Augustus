@@ -1,14 +1,11 @@
-/**********************************************************************
- * file:    fasta.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  FASTA sequence input
- * authors: Mario Stanke, mario.stanke@uni-greifswald.de
+/*
+ * fasta.cc
  *
- * date     |   author      |  changes
- * ---------|---------------|------------------------------------------
- * 01.09.12 | Mario Stanke  | creation of the file
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: FASTA sequence input
+ */
 
 // project includes
 #include "fasta.hh"
