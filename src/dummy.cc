@@ -1,14 +1,9 @@
-/**********************************************************************
- * file:    dummy.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * dummy.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 2.1.06  | Mario Stanke  |  creation of the file
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "intronmodel.hh"
 #include "exonmodel.hh"
