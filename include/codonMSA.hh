@@ -1,15 +1,9 @@
-/**********************************************************************
- * file:    codonMSA.hh
- * licence: Artistic Licence, see file LICENCE.TXT or
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  datastructure for the codon alignment
- * author:  Lizzy Gerischer
+/*
+ * codonMSA.hh
  *
- * date    |   author           |  changes
- * --------|--------------------|------------------------------------------
- * 14.07.16| Lizzy Gerischer    | creation of the file
- **********************************************************************/
-
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _CODONMSA
 #define _CODONMSA
@@ -20,6 +14,11 @@
 #include "phylotree.hh"
 #include "contTimeMC.hh"
 
+/**
+ * @brief datastructure for the codon alignment
+ * 
+ * @author Lizzy Gerischer
+ */
 class CodonMSA{
 public:
   CodonMSA(string filename, double branchlength);
