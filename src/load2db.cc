@@ -1,16 +1,11 @@
-/**********************************************************************
- * Load the sequences from a flat file in fasta format into a database.
- * file:    load2db.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
+/*
+ * load2db.cc
  *
- * authors: Mario Stanke, mario.stanke@uni-greifswald.de
- *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 30.08.12| Mario Stanke  | creation of the file
- * 20.11.13|Stefanie Koenig| loading extrinsic evidence into database
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: Load the sequences from a flat file in fasta format into a database.
+ */
 
 // Project includes
 #include "fasta.hh"
