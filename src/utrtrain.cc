@@ -1,16 +1,11 @@
-/**********************************************************************
- * file:    utrtrain.cc
- * licence: 
- *          
- * descr.:  training of untranslated region model
- * authors: Mario Stanke (mario@gobics.de)
+/*
+ * utrtrain.cc
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
  * 
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------ 
- * 01.02.06| Mario Stanke  | creation of the file
- * 27.03.06| Mario Stanke  | 5' UTR intron
- * 15.05.06| Mario Stanke  | 3' UTR training
- **********************************************************************/
+ * Description: training of untranslated region model
+ */
 
 #include "utrmodel.hh"
 
