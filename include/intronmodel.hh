@@ -1,15 +1,9 @@
-/*****************************************************************************\
- * Filename : intronmodel.hh
- * Authors   : Emmanouil Stafilarakis, Mario Stanke
+/*
+ * intronmodel.hh
  *
- * Description: Intron Model Header File
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|----------------------------------------
- * 10.11.2001 | Stafilarakis Emm.     | Creation of the file
- * 31.05.2002 | Mario Stanke          | static data members
- \******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _INTRONMODEL_HH
 #define _INTRONMODEL_HH
@@ -18,13 +12,11 @@
 
 
 /**
- * @memo    The intron model class.
- *
- * @doc     
- *
- * @authors  Emmanouil Stafilarakis, Mario Stanke
- */
- 
+ * @brief The intron model class.
+ * 
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
+ */ 
 class IntronModel : public StateModel {
 public:
     IntronModel();
@@ -141,6 +133,10 @@ private:
     static int             ass_outside; // Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
 };
 
+/**
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
+ */ 
 class IntronModelError : public ProjectError {
 public:
     IntronModelError(string msg) : ProjectError(msg) {}
