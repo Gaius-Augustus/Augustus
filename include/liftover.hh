@@ -1,12 +1,9 @@
-/*****************************************************************************\
- * Filename : liftover.hh
- * Authors  : Stefanie Koenig
+/*
+ * liftover.hh
  *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|----------------------------------------
- * 03.10.2014 | Stefanie Koenig       | Creation of the file
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _LIFTOVER_HH
 #define _LIFTOVER_HH
@@ -14,15 +11,17 @@
 // project includes
 #include "alignment.hh"
 
-/*
- * SeqIntKey encodes the start position and length of a sequence interval in a 64 bit integer
- *   
- * bits           42                 15          7 
- *      |--------------------|---------------|-------|
+/**
+ * @brief SeqIntKey encodes the start position and length of a sequence interval in a 64 bit integer
+ * @details   
+ * bits           42                 15          7     <br>
+ *      |--------------------|---------------|-------| <br>
  *         start position           length     
- *
+ * <br>
  * 7 extra bits for additional information (optional)
  * f.e. if sequence interval is an exon, 5 extra bits for type and 2 extra bits for lenMod3
+ * 
+ * @author Stefanie Koenig
  */
 class SeqIntKey{
 
@@ -43,18 +42,20 @@ private:
     int_fast64_t key;
 };
 
-/*
- * Mapping of sequence intervals from positions in the genome
+/**
+ * @brief Mapping of sequence intervals from positions in the genome
  * to positions in the alignment and vice versa.
- * A sequence interval can be any object T for which functions
- *
- * int_fast64_ T::getKey()                        // returns a SeqIntKey encoding start position and length of the SI
+ * @details A sequence interval can be any object T for which functions <br>
+ * <br>
+ * int_fast64_ T::getKey()                        // returns a SeqIntKey encoding start position and length of the SI <br>
  * T* create(int_fast64_t key , const char* dna)  // creates a new SI from a SeqIntKey after verification (e.g. if SI is an
- *                                                // intron, check whether splice sites are present in the sequence)
+ *                                                // intron, check whether splice sites are present in the sequence)<br>
  *
- * exist. Sequence positions can be encoded as zero-length SIs.
+ * exist. Sequence positions can be encoded as zero-length SIs.<br>
  * Purpose: lifting over of exons, introns and non-canonical SS to other species
  * (is it possible to generalize this class to lifting over whole gene structures?)
+ * 
+ * @author Stefanie Koenig
  */
 class LiftOver {
 
