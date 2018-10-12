@@ -1,6 +1,17 @@
+/*
+ * meaPath.hh
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+
 #ifndef _MEAPATH_HH
 #define _MEAPATH_HH
 
+/**
+ * 
+ * @author Lizzy Gerischer
+ */
 class MEApath{
 public:
   MEApath(AugustusGraph *g):graph(g){}

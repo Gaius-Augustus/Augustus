@@ -1,11 +1,9 @@
-/**********************************************************************
- * file:    orthoexon.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  maintains orthologous exons for comparative gene prediction
- * authors: Stefanie König
+/*
+ * orthoexon.hh
  *
- *********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _ORTHOEXON_HH
 #define _ORTHOEXON_HH
@@ -22,8 +20,16 @@
 extern const char*  phyleticPatternIdentifiers[6];
 
 //forward declarations:
+/**
+ * @author Stefanie König
+ */
 class Node;
 
+/**
+ * @brief maintains orthologous exons for comparative gene prediction
+ * 
+ * @author Stefanie König
+ */
 class OrthoExon {
 public:
     OrthoExon(int_fast64_t k, size_t numSpecies);

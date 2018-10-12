@@ -1,11 +1,9 @@
-/**********************************************************************
- * file:    namgene.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  the class NAMGene is AUGUSTUS' entry point for the algorithms
- * authors: Mario Stanke (mario@gobics.de), Stafilarakis
+/*
+ * namgene.hh
  *
- *********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _NAM_GENE_HH
 #define _NAM_GENE_HH
@@ -18,13 +16,21 @@
 #include "pp_scoring.hh"
 #include "statemodel.hh"
 
-
+/**
+ * @author Mario Stanke
+ * @author Emmanouil Stafilarakis
+ */
 class NAMGeneError : public ProjectError {
 public:
     NAMGeneError( string msg ) : ProjectError( msg ) { }
 };
 
-
+/**
+ * @brief the class NAMGene is AUGUSTUS' entry point for the algorithms
+ * 
+ * @author Mario Stanke
+ * @author Emmanouil Stafilarakis
+ */
 class NAMGene {
 public:
     NAMGene();

@@ -1,3 +1,10 @@
+/*
+ * graph.hh
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+
 #ifndef _GRAPH_HH
 #define _GRAPH_HH
 
@@ -14,6 +21,9 @@ using namespace std;
 
 #define NUM_STATENAMES 6
 
+/**
+ * @author Stefanie Nachtweide
+ */
 enum Statename{type_unknown=-1, CDS, utr3, utr5, intron, utr3Intron, utr5Intron};
 
 extern string stateNameIdentifiers[NUM_STATENAMES];
@@ -26,6 +36,15 @@ extern string stateNameIdentifiers[NUM_STATENAMES];
  */
 #define NUM_NODETYPES 27
 
+/**
+ * @brief types of nodes
+ * @details sampled exons and introns: sampled <br>
+ * additional exons, which are not sampled: unsampled_exons <br>
+ * neutral nodes: IR, plus0, plus1, plus2, minus0, minus1, minus2 (for each of the 7 neutral lines one type) <br>
+ * NOT_KNOWN: default type, for example head and tail <br>
+ * 
+ * @author Stefanie Nachtweide
+ */
 enum NodeType{NOT_KNOWN=-1, IR,
 	      plus0, plus1, plus2, minus0, minus1, minus2, T_plus1, TA_plus2, TG_plus2, T_minus1, C_minus1, YY_minus0, // intron types between two CDS exons
 	      ncintr, rncintr, // intron between two non-coding exons
@@ -34,14 +53,27 @@ enum NodeType{NOT_KNOWN=-1, IR,
 
 extern string nodeTypeIdentifiers[NUM_NODETYPES];
 
-class Status;
-class Node;
-class Edge;
-class Graph;
-
-/*
- * Status stores all the relavant information (for states) from the program specific datastructure
+/**
+ * @brief Status stores all the relevant information (for states) from the program specific datastructure
+ * 
+ * @author Stefanie Nachtweide
  */
+class Status;
+
+/**
+ * @author Stefanie Nachtweide
+ */
+class Node;
+
+/**
+ * @author Stefanie Nachtweide
+ */
+class Edge;
+
+/**
+ * @author Stefanie Nachtweide
+ */
+class Graph;
 
 class Status{
 public:
@@ -205,6 +237,9 @@ protected:
 
 };
 
+/**
+ * @author Stefanie Nachtweide
+ */
 class AugustusGraph : public Graph{
 
 public:

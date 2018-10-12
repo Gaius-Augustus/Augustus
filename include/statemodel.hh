@@ -1,12 +1,9 @@
-/***********************************************************************
- * file:    statemodel.hh
- * licence: Artistic Licence, see file LICENCE.TXT or
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  base interface class for the state model classes
- * authors: Emmanouil Stafilarakis, Mario Stanke (mario@gobics.de), 
- *          Oliver Keller
+/*
+ * statemodel.hh
  *
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _STATEMODEL_HH
 #define _STATEMODEL_HH
@@ -45,8 +42,11 @@ inline void getStatePair(int fullState, int& state, SubstateId& substate) {
     substate.set(SHIFT_RIGHT(fullState -state));
 }
 
-/*
- * Predecessor in the state transition Graph
+/**
+ * @brief Predecessor in the state transition Graph
+ * 
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
  */
 struct Ancestor{
     Ancestor(int newpos=0, Double newval=0.0) : pos(newpos), val(newval) {} 
@@ -54,10 +54,12 @@ struct Ancestor{
     Double  val;
 };
 
-
-/*
- * This is the base interface common to all state model classes
+/**
+ * @brief This is the base interface class common to all state model classes
  * (ExonModel, IntronModel, IGenicModel, UTRModel)
+ * 
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
  *
  */
 class StateModel {
@@ -142,10 +144,12 @@ protected:
 }; // class StateModel
 
 
-/*
- * classes Snippet*
- * intelligently store and retrieve the sequence emission probabilities of the sequence from a to b
- * for common pairs of a and b
+/**
+ * @brief intelligently store and retrieve the sequence emission probabilities 
+ *        of the sequence from a to b for common pairs of a and b
+ * 
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
  */
 class SnippetListItem {
 public:
@@ -159,6 +163,10 @@ public:
     SnippetListItem *next;
 };
 
+/**
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
+ */ 
 class SnippetList {
 public:
     Double getProb(int base, int &partlen);
@@ -167,6 +175,10 @@ public:
     SnippetListItem *first, *last;
 };
 
+/**
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
+ */
 class SnippetProbs {
 public:
     SnippetProbs(const char* dna, int k, bool forwardStrand=true){
@@ -210,9 +222,12 @@ private:
     Double getElemSeqProb(int base, int len);
 };
 
-/*
- * SegProbs - another class for caching probabilities of sequence segments
- * idea: cumulative product => get segment prob in constant time via a ratio 
+/**
+ * @brief another class for caching probabilities of sequence segments
+ * @details idea: cumulative product => get segment prob in constant time via a ratio 
+ * 
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
  */
 class SegProbs {
 public:
@@ -240,10 +255,13 @@ protected:
     bool forwardStrand;
 };
 
-/*
- * data structure to store possible endOfPred positions to iterate directly
+/**
+ * @brief data structure to store possible endOfPred positions to iterate directly
  * only over those endOfPred positions, that are possible in the inner loop of
- * the Viterbi algorithm
+ * the Viterbi algorithm.
+ * 
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
  */
 class EOPList {
 public:
