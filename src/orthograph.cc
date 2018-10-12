@@ -1,15 +1,11 @@
-/**********************************************************************
- * file:    orthograph.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  orthologous graphs for comparative gene prediction
- * authors: Stefanie Koenig
+/*
+ * orthograph.cc
  *
- * date    |   author       |  changes
- * --------|----------------|------------------------------------------
- * 23.03.12|Stefanie Koenig | creation of the file
- **********************************************************************/
-
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: orthologous graphs for comparative gene prediction
+ */
 
 #include "orthograph.hh"
 #include "contTimeMC.hh"
