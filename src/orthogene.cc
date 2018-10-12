@@ -1,13 +1,10 @@
-/**********************************************************************
- * file:    orthogene.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  maintains homologous (often orthologous) genes for comparative gene prediction
- * authors: Mario Stanke, Patrick Balmerth
+/*
+ * orthogene.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 19.10.14| Mario Stanke  | creation of the file
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: maintains homologous (often orthologous) genes for comparative gene prediction
+ */
 
 #include "orthogene.hh"
