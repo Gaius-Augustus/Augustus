@@ -1,16 +1,11 @@
-/**********************************************************************
- * file:    genomicMSA.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  Generation of exon candidates
- * author:  Alexander Gebauer
+/*
+ * genomicMSA.cc
  *
- * date    |   author           |  changes
- * --------|--------------------|------------------------------------------
- * 04.04.12| Alexander Gebauer  | creation of the file
- * 01.07.13| Mario Stanke       | overhaul of readAlignment
- * 27.08.13| Mario Stanke       | summarization of aligmnments into gene ranges
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: Generation of exon candidates
+ */
 
 #include "genomicMSA.hh"
 #include <fstream>
