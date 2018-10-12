@@ -1,15 +1,9 @@
-/*****************************************************************************\
- * Filename : hints.hh
- * Author   : Mario Stanke
+/*
+ * hints.hh
  *
- *
- * Description: Hints on the gene structure
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|---------------------------------
- * 20.10.06   | Mario Stanke          | creation of the file by splitting the source file extrinsicinfo.hh
- * 01.07.08   | Mario Stanke          | added nonirpart hint type
- \******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef __HINTS_HH
 #define __HINTS_HH
@@ -28,7 +22,12 @@
 
 using namespace std;
 
-// Note: the order of FeatureTypes is important for the function compatibleWith
+/**
+ * @brief FeatureType
+ * @details Note: the order of FeatureTypes is important for the function compatibleWith
+ * 
+ * @author Mario Stanke
+ */
 enum FeatureType {startF = 0, stopF, assF, dssF, tssF, ttsF, exonpartF, exonF, intronpartF, intronF, irpartF, CDSF, CDSpartF, UTRF, UTRpartF, nonexonpartF, nonirpartF};
 extern const char* featureTypeNames[NUM_FEATURE_TYPES];
 
@@ -53,6 +52,11 @@ extern const char* featureTypeNames[NUM_FEATURE_TYPES];
 bool isSignalType(FeatureType type);
 bool isGFF(ifstream &istrm);
 
+/**
+ * @brief Hints on the gene structure
+ * 
+ * @author Mario Stanke
+ */
 class Feature {
 public:
     Feature(){
@@ -134,12 +138,14 @@ istream& operator>>( istream& in, Feature& feature );
 bool operator<(const Feature& f1, const Feature& f2);
 bool operator==(const Feature& f1, const Feature& f2);
 
-/*
- * HintGroup
- * Hints that are known to belong to the same gene, 
- * for example, because they come from the same mRNA, form a group.
- */
 
+/**
+ * @brief HintGroup
+ * @details Hints that are known to belong to the same gene, 
+ * for example, because they come from the same mRNA, form a group.
+ * 
+ * @author Mario Stanke
+ */
 class HintGroup{
 public:
     HintGroup(){
