@@ -1,15 +1,9 @@
-/**********************************************************************
- * file:    projectio.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  
- * authors: Stafilarakis, Mario Stanke (mario@gobics.de)
+/*
+ * projectio.cc
  *
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------ 
- *         | Stafilarakis  | creation of the class
- * 13.01.03| Mario Stanke  | made goto_line_after conform with g++ 3.2
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "projectio.hh"
 #include <sstream>
