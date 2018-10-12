@@ -1,14 +1,11 @@
-/**********************************************************************
- * file:    merkmal.cc
- * licence: Artistic Licence, see file LICENCE.TXT or
- *          http://www.opensource.org/licenses/artistic-license-2.0.php
- * descr.:  Features (German: Merkmale) for the Conditional Random Field
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * merkmal.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 27.07.08| Mario Stanke  | creation of the classes
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: Features (German: Merkmale) for the Conditional Random Field
+ */
 
 #include "merkmal.hh"
 
