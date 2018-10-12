@@ -1,13 +1,9 @@
- /*****************************************************************************\
- * Filename : ncmodel.hh
- * Author   : Mario Stanke
- * Description: Model for non-protein-coding genes (nc)
+/*
+ * ncmodel.hh
  *
- *
- * Date       |   Author        |  Changes
- *------------|-----------------|----------------------------------------
- * 21.02.2015 | Mario Stanke    | creation of the file
- \******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _NCMODEL_HH
 #define _NCMODEL_HH
@@ -16,12 +12,11 @@
 
 
 /**
- * The nc model class.
+ * @brief Model for non-protein-coding genes (nc)
  *
- * author Mario Stanke
+ * @author Mario Stanke
  */
- 
-class NcModel : public StateModel {
+ class NcModel : public StateModel {
 public:
     NcModel();
     ~NcModel();
@@ -81,6 +76,10 @@ private:
     static vector<Double>  tssProbPlus, tssProbMinus;
 };
 
+ 
+/**
+ * @author Mario Stanke
+ */
 class NcModelError : public ProjectError {
 public:
     NcModelError(string msg) : ProjectError(msg) {}
