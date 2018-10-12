@@ -1,31 +1,30 @@
-/*****************************************************************************\
- * Fielname : igenicmodel.hh
- * Author   : Mario Stanke
- * Email    : stanke@math.uni-goettingen.de
- * Project  : HMM
+/*
+ * igenicmodel.hh
  *
- * Copyright: (C) 2002 by Mario Stanke
- *
- * Description: 
- *
- *
- * Date             |   Author       |  Changes
- * Mit Jun 26 2002  | Mario Stanke   | Creation of the file           
- * -----------------|----------------|---------------------------------------
-\******************************************************************************/
-
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+ 
 #ifndef __IGENICMODEL_HH
 #define __IGENICMODEL_HH
 
 #include "statemodel.hh"
 
-
+/**
+ * @author Mario Stanke
+ * 
+ */
 class IGenicModelError : public ProjectError {
 public:
     IGenicModelError(string msg) : ProjectError(msg) {}
 };
 
-
+/**
+ * @brief intergenic region
+ * 
+ * @author Mario Stanke
+ * 
+ */
 class IGenicModel : public StateModel {
 public:
     IGenicModel() : gweight(1) {
