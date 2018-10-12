@@ -1,18 +1,11 @@
-/**********************************************************************
- * file:    lldouble.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  floating point number with very high precision
- * authors: Emmanouil Stafilarakis, Mario Stanke, mario@gobics.de
+/*
+ * lldouble.cc
  *
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------ 
- * 17.01.02| Stafilarakis  | Creation of the file
- * 2.5.02  | Mario Stanke  | debugging
- * 19.4.06 | Mario Stanke  | root
- * 19.4.06 | Mario Stanke  | root
- * 26.7.08 | Oliver Keller | rewrite; exponential
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: floating point number with very high precision
+ */
 
 #include "lldouble.hh"
 
