@@ -1,3 +1,10 @@
+/*
+ * mea.cc
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+
 #include "mea.hh"
 #include "meaPath.hh"
 #include "evaluation.hh"

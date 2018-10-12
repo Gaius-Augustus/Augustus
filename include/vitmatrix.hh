@@ -1,11 +1,9 @@
-/***********************************************************************
- * file:    vitmatrix.hh
- * licence: Artistic Licence, see file LICENCE.TXT or
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  data structures used inside the viterbi matrix
- * author:  Oliver Keller (keller@cs.uni-goettingen.de)
+/*
+ * vitmatrix.hh
  *
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _VITMATRIX_HH
 #define _VITMATRIX_HH
@@ -27,7 +25,11 @@ using namespace std;
 #define VIT_MIN_CAPACITY 7
 #define MAX_LINKCOUNT 300
 #define SUBSTATEVALUE_BITS (8*sizeof(short))
-	
+
+/**
+ * @author Oliver Keller
+ * @author Mario Stanke
+ */
 struct SubstateId {
     explicit SubstateId(signed char s=-1, short v=0) : slot(s), value(v) {}
 
@@ -100,22 +102,32 @@ struct GenericDataType {
 };
 #endif
 
-// exceptions thrown by Viterbi
+/**
+ * @brief exceptions thrown by Viterbi
+ * 
+ * @author Oliver Keller
+ * @author Mario Stanke
+ */
 struct NoSubmapFoundError : public ProjectError {
     NoSubmapFoundError() : 
 	ProjectError("Internal error: ViterbiSubmapType has no map!") {}
 };
+
+/**
+ * @author Oliver Keller
+ * @author Mario Stanke
+ */
 struct SubmapEmptyError : public ProjectError {
     SubmapEmptyError() : 
 	ProjectError("Internal error: ViterbiSubmapType is empty!") {}
 };
 
-
-/*
- * AlgorithmVariant: 
- * this type is used to determine the variant implemented in the
+/**
+ * @brief this type is used to determine the variant implemented in the
  * viterbiForwardAndSampling methods
- *
+ * 
+ * @author Oliver Keller
+ * @author Mario Stanke
  */
 enum AlgorithmVariant { doViterbiOnly, doViterbiAndForward, doSampling, doBacktracking };
 /* any changes made to the order above needs to be reflected in the following 
@@ -130,16 +142,20 @@ inline AlgorithmVariant doViterbi(bool needForwardTable) {
     return needForwardTable ? doViterbiAndForward : doViterbiOnly;
 }
 
-
-/*
- * ViterbiSubmapType:
- * This class stores the probabilites for substates for a single
- * pair (base position, state)
+/**
+ * @brief This class stores the probabilites for substates for a single
+ *        pair (base position, state)
+ * @details the actual values are the entries of the map, multiplied by a common factor
  * 
- * the actual values are the entries of the map, multiplied by a common factor
+ * @author Oliver Keller
+ * @author Mario Stanke
  */
 class ViterbiSubmapType;
 
+/**
+ * @author Oliver Keller
+ * @author Mario Stanke
+ */
 struct ViterbiSubmapEntry {
     ViterbiSubmapEntry(const Double& dbl=0, ViterbiSubmapType* pred=0) :
 	p(dbl), predMap(pred), succCount(0) {}
@@ -165,6 +181,10 @@ struct ViterbiSubmapEntry {
     short succCount;
 };
 
+/**
+ * @author Oliver Keller
+ * @author Mario Stanke
+ */
 struct ViterbiSubmapBasetype : public map<SubstateId, ViterbiSubmapEntry > {
     ViterbiSubmapBasetype(int ln) : 
 	linkcount(ln), 
@@ -441,10 +461,11 @@ inline void ViterbiSubmapType::getMaxSubstate(SubstateId& substate, Double& valu
 }
 
 
-/*
- * ViterbiEntryType:
- * one entry in the viterbi matrix, including the index for the substate map
- *
+/**
+ * @brief one entry in the viterbi matrix, including the index for the substate map
+ * 
+ * @author Oliver Keller
+ * @author Mario Stanke
  */
 struct ViterbiEntryType {
     ViterbiEntryType(signed char st, Double v, signed char i=-1) :
@@ -459,10 +480,14 @@ struct ViterbiEntryType {
  * ViterbiColumnType:
  * The entries of the Viterbi matrix belonging to the same base position
  * Only nonzero values are actually stored
- *
+ * 
  */
 typedef vector<ViterbiEntryType> ViterbiColumnBasetype;
 
+/**
+ * @author Oliver Keller
+ * @author Mario Stanke
+ */
 class ViterbiColumnType : public ViterbiColumnBasetype {
 public:
     
@@ -653,9 +678,11 @@ inline void ViterbiColumnType::eraseSubProbs(int subidx) {
 }
 
 
-/*
- * ViterbiMatrixType:
- * An array of Viterbi columns
+/**
+ * @brief An array of Viterbi columns
+ * 
+ * @author Oliver Keller
+ * @author Mario Stanke
  */
 class ViterbiMatrixType {
 public:
@@ -712,8 +739,11 @@ private:
 }; // ViterbiMatrixType
 
 
-/*
- * Options lists are used for sampling; items also in backtracking
+/**
+ * @brief Options lists are used for sampling; items also in backtracking
+ * 
+ * @author Oliver Keller
+ * @author Mario Stanke
  */
 class OptionListItem {
 public:
@@ -742,6 +772,10 @@ inline bool operator< (const OptionListItem& first, const OptionListItem& second
     return (first.probability > second.probability);
 }
 
+/**
+ * @author Oliver Keller
+ * @author Mario Stanke
+ */
 class OptionsList{
 public:
     OptionsList(){

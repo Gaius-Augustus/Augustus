@@ -1,11 +1,9 @@
-/**********************************************************************
- * file:    geneMSA.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  multiple sequence alignment of genomes for comparative gene prediction
- * authors: Mario Stanke, Alexander Gebauer
+/*
+ * geneMSA.hh
  *
- *********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _GENEMSA
 #define _GENEMSA
@@ -21,6 +19,12 @@
 #include<boost/functional/hash.hpp>
 
 //forward declarations
+
+/**
+ * 
+ * @author Mario Stanke
+ * @author Alexander Gebauer
+ */
 class OrthoGraph;
 string printRFC(vector<int>);
 
@@ -48,6 +52,12 @@ struct cumValues{
    }
 };
 
+/**
+ * @brief multiple sequence alignment of genomes for comparative gene prediction
+ * 
+ * @author Mario Stanke
+ * @author Alexander Gebauer
+ */
 class GeneMSA {
 public:
     GeneMSA(RandSeqAccess *rsa, Alignment *a);

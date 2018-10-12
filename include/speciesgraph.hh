@@ -1,16 +1,9 @@
-/**********************************************************************
- * file:    speciesgraph.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  builds a directed acyclic graph from a set of sampled genes.
- *          The underlying auxiliary structure of the graph consists of seven
- *          neutral lines each representing a type of non-coding segment
- *          In comparative gene prediction for each species an object of
- *          this class is created.
- * authors: Stefanie König
+/*
+ * speciesgraph.hh
  *
- *********************************************************************/
-
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _SPECIESGRAPH
 #define _SPECIESGRAPH
@@ -21,8 +14,21 @@
 #include "graph.hh"
 
 //forward declarations
+
+/**
+ * @author Stefanie König
+ */
 class Move;
 
+/**
+ * @brief builds a directed acyclic graph from a set of sampled genes.
+ * @details The underlying auxiliary structure of the graph consists of seven
+ *          neutral lines each representing a type of non-coding segment. 
+ *          In comparative gene prediction for each species an object of
+ *          this class is created.
+ * 
+ * @author Stefanie König
+ */
 class SpeciesGraph : public AugustusGraph {
 
 private:

@@ -1,11 +1,9 @@
-/**********************************************************************
- * file:    orthograph.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  orthologous graphs for comparative gene prediction
- * authors: Stefanie König
+/*
+ * orthograph.hh
  *
- *********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _ORTHOGRAPH_HH
 #define _ORTHOGRAPH_HH
@@ -17,10 +15,22 @@
 #include "geneMSA.hh"
 
 // forward declarations
+
+/**
+ * @author Stefanie König
+ */
 class GeneMSA;
 
+/**
+ * @author Stefanie König
+ */
 enum StepRule{constant=0, harmonic, square_root, base_2, base_e, polyak, mixed};
 
+/**
+ * @brief orthologous graphs for comparative gene prediction
+ * 
+ * @author Stefanie König
+ */
 class OrthoGraph{
 
 public:

@@ -1,3 +1,10 @@
+/*
+ * mea.hh
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+
 #ifndef _MEA_HH
 #define _MEA_HH
 

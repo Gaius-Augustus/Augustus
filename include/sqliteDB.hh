@@ -1,11 +1,9 @@
-/**********************************************************************
- * file:    sqliteDB.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  wrapper class around the SQLite interface
- * authors: Stefanie Koenig
+/*
+ * sqliteDB.hh
  *
- *********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef __SQLITEDB_H__
 #define __SQLITEDB_H__
@@ -17,13 +15,26 @@
 using namespace std;
 
 //forward declarations
+
+/**
+ * @brief wrapper class around the SQLite interface
+ * 
+ * @author Stefanie Koenig
+ */
 class SQLiteDB;
+
+/**
+ * @author Stefanie Koenig
+ */
 class Statement;
 
-/* database opening flags:
- * ro (read-only mode, throws and error if db does not exist, default flag)  
- * rw (writing only possible if db is not write protected, throws and error if db does not exist) 
- * crw (reading and writing, creates db if it does not exist)  
+/**
+ * @brief  database opening flags:
+ * @details ro (read-only mode, throws and error if db does not exist, default flag) <br>
+ * rw (writing only possible if db is not write protected, throws and error if db does not exist) <br>
+ * crw (reading and writing, creates db if it does not exist) <br>
+ * 
+ * @author Stefanie Koenig
  */
 enum OpenMode{ro,rw,crw};
 

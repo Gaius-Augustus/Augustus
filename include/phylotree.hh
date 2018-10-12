@@ -1,12 +1,9 @@
-/**********************************************************************
- * file:    phylotree.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  representation of the phylogenetic relationship of the species
- *          in comparative gene prediction
- * authors: Stefanie König
+/*
+ * phylotree.hh
  *
- *********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _PHYLOTREE_HH
 #define _PHYLOTREE_HH
@@ -19,9 +16,28 @@
 #include "contTimeMC.hh"
 
 //forward declarations
+/**
+ * @author Stefanie König
+ */
 class Treenode;
+
+/**
+ * @brief the phylogenetic tree
+ * @details representation of the phylogenetic relationship of the species
+ *          in comparative gene prediction
+ * 
+ * @author Stefanie König
+ */
 class PhyloTree;
+
+/**
+ * @author Stefanie König
+ */
 class Evo;
+
+/**
+ * @author Stefanie König
+ */
 class ExonEvo;
 
 typedef std::vector<bool> bit_vector;
@@ -87,9 +103,6 @@ public:
     friend class PhyloTree;
 };
 
-/*
- * the phylogenetic tree
- */
 class PhyloTree{
 
 private:

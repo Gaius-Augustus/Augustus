@@ -1,3 +1,10 @@
+/*
+ * pp_fastBlockSearcher.cc
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+
 #include "pp_fastBlockSearcher.hh"
 
 #include <sstream>
