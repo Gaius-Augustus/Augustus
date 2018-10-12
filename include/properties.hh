@@ -29,7 +29,7 @@
 #endif
 
 
-#define NUMPARNAMES 275
+#define NUMPARNAMES 275 // FABIAN: hier +1 fuer einen weiteren Kommandozeilenparameter
 
 #define GENEMODEL_KEY "genemodel"
 #define NONCODING_KEY "nc"

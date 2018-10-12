@@ -36,7 +36,7 @@ void downcase(string& s) {
 
 
 map<string, string> Properties::properties;
-const char* Properties::parameternames[NUMPARNAMES]= 
+const char* Properties::parameternames[NUMPARNAMES]= // FABIAN: hier numthreads einfuegen
 {
 "allow_hinted_splicesites",
 "alnfile",

@@ -254,6 +254,7 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
 #endif
 
   initAlgorithms(); // update GC content dependent parameters
+  // FABIAN: Schleife über Spalten
   for( int j = 1; j < dnalen; j++ ) { // TODO: this ignores the first nucleotide
       if (cs.idx[j] != curGCIdx) {// check whether GC content has changed, this is in particular the case at the very start
           curGCIdx = cs.idx[j];
@@ -271,8 +272,19 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
       }
       if (useProfile) 
 	  profileModel->advanceScores(j);
+      // FABIAN: Schleife über Zeilen der Spalte (80 im Vortrag, aber variabel)
       for( int i = 0; i < statecount; i++ ){
 	  if (stateReachable[i]) {
+	      // FABIAN: parallelize here, e.g. statecount/numcpu different values for i per core
+	      // calls independen for different (i1,j), (i2,j), i1 != i2
+	      // 80 or so states are mapped to 3-4 classes: ExonModel, IntronModel, IGenicModel, (UtrModel)
+	      // possibly sort by expected time of execution (long to short)
+	      // Ausgabe vom Namen des Zustands: (stateTypeNames[getStateType(i)]
+	      // Testen: --sample=0, --sample=100, --UTR=on/off, zwei verschiedene Eingabegrößen: examples/example.fa,
+	      // Schleife über numthreads, wie nimmt die mit Cores normalisierte Geschwindigkeit ab?
+	      // danach Maximum fuer automatisch festgelegtes numthreads festlegen
+	      // examples/autoAug/genome.fa
+	      // hier muesste die Ausgabe identisch bleiben
 	      states[i]->viterbiForwardAndSampling(viterbi, forward, i, j, doViterbi(needForwardTable), oli);
 	  }
       }
@@ -842,6 +854,8 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
      * Sample and add the sampled genes to the list of genes
      */
     StatePath *sampledPath, *condensedsampledPath;
+    // FABIAN: zweiter Schritt, sampling parallelisieren
+    // diese Schleife, sampleiterations=100 als Default
     for (int i=0; i < sampleiterations-1; i++) {
 #ifdef DEBUG
 	cerr << "Sample iteration " << i << endl;
@@ -857,7 +871,10 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
 	  }
       }
       // sample the transcripts 
-      sampledPath = getSampledPath(dna, "");
+      sampledPath = getSampledPath(dna, ""); // FABIAN: zeitaufwändige Teil hier, das eigentliche sampeln
+      // FABIAN: Hier zwei Optionen: diesen Code seriell oder auch parallel
+      // Ob sich die parallelisierung hier lohnt ist zweifelhaft und wuerde ich erst einmal Zeit messen.
+      // seriell: zweite Schleife über i. sampledPath = sampledPath[i] in erster Zeile
       condensedsampledPath = StatePath::condenseStatePath(sampledPath);
       // condensedsampledPath->print(); // for testing
       char gr[9];
@@ -878,7 +895,8 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
 	g->viterbi = false;
 	if (!alternatives_from_sampling)
 	  g->throwaway = true; // no alternatives requested, throw sampled gene away later
-	alltranscripts.push_back(g);
+	alltranscripts.push_back(g); // FABIAN: enthält alle Gene von allen Sequenzen, idR mehr als sampleiterations
+	// Reihenfolge des Pushens ist egal
       }
     } // for i<sampleiterations
     if (show_progress)
