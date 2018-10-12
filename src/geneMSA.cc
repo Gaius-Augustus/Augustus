@@ -1,16 +1,11 @@
-/**********************************************************************
- * file:    geneMSA.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  Generation of exon candidates
- * author:  Alexander Gebauer
+/*
+ * geneMSA.cc
  *
- * date    |   author           |  changes
- * --------|--------------------|------------------------------------------
- * 04.04.12| Alexander Gebauer  | creation of the file
- * 02.08.13| Mario Stanke       | rewrite of the merging of alignment blocks
- * 09.08.13| Mario Stanke       | rewrite of most (createOrthoExons, getCodonAlignment and others)
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: Generation of exon candidates
+ */
  
 #include "geneticcode.hh"
 #include "genomicMSA.hh"
