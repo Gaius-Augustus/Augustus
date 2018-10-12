@@ -1,14 +1,11 @@
-/**********************************************************************
- * file:    igenictrain.cc
- * licence: 
- *          
- * descr.:  training for intergenic region
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * igenictrain.cc
  *
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------
- * 27.03.06| Mario Stanke  | took introns in cds out of the training
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: training for intergenic region
+ */
 
 #include "igenicmodel.hh"
 
