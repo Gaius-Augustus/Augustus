@@ -1,19 +1,11 @@
-/*****************************************************************************\
- * Filename : properties.hh
- * Author   : Emmanouils Stafilarakis
+/*
+ * properties.hh
  *
- * Copyright: ©Stafilarakis
- *
- * Description: Declaration of the Properties class.
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|------------------------------------------
- * 26.09.2001 | Stafilarakis          | creations of the class
- * 19.05.2003 | Stanke                | recursively include other property files
- * 30.07.2004 | Stanke                | added hasProperty
- * 16.07.2008 | Keller                | made it a static class
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+  * Description: Declaration of the Properties class.
+ */
 
 #ifndef _PROPERTIES_HH
 #define _PROPERTIES_HH
@@ -52,10 +44,11 @@
 #define REF_EXON_KEY "referenceFile"
 
 #define OVLPLENFILE "ovlp_len.pbl"
+
 /**
- * The base exception class for Properties
+ * @brief The base exception class for Properties
  *
- * author Emmanouil Stafilarakis
+ * @author Emmanouil Stafilarakis
  */
 struct PropertiesError : public ProjectError{
     /**
@@ -66,39 +59,50 @@ struct PropertiesError : public ProjectError{
     PropertiesError( string msg ) : ProjectError( msg ) { }
 };
 
+/**
+ * @author Emmanouil Stafilarakis
+ */
 struct KeyNotFoundError : public PropertiesError{
     KeyNotFoundError( string key ) :
 	PropertiesError("Properties::getProperty(): no such key \"" + key + "\".") 
     {}
 };
+
+/**
+ * @author Emmanouil Stafilarakis
+ */
 struct ValueFormatError : public PropertiesError{
     ValueFormatError( string key, string value, string type ) :
 	PropertiesError( "Properties::getProperty(): cannot convert value \"" 
 			 + value + "\" of key \"" + key + "\" into " + type + "." )
     {}
 };
+
+/**
+ * @author Emmanouil Stafilarakis
+ */
 struct HelpException {
     string message;
     HelpException(string s) : message(s) {}
 }; // no error
-    
+
 /**
- * The Properties class.
+ * @brief The Properties class.
  *
- *      This class is provided to pass several properties to all
- *      objects in the running programm.
+ * @details This class is provided to pass several properties to all
+ *      objects in the running programm. <br>
  *
  *      The properties can be given to the Properties object by
- *      the programm with the <i>addProperty</i> method.
+ *      the programm with the <i>addProperty</i> method. <br>
  *
  *      The Properties object can also parse a file with the
  *      <i>readFile</i> method and also parse the commandline arguments
- *      with the <i>init</i> method.
+ *      with the <i>init</i> method. <br>
  *
  *      If an adding property already exists, the old value will be
  *      overwriten with the new value. Therefore, if the commandline
  *      arguments should be prefered, the method <i>init</i> should be
- *      called after the method <i>readFile</i>!
+ *      called after the method <i>readFile</i>! <br>
  *
  *      Example:
  *      <pre><pre style="background-color:white; color:blue; padding:10px;">
@@ -117,11 +121,11 @@ struct HelpException {
         </pre></pre>
  *
  *      A class can get the properties with the <i>get<b>TYPE</b>Property</i>
- *      methods, where TYPE is one of Int, Double, Bool or String. 
+ *      methods, where TYPE is one of Int, Double, Bool or String.  <br>
  *
  *      The format of the properties file is line based. Each line contains
  *      the property name and the property value, separated by whitespaces.
- *      Comments begin with a '#' and end an the end of line.
+ *      Comments begin with a '#' and end an the end of line. <br>
  *
  *      Example: Listing of a properties file
  *      <pre><pre style="background-color:white; color:blue; padding:10px;">
@@ -158,7 +162,7 @@ struct HelpException {
         /IntronModel/h                  5
         </pre></pre>
  *
- * author Emmanouil Stafilarakis
+ * @author Emmanouil Stafilarakis
  */
 class Properties{
     public:
