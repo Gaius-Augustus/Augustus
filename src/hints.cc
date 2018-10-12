@@ -1,14 +1,11 @@
-/**********************************************************************
- * file:    hints.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  hints, user constraints
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * hints.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 20.10.06| Mario Stanke  | creation of the file by splitting extrinsicinfo.cc
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: hints, user constraints
+ */
 
 #include "hints.hh"
 #include "properties.hh"
