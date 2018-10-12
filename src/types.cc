@@ -1,19 +1,9 @@
-/**********************************************************************
- * file:    types.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  
- * authors: Mario Stanke (mario.stanke@uni-greifswald.de)
- * 
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------ 
- * 16.06.02| Mario Stanke  | Creation of the file
- * 02.01.03| Mario Stanke  | changing intron to model with 4 states
- * 24.03.03| Mario Stanke  | introducing shadow states
- * 06.08.03| Mario Stanke  | configPath
- * 04.10.05| Mario Stanke  | UTR adjustments
- * 15.05.06| Mario Stanke  | added 3' UTR
- **********************************************************************/
+/*
+ * types.cc
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "types.hh"
 
