@@ -1,15 +1,11 @@
-/**********************************************************************
- * file:    sqliteDB.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  wrapper class around the SQLite interface
- * authors: Stefanie Koenig
+/*
+ * sqliteDB.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 25.06.14|Stefanie Koenig| creation of the file
- **********************************************************************/
-
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: wrapper class around the SQLite interface
+ */
 
 #include "sqliteDB.hh"
 #include "hints.hh"
