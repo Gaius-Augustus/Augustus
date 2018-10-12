@@ -1,15 +1,11 @@
-/**********************************************************************
- * file:    igenicmodel.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  intergenic region
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * igenicmodel.cc
  *
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------
- * 1.05.02 | Mario Stanke  |  Viterbi Algorithm
- * 1.11.02 | Mario Stanke  |  emiProbUnderModel
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: intergenic region
+ */
 
 #include "igenicmodel.hh"
 
