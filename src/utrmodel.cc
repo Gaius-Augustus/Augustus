@@ -1,24 +1,9 @@
-/**********************************************************************
- * file:    utrmodel.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  untranslated region model
- * authors: Mario Stanke (mario@gobics.de)
- * 
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------ 
- * 21.09.05| Mario Stanke  | creation of the file
- * 30.09.05| Mario Stanke  | training utr exon lengths, viterbiAndForward
- * 27.03.06| Mario Stanke  | introduced UTR intron
- * 18.04.06| Mario Stanke  | fixed bug in tssProb for tata-less promoters on the reverse strand
- * 15.05.06| Mario Stanke  | improved speed of rutr5init and rutr5single by using Snippets
- * 14.10.06| Mario Stanke  | added exon malus, tss hints
- * 15.10.06| Mario Stanke  | added UTR introns with variable length
- * 30.01.07| Mario Stanke  | allow utr5terminal and rutr5terminal exons to have length 0 
- *         |               | (start codon comes right after splice site)
- * 31.01.07| Mario Stanke  | fixed bug that set predPossible=false for rutr5init because dss test was off by 1
- * 05.04.07| Mario Stanke  | distance distribution of tata box to tss
- **********************************************************************/
+/*
+ * utrmodel.cc
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "utrmodel.hh"
 
