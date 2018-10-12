@@ -1,18 +1,13 @@
-/*****************************************************************************\
- * Filename : pp_scoring.hh
- * Author   : Oliver Keller
- * Project  : Gene Prediction with Protein Family Patterns
+/*
+ * pp_scoring.hh
  *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Project    : Gene Prediction with Protein Family Patterns
  * Description: Classes that perform the evaluation of ProteinProfile
- *              emission probabilites
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|---------------------------------
- * 20.10.08   | Oliver Keller         | creation of the file
- * 06.11.08   | Oliver Keller         | first version in SVN
- * 28.01.09   | Oliver Keller         | rev. 157, final forward-only version
- \******************************************************************************/
+ *              emission probabilities
+ */
 
 #ifndef __PP_SCORING_HH
 #define __PP_SCORING_HH
