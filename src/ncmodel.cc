@@ -1,14 +1,9 @@
-/**********************************************************************
- * file:    ncmodel.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  noncoding model (all transcribed genes that are not translated to proteins)
- * authors: Mario Stanke (mario.stanke@uni-greisfwald.de)
- * 
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------ 
- * 21.02.15| Mario Stanke  | creation of the file
- **********************************************************************/
+/*
+ * ncmodel.cc
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "ncmodel.hh"
 
