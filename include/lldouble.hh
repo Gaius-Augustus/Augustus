@@ -1,25 +1,9 @@
-/*****************************************************************************\
- * Filename : lldouble.hh
- * Author   : Emmanouil Stafilarakis
- * Project  : HMM
- * Version  : 0.1
+/*
+ * lldouble.hh
  *
- * authors: Emmanouil Stafilarakis, Mario Stanke, mario@gobics.de
- *
- * Description: This class implements a double object with a very large
- *              range. It is designed to handle very small (or high) floating
- *              point numbers that would otherwise become zero when multiplied
- *              to each other.
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|----------------------------------------
- * 17.01.2002 | E. Stafilarakis       | Creation of the file.
- * 06.11.2002 | Mario Stanke          | simplify
- * 19.4.2006  | Mario Stanke          | root
- * 20.9.2007  | Oliver Keller         | partial rewrite
- * 26.7.2008  | Oliver Keller         | exponential
- \*****************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _LL_DOUBLE_HH
 #define _LL_DOUBLE_HH
@@ -34,6 +18,16 @@
 using namespace std;
 typedef ios_base::fmtflags fmtflags;
 
+/**
+ * @brief This class implements a double object with a very large
+ *        range. 
+ * @details It is designed to handle very small (or high) floating
+ *        point numbers that would otherwise become zero when multiplied
+ *        to each other.
+ * 
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
+ */
 class LLDouble{
     typedef int exponent_type;
 
@@ -275,13 +269,13 @@ inline bool almost_equal(const LLDouble& d1, const LLDouble& d2) {
 }
 #endif
 
-/*
- * class LogDouble
- *
- * internally stores floating point numbers using their logarithm
- * this saves time when multiplication and division is a frequent operation
+/**
+ * @brief internally stores floating point numbers using their logarithm. 
+ * @details this saves time when multiplication and division is a frequent operation
+ * 
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
  */
-
 class LogDouble{
 public:
     LogDouble( double d=0.0 );
