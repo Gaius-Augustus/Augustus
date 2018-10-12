@@ -1,15 +1,13 @@
-/**********************************************************************
- * file:    pp_hitseq.cc
- * license: Artistic License, see file LICENCE.TXT or
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  protein pattern search extension
- * authors: Oliver Keller
+/*
+ * pp_hitseq.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 20.10.08| Oliver Keller | creation of the file
- * 12.11.08| Oliver Keller | rev. 137, first version in the SVN
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Author     : Oliver Keller
+ * Description: protein pattern search extension
+ * 
+ */
 
 #include "pp_hitseq.hh"
 
