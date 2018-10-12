@@ -1,17 +1,9 @@
-/*****************************************************************************\
- * Filename : motif.hh
- * Author   : Mario Stanke
- * Project  : HMM
+/*
+ * motif.hh
  *
- * Copyright: ©Stanke
- *
- * Description: 
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|----------------------------------------
- * 08.08.2002 | Mario Stanke          | Creation of the file.
-\*****************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _MOTIF_HH
 #define _MOTIF_HH
@@ -20,19 +12,24 @@
 #include "matrix.hh"
 #include "geneticcode.hh"  // for Seq2Int
 
-
-/*
- * The sequences are weighed according to the relative frequencies of the 4 nucleotides in them 
- * and the relative frequencies of the nukleotides in the input sequence
- * equalWeights     : all are equally important
+/**
+ * @details The sequences are weighed according to the relative frequencies of the 4 nucleotides in them 
+ * and the relative frequencies of the nucleotides in the input sequence <br>
+ * equalWeights     : all are equally important <br>
  * gcContentClass   : consider only sequences in the same class of gc-Content (isochore) as the
- *                    input sequence (like Genscan does)
+ *                    input sequence (like Genscan does) <br>
  * multiNormalKernel: use an arbitrary weighing matrix as inverse of the covariance matrix
- *                    of a multvariate normal distribution
- * see class BaseCount
+ *                    of a multvariate normal distribution <br>
+ * 
+ * @see BaseCount
+ * 
+ * @author Mario Stanke
  */
 enum WeighingType { equalWeights, gcContentClasses, multiNormalKernel};
 
+/**
+ * @author Mario Stanke
+ */
 class BaseCount{
 public:
     int a;
@@ -65,7 +62,9 @@ public:
 
 ostream& operator<<( ostream& out, const BaseCount& bc );
 
-
+/**
+ * @author Mario Stanke
+ */
 struct Composition{
     double a;
     double c;
@@ -87,10 +86,9 @@ struct Composition{
     }
 };
 
-/*
- * class Motif
+/**
+ * @author Mario Stanke
  */
-
 class Motif {
 public:
     int n;
@@ -129,7 +127,9 @@ private:
     Seq2Int s2i;
 };
 
-
+/**
+ * @author Mario Stanke
+ */
 class ContentDecomposition {
 public:
     int n;
@@ -144,9 +144,10 @@ private:
     void makeDecomposition();
 };
 
-/*
- * ContentStairs
- * holds the stepwize constant function of GC content class indices
+/**
+ * @brief holds the stepwise constant function of GC content class indices
+ * 
+ * @author Mario Stanke
  */
 class ContentStairs {
 public:
