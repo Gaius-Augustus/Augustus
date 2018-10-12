@@ -1,15 +1,11 @@
-/**********************************************************************
- * Bulk loading of sequences and hints into an SQLite database.
- * file:    load2sqlitedb.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
+/*
+ * load2sqlitedb.cc
  *
- * authors: Mario Stanke, mario.stanke@uni-greifswald.de
- *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 24.06.14|Stefanie Koenig| creation of the file
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: Bulk loading of sequences and hints into an SQLite database.
+ */
 
 // Project includes
 #include "fasta.hh"
