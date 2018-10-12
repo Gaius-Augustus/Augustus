@@ -1,19 +1,14 @@
-/*****************************************************************************\
- * Filename : pp_profile.hh
- * Author   : Oliver Keller
+/*
+ * pp_profile.hh
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
  * Project  : Gene Prediction with Protein Family Patterns
- *
- * Description: Data structures containing the ProteinProfile /
- *              IntronProfile 
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|---------------------------------
- * 22.03.07   | Oliver Keller         | creation of the file
- * 06.11.08   | Oliver Keller         | first version in SVN
- * 28.01.09   | Oliver Keller         | rev. 157, final forward-only version
- \******************************************************************************/
-
+ * Description: Data structures containing the ProteinProfile / IntronProfile 
+ * 
+ */
+ 
 #ifndef __PP_PROFILE_HH
 #define __PP_PROFILE_HH
 
