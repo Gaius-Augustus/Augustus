@@ -1,16 +1,15 @@
-/*****************************************************************************\
- * Filename : pp_fastBlockSearcher.hh
+/*
+ * pp_fastBlockSearcher.hh
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
  * Author   : Oliver Keller
  * Project  : Gene Prediction with Protein Family Patterns
  *
  * Description: A fast block search class to determine sequence parts
  *              relevant for the ppx extension
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|---------------------------------
- * 09.09.09   | Oliver Keller         | creation of the file
- \******************************************************************************/
+ */
 
 #ifndef __PP_BLOCKSEARCHER_HH
 #define __PP_BLOCKSEARCHER_HH
