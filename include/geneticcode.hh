@@ -1,15 +1,10 @@
-/*****************************************************************************\
- * Filename : geneticcode.hh
- * Authors  : Mario Stanke
- * 
+/*
+ * geneticcode.hh
  *
- * Description: The genetic code maps codons to amino acids
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|------------------------------------------
- * 15.09.2002 | Stanke                | creation of the class
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+
 #ifndef _GENETIC_CODE_HH
 #define _GENETIC_CODE_HH
 
@@ -160,10 +155,10 @@ inline void reverseString(string &text) {
 }
 
 
-
-/*
- * a class for converting sequence into integer
- * replacing Base4Int
+/**
+ * @brief a class for converting sequence into integer replacing Base4Int
+ * 
+ * @author Mario Stanke
  */
 class Seq2Int {
 public:
@@ -275,6 +270,9 @@ inline char Seq2Int::int2BASE(int i) {
     }
 }
 
+/**
+ * @author Mario Stanke
+ */
 class ORF {
 public:
     ORF() { start = end = -1; complete5prime = complete3prime = 0; strand = plusstrand; }
@@ -286,6 +284,11 @@ public:
     bool complete3prime;
 };
 
+/**
+ * @brief The genetic code maps codons to amino acids
+ * 
+ * @author Mario Stanke 
+ */
 class GeneticCode {
 public:
      static void init() {
