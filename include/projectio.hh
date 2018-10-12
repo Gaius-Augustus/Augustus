@@ -1,19 +1,11 @@
-/*****************************************************************************\
- * Filename : projectio.hh
- * Author   : Emmanouil Stafilarakis
- * Project  : HMM
- * Version  : 0.1
+/*
+ * projectio.hh
  *
- * Copyright: ©Stafilarakis
- *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
  * Description: Some manipulators for streams.
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|----------------------------------------
- * 11.09.2001 | Stafilarakis Emm.     | Creation of the file
- * 03.09.2002 | Mario Stanke          | change line length to 8192 (before 256)
-\******************************************************************************/
+ */
 
 #ifndef _PROJECTIO_HH
 #define _PROJECTIO_HH
