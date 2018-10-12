@@ -1,17 +1,9 @@
-/**********************************************************************
- * file:    statemodel.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  base class for exonmodel, intronmodel, igenicmodel and utrmodel
- * authors: Mario Stanke (mario@gobics.de), Stafilarakis, Oliver Keller
- * 
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------ 
- * 17.11.01| Stafilarakis  | creation of the file
- *         | Mario Stanke  | computeEmiFromPat, makeProbsFromCounts, determineShortPatterns
- * 14.04.03| Mario Stanke  | threw out the shared object stuff
- * 21.09.05| Mario Stanke  | untranslated region
- **********************************************************************/
+/*
+ * statemodel.cc
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "statemodel.hh"
 
