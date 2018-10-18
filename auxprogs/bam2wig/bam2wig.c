@@ -116,6 +116,14 @@ int main(int argc, char *argv[])
 	if (tid >= 0) 
 	  { // if a region is specified and parsed successfully
 		bam_index_t *idx = bam_index_load(argv[optind]);  // load the index
+
+		if (idx == NULL)
+		  {
+		    fprintf(stderr, "Missing indexed BAM file!\n");
+		    fprintf(stderr, "See: samtools index\n");
+		    exit(1);
+		  }
+
 		data[0]->iter = bam_iter_query(idx, tid, beg, end); // set the iterator
 		bam_index_destroy(idx); // the index is not needed any more; phase out of the memory
 	  }
