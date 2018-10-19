@@ -1,25 +1,24 @@
 # Makefile of bam2wig
 #
-# NOTE: Modify the variable TOOLDIR according to where your samtools/htslib/bcftools/tabix software has been installed
-#
-# Created: 12-June-2012
-# Last modified: 10-NOV-2017
+# NOTE: Modify the variable TOOLDIR according to where your samtools/htslib/bcftools software has been installed
+# 
+# License: Artistic License, see file LICENSE.TXT or 
+#          https://opensource.org/licenses/artistic-license-1.0
 #
 
 ifndef TOOLDIR
 	TOOLDIR=$(HOME)/tools
-# replace with your own parent directory of samtools, htslib, bcftools, tabix
+# replace with your own parent directory of samtools, htslib, bcftools
 # if TOOLDIR is not specified as environment variable
 endif
 
 PROGRAM = bam2wig
 SOURCES = $(PROGRAM)
 OBJECTS = $(SOURCES:.c=.o)
-SAMTOOLS=$(TOOLDIR)/samtools/
-HTSLIB=$(TOOLDIR)/htslib/
-BCFTOOLS=$(TOOLDIR)/bcftools/
-TABIX=$(TOOLDIR)/tabix/
-INCLUDES=-I$(SAMTOOLS) -I. -I$(HTSLIB) -I$(BCFTOOLS) -I$(TABIX)
+SAMTOOLS=$(TOOLDIR)/samtools
+HTSLIB=$(TOOLDIR)/htslib
+BCFTOOLS=$(TOOLDIR)/bcftools
+INCLUDES=-I$(SAMTOOLS) -I. -I$(HTSLIB) -I$(BCFTOOLS)
 VPATH=$(SAMTOOLS)
 LIBS=$(SAMTOOLS)/libbam.a $(HTSLIB)/libhts.a -lcurses -lm -lz -lpthread -lcurl -lssl -lcrypto
 CFLAGS=-Wall -O2 $(INCLUDES)
