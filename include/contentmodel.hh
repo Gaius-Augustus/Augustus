@@ -1,17 +1,9 @@
-/*****************************************************************************\
- * Filename : ContentModel.hh
- * Author   : Mario Stanke
- * Project  : HMM
- * Version  : 0.2
+/*
+ * contentmodel.hh
  *
- *
- * Description: Model typical sequences by pattern frequencies
- *
- *
- * Date                |   Author              |  Changes
- *---------------------|-----------------------|---------------------------------
- * Die Jun 25 2002     | Mario Stanke          | creation of the file
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef __CONTENTMODEL_HH
 #define __CONTENTMODEL_HH
@@ -27,6 +19,12 @@
 
 using namespace std;
 
+/**
+ * @brief Model typical sequences by pattern frequencies
+ * 
+ * @author Mario Stanke
+ * @version 0.2
+ */
 class ContentModel {
 public:
     /*

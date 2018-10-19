@@ -1,3 +1,10 @@
+/*
+ * exon_seg.hh
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+
 #ifndef _EXON_SEG_HH
 #define _EXON_SEG_HH
 
@@ -68,7 +75,8 @@ typedef struct fragment{
 } fragment;
 
 
-/* It is a small class to store the information extracted from the wig file 
+/**
+ * @brief It is a small class to store the information extracted from the wig file 
  */
 class dataset{
   

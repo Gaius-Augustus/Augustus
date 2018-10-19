@@ -27,21 +27,19 @@ install:
 
 # for internal purposes:
 release:
-	find . -name .svn | xargs rm -rf
 	find . -name "*~" | xargs rm -f
 	rm -f src/makedepend.pl
 	rm -r augustus-training
 	cd docs/tutorial2015/results; ls | grep -v do.sh | grep -v README | xargs rm; cd -
 	rm -r auxprogs/utrrnaseq/input/human-chr19
 	rm -r docs/tutorial-cgp/results/cactusout
-	rm TODO.TXT
 	make clean all
-	make tidy
-	cd config/species; rm -rf tobacco xeno1 bombus_terrestris{1,3} symsag xenoturbella meara pavar newest elegans maker2_* lizard
 	rm generic/*.pbl
 	cd src/parser; rm Makefile; cd -
-	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus
-	rm TODO.TXT
+	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
+
+test:
+	./bin/augustus --species=human --UTR=on examples/example.fa
 
 # remove -static from src/Makefile for MAC users
 # remove -g -gdb from CXXFLAGS

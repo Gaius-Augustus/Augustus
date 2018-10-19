@@ -1,12 +1,9 @@
-/*****************************************************************************\
- * Filename : fasta.hh
- * Authors  : Mario Stanke
+/*
+ * fasta.hh
  *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|----------------------------------------
- * 01.09.2012 | Mario Stanke          | Creation of the file
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _FASTA_HH
 #define _FASTA_HH

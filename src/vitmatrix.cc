@@ -1,11 +1,11 @@
-/***********************************************************************
- * file:    vitmatrix.cc
- * licence: Artistic Licence, see file LICENCE.TXT or
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  data structures used inside the viterbi matrix
- * author:  Oliver Keller (keller@cs.uni-goettingen.de)
+/*
+ * vitmatrix.cc
  *
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: data structures used inside the viterbi matrix
+ */
 
 #include "vitmatrix.hh"
 

@@ -1,20 +1,21 @@
-/********************************************************************************
+/*
+ * pp_prepare_align.cc
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
  * 
- * pp_prepare_align.cc:  Remove sequences from a MSA (in FASTA format)
- *                       that cause insertions and deletions
+ * Description: Remove sequences from a MSA (in FASTA format)
+ *              that cause insertions and deletions
  *
  * In an MSA, to produce PSSMs (position specific scoring matrices), the goal is
  * to find regions, called *blocks*, that are common to all the member sequences, 
  * without insertions and deletions, so the region can be modelled by the matrix. 
  * This program removes sequences from the alignment in order to maximize the 
  * total size of the blocks (columns in the block times number of sequences).
-
+ *
  * If a parameter is specified, it is considered a part of the fasta alignment whose
  * sequences must not be deleted from the alignment
- *
-
  */
-
 
 #include <vector>
 #include <iostream>

@@ -1,20 +1,12 @@
-/*****************************************************************************\
- * Filename : extrinsicinfo.hh
- * Author   : Mario Stanke
+/*
+ * extrinsicinfo.hh
  *
- *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
  * Description: EST information or homology information or information from inter species
  *              comparisons. Hints in general.
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|---------------------------------
- * 26.11.02   | Mario Stanke          | creation of the file
- * 27.08.03   | Mario Stanke          | grades of hints
- * 23.06.06   | Mario Stanke          | introduce CDS, CDSpart, UTR, UTRpart hints
- * 26.07.06   | Mario Stanke          | introduce nonexonpart hints
- * 28.08.06   | Mario Stanke          | HintGroup
- * 01.07.08   | Mario Stanke          | added new hint type nonirpartF
- \******************************************************************************/
+ */
 
 #ifndef __EXTRINSICINFO_HH
 #define __EXTRINSICINFO_HH
@@ -37,8 +29,10 @@
 #define revASS     3
 #define maxStoreMalus 3000
 
-/*
- * Range of prediction and a set of HintGroups turned off
+/**
+ * @brief Range of prediction and a set of HintGroups turned off
+ * 
+ * @author Mario Stanke
  */
 class PredictionRun {
 public:
@@ -60,8 +54,10 @@ public:
     list<HintGroup*> *omittedGroups;
 };
 
-/*
- * Plan of individiual prediction steps with each a range and a set of hint groups turned on/off
+/**
+ * @brief Plan of individiual prediction steps with each a range and a set of hint groups turned on/off
+ * 
+ * @author Mario Stanke
  */
 class PredictionScheme {
 public:
@@ -75,12 +71,17 @@ public:
 };
 
 
+/**
+ * @brief holds all extrinsic feature information for a set of sequences
+ * 
+ * @author Mario Stanke
+ */
 class FeatureCollection;
 
-/*
- * SequenceFeatureCollection
- * holds all extrinsic feature information for one sequence
+/**
+ * @brief holds all extrinsic feature information for one sequence
  * 
+ * @author Mario Stanke
  */
 class SequenceFeatureCollection {
 public:
@@ -250,10 +251,10 @@ private:
     void addCumCov(vector<bool> &cov, const list<Feature>& flist, Strand strand);
 };
 
-/*
- * FeatureTypeInfo
- * holds all type-specific extrinsic feature information
- *
+/**
+ * @brief holds all type-specific extrinsic feature information
+ * 
+ * @author Mario Stanke
  */
 struct FeatureTypeInfo {
     FeatureTypeInfo(int numSources=1, double b=-1.0, double m=1.0, double lm=1.0) :
@@ -310,11 +311,6 @@ struct FeatureTypeInfo {
     vector<vector<double> > gradequots; // for each source and class the grade quotient
 };
 
-/*
- * FeatureCollection
- * holds all extrinsic feature information for a set of sequences
- * 
- */
 class FeatureCollection {
 public:
     FeatureCollection() :

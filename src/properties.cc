@@ -1,18 +1,9 @@
-/**********************************************************************
- * file:    properties.cc
- * licence: Artistic Licence, see file LICENCE.TXT or
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:
- * authors: Stafilarakis, Mario Stanke (mario@gobics.de)
+/*
+ * properties.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 26.09.01| Stafilarakis  | creations of the class
- * 04.08.03| Stanke        | changed operator Boolean( )
- * 01.08.05| Stanke        | added new species
- * 13.08.05| Mario Stanke  | code species independent: species is prefix of config file name
- * 04.04.07| Mario Stanke  | added parameters
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "properties.hh"
 

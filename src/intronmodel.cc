@@ -1,27 +1,9 @@
-/**********************************************************************
- * file:    intronmodel.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * intronmodel.cc
  *
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------
- * 06.05.02| Mario Stanke  | debugging and testing
- * 23.08.02| Mario Stanke  | performance improvement in seqProb 
- * 01.11.02| Mario Stanke  | introducing emiProbUnderModel
- * 07.11.02| Mario Stanke  | fixing length distr. bug in equalD intron
- * 02.01.03| Mario Stanke  | changing intron to model with 4 states (overlapping short and long introns)
- * ??.01.03| Mario Stanke  | changing intron to model with 5 states 
- * 26.03.03| Mario Stanke  | don't distinguish 'long' and 'short' splice sites anymore
- * 26.03.03| Mario Stanke  | introducing shadow states on reverse strand
- * 05.08.03| Mario Stanke  | check for in-frame stop codons in dss
- * 18.03.04| Mario Stanke  | bugfix in aSSProb: set emiProb before returning 0
- * 19.05.05| Mario Stanke  | bugfix in aSSProb: set oldpos before returning 0
- * 29.06.06| Mario Stanke  | bugfix for extremely short intron hints
- * 09.05.07| Mario Stanke  | bufix in aSSProb: missing re-initialization lead to crashes
- * 21.05.07| Mario Stanke  | bufix in emiProbUnderModel, allow right-truncated short introns on the reverse strand
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "intronmodel.hh"
 

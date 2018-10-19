@@ -1,12 +1,9 @@
-/**********************************************************************
- * file:    etraining.cc
- * licence: Artistic Licence, see file LICENCE.TXT or
- *          http://www.opensource.org/licenses/artistic-license-2.0.php
- *          
- * descr.:  etraining executable that determines species-specific parameters
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * etraining.cc
  *
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-2.0
+ */
 
 // project includes
 #include "types.hh"
@@ -20,9 +17,10 @@
 typedef ProjectError EHMMTrainingError;
 
 /**
- * class EHMMTraining
+ * @brief etraining executable that determines species-specific parameters
  *
- * @authors  Emmanouil Stafilarakis, Mario Stanke
+ * @author Mario Stanke
+ * @author Emmanouil Stafilarakis
  */
 class EHMMTraining{
 public:

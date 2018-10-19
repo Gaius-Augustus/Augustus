@@ -1,15 +1,9 @@
- /*****************************************************************************\
- * Filename : utrmodel.hh
- * Author   : Mario Stanke
- * Description: Untranslated Region Model Header File
+/*
+ * utrmodel.hh
  *
- *
- * Date       |   Author        |  Changes
- *------------|-----------------|----------------------------------------
- * 21.09.2005 | Mario Stanke    | creation of the file
- * 27.03.2006 | Mario Stanke    | introduced UTR intron
- * 05.04.2007 | Mario Stanke    | distance distribution of tata box to tss
- \******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _UTRMODEL_HH
 #define _UTRMODEL_HH
@@ -18,11 +12,10 @@
 
 
 /**
- * The UTR model class.
+ * @brief Untranslated Region Model
  *
- * author Mario Stanke
- */
- 
+ * @author Mario Stanke
+ */ 
 class UtrModel : public StateModel {
 public:
     UtrModel();
@@ -200,6 +193,9 @@ private:
   static int             ttsSpacing; // without hints allow 3' end only every ttsSpacing bases for speed
 };
 
+/**
+ * @author Mario Stanke
+ */ 
 class UtrModelError : public ProjectError {
 public:
     UtrModelError(string msg) : ProjectError(msg) {}

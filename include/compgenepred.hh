@@ -1,12 +1,9 @@
-
-/**********************************************************************
- * file:    compgenepred.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  comparative gene prediction on multiple species
- * authors: Mario Stanke
+/*
+ * compgenepred.hh
  *
- *********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _COMPGENEPRED
 #define _COMPGENEPRED
@@ -16,6 +13,13 @@
 #include "randseqaccess.hh"
 #include "phylotree.hh"
 
+/**
+ * @brief comparative gene prediction on multiple species
+ * 
+ * @author Mario Stanke
+ * @author Alexander Gebauer
+ * @author Stefanie Koenig
+ */
 class CompGenePred {
 public:
     CompGenePred();

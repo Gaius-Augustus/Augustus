@@ -1,10 +1,9 @@
-/**********************************************************************
- * file:    consensus.hh
+/*
+ * consensus.hh
  *
- * descr.:  header file for consensus.cc which finds the consensus pattern
- * authors: Sukadeb Acharya, sukadeb@gmail.com
- *
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _CONSENSUS_HH
 #define _CONSENSUS_HH
@@ -19,6 +18,11 @@
 
 using namespace std;
 
+/**
+ * @brief finds the consensus pattern  
+ * 
+ * @author Sukadeb Acharya
+ */
 class consensus;
 
 //stores the input sequences in this structure

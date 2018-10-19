@@ -1,23 +1,9 @@
-/*****************************************************************************\
- * Filename : matrix.hh
- * Author   : Emmanouil Stafilarakis
- * Project  : HMM
- * Version  : 0.1
+/*
+ * matrix.hh
  *
- * Copyright: ©Stafilarakis
- *
- * Description: Base class for all mathematical matrix objects,
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|----------------------------------------
- * 20.09.2001 | Stafilarakis Emm.     | Creation of the file
- * 19.08.2002 | Mario Stanke          | fixed bug in assignment op and copy 
- *            |                       | constructor: they weren't called at all
- * 01.09.2007 | Oliver Keller         | Complete rewrite; now use vector internally
- * 22.07.2008 | Oliver Keller         | Another rewrite; now we use an array that 
- *            |                       | is reserved on creation
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _MATRIX_HH
 #define _MATRIX_HH
@@ -30,9 +16,8 @@
 using namespace std;
 
 /**
- * @memo    A simple matrix class.
- *
- * @doc     This class provides the functionality of a matrix. It is designed
+ * @brief A simple matrix class. Base class for all mathematical matrix objects.
+ * @details This class provides the functionality of a matrix. It is designed
  *          to easily allocate space without the need to free this explicitily.
  *
  * @author  Emmanouil Stafilarakis

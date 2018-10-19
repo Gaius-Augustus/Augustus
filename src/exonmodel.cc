@@ -1,26 +1,9 @@
-/**********************************************************************
- * file:    exonmodel.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  coding exons only, UTR exons are modelled in utrmodel.cc
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * exonmodel.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 06.05.02| Mario Stanke  | debugging and testing
- * 18.05.02| Mario Stanke  | added length distributions
- * 31.05.02| Mario Stanke  | implementation of viterbi algorithm
- * 06.10.02| Mario Stanke  | making length distr independent of content
- * 18.11.02| Mario Stanke  | internal exon terminal emission part
- * 30.12.02| Mario Stanke  | moving splice site models to intron
- * 25.03.03| Mario Stanke  | shadow exons on reverse strand
- * 02.07.04| Mario Stanke  | malus for all exons, not only for those without a bonus
- * 19.08.04| Mario Stanke  | corrected rare bug with exon state at end of dna
- * 23.12.04| Mario Stanke  | bug fixed: wrong reading frame in call to getExonListInRange
- * 08.02.05| Mario Stanke  | bug fixed: exon hints were missed for reverse terminal or reverse single exons.
- * 22.08.05| Mario Stanke  | training on genes with incomplete 3' end, incomplete exon not used for lendist
- * 09.09.08| Mario Stanke  | introduce fuzzyness in dss and ass hints
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "exonmodel.hh"
 

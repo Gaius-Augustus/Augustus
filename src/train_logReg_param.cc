@@ -1,15 +1,9 @@
- /*****************************************************************************\
- * Filename : train_logReg_param.cc
- * licence  : Artistic Licence, see file LICENCE.TXT or 
- *            http://www.opensource.org/licenses/artistic-license.php
- * Authors  : Mario Stanke, mario.stanke@uni-greifswald.de
+/*
+ * train_logReg_param.cc
  *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|------------------------------------------
- * 09.12.2016 | Lizzy Gerischer       | creation of the file
- *
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 // project includes
 

@@ -1,17 +1,10 @@
-/*****************************************************************************\
- * Filename : contTimeMC.hh
- * Authors  : Mario Stanke
+/*
+ * contTimeMC.hh
  *
- * Description: continuous-time Markov chains for sequence evolution
- *              codon models
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|------------------------------------------
- * 17.02.2013 | Mario Stanke          | creation of the class
- * 27.05.2013 | Stefanie König        | creation of the class ExonEvo
- *            |                       | and a base class Evo from which ExonEvo
- *            |                       | and CodonEvo inherit
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+
 #ifndef _CONTTIMEMC_HH
 #define _CONTTIMEMC_HH
 
@@ -26,12 +19,19 @@
 #include <gsl/gsl_linalg.h>
 
 // forward declarations
+/**
+ * @author Mario Stanke
+ * @author Stefanie König
+ */
 class PhyloTree;
 
 using namespace std;
 
-/*
- * abstract base class for codon and exon evolution
+/**
+ * @brief abstract base class for codon and exon evolution
+ * 
+ * @author Mario Stanke
+ * @author Stefanie König
  */
 class Evo {
 public:
@@ -84,15 +84,18 @@ protected:
 
 };
 
-/*
- * class CodonEvo
- * Computes and stores 64x64 codon substitution probability matrices
+/**
+ * @brief class CodonEvo
+ * @details Computes and stores 64x64 codon substitution probability matrices
  * P(t,omega,kappa,pi) = exp(Q(omega,kappa,pi)*t)
  * for a sample of values for t and omega (dN/dS, selection)
  * and a fixed given value of kappa (transition/transversion ratio)
  * and vector pi (codon usage).
  * Matrices are precomputed and retrieval of P(t,omega) is then a constant time lookup
  * as this is needed very often during estimation of omega for a given tree.
+ * 
+ * @author Mario Stanke
+ * @author Stefanie König
  */
 class CodonEvo : public Evo {
 public:
@@ -202,11 +205,14 @@ void printCodonMatrix(gsl_matrix *M);
 gsl_matrix *log(gsl_matrix *P, int states);
 
 /*
- * class ExonEvo
- * Computes and stores 2x2 probability matrices for exon gain/loss events
+ * @brief class ExonEvo
+ * @details Computes and stores 2x2 probability matrices for exon gain/loss events
  * P(t) = exp(Q(lambda, mu)*t) for a sample of values for t
  * and a fixed given value for lambda (rate of exon gain) and mu (rate of exon loss)
  * Matrices are precomputed and retrieval of P(t) is then a constant time lookup
+ * 
+ * @author Mario Stanke
+ * @author Stefanie König
  */
 class ExonEvo : public Evo{
 
@@ -250,11 +256,14 @@ private:
 };
 
 /*
- * class Parsimony
- * transitions from state i to state j are independ of the branch length
+ * @brief class Parsimony
+ * @details transitions from state i to state j are independ of the branch length
  * and cost -1 if i!=j and 0 if i==j.
  * can be used to calculate the minimum nunber of codon substitutions
  * for a given tree topology
+ * 
+ * @author Mario Stanke
+ * @author Stefanie König
  */
 class Parsimony : public Evo{
 

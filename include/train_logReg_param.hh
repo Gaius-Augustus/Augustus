@@ -1,15 +1,10 @@
-/*****************************************************************************\
- * Filename : train_logReg_param.hh
- * Authors  : Lizzy Gerischer
+/*
+ * train_logReg_param.hh
  *
- * Description: implementation of logistic regression for training OE and EC 
- *              feature parameters using GSL 
- *              
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|------------------------------------------
- * 09.12.2016 | Lizzy Gerischer       | creation of the file
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+
 #ifndef _TRAINLOGREG_HH
 #define _TRAINLOGREG_HH
 
@@ -27,6 +22,12 @@
 
 using namespace std;
 
+/**
+ * @brief implementation of logistic regression for training OE and EC 
+ *        feature parameters using GSL
+ * 
+ * @author Lizzy Gerischer
+ */
 class train_data{
 
 public:

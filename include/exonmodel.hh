@@ -1,20 +1,9 @@
-/*****************************************************************************\
- * Filename : exonmodel.hh
- * Author   : Mario Stanke
- * Project  : HMM
+/*
+ * exonmodel.hh
  *
- *
- * Description: Training the exon model and implementing the algorithms.
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|------------------------------------------
- * ?          | Stafilarakis          | creations of the class
- * 06.05.2002 | Stanke                | debugging and testing
- * 18.05.2002 | Stanke                | added length distributions
- * 24.03.2003 | Mario Stanke          | introducing shadow states
- * 31.08.2005 | Mario Stanke          | sequence is no longer a member of gene
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _EXONMODEL_HH
 #define _EXONMODEL_HH
@@ -22,27 +11,23 @@
 #include "statemodel.hh"
 
 
-/*
- * The reading frame of an exon is the position of the nucleotide following the exon
- * in its codon starting counting at 0:
- * forward strand:
- *  *** | ***        index 0
- *  *** * | ** ***   index 1
- *  *** ** | * ***   index 2
- * reverse strand:
- *  *** | ***        index 2
- *  *** * | ** ***   index 1
- *  *** ** | * ***   index 0
- */
-
 class ExonModelError : public ProjectError {
 public:
     ExonModelError(string msg) : ProjectError(msg) {}
 };
 
-
-/*
- * Open Reading Frame (ORF), part of the exon model
+/**
+ * @brief Open Reading Frame (ORF), part of the exon model
+ * @details The reading frame of an exon is the position of the nucleotide following the exon
+ * in its codon starting counting at 0:<br>
+ * forward strand:<br>
+ *  *** | ***        index 0<br>
+ *  *** * | ** ***   index 1<br>
+ *  *** ** | * ***   index 2<br>
+ * reverse strand:<br>
+ *  *** | ***        index 2<br>
+ *  *** * | ** ***   index 1<br>
+ *  *** ** | * ***   index 0<br>
  */
 class OpenReadingFrame{
 public:
@@ -64,7 +49,11 @@ private:
 };
 
 /*
- * ExonModel
+ * @brief Training the exon model and implementing the algorithms.
+ * @details coding exons only, UTR exons are modelled in utrmodel.cc
+ * 
+ * @author Stafilarakis
+ * @author Mario Stanke
  */
 class ExonModel : public StateModel{
 public:

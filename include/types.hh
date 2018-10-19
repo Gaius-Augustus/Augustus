@@ -1,25 +1,9 @@
-/*****************************************************************************\
- * Filename : types.hh
- * Authors  : Emmanouil Stafilarakis, Mario Stanke
+/*
+ * types.hh
  *
- * Copyright: ©Stafilarakis, Stanke
- *
- * Description: Several typedefs and definitions.
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|----------------------------------------
- * 26.09.2001 | Stafilarakis Emm.     | Creation of the file
- * 07.05.2002 | Mario Stanke          | Included the defs of dss and ass sizes
- * 24.03.2003 | Mario Stanke          | introducing shadow states 
- * 19.05.2003 | Stanke                | recursively include other property files
- * 10.05.2006 | Mario Stanke          | added 10 new species in the usage info
- * 15.05.2006 | Mario Stanke          | added 3' UTR states
- * 29.02.2012 | Mario Stanke          | added quantile function
- * 25.02.2014 | Stefanie Koenig       | added ftoa function (double to string)
- * 28.09.2014 | Mario Stanke          | added noncoding (nc) states
- * 16.08.2018 | Katharina Hoff        | updated species list
-\******************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _TYPES_HH
 #define _TYPES_HH
@@ -43,7 +27,10 @@
 
 using namespace std;
 
-
+/**
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
+ */
 enum Strand {STRAND_UNKNOWN=-1, plusstrand, minusstrand, bothstrands};
 char strandChar (Strand s);
 ostream& operator<< (ostream& strm, const Strand s);
@@ -70,7 +57,7 @@ ostream& operator<< (ostream& strm, const Strand s);
 #define MODEL_SUBDIR "model/"
 #define EXTRINSIC_SUBDIR "extrinsic/"
 
-#define VERSION "3.3.1"
+#define VERSION "3.3.2"
 
 #define PREAMBLE "# This output was generated with AUGUSTUS (version " VERSION ").\n\
 # AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),\n\
@@ -294,7 +281,10 @@ typedef LLDouble Double;
  */
 typedef double      Float;
 
-
+/**
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
+ */
 class Constant {
 public:
     static void init();
@@ -407,6 +397,10 @@ extern const int power2id[31];
 
 #define A_SET_FLAG(x) power2id[x]
 
+/**
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
+ */
 struct Bitmask {
     Bitmask (int n=0) : value(n) {}
     Bitmask (const Bitmask& other) : value(other.value) {}
@@ -426,8 +420,8 @@ struct Bitmask {
 };
     
 
-/*
- * Base class for all exception classes in the project.
+/**
+ * @ brief Base class for all exception classes in the project.
  *
  * @author Emmanouil Stafilarakis
  */
@@ -458,7 +452,10 @@ private:
     string message;
 };
 
-
+/**
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
+ */
 class InvalidNucleotideError : public ProjectError {
 public:
     InvalidNucleotideError( char t ) : ProjectError( "Invalid nucleotide '" + string(1,t) + "' encountered." ) { }
@@ -467,6 +464,10 @@ public:
 
 #define NUM_TYPES 86
 
+/**
+ * @author Emmanouil Stafilarakis
+ * @author Mario Stanke
+ */
 enum StateType{TYPE_UNKNOWN = -1, igenic, 
 	       // forward strand
 	       singleG, initial0, initial1, initial2, internal0, internal1, internal2, terminal,

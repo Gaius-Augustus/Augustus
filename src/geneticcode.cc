@@ -1,16 +1,9 @@
-/**********************************************************************
- * file:    geneticcode.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  
- * authors: Mario Stanke, mario.stanke@uni-greifswald.de
+/*
+ * geneticcode.cc
  *
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------
- * 15.09.02| Mario Stanke  | creation of the class
- * 13.06.07| Oliver Keller | added alternative translation tables
- * 14.02.13| Mario Stanke  | added alternative start codon tables
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "geneticcode.hh"
 

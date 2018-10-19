@@ -1,11 +1,9 @@
-/**********************************************************************
- * file:    genomicMSA.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  multiple sequence alignment of genomes for comparative gene prediction
- * authors: Mario Stanke, Alexander Gebauer
+/*
+ * genomicMSA.hh
  *
- *********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _GENOMICMSA
 #define _GENOMICMSA
@@ -24,6 +22,10 @@ const string colornames[NUMCOLNAMES] = {"aquamarine", "darksalmon", "gainsboro",
 					"aquamarine2", "darkorange1", "forestgreen", "gray66", "khaki", "olivedrab1", 
 					"skyblue4", "maroon2", "grey40", "darkturquoise", "brown4", "seagreen1", "royalblue3"};
 
+/**
+ * @author Mario Stanke
+ * @author Alexander Gebauer
+ */
 struct AliNode {
     Alignment* a;
     int id;
@@ -33,10 +35,18 @@ struct AliNode {
     int topoIdx;
 };
 
+/**
+ * @author Mario Stanke
+ * @author Alexander Gebauer
+ */
 struct AliEdge {
     int weight;
 };
 
+/**
+ * @author Mario Stanke
+ * @author Alexander Gebauer
+ */
 struct AliGraph {
     vector<size_t> topo; // topologial order
     int maxWexceptCov;
@@ -50,6 +60,10 @@ typedef boost::adjacency_list<boost::setS, // disallow parallel edges
 			      boost::property < boost::edge_weight_t, int, AliEdge >,
 			      AliGraph> AlignmentGraph;
 
+/**
+ * @author Mario Stanke
+ * @author Alexander Gebauer
+ */
 class AliPath {
 public:
     int maxSeqRange(AlignmentGraph &g);
@@ -63,6 +77,10 @@ public:
 typedef AlignmentGraph::vertex_descriptor vertex_descriptor;
 typedef AlignmentGraph::edge_descriptor edge_descriptor;
 
+/**
+ * @author Mario Stanke
+ * @author Alexander Gebauer
+ */
 class dfs_time_visitor: public boost::default_dfs_visitor {
     //    typedef typename property_traits < size_t* >::value_type T;
 public:
@@ -79,6 +97,11 @@ public:
 void eraseListRange(list<int> L, list<int>::reverse_iterator from, list<int>::reverse_iterator to);
 void eraseListRange(list<int> L, list<int>::iterator from, list<int>::iterator to);
 
+/**
+ * @brief multiple sequence alignment of genomes for comparative gene prediction
+ * 
+ * @author Mario Stanke
+ */
 class GenomicMSA {
 public:
     GenomicMSA(RandSeqAccess *rsa_) : rsa(rsa_){}

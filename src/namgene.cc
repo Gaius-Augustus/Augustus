@@ -1,22 +1,9 @@
-/*******************************************************************************************************
- * file:    namgene.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  
- * authors: Mario Stanke (mario@gobics.de), Stafilarakis
+/*
+ * namgene.cc
  *
- * date    |   author      |  changes 
- * --------|---------------|----------------------------------------------------------------------------- 
- * 26.09.01| Stafilarakis  | creation of the class
- * ??.11.02| Stanke        | getPathEmiProb
- * 09.03.04| Stefanie Dahms| getNextCutEndPoint
- *         | Stanke        | forward algorithm, sampling, sfc, ...
- * 09.09.05| Mario Stanke  | alternative transcripts and posterior probs from sampling
- * 13.07.06| Mario Stanke  | fixed minor bug: mixed up geneBegin and codingstart for sorting transcripts
- * 31.08.06| Mario Stanke  | rewrote getNextCutEndPoint
- * 21.09.06| Mario Stanke  | getStepGenes, etc.
- * 17.01.07| Mario Stanke  | computeReachableStates: save time by not going into irrelevant states
- *******************************************************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "namgene.hh"
 
@@ -1399,7 +1386,7 @@ void NAMGene::readTransAndInitProbs( ){
 
     istrm.close();
   } else {
-    throw NAMGeneError( "Could't open the file with transition probabilities." );
+    throw NAMGeneError( "Couldn't open the file with transition probabilities." );
   }
 }
 
@@ -1449,7 +1436,7 @@ void NAMGene::readOvlpLenDist( ){
       istrm >> Constant::tail2tail_ovlp[i];
     istrm.close();
   } else {
-    throw NAMGeneError( "Could't open the file with the overlap length distribution." );
+    throw NAMGeneError( "Couldn't open the file with the overlap length distribution." );
   }
 }
 

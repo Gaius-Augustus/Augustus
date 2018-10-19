@@ -52,7 +52,7 @@ $usage .= "                     CACW21662.g1    3       C2      5TNS       Unkno
 $usage .= "                     CACW25491.g1    3       F21     5TNS       3TNS-NP\n";
 $usage .= "                     \n";
 $usage .= "                     cloneB\tread4\tread5\n";
-$usage .= "  --maxgenelen=n     alignments of the same clone are considered to be of the same gene if not separeted by more than this (400000)\n";
+$usage .= "  --maxgenelen=n     alignments of the same clone are considered to be of the same gene if not separated by more than this (400000)\n";
 $usage .= "                     Alignments that span more than this are ignored, but better filter long introns through alignment program.\n";
 
 my $blatfilename;

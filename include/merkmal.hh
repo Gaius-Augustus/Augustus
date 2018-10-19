@@ -1,13 +1,11 @@
-/*****************************************************************************\
- * Filename : merkmal.cc
- * Author   : Mario Stanke, mstanke@gwdg.de
+/*
+ * merkmal.cc
  *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
  * Description: Features (German: Merkmale) for the Conditional Random Field
- *
- * Date       |   Author        |  Changes
- *------------|-----------------|------------------------------------------
- * 27.07.08   | Mario Stanke    | creation of the classes
- \****************************************************************************/
+ */
 
 #ifndef _MERKMAL_HH
 #define _MERKMAL_HH
@@ -26,17 +24,28 @@ using namespace std;
 
 
 // Forward declarations
+
+/**
+ * @brief holds all parameters that are trained through the CRF
+ * 
+ * @author Mario Stanke
+ */
 class Parameters;
+
+/**
+ * @author Mario Stanke
+ */
 class StateModel;
 
-
-/*
- * MMGroup (MM = Merkmal = Feature)
- * The derived classes contain a group of parameters, e.g. a motif or an emission probability matrix.
+/**
+ * @brief MMGroup (MM = Merkmal = Feature)
+ * @details The derived classes contain a group of parameters, e.g. a motif or an emission probability matrix.
  * As an example take the emission probabilities of exons. Here we have one parameter for every reading
- * frame f and every pattern number p.
+ * frame f and every pattern number p. <br>
  * The derived class FramedEmiProb contains the matrix of parameters and implements a function
  * int getIndex(f,p) for intuitive access to the linear vector of parameters.
+ * 
+ * @author Mario Stanke
  */
 class MMGroup {
  public:
@@ -63,9 +72,10 @@ private:
     int offset;                            // offset in the Parameters vector where the features of this group start
 };
 
-/*
- * PatMMGroup
- * Contains a vector of parameters. Is used in particular for intron emiprobs.
+/**
+ * @brief Contains a vector of parameters. Is used in particular for intron emiprobs.
+ * 
+ * @author Mario Stanke
  */
 class PatMMGroup : public MMGroup{
 public:
@@ -80,10 +90,10 @@ public:
     vector<Double> probs;
 };
 
-
-/*
- * FramedPatMMGroup
- * Contains a vector of parameters for each frame. Is used in particular for exon emiprobs.
+/**
+ * @brief Contains a vector of parameters for each frame. Is used in particular for exon emiprobs.
+ * 
+ * @author Mario Stanke
  */
 class FramedPatMMGroup : public MMGroup{
 public:
@@ -100,10 +110,12 @@ public:
     vector<Double> probs[3];
 };
 
-/*
- * BinnedMMGroup
- * Contains features for bins of a probability (or a score). E.g. when a probability is mapped to a piecewise constant function.
+/**
+ * @brief Contains features for bins of a probability (or a score). 
+ * @details E.g. when a probability is mapped to a piecewise constant function.
  * Used to make features for signal models where a pattern probability previously existed. Avoids overfitting.
+ * 
+ * @author Mario Stanke
  */
 class BinnedMMGroup : public MMGroup{
 public:
@@ -133,10 +145,6 @@ public:
     vector<Double> avprobs;   // probs for bins [-infty, bb[0]), [bb[0],bb[1]), ... , [bb[nbins-1], infty]
 };
 
-/*
- * Parameters
- * holds all parameters that are trained through the CRF
- */
 class Parameters {
  public:
     Parameters(){
@@ -219,9 +227,10 @@ void Parameters::print(vector<T> &counts, int numprint, bool countsOnly){
 }
 
 
-/*
- * CRF
- * implements functions for training Conditional Random Fields
+/**
+ * @brief implements functions for training Conditional Random Fields
+ * 
+ * @author Mario Stanke
  */
 class CRF {
 public:
@@ -245,6 +254,9 @@ private:
     static StateModel **states;
 };
 
+/**
+ * @author Mario Stanke
+ */
 struct LessDereference {
     template <class T>
     bool operator()(const T * lhs, const T * rhs) const {

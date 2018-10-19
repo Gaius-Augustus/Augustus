@@ -1,15 +1,12 @@
-/**********************************************************************
- * file:    phylotree.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  representation of the phylogenetic relationship of the species
- *          in comparative gene prediction
- * authors: Stefanie König
+/*
+ * phylotree.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 09.03.12|Stefanie König | creation of the file
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: representation of the phylogenetic relationship of the species
+ *              in comparative gene prediction
+ */
 
 //project includes
 #include "phylotree.hh"

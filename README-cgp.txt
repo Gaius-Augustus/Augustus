@@ -55,15 +55,20 @@ a) install all dependencies
    g++       install via package manager:
              > sudo apt install build-essential
    lpsolve   > sudo apt install libsuitesparse-dev liblpsolve55-dev 
-
+   sqlite3   > sudo apt install libsqlite3-dev
+             Alternatively, download the SQLite source code from http://www.sqlite.org/download.html 
+             (tested with  SQLite 3.8.5 ) and install as instructed there.
+   
   optional (for gzipped input):
    zlib:     The compression library. Download from http://www.zlib.net/ or install via package manager.
 
 b) recompile AUGUSTUS with cgp mode enabled
 
-   open the file common.mk with a text editor and uncomment the following line to enable comparative gene prediction
+   open the file common.mk with a text editor and uncomment the following lines to enable comparative gene prediction
+   using an SQLITE database
 
-#COMGENEPRED = true
+COMGENEPRED = true
+SQLITE = true
 
    recompile AUGUSTUS
 
@@ -396,21 +401,8 @@ file offsets to achieve random access to the genome files.
 
 a) Installation
 
-   To enable access to an SQLITE database, install the package libsqlite3-dev with your package manager or 
-   download the SQLite source code from http://www.sqlite.org/download.html/ 
-   (tested with  SQLite 3.8.5 ) and install as follows:
-
-   > tar zxvf sqlite-autoconf-3080500.tar.gz
-   > cd sqlite-autoconf-3080500
-   > ./configure
-   > sudo make
-   > sudo make install
-
-   If you encounter an "SQLite header and source version mismatch" error, try
-
-   > ./configure --disable-dynamic-extensions --enable-static --disable-shared
-
-   Turn on the flag SQLITE in augustus/trunks/common.mk and recompile AUGUSTUS
+   If not already installed, install sqlite3 as described above. Do not forget to turn on the flag SQLITE
+   in augustus/trunks/common.mk and to recompile AUGUSTUS.
 
 b) create an SQLite database and populate it
    Use the program 'load2sqlitedb' in the AUGUSTUS repository.

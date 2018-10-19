@@ -1,18 +1,16 @@
- # Gene Prediction with the Command-Line Version of AUGUSTUS
+[![Build Status](https://travis-ci.org/Gaius-Augustus/Augustus.svg?branch=master)](https://travis-ci.org/Gaius-Augustus/Augustus)
+
+# Gene Prediction with the Command-Line Version of AUGUSTUS
  
 ## Authors and Contact Information
 
 Lizzy Gerischer, Oliver Keller, Stefanie König, Lars Romoth, Katharina Hoff
 and Mario Stanke
 
-Universitaet Greifswald
-
-Institut fuer Mathematik und Informatik
-
-17497 Greifswald
-
-Fon: +49 3834 4204642
-
+Universitaet Greifswald  
+Institut fuer Mathematik und Informatik  
+17489 Greifswald  
+Fon: +49 3834 4204642  
 mario.stanke@uni-greifswald.de
 
 ## Structure of this README
@@ -130,10 +128,14 @@ Parameters for Chiloscyllium punctatum (brownbanded bamboo shark), Scyliorhinus 
 
 ## Clone from GitHUB
 
-First, you need to clone the repository.
+First, clone the repository
 
 ```
 git clone https://github.com/Gaius-Augustus/Augustus.git
+```
+or, alternatively, download and unpack the AUGUSTUS source package with
+```
+tar -xzf augustus-3.3.2.tar.gz
 ```
 
 # Install dependencies
@@ -157,7 +159,7 @@ The following dependencies may be required for AUGUSTUS:
 - For compiling bam2hints and filterBam:
   - libbamtools-dev
 - For compiling bam2wig:
-  - Follow [these instructions](#../blob/master/auxprogs/bam2wig/README.TXT)
+  - Follow [these instructions](./auxprogs/bam2wig/README.txt)
 - For compiling utrrnaseq:
   - libboost-all-dev (version must be >Boost_1_49_0)
 
@@ -513,13 +515,13 @@ start, stop, tss, tts, ass, dss, exonpart, exon, intronpart, intron, CDSpart, CD
 The hints must be stored in a file in gff format containing one hint per line. Below is an example of a hintsfile:
 
 ```
-HS04636	mario	exonpart	500	506	.	-	.	source=M
-HS04636	mario	exon	966	1017	.	+	0	source=P
-HS04636	AGRIPPA	start	966	968	6.3e-239	+	0	group=gb|AAA35803.1;source=P
-HS04636	AGRIPPA	dss	2199	2199	1.3e-216	+	.	group=gb|AAA35803.1;source=P
-HS04636	mario	stop	7631	7633	.	+	0	source=M
-HS08198	AGRIPPA	intron	2000	2000	0	+	.	group=ref|NP_000597.1;source=E
-HS08198	AGRIPPA	ass	757	757	1.4e-52	+	.	group=ref|NP_000597.1;source=E
+HS04636	mario   exonpart   500   506	     .	-	.	source=M
+HS04636	mario   exon       966  1017	     .	+	0	source=P
+HS04636	AGRIPPA start      966   968  6.3e-239	+	0	group=gb|AAA35803.1;source=P
+HS04636	AGRIPPA dss       2199  2199  1.3e-216	+	.	group=gb|AAA35803.1;source=P
+HS04636	mario   stop      7631  7633	     .	+	0	source=M
+HS08198	AGRIPPA intron    2000  2000	     0	+	.	group=ref|NP_000597.1;source=E
+HS08198	AGRIPPA ass        757   757   1.4e-52	+	.	group=ref|NP_000597.1;source=E
 ```
 
 The fields must be separated by a tabulator. In the first column (field) the sequence name is given. In this case the hints are together about two sequences. The second field is the name of the program that produced the hint. It is ignored here. The third column specifies the type of the hint. The 4th and 5th column specify the begin and end position of the hint. Positions start at 1. The 6th colum gives a score. The 7th the strand. The 8th the reading frame as defined in the GFF standard. The 9th column contains arbitrary extra information but it must contain a string 'source=X' where X is the source identifier of the hint. Which values for X are possible is specified in the file augustus/config/extrinsic.cfg, e.g. X=M, E, or P.
@@ -629,9 +631,9 @@ AUGUSTUS can predict alternative splicing or - more general - alternative transc
 Each hint can be given a group name, by specifying 'group=goupname;' or 'grp=goupname;' in the last column for the hint in the gff file. This should be used to group all the hints coming from the alignment of the same sequence to the genome. For example, if an EST with the name est_xyz aligns to the genome with one gap suggesting an intron then the hints resulting from that alignment could look like this
 
 ```
-HS04636	blat2hints	exonpart	500	599	.	+	.	group=est_xyz; source=E
-HS04636	blat2hints	intron		600	700	.	+	.	group=est_xyz; source=E
-HS04636	blat2hints	exonpart	701	900	.	+	.	group=est_xyz; source=E
+HS04636	blat2hints	exonpart   500	599	.	+	.	group=est_xyz; source=E
+HS04636	blat2hints	intron     600	700	.	+	.	group=est_xyz; source=E
+HS04636	blat2hints	exonpart   701	900	.	+	.	group=est_xyz; source=E
 ```
 
 Grouping tells AUGUSTUS that hints belong together. Ideally, all hints of a group are obeyed by a predicted transcript or the whole group of hints is ignored when making the prediction.
@@ -640,8 +642,8 @@ Grouping tells AUGUSTUS that hints belong together. Ideally, all hints of a grou
 Hints or hint groups can be given a priority by specifying 'priority=n;' or 'pri=n' in the last column for the hint in the gff file. For example
 
 ```
-HS04636	blat2hints	exonpart	500	599	.	+	.	priority=2; source=E
-HS04636	blat2hints	intron		550	650	.	+	.	priority=5; source=mRNA
+HS04636	blat2hints	exonpart   500	599	.	+	.	priority=2; source=E
+HS04636	blat2hints	intron     550	650	.	+	.	priority=5; source=mRNA
 ```
 
 When two hints or hint groups contradict each other then the hints with the lower priority number are ignored. This is especially useful if for a genome several sources of hints are available, where one source should be trusted when in doubt. For example, the rhesus macaque currently has few native ESTs but human ESTs often also align to rhesus. Giving the hints from native ESTs a higher priority means that AUGUSTUS uses only them for genes with support by native ESTs and uses the alien EST alignments when native ESTs alignments are not available for a gene. When the priority is not specified, it is internally set to -1.
@@ -775,7 +777,7 @@ These can be multi-gene sequences and genes on the reverse strand. However, the 
 
 # WEB-SERVER
 
-AUGUSTUS can also be run through a web-interface avaible on the AUGUSTUS home page: http://augustus.gobics.de.
+AUGUSTUS can also be run through a web-interface at http://bioinf.uni-greifswald.de/augustus/ and a web service at http://bioinf.uni-greifswald.de/webaugustus/index.gsp.
 
 # MEA: USING THE MAXIMUM EXPECTED ACCURACY APPROACH
 
@@ -794,12 +796,11 @@ bioinf.uni-greifswald.de/trainaugustus
 
 # REFERENCES
 
-Stefanie König, Lars Romoth, Lizzy Gerischer, and Mario Stanke (2015)
-Simultaneous gene finding in multiple genomes. PeerJ PrePrints, e1594
+Stefanie König, Lars Romoth, Lizzy Gerischer, and Mario Stanke (2016)
+[Simultaneous gene finding in multiple genomes](https://academic.oup.com/bioinformatics/article/32/22/3388/2525611). Bioinformatics, 32 (22): 3388-3395, doi: 10.1093/bioinformatics/btw494
 
 Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008)
-"Using native and syntenically mapped cDNA alignments to improve de novo gene finding"
-Bioinformatics, doi: 10.1093/bioinformatics/btn013
+[Using native and syntenically mapped cDNA alignments to improve de novo gene finding](https://academic.oup.com/bioinformatics/article/24/5/637/202844). Bioinformatics, doi: 10.1093/bioinformatics/btn013
 
 Mario Stanke, Ana Tzvetkova, Burkhard Morgenstern (2006)
 "AUGUSTUS at EGASP: using EST, protein and genomic alignments for improved gene prediction in the human genome"

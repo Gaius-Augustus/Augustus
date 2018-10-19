@@ -1,16 +1,13 @@
-/*****************************************************************************\
- * Filename : pp_hitseq.hh
+/*
+ * pp_hitseq.hh
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
  * Author   : Oliver Keller
  * Project  : Gene Prediction with Protein Family Patterns
- *
  * Description: Data structures for storing ProteinProfile hit sequences
- *
- *
- * Date       |   Author              |  Changes
- *------------|-----------------------|---------------------------------
- * 20.10.08   | Oliver Keller         | creation of the file
- * 12.11.08   | Oliver Keller         | first version in SVN (rev. 137)
- \******************************************************************************/
+ */
 
 #ifndef __PP_HITSEQ_HH
 #define __PP_HITSEQ_HH

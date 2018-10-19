@@ -1,16 +1,9 @@
-/**********************************************************************
- * file:    evaluation.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * evaluation.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 19.06.02| Mario Stanke  | creation of the file
- * 30.11.02| Mario Stanke  | incomplete genes
- * 11.04.07| Mario Stanke  | evaluation of the pred. of the tts
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "evaluation.hh"
 

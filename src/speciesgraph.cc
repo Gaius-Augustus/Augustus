@@ -1,18 +1,9 @@
-/**********************************************************************
- * file:    speciesgraph.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  builds a directed acyclic graph from a set of sampled genes.
- *          The underlying auxiliary structure of the graph consists of seven
- *          neutral lines each representing a type of non-coding segment.
- *          In comparative gene prediction for each species an object of
- *          this class is created.
- * authors: Stefanie Koenig
+/*
+ * speciesgraph.cc
  *
- * date    |   author       |  changes
- * --------|----------------|------------------------------------------
- * 18.06.12| Stefanie Koenig| creation of the file
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "speciesgraph.hh"
 

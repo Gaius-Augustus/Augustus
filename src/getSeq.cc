@@ -1,15 +1,11 @@
-/**********************************************************************
- * retrieve genomic sequences from a mysql database, 
- * file:    getSeq.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
+/*
+ * getSeq.cc
  *
- * authors: Stefanie Koenig
- *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 20.11.13|Stefanie Koenig| creation of the file
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: retrieve genomic sequences from a mysql database
+ */
 
 // Project includes
 #include "randseqaccess.hh"

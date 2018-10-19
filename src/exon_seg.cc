@@ -1,3 +1,10 @@
+/*
+ * exon_seg.cc
+ *
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+
 #include<iostream>
 #include<fstream>
 #include<math.h>

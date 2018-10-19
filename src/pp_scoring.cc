@@ -1,15 +1,11 @@
-/**********************************************************************
- * file:    pp_scoring.cc
- * license: Artistic License, see file LICENCE.TXT or
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  protein pattern search extension
- * authors: Oliver Keller
+/*
+ * pp_scoring.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 20.10.08| Oliver Keller | creation of the file
- * 28.01.09| Oliver Keller | rev. 157, final forward-only version
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: protein pattern search extension
+ */
 
 #include "pp_scoring.hh"
 

@@ -1,19 +1,10 @@
-
-/**********************************************************************
- * file: compgenepred.cc licence: Artistic Licence, see file
- * LICENCE.TXT or
- * http://www.opensource.org/licenses/artistic-license.php descr.:
- * comparative gene prediction on multiple species authors: Mario
- * Stanke, Alexander Gebauer, Stefanie Koenig
+/*
+ * compgenepred.cc
  *
- * date    |   author       |  changes
- * --------|----------------|------------------------------------------
- * 07.03.12| Mario Stanke   | creation of the file
- * 06.10.12|Stefanie Koenig | construction of an OrthoGraph from a set of
- *         |                | orthologous sequences + integration of
- *         |                | the optimization method
- ***********************************************************************/
-
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
+  
 #include "compgenepred.hh"
 #include "orthograph.hh"
 #include "mea.hh"

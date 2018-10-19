@@ -1,15 +1,9 @@
-/**********************************************************************
- * file:    introntrain.cc
- * licence: 
- *          
- * descr.:  
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * introntrain.cc
  *
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------
- * 02.01.06| Mario Stanke  | creating the file
- * 11.05.06| Mario Stanke  | fixed error in case no intron is longer than d
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "intronmodel.hh"
 

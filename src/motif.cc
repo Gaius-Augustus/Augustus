@@ -1,15 +1,11 @@
-/**********************************************************************
- * file:    motif.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  Weight matrices and other motifs
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * motif.cc
  *
- * date    |   author      |  changes 
- * --------|---------------|------------------------------------------ 
- * 08.08.02| Mario Stanke  | creation of the file
- * 10.05.05| Mario Stanke  | making gc_range_min, gc_range_max variable
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: Weight matrices and other motifs
+ */
 
 #include "motif.hh"
 
@@ -193,7 +189,7 @@ void BaseCount::setWeightMatrix(string matrixFileName){
 	// cout <<"Gewichtungsmatrix: \n" << weighingMatrix << endl;
 	istrm.close();
     } else {
-	string errorMess("Could't open the file with the weight matrix: ");
+	string errorMess("Couldn't open the file with the weight matrix: ");
 	errorMess.append(matrixFileName);
 	throw ProjectError(errorMess.c_str());
     }

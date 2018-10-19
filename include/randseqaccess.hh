@@ -1,11 +1,9 @@
-/**********************************************************************
- * file:    randseqaccess.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  random acces to sequence data, e.g. get me chr1:1000-2000 from species 'human'
- * authors: Mario Stanke, Stefanie Koenig, yuquilin
+/*
+ * randseqaccess.hh
  *
- *********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #ifndef _RANDSEQACCESS
 #define _RANDSEQACCESS
@@ -27,14 +25,16 @@
 #include "sqliteDB.hh"
 #endif
 
-/*
- * SpeciesCollection holds all extrinsic evidence given for the species.
- * It consists of a set of group specific FeatureCollections and
+/**
+ * @brief SpeciesCollection holds all extrinsic evidence given for the species.
+ * @details It consists of a set of group specific FeatureCollections and
  * a default FeatureCollection. Species for which no extrinsic evidence
  * is given, make use of the default collection (identical to ab initio
  * gene prediction, no bonus/malus).
  * Subsets of the species with the same extrinsic config, i.e. same feature table
  * in the extrinsicCfgFile, share one group specific FeatureCollection.
+ * 
+ * @author Stefanie Koenig
  */
 class SpeciesCollection{
 public:
@@ -52,9 +52,12 @@ private:
     static int groupCount; // number of groups
 };
 
-/*
- * abstract class for quick access to an arbitrary sequence segment in genomes
+/**
+ * @brief abstract class for quick access to an arbitrary sequence segment in genomes
  * needed for comparative gene finding
+ * @details random acces to sequence data, e.g. get me chr1:1000-2000 from species 'human'
+ * 
+ * @author Mario Stanke
  */
 class RandSeqAccess {
 public:
@@ -82,9 +85,11 @@ protected:
     SpeciesCollection extrinsicFeatures; // all hints
 };
 
-/*
- * Achieve random access by simply storing all genomes in memory and then retrieving the required
- * substrings when desired. This may need a lot of RAM.
+/**
+ * @brief Achieve random access by simply storing all genomes in memory and 
+ * then retrieving the required substrings when desired. This may need a lot of RAM.
+ * 
+ * @author Mario Stanke
  */
 class MemSeqAccess : public RandSeqAccess {
 public:
@@ -107,10 +112,11 @@ private:
  */
 map<string,string> getFileNames (string listfile);
 
-
-/*
- * Random access to sequence segments through a database.
- * The sequences must be stored in a database.
+/**
+ * @brief Random access to sequence segments through a database.
+ * @details The sequences must be stored in a database.
+ * 
+ * @author Stefanie Koenig
  */
 class DbSeqAccess : public RandSeqAccess {
 public:
@@ -152,6 +158,13 @@ private:
 #endif // AMYSQL
 
 #ifdef SQLITE
+
+/**
+ * @brief Random access to sequence segments through a database.
+ * @details The sequences must be stored in a database.
+ * 
+ * @author Stefanie Koenig
+ */
 class SQLiteAccess : public DbSeqAccess {
 public:
     SQLiteAccess(const char* f, vector<string> s = vector<string>()) : DbSeqAccess(s), db(f) {

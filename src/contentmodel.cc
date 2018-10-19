@@ -1,14 +1,9 @@
-/**********************************************************************
- * file:    contentmodel.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  Model typical sequences by pattern frequencies
- * authors: Mario Stanke, mario@gobics.de
+/*
+ * contentmodel.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 19.08.02| Mario Stanke  |  creation of the file
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ */
 
 #include "contentmodel.hh"
 

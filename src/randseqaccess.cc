@@ -1,16 +1,11 @@
-/**********************************************************************
- * file:    randseqaccess.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
- *          http://www.opensource.org/licenses/artistic-license.php
- * descr.:  random acces to sequence data, e.g. get me chr1:1000-2000 from species 'human'
- * authors: Mario Stanke
+/*
+ * randseqaccess.cc
  *
- * date    |   author      |  changes
- * --------|---------------|------------------------------------------
- * 07.03.12| Mario Stanke  | creation of the file
- * 21.03.12| Stefanie König| implementation of MemSeqAcess functions
- * 09.06.12| yuqiulin      | mysql access to sequences
- **********************************************************************/
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
+ * Description: random acces to sequence data, e.g. get me chr1:1000-2000 from species 'human'
+ */
 
 #include "randseqaccess.hh"
 #include "genbank.hh"
