@@ -21,7 +21,7 @@ RUN apt-get install -y libssl-dev libcurl3-dev
 # Clone AUGUSTUS repository
 RUN git clone --recursive https://github.com/Gaius-Augustus/Augustus /root/augustus
 
-# Build bam2wig dependencies (htslib, bfctools, tabix, samtools)
+# Build bam2wig dependencies (htslib, bfctools, samtools)
 RUN git clone https://github.com/samtools/htslib.git /root/htslib
 WORKDIR "/root/htslib"
 RUN autoheader
@@ -36,9 +36,6 @@ RUN autoconf
 RUN ./configure
 RUN make
 RUN make install
-RUN git clone https://github.com/samtools/tabix.git /root/tabix
-WORKDIR "/root/tabix"
-RUN make
 RUN git clone https://github.com/samtools/samtools.git /root/samtools
 WORKDIR "/root/samtools"
 RUN autoheader

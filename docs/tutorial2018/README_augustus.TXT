@@ -186,11 +186,10 @@ Compiling bam2wig requires:
 
    -htslib
    -bcftools
-   -tabix
    -samtools
-   For bam2wig, these four packages must be installed from github. An installation via Ubuntu packages is not sufficient.
+   For bam2wig, these three packages must be installed from github. An installation via Ubuntu packages is not sufficient.
    See detailed installation & compilation instructions at auxprogs/bam2wig/README.TXT
-   Also, the environment variable TOOLDIR (directory in which htslib, bcftools, tabix and samtools reside) must be exported:
+   Also, the environment variable TOOLDIR (directory in which htslib, bcftools and samtools reside) must be exported:
 
    export TOOLDIR=/path/where/dependencies/reside
 
