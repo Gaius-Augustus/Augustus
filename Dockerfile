@@ -18,9 +18,6 @@ RUN apt-get install -y libncurses5-dev
 # Install additional dependencies for bam2wig
 RUN apt-get install -y libssl-dev libcurl3-dev
 
-# Clone AUGUSTUS repository
-RUN git clone --recursive https://github.com/Gaius-Augustus/Augustus /root/augustus
-
 # Build bam2wig dependencies (htslib, bfctools, samtools)
 RUN git clone https://github.com/samtools/htslib.git /root/htslib
 WORKDIR "/root/htslib"
@@ -44,6 +41,9 @@ RUN ./configure
 RUN make
 RUN make install
 ENV TOOLDIR="/root"
+
+# Clone AUGUSTUS repository
+ADD / /root/augustus
 
 # Build bam2wig
 RUN mkdir /root/augustus/bin
