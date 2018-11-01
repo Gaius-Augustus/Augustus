@@ -370,12 +370,12 @@ parameters:\n\
 --noIdx       use this flag to suppress the building of indices on the database tables.\n\
               If you are going to load several genomes and/or hint files in a row, this option\n\
               is recommended to speed up the loading. But make sure to build indices with\n\
-              --makeIdx after all genomes/hints are loaded. Otherwise, data retrieval opterations\n\
+              --makeIdx after all genomes/hints are loaded. Otherwise, data retrieval operations\n\
               can be very slow.\n\
 --makeIdx     use this flag to build the indices on the database tables after loading several\n\
               genomes and/or hint files with --noIdx. Only call this once for all species, e.g.\n\
               load2sqlitedb --makeIdx --dbaccess=database.db\n\
---clean       makes a clean load deleting existing hints/genome for the species from the dabase.\n\
+--clean       makes a clean load deleting existing hints/genome for the species from the database.\n\
               When called with a gff file, only the hints for the species are delete, but not the genome.\n\
               When called with a fasta file, both hints and genome for the species are deleted.\n\
 \n\
