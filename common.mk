@@ -10,7 +10,7 @@ AUGVERSION = 3.3.2
 # COMPGENEPRED = true
 
 # uncomment this line when you need MySQL access to sequences (most users don't)
-#MYSQL = true
+# MYSQL = true
 
 # uncomment this line to enable access to SQLite databases that store
 # file offsets of sequence data in flat files and hints

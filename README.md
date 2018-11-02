@@ -22,13 +22,6 @@ This currently installs only a single-genome version without comparative gene pr
 sudo apt install augustus augustus-data augustus-doc
 ```
 
-## Docker
-Download [Dockerfile](Dockerfile) into some new directory, change into this directory and issue
-
-```
-docker build -t augustus .
-```
-
 ## Clone from GitHUB
 
 To obtain the most recent complete version, first, clone the repository
@@ -41,21 +34,32 @@ or, alternatively, [download](http://bioinf.uni-greifswald.de/augustus/binaries/
 tar -xzf augustus.current.tar.gz
 ```
 
-# Install dependencies
+## Docker
+
+After retrieving Augustus change into the main directory containing the 
+[Dockerfile](Dockerfile) and issue
+
+```
+docker build -t augustus .
+```
+
+## Install dependencies
 
 The following dependencies may be required for AUGUSTUS:
 - Optional libraries for gzip compressed input (uncomment ZIPINPUT = TRUE in common.mk):
   - libboost-iostreams-dev
   - zlib1g-dev
-- Optional for comparative (multi-species, CGP) AUGUSTUS with SQLITE (uncomment COMPGENEPRED = true and SQLITE = true in common.mk):
+- Optional for comparative (multi-species, CGP) AUGUSTUS with SQLite (uncomment COMPGENEPRED = true and SQLITE = true in common.mk):
   - libgsl-dev
   - libboost-graph-dev
+  - libboost-all-dev
   - libsuitesparse-dev
   - liblpsolve55-dev
   - libsqlite3-dev
 - Optional for comparative (mutli-species, CGP) AUGUSTUS with MySQL (uncomment COMPGENEPRED = true and MYSQL = true in common.mk):
   - libgsl-dev
   - libboost-graph-dev
+  - libboost-all-dev
   - libsuitesparse-dev
   - liblpsolve55-dev
   - libmysql++-dev
