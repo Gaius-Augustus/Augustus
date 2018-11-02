@@ -84,7 +84,7 @@ arguments need to be passed:
                         3       bosTau4,
                         4       galGal3
                         ;
-         tree con_50_majrule = [&U] ((((1:0.032973,2:0.036199):0.129706,3:0.352605):0.020666,4:0.219477):0.438357,5:0.474279);
+         tree con_50_majrule = [&U] (((1:0.16268,2:0.352605):0.020666,3:0.219477):0.438357,4:0.474279);
          end;
 
        In cases where the phylogeny is not known, a star-like tree with uniform branch lengths might be
@@ -394,8 +394,9 @@ b) create an SQLite database and populate it
 c) running AUGUSUTS with SQLite db access:  
    call AUGUSTUS with parameters --dbaccess AND --speciesfilenames
 
-    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl
-
+    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf \
+      --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl
+    
 ## Option 2: MySQL
 
 This is an alternative to the SQLite database from above.
@@ -476,7 +477,8 @@ d) running AUGUSTUS with database access:
    call AUGUSTUS (just as in the single species version) with the hints file and 
    the extrinsic config file
 
-    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl --hintsfile=hints.gff --extrinsicCfgFile=cgp.extrinsic.cfg
+    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf \
+      --speciesfilenames=genomes.tbl --hintsfile=hints.gff --extrinsicCfgFile=cgp.extrinsic.cfg
 
 ## retrieving hints from a SQLite database
 
@@ -491,7 +493,9 @@ d) running AUGUSTUS with database access:
 
    call AUGUSTUS with --dbhints enabled:
     
-    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
+    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf \
+      --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl --dbhints=true \
+      --extrinsicCfgFile=cgp.extrinsic.cfg
 
 ## retrieving hints from a MySQL database
 
@@ -506,7 +510,9 @@ d) running AUGUSTUS with database access:
 
    call AUGUSTUS with --dbhints enabled:
 
-    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates,localhost,cgp,db_passwd --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
+    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf \
+      --dbaccess=vertebrates,localhost,cgp,db_passwd --dbhints=true \
+      --extrinsicCfgFile=cgp.extrinsic.cfg
 
 # TRAINING OF CLADE-SPECIFIC PARAMETERS
    (USUALLY NOT REQUIRED!!!)
@@ -546,7 +552,8 @@ a) Installation of Eval
 
    to check that the installation was successful, run following command
 
-    evaluate_gtf.pl -v /path/to/eval-2.2.8/chr22.refseq.gtf /path/to/eval-2.2.8/chr22.twinscan.gtf /path/to/eval-2.2.8/chr22.genscan.gtf
+    evaluate_gtf.pl -v /path/to/eval-2.2.8/chr22.refseq.gtf /path/to/eval-2.2.8/chr22.twinscan.gtf \
+      /path/to/eval-2.2.8/chr22.genscan.gtf
 
 b) Running optimize_augustus.pl for cgp parameter training
    Run optimize_augustus.pl and read the instructions in USAGE 2 for further information
@@ -555,7 +562,9 @@ b) Running optimize_augustus.pl for cgp parameter training
 
    example code:
 
-    optimize_augustus.pl --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=db.vertebrates --speciesfilenames=genomes.tbl --eval_against=hg19 --stopCodonExcludedFromCDS=1 eval.gtf
+    optimize_augustus.pl --species=human --treefile=tree.nwk --alnfile=aln.maf \
+      --dbaccess=db.vertebrates --speciesfilenames=genomes.tbl --eval_against=hg19 \
+      --stopCodonExcludedFromCDS=1 eval.gtf
 
    The file eval.gtf contains a reference gene set for the human genome that is used 
    for evaluation.
@@ -569,7 +578,9 @@ b) Running optimize_augustus.pl for cgp parameter training
 
 1. if your training set (input alignment) is small, run AUGUSTUS as shown in the following example
    ```
-    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl --referenceFile=referenceFeature.gff --refSpecies=hg19 --param_outfile=params.cfg
+    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf \
+      --speciesfilenames=genomes.tbl --referenceFile=referenceFeature.gff \
+      --refSpecies=hg19 --param_outfile=params.cfg
    ```
    This command will not predict genes. Specifying a reference file with --referenceFile 
    will make AUGUSTUS train feature parameters used to score exon and intron candidates 
@@ -587,7 +598,8 @@ b) Running optimize_augustus.pl for cgp parameter training
 
    After training, run AUGUSTUS in cgp mode with params.cfg as optional config file
    ```
-    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl --optCfgFile=params.cfg 
+    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf \
+      --speciesfilenames=genomes.tbl --optCfgFile=params.cfg 
    ```
    If --param_outfile is not specified parameters will be written to  
    $AUGUSTUS_CONFIG_PATH/cgp/log_reg_parameters_trained.cfg.  
@@ -600,22 +612,27 @@ b) Running optimize_augustus.pl for cgp parameter training
    ```
     mkdir run1 run2 ...
     for dir in run*; do
-      augustus --species=human --treefile=tree.nwk --alnfile=$dir/aln.maf --speciesfilenames=genomes.tbl --exoncands=1 --/CompPred/outdir=$dir --outfile=$dir/aug.out --errfile=$dir/aug.err &
+      augustus --species=human --treefile=tree.nwk --alnfile=$dir/aln.maf \
+        --speciesfilenames=genomes.tbl --exoncands=1 --/CompPred/outdir=$dir \
+        --outfile=$dir/aug.out --errfile=$dir/aug.err &
     done
    ```
    concatenate the following files after all jobs are done
    ```
-    cat run*/exonCands.refSpecies.gff3 run*/refSpecies.sampled_GFs.gff run*/orthoExons.refSpecies.gff3 > all_exon_intron_candidates.gff
+    cat run*/exonCands.refSpecies.gff3 run*/refSpecies.sampled_GFs.gff \
+      run*/orthoExons.refSpecies.gff3 > all_exon_intron_candidates.gff
    ```
    run AUGUSTUS again, now in training mode using all_exon_intron_candidates.gff (this is fast)
    ```
-    augustus --species=human --treefile=tree.nwk --referenceFile=referenceFeature.gff --refSpecies=hg19 --trainFeatureFile=all_exon_intron_candidates.gff --param_outfile=params.cfg
+    augustus --species=human --treefile=tree.nwk --referenceFile=referenceFeature.gff \
+      --refSpecies=hg19 --trainFeatureFile=all_exon_intron_candidates.gff --param_outfile=params.cfg
    ```
    The trained parameters are written to the file params.cfg.
 
    After training, run AUGUSTUS in cgp mode with params.cfg as optional config file
    ```
-    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl --optCfgFile=params.cfg
+    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf \
+      --speciesfilenames=genomes.tbl --optCfgFile=params.cfg
    ```
    If --param_outfile is not specified parameters will be written to  
    $AUGUSTUS_CONFIG_PATH/cgp/log_reg_parameters_trained.cfg.  
