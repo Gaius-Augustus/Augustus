@@ -98,7 +98,7 @@ b) recompile AUGUSTUS with cgp mode enabled
    open the file [common.mk](./common.mk) with a text editor and uncomment the following lines 
    to enable comparative gene prediction using a SQLite database
    
-    COMGENEPRED = true
+    COMPGENEPRED = true
     SQLite = true
    
    recompile AUGUSTUS
@@ -127,7 +127,6 @@ arguments need to be passed:
        The second field is the directory and file name for the genome file, e.g.
 
          hg19      /dir/to/genome/human.fa
-         rheMac2   /dir/to/genome/rhesus.fa
          mm9       /dir/to/genome/mouse.fa
          bosTau4   /dir/to/genome/cow.fa
          galGal3   /dir/to/genome/chicken.fa
@@ -153,25 +152,23 @@ arguments need to be passed:
        and the sequences identifiers (as they appear in  the genome files) delimited 
        by '.', e.g.  
 
-         a score=235085.000000
-         s hg19.chr21             15725769 27 +  48129895 AGCTATTGCTGTTTATGTCTCAATTTC
-         s rheMac2.chr3          163875558 27 - 196418989 AGCTCTTGCTGTTTACGTCTCGATTTC
-         s mm9.chr16              75744509 27 +  98319150 AGCTCGCAGTGTTGATGCTTCAGTCTC
-         s bosTau4.chr1          138520043 27 - 161106243 AGCTATTGATGTTTATGTCTTCATTTC
-         s galGal3.chr1          101466793 21 + 200994015 AGCTCGAGAAG------AGCCATTATA
+         a score=628177.000000
+         s	hg19.chr21    2032  36  +  32085  TAGG-----------TCTTGCTTCGCCGCAGGAGCGTGGCGGCGGGG
+         s	mm9.chr16     1745  36  +  25968  TAGG-----------TCTTGCTGCGTCGGAGCAACGTGGCAGCAGAG
+         s	bosTau4.chr1  1935  36  +  30875  TAGG-----------TCTTGCTCCGCCGGAGGAGCGTGGCGGCAGGA
+         s	galGal3.chr1  1000  45  +  22283  CAGTAACTGAGCTATTGCTGCTCTGCTG--AGTGAGCCGGAGCAGGG
 
-         a score=128487.000000
-         s hg19.chr21             15725796 32 +  48129895 CCAGAGGAGAGGGTTAGTACCAAATGCACCAA
-         s bosTau4.chr1          138520070 30 - 161106243 CCAGAGGAGA--GTTCATATTGAGTGCACCAA
-         s mm9.chr16              75744536 30 +  98319150 TCAGAGAAGA--ACTTGGACAAAGTGCACCCA
-         s rheMac2.chr3          163875585 32 - 196418989 CCAGAGGAGACAGTTAGTACTAAATGCACCAA
-
+         a score=3843.000000
+         s	hg19.chr21    2068   9  +  32085  CCATGGCCG
+         s	bosTau4.chr1  1971   9  +  30875  CTGGGGCCG
+         s	mm9.chr16     1781   9  +  25968  CTCTGGCCT
+         
        Alignment rows of species that are not listed in --speciesfilenames are ignored.
          
     --treefile=tree.nwk
        a phylogenetic tree of the species in Newick format, e.g.   
 
-         ((((hg19:0.032973,rheMac2:0.036199):0.129706,mm9:0.352605):0.020666,bosTau4:0.219477):0.438357,galGal3:0.474279);
+         (((hg19:0.16268,mm9:0.352605):0.020666,bosTau4:0.219477):0.438357,galGal3:0.474279);
 
        All branch lengths are required and leaf nodes must be named after the 
        genome/species identifier (as in 'aln.maf' and 'genomes.tbl').
@@ -181,10 +178,9 @@ arguments need to be passed:
          begin trees;
                 translate
                         1       hg19,
-                        2       rheMac2,
-                        3       mm9,
-                        4       bosTau4,
-                        5       galGal3
+                        2       mm9,
+                        3       bosTau4,
+                        4       galGal3
                         ;
          tree con_50_majrule = [&U] ((((1:0.032973,2:0.036199):0.129706,3:0.352605):0.020666,4:0.219477):0.438357,5:0.474279);
          end;
@@ -192,7 +188,7 @@ arguments need to be passed:
        In cases where the phylogeny is not known, a star-like tree with uniform branch lengths might be
        used instead, e.g.
 
-         (hg19:0.01,rheMac2:0.01,mm9:0.01,bosTau4:0.01,galGal3:0.01);
+         (hg19:0.01,mm9:0.01,bosTau4:0.01,galGal3:0.01);
 
        If --speciesfilenames only contains a subset of the species in --treefile, a subtree of is extracted.
 
@@ -279,7 +275,7 @@ a) General Options:
     --softmasking=1
        adds regions with lowercase nucleotides as nonexonpart hints of source "RM".
        This is the preferrable way to deal with repeat (soft) masked genomes.
-       If --extrinsicCfgFile is not given, it used the default cgp.extrinsic.cfg 
+       If --extrinsicCfgFile is not given, it used the default extrinsic-cgp.cfg 
        with bonus 1.15, if another extrinsic config file is given, it must contain 
        the "RM" source.
 
@@ -479,7 +475,7 @@ Option 1: SQLite
    
 a) Installation  
    If not already installed, install sqlite3 as described above. Do not forget to 
-   turn on the flag SQLite in [common.mk](./common.mk) and to recompile AUGUSTUS.
+   turn on the flags COMPGENEPRED and SQLite in [common.mk](./common.mk) and to recompile AUGUSTUS.
 
 b) create an SQLite database and populate it  
    Use the program 'load2sqlitedb' in the AUGUSTUS repository.
@@ -490,35 +486,34 @@ b) create an SQLite database and populate it
    example code for loading a genome and a hints file to the database vertebrates.db  
    (always load the genome file first, before loading hints):  
 
-    load2sqlitedb --species=chicken --dbaccess=vertebrates.db genome.fa
-    load2sqlitedb --species=chicken --dbaccess=vertebrates.db hints.gff
+    load2sqlitedb --species=hg19 --dbaccess=vertebrates.db human.fa
+    load2sqlitedb --species=mm9 --dbaccess=vertebrates.db mouse.fa
+    load2sqlitedb --species=bosTau4 --dbaccess=vertebrates.db cow.fa
+    load2sqlitedb --species=galGal3 --dbaccess=vertebrates.db chicken.fa
 
 c) running AUGUSUTS with SQLite db access:  
    call AUGUSTUS with parameters --dbaccess AND --speciesfilenames
 
     augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl
 
-   in order to retrieve hints from the database, enable --dbhints and pass an extrinsic config file
-
-    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
-
 Option 2: MySQL
 ---------------
 
-This is an alternative to the SQLite flat file database from above.
+This is an alternative to the SQLite database from above.
 
 a) enabling MySQL access:  
 
    Follow the instructions in [README.md](./README.md#install-dependencies) to install MySQL.  
-   Do not forget to turn on the flag MYSQL in [common.mk](./common.mk) and to recompile AUGUSTUS.
+   Do not forget to turn on the flags COMPGENEPRED and MYSQL in [common.mk](./common.mk) and to recompile AUGUSTUS.
 
 b) creating a MySQL database (example code) and a user:  
 
+    apt install mysql-server
     mysql -u root -p
-    create database saeuger;
-    select password('db_passwd');
-    create user `cgp`@`%` identified by password 'user_passwd'; /* or whatever the password code is*/
-    grant all privileges on saeuger.* to cgp@'%';
+    > CREATE DATABASE vertebrates;
+    > CREATE USER `cgp`@`%` IDENTIFIED BY 'db_passwd'; /* or any other password */
+    > GRANT ALL PRIVILEGES ON vertebrates.* TO cgp@'%';
+    > exit
 
 c) loading sequences into the database:  
 
@@ -529,15 +524,14 @@ c) loading sequences into the database:
 
    Call 'load2db' for each genome, double check that the correct species identifier is used, e.g.
 
-    load2db --species=hg19 --dbaccess=saeuger,localhost,cgp,db_passwd dir/to/genome/human.fa
-    load2db --species=rheMac2 --dbaccess=saeuger,localhost,cgp,db_passwd dir/to/genome/rhesus.fa
-    load2db --species=mm9 --dbaccess=saeuger,localhost,cgp,db_passwd dir/to/genome/mouse.fa
-    load2db --species=bosTau4 --dbaccess=saeuger,localhost,cgp,db_passwd dir/to/genome/cow.fa
-    load2db --species=galGal3 --dbaccess=saeuger,localhost,cgp,db_passwd dir/to/genome/chicken.fa
+    load2db --species=hg19 --dbaccess=vertebrates,localhost,cgp,db_passwd human.fa
+    load2db --species=mm9 --dbaccess=vertebrates,localhost,cgp,db_passwd mouse.fa
+    load2db --species=bosTau4 --dbaccess=vertebrates,localhost,cgp,db_passwd cow.fa
+    load2db --species=galGal3 --dbaccess=vertebrates,localhost,cgp,db_passwd chicken.fa
 
 d) running AUGUSTUS with database access:
 
-    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=saeuger,localhost,cgp,db_passwd
+    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates,localhost,cgp,db_passwd
 
 # USING HINTS
 
@@ -554,7 +548,6 @@ d) running AUGUSTUS with database access:
     chr21       b2h          intron       9908433    9909046         0  .  .  pri=4;src=E
     chr21       repmask      nonexonpart  10018268  10018612         0  .  .  src=RM
     chr21       w2h          ep           48084612  48084621    41.600  .  .  src=W;pri=4;mult=41;
-
 
    mouse.hints.gff contains hints from the mouse Refseq annotation
 
@@ -578,28 +571,44 @@ a) retrieving hints from a flat file
     mm9.chr10   mm9_refGene  CDS          50409921  50410055  0.000000  +  0  source=M
     mm9.chr10   mm9_refGene  intron       50410056  50419745  0.000000  +  .  source=M
 
-   prepare the extrinsic config file. Use config/extrinsic/cgp.extrinsic.cfg as template
+   prepare the extrinsic config file. Use config/extrinsic/extrinsic-cgp.cfg as template
 
    call AUGUSTUS (just as in the single species version) with the hints file and 
    the extrinsic config file
 
     augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --speciesfilenames=genomes.tbl --hintsfile=hints.gff --extrinsicCfgFile=cgp.extrinsic.cfg
 
-b) retrieving hints from database
+b) retrieving hints from a SQLite database
 ---------------------------------
 
-   loading hints into the database works exactly the same as loading genomes into the 
-   database. Call 'load2db' to load hints for a particular species. Use the same species 
-   identifier as for the genomes:
+   loading hints into the SQLite database works exactly the same as loading genomes 
+   into the database. Call 'load2sqlitedb' to load hints for a particular species. 
+   Use the same species identifier as for the genomes:
 
-    load2db --species=hg19 --dbaccess=saeuger,localhost,cgp,db_passwd human.hints.gff
-    load2db --species=mm9  --dbaccess=saeuger,localhost,cgp,db_passwd mouse.hints.gff
+    load2sqlitedb --species=hg19 --dbaccess=vertebrates.db human.hints.gff
+    load2sqlitedb --species=mm9 --dbaccess=vertebrates.db mouse.hints.gff
 
-   prepare the extrinsic config file. Use config/extrinsic/cgp.extrinsic.cfg as template
+   prepare the extrinsic config file. Use config/extrinsic/extrinsic-cgp.cfg as template
+
+   call AUGUSTUS with --dbhints enabled:
+    
+    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates.db --speciesfilenames=genomes.tbl --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
+
+c) retrieving hints from a MySQL database
+---------------------------------
+
+   loading hints into the MySQL database works exactly the same as loading genomes 
+   into the database. Call 'load2db' to load hints for a particular species. 
+   Use the same species identifier as for the genomes:
+
+    load2db --species=hg19 --dbaccess=vertebrates,localhost,cgp,db_passwd human.hints.gff
+    load2db --species=mm9  --dbaccess=vertebrates,localhost,cgp,db_passwd mouse.hints.gff
+
+   prepare the extrinsic config file. Use config/extrinsic/extrinsic-cgp.cfg as template
 
    call AUGUSTUS with --dbhints enabled:
 
-    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=saeuger,localhost,cgp,db_passwd --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
+    augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates,localhost,cgp,db_passwd --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
 
 
 # TRAINING OF CLADE-SPECIFIC PARAMETERS
