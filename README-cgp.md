@@ -99,7 +99,7 @@ b) recompile AUGUSTUS with cgp mode enabled
    to enable comparative gene prediction using a SQLite database
    
     COMPGENEPRED = true
-    SQLite = true
+    SQLITE = true
    
    recompile AUGUSTUS
 
@@ -475,7 +475,7 @@ Option 1: SQLite
    
 a) Installation  
    If not already installed, install sqlite3 as described above. Do not forget to 
-   turn on the flags COMPGENEPRED and SQLite in [common.mk](./common.mk) and to recompile AUGUSTUS.
+   turn on the flags COMPGENEPRED and SQLITE in [common.mk](./common.mk) and to recompile AUGUSTUS.
 
 b) create an SQLite database and populate it  
    Use the program 'load2sqlitedb' in the AUGUSTUS repository.
@@ -483,9 +483,8 @@ b) create an SQLite database and populate it
 
     load2sqlitedb --help
 
-   example code for loading a genome and a hints file to the database vertebrates.db  
-   (always load the genome file first, before loading hints):  
-
+   example code for loading genome files to the database vertebrates.db:  
+   
     load2sqlitedb --species=hg19 --dbaccess=vertebrates.db human.fa
     load2sqlitedb --species=mm9 --dbaccess=vertebrates.db mouse.fa
     load2sqlitedb --species=bosTau4 --dbaccess=vertebrates.db cow.fa
@@ -509,6 +508,7 @@ a) enabling MySQL access:
 b) creating a MySQL database (example code) and a user:  
 
     apt install mysql-server
+    /* The initial MySQL root account passwords are usally empty */
     mysql -u root -p
     > CREATE DATABASE vertebrates;
     > CREATE USER `cgp`@`%` IDENTIFIED BY 'db_passwd'; /* or any other password */
@@ -522,7 +522,7 @@ c) loading sequences into the database:
 
     load2db --help
 
-   Call 'load2db' for each genome, double check that the correct species identifier is used, e.g.
+   Call 'load2db' for each genome, check that the correct species identifier is used, e.g.
 
     load2db --species=hg19 --dbaccess=vertebrates,localhost,cgp,db_passwd human.fa
     load2db --species=mm9 --dbaccess=vertebrates,localhost,cgp,db_passwd mouse.fa
@@ -581,9 +581,9 @@ a) retrieving hints from a flat file
 b) retrieving hints from a SQLite database
 ---------------------------------
 
-   loading hints into the SQLite database works exactly the same as loading genomes 
-   into the database. Call 'load2sqlitedb' to load hints for a particular species. 
-   Use the same species identifier as for the genomes:
+   Loading hints into the SQLite database works exactly the same as loading genomes 
+   into the database. After the genome files are loaded, call 'load2sqlitedb' to 
+   load hints for a particular species. Use the same species identifier as for the genomes:
 
     load2sqlitedb --species=hg19 --dbaccess=vertebrates.db human.hints.gff
     load2sqlitedb --species=mm9 --dbaccess=vertebrates.db mouse.hints.gff
@@ -597,9 +597,9 @@ b) retrieving hints from a SQLite database
 c) retrieving hints from a MySQL database
 ---------------------------------
 
-   loading hints into the MySQL database works exactly the same as loading genomes 
-   into the database. Call 'load2db' to load hints for a particular species. 
-   Use the same species identifier as for the genomes:
+   Loading hints into the MySQL database works exactly the same as loading genomes 
+   into the database. After the genome files are loaded, call 'load2db' to load 
+   hints for a particular species. Use the same species identifier as for the genomes:
 
     load2db --species=hg19 --dbaccess=vertebrates,localhost,cgp,db_passwd human.hints.gff
     load2db --species=mm9  --dbaccess=vertebrates,localhost,cgp,db_passwd mouse.hints.gff
