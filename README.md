@@ -26,7 +26,7 @@ sudo apt install augustus augustus-data augustus-doc
 Download [Dockerfile](Dockerfile) into some new directory, change into this directory and issue
 
 ```
-docker build -t augustus .
+docker build -t augustus https://github.com/Gaius-Augustus/Augustus.git
 ```
 
 ## Clone from GitHUB
