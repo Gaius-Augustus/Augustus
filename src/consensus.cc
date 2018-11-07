@@ -470,7 +470,7 @@ void consensus::start(){
   for(k=0;k<final_list.size();k++){
     cout << " storing histogram for sequence " << final_list[k].consensus_pattern<<endl;
     for(i=0;i<max_string_length;i++)
-      final_list[k].position_of_occurence.push_back(0);
+      final_list[k].position_of_occurrence.push_back(0);
     for(i=0;i<number_seq;i++){      
       if(var[i].seq.length()<pattern_size) 
 	continue;
@@ -479,9 +479,9 @@ void consensus::start(){
       for( j=0;j<var[i].seq.length()- pattern_size +1;j++){ 
 	try{
 	  if(consensus_data[k] == s2i(var[i].seq.c_str()+j)){
-	    final_list[k].position_of_occurence[j]++;
-	    if(final_list[k].position_of_occurence[j]>max_freq)
-	      max_freq=final_list[k].position_of_occurence[j];
+	    final_list[k].position_of_occurrence[j]++;
+	    if(final_list[k].position_of_occurrence[j]>max_freq)
+	      max_freq=final_list[k].position_of_occurrence[j];
 	  }
 	}
 	catch(exception& e ){
@@ -619,16 +619,16 @@ void consensus::analyse(string pattern1,float p_value1,float delta1,int max_allo
   for(k=0;k<final_list.size();k++){
     cout << " storing histogram for sequence " << final_list[k].consensus_pattern<<endl;
     for(i=0;i<max_string_length;i++)
-      final_list[k].position_of_occurence.push_back(0);
+      final_list[k].position_of_occurrence.push_back(0);
     for(i=0;i<number_seq;i++){      
       if(var[i].seq.length()<pattern_size) 
 	continue;
       for( j=0;j<var[i].seq.length()- pattern_size +1;j++){ 
 	try{
 	  if(number == s2i(var[i].seq.c_str()+j)){
-	    final_list[k].position_of_occurence[j]++;
-	    if(final_list[k].position_of_occurence[j]>max_freq)
-	      max_freq=final_list[k].position_of_occurence[j];
+	    final_list[k].position_of_occurrence[j]++;
+	    if(final_list[k].position_of_occurrence[j]>max_freq)
+	      max_freq=final_list[k].position_of_occurrence[j];
 	  }
 	}
 	catch(exception& e ){
@@ -644,18 +644,18 @@ void consensus::plot_histogram(){
   for(i=0;i<final_list.size();i++){
     cout<<" The pattern is " << final_list[i].consensus_pattern<< endl;
     cout<<max_line_len<<'\t'<<max_freq<<endl;
-    cout<< " The scale is "<< (float)max_line_len/max_freq <<" * = one occurence"<< endl;
+    cout<< " The scale is "<< (float)max_line_len/max_freq <<" * = one occurrence"<< endl;
     if(starting==0)
       cout <<" and it starts from beginning of sequence." <<endl;
     else
       cout <<" and it begins from position "<< starting <<"."<<endl;
     for(j=0;j<max_string_length;j++){      
       cout <<j +1<< '\t';
-      if(final_list[i].position_of_occurence[j]==0){
+      if(final_list[i].position_of_occurrence[j]==0){
 	cout<<endl;
 	continue;
       }
-      length=(final_list[i].position_of_occurence[j]*max_line_len)/max_freq;
+      length=(final_list[i].position_of_occurrence[j]*max_line_len)/max_freq;
       if(length==0)
 	length=1;
       for(k=0;k<length;k++)

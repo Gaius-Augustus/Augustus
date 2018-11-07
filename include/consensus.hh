@@ -40,7 +40,7 @@ typedef struct histogram_data{
   vector<float> mean_neighbours;
   int f_value;
   float mean_value;
-  vector<int> position_of_occurence;
+  vector<int> position_of_occurrence;
 } histogram_data;
 
 
@@ -74,7 +74,7 @@ class consensus{
   /* consensus_data stores the consensus patterns as their corresponding integers
    * final_list is a vector of struccture histogram_data
    * max_string_length is the maximum length of the input string sequences
-   * max_freq is the maximum frequency of occurence at a particular position and is used to scale the histogram
+   * max_freq is the maximum frequency of occurrence at a particular position and is used to scale the histogram
    */
   vector<int> consensus_data;
   vector<histogram_data> final_list;
@@ -107,7 +107,7 @@ public:
    */
   double poisThresh(int i, float p);
   /* calculates the poisson inverse between values a and b with threshold value p , number of iterations to perform n and 
-   * frequency of occurence i
+   * frequency of occurrence i
    */
   double poisInv(double a,double b, float p,int n,int i);
   /* starts the calculations

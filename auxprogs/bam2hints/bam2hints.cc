@@ -820,7 +820,7 @@ int main(int argc, char* argv[])
       // check if there is a proper old target
       if(OldTargetID >= 0) // -1 <-> "*"(unknown reference), -2 <-> uninitialized
       {
-  	// check previous occurence of that target
+  	// check previous occurrence of that target
   	if(seenRefSet.find(TargetName) != seenRefSet.end())
   	{
   	  if(IntOnly && Mult)

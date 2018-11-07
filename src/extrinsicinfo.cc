@@ -2406,8 +2406,8 @@ int FeatureCollection::getNumCommonSeqs(AnnoSequence *annoseq){
 void FeatureCollection::printAccuracyForSequenceSet(const AnnoSequence* annoseqs, bool cleanRedundancies){
 /*
  * Loop over all genes in the set and count for each feature
- * the relative frequency of its occurence at positions where it is correct
- * and the relative frequency of its occurence at positions where it is not correct
+ * the relative frequency of its occurrence at positions where it is correct
+ * and the relative frequency of its occurrence at positions where it is not correct
  */
 
     int num_correct[NUM_FEATURE_TYPES];
