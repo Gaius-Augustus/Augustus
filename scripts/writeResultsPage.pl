@@ -69,7 +69,7 @@ if($final == 0){
 }
 
 if($final == 1){
-## create a paramter folder in web-out folder
+## create a parameter folder in web-out folder
 if($projectID =~ m/^t/){
 	print STDOUT "writeResults.pl is called in training mode\nCollecting parameters\n";
 	my $projectWebOutParams = $wwwOut."/$projectID/$species";
@@ -162,7 +162,7 @@ if($projectID =~ m/^t/){
 
 	## pack parameters
 	if(-e $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_parameters.cfg"){
-	    print STDOUT "Packing paramters...\n";
+	    print STDOUT "Packing parameters...\n";
 		$cmdStr = "cd $projectWebOutDir; tar -czvf parameters.tar.gz $species &> /dev/null;";
 		`$cmdStr`;
 	}

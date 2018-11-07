@@ -11,7 +11,7 @@
 #                                                                                                  #
 # Release date: January 7th 2015                                                                   #
 #                                                                                                  #
-# This script is under the Artistic Licence                                                        #
+# This script is under the Artistic License                                                        #
 # (http://www.opensource.org/licenses/artistic-license.php)                                        #
 #                                                                                                  #
 ####################################################################################################

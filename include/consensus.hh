@@ -40,7 +40,7 @@ typedef struct histogram_data{
   vector<float> mean_neighbours;
   int f_value;
   float mean_value;
-  vector<int> position_of_occurence;
+  vector<int> position_of_occurrence;
 } histogram_data;
 
 
@@ -52,10 +52,10 @@ class consensus{
    * no_iterations specifies the number of consensus patterns we need to store for the output
    * delta is used to calculate whether a certain string is relevant or not
    * p_value is the threshold used to identify the significant strings
-   * powers is the array used to store the powers 4 for caculating the character to int conversion and vice versa
-   * tpm is the transition probabiliry matrix
+   * powers is the array used to store the powers 4 for calculating the character to int conversion and vice versa
+   * tpm is the transition probability matrix
    * var is the vector of structure sequence containing all the input sequences
-   * t_values is a flag array used to store the actuall frequencies of the patterns
+   * t_values is a flag array used to store the actual frequencies of the patterns
    * f_values stores the actual frequencies of the patterns
    * back_probs store the background probabilities
    * significant_strings and relevant_strings store the significant and relevant strings respectively
@@ -72,9 +72,9 @@ class consensus{
   string analyse_pattern;
 
   /* consensus_data stores the consensus patterns as their corresponding integers
-   * final_list is a vector of struccture histogram_data
+   * final_list is a vector of structure histogram_data
    * max_string_length is the maximum length of the input string sequences
-   * max_freq is the maximum frequency of occurence at a particular position and is used to scale the histogram
+   * max_freq is the maximum frequency of occurrence at a particular position and is used to scale the histogram
    */
   vector<int> consensus_data;
   vector<histogram_data> final_list;
@@ -93,7 +93,7 @@ public:
   /* takes the file name to store the sequences
    */
   void set_file_name(string filename);
-  /* adds a particular string to consider for caculation
+  /* adds a particular string to consider for calculation
    */
   void add_string(string fileline);
   /* takes as input the pattern that we want to analyse and also the required parameters and does all the necessary 
@@ -107,7 +107,7 @@ public:
    */
   double poisThresh(int i, float p);
   /* calculates the poisson inverse between values a and b with threshold value p , number of iterations to perform n and 
-   * frequency of occurence i
+   * frequency of occurrence i
    */
   double poisInv(double a,double b, float p,int n,int i);
   /* starts the calculations
@@ -116,7 +116,7 @@ public:
   /* plots the histogram
    */
   void plot_histogram();
-  /* returns the consensus pattern and other reltaed information
+  /* returns the consensus pattern and other related information
    */
   vector<histogram_data> get_consensus();
   /* prints the consensus pattern and other related information
@@ -128,7 +128,7 @@ public:
   /* returns n choose r
    */
   int nCr(int n, int r);
-  /* converts a character from A C G T to coresponding number value 0 1 2 3 respectively
+  /* converts a character from A C G T to corresponding number value 0 1 2 3 respectively
    */
   int char2num(char m);
   /* converts the numbers to corresponding character
@@ -139,7 +139,7 @@ public:
    * performing the calculations and the vector where the new neighbours is to be stored
    */
   void k_mismatch(int new_m, int old_m, int k, int length,Seq2Int s2i,vector<int> &neighbours_index);
-  /* returns a vector containing k mismatch neighbours of pattern with interger value m and length as specified
+  /* returns a vector containing k mismatch neighbours of pattern with integer value m and length as specified
    */
   vector<int> find_neighbours(int m,int k, int length);
 };

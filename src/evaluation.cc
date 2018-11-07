@@ -127,7 +127,7 @@ void Evaluation::addToEvaluation(Transcript* predictedGeneList, Transcript* anno
     numUniquePredExons += predictedExons->size();
 
 
-    // evaluateQuickOnNukleotideLevel(predictedExons.first, -1, annotatedExons.first, -1);
+    // evaluateQuickOnNucleotideLevel(predictedExons.first, -1, annotatedExons.first, -1);
     evaluateOnNucleotideLevel(predictedExons, annotatedExons); // coding bases only
     evaluateOnExonLevel(predictedExons, annotatedExons);
     evaluateOnGeneLevel(predictedGeneList, annotatedGeneList);

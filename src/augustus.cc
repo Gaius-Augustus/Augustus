@@ -1,6 +1,6 @@
 /**********************************************************************
  * file:    augustus.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
+ * license: Artistic License, see file LICENSE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  *
  * authors: Mario Stanke, mario@gobics.de
@@ -115,7 +115,7 @@ int main( int argc, char* argv[] ){
 	Constant::init();
 	Gene::init();
 	GeneticCode::init();
-	setParameters(); // NOTE: need Constant and GeneticCode to be initialised first
+	setParameters(); // NOTE: need Constant and GeneticCode to be initialized first
 	StateModel::init();   // set global parameters of state models	  
 
 	if(Properties::hasProperty("trainFeatureFile"))
@@ -145,7 +145,7 @@ int main( int argc, char* argv[] ){
 	  cout << PREAMBLE << endl;
 	  
 	  /*
-	   * check for extrinsic information and initialise when existent
+	   * check for extrinsic information and initialize when existent
 	   */
 	  FeatureCollection extrinsicFeatures;
 	  const char *extrinsicfilename;
@@ -169,7 +169,7 @@ int main( int argc, char* argv[] ){
 	  }
 	  
 	  if (verbosity > 1) 
-	      cout << "# Initialising the parameters using config directory " << Properties::getProperty(CFGPATH_KEY) << " ..." << endl;
+	      cout << "# Initializing the parameters using config directory " << Properties::getProperty(CFGPATH_KEY) << " ..." << endl;
 	  BaseCount::init();
 	  PP::initConstants();
 	  NAMGene namgene; // creates and initializes the states
@@ -476,7 +476,7 @@ void setParameters(){
 	if (outdir != ""){
 	    outdir = expandHome(outdir);         // replace "~" by "$HOME"
 	    if(outdir[outdir.size()-1] != '/')
-		outdir += '/';                   // append slash if neccessary 
+		outdir += '/';                   // append slash if necessary 
 	    
 	    Properties::addProperty("/CompPred/outdir", outdir);
 	    // the directory actually exists? 

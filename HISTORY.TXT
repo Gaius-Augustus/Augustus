@@ -42,7 +42,7 @@ List of changes from version 3.2 to 3.2.1 (until October 23rd, 2015)
      - comparative gene prediction (CGP): make the parameters from the GCB proceedings paper match again
      - new CGP default parameters (tested on 5 clades)
      - CGP version penalizes very long introns equivalently to a geometric distribution
-     - code now under artistic licence only
+     - code now under artistic license only
 List of changes from version 3.1 to 3.2 (until September 25th, 2015)
      - comparative gene prediction (CGP option) has sensible default parameters of the logistic regression model
      - new tool hal2maf_split.pl for splitting an alignment for parallel comparative prediction
@@ -85,10 +85,10 @@ List of changes from version 3.0.2 to 3.0.3 (until August 28th, 2014)
      - other bugfixes in comparative mode
      - removal of mysql++ code from package: this is available as Debian/Ubuntu package
 List of changes from version 3.0 to 3.0.2 (until February 22nd, 2014)
-     - inclusion of scanner and parser code for Newick tree format (GPL licence), easier installation of 
+     - inclusion of scanner and parser code for Newick tree format (GPL license), easier installation of 
        comparative augustus functionality
-     - therefore release under more restrictive GPL licence (the plan is to replace this later
-       and switch back to the more permissive and non-viral artistic open source licence)
+     - therefore release under more restrictive GPL license (the plan is to replace this later
+       and switch back to the more permissive and non-viral artistic open source license)
      - drop requirement to set environment variable AUGUSTUS_CONFIG_PATH
      - bugfixes (etraining: "not Genbank format", gtf2gff.pl, compilation warning)
 List of changes from version 2.7 to 3.0 (until January 8th, 2014)
@@ -153,7 +153,7 @@ List of changes from version 2.4 to 2.5 (until Nov 13th, 2010)
      - new species pneumocystis (fungus), user contributed by Marco Pagni
 List of changes from version 2.3.1 to 2.4 (until July 27, 2010)
      - improved human parameter set: roughly 13 percent points better on CDS exon level
-     - improved fly paramter set
+     - improved fly parameter set
      - added new species 'lamprey', contributed by Falk Hildebrand and Shigehiro Kuraku
      - added new species Leishmania tarentolae, Trichinella spiralis
      - added maize5 parameter set, better than 'maize' and with UTR model
@@ -274,7 +274,7 @@ List of changes from version 1.6 to version 1.7 (until October 5th, 2005):
 
 List of changes from version 1.5 to version 1.6 (until August 3rd, 2005):
 
-     - The source code is now freely available (Artistic Licence).
+     - The source code is now freely available (Artistic License).
      - New species: Tribolium castaneum, Aedes aegypti, Coprinus cinereus
      - Bugfix: Wrong interpretation of reading frame for reverse strand exon hints.
      - Training of hints possible with nested genes.

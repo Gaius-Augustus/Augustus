@@ -32,7 +32,7 @@ uint32_t sumMandIOperations(vector<CigarOp> cigar, string printFlag);
 uint32_t sumDandIOperations(vector<CigarOp> cigar, string printFlag);
 int printElapsedTime(int tEnd, int tStart); 
 
-// For option initialisation
+// For option initialization
 struct globalOptions_t {
 	bool best;
 	bool help;

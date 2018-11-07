@@ -8,7 +8,7 @@
 # Using native and syntenically mapped cDNA alignments to improve de novo gene finding
 # Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
 # No extrinsic information on sequences given.
-# Initialising the parameters ...
+# Initializing the parameters ...
 # Using protein profile HSP70
 # --[0..159]--> PF00012.13_A (30) <--[0..3]--> PF00012.13_B (33) <--[0..7]--> PF00012.13_C (13) <--[13..24]--> PF00012.13_D (75) <--[1..13]--> PF00012.13_E (21) <--[10..20]--> PF00012.13_F (12) <--[0..18]--> PF00012.13_G (11) <--[3..4]--> PF00012.13_H (27) <--[0..2]--> PF00012.13_I (13) <--[1..8]--> PF00012.13_J (34) <--[5..20]--> PF00012.13_K (26) <--[0..1]--> PF00012.13_L (26) <--[0..8]--> PF00012.13_M (39) <--[0..1]--> PF00012.13_N (35) <--[0..11]--> PF00012.13_O (33) <--[0..1]--> PF00012.13_P (15) <--[0..1]--> PF00012.13_Q (46) <--[34,...]--
 # human version. Use default transition matrix.

@@ -51,7 +51,7 @@ PairednessCoverage::PairednessCoverage(const PairednessCoverage &copyin)   // Co
 	this->chr = copyin.chr; 	               
 }
 
-// Initialisation method
+// Initialization method
 PairednessCoverage::PairednessCoverage(int coord, int label, string chr)
 {
 	this->coord = coord; 	               
@@ -60,7 +60,7 @@ PairednessCoverage::PairednessCoverage(int coord, int label, string chr)
 }
 
 
-// Initialisation method
+// Initialization method
 void PairednessCoverage::setValues(int coord, int label, string chr)
 {
 	this->coord = coord;

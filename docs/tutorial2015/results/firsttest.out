@@ -5,7 +5,7 @@
 # Using native and syntenically mapped cDNA alignments to improve de novo gene finding
 # Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
 # No extrinsic information on sequences given.
-# Initialising the parameters using config directory /home/mario/augustus/trunks/config/ ...
+# Initializing the parameters using config directory /home/mario/augustus/trunks/config/ ...
 # bug version. Using default transition matrix.
 # admissible start codons and their probabilities: ATG(1), CTG(0), TTG(0)
 # Looks like genes.gb.test is in genbank format. Augustus uses the annotation for evaluation of accuracy.

@@ -55,7 +55,7 @@ MatePairs::MatePairs(const MatePairs &copyin)   // Copy constructor to handle pa
 	this->score = copyin.score; 	               
 }
 
-// Initialisation method
+// Initialization method
 MatePairs::MatePairs(int it, int jit, float score)
 {
 	this->alIt = it;
@@ -63,7 +63,7 @@ MatePairs::MatePairs(int it, int jit, float score)
 	this->score = score;
 }
 
-// Initialisation method
+// Initialization method
 void MatePairs::setValues(int it, int jit, float score)
 {
 	this->alIt = it;

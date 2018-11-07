@@ -530,7 +530,7 @@ void CompGenePred::start(){
        
 	if(use_omega){
 	    geneRange->computeOmegasEff(hects, seqRanges, &ctree, &codonAli); // omega and number of substitutions is stored as OrthoExon attribute
-	    // calculates an omega for every single codon alignment and prints wiggle trac for ever reding frame and species combination that exists in an ortho exon
+	    // calculates an omega for every single codon alignment and prints wiggle trac for ever reading frame and species combination that exists in an ortho exon
 	    //geneRange->printOmegaForCodon(outdir);
 	    //inefficient omega calculation, only use for debugging purpose 
 	    //geneRange->computeOmegas(hects, seqRanges, &ctree);
@@ -593,7 +593,7 @@ void CompGenePred::start(){
     GeneMSA::topologies.clear(); 
   
     if(Properties::hasProperty("referenceFile")){
-      // initialise training of log reg parameters
+      // initialize training of log reg parameters
       train_OEscore_params(speciesNames.size());
     }
   } 

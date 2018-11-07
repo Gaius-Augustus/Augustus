@@ -1672,7 +1672,7 @@ void Gene::compileExtrinsicEvidence(list<HintGroup>  *groupList){
 	    sf = supportingFraction(&*git);
 	    if (sf >= 1.0) {
 		supportingEvidence->add(git->getSource(), git->getName());
-	    } else { // TODO: in case of CDS only predictions the rest does not need to be incompatible neccessarily
+	    } else { // TODO: in case of CDS only predictions the rest does not need to be incompatible necessarily
 		incompatibleEvidence->add(git->getSource(), git->getName());
 	    }
 	    addSupportedStates(&*git);

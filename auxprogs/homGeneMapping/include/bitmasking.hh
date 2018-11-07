@@ -1,6 +1,6 @@
  /**********************************************************************
  * file:    bitmasking.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
+ * license: Artistic License, see file LICENSE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  * descr.:  usage of bit masks to pack multiple values into a
             single integer

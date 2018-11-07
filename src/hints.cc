@@ -290,8 +290,8 @@ FeatureType Feature::getFeatureType(int typeint){
  */
 bool Feature::compatibleWith(Feature &other){
     const int transcript_fuzzy_margin = 50; // a tss/tts at most this far from the end of an exon/UTR end is still considered compatible
-    const int term3_M = 1000; // two tts at most this far apart but not overlapping and not suggesting tail to tail genes are imcompatible
-    const int term5_M = 0; // two tss at most this far apart but not overlapping and not suggesting head to head genes are imcompatible
+    const int term3_M = 1000; // two tts at most this far apart but not overlapping and not suggesting tail to tail genes are incompatible
+    const int term5_M = 0; // two tss at most this far apart but not overlapping and not suggesting head to head genes are incompatible
     
     if (start > other.end || end < other.start){ // no overlap
 	if ((type == tssF && other.type == tssF) &&
@@ -445,7 +445,7 @@ bool Feature::compatibleWith(Feature &other){
  * Feature::weakerThan
  * True if every gene structure that is compatible with 'other' also is compatible with 'this'.
  * Strictly is true, if there could be gene structures that are only compatible with 'this' and not with other.
- * Usually, when a **partF inverval is larger in other. 'strictly' is only correctly set when the return value is true.
+ * Usually, when a **partF interval is larger in other. 'strictly' is only correctly set when the return value is true.
  */
 bool Feature::weakerThan(Feature &other, bool &strictly){
     strictly = false;
@@ -585,7 +585,7 @@ void HintGroup::addFeature(Feature *hint){
     while(fit != hints->end() && (*fit)->end < hint->end)
 	fit++;
     hints->insert(fit, hint);
-    // if feature is genic then reset begin and end if neccessary
+    // if feature is genic then reset begin and end if necessary
     // nongenic features: irpartF, nonexonpartF
     if (begin < 0 || begin > hint->start)
 	begin = hint->start;

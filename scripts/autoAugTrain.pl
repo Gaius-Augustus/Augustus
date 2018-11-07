@@ -94,7 +94,7 @@ GetOptions('genome=s' => \$genome,
 	   'useexisting!' => \$useexisting
 	   );
 if ($flanking_DNA > 10000){
-    print "flanking_DNA larger than neccessary ($flanking_DNA). Resetting flanking_DNA to 10000.\n";
+    print "flanking_DNA larger than necessary ($flanking_DNA). Resetting flanking_DNA to 10000.\n";
     $flanking_DNA = 10000;
 }
 # show error information and stop the program if $species not specified

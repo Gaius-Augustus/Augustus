@@ -6,7 +6,7 @@
 # Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
 # No extrinsic information on sequences given.
 # Sources of extrinsic information: M RM 
-# Initialising the parameters using config directory /home/mario/augustus/trunks/config/ ...
+# Initializing the parameters using config directory /home/mario/augustus/trunks/config/ ...
 # zebrafish version. Using default transition matrix.
 # admissible start codons and their probabilities: ATG(0.999), CTG(0.000667), TTG(0)
 # Looks like chr2L.sm.fa is in fasta format.

@@ -17,7 +17,7 @@
 using namespace std;
 
   exon_segmentation::exon_segmentation(){
-    /* Initialise lambda1 and lambda2
+    /* Initialize lambda1 and lambda2
      */
     lambda1=0.2;
     lambda2=0.3;
@@ -71,13 +71,13 @@ using namespace std;
 
 
 
-    /* Initialise the values of lambda1 and lambda2 in the order of
+    /* Initialize the values of lambda1 and lambda2 in the order of
      * 1/(mean coverage depth)
      */
     /*lambda2=(1/coverage_info.avg_depth)*1.1;
     lambda1=(1/coverage_info.avg_depth)*0.9;
 
-     Initialise the p1 and p2 vectors
+     Initialize the p1 and p2 vectors
      */
     //p1.resize(maxcov+1,0.0);
     //p2.resize(maxcov+1,0.0);
@@ -167,26 +167,26 @@ using namespace std;
   void exon_segmentation::train_function(dataset &coverage_info,string inputfile,string key){
     int find1,i,start=0,end=0,seg_ptr,track,strand,l,depth;
     double sum_exons=0,sum_introns=0,sum_q_exon_num=0,sum_q_exon_den=0,sum_q_intron_num=0,sum_q_intron_den=0;
-    /* r stores the fraction of postitions with coverage depths > L
+    /* r stores the fraction of positions with coverage depths > L
      * q is a parameter such that L+1/q= "mean of coverages that are >L "
      * log_comp_q stores the value of log(1-q) for introns and exons
      */
     double q_intron,q_exon,log_comp_q_intron,log_comp_q_exon,r_exon=0,r_intron=0;
     ifstream infile(inputfile.c_str());
     string fileline,feature,strand1,line;
-    /* stores the number of positions with a parrticular coverage depth
+    /* stores the number of positions with a particular coverage depth
      */
     vector<int> count_introns,count_exons;
     /* stores the normalized value of the count vector
      */
     vector<double> f_introns,f_exons,temp1;
-    /*structure where the data inormation from the training gff file is stored
+    /*structure where the data information from the training gff file is stored
      */
     vector<fragment> segments;
     /* a temporary fragment is defined to store the data initially and then it is pushed to the vector
      */
     fragment temp;
-    /* initialise the vectors
+    /* initialize the vectors
      */
     count_introns.resize(maxcov+1,0);
     count_exons.resize(maxcov+1,0);
@@ -196,7 +196,7 @@ using namespace std;
     prob_dist_exon.resize(coverage_info.no_of_tracks,temp1);
     prob_dist_intron.resize(coverage_info.no_of_tracks,temp1);
 
-    /* We read the input gff file and store the information about introns and exons in a vector os fragments
+    /* We read the input gff file and store the information about introns and exons in a vector of fragments
      */
     getline(infile,line);
     while(!infile.eof() ){
@@ -216,7 +216,7 @@ using namespace std;
 	/* loops through the number of tabs possible in a line
 	 */
 	for(i=0;i<8;i++){
-	  /* extract the relevant information from the corrsponding i
+	  /* extract the relevant information from the corresponding i
 	   */
 	  if(i==2)
 	    feature=fileline.substr(0,find1);
@@ -306,7 +306,7 @@ using namespace std;
       }
       q_exon=sum_q_exon_den/sum_q_exon_num;
       q_intron=sum_q_intron_den/sum_q_intron_num;
-      /* initialise the probability distribution vectors
+      /* initialize the probability distribution vectors
        */
       log_comp_q_intron=log(1-q_intron);
       log_comp_q_exon=log(1-q_exon);
@@ -388,7 +388,7 @@ using namespace std;
      * first track of the + strand only
      */
     for(l=0;l<smooth_data.size();l++){// loop over position on track
-      /* Dont change the values for the beginning values and end values
+      /* Don't change the values for the beginning values and end values
        * which cannot be covered by the window
        */
       if(l<moving_window/2){
@@ -649,17 +649,17 @@ using namespace std;
   }
 
 
-  /* it takes as input pointer to a 2-D vecctor, 
+  /* it takes as input pointer to a 2-D vector, 
    * the input dataset for a chromosome and
    * stores the emission probability values in it
    */
 void exon_segmentation::calculate_emissions( vector< vector<double> > &emission_probs,int max_len,vector< vector< vector<int> > > &input_set,int chunksize,int iteration){
   int i,j,m,index,strand,track,limit;
-    /* g_matrix is used to store the probaility values temporarily so as to
+    /* g_matrix is used to store the probability values temporarily so as to
      * reduce the time complexity in states having length > 1
      */
     vector<vector<double> > g_matrix;
-    /*define temporary vectors to initialise higher dimension vectors
+    /*define temporary vectors to initialize higher dimension vectors
      */
     vector<double> temp,temp1;
     double sum,sum1;
@@ -673,7 +673,7 @@ void exon_segmentation::calculate_emissions( vector< vector<double> > &emission_
 	g_matrix.push_back(temp);
     }
     /* Calculate the size of the current chunk and store it in limit so as to 
-     * avoid index overflow in tha dataset
+     * avoid index overflow in the dataset
      */
     if((iteration+1)*chunksize >max_len)
       limit=max_len-iteration*chunksize;
@@ -704,8 +704,8 @@ void exon_segmentation::calculate_emissions( vector< vector<double> > &emission_
 		 * here we also add the offset determined by the chunksize and the number of iteration
 		 */
 		index=input_set[strand][track][j+1-m+iteration*chunksize];
-		/* if the strand amd the label are compatiable then use the
-		 * probabiliity distribution for exons
+		/* if the strand and the label are compatible then use the
+		 * probability distribution for exons
 		 */
 		if( (i==EXONP && (strand!=STRANDM))||(i==EXONM && (strand!=STRANDP)) ){
 		  sum=sum+prob_value_exon(index,track);
@@ -727,13 +727,13 @@ void exon_segmentation::calculate_emissions( vector< vector<double> > &emission_
 	/* for the states with length > 1 we use the previously calculated g values to find the emission probability
 	 */
 	else{
-	  sum=0;//initialise the value of sum
+	  sum=0;//initialize the value of sum
 	  /* first we calculate the next g value
 	   */
 	  for(strand=0;strand<3;strand++){
 	    for(track=0;track<input_set[strand].size();track++){
 	      index=input_set[strand][track][j+iteration*chunksize];
-	      /* check compatiability 
+	      /* check compatibility 
 	       */
 	      if( (i==EXONP && (strand!=STRANDM))||(i==EXONM && (strand!=STRANDP)) )
 		sum=sum+prob_value_exon(index,track);
@@ -741,7 +741,7 @@ void exon_segmentation::calculate_emissions( vector< vector<double> > &emission_
 		sum=sum+prob_value_intron(index,track);	    	    
 	    }
 	    g_matrix[i][j]=sum;//stores the value of g
-	    /* calculates emission value by adding the head value and substracting 
+	    /* calculates emission value by adding the head value and subtracting 
 	     * the tail value to the previous entry in g_matrix
 	     */
 	    emission_probs[i][j]=emission_probs[i][j-1]+g_matrix[i][j]-g_matrix[i][j-lengths[i]];
@@ -765,7 +765,7 @@ void exon_segmentation::calculate_emissions( vector< vector<double> > &emission_
     /* else we take the maximum through all possible states k
      */
     else{
-      max=minus_infinity;//initialise max
+      max=minus_infinity;//initialize max
       for(k=0;k<numstates;k++){
 	/* ignore the transitions that are not possible
 	 */
@@ -810,7 +810,7 @@ vector<int> exon_segmentation::viterbi(vector< vector< vector<int> > > &input_se
     else
       limit=chunksize;
     
-    /* initialise the dynamic programming matrix
+    /* initialize the dynamic programming matrix
      */
     temp.clear();//clears the temporary vectors
     for(i=0;i<NUMSTATES;i++){
@@ -818,7 +818,7 @@ vector<int> exon_segmentation::viterbi(vector< vector< vector<int> > > &input_se
     }
     gamma.resize(limit+1,temp);
     
-    /* initialise the emission probability matrix
+    /* initialize the emission probability matrix
      */
     temp.clear();
     temp.resize(limit,0.0);
@@ -833,7 +833,7 @@ vector<int> exon_segmentation::viterbi(vector< vector< vector<int> > > &input_se
     cout<<"tesint "<<prob_dist_exon[0][20]<<'\t'<<prob_dist_intron[0][20]<<endl;  
     cout<<"tesing "<<prob_dist_exon[0][0]<<'\t'<<prob_dist_intron[0][0]<<endl;*/
     
-    /* calculate the dynamic programing matrix
+    /* calculate the dynamic programming matrix
      */
     state_seq.clear();
     for(j=1;j<limit+1;j++)
@@ -842,7 +842,7 @@ vector<int> exon_segmentation::viterbi(vector< vector< vector<int> > > &input_se
 	fill_viterbi(gamma,NUMSTATES,j,s,sum1,a,&spred);
       }
 
-    /* bactracking to get the sequence
+    /* backtracking to get the sequence
      */
     j=limit;
     max=minus_infinity;
@@ -889,7 +889,7 @@ vector<int> exon_segmentation::viterbi(vector< vector< vector<int> > > &input_se
       else{
 	/* once we reach a different state we store the stretch of information
 	 */
-	/* Initialise the vector to store the average coverage depth
+	/* Initialize the vector to store the average coverage depth
 	 * for each experiment
 	 */
 	temp1.resize(no_of_tracks,0.0);
@@ -975,7 +975,7 @@ vector<int> exon_segmentation::viterbi(vector< vector< vector<int> > > &input_se
 
   }
 /* Function to convert the average coverage depths into some usable form
- * in teh pott's functional
+ * in the pott's functional
  */
 double exon_segmentation::pott_convert(double d){
   if(d<1)
@@ -1014,7 +1014,7 @@ double exon_segmentation::pott_convert(double d){
      * psum stores the summation of l_i*c_i
      * psqrsum stores the summation l_i*c_i^2
      * pcubesum stores the summation l_i*c_i^3
-     * psuml stores the summattion l_i
+     * psuml stores the summation l_i
      */
     temp2.resize(n+1,0.0);
     psum.resize(no_of_tracks,temp2);
@@ -1022,7 +1022,7 @@ double exon_segmentation::pott_convert(double d){
     pcubesum.resize(no_of_tracks,temp2);
     psum1.resize(no_of_tracks,temp1);
 
-    /* initialize the vectors required for the dynamic programing matrix
+    /* initialize the vectors required for the dynamic programming matrix
      */
     h.resize(n+1,0.0);
     x.resize(no_of_tracks,temp2);
@@ -1046,19 +1046,19 @@ double exon_segmentation::pott_convert(double d){
       }
     }
     k=0;
-    /* Intialiazation for the first element of the dynamic programing table
+    /* Initialization for the first element of the dynamic programming table
      */
     /* Change the value of pott_gamma to no_of_tracks*pott_gamma
      * to account for multiple number of experiments in the file
      */
     h[0]=-1*pott_gamma*no_of_tracks;
-    /* Start the dynamic programing algorithm
+    /* Start the dynamic programming algorithm
      */
     for(k=1;k<=n;k++){
       /* Initialize min value to the first entry
        */
       sum=0;
-      /* sum the calue of s over all the experimetns
+      /* sum the value of s over all the experiments
        */
       for(exp=0;exp<no_of_tracks;exp++)
 	sum+=calculate_s(1,k,psum1,psum,psqrsum,pcubesum,segments,exp);
@@ -1095,15 +1095,15 @@ double exon_segmentation::pott_convert(double d){
     k=J.size();
     for(i=0,m=k-1;i<k;i++,m--)
       J_temp[i]=J[m];
-    cout<<"Finshed clustering."<<endl;
+    cout<<"Finished clustering."<<endl;
     cout<<"J vector size :"<<J_temp.size()<<endl;
     return J_temp;
   }
 
   /* Takes the dataset, the name of output file and the threshold c and the ratio of complement 
-   * of the paramters(s) as input and makes the gff file
+   * of the parameters(s) as input and makes the gff file
    * train_file specifies the gff file to be used for training the distributions
-   * flag_r specifies whether the function will be iterated by training thhe distribtuion from the
+   * flag_r specifies whether the function will be iterated by training the distribution from the
    * output produced
    */
 void exon_segmentation::make_gff(dataset &coverage_info,string outputfile,int c,float s,string train_file,int flag_r,string bed_file,string augustus_hints,int chunksize){
@@ -1131,7 +1131,7 @@ void exon_segmentation::make_gff(dataset &coverage_info,string outputfile,int c,
     for(coverage_info.it=coverage_info.database.begin();coverage_info.it!=coverage_info.database.end();++coverage_info.it){
       cout<<"chromosome considering for calculation: "<<coverage_info.it->first<<endl;
 
-      /* Calculate the probaility distribution for introns and exons
+      /* Calculate the probability distribution for introns and exons
        */
       if(train_file==" "){//no file for training is specified
 	/* call the function to calculate the parameters for the two geometric distributions
@@ -1142,7 +1142,7 @@ void exon_segmentation::make_gff(dataset &coverage_info,string outputfile,int c,
 	prob_density(coverage_info.max_depth,coverage_info.no_of_tracks);
       }
       else{//if the file for training is specified	
-	/* Call the function to make the geometric distributtion vector after training 
+	/* Call the function to make the geometric distribution vector after training 
 	 * from the specified gff file and the given data set and also it takes the 
 	 * key to the chromosome as input
 	 */    

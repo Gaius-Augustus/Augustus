@@ -6,7 +6,7 @@
 # Using native and syntenically mapped cDNA alignments to improve de novo gene finding
 # Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
 # No extrinsic information on sequences given.
-# Initialising the parameters ...
+# Initializing the parameters ...
 # Using protein profile unknown
 # --[8..1336]--> unknown_A (9) <--[16..88]--> unknown_B (7) <--[19..46]--> unknown_D (8) <--[0..1]--> unknown_E (10) <--[2..42]--> unknown_F (10) <--[9..128]--> unknown_G (11) <--[16..74]--> unknown_H (16) <--[10..54]--> unknown_I (8) <--[8..29]--> unknown_J (13) <--[8..42]--> unknown_K (15) <--[1..3]--> unknown_L (12) <--[6..15]--> unknown_M (13) <----
 # human version. Use default transition matrix.

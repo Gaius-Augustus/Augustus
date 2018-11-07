@@ -6,7 +6,7 @@
 #
 # Properties for augustus
 #------------------------------------
-/augustus/verbosity 3     # 0-3, 0: only print the neccessary
+/augustus/verbosity 3     # 0-3, 0: only print the necessary
 maxDNAPieceSize    200000 # maximum segment that is predicted in one piece
 stopCodonExcludedFromCDS true # make this 'true' if the CDS includes the stop codon (training and prediction)
 
@@ -55,7 +55,7 @@ UTR                         off   # predict untranslated regions
 /Constant/decomp_num_gc               1
 /Constant/gc_range_min		      0.15   # This range has an effect only when decomp_num_steps>1. 
 /Constant/gc_range_max                0.55   # States the minimal and maximal percentage of c or g
-/Constant/decomp_num_steps            7      # I recomment keeping this to 1 for most species.
+/Constant/decomp_num_steps            7      # I recommend keeping this to 1 for most species.
 /Constant/min_coding_len              201    # no gene with a coding sequence shorter than this is predicted
 /Constant/probNinCoding               0.15   # divide this by .25 to get a malus for making one masked letter part of the coding sequence
 /Constant/amberprob                   0.158   # Prob(stop codon = tag), if 0 tag is assumed to code for amino acid
@@ -67,7 +67,7 @@ UTR                         off   # predict untranslated regions
 # type of weighing, one of  1 = equalWeights, 2 = gcContentClasses, 3 = multiNormalKernel
 /BaseCount/weighingType    3
 # file with the weight matrix (only for multiNormalKernel type weighing)
-/BaseCount/weightMatrixFile   bombus_terrestris1_weightmatrix.txt # change this to your species if at all neccessary
+/BaseCount/weightMatrixFile   bombus_terrestris1_weightmatrix.txt # change this to your species if at all necessary
 
 # Properties for IGenicModel
 # ----------------------------

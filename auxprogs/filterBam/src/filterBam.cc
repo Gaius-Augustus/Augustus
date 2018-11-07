@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
   optionalCounters.outPaired = outPaired;
   optionalCounters.outUniq = outUniq;
   optionalCounters.outBest = outBest;
-  // Initialising options
+  // Initializing options
   struct globalOptions_t globalOptions;
   globalOptions = initOptions(argc, argv);
   bool best = globalOptions.best;

@@ -1065,7 +1065,7 @@ HS04636 anchor  intronpart      7631    7633    0       +       0       source=M
 # Setting 1group1gene for E.
 # Sources of extrinsic information: M E
 # Have extrinsic information about 1 sequences (in the specified range).
-# Initialising the parameters ...
+# Initializing the parameters ...
 # human version. Use default transition matrix.
 # Looks like /var/tmp/augustus/AUG-1855139717/input.fa is in fasta format.
 # We have hints for 1 sequence and for 1 of the sequences in the input set.

@@ -21,7 +21,7 @@
 #include <fstream>
 
 /*
- * Initialisation of static data members
+ * Initialization of static data members
  */
 
 Integer IGenicModel::k = 4;
@@ -38,7 +38,7 @@ int IGenicModel::verbosity;
 double IGenicModel::geoProb = 0.9999;
 
 /*
- * Initialisation of class variables
+ * Initialization of class variables
  */
 void IGenicModel::init() {
     try{

@@ -55,7 +55,7 @@ public:
 };
 
 /**
- * @brief Plan of individiual prediction steps with each a range and a set of hint groups turned on/off
+ * @brief Plan of individual prediction steps with each a range and a set of hint groups turned on/off
  * 
  * @author Mario Stanke
  */
@@ -235,10 +235,10 @@ public:
     int              seqlen;
     int              K; // block size for firstEnd and lastStart
     // firstEnd[t][k] holds an iterator to featureList[t] to the first element f in the list such that
-    // f->end >= k*K, where k>=0 and k ist such that k*K <= seqlen
+    // f->end >= k*K, where k>=0 and k is such that k*K <= seqlen
     list<Feature>::iterator **firstEnd;
     // lastStart[t][k] holds an iterator to featureList[t] to the list such that all following list elements f have
-    // f->start > k*K, where k>=0 and k ist such that k*K <= seqlen 
+    // f->start > k*K, where k>=0 and k is such that k*K <= seqlen 
     list<Feature>::iterator **lastStart;
     vector<int> cumCovUTRpartPlus; // cumulative number of positions not covered by UTRpart hints on the plus strand
     vector<int> cumCovUTRpartMinus; // cumulative number of positions not covered by UTRpart hints on the minus strand
@@ -258,7 +258,7 @@ private:
  */
 struct FeatureTypeInfo {
     FeatureTypeInfo(int numSources=1, double b=-1.0, double m=1.0, double lm=1.0) :
-	bonus(b), // -1 means not initialised
+	bonus(b), // -1 means not initialized
 	malus(m), // don't change anything unless we have at least searched 
 	localMalus(lm),
 	gradeclassbounds(numSources, vector<double>()),

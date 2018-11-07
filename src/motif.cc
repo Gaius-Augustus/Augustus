@@ -94,7 +94,7 @@ void BaseCount::addCharacter(char nucleotide, bool subtract){
 // 	case 2: return rg;
 // 	case 3: return rt;
 // 	default: 
-// 	    throw InvalidNukleotideError("");
+// 	    throw InvalidNucleotideError("");
 //     }
 // }
 

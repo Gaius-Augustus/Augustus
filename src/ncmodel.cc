@@ -20,7 +20,7 @@
 #include <climits>
 
 /*
- * Initialisation of static data members
+ * Initialization of static data members
  */
 Integer         NcModel::nccount = 0;
 vector<Double>  NcModel::lenDistInternal;     // length distribution of non-single exons
@@ -54,7 +54,7 @@ NcModel::~NcModel( ){
 }
 
 /*
- * NcModel initialisation of class variables
+ * NcModel initialization of class variables
  */
 void NcModel::init() {
     try {

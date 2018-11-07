@@ -12,7 +12,7 @@ This page describes how to use BRAKER2 and AUGUSTUS for training of AUGUSTUS and
 <h2>General remarks</h2>
 
 <ul>
-  <li> This tutorial is designed in a way that persons with no exprience in Linux should be able to follow. In case someone gets bored, he or she can try to get the code of this tutorial on his own laptop running.
+  <li> This tutorial is designed in a way that persons with no experience in Linux should be able to follow. In case someone gets bored, he or she can try to get the code of this tutorial on his own laptop running.
   <li> Here some manuals:
   <ul>
     <li> <a href="README_augustus.TXT">AUGUSTUS readme</a>
@@ -164,7 +164,7 @@ build_lmer_table -sequence data/genome.fa -freq masking/genome.freq
 RepeatScout -sequence data/genome.fa -output masking/genome.repseq.fa -freq masking/genome.freq   # takes ~30s
 </pre>
 
-The file <tt>masking/genome.freq</tt> contains a list of ostensibe repeat sequences.
+The file <tt>masking/genome.freq</tt> contains a list of ostensible repeat sequences.
 
 <pre class="code">
 head -n 100 masking/genome.freq
@@ -360,7 +360,7 @@ The effect of our first call of BRAKER is trifold:
 The options in the BRAKE call have the follownig meanings:
 <ul>
   <li> <tt>--species</tt>: The name of the species on which we carry out our gene prediction. <br> 
-  <i>The parameters AUGUSTUS infers from the training data and uses to parametrize its internal model for the gene prediciton is located in AUGUSTUS_CONFIG_PATH/species/[value of --species]. The term "species" is used in this option although AUGUSTUS can also be used for gene predictions on different strains of the same species.</i>
+  <i>The parameters AUGUSTUS infers from the training data and uses to parametrize its internal model for the gene prediction is located in AUGUSTUS_CONFIG_PATH/species/[value of --species]. The term "species" is used in this option although AUGUSTUS can also be used for gene predictions on different strains of the same species.</i>
   <li> <tt>--genome</tt>: The genomic data on which the gene prediction is carried out.
   <li> <tt>--bam</tt>: The BAM file containign the aligned RNA-seq reads used for inference of the training genes by GeneMark and as hints for the gene prediction by AUGUSTUS
   <li> <tt>--softmasking</tt>: Flag indicating that the genome is softmasked. <br>
@@ -369,7 +369,7 @@ The options in the BRAKE call have the follownig meanings:
   <i>One should not use the parameters AUGUSTUS infers without optimization to generate a gene set used in a scientific project. We skip optimization here because it is very time-consuming</i>
   <li> <tt>--cores</tt>: The number of cores used by BRAKER and AUGUSTUS. <br>
   <i> To reduce running time, once can increase the number of cores. Nevertheless, for this session this is probably not advisable as the genotoul server only has 32 cores. </i>
-  <li> <tt>--AUGUSTUS_SCRIPTS_PATH</tt>, <tt>--AUGUSTUS_BIN_PATH</tt>, <tt>--AUGUSTUS_CONFIG_PATH</tt>: These pathes specify where to find various files and executables. <br>
+  <li> <tt>--AUGUSTUS_SCRIPTS_PATH</tt>, <tt>--AUGUSTUS_BIN_PATH</tt>, <tt>--AUGUSTUS_CONFIG_PATH</tt>: These paths specify where to find various files and executables. <br>
   <i>When you install BRAKER and AUGUSTUS on a computer for which you have administrator rights, you very probably will not need to set these paths.</i>
 </ul>
 <br>

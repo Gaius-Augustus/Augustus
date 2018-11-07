@@ -13,7 +13,7 @@ const int nRep=20;
 using namespace std;
 
 consensus::consensus(int starting1,int ending1){
-  //gives default value to the paramters
+  //gives default value to the parameters
   pattern_size=6;
   p_value=.01;
   delta=2;
@@ -41,7 +41,7 @@ consensus::consensus(int starting1,int ending1){
   for(i=pattern_size-1;i>=0;i--) 
     powers.push_back(pow((double)4,(double)i));
 
-  //initialises the mean value, significance value, relevant value vectors
+  //initializes the mean value, significance value, relevant value vectors
   for(i=0;i<pow((double)4,(double)pattern_size);i++){
     t_values.push_back(0);
     f_values.push_back(0);
@@ -421,7 +421,7 @@ void consensus::start(){
 	  }
     }
     
-    //storing the right shift neghbour for deletion
+    //storing the right shift neighbour for deletion
     number1=number/4;
     flag=0;
     for(i=0;i<4;i++){
@@ -447,14 +447,14 @@ void consensus::start(){
       //erasing neighbours from the significant list
       
       significant_strings.erase(significant_strings.begin()+ prev_neighbours[i]);
-      //erasing the neighours from relevant list
+      //erasing the neighbours from relevant list
       for(j=0;j<relevant_strings.size();j++)
 	if(relevant_strings[j]==k ){
 	  relevant_strings.erase(relevant_strings.begin() + j);
 	  break;
 	}
       
-      //adjusting the indices to accomodate for the deleted element
+      //adjusting the indices to accommodate for the deleted element
       for(j=i+1;j<prev_neighbours.size();j++)
 	if(prev_neighbours[j]>prev_neighbours[i])
 	  prev_neighbours[j]=prev_neighbours[j]-1;
@@ -470,7 +470,7 @@ void consensus::start(){
   for(k=0;k<final_list.size();k++){
     cout << " storing histogram for sequence " << final_list[k].consensus_pattern<<endl;
     for(i=0;i<max_string_length;i++)
-      final_list[k].position_of_occurence.push_back(0);
+      final_list[k].position_of_occurrence.push_back(0);
     for(i=0;i<number_seq;i++){      
       if(var[i].seq.length()<pattern_size) 
 	continue;
@@ -479,9 +479,9 @@ void consensus::start(){
       for( j=0;j<var[i].seq.length()- pattern_size +1;j++){ 
 	try{
 	  if(consensus_data[k] == s2i(var[i].seq.c_str()+j)){
-	    final_list[k].position_of_occurence[j]++;
-	    if(final_list[k].position_of_occurence[j]>max_freq)
-	      max_freq=final_list[k].position_of_occurence[j];
+	    final_list[k].position_of_occurrence[j]++;
+	    if(final_list[k].position_of_occurrence[j]>max_freq)
+	      max_freq=final_list[k].position_of_occurrence[j];
 	  }
 	}
 	catch(exception& e ){
@@ -533,7 +533,7 @@ void consensus::analyse(string pattern1,float p_value1,float delta1,int max_allo
 	tpm[row][column]++;
     }
   }
-  //calculating the background probabilites
+  //calculating the background probabilities
   float k1=0;
   for(i=0;i<4;i++){
     k1=0;
@@ -572,7 +572,7 @@ void consensus::analyse(string pattern1,float p_value1,float delta1,int max_allo
     }
   }
 
-  cout << " calculated the frequenecy values" << endl;
+  cout << " calculated the frequency values" << endl;
   data1.consensus_pattern=analyse_pattern;
   data1.f_value=f_values[number];
 
@@ -619,16 +619,16 @@ void consensus::analyse(string pattern1,float p_value1,float delta1,int max_allo
   for(k=0;k<final_list.size();k++){
     cout << " storing histogram for sequence " << final_list[k].consensus_pattern<<endl;
     for(i=0;i<max_string_length;i++)
-      final_list[k].position_of_occurence.push_back(0);
+      final_list[k].position_of_occurrence.push_back(0);
     for(i=0;i<number_seq;i++){      
       if(var[i].seq.length()<pattern_size) 
 	continue;
       for( j=0;j<var[i].seq.length()- pattern_size +1;j++){ 
 	try{
 	  if(number == s2i(var[i].seq.c_str()+j)){
-	    final_list[k].position_of_occurence[j]++;
-	    if(final_list[k].position_of_occurence[j]>max_freq)
-	      max_freq=final_list[k].position_of_occurence[j];
+	    final_list[k].position_of_occurrence[j]++;
+	    if(final_list[k].position_of_occurrence[j]>max_freq)
+	      max_freq=final_list[k].position_of_occurrence[j];
 	  }
 	}
 	catch(exception& e ){
@@ -644,18 +644,18 @@ void consensus::plot_histogram(){
   for(i=0;i<final_list.size();i++){
     cout<<" The pattern is " << final_list[i].consensus_pattern<< endl;
     cout<<max_line_len<<'\t'<<max_freq<<endl;
-    cout<< " The scale is "<< (float)max_line_len/max_freq <<" * = one occurence"<< endl;
+    cout<< " The scale is "<< (float)max_line_len/max_freq <<" * = one occurrence"<< endl;
     if(starting==0)
       cout <<" and it starts from beginning of sequence." <<endl;
     else
       cout <<" and it begins from position "<< starting <<"."<<endl;
     for(j=0;j<max_string_length;j++){      
       cout <<j +1<< '\t';
-      if(final_list[i].position_of_occurence[j]==0){
+      if(final_list[i].position_of_occurrence[j]==0){
 	cout<<endl;
 	continue;
       }
-      length=(final_list[i].position_of_occurence[j]*max_line_len)/max_freq;
+      length=(final_list[i].position_of_occurrence[j]*max_line_len)/max_freq;
       if(length==0)
 	length=1;
       for(k=0;k<length;k++)

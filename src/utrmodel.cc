@@ -18,7 +18,7 @@
 #include <climits>
 
 /*
- * Initialisation of static data members
+ * Initialization of static data members
  */
 Integer         UtrModel::utrcount = 0;
 vector<Integer> UtrModel::utr5_emicount;
@@ -853,7 +853,7 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	    leftMostEndOfPred = base - (max_exon_length - Constant::trans_init_window + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE);
 	    rightMostEndOfPred = base - Constant::ass_upwindow_size - Constant::ass_whole_size();
 	    if (- Constant::ass_upwindow_size - Constant::ass_whole_size() + Constant::trans_init_window + Constant::ass_end < 0) 
-		// this check is neccessary, otherwise endOfPred could be larger than base
+		// this check is necessary, otherwise endOfPred could be larger than base
 		rightMostEndOfPred = base - Constant::ass_upwindow_size - Constant::ass_whole_size()
 		    + Constant::trans_init_window + Constant::ass_end; // this is so 5' terminal exons can be shorter than trans_init_window + ass_end, negative length of state!
 	                                                               // in the most extreme case, the UTR exon has length 0
@@ -862,7 +862,7 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	    leftMostEndOfPred = base - (max_exon_length - Constant::trans_init_window + Constant::ass_upwindow_size + Constant::ass_start + ASS_MIDDLE);
 	    rightMostEndOfPred = base - Constant::ass_upwindow_size - Constant::ass_whole_size();
 	    if (- Constant::ass_upwindow_size - Constant::ass_whole_size() + Constant::trans_init_window + Constant::ass_end < 0) 
-		// this check is neccessary, otherwise endOfPred could be larger than base
+		// this check is necessary, otherwise endOfPred could be larger than base
 		rightMostEndOfPred = base - Constant::ass_upwindow_size - Constant::ass_whole_size()
 		    + Constant::trans_init_window + Constant::ass_end; // this is so 5' terminal exons can be shorter than trans_init_window, negative length of state!
 	    break;

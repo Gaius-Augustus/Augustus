@@ -1,6 +1,6 @@
  /**********************************************************************
  * file:    projectio.hh
- * licence: Artistic Licence, see file LICENCE.TXT or 
+ * license: Artistic License, see file LICENSE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  * descr.:  
  * authors: Stefanie Koenig, stefaniekoenig@ymail.com
@@ -69,7 +69,7 @@ inline std::string exec(const char* cmd) {
  */
 inline std::string expandDir(std::string filename){
     if(filename.length()>0 && filename[filename.size()-1] != '/')
-	filename += '/';                     // append slash if neccessary 
+	filename += '/';                     // append slash if necessary 
     filename = expandHome(filename);         // replace "~" by "$HOME
     return filename;
 }

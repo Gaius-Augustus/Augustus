@@ -11,7 +11,7 @@
 #                                                                                                  #
 # Release date: February 9th 2018                                                                  #
 #                                                                                                  #
-# This script is under the Artistic Licence                                                        #
+# This script is under the Artistic License                                                        #
 # (http://www.opensource.org/licenses/artistic-license.php)                                        #
 #                                                                                                  #
 ####################################################################################################
@@ -2504,9 +2504,9 @@ if(!uptodate(["$otherfilesDir/genbank.good.gb"],["$otherfilesDir/genbank.good.gb
 
             # decide on whether to keep CRF parameters
             if($target_2>$target_3){
-                print LOG "\# ".(localtime).": CRF performance is worse than HMM performance, reverting to usage of HMM paramters.\n";
+                print LOG "\# ".(localtime).": CRF performance is worse than HMM performance, reverting to usage of HMM parameters.\n";
             }else{
-                print LOG "\# ".(localtime).": CRF performance is better than HMM performance, keeping CRF paramters.\n";
+                print LOG "\# ".(localtime).": CRF performance is better than HMM performance, keeping CRF parameters.\n";
             }
             # cp config files
             print LOG "\# ".(localtime).": Copying parameter files to $species*.CRF\n";

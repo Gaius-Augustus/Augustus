@@ -7,7 +7,7 @@
 #
 # Properties for augustus
 #------------------------------------
-/augustus/verbosity 3     # 0-3, 0: only print the neccessary
+/augustus/verbosity 3     # 0-3, 0: only print the necessary
 
 stopCodonExcludedFromCDS false  # make this 'true' if the CDS includes the stop codon (training and prediction)
 
@@ -63,7 +63,7 @@ maxtranscripts      -1    # maximum number of reported transcripts per gene (-1:
 # type of weighing, one of  1 = equalWeights, 2 = gcContentClasses, 3 = multiNormalKernel
 /BaseCount/weighingType    3
 # file with the weight matrix (only for multiNormalKernel type weighing)
-/BaseCount/weightMatrixFile   generic_weightmatrix.txt # change this to your species if at all neccessary
+/BaseCount/weightMatrixFile   generic_weightmatrix.txt # change this to your species if at all necessary
 
 # Properties for IGenicModel
 # ----------------------------

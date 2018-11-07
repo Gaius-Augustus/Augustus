@@ -1,6 +1,6 @@
 /**********************************************************************
  * file:    genome.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
+ * license: Artistic License, see file LICENSE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  * descr.:  
  * authors: Stefanie Koenig, stefaniekoenig@ymail.com

@@ -143,7 +143,7 @@ int Smooth::geoCutOff(const vector<Integer> &lencount, vector<Double>& result){
     Double relDiff;
 
     /*
-     * start with dtemp as the positiion of the maximum of the length distribution
+     * start with dtemp as the position of the maximum of the length distribution
      * increase dtemp and check the size of the jump of the model-distribution
      * if we introduce the cutoff at dtemp
      */

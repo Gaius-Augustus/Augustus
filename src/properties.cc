@@ -412,7 +412,7 @@ void Properties::init( int argc, char* argv[] ){
 	}
     }
     if (configPath[configPath.size()-1] != '/')
-	configPath += '/';  // append slash if neccessary
+	configPath += '/';  // append slash if necessary
 
     // does the directory actually exist?
     struct stat buffer;

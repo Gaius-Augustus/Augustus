@@ -10,7 +10,7 @@
    (not needed unless you run into compiler errors related to 'parse.cc' or 'lex.cc')  
 [AUTHORS AND CONTACT](docs/CONTACT.md)  
 [REFERENCES](README.md#references)  
-[LICENCES](README.md#licenses)  
+[LICENSES](README.md#licenses)  
 
 # INTRODUCTION
 

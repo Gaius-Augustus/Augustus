@@ -8,7 +8,7 @@
 # Date: 19.05.2003
 
 # Initial probabilities (a priori probs for a state ending at a
-# certain position, e.g. the position before the first nukleotide in
+# certain position, e.g. the position before the first nucleotide in
 # the sequence or the last position.
 # only non-zero probabilities
 [Initial]
@@ -19,7 +19,7 @@
 
 # Terminal probabilities (a priori probs for a state ending at
 # the last position.
-# only non-zero probabilities neccessary
+# only non-zero probabilities necessary
 [Terminal]
 # number of states where terminating is possible
 1
