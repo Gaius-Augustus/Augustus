@@ -27,7 +27,7 @@ chr21	b2h	intron	7966	10347	0	.	.	mult=4;pri=4;src=E
 chr21	b2h	intron	10398	12290	0	.	.	mult=5;pri=4;src=E
 chr21	b2h	intron	12440	17718	0	.	.	mult=5;pri=4;src=E
 chr21	b2h	intron	18011	28053	0	.	.	mult=5;pri=4;src=E
-chr21	repmask	nonexonpart	-350	293	0	.	.	src=RM
+chr21	repmask	nonexonpart	1	293	0	.	.	src=RM
 chr21	repmask	nonexonpart	9036	9160	0	.	.	src=RM
 chr21	repmask	nonexonpart	9754	9862	0	.	.	src=RM
 chr21	repmask	nonexonpart	9894	10133	0	.	.	src=RM
