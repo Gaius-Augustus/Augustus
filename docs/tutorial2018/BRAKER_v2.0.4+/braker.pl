@@ -11,7 +11,7 @@
 #                                                                                                  #
 # Release date: February 9th 2018                                                                  #
 #                                                                                                  #
-# This script is under the Artistic Licence                                                        #
+# This script is under the Artistic License                                                        #
 # (http://www.opensource.org/licenses/artistic-license.php)                                        #
 #                                                                                                  #
 ####################################################################################################

@@ -8,7 +8,7 @@
 [WEB-SERVER](#web-server)  
 [AUTHORS AND CONTACT](docs/CONTACT.md)  
 [REFERENCES](#references)  
-[LICENCES](#licenses)  
+[LICENSES](#licenses)  
 
 # INTRODUCTION
 

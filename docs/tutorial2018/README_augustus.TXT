@@ -26,7 +26,7 @@
   10. MEA: USING THE MAXIMUM EXPECTED ACCURACY APPROACH
   11. CONTACT ME
   12. REFERENCES
-  13. LICENCES
+  13. LICENSES
 
               1. INTRODUCTION
               ---------------
@@ -965,7 +965,7 @@ Mario Stanke and Stephan Waack (2003),
 Gene Prediction with a Hidden-Markov Model and a new Intron Submodel. Bioinformatics, Vol. 19, Suppl. 2, pages ii215-ii225 
 
 
-              13. LICENCES
+              13. LICENSES
               ------------
 
 All source code, i.e.
@@ -973,4 +973,4 @@ All source code, i.e.
   - the scripts (scripts/*.pl)
   - the auxiliary programs (auxprogs/)
   - the tree-parser (src/scanner,src/parser)
-are under the Artistic Licence (see src/LICENCE.TXT).
+are under the Artistic License (see src/LICENSE.TXT).

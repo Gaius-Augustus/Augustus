@@ -1,6 +1,6 @@
 /**********************************************************************
  * file:    augustus.cc
- * licence: Artistic Licence, see file LICENCE.TXT or 
+ * license: Artistic License, see file LICENSE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  *
  * authors: Mario Stanke, mario@gobics.de

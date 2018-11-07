@@ -1,4 +1,4 @@
-Artistic Licence (http://www.opensource.org/licenses/artistic-license.php)
+Artistic License (http://www.opensource.org/licenses/artistic-license.php)
 
 Preamble
 
