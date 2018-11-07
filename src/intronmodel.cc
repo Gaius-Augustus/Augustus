@@ -19,7 +19,7 @@
 #include <climits>
 
 /*
- * Initialisation of static data members
+ * Initialization of static data members
  */
 vector<Integer> IntronModel::emicount;
 vector<Integer> IntronModel::intlencount;
@@ -99,7 +99,7 @@ IntronModel::~IntronModel( ){
 }
 
 /*
- * IntronModel initialisation of class variables
+ * IntronModel initialization of class variables
  */
 void IntronModel::init() {
     // Initialize class variables from properties values
@@ -1041,7 +1041,7 @@ Double IntronModel::seqProb(int left, int right) const {
     
     int curpos;
     Seq2Int s2i(k+1);
-    if (left < 0) {   // new initialisation
+    if (left < 0) {   // new initialization
 	seqProb = 1;
 	oldleft = oldright = -1;
 	seqProbs.assign(d - DSS_MIDDLE - Constant::dss_end - Constant::ass_start 

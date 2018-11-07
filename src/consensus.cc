@@ -41,7 +41,7 @@ consensus::consensus(int starting1,int ending1){
   for(i=pattern_size-1;i>=0;i--) 
     powers.push_back(pow((double)4,(double)i));
 
-  //initialises the mean value, significance value, relevant value vectors
+  //initializes the mean value, significance value, relevant value vectors
   for(i=0;i<pow((double)4,(double)pattern_size);i++){
     t_values.push_back(0);
     f_values.push_back(0);

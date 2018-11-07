@@ -593,7 +593,7 @@ void CompGenePred::start(){
     GeneMSA::topologies.clear(); 
   
     if(Properties::hasProperty("referenceFile")){
-      // initialise training of log reg parameters
+      // initialize training of log reg parameters
       train_OEscore_params(speciesNames.size());
     }
   } 

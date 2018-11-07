@@ -18,7 +18,7 @@
 #include <climits>
 
 /*
- * Initialisation of static data members
+ * Initialization of static data members
  */
 Integer         UtrModel::utrcount = 0;
 vector<Integer> UtrModel::utr5_emicount;

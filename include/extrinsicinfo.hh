@@ -258,7 +258,7 @@ private:
  */
 struct FeatureTypeInfo {
     FeatureTypeInfo(int numSources=1, double b=-1.0, double m=1.0, double lm=1.0) :
-	bonus(b), // -1 means not initialised
+	bonus(b), // -1 means not initialized
 	malus(m), // don't change anything unless we have at least searched 
 	localMalus(lm),
 	gradeclassbounds(numSources, vector<double>()),

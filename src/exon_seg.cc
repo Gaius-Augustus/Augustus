@@ -17,7 +17,7 @@
 using namespace std;
 
   exon_segmentation::exon_segmentation(){
-    /* Initialise lambda1 and lambda2
+    /* Initialize lambda1 and lambda2
      */
     lambda1=0.2;
     lambda2=0.3;
@@ -71,13 +71,13 @@ using namespace std;
 
 
 
-    /* Initialise the values of lambda1 and lambda2 in the order of
+    /* Initialize the values of lambda1 and lambda2 in the order of
      * 1/(mean coverage depth)
      */
     /*lambda2=(1/coverage_info.avg_depth)*1.1;
     lambda1=(1/coverage_info.avg_depth)*0.9;
 
-     Initialise the p1 and p2 vectors
+     Initialize the p1 and p2 vectors
      */
     //p1.resize(maxcov+1,0.0);
     //p2.resize(maxcov+1,0.0);
@@ -186,7 +186,7 @@ using namespace std;
     /* a temporary fragment is defined to store the data initially and then it is pushed to the vector
      */
     fragment temp;
-    /* initialise the vectors
+    /* initialize the vectors
      */
     count_introns.resize(maxcov+1,0);
     count_exons.resize(maxcov+1,0);
@@ -306,7 +306,7 @@ using namespace std;
       }
       q_exon=sum_q_exon_den/sum_q_exon_num;
       q_intron=sum_q_intron_den/sum_q_intron_num;
-      /* initialise the probability distribution vectors
+      /* initialize the probability distribution vectors
        */
       log_comp_q_intron=log(1-q_intron);
       log_comp_q_exon=log(1-q_exon);
@@ -659,7 +659,7 @@ void exon_segmentation::calculate_emissions( vector< vector<double> > &emission_
      * reduce the time complexity in states having length > 1
      */
     vector<vector<double> > g_matrix;
-    /*define temporary vectors to initialise higher dimension vectors
+    /*define temporary vectors to initialize higher dimension vectors
      */
     vector<double> temp,temp1;
     double sum,sum1;
@@ -727,7 +727,7 @@ void exon_segmentation::calculate_emissions( vector< vector<double> > &emission_
 	/* for the states with length > 1 we use the previously calculated g values to find the emission probability
 	 */
 	else{
-	  sum=0;//initialise the value of sum
+	  sum=0;//initialize the value of sum
 	  /* first we calculate the next g value
 	   */
 	  for(strand=0;strand<3;strand++){
@@ -765,7 +765,7 @@ void exon_segmentation::calculate_emissions( vector< vector<double> > &emission_
     /* else we take the maximum through all possible states k
      */
     else{
-      max=minus_infinity;//initialise max
+      max=minus_infinity;//initialize max
       for(k=0;k<numstates;k++){
 	/* ignore the transitions that are not possible
 	 */
@@ -810,7 +810,7 @@ vector<int> exon_segmentation::viterbi(vector< vector< vector<int> > > &input_se
     else
       limit=chunksize;
     
-    /* initialise the dynamic programming matrix
+    /* initialize the dynamic programming matrix
      */
     temp.clear();//clears the temporary vectors
     for(i=0;i<NUMSTATES;i++){
@@ -818,7 +818,7 @@ vector<int> exon_segmentation::viterbi(vector< vector< vector<int> > > &input_se
     }
     gamma.resize(limit+1,temp);
     
-    /* initialise the emission probability matrix
+    /* initialize the emission probability matrix
      */
     temp.clear();
     temp.resize(limit,0.0);
@@ -889,7 +889,7 @@ vector<int> exon_segmentation::viterbi(vector< vector< vector<int> > > &input_se
       else{
 	/* once we reach a different state we store the stretch of information
 	 */
-	/* Initialise the vector to store the average coverage depth
+	/* Initialize the vector to store the average coverage depth
 	 * for each experiment
 	 */
 	temp1.resize(no_of_tracks,0.0);

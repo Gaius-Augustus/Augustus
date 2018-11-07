@@ -75,7 +75,7 @@ SingleAlignment::SingleAlignment(BamAlignment *al, float coverage, float percId,
 }
 
 
-// Initialisation method
+// Initialization method
 void SingleAlignment::setValues(BamAlignment *al, float coverage, float percId, const RefVector *refData)
 {
 	this->al = al; 	               

@@ -6,7 +6,7 @@
 # Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
 # No extrinsic information on sequences given.
 # Sources of extrinsic information: M RM 
-# Initialising the parameters using config directory /home/mario/augustus/git/Augustus/config/ ...
+# Initializing the parameters using config directory /home/mario/augustus/git/Augustus/config/ ...
 # human version. Using default transition matrix.
 # Looks like ../genomes/bosTau8.fa is in fasta format.
 # We have hints for 0 sequences and for 0 of the sequences in the input set.

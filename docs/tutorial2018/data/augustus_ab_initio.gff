@@ -5,7 +5,7 @@
 # Using native and syntenically mapped cDNA alignments to improve de novo gene finding
 # Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013
 # No extrinsic information on sequences given.
-# Initialising the parameters ...
+# Initializing the parameters ...
 # o.tauri version. Using default transition matrix.
 # Looks like masking/genome.fa.softmasked is in fasta format.
 # We have hints for 0 sequences and for 0 of the sequences in the input set.

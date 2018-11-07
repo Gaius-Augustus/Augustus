@@ -18,7 +18,7 @@
 #include <fstream>
 
 /*
- * Initialisation of static data members
+ * Initialization of static data members
  */
 
 vector<Integer> ExonModel::patterncount[3];      // {0,1,2}x{acgt}^(k+1), the reading frame is 
@@ -286,7 +286,7 @@ ExonModel::~ExonModel( ){
 }
 
 /*
- * ===[ ExonModel initialisation of class variables ]======================
+ * ===[ ExonModel initialization of class variables ]======================
  */
 void ExonModel::init() {
     /*
@@ -1929,7 +1929,7 @@ Double ExonModel::seqProb(int left, int right, int frameOfRight) const {
 
     bool reverse = !isOnFStrand(etype);
     Seq2Int s2i(k+1);
-    if (left < 0) {   // new initialisation
+    if (left < 0) {   // new initialization
 	seqProb = 1;
         oldleft = oldright = oldframe = -1;
         oldtype = TYPE_UNKNOWN;

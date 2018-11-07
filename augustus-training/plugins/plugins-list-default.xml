@@ -31822,7 +31822,7 @@ It integrates nicely with the resources plugin.
       <title>Git Plugin</title>
       <author>Peter Ledbrook</author>
       <authorEmail>p.ledbrook@cacoethes.co.uk</authorEmail>
-      <description>Integrates git, the distributed version control system, into Grails projects. It can initialise a local git repository for your project, add a .gitignore file and commit the first version of your source code.
+      <description>Integrates git, the distributed version control system, into Grails projects. It can initialize a local git repository for your project, add a .gitignore file and commit the first version of your source code.
 </description>
       <file>http://plugins.grails.org/grails-git/tags/RELEASE_1_0-SNAPSHOT/grails-git-1.0-SNAPSHOT.zip</file>
     </release>

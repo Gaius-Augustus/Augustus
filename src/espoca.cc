@@ -114,7 +114,7 @@ int main( int argc, char* argv[] ){
 	GeneticCode::chooseTranslationTable(Properties::getIntProperty("translation_table"));
       }
 
-      // setParameters(); // NOTE: need Constant and GeneticCode to be initialised first
+      // setParameters(); // NOTE: need Constant and GeneticCode to be initialized first
       StateModel::init();   // set global parameters of state models	  
 		
 	// calculate omega on input codon alignment

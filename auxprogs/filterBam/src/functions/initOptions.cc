@@ -146,7 +146,7 @@ void displayUsage(int argc, char *argv[])
 }
 
 
-// Options initialisation
+// Options initialization
 globalOptions_t initOptions(int argc, char *argv[])
 {
   	int opt = 0, longIndex;

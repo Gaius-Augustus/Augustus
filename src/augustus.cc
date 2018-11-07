@@ -115,7 +115,7 @@ int main( int argc, char* argv[] ){
 	Constant::init();
 	Gene::init();
 	GeneticCode::init();
-	setParameters(); // NOTE: need Constant and GeneticCode to be initialised first
+	setParameters(); // NOTE: need Constant and GeneticCode to be initialized first
 	StateModel::init();   // set global parameters of state models	  
 
 	if(Properties::hasProperty("trainFeatureFile"))
@@ -145,7 +145,7 @@ int main( int argc, char* argv[] ){
 	  cout << PREAMBLE << endl;
 	  
 	  /*
-	   * check for extrinsic information and initialise when existent
+	   * check for extrinsic information and initialize when existent
 	   */
 	  FeatureCollection extrinsicFeatures;
 	  const char *extrinsicfilename;
@@ -169,7 +169,7 @@ int main( int argc, char* argv[] ){
 	  }
 	  
 	  if (verbosity > 1) 
-	      cout << "# Initialising the parameters using config directory " << Properties::getProperty(CFGPATH_KEY) << " ..." << endl;
+	      cout << "# Initializing the parameters using config directory " << Properties::getProperty(CFGPATH_KEY) << " ..." << endl;
 	  BaseCount::init();
 	  PP::initConstants();
 	  NAMGene namgene; // creates and initializes the states

@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 	  }
 
 
-	// Initialising auxiliary data structures
+	// Initializing auxiliary data structures
 	data = calloc(1, sizeof(void*)); // data[0] is array for just one BAM file
 	// set the default region. left-shift "end" by appending 30 zeros (i.e. end=1073741824) 
 	beg = 0; end = 1<<30; tid = -1;  

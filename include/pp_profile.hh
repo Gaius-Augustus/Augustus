@@ -612,7 +612,7 @@ namespace PP {
 
     public:
 	// methods of class ProteinProfile
-	// initialise pattern from file <filename>
+	// initialize pattern from file <filename>
 	Profile(string filename);
 	
     
