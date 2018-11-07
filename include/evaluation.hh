@@ -135,7 +135,7 @@ private:
    */
 
   int numDataSets;
-  // nukleotide level
+  // nucleotide level
   int nukTPBK, nukFPBK, nukFPBKinside, nukFNBK;
            
   // exon level
