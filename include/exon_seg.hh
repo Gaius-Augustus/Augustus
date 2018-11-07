@@ -166,7 +166,7 @@ public:
   vector<int> cluster_exons(vector<fragment> segments,int no_of_tracks);
 
   /* Takes the dataset, the name of output file and the threshold c and the ratio of complement 
-   * of the paramters(s) as input and makes the gff file
+   * of the parameters(s) as input and makes the gff file
    */
   void make_gff(dataset &coverage_info,string outputfile,int c,float s,string train_file,int flag_r,string bed_file,string augustus_hints,int chunksize);
   /* takes the dataset and vector of fragments as input and

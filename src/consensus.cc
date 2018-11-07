@@ -13,7 +13,7 @@ const int nRep=20;
 using namespace std;
 
 consensus::consensus(int starting1,int ending1){
-  //gives default value to the paramters
+  //gives default value to the parameters
   pattern_size=6;
   p_value=.01;
   delta=2;

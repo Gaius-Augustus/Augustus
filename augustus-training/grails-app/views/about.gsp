@@ -152,7 +152,7 @@
                         </li>
                         <li> AUGUSTUS can report a large number of alternative genes, including probabilities for the
                            transcripts and each exon and intron. You can make AUGUSTUS predict suboptimal gene structures (<a
-                              href="images/alternative-sampling.png">example</a>) and you can adjust command line paramters to regulate
+                              href="images/alternative-sampling.png">example</a>) and you can adjust command line parameters to regulate
                            the number of reported alternatives.
                         </li>
                      </ul>
