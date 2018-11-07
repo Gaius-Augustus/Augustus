@@ -1069,7 +1069,7 @@ int main(int argc, char* argv[])
     // TASK: else store alignment pointer into map
     // TASK: set new or reuse "pal"
 
-  } // end while (parsing through bam aligment lines)
+  } // end while (parsing through bam alignment lines)
 
 
   // newline after display of the line count

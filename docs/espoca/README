@@ -2,7 +2,7 @@ ESPOCA - Estimate Selective Pressure on Codon Alignments
 
 This directory contains example input files:
 example.fa    codon alignment file in multi fasta format
-tree.nwk      phylogenetik tree file in newick format with branch length
+tree.nwk      phylogenetic tree file in newick format with branch length
 
 Example Command:
 
@@ -21,7 +21,7 @@ Output:
 # 4. Pr(w>1)     probability of omega > 1 at alipos (*: Pr(w>1) > 0.90, **: Pr(w>1) > 0.95)
 # 5. post_mean   posterior mean estimate of omega at ali_pos
 # 6. SE_for_w    standard deviation of omega at ali_pos
-# 7. num_subst   number of subsitution calculated by the Fitch algorithm
+# 7. num_subst   number of substitution calculated by the Fitch algorithm
 
    ali_pos   ref_pos    AS_ref   Pr(w>1) post_mean  +-  SE_for_w num_subst
          0         0         M  0.249188  0.814206  +-  0.362779         0

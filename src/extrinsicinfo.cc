@@ -907,7 +907,7 @@ Feature *SequenceFeatureCollection::getExonListOvlpingRange(int startPosition, i
 
 /*
  * makeGroups
- * makes groups of hints accoding to the group name given in the hintsfile
+ * makes groups of hints according to the group name given in the hintsfile
  */ 
 void SequenceFeatureCollection::makeGroups(){
     // HashTable<HintGroup*, string, HashString<99999>, 100000 > groupnames;
@@ -1339,7 +1339,7 @@ list<Feature>::iterator SequenceFeatureCollection::getPosStartAfter(int type, in
 
 /*
  * rescaleBoniByConformance
- * Adjust boni of all hints, accoding to the number of other hints that are supporting it and the number 
+ * Adjust boni of all hints, according to the number of other hints that are supporting it and the number 
  * of other hints that are contradicting it.
  * A hint with a lot of contradicting other hints gets a smaller bonus.
  */
@@ -2860,6 +2860,6 @@ void FeatureCollection::printAccuracyForSequenceSet(const AnnoSequence* annoseqs
 
 
 /*
- * TODO: clean for redundancies after cheking the accuracy. Then delete the less confident type.
+ * TODO: clean for redundancies after checking the accuracy. Then delete the less confident type.
  * Check the configuration file syntax. E.g. when the number of grades is missing.
  */

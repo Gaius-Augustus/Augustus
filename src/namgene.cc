@@ -899,7 +899,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
 	    (*geneit1)->updatePostProb(*geneit2);
     }
     for (geneit1 = alltranscripts.begin(); geneit1 != alltranscripts.end(); geneit1++){
-	(*geneit1)->normPostProb(sampleiterations); // +1 wegen Viterbipfad
+	(*geneit1)->normPostProb(sampleiterations); // +1 due to  Viterbi path
     }
   }
   /*
@@ -931,7 +931,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   if (sampleiterations>1) {
     /*
      * compute apostprob of genes. The posterior 'probability' of a gene is the 
-     * expected number of transcripts overlaping the region of the gene on 
+     * expected number of transcripts overlapping the region of the gene on 
      * the given strand. This may now be larger than 1 (changed March 15, Mario).
      */
     for (agit = agl->begin(); agit != agl->end(); ++agit) {
@@ -1053,7 +1053,7 @@ int NAMGene::getNextCutEndPoint(const char *dna, int beginPos, int maxstep, Sequ
       StateModel::setSFC(partSFC);
       viterbiAndForward(curdna);      // do not use protein profile here
       viterbiPath = getViterbiPath(curdna, "temp");
-      delete partSFC; //achtung, das muß nach getViterbiPath stehen
+      delete partSFC; //attention, this should called after getViterbiPath
       delete [] curdna;
       condensedViterbiPath = StatePath::condenseStatePath(viterbiPath);
       //cout << "getNextCutEndPoint viterbi path:" << endl;

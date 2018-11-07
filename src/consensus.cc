@@ -421,7 +421,7 @@ void consensus::start(){
 	  }
     }
     
-    //storing the right shift neghbour for deletion
+    //storing the right shift neighbour for deletion
     number1=number/4;
     flag=0;
     for(i=0;i<4;i++){
@@ -447,14 +447,14 @@ void consensus::start(){
       //erasing neighbours from the significant list
       
       significant_strings.erase(significant_strings.begin()+ prev_neighbours[i]);
-      //erasing the neighours from relevant list
+      //erasing the neighbours from relevant list
       for(j=0;j<relevant_strings.size();j++)
 	if(relevant_strings[j]==k ){
 	  relevant_strings.erase(relevant_strings.begin() + j);
 	  break;
 	}
       
-      //adjusting the indices to accomodate for the deleted element
+      //adjusting the indices to accommodate for the deleted element
       for(j=i+1;j<prev_neighbours.size();j++)
 	if(prev_neighbours[j]>prev_neighbours[i])
 	  prev_neighbours[j]=prev_neighbours[j]-1;
@@ -533,7 +533,7 @@ void consensus::analyse(string pattern1,float p_value1,float delta1,int max_allo
 	tpm[row][column]++;
     }
   }
-  //calculating the background probabilites
+  //calculating the background probabilities
   float k1=0;
   for(i=0;i<4;i++){
     k1=0;
@@ -572,7 +572,7 @@ void consensus::analyse(string pattern1,float p_value1,float delta1,int max_allo
     }
   }
 
-  cout << " calculated the frequenecy values" << endl;
+  cout << " calculated the frequency values" << endl;
   data1.consensus_pattern=analyse_pattern;
   data1.f_value=f_values[number];
 

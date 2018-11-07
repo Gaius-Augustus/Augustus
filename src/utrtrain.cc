@@ -140,7 +140,7 @@ void UtrModel::buildProbabilities(const AnnoSequence* annoseq){
     utr5_emiprobs.order = k;
     computeEmiFromPat(patternprobs, utr5_emiprobs.probs, k);    
 
-    // 5' utr initial emission (inital exon and single exon)
+    // 5' utr initial emission (initial exon and single exon)
     patternprobs.resize(utr5init_emicount.size());
     makeProbsFromCounts(patternprobs, utr5init_emicount, k, utr_patpseudo, false);
     utr5init_emiprobs.probs.resize(utr5init_emicount.size());

@@ -29,7 +29,7 @@ const long int minus_infinity=LONG_MIN;
 const int maxcov =10000;
 #define NUMSTATES 4
 /* EXONP denotes positive exon EXONM denotes the negative exon INTRONJ and INTRONI denote the 
- * J and I lables of introns Together these four are teh states that we are considering
+ * J and I labels of introns Together these four are the states that we are considering
  * in our HMM
  */
 const int EXONP =0;
@@ -41,7 +41,7 @@ const int INTRONJ =3;
 const int STRANDP =0;
 const int STRANDM =1;
 const int STRANDB =2;
-/* pott_gamma denotes the gamma value that we will be using in calulating the
+/* pott_gamma denotes the gamma value that we will be using in calculating the
  * Pott's functionals
  */
 const int pott_gamma =1500;
@@ -49,10 +49,10 @@ const int pott_gamma =1500;
  * splice sites using the template matching technique
  */
 const int moving_window=70;
-/* The convergence limit that we use for calculating the labda values using the iterative technique
+/* The convergence limit that we use for calculating the lambda values using the iterative technique
  */
 const double convergence_limit=0.01;
-/* L stores the threshold betweeen introns and exons which we use when we try to estimate the
+/* L stores the threshold between introns and exons which we use when we try to estimate the
  * the distribution using the train_function which calculates the distribution using the exons
  * predicted from a gff file
  */
@@ -134,7 +134,7 @@ public:
   /* reads the file and stores it in the the object of the class dataset
    */
   void read_file(dataset &coverage_info,string filename);
-  /* it takes as input pointer to a 2-D vecctor, 
+  /* it takes as input pointer to a 2-D vector, 
    * the input dataset for a chromosome and
    * stores the emission probability values in it
    */
@@ -150,7 +150,7 @@ public:
   /* function to convert the state sequence into segments and also to store the avg coverage depth
    */
   vector< fragment > segment( vector<int> state_seq,vector< vector< vector<int> > > &input_set,int include_intron,int no_of_tracks );
-  /* This function takes input the averrage coverage depth and transforms them
+  /* This function takes input the average coverage depth and transforms them
    * into some usable form in the pott's functional
    */
   double pott_convert(double d);

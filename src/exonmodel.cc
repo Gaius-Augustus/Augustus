@@ -22,7 +22,7 @@
  */
 
 vector<Integer> ExonModel::patterncount[3];      // {0,1,2}x{acgt}^(k+1), the reading frame is 
-                                                 // the positiion of the emitted (last) nucleotide
+                                                 // the position of the emitted (last) nucleotide
 vector<Integer> ExonModel::initpatterncount[3];
 vector<Integer> ExonModel::etpatterncount[3];
 Integer ExonModel::k = 4;
@@ -64,7 +64,7 @@ Boolean ExonModel::hasLenDist = false;
 //Boolean ExonModel::hasAAdep = false;      // not in use right now
 Integer ExonModel::gesbasen[3]  = { 0, 0, 0 };
 Double  ExonModel::patpseudo = 1;         // pseudocount for patterns in sequence
-Integer ExonModel::exonLenD = 4000;       // use detailled length distribution up to this number
+Integer ExonModel::exonLenD = 4000;       // use detailed length distribution up to this number
 Integer ExonModel::minPatSum = 0;         // for the decision to shorten the emission pattern
 vector<Integer> ExonModel::lenCountSingle;   // length count of Single exons (length of biol. exon)
 vector<Integer> ExonModel::lenCountInitial;  // length count of Initial exons (length of biol. exon)
@@ -1003,7 +1003,7 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 		     << endl;
 #endif
 #endif		    
-	    // if it's a terminal or rinitial exon, we backtrack from igenic which is
+	    // if it's a terminal or initial exon, we backtrack from igenic which is
 	    // unaware of substates, so the given state won't refer to a substate; 
 	    // in order to find out, we check viterbi: if the probability comes from the
 	    // profile, there will be substates, otherwise not
@@ -1403,7 +1403,7 @@ Double ExonModel::endPartEmiProb(int end) const {
 /*
  * ===[ ExonModel::notEndPartEmiProb ]=====================================
  *
- * Probability of the emission of the exon exluding the fixed length end part.
+ * Probability of the emission of the exon excluding the fixed length end part.
  * This includes 
  * - the beginPart     (translation initiation, ass or reverse dss)
  * - the startSeq part (first k or less emissions after the begin part)
@@ -1581,7 +1581,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 	 * inner sequence part from endOfStart+1 to right
 	 * | initial pattern | initial content model| exon content model| exon terminating model (dss)|
 	 * Depending on the exon type, some of the models may not apply
-	 * For short exons the precedence is inital -> terminal -> inner
+	 * For short exons the precedence is initial -> terminal -> inner
 	 * but terminal applies only completely or not at all.
 	 */
 	int endOfInitial, beginOfTerm,  endOfStart; // forward

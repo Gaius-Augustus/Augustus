@@ -102,7 +102,7 @@ int main( int argc, char* argv[] ){
       exit(1);
     }
     if(Constant::treefile.empty()){
-      cerr << "Warning: No treefile spezified. Using startree with branchlength of one." << endl;
+      cerr << "Warning: No treefile specified. Using startree with branchlength of one." << endl;
     }
 
     try{
@@ -154,7 +154,7 @@ void printUsage(){
   cerr << "DESCRIPTON:\n\
  SPECIES   species parameter for calculation of the codon usage. type 'augustus --species=help' to see what species are available\n\
  ALNFILE   codon alignment file in multi fasta format\n\
- TREEFILE  phylogenetik tree with branchlength in newick format (startree is used if not specified)\n\n";
+ TREEFILE  phylogenetic tree with branchlength in newick format (startree is used if not specified)\n\n";
   cerr << "OPTIONS:\n\
  --help         print this usage\n";
 }
@@ -169,5 +169,5 @@ void printIntro(){
   cout << "# 4. Pr(w>1)     probability of omega > 1 at alipos (*: Pr(w>1) > 0.90, **: Pr(w>1) > 0.95)\n";
   cout << "# 5. post_mean   posterior mean estimate of omega at ali_pos\n";
   cout << "# 6. SE_for_w    standard deviation of omega at ali_pos\n";
-  cout << "# 7. num_subst   number of subsitution calculated by the Fitch algorithm\n\n";
+  cout << "# 7. num_subst   number of substitution calculated by the Fitch algorithm\n\n";
 }

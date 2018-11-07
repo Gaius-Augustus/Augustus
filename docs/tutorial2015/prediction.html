@@ -186,7 +186,7 @@ includes short local alignments starting from 30bp. For this reason, we further
 <pre class="code">cat est.psl | filterPSL.pl --best --minCover=80 > est.f.psl</pre>
 
 <span class="result"><tt>est.f.psl</tt></span> now only contains for each query
-the best alginment(s) and that only if it covers at least 80% of the query length.
+the best alignment(s) and that only if it covers at least 80% of the query length.
 This reduces the number of alignments:
 <pre class="code">
 wc -l est.psl est.f.psl
