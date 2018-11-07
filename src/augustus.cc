@@ -476,7 +476,7 @@ void setParameters(){
 	if (outdir != ""){
 	    outdir = expandHome(outdir);         // replace "~" by "$HOME"
 	    if(outdir[outdir.size()-1] != '/')
-		outdir += '/';                   // append slash if neccessary 
+		outdir += '/';                   // append slash if necessary 
 	    
 	    Properties::addProperty("/CompPred/outdir", outdir);
 	    // the directory actually exists? 

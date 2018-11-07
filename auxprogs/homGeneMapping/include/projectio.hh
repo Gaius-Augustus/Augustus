@@ -69,7 +69,7 @@ inline std::string exec(const char* cmd) {
  */
 inline std::string expandDir(std::string filename){
     if(filename.length()>0 && filename[filename.size()-1] != '/')
-	filename += '/';                     // append slash if neccessary 
+	filename += '/';                     // append slash if necessary 
     filename = expandHome(filename);         // replace "~" by "$HOME
     return filename;
 }

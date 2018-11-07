@@ -51,7 +51,7 @@
 # This section is for seting constraints between transition probabilities,
 # such as suggested by symmetry such as strand symmetry (or by treating transitions in
 # all reading frames the same). Theoretically, i.e. with infinite and
-# representative traininig data, this should not be neccessary. However, in the real finite
+# representative traininig data, this should not be necessary. However, in the real finite
 # world this is a little safeguard against overfitting.
 #
 [BINDINGS]

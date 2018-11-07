@@ -280,7 +280,7 @@ int ExonModel::getInnerPartEndOffset(StateType type){
  * destructor
  */
 ExonModel::~ExonModel( ){
-    // TODO: delete what is neccessary
+    // TODO: delete what is necessary
     if( --exoncount == 0 )
 	lastParIndex = -1;
 }

@@ -585,7 +585,7 @@ void HintGroup::addFeature(Feature *hint){
     while(fit != hints->end() && (*fit)->end < hint->end)
 	fit++;
     hints->insert(fit, hint);
-    // if feature is genic then reset begin and end if neccessary
+    // if feature is genic then reset begin and end if necessary
     // nongenic features: irpartF, nonexonpartF
     if (begin < 0 || begin > hint->start)
 	begin = hint->start;

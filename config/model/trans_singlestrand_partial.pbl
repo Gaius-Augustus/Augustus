@@ -43,7 +43,7 @@
 
 # Terminal probabilities (a priori probs for a state ending at
 # the last position.
-# only non-zero probabilities neccessary
+# only non-zero probabilities necessary
 [Terminal]
 # number of states where terminating is possible
 24
