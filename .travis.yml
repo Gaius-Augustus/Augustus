@@ -1,6 +1,15 @@
 language: generic
 sudo: required
 
+addons:
+  apt:
+    packages:
+      - doxygen
+      - doxygen-doc
+      - doxygen-latex
+      - doxygen-gui
+      - graphviz
+
 services:
   - docker
 
@@ -9,3 +18,12 @@ before_install:
   
 script:
   - docker build -t augustus .
+  - doxygen doxygen.conf
+
+deploy:
+  provider: pages
+  skip-cleanup: true
+  local-dir: $TRAVIS_BUILD_DIR/doxygen/html
+  github-token: $GITHUB_API_KEY
+#  on:
+#    branch: master
