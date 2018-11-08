@@ -46,7 +46,7 @@ ENV TOOLDIR="/root"
 ADD / /root/augustus
 
 # Build bam2wig
-RUN mkdir /root/augustus/bin
+RUN mkdir -p /root/augustus/bin
 WORKDIR "/root/augustus/auxprogs/bam2wig"
 RUN make
 
