@@ -25,5 +25,5 @@ deploy:
   skip-cleanup: true
   local-dir: $TRAVIS_BUILD_DIR/doxygen/html
   github-token: $GITHUB_API_KEY
-#  on:
-#    branch: master
+  on:
+    branch: doxygen-built
