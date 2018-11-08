@@ -17,7 +17,10 @@ before_install:
   - printenv | grep -E '^TRAVIS_' > .env
   
 script:
-  - docker build -t augustus .
+  - docker build -f Dockerfile -t augustus .
+  - docker build -f Dockerfile-cgp-file -t augustus-cgp-file .
+  - docker build -f Dockerfile-cgp-mysql -t augustus-cgp-mysql .
+  - docker build -f Dockerfile-cgp-sqlite -t augustus-cgp-sqlite .
   - doxygen doxygen.conf
 
 deploy:
