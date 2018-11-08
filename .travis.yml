@@ -26,4 +26,4 @@ deploy:
   local-dir: $TRAVIS_BUILD_DIR/doxygen/html
   github-token: $GITHUB_API_KEY
   on:
-    branch: doxygen-built
+    branch: master
