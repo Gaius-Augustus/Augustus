@@ -2,7 +2,7 @@
 
 # Author: Katharina J. Hoff
 # E-Mail: katharina.hoff@uni-greifswald.de
-# Last modified on November 15th 2018
+# Last modified on November 22nd 2018
 #
 # WARNINGS:
 #
@@ -35,7 +35,8 @@ except ImportError:
 
 ucsc_tools = {'bedToBigBed': '', 'genePredCheck': '', 'faToTwoBit': '',
               'gtfToGenePred': '', 'hgGcPercent': '', 'ixIxx': '',
-              'twoBitInfo': '', 'wigToBigWig': '', 'genePredToBed': ''}
+              'twoBitInfo': '', 'wigToBigWig': '', 'genePredToBed': '', 'bigWigToBedGraph':
+              ''}
 
 parser = argparse.ArgumentParser(
     description='Generate UCSC assembly hub from BRAKER output.')
@@ -44,54 +45,70 @@ parser.add_argument('-e', '--email', required=True, type=str,
 parser.add_argument('-g', '--genome', required=True, type=str,
                     help='Genome fasta file (possibly softmasked)')
 parser.add_argument('--no_repeats', required=False, type=bool, default=False,
-                    help="Bool flag to disable repeat track generation from softmasked genome sequence")
-parser.add_argument('--long_label', required=True, type=str,
+                    help="disable repeat track generation from softmasked genome sequence, bool flag, i.e. set to True if desired")
+parser.add_argument('-L', '--long_label', required=True, type=str,
                     help='Long label for hub, e.g. species name in english ' +
                     'and latin, pass in single quotation marks, e.g. ' +
                     '--long_label \'Dorosphila melanogster (fruit fly)\'')
-parser.add_argument('--short_label', required=True, type=str,
+parser.add_argument('-l', '--short_label', required=True, type=str,
                     help='Short label for hub, will also be used as directory ' +
                     'name for hub, should not contain spaces or special ' +
                     'characters, e.g. --short_label fly')
-parser.add_argument('--annot', required=False, type=str,
-                    help='GTF file with reference annotation')  # todo
+parser.add_argument('-a', '--annot', required=False, type=str,
+                    help='GTF file with reference annotation')  
 parser.add_argument('--hints', required=False, type=str,
-                    help='GFF file with AUGUSTUS hints')  # todo
-parser.add_argument('--bam', required=False, type=str, nargs="+",
-                    help='BAM file with RNA-Seq information')
+                    help='GFF file with AUGUSTUS hints')  
+parser.add_argument('-b', '--bam', required=False, type=str, nargs="+",
+                    help='BAM file(s) - space separated - with RNA-Seq information')
+parser.add_argument('--display_bam_as_bam', required=False, type=bool, nargs="+",
+                    help="Display BAM as bam track in addition to bedGraph track, bool flag, i.e. set to True if desired")
 parser.add_argument('--genemark', required=False, type=str,
-                    help='GTF file with GeneMark predictions')  # todo
+                    help='GTF file with GeneMark predictions')  
 parser.add_argument('--aug_ab_initio', required=False, type=str,
-                    help='GTF file with ab initio AUGUSTUS predictions')  # todo
+                    help='GTF file with ab initio AUGUSTUS predictions')  
 parser.add_argument('--aug_hints', required=False, type=str,
-                    help='GTF file with AUGUSTUS predictions with hints')  # todo
+                    help='GTF file with AUGUSTUS predictions with hints') 
 parser.add_argument('--aug_ab_initio_utr', required=False, type=str,
-                    help='GTF file with ab initio AUGUSTUS predictions with UTRs')  # todo
+                    help='GTF file with ab initio AUGUSTUS predictions with UTRs') 
 parser.add_argument('--aug_hints_utr', required=False, type=str,
-                    help='GTF file with AUGUSTUS predictions with hints with UTRs')  # todo
-parser.add_argument('--traingenes', required=False, type=str,
-                    help='GTF file with training genes')  # todo
+                    help='GTF file with AUGUSTUS predictions with hints with UTRs') 
+parser.add_argument('-t', '--traingenes', required=False, type=str,
+                    help='GTF file with training genes') 
 parser.add_argument('--SAMTOOLS_PATH', required=False, type=str,
                     help="Path to samtools executable")
-parser.add_argument('--outdir', required=False, type=str, default='.',
+parser.add_argument('-o', '--outdir', required=False, type=str, default='.',
                     help="output directory to write hub to")
+parser.add_argument('-v', '--verbosity', required = False, type=int, default=0,
+                    help="if INT>0 verbose output log is produced")
+# The following argument is for adding a track to an existing hub, i.e. producing the files required for the track and writing into existing configuration files; requires the directory tmp to be present
+parser.add_argument('--add_track', required=False, type=bool, default=False,
+                    help="add track to existing hub, i.e. skip generating genome information and config files, bool flag, i.e. set to True if desired")
+parser.add_argument('-r', '--no_tmp_rm', required=False, type=bool, default=False,
+                    help="do not delete temporary files (e.g. because you want to add tracks, later), bool flag, i.e. set to True if desired")
 args = parser.parse_args()
+
+tmp_dir = args.outdir + "/tmp/"
+hub_dir = args.outdir + "/" + args.short_label + \
+    "/" + args.short_label + "/"
 
 ''' Find samtools (if bam file provided) '''
 samtools = ""
 if args.bam:
-    print("Searching for samtools:")
+    if args.verbosity > 0:
+        print("Searching for samtools:")
 if args.bam and args.SAMTOOLS_PATH:
     samtools = args.SAMTOOLS_PATH + "/samtools"
     if not(os.access(samtools, os.X_OK)):
         print("Error: " + samtools + " is not executable!")
         exit(1)
     else:
-        print("Will use " + samtools)
+        if args.verbosity > 0:
+            print("Will use " + samtools)
 elif args.bam:
     if shutil.which("samtools") is not None:
         samtools = shutil.which("samtools")
-        print("Will use " + samtools)
+        if args.verbosity > 0:
+            print("Will use " + samtools)
     else:
         print("Error: unable to locate samtools binary!")
         exit(1)
@@ -101,7 +118,8 @@ elif args.bam:
 # the URLs of UCSC tool download are hardcoded for linux.x84_64
 arch = platform.machine()
 
-print("Searching for required UCSC tools:")
+if args.verbosity > 0:
+    print("Searching for required UCSC tools:")
 for key, val in ucsc_tools.items():
     if shutil.which(key) is not None:
         ucsc_tools[key] = shutil.which(key)
@@ -127,7 +145,8 @@ for key, val in ucsc_tools.items():
                 shutil.copyfileobj(response, out_file)
             ucsc_tools[key] = os.getcwd() + "/" + key
             os.chmod(ucsc_tools[key], 0o777)
-    print("Will use " + ucsc_tools[key])
+    if args.verbosity > 0:
+        print("Will use " + ucsc_tools[key])
 
 
 ''' track color defintion '''
@@ -142,8 +161,8 @@ rgb_cols = ['0,0,0', '255,0,0', '0,255,0', '0,0,255', '176,196,222', '0,255,255'
 ''' Create hub directory structure '''
 
 try:
-    os.makedirs(args.outdir + "/" + args.short_label + "/" + args.short_label)
-    os.makedirs(args.outdir + "/" + args.short_label + "/tmp")
+    os.makedirs(hub_dir)
+    os.makedirs(tmp_dir)
 except OSError as e:
     if e.errno != errno.EEXIST:
         raise
@@ -153,16 +172,19 @@ except OSError as e:
 
 def run_simple_process(args_lst):
     try:
-        print("Trying to execute the following command:")
-        print(" ".join(args_lst))
+        if args.verbosity > 0:
+            print("Trying to execute the following command:")
+            print(" ".join(args_lst))
         result = subprocess.run(
             args_lst, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print("Suceeded in executing command.")
+        if args.verbosity > 0:
+            print("Suceeded in executing command.")
         if(result.returncode == 0):
             return(result)
         else:
             print("Error: return code of subprocess was " +
                   str(result.returncode))
+            quit(1)
     except subprocess.CalledProcessError as grepexc:
         print("Failed executing: ", " ".join(grepexec.args))
         print("Error code: ", grepexc.returncode, grepexc.output)
@@ -174,16 +196,19 @@ def run_simple_process(args_lst):
 
 def run_process_stdinput(args_lst, byte_obj):
     try:
-        print("Trying to execute the following command with input from STDIN:")
-        print(" ".join(args_lst))
+        if args.verbosity > 0:
+            print("Trying to execute the following command with input from STDIN:")
+            print(" ".join(args_lst))
         result = subprocess.run(args_lst, input=byte_obj,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print("Suceeded in executing command.")
+        if args.verbosity > 0:
+            print("Suceeded in executing command.")
         if(result.returncode == 0):
             return(result)
         else:
             print("Error: return code of subprocess was "
                   + str(result.returncode))
+            quit(1)
     except subprocess.CalledProcessError as grepexc:
         print("Failed executing: ", " ".join(grepexec.args))
         print("Error code: ", grepexc.returncode, grepexc.output)
@@ -198,15 +223,17 @@ def make_gtf_sane(annot_file, ucsc_file):
         with open(annot_file, "r") as annot_handle:
             txs = {}
             for line in annot_handle:
-                seq, first_part, strand, second_part, txid = re.search(r'(\S+)(\t\S+\t\S+\t\d+\t\d+\t\S+\t)(\S+)(\t\S+\t).*transcript_id\s\"(\S+)\"', line).groups()
+                seq, first_part, strand, second_part, txid = re.search(
+                    r'(\S+)(\t\S+\t\S+\t\d+\t\d+\t\S+\t)(\S+)(\t\S+\t).*transcript_id\s\"(\S+)\"', line).groups()
                 if txid not in txs:
-                    txs[txid] = {'strand' : strand, 'lines' : [], 'sane' : True}
+                    txs[txid] = {'strand': strand, 'lines': [], 'sane': True}
                 else:
                     if not(strand == txs[txid]['strand']):
                         txs[txid]['sane'] = False
                 txs[txid]['lines'].append(line)
     except IOError:
         print("Error: failed to open file " + annot_file + " for reading!")
+        quit(1)
     try:
         with open(ucsc_file, "w") as ucsc_handle:
             for key, value in txs.items():
@@ -215,13 +242,15 @@ def make_gtf_sane(annot_file, ucsc_file):
                         ucsc_handle.write(line)
                 else:
                     for line in value['lines']:
-                        seq, first_part, strand, second_part, txid = re.search(r'^(\S+)(\t\S+\t\S+\t\d+\t\d+\t\S+\t)(\S+)(\t\S+\t).*transcript_id\s\"(\S+)\"', line).groups()
+                        seq, first_part, strand, second_part, txid = re.search(
+                            r'^(\S+)(\t\S+\t\S+\t\d+\t\d+\t\S+\t)(\S+)(\t\S+\t).*transcript_id\s\"(\S+)\"', line).groups()
                         new_gid = txid + "_" + seq + "_" + strand
                         new_txid = new_gid + ".t1"
-                        ucsc_handle.write(seq + first_part + strand + second_part + "gene_id \"" + new_gid + "\"; transcript_id \"" + new_txid + "\";\n")
+                        ucsc_handle.write(seq + first_part + strand + second_part +
+                                          "gene_id \"" + new_gid + "\"; transcript_id \"" + new_txid + "\";\n")
     except IOError:
         print("Error: failed to open file " + ucsc_file + " for writing!")
-
+        quit(1)
 
 
 ''' Function that reformats AUGUSTUS gtf format to UCSC gtf format '''
@@ -235,19 +264,23 @@ def aug2ucsc_gtf(augustus_file, ucsc_file):
                     for line in aug_handle:
                         if re.search(r'\tAUGUSTUS\tCDS\t', line) or re.search(r'\tAUGUSTUS\texon\t', line) or re.search(r'\tAUGUSTUS\tstart_codon\t', line) or re.search(r'\tAUGUSTUS\t\d+\'-UTR\t', line):
                             if re.search(r'\S+\t\S+\t\S+\t\d+\t\d+\t\S+\t\S+\t\S+\ttranscript_id\s\"\S+\";\sgene_id\s\"\S+\";', line):
-                                first_part, feature, second_part, gid, txid = re.search(r'(\S+\t\S+\t)(\S+)(\t\d+\t\d+\t\S+\t\S+\t\S+\t)(transcript_id\s\"\S+\";)\s(gene_id\s\"\S+\";)', line).groups()
+                                first_part, feature, second_part, gid, txid = re.search(
+                                    r'(\S+\t\S+\t)(\S+)(\t\d+\t\d+\t\S+\t\S+\t\S+\t)(transcript_id\s\"\S+\";)\s(gene_id\s\"\S+\";)', line).groups()
                             elif re.search(r'\S+\t\S+\t\S+\t\d+\t\d+\t\S+\t\S+\t\S+\tgene_id\s\"\S+\";\stranscript_id\s\"\S+\";', line):
-                                first_part, feature, second_part, txid, gid = re.search(r'(\S+\t\S+\t)(\S+)(\t\d+\t\d+\t\S+\t\S+\t\S+\t)(gene_id\s\"\S+\";)\s(transcript_id\s\"\S+\";)', line).groups()
+                                first_part, feature, second_part, txid, gid = re.search(
+                                    r'(\S+\t\S+\t)(\S+)(\t\d+\t\d+\t\S+\t\S+\t\S+\t)(gene_id\s\"\S+\";)\s(transcript_id\s\"\S+\";)', line).groups()
                             if re.search(r'5\'-UTR', feature):
                                 feature = "5UTR"
                             elif re.search(r'3\'-UTR', feature):
                                 feature = "3UTR"
-                            ucsc_handle.write(first_part + feature + second_part + gid + " " + txid + "\n")
+                            ucsc_handle.write(
+                                first_part + feature + second_part + gid + " " + txid + "\n")
             except IOError:
-                print("Error: failed to open file " +
-                      ucsc_file + " for writing!")
+                print("Error: failed to open file " + ucsc_file + " for writing!")
+                quit(1)
     except IOError:
         print("Error: failed to open file " + augustus_file + " for reading!")
+        quit(1)
 
 
 ''' Function that writes subprocess byte object to flat file '''
@@ -259,6 +292,7 @@ def write_byteobj(byte_obj, outfile):
             byteobj_handle.write(byte_obj.decode('utf-8'))
     except IOError:
         print("Error: failed to open file " + outfile + " for writing!")
+        quit(1)
 
 
 ''' Function that determines which regions in genome are softmasked '''
@@ -287,6 +321,7 @@ def find_masked_intervals(genome_file, bed3_file):
                         {'id': record.id, 'start': mmStart, 'end': len(masked_seq)})
     except IOError:
         print("Error: failed to open file " + genome_file + " for reading!")
+        quit(1)
 
     try:
         with open(bed3_file, "w+") as bed2_handle:
@@ -296,13 +331,14 @@ def find_masked_intervals(genome_file, bed3_file):
                     '\n')
     except IOError:
         print("Error: failed to open file " + bed3_file + " for writing!")
+        quit(1)
 
 
 ''' Function that sorts a bed3 file with LC_COLLATE=C (using a bash script) '''
 
 
 def sort_bed3(bed3_file, bed3_sorted_file):
-    script_file = args.outdir + '/sort_bed3.sh'
+    script_file = tmp_dir + 'sort_bed3.sh'
     try:
         with open(script_file, 'w') as script_handle:
             script_handle.write(
@@ -310,12 +346,14 @@ def sort_bed3(bed3_file, bed3_sorted_file):
                 ' > ' + bed3_sorted_file)
     except IOError:
         print("Error: failed to open file " + script_file + " for writing!")
+        quit(1)
     os.chmod(script_file, 0o777)
     subprcs_args = [script_file]
     run_simple_process(subprcs_args)
 
 
 ''' Function that converts bed to bigBed '''
+
 
 def bed2bigBed(btype, bed_file, chrom_sizes_file, bigBedFile):
     print('Generating bigBed file for ' + bed_file + '...')
@@ -327,6 +365,7 @@ def bed2bigBed(btype, bed_file, chrom_sizes_file, bigBedFile):
 
 ''' Function that converts gtf to bb format '''
 
+
 def gtf2bb(gtf_file, gp_file, bed_file, bb_file, info_out_file, chrom_size_file):
     subprcs_args = [ucsc_tools['gtfToGenePred'], '-infoOut=' +
                     info_out_file, '-genePredExt', gtf_file, gp_file]
@@ -335,7 +374,8 @@ def gtf2bb(gtf_file, gp_file, bed_file, bb_file, info_out_file, chrom_size_file)
     result = run_simple_process(subprcs_args)
     # parse result for failed annotations
     annotation_validation_result = result.stderr.decode('utf-8')
-    print(annotation_validation_result)
+    if args.verbosity > 0:
+        print(annotation_validation_result)
     regex_result = re.match(
         r'checked: \d+ failed: (\d+)', annotation_validation_result)
     if int(regex_result.group(1)) > 0:
@@ -346,6 +386,7 @@ def gtf2bb(gtf_file, gp_file, bed_file, bb_file, info_out_file, chrom_size_file)
     sort_tool = shutil.which('sort')
     if sort_tool is None:
         print("Error: unable to locate bash tool 'sort'")
+        quit(1)
     subprcs_args = [sort_tool, '-k1,1', '-k2,2n']
     result = run_process_stdinput(subprcs_args, result.stdout)
     write_byteobj(result.stdout, bed_file)
@@ -371,25 +412,23 @@ def info_to_trackDB(trackDb_file, short_label, long_label, rgb_color, group, bed
     except IOError:
         print("Error: failed to open file " +
               trackDb_file + " for writing!")
+        quit(1)
 
 
 ''' Function that converts gtf to gene prediction track '''
 
 
 def make_gtf_track(trackDb_file, gtf_file, chrom_size_file, short_label, long_label, rgb_color):
-    gp_file = args.outdir + "/" + args.short_label + "/tmp/" + short_label + ".gp"
-    info_out_file = args.outdir + "/" + args.short_label + \
-        "/tmp/" + short_label + ".infoOut.txt"
-    bed_file = args.outdir + "/" + args.short_label + "/tmp/" + short_label + ".bed"
-    bb_file = args.outdir + "/" + args.short_label + \
-        "/" + args.short_label + "/" + short_label + ".bb"
+    gp_file = tmp_dir + short_label + ".gp"
+    info_out_file = tmp_dir+ short_label + ".infoOut.txt"
+    bed_file = tmp_dir + short_label + ".bed"
+    bb_file = hub_dir + short_label + ".bb"
     gtf2bb(gtf_file, gp_file, bed_file, bb_file,
            info_out_file, chrom_size_file)
     info_to_trackDB(trackDb_file, short_label, long_label,
                     rgb_color, "genePreds", 12)
     # parse info_out_file to produce txt file for creating nameIndex files
-    name_index_txt_file = args.outdir + "/" + args.short_label + \
-        "/tmp/" + short_label + ".nameIndex.txt"
+    name_index_txt_file = tmp_dir + short_label + ".nameIndex.txt"
     try:
         with open(name_index_txt_file, "w") as name_index_handle:
             try:
@@ -403,198 +442,226 @@ def make_gtf_track(trackDb_file, gtf_file, chrom_size_file, short_label, long_la
             except IOError:
                 print("Error: failed to open file " +
                       info_out_file + " for reading!")
+                quit(1)
     except IOError:
         print("Error: failed to open file " +
               name_index_txt_file + " for writing!")
-    ix_file = args.outdir + "/" + args.short_label + \
-        "/" + args.short_label + "/" + short_label + ".nameIndex.ix"
-    ixx_file = args.outdir + "/" + args.short_label + \
-        "/" + args.short_label + "/" + short_label + ".nameIndex.ixx"
+        quit(1)
+    ix_file = hub_dir + short_label + ".nameIndex.ix"
+    ixx_file = hub_dir + short_label + ".nameIndex.ixx"
     subprcs_args = [ucsc_tools['ixIxx'],
                     name_index_txt_file, ix_file, ixx_file]
     run_simple_process(subprcs_args)
 
 
+''' Function that converts mpileup to wig '''
+
+
+def mpileup2wig(pileup_file, wig_file):
+    try:
+        with open(pileup_file, "r") as pileup_handle:
+            try:
+                with open(wig_file, "w") as wig_handle:
+                    lastC = ""
+                    lastStart = 0
+                    for line in pileup_handle:
+                        line_list = re.split(r'\s+', line)
+                        if (line_list[0] != lastC) or (line_list[1] != str(int(lastStart) + 1)):
+                            wig_handle.write(
+                                "fixedStep chrom=" + line_list[0] + " start=" + line_list[1] + " step=1 span=1\n")
+                        wig_handle.write(line_list[3] + "\n")
+                        lastC = line_list[0]
+                        lastStart = line_list[1]
+            except IOError:
+                print("Error: failed to open file " +
+                      wig_file + " for writing!")
+                quit(1)
+    except IOError:
+        print("Error: failed to open file " + pileup_file + " for reading!")
+        quit(1)
+
+
+''' Globally required files that must be defined even if args.add_track is True '''
+
+ChromSizes_file = tmp_dir + args.short_label + ".chrom.sizes"
+trackDb_file = hub_dir + "trackDb.txt"
+
 ''' Generate essential files for genome display '''
 
 
-TwoBit_file = args.outdir + "/" + args.short_label + "/" + \
-    args.short_label + "/" + args.short_label + ".2bit"
-print('Generating genome 2bit file ' + TwoBit_file + '...')
-subprcs_args = [ucsc_tools['faToTwoBit'], args.genome, TwoBit_file]
-run_simple_process(subprcs_args)
-print('Done.')
-
-ChromSizes_file = args.outdir + "/" + args.short_label + \
-    "/tmp/" + args.short_label + ".chrom.sizes"
-print('Generating chromsome size info file ' + ChromSizes_file + '...')
-subprcs_args = [ucsc_tools['twoBitInfo'], TwoBit_file, 'stdout']
-result = run_simple_process(subprcs_args)
-sort_tool = shutil.which('sort')
-if sort_tool is None:
-    print("Error: unable to locate bash tool 'sort'")
-subprcs_args = [sort_tool, '-k2rn']
-result = run_process_stdinput(subprcs_args, result.stdout)
-write_byteobj(result.stdout, ChromSizes_file)
-print('Done.')
-
-WigVarStep_file = args.outdir + "/" + args.short_label + \
-    "/tmp/" + args.short_label + ".gc5Base.wigVarStep"
-WigVarStep_file_compr = WigVarStep_file + ".gz"
-print('Generating variable step wiggle file for GC content ' +
-      WigVarStep_file_compr + '...')
-subprcs_args = [ucsc_tools['hgGcPercent'], '-wigOut', '-doGaps',
-                '-file=stdout', '-win=5', '-verbose=0', args.short_label,
-                TwoBit_file]
-result = run_simple_process(subprcs_args)
-write_byteobj(result.stdout, WigVarStep_file)
-gzip_tool = shutil.which('gzip')
-if gzip_tool is None:
-    print("Error: unable to locate bash tool 'gzip'")
-if os.path.isfile(WigVarStep_file_compr):
-    os.unlink(WigVarStep_file_compr)
-subprcs_args = [gzip_tool, WigVarStep_file]
-run_simple_process(subprcs_args)
-print('Done.')
-
-BigWigGC_file = args.outdir + "/" + args.short_label + "/" + \
-    args.short_label + "/" + args.short_label + ".gc5Base.bw"
-print('Generating bigWig file for GC content ' + BigWigGC_file + '...')
-subprcs_args = [ucsc_tools['wigToBigWig'],
-                WigVarStep_file_compr, ChromSizes_file, BigWigGC_file]
-run_simple_process(subprcs_args)
-print('Done.')
-
-hub_txt_file = args.outdir + "/" + args.short_label + "/hub.txt"
-try:
-    with open(hub_txt_file, "w+") as hub_txt_handle:
-        hub_txt_handle.write("hub " + args.short_label + "\n")
-        hub_txt_handle.write("shortLabel " + args.short_label + "\n")
-        hub_txt_handle.write("longLabel " + args.long_label + "\n")
-        hub_txt_handle.write("genomesFile genomes.txt\n")
-        hub_txt_handle.write("email " + args.email + "\n")
-        hub_txt_handle.write("descriptionUrl aboutHub.html\n")
-except IOError:
-    print("Error: failed to open file " + hub_txt_file + " for writing!")
-
-default_seq_id = ""
-default_seq_end = 0
-try:
-    with open(args.genome, "rU") as genome_handle:
-        nSeq = 0
-        for record in SeqIO.parse(genome_handle, "fasta"):
-            default_seq_id = record.id
-            if len(record.seq) > 15000:
-                default_seq_end = 15000
-            else:
-                default_seq_end = len(record.seq)
-            nSeq = nSeq + 1
-            if nSeq > 0:
-                continue
-except IOError:
-    print("Error: failed to open file " + args.genome + " for reading!")
-
-genomes_txt_file = args.outdir + "/" + args.short_label + "/genomes.txt"
-try:
-    with open(genomes_txt_file, "w+") as genomes_txt_handle:
-        genomes_txt_handle.write("genome " + args.short_label + "\n")
-        genomes_txt_handle.write(
-            "trackDb " + args.short_label + "/trackDb.txt\n")
-        genomes_txt_handle.write(
-            "groups " + args.short_label + "/groups.txt\n")
-        genomes_txt_handle.write(
-            "description Automatically generated Hub\n")
-        genomes_txt_handle.write(
-            "twoBitPath " + args.short_label + "/" + args.short_label +
-            ".2bit\n")
-        genomes_txt_handle.write("organism " + args.long_label + "\n")
-        genomes_txt_handle.write(
-            "defaultPos " + default_seq_id + ":1-" + str(default_seq_end) +
-            "\n")
-        genomes_txt_handle.write("orderKey 4800\n")
-        genomes_txt_handle.write("scientificName " + args.long_label + "\n")
-        genomes_txt_handle.write("htmlPath hmi/description.html\n")
-except IOError:
-    print("Error: failed to open file " + genomes_txt_file + " for writing!")
-
-trackDb_file = args.outdir + "/" + args.short_label + \
-    "/" + args.short_label + "/trackDb.txt"
-try:
-    with open(trackDb_file, "w+") as trackDb_handle:
-        trackDb_handle.write("track gcPercent\nlongLabel GC Percent in 5-base " +
-                             "Window\nshortLabel GC Percent\n" +
-                             "type bigWig 0 100\ngroup map\nvisibility dense" +
-                             "\nwindowingFunction Mean\nbigDataUrl " +
-                             args.short_label + ".gc5Base.bw\npriority 2\nautoScale Off\n" +
-                             "maxHeightPixels 128:36:16\ngraphTypeDefault Bar\ngridDefault OFF\n" +
-                             "ncolor 0,0,0\naltColor 128,128,128\nviewLimits 30:70\nhtml ../documentation/gcPercent\n\n")
-except IOError:
-    print("Error: failed to open file " + trackDb_file + " for writing!")
-
-groups_txt_file = args.outdir + "/" + args.short_label + \
-    "/" + args.short_label + "/groups.txt"
-try:
-    with open(groups_txt_file, "w+") as groups_handle:
-        groups_handle.write(
-            "name genePreds\nlabel Gene Predictions\npriority 2\ndefaultIsClosed 0\n\n")
-        groups_handle.write(
-            "name reps\nlabel Repeats\npriority 2\ndefaultIsClosed 0\n\n")
-        groups_handle.write(
-            "name hints\nlabel Hints\npriority 2\ndefaultIsClosed 0\n\n")
-except IOError:
-    print("Error: failed to open file " + groups_txt_file + " for writing!")
-
-
-''' Generate repeat masking track '''
-
-if not args.no_repeats:
-    softmaskedBed3_file = args.outdir + "/" + args.short_label + \
-        "/tmp/" + args.short_label + ".RMsoft.bed3"
-    print('Generating softmasking information bed3 file ' +
-          softmaskedBed3_file + " from genome data (this may take a while)...")
-    find_masked_intervals(args.genome, softmaskedBed3_file)
+if not args.add_track:
+    TwoBit_file = hub_dir + args.short_label + ".2bit"
+    print('Generating genome 2bit file ' + TwoBit_file + '...')
+    subprcs_args = [ucsc_tools['faToTwoBit'], args.genome, TwoBit_file]
+    run_simple_process(subprcs_args)
     print('Done.')
-    softmaskedBed3_sorted_file = args.outdir + "/" + \
-        args.short_label + "/tmp/" + args.short_label + ".RMsoft.s.bed3"
-    print('Sorting file ' + softmaskedBed3_file + '...')
-    sort_bed3(softmaskedBed3_file, softmaskedBed3_sorted_file)
+
+    print('Generating chromsome size info file ' + ChromSizes_file + '...')
+    subprcs_args = [ucsc_tools['twoBitInfo'], TwoBit_file, 'stdout']
+    result = run_simple_process(subprcs_args)
+    sort_tool = shutil.which('sort')
+    if sort_tool is None:
+        print("Error: unable to locate bash tool 'sort'")
+        quit(1)
+    subprcs_args = [sort_tool, '-k2rn']
+    result = run_process_stdinput(subprcs_args, result.stdout)
+    write_byteobj(result.stdout, ChromSizes_file)
     print('Done.')
-    ChromSizes_file = args.outdir + "/" + args.short_label + \
-        "/tmp/" + args.short_label + ".chrom.sizes"
-    softmaskedBigBed_file = args.outdir + "/" + args.short_label + "/" + \
-        args.short_label + "/" + args.short_label + "_softmasking.bb"
-    bed2bigBed(3, softmaskedBed3_sorted_file,
-               ChromSizes_file, softmaskedBigBed_file)
+
+    WigVarStep_file = tmp_dir + args.short_label + ".gc5Base.wigVarStep"
+    WigVarStep_file_compr = WigVarStep_file + ".gz"
+    print('Generating variable step wiggle file for GC content ' +
+          WigVarStep_file_compr + '...')
+    subprcs_args = [ucsc_tools['hgGcPercent'], '-wigOut', '-doGaps',
+                    '-file=stdout', '-win=5', '-verbose=0', args.short_label,
+                    TwoBit_file]
+    result = run_simple_process(subprcs_args)
+    write_byteobj(result.stdout, WigVarStep_file)
+    gzip_tool = shutil.which('gzip')
+    if gzip_tool is None:
+        print("Error: unable to locate bash tool 'gzip'")
+        quit(1)
+    if os.path.isfile(WigVarStep_file_compr):
+        os.unlink(WigVarStep_file_compr)
+    subprcs_args = [gzip_tool, WigVarStep_file]
+    run_simple_process(subprcs_args)
+    print('Done.')
+
+    BigWigGC_file = hub_dir + args.short_label + ".gc5Base.bw"
+    print('Generating bigWig file for GC content ' + BigWigGC_file + '...')
+    subprcs_args = [ucsc_tools['wigToBigWig'],
+                    WigVarStep_file_compr, ChromSizes_file, BigWigGC_file]
+    run_simple_process(subprcs_args)
+    print('Done.')
+
+    hub_txt_file = args.outdir + "/" + args.short_label + "/hub.txt"
     try:
-        with open(trackDb_file, "a") as trackDb_handle:
-            trackDb_handle.write("track RMsoft\nlongLabel Softmaked Repeats\n" +
-                                 "shortLabel Repeats\ngroup reps\ntype bigBed 3 .\n" +
-                                 "bigDataUrl " + args.short_label + "_softmasking.bb\n" +
-                                 "color " + rgb_cols[col_idx] + "\n\ngroup reps\ntype bigBed 3 .\n" +
-                                 "bigDataUrl " + args.short_label + "_softmasking.bb\n" +
-                                 "color " + rgb_cols[col_idx] + "\n\n")
-            col_idx = col_idx + 1
-            if col_idx > 25:
-                col_idx = 0
+        with open(hub_txt_file, "w+") as hub_txt_handle:
+            hub_txt_handle.write("hub " + args.short_label + "\n")
+            hub_txt_handle.write("shortLabel " + args.short_label + "\n")
+            hub_txt_handle.write("longLabel " + args.long_label + "\n")
+            hub_txt_handle.write("genomesFile genomes.txt\n")
+            hub_txt_handle.write("email " + args.email + "\n")
+            hub_txt_handle.write("descriptionUrl aboutHub.html\n")
+    except IOError:
+        print("Error: failed to open file " + hub_txt_file + " for writing!")
+        quit(1)
+
+    default_seq_id = ""
+    default_seq_end = 0
+    try:
+        with open(args.genome, "rU") as genome_handle:
+            nSeq = 0
+            for record in SeqIO.parse(genome_handle, "fasta"):
+                default_seq_id = record.id
+                if len(record.seq) > 15000:
+                    default_seq_end = 15000
+                else:
+                    default_seq_end = len(record.seq)
+                nSeq = nSeq + 1
+                if nSeq > 0:
+                    continue
+    except IOError:
+        print("Error: failed to open file " + args.genome + " for reading!")
+        quit(1)
+
+    genomes_txt_file = args.outdir + "/" + args.short_label + "/genomes.txt"
+    try:
+        with open(genomes_txt_file, "w+") as genomes_txt_handle:
+            genomes_txt_handle.write("genome " + args.short_label + "\n")
+            genomes_txt_handle.write(
+                "trackDb " + args.short_label + "/trackDb.txt\n")
+            genomes_txt_handle.write(
+                "groups " + args.short_label + "/groups.txt\n")
+            genomes_txt_handle.write(
+                "description Automatically generated Hub\n")
+            genomes_txt_handle.write(
+                "twoBitPath " + args.short_label + "/" + args.short_label +
+                ".2bit\n")
+            genomes_txt_handle.write("organism " + args.long_label + "\n")
+            genomes_txt_handle.write(
+                "defaultPos " + default_seq_id + ":1-" + str(default_seq_end) +
+                "\n")
+            genomes_txt_handle.write("orderKey 4800\n")
+            genomes_txt_handle.write(
+                "scientificName " + args.long_label + "\n")
+            genomes_txt_handle.write("htmlPath hmi/description.html\n")
+    except IOError:
+        print("Error: failed to open file " +
+              genomes_txt_file + " for writing!")
+        quit(1)
+
+    try:
+        with open(trackDb_file, "w+") as trackDb_handle:
+            trackDb_handle.write("track gcPercent\nlongLabel GC Percent in 5-base " +
+                                 "Window\nshortLabel GC Percent\n" +
+                                 "type bigWig 0 100\ngroup map\nvisibility dense" +
+                                 "\nwindowingFunction Mean\nbigDataUrl " +
+                                 args.short_label + ".gc5Base.bw\npriority 2\nautoScale Off\n" +
+                                 "maxHeightPixels 128:36:16\ngraphTypeDefault Bar\ngridDefault OFF\n" +
+                                 "ncolor 0,0,0\naltColor 128,128,128\nviewLimits 30:70\nhtml ../documentation/gcPercent\n\n")
     except IOError:
         print("Error: failed to open file " + trackDb_file + " for writing!")
+        quit(1)
+
+    groups_txt_file = hub_dir + "groups.txt"
+    try:
+        with open(groups_txt_file, "w+") as groups_handle:
+            groups_handle.write(
+                "name genePreds\nlabel Gene Predictions\npriority 2\ndefaultIsClosed 0\n\n")
+            groups_handle.write(
+                "name reps\nlabel Repeats\npriority 2\ndefaultIsClosed 0\n\n")
+            groups_handle.write(
+                "name hints\nlabel Hints\npriority 2\ndefaultIsClosed 0\n\n")
+    except IOError:
+        print("Error: failed to open file " +
+              groups_txt_file + " for writing!")
+        quit(1)
+
+    ''' Generate repeat masking track '''
+
+    if not args.no_repeats:
+        softmaskedBed3_file = tmp_dir + args.short_label + ".RMsoft.bed3"
+        print('Generating softmasking information bed3 file ' +
+              softmaskedBed3_file + " from genome data (this may take a while)...")
+        find_masked_intervals(args.genome, softmaskedBed3_file)
+        print('Done.')
+        softmaskedBed3_sorted_file = tmp_dir + args.short_label + ".RMsoft.s.bed3"
+        print('Sorting file ' + softmaskedBed3_file + '...')
+        sort_bed3(softmaskedBed3_file, softmaskedBed3_sorted_file)
+        print('Done.')
+        ChromSizes_file = tmp_dir + args.short_label + ".chrom.sizes"
+        softmaskedBigBed_file = hub_dir + args.short_label + "_softmasking.bb"
+        bed2bigBed(3, softmaskedBed3_sorted_file,
+                   ChromSizes_file, softmaskedBigBed_file)
+        try:
+            with open(trackDb_file, "a") as trackDb_handle:
+                trackDb_handle.write("track RMsoft\nlongLabel Softmaked Repeats\n" +
+                                     "shortLabel Repeats\ngroup reps\ntype bigBed 3 .\n" +
+                                     "bigDataUrl " + args.short_label + "_softmasking.bb\n" +
+                                     "color " + rgb_cols[col_idx] + "\n\ngroup reps\ntype bigBed 3 .\n" +
+                                     "bigDataUrl " + args.short_label + "_softmasking.bb\n" +
+                                     "color " + rgb_cols[col_idx] + "\n\n")
+                col_idx = col_idx + 1
+                if col_idx > 25:
+                    col_idx = 0
+        except IOError:
+            print("Error: failed to open file " +
+                  trackDb_file + " for writing!")
+            quit(1)
 
 
 ''' Creating RNA-Seq bam track(s) '''
 
-
-if args.bam:
+if args.bam and args.display_bam_as_bam:
     print('Generating BAM track(s)...')
     bam_index = 1
     for bam_file in args.bam:
-        bam_sorted_file = args.outdir + "/" + args.short_label + "/" + \
-            args.short_label + "/" + "rnaseq_" + str(bam_index) + \
+        bam_sorted_file = hub_dir + "rnaseq_" + str(bam_index) + \
             ".s.bam"
         subprcs_args = [samtools, "sort", bam_file, "-o", bam_sorted_file]
         run_simple_process(subprcs_args)
-        bam_index_file = args.outdir + "/" + args.short_label + \
-            "/" + args.short_label + "/" + \
-            "rnaseq_" + str(bam_index) + ".s.bam.bai"
+        bam_index_file = hub_dir + "rnaseq_" + str(bam_index) + ".s.bam.bai"
         subprcs_args = [samtools, "index",
                         bam_sorted_file, bam_index_file]
         run_simple_process(subprcs_args)
@@ -609,6 +676,54 @@ if args.bam:
         except IOError:
             print("Error: failed to open file " +
                   trackDb_file + " for writing!")
+            quit(1)
+        bam_index = bam_index + 1
+    print('Done.')
+
+
+''' Creating BedGraph RNA-Seq track(s) from bam '''
+
+if args.bam:
+    print('Generating BedGraph RNA-Seq track(s) from BAM...')
+    bam_index = 1
+    for bam_file in args.bam:
+        bam_sorted_file = tmp_dir + "rnaseq_" + str(bam_index) + ".s.bam"
+        subprcs_args = [samtools, "sort", bam_file, "-o", bam_sorted_file]
+        run_simple_process(subprcs_args)
+        bam_pileup_file = tmp_dir + "rnaseq_" + str(bam_index) + ".mpileup"
+        subprcs_args = [samtools, "mpileup", "-BQ0",
+                        bam_sorted_file, "-o", bam_pileup_file]
+        run_simple_process(subprcs_args)
+        wig_file = tmp_dir + "rnaseq_" + str(bam_index) + ".wig"
+        mpileup2wig(bam_pileup_file, wig_file)
+        gzip_tool = shutil.which('gzip')
+        if gzip_tool is None:
+            print("Error: unable to locate bash tool 'gzip'")
+            quit(1)
+        wig_compr_file = tmp_dir + "rnaseq_" + str(bam_index) + ".wig.gz"
+        if os.path.isfile(wig_compr_file):
+            os.unlink(wig_compr_file)
+        subprcs_args = [gzip_tool, wig_file]
+        run_simple_process(subprcs_args)
+        big_wig_file = hub_dir + "rnaseq_" + str(bam_index) + ".bw"
+        subprcs_args = [ucsc_tools['wigToBigWig'],
+                        wig_compr_file, ChromSizes_file, big_wig_file]
+        run_simple_process(subprcs_args)
+        try:
+            with open(trackDb_file, "a") as trackDb_handle:
+                trackDb_handle.write("track RNASeq_wig_" + str(bam_index) + "\n" +
+                                     "type bigWig 0 500\n" + 
+                                     "bigDataUrl rnaseq_" + str(bam_index) + ".bw\n" +
+                                     "shortLabel RNASeq_" + str(bam_index) + "\n" +
+                                     "longLabel RNASeq Wiggle " + str(bam_index) + " from bam file " +
+                                     bam_file + "\ncolor " + rgb_cols[col_idx] + "\nyLineOnOff on\nyLineMark 0\ngridDefault on\n\ngroup hints\ntype bigWig 0 500\nbigDataUrl rnaseq_" + str(bam_index) + ".bw\ncolor "+ rgb_cols[col_idx] + "\n\n")
+                col_idx = col_idx + 1
+                if col_idx > 25:
+                    col_idx = 0         
+        except IOError:
+            print("Error: failed to open file " +
+                  trackDb_file + " for writing!")
+            quit(1)
         bam_index = bam_index + 1
     print('Done.')
 
@@ -617,7 +732,7 @@ if args.bam:
 
 if args.annot:
     print('Generating reference annotation gene track...')
-    ucsc_file = args.outdir + "/" + args.short_label + "/tmp/annot_ucsc.gtf"
+    ucsc_file = tmp_dir + "annot_ucsc.gtf"
     make_gtf_sane(args.annot, ucsc_file)
     make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file, "annot",
                    "Reference Annotation", rgb_cols[col_idx])
@@ -643,7 +758,7 @@ if args.genemark:
 
 if args.aug_ab_initio:
     print('Generating AUGUSTUS ab initio prediction (no UTRs) track...')
-    ucsc_file = args.outdir + "/" + args.short_label + "/tmp/aug_ab_initio_ucsc.gtf"
+    ucsc_file = tmp_dir + "aug_ab_initio_ucsc.gtf"
     aug2ucsc_gtf(args.aug_ab_initio, ucsc_file)
     make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file, "aug_ab_initio_no_utr",
                    "AUGUSTUS ab initio predictions without UTRs", rgb_cols[col_idx])
@@ -657,7 +772,7 @@ if args.aug_ab_initio:
 
 if args.aug_hints:
     print('Generating AUGUSTUS prediction with hints (no UTRs) track...')
-    ucsc_file = args.outdir + "/" + args.short_label + "/tmp/aug_hints_ucsc.gtf"
+    ucsc_file = tmp_dir + "aug_hints_ucsc.gtf"
     aug2ucsc_gtf(args.aug_hints, ucsc_file)
     make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file, "aug_hints_no_utr",
                    "AUGUSTUS predictions with hints without UTRs", rgb_cols[col_idx])
@@ -671,7 +786,7 @@ if args.aug_hints:
 
 if args.aug_ab_initio_utr:
     print('Generating AUGUSTUS ab initio prediction with UTRs track...')
-    ucsc_file = args.outdir + "/" + args.short_label + "/tmp/aug_ab_initio_utr_ucsc.gtf"
+    ucsc_file = tmp_dir + "aug_ab_initio_utr_ucsc.gtf"
     aug2ucsc_gtf(args.aug_ab_initio_utr, ucsc_file)
     make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file, "aug_ab_initio_utr",
                    "AUGUSTUS ab initio predictions with UTRs", rgb_cols[col_idx])
@@ -685,7 +800,7 @@ if args.aug_ab_initio_utr:
 
 if args.aug_hints_utr:
     print('Generating AUGUSTUS prediction with hints and with UTRs track...')
-    ucsc_file = args.outdir + "/" + args.short_label + "/tmp/aug_hints_utr_ucsc.gtf"
+    ucsc_file = tmp_dir + "aug_hints_utr_ucsc.gtf"
     aug2ucsc_gtf(args.aug_hints_utr, ucsc_file)
     make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file, "aug_hints_utr",
                    "AUGUSTUS predictions with hints and UTRs", rgb_cols[col_idx])
@@ -726,10 +841,10 @@ if args.hints:
                 hint_categ[h_src][h_type].append(line)
     except IOError:
         print("Error: failed to open file " + args.hints + " for reading!")
+        quit(1)
     for h_src in hint_categ:
         for h_type in hint_categ[h_src]:
-            this_hints_file = args.outdir + "/" + args.short_label + "/tmp/" + \
-                h_src + "_" + h_type + ".hints"
+            this_hints_file = tmp_dir + h_src + "_" + h_type + ".hints"
             try:
                 with open(this_hints_file, "w") as hints_handle:
                     hint_no = 0
@@ -778,8 +893,8 @@ if args.hints:
             except IOError:
                 print("Error: failed top open file " +
                       this_hints_file + " for writing!")
-            bb_file = args.outdir + "/" + args.short_label + \
-                "/" + args.short_label + "/"  + h_src + "_" + h_type + ".hints.bb"
+                quit(1)
+            bb_file = hub_dir + h_src + "_" + h_type + ".hints.bb"
             if (h_type == 'CDS') or (h_type == 'CDSpart') or (h_type == 'exon'):
                 gp_file = this_hints_file + ".gp"
                 bed_file = this_hints_file + ".bed"
@@ -801,11 +916,15 @@ if args.hints:
 
 ''' Delete temporary directory '''
 
-print("Deleting temporary files...")
-#shutil.rmtree(args.outdir + "/" + args.short_label + "/tmp/")
-print("Done.")
+if not args.no_tmp_rm:
+    if args.verbosity > 0:
+        print("Deleting temporary files...")
+    shutil.rmtree(tmp_dir)
+    if args.verbosity > 0:
+        print("Done.")
 
 print('\nHub is ready, please copy to a web server, e.g.')
-print('\"scp -r ' + args.outdir + "/" + args.short_label + " user@server:/target/location\"")
+print('\"scp -r ' + args.outdir + "/" +
+      args.short_label + " user@server:/target/location\"")
 print('Feed the link to hub.txt to UCSC genome browser:')
 print('\tMy Data -> Track Hubs -> MyHubs')
