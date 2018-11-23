@@ -35,8 +35,7 @@ except ImportError:
 
 ucsc_tools = {'bedToBigBed': '', 'genePredCheck': '', 'faToTwoBit': '',
               'gtfToGenePred': '', 'hgGcPercent': '', 'ixIxx': '',
-              'twoBitInfo': '', 'wigToBigWig': '', 'genePredToBed': '', 'bigWigToBedGraph':
-              ''}
+              'twoBitInfo': '', 'wigToBigWig': '', 'genePredToBed': ''}
 
 parser = argparse.ArgumentParser(
     description='Generate UCSC assembly hub from BRAKER output.')
@@ -681,10 +680,10 @@ if args.bam and args.display_bam_as_bam:
     print('Done.')
 
 
-''' Creating BedGraph RNA-Seq track(s) from bam '''
+''' Creating bigWig RNA-Seq track(s) from bam '''
 
 if args.bam:
-    print('Generating BedGraph RNA-Seq track(s) from BAM...')
+    print('Generating bigWig RNA-Seq track(s) from BAM...')
     bam_index = 1
     for bam_file in args.bam:
         bam_sorted_file = tmp_dir + "rnaseq_" + str(bam_index) + ".s.bam"
