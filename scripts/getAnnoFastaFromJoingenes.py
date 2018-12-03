@@ -65,9 +65,11 @@ try:
     with open(args.gtf, "r") as gtf_handle:
         for line in gtf_handle:
             if re.match(
-                    r"\S+\t\S+\tCDS\t\d+\t\d+\t\S+\t\S+\t\d\t.*transcript_id \"(\S+)\";", line):
+                    r"\S+\t\S+\tCDS\t\d+\t\d+\t\S+\t\S+\t\d\t.*transcript_id (\S+)", line):
                 seq_id, st, en, stx, fr, tx_id = re.match(
-                    r"(\S+)\t\S+\tCDS\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\d)\t.*transcript_id \"(\S+)\";", line).groups()
+                    r"(\S+)\t\S+\tCDS\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\d)\t.*transcript_id (\S+)", line).groups()
+                tx_id = re.sub(r'\"(\S+)\"', r'\1', tx_id)
+                tx_id = re.sub(r';', r'', tx_id)
                 if seq_id not in cds:
                     cds[seq_id] = {}
                 if tx_id not in cds[seq_id]:
