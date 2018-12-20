@@ -1,4 +1,14 @@
 language: generic
+
+matrix:
+  include:
+  - os: linux
+    dist: xenial
+    sudo: required
+  - os: linux
+    dist: trusty
+    sudo: required
+
 sudo: required
 
 addons:
