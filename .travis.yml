@@ -1,9 +1,9 @@
 maxtrix:
   include:
-    - os: linux
-      dist: trusty
-    - os: linux
-      dist: xenial
+  - os: linux
+    dist: trusty
+  - os: linux
+    dist: xenial
 
 language: generic
 sudo: required
