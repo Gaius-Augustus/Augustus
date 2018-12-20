@@ -1,11 +1,14 @@
-maxtrix:
+language: generic
+
+matrix:
   include:
   - os: linux
-    dist: trusty
-  - os: linux
     dist: xenial
+    sudo: required
+  - os: linux
+    dist: trusty
+    sudo: required
 
-language: generic
 sudo: required
 
 addons:
