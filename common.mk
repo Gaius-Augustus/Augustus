@@ -7,7 +7,7 @@ AUGVERSION = 3.3.2
 #ZIPINPUT = true
 
 # uncomment this line to enable comparative gene finding (requires compiler which supports C++11 standard)
-# COMPGENEPRED = true
+COMPGENEPRED = true
 
 # uncomment this line when you need MySQL access to sequences (most users don't)
 # MYSQL = true

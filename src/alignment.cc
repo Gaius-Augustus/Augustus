@@ -99,7 +99,7 @@ void AlignmentRow::pack(){
 // simple left-to-right search starting from given fragment 'from'
 // efficient, when many 'chrPos' are searched in left-to-right order
 int AlignmentRow::getAliPos(int chrPos, vector<fragment>::const_iterator from){
-    if (from == frags.end() || from->chrPos > chrPos) // chrPos the the left of alignment
+    if (from == frags.end() || from->chrPos > chrPos) // chrPos to the left of alignment
 	return -2;
     while (from != frags.end() && from->chrPos + from->len - 1 < chrPos)
 	++from;
@@ -133,13 +133,112 @@ int AlignmentRow::getChrPos(int aliPos, vector<fragment>::const_iterator from){
         return -2;
     while (from != frags.end() && from->aliPos + from->len - 1 < aliPos)
         ++from;
-    if (from == frags.end())
-        return -1;
-    if (aliPos < from->aliPos) // aliPos falls in an aligment gap
-        return -1;
-    return from->chrPos + aliPos - from->aliPos;
+    if (from == frags.end()){
+		--from;
+		return from->aliPos + from->len - 1;
+	}
+	// aliPos falls in an aligment gap
+    if (aliPos < from->aliPos){
+		--from; 
+		return from->aliPos + from->len - 1;
+	}
+	    return from->chrPos + aliPos - from->aliPos;
 }
 
+void AlignmentRow::getAliColumns(int aliPos, int aliLen, vector<fragment>::const_iterator from){
+    if (from == frags.end() || from->aliPos > aliPos) return ;
+    while (from != frags.end() && from->aliPos + from->len - 1 < aliPos){
+        ++from;
+	}
+    if (from == frags.end())
+        return ;
+    // aliPos falls in an aligment gap
+    int n=aliLen;
+    if (aliPos < from->aliPos){
+       for(int i=aliPos;i<from->aliPos && n>0;i++){
+            cout<<'-';
+            n--;
+       }
+    }
+	// alignment starts from a letter
+	else{
+		for(int i=aliPos;i<from->aliPos + from->len && n>0;i++){
+            cout<<'*';
+            n--;
+        }
+
+        for(int i=from->aliPos + from->len;i<from->aliPos + from->len+((from+1)->aliPos - from->aliPos - from->len) && n>0;i++){
+            cout<<'-';
+            n--;
+        }
+        from++;
+	}
+    while(from->len<=n && n>0){
+        for(int i=from->aliPos;i<from->aliPos + from->len && n>0;i++){
+            cout<<'*';
+            n--;
+        }
+
+        for(int i=from->aliPos + from->len;i<from->aliPos + from->len+((from+1)->aliPos - from->aliPos - from->len) && n>0;i++){
+            cout<<'-';
+            n--;
+        }
+        from++;
+    }
+	// alignment ends in a letter
+    if(n>0){
+        for(int i=from->aliPos;i<aliPos+aliLen;i++){
+            cout<<'*';
+        }
+    }
+    cout<<endl;
+    return ;
+}
+int AlignmentRow::getnchr(int aliPos, int aliLen, vector<fragment>::const_iterator from){
+    if (from == frags.end() || from->aliPos > aliPos) return 0;
+    while (from != frags.end() && from->aliPos + from->len - 1 < aliPos){
+        ++from;
+	}
+    if (from == frags.end())
+        return 0;
+    // aliPos falls in an aligment gap
+    int n=aliLen, achr=0;
+    if (aliPos < from->aliPos){
+       for(int i=aliPos;i<from->aliPos && n>0;i++){
+            n--;
+       }
+    }
+	// alignment starts from a letter
+	else{
+		for(int i=aliPos;i<from->aliPos + from->len && n>0;i++){
+            n--;
+			achr++;
+        }
+
+        for(int i=from->aliPos + from->len;i<from->aliPos + from->len+((from+1)->aliPos - from->aliPos - from->len) && n>0;i++){
+            n--;
+        }
+        from++;
+	}
+    while(from->len<=n && n>0){
+        for(int i=from->aliPos;i<from->aliPos + from->len && n>0;i++){
+            n--;
+			achr++;
+        }
+
+        for(int i=from->aliPos + from->len;i<from->aliPos + from->len+((from+1)->aliPos - from->aliPos - from->len) && n>0;i++){
+            n--;
+        }
+        from++;
+    }
+	// alignment ends in a letter
+    if(n>0){
+        for(int i=from->aliPos;i<aliPos+aliLen;i++){
+			achr++;
+        }
+    }
+    return achr;
+}
 /**
  * append row r2 to r1, thereby shifting all alignment coordinates of r2 by aliLen1
  * if signature string (chr and strand) is not empty, treat everything else as missing

@@ -71,7 +71,8 @@ public:
      */
     int getAliPos(int chrPos, vector<fragment>::const_iterator from);
     int getAliPos(int chrPos, vector<fragment>::const_iterator *from); // variant from Patrick Balmerth
-
+    void getAliColumns(int aliPos, int aliLen, vector<fragment>::const_iterator from);
+    int getnchr(int aliPos, int aliLen, vector<fragment>::const_iterator from);
     int getAliPos(int chrPos) { return getAliPos(chrPos, frags.begin()); }
 
     // convert from alignment to chromosomal position (inverse function of getAliPos())

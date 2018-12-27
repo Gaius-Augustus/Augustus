@@ -201,17 +201,21 @@ void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCand
 }
 
 void GeneMSA::setExonCands(vector<map<int_fast64_t, ExonCandidate*> > &ecs){
-    for (int s = 0; s < ecs.size(); s++) {
+    for (int s = 0; s < alignment->rows.size(); s++) {
         if (!ecs[s].empty()){
             list<ExonCandidate*> *candidates = new list<ExonCandidate*>;
             for(map<int_fast64_t, ExonCandidate*>::iterator ecit=ecs[s].begin(); ecit!=ecs[s].end(); ecit++){
                 candidates->push_back(ecit->second);
+				// cout<<ecit->second->getKey()<<":"<<ecit->second->begin<<","<<ecit->second->end<<"=="<<stateExonTypeIdentifiers[ecit->second->type]<<endl;
+				
             }
             exoncands[s] = candidates;
-            ecs[s].clear(); // not needed anymore
+            // ecs[s].clear(); // not needed anymore
             cout << "Found " << exoncands[s]->size() << " ECs on species " << rsa->getSname(s) << endl; 
         }
     }
+	
+	
 }
 
 /**
@@ -244,16 +248,14 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
         list<pair<int,ExonCandidate*> >::iterator it = aec->second.begin();
 	while (it != aec->second.end()){
 	    if(!it->second){
-		if(evo->getNumStates() > 2){ // additional state "EC is absent", only if ExonEvo model is initialized with 3 states
-		    absent[it->first]=1;
-		}
-                it = aec->second.erase(it);
-            }
-            else{
-                it++;
-            }
+			if(evo->getNumStates() > 2){ // additional state "EC is absent", only if ExonEvo model is initialized with 3 states
+		    	absent[it->first]=1;
+			}
+            it = aec->second.erase(it);
         }
-	
+        else
+            it++;
+    }
 	// float avLen = 0.0; // not needed anymore
 	OrthoExon oe(aec->first, numSpecies());
 	bit_vector present(k,0);      // bit 1 for ECs that are present
@@ -275,6 +277,7 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 	    present[s]=1;
 	    leaves[s]=1;
 	    oe.orthoex[s] = ec;
+		ec->ortho = 1;
 	    // avLen += ec->len();
 	}
 	// avLen /= aec->second.size(); // compute average length of exon candidates in oe
@@ -370,7 +373,6 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
     }
     cout << "Found " << numOE << " ortho exons" << endl;
 }
-
 
 void GeneMSA::openOutputFiles(string outdir){
     
