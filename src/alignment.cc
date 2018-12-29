@@ -139,48 +139,49 @@ int AlignmentRow::getChrPos(int aliPos, vector<fragment>::const_iterator from){
 	}
 	// aliPos falls in an aligment gap
     if (aliPos < from->aliPos){
-		--from; 
+		--from;
 		return from->aliPos + from->len - 1;
 	}
-	    return from->chrPos + aliPos - from->aliPos;
+	return from->chrPos + aliPos - from->aliPos;
 }
 
-void AlignmentRow::getAliColumns(int aliPos, int aliLen, vector<fragment>::const_iterator from){
-    if (from == frags.end() || from->aliPos > aliPos) return ;
+vector<char> AlignmentRow::getAliColumns(int specie, int aliPos, int aliLen, vector<fragment>::const_iterator from, vector<string>& speciesNames){
+	vector<char> test;
+	if (from == frags.end() || from->aliPos > aliPos) return test;
     while (from != frags.end() && from->aliPos + from->len - 1 < aliPos){
         ++from;
 	}
     if (from == frags.end())
-        return ;
+        return test;
     // aliPos falls in an aligment gap
     int n=aliLen;
     if (aliPos < from->aliPos){
        for(int i=aliPos;i<from->aliPos && n>0;i++){
-            cout<<'-';
+            test.push_back('-');
             n--;
        }
     }
 	// alignment starts from a letter
 	else{
 		for(int i=aliPos;i<from->aliPos + from->len && n>0;i++){
-            cout<<'*';
+            test.push_back('*');
             n--;
         }
 
         for(int i=from->aliPos + from->len;i<from->aliPos + from->len+((from+1)->aliPos - from->aliPos - from->len) && n>0;i++){
-            cout<<'-';
+            test.push_back('-');
             n--;
         }
         from++;
 	}
     while(from->len<=n && n>0){
         for(int i=from->aliPos;i<from->aliPos + from->len && n>0;i++){
-            cout<<'*';
-            n--;
+            test.push_back('*');
+			n--;
         }
 
         for(int i=from->aliPos + from->len;i<from->aliPos + from->len+((from+1)->aliPos - from->aliPos - from->len) && n>0;i++){
-            cout<<'-';
+            test.push_back('-');
             n--;
         }
         from++;
@@ -188,11 +189,11 @@ void AlignmentRow::getAliColumns(int aliPos, int aliLen, vector<fragment>::const
 	// alignment ends in a letter
     if(n>0){
         for(int i=from->aliPos;i<aliPos+aliLen;i++){
-            cout<<'*';
-        }
+            test.push_back('*');
+		}
     }
     cout<<endl;
-    return ;
+    return test;
 }
 int AlignmentRow::getnchr(int aliPos, int aliLen, vector<fragment>::const_iterator from){
     if (from == frags.end() || from->aliPos > aliPos) return 0;

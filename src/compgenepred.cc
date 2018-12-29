@@ -72,15 +72,15 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
     }
     }
 }
-
-/** void ntprofile(GeneMSA& geneRange, RandSeqAccess& rsa, vector<string>& speciesNames) {
+// function for nucleotide profile 
+void ntprofile(GeneMSA& geneRange, RandSeqAccess& rsa, vector<string>& speciesNames) {
     vector<map<char,float>> ntpr;
-    ntpr.resize(geneRange.getAlignment()->rows[0]->aliEnd());
+    ntpr.resize(geneRange.getAlignment()->rows[0]->aliEnd()); 
     int n = speciesNames.size();
-    for(int i=0;i<geneRange.getAlignment()->rows[0]->aliEnd();i++){
-        int a=0,t=0,g=0,c=0,b=0;
-        for(int j=0;j<speciesNames.size();j++){
-            AnnoSequence* annoseq = rsa.getSeq(speciesNames[i], geneRange.getSeqID(i), i, i, geneRange.getStrand(i));
+    for(int i = 0;i < geneRange.getAlignment()->rows[0]->aliEnd();i++){   // alignment length will be fixed
+        int a = 0,t = 0,g = 0,c = 0,b = 0;
+        for(int j = 0;j < speciesNames.size();j++){
+            AnnoSequence* annoseq = rsa.getSeq(speciesNames[j], geneRange.getSeqID(j), i, i, geneRange.getStrand(j));
             if(annoseq) {
                 switch(annoseq->sequence[0]){
                     case 'A': a++;
@@ -100,25 +100,40 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
         ntpr[i].insert({'C',c/n});
         ntpr[i].insert({'-',b/n});
     }
+    return ;
+    // can be improved using a similiar method as used in frame profile
 }
-
-void fprofile(GeneMSA& geneRange, RandSeqAccess& rsa, vector<string>& speciesNames) {
-    vector<map<char,float>> fpr;
-    fpr.resize(geneRange.getAlignment()->rows[0]->aliEnd());
-    int n = speciesNames.size();
-    for(int i=0;i<geneRange.getAlignment()->rows[0]->aliEnd();i++){
-        int a=0,t=0,g=0,c=0,b=0;
-        for(int j=0;j<speciesNames.size();j++){
-            if(test[j][i]
+// function for frame profile of orthoexons
+void frprofile(list<OrthoExon>& hects, GeneMSA& geneRange, vector<string>& speciesNames){
+        for(list<OrthoExon>::iterator it = hects.begin();it != hects.end();++it){
+            int k = 0, etype = 0; // stores the exon type of exon in an orthoexon
+            for(int i = 0;i < it->orthoex.size();++i){
+                if(it->orthoex[i] != NULL) {
+                    etype = it->orthoex[i]->getExonType();
+                    break;
+                    }
+            }
+            for(int i = it->getAliStart();i < it->getAliStart() + it->getAliLen() + 1 - exonTypeReadingFrames[etype];++i){
+                vector<char> nts;
+                int o = 0, n = 0, t = 0;
+                for(int j = 0; j < it->orthoex.size();++j){
+                    vector<fragment>::const_iterator from = geneRange.getAlignment()->rows[j]->frags.begin();
+                    // getAliColumns gives the alignment in the form of vector
+                    nts = geneRange.getAlignment()->rows[j]->getAliColumns(j,geneRange.getAlignment()->rows[j]->getChrPos(i),it->getAliLen() + 1,from,speciesNames);
+                    if(nts[i-it->getAliStart()] == '*'){
+                        switch(k){
+                            case 0: o++;
+                            case 1: n++;
+                            case 2: t++;
+                        }
+                    }       
+                }
+                k++;
+                k = k%3;
+            }
         }
-        ntpr[i].insert({'A',a/n});
-        ntpr[i].insert({'T',t/n});
-        ntpr[i].insert({'G',g/n});
-        ntpr[i].insert({'C',c/n});
-        ntpr[i].insert({'-',b/n});
-    }
-} **/
-
+    return ;
+}
 void findMissed(list<OrthoExon>& hects, GeneMSA& geneRange, RandSeqAccess& rsa, vector<string>& speciesNames, vector<map<int_fast64_t,ExonCandidate*> >& exc) {
     int j=0,etype = 0; // stores the exon type of exon in an orthoexon
     for(list<OrthoExon>::iterator it = hects.begin();it != hects.end();++it) {
@@ -171,25 +186,22 @@ void findMissed(list<OrthoExon>& hects, GeneMSA& geneRange, RandSeqAccess& rsa, 
                 } 
             }  
         }
-
         // prints all the orthoexons 
-        for(int i=0;i<it->orthoex.size();++i) {     
+        for(int i=0;i<it->orthoex.size();++i) {    
             if(it->orthoex[i] == NULL) {
                 // print missed
                 cout << "missed sp:" << i << " alistart:" << it->getAliStart() << " alilen:" << it->getAliLen() << " chrpos:" << geneRange.getAlignment()->rows[i]->getChrPos(it->getAliStart()+it->getAliLen())<<endl;
-                vector<fragment>::const_iterator from = geneRange.getAlignment()->rows[i]->frags.begin();
-                geneRange.getAlignment()->rows[i]->getAliColumns(it->getAliStart(),it->getAliLen()+1,from);
+                // vector<fragment>::const_iterator from = geneRange.getAlignment()->rows[i]->frags.begin();
             }
             else {
                 // print hits
                 int aliToChrStart = it->orthoex[i]->begin;
                 cout << "hit sp:" << i << " alistart:" << it->getAliStart() << " alilen:" << it->getAliLen() << " chrpos:" << aliToChrStart << endl;        
-                vector<fragment>::const_iterator from = geneRange.getAlignment()->rows[i]->frags.begin();
-                geneRange.getAlignment()->rows[i]->getAliColumns(geneRange.getAlignment()->rows[i]->getAliPos(aliToChrStart),it->getAliLen()+1,from);            
+                // vector<fragment>::const_iterator from = geneRange.getAlignment()->rows[i]->frags.begin();
             }  
         } 
         cout << endl;
-    }
+    } 
 } 
 void CompGenePred::start(){
   
@@ -614,6 +626,7 @@ void CompGenePred::start(){
 	list<OrthoExon> hects;  // list of ortholog exons found in a gene Range
 	geneRange->createOrthoExons(hects, alignedECs, &evo);
     findMissed(hects, *geneRange, *rsa, speciesNames, exoncands);
+   // frprofile(hects,*geneRange,speciesNames);
     exoncands.clear(); // not needed anymore, exoncands are now stored as a vector of lists of ECs in geneRange
 	if(meanIntrLen<0.0)
 	    meanIntrLen = mil_factor * IntronModel::getMeanIntrLen(); // initialize mean intron length
