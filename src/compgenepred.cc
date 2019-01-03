@@ -105,31 +105,32 @@ void ntprofile(GeneMSA& geneRange, RandSeqAccess& rsa, vector<string>& speciesNa
 }
 // function for frame profile of orthoexons
 void frprofile(list<OrthoExon>& hects, GeneMSA& geneRange, vector<string>& speciesNames){
+        vector<vector<int>> res; //still to add the size of vector
+        res[0].resize(3);
         for(list<OrthoExon>::iterator it = hects.begin();it != hects.end();++it){
-            int k = 0, etype = 0; // stores the exon type of exon in an orthoexon
+            int etype = 0; // stores the exon type of exon in an orthoexon
             for(int i = 0;i < it->orthoex.size();++i){
                 if(it->orthoex[i] != NULL) {
                     etype = it->orthoex[i]->getExonType();
                     break;
                     }
             }
-            for(int i = it->getAliStart();i < it->getAliStart() + it->getAliLen() + 1 - exonTypeReadingFrames[etype];++i){
+            for(int i = 0;i < it->orthoex.size();++i){
                 vector<char> nts;
-                int o = 0, n = 0, t = 0;
-                for(int j = 0; j < it->orthoex.size();++j){
+                int k = 0, nchr;
+                for(int j = it->getAliStart();j < it->getAliStart() + it->getAliLen() + 1;++j){
                     vector<fragment>::const_iterator from = geneRange.getAlignment()->rows[j]->frags.begin();
                     // getAliColumns gives the alignment in the form of vector
-                    nts = geneRange.getAlignment()->rows[j]->getAliColumns(j,geneRange.getAlignment()->rows[j]->getChrPos(i),it->getAliLen() + 1,from,speciesNames);
-                    if(nts[i-it->getAliStart()] == '*'){
-                        switch(k){
-                            case 0: o++;
-                            case 1: n++;
-                            case 2: t++;
-                        }
+                    nts = geneRange.getAlignment()->rows[i]->getAliColumns(i,geneRange.getAlignment()->rows[i]->getChrPos(j),it->getAliLen() + 1,from,speciesNames);
+                    nchr = geneRange.getAlignment()->rows[i]->getnchr(it->getAliStart(),it->getAliLen()+1,from);
+                    if(nts[j-it->getAliStart()] == '*' && nchr > exonTypeReadingFrames[etype]){
+                        ++res[j][k];
+                        ++k;
+                        k = k%3;
+                        --nchr;
                     }       
                 }
-                k++;
-                k = k%3;
+
             }
         }
     return ;
@@ -152,9 +153,8 @@ void findMissed(list<OrthoExon>& hects, GeneMSA& geneRange, RandSeqAccess& rsa, 
 
                 // key for the alignment which is present but not detected as an exon
                 int_fast64_t start = geneRange.getAlignment()->rows[i]->getChrPos(it->getAliStart());
-                int_fast64_t len = geneRange.getAlignment()->rows[i]->getnchr(it->getAliStart(),it->getAliLen()+1,from)-1; // getnchr returns the number of nucleotides present in the alignment
-                int lenMod3 = (len + 1) % 3;
-                int_fast64_t end = start + len + 1;
+                int_fast64_t len = geneRange.getAlignment()->rows[i]->getnchr(it->getAliStart(),it->getAliLen()+1,from); // getnchr returns the number of nucleotides present in the alignment
+                int lenMod3 = (len) % 3;
                 int_fast64_t mkey = (start << 22 ) + ((len) << 7) + (etype << 2) + lenMod3;
                 
                 // exc[i] is the list of exon candidates for i'th specie sorted by their start position in chromosome space 
@@ -162,22 +162,24 @@ void findMissed(list<OrthoExon>& hects, GeneMSA& geneRange, RandSeqAccess& rsa, 
                 map<int_fast64_t,ExonCandidate*>::iterator utr = exc[i].begin();
                 itr = exc[i].lower_bound(mkey);
                 utr = exc[i].upper_bound(mkey);
+                if(itr != exc[i].begin()) --itr;
                 int t = 21; // bound for the iterator to search for an exon candidate
-                
+                int end = it->getAliStart() + it->getAliLen();
                 /** moving first upstream then downstream to search for an exon candidate with four constraints -
                  * 1. |start - alignmentstart| <= t
                  * 2. |end - alignmentend| <= t
                  * 3. orthoexon type = etype
                  * 4. exon candidate is not part of other orthoexon **/
-                while(itr != exc[i].begin() && (start - (itr->second->getKey() >> 22)) <= t && (end - ((itr->second->getKey() >> 22)+((itr->second->getKey() - ((itr->second->getKey() >> 22) << 22)) >> 7)))){
+                while((it->getAliStart() - geneRange.getAlignment()->rows[i]->getAliPos(itr->second->getStart())) <= t && (end - geneRange.getAlignment()->rows[i]->getAliPos(itr->second->getEnd())) <= t){
                     if(itr->second->getExonType() == etype && itr->second->ortho == 0){
                         it->orthoex[i] = itr->second;
                         //TODO: change label of the exon
                     }
+                    if(itr == exc[i].begin()) break;
                     itr--;
                 }
                 if(it->orthoex[i] == NULL){
-                    while(utr != exc[i].end() && (start - (utr->second->getKey() >> 22)) <= t && (end - ((utr->second->getKey() >> 22)+((utr->second->getKey() - ((utr->second->getKey() >> 22) << 22)) >> 7)))){
+                    while(utr != exc[i].end() && geneRange.getAlignment()->rows[i]->getAliPos(utr->second->getStart()) - it->getAliStart() <= t && (geneRange.getAlignment()->rows[i]->getAliPos(utr->second->getEnd()) - end <= t)){
                         if(utr->second->getExonType() == etype && utr->second->ortho == 0){
                             it->orthoex[i] = utr->second;
                         }
@@ -185,24 +187,38 @@ void findMissed(list<OrthoExon>& hects, GeneMSA& geneRange, RandSeqAccess& rsa, 
                     }
                 } 
             }  
-        }
+        } 
         // prints all the orthoexons 
+        
         for(int i=0;i<it->orthoex.size();++i) {    
+            int k = 0;
             if(it->orthoex[i] == NULL) {
                 // print missed
-                cout << "missed sp:" << i << " alistart:" << it->getAliStart() << " alilen:" << it->getAliLen() << " chrpos:" << geneRange.getAlignment()->rows[i]->getChrPos(it->getAliStart()+it->getAliLen())<<endl;
-                // vector<fragment>::const_iterator from = geneRange.getAlignment()->rows[i]->frags.begin();
+                cout << "missed sp:" << i << " alistart:" << it->getAliStart() << " alilen:" << it->getAliLen() << " chrpos:" << geneRange.getAlignment()->rows[i]->getChrPos(it->getAliStart())<<endl;
             }
             else {
                 // print hits
                 int aliToChrStart = it->orthoex[i]->begin;
                 cout << "hit sp:" << i << " alistart:" << it->getAliStart() << " alilen:" << it->getAliLen() << " chrpos:" << aliToChrStart << endl;        
-                // vector<fragment>::const_iterator from = geneRange.getAlignment()->rows[i]->frags.begin();
             }  
+            vector<fragment>::const_iterator from = geneRange.getAlignment()->rows[i]->frags.begin();
+            vector<char> nts;
+            nts = geneRange.getAlignment()->rows[i]->getAliColumns(i,it->getAliStart(),it->getAliLen() + 1,from,speciesNames);
+            for(int j = 0;j < nts.size(); ++j){
+                if(nts[j] == '*'){
+                    AnnoSequence* annoseq = rsa.getSeq(speciesNames[i], geneRange.getSeqID(i), k + geneRange.getAlignment()->rows[i]->getChrPos(it->getAliStart()), k + geneRange.getAlignment()->rows[i]->getChrPos(it->getAliStart()), geneRange.getStrand(i));
+                    if(annoseq) cout << annoseq->sequence[0];
+                    else cout << "error on annoseq" << endl;
+                    delete annoseq;
+                    k++;
+                }
+                else cout<<"-";
+            }
+            cout << endl;
         } 
         cout << endl;
     } 
-} 
+}
 void CompGenePred::start(){
   
   
@@ -625,7 +641,7 @@ void CompGenePred::start(){
 	// create HECTS
 	list<OrthoExon> hects;  // list of ortholog exons found in a gene Range
 	geneRange->createOrthoExons(hects, alignedECs, &evo);
-    findMissed(hects, *geneRange, *rsa, speciesNames, exoncands);
+    // findMissed(hects, *geneRange, *rsa, speciesNames, exoncands);
    // frprofile(hects,*geneRange,speciesNames);
     exoncands.clear(); // not needed anymore, exoncands are now stored as a vector of lists of ECs in geneRange
 	if(meanIntrLen<0.0)

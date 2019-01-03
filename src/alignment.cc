@@ -192,9 +192,9 @@ vector<char> AlignmentRow::getAliColumns(int specie, int aliPos, int aliLen, vec
             test.push_back('*');
 		}
     }
-    cout<<endl;
     return test;
 }
+
 int AlignmentRow::getnchr(int aliPos, int aliLen, vector<fragment>::const_iterator from){
     if (from == frags.end() || from->aliPos > aliPos) return 0;
     while (from != frags.end() && from->aliPos + from->len - 1 < aliPos){
