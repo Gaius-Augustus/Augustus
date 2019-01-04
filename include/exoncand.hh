@@ -87,7 +87,7 @@ public:
     StateType getStateType();
     string key();
     int_fast64_t getKey(); // keys encodes all of: chrStart chrEnd type lenMod3
-    bool ortho = 0; // exon candidate is an orthoexon
+    bool ortho = 0; // exon candidate is a part of an orthoexon, feature used for MSA correction
     bool correctType(const char* dna, int dnalen); // verify ExonType on sequence
     friend ostream& operator<<(ostream& strm, const ExonCandidate &ec);
 private:
