@@ -212,7 +212,7 @@ void findMissed(list<OrthoExon>& hects, GeneMSA& geneRange, RandSeqAccess& rsa, 
 			    cout << annoseq->sequence[0];
 			else
 			    cout << "error on annoseq" << endl;
-			delete annoseq;
+			delete annoseq;	
 			++k;
 		    }
 		    else cout << "-";
