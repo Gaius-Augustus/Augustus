@@ -210,7 +210,7 @@ void GeneMSA::setExonCands(vector<map<int_fast64_t, ExonCandidate*> > &ecs){
 				
             }
             exoncands[s] = candidates;
-            // ecs[s].clear(); // not needed anymore
+            // ecs[s].clear(); // needed to find missed exon candidates in the orthoexon
             cout << "Found " << exoncands[s]->size() << " ECs on species " << rsa->getSname(s) << endl; 
         }
     }
@@ -277,7 +277,7 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 	    present[s]=1;
 	    leaves[s]=1;
 	    oe.orthoex[s] = ec;
-		ec->ortho = 1;
+		ec->ortho = 1; // this exon candidate is now part of some orthoexon
 	    // avLen += ec->len();
 	}
 	// avLen /= aec->second.size(); // compute average length of exon candidates in oe

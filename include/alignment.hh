@@ -69,9 +69,9 @@ public:
      * return -1, if chrPos is outside the range of these fragments
      * return -2, if position is otherwise not mappable: no fragment contains the chrPos, i.e. chrPos is in a gap
      */
+    vector<char> getAliSeq( int aliPos, int aliLen, vector<fragment>::const_iterator from);
     int getAliPos(int chrPos, vector<fragment>::const_iterator from);
     int getAliPos(int chrPos, vector<fragment>::const_iterator *from); // variant from Patrick Balmerth
-    vector<char> getAliColumns(int specie, int aliPos, int aliLen, vector<fragment>::const_iterator from, vector<string>& speciesNames);
     int getnchr(int aliPos, int aliLen, vector<fragment>::const_iterator from);
     int getAliPos(int chrPos) { return getAliPos(chrPos, frags.begin()); }
 

@@ -133,112 +133,104 @@ int AlignmentRow::getChrPos(int aliPos, vector<fragment>::const_iterator from){
         return -2;
     while (from != frags.end() && from->aliPos + from->len - 1 < aliPos)
         ++from;
-    if (from == frags.end()){
-		--from;
-		return from->aliPos + from->len - 1;
-	}
+    if (from == frags.end())
+	return -1;
 	// aliPos falls in an aligment gap
-    if (aliPos < from->aliPos){
-		--from;
-		return from->aliPos + from->len - 1;
-	}
-	return from->chrPos + aliPos - from->aliPos;
+    if (aliPos < from->aliPos)
+	return -1;
+    return from->chrPos + aliPos - from->aliPos;
 }
 
-vector<char> AlignmentRow::getAliColumns(int specie, int aliPos, int aliLen, vector<fragment>::const_iterator from, vector<string>& speciesNames){
-	vector<char> test;
-	if (from == frags.end() || from->aliPos > aliPos) return test;
-    while (from != frags.end() && from->aliPos + from->len - 1 < aliPos){
-        ++from;
-	}
+vector<char> AlignmentRow::getAliSeq(int aliPos, int aliLen, vector<fragment>::const_iterator from){
+    vector<char> aliseq;
+    if (from == frags.end() || from->aliPos > aliPos) return aliseq;
+    while (from != frags.end() && from->aliPos + from->len - 1 < aliPos) ++from;
     if (from == frags.end())
-        return test;
+	return aliseq;
     // aliPos falls in an aligment gap
-    int n=aliLen;
+    int n = aliLen;
     if (aliPos < from->aliPos){
-       for(int i=aliPos;i<from->aliPos && n>0;i++){
-            test.push_back('-');
-            n--;
-       }
-    }
-	// alignment starts from a letter
-	else{
-		for(int i=aliPos;i<from->aliPos + from->len && n>0;i++){
-            test.push_back('*');
-            n--;
-        }
-
-        for(int i=from->aliPos + from->len;i<from->aliPos + from->len+((from+1)->aliPos - from->aliPos - from->len) && n>0;i++){
-            test.push_back('-');
-            n--;
-        }
-        from++;
+	for(int i = aliPos;i < from->aliPos && n > 0;++i){
+	    aliseq.push_back('-');
+	    --n;
 	}
-    while(from->len<=n && n>0){
-        for(int i=from->aliPos;i<from->aliPos + from->len && n>0;i++){
-            test.push_back('*');
-			n--;
-        }
-
-        for(int i=from->aliPos + from->len;i<from->aliPos + from->len+((from+1)->aliPos - from->aliPos - from->len) && n>0;i++){
-            test.push_back('-');
-            n--;
-        }
-        from++;
     }
-	// alignment ends in a letter
-    if(n>0){
-        for(int i=from->aliPos;i<aliPos+aliLen;i++){
-            test.push_back('*');
-		}
+    // alignment starts from a letter
+    else{
+	for(int i = aliPos;i < from->aliPos + from->len && n > 0;++i){
+            aliseq.push_back('*');
+            --n;
+	}
+        for(int i = from->aliPos + from->len;i < from->aliPos + from->len + ((from+1)->aliPos - from->aliPos - from->len)
+		&& n > 0;++i){
+            aliseq.push_back('-');
+            --n;
+	}
+        ++from;
     }
-    return test;
+    while(from->len <= n && n > 0){
+        for(int i = from->aliPos;i < from->aliPos + from->len && n > 0;++i){
+            aliseq.push_back('*');
+	    --n;
+	}
+        for(int i = from->aliPos + from->len;i < from->aliPos + from->len + ((from+1)->aliPos - from->aliPos - from->len)
+		&& n > 0;++i){
+            aliseq.push_back('-');
+            --n;
+	}
+        ++from;
+    }
+    // alignment ends in a letter
+    if(n > 0){
+        for(int i = from->aliPos;i < aliPos+aliLen;++i){
+            aliseq.push_back('*');
+	}
+    }
+    return aliseq;
 }
 
 int AlignmentRow::getnchr(int aliPos, int aliLen, vector<fragment>::const_iterator from){
     if (from == frags.end() || from->aliPos > aliPos) return 0;
-    while (from != frags.end() && from->aliPos + from->len - 1 < aliPos){
-        ++from;
-	}
+    while (from != frags.end() && from->aliPos + from->len - 1 < aliPos) ++from;
     if (from == frags.end())
         return 0;
     // aliPos falls in an aligment gap
-    int n=aliLen, achr=0;
+    int n = aliLen, nchr = 0;
     if (aliPos < from->aliPos){
-       for(int i=aliPos;i<from->aliPos && n>0;i++){
-            n--;
-       }
+	for(int i = aliPos;i < from->aliPos && n > 0;++i){
+            --n;
+	}
     }
 	// alignment starts from a letter
-	else{
-		for(int i=aliPos;i<from->aliPos + from->len && n>0;i++){
-            n--;
-			achr++;
-        }
-
-        for(int i=from->aliPos + from->len;i<from->aliPos + from->len+((from+1)->aliPos - from->aliPos - from->len) && n>0;i++){
-            n--;
-        }
-        from++;
+    else{
+	for(int i = aliPos;i < from->aliPos + from->len && n > 0;++i){
+            --n;
+	    ++nchr;
 	}
-    while(from->len<=n && n>0){
-        for(int i=from->aliPos;i<from->aliPos + from->len && n>0;i++){
-            n--;
-			achr++;
+        for(int i = from->aliPos + from->len;i < from->aliPos + from->len + ((from+1)->aliPos - from->aliPos - from->len)
+		&& n > 0;++i){
+            --n;
+	}
+        ++from;
+    }
+    while(from->len <= n && n > 0){
+        for(int i = from->aliPos;i < from->aliPos + from->len && n > 0;++i){
+            --n;
+	    ++nchr;
         }
-
-        for(int i=from->aliPos + from->len;i<from->aliPos + from->len+((from+1)->aliPos - from->aliPos - from->len) && n>0;i++){
-            n--;
+        for(int i = from->aliPos + from->len;i < from->aliPos + from->len + ((from+1)->aliPos - from->aliPos - from->len)
+		&& n > 0;++i){
+            --n;
         }
-        from++;
+        ++from;
     }
 	// alignment ends in a letter
-    if(n>0){
-        for(int i=from->aliPos;i<aliPos+aliLen;i++){
-			achr++;
-        }
+    if(n > 0){
+        for(int i = from->aliPos;i < aliPos+aliLen;++i){
+	    ++nchr;
+	}
     }
-    return achr;
+    return nchr;
 }
 /**
  * append row r2 to r1, thereby shifting all alignment coordinates of r2 by aliLen1
