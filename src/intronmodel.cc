@@ -17,6 +17,7 @@
 // standard C/C++ includes
 #include <fstream>
 #include <climits>
+#include <mutex>
 
 /*
  * Initialization of static data members
@@ -1098,6 +1099,8 @@ Double IntronModel::seqProb(int left, int right) const {
     return seqProb;
 }
 
+std::mutex aSSMutex;
+
 /*
  * base is the first position of the motif window (forward case)
  * intron ...mmmmmmmmmmmmmmmmmmmmm **AG|*** ... exon
@@ -1171,10 +1174,12 @@ Double IntronModel::aSSProb(int base, bool forwardStrand){
     }
 
     emiProb = motifProb * patternProb;
+    aSSMutex.lock();
     if (forwardStrand)
 	memoF[base] = emiProb;	
     else
 	memoR[base] = emiProb;
+    aSSMutex.unlock();
     return emiProb;
 }
 
@@ -1228,10 +1233,12 @@ Double IntronModel::dSSProb(int base, bool forwardStrand){
 		dssBinProbs.addCount(idx);
 	    dssprob = dssBinProbs.avprobs[idx];
 	}
+        aSSMutex.lock();
 	if (forwardStrand)
 	    memoF[base] = dssprob;
 	else
 	    memoR[base] = dssprob;
+        aSSMutex.unlock();
 	return dssprob; // standard HMM probabilities
     } catch (InvalidNucleotideError e) {
 	return 0; // don't predict splice site when there is an unknown nucleotide

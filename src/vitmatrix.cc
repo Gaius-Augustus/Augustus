@@ -16,6 +16,7 @@
 #include <iostream>
 #include <climits>
 #include <cstdlib>
+#include <mutex>
 
 /* --- ViterbiSubmapType methods ----------------------------------- */
 
@@ -275,6 +276,8 @@ void ViterbiColumnType::erase(int state) {
     }
 }
 
+std::mutex addStateMutex;
+
 void ViterbiColumnType::addState(int state, signed char sub_idx) {
     idx[state]=size();
     int cap = capacity();
@@ -284,9 +287,13 @@ void ViterbiColumnType::addState(int state, signed char sub_idx) {
 	    cap=maxsize;
 	else if (cap == 0)
 	    cap = VIT_MIN_CAPACITY;
+        addStateMutex.lock();
 	reserve(cap);
+        addStateMutex.unlock();
     }
+    addStateMutex.lock();
     push_back(ViterbiEntryType(state, 0, sub_idx));
+    addStateMutex.unlock();
 }
 
 

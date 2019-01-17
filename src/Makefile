@@ -20,7 +20,7 @@ ifdef ZIPINPUT
 	CXXFLAGS += -DZIPINPUT
 	LIBS    = -lboost_iostreams
 endif
-
+LIBS += -pthread
 ifdef COMPGENEPRED
 	CXXFLAGS += -std=c++11 -DCOMPGENEPRED
 endif
