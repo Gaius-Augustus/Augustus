@@ -50,6 +50,7 @@ while(<STDIN>){
 	if(m/^\#/){
 		$comments .= $_;
 	}else{
+		chomp;
 		my @t = split(/\t/);
 		my @t2 = split(/\./, $t[8]);
 		if(m/\ttranscript\t/){
@@ -75,8 +76,10 @@ while(<STDIN>){
 			}else{
 				$genes{$tx_id}{'stop'} = $t[4];
 			}
+			push(@{$genes{$tx_id}{'lines'}}, $t[0]."\t".$t[1]."\t".$t[2]."\t".$t[3]."\t".$t[4]."\t".$t[5]."\t".$t[6]."\t".$t[7]."\ttranscript_id \"".$t[8]."\"; gene_id \"".$tx_id."\"");
+		}else{
+			push(@{$genes{$tx_id}{'lines'}}, $_);
 		}
-		push(@{$genes{$tx_id}{'lines'}}, $_);
 	}
 }
 
@@ -84,6 +87,6 @@ foreach my $key (keys(%genes)) {
 	print $genes{$key}{'comments'};
     print $genes{$key}{'seq'}."\t".$genes{$key}{'src'}."\tgene\t".$genes{$key}{'start'}."\t".$genes{$key}{'stop'}."\t.\t".$genes{$key}{'strand'}."\t.\t".$key."\n";
     foreach(@{$genes{$key}{'lines'}}){
-    	print $_;
+    	print $_."\n";
     }
 }
