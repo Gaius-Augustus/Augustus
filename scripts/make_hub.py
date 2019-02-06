@@ -2,7 +2,7 @@
 
 # Author: Katharina J. Hoff
 # E-Mail: katharina.hoff@uni-greifswald.de
-# Last modified on November 22nd 2018
+# Last modified on February 5th 2019
 #
 # WARNINGS:
 #
@@ -24,73 +24,117 @@ import platform
 import urllib.request
 import subprocess
 from difflib import SequenceMatcher
+from inspect import currentframe, getframeinfo
 try:
     from Bio.Seq import Seq
     from Bio.Alphabet import generic_dna, generic_protein
     from Bio import SeqIO
     from Bio.SeqRecord import SeqRecord
 except ImportError:
-    raise ImportError(
-        'Failed to import biophython modules. Try installing with \"pip3 install biopython\"')
+    frameinfo = getframeinfo(currentframe())
+    raise ImportError('In file ' + frameinfo.filename + ' at line ' + str(frameinfo.lineno) + ': ' +
+                      'Failed to import biophython modules. Try installing with \"pip3 install biopython\"')
 
 ucsc_tools = {'bedToBigBed': '', 'genePredCheck': '', 'faToTwoBit': '',
               'gtfToGenePred': '', 'hgGcPercent': '', 'ixIxx': '',
               'twoBitInfo': '', 'wigToBigWig': '', 'genePredToBed': ''}
 
+augustus_tools = {'bam2wig': ''}
+
 parser = argparse.ArgumentParser(
-    description='Generate UCSC assembly hub from BRAKER output.')
-parser.add_argument('-e', '--email', required=True, type=str,
+    description='Generate UCSC assembly hub (e.g. from BRAKER or MAKER output).')
+parser.add_argument('--printUsageExamples', required=False, type=bool, default=False,
+                    help="Print usage examples for make_hub.py")
+parser.add_argument('-e', '--email', required=False, type=str,
                     help='Contact e-mail adress for assembly hub')
-parser.add_argument('-g', '--genome', required=True, type=str,
+parser.add_argument('-g', '--genome', required=False, type=str,
                     help='Genome fasta file (possibly softmasked)')
 parser.add_argument('--no_repeats', required=False, type=bool, default=False,
-                    help="disable repeat track generation from softmasked genome sequence, bool flag, i.e. set to True if desired")
-parser.add_argument('-L', '--long_label', required=True, type=str,
+                    help="Disable repeat track generation from softmasked " +
+                    "genome sequence, bool flag, i.e. set to True if desired")
+parser.add_argument('-L', '--long_label', required=False, type=str,
                     help='Long label for hub, e.g. species name in english ' +
                     'and latin, pass in single quotation marks, e.g. ' +
                     '--long_label \'Dorosphila melanogster (fruit fly)\'')
-parser.add_argument('-l', '--short_label', required=True, type=str,
-                    help='Short label for hub, will also be used as directory ' +
-                    'name for hub, should not contain spaces or special ' +
-                    'characters, e.g. --short_label fly')
+parser.add_argument('-l', '--short_label', required=False, type=str,
+                    help='Short label for hub, will also be used as ' +
+                    'directory name for hub, should not contain spaces or ' +
+                    'special characters, e.g. --short_label fly')
 parser.add_argument('-a', '--annot', required=False, type=str,
-                    help='GTF file with reference annotation')  
+                    help='GTF file with reference annotation')
 parser.add_argument('--hints', required=False, type=str,
-                    help='GFF file with AUGUSTUS hints')  
+                    help='GFF file with AUGUSTUS hints')
 parser.add_argument('-b', '--bam', required=False, type=str, nargs="+",
-                    help='BAM file(s) - space separated - with RNA-Seq information')
-parser.add_argument('--display_bam_as_bam', required=False, type=bool, nargs="+",
-                    help="Display BAM as bam track in addition to bedGraph track, bool flag, i.e. set to True if desired")
+                    help='BAM file(s) - space separated - with RNA-Seq ' +
+                    'information, by default will be displayed as bigWig')
+parser.add_argument('--display_bam_as_bam', required=False, type=bool,
+                    nargs="+", help="Display BAM as bam track in addition to " +
+                    "bedGraph track, bool flag, i.e. set to True if desired")
+parser.add_argument('-c', '--cores', required=False, type=int, default=1,
+                    help='Number of cores for samtools sort processes')
 parser.add_argument('--genemark', required=False, type=str,
-                    help='GTF file with GeneMark predictions')  
+                    help='GTF file with GeneMark predictions')
 parser.add_argument('--aug_ab_initio', required=False, type=str,
-                    help='GTF file with ab initio AUGUSTUS predictions')  
+                    help='GTF file with ab initio AUGUSTUS predictions')
 parser.add_argument('--aug_hints', required=False, type=str,
-                    help='GTF file with AUGUSTUS predictions with hints') 
+                    help='GTF file with AUGUSTUS predictions with hints')
 parser.add_argument('--aug_ab_initio_utr', required=False, type=str,
-                    help='GTF file with ab initio AUGUSTUS predictions with UTRs') 
+                    help='GTF file with ab initio AUGUSTUS predictions with ' +
+                    'UTRs')
 parser.add_argument('--aug_hints_utr', required=False, type=str,
-                    help='GTF file with AUGUSTUS predictions with hints with UTRs') 
+                    help='GTF file with AUGUSTUS predictions with hints with ' +
+                    'UTRs')
 parser.add_argument('-t', '--traingenes', required=False, type=str,
-                    help='GTF file with training genes') 
+                    help='GTF file with training genes')
+parser.add_argument('--gene_track', required=False, nargs='+',
+                    help="Gene track with user specified label, argument " +
+                    "must be formatted as  follows: --gene_track file.gtf tracklabel")
 parser.add_argument('--SAMTOOLS_PATH', required=False, type=str,
                     help="Path to samtools executable")
 parser.add_argument('-o', '--outdir', required=False, type=str, default='.',
                     help="output directory to write hub to")
-parser.add_argument('-v', '--verbosity', required = False, type=int, default=0,
-                    help="if INT>0 verbose output log is produced")
-# The following argument is for adding a track to an existing hub, i.e. producing the files required for the track and writing into existing configuration files; requires the directory tmp to be present
+parser.add_argument('-v', '--verbosity', required=False, type=int, default=0,
+                    help="If INT>0 verbose output log is produced")
+# The following argument is for adding a track to an existing hub, i.e.
+# producing the files required for the track and writing into existing
+# configuration files; requires the directory tmp to be present
 parser.add_argument('--add_track', required=False, type=bool, default=False,
-                    help="add track to existing hub, i.e. skip generating genome information and config files, bool flag, i.e. set to True if desired")
-parser.add_argument('-r', '--no_tmp_rm', required=False, type=bool, default=False,
-                    help="do not delete temporary files (e.g. because you want to add tracks, later), bool flag, i.e. set to True if desired")
+                    help="Add track to existing hub, bool flag, i.e. " +
+                    "set to TRUE if desired")
+parser.add_argument('-r', '--no_tmp_rm', required=False, type=bool,
+                    default=False, help="Do not delete temporary files " +
+                    ", bool flag, i.e. set to TRUE if desired")
 args = parser.parse_args()
+
+if (args.long_label is None) and (args.short_label is not None) and (args.add_track is False):
+    print("Warning: no long label specified for creating novel track hub, " +
+          "will use short label \"" + args.short_label + "\" as long label!")
+    args.long_label = args.short_label
+
+if ((args.email is None) or (args.genome is None) or (args.short_label is None)) and (args.add_track is False) and (args.printUsageExamples is False):
+    frameinfo = getframeinfo(currentframe())
+    print('Error in file ' + frameinfo.filename + ' at line ' + str(frameinfo.lineno) + ': '
+          + 'If a novel track is created, the following arguments are ' +
+          'required: -e/--email, -g/--genome, -l/--short_label')
+    exit(1)
+
+if args.printUsageExamples:
+    print("\nUsage example for generating a novel hub:\n")
+    print("make_hub.py -e me@anonymous.de -g genome.fa -L " +
+          "\"My species name hub\" -l species -a annot.gtf --hints " +
+          "intron.hints --bam this1.bam this2.bam -v 1 --genemark genemark.gtf\n")
+    print("Usage example for adding a gene prediction track to an existing " +
+          "hub (hub resides in the directory where this command is executed):\n")
+    print("make_hub.py -l species --add_track TRUE " +
+          "--gene_track file.gtf novel_track_label\n")
+    exit(1)
 
 tmp_dir = args.outdir + "/tmp/"
 hub_dir = args.outdir + "/" + args.short_label + \
     "/" + args.short_label + "/"
 
-''' Find samtools (if bam file provided) '''
+
+''' Find samtools & bam2wig (if bam file provided) '''
 samtools = ""
 if args.bam:
     if args.verbosity > 0:
@@ -98,7 +142,9 @@ if args.bam:
 if args.bam and args.SAMTOOLS_PATH:
     samtools = args.SAMTOOLS_PATH + "/samtools"
     if not(os.access(samtools, os.X_OK)):
-        print("Error: " + samtools + " is not executable!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + samtools + " is not executable!")
         exit(1)
     else:
         if args.verbosity > 0:
@@ -109,11 +155,60 @@ elif args.bam:
         if args.verbosity > 0:
             print("Will use " + samtools)
     else:
-        print("Error: unable to locate samtools binary!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': '
+              + "Unable to locate samtools binary!")
+        print("samtools is available as package in many Linux distributions.")
+        print("For example, pn Ubuntu, try installing with:")
+        print("\"sudo apt install samtools\"")
+        print("If samtools is unavailable as a package, you can obtain it " +
+              "from github at:")
+        print("https://github.com/samtools/samtools")
+        exit(1)
+if args.bam:
+    if args.verbosity > 0:
+        print("Searching for bam2wig:")
+    if shutil.which("bam2wig") is not None:
+        augustus_tools['bam2wig'] = shutil.which("bam2wig")
+    else:
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': '
+              + "Unable to locate AUGUSTUS auxprog bam2wig binary!")
         exit(1)
 
 
-''' Find or obitain UCSC tools '''
+''' Find gzip '''
+gzip_tool = ""
+if (not args.add_track) or args.bam:
+    gzip_tool = shutil.which('gzip')
+    if gzip_tool is None:
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' +
+              "Unable to locate gzip")
+        print("gzip is available as package in many Linux distributions.")
+        print("For example, pn Ubuntu, try installing with:")
+        print("\"sudo apt install gzip\"")
+        print("If gzip is unavailable as a package, you can obtain it " +
+              "from:")
+        print("https://ftp.gnu.org/gnu/gzip/")
+        quit(1)
+
+
+''' Find bash sort '''
+sort_tool = shutil.which('sort')
+if sort_tool is None:
+    frameinfo = getframeinfo(currentframe())
+    print('Error in file ' + frameinfo.filename + ' at line ' +
+          str(frameinfo.lineno) + ': ' + "Unable to locate bash tool 'sort'")
+    print('sort is part of most Linux distributions. On Ubuntu, it is ' +
+          'part of the package coreutils. Try re-installing your bash if sort' +
+          ' is missing on your system.')
+    quit(1)
+
+''' Find or obtain UCSC tools '''
 # the URLs of UCSC tool download are hardcoded for linux.x84_64
 arch = platform.machine()
 
@@ -129,10 +224,13 @@ for key, val in ucsc_tools.items():
     else:
         if not(arch == 'x86_64'):
             print(arch)
-            print("Error: This script was implemented for linux.x84_64 " +
-                  " architecture and will not be able to locate the exectuables " +
-                  "for your system. Please download " + key + ", manually. UCSC" +
-                  "tools are generally available at " +
+            frameinfo = getframeinfo(currentframe())
+            print('Error in file ' + frameinfo.filename + ' at line ' +
+                  str(frameinfo.lineno) + ': '
+                  + "This script was implemented for linux.x84_64 " +
+                  " architecture and will not be able to locate the " +
+                  "exectuables for your system. Please download " + key +
+                  ", manually. UCSC tools are generally available at " +
                   "http://hgdownload.soe.ucsc.edu/admin/exe")
             exit(1)
         else:
@@ -151,20 +249,27 @@ for key, val in ucsc_tools.items():
 ''' track color defintion '''
 
 col_idx = 0
-rgb_cols = ['0,0,0', '255,0,0', '0,255,0', '0,0,255', '176,196,222', '0,255,255', '255,0,255',
-            '192,192,192', '128,128,128', '128,0,0', '128,128,0', '0,128,0', '128,0,128',
-            '0,128,128', '0,0,128', '139,0,0', '220,20,60', '233,150,122', '255,140,0',
-            '218,165,32', '154,205,50', '34,139,34', '152,251,152', '72,209,203', '176,224,230',
-            '138,43,226']  # 0 - 25
+rgb_cols = ['0,0,0', '255,0,0', '0,255,0', '0,0,255', '176,196,222',
+            '0,255,255', '255,0,255', '192,192,192', '128,128,128', '128,0,0',
+            '128,128,0', '0,128,0', '128,0,128', '0,128,128', '0,0,128',
+            '139,0,0', '220,20,60', '233,150,122', '255,140,0', '218,165,32',
+            '154,205,50', '34,139,34', '152,251,152', '72,209,203',
+            '176,224,230', '138,43,226']  # 0 - 25
 
 ''' Create hub directory structure '''
 
 try:
     os.makedirs(hub_dir)
+except OSError as e:
+    if e.errno != errno.EEXIST:
+        raise
+
+try:
     os.makedirs(tmp_dir)
 except OSError as e:
     if e.errno != errno.EEXIST:
         raise
+
 
 ''' Function that runs a subprocess with arguments '''
 
@@ -181,11 +286,16 @@ def run_simple_process(args_lst):
         if(result.returncode == 0):
             return(result)
         else:
-            print("Error: return code of subprocess was " +
+            frameinfo = getframeinfo(currentframe())
+            print('Error in file ' + frameinfo.filename + ' at line ' +
+                  str(frameinfo.lineno) + ': ' + "Return code of subprocess was " +
                   str(result.returncode))
             quit(1)
     except subprocess.CalledProcessError as grepexc:
-        print("Failed executing: ", " ".join(grepexec.args))
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed executing: ",
+              " ".join(grepexec.args))
         print("Error code: ", grepexc.returncode, grepexc.output)
         quit(1)
 
@@ -196,7 +306,8 @@ def run_simple_process(args_lst):
 def run_process_stdinput(args_lst, byte_obj):
     try:
         if args.verbosity > 0:
-            print("Trying to execute the following command with input from STDIN:")
+            print("Trying to execute the following command with input from " +
+                  "STDIN:")
             print(" ".join(args_lst))
         result = subprocess.run(args_lst, input=byte_obj,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -205,11 +316,17 @@ def run_process_stdinput(args_lst, byte_obj):
         if(result.returncode == 0):
             return(result)
         else:
-            print("Error: return code of subprocess was "
+            frameinfo = getframeinfo(currentframe())
+            print('Error in file ' + frameinfo.filename + ' at line ' +
+                  str(frameinfo.lineno) + ': '
+                  + "run_process_stdinput: return code of subprocess was "
                   + str(result.returncode))
             quit(1)
     except subprocess.CalledProcessError as grepexc:
-        print("Failed executing: ", " ".join(grepexec.args))
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' +
+              "Failed executing: ", " ".join(grepexec.args))
         print("Error code: ", grepexc.returncode, grepexc.output)
         quit(1)
 
@@ -222,16 +339,21 @@ def make_gtf_sane(annot_file, ucsc_file):
         with open(annot_file, "r") as annot_handle:
             txs = {}
             for line in annot_handle:
-                seq, first_part, strand, second_part, txid = re.search(
-                    r'(\S+)(\t\S+\t\S+\t\d+\t\d+\t\S+\t)(\S+)(\t\S+\t).*transcript_id\s\"(\S+)\"', line).groups()
-                if txid not in txs:
-                    txs[txid] = {'strand': strand, 'lines': [], 'sane': True}
-                else:
-                    if not(strand == txs[txid]['strand']):
-                        txs[txid]['sane'] = False
-                txs[txid]['lines'].append(line)
+                if (len(line) > 1) and (not(re.match(r'^#', line))):
+                    seq, first_part, strand, second_part, txid = re.search(
+                        r'(\S+)(\t\S+\t\S+\t\d+\t\d+\t\S+\t)(\S+)(\t\S+\t).*transcript_id\s\"(\S+)\"', line).groups()
+                    if txid not in txs:
+                        txs[txid] = {'strand': strand,
+                                     'lines': [], 'sane': True}
+                    else:
+                        if not(strand == txs[txid]['strand']):
+                            txs[txid]['sane'] = False
+                    txs[txid]['lines'].append(line)
     except IOError:
-        print("Error: failed to open file " + annot_file + " for reading!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " +
+              annot_file + " for reading!")
         quit(1)
     try:
         with open(ucsc_file, "w") as ucsc_handle:
@@ -248,7 +370,10 @@ def make_gtf_sane(annot_file, ucsc_file):
                         ucsc_handle.write(seq + first_part + strand + second_part +
                                           "gene_id \"" + new_gid + "\"; transcript_id \"" + new_txid + "\";\n")
     except IOError:
-        print("Error: failed to open file " + ucsc_file + " for writing!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " +
+              ucsc_file + " for writing!")
         quit(1)
 
 
@@ -273,12 +398,19 @@ def aug2ucsc_gtf(augustus_file, ucsc_file):
                             elif re.search(r'3\'-UTR', feature):
                                 feature = "3UTR"
                             ucsc_handle.write(
-                                first_part + feature + second_part + gid + " " + txid + "\n")
+                                first_part + feature + second_part + gid + " " +
+                                txid + "\n")
             except IOError:
-                print("Error: failed to open file " + ucsc_file + " for writing!")
+                frameinfo = getframeinfo(currentframe())
+                print('Error in file ' + frameinfo.filename + ' at line ' +
+                      str(frameinfo.lineno) + ': ' + "Failed to open file " +
+                      ucsc_file + " for writing!")
                 quit(1)
     except IOError:
-        print("Error: failed to open file " + augustus_file + " for reading!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " + augustus_file +
+              " for reading!")
         quit(1)
 
 
@@ -290,7 +422,10 @@ def write_byteobj(byte_obj, outfile):
         with open(outfile, 'w') as byteobj_handle:
             byteobj_handle.write(byte_obj.decode('utf-8'))
     except IOError:
-        print("Error: failed to open file " + outfile + " for writing!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " + outfile +
+              " for writing!")
         quit(1)
 
 
@@ -319,7 +454,10 @@ def find_masked_intervals(genome_file, bed3_file):
                     masked_intervals.append(
                         {'id': record.id, 'start': mmStart, 'end': len(masked_seq)})
     except IOError:
-        print("Error: failed to open file " + genome_file + " for reading!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " + genome_file +
+              " for reading!")
         quit(1)
 
     try:
@@ -329,7 +467,10 @@ def find_masked_intervals(genome_file, bed3_file):
                     x['id'] + '\t' + str(x['start']) + '\t' + str(x['end']) +
                     '\n')
     except IOError:
-        print("Error: failed to open file " + bed3_file + " for writing!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " + bed3_file +
+              " for writing!")
         quit(1)
 
 
@@ -344,7 +485,10 @@ def sort_bed3(bed3_file, bed3_sorted_file):
                 '#!/bin/bash\nLC_COLLATE=C\nsort -k1,1 -k2,2n ' + bed3_file +
                 ' > ' + bed3_sorted_file)
     except IOError:
-        print("Error: failed to open file " + script_file + " for writing!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " + script_file +
+              " for writing!")
         quit(1)
     os.chmod(script_file, 0o777)
     subprcs_args = [script_file]
@@ -354,10 +498,10 @@ def sort_bed3(bed3_file, bed3_sorted_file):
 ''' Function that converts bed to bigBed '''
 
 
-def bed2bigBed(btype, bed_file, chrom_sizes_file, bigBedFile):
+def bed2bigBed(btype, bed_file, chrom_size_file, bigBedFile):
     print('Generating bigBed file for ' + bed_file + '...')
     subprcs_args = [ucsc_tools['bedToBigBed'], '-type=bed' +
-                    str(btype), bed_file, chrom_sizes_file, bigBedFile]
+                    str(btype), bed_file, chrom_size_file, bigBedFile]
     run_simple_process(subprcs_args)
     print('Done.')
 
@@ -365,7 +509,8 @@ def bed2bigBed(btype, bed_file, chrom_sizes_file, bigBedFile):
 ''' Function that converts gtf to bb format '''
 
 
-def gtf2bb(gtf_file, gp_file, bed_file, bb_file, info_out_file, chrom_size_file):
+def gtf2bb(gtf_file, gp_file, bed_file, bb_file, info_out_file, chrom_size_file,
+           sort_tool):
     subprcs_args = [ucsc_tools['gtfToGenePred'], '-infoOut=' +
                     info_out_file, '-genePredExt', gtf_file, gp_file]
     run_simple_process(subprcs_args)
@@ -382,10 +527,6 @@ def gtf2bb(gtf_file, gp_file, bed_file, bb_file, info_out_file, chrom_size_file)
               " annotations did not pass validation!")
     subprcs_args = [ucsc_tools['genePredToBed'], gp_file, 'stdout']
     result = run_simple_process(subprcs_args)
-    sort_tool = shutil.which('sort')
-    if sort_tool is None:
-        print("Error: unable to locate bash tool 'sort'")
-        quit(1)
     subprcs_args = [sort_tool, '-k1,1', '-k2,2n']
     result = run_process_stdinput(subprcs_args, result.stdout)
     write_byteobj(result.stdout, bed_file)
@@ -401,15 +542,19 @@ def info_to_trackDB(trackDb_file, short_label, long_label, rgb_color, group, bed
             trackDb_handle.write("track " + short_label + "\n" +
                                  "longLabel " + long_label + "\n" +
                                  "shortLabel " + short_label + "\n" +
-                                 "group " + group + "\ntype bigBed " + str(bed_no) + " .\n" +
+                                 "group " + group + "\ntype bigBed " +
+                                 str(bed_no) + " .\n" +
                                  "bigDataUrl " + short_label + ".bb\n" +
                                  "color " + rgb_color + "\n" +
                                  "visibility 4\n\n" +
-                                 "group " + group + "\ntype bigBed " + str(bed_no) + " .\n" +
+                                 "group " + group + "\ntype bigBed " +
+                                 str(bed_no) + " .\n" +
                                  "bigDataUrl " + short_label + ".bb\n" +
                                  "color " + rgb_color + "\n\n")
     except IOError:
-        print("Error: failed to open file " +
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " +
               trackDb_file + " for writing!")
         quit(1)
 
@@ -419,11 +564,11 @@ def info_to_trackDB(trackDb_file, short_label, long_label, rgb_color, group, bed
 
 def make_gtf_track(trackDb_file, gtf_file, chrom_size_file, short_label, long_label, rgb_color):
     gp_file = tmp_dir + short_label + ".gp"
-    info_out_file = tmp_dir+ short_label + ".infoOut.txt"
+    info_out_file = tmp_dir + short_label + ".infoOut.txt"
     bed_file = tmp_dir + short_label + ".bed"
     bb_file = hub_dir + short_label + ".bb"
     gtf2bb(gtf_file, gp_file, bed_file, bb_file,
-           info_out_file, chrom_size_file)
+           info_out_file, chrom_size_file, sort_tool)
     info_to_trackDB(trackDb_file, short_label, long_label,
                     rgb_color, "genePreds", 12)
     # parse info_out_file to produce txt file for creating nameIndex files
@@ -439,11 +584,15 @@ def make_gtf_track(trackDb_file, gtf_file, chrom_size_file, short_label, long_la
                             name_index_handle.write(
                                 tx_id + "\t" + g_id + "," + src + ",,,\n")
             except IOError:
-                print("Error: failed to open file " +
+                frameinfo = getframeinfo(currentframe())
+                print('Error in file ' + frameinfo.filename + ' at line ' +
+                      str(frameinfo.lineno) + ': ' + "Failed to open file " +
                       info_out_file + " for reading!")
                 quit(1)
     except IOError:
-        print("Error: failed to open file " +
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " +
               name_index_txt_file + " for writing!")
         quit(1)
     ix_file = hub_dir + short_label + ".nameIndex.ix"
@@ -453,36 +602,86 @@ def make_gtf_track(trackDb_file, gtf_file, chrom_size_file, short_label, long_la
     run_simple_process(subprcs_args)
 
 
-''' Function that converts mpileup to wig '''
+''' Function that converts bam file to wig file '''
 
 
-def mpileup2wig(pileup_file, wig_file):
+def bam2wig(bam_file, wig_file, size_file):
+    tmp_wig_file = wig_file + ".tmp"
     try:
-        with open(pileup_file, "r") as pileup_handle:
-            try:
-                with open(wig_file, "w") as wig_handle:
-                    lastC = ""
-                    lastStart = 0
-                    for line in pileup_handle:
-                        line_list = re.split(r'\s+', line)
-                        if (line_list[0] != lastC) or (line_list[1] != str(int(lastStart) + 1)):
-                            wig_handle.write(
-                                "fixedStep chrom=" + line_list[0] + " start=" + line_list[1] + " step=1 span=1\n")
-                        wig_handle.write(line_list[3] + "\n")
-                        lastC = line_list[0]
-                        lastStart = line_list[1]
-            except IOError:
-                print("Error: failed to open file " +
-                      wig_file + " for writing!")
+        with open(tmp_wig_file, "w") as wig_handle:
+            subprcs_args = [augustus_tools['bam2wig'],
+                            "-t", bam_file, bam_file]
+            if args.verbosity > 0:
+                print("Trying to execute the following command:")
+                print(" ".join(subprcs_args))
+            result = subprocess.run(
+                subprcs_args, stdout=wig_handle, stderr=subprocess.PIPE)
+            if args.verbosity > 0:
+                print("Suceeded in executing command.")
+            if(result.returncode != 0):
+                frameinfo = getframeinfo(currentframe())
+                print('Error in file ' + frameinfo.filename + ' at line ' +
+                      str(frameinfo.lineno) + ': ' +
+                      "Return code of subprocess was " + str(result.returncode))
                 quit(1)
     except IOError:
-        print("Error: failed to open file " + pileup_file + " for reading!")
-        quit(1)
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Could not open file " +
+              tmp_wig_file + " for writing!")
+    # observed that in rare cases a wig file might contain coverage for one
+    # more base than present in the sequence; seems to be an alignment
+    # error, not a bam2wig error, because the same problem arises if I
+    # convert bam to wig in python in a different way
+    # therefore check wiggle file for sanity and modify if required
+    # (i.e. cleave coverage at sequence end)
+    if args.verbosity > 0:
+        print("Sanity checking wig file...")
+    chrom_sizes = {}
+    print("Reading chrom sizes")
+    try:
+        with open(size_file, "r") as size_handle:
+            for line in size_handle:
+                split_list = re.split(r'\t', line.rstrip('\n'))
+                chrom_sizes[split_list[0]] = int(split_list[1])
+    except IOError:
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Could not open file " +
+              size_file + " for reading!")
+    try:
+        with open(tmp_wig_file, "r") as tmp_handle:
+            try:
+                with open(wig_file, "w") as wig_handle:
+                    seqname = ""
+                    for line in tmp_handle:
+                        match = re.search(r'chrom=(\S+)', line)
+                        if match:
+                            seqname = match.group(1)
+                        match = re.search(r'(\d+) \d+', line)
+                        if match:
+                            if int(match.group(1)) <= chrom_sizes[seqname]:
+                                wig_handle.write(line)
+                        else:
+                            wig_handle.write(line)
+            except IOError:
+                frameinfo = getframeinfo(currentframe())
+                print('Error in file ' + frameinfo.filename + ' at line ' +
+                      str(frameinfo.lineno) + ': ' + "Could not open file " +
+                      wig_file + " for writing!")
+    except IOError:
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Could not open file " +
+              tmp_wig_file + " for reading!")
+    os.remove(tmp_wig_file)
 
 
 ''' Globally required files that must be defined even if args.add_track is True '''
 
-ChromSizes_file = tmp_dir + args.short_label + ".chrom.sizes"
+# ChromSizes_file is not required for displaying a hub but for adding new tracks
+ChromSizes_file = hub_dir + args.short_label + ".chrom.sizes"
+print(ChromSizes_file)
 trackDb_file = hub_dir + "trackDb.txt"
 
 ''' Generate essential files for genome display '''
@@ -498,10 +697,6 @@ if not args.add_track:
     print('Generating chromsome size info file ' + ChromSizes_file + '...')
     subprcs_args = [ucsc_tools['twoBitInfo'], TwoBit_file, 'stdout']
     result = run_simple_process(subprcs_args)
-    sort_tool = shutil.which('sort')
-    if sort_tool is None:
-        print("Error: unable to locate bash tool 'sort'")
-        quit(1)
     subprcs_args = [sort_tool, '-k2rn']
     result = run_process_stdinput(subprcs_args, result.stdout)
     write_byteobj(result.stdout, ChromSizes_file)
@@ -516,10 +711,6 @@ if not args.add_track:
                     TwoBit_file]
     result = run_simple_process(subprcs_args)
     write_byteobj(result.stdout, WigVarStep_file)
-    gzip_tool = shutil.which('gzip')
-    if gzip_tool is None:
-        print("Error: unable to locate bash tool 'gzip'")
-        quit(1)
     if os.path.isfile(WigVarStep_file_compr):
         os.unlink(WigVarStep_file_compr)
     subprcs_args = [gzip_tool, WigVarStep_file]
@@ -543,7 +734,10 @@ if not args.add_track:
             hub_txt_handle.write("email " + args.email + "\n")
             hub_txt_handle.write("descriptionUrl aboutHub.html\n")
     except IOError:
-        print("Error: failed to open file " + hub_txt_file + " for writing!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " + hub_txt_file +
+              " for writing!")
         quit(1)
 
     default_seq_id = ""
@@ -561,7 +755,10 @@ if not args.add_track:
                 if nSeq > 0:
                     continue
     except IOError:
-        print("Error: failed to open file " + args.genome + " for reading!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " + args.genome +
+              " for reading!")
         quit(1)
 
     genomes_txt_file = args.outdir + "/" + args.short_label + "/genomes.txt"
@@ -586,7 +783,9 @@ if not args.add_track:
                 "scientificName " + args.long_label + "\n")
             genomes_txt_handle.write("htmlPath hmi/description.html\n")
     except IOError:
-        print("Error: failed to open file " +
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " +
               genomes_txt_file + " for writing!")
         quit(1)
 
@@ -600,7 +799,10 @@ if not args.add_track:
                                  "maxHeightPixels 128:36:16\ngraphTypeDefault Bar\ngridDefault OFF\n" +
                                  "ncolor 0,0,0\naltColor 128,128,128\nviewLimits 30:70\nhtml ../documentation/gcPercent\n\n")
     except IOError:
-        print("Error: failed to open file " + trackDb_file + " for writing!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " + trackDb_file +
+              " for writing!")
         quit(1)
 
     groups_txt_file = hub_dir + "groups.txt"
@@ -613,7 +815,9 @@ if not args.add_track:
             groups_handle.write(
                 "name hints\nlabel Hints\npriority 2\ndefaultIsClosed 0\n\n")
     except IOError:
-        print("Error: failed to open file " +
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " +
               groups_txt_file + " for writing!")
         quit(1)
 
@@ -629,7 +833,6 @@ if not args.add_track:
         print('Sorting file ' + softmaskedBed3_file + '...')
         sort_bed3(softmaskedBed3_file, softmaskedBed3_sorted_file)
         print('Done.')
-        ChromSizes_file = tmp_dir + args.short_label + ".chrom.sizes"
         softmaskedBigBed_file = hub_dir + args.short_label + "_softmasking.bb"
         bed2bigBed(3, softmaskedBed3_sorted_file,
                    ChromSizes_file, softmaskedBigBed_file)
@@ -637,17 +840,22 @@ if not args.add_track:
             with open(trackDb_file, "a") as trackDb_handle:
                 trackDb_handle.write("track RMsoft\nlongLabel Softmaked Repeats\n" +
                                      "shortLabel Repeats\ngroup reps\ntype bigBed 3 .\n" +
-                                     "bigDataUrl " + args.short_label + "_softmasking.bb\n" +
-                                     "color " + rgb_cols[col_idx] + "\n\ngroup reps\ntype bigBed 3 .\n" +
-                                     "bigDataUrl " + args.short_label + "_softmasking.bb\n" +
+                                     "bigDataUrl " + args.short_label +
+                                     "_softmasking.bb\n" +
+                                     "color " + rgb_cols[col_idx] +
+                                     "\n\ngroup reps\ntype bigBed 3 .\n" +
+                                     "bigDataUrl " + args.short_label +
+                                     "_softmasking.bb\n" +
                                      "color " + rgb_cols[col_idx] + "\n\n")
                 col_idx = col_idx + 1
                 if col_idx > 25:
                     col_idx = 0
         except IOError:
-            print("Error: failed to open file " +
-                  trackDb_file + " for writing!")
-            quit(1)
+            frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " +
+              trackDb_file + " for writing!")
+        quit(1)
 
 
 ''' Creating RNA-Seq bam track(s) '''
@@ -658,22 +866,30 @@ if args.bam and args.display_bam_as_bam:
     for bam_file in args.bam:
         bam_sorted_file = hub_dir + "rnaseq_" + str(bam_index) + \
             ".s.bam"
-        subprcs_args = [samtools, "sort", bam_file, "-o", bam_sorted_file]
+        subprcs_args = [samtools, "sort", "-@",
+                        str(args.cores), bam_file, "-o", bam_sorted_file]
         run_simple_process(subprcs_args)
         bam_index_file = hub_dir + "rnaseq_" + str(bam_index) + ".s.bam.bai"
-        subprcs_args = [samtools, "index",
+        subprcs_args = [samtools, "index", "-@", str(args.cores),
                         bam_sorted_file, bam_index_file]
         run_simple_process(subprcs_args)
         try:
             with open(trackDb_file, "a") as trackDb_handle:
                 trackDb_handle.write("track RNASeq_" + str(bam_index) + "\n" +
-                                     "bigDataUrl rnaseq_" + str(bam_index) + ".s.bam\n" +
-                                     "shortLabel RNASeq_" + str(bam_index) + "\n" +
-                                     "longLabel RNASeq bam file " + str(bam_index) + " from file " +
-                                     bam_file + "\ngroup hints\nvisibility 4\ntype bam\n\n" +
-                                     "group hints\nbigDataUrl rnaseq_" + str(bam_index) + ".s.bam\n")
+                                     "bigDataUrl rnaseq_" + str(bam_index) +
+                                     ".s.bam\n" +
+                                     "shortLabel RNASeq_" + str(bam_index) +
+                                     "\n" +
+                                     "longLabel RNASeq bam file "
+                                     + str(bam_index) + " from file " +
+                                     bam_file +
+                                     "\ngroup hints\nvisibility 4\ntype bam\n\n" +
+                                     "group hints\nbigDataUrl rnaseq_" +
+                                     str(bam_index) + ".s.bam\n")
         except IOError:
-            print("Error: failed to open file " +
+            frameinfo = getframeinfo(currentframe())
+            print('Error in file ' + frameinfo.filename + ' at line ' +
+                  str(frameinfo.lineno) + ': ' + "Failed to open file " +
                   trackDb_file + " for writing!")
             quit(1)
         bam_index = bam_index + 1
@@ -687,18 +903,12 @@ if args.bam:
     bam_index = 1
     for bam_file in args.bam:
         bam_sorted_file = tmp_dir + "rnaseq_" + str(bam_index) + ".s.bam"
-        subprcs_args = [samtools, "sort", bam_file, "-o", bam_sorted_file]
-        run_simple_process(subprcs_args)
-        bam_pileup_file = tmp_dir + "rnaseq_" + str(bam_index) + ".mpileup"
-        subprcs_args = [samtools, "mpileup", "-BQ0",
-                        bam_sorted_file, "-o", bam_pileup_file]
+        subprcs_args = [samtools, "sort", "-@",
+                        str(args.cores), bam_file, "-o", bam_sorted_file]
+        print(subprcs_args)
         run_simple_process(subprcs_args)
         wig_file = tmp_dir + "rnaseq_" + str(bam_index) + ".wig"
-        mpileup2wig(bam_pileup_file, wig_file)
-        gzip_tool = shutil.which('gzip')
-        if gzip_tool is None:
-            print("Error: unable to locate bash tool 'gzip'")
-            quit(1)
+        bam2wig(bam_sorted_file, wig_file, ChromSizes_file)
         wig_compr_file = tmp_dir + "rnaseq_" + str(bam_index) + ".wig.gz"
         if os.path.isfile(wig_compr_file):
             os.unlink(wig_compr_file)
@@ -710,17 +920,19 @@ if args.bam:
         run_simple_process(subprcs_args)
         try:
             with open(trackDb_file, "a") as trackDb_handle:
-                trackDb_handle.write("track RNASeq_wig_" + str(bam_index) + "\n" +
-                                     "type bigWig 0 500\n" + 
+                trackDb_handle.write("track RNASeq_wig_" + str(bam_index)
+                                     + "\n" + "type bigWig\n" +
                                      "bigDataUrl rnaseq_" + str(bam_index) + ".bw\n" +
                                      "shortLabel RNASeq_" + str(bam_index) + "\n" +
                                      "longLabel RNASeq Wiggle " + str(bam_index) + " from bam file " +
-                                     bam_file + "\ncolor " + rgb_cols[col_idx] + "\nyLineOnOff on\nyLineMark 0\ngridDefault on\n\ngroup hints\ntype bigWig 0 500\nbigDataUrl rnaseq_" + str(bam_index) + ".bw\ncolor "+ rgb_cols[col_idx] + "\n\n")
+                                     bam_file + "\ncolor " + rgb_cols[col_idx] + "\nyLineOnOff on\nyLineMark 0\ngridDefault on\n\ngroup hints\ntype bigWig\nbigDataUrl rnaseq_" + str(bam_index) + ".bw\ncolor " + rgb_cols[col_idx] + "\n\n")
                 col_idx = col_idx + 1
                 if col_idx > 25:
-                    col_idx = 0         
+                    col_idx = 0
         except IOError:
-            print("Error: failed to open file " +
+            frameinfo = getframeinfo(currentframe())
+            print('Error in file ' + frameinfo.filename + ' at line ' +
+                  str(frameinfo.lineno) + ': ' + "Failed to open file " +
                   trackDb_file + " for writing!")
             quit(1)
         bam_index = bam_index + 1
@@ -759,8 +971,10 @@ if args.aug_ab_initio:
     print('Generating AUGUSTUS ab initio prediction (no UTRs) track...')
     ucsc_file = tmp_dir + "aug_ab_initio_ucsc.gtf"
     aug2ucsc_gtf(args.aug_ab_initio, ucsc_file)
-    make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file, "aug_ab_initio_no_utr",
-                   "AUGUSTUS ab initio predictions without UTRs", rgb_cols[col_idx])
+    make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file,
+                   "aug_ab_initio_no_utr",
+                   "AUGUSTUS ab initio predictions without UTRs",
+                   rgb_cols[col_idx])
     col_idx = col_idx + 1
     if col_idx > 25:
         col_idx = 0
@@ -773,8 +987,10 @@ if args.aug_hints:
     print('Generating AUGUSTUS prediction with hints (no UTRs) track...')
     ucsc_file = tmp_dir + "aug_hints_ucsc.gtf"
     aug2ucsc_gtf(args.aug_hints, ucsc_file)
-    make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file, "aug_hints_no_utr",
-                   "AUGUSTUS predictions with hints without UTRs", rgb_cols[col_idx])
+    make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file,
+                   "aug_hints_no_utr",
+                   "AUGUSTUS predictions with hints without UTRs",
+                   rgb_cols[col_idx])
     col_idx = col_idx + 1
     if col_idx > 25:
         col_idx = 0
@@ -787,8 +1003,10 @@ if args.aug_ab_initio_utr:
     print('Generating AUGUSTUS ab initio prediction with UTRs track...')
     ucsc_file = tmp_dir + "aug_ab_initio_utr_ucsc.gtf"
     aug2ucsc_gtf(args.aug_ab_initio_utr, ucsc_file)
-    make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file, "aug_ab_initio_utr",
-                   "AUGUSTUS ab initio predictions with UTRs", rgb_cols[col_idx])
+    make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file,
+                   "aug_ab_initio_utr",
+                   "AUGUSTUS ab initio predictions with UTRs",
+                   rgb_cols[col_idx])
     col_idx = col_idx + 1
     if col_idx > 25:
         col_idx = 0
@@ -802,10 +1020,42 @@ if args.aug_hints_utr:
     ucsc_file = tmp_dir + "aug_hints_utr_ucsc.gtf"
     aug2ucsc_gtf(args.aug_hints_utr, ucsc_file)
     make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file, "aug_hints_utr",
-                   "AUGUSTUS predictions with hints and UTRs", rgb_cols[col_idx])
+                   "AUGUSTUS predictions with hints and UTRs",
+                   rgb_cols[col_idx])
     col_idx = col_idx + 1
     if col_idx > 25:
         col_idx = 0
+    print('Done.')
+
+''' Creating general gene track with custom label '''
+
+if args.gene_track:
+    print('Generating gene track from file ' +
+          args.gene_track[0] + ' with label ' + args.gene_track[1])
+    try:
+        with open(args.gene_track[0], "r") as gene_file_handle:
+            lineNo = 1
+            for line in gene_file_handle:
+                if(re.search(r'\s+AUGUSTUS\s+', line)):
+                    ucsc_file = tmp_dir + "gene_track_ucsc.gtf"
+                    if(os.path.isfile(ucsc_file)):
+                        os.remove(ucsc_file)
+                    aug2ucsc_gtf(args.gene_track[0], ucsc_file)
+                    break
+                if lineNo > 30:
+                    ucsc_file = args.gene_track[0]
+                    break
+                lineNo = lineNo + 1
+    except IOError:
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " +
+              args.gene_track[0] + " for reading!")
+    make_gtf_track(trackDb_file, ucsc_file, ChromSizes_file, args.gene_track[1],
+                   args.gene_track[1], rgb_cols[col_idx])
+    col_idx = col_idx + 1
+    if col_idx > 25:
+        col_dix = 0
     print('Done.')
 
 
@@ -839,11 +1089,28 @@ if args.hints:
                         hint_categ[h_src][h_type] = []
                 hint_categ[h_src][h_type].append(line)
     except IOError:
-        print("Error: failed to open file " + args.hints + " for reading!")
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " + args.hints +
+              " for reading!")
         quit(1)
+    # determine whether there have been hints tracks before, in this hub
+    hint_file_no = 1
+    try:
+        with open(trackDb_file, "r") as trackDb_handle:
+            for line in trackDb_handle:
+                if re.match(r'_hints_\d+$', line):
+                    hint_file_no = re.match(r'_hints_(\d+)$', line).groups()
+                    hint_file_no = int(hint_file_no) + 1
+    except IOError:
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed to open file " +
+              trackDb_file + " for reading!")
     for h_src in hint_categ:
         for h_type in hint_categ[h_src]:
-            this_hints_file = tmp_dir + h_src + "_" + h_type + ".hints"
+            this_hints_file = tmp_dir + h_src + "_" + \
+                h_type + ".hints_" + str(hint_file_no)
             try:
                 with open(this_hints_file, "w") as hints_handle:
                     hint_no = 0
@@ -886,27 +1153,39 @@ if args.hints:
                                         r'mult=(\d+)', hint).group(1)
                                 else:
                                     mult = 1
-                                hints_handle.write(seq + "\t" + start + "\t" + end + "\t" + h_type + "_" + str(hint_no) + "_mult_" + str(mult) + "_strand_" +
-                                                   strand + "\t1\t" + strand + "\t" + start + "\t" + end + "\t0\t1\t" + str(int(end) - int(start)) + "\t0\n")
+                                hints_handle.write(seq + "\t" + start + "\t" +
+                                                   end + "\t" + h_type + "_" +
+                                                   str(hint_no) + "_mult_" +
+                                                   str(mult) + "_strand_" +
+                                                   strand + "\t1\t" + strand +
+                                                   "\t" + start + "\t" + end +
+                                                   "\t0\t1\t" +
+                                                   str(int(end) - int(start)) +
+                                                   "\t0\n")
 
             except IOError:
-                print("Error: failed top open file " +
+                frameinfo = getframeinfo(currentframe())
+                print('Error in file ' + frameinfo.filename + ' at line ' +
+                      str(frameinfo.lineno) + ': ' + "Failed top open file " +
                       this_hints_file + " for writing!")
                 quit(1)
-            bb_file = hub_dir + h_src + "_" + h_type + ".hints.bb"
+            bb_file = hub_dir + h_src + "_" + h_type + \
+                "_hints_" + str(hint_file_no) + ".bb"
             if (h_type == 'CDS') or (h_type == 'CDSpart') or (h_type == 'exon'):
                 gp_file = this_hints_file + ".gp"
                 bed_file = this_hints_file + ".bed"
                 info_out_file = this_hints_file + ".infoOut.txt"
                 gtf2bb(this_hints_file, gp_file, bed_file,
-                       bb_file, info_out_file, ChromSizes_file)
+                       bb_file, info_out_file, ChromSizes_file, sort_tool)
             else:
                 this_sorted_hints_file = this_hints_file + ".sorted"
                 sort_bed3(this_hints_file, this_sorted_hints_file)
                 bed2bigBed(12, this_sorted_hints_file,
                            ChromSizes_file, bb_file)
-            info_to_trackDB(trackDb_file, h_src + "_" + h_type + ".hints",
-                            "Hints of type " + h_type + " from source " + h_src, rgb_cols[col_idx], "hints", 12)
+            info_to_trackDB(trackDb_file, h_src + "_" + h_type + "_hints_" +
+                            str(hint_file_no), "Hints of type " + h_type +
+                            " from source " + h_src, rgb_cols[col_idx],
+                            "hints", 12)
             col_idx = col_idx + 1
             if col_idx > 25:
                 col_idx = 0
