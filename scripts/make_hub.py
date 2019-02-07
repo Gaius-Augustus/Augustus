@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 
-# Author: Katharina J. Hoff
-# E-Mail: katharina.hoff@uni-greifswald.de
-# Last modified on February 5th 2019
-#
 # WARNINGS:
 #
 # 1) This script has been adapted to BRAKER output files.
@@ -32,8 +28,19 @@ try:
     from Bio.SeqRecord import SeqRecord
 except ImportError:
     frameinfo = getframeinfo(currentframe())
-    raise ImportError('In file ' + frameinfo.filename + ' at line ' + str(frameinfo.lineno) + ': ' +
-                      'Failed to import biophython modules. Try installing with \"pip3 install biopython\"')
+    raise ImportError('In file ' + frameinfo.filename + ' at line ' +
+                      str(frameinfo.lineno) + ': ' +
+                      'Failed to import biophython modules. ' +
+                      'Try installing with \"pip3 install biopython\"')
+
+
+__author__ = "Kathairna J. Hoff"
+__copyright__ = "Copyright 2019. All rights reserved."
+__credits__ = []
+__license__ = "Artistic Licsense"
+__version__ = "1.0"
+__email__ = "katharina.hoff@uni-greifswald.de"
+__status__ = "development"
 
 ucsc_tools = {'bedToBigBed': '', 'genePredCheck': '', 'faToTwoBit': '',
               'gtfToGenePred': '', 'hgGcPercent': '', 'ixIxx': '',
@@ -113,7 +120,7 @@ if (args.long_label is None) and (args.short_label is not None) and (args.add_tr
 
 if ((args.email is None) or (args.genome is None) or (args.short_label is None)) and (args.add_track is False) and (args.printUsageExamples is False):
     frameinfo = getframeinfo(currentframe())
-    print('Error in file ' + frameinfo.filename + ' at line ' + str(frameinfo.lineno) + ': '
+    print('Usage error in file ' + frameinfo.filename + ' at line ' + str(frameinfo.lineno) + ': '
           + 'If a novel track is created, the following arguments are ' +
           'required: -e/--email, -g/--genome, -l/--short_label')
     exit(1)
@@ -134,7 +141,8 @@ hub_dir = args.outdir + "/" + args.short_label + \
     "/" + args.short_label + "/"
 
 
-''' Find samtools & bam2wig (if bam file provided) '''
+''' Find samtools (if bam file provided) '''
+
 samtools = ""
 if args.bam:
     if args.verbosity > 0:
@@ -166,20 +174,28 @@ elif args.bam:
               "from github at:")
         print("https://github.com/samtools/samtools")
         exit(1)
+
+
+''' Find either python RSeQC or bam2wig from AUGUSTUS (if bam file provided) '''
+
+bam2wig_aug = False
 if args.bam:
     if args.verbosity > 0:
-        print("Searching for bam2wig:")
-    if shutil.which("bam2wig") is not None:
-        augustus_tools['bam2wig'] = shutil.which("bam2wig")
-    else:
-        frameinfo = getframeinfo(currentframe())
-        print('Error in file ' + frameinfo.filename + ' at line ' +
-              str(frameinfo.lineno) + ': '
-              + "Unable to locate AUGUSTUS auxprog bam2wig binary!")
-        exit(1)
+        print("Searching for bam2wig from AUGUSTUS auxprogs:")
+        if shutil.which("bam2wig") is not None:
+            augustus_tools['bam2wig'] = shutil.which("bam2wig")
+            bam2wig_aug = True
+        else:
+            frameinfo = getframeinfo(currentframe())
+            print('Was unable to locate bam2wig from ' +
+                  'AUGUSTUS auxprogs (available at ' +
+                  'https://github.com/Gaius-Augustus/Augustus). ' +
+                  'Will convert bam to wig using samtools pileup ' +
+                  'and line-by-line processing, instead.')
 
 
 ''' Find gzip '''
+
 gzip_tool = ""
 if (not args.add_track) or args.bam:
     gzip_tool = shutil.which('gzip')
@@ -198,6 +214,7 @@ if (not args.add_track) or args.bam:
 
 
 ''' Find bash sort '''
+
 sort_tool = shutil.which('sort')
 if sort_tool is None:
     frameinfo = getframeinfo(currentframe())
@@ -208,9 +225,12 @@ if sort_tool is None:
           ' is missing on your system.')
     quit(1)
 
+
 ''' Find or obtain UCSC tools '''
 # the URLs of UCSC tool download are hardcoded for linux.x84_64
+
 arch = platform.machine()
+plat_sys = platform.system()
 
 if args.verbosity > 0:
     print("Searching for required UCSC tools:")
@@ -223,21 +243,36 @@ for key, val in ucsc_tools.items():
             os.chmod(ucsc_tools[key], 0o777)
     else:
         if not(arch == 'x86_64'):
-            print(arch)
             frameinfo = getframeinfo(currentframe())
             print('Error in file ' + frameinfo.filename + ' at line ' +
                   str(frameinfo.lineno) + ': '
-                  + "This script was implemented for linux.x84_64 " +
-                  " architecture and will not be able to locate the " +
-                  "exectuables for your system. Please download " + key +
-                  ", manually. UCSC tools are generally available at " +
+                  + "This script depends on binaries that are available for " +
+                  "x86_64 architecture for linux and MacOX. " +
+                  "We have determined that your system architecture is " +
+                  arch + "." +
+                  " Please try downloading " + key +
+                  " for your architecture from: " +
+                  "http://hgdownload.soe.ucsc.edu/admin/exe")
+            exit(1)
+        elif not(plat_sys == 'Linux') and not(plat_sys == 'Darwin'):
+            frameinfo = getframeinfo(currentframe())
+            print('Error in file ' + frameinfo.filename + ' at line ' +
+                  str(frameinfo.lineno) + ': '
+                  + "This script depends on binaries that are available for " +
+                  "x86_64 architecture for linux and MacOX. " +
+                  "We have determined that your system is " +
+                  plat_sys + "." +
+                  " Please try downloading " + key +
+                  " for your operating system from: " +
                   "http://hgdownload.soe.ucsc.edu/admin/exe")
             exit(1)
         else:
-            tool_url = "http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/" + key
+            if plat_sys == 'Linux':
+                tool_url = "http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/" + key
+            elif plat_sys == 'Darwin':
+                tool_url = "http://hgdownload.soe.ucsc.edu/admin/exe/macOSX.x86_64/"+ key
             print("Was unable to locate " + key +
-                  ", will try to download it from " + tool_url)
-            print("This may take a while...")
+                  " on your system, will try to download it from " + tool_url + "...")
             with urllib.request.urlopen(tool_url) as response, open(key, 'wb') as out_file:
                 shutil.copyfileobj(response, out_file)
             ucsc_tools[key] = os.getcwd() + "/" + key
@@ -270,6 +305,7 @@ except OSError as e:
     if e.errno != errno.EEXIST:
         raise
 
+''' ******************* BEGIN FUNCTIONS *************************************'''
 
 ''' Function that runs a subprocess with arguments '''
 
@@ -602,33 +638,10 @@ def make_gtf_track(trackDb_file, gtf_file, chrom_size_file, short_label, long_la
     run_simple_process(subprcs_args)
 
 
-''' Function that converts bam file to wig file '''
+''' Function that cleans wiggle files '''
 
 
-def bam2wig(bam_file, wig_file, size_file):
-    tmp_wig_file = wig_file + ".tmp"
-    try:
-        with open(tmp_wig_file, "w") as wig_handle:
-            subprcs_args = [augustus_tools['bam2wig'],
-                            "-t", bam_file, bam_file]
-            if args.verbosity > 0:
-                print("Trying to execute the following command:")
-                print(" ".join(subprcs_args))
-            result = subprocess.run(
-                subprcs_args, stdout=wig_handle, stderr=subprocess.PIPE)
-            if args.verbosity > 0:
-                print("Suceeded in executing command.")
-            if(result.returncode != 0):
-                frameinfo = getframeinfo(currentframe())
-                print('Error in file ' + frameinfo.filename + ' at line ' +
-                      str(frameinfo.lineno) + ': ' +
-                      "Return code of subprocess was " + str(result.returncode))
-                quit(1)
-    except IOError:
-        frameinfo = getframeinfo(currentframe())
-        print('Error in file ' + frameinfo.filename + ' at line ' +
-              str(frameinfo.lineno) + ': ' + "Could not open file " +
-              tmp_wig_file + " for writing!")
+def clean_wig(tmp_wig_file, wig_file, chrom_size_file):
     # observed that in rare cases a wig file might contain coverage for one
     # more base than present in the sequence; seems to be an alignment
     # error, not a bam2wig error, because the same problem arises if I
@@ -640,7 +653,7 @@ def bam2wig(bam_file, wig_file, size_file):
     chrom_sizes = {}
     print("Reading chrom sizes")
     try:
-        with open(size_file, "r") as size_handle:
+        with open(chrom_size_file, "r") as size_handle:
             for line in size_handle:
                 split_list = re.split(r'\t', line.rstrip('\n'))
                 chrom_sizes[split_list[0]] = int(split_list[1])
@@ -675,14 +688,82 @@ def bam2wig(bam_file, wig_file, size_file):
               str(frameinfo.lineno) + ': ' + "Could not open file " +
               tmp_wig_file + " for reading!")
     os.remove(tmp_wig_file)
+    if args.verbosity > 0:
+        print("Done...")
 
 
-''' Globally required files that must be defined even if args.add_track is True '''
+''' Function that converts bam file to wig file using AUGUSTUS auxprog bam2wig'''
 
-# ChromSizes_file is not required for displaying a hub but for adding new tracks
-ChromSizes_file = hub_dir + args.short_label + ".chrom.sizes"
-print(ChromSizes_file)
-trackDb_file = hub_dir + "trackDb.txt"
+
+def bam2wig(bam_file, wig_file, size_file):
+    tmp_wig_file = wig_file + ".tmp"
+    try:
+        with open(tmp_wig_file, "w") as wig_handle:
+            subprcs_args = [augustus_tools['bam2wig'],
+                            "-t", bam_file, bam_file]
+            if args.verbosity > 0:
+                print("Trying to execute the following command:")
+                print(" ".join(subprcs_args))
+            result = subprocess.run(
+                subprcs_args, stdout=wig_handle, stderr=subprocess.PIPE)
+            if args.verbosity > 0:
+                print("Suceeded in executing command.")
+            if(result.returncode != 0):
+                frameinfo = getframeinfo(currentframe())
+                print('Error in file ' + frameinfo.filename + ' at line ' +
+                      str(frameinfo.lineno) + ': ' +
+                      "Return code of subprocess was " + str(result.returncode))
+                quit(1)
+    except IOError:
+        frameinfo = getframeinfo(currentframe())
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Could not open file " +
+              tmp_wig_file + " for writing!")
+    clean_wig(tmp_wig_file, wig_file, size_file)
+
+
+''' Function that converts bam file to wig file with RSeQC '''
+
+
+def bamToWig(bam_file, wig_file, size_file):
+    pileup_file = wig_file + ".mpileup"
+    subprcs_args = [samtools, "mpileup", "-o", pileup_file, bam_file]
+    run_simple_process(subprcs_args)
+    tmp_wig_file = wig_file + ".tmp"
+    try:
+        with open(pileup_file, "r") as pileup_handle:
+            try:
+                with open(tmp_wig_file, "w") as wig_handle:
+                    wig_handle.write(
+                        "track name=" + bam_file + " type=wiggle_0\n")
+                    lastC = ""
+                    lastStart = 0
+                    for line in pileup_handle:
+                        c, start, t1, depth, T2, t3 = line.split()
+                        if (c != lastC) and (start != lastStart):
+                            wig_handle.write("variableStep chrom=" + c + "\n")
+                        wig_handle.write(c + "\t" + start + "\n")
+                        lastC = c
+                        lastStart = start
+            except IOError:
+                print('Error in file ' + frameinfo.filename + ' at line ' +
+                      str(frameinfo.lineno) + ': ' +
+                      "Could not open file " + tmp_wig_file + " for writing!")
+    except IOError:
+        print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' +
+              "Could not open file " + pilup_file + " for reading!")
+    clean_wig(tmp_wig_file, wig_file, size_file)
+
+
+''' ******************* END FUNCTIONS ***************************************'''
+
+''' Globally required files '''
+
+ChromSizes_file = hub_dir + args.short_label + \
+    ".chrom.sizes"  # for making tracks
+trackDb_file = hub_dir + "trackDb.txt"  # main UCSC hub configuration file
+
 
 ''' Generate essential files for genome display '''
 
@@ -901,23 +982,42 @@ if args.bam and args.display_bam_as_bam:
 if args.bam:
     print('Generating bigWig RNA-Seq track(s) from BAM...')
     bam_index = 1
+    if os.path.isfile(trackDb_file):
+        try:
+            with open(trackDb_file, "r") as db_handle:
+                for line in db_handle:
+                    if re.search(r'rnaseq_\d+.bw', line):
+                        re_result = re.search(r'rnaseq_(\d+).bw', line).groups()
+                        bam_index = int(re_result[0]) + 1
+                        pass
+        except IOError:
+            frameinfo = getframeinfo(currentframe())
+            print('Error in file ' + frameinfo.filename + ' at line ' +
+                  str(frameinfo.lineno) + ': ' + "Failed to open file " +
+                  trackDb_file + " for reading!")
+            quit(1)
     for bam_file in args.bam:
         bam_sorted_file = tmp_dir + "rnaseq_" + str(bam_index) + ".s.bam"
         subprcs_args = [samtools, "sort", "-@",
                         str(args.cores), bam_file, "-o", bam_sorted_file]
-        print(subprcs_args)
         run_simple_process(subprcs_args)
         wig_file = tmp_dir + "rnaseq_" + str(bam_index) + ".wig"
-        bam2wig(bam_sorted_file, wig_file, ChromSizes_file)
+        # if bam2wig_aug is True:
+        #   bam2wig(bam_sorted_file, wig_file, ChromSizes_file)
+        # else:
+        bamToWig(bam_sorted_file, wig_file, ChromSizes_file)
         wig_compr_file = tmp_dir + "rnaseq_" + str(bam_index) + ".wig.gz"
         if os.path.isfile(wig_compr_file):
             os.unlink(wig_compr_file)
         subprcs_args = [gzip_tool, wig_file]
         run_simple_process(subprcs_args)
+        print("Converting compressed wig to bigWig")
         big_wig_file = hub_dir + "rnaseq_" + str(bam_index) + ".bw"
         subprcs_args = [ucsc_tools['wigToBigWig'],
                         wig_compr_file, ChromSizes_file, big_wig_file]
+        print(subprcs_args)
         run_simple_process(subprcs_args)
+        print("Writing to track db")
         try:
             with open(trackDb_file, "a") as trackDb_handle:
                 trackDb_handle.write("track RNASeq_wig_" + str(bam_index)
@@ -935,6 +1035,7 @@ if args.bam:
                   str(frameinfo.lineno) + ': ' + "Failed to open file " +
                   trackDb_file + " for writing!")
             quit(1)
+
         bam_index = bam_index + 1
     print('Done.')
 
@@ -1096,17 +1197,18 @@ if args.hints:
         quit(1)
     # determine whether there have been hints tracks before, in this hub
     hint_file_no = 1
-    try:
-        with open(trackDb_file, "r") as trackDb_handle:
-            for line in trackDb_handle:
-                if re.match(r'_hints_\d+$', line):
-                    hint_file_no = re.match(r'_hints_(\d+)$', line).groups()
-                    hint_file_no = int(hint_file_no) + 1
-    except IOError:
-        frameinfo = getframeinfo(currentframe())
-        print('Error in file ' + frameinfo.filename + ' at line ' +
-              str(frameinfo.lineno) + ': ' + "Failed to open file " +
-              trackDb_file + " for reading!")
+    if os.path.isfile(trackDb_file):
+        try:
+            with open(trackDb_file, "r") as trackDb_handle:
+                for line in trackDb_handle:
+                    if re.search(r'_hints_\d+$', line):
+                        re_result = re.search(r'_hints_(\d+)$', line).groups()
+                        hint_file_no = int(re_result[0]) + 1
+        except IOError:
+            frameinfo = getframeinfo(currentframe())
+            print('Error in file ' + frameinfo.filename + ' at line ' +
+                  str(frameinfo.lineno) + ': ' + "Failed to open file " +
+                  trackDb_file + " for reading!")
     for h_src in hint_categ:
         for h_type in hint_categ[h_src]:
             this_hints_file = tmp_dir + h_src + "_" + \
