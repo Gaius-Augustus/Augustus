@@ -560,7 +560,7 @@ int main(int argc, char* argv[])
 
   // Estimating the right value of the arrays:  PSLb;  PSLq;  PSLt; BlockBegins; BlockEnds and FolOK;
   // This is done by sweeping through all the alignments and calculating the maxBlock size.
-  cout << "Wait a moment, calculating maximum block size that needs to be allocated... ";
+  // cout << "Wait a moment, calculating maximum block size that needs to be allocated... ";
   int alignmentBlock, maxBlock=0;
   while (BAM.GetNextAlignment(*pal)) 
 	{ 	
@@ -576,7 +576,7 @@ int main(int argc, char* argv[])
 
 	  if (alignmentBlock >= maxBlock) maxBlock = alignmentBlock;
 	} // end while
-  cout << ".. done" << endl;
+  // cout << ".. done" << endl;
 
   // closing and opening handle of BAM file
   BAM.Close();
@@ -1072,8 +1072,8 @@ int main(int argc, char* argv[])
   } // end while (parsing through bam alignment lines)
 
 
-  // newline after display of the line count
-  cout << "\n";
+  // newline after display of the line count, has been commented out above
+  //cout << "\n";
 
   // print the last hints
   printHints(GFF, "");
