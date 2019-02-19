@@ -359,9 +359,9 @@ void SnippetProbs::addProb(int base, int len, Double p) {
 	while (s && s->next && s->next->len < len)
 	    s = s->next;
 	if (s->next && s->next->len == len) {
-	    cerr << "SnippetProb: tried to add snippet of same length: prob " << p << " original prob " << s->next->prob << " len " << len << endl;
-	    for (SnippetListItem *snit = snippetlist[base]->first; snit != NULL; snit=snit->next)
-		cout << base <<  "\t" << snit->len << " " << snit->prob << endl;
+//	    cerr << "SnippetProb: tried to add snippet of same length: prob " << p << " original prob " << s->next->prob << " len " << len << endl;
+//	    for (SnippetListItem *snit = snippetlist[base]->first; snit != NULL; snit=snit->next)
+//		cout << base <<  "\t" << snit->len << " " << snit->prob << endl;
 	} else {
 	    sni->next = s->next;
 	    s->next = sni;

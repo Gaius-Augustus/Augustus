@@ -1174,12 +1174,12 @@ Double IntronModel::aSSProb(int base, bool forwardStrand){
     }
 
     emiProb = motifProb * patternProb;
-    aSSMutex.lock();
+    //aSSMutex.lock();
     if (forwardStrand)
 	memoF[base] = emiProb;	
     else
 	memoR[base] = emiProb;
-    aSSMutex.unlock();
+    //aSSMutex.unlock();
     return emiProb;
 }
 
@@ -1233,12 +1233,12 @@ Double IntronModel::dSSProb(int base, bool forwardStrand){
 		dssBinProbs.addCount(idx);
 	    dssprob = dssBinProbs.avprobs[idx];
 	}
-        aSSMutex.lock();
+        //aSSMutex.lock();
 	if (forwardStrand)
 	    memoF[base] = dssprob;
 	else
 	    memoR[base] = dssprob;
-        aSSMutex.unlock();
+        //aSSMutex.unlock();
 	return dssprob; // standard HMM probabilities
     } catch (InvalidNucleotideError e) {
 	return 0; // don't predict splice site when there is an unknown nucleotide

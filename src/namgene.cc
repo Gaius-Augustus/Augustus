@@ -29,14 +29,105 @@
 
 int synchstate = 0;
 
-
 class ThreadPool
 {
     public:
 
     ThreadPool (int threads) : shutdown_ (false)
     {
-        threadsRunning_ = 0;
+	    // Create the specified number of threads
+        threads_.reserve (threads);
+        for (int i = 0; i < threads; ++i)
+            threads_.emplace_back (std::bind (&ThreadPool::threadEntry, this));
+    }
+
+    ~ThreadPool ()
+    {
+        {
+            // Unblock any threads and tell them to stop
+            std::unique_lock <std::mutex> l (lock_);
+
+            shutdown_ = true;
+            condVar_.notify_all();
+        }
+
+        // Wait for all threads to stop
+        for (auto& thread : threads_)
+            thread.join();
+    }
+
+    void doJob (std::function <void (void)> &func)
+    {
+        // Place a job on the queue and unblock a thread
+        std::unique_lock <std::mutex> l (lock_);
+
+        jobs_.emplace (std::move (func));
+        condVar_.notify_one();
+    }
+
+    void waitForQueueEmpty() {
+         std::unique_lock <std::mutex> lck2(wait_lock);
+         while( jobs_.size()>0 ) {
+//            std::this_thread::sleep_for(std::chrono::nanoseconds(5));
+//            std::unique_lock <std::mutex> lck2(wait_lock);
+            not_empty.wait_for(lck2,std::chrono::nanoseconds(10));
+        }
+    }
+
+    size_t queuelength() {
+        return jobs_.size();
+    }
+
+	protected:
+
+    void threadEntry ()
+    {
+        std::function <void (void)> job;
+
+        while (1)
+        {
+            {
+                std::unique_lock <std::mutex> l (lock_);
+
+                while (! shutdown_ && jobs_.empty())
+                    condVar_.wait (l);
+
+                if (jobs_.empty ())
+                {
+                    // No jobs to do and we are shutting down
+                    //std::cerr << "Thread " << i << " terminates" << std::endl;
+                    return;
+                 }
+                 job = std::move (jobs_.front());
+                 jobs_.pop();
+                 if( jobs_.empty() ) {
+                    not_empty.notify_all();
+                 }
+            }
+            // Do the job without holding any locks
+            job();
+        }
+
+    }
+    
+    std::mutex lock_;
+    std::condition_variable condVar_;
+    bool shutdown_;
+    std::queue <std::function <void ()>> jobs_;
+    std::vector<std::thread> threads_;
+    std::mutex wait_lock;
+    std::condition_variable not_empty;
+};
+
+/*
+class ThreadPool
+{
+
+    public:
+
+    ThreadPool (int threads) : shutdown_ (false)
+    {
+//        threadsRunning_ = 0;
         // Create the specified number of threads
         threads_.reserve (threads);
         for (int i = 0; i < threads; ++i)
@@ -69,10 +160,11 @@ class ThreadPool
     }
 
     void waitForQueueEmpty() {
-        while( jobs_.size()>0 || threadsRunning_>0 ) {
+//        while( jobs_.size()>0 || threadsRunning_>0 ) {
+         while( jobs_.size()>0 ) {
 //            std::cout << "waiting: " << jobs_.size() << " " << threadsRunning_ << std::endl;
             std::unique_lock <std::mutex> lck2(wait_lock);
-            not_empty.wait_for(lck2,10ms);
+            not_empty.wait_for(lck2,1ms);
         }
 //        std::cout << jobs_.size() << " " << threadsRunning_ << std::endl;
     }
@@ -104,14 +196,15 @@ class ThreadPool
 
                 //std::cerr << "Thread " << i << " does a job" << std::endl;
                 job = std::move (jobs_.front ());
-                threadsRunning_++;
+                //threadsRunning_++;
                 jobs_.pop();
             }
 
             // Do the job without holding any locks
             job ();
-            threadsRunning_--;
-            if( threadsRunning_==0 && jobs_.empty() ) {
+//            threadsRunning_--;
+//            if( threadsRunning_==0 && jobs_.empty() ) {
+            if( jobs_.empty() ) {
                 not_empty.notify_all();
             }
         }
@@ -123,11 +216,11 @@ class ThreadPool
     bool shutdown_;
     std::queue <std::function <void (void)>> jobs_;
     std::vector <std::thread> threads_;
-    std::atomic_int threadsRunning_;
+//    std::atomic_int threadsRunning_;
     std::mutex wait_lock;
     std::condition_variable not_empty;
 };
-
+*/
 
 NAMGene::NAMGene() {
   /*
@@ -348,7 +441,13 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
 #endif
 
   initAlgorithms(); // update GC content dependent parameters
-  ThreadPool threadPool(2);
+//  ThreadPool threadPool(2);
+  ThreadPool threadPoolExon(1);
+  ThreadPool threadPoolOther(1);
+  std::chrono::duration<double> totalDuration1;
+  std::chrono::duration<double> totalDuration2;
+  std::chrono::duration<double> totalDuration3;
+  auto start1 = std::chrono::high_resolution_clock::now();
   for( int j = 1; j < dnalen; j++ ) { // TODO: this ignores the first nucleotide
       //std::cout << j << " ";
       if (cs.idx[j] != curGCIdx) {// check whether GC content has changed, this is in particular the case at the very start
@@ -367,15 +466,25 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
       }
       if (useProfile) 
 	  profileModel->advanceScores(j);
-//      cout << threadPool.queuelength() << " ";
+     auto start = std::chrono::high_resolution_clock::now();
       for( int i = 0; i < statecount; i++ ){
 	  if (stateReachable[i]) {
-              std::function <void (void)>  functionCall = std::bind(&StateModel::viterbiForwardAndSampling, std::ref(states[i]), std::ref(viterbi), std::ref(forward), i, j, doViterbi(needForwardTable), std::ref(oli));
-              threadPool.doJob(functionCall);
-              //states[i]->viterbiForwardAndSampling(viterbi, forward, i, j, doViterbi(needForwardTable), oli);
+//              std::function <void (void)>  functionCall = std::bind(&StateModel::viterbiForwardAndSampling, std::ref(states[i]), std::ref(viterbi), std::ref(forward), i, j, doViterbi(needForwardTable), std::ref(oli));
+//              if ((i>=1 && i<=8) || (i>=36 && i<=43)) {
+//                  threadPoolExon.doJob(functionCall);
+//              } else {
+//                  threadPoolOther.doJob(functionCall);
+//              }
+              states[i]->viterbiForwardAndSampling(viterbi, forward, i, j, doViterbi(needForwardTable), oli);
 	  }
-      }            
-      threadPool.waitForQueueEmpty();
+      } 
+      auto mid = std::chrono::high_resolution_clock::now();
+      threadPoolExon.waitForQueueEmpty();
+      threadPoolOther.waitForQueueEmpty();
+      auto end = std::chrono::high_resolution_clock::now();
+      totalDuration1 += mid-start;
+      totalDuration2 += end-mid;
+      totalDuration3 += end-start;
       if (j % 1000 == 0) {
 #ifdef DEBUG 
 	  cerr << "[" << j;
@@ -393,7 +502,7 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
 	  cerr << "]";
 #endif 
       }
-      
+
 #ifdef DEBUG
       try {
 	  viterbi[j].testIntegrity();
@@ -474,7 +583,11 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
    * call viterbiForwardAndSampling and thus change the viterbi and forward table again.
    * This probability needs to be multiplied at the appropriate places.
    */
-
+      auto end2 = std::chrono::high_resolution_clock::now();
+      totalDuration3 = end2-start1;
+      std::cout << totalDuration1.count() << std::endl;
+      std::cout << totalDuration2.count() << std::endl;
+      std::cout << totalDuration3.count() << std::endl;
 } // end ViterbiAndForward
 
 StatePath* NAMGene::getSampledPath(const char *dna, const char* seqname){
@@ -1656,6 +1769,7 @@ void NAMGene::createStateModels( ){
 	 * Determine the names of the states and create the state objects
 	 */ 
 	const char* statename = Properties::getProperty("/NAMGene/state", i);
+        std::cout << i << " is " << statename << std::endl;
 	states[i] = StateModel::newStateModelPtr(statename);
     }
 }
