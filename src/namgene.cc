@@ -469,13 +469,13 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
      auto start = std::chrono::high_resolution_clock::now();
       for( int i = 0; i < statecount; i++ ){
 	  if (stateReachable[i]) {
-//              std::function <void (void)>  functionCall = std::bind(&StateModel::viterbiForwardAndSampling, std::ref(states[i]), std::ref(viterbi), std::ref(forward), i, j, doViterbi(needForwardTable), std::ref(oli));
-//              if ((i>=1 && i<=8) || (i>=36 && i<=43)) {
-//                  threadPoolExon.doJob(functionCall);
-//              } else {
-//                  threadPoolOther.doJob(functionCall);
-//              }
-              states[i]->viterbiForwardAndSampling(viterbi, forward, i, j, doViterbi(needForwardTable), oli);
+              std::function <void (void)>  functionCall = std::bind(&StateModel::viterbiForwardAndSampling, std::ref(states[i]), std::ref(viterbi), std::ref(forward), i, j, doViterbi(needForwardTable), std::ref(oli));
+              if ((i>=1 && i<=8) || (i>=36 && i<=43)) {
+                  threadPoolExon.doJob(functionCall);
+              } else {
+                  threadPoolOther.doJob(functionCall);
+              }
+//              states[i]->viterbiForwardAndSampling(viterbi, forward, i, j, doViterbi(needForwardTable), oli);
 	  }
       } 
       auto mid = std::chrono::high_resolution_clock::now();
