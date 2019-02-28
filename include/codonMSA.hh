@@ -20,6 +20,8 @@
 #include "phylotree.hh"
 #include "contTimeMC.hh"
 #include "alignment.hh"
+#include "orthoexon.hh"
+#include "geneMSA.hh"
 
 class CodonMSA{
 public:
@@ -28,6 +30,7 @@ public:
     delete ctree;
     for(auto it = speciesSeqs.begin(); it != speciesSeqs.end(); it++)
       delete[] it->second;
+    delete geneRange;
   }
   
   void readAlignment(string filename);
@@ -36,14 +39,16 @@ public:
   void printOmegaStats();
 
   vector<string> aliRows;
-  map<string, char*> speciesSeqs;
-  map<string, int> seqLengths;
-  vector<string> speciesNames;
+  map<string, char*> speciesSeqs; // string is species abbreviation and char* is a pointer to the actual sequence of DNA+Gap characters 
+  map<string, int> seqLengths; // contains the sequence length for each species
+  vector<string> speciesNames; // name abbreviations of all species
   Alignment *alignment;
-  int refSpeciesIdx;
+  int refSpeciesIdx; // reference Species index as it appears in speciesNames
   CodonEvo codonevo;
   PhyloTree* ctree;
   string seqname;
+  list<OrthoExon> hects;
+  GeneMSA* geneRange;
 };
 
 #endif

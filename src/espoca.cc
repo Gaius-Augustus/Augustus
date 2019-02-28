@@ -62,6 +62,8 @@ int main( int argc, char* argv[] ){
       {"help",0,0,'h'},
       {"useAminoAcidRates",1,0,'r'},
       {"branchlength",1,0,'b'},
+      {"/CompPred/parsFile",1,0,'p'},
+      {"/CompPred/configFile",1,0,'c'},
       {0,0,0,0}
     };
 
@@ -108,7 +110,9 @@ int main( int argc, char* argv[] ){
     if(Constant::treefile.empty()){
       cerr << "Warning: No treefile spezified. Using startree with branchlength of one." << endl;
     }
-
+    // turn on espoca mode
+    Constant::EspocaMode = true;
+    
     try{
       Properties::init( argc, argv );
       Constant::init();

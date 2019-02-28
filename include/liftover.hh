@@ -76,7 +76,6 @@ public:
      */
     template <typename T> void projectToAli(vector< map<int_fast64_t,T*> > &seqints, // input
 					    map<int_fast64_t, list<pair<int,T*> > > &alignedSIs) { // output
-
 	int k = alignment->rows.size();
 	int_fast64_t aliStart, aliEnd;
 	int chrStart, chrEnd;
@@ -94,7 +93,6 @@ public:
 	    AlignmentRow *row = alignment->rows[s];
 	    vector<fragment>::const_iterator from = row->frags.begin();
 	    for(typename map<int_fast64_t,T*>::iterator siit = seqints[s].begin(); siit != seqints[s].end(); ++siit){
-
 		// go the the first fragment that may contain the SI start
 		while (from != row->frags.end() && from->chrPos + from->len - 1 < siit->second->getStart() + offset)
 		    ++from;

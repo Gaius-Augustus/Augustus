@@ -59,9 +59,9 @@ CodonMSA::CodonMSA(string codonAliFilename, double branchlength){
   MemSeqAccess msa(speciesSeqs, seqLengths, speciesNames);
   RandSeqAccess *rsa = &msa;
   rsa->printStats();
-  GeneMSA geneRange(rsa, alignment);
-  geneRange.setTree(ctree);
-  geneRange.printStats();
+  geneRange = new GeneMSA(rsa, alignment);
+  geneRange->setTree(ctree);
+  geneRange->printStats();
 
   vector<map<int_fast64_t, ExonCandidate*> > exoncands(speciesNames.size());
   vector<map<int_fast64_t, ExonCandidate*> > addECs(speciesNames.size());
@@ -91,37 +91,45 @@ CodonMSA::CodonMSA(string codonAliFilename, double branchlength){
     if(slit == seqLengths.end())
       cout << "seqlength of species " << sit->first << " not found!!!" << endl;
 
-    cout << "speciesname: " << sit->first << " length: " << slit->second; 
-    cout << " sequence: ";
-    char *e = sit->second;
-    for(int i=0; i<slit->second; i++)
-      cout << e[i];
-    cout << endl;
     if(sit != speciesSeqs.end()){
-      cout << " found in speciesSeqs" << endl;
-      geneRange.createExonCands(s, sit->second, exoncands[s], addECs[s]);
+      geneRange->createExonCands(s, sit->second, exoncands[s], addECs[s]);
       seqranges[s] = new AnnoSequence();
       seqranges[s]->sequence = sit->second;
       map<string, int>::iterator slit = seqLengths.find(speciesNames[s]);
       if(slit != seqLengths.end())
 	seqranges[s]->length = slit->second;
-    }else{
-      cout << " NOT found in speciesSeqs" << endl;
     }
   }
 
-  vector<int> offsets = geneRange.getOffsets();
-  LiftOver lo(geneRange.getAlignment(), offsets);
+  vector<int> offsets = geneRange->getOffsets();
+  LiftOver lo(geneRange->getAlignment(), offsets);
   map<int_fast64_t, list<pair<int,ExonCandidate*> > > alignedECs; // hash of aligned ECs 
+
+  for (int i=0; i<addECs.size();i++ ){
+      for (auto it = addECs[i].begin(); it != addECs[i].end(); it++){
+	  ExonCandidate *ec = it->second;
+	  cout << "EC: " << ec->getStart() << " - " << ec->getEnd() << endl;
+      }
+  }
+
   lo.projectToAli(addECs,alignedECs);
+  cout << "after project to ali in alignedECs:" << endl;
+  for (auto it = alignedECs.begin(); it != alignedECs.end(); it++){
+      for ( auto lit = it->second.begin(); lit != it->second.end(); lit++){
+	  ExonCandidate *ec = lit->second;
+	  cout << "EC: " << ec->getStart() << " - " << ec->getEnd() << endl;
+      }
+  }
+  
+  
   addECs.clear();
 
   lo.projectToGenome(alignedECs, seqranges, exoncands, true);
 
-  geneRange.setExonCands(exoncands);
+  geneRange->setExonCands(exoncands);
   exoncands.clear(); 
 
-  //geneRange.printExonCands();
+  geneRange->printExonCands();
 
   ExonEvo evo(2);
   vector<double> branchset;
@@ -129,9 +137,12 @@ CodonMSA::CodonMSA(string codonAliFilename, double branchlength){
   evo.setBranchLengths(branchset);
   evo.computeLogPmatrices();
   
-  list<OrthoExon> hects;
-  geneRange.createOrthoExons(hects, alignedECs, &evo);
+  geneRange->createOrthoExons(hects, alignedECs, &evo);
 
+// set length to alignment length
+  for(auto hit = hects.begin(); hit != hects.end(); hit++)
+      hit->oeTraits.setLength(hit->getAliLen());
+  
   vector<double> ct_branchset;
   ctree->getBranchLengths(ct_branchset);
   int k; // number of omegas
@@ -176,7 +187,7 @@ CodonMSA::CodonMSA(string codonAliFilename, double branchlength){
   /*cout << "Omegas, for which substitution matrices are stored:" << endl;                                                          
     codonevo.printOmegas();
   */
-  cout << "computeLogPmatrices" << endl;;
+  cout << "computeLogPmatrices" << endl;
   codonevo.computeLogPmatrices();
  
   // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);                                                                          
@@ -185,9 +196,12 @@ CodonMSA::CodonMSA(string codonAliFilename, double branchlength){
   GeneMSA::setCodonEvo(&codonevo);
 
   // get features
-  geneRange.computeOmegasEff(hects, seqranges, ctree, NULL);
+  string outdir;
+  geneRange->calcConsScore(hects, seqranges, outdir);
 
-  geneRange.printOrthoExons(hects);
+  geneRange->computeOmegasEff(hects, seqranges, ctree, NULL);
+
+  geneRange->printOrthoExons(hects);
   
 }
 
@@ -200,7 +214,7 @@ void CodonMSA::readAlignment(string alignFilename){
   map<string, size_t> notExistingSpecies;
   string speciesName;
   string seqID;
-   int numSpecies;
+  int numSpecies;
 
   ifstream Alignmentfile;
 
@@ -285,8 +299,7 @@ void CodonMSA::addAliRow(string speciesName, string rowseq, int &numSpeciesFound
   row = new AlignmentRow (seqname, 1, plusstrand, rowseq);
   
   int index = ctree->getLeaf(speciesName)->getIdx();
-  cout << "index of species " << speciesName << " is " << index << endl;
-  
+   
   if (index >= 0) { // species name in the white list                                                                                                                                                                                                                    
     if (!(alignment->rows[index])){ // first row for this species in this block                                                                                                                                                                                          
       alignment->rows[index] = row; // place at the right position                                                                                                                                                                                                       
@@ -301,8 +314,6 @@ void CodonMSA::addAliRow(string speciesName, string rowseq, int &numSpeciesFound
       speciesSeqs.insert(pair<string, char*>(seqname+"."+speciesName, seq));
       seqLengths.insert(pair<string, int>(speciesName, seqlen));
     
-      cout << "length of sequence of species " << speciesName << " is " << alignment->rows[index]->getSeqLen() << endl;
-  
       // store chrLen and check whether consistent with previous chrLen                                                                                                                                                                                                  
       numSpeciesFound++;
     } else {
@@ -330,7 +341,26 @@ string CodonMSA::removeGaps(string row){
 
 void CodonMSA::printOmegaStats(){
 
-  codonevo.graphOmegaOnCodonAli(aliRows, ctree, refSpeciesIdx);
+  //codonevo.graphOmegaOnCodonAli(aliRows, ctree, refSpeciesIdx);
+
+  // calculate logreg score for each hect
+  if(!hects.empty()){
+    auto hit_max = hects.begin();
+    double max_score = Properties::calculate_feature_score(&hit_max->oeTraits);
+    for(auto hit = hects.begin(); hit != hects.end(); hit++){
+      
+      double score = Properties::calculate_feature_score(&hit->oeTraits);
+      cout << "curr_score = " << score << endl;
+      if(score > max_score){
+	max_score = score;
+	hit_max = hit;
+      }
+    }
+    cout << "max_score = " << max_score << endl;
+    geneRange->printSingleOrthoExon(*hit_max,false);
+  }else{
+    cout << "no Ortho Exons found!" << endl;
+  }
 }
 
 

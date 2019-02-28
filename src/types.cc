@@ -130,6 +130,8 @@ vector<LRfeatureGroup*>  Constant::lr_features;
 bool Constant::rescaleBoni = true;
 string Constant::cgpConfigFile;
 string Constant::cgpParsFile;
+bool Constant::EspocaMode = false;
+bool Constant::addIncompleteECs = false;
 // moved here from hints.cc
 const int power2id[31] = {1,2,4,8,16,32,64,128,
 			   256,512,1024,2048,4096,8192,16384,32768,
@@ -426,7 +428,12 @@ void Constant::init(){
       rescaleBoni = true;
     }
 
-
+    try {
+	addIncompleteECs = Properties::getBoolProperty("addIncompleteECs");
+    } catch(...) {
+	addIncompleteECs = false;
+    }
+    
     Properties::assignProperty("/UtrModel/d_polyasig_cleavage", d_polyasig_cleavage);
     Properties::assignProperty("keep_viterbi", 	keep_viterbi);
     Properties::assignProperty("/Constant/gc_range_min", gc_range_min);

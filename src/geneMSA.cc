@@ -189,7 +189,6 @@ map<string,ExonCandidate*>* GeneMSA::getECHash(list<ExonCandidate*> *ec) {
 // computes and sets the exon candidates for species s
 // and inserts them into the hash of ECs if they do not exist already
 void GeneMSA::createExonCands(int s, const char *dna, map<int_fast64_t, ExonCandidate*> &ecs, map<int_fast64_t, ExonCandidate*> &addECs){
-  cout << "createexoncands" << endl;
   double assmotifqthresh = 0; // 0.15;
   double assqthresh = 0; // 0.3;
   double dssqthresh = 0; // 0.7;
@@ -215,8 +214,8 @@ void GeneMSA::setExonCands(vector<map<int_fast64_t, ExonCandidate*> > &ecs){
             }
             exoncands[s] = candidates;
             ecs[s].clear(); // not needed anymore
-            cout << "Found " << exoncands[s]->size() << " ECs on species " << rsa->getSname(s) << endl; 
-        }
+            cout << "Found " << exoncands[s]->size() << " ECs on species " << rsa->getSname(s) << endl;
+	}
     }
 }
 
@@ -274,7 +273,7 @@ void GeneMSA::createOrthoExons(list<OrthoExon> &orthoExonsList, map<int_fast64_t
 	for (it = aec->second.begin(); it != aec->second.end(); ++it){
 	    int s = it->first;
 	    ExonCandidate *ec = it->second;
-	    // cout << rsa->getSname(s) << "\t" << ec->getStart() + offsets[s] << ".." << ec->getEnd() + offsets[s] << "\t" << *ec << endl;
+	    cout << rsa->getSname(s) << "\t" << ec->getStart() + offsets[s] << ".." << ec->getEnd() + offsets[s] << "\t" << *ec << endl;
 	    if (oe.orthoex[s])
 		throw ProjectError("createOrthoExons: Have two exon candidates from the same species " 
 				   + rsa->getSname(s) + " with the same key " + itoa(aec->first));
@@ -1573,8 +1572,9 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
 		vector<fragment>::const_iterator it = fragsit[j];
 		if( i >= it->aliPos && i <= it->aliPos + it->len - 1){ // character in i-th column, j-th row is not a gap
 		    int pos = it->chrPos - offsets[j] + seqPos[j];
-                    if(pos < 0 || pos >= seqRanges[j]->length)
-                        throw ProjectError("Internal error in GeneMSA::printConsScore: trying to read position" + itoa(pos+1) + "in sequence " + seqRanges[j]->seqname + ".");
+                    // if(pos < 0 || pos >= seqRanges[j]->length)
+		    if(pos < 0 || pos > seqRanges[j]->length)
+                        throw ProjectError("Internal error in GeneMSA::printConsScore: trying to read position " + itoa(pos+1) + " in sequence " /*+ seqRanges[j]->seqname*/ + ".");
 		    const char* base = seqRanges[j]->sequence + pos;
 		    switch(*base){
 		    case 'a': a++; break;

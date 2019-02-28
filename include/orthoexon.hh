@@ -19,7 +19,7 @@
 #include <string>
 #include <list>
 
-extern const char*  phyleticPatternIdentifiers[6];
+extern const char* phyleticPatternIdentifiers[6];
 
 //forward declarations:
 class Node;
@@ -74,9 +74,9 @@ public:
     OEtraits oeTraits;
 private:
     int_fast64_t key; // key encodes all of: aliStart aliEnd type lenMod3
-  list<vector<double> > loglikOmegaStarts;
-  int intervalCount;   
-  bit_vector bv; //  stores in one bit for each species its absence/presence (0/1)
+    list<vector<double> > loglikOmegaStarts;
+    int intervalCount;   
+    bit_vector bv; //  stores in one bit for each species its absence/presence (0/1)
     PhyloTree *tree; // corresponding tree topology of an OE
 };
 

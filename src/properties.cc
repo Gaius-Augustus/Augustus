@@ -39,6 +39,7 @@ void downcase(string& s) {
 map<string, string> Properties::properties;
 const char* Properties::parameternames[NUMPARNAMES]= 
 {
+"addIncompleteECs",
 "allow_hinted_splicesites",
 "alnfile",
 "alternatives-from-evidence",
@@ -324,7 +325,7 @@ UTR_KEY,
 
 
 
-void Properties::readFile( string filename ){
+void Properties::readFile( string filename , int fileTypeNr){
     ifstream strm;
     strm.open( filename.c_str() );
     if (!strm) {
@@ -489,7 +490,7 @@ void Properties::init( int argc, char* argv[] ){
     }
 
 
-    if (Constant::MultSpeciesMode || hasProperty(REF_EXON_KEY)){
+    if (Constant::MultSpeciesMode || hasProperty(REF_EXON_KEY) || Constant::EspocaMode){
       string cgp_file = "";
       Constant::lr_features.push_back(new LRfeatureGroup(0, "intercept", 0, 1)); // exon intercept
       Constant::lr_features.push_back(new LRfeatureGroup(20, "intron_intercept", 0, 1)); // intron intercept
@@ -802,7 +803,7 @@ void Properties::readCGPparsFile(ifstream& strm){
       for(int i=0; i<Constant::lr_features.size(); i++){
 	if(Constant::lr_features[i]->id == id){
 	  if(Constant::lr_features[i]->descript != feature_name || Constant::lr_features[i]->num_bins < nb)
-	    throw PropertiesError("Properties::readCGPparsFile: "
+	    throw PropertiesError("Properties::readCGPparsFile "
 				  "Error in readCGPparsFile: number of bins and/or feature description not consistent with the CGP config file.");
 	  
 	  if(nb == 1){
@@ -869,8 +870,14 @@ LRfeatureGroup* Properties::findFeatureGroup(int id){
 double Properties::calculate_feature_score(Traits* t){
 
   double score = 0;
-  for(int i = 0; i < Constant::lr_features.size(); i++)
-    score += calculate_feature_score(Constant::lr_features[i], t);
+  for(int i = 0; i < Constant::lr_features.size(); i++){
+      if(t->isOE() && Constant::lr_features[i]->id < 20){
+	  //cout << "feature " << Constant::lr_features[i]->id << " : " <<Constant::lr_features[i]->descript;
+	  double s = calculate_feature_score(Constant::lr_features[i], t);
+	  //cout << " with score: " << s << endl; 
+	  score += s;
+      }
+  }
   return score;
 }
 
@@ -879,7 +886,6 @@ double Properties::calculate_feature_score(LRfeatureGroup* lr_feature, Traits* t
   int id = lr_feature->id;
   bool hasTrait = true;
   double x = getFeature(id, t, &hasTrait);
-  
   if(hasTrait){
     if(lr_feature->num_bins==1) // not binned features
       return (x * lr_feature->weight);

@@ -29,7 +29,7 @@
 #endif
 
 
-#define NUMPARNAMES 280
+#define NUMPARNAMES 283
 
 #define GENEMODEL_KEY "genemodel"
 #define NONCODING_KEY "nc"
@@ -177,11 +177,7 @@ class Properties{
          * @param   file The file with the programm properties
          * @exception PropertiesError
          */
-<<<<<<< HEAD
-        static void        readFile    ( string file );
-=======
-        static void        readFile    ( string file, int fileTypeNr = 0 ) throw( PropertiesError );
->>>>>>> new_training_code
+  static void        readFile    ( string file, int fileTypeNr = 0 );
         /**
          * @memo    Parse the commandline arguments.
          *

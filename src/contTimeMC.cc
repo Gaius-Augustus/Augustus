@@ -29,7 +29,6 @@
 
 // destructor
 Evo::~Evo(){
-  cout << "destructor of Evo" << endl;
     times.clear();
     for (int i=0; i < allPs.getColSize(); i++)
 	for (int j=0; j< allPs.getRowSize(); j++){
@@ -1207,14 +1206,14 @@ double CodonEvo::graphOmegaOnCodonAli(vector<string> &seqtuple, PhyloTree *tree,
 	if(omegas[u] > 1){
 	  postProb_gt1[codonIdx] += postprobs[u];
 	}
-      }    
+      }
     }
     codonIdx++;
   }
 
   double subst_div = 0;
   int numc = 0;
-  cout << setw(10) << "ali_pos" << setw(10) << "ref_pos" << setw(10) << "AS_ref" << setw(10) << "Pr(w>1)" << setw(10) << "post_mean" << setw(4) << "+-" << setw(10) << "SE_for_w" << setw(10) << "num_subst"<< setw(10) << "num_subst/tree_div" << endl;
+  cout << setw(10) << "ali_pos" << setw(10) << "ref_pos" << setw(10) << "AS_ref" << setw(10) << "Pr(w>1)" << setw(10) << "post_mean" << setw(4) << "+-" << setw(10) << "SE_for_w" << setw(10) << "num_subst" << setw(10) << "num_subst/tree_div" << endl;
   for(int i = 0; i < codonIdx; i++){
     cout << setw(10)<< i << setw(10) << refPos[i] << setw(10) << aminoAcidsRef[i];
     if(postProb_gt1[i] > 0){

@@ -408,6 +408,8 @@ public:
     static bool rescaleBoni;
     static string cgpConfigFile; // config file with features listed for exon and intron scores
     static string cgpParsFile; // weight parameters for exon and intron feature scores
+    static bool EspocaMode;
+    static bool addIncompleteECs;
 };
 
 
