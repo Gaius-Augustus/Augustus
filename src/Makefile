@@ -66,6 +66,7 @@ all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
 .SUFFIXES:
 .SUFFIXES: .cc .o .so
+.PHONY: googletest
 
 .cc.o:
 	$(CXX) -c $(CXXFLAGS) -o $@ $< $(INCLS)
@@ -119,9 +120,17 @@ info:
 
 clean:
 	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o  $(INFO)
+	cd googletest && ${MAKE} clean
 
 tidy: clean
 	rm -f *~ *.o *.rej *.orig ../include/*~ ../include/*.orig ../include/*.rej $(INFO)
+	cd googletest && ${MAKE} tidy
+
+googletest:
+	cd googletest && ${MAKE}
+
+unittest: googletest
+	echo "compile unittest here"
 
 augustus.o : \
 	../include/evaluation.hh \
