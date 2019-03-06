@@ -6,6 +6,7 @@ auxprogs/utrrnaseq/Debug/src/*.o
 auxprogs/utrrnaseq/Debug/utrrnaseq
 auxprogs/utrrnaseq/*.gff
 src/*.o
+src/googletest/*.o
 auxprogs/bam2hints/bam2hints
 auxprogs/bam2hints/bam2hints.o
 auxprogs/bam2wig/bam2wig
