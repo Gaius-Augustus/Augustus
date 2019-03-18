@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # Convert a gtf file and corresponding genome fasta file to protein file with standard translational code
 # Katharina J. Hoff

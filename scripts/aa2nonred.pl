@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # take a multiple fasta amino acid sequence file
 # and output a file that is non-redundant:
