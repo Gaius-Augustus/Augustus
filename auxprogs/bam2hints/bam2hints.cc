@@ -587,7 +587,7 @@ int main(int argc, char* argv[])
   SamHeader header = BAM.GetHeader();
   if(header.HasSortOrder() && header.SortOrder == "unsorted" && IntOnly && Mult)
   {
-    cout << "\nBAM file MUST be sorted by target sequence names when 'intronsonly' and 'mult' options are active\n";
+    cout << "\nBAM file MUST be sorted by read names (samtools sort -n) when 'intronsonly' and 'mult' options are active\n";
     return -1;
   }
 
@@ -826,7 +826,7 @@ int main(int argc, char* argv[])
   	  if(IntOnly && Mult)
   	  {
   	    // require sorting and abort
-  	    cout << "\nBAM file MUST be sorted by target sequence names when 'intronsonly' and 'mult' options are active\n";
+  	    cout << "\nBAM file MUST be sorted by read names (samtools sort -n)  when 'intronsonly' and 'mult' options are active\n";
   	    return -1;
   	  }
   	}
