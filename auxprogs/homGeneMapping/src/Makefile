@@ -40,6 +40,7 @@ all: homGeneMapping
 
 homGeneMapping: main.cc $(OBJS)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $^ $(INCLS)  $(LIBS)
+	mkdir -p ../../../bin/
 	cp homGeneMapping ../../../bin/homGeneMapping
 
 clean:

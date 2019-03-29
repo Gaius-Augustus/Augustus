@@ -26,6 +26,7 @@ CC=gcc
 
 $(PROGRAM) : bam2wig.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LIBS) -lbz2 -llzma
+	mkdir -p ../../bin
 	cp bam2wig ../../bin/bam2wig
 
 bam2wig.o : bam2wig.c
