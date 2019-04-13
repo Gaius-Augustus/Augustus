@@ -47,6 +47,7 @@ utrrnaseq: $(OBJS) $(USER_OBJS)
 	g++  -o "utrrnaseq" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
+	cp utrrnaseq ../../../bin/
 
 # Other Targets
 clean:
