@@ -101,6 +101,10 @@ double          ExonModel::lenboostE = 0; // lengths above L are improved, the m
 OpenReadingFrame::OpenReadingFrame(const char *dna, int _max_exon_length, int _n) :
     n(_n), max_exon_length(_max_exon_length)
 {
+    if (*dna != tolower(*dna))
+	throw ProjectError("Internal Error: upper case in DNA "
+			   + string(dna).substr(0, 50) + "...");
+
     nearestStopForward.resize(n);
     nearestStopReverse.resize(n);
     int stopcodpos, i;
@@ -198,8 +202,6 @@ int OpenReadingFrame::leftmostExonBegin(int frame, int base, bool forward){
  */
 
 bool OpenReadingFrame::isStopcodon( const char* dna ){
-    if (*dna != tolower(*dna))
-	throw ProjectError("Internal Error: upper case dna"); // TEMP: just for now
     // Oliver, 2009/06/24: commented this out to give translation table priority
     // over {ochre,amber,opal}prob values; this basically causes
     // stopcodons with prob=0 to appear neither prematurely nor as stopcodons
