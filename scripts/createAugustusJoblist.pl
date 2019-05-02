@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # createAugustusJoblist.pl
 # Create a joblist with overlapping sequence chunks from multiple fasta files.

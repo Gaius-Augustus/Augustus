@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # Authors: Katharina Hoff & Sophie Kersting
 # Contact: katharina.hoff@uni-greifswald.de
