@@ -11,10 +11,10 @@
 my $usage = "writeResultsPage ID species-name db-file grails-out www-out AugustusConfigPath AugustusScriptsPath final-flag\n";
 
 if(@ARGV != 8){
-    $nArgs = @ARGV;
-    print "Number of args $nArgs\n";
-        print $usage;
-        exit;
+	$nArgs = @ARGV;
+	print "Number of args $nArgs\n";
+	print $usage;
+	exit;
 }
 
 ## automatically configured variables
@@ -50,7 +50,7 @@ if($final == 0){
 		print STDERR "Creating the output directory in for apache failed! Check writing permissions!\n";
 		exit;
 	}
-	## create emtpy results page
+	## create empty results page
 	my $head = $svnScripts."/webserver-results.head";
 	my $body = $svnScripts."/webserver-results.body";
 	my $tail = $svnScripts."/webserver-results.tail";
@@ -162,7 +162,7 @@ if($projectID =~ m/^t/){
 
 	## pack parameters
 	if(-e $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_parameters.cfg"){
-	    print STDOUT "Packing parameters...\n";
+		print STDOUT "Packing parameters...\n";
 		$cmdStr = "cd $projectWebOutDir; tar -czvf parameters.tar.gz $species &> /dev/null;";
 		`$cmdStr`;
 	}
@@ -173,7 +173,7 @@ if($projectID =~ m/^t/){
 
 	## remove original parameter directoy from apache directory
 	if(-d "$projectWebOutDir/$species"){
-      	        print "Cleaning up parameters in apache directory...\n";
+	  		print "Cleaning up parameters in apache directory...\n";
 		$cmdStr = "rm -r $projectWebOutDir/$species";
 		system "$cmdStr\n";
 	}
@@ -207,7 +207,7 @@ if($projectID =~ m/^t/){
 	if (not(-e "$ab_initio_grailsDir/predictions/augustus.gff")){
 		print STDERR "AutoAug did not produce ab initio predictions!\n";
 	}else{
-	        $abinitioExistsFlag = 1;
+		$abinitioExistsFlag = 1;
 		$cmdStr = "cp  $ab_initio_grailsDir/predictions/* $ab_initio_webDir; cp $ab_initio_grailsDir/gbrowse/* $ab_initio_webDir;";
 		`$cmdStr`;
 		$cmdStr = "cd $projectWebOutDir; tar -czvf ab_initio.tar.gz ab_initio;";
@@ -221,7 +221,7 @@ if($projectID =~ m/^t/){
 		$hintsPredsExistsFlag = 1;
 	}
 	if($hintsPredsExistsFlag==1){
-	        print "Packing gene predictions without UTR and with hints...\n";
+		print "Packing gene predictions without UTR and with hints...\n";
 		my $hintsPred_webDir = $projectWebOutDir."/hints_pred";
 		$cmdStr = "mkdir $hintsPred_webDir";
 		system $cmdStr;
@@ -263,7 +263,7 @@ if($projectID =~ m/^t/){
 		print STDOUT "AutoAug did not produce utr and hint predictions!\n";
 	}
 	if($utrHintsPredsExistsFlag==1){
-	        print STDOUT "Packing gene predictions with UTR and hints...\n";
+		print STDOUT "Packing gene predictions with UTR and hints...\n";
 		my $utrHintsPred_webDir = $projectWebOutDir."/hints_utr_pred";
 		$cmdStr = "mkdir $utrHintsPred_webDir";
 		system $cmdStr;
@@ -280,7 +280,7 @@ if($projectID =~ m/^t/){
 	my $errorFile = $grailsOut."/$projectID/AutoAug.err";
 	my $logFile = $grailsOut."/$projectID/AutoAug.log";
 	if(-e $errorFile){
-	        print STDOUT "Copying error and log file...\n";
+		print STDOUT "Copying error and log file...\n";
 		$cmdStr = "cp $errorFile $projectWebOutDir; cp $logFile $projectWebOutDir;";
 		`$cmdStr`;
 	}else{
@@ -289,9 +289,9 @@ if($projectID =~ m/^t/){
 	}
 }else{
 	## pack and copy augustus predictions
-        print STDOUT "writeResults.pl is called in prediction mode...\n";
+	print STDOUT "writeResults.pl is called in prediction mode...\n";
 	if(-d $grailsOut."/$projectID/augustus"){
-	        print STDOUT "Packing gene predictions...\n";
+		print STDOUT "Packing gene predictions...\n";
 		$cmdStr = "cd $grailsOut/$projectID; tar -czvf predictions.tar.gz augustus;";
 		`$cmdStr`;
 		$cmdStr = "cp $grailsOut/$projectID/predictions.tar.gz $projectWebOutDir/predictions.tar.gz";
@@ -299,7 +299,7 @@ if($projectID =~ m/^t/){
 	}
 }
 
-## create index-html page
+## create index.html page
 my $head = $svnScripts."/webserver-results.head";
 my $body = $svnScripts."/webserver-results.body";
 my $tail = $svnScripts."/webserver-results.tail";
@@ -317,23 +317,33 @@ if($projectID =~ m/^t/){
 	print SEG2 "<div class=\"main\" id=\"main\">\n<p>On this page, you find all relevant results to AUGUSTUS training run $projectID for species $species, first submitted to our web server application on $submissionDate.</p>\n";
 	print SEG2 "<h1>Files for download</h1>\n<table>\n<tr><td><b>Log-file</b></td><td><a href=\"AutoAug.log\">AutoAug.log</a></td></tr>\n<tr><td><b>Error-file</b></td><td><a href=\"AutoAug.err\">AutoAug.err</a></td></tr>\n";
 	if(-e "$projectWebOutDir/parameters.tar.gz"){
-	print SEG2 "<tr>\n<td><b>Species parameter archive</b>&nbsp;&nbsp;</td>\n<td><a href=\"parameters.tar.gz\">parameters.tar.gz</a></td>\n</tr>\n";
-	}else{print STDOUT "Parameters are not included in web output\n";}
+		print SEG2 "<tr>\n<td><b>Species parameter archive</b>&nbsp;&nbsp;</td>\n<td><a href=\"parameters.tar.gz\">parameters.tar.gz</a></td>\n</tr>\n";
+	}else{
+		print STDOUT "Parameters are not included in web output\n";}
 	if(-e "$projectWebOutDir/training.gb"){
-	print SEG2 "<tr>\n<td><b>Training genes</b>&nbsp;&nbsp;</td><td><a href=\"training.gb.gz\">training.gb.gz</a></td>\n</tr>\n";
-	}else{print STDOUT "training.gb is not included in web output\n";}
+		print SEG2 "<tr>\n<td><b>Training genes</b>&nbsp;&nbsp;</td><td><a href=\"training.gb.gz\">training.gb.gz</a></td>\n</tr>\n";
+	}else{
+		print STDOUT "training.gb is not included in web output\n";
+	}
 	if($abinitioExistsFlag==1){
-	print SEG2 "<tr>\n<td><b>Ab initio predictions</b></td>\n<td><a href=\"ab_initio.tar.gz\">ab_initio.tar.gz</a></td>\n</tr>\n";
-	}else{print STDOUT "ab initio predictions are not included in web output\n";}
+		print SEG2 "<tr>\n<td><b>Ab initio predictions</b></td>\n<td><a href=\"ab_initio.tar.gz\">ab_initio.tar.gz</a></td>\n</tr>\n";
+	}else{
+		print STDOUT "ab initio predictions are not included in web output\n";
+	}
 	if($hintsPredsExistsFlag==1){
-	print SEG2 "<tr>\n<td><b>Predictions with hints</b></td>\n<td><a href=\"hints_pred.tar.gz\">hints_pred.tar.gz</a></td>\n</tr>\n";
-	}else{print STDOUT "hint predictions are not included in web output\n";}
+		print SEG2 "<tr>\n<td><b>Predictions with hints</b></td>\n<td><a href=\"hints_pred.tar.gz\">hints_pred.tar.gz</a></td>\n</tr>\n";
+	}else{
+		print STDOUT "hint predictions are not included in web output\n";
+	}
 	if($utrPredsExistsFlag==1){
-	print SEG2 "<tr>\n<td><b>Predictions with UTR</b></td>\n<td><a href=\"utr_pred.tar.gz\">utr_pred.tar.gz</a></td>\n</tr>\n";
-	}else{print STDOUT "UTR predictions are not included in web output\n";}
+		print SEG2 "<tr>\n<td><b>Predictions with UTR</b></td>\n<td><a href=\"utr_pred.tar.gz\">utr_pred.tar.gz</a></td>\n</tr>\n";
+	}else{
+		print STDOUT "UTR predictions are not included in web output\n";}
 	if($utrHintsPredsExistsFlag==1){
-	print SEG2 "<tr>\n<td><b>Predictions with hints and UTR &nbsp;&nbsp;</b></td>\n<td><a href=\"hints_utr_pred.tar.gz\">hints_utr_pred.tar.gz</a></td>\n</tr>\n";
-	}else{print STDOUT "UTR and hint predictions are not included in web output\n";}
+		print SEG2 "<tr>\n<td><b>Predictions with hints and UTR &nbsp;&nbsp;</b></td>\n<td><a href=\"hints_utr_pred.tar.gz\">hints_utr_pred.tar.gz</a></td>\n</tr>\n";
+	}else{
+		print STDOUT "UTR and hint predictions are not included in web output\n";
+	}
 	print SEG2 "</table>\n<br><br>\n";
 	close(SEG2) or die "Could not close file $segmentFile2!\n";
 }else{
