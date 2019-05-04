@@ -38,6 +38,8 @@ release:
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
 
 test:
+	cd src && ${MAKE} unittest
+	cd src/unittests && ./unittests
 	./bin/augustus --species=human --UTR=on examples/example.fa
 
 # remove -static from src/Makefile for MAC users
