@@ -121,6 +121,7 @@ info:
 clean:
 	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o  $(INFO)
 	cd googletest && ${MAKE} clean
+	cd unittests && ${MAKE} clean
 
 tidy: clean
 	rm -f *~ *.o *.rej *.orig ../include/*~ ../include/*.orig ../include/*.rej $(INFO)
@@ -130,7 +131,7 @@ googletest:
 	cd googletest && ${MAKE}
 
 unittest: googletest
-	echo "compile unittest here"
+	cd unittests && ${MAKE}
 
 augustus.o : \
 	../include/evaluation.hh \
