@@ -52,20 +52,16 @@ if($final == 0){
 	}
 	## create empty results page
 	my $head = $svnScripts."/webserver-results.head";
-	my $body = $svnScripts."/webserver-results.body";
 	my $tail = $svnScripts."/webserver-results.tail";
-	my $segmentFile1 = $grailsOut."/$projectID/segment1";
 	my $segmentFile2 = $grailsOut."/$projectID/segment2";
-	open(SEG1, ">", $segmentFile1) or die "Could not open file $segmentFile1!\n";
-	print SEG1 "Results for job $projectID\n";
-	close(SEG1) or die "Could not close file $segmentFile1!\n";
 	open(SEG2, ">", $segmentFile2) or die "Could not open file $segmentFile2!\n";
-	print SEG2 "<a href=\"index.html\" class=\"contentpagetitle\">Results for job $projectID</a>\n</td>\n</tr>\n</table>\n";
-	print SEG2 "<p>There are no results available, yet!</p>\n";
+	print SEG2 "<h1 class=\"csc-firstHeader\">Results for job $projectID</h1>\n";
+	print SEG2 "<div class=\"csc-default divider\"><hr></div>\n";
+	print SEG2 "<p>There are no results available, yet!</p><br>\n";
 	close(SEG2) or die "Could not close file $segmentFIle2!\n";
-	$cmdStr = "cat $head $segmentFile1 $body $segmentFile2 $tail > $projectWebOutDir/index.html";
+	$cmdStr = "cat $head $segmentFile2 $tail > $projectWebOutDir/index.html";
 	`$cmdStr`;
-	
+	unlink $segmentFile2;
 }
 
 if($final == 1){
@@ -173,7 +169,7 @@ if($projectID =~ m/^t/){
 
 	## remove original parameter directoy from apache directory
 	if(-d "$projectWebOutDir/$species"){
-	  		print "Cleaning up parameters in apache directory...\n";
+		print "Cleaning up parameters in apache directory...\n";
 		$cmdStr = "rm -r $projectWebOutDir/$species";
 		system "$cmdStr\n";
 	}
@@ -208,7 +204,7 @@ if($projectID =~ m/^t/){
 		print STDERR "AutoAug did not produce ab initio predictions!\n";
 	}else{
 		$abinitioExistsFlag = 1;
-		$cmdStr = "cp  $ab_initio_grailsDir/predictions/* $ab_initio_webDir; cp $ab_initio_grailsDir/gbrowse/* $ab_initio_webDir;";
+		$cmdStr = "cp $ab_initio_grailsDir/predictions/* $ab_initio_webDir; cp $ab_initio_grailsDir/gbrowse/* $ab_initio_webDir;";
 		`$cmdStr`;
 		$cmdStr = "cd $projectWebOutDir; tar -czvf ab_initio.tar.gz ab_initio;";
 		`$cmdStr`;
@@ -229,7 +225,7 @@ if($projectID =~ m/^t/){
 		if (not(-d "$hintsPred_grailsDir")){
 			print STDERR "AutoAug did not produce hints predictions!\n";
 		}
-		$cmdStr = "cp  $hintsPred_grailsDir/predictions/* $hintsPred_webDir; cp $hintsPred_grailsDir/gbrowse/* $hintsPred_webDir;";
+		$cmdStr = "cp $hintsPred_grailsDir/predictions/* $hintsPred_webDir; cp $hintsPred_grailsDir/gbrowse/* $hintsPred_webDir;";
 		`$cmdStr`;
 		$cmdStr = "cd $projectWebOutDir; tar -czvf hints_pred.tar.gz hints_pred;";
 		`$cmdStr`;
@@ -248,7 +244,7 @@ if($projectID =~ m/^t/){
 		$cmdStr = "mkdir $utrPred_webDir";
 		system $cmdStr;
 		my $utrPred_grailsDir = $grailsOut."/$projectID/autoAug/autoAugPred_utr";
-		$cmdStr = "cp  $utrPred_grailsDir/predictions/* $utrPred_webDir; cp $utrPred_grailsDir/gbrowse/* $utrPred_webDir;";
+		$cmdStr = "cp $utrPred_grailsDir/predictions/* $utrPred_webDir; cp $utrPred_grailsDir/gbrowse/* $utrPred_webDir;";
 		`$cmdStr`;
 		$cmdStr = "cd $projectWebOutDir; tar -czvf utr_pred.tar.gz utr_pred;";
 		`$cmdStr`;
@@ -268,7 +264,7 @@ if($projectID =~ m/^t/){
 		$cmdStr = "mkdir $utrHintsPred_webDir";
 		system $cmdStr;
 		my $utrHintsPred_grailsDir = $grailsOut."/$projectID/autoAug/autoAugPred_hints_utr";
-		$cmdStr = "cp  $utrHintsPred_grailsDir/predictions/* $utrHintsPred_webDir; cp $utrHintsPred_grailsDir/gbrowse/* $utrHintsPred_webDir;";
+		$cmdStr = "cp $utrHintsPred_grailsDir/predictions/* $utrHintsPred_webDir; cp $utrHintsPred_grailsDir/gbrowse/* $utrHintsPred_webDir;";
 		`$cmdStr`;
 		$cmdStr = "cd $projectWebOutDir; tar -czvf hints_utr_pred.tar.gz hints_utr_pred;";
 		`$cmdStr`;
@@ -301,63 +297,64 @@ if($projectID =~ m/^t/){
 
 ## create index.html page
 my $head = $svnScripts."/webserver-results.head";
-my $body = $svnScripts."/webserver-results.body";
 my $tail = $svnScripts."/webserver-results.tail";
-my $segmentFile1 = $grailsOut."/$projectID/segment1";
 my $segmentFile2 = $grailsOut."/$projectID/segment2";
 
 
 if($projectID =~ m/^t/){
-	open(SEG1, ">", $segmentFile1) or die "Could not open file $segmentFile1!\n";
-	print SEG1 "Training Results for job $projectID\n";
-	close(SEG1) or die "Could not close file $segmentFile1!\n";
-
+	
 	open(SEG2, ">", $segmentFile2) or die "Could not open file $segmentFile2!\n";
-	print SEG2 "<a href=\"index.html\" class=\"contentpagetitle\">Training results for job $projectID</a>\n</td>\n</tr>\n</table>\n";
-	print SEG2 "<div class=\"main\" id=\"main\">\n<p>On this page, you find all relevant results to AUGUSTUS training run $projectID for species $species, first submitted to our web server application on $submissionDate.</p>\n";
-	print SEG2 "<h1>Files for download</h1>\n<table>\n<tr><td><b>Log-file</b></td><td><a href=\"AutoAug.log\">AutoAug.log</a></td></tr>\n<tr><td><b>Error-file</b></td><td><a href=\"AutoAug.err\">AutoAug.err</a></td></tr>\n";
+	print SEG2 "<h1 class=\"csc-firstHeader\">Training results for job $projectID</h1>\n";
+	print SEG2 "<div class=\"csc-default divider\"><hr></div>\n";
+	print SEG2 "<p>On this page, you find all relevant results to AUGUSTUS training run $projectID for species $species, first submitted to our web server application on $submissionDate.</p>\n";
+	print SEG2 "<div class=\"csc-default divider\"><hr></div>\n";
+	print SEG2 "<h2><font color=\"#006699\">Results</font></h2>\n";
+	print SEG2 "<p><b>Log-file</b>&nbsp;&nbsp;<a href=\"AutoAug.log\">AutoAug.log</a></p><br>\n";
+	print SEG2 "<p><b>Error-file</b>&nbsp;&nbsp;<a href=\"AutoAug.err\">AutoAug.err</a></p><br>\n";
 	if(-e "$projectWebOutDir/parameters.tar.gz"){
-		print SEG2 "<tr>\n<td><b>Species parameter archive</b>&nbsp;&nbsp;</td>\n<td><a href=\"parameters.tar.gz\">parameters.tar.gz</a></td>\n</tr>\n";
+		print SEG2 "<p><b>Species parameter archive</b>&nbsp;&nbsp;<a href=\"parameters.tar.gz\">parameters.tar.gz</a></p><br>\n";
 	}else{
-		print STDOUT "Parameters are not included in web output\n";}
-	if(-e "$projectWebOutDir/training.gb"){
-		print SEG2 "<tr>\n<td><b>Training genes</b>&nbsp;&nbsp;</td><td><a href=\"training.gb.gz\">training.gb.gz</a></td>\n</tr>\n";
+		print STDOUT "Parameters are not included in web output\n";
+	}
+	if(-e "$projectWebOutDir/training.gb.gz"){
+		print SEG2 "<p><b>Training genes</b>&nbsp;&nbsp;<a href=\"training.gb.gz\">training.gb.gz</a></p><br>\n";
 	}else{
 		print STDOUT "training.gb is not included in web output\n";
 	}
 	if($abinitioExistsFlag==1){
-		print SEG2 "<tr>\n<td><b>Ab initio predictions</b></td>\n<td><a href=\"ab_initio.tar.gz\">ab_initio.tar.gz</a></td>\n</tr>\n";
+		print SEG2 "<p><b>Ab initio predictions</b>&nbsp;&nbsp;<a href=\"ab_initio.tar.gz\">ab_initio.tar.gz</a></p><br>\n";
 	}else{
 		print STDOUT "ab initio predictions are not included in web output\n";
 	}
 	if($hintsPredsExistsFlag==1){
-		print SEG2 "<tr>\n<td><b>Predictions with hints</b></td>\n<td><a href=\"hints_pred.tar.gz\">hints_pred.tar.gz</a></td>\n</tr>\n";
+		print SEG2 "<p><b>Predictions with hints</b>&nbsp;&nbsp;<a href=\"hints_pred.tar.gz\">hints_pred.tar.gz</a></p><br>\n";
 	}else{
 		print STDOUT "hint predictions are not included in web output\n";
 	}
 	if($utrPredsExistsFlag==1){
-		print SEG2 "<tr>\n<td><b>Predictions with UTR</b></td>\n<td><a href=\"utr_pred.tar.gz\">utr_pred.tar.gz</a></td>\n</tr>\n";
+		print SEG2 "<p><b>Predictions with UTR</b>&nbsp;&nbsp;<a href=\"utr_pred.tar.gz\">utr_pred.tar.gz</a></p><br>\n";
 	}else{
-		print STDOUT "UTR predictions are not included in web output\n";}
+		print STDOUT "UTR predictions are not included in web output\n";
+	}
 	if($utrHintsPredsExistsFlag==1){
-		print SEG2 "<tr>\n<td><b>Predictions with hints and UTR &nbsp;&nbsp;</b></td>\n<td><a href=\"hints_utr_pred.tar.gz\">hints_utr_pred.tar.gz</a></td>\n</tr>\n";
+		print SEG2 "<p><b>Predictions with hints and UTR</b>&nbsp;&nbsp;<a href=\"hints_utr_pred.tar.gz\">hints_utr_pred.tar.gz</a></p><br>\n";
 	}else{
 		print STDOUT "UTR and hint predictions are not included in web output\n";
-	}
-	print SEG2 "</table>\n<br><br>\n";
+	}	
+	print SEG2 "</table><br><br>\n";
 	close(SEG2) or die "Could not close file $segmentFile2!\n";
 }else{
-	open(SEG1, ">", $segmentFile1) or die "Could not open file $segmentFile1!\n";
-	print SEG1 "Prediction Results for job $projectID\n";
-	close(SEG1) or die "Could not close file $segmentFile1!\n";
 	open(SEG2, ">", $segmentFile2) or die "Could not open file $segmentFile2!\n";
-	print SEG2 "<a href=\"index.html\" class=\"contentpagetitle\">Prediction results for job $projectID</a>\n</td>\n</tr>\n</table>\n";
-	print SEG2 "<div class=\"main\" id=\"main\">\n<p>On this page, you find all relevant results to AUGUSTUS prediction run $projectID, first submitted to our web server application on $submissionDate.</p>\n";
-	print SEG2 "<h1>Files for download</h1>\n<table>\n<tr><td><b>Prediction archive</b>&nbsp;&nbsp;</td><td><a href=\"predictions.tar.gz\">predictions.tar.gz</a></td></tr>\n";
-	print SEG2 "</table>\n<br><br>\n";
+	print SEG2 "<h1 class=\"csc-firstHeader\">Predicting Genes with AUGUSTUS<br>Job $projectID</h1>\n";
+	print SEG2 "<div class=\"csc-default divider\"><hr></div>\n";
+	print SEG2 "<p>On this page, you find all relevant results to AUGUSTUS prediction run $projectID, first submitted to our web server application on $submissionDate.</p>\n";
+	print SEG2 "<div class=\"csc-default divider\"><hr></div>\n";
+	print SEG2 "<h2><font color=\"#006699\">Results</font></h2>\n";
+	print SEG2 "<p><b>Prediction archive</b>&nbsp;&nbsp;<a href=\"predictions.tar.gz\">predictions.tar.gz</a></p><br>\n";
 	close(SEG2) or die "Could not close file $segmentFile2!\n";
 }
 
-$cmdStr = "cat $head $segmentFile1 $body $segmentFile2 $tail > $projectWebOutDir/index.html";
+$cmdStr = "cat $head $segmentFile2 $tail > $projectWebOutDir/index.html";
 `$cmdStr`;
+unlink $segmentFile2;
 }
