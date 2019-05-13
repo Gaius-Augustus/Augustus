@@ -38,7 +38,7 @@ ifdef COMPGENEPRED
 endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
-PROGR	= augustus etraining prepareAlign fastBlockSearch
+PROGR	= augustus etraining prepareAlign fastBlockSearch pp_simScore
 INFO    = cxxflags
 
 ifdef MYSQL
@@ -97,6 +97,10 @@ fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 prepareAlign: pp_prepare_align.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 	cp prepareAlign ../bin/
+
+pp_simScore: pp_simscore.cc types.o properties.o geneticcode.o pp_profile.o lldouble.o
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	cp pp_simScore ../bin/
 
 load2db: load2db.cc fasta.o hints.o types.o properties.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
