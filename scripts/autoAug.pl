@@ -418,21 +418,22 @@ sub construct_training_set{
 	$gmapoption = "--USE_GMAP" if ($useGMAPforPASA);
 	
 	print "3 Reading MySQL variables from $PASAHOME/pasa_conf/\n" if ($verbose>=3);
-	open(CONFIG, "$PASAHOME/pasa_conf/conf.txt") or die("\nCould not open $PASAHOME/pasa_conf/conf.txt!\n");
+	open(my $config_fh, "<", "$PASAHOME/pasa_conf/conf.txt") or die("\nCould not open $PASAHOME/pasa_conf/conf.txt!\n");
 	my $MYSQLSERVER;
 	my $MYSQL_RO_USER;
 	my $MYSQL_RO_PASSWORD;
 	my $MYSQL_RW_USER;
 	my $MYSQL_RW_PASSWORD;
-	while(<CONFIG>){
-	    $MYSQLSERVER=$1       if /MYSQLSERVER=(.*)/;
-	    $MYSQL_RO_USER=$1     if /MYSQL_RO_USER=(.*)/;
-	    $MYSQL_RO_PASSWORD=$1 if /MYSQL_RO_PASSWORD=(.*)/;
-	    $MYSQL_RW_USER=$1     if /MYSQL_RW_USER=(.*)/;
-	    $MYSQL_RW_PASSWORD=$1 if /MYSQL_RW_PASSWORD=(.*)/;
+	while(my $line = <$config_fh>){
+	    next if ($line =~ /^\s*#/); # discard comments
+	    $MYSQLSERVER=$1       if ($line =~ /MYSQLSERVER=(.*)/);
+	    $MYSQL_RO_USER=$1     if ($line =~ /MYSQL_RO_USER=(.*)/);
+	    $MYSQL_RO_PASSWORD=$1 if ($line =~ /MYSQL_RO_PASSWORD=(.*)/);
+	    $MYSQL_RW_USER=$1     if ($line =~ /MYSQL_RW_USER=(.*)/);
+	    $MYSQL_RW_PASSWORD=$1 if ($line =~ /MYSQL_RW_PASSWORD=(.*)/);
 	    
 	}
-	close(CONFIG);
+	close($config_fh);
 	print "0 WARNING: MYSQL_RO_PASSWORD is empty!\n" if (! $MYSQL_RO_PASSWORD);
 	
 	my $dbh;
