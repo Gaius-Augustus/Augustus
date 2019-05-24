@@ -368,7 +368,7 @@ sub construct_training_set{
 
     if (!uptodate(["transcripts.fasta"], ["transcripts.fasta.clean"])){
 	count_fasta_entries("$trainDir/pasa/transcripts.fasta");
-	$perlCmdString="perl $PASAHOME/seqclean/seqclean/seqclean transcripts.fasta 1>seqclean.stdout 2>seqclean.stderr";
+	$perlCmdString="seqclean transcripts.fasta 1>seqclean.stdout 2>seqclean.stderr";
 	print "2 Running $perlCmdString ..." if ($verbose>=2);
 	system("$perlCmdString")==0 or die ("failed to execute: $!\n");
 	print " Finished!\n" if ($verbose>=2);
@@ -1085,6 +1085,12 @@ sub check_upfront{
 	    print STDERR "Error: 'gmap' not installed. Install GMAP first or use BLAT.\n";
 	    exit(1);
 	}
+    }
+    if ($pasa){
+        if (system("which seqclean > /dev/null") != 0){
+            print STDERR "Error: seqclean script not installed. Install seqclean first or if it is available in a PASAHOME subdirectory add this to PATH.\n";
+            exit(1);
+        }
     }
     find("gff2gbSmallDNA.pl");
     find("summarizeACGTcontent.pl");
