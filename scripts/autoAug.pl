@@ -521,22 +521,23 @@ sub construct_training_set{
     }
 
     # calculate the average gene length
+    my $file_fh;
     if(-e "../pasa/trainingSetCandidates.gff"){
-        open(FILE, "../pasa/trainingSetCandidates.gff") or die("\nCould not open ../pasa/trainingSetCandidates.gff\n");
+        open($file_fh, "<", "../pasa/trainingSetCandidates.gff") or die("\nCould not open ../pasa/trainingSetCandidates.gff\n");
     }else{
-        open(FILE, "../pasa/trainingSetCandidates.gff3") or die("\nCould not open ../pasa/trainingSetCandidates.gff\n");
+        open($file_fh, "<", "../pasa/trainingSetCandidates.gff3") or die("\nCould not open ../pasa/trainingSetCandidates.gff3\n");
     }
     my $sum=0;
     my $n=0;
-    while(<FILE>){
-        if(/\tgene\t/){
-            split;
-            my $len=$_[4]-$_[3]+1;
+    while(my $line = <$file_fh>){
+        if($line =~ /\tgene\t/){
+            my @fields = split(/\t/, $line);
+            my $len=$fields[4]-$fields[3]+1;
             $sum+=$len;
             $n++;
         }
     }
-    close(FILE);
+    close($file_fh);
     print "1 Average gene length in the training set is " . sprintf ("%.2f", ($sum/$n)) . "\n" if ($verbose >=1);
     
     # set flanking DNA
