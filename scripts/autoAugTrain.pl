@@ -190,7 +190,7 @@ sub train{
 		print STDERR "Number of lines in gff file was zero! This is likely to cause problems because no training gene genbank entries can be created! etraining will crash when the training gene genbank file is empty!\n";
 	    }
 	    # The GFF-file needs to be sorted such that for each gene or mRNA the exons are in increasing order 
-	    $cmdString="cat $trainingset | perl -pe 's/\t\S*Parent=/\t/' | sort -n -k 4 | sort -s -k 9 | sort -s -k 1,1 > training.gff";
+	    $cmdString="cat $trainingset | " . 'perl -pe \'s/\t\S*Parent=/\t/\' | sort -n -k 4 | sort -s -k 9 | sort -s -k 1,1 > training.gff';
 	    print "3 Running \"$cmdString\" ..." if ($verbose >2);
 	    system("$cmdString")==0 or die("failed to execute $!\n");
 	    print " Finished!\n" if ($verbose >2);
@@ -289,7 +289,7 @@ sub train{
     if (!uptodate(["training.gb.train"], ["training.gb.onlytrain", "training.gb.train.test"])){
 	print "2 Creating training.gb.train.test and training.gb.onlytrain:\n" if ($verbose>=2);
 	$perlCmdString="perl $string training.gb.train $split_num_o";
-	print "1 randomly selecting $split_num_o genes from the training set training.gb.train..." if ($verbose>=1);
+	print "1 randomly selecting $split_num_o genes from the training set training.gb.train...\n" if ($verbose>=1);
 	print "3 $perlCmdString ...\n" if ($verbose>=3);
 	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
 	system("mv training.gb.train.train training.gb.onlytrain")==0 or die("failed to execute: $!\n");
@@ -648,7 +648,7 @@ sub trainWithUTR{
 	close TS;
 	print "1 Have constructed a training set train.gb for UTRs with $counter_gen genes\n" if ($verbose>=1);
 	system("rm t.gb.train t.gb t.gb.test t.nomrna.test.gb")==0 or die("failed to execute: $!\n");
-#	system("grep LOCUS train.gb | perl -pe 's/^LOCUS\s+(\S+)\s+.*/$1/' > train.gb.lst")==0 or die("failed to execute: $!\n");
+#	system('grep LOCUS train.gb | perl -pe \'s/^LOCUS\s+(\S+)\s+.*/$1/\' > train.gb.lst')==0 or die("failed to execute: $!\n");
 #	print "3 Made file train.gb.lst under $workDir/training/utr/\n" if ($verbose>=3);
 	#why do we need train.gb.lst ???#
     

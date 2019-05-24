@@ -573,7 +573,7 @@ sub construct_training_set{
     chdir "$genericPath" or die ("Could not change directory to $scriptPath\n");
     print "3 cd $genericPath\n" if ($verbose>=3);
 
-    $cmdString="cat generic_parameters.cfg | perl -pe 's/(stopCodonExcludedFromCDS )(\s+) /$1true /' > temp_1";
+    $cmdString='cat generic_parameters.cfg | perl -pe \'s/(stopCodonExcludedFromCDS )(\s+) /$1true /\' > temp_1';
     system("$cmdString")==0 or die ("failed to execute: $!\n");
     print "3 $cmdString\n" if ($verbose>=3);
     
@@ -600,7 +600,7 @@ sub construct_training_set{
     if($err_rate>=0.5){
 	print "3 The appropriate value for \"stopCodonExcludedFromCDS\" seems to be \"false\".\n" if ($verbose>=3);
         chdir "$scriptPath" or die ("Can not chdir to $scriptPath.\n");
-        system("cat generic_parameters.cfg | perl -pe 's/(stopCodonExcludedFromCDS )(\s+) /$1false /' > temp_1")==0 or die ("failed to execute: $!\n");
+        system('cat generic_parameters.cfg | perl -pe \'s/(stopCodonExcludedFromCDS )(\s+) /$1false /\' > temp_1')==0 or die ("failed to execute: $!\n");
         system("mv temp_1 generic_parameters.cfg")==0 or die("\nfailed to execute: $!\n");
         print "3 Setted value of \"stopCodonExcludedFromCDS\" in generic_parameters.cfg to \"false\"\n" if ($verbose>=3);
         print "3 Try etraining again: etraining --species=$species training.gb.train >train.out ..." if ($verbose>=3);
@@ -618,7 +618,7 @@ sub construct_training_set{
 
     # extract badlist
     print '3 cat train.err | perl -ne \'print \"'."$1".'\n\" if /in sequence (\S+):/\' > badlist' if ($verbose>=3);
-    system("cat train.err | perl -ne 'print \"$1\n\" if /in sequence (\S+):/' > badlist")==0 or die ("failed to execute: $!\n");
+    system("cat train.err | perl -ne 'print \"$1\n\" if ".'/in sequence (\S+):/'."' > badlist")==0 or die ("failed to execute: $!\n");
 
     # check whether only a small fraction of all entries created a problem, if >10%, output a warning
     my $bad_num=`wc -l badlist`;
