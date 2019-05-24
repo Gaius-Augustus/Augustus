@@ -36,12 +36,12 @@ my $species;                          # species name
 my $hints;                            # hints file name
 my $havehints=0;                      # have hints at all or not?
 my $estali;                           # est file for make UTR-Training
-my $positionWD=cwd();                 # workding superdirectory where program is called from
+my $positionWD=cwd();                 # working superdirectory where program is called from
 my $pasa='';                          # switch it on to create training set, est set, hints file with PASA
-my $pasapolyAhints;                   # use pasa Poly A hints as hints for the prediction
+my $pasapolyAhints;                   # use PASA Poly A hints as hints for the prediction
 my $fasta_cdna;                       # fasta file for PASA
 my $verbose=2;                        # verbose level
-my $singleCPU=0;                      # run everything sequentially whithout interruption
+my $singleCPU=0;                      # run everything sequentially without interruption
 my $maxIntronLen = 100000;            # maximal length of an intron, used by PASA and BLAT
 my $noninteractive;                   # parameter for autoAugPred.pl
 my $cname="fe";                       # parameter for autoAugPred.pl:cluster name
@@ -50,7 +50,7 @@ my $optrounds=1;                      # optimization rounds
 my $useGMAPforPASA=0;                 # use GMAP instead of BLAT (only for PASA)
 my $useexisting=0;                    # start with and change existing config, parameter and result files
 my $utr=1;                            # default value: with "utr" if cDNA exists
-my $flanking_DNA='';                  # length of flanking DNA, defaul value is min{ave. gene length, 10000}
+my $flanking_DNA='';                  # length of flanking DNA, default value is min{ave. gene length, 10000}
 my $help=0;                           # print usage
 my $useexistingopt = "";
 my $autoAugDir_abinitio;
@@ -73,7 +73,7 @@ my $string;          		      # temp string for perl-scripts, which will be calle
 
 my $usage =  <<_EOH_;
 
-Function: train AUGUSTUS and run AUGUSTUS completly and automatically
+Function: train AUGUSTUS and run AUGUSTUS completely and automatically
 
 Usage:
 
@@ -98,7 +98,7 @@ options:
                                     Default: current working directory
 --singleCPU                         run the complete program sequentially instead of parallel execution of jobs on a cluster
 --noninteractive                    bypass all manual interaction when using a SGE cluster
---cname=yourClusterName             cluster name, only use it wenn "noninteractive" default:fe
+--cname=yourClusterName             cluster name, only use it when "noninteractive" default:fe
 --index=i                           step index, default:0 
 --optrounds=n                       optimization rounds - each meta parameter is optimized this often (default 1)
 --maxIntronLen=n                    maximal length of an intron as used by PASA and BLAT, not by AUGUSTUS (default 100000)
@@ -179,7 +179,7 @@ die("$AUGUSTUS_CONFIG_PATH/species/$species already exists. Choose another speci
 $genome = checkFile($genome, "fasta", $usage);
 check_fasta_headers($genome);
 
-# show error information and stop the program if the specified $positionWD coudn't be found
+# show error information and stop the program if the specified $positionWD couldn't be found
 # overwrite $positionWD with absolute path
 $positionWD=relToAbs($positionWD);         
 die("Error: Did not find the directory $positionWD! Please specify a valid one for \"workingdir\"! \n") unless (-d $positionWD);
@@ -428,8 +428,8 @@ sub construct_training_set{
 	    $MYSQLSERVER=$1       if /MYSQLSERVER=(.*)/;
 	    $MYSQL_RO_USER=$1     if /MYSQL_RO_USER=(.*)/;
 	    $MYSQL_RO_PASSWORD=$1 if /MYSQL_RO_PASSWORD=(.*)/;
-            $MYSQL_RW_USER=$1      if /MYSQL_RW_USER=(.*)/;
-            $MYSQL_RW_PASSWORD=$1 if /MYSQL_RW_PASSWORD=(.*)/;
+	    $MYSQL_RW_USER=$1     if /MYSQL_RW_USER=(.*)/;
+	    $MYSQL_RW_PASSWORD=$1 if /MYSQL_RW_PASSWORD=(.*)/;
 	    
 	}
 	close(CONFIG);
@@ -444,7 +444,6 @@ sub construct_training_set{
 	    ."-t transcripts.fasta.clean -T -u transcripts.fasta $gmapoption 1>Launch_PASA_pipeline.stdout 2>Launch_PASA_pipeline.stderr";
 	
 	print "2 Executing the Alignment Assembly: $perlCmdString ..." if ($verbose>=2);
-	print "2 A test output...\n";
 	my $abortString;
 	$abortString = "\nFailed to execute, possible reasons could be:\n";
 	$abortString.= "1. There is already a database named \"$pasaDBname\" in your mysql host.\n";
@@ -476,7 +475,7 @@ sub construct_training_set{
 			   "output.subclusters.out");
 	foreach my $file (@filesToDelete) {         
 	    $perlCmdString="rm -rf $file";
-	    print "3 Deleting $file" if ($verbose>=3);
+	    print "3 Deleting $file\n" if ($verbose>=3);
 	    system("$perlCmdString");
 	}
     #dropping pasa database 
@@ -520,21 +519,21 @@ sub construct_training_set{
 	print " Finished!\n" if ($verbose >=2);
     }
 
-    # calculate the a average gene length
+    # calculate the average gene length
     if(-e "../pasa/trainingSetCandidates.gff"){
-    	open(FILE, "../pasa/trainingSetCandidates.gff") or die("\nCould not open ../pasa/trainingSetCandidates.gff\n");
+        open(FILE, "../pasa/trainingSetCandidates.gff") or die("\nCould not open ../pasa/trainingSetCandidates.gff\n");
     }else{
-	open(FILE, "../pasa/trainingSetCandidates.gff3") or die("\nCould not open ../pasa/trainingSetCandidates.gff\n");
+        open(FILE, "../pasa/trainingSetCandidates.gff3") or die("\nCould not open ../pasa/trainingSetCandidates.gff\n");
     }
     my $sum=0;
     my $n=0;
     while(<FILE>){
-	if(/\tgene\t/){
-	    split;
-	    my $len=$_[4]-$_[3]+1;
-	    $sum+=$len;
-	    $n++;
-	}
+        if(/\tgene\t/){
+            split;
+            my $len=$_[4]-$_[3]+1;
+            $sum+=$len;
+            $n++;
+        }
     }
     print "1 Average gene length in the training set is " . sprintf ("%.2f", ($sum/$n)) . "\n" if ($verbose >=1);
     
@@ -648,7 +647,8 @@ sub prepare_genome{
     $perlCmdString="perl $string $rootDir/seq/genome_clean.fa > genome.summary";
     print "3 Running $perlCmdString ..." if ($verbose>=3);
     system("$perlCmdString")==0 or die("\nfailed to execute: $perlCmdString!\n");
-    
+    print " Finished!\n" if ($verbose>=3);
+
     # create contigs gbrowse file
     $cmdString='cat genome.summary | grep "bases." | perl -pe \'s/(\d+)\sbases.\s+(\S*) BASE.*/$2\tassembly\tcontig\t1\t$1\t.\t.\t.\tContig $2/\' > contigs.gff';
     print "3 Running $cmdString ..." if ($verbose>=3);
@@ -707,7 +707,7 @@ sub alignments_and_hints{
     print " Finished!\n" if ($verbose>3);
     
     # create hints
-    print "1 Creating hints from cDNA alignments....\n" if ($verbose>=1);
+    print "1 Creating hints from cDNA alignments ...\n" if ($verbose>=1);
     chdir "../hints" or die("\nCould not change directory to ../hints\n");
     $string=find("blat2hints.pl");
     $perlCmdString="perl $string --in=../cdna/cdna.f.psl --out=hints.E.gff --minintronlen=35 --trunkSS 1>blat2hints.stdout 2>blat2hints.stderr";
@@ -789,7 +789,7 @@ sub autoAug_prepareScripts{
     $perlCmdString = "perl $scriptPath/autoAugPred.pl -g=$genome_clean --species=$species -w=$rootDir $utrString " . 
 	"$verboseString $hintsString $useexistingopt";
     $perlCmdString .= " --singleCPU" if ($singleCPU);
-    print "2 $perlCmdString" if ($verbose>=2);
+    print "2 $perlCmdString\n" if ($verbose>=2);
     system("$perlCmdString")==0 or die("\nfailed to execute $!\n");
     
     my $stepNum;
@@ -868,7 +868,7 @@ sub autoAug_continue{
 
 
 
-       ################## run AUGUGUS completely automatically ##################
+       ################## run AUGUSTUS completely automatically ##################
 
 
 sub autoAug_noninteractive{
@@ -1071,12 +1071,12 @@ sub check_upfront{
     
     my $augpath = "$ENV{'AUGUSTUS_CONFIG_PATH'}/../bin/augustus";
     if (system("$augpath > /dev/null 2> /dev/null") != 0){
-	if (! -f $augpath){
-	    print STDERR "Error: augustus executable not found at $augpath.\n";
-	} else {
-	    print STDERR "Error: $augpath not executable on this machine.\n";
-	}
-	exit (1);
+        if (! -f $augpath){
+            print STDERR "Error: augustus executable not found at $augpath.\n";
+        } else {
+            print STDERR "Error: $augpath not executable on this machine.\n";
+        }
+        exit (1);
     }
     if (defined($fasta_cdna)){
 	if (system("which blat > /dev/null") != 0){
@@ -1107,19 +1107,19 @@ sub check_fasta_headers{
 	chomp;
 	if($_=~m/\s/){
 	    if($spaces == 0){
-		print "1 - WARNING: Detected whitespace in fasta header of file $fastaFile. ".$stdStr;
+		print "1 - WARNING: Detected whitespace in fasta header of file $fastaFile. ".$stdStr."\n";
 		$spaces++;
 	    }
 	}
 	if($_=~m/\|/){
 	    if($orSign == 0){
-		print "1 - WARNING: Detected | in fasta header of file $fastaFile. ".$stdStr;
+		print "1 - WARNING: Detected | in fasta header of file $fastaFile. ".$stdStr."\n";
 		$orSign++;
 	    }
 	}
 	if($_=!m/[>a-zA-Z0123456789]/){
 	    if($someThingWrongWithHeader==0){
-		print "1 - WARNING: Fasta headers inf file $fastaFile seem to contain non-letter and non-number characters. That means they may contain some kind of special character. ".$stdStr;
+		print "1 - WARNING: Fasta headers inf file $fastaFile seem to contain non-letter and non-number characters. That means they may contain some kind of special character. ".$stdStr."\n";
 		$someThingWrongWithHeader++;
 	    }
 	}
