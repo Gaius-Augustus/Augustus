@@ -271,11 +271,10 @@ sub prepareScript{
 		$opt_string .= " --hintsfile=../../hints/hints.gff --extrinsicCfgFile=$extrinsiccfg"; 
 	    }
 	    
-	    my $aug="$AUGUSTUS_CONFIG_PATH/../src/augustus";
 	    my $base=basename($genome);
 	    $base =~ s/(\.fa|\.fna|\.fasta)$//;     # adjust the function in splitMfasta.pl
 	    open(AUG, ">aug$i") or die ("Could not open file aug$i!\n");
-	    my $augString="$aug $opt_string --AUGUSTUS_CONFIG_PATH=$AUGUSTUS_CONFIG_PATH --exonnames=on --species=$species $splitDir/$base.split.$i.fa > $workDir/shells/aug$i.out";
+	    my $augString="augustus $opt_string --AUGUSTUS_CONFIG_PATH=$AUGUSTUS_CONFIG_PATH --exonnames=on --species=$species $splitDir/$base.split.$i.fa > $workDir/shells/aug$i.out";
 	    print AUG "$augString";
 	    close AUG;
 	    system("chmod +x aug$i")==0 or die("failed to execute: $!\n");
