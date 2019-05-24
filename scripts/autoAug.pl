@@ -535,18 +535,19 @@ sub construct_training_set{
             $n++;
         }
     }
+    close(FILE);
     print "1 Average gene length in the training set is " . sprintf ("%.2f", ($sum/$n)) . "\n" if ($verbose >=1);
     
     # set flanking DNA
 
-    my $flanking_DNA = int($sum/$n);
+    $flanking_DNA = int($sum/$n);
     $flanking_DNA = 10000 if ($flanking_DNA > 10000);
     $flanking_DNA = 1000 if ($flanking_DNA < 1000);
     print "2 The length of flanking DNA is set as $flanking_DNA accordingly.\n" if ($verbose>=2);
 
     # convert file format from gff to gb
 
-    my $string=find("gff2gbSmallDNA.pl");
+    $string=find("gff2gbSmallDNA.pl");
     print "3 Found script $string.\n" if ($verbose>=3);
     
     $perlCmdString="perl $string trainingSetComplete.gff $genome_clean $flanking_DNA "
@@ -699,7 +700,7 @@ sub alignments_and_hints{
 	system("ln -s cdna.psl cdna.f.psl");
     }
     # create gbrowse files
-    my $string=find("blat2gbrowse.pl");
+    $string=find("blat2gbrowse.pl");
     print "3 Found script $string.\n" if ($verbose>=3);
     $perlCmdString="perl $string --source=CDNA cdna.f.psl cdna.gbrowse";
     print "3 Running $perlCmdString ..." if ($verbose>3);
@@ -842,7 +843,7 @@ sub autoAug_continue{
     $mainDir = "$autoAugDir_hints"     if ($index==2);
     $mainDir = "$autoAugDir_utr"       if ($index==3);
  
-    my $shellDir = "$mainDir/shells";
+    $shellDir = "$mainDir/shells";
 
 
     $perlCmdString = "perl $scriptPath/autoAugPred.pl --species=$species --genome=$rootDir/seq/genome_clean.fa --continue --workingdir=$rootDir $verboseString $hintsString $utrString $useexistingopt";

@@ -661,7 +661,7 @@ sub trainWithUTR{
 	open(CDSONLY, "> cdsonly.gb");
 	
 	# delete the mRNA part up to the next CDS tag
-	my $delete=0;
+	$delete=0;
 	while(<ONLYTRAIN>){
 	    $delete=1 if /mRNA/; 
 	    $delete=0 if /CDS/; 

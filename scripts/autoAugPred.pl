@@ -29,7 +29,6 @@ use strict;
 
 my $path=dirname(rel2abs($0));        # path of this script
 
-my $workDir;
 my $species;
 my $utr;                 # default value: without "utr"
 my $hints;               # default value: without "hints"
@@ -370,7 +369,7 @@ sub continue_aug{
 	system("cat $out | $string > augustus.gff")==0 or die("failed to execute: $!\n");
 	
 	# make file augustus.aa
-	my $string = find("getAnnoFasta.pl");
+	$string = find("getAnnoFasta.pl");
 	$perlCmdString="perl $string augustus.gff";
 	print "3 $perlCmdString\n" if ($verbose>=3);
 	system("$perlCmdString")==0 or die ("failed to execute: $!\n"); # make augustus.aa
