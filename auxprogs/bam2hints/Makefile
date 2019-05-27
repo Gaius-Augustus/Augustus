@@ -7,9 +7,11 @@
 # 	Created: 14-December-2011
 #	Last modified:  09-October-2015 by Katharina J. Hoff
 
+include ../../common.mk
+
 # Variable definition
-INCLUDES = /usr/include/bamtools
-LIBS = -lbamtools -lz
+INCLUDES = -I$(BAMTOOL_INC)
+LIBS = $(BAMTOOL_LIBS) -lz
 SOURCES = bam2hints.cc 
 OBJECTS = $(SOURCES:.cc=.o)
 CXXFLAGS += -Wall -O2 # -g -p -g -ggdb 
@@ -27,7 +29,7 @@ bam2hints : $(OBJECTS)
 all:$(OBJECTS) # Compiles each foo.cc into foo.o
 
 bam2hints.o : $(SOURCES)
-	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) -c $< -o $@ -I$(INCLUDES) 
+	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) -c $< -o $@ $(INCLUDES) 
 
 clean:
 	rm -f bam2hints.o bam2hints ../../bin/bam2hints

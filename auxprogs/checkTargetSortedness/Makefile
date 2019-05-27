@@ -9,15 +9,17 @@
 # Last modified:  9-July-2012
 #
 
+include ../../common.mk
+
 SOURCES = checkTargetSortedness.c
 PROGRAM = checkTargetSortedness
 OBJECTS = $(SOURCES:.c=.o) 
 CFLAGS := -g -Wall -O2 ${CFLAGS}
 # Change variable below so that it points to your SAMTOOLS folder...
-SAMTOOLS = /usr/include/samtools
-INCLUDES = -I$(SAMTOOLS) -I.
+#SAMTOOLS = /usr/include/samtools
+INCLUDES = -I$(SAMTOOLS_INC) -I.
 # replace -lbam with the following in case you have your own samtools library: $(SAMTOOLS)/libbam.a
-LIBS=-lbam -lcurses -lm -lz -lpthread
+LIBS=$(SAMTOOLS_LIBS) -lcurses -lm -lz -lpthread
 CC=gcc
 
 all:$(PROGRAM) $(OBJECTS)

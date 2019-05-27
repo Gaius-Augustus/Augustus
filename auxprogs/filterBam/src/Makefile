@@ -4,13 +4,15 @@
 #	Last modified: 09-May-2018
 
 
+include ../../../common.mk
+
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
 			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
-BAMTOOLS = /usr/include/bamtools
-INCLUDES = -I$(BAMTOOLS) -Iheaders -I./bamtools
-LIBS = -lbamtools -lz
+#BAMTOOLS = /usr/include/bamtools
+INCLUDES = -I$(BAMTOOL_INC) -Iheaders -I./bamtools
+LIBS = $(BAMTOOL_LIBS) -lz
 CFLAGS = -std=c++0x
 VPATH = functions
 
@@ -20,11 +22,11 @@ BIN : $(PROGRAM) CHECKBAM
 	mv filterBam ../../../bin/filterBam
 
 CHECKBAM:
-	@if [ -z "${BAMTOOLS}" ]; then \
-		echo '[Makefile]: $${BAMTOOLS} has not been set.'; \
+	@if [ -z "${BAMTOOL}" ]; then \
+		echo '[Makefile]: $${BAMTOOL} has not been set.'; \
 		exit 101; \
-	elif [ "${BAMTOOLS}" ]; then \
-		echo "filterBam compiled with BAMTOOLS=${BAMTOOLS}"; \
+	elif [ "${BAMTOOL}" ]; then \
+		echo "filterBam compiled with BAMTOOL=${BAMTOOL}"; \
 	fi
 
 $(PROGRAM) : $(OBJECTS)

@@ -6,21 +6,20 @@
 #          https://opensource.org/licenses/artistic-license-1.0
 #
 
-ifndef TOOLDIR
-	TOOLDIR=$(HOME)/tools
+include ../../common.mk
+
+#ifndef TOOLDIR
+#	TOOLDIR=$(HOME)/tools
 # replace with your own parent directory of samtools, htslib, bcftools
 # if TOOLDIR is not specified as environment variable
-endif
+#endif
 
 PROGRAM = bam2wig
 SOURCES = $(PROGRAM)
 OBJECTS = $(SOURCES:.c=.o)
-SAMTOOLS=$(TOOLDIR)/samtools
-HTSLIB=$(TOOLDIR)/htslib
-BCFTOOLS=$(TOOLDIR)/bcftools
-INCLUDES=-I$(SAMTOOLS) -I. -I$(HTSLIB) -I$(BCFTOOLS)
-VPATH=$(SAMTOOLS)
-LIBS=$(SAMTOOLS)/libbam.a $(HTSLIB)/libhts.a -lcurses -lm -lz -lpthread -lcurl -lssl -lcrypto
+INCLUDES=-I$(SAMTOOLS_INC) -I. -I$(HTSLIB_INC) -I$(BCFTOOLS_INC)
+# VPATH=$(SAMTOOLS)
+LIBS=-lcurses -lm -lz -lpthread -lcurl -lssl -lcrypto $(SAMTOOLS_LIBS) $(HTSLIB_LIBS)
 CFLAGS=-Wall -O2 $(INCLUDES)
 CC=gcc
 

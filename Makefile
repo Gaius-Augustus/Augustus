@@ -17,6 +17,8 @@ INSTALLDIR = /opt/augustus-$(AUGVERSION)
 install:
 	install -d $(INSTALLDIR)
 	cp -a config bin scripts $(INSTALLDIR)
+
+links:	install
 	ln -sf $(INSTALLDIR)/bin/augustus /usr/local/bin/augustus
 	ln -sf $(INSTALLDIR)/bin/etraining /usr/local/bin/etraining
 	ln -sf $(INSTALLDIR)/bin/prepareAlign /usr/local/bin/prepareAlign
