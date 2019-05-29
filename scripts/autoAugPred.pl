@@ -286,10 +286,6 @@ sub prepareScript{
 	open(SH, ">shellForAug");
 	print SH 'for (( i=1; i<='."$splitN".'; i++))'."\n";
 	print SH 'do'."\n";
-        print SH '    echo \'PATH="${PATH}":\'"$AUGUSTUS_CONFIG_PATH/../src/" > aug$i_temp'."\n";
-        print SH '    echo "export PATH" >> aug$i_temp'."\n";
-        print SH '    cat "aug$i" >> aug$i_temp'."\n";
-        print SH '    mv aug$i_temp aug$i'."\n";
         print SH '    chmod +x aug$i'."\n";
         print SH '    qsub -cwd "aug$i"'."\n";  #just for sun grid engine
 	print SH 'done'."\n";
