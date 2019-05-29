@@ -786,8 +786,10 @@ sub autoAug_prepareScripts{
     $autoAugDir = $autoAugDir_hints_utr if ($hints_switch && $utr_switch);
     $autoAugDir = $autoAugDir_utr       if (!$hints_switch && $utr_switch);
 
-    my $hintsString ="--hints=$hints" if ($hints_switch);
-    my $utrString   ="--utr"          if ($utr_switch);
+    my $hintsString = "";
+    my $utrString  = "";
+    $hintsString = "--hints=$hints" if ($hints_switch);
+    $utrString   = "--utr"          if ($utr_switch);
    
     
     $perlCmdString = "perl $scriptPath/autoAugPred.pl -g=$genome_clean --species=$species -w=$rootDir $utrString " . 
@@ -836,8 +838,10 @@ sub autoAug_continue{
         print "\n";
     }
 
-    my $hintsString="--hints=$hints" if ($hints_switch);
-    my $utrString=" --utr" if ($utr_switch);
+    my $hintsString = "";
+    my $utrString = "";
+    $hintsString = "--hints=$hints" if ($hints_switch);
+    $utrString = " --utr" if ($utr_switch);
 
     $estali="$rootDir/cdna/cdna.f.psl" if ($pasa);
 
@@ -880,8 +884,10 @@ sub autoAug_noninteractive{
     my $hints_switch=shift;       # for AUGUSTUS with hints
     my $utr_switch=shift;         # for AUGUSTUS with UTR
 
-    my $hintsString="--hints=$hints" if ($hints_switch);
-    my $utrString="--utr"            if ($utr_switch);
+    my $hintsString="";
+    my $utrString="";
+    $hintsString="--hints=$hints" if ($hints_switch);
+    $utrString="--utr"            if ($utr_switch);
 
     my $string;
     $string="ab initio (without hints and utr)" if(!$hints_switch && !$utr_switch);
