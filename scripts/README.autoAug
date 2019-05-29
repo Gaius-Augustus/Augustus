@@ -57,7 +57,7 @@ can then submit them manually using your batch job submission system.
 		3. Software Components
 		-----------------------------------
 
-AUGUSTUS: Download from http://augustus.gobics.de/
+AUGUSTUS: Download from https://github.com/Gaius-Augustus/Augustus
 
 BLAT:     You get Jim Kent's alignment program at http://users.soe.ucsc.edu/~kent/src/
           Also install pslCDnaFilter which is part of the Jim Kent src tree
@@ -68,8 +68,8 @@ PASA:     Download the Program to Assemble Spliced Alignments from
           You do not need PASA if you already have a training set of genes for your species.
 
 SCIPIO:   Install SCIPIO if you have training genes in the form of protein sequences.
-	  SCIPIO can then find their gene structures in the genome. Most users will not need this.
-	  http://www.webscipio.org/
+          SCIPIO can then find their gene structures in the genome. Most users will not need this.
+          http://www.webscipio.org/
 
 
 		4. Installation and Configuration
@@ -258,7 +258,7 @@ autoAugTrain.pl [OPTIONS] --species=sname --genome=genome.fa --species=sname --u
 
 --trainingset=genes.gb      
   genes.gb is a file with training genes a Genbank format. For examples for the exact format look at 
-  the files in http://augustus.gobics.de/datasets/
+  the files in http://bioinf.uni-greifswald.de/webaugustus/datasets.gsp
 
 --trainingset=genes.gff     
   genes.gff is a file with training genes in GFF format
