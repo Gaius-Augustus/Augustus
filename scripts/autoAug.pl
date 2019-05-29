@@ -617,11 +617,12 @@ sub construct_training_set{
     print "1 Now filtering problematic genes from training set...\n" if ($verbose>=1);
 
     # extract badlist
-    print '3 cat train.err | perl -ne \'print \"'."$1".'\n\" if /in sequence (\S+):/\' > badlist' if ($verbose>=3);
-    system("cat train.err | perl -ne 'print \"$1\n\" if ".'/in sequence (\S+):/'."' > badlist")==0 or die ("failed to execute: $!\n");
+    $perlCmdString='cat train.err | perl -ne \'print "$1\n" if /in sequence (\S+):/\' > badlist';
+    print "3 Running $perlCmdString ...\n" if ($verbose>=3);
+    system("$perlCmdString")==0 or die ("failed to execute: $!\n");
 
     # check whether only a small fraction of all entries created a problem, if >10%, output a warning
-    my $bad_num=`wc -l badlist`;
+    my $bad_num=`wc -l < badlist`;
     $bad_num*=1;
     print "3 The number of all entries that created a problem is $bad_num\n" if ($verbose>=3);
     my $frac=$bad_num/$num_TSC;
