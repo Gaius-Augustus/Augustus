@@ -279,7 +279,7 @@ if(not($diamond)){
 }else{
     unlink (rel2abs($tempdbname).".dmnd" );
 }
-#unlink ( rel2abs($tempoutfile) );
+unlink ( rel2abs($tempoutfile) );
 if ($CPU > 1 && not($diamond)) {
     rmtree( ["$splitDir"] );
 }
