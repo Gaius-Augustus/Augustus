@@ -11,7 +11,7 @@
 # pipeline may fail upon custom modification of this script.
 # In case of doubt, contact katharina.hoff@uni-greifswald.de
 #
-# Mario Stanke & Katharina Hoff, last modification on Feb 19th 2018
+# Mario Stanke & Katharina Hoff, last modification on May 31 2019
 
 use strict;
 use Getopt::Long;
