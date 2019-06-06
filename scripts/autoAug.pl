@@ -309,7 +309,7 @@ sub training_set_dirs {
 	print "3 mkdir $_\n" if ($verbose>=3);
     }
  
-    print "2 All necessary directories have been created unter $trainDir.\n" if ($verbose>=2);
+    print "2 All necessary directories have been created under $trainDir.\n" if ($verbose>=2);
 
     # build symbolic link for $genome
 
@@ -958,7 +958,7 @@ sub collect{
 
     chdir "$summary_dir" or die("\nError: cannot change directory to $summary_dir!\n");
     for(("gbrowse", "hints","predictions","seq", "genes", "config")){mkdir "$_"}
-    print "3 All necessary diretories have been created unter $summary_dir.\n" if ($verbose>=3);
+    print "3 All necessary directories have been created under $summary_dir.\n" if ($verbose>=3);
     
     # collect gbrowse files
     print "3 cd gbrowse\n" if ($verbose>=3);
@@ -974,7 +974,7 @@ sub collect{
 	system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
     }
     
-    if (-f $fasta_cdna){
+    if (defined($fasta_cdna) && -f $fasta_cdna){
 	$cmdString = "ln -sf $fasta_cdna cdna.fa";
 	system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
     }
