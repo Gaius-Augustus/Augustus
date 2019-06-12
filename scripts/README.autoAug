@@ -144,7 +144,7 @@ Situation 2:
 You can just input a cDNA sequence file in FASTA format, and let PASA extract
 a training set of genes. You need to install PASA for this separately.
 
->autoAug.pl -g genome.fa --species=yourSpecies -c cdna.fa -v -v --pasa --useexisting
+>autoAug.pl -g genome.fa --species=yourSpecies -c cdna.fa -v -v --pasa --useGMAPforPASA --useexisting
 
 Then follow the output prompts. If your cluster is set as in section 4 you can also use the option --noninteractive.
 
@@ -173,7 +173,10 @@ The keywords (such as genome) can be abbreviated (e.g. "ge") to the extend that 
   cdna.fa is a cdna sequence file in the FASTA format (typically EST sequences or 454)
 
 --pasa
-  This argument swithes the PASA function on for creating a training set of genes from the cDNA, default: off.
+  This argument switches the PASA function on for creating a training set of genes from the cDNA, default: off.
+
+--useGMAPforPASA
+  use GMAP instead of BLAT in the PASA run
 
 --hints=hintsfile
   hintsfile is a file with extrinsic evidence about the location and structure of genes, see documentation of AUGUSTUS.
