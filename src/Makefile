@@ -98,7 +98,7 @@ prepareAlign: pp_prepare_align.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 	cp prepareAlign ../bin/
 
-pp_simScore: pp_simscore.cc types.o properties.o geneticcode.o pp_profile.o lldouble.o
+pp_simScore: pp_simscore.cc types.o properties.o geneticcode.o pp_profile.o lldouble.o geneticcode.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp pp_simScore ../bin/
 

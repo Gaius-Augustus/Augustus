@@ -13,38 +13,84 @@
 #include <fstream>
 #include <limits>
 #include <math.h>
+#include "pp_simscore.hh"
 #include "properties.hh"
 #include "pp_profile.hh"
 
-using namespace PP;
+
+
+
+using namespace SS;
+	
+
+    Column::Column(int length, int position){
+        Column::length=length;
+        Column::position=position;
+        col = new Cell[length];
+    }
+
+    int Column::getElementPosition(int n){
+        //return (0<=n<=length) ?  n+position : std::cerr<<"Error: Column out of range. \n";
+        return n+position;
+    }
+
+	Cell& Column::operator[] (int n) {
+        if(0 <= n && n<= length) {
+            return col[n];
+        } else { 
+            throw out_of_range("Column out of range. \n");
+        }
+     }
 	
 
 
-//std::string subs_file = "../config/profile/blosum62.qij";
-//int subs_matrix[20][20];
-/*
-void read_subs_matrix(std::string file_name){
-	std::fstream subs_file;
-	subs_file.open(file_name);
-	std::string line;
-	
-	while(std::getline(subs_file, line))
-	{
-		if(line[0] != '#')
-		{
-			std::istringstream iss(line);
-			
-			
-		
-		}
-		
-	}
+    SimilarityMatrix::SimilarityMatrix(int length){
+        SimilarityMatrix::length=length;
+    }
+    
+    Column& SimilarityMatrix::operator[] (int n) {
+        if(0 <= n && n<= length) {
+            return matrix[n];
+        } else { 
+            throw out_of_range("Matrix out of range. \n");
+        }
+    }
+    
+    void SimilarityMatrix::addColumn(int l, int p){
+        Column c(l,p);
+        matrix.push_back(c);    
+    }
+    
+    void SimilarityMatrix::addColumn(Column c){
+        matrix.push_back(c);
+    }
 
-}
-	*/
-	
-	
-
+    SimilarityScore::SimilarityScore(char* seqFileName, char* profileFileName){    
+        readFiles(seqFileName,profileFileName);
+    }
+    
+    void SimilarityScore::readFiles(char* seqFileName, char* profileFileName){
+        //read protein sequence
+        std::fstream input_seq;
+        input_seq.open(seqFileName);
+        if(!input_seq)
+        {
+            std::cerr<<"Error (2): Sequence file not found. \n";
+            exit(2);	
+        }	
+        std::string seq, line;
+        while(std::getline(input_seq, line))
+        {	
+            seq += line;
+        }
+        
+        //read protein profile
+        PP::initConstants();
+        PP::Profile prfl(profileFileName);
+        
+    }
+    
+    
 int aa2int(char c)
 {
 	switch (c)
@@ -92,17 +138,24 @@ int aa2int(char c)
 		case 'P':
 			return 19;
 	}		
+	return -1;
 }	
 
 int main(int argc, char* argv[])
-{	
+{
+
+    
+    
+    SimilarityScore SS(argv[1],argv[2]);
+	/*
 	if (argc != 3) 
 	{
 		std::cerr<<"Error (1): Wrong number of input arguments. \n";
 		exit(1);
 	}
-	double match_cost = 0.9;
-	double gap_cost = 0.1;
+	//double match_cost = 0.9;
+	double gap_cost = -1;
+	
 
 	//read protein sequence
 	std::fstream input_seq;
@@ -124,6 +177,7 @@ int main(int argc, char* argv[])
 	initConstants();
 	Profile prfl(argv[2]);
 	
+	
 	//std::map<int, vector<vector<Double>>> similarity_matrix;
 	
 	int seq_length=seq.length();
@@ -140,12 +194,13 @@ int main(int argc, char* argv[])
 	
 	for(int i=1; i<seq_length+1; i++)
 	{
-		similarity_matrix[i][0]=similarity_matrix[i-1][0]*gap_cost;
+		similarity_matrix[i][0]=similarity_matrix[i-1][0]+gap_cost;
+		
 	}
 	
 	for(int j=1; j<prfl_length+1; j++)
 	{
-		similarity_matrix[0][j]=similarity_matrix[0][j-1]*gap_cost;
+		similarity_matrix[0][j]=similarity_matrix[0][j-1]+gap_cost;
 	}
 
 	int j=0;
@@ -165,17 +220,18 @@ int main(int argc, char* argv[])
 				if(k>d.r.min && k<=i)
 				{
 
-					help=similarity_matrix[i-k][j]*col[aa2int(seq[i])]*match_cost;
+					//help=similarity_matrix[i-k][j]*col[aa2int(seq[i])]*match_cost;
+					help=similarity_matrix[i-k][j]+col.L(aa2int(seq[i]));
 					max = (help>max) ? help : max;		
 								
 				}
 				if(k<=d.r.min && k<=i)
 				{
-					help=similarity_matrix[i-k][j]*pow(gap_cost,(d.r.min-k+1));
+					help=similarity_matrix[i-k][j] + gap_cost*(d.r.min-k+1);
 					max = (max<help) ? help:max;	
 					if(k>0)
 					{
-						help=similarity_matrix[i-k][j]*pow(gap_cost,(d.r.min-k))*col[aa2int(seq[i])]*match_cost;
+						help=similarity_matrix[i-k][j]+ gap_cost*(d.r.min-k)+col.L(aa2int(seq[i]));
 						max = (max<help) ? help:max;
 					}				
 				}
@@ -192,7 +248,7 @@ int main(int argc, char* argv[])
 			for(int i=1; i<seq_length+1; i++)
 			{
 				//Rekursion 1				
-				similarity_matrix[i][j+s]= std::max({similarity_matrix[i-1][j+s-1]*col[aa2int(seq[i])]*match_cost, similarity_matrix[i-1][j+s]*gap_cost, similarity_matrix[i][j+s-1]*gap_cost});
+				similarity_matrix[i][j+s]= std::max({similarity_matrix[i-1][j+s-1]+col.L(aa2int(seq[i])), similarity_matrix[i-1][j+s]+gap_cost, similarity_matrix[i][j+s-1]+gap_cost});
 			}	
 			
 		}
@@ -202,7 +258,7 @@ int main(int argc, char* argv[])
 	
 	
 	//print similarity matrix
-	/*for(int i=0;i<seq_length+1;i++)
+	for(int i=0;i<seq_length+1;i++)
 	{
 		for(int j=0;j<prfl_length+1;j++)
 		{
@@ -210,11 +266,21 @@ int main(int argc, char* argv[])
 			std::cout<<"  ";
 		}
 		std::cout<<endl;
-	}*/
+	}
 	//calculate final score
 	
-	//
 	std::cout<<similarity_matrix[seq_length][prfl_length]<<endl;
+	
+	
+	//int aa = Seq2Int(3)("act");
+
+	
+	
+	//backtracking*/
 	return 0;
 }
+
+
+
+
 
