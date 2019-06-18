@@ -333,7 +333,7 @@ public:
 		return start_codons[codon.rc(t)];	
 	    else
 		return start_codons[codon(t)];
-	} catch (InvalidNucleotideError){}
+	} catch (InvalidNucleotideError &e){}
 	return false;
     }
     static bool isStartcodon(int pn){
@@ -344,7 +344,7 @@ public:
 	    int pn = rc? codon.rc(t) : codon(t);
 	    if (start_codons[pn])
 		return start_codon_probs[pn];
-	} catch (InvalidNucleotideError){}
+	} catch (InvalidNucleotideError &e){}
 	return 0;
     }
     static Double startCodonProb(int pn){
