@@ -564,16 +564,19 @@ sub construct_training_set{
   
     print "2 Now trying to find out whether the CDS in the training set contain or exclude the stop codon.\n" if ($verbose >=2);
     my $genericPath="$AUGUSTUS_CONFIG_PATH/species/generic";
-    chdir "$genericPath" or die ("Could not change directory to $scriptPath\n");
-    print "3 cd $genericPath\n" if ($verbose>=3);
-
-    $cmdString='cat generic_parameters.cfg | perl -pe \'s/(stopCodonExcludedFromCDS )(\s+) /$1true /\' > temp_1';
-    system("$cmdString")==0 or die ("failed to execute: $cmdString\n");
+    my $genericPathTrain="$AUGUSTUS_CONFIG_PATH/species/${species}_generic";
+    $cmdString = "cp -r $genericPath $genericPathTrain";
     print "3 $cmdString\n" if ($verbose>=3);
+    system("$cmdString")==0 or die ("failed to execute: $cmdString\n");
+
+    chdir "$genericPathTrain" or die ("Could not change directory to $genericPathTrain\n");
+    print "3 cd $genericPathTrain\n" if ($verbose>=3);
+
+    $cmdString='cat generic_parameters.cfg | perl -pe \'s/(stopCodonExcludedFromCDS ).*/$1true /\' > '."${species}_generic_parameters.cfg";
+    print "3 $cmdString\n" if ($verbose>=3);
+    system("$cmdString")==0 or die ("failed to execute: $cmdString\n");
     
-    system("mv temp_1 generic_parameters.cfg")==0 or die("\nfailed to execute: $!\n");
-    print "3 mv temp_1 generic_parameters.cfg\n" if ($verbose>=3);
-    print "3 Set value of \"stopCodonExcludedFromCDS\" in generic_parameters.cfg to \"true\"\n" if ($verbose>=3);
+    print "3 Set value of \"stopCodonExcludedFromCDS\" in ${species}_generic_parameters.cfg to \"true\"\n" if ($verbose>=3);
     
     # first try with etraining
   #  print "3 mv $trainDir/pasa/trainingSetComplete.gb $trainDir/training/trainingSetComplete.gb\n";   
@@ -581,7 +584,7 @@ sub construct_training_set{
    # system("$cmdString")==0 or die("\nfailed to move trainingSetComplete.gb to $trainDir/training\n");
     print "3 cd $trainDir/training\n" if ($verbose>=3);
     chdir "$trainDir/training" or die ("Could not change directory to $trainDir/training\n");
-    $cmdString="etraining --species=generic trainingSetComplete.gb 1>train.out 2>train.err";
+    $cmdString="etraining --species=${species}_generic trainingSetComplete.gb 1>train.out 2>train.err";
     print "3 Running \"$cmdString\" ... " if ($verbose>=3);
     system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
     print " Finished!\n" if ($verbose>=3); 
@@ -593,13 +596,14 @@ sub construct_training_set{
     print "3 Error rate caused by \"exon doesn't end in stop codon\" is $err_rate\n" if ($verbose>=3);
     if($err_rate>=0.5){
 	print "3 The appropriate value for \"stopCodonExcludedFromCDS\" seems to be \"false\".\n" if ($verbose>=3);
-        chdir "$scriptPath" or die ("Can not chdir to $scriptPath.\n");
-        system('cat generic_parameters.cfg | perl -pe \'s/(stopCodonExcludedFromCDS )(\s+) /$1false /\' > temp_1')==0 or die ("failed to execute: $!\n");
-        system("mv temp_1 generic_parameters.cfg")==0 or die("\nfailed to execute: $!\n");
-        print "3 Setted value of \"stopCodonExcludedFromCDS\" in generic_parameters.cfg to \"false\"\n" if ($verbose>=3);
-        print "3 Try etraining again: etraining --species=$species training.gb.train >train.out ..." if ($verbose>=3);
+        chdir "$genericPathTrain" or die ("Can not chdir to $genericPathTrain.\n");
+        system('cat generic_parameters.cfg | perl -pe \'s/(stopCodonExcludedFromCDS ).*/$1false /\' > '."${species}_generic_parameters.cfg")==0 or die ("failed to execute: $!\n");
+        print "3 Set value of \"stopCodonExcludedFromCDS\" in ${species}_generic_parameters.cfg to \"false\"\n" if ($verbose>=3);
+        print "3 Try etraining again: etraining --species=${species}_generic training.gb.train >train.out ..." if ($verbose>=3);
         chdir "$trainDir/training/" or die ("Can not change directory to $trainDir/training.");
-        system("etraining --species=generic trainingSetComplete.gb 1>train.out 2>train.err")==0 or die("\nfailed to execute: $!\n");
+        $cmdString="etraining --species=${species}_generic trainingSetComplete.gb 1>train.out 2>train.err";
+        print "3 Running \"$cmdString\" ... " if ($verbose>=3);
+        system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
         print " Finished!\n" if ($verbose>=3);
         print "3 train.out and train.err have been made again under $trainDir/training.\n" if ($verbose>=3);
 	print "2 Stop codons seem to be contained by CDS. Setting stopCodonExcludedFromCDS to false\n" if ($verbose>=2);
@@ -607,6 +611,10 @@ sub construct_training_set{
     else{
 	print "2 Stop codons seem to be exluded from CDS. Setting stopCodonExcludedFromCDS to true\n" if ($verbose>=2); 
     }
+		
+    $cmdString = "rm -rf $genericPathTrain";
+    print "3 $cmdString\n" if ($verbose>=3);
+    system("$cmdString")==0 or die ("failed to execute: $cmdString\n");
 
     print "1 Now filtering problematic genes from training set...\n" if ($verbose>=1);
 
