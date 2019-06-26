@@ -4,11 +4,10 @@
 
 # ID is the random project ID of a grails project
 # species-name
-# db-file is the grails database flatfile 
 # grails-out is the directory where grails places the autoAug output files
 # www-out is the directory where results shall be made available to end users (i.e. an apache directory)
 	
-my $usage = "writeResultsPage ID species-name db-file grails-out www-out AugustusConfigPath AugustusScriptsPath final-flag\n";
+my $usage = "writeResultsPage ID species-name submission_date grails-out www-out AugustusConfigPath AugustusScriptsPath final-flag\n";
 
 if(@ARGV != 8){
 	$nArgs = @ARGV;
@@ -20,18 +19,12 @@ if(@ARGV != 8){
 ## automatically configured variables
 my $projectID = $ARGV[0];
 my $species = $ARGV[1];
-my $dbFile = $ARGV[2];
+my $submissionDate = $ARGV[2];
 my $grailsOut = $ARGV[3];
 my $wwwOut = $ARGV[4];
 my $AUGUSTUS_CONFIG_PATH = $ARGV[5];
 my $svnScripts = $ARGV[6];
 my $final = $ARGV[7];
-
-## retrieve all submission data information that will later be used to create the results page
-
-my $dbLine = `grep $projectID $dbFile`;
-my @tdbLine = split(/\[|\]/, $dbLine);
-my $submissionDate = $tdbLine[1];
 
 my $projectWebOutDir = $wwwOut."/$projectID";
 
