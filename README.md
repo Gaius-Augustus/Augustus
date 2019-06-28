@@ -113,12 +113,14 @@ If this environment variable is not set, then the programs will look in the path
 
 AUGUSTUS can also be run through a web-interface at http://bioinf.uni-greifswald.de/augustus/ and a web service at http://bioinf.uni-greifswald.de/webaugustus/index.gsp.
 
-# REFERENCES
+# REFERENCES AND DOCUMENTATION
 
 Mario Stanke, Mark Diekhans, Robert Baertsch, David Haussler (2008).
 [Using native and syntenically mapped cDNA alignments to improve de novo gene finding](https://academic.oup.com/bioinformatics/article/24/5/637/202844). Bioinformatics, 24(5), pages 637–644, doi: 10.1093/bioinformatics/btn013
 
 For further references see [docs/REFERENCES.md](docs/REFERENCES.md)
+
+[3 book chapters with command line walkthroughs](https://math-inf.uni-greifswald.de/en/department/about-us/employees/prof-dr-mario-stanke-english/publications/#c302071)
 
 # LICENSES
 

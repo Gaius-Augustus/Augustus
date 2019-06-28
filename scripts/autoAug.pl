@@ -78,7 +78,7 @@ Function: train AUGUSTUS and run AUGUSTUS completely and automatically
 Usage:
 
 autoAug.pl [OPTIONS] --species=sname --genome=genome.fa --cdna=cdna.fa --trainingset=genesfile
-autoAug.pl [OPTIONS] --species=sname --genome=genome.fa --cdna=cdna.fa --pasa
+autoAug.pl [OPTIONS] --species=sname --genome=genome.fa --cdna=cdna.fa --pasa --useGMAPforPASA
 autoAug.pl [OPTIONS] --species=sname --genome=genome.fa --trainingset=genesfile [--estali=cdna.psl] [--hints=hints.gff]
 
 --genome=fasta                      fasta file with DNA sequences for training
@@ -309,7 +309,7 @@ sub training_set_dirs {
 	print "3 mkdir $_\n" if ($verbose>=3);
     }
  
-    print "2 All necessary directories have been created unter $trainDir.\n" if ($verbose>=2);
+    print "2 All necessary directories have been created under $trainDir.\n" if ($verbose>=2);
 
     # build symbolic link for $genome
 
@@ -389,7 +389,9 @@ sub construct_training_set{
 	open(CONFIG, "alignAssembly.config") or die ("Cannot open file alignAssembly.config!\n");
 	open(TEMP, ">temp") or die("\nCannot open file temp\n");
 	while(<CONFIG>){
-	    s/<__MYSQLDB__>/$pasaDBname/;
+	    s/MYSQLDB=<__MYSQLDB__>/MYSQLDB=$pasaDBname/;    # the database name used in old PASA versions
+	    s/DATABASE=<__DATABASE__>/DATABASE=$pasaDBname/; # the database name used in newer PASA versions
+	    s/^DATABASE=(.*)$/DATABASE=$1\nMYSQLDB=$1/;      # the renaming wasn't carried out in all PASA scripts, so provide both versions
 	    s/<__MAX_INTRON_LENGTH__>/$maxIntronLen/;
 	    s/<__MIN_PERCENT_ALIGNED__>/0.8/;
 	    s/<__MIN_AVG_PER_ID__>/0.9/;
@@ -409,13 +411,13 @@ sub construct_training_set{
     # executing the Alignment Assembly
 
     if (!uptodate([$genome_clean, "alignAssembly.config", "transcripts.fasta", "transcripts.fasta.clean"],
-		  ["trainingSetCandidates.gff", "pasa_asmbls_to_training_set.stdout"])){
+		  ["$pasaDBname.assemblies.fasta.transdecoder.genome.gff3", "pasa_asmbls_to_training_set.stdout"])){
 	$cmdString="ln -fs $genome_clean genome.fasta";
 	print "3 $cmdString\n" if ($verbose>=3);
 	system("$cmdString")==0 or die("\nfailed to execute $!\n");
 	
-	my $gmapoption = "";
-	$gmapoption = "--USE_GMAP" if ($useGMAPforPASA);
+	my $gmapoption = "blat";
+	$gmapoption = "gmap" if ($useGMAPforPASA);
 	
 	print "3 Reading MySQL variables from $PASAHOME/pasa_conf/\n" if ($verbose>=3);
 	open(my $config_fh, "<", "$PASAHOME/pasa_conf/conf.txt") or die("\nCould not open $PASAHOME/pasa_conf/conf.txt!\n");
@@ -441,8 +443,13 @@ sub construct_training_set{
 	    &DropDataBase("$MYSQLSERVER","$pasaDBname","$MYSQL_RW_USER","$MYSQL_RW_PASSWORD",\$dbh);
         }
 
-	$perlCmdString="perl $PASAHOME/scripts/Launch_PASA_pipeline.pl -c alignAssembly.config -C -R -g $genome_clean "
-	    ."-t transcripts.fasta.clean -T -u transcripts.fasta $gmapoption 1>Launch_PASA_pipeline.stdout 2>Launch_PASA_pipeline.stderr";
+	if (! -e "$PASAHOME/Launch_PASA_pipeline.pl"){
+	    die("Error: Script Launch_PASA_pipeline.pl not found. Ensure that this script exists in PASAHOME folder: $PASAHOME.\n");
+	}
+	$perlCmdString = "perl $PASAHOME/Launch_PASA_pipeline.pl "
+	    ."-c alignAssembly.config -C -R -g $genome_clean "
+	    ."-t transcripts.fasta.clean -T -u transcripts.fasta --ALIGNERS $gmapoption "
+	    ."1>Launch_PASA_pipeline.stdout 2>Launch_PASA_pipeline.stderr";
 	
 	print "2 Executing the Alignment Assembly: $perlCmdString ..." if ($verbose>=2);
 	my $abortString;
@@ -450,7 +457,7 @@ sub construct_training_set{
 	$abortString.= "1. There is already a database named \"$pasaDBname\" in your mysql host.\n";
 	$abortString.= "2. The software \"slclust\" is not installed correctly, try to install it";
 	$abortString.= " again (see the details in the PASA documentation).\n";
-        $abortString.= "3. The fasta headers in cDNA or genome file were not unique.\n";
+	$abortString.= "3. The fasta headers in cDNA or genome file were not unique.\n";
 	$abortString.= "Inspect $trainDir/pasa/Launch_PASA_pipeline.stderr for PASA error messages.\n";
 	
 	system("$perlCmdString")==0 or die ("$abortString");
@@ -458,9 +465,10 @@ sub construct_training_set{
   	
 
         
-
-	$perlCmdString="perl $PASAHOME/scripts/pasa_asmbls_to_training_set.dbi -M \"$pasaDBname:$MYSQLSERVER\" -p "
-	    ."\"$MYSQL_RO_USER:$MYSQL_RO_PASSWORD\" -g $genome_clean 1>pasa_asmbls_to_training_set.stdout 2>pasa_asmbls_to_training_set.stderr";
+	$perlCmdString="perl $PASAHOME/scripts/pasa_asmbls_to_training_set.dbi "
+	    ."--pasa_transcripts_fasta $pasaDBname.assemblies.fasta "
+	    ."--pasa_transcripts_gff3 $pasaDBname.pasa_assemblies.gff3 "
+	    ."1>pasa_asmbls_to_training_set.stdout 2>pasa_asmbls_to_training_set.stderr";
 	
 	print "2 Running $perlCmdString ..." if ($verbose>=2);
 	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
@@ -482,30 +490,20 @@ sub construct_training_set{
     #dropping pasa database 
     &DropDataBase("$MYSQLSERVER","$pasaDBname","$MYSQL_RW_USER","$MYSQL_RW_PASSWORD",\$dbh);
     } else {
- 	print ("2 Skipping PASA training set creation. Using existing trainingSetCandidates.gff.\n") if ($verbose>=2);
+ 	print ("2 Skipping PASA training set creation. Using existing $pasaDBname.assemblies.fasta.transdecoder.genome.gff3.\n") if ($verbose>=2);
     }
     
     # find complete genes in candidate training file
-    if (!uptodate((["trainingSetCandidates.gff"] or ["trainingSetCandidates.gff3"]), ["trainingSetComplete.gff"])){
+    if (!uptodate(["$pasaDBname.assemblies.fasta.transdecoder.genome.gff3"], ["trainingSetComplete.gff"])){
 	print "3 cd ../training\n" if ($verbose>=3);
 	chdir "../training" or die ("Could not change directory to training!\n");
-	# old PASA version (at least before January 2011, probably older) produce different output files than new PASA version:
-	if(-e "../pasa/trainingSetCandidates.fasta"){
-		$cmdString = 'grep complete ../pasa/trainingSetCandidates.fasta | perl -pe \'s/>(\S+).*/$1\$/\'';
-	}else{
-		$cmdString = 'grep complete ../pasa/trainingSetCandidates.cds | perl -pe \'s/>(\S+).*/$1\$/\'';
-	}
+	$cmdString = "grep complete ../pasa/$pasaDBname.assemblies.fasta.transdecoder.cds | perl -pe ".'\'s/>(\S+).*/$1\$/\'';
 	print "3 $cmdString 1> pasa.complete.lst\n" if ($verbose>=3);
 	system("$cmdString 1> pasa.complete.lst")==0 or die("\nfailed to execute $!\n");
 	if (! -e "pasa.complete.lst" || -z "pasa.complete.lst"){
             die ("PASA has not constructed any complete training gene. Training aborted because of insufficient data.\n");
         }
-	# old PASA version (at least before January 2011, probably older) produce different output files than new PASA version:
-	if(-e "../pasa/trainingSetCandidates.gff"){
-		$cmdString="grep -f pasa.complete.lst ../pasa/trainingSetCandidates.gff >trainingSetComplete.temp.gff";
-	}else{
-		$cmdString="grep -f pasa.complete.lst ../pasa/trainingSetCandidates.gff3 >trainingSetComplete.temp.gff";
-	}
+	$cmdString="grep -f pasa.complete.lst ../pasa/$pasaDBname.assemblies.fasta.transdecoder.genome.gff3 >trainingSetComplete.temp.gff";
 	print "2 Running \"$cmdString\" ..." if ($verbose>=2);
 	system("$cmdString")==0 or die("\nfailed to execute $!\n");
 	print " Finished!\n" if ($verbose>=2);
@@ -522,11 +520,7 @@ sub construct_training_set{
 
     # calculate the average gene length
     my $file_fh;
-    if(-e "../pasa/trainingSetCandidates.gff"){
-        open($file_fh, "<", "../pasa/trainingSetCandidates.gff") or die("\nCould not open ../pasa/trainingSetCandidates.gff\n");
-    }else{
-        open($file_fh, "<", "../pasa/trainingSetCandidates.gff3") or die("\nCould not open ../pasa/trainingSetCandidates.gff3\n");
-    }
+    open($file_fh, "<", "../pasa/$pasaDBname.assemblies.fasta.transdecoder.genome.gff3") or die("\nCould not open ../pasa/$pasaDBname.assemblies.fasta.transdecoder.genome.gff3\n");
     my $sum=0;
     my $n=0;
     while(my $line = <$file_fh>){
@@ -958,7 +952,7 @@ sub collect{
 
     chdir "$summary_dir" or die("\nError: cannot change directory to $summary_dir!\n");
     for(("gbrowse", "hints","predictions","seq", "genes", "config")){mkdir "$_"}
-    print "3 All necessary diretories have been created unter $summary_dir.\n" if ($verbose>=3);
+    print "3 All necessary directories have been created under $summary_dir.\n" if ($verbose>=3);
     
     # collect gbrowse files
     print "3 cd gbrowse\n" if ($verbose>=3);
@@ -974,7 +968,7 @@ sub collect{
 	system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
     }
     
-    if (-f $fasta_cdna){
+    if (defined($fasta_cdna) && -f $fasta_cdna){
 	$cmdString = "ln -sf $fasta_cdna cdna.fa";
 	system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
     }
