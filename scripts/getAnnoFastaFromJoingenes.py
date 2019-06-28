@@ -16,16 +16,19 @@
 # warning to STDOUT if such genes are in the GTF-file. The IDs of bad genes
 # are printed to a file bad_genes.lst. Option -s allows to exclude bad genes
 # from the FASTA output file, automatically.
+# Beware: the script assumes that the gtf input file is sorted by coordinates!
 
 try:
     import argparse
 except ImportError:
-    raise ImportError('Failed to import argparse. Try installing with \"pip3 install argparse\"')
+    raise ImportError(
+        'Failed to import argparse. Try installing with \"pip3 install argparse\"')
 
 try:
     import re
 except ImportError:
-    raise ImportError('Failed to import argparse. Try installing with \"pip3 install re\"')
+    raise ImportError(
+        'Failed to import argparse. Try installing with \"pip3 install re\"')
 
 try:
     from Bio.Seq import Seq
@@ -33,7 +36,8 @@ try:
     from Bio import SeqIO
     from Bio.SeqRecord import SeqRecord
 except ImportError:
-    raise ImportError('Failed to import biophython modules. Try installing with \"pip3 install biopython\"')
+    raise ImportError(
+        'Failed to import biophython modules. Try installing with \"pip3 install biopython\"')
 
 
 parser = argparse.ArgumentParser(
@@ -60,6 +64,8 @@ codingseqFile = args.out + ".codingseq"
 proteinFile = args.out + ".aa"
 
 # Read GTF file CDS entries for transcripts
+tx2seq = {}
+tx2str = {}
 cds = {}
 try:
     with open(args.gtf, "r") as gtf_handle:
@@ -77,15 +83,20 @@ try:
                 cds[seq_id][tx_id].append(
                     {'start': int(st), 'end': int(en), 'strand': stx,
                      'frame': int(fr)})
+                if not tx_id in tx2seq:
+                    tx2seq[tx_id] = seq_id
+                    tx2str[tx_id] = stx
 except IOError:
     print("Error: Failed to open file " + args.gtf + "!")
 
 # Read genome file (single FASTA entries are held in memory, only), extract
 # CDS sequence windows, add N when frame information states missing nucleotides
+seq_len = {}
 codingseq = {}
 try:
     with open(args.genome, "rU") as genome_handle:
         for record in SeqIO.parse(genome_handle, "fasta"):
+            seq_len[record.id] = len(record.seq)
             if record.id in cds:
                 for tx in cds[record.id]:
                     if tx not in codingseq:
@@ -99,13 +110,13 @@ try:
                                                      * 'N', generic_dna)
                         codingseq[tx].seq += record.seq[cds_line['start'] -
                                                         1:cds_line['end']]
-                        if i == (nCDS-1):
+                        if i == (nCDS - 1):
                             if cds_line['strand'] == '+':
                                 if (len(codingseq[tx].seq) % 3) != 0:
                                     codingseq[tx].seq += Seq(
                                         (3 - (len(codingseq[tx]) % 3)) * 'N',
                                         generic_dna)
-                        if i == (nCDS-1) and cds_line['strand'] == '-':
+                        if i == (nCDS - 1) and cds_line['strand'] == '-':
                             if cds_line['frame'] != 0:
                                 codingseq[tx].seq += Seq((3 - cds_line['frame'])
                                                          * 'N', generic_dna)
@@ -113,7 +124,8 @@ try:
                                 codingseq[tx].seq = Seq(
                                     (3 - (len(codingseq[tx].seq) % 3)) * 'N',
                                     generic_dna) + codingseq[tx].seq
-                            codingseq[tx].seq = codingseq[tx].seq.reverse_complement()
+                            codingseq[tx].seq = codingseq[
+                                tx].seq.reverse_complement()
 except IOError:
     print("Error: Failed to open file " + args.genome + "!")
 
@@ -134,8 +146,10 @@ try:
         for tx_id, seq_rec in codingseq.items():
             is_good = True
             seq_rec.seq = seq_rec.seq.translate(table=args.translation_table)
-            if re.search(r"\*\w", str(seq_rec.seq)):
-                bad_tx[tx_id] = 1
+            match = re.search(r"(\*)\w", str(seq_rec.seq))
+            if match:
+                # 1-based amino acid index of stop codon
+                bad_tx[tx_id] = match.start(0) + 1
             if ((args.filter == True) and (tx_id not in bad_tx)) or args.filter == False:
                 SeqIO.write(seq_rec, protein_handle, "fasta")
 except IOError:
@@ -145,14 +159,26 @@ except IOError:
 if len(bad_tx) > 0:
     try:
         with open("bad_genes.lst", "w") as bad_handle:
+            bad_handle.write(
+                "tx_id\tstop_in_amino_acid\tstop_in_mRNA_start\tstop_in_mRNA_end\tgenomic_transcript_start\tgenomic_transcript_end\tstrand\n")
             for tx in bad_tx:
-                bad_handle.write(tx + "\n")
+                bad_handle.write(tx + "\t" + str(bad_tx[tx]) + "\t" + str(
+                    bad_tx[tx] * 3 - 2) + "\t" + str(bad_tx[tx] * 3) + "\t")
+                left_most = -1
+                right_most = -1
+                for i in range(0, len(cds[tx2seq[tx]][tx])):
+                    if (left_most == -1) or (cds[tx2seq[tx]][tx][i]['start'] <= left_most):
+                        left_most = cds[tx2seq[tx]][tx][i]['start']
+                    if (right_most == -1) or (cds[tx2seq[tx]][tx][i]['end'] <= right_most):
+                        right_most = cds[tx2seq[tx]][tx][i]['end']
+                bad_handle.write(str(left_most) + '\t' + str(right_most) + '\t' + tx2str[tx] +
+                                 '\n')
     except IOError:
         print("Error: Failed to open file bad_genes.lst!")
     print("WARNING: The GTF file contained " + str(len(bad_tx)) + " gene(s) " +
           "with internal Stop codons (see file bad_genes.lst).")
     if args.filter:
-        print("Note: Translations of the bad genes have already been exclude " +
+        print("Note: Translations of the bad genes have already been excluded " +
               "from the output file " + args.gtf + ".")
     else:
         print("Note: Translations of the bad genes have been included in the " +
