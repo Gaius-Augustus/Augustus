@@ -1,0 +1,54 @@
+[name]
+unknown
+
+[dist]
+# distance from previous block
+# <min> <max>
+0	0
+
+[block]
+# block no. 0 follows, 71 sequences, length 9
+# corresponding to MSA columns:
+# 0-8
+name=unknown_A
+#
+# <colnr> <probs for GDERKNQSTAVLIFYWHMCP>
+#	G	D	E	R	K	N	Q	S	T	A	V	L	I	F	Y	W	H	M	C	P
+0	0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+1	0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0
+2	0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0
+3	0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+4	0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0
+5	0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+6	0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+7	0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0
+8	0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+
+[dist]
+# distance from previous block
+# <min> <max>
+1	3
+
+[block]
+# block no. 1 follows, 71 sequences, length 7
+# corresponding to MSA columns:
+# 93-99
+name=unknown_B
+#
+# <colnr> <probs for GDERKNQSTAVLIFYWHMCP>
+#	G	D	E	R	K	N	Q	S	T	A	V	L	I	F	Y	W	H	M	C	P
+0	0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+1	0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0
+2	0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0
+3	0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+4	0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0
+5	0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+6	0 0 0 .8 0 0 0 .2 0 0 0 0 0 0 0 0 0 0 0 0
+
+[dist]
+# distance from previous block
+# <min> <max>
+0	1
+
+# created by:
+# /home/lars/masterarbeit/augustus/Augustus/scripts/msa2prfl.pl --prefix_from_seqnames --max_entropy=0.75 --blockscorefile=PF00225_seed.blocks.txt PF00225_seed.txt
