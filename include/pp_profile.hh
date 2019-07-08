@@ -264,7 +264,11 @@ namespace PP {
 	double L(int n) const { 
 	    return Q(n).log(); 
 	}
-
+    
+    //returns character of the amino acid with the highest value
+    char argmax() const {
+        return std::string(GeneticCode::aa_symbols)[std::max_element(values, values + NUM_AA) - values];
+    }
 	// stream operations
 	friend ostream& operator<<(ostream&, const Column&);
 	friend istream& operator>>(istream&, Column& c);

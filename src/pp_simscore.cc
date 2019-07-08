@@ -11,12 +11,14 @@
 #include "properties.hh"
 #include "pp_profile.hh"
 #include "fasta.hh"
+#include "geneticcode.hh"
 
 // standard C/C++ includes
 #include <iostream>
 #include <fstream>
 #include <limits>
 #include <math.h>
+#include <iomanip>
 
 
 
@@ -157,7 +159,7 @@ using namespace SS;
                     
                     if (k < row_length && k < diff_pos-d.r.min) {
                         //match
-                        new_score = S[i-1][k].score + col.L(aa2int(seq[position+j-1]));
+                        new_score = S[i-1][k].score + col.L(GeneticCode::get_aa_from_symbol(seq[position+j-1]));
                         old_score = compareScores(new_score, old_score, i, j, i-1, k, 'm');
                     }                    
                                    
@@ -167,7 +169,7 @@ using namespace SS;
                         old_score = compareScores(new_score, old_score, i, j, i-1, k, 's');
                         
                         //match with gap
-                        new_score = S[i-1][k].score + gap_cost * (d.r.min-k_max+k) + col.L(aa2int(seq[position+j]));
+                        new_score = S[i-1][k].score + gap_cost * (d.r.min-k_max+k) + col.L(GeneticCode::get_aa_from_symbol(seq[position+j]));
                         old_score = compareScores(new_score, old_score, i, j, i-1, k, '_');                        
                     }
                     else {
@@ -212,7 +214,7 @@ using namespace SS;
                     }
                     
                     //match
-                    new_score = S[i-1][j].score + col.L(aa2int(seq[position+j-1]));
+                    new_score = S[i-1][j].score + col.L(GeneticCode::get_aa_from_symbol(seq[position+j-1]));
                     old_score = compareScores(new_score, old_score, i, j, i-1, j, 'm');
                     
                     S[i][j].score = old_score;                    
@@ -265,35 +267,13 @@ using namespace SS;
         }
         return old_score;    
     }
-        	
-    void SimilarityScore::printSimilarityMatrix () {
-        
-        for (int i=0; i<S.length(); i++) {
-        
-            for (int j=0; j<S[i].position; j++) {
-                std::cout<<"-"<<"  ";        
-            }  
-            
-            for (int j=0; j<S[i].length; j++) {    
-                for (int t=0; t<S[i][j].prev.size(); t++) {            
-                    std::cout<<std::get<0>(S[i][j].prev[t])<<":"<<std::get<1>(S[i][j].prev[t])<<":"<<std::get<2>(S[i][j].prev[t])<<",";
-                }
-                std::cout<<" | ";
-            }
-            
-            for (int j=0; j<seq_length+1-S[i].length-S[i].position; j++) { 
-                std::cout<<"-"<<"  ";            
-            }
-                 
-            std::cout<<endl;
-        }
-    }
     
     void SimilarityScore::backtracking () {
     
-        std::vector <backtrack_align > bt;
-        backtrack_align new_bt;
+        std::vector <BacktrackAlign > bt;
+        BacktrackAlign new_bt;
         int bt_size;
+        pair<char, PrflAlignmentElement > align_element;
         new_bt.i = S.length()-1;
         new_bt.j = 0;        
         new_bt.block_count = prfl->blockCount()-1;
@@ -307,67 +287,78 @@ using namespace SS;
             for (int t = 0; t < bt_size; t++) {
             
                 for (int k = S[bt[t].i][bt[t].j].prev.size() - 1; k > -1; k=k-1) {
-                
+                    
                     new_bt = bt[t];
                     new_bt.j_prev = std::get<1>(S[new_bt.i][new_bt.j].prev[k]);
                     switch (std::get<2>(S[new_bt.i][new_bt.j].prev[k])) { 
                     
                         case 'm':
-                            new_bt.align_seq += seq[S[new_bt.i].position + new_bt.j-1];
-                            new_bt.align_seq += ' ';
+                            align_element.first = seq[S[new_bt.i].position + new_bt.j-1];
                             if (new_bt.i < S.length()-1) {                        
-                                new_bt.align_prfl.push_back(std::to_string(prfl[0][new_bt.block_count][new_bt.col_count][aa2int(seq[S[new_bt.i].position + new_bt.j-1])]));
+                                align_element.second.match_prob = prfl[0][new_bt.block_count][new_bt.col_count][GeneticCode::get_aa_from_symbol(seq[S[new_bt.i].position + new_bt.j-1])];
+                                align_element.second.argmax = prfl[0][new_bt.block_count][new_bt.col_count].argmax();
                                 new_bt.col_count = new_bt.col_count - 1;
                             }
                             else {
-                                new_bt.align_prfl.push_back("*");
+                                align_element.second.match_prob = -1;
+                                align_element.second.argmax = '*';
                             }
+                            new_bt.alignment.push_back(align_element);
+                            
                             for (int s = S[new_bt.i].position + new_bt.j-1; s > S[new_bt.i-1].position + new_bt.j_prev; s=s-1) {
-                                new_bt.align_seq += seq[s-1];
-                                new_bt.align_seq += ' ';
-                                new_bt.align_prfl.push_back("*");
+                                align_element.first = seq[s-1];
+                                align_element.second.match_prob = -1;
+                                align_element.second.argmax = '*';
+                                new_bt.alignment.push_back(align_element);
                             }
                             
                             break;
                             
                         case 'p':
                             if (new_bt.i < S.length()-1) { 
-                                new_bt.align_seq += seq[S[new_bt.i].position + new_bt.j-1];
-                                new_bt.align_seq += ' ';
-                                new_bt.align_prfl.push_back("_");
+                                align_element.first = seq[S[new_bt.i].position + new_bt.j-1];
+                                align_element.second.match_prob = -1;
+                                align_element.second.argmax = '_';
+                                new_bt.alignment.push_back(align_element);
                             }
                             else {                            
                                 for (int s = S[new_bt.i].position + new_bt.j; s > S[new_bt.i-1].position + new_bt.j_prev; s=s-1) {
-                                    new_bt.align_seq += seq[s-1];
-                                    new_bt.align_seq += ' ';
-                                    new_bt.align_prfl.push_back("_");
+                                    align_element.first = seq[s-1];
+                                    align_element.second.match_prob = -1;
+                                    align_element.second.argmax = '_';
+                                    new_bt.alignment.push_back(align_element);
                                 }
                             }  
                             
                             break;
                             
                             case 's':
-                                new_bt.align_seq += '_';
-                                new_bt.align_seq += ' ';
-                                new_bt.align_prfl.push_back(std::to_string(prfl[0][new_bt.block_count][new_bt.col_count][aa2int(seq[S[new_bt.i].position + new_bt.j-1])]));
+                                align_element.first = '_';
+                                align_element.second.match_prob = prfl[0][new_bt.block_count][new_bt.col_count][GeneticCode::get_aa_from_symbol(seq[S[new_bt.i].position + new_bt.j-1])];
+                                align_element.second.argmax = prfl[0][new_bt.block_count][new_bt.col_count].argmax();
+                                new_bt.alignment.push_back(align_element);
                                 new_bt.col_count = new_bt.col_count - 1;
+                                
                                 for (int s = S[new_bt.i].position + new_bt.j; s > S[new_bt.i-1].position + new_bt.j_prev; s=s-1) {
-                                    new_bt.align_seq += seq[s];
-                                    new_bt.align_seq += ' ';
-                                    new_bt.align_prfl.push_back("*");
+                                    align_element.first = seq[s];
+                                    align_element.second.match_prob = -1;
+                                    align_element.second.argmax = '*';
+                                    new_bt.alignment.push_back(align_element);
                                 }
                                             
                                 break;
                                 
                             case '_':
-                                new_bt.align_seq += seq[S[new_bt.i].position+new_bt.j-1];
-                                new_bt.align_seq += ' ';
-                                new_bt.align_prfl.push_back(std::to_string(prfl[0][new_bt.block_count][new_bt.col_count][aa2int(seq[S[new_bt.i].position + new_bt.j-1])]));
+                                align_element.first = seq[S[new_bt.i].position+new_bt.j-1];
+                                align_element.second.match_prob = prfl[0][new_bt.block_count][new_bt.col_count][GeneticCode::get_aa_from_symbol(seq[S[new_bt.i].position + new_bt.j-1])];
+                                align_element.second.argmax = prfl[0][new_bt.block_count][new_bt.col_count].argmax();
+                                new_bt.alignment.push_back(align_element);
                                 new_bt.col_count = new_bt.col_count - 1;
                                 for (int s = 0; s < S[new_bt.i].position - S[new_bt.i-1].position - 1; s++) {
-                                    new_bt.align_seq += '_';
-                                    new_bt.align_seq += ' ';
-                                    new_bt.align_prfl.push_back("*");
+                                    align_element.first = '_';
+                                    align_element.second.match_prob = -1;
+                                    align_element.second.argmax = '*';
+                                    new_bt.alignment.push_back(align_element);
                                 }
                                 
                                 break;
@@ -377,11 +368,12 @@ using namespace SS;
                             new_bt.block_count = (new_bt.block_count > 0) ? new_bt.block_count - 1 : 0; 
                             new_bt.col_count = prfl->blockSize(new_bt.block_count)-1;
                         }
+                        
                         new_bt.i = std::get<0>(S[new_bt.i][new_bt.j].prev[k]);            
                         new_bt.j = new_bt.j_prev; 
+                        
                         if (new_bt.i == 0 && S[new_bt.i].position+new_bt.j == 0) {
-                            align_seq.push_back(new_bt.align_seq);
-                            align_prfl.push_back(new_bt.align_prfl);
+                            alignments.push_back(new_bt.alignment);
                             if (k == 0) {
                                 bt.erase(bt.begin()+t);
                                 t = t - 1;
@@ -396,67 +388,70 @@ using namespace SS;
                         }                            
                 }
             }
-      }       
+      }  
+    }
+    
+    void SimilarityScore::printSimilarityMatrix () {
+        
+        std::cout.precision(2);
+        std::cout<<std::fixed;
+        for (int i=0; i<S.length(); i++) {
+        
+            for (int j=0; j<S[i].position; j++) {
+                std::cout<< std::left<<setw(7)<<"-";        
+            }  
+            
+            for (int j=0; j<S[i].length; j++) {    
+                std::cout<< std::left<<setw(7)<<S[i][j].score;
+                /*for (int t=0; t<S[i][j].prev.size(); t++) {            
+                    std::cout<<std::get<0>(S[i][j].prev[t])<<":"<<std::get<1>(S[i][j].prev[t])<<":"<<std::get<2>(S[i][j].prev[t])<<",";
+                }
+                std::cout<<" | ";*/
+            }
+            
+            for (int j=0; j<seq_length+1-S[i].length-S[i].position; j++) { 
+                std::cout<< std::left<<setw(7)<<"-";            
+            }
+                 
+            std::cout<<endl;
+        }
     }
     
     void SimilarityScore::printAlignment () { //add number of alignments
-        if (!align_prfl.empty() && !align_seq.empty()) {
-            for(int i = 0; i < align_seq.size(); i++) {  
-                reverse(align_seq[i].begin(), align_seq[i].end());
-                reverse(align_prfl[i].begin(), align_prfl[i].end());
-                std::cout<<align_seq[i]<<endl;
-                std::cout<<align_prfl[i]<<endl;
+        int number_of_decimals = 4;
+        std::string decimals;
+        
+        if (!alignments.empty()) {
+            for (int i = 0; i < alignments.size(); i++) {  
+                reverse(alignments[i].begin(), alignments[i].end());
+                std::cout << std::left << std::setw(25) << "protein sequence:";
+                for( int j = 0; j < alignments[i].size(); j++) {
+                    std::cout << alignments[i][j].first;
+                    
+                }
+                std::cout << endl;
+                std::cout << std::left << std::setw(25) << "protein profile argmax:";
+                for (int j = 0; j < alignments[i].size(); j++) {
+                    std::cout << alignments[i][j].second.argmax;
+                }
+                std::cout << endl;
+                std::cout << std::left << std::setw(25) << "protein profile prob.:";
+                for (int k = 1; k < number_of_decimals+1; k++) {
+                    for (int j = 0; j < alignments[i].size(); j++) {
+                        decimals = std::to_string(alignments[i][j].second.match_prob);
+                        if (alignments[i][j].second.match_prob != -1 && k < decimals.length()) {
+                            std::cout << decimals[k];
+                        }
+                        else {
+                            std::cout << " ";
+                        }
+                    }
                 std::cout<<endl;
+                std::cout << std::left << std::setw(25) << " ";
+                }
+                std::cout << endl << endl;
             }
-         } 
-    }   
-    
-    int SimilarityScore::aa2int (char c) { //use geneticcode.hh
-        switch (c) {
-            case '.':
-                return 20;
-            case 'G':
-                return 0;
-            case 'D':
-                return 1;
-            case 'E':
-                return 2;
-            case 'R':
-                return 3;
-            case 'K':
-                return 4;
-            case 'N':
-                return 5;
-            case 'Q':
-                return 6;
-            case 'S':
-                return 7;
-            case 'T':
-                return 8;
-            case 'A':
-                return 9;
-            case 'V':
-                return 10;
-            case 'L':
-                return 11;
-            case 'I':
-                return 12;
-            case 'F':
-                return 13;
-            case 'Y':
-                return 14;
-            case 'W':
-                return 15;
-            case 'H':
-                return 16;
-            case 'M':
-                return 17;
-            case 'C':
-                return 18;
-            case 'P':
-                return 19;
-        }		
-        return -1;
+        }
     }
     
 int main(int argc, char* argv[])
@@ -466,7 +461,7 @@ int main(int argc, char* argv[])
         std::cerr<<"Error (1): Wrong number of input arguments. \n";
         exit(1);
     }
-    
+
     SimilarityScore SS(-5);
     SS.readFiles(argv[1],argv[2]);
     SS.fillSimilarityMatrix();
