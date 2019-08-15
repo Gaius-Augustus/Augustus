@@ -363,14 +363,14 @@ sub construct_training_set{
 
     if (!uptodate([$fasta_cdna], ["transcripts.fasta"])){
 	print "3 ln -fs $fasta_cdna transcripts.fasta\n" if ($verbose>=3);
-	system("ln -fs $fasta_cdna transcripts.fasta")==0 or die ("failed to execute: $!\n");
+	system("ln -fs $fasta_cdna transcripts.fasta")==0 or die ("failed to execute: ln -fs $fasta_cdna transcripts.fasta\n");
     }
 
     if (!uptodate(["transcripts.fasta"], ["transcripts.fasta.clean"])){
 	count_fasta_entries("$trainDir/pasa/transcripts.fasta");
 	$perlCmdString="seqclean transcripts.fasta 1>seqclean.stdout 2>seqclean.stderr";
 	print "2 Running $perlCmdString ..." if ($verbose>=2);
-	system("$perlCmdString")==0 or die ("failed to execute: $!\n");
+	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
 	print " Finished!\n" if ($verbose>=2);
     } else {
 	print ("2 Skipping seqclean. Using existing transcripts.fasta.clean.\n") if ($verbose>=2);
@@ -402,7 +402,7 @@ sub construct_training_set{
   
 	$cmdString="rm alignAssembly.config; mv temp alignAssembly.config; chmod a+x alignAssembly.config";
 	print "3 $cmdString\n" if ($verbose>=3);
-	system("$cmdString")==0 or die ("failed to execute: $!\n");
+	system("$cmdString")==0 or die ("failed to execute: $cmdString\n");
 	print "3 Adjusted alignAssembly.config\n" if ($verbose>=3); 
     } else {
 	print ("2 Using existing alignAssembly.config.\n") if ($verbose>=3);
@@ -414,7 +414,7 @@ sub construct_training_set{
 		  ["$pasaDBname.assemblies.fasta.transdecoder.genome.gff3", "pasa_asmbls_to_training_set.stdout"])){
 	$cmdString="ln -fs $genome_clean genome.fasta";
 	print "3 $cmdString\n" if ($verbose>=3);
-	system("$cmdString")==0 or die("\nfailed to execute $!\n");
+	system("$cmdString")==0 or die("\nfailed to execute $cmdString\n");
 	
 	my $gmapoption = "blat";
 	$gmapoption = "gmap" if ($useGMAPforPASA);
@@ -499,13 +499,13 @@ sub construct_training_set{
 	chdir "../training" or die ("Could not change directory to training!\n");
 	$cmdString = "grep complete ../pasa/$pasaDBname.assemblies.fasta.transdecoder.cds | perl -pe ".'\'s/>(\S+).*/$1\$/\'';
 	print "3 $cmdString 1> pasa.complete.lst\n" if ($verbose>=3);
-	system("$cmdString 1> pasa.complete.lst")==0 or die("\nfailed to execute $!\n");
+	system("$cmdString 1> pasa.complete.lst")==0 or die("\nfailed to execute $cmdString\n");
 	if (! -e "pasa.complete.lst" || -z "pasa.complete.lst"){
             die ("PASA has not constructed any complete training gene. Training aborted because of insufficient data.\n");
         }
 	$cmdString="grep -f pasa.complete.lst ../pasa/$pasaDBname.assemblies.fasta.transdecoder.genome.gff3 >trainingSetComplete.temp.gff";
 	print "2 Running \"$cmdString\" ..." if ($verbose>=2);
-	system("$cmdString")==0 or die("\nfailed to execute $!\n");
+	system("$cmdString")==0 or die("\nfailed to execute $cmdString\n");
 	print " Finished!\n" if ($verbose>=2);
 	
 	# sort trainingSetComplete.temp.gff for gff2gbSmallDNA.pl later
@@ -550,7 +550,7 @@ sub construct_training_set{
     ."trainingSetComplete.gb 1>gff2gbSmallDNA.stdout 2>gff2gbSmallDNA.stderr";
     
     print "3 $perlCmdString\n" if ($verbose>=3);
-    system("$perlCmdString")==0 or die ("failed to execute: $!\n");
+    system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
     
     # let etraining find prolematic genbank entries
     
@@ -564,16 +564,19 @@ sub construct_training_set{
   
     print "2 Now trying to find out whether the CDS in the training set contain or exclude the stop codon.\n" if ($verbose >=2);
     my $genericPath="$AUGUSTUS_CONFIG_PATH/species/generic";
-    chdir "$genericPath" or die ("Could not change directory to $scriptPath\n");
-    print "3 cd $genericPath\n" if ($verbose>=3);
-
-    $cmdString='cat generic_parameters.cfg | perl -pe \'s/(stopCodonExcludedFromCDS )(\s+) /$1true /\' > temp_1';
-    system("$cmdString")==0 or die ("failed to execute: $!\n");
+    my $genericPathTrain="$AUGUSTUS_CONFIG_PATH/species/${species}_generic";
+    $cmdString = "cp -r $genericPath $genericPathTrain";
     print "3 $cmdString\n" if ($verbose>=3);
+    system("$cmdString")==0 or die ("failed to execute: $cmdString\n");
+
+    chdir "$genericPathTrain" or die ("Could not change directory to $genericPathTrain\n");
+    print "3 cd $genericPathTrain\n" if ($verbose>=3);
+
+    $cmdString='cat generic_parameters.cfg | perl -pe \'s/(stopCodonExcludedFromCDS ).*/$1true /\' > '."${species}_generic_parameters.cfg";
+    print "3 $cmdString\n" if ($verbose>=3);
+    system("$cmdString")==0 or die ("failed to execute: $cmdString\n");
     
-    system("mv temp_1 generic_parameters.cfg")==0 or die("\nfailed to execute: $!\n");
-    print "3 mv temp_1 generic_parameters.cfg\n" if ($verbose>=3);
-    print "3 Set value of \"stopCodonExcludedFromCDS\" in generic_parameters.cfg to \"true\"\n" if ($verbose>=3);
+    print "3 Set value of \"stopCodonExcludedFromCDS\" in ${species}_generic_parameters.cfg to \"true\"\n" if ($verbose>=3);
     
     # first try with etraining
   #  print "3 mv $trainDir/pasa/trainingSetComplete.gb $trainDir/training/trainingSetComplete.gb\n";   
@@ -581,9 +584,9 @@ sub construct_training_set{
    # system("$cmdString")==0 or die("\nfailed to move trainingSetComplete.gb to $trainDir/training\n");
     print "3 cd $trainDir/training\n" if ($verbose>=3);
     chdir "$trainDir/training" or die ("Could not change directory to $trainDir/training\n");
-    $cmdString="etraining --species=generic trainingSetComplete.gb 1>train.out 2>train.err";
+    $cmdString="etraining --species=${species}_generic trainingSetComplete.gb 1>train.out 2>train.err";
     print "3 Running \"$cmdString\" ... " if ($verbose>=3);
-    system("$cmdString")==0 or die("\nfailed to execute: $!\n");
+    system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
     print " Finished!\n" if ($verbose>=3); 
     print "3 train.out and train.err have been made under $trainDir/training.\n" if ($verbose>=3);
     
@@ -593,13 +596,14 @@ sub construct_training_set{
     print "3 Error rate caused by \"exon doesn't end in stop codon\" is $err_rate\n" if ($verbose>=3);
     if($err_rate>=0.5){
 	print "3 The appropriate value for \"stopCodonExcludedFromCDS\" seems to be \"false\".\n" if ($verbose>=3);
-        chdir "$scriptPath" or die ("Can not chdir to $scriptPath.\n");
-        system('cat generic_parameters.cfg | perl -pe \'s/(stopCodonExcludedFromCDS )(\s+) /$1false /\' > temp_1')==0 or die ("failed to execute: $!\n");
-        system("mv temp_1 generic_parameters.cfg")==0 or die("\nfailed to execute: $!\n");
-        print "3 Setted value of \"stopCodonExcludedFromCDS\" in generic_parameters.cfg to \"false\"\n" if ($verbose>=3);
-        print "3 Try etraining again: etraining --species=$species training.gb.train >train.out ..." if ($verbose>=3);
+        chdir "$genericPathTrain" or die ("Can not chdir to $genericPathTrain.\n");
+        system('cat generic_parameters.cfg | perl -pe \'s/(stopCodonExcludedFromCDS ).*/$1false /\' > '."${species}_generic_parameters.cfg")==0 or die ("failed to execute: $!\n");
+        print "3 Set value of \"stopCodonExcludedFromCDS\" in ${species}_generic_parameters.cfg to \"false\"\n" if ($verbose>=3);
+        print "3 Try etraining again: etraining --species=${species}_generic training.gb.train >train.out ..." if ($verbose>=3);
         chdir "$trainDir/training/" or die ("Can not change directory to $trainDir/training.");
-        system("etraining --species=generic trainingSetComplete.gb 1>train.out 2>train.err")==0 or die("\nfailed to execute: $!\n");
+        $cmdString="etraining --species=${species}_generic trainingSetComplete.gb 1>train.out 2>train.err";
+        print "3 Running \"$cmdString\" ... " if ($verbose>=3);
+        system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
         print " Finished!\n" if ($verbose>=3);
         print "3 train.out and train.err have been made again under $trainDir/training.\n" if ($verbose>=3);
 	print "2 Stop codons seem to be contained by CDS. Setting stopCodonExcludedFromCDS to false\n" if ($verbose>=2);
@@ -607,13 +611,17 @@ sub construct_training_set{
     else{
 	print "2 Stop codons seem to be exluded from CDS. Setting stopCodonExcludedFromCDS to true\n" if ($verbose>=2); 
     }
+		
+    $cmdString = "rm -rf $genericPathTrain";
+    print "3 $cmdString\n" if ($verbose>=3);
+    system("$cmdString")==0 or die ("failed to execute: $cmdString\n");
 
     print "1 Now filtering problematic genes from training set...\n" if ($verbose>=1);
 
     # extract badlist
     $perlCmdString='cat train.err | perl -ne \'print "$1\n" if /in sequence (\S+):/\' > badlist';
     print "3 Running $perlCmdString ...\n" if ($verbose>=3);
-    system("$perlCmdString")==0 or die ("failed to execute: $!\n");
+    system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
 
     # check whether only a small fraction of all entries created a problem, if >10%, output a warning
     my $bad_num=`wc -l < badlist`;
@@ -751,7 +759,7 @@ sub autoTrain_no_utr{
     # run autoAugTrain.pl
     $perlCmdString="perl $scriptPath/autoAugTrain.pl -t=$trainingset -s=$species $useexistingopt -g=$genome_clean -w=$rootDir $verboseString --opt=$optrounds";
     print "\n2 $perlCmdString\n" if ($verbose>=2);
-    system("$perlCmdString")==0 or die ("failed to execute: $!\n");
+    system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
 
     print "\n1 ####### Finished step 1 at " .(scalar localtime()) . 
 	". All files are stored in $rootDir/autoAugTrain #######\n" if ($verbose>=1);
@@ -790,7 +798,7 @@ sub autoAug_prepareScripts{
 	"$verboseString $hintsString $useexistingopt";
     $perlCmdString .= " --singleCPU" if ($singleCPU);
     print "2 $perlCmdString\n" if ($verbose>=2);
-    system("$perlCmdString")==0 or die("\nfailed to execute $!\n");
+    system("$perlCmdString")==0 or die("\nfailed to execute $perlCmdString\n");
     
     my $stepNum;
     $stepNum=2 if (!$hints_switch && !$utr_switch);
@@ -922,7 +930,7 @@ sub autoTrain_with_utr{
   	  $perlCmdString="perl $scriptPath/autoAugTrain.pl -g=$genome_clean -s=$species --utr -e=$estali $augString -w=$rootDir $verboseString --opt=$optrounds $useexistingopt";
     }
     print "\n2 $perlCmdString\n" if ($verbose>=2);
-    system("$perlCmdString")==0 or die ("failed to execute: $!\n");
+    system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
 
     print "\n1 ####### Finished step $stepNum, all files are stored in $rootDir/training/utr #######\n" if ($verbose>=1);
     
@@ -961,7 +969,7 @@ sub collect{
 
 
     $cmdString = "cp $rootDir/seq/contigs.gff contigs.gff";
-    system("$cmdString")==0 or die("\nfailed to execute: $!\n");
+    system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
 
     if (-f "$rootDir/cdna/cdna.gbrowse"){
 	$cmdString = "ln -sf $rootDir/cdna/cdna.gbrowse cdna.gbrowse";
@@ -990,11 +998,11 @@ sub collect{
     chdir "../hints";
     if($pasa){
 	$cmdString="ln -sf $rootDir/hints/hints.E.gff hints.E.gff";
-	system("$cmdString")==0 or die("\nfailed to execute: $!\n");
+	system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
         print "3 $cmdString\n" if ($verbose>=3);
     } elsif ($havehints) {
 	$cmdString="ln -sf  $hints hints.E.gff";
-	system("$cmdString")==0 or die("\nfailed to execute: $!\n");
+	system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
 	print "3 $cmdString\n" if ($verbose>=3);
     }
     
@@ -1019,7 +1027,7 @@ sub collect{
     chdir "../seq";
     $cmdString="ln -s $genome genome.fa" if (!uptodate([$genome], ["genome.fa"]));
 
-    system("$cmdString")==0 or die("\nfailed to execute: $!\n");
+    system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
     print "3 $cmdString\n" if ($verbose>=3);
     
     # collect config files
@@ -1047,12 +1055,12 @@ sub collect{
 	$i =~ /^(\/.*\/)(.*)\n$/;
 	if(-f "$2"){
 	    $cmdString="ln -fs $1$2 $2"."_another";
-	    system("$cmdString")==0 or die("\nfailed to execute: $!\n");
+	    system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
 	    print "3 $cmdString\n" if ($verbose>=3);
 	}
 	else{
 	    $cmdString="ln -s $1$2 $2";
-	    system("$cmdString")==0 or die("\nfailed to execute: $!\n");
+	    system("$cmdString")==0 or die("\nfailed to execute: $cmdString\n");
             print "3 $cmdString\n" if ($verbose>=3);
 	}
     }
