@@ -279,7 +279,7 @@ sub printConvertedGTF {
 	if ($txs{$txid}{"txline"}[0] ne ""){
 	    if ($gff3) {
 		$txs{$txid}{"txline"}->[2] = "mRNA";
-		$txs{$txid}{"txline"}->[8] = "ID=$txid;Parent=$geneid\n";
+		$txs{$txid}{"txline"}->[8] = "ID=$txid;Parent=$geneid;\n";
 	    }
 	    print OUT join ("\t", @{$txs{$txid}{"txline"}});
 	}
@@ -302,13 +302,13 @@ sub printConvertedGTF {
 		    $line->[8] = "ID=$txid.$line->[2]$ct_exon;Parent=$txid;\n";
 		}elsif($line->[2] eq "CDS"){
 		    ++$ct_CDS;
-		   $line->[8] = "ID=$txid.$line->[2]$ct_CDS;Parent=$txid\n";
+		   $line->[8] = "ID=$txid.$line->[2]$ct_CDS;Parent=$txid;\n";
 		}elsif($line->[2] eq "three_prime_utr"){
 		    ++$ct_3UTR;
-		    $line->[8] = "ID=$txid.3UTR$ct_3UTR;Parent=$txid\n";
+		    $line->[8] = "ID=$txid.3UTR$ct_3UTR;Parent=$txid;\n";
 		}elsif($line->[2] eq "five_prime_utr"){
 		    ++$ct_5UTR;
-		    $line->[8] = "ID=$txid.5UTR$ct_5UTR;Parent=$txid\n";
+		    $line->[8] = "ID=$txid.5UTR$ct_5UTR;Parent=$txid;\n";
 		} else {
 		    $line->[8] = "Parent=$txid;\n";
 		}
