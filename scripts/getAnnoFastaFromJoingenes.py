@@ -94,7 +94,7 @@ except IOError:
 seq_len = {}
 codingseq = {}
 try:
-    with open(args.genome, "rU") as genome_handle:
+    with open(args.genome, "r") as genome_handle:
         for record in SeqIO.parse(genome_handle, "fasta"):
             seq_len[record.id] = len(record.seq)
             if record.id in cds:
