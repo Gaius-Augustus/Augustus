@@ -11,7 +11,7 @@
 # do not exceed sequence boundaries (which sometimes happens and is not caught
 # by bam2wig).
 # This script is a re-assembly of functions from MakeHub
-# at 
+# at https://github.com/Gaius-Augustus/MakeHub
 
 import string
 import random
