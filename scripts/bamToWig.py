@@ -10,6 +10,8 @@
 # as additional input argument. In return, it ensures that aligments
 # do not exceed sequence boundaries (which sometimes happens and is not caught
 # by bam2wig).
+# This script is a re-assembly of functions from MakeHub
+# at 
 
 import string
 import random
