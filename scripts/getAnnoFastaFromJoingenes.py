@@ -146,7 +146,7 @@ try:
         for tx_id, seq_rec in codingseq.items():
             is_good = True
             seq_rec.seq = seq_rec.seq.translate(table=args.translation_table)
-            match = re.search(r"(\*)\w", str(seq_rec.seq))
+            match = re.search(r"(\*)(\w|\*)", str(seq_rec.seq))
             if match:
                 # 1-based amino acid index of stop codon
                 bad_tx[tx_id] = match.start(0) + 1
