@@ -169,7 +169,7 @@ if len(bad_tx) > 0:
                 for i in range(0, len(cds[tx2seq[tx]][tx])):
                     if (left_most == -1) or (cds[tx2seq[tx]][tx][i]['start'] <= left_most):
                         left_most = cds[tx2seq[tx]][tx][i]['start']
-                    if (right_most == -1) or (cds[tx2seq[tx]][tx][i]['end'] <= right_most):
+                    if (right_most == -1) or (cds[tx2seq[tx]][tx][i]['end'] >= right_most):
                         right_most = cds[tx2seq[tx]][tx][i]['end']
                 bad_handle.write(str(left_most) + '\t' + str(right_most) + '\t' + tx2str[tx] +
                                  '\n')
