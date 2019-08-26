@@ -46,8 +46,6 @@ parser = argparse.ArgumentParser(
                  and a corresponding genomic FASTA-file.')
 parser.add_argument('-g', '--genome', required=True,
                     type=str, help='genome sequence file (FASTA-format)')
-parser.add_argument('-f', '--gtf', required=True,
-                    type=str, help='file with CDS coordinates (GTF-format)')
 parser.add_argument('-o', '--out', required=True, type=str,
                     help="name stem pf output file with coding sequences and \
                     protein sequences (FASTA-format); will be extended by \
@@ -57,7 +55,34 @@ parser.add_argument('-t', '--table', dest='translation_table', default=1,
 parser.add_argument('-s', '--filter_out_invalid_stops', dest='filter',
                     type=bool, help='Suppress output of protein sequences \
                     that contain internal stop codons.', default=False)
+parser.add_argument('-p', '--print_format_examples', required=False, action='store_true',
+                    help="Print gtf/gff3 input format examples, do not perform analysis")
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('-f', '--gtf',
+                    type=str, help='file with CDS coordinates (GTF-format)')
+group.add_argument('-3', '--gff3',
+                    type=str, help='file with CDS coordinates (GFF3 format)')
 args = parser.parse_args()
+
+
+if args.print_format_examples:
+    print('This script requires an annotation of protein coding genes with CDS ' +
+        'features either in GTF or GFF3 format. Since both formats are sometimes ' +
+        'inhomogeneous accross different tools, we here provide compatible ' +
+        'examples. ' +
+        'This script will only process the CDS lines. The input data may contain other feature lines that ' +
+        'are ignored.')
+    print('\nGTF format example:\n')
+    print('NW_018027262_1\tAUGUSTUS\tCDS\t347\t525\t0.5\t-\t0\ttranscript_id "g1.t1"; gene_id "g1";\n' +
+          'NW_018027262_1\tAUGUSTUS\tCDS\t1791\t2242\t0.59\t-\t2\ttranscript_id "g1.t1"; gene_id "g1";\n' +
+          'NW_018027262_1\tAUGUSTUS\tCDS\t2451\t2682\t0.24\t-\t0\ttranscript_id "g1.t1"; gene_id "g1";\n')
+    print('GFF3 format example:\n')
+    print('NW_018027262_1\tAUGUSTUS\tCDS\t347\t525\t0.5\t-\t0\tID=g1.t1.CDS1;Parent=g1.t1;\n' +
+          'NW_018027262_1\tAUGUSTUS\tCDS\t1791\t2242\t0.59\t-\t2\tID=g1.t1.CDS2;Parent=g1.t1;\n' +
+          'NW_018027262_1\tAUGUSTUS\tCDS\t2451\t2682\t0.24\t-\t0\tID=g1.t1.CDS3;Parent=g1.t1;\n')
+    print('\nThis script has successfully been tested with GTF format produced by BRAKER, and with' +
+        'the GFF3 format produced by gtf2gff3.pl (Augustus/scripts).')
+    exit(0)
 
 # output file names:
 codingseqFile = args.out + ".codingseq"
@@ -67,27 +92,53 @@ proteinFile = args.out + ".aa"
 tx2seq = {}
 tx2str = {}
 cds = {}
-try:
-    with open(args.gtf, "r") as gtf_handle:
-        for line in gtf_handle:
-            if re.match(
-                    r"\S+\t\S+\tCDS\t\d+\t\d+\t\S+\t\S+\t\d\t.*transcript_id (\S+)", line):
-                seq_id, st, en, stx, fr, tx_id = re.match(
-                    r"(\S+)\t\S+\tCDS\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\d)\t.*transcript_id (\S+)", line).groups()
-                tx_id = re.sub(r'\"(\S+)\"', r'\1', tx_id)
-                tx_id = re.sub(r';', r'', tx_id)
-                if seq_id not in cds:
-                    cds[seq_id] = {}
-                if tx_id not in cds[seq_id]:
-                    cds[seq_id][tx_id] = []
-                cds[seq_id][tx_id].append(
-                    {'start': int(st), 'end': int(en), 'strand': stx,
-                     'frame': int(fr)})
-                if not tx_id in tx2seq:
-                    tx2seq[tx_id] = seq_id
-                    tx2str[tx_id] = stx
-except IOError:
-    print("Error: Failed to open file " + args.gtf + "!")
+
+if args.gtf:
+    try:
+        with open(args.gtf, "r") as gtf_handle:
+            for line in gtf_handle:
+                if re.match(
+                        r"\S+\t\S+\tCDS\t\d+\t\d+\t\S+\t\S+\t\d\t.*transcript_id (\S+)", line):
+                    seq_id, st, en, stx, fr, tx_id = re.match(
+                        r"(\S+)\t\S+\tCDS\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\d)\t.*transcript_id (\S+)", line).groups()
+                    tx_id = re.sub(r'\"(\S+)\"', r'\1', tx_id)
+                    tx_id = re.sub(r';', r'', tx_id)
+                    if seq_id not in cds:
+                        cds[seq_id] = {}
+                    if tx_id not in cds[seq_id]:
+                        cds[seq_id][tx_id] = []
+                    cds[seq_id][tx_id].append(
+                        {'start': int(st), 'end': int(en), 'strand': stx,
+                         'frame': int(fr)})
+                    if not tx_id in tx2seq:
+                        tx2seq[tx_id] = seq_id
+                        tx2str[tx_id] = stx
+    except IOError:
+        print("Error: Failed to open file " + args.gtf + "!")
+        exit(1)
+elif args.gff3:
+    try:
+        with open(args.gff3, "r") as gff3_handle:
+            for line in gff3_handle:
+                if re.match(r"\S+\t\S+\tCDS\t\d+\t\d+\t\S+\t\S+\t\d\tID=[^;]+;Parent=[^;]+;", line):
+                    seq_id, st, en, stx, fr, tx_id = re.match(
+                        r"(\S+)\t\S+\tCDS\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\d)\tID=[^;]+;Parent=([^;]+);", line).groups()
+                    if seq_id not in cds:
+                        cds[seq_id] = {}
+                    if tx_id not in cds[seq_id]:
+                        cds[seq_id][tx_id] = []
+                    cds[seq_id][tx_id].append(
+                        {'start': int(st), 'end': int(en), 'strand': stx,
+                         'frame': int(fr)})
+                    if not tx_id in tx2seq:
+                        tx2seq[tx_id] = seq_id
+                        tx2str[tx_id] = stx
+    except IOError:
+        print("Error: Failed to open file " + args.gtf + "!")
+        exit(1)
+else:
+    print("Error: Neither annotation file in GTF, nor in GFF3 was provided!")
+    exit(1)
 
 # Read genome file (single FASTA entries are held in memory, only), extract
 # CDS sequence windows, add N when frame information states missing nucleotides
@@ -128,6 +179,7 @@ try:
                                 tx].seq.reverse_complement()
 except IOError:
     print("Error: Failed to open file " + args.genome + "!")
+    exit(1)
 
 # Print coding sequences to file
 try:
@@ -136,6 +188,7 @@ try:
             SeqIO.write(seq_rec, codingseq_handle, "fasta")
 except IOError:
     print("Error: Failed to open file " + codingseqFile + "!")
+    exit(1)
 
 
 # Translate coding sequences, identify sequences with in-frame stop codons,
@@ -154,6 +207,7 @@ try:
                 SeqIO.write(seq_rec, protein_handle, "fasta")
 except IOError:
     print("Error: Failed to open file " + proteinFile + "!")
+    exit(1)
 
 # Print IDs of genes with in-frame stop codons if any were found
 if len(bad_tx) > 0:
@@ -175,6 +229,7 @@ if len(bad_tx) > 0:
                                  '\n')
     except IOError:
         print("Error: Failed to open file bad_genes.lst!")
+        exit(1)
     print("WARNING: The GTF file contained " + str(len(bad_tx)) + " gene(s) " +
           "with internal Stop codons (see file bad_genes.lst).")
     if args.filter:
