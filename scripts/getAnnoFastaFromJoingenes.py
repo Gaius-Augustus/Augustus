@@ -2,7 +2,7 @@
 
 # Author: Katharina J. Hoff
 # E-Mail: katharina.hoff@uni-greifswald.de
-# Last modified on September 10th 2018
+# Last modified on August 26th 2019
 #
 # This Python script extracts CDS features from a GTF file, excises
 # corresponding sequence windows from a genome FASTA file, stitches the
