@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # Creates a fasta file with unique peptides from two peptide fasta input files
 # Deletes redundant entries. Multiplicity information is taken from the first

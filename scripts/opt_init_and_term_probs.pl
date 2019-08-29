@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #############################################################
 # opt_init_and_term_probs.pl

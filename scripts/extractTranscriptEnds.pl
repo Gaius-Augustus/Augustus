@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # extract transcript ends of a given length from a gene fasta file (no UTR)
 # Katharina Hoff, 9.8.2011, katharina.hoff@gmail.com

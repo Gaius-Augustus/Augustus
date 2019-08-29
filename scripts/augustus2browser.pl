@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # This takes the AUGUSTUS output in the standard input
 # and outputs to standard output a file with UCSC browser gtf format

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # convert phastcons track to a file with hints to AUGUSTUS
 # 

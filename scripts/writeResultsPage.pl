@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # This scripts writes an HTML results page and does all the necessary file modifications for making results of the AUGUSTUS training web server application available.
 

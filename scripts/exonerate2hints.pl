@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # generate hints from an Exonerate gff dump
 # Mario Stanke June, 2007

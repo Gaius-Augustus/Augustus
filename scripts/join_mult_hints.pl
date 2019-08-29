@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # summarize multiple identical hints to one with mult=n
 #

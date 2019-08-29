@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # filter augustus splice hints file (e.g. from RNA-seq data)
 # for splice hints that contain a particular splicing motif,

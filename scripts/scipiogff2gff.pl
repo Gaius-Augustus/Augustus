@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # convert a gff from scipio to a gff file in a format that
 # can then be converted to genbank, e.g. with gff2gbSmallDNA.pl

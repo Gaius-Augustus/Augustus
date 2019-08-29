@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 #  convert the exoniphy exon predictions to a file with hints to AUGUSTUS
 #

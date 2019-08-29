@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # Construct likely UTR regions from EST alignments and codon region boundaries
 # e.g. to make a training set to train the AUGUSTUS UTR models.
