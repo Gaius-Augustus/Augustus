@@ -54,6 +54,7 @@ RUN make
 WORKDIR "/root/augustus"
 RUN make
 RUN make install
+ENV PATH="/root/augustus/bin:${PATH}"
 
 # Test AUGUSTUS
 RUN make test
