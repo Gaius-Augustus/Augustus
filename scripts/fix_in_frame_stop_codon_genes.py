@@ -15,6 +15,8 @@ import shutil
 import subprocess
 from inspect import currentframe, getframeinfo
 import logging
+import random
+import string
 
 ### Create log file ###
 if os.path.exists('log'):
@@ -51,8 +53,8 @@ except ImportError:
                       'Try installing with \"pip3 install biopython\"')
 
 parser = argparse.ArgumentParser(description='Replaces genes with in-frame \
-		stop codons (IFS) in a GTF or GFF3 file by genes without IFS \
-		that are newly predicted with AUGUSTUS using mea.')
+        stop codons (IFS) in a GTF or GFF3 file by genes without IFS \
+        that are newly predicted with AUGUSTUS using mea.')
 parser.add_argument('-g', '--genome', required=True, type=str,
                     help='genome sequence file (FASTA format)')
 group = parser.add_mutually_exclusive_group(required=True)
@@ -67,11 +69,13 @@ parser.add_argument('-H', '--hintsfile', required=True, type=str,
 parser.add_argument('-o', '--out', required=True, type=str,
                     help="Name stem of the output file; will be extended with \
                     .gtf or .gff3 depending on the input format.")
+parser.add_argument('-s', '--species', required=True, type=str,
+                    help='Set the species to be used for running AUGUSTUS')
+parser.add_argument('-e', '--extrinsicCfgFile', required=True, type=str,
+                    help='Set extrinsic config file for AUGUSTUS')
 parser.add_argument('-m', '--softmasking', required=False,
                     choices=['on', 'off'], default='off', type=str,
                     help='Choose \'on\' if the genome file is softmasked')
-parser.add_argument('-s', '--species', required=True, type=str,
-                    help='Set the species to be used for running AUGUSTUS')
 parser.add_argument('--UTR', required=False, choices=['on', 'off'],
                     default='off', type=str,
                     help='Predict the untranslated regions in addition \
@@ -81,8 +85,6 @@ parser.add_argument('--print_utr', required=False, choices=['on', 'off'],
                     default='off', type=str,
                     help='Choose \'on\' if --print-utr=on was used in the \
                     original AUGUSTUS run')
-parser.add_argument('-e', '--extrinsicCfgFile', required=True, type=str,
-                    help='Set extrinsic config file for AUGUSTUS')
 parser.add_argument('-a', '--augustus_config_path', required=False, type=str,
                     help='Set path to the config directory of AUGUSTUS.')
 parser.add_argument('-A', '--augustus_bin_path', required=False, type=str,
@@ -96,14 +98,14 @@ parser.add_argument('-n', '--noCleanUp', required=False, action='store_true',
                     choose \'--noCleanUp True\'.')
 parser.add_argument('-p', '--print_format_examples', required=False,
                     action='store_true', help="Print gtf/gff3 input format \
-	                examples, do not perform analysis")
+                    examples, do not perform analysis")
 args = parser.parse_args()
 
 if args.print_format_examples:
     print('This script requires an annotation of protein coding genes ' +
-    	  ' either in GTF or GFF3 format, containing genes with in-frame ' +
-    	  'stop codon (IFS). The file must contain a gene line and a ' +
-    	  'transcript/mRNA line. \n')
+          ' either in GTF or GFF3 format, containing genes with in-frame ' +
+          'stop codon (IFS). The file must contain a gene line and a ' +
+          'transcript/mRNA line. \n')
     print('GTF format example:\n')
     print('ctg1\tAUGUSTUS\tgene\t7816\t12187\t0.25\t+\t.\tg1\n' +
           'ctg1\tAUGUSTUS\ttranscript\t7816\t12187\t0.25\t+\t.\tg1.t1\n' +
@@ -147,88 +149,83 @@ if args.print_format_examples:
     print('g11.t1\ng722.t1')
     exit(0)
 
-### Check whether sufficient options have been provided ###
 
-### tmp directory for saving files that can be removed afterwards ###
-tmp = "tmp/"
-if not os.path.exists("tmp"):
+''' ******************* BEGIN FUNCTIONS *************************************'''
+
+
+def create_tmp_dir():
+    """ Function that a directory for temporary files with a random name """
+    letters = string.ascii_lowercase
+    randomString = ''.join(random.choice(letters) for i in range(8))
+    tmp = "tmp" + randomString + "/"
+    # if directory exists, create a new one
+    while(os.path.exists(tmp)):
+        logger.info("Directory " + tmp + " already exists.")
+        randomString = ''.join(random.choice(letters) for i in range(8))
+        tmp = "tmp" + randomString + "/"
     os.mkdir(tmp)
-else:
-    logger.info("Directory tmp already exists.")
+    logger.info("Creating directory " + tmp + ".")
+    return(tmp)
 
-### Find grep ###
-if shutil.which("grep") is not None:
-    grep = shutil.which("grep")
-else:
-    frameinfo = getframeinfo(currentframe())
-    logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                str(frameinfo.lineno) + ': '
-                + "Unable to locate grep!")
 
-### Find perl ###
-if shutil.which("perl") is not None:
-    perl = shutil.which("perl")
-else:
-    frameinfo = getframeinfo(currentframe())
-    logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                str(frameinfo.lineno) + ': '
-                + "Unable to locate perl!")
-
-### Find cdbfasta and cdbyank ###
-if shutil.which("cdbfasta") is not None:
-    cdbfasta = shutil.which("cdbfasta")
-else:
-    frameinfo = getframeinfo(currentframe())
-    logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                str(frameinfo.lineno) + ': '
-                + "Unable to locate cdbfasta!")
-if shutil.which("cdbyank") is not None:
-    cdbyank = shutil.which("cdbyank")
-else:
-    frameinfo = getframeinfo(currentframe())
-    logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                str(frameinfo.lineno) + ': '
-                + "Unable to locate cdbyank!")
-
-### Find augustus_bin_path ###
-if args.augustus_bin_path:
-    augustus_bin_path = args.augustus_bin_path
-    if not re.search(r"/$", augustus_bin_path):
-        augustus_bin_path = augustus_bin_path + "/"
-    augustus = augustus_bin_path + "augustus"
-    if not(os.access(augustus, os.X_OK)):
-        frameinfo = getframeinfo(currentframe())
-        logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                    str(frameinfo.lineno) + ': ' + augustus + " is not executable!")
-        exit(1)
-else:
-    if shutil.which("augustus") is not None:
-        augustus = shutil.which("augustus")
-        if re.match(r".+/augustus", augustus):
-            match = re.match(r"(.+/)augustus", augustus)
-            augustus_bin_path = match.group(1)
+def find_tool(toolname):
+    """ Function that tries to locate a tool with which """
+    if shutil.which(toolname) is not None:
+        toolbinary = shutil.which(toolname)
     else:
         frameinfo = getframeinfo(currentframe())
         logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                    str(frameinfo.lineno) + ': ' + "Unable to locate augustus!")
+                str(frameinfo.lineno) + ': '
+                + "Unable to locate binary of " + toolname + "!")
         exit(1)
+    return(toolbinary)
+
+
+def check_tool_in_given_path(given_path, toolname):
+    """ If TOOL_PATH is provided as command line option, check whether the
+    required binary is executable in that directory; return tool binary 
+    with full path. """
+    if not re.search(r"/$", given_path):
+        given_path = given_path + "/"
+    toolbinary = given_path + toolname
+    if not(os.access(toolname, os.X_OK)):
+        frameinfo = getframeinfo(currentframe())
+        logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+                    str(frameinfo.lineno) + ': ' + toolbinary + 
+                    " is not executable!")
+        exit(1)
+    return toolbinary
+
+def sortSecond(val):
+    """ """
+    return val[1]
+
+''' ******************* END FUNCTIONS *************************************'''
+
+### Check whether sufficient options have been provided ###
+
+### tmp directory for saving files that can be removed afterwards ###
+tmp = create_tmp_dir()
+
+
+
+### Find required binaries on system ###
+grep = find_tool("grep")
+perl = find_tool("perl")
+cdbfasta = find_tool("cdbfasta")
+cdbyank = find_tool("cdbyank")
+
+### Find augustus_bin_path ###
+if args.augustus_bin_path:
+    augustus = check_tool_in_given_path(args.augustus_bin_path, "augustus")
+else:
+    augustus = find_tool("augustus")
 
 ### Find augustus_scripts_path ###
 if args.augustus_scripts_path:
-    augustus_scripts_path = args.augustus_scripts_path
-    if not re.search(r"/$", augustus_scripts_path):
-        augustus_scripts_path = augustus_scripts_path + "/"
-    gtf2gff = augustus_scripts_path + "gtf2gff.pl"
-    if not(os.access(gtf2gff, os.X_OK)):
-        frameinfo = getframeinfo(currentframe())
-        logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                    str(frameinfo.lineno) + ': ' + gtf2gff + " is not executable!")
-        exit(1)
+    gtf2gff = check_tool_in_given_path(args.augustus_scripts_path, "gtf2gff.pl")
 elif shutil.which("gtf2gff.pl") is not None:
-    gtf2gff = shutil.which("gtf2gff.pl")
-    if re.match(r".+/gtf2gff\.pl", gtf2gff):
-        match = re.match(r"(.+/)gtf2gff\.pl", gtf2gff)
-        augustus_scripts_path = match.group(1)
+    gtf2gff = find_tool("gtf2gff.pl")
 else:
     logger.info(
         "Trying to set augustus_scripts_path to augustus_bin_path/../scripts/")
@@ -239,34 +236,41 @@ else:
     else:
         frameinfo = getframeinfo(currentframe())
         logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                    str(frameinfo.lineno) + ': ' + "Unable to set augustus_scripts_path!")
+                    str(frameinfo.lineno) + ': ' + 
+                    "Unable to set augustus_scripts_path!")
         exit(1)
 
 ### Find augustus_config_path ###
+augustus_config_path = ""
 if args.augustus_config_path:
     augustus_config_path = args.augustus_config_path
 else:
     logger.info(
-        "Trying to set augustus_scripts_path to augustus_scripts_path/../config/")
-    test_augustus_config_path = augustus_config_path + "../config/"
-    if os.path.existis(test_augustus_config_path):
+        "Trying to set augustus_scripts_path to " +
+        "augustus_scripts_path/../config/")
+    augustus_scripts_path = gtf2gff
+    augustus_scripts_path = re.sub(r'gtf2gff\.pl', '', augustus_scripts_path)
+    test_augustus_config_path = augustus_scripts_path + "../config/"
+    if os.path.exists(test_augustus_config_path):
         augustus_config_path = test_augustus_config_path
     else:
         frameinfo = getframeinfo(currentframe())
         logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                    str(frameinfo.lineno) + ': ' + "Unable to set augustus_config_path!")
+                    str(frameinfo.lineno) + ': ' + "Unable to set " +
+                    "augustus_config_path!")
+        exit(1)
 
 ### Save input arguments ###
-genome_file = args.genome
-if args.gtf:
-    gtf_file = args.gtf
+
+if args.gtf is not None:
+    gtf_file = args.gtf # setting gtf_file because identically named variable
+                        # is also used if a gff3 file was originally
+                        # provided
     out_file = args.out + ".gtf"
-    gff3 = False
 else:
-    gff3_file = args.gff3
     gtf_file = tmp + "converted_augustus.gtf"
     out_file = args.out + ".gff3"
-    gff3 = True
+
 hintsfile = args.hintsfile
 species = args.species
 softmasking = args.softmasking
@@ -277,11 +281,11 @@ noCleanUp = args.noCleanUp
 
 
 ### If input file is in gff3 format, convert input file to gtf format ###
-if gff3:
+if args.gff3 is not None:
     g_id = ""
     tx_id = ""
     try:
-        with open(gff3_file, "r") as gff3_handle:
+        with open(args.gff3, "r") as gff3_handle:
             try:
                 with open(gtf_file, "w") as gtf_handle:
                     for line in gff3_handle:
@@ -342,7 +346,7 @@ if gff3:
         logger.info("Error: Failed to open file " + gff3_file + "!")
 
 
-### Read file with list of transcript ids of genes with IFS and extract transcript ids ###
+### Read file with list of transcript IDs of genes with IFS and extract transcript IDs ###
 bad_tx = []
 try:
     with open(args.badGenes, "r") as bad_handle:
@@ -355,7 +359,7 @@ except IOError:
     logger.info("Error: Failed to open file " + args.badGenes + "!")
 
 
-### Read gtf file and extract seq ids and gene start and end ###
+### Read gtf file and extract seq id, gene start and end ###
 genes = {}
 genesStart_ofSeqID = {}
 genesEnd_ofSeqID = {}
@@ -396,19 +400,18 @@ for tx_id in bad_tx:
 ### Create list of scaffold lengths ###
 seq_len = {}
 try:
-    with open(genome_file, "r") as genome_handle:
+    with open(args.genome, "r") as genome_handle:
         for record in SeqIO.parse(genome_handle, "fasta"):
             seq_len[record.id] = len(record.seq)
 except IOError:
     frameinfo = getframeinfo(currentframe())
     logger.info('Error in file ' + frameinfo.filename + ' at line ' +
                 str(frameinfo.lineno) + ': ' + "Could not open file " +
-                genome_file + " for reading!")
+                args.genome + " for reading!")
 
 
 ### Compute positions for prediction start and prediction end ###
-def sortSecond(val):
-    return val[1]
+
 
 
 regions = {}
@@ -455,10 +458,10 @@ for g_id in bad_genes:
 
 ### Generate FASTA files for each scaffold containing a gene with in-frame stop codon ###
 # Run cdbfasta
-genome_cidx = genome_file + ".cidx"
+genome_cidx = args.genome + ".cidx"
 try:
     with open(genome_cidx, "w") as cidx_handle:
-        subprcs_args = [cdbfasta, genome_file]
+        subprcs_args = [cdbfasta, args.genome]
         logger.info("Trying to execute the following command:")
         logger.info(" ".join(subprcs_args))
         result = subprocess.run(
@@ -533,7 +536,7 @@ if not os.path.exists("out"):
 else:
     logger.info("Directory out already exists.")
 
-if gff3:
+if args.gff3 is not None:
     use_gff3 = "on"
 else:
     use_gff3 = "off"
@@ -671,7 +674,7 @@ except IOError:
 ### Sort gtf file or convert gtf file to gff3 format (sorted) depending on the input format ###
 try:
     with open(augustus_tmp_file, "r") as augustus_tmp_handle:
-        if gff3:
+        if args.gff3 is not None:
             subprcs_args = [perl, gtf2gff, "--out=" +
                             out_file, "--printExon", "--gff3"]
         else:
