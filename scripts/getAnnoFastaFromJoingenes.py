@@ -214,7 +214,7 @@ if len(bad_tx) > 0:
     try:
         with open("bad_genes.lst", "w") as bad_handle:
             bad_handle.write(
-                "tx_id\tstop_in_amino_acid\tstop_in_mRNA_start\tstop_in_mRNA_end\tgenomic_transcript_start\tgenomic_transcript_end\tstrand\n")
+                "# tx_id\tstop_in_amino_acid\tstop_in_mRNA_start\tstop_in_mRNA_end\tgenomic_transcript_start\tgenomic_transcript_end\tstrand\n")
             for tx in bad_tx:
                 bad_handle.write(tx + "\t" + str(bad_tx[tx]) + "\t" + str(
                     bad_tx[tx] * 3 - 2) + "\t" + str(bad_tx[tx] * 3) + "\t")
