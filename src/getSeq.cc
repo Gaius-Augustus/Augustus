@@ -128,7 +128,7 @@ int main( int argc, char* argv[] ){
 #endif
     }
 
-    try{
+    try{    
 	AnnoSequence *annoseq = rsa->getSeq(species, seqname, start-1, end-1, strand);
 	if(annoseq){
 	    if(annoseq->offset + annoseq->length < end ){
@@ -171,9 +171,14 @@ parameters:\n\
 --start=N     retrieve subsequence starting at position N (coordinates are 1-based)\n\
 --end=N       retrieve subsequence ending at position N (coordinates are 1-based)\n\
 \n\
-example:\n\
+example MySQL:\n\
      getSeq --species=hg19 --seq=chr21 --dbaccess=saeuger,localhost,cgp,AVglssd8 \n\
      getSeq --species=hg19 --seq=chr21 --start=47870612  --end=48086047 --rc --dbaccess=saeuger,localhost,cgp,AVglssd8 \n\
+\n\
+example SQLite:\n\
+    getSeq --species=hg19 --seq=chr21 --start=20000 --end=30000 --dbaccess=genomes.db --speciesfilenames=genomes.tbl\n\
+    format of genomes.tbl: Homo sapiens <TAB> /dir/to/genome/human.fa\n\
+                           Mus musculus <TAB> /dir/to/genome/mouse.fa\n\
 \n";
 }
 
