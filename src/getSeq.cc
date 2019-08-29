@@ -128,7 +128,7 @@ int main( int argc, char* argv[] ){
 #endif
     }
 
-    try{    
+    try{
 	AnnoSequence *annoseq = rsa->getSeq(species, seqname, start-1, end-1, strand);
 	if(annoseq){
 	    if(annoseq->offset + annoseq->length < end ){
