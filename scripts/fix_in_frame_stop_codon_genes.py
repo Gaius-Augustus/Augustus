@@ -18,17 +18,6 @@ import logging
 import random
 import string
 
-### Create log file ###
-if os.path.exists('log'):
-    os.remove('log')
-logger = logging.getLogger("simple_example")
-logger.setLevel(logging.INFO)
-fh = logging.FileHandler('log')
-fh.setLevel(logging.INFO)
-formatter = logging.Formatter("%(message)s")
-fh.setFormatter(formatter)
-logger.addHandler(fh)
-
 try:
     import argparse
 except ImportError:
@@ -63,7 +52,7 @@ group.add_argument('-3', '--gff3', type=str, help='GFF3 input file')
 parser.add_argument('-b', '--badGenes', required=True, type=str,
                     help='File with list of transcript IDs of genes with \
                     in-frame stop codons')
-parser.add_argument('-H', '--hintsfile', required=True, type=str,
+parser.add_argument('-H', '--hintsfile', required=False, type=str,
                     help='File with hints in gff format used for \
                     (re-)predicting genes with AUGUSTUS')
 parser.add_argument('-o', '--out', required=True, type=str,
@@ -76,12 +65,12 @@ parser.add_argument('-e', '--extrinsicCfgFile', required=False, type=str,
 parser.add_argument('-m', '--softmasking', required=False,
                     choices=['on', 'off'], default='off', type=str,
                     help='Choose \'on\' if the genome file is softmasked')
-parser.add_argument('--UTR', required=False, choices=['on', 'off'],
+parser.add_argument('-u', '--UTR', required=False, choices=['on', 'off'],
                     default='off', type=str,
                     help='Predict the untranslated regions in addition \
                     to the coding sequence. If UTR=on was used in the original \
                     AUGUSTUS run, use \'--UTR on\' here, otherwise not')
-parser.add_argument('--print_utr', required=False, choices=['on', 'off'],
+parser.add_argument('-U', '--print_utr', required=False, choices=['on', 'off'],
                     default='off', type=str,
                     help='Choose \'on\' if --print-utr=on was used in the \
                     original AUGUSTUS run')
@@ -100,6 +89,11 @@ parser.add_argument('-p', '--print_format_examples', required=False,
                     action='store_true', help="Print gtf/gff3 input format \
                     examples, do not perform analysis")
 args = parser.parse_args()
+
+### As args.hintsfile and args.extrinsicCfgFile have to be given together: ###
+### Check if only one of args.hintsfile and args.extrinsicCfgFile is given ###
+if (args.hintsfile is not None) ^ (args.extrinsicCfgFile is not None):
+    parser.error("--hintsfile and --extrinsicCfgFile must be given together")
 
 if args.print_format_examples:
     print('This script requires an annotation of protein coding genes ' +
@@ -153,16 +147,30 @@ if args.print_format_examples:
 ''' ******************* BEGIN FUNCTIONS *************************************'''
 
 
-def create_tmp_dir():
-    """ Function that a directory for temporary files with a random name """
+def create_random_string():
+    """ Funtion that creates a rndom string added to the logfile name, 
+        tmp dir name and AUGUSTUS out dir name """
     letters = string.ascii_lowercase
     randomString = ''.join(random.choice(letters) for i in range(8))
-    tmp = "tmp" + randomString + "/"
-    # if directory exists, create a new one
-    while(os.path.exists(tmp)):
-        logger.info("Directory " + tmp + " already exists.")
+    tmp = "tmp_" + randomString + "/"
+    log = "log_" + randomString
+    # if directory  or log_file exists, create a new random string
+    while(os.path.exists(tmp) or os.path.exists(log)):
         randomString = ''.join(random.choice(letters) for i in range(8))
         tmp = "tmp" + randomString + "/"
+        log = "log_" + randomString
+    return(randomString)
+
+
+def create_log_file_name(randomString):
+    """ Function that creates a log file with a random name """
+    log = "log_" + randomString
+    return(log)
+
+
+def create_tmp_dir(randomString):
+    """ Function that creates a directory for temporary files with a random name """
+    tmp = "tmp_" + randomString + "/"
     os.mkdir(tmp)
     logger.info("Creating directory " + tmp + ".")
     return(tmp)
@@ -196,18 +204,74 @@ def check_tool_in_given_path(given_path, toolname):
         exit(1)
     return toolbinary
 
+
+def run_process(args_lst, prc_out, prc_err):
+	''' Function that runs a subprocess with arguments and specified STDOUT and STDERR '''
+	try:
+		logger.info("Trying to execute the following command:")
+		logger.info(" ".join(args_lst))
+		result = subprocess.run(args_lst, stdout=prc_out, stderr=prc_err)
+		logger.info("Suceeded in executing command.")
+		if(result.returncode == 0):
+			return(result)
+		else:
+			frameinfo = getframeinfo(currentframe())
+			logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+				  str(frameinfo.lineno) + ': ' + "Return code of subprocess was " + 
+		        str(result.returncode) + str(result.args))
+			quit(1)
+	except subprocess.CalledProcessError as grepexc:
+		frameinfo = getframeinfo(currentframe())
+		print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed executing: ",
+              " ".join(grepexec.args))
+		print("Error code: ", grepexc.returncode, grepexc.output)
+		quit(1)
+
+
+def run_process_stdinput(args_lst, prc_in):
+	''' Function that runs a subprocess with arguments and input from STDIN '''
+	try:
+		logger.info("Trying to execute the following command with input from STDIN:")
+		logger.info(" ".join(args_lst))
+		result = subprocess.run(args_lst, stdin=prc_in, stderr=subprocess.PIPE)
+		logger.info("Suceeded in executing command.")
+		if(result.returncode == 0):
+			return(result)
+		else:
+			frameinfo = getframeinfo(currentframe())
+			logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+				  str(frameinfo.lineno) + ': ' + "Return code of subprocess was " + 
+		        str(result.returncode) + str(result.args))
+			quit(1)
+	except subprocess.CalledProcessError as grepexc:
+		frameinfo = getframeinfo(currentframe())
+		print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed executing: ",
+              " ".join(grepexec.args))
+		print("Error code: ", grepexc.returncode, grepexc.output)
+		quit(1)
+
+
 def sortSecond(val):
-    """ """
+    """  """
     return val[1]
 
 ''' ******************* END FUNCTIONS *************************************'''
 
 ### Check whether sufficient options have been provided ###
 
-### tmp directory for saving files that can be removed afterwards ###
-tmp = create_tmp_dir()
-
-
+### Create log file and tmp directory for saving files that can be removed afterwards ###
+rString = create_random_string()
+log = create_log_file_name(rString)
+logger = logging.getLogger("")
+logger.setLevel(logging.INFO)
+fh = logging.FileHandler(log)
+fh.setLevel(logging.INFO)
+formatter = logging.Formatter("%(message)s")
+fh.setFormatter(formatter)
+logger.addHandler(fh)
+tmp = create_tmp_dir(rString)
 
 ### Find required binaries on system ###
 grep = find_tool("grep")
@@ -260,8 +324,7 @@ else:
                     "augustus_config_path!")
         exit(1)
 
-### Save input arguments ###
-
+### Save gtf file and create output file name ###
 if args.gtf is not None:
     gtf_file = args.gtf # setting gtf_file because identically named variable
                         # is also used if a gff3 file was originally
@@ -270,14 +333,6 @@ if args.gtf is not None:
 else:
     gtf_file = tmp + "converted_augustus.gtf"
     out_file = args.out + ".gff3"
-
-hintsfile = args.hintsfile
-species = args.species
-softmasking = args.softmasking
-utr = args.UTR
-putr = args.print_utr
-extrinsicCfgFile = args.extrinsicCfgFile
-noCleanUp = args.noCleanUp
 
 
 ### If input file is in gff3 format, convert input file to gtf format ###
@@ -411,9 +466,6 @@ except IOError:
 
 
 ### Compute positions for prediction start and prediction end ###
-
-
-
 regions = {}
 genesStart = []
 genesEnd = []
@@ -462,17 +514,7 @@ genome_cidx = args.genome + ".cidx"
 try:
     with open(genome_cidx, "w") as cidx_handle:
         subprcs_args = [cdbfasta, args.genome]
-        logger.info("Trying to execute the following command:")
-        logger.info(" ".join(subprcs_args))
-        result = subprocess.run(
-            subprcs_args, stdout=cidx_handle, stderr=subprocess.PIPE)
-        logger.info("Suceeded in executing command.")
-        if(result.returncode != 0):
-            frameinfo = getframeinfo(currentframe())
-            logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                        str(frameinfo.lineno) + ': ' +
-                        "Return code of subprocess was " + str(result.returncode))
-            quit(1)
+        run_process(subprcs_args, cidx_handle, subprocess.PIPE)
 except IOError:
     frameinfo = getframeinfo(currentframe())
     logger.info('Error in file ' + frameinfo.filename + ' at line ' +
@@ -485,17 +527,7 @@ for seq_id in regions:
     try:
         with open(fasta_file, "w") as fasta_tmp_handle:
             subprcs_args = [cdbyank, "-a", seq_id, genome_cidx]
-            logger.info("Trying to execute the following command:")
-            logger.info(" ".join(subprcs_args))
-            result = subprocess.run(
-                subprcs_args, stdout=fasta_tmp_handle, stderr=subprocess.PIPE)
-            logger.info("Suceeded in executing command.")
-            if(result.returncode != 0):
-                frameinfo = getframeinfo(currentframe())
-                logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                            str(frameinfo.lineno) + ': ' +
-                            "Return code of subprocess was " + str(result.returncode))
-                quit(1)
+            run_process(subprcs_args, fasta_tmp_handle, subprocess.PIPE)
     except IOError:
         frameinfo = getframeinfo(currentframe())
         logger.info('Error in file ' + frameinfo.filename + ' at line ' +
@@ -504,25 +536,16 @@ for seq_id in regions:
 
 
 ### Create hintsfiles for each scaffold containing genes with in-frame stop codon ###
-for seq_id in regions:
-    new_hintsfile = tmp + "hints." + seq_id + ".gff"
-    try:
-        with open(new_hintsfile, "w") as new_hints_handle:
-            subprcs_args = [grep, seq_id, hintsfile]
-            logger.info("Trying to execute the following command:")
-            logger.info(" ".join(subprcs_args))
-            result = subprocess.run(
-                subprcs_args, stdout=new_hints_handle, stderr=subprocess.PIPE)
-            logger.info("Suceeded in executing command.")
-            if(result.returncode != 0 and result.returncode != 1):
-                frameinfo = getframeinfo(currentframe())
-                logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                            str(frameinfo.lineno) + ': ' +
-                            "Return code of subprocess was " + str(result.returncode))
-                quit(1)
-    except IOError:
-        frameinfo = getframeinfo(currentframe())
-        logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+if args.hintsfile is not None:
+    for seq_id in regions:
+        new_hintsfile = tmp + "hints." + seq_id + ".gff"
+        try:
+            with open(new_hintsfile, "w") as new_hints_handle:
+                subprcs_args = [grep, seq_id, args.hintsfile]
+                run_process(subprcs_args, new_hints_handle, subprocess.PIPE)
+        except IOError:
+            frameinfo = getframeinfo(currentframe())
+            logger.info('Error in file ' + frameinfo.filename + ' at line ' +
                     str(frameinfo.lineno) + ': ' + "Could not open file " +
                     new_hintsfile + " for writing!")
 
@@ -530,8 +553,8 @@ for seq_id in regions:
 ### Run AUGUSTUS for each gene with in-frame stop codon ###
 ### (with predictionstart=region_start and predictionend=region_end) ###
 # Directory for AUGUSTUS output:
-out = "out/"
-if not os.path.exists("out"):
+out = tmp + "out/"
+if not os.path.exists(out):
     os.mkdir(out)
 else:
     logger.info("Directory out already exists.")
@@ -544,7 +567,8 @@ else:
 for seq_id in regions:
     i = 1
     genome = tmp + "genome." + seq_id + ".fa"
-    hintsfile = tmp + "hints." + seq_id + ".gff"
+    if args.hintsfile is not None:
+        hintsfile = tmp + "hints." + seq_id + ".gff"
     for reg in regions[seq_id]:
         augustus_out = out + "augustus." + seq_id + "." + str(i) + ".out"
         augustus_err = out + "augustus." + seq_id + "." + str(i) + ".err"
@@ -554,24 +578,24 @@ for seq_id in regions:
             with open(augustus_out, "w") as augustus_out_handle:
                 try:
                     with open(augustus_err, "w") as augustus_err_handle:
-                        subprcs_args = [augustus, "--mea=1", "--species="+species,
-                                        "--softmasking="+softmasking, "--UTR="+utr, "--print_utr="+putr,
+                        if args.hintsfile is not None:
+                            subprcs_args = [augustus, "--mea=1", "--species="+args.species,
+                                        "--softmasking="+args.softmasking, "--UTR="+args.UTR, "--print_utr="+args.print_utr,
                                         "--alternatives-from-evidence=0", "--hintsfile="+hintsfile,
                                         "--genemodel=complete", "--allow_hinted_splicesites=gcag,atac",
-                                        "--extrinsicCfgFile="+extrinsicCfgFile, "--exonnames="+exonnames,
+                                        "--extrinsicCfgFile="+args.extrinsicCfgFile, "--exonnames="+exonnames,
                                         "--predictionStart="+start, "--predictionEnd="+end,
                                         "--AUGUSTUS_CONFIG_PATH="+augustus_config_path, genome]
-                        logger.info("Trying to execute the following command:")
-                        logger.info(" ".join(subprcs_args))
-                        result = subprocess.run(
-                            subprcs_args, stdout=augustus_out_handle, stderr=augustus_err_handle)
-                        logger.info("Suceeded in executing command.")
-                        if(result.returncode != 0):
-                            frameinfo = getframeinfo(currentframe())
-                            logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                                        str(frameinfo.lineno) + ': ' +
-                                        "Return code of subprocess was " + str(result.returncode))
-                            quit(1)
+                        else:
+                            subprcs_args = [augustus, "--mea=1", "--species="+args.species,
+                                        "--softmasking="+args.softmasking, "--UTR="+args.UTR, 
+                                        "--print_utr="+args.print_utr,
+                                        "--alternatives-from-evidence=0",
+                                        "--genemodel=complete", "--allow_hinted_splicesites=gcag,atac",
+                                        "--exonnames="+exonnames,
+                                        "--predictionStart="+start, "--predictionEnd="+end,
+                                        "--AUGUSTUS_CONFIG_PATH="+augustus_config_path, genome]
+                        run_process(subprcs_args, augustus_out_handle, augustus_err_handle)
                 except IOError:
                     frameinfo = getframeinfo(currentframe())
                     logger.info('Error in file ' + frameinfo.filename + ' at line ' +
@@ -679,17 +703,7 @@ try:
                             out_file, "--printExon", "--gff3"]
         else:
             subprcs_args = [perl, gtf2gff, "--out="+out_file, "--printExon"]
-        logger.info("Trying to execute the following command:")
-        logger.info(" ".join(subprcs_args))
-        result = subprocess.run(
-            subprcs_args, stdin=augustus_tmp_handle, stderr=subprocess.PIPE)
-        logger.info("Suceeded in executing command.")
-        if(result.returncode != 0):
-            frameinfo = getframeinfo(currentframe())
-            logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                        str(frameinfo.lineno) + ': ' +
-                        "Return code of subprocess was " + str(result.returncode))
-            quit(1)
+        run_process_stdinput(subprcs_args, augustus_tmp_handle)
 except IOError:
     frameinfo = getframeinfo(currentframe())
     logger.info('Error in file ' + frameinfo.filename + ' at line ' +
@@ -697,7 +711,6 @@ except IOError:
                 augustus_tmp_file + " for reading!")
 
 
-### If not 'noCleanUp' is chosen, remove directories with files that are not needed anymore ###
-if not noCleanUp:
-    shutil.rmtree(out)
+### If not 'noCleanUp' is chosen, remove tmp directory ###
+if not args.noCleanUp:
     shutil.rmtree(tmp)
