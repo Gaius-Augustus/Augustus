@@ -71,7 +71,7 @@ parser.add_argument('-o', '--out', required=True, type=str,
                     .gtf or .gff3 depending on the input format.")
 parser.add_argument('-s', '--species', required=True, type=str,
                     help='Set the species to be used for running AUGUSTUS')
-parser.add_argument('-e', '--extrinsicCfgFile', required=True, type=str,
+parser.add_argument('-e', '--extrinsicCfgFile', required=False, type=str,
                     help='Set extrinsic config file for AUGUSTUS')
 parser.add_argument('-m', '--softmasking', required=False,
                     choices=['on', 'off'], default='off', type=str,
