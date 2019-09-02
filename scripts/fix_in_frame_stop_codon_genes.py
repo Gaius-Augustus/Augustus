@@ -196,7 +196,8 @@ def check_tool_in_given_path(given_path, toolname):
     if not re.search(r"/$", given_path):
         given_path = given_path + "/"
     toolbinary = given_path + toolname
-    if not(os.access(toolname, os.X_OK)):
+    toolbinary = os.path.abspath(toolbinary)
+    if not(os.access(toolbinary, os.X_OK)):
         frameinfo = getframeinfo(currentframe())
         logger.info('Error in file ' + frameinfo.filename + ' at line ' +
                     str(frameinfo.lineno) + ': ' + toolbinary + 
