@@ -74,6 +74,15 @@ parser.add_argument('-U', '--print_utr', required=False, choices=['on', 'off'],
                     default='off', type=str,
                     help='Choose \'on\' if --print-utr=on was used in the \
                     original AUGUSTUS run')
+parser.add_argument('--additional_aug_args', required=False, type=str, 
+                    help='One or several command line arguments to be passed \
+                    to AUGUSTUS (which can not be given with another specific \
+                    command line argument here). The list of arguments has to \
+                    be given in quotes. If several arguments are given, \
+                    they have to be separated by whitespace, i.e. \
+                    \"--first_arg=sth --second_arg=sth\". If only one argument is \
+                    given, the argument still has to contain a whitespace, i.e. \
+                    \"--first_arg=sth \"')
 parser.add_argument('-a', '--augustus_config_path', required=False, type=str,
                     help='Set path to the config directory of AUGUSTUS.')
 parser.add_argument('-A', '--augustus_bin_path', required=False, type=str,
@@ -82,9 +91,8 @@ parser.add_argument('-A', '--augustus_bin_path', required=False, type=str,
 parser.add_argument('-S', '--augustus_scripts_path', required=False, type=str,
                     help='Set path to the AUGUSTUS scripts directory')
 parser.add_argument('-n', '--noCleanUp', required=False, action='store_true',
-                    help='Temporary files created while running this script \
-                    will be deleted at the end. If you want to save all files, \
-                    choose \'--noCleanUp True\'.')
+                    help='Unless chosen, temporary files created while running \
+                    this script will be deleted at the end')
 parser.add_argument('-p', '--print_format_examples', required=False,
                     action='store_true', help="Print gtf/gff3 input format \
                     examples, do not perform analysis")
@@ -148,8 +156,8 @@ if args.print_format_examples:
 
 
 def create_random_string():
-    """ Funtion that creates a rndom string added to the logfile name, 
-        tmp dir name and AUGUSTUS out dir name """
+    """ Funtion that creates a random string added to the logfile name 
+        and tmp dir name """
     letters = string.ascii_lowercase
     randomString = ''.join(random.choice(letters) for i in range(8))
     tmp = "tmp_" + randomString + "/"
@@ -579,23 +587,18 @@ for seq_id in regions:
             with open(augustus_out, "w") as augustus_out_handle:
                 try:
                     with open(augustus_err, "w") as augustus_err_handle:
-                        if args.hintsfile is not None:
-                            subprcs_args = [augustus, "--mea=1", "--species="+args.species,
-                                        "--softmasking="+args.softmasking, "--UTR="+args.UTR, "--print_utr="+args.print_utr,
-                                        "--alternatives-from-evidence=0", "--hintsfile="+hintsfile,
-                                        "--genemodel=complete", "--allow_hinted_splicesites=gcag,atac",
-                                        "--extrinsicCfgFile="+args.extrinsicCfgFile, "--exonnames="+exonnames,
-                                        "--predictionStart="+start, "--predictionEnd="+end,
-                                        "--AUGUSTUS_CONFIG_PATH="+augustus_config_path, genome]
-                        else:
-                            subprcs_args = [augustus, "--mea=1", "--species="+args.species,
+                        subprcs_args = [augustus, "--mea=1", "--species="+args.species,
                                         "--softmasking="+args.softmasking, "--UTR="+args.UTR, 
-                                        "--print_utr="+args.print_utr,
-                                        "--alternatives-from-evidence=0",
-                                        "--genemodel=complete", "--allow_hinted_splicesites=gcag,atac",
-                                        "--exonnames="+exonnames,
+                                        "--print_utr="+args.print_utr, "--genemodel=complete",
+                                        "--alternatives-from-evidence=0", "--exonnames="+exonnames,
                                         "--predictionStart="+start, "--predictionEnd="+end,
                                         "--AUGUSTUS_CONFIG_PATH="+augustus_config_path, genome]
+                        if args.hintsfile is not None:
+                            subprcs_args.append("--hintsfile="+hintsfile)
+                            subprcs_args.append("--extrinsicCfgFile="+args.extrinsicCfgFile)
+                        if args.additional_aug_args is not None:
+                            additional_aug_args = args.additional_aug_args.split()
+                            subprcs_args.extend(additional_aug_args)
                         run_process(subprcs_args, augustus_out_handle, augustus_err_handle)
                 except IOError:
                     frameinfo = getframeinfo(currentframe())
@@ -615,7 +618,6 @@ augustus_tmp_file = tmp + "augustus.tmp"
 gene_id = ""
 gene_num = 0
 new_gene_id = ""
-start_end = ()
 seq_id = ""
 ifs_gene_num = 0
 tx_num = 0
@@ -630,7 +632,6 @@ try:
                         if match.group(1) != seq_id:
                             ifs_gene_num = 0
                         seq_id = match.group(1)
-                        start_end = (int(match.group(3)), int(match.group(5)))
                         gene_id = match.group(7)
                         if not gene_id in bad_genes:
                             gene_num += 1
