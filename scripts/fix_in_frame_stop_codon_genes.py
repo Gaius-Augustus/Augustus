@@ -82,14 +82,27 @@ parser.add_argument('--additional_aug_args', required=False, type=str,
                     they have to be separated by whitespace, i.e. \
                     \"--first_arg=sth --second_arg=sth\". If only one argument is \
                     given, the argument still has to contain a whitespace, i.e. \
-                    \"--first_arg=sth \"')
+                    \"--first_arg=sth \". Beware: Do not choose \
+                    --alternatives-from-evidence=true because mea can not use \
+                    this. Also do not set --exonnames (this parameter will be \
+                    set automatically depending on the input gtf/gff3 file).')
 parser.add_argument('-a', '--augustus_config_path', required=False, type=str,
-                    help='Set path to the config directory of AUGUSTUS.')
+                    help='Set path to the config directory of AUGUSTUS. \
+                    If not given, will try to set augustus_config_path to \
+                    environment variable AUGUSTUS_CONFIG_PATH. If this does not \
+                    work, will try to set augustus_config_path to \
+                    augustus_scripts_path/../config/. \
+                    The commandline argument --AUGUSTUS_CONFIG_PATH has higher \
+                    priority than the environment variable with the same name.')
 parser.add_argument('-A', '--augustus_bin_path', required=False, type=str,
                     help='Set path to the AUGUSTUS directory that contains \
-                    augustus binary')
+                    augustus binary. If not given, will try to locate the path \
+                    with which(augustus)')
 parser.add_argument('-S', '--augustus_scripts_path', required=False, type=str,
-                    help='Set path to the AUGUSTUS scripts directory')
+                    help='Set path to the AUGUSTUS scripts directory. If not \
+                    given, will try to locate the path with which(gtf2gff.pl). \
+                    If this does not work, will try to set the path relative \
+                    to the augustus_bin_path (augustus_bin_path/../scripts/).')
 parser.add_argument('-n', '--noCleanUp', required=False, action='store_true',
                     help='Unless chosen, temporary files created while running \
                     this script will be deleted at the end')
@@ -318,8 +331,22 @@ augustus_config_path = ""
 if args.augustus_config_path:
     augustus_config_path = args.augustus_config_path
 else:
+    logger.info("Trying to find environment variable " + 
+                "AUGUSTUS_CONFIG_PATH")
+    if os.environ.get('AUGUSTUS_CONFIG_PATH') is not None:
+        test_augustus_config_path = os.environ.get('AUGUSTUS_CONFIG_PATH')
+        if os.path.exists(test_augustus_config_path):
+            augustus_config_path = test_augustus_config_path
+            logger.info("Found environment variable AUGUSTUS_CONFIG_PATH " + 
+                        "and set augustus_config_path to environment " +
+                        "variable AUGUSTUS_CONFIG_PATH")
+if augustus_config_path == "":
     logger.info(
-        "Trying to set augustus_scripts_path to " +
+        "Did not find environment variable AUGUSTUS_CONFIG_PATH " +
+        "(either variable does not exist, or the path given in variable " +
+        "does not exist). Will try to set this variable in a different " +
+        "way. \n" +
+        "Trying to set augustus_config_path to " +
         "augustus_scripts_path/../config/")
     augustus_scripts_path = gtf2gff
     augustus_scripts_path = re.sub(r'gtf2gff\.pl', '', augustus_scripts_path)
@@ -676,7 +703,8 @@ try:
                                             m = re.match(
                                                 r"(\S+\t\S+\t\S+\t\d+\t\d+\t\S+\t\S+\t\S+\t).+", ifs_line)
                                             tmp_handle.write(m.group(
-                                                1) + "transcript_id \"" + new_tx_id + "\"; gene_id \"" + new_gene_id + "\";\n")
+                                                1) + "transcript_id \"" + new_tx_id + "\"; gene_id \"" + 
+                                                new_gene_id + "\";\n")
                             except IOError:
                                 frameinfo = getframeinfo(currentframe())
                                 logger.info('Error in file ' + frameinfo.filename + ' at line ' +
