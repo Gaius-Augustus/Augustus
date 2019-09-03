@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Author: Anica Hoppe
-# Last modified: August 29th 2019
+# Last modified: September 3rd 2019
 
 # Given a list of transcript IDs, this python script identifies the
 # boundaries of corresponding genes in a GTF or GFF3 file, makes
@@ -161,18 +161,18 @@ def create_random_string():
     letters = string.ascii_lowercase
     randomString = ''.join(random.choice(letters) for i in range(8))
     tmp = "tmp_" + randomString + "/"
-    log = "log_" + randomString
+    log = "fix_IFS_log_" + randomString
     # if directory  or log_file exists, create a new random string
     while(os.path.exists(tmp) or os.path.exists(log)):
         randomString = ''.join(random.choice(letters) for i in range(8))
         tmp = "tmp" + randomString + "/"
-        log = "log_" + randomString
+        log = "fix_IFS_log_" + randomString
     return(randomString)
 
 
 def create_log_file_name(randomString):
     """ Function that creates a log file with a random name """
-    log = "log_" + randomString
+    log = "fix_IFS_log_" + randomString
     return(log)
 
 
@@ -404,10 +404,13 @@ if args.gff3 is not None:
             except IOError:
                 frameinfo = getframeinfo(currentframe())
                 logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                            str(frameinfo.lineno) + ': ' + "Could not open file " +
-                            gtf_file + " for writing!")
+                             str(frameinfo.lineno) + ': ' + "Could not open file " +
+                             gtf_file + " for writing!")
     except IOError:
-        logger.info("Error: Failed to open file " + gff3_file + "!")
+        frameinfo = getframeinfo(currentframe())
+        logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+                    str(frameinfo.lineno) + ': ' + "Could not open file " +
+                    args.gff3 + " for reading!")
 
 
 ### Read file with list of transcript IDs of genes with IFS and extract transcript IDs ###
@@ -420,7 +423,10 @@ try:
                 tx_id = match.group(1)
                 bad_tx.append(tx_id)
 except IOError:
-    logger.info("Error: Failed to open file " + args.badGenes + "!")
+    frameinfo = getframeinfo(currentframe())
+    logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+                str(frameinfo.lineno) + ': ' + "Could not open file " +
+                args.badGenes + " for reading!")
 
 
 ### Read gtf file and extract seq id, gene start and end ###
@@ -453,7 +459,10 @@ try:
             elif re.match(r".+internal.+", line):
                 exonnames = "on"
 except IOError:
-    logger.info("Error: Failed to open file " + gtf_file + "!")
+    frameinfo = getframeinfo(currentframe())
+    logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+                str(frameinfo.lineno) + ': ' + "Could not open file " +
+                gtf_file + " for reading!")
 
 ### Create list of "bad genes" = genes with in-frame stop codon ###
 bad_genes = []
@@ -527,8 +536,8 @@ try:
 except IOError:
     frameinfo = getframeinfo(currentframe())
     logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                str(frameinfo.lineno) + ': ' + "Could not open file " +
-                genome_cidx + " for writing!")
+                 str(frameinfo.lineno) + ': ' + "Could not open file " +
+                 genome_cidx + " for writing!")
 
 # Run cdbyank
 for seq_id in regions:
@@ -544,7 +553,8 @@ for seq_id in regions:
                     fasta_file + " for writing!")
 
 
-### Create hintsfiles for each scaffold containing genes with in-frame stop codon ###
+### If a hintsfile is given, create hintsfiles for each scaffold ### 
+### containing genes with in-frame stop codon ###
 if args.hintsfile is not None:
     for seq_id in regions:
         new_hintsfile = tmp + "hints." + seq_id + ".gff"
@@ -555,8 +565,8 @@ if args.hintsfile is not None:
         except IOError:
             frameinfo = getframeinfo(currentframe())
             logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                    str(frameinfo.lineno) + ': ' + "Could not open file " +
-                    new_hintsfile + " for writing!")
+                        str(frameinfo.lineno) + ': ' + "Could not open file " +
+                        new_hintsfile + " for writing!")
 
 
 ### Run AUGUSTUS for each gene with in-frame stop codon ###
@@ -689,7 +699,7 @@ try:
             frameinfo = getframeinfo(currentframe())
             logger.info('Error in file ' + frameinfo.filename + ' at line ' +
                         str(frameinfo.lineno) + ': ' + "Could not open file " +
-                        out_file + " for writing!")
+                        augustus_tmp_file + " for writing!")
 
 except IOError:
     frameinfo = getframeinfo(currentframe())
@@ -700,11 +710,9 @@ except IOError:
 ### Sort gtf file or convert gtf file to gff3 format (sorted) depending on the input format ###
 try:
     with open(augustus_tmp_file, "r") as augustus_tmp_handle:
+        subprcs_args = [perl, gtf2gff, "--out="+out_file, "--printExon"]
         if args.gff3 is not None:
-            subprcs_args = [perl, gtf2gff, "--out=" +
-                            out_file, "--printExon", "--gff3"]
-        else:
-            subprcs_args = [perl, gtf2gff, "--out="+out_file, "--printExon"]
+            subprcs_args.append("--gff3")
         run_process_stdinput(subprcs_args, augustus_tmp_handle)
 except IOError:
     frameinfo = getframeinfo(currentframe())
