@@ -109,6 +109,9 @@ parser.add_argument('-n', '--noCleanUp', required=False, action='store_true',
 parser.add_argument('-p', '--print_format_examples', required=False,
                     action='store_true', help="Print gtf/gff3 input format \
                     examples, do not perform analysis")
+parser.add_argument('-C', '--cdbtools_path', required=False, type=str, 
+                    help = "Set path to cdbfasta/cdbyank. If not given, \
+                    will try to locate the path with which(cdbfasta).")
 args = parser.parse_args()
 
 ### As args.hintsfile and args.extrinsicCfgFile have to be given together: ###
@@ -298,8 +301,12 @@ tmp = create_tmp_dir(rString)
 ### Find required binaries on system ###
 grep = find_tool("grep")
 perl = find_tool("perl")
-cdbfasta = find_tool("cdbfasta")
-cdbyank = find_tool("cdbyank")
+if args.cdbtools_path:
+    cdbfasta = check_tool_in_given_path(args.cdbtools_path, "cdbfasta")
+    cdbyank = check_tool_in_given_path(args.cdbtools_path, "cdbyank")
+else:
+    cdbfasta = find_tool("cdbfasta")
+    cdbyank = find_tool("cdbyank")
 
 ### Find augustus_bin_path ###
 if args.augustus_bin_path:
