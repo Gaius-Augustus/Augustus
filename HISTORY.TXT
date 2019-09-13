@@ -1,3 +1,5 @@
+List of changes from version 3.3.2 to 3.3.3 (until Sep 13th, 2019)
+     - fix warnings on new GCC compiler (8.3)
 List of changes from version 3.3.1 to 3.3.2 (until Oct 5th, 2018)
      - bugfixes in comparative augustus, utrrnaseq
      - new species Chiloscyllium punctatum (bamboo shark), Scyliorhinus torazame (cat shark), Rhincodon typus (whale shark)
