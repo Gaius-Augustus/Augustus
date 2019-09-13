@@ -8,7 +8,7 @@
 # In case of doubt, contact katharina.hoff@uni-greifswald.de 
 #
 # Mario Stanke, 1.2.2010, mario.stanke@uni-greifswald.de
-# last modification on Feb 21st 2018 by Katharina J. Hoff
+# last modification on August 20th 2019 by Katharina J. Hoff
 
 use strict;
 use Getopt::Long;
@@ -279,7 +279,7 @@ sub printConvertedGTF {
 	if ($txs{$txid}{"txline"}[0] ne ""){
 	    if ($gff3) {
 		$txs{$txid}{"txline"}->[2] = "mRNA";
-		$txs{$txid}{"txline"}->[8] = "ID=$txid;Parent=$geneid\n";
+		$txs{$txid}{"txline"}->[8] = "ID=$txid;Parent=$geneid;\n";
 	    }
 	    print OUT join ("\t", @{$txs{$txid}{"txline"}});
 	}
@@ -291,27 +291,47 @@ sub printConvertedGTF {
 	my $ct_CDS = 0;
 	my $ct_3UTR = 0;
 	my $ct_5UTR = 0;
+	my $ct_intron = 0;
+	my $ct_tss = 0;
+	my $ct_tts = 0;
+	my $ct_start = 0;
+	my $ct_stop = 0;
 	foreach my $line (@lines){
 	    if ($gff3){
-		$line->[2] =~ s/3.*UTR/three_prime_utr/;
-		$line->[2] =~ s/5.*UTR/five_prime_utr/;
-		$line->[2] =~ s/tss/transcription_start_site/;
-		$line->[2] =~ s/tts/transcription_end_site/;
-		if($line->[2] eq "exon"){
-		    ++$ct_exon;
-		    $line->[8] = "ID=$txid.$line->[2]$ct_exon;Parent=$txid;\n";
-		}elsif($line->[2] eq "CDS"){
-		    ++$ct_CDS;
-		   $line->[8] = "ID=$txid.$line->[2]$ct_CDS;Parent=$txid\n";
-		}elsif($line->[2] eq "three_prime_utr"){
-		    ++$ct_3UTR;
-		    $line->[8] = "ID=$txid.3UTR$ct_3UTR;Parent=$txid\n";
-		}elsif($line->[2] eq "five_prime_utr"){
-		    ++$ct_5UTR;
-		    $line->[8] = "ID=$txid.5UTR$ct_5UTR;Parent=$txid\n";
-		} else {
-		    $line->[8] = "Parent=$txid;\n";
-		}
+			$line->[2] =~ s/3.*UTR/three_prime_utr/;
+			$line->[2] =~ s/5.*UTR/five_prime_utr/;
+			$line->[2] =~ s/tss/transcription_start_site/;
+			$line->[2] =~ s/tts/transcription_end_site/;
+			if($line->[2] eq "exon"){
+			    ++$ct_exon;
+			    $line->[8] = "ID=$txid.$line->[2]$ct_exon;Parent=$txid;\n";
+			}elsif($line->[2] eq "CDS"){
+			    ++$ct_CDS;
+			   $line->[8] = "ID=$txid.$line->[2]$ct_CDS;Parent=$txid;\n";
+			}elsif($line->[2] eq "three_prime_utr"){
+			    ++$ct_3UTR;
+			    $line->[8] = "ID=$txid.3UTR$ct_3UTR;Parent=$txid;\n";
+			}elsif($line->[2] eq "five_prime_utr"){
+			    ++$ct_5UTR;
+			    $line->[8] = "ID=$txid.5UTR$ct_5UTR;Parent=$txid;\n";
+			}elsif($line->[2] eq "intron"){
+				++$ct_intron;
+				$line->[8] = "ID=$txid.intron$ct_intron;Parent=$txid;\n";
+			}elsif($line->[2] eq "transcription_start_site"){
+				++$ct_tss;
+				$line->[8] = "ID=$txid.tss$ct_tss;Parent=$txid;\n";
+			}elsif($line->[2] eq "transcription_end_site"){
+				++$ct_tts;
+				$line->[8] = "ID=$txid.tts$ct_tts;Parent=$txid;\n";
+			}elsif($line->[2] eq "start_codon"){
+				++$ct_start;
+				$line->[8] = "ID=$txid.start$ct_start;Parent=$txid;\n";
+			}elsif($line->[2] eq "stop_codon"){
+				++$ct_stop;
+				$line->[8] = "ID=$txid.stop$ct_stop;Parent=$txid;\n";
+			} else {
+			    $line->[8] = "Parent=$txid;\n";
+			}
 	    }
 	    print OUT join("\t", @$line);
 	}
@@ -362,17 +382,17 @@ gtf2gff.pl <in.gtf --out=out.gff
     example output for --gff3 --printExon:
 
     chr1 AUGUSTUS  gene                     12656   14013   0.04    +   .   ID=g50;
-    chr1 AUGUSTUS  mRNA                     12656   14013   0.04    +   .   ID=g50.t1;Parent=g50
-    chr1 AUGUSTUS  transcription_start_site 12656   12656   .       +   .   Parent=g50.t1;
-    chr1 AUGUSTUS  five_prime_utr           12656   12867   0.2     +   .   ID=g50.t1.5UTR1;Parent=g50.t1
+    chr1 AUGUSTUS  mRNA                     12656   14013   0.04    +   .   ID=g50.t1;Parent=g50;
+    chr1 AUGUSTUS  transcription_start_site 12656   12656   .       +   .   ID=g50.t1.tss1;Parent=g50.t1;
+    chr1 AUGUSTUS  five_prime_utr           12656   12867   0.2     +   .   ID=g50.t1.5UTR1;Parent=g50.t1;
     chr1 AUGUSTUS  exon                     12656   12993   .       +   .   ID=g50.t1.exon1;Parent=g50.t1;
-    chr1 AUGUSTUS  start_codon              12868   12870   .       +   0   Parent=g50.t1;
-    chr1 AUGUSTUS  CDS                      12868   12993   0.8     +   0   ID=g50.t1.CDS1;Parent=g50.t1
-    chr1 AUGUSTUS  intron                   12994   13248   1       +   .   Parent=g50.t1;
-    chr1 AUGUSTUS  CDS                      13249   13479   1       +   0   ID=g50.t1.CDS2;Parent=g50.t1
+    chr1 AUGUSTUS  start_codon              12868   12870   .       +   0   ID=g50.t1.start1;Parent=g50.t1;
+    chr1 AUGUSTUS  CDS                      12868   12993   0.8     +   0   ID=g50.t1.CDS1;Parent=g50.t1;
+    chr1 AUGUSTUS  intron                   12994   13248   1       +   .   ID=g50.t1.intron1;Parent=g50.t1;
+    chr1 AUGUSTUS  CDS                      13249   13479   1       +   0   ID=g50.t1.CDS2;Parent=g50.t1;
     chr1 AUGUSTUS  exon                     13249   14013   .       +   .   ID=g50.t1.exon2;Parent=g50.t1;
-    chr1 AUGUSTUS  stop_codon               13477   13479   .       +   0   Parent=g50.t1;
-    chr1 AUGUSTUS  three_prime_utr          13480   14013   0.17    +   .   ID=g50.t1.3UTR1;Parent=g50.t1
-    chr1 AUGUSTUS  transcription_end_site   14013   14013   .       +   .   Parent=g50.t1;
+    chr1 AUGUSTUS  stop_codon               13477   13479   .       +   0   ID=g50.t1.stop1;Parent=g50.t1;
+    chr1 AUGUSTUS  three_prime_utr          13480   14013   0.17    +   .   ID=g50.t1.3UTR1;Parent=g50.t1;
+    chr1 AUGUSTUS  transcription_end_site   14013   14013   .       +   .   ID=g50.t1.tts1;Parent=g50.t1;
 
 =cut

@@ -1,5 +1,11 @@
 # REFERENCES
 
+Stefanie Nachtweide and Mario Stanke (2019), [Multi-Genome Annotation with AUGUSTUS](https://www.ncbi.nlm.nih.gov/pubmed/31020558). Methods Mol Biol., 1962:139-160. doi: 10.1007/978-1-4939-9173-0_8. PubMed PMID: 31020558
+
+Hoff KJ, Lomsadze A, Borodovsky M, Stanke M. (2019), [Whole-Genome Annotation with BRAKER](https://www.ncbi.nlm.nih.gov/pubmed/31020555). Methods Mol Biol., 1962:65-95. doi: 10.1007/978-1-4939-9173-0_5. PubMed PMID: 31020555.
+
+Hoff KJ. ,Stanke M. (2018). [Predicting genes in single genomes with AUGUSTUS](https://currentprotocols.onlinelibrary.wiley.com/doi/abs/10.1002/cpbi.57). Current Protocols in Bioinformatics, e57. doi: 10.1002/cpbi.57. [manuscript (PDF)](https://math-inf.uni-greifswald.de/fileadmin/uni-greifswald/fakultaet/mnf/mathinf/stanke/augustus_wrp.pdf)
+
 Stefanie König, Lars Romoth, Lizzy Gerischer, and Mario Stanke (2016)
 [Simultaneous gene finding in multiple genomes](https://academic.oup.com/bioinformatics/article/32/22/3388/2525611). Bioinformatics, 32 (22): 3388-3395, doi: 10.1093/bioinformatics/btw494
 

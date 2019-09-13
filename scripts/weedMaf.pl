@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # weedMaf remove only-gap columns from a multiple alignment in MAF format
 #

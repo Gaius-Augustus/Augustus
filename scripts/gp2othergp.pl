@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # convert genepred format from UCSC gtfToGenePred -genePredExt
 # table genePredExt

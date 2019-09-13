@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # Convert a psl format output file (from BLAT or GMAP) from cDNA alignments
 # to a hints file

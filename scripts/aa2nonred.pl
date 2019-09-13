@@ -11,7 +11,7 @@
 # pipeline may fail upon custom modification of this script.
 # In case of doubt, contact katharina.hoff@uni-greifswald.de
 #
-# Mario Stanke & Katharina Hoff, last modification on Feb 19th 2018
+# Mario Stanke & Katharina Hoff, last modification on May 31 2019
 
 use strict;
 use Getopt::Long;
@@ -30,8 +30,11 @@ use POSIX;
 #
 my $max_percent_id = 0.8;
 my $BLAST_PATH;
+my $DIAMOND_PATH;
 my $blast_path;
+my $diamond_path;
 my $CPU = 1;
+my $diamond;
 my $v = 0;
 my $help;
 
@@ -40,17 +43,21 @@ $usage .= "Usage: aa2nonred.pl input.fa output.fa\n";
 $usage .= "In output.fa the percent identity value between each pair of \n";
 $usage .= "When removing redundant sequences, priority is given to the sequence occuring last.\n";
 $usage .= "Options:\n";
-$usage .= "--maxid=f       maximum percent identity between to sequences\n";
-$usage .= "                (#identical aa) / (length of shorter sequence) default: 0.8\n";
-$usage .= "--BLAST_PATH=s  path to blast (only implemented for NCBI BLAST)\n";
-$usage .= "--cores=n       number of cores to be used by NCBI BLAST\n";
-$usage .= "--verbosity=n   verbosity level for information printed to stdout\n";
-$usage .= "--help          print this help message\n";
+$usage .= "--maxid=f         maximum percent identity between to sequences\n";
+$usage .= "                  (#identical aa) / (length of shorter sequence) default: 0.8\n";
+$usage .= "--BLAST_PATH=s    path to blast (only implemented for NCBI BLAST)\n";
+$usage .= "--DIAMOND_PATH=s  path to diamond\n"; 
+$usage .= "--cores=n         number of cores to be used by NCBI BLAST or DIAMOND\n";
+$usage .= "--diamond         use DIAMOND istead of NCBI BLAST\n";
+$usage .= "--verbosity=n     verbosity level for information printed to stdout\n";
+$usage .= "--help            print this help message\n";
 
 GetOptions(
     'maxid:f'  => \$max_percent_id,
     'BLAST_PATH=s' => \$blast_path,
+    'DIAMOND_PATH=s' => \$diamond_path,
     'cores=i'  => \$CPU,
+    'diamond!' => \$diamond,
     'verbosity=i' => \$v,
     'help!'    => \$help
 );
@@ -66,8 +73,11 @@ if (scalar(@ARGV) < 2){
     exit(1);
 }
 
-
-set_BLAST_PATH();
+if($diamond){
+    set_DIAMOND_PATH();
+}else{
+    set_BLAST_PATH();
+}
 
 
 my $inputfilename  = $ARGV[0];
@@ -82,7 +92,7 @@ my $outputfilename = $ARGV[1];
 my $splitDir; # for parallelization
 my @splitFiles;
 my $SPLITF;
-if ( $CPU > 1 ) {
+if ( $CPU > 1 && not($diamond)) {
 
     my $nFastaEntries = 0;
     # counter number of fasta entries
@@ -165,27 +175,45 @@ close (TEMP) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould
 
 my $tempoutfile = "$inputfilename.blastout";
 
-## NCBI blast
-system("$BLAST_PATH/makeblastdb -in $tempdbname -dbtype prot -parse_seqids -out $tempdbname");
-if ( $CPU == 1 ) {
-    system("$BLAST_PATH/blastp -query $tempdbname -db $tempdbname > $tempoutfile");
-}else{
-    my $pm = new Parallel::ForkManager($CPU);
-    foreach ( @splitFiles ) {
-        my $pid = $pm->start and next;
-        system("$BLAST_PATH/blastp -query $tempdbname -db $tempdbname > $_.blastout");
-        $pm->finish;
+if($diamond){
+    if($CPU > 1){
+        system("$DIAMOND_PATH/diamond makedb --in $tempdbname -d $tempdbname --threads $CPU");
+    }else{
+        system("$DIAMOND_PATH/diamond makedb --in $tempdbname -d $tempdbname --threads 1");
     }
-    $pm->wait_all_children;
-    foreach ( @splitFiles ) {
-        system("cat $_.blastout >> $tempoutfile");
+}else{
+    ## NCBI blast
+    system("$BLAST_PATH/makeblastdb -in $tempdbname -dbtype prot -parse_seqids -out $tempdbname");
+}
+
+if ( $CPU == 1 ) {
+    if($diamond){
+        system("$DIAMOND_PATH/diamond blastp --db $tempdbname --outfmt 0 --query $tempdbname --out $tempoutfile")
+
+    }else{
+        system("$BLAST_PATH/blastp -query $tempdbname -db $tempdbname > $tempoutfile");
+    }
+}else{
+    if($diamond){
+        system("$DIAMOND_PATH/diamond blastp --db $tempdbname --outfmt 0 --query $tempdbname --threads $CPU --out $tempoutfile");
+    }else{
+        my $pm = new Parallel::ForkManager($CPU);
+        foreach ( @splitFiles ) {
+            my $pid = $pm->start and next;
+            system("$BLAST_PATH/blastp -query $tempdbname -db $tempdbname > $_.blastout");
+            $pm->finish;
+        }
+        $pm->wait_all_children;
+        foreach ( @splitFiles ) {
+            system("cat $_.blastout >> $tempoutfile");
+        }
     }
 }
 
 
 ###########################################################################################
 #
-# parse the blast output
+# parse the blast/diamond output
 #
 ###########################################################################################
 
@@ -193,8 +221,10 @@ open( BLASTOUT, "<$tempoutfile" ) or die("ERROR in file " . __FILE__ ." at line 
 $/ = "\nQuery= ";
 my ( $query, $target, $qlen, $tlen, $numid, $minlen );
 while (<BLASTOUT>) {
-    next unless / producing /;
-    $_ =~ m/(\S+)\n\nLength=(\d+)/;
+    if(not($diamond)){
+        next unless / producing /;
+    }
+    $_ =~ m/(\S+)\n+Length=(\d+)/;
     $query = $1;
     $qlen  = $2;
     print STDOUT "query=$query, qlen=$qlen\n" if ($v>0);
@@ -217,6 +247,7 @@ while (<BLASTOUT>) {
             }
         }
     }
+
 }
 close (BLASTOUT) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould not close $tempoutfile!\n");
 
@@ -238,14 +269,18 @@ close( OUT ) or die("ERROR in file " . __FILE__ ." at line ". __LINE__ ."\nCould
 #
 ###########################################################################################
 unlink ( rel2abs($tempdbname) );
-unlink ( rel2abs($tempdbname).".phr" );
-unlink ( rel2abs($tempdbname).".pin" );
-unlink ( rel2abs($tempdbname).".pog" );
-unlink ( rel2abs($tempdbname).".psd" );
-unlink ( rel2abs($tempdbname).".psi" );
-unlink ( rel2abs($tempdbname).".psq" );
+if(not($diamond)){
+    unlink ( rel2abs($tempdbname).".phr" );
+    unlink ( rel2abs($tempdbname).".pin" );
+    unlink ( rel2abs($tempdbname).".pog" );
+    unlink ( rel2abs($tempdbname).".psd" );
+    unlink ( rel2abs($tempdbname).".psi" );
+    unlink ( rel2abs($tempdbname).".psq" );
+}else{
+    unlink (rel2abs($tempdbname).".dmnd" );
+}
 unlink ( rel2abs($tempoutfile) );
-if ($CPU > 1) {
+if ($CPU > 1 && not($diamond)) {
     rmtree( ["$splitDir"] );
 }
 
@@ -366,6 +401,124 @@ sub set_BLAST_PATH {
         exit(1);
     }elsif( not ( -x "$BLAST_PATH/makeblastdb" ) ){
         print STDERR "\# " . (localtime) . " ERROR in file " . __FILE__ ." at line ". __LINE__ ."\n$BLAST_PATH/makeblastdb is not an executable file!\n";
+        exit(1);
+    }
+}
+
+###########################################################################################
+#
+# finding diamond executable
+#
+###########################################################################################
+sub set_DIAMOND_PATH {
+    my $prtStr;
+    # try to get path from ENV
+    if ( defined( $ENV{'DIAMOND_PATH'} ) ) {
+        if ( -e $ENV{'DIAMOND_PATH'} ) {
+            $prtStr
+                = "\# "
+                . (localtime)
+                . ": Found environment variable \$DIAMOND_PATH.\n";
+            print STDOUT $prtStr;
+            $DIAMOND_PATH = $ENV{'DIAMOND_PATH'};
+        }
+    }
+    else {
+        $prtStr
+            = "\# "
+            . (localtime)
+            . ": Did not find environment variable \$DIAMOND_PATH\n";
+        print STDOUT $prtStr;
+    }
+
+    # try to get path from command line
+    if ( defined($diamond_path) ) {
+        my $last_char = substr( $diamond_path, -1 );
+        if ( $last_char eq "\/" ) {
+            chop($diamond_path);
+        }
+        if ( -d $diamond_path ) {
+            $prtStr
+                = "\# "
+                . (localtime)
+                . ": Setting \$DIAMOND_PATH to command line argument ";
+            $prtStr .= "--DIAMOND_PATH value $diamond_path.\n";
+            print STDOUT $prtStr;
+            $DIAMOND_PATH = $diamond_path;
+        }
+        else {
+            $prtStr
+                = "\# "
+                . (localtime)
+                . ": WARNING: Command line argument --DIAMOND_PATH was ";
+            $prtStr
+                .= "supplied but value $diamond_path is not a directory. Will not set ";
+            $prtStr .= "\$DIAMOND_PATH to $diamond_path!\n";
+            print STDOUT $prtStr;
+        }
+    }
+
+    # try to guess
+    if ( not( defined($DIAMOND_PATH) )
+        || length($DIAMOND_PATH) == 0 )
+    {
+        $prtStr
+            = "\# "
+            . (localtime)
+            . ": Trying to guess \$DIAMOND_PATH from location of diamond";
+        $prtStr .= " executable that is available in your \$PATH.\n";
+        print STDOUT $prtStr;
+        my $epath = which 'diamond';
+        if ( -d dirname($epath) ) {
+            $prtStr
+                = "\# "
+                . (localtime)
+                . ": Setting \$DIAMOND_PATH to "
+                . dirname($epath) . "\n";
+            print STDOUT $prtStr;
+            $DIAMOND_PATH = dirname($epath);
+        }
+        else {
+            $prtStr
+                = "\# "
+                . (localtime)
+                . ": WARNING: Guessing the location of \$DIAMOND_PATH ";
+            $prtStr
+                .= "failed. " . dirname($epath) . " is not a directory!\n";
+            print STDOUT $prtStr;
+        }
+    }
+
+    if ( not( defined($DIAMOND_PATH) ) ) {
+        my $diamond_err;
+        $diamond_err .= "There are 3 alternative ways to set this variable for "
+                     .  " aa2nonred.pl:\n"
+                     .  "   a) provide command-line argument "
+                     .  "--DIAMOND_PATH=/your/path\n"
+                     .  "   b) use an existing environment variable "
+                     .  "\$DIAMOND_PATH\n"
+                     .  "      for setting the environment variable, run\n"
+                     .  "           export DIAMOND_PATH=/your/path\n"
+                     .  "      in your shell. You may append this to your "
+                     .  ".bashrc or .profile file in\n"
+                     .  "      order to make the variable available to all your "
+                     .  "bash sessions.\n"
+                     .  "   c) aa2nonred.pl can try guessing the location of "
+                     .  "\$DIAMOND_PATH from the\n"
+                     .  "      location of a diamond executable that is "
+                     .  "available in your \$PATH variable.\n"
+                     .  "      If you try to rely on this option, you can check "
+                     .  "by typing\n"
+                     .  "           which diamond\n"
+                     .  "      in your shell, whether there is a diamond "
+                     .  "executable in your \$PATH\n";
+        $prtStr = "\# " . (localtime) . " ERROR in file " . __FILE__ ." at line ". __LINE__ ."\n\$DIAMOND_PATH not set!\n";
+        print STDERR $prtStr;
+        print STDERR $diamond_err;
+        exit(1);
+    }
+    if ( not ( -x "$DIAMOND_PATH/diamond" ) ) {
+        print STDERR "\# " . (localtime) . " ERROR in file " . __FILE__ ." at line ". __LINE__ ."\n$DIAMOND_PATH/diamond is not an executable file!\n";
         exit(1);
     }
 }

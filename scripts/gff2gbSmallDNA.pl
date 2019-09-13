@@ -194,7 +194,7 @@ while(<FASTA>) {
     $length = length $seq;
     $annotation = $annos{$seqname};
     my $shortseqname = $seqname;
-    $shortseqname =~ s/ .*//;
+    $shortseqname =~ s/\s.*//;
 
     if (!defined($annotation) && defined($annos{$shortseqname})){
 	$seqnameerrcount++;

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # convert a blat output file (tab format) for transcript alignments
 # to a GBrowse GFF file and the multiple fasta file with the matching ests

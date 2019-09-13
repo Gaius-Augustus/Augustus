@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # Convert maf alignment format to a conservation graph in wig format
 # Use simply average percentage of identity in a sliding window as VISTA does.

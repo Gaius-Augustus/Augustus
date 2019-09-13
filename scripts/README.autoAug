@@ -57,7 +57,7 @@ can then submit them manually using your batch job submission system.
 		3. Software Components
 		-----------------------------------
 
-AUGUSTUS: Download from http://augustus.gobics.de/
+AUGUSTUS: Download from https://github.com/Gaius-Augustus/Augustus
 
 BLAT:     You get Jim Kent's alignment program at http://users.soe.ucsc.edu/~kent/src/
           Also install pslCDnaFilter which is part of the Jim Kent src tree
@@ -68,8 +68,8 @@ PASA:     Download the Program to Assemble Spliced Alignments from
           You do not need PASA if you already have a training set of genes for your species.
 
 SCIPIO:   Install SCIPIO if you have training genes in the form of protein sequences.
-	  SCIPIO can then find their gene structures in the genome. Most users will not need this.
-	  http://www.webscipio.org/
+          SCIPIO can then find their gene structures in the genome. Most users will not need this.
+          http://www.webscipio.org/
 
 
 		4. Installation and Configuration
@@ -144,7 +144,7 @@ Situation 2:
 You can just input a cDNA sequence file in FASTA format, and let PASA extract
 a training set of genes. You need to install PASA for this separately.
 
->autoAug.pl -g genome.fa --species=yourSpecies -c cdna.fa -v -v --pasa --useexisting
+>autoAug.pl -g genome.fa --species=yourSpecies -c cdna.fa -v -v --pasa --useGMAPforPASA --useexisting
 
 Then follow the output prompts. If your cluster is set as in section 4 you can also use the option --noninteractive.
 
@@ -173,7 +173,10 @@ The keywords (such as genome) can be abbreviated (e.g. "ge") to the extend that 
   cdna.fa is a cdna sequence file in the FASTA format (typically EST sequences or 454)
 
 --pasa
-  This argument swithes the PASA function on for creating a training set of genes from the cDNA, default: off.
+  This argument switches the PASA function on for creating a training set of genes from the cDNA, default: off.
+
+--useGMAPforPASA
+  use GMAP instead of BLAT in the PASA run
 
 --hints=hintsfile
   hintsfile is a file with extrinsic evidence about the location and structure of genes, see documentation of AUGUSTUS.
@@ -258,7 +261,7 @@ autoAugTrain.pl [OPTIONS] --species=sname --genome=genome.fa --species=sname --u
 
 --trainingset=genes.gb      
   genes.gb is a file with training genes a Genbank format. For examples for the exact format look at 
-  the files in http://augustus.gobics.de/datasets/
+  the files in http://bioinf.uni-greifswald.de/webaugustus/datasets.gsp
 
 --trainingset=genes.gff     
   genes.gff is a file with training genes in GFF format

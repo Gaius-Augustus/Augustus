@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # "Clean" a MS/DOS fasta file from weird characters that screw with e.g. Perl
 

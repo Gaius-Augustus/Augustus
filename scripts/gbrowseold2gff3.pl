@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # convert old gbrowse format of gene predictions to gff3 format
 # Mario Stanke, 3/8/2011, mario.stanke@uni-greifswald.de
 

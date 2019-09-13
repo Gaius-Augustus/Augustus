@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # parse the output of sim4, fiter the alignments and
 # output them to stdout
