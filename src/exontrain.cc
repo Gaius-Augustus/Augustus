@@ -516,7 +516,7 @@ void ExonModel::printProbabilities(int idx, BaseCount *bc, const char* suffix){
 	    */
 	    ofstrm.close();
 	}
-	catch( ProjectError ) {
+	catch( ProjectError& ) {
 	    if (verbosity)    
 		cout << "Exon model parameters not saved." << endl;
 	}
@@ -620,7 +620,7 @@ void ExonModel::processExons( const Gene* gene ){
     if( !exon->next ){
 	try{
 	    processSingleExon( exon );
-	} catch (ExonModelError e) {
+	} catch (ExonModelError &e) {
 	    if (verbosity)
 	      cerr << "gene " << gene->geneid << " transcr. " << gene->id << " in sequence " << gene->seqname << ": " << e.getMessage() << endl;
 	}
@@ -628,7 +628,7 @@ void ExonModel::processExons( const Gene* gene ){
     else{
 	try{
 	    processInitialExon( exon );
-	} catch( ExonModelError e ){
+	} catch( ExonModelError &e ){
 	    if (verbosity)
 	      cerr << "gene " << gene->geneid << " transcr. " << gene->id << " in sequence " << gene->seqname << ": " << e.getMessage() << endl;
 	}
@@ -637,7 +637,7 @@ void ExonModel::processExons( const Gene* gene ){
 	while( exon->next ){
 	    try{
 		processInternalExon( exon );
-	    } catch( ExonModelError e ){
+	    } catch( ExonModelError &e ){
 	      if (verbosity)
 		    cerr << "gene " << gene->geneid << " transcr. " << gene->id << " in sequence " << gene->seqname << ": " << e.getMessage() << endl;
 	    }
@@ -645,7 +645,7 @@ void ExonModel::processExons( const Gene* gene ){
 	} 
 	try{
 	    processTerminalExon( exon );
-	} catch( ExonModelError e ){
+	} catch( ExonModelError &e ){
 	    if (verbosity)
 		cerr << "gene " << gene->geneid << " transcr. " << gene->id << " in sequence " << gene->seqname << ": " << e.getMessage() << endl;
 	}
@@ -805,7 +805,7 @@ void ExonModel::processInternalExon( const State* exon){
 	cout << "internal etMotif " << mod3(oldwin + length - Constant::dss_start - Constant::et_coding_len) << " " <<fenster << endl;
 	*/
 	
-    } catch( ExonModelError e ){
+    } catch( ExonModelError &e ){
 	cerr << "ExonModel::processInternalExon: " << e.getMessage() << endl;
 	throw e;
     }
@@ -890,7 +890,7 @@ void ExonModel::processInnerSequence(const char *begin, const char* end, int mod
 	    else 
 		throw ProjectError("ExonModel::processInnerSequence: invalid model type");
 	    gesbasen[curwin] += gweight;
-	} catch (InvalidNucleotideError e) {}
+	} catch (InvalidNucleotideError &e) {}
 	curwin++;
     }
 }

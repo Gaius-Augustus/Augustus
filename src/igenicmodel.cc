@@ -45,7 +45,7 @@ void IGenicModel::init() {
 	k = Properties::getIntProperty( "/IGenicModel/k" );
 	patpseudocount = Properties::getDoubleProperty( "/IGenicModel/patpseudocount" );
 	verbosity = Properties::getIntProperty("/IGenicModel/verbosity"); 
-    } catch( ProjectError ) { }
+    } catch( ProjectError& ) { }
     
     // create GC content array data structures IF NOT THERE YET
     if (!GCemiprobs)
@@ -272,7 +272,7 @@ void IGenicModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // viter
 	optionslist->prepareSampling();
 	try {
 	    oli = optionslist->sample();
-	} catch (ProjectError e) {
+	} catch (ProjectError &e) {
 	    cerr << "Sampling error in model for intergenic region. state=" << state << " base=" << base << endl;
 	    throw e;
 	}
@@ -336,7 +336,7 @@ Double IGenicModel::emiProbUnderModel(int begin, int end) const {
 		  else 
 		    GCemiprobs[gcIdx].addCount(pn);
 		}
-	    } catch (InvalidNucleotideError e) {
+	    } catch (InvalidNucleotideError &e) {
 		p *= 0.25;
 	    }
 	} else{
@@ -348,7 +348,7 @@ Double IGenicModel::emiProbUnderModel(int begin, int end) const {
 	    try {
 		int basek = s2it(sequence);
 		p *=  Pls[begin][basek]/ (Pls[begin][basek/4]+Pls[begin][basek/4+1]+Pls[begin][basek/4+2]+Pls[begin][basek/4+3]);
-	    } catch  (InvalidNucleotideError e) {
+	    } catch  (InvalidNucleotideError &e) {
 		p *= 0.25;
 	    }
 	}

@@ -169,7 +169,7 @@ void IGenicModel::processSequence( const char* start, const char* end ){
 	    emicount[ s2i( start-k ) ] += gweight ;
 	    emicount[ s2i.rc( start-k ) ] += gweight ;
 	    gesbasen += 2*gweight;
-	} catch (InvalidNucleotideError e) {}
+	} catch (InvalidNucleotideError &e) {}
     }
 }
 
@@ -246,7 +246,7 @@ void IGenicModel::printProbabilities( int idx, BaseCount *bc, const char* suffix
             ostrm.close();
         }
     }
-    catch( ProjectError ) { 
+    catch( ProjectError& ) { 
 	if (verbosity)
 	    cout << "Intergenic Region model parameters not saved." << endl;
     }

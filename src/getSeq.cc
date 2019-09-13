@@ -148,7 +148,7 @@ int main( int argc, char* argv[] ){
 	    printSeq(annoseq->sequence, end-start+1);
 	}
     }
-    catch(ProjectError e){
+    catch(ProjectError &e){
 	cerr << "random sequence access failed on " << species << ", " << seqname << ":" 
 	     << start << "-" << end << endl;;
 	cerr << e.getMessage() << endl;

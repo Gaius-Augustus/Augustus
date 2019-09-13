@@ -101,6 +101,10 @@ double          ExonModel::lenboostE = 0; // lengths above L are improved, the m
 OpenReadingFrame::OpenReadingFrame(const char *dna, int _max_exon_length, int _n) :
     n(_n), max_exon_length(_max_exon_length)
 {
+    if (*dna != tolower(*dna))
+	throw ProjectError("Internal Error: upper case in DNA "
+			   + string(dna).substr(0, 50) + "...");
+
     nearestStopForward.resize(n);
     nearestStopReverse.resize(n);
     int stopcodpos, i;
@@ -198,8 +202,6 @@ int OpenReadingFrame::leftmostExonBegin(int frame, int base, bool forward){
  */
 
 bool OpenReadingFrame::isStopcodon( const char* dna ){
-    if (*dna != tolower(*dna))
-	throw ProjectError("Internal Error: upper case dna"); // TEMP: just for now
     // Oliver, 2009/06/24: commented this out to give translation table priority
     // over {ochre,amber,opal}prob values; this basically causes
     // stopcodons with prob=0 to appear neither prematurely nor as stopcodons
@@ -298,62 +300,62 @@ void ExonModel::init() {
     minwindowcount=3;           // see class Smooth in commontrain.hh	
     try{
 	verbosity = Properties::getIntProperty("/ExonModel/verbosity");
-    }catch( ProjectError e) {    
+    }catch( ProjectError &e) {
 	cerr << e.getMessage();
     }
     try{
 	k = Properties::getIntProperty( "/ExonModel/k" );
-    }catch( ProjectError e) {    
+    }catch( ProjectError &e) {    
 	cerr << e.getMessage();
     }
     try{
 	patpseudo = Properties::getDoubleProperty( "/ExonModel/patpseudocount" );
-    }catch( ProjectError e) { 
+    }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	exonLenD = Properties::getIntProperty( "/ExonModel/exonlengthD" );
-    }catch( ProjectError e) { 
+    }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	slope_of_bandwidth = Properties::getdoubleProperty( "/ExonModel/slope_of_bandwidth");
-    }catch( ProjectError e) { 
+    }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	minwindowcount = Properties::getIntProperty( "/ExonModel/minwindowcount");
-    }catch( ProjectError e) { 
+    }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	min_exon_length = Properties::getIntProperty( "/ExonModel/minexonlength");
-    } catch( ProjectError e) { 
+    } catch( ProjectError &e) { 
 	// optional parameter
     }
     try{
 	minPatSum = Properties::getIntProperty( "/ExonModel/minPatSum");
-    } catch( ProjectError e) { 
+    } catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	etorder = Properties::getIntProperty( "/ExonModel/etorder");
-    } catch( ProjectError e) { 
+    } catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	etpseudocount = Properties::getIntProperty( "/ExonModel/etpseudocount");
-    } catch( ProjectError e) { 
+    } catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	tis_motif_memory = Properties::getIntProperty( "/ExonModel/tis_motif_memory");
-    } catch( ProjectError e) { 
+    } catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	tis_motif_radius = Properties::getIntProperty( "/ExonModel/tis_motif_radius");
-    } catch( ProjectError e) { 
+    } catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
@@ -362,10 +364,10 @@ void ExonModel::init() {
 	    cout << "Warning: /ExonModel/lenboostE < 0 does not make sense. Will use 0 instead." << endl;
 	    lenboostE = 0.0;
 	}
-    } catch( ProjectError e) {}
+    } catch( ProjectError &e) {}
     try{
 	lenboostL = Properties::getIntProperty( "/ExonModel/lenboostL");
-    } catch( ProjectError e) {}
+    } catch( ProjectError &e) {}
 	
     trans_init_window = Constant::trans_init_window;
 
@@ -1109,7 +1111,7 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 				oli.resetPredEnd();
 				oli.state = getFullStateId(predState, exonScorer->getPredSubstate());
 			    }
-			} catch(NoSubmapFoundError e) {}
+			} catch(NoSubmapFoundError &e) {}
 		} 
 		Double predProb = predVit.get(predState) * transEmiProb;
 		if (predProb > maxProb) {
@@ -1136,7 +1138,7 @@ void ExonModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi, // matrix 
 	    optionslist->prepareSampling();
 	    try {
 		oli = optionslist->sample();
-	    } catch (ProjectError e) {
+	    } catch (ProjectError &e) {
 		cerr << "Sampling error in exon model. state=" << state << " base=" << base << endl;
 		throw e;
 	    }
@@ -1568,7 +1570,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 	    else
 		restSeqProb = Pls[right-beginOfStart][mod3(frameOfRight + right - beginOfStart)]
 		    [s2i.rc(sequence + beginOfStart)];		
-	} catch (InvalidNucleotideError e) {
+	} catch (InvalidNucleotideError &e) {
 	    // we dont assume anything in this case, take iid uniform distribution on {a,c,g,t}
 	    restSeqProb = pow(Constant::probNinCoding, right-beginOfStart + 1); // 0.25
 	}
@@ -1598,7 +1600,7 @@ Double ExonModel::notEndPartEmiProb(int beginOfStart, int right, int frameOfRigh
 		else                  // init pattern at right side
 		    restSeqProb = Pls[k-1][mod3(frameOfRight+right-beginOfInitP)]
 			[Seq2Int(k).rc(sequence + beginOfInitP)];
-	} catch (InvalidNucleotideError e) {
+	} catch (InvalidNucleotideError &e) {
 	    restSeqProb = pow(Constant::probNinCoding, (int) k ); // 0.25
 	}
 
@@ -1944,7 +1946,7 @@ Double ExonModel::seqProb(int left, int right, int frameOfRight) const {
 		int f = reverse? mod3(frameOfRight+right-curpos) : mod3(frameOfRight-right+curpos);
 		int pn = reverse? s2i.rc(sequence+curpos) : s2i(sequence+curpos-k);
 		seqProb *= emiprobs.probs[f][pn];
-            } catch (InvalidNucleotideError e) {
+            } catch (InvalidNucleotideError &e) {
                 seqProb *= Constant::probNinCoding; //  0.25, 1/4
             }
         }
@@ -1961,7 +1963,7 @@ Double ExonModel::seqProb(int left, int right, int frameOfRight) const {
 	    seqProb  *= emiprobs.probs[f][pn];
 	    if (inCRFTraining && (countEnd < 0 || (curpos >= countStart && curpos <= countEnd)))
 		GCemiprobs[gcIdx].addCount(GCemiprobs[gcIdx].getIndex(f,pn));
-	} catch (InvalidNucleotideError e) {
+	} catch (InvalidNucleotideError &e) {
 	    seqProb  *= Constant::probNinCoding; // 0.25 1/4
 	}
     }
@@ -1999,7 +2001,7 @@ Double ExonModel::eTermSeqProb(int left, int right, int frameOfRight) const {
 		int f = reverse? mod3(frameOfRight+right-curpos) : mod3(frameOfRight-right+curpos);
 		int pn = reverse? s2i.rc(sequence+curpos) : s2i(sequence+curpos-k);
 		seqProb *= etemiprobs[f][pn];
-	    } catch (InvalidNucleotideError e) {
+	    } catch (InvalidNucleotideError &e) {
 		seqProb *= Constant::probNinCoding; // 0.25, 1/4
 	    }
 	}
@@ -2026,7 +2028,7 @@ Double ExonModel::initialSeqProb(int left, int right, int frameOfRight) const {
 	    int f = reverse? mod3(frameOfRight+right-curpos) : mod3(frameOfRight-right+curpos);
 	    int pn = reverse? s2i.rc(sequence+curpos) : s2i(sequence+curpos-k);
 	    seqProb *= initemiprobs[f][pn];
-	} catch (InvalidNucleotideError e) {
+	} catch (InvalidNucleotideError &e) {
 	    seqProb *= Constant::probNinCoding; // 0.25, 1/4
 	}
     }

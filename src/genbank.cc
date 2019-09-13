@@ -43,14 +43,14 @@ AnnoSequence* GBProcessor::getAnnoSequence( GBPositions* pos ){
     bool stopCodonExcludedFromCDS = false;
     try {
 	stopCodonExcludedFromCDS = Properties::getBoolProperty("stopCodonExcludedFromCDS");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	stopCodonExcludedFromCDS = false;
     }
     bool withUTR;
     try {
       string utr = Properties::getProperty("UTR");
       withUTR = (utr == "both" || utr == "1" || utr == "on" || utr == "5");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
       withUTR = false;
     }
 
@@ -304,7 +304,7 @@ AnnoSequence* GBProcessor::getAnnoSequenceList(){
 		last = annoseq;
 		annocount++;
 	    }
-	} catch (GBError e) {
+	} catch (GBError &e) {
 	  cerr << "GBProcessor::getGeneList(): " << e.getMessage() << endl;
 	  cerr << "Encountered error after reading " << annocount << " annotations." << endl;
  	}
@@ -482,7 +482,7 @@ GBFeature::GBFeature(const char *pos){
       }    
       exon_old = exon;
     }
-  } catch (ProjectError e) {
+  } catch (ProjectError &e) {
     cerr << "Constructing GenBank feature: " << e.getMessage() << endl;
     throw GBError("GBFeature constructor:Format error when reading genbank format.");
   }
