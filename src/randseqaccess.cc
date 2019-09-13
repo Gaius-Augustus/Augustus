@@ -90,7 +90,7 @@ void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
 				    try{
 					addSpeciesToGroup(speciesNames[i],groupCount);
 					cout <<" "<<speciesNames[i];
-				    }catch(ProjectError e){
+				    }catch(ProjectError &e){
 					if(skey == "all")
 					    throw;
 				    }
@@ -129,7 +129,7 @@ void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
 	}
         datei.close();
         datei.clear();
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
         cerr << e.getMessage() << endl;
         cerr << "Could not read in file with the configuration of hints: " << filename << endl;
         datei.close();
@@ -158,7 +158,7 @@ void SpeciesCollection::readGFFFile(const char *filename){
         while (datei) {
             try{
                 datei >> f >> comment >> ws;
-            } catch (ProjectError e){}
+            } catch (ProjectError &e){}
 	    // split species name and sequence ID
 	    string completeName=f.seqname;
 	    string speciesName,seqname;                                                                                                          
@@ -188,7 +188,7 @@ void SpeciesCollection::readGFFFile(const char *filename){
 	    }
         }
         datei.close();
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
         cerr << e.getMessage() << endl;
         throw e;
     } catch(...) {

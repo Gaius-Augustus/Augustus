@@ -207,128 +207,128 @@ void Constant::init(){
     speciesDir = Properties::getProperty(SPECIESDIR_KEY);
     try {
 	trans_init_window = Properties::getIntProperty("/Constant/trans_init_window");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     }
     try {
 	ass_upwindow_size = Properties::getIntProperty("/Constant/ass_upwindow_size");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     }
     try {
 	ass_start = Properties::getIntProperty("/Constant/ass_start");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     }
     try {
 	ass_end = Properties::getIntProperty("/Constant/ass_end");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     }
     try {
 	dss_start = Properties::getIntProperty("/Constant/dss_start");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     }
     try {
 	dss_end = Properties::getIntProperty("/Constant/dss_end");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     } 
     try {
 	useCRFtraining = Properties::getBoolProperty("CRF");
-    } catch (ProjectError e) {}
+    } catch (ProjectError &e) {}
     try {
 	dss_maxbinsize = Properties::getIntProperty("/Constant/dss_maxbinsize");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	if (useCRFtraining)
 	    dss_maxbinsize = 100; // default, when not set and CRF training
     }
     try {
       CRFtrainSS = Properties::getBoolProperty("CRFtrainSS");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
       CRFtrainSS = true;
     }
     try {
       CRFtrainIntron = Properties::getBoolProperty("CRFtrainIntron");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
       CRFtrainIntron = true;
     }
     try {
       CRFtrainTIS = Properties::getBoolProperty("CRFtrainTIS");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
       CRFtrainTIS = true;
     }
     try {
       CRFtrainCDS = Properties::getBoolProperty("CRFtrainCDS");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
       CRFtrainCDS = true;
     }
     try {
       CRFtrainUTR = Properties::getBoolProperty("CRFtrainUTR");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
       CRFtrainUTR = false;
     }
     try {
       CRFtrainIgenic = Properties::getBoolProperty("CRFtrainIgenic");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
       CRFtrainIgenic = true;
     }
     try {
         ass_maxbinsize = Properties::getIntProperty("/Constant/ass_maxbinsize");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	if (useCRFtraining)
 	    ass_maxbinsize = 100; // default, when not set and CRF training
     }
     try {
         tis_maxbinsize = Properties::getIntProperty("/Constant/tis_maxbinsize");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	if (useCRFtraining)
 	    tis_maxbinsize = 30; // default, when not set and CRF training
     }
     try {
 	init_coding_len = Properties::getIntProperty("/Constant/init_coding_len");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     }
     try {
 	et_coding_len = Properties::getIntProperty("/Constant/intterm_coding_len");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     }
     try {
 	tss_upwindow_size = Properties::getIntProperty("/Constant/tss_upwindow_size");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	//cerr << e.getMessage();
     }
     try {
 	tss_start = Properties::getIntProperty("/UtrModel/tss_start");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
       //cerr << e.getMessage();  TODO: error message only if --UTR=5
     }
     try {
 	decomp_num_at = Properties::getIntProperty("/Constant/decomp_num_at");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     }
     try {
 	decomp_num_gc = Properties::getIntProperty("/Constant/decomp_num_gc");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     }
     try {
 	decomp_num_steps = Properties::getIntProperty("/Constant/decomp_num_steps");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     } 
     try {
 	min_coding_len = Properties::getIntProperty("/Constant/min_coding_len");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     }
     try {
 	max_exon_len = Properties::getIntProperty("/ExonModel/maxexonlength");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     }
     

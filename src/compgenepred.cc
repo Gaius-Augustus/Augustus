@@ -204,7 +204,7 @@ void CompGenePred::start(){
 		throw ProjectError("Is not numeric.");
 	    dd_factors.push_back(pos);
 	}
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	throw ProjectError("Format error parsing parameter --/CompPred/dd_factor=" + dd_param_s +".\n" + e.getMessage());
     }
     bool onlySampling = false;
@@ -221,7 +221,7 @@ void CompGenePred::start(){
 	}else{
 	  cout << "# No outfile for logReg parameters specified. Writing parameters to " << Constant::configPath <<  "/cgp/log_reg_parameters_trained.cfg" << endl;
 	}
-      } catch (ProjectError e) {
+      } catch (ProjectError &e) {
 	throw ProjectError("For parameter training a reference species must be specified. Use --refSpecies=<SPECIES> and note, that <SPECIES> must be identical to one of the species names provided in the alignment and tree files.");
       }
     }

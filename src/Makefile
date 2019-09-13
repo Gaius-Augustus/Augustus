@@ -7,7 +7,7 @@ CXX	= g++
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CXXFLAGS := -Wall -Wno-sign-compare -Wno-strict-overflow -pedantic -g -ggdb -O3 ${CXXFLAGS}# -DDEBUG -g -ggdb -pg -DDEBUG_STATES
+CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 ${CXXFLAGS}# -DDEBUG -g -ggdb -pg -DDEBUG_STATES
 ifdef SQLITE
 	COMPGENEPRED = true
 endif

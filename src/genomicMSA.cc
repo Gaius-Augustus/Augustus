@@ -83,7 +83,7 @@ void GenomicMSA::readAlignment(string alignFilename) {
     while (!Alignmentfile.eof()) {
         try {
             Alignmentfile >> buffer;
-	} catch (std::ios_base::failure e) {
+	} catch (std::ios_base::failure &e) {
    	    throw ProjectError(string("Could not open file ") + alignFilename + ". Make sure this is not a directory.\n");
 	}
         int numSpeciesFound = 0;
@@ -139,7 +139,7 @@ void GenomicMSA::readAlignment(string alignFilename) {
 			// store chrLen and check whether consistent with previous chrLen
 			try {
 			    rsa->setLength(index, row->seqID, lenOfChr);
-			} catch (ProjectError e){
+			} catch (ProjectError &e){
 			    cerr << e.getMessage() << endl << "MAF file inconsistent." << endl;
 			    throw e;
 			}
@@ -155,7 +155,7 @@ void GenomicMSA::readAlignment(string alignFilename) {
 			    alignBlock->rows[index] = row;
 			    try {
 				rsa->setLength(index, row->seqID, lenOfChr);
-			    } catch (ProjectError e){
+			    } catch (ProjectError &e){
 				cerr << e.getMessage() << endl << "MAF file inconsistent." << endl;
 				throw e;
 			    }

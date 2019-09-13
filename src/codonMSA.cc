@@ -133,7 +133,7 @@ void CodonMSA::readAlignment(string filename){
 	}
       }
       // cout << "species name: " << speciesName << "\t rowseq: " << rowseq << endl;
-    } catch (std::ios_base::failure e) {
+    } catch (std::ios_base::failure &e) {
       throw ProjectError(string("Could not open file ") + filename + ". Make sure this is not a directory.\n");
     }
     if(aliLen){

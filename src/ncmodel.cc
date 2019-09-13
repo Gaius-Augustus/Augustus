@@ -60,7 +60,7 @@ void NcModel::init() {
     try {
 	if (!Properties::getBoolProperty(NONCODING_KEY)) // not run with --nc=On
 	    return;
-    } catch(ProjectError e) {
+    } catch(ProjectError &e) {
 	return;
     }
 }
@@ -256,7 +256,7 @@ void NcModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	       continue;
 	    try {
 	       eop.update(endOfPred);
-	    } catch (ProjectError e) {
+	    } catch (ProjectError &e) {
 	       cerr << "Error in EOPList::update.\tbase=" << base << "\t" << stateTypeNames[nctype]
 		    << "\tnotEndPartProb=" << notEndPartProb << endl;
 	       throw e;
@@ -338,7 +338,7 @@ void NcModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	    optionslist->prepareSampling();
 	    try {
 		oli = optionslist->sample();
-	    } catch (ProjectError e) {
+	    } catch (ProjectError &e) {
 		cerr << "Sampling error in noncoding model. state=" << state << " base=" << base << endl;
 		throw e;
 	    }
@@ -536,7 +536,7 @@ Double NcModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon, 
 		if (pos - IntronModel::k >= 0)
 		    try {
 			middlePartProb *= IntronModel::emiprobs.probs[s2i_intron(sequence + pos - IntronModel::k)]; 
-		    } catch (InvalidNucleotideError e) {
+		    } catch (InvalidNucleotideError &e) {
 		       middlePartProb *= (float) 0.25;
 		    }
 		else

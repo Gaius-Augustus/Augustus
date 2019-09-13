@@ -83,7 +83,7 @@ StateModel* StateModel::newStateModelPtr(const char* path) {
 	    return new UtrModel();
 	else if (pathString == ncMdlStr)
 	    return new NcModel();
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage() << endl;
     }
     throw ProjectError("StateModelPtr: error creating model \"" + string(path) + "\".");
@@ -290,7 +290,7 @@ Double SnippetProbs::getElemSeqProb(int base, int len){
 		    seqProb *= (*emiprobs)[s2i(dna+curpos-k)];
 		else 
 		    seqProb *= 0.25;
-	    } catch (InvalidNucleotideError e) {
+	    } catch (InvalidNucleotideError &e) {
 		seqProb *= 0.25;
 	    }
 	}
@@ -301,7 +301,7 @@ Double SnippetProbs::getElemSeqProb(int base, int len){
 		    seqProb *= (*emiprobs)[s2i.rc(dna+curpos)];
 		else 
 		    seqProb *= 0.25;
-	    } catch (InvalidNucleotideError e) {
+	    } catch (InvalidNucleotideError &e) {
 		seqProb *= 0.25;
 	    }
 	}
@@ -416,7 +416,7 @@ void SegProbs::setEmiProbs(vector<Double> *emiprobs, int from, int to) {
 		if (i<k)
 		    throw InvalidNucleotideError('\0');
 		p = (*emiprobs)[s2i(dna + i - k)];
-	    } catch (InvalidNucleotideError){
+	    } catch (InvalidNucleotideError&){
 		p = (float) 0.25;
 	    }
 	} else {
@@ -424,7 +424,7 @@ void SegProbs::setEmiProbs(vector<Double> *emiprobs, int from, int to) {
 		if (i >= n-k)
 		    throw InvalidNucleotideError('\0');
 		p = (*emiprobs)[s2i.rc(dna + i)];
-	    } catch (InvalidNucleotideError){
+	    } catch (InvalidNucleotideError&){
 		p = (float) 0.25;
 	    }
 	}
@@ -445,7 +445,7 @@ Double SegProbs::getSeqProb(int from, int to) {
 		return (*emiprobs)[s2i(dna + to - k)];
 	    } else
 		return (*emiprobs)[s2i.rc(dna + to)];
-	} catch (InvalidNucleotideError) {
+	} catch (InvalidNucleotideError&) {
 	    return (float) .25;
 	}
     } else if (from > to)

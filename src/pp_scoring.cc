@@ -112,7 +112,7 @@ void SubstateModel::scoreAssOrRDss(ViterbiSubmapType& submap, bool complement,
 		    // that has a temporary lifetime 
 		    // (see [Multi|Single]TargetExonScorer::scoreInternal)
 		    submap.push_back(ppos.copyId(), prob * suffixFactor, 0);
-	    } catch (out_of_range) {
+	    } catch (out_of_range&) {
 #ifdef DEBUG
 		if (firstBase <= DNA::len-3)
 		    throw;
@@ -264,7 +264,7 @@ void MultiTargetExonScorer::initBonusProbs(BonusProbType& target, int b, int fra
 		* mdl.getIntronBonus(b, l, frame, complement);
 	    if (l == 0 || newfactor > blscore.prefixThresh(complement, l)) 
 		target.push_back(l+endStateOffset, newfactor);
-	} catch (out_of_range) {
+	} catch (out_of_range&) {
 #ifdef DEBUG
 	    if (endOfLastCodon >= blscore.end() && endOfLastCodon <= DNA::len-3 && endOfLastCodon >= 3*l - 1)
 		cerr << "BonusProbType::BonusProbType: exception out_of_range caught.\n";

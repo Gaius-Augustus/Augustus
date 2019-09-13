@@ -367,7 +367,7 @@ namespace PP {
 		    putSeedsToEntries(forval + aa, false);
 		if (aab >= 0 && revval >= 0)
 		    putSeedsToEntries(revval + 400*aab, true);
-	    } catch (InvalidNucleotideError e) {
+	    } catch (InvalidNucleotideError &e) {
 		aa = aab = -2;
 	    }
 	    nextPattern[0] = nextPattern[1];

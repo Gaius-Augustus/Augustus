@@ -160,7 +160,7 @@ void IntronModel::processSequence( const char* start, const char* end){
 	    emicount[s2i(start-k)] += gweight ;
 	    emicount[s2i.rc(start-k) ] += gweight ;
 	    gesbasen += 2*gweight;
-	} catch (InvalidNucleotideError e) {
+	} catch (InvalidNucleotideError &e) {
 	}  
     }
 }
@@ -243,7 +243,7 @@ void IntronModel::processASS(const char* dna, int pos, Boolean withMotif){
     try {
 	asscount[s2i(astr)]++;
 	c_ass += 1;
-    } catch (InvalidNucleotideError e){
+    } catch (InvalidNucleotideError &e){
 	//cerr << "Acceptor splice site " << astr << " contains an invalid character." << endl;
     }
    
@@ -279,7 +279,7 @@ void IntronModel::processDSS( const char* dna, int pos){
 	try{
 	    dsscount[s2i(dstr)]++;
 	    c_dss += 1;
-	} catch (InvalidNucleotideError e) {
+	} catch (InvalidNucleotideError &e) {
 	    //cerr << "Donor splice site " << dstr << " contains an invalid character." << endl;
 	}
 	/*/output for seqlogo of ass 
@@ -343,7 +343,7 @@ void IntronModel::buildProbabilities(const AnnoSequence* annoseq){
 		  try {
 		      processDSS(sequence, in->begin-1);
 		      processASS(sequence, in->end + 1, true);
-		  } catch (IntronModelError e) {
+		  } catch (IntronModelError &e) {
 		      numErrorSplicesites++;
 		      if (verbosity) {
 			  if (numErrorSplicesites <= 20) { 
@@ -722,7 +722,7 @@ void IntronModel::printProbabilities( int idx, BaseCount *bc, const char* suffix
 				
 	ofstrm.close();
       }
-    } catch( ProjectError ) { 
+    } catch( ProjectError& ) { 
       if (verbosity)
 	cout << "Intron model parameters not saved." << endl;
     }

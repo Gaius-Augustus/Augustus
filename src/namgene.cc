@@ -100,10 +100,10 @@ NAMGene::NAMGene() {
       PP::Profile* prfl;
       try {
 	  prfl = new PP::Profile(Properties::getProperty("proteinprofile"));
-      } catch (PP::ProfileNotFoundError e) {
+      } catch (PP::ProfileNotFoundError &e) {
 	  try {
 	      prfl = new PP::Profile(Properties::getConfigFilename("proteinprofile"));
-	  } catch (PP::ProfileNotFoundError) {
+	  } catch (PP::ProfileNotFoundError&) {
 	      throw e;
 	  }
       }
@@ -112,9 +112,9 @@ NAMGene::NAMGene() {
 	  cout << "# Using protein profile " << prfl->getName() << "\n";
 	  cout << "# " << prfl->getInfoLine() << "\n";
       }
-  } catch (KeyNotFoundError) {
+  } catch (KeyNotFoundError&) {
       profileModel = NULL;
-  } catch (PP::ProfileInsigError e) {
+  } catch (PP::ProfileInsigError &e) {
       cerr << e.getMessage() << ". Not using protein profile.\n";
       cerr << "Choose different block thresholds to enforce using this profile.\n";
       cout << "# Not using protein profile.";
@@ -326,7 +326,7 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
 		  }
 		  try {
 		      viterbi[j].getSubstates(i).checkCounts();
-		  } catch (ProjectError) {
+		  } catch (ProjectError&) {
 		      throw ProjectError("checkCounts() failed at base=" + itoa(j) + ", state=" + itoa(i) + " (" + stateTypeIdentifiers[stateMap[i]] + ")");
 		  }
 	      }
@@ -847,7 +847,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
       sampledPath = getSampledPath(dna, "");
       condensedsampledPath = StatePath::condenseStatePath(sampledPath);
       // condensedsampledPath->print(); // for testing
-      char gr[9];
+      char gr[16];
       sprintf(gr, "s%d-", (i+1));
       genes = condensedsampledPath->projectOntoGeneSequence(gr);
       delete sampledPath;

@@ -244,37 +244,37 @@ class Properties{
     static void assignProperty(string name, Integer& target) {
 	try {
 	    target = getIntProperty(name);
- 	} catch (KeyNotFoundError e) {}
+ 	} catch (KeyNotFoundError &e) {}
     }
     static void assignProperty(string name, unsigned& target) {
 	try {
 	    target = (unsigned) getIntProperty(name);
- 	} catch (KeyNotFoundError e) {}
+ 	} catch (KeyNotFoundError &e) {}
     }
     static void assignProperty(string name, Double& target) {
 	try {
 	    target = getDoubleProperty(name);
- 	} catch (KeyNotFoundError e) {}
+ 	} catch (KeyNotFoundError &e) {}
     }
     static void assignProperty(string name, double& target) {
 	try {
 	    target = getdoubleProperty(name);
-	} catch (KeyNotFoundError e) {}
+	} catch (KeyNotFoundError &e) {}
     }
     static void assignProperty(string name, Boolean& target) {
 	try {
 	    target = getBoolProperty(name);
-	} catch (KeyNotFoundError e) {}
+	} catch (KeyNotFoundError &e) {}
     }
     static void assignProperty(string name, string& target) {
 	try {
 	    target = getProperty(name);
-	} catch (KeyNotFoundError e) {}
+	} catch (KeyNotFoundError &e) {}
     }
     static void assignProperty(string name, const char*& target) {
 	try {
 	    target = getProperty(name);
-	} catch (KeyNotFoundError e) {}
+	} catch (KeyNotFoundError &e) {}
     }
     
 
