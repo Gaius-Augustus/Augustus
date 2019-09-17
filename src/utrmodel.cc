@@ -149,92 +149,92 @@ void UtrModel::init() {
     try {
 	if (!Constant::utr_option_on)
 	    return;
-    } catch(ProjectError e) {
+    } catch(ProjectError &e) {
 	return;
     }
     try {
 	verbosity = Properties::getIntProperty("/UtrModel/verbosity");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	k = Properties::getIntProperty("/UtrModel/k");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	utr_patpseudo = Properties::getDoubleProperty("/UtrModel/patpseudocount");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	exonLenD = Properties::getIntProperty("/UtrModel/exonlengthD");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	slope_of_bandwidth = Properties::getdoubleProperty("/UtrModel/slope_of_bandwidth");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	minwindowcount = Properties::getIntProperty("/UtrModel/minwindowcount");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	max_exon_length = Properties::getIntProperty("/UtrModel/maxexonlength");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	max3singlelength = Properties::getIntProperty("/UtrModel/max3singlelength");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	max3termlength = Properties::getIntProperty("/UtrModel/max3termlength");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	tss_start = Properties::getIntProperty("/UtrModel/tss_start");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	tss_end = Properties::getIntProperty("/UtrModel/tss_end");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	tata_start = Properties::getIntProperty("/UtrModel/tata_start");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	tata_end = Properties::getIntProperty("/UtrModel/tata_end");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	d_tss_tata_min = Properties::getIntProperty("/UtrModel/d_tss_tata_min");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	d_tss_tata_max = Properties::getIntProperty("/UtrModel/d_tss_tata_max");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	tssup_k = Properties::getIntProperty("/UtrModel/tssup_k");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	tssup_patpseudo = Properties::getIntProperty("/UtrModel/tssup_patpseudocount");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	polyasig_consensus = Properties::getProperty("/UtrModel/polyasig_consensus");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	polyasig_consensus = "aataaa";
     }
     try {
 	d_polya_cleavage_min = Properties::getIntProperty("/UtrModel/d_polya_cleavage_min");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	d_polya_cleavage_max = Properties::getIntProperty("/UtrModel/d_polya_cleavage_max");
-    } catch(ProjectError e) { cerr << e.getMessage(); }
+    } catch(ProjectError &e) { cerr << e.getMessage(); }
     try {
 	prob_polya = Properties::getdoubleProperty("/UtrModel/prob_polya");
-    } catch(ProjectError e) {}
+    } catch(ProjectError &e) {}
     try {
 	tata_pseudocount = Properties::getIntProperty("/UtrModel/tata_pseudocount");
-    } catch(ProjectError e) {}
+    } catch(ProjectError &e) {}
     try {
 	utr5patternweight = Properties::getdoubleProperty("/UtrModel/utr5patternweight");
-    } catch(ProjectError e) {}
+    } catch(ProjectError &e) {}
     try {
 	utr3patternweight = Properties::getdoubleProperty("/UtrModel/utr3patternweight");
-    } catch(ProjectError e) {}
+    } catch(ProjectError &e) {}
     try {
       utr5prepatternweight = Properties::getdoubleProperty("/UtrModel/utr5prepatternweight");
-    } catch(ProjectError e) {}
+    } catch(ProjectError &e) {}
     try {
       utr3prepatternweight = Properties::getdoubleProperty("/UtrModel/utr3prepatternweight");
-    } catch(ProjectError e) {}
+    } catch(ProjectError &e) {}
     try {
 	tts_motif_memory = Properties::getIntProperty("/UtrModel/tts_motif_memory");
-    } catch(ProjectError e) {}
+    } catch(ProjectError &e) {}
 
     aataaa_boxlen = (int) polyasig_consensus.length();
     if (d_tss_tata_max + tata_start > Constant::tss_upwindow_size) {
@@ -602,7 +602,7 @@ void UtrModel::readAllParameters(){
     
     // Start of GC content dependent parameters section
     // ------------------------------------------------
-    char zusString[6];
+    char zusString[16]; // more than necessary, but avoids a compiler warning
     
     // loop over GC content classes
     for (int idx = 0; idx < Constant::decomp_num_steps; idx++) {
@@ -1044,7 +1044,7 @@ void UtrModel::viterbiForwardAndSampling( ViterbiMatrixType& viterbi,
 	    optionslist->prepareSampling();
 	    try {
 		oli = optionslist->sample();
-	    } catch (ProjectError e) {
+	    } catch (ProjectError &e) {
 		cerr << "Sampling error in UTR model. state=" << state << " base=" << base << endl;
 		throw e;
 	    }
@@ -1257,7 +1257,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 		if (pos-k >= 0)
 		    try {
 			middlePartProb *= IntronModel::emiprobs.probs[s2i_intron(sequence + pos - k)]; // strand does not matter!
-		    } catch (InvalidNucleotideError e) {
+		    } catch (InvalidNucleotideError &e) {
 			middlePartProb *= (float) 0.25;
 		    }
 		else
@@ -1391,7 +1391,7 @@ Double UtrModel::notEndPartEmiProb(int begin, int endOfMiddle, int endOfBioExon,
 		if (pos-k >= 0)
 		    try {
 			middlePartProb = IntronModel::emiprobs.probs[s2i_intron(sequence + pos - k)]; // strand does not matter!
-		    } catch (InvalidNucleotideError e) {
+		    } catch (InvalidNucleotideError &e) {
 			middlePartProb = (float) 0.25;
 		    }
 		else 
@@ -1682,7 +1682,7 @@ Double UtrModel::seqProb(int left, int right, bool reverse, int type) const {
 			seqProb *= IntronModel::emiprobs.probs[pn]; //for testing purposes
 		    }
 		}
-	    } catch (InvalidNucleotideError e) {
+	    } catch (InvalidNucleotideError &e) {
 		seqProb *= (float) .25; //  0.25, 1/4
 	    }
 	}
@@ -1717,7 +1717,7 @@ Double UtrModel::seqProb(int left, int right, bool reverse, int type) const {
 		    IntronModel::GCemiprobs[gcIdx].addCount(pn);
 		}
 	    }
-	} catch (InvalidNucleotideError e) {
+	} catch (InvalidNucleotideError &e) {
 	    seqProb *= (float) 0.25; // 0.25 1/4
 	}
     }
@@ -1742,7 +1742,7 @@ Double UtrModel::tssupSeqProb (int left, int right, bool reverse) const {
 		seqProb *= tssup_emiprobs[s2i.rc(sequence+curpos)];
 	    else 
 		seqProb *= (float) 0.25;
-	} catch (InvalidNucleotideError e) {
+	} catch (InvalidNucleotideError &e) {
 	    seqProb *= (float) 0.25;
 	}
     }
@@ -1871,7 +1871,7 @@ void UtrModel::computeTtsProbs(int from, int to){
 	    try {
 		prob = aataaa_probs[s2i_aataaa(sequence + aataaa_box_begin)];
 		prob *= prob_polya;
-	    } catch (InvalidNucleotideError e) {
+	    } catch (InvalidNucleotideError &e) {
 		prob = 0;
 	    }
 	    if ((extrinsicProb > 1 || aataaa_box_begin % ttsSpacing == 0) && prob == 0)//if no aataaa like pattern: allow tts every ttsSpacing-th base
@@ -1898,7 +1898,7 @@ void UtrModel::computeTtsProbs(int from, int to){
         try {
 	    prob = aataaa_probs[s2i_aataaa.rc(sequence + aataaa_box_begin)];
 	    prob *= prob_polya;
-	} catch (InvalidNucleotideError e) {
+	} catch (InvalidNucleotideError &e) {
 	    prob = 0;
 	}
 	if ((extrinsicProb > 1 || aataaa_box_begin % ttsSpacing == 0) && prob == 0)

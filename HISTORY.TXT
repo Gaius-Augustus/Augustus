@@ -1,3 +1,12 @@
+List of changes from version 3.3.2 to 3.3.3 (until Sep 13th, 2019)
+     - docker container
+     - new script tfix_in_frame_stop_codon_genes.py that replaces genes where spliced in-frame stop codons were predicted
+     - new scripts: compare_masking.pl, merge_masking.pl
+     - new program bamToWig.py as alternarive to bam2wig C++ binary
+     - fix warnings on new GCC compiler (8.3)
+     - introduced unit tests of C++ code (make test)
+     - bugfixes (lex.cc, autoAug.pl)
+     - DIAMOND as alternative to BLAST in aa2nonred.pl
 List of changes from version 3.3.1 to 3.3.2 (until Oct 5th, 2018)
      - bugfixes in comparative augustus, utrrnaseq
      - new species Chiloscyllium punctatum (bamboo shark), Scyliorhinus torazame (cat shark), Rhincodon typus (whale shark)

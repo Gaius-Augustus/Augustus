@@ -89,10 +89,10 @@ public:
     static void resetModelCount(){exoncount = 0;};
     static int getMaxStateLen() { return Constant::max_exon_len + trans_init_window; }
     static void setORF() {
-      if (orf)
-	delete orf;
-      orf = new OpenReadingFrame(sequence, Constant::max_exon_len, dnalen);
-      initAlgorithmsCalled = false;
+        if (orf)
+            delete orf;
+        orf = new OpenReadingFrame(sequence, Constant::max_exon_len, dnalen);
+        initAlgorithmsCalled = false;
     }
     static vector<Double> lenDistSingle;   // Length distribution of Single exons (length of biol. exon)
     static vector<Double> lenDistInitial;  // Length distribution of Initial exons (length of biol. exon)

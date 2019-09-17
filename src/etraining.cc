@@ -67,7 +67,7 @@ int main( int argc, char* argv[] ){
 	
 	try {
 	    Properties::init( argc, argv );
-	} catch (ProjectError e) {
+	} catch (ProjectError &e) {
 	    cout << e.getMessage() << endl << endl;
 	    exit(1);
 	}

@@ -431,7 +431,7 @@ void Properties::init( int argc, char* argv[] ){
 	optCfgFile = expandHome(configPath + "cgp/log_reg_parameters_default.cfg");
 	try {
 	    readFile(optCfgFile);
-	} catch (PropertiesError e){
+	} catch (PropertiesError &e){
 	    throw ProjectError("Default configuration file with parameters from logistic regression " + optCfgFile + " not found!");
 	}
     }
@@ -456,7 +456,7 @@ void Properties::init( int argc, char* argv[] ){
     speciesDir = SPECIES_SUBDIR + speciesValue + "/";
     try {
 	readFile(configPath + speciesDir + speciesParFileName);
-    } catch (PropertiesError e){
+    } catch (PropertiesError &e){
 	throw ProjectError("Species-specific configuration files not found in " + configPath + SPECIES_SUBDIR + ". Type \"augustus --species=help\" to see available species.");
     }
 

@@ -106,7 +106,7 @@ void UtrModel::buildProbabilities(const AnnoSequence* annoseq){
 	    if (curgene->utr5exons || curgene->utr3exons){
 		try {
 		    processStates(curgene);
-		} catch (UtrModelError e) {
+		} catch (UtrModelError &e) {
 		    cerr << "Sequence " << curgene->seqname << ":" << endl;
 		    cerr << e.getMessage() << endl;
 		}
@@ -189,7 +189,7 @@ void UtrModel::buildTSSModel(const AnnoSequence* annoseq){
 		    //cout << "good TSS: " << curgene->seqname << " "; 
 		    processTSS(annoseq->sequence + tsspos - Constant::tss_upwindow_size);
 		}
-	    } catch (UtrModelError e) {
+	    } catch (UtrModelError &e) {
 		cerr << "Sequence " << curgene->seqname << ":" << endl;
 		cerr << e.getMessage() << endl;
 	    }
@@ -388,14 +388,14 @@ void UtrModel::processStates( const Gene* gene ){
 	if( !exon->next ){
 	    try{
 		process5SingleExon( exon, (gene->exons != NULL));
-	    } catch (UtrModelError e) {
+	    } catch (UtrModelError &e) {
 		if (verbosity)
 		    cerr << "gene " << gene->geneid  << " transcr. " << gene->id << " in sequence " << gene->seqname << ": " << e.getMessage() << endl;
 	    }
 	} else { // 5' initial, internal, terminal exons and introns
 	    try {
 		process5InitialExon( exon );
-	    } catch( UtrModelError e ){
+	    } catch( UtrModelError &e ){
 		if (verbosity)
 		    cerr << "gene " << gene->geneid << " transcr. " << gene->id << " in sequence " << gene->seqname << ": " << e.getMessage() << endl;
 	    }
@@ -405,7 +405,7 @@ void UtrModel::processStates( const Gene* gene ){
 		try {
 		    process5InternalExon( exon );
 		    process5Intron(lastexon->end + 1, exon->begin - 1);
-		} catch( UtrModelError e ){
+		} catch( UtrModelError &e ){
 		    if (verbosity)
 			cerr << "gene " << gene->geneid << " transcr. " << gene->id << " in sequence " << gene->seqname << ": " << e.getMessage() << endl;
 		}
@@ -415,7 +415,7 @@ void UtrModel::processStates( const Gene* gene ){
 	    try {
 		process5TerminalExon( exon );
 		process5Intron(lastexon->end + 1, exon->begin - 1);
-	    } catch( UtrModelError e ){
+	    } catch( UtrModelError &e ){
 		if (verbosity)
 		    cerr << "gene " << gene->geneid << " transcr. " << gene->id << " in sequence " << gene->seqname << ": " << e.getMessage() << endl;
 	    }
@@ -430,14 +430,14 @@ void UtrModel::processStates( const Gene* gene ){
 	if( !exon->next ){
 	    try{
 		process3SingleExon( exon, (gene->exons != NULL) && gene->complete3utr);
-	    } catch (UtrModelError e) {
+	    } catch (UtrModelError &e) {
 		if (verbosity)
 		    cerr << "gene " << gene->geneid  << " transcr. " << gene->id << " in sequence " << gene->seqname << ": " << e.getMessage() << endl;
 	    }
 	} else { // 3' initial, internal, terminal exons and introns
 	    try {
 		process3InitialExon( exon );
-	    } catch( UtrModelError e ){
+	    } catch( UtrModelError &e ){
 		if (verbosity)
 		    cerr << "gene " << gene->geneid << " transcr. " << gene->id << " in sequence " << gene->seqname << ": " << e.getMessage() << endl;
 	    }
@@ -447,7 +447,7 @@ void UtrModel::processStates( const Gene* gene ){
 		try {
 		    process3InternalExon( exon );
 		    process3Intron(lastexon->end + 1, exon->begin - 1);
-		} catch( UtrModelError e ){
+		} catch( UtrModelError &e ){
 		    if (verbosity)
 			cerr << "gene " << gene->geneid << " transcr. " << gene->id << " in sequence " << gene->seqname << ": " << e.getMessage() << endl;
 		}
@@ -457,7 +457,7 @@ void UtrModel::processStates( const Gene* gene ){
 	    try {
 		process3TerminalExon( exon , gene->complete3utr);
 		process3Intron(lastexon->end + 1, exon->begin - 1);
-	    } catch( UtrModelError e ){
+	    } catch( UtrModelError &e ){
 		if (verbosity)
 		    cerr << "gene " << gene->geneid << " transcr. " << gene->id << " in sequence " << gene->seqname << ": " << e.getMessage() << endl;
 	    }
@@ -788,7 +788,7 @@ void UtrModel::process5InitSequence( const char* start, const char* end){
       try {
 	  utr5init_emicount[s2i(start-k)] += gweight;
 	  utr5init_gesbasen += gweight;
-      } catch (InvalidNucleotideError e) {
+      } catch (InvalidNucleotideError &e) {
       }
   }
 }
@@ -802,7 +802,7 @@ void UtrModel::process5Sequence( const char* start, const char* end){
       try {
 	  utr5_emicount[s2i(start-k)] += gweight ;
 	  utr5_gesbasen += gweight;
-      } catch (InvalidNucleotideError e) {
+      } catch (InvalidNucleotideError &e) {
       }  
   }
 }
@@ -816,7 +816,7 @@ void UtrModel::process3Sequence( const char* start, const char* end){
       try {
 	  utr3_emicount[s2i(start-k)] += gweight ;
 	  utr3_gesbasen += gweight;
-      } catch (InvalidNucleotideError e) {
+      } catch (InvalidNucleotideError &e) {
       }  
   }
 }
@@ -830,7 +830,7 @@ void UtrModel::processTssupSequence( const char* start, const char* end){
     try {
       tssup_emicount[s2i(start-tssup_k)] += 1 ;
       tssup_gesbasen += 1;
-    } catch (InvalidNucleotideError e) {
+    } catch (InvalidNucleotideError &e) {
     }  
   }
 }
@@ -843,7 +843,7 @@ void UtrModel::storeGCPars(int idx){
   try {
     if (!Constant::utr_option_on)
       return;
-  } catch(ProjectError e) {
+  } catch(ProjectError &e) {
     return;
   }
   if (!IntronModel::GCemiprobs || utr5_emiprobs.probs.empty() || utr3_emiprobs.probs.empty() || utr5init_emiprobs.probs.empty() || !tssMotif || !ttsMotif || !tssMotifTATA || !tataMotif)
@@ -1010,7 +1010,7 @@ void UtrModel::printProbabilities( int idx, BaseCount *bc, const char* suffix ){
 	  GCttsMotif[idx].write(ofstrm);
 	  ofstrm.close();
       }
-    } catch( ProjectError ) { 
+    } catch( ProjectError& ) { 
 	if (verbosity)
 	    cout << "Utr model parameters not saved." << endl;
     }

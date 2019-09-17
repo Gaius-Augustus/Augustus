@@ -2052,7 +2052,7 @@ void FeatureCollection::readExtrinsicCFGFile(){
 	readTypeInfo(datei);
 	datei.close();
 	datei.clear();
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage() << endl;;
 	cerr << "Could not read in file with the configuration of hints: " << filename << endl;
 	datei.close();
@@ -2110,7 +2110,7 @@ void FeatureCollection::readTypeInfo(istream& datei){
 			cerr << "Error in syntax for type " << featureName << " source key " << skey << "." << endl;
 			throw ProjectError("Syntax Error");
 		    }
-		} catch (ProjectError e) {
+		} catch (ProjectError &e) {
 		    throw ProjectError("FeatureCollection::readExtrinsicCFGFile: " + e.getMessage());
 		}
 	    }
@@ -2263,7 +2263,7 @@ void FeatureCollection::readGFFFile(const char *filename){
 	while (datei) {
 	    try{
 		datei >> f >> comment >> ws;
-	    } catch (ProjectError e){}
+	    } catch (ProjectError &e){}
 	    if ((f.end >= predictionStart && f.start <= predictionEnd) || predictionStart < 0) {
 		f.start += offset;
 		f.end += offset;
@@ -2280,7 +2280,7 @@ void FeatureCollection::readGFFFile(const char *filename){
 	    }
 	}
 	datei.close();
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage() << endl;
 	throw e;
     } catch(...) {

@@ -108,42 +108,42 @@ void IntronModel::init() {
     Properties::assignProperty("/IntronModel/k", k);
     try{
 	slope_of_bandwidth = Properties::getdoubleProperty( "/IntronModel/slope_of_bandwidth");
-    }catch( ProjectError e) { 
+    }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	minwindowcount = Properties::getIntProperty( "/IntronModel/minwindowcount");
-    }catch( ProjectError e) { 
+    }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	asspseudo = Properties::getDoubleProperty( "/IntronModel/asspseudocount" );
-    }catch( ProjectError e) { 
+    }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	dsspseudo = Properties::getDoubleProperty( "/IntronModel/dsspseudocount" );
-    }catch( ProjectError e) { 
+    }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	dssneighborfactor = Properties::getDoubleProperty( "/IntronModel/dssneighborfactor" );
-    }catch( ProjectError e) { 
+    }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	d = Properties::getIntProperty( "/IntronModel/d" );
-    }catch( ProjectError e) { 
+    }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	ass_motif_memory = Properties::getIntProperty( "/IntronModel/ass_motif_memory" );
-    }catch( ProjectError e) { 
+    }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     try{
 	ass_motif_radius = Properties::getIntProperty( "/IntronModel/ass_motif_radius" );
-    }catch( ProjectError e) { 
+    }catch( ProjectError &e) { 
 	cerr << e.getMessage();
     }
     Properties::assignProperty("/IntronModel/non_gt_dss_prob", non_gt_dss_prob);
@@ -366,7 +366,7 @@ void IntronModel::readAllParameters(){
 	
 	// Start of GC content dependent parameters section
 	// ------------------------------------------------
-	char zusString[6];
+	char zusString[16];
 	/*	if (GCprobShortIntron) 
 	  delete [] GCprobShortIntron;
 	if (GCmal)
@@ -778,7 +778,7 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 			substates.cloneMap(firstPredSubstates);
 			substates.merge(predSubstates, transEmiProb);
 		    }
-		} catch (NoSubmapFoundError) {}
+		} catch (NoSubmapFoundError&) {}
 	    if (predProb > maxPredProb) {
 		maxPredProb = predProb;
 		oli.state = it->pos;
@@ -845,7 +845,7 @@ void IntronModel::viterbiForwardAndSampling(ViterbiMatrixType& viterbi,
 	    optionslist->prepareSampling();
 	    try {
 		oli = optionslist->sample();
-	    } catch (ProjectError e) {
+	    } catch (ProjectError &e) {
 		cerr << "Sampling error in intron model. state=" << state << " base=" << base << endl;
 		throw e;
 	    }
@@ -905,7 +905,7 @@ Double IntronModel::emiProbUnderModel (int begin, int end) const {
 			returnProb *= emiprobs.probs[pn];
 			if (inCRFTraining && (countEnd < 0 || (begin >= countStart && begin <= countEnd)))
 			    GCemiprobs[gcIdx].addCount(pn);
-		    } catch (InvalidNucleotideError e) {
+		    } catch (InvalidNucleotideError &e) {
 		       returnProb *= (float) 0.25;
 		    }
 		} else { // at the very beginning of the sequence
@@ -1061,7 +1061,7 @@ Double IntronModel::seqProb(int left, int right) const {
 	    for (curpos = oldleft-1; curpos >= left; curpos--){
 		try {
 		    seqProb *= emiprobs.probs[s2i(sequence + curpos - k)];
-		} catch (InvalidNucleotideError e) {
+		} catch (InvalidNucleotideError &e) {
 		    seqProb *= (float) 0.25;
 		}
 		seqProbs[right-curpos] = seqProb;
@@ -1087,7 +1087,7 @@ Double IntronModel::seqProb(int left, int right) const {
 		    GCemiprobs[gcIdx].addCount(pn);
 	    } else
 		seqProb *= (float) 0.25;
-	} catch (InvalidNucleotideError e) {
+	} catch (InvalidNucleotideError &e) {
 	    seqProb *= (float) 0.25;
 	}
 	if ( right-curpos < seqProbs.size())
@@ -1166,7 +1166,7 @@ Double IntronModel::aSSProb(int base, bool forwardStrand){
 		assBinProbs.addCount(idx);
 	    patternProb = assBinProbs.avprobs[idx];
 	}
-    } catch (InvalidNucleotideError e) {
+    } catch (InvalidNucleotideError &e) {
 	patternProb = 0.001 * pow(.25, (int) Constant::ass_size());
     }
 
@@ -1233,7 +1233,7 @@ Double IntronModel::dSSProb(int base, bool forwardStrand){
 	else
 	    memoR[base] = dssprob;
 	return dssprob; // standard HMM probabilities
-    } catch (InvalidNucleotideError e) {
+    } catch (InvalidNucleotideError &e) {
 	return 0; // don't predict splice site when there is an unknown nucleotide
     }
 }

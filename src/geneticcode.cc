@@ -172,14 +172,14 @@ void GeneticCode::chooseTranslationTable(int n) {
 char GeneticCode::translate(const char* t) {
     try {
 	return translate(Seq2Int(3)(t));
-    } catch (InvalidNucleotideError) {
+    } catch (InvalidNucleotideError&) {
 	return 'X';
     }
 }
 char GeneticCode::revtranslate(const char* t) {
     try {
 	return translate(Seq2Int(3).rc(t));
-    } catch (InvalidNucleotideError) {
+    } catch (InvalidNucleotideError&) {
 	return 'X';
     }
 }
