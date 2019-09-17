@@ -1,0 +1,12 @@
+# Generation of parameters of tape worm Hymenolepsis microstoma
+# Katharina J. Hoff
+# September 17th 2019
+
+The genome assembly version GCA_000469805.3_HMN_v3 was softmasked for repeats using RepeatScout & CARP.
+
+RNA-Seq reads were sampled from the sequence read archive using VARUS.
+
+BRAKER version 2.1.4 was applied to obtain parameters as follows:
+
+braker.pl --genome=genome.softmasked.fa --softmasking --hints=varus.gff \
+   --species=hymenolepis_microstoma
