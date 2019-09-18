@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/env perl
 ################################################################################
 #
 #   Project: Gene Prediction with Protein Family Patterns 
@@ -33,6 +33,7 @@
 
 
 use strict;
+use warnings;
 use List::Util('sum', 'max');
 use YAML;
 use Getopt::Long;

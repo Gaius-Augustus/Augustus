@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/env perl
 ################################################################################
 #
 #   Name:    block2prfl.pl
@@ -18,6 +18,7 @@
 #
 
 use strict;
+use warnings;
 use File::Basename;
 use List::Util ("min","max","sum");
 use POSIX;
