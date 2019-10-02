@@ -2,7 +2,7 @@
 # Makefile for Augustus
 #
 include ../common.mk
-CXX	= g++
+CXX?=g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
@@ -10,7 +10,7 @@ CXX	= g++
 CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 ${CXXFLAGS} #-DDEBUG -g -ggdb -pg -DDEBUG_STATES
 
 ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))  # if ZIPINPUT is not defined or is something else than 0, false, False or FALSE
-	CXXFLAGS += -DZIPINPUT
+	CPPFLAGS += -DZIPINPUT
 	LIBS    = -lboost_iostreams
 endif
 
@@ -23,7 +23,8 @@ OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o
 ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is not defined or is something else than 0, false, False or FALSE
 	SQLITE   ?= true
 	MYSQL    ?= true
-	CXXFLAGS += -std=c++11 -DCOMPGENEPRED
+	CXXFLAGS += -std=c++11
+	CPPFLAGS += -DCOMPGENEPRED
 	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
@@ -41,7 +42,7 @@ ifneq (,$(findstring $(MYSQL),1 true True TRUE)) # if MYSQL is defined and conta
 	RUNTIME_LIBPATH =
 	INCLS    += -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
 	LIBS     += -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
-	CXXFLAGS += -DM_MYSQL
+	CPPFLAGS += -DM_MYSQL
 	PROGR    += load2db getSeq
 endif
 
@@ -49,7 +50,7 @@ ifneq (,$(findstring $(SQLITE),1 true True TRUE)) # if SQLITE is defined and con
 	# SQLite support
 	LIBS      += -lsqlite3
 	OBJS      += sqliteDB.o
-	CXXFLAGS  += -DM_SQLITE
+	CPPFLAGS  += -DM_SQLITE
 	PROGR     += load2sqlitedb getSeq
 endif
 
@@ -64,7 +65,7 @@ all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 .PHONY: googletest
 
 .cc.o:
-	$(CXX) -c $(CXXFLAGS) -o $@ $< $(INCLS)
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(INCLS)
 
 augustus: augustus.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
@@ -115,10 +116,10 @@ espoca: espoca.cc $(OBJS) $(DUMOBJS)
 	cp espoca ../bin/
 
 info:
-	echo "$(CXXFLAGS)" > $(INFO)
+	echo "$(CXXFLAGS) $(CPPFLAGS)" > $(INFO)
 
 clean:
-	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o  $(INFO)
+	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o $(INFO)
 	cd googletest && ${MAKE} clean
 	cd unittests && ${MAKE} clean
 

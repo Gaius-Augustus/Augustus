@@ -18,7 +18,7 @@ SAMTOOLS = /usr/include/samtools
 INCLUDES = -I$(SAMTOOLS) -I.
 # replace -lbam with the following in case you have your own samtools library: $(SAMTOOLS)/libbam.a
 LIBS=-lbam -lcurses -lm -lz -lpthread
-CC=gcc
+CC?=gcc
 
 all:$(PROGRAM) $(OBJECTS)
 
@@ -26,7 +26,7 @@ $(PROGRAM):$(OBJECTS)
 	$(CC) $(CFLAGS)	$(CPPFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS) 
 
 $(OBJECTS):%.o:%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -c $^ -o $@ $(INCLUDES)
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(INCLUDES)
 
 clean:
 	rm -f *.o checkTargetSortedness
