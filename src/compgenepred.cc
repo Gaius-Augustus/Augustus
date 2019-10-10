@@ -605,3 +605,149 @@ void CompGenePred::start(){
   } 
 }
 
+
+
+/*
+*   added by Giovanna Migliorelli 10.10.2019 
+*   functions to print the MSA associated with some ortho exon
+*/
+
+// conversion from ec to chr coordinate sys (output coordinates are invariably referred to the positive strand if referToPlus = true)
+void ec2Chr(int ecStart, int ecEnd, int offset, int chrLen, Strand strand, int& chrStart, int& chrEnd, bool referToPlus){
+	if(!referToPlus || strand == Strand::plusstrand){
+		chrStart = offset + ecStart;
+		chrEnd = offset + ecEnd;
+	}
+	else{
+		chrStart = chrLen - 1 - offset - ecEnd;
+		chrEnd = chrLen - 1 - offset - ecStart;
+	}
+}
+
+void printMSA_printEC_helper(ostream& os, GeneMSA* geneRange, int sp, vector<string>& speciesNames, RandSeqAccess* rsa, int chrStart, int chrEnd, AnnoSequence* as, bool expandUnaligned){
+
+	os << speciesNames[sp] << "\t\t";
+	
+	vector<int> pattern;
+	
+	int res = geneRange->getAlignment()->rows[sp]->getSeqInfo(chrStart, chrEnd, pattern);
+	
+	if(res>-1){
+		if(pattern.empty()){
+			os << " erroneous condition due to empty pattern: " << chrStart << " " << chrEnd << " " << res;
+			os << endl;
+		}
+		else{
+
+			for(int pos = 0, i, k=0;k<pattern.size();k+=3){
+				if(expandUnaligned){
+					for(i=0;i<pattern[k];++i){
+						os << "X";
+						++pos;
+					}
+				}
+				else{	
+					if(pattern[k]>0){			
+						os << "X" << pattern[k];
+						pos += pattern[k];
+					}
+				}
+						
+				for(i=0;i<pattern[k+2];++i){
+					os << "-";
+				}
+				
+				for(i=0;i<pattern[k+1];++i){
+					os << as->sequence[pos];
+					++pos;
+				}
+			}
+		}
+	}
+	else 
+		os << " erroneous condition";
+
+	os << endl;
+}
+
+
+void printMSA_printEC(ostream& os, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, int sp, ExonCandidate* ec, bool downcase, bool expandUnaligned){
+
+	int chrStart, chrEnd, chrStartStranded, chrEndStranded;
+	string seqID = geneRange->getSeqID(sp);
+	Strand strand;
+	AnnoSequence* as = NULL;
+	
+
+	// coordinate conversion from exon cand space to chromosome space (we want coo referred to the + strand because getSeq from RandSeqAccess requires so)
+	ec2Chr(ec->begin, ec->end, geneRange->getOffsets(sp), rsa->getChrLen(sp, seqID), geneRange->getStrand(sp), chrStart, chrEnd, true);
+	
+	if(geneRange->getStrand(sp) == plusstrand){
+		if(isPlusExon(ec->type))
+			strand = plusstrand;
+		else 
+			strand = minusstrand;
+	}
+	else{
+		if(isPlusExon(ec->type))
+			strand = minusstrand;
+		else 
+			strand = plusstrand;
+	}
+
+	as = rsa->getSeq(speciesNames[sp], seqID, chrStart, chrEnd, strand);
+	
+	if(as){
+		if(downcase){
+			for(int k=0;k<as->length;++k){
+				switch(as->sequence[k]){
+					case 'A':
+						as->sequence[k] = 'a';
+					break;
+					case 'C':
+						as->sequence[k] = 'c';
+					break;
+					case 'G':
+						as->sequence[k] = 'g';
+					break;
+					case 'T':
+						as->sequence[k] = 't';
+					break;
+				}
+			}
+		}
+
+		// coordinate conversion from exon cand space to chromosome space (in this case coordinates are referred to the strand the ec lies on
+		// because all methods dealing with the alignment usually require so)		
+		ec2Chr(ec->begin, ec->end, geneRange->getOffsets(sp), rsa->getChrLen(sp, seqID), geneRange->getStrand(sp), chrStartStranded, chrEndStranded, false);
+		printMSA_printEC_helper(os, geneRange, sp, speciesNames, rsa, chrStartStranded, chrEndStranded, as, expandUnaligned);
+		delete as;
+	}
+}
+
+void printMSA(ostream& os, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, OrthoExon& oe, bool extraInfo, bool expandUnaligned){
+	if(rsa==NULL || geneRange==NULL)
+		return;
+
+	int lenMod3;
+	ExonType etype;
+	
+	for(int sp=0;sp<oe.orthoex.size();++sp){
+		if(oe.orthoex[sp] != NULL){
+			etype = oe.orthoex[sp]->getExonType();
+			lenMod3 = (oe.orthoex[sp]->getEnd() - oe.orthoex[sp]->getStart() + 1) % 3;
+			break;
+		}
+	}
+
+	if(extraInfo)
+		os << "Printing OE (type: " << stateExonTypeIdentifiers[etype] << " lenMod3: " << lenMod3 << ")" << endl;
+	
+	for(int sp=0;sp<oe.orthoex.size();++sp){
+		if(oe.orthoex[sp] != NULL){
+			printMSA_printEC(os, speciesNames, rsa, geneRange, sp, oe.orthoex[sp], true, true);
+		}
+	}	
+	os << endl;
+}
+
