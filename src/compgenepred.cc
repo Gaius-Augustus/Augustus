@@ -691,7 +691,7 @@ void printMSA_printEC(ostream& os, vector<string>& speciesNames, RandSeqAccess* 
 	
 
 	// coordinate conversion from exon cand space to chromosome space (we want coo referred to the + strand because getSeq from RandSeqAccess requires so)
-	ec2Chr(ec->begin, ec->end, geneRange->getOffsets(sp), rsa->getChrLen(sp, seqID), geneRange->getStrand(sp), chrStart, chrEnd, true);
+	ec2Chr(ec->begin, ec->end, geneRange->getOffsets()[sp], rsa->getChrLen(sp, seqID), geneRange->getStrand(sp), chrStart, chrEnd, true);
 	
 	if(geneRange->getStrand(sp) == plusstrand){
 		if(isPlusExon(ec->type))
