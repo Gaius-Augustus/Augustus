@@ -730,7 +730,7 @@ void printMSA_printEC(ostream& os, vector<string>& speciesNames, RandSeqAccess* 
 
 		// coordinate conversion from exon cand space to chromosome space (in this case coordinates are referred to the strand the ec lies on
 		// because all methods dealing with the alignment usually require so)		
-		ec2Chr(ec->begin, ec->end, geneRange->getOffsets(sp), rsa->getChrLen(sp, seqID), geneRange->getStrand(sp), chrStartStranded, chrEndStranded, false);
+		ec2Chr(ec->begin, ec->end, geneRange->getOffsets()[sp], rsa->getChrLen(sp, seqID), geneRange->getStrand(sp), chrStartStranded, chrEndStranded, false);
 		printMSA_printEC_helper(os, geneRange, sp, speciesNames, rsa, chrStartStranded, chrEndStranded, as, expandUnaligned);
 		delete as;
 	}
