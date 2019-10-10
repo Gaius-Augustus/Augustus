@@ -885,8 +885,8 @@ int AlignmentRow::getSeqInfo(int chrStart, int chrEnd, vector<int>& pattern){
 	while(to<frags.size() && frags[to].chrPos+frags[to].len-1 < chrEnd)
 		++to;
 
-	if(to==frags.size() || (to == frags.size()-1 && chrEnd > frags.back().chrPos+frags.back().len - 1))// should never be the case
-		return -2;
+	if(to==frags.size() || (to == frags.size()-1 && chrEnd > frags.back().chrPos+frags.back().len - 1))
+		return -2;	// should never be the case
 
 	start = chrStart;
 	pt = from;
@@ -895,23 +895,20 @@ int AlignmentRow::getSeqInfo(int chrStart, int chrEnd, vector<int>& pattern){
 		if(pt == from){			
 			if(start<frags[pt].chrPos){
 				pattern.push_back(frags[pt].chrPos - start); 	// unaligned
-				pattern.push_back(frags[pt].len);		// aligned nts
+				pattern.push_back(frags[pt].len);				// aligned nts
 			}
 			else{ 
-				pattern.push_back(0); 						// unaligned
+				pattern.push_back(0); 											// unaligned
 				pattern.push_back(frags[pt].chrPos + frags[pt].len - start); 	// aligned nts
-			
-
 			}
 
 			pattern.push_back(0); // gaps
 		}
 		else{
 			pattern.push_back(frags[pt].chrPos - (frags[pt-1].chrPos + frags[pt-1].len -1) - 1); 	// unaligned
-			pattern.push_back(frags[pt].len);							// aligned nts
+			pattern.push_back(frags[pt].len);														// aligned nts
 			pattern.push_back(frags[pt].aliPos - (frags[pt-1].aliPos + frags[pt-1].len - 1) - 1); 	// gaps
 		}
-		 
 		
 		start = frags[pt].chrPos + frags[pt].len;
 		++pt;
@@ -920,20 +917,16 @@ int AlignmentRow::getSeqInfo(int chrStart, int chrEnd, vector<int>& pattern){
 	// pt == to	
 	if(chrEnd<frags[to].chrPos){
 		pattern.push_back(chrEnd-start+1); 	// unaligned
-		pattern.push_back(0); 			// aligned nts
+		pattern.push_back(0); 				// aligned nts
 	}
 	else{
 		if (start < frags[pt].chrPos){
 			pattern.push_back(frags[pt].chrPos - start); 		// unaligned
 			pattern.push_back(chrEnd - frags[pt].chrPos + 1);	// aligned nts
-			
-			
-
 		}
 		else{
-			pattern.push_back(0);			// unaligned
+			pattern.push_back(0);					// unaligned
 			pattern.push_back(chrEnd - start + 1);	// aligned nts	
-
 		}
 	}
 	
@@ -943,7 +936,6 @@ int AlignmentRow::getSeqInfo(int chrStart, int chrEnd, vector<int>& pattern){
 	}
 	else{
 		pattern.push_back(frags[pt].aliPos - (frags[pt-1].aliPos + frags[pt-1].len - 1) - 1); // gaps
-		
 	}
 	
 	return 0;
