@@ -77,6 +77,9 @@ public:
     // convert from alignment to chromosomal position (inverse function of getAliPos())
     int getChrPos(int aliPos, vector<fragment>::const_iterator from);
     int getChrPos(int aliPos) { return getChrPos(aliPos, frags.begin()); }
+	
+	// retrieve a pattern describing blocks of (unaligned, gaps, aligned nts) to rebuild the alignment 
+	int getSeqInfo(int chrStart, int chrEnd, vector<int>& pattern);
     
     // data members
     string seqID; // e.g. chr21
