@@ -681,7 +681,6 @@ void printMSA_printEC_helper(ostream& os, GeneMSA* geneRange, int sp, vector<str
 	os << endl;
 }
 
-
 void printMSA_printEC(ostream& os, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, int sp, ExonCandidate* ec, bool downcase, bool expandUnaligned){
 
 	int chrStart, chrEnd, chrStartStranded, chrEndStranded;
