@@ -866,5 +866,89 @@ void Alignment::pack(){
 }
 
 
+/*
+*   added by Giovanna Migliorelli 10.10.2019 
+*   The following function allows to retrieve a pattern from the alignment containing blocks of unaligned nts,gaps,aligned nts 
+*   todo : the function assumes the first position not to fall within gaps (relax this constraint to make the code robust)
+*   formatting the code according to Augustus style guidelines
+*/
+int AlignmentRow::getSeqInfo(int chrStart, int chrEnd, vector<int>& pattern){
+	int from = 0, to, pt, start;
+	while(from<frags.size() && frags[from].chrPos+frags[from].len-1 < chrStart){
+		++from;
+	}
+	
+	if(from == 0 && chrStart < frags[0].chrPos) // should never be the case
+		return -1;
+
+	to = from;
+	while(to<frags.size() && frags[to].chrPos+frags[to].len-1 < chrEnd)
+		++to;
+
+	if(to==frags.size() || (to == frags.size()-1 && chrEnd > frags.back().chrPos+frags.back().len - 1))// should never be the case
+		return -2;
+
+	start = chrStart;
+	pt = from;
+
+	while(pt<to){
+		if(pt == from){			
+			if(start<frags[pt].chrPos){
+				pattern.push_back(frags[pt].chrPos - start); 	// unaligned
+				pattern.push_back(frags[pt].len);		// aligned nts
+			}
+			else{ 
+				pattern.push_back(0); 						// unaligned
+				pattern.push_back(frags[pt].chrPos + frags[pt].len - start); 	// aligned nts
+			
+
+			}
+
+			pattern.push_back(0); // gaps
+		}
+		else{
+			pattern.push_back(frags[pt].chrPos - (frags[pt-1].chrPos + frags[pt-1].len -1) - 1); 	// unaligned
+			pattern.push_back(frags[pt].len);							// aligned nts
+			pattern.push_back(frags[pt].aliPos - (frags[pt-1].aliPos + frags[pt-1].len - 1) - 1); 	// gaps
+		}
+		 
+		
+		start = frags[pt].chrPos + frags[pt].len;
+		++pt;
+	}
+	
+	// pt == to	
+	if(chrEnd<frags[to].chrPos){
+		pattern.push_back(chrEnd-start+1); 	// unaligned
+		pattern.push_back(0); 			// aligned nts
+	}
+	else{
+		if (start < frags[pt].chrPos){
+			pattern.push_back(frags[pt].chrPos - start); 		// unaligned
+			pattern.push_back(chrEnd - frags[pt].chrPos + 1);	// aligned nts
+			
+			
+
+		}
+		else{
+			pattern.push_back(0);			// unaligned
+			pattern.push_back(chrEnd - start + 1);	// aligned nts	
+
+		}
+	}
+	
+	if(to == from){
+		pattern.push_back(0); // gaps
+		
+	}
+	else{
+		pattern.push_back(frags[pt].aliPos - (frags[pt-1].aliPos + frags[pt-1].len - 1) - 1); // gaps
+		
+	}
+	
+	return 0;
+}
+
+
 int MsaSignature::maxSigStrLen = 0;
 
