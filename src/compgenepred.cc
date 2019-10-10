@@ -22,6 +22,17 @@
 #include <sys/stat.h>
 
 
+/*
+*   added by Giovanna Migliorelli 10.10.2019 
+*   headers for functions in charge of printing MSA associated with some OE
+*/
+void ec2Chr(int ecStart, int ecEnd, int offset, int chrLen, Strand strand, int& chrStart, int& chrEnd, bool referToPlus);
+void printMSA_printEC_helper(ostream& os, GeneMSA* geneRange, int sp, vector<string>& speciesNames, RandSeqAccess* rsa, int chrStart, int chrEnd, AnnoSequence* as, bool expandUnaligned);
+void printMSA_printEC(ostream& os, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, int sp, ExonCandidate* ec, bool downcase, bool expandUnaligned);
+void printMSA(ostream& os, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, OrthoExon& oe, bool extraInfo, bool expandUnaligned);
+
+
+
 CompGenePred::CompGenePred() : tree(Constant::treefile) {
 
     rsa = NULL;
