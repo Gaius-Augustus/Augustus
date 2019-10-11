@@ -24,13 +24,21 @@
 
 /*
 *   added by Giovanna Migliorelli 10.10.2019 
-*   headers for functions in charge of printing MSA associated with some OE
+*   signatures for functions in charge of PRINTING MSA associated with some OE
 */
 void ec2Chr(int ecStart, int ecEnd, int offset, int chrLen, Strand strand, int& chrStart, int& chrEnd, bool referToPlus);
 void printMSA_printEC_helper(ostream& os, GeneMSA* geneRange, int sp, vector<string>& speciesNames, RandSeqAccess* rsa, int chrStart, int chrEnd, AnnoSequence* as, bool expandUnaligned);
 void printMSA_printEC(ostream& os, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, int sp, ExonCandidate* ec, bool downcase, bool expandUnaligned);
 void printMSA(ostream& os, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, OrthoExon& oe, bool extraInfo, bool expandUnaligned);
 
+
+/*
+*   added by Giovanna Migliorelli 11.10.2019 
+*   signatures for functions in charge of RETRIEVING MSA associated with some OE as a vector of strings
+*/
+bool getMSA_getEC_helper(vector<string>& msa, GeneMSA* geneRange, int sp, vector<string>& speciesNames, RandSeqAccess* rsa, int chrStart, int chrEnd, AnnoSequence* as, bool includeUnaligned);
+void getMSA_getEC(vector<string>& msa, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, int sp, ExonCandidate* ec, bool downcase, bool includeUnaligned);
+void getMSA(vector<string>& msa, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, OrthoExon& oe, bool downcase, bool includeUnaligned);
 
 
 CompGenePred::CompGenePred() : tree(Constant::treefile) {
@@ -635,6 +643,7 @@ void ec2Chr(int ecStart, int ecEnd, int offset, int chrLen, Strand strand, int& 
 	}
 }
 
+// helper function to print MSA
 void printMSA_printEC_helper(ostream& os, GeneMSA* geneRange, int sp, vector<string>& speciesNames, RandSeqAccess* rsa, int chrStart, int chrEnd, AnnoSequence* as, bool expandUnaligned){
 
 	os << speciesNames[sp] << "\t\t";
@@ -681,6 +690,7 @@ void printMSA_printEC_helper(ostream& os, GeneMSA* geneRange, int sp, vector<str
 	os << endl;
 }
 
+// helper function to print MSA
 void printMSA_printEC(ostream& os, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, int sp, ExonCandidate* ec, bool downcase, bool expandUnaligned){
 
 	int chrStart, chrEnd, chrStartStranded, chrEndStranded;
@@ -735,6 +745,7 @@ void printMSA_printEC(ostream& os, vector<string>& speciesNames, RandSeqAccess* 
 	}
 }
 
+// main function to print MSA
 void printMSA(ostream& os, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, OrthoExon& oe, bool extraInfo, bool expandUnaligned){
 	if(rsa==NULL || geneRange==NULL)
 		return;
@@ -759,5 +770,125 @@ void printMSA(ostream& os, vector<string>& speciesNames, RandSeqAccess* rsa, Gen
 		}
 	}	
 	os << endl;
+}
+
+
+/*
+*   added by Giovanna Migliorelli 11.10.2019 
+*   alternative version of printMSA which allows to get the MSA as a vector of strings instead of printing it
+*/
+
+// helper function to get MSA : from the ec sequence and frags list the alignment is derived (it includes unaligned parts optionally)
+bool getMSA_getEC_helper(vector<string>& msa, GeneMSA* geneRange, int sp, vector<string>& speciesNames, RandSeqAccess* rsa, int chrStart, int chrEnd, AnnoSequence* as, bool includeUnaligned){
+
+	vector<int> pattern;
+	
+	int res = geneRange->getAlignment()->rows[sp]->getSeqInfo(chrStart, chrEnd, pattern);
+	
+	if(res<0 || pattern.empty())
+		return false;
+
+
+	int alilen = 0;
+	for(int k=0;k<pattern.size();++k){
+		if(includeUnaligned || k%3 != 0)
+			alilen += pattern[k];
+	}
+
+	msa[sp].resize(alilen);
+	
+	for(int alipos = 0, pos = 0, i, k=0;k<pattern.size();k+=3){
+
+		if(includeUnaligned){
+			for(i=0;i<pattern[k];++i){
+				msa[sp][alipos] = 'X';
+				++pos;
+				++alipos;
+			}
+		}
+						
+		for(i=0;i<pattern[k+2];++i){
+			msa[sp][alipos] = '-';
+			++alipos;			
+		}
+		
+		for(i=0;i<pattern[k+1];++i){
+			msa[sp][alipos] = as->sequence[pos];
+			++pos;
+			++alipos;
+		}
+	}
+
+	return true;	
+}
+
+// helper function to get MSA : retrieves ec sequence
+void getMSA_getEC(vector<string>& msa, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, int sp, ExonCandidate* ec, bool downcase, bool includeUnaligned){
+
+	int chrStart, chrEnd, chrStartStranded, chrEndStranded;
+	string seqID = geneRange->getSeqID(sp);
+	Strand strand;
+	AnnoSequence* as = NULL;
+	
+
+	// coordinate conversion from exon cand space to chromosome space (we want coo referred to the + strand because getSeq from RandSeqAccess requires so)
+	ec2Chr(ec->begin, ec->end, geneRange->getOffsets()[sp], rsa->getChrLen(sp, seqID), geneRange->getStrand(sp), chrStart, chrEnd, true);
+	
+	if(geneRange->getStrand(sp) == plusstrand){
+		if(isPlusExon(ec->type))
+			strand = plusstrand;
+		else 
+			strand = minusstrand;
+	}
+	else{
+		if(isPlusExon(ec->type))
+			strand = minusstrand;
+		else 
+			strand = plusstrand;
+	}
+
+	as = rsa->getSeq(speciesNames[sp], seqID, chrStart, chrEnd, strand);
+	
+	if(as){
+		if(downcase){
+			for(int k=0;k<as->length;++k){
+				switch(as->sequence[k]){
+					case 'A':
+						as->sequence[k] = 'a';
+					break;
+					case 'C':
+						as->sequence[k] = 'c';
+					break;
+					case 'G':
+						as->sequence[k] = 'g';
+					break;
+					case 'T':
+						as->sequence[k] = 't';
+					break;
+				}
+			}
+		}
+
+		// coordinate conversion from exon cand space to chromosome space (in this case coordinates are referred to the strand the ec lies on
+		// because all methods dealing with the alignment usually require so)
+		
+		ec2Chr(ec->begin, ec->end, geneRange->getOffsets()[sp], rsa->getChrLen(sp, seqID), geneRange->getStrand(sp), chrStartStranded, chrEndStranded, false);
+		getMSA_getEC_helper(msa, geneRange, sp, speciesNames, rsa, chrStartStranded, chrEndStranded, as, includeUnaligned);
+		delete as;
+	}
+}
+
+// main function to get the MSA form some OE
+void getMSA(vector<string>& msa, vector<string>& speciesNames, RandSeqAccess* rsa, GeneMSA* geneRange, OrthoExon& oe, bool downcase, bool includeUnaligned){
+	if(rsa==NULL || geneRange==NULL)
+		return;
+
+	msa.resize(speciesNames.size());
+
+	for(int sp=0;sp<oe.orthoex.size();++sp){
+		if(oe.orthoex[sp] != NULL){
+			getMSA_getEC(msa, speciesNames, rsa, geneRange, sp, oe.orthoex[sp], downcase, includeUnaligned);
+		}
+	}	
 }
 
