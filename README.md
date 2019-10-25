@@ -68,7 +68,7 @@ The following dependencies may be required for AUGUSTUS:
 - For compiling bam2wig:
   - Follow [these instructions](./auxprogs/bam2wig/README.txt)
 - For compiling utrrnaseq:
-  - libboost-all-dev (version must be >Boost_1_49_0)Scripts	dependencies:
+  - libboost-all-dev (version must be >Boost_1_49_0)
 
 ## Compile from sources
 
