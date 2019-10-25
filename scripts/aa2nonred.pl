@@ -200,7 +200,7 @@ if ( $CPU == 1 ) {
         my $pm = new Parallel::ForkManager($CPU);
         foreach ( @splitFiles ) {
             my $pid = $pm->start and next;
-            system("$BLAST_PATH/blastp -query $tempdbname -db $tempdbname > $_.blastout");
+            system("$BLAST_PATH/blastp -query $_ -db $tempdbname > $_.blastout");
             $pm->finish;
         }
         $pm->wait_all_children;
