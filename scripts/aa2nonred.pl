@@ -37,6 +37,7 @@ my $CPU = 1;
 my $diamond;
 my $v = 0;
 my $help;
+my $cmdString;
 
 my $usage = "aa2nonred.pl -- make a protein file non-redundant\n";
 $usage .= "Usage: aa2nonred.pl input.fa output.fa\n";
@@ -177,35 +178,43 @@ my $tempoutfile = "$inputfilename.blastout";
 
 if($diamond){
     if($CPU > 1){
-        system("$DIAMOND_PATH/diamond makedb --in $tempdbname -d $tempdbname --threads $CPU");
+        $cmdString = "$DIAMOND_PATH/diamond makedb --in $tempdbname -d $tempdbname --threads $CPU";
+        system($cmdString) == 0 or die("ERROR in file " . __FILE__ . " at line " . __LINE__ ."\nFailed to execute: $cmdString!\n");
     }else{
-        system("$DIAMOND_PATH/diamond makedb --in $tempdbname -d $tempdbname --threads 1");
+        $cmdString = "$DIAMOND_PATH/diamond makedb --in $tempdbname -d $tempdbname --threads 1";
+        system($cmdString) == 0 or die("ERROR in file " . __FILE__ . " at line " . __LINE__ ."\nFailed to execute: $cmdString!\n");
     }
 }else{
     ## NCBI blast
-    system("$BLAST_PATH/makeblastdb -in $tempdbname -dbtype prot -parse_seqids -out $tempdbname");
+    $cmdString = "$BLAST_PATH/makeblastdb -in $tempdbname -dbtype prot -parse_seqids -out $tempdbname";
+    system($cmdString) == 0 or die("ERROR in file " . __FILE__ . " at line " . __LINE__ ."\nFailed to execute: $cmdString!\n");
 }
 
 if ( $CPU == 1 ) {
     if($diamond){
-        system("$DIAMOND_PATH/diamond blastp --db $tempdbname --outfmt 0 --query $tempdbname --out $tempoutfile")
+        $cmdString = "$DIAMOND_PATH/diamond blastp --db $tempdbname --outfmt 0 --query $tempdbname --out $tempoutfile";
+        system($cmdString) == 0 or die("ERROR in file " . __FILE__ . " at line " . __LINE__ ."\nFailed to execute: $cmdString!\n");
 
     }else{
-        system("$BLAST_PATH/blastp -query $tempdbname -db $tempdbname > $tempoutfile");
+        $cmdString = "$BLAST_PATH/blastp -query $tempdbname -db $tempdbname > $tempoutfile";
+        system($cmdString) == 0 or die("ERROR in file " . __FILE__ . " at line " . __LINE__ ."\nFailed to execute: $cmdString!\n");
     }
 }else{
     if($diamond){
-        system("$DIAMOND_PATH/diamond blastp --db $tempdbname --outfmt 0 --query $tempdbname --threads $CPU --out $tempoutfile");
+        $cmdString = "$DIAMOND_PATH/diamond blastp --db $tempdbname --outfmt 0 --query $tempdbname --threads $CPU --out $tempoutfile";
+        system($cmdString) == 0 or die("ERROR in file " . __FILE__ . " at line " . __LINE__ ."\nFailed to execute: $cmdString!\n");
     }else{
         my $pm = new Parallel::ForkManager($CPU);
         foreach ( @splitFiles ) {
             my $pid = $pm->start and next;
-            system("$BLAST_PATH/blastp -query $_ -db $tempdbname > $_.blastout");
+            $cmdString = "$BLAST_PATH/blastp -query $_ -db $tempdbname > $_.blastout";
+            system($cmdString) == 0 or die("ERROR in file " . __FILE__ . " at line " . __LINE__ ."\nFailed to execute: $cmdString!\n");
             $pm->finish;
         }
         $pm->wait_all_children;
         foreach ( @splitFiles ) {
-            system("cat $_.blastout >> $tempoutfile");
+            $cmdString = "cat $_.blastout >> $tempoutfile";
+            system($cmdString) == 0 or die("ERROR in file " . __FILE__ . " at line " . __LINE__ ."\nFailed to execute: $cmdString!\n");
         }
     }
 }
