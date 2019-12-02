@@ -65,10 +65,11 @@ The following dependencies may be required for AUGUSTUS:
   - libmysql++-dev
 - For compiling bam2hints and filterBam:
   - libbamtools-dev
-- For compiling bam2wig:
-  - Follow [these instructions](./auxprogs/bam2wig/README.txt)
 - For compiling utrrnaseq:
   - libboost-all-dev (version must be >Boost_1_49_0)
+- For compiling bam2wig:
+  - Follow [these instructions](./auxprogs/bam2wig/README.txt). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use `bamToWig.py` to accomplish the same task.
+
 
 ## Compile from sources
 
