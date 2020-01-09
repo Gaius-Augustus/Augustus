@@ -119,29 +119,7 @@ PATH=&ltinstallation path&gt/augustus/trunks/bin:&ltinstallation path&gt/augustu
 Before starting with the tutorial make sure that following executables/scripts from the Augustus package are in the your global path<br><br>
 <ul>
 <li>augustus</li>
-<li>homGeneMapping
-<a href="javascript:onoff('hgm')" class="dlink"><span id="hgm" title="hgmd" class="dcross">[+]</span>
-<span class="dtitle">(Make sure SQLite database support is enabled...)</span></a> <br>
-<div id="hgmd" class="details" style="display:none;">
-<h2 id="abinitiopred">Dependencies</h2>
-<ul>
-<li><a href="http://www.sqlite.org/">SQLite</a> (tested with version 3.8.5)<br>
-<span class="assignment">Install</span> via package manager, on UBUNTU/Debian linux</span>
-<pre class="code">
-sudo apt-get install libsqlite3-dev
-</pre>
-</li>
-</ul>
-<span class="assignment">Open</span> the <tt>Makefile</tt> file in the <tt>auxprogs/homGeneMapping/src</tt> directory and enable access to SQLite databases by uncommenting following line
-<pre class="code">
-SQLITE = true
-</pre>
-Then, <span class="assignment">Recompile</span> HomGeneMapping from within the <tt>auxprogs/homGeneMapping</tt> directory
-<pre class="code">
-make clean all
-</pre>
-</div
-</li>
+<li>homGeneMapping</li>
 <li>load2sqlitedb</li>
 <li>joingenes</li>
 <li>gtf2bed.pl</li>
