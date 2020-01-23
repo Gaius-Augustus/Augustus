@@ -5,8 +5,8 @@
  *          https://opensource.org/licenses/artistic-license-1.0
  */
 
-#ifndef _COMPGENEPRED
-#define _COMPGENEPRED
+#ifndef _COMPGENEPRED_HH
+#define _COMPGENEPRED_HH
 
 // project includes
 #include "extrinsicinfo.hh"
@@ -30,4 +30,4 @@ public:
     PhyloTree tree;
 };
 
-#endif  // _COMPGENEPRED
+#endif  // _COMPGENEPRED_HH

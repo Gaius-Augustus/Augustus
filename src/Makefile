@@ -8,13 +8,6 @@ CXX	= g++
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
 CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 ${CXXFLAGS}# -DDEBUG -g -ggdb -pg -DDEBUG_STATES
-ifdef SQLITE
-	COMPGENEPRED = true
-endif
-
-ifdef MYSQL
-	COMPGENEPRED = true
-endif
 
 ifdef ZIPINPUT
 	CXXFLAGS += -DZIPINPUT
@@ -41,22 +34,18 @@ TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # conte
 PROGR	= augustus etraining prepareAlign fastBlockSearch
 INFO    = cxxflags
 
-ifdef MYSQL
+# MySQL support
 # replace RUNTIME_LIBPATH with your own run-time libpath if mysql++ is not installed system-wide, e.g.
 # RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib 
 RUNTIME_LIBPATH = 
 INCLS	+= -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
 LIBS 	+=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
-CXXFLAGS  += -DAMYSQL
 PROGR   += load2db getSeq
-endif
 
-ifdef SQLITE
+# SQLite support
 LIBS	  += -lsqlite3
 OBJS	  += sqliteDB.o
-CXXFLAGS  += -DSQLITE
 PROGR     += load2sqlitedb getSeq
-endif
 
 ifdef COMPGENEPRED
 PROGR     += espoca

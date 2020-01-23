@@ -19,8 +19,8 @@ alignment of the genomes and prints a summary for each gene, e.g.
 * gcc 4.6 or newer
 * HAL Tools (available at https://github.com/ComparativeGenomicsToolkit/hal)
 * Boost graph library for option --printHomologs that clusters transcripts into groups of homologs
-  Install the package libboost-graph-dev with your package manager
-  (optional: comment BOOST = true in src/Makefile if the Boost graph library is unavailable)
+  Install the package libboost-all-dev with your package manager
+  (optional: set BOOST = false in src/Makefile if the Boost library is unavailable and option --printHomologs is not required)
 * SQLite library for option --dbaccess that enables the retrieval hints from a database:
   Install the package libsqlite3-dev with your package manager or 
   download the SQLite source code from http://www.sqlite.org/download.html 

@@ -23,4 +23,4 @@ test:
 	../../bin/load2sqlitedb --noIdx --species=hg19 --dbaccess=test/homGeneMapping_hints.db examples/gtfs/human.hints.gff
 	../../bin/load2sqlitedb --noIdx --species=mm9  --dbaccess=test/homGeneMapping_hints.db examples/gtfs/mouse.hints.gff
 	../../bin/load2sqlitedb --makeIdx --dbaccess=test/homGeneMapping_hints.db
-	(cd examples; ../../../bin/homGeneMapping --noDupes --gtfs=../test/gtffilenames_without_hints.tbl --dbaccess=../test/homGeneMapping_hints.db --halfile=aln.hal --tmpdir=../test/tmp_sqllite_hints --outdir=../test/outdir_sqllite_hints --printHomologs=../test/homologs_sqllite_hints.txt > ../test/homGeneMapping_sqllite_hints.out)
+	(cd examples; ../../../bin/homGeneMapping --noDupes --gtfs=../test/gtffilenames_without_hints.tbl --dbaccess=../test/homGeneMapping_hints.db --halfile=aln.hal --tmpdir=../test/tmp_sqlite_hints --outdir=../test/outdir_sqlite_hints --printHomologs=../test/homologs_sqlite_hints.txt > ../test/homGeneMapping_sqlite_hints.out)

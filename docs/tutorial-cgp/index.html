@@ -41,23 +41,16 @@ You don't have to read this. If you get bored with the speed of the tutorial the
 <li><a href="http://bioinf.uni-greifswald.de/augustus/binaries/">Augustus</a><br><br>
 
 <a href="javascript:onoff('cgp')" class="dlink"><span id="cgp" title="cgpd" class="dcross">[+]</span>
-<span class="dtitle">Installing Augustus-CGP...</span></a> <br>
+<span class="dtitle">Augustus-CGP dependencies ...</span></a> <br>
 <div id="cgpd" class="details" style="display:none;">
 <a href="javascript:onoff('do')" class="dlink"><span id="do" title="dod" class="dcross">[+]</span>
-<span class="dtitle">Enable the cgp mode in Augustus...</span></a> <br>
+<span class="dtitle">dependencies</span></a> <br><br>
 <div id="dod" class="details" style="display:none;">
-<h2 id="abinitiopred">Dependencies</h2>
 <ul>
 <li><a href="http://www.gnu.org/software/gsl/">GSL</a> (GNU Scientific Library)</br>
-<span class="assignment">Download</span> from ftp server and <span class="assignment">install</span> as
-instructed
+<span class="assignment">Install</span> via package manager, on UBUNTU/Debian linux</span>
 <pre class="code">
-wget http://ftp.u-tx.net/gnu/gsl/gsl-latest.tar.gz
-tar -xzf gsl-latest.tar.gz 
-cd gsl-2.1/
-./configure
-make
-sudo make install
+sudo apt-get install libgsl-dev
 </pre>
 </li>
 <li><a href="http://www.gnu.org/software/gsl/">Boost C++ Libraries</a> (>= V1_46_1)<br>
@@ -78,42 +71,11 @@ sudo apt-get install libsuitesparse-dev liblpsolve55-dev
 </pre>
 </li>
 </ul>
-<span class="assignment">Open</span> the <tt>common.mk</tt> file in the <tt>Augustus</tt> directory and enable the cgp mode
-by uncommenting following line
-<pre class="code">
-COMGENEPRED = true
-</pre>
-Then, <span class="assignment">Recompile</span> Augustus from within the <tt>augustus</tt> directory
-<pre class="code">
-make clean all
-</pre>
 </div>
-<a href="javascript:onoff('sq')" class="dlink"><span id="sq" title="sqd" class="dcross">[+]</span>
-<span class="dtitle">Enable SQLite database support...</span></a> <br>
-<div id="sqd" class="details" style="display:none;">
-<h2 id="abinitiopred">Dependencies</h2>
-<ul>
-<li><a href="http://www.sqlite.org/">SQLite</a> (tested with version 3.8.5)<br>
-<span class="assignment">Install</span> via package manager, on UBUNTU/Debian linux</span>
-<pre class="code">
-sudo apt-get install libsqlite3-dev
-</pre>
-</li>
-</ul>
-<span class="assignment">Open</span> the <tt>common.mk</tt> file in the <tt>Augustus</tt> directory and enable access to SQLite databases
-by uncommenting following line
-<pre class="code">
-SQLITE = true
-</pre>
-Then, <span class="assignment">Recompile</span> Augustus from within the <tt>augustus</tt> directory
-<pre class="code">
-make clean all
-</pre>
-</div><br>
 For convenience, you may want to , <span class="assignment">run</span> or <span class="assignment">add</span> this to your .bashrc file
 <pre class="code">
-export AUGUSTUS_CONFIG_PATH=&ltinstallation path&gt/augustus/trunks/config/
-PATH=&ltinstallation path&gt/augustus/trunks/bin:&ltinstallation path&gt/augustus/trunks/scripts:$PATH 
+export AUGUSTUS_CONFIG_PATH=&ltinstallation path&gt/augustus/config/
+PATH=&ltinstallation path&gt/augustus/bin:&ltinstallation path&gt/augustus/scripts:$PATH 
 </pre>
 </div><br>
 Before starting with the tutorial make sure that following executables/scripts from the Augustus package are in the your global path<br><br>

@@ -28,13 +28,12 @@ ENV PATH="${PATH}:/root/hal/bin"
 RUN apt-get update
 RUN apt-get install -y libgsl-dev liblpsolve55-dev
 RUN apt-get install -y libsqlite3-dev
-RUN apt-get install -y libboost-all-dev libboost-iostreams-dev libboost-graph-dev
+RUN apt-get install -y libboost-all-dev libboost-iostreams-dev
 
 # Clone AUGUSTUS repository
 WORKDIR /root
 RUN git clone https://github.com/Gaius-Augustus/Augustus.git
 WORKDIR /root/Augustus
-RUN sed -i "s/#\s*SQLITE = true/SQLITE = true/g" common.mk
 
 # Build load2sqlitedb
 WORKDIR /root/Augustus/src/
