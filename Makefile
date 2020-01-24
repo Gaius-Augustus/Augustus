@@ -28,12 +28,14 @@ install:
 # for internal purposes:
 release:
 	find . -name "*~" | xargs rm -f
+	rm .travis.yml
+	rm -rf .git
 	rm -f src/makedepend.pl
 	cd docs/tutorial2015/results; ls | grep -v do.sh | grep -v README | xargs rm; cd -
 	rm -r auxprogs/utrrnaseq/input/human-chr19
 	rm -r docs/tutorial-cgp/results/cactusout
 	make clean all
-	rm generic/*.pbl
+	rm config/species/generic/*.pbl
 	cd src/parser; rm Makefile; cd -
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
 
