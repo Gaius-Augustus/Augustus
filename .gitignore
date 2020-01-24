@@ -47,3 +47,6 @@ src/scanner/lex.o
 
 # ignore VS Code configuration files
 .vscode
+
+# ignore generated test output
+examples_test_output/
