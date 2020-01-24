@@ -1,11 +1,8 @@
 #
 # Makefile for homGeneMapping
 #
-# BOOST = true
-
-# set this flag to enable
-# database access for retrieval of hints
-# SQLITE = true
+# comment this flag to disable the usage of the Boost graph library, the option --printHomologs will not be available
+BOOST = true
 
 CC      = g++
 
@@ -15,19 +12,12 @@ CC      = g++
 CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -std=c++0x -pthread -O2 ${CFLAGS} # -DDEBUG -g -ggdb -pg
 
 INCLS	= -I../include
-LIBS	=
-OBJS	= gene.o genome.o
+LIBS	= -lsqlite3 # add the sqlite library path here, if sqlite is not install system-wide
+OBJS	= gene.o genome.o sqliteDB.o
 
 ifdef BOOST
 	CFLAGS += -DBOOST
 	INCLS +=  # add the boost include path here, if boost ist not installed system-wide
-endif
-
-ifdef SQLITE
-INCLS	+=           # add the sqlite include path here, if sqlite is not installed system-wide
-LIBS    += -lsqlite3 # add the sqlite library path here, if sqlite is not install system-wide
-OBJS    += sqliteDB.o
-CFLAGS  += -DSQLITE
 endif
 
 all: homGeneMapping
@@ -45,6 +35,7 @@ homGeneMapping: main.cc $(OBJS)
 
 clean:
 	rm -f homGeneMapping $(OBJS)
+	rm -f ../../../bin/homGeneMapping
 
 main.o : \
 	../include/genome.hh \

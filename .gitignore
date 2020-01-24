@@ -25,7 +25,9 @@ auxprogs/filterBam/src/sumDandIOperations.o
 auxprogs/filterBam/src/sumMandIOperations.o
 auxprogs/homGeneMapping/src/gene.o
 auxprogs/homGeneMapping/src/genome.o
+auxprogs/homGeneMapping/src/sqliteDB.o
 auxprogs/homGeneMapping/src/homGeneMapping
+auxprogs/homGeneMapping/test/
 auxprogs/joingenes/jg_ios.o
 auxprogs/joingenes/jg_transcript.o
 auxprogs/joingenes/joingenes

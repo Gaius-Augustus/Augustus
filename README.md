@@ -45,31 +45,28 @@ docker build -t augustus .
 
 ## Install dependencies
 
-The following dependencies may be required for AUGUSTUS:
-- Optional libraries for gzip compressed input (uncomment ZIPINPUT = TRUE in common.mk):
+The following dependencies are required for AUGUSTUS:
+  - libsqlite3-dev
+  - libmysql++-dev
+- For gzip compressed input:
+ (set ZIPINPUT = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available)
   - libboost-iostreams-dev
   - zlib1g-dev
-- Optional for comparative (multi-species, CGP) AUGUSTUS with SQLite (uncomment COMPGENEPRED = true and SQLITE = true in common.mk):
+- For comparative AUGUSTUS (multi-species, CGP):
+  (Set COMPGENEPRED = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available)
   - libgsl-dev
-  - libboost-graph-dev
   - libboost-all-dev
   - libsuitesparse-dev
   - liblpsolve55-dev
-  - libsqlite3-dev
-- Optional for comparative (mutli-species, CGP) AUGUSTUS with MySQL (uncomment COMPGENEPRED = true and MYSQL = true in common.mk):
-  - libgsl-dev
-  - libboost-graph-dev
-  - libboost-all-dev
-  - libsuitesparse-dev
-  - liblpsolve55-dev
-  - libmysql++-dev
 - For compiling bam2hints and filterBam:
   - libbamtools-dev
 - For compiling utrrnaseq:
   - libboost-all-dev (version must be >Boost_1_49_0)
 - For compiling bam2wig:
   - Follow [these instructions](./auxprogs/bam2wig/README.txt). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use `bamToWig.py` to accomplish the same task.
-
+- For compiling homgenemapping
+  (set BOOST = FALSE in [./auxprogs/homgenemapping/src/Makefile](./auxprogs/homgenemapping/src/Makefile) if the option --printHomologs is not required or the required libraries are not available)
+  - libboost-all-dev
 
 ## Compile from sources
 

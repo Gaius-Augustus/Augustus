@@ -141,7 +141,7 @@ PhyloTree::PhyloTree(string filename){
 	throw ProjectError("PhyloTree::PhyloTree: Could not open file " + filename);
 
 #else
-    throw ProjectError("Comparative gene prediction not possible with this compiled version. Please recompile with flag COMPGENEPRED set in common.mk.");
+    throw ProjectError("Comparative gene prediction not possible with this compiled version. Please recompile with flag COMPGENEPRED = true set in common.mk.");
 #endif
 }
 
