@@ -51,7 +51,8 @@ The following dependencies are required for AUGUSTUS:
 - For gzip compressed input (set ZIPINPUT = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available):
   - libboost-iostreams-dev
   - zlib1g-dev
-- For comparative (multi-species, CGP) AUGUSTUS (set COMPGENEPRED = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available):
+- For comparative AUGUSTUS (multi-species, CGP):
+  (Set COMPGENEPRED = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available)
   - libgsl-dev
   - libboost-all-dev
   - libsuitesparse-dev
