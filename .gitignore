@@ -44,3 +44,6 @@ src/load2sqlitedb
 src/parser/parse.o
 src/prepareAlign
 src/scanner/lex.o
+
+# ignore VS Code configuration files
+.vscode
