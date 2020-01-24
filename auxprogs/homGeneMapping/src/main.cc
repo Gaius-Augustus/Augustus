@@ -329,8 +329,8 @@ map<string,pair<string,string> > getFileNames (string listfile){
     map<string,pair<string, string> > filenames;
     ifstream ifstrm(listfile.c_str());
     if (ifstrm.is_open()){
-        char buf[256];
-	while(ifstrm.getline(buf,255)){
+        char buf[512];
+	while(ifstrm.getline(buf,511)){
 	    stringstream stm(buf);
             string species, genefile;
             if(stm >> species >> genefile){

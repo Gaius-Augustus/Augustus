@@ -65,10 +65,11 @@ The following dependencies may be required for AUGUSTUS:
   - libmysql++-dev
 - For compiling bam2hints and filterBam:
   - libbamtools-dev
-- For compiling bam2wig:
-  - Follow [these instructions](./auxprogs/bam2wig/README.txt)
 - For compiling utrrnaseq:
   - libboost-all-dev (version must be >Boost_1_49_0)
+- For compiling bam2wig:
+  - Follow [these instructions](./auxprogs/bam2wig/README.txt). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use `bamToWig.py` to accomplish the same task.
+
 
 ## Compile from sources
 
@@ -112,6 +113,15 @@ If this environment variable is not set, then the programs will look in the path
 # WEB-SERVER
 
 AUGUSTUS can also be run through a web-interface at http://bioinf.uni-greifswald.de/augustus/ and a web service at http://bioinf.uni-greifswald.de/webaugustus/index.gsp.
+
+# Scripts
+
+Many scripts require Perl.
+
+Running the python3 script bamToWig.py has the following software dependencies:
+  - Python3
+  - twoBitInfo and faToTwoBit from http://hgdownload.soe.ucsc.edu/admin/exe . bamToWig.py will automatically download these tools to the working directory during execution	if they	are not	in your	$PATH.
+  - samtools (available e.g. at https://github.com/samtools/samtools or via package managers)
 
 # REFERENCES AND DOCUMENTATION
 

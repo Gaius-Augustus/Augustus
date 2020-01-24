@@ -19,6 +19,7 @@ import os
 import os.path
 import argparse
 import re
+import urllib.request
 import subprocess
 import platform
 from inspect import currentframe, getframeinfo
@@ -260,7 +261,7 @@ def bamToWig(bam_file, wig_file, size_file, mpileup_file):
                             wig_handle.write(
                                 "variableStep chrom=" + seq + "\n")
                         if(int(start) <= chrom_sizes[seq]):
-                            wig_handle.write(start + "\t" + depth + "\n")
+                            wig_handle.write(start + " " + depth + "\n")
                         lastSeq = seq
                         lastStart = start
             except IOError:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Author: Anica Hoppe
-# Last modified: September 3rd 2019
+# Last modified: September 17th 2019
 
 # Given a list of transcript IDs, this python script identifies the
 # boundaries of corresponding genes in a GTF or GFF3 file, makes
@@ -238,6 +238,30 @@ def run_process(args_lst, prc_out, prc_err):
 		result = subprocess.run(args_lst, stdout=prc_out, stderr=prc_err)
 		logger.info("Suceeded in executing command.")
 		if(result.returncode == 0):
+			return(result)
+		else:
+			frameinfo = getframeinfo(currentframe())
+			logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+				  str(frameinfo.lineno) + ': ' + "Return code of subprocess was " + 
+		        str(result.returncode) + str(result.args))
+			quit(1)
+	except subprocess.CalledProcessError as grepexc:
+		frameinfo = getframeinfo(currentframe())
+		print('Error in file ' + frameinfo.filename + ' at line ' +
+              str(frameinfo.lineno) + ': ' + "Failed executing: ",
+              " ".join(grepexec.args))
+		print("Error code: ", grepexc.returncode, grepexc.output)
+		quit(1)
+
+
+def run_grep_process(args_lst, prc_out, prc_err):
+	''' Function that runs a subprocess with arguments and specified STDOUT and STDERR '''
+	try:
+		logger.info("Trying to execute the following command:")
+		logger.info(" ".join(args_lst))
+		result = subprocess.run(args_lst, stdout=prc_out, stderr=prc_err)
+		logger.info("Suceeded in executing command.")
+		if(result.returncode == 0 or result.returncode == 1):
 			return(result)
 		else:
 			frameinfo = getframeinfo(currentframe())
@@ -595,7 +619,7 @@ if args.hintsfile is not None:
         try:
             with open(new_hintsfile, "w") as new_hints_handle:
                 subprcs_args = [grep, seq_id, args.hintsfile]
-                run_process(subprcs_args, new_hints_handle, subprocess.PIPE)
+                run_grep_process(subprcs_args, new_hints_handle, subprocess.PIPE)
         except IOError:
             frameinfo = getframeinfo(currentframe())
             logger.info('Error in file ' + frameinfo.filename + ' at line ' +
