@@ -59,7 +59,7 @@ WORKDIR "/root/augustus"
 RUN make clean
 RUN make
 RUN make install
-ENV PATH="${PATH}:/root/augustus/bin"
+ENV PATH="/root/augustus/bin:${PATH}"
 
 # Test AUGUSTUS
 RUN make test

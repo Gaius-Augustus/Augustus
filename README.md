@@ -48,21 +48,21 @@ docker build -t augustus .
 The following dependencies are required for AUGUSTUS:
   - libsqlite3-dev
   - libmysql++-dev
-- libraries for gzip compressed input (set ZIPINPUT = FALSE in [common.mk](common.mk) if this feature is not required or the required libraries are not available):
+- For gzip compressed input (set ZIPINPUT = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available):
   - libboost-iostreams-dev
   - zlib1g-dev
-- for comparative (multi-species, CGP) AUGUSTUS (set COMPGENEPRED = FALSE in [common.mk](common.mk) if this feature is not required or the required libraries are not available):
+- For comparative (multi-species, CGP) AUGUSTUS (set COMPGENEPRED = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available):
   - libgsl-dev
   - libboost-all-dev
   - libsuitesparse-dev
   - liblpsolve55-dev
-- for compiling bam2hints and filterBam:
+- For compiling bam2hints and filterBam:
   - libbamtools-dev
-- for compiling bam2wig:
-  - Follow [these instructions](./auxprogs/bam2wig/README.txt). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use `bamToWig.py` to accomplish the same task.
 - For compiling utrrnaseq:
   - libboost-all-dev (version must be >Boost_1_49_0)
-- for compiling homgenemapping (set BOOST = FALSE in [./auxprogs/homgenemapping/src/Makefile](./auxprogs/homgenemapping/src/Makefile) if the option --printHomologs is not required or the required libraries are not available):
+- For compiling bam2wig:
+  - Follow [these instructions](./auxprogs/bam2wig/README.txt). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use `bamToWig.py` to accomplish the same task.
+- For compiling homgenemapping (set BOOST = FALSE in [./auxprogs/homgenemapping/src/Makefile](./auxprogs/homgenemapping/src/Makefile) if the option --printHomologs is not required or the required libraries are not available):
   - libboost-all-dev
 
 ## Compile from sources

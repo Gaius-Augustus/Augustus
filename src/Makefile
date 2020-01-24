@@ -9,12 +9,12 @@ CXX	= g++
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
 CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 ${CXXFLAGS}# -DDEBUG -g -ggdb -pg -DDEBUG_STATES
 
-ifdef ZIPINPUT
+ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))
 	CXXFLAGS += -DZIPINPUT
 	LIBS    = -lboost_iostreams
 endif
 
-ifdef COMPGENEPRED
+ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
 	CXXFLAGS += -std=c++11 -DCOMPGENEPRED
 endif
 INCLS	= -I../include
@@ -23,7 +23,7 @@ OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
  meaPath.o exoncand.o randseqaccess.o fasta.o ncmodel.o
-ifdef COMPGENEPRED
+ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
 	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
@@ -47,7 +47,7 @@ LIBS	  += -lsqlite3
 OBJS	  += sqliteDB.o
 PROGR     += load2sqlitedb getSeq
 
-ifdef COMPGENEPRED
+ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
 PROGR     += espoca
 endif
 
