@@ -7,11 +7,6 @@ import shutil
 import gzip
 import aug_out_filter as afilter
 
-#TODO: tmp copy and unzip required data for test cases:
-#      - test_iterative_prediction()
-#      - test_iterative_prediction_with_hints()
-#      - test_training_new_species(True) # with crf
-#      - test_training_new_species(False)
 
 #TODO: generate output information while tests are running
 
