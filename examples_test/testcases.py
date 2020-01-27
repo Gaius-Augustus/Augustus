@@ -4,6 +4,7 @@ import itertools
 import subprocess
 import os
 import shutil
+import gzip
 import aug_out_filter as afilter
 
 #TODO: tmp copy and unzip required data for test cases:
@@ -22,6 +23,20 @@ def create_initial_testdir():
     if os.path.exists(testdir):
         shutil.rmtree(testdir)
     os.mkdir(testdir)
+
+
+def init_test_data():
+    if not os.path.exists('data/tmp'):
+        os.mkdir('data/tmp')
+
+    inputfile = 'data/tmp/chr2L.sm.fa.gz'
+    shutil.copyfile('../docs/tutorial2015/data/chr2L.sm.fa.gz', inputfile)
+
+    with gzip.open(inputfile, 'rb') as f_in:
+        with open('data/tmp/chr2L.sm.fa', 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+
+    os.remove(inputfile)
 
 
 def test_utr_on():
@@ -47,6 +62,8 @@ def test_iterative_prediction():
     resfolder = testdir + test_iterative_prediction.__name__
     species_list = ['nasonia', 'zebrafish', 'tomato']
     proc_list = []
+    if not os.path.isfile('data/tmp/chr2L.sm.fa'):
+        init_test_data()
 
     # run augustus several times with different parameter sets
     os.mkdir(resfolder)
@@ -55,7 +72,7 @@ def test_iterative_prediction():
                   "w") as file:
             proc_list.append(
                 subprocess.Popen([
-                    augustusbin, '--species=' + species, 'data/chr2L.sm.fa',
+                    augustusbin, '--species=' + species, 'data/tmp/chr2L.sm.fa',
                     '--softmasking=on', '--predictionEnd=1000000'
                 ],
                                  stdout=file,
@@ -81,6 +98,8 @@ def test_iterative_prediction():
 def test_iterative_prediction_with_hints():
     resfolder = testdir + test_iterative_prediction_with_hints.__name__
     proc_list = []
+    if not os.path.isfile('data/tmp/chr2L.sm.fa'):
+        init_test_data()
 
     os.mkdir(resfolder)
     for i in range(0, 3):
@@ -88,11 +107,11 @@ def test_iterative_prediction_with_hints():
                   "w") as file:
             proc_list.append(
                 subprocess.Popen([
-                    augustusbin, '--species=nasonia', 'data/chr2L.sm.fa',
+                    augustusbin, '--species=nasonia', 'data/tmp/chr2L.sm.fa',
                     '--softmasking=on',
                     '--predictionStart=' + str(i * 2000000),
                     '--predictionEnd=' + str((i + 1) * 2000000 + 50000),
-                    '--hintsfile=data/hints.gff',
+                    '--hintsfile=../docs/tutorial2015/results/hints.gff',
                     '--extrinsicCfgFile=extrinsic.M.RM.E.W.cfg'
                 ],
                                  stdout=file,
@@ -353,8 +372,8 @@ def test_cgp_rna_hint(max_sub_p):
 if __name__ == '__main__':
     create_initial_testdir()
     test_utr_on()
-    #    test_iterative_prediction()
-    #    test_iterative_prediction_with_hints()
+    test_iterative_prediction()
+    test_iterative_prediction_with_hints()
     test_training_new_species(True) # with crf
     test_training_new_species(False)
     test_ab_initio_prediction()
