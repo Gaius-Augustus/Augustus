@@ -50,3 +50,6 @@ src/scanner/lex.o
 
 # ignore generated test output
 examples_test_output/
+
+# ignore tmp test case data
+examples_test/data/tmp/
