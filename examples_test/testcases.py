@@ -138,7 +138,7 @@ def test_training_new_species(crf):
 
     # call script to initialzie new species
     p = subprocess.Popen(
-        ['perl', '../scripts/new_species.pl', '--species=' + speciesname],
+        ['perl', '../scripts/new_species.pl', '--species=' + speciesname, '--AUGUSTUS_CONFIG_PATH=../config'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     error = p.stderr.read()
@@ -158,7 +158,10 @@ def test_training_new_species(crf):
 
     # test
     with open(resfolder + "/test_tmp.out", "w") as file:
-        args = [augustusbin, '../docs/tutorial2015/results/genes.gb.test', '--species=' + speciesname]
+        args = [augustusbin,
+                '../docs/tutorial2015/results/genes.gb.test',
+                '--species=' + speciesname,
+                '--AUGUSTUS_CONFIG_PATH=../config']
         if (crf):
             args.append('--CRF=on')
             args.append('--CRF_N=2')
