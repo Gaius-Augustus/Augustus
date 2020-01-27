@@ -133,7 +133,7 @@ def test_training_new_species(crf):
 
     # training
     p = subprocess.Popen([
-        '../bin/etraining', 'data/genes.gb.train', '--species=' + speciesname
+        '../bin/etraining', '../docs/tutorial2015/results/genes.gb.train', '--species=' + speciesname
     ],
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
@@ -144,7 +144,7 @@ def test_training_new_species(crf):
 
     # test
     with open(resfolder + "/test_tmp.out", "w") as file:
-        args = [augustusbin, 'data/genes.gb.test', '--species=' + speciesname]
+        args = [augustusbin, '../docs/tutorial2015/results/genes.gb.test', '--species=' + speciesname]
         if (crf):
             args.append('--CRF=on')
             args.append('--CRF_N=2')
@@ -355,8 +355,8 @@ if __name__ == '__main__':
     test_utr_on()
     #    test_iterative_prediction()
     #    test_iterative_prediction_with_hints()
-    #    test_training_new_species(True) # with crf
-    #    test_training_new_species(False)
+    test_training_new_species(True) # with crf
+    test_training_new_species(False)
     test_ab_initio_prediction()
     test_format_and_error_out()
     test_alternatives_from_sampling()
