@@ -5,6 +5,7 @@ import subprocess
 import os
 import shutil
 import gzip
+import mysql.connector
 import aug_out_filter as afilter
 
 
@@ -69,7 +70,7 @@ def init_mysql_db(dbname, host, user, passwd):
         ['../bin/load2db', '--species=hg19', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/human.hints.gff'],  
         ['../bin/load2db', '--species=mm9', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/mouse.hints.gff']] 
 
-    print('Inserting data in MySQL database for testing purposes:' + '\n')
+    print('Inserting data into MySQL database for testing purposes:' + '\n')
 
     for cmd in cmd_list:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -88,6 +89,23 @@ def cleanup():
 
     # remove copied/unzipped files
     os.remove('data/tmp/chr2L.sm.fa')
+
+
+def cleanup_mysqldb(dbname, host, user, passwd):
+    mysqldb = mysql.connector.connect(
+        host=host,
+        user=user,
+        passwd=passwd,
+        database=dbname
+    )
+
+    print('Clean up MySQL database.' + '\n')
+    augcursor = mysqldb.cursor()
+    augcursor.execute('DROP TABLE IF EXISTS genomes;')    
+    augcursor.execute('DROP TABLE IF EXISTS speciesnames;')    
+    augcursor.execute('DROP TABLE IF EXISTS seqnames;')    
+    augcursor.execute('DROP TABLE IF EXISTS hints;')    
+    augcursor.execute('DROP TABLE IF EXISTS featuretypes;')    
 
 
 def test_utr_on():
@@ -472,4 +490,4 @@ if __name__ == '__main__':
     #test_cgp_rna_hint_tutorial(4)   # maybe longrunning
     cleanup()
     #init_mysql_db('aug_vertebrates', 'localhost', 'augustus', 'aug_passwd')
-    
+    #cleanup_mysqldb('aug_vertebrates', 'localhost', 'augustus', 'aug_passwd')
