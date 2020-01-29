@@ -60,6 +60,28 @@ def init_sqlite_db():
             print(output)
 
 
+def init_mysql_db(dbname, host, user, passwd):
+    cmd_list = [
+        ['../bin/load2db', '--species=hg19', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/human.fa'],  
+        ['../bin/load2db', '--species=mm9', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/mouse.fa'],  
+        ['../bin/load2db', '--species=bosTau4', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/cow.fa'],  
+        ['../bin/load2db', '--species=galGal3', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/chicken.fa'],  
+        ['../bin/load2db', '--species=hg19', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/human.hints.gff'],  
+        ['../bin/load2db', '--species=mm9', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/mouse.hints.gff']] 
+
+    print('Inserting data in MySQL database for testing purposes:' + '\n')
+
+    for cmd in cmd_list:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        p.wait()   
+        error = p.stderr.read()
+        output = p.stdout.read()
+        if (error):
+            print(error)
+        if(output):
+            print(output)
+
+
 def cleanup():
     # remove generated SQLite database
     os.remove('data/tmp/vertebrates.db')
@@ -449,3 +471,5 @@ if __name__ == '__main__':
     #test_cgp_denovo_tutorial(4)     # maybe longrunning
     #test_cgp_rna_hint_tutorial(4)   # maybe longrunning
     cleanup()
+    #init_mysql_db('aug_vertebrates', 'localhost', 'augustus', 'aug_passwd')
+    
