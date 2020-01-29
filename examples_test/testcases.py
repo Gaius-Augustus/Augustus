@@ -174,7 +174,8 @@ def test_training_new_species(crf):
     p = subprocess.Popen(
         ['perl', '../scripts/new_species.pl', '--species=' + speciesname, '--AUGUSTUS_CONFIG_PATH=../config'],
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
+        stderr=subprocess.PIPE,
+        universal_newlines=True)
     error = p.stderr.read()
     if (error):
         print(error)
@@ -184,7 +185,8 @@ def test_training_new_species(crf):
         '../bin/etraining', '../docs/tutorial2015/results/genes.gb.train', '--species=' + speciesname
     ],
                          stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
+                         stderr=subprocess.PIPE,
+                         universal_newlines=True)
     p.wait()
     error = p.stderr.read()
     if (error):
@@ -200,7 +202,7 @@ def test_training_new_species(crf):
             args.append('--CRF=on')
             args.append('--CRF_N=2')
             args.append('--UTR=off')
-        p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE)
+        p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE, universal_newlines=True)
     p.wait()
     error = p.stderr.read()
     if (error):
@@ -223,7 +225,7 @@ def test_ab_initio_prediction():
             augustusbin, '../examples/autoAug/genome.fa',
             '--species=caenorhabditis'
         ]
-        p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE)
+        p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE, universal_newlines=True)
     p.wait()
     error = p.stderr.read()
     if (error):
@@ -244,7 +246,7 @@ def test_format_and_error_out():
         '--outfile=' + resfolder + '/augustus_tmp.gff3',
         '--errfile=' + resfolder + '/augustus.err'
     ]
-    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     p.wait()
     error = p.stderr.read()
     if (error):
@@ -267,7 +269,7 @@ def test_alternatives_from_sampling():
             '--minexonintronprob=0.08', '--minmeanexonintronprob=0.4',
             '--maxtracks=3'
         ]
-        p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE)
+        p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE, universal_newlines=True)
     p.wait()
     error = p.stderr.read()
     if (error):
@@ -293,7 +295,7 @@ def test_cgp():
             '--alternatives-from-evidence=0',  # removes warning
             '--/CompPred/outdir=' + resfolder
         ]
-        p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE)
+        p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE, universal_newlines=True)
     p.wait()
     error = p.stderr.read()
     if (error):
@@ -325,7 +327,7 @@ def test_cgp_sqlite(max_sub_p, resfolder, *args):
         for cmd, filename in filter(None, arg_list):
             with open(filename, "w") as file:
                 proc_list.append(
-                    subprocess.Popen(cmd, stdout=file, stderr=subprocess.PIPE))
+                    subprocess.Popen(cmd, stdout=file, stderr=subprocess.PIPE, universal_newlines=True))
         for p in proc_list:
             p.wait()
         for p in proc_list:
