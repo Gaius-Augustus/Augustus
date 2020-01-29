@@ -354,7 +354,7 @@ def test_cgp():
     os.chdir('../../examples_test')
 
 
-def test_cgp_sqlite(max_sub_p, resfolder, *args):
+def test_cgp_db_execution(max_sub_p, resfolder, *args):
     os.mkdir(resfolder)
     proc_list = []
 
@@ -386,12 +386,45 @@ def test_cgp_sqlite(max_sub_p, resfolder, *args):
                 os.remove(subdir + "/" + filename)
 
 
-def test_cgp_with_db_creation(hints):
-    if not os.path.isfile('data/tmp/vertebrates.db'):
+def test_cgp_with_db_creation(hints, mysql, *args, **kwargs):
+    dbname = kwargs.get('dbname', None)
+    host = kwargs.get('host', None)
+    user = kwargs.get('user', None)
+    passwd = kwargs.get('passwd', None)
+
+    if not mysql and not os.path.isfile('data/tmp/vertebrates.db'):
         init_sqlite_db()
+
+    if mysql:
+        missing_arguments = False
+        if dbname is None:
+            print('The database name is missing!')
+            missing_arguments = True
+        if host is None:
+            print('The host name is missing!')
+            missing_arguments = True
+        if user is None:
+            print('The db user name is missing!')
+            missing_arguments = True
+        if passwd is None:
+            print('The db user passwd is missing!')
+            missing_arguments = True
+        
+        if missing_arguments:
+            print('Test case test_cgp_with_db_creation was not executed.')
+            return
+        else:
+            cleanup_mysqldb('aug_vertebrates', 'localhost', 'augustus', 'aug_passwd')
+            init_mysql_db(dbname, host, user, passwd)
+
     os.chdir('../examples/cgp')
-    resfolder = '../' + ((testdir + test_cgp_with_db_creation.__name__ +
-                 '_hints') if hints else (testdir + test_cgp_with_db_creation.__name__))
+
+    resfolder = '../' + testdir + test_cgp_with_db_creation.__name__
+    if mysql:
+        resfolder += '_mysql'
+    if hints:
+        resfolder += '_hints'
+
     cmd = [
         '../' + augustusbin,
         '--species=human',
@@ -399,15 +432,21 @@ def test_cgp_with_db_creation(hints):
         '--treefile=tree.nwk',
         '--alnfile=aln.maf',
         '--alternatives-from-evidence=0',  # removes warning
-        '--dbaccess=../../examples_test/data/tmp/vertebrates.db',
         '--/CompPred/outdir=' + resfolder + '/pred' 
     ]
-    if (hints):
+
+    if mysql:
+        cmd.append('--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd)
+    else:
+        cmd.append('--dbaccess=../../examples_test/data/tmp/vertebrates.db')
+
+    if hints:
         cmd.append('--dbhints=true')
         cmd.append('--extrinsicCfgFile=cgp.extrinsic.cfg')
+
     args = [[cmd,  resfolder + '/aug.out']]
 
-    test_cgp_sqlite(1, resfolder, *args)
+    test_cgp_db_execution(1, resfolder, *args)
 
     # set working directory back to base test directory
     os.chdir('../../examples_test')
@@ -435,7 +474,7 @@ def test_cgp_denovo_tutorial(max_sub_p):
             resfolder + "/aug-" + str(idx) + ".out"
         ])
 
-    test_cgp_sqlite(max_sub_p, resfolder, *args)
+    test_cgp_db_execution(max_sub_p, resfolder, *args)
 
     # set working directory back to base test directory
     os.chdir('../../../../examples_test/')
@@ -467,7 +506,7 @@ def test_cgp_rna_hint_tutorial(max_sub_p):
             resfolder + "/aug-" + str(idx) + ".out"
         ])
 
-    test_cgp_sqlite(max_sub_p, resfolder, *args)
+    test_cgp_db_execution(max_sub_p, resfolder, *args)
 
     # set working directory back to base test directory
     os.chdir('../../../../examples_test/')
@@ -484,10 +523,10 @@ if __name__ == '__main__':
     test_format_and_error_out()
     test_alternatives_from_sampling()
     test_cgp()
-    test_cgp_with_db_creation(False)
-    test_cgp_with_db_creation(True)  # with hints
-    #test_cgp_denovo_tutorial(4)     # maybe longrunning
-    #test_cgp_rna_hint_tutorial(4)   # maybe longrunning
-    cleanup()
-    #init_mysql_db('aug_vertebrates', 'localhost', 'augustus', 'aug_passwd')
-    #cleanup_mysqldb('aug_vertebrates', 'localhost', 'augustus', 'aug_passwd')
+    test_cgp_with_db_creation(False, False)
+    test_cgp_with_db_creation(True, False)  # with hints
+    # test_cgp_with_db_creation(False, True, dbname='aug_vertebrates', host='localhost', user='augustus', passwd='aug_passwd') # with mysql
+    # test_cgp_with_db_creation(True, True, dbname='aug_vertebrates', host='localhost', user='augustus', passwd='aug_passwd')  # with mysql and hints
+    # test_cgp_denovo_tutorial(4)     # maybe longrunning
+    # test_cgp_rna_hint_tutorial(4)   # maybe longrunning
+    cleanup()    
