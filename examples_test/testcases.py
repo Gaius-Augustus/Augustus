@@ -334,13 +334,37 @@ def test_cgp_sqlite(max_sub_p, resfolder, *args):
                     subdir + "/" + filename.replace(".gff", ".filtered.gff"))
                 os.remove(subdir + "/" + filename)
 
+
+def test_cgp_with_db_creation(hints):
+    os.chdir('../examples/cgp')
+    if not os.path.isfile('../../examples_test/data/tmp/vertebrates.db'):
+        init_sqlite_db()
+    resfolder = '../' + ((testdir + test_cgp_with_db_creation.__name__ +
+                 '_hints') if hints else (testdir + test_cgp_with_db_creation.__name__))
+    cmd = [
+        '../' + augustusbin,
+        '--species=human',
+        '--speciesfilenames=genomes.tbl',
+        '--treefile=tree.nwk',
+        '--alnfile=aln.maf',
+        '--alternatives-from-evidence=0',  # removes warning
+        '--dbaccess=../../examples_test/data/tmp/vertebrates.db',
+        '--/CompPred/outdir=' + resfolder + '/pred' 
+    ]
+    if (hints):
+        cmd.append('--dbhints=true')
+        cmd.append('--extrinsicCfgFile=cgp.extrinsic.cfg')
+    args = [[cmd,  resfolder + '/aug.out']]
+
+    test_cgp_sqlite(1, resfolder, *args)
+
     # set working directory back to base test directory
-    os.chdir('../../../../examples_test/')
+    os.chdir('../../examples_test')
 
 
-def test_cgp_denovo(max_sub_p):
+def test_cgp_denovo_tutorial(max_sub_p):
     os.chdir('../docs/tutorial-cgp/results/mafs')
-    resfolder = '../../../' + testdir + test_cgp_denovo.__name__
+    resfolder = '../../../' + testdir + test_cgp_denovo_tutorial.__name__
     args = []
 
     # create command list for all alignment files
@@ -362,10 +386,13 @@ def test_cgp_denovo(max_sub_p):
 
     test_cgp_sqlite(max_sub_p, resfolder, *args)
 
+    # set working directory back to base test directory
+    os.chdir('../../../../examples_test/')
 
-def test_cgp_rna_hint(max_sub_p):
+
+def test_cgp_rna_hint_tutorial(max_sub_p):
     os.chdir('../docs/tutorial-cgp/results/mafs')
-    resfolder = '../../../' + testdir + test_cgp_rna_hint.__name__
+    resfolder = '../../../' + testdir + test_cgp_rna_hint_tutorial.__name__
     args = []
 
     # create command list for all alignment files
@@ -391,6 +418,9 @@ def test_cgp_rna_hint(max_sub_p):
 
     test_cgp_sqlite(max_sub_p, resfolder, *args)
 
+    # set working directory back to base test directory
+    os.chdir('../../../../examples_test/')
+
 
 if __name__ == '__main__':
     create_initial_testdir()
@@ -403,5 +433,7 @@ if __name__ == '__main__':
     test_format_and_error_out()
     test_alternatives_from_sampling()
     test_cgp()
-    test_cgp_denovo(4)
-    test_cgp_rna_hint(4)
+    test_cgp_with_db_creation(False)
+    test_cgp_with_db_creation(True)
+    #test_cgp_denovo_tutorial(4)   # maybe longrunning
+    #test_cgp_rna_hint_tutorial(4) # maybe longrunning
