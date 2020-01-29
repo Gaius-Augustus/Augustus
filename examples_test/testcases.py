@@ -59,6 +59,15 @@ def init_sqlite_db():
         if(output):
             print(output)
 
+
+def cleanup():
+    # remove generated SQLite database
+    os.remove('data/tmp/vertebrates.db')
+
+    # remove copied/unzipped files
+    os.remove('data/tmp/chr2L.sm.fa')
+
+
 def test_utr_on():
     resfolder = testdir + test_utr_on.__name__
 
@@ -336,9 +345,9 @@ def test_cgp_sqlite(max_sub_p, resfolder, *args):
 
 
 def test_cgp_with_db_creation(hints):
-    os.chdir('../examples/cgp')
-    if not os.path.isfile('../../examples_test/data/tmp/vertebrates.db'):
+    if not os.path.isfile('data/tmp/vertebrates.db'):
         init_sqlite_db()
+    os.chdir('../examples/cgp')
     resfolder = '../' + ((testdir + test_cgp_with_db_creation.__name__ +
                  '_hints') if hints else (testdir + test_cgp_with_db_creation.__name__))
     cmd = [
@@ -434,6 +443,7 @@ if __name__ == '__main__':
     test_alternatives_from_sampling()
     test_cgp()
     test_cgp_with_db_creation(False)
-    test_cgp_with_db_creation(True)
-    #test_cgp_denovo_tutorial(4)   # maybe longrunning
-    #test_cgp_rna_hint_tutorial(4) # maybe longrunning
+    test_cgp_with_db_creation(True)  # with hints
+    #test_cgp_denovo_tutorial(4)     # maybe longrunning
+    #test_cgp_rna_hint_tutorial(4)   # maybe longrunning
+    cleanup()
