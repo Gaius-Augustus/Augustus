@@ -34,6 +34,31 @@ def init_test_data():
     os.remove(inputfile)
 
 
+def init_sqlite_db():
+    if not os.path.exists('data/tmp'):
+        os.mkdir('data/tmp')
+
+    cmd_list = [
+        ['../bin/load2sqlitedb', '--species=hg19', '--dbaccess=data/tmp/vertebrates.db', '--clean', '../examples/cgp/human.fa'],
+        ['../bin/load2sqlitedb', '--species=mm9', '--dbaccess=data/tmp/vertebrates.db', '--clean', '../examples/cgp/mouse.fa'],
+        ['../bin/load2sqlitedb', '--species=bosTau4', '--dbaccess=data/tmp/vertebrates.db', '--clean', '../examples/cgp/cow.fa'],
+        ['../bin/load2sqlitedb', '--species=galGal3', '--dbaccess=data/tmp/vertebrates.db', '--clean', '../examples/cgp/chicken.fa'],
+        ['../bin/load2sqlitedb', '--noIdx', '--species=hg19', '--dbaccess=data/tmp/vertebrates.db', '--clean', '../examples/cgp/human.hints.gff'],
+        ['../bin/load2sqlitedb', '--noIdx', '--species=mm9', '--dbaccess=data/tmp/vertebrates.db', '--clean', '../examples/cgp/mouse.hints.gff'],
+        ['../bin/load2sqlitedb', '--makeIdx', '--dbaccess=data/tmp/vertebrates.db', '--clean']]
+
+    print('Creating SQLite database for testing purposes:' + '\n')
+
+    for cmd in cmd_list:
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        p.wait()   
+        error = p.stderr.read()
+        output = p.stdout.read()
+        if (error):
+            print(error)
+        if(output):
+            print(output)
+
 def test_utr_on():
     resfolder = testdir + test_utr_on.__name__
 
