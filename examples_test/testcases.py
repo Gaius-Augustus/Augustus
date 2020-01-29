@@ -10,6 +10,7 @@ import aug_out_filter as afilter
 
 
 #TODO: generate output information while tests are running
+#TODO: generate optional script arguments for mysql case (argparse)
 
 testdir = '../examples_test_output/'
 augustusbin = '../bin/augustus'
@@ -85,10 +86,12 @@ def init_mysql_db(dbname, host, user, passwd):
 
 def cleanup():
     # remove generated SQLite database
-    os.remove('data/tmp/vertebrates.db')
+    if os.path.isfile('data/tmp/vertebrates.db'):
+        os.remove('data/tmp/vertebrates.db')
 
     # remove copied/unzipped files
-    os.remove('data/tmp/chr2L.sm.fa')
+    if os.path.isfile('data/tmp/chr2L.sm.fa'):
+        os.remove('data/tmp/chr2L.sm.fa')
 
 
 def cleanup_mysqldb(dbname, host, user, passwd):
@@ -529,4 +532,4 @@ if __name__ == '__main__':
     # test_cgp_with_db_creation(True, True, dbname='aug_vertebrates', host='localhost', user='augustus', passwd='aug_passwd')  # with mysql and hints
     # test_cgp_denovo_tutorial(4)     # maybe longrunning
     # test_cgp_rna_hint_tutorial(4)   # maybe longrunning
-    cleanup()    
+    cleanup()
