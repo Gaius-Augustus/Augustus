@@ -531,7 +531,7 @@ GBSplitter::GBSplitter( string fname ) : ftype(unknown) {
 	if( !ifstrm )
 	    throw GBError("Could not open input file \"" + fname + "\"!");
     } else { // read from standard input
-	throw GBError("Input from STDIN not supported anymore since the introcution of .gzipped input (with version 3.0).");
+	throw GBError("Input from STDIN not supported anymore since the introduction of .gzipped input (with version 3.0).");
 	//ifstrm.ios::rdbuf(cin.rdbuf());
 	//ftype = fasta;
     }

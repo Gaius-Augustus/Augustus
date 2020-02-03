@@ -1,11 +1,12 @@
 #!/usr/bin/env perl
 
-# Katharina J. Hoff
-# November 14th 2014
+# Katharina J. Hoff & Henry Mehlan
+# last modified on January 24th 2019
 # This script is part of WebAUGUSTUS.
 # The purpose is to copy user-uploaded parameters to the AUGUSTUS_CONFIG_PATH and rename the parameters according to the job id
 
 use File::Path qw(make_path);
+use File::Copy;
 
 my $usage = "moveParameters.pl parameterdir newid copytodir\n";
 
@@ -26,7 +27,7 @@ closedir $dir;
 my $archC = 0;
 foreach(@dirs){
     if(not($_ eq ".") and not($_ eq "..")){
-	$species = $_;
+        $species = $_;
     }
     $archC++;
 }
@@ -49,18 +50,24 @@ my %filehash;
 opendir my($specdir), $speciesdir or die "Could not open directory $ARGV[0]!\n";
 while( my $file = readdir($specdir)){
     if(not($file =~m/^\./)){
-	open(INFILE, "<", "$speciesdir/$file") or die ("Could not open file $speciesdir/$file!\n");
-	$fstr = $file;
-	$fstr =~ s/$species/$ARGV[1]/;
-	open(OUTFILE, ">", "$targetdir/$fstr") or die ("Could not open output file $targetdir/$fstr!\n");
-	while(<INFILE>){
-	    $_=~s/$species/$ARGV[1]/;
-	    print OUTFILE $_;
-	}
-	close(INFILE);
-	close(OUTFILE);
+        $fstr = $file;
+        $fstr =~ s/$species/$ARGV[1]/;
+        if($file =~ m/_parameters.cfg/){
+            open(INFILE, "<", "$speciesdir/$file") or die ("Could not open file $speciesdir/$file!\n");
+            open(OUTFILE, ">", "$targetdir/$fstr") or die ("Could not open output file $targetdir/$fstr!\n");
+            while(<INFILE>){
+                $_=~s/(.+[Ff]ile\s+)$species(_.+)/$1$ARGV[1]$2/;
+                if($_=~m/^#/){
+                    $_=~s/$species/$ARGV[1]/;
+                }
+                print OUTFILE $_;
+            }
+            close(INFILE);
+            close(OUTFILE);
+        }else{
+            copy("$speciesdir/$file","$targetdir/$fstr") or die "Copying file $speciesdir/$file to $targetdir/$fstr failed: $!";
+        }       
     }
-
 }
 closedir $specdir;
 
