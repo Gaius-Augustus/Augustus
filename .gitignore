@@ -42,6 +42,7 @@ src/espoca
 src/etraining
 src/fastBlockSearch
 src/getSeq
+src/load2db
 src/load2sqlitedb
 src/parser/parse.o
 src/prepareAlign
