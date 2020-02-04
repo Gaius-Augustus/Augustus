@@ -20,13 +20,15 @@ augustusbin = '../bin/augustus'
 
 class TestAugustus(unittest.TestCase):
 
-    def create_initial_testdir(self):
+    @classmethod
+    def create_initial_testdir(cls):
         if os.path.exists(testdir):
             shutil.rmtree(testdir)
         os.mkdir(testdir)
 
 
-    def init_test_data(self):
+    @classmethod
+    def init_test_data(cls):
         if not os.path.exists('data/tmp'):
             os.mkdir('data/tmp')
 
@@ -39,8 +41,8 @@ class TestAugustus(unittest.TestCase):
 
         os.remove(inputfile)
 
-
-    def init_sqlite_db():
+    @classmethod
+    def init_sqlite_db(cls):
         if not os.path.exists('data/tmp'):
             os.mkdir('data/tmp')
 
@@ -60,10 +62,10 @@ class TestAugustus(unittest.TestCase):
             p.wait()   
             error = p.stderr.read()
             output = p.stdout.read()
-            if (error):
-                print(error)
-            if(output):
-                print(output)
+            p.stdout.close()
+            p.stderr.close()
+            print(error)
+            print(output)
 
 
     def init_mysql_db(dbname, host, user, passwd):
@@ -82,13 +84,14 @@ class TestAugustus(unittest.TestCase):
             p.wait()   
             error = p.stderr.read()
             output = p.stdout.read()
-            if (error):
-                print(error)
-            if(output):
-                print(output)
+            p.stdout.close()
+            p.stderr.close()            
+            print(error)
+            print(output)
 
 
-    def cleanup(self):
+    @classmethod
+    def cleanup(cls):
         # remove generated SQLite database
         if os.path.isfile('data/tmp/vertebrates.db'):
             os.remove('data/tmp/vertebrates.db')
@@ -115,13 +118,16 @@ class TestAugustus(unittest.TestCase):
         augcursor.execute('DROP TABLE IF EXISTS featuretypes;')    
 
 
-    def setUp(self):
-        self.create_initial_testdir()
-        self.init_test_data()
+    @classmethod
+    def setUpClass(cls):
+        cls.create_initial_testdir()
+        cls.init_test_data()
+        cls.init_sqlite_db()
 
-    
-    def tearDown(self):
-         self.cleanup();   
+
+    @classmethod   
+    def tearDownClass(cls):
+         cls.cleanup();   
 
 
     def test_utr_on(self):
@@ -150,390 +156,418 @@ class TestAugustus(unittest.TestCase):
         os.remove(resfolder + '/aug_utr_on_tmp.gff')
 
 
-    # def test_iterative_prediction(self):
-    #     resfolder = testdir + self.test_iterative_prediction.__name__
-    #     species_list = ['nasonia', 'zebrafish', 'tomato']
-    #     proc_list = []
+    def test_iterative_prediction(self):
+        resfolder = testdir + self.test_iterative_prediction.__name__
+        species_list = ['nasonia', 'zebrafish', 'tomato']
+        proc_list = []
 
-    #     # run augustus several times with different parameter sets
-    #     os.mkdir(resfolder)
-    #     for species in species_list:
-    #         with open(resfolder + '/aug.' + species + '.1-1M_tmp.gff',
-    #                 "w") as file:
-    #             proc_list.append(
-    #                 subprocess.Popen([
-    #                     augustusbin, '--species=' + species, 'data/tmp/chr2L.sm.fa',
-    #                     '--softmasking=on', '--predictionEnd=1000000'
-    #                 ],
-    #                                 stdout=file,
-    #                                 stderr=subprocess.PIPE,
-    #                                 universal_newlines=True))
-    #             for p in proc_list:
-    #                 p.wait()
+        # run augustus several times with different parameter sets
+        os.mkdir(resfolder)
+        for species in species_list:
+            with open(resfolder + '/aug.' + species + '.1-1M_tmp.gff',
+                    'w') as file:
+                proc_list.append(
+                    subprocess.Popen([
+                        augustusbin, '--species=' + species, 'data/tmp/chr2L.sm.fa',
+                        '--softmasking=on', '--predictionEnd=1000000'
+                    ],
+                                    stdout=file,
+                                    stderr=subprocess.PIPE,
+                                    universal_newlines=True))
+        for p in proc_list:
+            p.wait()
+    
+        for p in proc_list:
+            error = p.stderr.read()
+            p.stderr.close()
+            self.assertEqual(error, '', error)
 
-    #             for p in proc_list:
-    #                 error = p.stderr.read()
-    #                 if (error):
-    #                     print(error)
-
-    #     # filter output
-    #     for species in species_list:
-    #         source = resfolder + '/aug.' + species + '.1-1M_tmp.gff'
-    #         target = resfolder + '/aug.' + species + '.1-1M.gff'
-    #         afilter.pred(source, target)
-    #         os.remove(source)
-
-
-    # def test_iterative_prediction_with_hints():
-    #     resfolder = testdir + test_iterative_prediction_with_hints.__name__
-    #     proc_list = []
-    #     if not os.path.isfile('data/tmp/chr2L.sm.fa'):
-    #         init_test_data()
-
-    #     os.mkdir(resfolder)
-    #     for i in range(0, 3):
-    #         with open(resfolder + '/aug.nasonia.hints.' + str(i) + '_tmp.gff',
-    #                 "w") as file:
-    #             proc_list.append(
-    #                 subprocess.Popen([
-    #                     augustusbin, '--species=nasonia', 'data/tmp/chr2L.sm.fa',
-    #                     '--softmasking=on',
-    #                     '--predictionStart=' + str(i * 2000000),
-    #                     '--predictionEnd=' + str((i + 1) * 2000000 + 50000),
-    #                     '--hintsfile=../docs/tutorial2015/results/hints.gff',
-    #                     '--extrinsicCfgFile=extrinsic.M.RM.E.W.cfg'
-    #                 ],
-    #                                 stdout=file,
-    #                                 stderr=subprocess.PIPE,
-    #                                 universal_newlines=True))
-
-    #     for p in proc_list:
-    #         p.wait()
-
-    #     for p in proc_list:
-    #         error = p.stderr.read()
-    #         if (error):
-    #             print(error)
-
-    #     # filter output
-    #     for i in range(0, 3):
-    #         source = resfolder + '/aug.nasonia.hints.' + str(i) + '_tmp.gff'
-    #         target = resfolder + '/aug.nasonia.hints.' + str(i) + '.gff'
-    #         afilter.pred(source, target)
-    #         os.remove(source)
+        # filter output
+        for species in species_list:
+            source = resfolder + '/aug.' + species + '.1-1M_tmp.gff'
+            self.assertTrue(os.path.isfile(source), 'Output file was not created as expected!')
+            target = resfolder + '/aug.' + species + '.1-1M.gff'
+            afilter.pred(source, target)
+            os.remove(source)
 
 
-    # def test_training_new_species(crf):
-    #     speciesname = 'test_aug_dev_species'
-    #     resfolder = (testdir + test_training_new_species.__name__ +
-    #                 '_crf') if crf else (testdir +
-    #                                     test_training_new_species.__name__)
-    #     os.mkdir(resfolder)
+    def test_iterative_prediction_with_hints(self):
+        resfolder = testdir + self.test_iterative_prediction_with_hints.__name__
+        proc_list = []
+        if not os.path.isfile('data/tmp/chr2L.sm.fa'):
+            init_test_data()
 
-    #     # call script to initialzie new species
-    #     p = subprocess.Popen(
-    #         ['perl', '../scripts/new_species.pl', '--species=' + speciesname, '--AUGUSTUS_CONFIG_PATH=../config'],
-    #         stdout=subprocess.PIPE,
-    #         stderr=subprocess.PIPE,
-    #         universal_newlines=True)
-    #     error = p.stderr.read()
-    #     if (error):
-    #         print(error)
+        os.mkdir(resfolder)
+        for i in range(0, 3):
+            with open(resfolder + '/aug.nasonia.hints.' + str(i) + '_tmp.gff',
+                    'w') as file:
+                proc_list.append(
+                    subprocess.Popen([
+                        augustusbin, '--species=nasonia', 'data/tmp/chr2L.sm.fa',
+                        '--softmasking=on',
+                        '--predictionStart=' + str(i * 2000000),
+                        '--predictionEnd=' + str((i + 1) * 2000000 + 50000),
+                        '--hintsfile=../docs/tutorial2015/results/hints.gff',
+                        '--extrinsicCfgFile=extrinsic.M.RM.E.W.cfg'
+                    ],
+                                    stdout=file,
+                                    stderr=subprocess.PIPE,
+                                    universal_newlines=True))
 
-    #     # training
-    #     p = subprocess.Popen([
-    #         '../bin/etraining', '../docs/tutorial2015/results/genes.gb.train', '--species=' + speciesname
-    #     ],
-    #                         stdout=subprocess.PIPE,
-    #                         stderr=subprocess.PIPE,
-    #                         universal_newlines=True)
-    #     p.wait()
-    #     error = p.stderr.read()
-    #     if (error):
-    #         print(error)
+        for p in proc_list:
+            p.wait()
+    
+        for p in proc_list:
+            error = p.stderr.read()
+            p.stderr.close()
+            self.assertEqual(error, '', error)
 
-    #     # test
-    #     with open(resfolder + "/test_tmp.out", "w") as file:
-    #         args = [augustusbin,
-    #                 '../docs/tutorial2015/results/genes.gb.test',
-    #                 '--species=' + speciesname,
-    #                 '--AUGUSTUS_CONFIG_PATH=../config']
-    #         if (crf):
-    #             args.append('--CRF=on')
-    #             args.append('--CRF_N=2')
-    #             args.append('--UTR=off')
-    #         p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE, universal_newlines=True)
-    #     p.wait()
-    #     error = p.stderr.read()
-    #     if (error):
-    #         print(error)
-
-    #     # filter output file
-    #     afilter.eval(resfolder + "/test_tmp.out", resfolder + "/test.out")
-    #     os.remove(resfolder + "/test_tmp.out")
-
-    #     # move new species to result folder
-    #     shutil.move('../config/species/' + speciesname, resfolder)
+        # filter output
+        for i in range(0, 3):
+            source = resfolder + '/aug.nasonia.hints.' + str(i) + '_tmp.gff'
+            self.assertTrue(os.path.isfile(source), 'Output file was not created as expected!')
+            target = resfolder + '/aug.nasonia.hints.' + str(i) + '.gff'
+            afilter.pred(source, target)
+            os.remove(source)
 
 
-    # def test_ab_initio_prediction():
-    #     resfolder = testdir + test_ab_initio_prediction.__name__
-
-    #     os.mkdir(resfolder)
-    #     with open(resfolder + "/augustus_tmp.gff", "w") as file:
-    #         args = [
-    #             augustusbin, '../examples/autoAug/genome.fa',
-    #             '--species=caenorhabditis'
-    #         ]
-    #         p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE, universal_newlines=True)
-    #     p.wait()
-    #     error = p.stderr.read()
-    #     if (error):
-    #         print(error)
-
-    #     # filter output file
-    #     afilter.pred(resfolder + "/augustus_tmp.gff", resfolder + "/augustus.gff")
-    #     os.remove(resfolder + "/augustus_tmp.gff")
+    def test_training_new_species(self):
+        self.training_new_species(False)
 
 
-    # def test_format_and_error_out():
-    #     resfolder = testdir + test_format_and_error_out.__name__
-
-    #     os.mkdir(resfolder)
-    #     args = [
-    #         augustusbin, '../examples/autoAug/genome.fa',
-    #         '--species=caenorhabditis', '--gff3=on',
-    #         '--outfile=' + resfolder + '/augustus_tmp.gff3',
-    #         '--errfile=' + resfolder + '/augustus.err'
-    #     ]
-    #     p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    #     p.wait()
-    #     error = p.stderr.read()
-    #     if (error):
-    #         print(error)
-
-    #     # filter output file
-    #     afilter.pred(resfolder + "/augustus_tmp.gff3",
-    #                 resfolder + "/augustus.gff3")
-    #     os.remove(resfolder + "/augustus_tmp.gff3")
+    def test_training_new_species_crf(self):
+        self.training_new_species(True)
 
 
-    # def test_alternatives_from_sampling():
-    #     resfolder = testdir + test_alternatives_from_sampling.__name__
+    def training_new_species(self, crf):
+        speciesname = 'test_aug_dev_species'
+        resfolder = (testdir + self.test_training_new_species_crf.__name__) if crf else (testdir +
+                                        self.test_training_new_species.__name__)
+        os.mkdir(resfolder)
 
-    #     os.mkdir(resfolder)
-    #     with open(resfolder + "/augustus_tmp.gff", "w") as file:
-    #         args = [
-    #             augustusbin, '../examples/autoAug/genome.fa',
-    #             '--species=caenorhabditis', '--alternatives-from-sampling=on',
-    #             '--minexonintronprob=0.08', '--minmeanexonintronprob=0.4',
-    #             '--maxtracks=3'
-    #         ]
-    #         p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE, universal_newlines=True)
-    #     p.wait()
-    #     error = p.stderr.read()
-    #     if (error):
-    #         print(error)
+        # call script to initialzie new species
+        p = subprocess.Popen(
+            ['perl', '../scripts/new_species.pl', '--species=' + speciesname, '--AUGUSTUS_CONFIG_PATH=../config'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True)
+        p.wait()
+        error = p.stderr.read()
+        stdout = p.stdout.read()
+        p.stdout.close()
+        p.stderr.close()
+        print(stdout)
+        print(error)
 
-    #     # filter output file
-    #     afilter.pred(resfolder + "/augustus_tmp.gff", resfolder + "/augustus.gff")
-    #     os.remove(resfolder + "/augustus_tmp.gff")
+        # training
+        p = subprocess.Popen([
+            '../bin/etraining', '../docs/tutorial2015/results/genes.gb.train', '--species=' + speciesname
+        ],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            universal_newlines=True)
+        p.wait()
+        error = p.stderr.read()
+        stdout = p.stdout.read()
+        p.stdout.close()
+        p.stderr.close()
+        #print(stdout)
+        self.assertEqual(error, '', error)
 
+        # test
+        with open(resfolder + '/test_tmp.out', 'w') as file:
+            args = [augustusbin,
+                    '../docs/tutorial2015/results/genes.gb.test',
+                    '--species=' + speciesname,
+                    '--AUGUSTUS_CONFIG_PATH=../config']
+            if (crf):
+                args.append('--CRF=on')
+                args.append('--CRF_N=2')
+                args.append('--UTR=off')
+            p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE, universal_newlines=True)
+        p.wait()
+        error = p.stderr.read()
+        p.stderr.close()
+        self.assertEqual(error, '', error)
 
-    # def test_cgp():
-    #     os.chdir('../examples/cgp')
-    #     resfolder = '../' + testdir + test_cgp.__name__
-    #     os.mkdir(resfolder)
+        # filter output file
+        self.assertTrue(os.path.isfile(resfolder + '/test_tmp.out'), 'Output file was not created as expected!')
+        afilter.eval(resfolder + '/test_tmp.out', resfolder + '/test.out')
+        os.remove(resfolder + '/test_tmp.out')
 
-    #     with open(resfolder + "/output.txt", "w") as file:
-    #         args = [
-    #             '../' + augustusbin,
-    #             '--species=human',
-    #             '--speciesfilenames=genomes.tbl',
-    #             '--treefile=tree.nwk',
-    #             '--alnfile=aln.maf',
-    #             '--alternatives-from-evidence=0',  # removes warning
-    #             '--/CompPred/outdir=' + resfolder
-    #         ]
-    #         p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE, universal_newlines=True)
-    #     p.wait()
-    #     error = p.stderr.read()
-    #     if (error):
-    #         print(error)
-
-    #     # filter output files
-    #     for file in os.listdir(resfolder):
-    #         filename = os.fsdecode(file)
-    #         if filename.endswith(".gff"):
-    #             afilter.cgp(
-    #                 resfolder + "/" + filename,
-    #                 resfolder + "/" + filename.replace(".gff", ".filtered.gff"))
-    #             os.remove(resfolder + "/" + filename)
-
-    #     # set working directory back to base test directory
-    #     os.chdir('../../examples_test')
-
-
-    # def test_cgp_db_execution(max_sub_p, resfolder, *args):
-    #     os.mkdir(resfolder)
-    #     proc_list = []
-
-    #     # create groups according to the number of maxumim subprocesses
-    #     grouped_args = [iter(args)] * max_sub_p
-
-    #     # parallel execution of the commands of each group
-    #     for arg_list in itertools.zip_longest(*grouped_args):
-    #         proc_list = []
-    #         for cmd, filename in filter(None, arg_list):
-    #             with open(filename, "w") as file:
-    #                 proc_list.append(
-    #                     subprocess.Popen(cmd, stdout=file, stderr=subprocess.PIPE, universal_newlines=True))
-    #         for p in proc_list:
-    #             p.wait()
-    #         for p in proc_list:
-    #             error = p.stderr.read()
-    #             if (error):
-    #                 print(error)
-
-    #     # filter output prediction files
-    #     for subdir, dirs, files in os.walk(resfolder):
-    #         for file in files:
-    #             filename = os.fsdecode(file)
-    #             if filename.endswith(".gff"):
-    #                 afilter.cgp(
-    #                     subdir + "/" + filename,
-    #                     subdir + "/" + filename.replace(".gff", ".filtered.gff"))
-    #                 os.remove(subdir + "/" + filename)
+        # move new species to result folder
+        shutil.move('../config/species/' + speciesname, resfolder)
 
 
-    # def test_cgp_with_db_creation(hints, mysql, *args, **kwargs):
-    #     dbname = kwargs.get('dbname', None)
-    #     host = kwargs.get('host', None)
-    #     user = kwargs.get('user', None)
-    #     passwd = kwargs.get('passwd', None)
+    def test_ab_initio_prediction(self):
+        resfolder = testdir + self.test_ab_initio_prediction.__name__
 
-    #     if not mysql and not os.path.isfile('data/tmp/vertebrates.db'):
-    #         init_sqlite_db()
+        os.mkdir(resfolder)
+        with open(resfolder + '/augustus_tmp.gff', 'w') as file:
+            args = [
+                augustusbin, '../examples/autoAug/genome.fa',
+                '--species=caenorhabditis'
+            ]
+            p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE, universal_newlines=True)
+        p.wait()
+        error = p.stderr.read()
+        p.stderr.close()
+        self.assertEqual(error, '', error)
 
-    #     if mysql:
-    #         missing_arguments = False
-    #         if dbname is None:
-    #             print('The database name is missing!')
-    #             missing_arguments = True
-    #         if host is None:
-    #             print('The host name is missing!')
-    #             missing_arguments = True
-    #         if user is None:
-    #             print('The db user name is missing!')
-    #             missing_arguments = True
-    #         if passwd is None:
-    #             print('The db user passwd is missing!')
-    #             missing_arguments = True
+        # filter output file
+        self.assertTrue(os.path.isfile(resfolder + '/augustus_tmp.gff'), 'Output file was not created as expected!')
+        afilter.pred(resfolder + '/augustus_tmp.gff', resfolder + '/augustus.gff')
+        os.remove(resfolder + '/augustus_tmp.gff')
+
+
+    def test_format_and_error_out(self):
+        resfolder = testdir + self.test_format_and_error_out.__name__
+
+        os.mkdir(resfolder)
+        args = [
+            augustusbin, '../examples/autoAug/genome.fa',
+            '--species=caenorhabditis', '--gff3=on',
+            '--outfile=' + resfolder + '/augustus_tmp.gff3',
+            '--errfile=' + resfolder + '/augustus.err'
+        ]
+        p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        p.wait()
+        error = p.stderr.read()
+        p.stdout.close()
+        p.stderr.close()
+        self.assertEqual(error, '', error)
+
+        # filter output file
+        self.assertTrue(os.path.isfile(resfolder + '/augustus_tmp.gff3'), 'Output file was not created as expected!')
+        afilter.pred(resfolder + '/augustus_tmp.gff3',
+                    resfolder + '/augustus.gff3')
+        os.remove(resfolder + '/augustus_tmp.gff3')
+
+
+    def test_alternatives_from_sampling(self):
+        resfolder = testdir + self.test_alternatives_from_sampling.__name__
+
+        os.mkdir(resfolder)
+        with open(resfolder + '/augustus_tmp.gff', 'w') as file:
+            args = [
+                augustusbin, '../examples/autoAug/genome.fa',
+                '--species=caenorhabditis', '--alternatives-from-sampling=on',
+                '--minexonintronprob=0.08', '--minmeanexonintronprob=0.4',
+                '--maxtracks=3'
+            ]
+            p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE, universal_newlines=True)
+        p.wait()
+        error = p.stderr.read()
+        p.stderr.close()
+        self.assertEqual(error, '', error)
+
+        # filter output file
+        self.assertTrue(os.path.isfile(resfolder + '/augustus_tmp.gff'), 'Output file was not created as expected!')
+        afilter.pred(resfolder + '/augustus_tmp.gff', resfolder + '/augustus.gff')
+        os.remove(resfolder + '/augustus_tmp.gff')
+
+
+    def test_cgp(self):
+        os.chdir('../examples/cgp')
+        resfolder = '../' + testdir + self.test_cgp.__name__
+        os.mkdir(resfolder)
+
+        with open(resfolder + '/output.txt', 'w') as file:
+            args = [
+                '../' + augustusbin,
+                '--species=human',
+                '--speciesfilenames=genomes.tbl',
+                '--treefile=tree.nwk',
+                '--alnfile=aln.maf',
+                '--alternatives-from-evidence=0',  # removes warning
+                '--/CompPred/outdir=' + resfolder
+            ]
+            p = subprocess.Popen(args, stdout=file, stderr=subprocess.PIPE, universal_newlines=True)
+        p.wait()
+        error = p.stderr.read()
+        p.stderr.close()
+        self.assertEqual(error, '', error)
+
+        # filter output files
+        for file in os.listdir(resfolder):
+            filename = os.fsdecode(file)
+            if filename.endswith('.gff'):
+                afilter.cgp(
+                    resfolder + '/' + filename,
+                    resfolder + '/' + filename.replace('.gff', '.filtered.gff'))
+                os.remove(resfolder + '/' + filename)
+
+        # set working directory back to base test directory
+        os.chdir('../../examples_test')
+
+
+    def test_cgp_sqlite(self):
+        self.cgp_with_db_preparation(False, False)
+
+
+    def test_cgp_sqlite_hints(self):
+        self.cgp_with_db_preparation(True, False)
+
+
+    def cgp_with_db_execution(self, max_sub_p, resfolder, *args):
+        os.mkdir(resfolder)
+        proc_list = []
+
+        # create groups according to the number of maxumim subprocesses
+        grouped_args = [iter(args)] * max_sub_p
+
+        # parallel execution of the commands of each group
+        for arg_list in itertools.zip_longest(*grouped_args):
+            proc_list = []
+            for cmd, filename in filter(None, arg_list):
+                with open(filename, 'w') as file:
+                    proc_list.append(
+                        subprocess.Popen(cmd, stdout=file, stderr=subprocess.PIPE, universal_newlines=True))
+            for p in proc_list:
+                p.wait()
+            for p in proc_list:
+                error = p.stderr.read()
+                p.stderr.close()
+                self.assertEqual(error, '', error)
+
+        # filter output prediction files
+        for subdir, dirs, files in os.walk(resfolder):
+            for file in files:
+                filename = os.fsdecode(file)
+                if filename.endswith('.gff'):
+                    afilter.cgp(
+                        subdir + '/' + filename,
+                        subdir + '/' + filename.replace('.gff', '.filtered.gff'))
+                    os.remove(subdir + '/' + filename)
+
+
+    def cgp_with_db_preparation(self, hints, mysql):
+        #TODO: use config file for mysql information 
+        #dbname = kwargs.get('dbname', None)
+        #host = kwargs.get('host', None)
+        #user = kwargs.get('user', None)
+        #passwd = kwargs.get('passwd', None)
+
+        if mysql:
+            missing_arguments = False
+            if dbname is None:
+                print('The database name is missing!')
+                missing_arguments = True
+            if host is None:
+                print('The host name is missing!')
+                missing_arguments = True
+            if user is None:
+                print('The db user name is missing!')
+                missing_arguments = True
+            if passwd is None:
+                print('The db user passwd is missing!')
+                missing_arguments = True
             
-    #         if missing_arguments:
-    #             print('Test case test_cgp_with_db_creation was not executed.')
-    #             return
-    #         else:
-    #             cleanup_mysqldb('aug_vertebrates', 'localhost', 'augustus', 'aug_passwd')
-    #             init_mysql_db(dbname, host, user, passwd)
+            if missing_arguments:
+                print('Test case test_cgp_with_db was not executed.')
+                return
+            else:
+                cleanup_mysqldb('aug_vertebrates', 'localhost', 'augustus', 'aug_passwd')
+                init_mysql_db(dbname, host, user, passwd)
 
-    #     os.chdir('../examples/cgp')
+        os.chdir('../examples/cgp')
 
-    #     resfolder = '../' + testdir + test_cgp_with_db_creation.__name__
-    #     if mysql:
-    #         resfolder += '_mysql'
-    #     if hints:
-    #         resfolder += '_hints'
+        resfolder = '../' + testdir + 'test_cgp_with_db'
+        if mysql:
+            resfolder += '_mysql'
+        if hints:
+            resfolder += '_hints'
 
-    #     cmd = [
-    #         '../' + augustusbin,
-    #         '--species=human',
-    #         '--speciesfilenames=genomes.tbl',
-    #         '--treefile=tree.nwk',
-    #         '--alnfile=aln.maf',
-    #         '--alternatives-from-evidence=0',  # removes warning
-    #         '--/CompPred/outdir=' + resfolder + '/pred' 
-    #     ]
+        cmd = [
+            '../' + augustusbin,
+            '--species=human',
+            '--speciesfilenames=genomes.tbl',
+            '--treefile=tree.nwk',
+            '--alnfile=aln.maf',
+            '--alternatives-from-evidence=0',  # removes warning
+            '--/CompPred/outdir=' + resfolder + '/pred' 
+        ]
 
-    #     if mysql:
-    #         cmd.append('--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd)
-    #     else:
-    #         cmd.append('--dbaccess=../../examples_test/data/tmp/vertebrates.db')
+        if mysql:
+            cmd.append('--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd)
+        else:
+            cmd.append('--dbaccess=../../examples_test/data/tmp/vertebrates.db')
 
-    #     if hints:
-    #         cmd.append('--dbhints=true')
-    #         cmd.append('--extrinsicCfgFile=cgp.extrinsic.cfg')
+        if hints:
+            cmd.append('--dbhints=true')
+            cmd.append('--extrinsicCfgFile=cgp.extrinsic.cfg')
 
-    #     args = [[cmd,  resfolder + '/aug.out']]
+        args = [[cmd,  resfolder + '/aug.out']]
 
-    #     test_cgp_db_execution(1, resfolder, *args)
+        self.cgp_with_db_execution(1, resfolder, *args)
 
-    #     # set working directory back to base test directory
-    #     os.chdir('../../examples_test')
-
-
-    # def test_cgp_denovo_tutorial(max_sub_p):
-    #     os.chdir('../docs/tutorial-cgp/results/mafs')
-    #     resfolder = '../../../' + testdir + test_cgp_denovo_tutorial.__name__
-    #     args = []
-
-    #     # create command list for all alignment files
-    #     for idx, alin in enumerate(os.listdir(os.curdir), 1):
-    #         args.append([
-    #             [
-    #                 '../../../' + augustusbin,
-    #                 '--species=human',
-    #                 '--softmasking=1',
-    #                 '--speciesfilenames=../../../../examples_test/data/cgp_genomes.tbl',
-    #                 '--treefile=../../data/tree.nwk',
-    #                 '--alnfile=' + alin.__str__(),
-    #                 '--alternatives-from-evidence=0',  # removes warning
-    #                 '--dbaccess=../vertebrates.db',
-    #                 '--/CompPred/outdir=' + resfolder + '/pred' + str(idx)
-    #             ],
-    #             resfolder + "/aug-" + str(idx) + ".out"
-    #         ])
-
-    #     test_cgp_db_execution(max_sub_p, resfolder, *args)
-
-    #     # set working directory back to base test directory
-    #     os.chdir('../../../../examples_test/')
+        # set working directory back to base test directory
+        os.chdir('../../examples_test')
 
 
-    # def test_cgp_rna_hint_tutorial(max_sub_p):
-    #     os.chdir('../docs/tutorial-cgp/results/mafs')
-    #     resfolder = '../../../' + testdir + test_cgp_rna_hint_tutorial.__name__
-    #     args = []
+    def test_cgp_denovo_tutorial(self):
+        os.chdir('../docs/tutorial-cgp/results/mafs')
+        resfolder = '../../../' + testdir + self.test_cgp_denovo_tutorial.__name__
+        args = []
 
-    #     # create command list for all alignment files
-    #     for idx, alin in enumerate(os.listdir(os.curdir), 1):
-    #         args.append([
-    #             [
-    #                 '../../../' + augustusbin,
-    #                 '--species=human',
-    #                 '--softmasking=1',
-    #                 '--speciesfilenames=../../../../examples_test/data/cgp_genomes.tbl',
-    #                 '--treefile=../../data/tree.nwk',
-    #                 '--alnfile=' + alin.__str__(),
-    #                 '--alternatives-from-evidence=0',  # removes warning
-    #                 '--dbaccess=../vertebrates.db',
-    #                 '--dbhints=1',
-    #                 '--UTR=1',
-    #                 '--allow_hinted_splicesites=atac',
-    #                 '--extrinsicCfgFile=../extrinsic-rnaseq.cfg',
-    #                 '--/CompPred/outdir=' + resfolder + '/pred' + str(idx)
-    #             ],
-    #             resfolder + "/aug-" + str(idx) + ".out"
-    #         ])
+        # create command list for all alignment files
+        for idx, alin in enumerate(os.listdir(os.curdir), 1):
+            args.append([
+                [
+                    '../../../' + augustusbin,
+                    '--species=human',
+                    '--softmasking=1',
+                    '--speciesfilenames=../../../../examples_test/data/cgp_genomes.tbl',
+                    '--treefile=../../data/tree.nwk',
+                    '--alnfile=' + alin.__str__(),
+                    '--alternatives-from-evidence=0',  # removes warning
+                    '--dbaccess=../vertebrates.db',
+                    '--/CompPred/outdir=' + resfolder + '/pred' + str(idx)
+                ],
+                resfolder + '/aug-' + str(idx) + '.out'
+            ])
 
-    #     test_cgp_db_execution(max_sub_p, resfolder, *args)
+        #TODO: use config for number of maximal sub processes
+        self.cgp_with_db_execution(4, resfolder, *args)
 
-    #     # set working directory back to base test directory
-    #     os.chdir('../../../../examples_test/')
+        # set working directory back to base test directory
+        os.chdir('../../../../examples_test/')
+
+
+    def test_cgp_rna_hint_tutorial(self):
+        os.chdir('../docs/tutorial-cgp/results/mafs')
+        resfolder = '../../../' + testdir + self.test_cgp_rna_hint_tutorial.__name__
+        args = []
+
+        # create command list for all alignment files
+        for idx, alin in enumerate(os.listdir(os.curdir), 1):
+            args.append([
+                [
+                    '../../../' + augustusbin,
+                    '--species=human',
+                    '--softmasking=1',
+                    '--speciesfilenames=../../../../examples_test/data/cgp_genomes.tbl',
+                    '--treefile=../../data/tree.nwk',
+                    '--alnfile=' + alin.__str__(),
+                    '--alternatives-from-evidence=0',  # removes warning
+                    '--dbaccess=../vertebrates.db',
+                    '--dbhints=1',
+                    '--UTR=1',
+                    '--allow_hinted_splicesites=atac',
+                    '--extrinsicCfgFile=../extrinsic-rnaseq.cfg',
+                    '--/CompPred/outdir=' + resfolder + '/pred' + str(idx)
+                ],
+                resfolder + '/aug-' + str(idx) + '.out'
+            ])
+
+        #TODO: use config for number of maximal sub processes
+        self.cgp_with_db_execution(4, resfolder, *args)
+
+        # set working directory back to base test directory
+        os.chdir('../../../../examples_test/')
 
 
 if __name__ == '__main__':
-    print('Executing test cases...')
     unittest.main()
     #create_initial_testdir()
     #test_utr_on()
