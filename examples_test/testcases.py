@@ -2,6 +2,7 @@
 
 import unittest
 import itertools
+import json
 import subprocess
 import os
 import shutil
@@ -19,7 +20,25 @@ testdir = '../examples_test_output/'
 augustusbin = '../bin/augustus'
 
 class TestAugustus(unittest.TestCase):
+    dbname = ''
+    dbhost = ''
+    dbuser = ''
+    dbpasswd = ''
+    cpuno = 2
 
+
+    @classmethod
+    def read_config(cls):
+        with open('testconfig.json', 'r') as file:
+            config = json.load(file)
+
+        cls.dbname = config['dbname']
+        cls.dbhost = config['dbhost']
+        cls.dbuser = config['dbuser']
+        cls.dbpasswd = config['dbpasswd']
+        cls.cpuno = config['cpuno']
+
+    
     @classmethod
     def create_initial_testdir(cls):
         if os.path.exists(testdir):
@@ -597,6 +616,7 @@ def small_test_suite():
 
 
 if __name__ == '__main__':
+    TestAugustus.read_config()
     runner = unittest.TextTestRunner(verbosity=2)
     #runner.run(default_test_suite())
     runner.run(small_test_suite())
