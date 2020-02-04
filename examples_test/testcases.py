@@ -87,14 +87,15 @@ class TestAugustus(unittest.TestCase):
             print(output)
 
 
-    def init_mysql_db(dbname, host, user, passwd):
+    @classmethod
+    def init_mysql_db(cls):
         cmd_list = [
-            ['../bin/load2db', '--species=hg19', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/human.fa'],  
-            ['../bin/load2db', '--species=mm9', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/mouse.fa'],  
-            ['../bin/load2db', '--species=bosTau4', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/cow.fa'],  
-            ['../bin/load2db', '--species=galGal3', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/chicken.fa'],  
-            ['../bin/load2db', '--species=hg19', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/human.hints.gff'],  
-            ['../bin/load2db', '--species=mm9', '--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd, '../examples/cgp/mouse.hints.gff']] 
+            ['../bin/load2db', '--species=hg19', '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' + cls.dbuser + ',' + cls.dbpasswd, '../examples/cgp/human.fa'],  
+            ['../bin/load2db', '--species=mm9', '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' + cls.dbuser + ',' + cls.dbpasswd, '../examples/cgp/mouse.fa'],  
+            ['../bin/load2db', '--species=bosTau4', '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' + cls.dbuser + ',' + cls.dbpasswd, '../examples/cgp/cow.fa'],  
+            ['../bin/load2db', '--species=galGal3', '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' + cls.dbuser + ',' + cls.dbpasswd, '../examples/cgp/chicken.fa'],  
+            ['../bin/load2db', '--species=hg19', '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' + cls.dbuser + ',' + cls.dbpasswd, '../examples/cgp/human.hints.gff'],  
+            ['../bin/load2db', '--species=mm9', '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' + cls.dbuser + ',' + cls.dbpasswd, '../examples/cgp/mouse.hints.gff']] 
 
         print('Inserting data into MySQL database for testing purposes:' + '\n')
 
@@ -120,12 +121,13 @@ class TestAugustus(unittest.TestCase):
             os.remove('data/tmp/chr2L.sm.fa')
 
 
-    def cleanup_mysqldb(dbname, host, user, passwd):
+    @classmethod
+    def cleanup_mysqldb(cls):
         mysqldb = mysql.connector.connect(
-            host=host,
-            user=user,
-            passwd=passwd,
-            database=dbname
+            host=cls.dbhost,
+            user=cls.dbuser,
+            passwd=cls.dbpasswd,
+            database=cls.dbname
         )
 
         print('Clean up MySQL database.' + '\n')
@@ -139,6 +141,7 @@ class TestAugustus(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.read_config()
         cls.create_initial_testdir()
         cls.init_test_data()
         cls.init_sqlite_db()
@@ -428,6 +431,14 @@ class TestAugustus(unittest.TestCase):
         self.cgp_with_db_preparation(True, False)
 
 
+    def test_cgp_mysql(self):
+        self.cgp_with_db_preparation(False, True)
+
+
+    def test_cgp_mysql_hints(self):
+        self.cgp_with_db_preparation(True, True)
+
+
     def cgp_with_db_execution(self, max_sub_p, resfolder, *args):
         os.mkdir(resfolder)
         proc_list = []
@@ -461,33 +472,27 @@ class TestAugustus(unittest.TestCase):
 
 
     def cgp_with_db_preparation(self, hints, mysql):
-        #TODO: use config file for mysql information 
-        #dbname = kwargs.get('dbname', None)
-        #host = kwargs.get('host', None)
-        #user = kwargs.get('user', None)
-        #passwd = kwargs.get('passwd', None)
-
         if mysql:
             missing_arguments = False
-            if dbname is None:
+            if TestAugustus.dbname is None:
                 print('The database name is missing!')
                 missing_arguments = True
-            if host is None:
+            if TestAugustus.dbhost is None:
                 print('The host name is missing!')
                 missing_arguments = True
-            if user is None:
+            if TestAugustus.dbuser is None:
                 print('The db user name is missing!')
                 missing_arguments = True
-            if passwd is None:
+            if TestAugustus.dbpasswd is None:
                 print('The db user passwd is missing!')
                 missing_arguments = True
             
             if missing_arguments:
                 print('Test case test_cgp_with_db was not executed.')
-                return
+                return 1
             else:
-                cleanup_mysqldb('aug_vertebrates', 'localhost', 'augustus', 'aug_passwd')
-                init_mysql_db(dbname, host, user, passwd)
+                TestAugustus.cleanup_mysqldb()
+                TestAugustus.init_mysql_db()
 
         os.chdir('../examples/cgp')
 
@@ -508,7 +513,7 @@ class TestAugustus(unittest.TestCase):
         ]
 
         if mysql:
-            cmd.append('--dbaccess=' + dbname + ',' + host + ',' + user + ',' + passwd)
+            cmd.append('--dbaccess=' + TestAugustus.dbname + ',' + TestAugustus.dbhost + ',' + TestAugustus.dbuser + ',' + TestAugustus.dbpasswd)
         else:
             cmd.append('--dbaccess=../../examples_test/data/tmp/vertebrates.db')
 
@@ -615,8 +620,15 @@ def small_test_suite():
     return suite
 
 
+def mysql_test_suite():
+    suite = unittest.TestSuite()
+    suite.addTest(TestAugustus('test_cgp_mysql'))
+    suite.addTest(TestAugustus('test_cgp_mysql_hints'))
+    return suite
+
+
 if __name__ == '__main__':
-    TestAugustus.read_config()
     runner = unittest.TextTestRunner(verbosity=2)
     #runner.run(default_test_suite())
     runner.run(small_test_suite())
+    #runner.run(mysql_test_suite())
