@@ -1,0 +1,7 @@
+{
+    "cpuno": "4",
+    "dbhost": "localhost",
+    "dbname": "aug_vertebrates",
+    "dbpasswd": "aug_passwd",
+    "dbuser": "augustus"
+}
