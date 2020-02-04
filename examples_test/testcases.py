@@ -256,7 +256,7 @@ class TestAugustus(unittest.TestCase):
         stdout = p.stdout.read()
         p.stdout.close()
         p.stderr.close()
-        print(stdout)
+        #print(stdout)
         print(error)
 
         # training
@@ -567,22 +567,36 @@ class TestAugustus(unittest.TestCase):
         os.chdir('../../../../examples_test/')
 
 
+def default_test_suite():
+    suite = unittest.TestSuite()
+    suite.addTest(TestAugustus('test_utr_on'))
+    suite.addTest(TestAugustus('test_iterative_prediction'))
+    suite.addTest(TestAugustus('test_iterative_prediction_with_hints'))
+    suite.addTest(TestAugustus('test_training_new_species'))
+    suite.addTest(TestAugustus('test_training_new_species_crf'))
+    suite.addTest(TestAugustus('test_ab_initio_prediction'))
+    suite.addTest(TestAugustus('test_format_and_error_out'))
+    suite.addTest(TestAugustus('test_alternatives_from_sampling'))
+    suite.addTest(TestAugustus('test_cgp'))
+    suite.addTest(TestAugustus('test_cgp_sqlite'))
+    suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
+    return suite
+
+
+def small_test_suite():
+    suite = unittest.TestSuite()
+    suite.addTest(TestAugustus('test_utr_on'))
+    suite.addTest(TestAugustus('test_training_new_species'))
+    suite.addTest(TestAugustus('test_ab_initio_prediction'))
+    suite.addTest(TestAugustus('test_format_and_error_out'))
+    suite.addTest(TestAugustus('test_alternatives_from_sampling'))
+    suite.addTest(TestAugustus('test_cgp'))
+    suite.addTest(TestAugustus('test_cgp_sqlite'))
+    suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
+    return suite
+
+
 if __name__ == '__main__':
-    unittest.main()
-    #create_initial_testdir()
-    #test_utr_on()
-    #test_iterative_prediction()
-    #test_iterative_prediction_with_hints()
-    #test_training_new_species(True) # with crf
-    #test_training_new_species(False)
-    #test_ab_initio_prediction()
-    #test_format_and_error_out()
-    #test_alternatives_from_sampling()
-    #test_cgp()
-    #test_cgp_with_db_creation(False, False)
-    #test_cgp_with_db_creation(True, False)  # with hints
-    # test_cgp_with_db_creation(False, True, dbname='aug_vertebrates', host='localhost', user='augustus', passwd='aug_passwd') # with mysql
-    # test_cgp_with_db_creation(True, True, dbname='aug_vertebrates', host='localhost', user='augustus', passwd='aug_passwd')  # with mysql and hints
-    # test_cgp_denovo_tutorial(4)     # maybe longrunning
-    # test_cgp_rna_hint_tutorial(4)   # maybe longrunning
-    #cleanup()
+    runner = unittest.TextTestRunner()
+    #runner.run(default_test_suite())
+    runner.run(small_test_suite())
