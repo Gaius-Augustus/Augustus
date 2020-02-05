@@ -27,6 +27,12 @@ testdir = '../examples_test_output/'
 augustusbin = '../bin/augustus'
 
 
+def create_initial_testdir():
+    if os.path.exists(testdir):
+        shutil.rmtree(testdir)
+    os.mkdir(testdir)
+
+
 class TestAugustus(unittest.TestCase):
     dbname = ''
     dbhost = ''
@@ -44,12 +50,6 @@ class TestAugustus(unittest.TestCase):
         cls.dbuser = config['dbuser']
         cls.dbpasswd = config['dbpasswd']
         cls.cpuno = int(config['cpuno'])
-
-    @classmethod
-    def create_initial_testdir(cls):
-        if os.path.exists(testdir):
-            shutil.rmtree(testdir)
-        os.mkdir(testdir)
 
     @classmethod
     def init_test_data(cls):
@@ -204,7 +204,6 @@ class TestAugustus(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.read_config()
-        cls.create_initial_testdir()
         cls.init_test_data()
         cls.init_sqlite_db()
 
@@ -715,6 +714,7 @@ def print_tc_header(tc_name):
 
 
 if __name__ == '__main__':
+    create_initial_testdir()
     runner = unittest.TextTestRunner(verbosity=2)
     #print_tc_header('Small test suite')
     #runner.run(default_test_suite())
