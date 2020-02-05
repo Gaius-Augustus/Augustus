@@ -36,7 +36,7 @@ class TestAugustus(unittest.TestCase):
         cls.dbhost = config['dbhost']
         cls.dbuser = config['dbuser']
         cls.dbpasswd = config['dbpasswd']
-        cls.cpuno = config['cpuno']
+        cls.cpuno = int(config['cpuno'])
 
     
     @classmethod
@@ -439,12 +439,12 @@ class TestAugustus(unittest.TestCase):
         self.cgp_with_db_preparation(True, True)
 
 
-    def cgp_with_db_execution(self, max_sub_p, resfolder, *args):
+    def cgp_with_db_execution(self, resfolder, *args):
         os.mkdir(resfolder)
         proc_list = []
 
-        # create groups according to the number of maxumim subprocesses
-        grouped_args = [iter(args)] * max_sub_p
+        # create groups according to the configured number of cpus 
+        grouped_args = [iter(args)] * TestAugustus.cpuno
 
         # parallel execution of the commands of each group
         for arg_list in itertools.zip_longest(*grouped_args):
@@ -523,7 +523,7 @@ class TestAugustus(unittest.TestCase):
 
         args = [[cmd,  resfolder + '/aug.out']]
 
-        self.cgp_with_db_execution(1, resfolder, *args)
+        self.cgp_with_db_execution(resfolder, *args)
 
         # set working directory back to base test directory
         os.chdir('../../examples_test')
@@ -551,8 +551,7 @@ class TestAugustus(unittest.TestCase):
                 resfolder + '/aug-' + str(idx) + '.out'
             ])
 
-        #TODO: use config for number of maximal sub processes
-        self.cgp_with_db_execution(4, resfolder, *args)
+        self.cgp_with_db_execution(resfolder, *args)
 
         # set working directory back to base test directory
         os.chdir('../../../../examples_test/')
@@ -584,8 +583,7 @@ class TestAugustus(unittest.TestCase):
                 resfolder + '/aug-' + str(idx) + '.out'
             ])
 
-        #TODO: use config for number of maximal sub processes
-        self.cgp_with_db_execution(4, resfolder, *args)
+        self.cgp_with_db_execution(resfolder, *args)
 
         # set working directory back to base test directory
         os.chdir('../../../../examples_test/')
@@ -630,5 +628,5 @@ def mysql_test_suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner(verbosity=2)
     #runner.run(default_test_suite())
-    runner.run(small_test_suite())
-    #runner.run(mysql_test_suite())
+    #runner.run(small_test_suite())
+    runner.run(mysql_test_suite())
