@@ -8,7 +8,6 @@ import subprocess
 import os
 import shutil
 import gzip
-import mysql.connector
 import aug_out_filter as afilter
 
 #TODO: generate optional script arguments for mysql case and compare mode (argparse)
@@ -19,6 +18,11 @@ parser.add_argument('--mysql',
                     action='store_true',
                     help='Execute cgp test cases using a MySQL database.')
 args = parser.parse_args()
+
+# only import mysql connector if testcases using mysql should be executed
+# MySQL Connector must be installed in this case
+if args.mysql:
+    import mysql.connector
 
 testdir = '../examples_test_output/'
 augustusbin = '../bin/augustus'
