@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import unittest
 import itertools
 import json
@@ -15,6 +16,10 @@ import aug_out_filter as afilter
 #TODO: generate optional script arguments for mysql case and compare mode (argparse)
 #TODO: use conditional mysql import
 #TODO: use test suite for different configs (mysql)
+
+parser = argparse.ArgumentParser(description='Execute Augustus test cases.')
+parser.add_argument('--mysql', action='store_true', help='Execute cgp test cases using a MySQL database.')
+args = parser.parse_args()
 
 testdir = '../examples_test_output/'
 augustusbin = '../bin/augustus'
@@ -628,5 +633,6 @@ def mysql_test_suite():
 if __name__ == '__main__':
     runner = unittest.TextTestRunner(verbosity=2)
     #runner.run(default_test_suite())
-    #runner.run(small_test_suite())
-    runner.run(mysql_test_suite())
+    runner.run(small_test_suite())
+    if args.mysql:
+        runner.run(mysql_test_suite())
