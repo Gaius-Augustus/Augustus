@@ -79,7 +79,7 @@ class TestAugustus(unittest.TestCase):
             ['../bin/load2sqlitedb', '--noIdx', '--species=mm9', '--dbaccess=data/tmp/vertebrates.db', '--clean', '../examples/cgp/mouse.hints.gff'],
             ['../bin/load2sqlitedb', '--makeIdx', '--dbaccess=data/tmp/vertebrates.db', '--clean']]
 
-        print('Creating SQLite database for testing purposes:' + '\n')
+        print('Creating SQLite database for cgp test cases...')
 
         for cmd in cmd_list:
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -88,8 +88,9 @@ class TestAugustus(unittest.TestCase):
             output = p.stdout.read()
             p.stdout.close()
             p.stderr.close()
-            print(error)
-            print(output)
+            if error:          
+                print(error)
+            #print(output)
 
 
     @classmethod
@@ -102,7 +103,7 @@ class TestAugustus(unittest.TestCase):
             ['../bin/load2db', '--species=hg19', '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' + cls.dbuser + ',' + cls.dbpasswd, '../examples/cgp/human.hints.gff'],  
             ['../bin/load2db', '--species=mm9', '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' + cls.dbuser + ',' + cls.dbpasswd, '../examples/cgp/mouse.hints.gff']] 
 
-        print('Inserting data into MySQL database for testing purposes:' + '\n')
+        print('  -' + 'Inserting data into MySQL database for testing purposes...')
 
         for cmd in cmd_list:
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -110,9 +111,10 @@ class TestAugustus(unittest.TestCase):
             error = p.stderr.read()
             output = p.stdout.read()
             p.stdout.close()
-            p.stderr.close()            
-            print(error)
-            print(output)
+            p.stderr.close()  
+            if error:          
+                print(error)
+            #print(output)
 
 
     @classmethod
@@ -135,7 +137,7 @@ class TestAugustus(unittest.TestCase):
             database=cls.dbname
         )
 
-        print('Clean up MySQL database.' + '\n')
+        print('\n' + '  -' + 'Clean up MySQL database...')
         augcursor = mysqldb.cursor()
         augcursor.execute('DROP TABLE IF EXISTS genomes;')    
         augcursor.execute('DROP TABLE IF EXISTS speciesnames;')    
@@ -150,7 +152,6 @@ class TestAugustus(unittest.TestCase):
         cls.create_initial_testdir()
         cls.init_test_data()
         cls.init_sqlite_db()
-
 
     @classmethod   
     def tearDownClass(cls):
@@ -284,7 +285,8 @@ class TestAugustus(unittest.TestCase):
         p.stdout.close()
         p.stderr.close()
         #print(stdout)
-        print(error)
+        if error:
+            print(error)
 
         # training
         p = subprocess.Popen([
@@ -630,9 +632,18 @@ def mysql_test_suite():
     return suite
 
 
+def print_tc_header(tc_name):
+    print('----------------------------------------------------------------------')
+    print('Executing ' + tc_name )
+    print('----------------------------------------------------------------------')
+
+
 if __name__ == '__main__':
     runner = unittest.TextTestRunner(verbosity=2)
+    #print_tc_header('Small test suite')
     #runner.run(default_test_suite())
+    print_tc_header('small test suite')
     runner.run(small_test_suite())
     if args.mysql:
+        print_tc_header('MySQL test suite')
         runner.run(mysql_test_suite())
