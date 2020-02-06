@@ -52,7 +52,7 @@ def generate_html(reflines, currentlines, reffile, currentfile):
         os.mkdir(outputfolder)
 
     diff = difflib.HtmlDiff().make_file(reflines, currentlines, reffile,
-                                    currentfile)
+                                        currentfile)
 
     filename = create_html_filename(reffile)
     with open(outputfolder + filename, 'w') as html:
@@ -78,6 +78,4 @@ def create_html_filename(name):
 if __name__ == '__main__':
     reference = sys.argv[1]
     curent = sys.argv[2]
-    #res = compare_files(reference, curent)
-    res = compare_folder(reference, curent, html=True)
-    print(res)
+    print(compare_files(reference, curent))
