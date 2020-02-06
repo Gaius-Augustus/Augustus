@@ -47,11 +47,15 @@ def compare_files(reffile, currentfile, html=False):
 
 
 def generate_html(reflines, currentlines, reffile, currentfile):
+    outputfolder = 'output_html/'
+    if not os.path.exists(outputfolder):
+        os.mkdir(outputfolder)
+
     diff = difflib.HtmlDiff().make_file(reflines, currentlines, reffile,
-                                        currentfile)
+                                    currentfile)
 
     filename = create_html_filename(reffile)
-    with open(filename, 'w') as html:
+    with open(outputfolder + filename, 'w') as html:
         html.write(diff)
 
 
