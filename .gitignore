@@ -52,7 +52,7 @@ src/scanner/lex.o
 .vscode
 
 # ignore generated test output
-examples_test_output/
+examples_test_results/
 
 # ignore tmp test case data
 examples_test/data/tmp/

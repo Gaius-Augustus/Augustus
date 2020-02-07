@@ -23,14 +23,14 @@ args = parser.parse_args()
 if args.mysql:
     import mysql.connector
 
-testdir = '../examples_test_output/'
+resultdir = '../examples_test_results/'
 augustusbin = '../bin/augustus'
 
 
-def create_initial_testdir():
-    if os.path.exists(testdir):
-        shutil.rmtree(testdir)
-    os.mkdir(testdir)
+def create_initial_resultdir():
+    if os.path.exists(resultdir):
+        shutil.rmtree(resultdir)
+    os.mkdir(resultdir)
 
 
 class TestAugustus(unittest.TestCase):
@@ -212,7 +212,7 @@ class TestAugustus(unittest.TestCase):
         cls.cleanup()
 
     def test_utr_on(self):
-        resfolder = testdir + self.test_utr_on.__name__
+        resfolder = resultdir + self.test_utr_on.__name__
 
         os.mkdir(resfolder)
         with open(resfolder + '/aug_utr_on_tmp.gff', 'w') as file:
@@ -238,7 +238,7 @@ class TestAugustus(unittest.TestCase):
         os.remove(resfolder + '/aug_utr_on_tmp.gff')
 
     def test_iterative_prediction(self):
-        resfolder = testdir + self.test_iterative_prediction.__name__
+        resfolder = resultdir + self.test_iterative_prediction.__name__
         species_list = ['nasonia', 'zebrafish', 'tomato']
         proc_list = []
 
@@ -274,7 +274,7 @@ class TestAugustus(unittest.TestCase):
             os.remove(source)
 
     def test_iterative_prediction_with_hints(self):
-        resfolder = testdir + self.test_iterative_prediction_with_hints.__name__
+        resfolder = resultdir + self.test_iterative_prediction_with_hints.__name__
         proc_list = []
         if not os.path.isfile('data/tmp/chr2L.sm.fa'):
             init_test_data()
@@ -321,9 +321,9 @@ class TestAugustus(unittest.TestCase):
 
     def training_new_species(self, crf):
         speciesname = 'test_aug_dev_species'
-        resfolder = (testdir +
+        resfolder = (resultdir +
                      self.test_training_new_species_crf.__name__) if crf else (
-                         testdir + self.test_training_new_species.__name__)
+                         resultdir + self.test_training_new_species.__name__)
         os.mkdir(resfolder)
 
         # call script to initialzie new species
@@ -388,7 +388,7 @@ class TestAugustus(unittest.TestCase):
         shutil.move('../config/species/' + speciesname, resfolder)
 
     def test_ab_initio_prediction(self):
-        resfolder = testdir + self.test_ab_initio_prediction.__name__
+        resfolder = resultdir + self.test_ab_initio_prediction.__name__
 
         os.mkdir(resfolder)
         with open(resfolder + '/augustus_tmp.gff', 'w') as file:
@@ -413,7 +413,7 @@ class TestAugustus(unittest.TestCase):
         os.remove(resfolder + '/augustus_tmp.gff')
 
     def test_format_and_error_out(self):
-        resfolder = testdir + self.test_format_and_error_out.__name__
+        resfolder = resultdir + self.test_format_and_error_out.__name__
 
         os.mkdir(resfolder)
         args = [
@@ -440,7 +440,7 @@ class TestAugustus(unittest.TestCase):
         os.remove(resfolder + '/augustus_tmp.gff3')
 
     def test_alternatives_from_sampling(self):
-        resfolder = testdir + self.test_alternatives_from_sampling.__name__
+        resfolder = resultdir + self.test_alternatives_from_sampling.__name__
 
         os.mkdir(resfolder)
         with open(resfolder + '/augustus_tmp.gff', 'w') as file:
@@ -468,7 +468,7 @@ class TestAugustus(unittest.TestCase):
 
     def test_cgp(self):
         os.chdir('../examples/cgp')
-        resfolder = '../' + testdir + self.test_cgp.__name__
+        resfolder = '../' + resultdir + self.test_cgp.__name__
         os.mkdir(resfolder)
 
         with open(resfolder + '/output.txt', 'w') as file:
@@ -573,7 +573,7 @@ class TestAugustus(unittest.TestCase):
 
         os.chdir('../examples/cgp')
 
-        resfolder = '../' + testdir + 'test_cgp_with_db'
+        resfolder = '../' + resultdir + 'test_cgp_with_db'
         if mysql:
             resfolder += '_mysql'
         if hints:
@@ -610,7 +610,7 @@ class TestAugustus(unittest.TestCase):
 
     def test_cgp_denovo_tutorial(self):
         os.chdir('../docs/tutorial-cgp/results/mafs')
-        resfolder = '../../../' + testdir + self.test_cgp_denovo_tutorial.__name__
+        resfolder = '../../../' + resultdir + self.test_cgp_denovo_tutorial.__name__
         args = []
 
         # create command list for all alignment files
@@ -637,7 +637,7 @@ class TestAugustus(unittest.TestCase):
 
     def test_cgp_rna_hint_tutorial(self):
         os.chdir('../docs/tutorial-cgp/results/mafs')
-        resfolder = '../../../' + testdir + self.test_cgp_rna_hint_tutorial.__name__
+        resfolder = '../../../' + resultdir + self.test_cgp_rna_hint_tutorial.__name__
         args = []
 
         # create command list for all alignment files
@@ -714,9 +714,9 @@ def print_tc_header(tc_name):
 
 
 if __name__ == '__main__':
-    create_initial_testdir()
+    create_initial_resultdir()
     runner = unittest.TextTestRunner(verbosity=2)
-    #print_tc_header('Small test suite')
+    #print_tc_header('default test suite')
     #runner.run(default_test_suite())
     print_tc_header('small test suite')
     runner.run(small_test_suite())
