@@ -18,6 +18,9 @@ parser.add_argument('--mysql',
 parser.add_argument('--compare',
                     action='store_true',
                     help='Compare generated results with reference results.')
+parser.add_argument('--html',
+                    action='store_true',
+                    help='Save diff results in html file.')
 args = parser.parse_args()
 
 # only import mysql connector if testcases using mysql should be executed
@@ -27,10 +30,14 @@ if args.mysql:
 
 resultdir = '../examples_test_results/'
 refdir = '../examples_results/'
+htmldir = 'output_html/'
 augustusbin = '../bin/augustus'
 
 
 def create_initial_resultdir():
+    if os.path.exists(htmldir):
+        shutil.rmtree(htmldir)
+
     if os.path.exists(resultdir):
         shutil.rmtree(resultdir)
     os.mkdir(resultdir)
@@ -242,8 +249,10 @@ class TestAugustus(unittest.TestCase):
 
         # compare results
         if args.compare:
-            diff = comp.compare_folder(
-                refdir + self.test_utr_on.__name__ + '/', resfolder)
+            diff = comp.compare_folder(refdir + self.test_utr_on.__name__ +
+                                       '/',
+                                       resfolder,
+                                       html=args.html)
         self.assertEqual(diff, '', diff)
 
     def test_iterative_prediction(self):
