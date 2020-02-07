@@ -25,19 +25,27 @@ def eval(sourcepath, targetpath):
     filter(sourcepath, targetpath, ignoredlines)
 
 
-def search_for_lines_to_ignore(sourcepath, startwith, ignores):
+def cgp_out(sourcepath, targetpath):
+    startwith = ''
+    ignores = ['# total time:']
+    ignoredlines = search_for_lines_to_ignore(sourcepath, startwith, ignores, startblock=False)
+    filter(sourcepath, targetpath, ignoredlines)
+
+
+def search_for_lines_to_ignore(sourcepath, startwith, ignores, startblock=True):
     ignoredlines = []
 
     # startblock
-    with open(sourcepath) as fp:
-        line = fp.readline()
-        lno = 1
-        while line:
-            if startwith in line.strip():
-                break
+    if startblock:
+        with open(sourcepath) as fp:
             line = fp.readline()
-            ignoredlines.append(lno)
-            lno += 1
+            lno = 1
+            while line:
+                if startwith in line.strip():
+                    break
+                line = fp.readline()
+                ignoredlines.append(lno)
+                lno += 1
 
     # other lines to ignore
     if len(ignores) > 0:
