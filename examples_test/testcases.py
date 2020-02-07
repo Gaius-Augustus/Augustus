@@ -50,6 +50,9 @@ class TestAugustus(unittest.TestCase):
     dbpasswd = ''
     cpuno = 2
 
+    opt_compare = False
+    opt_html = False
+
     @classmethod
     def read_config(cls):
         with open('testconfig.json', 'r') as file:
@@ -248,22 +251,22 @@ class TestAugustus(unittest.TestCase):
         os.remove(resfolder + 'aug_utr_on_tmp.gff')
 
         # compare results
-        if args.compare:
+        if TestAugustus.opt_compare:
             diff = comp.compare_folder(refdir + self.test_utr_on.__name__ +
                                        '/',
                                        resfolder,
-                                       html=args.html)
+                                       html=TestAugustus.opt_html)
         self.assertEqual(diff, '', diff)
 
     def test_iterative_prediction(self):
-        resfolder = resultdir + self.test_iterative_prediction.__name__
+        resfolder = resultdir + self.test_iterative_prediction.__name__ + '/'
         species_list = ['nasonia', 'zebrafish', 'tomato']
         proc_list = []
 
         # run augustus several times with different parameter sets
         os.mkdir(resfolder)
         for species in species_list:
-            with open(resfolder + '/aug.' + species + '.1-1M_tmp.gff',
+            with open(resfolder + 'aug.' + species + '.1-1M_tmp.gff',
                       'w') as file:
                 proc_list.append(
                     subprocess.Popen([
@@ -284,22 +287,30 @@ class TestAugustus(unittest.TestCase):
 
         # filter output
         for species in species_list:
-            source = resfolder + '/aug.' + species + '.1-1M_tmp.gff'
+            source = resfolder + 'aug.' + species + '.1-1M_tmp.gff'
             self.assertTrue(os.path.isfile(source),
                             'Output file was not created as expected!')
-            target = resfolder + '/aug.' + species + '.1-1M.gff'
+            target = resfolder + 'aug.' + species + '.1-1M.gff'
             afilter.pred(source, target)
             os.remove(source)
 
+        # compare results
+        if TestAugustus.opt_compare:
+            diff = comp.compare_folder(
+                refdir + self.test_iterative_prediction.__name__ + '/',
+                resfolder,
+                html=TestAugustus.opt_html)
+        self.assertEqual(diff, '', diff)
+
     def test_iterative_prediction_with_hints(self):
-        resfolder = resultdir + self.test_iterative_prediction_with_hints.__name__
+        resfolder = resultdir + self.test_iterative_prediction_with_hints.__name__ + '/'
         proc_list = []
         if not os.path.isfile('data/tmp/chr2L.sm.fa'):
             init_test_data()
 
         os.mkdir(resfolder)
         for i in range(0, 3):
-            with open(resfolder + '/aug.nasonia.hints.' + str(i) + '_tmp.gff',
+            with open(resfolder + 'aug.nasonia.hints.' + str(i) + '_tmp.gff',
                       'w') as file:
                 proc_list.append(
                     subprocess.Popen([
@@ -324,12 +335,21 @@ class TestAugustus(unittest.TestCase):
 
         # filter output
         for i in range(0, 3):
-            source = resfolder + '/aug.nasonia.hints.' + str(i) + '_tmp.gff'
+            source = resfolder + 'aug.nasonia.hints.' + str(i) + '_tmp.gff'
             self.assertTrue(os.path.isfile(source),
                             'Output file was not created as expected!')
-            target = resfolder + '/aug.nasonia.hints.' + str(i) + '.gff'
+            target = resfolder + 'aug.nasonia.hints.' + str(i) + '.gff'
             afilter.pred(source, target)
             os.remove(source)
+
+        # compare results
+        if TestAugustus.opt_compare:
+            diff = comp.compare_folder(
+                refdir + self.test_iterative_prediction_with_hints.__name__ +
+                '/',
+                resfolder,
+                html=TestAugustus.opt_html)
+        self.assertEqual(diff, '', diff)
 
     def test_training_new_species(self):
         self.training_new_species(False)
@@ -339,9 +359,13 @@ class TestAugustus(unittest.TestCase):
 
     def training_new_species(self, crf):
         speciesname = 'test_aug_dev_species'
-        resfolder = (resultdir +
-                     self.test_training_new_species_crf.__name__) if crf else (
-                         resultdir + self.test_training_new_species.__name__)
+        resfolder = (
+            resultdir +
+            self.test_training_new_species_crf.__name__) if crf else (
+                resultdir + self.test_training_new_species.__name__) + '/'
+        reffolder = (
+            refdir + self.test_training_new_species_crf.__name__) if crf else (
+                resultdir + self.test_training_new_species.__name__) + '/'
         os.mkdir(resfolder)
 
         # call script to initialzie new species
@@ -378,16 +402,16 @@ class TestAugustus(unittest.TestCase):
         self.assertEqual(error, '', error)
 
         # test
-        with open(resfolder + '/test_tmp.out', 'w') as file:
-            args = [
+        with open(resfolder + 'test_tmp.out', 'w') as file:
+            cmd = [
                 augustusbin, '../docs/tutorial2015/results/genes.gb.test',
                 '--species=' + speciesname, '--AUGUSTUS_CONFIG_PATH=../config'
             ]
             if (crf):
-                args.append('--CRF=on')
-                args.append('--CRF_N=2')
-                args.append('--UTR=off')
-            p = subprocess.Popen(args,
+                cmd.append('--CRF=on')
+                cmd.append('--CRF_N=2')
+                cmd.append('--UTR=off')
+            p = subprocess.Popen(cmd,
                                  stdout=file,
                                  stderr=subprocess.PIPE,
                                  universal_newlines=True)
@@ -397,24 +421,31 @@ class TestAugustus(unittest.TestCase):
         self.assertEqual(error, '', error)
 
         # filter output file
-        self.assertTrue(os.path.isfile(resfolder + '/test_tmp.out'),
+        self.assertTrue(os.path.isfile(resfolder + 'test_tmp.out'),
                         'Output file was not created as expected!')
-        afilter.eval(resfolder + '/test_tmp.out', resfolder + '/test.out')
-        os.remove(resfolder + '/test_tmp.out')
+        afilter.eval(resfolder + 'test_tmp.out', resfolder + 'test.out')
+        os.remove(resfolder + 'test_tmp.out')
 
         # move new species to result folder
         shutil.move('../config/species/' + speciesname, resfolder)
 
+        # compare results
+        if TestAugustus.opt_compare:
+            diff = comp.compare_folder(reffolder,
+                                       resfolder,
+                                       html=TestAugustus.opt_html)
+        self.assertEqual(diff, '', diff)
+
     def test_ab_initio_prediction(self):
-        resfolder = resultdir + self.test_ab_initio_prediction.__name__
+        resfolder = resultdir + self.test_ab_initio_prediction.__name__ + '/'
 
         os.mkdir(resfolder)
         with open(resfolder + '/augustus_tmp.gff', 'w') as file:
-            args = [
+            cmd = [
                 augustusbin, '../examples/autoAug/genome.fa',
                 '--species=caenorhabditis'
             ]
-            p = subprocess.Popen(args,
+            p = subprocess.Popen(cmd,
                                  stdout=file,
                                  stderr=subprocess.PIPE,
                                  universal_newlines=True)
@@ -424,23 +455,31 @@ class TestAugustus(unittest.TestCase):
         self.assertEqual(error, '', error)
 
         # filter output file
-        self.assertTrue(os.path.isfile(resfolder + '/augustus_tmp.gff'),
+        self.assertTrue(os.path.isfile(resfolder + 'augustus_tmp.gff'),
                         'Output file was not created as expected!')
-        afilter.pred(resfolder + '/augustus_tmp.gff',
+        afilter.pred(resfolder + 'augustus_tmp.gff',
                      resfolder + '/augustus.gff')
-        os.remove(resfolder + '/augustus_tmp.gff')
+        os.remove(resfolder + 'augustus_tmp.gff')
+
+        # compare results
+        if TestAugustus.opt_compare:
+            diff = comp.compare_folder(
+                refdir + self.test_ab_initio_prediction.__name__ + '/',
+                resfolder,
+                html=TestAugustus.opt_html)
+        self.assertEqual(diff, '', diff)
 
     def test_format_and_error_out(self):
-        resfolder = resultdir + self.test_format_and_error_out.__name__
+        resfolder = resultdir + self.test_format_and_error_out.__name__ + '/'
 
         os.mkdir(resfolder)
-        args = [
+        cmd = [
             augustusbin, '../examples/autoAug/genome.fa',
             '--species=caenorhabditis', '--gff3=on',
-            '--outfile=' + resfolder + '/augustus_tmp.gff3',
-            '--errfile=' + resfolder + '/augustus.err'
+            '--outfile=' + resfolder + 'augustus_tmp.gff3',
+            '--errfile=' + resfolder + 'augustus.err'
         ]
-        p = subprocess.Popen(args,
+        p = subprocess.Popen(cmd,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
                              universal_newlines=True)
@@ -451,24 +490,32 @@ class TestAugustus(unittest.TestCase):
         self.assertEqual(error, '', error)
 
         # filter output file
-        self.assertTrue(os.path.isfile(resfolder + '/augustus_tmp.gff3'),
+        self.assertTrue(os.path.isfile(resfolder + 'augustus_tmp.gff3'),
                         'Output file was not created as expected!')
-        afilter.pred(resfolder + '/augustus_tmp.gff3',
-                     resfolder + '/augustus.gff3')
-        os.remove(resfolder + '/augustus_tmp.gff3')
+        afilter.pred(resfolder + 'augustus_tmp.gff3',
+                     resfolder + 'augustus.gff3')
+        os.remove(resfolder + 'augustus_tmp.gff3')
+
+        # compare results
+        if TestAugustus.opt_compare:
+            diff = comp.compare_folder(
+                refdir + self.test_format_and_error_out.__name__ + '/',
+                resfolder,
+                html=TestAugustus.opt_html)
+        self.assertEqual(diff, '', diff)
 
     def test_alternatives_from_sampling(self):
-        resfolder = resultdir + self.test_alternatives_from_sampling.__name__
+        resfolder = resultdir + self.test_alternatives_from_sampling.__name__ + '/'
 
         os.mkdir(resfolder)
-        with open(resfolder + '/augustus_tmp.gff', 'w') as file:
-            args = [
+        with open(resfolder + 'augustus_tmp.gff', 'w') as file:
+            cmd = [
                 augustusbin, '../examples/autoAug/genome.fa',
                 '--species=caenorhabditis', '--alternatives-from-sampling=on',
                 '--minexonintronprob=0.08', '--minmeanexonintronprob=0.4',
                 '--maxtracks=3'
             ]
-            p = subprocess.Popen(args,
+            p = subprocess.Popen(cmd,
                                  stdout=file,
                                  stderr=subprocess.PIPE,
                                  universal_newlines=True)
@@ -478,19 +525,28 @@ class TestAugustus(unittest.TestCase):
         self.assertEqual(error, '', error)
 
         # filter output file
-        self.assertTrue(os.path.isfile(resfolder + '/augustus_tmp.gff'),
+        self.assertTrue(os.path.isfile(resfolder + 'augustus_tmp.gff'),
                         'Output file was not created as expected!')
-        afilter.pred(resfolder + '/augustus_tmp.gff',
-                     resfolder + '/augustus.gff')
-        os.remove(resfolder + '/augustus_tmp.gff')
+        afilter.pred(resfolder + 'augustus_tmp.gff',
+                     resfolder + 'augustus.gff')
+        os.remove(resfolder + 'augustus_tmp.gff')
+
+        # compare results
+        if TestAugustus.opt_compare:
+            diff = comp.compare_folder(
+                refdir + self.test_alternatives_from_sampling.__name__ + '/',
+                resfolder,
+                html=TestAugustus.opt_html)
+        self.assertEqual(diff, '', diff)
 
     def test_cgp(self):
         os.chdir('../examples/cgp')
-        resfolder = '../' + resultdir + self.test_cgp.__name__
+        resfolder = '../' + resultdir + self.test_cgp.__name__ + '/'
+        reffolder = '../' + refdir + self.test_cgp.__name__ + '/'
         os.mkdir(resfolder)
 
-        with open(resfolder + '/output.txt', 'w') as file:
-            args = [
+        with open(resfolder + 'output_tmp.txt', 'w') as file:
+            cmd = [
                 '../' + augustusbin,
                 '--species=human',
                 '--speciesfilenames=genomes.tbl',
@@ -499,7 +555,7 @@ class TestAugustus(unittest.TestCase):
                 '--alternatives-from-evidence=0',  # removes warning
                 '--/CompPred/outdir=' + resfolder
             ]
-            p = subprocess.Popen(args,
+            p = subprocess.Popen(cmd,
                                  stdout=file,
                                  stderr=subprocess.PIPE,
                                  universal_newlines=True)
@@ -513,9 +569,18 @@ class TestAugustus(unittest.TestCase):
             filename = os.fsdecode(file)
             if filename.endswith('.gff'):
                 afilter.cgp(
-                    resfolder + '/' + filename, resfolder + '/' +
+                    resfolder + filename, resfolder + '/' +
                     filename.replace('.gff', '.filtered.gff'))
-                os.remove(resfolder + '/' + filename)
+                os.remove(resfolder + filename)
+        afilter.cgp_out(resfolder + 'output_tmp.txt', resfolder + 'output.txt')
+        os.remove(resfolder + 'output_tmp.txt')
+
+        # compare results
+        if TestAugustus.opt_compare:
+            diff = comp.compare_folder(reffolder,
+                                       resfolder,
+                                       html=TestAugustus.opt_html)
+        self.assertEqual(diff, '', diff)
 
         # set working directory back to base test directory
         os.chdir('../../examples_test')
@@ -532,7 +597,7 @@ class TestAugustus(unittest.TestCase):
     def test_cgp_mysql_hints(self):
         self.cgp_with_db_preparation(True, True)
 
-    def cgp_with_db_execution(self, resfolder, *args):
+    def cgp_with_db_execution(self, resfolder, reffolder, *args):
         os.mkdir(resfolder)
         proc_list = []
 
@@ -565,6 +630,18 @@ class TestAugustus(unittest.TestCase):
                         subdir + '/' + filename, subdir + '/' +
                         filename.replace('.gff', '.filtered.gff'))
                     os.remove(subdir + '/' + filename)
+                elif filename.endswith('.out'):
+                    afilter.cgp_out(
+                        subdir + '/' + filename,
+                        subdir + '/' + filename.replace('_tmp', ''))
+                    os.remove(subdir + '/' + filename)
+
+        # compare results
+        if TestAugustus.opt_compare:
+            diff = comp.compare_folder(reffolder,
+                                       resfolder,
+                                       html=TestAugustus.opt_html)
+        self.assertEqual(diff, '', diff)
 
     def cgp_with_db_preparation(self, hints, mysql):
         if mysql:
@@ -592,10 +669,15 @@ class TestAugustus(unittest.TestCase):
         os.chdir('../examples/cgp')
 
         resfolder = '../' + resultdir + 'test_cgp_with_db'
+        reffolder = '../' + refdir + 'test_cgp_with_db'
         if mysql:
             resfolder += '_mysql'
+            reffolder += '_mysql'
         if hints:
             resfolder += '_hints'
+            reffolder += '_hints'
+        resfolder += '/'
+        reffolder += '/'
 
         cmd = [
             '../' + augustusbin,
@@ -604,7 +686,7 @@ class TestAugustus(unittest.TestCase):
             '--treefile=tree.nwk',
             '--alnfile=aln.maf',
             '--alternatives-from-evidence=0',  # removes warning
-            '--/CompPred/outdir=' + resfolder + '/pred'
+            '--/CompPred/outdir=' + resfolder + 'pred'
         ]
 
         if mysql:
@@ -619,16 +701,17 @@ class TestAugustus(unittest.TestCase):
             cmd.append('--dbhints=true')
             cmd.append('--extrinsicCfgFile=cgp.extrinsic.cfg')
 
-        args = [[cmd, resfolder + '/aug.out']]
+        args = [[cmd, resfolder + 'aug_tmp.out']]
 
-        self.cgp_with_db_execution(resfolder, *args)
+        self.cgp_with_db_execution(resfolder, reffolder, *args)
 
         # set working directory back to base test directory
         os.chdir('../../examples_test')
 
     def test_cgp_denovo_tutorial(self):
         os.chdir('../docs/tutorial-cgp/results/mafs')
-        resfolder = '../../../' + resultdir + self.test_cgp_denovo_tutorial.__name__
+        resfolder = '../../../' + resultdir + self.test_cgp_denovo_tutorial.__name__ + '/'
+        reffolder = '../../../' + refdir + self.test_cgp_denovo_tutorial.__name__ + '/'
         args = []
 
         # create command list for all alignment files
@@ -643,19 +726,20 @@ class TestAugustus(unittest.TestCase):
                     '--alnfile=' + alin.__str__(),
                     '--alternatives-from-evidence=0',  # removes warning
                     '--dbaccess=../vertebrates.db',
-                    '--/CompPred/outdir=' + resfolder + '/pred' + str(idx)
+                    '--/CompPred/outdir=' + resfolder + 'pred' + str(idx)
                 ],
-                resfolder + '/aug-' + str(idx) + '.out'
+                resfolder + 'aug-' + str(idx) + '_tmp.out'
             ])
 
-        self.cgp_with_db_execution(resfolder, *args)
+        self.cgp_with_db_execution(resfolder, reffolder, *args)
 
         # set working directory back to base test directory
         os.chdir('../../../../examples_test/')
 
     def test_cgp_rna_hint_tutorial(self):
         os.chdir('../docs/tutorial-cgp/results/mafs')
-        resfolder = '../../../' + resultdir + self.test_cgp_rna_hint_tutorial.__name__
+        resfolder = '../../../' + resultdir + self.test_cgp_rna_hint_tutorial.__name__ + '/'
+        reffolder = '../../../' + refdir + self.test_cgp_rna_hint_tutorial.__name__ + '/'
         args = []
 
         # create command list for all alignment files
@@ -674,12 +758,12 @@ class TestAugustus(unittest.TestCase):
                     '--UTR=1',
                     '--allow_hinted_splicesites=atac',
                     '--extrinsicCfgFile=../extrinsic-rnaseq.cfg',
-                    '--/CompPred/outdir=' + resfolder + '/pred' + str(idx)
+                    '--/CompPred/outdir=' + resfolder + 'pred' + str(idx)
                 ],
-                resfolder + '/aug-' + str(idx) + '.out'
+                resfolder + 'aug-' + str(idx) + '_tmp.out'
             ])
 
-        self.cgp_with_db_execution(resfolder, *args)
+        self.cgp_with_db_execution(resfolder, reffolder, *args)
 
         # set working directory back to base test directory
         os.chdir('../../../../examples_test/')
@@ -733,6 +817,8 @@ def print_tc_header(tc_name):
 
 if __name__ == '__main__':
     create_initial_resultdir()
+    TestAugustus.opt_compare = args.compare
+    TestAugustus.opt_html = args.html
     runner = unittest.TextTestRunner(verbosity=2)
     #print_tc_header('default test suite')
     #runner.run(default_test_suite())
