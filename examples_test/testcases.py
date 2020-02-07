@@ -10,12 +10,13 @@ import shutil
 import gzip
 import aug_out_filter as afilter
 
-#TODO: generate optional script arguments for mysql case and compare mode (argparse)
-
 parser = argparse.ArgumentParser(description='Execute Augustus test cases.')
 parser.add_argument('--mysql',
                     action='store_true',
                     help='Execute cgp test cases using a MySQL database.')
+parser.add_argument('--compare',
+                    action='store_true',
+                    help='Compare generated results with reference results.')
 args = parser.parse_args()
 
 # only import mysql connector if testcases using mysql should be executed
