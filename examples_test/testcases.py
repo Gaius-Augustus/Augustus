@@ -9,6 +9,7 @@ import os
 import shutil
 import gzip
 import aug_out_filter as afilter
+import aug_comparator as comp
 
 parser = argparse.ArgumentParser(description='Execute Augustus test cases.')
 parser.add_argument('--mysql',
@@ -25,6 +26,7 @@ if args.mysql:
     import mysql.connector
 
 resultdir = '../examples_test_results/'
+refdir = '../examples_results/'
 augustusbin = '../bin/augustus'
 
 
@@ -213,10 +215,10 @@ class TestAugustus(unittest.TestCase):
         cls.cleanup()
 
     def test_utr_on(self):
-        resfolder = resultdir + self.test_utr_on.__name__
+        resfolder = resultdir + self.test_utr_on.__name__ + '/'
 
         os.mkdir(resfolder)
-        with open(resfolder + '/aug_utr_on_tmp.gff', 'w') as file:
+        with open(resfolder + 'aug_utr_on_tmp.gff', 'w') as file:
             p = subprocess.Popen([
                 augustusbin, '--species=human', '--UTR=on',
                 '../examples/example.fa'
@@ -230,13 +232,19 @@ class TestAugustus(unittest.TestCase):
 
         self.assertEqual(error, '', error)
         self.assertEqual(rc, 0, 'Returncode not 0!')
-        self.assertTrue(os.path.isfile((resfolder + '/aug_utr_on_tmp.gff')),
+        self.assertTrue(os.path.isfile((resfolder + 'aug_utr_on_tmp.gff')),
                         'Output file was not created as expected!')
 
         # filter output file
-        afilter.pred(resfolder + '/aug_utr_on_tmp.gff',
-                     resfolder + '/aug_utr_on.gff')
-        os.remove(resfolder + '/aug_utr_on_tmp.gff')
+        afilter.pred(resfolder + 'aug_utr_on_tmp.gff',
+                     resfolder + 'aug_utr_on.gff')
+        os.remove(resfolder + 'aug_utr_on_tmp.gff')
+
+        # compare results
+        if args.compare:
+            diff = comp.compare_folder(
+                refdir + self.test_utr_on.__name__ + '/', resfolder)
+        self.assertEqual(diff, '', diff)
 
     def test_iterative_prediction(self):
         resfolder = resultdir + self.test_iterative_prediction.__name__
