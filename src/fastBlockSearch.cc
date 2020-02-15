@@ -238,6 +238,8 @@ int main(int argc, char* argv[]) {
 	cout << "Hits found in " << seqname << endl;
 	printBestResults(prfl, fastSearchResults, cutoff, columnCount, predictionStart);
 	cout << endl;
+        delete [] PP::DNA::sequence;
+        
 	if (predictionStart > 0 || predictionLen != MAX_SEQSIZE)
 	    break;
     }
