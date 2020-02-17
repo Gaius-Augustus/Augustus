@@ -14,8 +14,8 @@ The program pp_simScore computes the similarity score and optimal alignments of 
 The algorithm can optional take intron positions into account.
 
 2. INSTALLATION
- a) AUGUSTUS has to be installed, see for the install of AUGUSTUS the README.md
- b) compile with make in src/ 
+ a) AUGUSTUS has to be installed, see for the install of AUGUSTUS README.md
+ b) Compilation with make in src/ 
 
 3. RUNNING pp_simScore
 The program can be run with following command line from the directory src/
