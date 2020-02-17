@@ -1,33 +1,30 @@
 /*
  * pp_simscore.hh
- * Project: Similarity-Score for Protein-Profile and Protein-Sequence  
+ * Project: Similarity-Score algorithm for Protein-Profile and Protein-Sequence with Intron Information
  * Author:  Lars Gabriel
  *
  *
- * USAGE: ../src/ ./pp_simScore protein_sequence_file.fa protein_profile_file_prfl
  */
  
- 
- //TO DO: markdown, descriptions, store alignments in file, options, errors, test
- 
- 
-#ifndef _PP_SIMSCORE_HH
-#define _PP_SIMSCORE_HH
- 
+
 #include <iostream>
 #include <fstream>
 #include <limits>
 #include <math.h>
+#include <string>
 #include "properties.hh"
 #include "pp_profile.hh"
 
- namespace SS { 
+#include <sqlite3.h>
+
+
+ namespace SS {
     
     /** 
     * @brief structure representing one cell of a similarity matrix
     * 
     * @details 
-    * Contains the highest similarity score of this position in the matrix and the indices of the cell from which the score was computed with corresponding type of score.
+    * Contains the highest similarity score of this position in the similarity matrix, the indices of the cell from which the score was computed and the corresponding type of score.
     * 
     * <pre>
     * types: m: match without gaps 
@@ -49,26 +46,26 @@
     * 
     * @details 
     * Each row represents a column of a block in the protein profile. \n
-    * In each row of the similarity matrix only a connected part of cells are not empty, since the whole protein profile has to be included in the protein sequence. \n
+    * Each row of the similarity matrix consists of a section of connected cells, the other cells are empty. The length of the section depends on the assumption, that the whole protein profile has to be included in the protein sequence. \n
     * The class Row contains only such cells, which are not empty. \n
     * These cells are stored in an array with fixed length. \n
     * The array can be accessed by [ ] with an index j {0, ..., length-1}. \n
-    * Also the position of the first cell of the array is stored, such that the position of each cell can be determined by position + j. \n
+    * The position in the similarity of the first cell of the row is stored, such that the position in the similarity matrix of each cell can be determined by position + j. \n
     *
     * @param length: number of not empty cells \n
-    * @param position: position of the first not empty cell in the row
+    * @param position: position of the first non empty cell in the row
     * 
     * @author Lars Gabriel
     */    
     class Row {
         private:
-            
+            int len;
         public:
             Cell* row;       
             int position;
             Row (int length, int position);
             Cell& operator[] (int n);
-            int length;   //method or const!!        
+            int length();
     };
     
     
@@ -81,6 +78,7 @@
     *<pre>
     *
     *                |         protein sequence         |
+    *
     *             –   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     *             ┬   ----XXXXXXXXX---------------------
     *             │   -----XXXXXXXXX--------------------
@@ -99,11 +97,11 @@
     * 
     * @author Lars Gabriel
     */
-    class SimilarityMatrix {
+    class SimilarityMatrix { 
         private:
             std::vector<Row> matrix;
         public:            
-            SimilarityMatrix ();
+            //SimilarityMatrix ();
             Row& operator[] (int n);
             void addRow (int l, int p);
             int length ();  
@@ -112,31 +110,95 @@
     };
     
     /**
+    * @brief class representing a protein sequence with optional informations about intron postions
+    *
+    * @details
+    * The protein sequence has to be in fasta file format. The optional intron informations must be attached to the protein sequence.\n
+    * Format structure:\n
+    *<pre>
+    * >protein sequence header
+    * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    * XXXXXXX protein sequence XXXXXXXXXXX
+    * XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    * 
+    * [Introns]
+    * # index of the position after which an intron occures | residual nucleotides before the intron
+    * 2 0
+    * 5 1
+    * 30 2
+    * 104 1
+    *</pre> 
+    * 
+    * The amino acids of the protein sequence can be accessed by [] with their position in the sequence.\n
+    * With intronAt() it can be checked if there is an intron at a position\n
+    * The number of introns in a specific frame can be determined with intronsInRange(start, end)\n
+    * For example: intronsInRange(3, 104) = 2\n
+    *
+    * @author Lars Gabriel
+    */
+    
+    class ProteinSequence {
+        private:
+            char* sequence = NULL;
+            std::map < int, int > introns;
+            int len;
+            char* name;
+        public:
+            ProteinSequence (const char* fileName); //read file and calc intronProfile
+            char& operator[] (int n);
+            int length();
+            int intronAt(int i);
+            int intronsInRange (int start, int end);
+    };
+    /**
     * @brief structure representing the information of a column from the protein profile for a position of an alignment
     *
-    * @details Contains the protein which is most likely at this position in the protein profile and the probability of the aligned protein of the sequence at that position. \n
+    * @details contains the protein which is most likely at this position in the protein profile and the probability of the aligned protein of the sequence at that position. \n
     * 
     * @author Lars Gabriel
     */
-    struct PrflAlignmentElement { 
-        char argmax;
-        double match_prob;    
+    struct PrflAlignment { 
+        std::string argmax;
+        std::vector <double > match_prob;    
     };
     
+    /**
+    * @brief structure representing one element of the data structure of a final alignment of the backtacking algorithm
+    *
+    * @details 
+    * stores for every alignment the connected regions that are of the same alignment type and are part of the alignment of the same block
+    * List of:  - starting position of the first amino acid of the protein sequence that is included in the alignment frame
+    *           - block number in which the alignment frame is located
+    *           - indice of the first block column that is included in the alignment frame
+    *           - length of the frame (number of alignment columns)
+    *           - alignment type: 'm', 's'. 'p' or '-'
+    *
+    * @author Lars Gabriel
+    */
+    struct AlignmentElement {
+        int protSeq_pos;
+        int block_pos;
+        int col_pos;
+        int length;
+        char type;
+    };
     
     /**
     * @brief structure representing all information internally needed for backtracking one final alignment
     *
     * @author Lars Gabriel
     */
-    struct BacktrackAlign {//Name
+    struct BacktrackAlignDB {//Name
         int i;
         int j;
         int j_prev;
         int block_count;
         int col_count;
-        std::vector <pair <char, PrflAlignmentElement > > alignment; 
+        int col_posStart;
+        AlignmentElement align_element;
+        std::vector <AlignmentElement > alignment; 
     };
+    
     
 
     /**
@@ -145,10 +207,16 @@
     * @details 
     * Based on the Needleman-Wunsch algorithm, it computes with a SimilarityMatrix the optimal global alignment score. \n
     * For every column of the protein profile and every position in the protein sequence the optimal alignment score up to that position will be computed. \n
-    * Here are the columns of the SimilarityMatrix the proteins of the protein sequence and the rows of the SimilarityMatrix are the columns of the protein profile. \n
-    * At the moment, gaps in the profile are still allowed. \n
+    * Here, the columns of the SimilarityMatrix are the proteins of the protein sequence and the rows of the SimilarityMatrix are the columns of the protein profile. \n
+    * At the moment, gaps in the alignment are allowed. \n
     *
-    *@param g: gap_cost
+    * @param    g: gap cost in inter-block region, 
+                b: gap cost for an intra-block gap, 
+                g_i: gap cost for a gap in the alignment of intron positions, 
+                iw1: intron weight for the intron score in an intra-block region, 
+                iw2: intron weight for the intron score in an intra-block region , 
+                e_i: pseudocount parameter for epsilon1, 
+                e_n pseudocount parameter for epsilon2
     *
     * @author Lars Gabriel
     */
@@ -158,36 +226,90 @@
                 //one column represents one entry of the sequence
                 //one row represents an entry of the blockprofile
             SimilarityMatrix S;
-            double gap_cost;
-            int seq_length = 0;
-            char* seq = NULL;
-            PP::Profile* prfl;
             
-            //method for comparison, whether a score is the new best score for a cell and store the information of the current best score for backtracking 
+            //data structure for the protein sequence P
+            ProteinSequence* seq;
+            //data structure for the block profile B
+            PP::Profile* prfl;  
+            //parameter for the gap costs
+            double gap_cost_inter;
+            double gap_cost_intra;
+            double gap_cost_intron;
+            //parameter for the intron weights
+            double intron_weight_inter;
+            double intron_weight_intra;
+            //parameter for the pseudocount
+            //the pseudocount is added to a relative frequency (v/w) of an intron position with (v+epsi_intron)/(w+epsi_intron+epsi_noIntron)
+            double epsi_intron;
+            double epsi_noIntron;
+            
+            //number of protein sequences used to create the intron profile of the block profile
+	        int intronPrfl_noProt;
+	        
+            //background frequency of an introns at an intrablock intron position, estimated from the intron positions of 15799 protein sequences
+            const double intronIntraBlock_bfreq = 0.0017061790196412467;
+            //background frequency of the number of introns in an intrablock intron position, estimated from the intron positions of 15799 protein sequences in inter-block section 
+            //the length an inter-block section that was used for this estimation is the mean of the inter-block distance interval 
+            const double intronAvgInterBlock_bfreq = 0.009599526151049566;
+            
+            //computes the intra-block intron score for a match of intron positions with f residual nucleotides, if an intron of P is aligned to block column s of block k
+            //if f=-1: ths score of a mismatch in intron position for f in {0,1,2} is computed
+            double intraBlock_iscore (int k, int s, int f, int intron_frame);
+            //Poisson distribution, which is used as the background distribution of k intron in an inter-block section
+            //lambda is estimated for I=[d_min, d_max] as 3 * ((d_min+d_max)/2 +1) * (intronAvgInterBlock_bfreq/intronPrfl_noProt)
+            double PoiDist (int k, double lambda);
+          
+            //method for comparison, whether a score is the new best score for a cell and stores the information of the current best score for backtracking 
             double compareScores(double new_score, double old_score, int current_i, int current_j, int prev_i, int prev_j, char score_type);
-            //int aa2int(char c);
             
-        public:
-        
-            //final alignments of the sequence and the profile
-            std::vector <std::vector <pair <char, PrflAlignmentElement > > > alignments;
-            SimilarityScore (double g);            
-            ~SimilarityScore();
+            //calculates the intron score
+            double intronScore (double q, double q_b);
             
+        public:                     
+            SimilarityScore (double g, double b, double g_i, double iw1, double iw2, double e_i, double e_n);  
+            
+            //prints the inter block distance intervals of B to stdout
+            void printInterBlock();
+            bool SimilarityMatrix_empty();
+            //prints an optimal alignment as the coordinates of connected alignment sections of the same alignment type
+            //Format: List of AlignmentElement
+            void printAlignmentDB();
+            //prints a list of a translations from the indice of a block to the number of the block in the .prfl file.
+            void printBlockPos ();
+            //prints the average of the argmax of the block columns for the complete profile
+            pair<double, double> avgArgMaxProb();
             //read files::
-                //sequence input file has to be in FASTA
+                //sequence input file has to be in FASTA 
+                    //intron positions are optional as '[Introns]' section in the file format (see description of class ProteinSequence)
                 //blockprofile input file has to be in .prfl 
-            void readFiles (char* seqFileName, char* profileFileName);
+                    //intron information are optional in the file format (see README file)
+            void readFiles (const char* seqFileName, const char* profileFileName);
+            
             //algorithm to fill the similarity matrix and compute the final similarity score
             void fillSimilarityMatrix ();
+            
             //traces back the alignments corresponding to the final score
-            void backtracking ();
+            //alignment are stored as list of AlignmentElements
+            void backtrackingDB (int number_Alignments);
+            
+            //print final similarity score
             double score();
+            
+            //final alignments of the sequence and the profile
+            std::vector <std::vector <AlignmentElement > > alignments;
+            
+            //datastructure for a readable alignment, which is used for printing an alignment
+            std::vector < pair <std::string, PrflAlignment > > alignmentsReadable;
             //prints similarity matrix and alignments with cout
             void printSimilarityMatrix ();
+            
+            //print readable alignment to stdout
+            //FORMAT:   Alignment representation of P (AminoAcid, gap symbol or number of amino acids in inter-block)
+            //          Alignemnt representation of argmax of B (argmax AminoAcid for aligned block column, gap symbol or inter-block length)
+            //          frequency of amino acid of P in aligned block column of B, if alignment type is a match
             void printAlignment ();
     };
 
-}//namespace SS
 
-#endif //_PP_SIMSCORE_HH
+}
+//namespace SS

@@ -67,7 +67,7 @@ Column& Column::operator= (const double* val) {
 
 void Column::initRatios() {
     if (weight == 1.0)
-	for (int a=0; a<NUM_AA; a++)  
+	for (int a=0; a<NUM_AA; a++) 
 	    oddRatios[a] = values[a]/background[a];
     else
 	for (int a=0; a<NUM_AA; a++)  
@@ -156,6 +156,43 @@ ostream& PP::operator<< (ostream& strm, const IntronProfile& prfl) {
 
 */ 
 
+/*--- class IntronProfile --------------------------------------------------*/
+//Author: Lars Gabriel
+
+//read an intron profile for one block and the inter-block section before the block
+IntronProfile::IntronProfile (int block, const vector<string>& lines) {
+    blockNo = block;
+    int n, f, p;
+    double d;
+    for (int lineno=0; lineno<lines.size(); lineno++) {
+        if (lines[lineno] == "") continue;
+        if (istringstream(lines[lineno]) >> n >> f >> p) {
+            if (0 <= n && 0 <= f && f < 3 && 0 <= p && p <= noSeq)
+                mapIntraBlock.insert(make_pair(make_pair(n,f), p));
+            else {
+        	    throw PartParseError(lines.size()-lineno); 
+	        }
+        }
+        else if (istringstream(lines[lineno]) >> n >> p) {
+            if (0 <= n && 0 <= p && p <= noSeq){
+                mapInterBlock.insert(make_pair(n, p));}
+            else{
+        	    throw PartParseError(lines.size()-lineno); 
+	        }
+        }       
+        else if (istringstream(lines[lineno]) >> d) {
+            noSeq = d;
+        }
+        else{
+	        throw PartParseError(lines.size()-lineno); 
+        }
+
+    }
+    if (noSeq == 0)
+        throw PartParseError(lines.size());
+}
+
+
 /*--- class Block --------------------------------------------------*/
 
 const char* DNA::sequence = 0;
@@ -210,7 +247,7 @@ void Block::initDistributions() {
 }    
 
 bool Block::initThresholds() {
-    if (size() < MIN_BLOCKSIZE)
+    if (size() < MIN_BLOCKSIZE) 
 	return false;
     thresholdMatrix.resize(size()+1);
     for (int to=0; to <= size(); to++) {
@@ -223,10 +260,10 @@ bool Block::initThresholds() {
 		logthresh = (min_logthresh + logthresh)/2;
 	    current.push_back(Double::exp(logthresh));
 	}
-	if (to == size()) 
+	if (to == size())
 	    current.resize(size()+1, almostZero);
 	else { 
-	    if (to < MIN_CHECKCOUNT) 
+	    if (to < MIN_CHECKCOUNT)
 		current.push_back(almostZero);
 	    current.resize(to+1, Double::infinity());
 	}
@@ -284,7 +321,9 @@ bool Block::initThresholds() {
     }
     return false;
 }
-    
+
+//original intron profile
+/*    
 void Block::setIntronProfile(const vector<string>& lines) {
     iP = new ProfileMap();
     for (int lineno=0; lineno<lines.size(); lineno++) {
@@ -297,6 +336,8 @@ void Block::setIntronProfile(const vector<string>& lines) {
 	    throw PartParseError(lines.size()-lineno);
     }
 }
+*/
+
 
 bool BlockScoreType::addBlocksUntil(bool complement, int newbase, map<int,Double> *result) {
     // add the newly created blocks to (*result)
@@ -432,7 +473,6 @@ Double Block::checkedSuffixScore(bool complement, int dna_offset, int block_offs
 	result : 0;
 }
 
-
 void getBestPartialProduct(vector<LLDouble>& vec, PartScoreType& result) {
     result.from=0;
     result.to=0;
@@ -500,7 +540,6 @@ void Block::bestPartialLogScore(bool complement, int dna_offset, PartScoreType& 
     }
 }
 
-	
 /*--- class Profile ------------------------------------------------*/
 
 Profile::Profile(string filename) {
@@ -625,7 +664,8 @@ void Profile::parse_stream(istream & strm) {
                      // including the current line containing the type
     vector< vector<Dist> > ownDists;
     char blockName ='A';
-
+    int blockNumb = 0;
+    
     if (readAndConcatPart(strm, type, lineno).find_first_not_of("\t\n\v\f\r ") != string::npos) 
 	throw ProfileParseError(lineno); // ignore part before first type id
     if (type == "[name]") 
@@ -644,13 +684,18 @@ void Profile::parse_stream(istream & strm) {
 	    if (type != "[block]")
 		break;
 	    blocks.push_back(Block(finalDist, readPart(strm, type, lineno), string("block_")+(blockName++)));
+	    blocks.back().blockNumbInFile = blockNumb;
+	    blockNumb++;
+	    //read intron profile section
+	    //Author: Lars Gabriel
 	    if (type == "[intron profile]")
-		blocks.back().setIntronProfile(readPart(strm, type, lineno));
+	    iP.insert(make_pair(blocks.size()-1, IntronProfile(blocks.size()-1, readPart(strm, type, lineno))));
+	    
 	    blocks.back().initDistributions();
 	    if (!blocks.back().initThresholds()) {
 		// block not statistically significant, so we'll ignore it
 		// and just add its size to the allowed distance range
-		cerr << "Warning: Block " << blocks.back().id << " is not significant enough, removed from profile.\n";
+		cerr << "Warning: Block no." << blocks.back().id << " is not significant enough, removed from profile.\n";
 		finalDist.r += blocks.back().size();
 		blocks.pop_back();
 	    } else {
@@ -662,11 +707,14 @@ void Profile::parse_stream(istream & strm) {
     } catch (PartParseError err) {
 	throw ProfileParseError(lineno - err.offset);
     }
+    //Author: Lars Gabriel
+    if (type == "[intron profile]")
+    iP.insert(make_pair(blocks.size(), IntronProfile(blocks.size(), readPart(strm, type, lineno))));
     if (type != "")
 	throw ProfileParseError(lineno);
     if (!blocks.empty())
 	calcGlobalThresh(ownDists);
-    finalDist.makeTolerant();
+    finalDist.makeTolerant();    
 }
 
 ostream& Profile::write(ostream& strm) const {

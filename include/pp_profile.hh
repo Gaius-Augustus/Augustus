@@ -31,7 +31,7 @@ using namespace std;
 #define MAXINTERBLOCKDIST ((1<<INTERBLOCKBITS)-1)
 // this might well be reduced in the future to enable more profile-related
 // substates
-#define MAX_BLOCKCOUNT 64
+#define MAX_BLOCKCOUNT 128
 
 
 // fraction by which the distance range is relaxed
@@ -40,7 +40,7 @@ using namespace std;
 
 // minimum size of a partial block that can be discarded
 #define MIN_CHECKCOUNT 3
-#define MIN_BLOCKSIZE 6
+#define MIN_BLOCKSIZE 3
 
 // default values for quantiles (in units of stddev)
 // that are transformed into scoring thresholds
@@ -104,8 +104,43 @@ struct ProfileMap : private map < pair<int, int>, double > {
     }
 }; // class ProfileMap
 
+namespace PP { 
 
-namespace PP {
+// data structure that represents an intron profile for a block and the inter-block section before the block
+// Author: Lars Gabriel
+class IntronProfile {
+    private:        
+        std::map < pair< int, int >, int > mapIntraBlock;
+        std::map < int, int > mapInterBlock;
+        int noSeq = 0;
+        double interBlock_mu = -1;
+        int blockNo, interBlockDistPos;        
+        std::vector<double> interBlockDist;
+    public: 
+        IntronProfile() {}
+        IntronProfile (int block, const vector<string>& lines);  
+        
+        //returns the relative frequency of intron after block column c and f residual nucleotides
+        double getIntraFreq (int c, int f) const {
+	        map < pair< int, int >, int >::const_iterator it = mapIntraBlock.find(make_pair(c,f));
+	        return (it == mapIntraBlock.end()) ? 0 : (it->second);
+        }
+        
+        //returns the relative frequency that n intron occur in the inter-block section
+        double getInterFreq (int n) const {
+	        if (mapInterBlock.empty()) {
+                return -1;  
+            }
+            map < int, int >::const_iterator it = mapInterBlock.find(n);
+	        return (it == mapInterBlock.end()) ? 0 : (it->second);
+        }
+        
+        int get_noSeq () const {
+            return noSeq;
+        }
+};
+
+
     /*
      * Exception class thrown from PP:: classes
      */
@@ -264,7 +299,9 @@ namespace PP {
 	double L(int n) const { 
 	    return Q(n).log(); 
 	}
-    
+    double max_val() const {
+        return *std::max_element(values, values + NUM_AA);
+    };
     //returns character of the amino acid with the highest value
     char argmax() const {
         return std::string(GeneticCode::aa_symbols)[std::max_element(values, values + NUM_AA) - values];
@@ -365,7 +402,7 @@ namespace PP {
     public:
 	Block(DistanceType, const vector<string>&, string);
 	~Block() {
-	    delete iP;
+	    //delete iP;
 	}
 	// score(x,b,l) is the emission probability factor for the sequence starting 
 	// at dna position x, from the partial block of length l (codons), starting at 
@@ -429,9 +466,11 @@ namespace PP {
 	Double getPartialThresh(bool complement, int from) const {
 	    return getPartialThresh(complement, from, size());
 	}
+	
 	Double getThreshold() const {
 	    return threshold;
 	}
+	
 	bool hasIP() const {
 	    return iP != 0;
 	}
@@ -484,6 +523,7 @@ namespace PP {
 	}
 
 	string id;
+	int blockNumbInFile;
 	DistanceType distance; // distance range to previous block
 
 	static const Double almostZero;
@@ -619,7 +659,43 @@ namespace PP {
 	// initialize pattern from file <filename>
 	Profile(string filename);
 	
-    
+	//access the intron frequencies of the intron profiles
+	//Author: Lars Gabriel
+    double getIntronIntraFreq(int b, int s, int frame) {
+		if (!has_iP(b))
+	        return 0;//-1
+	    return iP[b].getIntraFreq(s, frame);
+	}
+	
+	double getIntronIntraFreqAtCol (int b, int col) {
+	    if (!has_iP(b))
+	        return 0;
+	    double freq = 0;
+        for (int frame = 0; frame < 3; frame++) {
+            freq += iP[b].getIntraFreq(col, frame);
+        }
+        return freq;
+	}
+	double getIntronInterFreq(int b, int introns) {
+        if (!has_iP(b))
+	        return -1;
+	    return iP[b].getInterFreq(introns);
+	}
+	//number of protein sequences used to build an intron profile
+	int getIntronNoSeq() {
+        for (int i = 0; i < iP.size(); i++) {
+            if (iP[i].get_noSeq() > 0) {            
+                return iP[i].get_noSeq();
+            }
+        }
+        return 0;
+  	    
+	}
+	
+	//int getIntronTotalFreq () {
+	  //  return iP[block].getTotalFreq();
+	//}
+
 
 // 	static bool idInBlock(int id) {
 // 	    return ((id >> INTERBLOCKBITS)) % 2 > 0;
@@ -781,11 +857,20 @@ namespace PP {
 	vector<Block> blocks;  // the blocks
 	vector< vector<Double> > globalThresh[2];
 	DistanceType finalDist;       // final non-block range
-	ProfileMap iP;      // not implemented
-
+	//ProfileMap iP;      // not implemented
+	
+	//data structure that holds all intron profiles
+	//Author Lars Gabriel
+	std::map<int, IntronProfile> iP;
+	
+	bool has_iP(int b) {
+	    map < int, IntronProfile >::const_iterator it = iP.find(b);
+	    return !(it == iP.end());
+	};
 	static int    min_anchor_count;
 	static double global_thresh;
 	static double absolute_malus_threshold;
+	
 // 	// moved to SubstateModel
 // 	void addSkipBits(Range r) {
 // 	    int n=0; 

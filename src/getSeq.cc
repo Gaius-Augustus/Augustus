@@ -128,7 +128,7 @@ int main( int argc, char* argv[] ){
 #endif
     }
 
-    try{
+    try{    
 	AnnoSequence *annoseq = rsa->getSeq(species, seqname, start-1, end-1, strand);
 	if(annoseq){
 	    if(annoseq->offset + annoseq->length < end ){
@@ -159,11 +159,17 @@ int main( int argc, char* argv[] ){
 
 void printUsage(){
     cerr << "usage:\n\
-getSeq [parameters] --species=SPECIES --seq=SEQUENCE --dbaccess=dbname,host,user,passwd \n\
+MySQL:\n\
+    getSeq [parameters] --species=SPECIES --seq=SEQUENCE --dbaccess=dbname,host,user,passwd \n\
+SQLite:\n\
+    getSeq [parameters] --species=SPECIES --seq=SEQUENCE --dbaccess=dbname.db --speciesfilenames=SPECIESFILENAMES\n\
 \n\
 SPECIES is the species identifier used when loading the sequence into the database\n\
 SEQUENCE is the ID of the sequence to retrieve\n\
 dbname,host,user,passwd are the name of the SQL database, the host name or IP, the database user and password\n\
+SPECIESFILENAMES is the file where the species identifier and the related file names of the sequences are stored \n\
+    format: Homo sapiens <TAB> /dir/to/genome/human.fa\n\
+            Mus musculus <TAB> /dir/to/genome/mouse.fa\n\
 \n\
 parameters:\n\
 --help        print this usage info\n\
@@ -171,9 +177,12 @@ parameters:\n\
 --start=N     retrieve subsequence starting at position N (coordinates are 1-based)\n\
 --end=N       retrieve subsequence ending at position N (coordinates are 1-based)\n\
 \n\
-example:\n\
+example MySQL:\n\
      getSeq --species=hg19 --seq=chr21 --dbaccess=saeuger,localhost,cgp,AVglssd8 \n\
      getSeq --species=hg19 --seq=chr21 --start=47870612  --end=48086047 --rc --dbaccess=saeuger,localhost,cgp,AVglssd8 \n\
+\n\
+example SQLite:\n\
+    getSeq --species=hg19 --seq=chr21 --start=47870612 --end=48086047 --dbaccess=genomes.db --speciesfilenames=genomes.tbl\n\
 \n";
 }
 

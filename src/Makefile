@@ -22,7 +22,7 @@ ifdef ZIPINPUT
 endif
 
 ifdef COMPGENEPRED
-	CXXFLAGS += -std=c++11 -DCOMPGENEPRED
+    CXXFLAGS += -std=c++11 -DCOMPGENEPRED
 endif
 INCLS	= -I../include
 
@@ -42,13 +42,13 @@ PROGR	= augustus etraining prepareAlign fastBlockSearch pp_simScore
 INFO    = cxxflags
 
 ifdef MYSQL
-# replace RUNTIME_LIBPATH with your own run-time libpath if mysql++ is not installed system-wide, e.g.
-# RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib 
-RUNTIME_LIBPATH = 
-INCLS	+= -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
-LIBS 	+=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
-CXXFLAGS  += -DAMYSQL
-PROGR   += load2db getSeq
+    # replace RUNTIME_LIBPATH with your own run-time libpath if mysql++ is not installed system-wide, e.g.
+    # RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib 
+    RUNTIME_LIBPATH = 
+    INCLS	+= -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
+    LIBS 	+=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
+    CXXFLAGS  += -DAMYSQL
+    PROGR   += load2db getSeq
 endif
 
 ifdef SQLITE
@@ -59,7 +59,7 @@ PROGR     += load2sqlitedb getSeq
 endif
 
 ifdef COMPGENEPRED
-PROGR     += espoca
+PROGR     += espoca 
 endif
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
@@ -93,15 +93,15 @@ fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	types.o properties.o geneticcode.o pp_profile.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp fastBlockSearch ../bin/
-
-prepareAlign: pp_prepare_align.cc
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
-	cp prepareAlign ../bin/
-
+	
 pp_simScore: pp_simscore.cc fasta.o types.o properties.o geneticcode.o pp_profile.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp pp_simScore ../bin/
-
+	
+prepareAlign: pp_prepare_align.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
+	cp prepareAlign ../bin/
+	
 load2db: load2db.cc fasta.o hints.o types.o properties.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp load2db ../bin/
@@ -116,7 +116,9 @@ getSeq: getSeq.cc $(OBJS) $(DUMOBJS)
 
 espoca: espoca.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp espoca ../bin/ 
+	cp espoca ../bin/
+
+
 
 info:
 	echo "$(CXXFLAGS)" > $(INFO)
