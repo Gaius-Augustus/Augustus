@@ -816,6 +816,7 @@ def print_tc_header(tc_name):
 
 
 if __name__ == '__main__':
+    os.chdir('examples_test/')
     create_initial_resultdir()
     TestAugustus.opt_compare = args.compare
     TestAugustus.opt_html = args.html

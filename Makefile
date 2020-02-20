@@ -40,7 +40,7 @@ release:
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
 
 test:
-	./bin/augustus --species=human --UTR=on examples/example.fa
+	./examples_test/testcases.py --compare --html
 
 unit_test:
 	cd src && ${MAKE} unittest
