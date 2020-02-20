@@ -21,6 +21,9 @@ parser.add_argument('--compare',
 parser.add_argument('--html',
                     action='store_true',
                     help='Save diff results in html file.')
+parser.add_argument('--set_default_wd',
+                    action='store_true',
+                    help='Set the working directory to examples_test (if called from AUGUSTUS root).')
 args = parser.parse_args()
 
 # only import mysql connector if testcases using mysql should be executed
@@ -816,7 +819,9 @@ def print_tc_header(tc_name):
 
 
 if __name__ == '__main__':
-    os.chdir('examples_test/')
+    if args.set_default_wd:
+        os.chdir('examples_test/')
+    
     create_initial_resultdir()
     TestAugustus.opt_compare = args.compare
     TestAugustus.opt_html = args.html
