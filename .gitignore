@@ -47,6 +47,9 @@ src/load2sqlitedb
 src/parser/parse.o
 src/prepareAlign
 src/scanner/lex.o
+src/unittests/fasta_unittest.o
+src/unittests/lldouble_unittest.o
+src/unittests/unittests
 
 # ignore VS Code configuration files
 .vscode
