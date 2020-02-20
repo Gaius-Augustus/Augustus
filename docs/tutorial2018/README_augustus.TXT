@@ -899,7 +899,7 @@ These can be multi-gene sequences and genes on the reverse strand. However, the 
               9. WEB-SERVER
               -------------
 
-AUGUSTUS can also be run through a web-interface avaible on the AUGUSTUS home page: http://augustus.gobics.de.
+AUGUSTUS can also be run through a web-interface available on the AUGUSTUS home page: http://bioinf.uni-greifswald.de/augustus/.
 
 	     10. MEA: USING THE MAXIMUM EXPECTED ACCURACY APPROACH
  	     -----------------------------------------------------
@@ -910,12 +910,12 @@ For predictions using MEA the corresponding AUGUSTUS parameter has to be turned 
               11. CONTACT
               -----------
 
-In case you find a bug, or miss a desireable feature or need executables for a different platform, need
+In case you find a bug, or miss a desirable feature or need executables for a different platform, need
 detailed info about the model, please check this forum and post your question at:
-http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Forum.Forum
+http://bioinf.uni-greifswald.de/bioinf/forum/
 
 In case you need to train AUGUSTUS on a different organism consider this training web service:
-bioinf.uni-greifswald.de/trainaugustus
+bioinf.uni-greifswald.de/webaugustus
 
 
               12. REFERENCES
