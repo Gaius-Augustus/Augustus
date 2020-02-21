@@ -915,7 +915,7 @@ detailed info about the model, please check this forum and post your question at
 http://bioinf.uni-greifswald.de/bioinf/forum/
 
 In case you need to train AUGUSTUS on a different organism consider this training web service:
-bioinf.uni-greifswald.de/webaugustus/
+bioinf.uni-greifswald.de/webaugustus
 
 
               12. REFERENCES
