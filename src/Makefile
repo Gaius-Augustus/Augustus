@@ -8,20 +8,13 @@ CXX	= g++
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
 CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 ${CXXFLAGS}# -DDEBUG -g -ggdb -pg -DDEBUG_STATES
-ifdef SQLITE
-	COMPGENEPRED = true
-endif
 
-ifdef MYSQL
-	COMPGENEPRED = true
-endif
-
-ifdef ZIPINPUT
+ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))
 	CXXFLAGS += -DZIPINPUT
 	LIBS    = -lboost_iostreams
 endif
 
-ifdef COMPGENEPRED
+ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
 	CXXFLAGS += -std=c++11 -DCOMPGENEPRED
 endif
 INCLS	= -I../include
@@ -30,7 +23,7 @@ OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
  meaPath.o exoncand.o randseqaccess.o fasta.o ncmodel.o
-ifdef COMPGENEPRED
+ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
 	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
@@ -41,24 +34,20 @@ TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # conte
 PROGR	= augustus etraining prepareAlign fastBlockSearch
 INFO    = cxxflags
 
-ifdef MYSQL
+# MySQL support
 # replace RUNTIME_LIBPATH with your own run-time libpath if mysql++ is not installed system-wide, e.g.
 # RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib 
 RUNTIME_LIBPATH = 
 INCLS	+= -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
 LIBS 	+=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
-CXXFLAGS  += -DAMYSQL
 PROGR   += load2db getSeq
-endif
 
-ifdef SQLITE
+# SQLite support
 LIBS	  += -lsqlite3
 OBJS	  += sqliteDB.o
-CXXFLAGS  += -DSQLITE
 PROGR     += load2sqlitedb getSeq
-endif
 
-ifdef COMPGENEPRED
+ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
 PROGR     += espoca
 endif
 

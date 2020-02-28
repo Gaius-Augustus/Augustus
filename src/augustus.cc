@@ -129,7 +129,7 @@ int main( int argc, char* argv[] ){
 	    cgp.start();
 	    cout << "# total time: " << (double) (clock()-start) / CLOCKS_PER_SEC << "s" << endl;
 #else
-	    throw ProjectError("Comparative gene prediction not possible with this compiled version. Please recompile with flag COMPGENEPRED set in common.mk.");
+	    throw ProjectError("Comparative gene prediction not possible with this compiled version. Please recompile with flag COMPGENEPRED = true set in common.mk.");
 #endif	  
 	} else { // single species mode, default
 	  // check query filename

@@ -154,25 +154,16 @@ docs
 
 2. compile (if not already compiled)
 
-Install dependencies:
-	
-   - To turn on the optional support of gzip compressed input files you
-    1) Edit common.mk and uncomment the line ZIPINPUT = true
-    2) Install these dependencies:
-       - Boost C++ Libraries: libboost-iostreams-dev (on Ubuntu: sudo apt-get install libboost-iostreams-dev)
-       - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager
-         (sudo apt-get install zlib1g-dev).
-   
-If comparative (multi-species, CGP) AUGUSTUS is enabled via uncommenting 
-   COMPGENEPRED = true
-   and 
-   SQLITE = true or MYSQL = true
-in common.mk then the following additional dependencies are required:
-
+The following dependencies are required for AUGUSTUS:
+   - build-essential, wget, git, autoconf (sudo apt-get install build-essential wget git autoconf)
+   - libsqlite3-dev and libmysql++-dev (sudo apt-get install libsqlite3-dev libmysql++-dev)
+  - libraries for gzip compressed input (set ZIPINPUT = false in common.mk if this feature is not required or the required libraries are not available):
+   - Boost C++ Libraries: libboost-iostreams-dev (on Ubuntu: sudo apt-get install libboost-iostreams-dev)
+   - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager (sudo apt-get install zlib1g-dev).
+  - libraries for comparative (multi-species, CGP) AUGUSTUS (set COMPGENEPRED = false in common.mk if this feature is not required or the required libraries are not available):
    - GNU scientific library (for eigen decompositions of matrices, sudo apt-get install libgsl-dev)
-   - libsqlite3-dev or mysql++ (sudo apt-get install libmysql++-dev or sudo apt-get install libsqlite3-dev)
-   - Boost C++ Library: sudo apt-get install libboost-graph-dev (at least version 1.45 from Nov. 2010)
-   - integer linear program solver lpsolve: sudo apt-get install libsuitesparse-dev liblpsolve55-dev
+   - Boost C++ Library: sudo apt-get install libboost-all-dev (at least version 1.45 from Nov. 2010)
+   - integer linear program solver liblpsolve55-dev: sudo apt-get install libsuitesparse-dev liblpsolve55-dev
 
 Compiling bam2hints and filterBam requires:
 
@@ -908,7 +899,7 @@ These can be multi-gene sequences and genes on the reverse strand. However, the 
               9. WEB-SERVER
               -------------
 
-AUGUSTUS can also be run through a web-interface avaible on the AUGUSTUS home page: http://augustus.gobics.de.
+AUGUSTUS can also be run through a web-interface available on the AUGUSTUS home page: http://bioinf.uni-greifswald.de/augustus/.
 
 	     10. MEA: USING THE MAXIMUM EXPECTED ACCURACY APPROACH
  	     -----------------------------------------------------
@@ -919,12 +910,12 @@ For predictions using MEA the corresponding AUGUSTUS parameter has to be turned 
               11. CONTACT
               -----------
 
-In case you find a bug, or miss a desireable feature or need executables for a different platform, need
+In case you find a bug, or miss a desirable feature or need executables for a different platform, need
 detailed info about the model, please check this forum and post your question at:
-http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Forum.Forum
+http://bioinf.uni-greifswald.de/bioinf/forum/
 
 In case you need to train AUGUSTUS on a different organism consider this training web service:
-bioinf.uni-greifswald.de/trainaugustus
+bioinf.uni-greifswald.de/webaugustus
 
 
               12. REFERENCES

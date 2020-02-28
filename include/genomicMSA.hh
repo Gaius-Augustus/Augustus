@@ -155,7 +155,7 @@ public:
 private:
     list<Alignment*> alignment;
     int numSpecies;
-    RandSeqAccess *rsa; // the actual data is manages in CompGenePred
+    RandSeqAccess *rsa; // the actual data is managed in CompGenePred
     map<string, MsaSignature> signatures;
     static int maxIntronLen;
     static int minGeneLen;

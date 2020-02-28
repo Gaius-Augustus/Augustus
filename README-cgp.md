@@ -36,21 +36,6 @@
 ## Install dependencies
 
    See [these instructions](README.md#install-dependencies) for a complete overview.
-
-## Enable cgp mode
-
-   Open the file [common.mk](./common.mk) with a text editor and uncomment the 
-   following lines to enable comparative gene prediction.
-   
-    COMPGENEPRED = true
-
-   To support a SQLite database uncomment this line
-
-     SQLite = true
-
-   or for MySQL this
-
-     MYSQL = true
    
 ## Compile from sources
 

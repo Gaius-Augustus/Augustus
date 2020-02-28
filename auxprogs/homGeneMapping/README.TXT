@@ -17,17 +17,13 @@ alignment of the genomes and prints a summary for each gene, e.g.
 
 ### Requirements ###
 * gcc 4.6 or newer
-* HAL Tools (available at https://github.com/glennhickey/hal)
-
-From within the src directory, type "make"
-
-### Optional Requirements """
-* Boost graph library for option --printHomologs that clusters
-  transcripts into groups of homologs
-
+* HAL Tools (available at https://github.com/ComparativeGenomicsToolkit/hal)
+* Boost graph library for option --printHomologs that clusters transcripts into groups of homologs
+  Install the package libboost-all-dev with your package manager
+  (optional: set BOOST = false in src/Makefile if the Boost library is unavailable and option --printHomologs is not required)
 * SQLite library for option --dbaccess that enables the retrieval hints from a database:
   Install the package libsqlite3-dev with your package manager or 
-  download the SQLite source code from http://www.sqlite.org/download.html/ 
+  download the SQLite source code from http://www.sqlite.org/download.html 
   (tested with  SQLite 3.8.5 ) and install as follows:
 
    > tar zxvf sqlite-autoconf-3080500.tar.gz
@@ -40,7 +36,7 @@ From within the src directory, type "make"
 
    > ./configure --disable-dynamic-extensions --enable-static --disable-shared
 
-   Turn on the flag SQLITE in src/Makefile and recompile
+From within the auxprogs/homGeneMapping directory, type "make"
 
 
         USAGE
@@ -63,10 +59,30 @@ OPTIONS:
 --help                        print this usage info
 --cpus=N                      N is the number of CPUs to use (default: 1)
 --noDupes                     do not map between duplications in hal graph. (default: off)
+--details                     print detailed output (default: off)
 --halLiftover_exec_dir=DIR    Directory that contains the executable halLiftover from the HAL Tools package
                               If not specified it must be in $PATH environment variable.
+--unmapped                    print a GTF attribute with a list of all genomes, that are not aligned to the
+                              corresponding gene feature, e.g. hgm_unmapped "1,4,5"; (default; off)
 --tmpdir=DIR                  a temporary file directory that stores lifted over files. (default 'tmp/' in current directory)
 --outdir=DIR                  file directory that stores output gene files. (default: current directory)
+--printHomologs=FILE          prints disjunct sets of homologous transcripts to FILE, e.g.
+                              # 0     dana
+                              # 1     dere
+                              # 2     dgri
+                              # 3     dmel
+                              # 4     dmoj
+                              # 5     dper
+                              (0,jg4139.t1) (0,jg4140.t1) (1,jg7797.t1) (2,jg3247.t1) (4,jg6720.t1) (5,jg313.t1)
+                              (1,jg14269.t1) (3,jg89.t1) (5,jg290.t1)
+                              ...
+                              Two transcripts are in the same set, if all their exons/introns are homologs and their are
+                              no additional exons/introns.
+                              This option requires the Boost C++ Library
+--dbaccess=db                 retrieve hints from an SQLite database. In order to set up a database and populate it with hints
+                              a separate tool 'load2sqlitedb' is provided. For more information, see the documentation in
+                              README-cgp.txt (section 8a+b) in the Augustus package. If both a database and hint files in 'gtffilenames.tbl'
+                              are specified, hints are retrieved from both sources.
 
 example:
 homGeneMapping --noDupes --halLiftOver_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal
