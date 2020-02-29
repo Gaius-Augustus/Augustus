@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 #############################################################################
 # filterGenesIn_mRNAname.pl
@@ -35,7 +35,7 @@ my %goodids;
 open( GOODFILE, "<", "$goodfilename" )
     || die "Couldn't open goodfile $goodfilename\n";
 while (<GOODFILE>) {
-    if ( $_ =~ m/transcript_id \"(.*)\"/ ) {
+    if ( $_ =~ m/transcript_id \"([^"]*)\"/ ) {
         if (not (defined $goodids{$1})){
 	    $goodids{$1} = 1;
 	}

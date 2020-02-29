@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # Map a sam file that was created by aligning against an exon-exon junction file back to genome level.
 # Filters out non-intron-containing alignments.

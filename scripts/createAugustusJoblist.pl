@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # createAugustusJoblist.pl
 # Create a joblist with overlapping sequence chunks from multiple fasta files.
@@ -164,7 +164,7 @@ while (<SEQ>) {
         if( $partitionHints ) {
             $wholecommand .= "if [ -e $outputdir/$seqnr.$chunkid.${name}.$start..$end.hints ]\nthen\nrm $outputdir/$seqnr.$chunkid.${name}.$start..$end.hints\nfi\n";
             # for braker.pl (where we use partitionHints) I want to delete empty error files
-            $wholecommand .= "if [ -s $errorfilename ]\nthen\nrm $errorfilename\nfi\n";
+            $wholecommand .= "if [ ! -s $errorfilename ]; then rm -f $errorfilename;fi\n";
         }
         if ( $wrap eq "" ) {
             print BATCH $wholecommand;

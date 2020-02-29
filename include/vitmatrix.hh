@@ -510,7 +510,7 @@ public:
 	if (substate.undef()) return get(state);
 	try {
 	    return getSubstates(state).get(substate);
-	} catch (NoSubmapFoundError) {
+	} catch (NoSubmapFoundError &) {
 	    return 0;
 	}
     }
@@ -643,7 +643,7 @@ inline void ViterbiColumnType::getMaxSubstate(int state, SubstateId& substate, D
 	submap.getMaxSubstate(substate, value);
 	if (value > mainval)
 	    return;
-    } catch (NoSubmapFoundError) {}
+    } catch (NoSubmapFoundError &) {}
     substate.set(0); value = mainval;
 }
 

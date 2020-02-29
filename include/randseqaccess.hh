@@ -17,13 +17,8 @@
 #include <vector>
 #include <cstring>
 
-#ifdef AMYSQL
 #include <mysql++.h>
-#endif
-
-#ifdef SQLITE
 #include "sqliteDB.hh"
-#endif
 
 /**
  * @brief SpeciesCollection holds all extrinsic evidence given for the species.
@@ -130,7 +125,6 @@ protected:
 
 };
 
-#ifdef AMYSQL
 class MysqlAccess : public DbSeqAccess {
 public:
     MysqlAccess(vector<string> s = vector<string>()) : DbSeqAccess(s){
@@ -155,9 +149,6 @@ private:
     mysqlpp::Connection con;
     vector<string> db_information;
 };
-#endif // AMYSQL
-
-#ifdef SQLITE
 
 /**
  * @brief Random access to sequence segments through a database.
@@ -177,6 +168,5 @@ private:
     SQLiteDB db;
     map<string,string> filenames;
 };
-#endif // SQLITE
 
 #endif  // _RANDSEQACCESS

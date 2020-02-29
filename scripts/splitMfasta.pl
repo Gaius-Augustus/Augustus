@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # splitMfasta.pl
 # split a multiple fasta file in smaller multiple fasta files

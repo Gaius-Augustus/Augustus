@@ -28,19 +28,21 @@ install:
 # for internal purposes:
 release:
 	find . -name "*~" | xargs rm -f
+	rm .travis.yml
+	rm -rf .git
 	rm -f src/makedepend.pl
-	rm -r augustus-training
 	cd docs/tutorial2015/results; ls | grep -v do.sh | grep -v README | xargs rm; cd -
 	rm -r auxprogs/utrrnaseq/input/human-chr19
 	rm -r docs/tutorial-cgp/results/cactusout
 	make clean all
-	rm generic/*.pbl
+	rm config/species/generic/*.pbl
 	cd src/parser; rm Makefile; cd -
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
 
 test:
+	cd src && ${MAKE} unittest
+	cd src/unittests && ./unittests
 	./bin/augustus --species=human --UTR=on examples/example.fa
 
 # remove -static from src/Makefile for MAC users
 # remove -g -gdb from CXXFLAGS
-# make COMPGENEPRED = true and SQLITE = true and MYSQL = true a comment

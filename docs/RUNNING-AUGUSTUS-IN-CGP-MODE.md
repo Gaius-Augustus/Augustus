@@ -373,12 +373,8 @@ f) Options to adjust the DD algorithm:
    (in our experience the SQLite access runs more stable than MySQL).  
    Other than the MySQL database that stores the full sequences, the SQLite database 
    only stores file offsets to achieve random access to the genome files.
-   
-a) Installation  
-   If not already installed, install sqlite3 as described above. Do not forget to 
-   turn on the flags COMPGENEPRED and SQLITE in [common.mk](./common.mk) and to recompile AUGUSTUS.
 
-b) create an SQLite database and populate it  
+a) create an SQLite database and populate it  
    Use the program 'load2sqlitedb' in the AUGUSTUS repository.
    Run load2sqlitedb with the parameter "--help" to view the usage instructions
 
@@ -391,7 +387,7 @@ b) create an SQLite database and populate it
     load2sqlitedb --species=bosTau4 --dbaccess=vertebrates.db cow.fa
     load2sqlitedb --species=galGal3 --dbaccess=vertebrates.db chicken.fa
 
-c) running AUGUSUTS with SQLite db access:  
+b) running AUGUSTUS with SQLite db access:  
    call AUGUSTUS with parameters --dbaccess AND --speciesfilenames
 
     augustus --species=human --treefile=tree.nwk --alnfile=aln.maf \
@@ -401,12 +397,7 @@ c) running AUGUSUTS with SQLite db access:
 
 This is an alternative to the SQLite database from above.
 
-a) enabling MySQL access:  
-
-   Follow the instructions in [README.md](./README.md#install-dependencies) to install MySQL.  
-   Do not forget to turn on the flags COMPGENEPRED and MYSQL in [common.mk](./common.mk) and to recompile AUGUSTUS.
-
-b) creating a MySQL database (example code) and a user:  
+a) creating a MySQL database (example code) and a user:  
 
     apt install mysql-server
     /* The initial MySQL root account passwords are usally empty */
@@ -416,7 +407,7 @@ b) creating a MySQL database (example code) and a user:
     > GRANT ALL PRIVILEGES ON vertebrates.* TO cgp@'%';
     > exit
 
-c) loading sequences into the database:  
+b) loading sequences into the database:  
 
    Use the program 'load2db' in the AUGUSTUS repository.  
    Run load2db with the parameter "--help" to view the usage instructions
@@ -430,7 +421,7 @@ c) loading sequences into the database:
     load2db --species=bosTau4 --dbaccess=vertebrates,localhost,cgp,db_passwd cow.fa
     load2db --species=galGal3 --dbaccess=vertebrates,localhost,cgp,db_passwd chicken.fa
 
-d) running AUGUSTUS with database access:
+c) running AUGUSTUS with database access:
 
     augustus --species=human --treefile=tree.nwk --alnfile=aln.maf --dbaccess=vertebrates,localhost,cgp,db_passwd
 

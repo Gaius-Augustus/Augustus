@@ -16,10 +16,8 @@
 #include <fstream>
 #include <types.hh>
 
-#ifdef AMYSQL
 #include <table_structure.h>
 #include <query.h>
-#endif
 
 int SpeciesCollection::groupCount = 1;
 
@@ -90,7 +88,7 @@ void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
 				    try{
 					addSpeciesToGroup(speciesNames[i],groupCount);
 					cout <<" "<<speciesNames[i];
-				    }catch(ProjectError e){
+				    }catch(ProjectError &e){
 					if(skey == "all")
 					    throw;
 				    }
@@ -129,7 +127,7 @@ void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
 	}
         datei.close();
         datei.clear();
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
         cerr << e.getMessage() << endl;
         cerr << "Could not read in file with the configuration of hints: " << filename << endl;
         datei.close();
@@ -158,7 +156,7 @@ void SpeciesCollection::readGFFFile(const char *filename){
         while (datei) {
             try{
                 datei >> f >> comment >> ws;
-            } catch (ProjectError e){}
+            } catch (ProjectError &e){}
 	    // split species name and sequence ID
 	    string completeName=f.seqname;
 	    string speciesName,seqname;                                                                                                          
@@ -188,7 +186,7 @@ void SpeciesCollection::readGFFFile(const char *filename){
 	    }
         }
         datei.close();
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
         cerr << e.getMessage() << endl;
         throw e;
     } catch(...) {
@@ -388,7 +386,6 @@ DbSeqAccess::DbSeqAccess(vector<string> s){
     }
 }
 
-#ifdef AMYSQL
 void MysqlAccess::open(){
     dbaccess = Constant::dbaccess;
     split_dbaccess();
@@ -746,9 +743,6 @@ int MysqlAccess::get_region_coord(int seq_region_id,int start,int end,vector<T> 
 //    return seqlist;
 //}
 
-#endif // AMYSQL
-
-#ifdef SQLITE
 AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
     int seq_start, seq_end;
     streampos file_start;
@@ -871,4 +865,3 @@ SequenceFeatureCollection* SQLiteAccess::getFeatures(string speciesname, string 
     fc->hasHintsFile = true;
     return sfc;
 }
-#endif

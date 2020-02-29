@@ -1,60 +1,24 @@
-<h1>Instructions</h1>
-
+<p><b>Instructions</b></p>
 <p>Please download the files listed above by clicking on the links.</p>
-
-<p>All files and folders - except for log and error file - are compressed. To unpack <tt>*.tar.gz</tt> archives, e.g. on linux type</p><p><tt>tar -xzvf *.tar.gz</tt></p><p>For unpacking <tt>*.gz</tt> files, e.g. on linux type</p><p><tt>gunzip *.gz</tt>.</p>
-
+<p>All files and folders - except for log and error file - are compressed. To unpack <kbd>*.tar.gz</kbd> archives, e.g. on linux type<br><br>
+<kbd>tar -xzvf *.tar.gz</kbd><br><br>
+For unpacking <kbd>*.gz</kbd> files, e.g. on linux type<br><br>
+<kbd>gunzip *.gz.</kbd></p>
 <p>Further instructions about results contents are given at the <a href="http://bioinf.uni-greifswald.de/webaugustus/trainingtutorial.gsp#results">Training Tutorial</a> and the <a href="http://bioinf.uni-greifswald.de/webaugustus/predictiontutorial.gsp#results">Prediction Tutorial</a>.
 
-</div>
-</div>
-
- <div id="rechte_spalte">
-  <div id="schriftgroesse">
-   <script type="text/javascript">
-    //<![CDATA[
-    document.write('<a href="http://bioinf.uni-greifswald.de/webaugustus/training-results/ABCDRZ/index.html" title="Increase size" onclick="changeFontSize(2); return false;" class="larger">bigger</a><span class="unseen">&nbsp;</span>');
-    document.write('<a href="http://bioinf.uni-greifswald.de/webaugustus/training-results/ABCDRZ/index.html" title="Decrease size" onclick="changeFontSize(-2); return false;" class="smaller">smaller</a><span class="unseen">&nbsp;</span>');
-    document.write('<a href=""http://bioinf.uni-greifswald.de/webaugustus/training-results/ABCDRZ/index.html" title="Revert styles to default" onclick="revertStyles(); return false;" class="reset">reset</a></p>');
-    //]]>
-   </script>
-  </div>
-<div class="linien_div">
-         <h5 class="ueberschrift_spezial">CONTACT</h5>
-         <strong>Institute for Mathematics und Computer Sciences</strong><br/>
-          Walther-Rathenau-Stra&szlig;e 47<br /> 17487 Greifswald<br /> Germany<br /> Tel.: +49 (0)3834 86 - 46 24<br /> Fax:  +49 (0)3834 86 - 46 40<br /><br /> <a href="mailto:augustus-web@uni-greifswald.de" title="E-Mail augustus-web@uni-greifswald.de, opens the standard mail program">augustus-web@uni-greifswald.de</a></div>
-
- <div class="beendeFluss"></div>
-</div>
-<!-- ***** Ende: Koerper *************************************************// -->
-
-
-
-<!-- ***** Start: Fuss ***************************************************// -->
-<div id="fuss">
- <div id="fuss_links"><p class="copyright">&copy; 2011 University of Greifswald</p></div>
- <div id="fuss_mitte">
-         <table width="100%" border="0" cellpadding="0" cellspacing="1">
-                 <tr><td nowrap="nowrap"><a href="index.html" class="mainleveltop_" >Home</a>|&nbsp; </span><a href="http://bioinf.uni-greifswald.de/webaugustus/impressum.gsp" class="mainleveltop_" >Impressum</a>
-                 </td></tr>
-         </table>
- <div class="bannergroup">
- </div>
- </div>
- <div id="fuss_rechts" >
-  <ul>
-   <li>
-    <a href="#seitenanfang">
-     <img hspace="5" height="4" border="0" width="7" alt="Seitenanfang" src="http://www.math-inf.uni-greifswald.de/mathe/templates/uni2/bilder/frames/top.gif" />
-     Top of page
-    </a>
-   </li>
-  </ul>
- </div>
- <div class="beendeFluss"></div>
-</div>
-<!-- ***** Ende: Fuss ***************************************************// -->
-</body>
-
+			</div>
+			</div>
+		</div>
+		<footer class="footer footer--padding-bottom">
+			<div class="footer-column footer-column--dark">
+				<div class="footer__content-wrapper">
+					<div class="footer-bottom">
+						<div class="footer-bottom__copyright">
+							<p>&copy;&nbsp; Universität Greifswald</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+	</body>
 </html>
-

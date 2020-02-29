@@ -138,14 +138,6 @@ int main( int argc, char* argv[] ){
 	    printUsage();
 	    exit(1);
 	}
-	if (!dbfile.empty()){
-#ifndef SQLITE
-	    throw ProjectError("The option --dbaccess requires the SQLite library.\n"
-                               "Please install the SQLite library, e.g. using the APT package manager\n\n"
-                               "sudo apt-get install libsqlite3-dev\n\n"
-                               "Then edit the Makefile by setting the flag SQLITE = true and recompile homGeneMapping.\n");
-#endif
-	}
 	if(maxCpus < 1){
 	    maxCpus = 1;
 	    cerr << "number of cpus must be at least 1. Proceeding with --cpus=1" << endl; 
@@ -156,7 +148,7 @@ int main( int argc, char* argv[] ){
 #ifndef BOOST
 	    throw ProjectError("The option --printHomologs requires the boost C++ library.\n"
                                "Please install the boost library, e.g. using the APT package manager\n\n"
-                               "sudo apt-get install libboost-graph-dev\n\n"
+                               "sudo apt-get install libboost-all-dev\n\n"
                                "Then edit the Makefile by setting the flag BOOST = true and recompile homGeneMapping.\n");
 #endif
 	}
@@ -311,7 +303,6 @@ OPTIONS:\n\
                               a separate tool 'load2sqlitedb' is provided. For more information, see the documentation in\n\
                               README-cgp.txt (section 8a+b) in the Augustus package. If both a database and hint files in 'gtffilenames.tbl'\n\
                               are specified, hints are retrieved from both sources.\n\
-                              This option requires the SQLite3 library\n\
 \n\
 example:\n\
 homGeneMapping --noDupes --halLiftover_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal\n\
@@ -329,8 +320,8 @@ map<string,pair<string,string> > getFileNames (string listfile){
     map<string,pair<string, string> > filenames;
     ifstream ifstrm(listfile.c_str());
     if (ifstrm.is_open()){
-        char buf[256];
-	while(ifstrm.getline(buf,255)){
+        char buf[512];
+	while(ifstrm.getline(buf,511)){
 	    stringstream stm(buf);
             string species, genefile;
             if(stm >> species >> genefile){

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # Author: Katharina J. Hoff
 # Date: February 19th 2018
 # set stop codon frequencies in parameters.cfg of a particular species

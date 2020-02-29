@@ -114,8 +114,7 @@ the species identifier that best represents your clade,<br>
 A complete list of species identifiers can be found in
 the directory <tt>augustus/config/species</tt>.
 <pre class="code">
-for ali in *.maf
-do
+for ali in *.maf; do
 id=${ali%.maf} # remove .maf suffix
 augustus \
 --species=human \

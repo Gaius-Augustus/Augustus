@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # this script works on top of the 'halTools' toolbox
 # and exports a hal alignment to maf by splitting the alignment into several smaller
 # alignment chunks of a certain size. An overlap between two consecutive alignment chunks can

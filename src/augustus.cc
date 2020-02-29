@@ -129,7 +129,7 @@ int main( int argc, char* argv[] ){
 	    cgp.start();
 	    cout << "# total time: " << (double) (clock()-start) / CLOCKS_PER_SEC << "s" << endl;
 #else
-	    throw ProjectError("Comparative gene prediction not possible with this compiled version. Please recompile with flag COMPGENEPRED set in common.mk.");
+	    throw ProjectError("Comparative gene prediction not possible with this compiled version. Please recompile with flag COMPGENEPRED = true set in common.mk.");
 #endif	  
 	} else { // single species mode, default
 	  // check query filename
@@ -233,7 +233,7 @@ int main( int argc, char* argv[] ){
     } catch( ProjectError& err ){
         cerr << "\n" <<  argv[0] << ": ERROR\n\t" << err.getMessage( ) << "\n\n";
         errorcode=1;
-    } catch ( HelpException help ) {
+    } catch ( HelpException &help ) {
     	cerr << help.message << endl;
     }
     if (outputfile.is_open())
@@ -424,7 +424,7 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
 			cout << "# joint probability of gene structure and sequence in " << 
 			    Properties::getProperty(SPECIES_KEY) << " model: " << curseq->anno->emiProb << endl;
 			curseq->anno = olda;
-		    } catch (ProjectError e){
+		    } catch (ProjectError &e){
 			cerr << e.getMessage() << endl << "Error: Could not compute the emission probabilities (--emiprobs)" << endl;
 		    }
 		}
@@ -459,7 +459,7 @@ void setParameters(){
     } catch (...) {} 
     try {
 	checkExAcc = Properties::getBoolProperty("checkExAcc");
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << e.getMessage();
     }
     try {

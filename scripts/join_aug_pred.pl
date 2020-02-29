@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # join_aug_pred.pl
 # Join AUGUSTUS predictions from separate runs of possibly overlapping sequence segments.

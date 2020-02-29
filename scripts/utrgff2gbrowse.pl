@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # convert a utr.gff from makeUtrTrainingSet.pl to a gbrowse file
 # Mario Stanke, 9.4.2008
 #

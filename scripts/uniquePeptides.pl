@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # Creates a fasta file with unique peptides from a fasta input file
 # where identical peptide match multiple positions. The first found 

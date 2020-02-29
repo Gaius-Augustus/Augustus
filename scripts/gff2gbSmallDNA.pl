@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # This script is used by the braker.pl pipeline.
 # Please be extremely careful when changing this script because the braker.pl
@@ -194,7 +194,7 @@ while(<FASTA>) {
     $length = length $seq;
     $annotation = $annos{$seqname};
     my $shortseqname = $seqname;
-    $shortseqname =~ s/ .*//;
+    $shortseqname =~ s/\s.*//;
 
     if (!defined($annotation) && defined($annos{$shortseqname})){
 	$seqnameerrcount++;

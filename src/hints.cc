@@ -223,7 +223,7 @@ istream& operator>>( istream& in, Feature& feature ){
 	feature.end--;   // shift by -1, cause I start indexing with 0
 	
 	feature.type = Feature::getFeatureType(feature.feature); // may fail: type = -1
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	cerr << "Error in hint line: " << copybuff << endl;
 	cerr << e.getMessage() << endl;
 	cerr << "Maybe you used spaces instead of tabulators?" << endl;

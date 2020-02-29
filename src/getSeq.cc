@@ -106,13 +106,7 @@ int main( int argc, char* argv[] ){
 
     if (Constant::dbaccess.find(',') != string::npos){ // assuming mysql access
 	cerr << "assuming a MySQL database" << endl;
-#ifdef AMYSQL
 	rsa = new MysqlAccess;
-#else
-	cerr << "Database access not possible with this compiled version. Please recompile with flag MYSQL." << endl;
-	exit(1);
-#endif
-	
     }
     else if(Constant::dbaccess.find('.') != string::npos){ // assuming sqlite access
 	cerr << "assuming an SQLite database" << endl;
@@ -120,12 +114,7 @@ int main( int argc, char* argv[] ){
 	    cerr << "Missing parameter speciesfilenames." << endl;
 	    exit(1);
 	}
-#ifdef SQLITE
 	rsa = new SQLiteAccess(Constant::dbaccess.c_str());
-#else
-	cerr <<"Database access not possible with this compiled version. Please recompile with flag SQLITE." << endl;
-	exit(1);
-#endif
     }
 
     try{    
@@ -148,7 +137,7 @@ int main( int argc, char* argv[] ){
 	    printSeq(annoseq->sequence, end-start+1);
 	}
     }
-    catch(ProjectError e){
+    catch(ProjectError &e){
 	cerr << "random sequence access failed on " << species << ", " << seqname << ":" 
 	     << start << "-" << end << endl;;
 	cerr << e.getMessage() << endl;
@@ -178,8 +167,8 @@ parameters:\n\
 --end=N       retrieve subsequence ending at position N (coordinates are 1-based)\n\
 \n\
 example MySQL:\n\
-     getSeq --species=hg19 --seq=chr21 --dbaccess=saeuger,localhost,cgp,AVglssd8 \n\
-     getSeq --species=hg19 --seq=chr21 --start=47870612  --end=48086047 --rc --dbaccess=saeuger,localhost,cgp,AVglssd8 \n\
+     getSeq --species=hg19 --seq=chr21 --dbaccess=saeuger,localhost,myuser,mypasswd \n\
+     getSeq --species=hg19 --seq=chr21 --start=47870612  --end=48086047 --rc --dbaccess=saeuger,localhost,myuser,mypasswd \n\
 \n\
 example SQLite:\n\
     getSeq --species=hg19 --seq=chr21 --start=47870612 --end=48086047 --dbaccess=genomes.db --speciesfilenames=genomes.tbl\n\

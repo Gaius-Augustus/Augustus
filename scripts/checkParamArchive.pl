@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # This script checks whether a parameter *.tar.gz archive contains valid AUGUSTUS parameter files. Errors due to missing files are written to STDERR. If UTR parameters are not present, this is written to STDOUT.
 # param-archive.tar.gz is the archive in question

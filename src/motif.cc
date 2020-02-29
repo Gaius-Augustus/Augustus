@@ -50,7 +50,7 @@ void BaseCount::init(){
     WeighingType wt = equalWeights;
     try {
 	wtNumber = Properties::getIntProperty( "/BaseCount/weighingType" );
-    } catch (ProjectError) {
+    } catch (ProjectError&) {
 	cerr << "couldn't read the '/BaseCount/weighingType' property" << endl;
     }
     switch (wtNumber) {
@@ -63,7 +63,7 @@ void BaseCount::init(){
 	string weightMatrixFileName;
 	try {
 	    weightMatrixFileName = Properties::getProperty( "/BaseCount/weightMatrixFile" );
-	} catch (ProjectError) {
+	} catch (ProjectError&) {
 	    cerr << "couldn't read the '/BaseCount/weightMatrixFile' property" << endl;
 	}
 	setWeightMatrix(weightMatrixFileName.c_str());
@@ -295,7 +295,7 @@ void Motif::addSequence(const char* seq, int weight, bool reverse){
 	if (i+j < n)
 	  windowCounts[i+j][pn] += weight;
       }
-    } catch (InvalidNucleotideError e) {}
+    } catch (InvalidNucleotideError &e) {}
   } 
   numSeqs += 1; // do not weight here
 }
@@ -323,7 +323,7 @@ Double Motif::seqProb(const char* seq, bool reverse, bool complement){
 		    pn = s2i.rev(seq+i);
 		prob *= windowProbs[n-1-i][pn];
 	    }
-	} catch (InvalidNucleotideError e) {
+	} catch (InvalidNucleotideError &e) {
 	    prob *= (float) 0.25;
 	}
     }
@@ -512,7 +512,7 @@ ContentStairs::ContentStairs(){
   dna = NULL;
   try {
     GCwinsize = Properties::getIntProperty( "GCwinsize" );
-  } catch (ProjectError) {
+  } catch (ProjectError&) {
     GCwinsize = 10000; // default. 5000 is also good 
     // GCwinsize = -1 means the same as infinity, take whole sequence.
   }

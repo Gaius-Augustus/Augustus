@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 
 ###########################################################################################################################
@@ -190,7 +190,7 @@ sub train{
 		print STDERR "Number of lines in gff file was zero! This is likely to cause problems because no training gene genbank entries can be created! etraining will crash when the training gene genbank file is empty!\n";
 	    }
 	    # The GFF-file needs to be sorted such that for each gene or mRNA the exons are in increasing order 
-	    $cmdString="cat $trainingset | perl -pe 's/\t\S*Parent=/\t/' | sort -n -k 4 | sort -s -k 9 | sort -s -k 1,1 > training.gff";
+	    $cmdString="cat $trainingset | " . 'perl -pe \'s/\t\S*Parent=/\t/\' | sort -n -k 4 | sort -s -k 9 | sort -s -k 1,1 > training.gff';
 	    print "3 Running \"$cmdString\" ..." if ($verbose >2);
 	    system("$cmdString")==0 or die("failed to execute $!\n");
 	    print " Finished!\n" if ($verbose >2);
@@ -247,7 +247,7 @@ sub train{
     }
     close TS;
     if($counter_gen == 0){
-	die("ERROR: training.gb is empty. Possible reasons:\n\ta) features in a provided training gene structure gff file were not compliant with the autoAug.pl pipeline (for instructions read at e.g. http://bioinf.uni-greifswald.de/augustus-training-0.1/help.gsp#structure\n\tb) Scipio failed to generate training gene structures\n\tThis will cause a crash of the autoAug.pl pipeline!\n");
+	die("ERROR: training.gb is empty. Possible reasons:\n\ta) features in a provided training gene structure gff file were not compliant with the autoAug.pl pipeline (for instructions read at e.g. http://bioinf.uni-greifswald.de/webaugustus/help#structure\n\tb) Scipio failed to generate training gene structures\n\tThis will cause a crash of the autoAug.pl pipeline!\n");
     }
     my $ave=$counter_gen/$counter_seq;
     print "1 training.gb contains $counter_seq sequences and $counter_gen genes," if ($verbose>=1);
@@ -289,7 +289,7 @@ sub train{
     if (!uptodate(["training.gb.train"], ["training.gb.onlytrain", "training.gb.train.test"])){
 	print "2 Creating training.gb.train.test and training.gb.onlytrain:\n" if ($verbose>=2);
 	$perlCmdString="perl $string training.gb.train $split_num_o";
-	print "1 randomly selecting $split_num_o genes from the training set training.gb.train..." if ($verbose>=1);
+	print "1 randomly selecting $split_num_o genes from the training set training.gb.train...\n" if ($verbose>=1);
 	print "3 $perlCmdString ...\n" if ($verbose>=3);
 	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
 	system("mv training.gb.train.train training.gb.onlytrain")==0 or die("failed to execute: $!\n");
@@ -648,7 +648,7 @@ sub trainWithUTR{
 	close TS;
 	print "1 Have constructed a training set train.gb for UTRs with $counter_gen genes\n" if ($verbose>=1);
 	system("rm t.gb.train t.gb t.gb.test t.nomrna.test.gb")==0 or die("failed to execute: $!\n");
-#	system("grep LOCUS train.gb | perl -pe 's/^LOCUS\s+(\S+)\s+.*/$1/' > train.gb.lst")==0 or die("failed to execute: $!\n");
+#	system('grep LOCUS train.gb | perl -pe \'s/^LOCUS\s+(\S+)\s+.*/$1/\' > train.gb.lst')==0 or die("failed to execute: $!\n");
 #	print "3 Made file train.gb.lst under $workDir/training/utr/\n" if ($verbose>=3);
 	#why do we need train.gb.lst ???#
     
@@ -661,7 +661,7 @@ sub trainWithUTR{
 	open(CDSONLY, "> cdsonly.gb");
 	
 	# delete the mRNA part up to the next CDS tag
-	my $delete=0;
+	$delete=0;
 	while(<ONLYTRAIN>){
 	    $delete=1 if /mRNA/; 
 	    $delete=0 if /CDS/; 

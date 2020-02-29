@@ -363,7 +363,7 @@ bool BlockScoreType::addBlocksUntil(bool complement, int newbase, map<int,Double
 		try {
 		    int aa = GeneticCode::map[Seq2Int(3).rc(dna)];
 		    value *= (*partner)[i].Q(aa);
-		} catch (InvalidNucleotideError e) {
+		} catch (InvalidNucleotideError &e) {
 		    value *= Column::invalidScore;
 		}
 		new_vals.push_back(value);
@@ -374,7 +374,7 @@ bool BlockScoreType::addBlocksUntil(bool complement, int newbase, map<int,Double
 		try {
 		    int aa = GeneticCode::map[Seq2Int(3)(dna)];
 		    value *= (*partner)[i].Q(aa);
-		} catch (InvalidNucleotideError e) {
+		} catch (InvalidNucleotideError &e) {
 		    value *= Column::invalidScore;
 		}
 		new_vals.push_back(value);
@@ -419,7 +419,7 @@ Double Block::scoreFromScratch(bool complement, int dna_offset, int block_offset
 	    try {
 		int aa = GeneticCode::map[Seq2Int(3).rc(dna)];
 		result *= columns[i].Q(aa);
-	    } catch (InvalidNucleotideError e) {
+	    } catch (InvalidNucleotideError &e) {
 		result *= Column::invalidScore;
 	    }
 	    dna +=3;
@@ -430,7 +430,7 @@ Double Block::scoreFromScratch(bool complement, int dna_offset, int block_offset
 	    try {
 		int aa = GeneticCode::map[Seq2Int(3)(dna)];
 		result *= columns[i].Q(aa);
-	    } catch (InvalidNucleotideError e) {
+	    } catch (InvalidNucleotideError &e) {
 		result *= Column::invalidScore;
 	    }
 	    dna += 3; 
@@ -455,7 +455,7 @@ Double Block::checkedSuffixScore(bool complement, int dna_offset, int block_offs
     	    try {
     		int aa = GeneticCode::map[Seq2Int(3).rc(dna)];
     		result2 *= columns[i].Q(aa);
-    	    } catch (InvalidNucleotideError e) {}
+    	    } catch (InvalidNucleotideError &e) {}
     	    dna += 3; 
     	}
     else
@@ -463,7 +463,7 @@ Double Block::checkedSuffixScore(bool complement, int dna_offset, int block_offs
     	    try {
     		int aa = GeneticCode::map[Seq2Int(3)(dna)];
     		result2 *= columns[i].Q(aa);
-    	    } catch (InvalidNucleotideError e) {}
+    	    } catch (InvalidNucleotideError &e) {}
     	    dna += 3; 
     	}
     if (result2 != result)
@@ -551,7 +551,7 @@ Profile::Profile(string filename) {
 	cerr << "Reading blocks. Here are the confidence ranges for average column scores:\n";
 #endif
 	parse_stream(strm);
-    } catch (ProfileParseError e) {
+    } catch (ProfileParseError &e) {
 	throw ProfileReadError(filename, e.lineno);
     } 
     if (blocks.empty()) 
@@ -704,7 +704,7 @@ void Profile::parse_stream(istream & strm) {
 		ownDists.push_back(blocks.back().getAllOwnDists());
 	    }
 	}
-    } catch (PartParseError err) {
+    } catch (PartParseError &err) {
 	throw ProfileParseError(lineno - err.offset);
     }
     //Author: Lars Gabriel

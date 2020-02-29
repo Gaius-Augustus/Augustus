@@ -1,7 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 # convert a blat output file (tab format) for transcript alignments
 # to a GBrowse GFF file and the multiple fasta file with the matching ests
+# Last modified on January 24th 2020
 
 use strict;
 use Getopt::Long;
@@ -25,8 +26,8 @@ if ($#ARGV <1) {
 }
 
 GetOptions('estnames:s'=>\$estfilename,
-	   'oldformat!'=>\$oldformat,
-	   'source:s'=>\$source);
+       'oldformat!'=>\$oldformat,
+       'source:s'=>\$source);
 
 $source = "bl2gbr" unless (defined($source));
 
@@ -56,13 +57,14 @@ my %estnames;
 
 while (<BLAT>) {
     if (/psLayout/){
-	$skiplines=5;
+        $skiplines=5;
     }
     if ($skiplines>0) {
-	$skiplines--;
-	next;
+        $skiplines--;
+        next;
     }
-    s/#.*//;
+    s/^#.*//;
+    s/#[^\t]+$//;
     next unless /\S/;
 
     @f = split /\t/, $_, $coloffset+21;
@@ -100,45 +102,45 @@ while (<BLAT>) {
     @blockbegins=();
     @blockends=();
     for ($i=0; $i<$numBlocks; $i++) {
-	$mstart = $t[$i]+1; # blat is 0-based
-	$mend = $mstart + $b[$i] - 1;
+        $mstart = $t[$i]+1; # blat is 0-based
+        $mend = $mstart + $b[$i] - 1;
 
-	push @blockbegins, $mstart;
-	push @blockends, $mend;
+        push @blockbegins, $mstart;
+        push @blockends, $mend;
     }
     $numBlocks = scalar @blockbegins;
     
     $id++;
     my $a, $b;
     if ($oldformat){
-	if ($strand ne "-") {
-	    print GFF "$targetname\t$source\tmatch\t",($t[0]+1),"\t", ($t[$numBlocks-1]+$b[$numBlocks-1]), "\t0\t$strand\t.\tTarget $source:$qname ", ($q[0]+1)," ",($q[$numBlocks-1]+$b[$numBlocks-1]),"\n";
-	} else {
-	    print GFF "$targetname\t$source\tmatch\t",($t[0]+1),"\t", ($t[$numBlocks-1]+$b[$numBlocks-1]), "\t0\t$strand\t.\tTarget $source:$qname ", ($qsize+1-($q[$numBlocks-1]+$b[$numBlocks-1]))," ",($qsize-$q[0]),"\n";
-	}
+        if ($strand ne "-") {
+            print GFF "$targetname\t$source\tmatch\t",($t[0]+1),"\t", ($t[$numBlocks-1]+$b[$numBlocks-1]), "\t0\t$strand\t.\tTarget $source:$qname ", ($q[0]+1)," ",($q[$numBlocks-1]+$b[$numBlocks-1]),"\n";
+        } else {
+            print GFF "$targetname\t$source\tmatch\t",($t[0]+1),"\t", ($t[$numBlocks-1]+$b[$numBlocks-1]), "\t0\t$strand\t.\tTarget $source:$qname ", ($qsize+1-($q[$numBlocks-1]+$b[$numBlocks-1]))," ",($qsize-$q[0]),"\n";
+        }
     }
-	
+    
     for ($i=0; $i<$numBlocks; $i++) {
-	if ($strand ne "-") {
-	    if ($oldformat){
-		print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tTarget $source:$qname ", ($q[$i]+1), " ", ($q[$i]+$b[$i]),"\n";
-	    } else {
-		print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tID=m$id;Name=$qname;Target=$qname ", ($q[$i]+1), " ", ($q[$i]+$b[$i]),"\n";	
-	    }
-	} else {
-	    if ($oldformat){
-		print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tTarget $source:$qname ", ($qsize+1-($q[$i]+$b[$i])), " ",($qsize-$q[$i]) ,"\n";
-	    } else {
-		print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tID=m$id;Name=$qname;Target=$qname ", ($qsize+1-($q[$i]+$b[$i])), " ",($qsize-$q[$i]) ,"\n";
-	    }
-	}
+        if ($strand ne "-") {
+            if ($oldformat){
+                print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tTarget $source:$qname ", ($q[$i]+1), " ", ($q[$i]+$b[$i]),"\n";
+            } else {
+                print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tID=m$id;Name=$qname;Target=$qname ", ($q[$i]+1), " ", ($q[$i]+$b[$i]),"\n"; 
+            }
+        } else {
+            if ($oldformat){
+                print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tTarget $source:$qname ", ($qsize+1-($q[$i]+$b[$i])), " ",($qsize-$q[$i]) ,"\n";
+            } else {
+                print GFF "$targetname\t$source\tHSP\t",($t[$i]+1),"\t", ($t[$i]+$b[$i]), "\t0\t$strand\t.\tID=m$id;Name=$qname;Target=$qname ", ($qsize+1-($q[$i]+$b[$i])), " ",($qsize-$q[$i]) ,"\n";
+            }
+        }
     }
     $estnames{$qname}++;
 }
 
 if (defined $estfilename) {
     foreach (keys %estnames) {
-	print EST;
-	print EST "\n";
+        print EST;
+        print EST "\n";
     }
 }

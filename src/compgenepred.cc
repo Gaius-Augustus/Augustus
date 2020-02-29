@@ -43,23 +43,13 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
 	string dbaccess = Constant::dbaccess;
 	if (dbaccess.find(',') != string::npos){ // assuming mysql access
 	    cout << "# assuming a MySQL database" << endl;
-#ifdef AMYSQL
 	    rsa = new MysqlAccess(speciesNames);
-#else
-	    throw ProjectError("Database access not possible with this compiled version. Please recompile with flag MYSQL.");
-#endif
-
 	}
 	else if(dbaccess.find('.') != string::npos){ // assuming sqlite access
 	    cout << "# assuming an SQLite database" << endl;
 	    if(Constant::speciesfilenames.empty())
 		throw ProjectError("Missing parameter speciesfilenames.");
-#ifdef SQLITE
 	    rsa = new SQLiteAccess(dbaccess.c_str(), speciesNames);
-#else
-	    throw ProjectError("Database access not possible with this compiled version. Please recompile with flag SQLITE.");
-#endif
-	    
 	}
 	else{
 	    throw ProjectError("cannot determine the type of database.\n\
@@ -204,7 +194,7 @@ void CompGenePred::start(){
 		throw ProjectError("Is not numeric.");
 	    dd_factors.push_back(pos);
 	}
-    } catch (ProjectError e) {
+    } catch (ProjectError &e) {
 	throw ProjectError("Format error parsing parameter --/CompPred/dd_factor=" + dd_param_s +".\n" + e.getMessage());
     }
     bool onlySampling = false;
@@ -221,7 +211,7 @@ void CompGenePred::start(){
 	}else{
 	  cout << "# No outfile for logReg parameters specified. Writing parameters to " << Constant::configPath <<  "/cgp/log_reg_parameters_trained.cfg" << endl;
 	}
-      } catch (ProjectError e) {
+      } catch (ProjectError &e) {
 	throw ProjectError("For parameter training a reference species must be specified. Use --refSpecies=<SPECIES> and note, that <SPECIES> must be identical to one of the species names provided in the alignment and tree files.");
       }
     }
@@ -470,13 +460,19 @@ void CompGenePred::start(){
 
 	// create additional ECs for each species and  insert them into exoncands and alignedECs
 	vector<map<int_fast64_t,ExonCandidate*> > addECs(speciesNames.size()); // new ECs that need to be mapped to the alignment
-        for (int s = 0; s < speciesNames.size(); s++) {
+	for (int s = 0; s < speciesNames.size(); s++) {
 	    if (seqRanges[s]) {
-		AnnoSequence *as = seqRanges[s];		
-		// this is needed for IntronModel::dssProb in GenomicMSA::createExoncands
-		namgene.getPrepareModels(as->sequence, as->length); 
-		// identifies exon candidates in the sequence for species s
-		geneRange->createExonCands(s, as->sequence, exoncands[s], addECs[s]);
+	        AnnoSequence *as = seqRanges[s];
+	        try {
+	            // this is needed for IntronModel::dssProb in GenomicMSA::createExoncands
+	            namgene.getPrepareModels(as->sequence, as->length);
+	            // identifies exon candidates in the sequence for species s
+	            geneRange->createExonCands(s, as->sequence, exoncands[s], addECs[s]);
+	        } catch (ProjectError &e) {
+		    cerr << "CGP error when creating additional ECs for " << speciesNames[s] << endl
+			 << e.getMessage();
+		    throw e;
+	        }
 	    }
 	}
 

@@ -291,6 +291,7 @@ ScannerBase::ScannerBase(std::istream &in, std::ostream &out)
 // $insert interactiveInit
     d_in(0),
     d_input(new std::istream(in.rdbuf())),
+    d_more(false),
     d_dfaBase__(s_dfa__)
 {}
 
@@ -316,6 +317,7 @@ ScannerBase::ScannerBase(std::string const &infilename, std::string const &outfi
     d_atBOL(true),
     d_tailCount(11, UINT_MAX),
     d_input(new std::ifstream(infilename)),
+    d_more(false),
     d_dfaBase__(s_dfa__)
 {}
 

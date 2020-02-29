@@ -892,8 +892,12 @@ class IntronProfile {
 	    len = seqlen;
 	}
 	static void initSeq(string s) {
-	    sequence = s.c_str();
-	    len = s.length();
+            // Make a copy of the actual character array, as the
+            // string can be destroyed when the sequence is still needed.
+            len = s.length();
+            char *dna = new char[len + 1];
+            std::strcpy (dna, s.c_str());
+            sequence = dna;
 	}
     };
 

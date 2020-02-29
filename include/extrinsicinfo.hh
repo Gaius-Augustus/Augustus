@@ -329,7 +329,7 @@ public:
 	try {
 	    ssList += Properties::getProperty("allow_hinted_splicesites");
 	    ssList += ",";
-	} catch (KeyNotFoundError) {}
+	} catch (KeyNotFoundError &) {}
 	SequenceFeatureCollection::initHintedSplicesites(ssList);
 
 	if (offset < 0)

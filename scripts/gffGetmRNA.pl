@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # gffGetmRNA.pl
 # Creates mRNA fasta sequence files from a GFF with gene annotation
 # 

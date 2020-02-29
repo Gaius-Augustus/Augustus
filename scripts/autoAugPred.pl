@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 #
 
 ##########################################################################################################################
@@ -29,7 +29,6 @@ use strict;
 
 my $path=dirname(rel2abs($0));        # path of this script
 
-my $workDir;
 my $species;
 my $utr;                 # default value: without "utr"
 my $hints;               # default value: without "hints"
@@ -272,11 +271,10 @@ sub prepareScript{
 		$opt_string .= " --hintsfile=../../hints/hints.gff --extrinsicCfgFile=$extrinsiccfg"; 
 	    }
 	    
-	    my $aug="$AUGUSTUS_CONFIG_PATH/../src/augustus";
 	    my $base=basename($genome);
 	    $base =~ s/(\.fa|\.fna|\.fasta)$//;     # adjust the function in splitMfasta.pl
 	    open(AUG, ">aug$i") or die ("Could not open file aug$i!\n");
-	    my $augString="$aug $opt_string --AUGUSTUS_CONFIG_PATH=$AUGUSTUS_CONFIG_PATH --exonnames=on --species=$species $splitDir/$base.split.$i.fa > $workDir/shells/aug$i.out";
+	    my $augString="augustus $opt_string --AUGUSTUS_CONFIG_PATH=$AUGUSTUS_CONFIG_PATH --exonnames=on --species=$species $splitDir/$base.split.$i.fa > $workDir/shells/aug$i.out";
 	    print AUG "$augString";
 	    close AUG;
 	    system("chmod +x aug$i")==0 or die("failed to execute: $!\n");
@@ -288,10 +286,6 @@ sub prepareScript{
 	open(SH, ">shellForAug");
 	print SH 'for (( i=1; i<='."$splitN".'; i++))'."\n";
 	print SH 'do'."\n";
-        print SH '    echo \'PATH="${PATH}":\'"$AUGUSTUS_CONFIG_PATH/../src/" > aug$i_temp'."\n";
-        print SH '    echo "export PATH" >> aug$i_temp'."\n";
-        print SH '    cat "aug$i" >> aug$i_temp'."\n";
-        print SH '    mv aug$i_temp aug$i'."\n";
         print SH '    chmod +x aug$i'."\n";
         print SH '    qsub -cwd "aug$i"'."\n";  #just for sun grid engine
 	print SH 'done'."\n";
@@ -370,7 +364,7 @@ sub continue_aug{
 	system("cat $out | $string > augustus.gff")==0 or die("failed to execute: $!\n");
 	
 	# make file augustus.aa
-	my $string = find("getAnnoFasta.pl");
+	$string = find("getAnnoFasta.pl");
 	$perlCmdString="perl $string augustus.gff";
 	print "3 $perlCmdString\n" if ($verbose>=3);
 	system("$perlCmdString")==0 or die ("failed to execute: $!\n"); # make augustus.aa
