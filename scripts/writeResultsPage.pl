@@ -327,7 +327,7 @@ if($projectID =~ m/^t/){
 	}else{
 		print STDOUT "UTR and hint predictions are not included in web output\n";
 	}	
-	$content .= "</table><br><br>\n";
+	$content .= "<br><br>\n";
 }else{
 	$content = "<h1 class=\"csc-firstHeader\">Predicting Genes with AUGUSTUS<br>Job $projectID</h1>\n";
 	$content .= "<div class=\"csc-default divider\"><hr></div>\n";
