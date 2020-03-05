@@ -147,6 +147,14 @@ if($projectID =~ m/^t/){
 		system "$cmdStr\n";
 	}
 
+	$cfgFile = $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_utr_probs.pbl";
+	if (not(-e $cfgFile)){
+		print STDOUT "$cfgFile does not exist!\n";
+	}else{
+		$cmdStr = "cat $cfgFile | perl -pe 's/$projectID/$species/;' > $projectWebOutParams/$species"."_utr_probs.pbl";
+		system "$cmdStr\n";
+	}
+
 	## pack parameters
 	if(-e $AUGUSTUS_CONFIG_PATH."/species/$projectID/$projectID"."_parameters.cfg"){
 		print STDOUT "Packing parameters...\n";
