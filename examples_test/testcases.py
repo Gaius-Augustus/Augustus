@@ -259,7 +259,7 @@ class TestAugustus(unittest.TestCase):
                                        '/',
                                        resfolder,
                                        html=TestAugustus.opt_html)
-        self.assertEqual(diff, '', diff)
+            self.assertEqual(diff, '', diff)
 
     def test_iterative_prediction(self):
         resfolder = resultdir + self.test_iterative_prediction.__name__ + '/'
@@ -303,7 +303,7 @@ class TestAugustus(unittest.TestCase):
                 refdir + self.test_iterative_prediction.__name__ + '/',
                 resfolder,
                 html=TestAugustus.opt_html)
-        self.assertEqual(diff, '', diff)
+            self.assertEqual(diff, '', diff)
 
     def test_iterative_prediction_with_hints(self):
         resfolder = resultdir + self.test_iterative_prediction_with_hints.__name__ + '/'
@@ -352,7 +352,7 @@ class TestAugustus(unittest.TestCase):
                 '/',
                 resfolder,
                 html=TestAugustus.opt_html)
-        self.assertEqual(diff, '', diff)
+            self.assertEqual(diff, '', diff)
 
     def test_training_new_species(self):
         self.training_new_species(False)
@@ -437,7 +437,7 @@ class TestAugustus(unittest.TestCase):
             diff = comp.compare_folder(reffolder,
                                        resfolder,
                                        html=TestAugustus.opt_html)
-        self.assertEqual(diff, '', diff)
+            self.assertEqual(diff, '', diff)
 
     def test_ab_initio_prediction(self):
         resfolder = resultdir + self.test_ab_initio_prediction.__name__ + '/'
@@ -470,7 +470,7 @@ class TestAugustus(unittest.TestCase):
                 refdir + self.test_ab_initio_prediction.__name__ + '/',
                 resfolder,
                 html=TestAugustus.opt_html)
-        self.assertEqual(diff, '', diff)
+            self.assertEqual(diff, '', diff)
 
     def test_format_and_error_out(self):
         resfolder = resultdir + self.test_format_and_error_out.__name__ + '/'
@@ -505,7 +505,7 @@ class TestAugustus(unittest.TestCase):
                 refdir + self.test_format_and_error_out.__name__ + '/',
                 resfolder,
                 html=TestAugustus.opt_html)
-        self.assertEqual(diff, '', diff)
+            self.assertEqual(diff, '', diff)
 
     def test_alternatives_from_sampling(self):
         resfolder = resultdir + self.test_alternatives_from_sampling.__name__ + '/'
@@ -540,7 +540,7 @@ class TestAugustus(unittest.TestCase):
                 refdir + self.test_alternatives_from_sampling.__name__ + '/',
                 resfolder,
                 html=TestAugustus.opt_html)
-        self.assertEqual(diff, '', diff)
+            self.assertEqual(diff, '', diff)
 
     def test_cgp(self):
         os.chdir('../examples/cgp')
@@ -583,7 +583,7 @@ class TestAugustus(unittest.TestCase):
             diff = comp.compare_folder(reffolder,
                                        resfolder,
                                        html=TestAugustus.opt_html)
-        self.assertEqual(diff, '', diff)
+            self.assertEqual(diff, '', diff)
 
         # set working directory back to base test directory
         os.chdir('../../examples_test')
@@ -644,7 +644,7 @@ class TestAugustus(unittest.TestCase):
             diff = comp.compare_folder(reffolder,
                                        resfolder,
                                        html=TestAugustus.opt_html)
-        self.assertEqual(diff, '', diff)
+            self.assertEqual(diff, '', diff)
 
     def cgp_with_db_preparation(self, hints, mysql):
         if mysql:
