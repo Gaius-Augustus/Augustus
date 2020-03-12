@@ -6,6 +6,7 @@ import itertools
 import json
 import subprocess
 import os
+import sys
 import shutil
 import gzip
 import aug_out_filter as afilter
@@ -21,9 +22,12 @@ parser.add_argument('--compare',
 parser.add_argument('--html',
                     action='store_true',
                     help='Save diff results in html file.')
-parser.add_argument('--set_default_wd',
-                    action='store_true',
-                    help='Set the working directory to examples_test (if called from AUGUSTUS root).')
+parser.add_argument(
+    '--set_default_wd',
+    action='store_true',
+    help=
+    'Set the working directory to examples_test (if called from AUGUSTUS root).'
+)
 args = parser.parse_args()
 
 # only import mysql connector if testcases using mysql should be executed
@@ -44,6 +48,14 @@ def create_initial_resultdir():
     if os.path.exists(resultdir):
         shutil.rmtree(resultdir)
     os.mkdir(resultdir)
+
+
+def check_working_dir():
+    wd = os.getcwd()
+    if not (wd.endswith('Augustus/examples_test')):
+        errstr = 'Wrong working directory!' + '\n'
+        errstr += 'This script must be called from "Augustus/examples_test"!'
+        sys.exit(errstr)
 
 
 class TestAugustus(unittest.TestCase):
@@ -821,7 +833,8 @@ def print_tc_header(tc_name):
 if __name__ == '__main__':
     if args.set_default_wd:
         os.chdir('examples_test/')
-    
+
+    check_working_dir()
     create_initial_resultdir()
     TestAugustus.opt_compare = args.compare
     TestAugustus.opt_html = args.html
