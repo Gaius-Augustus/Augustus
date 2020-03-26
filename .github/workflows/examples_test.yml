@@ -36,4 +36,5 @@ jobs:
       run: make all
 
     # Test AUGUSTUS
-
+    - name: Test AUGUSTUS (examples folder)
+      run: ./examples_test/testcases.py --compare --set_default_wd
