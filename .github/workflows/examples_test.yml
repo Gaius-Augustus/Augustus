@@ -1,0 +1,37 @@
+# This is a workflow to build AUGUSTUS and test the examples directory
+name: Test examples
+
+# Controls when the action will run. Triggers the workflow on push or pull request 
+# events but only for the 'testing'' branch
+on:
+  push:
+    branches:
+      - 'testing'
+
+env:
+  TOOLDIR: '${{ github.workspace }}/required_tools'
+  
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build_and_test"
+  build_and_test:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-18.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+    - uses: actions/checkout@v2
+
+    # Install required dependencies
+    - name: Install dependencies
+      run: sudo ./examples_test/installDependencies
+
+    # Build tools
+    - name: Clone and build tools
+      run: ./examples_test/buildTools
+
+    # Build AUGUSTUS
+
+    # Test AUGUSTUS
+
