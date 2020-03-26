@@ -32,6 +32,8 @@ jobs:
       run: ./examples_test/buildTools
 
     # Build AUGUSTUS
+    - name: Build AUGUSTUS
+      run: make all
 
     # Test AUGUSTUS
 
