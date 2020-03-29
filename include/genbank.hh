@@ -22,7 +22,7 @@
 #include <boost/iostreams/copy.hpp>
 #endif
 
-#define GBMAXLINELEN 10002
+#define GBMAXLINELEN 40000
 
 enum FileType {unknown, genbank, fasta};
 
@@ -48,25 +48,25 @@ public:
  */
 class GBFeature{
 public:
-  State *ranges;
-  int begin, end;
-  string geneid;
-  string fkey;
-  Strand strand;
-  bool complete_l, complete_r; // complete at the left end, right end?
-  GBFeature(){
-    ranges=NULL;
-    begin=end=-1;
-    geneid="";
-    strand=plusstrand;
-    complete_l=complete_r=true;
-  }
+    State *ranges;
+    int begin, end;
+    string geneid;
+    string fkey;
+    Strand strand;
+    bool complete_l, complete_r; // complete at the left end, right end?
+    GBFeature(){
+        ranges = NULL;
+        begin=end = -1;
+        geneid = "";
+        strand = plusstrand;
+        complete_l = complete_r=true;
+    }
     GBFeature(const char *);
-  bool checkRange(int len);
-  bool operator<(const GBFeature &other) const{
-    return (begin<other.begin || (begin==other.begin && end<other.end));
-  }
-  bool matches(GBFeature &other);
+    bool checkRange(int len);
+    bool operator<(const GBFeature &other) const{
+        return (begin<other.begin || (begin==other.begin && end<other.end));
+    }
+    bool matches(GBFeature &other);
 };
 
 
