@@ -368,8 +368,8 @@ char* GBProcessor::getSequence( GBPositions& pos ){
 
 GBFeature::GBFeature(const char *pos){
   begin = end = -1;
-  ranges= NULL;
-  complete_r=complete_l=true;
+  ranges = NULL;
+  complete_r = complete_l = true;
   istringstream isstrm( pos );
   char c;
   char tmp[GBMAXLINELEN] = { '\0' }; // need more than 4200 chars for human muscle gene TTN
@@ -385,6 +385,7 @@ GBFeature::GBFeature(const char *pos){
   } else
     strand = plusstrand;
   c = isstrm.peek( );
+
   if( isalpha( c ) ){
     while( isstrm.get( c ) && c != '(' && c != '\n')
       ;
@@ -394,9 +395,14 @@ GBFeature::GBFeature(const char *pos){
     }
     while( isstrm.get( c ) && c != ')' )
       if( !isspace( c ) ) {
-	if (isdigit(c) || c =='.' || c == ',' || c=='<' || c=='>' )
-	  tmp[i++] = c;
-	else {
+          if (isdigit(c) || c =='.' || c == ',' || c=='<' || c=='>' ){
+              if (i >= GBMAXLINELEN) {  
+                  cerr << "Genbank feature description of " << fkey << "  " << string(tmp).substr(0, 40)
+                       << " ... reaches the character limit of " << GBMAXLINELEN-1 << endl;
+                  throw GBError( "GBProcessor::getJoin( ):  failed!!!" );
+              }
+              tmp[i++] = c;
+          } else {
 	  cerr << fkey << " contains character " << c << endl;
 	  throw GBError( "GBProcessor::getJoin( ):  failed!!!" );
 	}
@@ -404,8 +410,15 @@ GBFeature::GBFeature(const char *pos){
     while( isstrm.get( c ) && c != '\n' )
       ;         // read up to the end of the line
   } else if( isdigit( c ) || c == '<'){
-    while( isstrm.get( c ) && c != ')' && c != '\n' )
-      tmp[i++] = c;
+      while( isstrm.get( c ) && c != ')' && c != '\n' ){
+          if (i >= GBMAXLINELEN) {  
+              cerr << "Genbank feature description of " << fkey << "  " << string(tmp).substr(0, 40)
+                   << " ... reaches the character limit of " << GBMAXLINELEN-1 << endl;
+              throw GBError( "GBProcessor::getJoin( ):  failed!!!" );
+          }
+          tmp[i++] = c;
+      }
+      
     while (isstrm && (c != '\n'))  // read until end of line
       isstrm.get( c );
   } else {  
