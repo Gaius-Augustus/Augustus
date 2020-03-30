@@ -842,7 +842,15 @@ if __name__ == '__main__':
     #print_tc_header('default test suite')
     #runner.run(default_test_suite())
     print_tc_header('small test suite')
-    runner.run(small_test_suite())
+    result = runner.run(small_test_suite())
+
+    mysql_was_successful = True
     if args.mysql:
         print_tc_header('MySQL test suite')
-        runner.run(mysql_test_suite())
+        result_mysql = runner.run(mysql_test_suite())
+        mysql_was_successful = result_mysql.wasSuccessful()
+
+    if result.wasSuccessful and mysql_was_successful:
+        exit(0)
+    else:
+        exit(1)
