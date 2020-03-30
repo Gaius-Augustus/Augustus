@@ -806,7 +806,7 @@ def small_test_suite():
     suite.addTest(TestAugustus('test_training_new_species'))
     suite.addTest(TestAugustus('test_ab_initio_prediction'))
     suite.addTest(TestAugustus('test_format_and_error_out'))
-    suite.addTest(TestAugustus('test_alternatives_from_sampling'))
+    #suite.addTest(TestAugustus('test_alternatives_from_sampling'))
     suite.addTest(TestAugustus('test_cgp'))
     suite.addTest(TestAugustus('test_cgp_sqlite'))
     suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
