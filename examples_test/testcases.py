@@ -850,7 +850,7 @@ if __name__ == '__main__':
         result_mysql = runner.run(mysql_test_suite())
         mysql_was_successful = result_mysql.wasSuccessful()
 
-    if result.wasSuccessful and mysql_was_successful:
-        exit(0)
+    if result.wasSuccessful() and mysql_was_successful:
+        sys.exit()
     else:
-        exit(1)
+        sys.exit(1)
