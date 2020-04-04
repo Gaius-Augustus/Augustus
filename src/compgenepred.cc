@@ -1,5 +1,14 @@
+<<<<<<< HEAD
 /*
  * compgenepred.cc
+=======
+/**********************************************************************
+ * file: compgenepred.cc licence: Artistic Licence, see file
+ * LICENCE.TXT or
+ * http://www.opensource.org/licenses/artistic-license.php descr.:
+ * comparative gene prediction on multiple species authors: Mario
+ * Stanke, Alexander Gebauer, Stefanie Koenig
+>>>>>>> 0aaefc96961df96de4c4269dd9a2b2d5eb028909
  *
  * License: Artistic License, see file LICENSE.TXT or 
  *          https://opensource.org/licenses/artistic-license-1.0
@@ -204,6 +213,7 @@ void CompGenePred::start(){
 	noprediction = Properties::getBoolProperty("noprediction");
     } catch (...) {}
     if(Properties::hasProperty("referenceFile")){
+<<<<<<< HEAD
 	onlySampling = true;
 	cout << "# AUGUSTUS is running in training mode. No prediction will be done!" << endl;
 	try {
@@ -217,6 +227,16 @@ void CompGenePred::start(){
 	    reference_from_file(&ref_class);
 	    throw ProjectError("For parameter training a reference species must be specified. Use --refSpecies=<SPECIES> and note, that <SPECIES> must be identical to one of the species names provided in the alignment and tree files.");
 	}
+=======
+      onlySampling = true;
+      cout << "# AUGUSTUS is running in training mode. No prediction will be done!" << endl;
+      try {
+	Constant::refSpecies = Properties::getProperty("refSpecies");
+	reference_from_file(&ref_class);
+      } catch (ProjectError e) {
+	throw ProjectError("For parameter training a reference species must be specified. Use --refSpecies=<SPECIES> and note, that <SPECIES> must be identical to one of the species names provided in the alignment and tree files.");
+      }
+>>>>>>> 0aaefc96961df96de4c4269dd9a2b2d5eb028909
     }
     try {
 	useLocusTrees = Properties::getBoolProperty("locustree");
@@ -595,12 +615,16 @@ void CompGenePred::start(){
     GeneMSA::topologies.clear(); 
   
     if(Properties::hasProperty("referenceFile")){
+<<<<<<< HEAD
 <<<<<<< c956852261d883d09cb0e93a82bfb32519f6b8e4
       // initialize training of log reg parameters
       train_OEscore_params(speciesNames.size());
 =======
 	// possibly call ANN training here
 >>>>>>> scaffold for Darwin to start training MSAs around ortho exons
+=======
+	// possibly call ANN training here
+>>>>>>> 0aaefc96961df96de4c4269dd9a2b2d5eb028909
     }
   } 
 }
