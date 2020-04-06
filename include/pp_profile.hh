@@ -198,7 +198,7 @@ namespace PP {
                 return *this;
             }
             Range operator+ (Range other) const {
-            return Range(min,max)+=other;
+                return Range(min,max)+=other;
             }
         bool has(int elem) const {
             return min <= elem && elem <= max;
@@ -231,18 +231,18 @@ namespace PP {
         DistanceType(Range other) : has_max(true), r(other) {}
         friend ostream& operator<< (ostream& strm, DistanceType d) {
             if (d.has_max)
-        return strm <<  d.r.min << "\t" << d.r.max;
+                return strm <<  d.r.min << "\t" << d.r.max;
             else
-            return strm << d.r.min << "\t*";
+                return strm << d.r.min << "\t*";
         }
             friend istream& operator>> (istream& strm, DistanceType& d) {
             d.has_max = true;
             strm >> d.r.min >> ws;
             if (strm.peek() == '*') {
-        strm.get();
-        d.has_max = false;
-        d.r.max = d.r.min;
-        return strm;
+                strm.get();
+                d.has_max = false;
+                d.r.max = d.r.min;
+                return strm;
             }
             return strm >> d.r.max;
             }
@@ -261,11 +261,11 @@ namespace PP {
         void makeTolerant() {
             r.min = int(r.min * (1-RELAXATION) + 0.5);
             if (has_max) {
-        r.max = int(r.max * (1+RELAXATION) + 0.5);
-        if (r.max >= MAXINTERBLOCKDIST)
-            setInfMax();
+                r.max = int(r.max * (1+RELAXATION) + 0.5);
+                if (r.max >= MAXINTERBLOCKDIST)
+                    setInfMax();
             } else
-        r.max = r.min;
+                r.max = r.min;
         }
         bool has(int elem) const {
             return has_max ? r.has(elem) : r.min <= elem;
@@ -462,7 +462,7 @@ namespace PP {
             Block result;
             result.distance = dist;
             for (int i=size()-1; i>=0; i--)
-        result.columns.push_back(columns[i]);
+                result.columns.push_back(columns[i]);
             return result;
         }
 
@@ -472,8 +472,8 @@ namespace PP {
         Double getSuffixThresh(bool complement, int i) const;
         Double getPartialThresh(bool complement, int from, int to) const {
             return complement ?
-        thresholdMatrix[size()-from][size()-to] :
-        thresholdMatrix[to][from];
+                thresholdMatrix[size()-from][size()-to] :
+                thresholdMatrix[to][from];
         }
         Double getPartialThresh(bool complement, int from) const {
             return getPartialThresh(complement, from, size());
@@ -498,16 +498,16 @@ namespace PP {
         // the following methods use logscores
         Dist getOwnDist(int from, int to, bool complement = false) const {
             return complement ?
-        ownDists[size()-to] - ownDists[size()-from] :
-        ownDists[from] - ownDists[to];
+            ownDists[size()-to] - ownDists[size()-from] :
+            ownDists[from] - ownDists[to];
         }
         Dist getOwnDist(int from=0) const {
             return ownDists[from];
         }
         Dist getBackDist(int from, int to, bool complement = false ) const {
             return complement ?
-        backDists[size()-to] - ownDists[size()-from]:
-        backDists[from] - backDists[to];
+                backDists[size()-to] - ownDists[size()-from]:
+                backDists[from] - backDists[to];
         }
         Dist getBackDist(int from=0) const {
             return backDists[from];
@@ -576,7 +576,7 @@ namespace PP {
         void removeBlocksUntil(int newbase) {
             newbase -= 3 * size();
             while (begin() < newbase)
-        pop_front();
+                pop_front();
         }
         Double savedScore(int offset) {
             map<int,Double>::iterator it = hits[offset%3].find(offset);
@@ -609,15 +609,15 @@ namespace PP {
         }
         Double get(int dna_offset, int block_offset, int len)  const {
             if (len==0)
-        return 1;
+                return 1;
             if (block_offset == 0)
-        return getAlignedScores(dna_offset).at(len-1);
+                return getAlignedScores(dna_offset).at(len-1);
             const aligned_type& alignedScores = getAlignedScores(dna_offset - 3*block_offset);
             return alignedScores.at(len+block_offset-1)/alignedScores.at(block_offset-1);
         }
         Double get(int dna_offset, int block_offset)  const {
             if (block_offset == 0)
-        return get(dna_offset);
+                return get(dna_offset);
             const aligned_type& alignedScores = getAlignedScores(dna_offset - 3*block_offset);
             return alignedScores.back()/alignedScores.at(block_offset-1);
         }
@@ -795,18 +795,18 @@ namespace PP {
             ostringstream result;
             int blockno=0;
             while (true) {
-        result << "--";
-        DistanceType d = interBlockDist(blockno);
-        if (d.has_max)
-            result << "[" << d.r.min << ".." << d.r.max << "]";
-        else if (d.r.min>0)
+                result << "--";
+                DistanceType d = interBlockDist(blockno);
+                if (d.has_max)
+                    result << "[" << d.r.min << ".." << d.r.max << "]";
+                else if (d.r.min>0)
 
-            result << "[" << d.r.min << ",...]";
-        result << "--";
-        if (blockno == blockCount())
-            return result.str();
-        result << "> " << blocks[blockno].id << " (" << blockSize(blockno) << ") <";
-        blockno++;
+                    result << "[" << d.r.min << ",...]";
+                result << "--";
+                if (blockno == blockCount())
+                    return result.str();
+                result << "> " << blocks[blockno].id << " (" << blockSize(blockno) << ") <";
+                blockno++;
             }
         }
         ostream& write(ostream&) const;
@@ -848,32 +848,32 @@ namespace PP {
             vector< vector<Dist> > ownDists;
             result.name = name + "(rev.)";
             for (int b=blockCount(); b>0; b--) {
-        result.blocks.push_back(blocks[b-1].reverse(interBlockDist(b)));
-        result.blocks.back().initThresholds();
-        ownDists.push_back(result.blocks.back().getAllOwnDists());
+                result.blocks.push_back(blocks[b-1].reverse(interBlockDist(b)));
+                result.blocks.back().initThresholds();
+                ownDists.push_back(result.blocks.back().getAllOwnDists());
             }
             result.calcGlobalThresh(ownDists);
             if (!equal(result.globalThresh[0].begin(),
-               result.globalThresh[0].end(),
-               globalThresh[1].begin(),
-               vv_equal) ||
-        !equal(result.globalThresh[1].begin(),
-               result.globalThresh[1].end(),
-               globalThresh[0].begin(),
-               vv_equal) )
-        throw ProjectError("globalThreshs not equal!");
+                       result.globalThresh[0].end(),
+                       globalThresh[1].begin(),
+                       vv_equal) ||
+                !equal(result.globalThresh[1].begin(),
+                       result.globalThresh[1].end(),
+                       globalThresh[0].begin(),
+                       vv_equal) )
+                throw ProjectError("globalThreshs not equal!");
             for (int b=0; b<blockCount(); b++)
-        for (int i=1; i<result.blockSize(b); i++)
-            if (!almost_equal(result[b].getPrefixThresh(false, i),
-              blocks[blockCount()-b-1].getPrefixThresh(true,i)) ||
-        !almost_equal(result[b].getPrefixThresh(true, i),
-              blocks[blockCount()-b-1].getPrefixThresh(false,i)))
-        throw ProjectError("prefixThreshs not equal!");
-            else if (!almost_equal(result[b].getSuffixThresh(false, i),
-           blocks[blockCount()-b-1].getSuffixThresh(true,i)) ||
-             !almost_equal(result[b].getSuffixThresh(true, i),
-           blocks[blockCount()-b-1].getSuffixThresh(false,i)))
-        throw ProjectError("suffixThreshs not equal!");
+                for (int i=1; i<result.blockSize(b); i++)
+                    if (!almost_equal(result[b].getPrefixThresh(false, i),
+                              blocks[blockCount()-b-1].getPrefixThresh(true,i)) ||
+                        !almost_equal(result[b].getPrefixThresh(true, i),
+                              blocks[blockCount()-b-1].getPrefixThresh(false,i)))
+                        throw ProjectError("prefixThreshs not equal!");
+                    else if (!almost_equal(result[b].getSuffixThresh(false, i),
+                                blocks[blockCount()-b-1].getSuffixThresh(true,i)) ||
+                             !almost_equal(result[b].getSuffixThresh(true, i),
+                                blocks[blockCount()-b-1].getSuffixThresh(false,i)))
+                            throw ProjectError("suffixThreshs not equal!");
             result.finalDist = interBlockDist(0);
             return result;
         }
@@ -947,12 +947,12 @@ inline ostream& operator<< (ostream& strm, PP::Position ppos) {
 inline Double PP::Block::getPrefixThresh(bool complement, int i) const {
 #ifdef DEBUG
     if (i<=0 || i>=size())
-    throw ProjectError("Out of range!");
+        throw ProjectError("Out of range!");
     Double result = complement ?
-    suffixThresh[size() - i] :
-    prefixThresh[i];
+        suffixThresh[size() - i] :
+        prefixThresh[i];
     if (!almost_equal(result,getPartialThresh(complement, 0, i)))
-    throw ProjectError("partialThresh bug");
+        throw ProjectError("partialThresh bug");
 #endif
     return getPartialThresh(complement, 0, i);
 }
