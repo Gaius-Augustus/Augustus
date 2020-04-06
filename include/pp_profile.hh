@@ -58,30 +58,30 @@ struct Dist {
     double var;
     Dist(double m=0, double v=0) : mu(m), var(v) {}
     Dist& add(double m=0, double v=0) {
-    mu+=m; var+=v; return *this;
+        mu+=m; var+=v; return *this;
     }
     Dist& operator+=(const Dist& other) {
-    return add(other.mu, other.var);
+        return add(other.mu, other.var);
     }
     Dist& operator-=(const Dist& other) {
-    return add(-other.mu, -other.var);
+        return add(-other.mu, -other.var);
     }
     Dist operator+(const Dist& other) const {
-    return Dist(*this) += other;
+        return Dist(*this) += other;
     }
     Dist operator-(const Dist& other) const {
-    return Dist(*this) -= other;
+        return Dist(*this) -= other;
     }
 
     double stddev() const {
-    return sqrt(var>=0?var:-var);
+        return sqrt(var>=0?var:-var);
     }
 
     double normed(double abs) const {
-    return (abs - mu)/stddev();
+        return (abs - mu)/stddev();
     }
     double abs(double normed) const {
-    return normed * stddev() + mu;
+        return normed * stddev() + mu;
     }
 
 };
