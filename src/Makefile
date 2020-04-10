@@ -7,7 +7,7 @@ CXX	= g++
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 ${CXXFLAGS}# -DDEBUG -g -ggdb -pg -DDEBUG_STATES
+CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 ${CXXFLAGS} #-DDEBUG -g -ggdb -pg -DDEBUG_STATES
 
 ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))
 	CXXFLAGS += -DZIPINPUT
@@ -31,13 +31,13 @@ ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
 endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
-PROGR	= augustus etraining prepareAlign fastBlockSearch
+PROGR	= augustus etraining prepareAlign fastBlockSearch pp_simScore
 INFO    = cxxflags
 
 # MySQL support
 # replace RUNTIME_LIBPATH with your own run-time libpath if mysql++ is not installed system-wide, e.g.
-# RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib 
-RUNTIME_LIBPATH = 
+# RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib
+RUNTIME_LIBPATH =
 INCLS	+= -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
 LIBS 	+=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
 PROGR   += load2db getSeq
@@ -84,6 +84,10 @@ fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp fastBlockSearch ../bin/
 
+pp_simScore: pp_simscore.cc fasta.o types.o properties.o geneticcode.o pp_profile.o lldouble.o
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	cp pp_simScore ../bin/
+
 prepareAlign: pp_prepare_align.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 	cp prepareAlign ../bin/
@@ -102,7 +106,7 @@ getSeq: getSeq.cc $(OBJS) $(DUMOBJS)
 
 espoca: espoca.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp espoca ../bin/ 
+	cp espoca ../bin/
 
 info:
 	echo "$(CXXFLAGS)" > $(INFO)

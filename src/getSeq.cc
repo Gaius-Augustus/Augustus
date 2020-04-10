@@ -1,9 +1,9 @@
 /*
  * getSeq.cc
  *
- * License: Artistic License, see file LICENSE.TXT or 
+ * License: Artistic License, see file LICENSE.TXT or
  *          https://opensource.org/licenses/artistic-license-1.0
- * 
+ *
  * Description: retrieve genomic sequences from a mysql database
  */
 
@@ -26,7 +26,7 @@ void printSeq(string sequence,int length);
 int main( int argc, char* argv[] ){
 
     int intMax = std::numeric_limits<int>::max();
-   
+
     int c;
     string species, seqname;
     int start = 1;
@@ -69,7 +69,7 @@ int main( int argc, char* argv[] ){
                 break;
             case 'r':
                 strand=minusstrand;
-                break;    
+                break;
 	    case 'h':
 		help=1;
 		break;
@@ -90,7 +90,7 @@ int main( int argc, char* argv[] ){
 	printUsage();
 	exit(1);
     }
-    
+
     if (Constant::dbaccess.empty()){
 	cerr << "Missing database access info. dbaccess is a required parameter." << endl;
 	printUsage();
@@ -101,7 +101,7 @@ int main( int argc, char* argv[] ){
 	cerr << "Not a genomic interval. Typo in the start or end coordinate?" << endl;
 	exit(1);
     }
-    
+
     DbSeqAccess *rsa=NULL;
 
     if (Constant::dbaccess.find(',') != string::npos){ // assuming mysql access
@@ -138,7 +138,7 @@ int main( int argc, char* argv[] ){
 	}
     }
     catch(ProjectError &e){
-	cerr << "random sequence access failed on " << species << ", " << seqname << ":" 
+	cerr << "random sequence access failed on " << species << ", " << seqname << ":"
 	     << start << "-" << end << endl;;
 	cerr << e.getMessage() << endl;
 	exit(1);

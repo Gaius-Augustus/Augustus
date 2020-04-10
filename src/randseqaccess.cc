@@ -744,7 +744,6 @@ int MysqlAccess::get_region_coord(int seq_region_id,int start,int end,vector<T> 
 //}
 
 AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
-
     int seq_start, seq_end;
     streampos file_start;
     streamsize n=0; // number of characters that are read
