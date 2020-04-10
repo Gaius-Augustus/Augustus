@@ -783,49 +783,6 @@ void GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges
     }
 }
 
-/*
- * Darwin Mertsch: 
- * This function currently prints the MSA as strings. Darwin, you can make it return a suitable data structure
- * and then construct a training data structure.
- */
-void GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges) {
-    int k = alignment->rows.size();
-    vector<string> rowstrings(k, "");
-    size_t flanking = 10;
-    int aliStart = oe.getAliStart() - flanking;
-    int aliEnd = oe.getAliEnd() + flanking;
-    int aliLen = aliEnd - aliStart + 1;
-    int gaplen, matchlen, loverhang, prevAliEnd;
-    
-    for (size_t s=0; s<k; s++){
-	if (alignment->rows[s] == NULL || oe.orthoex[s] == NULL)
-	    continue;
-	AlignmentRow *row = alignment->rows[s];
-	vector<fragment>::const_iterator from = row->frags.begin(); // this could be more efficient exploiting sortedness
-
-	// search first fragment that is not strictly to the left of the alignment start
-	while (from != row->frags.end() && from->aliPos + from->len < aliStart)
-	    from++;
-	prevAliEnd = aliStart - 1;
-	while (from != row->frags.end() && from->aliPos <= aliEnd){
-	    // insert gap characters between previous and this fragment
-	    gaplen = from->aliPos - prevAliEnd - 1;
-	    if (gaplen > 0)
-		rowstrings[s] += string(gaplen, '-');
-	    
-	    loverhang = (from->aliPos < aliStart)? aliStart - from->aliPos : 0;
-	    matchlen = from->len - loverhang;
-	    if (matchlen > aliEnd - from->aliPos - loverhang + 1)
-		matchlen = aliEnd - from->aliPos - loverhang + 1;
-	    rowstrings[s] += string(seqRanges[s]->sequence + from->chrPos + loverhang - offsets[s], matchlen);
-	    prevAliEnd = from->aliPos + loverhang + matchlen - 1;
-	    from++;
-	}
-	if (rowstrings[s].size() < aliLen)
-	    rowstrings[s] += string(aliLen - rowstrings[s].size(), '-');
-	cout << s << "\t" << offsets[s] << "\t" << "\t" << rowstrings[s] << endl;
-    }
-}
 
 /** 
  * Two codons are considered aligned, when all 3 of their bases are aligned with each other.
@@ -1686,7 +1643,8 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
 		}
 	    }
 	}
-	consScore.push_back(calcColumnScore(a,c,t,g));
+	double sc = calcColumnScore(a,c,t,g);
+	consScore.push_back(sc);
     }
     // calcluate conservation score for each HECT
     for (list<OrthoExon>::iterator oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
@@ -1696,6 +1654,10 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
 	for(int pos = oeAliStart; pos <= oeAliEnd; pos++){
 	    if (pos > alignment->aliLen || pos < 0)
 		throw ProjectError("Internal error in printConsScore: alignment positions of HECTs and geneRanges are inconsistent.");
+	    if (pos >= consScore.size()){
+		cerr << "invalid access at " << pos << "\t" << consScore.size() <<  endl;
+		exit(1);
+	    }
 	    oeConsScore+=consScore[pos];
 	}
 	oeConsScore/=(oeAliEnd-oeAliStart+1); // average over all alignment columns within a HECT
@@ -1713,14 +1675,18 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
         oe->setLeftConsScore(oeConsScore);
 	// conservation score for right boundary feature
 	oeConsScore=0.0;
+
         int oeRightBoundAliStart = min(oeAliEnd + 1, alignment->aliLen);
-        int oeRightBoundAliEnd = min(oeAliEnd + 1 + Constant::oeExtensionWidth, alignment->aliLen);
+        int oeRightBoundAliEnd = min(oeAliEnd + 1 + Constant::oeExtensionWidth, alignment->aliLen - 1);
+	
         for(int pos = oeRightBoundAliStart; pos <= oeRightBoundAliEnd; pos++){
-          if (pos > alignment->aliLen || pos < 0)
-            throw ProjectError("Internal error in printConsScore: alignment positions of HECTs and geneRanges are inconsistent.");
-          oeConsScore+=consScore[pos];
+	    if (pos >= alignment->aliLen || pos < 0)
+		throw ProjectError("Internal error in printConsScore: alignment positions of HECTs and geneRanges are inconsistent.");
+	    oeConsScore += consScore[pos];
         }
-        oeConsScore/=(oeRightBoundAliEnd-oeRightBoundAliStart+1); // average over all alignment columns within a HECT                   
+	
+        oeConsScore/=(oeRightBoundAliEnd-oeRightBoundAliStart+1); // average over all alignment columns within a HECT
+
         oe->setRightConsScore(oeConsScore);
 
     }

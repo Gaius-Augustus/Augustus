@@ -747,7 +747,7 @@ AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start
 
     int seq_start, seq_end;
     streampos file_start;
-    streamsize n=0; // number of characters that are read
+    streamsize n = 0; // number of characters that are read
     
     AnnoSequence* annoseq = new AnnoSequence();
     annoseq->seqname = newstrcpy(chrName);
@@ -765,9 +765,10 @@ AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start
 	    seq_end = stmt.intColumn(1);
 	    file_start = (std::streampos)stmt.int64Column(2);
 	    n += stmt.intColumn(3);
+	    n += 1; // as the newlines after the 50Kb regions are not included, extra bp are truncated below
 	    while(stmt.nextResult()){
 		seq_end = stmt.intColumn(1);
-		n += stmt.intColumn(3);
+		n += stmt.intColumn(3) + 1;
 	    }
 	    if(start - seq_start < 0 || seq_end - end < 0){
 		if(Constant::MultSpeciesMode){
@@ -783,7 +784,7 @@ AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start
 	    if(it == filenames.end()){
 		throw ProjectError("no genome file specified for " + speciesname + " in speciesfilenames");
 	    }
-	    string file =it->second;
+	    string file = it->second;
 	    ifstream ifstrm(file.c_str());
 	    if (ifstrm.is_open()){
 		ifstrm.seekg(file_start);
@@ -803,6 +804,10 @@ AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start
 		    delete [] annoseq->sequence;
 		    annoseq->sequence = reverseDNA;
 		}
+		if (strlen(annoseq->sequence) != annoseq->length)
+		    throw ProjectError("SQLiteAccess::getSeq " + itoa(strlen(annoseq->sequence)) + " != " + itoa(annoseq->length) + " in " 
+				       + speciesname + "." + chrName + ":" + itoa(start) + "-" + itoa(end));
+		
 		return annoseq;
 	    }
 	    else

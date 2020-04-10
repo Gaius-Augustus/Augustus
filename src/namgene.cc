@@ -175,10 +175,12 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
    * and form the forward matrix
    */
   int dnalen = strlen( dna );
+  cout << "viterbiAndForward dnalen=" << dnalen << endl;
   viterbi.assign(dnalen, statecount);
   if (needForwardTable) 
       forward.assign(dnalen, statecount);
 
+  cout << "forward.size=" << forward.size() << endl << flush;
   /*
    * Initialize the first Viterbi column with InitialProbs
    */
@@ -700,7 +702,10 @@ list<AltGene> *NAMGene::getStepGenes(AnnoSequence *annoseq, SequenceFeatureColle
     /*
      * First make a prediction run on the whole sequence using all hints at the same time.
      */
+    // MARIO
+    cout << "onlyViterbi = " << onlyViterbi << "\tn=" << n << endl;
     genesAllHints = findGenes(dna, strand, onlyViterbi);
+    cout << "forward.size= " << forward.size() << endl;
 #ifdef DEBUG
     // printGeneList(genesAllHints, annoseq, false, false, false);
 #endif
