@@ -194,12 +194,12 @@ namespace PP {
         }
         Range operator+= (Range other) {
                 min+=other.min;
-            max+=other.max;
+                max+=other.max;
                 return *this;
-            }
-            Range operator+ (Range other) const {
-                return Range(min,max)+=other;
-            }
+        }
+        Range operator+ (Range other) const {
+            return Range(min,max)+=other;
+        }
         bool has(int elem) const {
             return min <= elem && elem <= max;
         }
@@ -327,7 +327,7 @@ namespace PP {
         static double weight;
     private:
         // internal data fields
-            double values[NUM_AA];  // these numbers will be positive and
+        double values[NUM_AA];  // these numbers will be positive and
                                 // add up to one; class takes care of the normalisation
         double oddRatios[NUM_AA]; // the odds against the background distribution
 
@@ -498,8 +498,8 @@ namespace PP {
         // the following methods use logscores
         Dist getOwnDist(int from, int to, bool complement = false) const {
             return complement ?
-            ownDists[size()-to] - ownDists[size()-from] :
-            ownDists[from] - ownDists[to];
+                ownDists[size()-to] - ownDists[size()-from] :
+                ownDists[from] - ownDists[to];
         }
         Dist getOwnDist(int from=0) const {
             return ownDists[from];
@@ -800,7 +800,6 @@ namespace PP {
                 if (d.has_max)
                     result << "[" << d.r.min << ".." << d.r.max << "]";
                 else if (d.r.min>0)
-
                     result << "[" << d.r.min << ",...]";
                 result << "--";
                 if (blockno == blockCount())
@@ -829,9 +828,8 @@ namespace PP {
             return blocks[blockno];
         }
         Double getGlobalThresh(bool complement, Position ppos) const {
-            return
-        ppos.b == blockCount() ? 1 :
-        globalThresh[complement][ppos.b][ppos.i >= 0 ? ppos.i : 0];
+            return ppos.b == blockCount() ? 1 :
+                globalThresh[complement][ppos.b][ppos.i >= 0 ? ppos.i : 0];
         }
 
         friend void initConstants();

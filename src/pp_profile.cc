@@ -56,9 +56,9 @@ Column& Column::operator= (const double* val) {
             throw out_of_range("Negative value for PP::Column");
         else
             sum+=val[a];
-        if (sum <= 0.0) {
-            throw out_of_range("No positive value in PP::Column");
-        }
+    if (sum <= 0.0) {
+        throw out_of_range("No positive value in PP::Column");
+    }
     for (int a=0; a<NUM_AA; a++)
         values[a]=(val[a]/sum)*(1-minFreq*NUM_AA)+minFreq;
     initRatios();
@@ -389,9 +389,9 @@ bool BlockScoreType::addBlocksUntil(bool complement, int newbase, map<int,Double
             if (result)
         (*result)[pos] = value;
         }
-        }
-        return true;
     }
+    return true;
+}
 
 // Double Block::saveNewScore() {
 //     int offset = score.begin();
@@ -559,7 +559,7 @@ Profile::Profile(string filename) {
     for (int b=0; b<blockCount(); b++)
         if (blocks[b].isAnchor())
             anchorCount++;
-        if (anchorCount < min_anchor_count)
+    if (anchorCount < min_anchor_count)
         throw ProfileInsigError("At least " + itoa(min_anchor_count) + " highly "
                                 "significant block" + (min_anchor_count==1 ? "" : "s")
                                 + "are required in profile, not found in \"" +
@@ -685,7 +685,7 @@ void Profile::parse_stream(istream & strm) {
             //read intron profile section
             //Author: Lars Gabriel
             if (type == "[intron profile]")
-            iP.insert(make_pair(blocks.size()-1, IntronProfile(readPart(strm, type, lineno))));
+                iP.insert(make_pair(blocks.size()-1, IntronProfile(readPart(strm, type, lineno))));
 
             blocks.back().initDistributions();
             if (!blocks.back().initThresholds()) {
