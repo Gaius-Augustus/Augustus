@@ -32,7 +32,6 @@ class Node;
  */
 class OrthoExon {
 public:
-    OrthoExon();
     OrthoExon(int_fast64_t k, size_t numSpecies);
     ~OrthoExon() {};
 

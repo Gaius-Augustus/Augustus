@@ -1646,19 +1646,22 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
 	double sc = calcColumnScore(a,c,t,g);
 	consScore.push_back(sc);
     }
+    // DEBUGGING Mario
+    if (consScore.size() != alignment->aliLen)
+	cerr << "consScore.size() != alignment->aliLen: " <<  consScore.size() << " != " << alignment->aliLen << endl;
     // calcluate conservation score for each HECT
     for (list<OrthoExon>::iterator oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
 	double oeConsScore=0.0;
 	int oeAliStart = oe->getAliStart();
-	int oeAliEnd = oeAliStart + oe->getAliLen();
+	int oeAliEnd = oeAliStart + oe->getAliLen(); // the actual end, as oe->getAliLen  = end - start
 	for(int pos = oeAliStart; pos <= oeAliEnd; pos++){
 	    if (pos > alignment->aliLen || pos < 0)
 		throw ProjectError("Internal error in printConsScore: alignment positions of HECTs and geneRanges are inconsistent.");
 	    if (pos >= consScore.size()){
 		cerr << "invalid access at " << pos << "\t" << consScore.size() <<  endl;
-		exit(1);
 	    }
-	    oeConsScore+=consScore[pos];
+	    if (pos < consScore.size())
+		oeConsScore += consScore[pos];
 	}
 	oeConsScore/=(oeAliEnd-oeAliStart+1); // average over all alignment columns within a HECT
 	oe->setConsScore(oeConsScore);

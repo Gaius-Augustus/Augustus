@@ -180,7 +180,6 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
   if (needForwardTable) 
       forward.assign(dnalen, statecount);
 
-  cout << "forward.size=" << forward.size() << endl << flush;
   /*
    * Initialize the first Viterbi column with InitialProbs
    */

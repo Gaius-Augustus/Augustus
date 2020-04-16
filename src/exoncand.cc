@@ -115,7 +115,7 @@ string ExonCandidate::key() {
 int_fast64_t ExonCandidate::getKey(){
     
     int_fast64_t start = begin;
-    int_fast64_t len = end - begin;
+    int_fast64_t len = end - begin; // length + 1
     int lenMod3 = (end - begin + 1) % 3;
     int_fast64_t key = (start << 22 ) // 42 bits
         + ((len) << 7)                // 15 bits
