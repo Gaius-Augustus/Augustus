@@ -46,18 +46,18 @@ docker build -t augustus .
 ## Install dependencies
 
 The following dependencies are required for AUGUSTUS:
-  - libsqlite3-dev
-  - libmysql++-dev
 - For gzip compressed input:
  (set ZIPINPUT = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available)
   - libboost-iostreams-dev
   - zlib1g-dev
 - For comparative AUGUSTUS (multi-species, CGP):
-  (Set COMPGENEPRED = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available)
+  (set COMPGENEPRED = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available)
   - libgsl-dev
   - libboost-all-dev
   - libsuitesparse-dev
   - liblpsolve55-dev
+  - libsqlite3-dev (add SQLITE = false to [common.mk](common.mk) if this feature is not required or the required library is not available)
+  - libmysql++-dev (add MYSQL = false to [common.mk](common.mk) if this feature is not required or the required library is not available)
 - For compiling bam2hints and filterBam:
   - libbamtools-dev
 - For compiling utrrnaseq:

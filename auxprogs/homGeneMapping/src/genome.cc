@@ -37,10 +37,12 @@ void Genome::parse(string genefile, string hintsfile, string dbfile){
     parseGTF(genefile);
     if(!hintsfile.empty()) // read hints file if specified
 	parseExtrinsicGFF(hintsfile);
+#ifdef M_SQLITE
     if(!dbfile.empty()){
 	SQLiteDB db = SQLiteDB(dbfile.c_str());
 	getDbHints(db);
     }
+#endif
     printBed(); // print sequence coordinates, that need to be mapped to the other genomes, to file
 }
 
@@ -830,6 +832,7 @@ void Genome::insertHint(string seqname, long int start, long int end, Strand str
     }    
 }
 
+#ifdef M_SQLITE
 void Genome::getDbHints(SQLiteDB &db){
 
     try{
@@ -858,4 +861,5 @@ void Genome::getDbHints(SQLiteDB &db){
 	throw ProjectError("failed retrieving hints from DB for " + name + "."  + "\n");
     }
 }
+#endif
 		

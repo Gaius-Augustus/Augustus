@@ -1,8 +1,16 @@
 #
 # Makefile for homGeneMapping
-#
-# comment this flag to disable the usage of the Boost graph library, the option --printHomologs will not be available
-BOOST = true
+
+include ../../../common.mk
+
+# set SQLITE = false in common.mk to disable the usage of the SQLite library, option --dbaccess will not be available
+# set BOOST = false in common.mk to disable the usage of the Boost graph library, the option --printHomologs will not be available
+BOOST ?= true
+
+ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE)) # if COMPGENEPRED is not defined or not contains 0, false, False or FALSE
+# comment this flag to disable database access for retrieval of hints, the option --dbaccess will not be available
+	SQLITE ?= true
+endif
 
 CC      = g++
 
@@ -12,12 +20,18 @@ CC      = g++
 CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -std=c++0x -pthread -O2 ${CFLAGS} # -DDEBUG -g -ggdb -pg
 
 INCLS	= -I../include
-LIBS	= -lsqlite3 # add the sqlite library path here, if sqlite is not install system-wide
-OBJS	= gene.o genome.o sqliteDB.o
+LIBS	=
+OBJS	= gene.o genome.o
 
-ifdef BOOST
+ifeq (,$(findstring $(BOOST),0 false False FALSE)) # if BOOST is not defined or not contains 0, false, False or FALSE
 	CFLAGS += -DBOOST
 	INCLS +=  # add the boost include path here, if boost ist not installed system-wide
+endif
+
+ifneq (,$(findstring $(SQLITE),1 true True TRUE)) # if SQLITE is defined and contains 1, true, True or TRUE
+	LIBS    += -lsqlite3 # add the sqlite library path here, if sqlite is not install system-wide
+	OBJS    += sqliteDB.o
+	CFLAGS  += -DM_SQLITE
 endif
 
 all: homGeneMapping
