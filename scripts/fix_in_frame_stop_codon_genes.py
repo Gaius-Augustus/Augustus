@@ -649,7 +649,7 @@ if args.hintsfile is not None:
         new_hintsfile = tmp + "hints." + seq_id + ".gff"
         try:
             with open(new_hintsfile, "w") as new_hints_handle:
-                subprcs_args = [grep, seq_id, args.hintsfile]
+                subprcs_args = [grep, "-w", seq_id, args.hintsfile]
                 run_grep_process(subprcs_args, new_hints_handle, subprocess.PIPE)
         except IOError:
             frameinfo = getframeinfo(currentframe())
