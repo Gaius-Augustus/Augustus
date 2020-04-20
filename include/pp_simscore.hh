@@ -1,10 +1,17 @@
 /*
  * Name:    pp_simscore.hh
+ * 
+ * License: Artistic License, see file LICENSE.TXT or 
+ *          https://opensource.org/licenses/artistic-license-1.0
+ * 
  * Project: similarity-score algorithm for block-profile and protein sequence
  * with intron information
  * Author:  Lars Gabriel
  *
  */
+
+#ifndef __PP_SIMSCORE_HH
+#define __PP_SIMSCORE_HH
 
 #include <iostream>
 #include <fstream>
@@ -13,9 +20,6 @@
 #include <string>
 #include "properties.hh"
 #include "pp_profile.hh"
-
-#include <sqlite3.h>
-
 
  namespace SS {
     /**
@@ -357,3 +361,4 @@
     };
 }
 //namespace SS
+#endif
