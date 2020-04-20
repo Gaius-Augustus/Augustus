@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Author: Anica Hoppe
-# Last modified: September 17th 2019
+# Last modified: March 25th 2020
 
 # Given a list of transcript IDs, this python script identifies the
 # boundaries of corresponding genes in a GTF or GFF3 file, makes
@@ -17,6 +17,8 @@ from inspect import currentframe, getframeinfo
 import logging
 import random
 import string
+import multiprocessing
+from functools import partial
 
 try:
     import argparse
@@ -112,6 +114,8 @@ parser.add_argument('-p', '--print_format_examples', required=False,
 parser.add_argument('-C', '--cdbtools_path', required=False, type=str, 
                     help = "Set path to cdbfasta/cdbyank. If not given, \
                     will try to locate the path with which(cdbfasta).")
+parser.add_argument('-c', '--cores', required=False, default=1, type=int, 
+                    help = "Set the number of cores used. Default will be 1.")
 args = parser.parse_args()
 
 ### As args.hintsfile and args.extrinsicCfgFile have to be given together: ###
@@ -301,6 +305,30 @@ def run_process_stdinput(args_lst, prc_in):
 		print("Error code: ", grepexc.returncode, grepexc.output)
 		quit(1)
 
+def run_augustus_process(lst_entry):
+    """ Function that runs an AUGUSTUS subprocess """
+    subprcs_args = lst_entry[0]
+    augustus_out = lst_entry[1]
+    augustus_err = lst_entry[2]
+    try:
+        with open(augustus_out, "w") as augustus_out_handle:
+            try:
+                with open(augustus_err, "w") as augustus_err_handle:
+                    run_process(subprcs_args, augustus_out_handle, augustus_err_handle)
+            except IOError:
+                frameinfo = getframeinfo(currentframe())
+                logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+                            str(frameinfo.lineno) + ': ' + "Could not open file " +
+                            augustus_err + " for writing!")
+    except IOError:
+        frameinfo = getframeinfo(currentframe())
+        logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+                    str(frameinfo.lineno) + ': ' + "Could not open file " +
+                    augustus_out + " for writing!")
+
+def sortFirst(val):
+    """  """
+    return val[0]
 
 def sortSecond(val):
     """  """
@@ -583,6 +611,9 @@ for g_id in bad_genes:
     if not((region_start, region_end) in regions[seq_id]):
         regions[seq_id].append((region_start, region_end))
 
+for seq_id in regions:
+    regions[seq_id].sort(key=sortFirst)
+
 
 ### Generate FASTA files for each scaffold containing a gene with in-frame stop codon ###
 # Run cdbfasta
@@ -636,11 +667,7 @@ if not os.path.exists(out):
 else:
     logger.info("Directory out already exists.")
 
-if args.gff3 is not None:
-    use_gff3 = "on"
-else:
-    use_gff3 = "off"
-
+augustus_lst = []
 for seq_id in regions:
     i = 1
     genome = tmp + "genome." + seq_id + ".fa"
@@ -651,34 +678,28 @@ for seq_id in regions:
         augustus_err = out + "augustus." + seq_id + "." + str(i) + ".err"
         start = str(reg[0])
         end = str(reg[1])
-        try:
-            with open(augustus_out, "w") as augustus_out_handle:
-                try:
-                    with open(augustus_err, "w") as augustus_err_handle:
-                        subprcs_args = [augustus, "--mea=1", "--species="+args.species,
-                                        "--softmasking="+args.softmasking, "--UTR="+args.UTR, 
-                                        "--print_utr="+args.print_utr, "--genemodel=complete",
-                                        "--alternatives-from-evidence=0", "--exonnames="+exonnames,
-                                        "--predictionStart="+start, "--predictionEnd="+end,
-                                        "--AUGUSTUS_CONFIG_PATH="+augustus_config_path, genome]
-                        if args.hintsfile is not None:
-                            subprcs_args.append("--hintsfile="+hintsfile)
-                            subprcs_args.append("--extrinsicCfgFile="+args.extrinsicCfgFile)
-                        if args.additional_aug_args is not None:
-                            additional_aug_args = args.additional_aug_args.split()
-                            subprcs_args.extend(additional_aug_args)
-                        run_process(subprcs_args, augustus_out_handle, augustus_err_handle)
-                except IOError:
-                    frameinfo = getframeinfo(currentframe())
-                    logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                                str(frameinfo.lineno) + ': ' + "Could not open file " +
-                                augustus_err + " for writing!")
-        except IOError:
-            frameinfo = getframeinfo(currentframe())
-            logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                        str(frameinfo.lineno) + ': ' + "Could not open file " +
-                        augustus_out + " for writing!")
+
+        subprcs_args = [augustus, "--mea=1", "--species="+args.species,
+                        "--softmasking="+args.softmasking, "--UTR="+args.UTR, 
+                        "--print_utr="+args.print_utr, "--genemodel=complete",
+                        "--alternatives-from-evidence=0", "--exonnames="+exonnames,
+                        "--predictionStart="+start, "--predictionEnd="+end,
+                        "--AUGUSTUS_CONFIG_PATH="+augustus_config_path, genome]
+        if args.hintsfile is not None:
+            subprcs_args.append("--hintsfile="+hintsfile)
+            subprcs_args.append("--extrinsicCfgFile="+args.extrinsicCfgFile)
+        if args.additional_aug_args is not None:
+            additional_aug_args = args.additional_aug_args.split()
+            subprcs_args.extend(additional_aug_args)
+
+        augustus_lst_entry = (subprcs_args, augustus_out, augustus_err)
+        augustus_lst.append(augustus_lst_entry)
+        
         i += 1
+
+if __name__ == "__main__":
+    with multiprocessing.Pool(processes = args.cores) as pool:
+        pool.map(run_augustus_process, augustus_lst)
 
 
 ### Replace genes with in-frame stop codon by new genes  ###
