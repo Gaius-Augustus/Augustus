@@ -51,7 +51,7 @@ The following dependencies are required for AUGUSTUS:
   - libboost-iostreams-dev
   - zlib1g-dev
 - For comparative AUGUSTUS (multi-species, CGP):
-  (set COMPGENEPRED = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available)
+  (set COMPGENEPRED = false in [common.mk](common.mk) if the libraries required by the CGP version are not available. Augustus can then only be run in single-genome mode, which is what most users need.)
   - libgsl-dev
   - libboost-all-dev
   - libsuitesparse-dev
