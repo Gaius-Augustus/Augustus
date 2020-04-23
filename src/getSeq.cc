@@ -106,7 +106,13 @@ int main( int argc, char* argv[] ){
 
     if (Constant::dbaccess.find(',') != string::npos){ // assuming mysql access
 	cerr << "assuming a MySQL database" << endl;
+#ifdef M_MYSQL
 	rsa = new MysqlAccess;
+#else
+	cerr << "Database access not possible with this compiled version. Please recompile with flag MYSQL = true added to common.mk." << endl;
+	exit(1);
+#endif
+	
     }
     else if(Constant::dbaccess.find('.') != string::npos){ // assuming sqlite access
 	cerr << "assuming an SQLite database" << endl;
@@ -114,7 +120,12 @@ int main( int argc, char* argv[] ){
 	    cerr << "Missing parameter speciesfilenames." << endl;
 	    exit(1);
 	}
+#ifdef M_SQLITE
 	rsa = new SQLiteAccess(Constant::dbaccess.c_str());
+#else
+	cerr <<"Database access not possible with this compiled version. Please recompile with flag SQLITE = true set in common.mk." << endl;
+	exit(1);
+#endif
     }
 
     try{

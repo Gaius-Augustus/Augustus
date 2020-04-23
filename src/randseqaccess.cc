@@ -16,8 +16,10 @@
 #include <fstream>
 #include <types.hh>
 
+#ifdef M_MYSQL
 #include <table_structure.h>
 #include <query.h>
+#endif
 
 int SpeciesCollection::groupCount = 1;
 
@@ -386,6 +388,7 @@ DbSeqAccess::DbSeqAccess(vector<string> s){
     }
 }
 
+#ifdef M_MYSQL
 void MysqlAccess::open(){
     dbaccess = Constant::dbaccess;
     split_dbaccess();
@@ -743,6 +746,9 @@ int MysqlAccess::get_region_coord(int seq_region_id,int start,int end,vector<T> 
 //    return seqlist;
 //}
 
+#endif // M_MYSQL
+
+#ifdef M_SQLITE
 AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
     int seq_start, seq_end;
     streampos file_start;
@@ -869,3 +875,4 @@ SequenceFeatureCollection* SQLiteAccess::getFeatures(string speciesname, string 
     fc->hasHintsFile = true;
     return sfc;
 }
+#endif // M_SQLITE

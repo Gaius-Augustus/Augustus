@@ -43,13 +43,23 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
 	string dbaccess = Constant::dbaccess;
 	if (dbaccess.find(',') != string::npos){ // assuming mysql access
 	    cout << "# assuming a MySQL database" << endl;
+#ifdef M_MYSQL
 	    rsa = new MysqlAccess(speciesNames);
+#else
+	    throw ProjectError("Database access not possible with this compiled version. Please recompile with flag MYSQL = true added to common.mk.");
+#endif
+
 	}
 	else if(dbaccess.find('.') != string::npos){ // assuming sqlite access
 	    cout << "# assuming an SQLite database" << endl;
 	    if(Constant::speciesfilenames.empty())
 		throw ProjectError("Missing parameter speciesfilenames.");
+#ifdef M_SQLITE
 	    rsa = new SQLiteAccess(dbaccess.c_str(), speciesNames);
+#else
+	    throw ProjectError("Database access not possible with this compiled version. Please recompile with flag SQLITE = true added to common.mk.");
+#endif
+	    
 	}
 	else{
 	    throw ProjectError("cannot determine the type of database.\n\
