@@ -1,10 +1,12 @@
 CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -O2 -ggdb ${CFLAGS}
+CC?=gcc
 
 aln2wig : aln2wig.o
-	gcc $(CFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o aln2wig aln2wig.o;
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o aln2wig aln2wig.o
+	mkdir -p ../../bin
 	cp aln2wig ../../bin
 aln2wig.o : aln2wig.c
-	gcc $(CPPFLAGS) $(CXXFLAGS) $(CFLAGS) $(LDFLAGS) -c aln2wig.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c aln2wig.c
 
 all : aln2wig
 
