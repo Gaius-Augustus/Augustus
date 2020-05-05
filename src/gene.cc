@@ -154,8 +154,10 @@ int State::frame(){
 }
 
 bool State::frame_compatible(const Feature *hint){
-  return ((hint->strand == plusstrand && strand() == plusstrand && (hint->frame <0 || mod3(end - hint->start + 1 - hint->frame - frame())==0))
-	  || (hint->strand == minusstrand && strand() == minusstrand && (hint->frame <0 || mod3(end - hint->end + hint->frame + frame() + 1)==0)));
+    if ((hint->strand == minusstrand && strand() == plusstrand) || (hint->strand == plusstrand && strand() == minusstrand))
+        return false;
+    return ((strand() == plusstrand && (hint->frame <0 || mod3(end - hint->start + 1 - hint->frame - frame())==0))
+	  || (strand() == minusstrand && (hint->frame <0 || mod3(end - hint->end + hint->frame + frame() + 1)==0)));
 }
 
 bool frame_compatible(State *ex1, State* ex2){
@@ -1794,7 +1796,7 @@ double Gene::supportingFraction(HintGroup *group){
 	    if (exonbegin>0 && exonend>0 && hint->type == exonF && hint->start == exonbegin && hint->end == exonend)
 		supports = true;
 	    if (exonbegin>0 && exonend>0 && hint->type == exonpartF && hint->start >= exonbegin && hint->end <= exonend)
-		supports = true;	
+		supports = true;
 	}
 	if (hint->type == exonF || hint->type == exonpartF || hint->type == CDSF || hint->type == CDSpartF || hint->type == intronF 
 	    || hint->type == intronpartF || hint->type == assF || hint->type == dssF || hint->type == UTRF || hint->type == UTRpartF || hint->type == nonirpartF || hint->type == nonexonpartF) {
