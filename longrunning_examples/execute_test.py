@@ -4,20 +4,26 @@ import subprocess
 import re
 import json
 import os
+import shutil
+
 
 #TODO: script arguments for eval path and wd
 #TODO: define input data to use for lr test
 
 augustusbin = '../bin/augustus'
-tmp_data_folder = 'data/tmp/lr/'
+tmp_data_folder = 'tmp/'
+result_folder = 'output/'
 
 
-def init_tmp_folder():
-    if not os.path.exists('data/tmp'):
-        os.mkdir('data/tmp')
+def init():
+    if os.path.exists(tmp_data_folder):
+        shutil.rmtree(tmp_data_folder)
 
-    if not os.path.exists(tmp_data_folder):
-        os.mkdir(tmp_data_folder)
+    if os.path.exists(result_folder):
+        shutil.rmtree(result_folder)
+
+    os.makedirs(tmp_data_folder)
+    os.makedirs(result_folder)
 
 
 def create_test_files():
@@ -107,7 +113,7 @@ def find_values(file):
                                    d['nucleotide_specificity'])
 
     # save results as JSON file
-    with open(tmp_data_folder + 'eval.json', 'w') as file:
+    with open(result_folder + 'eval.json', 'w') as file:
         json.dump(d, file, indent=4)
 
 
@@ -178,6 +184,6 @@ def execute(cmd, output):
 
 
 if __name__ == '__main__':
-    init_tmp_folder()
+    init()
     evaluate()
     find_values(tmp_data_folder + 'eval.out')
