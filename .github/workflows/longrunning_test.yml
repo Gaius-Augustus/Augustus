@@ -1,0 +1,38 @@
+# This workflow builds AUGUSTUS and executes the 
+# longrunning test cases
+name: Execute AUGUSTUS longrunning test cases
+
+on:
+  push:
+    branches:
+      - 'testing'
+
+  #schedule:
+  # execute workflow at scheduled time
+  #- cron:  '30 1 * * *'
+
+env:
+  TOOLDIR: /home/daniel/tools
+
+jobs:
+  longrunning_test:
+    runs-on: [self-hosted, linux]
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Build AUGUSTUS
+      run: make all
+
+    - name: Execute test cases
+      run: ./execute_test.py --data /home/daniel/data/examples
+      working-directory: ./longrunning_examples
+
+#    - name: Storing results
+#      uses: s0/git-publish-subdir-action@master
+#      env:
+#        REPO: git@github.com:dhonsel/test_storage.git
+#        BRANCH: master
+#        FOLDER: output/
+#        SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_PRIVATE_KEY }}
