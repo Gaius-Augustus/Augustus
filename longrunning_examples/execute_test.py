@@ -17,6 +17,9 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--data',
                     required=True,
                     help='The directory where the data is stored.')
+parser.add_argument('--eval',
+                    required=True,
+                    help='The path to eval.')                    
 args = parser.parse_args()
 
 augustusbin = '../bin/augustus'
@@ -58,7 +61,7 @@ def evaluate():
     cmd = [
         '../scripts/eval_multi_gtf.pl', tmp_data_folder + 'seqlist',
         tmp_data_folder + 'file1.gff', tmp_data_folder + 'file2.gff',
-        '--EVAL_PATH=../../../eval-2.2.8'
+        '--EVAL_PATH=' + args.eval
     ]
     execute(cmd, tmp_data_folder + 'eval.out')
 
