@@ -5,10 +5,19 @@ import re
 import json
 import os
 import shutil
+import argparse
 
 
 #TODO: script arguments for eval path and wd
 #TODO: define input data to use for lr test
+
+
+parser = argparse.ArgumentParser(
+    description='Execute Augustus long running test cases.')
+parser.add_argument('--data',
+                    required=True,
+                    help='The directory where the data is stored.')
+args = parser.parse_args()
 
 augustusbin = '../bin/augustus'
 tmp_data_folder = 'tmp/'
@@ -27,10 +36,10 @@ def init():
 
 
 def create_test_files():
-    cmd = [augustusbin, '--species=human', '../examples/example.fa']
+    cmd = [augustusbin, '--species=human', args.data + '/example.fa']
     execute(cmd, tmp_data_folder + 'file1.gff')
 
-    cmd = [augustusbin, '--species=chicken', '../examples/example.fa']
+    cmd = [augustusbin, '--species=chicken', args.data + '/example.fa']
     execute(cmd, tmp_data_folder + 'file2.gff')
 
     create_seqlist(tmp_data_folder + 'file2.gff')
