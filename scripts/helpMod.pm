@@ -5,7 +5,7 @@ package helpMod;
         ###########################
 
 use Exporter 'import';
-@EXPORT_OK = qw(find tildeConvert checkFile formatDetector relToAbs setParInConfig uptodate);
+@EXPORT_OK = qw(find tildeConvert checkFile check_fasta_headers formatDetector relToAbs setParInConfig uptodate);
 
 use strict;
 use Cwd;
@@ -97,7 +97,7 @@ sub formatDetector{
     while (defined(my $line=<DFILE>)) {
 	$i++;
 	$haveLOCUS = 1 if($i==1 && $line=~ /^LOCUS/);
-	$haveSource = 1 if(!$haveSource && $line=~ /\s+source\s+\d+\.\…\d+/);
+	$haveSource = 1 if(!$haveSource && $line=~ /\s+source\s+\d+\.\.\d+/);
 	$haveOrigin = 1 if(!$haveOrigin && $line=~ /^ORIGIN/);
 	$haveTermSymb = 1 if(!$haveTermSymb && $line=~ /\s*\/\//);
     }
