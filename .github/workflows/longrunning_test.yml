@@ -26,7 +26,7 @@ jobs:
       run: make all
 
     - name: Execute test cases
-      run: ./execute_test.py --data /home/daniel/data/examples
+      run: ./execute_test.py --data /home/daniel/data/examples --eval /home/daniel/eval-2.2.8
       working-directory: ./longrunning_examples
 
 #    - name: Storing results
