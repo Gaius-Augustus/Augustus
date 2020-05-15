@@ -16,7 +16,7 @@
 use Getopt::Long;
 use Cwd;
 use File::Spec::Functions qw(rel2abs);
-use File::Basename qw(dirname);
+use File::Basename qw(basename dirname);
 
 BEGIN {
     my $path=rel2abs($0);
@@ -257,6 +257,14 @@ sub train{
     # stop Pipeline if the number of training genes is lower than 100
     if($counter_gen < 100){
 	die("Number of training genes is with $counter_gen too low (at least 100 genes required)! Training aborted.\n");
+    }
+
+    # stop Pipeline if the number of sequences is lower than 3 (training.gb will be spĺitted in 3 parts)
+    if ($counter_seq < 3) {
+        my $trainingsetName = basename($trainingset);
+        die("AUGUSTUS training expects a GenBank training gene structure file with one gene per locus.\n"
+            ."$trainingsetName has $counter_gen genes and only $counter_seq loci. Training aborted.\n"
+            ."(for instructions read at e.g. http://bioinf.uni-greifswald.de/webaugustus/help#structure)\n");
     }
 
     # set $v to the smaller one of 200 and int(0.1*$counter_gen)
