@@ -174,6 +174,45 @@ sub formatDetector{
     return "";
 }
 
+##########################################################
+# Check headers for occurrence of suspicious characters  #
+# and print warnings to stdout                           #
+##########################################################
+
+sub check_fasta_headers {
+    my $fastaFile=shift;
+    my $spaces = 0;
+    my $orSign = 0;
+    my $someThingWrongWithHeader = 0;
+    my $stdStr = "This may later on cause problems! If the pipeline turns out to crash, please clean up the fasta headers, e.g. by using simplifyFastaHeaders.pl. This message will be suppressed from now on!\n";
+    
+    open(my $fasta_fh, "<", $fastaFile) or die("Could not open fasta file $fastaFile!\n");
+    while (my $line = <$fasta_fh>) {
+        if ($line !~ /^>/) { # ignore none header lines
+            next;
+        }
+        $line = rtrim_fasta_headers($line);
+        if (!$spaces && $line =~ /\s/) {
+            print "WARNING: Detected whitespace in fasta header of file $fastaFile. $stdStr\n";
+            $spaces++;
+        }
+        if (!$orSign && $line =~ /\|/) {
+            print "WARNING: Detected | in fasta header of file $fastaFile. $stdStr\n";
+            $orSign++;
+        }
+        if (!$someThingWrongWithHeader && $line =~ /[^>a-zA-Z0-9]/) {
+            print "WARNING: Fasta headers inf file $fastaFile seem to contain non-letter and non-number characters. That means they may contain some kind of special character. $stdStr\n";
+            $someThingWrongWithHeader++;
+        }
+        if ($spaces && $orSign && $someThingWrongWithHeader) {
+            last;
+        }
+    }
+    close($fasta_fh) or die("Could not close fasta file $fastaFile!\n");
+}
+
+sub rtrim_fasta_headers { my $s = shift; $s =~ s/\s+$//g; return $s };
+
 ##########################################
 # convert relative path to absolute path #
 ##########################################

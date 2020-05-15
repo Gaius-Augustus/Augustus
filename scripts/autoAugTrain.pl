@@ -24,7 +24,7 @@ BEGIN {
     our $directory = dirname($path);
 }
 use lib $directory;
-use helpMod qw(find checkFile formatDetector relToAbs setParInConfig uptodate);
+use helpMod qw(find checkFile check_fasta_headers formatDetector relToAbs setParInConfig uptodate);
 use Term::ANSIColor qw(:constants);
 use strict;
 
@@ -178,6 +178,7 @@ sub train{
 	    print "2 The input training set file has GFF format.\n" if ($verbose>=2);
 	    chdir "$cwd" or die("Error: could not change diectory to $cwd.\n");
 	    $genome = checkFile($genome, "fasta", $usage);
+	    print "1 Checking fasta headers in file $genome...\n" if ($verbose>=1);
 	    check_fasta_headers($genome);
 	    $string = find("gff2gbSmallDNA.pl");
 	    chdir "$workDir/training/" or die("Error: could not change directory to $workDir/training/!\n");
@@ -785,40 +786,6 @@ sub accuracy_calculator{
     return $target;
 }
 
-#                                                                                                                                                                                            # Check fasta header formatting                                                                                                                                                              #                                                                                                                                                                                             
-sub check_fasta_headers{
-    my $fastaFile=shift;
-    my $someThingWrongWithHeader = 0;
-    my $spaces = 0;
-    my $orSign = 0;
-    my $stdStr = "This may later on cause problems! If the pipeline turns out to crash, please clean up the fasta headers, e.g. by using simplifyFastaHeaders.pl. This message will be suppressed from now on!\n";
-    print "1 Checking fasta headers in file $fastaFile...\n" if ($verbose>=1);
-    open(FASTA, "<", $fastaFile) or die("Could not open fasta file $fastaFile!\n");
-    while(<FASTA>){
-        chomp;
-        if($_=~m/\s/){
-            if($spaces == 0){
-                print "1 - WARNING: Detected whitespace in fasta header of file $fastaFile. ".$stdStr;
-                $spaces++;
-            }
-        }
-        if($_=~m/\|/){
-            if($orSign == 0){
-                print "1 - WARNING: Detected "|" in fasta header of file $fastaFile. ".$stdStr;
-                $orSign++;
-            }
-        }
-        if($_=!m/[>a-zA-Z0123456789]/){
-            if($someThingWrongWithHeader==0){
-                print "1 - WARNING: Fasta headers in file $fastaFile seem to contain non-letter and non-number characters. That means they may contain some kind of special character. ".$stdStr;
-                $someThingWrongWithHeader++;
-            }
-        }
-    }
-    close(FASTA) or die("Could not close fasta file $fastaFile!\n");
-}
-
-
 #
 # convert from protein FASTA format to Genbank format using Scipio
 #
@@ -826,7 +793,9 @@ sub scipio_conversion{
     my $trainingset = shift;
     chdir "$cwd" or die("Error: could not change diectory to $cwd.\n");
     $genome=checkFile($genome, "fasta", $usage);
+    print "1 Checking fasta headers in file $genome...\n" if ($verbose>=1);
     check_fasta_headers($genome);
+    print "1 Checking fasta headers in file $trainingset...\n" if ($verbose>=1);
     check_fasta_headers($trainingset);
     chdir "$workDir/training/" or die("Error: could not change directory to $workDir/training/!\n");
     $cmdString = "scipio.pl $genome $trainingset > scipio.yaml 2> scipio.err"; 
