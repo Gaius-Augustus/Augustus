@@ -84,27 +84,25 @@ sub checkFile{
 
 sub formatDetector{
     my $file=shift;   # file to be detected
-    my $testLines = 1000; # read at most this many lines for testing
-    my $i;
+    my $i = 0;
     my @helpArray_gff;
     #
     # check if file has GENBANK format
     #
     open(DFILE, $file) or die ("Could not open $file!\n");
-    $i=0;
     my $haveLOCUS=0;
     my $haveSource=0;
     my $haveOrigin=0;
     my $haveTermSymb=0;
-    while(defined(my $line=<DFILE>) && $i<$testLines){
+    while (defined(my $line=<DFILE>)) {
 	$i++;
-	$haveLOCUS++ if($i==1 && $line=~ /^LOCUS/);
-	$haveSource++ if($line=~ / +source +/i);
-	$haveOrigin++ if($line=~ /^ORIGIN/);
-	$haveTermSymb++ if($line=~ /\/\//);
+	$haveLOCUS = 1 if($i==1 && $line=~ /^LOCUS/);
+	$haveSource = 1 if(!$haveSource && $line=~ /\s+source\s+\d+\.\…\d+/);
+	$haveOrigin = 1 if(!$haveOrigin && $line=~ /^ORIGIN/);
+	$haveTermSymb = 1 if(!$haveTermSymb && $line=~ /\s*\/\//);
     }
     close(DFILE);
-    if ((($haveLOCUS>0) + ($haveSource>0) + ($haveOrigin>0) + ($haveTermSymb>0)) > 1){
+    if (($haveLOCUS + $haveSource + $haveOrigin + $haveTermSymb) > 1) {
 	print STDERR "$file appears to be in corrupt Genbank format. 'LOCUS' missing\n" if (!$haveLOCUS);
 	print STDERR "$file appears to be in corrupt Genbank format. ' source ' line missing\n" if (!$haveSource);
 	print STDERR "$file appears to be in corrupt Genbank format. 'ORIGIN' missing\n" if (!$haveOrigin);
@@ -115,11 +113,9 @@ sub formatDetector{
     # check if file has GFF format
     #
     open(DFILE, $file) or die ("Could not open $file!\n");
-    $i=0;
     my $badGFFlines=0;
     my $goodGFFlines=0;
-    while(defined(my $line=<DFILE>) && $i<$testLines){
-	$i++;
+    while (defined(my $line=<DFILE>)) {
         # if not genbank format and the row not a possible comment in gff format
         if(!($line=~/^#/) && !($line=~/^\s*$/)){
              @helpArray_gff=split(/\t/, $line);
@@ -144,11 +140,9 @@ sub formatDetector{
     # check if file has FASTA format and whether it is DNA or protein
     #
     open(DFILE, $file) or die ("Could not open $file!\n");
-    $i=0;
     my $greaterLines=0;
     my $concatseq = "";
-    while(defined(my $line=<DFILE>) && $i<$testLines){
-	$i++;
+    while(defined(my $line=<DFILE>)){
 	chomp $line;
 	if ($line =~ /^>/){
 	    $greaterLines++;
