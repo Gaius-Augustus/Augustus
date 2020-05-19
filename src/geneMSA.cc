@@ -747,7 +747,7 @@ void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<st
 void GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges) {
     int k = alignment->rows.size();
     vector<string> rowstrings(k, "");
-    size_t flanking = 10;
+    size_t flanking = 0;
     int aliStart = oe.getAliStart() - flanking;
     int aliEnd = oe.getAliEnd() + flanking;
     int aliLen = aliEnd - aliStart + 1;
@@ -796,7 +796,7 @@ void GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges
  *                 a|c g - t|t g a|t g t|t g a|- a a
  *                   ^                       ^
  * firstCodonBase    |                       | lastCodonBase (for last species)
- * example output: (stop codons are excluded for singe and terminal exons)
+ * example output: (stop codons are excluded for single and terminal exons)
  *                 - - -|c t t|- - -|g t c|- - -|g a t
  *                 - - -|c c t|- - -|- - -|- - -|a n c
  *                 c g t|- - -|t g a|g t c|- - -|g a c
