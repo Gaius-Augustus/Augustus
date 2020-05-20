@@ -566,6 +566,7 @@ void CompGenePred::start(){
 	    if (speciesID >= speciesNames.size()){
 		throw ProjectError("Species " + Constant::refSpecies + " not found. Use one of the names specified in the alignment file as a reference!");
 	    } else {
+  	        geneRange->collect_features(speciesID, &hects, orthograph.graphs[speciesID]);
 		// Darwin Mertsch: This should probably return a suitable data structure (e.g. labels and matrices)
 		geneRange->getAllOEMsas(speciesID, &hects, &ref_class, seqRanges);
 		// Here you should pass above data structure to your own
@@ -596,7 +597,7 @@ void CompGenePred::start(){
   
     if(Properties::hasProperty("referenceFile")){
 	// initialize training of log reg parameters
-	train_OEscore_params(speciesNames.size());
+	// train_OEscore_params(speciesNames.size());
     }
   } 
 }
