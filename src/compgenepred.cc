@@ -208,13 +208,13 @@ void CompGenePred::start(){
 	cout << "# AUGUSTUS is running in training mode. No prediction will be done!" << endl;
 	try {
 	    Constant::refSpecies = Properties::getProperty("refSpecies");
-	    if(Properties::hasProperty("param_outfile")){
+	    if (Properties::hasProperty("param_outfile")){
 		cout << "# Using file " << Properties::getProperty("param_outfile") << " to store logReg parameters." << endl;
-	    }else{
+	    } else {
 		cout << "# No outfile for logReg parameters specified. Writing parameters to " << Constant::configPath <<  "/cgp/log_reg_parameters_trained.cfg" << endl;
 	    }
-	} catch (ProjectError &e) {
 	    reference_from_file(&ref_class);
+	} catch (ProjectError &e) {
 	    throw ProjectError("For parameter training a reference species must be specified. Use --refSpecies=<SPECIES> and note, that <SPECIES> must be identical to one of the species names provided in the alignment and tree files.");
 	}
     }
