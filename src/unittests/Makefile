@@ -1,6 +1,6 @@
 include ../../common.mk
 AINC = ../../include
-CXX = g++
+CXX ?= g++
 CXXFLAGS := -std=c++11 -Wall -pedantic -pthread ${CXXFLAGS}
 LDFLAGS = -L../googletest -lgtest -lgtest_main
 INCLS	+= -I$(AINC) -isystem ../googletest/include/
@@ -11,10 +11,10 @@ unittests: lldouble_unittest.o fasta_unittest.o
 
 # Here follows each individual Unit Test
 lldouble_unittest.o: lldouble_unittest.cc $(AINC)/lldouble.hh
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(INCLS) -c lldouble_unittest.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c lldouble_unittest.cc
 
 fasta_unittest.o: fasta_unittest.cc $(AINC)/fasta.hh
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(INCLS) -c fasta_unittest.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c fasta_unittest.cc
 
 # execute all tests: run test binary
 test: unittests

@@ -21,14 +21,15 @@ RUN make
 WORKDIR /root
 RUN git clone https://github.com/ComparativeGenomicsToolkit/hal.git
 WORKDIR /root/hal
+ENV RANLIB=ranlib
 RUN make
 ENV PATH="${PATH}:/root/hal/bin"
 
 # Install dependencies for homGeneMapping
 RUN apt-get update
 RUN apt-get install -y libgsl-dev liblpsolve55-dev
-RUN apt-get install -y libsqlite3-dev
-RUN apt-get install -y libboost-all-dev libboost-iostreams-dev
+RUN apt-get install -y libsqlite3-dev  libmysql++-dev
+RUN apt-get install -y libboost-all-dev
 
 # Clone AUGUSTUS repository
 WORKDIR /root
@@ -44,6 +45,7 @@ ENV PATH="${PATH}:/root/Augustus/bin"
 # Build homGeneMapping
 ADD / /root/Augustus/auxprogs/homGeneMapping
 WORKDIR /root/Augustus/auxprogs/homGeneMapping/
+RUN make clean
 RUN make
 
 # Test homGeneMapping

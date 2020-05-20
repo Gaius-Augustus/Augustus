@@ -156,7 +156,6 @@ docs
 
 The following dependencies are required for AUGUSTUS:
    - build-essential, wget, git, autoconf (sudo apt-get install build-essential wget git autoconf)
-   - libsqlite3-dev and libmysql++-dev (sudo apt-get install libsqlite3-dev libmysql++-dev)
   - libraries for gzip compressed input (set ZIPINPUT = false in common.mk if this feature is not required or the required libraries are not available):
    - Boost C++ Libraries: libboost-iostreams-dev (on Ubuntu: sudo apt-get install libboost-iostreams-dev)
    - zlib library for compression methods. Download from http://www.zlib.net/ or install via package manager (sudo apt-get install zlib1g-dev).
@@ -164,7 +163,9 @@ The following dependencies are required for AUGUSTUS:
    - GNU scientific library (for eigen decompositions of matrices, sudo apt-get install libgsl-dev)
    - Boost C++ Library: sudo apt-get install libboost-all-dev (at least version 1.45 from Nov. 2010)
    - integer linear program solver liblpsolve55-dev: sudo apt-get install libsuitesparse-dev liblpsolve55-dev
-
+   - libsqlite3-dev (sudo apt-get install libsqlite3-dev) (add SQLITE = false to common.mk if this feature is not required or libsqlite3-dev is not available)
+   - libmysql++-dev (sudo apt-get install libmysql++-dev) (add MYSQL = false to common.mk if this feature is not required or libmysql++-dev is not available)
+   
 Compiling bam2hints and filterBam requires:
 
    - The packages bamtools and libbamtools-dev

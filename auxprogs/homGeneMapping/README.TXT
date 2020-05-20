@@ -20,7 +20,7 @@ alignment of the genomes and prints a summary for each gene, e.g.
 * HAL Tools (available at https://github.com/ComparativeGenomicsToolkit/hal)
 * Boost graph library for option --printHomologs that clusters transcripts into groups of homologs
   Install the package libboost-all-dev with your package manager
-  (optional: set BOOST = false in src/Makefile if the Boost library is unavailable and option --printHomologs is not required)
+  (optional: add BOOST = false to common.mk if the Boost library is unavailable and option --printHomologs is not required)
 * SQLite library for option --dbaccess that enables the retrieval hints from a database:
   Install the package libsqlite3-dev with your package manager or 
   download the SQLite source code from http://www.sqlite.org/download.html 
@@ -35,7 +35,8 @@ alignment of the genomes and prints a summary for each gene, e.g.
    If you encounter an "SQLite header and source version mismatch" error, try
 
    > ./configure --disable-dynamic-extensions --enable-static --disable-shared
-
+  (optional: add SQLITE = false to common.mk if the SQLite library is unavailable and option --dbaccess is not required)
+  
 From within the auxprogs/homGeneMapping directory, type "make"
 
 

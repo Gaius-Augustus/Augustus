@@ -21,17 +21,17 @@ BCFTOOLS=$(TOOLDIR)/bcftools
 INCLUDES=-I$(SAMTOOLS) -I. -I$(HTSLIB) -I$(BCFTOOLS)
 VPATH=$(SAMTOOLS)
 LIBS=$(SAMTOOLS)/libbam.a $(HTSLIB)/libhts.a -lcurses -lm -lz -lpthread -lcurl -lssl -lcrypto
-CFLAGS=-Wall -O2 $(INCLUDES)
-CC=gcc
+CFLAGS:=-Wall -O2 $(INCLUDES) $(CFLAGS)
+CC?=gcc
 
 $(PROGRAM) : bam2wig.o
-	$(CC) $(CFLAGS) $^ -o $@ $(LIBS) -lbz2 -llzma
+	$(CC) $(LDFLAGS) $^ -o $@ $(LIBS) -lbz2 -llzma
 	mkdir -p ../../bin
 	cp bam2wig ../../bin/bam2wig
 
 bam2wig.o : bam2wig.c
-	$(CC) $(CFLAGS) -c $^ -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@
 
 clean:
-	rm -f $(OBJECTS) bam2wig.o
+	rm -f $(OBJECTS) bam2wig.o bam2wig
 	rm -f ../../bin/bam2wig

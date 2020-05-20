@@ -9,7 +9,7 @@ all:
 clean:
 	(rm -rf test; cd src; make clean)
 
-test:
+test:   all
 	rm -rf test
 	mkdir -p test
 	# test with hints

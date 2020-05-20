@@ -5,7 +5,7 @@ package helpMod;
         ###########################
 
 use Exporter 'import';
-@EXPORT_OK = qw(find tildeConvert checkFile formatDetector relToAbs setParInConfig uptodate);
+@EXPORT_OK = qw(find tildeConvert checkFile check_fasta_headers formatDetector relToAbs setParInConfig uptodate);
 
 use strict;
 use Cwd;
@@ -84,27 +84,25 @@ sub checkFile{
 
 sub formatDetector{
     my $file=shift;   # file to be detected
-    my $testLines = 1000; # read at most this many lines for testing
-    my $i;
+    my $i = 0;
     my @helpArray_gff;
     #
     # check if file has GENBANK format
     #
     open(DFILE, $file) or die ("Could not open $file!\n");
-    $i=0;
     my $haveLOCUS=0;
     my $haveSource=0;
     my $haveOrigin=0;
     my $haveTermSymb=0;
-    while(defined(my $line=<DFILE>) && $i<$testLines){
+    while (defined(my $line=<DFILE>)) {
 	$i++;
-	$haveLOCUS++ if($i==1 && $line=~ /^LOCUS/);
-	$haveSource++ if($line=~ / +source +/i);
-	$haveOrigin++ if($line=~ /^ORIGIN/);
-	$haveTermSymb++ if($line=~ /\/\//);
+	$haveLOCUS = 1 if($i==1 && $line=~ /^LOCUS/);
+	$haveSource = 1 if(!$haveSource && $line=~ /\s+source\s+\d+\.\.\d+/);
+	$haveOrigin = 1 if(!$haveOrigin && $line=~ /^ORIGIN/);
+	$haveTermSymb = 1 if(!$haveTermSymb && $line=~ /\s*\/\//);
     }
     close(DFILE);
-    if ((($haveLOCUS>0) + ($haveSource>0) + ($haveOrigin>0) + ($haveTermSymb>0)) > 1){
+    if (($haveLOCUS + $haveSource + $haveOrigin + $haveTermSymb) > 1) {
 	print STDERR "$file appears to be in corrupt Genbank format. 'LOCUS' missing\n" if (!$haveLOCUS);
 	print STDERR "$file appears to be in corrupt Genbank format. ' source ' line missing\n" if (!$haveSource);
 	print STDERR "$file appears to be in corrupt Genbank format. 'ORIGIN' missing\n" if (!$haveOrigin);
@@ -115,11 +113,9 @@ sub formatDetector{
     # check if file has GFF format
     #
     open(DFILE, $file) or die ("Could not open $file!\n");
-    $i=0;
     my $badGFFlines=0;
     my $goodGFFlines=0;
-    while(defined(my $line=<DFILE>) && $i<$testLines){
-	$i++;
+    while (defined(my $line=<DFILE>)) {
         # if not genbank format and the row not a possible comment in gff format
         if(!($line=~/^#/) && !($line=~/^\s*$/)){
              @helpArray_gff=split(/\t/, $line);
@@ -144,11 +140,9 @@ sub formatDetector{
     # check if file has FASTA format and whether it is DNA or protein
     #
     open(DFILE, $file) or die ("Could not open $file!\n");
-    $i=0;
     my $greaterLines=0;
     my $concatseq = "";
-    while(defined(my $line=<DFILE>) && $i<$testLines){
-	$i++;
+    while(defined(my $line=<DFILE>)){
 	chomp $line;
 	if ($line =~ /^>/){
 	    $greaterLines++;
@@ -173,6 +167,45 @@ sub formatDetector{
     }
     return "";
 }
+
+##########################################################
+# Check headers for occurrence of suspicious characters  #
+# and print warnings to stdout                           #
+##########################################################
+
+sub check_fasta_headers {
+    my $fastaFile=shift;
+    my $spaces = 0;
+    my $orSign = 0;
+    my $someThingWrongWithHeader = 0;
+    my $stdStr = "This may later on cause problems! If the pipeline turns out to crash, please clean up the fasta headers, e.g. by using simplifyFastaHeaders.pl. This message will be suppressed from now on!\n";
+    
+    open(my $fasta_fh, "<", $fastaFile) or die("Could not open fasta file $fastaFile!\n");
+    while (my $line = <$fasta_fh>) {
+        if ($line !~ /^>/) { # ignore none header lines
+            next;
+        }
+        $line = rtrim_fasta_headers($line);
+        if (!$spaces && $line =~ /\s/) {
+            print "WARNING: Detected whitespace in fasta header of file $fastaFile. $stdStr\n";
+            $spaces++;
+        }
+        if (!$orSign && $line =~ /\|/) {
+            print "WARNING: Detected | in fasta header of file $fastaFile. $stdStr\n";
+            $orSign++;
+        }
+        if (!$someThingWrongWithHeader && $line =~ /[^>a-zA-Z0-9]/) {
+            print "WARNING: Fasta headers inf file $fastaFile seem to contain non-letter and non-number characters. That means they may contain some kind of special character. $stdStr\n";
+            $someThingWrongWithHeader++;
+        }
+        if ($spaces && $orSign && $someThingWrongWithHeader) {
+            last;
+        }
+    }
+    close($fasta_fh) or die("Could not close fasta file $fastaFile!\n");
+}
+
+sub rtrim_fasta_headers { my $s = shift; $s =~ s/\s+$//g; return $s };
 
 ##########################################
 # convert relative path to absolute path #

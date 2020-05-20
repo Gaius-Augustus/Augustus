@@ -11,12 +11,14 @@ OBJECTS = $(SOURCES:.cc=.o)
 BAMTOOLS = /usr/include/bamtools
 INCLUDES = -I$(BAMTOOLS) -Iheaders -I./bamtools
 LIBS = -lbamtools -lz
-CFLAGS = -std=c++0x
+CXXFLAGS := -std=c++0x ${CXXFLAGS}
 VPATH = functions
+LINK.cc ?= g++
 
 all : $(PROGRAM) $(OBJECTS) CHECKBAM BIN
 
 BIN : $(PROGRAM) CHECKBAM
+	mkdir -p ../../../bin
 	mv filterBam ../../../bin/filterBam
 
 CHECKBAM:
@@ -28,12 +30,13 @@ CHECKBAM:
 	fi
 
 $(PROGRAM) : $(OBJECTS)
-	$(LINK.cc) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS) 
+	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 $(OBJECTS) : %.o:%.cc
-	$(LINK.cc) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(INCLUDES)
+	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) -c $^ -o $@ $(INCLUDES)
 
 
 clean:
 	rm -f *~ $(OBJECTS)
+	rm -f filterBam
 	rm -f ../../../bin/filterBam

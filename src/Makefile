@@ -2,54 +2,60 @@
 # Makefile for Augustus
 #
 include ../common.mk
-CXX	= g++
+CXX?=g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 ${CXXFLAGS}# -DDEBUG -g -ggdb -pg -DDEBUG_STATES
+CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 ${CXXFLAGS} #-DDEBUG -g -ggdb -pg -DDEBUG_STATES
 
-ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))
-	CXXFLAGS += -DZIPINPUT
+ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))  # if ZIPINPUT is not defined or is something else than 0, false, False or FALSE
+	CPPFLAGS += -DZIPINPUT
 	LIBS    = -lboost_iostreams
 endif
 
-ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
-	CXXFLAGS += -std=c++11 -DCOMPGENEPRED
-endif
 INCLS	= -I../include
 
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
  meaPath.o exoncand.o randseqaccess.o fasta.o ncmodel.o
-
-ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
-	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o ann.o
+ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is not defined or is something else than 0, false, False or FALSE
+	SQLITE   ?= true
+	MYSQL    ?= true
+	CXXFLAGS += -std=c++11
+	CPPFLAGS += -DCOMPGENEPRED
+	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
 	INCLS += -I/usr/include/lpsolve
 endif
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
-PROGR	= augustus etraining prepareAlign fastBlockSearch
+PROGR	= augustus etraining prepareAlign fastBlockSearch pp_simScore
 INFO    = cxxflags
 
-# MySQL support
-# replace RUNTIME_LIBPATH with your own run-time libpath if mysql++ is not installed system-wide, e.g.
-# RUNTIME_LIBPATH = -Wl,-rpath=/home/mario/augustus/trunks/mysql++/mysql++-3.1.0/lib 
-RUNTIME_LIBPATH = 
-INCLS	+= -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
-LIBS 	+=  -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
-PROGR   += load2db getSeq
+ifneq (,$(findstring $(MYSQL),1 true True TRUE)) # if MYSQL is defined and contains 1, true, True or TRUE
+	# MySQL support
+	# replace RUNTIME_LIBPATH with your own run-time libpath if mysql++ is not installed system-wide, e.g.
+	# RUNTIME_LIBPATH = -Wl,-rpath=~/augustus/trunks/mysql++/mysql++-3.1.0/lib
+	RUNTIME_LIBPATH =
+	INCLS    += -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
+	LIBS     += -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
+	CPPFLAGS += -DM_MYSQL
+	PROGR    += load2db getSeq
+endif
 
-# SQLite support
-LIBS	  += -lsqlite3
-OBJS	  += sqliteDB.o
-PROGR     += load2sqlitedb getSeq
+ifneq (,$(findstring $(SQLITE),1 true True TRUE)) # if SQLITE is defined and contains 1, true, True or TRUE
+	# SQLite support
+	LIBS      += -lsqlite3
+	OBJS      += sqliteDB.o
+	CPPFLAGS  += -DM_SQLITE
+	PROGR     += load2sqlitedb getSeq
+endif
 
 ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
-PROGR     += espoca
+    PROGR     += espoca
 endif
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
@@ -59,7 +65,7 @@ all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 .PHONY: googletest
 
 .cc.o:
-	$(CXX) -c $(CXXFLAGS) -o $@ $< $(INCLS)
+	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(INCLS)
 
 augustus: augustus.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
@@ -85,6 +91,10 @@ fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp fastBlockSearch ../bin/
 
+pp_simScore: pp_simscore.cc fasta.o types.o properties.o geneticcode.o pp_profile.o lldouble.o
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	cp pp_simScore ../bin/
+
 prepareAlign: pp_prepare_align.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 	cp prepareAlign ../bin/
@@ -103,13 +113,13 @@ getSeq: getSeq.cc $(OBJS) $(DUMOBJS)
 
 espoca: espoca.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp espoca ../bin/ 
+	cp espoca ../bin/
 
 info:
-	echo "$(CXXFLAGS)" > $(INFO)
+	echo "$(CXXFLAGS) $(CPPFLAGS)" > $(INFO)
 
 clean:
-	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o  $(INFO)
+	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o $(INFO)
 	cd googletest && ${MAKE} clean
 	cd unittests && ${MAKE} clean
 
@@ -705,14 +715,6 @@ codonMSA.o: \
 train_logReg_param.o: \
 	../include/train_logReg_param.hh \
 	train_logReg_param.cc
-
-ann.o : \
-	../include/ann.hh \
-	../include/types.hh \
-	../include/exoncand.hh \
-	../include/properties.hh \
-	ann.cc
-
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately
