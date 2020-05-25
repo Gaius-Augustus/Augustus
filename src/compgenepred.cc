@@ -16,7 +16,6 @@
 #include "liftover.hh"
 #include "intronmodel.hh"
 #include "train_logReg_param.hh"
-#include "ann.hh"
 
 #include <gsl/gsl_matrix.h>
 #include <ctime>
