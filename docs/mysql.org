@@ -65,7 +65,7 @@
    'mysqlpplib' is added to in trunk base directory and 'mysql' 'mysqlppheader' are added in include directory.'mysql' is
    set of header files comes with mysql.
 ** run-time libpath
-   Copy mysqlpplib to a path that is registered in '/etc/ld.so.cathe '.In most Unix-like OS,they
+   Copy mysqlpplib to a path that is registered in '/etc/ld.so.cache '.In most Unix-like OS,they
    are '/usr/lib/','/lib/','/usr/share/lib/'.If you you want indicate your own lib-path but have no
    authority to run 'ldconfig',copy 'mysqlpplib' to '/your/run-time lib/path/',compile Augustus
    with '-Wl,rpath= /your/run-time lib/path/'.

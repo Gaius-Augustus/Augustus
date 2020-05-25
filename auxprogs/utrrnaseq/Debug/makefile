@@ -35,6 +35,8 @@ endif
 
 -include ../makefile.defs
 
+CXX?=g++
+
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
@@ -44,7 +46,7 @@ all: utrrnaseq
 utrrnaseq: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++  -o "utrrnaseq" $(OBJS) $(USER_OBJS) $(LIBS)
+	$(CXX)  -o "utrrnaseq" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

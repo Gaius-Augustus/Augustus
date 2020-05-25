@@ -16,8 +16,10 @@
 #include <fstream>
 #include <types.hh>
 
+#ifdef M_MYSQL
 #include <table_structure.h>
 #include <query.h>
+#endif
 
 int SpeciesCollection::groupCount = 1;
 
@@ -386,6 +388,7 @@ DbSeqAccess::DbSeqAccess(vector<string> s){
     }
 }
 
+#ifdef M_MYSQL
 void MysqlAccess::open(){
     dbaccess = Constant::dbaccess;
     split_dbaccess();
@@ -743,8 +746,10 @@ int MysqlAccess::get_region_coord(int seq_region_id,int start,int end,vector<T> 
 //    return seqlist;
 //}
 
-AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
+#endif // M_MYSQL
 
+#ifdef M_SQLITE
+AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
     int seq_start, seq_end;
     streampos file_start;
     streamsize n=0; // number of characters that are read
@@ -765,9 +770,10 @@ AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start
 	    seq_end = stmt.intColumn(1);
 	    file_start = (std::streampos)stmt.int64Column(2);
 	    n += stmt.intColumn(3);
+            n += 1; // as the newlines after the 50Kb regions are not included, extra bp are truncated below
 	    while(stmt.nextResult()){
 		seq_end = stmt.intColumn(1);
-		n += stmt.intColumn(3);
+		n += stmt.intColumn(3) + 1;
 	    }
 	    if(start - seq_start < 0 || seq_end - end < 0){
 		if(Constant::MultSpeciesMode){
@@ -803,6 +809,9 @@ AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start
 		    delete [] annoseq->sequence;
 		    annoseq->sequence = reverseDNA;
 		}
+                if (strlen(annoseq->sequence) != annoseq->length)
+                    throw ProjectError("SQLiteAccess::getSeq " + itoa(strlen(annoseq->sequence)) + " != " + itoa(annoseq->length) + " in " 
+                                       + speciesname + "." + chrName + ":" + itoa(start) + "-" + itoa(end));
 		return annoseq;
 	    }
 	    else
@@ -866,3 +875,4 @@ SequenceFeatureCollection* SQLiteAccess::getFeatures(string speciesname, string 
     fc->hasHintsFile = true;
     return sfc;
 }
+#endif // M_SQLITE

@@ -16,9 +16,9 @@ mario.stanke@uni-greifswald.de
 
 ## Questions
 
-In case you find a bug, or miss a desireable feature or need
+In case you find a bug, or miss a desirable feature or need
 detailed info about the model, please check this forum and post your question at:
-http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Forum.Forum
+http://bioinf.uni-greifswald.de/bioinf/forum/
 
 In case you need to train AUGUSTUS on a different organism consider this training web service:
-http://bioinf.uni-greifswald.de/trainaugustus
+http://bioinf.uni-greifswald.de/webaugustus/

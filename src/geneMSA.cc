@@ -1601,11 +1601,11 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
 	// conservation score for right boundary feature
 	oeConsScore=0.0;
         int oeRightBoundAliStart = min(oeAliEnd + 1, alignment->aliLen);
-        int oeRightBoundAliEnd = min(oeAliEnd + 1 + Constant::oeExtensionWidth, alignment->aliLen);
+        int oeRightBoundAliEnd = min(oeAliEnd + 1 + Constant::oeExtensionWidth, alignment->aliLen - 1);
         for(int pos = oeRightBoundAliStart; pos <= oeRightBoundAliEnd; pos++){
-          if (pos > alignment->aliLen || pos < 0)
-            throw ProjectError("Internal error in printConsScore: alignment positions of HECTs and geneRanges are inconsistent.");
-          oeConsScore+=consScore[pos];
+            if (pos >= alignment->aliLen || pos < 0)
+                throw ProjectError("Internal error in printConsScore: alignment positions of HECTs and geneRanges are inconsistent.");
+            oeConsScore += consScore[pos];
         }
         oeConsScore/=(oeRightBoundAliEnd-oeRightBoundAliStart+1); // average over all alignment columns within a HECT                   
         oe->setRightConsScore(oeConsScore);

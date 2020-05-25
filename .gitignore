@@ -7,10 +7,14 @@ auxprogs/utrrnaseq/Debug/utrrnaseq
 auxprogs/utrrnaseq/*.gff
 src/*.o
 src/googletest/*.o
+auxprogs/aln2wig/aln2wig
+auxprogs/aln2wig/aln2wig.o
 auxprogs/bam2hints/bam2hints
 auxprogs/bam2hints/bam2hints.o
 auxprogs/bam2wig/bam2wig
 auxprogs/bam2wig/bam2wig.o
+auxprogs/checkTargetSortedness/checkTargetSortedness
+auxprogs/checkTargetSortedness/checkTargetSortedness.o
 auxprogs/compileSpliceCands/compileSpliceCands
 auxprogs/compileSpliceCands/compileSpliceCands.o
 auxprogs/compileSpliceCands/list.o

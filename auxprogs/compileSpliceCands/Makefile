@@ -1,8 +1,11 @@
+CC?=gcc
+
 compileSpliceCands : compileSpliceCands.o list.h list.o
-	gcc $(LDFLAGS) -o compileSpliceCands compileSpliceCands.o list.o;
+	$(CC) $(CFLAGS)	$(CPPFLAGS) $(LDFLAGS) -o compileSpliceCands compileSpliceCands.o list.o
 #	cp compileSpliceCands ../../bin
+
 compileSpliceCands.o : compileSpliceCands.c 
-	gcc -Wall -pedantic -ansi $(CPPFLAGS) -c compileSpliceCands.c 
+	$(CC) -Wall -pedantic -ansi $(CFLAGS) $(CPPFLAGS) -c compileSpliceCands.c
 
 all : compileSpliceCands
 

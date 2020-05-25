@@ -1,5 +1,5 @@
      - compile with CGP and ZIPINPUT support by default
-     - compile with SQLite and MySQL support for CGP (no longer optional)
+     - compile with SQLite and MySQL support for CGP (switch of by adding SQLite = false and MySQL = false to common.mk)
 List of changes from version 3.3.2 to 3.3.3 (until Sep 13th, 2019)
      - docker container
      - new script tfix_in_frame_stop_codon_genes.py that replaces genes where spliced in-frame stop codons were predicted

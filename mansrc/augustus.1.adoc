@@ -31,7 +31,7 @@ SPECIES is an identifier for the species. Use *--species=help* to see a list.
   predict genes independently on each strand, allow overlapping genes on opposite strands.
   This option is turned off by default.
 
-*--hintsfile=hintsfilenam*e::
+*--hintsfile=hintsfilename*::
   When this option is used the prediction considering hints (extrinsic information) is turned on.
   hintsfilename contains the hints in gff format.
 

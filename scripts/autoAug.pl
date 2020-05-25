@@ -22,7 +22,7 @@ BEGIN {
     our $directory = dirname($0);
 } 
 use lib $directory;
-use helpMod qw(find checkFile relToAbs uptodate);
+use helpMod qw(find checkFile check_fasta_headers relToAbs uptodate);
 use Term::ANSIColor qw(:constants);
 use DBI;
 use strict;
@@ -177,6 +177,7 @@ die("$AUGUSTUS_CONFIG_PATH/species/$species already exists. Choose another speci
 
 # check genome file
 $genome = checkFile($genome, "fasta", $usage);
+print "1 Checking fasta headers in file $genome...\n" if ($verbose>=1);
 check_fasta_headers($genome);
 
 # show error information and stop the program if the specified $positionWD couldn't be found
@@ -196,7 +197,10 @@ $verboseString='-v -v -v' if ($verbose>2);
 
 $havehints = (defined($hints) || defined($fasta_cdna) || defined($estali));
 $fasta_cdna = checkFile($fasta_cdna, "fasta", $usage) if (defined($fasta_cdna));
-check_fasta_headers($fasta_cdna) if (defined($fasta_cdna));
+if (defined($fasta_cdna)) {
+    print "1 Checking fasta headers in file $fasta_cdna...\n" if ($verbose>=1);
+    check_fasta_headers($fasta_cdna);
+}
 $trainingset = checkFile($trainingset,"training genes", $usage) if($index==0 && defined($trainingset));
 $hints = checkFile($hints,"hints", $usage) if (defined($hints));
 $estali = checkFile($estali,"EST alignment", $usage) if (defined($estali));
@@ -1106,39 +1110,6 @@ sub check_upfront{
     find("gff2gbSmallDNA.pl");
     find("summarizeACGTcontent.pl");
     print "ok.\n" if ($verbose>=2);
-}
-
-sub check_fasta_headers{
-    my $fastaFile=shift;
-    my $someThingWrongWithHeader = 0;
-    my $spaces = 0;
-    my $orSign = 0;
-    my $stdStr = "This may later on cause problems! If the pipeline turns out to crash, please clean up the fasta headers, e.g. by using simplifyFastaHeaders.pl. This message will be suppressed from now on!\n";
-    print "1 Checking fasta headers in file $fastaFile...\n" if ($verbose>=1);
-    open(FASTA, "<", $fastaFile) or die("Could not open fasta file $fastaFile!\n");
-    while(<FASTA>){
-	chomp;
-	if($_=~m/\s/){
-	    if($spaces == 0){
-		print "1 - WARNING: Detected whitespace in fasta header of file $fastaFile. ".$stdStr."\n";
-		$spaces++;
-	    }
-	}
-	if($_=~m/\|/){
-	    if($orSign == 0){
-		print "1 - WARNING: Detected | in fasta header of file $fastaFile. ".$stdStr."\n";
-		$orSign++;
-	    }
-	}
-	if($_=!m/[>a-zA-Z0123456789]/){
-	    if($someThingWrongWithHeader==0){
-		print "1 - WARNING: Fasta headers inf file $fastaFile seem to contain non-letter and non-number characters. That means they may contain some kind of special character. ".$stdStr."\n";
-		$someThingWrongWithHeader++;
-	    }
-	}
-   }
-    close(FASTA) or die("Could not close fasta file $fastaFile!\n");
-    
 }
 
 sub count_fasta_entries{
