@@ -303,7 +303,11 @@ UTR_KEY,
 "/UtrModel/utr5patternweight",
 "/UtrModel/utr3prepatternweight",
 "/UtrModel/utr5prepatternweight",
-"/UtrModel/verbosity"};
+"/UtrModel/verbosity"
+#ifdef TESTING
+"/Testing/testMode"
+#endif
+};
 
 
 void Properties::readFile( string filename ){
