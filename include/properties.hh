@@ -20,8 +20,11 @@
 #include <mach-o/dyld.h>   // for _NSGetExecutablePath
 #endif
 
-
+#ifdef TESTING
+#define NUMPARNAMES 275   // testMode command line option added
+#else
 #define NUMPARNAMES 275
+#endif
 
 #define GENEMODEL_KEY "genemodel"
 #define NONCODING_KEY "nc"
