@@ -33,7 +33,6 @@ endif
 
 ifeq (,$(findstring $(TESTING),0 false False FALSE))  # if TESTING is not defined or is something else than 0, false, False or FALSE
 	CPPFLAGS += -DTESTING
-	
 	LIBS += -lboost_serialization # for serialization/deserialization
 endif
 
