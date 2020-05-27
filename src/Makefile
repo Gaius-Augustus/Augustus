@@ -30,6 +30,13 @@ ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is 
 	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
 	INCLS += -I/usr/include/lpsolve
 endif
+
+ifeq (,$(findstring $(TESTING),0 false False FALSE))  # if TESTING is not defined or is something else than 0, false, False or FALSE
+	CPPFLAGS += -DTESTING
+	
+	LIBS += -lboost_serialization # for serialization/deserialization
+endif
+
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
 PROGR	= augustus etraining prepareAlign fastBlockSearch pp_simScore
