@@ -22,6 +22,60 @@
 #include <sys/stat.h>
 
 
+#ifdef TESTING
+#include "tokenizer.hh"
+
+/*
+*   added by Giovanna Migliorelli 14.05.2020 
+*   code responsible for serialization/deserialization
+*/
+
+void serializeAlignment(string archname, Alignment* ali){
+
+    cout << "Serializing alignment into " << archname << " archive" << endl;
+
+    {
+        std::ofstream ofs(archname.c_str());
+        boost::archive::text_oarchive oa(ofs);
+        oa << ali;
+    }
+}
+
+void deserializeAlignment(string archname, Alignment*& ali){
+
+    cout << "Deserializing alignment from " << archname << " archive" << endl;
+
+    {
+        std::ifstream ifs(archname.c_str());
+        boost::archive::text_iarchive ia(ifs);
+        ia >> ali;
+    }
+}
+
+void serializeGeneMSA(string archname, GeneMSA* geneRange){
+
+    cout << "Serializing gene range into " << archname << " archive" << endl;
+
+    {
+        std::ofstream ofs(archname.c_str());
+        boost::archive::text_oarchive oa(ofs);
+        oa << geneRange;
+    }
+}
+
+void deserializeGeneMSA(string archname, GeneMSA*& geneRange){
+
+    cout << "Deserializing gene range from " << archname << " archive" << endl;
+
+    {
+        std::ifstream ifs(archname.c_str());
+        boost::archive::text_iarchive ia(ifs);
+        ia >> geneRange;
+    }
+}
+#endif
+
+
 CompGenePred::CompGenePred() : tree(Constant::treefile) {
 
     rsa = NULL;
