@@ -11,6 +11,16 @@
 // project includes
 #include "lldouble.hh"
 
+
+#ifdef TESTING
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/impl/basic_text_oarchive.ipp>
+#include <boost/archive/impl/text_oarchive_impl.ipp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/vector.hpp>
+#endif
+
 // standard C/C++ includes
 #include <string>
 #include <exception>
