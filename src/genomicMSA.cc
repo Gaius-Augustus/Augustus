@@ -147,10 +147,10 @@ void GenomicMSA::readAlignment(string alignFilename) {
 		// TODO: may have to be checked/adjusted for general .maf files
 		Alignmentfile >> completeName >> chrStart >> seqLen >> strandChar >> lenOfChr >> rowseq >> buffer;
 		
-        /*  
-        *   GM added the following to correctly handle names containing the symbol '-' when the dot works as a separator
-        *   GM the case not handled yet relates strings containing dashes in the name and using a dash as a separator (this case though should be infrequent)
-        */
+		/*  
+		*   GM added the following to correctly handle names containing the symbol '-' when the dot works as a separator
+		*   GM the case not handled yet relates strings containing dashes in the name and using a dash as a separator (this case though should be infrequent)
+		*/
 
 		size_t dotAt = completeName.find('.');
 		if (dotAt != string::npos){
@@ -171,7 +171,7 @@ void GenomicMSA::readAlignment(string alignFilename) {
 		    // no dot present, use dash as a separator
 		    // split species name and sequence ID
 		    for (int i=0; i<completeName.length(); i++) {
-                if (completeName[i] == '-') { 
+			    if (completeName[i] == '-') { 
                     speciesName = completeName.substr(0,i);
                     seqID = completeName.substr(i+1, string::npos);
                     // some input file have a suffix "(..)" that needs to be stripped
@@ -179,11 +179,11 @@ void GenomicMSA::readAlignment(string alignFilename) {
                     if (p != std::string::npos)
                         seqID = seqID.erase(p); 
                     break;
-                }
-                if (i == completeName.length()-1) {
+			    }
+			    if (i == completeName.length()-1) {
                     speciesName = completeName;
                     seqID = "unknown";
-                }
+			    }
 		    }
 		}
         		  
