@@ -1,3 +1,4 @@
+     - remove bam2wig
      - compile with CGP and ZIPINPUT support by default
      - compile with SQLite and MySQL support for CGP (switch of by adding SQLite = false and MySQL = false to common.mk)
 List of changes from version 3.3.2 to 3.3.3 (until Sep 13th, 2019)

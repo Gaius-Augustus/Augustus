@@ -44,7 +44,7 @@ In order to integrate RNA-Seq into Augustus, the usual procedure involves
 <li> aligning RNA-Seq reads to the source genome with a spliced-aligner (f.e. <a href="https://github.com/alexdobin/STAR">STAR</a>)</li>
 <li> quality and uniqueness filtering of alignments with <tt>filterBam</tt></li>
 <li> generation of intron hints with <tt>bam2hints</tt></li>
-<li> generation of exonpart hints with <tt>bam2wig</tt> and <tt>wig2hints.pl</tt></li>
+<li> generation of exonpart hints with <tt>bamToWig.py</tt> and <tt>wig2hints.pl</tt></li>
 </ul>
 We will skip this procedure as it is explained in detail in other tutorials (see section 'RNA-Seq integration' in the <a href="http://bioinf.uni-greifswald.de/bioinf/wiki/pmwiki.php?n=Augustus.Augustus">Augustus Wiki</a>)<br>
 and assume that we have generated <a href="data/hints/" >hints files</a> for some of the species (chicken, human, mouse and rhesus) in our clade.

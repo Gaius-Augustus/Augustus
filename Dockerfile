@@ -15,38 +15,12 @@ RUN apt-get install -y libboost-iostreams-dev zlib1g-dev
 # Install dependencies for bam2hints and filterBam 
 RUN apt-get install -y libbamtools-dev
 
-# Install additional dependencies for htslib and samtools
-RUN apt-get install -y libbz2-dev liblzma-dev
-RUN apt-get install -y libncurses5-dev
-
-# Install additional dependencies for bam2wig
-RUN apt-get install -y libssl-dev libcurl3-dev
+# Install additional dependencies for bamToWig.py
+RUN apt-get install -y samtools
 
 # Install additional dependencies for homgenemapping and utrrnaseq
 RUN apt-get install -y libboost-all-dev
 
-# Build bam2wig dependencies (htslib, bfctools, samtools)
-RUN git clone https://github.com/samtools/htslib.git /root/htslib
-WORKDIR "/root/htslib"
-RUN autoheader
-RUN autoconf
-RUN ./configure
-RUN make
-RUN make install
-RUN git clone https://github.com/samtools/bcftools.git /root/bcftools
-WORKDIR "/root/bcftools"
-RUN autoheader
-RUN autoconf
-RUN ./configure
-RUN make
-RUN make install
-RUN git clone https://github.com/samtools/samtools.git /root/samtools
-WORKDIR "/root/samtools"
-RUN autoheader
-RUN autoconf -Wno-syntax
-RUN ./configure
-RUN make
-RUN make install
 ENV TOOLDIR="/root"
 
 # Install hal
