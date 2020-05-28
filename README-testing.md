@@ -44,11 +44,11 @@ Run the following commands from within ./scripts/ :
 ```
 YOURPYTHON executeTestCGP.py --chunk=1 --run
 ```
-to run prediction using minimal FASTAs (expected running time 1h c.ca). Results are stored in example/cgp12way/out1run.
+this command runs prediction using minimal FASTAs (expected running time 1h c.ca). Results are stored in example/cgp12way/out1run.
 ```
 YOURPYTHON executeTestCGP.py --chunk=1 --eval 
 ```
-to compute accuracy for prediction obtained using minimal FASTAs. Results are stored in example/cgp12way/out1result. Chunk parameter can be set to be any chunk, provided data are available for it (e.g. MAF, SQlite db).
+this command computes accuracy for some prediction obtained using minimal FASTAs. Results are stored in example/cgp12way/out1result. Chunk parameter can be set to be any chunk, provided data are available for it (e.g. MAF, SQlite db).
 
 # ADVANCED
 Todo add description of advanced use here
