@@ -531,6 +531,16 @@ map<string, size_t> *getMap (vector<string> names){
     return hashtable;
 }
 
+
+
+#ifdef TESTING
+void expandDir(string& filename){
+    if(!filename.empty() && filename[filename.size()-1] != '/')
+	    filename += "/";                     // append slash if necessary 
+    // filename = expandHome(filename);         // replace "~" by "$HOME
+}
+#endif
+
 /*
  * functions used in earlier versions of AUGUSTUS
  */

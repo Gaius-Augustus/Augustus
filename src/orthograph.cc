@@ -227,8 +227,7 @@ vector<ofstream*> initOutputFiles(string outdir, string extension){
     
     if(testMode=="run")
         label = ".SHIFTED";
-
-	filename = outdir + species[pos] + extension + label + ".gff";
+    filename = outdir + species[pos] + extension + label + ".gff";
 	#else
 	string filename = outdir + species[pos] + extension + ".gff";
     #endif
