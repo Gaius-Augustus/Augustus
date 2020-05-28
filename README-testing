@@ -1,0 +1,21 @@
+DEPENDENCIES
+please make sure boost-serialization-dev is installed. If it is not the case, try and run:
+sudo apt-get update
+sudo apt-get install libboost-serialization-dev
+
+1) RUN and EVAL modes to predict over the minimal data set and assess accuracy
+After having assigned the path to eval to eval_dir within script/executeTestCGP.py, run the following commands from within Augustus-testing_dataset/scripts :
+
+YOURPYTHON executeTestCGP.py --chunk=1 --run
+
+it runs prediction using minimal FASTAs (expected running time 1h c.ca), results are stored in example/cgp12way/out1run
+
+YOURPYTHON executeTestCGP.py --chunk=1 --eval 
+
+it computes accuracy for prediction obtained using minimal FASTAs, results are stored in example/cgp12way/out1result
+
+
+The following modes are used only when creating a new data set (bedtools required)
+2) PREDICT mode to run original cmpAugustus prediction
+3) TEST mode to run a test concerning the crrectness in the use of minimal FASTAs
+4) PREPARE to build new data sets
