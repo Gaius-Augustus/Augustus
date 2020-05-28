@@ -19,6 +19,12 @@
 #include <boost/archive/impl/text_oarchive_impl.ipp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/vector.hpp>
+
+/*
+ * author Stefanie Koenig (included here and adapted by Giovanna Migliorelli on 14.05.2020)
+ * append slash to the end of a directory name 
+ */
+void expandDir(string& filename);
 #endif
 
 // standard C/C++ includes
@@ -247,6 +253,10 @@ parameters:\n\
   If true and input is in genbank format, no prediction is made. Useful for getting the annotated protein sequences.\n\
 --uniqueGeneId=true/false\n\
   If true, output gene identifyers like this: seqname.gN\n\
+--/Testing/testMode=prepare, --/Testing/testMode=run, (disabled by default)\n\
+  prepare      : prepare a new minimal data set to test comparative Augustus\n\
+  intronless   : run prediction over some given minimal data set\n\
+  (*) a minimal data set is one retaining only the information need in prediction, usually very small (order of Mb) compared to full sequence data sets (ordet of Gb)\n\
 \n\
 For a complete list of parameters, type \"augustus --paramlist\".\nAn exhaustive description can be found in the file README.TXT.\n"
 
