@@ -147,24 +147,46 @@ void GenomicMSA::readAlignment(string alignFilename) {
 		// TODO: may have to be checked/adjusted for general .maf files
 		Alignmentfile >> completeName >> chrStart >> seqLen >> strandChar >> lenOfChr >> rowseq >> buffer;
 		
-		// split species name and sequence ID
-		for (int i=0; i<completeName.length(); i++) {
-		    // seperator is the point '.' for example hs19.chr21, has to be changed
-		    if ((completeName[i] == '-') || (completeName[i] == '.')) { 
-			speciesName = completeName.substr(0,i);
-			seqID = completeName.substr(i+1, string::npos);
+		/*  
+        *   GM added the following to correctly handle names containing the symbol '-' when the dot works as a separator
+		*   GM the case not handled yet relates strings containing dashes in the name and using a dash as a separator (this case though should be infrequent)
+        */
+
+        size_t dotAt = completeName.find('.');
+        if (dotAt != string::npos){
+            // use the dot found at position dotAt as a separator
+            speciesName = completeName.substr(0,dotAt);
+			seqID = completeName.substr(dotAt+1, string::npos);
 			// some input file have a suffix "(..)" that needs to be stripped
 			string::size_type p = seqID.find_first_of("(");
 			if (p != std::string::npos)
 			    seqID = seqID.erase(p); 
-			break;
-		    }
-		    if (i == completeName.length()-1) {
-			speciesName = completeName;
-			seqID = "unknown";
-		    }
-		}
-		  
+			
+		    if (dotAt == completeName.length()-1) {
+			    speciesName = completeName;
+			    seqID = "unknown";
+            }
+        }
+        else{        
+            // no dot present, use dash as a separator
+            // split species name and sequence ID
+            for (int i=0; i<completeName.length(); i++) {
+                if (completeName[i] == '-') { 
+                    speciesName = completeName.substr(0,i);
+                    seqID = completeName.substr(i+1, string::npos);
+                    // some input file have a suffix "(..)" that needs to be stripped
+                    string::size_type p = seqID.find_first_of("(");
+                    if (p != std::string::npos)
+                        seqID = seqID.erase(p); 
+                    break;
+                }
+                if (i == completeName.length()-1) {
+                    speciesName = completeName;
+                    seqID = "unknown";
+                }
+            }
+        }
+        		  
 		if (strandChar == '+') {
 		    strand = plusstrand;
 		} else if (strandChar == '-') {
