@@ -38,11 +38,9 @@ Running the python3 script executeTestCGP.py has the following software dependen
   - Python3
 
 ## First use
-Set TESTING = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available)
-  - libboost-iostreams-dev
-by default TESTING = true.
+Set TESTING = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available. By default TESTING = true.
 
-Run the following commands from within Augustus-testing_dataset/scripts :
+Run the following commands from within ./scripts/ :
 ```
 YOURPYTHON executeTestCGP.py --chunk=1 --run
 ```
@@ -50,7 +48,7 @@ to run prediction using minimal FASTAs (expected running time 1h c.ca). Results 
 ```
 YOURPYTHON executeTestCGP.py --chunk=1 --eval 
 ```
-to compute accuracy for prediction obtained using minimal FASTAs. Results are stored in example/cgp12way/out1result.
+to compute accuracy for prediction obtained using minimal FASTAs. Results are stored in example/cgp12way/out1result. Chunk parameter can be set to be any chunk, provided data are available for it (e.g. MAF, SQlite db).
 
 # ADVANCED
 Todo add description of advanced use here
