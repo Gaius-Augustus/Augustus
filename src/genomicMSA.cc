@@ -152,25 +152,25 @@ void GenomicMSA::readAlignment(string alignFilename) {
         *   GM the case not handled yet relates strings containing dashes in the name and using a dash as a separator (this case though should be infrequent)
         */
 
-        size_t dotAt = completeName.find('.');
-        if (dotAt != string::npos){
-            // use the dot found at position dotAt as a separator
-            speciesName = completeName.substr(0,dotAt);
-			seqID = completeName.substr(dotAt+1, string::npos);
-			// some input file have a suffix "(..)" that needs to be stripped
-			string::size_type p = seqID.find_first_of("(");
-			if (p != std::string::npos)
+		size_t dotAt = completeName.find('.');
+		if (dotAt != string::npos){
+		    // use the dot found at position dotAt as a separator
+		    speciesName = completeName.substr(0,dotAt);
+		    seqID = completeName.substr(dotAt+1, string::npos);
+		    // some input file have a suffix "(..)" that needs to be stripped
+		    string::size_type p = seqID.find_first_of("(");
+		    if (p != std::string::npos)
 			    seqID = seqID.erase(p); 
 			
 		    if (dotAt == completeName.length()-1) {
 			    speciesName = completeName;
 			    seqID = "unknown";
-            }
-        }
-        else{        
-            // no dot present, use dash as a separator
-            // split species name and sequence ID
-            for (int i=0; i<completeName.length(); i++) {
+		    }
+		}
+		else{        
+		    // no dot present, use dash as a separator
+		    // split species name and sequence ID
+		    for (int i=0; i<completeName.length(); i++) {
                 if (completeName[i] == '-') { 
                     speciesName = completeName.substr(0,i);
                     seqID = completeName.substr(i+1, string::npos);
@@ -184,8 +184,8 @@ void GenomicMSA::readAlignment(string alignFilename) {
                     speciesName = completeName;
                     seqID = "unknown";
                 }
-            }
-        }
+		    }
+		}
         		  
 		if (strandChar == '+') {
 		    strand = plusstrand;
