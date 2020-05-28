@@ -18,3 +18,4 @@ COMPGENEPRED = true
 # libboost-serialization-dev 
 # are not available
 TESTING = true
+
