@@ -1,0 +1,287 @@
+-------Speciesnames:--------
+species 0	galGal4
+species 1	monDom5
+species 2	dasNov3
+species 3	echTel2
+species 4	loxAfr3
+species 5	canFam3
+species 6	bosTau8
+species 7	oryCun2
+species 8	rn6
+species 9	mm10
+species 10	rheMac3
+species 11	hg38
+# assuming an SQLite database
+read in the configuration file for extrinsic features
+# Sources of extrinsic information: M RM E W 
+# Setting acceptor splice site local malus: 0.1
+# Setting donor splice site local malus: 0.1
+# Setting exon local malus: 0.985
+# Setting CDSpart local malus: 0.985
+# Setting UTRpart local malus: 0.985
+extrinsic group 1: none ... is deleted
+extrinsic group 1: none ... is deleted
+extrinsic group 1: galGal4 monDom5 dasNov3 echTel2 loxAfr3 canFam3 bosTau8 oryCun2 rn6 mm10 rheMac3 hg38
+Trying to open database ../examples/cgp12way/SQLITE/12way.db
+Running prediction...
+# human version. Using default transition matrix.
+# setting temperature to 3 (for sampling)
+number of nodes: 14460
+number of signatures=3798. First 10 signatures are:
+numAli	sumCumFragLen	sumAliLen	depth	color	signature
+211	272157	150663	2     royalblue3                                                                                                          10:chr1+11:chr1+
+218	222487	73147	4      seagreen1                                                                                           5:chr5+6:chr16-10:chr1+11:chr1+
+71	217742	23903	10         brown4                                  1:chr4+2:JH570357+3:JH980313-4:scaffold_26-5:chr5+6:chr16-8:chr5-9:chr4-10:chr1+11:chr1+
+105	213239	23915	10  darkturquoise                             2:JH570357+3:JH980313-4:scaffold_26-5:chr5+6:chr16-7:chrUn0290+8:chr5-9:chr4-10:chr1+11:chr1+
+220	210322	93848	3         grey40                                                                                                   5:chr5+10:chr1+11:chr1+
+131	199906	24981	9        maroon2                                         2:JH570357+3:JH980313-4:scaffold_26-5:chr5+6:chr16-8:chr5-9:chr4-10:chr1+11:chr1+
+131	197308	36168	7       skyblue4                                                       2:JH570357+3:JH980313-4:scaffold_26-5:chr5+6:chr16-10:chr1+11:chr1+
+59	184665	17780	11     olivedrab1                      1:chr4+2:JH570357+3:JH980313-4:scaffold_26-5:chr5+6:chr16-7:chrUn0290+8:chr5-9:chr4-10:chr1+11:chr1+
+36	140134	13176	12          khaki                  0:chr21-1:chr4+2:JH565275+3:JH980313-4:scaffold_26-5:chr5+6:chr16-7:chr13-8:chr5-9:chr4-10:chr1+11:chr1+
+172	138149	35745	5         gray66                                                                             4:scaffold_26-5:chr5+6:chr16-10:chr1+11:chr1+
+found 59 paths
+Have 1711 collisions.
+aliG2 nodes 14461 allPaths nodes 14356 ratio: 0.992739
+Have 0 collisions.
+very large alignments (>2000000) had to be cut 2 times.
+MILP objective=0
+removing alignments 
+0 geneRanges=alignments (0%) and 0 / 10642780 = 0% of aligned bases and 0 / 24070398 = 0% of aligment-range-covered bases were deleted because of too much redundancy.
+findGeneRanges reduced the number of aligments from 90278 to 3 (to 0.00332%).
+processing gene range number 1
+galGal4.chr21	-	776964	899481
+monDom5.chr4	+	390478817	392408427
+dasNov3.JH570357	+	382	319905
+echTel2.JH980313	-	40224228	41574030
+loxAfr3.scaffold_26	-	17927586	19330267
+canFam3.chr5	+	58439042	59257221
+bosTau8.chr16	-	49004753	50399536
+oryCun2.	
+rn6.chr5	-	170309698	171169286
+mm10.chr4	-	153087219	153887393
+rheMac3.chr1	+	7130319	8230070
+hg38.chr1	+	3999000	5138743
+Found 12386 ECs on species galGal4
+Found 148272 ECs on species monDom5
+Found 27517 ECs on species dasNov3
+Found 99677 ECs on species echTel2
+Found 124981 ECs on species loxAfr3
+Found 84367 ECs on species canFam3
+Found 146696 ECs on species bosTau8
+Found 89310 ECs on species rn6
+Found 88766 ECs on species mm10
+Found 114091 ECs on species rheMac3
+Found 120053 ECs on species hg38
+OEs in this gene range must have at least 2 ECs
+Found 43922 ortho exons
+building Graph for galGal4
+building Graph for monDom5
+building Graph for dasNov3
+building Graph for echTel2
+building Graph for loxAfr3
+building Graph for canFam3
+building Graph for bosTau8
+building Graph for rn6
+building Graph for mm10
+building Graph for rheMac3
+building Graph for hg38
+computing omega for each ortho exon.
+--- processing ortho exons on forward strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+--- processing ortho exons on reverse strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+compute omegas done
+dual decomposition on gene Range 1
+round	iter	step_size	primal	dual	#inconsistencies
+0	0	0	-30215.39456	-29880.87946	29
+0	1	11.53500329	-30101.46168	-29632.9104	130
+0	2	3.604240624	-30493.84693	-29793.80429	81
+0	3	3.798239364	-30254.12408	-29819.30065	77
+0	4	3.664429062	-30257.70105	-29843.82499	62
+0	5	4.155430607	-30073.42711	-29830.68509	82
+0	6	2.960268586	-30314.55838	-29869.06373	47
+0	7	4.34815714	-29989.69434	-29847.48039	44
+0	8	3.232135408	-30247.54978	-29871.429	42
+0	9	2.815841424	-29915.09978	-29869.78774	71
+0	10	0.638197847	-29983.82699	-29900.55557	14
+0	11	1.0388722	-29915.67992	-29902.98436	32
+0	12	0.3786070388	-29961.09747	-29904.57443	5
+0	13	2.105071524	-29917.28741	-29904.9444	1
+0	14	10.15538777	-29917.32992	-29894.83152	3
+0	15	6.756089811	-29951.47676	-29896.24351	5
+0	16	3.771254995	-29917.49393	-29903.32815	9
+0	17	1.307959598	-29917.07322	-29903.84749	3
+0	18	3.75076354	-29917.49393	-29900.74046	4
+0	19	3.589831177	-29934.90347	-29900.82942	3
+0	20	4.75678949	-29917.07322	-29899.84786	4
+0	21	3.812980298	-29909.66714	-29902.75292	3
+0	22	2.304742614	-29926.58798	-29905.33035	2
+0	23	2.168397605	-29917.80138	-29901.12157	6
+0	24	1.424261689	-29916.83878	-29904.21028	3
+0	25	1.818956057	-29917.80138	-29903.78302	3
+0	26	1.961375515	-29916.83878	-29905.49212	1
+0	27	4.175026298	-29918.00556	-29904.12962	3
+0	28	1.84584264	-29918.22743	-29904.03857	3
+0	29	1.876190702	-29918.00556	-29903.75601	3
+0	30	1.970377882	-29918.22743	-29905.72639	3
+0	31	1.313585162	-29918.24188	-29905.89886	1
+0	32	3.768284202	-29934.4034	-29902.23205	4
+0	33	1.858773679	-29918.34916	-29904.09664	5
+0	34	1.114101291	-29917.6832	-29904.97022	3
+0	35	1.565642754	-29918.34917	-29904.66909	3
+0	36	1.666017612	-29917.6832	-29905.98394	1
+0	37	3.683202147	-29918.45389	-29904.87419	3
+0	38	1.597652276	-29918.47339	-29904.53272	3
+0	39	1.711475452	-29918.45389	-29904.28557	3
+0	40	1.793857098	-29918.47339	-29906.04799	1
+0	41	3.619156241	-29918.48998	-29904.40405	3
+0	42	1.754364332	-29930.01896	-29904.4057	4
+0	43	1.315360248	-29930.87323	-29905.17011	4
+0	44	1.124257535	-29917.07322	-29903.94835	7
+0	45	0.8169704676	-29917.62352	-29906.22431	1
+0	46	3.442831397	-29932.84286	-29905.67807	4
+0	47	0.9972691238	-29918.00556	-29906.28899	1
+0	48	3.378150821	-29917.49393	-29905.48312	3
+0	49	1.394675692	-29918.67573	-29906.33272	1
+0	50	3.334425807	-29906.36895	-29903.03452	2
+0	51	1.667212963	-29906.36895	-29906.36895	0
+dual decomposition reduced initial duality gap of 309.0256131 to 0 (to 0%)
+processing gene range number 2
+galGal4.chr21	-	690494	776916
+monDom5.chr4	+	392441807	393907297
+dasNov3.JH570357	+	317911	995889
+echTel2.JH980313	-	39216160	40218268
+loxAfr3.scaffold_26	-	16868480	17928606
+canFam3.chr5	+	59255222	59944211
+bosTau8.chr16	-	48165700	49005421
+oryCun2.	
+rn6.chr5	-	169649176	170308497
+mm10.chr4	-	152467468	153085519
+rheMac3.chr1	+	8228071	9101813
+hg38.chr1	+	5136744	6002123
+Found 9372 ECs on species galGal4
+Found 114241 ECs on species monDom5
+Found 61012 ECs on species dasNov3
+Found 76824 ECs on species echTel2
+Found 95810 ECs on species loxAfr3
+Found 72968 ECs on species canFam3
+Found 90713 ECs on species bosTau8
+Found 73116 ECs on species rn6
+Found 71239 ECs on species mm10
+Found 90820 ECs on species rheMac3
+Found 92876 ECs on species hg38
+OEs in this gene range must have at least 2 ECs
+Found 37284 ortho exons
+building Graph for galGal4
+building Graph for monDom5
+building Graph for dasNov3
+building Graph for echTel2
+building Graph for loxAfr3
+building Graph for canFam3
+building Graph for bosTau8
+building Graph for rn6
+building Graph for mm10
+building Graph for rheMac3
+building Graph for hg38
+computing omega for each ortho exon.
+--- processing ortho exons on forward strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+--- processing ortho exons on reverse strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+compute omegas done
+dual decomposition on gene Range 2
+round	iter	step_size	primal	dual	#inconsistencies
+0	0	0	-23803.58786	-23191.99465	57
+0	1	10.72970549	-23599.44104	-22766.4063	437
+0	2	1.906257994	-23882.91721	-23104.99129	124
+0	3	3.98749804	-23743.85685	-23186.94871	122
+0	4	3.381084681	-23488.47026	-23219.09927	88
+0	5	3.061033965	-23761.73381	-23253.84019	60
+0	6	3.91050122	-23341.88072	-23228.17472	71
+0	7	1.601493019	-23403.42909	-23291.10519	18
+0	8	2.820862582	-23314.45652	-23269.01768	33
+0	9	1.376934727	-23419.5946	-23289.13564	22
+0	10	1.150949164	-23357.39759	-23300.09103	7
+0	11	2.052213056	-23331.27465	-23294.81044	6
+0	12	3.274347746	-23329.09142	-23294.4074	5
+0	13	4.009823656	-23329.92263	-23291.86406	6
+0	14	3.765410626	-23329.0914	-23295.62945	5
+0	15	3.765414476	-23323.54795	-23293.45134	4
+0	16	5.251296824	-23329.09142	-23293.45135	5
+0	17	4.201034593	-23334.5502	-23294.18261	6
+0	18	3.378984971	-23329.0914	-23293.3764	13
+0	19	1.621548156	-23329.0914	-23301.08359	2
+0	20	6.686466336	-23301.19388	-23290.60641	8
+0	21	1.323434353	-23323.54796	-23295.34881	4
+0	22	1.461269503	-23332.66349	-23296.45198	4
+0	23	1.185477132	-23324.07464	-23297.51323	6
+0	24	0.6134426793	-23323.54795	-23299.22956	6
+0	25	0.327386717	-23314.11912	-23299.8399	4
+0	26	0.3384955899	-23323.54797	-23300.37713	4
+0	27	0.2041882331	-23322.67734	-23300.54388	4
+0	28	0.1625012106	-23323.54796	-23300.86888	4
+0	29	0.08125198435	-23322.67734	-23301.01454	6
+0	30	0.02989035233	-23334.38873	-23301.07244	4
+0	31	0.03036130732	-23322.67735	-23301.12106	4
+0	32	0.01820647182	-23322.67732	-23301.18545	4
+0	33	0.002108447145	-23332.66347	-23301.19207	4
+0	34	0.0004534758627	-23322.34938	-23301.19182	6
+0	35	0.0003440331348	-23323.54795	-23301.19272	6
+0	36	0.000193475474	-23314.11913	-23301.19304	4
+0	37	0.0002123966005	-23323.54795	-23301.19346	6
+0	38	7.089760766e-05	-23322.3494	-23301.19369	6
+0	39	3.249685809e-05	-23314.1191	-23301.19371	4
+0	40	4.321357301e-05	-23322.34939	-23301.19379	6
+0	41	1.539416432e-05	-23322.34941	-23301.19384	2
+0	42	2.05284523e-05	-23322.3494	-23301.19387	4
+0	43	2.736472197e-06	-23322.34939	-23301.19387	2
+0	44	6.739539458e-06	-23322.3494	-23301.19389	4
+dual decomposition reduced initial duality gap of 502.3939721 to 0 (to 0%)
+processing gene range number 3
+galGal4.chr21	-	586500	685156
+monDom5.chr4	+	412759577	412823801
+dasNov3.	
+echTel2.JH980313	-	38736485	39218159
+loxAfr3.scaffold_26	-	16338778	16870478
+canFam3.chr5	+	59942212	60351429
+bosTau8.chr16	-	47715334	48166590
+oryCun2.chr13	-	143130406	143360831
+rn6.chr5	-	169255885	169651175
+mm10.chr4	-	152082924	152469467
+rheMac3.chr1	+	9099814	9611803
+hg38.chr1	+	6000124	6500838
+Found 11126 ECs on species galGal4
+Found 6462 ECs on species monDom5
+Found 44491 ECs on species echTel2
+Found 55711 ECs on species loxAfr3
+Found 46715 ECs on species canFam3
+Found 52442 ECs on species bosTau8
+Found 24422 ECs on species oryCun2
+Found 41449 ECs on species rn6
+Found 41273 ECs on species mm10
+Found 53121 ECs on species rheMac3
+Found 57300 ECs on species hg38
+OEs in this gene range must have at least 2 ECs
+Found 23214 ortho exons
+building Graph for galGal4
+building Graph for monDom5
+building Graph for echTel2
+building Graph for loxAfr3
+building Graph for canFam3
+building Graph for bosTau8
+building Graph for oryCun2
+building Graph for rn6
+building Graph for mm10
+building Graph for rheMac3
+building Graph for hg38
+computing omega for each ortho exon.
+--- processing ortho exons on forward strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+--- processing ortho exons on reverse strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
