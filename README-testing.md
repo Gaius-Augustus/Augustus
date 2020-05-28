@@ -40,7 +40,7 @@ in --run mode, the script runs prediction using minimal FASTAs (expected running
 ```
 YOURPYTHON executeTestCGP.py --chunk=1 --eval 
 ```
-in --eval mode, the script computes accuracy for some prediction obtained using minimal FASTAs. Results are stored in example/cgp12way/out1result. Chunk parameter can be set to be any chunk, provided data are available for it (e.g. MAF, SQlite db).
+in --eval mode, the script computes accuracy for some prediction obtained using minimal FASTAs. Results are stored in example/cgp12way/out1result. Chunk parameter can be set to be any chunk, provided data are available for it (e.g. MAF, SQlite db). So far I made available such data for chunks 1, 2 and 3.
 
 # ADVANCED
 Todo add description of advanced use here
