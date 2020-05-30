@@ -38,10 +38,14 @@ parser.add_argument('-t', '--test', action='store_true',
 args = parser.parse_args()
 
 # if not already existing, create dir to collect results for the current chunk
-def make_dirs(paths, chunks):
+def make_dirs(paths_shared, paths, chunks):
     for chunk in chunks:
         if os.path.exists(paths[chunk]['result_dir']) == False:
             os.makedirs(paths[chunk]['result_dir'])
+    if os.path.exists(paths_shared['accuracy']) == False:
+            os.makedirs(paths_shared['accuracy'])
+    if os.path.exists(paths_shared['joingenes_out_dir']) == False:
+            os.makedirs(paths_shared['joingenes_out_dir'])
 
 # extract minimal FASTAs on the base of gene ranges (BEDs) and prepare sqlitedb
 def make_sqlitedb(paths_shared, paths, chunk):
@@ -473,7 +477,7 @@ if __name__ == '__main__':
     paths_shared = init_paths_shared()
     paths = init_paths(chunks)
 
-    make_dirs(paths, chunks)
+    make_dirs(paths_shared, paths, chunks)
 
     if args.predict:
         run_prediction_parallel(paths_shared, paths, chunks)
