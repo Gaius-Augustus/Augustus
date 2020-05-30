@@ -3,13 +3,19 @@
 # Gene Prediction with AUGUSTUS
 
 [INTRODUCTION](#introduction)  
+[DATASET](#dataset)
 [BASIC](#basicuse)  
 [ADVANCED](#advanceduse)  
+[TODO LIST](#todolist)  
 [LICENSES](#licenses)  
 
 # INTRODUCTION
 
-The present version of Augustus allows to run prediction over a minimal data set to assess how changes in the code may have affected accuracy.
+The present version of Augustus allows to run prediction over a minimal dataset to assess how changes in the code may have affected accuracy. Set TESTING = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available. By default TESTING = true.
+
+# DATASET
+
+After extraction of only those data which are strictly need from original full length genomes, the size of FASTAs is dramatically reduced from 1-3 Gigas to a few Megas. In addition, serialization of alignments retains only blocks which are strictly need from original MAFs. Reasoneably, the overall size of a dataset containing around 300 genes can be expected to be less than 80 Mb in size. The dataset includes minimal FASTAs and serialized alignments. The dataset currently comes uncompressed.
 
 # BASIC
 
@@ -30,20 +36,25 @@ Running the python3 script executeTestCGP.py has the following software dependen
   - Python3
 
 ## First use
-Set TESTING = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available. By default TESTING = true.
-
 Run the following commands from within ./scripts/ :
 ```
-YOURPYTHON executeTestCGP.py --chunk=1 --run
+python3 executeTestCGP.py --chunk 1 2 3 --run
 ```
-in --run mode, the script runs prediction using minimal FASTAs (expected running time 1h c.ca). Results are stored in example/cgp12way/out1run.
+in --run mode, the script runs prediction using minimal FASTAs (estimated running time 90 min c.ca when running in parallel, more details to come). Results are stored in example/cgp12way/outCHUNKrun, where CHUNK is a positive integer corresponding to the chunk under analysis.
 ```
-YOURPYTHON executeTestCGP.py --chunk=1 --eval 
+python3 executeTestCGP.py --chunks 1 2 3 --eval 
 ```
-in --eval mode, the script computes accuracy for some prediction obtained using minimal FASTAs. Results are stored in example/cgp12way/out1result. Chunk parameter can be set to be any chunk, provided data are available for it (e.g. MAF, SQlite db). So far I made available such data for chunks 1, 2 and 3.
+in --eval mode, the script computes accuracy for some prediction obtained using minimal FASTAs during the execution of --run mode. Results are stored in example/cgp12way/ACCURACY. Chunks parameter can be set to be any list of chunks, provided data are available for them (e.g. serialization of alignments, SQlite db). So far I made available such data for chunks 1, 2 and 3.
 
 # ADVANCED
 Todo add description of advanced use here
+
+# TODO LIST
+Here it follows a list of issues and corresponding progress:
+  - parallelization (done)
+  - code clean-up (pending)
+  - make dataset unbiased (pending)
+  - compress dataset (pending)
 
 # LICENSES
 
