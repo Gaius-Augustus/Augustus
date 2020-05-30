@@ -46,6 +46,12 @@ python3 executeTestCGP.py --chunks 1 2 3 --eval
 ```
 in --eval mode, the script computes accuracy for some prediction obtained using minimal FASTAs during the execution of --run mode. Results are stored in example/cgp12way/ACCURACY. Chunks parameter can be set to be any list of chunks, provided data are available for them (e.g. serialization of alignments, SQlite db). So far I made available such data for chunks 1, 2 and 3.
 
+## Optional test
+The following command allows to run a basic test over the correctness of the code. The prediction obtained by the user in --run mode over minimal FASTAs should be identical to the original prediction carried out on full size FASTAs and included in directories named outCHUNKprediction. Obviously, the test is to be run before any change is made to the original code to ensure the same accuracy.
+```
+python3 executeTestCGP.py --chunk 1 2 3 --test
+```
+
 # ADVANCED
 Todo add description of advanced use here
 
