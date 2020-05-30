@@ -129,7 +129,7 @@ def run_prediction_parallel(paths_shared, paths, chunks):
         print('Runnning prediction on chunk', chunk, '...')
 
         cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], 
-        #'--alnfile=' + paths[chunk]['maf_file'],
+        '--alnfile=' + paths[chunk]['maf_file'],
         '--speciesfilenames=' + paths_shared['tbl_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths_shared['sqlitedb_file'],
         '--stopCodonExcludedFromCDS=true', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'prediction']
 
@@ -170,7 +170,8 @@ def port_test(paths_shared, paths, chunks):
 
 def run_test(paths, chunk):
     print('Runnning prediction on chunk', chunk, 'using the minimal data set...')
-    cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], '--alnfile=' + paths[chunk]['maf_file'],
+    cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], 
+    '--alnfile=' + paths[chunk]['maf_file'],
     '--speciesfilenames=' + paths[chunk]['tbl_test_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths[chunk]['sqlitedb_test_file'],
     '--stopCodonExcludedFromCDS=true', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run']
     execute(cmd, paths[chunk]['result_dir'] + 'out.runTest')
@@ -183,7 +184,8 @@ def run_test_parallel(paths_shared, paths, chunks):
     for chunk in chunks:
         print('Runnning prediction on chunk', chunk, 'using the minimal data set...')
 
-        cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], '--alnfile=' + paths[chunk]['maf_file'],
+        cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], 
+        '--alnfile=' + paths[chunk]['maf_file'],
         '--speciesfilenames=' + paths[chunk]['tbl_test_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths[chunk]['sqlitedb_test_file'],
         '--stopCodonExcludedFromCDS=true', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run']
         output = paths[chunk]['result_dir'] + 'out.runTest'
