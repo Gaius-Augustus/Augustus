@@ -15,7 +15,7 @@ The present version of Augustus allows to run prediction over a minimal dataset 
 
 # DATASET
 
-After extraction of only those data which are strictly need from original full length genomes, the size of FASTAs is dramatically reduced from 1-3 Gigas to a few Megas. Likewise, serialization of alignments retains only blocks which are strictly need from original MAFs. Reasonably, the overall size of a dataset containing around 300 genes from hg38.chr1 can be expected to be less than 80 Mb in size. The dataset includes minimal FASTAs and serialized alignments. The dataset currently comes uncompressed. In addition to hg38, eleven more vertebrates belong to the clade. 
+After extraction of only those data which are strictly need from original full length genomes, the size of FASTAs is dramatically reduced from 1-3 Gigas to a few Megas. Likewise, serialization of alignments retains only blocks which are strictly need from original MAFs. Reasonably, the overall size of a dataset containing around 300 genes from hg38.chr1 can be expected to fall in a range between 80 and 100 Mb. The dataset includes minimal FASTAs and serialized alignments. The dataset currently comes uncompressed. In addition to hg38, eleven more vertebrates belong to the clade. 
 
 # BASIC
 
