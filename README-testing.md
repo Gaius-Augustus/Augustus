@@ -81,5 +81,6 @@ All source code, i.e.
   - the scripts (scripts/*.pl)
   - the auxiliary programs (auxprogs/)
   - the tree-parser (src/scanner,src/parser)
+  - include latest config files which return the best accuracy so far obtained (pending)
   
 is under the [Artistic License](src/LICENSE.TXT).
