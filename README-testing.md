@@ -3,10 +3,10 @@
 # Gene Prediction with AUGUSTUS
 
 [INTRODUCTION](#introduction)  
-[DATASET](#dataset)
-[BASIC](#basicuse)  
-[ADVANCED](#advanceduse)  
-[TODO LIST](#todolist)  
+[DATASET](#dataset)  
+[BASIC](#basic)  
+[ADVANCED](#advanced)  
+[HISTORY](#history)  
 [LICENSES](#licenses)  
 
 # INTRODUCTION
@@ -15,11 +15,18 @@ The present version of Augustus allows to run prediction over a minimal dataset 
 
 # DATASET
 
-After extraction of only those data which are strictly need from original full length genomes, the size of FASTAs is dramatically reduced from 1-3 Gigas to a few Megas. Likewise, serialization of alignments retains only blocks which are strictly need from original MAFs. Reasonably, the overall size of a dataset containing around 300 genes from hg38.chr1 can be expected to fall in a range between 80 and 100 Mb. The dataset includes minimal FASTAs and serialized alignments. The dataset currently comes uncompressed. In addition to hg38, eleven more vertebrates belong to the clade. 
+After extraction of only those data which are strictly need from original full length genomes, the size of FASTAs is dramatically reduced from 1-3 Gigas to a few Megas. Likewise, serialization of alignments retains only blocks which are strictly need from original MAFs. The present distribution comes with an unbiased dataset containing 352 genes from 9 chunks randomly picked from the 125 chunks covering hg38.chr1. The data set is 346 Mb in size and includes minimal FASTAs and serialized alignments. The dataset currently comes uncompressed. In addition to hg38, eleven more vertebrates belong to the clade. Each chunk is 2.5 Mb in size and overlaps its left and right neighbours by 0.5 Mb. 
+
+The random sampling of chunks has been obtained running the following command:
+```
+/usr/bin/python3.6 ./executeTestCGP.py --rand ../examples/cgp12way/chunks.stats
+```
+which randomly picks one chunk at the time and adds it to the dataset. No overlapping chunks are allowed. The algorithm ends as soon as the dataset contains at least 300 genes.
 
 # BASIC
 
 ## Dependencies
+
 Please make sure boost-serialization-dev is installed. If it is not the case, try and run:
 
 ```
@@ -36,31 +43,34 @@ Running the python3 script executeTestCGP.py has the following software dependen
   - Python3
 
 ## First use
+
 Run the following commands from within scripts Augustus subdirectory:
 ```
-python3 executeTestCGP.py --chunk 1 2 3 --run
+python3 executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --run
 ```
 in --run mode, the script runs prediction using minimal FASTAs (estimated running time 90 min c.ca when running in parallel, more details to come). Results are stored in example/cgp12way/outCHUNKrun, where CHUNK is a positive integer corresponding to the chunk under analysis.
 ```
-python3 executeTestCGP.py --chunks 1 2 3 --eval 
+python3 executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval 
 ```
-in --eval mode, the script computes accuracy for some prediction obtained using minimal FASTAs during the execution of --run mode. Results are stored in example/cgp12way/ACCURACY. Chunks parameter can be set to be any list of chunks, provided data are available for them (e.g. serialization of alignments, SQlite db). So far I made available such data for chunks 1, 2 and 3.
+in --eval mode, the script computes accuracy for some prediction obtained using minimal FASTAs during the execution of --run mode. Results are stored in example/cgp12way/ACCURACY. Chunks parameter can be set to be any list of chunks, provided data are available for them (e.g. serialization of alignments, SQlite db). So far I made available such data for chunks 27, 30, 47, 54, 57, 80, 86, 101, 118.
 
 ## Optional test
 The following command allows to run a basic test over the correctness of the code. The prediction obtained by the user in --run mode over minimal FASTAs should be identical to the original prediction carried out on full size FASTAs and included in directories named outCHUNKprediction. Obviously, the test is to be run before any change is made to the original code to ensure the same accuracy.
 ```
-python3 executeTestCGP.py --chunk 1 2 3 --test
+python3 executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --test
 ```
 
 # ADVANCED
+
 Todo add description of advanced use here
 
-# TODO LIST
-Here it follows a list of issues and corresponding progress:
+# HISTORY
+
+Here it follows a list of issues and corresponding progress status:
   - parallelization (done)
   - code clean-up (pending)
-  - make dataset unbiased (pending)
-  - compress dataset (pending)
+  - make dataset unbiased (done)
+  - allow for compressed dataset (pending)
 
 # LICENSES
 
