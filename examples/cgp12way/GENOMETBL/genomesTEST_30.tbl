@@ -1,0 +1,12 @@
+hg38	../examples/cgp12way/minimalFasta30/hg38.MINIMAL.fasta
+rheMac3	../examples/cgp12way/minimalFasta30/rheMac3.MINIMAL.fasta
+mm10	../examples/cgp12way/minimalFasta30/mm10.MINIMAL.fasta
+rn6	../examples/cgp12way/minimalFasta30/rn6.MINIMAL.fasta
+oryCun2	../examples/cgp12way/minimalFasta30/oryCun2.MINIMAL.fasta
+bosTau8	../examples/cgp12way/minimalFasta30/bosTau8.MINIMAL.fasta
+canFam3	../examples/cgp12way/minimalFasta30/canFam3.MINIMAL.fasta
+loxAfr3	../examples/cgp12way/minimalFasta30/loxAfr3.MINIMAL.fasta
+echTel2	../examples/cgp12way/minimalFasta30/echTel2.MINIMAL.fasta
+dasNov3	../examples/cgp12way/minimalFasta30/dasNov3.MINIMAL.fasta
+monDom5	../examples/cgp12way/minimalFasta30/monDom5.MINIMAL.fasta
+galGal4	../examples/cgp12way/minimalFasta30/galGal4.MINIMAL.fasta
