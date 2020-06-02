@@ -7,15 +7,19 @@ import shutil
 import argparse
 import fileinput
 import filecmp
+import sys
+import random
+from datetime import datetime
+import numpy as np
 
 # author Giovanna Migliorelli
 # version beta 25.05.2020
 # the code comes as a modification of original Augustus/longrunning_examples/execute_test.py script by Daniel Honsel
 
 # todo 0 extend basic test about code correctness
-# todo 1 randomly pick chunks to build the test set avoiding any bias
-# todo 2 merge different chunks (join genes)
-# todo 3 parallelize
+# done 1 randomly pick chunks to build the test set avoiding any bias
+# done 2 merge different chunks (join genes)
+# done 3 parallelize
 # todo 4 replace call to shell script with pybedtools
 
 parser = argparse.ArgumentParser(description='Execute Augustus long running test cases.')
@@ -30,11 +34,14 @@ parser.add_argument('-r', '--run', action='store_true',
 parser.add_argument('-v', '--eval', action='store_true',
                     help='to evaluate accuracy (respect to the last prediction obtained by launching the script with --run option).')
 parser.add_argument('-c', '--chunks',
-                    required=True,
+                    #required=True,
                     nargs='+',
                     help='a list of one or more positive integers indicating the chunk/s to be processed (refer to documentation for a list of chunks over hg38.chr1).') 
 parser.add_argument('-t', '--test', action='store_true',
                     help='to run a basic test to assess the correctness in the creation of the minimal data set.')                   
+parser.add_argument('-a', '--rand',
+                    help='to pick a random subset of non overlapping chunks containing at least 300 genes.')                   
+
 args = parser.parse_args()
 
 # if not already existing, create dir to collect results for the current chunk
@@ -75,8 +82,8 @@ def port_sqlitedb(paths_shared, paths, chunk):
         execute(cmd, paths[chunk]['result_dir'] + 'out.createMinimalFASTA', mode ='a+')
 
 # create new genomes.tbl for this chunk
-def make_genometbl(paths, chunk):
-    cleanup_tbl(paths, chunk)
+def make_genometbl_chunk(paths, chunk):
+    cleanup_tbl_chunk(paths, chunk)
     print('Creating new genome tbl for current chunk...', paths[chunk]['tbl_test_file'])
 
     with open(paths[chunk]['tbl_test_file'], 'w') as f:
@@ -104,7 +111,7 @@ def cleanup_db(paths, chunk, removeFASTA = True):
     if os.path.exists(paths[chunk]['sqlitedb_test_file']):
         os.remove(paths[chunk]['sqlitedb_test_file'])
 
-def cleanup_tbl(paths, chunk):
+def cleanup_tbl_chunk(paths, chunk):
     print('Cleaning up', paths[chunk]['tbl_test_file'])
     if os.path.exists(paths[chunk]['tbl_test_file']):
         os.remove(paths[chunk]['tbl_test_file'])
@@ -123,7 +130,6 @@ def run_prediction(paths, chunk):
     '--stopCodonExcludedFromCDS=true', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'prediction']
         
     execute(cmd, paths[chunk]['result_dir'] + 'out.runPrediction')
-    
 
 def run_prediction_parallel(paths_shared, paths, chunks):
 
@@ -162,15 +168,14 @@ def prepare_test(paths_shared, paths, chunks):
         execute(cmd, paths[chunk]['result_dir'] + 'out.prepareTest')
 
         make_sqlitedb(paths_shared, paths, chunk)
-        make_genometbl(paths, chunk)
+        make_genometbl_chunk(paths, chunk)
 
 def port_test(paths_shared, paths, chunks):
     for chunk in chunks:
         print('Porting test for chunk', chunk, '...')
         port_sqlitedb(paths_shared, paths, chunk)
-        make_genometbl(paths, chunk)
+        make_genometbl_chunk(paths, chunk)
     make_genometbl(paths_shared)
-    
 
 def run_test(paths, chunk):
     print('Runnning prediction on chunk', chunk, 'using the minimal data set...')
@@ -257,14 +262,14 @@ def test_test(paths_shared, paths, chunks):
         if correct:
             print('\ttest on code succeeded')
 
-# currently not used (returns accuracy for single chunks)
+# currently not used (returns accuracy for single chunks) - not parallelized
 def run_evaluate(paths, chunk):
     print('Runnning evaluation on chunk', chunk, '...')
     cmd = [paths_shared['eval_bin'], paths_shared['anno_file'], paths_shared['working_dir'] + 'out' + str(chunk) + 'run/hg38.cgp.gff']
     execute(cmd, paths[chunk]['result_dir'] + 'out.eval')
     find_values(paths[chunk]['result_dir'] + 'out.eval')
 
-# currently not used (returns accuracy for single chunks) - parallel version
+# currently not used (returns accuracy for single chunks) - parallelized
 def run_evaluate_parallel(paths, chunks):
     proc_list = []
 
@@ -290,7 +295,7 @@ def run_evaluate_parallel(paths, chunks):
         p.stderr.close()
 
 
-# currently in use (returns accuracy after merging the contributes from all chunks)
+# currently in use (returns accuracy after merging the contributes from all chunks) - parallelized
 def run_evaluate_global(paths_shared, paths, chunks):
     print('Runnning evaluation on chunks', chunks, '...')
     
@@ -433,10 +438,10 @@ def init_paths_shared():
     'eval_dir' : '/home/giovanna/Desktop/Alignment/eval-2.2.8/',    # path to eval
     'augustus_dir' : '../',                                         # path to augustus binaries
     'working_dir' : '../examples/cgp12way/',                        # path to working directory (it contains tree, genome tbl, SQLite db and there results will be written)
-    'maf_dir' : '../examples/cgp12way/MAF/',                        # path to MAFs for chunks of interest
-    'anno_file' : '../examples/cgp12way/ENSEMBL/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.gtf',  # path to annotation for hg38.chr1
+    'anno_file' : '../examples/cgp12way/ENSEMBL/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf',  # path to annotation for hg38.chr1
 
-    # the following two directories are required only if a new test set is to be built
+    # the following three directories are required only if a new test set is to be built
+    'maf_dir' : '../examples/cgp12way/MAF/',                                    # path to MAFs 
     'fasta_dir' : '/home/giovanna/Desktop/Alignment/DATA_UCSCSOFT/',            # path to original FASTA files for genomes of interest
     'bedtools_dir' : '/home/giovanna/Desktop/Alignment/bedtoolsBinaries/'       # path to bedtools (need to extract minimal FASTA from original FASTA, on the base of BED format)
     }
@@ -449,7 +454,7 @@ def init_paths_shared():
     paths_shared.update({'tbl_file' : paths_shared['working_dir'] + 'GENOMETBL/genomes.tbl'})       # path to genomes.tbl for length genomes (only if a new data set is to be built)
     paths_shared.update({'tree_file' : paths_shared['working_dir'] + 'TREE/ucsc12way.nwk'})         # path to tree
     paths_shared.update({'augustus_bin' : paths_shared['augustus_dir'] + 'bin/augustus'})           # path to augustus exec
-    paths_shared.update({'joingenes_bin' : paths_shared['augustus_dir'] + 'auxprogs/joingenes/joingenes'})  # path to joingene exec
+    paths_shared.update({'joingenes_bin' : paths_shared['augustus_dir'] + 'auxprogs/joingenes/joingenes'})  # path to joingenes exec
     paths_shared.update({'bedtool_bin' : paths_shared['bedtools_dir'] + 'bedtools'})                # path to bedtools (only if a new data set is to be built)
     paths_shared.update({'eval_bin' : paths_shared['eval_dir'] + 'evaluate_gtf.pl'})                # path to eval
 
@@ -460,7 +465,7 @@ def init_paths(chunks):
     for chunk in chunks:
         dictionary = {}
 
-        # the following paths automatically reflect changes in the paths above
+        # the following paths automatically reflect changes in paths_shared
         dictionary.update({'sqlitedb_dir' : paths_shared['working_dir'] + 'minimalFasta' + str(chunk) + '/'})               # will contain minimal fasta after their extraction
         dictionary.update({'sqlitedb_test_file' : paths_shared['working_dir'] + 'SQLITE/12wayTEST_' + str(chunk) + '.db'})
         dictionary.update({'tbl_test_file' : paths_shared['working_dir'] + 'GENOMETBL/genomesTEST_' + str(chunk) + '.tbl'})
@@ -471,8 +476,43 @@ def init_paths(chunks):
 
     return paths
 
+# given a list of chunks (no header admitted, tabseparated) and, for each of them, the number of genes it contains, a random subset is picked according to the following:
+# no chunks in the data set overlap (rule out contigous ones)
+# the sum of genes in greater than 300
+def randomize_dataset(filename):
+    random.seed(datetime.now())
+
+    data = np.genfromtxt(filename)
+
+    index = np.random.choice(range(0,len(data)), len(data), replace=False)
+
+    dataset = []
+    numgenes = 0
+    for i in index:
+        if data[i][1] > 0:
+            res = [x for x in dataset if abs(data[i][0] - x)<2]
+            if len(res) == 0:
+                dataset.append(int(data[i][0]))
+                numgenes = numgenes + data[i][1]
+                if numgenes>=300:
+                    break
+
+    print('Sampled dataset contains', int(numgenes), 'genes from chunks:', [x for x in dataset])
+
 if __name__ == '__main__':
-    chunks = args.chunks
+    if args.rand:
+        randomize_dataset(args.rand)
+        sys.exit()
+
+    if args.chunks is None:
+        print('No chunks specified, please make use of --chunks to pass a non empty list of positive integers...')
+        sys.exit()
+
+    chunks = [int(x) for x in list(dict.fromkeys(args.chunks))]
+    chunks = [x for x in chunks if x>0 and x<126]          # range valid for chr1 chunk size 2.5 Mb, chunk overlap 0.5 Mb
+
+    if len(chunks) == 0:
+        sys.exit()
 
     paths_shared = init_paths_shared()
     paths = init_paths(chunks)
