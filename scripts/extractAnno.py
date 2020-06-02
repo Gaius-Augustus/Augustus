@@ -39,16 +39,17 @@ def extractAnno(infile, outfile, mode, left, right, overlap, subset):
                 if split[0] == '1':
                     trans_id = extractTransId(split[8], 'transcript_id')
                     if trans_id != '':
-                        # just in case gff contains some unordered pair
-                        start = min(int(split[3]), int(split[4]))
-                        end = max(int(split[3]), int(split[4]))
+                        if trans_id not in subset:
+                            # just in case gff contains some unordered pair
+                            start = min(int(split[3]), int(split[4]))
+                            end = max(int(split[3]), int(split[4]))
 
-                        if trans_id in transcripts:
-                            transcripts[trans_id][0] = min(transcripts[trans_id][0], start)
-                            transcripts[trans_id][1] = max(transcripts[trans_id][1], end)
-                        else:
-                            transcripts[trans_id] = [start, end]
-                    
+                            if trans_id in transcripts:
+                                transcripts[trans_id][0] = min(transcripts[trans_id][0], start)
+                                transcripts[trans_id][1] = max(transcripts[trans_id][1], end)
+                            else:
+                                transcripts[trans_id] = [start, end]
+                                                
               
     # read once again and filter (not smart but helps saving mem)
     with open(infile, 'r') as input, open(outfile, mode) as output:
@@ -64,6 +65,7 @@ def extractAnno(infile, outfile, mode, left, right, overlap, subset):
                         if overlap == 'full':
                             if transcripts[trans_id][0]>=left and transcripts[trans_id][0]<=right:
                                 output.write(line)
+                                subset[trans_id] = True
                         elif overlap == 'partial':
                             if not(transcripts[trans_id][0]>=right or transcripts[trans_id][0]<=left):
                                 output.write(line)
