@@ -778,15 +778,18 @@ bool shiftFeature(string line, string seqID, int shift, string& newline){
 
 /*
 *   added on 14.05.2020 
-*   reads a GFF containing the prediction obtained over minimal FATSAs and shift coordinates back to full length genomes  
+*   reads a GFF containing the prediction obtained over minimal FASTAs and shift coordinates back to full length genomes  
 */
 bool shiftGFF(string filenameIn, string filenameOut){
     ifstream ifs(filenameIn);
-    if(!ifs.is_open())
+    if(!ifs.is_open()){
+        cout << "shiftGFF failed to open " << filenameIn << endl;
         return false;
+    }
     
     ofstream ofs(filenameOut);
     if(!ofs.is_open()){
+        cout << "shiftGFF failed to open " << filenameOut << endl;
         ifs.close();
         return false;
     }
@@ -1907,6 +1910,7 @@ void CompGenePred::postprocTest(){
     
     try {
         outdir = Properties::getProperty("/CompPred/outdir");
+        expandDir(outdir);
     } catch (...) {
         outdir = "";
     }
@@ -1916,6 +1920,8 @@ void CompGenePred::postprocTest(){
     for(map<string,string>::iterator it=speciesNames.begin();it!=speciesNames.end();++it){
         filenameIn = outdir + it->first + ".cgp.SHIFTED.gff";
         filenameOut = outdir + it->first + ".cgp.gff";
+
+        cout << "Shifting GFFs " << filenameIn << " " << filenameOut << endl;
         shiftGFF(filenameIn, filenameOut);
     }
 }
