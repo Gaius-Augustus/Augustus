@@ -6,7 +6,9 @@
 [DATASET](#dataset)  
 [BASIC](#basic)  
 [ADVANCED](#advanced)  
-[HISTORY](#history)  
+[TESTING](#testing)  
+[HISTORY](#history)
+[CAVEAT](#caveat) 
 [LICENSES](#licenses)  
 
 # INTRODUCTION
@@ -62,7 +64,18 @@ python3 executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --test
 
 # ADVANCED
 
-Todo add description of advanced use here
+## Reduced annotation
+The following command allows to extract a subset of transcripts from Ensembl given annotation which are entirely contained within any chunk among those making up the data set. We expect accuracy estimation to reliably mirror global accuracy.
+
+```
+python3 extractAnno.py --chunks 27 30 47 54 57 80 86 101 118
+```
+
+## Todo : add description of advanced use here
+
+# TESTING
+
+todo
 
 # HISTORY
 
@@ -73,6 +86,14 @@ Here it follows a list of issues and corresponding progress status:
   - make dataset unbiased (done)
   - allow for compressed dataset (pending)
   - verify overhead due to Python wrapper (pending)
+
+# CAVEAT
+
+Anyone who plans to modify executeTestCGP.py or use part of it, is recommended to keep Augustus command line intact. In particular, do not discard the following option:
+```
+--stopCodonExcludedFromCDS=true
+```
+It also suggested to repeat [TESTING](TESTING) after remarkable changes are made.
 
 # LICENSES
 
