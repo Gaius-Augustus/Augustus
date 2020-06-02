@@ -41,6 +41,8 @@ In order to have accuracy returned, [EVAL](https://mblab.wustl.edu/software/down
 eval_dir = /my_path_to_EVAL/
 ```
 
+Also, joingenes is required component: please build it running make from within auxprogs/joingenes directory.
+
 Running the python3 script executeTestCGP.py has the following software dependency:
   - Python3
 
