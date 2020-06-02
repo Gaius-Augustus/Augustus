@@ -93,7 +93,7 @@ Anyone who plans to modify executeTestCGP.py or use part of it, is recommended t
 ```
 --stopCodonExcludedFromCDS=true
 ```
-It also suggested to repeat [TESTING](TESTING) after remarkable changes are made.
+It also suggested to repeat [TESTING](#TESTING) after remarkable changes are made.
 
 # LICENSES
 
