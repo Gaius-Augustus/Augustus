@@ -39,7 +39,7 @@ resultdir = '../examples_test_results/'
 refdir = '../examples_results/'
 htmldir = 'output_html/'
 augustusbin = '../bin/augustus'
-
+default_wd = os.getcwd()
 
 def create_initial_resultdir():
     if os.path.exists(htmldir):
@@ -795,8 +795,11 @@ def default_test_suite():
     suite.addTest(TestAugustus('test_format_and_error_out'))
     suite.addTest(TestAugustus('test_alternatives_from_sampling'))
     suite.addTest(TestAugustus('test_cgp'))
+    os.chdir(default_wd)
     suite.addTest(TestAugustus('test_cgp_sqlite'))
+    os.chdir(default_wd)
     suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
+    os.chdir(default_wd)
     return suite
 
 
@@ -808,15 +811,20 @@ def small_test_suite():
     suite.addTest(TestAugustus('test_format_and_error_out'))
     #suite.addTest(TestAugustus('test_alternatives_from_sampling'))
     suite.addTest(TestAugustus('test_cgp'))
+    os.chdir(default_wd)
     suite.addTest(TestAugustus('test_cgp_sqlite'))
+    os.chdir(default_wd)
     suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
+    os.chdir(default_wd)
     return suite
 
 
 def mysql_test_suite():
     suite = unittest.TestSuite()
     suite.addTest(TestAugustus('test_cgp_mysql'))
+    os.chdir(default_wd)
     suite.addTest(TestAugustus('test_cgp_mysql_hints'))
+    os.chdir(default_wd)
     return suite
 
 
@@ -835,6 +843,8 @@ if __name__ == '__main__':
         os.chdir('examples_test/')
 
     check_working_dir()
+    default_wd = os.getcwd()
+
     create_initial_resultdir()
     TestAugustus.opt_compare = args.compare
     TestAugustus.opt_html = args.html
