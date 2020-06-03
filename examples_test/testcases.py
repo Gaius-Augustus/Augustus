@@ -594,7 +594,8 @@ class TestAugustus(unittest.TestCase):
         if TestAugustus.opt_compare:
             diff = comp.compare_folder(reffolder,
                                        resfolder,
-                                       html=TestAugustus.opt_html)
+                                       html=TestAugustus.opt_html,
+                                       outputfolder=default_wd + '/output_html/')
             self.assertEqual(diff, '', diff)
 
         # set working directory back to base test directory
@@ -655,7 +656,8 @@ class TestAugustus(unittest.TestCase):
         if TestAugustus.opt_compare:
             diff = comp.compare_folder(reffolder,
                                        resfolder,
-                                       html=TestAugustus.opt_html)
+                                       html=TestAugustus.opt_html,
+                                       outputfolder=default_wd + '/output_html/')
             self.assertEqual(diff, '', diff)
 
     def cgp_with_db_preparation(self, hints, mysql):

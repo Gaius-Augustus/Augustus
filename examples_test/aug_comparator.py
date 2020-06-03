@@ -5,7 +5,7 @@ import os
 import difflib
 
 
-def compare_folder(reffolder, currentfolder, html=False):
+def compare_folder(reffolder, currentfolder, html=False, outputfolder='output_html/'):
     if not os.path.isdir(reffolder):
         return 'Reference folder not found: ' + reffolder
     if not os.path.isdir(currentfolder):
@@ -19,13 +19,13 @@ def compare_folder(reffolder, currentfolder, html=False):
                 subdir += '/'
             currentdir = subdir.replace(reffolder, currentfolder)
 
-            diff = compare_files(subdir + file, currentdir + file, html=html)
+            diff = compare_files(subdir + file, currentdir + file, html=html, outputfolder=outputfolder)
             res += diff
 
     return res
 
 
-def compare_files(reffile, currentfile, html=False):
+def compare_files(reffile, currentfile, html=False, outputfolder='output_html/'):
     if not os.path.isfile(reffile):
         return 'Reference file not found: ' + reffile
     if not os.path.isfile(currentfile):
@@ -41,13 +41,12 @@ def compare_files(reffile, currentfile, html=False):
                              n=0))
 
     if html and diff:
-        generate_html(reflines, currentlines, reffile, currentfile)
+        generate_html(reflines, currentlines, reffile, currentfile, outputfolder)
 
     return diff
 
 
-def generate_html(reflines, currentlines, reffile, currentfile):
-    outputfolder = 'output_html/'
+def generate_html(reflines, currentlines, reffile, currentfile, outputfolder):
     if not os.path.exists(outputfolder):
         os.mkdir(outputfolder)
 
