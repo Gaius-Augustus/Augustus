@@ -4,10 +4,10 @@ import json
 
 config = {
     'dbname':   'aug_vertebrates',
-    'dbhost':   'localhost',
+    'dbhost':   '127.0.0.1',
     'dbuser':   'augustus',
     'dbpasswd': 'aug_passwd',
-    'cpuno':    '4' 
+    'cpuno':    '2' 
     }
 
 
