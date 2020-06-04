@@ -1,14 +1,11 @@
 Installation instructions:
 
 0. Install dependencies:
-   * bcftools
    * htslib
-   * samtools
-  You find those tools at https://github.com/samtools . bam2wig has been tested with samtools 0.2.0-rc7
+  You find this library at https://github.com/samtools/htslib .
 
-  We recommend that you install all three tools into one directory that we will further refer to as the
-  TOOLDIR. For example, you can install all tools into your home directory, which will result into
-  three folders in your home directory: bcftools, htslib and samtools.
+  We recommend that you install htslib in one directory that we will further refer to as the
+  TOOLDIR.
 
   Installation example:
 
@@ -19,23 +16,6 @@ Installation instructions:
   ./configure
   make
   sudo make install
-  cd ..
-  git clone https://github.com/samtools/bcftools.git
-  cd bcftools
-  autoheader
-  autoconf
-  ./configure
-  make
-  sudo make install
-  cd ..
-  git clone https://github.com/samtools/samtools.git
-  cd samtools
-  autoheader
-  autoconf -Wno-syntax
-  ./configure
-  make
-  sudo make install
-  cd ..
 
 1. Export TOOLDIR path
 
