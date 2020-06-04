@@ -1,0 +1,81 @@
+# training and prediction of single-genome augustus
+# Tests are longrunning because of CRF training and evaluations on larger chunks of genome.
+# execute this script (1h, single-threaded) with
+# bash -v make.doc
+TSET=../data/training/old/train.1784.gb
+VSET=../data/training/old/validate.gb
+# VSET=../data/training/new/val.gb
+
+### HMM training
+# create parameter set from template
+HMMspecies=human_longrunningtest_hmm
+if [ -d $AUGUSTUS_CONFIG_PATH/species/$HMMspecies ]; then
+   rm -r $AUGUSTUS_CONFIG_PATH/species/$HMMspecies
+fi
+new_species.pl --species=$HMMspecies
+
+# train parameters
+etraining --species=$HMMspecies $TSET --UTR=on > etrain_hmm.out 2> etrain_hmm.err
+
+# predict and evaluate
+augustus --species=$HMMspecies $VSET --UTR=on > augustus_hmm.gff
+
+### CRF-train coding model
+CRFspecies=human_longrunningtest_crf
+if [ -d $AUGUSTUS_CONFIG_PATH/species/$CRFspecies ]; then
+   rm -r $AUGUSTUS_CONFIG_PATH/species/$CRFspecies
+fi
+   
+new_species.pl --species=$CRFspecies
+
+# HMM-training to obtain UTR parameters
+etraining --species=$CRFspecies $TSET --UTR=on
+
+# CRF training of CDS parameters
+etraining --species=$CRFspecies $TSET --CRF=on --CRF_N=2 --UTR=off --CRFtrainSS=1 --CRFtrainIntron=1 --tieIgenicIntron=1 > etrain_crf.out 2> etrain_crf.err
+# 46m
+
+# predict and evaluate
+augustus --species=$CRFspecies $VSET --UTR=on > augustus_crf.gff
+
+
+### CRF-train UTR and coding model
+CRFspecies2=human_longrunningtest_crf2
+if [ -d $AUGUSTUS_CONFIG_PATH/species/$CRFspecies2 ]; then
+   rm -r $AUGUSTUS_CONFIG_PATH/species/$CRFspecies2
+fi
+
+new_species.pl --species=$CRFspecies2
+
+# CRF training
+etraining --species=$CRFspecies2 $TSET --CRF=on --CRF_N=2 --UTR=on\
+   --CRFtrainSS=1 --CRFtrainIntron=1 --tieIgenicIntron=1 \
+   --CRFtrainUTR=1 --CRFtrainTIS=1 > etrain_crf2.out 2> etrain_crf2.err
+# 15.4 h
+
+# predict and evaluate
+augustus --species=$CRFspecies2 $VSET --UTR=on > augustus_crf2.gff
+
+### cleanup
+mv etrain_hmm.err etrain_hmm.out etrain_crf.err etrain_crf.out trash/
+
+
+
+### evaluate on long genomic regions
+DIR=`mktemp -d -p .`
+CHUNKLIST="27 30 47 54 57 80 86 101 118"
+
+parallel -j 9 --will-cite ./aug_run_chunk.sh {} ../data/chr1.fa.gz $CRFspecies $DIR/augustus_{}.gff "--UTR=1 --softmasking=1" ::: $CHUNKLIST
+
+for C in $CHUNKLIST; do
+  cat $DIR/augustus_$C.gff
+done | join_aug_pred.pl > augustus-long.gff
+
+# rm -r $DIR
+
+/home/mario/tools/eval-2.2.8/evaluate_gtf.pl ../data/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf augustus-long.gff > long.eval
+
+# on larger training set
+# augustus --species=human_test_crf ../data/training/old/validate.gb --UTR=on > augustus_crf_oldval.gff
+# etraining --species=human_test_hmm ../data/training/train.gb --UTR=on > etrain_hmm.err
+# augustus --species=human_test_hmm ../data/training/val.gb --UTR=on > augustus_hmm.gff
