@@ -30,10 +30,11 @@ chr21	AUGUSTUS	start_codon	28233	28235	.	-	0	transcript_id "g1.t1"; gene_id "g1"
 #      E:   7
 # 5'UTR exons and introns: 0/0
 # 3'UTR exons and introns: 0/0
-# hint groups fully obeyed: 43
+# hint groups fully obeyed: 798
 #      E:  23
 #     RM:  20
-# incompatible hint groups: 761
-#      W: 761
+#      W: 755
+# incompatible hint groups: 6
+#      W:   6
 # end gene g1
 ###
