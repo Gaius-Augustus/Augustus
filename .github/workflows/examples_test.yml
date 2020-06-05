@@ -38,6 +38,10 @@ jobs:
     # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
     - uses: actions/checkout@v2
 
+    # Install python-mysql-connector
+    - name: Install python-mysql-connector
+      run: pip3 install mysql-connector-python
+
     # Install required dependencies
     - name: Install dependencies
       run: sudo ./examples_test/installDependencies
