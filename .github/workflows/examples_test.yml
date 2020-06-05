@@ -16,12 +16,31 @@ jobs:
   # This workflow contains a single job called "build_and_test"
   build_and_test:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+
+    services:
+      # Label used to access the service container
+      mysql:
+        # Docker Hub image
+        image: mysql:5.7
+        # Provide the config for MySQL
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: aug_vertebrates
+          MYSQL_USER: augustus
+          MYSQL_PASSWORD: aug_passwd
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
     - uses: actions/checkout@v2
+
+    # Install python-mysql-connector
+    - name: Install python-mysql-connector
+      run: pip3 install mysql-connector-python
 
     # Install required dependencies
     - name: Install dependencies
@@ -37,5 +56,13 @@ jobs:
 
     # Test AUGUSTUS
     - name: Test AUGUSTUS (examples folder)
-      run: ./testcases.py --compare
-      working-directory: ./examples_test
+      run: ./testcases.py --compare --mysql --html
+      working-directory: examples_test/
+
+    # Upload html diffs of failed test cases 
+    - name: Upload HTML diffs
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: html-diffs
+        path: examples_test/output_html/
