@@ -378,7 +378,7 @@ void CRF::onlineLargeMarginTraining(Parameters* parameters, vector<AnnoSequence*
 	    N = 1;
 	}
     } catch  (...) {
-	N = 3;
+	N = 2;
     }
 
     /*
