@@ -18,6 +18,21 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-18.04
 
+    services:
+      # Label used to access the service container
+      mysql:
+        # Docker Hub image
+        image: mysql:5.7
+        # Provide the config for MySQL
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: aug_vertebrates
+          MYSQL_USER: augustus
+          MYSQL_PASSWORD: aug_passwd
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
