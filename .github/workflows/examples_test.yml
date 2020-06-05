@@ -16,7 +16,7 @@ jobs:
   # This workflow contains a single job called "build_and_test"
   build_and_test:
     # The type of runner that the job will run on
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     services:
       # Label used to access the service container
