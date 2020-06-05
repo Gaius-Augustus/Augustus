@@ -37,8 +37,8 @@ jobs:
 
     # Test AUGUSTUS
     - name: Test AUGUSTUS (examples folder)
-      run: ./testcases.py --compare
-      working-directory: ./examples_test
+      run: ./testcases.py --compare --html
+      working-directory: examples_test/
 
     # Upload html diffs of failed test cases 
     - name: Upload HTML diffs
