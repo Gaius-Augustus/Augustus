@@ -127,7 +127,7 @@ def run_prediction(paths, chunk):
 
     cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], '--alnfile=' + paths[chunk]['maf_file'],
     '--speciesfilenames=' + paths_shared['tbl_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths_shared['sqlitedb_file'],
-    '--stopCodonExcludedFromCDS=true', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'prediction']
+    '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'prediction']
         
     execute(cmd, paths[chunk]['result_dir'] + 'out.runPrediction')
 
@@ -141,7 +141,7 @@ def run_prediction_parallel(paths_shared, paths, chunks):
         cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], 
         '--alnfile=' + paths[chunk]['maf_file'],
         '--speciesfilenames=' + paths_shared['tbl_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths_shared['sqlitedb_file'],
-        '--stopCodonExcludedFromCDS=true', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'prediction']
+        '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'prediction']
 
         filename = paths[chunk]['result_dir'] + 'out.runPrediction'
 
@@ -163,7 +163,7 @@ def prepare_test(paths_shared, paths, chunks):
         print('Preparing test for chunk', chunk, '...')
         cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], '--alnfile=' + paths[chunk]['maf_file'], '--dbaccess=' + paths_shared['sqlitedb_file'], 
         '--speciesfilenames=' + paths_shared['tbl_file'], '--softmasking=1', '--alternatives-from-evidence=0',
-        '--stopCodonExcludedFromCDS=true', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'prepare', '--/Testing/testMode=prepare']
+        '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'prepare', '--/Testing/testMode=prepare']
 
         execute(cmd, paths[chunk]['result_dir'] + 'out.prepareTest')
 
@@ -182,7 +182,7 @@ def run_test(paths, chunk):
     cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], 
     '--alnfile=' + paths[chunk]['maf_file'],
     '--speciesfilenames=' + paths[chunk]['tbl_test_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths[chunk]['sqlitedb_test_file'],
-    '--stopCodonExcludedFromCDS=true', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run']
+    '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run']
     execute(cmd, paths[chunk]['result_dir'] + 'out.runTest')
 
 # parallel execution : acknowldgement Daniel Honsel (revisited code from test_case.py)
@@ -196,7 +196,7 @@ def run_test_parallel(paths_shared, paths, chunks):
         cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], 
         '--alnfile=' + paths[chunk]['maf_file'],
         '--speciesfilenames=' + paths[chunk]['tbl_test_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths[chunk]['sqlitedb_test_file'],
-        '--stopCodonExcludedFromCDS=true', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run']
+        '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run']
         output = paths[chunk]['result_dir'] + 'out.runTest'
 
         with open(output, 'w') as file:
@@ -448,7 +448,7 @@ def init_paths_shared():
 
     paths_shared.update({'log' : paths_shared['working_dir'] + 'LOG/'})                             # todo : move here all outXresult
     paths_shared.update({'accuracy' : paths_shared['working_dir'] + 'ACCURACY/'})                   # results returned by eval
-    paths_shared.update({'joingenes_bin' : paths_shared['augustus_dir'] + '/auxprogs/joingenes'})   # path to joingenes exec dir
+    # wrong paths_shared.update({'joingenes_bin' : paths_shared['augustus_dir'] + '/auxprogs/joingenes'})   # path to joingenes exec dir
     paths_shared.update({'joingenes_out_dir' : paths_shared['working_dir'] + 'JOINGENES/'})         # output from joingenes
     paths_shared.update({'sqlitedb_file' : paths_shared['working_dir'] + 'SQLITE/12way.db'})        # path to SQlite for full length genomes (only if a new data set is to be built)
     paths_shared.update({'tbl_file' : paths_shared['working_dir'] + 'GENOMETBL/genomes.tbl'})       # path to genomes.tbl for length genomes (only if a new data set is to be built)
