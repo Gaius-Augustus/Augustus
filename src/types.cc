@@ -344,8 +344,12 @@ void Constant::init(){
         lambda = 1;
     }
 
+    #ifdef TESTING
+    for(int i=0; i<37; i++){
+    #else
     for(int i=0; i<17; i++){
-	try {
+	#endif
+    try {
 	    ex_sc.push_back(Properties::getdoubleProperty("/CompPred/exon_score" + itoa(i) ));
 	} catch (...) {
 	    ex_sc.push_back(0);
