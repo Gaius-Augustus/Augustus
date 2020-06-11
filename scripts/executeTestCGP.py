@@ -127,6 +127,7 @@ def run_prediction(paths, chunk):
 
     cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], '--alnfile=' + paths[chunk]['maf_file'],
     '--speciesfilenames=' + paths_shared['tbl_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths_shared['sqlitedb_file'],
+    '--optCfgFile=../config/cgp/cgp_param_21features_accuracy_largerGrid.convDivCorrect.cfg',
     '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'prediction']
         
     execute(cmd, paths[chunk]['result_dir'] + 'out.runPrediction')
@@ -141,6 +142,7 @@ def run_prediction_parallel(paths_shared, paths, chunks):
         cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], 
         '--alnfile=' + paths[chunk]['maf_file'],
         '--speciesfilenames=' + paths_shared['tbl_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths_shared['sqlitedb_file'],
+        '--optCfgFile=../config/cgp/cgp_param_21features_accuracy_largerGrid.convDivCorrect.cfg',
         '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'prediction']
 
         filename = paths[chunk]['result_dir'] + 'out.runPrediction'
@@ -163,6 +165,7 @@ def prepare_test(paths_shared, paths, chunks):
         print('Preparing test for chunk', chunk, '...')
         cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], '--alnfile=' + paths[chunk]['maf_file'], '--dbaccess=' + paths_shared['sqlitedb_file'], 
         '--speciesfilenames=' + paths_shared['tbl_file'], '--softmasking=1', '--alternatives-from-evidence=0',
+        '--optCfgFile=../config/cgp/cgp_param_21features_accuracy_largerGrid.convDivCorrect.cfg',
         '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'prepare', '--/Testing/testMode=prepare']
 
         execute(cmd, paths[chunk]['result_dir'] + 'out.prepareTest')
@@ -182,6 +185,7 @@ def run_test(paths, chunk):
     cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], 
     '--alnfile=' + paths[chunk]['maf_file'],
     '--speciesfilenames=' + paths[chunk]['tbl_test_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths[chunk]['sqlitedb_test_file'],
+    '--optCfgFile=../config/cgp/cgp_param_21features_accuracy_largerGrid.convDivCorrect.cfg',
     '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run']
     execute(cmd, paths[chunk]['result_dir'] + 'out.runTest')
 
@@ -196,6 +200,7 @@ def run_test_parallel(paths_shared, paths, chunks):
         cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], 
         '--alnfile=' + paths[chunk]['maf_file'],
         '--speciesfilenames=' + paths[chunk]['tbl_test_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths[chunk]['sqlitedb_test_file'],
+        '--optCfgFile=../config/cgp/cgp_param_21features_accuracy_largerGrid.convDivCorrect.cfg',
         '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run']
         output = paths[chunk]['result_dir'] + 'out.runTest'
 
@@ -477,8 +482,8 @@ def init_paths(chunks):
     return paths
 
 # given a list of chunks (no header admitted, tabseparated) and, for each of them, the number of genes it contains, a random subset is picked according to the following:
-# no chunks in the data set overlap (rule out contigous ones)
-# the sum of genes in greater than 300
+# no chunks in the data set overlap (rule out contiguous ones)
+# the sum of genes in greater than 299
 def randomize_dataset(filename):
     random.seed(datetime.now())
 
