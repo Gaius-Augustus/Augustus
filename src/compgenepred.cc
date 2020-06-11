@@ -83,9 +83,9 @@ void CompGenePred::start(){
 
     int num_phylo_states; // number of states in ExonEvo model
     try {
-	num_phylo_states = Properties::getIntProperty("/CompPred/phylo_model");
+        num_phylo_states = Properties::getIntProperty("/CompPred/phylo_model");
     } catch (...) {
-	num_phylo_states = 2;
+        num_phylo_states = 2;
     }
     if( num_phylo_states > 4 || num_phylo_states < 2)
 	throw ProjectError("/CompPred/phylo_model must be 2,3 or 4");
@@ -331,13 +331,13 @@ void CompGenePred::start(){
 
     bool printCodons;
     try {
-      printCodons =  Properties::getBoolProperty("/CompPred/printOrthoExonAli");
+        printCodons =  Properties::getBoolProperty("/CompPred/printOrthoExonAli");
     } catch(...){
-      printCodons = 0;
+        printCodons = 0;
     }
     ofstream codonAli;   // prints codon alignments of all orthoexons in maf format
     if(printCodons){
-      codonAli.open(outdir + "orthoexons_codonAlignment.maf");
+        codonAli.open(outdir + "orthoexons_codonAlignment.maf");
     }
 
     BaseCount::init();
@@ -347,9 +347,9 @@ void CompGenePred::start(){
 
     int k; // number of omega values for which rate matrices are stored
     try {
-      k = Properties::getIntProperty("/CompPred/num_omega");
+        k = Properties::getIntProperty("/CompPred/num_omega");
     } catch(...){
-      k = 20;
+        k = 20;
     }
 
     // initializing codon rate matricies, for exon evolution see code above (evo)
@@ -367,7 +367,7 @@ void CompGenePred::start(){
     // TODO: different prior for coding and noncoding
     codonevo.setPrior(0.5);
     if(Constant::useAArates){
-      codonevo.setAAPostProbs();
+        codonevo.setAAPostProbs();
     }
     //cout << "Omegas, for which substitution matrices are stored:" << endl;
     //codonevo.printOmegas();

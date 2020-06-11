@@ -262,43 +262,42 @@ void CodonEvo::computeLogPmatrices(){
     allPs.assign(k, m, NULL); // omegas index the rows, times index the columns
     allLogPs.assign(k, m, NULL);
     for (int u=0; u<k; u++){
-	omega = omegas[u];
-	// compute decomposition of Q, which does not require t yet
-	if(u < k){
-	  if(!aaPostProb.empty()) // use amino acid score in codon rate matrix 
-	    Q = getCodonRateMatrix(pi, omega, kappa, &aaPostProb);
-	  else
-	    Q = getCodonRateMatrix(pi, omega, kappa);
-	}else{
-	  vector<double> pi_nuc = IGenicModel::getNucleotideProbs();
-	  Q = getNonCodingRateMatrix(&pi_nuc, kappa);
-	}
-	status = eigendecompose(Q, pi, lambda, U, Uinv);
-	if (status) {
-	    stringstream s;
-	    s << "Spectral decomposition of rate matrix for omega=" << omega << " failed.";
-	    throw ProjectError(s.str());
-	}
-	for (int v=0; v<m; v++){
-	    t = times[v]; // time
-	    P = expQt(t, lambda, U, Uinv);
-	    // store P
-	    allPs[u][v] = P;
-	    allLogPs[u][v] = log(P,states);
-	    //#ifdef DEBUG
-	    //cout << "codon rate matrix log P(t=" << t << ", omega=" << omega << ")" << endl;
-	    //printCodonMatrix(allLogPs[u][v]);
-	    //#endif
+        omega = omegas[u];
+        // compute decomposition of Q, which does not require t yet
+        if (u < k){
+            if(!aaPostProb.empty()) // use amino acid score in codon rate matrix 
+                Q = getCodonRateMatrix(pi, omega, kappa, &aaPostProb);
+            else
+                Q = getCodonRateMatrix(pi, omega, kappa);
+        }else{
+            vector<double> pi_nuc = IGenicModel::getNucleotideProbs();
+            Q = getNonCodingRateMatrix(&pi_nuc, kappa);
+        }
+        status = eigendecompose(Q, pi, lambda, U, Uinv);
+        if (status) {
+            stringstream s;
+            s << "Spectral decomposition of rate matrix for omega=" << omega << " failed.";
+            throw ProjectError(s.str());
+        }
+        for (int v=0; v<m; v++){
+            t = times[v]; // time
+            P = expQt(t, lambda, U, Uinv);
+            // store P
+            allPs[u][v] = P;
+            allLogPs[u][v] = log(P,states);
+            //#ifdef DEBUG
+            //cout << "codon rate matrix log P(t=" << t << ", omega=" << omega << ")" << endl;
+            //printCodonMatrix(allLogPs[u][v]);
+            //#endif
 
-	    /*for(int i=0; i<64; i++){
-	       cout<<"vvv\t"<<Seq2Int(3).inv(i)<<"\t"<<omega<<"\t"<<t<<"\t"<<gsl_matrix_get(allPs[u][v],i,i)<<endl;
-	       }*/
-
-	}
-	gsl_matrix_free(U);
-	gsl_matrix_free(Uinv);
-	gsl_matrix_free(Q);
-	gsl_vector_free(lambda);
+            /*for(int i=0; i<64; i++){
+                  cout<<"vvv\t"<<Seq2Int(3).inv(i)<<"\t"<<omega<<"\t"<<t<<"\t"<<gsl_matrix_get(allPs[u][v],i,i)<<endl;
+                  }*/
+        }
+        gsl_matrix_free(U);
+        gsl_matrix_free(Uinv);
+        gsl_matrix_free(Q);
+        gsl_vector_free(lambda);
     }
 }
 
@@ -742,15 +741,14 @@ void ExonEvo::setAliErr(){
 }
 
 void ExonEvo::computeLogPmatrices(){
-
     gsl_matrix *Q = getExonRateMatrix();
 
     // decompose rate matrix Q = U * diag(l_1,...,l_n) * Uinv
     int status = eigendecompose(Q);
     if (status) {
-	stringstream s;
-	s << "Spectral decomposition of exon rate matrix for failed.";
-	throw ProjectError(s.str());
+        stringstream s;
+        s << "Spectral decomposition of exon rate matrix for failed.";
+        throw ProjectError(s.str());
     }
     gsl_matrix_free(Q);
 
@@ -758,17 +756,17 @@ void ExonEvo::computeLogPmatrices(){
     allPs.assign(1, m, NULL);
     allLogPs.assign(1, m, NULL);
     for (int v=0; v<m; v++){
-	double t = times[v]; // time
-	gsl_matrix *P = expQt(t);
-	/*cout << "printing P for t=" << t << endl;
-	for (int i = 0; i < states; ++i){
-	    for(int j = 0 ; j < states; j++){
-		cout << gsl_matrix_get (P, i, j) << " ";
-	    }
-	    cout << endl;
-	    }*/
-        allPs[0][v]=P;
-	allLogPs[0][v]=log(P,states); 
+        double t = times[v]; // time
+        gsl_matrix *P = expQt(t);
+        /*cout << "printing P for t=" << t << endl;
+        for (int i = 0; i < states; ++i){
+            for(int j = 0 ; j < states; j++){
+            cout << gsl_matrix_get (P, i, j) << " ";
+            }
+            cout << endl;
+            }*/
+        allPs[0][v] = P;
+        allLogPs[0][v] = log(P, states);
     }
 }
 

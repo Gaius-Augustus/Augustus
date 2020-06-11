@@ -9,7 +9,7 @@
 #define _CONTTIMEMC_HH
 
 // project includes
-#include "geneticcode.hh"
+//#include "geneticcode.hh"
 #include "matrix.hh"
 
 // standard C/C++ includes
@@ -40,7 +40,7 @@ public:
     int getNumStates(){return states;}
 
     /* Determine the branch lengths for which matrices P should be stored, at most m.
-     * For trees with few species, say <10, this could be all branch lengths b occuring
+     * For trees with few species, say <10, this could be all branch lengths b occurring
      * in the tree. A value of m=-1 means to store all lengths in b. Memory may be saved
      * by building m clusters roughly representing all lengths in b.
      */
@@ -57,7 +57,7 @@ public:
      * Returns a pointer to the probability matrix for which t comes closest.
      * u is the index to a second parameter for which the probability matrices
      * are stored for different values.
-     * in the case of codon evolution u is the index to omega (dN/ds, selection)
+     * in the case of codon evolution u is the index to omega (dN/dS, selection)
      * in the case of exon evolution probability matrices currently only
      * depend on t and thus u is set to 0. It is however conceivable
      * to allow different rates of exon loss in future.
@@ -79,8 +79,8 @@ protected:
     int m; // number of branch lengths (times) for which P's are stored
     double *pi;
     vector<double> times; // sorted vector of branch lengths
-    Matrix<gsl_matrix *> allPs; // parametrized probability matrices
-    Matrix<gsl_matrix *> allLogPs; // parametrized log probability matrices
+    Matrix<gsl_matrix *> allPs; // Parameterized probability matrices
+    Matrix<gsl_matrix *> allLogPs; // Parameterized log probability matrices
 
 };
 
@@ -257,9 +257,9 @@ private:
 
 /*
  * @brief class Parsimony
- * @details transitions from state i to state j are independ of the branch length
+ * @details transitions from state i to state j are independent of the branch length
  * and cost -1 if i!=j and 0 if i==j.
- * can be used to calculate the minimum nunber of codon substitutions
+ * can be used to calculate the minimum number of codon substitutions
  * for a given tree topology
  * 
  * @author Mario Stanke
