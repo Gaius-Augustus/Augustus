@@ -8,6 +8,7 @@ read in the configuration file for extrinsic features
 # Sources of extrinsic information: M RM E W
 extrinsic group 1: hg19 mm9
 # Opening database connection using connection data "aug_vertebrates,127.0.0.1,augustus,aug_passwd"...	DB connection OK.
+Running prediction...
 # human version. Using default transition matrix.
 # setting temperature to 3 (for sampling)
 number of nodes: 1
@@ -19,7 +20,7 @@ MILP objective=0
 removing alignments
 0 geneRanges=alignments (0%) and 0 / 58758 = 0% of aligned bases and 0 / 106809 = 0% of aligment-range-covered bases were deleted because of too much redundancy.
 findGeneRanges reduced the number of aligments from 313 to 1 (to 0.319%).
-processing next gene range:
+processing gene range number 1
 hg19.chr21	+	0	32084
 mm9.chr16	+	0	25967
 bosTau4.chr1	+	0	30874
