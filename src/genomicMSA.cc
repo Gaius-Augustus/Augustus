@@ -54,6 +54,49 @@ bool cmpSigPtr(const MsaSignature *s1, const MsaSignature *s2){
     return *s1 < *s2;
 }
 
+
+#ifdef TESTING
+/*  
+*	added by Giovanna Migliorelli 14.05.2020 
+*   to read chr/scaffold names manually since boost serialization seems to have some problem with strings : needs replacing with better solution!
+*/
+void GenomicMSA::readNameDB(string dir) {
+    cout << "Entering readNameDB..." << endl;
+	
+	int n, numSpecies;
+    string seqID, filename;
+
+    numSpecies = rsa->getNumSpecies();
+	// clean up previous read
+	seqID2seqIDarhive.clear();
+	seqIDarhive2seqID.clear();
+	seqID2seqIDarhive.resize(numSpecies);
+	seqIDarhive2seqID.resize(numSpecies);
+
+	// move data to output vector (even if we could have used a vector from the beginning) , search within a map for duplicates is more efficient
+    for(int s=0;s<numSpecies;++s){
+        
+        filename = dir + "names." + rsa->getSname(s);
+        ifstream ifs(filename);
+        if(ifs.is_open()){
+            while(ifs){
+                ifs >> seqID;
+                if(!seqID.empty()){
+                    if(seqID2seqIDarhive[s].find(seqID) == seqID2seqIDarhive[s].end()){
+                        n = seqID2seqIDarhive[s].size();
+                        seqID2seqIDarhive[s].insert(make_pair(seqID, n));
+                        seqIDarhive2seqID[s].insert(make_pair(n, seqID));
+                        // cout << rsa->getSname(s) << "." << seqID << " " << n << endl;
+                    }
+                }
+            }
+            ifs.close();
+        }
+	}
+    cout << "Leaving readNameDB..." << endl;
+}
+#endif
+
 /*  *.maf file is read and saved into this->alignment
  *  only the species with names in the given list are considered, the rest is ignored
  */
@@ -71,6 +114,15 @@ void GenomicMSA::readAlignment(string alignFilename) {
     int chrStart;
     int seqLen; 
     Strand strand;
+
+    #ifdef TESTING
+    string testMode; 
+    try {
+        testMode = Properties::getProperty("/Testing/testMode");
+    } catch (...) {
+        testMode = "none"; 
+    }
+    #endif
 
     numSpecies = rsa->getNumSpecies();
     ifstream Alignmentfile;
@@ -95,24 +147,46 @@ void GenomicMSA::readAlignment(string alignFilename) {
 		// TODO: may have to be checked/adjusted for general .maf files
 		Alignmentfile >> completeName >> chrStart >> seqLen >> strandChar >> lenOfChr >> rowseq >> buffer;
 		
-		// split species name and sequence ID
-		for (int i=0; i<completeName.length(); i++) {
-		    // seperator is the point '.' for example hs19.chr21, has to be changed
-		    if ((completeName[i] == '-') || (completeName[i] == '.')) { 
-			speciesName = completeName.substr(0,i);
-			seqID = completeName.substr(i+1, string::npos);
-			// some input file have a suffix "(..)" that needs to be stripped
-			string::size_type p = seqID.find_first_of("(");
-			if (p != std::string::npos)
+		/*  
+		*   GM added the following to correctly handle names containing the symbol '-' when the dot works as a separator
+		*   GM the case not handled yet relates strings containing dashes in the name and using a dash as a separator (this case though should be infrequent)
+		*/
+
+		size_t dotAt = completeName.find('.');
+		if (dotAt != string::npos){
+		    // use the dot found at position dotAt as a separator
+		    speciesName = completeName.substr(0,dotAt);
+		    seqID = completeName.substr(dotAt+1, string::npos);
+		    // some input file have a suffix "(..)" that needs to be stripped
+		    string::size_type p = seqID.find_first_of("(");
+		    if (p != std::string::npos)
 			    seqID = seqID.erase(p); 
-			break;
-		    }
-		    if (i == completeName.length()-1) {
-			speciesName = completeName;
-			seqID = "unknown";
+			
+		    if (dotAt == completeName.length()-1) {
+			    speciesName = completeName;
+			    seqID = "unknown";
 		    }
 		}
-		  
+		else{        
+		    // no dot present, use dash as a separator
+		    // split species name and sequence ID
+		    for (int i=0; i<completeName.length(); i++) {
+			    if (completeName[i] == '-') { 
+                    speciesName = completeName.substr(0,i);
+                    seqID = completeName.substr(i+1, string::npos);
+                    // some input file have a suffix "(..)" that needs to be stripped
+                    string::size_type p = seqID.find_first_of("(");
+                    if (p != std::string::npos)
+                        seqID = seqID.erase(p); 
+                    break;
+			    }
+			    if (i == completeName.length()-1) {
+                    speciesName = completeName;
+                    seqID = "unknown";
+			    }
+		    }
+		}
+        		  
 		if (strandChar == '+') {
 		    strand = plusstrand;
 		} else if (strandChar == '-') {
@@ -134,6 +208,16 @@ void GenomicMSA::readAlignment(string alignFilename) {
 		
 		index = rsa->getIdx(speciesName);
 		if (index >= 0) { // species name in the white list
+
+            #ifdef TESTING
+            if(testMode!="none"){
+                // added for the sake of deserialization
+			    row->chrLen = lenOfChr;
+			    // temporarily added to come around some problem with boost string serialization
+    		    row->seqIDarchive = seqID2seqIDarhive[index][seqID];
+            }
+            #endif
+
 		    if (!(alignBlock->rows[index])){ // first row for this species in this block
   		        alignBlock->rows[index] = row; // place at the right position
 			// store chrLen and check whether consistent with previous chrLen
@@ -1088,8 +1172,6 @@ void GenomicMSA::writeDot(AlignmentGraph const &g, string fname, MsaSignature co
     dot.close();
 }
 
-
-
 // pops the first alignment from list
 GeneMSA* GenomicMSA::getNextGene() {
     if (alignment.empty())
@@ -1098,6 +1180,18 @@ GeneMSA* GenomicMSA::getNextGene() {
     alignment.pop_front();
     return geneRange;
 }
+
+
+#ifdef TESTING
+// pops the first alignment from list without constructing any gene range
+Alignment* GenomicMSA::getNextAlignment() {
+    if (alignment.empty())
+	return NULL;
+    Alignment *ali = alignment.front();
+    alignment.pop_front();
+    return ali;
+}
+#endif
 
 ostream& operator<< (ostream& strm, const AliPath &p){
     for(list<int>::const_iterator pit = p.path.begin(); pit != p.path.end(); ++pit)

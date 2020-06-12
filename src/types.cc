@@ -344,8 +344,12 @@ void Constant::init(){
         lambda = 1;
     }
 
+    #ifdef TESTING
+    for(int i=0; i<37; i++){
+    #else
     for(int i=0; i<17; i++){
-	try {
+	#endif
+    try {
 	    ex_sc.push_back(Properties::getdoubleProperty("/CompPred/exon_score" + itoa(i) ));
 	} catch (...) {
 	    ex_sc.push_back(0);
@@ -530,6 +534,16 @@ map<string, size_t> *getMap (vector<string> names){
     }
     return hashtable;
 }
+
+
+
+#ifdef TESTING
+void expandDir(string& filename){
+    if(!filename.empty() && filename[filename.size()-1] != '/')
+	    filename += "/";                     // append slash if necessary 
+    // filename = expandHome(filename);         // replace "~" by "$HOME
+}
+#endif
 
 /*
  * functions used in earlier versions of AUGUSTUS
