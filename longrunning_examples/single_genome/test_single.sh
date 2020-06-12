@@ -5,9 +5,11 @@
 # ~/Augustus/longrunning_examples/single_genome$ bash -v test_single.sh
 
 # set this directory
-EVAL_DIR=/home/mario/tools/eval-2.2.8
+# EVAL_DIR=/home/mario/tools/eval-2.2.8
+EVAL_DIR=/home/daniel/tools/eval-2.2.8
 
 export PERL5LIB=$EVAL_DIR # so Eval.pm is found
+export AUGUSTUS_CONFIG_PATH=../../config
 
 ########## download training data and sample genome data
 DATADIR=../data
@@ -40,7 +42,8 @@ HMMspecies=human_longrunningtest_hmm
 if [ -d $AUGUSTUS_CONFIG_PATH/species/$HMMspecies ]; then
    rm -r $AUGUSTUS_CONFIG_PATH/species/$HMMspecies
 fi
-new_species.pl --species=$HMMspecies
+#../../scripts/new_species.pl --species=$HMMspecies --AUGUSTUS_CONFIG_PATH=../../config
+../../scripts/new_species.pl --species=$HMMspecies
 
 # train parameters
 etraining --species=$HMMspecies $TRSET --UTR=on > etrain_hmm.out 2> etrain_hmm.err
@@ -52,7 +55,8 @@ CRFspecies=human_longrunningtest_crf
 if [ -d $AUGUSTUS_CONFIG_PATH/species/$CRFspecies ]; then
    rm -r $AUGUSTUS_CONFIG_PATH/species/$CRFspecies
 fi   
-new_species.pl --species=$CRFspecies
+#../../scripts/new_species.pl --species=$CRFspecies --AUGUSTUS_CONFIG_PATH=../../config
+../../scripts/new_species.pl --species=$CRFspecies
 
 # HMM-training to obtain UTR parameters
 etraining --species=$CRFspecies $TRSET --UTR=on > /dev/null 2> /dev/null
@@ -113,7 +117,7 @@ for ((r=0; r<$numEvalRuns; r++)); do
    
    for C in $CHUNKLIST; do
       cat $DIR/augustus_$C.gff
-   done | join_aug_pred.pl > $GFFFNAME
+   done | ../../scripts/join_aug_pred.pl > $GFFFNAME
 
    # count how many jobs finished
    NUM_FINISHED=`tail -n 2 $DIR/augustus_*.gff | grep "command line" | wc -l`
