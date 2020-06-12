@@ -859,6 +859,7 @@ if __name__ == '__main__':
 
     mysql_was_successful = True
     if args.mysql:
+        os.chdir(default_wd)
         print_tc_header('MySQL test suite')
         result_mysql = runner.run(mysql_test_suite())
         mysql_was_successful = result_mysql.wasSuccessful()
