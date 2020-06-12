@@ -240,6 +240,7 @@ class TestAugustus(unittest.TestCase):
         cls.cleanup()
 
     def test_utr_on(self):
+        os.chdir(default_wd)
         resfolder = resultdir + self.test_utr_on.__name__ + '/'
 
         os.mkdir(resfolder)
@@ -274,6 +275,7 @@ class TestAugustus(unittest.TestCase):
             self.assertEqual(diff, '', diff)
 
     def test_iterative_prediction(self):
+        os.chdir(default_wd)
         resfolder = resultdir + self.test_iterative_prediction.__name__ + '/'
         species_list = ['nasonia', 'zebrafish', 'tomato']
         proc_list = []
@@ -318,6 +320,7 @@ class TestAugustus(unittest.TestCase):
             self.assertEqual(diff, '', diff)
 
     def test_iterative_prediction_with_hints(self):
+        os.chdir(default_wd)
         resfolder = resultdir + self.test_iterative_prediction_with_hints.__name__ + '/'
         proc_list = []
         if not os.path.isfile('data/tmp/chr2L.sm.fa'):
@@ -367,9 +370,11 @@ class TestAugustus(unittest.TestCase):
             self.assertEqual(diff, '', diff)
 
     def test_training_new_species(self):
+        os.chdir(default_wd)
         self.training_new_species(False)
 
     def test_training_new_species_crf(self):
+        os.chdir(default_wd)
         self.training_new_species(True)
 
     def training_new_species(self, crf):
@@ -452,6 +457,7 @@ class TestAugustus(unittest.TestCase):
             self.assertEqual(diff, '', diff)
 
     def test_ab_initio_prediction(self):
+        os.chdir(default_wd)
         resfolder = resultdir + self.test_ab_initio_prediction.__name__ + '/'
 
         os.mkdir(resfolder)
@@ -485,6 +491,7 @@ class TestAugustus(unittest.TestCase):
             self.assertEqual(diff, '', diff)
 
     def test_format_and_error_out(self):
+        os.chdir(default_wd)
         resfolder = resultdir + self.test_format_and_error_out.__name__ + '/'
 
         os.mkdir(resfolder)
@@ -520,6 +527,7 @@ class TestAugustus(unittest.TestCase):
             self.assertEqual(diff, '', diff)
 
     def test_alternatives_from_sampling(self):
+        os.chdir(default_wd)
         resfolder = resultdir + self.test_alternatives_from_sampling.__name__ + '/'
 
         os.mkdir(resfolder)
@@ -555,6 +563,7 @@ class TestAugustus(unittest.TestCase):
             self.assertEqual(diff, '', diff)
 
     def test_cgp(self):
+        os.chdir(default_wd)
         os.chdir('../examples/cgp')
         resfolder = '../' + resultdir + self.test_cgp.__name__ + '/'
         reffolder = '../' + refdir + self.test_cgp.__name__ + '/'
@@ -598,19 +607,21 @@ class TestAugustus(unittest.TestCase):
                                        outputfolder=default_wd + '/output_html/')
             self.assertEqual(diff, '', diff)
 
-        # set working directory back to base test directory
-        os.chdir('../../examples_test')
 
     def test_cgp_sqlite(self):
+        os.chdir(default_wd)
         self.cgp_with_db_preparation(False, False)
 
     def test_cgp_sqlite_hints(self):
+        os.chdir(default_wd)
         self.cgp_with_db_preparation(True, False)
 
     def test_cgp_mysql(self):
+        os.chdir(default_wd)
         self.cgp_with_db_preparation(False, True)
 
     def test_cgp_mysql_hints(self):
+        os.chdir(default_wd)
         self.cgp_with_db_preparation(True, True)
 
     def cgp_with_db_execution(self, resfolder, reffolder, *args):
@@ -722,10 +733,9 @@ class TestAugustus(unittest.TestCase):
 
         self.cgp_with_db_execution(resfolder, reffolder, *args)
 
-        # set working directory back to base test directory
-        os.chdir('../../examples_test')
 
     def test_cgp_denovo_tutorial(self):
+        os.chdir(default_wd)
         os.chdir('../docs/tutorial-cgp/results/mafs')
         resfolder = '../../../' + resultdir + self.test_cgp_denovo_tutorial.__name__ + '/'
         reffolder = '../../../' + refdir + self.test_cgp_denovo_tutorial.__name__ + '/'
@@ -750,10 +760,9 @@ class TestAugustus(unittest.TestCase):
 
         self.cgp_with_db_execution(resfolder, reffolder, *args)
 
-        # set working directory back to base test directory
-        os.chdir('../../../../examples_test/')
 
     def test_cgp_rna_hint_tutorial(self):
+        os.chdir(default_wd)
         os.chdir('../docs/tutorial-cgp/results/mafs')
         resfolder = '../../../' + resultdir + self.test_cgp_rna_hint_tutorial.__name__ + '/'
         reffolder = '../../../' + refdir + self.test_cgp_rna_hint_tutorial.__name__ + '/'
@@ -781,9 +790,6 @@ class TestAugustus(unittest.TestCase):
             ])
 
         self.cgp_with_db_execution(resfolder, reffolder, *args)
-
-        # set working directory back to base test directory
-        os.chdir('../../../../examples_test/')
 
 
 def default_test_suite():
@@ -813,20 +819,15 @@ def small_test_suite():
     suite.addTest(TestAugustus('test_format_and_error_out'))
     #suite.addTest(TestAugustus('test_alternatives_from_sampling'))
     suite.addTest(TestAugustus('test_cgp'))
-    os.chdir(default_wd)
     suite.addTest(TestAugustus('test_cgp_sqlite'))
-    os.chdir(default_wd)
     suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
-    os.chdir(default_wd)
     return suite
 
 
 def mysql_test_suite():
     suite = unittest.TestSuite()
     suite.addTest(TestAugustus('test_cgp_mysql'))
-    os.chdir(default_wd)
     suite.addTest(TestAugustus('test_cgp_mysql_hints'))
-    os.chdir(default_wd)
     return suite
 
 
