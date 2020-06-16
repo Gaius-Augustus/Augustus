@@ -12,6 +12,8 @@
 #include "projectio.hh"
 #include "types.hh"
 #include "phylotree.hh"
+#include "contTimeMC.hh"
+#include "codonevo.hh"
 
 #include <vector>
 #include <string>

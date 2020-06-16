@@ -25,7 +25,7 @@ ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is 
 	MYSQL    ?= true
 	CXXFLAGS += -std=c++11
 	CPPFLAGS += -DCOMPGENEPRED
-	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o
+	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o codonevo.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
 	INCLS += -I/usr/include/lpsolve
@@ -699,6 +699,11 @@ fasta.o: \
 contTimeMC.o: \
 	../include/contTimeMC.hh \
 	contTimeMC.cc
+
+codonevo.o: \
+	../include/codonevo.hh \
+	../include/contTimeMC.hh \
+	codonevo.cc
 
 alignment.o: \
 	../include/alignment.hh \

@@ -14,7 +14,7 @@
 #include "orthoexon.hh"
 #include "randseqaccess.hh"
 #include "speciesgraph.hh"
-
+#include "contTimeMC.hh"
 #include<unordered_map>
 #include<boost/functional/hash.hpp>
 
