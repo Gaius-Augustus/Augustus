@@ -127,12 +127,13 @@ public:
             gsl_vector_free(l);
     }
     void setPi();
-    void setMu();
-    void setAliErr();
-    double getMu() const{return mu;}
-    void setLambda();
+    void setLambda(double lambda = 0.001);
+    void setMu(double mu = 0.001);
+    void setAliErr(double ali_error = 0.1);
     double getLambda() const{return lambda;}
+    double getMu() const{return mu;}
     double getAliErr() const{return ali_error;}
+    
     void computeLogPmatrices();
     void addBranchLength(double b); //add new branch length b and matrix P(b)
     double minBranchLength() const {return times.front();}

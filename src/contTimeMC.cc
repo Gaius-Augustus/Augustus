@@ -261,40 +261,37 @@ gsl_matrix *log(gsl_matrix *P, int states){
     return LogP;
 }
 
-void ExonEvo::setLambda(){
-
+void ExonEvo::setLambda(double lambda){
     try {
-	lambda = Properties::getdoubleProperty("/CompPred/exon_gain");
+	this->lambda = Properties::getdoubleProperty("/CompPred/exon_gain");
     } catch (...) {
-	lambda = 0.0001;
+        this->lambda = lambda;
     }
-    if(lambda <= 0.0){
+    
+    if (this->lambda <= 0.0)
 	throw ProjectError("the rates for exon loss/gain have to be positive");
-    }
 }
 
-void ExonEvo::setMu(){
-  
+void ExonEvo::setMu(double mu){
     try {
-	mu  = Properties::getdoubleProperty("/CompPred/exon_loss");
+	this->mu  = Properties::getdoubleProperty("/CompPred/exon_loss");
     } catch (...) {
-	mu  = 0.0001;
+        this->mu = mu;
     }
-    if(mu <= 0.0){
+
+    if (this->mu <= 0.0)
 	throw ProjectError("the rates for exon loss/gain have to be positive");
-    }
 }
 
-void ExonEvo::setAliErr(){
-  
+void ExonEvo::setAliErr(double ali_error){
     try {
-	ali_error = Properties::getdoubleProperty("/CompPred/ali_error");
+	this->ali_error = Properties::getdoubleProperty("/CompPred/ali_error");
     } catch (...) {
-	ali_error  = 0.1;
+        this->ali_error = ali_error;
     }
-    if(ali_error <= 0.0){
+
+    if (this->ali_error <= 0.0)
 	throw ProjectError("the rate for alignment errors has to be positive");
-    }
 }
 
 void ExonEvo::computeLogPmatrices(){
@@ -315,26 +312,28 @@ void ExonEvo::computeLogPmatrices(){
     for (int v=0; v<m; v++){
         double t = times[v]; // time
         gsl_matrix *P = expQt(t);
-        /*cout << "printing P for t=" << t << endl;
-        for (int i = 0; i < states; ++i){
-            for(int j = 0 ; j < states; j++){
-            cout << gsl_matrix_get (P, i, j) << " ";
-            }
-            cout << endl;
-            }*/
+
+        /*
+          cout << "printing P for t=" << t << endl;
+          for (int i = 0; i < states; ++i){
+          for(int j = 0 ; j < states; j++){
+          cout << gsl_matrix_get (P, i, j) << " ";
+          }
+          cout << endl;
+          }
+        */
         allPs[0][v] = P;
         allLogPs[0][v] = log(P, states);
     }
 }
 
 void ExonEvo::setPi(){
-
-    if(states == 2){
+    if (states == 2){
 	this->pi = new double[2];
 	this->pi[0] = (mu / (lambda + mu));
 	this->pi[1] = (lambda / (lambda + mu));
     }
-    else if(states == 3){
+    else if (states == 3){
 	this->pi = new double[3];
 	this->pi[0] = (mu / (lambda + mu));
         this->pi[1] = (lambda / (lambda + mu));
@@ -344,7 +343,7 @@ void ExonEvo::setPi(){
         this->pi[1] = (ali_error + (2*lambda)) / denominator;
 	this->pi[2] = 1.0 / 3.0;*/
     }
-    else if(states == 4){
+    else if (states == 4){
 	this->pi = new double[4];
 	this->pi[0] = (mu / (lambda + mu));
         this->pi[1] = (lambda / (lambda + mu));
@@ -390,7 +389,6 @@ void ExonEvo::addBranchLength(double b){
 }
 
 gsl_matrix *ExonEvo::getExonRateMatrix(){
-
     const int N = states;
 
     gsl_matrix *Q = gsl_matrix_alloc (N, N);
