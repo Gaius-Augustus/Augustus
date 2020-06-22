@@ -7,7 +7,7 @@ include ../common.mk
 # the required libraries 
 # libboost-serialization-dev 
 # are not available
-TESTING = true
+TESTING = false
 
 CXX?=g++
 
