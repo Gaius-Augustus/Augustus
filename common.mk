@@ -12,10 +12,3 @@ ZIPINPUT = true
 # libgsl-dev, libboost-all-dev, libsuitesparse-dev, liblpsolve55-dev, libmysql++-dev and libsqlite3-dev 
 # are not available
 COMPGENEPRED = true
-
-# set TESTING to false if you don't need testing for the comparative gene prediction mode (CGP) or
-# the required libraries 
-# libboost-serialization-dev 
-# are not available
-TESTING = true
-

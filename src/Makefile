@@ -2,6 +2,13 @@
 # Makefile for Augustus
 #
 include ../common.mk
+
+# set TESTING to false if you don't need testing for the comparative gene prediction mode (CGP) or
+# the required libraries 
+# libboost-serialization-dev 
+# are not available
+TESTING = true
+
 CXX?=g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
