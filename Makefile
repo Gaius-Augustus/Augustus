@@ -42,7 +42,7 @@ release:
 test:
 	cd src && ${MAKE} unittest
 	cd src/unittests && ./unittests
-	./bin/augustus --species=human --UTR=on examples/example.fa
+	./bin/augustus --species=human --UTR=on --softmasking=0 examples/example.fa
 
 # remove -static from src/Makefile for MAC users
 # remove -g -gdb from CXXFLAGS
