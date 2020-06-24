@@ -10,7 +10,7 @@
 
 # INTRODUCTION
 
-The present version of Augustus allows to run prediction over a minimal dataset to assess how changes in the code may have affected accuracy. To use testing related function, please set TESTING = true within [src/Makefile](src/Makefile). If either this feature is not required or the required libraries are not available, leave/set TESTING = false (default value).
+The present version of Augustus allows to run prediction over a minimal dataset to assess how changes in the code may have affected accuracy. To use testing related function, please set TESTING = true within [../src/Makefile](../src/Makefile). If either this feature is not required or the required libraries are not available, leave/set TESTING = false (default value).
 
 # DATASET
 
