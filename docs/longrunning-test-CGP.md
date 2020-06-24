@@ -51,15 +51,6 @@ python3 executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval
 ```
 in --eval mode, the script computes accuracy for predictions obtained over the data-set during the execution of --run mode. Results are stored in example/cgp12way/ACCURACY. 
 
-# HISTORY
-
-Here it follows a list of issues and corresponding progress status:
-  - BED coordinate and MAF species names issues (done)
-  - parallelization (done)
-  - code clean-up (done)
-  - make dataset unbiased (done)
-  - allow for compressed dataset (pending)
-
 # CAVEAT
 
 Anyone who plans to modify executeTestCGP.py or use part of it, is recommended not to discard the following option, unless really aware of what she or he is doing:
