@@ -283,7 +283,7 @@ double OrthoExon::getLogRegScore(){
 			+ Constant::ex_sc[36]*hasConservation()*getRightConsScore();
 			//	'rightBoundaryCons'			19
 
-    // #endif
+    
 
   return ( addScore + Constant::ex_sc[6]  * Eomega * hasOmega()
 	    + Constant::ex_sc[7]  * VarOmega * hasVarOmega()
