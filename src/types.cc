@@ -344,11 +344,9 @@ void Constant::init(){
         lambda = 1;
     }
 
-    // we can add extended set of features in any case, no matter if TESTING is enabled #ifdef TESTING
+    // can deal with extended set of features 
     for(int i=0; i<37; i++){
-    // #else
-    // for(int i=0; i<17; i++){
-	// #endif
+   
     try {
 	    ex_sc.push_back(Properties::getdoubleProperty("/CompPred/exon_score" + itoa(i) ));
 	} catch (...) {
