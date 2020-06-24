@@ -271,7 +271,7 @@ double OrthoExon::getLogRegScore(){
 		addScore = 						
 			Constant::ex_sc[31]*hasOmega()*getLeftExtOmega()	
 			//'leftBoundaryExtOmega', 	14
-         	+ Constant::ex_sc[32]*hasOmega()*getRightExtOmega()	
+			+ Constant::ex_sc[32]*hasOmega()*getRightExtOmega()	
 			//'rightBoundaryExtOmega'		15
 			+ Constant::ex_sc[33]*hasOmega()*getLeftIntOmega()	
 			// 'leftBoundaryIntOmega'		16
