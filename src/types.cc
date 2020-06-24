@@ -345,8 +345,7 @@ void Constant::init(){
     }
 
     // can deal with extended set of features 
-    for(int i=0; i<37; i++){
-   
+    for(int i=0; i<37; i++){   
     try {
 	    ex_sc.push_back(Properties::getdoubleProperty("/CompPred/exon_score" + itoa(i) ));
 	} catch (...) {
