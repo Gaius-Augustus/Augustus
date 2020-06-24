@@ -215,8 +215,24 @@ vector<ofstream*> initOutputFiles(string outdir, string extension){
     vector<string> species;
     OrthoGraph::tree->getSpeciesNames(species);
     for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){
+
+    // label "SHIFTED" added to distinguish GFFs using the shrinked data set (hence having shifted coordinates) from standard GFFs
+    #ifdef TESTING
+    string testMode, filename, label; 
+    try {
+        testMode = Properties::getProperty("/Testing/testMode");
+    } catch (...) {
+        testMode = "none"; 
+    }
+    
+    if(testMode=="run")
+        label = ".SHIFTED";
+    filename = outdir + species[pos] + extension + label + ".gff";
+	#else
 	string filename = outdir + species[pos] + extension + ".gff";
-	if(Gene::gff3){
+    #endif
+    
+    if(Gene::gff3){
 	    filename += "3";	    
 	}
 	ofstream *out = new ofstream(filename.c_str());

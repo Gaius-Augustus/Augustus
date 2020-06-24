@@ -150,8 +150,17 @@ void appendRow(AlignmentRow **r1, const AlignmentRow *r2, int aliLen1, string si
     if (*r1 == NULL && r2 != NULL && (sigstr == "" || sigstr == r2->getSignature())){
 	*r1 = new AlignmentRow();
 	(*r1)->seqID = r2->seqID;
-	(*r1)->strand = r2->strand;
+    (*r1)->strand = r2->strand;
+
+
+    #ifdef TESTING
+	(*r1)->seqIDarchive = r2->seqIDarchive;
+	(*r1)->chrLen = r2->chrLen;				
+    #endif
+
     }
+
+    
     if ((*r1) && r2 &&
 	((*r1)->seqID != r2->seqID || r2->chrStart() <= (*r1)->chrEnd())){
 	// incomplatible sequence IDs or second row does not come after first row,
@@ -164,6 +173,11 @@ void appendRow(AlignmentRow **r1, const AlignmentRow *r2, int aliLen1, string si
 	    (*r1)->seqID = r2->seqID;
 	    (*r1)->strand = r2->strand;
 	    (*r1)->cumFragLen = 0;
+
+        #ifdef TESTING
+    	(*r1)->seqIDarchive = r2->seqIDarchive;
+    	(*r1)->chrLen = r2->chrLen;				
+        #endif
 	}
     }
     if (r2 && (sigstr == "" || sigstr == r2->getSignature())) {
@@ -426,6 +440,12 @@ void capAliSize(list<Alignment*> &alis, int maxRange){
 			    newAli->rows[ss] = new AlignmentRow();
 			    newAli->rows[ss]->seqID = a->rows[ss]->seqID;
 			    newAli->rows[ss]->strand = a->rows[ss]->strand;
+
+                #ifdef TESTING
+			    newAli->rows[ss]->seqIDarchive = a->rows[ss]->seqIDarchive;
+			    newAli->rows[ss]->chrLen = a->rows[ss]->chrLen;				
+                #endif
+                
 			    vector<fragment>::iterator first = a->rows[ss]->frags.begin(), 
 				last = a->rows[ss]->frags.end(), it, itCutPos;
 
@@ -867,4 +887,28 @@ void Alignment::pack(){
 
 
 int MsaSignature::maxSigStrLen = 0;
+
+#ifdef TESTING
+// convert the alignment according to new intervals/FASTA (start/end are in bed format)
+void Alignment::convertAlignment(int r, int start, int end) {
+    if(rows[r] != NULL){
+        int newChrLen = end - start + 1;
+
+        for(int f=0;f<rows[r]->frags.size();++f){
+            if(rows[r]->strand == plusstrand){
+                // cout << "converting " << start << " " << end << " " << rows[r]->seqID << " " << rows[r]->frags[f].chrPos << " " << start << " " << rows[r]->frags[f].chrPos - start << endl;
+                rows[r]->frags[f].chrPos -= start;
+            }
+            else{
+                rows[r]->frags[f].chrPos = rows[r]->chrLen - rows[r]->frags[f].chrPos;  // onto the positive strand
+                rows[r]->frags[f].chrPos -= start;
+                rows[r]->frags[f].chrPos =  newChrLen - rows[r]->frags[f].chrPos;       // back onto the negative strand (remark the new length is used)
+            }
+        }
+
+        rows[r]->seqID = rows[r]->seqID + "_" +  to_string(start) + "_" + to_string(end+1); // the identifier is again in BED format (open interval)
+        rows[r]->chrLen = newChrLen;
+    }        
+}
+#endif
 

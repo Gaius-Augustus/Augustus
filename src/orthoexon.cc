@@ -266,7 +266,29 @@ double OrthoExon::getLogRegScore(){
     b_r = 0;
   }
 
-  return (    Constant::ex_sc[6]  * Eomega * hasOmega()
+  	// GM added the following to include up to 21 features
+	double addScore = 0.0;
+	#if TESTING
+		addScore = 
+
+
+						
+			Constant::ex_sc[31]*hasOmega()*getLeftExtOmega()	
+			//'leftBoundaryExtOmega', 	14
+         	+ Constant::ex_sc[32]*hasOmega()*getRightExtOmega()	
+			//'rightBoundaryExtOmega'		15
+			+ Constant::ex_sc[33]*hasOmega()*getLeftIntOmega()	
+			// 'leftBoundaryIntOmega'		16
+			+ Constant::ex_sc[34]*hasOmega()*getRightIntOmega()	
+			// 'rightBoundaryIntOmega'		17
+			+ Constant::ex_sc[35]*hasConservation()*getLeftConsScore()
+			//	'leftBoundaryCons'			18
+			+ Constant::ex_sc[36]*hasConservation()*getRightConsScore();
+			//	'rightBoundaryCons'			19
+
+    #endif
+
+  return ( addScore + Constant::ex_sc[6]  * Eomega * hasOmega()
 	    + Constant::ex_sc[7]  * VarOmega * hasVarOmega()
 	    + Constant::ex_sc[8]  * cons * hasConservation()
 	    + Constant::ex_sc[9]  * containment * hasContainment()
@@ -278,6 +300,7 @@ double OrthoExon::getLogRegScore(){
 	    - Constant::ex_sc[1]  * hasOmega()
 	    + Constant::ex_sc[16] * ( b_l * exp(Constant::lambda*b_l) + b_r * exp(Constant::lambda*b_r) ) / ( exp(Constant::lambda*b_l) + exp(Constant::lambda*b_r) )
 	    - Constant::ex_sc[2] ); // for being a HECT
+
 
   /*
     if (string("fly") == Properties::getProperty("species")){

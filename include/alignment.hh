@@ -29,7 +29,23 @@ public:
     int chrPos; // chromosomal start position of fragment, 0-based
     int aliPos; // start position of fragment in alignment, 0-based
     int len;    // fragment length
-    
+
+    /*
+    *   added by Giovanna Migliorelli 14.05.2020 
+    *   code responsible for serialization
+    *   aknowledgement : https://www.boost.org/doc/libs/1_70_0/libs/serialization/doc/tutorial.html
+    */
+
+    #ifdef TESTING
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & chrPos; 
+        ar & aliPos;
+        ar & len; 
+    }
+    #endif    
 };
 
 /**
@@ -80,10 +96,35 @@ public:
     
     // data members
     string seqID; // e.g. chr21
+    
+    #ifdef TESTING
+    int seqIDarchive;   // GM temporarily added to come around some problem with string serialization
+    int chrLen;         // GM added to properly set rsa chr lengths during deserialization
+    #endif
+
     Strand strand;
     vector<fragment> frags; // fragments are sorted by alignment positions AND by chromosomal positions (assumption for now)
 private:
     int cumFragLen; // total length of all fragments, becomes a nonredundant attribute after merging of alignments
+
+    /*
+    *   added by Giovanna Migliorelli 14.05.2020 
+    *   code responsible for serialization
+    *   aknowledgement : https://www.boost.org/doc/libs/1_70_0/libs/serialization/doc/tutorial.html
+    */
+
+    #ifdef TESTING
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & cumFragLen;
+        ar & seqIDarchive; 
+        ar & strand;
+        ar & frags; 
+        ar & chrLen;    
+    }
+    #endif
 };
 
 
@@ -138,9 +179,33 @@ public:
     int numFitting(const MsaSignature *sig) const;
     void shiftAliPositions(int offset);
     void pack(); // merge pairs of fragments without gap into one fragment making the alignment representation more compact
+
+    #ifdef TESTING
+    void convertAlignment(int r, int start, int end);
+    #endif
+
 public: // should rather be private
     int aliLen; // all aligned sequences are this long when gaps are included
     vector<AlignmentRow*> rows;
+
+private:
+    /*
+    *   added by Giovanna Migliorelli 14.05.2020 
+    *   code responsible for serialization and default constructor required in serialization
+    *   aknowledgement : https://www.boost.org/doc/libs/1_70_0/libs/serialization/doc/tutorial.html
+    */
+
+    #ifdef TESTING
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & aliLen;
+        ar & rows;
+    }
+    
+    Alignment(){};
+    #endif
 };
 
 int medianChrStartEndDiff(Alignment *a1, Alignment *a2);

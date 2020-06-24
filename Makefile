@@ -40,9 +40,11 @@ release:
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
 
 test:
+	./examples_test/testcases.py --compare --html --set_default_wd
+
+unit_test:
 	cd src && ${MAKE} unittest
 	cd src/unittests && ./unittests
-	./bin/augustus --species=human --UTR=on --softmasking=0 examples/example.fa
 
 # remove -static from src/Makefile for MAC users
 # remove -g -gdb from CXXFLAGS
