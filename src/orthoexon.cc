@@ -266,9 +266,8 @@ double OrthoExon::getLogRegScore(){
     b_r = 0;
   }
 
-  	// GM added the following to include up to 21 features
+  	// include up to 21 features
 	double addScore = 0.0;
-	// we can include 21 features in any case, it depends on the config file you choose then #if TESTING
 		addScore = 						
 			Constant::ex_sc[31]*hasOmega()*getLeftExtOmega()	
 			//'leftBoundaryExtOmega', 	14
