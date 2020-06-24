@@ -41,6 +41,7 @@ public:
     void setBranchLengths(vector<double> b, int m=-1);
     void printBranchLengths();
 
+    virtual void getRateMatrices() {}; // precomputes or reads the rate matrices
     virtual void computeLogPmatrices()=0; // precomputes and stores the array of matrices
     virtual void addBranchLength(double b)=0; //add new branch length b and matrix P(b)
 
@@ -73,6 +74,7 @@ protected:
     int m; // number of branch lengths (times) for which P's are stored
     double *pi;
     vector<double> times; // sorted vector of branch lengths
+    vector<gsl_matrix *> allQs; // rate matrices
     Matrix<gsl_matrix *> allPs; // Parameterized probability matrices
     Matrix<gsl_matrix *> allLogPs; // Parameterized log probability matrices
 
@@ -133,7 +135,8 @@ public:
     double getLambda() const{return lambda;}
     double getMu() const{return mu;}
     double getAliErr() const{return ali_error;}
-    
+
+    void getRateMatrices(); // precomputes or reads the rate matrices
     void computeLogPmatrices();
     void addBranchLength(double b); //add new branch length b and matrix P(b)
     double minBranchLength() const {return times.front();}

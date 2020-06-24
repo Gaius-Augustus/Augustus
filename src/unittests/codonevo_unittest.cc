@@ -44,7 +44,7 @@ namespace {
         // 1.09091 ,  1.2 , 1.33333 , 1.5 , 1.71429 , 2 , 2.4 , 3 , 4]
 
         //codonevo.setPrior(0.5);
-        
+        codonevo.getRateMatrices();
         codonevo.computeLogPmatrices();
 
         gsl_matrix *P00 = codonevo.getSubMatrixP(0, 0.1);

@@ -154,6 +154,19 @@ void CodonEvo::setAAPostProbs(){
   aaPostProb = b;
 }
 
+// precomputes or reads the rate matrices
+// which does not require t yet
+void CodonEvo::getRateMatrices(){
+    allQs.assign(k, NULL);
+    gsl_matrix *Q;
+    for (int u=0; u<k; u++){
+        if (!aaPostProb.empty()) // use amino acid score in codon rate matrix 
+            Q = getCodonRateMatrix(pi, omegas[u], kappa, &aaPostProb);
+        else
+            Q = getCodonRateMatrix(pi, omegas[u], kappa);
+        allQs[u] = Q;
+    }   
+}
 
 
 /* 
@@ -170,16 +183,7 @@ void CodonEvo::computeLogPmatrices(){
     allLogPs.assign(k, m, NULL);
     for (int u=0; u<k; u++){
         omega = omegas[u];
-        // compute decomposition of Q, which does not require t yet
-        if (u < k){
-            if(!aaPostProb.empty()) // use amino acid score in codon rate matrix 
-                Q = getCodonRateMatrix(pi, omega, kappa, &aaPostProb);
-            else
-                Q = getCodonRateMatrix(pi, omega, kappa);
-        }else{
-            vector<double> pi_nuc = IGenicModel::getNucleotideProbs();
-            Q = getNonCodingRateMatrix(&pi_nuc, kappa);
-        }
+        Q = allQs[u];
         status = eigendecompose(Q, pi, lambda, U, Uinv);
         if (status) {
             stringstream s;
@@ -198,12 +202,11 @@ void CodonEvo::computeLogPmatrices(){
             //#endif
 
             /*for(int i=0; i<64; i++){
-                  cout<<"vvv\t"<<Seq2Int(3).inv(i)<<"\t"<<omega<<"\t"<<t<<"\t"<<gsl_matrix_get(allPs[u][v],i,i)<<endl;
-                  }*/
+              cout<<"vvv\t"<<Seq2Int(3).inv(i)<<"\t"<<omega<<"\t"<<t<<"\t"<<gsl_matrix_get(allPs[u][v],i,i)<<endl;
+              }*/
         }
         gsl_matrix_free(U);
         gsl_matrix_free(Uinv);
-        gsl_matrix_free(Q);
         gsl_vector_free(lambda);
     }
 }

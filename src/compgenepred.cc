@@ -94,6 +94,7 @@ void CompGenePred::start(){
     tree.getBranchLengths(branchset);
     evo.setBranchLengths(branchset);
     //evo.printBranchLengths();
+    evo.getRateMatrices();
     evo.computeLogPmatrices();
     OrthoGraph::tree = &tree;
     GeneMSA::setTree(&tree);
@@ -371,6 +372,7 @@ void CompGenePred::start(){
     }
     //cout << "Omegas, for which substitution matrices are stored:" << endl;
     //codonevo.printOmegas();
+    codonevo.getRateMatrices();
     codonevo.computeLogPmatrices();
     
     // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);

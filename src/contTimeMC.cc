@@ -24,13 +24,18 @@ Evo::~Evo(){
 	for (int j=0; j< allPs.getRowSize(); j++){
 	    gsl_matrix_free(allPs[i][j]);
 	}
-
     allPs.assign(0, 0, NULL);
+
     for (int i=0; i < allLogPs.getColSize(); i++)
     	for (int j=0; j< allLogPs.getRowSize(); j++){
     	    gsl_matrix_free(allLogPs[i][j]);
     	}
     allLogPs.assign(0, 0, NULL);
+
+    for (size_t u=0; u < allQs.size(); u++)
+        gsl_matrix_free(allQs[u]);
+    allQs.assign(0, NULL);
+    
     if (pi != NULL)
         delete[] pi;
 }
@@ -294,8 +299,14 @@ void ExonEvo::setAliErr(double ali_error){
 	throw ProjectError("the rate for alignment errors has to be positive");
 }
 
+
+void ExonEvo::getRateMatrices(){
+    allQs.assign(1, getExonRateMatrix());
+}
+
+
 void ExonEvo::computeLogPmatrices(){
-    gsl_matrix *Q = getExonRateMatrix();
+    gsl_matrix *Q = allQs[0];
 
     // decompose rate matrix Q = U * diag(l_1,...,l_n) * Uinv
     int status = eigendecompose(Q);
@@ -304,7 +315,6 @@ void ExonEvo::computeLogPmatrices(){
         s << "Spectral decomposition of exon rate matrix for failed.";
         throw ProjectError(s.str());
     }
-    gsl_matrix_free(Q);
 
     // for all branch lengths t, compute transition matrices P(t) and logP(t)
     allPs.assign(1, m, NULL);

@@ -26,12 +26,6 @@ namespace {
         EXPECT_DOUBLE_EQ(gsl_matrix_get (Q, 1, 1), -0.02);
         gsl_matrix_free(Q);
     }
-    TEST(EvoTest, ValidateEigenDecomposition) 
-    {
-        ExonEvo evo(2);
-        EXPECT_EQ(0, 0);
-        
-    }
     TEST(EvoTest, ExonEvo2StatesTransitionProbs) 
     {
         ExonEvo evo(2);
@@ -42,7 +36,8 @@ namespace {
         evo.setMu(0.02); // exon loss rate
         evo.setPi();
         EXPECT_DOUBLE_EQ(evo.getPi(1), 0.75); // = lambda / (lambda+mu)
-        
+
+        evo.getRateMatrices();
         evo.computeLogPmatrices();
         gsl_matrix *P00 = evo.getSubMatrixP(0, 2.1);
         EXPECT_NEAR(gsl_matrix_get(P00, 0, 1), 0.017785717681568013, 1e-8);

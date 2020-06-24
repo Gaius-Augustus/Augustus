@@ -5,12 +5,7 @@ CXXFLAGS := -std=c++11 -Wall -pedantic -pthread ${CXXFLAGS}
 LDFLAGS = -L../googletest -lgtest -lgtest_main -lgsl -lgslcblas -lmysqlclient -lmysqlpp \
 	-lsqlite3 -llpsolve55 -lcolamd -ldl -lsqlite3 -lboost_iostreams
 INCLS	+= -I$(AINC) -isystem ../googletest/include/ -I/usr/include/mysql -I/usr/include/mysql++
-
-# Link all tests to a single test binary
-unittests: lldouble_unittest.o fasta_unittest.o evo_unittest.o codonevo_unittest.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) \
-	lldouble_unittest.o fasta_unittest.o evo_unittest.o codonevo_unittest.o \
-	../lldouble.o ../fasta.o ../contTimeMC.o ../codonevo.o \
+OBJS    = ../lldouble.o ../fasta.o ../contTimeMC.o ../codonevo.o \
 	../properties.o ../types.o \
 	../geneticcode.o ../phylotree.o ../geneMSA.o ../alignment.o \
 	../orthoexon.o ../exoncand.o ../intronmodel.o ../introntrain.o \
@@ -22,7 +17,12 @@ unittests: lldouble_unittest.o fasta_unittest.o evo_unittest.o codonevo_unittest
 	../mea.o ../meaPath.o ../speciesgraph.o ../graph.o ../randseqaccess.o \
 	../sqliteDB.o ../genbank.o \
 	../scanner/lex.o ../parser/parse.o \
-	$(LDFLAGS) -o unittests
+
+# Link all tests to a single test binary
+unittests: lldouble_unittest.o fasta_unittest.o evo_unittest.o codonevo_unittest.o $(OBJS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) \
+	lldouble_unittest.o fasta_unittest.o evo_unittest.o codonevo_unittest.o \
+	$(OBJS) $(LDFLAGS) -o unittests
 #evo_unittest.o \
 # Here follows each individual Unit Test
 lldouble_unittest.o: lldouble_unittest.cc $(AINC)/lldouble.hh

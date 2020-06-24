@@ -45,6 +45,7 @@ public:
     int getK(){ return k;}
     void printOmegas();
     void setAAPostProbs();
+    void getRateMatrices(); // precomputes or reads the rate matrices
     void computeLogPmatrices(); // precomputes and stores the array of matrices
 
     /*
