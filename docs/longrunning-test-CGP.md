@@ -18,7 +18,7 @@ The present distribution comes with an unbiased dataset containing 352 genes fro
 
 # BASIC
 
-To make testing available, make sure TESTING is enabled. Under such condition normal prediction can be still run instead of testing, invoking Augustus from command line as usual.
+To make testing available, make sure TESTING is enabled. Under such condition normal prediction can be still run instead of testing, invoking Augustus command line as usual.
 
 ## Dependencies
 
