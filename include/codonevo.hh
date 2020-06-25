@@ -9,6 +9,7 @@
 #define _CODONEVO_HH
 
 #include "contTimeMC.hh"
+#include "geneticcode.hh"
 
 //forward declarations
 class PhyloTree;
@@ -28,7 +29,21 @@ class PhyloTree;
  */
 class CodonEvo : public Evo {
 public:
-    CodonEvo() : Evo(64), k(0), kappa(4.0) {};
+    CodonEvo() : Evo(64), k(0), kappa(4.0) {
+        // initialize pi with the uniform distribution on all sense codons
+        pi = new double[64];
+        double normsum = 0.0;
+        for (unsigned c=0; c<64; c++){
+            if (GeneticCode::translate(c) == '*')
+                pi[c] = 0.0;
+            else
+                pi[c] = 1.0;
+            normsum += pi[c];
+        }
+        
+        for (int c=0; c<64; c++)
+            pi[c] /= normsum; 
+    };
     ~CodonEvo();
     void setKappa(double kappa){ this->kappa = kappa;} // transition/transversion ratio
     void setPi(double *pi); // codon usage
@@ -46,8 +61,11 @@ public:
     void printOmegas();
     void setAAPostProbs();
     void getRateMatrices(); // precomputes or reads the rate matrices
+    void writeRateMatrices(string filename); // serialize to file
+    void readRateMatrices(string filename);  // deserialize from file
     void computeLogPmatrices(); // precomputes and stores the array of matrices
-
+    
+        
     /*
      * Returns a pointer to the 64x64 substitution probability matrix
      * for which t and omega come closest to scored values.

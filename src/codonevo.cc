@@ -11,8 +11,9 @@
 #include "phylotree.hh"
 #include "igenicmodel.hh"
 
+#include <stdio.h>
+
 void CodonEvo::setPi(double *pi){
-    this->pi = new double[64];
     for (int i=0;i<64; i++)
 	this->pi[i] = pi[i];
 }
@@ -166,6 +167,43 @@ void CodonEvo::getRateMatrices(){
             Q = getCodonRateMatrix(pi, omegas[u], kappa);
         allQs[u] = Q;
     }   
+}
+
+void CodonEvo::writeRateMatrices(string filename){
+    gsl_matrix *Q;
+    int status;
+    FILE *Qfile;
+    Qfile = fopen(filename.c_str(), "w");
+    if (!Qfile)
+        throw ProjectError("Could not write to rate matrix file " + filename);
+    
+    for (int u=0; u<k; u++){
+        Q = allQs[u];
+        status = gsl_matrix_fprintf(Qfile, Q, "%g");
+        if (status)
+            throw ProjectError("Could not write " + itoa(u+1) + "-th rate matrix to " + filename);
+    }
+    fclose(Qfile);
+}
+
+void CodonEvo::readRateMatrices(string filename){
+    if (allQs.size() != k) // empty upon initialization
+        allQs.assign(k, NULL);
+    
+    int status;
+    FILE *Qfile;
+    Qfile = fopen(filename.c_str(), "w");
+    if (!Qfile)
+        throw ProjectError("Could not read rate matrix file " + filename);
+    
+    for (int u=0; u<k; u++){
+        if (allQs[u] == NULL)
+            allQs[u] = gsl_matrix_calloc (64, 64); // initialize Q as the zero-matrix
+        status = gsl_matrix_fprintf(Qfile, allQs[u], "%g");
+        if (status)
+            throw ProjectError("Could not read " + itoa(u+1) + "-th rate matrix from " + filename);
+    }
+    fclose(Qfile);
 }
 
 

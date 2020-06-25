@@ -11,20 +11,18 @@
 #include "codonevo.hh"
 #include "geneticcode.hh"
 #include "gtest/gtest.h"
+#include <stdlib.h>     /* rand */
+
 
 namespace {
-    TEST(CodonEvoTest, CodonEvoRate) 
+    TEST(CodonEvoTest, CodonEvoRateReadWrite)
+    // writing and reading codon rate matrix to/from file
     {
-        vector<double> branchset {0.3, 4.};
-
-        // equilibrium distribution pi
+        // random equilibrium distribution pi
         double *pi = new double[64];
         double normsum = 0.0;
         for (int c=0; c<64; c++){
-            if (GeneticCode::translate(c) == '*')
-                pi[c] = 0.0;
-            else
-                pi[c] = 1.0;
+            pi[c] = 1 + rand() % 10;
             normsum += pi[c];
         }
 
@@ -34,6 +32,20 @@ namespace {
         CodonEvo codonevo;
         codonevo.setKappa(4.0);
         codonevo.setPi(pi);
+        
+        codonevo.setOmegas(3);
+        codonevo.getRateMatrices();
+        codonevo.writeRateMatrices("rates-Q.txt");
+        
+        codonevo.readRateMatrices("rates-Q.txt");
+
+        EXPECT_EQ(0, 0);
+    }
+    TEST(CodonEvoTest, CodonEvoRate) 
+    {
+        vector<double> branchset {0.3, 4.};
+        CodonEvo codonevo; // implicitly uses uniform equilibrium distribution on sense codons
+        codonevo.setKappa(4.0);
         codonevo.setBranchLengths(branchset);
         
         codonevo.setOmegas(20);

@@ -19,7 +19,7 @@ OBJS    = ../lldouble.o ../fasta.o ../contTimeMC.o ../codonevo.o \
 	../scanner/lex.o ../parser/parse.o \
 
 # Link all tests to a single test binary
-unittests: lldouble_unittest.o fasta_unittest.o evo_unittest.o codonevo_unittest.o $(OBJS)
+unittests: lldouble_unittest.o fasta_unittest.o evo_unittest.o codonevo_unittest.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) \
 	lldouble_unittest.o fasta_unittest.o evo_unittest.o codonevo_unittest.o \
 	$(OBJS) $(LDFLAGS) -o unittests
