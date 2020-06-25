@@ -246,7 +246,7 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
         with open(resfolder + 'aug_utr_on_tmp.gff', 'w') as file:
             p = subprocess.Popen([
-                augustusbin, '--species=human', '--UTR=on',
+                augustusbin, '--species=human', '--UTR=on', '--softmasking=0',
                 '../examples/example.fa'
             ],
                                  stdout=file,

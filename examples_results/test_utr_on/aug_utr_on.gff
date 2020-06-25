@@ -61,4 +61,4 @@ HS08198	AUGUSTUS	exon	1587	1688	.	+	.	transcript_id "g2.t1"; gene_id "g2";
 # end gene g2
 ###
 # command line:
-# ../bin/augustus --species=human --UTR=on ../examples/example.fa
+# ../bin/augustus --species=human --UTR=on --softmasking=0 ../examples/example.fa
