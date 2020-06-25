@@ -2,6 +2,13 @@
 # Makefile for Augustus
 #
 include ../common.mk
+
+# set TESTING to false if you don't need testing for the comparative gene prediction mode (CGP) or
+# the required libraries 
+# libboost-serialization-dev 
+# are not available
+TESTING = false
+
 CXX?=g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
@@ -25,11 +32,17 @@ ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is 
 	MYSQL    ?= true
 	CXXFLAGS += -std=c++11
 	CPPFLAGS += -DCOMPGENEPRED
-	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o codonevo.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o
+	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o codonevo.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o tokenizer.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
 	INCLS += -I/usr/include/lpsolve
 endif
+
+ifeq (,$(findstring $(TESTING),0 false False FALSE))  # if TESTING is not defined or is something else than 0, false, False or FALSE
+	CPPFLAGS += -DTESTING
+	LIBS += -lboost_serialization # for serialization/deserialization
+endif
+
 DUMOBJS = dummy.o
 TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
 PROGR	= augustus etraining prepareAlign fastBlockSearch pp_simScore
@@ -624,6 +637,7 @@ compgenepred.o : \
 	../include/randseqaccess.hh \
 	../include/liftover.hh \
 	../include/train_logReg_param.hh \
+	../include/tokenizer.hh \
        compgenepred.cc
 
 randseqaccess.o : \
@@ -720,6 +734,10 @@ codonMSA.o: \
 train_logReg_param.o: \
 	../include/train_logReg_param.hh \
 	train_logReg_param.cc
+
+tokenizer.o: \
+	../include/tokenizer.hh \
+	tokenizer.cc
 
 #    1) signed-unsigned comparisons are needed because the methods
 #       std::vector<T>::size or std::string::length unfortunately

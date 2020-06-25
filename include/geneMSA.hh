@@ -157,6 +157,30 @@ private:
     //list<OrthoExon> orthoExonsList;		// Steffi: due to multiple copying, I remove this as attribute of any class. Instead it can be passed from compgenepred.cc by reference, whenever necessary.
     unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> > cumOmega; // stores cumulative omega values for every reading frame combination and every bitvector that exist 
     map<bit_vector, map<vector<int>, vector<double> > > codonOmega;
+
+    #ifdef TESTING
+    /*
+    *   added by Giovanna Migliorelli 14.05.2020 
+    *   code responsible for serialization
+    *   aknowledgement : https://www.boost.org/doc/libs/1_70_0/libs/serialization/doc/tutorial.html
+    */
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & starts;
+        ar & alignment;
+
+    }
+
+    /*  added by Giovanna Migliorelli 14.05.2020
+    *   default consttruct to allow for serialization
+    */
+
+    GeneMSA(){}; 
+
+    #endif
 };
 
 

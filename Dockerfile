@@ -79,4 +79,4 @@ RUN make install
 ENV PATH="/root/augustus/bin:${PATH}"
 
 # Test AUGUSTUS
-RUN make test
+RUN make unit_test
