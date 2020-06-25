@@ -385,9 +385,9 @@ class TestAugustus(unittest.TestCase):
                 resultdir + self.test_training_new_species.__name__) + '/'
         reffolder = (
             refdir + self.test_training_new_species_crf.__name__) if crf else (
-                resultdir + self.test_training_new_species.__name__) + '/'
+                refdir + self.test_training_new_species.__name__) + '/'
         os.mkdir(resfolder)
-
+        
         # call script to initialzie new species
         p = subprocess.Popen([
             'perl', '../scripts/new_species.pl', '--species=' + speciesname,
@@ -425,7 +425,7 @@ class TestAugustus(unittest.TestCase):
         with open(resfolder + 'test_tmp.out', 'w') as file:
             cmd = [
                 augustusbin, '../docs/tutorial2015/results/genes.gb.test',
-                '--species=' + speciesname, '--AUGUSTUS_CONFIG_PATH=../config'
+                '--species=' + speciesname, '--softmasking=0', '--AUGUSTUS_CONFIG_PATH=../config'
             ]
             if (crf):
                 cmd.append('--CRF=on')
