@@ -714,6 +714,7 @@ class TestAugustus(unittest.TestCase):
             '--speciesfilenames=genomes.tbl',
             '--treefile=tree.nwk',
             '--alnfile=aln.maf',
+            '--softmasking=0',
             '--alternatives-from-evidence=0',  # removes warning
             '--/CompPred/outdir=' + resfolder + 'pred'
         ]
@@ -819,8 +820,8 @@ def small_test_suite():
     # suite.addTest(TestAugustus('test_ab_initio_prediction'))
     # suite.addTest(TestAugustus('test_format_and_error_out'))
     # #suite.addTest(TestAugustus('test_alternatives_from_sampling'))
-    suite.addTest(TestAugustus('test_cgp'))
-    # suite.addTest(TestAugustus('test_cgp_sqlite'))
+    # suite.addTest(TestAugustus('test_cgp'))
+    suite.addTest(TestAugustus('test_cgp_sqlite'))
     # suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
     return suite
 
