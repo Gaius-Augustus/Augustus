@@ -497,7 +497,7 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
         cmd = [
             augustusbin, '../examples/autoAug/genome.fa',
-            '--species=caenorhabditis', '--gff3=on',
+            '--species=caenorhabditis', '--gff3=on', '--softmasking=0',
             '--outfile=' + resfolder + 'augustus_tmp.gff3',
             '--errfile=' + resfolder + 'augustus.err'
         ]
@@ -813,14 +813,14 @@ def default_test_suite():
 
 def small_test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(TestAugustus('test_utr_on'))
-    suite.addTest(TestAugustus('test_training_new_species'))
-    suite.addTest(TestAugustus('test_ab_initio_prediction'))
+    # suite.addTest(TestAugustus('test_utr_on'))
+    # suite.addTest(TestAugustus('test_training_new_species'))
+    # suite.addTest(TestAugustus('test_ab_initio_prediction'))
     suite.addTest(TestAugustus('test_format_and_error_out'))
-    #suite.addTest(TestAugustus('test_alternatives_from_sampling'))
-    suite.addTest(TestAugustus('test_cgp'))
-    suite.addTest(TestAugustus('test_cgp_sqlite'))
-    suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
+    # #suite.addTest(TestAugustus('test_alternatives_from_sampling'))
+    # suite.addTest(TestAugustus('test_cgp'))
+    # suite.addTest(TestAugustus('test_cgp_sqlite'))
+    # suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
     return suite
 
 
