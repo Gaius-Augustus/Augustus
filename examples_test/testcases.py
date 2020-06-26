@@ -463,7 +463,7 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
         with open(resfolder + '/augustus_tmp.gff', 'w') as file:
             cmd = [
-                augustusbin, '../examples/autoAug/genome.fa', '--softmasking=0',
+                augustusbin, '../examples/autoAug/genome.fa', '--softmasking=1',
                 '--species=caenorhabditis'
             ]
             p = subprocess.Popen(cmd,
