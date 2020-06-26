@@ -497,7 +497,7 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
         cmd = [
             augustusbin, '../examples/autoAug/genome.fa',
-            '--species=caenorhabditis', '--gff3=on', '--softmasking=0',
+            '--species=caenorhabditis', '--gff3=on', '--softmasking=1',
             '--outfile=' + resfolder + 'augustus_tmp.gff3',
             '--errfile=' + resfolder + 'augustus.err'
         ]
