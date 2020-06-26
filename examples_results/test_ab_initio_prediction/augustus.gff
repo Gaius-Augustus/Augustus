@@ -5749,4 +5749,4 @@ chrI	AUGUSTUS	tts	999557	999557	.	+	.	transcript_id "g187.t1"; gene_id "g187";
 # end gene g187
 ###
 # command line:
-# ../bin/augustus ../examples/autoAug/genome.fa --species=caenorhabditis
+# ../bin/augustus ../examples/autoAug/genome.fa --softmasking=0 --species=caenorhabditis
