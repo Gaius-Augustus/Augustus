@@ -379,6 +379,12 @@ class TestAugustus(unittest.TestCase):
 
     def training_new_species(self, crf):
         speciesname = 'test_aug_dev_species'
+
+        # Remove test species folder.
+        # Just in case the deletion fails for whatever reason.
+        if os.path.exists('../config/species/' + speciesname):
+            shutil.rmtree('../config/species/' + speciesname)
+
         resfolder = (
             resultdir +
             self.test_training_new_species_crf.__name__) if crf else (
