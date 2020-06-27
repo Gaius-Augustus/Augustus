@@ -96,6 +96,7 @@ int Evo::findClosestIndex(vector<double> &v, double val){
     return j;
 }
 
+
 gsl_matrix *Evo::getSubMatrixP(int u, double t){
     // determine index v into vector of branch lengths such that times[v] is close to t
     int v = findClosestIndex(times, t);

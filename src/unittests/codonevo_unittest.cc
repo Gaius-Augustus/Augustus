@@ -12,6 +12,9 @@
 #include "geneticcode.hh"
 #include "gtest/gtest.h"
 #include <stdlib.h>     /* rand */
+#include <unistd.h>
+
+int unlink(const char *path);
 
 
 namespace {
@@ -33,13 +36,24 @@ namespace {
         codonevo.setKappa(4.0);
         codonevo.setPi(pi);
         
-        codonevo.setOmegas(3);
+        codonevo.setOmegas(3); // k=3
         codonevo.getRateMatrices();
-        codonevo.writeRateMatrices("rates-Q.txt");
-        
-        codonevo.readRateMatrices("rates-Q.txt");
+        const char *ratesFname("rates-Q.txt");
+        codonevo.writeRateMatrices(ratesFname);
+        gsl_matrix *Q0, *Q2;
+        // change some values
+        Q0 = codonevo.getSubMatrixQ(0);
+        Q2 = codonevo.getSubMatrixQ(2);
+        gsl_matrix_set (Q0, 0, 0, 0.12345);
+        gsl_matrix_set (Q2, 0, 1, 0.012345);
+        // check that the values have indeed changed
+        // ... expect not near
+        codonevo.readRateMatrices(ratesFname);
 
-        EXPECT_EQ(0, 0);
+        EXPECT_NEAR(gsl_matrix_get(Q0, 0, 0), .12345, 1e-6);
+        EXPECT_NEAR(gsl_matrix_get(Q2, 0, 1), 0.012345, 1e-6);
+
+        unlink(ratesFname); // delete temporary file
     }
     TEST(CodonEvoTest, CodonEvoRate) 
     {

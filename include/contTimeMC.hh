@@ -57,7 +57,8 @@ public:
      * depend on t and thus u is set to 0. It is however conceivable
      * to allow different rates of exon loss in future.
      */
-    gsl_matrix *getSubMatrixP(int u, double t); 
+    gsl_matrix *getSubMatrixQ(int u);
+    gsl_matrix *getSubMatrixP(int u, double t);
     gsl_matrix *getSubMatrixLogP(int u, double t); 
 
     /*
