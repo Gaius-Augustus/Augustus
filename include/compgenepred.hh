@@ -12,6 +12,11 @@
 #include "extrinsicinfo.hh"
 #include "randseqaccess.hh"
 #include "phylotree.hh"
+#include "geneMSA.hh"
+#include "genomicMSA.hh"
+#include "namgene.hh"
+
+
 
 #include <stack>
 
@@ -33,23 +38,27 @@ bool shiftGFF(string filename);
  * @author Stefanie Koenig
  */
 class CompGenePred {
-public:
-    CompGenePred();
-    ~CompGenePred() { delete rsa;}
+    public:
+        CompGenePred();
+        ~CompGenePred() { delete rsa;}
 
-    void start();
-    void runPrediction();   // standard prediction (uses full size sequences)
+        void start();    
+        void runPredictionOrTest();
 
-    #ifdef TESTING
-    // helpers for testing
-    void prepareTest();   
-    void runTest();
-    void postprocTest();
-    bool readInterval(string filename, list<tuple<string,int,int> >& grlist);
-    #endif
-    
-    RandSeqAccess *rsa;
-    PhyloTree tree;
+        #ifdef TESTING
+        // helpers for testing
+        void postprocTest();
+        bool readInterval(string filename, list<tuple<string,int,int> >& grlist);
+        #endif
+        
+        RandSeqAccess *rsa;
+        PhyloTree tree;
+
+ 
+
 };
 
 #endif  // _COMPGENEPRED_HH
+
+
+
