@@ -571,13 +571,13 @@ class TestAugustus(unittest.TestCase):
     def test_cgp(self):
         os.chdir(default_wd)
         os.chdir('../../examples/cgp')
-        resfolder = '../' + resultdir + self.test_cgp.__name__ + '/'
-        reffolder = '../' + refdir + self.test_cgp.__name__ + '/'
+        resfolder = '../../tests/' + resultdir.replace('../', '') + self.test_cgp.__name__ + '/'
+        reffolder = '../../tests/' + refdir.replace('../', '') + self.test_cgp.__name__ + '/'
         os.mkdir(resfolder)
 
         with open(resfolder + 'output_tmp.txt', 'w') as file:
             cmd = [
-                '../' + augustusbin,
+                augustusbin,
                 '--species=human',
                 '--speciesfilenames=genomes.tbl',
                 '--treefile=tree.nwk',
@@ -824,9 +824,9 @@ def small_test_suite():
     # suite.addTest(TestAugustus('test_utr_on'))
     # suite.addTest(TestAugustus('test_training_new_species'))
     # suite.addTest(TestAugustus('test_ab_initio_prediction'))
-    suite.addTest(TestAugustus('test_format_and_error_out'))
+    # suite.addTest(TestAugustus('test_format_and_error_out'))
     # #suite.addTest(TestAugustus('test_alternatives_from_sampling'))
-    # suite.addTest(TestAugustus('test_cgp'))
+    suite.addTest(TestAugustus('test_cgp'))
     # suite.addTest(TestAugustus('test_cgp_sqlite'))
     # suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
     return suite
