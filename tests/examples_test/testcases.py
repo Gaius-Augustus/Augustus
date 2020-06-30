@@ -703,8 +703,8 @@ class TestAugustus(unittest.TestCase):
 
         os.chdir('../../examples/cgp')
 
-        resfolder = '../' + resultdir + 'test_cgp_with_db'
-        reffolder = '../' + refdir + 'test_cgp_with_db'
+        resfolder = '../../tests/' + resultdir.replace('../', '') + 'test_cgp_with_db'
+        reffolder = '../../tests/' + refdir.replace('../', '') + 'test_cgp_with_db'
         if mysql:
             resfolder += '_mysql'
             reffolder += '_mysql'
@@ -715,7 +715,7 @@ class TestAugustus(unittest.TestCase):
         reffolder += '/'
 
         cmd = [
-            '../' + augustusbin,
+            augustusbin,
             '--species=human',
             '--speciesfilenames=genomes.tbl',
             '--treefile=tree.nwk',
@@ -826,9 +826,9 @@ def small_test_suite():
     # suite.addTest(TestAugustus('test_ab_initio_prediction'))
     # suite.addTest(TestAugustus('test_format_and_error_out'))
     # #suite.addTest(TestAugustus('test_alternatives_from_sampling'))
-    suite.addTest(TestAugustus('test_cgp'))
-    # suite.addTest(TestAugustus('test_cgp_sqlite'))
-    # suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
+    # suite.addTest(TestAugustus('test_cgp'))
+    suite.addTest(TestAugustus('test_cgp_sqlite'))
+    suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
     return suite
 
 
