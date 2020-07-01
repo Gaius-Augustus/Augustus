@@ -378,11 +378,11 @@ namespace PP {
 	void addHitFront(int b, int offset, Double val, DistanceType iBD);
 	    
 	void init() {
-	    for (int b=0; b<lists.size(); b++)
+	    for (unsigned b=0; b<lists.size(); b++)
 		lists[b]->init();
 	}
 	void deleteNodes() {
-	    for (int b=0; b<lists.size(); b++)  
+	    for (unsigned b=0; b<lists.size(); b++)  
 		delete lists[b];
 	}
 

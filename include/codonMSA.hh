@@ -13,6 +13,7 @@
 #include "properties.hh"
 #include "phylotree.hh"
 #include "contTimeMC.hh"
+#include "codonevo.hh"
 
 /**
  * @brief datastructure for the codon alignment
