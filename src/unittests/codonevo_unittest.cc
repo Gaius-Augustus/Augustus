@@ -47,18 +47,21 @@ namespace {
         gsl_matrix_set (Q0, 0, 0, 0.12345);
         gsl_matrix_set (Q2, 0, 1, 0.012345);
         // check that the values have indeed changed
-        // ... expect not near
-        codonevo.readRateMatrices(ratesFname);
-
         EXPECT_NEAR(gsl_matrix_get(Q0, 0, 0), .12345, 1e-6);
         EXPECT_NEAR(gsl_matrix_get(Q2, 0, 1), 0.012345, 1e-6);
+
+        codonevo.readRateMatrices(ratesFname);
+
+        EXPECT_NEAR(gsl_matrix_get(Q0, 0, 0), -1.11186, 1e-6);
+        EXPECT_NEAR(gsl_matrix_get(Q2, 0, 1), 0.07978618, 1e-6);
 
         unlink(ratesFname); // delete temporary file
     }
     TEST(CodonEvoTest, CodonEvoRate) 
     {
         vector<double> branchset {0.3, 4.};
-        CodonEvo codonevo; // implicitly uses uniform equilibrium distribution on sense codons
+        CodonEvo codonevo; // implicitly uses uniform equilibrium
+                           // distribution on sense codons
         codonevo.setKappa(4.0);
         codonevo.setBranchLengths(branchset);
         

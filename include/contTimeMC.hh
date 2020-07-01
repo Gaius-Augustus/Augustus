@@ -48,6 +48,8 @@ public:
     double getPi(int i) const {return pi[i];}  //equilibrium frequency of state i
     double getLogPi(int i) const {return log(getPi(i));}
 
+    gsl_matrix *getSubMatrixQ(int u){ return allQs[u]; }
+    
     /*
      * Returns a pointer to the probability matrix for which t comes closest.
      * u is the index to a second parameter for which the probability matrices
@@ -57,7 +59,6 @@ public:
      * depend on t and thus u is set to 0. It is however conceivable
      * to allow different rates of exon loss in future.
      */
-    gsl_matrix *getSubMatrixQ(int u);
     gsl_matrix *getSubMatrixP(int u, double t);
     gsl_matrix *getSubMatrixLogP(int u, double t); 
 
