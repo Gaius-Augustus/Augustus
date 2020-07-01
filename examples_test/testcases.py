@@ -246,7 +246,7 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
         with open(resfolder + 'aug_utr_on_tmp.gff', 'w') as file:
             p = subprocess.Popen([
-                augustusbin, '--species=human', '--UTR=on',
+                augustusbin, '--species=human', '--UTR=on', '--softmasking=0',
                 '../examples/example.fa'
             ],
                                  stdout=file,
@@ -379,15 +379,21 @@ class TestAugustus(unittest.TestCase):
 
     def training_new_species(self, crf):
         speciesname = 'test_aug_dev_species'
+
+        # Remove test species folder.
+        # Just in case the deletion fails for whatever reason.
+        if os.path.exists('../config/species/' + speciesname):
+            shutil.rmtree('../config/species/' + speciesname)
+
         resfolder = (
             resultdir +
             self.test_training_new_species_crf.__name__) if crf else (
                 resultdir + self.test_training_new_species.__name__) + '/'
         reffolder = (
             refdir + self.test_training_new_species_crf.__name__) if crf else (
-                resultdir + self.test_training_new_species.__name__) + '/'
+                refdir + self.test_training_new_species.__name__) + '/'
         os.mkdir(resfolder)
-
+        
         # call script to initialzie new species
         p = subprocess.Popen([
             'perl', '../scripts/new_species.pl', '--species=' + speciesname,
@@ -425,7 +431,7 @@ class TestAugustus(unittest.TestCase):
         with open(resfolder + 'test_tmp.out', 'w') as file:
             cmd = [
                 augustusbin, '../docs/tutorial2015/results/genes.gb.test',
-                '--species=' + speciesname, '--AUGUSTUS_CONFIG_PATH=../config'
+                '--species=' + speciesname, '--softmasking=0', '--AUGUSTUS_CONFIG_PATH=../config'
             ]
             if (crf):
                 cmd.append('--CRF=on')
@@ -463,7 +469,7 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
         with open(resfolder + '/augustus_tmp.gff', 'w') as file:
             cmd = [
-                augustusbin, '../examples/autoAug/genome.fa',
+                augustusbin, '../examples/autoAug/genome.fa', '--softmasking=1',
                 '--species=caenorhabditis'
             ]
             p = subprocess.Popen(cmd,
@@ -497,7 +503,7 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
         cmd = [
             augustusbin, '../examples/autoAug/genome.fa',
-            '--species=caenorhabditis', '--gff3=on',
+            '--species=caenorhabditis', '--gff3=on', '--softmasking=1',
             '--outfile=' + resfolder + 'augustus_tmp.gff3',
             '--errfile=' + resfolder + 'augustus.err'
         ]
@@ -576,6 +582,7 @@ class TestAugustus(unittest.TestCase):
                 '--speciesfilenames=genomes.tbl',
                 '--treefile=tree.nwk',
                 '--alnfile=aln.maf',
+                '--softmasking=0',
                 '--alternatives-from-evidence=0',  # removes warning
                 '--/CompPred/outdir=' + resfolder
             ]
@@ -713,6 +720,7 @@ class TestAugustus(unittest.TestCase):
             '--speciesfilenames=genomes.tbl',
             '--treefile=tree.nwk',
             '--alnfile=aln.maf',
+            '--softmasking=0',
             '--alternatives-from-evidence=0',  # removes warning
             '--/CompPred/outdir=' + resfolder + 'pred'
         ]
