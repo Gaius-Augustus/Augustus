@@ -22,7 +22,7 @@ parser.add_argument('--eval',
                     help='The path to eval.')                    
 args = parser.parse_args()
 
-augustusbin = '../bin/augustus'
+augustusbin = '../../bin/augustus'
 tmp_data_folder = 'tmp/'
 result_folder = 'output/'
 
@@ -59,7 +59,7 @@ def create_seqlist(file):
 def evaluate():
     create_test_files()
     cmd = [
-        '../scripts/eval_multi_gtf.pl', tmp_data_folder + 'seqlist',
+        '../../scripts/eval_multi_gtf.pl', tmp_data_folder + 'seqlist',
         tmp_data_folder + 'file1.gff', tmp_data_folder + 'file2.gff',
         '--EVAL_PATH=' + args.eval
     ]
