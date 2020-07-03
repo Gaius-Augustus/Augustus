@@ -799,10 +799,47 @@ class TestAugustus(unittest.TestCase):
 
         self.cgp_with_db_execution(resfolder, reffolder, *args)
 
+    def test_hints_MPE(self):
+        dirname = self.test_hints_MPE.__name__
+        fname = "aug_hints_MPE.gff"
+        tfname = "aug_hints_MPE_tmp.gff"
+        os.chdir(default_wd)
+        resfolder = resultdir + dirname + '/'
+        os.mkdir(resfolder)
+        with open(resfolder + tfname, 'w') as file:
+            p = subprocess.Popen([
+                augustusbin, '--species=human', '--hintsfile=../../examples/hints.gff',
+                '--extrinsicCfgFile=../../config/extrinsic/extrinsic.MPE.cfg',
+                '../../examples/example.fa'
+            ],
+                                 stdout=file,
+                                 stderr=subprocess.PIPE,
+                                 universal_newlines=True)
+        rc = p.wait()
+        error = p.stderr.read()
+        p.stderr.close()
+
+        self.assertEqual(error, '', error)
+        self.assertEqual(rc, 0, 'Returncode not 0!')
+        self.assertTrue(os.path.isfile((resfolder + tfname)),
+                        'Output file was not created as expected!')
+
+        # filter output file
+        afilter.pred(resfolder + tfname, resfolder + fname)
+        os.remove(resfolder + tfname)
+
+        # compare results
+        if TestAugustus.opt_compare:
+            diff = comp.compare_folder(refdir + dirname + '/',
+                                       resfolder,
+                                       html=TestAugustus.opt_html)
+            self.assertEqual(diff, '', diff)
+
 
 def default_test_suite():
     suite = unittest.TestSuite()
     suite.addTest(TestAugustus('test_utr_on'))
+    suite.addTest(TestAugustus('test_hints_MPE'))
     suite.addTest(TestAugustus('test_iterative_prediction'))
     suite.addTest(TestAugustus('test_iterative_prediction_with_hints'))
     suite.addTest(TestAugustus('test_training_new_species'))
@@ -822,6 +859,7 @@ def default_test_suite():
 def small_test_suite():
     suite = unittest.TestSuite()
     suite.addTest(TestAugustus('test_utr_on'))
+    suite.addTest(TestAugustus('test_hints_MPE'))
     suite.addTest(TestAugustus('test_training_new_species'))
     suite.addTest(TestAugustus('test_ab_initio_prediction'))
     suite.addTest(TestAugustus('test_format_and_error_out'))
@@ -829,6 +867,7 @@ def small_test_suite():
     suite.addTest(TestAugustus('test_cgp'))
     suite.addTest(TestAugustus('test_cgp_sqlite'))
     suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
+
     return suite
 
 
