@@ -628,6 +628,7 @@ exoncand.o : \
 
 compgenepred.o : \
 	../include/compgenepred.hh \
+	../include/contTimeMC.hh \
 	../include/orthograph.hh \
 	../include/mea.hh \
         ../include/genomicMSA.hh \

@@ -131,8 +131,8 @@ public:
             gsl_vector_free(l);
     }
     void setPi();
-    void setLambda(double lambda = 0.001);
-    void setMu(double mu = 0.001);
+    void setLambda(double lambda = 0.0001);
+    void setMu(double mu = 0.0001);
     void setAliErr(double ali_error = 0.1);
     double getLambda() const{return lambda;}
     double getMu() const{return mu;}
