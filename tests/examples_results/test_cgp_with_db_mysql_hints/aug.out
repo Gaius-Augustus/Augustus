@@ -59,4 +59,4 @@ round	iter	step_size	primal	dual	#inconsistencies
 0	10	6.109476089e-07	18756.63152	18756.63172	4
 dual decomposition reduced initial duality gap of 6.033529932 to 0 (to 0%)
 # command line:
-# ../../bin/augustus --species=human --speciesfilenames=genomes.tbl --treefile=tree.nwk --alnfile=aln.maf --softmasking=0 --alternatives-from-evidence=0 --/CompPred/outdir=../../examples_test_results/test_cgp_with_db_mysql_hints/pred --dbaccess=aug_vertebrates,127.0.0.1,augustus,aug_passwd --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg
+# ../../bin/augustus --species=human --speciesfilenames=genomes.tbl --treefile=tree.nwk --alnfile=aln.maf --softmasking=0 --alternatives-from-evidence=0 --/CompPred/outdir=../../tests/examples_test_results/test_cgp_with_db_mysql_hints/pred --dbaccess=aug_vertebrates,127.0.0.1,augustus,aug_passwd --dbhints=true --extrinsicCfgFile=cgp.extrinsic.cfg

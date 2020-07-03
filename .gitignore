@@ -60,14 +60,14 @@ src/unittests/unittests
 .vscode
 
 # ignore generated test output
-examples_test_results/
+tests/examples_test_results/
 
 # ignore tmp test case data
-examples_test/data/tmp/
+tests/examples_test/data/tmp/
 
 # ignore generated longrunning test files
-longrunning_examples/tmp/
-longrunning_examples/output/
+tests/longrunning_examples/tmp/
+tests/longrunning_examples/output/
 
 # ignore test species
 config/species/test_aug_dev_species/
