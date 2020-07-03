@@ -850,7 +850,7 @@ def default_test_suite():
     suite.addTest(TestAugustus('test_cgp'))
     os.chdir(default_wd)
     suite.addTest(TestAugustus('test_cgp_sqlite'))
-
+    os.chdir(default_wd)
     suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
     os.chdir(default_wd)
     return suite
