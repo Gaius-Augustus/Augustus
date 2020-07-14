@@ -9,7 +9,11 @@
 EVAL_DIR=/home/daniel/tools/eval-2.2.8
 
 export PERL5LIB=$EVAL_DIR # so Eval.pm is found
-export AUGUSTUS_CONFIG_PATH=../../config
+export AUGUSTUS_CONFIG_PATH=../../../config
+
+########## create output folder for eval files
+EVAL_OUT_DIR=evalout
+mkdir -p $EVAL_OUT_DIR
 
 ########## download training data and sample genome data
 DATADIR=../data
@@ -43,7 +47,7 @@ if [ -d $AUGUSTUS_CONFIG_PATH/species/$HMMspecies ]; then
    rm -r $AUGUSTUS_CONFIG_PATH/species/$HMMspecies
 fi
 #../../scripts/new_species.pl --species=$HMMspecies --AUGUSTUS_CONFIG_PATH=../../config
-../../scripts/new_species.pl --species=$HMMspecies
+../../../scripts/new_species.pl --species=$HMMspecies
 
 # train parameters
 etraining --species=$HMMspecies $TRSET --UTR=on > etrain_hmm.out 2> etrain_hmm.err
@@ -56,7 +60,7 @@ if [ -d $AUGUSTUS_CONFIG_PATH/species/$CRFspecies ]; then
    rm -r $AUGUSTUS_CONFIG_PATH/species/$CRFspecies
 fi   
 #../../scripts/new_species.pl --species=$CRFspecies --AUGUSTUS_CONFIG_PATH=../../config
-../../scripts/new_species.pl --species=$CRFspecies
+../../../scripts/new_species.pl --species=$CRFspecies
 
 # HMM-training to obtain UTR parameters
 etraining --species=$CRFspecies $TRSET --UTR=on > /dev/null 2> /dev/null
@@ -112,12 +116,12 @@ for ((r=0; r<$numEvalRuns; r++)); do
    DIR=`mktemp -d -p .`
    CHUNKLIST="27 30 47 54 57 80 86 101 118" # same as Giovanna uses in multi-genome longrunning test
    NUMCHUNKS=${#CHUNKLIST[@]}
-   parallel -j 5 --will-cite ./aug_run_chunk.sh {} $TESTSEQ $DIR/augustus_{}.gff \"$OPTIONS\" ::: $CHUNKLIST
+   parallel -j 6 --will-cite ./aug_run_chunk.sh {} $TESTSEQ $DIR/augustus_{}.gff \"$OPTIONS\" ::: $CHUNKLIST
    # with sampling option this takes up to 4GB RAM per job
    
    for C in $CHUNKLIST; do
       cat $DIR/augustus_$C.gff
-   done | ../../scripts/join_aug_pred.pl > $GFFFNAME
+   done | ../../../scripts/join_aug_pred.pl > $GFFFNAME
 
    # count how many jobs finished
    NUM_FINISHED=`tail -n 2 $DIR/augustus_*.gff | grep "command line" | wc -l`
@@ -127,7 +131,7 @@ for ((r=0; r<$numEvalRuns; r++)); do
        echo "ERROR: $RUNNAME.eval could not be computed."
    else
        rm -r $DIR
-       $EVAL_DIR/evaluate_gtf.pl $REFANNO $GFFFNAME > $RUNNAME.eval
+       $EVAL_DIR/evaluate_gtf.pl $REFANNO $GFFFNAME > $EVAL_OUT_DIR/$RUNNAME.eval
    fi
 done
 
