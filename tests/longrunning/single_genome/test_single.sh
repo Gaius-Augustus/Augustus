@@ -5,18 +5,18 @@
 # ~/Augustus/longrunning_examples/single_genome$ bash -v test_single.sh
 
 # set this directory
-# EVAL_DIR=/home/mario/tools/eval-2.2.8
 EVAL_DIR=/home/daniel/tools/eval-2.2.8
 
 export PERL5LIB=$EVAL_DIR # so Eval.pm is found
 export AUGUSTUS_CONFIG_PATH=../../../config
 
-########## create output folder for eval files
-EVAL_OUT_DIR=evalout
+########## create output folder
+OUTDIR=output
+EVAL_OUT_DIR=$OUTDIR/eval
 mkdir -p $EVAL_OUT_DIR
 
 ########## download training data and sample genome data
-DATADIR=../data
+DATADIR=data
 TDIR=$DATADIR/training
 mkdir -p $TDIR
 
@@ -46,11 +46,10 @@ HMMspecies=human_longrunningtest_hmm
 if [ -d $AUGUSTUS_CONFIG_PATH/species/$HMMspecies ]; then
    rm -r $AUGUSTUS_CONFIG_PATH/species/$HMMspecies
 fi
-#../../scripts/new_species.pl --species=$HMMspecies --AUGUSTUS_CONFIG_PATH=../../config
 ../../../scripts/new_species.pl --species=$HMMspecies
 
 # train parameters
-etraining --species=$HMMspecies $TRSET --UTR=on > etrain_hmm.out 2> etrain_hmm.err
+etraining --species=$HMMspecies $TRSET --UTR=on > $OUTDIR/etrain_hmm.out 2> $OUTDIR/etrain_hmm.err
 
 
 
@@ -59,14 +58,13 @@ CRFspecies=human_longrunningtest_crf
 if [ -d $AUGUSTUS_CONFIG_PATH/species/$CRFspecies ]; then
    rm -r $AUGUSTUS_CONFIG_PATH/species/$CRFspecies
 fi   
-#../../scripts/new_species.pl --species=$CRFspecies --AUGUSTUS_CONFIG_PATH=../../config
 ../../../scripts/new_species.pl --species=$CRFspecies
 
 # HMM-training to obtain UTR parameters
 etraining --species=$CRFspecies $TRSET --UTR=on > /dev/null 2> /dev/null
 
 # CRF training of CDS parameters
-etraining --species=$CRFspecies $TRSET --CRF=on --UTR=off > etrain_crf.out 2> etrain_crf.err
+etraining --species=$CRFspecies $TRSET --CRF=on --UTR=off > $OUTDIR/etrain_crf.out 2> $OUTDIR/etrain_crf.err
 # 46m
 
 
@@ -103,14 +101,14 @@ OPTIONSNAMES=(human-nosm \
 	     )
 
 
-RFILE=pred-report.txt
+RFILE=$OUTDIR/pred-report.txt
 rm -r $RFILE
 
 for ((r=0; r<$numEvalRuns; r++)); do
    OPTIONS=${OPTIONSLIST[$r]}
    RUNNAME=${OPTIONSNAMES[$r]}
    DESCR=${OPTIONSDESCR[$r]}
-   GFFFNAME=augustus-long-$RUNNAME.gff
+   GFFFNAME=$OUTDIR/augustus-long-$RUNNAME.gff
    echo -e "$GFFFNAME\t$DESCR\trun options: $OPTIONS" | tee -a $RFILE
 
    DIR=`mktemp -d -p .`
