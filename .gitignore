@@ -66,8 +66,10 @@ tests/examples_test_results/
 tests/examples_test/data/tmp/
 
 # ignore generated longrunning test files
-tests/longrunning_examples/tmp/
-tests/longrunning_examples/output/
+tests/longrunning/single_genome/data/
+tests/longrunning/single_genome/output/
 
 # ignore test species
 config/species/test_aug_dev_species/
+config/species/human_longrunningtest_crf/
+config/species/human_longrunningtest_hmm/
