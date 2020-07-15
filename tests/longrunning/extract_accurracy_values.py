@@ -3,15 +3,15 @@
 import re
 import json
 import os
-import shutil
+import sys
 import argparse
 
 
 parser = argparse.ArgumentParser(
-    description='Extract desired accurracy values from eval file.')
-parser.add_argument('--file',
+    description='Extract desired accurracy values from eval file(s).')
+parser.add_argument('--path',
                     required=True,
-                    help='The file to consider.')         
+                    help='The path to the folder or the file to consider.')         
 args = parser.parse_args()
 
 
@@ -132,5 +132,19 @@ def init_dict():
     return dictionary
 
 
+def analyze_folder(folder):
+    if not os.path.isdir(args.path):
+        print('Folder not found: ' + folder)
+        sys.exit()
+
+    for subdir, dirs, files in os.walk(folder):
+        for file in files:
+            if file.endswith('.eval'):
+                find_values(subdir + '/' + file)
+
+
 if __name__ == '__main__':
-    find_values(args.file)
+    if os.path.isdir(args.path):
+        analyze_folder(args.path)
+    else:
+        find_values(args.path)
