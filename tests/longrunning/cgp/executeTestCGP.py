@@ -160,8 +160,9 @@ def run_prediction_parallel(paths_shared, paths, chunks):
     
     for p in proc_list:
         error = p.stderr.read()
-        print(error)
         p.stderr.close()
+        if error:
+            print(error)
 
 def prepare_test(paths_shared, paths, chunks):
     for chunk in chunks:
@@ -218,8 +219,9 @@ def run_test_parallel(paths_shared, paths, chunks):
         
     for p in proc_list:
         error = p.stderr.read()
-        print(error)
         p.stderr.close()
+        if error:
+            print(error)
 
 def execute(cmd, output, mode='w'):
     with open(output, mode) as file:
@@ -510,6 +512,9 @@ def randomize_dataset(filename):
 
 
 def get_required_data():
+    if os.path.exists('cgp12way/'):
+        shutil.rmtree('cgp12way/')
+
     url = 'http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/cgp12way.tgz'
     filename = 'cgp12way.tar.gz'
     wget.download(url, filename)
@@ -523,8 +528,6 @@ def get_required_data():
 if __name__ == '__main__':
     get_required_data()
      
-    #sys.exit()
-
     if args.rand:
         randomize_dataset(args.rand)
         sys.exit()
