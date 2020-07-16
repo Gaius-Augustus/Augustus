@@ -8,7 +8,7 @@ import argparse
 
 
 parser = argparse.ArgumentParser(
-    description='Extract desired accurracy values from eval file(s).')
+    description='Extract desired accuracy values from eval file(s).')
 parser.add_argument('--path',
                     required=True,
                     help='The path to the folder or the file to consider.')         
