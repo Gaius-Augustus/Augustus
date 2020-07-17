@@ -10,7 +10,7 @@ CHUNKSIZE=2499999
 START=$((CHUNKSTEP*(CHUNK-1)))
 END=$((START+CHUNKSIZE-1))
 
-CMD="augustus --predictionStart=$START --predictionEnd=$END $GENOME $OPTIONS --outfile=$OUTFNAME"
+CMD="../../../bin/augustus --predictionStart=$START --predictionEnd=$END $GENOME $OPTIONS --outfile=$OUTFNAME"
 
 echo -e "executing  $CMD"
 $CMD
