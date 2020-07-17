@@ -5,7 +5,7 @@
 # ~/Augustus/longrunning_examples/single_genome$ bash -v test_single.sh
 
 # set this directory
-EVAL_DIR=/home/daniel/tools/eval-2.2.8
+EVAL_DIR=/data/eval
 
 export PERL5LIB=$EVAL_DIR # so Eval.pm is found
 export AUGUSTUS_CONFIG_PATH=../../../config
