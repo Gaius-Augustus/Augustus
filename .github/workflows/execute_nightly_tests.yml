@@ -16,7 +16,7 @@ env:
 
 jobs:
   longrunning_test:
-    runs-on: [self-hosted, linux]
+    runs-on: [self-hosted, linux, ubuntu]
 
     steps:
     - name: Check out repository
