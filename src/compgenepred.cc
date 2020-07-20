@@ -180,6 +180,7 @@ void CompGenePred::runPredictionOrTest(){
     //evo.printBranchLengths();
 
     cout << "evo : computing logPmatrices..." << endl;
+    evo.getRateMatrices();
     evo.computeLogPmatrices();
     cout << "evo : logPmatrices successfully computed..." << endl;
 
@@ -501,6 +502,7 @@ void CompGenePred::runPredictionOrTest(){
     //codonevo.printOmegas();
 
     cout << "codonevo : computing logPmatrices..." << endl;
+    codonevo.getRateMatrices();
     codonevo.computeLogPmatrices();
     cout << "codonevo : logPmatrices successfully computed..." << endl;
     
