@@ -26,5 +26,5 @@ jobs:
       run: make all
 
     - name: Execute single genome test cases
-      run: ./test_single.sh 
-      working-directory: ./tests/longrunning/single_genome/
+      run: ./test_single.sh -e /data/eval/
+      working-directory: tests/longrunning/single_genome/

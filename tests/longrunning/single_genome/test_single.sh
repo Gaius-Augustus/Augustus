@@ -2,10 +2,16 @@
 # Tests are longrunning because of CRF training and evaluations on larger chunks of genome:
 # 9 regions of 2.5 MB each (human chr1, hg38)
 # execute this script (single-threaded) with
-# ~/Augustus/longrunning_examples/single_genome$ bash -v test_single.sh
+# ~/Augustus/longrunning_examples/single_genome$ bash -v test_single.sh -e path/to/eval
 
-# set this directory
-EVAL_DIR=/data/eval
+# set given eval directory
+while getopts e: option
+do
+case "${option}"
+in
+e) EVAL_DIR=${OPTARG};;
+esac
+done
 
 export PERL5LIB=$EVAL_DIR # so Eval.pm is found
 export AUGUSTUS_CONFIG_PATH=../../../config
