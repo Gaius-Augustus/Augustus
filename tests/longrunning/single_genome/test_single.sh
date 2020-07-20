@@ -55,7 +55,7 @@ fi
 ../../../scripts/new_species.pl --species=$HMMspecies
 
 # train parameters
-../../../bin/etraining --species=$HMMspecies $TRSET --UTR=on > $OUTDIR/etrain_hmm.out 2> $OUTDIR/etrain_hmm.err
+etraining --species=$HMMspecies $TRSET --UTR=on > $OUTDIR/etrain_hmm.out 2> $OUTDIR/etrain_hmm.err
 
 
 
@@ -67,10 +67,10 @@ fi
 ../../../scripts/new_species.pl --species=$CRFspecies
 
 # HMM-training to obtain UTR parameters
-../../../bin/etraining --species=$CRFspecies $TRSET --UTR=on > /dev/null 2> /dev/null
+etraining --species=$CRFspecies $TRSET --UTR=on > /dev/null 2> /dev/null
 
 # CRF training of CDS parameters
-../../../bin/etraining --species=$CRFspecies $TRSET --CRF=on --UTR=off > $OUTDIR/etrain_crf.out 2> $OUTDIR/etrain_crf.err
+etraining --species=$CRFspecies $TRSET --CRF=on --UTR=off > $OUTDIR/etrain_crf.out 2> $OUTDIR/etrain_crf.err
 # 46m
 
 
