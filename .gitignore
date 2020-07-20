@@ -68,6 +68,7 @@ tests/examples_test/data/tmp/
 # ignore longrunning test data and output files
 tests/longrunning/single_genome/data/
 tests/longrunning/single_genome/output/
+tests/longrunning/single_genome/tmp.*/
 tests/longrunning/cgp/cgp12way/
 tests/longrunning/cgp/cgp12way.tar.gz
 
