@@ -28,3 +28,7 @@ jobs:
     - name: Execute single genome test cases
       run: ./test_single.sh -e /data/eval/
       working-directory: tests/longrunning/single_genome/
+
+    - name: Extract desired accuracy values
+      run: ./extract_accuracy_values.py -path single_genome/output/eval
+      working-directory: tests/longrunning/
