@@ -70,7 +70,7 @@ fi
 ../../../bin/etraining --species=$CRFspecies $TRSET --UTR=on > /dev/null 2> /dev/null
 
 # CRF training of CDS parameters
-../../../bin/etraining --species=$CRFspecies $TRSET --CRF=on --UTR=off > $OUTDIR/etrain_crf.out 2> $OUTDIR/etrain_crf.err
+../../../bin/etraining --species=$CRFspecies $TRSET --softmasking=0 --CRF=on --UTR=off > $OUTDIR/etrain_crf.out 2> $OUTDIR/etrain_crf.err
 # 46m
 
 
