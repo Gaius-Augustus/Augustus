@@ -179,10 +179,7 @@ void CompGenePred::runPredictionOrTest(){
     evo.setBranchLengths(branchset);
     //evo.printBranchLengths();
 
-    cout << "evo : computing logPmatrices..." << endl;
-    evo.getRateMatrices();
     evo.computeLogPmatrices();
-    cout << "evo : logPmatrices successfully computed..." << endl;
 
     OrthoGraph::tree = &tree;
     GeneMSA::setTree(&tree);
@@ -501,10 +498,7 @@ void CompGenePred::runPredictionOrTest(){
     //cout << "Omegas, for which substitution matrices are stored:" << endl;
     //codonevo.printOmegas();
 
-    cout << "codonevo : computing logPmatrices..." << endl;
-    codonevo.getRateMatrices();
     codonevo.computeLogPmatrices();
-    cout << "codonevo : logPmatrices successfully computed..." << endl;
     
     // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
     // printCodonMatrix(P);
