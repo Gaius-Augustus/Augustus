@@ -208,6 +208,9 @@ def run_test_parallel(paths_shared, paths, chunks):
         '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run']
         output = paths[chunk]['result_dir'] + 'out.runTest'
 
+        # TODO: remove this debug output!
+        print(cmd)
+
         with open(output, 'w') as file:
             proc_list.append(
                         subprocess.Popen(cmd,
@@ -278,7 +281,6 @@ def run_evaluate(paths, chunk):
     print('Runnning evaluation on chunk', chunk, '...')
     cmd = [paths_shared['eval_bin'], paths_shared['anno_file'], paths_shared['working_dir'] + 'out' + str(chunk) + 'run/hg38.cgp.gff']
     execute(cmd, paths[chunk]['result_dir'] + 'out.eval')
-    find_values(paths[chunk]['result_dir'] + 'out.eval')
 
 # currently not used (returns accuracy for single chunks) - parallelized
 def run_evaluate_parallel(paths, chunks):
@@ -288,7 +290,6 @@ def run_evaluate_parallel(paths, chunks):
         print('Runnning evaluation on chunk', chunk, '...')
         cmd = [paths_shared['eval_bin'], paths_shared['anno_file'], paths_shared['working_dir'] + 'out' + str(chunk) + 'run/hg38.cgp.gff']
         execute(cmd, paths[chunk]['result_dir'] + 'out.eval')
-        find_values(paths[chunk]['result_dir'] + 'out.eval')
 
         filename = paths[chunk]['result_dir'] + 'out.eval'
 
@@ -319,117 +320,7 @@ def run_evaluate_global(paths_shared, paths, chunks):
 
     cmd = [paths_shared['eval_bin'], paths_shared['anno_file'], paths_shared['joingenes_out_dir'] + 'joingenes.gff']
     execute(cmd, paths_shared['accuracy'] + 'out.eval')
-    find_values(paths_shared['accuracy'] + 'out.eval')
-     
 
-def find_values(file):
-    d = init_dict()
-
-    # Summary Stats
-    with open(file, 'r') as input:
-        input_str = input.read()
-
-    d['gene_sensitivity'] = value_from_summary_stats(input_str,
-                                                     'Gene Sensitivity')
-    d['gene_specificity'] = value_from_summary_stats(input_str,
-                                                     'Gene Specificity')
-    d['transcript_sensitivity'] = value_from_summary_stats(
-        input_str, 'Transcript Sensitivity')
-    d['transcript_specificity'] = value_from_summary_stats(
-        input_str, 'Transcript Specificity')
-    d['exon_sensitivity'] = value_from_summary_stats(input_str,
-                                                     'Exon Sensitivity')
-    d['exon_specificity'] = value_from_summary_stats(input_str,
-                                                     'Exon Specificity')
-    d['nucleotide_sensitivity'] = value_from_summary_stats(
-        input_str, 'Nucleotide Sensitivity')
-    d['nucleotide_specificity'] = value_from_summary_stats(
-        input_str, 'Nucleotide Specificity')
-
-    # general stats
-    with open(file, 'r') as input:
-        general = re.search('\*\*General Stats\*\*.*\*\*Detailed Stats\*\*',
-                            input.read(), re.DOTALL).group()
-
-    b_gc = find_block(general, 'Gene', 'Transcript')
-    d['gene_count'] = find_value(b_gc, 'Count')
-    d['tx_count'] = find_value(b_gc, 'Total Transcripts')
-    d['txs_per_gene'] = find_value(b_gc, 'Transcripts Per')
-
-    b_tx = find_block(general, 'Transcript', 'Exon')
-    b_tx_all = find_block(b_tx, 'All', 'Complete')
-    d['avg_tx_length'] = find_value(b_tx_all, 'Average Length')
-    d['median_tx_length'] = find_value(b_tx_all, 'Median Length')
-    d['avg_coding_length'] = find_value(b_tx_all, 'Average Coding Length')
-    d['median_coding_length'] = find_value(b_tx_all, 'Median Coding Length')
-    d['avg_exons_per_tx'] = find_value(b_tx_all, 'Ave Exons Per')
-
-    b_single_ex = find_block(b_tx, 'Single Exon', 'Exon')
-    d['single_exon_count'] = find_value(b_single_ex, 'Count')
-
-    b_ex = find_block(general, 'Exon', 'Nuc')
-    b_ex_in = find_block(b_ex, 'Intron', 'InframeOptional')
-    d['avg_intron_length'] = find_value(b_single_ex, 'Average Length')
-    d['median_intron_length'] = find_value(b_single_ex, 'Median Length')
-
-    # compute f1 scores
-    d['gene_fscore'] = hmean(d['gene_sensitivity'], d['gene_specificity'])
-    d['transcript_fscore'] = hmean(d['transcript_sensitivity'],
-                                   d['transcript_specificity'])
-    d['exon_fscore'] = hmean(d['exon_sensitivity'], d['exon_specificity'])
-    d['nucleotide_fscore'] = hmean(d['nucleotide_sensitivity'],
-                                   d['nucleotide_specificity'])
-
-    # save results as JSON file
-    with open(paths_shared['accuracy'] + 'eval.json', 'w') as file:
-        json.dump(d, file, indent=4)
-
-def hmean(v1, v2):
-    if v1 > 0 and v2 > 0:
-        return 2 * (v1 * v2 / (v1 + v2))
-    else:
-        return 0.0
-
-def find_block(input, start, stop):
-    match = re.search(start + '[ ]*\n\t.*' + stop, input, re.DOTALL)
-    return match.group(0)
-
-def find_value(input, name):
-    match = re.search(
-        '\t\t' + name + '[ ]*\t[0-9]+\.[0-9]+[ ]*\t[0-9]+\.[0-9]+', input)
-    return float(match.group(0).rsplit('\t', 1)[1])
-
-def value_from_summary_stats(input, name):
-    match = re.search(name + '[ ]*\t[0-9]+\.[0-9]+', input).group(0)
-    return float(match.split('\t')[1])
-
-def init_dict():
-    dictionary = {
-        'gene_sensitivity': 0.0,
-        'gene_specificity': 0.0,
-        'gene_fscore': 0.0,
-        'transcript_sensitivity': 0.0,
-        'transcript_specificity': 0.0,
-        'transcript_fscore': 0.0,
-        'exon_sensitivity': 0.0,
-        'exon_specificity': 0.0,
-        'exon_fscore': 0.0,
-        'nucleotide_sensitivity': 0.0,
-        'nucleotide_specificity': 0.0,
-        'nucleotide_fscore': 0.0,
-        'gene_count': 0.0,
-        'tx_count': 0.0,
-        'txs_per_gene': 0.0,
-        'avg_tx_length': 0.0,
-        'median_tx_length': 0.0,
-        'avg_coding_length': 0.0,
-        'median_coding_length': 0.0,
-        'avg_exons_per_tx': 0.0,
-        'single_exon_count': 0.0,
-        'avg_intron_length': 0.0,
-        'median_intron_length': 0.0
-    }
-    return dictionary
 
 def execute(cmd, output, mode='w'):
     with open(output, mode) as file:
@@ -511,7 +402,7 @@ def randomize_dataset(filename):
     print('Sampled dataset contains', int(numgenes), 'genes from chunks:', [x for x in dataset])
 
 
-def get_required_data():
+def get_test_data():
     if os.path.exists('cgp12way/'):
         shutil.rmtree('cgp12way/')
 
@@ -526,7 +417,7 @@ def get_required_data():
 
 
 if __name__ == '__main__':
-    get_required_data()
+    get_test_data()
      
     if args.rand:
         randomize_dataset(args.rand)
