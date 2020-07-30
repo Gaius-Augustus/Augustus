@@ -5,7 +5,8 @@ name: Execute AUGUSTUS longrunning test cases
 on:
   push:
     branches:
-      - 'longrunning_tests'
+      - master
+#      - 'longrunning_tests'
 
   #schedule:
   # execute workflow at scheduled time
