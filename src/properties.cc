@@ -601,7 +601,7 @@ void Properties::init( int argc, char* argv[] ){
     if (hasProperty(EXTRFILE_KEY))
 	properties[EXTRFILE_KEY] = expandHome(properties[EXTRFILE_KEY]);
 
-    Properties::assignProperty("softmasking", Constant::softmasking);
+    Constant::softmasking_explicitly_requested = Properties::assignProperty("softmasking", Constant::softmasking);
     Properties::assignProperty("dbhints", Constant::dbhints);
     if(!Constant::MultSpeciesMode && Constant::dbhints){
 	Constant::dbhints=false;

@@ -1172,7 +1172,7 @@ void CompGenePred::prepareTest(){
     }
     //cout << "Omegas, for which substitution matrices are stored:" << endl;
     //codonevo.printOmegas();
-    evo.getRateMatrices();
+    codonevo.getRateMatrices();
     codonevo.computeLogPmatrices();
     
     // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
@@ -1571,7 +1571,7 @@ void CompGenePred::runTest(){
     }
     //cout << "Omegas, for which substitution matrices are stored:" << endl;
     //codonevo.printOmegas();
-    evo.getRateMatrices();
+    codonevo.getRateMatrices();
     codonevo.computeLogPmatrices();
     
     // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);

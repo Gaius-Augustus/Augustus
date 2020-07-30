@@ -91,6 +91,7 @@ vector<Double> Constant::head2head_ovlp;
 vector<Double> Constant::tail2tail_ovlp;
 unsigned Constant::temperature = 0; // heating the distribution for sampling, 0=cold, 7=hottest
 bool Constant::softmasking = true; // true became default on June 5th, 2020
+bool Constant::softmasking_explicitly_requested = false; // to reverse default for .gb input
 bool inCRFTraining = false;
 bool Constant::dbhints = false;
 // scores from logistic regression                                                                                                  
