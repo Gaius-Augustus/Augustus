@@ -13,6 +13,7 @@
 #include "matrix.hh"
 
 // standard C/C++ includes
+#include <cmath>
 #include <iostream>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_eigen.h>
@@ -46,7 +47,7 @@ public:
     virtual void addBranchLength(double b)=0; //add new branch length b and matrix P(b)
 
     double getPi(int i) const {return pi[i];}  //equilibrium frequency of state i
-    double getLogPi(int i) const {return log(getPi(i));}
+    double getLogPi(int i) const {return std::log(getPi(i));}
 
     gsl_matrix *getSubMatrixQ(int u){ return allQs[u]; }
     
