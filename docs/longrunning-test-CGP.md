@@ -28,11 +28,7 @@ Please make sure boost-serialization-dev is installed. If it is not the case, tr
 sudo apt-get update
 sudo apt-get install libboost-serialization-dev
 ```
-In order to have accuracy returned, [EVAL](https://mblab.wustl.edu/software/download/eval-2.2.8.tar.gz) should be installed on your machine. Make sure it is the case and set eval_dir within script/executeTestCGP.py to eval path as follows:
-
-```
-eval_dir = /my_path_to_EVAL/
-```
+In order to have accuracy returned, [EVAL](https://mblab.wustl.edu/software/download/eval-2.2.8.tar.gz) should be installed on your machine. Make sure it is the case
 
 Also, joingenes is required component: please build it running make from within auxprogs/joingenes directory.
 
@@ -41,15 +37,16 @@ Running the python3 script executeTestCGP.py has the following software dependen
 
 ## First use
 
-Run the following commands from within Augustus subdirectory named scripts:
+Run the following script located within scripts sub-directory:
 ```
-python3 executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --run
+python3 executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --run --augustusDir=my_path_to_comp_Augustus --workingDir=my_path_to_dataSet
 ```
+replacing my_path_to_comp_Augustus with the path to comparative Augustus executable on your machine and my_path_to_dataSet with the path to data set used for testing (it can be downloaded from [DATASET](http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/cgp12way.tgz])
 and when done:
 ```
-python3 executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval 
+python3 executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval --evalDir=my_path_to_Eval
 ```
-in --eval mode, the script computes accuracy for predictions obtained over the data-set during the execution of --run mode. Results are stored in example/cgp12way/ACCURACY. 
+replacing my_path_to_Eval with the path to Eval script. In --eval mode, the script computes accuracy for predictions obtained over the data-set during the execution of --run mode. Results are stored in example/cgp12way/ACCURACY. 
 
 # CAVEAT
 
