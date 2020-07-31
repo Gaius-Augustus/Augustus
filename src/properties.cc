@@ -306,6 +306,7 @@ UTR_KEY,
 "/UtrModel/verbosity"
 #ifdef TESTING
 , "/Testing/testMode"
+, "/Testing/workingDir"
 #endif
 };
 
