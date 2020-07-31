@@ -21,7 +21,7 @@
 #endif
 
 #ifdef TESTING
-#define NUMPARNAMES 276   // testMode command line option added
+#define NUMPARNAMES 275+2   // testMode command line option added, workingDir command line option
 #else
 #define NUMPARNAMES 275
 #endif
