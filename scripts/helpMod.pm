@@ -195,7 +195,7 @@ sub check_fasta_headers {
             $orSign++;
         }
         if (!$someThingWrongWithHeader && $line =~ /[^>a-zA-Z0-9]/) {
-            print "WARNING: Fasta headers inf file $fastaFile seem to contain non-letter and non-number characters. That means they may contain some kind of special character. $stdStr\n";
+            print "WARNING: Fasta headers in file $fastaFile seem to contain non-letter and non-number characters. That means they may contain some kind of special character. $stdStr\n";
             $someThingWrongWithHeader++;
         }
         if ($spaces && $orSign && $someThingWrongWithHeader) {
