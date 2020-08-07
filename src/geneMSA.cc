@@ -728,7 +728,7 @@ void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<st
 	    if (isPlusExon(ec->type))
 	        endStopOffset = -3;
 	    else
-	        beginStopOffset = 0; // 3
+	      beginStopOffset = 3;
 	}
 	
 	key << "CDS\t" << getSeqID(species) << "\t" << ec->begin + offsets[species] + 1 + beginStopOffset
