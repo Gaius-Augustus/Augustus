@@ -14,7 +14,7 @@ CXX?=g++
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 ${CXXFLAGS} #-DDEBUG -g -ggdb -pg -DDEBUG_STATES
+CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 -std=c++11 ${CXXFLAGS} #-DDEBUG -g -ggdb -pg -DDEBUG_STATES
 
 ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))  # if ZIPINPUT is not defined or is something else than 0, false, False or FALSE
 	CPPFLAGS += -DZIPINPUT
@@ -30,7 +30,6 @@ OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o
 ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is not defined or is something else than 0, false, False or FALSE
 	SQLITE   ?= true
 	MYSQL    ?= true
-	CXXFLAGS += -std=c++11
 	CPPFLAGS += -DCOMPGENEPRED
 	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o codonevo.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o tokenizer.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding

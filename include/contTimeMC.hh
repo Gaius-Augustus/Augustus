@@ -13,6 +13,7 @@
 #include "matrix.hh"
 
 // standard C/C++ includes
+#include <cmath>
 #include <iostream>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_eigen.h>
