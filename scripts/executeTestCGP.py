@@ -9,6 +9,8 @@ import fileinput
 import filecmp
 import sys
 import random
+import wget
+import tarfile
 from datetime import datetime
 import numpy as np
 
@@ -440,7 +442,7 @@ def execute(cmd, output, mode='w'):
 
 def init_paths_shared():
     paths_shared = {
-    'eval_dir' : '/home/giovanna/Desktop/Alignment/eval-2.2.8/',    # path to eval
+    'eval_dir' : '/home/daniel/tools/eval-2.2.8/',    # path to eval
     'augustus_dir' : '../',                                         # path to augustus binaries
     'working_dir' : '../examples/cgp12way/',                        # path to working directory (it contains tree, genome tbl, SQLite db and there results will be written)
     'anno_file' : '../examples/cgp12way/ENSEMBL/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf',  # path to annotation for hg38.chr1
@@ -504,7 +506,24 @@ def randomize_dataset(filename):
 
     print('Sampled dataset contains', int(numgenes), 'genes from chunks:', [x for x in dataset])
 
+
+def get_test_data():
+    if os.path.exists('../examples/cgp12way/'):
+        shutil.rmtree('../examples/cgp12way/')
+
+    url = 'http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/cgp12way.tgz'
+    filename = '../examples/cgp12way.tar.gz'
+    wget.download(url, out=filename)
+    if (os.path.isfile(filename)):
+        tar = tarfile.open(filename)
+        tar.extractall('../examples/')
+        tar.close()
+        os.remove(filename)
+
+
 if __name__ == '__main__':
+    get_test_data()
+
     if args.rand:
         randomize_dataset(args.rand)
         sys.exit()
