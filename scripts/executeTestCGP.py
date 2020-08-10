@@ -11,6 +11,7 @@ import sys
 import random
 import wget
 import tarfile
+import itertools
 from datetime import datetime
 import numpy as np
 
@@ -193,31 +194,43 @@ def run_test(paths, chunk):
 
 # parallel execution : acknowldgement Daniel Honsel (revisited code from test_case.py)
 def run_test_parallel(paths_shared, paths, chunks):
-
     proc_list = []
 
+    # create a command for each chunk
+    args = []
     for chunk in chunks:
-        print('Runnning prediction on chunk', chunk, 'using the minimal data set...')
-
         cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], 
         '--alnfile=' + paths[chunk]['maf_file'],
         '--speciesfilenames=' + paths[chunk]['tbl_test_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths[chunk]['sqlitedb_test_file'],
         '--optCfgFile=../config/cgp/cgp_param_21features_accuracy_largerGrid.convDivCorrect.cfg',
         '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run']
+
         output = paths[chunk]['result_dir'] + 'out.runTest'
 
-        with open(output, 'w') as file:
-            proc_list.append(
-                        subprocess.Popen(cmd,
-                                         stdout=file,
-                                         stderr=subprocess.PIPE,
-                                         universal_newlines=True))
-    for p in proc_list:
-        p.wait()
-        
-    for p in proc_list:
-        error = p.stderr.read()
-        p.stderr.close()
+        args.append([cmd, output, chunk])
+
+    # create groups according to the number of cpus
+    grouped_args = [iter(args)] * 5
+
+    # parallel execution of the commands of each group
+    for arg_list in itertools.zip_longest(*grouped_args):
+        proc_list = []
+        for cmd, output, chunk in filter(None, arg_list):
+            print('\n' + 'Runnning prediction on chunk', chunk, 'using the minimal data set...')
+            with open(output, 'w') as file:
+                proc_list.append(
+                    subprocess.Popen(cmd,
+                                        stdout=file,
+                                        stderr=subprocess.PIPE,
+                                        universal_newlines=True))
+        for p in proc_list:
+            p.wait()
+        for p in proc_list:
+            error = p.stderr.read()
+            p.stderr.close()
+            if error:
+                print(error)            
+            
 
 def execute(cmd, output, mode='w'):
     with open(output, mode) as file:
