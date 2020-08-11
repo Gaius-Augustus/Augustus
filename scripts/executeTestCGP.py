@@ -455,7 +455,7 @@ def execute(cmd, output, mode='w'):
 
 def init_paths_shared():
     paths_shared = {
-    'eval_dir' : '/home/daniel/tools/eval-2.2.8/',    # path to eval
+    'eval_dir' : '/data/eval/',    # path to eval
     'augustus_dir' : '../',                                         # path to augustus binaries
     'working_dir' : '../examples/cgp12way/',                        # path to working directory (it contains tree, genome tbl, SQLite db and there results will be written)
     'anno_file' : '../examples/cgp12way/ENSEMBL/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf',  # path to annotation for hg38.chr1
