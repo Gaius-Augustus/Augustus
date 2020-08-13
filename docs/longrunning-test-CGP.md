@@ -41,7 +41,7 @@ Run the following script located within scripts sub-directory:
 ```
 python3 executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --run --augustusDir=my_path_to_binaries --workingDir=my_path_to_dataSet
 ```
-replacing my_path_to_binaries with the path to the directory named bin, containing comparative Augustus executable on your machine and my_path_to_dataSet with the path to data set used for testing (the dataset can be downloaded from [DATASET](http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/cgp12way.tgz). When done:
+replacing my_path_to_binaries with the path to the directory named **bin**, containing comparative Augustus executable on your machine and my_path_to_dataSet with the path to data set used for testing (the dataset can be downloaded from [DATASET](http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/cgp12way.tgz). When done:
 ```
 python3 executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval --evalDir=my_path_to_Eval
 ```
