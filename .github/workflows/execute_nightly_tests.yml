@@ -20,6 +20,9 @@ jobs:
   longrunning_test:
     runs-on: [self-hosted, linux, default]
 
+    # Maximum number of minutes to let a job run before GitHub automatically cancels it. Default: 360
+    timeout-minutes: 600
+
     steps:
     - name: Check out repository
       uses: actions/checkout@v2
