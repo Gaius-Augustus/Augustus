@@ -722,7 +722,7 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
 void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_class, vector<AnnoSequence*> const &seqRanges){ 
     for(list<OrthoExon>::iterator oeit = hects->begin(); oeit != hects->end(); ++oeit){
 	ExonCandidate *ec = oeit->orthoex.at(species);
-	if(ec == NULL)
+	if (ec == NULL)
 	    continue; // can not consider alignments where the reference species has no exon candidate
 	stringstream key;
 	int beginStopOffset=0, endStopOffset=0; // to account for excluded stop codons
@@ -730,7 +730,7 @@ void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<st
 	    if (isPlusExon(ec->type))
 	        endStopOffset = -3;
 	    else
-	      beginStopOffset = 3;
+                beginStopOffset = 3;
 	}
 	
 	key << "CDS\t" << getSeqID(species) << "\t" << ec->begin + offsets[species] + 1 + beginStopOffset
@@ -744,7 +744,7 @@ void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<st
 	bool y=0;
 	if (got != ref_class->end())
 	    y=1;
-	cout << "\ny=" << y << "\tOE: " << key.str() << endl;
+	cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << key.str() << endl;
 	getMsa(*oeit, seqRanges);
     }
 }

@@ -656,7 +656,7 @@ void CompGenePred::runPrediction(){
 		orthograph.outputGenes(optGenes, opt_geneid);
 	    }
 	}
-	if(Constant::printOEs)
+	if (Constant::printOEs)
 	    geneRange->printOrthoExons(hects);
 	    
 	// store hect features globally for training
@@ -667,16 +667,14 @@ void CompGenePred::runPrediction(){
 		throw ProjectError("Species " + Constant::refSpecies + " not found. Use one of the names specified in the alignment file as a reference!");
 	    } else {
   	        geneRange->collect_features(speciesID, &hects, orthograph.graphs[speciesID]);
-		// Darwin Mertsch: This should probably return a suitable data structure (e.g. labels and matrices)
+		// Darwin Mertsch
 		geneRange->getAllOEMsas(speciesID, &hects, &ref_class, seqRanges);
-		// Here you should pass above data structure to your own
-		// code that should be in the separate files ann.{cc.,hh}
 	    }
 	}
 
 	// delete sequences
 	for (int i=0; i<seqRanges.size(); i++) {
-		delete seqRanges[i];
+            delete seqRanges[i];
 	}
 	// delete geneRange
 	delete geneRange;
