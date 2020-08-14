@@ -725,8 +725,17 @@ void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<st
 	if(ec == NULL)
 	    continue; // can not consider alignments where the reference species has no exon candidate
 	stringstream key;
-	key << "CDS\t" << getSeqID(species) << "\t" << ec->begin + offsets[species]+1 << "\t" << ec->end + offsets[species]+1 << "\t";
-	if(isPlusExon(ec->type))
+	int beginStopOffset=0, endStopOffset=0; // to account for excluded stop codons
+	if (hasStopCodon(ec->type) && Gene::stopCodonExcludedFromCDS){
+	    if (isPlusExon(ec->type))
+	        endStopOffset = -3;
+	    else
+	      beginStopOffset = 3;
+	}
+	
+	key << "CDS\t" << getSeqID(species) << "\t" << ec->begin + offsets[species] + 1 + beginStopOffset
+	    << "\t" << ec->end + offsets[species] + 1 + endStopOffset << "\t";
+	if (isPlusExon(ec->type))
 	    key << "+";
 	else
 	    key << "-";

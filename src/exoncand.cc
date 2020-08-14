@@ -19,6 +19,11 @@ bool isPlusExon(ExonType t){
     return t < rsingleGene;
 }
 
+bool hasStopCodon(ExonType t){
+    return t == singleGene || t == rsingleGene
+        || t == terminal_exon || t == rterminal_0 || t == rterminal_1 || t == rterminal_2;
+}
+
 const int exonTypeReadingFrames[EXON_TYPES-1] = { 0,0,1,2,0,1,2,0,         // forward exons
 						  2,2,0,1,2,0,1,2};         // reverse exons
 
