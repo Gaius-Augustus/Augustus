@@ -72,11 +72,13 @@ GeneMSA::GeneMSA(RandSeqAccess *rsa, Alignment *a) {
 	    int chrLen = rsa->getChrLen(s, alignment->rows[s]->seqID);
 	    switch (getStrand(s))
 		{
-		case plusstrand:
-		    starts[s] = alignment->rows[s]->chrStart() - padding;
+		case plusstrand:            
+            starts[s] = alignment->rows[s]->chrStart() - padding;
 		    ends[s] = alignment->rows[s]->chrEnd() + padding;
+		    // cout << "plus " << chrLen << " " << alignment->rows[s]->seqID << " " << alignment->rows[s]->chrStart() << " " << padding << " " << alignment->rows[s]->chrEnd() << " startEnd " << starts[s] << " " << ends[s] << endl;
 		    break;
 		case minusstrand:
+		    // cout << "minus " << alignment->rows[s]->seqID << " " << chrLen << " " << alignment->rows[s]->chrStart() << " " << padding << " " << alignment->rows[s]->chrEnd() << endl;
 		    starts[s] = chrLen - alignment->rows[s]->chrEnd() - padding;
 		    ends[s] = chrLen - alignment->rows[s]->chrStart() + padding;
 		    break;
@@ -453,7 +455,7 @@ void GeneMSA::printGeneRanges() {
 	    // output in .bed format
 	    if (Constant::printGeneRangesBED) {
 		ofstream &fstrm_bed = *geneRanges_outfiles_bed[s]; // write to 'geneRanges.speciesname[s].bed'
-		fstrm_bed << getSeqID(s) << "\t" << getStart(s) + 1 << "\t" << getEnd(s) + 1 << "\t" << alignment->getSignature()
+		fstrm_bed << getSeqID(s) << "\t" << getStart(s) /* + 1 GM removed this, since BED is 0-based*/ << "\t" << getEnd(s) + 1 << "\t" << alignment->getSignature()
 			  << "\t0\t" << getStrand(s) << endl;
 	    }
 	    // GFF output

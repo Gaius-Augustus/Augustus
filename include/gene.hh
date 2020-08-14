@@ -598,6 +598,9 @@ public:
     int          weight;
 };
 
+bool isAllLC(AnnoSequence *seqs);
+
+
 /**
  * 
  * @author Mario Stanke

@@ -2964,6 +2964,18 @@ const AnnoSeqGeneIterator& operator++(AnnoSeqGeneIterator& gi){
 }
 
 
+bool isAllLC(AnnoSequence *annoseq) {
+    while (annoseq) {
+        for (unsigned pos = 0; pos < annoseq->length; pos++)
+            if (isupper(annoseq->sequence[pos]))
+                return false;
+        annoseq = annoseq->next;
+    }
+    return true;
+}
+
+
+
 /* --- StatePathCollection methods --------------------------------- */
 
 /*

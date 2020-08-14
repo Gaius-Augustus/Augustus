@@ -542,7 +542,7 @@ public:
     // access substates
     bool hasSubstates(int state) const {
 	int idx = getSubstateIdx(state);
-	return idx >= 0 && idx < subProbs.size() && !subProbs[idx].inactive();
+	return idx >= 0 && idx < (int) subProbs.size() && !subProbs[idx].inactive();
     }
     const ViterbiSubmapType& getSubstates(int state) const;
     ViterbiSubmapType& getSubstates(int state);
@@ -618,7 +618,7 @@ private:
 // inline definitions of ViterbiColumnType member functions
 inline const ViterbiSubmapType& ViterbiColumnType::getSubstates(int state) const {
     int idx = getSubstateIdx(state);
-    if (idx >= 0 && idx < subProbs.size()) {
+    if (idx >= 0 && idx < (int) subProbs.size()) {
 	const ViterbiSubmapType& result = subProbs[idx];
 	if (!result.inactive())
 	    return result;
@@ -628,7 +628,7 @@ inline const ViterbiSubmapType& ViterbiColumnType::getSubstates(int state) const
 
 inline ViterbiSubmapType& ViterbiColumnType::getSubstates(int state) {
     int idx = getSubstateIdx(state);
-    if (idx >= 0 && idx < subProbs.size()) {
+    if (idx >= 0 && idx < (int) subProbs.size()) {
 	ViterbiSubmapType& result = subProbs[idx];
 	if (!result.inactive())
 	    return result;
@@ -649,14 +649,14 @@ inline void ViterbiColumnType::getMaxSubstate(int state, SubstateId& substate, D
 
 inline int ViterbiColumnType::eraseUnneededSubstates() {
     int result = 0;
-    for (int i=0; i<subProbs.size(); i++) 
+    for (unsigned i=0; i<subProbs.size(); i++) 
 	result += subProbs[i].eraseAllUnneededSubstates();
     return result;
 }
 
 inline int ViterbiColumnType::removeEmptySubmaps() {
     int result = 0;
-    for (int i=0; i<subProbs.size(); i++)
+    for (unsigned i=0; i<subProbs.size(); i++)
 	if (subProbs[i].empty() && !subProbs[i].inactive()) {
 	    subProbs[i].deactivate();
 	    result++;
@@ -668,7 +668,7 @@ inline void ViterbiColumnType::eraseSubProbs(int subidx) {
     if (subidx >= 0) {
 	// overwrite entry at position subidx
 	// with the (previously) last entry
-	if (subidx < subProbs.size()-1) {
+	if (subidx < (int) subProbs.size() - 1) {
 	    elem(subProbs.back().state).substate_idx = subidx;
 	    subProbs[subidx] = subProbs.back();
 	}

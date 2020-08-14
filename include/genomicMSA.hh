@@ -152,6 +152,14 @@ public:
     static int weight(const Alignment *a, const MsaSignature *sig); // node weight when projecting a to sig
     static int weight(const Alignment *a, const Alignment *b, const MsaSignature *sig); // edge weight after projection to sig
 
+    #ifdef TESTING
+    // temporarily added to come around some problem with boost string serialization
+    int seqID2seqIDarhiveConversion(int species, string seqID){return seqID2seqIDarhive[species][seqID];}
+    string seqIDarhive2seqIDConversion(int species, int seqIDarchive){return seqIDarhive2seqID[species][seqIDarchive];}
+    void readNameDB(string dir);
+    Alignment* getNextAlignment();
+    #endif
+
 private:
     list<Alignment*> alignment;
     int numSpecies;
@@ -160,6 +168,12 @@ private:
     static int maxIntronLen;
     static int minGeneLen;
     static int maxGeneLen;
+
+    #ifdef TESTING
+    // temporarily added to come around some problem with boost string serialization
+    vector<map<string, int> > seqID2seqIDarhive;
+    vector<map<int, string> > seqIDarhive2seqID;
+    #endif
 };
 
 #endif  // _GENOMICMSA

@@ -87,6 +87,15 @@ void checkExtrinsicAccuracy(AnnoSequence *annoseq, NAMGene &namgene, FeatureColl
  */
 void cutRelevantPiece(AnnoSequence *annoseq);
 
+
+/*
+ * Print a warning if --softmasking=1 (default) and all sequences are
+ * completely in lowercase characters. This can happen in particular
+ * if the input is from GenBank.
+ */
+void warnAllLowerCase(AnnoSequence *annoseq);
+
+
 /*
  * main
  */
@@ -119,7 +128,7 @@ int main( int argc, char* argv[] ){
 	StateModel::init();   // set global parameters of state models	  
 
 	if(Properties::hasProperty("trainFeatureFile"))
-	  Constant::MultSpeciesMode = true;
+            Constant::MultSpeciesMode = true;
 
 	if (Constant::MultSpeciesMode){
 #ifdef COMPGENEPRED
@@ -132,99 +141,103 @@ int main( int argc, char* argv[] ){
 	    throw ProjectError("Comparative gene prediction not possible with this compiled version. Please recompile with flag COMPGENEPRED = true set in common.mk.");
 #endif	  
 	} else { // single species mode, default
-	  // check query filename
-	  if (!Properties::hasProperty(INPUTFILE_KEY)){
-	    throw ProjectError("No query file specified. Type \"augustus\" for help.");
-	  }
-	  string filename =  Properties::getProperty(INPUTFILE_KEY);
+            // check query filename
+            if (!Properties::hasProperty(INPUTFILE_KEY)){
+                throw ProjectError("No query file specified. Type \"augustus\" for help.");
+            }
+            string filename =  Properties::getProperty(INPUTFILE_KEY);
 
-	  GBProcessor gbank(filename);
-	  if (Gene::gff3)
-	    cout << "##gff-version 3" << endl;
+            GBProcessor gbank(filename);
+            if (Gene::gff3)
+                cout << "##gff-version 3" << endl;
 	  
-	  cout << PREAMBLE << endl;
+            cout << PREAMBLE << endl;
 	  
-	  /*
-	   * check for extrinsic information and initialize when existent
-	   */
-	  FeatureCollection extrinsicFeatures;
-	  const char *extrinsicfilename;
-	  try {
-	    extrinsicfilename =  Properties::getProperty("hintsfile");
-	  } catch (...){
-	    extrinsicfilename = NULL;
-	    if (verbosity) 
-	      cout << "# No extrinsic information on sequences given." << endl;
-	  }
-	  if (extrinsicfilename || Constant::softmasking) {
-	      extrinsicFeatures.readExtrinsicCFGFile();
-	      if (extrinsicfilename) {
-		  if (verbosity)
-		      cout << "# reading in the file " << extrinsicfilename << " ..." << endl;
-		  extrinsicFeatures.readGFFFile(extrinsicfilename);
-		  if (verbosity) 
-		      cout << "# Have extrinsic information about " << extrinsicFeatures.getNumSeqsWithInfo()
-			   << " sequences (in the specified range). " << endl;
-	      }
-	  }
+            /*
+             * check for extrinsic information and initialize when existent
+             */
+            FeatureCollection extrinsicFeatures;
+            const char *extrinsicfilename;
+            try {
+                extrinsicfilename =  Properties::getProperty("hintsfile");
+            } catch (...){
+                extrinsicfilename = NULL;
+                if (verbosity) 
+                    cout << "# No extrinsic information on sequences given." << endl;
+            }
+            if (extrinsicfilename || Constant::softmasking) {
+                extrinsicFeatures.readExtrinsicCFGFile();
+                if (extrinsicfilename) {
+                    if (verbosity)
+                        cout << "# reading in the file " << extrinsicfilename << " ..." << endl;
+                    extrinsicFeatures.readGFFFile(extrinsicfilename);
+                    if (verbosity) 
+                        cout << "# Have extrinsic information about " << extrinsicFeatures.getNumSeqsWithInfo()
+                             << " sequences (in the specified range). " << endl;
+                }
+            }
 	  
-	  if (verbosity > 1) 
-	      cout << "# Initializing the parameters using config directory " << Properties::getProperty(CFGPATH_KEY) << " ..." << endl;
-	  BaseCount::init();
-	  PP::initConstants();
-	  NAMGene namgene; // creates and initializes the states
-	  StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
-	  try{
-	    string strandstr = Properties::getProperty("strand");
-	    if (strandstr == "forward" || strandstr == "Forward" || strandstr == "plus" || strandstr == "Plus" 
-		|| strandstr == "+" || strandstr == "Watson" || strandstr == "watson" || strandstr == "w" )
-	      strand = plusstrand;
-	    else if (strandstr == "backward" || strandstr == "Backward" || strandstr == "minus" 
-		     || strandstr == "Minus" || strandstr == "-" || strandstr == "Crick" || strandstr == "crick" 
-		     || strandstr == "c" || strandstr == "reverse" || strandstr == "Reverse")
-	      strand = minusstrand;
-	    else if (strandstr == "both")
-	      strand = bothstrands;
-	    else if (!(strandstr == ""))
-	      cerr << "# Unknown option for strand: " << strandstr << endl;
-	  } catch (...){} // take default strand
+            if (verbosity > 1) 
+                cout << "# Initializing the parameters using config directory " << Properties::getProperty(CFGPATH_KEY) << " ..." << endl;
+            BaseCount::init();
+            PP::initConstants();
+            NAMGene namgene; // creates and initializes the states
+            StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
+            try{
+                string strandstr = Properties::getProperty("strand");
+                if (strandstr == "forward" || strandstr == "Forward" || strandstr == "plus" || strandstr == "Plus" 
+                    || strandstr == "+" || strandstr == "Watson" || strandstr == "watson" || strandstr == "w" )
+                    strand = plusstrand;
+                else if (strandstr == "backward" || strandstr == "Backward" || strandstr == "minus" 
+                         || strandstr == "Minus" || strandstr == "-" || strandstr == "Crick" || strandstr == "crick" 
+                         || strandstr == "c" || strandstr == "reverse" || strandstr == "Reverse")
+                    strand = minusstrand;
+                else if (strandstr == "both")
+                    strand = bothstrands;
+                else if (!(strandstr == ""))
+                    cerr << "# Unknown option for strand: " << strandstr << endl;
+            } catch (...){} // take default strand
 	
-	  if(mea_prediction)
-	    cout <<"# Using MEA approach (Maximizing expected accuracy)."<<endl;
+            if(mea_prediction)
+                cout <<"# Using MEA approach (Maximizing expected accuracy)."<<endl;
 
-	  if (gbank.fileType() == fasta) {
-	    /*
-	     * Just predict the genes for every sequence in the file.
-	     */
-	    if (verbosity>2) {
-	      if (filename == "-")
-		cout << "# Reading sequences from standard input. Assuming fasta format." << endl;
-	      else
-		cout << "# Looks like " << filename << " is in fasta format." << endl;
-	    }
-	    AnnoSequence *testsequence = gbank.getSequenceList();
-	    cutRelevantPiece(testsequence);
-	    predictOnInputSequences(testsequence, namgene, extrinsicFeatures, strand);
-	    AnnoSequence::deleteSequence(testsequence);
-	  } else if (gbank.fileType() == genbank) {
-	    /*
-	     * Sequences were already annotated. Predict and also check the accuracy.
-	     */
-	    if (verbosity>2)
-	      cout << "# Looks like " << filename << " is in genbank format. " 
-		   << "Augustus uses the annotation for evaluation of accuracy." << endl;
-	    AnnoSequence *annoseq = gbank.getAnnoSequenceList();
-	    cutRelevantPiece(annoseq);
-	    if (!checkExAcc)
-	      evaluateOnTestSet(annoseq, namgene, extrinsicFeatures, strand);
-	    else { // do not predict just check the accuracy of the extrinsic information
-		   // without deleting for redundancies
-	      checkExtrinsicAccuracy(annoseq, namgene, extrinsicFeatures);
-	    }
-	    AnnoSequence::deleteSequence(annoseq);
-	  } else {
-	    throw ProjectError("File format of " + filename + " not recognized.");
-	  }
+            if (gbank.fileType() == fasta) {
+                /*
+                 * Just predict the genes for every sequence in the file.
+                 */
+                if (verbosity>2) {
+                    if (filename == "-")
+                        cout << "# Reading sequences from standard input. Assuming fasta format." << endl;
+                    else
+                        cout << "# Looks like " << filename << " is in fasta format." << endl;
+                }
+                AnnoSequence *testsequence = gbank.getSequenceList();
+                warnAllLowerCase(testsequence);
+                cutRelevantPiece(testsequence);
+                predictOnInputSequences(testsequence, namgene, extrinsicFeatures, strand);
+                AnnoSequence::deleteSequence(testsequence);
+            } else if (gbank.fileType() == genbank) {
+                /*
+                 * Sequences were already annotated. Predict and also check the accuracy.
+                 */
+                if (verbosity>2)
+                    cout << "# Looks like " << filename << " is in genbank format. " 
+                         << "Augustus uses the annotation for evaluation of accuracy." << endl;
+                AnnoSequence *annoseq = gbank.getAnnoSequenceList();
+                if (!Constant::softmasking_explicitly_requested)
+                    Constant::softmasking = false; // default is false only for .gb files
+                warnAllLowerCase(annoseq);
+                cutRelevantPiece(annoseq);
+                if (!checkExAcc)
+                    evaluateOnTestSet(annoseq, namgene, extrinsicFeatures, strand);
+                else { // do not predict just check the accuracy of the extrinsic information
+                    // without deleting for redundancies
+                    checkExtrinsicAccuracy(annoseq, namgene, extrinsicFeatures);
+                }
+                AnnoSequence::deleteSequence(annoseq);
+            } else {
+                throw ProjectError("File format of " + filename + " not recognized.");
+            }
 	} // single species mode
 	
 	//	if (verbosity>2)
@@ -302,7 +315,7 @@ void evaluateOnTestSet(AnnoSequence *annoseq, NAMGene &namgene, FeatureCollectio
 	
 	bool singlestrand = false; // use not the shadow states
 	try {
-	     singlestrand = (Properties::getIntProperty("singlestrand") == 1);
+            singlestrand = (Properties::getIntProperty("singlestrand") == 1);
 	} catch (...) {}
 
 	cout << "# Predicted genes for sequence number " << dnaproben <<  " on ";
@@ -351,9 +364,9 @@ void evaluateOnTestSet(AnnoSequence *annoseq, NAMGene &namgene, FeatureCollectio
 	annoseq = annoseq->next;
     }
     if (!noprediction) {
-      eval.finishEvaluation();
-      eval.printQuotients();
-      eval.print();
+        eval.finishEvaluation();
+        eval.printQuotients();
+        eval.print();
     }
     cout << "# total time: " << total << endl;
 }
@@ -463,10 +476,10 @@ void setParameters(){
 	cerr << e.getMessage();
     }
     try {
-      noprediction = Properties::getBoolProperty("noprediction");
+        noprediction = Properties::getBoolProperty("noprediction");
     } catch (...) {}   
     try {
-      mea_prediction = Properties::getBoolProperty("mea");
+        mea_prediction = Properties::getBoolProperty("mea");
     } catch (...) {}
 
     // directory for output files of comparative gene prediction
@@ -578,9 +591,27 @@ void cutRelevantPiece(AnnoSequence *annoseq){
 	annoseq->sequence = seq;
 	annoseq->offset = predictionStart;
     } else if (predictionStart < 0 && predictionEnd < 0 && predictionEnd == predictionStart){ 
-       // this is intended for applications in which a sequence fragment is cut out of a chromosome for input to augustus
-       // and the hints have still original coordinates
-       // => use the whole input sequence and just left-shift hints and right-shift output coordinates
-       annoseq->offset = -predictionStart - 1;
+        // this is intended for applications in which a sequence fragment is cut out of a chromosome for input to augustus
+        // and the hints have still original coordinates
+        // => use the whole input sequence and just left-shift hints and right-shift output coordinates
+        annoseq->offset = -predictionStart - 1;
     }
 }
+
+
+
+/*
+ * Print a warning if --softmasking=1 (default) and all sequences are
+ * completely in lowercase characters. This can happen in particular
+ * if the input is from GenBank.
+ */
+void warnAllLowerCase(AnnoSequence *annoseq){
+    if (Constant::softmasking && isAllLC(annoseq)){
+        cerr << "#########################################################################" << endl
+             << "# WARNING: --softmasking=1 and all sequences are completely in lower case." << endl
+             << "# They will be treated as repeatmasked everywhere and genes could be severely underpredicted." << endl
+             << "# If this is not intended, rerun with --softmasking=0" << endl
+             << "#########################################################################" << endl;
+    }
+}
+

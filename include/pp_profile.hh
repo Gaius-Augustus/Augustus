@@ -715,7 +715,7 @@ namespace PP {
         * @return The number of protein sequences used to build an intron profile
         */
         unsigned getIntronNumSeq () {
-            for (int i = 0; i < iP.size(); i++) {
+            for (unsigned i = 0; i < iP.size(); i++) {
                 if (iP[i].get_numSeq() > 0) {
                     return iP[i].get_numSeq();
                 }

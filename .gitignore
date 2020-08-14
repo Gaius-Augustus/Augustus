@@ -49,5 +49,25 @@ src/getSeq
 src/load2db
 src/load2sqlitedb
 src/parser/parse.o
+src/pp_simScore
 src/prepareAlign
 src/scanner/lex.o
+src/unittests/fasta_unittest.o
+src/unittests/lldouble_unittest.o
+src/unittests/unittests
+
+# ignore VS Code configuration files
+.vscode
+
+# ignore generated test output
+tests/examples_test_results/
+
+# ignore tmp test case data
+tests/examples_test/data/tmp/
+
+# ignore generated longrunning test files
+tests/longrunning_examples/tmp/
+tests/longrunning_examples/output/
+
+# ignore test species
+config/species/test_aug_dev_species/

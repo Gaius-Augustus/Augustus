@@ -1,0 +1,4 @@
+The arbuscular mycorrhizal fungus G. margarita (Glomeromycotina) has the largest genome among its fungal group. Most of the genomic space (~775 Mbp) is highly populated in repeats (~65%).
+The genome annotation was performed with BRAKER using 24 RNA-seq libraries from G. margarita (most of them publicly available under NCBI BioProject PRJNA267628) and the Uniprot Mucoromycota dataset as extrinsic evidence. Softmasking was provided by combining the results of the REPET pipeline (Flutre et al., 2011) and manual curation.
+More details are found in the related publication "At the nexus of three kingdoms: the genome of the mycorrhizal fungus Gigaspora margarita provides insights into plant, endobacterial and fungal interactions" (Venice et al., 2020). 
+The parameters set was provided by Francesco Venice (University of Turin, Italy).
