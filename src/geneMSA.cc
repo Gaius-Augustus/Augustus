@@ -528,23 +528,32 @@ void GeneMSA::printOrthoExons(list<OrthoExon> &orthoExonsList) {
 void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
     bool GBrowseStyle = false; // for viewing in GBrowse use this style
     streambuf *stdout = cout.rdbuf();
+    int beginStopOffset, endStopOffset; // to account for excluded stop codons    
     for (int s=0; s < numSpecies(); s++) {
 	ExonCandidate *ec = oe.orthoex.at(s);
 	if (files)
 	    cout.rdbuf(orthoExons_outfiles[s]->rdbuf()); // write to 'orthoExons.speciesname[s].gff3'
         if (ec != NULL) {
+            // the gff strand of the exon is the "strand product" of the alignment strand and exon type strand
+            // e.g. "-" x "-" = "+"
+            string gffStrand = ((isPlusExon(ec->type) == (getStrand(s) == plusstrand))? "+" : "-");
+            beginStopOffset = endStopOffset = 0;
+            if (hasStopCodon(ec->type) && Gene::stopCodonExcludedFromCDS){
+                if (gffStrand == "+"){
+                    endStopOffset = -3;
+                } else {
+                    beginStopOffset = 3;
+                }
+            }
 	    cout << getSeqID(s) << "\tOE1\t" << "exon" << "\t";
             if (getStrand(s) == plusstrand){ // strand of alignment
-		cout << ec->begin + offsets[s]+1 << "\t" << ec->end + offsets[s]+1;
+		cout << ec->begin + offsets[s]+1 + beginStopOffset << "\t" << ec->end + offsets[s]+1 + endStopOffset;
             } else {
 		int chrLen = rsa->getChrLen(s, getSeqID(s));
-                cout << chrLen - (ec->end + offsets[s]) << "\t" << chrLen - (ec->begin + offsets[s]);
+                cout << chrLen - (ec->end + offsets[s]) + beginStopOffset << "\t" << chrLen - (ec->begin + offsets[s]) + endStopOffset;
             }
-	    cout << "\t" << ec->score << "\t" 
-		// the gff strand of the exon is the "strand product" of the alignment strand and exon type strand
-		// e.g. "-" x "-" = "+"
-		 << ((isPlusExon(ec->type) == (getStrand(s) == plusstrand))? '+' : '-');
-            cout << "\t" << ec->gff3Frame() << "\t" << "ID=" << oe.ID << ";Name=" << oe.ID << ";Note=" 
+	    cout << "\t" << ec->score << "\t" << gffStrand << "\t" << ec->gff3Frame() << "\t"
+                 << "ID=" << oe.ID << ";Name=" << oe.ID << ";Note=" 
 		 << stateExonTypeIdentifiers[ec->type]; // TODO: reverse type if alignment strand is "-"
 	    if (GBrowseStyle)
 		cout << "|" << oe.numExons();
