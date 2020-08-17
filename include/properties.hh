@@ -21,7 +21,7 @@
 #endif
 
 #ifdef TESTING
-#define NUMPARNAMES 275+2   // testMode command line option added, workingDir command line option
+#define NUMPARNAMES 277   // +testMode, workingDir command line options
 #else
 #define NUMPARNAMES 275
 #endif
@@ -306,4 +306,3 @@ class Properties{
 string findLocationOfSelfBinary();
 
 #endif  //  _PROPERTIES_HH
-
