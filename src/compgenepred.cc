@@ -138,11 +138,11 @@ void CompGenePred::start(){
         postprocTest();
     }
     else{
-        cout << "Running prediction (if you want to switch to test mode, set /Testing/testMode=run at the command line)..." << endl;
+        cout << "Running prediction..." << endl; // (if you want to switch to test mode, set /Testing/testMode=run at the command line)
         runPredictionOrTest();
     }
     #else
-    cout << "Running prediction...(if you want to switch to test mode, rebuild Augustus after setting TRAINING to true as explained in longrunning-test-CGP.md)" << endl;
+    cout << "Running prediction..." << endl; // (if you want to switch to test mode, rebuild Augustus after setting TRAINING to true as explained in longrunning-test-CGP.md)
     runPredictionOrTest();
     #endif
 }
