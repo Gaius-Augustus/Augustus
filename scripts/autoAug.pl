@@ -473,15 +473,47 @@ sub construct_training_set{
 	print " Finished ".(scalar localtime())."\n" if ($verbose>=2);
   	
 
+    $perlCmdString="perl $PASAHOME/scripts/pasa_asmbls_to_training_set.dbi "
+        ."--pasa_transcripts_fasta $pasaDBname.assemblies.fasta "
+        ."--pasa_transcripts_gff3 $pasaDBname.pasa_assemblies.gff3 "
+        ."1>pasa_asmbls_to_training_set.stdout 2>pasa_asmbls_to_training_set.stderr";
+    
+    print "2 Running \"$perlCmdString\" ".(scalar localtime())." ..." if ($verbose>=2);
+    
+    if (system("$perlCmdString") != 0) {
+        # check if it is an error like here: https://github.com/TransDecoder/TransDecoder/issues/71 and try to circumvent it
+        if (! -e "pasa_asmbls_to_training_set.stderr") { # check if error file exists
+            print "\n2 file pasa_asmbls_to_training_set.stderr doesn't exists.\n" if ($verbose>=2);
+            die (" failed to execute: $perlCmdString\n");
+        }
+        open CHK_ARRAY, "pasa_asmbls_to_training_set.stderr"; # check if a TransDecoder.Predict error occured
+        my @chk_array = <CHK_ARRAY>;
+        close CHK_ARRAY;
+        if (grep(/^Error.*TransDecoder\.Predict.*/,@chk_array) eq 0) {
+            print "\n2 This is not a TransDecoder.Predict Error\n" if ($verbose>=2);
+            die (" failed to execute: $perlCmdString\n");
+        }
+        print "\n2 failed to execute: $perlCmdString\n" if ($verbose>=2);
+        print "2 Try pasa asmbls to training set without refinement - see https://github.com/TransDecoder/TransDecoder/issues/71\n" if ($verbose>=2);
+        if (! -e "$PASAHOME/scripts/pasa_asmbls_to_training_set_no_refine_starts.dbi") {
+            my $sedCmdString = "sed 's#\\(.*TransDecoder\\.Predict.*\\)#    \$transdecoder_params \\.= \" --no_refine_starts \";\\n\\1#g' $PASAHOME/scripts/pasa_asmbls_to_training_set.dbi > $PASAHOME/scripts/pasa_asmbls_to_training_set_no_refine_starts.dbi";
+            print "2 Create asmbl script without refinement: $sedCmdString\n" if ($verbose>=2);
+            system($sedCmdString);
+            if (! -e "$PASAHOME/scripts/pasa_asmbls_to_training_set_no_refine_starts.dbi") {
+                print "2 Could not create script \"$PASAHOME/scripts/pasa_asmbls_to_training_set_no_refine_starts.dbi\"\n" if ($verbose>=2);
+                die (" failed to execute: $perlCmdString\n");
+            }
+        }
         
-	$perlCmdString="perl $PASAHOME/scripts/pasa_asmbls_to_training_set.dbi "
-	    ."--pasa_transcripts_fasta $pasaDBname.assemblies.fasta "
-	    ."--pasa_transcripts_gff3 $pasaDBname.pasa_assemblies.gff3 "
-	    ."1>pasa_asmbls_to_training_set.stdout 2>pasa_asmbls_to_training_set.stderr";
-	
-	print "2 Running \"$perlCmdString\" ".(scalar localtime())." ..." if ($verbose>=2);
-	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
-	print " Finished ".(scalar localtime())."\n" if ($verbose>=2);
+        $perlCmdString="perl $PASAHOME/scripts/pasa_asmbls_to_training_set_no_refine_starts.dbi "
+            ."--pasa_transcripts_fasta $pasaDBname.assemblies.fasta "
+            ."--pasa_transcripts_gff3 $pasaDBname.pasa_assemblies.gff3 "
+            ."1>pasa_asmbls_to_training_set_no_refine_starts.stdout 2>pasa_asmbls_to_training_set_no_refine_starts.stderr";
+        
+        print "2 Running \"$perlCmdString\" ".(scalar localtime())." ..." if ($verbose>=2);
+        system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
+    }
+    print " Finished ".(scalar localtime())."\n" if ($verbose>=2);
 	
 	print ("2 Cleaning up after PASA ...\n") if ($verbose>=2);
 	my @filesToDelete=("output.assembly_building.out" ,
