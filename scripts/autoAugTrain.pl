@@ -809,7 +809,19 @@ sub scipio_conversion{
     chdir "$workDir/training/" or die("Error: could not change directory to $workDir/training/!\n");
     $cmdString = "scipio.pl $genome $trainingset > scipio.yaml 2> scipio.err"; 
     print "3 $cmdString ".(scalar localtime())." ..." if ($verbose>2);
-    system("$cmdString")==0 or die("Program aborted. Possibly \"scipio\" is not installed or not in your PATH");
+    my $scipioStatus = system("$cmdString");
+    if ($scipioStatus != 0) {
+      if (-s "scipio.err") { # if non-empty
+        open( my $fh, '<', "scipio.err" ) or die("Can't open \"scipio.err\": $!");
+        print STDERR <$fh>;
+        print STDERR "\n";
+        close $fh;
+        die("Program aborted. Scipio failed.");
+      }
+      else {
+        die("Program aborted. Possibly \"scipio.pl\" is not installed or not in your PATH");
+      }
+    }
     print "Finished. ".(scalar localtime())."\n" if ($verbose>2);
     $cmdString = "cat scipio.yaml | yaml2gff.1.4.pl --filterstatus=\"incomplete\" > scipio.gff 2> yaml2gff.err"; 
     print "3 $cmdString ".(scalar localtime())." ..." if ($verbose>2);
