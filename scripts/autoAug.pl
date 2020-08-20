@@ -461,12 +461,13 @@ sub construct_training_set{
 	
 	my $abortString;
 	$abortString = "\nFailed to execute, possible reasons could be:\n";
-	$abortString.= "1. There is already a database named \"$pasaDBname\" in your mysql host.\n";
+	$abortString.= "1. There is already a database named \"$pasaDBname\" on your mysql host.\n";
 	$abortString.= "2. The software \"slclust\" is not installed correctly, try to install it";
 	$abortString.= " again (see the details in the PASA documentation).\n";
-	$abortString.= "3. The fasta headers in cDNA or genome file were not unique.\n";
-	$abortString.= "Inspect $trainDir/pasa/Launch_PASA_pipeline.stderr for PASA error messages.\n";
-	
+	$abortString.= "3. Fasta headers in cDNA or genome file were not unique.\n";
+	$abortString.= "4. Fasta headers in cDNA file contains square brackets, commas or other non-letter or non-number characters.\n";
+	$abortString.= "2. Fasta headers in cDNA file were too long (max 90 characters)(the sequence name up to the first space).\n";
+	$abortString.= "Inspect $trainDir/pasa/Launch_PASA_pipeline.stderr for PASA error messages.\n";	
 	print "2 Executing the Alignment Assembly: \"$perlCmdString\" ".(scalar localtime())." ..." if ($verbose>=2);
 	system("$perlCmdString")==0 or die ("$abortString");
 	print " Finished ".(scalar localtime())."\n" if ($verbose>=2);
