@@ -69,10 +69,8 @@ tests/examples_test/data/tmp/
 tests/longrunning/single_genome/data/
 tests/longrunning/single_genome/output/
 tests/longrunning/single_genome/tmp.*/
-tests/longrunning/cgp/cgp12way/
-tests/longrunning/cgp/cgp12way.tar.gz
-examples/cgp12way/
-examples/cgp12way.tar.gz
+tests/longrunning/cgp/data/cgp12way/
+tests/longrunning/cgp/data/cgp12way.tar.gz
 
 # ignore test species
 config/species/test_aug_dev_species/
