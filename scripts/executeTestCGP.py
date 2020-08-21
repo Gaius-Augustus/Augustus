@@ -9,9 +9,6 @@ import fileinput
 import filecmp
 import sys
 import random
-import wget
-import tarfile
-import itertools
 from datetime import datetime
 import numpy as np
 
@@ -43,8 +40,13 @@ parser.add_argument('-c', '--chunks',
 parser.add_argument('-t', '--test', action='store_true',
                     help='to run a basic test to assess the correctness in the creation of the minimal data set.')                   
 parser.add_argument('-a', '--rand',
-                    help='to pick a random subset of non overlapping chunks containing at least 300 genes.')                   
-
+                    help='to pick a random subset of non overlapping chunks containing at least 300 genes.')  
+parser.add_argument('-g', '--augustusDir',
+                    help='path to comparative Augustus executable.')  
+parser.add_argument('-l', '--evalDir',
+                    help='path to Eval script.')  
+parser.add_argument('-w', '--workingDir',
+                    help='path to data set used in testing (link).')  
 args = parser.parse_args()
 
 # if not already existing, create dir to collect results for the current chunk
@@ -179,9 +181,9 @@ def prepare_test(paths_shared, paths, chunks):
 def port_test(paths_shared, paths, chunks):
     for chunk in chunks:
         print('Porting test for chunk', chunk, '...')
-        port_sqlitedb(paths_shared, paths, chunk)
+        # port_sqlitedb(paths_shared, paths, chunk)
         make_genometbl_chunk(paths, chunk)
-    make_genometbl(paths_shared)
+    #make_genometbl(paths_shared)
 
 def run_test(paths, chunk):
     print('Runnning prediction on chunk', chunk, 'using the minimal data set...')
@@ -189,48 +191,41 @@ def run_test(paths, chunk):
     '--alnfile=' + paths[chunk]['maf_file'],
     '--speciesfilenames=' + paths[chunk]['tbl_test_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths[chunk]['sqlitedb_test_file'],
     '--optCfgFile=../config/cgp/cgp_param_21features_accuracy_largerGrid.convDivCorrect.cfg',
-    '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run']
+    '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run',
+    '--/Testing/workingDir=' + paths_shared['working_dir'] + 'names']
+    
+    
     execute(cmd, paths[chunk]['result_dir'] + 'out.runTest')
 
 # parallel execution : acknowldgement Daniel Honsel (revisited code from test_case.py)
 def run_test_parallel(paths_shared, paths, chunks):
+
     proc_list = []
 
-    # create a command for each chunk
-    args = []
     for chunk in chunks:
+        print('Runnning prediction on chunk', chunk, 'using the minimal data set...')
+
         cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], 
         '--alnfile=' + paths[chunk]['maf_file'],
         '--speciesfilenames=' + paths[chunk]['tbl_test_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths[chunk]['sqlitedb_test_file'],
         '--optCfgFile=../config/cgp/cgp_param_21features_accuracy_largerGrid.convDivCorrect.cfg',
-        '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run']
+        '--stopCodonExcludedFromCDS=true', '--/CompPred/logreg=on', '--/CompPred/outdir=' + paths_shared['working_dir'] + 'out' + str(chunk) + 'run', '--/Testing/testMode=run',
+        '--/Testing/workingDir=' + paths_shared['working_dir']]
 
         output = paths[chunk]['result_dir'] + 'out.runTest'
 
-        args.append([cmd, output, chunk])
-
-    # create groups according to the number of cpus
-    grouped_args = [iter(args)] * 5
-
-    # parallel execution of the commands of each group
-    for arg_list in itertools.zip_longest(*grouped_args):
-        proc_list = []
-        for cmd, output, chunk in filter(None, arg_list):
-            print('\n' + 'Runnning prediction on chunk', chunk, 'using the minimal data set...')
-            with open(output, 'w') as file:
-                proc_list.append(
-                    subprocess.Popen(cmd,
-                                        stdout=file,
-                                        stderr=subprocess.PIPE,
-                                        universal_newlines=True))
-        for p in proc_list:
-            p.wait()
-        for p in proc_list:
-            error = p.stderr.read()
-            p.stderr.close()
-            if error:
-                print(error)            
-            
+        with open(output, 'w') as file:
+            proc_list.append(
+                        subprocess.Popen(cmd,
+                                         stdout=file,
+                                         stderr=subprocess.PIPE,
+                                         universal_newlines=True))
+    for p in proc_list:
+        p.wait()
+        
+    for p in proc_list:
+        error = p.stderr.read()
+        p.stderr.close()
 
 def execute(cmd, output, mode='w'):
     with open(output, mode) as file:
@@ -453,12 +448,12 @@ def execute(cmd, output, mode='w'):
     if error:
         print(error)
 
-def init_paths_shared():
+def init_paths_shared(augustusDir, workingDir, evalDir):
     paths_shared = {
-    'eval_dir' : '/data/eval/',    # path to eval
-    'augustus_dir' : '../',                                         # path to augustus binaries
-    'working_dir' : '../examples/cgp12way/',                        # path to working directory (it contains tree, genome tbl, SQLite db and there results will be written)
-    'anno_file' : '../examples/cgp12way/ENSEMBL/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf',  # path to annotation for hg38.chr1
+    'eval_dir' : evalDir,           #'/home/giovanna/Desktop/Alignment/eval-2.2.8/',    # path to eval
+    'augustus_dir' : augustusDir,   # '../',                                    # path to augustus binaries
+    'working_dir' : workingDir,     # '../examples/cgp12way/',                        # path to working directory (it contains tree, genome tbl, SQLite db and there results will be written)
+    'anno_file' : workingDir + 'ENSEMBL/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf',  # path to annotation for hg38.chr1
 
     # the following three directories are required only if a new test set is to be built
     'maf_dir' : '../examples/cgp12way/MAF/',                                    # path to MAFs 
@@ -519,24 +514,13 @@ def randomize_dataset(filename):
 
     print('Sampled dataset contains', int(numgenes), 'genes from chunks:', [x for x in dataset])
 
-
-def get_test_data():
-    if os.path.exists('../examples/cgp12way/'):
-        shutil.rmtree('../examples/cgp12way/')
-
-    url = 'http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/cgp12way.tgz'
-    filename = '../examples/cgp12way.tar.gz'
-    wget.download(url, out=filename)
-    if (os.path.isfile(filename)):
-        tar = tarfile.open(filename)
-        tar.extractall('../examples/')
-        tar.close()
-        os.remove(filename)
-
+def expandDir(path):
+    tmp = path
+    if len(path)>0 and path[len(path)-1] != '/':
+        tmp += '/'
+    return tmp
 
 if __name__ == '__main__':
-    get_test_data()
-
     if args.rand:
         randomize_dataset(args.rand)
         sys.exit()
@@ -549,9 +533,27 @@ if __name__ == '__main__':
     chunks = [x for x in chunks if x>0 and x<126]          # range valid for chr1 chunk size 2.5 Mb, chunk overlap 0.5 Mb
 
     if len(chunks) == 0:
+        print('No valid chunks specified...')
         sys.exit()
 
-    paths_shared = init_paths_shared()
+    if args.augustusDir is None:
+        print('Path to comparative augustus executable required, please make use of --augustusDir to pass the path...')
+        sys.exit()
+    augustusDir = str(expandDir(args.augustusDir))  
+
+    if args.workingDir is None:
+        print('Path to data set used in testing required, please make use of --workingDir to pass the path...')
+        sys.exit()
+    workingDir = str(expandDir(args.workingDir))
+
+    evalDir = ''
+    if args.eval:
+        if args.eval is None:
+            print('Path to Eval script required, please make use of --evalDir to pass the path...')
+            sys.exit()
+        evalDir = str(expandDir(args.evalDir))
+
+    paths_shared = init_paths_shared(augustusDir, workingDir, evalDir)
     paths = init_paths(chunks)
 
     make_dirs(paths_shared, paths, chunks)
@@ -561,6 +563,7 @@ if __name__ == '__main__':
     if args.prepare:
         prepare_test(paths_shared, paths, chunks)
     if args.run:
+        port_test(paths_shared, paths, chunks)
         run_test_parallel(paths_shared, paths, chunks)
     if args.eval:
         run_evaluate_global(paths_shared, paths, chunks)

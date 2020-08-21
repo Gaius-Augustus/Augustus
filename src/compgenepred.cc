@@ -8,10 +8,7 @@
 #include "compgenepred.hh"
 #include "orthograph.hh"
 #include "mea.hh"
-#include "genomicMSA.hh"
-#include "geneMSA.hh"
 #include "orthoexon.hh"
-#include "namgene.hh"
 #include "contTimeMC.hh"
 #include "liftover.hh"
 #include "intronmodel.hh"
@@ -125,9 +122,8 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
     }
 }
 
-
 void CompGenePred::start(){
-    // added to choose between different modes : predict, run test, prepare test
+    // added to choose between different modes : predict or run test
     #ifdef TESTING
     string testMode; 
     try {
@@ -136,38 +132,44 @@ void CompGenePred::start(){
         testMode = "none"; 
     }
 
-    if(testMode=="prepare"){
-        cout << "Preparing test..." << endl;
-        prepareTest();
-    }
-    else if(testMode=="run"){
+    if(testMode=="run"){
         cout << "Running test..." << endl;
-        runTest();
+        runPredictionOrTest();
         postprocTest();
     }
     else{
-        cout << "Running prediction..." << endl;
-        runPrediction();
+        cout << "Running prediction..." << endl; // (if you want to switch to test mode, set /Testing/testMode=run at the command line)
+        runPredictionOrTest();
     }
     #else
-    cout << "Running prediction..." << endl;
-    runPrediction();
+    cout << "Running prediction..." << endl; // (if you want to switch to test mode, rebuild Augustus after setting TRAINING to true as explained in longrunning-test-CGP.md)
+    runPredictionOrTest();
     #endif
 }
 
-void CompGenePred::runPrediction(){
 
-  // check if training mode is turned on and logreg features shall be read from file
-  
+
+void CompGenePred::runPredictionOrTest(){
+
+    #ifdef TESTING
+    string testMode; 
+    try {
+        testMode = Properties::getProperty("/Testing/testMode");
+    } catch (...) {
+        testMode = "predict"; 
+    }
+    #endif
+   
+  // check if training mode is turned on and logreg features shall be read from file  
   if(!Properties::hasProperty("trainFeatureFile")){
 
     // read in alignment, determine orthologous sequence fragments
 
     int num_phylo_states; // number of states in ExonEvo model
     try {
-        num_phylo_states = Properties::getIntProperty("/CompPred/phylo_model");
+	num_phylo_states = Properties::getIntProperty("/CompPred/phylo_model");
     } catch (...) {
-        num_phylo_states = 2;
+	num_phylo_states = 2;
     }
     if( num_phylo_states > 4 || num_phylo_states < 2)
 	throw ProjectError("/CompPred/phylo_model must be 2,3 or 4");
@@ -176,9 +178,10 @@ void CompGenePred::runPrediction(){
     tree.getBranchLengths(branchset);
     evo.setBranchLengths(branchset);
     //evo.printBranchLengths();
+
     evo.getRateMatrices();
     evo.computeLogPmatrices();
-    
+
     OrthoGraph::tree = &tree;
     GeneMSA::setTree(&tree);
     OrthoGraph::numSpecies = OrthoGraph::tree->numSpecies();
@@ -223,6 +226,7 @@ void CompGenePred::runPrediction(){
     } catch (...) {
 	ctree_scaling_factor = 1;
     }
+
     if(ctree_scaling_factor <= 0.0){
 	cerr << "No negative scaling factor allowed. /CompPred/scale_codontree must be a positive real number. Will use =1." << endl;	
 	ctree_scaling_factor=1;
@@ -291,6 +295,7 @@ void CompGenePred::runPrediction(){
     } catch (ProjectError &e) {
 	throw ProjectError("Format error parsing parameter --/CompPred/dd_factor=" + dd_param_s +".\n" + e.getMessage());
     }
+
     bool onlySampling = false;
     try {
 	noprediction = Properties::getBoolProperty("noprediction");
@@ -313,7 +318,6 @@ void CompGenePred::runPrediction(){
 	useLocusTrees = Properties::getBoolProperty("locustree");
     } catch (...) {}
     
-
     if(Constant::alternatives_from_evidence){
 	cerr << "Warning: The option 'alternatives-from-evidence' is only available in single species mode. Turned it off." << endl
 	     << "Rerun with --alternatives-from-evidence=0 to remove this warning." << endl;
@@ -324,6 +328,7 @@ void CompGenePred::runPrediction(){
 	string optCfgFile = expandHome(Properties::getProperty(EXTERNAL_KEY));
 	cout << "# Optional config file " << optCfgFile << " is used." << endl;
     }
+
     bool genesWithoutUTRs;
     try {
 	genesWithoutUTRs = Properties::getBoolProperty("/CompPred/genesWithoutUTRs");
@@ -336,6 +341,7 @@ void CompGenePred::runPrediction(){
     } catch (...) {
       overlapComp = false;
     }
+
     bool onlyCompleteGenes = false;
     const char* genemodelValue = Properties::hasProperty("genemodel") ? Properties::getProperty("genemodel") : "partial";
     if(strcmp(genemodelValue, "complete") == 0){
@@ -355,12 +361,14 @@ void CompGenePred::runPrediction(){
       else
         conservation = false;
     }
+
     double thold;
     try {
 	thold = Properties::getdoubleProperty("/CompPred/ec_thold");
     } catch (...) {
 	thold = 0.0;
     }
+
     SpeciesGraph::setECThold(thold);
     try {
 	thold = Properties::getdoubleProperty("/CompPred/ic_thold");
@@ -368,13 +376,47 @@ void CompGenePred::runPrediction(){
 	thold = 0.0;
     }
     SpeciesGraph::setICThold(thold);
-   
+
+    #ifdef TESTING
+    string outdir, outdirRun, outdirPrepare;  //direction for output files 
+    
+    if(testMode=="run"){
+        try {
+            outdir = Properties::getProperty("/CompPred/outdir");
+            expandDir(outdir);
+        } catch (...) {
+            if(outdir.empty())
+            throw ProjectError("Missing parameter /CompPred/outdir.");
+        }
+
+        outdirRun = outdir;
+        size_t pos = outdir.find("run");
+        if(pos == string::npos){
+            throw ProjectError("/CompPred/outdir parameter should end with the string \"run\".");
+        }
+        outdirPrepare = outdir.substr(0, outdir.length() - 4) + "prepare/";
+    }
+    else{   // testMode = predict
+        try {
+            outdir = Properties::getProperty("/CompPred/outdir");
+        } catch (...) {
+            outdir = "";
+        }
+    }
+    #else
     string outdir;  //direction for output files 
     try {
         outdir = Properties::getProperty("/CompPred/outdir");
     } catch (...) {
         outdir = "";
     }
+    #endif
+
+
+
+
+
+
 
     double mil_factor; // mean intron length factor (>=1), the higher the less are long introns penalized 
     try {
@@ -403,6 +445,7 @@ void CompGenePred::runPrediction(){
       else
 	use_omega = false;
     }
+
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes, optGenes, sampledGFs;
     if (Constant::printMEA)
@@ -415,13 +458,13 @@ void CompGenePred::runPrediction(){
 
     bool printCodons;
     try {
-        printCodons =  Properties::getBoolProperty("/CompPred/printOrthoExonAli");
+      printCodons =  Properties::getBoolProperty("/CompPred/printOrthoExonAli");
     } catch(...){
-        printCodons = 0;
+      printCodons = 0;
     }
     ofstream codonAli;   // prints codon alignments of all orthoexons in maf format
     if(printCodons){
-        codonAli.open(outdir + "orthoexons_codonAlignment.maf");
+      codonAli.open(outdir + "orthoexons_codonAlignment.maf");
     }
 
     BaseCount::init();
@@ -431,9 +474,9 @@ void CompGenePred::runPrediction(){
 
     int k; // number of omega values for which rate matrices are stored
     try {
-        k = Properties::getIntProperty("/CompPred/num_omega");
+      k = Properties::getIntProperty("/CompPred/num_omega");
     } catch(...){
-        k = 20;
+      k = 20;
     }
 
     // initializing codon rate matricies, for exon evolution see code above (evo)
@@ -451,10 +494,11 @@ void CompGenePred::runPrediction(){
     // TODO: different prior for coding and noncoding
     codonevo.setPrior(0.5);
     if(Constant::useAArates){
-        codonevo.setAAPostProbs();
+      codonevo.setAAPostProbs();
     }
     //cout << "Omegas, for which substitution matrices are stored:" << endl;
     //codonevo.printOmegas();
+
     codonevo.getRateMatrices();
     codonevo.computeLogPmatrices();
     
@@ -463,21 +507,170 @@ void CompGenePred::runPrediction(){
     GeneMSA::setCodonEvo(&codonevo);
     GenomicMSA msa(rsa);
 
-
-    msa.readAlignment(Constant::alnfile);  // reads the alignment
+    #ifdef TESTING
+    if(testMode!="run")
+        msa.readAlignment(Constant::alnfile);  // reads the alignment only if testMode != "run"
+    #else
+        msa.readAlignment(Constant::alnfile);  // reads the alignment
+    #endif
+    
     // msa.printAlignment("");    
     // rsa->printStats();
     // msa.compactify(); // Mario: commented out as this excludes paths through the alignment graph 
                          //(trivial mergers of neighboring alignments)
 
-    msa.findGeneRanges(); // nontrivial summary of alignments
+    #ifdef TESTING
+    if(testMode=="run"){        
+	    string dbdir;
+        try {
+            dbdir = Properties::getProperty("/Testing/workingDir");
+            expandDir(dbdir);
+        } catch (...) {
+            if(outdir.empty())
+            throw ProjectError("Missing parameter /Testing/workingDir.");
+        }
+
+        dbdir += "names/";
+        
+        msa.readNameDB(dbdir); // default was ../examples/cgp12way/names/ but currently an exception is raised if this parameter is not passed, temporarily added to solve a problem with string serialization 
+    }
+    else 
+        msa.findGeneRanges(); // nontrivial summary of alignments, disabled in case of testing since deserialization does the job 
+    #else
+    msa.findGeneRanges(); // nontrivial summary of alignments, disabled in case of testing since deserialization does the job 
+    #endif
 
     GeneMSA::openOutputFiles(outdir);
 
     int numGeneRange = 1;
 
-    while (GeneMSA *geneRange = msa.getNextGene()) {
-	cout << "processing gene range number " << numGeneRange << endl;
+    #ifdef TESTING
+    int n = 0;
+    struct stat buffer;  
+    string filename;
+    #endif
+    
+    #ifdef TESTING
+    if(testMode=="run"){        
+        while(true){
+            filename = outdirPrepare + "generange_" + to_string(1+n) + ".bed";   // interspecies
+            if(stat(filename.c_str(), &buffer) != 0)
+                break;
+            ++n;
+        }
+    }
+    #endif
+
+    #ifdef TESTING
+    Alignment* ali = NULL;
+    vector<list<tuple<string,int,int> > > grlist(n);        // contains intervals for all generanges within the current chunk (the file has been created by prepareTest)
+    vector<list<tuple<string,int,int> > > mergedlist(speciesNames.size());    // contains what remains of intervals for all generange within the current chunk after having merged original ones (the file has been created after prepareTest outside Augustus) 
+    #endif
+    
+    #ifdef TESTING
+    if(testMode=="run"){        
+        // read bed containing original intervals for each gene range and bed containing the same inervals after merging by species  : required for conversion of alignment
+        while(true){
+            filename = outdirPrepare + "generange_" + to_string(numGeneRange) + ".bed";   // interspecies
+
+            if(stat(filename.c_str(), &buffer) != 0)
+                break;
+                
+            if(!readInterval(filename, grlist[numGeneRange-1]))
+                cout << "File " << filename << " absent : cannot recover gene range " << numGeneRange << endl;
+            cout << "read gene range num " << numGeneRange << " " << grlist[numGeneRange-1].size() << endl;
+            int ii = 0;
+            for(list<tuple<string,int,int> >::iterator it=grlist[numGeneRange-1].begin();it!=grlist[numGeneRange-1].end();++it, ++ii)
+                cout << speciesNames[ii] << " " << get<0>(*it) << " " << get<1>(*it) << " " << get<2>(*it) << endl;
+            ++numGeneRange;       
+        }
+        
+        for(int s=0;s<speciesNames.size();++s){
+            filename = outdirPrepare + speciesNames[s] + ".bed";   //removed here .MERGED                // intraspecies        
+            if(!readInterval(filename, mergedlist[s]))
+                cout << "File " << filename << " absent : cannot recover merged interval list for generange " << numGeneRange << " for species " << speciesNames[s] << endl;
+        }
+
+        numGeneRange = 1;
+    }
+    #endif
+    
+    while(true){
+    GeneMSA *geneRange = NULL;
+    
+    #ifdef TESTING
+    if(testMode=="run"){  
+
+        // files containing serialized data for gene ranges are no longer named after the reference interval within the gr 
+        filename = outdirPrepare + "generange_" + to_string(numGeneRange); // to_string(itGR->first) + "_" + to_string(itGR->second);	
+
+        if(stat(filename.c_str(), &buffer) != 0){
+            cout << "File " << filename << " absent" << endl;
+            break;
+        }
+        else{		    
+            // can be made static or unique for all geneRanges 
+            deserializeAlignment(filename, ali);
+        
+            if(ali==NULL){
+                ++numGeneRange;
+                continue;
+            }
+
+            // restore string names we couldn't serialize, reset sequence lengths
+            for(int r=0;r<ali->rows.size();++r){
+                if(ali->rows[r]){
+                    ali->rows[r]->seqID = msa.seqIDarhive2seqIDConversion(r, ali->rows[r]->seqIDarchive);   // old names! as before minimizing fasta
+                    // postponed : rsa->setLength(r, ali->rows[r]->seqID, ali->rows[r]->chrLen);
+                }
+            }
+
+            // extract new interval the current gr falls within new fasta (eg 200-400 completely included within 0-1000, uses 0-1000)
+            list<tuple<string, int, int> >::iterator itGR = grlist[numGeneRange-1].begin();
+            for (int s = 0; s < speciesNames.size(); s++, ++itGR) {
+                // cout << "Extracting interval " << speciesNames[s] << " " << get<0>(*itGR) << " " << get<1>(*itGR) << " " << get<2>(*itGR) << endl;
+                int newStart = -1, newEnd = -1;
+                // search the larger interval the original interval has been merged into
+                for(list<tuple<string,int,int> >::iterator itMERGED=mergedlist[s].begin();itMERGED!=mergedlist[s].end();++itMERGED){
+                    if(get<0>(*itGR)==get<0>(*itMERGED) && get<1>(*itGR)>=get<1>(*itMERGED) &&  get<2>(*itGR)<= get<2>(*itMERGED)){// both BED
+                        // cout << "Interval detected " << get<0>(*itMERGED) << " " << get<1>(*itMERGED)  << " " << get<2>(*itMERGED) << endl;
+                        // maximal containing interval found
+                        newStart = get<1>(*itMERGED);
+                        newEnd = get<2>(*itMERGED) - 1; // BED no longer need, we close the interval
+                        break;
+                    }
+                }
+                if(newStart>-1 && newEnd>-1)
+                    ali->convertAlignment(s, newStart, newEnd);
+                else{
+                    // cout << "ERROR " << newStart << " " << newEnd << " " << get<0>(*itGR) << " " << get<1>(*itGR) << " " << get<2>(*itGR) << endl;
+                }
+            }
+
+            for(int r=0;r<ali->rows.size();++r){
+                if(ali->rows[r]){
+                    rsa->setLength(r, ali->rows[r]->seqID, ali->rows[r]->chrLen);
+                    // cout << "SETLEN POSTPONED " << ali->rows[r]->chrLen << endl;
+                }
+            }
+
+            // create a gene range from deserialized alignment and run predixtion over it
+            geneRange = new GeneMSA(rsa, ali);
+        }
+    }
+    else
+    {
+        geneRange = msa.getNextGene();
+        if(geneRange == NULL)
+            break;
+    }    
+    #else
+    geneRange = msa.getNextGene();
+    if(geneRange == NULL)
+        break;
+	#endif
+    
+    cout << "processing gene range number " << numGeneRange << endl;
 	geneRange->printStats();
 	
 	if (useLocusTrees){ // Charlotte Janas playground, off by default
@@ -696,6 +889,8 @@ void CompGenePred::runPrediction(){
     }
   } 
 }
+
+
 
 #ifdef TESTING
 /*
@@ -924,991 +1119,6 @@ bool CompGenePred::readInterval(string filename, list<tuple<string,int,int> >& g
 
 	ifs.close();
 	return true;
-}
-
-/*
-*   added on 14.05.2020 
-*   functions for preparing small data set and runniing prediction over it  
-*/
-void CompGenePred::prepareTest(){
-    
-  // check if training mode is turned on and logreg features shall be read from file
-  
-  if(!Properties::hasProperty("trainFeatureFile")){
-
-    // read in alignment, determine orthologous sequence fragments
-
-    int num_phylo_states; // number of states in ExonEvo model
-    try {
-	num_phylo_states = Properties::getIntProperty("/CompPred/phylo_model");
-    } catch (...) {
-	num_phylo_states = 2;
-    }
-    if( num_phylo_states > 4 || num_phylo_states < 2)
-	throw ProjectError("/CompPred/phylo_model must be 2,3 or 4");
-    ExonEvo evo(num_phylo_states);
-    vector<double> branchset;
-    tree.getBranchLengths(branchset);
-    evo.setBranchLengths(branchset);
-    //evo.printBranchLengths();
-    evo.getRateMatrices();
-    evo.computeLogPmatrices();
-    OrthoGraph::tree = &tree;
-    GeneMSA::setTree(&tree);
-    OrthoGraph::numSpecies = OrthoGraph::tree->numSpecies();
-    vector<string> speciesNames;
-    OrthoGraph::tree->getSpeciesNames(speciesNames);    
-
-#ifdef DEBUG
-    cout << "-------------------------------\nparameters phylogenetic model\n-------------------------------" << endl;
-    cout << "rate exon loss:\t" << evo.getMu() << endl;
-    cout << "rate exon gain:\t" << evo.getLambda() << endl;
-#endif
-
-    Constant::temperature = 3;
-    Properties::assignProperty("temperature", Constant::temperature);
-    if (Constant::temperature < 0){
-	Constant::temperature = 0;
-    }
-    if (Constant::temperature > 7){
-	Constant::temperature = 7;
-    }
-    try {
-	PhyloTree::phylo_factor  = Properties::getdoubleProperty("/CompPred/phylo_factor");
-    } catch (...) {
-	PhyloTree::phylo_factor = 1;
-    }
-    if(PhyloTree::phylo_factor <= 0.0){
-	throw ProjectError("/CompPred/phylo_factor must to be real positive number.");
-    }
-    
-    // used for mapping an existing annotation to the other genomes
-    // each exon/intron that is supported by a hint (e.g. exon/intron from the annotation) gets this
-    // additional score to make sure that it is transferred to the other genomes and not the
-    // other way round. It has to be at least has high as the maximum cost of an exon gain or loss event
-    SpeciesGraph::maxCostOfExonLoss = - log((evo.getMu()+evo.getLambda())*evo.minBranchLength())*PhyloTree::phylo_factor*100;
-
-    double ctree_scaling_factor = 1; // scaling factor to scale branch lengths in codon tree to one codon substitution per time unit
-    try {
-	ctree_scaling_factor = Properties::getdoubleProperty("/CompPred/scale_codontree");
-    } catch (...) {
-	ctree_scaling_factor = 1;
-    }
-    if(ctree_scaling_factor <= 0.0){
-	cerr << "No negative scaling factor allowed. /CompPred/scale_codontree must be a positive real number. Will use =1." << endl;	
-	ctree_scaling_factor=1;
-    }
-    int maxIterations; // maximum number of dual decomposition iterations in each round
-    try {
-	maxIterations = Properties::getIntProperty("/CompPred/maxIterations");
-    } catch (...) {
-	maxIterations = 500;
-    }
-    if(maxIterations <= 0){
-	cerr << "Warning: /CompPred/maxIterations must be a pos. Will use =500." << endl;
-	maxIterations = 500;
-    }
-    int rounds; // number of dual decomposition rounds
-    try {
-	rounds = Properties::getIntProperty("/CompPred/dd_rounds");
-    } catch (...) {
-	rounds = 5;
-    }
-    if(rounds <= 0){
-	cerr << "Warning: /CompPred/rounds was set to "<<rounds<<". At least one round must be made." << endl;
-	rounds =1;
-    }
-    const char* dd_step_rule = Properties::hasProperty("/CompPred/dd_step_rule") ? Properties::getProperty("/CompPred/dd_step_rule") : "mixed";
-    OrthoGraph::setStepRule(dd_step_rule);
-    
-    string dd_param_s; 
-    // parameter that defines the step size in dual decomposition.
-    // If a range is given, all values in that range are tried until convergence is achieved
-    vector<double> dd_factors; 
-    try {
-        dd_param_s = Properties::getProperty("/CompPred/dd_factor");
-    } catch (...) {
-        dd_param_s = "1-4"; // default: 1st round "polyak", 2nd-5th round "square_root" with c=1,2,3,4
-    }
-    if(OrthoGraph::step_rule == polyak) // only one round possible for this step size rule
-	dd_param_s = "1";
-    try{
-	size_t i = dd_param_s.find('-');
-	if(i != std::string::npos){
-	    double start;
-	    if( !(stringstream(dd_param_s.substr(0,i)) >> start))
-		throw ProjectError("Cannot read interval start.");
-	    double end;
-	    if( !(stringstream(dd_param_s.substr(i+1, string::npos)) >> end))
-		throw ProjectError("Cannot read interval end.");
-	    if(start > end)
-		throw ProjectError("Interval start greater than interval end.");
-	    if(OrthoGraph::step_rule == mixed){ // 1st round: polyak, 2nd round and onwards: square_root
-		dd_factors.push_back(1);        // dummy, not required in first round
-		for (int i=0; i < rounds-1; i++)
-                    dd_factors.push_back(start+i*(end-start)/(rounds-2));
-	    }
-	    else{
-		for (int i=0; i < rounds; i++)
-		    dd_factors.push_back(start+i*(end-start)/(rounds-1));	
-	    }
-	}
-	else{
-	    double pos;	    
-	    if( !(stringstream(dd_param_s) >> pos))
-		throw ProjectError("Is not numeric.");
-	    dd_factors.push_back(pos);
-	}
-    } catch (ProjectError &e) {
-	throw ProjectError("Format error parsing parameter --/CompPred/dd_factor=" + dd_param_s +".\n" + e.getMessage());
-    }
-    
-    if(Properties::hasProperty("referenceFile")){
-      cout << "# AUGUSTUS is running in training mode. No prediction will be done!" << endl;
-      try {
-	Constant::refSpecies = Properties::getProperty("refSpecies");
-	if(Properties::hasProperty("param_outfile")){
-	  cout << "# Using file " << Properties::getProperty("param_outfile") << " to store logReg parameters." << endl;
-	}else{
-	  cout << "# No outfile for logReg parameters specified. Writing parameters to " << Constant::configPath <<  "/cgp/log_reg_parameters_trained.cfg" << endl;
-	}
-      } catch (ProjectError &e) {
-	throw ProjectError("For parameter training a reference species must be specified. Use --refSpecies=<SPECIES> and note, that <SPECIES> must be identical to one of the species names provided in the alignment and tree files.");
-      }
-    }
-    
-
-    if(Constant::alternatives_from_evidence){
-	cerr << "Warning: The option 'alternatives-from-evidence' is only available in single species mode. Turned it off." << endl
-	     << "Rerun with --alternatives-from-evidence=0 to remove this warning." << endl;
-	Constant::alternatives_from_evidence=false;
-    }
-    // optional config file should contain feature scores from a logistic regression (otherwise defaults are used)
-    if (Properties::hasProperty(EXTERNAL_KEY)) {
-	string optCfgFile = expandHome(Properties::getProperty(EXTERNAL_KEY));
-	cout << "# Optional config file " << optCfgFile << " is used." << endl;
-    }
-       
-    const char* genemodelValue = Properties::hasProperty("genemodel") ? Properties::getProperty("genemodel") : "partial";
-    if(strcmp(genemodelValue, "complete") == 0){
-
-    }
-    else if(strcmp(genemodelValue, "partial") != 0 && strcmp(genemodelValue, "bacterium") != 0){
-	throw ProjectError("in cgp mode only the options --genemodel=partial, --genemodel=bacterium and --genemodel=complete are implemented.");
-    }
-    
-    double thold;
-    try {
-	thold = Properties::getdoubleProperty("/CompPred/ec_thold");
-    } catch (...) {
-	thold = 0.0;
-    }
-    SpeciesGraph::setECThold(thold);
-    try {
-	thold = Properties::getdoubleProperty("/CompPred/ic_thold");
-    } catch (...) {
-	thold = 0.0;
-    }
-    SpeciesGraph::setICThold(thold);
-   
-    string outdir;  //direction for output files 
-    try {
-        outdir = Properties::getProperty("/CompPred/outdir");
-        expandDir(outdir);
-    } catch (...) {
-        if(outdir.empty())
-		throw ProjectError("Missing parameter /CompPred/outdir.");
-    }
-
-    //initialize output files of initial gene prediction and optimized gene prediction
-    vector<ofstream*> baseGenes, optGenes, sampledGFs;
-    if (Constant::printMEA)
-	baseGenes = initOutputFiles(outdir,".mea"); // equivalent to MEA prediction
-    vector<int> base_geneid(OrthoGraph::numSpecies, 1); // gene numbering
-    optGenes = initOutputFiles(outdir,".cgp");  //optimized gene prediction by applying majority rule move
-    vector<int> opt_geneid(OrthoGraph::numSpecies, 1);
-    if (Constant::printSampled)
-	sampledGFs = initOutputFiles(outdir,".sampled_GFs"); // prints sampled exons/introns and their posterior probs to file
-
-    bool printCodons;
-    try {
-      printCodons =  Properties::getBoolProperty("/CompPred/printOrthoExonAli");
-    } catch(...){
-      printCodons = 0;
-    }
-    ofstream codonAli;   // prints codon alignments of all orthoexons in maf format
-    if(printCodons){
-      codonAli.open(outdir + "orthoexons_codonAlignment.maf");
-    }
-
-    BaseCount::init();
-    PP::initConstants();
-    NAMGene namgene; // creates and initializes the states
-    StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
-
-    int k; // number of omega values for which rate matrices are stored
-    try {
-      k = Properties::getIntProperty("/CompPred/num_omega");
-    } catch(...){
-      k = 20;
-    }
-
-    // initializing codon rate matricies, for exon evolution see code above (evo)
-    PhyloTree ctree(tree); // codon tree
-    ctree.scaleTree(ctree_scaling_factor); // scale branch lengths to codon substitutions 
-    vector<double> ct_branchset;
-    ctree.getBranchLengths(ct_branchset);
-    double *pi = ExonModel::getCodonUsage();
-    CodonEvo codonevo;
-    codonevo.setKappa(4.0);
-    codonevo.setPi(pi);
-    codonevo.setBranchLengths(ct_branchset, 25);
-    //codonevo.printBranchLengths();
-    codonevo.setOmegas(k);
-    // TODO: different prior for coding and noncoding
-    codonevo.setPrior(0.5);
-    if(Constant::useAArates){
-      codonevo.setAAPostProbs();
-    }
-    //cout << "Omegas, for which substitution matrices are stored:" << endl;
-    //codonevo.printOmegas();
-    codonevo.getRateMatrices();
-    codonevo.computeLogPmatrices();
-    
-    // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
-    // printCodonMatrix(P);
-    GeneMSA::setCodonEvo(&codonevo);
-    GenomicMSA msa(rsa);
-
-    
-    // temporarily added to solve a problem with string serialization 
-	msa.readNameDB("../examples/cgp12way/names/");
-    msa.readAlignment(Constant::alnfile);  // reads the alignment
-    // msa.printAlignment("");    
-    // rsa->printStats();
-    // msa.compactify(); // Mario: commented out as this excludes paths through the alignment graph 
-                         //(trivial mergers of neighboring alignments)
-    msa.findGeneRanges(); // nontrivial summary of alignments
-
-    GeneMSA::openOutputFiles(outdir);
-
-    string filename;
-    int numGeneRange = 1;
-    vector<list<tuple<string,int,int> > > intervals(speciesNames.size());
-
-    while (Alignment *ali = msa.getNextAlignment()) {
-
-        cout << "Processing alignment/gene range number " << numGeneRange << endl;
-
-        // to be sure all data are stored properly
-        for(int r=0;r<ali->rows.size();++r){
-            if(ali->rows[r]){                
-                ali->rows[r]->chrLen = rsa->getChrLen(r, ali->rows[r]->seqID);
-                ali->rows[r]->seqIDarchive = msa.seqID2seqIDarhiveConversion(r, ali->rows[r]->seqID);
-            }		
-        }
-        
-        GeneMSA* geneRange = new GeneMSA(rsa, ali);
-        // update list of intervals for each species
-        for(int s=0;s<speciesNames.size();++s){
-            if(ali->rows[s])
-                intervals[s].push_back(make_tuple(ali->rows[s]->seqID, geneRange->getStart(s), geneRange->getEnd(s) + 1));    // 0-based, half open as in BED format
-        }
-        
-        // geneRange->printGeneRanges(); replaced by the following print (BEDs contain start end only for each species in the gr, (-1,-1) if the species is not present)
-        filename = outdir + "generange_" + to_string(numGeneRange) + ".bed"; 	
-        ofstream ofs(filename);
-        if(ofs.is_open()){
-            for(int s=0;s<speciesNames.size();++s){
-                if(ali->rows[s])
-                    ofs << ali->rows[s]->seqID << "\t" << geneRange->getStart(s) << "\t" << geneRange->getEnd(s) + 1 << endl;    // 0-based, half open as in BED format
-                else 
-                    ofs << "unknown\t-1\t-1" << endl;
-            }
-            ofs.close();
-        }
-        else    
-            cout << "failed to write " << filename << endl;
-
-        filename = outdir + "generange_" + to_string(numGeneRange);	
-
-        // overhead : can be made static or unique for all geneRanges 
-        serializeAlignment(filename, ali);
-
-        delete geneRange;
-        ++numGeneRange;
-    }
-
-    // merge intervals and use them to extract minimal fasta for each species
-    mergeIntervals(speciesNames, intervals);
-    writeIntervals(outdir, speciesNames, intervals);    
-
-    GeneMSA::closeOutputFiles();
-    if (Constant::printMEA)
-	closeOutputFiles(baseGenes);
-    closeOutputFiles(optGenes);
-    if (Constant::printSampled)
-	closeOutputFiles(sampledGFs);
-
-    // delete all trees                                           
-    for(unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>>::iterator topit = GeneMSA::topologies.begin(); topit !=GeneMSA::topologies.end(); topit++){
-	delete topit->second;
-    }                                                                                                                                                              
-    GeneMSA::topologies.clear(); 
-  
-    if(Properties::hasProperty("referenceFile")){
-      // initialize training of log reg parameters
-      train_OEscore_params(speciesNames.size());
-    }
-  } 
-}
-
-void CompGenePred::runTest(){
-  // check if training mode is turned on and logreg features shall be read from file
-  
-  if(!Properties::hasProperty("trainFeatureFile")){
-
-    // read in alignment, determine orthologous sequence fragments
-
-    int num_phylo_states; // number of states in ExonEvo model
-    try {
-	num_phylo_states = Properties::getIntProperty("/CompPred/phylo_model");
-    } catch (...) {
-	num_phylo_states = 2;
-    }
-    if( num_phylo_states > 4 || num_phylo_states < 2)
-	throw ProjectError("/CompPred/phylo_model must be 2,3 or 4");
-    ExonEvo evo(num_phylo_states);
-    vector<double> branchset;
-    tree.getBranchLengths(branchset);
-    evo.setBranchLengths(branchset);
-    //evo.printBranchLengths();
-    evo.getRateMatrices();
-    evo.computeLogPmatrices();
-    OrthoGraph::tree = &tree;
-    GeneMSA::setTree(&tree);
-    OrthoGraph::numSpecies = OrthoGraph::tree->numSpecies();
-    vector<string> speciesNames;
-    OrthoGraph::tree->getSpeciesNames(speciesNames);    
-    Boolean noprediction = false;
-    Boolean useLocusTrees = false; // reestimate tree for each gene range
-
-
-#ifdef DEBUG
-    cout << "-------------------------------\nparameters phylogenetic model\n-------------------------------" << endl;
-    cout << "rate exon loss:\t" << evo.getMu() << endl;
-    cout << "rate exon gain:\t" << evo.getLambda() << endl;
-#endif
-
-    Constant::temperature = 3;
-    Properties::assignProperty("temperature", Constant::temperature);
-    if (Constant::temperature < 0){
-	Constant::temperature = 0;
-    }
-    if (Constant::temperature > 7){
-	Constant::temperature = 7;
-    }
-    try {
-	PhyloTree::phylo_factor  = Properties::getdoubleProperty("/CompPred/phylo_factor");
-    } catch (...) {
-	PhyloTree::phylo_factor = 1;
-    }
-    if(PhyloTree::phylo_factor <= 0.0){
-	throw ProjectError("/CompPred/phylo_factor must to be real positive number.");
-    }
-    
-    // used for mapping an existing annotation to the other genomes
-    // each exon/intron that is supported by a hint (e.g. exon/intron from the annotation) gets this
-    // additional score to make sure that it is transferred to the other genomes and not the
-    // other way round. It has to be at least has high as the maximum cost of an exon gain or loss event
-    SpeciesGraph::maxCostOfExonLoss = - log((evo.getMu()+evo.getLambda())*evo.minBranchLength())*PhyloTree::phylo_factor*100;
-
-    double ctree_scaling_factor = 1; // scaling factor to scale branch lengths in codon tree to one codon substitution per time unit
-    try {
-	ctree_scaling_factor = Properties::getdoubleProperty("/CompPred/scale_codontree");
-    } catch (...) {
-	ctree_scaling_factor = 1;
-    }
-    if(ctree_scaling_factor <= 0.0){
-	cerr << "No negative scaling factor allowed. /CompPred/scale_codontree must be a positive real number. Will use =1." << endl;	
-	ctree_scaling_factor=1;
-    }
-    int maxIterations; // maximum number of dual decomposition iterations in each round
-    try {
-	maxIterations = Properties::getIntProperty("/CompPred/maxIterations");
-    } catch (...) {
-	maxIterations = 500;
-    }
-    if(maxIterations <= 0){
-	cerr << "Warning: /CompPred/maxIterations must be a pos. Will use =500." << endl;
-	maxIterations = 500;
-    }
-    int rounds; // number of dual decomposition rounds
-    try {
-	rounds = Properties::getIntProperty("/CompPred/dd_rounds");
-    } catch (...) {
-	rounds = 5;
-    }
-    if(rounds <= 0){
-	cerr << "Warning: /CompPred/rounds was set to "<<rounds<<". At least one round must be made." << endl;
-	rounds =1;
-    }
-    const char* dd_step_rule = Properties::hasProperty("/CompPred/dd_step_rule") ? Properties::getProperty("/CompPred/dd_step_rule") : "mixed";
-    OrthoGraph::setStepRule(dd_step_rule);
-    
-    string dd_param_s; 
-    // parameter that defines the step size in dual decomposition.
-    // If a range is given, all values in that range are tried until convergence is achieved
-    vector<double> dd_factors; 
-    try {
-        dd_param_s = Properties::getProperty("/CompPred/dd_factor");
-    } catch (...) {
-        dd_param_s = "1-4"; // default: 1st round "polyak", 2nd-5th round "square_root" with c=1,2,3,4
-    }
-    if(OrthoGraph::step_rule == polyak) // only one round possible for this step size rule
-	dd_param_s = "1";
-    try{
-	size_t i = dd_param_s.find('-');
-	if(i != std::string::npos){
-	    double start;
-	    if( !(stringstream(dd_param_s.substr(0,i)) >> start))
-		throw ProjectError("Cannot read interval start.");
-	    double end;
-	    if( !(stringstream(dd_param_s.substr(i+1, string::npos)) >> end))
-		throw ProjectError("Cannot read interval end.");
-	    if(start > end)
-		throw ProjectError("Interval start greater than interval end.");
-	    if(OrthoGraph::step_rule == mixed){ // 1st round: polyak, 2nd round and onwards: square_root
-		dd_factors.push_back(1);        // dummy, not required in first round
-		for (int i=0; i < rounds-1; i++)
-                    dd_factors.push_back(start+i*(end-start)/(rounds-2));
-	    }
-	    else{
-		for (int i=0; i < rounds; i++)
-		    dd_factors.push_back(start+i*(end-start)/(rounds-1));	
-	    }
-	}
-	else{
-	    double pos;	    
-	    if( !(stringstream(dd_param_s) >> pos))
-		throw ProjectError("Is not numeric.");
-	    dd_factors.push_back(pos);
-	}
-    } catch (ProjectError &e) {
-	throw ProjectError("Format error parsing parameter --/CompPred/dd_factor=" + dd_param_s +".\n" + e.getMessage());
-    }
-    bool onlySampling = false;
-    try {
-	noprediction = Properties::getBoolProperty("noprediction");
-    } catch (...) {}
-    if(Properties::hasProperty("referenceFile")){
-      onlySampling = true;
-      cout << "# AUGUSTUS is running in training mode. No prediction will be done!" << endl;
-      try {
-	Constant::refSpecies = Properties::getProperty("refSpecies");
-	if(Properties::hasProperty("param_outfile")){
-	  cout << "# Using file " << Properties::getProperty("param_outfile") << " to store logReg parameters." << endl;
-	}else{
-	  cout << "# No outfile for logReg parameters specified. Writing parameters to " << Constant::configPath <<  "/cgp/log_reg_parameters_trained.cfg" << endl;
-	}
-      } catch (ProjectError &e) {
-	throw ProjectError("For parameter training a reference species must be specified. Use --refSpecies=<SPECIES> and note, that <SPECIES> must be identical to one of the species names provided in the alignment and tree files.");
-      }
-    }
-    try {
-	useLocusTrees = Properties::getBoolProperty("locustree");
-    } catch (...) {}
-    
-
-    if(Constant::alternatives_from_evidence){
-	cerr << "Warning: The option 'alternatives-from-evidence' is only available in single species mode. Turned it off." << endl
-	     << "Rerun with --alternatives-from-evidence=0 to remove this warning." << endl;
-	Constant::alternatives_from_evidence=false;
-    }
-    // optional config file should contain feature scores from a logistic regression (otherwise defaults are used)
-    if (Properties::hasProperty(EXTERNAL_KEY)) {
-	string optCfgFile = expandHome(Properties::getProperty(EXTERNAL_KEY));
-	cout << "# Optional config file " << optCfgFile << " is used." << endl;
-    }
-    bool genesWithoutUTRs;
-    try {
-	genesWithoutUTRs = Properties::getBoolProperty("/CompPred/genesWithoutUTRs");
-    } catch (...) {
-	genesWithoutUTRs = true;
-    }
-    bool overlapComp;
-    try {
-      overlapComp = Properties::getBoolProperty("/CompPred/overlapcomp");
-    } catch (...) {
-      overlapComp = false;
-    }
-    bool onlyCompleteGenes = false;
-    const char* genemodelValue = Properties::hasProperty("genemodel") ? Properties::getProperty("genemodel") : "partial";
-    if(strcmp(genemodelValue, "complete") == 0){
-	onlyCompleteGenes = true;
-    }
-    else if(strcmp(genemodelValue, "partial") != 0 && strcmp(genemodelValue, "bacterium") != 0){
-	throw ProjectError("in cgp mode only the options --genemodel=partial, --genemodel=bacterium and --genemodel=complete are implemented.");
-    }
-    if(onlyCompleteGenes && Constant::utr_option_on)
-	genesWithoutUTRs = false;
-    bool conservation;
-    try {
-        conservation = Properties::getBoolProperty("/CompPred/conservation");
-    } catch (...) {
-      if(Constant::logreg)
-	conservation = true;
-      else
-        conservation = false;
-    }
-    double thold;
-    try {
-	thold = Properties::getdoubleProperty("/CompPred/ec_thold");
-    } catch (...) {
-	thold = 0.0;
-    }
-    SpeciesGraph::setECThold(thold);
-    try {
-	thold = Properties::getdoubleProperty("/CompPred/ic_thold");
-    } catch (...) {
-	thold = 0.0;
-    }
-    SpeciesGraph::setICThold(thold);
-   
-    string outdir, outdirRun, outdirPrepare;  //direction for output files 
-    try {
-        outdir = Properties::getProperty("/CompPred/outdir");
-        expandDir(outdir);
-    } catch (...) {
-        if(outdir.empty())
-		throw ProjectError("Missing parameter /CompPred/outdir.");
-    }
-
-    outdirRun = outdir;
-    size_t pos = outdir.find("run");
-    if(pos == string::npos){
-		throw ProjectError("/CompPred/outdir parameter should end with the string \"run\".");
-    }
-    outdirPrepare = outdir.substr(0, outdir.length() - 4) + "prepare/";
-
-    double mil_factor; // mean intron length factor (>=1), the higher the less are long introns penalized 
-    try {
-        mil_factor = Properties::getdoubleProperty("/CompPred/mil_factor");
-    } catch (...) {
-        mil_factor = 1.0; // a value of 100 roughly corresponds to not penalizing long introns
-    }
-    double meanIntrLen = -1.0; // initialized later
-    /*
-     * by default only likely exon candidates (the ones from sampling) are lifted over to
-     *  the other genomes. If this flag is turned on ALL exon candidates are lifted over
-     */
-    bool liftover_all_ECs;
-    try {
-        liftover_all_ECs = Properties::getBoolProperty("/CompPred/liftover_all_ECs");
-    } catch (...) {
-	liftover_all_ECs = false;
-    }
-
-    bool use_omega;
-    try{ 
-      use_omega = Properties::getBoolProperty("/CompPred/omega");
-    } catch (...){
-      if(Constant::logreg && Constant::ex_sc[6] != 0)
-	use_omega = true;
-      else
-	use_omega = false;
-    }
-    
-    //initialize output files of initial gene prediction and optimized gene prediction
-    vector<ofstream*> baseGenes, optGenes, sampledGFs;
-    if (Constant::printMEA)
-	baseGenes = initOutputFiles(outdirRun,".mea"); // equivalent to MEA prediction
-    vector<int> base_geneid(OrthoGraph::numSpecies, 1); // gene numbering
-    optGenes = initOutputFiles(outdirRun,".cgp");  //optimized gene prediction by applying majority rule move
-    vector<int> opt_geneid(OrthoGraph::numSpecies, 1);
-    if (Constant::printSampled)
-	sampledGFs = initOutputFiles(outdirRun,".sampled_GFs"); // prints sampled exons/introns and their posterior probs to file
-
-    bool printCodons;
-    try {
-      printCodons =  Properties::getBoolProperty("/CompPred/printOrthoExonAli");
-    } catch(...){
-      printCodons = 0;
-    }
-    ofstream codonAli;   // prints codon alignments of all orthoexons in maf format
-    if(printCodons){
-      codonAli.open(outdirRun + "orthoexons_codonAlignment.maf");
-    }
-
-    BaseCount::init();
-    PP::initConstants();
-    NAMGene namgene; // creates and initializes the states
-    StateModel::readAllParameters(); // read in the parameter files: species_{igenic,exon,intron,utr}_probs.pbl
-
-    int k; // number of omega values for which rate matrices are stored
-    try {
-      k = Properties::getIntProperty("/CompPred/num_omega");
-    } catch(...){
-      k = 20;
-    }
-
-    // initializing codon rate matricies, for exon evolution see code above (evo)
-    PhyloTree ctree(tree); // codon tree
-    ctree.scaleTree(ctree_scaling_factor); // scale branch lengths to codon substitutions 
-    vector<double> ct_branchset;
-    ctree.getBranchLengths(ct_branchset);
-    double *pi = ExonModel::getCodonUsage();
-    CodonEvo codonevo;
-    codonevo.setKappa(4.0);
-    codonevo.setPi(pi);
-    codonevo.setBranchLengths(ct_branchset, 25);
-    //codonevo.printBranchLengths();
-    codonevo.setOmegas(k);
-    // TODO: different prior for coding and noncoding
-    codonevo.setPrior(0.5);
-    if(Constant::useAArates){
-      codonevo.setAAPostProbs();
-    }
-    //cout << "Omegas, for which substitution matrices are stored:" << endl;
-    //codonevo.printOmegas();
-    codonevo.getRateMatrices();
-    codonevo.computeLogPmatrices();
-    
-    // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
-    // printCodonMatrix(P);
-    GeneMSA::setCodonEvo(&codonevo);
-    GenomicMSA msa(rsa);
-    
-    // msa.readAlignment(Constant::alnfile);  // reads the alignment
-    // msa.printAlignment("");    
-    // rsa->printStats();
-    // msa.compactify(); // Mario: commented out as this excludes paths through the alignment graph 
-                         //(trivial mergers of neighboring alignments)
-    // disabled the following, since deserialization does the job : 
-    // msa.findGeneRanges(); // nontrivial summary of alignments
-
-    // temporarily added to solve a problem with string serialization 
-	msa.readNameDB("../examples/cgp12way/names/");
-
-    GeneMSA::openOutputFiles(outdirRun);
-
-    int numGeneRange = 1, n = 0;
-
-    struct stat buffer;  
-    string filename;
-    
-    while(true){
-        filename = outdirPrepare + "generange_" + to_string(1+n) + ".bed";   // interspecies
-        if(stat(filename.c_str(), &buffer) != 0)
-            break;
-        ++n;
-    }
-
-    Alignment* ali = NULL;
-    vector<list<tuple<string,int,int> > > grlist(n);        // contains intervals for all generanges within the current chunk (the file has been created by prepareTest)
-    vector<list<tuple<string,int,int> > > mergedlist(speciesNames.size());    // contains what remains of intervals for all generange within the current chunk after having merged original ones (the file has been created after prepareTest outside Augustus) 
-    
-    
-    // read bed containing original intervals for each gene range and bed containing the same inervals after merging by species  : required for conversion of alignment
-    while(true){
-        filename = outdirPrepare + "generange_" + to_string(numGeneRange) + ".bed";   // interspecies
-
-        if(stat(filename.c_str(), &buffer) != 0)
-            break;
-        	
-        if(!readInterval(filename, grlist[numGeneRange-1]))
-            cout << "File " << filename << " absent : cannot recover gene range " << numGeneRange << endl;
-        cout << "read gene range num " << numGeneRange << " " << grlist[numGeneRange-1].size() << endl;
-        int ii = 0;
-        for(list<tuple<string,int,int> >::iterator it=grlist[numGeneRange-1].begin();it!=grlist[numGeneRange-1].end();++it, ++ii)
-            cout << speciesNames[ii] << " " << get<0>(*it) << " " << get<1>(*it) << " " << get<2>(*it) << endl;
-        ++numGeneRange;       
-    }
-    
-    for(int s=0;s<speciesNames.size();++s){
-        filename = outdirPrepare + speciesNames[s] + ".bed";   //removed here .MERGED                // intraspecies        
-        if(!readInterval(filename, mergedlist[s]))
-            cout << "File " << filename << " absent : cannot recover merged interval list for generange " << numGeneRange << " for species " << speciesNames[s] << endl;
-    }
-
-    numGeneRange = 1;
-    while(true){
-
-        // files containing serialized data for gene ranges are no longer named after the reference interval within the gr 
-        filename = outdirPrepare + "generange_" + to_string(numGeneRange); // to_string(itGR->first) + "_" + to_string(itGR->second);	
-	
-        if(stat(filename.c_str(), &buffer) != 0){
-            cout << "File " << filename << " absent" << endl;
-            break;
-        }
-        else{		    
-            // can be made static or unique for all geneRanges 
-            deserializeAlignment(filename, ali);
-        
-            if(ali==NULL){
-                ++numGeneRange;
-                continue;
-            }
-
-            // restore string names we couldn't serialize, reset sequence lengths
-            for(int r=0;r<ali->rows.size();++r){
-                if(ali->rows[r]){
-                    ali->rows[r]->seqID = msa.seqIDarhive2seqIDConversion(r, ali->rows[r]->seqIDarchive);   // old names! as before minimizing fasta
-                    // postponed : rsa->setLength(r, ali->rows[r]->seqID, ali->rows[r]->chrLen);
-                }
-            }
-
-            // extract new interval the current gr falls within new fasta (eg 200-400 completely included within 0-1000, uses 0-1000)
-            list<tuple<string, int, int> >::iterator itGR = grlist[numGeneRange-1].begin();
-            for (int s = 0; s < speciesNames.size(); s++, ++itGR) {
-                // cout << "Extracting interval " << speciesNames[s] << " " << get<0>(*itGR) << " " << get<1>(*itGR) << " " << get<2>(*itGR) << endl;
-                int newStart = -1, newEnd = -1;
-                // search the larger interval the original interval has been merged into
-                for(list<tuple<string,int,int> >::iterator itMERGED=mergedlist[s].begin();itMERGED!=mergedlist[s].end();++itMERGED){
-                    if(get<0>(*itGR)==get<0>(*itMERGED) && get<1>(*itGR)>=get<1>(*itMERGED) &&  get<2>(*itGR)<= get<2>(*itMERGED)){// both BED
-                        // cout << "Interval detected " << get<0>(*itMERGED) << " " << get<1>(*itMERGED)  << " " << get<2>(*itMERGED) << endl;
-                        // maximal containing interval found
-                        newStart = get<1>(*itMERGED);
-                        newEnd = get<2>(*itMERGED) - 1; // BED no longer need, we close the interval
-                        break;
-                    }
-                }
-                if(newStart>-1 && newEnd>-1)
-                    ali->convertAlignment(s, newStart, newEnd);
-                else{
-                    // cout << "ERROR " << newStart << " " << newEnd << " " << get<0>(*itGR) << " " << get<1>(*itGR) << " " << get<2>(*itGR) << endl;
-                }
-            }
-
-            for(int r=0;r<ali->rows.size();++r){
-                if(ali->rows[r]){
-                    rsa->setLength(r, ali->rows[r]->seqID, ali->rows[r]->chrLen);
-                    // cout << "SETLEN POSTPONED " << ali->rows[r]->chrLen << endl;
-                }
-            }
-
-            // create a gene range from deserialized alignment and run predixtion over it
-            GeneMSA *geneRange = new GeneMSA(rsa, ali);
-        
-            cout << "processing gene range number " << numGeneRange << endl;
-            geneRange->printStats();
-            
-            if (useLocusTrees){ // Charlotte Janas playground, off by default
-                geneRange->constructTree();
-            }
-
-            OrthoGraph orthograph;
-            vector<AnnoSequence*> seqRanges(speciesNames.size());
-            vector<map<int_fast64_t,ExonCandidate*> > exoncands(speciesNames.size()); // EC hash: collection of all ECs of all species
-
-            // retrieval of sequences and sampling of gene structures
-                for (int s = 0; s < speciesNames.size(); s++) {
-                    string seqID = geneRange->getSeqID(s);
-                    if (!seqID.empty()) {
-                int start = geneRange->getStart(s); // start, end refer to plus strand
-                int end = geneRange->getEnd(s);
-                AnnoSequence *as = rsa->getSeq(speciesNames[s], seqID, start, end, geneRange->getStrand(s));
-                        if (!as) {
-                            cerr << "random sequence access failed on " << speciesNames[s] << ", " << seqID << ", " 
-                    << start << ", " << end << ", " << endl;
-                            break;
-                        } else {
-                    seqRanges[s] = as; // DNA seqs will be reused when omega is computed AND gene lists are processed for output  
-
-                    list<Transcript*> *transcripts = NULL;
-
-                    if (!noprediction){
-                    SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
-                    sfc->prepare(as, false, rsa->withEvidence(speciesNames[s]));
-                    namgene.doViterbiPiecewise(*sfc, as, bothstrands); // sampling
-                    transcripts = namgene.getAllTranscripts();
-                    orthograph.sfcs[s] = sfc;
-                    orthograph.ptrs_to_alltranscripts[s] = transcripts;
-                    } else {
-                    // turn whole sequence to lowercase characters
-                    for (unsigned pos = 0; pos < as->length; pos++)
-                    as->sequence[pos] = tolower(as->sequence[pos]);
-                    }
-                    // insert sampled exons into the EC hash
-                    if (transcripts){		    
-                    for (list<Transcript*>::iterator geneit = transcripts->begin(); geneit != transcripts->end(); geneit++) {
-                        if ((*geneit)->isCoding()){ // noncoding comparative prediction not (yet) implemented
-                        Gene *g = dynamic_cast<Gene*> (*geneit);
-                        if (g && orthograph.sfcs[s])
-                            g->compileExtrinsicEvidence(orthograph.sfcs[s]->groupList);
-                        State *st = (*geneit)->exons;
-                        while (st) {
-                            // include framemod into type
-                            st->includeFrameModIntoType();
-                            ExonCandidate *ec = new ExonCandidate(toExonType(stateTypeIdentifiers[st->type]),st->begin,st->end);
-                            int_fast64_t key = ec->getKey();
-                            map<int_fast64_t, ExonCandidate*>::iterator ecit;
-                            ecit = exoncands[s].find(key);
-                            if (ecit == exoncands[s].end()){ // insert new EC
-                            exoncands[s].insert(pair<int_fast64_t, ExonCandidate*>(key,ec));
-                            } else {
-                            delete ec;
-                            }
-                            st = st->next;
-                        }
-                        }
-                    }
-                    }
-                }
-            }
-        }
-        // liftover of sampled exons to other species
-        vector<int> offsets = geneRange->getOffsets();
-        LiftOver lo(geneRange->getAlignment(), offsets);
-        map<int_fast64_t, list<pair<int,ExonCandidate*> > > alignedECs; // hash of aligned ECs
-        // liftover of sampled ECs from genome to alignment space
-        lo.projectToAli(exoncands,alignedECs);
-        
-        /*
-        * liftover of sampled ECs from alignment to genome space
-        * - creates new ECs e_j that are sampled in a subset of species i != j
-        * - marks e_j as "absent", if both boundaries of some EC e_i, i != j are aligned to j,
-        *   but the exon signals (e.g. splice sites, open reading frame) are missing
-        */
-        lo.projectToGenome(alignedECs, seqRanges, exoncands, true);
-
-        // create additional ECs for each species and  insert them into exoncands and alignedECs
-        vector<map<int_fast64_t,ExonCandidate*> > addECs(speciesNames.size()); // new ECs that need to be mapped to the alignment
-        for (int s = 0; s < speciesNames.size(); s++) {
-            if (seqRanges[s]) {
-                AnnoSequence *as = seqRanges[s];
-                try {
-                    // this is needed for IntronModel::dssProb in GenomicMSA::createExoncands
-                    namgene.getPrepareModels(as->sequence, as->length);
-                    // identifies exon candidates in the sequence for species s
-                    geneRange->createExonCands(s, as->sequence, exoncands[s], addECs[s]);
-                } catch (ProjectError &e) {
-                cerr << "CGP error when creating additional ECs for " << speciesNames[s] << endl
-                << e.getMessage();
-                throw e;
-                }
-            }
-        }
-
-        // liftover of additional ECs from genome to alignment space
-        lo.projectToAli(addECs,alignedECs);
-        addECs.clear(); // not needed anymore
-        
-        // liftover of additional ECs from alignment to genomes space 
-        lo.projectToGenome(alignedECs, seqRanges, exoncands, liftover_all_ECs);
-        
-        geneRange->setExonCands(exoncands);
-        exoncands.clear(); // not needed anymore, exoncands are now stored as a vector of lists of ECs in geneRange
-
-        // create HECTS
-        list<OrthoExon> hects;  // list of ortholog exons found in a gene Range
-        geneRange->createOrthoExons(hects, alignedECs, &evo);
-
-        if(meanIntrLen<0.0)
-            meanIntrLen = mil_factor * IntronModel::getMeanIntrLen(); // initialize mean intron length
-
-        // build graph from sampled gene structures and additional ECs
-            for (int s = 0; s < speciesNames.size(); s++) {	    
-            if (orthograph.ptrs_to_alltranscripts[s]){
-            list<Transcript*> *alltranscripts = orthograph.ptrs_to_alltranscripts[s];
-            cout << "building Graph for " << speciesNames[s] << endl;
-            // build datastructure for graph representation
-            // @stlist : list of all sampled states
-            list<Status> stlist;
-            if (!alltranscripts->empty()){
-                buildStatusList(*alltranscripts, Constant::utr_option_on, stlist);
-            }
-            // build graph
-            ofstream *gf = NULL;
-            if (Constant::printSampled)
-                gf = sampledGFs[s];
-            orthograph.graphs[s] = new SpeciesGraph(&stlist, seqRanges[s], geneRange->getExonCands(s), speciesNames[s], 
-                                geneRange->getStrand(s), genesWithoutUTRs, onlyCompleteGenes, gf, overlapComp);
-            orthograph.graphs[s]->buildGraph(meanIntrLen);
-            //orthograph.graphs[s]->printGraph(outdirRun + speciesNames[s] + "." + itoa(GeneMSA::geneRangeID) + ".dot");
-            
-            }
-        }
-    
-        geneRange->printGeneRanges();
-        if (Constant::exoncands) // by default, ECs are not printed
-            geneRange->printExonCands();
-        try { // Kathrin Middendorf's playground
-            if (Properties::getBoolProperty("/CompPred/compSigScoring"))
-            geneRange->comparativeSignalScoring(hects); 
-        } catch (...) {}
-        
-        if(use_omega){
-            geneRange->computeOmegasEff(hects, seqRanges, &ctree, &codonAli); // omega and number of substitutions is stored as OrthoExon attribute
-            // calculates an omega for every single codon alignment and prints wiggle trac for ever reading frame and species combination that exists in an ortho exon
-            //geneRange->printOmegaForCodon(outdirRun);
-            //inefficient omega calculation, only use for debugging purpose 
-            //geneRange->computeOmegas(hects, seqRanges, &ctree);
-        }
-        if (conservation)
-            geneRange->calcConsScore(hects, seqRanges, outdirRun);
-
-        if(!noprediction && !onlySampling){
-            orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
-            orthograph.globalPathSearch();
-            if (Constant::printMEA)
-            orthograph.outputGenes(baseGenes,base_geneid);
-                    
-            if(!hects.empty()){
-                // optimization via dual decomposition
-            vector< list<Transcript*> *> genelist(OrthoGraph::numSpecies);
-            orthograph.dualdecomp(hects,evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factors);
-            orthograph.filterGeneList(genelist,opt_geneid);
-            orthograph.createOrthoGenes(geneRange);
-            orthograph.printOrthoGenes();
-            orthograph.printGenelist(optGenes);
-
-            }else{
-            orthograph.outputGenes(optGenes, opt_geneid);
-            }
-        }
-        if(Constant::printOEs)
-            geneRange->printOrthoExons(hects);
-            
-        // store hect features globally for training
-        if(Properties::hasProperty("referenceFile")){
-        cout << "collect sample features" << endl;
-        int speciesID = find(speciesNames.begin(), speciesNames.end(), Constant::refSpecies) - speciesNames.begin();
-        if(speciesID >= speciesNames.size()){
-            throw ProjectError("Species " + Constant::refSpecies + " not found. Use one of the names specified in the alignment file as a reference!");
-        }else{
-            geneRange->collect_features(speciesID, &hects, orthograph.graphs[speciesID]);
-        }
-        }
-
-        // delete sequences
-        for (int i=0; i<seqRanges.size(); i++) {
-            delete seqRanges[i];
-        }
-        // delete geneRange
-        delete geneRange;
-        ++numGeneRange;
-        }
-    }
-
-    GeneMSA::closeOutputFiles();
-    if (Constant::printMEA)
-	closeOutputFiles(baseGenes);
-    closeOutputFiles(optGenes);
-    if (Constant::printSampled)
-	closeOutputFiles(sampledGFs);
-
-    // delete all trees                                           
-    for(unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>>::iterator topit = GeneMSA::topologies.begin(); topit !=GeneMSA::topologies.end(); topit++){
-	delete topit->second;
-    }                                                                                                                                                              
-    GeneMSA::topologies.clear();
-  
-    if(Properties::hasProperty("referenceFile")){
-      // initialize training of log reg parameters
-      train_OEscore_params(speciesNames.size());
-    }
-  }  
 }
 
 void CompGenePred::postprocTest(){
