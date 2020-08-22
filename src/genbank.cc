@@ -677,7 +677,14 @@ Boolean GBSplitter::findPositions( GBPositions& pos ){
     fposb = sin.tellg();
     if( !gotoEnd( ) )
         return false;
-    fpose = sin.tellg();
+    if (sin.eof()){ // happens in rare cases, without newline after
+                    // record ending double-slash //
+        sin.clear(); // otherwise tellg returns -1
+        fpose = sin.tellg();
+        sin.clear(ios_base::eofbit); // reset the eofbit
+    } else {
+        fpose = sin.tellg();
+    }
     sin.seekg( fposb );
 
     pos.length = fpose-fposb /*+1*/;         // Without the '\0'!!
