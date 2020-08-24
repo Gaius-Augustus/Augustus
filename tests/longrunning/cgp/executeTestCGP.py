@@ -1,25 +1,18 @@
 #!/usr/bin/env python3
 import subprocess
-import re
-import json
 import os
 import shutil
 import argparse
-import fileinput
-import filecmp
 import sys
-import random
 import wget
 import tarfile
-from datetime import datetime
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
-import numpy as np
+
 
 # Minimal execution script for longrunning cgp test cases
 # based on scripts/executeTestCGP.py by Giovanna Migliorelli.
 # The script is executed by GH Actions. 
-
 
 parser = argparse.ArgumentParser(description='Execute Augustus long running test cases.')
 parser.add_argument('-v', '--eval', action='store_true',
@@ -37,6 +30,7 @@ parser.add_argument('-w', '--workingDir',
 parser.add_argument('-j', '--jobs',
                     help='to set the maximum number of jobs executed in parallel. (default value 2)')                    
 args = parser.parse_args()
+
 
 # if not already existing, create dir to collect results for the current chunk
 def make_dirs(paths_shared, paths, chunks):
@@ -71,10 +65,12 @@ def cleanup_db(paths, chunk, removeFASTA = True):
     if os.path.exists(paths[chunk]['sqlitedb_test_file']):
         os.remove(paths[chunk]['sqlitedb_test_file'])
 
+
 def cleanup_tbl_chunk(paths, chunk):
     print('Cleaning up', paths[chunk]['tbl_test_file'])
     if os.path.exists(paths[chunk]['tbl_test_file']):
         os.remove(paths[chunk]['tbl_test_file'])
+
 
 def cleanup_tbl(paths_shared):
     print('Cleaning up', paths_shared['tbl_file'])
@@ -149,6 +145,7 @@ def run_evaluate(paths, chunk):
     cmd = [paths_shared['eval_bin'], paths_shared['anno_file'], paths_shared['working_dir'] + 'out' + str(chunk) + 'run/hg38.cgp.gff']
     execute(cmd, paths[chunk]['result_dir'] + 'out.eval')
 
+
 # currently not used (returns accuracy for single chunks) - parallelized
 def run_evaluate_parallel(paths, chunks):
     proc_list = []
@@ -209,6 +206,7 @@ def init_paths_shared(augustusDir, workingDir, evalDir):
     paths_shared.update({'eval_bin' : paths_shared['eval_dir'] + 'evaluate_gtf.pl'})                # path to eval
 
     return paths_shared  
+
 
 def init_paths(chunks):
     paths = {}
