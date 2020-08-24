@@ -120,7 +120,7 @@ for ((r=0; r<$numEvalRuns; r++)); do
    DIR=`mktemp -d -p .`
    CHUNKLIST="27 30 47 54 57 80 86 101 118" # same as Giovanna uses in multi-genome longrunning test
    NUMCHUNKS=${#CHUNKLIST[@]}
-   parallel -j 6 --will-cite ./aug_run_chunk.sh {} $TESTSEQ $DIR/augustus_{}.gff \"$OPTIONS\" ::: $CHUNKLIST
+   parallel -j 8 --will-cite ./aug_run_chunk.sh {} $TESTSEQ $DIR/augustus_{}.gff \"$OPTIONS\" ::: $CHUNKLIST
    # with sampling option this takes up to 4GB RAM per job
    
    for C in $CHUNKLIST; do
