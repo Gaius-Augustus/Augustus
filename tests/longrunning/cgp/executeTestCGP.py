@@ -50,7 +50,9 @@ parser.add_argument('-g', '--augustusDir',
 parser.add_argument('-l', '--evalDir',
                     help='path to Eval script.')  
 parser.add_argument('-w', '--workingDir',
-                    help='path to data set used in testing (link).')  
+                    help='path to data set used in testing (link).')
+parser.add_argument('-j', '--jobs',
+                    help='to set the maximum number of jobs executed in parallel. (default value 2)')                    
 args = parser.parse_args()
 
 # if not already existing, create dir to collect results for the current chunk
@@ -201,7 +203,7 @@ def run_test(paths, chunk):
     execute(cmd, paths[chunk]['result_dir'] + 'out.runTest')
 
 # parallel execution : acknowldgement Daniel Honsel (revisited code from test_case.py)
-def run_test_parallel(paths_shared, paths, chunks):
+def run_test_parallel(paths_shared, paths, chunks, jobs=2):
 
     proc_list = []
 
@@ -220,7 +222,7 @@ def run_test_parallel(paths_shared, paths, chunks):
         args.append([cmd, output, chunk])
 
     #TODO: parameter for number of parallel jobs
-    with ThreadPoolExecutor(max_workers=6) as executor:
+    with ThreadPoolExecutor(max_workers=jobs) as executor:
         for cmd, output, chunk in args:
             print('Adding thread for chunk: ' + str(chunk) + '...')
             executor.submit(execute_test, cmd, output, chunk)
@@ -469,7 +471,10 @@ if __name__ == '__main__':
         prepare_test(paths_shared, paths, chunks)
     if args.run:
         port_test(paths_shared, paths, chunks)
-        run_test_parallel(paths_shared, paths, chunks)
+        if args.jobs:
+            run_test_parallel(paths_shared, paths, chunks, jobs=args.jobs)
+        else:
+            run_test_parallel(paths_shared, paths, chunks)
     if args.eval:
         run_evaluate_global(paths_shared, paths, chunks)
     if args.test:
