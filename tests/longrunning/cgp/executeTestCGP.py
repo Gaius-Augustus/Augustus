@@ -13,6 +13,7 @@ import wget
 import tarfile
 from datetime import datetime
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 
 # author Giovanna Migliorelli
@@ -204,9 +205,9 @@ def run_test_parallel(paths_shared, paths, chunks):
 
     proc_list = []
 
+    # create a command for each chunk
+    args = []
     for chunk in chunks:
-        print('Runnning prediction on chunk', chunk, 'using the minimal data set...')
-
         cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'], 
         '--alnfile=' + paths[chunk]['maf_file'],
         '--speciesfilenames=' + paths[chunk]['tbl_test_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' + paths[chunk]['sqlitedb_test_file'],
@@ -216,22 +217,30 @@ def run_test_parallel(paths_shared, paths, chunks):
 
         output = paths[chunk]['result_dir'] + 'out.runTest'
 
-        print(cmd)
+        args.append([cmd, output, chunk])
 
-        with open(output, 'w') as file:
-            proc_list.append(
-                        subprocess.Popen(cmd,
-                                         stdout=file,
-                                         stderr=subprocess.PIPE,
-                                         universal_newlines=True))
-    for p in proc_list:
-        p.wait()
-        
-    for p in proc_list:
-        error = p.stderr.read()
-        p.stderr.close()
+    #TODO: parameter for number of parallel jobs
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        for cmd, output, chunk in args:
+            print('Adding thread for chunk: ' + str(chunk) + '...')
+            executor.submit(execute_test, cmd, output, chunk)
+
 
 def execute(cmd, output, mode='w'):
+    with open(output, mode) as file:
+        p = subprocess.Popen(cmd,
+                             stdout=file,
+                             stderr=subprocess.PIPE,
+                             universal_newlines=True)
+
+    p.wait()
+    error = p.stderr.read()
+    p.stderr.close()
+    if error:
+        print(error)
+
+def execute_test(cmd, output, chunk, mode='w'):
+    print('Runnning prediction on chunk', chunk, 'using the minimal data set...')    
     with open(output, mode) as file:
         p = subprocess.Popen(cmd,
                              stdout=file,
@@ -326,19 +335,6 @@ def run_evaluate_global(paths_shared, paths, chunks):
     cmd = [paths_shared['eval_bin'], paths_shared['anno_file'], paths_shared['joingenes_out_dir'] + 'joingenes.gff']
     execute(cmd, paths_shared['accuracy'] + 'out.eval')
 
-
-def execute(cmd, output, mode='w'):
-    with open(output, mode) as file:
-        p = subprocess.Popen(cmd,
-                             stdout=file,
-                             stderr=subprocess.PIPE,
-                             universal_newlines=True)
-
-    p.wait()
-    error = p.stderr.read()
-    p.stderr.close()
-    if error:
-        print(error)
 
 def init_paths_shared(augustusDir, workingDir, evalDir):
     paths_shared = {
