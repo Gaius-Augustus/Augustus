@@ -27,14 +27,9 @@ jobs:
     - name: Check out repository
       uses: actions/checkout@v2
 
-
     # Install required python packages
-    - name: Install numpy
-      run: pip3 install numpy
-
     - name: Install python wget
       run: pip3 install wget
-
 
     - name: Build AUGUSTUS
       run: make all
@@ -43,14 +38,14 @@ jobs:
       run: ./test_single.sh -e /data/eval/
       working-directory: tests/longrunning/single_genome/
 
-    - name: Extract desired accuracy values
+    - name: Extract desired accuracy values (single genome test case)
       run: ./extract_accuracy_values.py --path single_genome/output/eval
       working-directory: tests/longrunning/
 
-      #TODO: change working-directory to tests/longrunning/cgp/
-      #TODO: pass eval path as argument
-      #TODO: use same code for accuracy value extraction as for single genome test case
     - name: Execute cgp test case
-      run: python3 executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --run --eval
-#      run: python3 executeTestCGP.py --chunks 27 --run --eval
-      working-directory: scripts/
+      run: ./executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval --augustusDir ../../../ --workingDir data/cgp12way --evalDir /data/eval --jobs 8
+      working-directory: tests/longrunning/cgp/
+
+    - name: Extract desired accuracy values (cgp test case)
+      run: ./extract_accuracy_values.py --path cgp/data/cgp12way/ACCURACY
+      working-directory: tests/longrunning/
