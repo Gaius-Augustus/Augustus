@@ -321,8 +321,9 @@ sub train{
 	
 	# first try with etraining
 	chdir "$workDir/training/" or die ("Can not change directory to $workDir/training.");
-	print "2 First try with etraining: etraining --species=$species training.gb.train >train.out ".(scalar localtime())." ..." if ($verbose>=2);
-	system("etraining --species=$species training.gb.train 1>train.out 2>train.err")==0 or die("failed to execute: $!\n");
+	my $etrainCmdString = "etraining --species=$species training.gb.train 1>train.out 2>train.err";
+	print "2 First try with etraining: $etrainCmdString ".(scalar localtime())." ..." if ($verbose>=2);
+	system("$etrainCmdString")==0 or die("failed to execute: $etrainCmdString\n");
 	print " Finished! ".(scalar localtime())."\n" if ($verbose>=2);
 	print "3 train.out and train.err have been made under $workDir/training.\n" if ($verbose>=3);
 	
@@ -336,9 +337,9 @@ sub train{
 	    chdir "$configDir" or die ("Can not chdir to $configDir.\n");
 	    print "2 Setting value of \"stopCodonExcludedFromCDS\" in $paraName to \"false\"\n" if ($verbose>=2);
 	    setParInConfig($paraName, "stopCodonExcludedFromCDS", "false");
-	    print "3 Trying etraining again: etraining --species=$species training.gb.train >train.out ".(scalar localtime())." ..." if ($verbose>=3);
+	    print "3 Trying etraining again: $etrainCmdString ".(scalar localtime())." ..." if ($verbose>=3);
 	    chdir "$workDir/training/" or die ("Can not change directory to $workDir/training.");
-	    system("etraining --species=$species training.gb.train 1>train.out 2>train.err")==0 or die("failed to execute: $!\n");
+	    system("$etrainCmdString")==0 or die("failed to execute: $etrainCmdString\n");
 	    print " Finished! ".(scalar localtime())."\n" if ($verbose>=3);
 	    print "3 train.out and train.err have been made again under $workDir/training.\n" if ($verbose>=3);
 	}
@@ -527,9 +528,9 @@ sub trainWithUTR{
 	$string=find("makeUtrTrainingSet.pl");
 	print "3 Found script $string.\n" if ($verbose>=3);
 	$perlCmdString="perl $string stops.and.starts.gff $genome $estali utr";
-	print "2 Running command: $perlCmdString ".(scalar localtime())." ..." if ($verbose>=2);
+	print "2 Running command: $perlCmdString ".(scalar localtime())." ...\n" if ($verbose>=2);
 	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
-	print " Finished! ".(scalar localtime())."\n" if ($verbose>=2);
+	print "2 Finished! ".(scalar localtime())."\n" if ($verbose>=2);
     } else {
 	print "2 Reusing existing UTR training set.\n" if ($verbose>=2);
     }
