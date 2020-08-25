@@ -42,6 +42,7 @@ my $pasa='';                          # switch it on to create training set, est
 my $pasapolyAhints;                   # use PASA Poly A hints as hints for the prediction
 my $fasta_cdna;                       # fasta file for PASA
 my $verbose=2;                        # verbose level
+my $webaugustus=0;                    # run in WebAUGUSTUS - adapt error messages to webservice or standalone
 my $singleCPU=0;                      # run everything sequentially without interruption
 my $maxIntronLen = 100000;            # maximal length of an intron, used by PASA and BLAT
 my $noninteractive;                   # parameter for autoAugPred.pl
@@ -94,6 +95,7 @@ autoAug.pl [OPTIONS] --species=sname --genome=genome.fa --trainingset=genesfile 
 options:
 --useexisting                       use and change the present config and parameter files if they exist for 'species'
 --verbose                           print more status info. Cumulative option, e.g. use -v -v -v to make this script very verbose
+--webaugustus                       run in WebAUGUSTUS - adapt error messages to this webservice
 --noutr                             do not train and predict UTRs.
 --workingdir=/path/to/wd/           In the working directory results and temporary files are stored.
                                     Default: current working directory
@@ -121,6 +123,7 @@ GetOptions( 'genome=s' => \$genome,
 	    'singleCPU!' => \$singleCPU,
 	    'cdna=s' => \$fasta_cdna,
 	    'verbose+' => \$verbose,
+	    'webaugustus!' => \$webaugustus,
 	    'noninteractive' => \$noninteractive,
 	    'cname=s' => \$cname,
 	    'index=i' => \$index,
@@ -461,13 +464,19 @@ sub construct_training_set{
 	
 	my $abortString;
 	$abortString = "\nFailed to execute, possible reasons could be:\n";
-	$abortString.= "1. There is already a database named \"$pasaDBname\" on your mysql host.\n";
-	$abortString.= "2. The software \"slclust\" is not installed correctly, try to install it";
-	$abortString.= " again (see the details in the PASA documentation).\n";
-	$abortString.= "3. Fasta headers in cDNA or genome file were not unique.\n";
-	$abortString.= "4. Fasta headers in cDNA file contains square brackets, commas or other non-letter or non-number characters.\n";
-	$abortString.= "2. Fasta headers in cDNA file were too long (max 90 characters)(the sequence name up to the first space).\n";
-	$abortString.= "Inspect $trainDir/pasa/Launch_PASA_pipeline.stderr for PASA error messages.\n";	
+	$abortString.= "1. Fasta headers in cDNA or genome file were not unique";
+	$abortString.= " (the sequence name up to the first space).\n";
+	$abortString.= "2. Fasta headers in cDNA file were too long";
+	$abortString.= " (max 90 characters)(the sequence name up to the first space).\n";
+	$abortString.= "3. Fasta headers in cDNA file contains square brackets, commas or other non-letter or non-number characters.";
+	$abortString.= " (in sequence name up to the first space).\n";
+	if (!$webaugustus) {
+		$abortString.= "4. There is already a database named \"$pasaDBname\" on your mysql host.\n";
+		$abortString.= "5. The software \"slclust\" is not installed correctly, try to install it";
+		$abortString.= " again (see the details in the PASA documentation).\n";
+		$abortString.= "Inspect $trainDir/pasa/Launch_PASA_pipeline.stderr for PASA error messages.\n";	
+	}
+	
 	print "2 Executing the Alignment Assembly: \"$perlCmdString\" ".(scalar localtime())." ..." if ($verbose>=2);
 	system("$perlCmdString")==0 or die ("$abortString");
 	print " Finished ".(scalar localtime())."\n" if ($verbose>=2);
