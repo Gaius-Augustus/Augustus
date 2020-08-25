@@ -43,7 +43,7 @@ jobs:
       working-directory: tests/longrunning/
 
     - name: Execute cgp test case
-      run: ./executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval --augustusDir ../../../ --workingDir data/cgp12way --evalDir /data/eval --jobs 8
+      run: ./executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval --augustusDir ../../../ --dataDir data --evalDir /data/eval --jobs 8
       working-directory: tests/longrunning/cgp/
 
     - name: Extract desired accuracy values (cgp test case)

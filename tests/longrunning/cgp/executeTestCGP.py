@@ -6,7 +6,6 @@ import argparse
 import sys
 import wget
 import tarfile
-from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -25,8 +24,8 @@ parser.add_argument('-g', '--augustusDir',
                     help='path to comparative Augustus executable.')  
 parser.add_argument('-l', '--evalDir',
                     help='path to Eval script.')  
-parser.add_argument('-w', '--workingDir',
-                    help='path to data set used in testing (link).')
+parser.add_argument('-d', '--dataDir',
+                    help='path to the folder where the test data should be extracted.')
 parser.add_argument('-j', '--jobs',
                     help='to set the maximum number of jobs executed in parallel. (default value 2)')                    
 args = parser.parse_args()
@@ -235,13 +234,14 @@ def expand_dir(path):
 def get_test_data(dataDir):
     if os.path.exists(dataDir):
         shutil.rmtree(dataDir)
+    os.mkdir(dataDir)
 
     url = 'http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/cgp12way.tgz'
-    filename = os.path.join(Path(dataDir).parent, 'cgp12way.tar.gz')
+    filename = os.path.join(dataDir, 'cgp12way.tar.gz')
     wget.download(url, out=filename)
     if (os.path.isfile(filename)):
         tar = tarfile.open(filename)
-        tar.extractall(Path(dataDir).parent)
+        tar.extractall(dataDir)
         tar.close()
         os.remove(filename)
 
@@ -263,10 +263,13 @@ if __name__ == '__main__':
         sys.exit()
     augustusDir = str(expand_dir(args.augustusDir))  
 
-    if args.workingDir is None:
-        print('Path to data set used in testing required, please make use of --workingDir to pass the path...')
+    if args.dataDir is None:
+        print('Path to test data folder required, please make use of --dataDir to pass the path...')
         sys.exit()
-    workingDir = str(expand_dir(args.workingDir))
+    dataDir = str(expand_dir(args.dataDir))
+
+    # set working directory according to test data stored on the webserver
+    workingDir = dataDir + 'cgp12way/'
 
     evalDir = ''
     if args.eval:
@@ -275,7 +278,7 @@ if __name__ == '__main__':
             sys.exit()
         evalDir = str(expand_dir(args.evalDir))
 
-    get_test_data(workingDir)
+    get_test_data(dataDir)
 
     paths_shared = init_paths_shared(augustusDir, workingDir, evalDir)
     paths = init_paths(chunks)
