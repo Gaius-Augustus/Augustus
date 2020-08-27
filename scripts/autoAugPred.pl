@@ -46,7 +46,7 @@ my $clusterENVDefs = "export SGE_ROOT=/opt/sge";  # commands to define environme
 my $SGEqstatPath = "/opt/sge/bin/lx24-amd64/";    # path to executables on Sun Grid Engine (qsub, qstat)
 my $verbose=2;           # verbose level
 my $singleCPU=0;         # run sequentially on a single CPU
-my $nodeNum=20;          # node number in your cluster
+my $cpus=1;              # n is the number of CPUs to use (default: 1)
 my $user_config_path;    # AUGUSTUS_CONFIG_PATH if specified on the command line
 my $AUGUSTUS_CONFIG_PATH;# command line path, or environment variable, if not specified.
 my $perlCmdString;       # to store perl commands
@@ -78,6 +78,7 @@ autoAugPred.pl [OPTIONS] --genome=genome.fa --species=sname --hints=hintsfile
 options:
 --useexisting                  use and change the present config and parameter files if they exist for 'species'
 --singleCPU                    run sequentially on a single CPU instead of parallel jobs on a cluster
+--cpus=n                       n is the number of CPUs to use (default: 1), if cpus > 1 install Parallel::ForkManager for better performance
 --noninteractive               for Sun Grid Engine users, who have configurated an openssh key
                                with this option AUGUSTUS is executed automatically on the SGE cluster
 --workingdir=/path/to/wd/      in the working directory results and temporary files are stored.
@@ -105,9 +106,9 @@ GetOptions('workingdir=s' => \$positionWD,
 	   'continue'=> \$continue,
 	   'noninteractive!'=> \$noninteractive,
 	   'singleCPU!'=> \$singleCPU,
+	   'cpus=i' => \$cpus,
 	   'remote=s'=> \$cname,
 	   'verbose+' => \$verbose,
-	   'nodeNum=i' => \$nodeNum,
 	   'cname=s' => \$cname,
 	   'AUGUSTUS_CONFIG_PATH=s' => \$user_config_path,
 	   'useexisting!' => \$useexisting,
@@ -158,12 +159,48 @@ if($noninteractive){
 } else { # interactive
     if (@dopreds){
 	if ($singleCPU){
-	    print "1 running augustus jobs aug" . join(" aug", @dopreds) . " sequentially now\n" if ($verbose >= 1);
 	    chdir "$workDir/shells/";
-	    for (my $i=1; $i <= $splitN; $i++){
-		print "2 running aug$i\n" if ($verbose >= 2);
-		system ("./aug$i");
-	    }
+        if ($cpus<=1){
+            print "1 running augustus jobs aug" . join(" aug", @dopreds) . " sequentially now\n" if ($verbose >= 1);
+            for (my $i=1; $i <= $splitN; $i++){
+                print "2 running aug$i ".(scalar localtime())." ..." if ($verbose >= 2);
+                system ("./aug$i");
+                print " Finished! ".(scalar localtime())."\n" if ($verbose >2);
+            }
+        }
+        else {
+            print "1 running augustus jobs aug" . join(" aug", @dopreds) . " parallel now\n" if ($verbose >= 1);
+            my $got_ForkManager = 0;
+            eval { require Parallel::ForkManager };
+            unless ($@) {
+                Parallel::ForkManager->import();
+                $got_ForkManager = 1;
+            }
+            if ($got_ForkManager) {
+                my $pm = new Parallel::ForkManager( $cpus );
+                for (my $i=1; $i <= $splitN; $i++){
+                    my $pid = $pm->start and next; # fork and return the pid for the child:
+                    print "2 running aug$i parallel ".(scalar localtime())." ...\n" if ($verbose >= 2);
+                    system ("./aug$i");
+                    print " Finished aug$i! ".(scalar localtime())."\n" if ($verbose >2);
+                    $pm->finish; # terminate the child process
+                }
+                $pm->wait_all_children;
+            }
+            else {
+                my $i=1;
+                while ($i <= $splitN) {
+                    my $cmdString = "";
+                    for (my $step = 1; $step <= $cpus && $i <= $splitN; $i++, $step++){
+                        $cmdString .= "./aug$i & ";
+                    }
+                    $cmdString .= "wait ";
+                    print "2 running $cmdString ".(scalar localtime())." ..." if ($verbose >= 2);
+                    system ($cmdString);
+                    print " Finished! ".(scalar localtime())."\n" if ($verbose >2);
+                }
+            }
+      }
 	    print "1 done with augustus jobs\n" if ($verbose >= 1);
 	    continue_aug($shellDir, $utr, $hints);
 	} else {
@@ -243,7 +280,7 @@ sub prepareScript{
 	
 	# calculate minsize
 	my $minsize = `grep -v ">" $genome | wc -c`;
-	$minsize = int($minsize/$nodeNum)+1;
+	$minsize = int($minsize/$cpus)+1;
 	
 	print "2 splitting genome sequence into subsets of size >= $minsize bp\n" if ($verbose>=2);
 	$perlCmdString="perl $string --minsize=$minsize $genome --outputpath=$splitDir";

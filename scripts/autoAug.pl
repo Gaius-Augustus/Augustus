@@ -44,10 +44,10 @@ my $fasta_cdna;                       # fasta file for PASA
 my $verbose=2;                        # verbose level
 my $webaugustus=0;                    # run in WebAUGUSTUS - adapt error messages to webservice or standalone
 my $singleCPU=0;                      # run everything sequentially without interruption
+my $cpus=1;                           # n is the number of CPUs to use (default: 1)
 my $maxIntronLen = 100000;            # maximal length of an intron, used by PASA and BLAT
 my $noninteractive;                   # parameter for autoAugPred.pl
 my $cname="fe";                       # parameter for autoAugPred.pl:cluster name
-my $nodeNum=20;                       # parameter for autoAugPred.pl
 my $optrounds=1;                      # optimization rounds
 my $useGMAPforPASA=0;                 # use GMAP instead of BLAT (only for PASA)
 my $useexisting=0;                    # start with and change existing config, parameter and result files
@@ -100,6 +100,7 @@ options:
 --workingdir=/path/to/wd/           In the working directory results and temporary files are stored.
                                     Default: current working directory
 --singleCPU                         run the complete program sequentially instead of parallel execution of jobs on a cluster
+--cpus=n                            n is the number of CPUs to use (default: 1), if cpus > 1 install pblat (parallelized blat) for better performance
 --noninteractive                    bypass all manual interaction when using a SGE cluster
 --cname=yourClusterName             cluster name, only use it when "noninteractive" default:fe
 --index=i                           step index, default:0 
@@ -121,6 +122,7 @@ GetOptions( 'genome=s' => \$genome,
 	    'workingdir=s' => \$positionWD,
 	    'pasa!' => \$pasa,
 	    'singleCPU!' => \$singleCPU,
+	    'cpus=i' => \$cpus,
 	    'cdna=s' => \$fasta_cdna,
 	    'verbose+' => \$verbose,
 	    'webaugustus!' => \$webaugustus,
@@ -459,7 +461,7 @@ sub construct_training_set{
 	}
 	$perlCmdString = "perl $PASAHOME/Launch_PASA_pipeline.pl "
 	    ."-c alignAssembly.config -C -R -g $genome_clean "
-	    ."-t transcripts.fasta.clean -T -u transcripts.fasta --ALIGNERS $gmapoption "
+	    ."-t transcripts.fasta.clean -T -u transcripts.fasta --ALIGNERS $gmapoption --CPU $cpus "
 	    ."1>Launch_PASA_pipeline.stdout 2>Launch_PASA_pipeline.stderr";
 	
 	my $abortString;
@@ -724,7 +726,13 @@ sub alignments_and_hints{
     # maxIntron=5000 to be determined
     if (!uptodate(["../seq/genome_clean.fa", "cdna.fa"], ["cdna.psl"])){
 	print "1 Aligning cDNA to genome with BLAT...\n" if ($verbose>=1); 
-	$cmdString="blat -noHead  -minIdentity=80 -maxIntron=$maxIntronLen ../seq/genome_clean.fa cdna.fa cdna.psl 1>blat.stdout 2>blat.stderr"; 
+	if ($cpus > 1 && check_command_exists("pblat")) {
+		$cmdString="pblat -threads=$cpus";
+	}
+	else {
+		$cmdString="blat";
+	}	
+	$cmdString.=" -noHead  -minIdentity=80 -maxIntron=$maxIntronLen ../seq/genome_clean.fa cdna.fa cdna.psl 1>blat.stdout 2>blat.stderr";
 	print "3 Running \"$cmdString\" ".(scalar localtime())." ..." if ($verbose>=3);
 	
 	my $abortString = "\nProgram aborted. BLAT threw an error message.\nPossibly \"BLAT\" is not installed or not in your PATH or your genome or cDNA file contained non-unique fasta headers.\n";  
@@ -806,7 +814,7 @@ sub autoTrain_no_utr{
     $trainingset   =   checkFile($trainingset, "training", $usage);
 
     # run autoAugTrain.pl
-    $perlCmdString="perl $scriptPath/autoAugTrain.pl -t=$trainingset -s=$species $useexistingopt -g=$genome_clean -w=$rootDir $verboseString --opt=$optrounds";
+    $perlCmdString="perl $scriptPath/autoAugTrain.pl --cpus=$cpus -t=$trainingset -s=$species $useexistingopt -g=$genome_clean -w=$rootDir $verboseString --opt=$optrounds";
     print "\n2 $perlCmdString\n" if ($verbose>=2);
     system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
 
@@ -845,6 +853,7 @@ sub autoAug_prepareScripts{
     $perlCmdString = "perl $scriptPath/autoAugPred.pl -g=$genome_clean --species=$species -w=$rootDir $utrString " . 
 	"$verboseString $hintsString $useexistingopt";
     $perlCmdString .= " --singleCPU" if ($singleCPU);
+    $perlCmdString .= " --cpus=$cpus";
     print "2 $perlCmdString\n" if ($verbose>=2);
     system("$perlCmdString")==0 or die("\nfailed to execute $perlCmdString\n");
     
@@ -905,6 +914,7 @@ sub autoAug_continue{
 
     $perlCmdString = "perl $scriptPath/autoAugPred.pl --species=$species --genome=$rootDir/seq/genome_clean.fa --continue --workingdir=$rootDir $verboseString $hintsString $utrString $useexistingopt";
     $perlCmdString .= " --singleCPU" if ($singleCPU);
+    $perlCmdString .= " --cpus=$cpus";
     my $abortString = "\nError executing\n$perlCmdString\n";
     print "3 $perlCmdString\n" if ($verbose >= 3);
     chdir $positionWD;
@@ -946,6 +956,7 @@ sub autoAug_noninteractive{
 
     print "\n\n1 ####### Now predicting genes $string in the whole sequence...#######\n" if ($verbose>=1);
     $perlCmdString="perl $scriptPath/autoAugPred.pl -g=$genome_clean --species=$species $hintsString $utrString --noninteractive --cname=$cname -w=$rootDir $verboseString $useexistingopt";
+    $perlCmdString .= " --cpus=$cpus";
     print "2 \"$perlCmdString\" ...\n" if ($verbose>1);
     system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
 
@@ -973,9 +984,9 @@ sub autoTrain_with_utr{
     $augString="--aug=$autoAugDir_hints/predictions/augustus.gff";
 
     if(-d $rootDir){
-  	  $perlCmdString="perl $scriptPath/autoAugTrain.pl -g=$genome_clean -s=$species --utr -e=$estali $augString -w=$rootDir $verboseString --opt=$optrounds --useexisting";
+  	  $perlCmdString="perl $scriptPath/autoAugTrain.pl --cpus=$cpus -g=$genome_clean -s=$species --utr -e=$estali $augString -w=$rootDir $verboseString --opt=$optrounds --useexisting";
     }else{
-  	  $perlCmdString="perl $scriptPath/autoAugTrain.pl -g=$genome_clean -s=$species --utr -e=$estali $augString -w=$rootDir $verboseString --opt=$optrounds $useexistingopt";
+  	  $perlCmdString="perl $scriptPath/autoAugTrain.pl --cpus=$cpus -g=$genome_clean -s=$species --utr -e=$estali $augString -w=$rootDir $verboseString --opt=$optrounds $useexistingopt";
     }
     print "\n2 $perlCmdString\n" if ($verbose>=2);
     system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
@@ -1165,4 +1176,10 @@ sub count_fasta_entries{
     }
     close(FASTA) or die("Could not close fasta file $fastaFile!\n");
     if($fc<=100){print STDERR "WARNING: Fasta file $fastaFile contained less than 100 entries. At least 100 genes are required for training AUGUSTUS. It is impossible to generate this number of genes with the given data! If PASA will be unable to generate at least one gene structure, the pipeline will die, later!\n";}
+}
+
+sub check_command_exists { 
+    my $command=shift;
+    my $status = system("which $command > /dev/null");
+    return !$status;
 }

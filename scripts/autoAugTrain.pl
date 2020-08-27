@@ -45,6 +45,7 @@ my $optrounds=1;           # optimization rounds
 my $perlCmdString;         # to store perl commands
 my $cmdString;             # to store shell commands
 my $useexisting=0;         # start with and change existing config and parameter files
+my $cpus=1;                # n is the number of CPUs to use (default: 1)
 
 my $evalString;
 
@@ -78,6 +79,7 @@ $usage.="--useexisting                  use and change the present config and pa
 $usage.="--optrounds=n                  optimization rounds - each meta parameter is optimized this often (default 1)\n";
 $usage.="--CRF                          try training as Conditional Random Field. Off by default\n";
 $usage.="--aug=augustus.gff             Previous CDS predictions for constructing a training set of UTRs.\n";
+$usage.="--cpus=n                       n is the number of CPUs to use (default: 1), if cpus > 1 install pblat (parallelized blat) for better performance";
 
 # set options
 GetOptions('genome=s' => \$genome,
@@ -91,7 +93,8 @@ GetOptions('genome=s' => \$genome,
 	   'estali=s' => \$estali,
 	   'verbose+' => \$verbose,
 	   'optrounds=i' => \$optrounds,
-	   'useexisting!' => \$useexisting
+	   'useexisting!' => \$useexisting,
+	   'cpus=i' => \$cpus
 	   );
 if ($flanking_DNA > 10000){
     print "flanking_DNA larger than necessary ($flanking_DNA). Resetting flanking_DNA to 10000.\n";
@@ -380,9 +383,9 @@ sub train{
 	chdir "$workDir/training/" or die ("Can not chdir to $workDir/training/.\n");
 	$string=find("optimize_augustus.pl");
 	if($t_b_o==0){
-	    $cmdString="perl $string --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --metapars=$configDir/$metaName > optimize.out";
+	    $cmdString="perl $string --cpus=$cpus --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --metapars=$configDir/$metaName > optimize.out";
 	} else{
-	    $cmdString="perl $string --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --onlytrain=$workDir/training/training.gb.onlytrain --metapars=$configDir/$metaName > optimize.out";
+	    $cmdString="perl $string --cpus=$cpus --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --onlytrain=$workDir/training/training.gb.onlytrain --metapars=$configDir/$metaName > optimize.out";
 	}
 	print "1 Optimizing meta parameters of AUGUSTUS\n" if ($verbose>=1);
 	print "2 Executing \"$cmdString\" ".(scalar localtime())." ..." if ($verbose>=2);
@@ -723,7 +726,7 @@ sub trainWithUTR{
     if (!uptodate(["train.gb", "onlytrain.gb"], ["optimize.utr.out"])){
 	$string=find("optimize_augustus.pl");
 	print "3 Found script $string.\n" if ($verbose>=3);
-	$perlCmdString="perl $string --rounds=$optrounds --species=$species --trainOnlyUtr=1 --onlytrain=onlytrain.gb  --metapars=$configDir/$metaUtrName train.gb --UTR=on > optimize.utr.out";
+	$perlCmdString="perl $string --cpus=$cpus --rounds=$optrounds --species=$species --trainOnlyUtr=1 --onlytrain=onlytrain.gb  --metapars=$configDir/$metaUtrName train.gb --UTR=on > optimize.utr.out";
 	print "1 Now optimizing meta parameters of AUGUSTUS for the UTR model." .
 	    " This will likely run for a long time..\n" if ($verbose>=1 && $optrounds > 0);
 	print "1 Running \"$perlCmdString\" ".(scalar localtime())." ..." if ($verbose>=1);
@@ -808,7 +811,13 @@ sub scipio_conversion{
     print "1 Checking fasta headers in file $trainingset...\n" if ($verbose>=1);
     check_fasta_headers($trainingset);
     chdir "$workDir/training/" or die("Error: could not change directory to $workDir/training/!\n");
-    $cmdString = "scipio.pl $genome $trainingset > scipio.yaml 2> scipio.err"; 
+
+    $cmdString = "scipio.pl ";
+    if ($cpus > 1 && check_command_exists("pblat")) { 
+        $cmdString .= "--blat_bin=pblat --blat_params=\"-threads=$cpus\" ";
+    }
+    $cmdString .= "$genome $trainingset > scipio.yaml 2> scipio.err";
+    
     print "3 $cmdString ".(scalar localtime())." ..." if ($verbose>2);
     my $scipioStatus = system("$cmdString");
     if ($scipioStatus != 0) {
@@ -847,4 +856,10 @@ sub scipio_conversion{
     print "3 $perlCmdString\n" if ($verbose>2);
     system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
     print "3 training.gb with genbank format has been created under $workDir/training/.\n" if ($verbose>2);      
+}
+
+sub check_command_exists { 
+    my $command=shift;
+    my $status = system("which $command > /dev/null");
+    return !$status;
 }
