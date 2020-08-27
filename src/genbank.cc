@@ -62,15 +62,16 @@ AnnoSequence* GBProcessor::getAnnoSequence( GBPositions* pos ){
     annoseq->length = pos->seqlength;
     annoseq->bc.addSequence(annoseq->sequence, strlen(annoseq->sequence) );
     char* idtmp = strstr(pos->buffer, "LOCUS");
+    unsigned maxSeqnameLen = 100;
     if (idtmp == NULL) {
 	annoseq->seqname = newstrcpy("unknown");
     } else {
-	annoseq->seqname = new char[100];
+	annoseq->seqname = new char[maxSeqnameLen];
 	idtmp += strlen("LOCUS");
 	while( isspace(*idtmp) )
 	    idtmp++;
 	int i;
-	for( i = 0; i < 99 && !isspace(*idtmp); i++, idtmp++ ){
+	for( i = 0; i < maxSeqnameLen - 1 && !isspace(*idtmp); i++, idtmp++ ){
 	    annoseq->seqname[i] = *idtmp;
 	}
 	annoseq->seqname[i] = '\0';
