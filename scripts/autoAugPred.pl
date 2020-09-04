@@ -37,7 +37,7 @@ my $genome;              # fasta file
 my $cwd=cwd();           # current directory
 my $positionWD=$cwd;     # position where working directory placed, default: current working directory
 my $workDir;             # working directory
-my $splitDir;            # where splited contigs stored
+my $splitDir;            # where split contigs stored
 my $shellDir;            #
 my $continue;
 my $noninteractive;
@@ -69,13 +69,10 @@ Usage:
 autoAugPred.pl [OPTIONS] --genome=genome.fa --species=sname
 autoAugPred.pl [OPTIONS] --genome=genome.fa --species=sname --hints=hintsfile 
 
---genome=genome.fa             fasta file with DNA sequences for training
-
---species=sname                species name as used by AUGUSTUS
-
---continue                     after cluster jobs are finished, continue to compile prediction sets
-
 options:
+--genome=genome.fa             fasta file with DNA sequences for training
+--species=sname                species name as used by AUGUSTUS
+--continue                     after cluster jobs are finished, continue to compile prediction sets
 --useexisting                  use and change the present config and parameter files if they exist for 'species'
 --singleCPU                    run sequentially on a single CPU instead of parallel jobs on a cluster
 --cpus=n                       n is the number of CPUs to use (default: 1), if cpus > 1 install Parallel::ForkManager for better performance
@@ -165,7 +162,7 @@ if($noninteractive){
             for (my $i=1; $i <= $splitN; $i++){
                 print "2 running aug$i ".(scalar localtime())." ..." if ($verbose >= 2);
                 system ("./aug$i");
-                print " Finished! ".(scalar localtime())."\n" if ($verbose >2);
+                print " Finished! ".(scalar localtime())."\n" if ($verbose >= 2);
             }
         }
         else {
@@ -182,7 +179,7 @@ if($noninteractive){
                     my $pid = $pm->start and next; # fork and return the pid for the child:
                     print "2 running aug$i parallel ".(scalar localtime())." ...\n" if ($verbose >= 2);
                     system ("./aug$i");
-                    print " Finished aug$i! ".(scalar localtime())."\n" if ($verbose >2);
+                    print "2 finished aug$i ".(scalar localtime())."\n" if ($verbose >= 2);
                     $pm->finish; # terminate the child process
                 }
                 $pm->wait_all_children;
@@ -197,7 +194,7 @@ if($noninteractive){
                     $cmdString .= "wait ";
                     print "2 running $cmdString ".(scalar localtime())." ..." if ($verbose >= 2);
                     system ($cmdString);
-                    print " Finished! ".(scalar localtime())."\n" if ($verbose >2);
+                    print " Finished! ".(scalar localtime())."\n" if ($verbose >= 2);
                 }
             }
       }
@@ -266,7 +263,7 @@ sub prepareScript{
 
     my $string;          # temp string for perl-scripts, which will be called later
     chdir "$positionWD/seq/split" or die ("Cound not change directory to $positionWD/seq/split.\n");
-    my $splitDir=cwd();  # where splited contigs stored
+    my $splitDir=cwd();  # where split contigs stored
     
     # split fasta into subsets
     opendir(SPLITDIR, $splitDir) or die ("Could not open directory $splitDir.\n");
@@ -286,7 +283,7 @@ sub prepareScript{
 	$perlCmdString="perl $string --minsize=$minsize $genome --outputpath=$splitDir";
 	print "3 $perlCmdString ..." if ($verbose>=3);
 	system("$perlCmdString")==0 or die ("failed to execute: $!\n");
-	print "2 The splited fasta files have been placed under $splitDir\n" if ($verbose>=2);
+	print "2 The split fasta files have been placed under $splitDir\n" if ($verbose>=2);
     } else {
 	print "2 Using existing split genome FASTA files.\n" if ($verbose>=2);
     }
@@ -459,7 +456,7 @@ sub dirBuilder{
     die("The working directory not found! Please specify a valid one! \n") unless (-d $position);
     chdir "$position" or die ("Can not chdir to $position!\n");
 
-    # check the write permission of $positio before building of the main directory
+    # check the write permission of $position before building of the main directory
     if(!(-w $position)){
         print "Don\'t have write permission at $position!\n";
         die("Please use command \"chmod\" to change permission or specify another position.\n");
