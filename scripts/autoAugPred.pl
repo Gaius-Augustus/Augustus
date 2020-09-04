@@ -208,7 +208,6 @@ if($noninteractive){
             }
       }
 	    print "1 done with augustus jobs\n" if ($verbose >= 1);
-	    continue_aug($shellDir, $utr, $hints);
 	} else {
 	    print "\nPlease start the augustus jobs $workDir/shells/aug* manually now.\n";
 	    print "Either by running them sequentially on a single PC or by submitting ". 
