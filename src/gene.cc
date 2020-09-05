@@ -3092,7 +3092,7 @@ void printGeneList(list<AltGene> *genelist, AnnoSequence *annoseq, bool withCS, 
 		    (*trit)->printBlockSequences(annoseq);
 		}
 	    }
-	    if (withEvidence){
+	    if (withEvidence && Constant::printEvidence){
 		Gene *g = dynamic_cast<Gene*> (*trit);
 		if (g)
 		    g->printEvidence();
