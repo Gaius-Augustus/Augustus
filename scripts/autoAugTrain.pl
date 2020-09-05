@@ -45,6 +45,7 @@ my $optrounds=1;           # optimization rounds
 my $perlCmdString;         # to store perl commands
 my $cmdString;             # to store shell commands
 my $useexisting=0;         # start with and change existing config and parameter files
+my $cpus=1;                # n is the number of CPUs to use (default: 1)
 
 my $evalString;
 
@@ -78,6 +79,7 @@ $usage.="--useexisting                  use and change the present config and pa
 $usage.="--optrounds=n                  optimization rounds - each meta parameter is optimized this often (default 1)\n";
 $usage.="--CRF                          try training as Conditional Random Field. Off by default\n";
 $usage.="--aug=augustus.gff             Previous CDS predictions for constructing a training set of UTRs.\n";
+$usage.="--cpus=n                       n is the number of CPUs to use (default: 1), if cpus > 1 install pblat (parallelized blat) for better performance";
 
 # set options
 GetOptions('genome=s' => \$genome,
@@ -91,7 +93,8 @@ GetOptions('genome=s' => \$genome,
 	   'estali=s' => \$estali,
 	   'verbose+' => \$verbose,
 	   'optrounds=i' => \$optrounds,
-	   'useexisting!' => \$useexisting
+	   'useexisting!' => \$useexisting,
+	   'cpus=i' => \$cpus
 	   );
 if ($flanking_DNA > 10000){
     print "flanking_DNA larger than necessary ($flanking_DNA). Resetting flanking_DNA to 10000.\n";
@@ -161,7 +164,7 @@ sub train{
 	 "predictions/hints.E", "predictions/hints.UTR.E", "training/test", "training/utr")){
 	mkdir "$_" if (! -d $_)
     }
-    print "3 All necessary diretories have been created unter $workDir.\n" if ($verbose>=3);
+    print "3 All necessary directories have been created under $workDir.\n" if ($verbose>=3);
 
     if (!uptodate(["$trainingset"], ["$workDir/training/training.gb"])){
 	# detect format of the training set file and create training.gb
@@ -192,16 +195,16 @@ sub train{
 	    }
 	    # The GFF-file needs to be sorted such that for each gene or mRNA the exons are in increasing order 
 	    $cmdString="cat $trainingset | " . 'perl -pe \'s/\t\S*Parent=/\t/\' | sort -n -k 4 | sort -s -k 9 | sort -s -k 1,1 > training.gff';
-	    print "3 Running \"$cmdString\" ..." if ($verbose >2);
+	    print "3 Running \"$cmdString\" ".(scalar localtime())." ..." if ($verbose >2);
 	    system("$cmdString")==0 or die("failed to execute $!\n");
-	    print " Finished!\n" if ($verbose >2);
+	    print " Finished! ".(scalar localtime())."\n" if ($verbose >2);
 	    
 	    # converting trainingset to Genbank format
 	    print "3 converting $trainingset to Genbank format file ...\n" if ($verbose>=3);
 	    $perlCmdString = "perl $string $trainingset $genome $flanking_DNA training.gb";
 	    print "3 $perlCmdString\n" if ($verbose>2);
 	    system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
-	    print "3 training.gb with genbank format has been created under $workDir/seq/training/.\n" if ($verbose>=3);
+	    print "3 training.gb with genbank format has been created under $workDir/training/.\n" if ($verbose>=3);
 	} elsif ($format eq "fasta-prot"){
 	    print "2 The input training set file has protein FASTA format. Converting to Genbank format...\n" if ($verbose>=2);
 	    scipio_conversion($trainingset);
@@ -248,7 +251,7 @@ sub train{
     }
     close TS;
     if($counter_gen == 0){
-	die("ERROR: training.gb is empty. Possible reasons:\n\ta) features in a provided training gene structure gff file were not compliant with the autoAug.pl pipeline (for instructions read at e.g. http://bioinf.uni-greifswald.de/webaugustus/help#structure\n\tb) Scipio failed to generate training gene structures\n\tThis will cause a crash of the autoAug.pl pipeline!\n");
+	die("ERROR: training.gb is empty. Possible reasons:\n\ta) features in a provided training gene structure file were not compliant with the autoAug.pl pipeline (for instructions read at e.g. http://bioinf.uni-greifswald.de/webaugustus/trainingtutorial#structure_file)\n\tb) If you provided a protein file: Scipio failed to generate training gene structures.\n\t   Please note that the number of proteins in the protein file needs to be sufficiently large to generate a minimum of 200 training gene structures for training AUGUSTUS.\n\t   At most one training gene structure is generated from a single protein, in some cases, not all proteins will align sufficiently well to generate a training gene structure, at all.\n\tThis will cause a crash of the autoAug.pl pipeline!\n");
     }
     my $ave=$counter_gen/$counter_seq;
     print "1 training.gb contains $counter_seq sequences and $counter_gen genes," if ($verbose>=1);
@@ -321,9 +324,10 @@ sub train{
 	
 	# first try with etraining
 	chdir "$workDir/training/" or die ("Can not change directory to $workDir/training.");
-	print "2 First try with etraining: etraining --species=$species training.gb.train >train.out ..." if ($verbose>=2);
-	system("etraining --species=$species training.gb.train 1>train.out 2>train.err")==0 or die("failed to execute: $!\n");
-	print " Finished!\n" if ($verbose>=2);
+	my $etrainCmdString = "etraining --species=$species training.gb.train 1>train.out 2>train.err";
+	print "2 First try with etraining: $etrainCmdString ".(scalar localtime())." ..." if ($verbose>=2);
+	system("$etrainCmdString")==0 or die("failed to execute: $etrainCmdString\n");
+	print " Finished! ".(scalar localtime())."\n" if ($verbose>=2);
 	print "3 train.out and train.err have been made under $workDir/training.\n" if ($verbose>=3);
 	
 	# set "stopCodonExcludedFromCDS" to false and run etraining again if necessary
@@ -336,10 +340,10 @@ sub train{
 	    chdir "$configDir" or die ("Can not chdir to $configDir.\n");
 	    print "2 Setting value of \"stopCodonExcludedFromCDS\" in $paraName to \"false\"\n" if ($verbose>=2);
 	    setParInConfig($paraName, "stopCodonExcludedFromCDS", "false");
-	    print "3 Trying etraining again: etraining --species=$species training.gb.train >train.out ..." if ($verbose>=3);
+	    print "3 Trying etraining again: $etrainCmdString ".(scalar localtime())." ..." if ($verbose>=3);
 	    chdir "$workDir/training/" or die ("Can not change directory to $workDir/training.");
-	    system("etraining --species=$species training.gb.train 1>train.out 2>train.err")==0 or die("failed to execute: $!\n");
-	    print " Finished!\n" if ($verbose>=3);
+	    system("$etrainCmdString")==0 or die("failed to execute: $etrainCmdString\n");
+	    print " Finished! ".(scalar localtime())."\n" if ($verbose>=3);
 	    print "3 train.out and train.err have been made again under $workDir/training.\n" if ($verbose>=3);
 	}
 	
@@ -364,9 +368,9 @@ sub train{
 		  ["$workDir/training/test/augustus.1.out"])){
 	# first test with augustus
 	$cmdString = "augustus --species=$species $workDir/training/training.gb.test > $workDir/training/test/augustus.1.out";
-	print "2 First evaluation of parameters ...\n2 Executing \"$cmdString\" ..." if ($verbose>=2);
+	print "2 First evaluation of parameters ...\n2 Executing \"$cmdString\" ".(scalar localtime())." ..." if ($verbose>=2);
 	system("$cmdString")==0 or die("failed to execute: $cmdString!\n");
-	print " Finished!\n" if ($verbose>=2);
+	print " Finished! ".(scalar localtime())."\n" if ($verbose>=2);
     }
     # caculate the accuracy
     my $aug_out="$workDir/training/test/augustus.1.out";
@@ -379,14 +383,14 @@ sub train{
 	chdir "$workDir/training/" or die ("Can not chdir to $workDir/training/.\n");
 	$string=find("optimize_augustus.pl");
 	if($t_b_o==0){
-	    $cmdString="perl $string --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --metapars=$configDir/$metaName > optimize.out";
+	    $cmdString="perl $string --cpus=$cpus --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --metapars=$configDir/$metaName > optimize.out";
 	} else{
-	    $cmdString="perl $string --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --onlytrain=$workDir/training/training.gb.onlytrain --metapars=$configDir/$metaName > optimize.out";
+	    $cmdString="perl $string --cpus=$cpus --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --onlytrain=$workDir/training/training.gb.onlytrain --metapars=$configDir/$metaName > optimize.out";
 	}
 	print "1 Optimizing meta parameters of AUGUSTUS\n" if ($verbose>=1);
-	print "2 Executing \"$cmdString\" ..." if ($verbose>=2);
+	print "2 Executing \"$cmdString\" ".(scalar localtime())." ..." if ($verbose>=2);
 	system("$cmdString")==0 or die("failed to execute: $cmdString!\n"); 
-	print " Finished!\n" if ($verbose>=2);
+	print " Finished! ".(scalar localtime())."\n" if ($verbose>=2);
 	print "2 You can find all info about optimizing in $workDir/training/optimize.out!\n" if ($verbose>=2);
     } else {
 	print "1 Skipping optimization of AUGUSTUS metaparameters.\n" if ($verbose>=1);
@@ -396,9 +400,9 @@ sub train{
 	# train augustus again with optimized parameters
 	chdir "$workDir/training" or die ("Could not change directory to $workDir/training\n");
 	$cmdString = "etraining --species=$species training.gb.train 1>train.withoutCRF.out 2>train.withoutCRF.err";
-	print "2 Running $cmdString ..." if ($verbose>1);
+	print "2 Running $cmdString ".(scalar localtime())." ..." if ($verbose>1);
 	system("$cmdString")==0 or die("failed to execute: $cmdString!\n");
-	print " Finished!\n" if ($verbose>1);
+	print " Finished! ".(scalar localtime())."\n" if ($verbose>1);
 	
 	# another test on the holdout set, the output file augustus.2.out should have the better results
 	print "2 augustus --species=$species training.gb.test > ./test/augustus.2.withoutCRF.out\n" if ($verbose>1);
@@ -428,13 +432,14 @@ sub train{
 	print "1 Starting training with training as Conditional Random Field (CRF)\n" if ($verbose>=1);
 	chdir "$workDir/training" or die ("Could not change directory to $workDir/training\n");
 	$cmdString="etraining --species=$species training.gb.train --CRF=1 1>train.CRF.out 2>train.CRF.err";
-	print "1 Running $cmdString ..." if ($verbose>0);
+	print "1 Running $cmdString ".(scalar localtime())." ..." if ($verbose>0);
 	system("$cmdString")==0 or die("failed to execute: $cmdString!\n");
-	print " Finished!\n" if ($verbose>0);
+	print " Finished! ".(scalar localtime())."\n" if ($verbose>0);
 
 	# another test on the holdout set, the output file augustus.2.out should have the better results 
-	print "3 augustus --species=$species training.gb.test > ./test/augustus.2.CRF.out\n" if ($verbose>2); 
+	print "3 augustus --species=$species training.gb.test > ./test/augustus.2.CRF.out".(scalar localtime())." ..." if ($verbose>2); 
 	system("augustus --species=$species training.gb.test > ./test/augustus.2.CRF.out")==0 or die("failed to execute: $!\n");
+	print " Finished! ".(scalar localtime())."\n" if ($verbose>=2);
 
 	# calculate the accuracy again
 	$aug_out="$workDir/training/test/augustus.2.CRF.out";
@@ -526,9 +531,9 @@ sub trainWithUTR{
 	$string=find("makeUtrTrainingSet.pl");
 	print "3 Found script $string.\n" if ($verbose>=3);
 	$perlCmdString="perl $string stops.and.starts.gff $genome $estali utr";
-	print "2 Running command: $perlCmdString ..." if ($verbose>=2);
+	print "2 Running command: $perlCmdString ".(scalar localtime())." ...\n" if ($verbose>=2);
 	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString\n");
-	print " Finished!\n" if ($verbose>=2);
+	print "2 Finished! ".(scalar localtime())."\n" if ($verbose>=2);
     } else {
 	print "2 Reusing existing UTR training set.\n" if ($verbose>=2);
     }
@@ -536,9 +541,9 @@ sub trainWithUTR{
     # make gbrowse file utr.train.gbrowse
     if (!uptodate(["utr.gff"], ["$workDir/gbrowse/utr.train.gbrowse"])){
 	$string = find("utrgff2gbrowse.pl");
-	print "3 Running \"cat utr.gff | perl $string\"..." if ($verbose>=3);
+	print "3 Running \"cat utr.gff | perl $string\" ".(scalar localtime())." ..." if ($verbose>=3);
 	system("cat utr.gff | perl $string > utr.train.gbrowse")==0 or die ("failed to execute: $!\n");
-	print " Finished! Made file utr.train.gbrowse\n" if ($verbose>=3);
+	print " Finished! ".(scalar localtime())." Made file utr.train.gbrowse\n" if ($verbose>=3);
 	system("mv utr.train.gbrowse ../../gbrowse")==0 or die ("failed to execute: $!\n");
 	print "3 Moved utr.train.gbrowse to $workDir/gbrowse\n" if ($verbose>=3);
     }
@@ -588,9 +593,9 @@ sub trainWithUTR{
 	$string=find("gff2gbSmallDNA.pl");
 	print "3 Found script $string.\n" if ($verbose>=3);
 	$perlCmdString="perl $string genes.gtf ../../../seq/genome.fa $flanking_DNA bothutr.test.gb --good=bothutr.lst 1>gff2gbSmallDNA.stdout 2>gff2gbSmallDNA.stderr";
-	print "3 Running \"$perlCmdString\" ..." if ($verbose>=3);
+	print "3 Running \"$perlCmdString\" ".(scalar localtime())." ..." if ($verbose>=3);
 	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
-	print " Finished!\n" if ($verbose>=3);
+	print " Finished! ".(scalar localtime())."\n" if ($verbose>=3);
     }
     ##################################################################################################
     # make a training set for optimization including m genes with both UTRs and n genes without UTRs #
@@ -629,13 +634,13 @@ sub trainWithUTR{
 	$string=find("randomSplit.pl");
 	print "3 Found script $string.\n" if ($verbose>=3);
 	$perlCmdString="perl $string bothutr.test.gb $m";
-	print "3 Running \"$perlCmdString\"..." if ($verbose>=3);
+	print "3 Running \"$perlCmdString\" ".(scalar localtime())." ..." if ($verbose>=3);
 	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
-	print " Finished!\n" if ($verbose>=3);
+	print " Finished! ".(scalar localtime())."\n" if ($verbose>=3);
 	$perlCmdString="perl $string t.gb $n";
-	print "3 Running \"$perlCmdString\"..." if ($verbose>=3);
+	print "3 Running \"$perlCmdString\" ".(scalar localtime())." ..." if ($verbose>=3);
 	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
-	print " Finished!\n" if ($verbose>=3);
+	print " Finished! ".(scalar localtime())."\n" if ($verbose>=3);
 	my $delete;
 	open(GB, "t.gb.test") or die ("Can not open file t.gb.test!\n");
 	open(NOMRNA, "> t.nomrna.test.gb");
@@ -721,12 +726,12 @@ sub trainWithUTR{
     if (!uptodate(["train.gb", "onlytrain.gb"], ["optimize.utr.out"])){
 	$string=find("optimize_augustus.pl");
 	print "3 Found script $string.\n" if ($verbose>=3);
-	$perlCmdString="perl $string --rounds=$optrounds --species=$species --trainOnlyUtr=1 --onlytrain=onlytrain.gb  --metapars=$configDir/$metaUtrName train.gb --UTR=on > optimize.utr.out";
+	$perlCmdString="perl $string --cpus=$cpus --rounds=$optrounds --species=$species --trainOnlyUtr=1 --onlytrain=onlytrain.gb  --metapars=$configDir/$metaUtrName train.gb --UTR=on > optimize.utr.out";
 	print "1 Now optimizing meta parameters of AUGUSTUS for the UTR model." .
 	    " This will likely run for a long time..\n" if ($verbose>=1 && $optrounds > 0);
-	print "1 Running \"$perlCmdString\"..." if ($verbose>=1);
+	print "1 Running \"$perlCmdString\" ".(scalar localtime())." ..." if ($verbose>=1);
 	system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
-	print " finished" if ($verbose>=3);
+	print " finished ".(scalar localtime())."\n" if ($verbose>=3);
 	system("cat train.gb ../training.gb.train > train.all.gb")==0 or die("failed to execute: $!\n");
     } else {
 	print "1 Skipping UTR parameter optimization. Already up to date.\n" if ($verbose>=1);
@@ -740,7 +745,7 @@ sub trainWithUTR{
 	system("etraining --species=$species --UTR=on train.all.gb --CRF=1 1>etrain.out 2>etrain.err")==0 or die("failed to execute: $!\n");
     }
 
-    print " Finished\n" if ($verbose>=2);
+    print " Finished ".(scalar localtime())."\n" if ($verbose>=2);
 }
 
 
@@ -806,19 +811,37 @@ sub scipio_conversion{
     print "1 Checking fasta headers in file $trainingset...\n" if ($verbose>=1);
     check_fasta_headers($trainingset);
     chdir "$workDir/training/" or die("Error: could not change directory to $workDir/training/!\n");
-    $cmdString = "scipio.pl $genome $trainingset > scipio.yaml 2> scipio.err"; 
-    print "3 $cmdString ..." if ($verbose>2); 
-    system("$cmdString")==0 or die("Program aborted. Possibly \"scipio\" is not installed or not in your PATH");
-    print "Finished.\n" if ($verbose>2);
-    $cmdString = "cat scipio.yaml | yaml2gff.1.4.pl --filterstatus=\"incomplete\"> scipio.gff 2> yaml2gff.err"; 
-    print "3 $cmdString ..." if ($verbose>2);
+
+    $cmdString = "scipio.pl ";
+    if ($cpus > 1 && check_command_exists("pblat")) { 
+        $cmdString .= "--blat_bin=pblat --blat_params=\"-threads=$cpus\" ";
+    }
+    $cmdString .= "$genome $trainingset > scipio.yaml 2> scipio.err";
+    
+    print "3 $cmdString ".(scalar localtime())." ..." if ($verbose>2);
+    my $scipioStatus = system("$cmdString");
+    if ($scipioStatus != 0) {
+      if (-s "scipio.err") { # if non-empty
+        open( my $fh, '<', "scipio.err" ) or die("Can't open \"scipio.err\": $!");
+        print STDERR <$fh>;
+        print STDERR "\n";
+        close $fh;
+        die("Program aborted. Scipio failed.");
+      }
+      else {
+        die("Program aborted. Possibly \"scipio.pl\" is not installed or not in your PATH");
+      }
+    }
+    print "Finished. ".(scalar localtime())."\n" if ($verbose>2);
+    $cmdString = "cat scipio.yaml | yaml2gff.1.4.pl --filterstatus=\"incomplete\" > scipio.gff 2> yaml2gff.err"; 
+    print "3 $cmdString ".(scalar localtime())." ..." if ($verbose>2);
     system("$cmdString")==0 or die("Command aborted. Possibly \"scipio\" is not installed or not in your PATH\n");
-    print "Finished.\n" if ($verbose>2);
+    print "Finished. ".(scalar localtime())."\n" if ($verbose>2);
     my $pathstr = find("scipiogff2gff.pl");
     $cmdString = "$pathstr --in=scipio.gff --out=traingenes.gff";
-    print "3 $cmdString ..." if ($verbose>2);
+    print "3 $cmdString ".(scalar localtime())." ..." if ($verbose>2);
     system("$cmdString")==0 or die("Command aborted.\n");
-    print "Finished.\n" if ($verbose>2);
+    print "Finished. ".(scalar localtime())."\n" if ($verbose>2);
     # check whether gff file contains any entries                                                                                                                                     
     my $gffLines = 0;
     open(GFFforCounting, "<", "traingenes.gff") or die("Cannot open training gene structure gff file traingenes.gff!\n");
@@ -832,5 +855,11 @@ sub scipio_conversion{
     $perlCmdString="perl $pathstr traingenes.gff $genome $flanking_DNA training.gb";
     print "3 $perlCmdString\n" if ($verbose>2);
     system("$perlCmdString")==0 or die ("failed to execute: $perlCmdString!\n");
-    print "3 training.gb with genbank format has been created under $workDir/seq/training/.\n" if ($verbose>2);      
+    print "3 training.gb with genbank format has been created under $workDir/training/.\n" if ($verbose>2);      
+}
+
+sub check_command_exists { 
+    my $command=shift;
+    my $status = system("which $command > /dev/null");
+    return !$status;
 }
