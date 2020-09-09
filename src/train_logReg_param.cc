@@ -537,23 +537,10 @@ void sgd(vector<pair<int, vector<double> > > *samples, gsl_vector *theta, int n)
   gsl_vector_free(best_theta);
 }
 
-void checkOutOfRange(vector<double>& feature, int index, vector<string>& attr_pair, string& line){
-    if(index>=0){
-        if(index<feature.size() && attr_pair.size()==2){
-            if(index == 9)
-                feature[index] = 1;
-            else 
-                feature[index] = stod(attr_pair[1]);
-        }
-        else
-            cout << "LOGREGFORMAT featuresNum = " << feature.size() << " index = " << index << " attrNum = " << attr_pair.size() << " at " << line << endl;
-    }
- }
-
 void trainFeature_from_file(){
 
     ifstream trainfile;
-    string buffer, junk;
+    string buffer;
     string filename = Properties::getProperty("trainFeatureFile");
     trainfile.open(filename, ifstream::in);
     if(!trainfile){
@@ -568,11 +555,10 @@ void trainFeature_from_file(){
         string type;
         int startPos;
         int endPos;
-        int index;
         char strand;
         char frame;
         string attributes;
-        linestream >> chr >> junk >> type >> startPos >> endPos >> junk >> strand >> frame >> attributes;
+        linestream >> chr >> buffer >> type >> startPos >> endPos >> buffer >> strand >> frame >> attributes;
 
         if(type == "exon")
             type = "CDS";
@@ -605,50 +591,89 @@ void trainFeature_from_file(){
                     attr_pair.push_back(ap);
                 }
 
-                index = -1;
-                if (attr_pair[0] == "postProb")
-                    index = 1;
-                    // oldcode got->second.second[1] = stod(attr_pair[1]); 
-                else if (attr_pair[0] == "avgBaseProb" || attr_pair[0] == "mbp")
-                    index = 2;
-                    // got->second.second[2] = stod(attr_pair[1]);
-                else if (attr_pair[0] == "Eomega" || attr_pair[0] == "PMomega")
-                    index = 3;
-                    // got->second.second[3] = stod(attr_pair[1]);
-                else if (attr_pair[0] == "VarOmega" || attr_pair[0] == "varOmega")
-                    index = 4;
-                    // got->second.second[4] = stod(attr_pair[1]);
-                else if (attr_pair[0] == "cons")
-                    index = 5;
-                    // got->second.second[5] = stod(attr_pair[1]);
-                else if (attr_pair[0] == "div")
-                    index = 6;
-                    // got->second.second[6] = stod(attr_pair[1]);
-                else if (attr_pair[0] == "containment" || attr_pair[0] == "contain")
-                    index = 7;
-                    // got->second.second[7] = stod(attr_pair[1]);
+                if (attr_pair[0] == "postProb"){
+                    try {
+                        got->second.second[1] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }     
+                else if (attr_pair[0] == "avgBaseProb" || attr_pair[0] == "mbp"){
+                    try {
+                        got->second.second[2] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "Eomega" || attr_pair[0] == "PMomega"){
+                    try {
+                        got->second.second[3] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "VarOmega" || attr_pair[0] == "varOmega"){
+                    try {
+                        got->second.second[4] = stod(attr_pair[1]);
+                    }
+                    catch (...) {                        
+                    }
+                }
+                else if (attr_pair[0] == "cons"){
+                    try {
+                        got->second.second[5] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "div"){
+                    try {
+                        got->second.second[6] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "containment" || attr_pair[0] == "contain"){
+                    try {
+                        got->second.second[7] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
                 else if (attr_pair[0] == "n" || attr_pair[0] == "numSpecies")
-                    index = 8;
-                    // got->second.second[8] = stod(attr_pair[1]);
+                    got->second.second[8] = stod(attr_pair[1]);
                 else if (attr_pair[0] == "oescore")
-                    index = 9;
-                    // got->second.second[9] = 1;
-                else if (attr_pair[0] == "leftBoundaryExtOmega")
-                    index = 10;
-                    // got->second.second[10] = stod(attr_pair[1]);
-                else if (attr_pair[0] == "leftBoundaryIntOmega")
-                    index = 11;
-                    // got->second.second[11] = stod(attr_pair[1]);
-                else if (attr_pair[0] == "rightBoundaryIntOmega")
-                    index = 12;
-                    // got->second.second[12] = stod(attr_pair[1]);
-                else if (attr_pair[0] == "rightBoundaryExtOmega")
-                    index = 13;
-                    //got->second.second[13] = stod(attr_pair[1]);
-                
-                checkOutOfRange(got->second.second, index, attr_pair, buffer);  // GM added it to check unconveniently formatted input
+                    got->second.second[9] = 1;
+                else if (attr_pair[0] == "leftBoundaryExtOmega"){
+                    try {
+                        got->second.second[10] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "leftBoundaryIntOmega"){
+                    try {
+                        got->second.second[11] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "rightBoundaryIntOmega"){
+                    try {
+                        got->second.second[12] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "rightBoundaryExtOmega"){
+                    try {
+                        got->second.second[13] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
             }
-        }
+        }        
     }
 }
 
