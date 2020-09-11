@@ -222,6 +222,7 @@ HINTSFILE_KEY,
 "noInFrameStop",
 "noprediction",
 EXTERNAL_KEY, // optCfgFile
+"printEvidence",
 "printHints",
 "printMEA",
 "printOEs",
@@ -306,6 +307,7 @@ UTR_KEY,
 "/UtrModel/verbosity"
 #ifdef TESTING
 , "/Testing/testMode"
+, "/Testing/workingDir"
 #endif
 };
 

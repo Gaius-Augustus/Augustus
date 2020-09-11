@@ -21,9 +21,9 @@
 #endif
 
 #ifdef TESTING
-#define NUMPARNAMES 276   // testMode command line option added
+#define NUMPARNAMES 278   // +testMode, workingDir command line options
 #else
-#define NUMPARNAMES 275
+#define NUMPARNAMES 276
 #endif
 
 #define GENEMODEL_KEY "genemodel"
@@ -306,4 +306,3 @@ class Properties{
 string findLocationOfSelfBinary();
 
 #endif  //  _PROPERTIES_HH
-
