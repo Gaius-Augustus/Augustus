@@ -760,7 +760,7 @@ void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<st
 
 
 /*
- * Darwin Mertsch: 
+ * Darvin Mertsch:
  * This function currently prints the MSA as strings. Darwin, you can make it return a suitable data structure
  * and then construct a training data structure.
  */

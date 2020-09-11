@@ -110,7 +110,7 @@ private:
     /*
     *   added by Giovanna Migliorelli 14.05.2020 
     *   code responsible for serialization
-    *   aknowledgement : https://www.boost.org/doc/libs/1_70_0/libs/serialization/doc/tutorial.html
+    *   Acknowledgment : https://www.boost.org/doc/libs/1_70_0/libs/serialization/doc/tutorial.html
     */
 
     #ifdef TESTING
