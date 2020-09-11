@@ -679,7 +679,7 @@ void CompGenePred::runPredictionOrTest(){
 	    geneRange->constructTree();
 	}
 
-    OrthoGraph orthograph;
+        OrthoGraph orthograph;
 	vector<AnnoSequence*> seqRanges(speciesNames.size());
 	vector<map<int_fast64_t,ExonCandidate*> > exoncands(speciesNames.size()); // EC hash: collection of all ECs of all species
 

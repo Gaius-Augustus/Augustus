@@ -912,3 +912,55 @@ void Alignment::convertAlignment(int r, int start, int end) {
 }
 #endif
 
+// StringAlignment stuff
+
+ostream& operator<< (ostream& strm, const StringAlignment &msa){
+    for (size_t s=0; s < msa.k; s++)
+        if (msa.rows[s].length() > 0)
+            strm << s << "\t" << msa.rows[s] << endl;
+    return strm;
+}
+
+void StringAlignment::insert(std::list<MsaInsertion> &insList, int maxInsertLen){
+    insList.sort();
+    int oldinsertpos = -1;
+    
+    for (MsaInsertion msains : insList){
+        if (msains.insertpos != oldinsertpos){
+            // new insert colums are always started with the longest
+            // inserts to make sure there is enough space
+            // insert gap colums for whole aligment
+            for (size_t s=0; s < k; s++) {
+                if (!rows[s].empty()){
+                    size_t insertsize = msains.insert.length();
+                    if (insertsize > maxInsertLen){
+                        // round down to a multiple of 3 for
+                        // reading-frame consistency
+                        insertsize = (maxInsertLen / 3) * 3;
+                    }
+                    rows[s].insert(msains.insertpos, string(insertsize, '-'));
+                }
+            }
+            oldinsertpos = msains.insertpos;
+        }
+        // replace gaps left justified with insert
+        rows[msains.s].replace(msains.insertpos, msains.insert.length(), msains.insert);
+    }
+}
+
+size_t StringAlignment::removeGapOnlyCols(){
+    size_t numRemovedCols = 0;
+    
+    for (int j = len - 1; j >= 0; --j){
+        if (isGapOnlyCol(j)){
+            // delete column j
+            numRemovedCols++;
+            for (size_t s=0; s < k; s++) {
+                if (!rows[s].empty()){
+                    rows[s].erase(j, 1);
+                }
+            }
+        }
+    }
+    return numRemovedCols;
+}

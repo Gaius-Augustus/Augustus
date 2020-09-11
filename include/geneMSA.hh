@@ -143,6 +143,16 @@ public:
     void collect_features(int species, list<OrthoExon> *hects, SpeciesGraph *speciesgraph);
     void getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_class, vector<AnnoSequence*> const &seqRanges);
     void getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges);
+    /**
+     * getMsa obtains the alignment in string format, including
+     * unaligned insertions that are not part of any fragment.
+     * 
+     * @return msa vector of alignment rows
+     * @param[in] oe the OrthoExon whose alignment is sought
+     * @param[in] seqRanges contains the alignment of the larger region tuple 
+     * @param[in] flanking allows to add padding on both sides, e.g. for sequence signals
+     */
+    StringAlignment getMsa2(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, size_t flanking = 0);
 private:
   vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, const vector<vector<fragment>::const_iterator > &froms, map<unsigned, vector<int> > *alignedCodons = NULL, bool generateString=true, vector<vector<int> > *posStoredCodons = NULL, ofstream *codonAli = NULL);
     void cutIncompleteCodons(OrthoExon &oe);

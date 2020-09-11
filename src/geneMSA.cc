@@ -728,7 +728,9 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
  * This function obtains multiple sequence alignments (MSAs) and their label y=0,1, whether
  * it constitutes a real CDS or not in the refernce species.
  */
-void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_class, vector<AnnoSequence*> const &seqRanges){ 
+void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_class, vector<AnnoSequence*> const &seqRanges){
+    StringAlignment msa(0);
+   
     for(list<OrthoExon>::iterator oeit = hects->begin(); oeit != hects->end(); ++oeit){
 	ExonCandidate *ec = oeit->orthoex.at(species);
 	if (ec == NULL)
@@ -754,8 +756,78 @@ void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<st
 	if (got != ref_class->end())
 	    y=1;
 	cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << key.str() << endl;
-	getMsa(*oeit, seqRanges);
+	//getMsa(*oeit, seqRanges);
+        msa = getMsa2(*oeit, seqRanges);
+        cout << msa << endl;
     }
+}
+
+StringAlignment GeneMSA::getMsa2(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, size_t flanking) {
+    int k = alignment->numRows();
+    int aliStart = oe.getAliStart() - flanking;
+    int aliEnd = oe.getAliEnd() + flanking;
+    int aliLen = aliEnd - aliStart + 1;
+    int gaplen, matchlen, loverhang, prevAliEnd, insertlen;
+    StringAlignment msa(k);
+    MsaInsertion msains;
+    list<MsaInsertion> insList;
+
+    for (size_t s=0; s<k; s++){
+	if (alignment->rows[s] == NULL || oe.orthoex[s] == NULL)
+	    continue;
+	AlignmentRow *row = alignment->rows[s];
+	vector<fragment>::const_iterator prev = row->frags.end(),
+            from = row->frags.begin(); // this could be more efficient exploiting sortedness
+
+	// search first fragment that is not strictly to the left of the alignment start
+	while (from != row->frags.end() && from->aliPos + from->len < aliStart)
+	    from++;
+        
+	prevAliEnd = aliStart - 1;
+	while (from != row->frags.end() && from->aliPos <= aliEnd){
+            // are there unaligned insertions?
+            if (prev != row->frags.end() && from->chrPos > prev->chrPos + prev->len){ // insertion
+                msains.s = s;
+                msains.insertpos = msa.rows[s].length();
+                insertlen = from->chrPos - prev->chrPos - prev->len;
+                msains.insert = string(seqRanges[s]->sequence + prev->chrPos + prev->len - offsets[s], insertlen);
+                /*
+                  cout << "insert of length " << insertlen << " found at "
+                     << "s= " << s << " pos " << msains.insertpos << " i.e. "
+                     << msains.insert << " inserted after " <<
+                     msa.rows[s] << endl;
+                */
+                insList.push_back(msains);
+            }
+            // insert gap characters between previous and this fragment
+            gaplen = from->aliPos - prevAliEnd - 1;
+            if (gaplen > 0)
+                msa.rows[s] += string(gaplen, '-');
+	    
+            loverhang = (from->aliPos < aliStart)? aliStart - from->aliPos : 0;
+            matchlen = from->len - loverhang;
+            if (matchlen > aliEnd - from->aliPos - loverhang + 1)
+                matchlen = aliEnd - from->aliPos - loverhang + 1;
+            msa.rows[s] += string(seqRanges[s]->sequence + from->chrPos + loverhang - offsets[s], matchlen);
+            prevAliEnd = from->aliPos + loverhang + matchlen - 1;
+            prev = from++;
+	}
+	if (msa.rows[s].size() < aliLen)
+            msa.rows[s] += string(aliLen - msa.rows[s].size(), '-');
+    }
+    if (!insList.empty()){
+        //cout << "msa before insertions:\n" << msa << endl;
+        // inserts could be long, limit their length to 99
+        msa.insert(insList, 99); 
+        //cout << "msa after  insertions:\n" << msa << endl;
+    }
+    msa.computeLen();
+    size_t numRemovedCols = msa.removeGapOnlyCols();
+
+    /*if (numRemovedCols > 0)
+        cout << "msa after removing " << numRemovedCols << " gap-only columns:\n" << msa << endl;
+    */
+    return msa;
 }
 
 
