@@ -858,11 +858,10 @@ void CompGenePred::runPredictionOrTest(){
 	    int speciesID = find(speciesNames.begin(), speciesNames.end(), Constant::refSpecies) - speciesNames.begin();
 	    if (speciesID >= speciesNames.size()){
 		throw ProjectError("Species " + Constant::refSpecies + " not found. Use one of the names specified in the alignment file as a reference!");
-	    } else {
-  	        geneRange->collect_features(speciesID, &hects, orthograph.graphs[speciesID]);
-		// Darwin Mertsch
-		geneRange->getAllOEMsas(speciesID, &hects, &ref_class, seqRanges);
 	    }
+	    geneRange->collect_features(speciesID, &hects, orthograph.graphs[speciesID]);
+	    // training set generation for codon evolution model
+	    geneRange->getAllOEMsas(speciesID, &hects, &ref_class, seqRanges);
 	}
 
 	// delete sequences

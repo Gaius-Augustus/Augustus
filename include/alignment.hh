@@ -398,7 +398,7 @@ public:
                 if (m == 0)
                     m = rowlen;
                 else if (m != rowlen)
-                    throw ("");
+                    throw length_error("StringAlignment with rows of differing lengths");
             }            
         }
         len = m;

@@ -926,25 +926,25 @@ void StringAlignment::insert(std::list<MsaInsertion> &insList, int maxInsertLen)
     int oldinsertpos = -1;
     
     for (MsaInsertion msains : insList){
+	size_t insertsize = msains.insert.length();
+	if (insertsize > maxInsertLen){
+	    // round down to a multiple of 3 for reading-frame consistency
+	    // cout << "long insert " << insertsize << endl;
+	    insertsize = (maxInsertLen / 3) * 3;
+	}
         if (msains.insertpos != oldinsertpos){
             // new insert colums are always started with the longest
             // inserts to make sure there is enough space
             // insert gap colums for whole aligment
             for (size_t s=0; s < k; s++) {
                 if (!rows[s].empty()){
-                    size_t insertsize = msains.insert.length();
-                    if (insertsize > maxInsertLen){
-                        // round down to a multiple of 3 for
-                        // reading-frame consistency
-                        insertsize = (maxInsertLen / 3) * 3;
-                    }
                     rows[s].insert(msains.insertpos, string(insertsize, '-'));
                 }
             }
             oldinsertpos = msains.insertpos;
         }
         // replace gaps left justified with insert
-        rows[msains.s].replace(msains.insertpos, msains.insert.length(), msains.insert);
+        rows[msains.s].replace(msains.insertpos, insertsize, msains.insert, 0, insertsize);
     }
 }
 
@@ -952,6 +952,7 @@ size_t StringAlignment::removeGapOnlyCols(){
     size_t numRemovedCols = 0;
     
     for (int j = len - 1; j >= 0; --j){
+	// TODO: remove consecutive ranges of all-gap cols at once for efficiency
         if (isGapOnlyCol(j)){
             // delete column j
             numRemovedCols++;
