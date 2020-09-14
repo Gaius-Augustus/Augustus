@@ -924,7 +924,7 @@ ostream& operator<< (ostream& strm, const StringAlignment &msa){
 void StringAlignment::insert(std::list<MsaInsertion> &insList, int maxInsertLen){
     insList.sort();
     int oldinsertpos = -1;
-    
+
     for (MsaInsertion msains : insList){
 	size_t insertsize = msains.insert.length();
 	if (insertsize > maxInsertLen){
@@ -950,7 +950,7 @@ void StringAlignment::insert(std::list<MsaInsertion> &insList, int maxInsertLen)
 
 size_t StringAlignment::removeGapOnlyCols(){
     size_t numRemovedCols = 0;
-    
+
     for (int j = len - 1; j >= 0; --j){
 	// TODO: remove consecutive ranges of all-gap cols at once for efficiency
         if (isGapOnlyCol(j)){

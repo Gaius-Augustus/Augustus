@@ -680,8 +680,8 @@ void CompGenePred::runPredictionOrTest(){
 	}
 
         OrthoGraph orthograph;
-	vector<AnnoSequence*> seqRanges(speciesNames.size());
-	vector<map<int_fast64_t,ExonCandidate*> > exoncands(speciesNames.size()); // EC hash: collection of all ECs of all species
+        vector<AnnoSequence*> seqRanges(speciesNames.size());
+        vector<map<int_fast64_t,ExonCandidate*> > exoncands(speciesNames.size()); // EC hash: collection of all ECs of all species
 
 	// retrieval of sequences and sampling of gene structures
         for (int s = 0; s < speciesNames.size(); s++) {
@@ -886,9 +886,10 @@ void CompGenePred::runPredictionOrTest(){
     }                                                                                                                                                              
     GeneMSA::topologies.clear(); 
   
-    if(Properties::hasProperty("referenceFile")){
+    if (Properties::hasProperty("referenceFile")){
 	// initialize training of log reg parameters
-	// train_OEscore_params(speciesNames.size());
+	// TODO: introduce a parameter for this, and document it 
+        //train_OEscore_params(speciesNames.size());
     }
   } 
 }

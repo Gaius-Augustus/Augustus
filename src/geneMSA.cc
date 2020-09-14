@@ -528,7 +528,7 @@ void GeneMSA::printOrthoExons(list<OrthoExon> &orthoExonsList) {
 void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
     bool GBrowseStyle = false; // for viewing in GBrowse use this style
     streambuf *stdout = cout.rdbuf();
-    int beginStopOffset, endStopOffset; // to account for excluded stop codons    
+    int beginStopOffset, endStopOffset; // to account for excluded stop codons
     for (int s=0; s < numSpecies(); s++) {
 	ExonCandidate *ec = oe.orthoex.at(s);
 	if (files)
@@ -724,9 +724,9 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
 }
 
 /*
- * Darwin Mertsch: 
+ * 
  * This function obtains multiple sequence alignments (MSAs) and their label y=0,1, whether
- * it constitutes a real CDS or not in the refernce species.
+ * it constitutes a real CDS or not in the reference species.
  */
 void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_class, vector<AnnoSequence*> const &seqRanges){
     StringAlignment msa(0);

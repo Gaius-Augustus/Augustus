@@ -338,7 +338,6 @@ public:
             return true;
         return false;
     }
-    
     size_t s; //! index of species
     size_t insertpos; //! at which position to insert
     string insert; //! what to insert
@@ -347,7 +346,6 @@ public:
 
 /**
  * @brief global multiple sequence alignment in (standard) string representation
- * 
  * @author Mario Stanke
  */
 class StringAlignment {
@@ -359,7 +357,7 @@ public:
      * Insert unaligned sequences into an alignment.
      * The insertion positions all refer to the MSA before insertions.
      * Example:
-     * 
+     *
      * a-tt-g   insert((0, 0, "ggg"), (2, 4, "gaga"),    ggga-tt-----g
      * --ctgg          (1, 4, "ttt"))                    -----ctttt-gg
      * a-ttgc   ===================================>     ---a-ttgagagc
@@ -374,19 +372,19 @@ public:
      * 
      * ggga-tt-----g           gggatt-----g
      * -----ctttt-gg   ====>   ----ctttt-gg
-     * ---a-ttgagagc           ---attgagagc 
+     * ---a-ttgagagc           ---attgagagc
      *
      * @param[in] insList a list of inserts at certain positions
      */
     size_t removeGapOnlyCols();
-    
+
     bool isGapOnlyCol(size_t col){
         for (size_t s = 0; s < k; ++s)
             if (!rows[s].empty() && rows[s].at(col) != '-')
                 return false;
         return true;
     }
-    
+
     /**
      * Ensure all rows have the same length and compute and set this length.
      */
@@ -399,12 +397,11 @@ public:
                     m = rowlen;
                 else if (m != rowlen)
                     throw length_error("StringAlignment with rows of differing lengths");
-            }            
+            }
         }
         len = m;
     }
-    
-    
+
     friend ostream& operator<< (ostream& strm, const StringAlignment &msa);
 
 // data members
