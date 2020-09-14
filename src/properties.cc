@@ -74,7 +74,8 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/only_species",
 "/CompPred/outdir_orthoexons",
 "/CompPred/outdir",
-"/CompPred/printOrthoExonAli",
+"/CompPred/printOrthoExonAli", // codon alignment (Gerischer)
+"/CompPred/printExonCandsMSA", // nucleotide alignment (Mertsch)
 "/CompPred/printConservationWig",
 "/CompPred/phylo_factor",
 "/CompPred/phylo_model",

@@ -861,7 +861,8 @@ void CompGenePred::runPredictionOrTest(){
 	    }
 	    geneRange->collect_features(speciesID, &hects, orthograph.graphs[speciesID]);
 	    // training set generation for codon evolution model
-	    geneRange->getAllOEMsas(speciesID, &hects, &ref_class, seqRanges);
+            if (Constant::printExonCandsMSA)
+                geneRange->getAllOEMsas(speciesID, &hects, &ref_class, seqRanges);
 	}
 
 	// delete sequences
@@ -888,8 +889,8 @@ void CompGenePred::runPredictionOrTest(){
   
     if (Properties::hasProperty("referenceFile")){
 	// initialize training of log reg parameters
-	// TODO: introduce a parameter for this, and document it 
-        //train_OEscore_params(speciesNames.size());
+        if (! Constant::printExonCandsMSA)
+            train_OEscore_params(speciesNames.size());
     }
   } 
 }

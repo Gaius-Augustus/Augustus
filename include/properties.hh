@@ -21,9 +21,9 @@
 #endif
 
 #ifdef TESTING
-#define NUMPARNAMES 278   // +testMode, workingDir command line options
+#define NUMPARNAMES 279   // +testMode, workingDir command line options
 #else
-#define NUMPARNAMES 276
+#define NUMPARNAMES 277
 #endif
 
 #define GENEMODEL_KEY "genemodel"
