@@ -812,7 +812,6 @@ AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start
                 if (strlen(annoseq->sequence) != annoseq->length)
                     throw ProjectError("SQLiteAccess::getSeq " + itoa(strlen(annoseq->sequence)) + " != " + itoa(annoseq->length) + " in " 
                                        + speciesname + "." + chrName + ":" + itoa(start) + "-" + itoa(end));
-
 		return annoseq;
 	    }
 	    else
