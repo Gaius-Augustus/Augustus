@@ -22,6 +22,7 @@ enum ExonType {UNKNOWN_EXON = -1,
 };
 
 bool isPlusExon(ExonType t);
+bool hasStopCodon(ExonType t);
 
 extern const int exonTypeReadingFrames[EXON_TYPES-1];
 extern const char* stateExonTypeIdentifiers[EXON_TYPES-1];
