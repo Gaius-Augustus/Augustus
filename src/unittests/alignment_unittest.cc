@@ -15,22 +15,25 @@ namespace {
     TEST(AlignmentTest, MsaInsertion)
     // inserting unaligned strings into a multiple sequence alignment (MSA)
     {    
-        StringAlignment msa(3);
+        StringAlignment msa(4);
         msa.rows[0] = "a-tt-g";
         msa.rows[1] = "--ctgg";
         msa.rows[2] = "a-ttgc";
+        msa.rows[3] = ""; // empty row
 
         list<MsaInsertion> insList;
         insList.push_back( MsaInsertion(0, 0, string("ggg")) );
         insList.push_back( MsaInsertion(1, 4, string("ttt")) );
         insList.push_back( MsaInsertion(2, 4, string("gaga")) );
-        
+        insList.push_back( MsaInsertion(3, 0, string("cc")) );
+
         msa.insert(insList);
-        //std::cout << msa << std::endl;
+        // std::cout << msa << std::endl;
         
         EXPECT_TRUE(msa.rows[0] == "ggga-tt-----g" &&
                     msa.rows[1] == "-----ctttt-gg" &&
-                    msa.rows[2] == "---a-ttgagagc");
+                    msa.rows[2] == "---a-ttgagagc" &&
+                    msa.rows[3] == "");
     }
     
     TEST(AlignmentTest, removeGapOnlyCols)

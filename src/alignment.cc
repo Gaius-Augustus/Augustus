@@ -926,6 +926,9 @@ void StringAlignment::insert(std::list<MsaInsertion> &insList, int maxInsertLen)
     int oldinsertpos = -1;
 
     for (MsaInsertion msains : insList){
+        if (rows[msains.s].empty())
+            continue; // no insertion into empty rows
+
 	size_t insertsize = msains.insert.length();
 	if (insertsize > maxInsertLen){
 	    // round down to a multiple of 3 for reading-frame consistency
