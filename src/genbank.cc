@@ -715,11 +715,22 @@ Boolean GBSplitter::findPositions( GBPositions& pos ){
             string str;
             int a, b;
             char c;
-            strm >> str >> a >> c >> c >> b;
+            if (strcasestr(src, "complement") != NULL) {
+                string position; 
+                getline(strm, position, '(');
+                getline(strm, position, ')' );
+                strm.clear();
+                strm.str(position);
+                strm >> a >> c >> c >> b;
+            }
+            else {
+                strm >> str >> a >> c >> c >> b;
+            }
             if (strm.fail())
                 throw GBError(string("Syntax error in source line:\n") + src +
-                                  "\nShould be of a format like:  source  1..2345");
-
+                                  "\nShould be of a format like:  source  1..2345"
+                                  "\n                        or:  source  complement(1..2345)");
+           
 	    if (b-a+1 > pos.seqlength)
 		pos.seqlength = b-a+1;
             continue;
