@@ -859,10 +859,12 @@ void CompGenePred::runPredictionOrTest(){
 	    if (speciesID >= speciesNames.size()){
 		throw ProjectError("Species " + Constant::refSpecies + " not found. Use one of the names specified in the alignment file as a reference!");
 	    }
-	    geneRange->collect_features(speciesID, &hects, orthograph.graphs[speciesID]);
-	    // training set generation for codon evolution model
-            if (Constant::printExonCandsMSA)
+	    
+	    if (!Constant::printExonCandsMSA){
+		geneRange->collect_features(speciesID, &hects, orthograph.graphs[speciesID]);
+	    } else{// training set generation for codon evolution model
                 geneRange->getAllOEMsas(speciesID, &hects, &ref_class, seqRanges);
+	    }
 	}
 
 	// delete sequences
