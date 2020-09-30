@@ -350,7 +350,9 @@ AnnoSequence* EHMMTraining::split2SingleGeneSeqs(const AnnoSequence *multiannose
 	// copy the sequence interval
 	newAS->sequence = newstrcpy(multiannoseq->sequence + windowBegin, windowEnd-windowBegin+1);
 	newAS->length = windowEnd-windowBegin+1;
-	char *newSeqName = new char[strlen(multiannoseq->sequence)+7];
+	char *newSeqName = new char[strlen(multiannoseq->seqname)+7];
+        // allows for pieceIndex with 5 digits
+
 	if (multiGene)
 	  sprintf(newSeqName, "%s.p%d", multiannoseq->seqname, pieceIndex);
 	else 

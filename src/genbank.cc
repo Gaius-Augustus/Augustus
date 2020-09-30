@@ -62,15 +62,16 @@ AnnoSequence* GBProcessor::getAnnoSequence( GBPositions* pos ){
     annoseq->length = pos->seqlength;
     annoseq->bc.addSequence(annoseq->sequence, strlen(annoseq->sequence) );
     char* idtmp = strstr(pos->buffer, "LOCUS");
+    unsigned maxSeqnameLen = 100;
     if (idtmp == NULL) {
 	annoseq->seqname = newstrcpy("unknown");
     } else {
-	annoseq->seqname = new char[100];
+	annoseq->seqname = new char[maxSeqnameLen];
 	idtmp += strlen("LOCUS");
 	while( isspace(*idtmp) )
 	    idtmp++;
 	int i;
-	for( i = 0; i < 99 && !isspace(*idtmp); i++, idtmp++ ){
+	for( i = 0; i < maxSeqnameLen - 1 && !isspace(*idtmp); i++, idtmp++ ){
 	    annoseq->seqname[i] = *idtmp;
 	}
 	annoseq->seqname[i] = '\0';
@@ -677,7 +678,14 @@ Boolean GBSplitter::findPositions( GBPositions& pos ){
     fposb = sin.tellg();
     if( !gotoEnd( ) )
         return false;
-    fpose = sin.tellg();
+    if (sin.eof()){ // happens in rare cases, without newline after
+                    // record ending double-slash //
+        sin.clear(); // otherwise tellg returns -1
+        fpose = sin.tellg();
+        sin.clear(ios_base::eofbit); // reset the eofbit
+    } else {
+        fpose = sin.tellg();
+    }
     sin.seekg( fposb );
 
     pos.length = fpose-fposb /*+1*/;         // Without the '\0'!!
@@ -708,6 +716,10 @@ Boolean GBSplitter::findPositions( GBPositions& pos ){
             int a, b;
             char c;
             strm >> str >> a >> c >> c >> b;
+            if (strm.fail())
+                throw GBError(string("Syntax error in source line:\n") + src +
+                                  "\nShould be of a format like:  source  1..2345");
+
 	    if (b-a+1 > pos.seqlength)
 		pos.seqlength = b-a+1;
             continue;

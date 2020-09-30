@@ -297,22 +297,24 @@ void CompGenePred::runPredictionOrTest(){
     }
 
     bool onlySampling = false;
+    unordered_map<string,int> ref_class; // reference classification (1/0) of CDS, introns for training
     try {
 	noprediction = Properties::getBoolProperty("noprediction");
     } catch (...) {}
     if(Properties::hasProperty("referenceFile")){
-      onlySampling = true;
-      cout << "# AUGUSTUS is running in training mode. No prediction will be done!" << endl;
-      try {
-	Constant::refSpecies = Properties::getProperty("refSpecies");
-	if(Properties::hasProperty("param_outfile")){
-	  cout << "# Using file " << Properties::getProperty("param_outfile") << " to store logReg parameters." << endl;
-	}else{
-	  cout << "# No outfile for logReg parameters specified. Writing parameters to " << Constant::configPath <<  "/cgp/log_reg_parameters_trained.cfg" << endl;
+	onlySampling = true;
+	cout << "# AUGUSTUS is running in training mode. No prediction will be done!" << endl;
+	try {
+	    Constant::refSpecies = Properties::getProperty("refSpecies");
+	    if (Properties::hasProperty("param_outfile")){
+		cout << "# Using file " << Properties::getProperty("param_outfile") << " to store logReg parameters." << endl;
+	    } else {
+		cout << "# No outfile for logReg parameters specified. Writing parameters to " << Constant::configPath <<  "/cgp/log_reg_parameters_trained.cfg" << endl;
+	    }
+	    reference_from_file(&ref_class);
+	} catch (ProjectError &e) {
+	    throw ProjectError("For parameter training a reference species must be specified. Use --refSpecies=<SPECIES> and note, that <SPECIES> must be identical to one of the species names provided in the alignment and tree files.");
 	}
-      } catch (ProjectError &e) {
-	throw ProjectError("For parameter training a reference species must be specified. Use --refSpecies=<SPECIES> and note, that <SPECIES> must be identical to one of the species names provided in the alignment and tree files.");
-      }
     }
     try {
 	useLocusTrees = Properties::getBoolProperty("locustree");
@@ -677,9 +679,9 @@ void CompGenePred::runPredictionOrTest(){
 	    geneRange->constructTree();
 	}
 
-    OrthoGraph orthograph;
-	vector<AnnoSequence*> seqRanges(speciesNames.size());
-	vector<map<int_fast64_t,ExonCandidate*> > exoncands(speciesNames.size()); // EC hash: collection of all ECs of all species
+        OrthoGraph orthograph;
+        vector<AnnoSequence*> seqRanges(speciesNames.size());
+        vector<map<int_fast64_t,ExonCandidate*> > exoncands(speciesNames.size()); // EC hash: collection of all ECs of all species
 
 	// retrieval of sequences and sampling of gene structures
         for (int s = 0; s < speciesNames.size(); s++) {
@@ -847,23 +849,27 @@ void CompGenePred::runPredictionOrTest(){
 		orthograph.outputGenes(optGenes, opt_geneid);
 	    }
 	}
-	if(Constant::printOEs)
+	if (Constant::printOEs)
 	    geneRange->printOrthoExons(hects);
 	    
 	// store hect features globally for training
-	if(Properties::hasProperty("referenceFile")){
-	  cout << "collect sample features" << endl;
-	  int speciesID = find(speciesNames.begin(), speciesNames.end(), Constant::refSpecies) - speciesNames.begin();
-	  if(speciesID >= speciesNames.size()){
-	    throw ProjectError("Species " + Constant::refSpecies + " not found. Use one of the names specified in the alignment file as a reference!");
-	  }else{
-	    geneRange->collect_features(speciesID, &hects, orthograph.graphs[speciesID]);
-	  }
+	if (Properties::hasProperty("referenceFile")){
+	    cout << "collecting sample features" << endl;
+	    int speciesID = find(speciesNames.begin(), speciesNames.end(), Constant::refSpecies) - speciesNames.begin();
+	    if (speciesID >= speciesNames.size()){
+		throw ProjectError("Species " + Constant::refSpecies + " not found. Use one of the names specified in the alignment file as a reference!");
+	    }
+	    
+	    if (!Constant::printExonCandsMSA){
+		geneRange->collect_features(speciesID, &hects, orthograph.graphs[speciesID]);
+	    } else{// training set generation for codon evolution model
+                geneRange->getAllOEMsas(speciesID, &hects, &ref_class, seqRanges);
+	    }
 	}
 
 	// delete sequences
 	for (int i=0; i<seqRanges.size(); i++) {
-		delete seqRanges[i];
+            delete seqRanges[i];
 	}
 	// delete geneRange
 	delete geneRange;
@@ -883,9 +889,10 @@ void CompGenePred::runPredictionOrTest(){
     }                                                                                                                                                              
     GeneMSA::topologies.clear(); 
   
-    if(Properties::hasProperty("referenceFile")){
-      // initialize training of log reg parameters
-      train_OEscore_params(speciesNames.size());
+    if (Properties::hasProperty("referenceFile")){
+	// initialize training of log reg parameters
+        if (! Constant::printExonCandsMSA)
+            train_OEscore_params(speciesNames.size());
     }
   } 
 }

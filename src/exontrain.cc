@@ -133,7 +133,7 @@ void ExonModel::buildProbabilities( ){
       for (int i=0; i < 1 + tiswins->size()/10; i++){
 	char *r = getRandomDNA(tis_motif_memory + trans_init_window);
 	transInitBinProbs.addProb(transInitMotif->seqProb(r + tis_motif_memory));
-	delete r;
+	delete [] r;
       }
       transInitBinProbs.trainBins(Constant::tis_maxbinsize);
       transInitBinProbs.printBoundaries();

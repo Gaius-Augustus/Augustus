@@ -14,7 +14,7 @@
 #include <stdlib.h>     /* rand */
 #include <unistd.h>
 
-int unlink(const char *path);
+int unlink(const char *path) throw ();
 
 
 namespace {

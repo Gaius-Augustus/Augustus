@@ -19,9 +19,9 @@ OBJS    = ../lldouble.o ../fasta.o ../contTimeMC.o ../codonevo.o \
 	../scanner/lex.o ../parser/parse.o \
 
 # Link all tests to a single test binary
-unittests: lldouble_unittest.o fasta_unittest.o evo_unittest.o codonevo_unittest.o
+unittests: lldouble_unittest.o fasta_unittest.o evo_unittest.o codonevo_unittest.o alignment_unittest.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) \
-	lldouble_unittest.o fasta_unittest.o evo_unittest.o codonevo_unittest.o \
+	lldouble_unittest.o fasta_unittest.o evo_unittest.o codonevo_unittest.o alignment_unittest.o \
 	$(OBJS) $(LDFLAGS) -o unittests
 #evo_unittest.o \
 # Here follows each individual Unit Test
@@ -36,6 +36,9 @@ evo_unittest.o: evo_unittest.cc $(AINC)/contTimeMC.hh
 
 codonevo_unittest.o: codonevo_unittest.cc $(AINC)/contTimeMC.hh $(AINC)/codonevo.hh 
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c codonevo_unittest.cc
+
+alignment_unittest.o: alignment_unittest.cc $(AINC)/alignment.hh
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c alignment_unittest.cc
 
 # execute all tests: run test binary
 test: unittests

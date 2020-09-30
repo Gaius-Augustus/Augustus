@@ -19,6 +19,11 @@ bool isPlusExon(ExonType t){
     return t < rsingleGene;
 }
 
+bool hasStopCodon(ExonType t){
+    return t == singleGene || t == rsingleGene
+        || t == terminal_exon || t == rterminal_0 || t == rterminal_1 || t == rterminal_2;
+}
+
 const int exonTypeReadingFrames[EXON_TYPES-1] = { 0,0,1,2,0,1,2,0,         // forward exons
 						  2,2,0,1,2,0,1,2};         // reverse exons
 
@@ -115,7 +120,7 @@ string ExonCandidate::key() {
 int_fast64_t ExonCandidate::getKey(){
     
     int_fast64_t start = begin;
-    int_fast64_t len = end - begin;
+    int_fast64_t len = end - begin; // length + 1
     int lenMod3 = (end - begin + 1) % 3;
     int_fast64_t key = (start << 22 ) // 42 bits
         + ((len) << 7)                // 15 bits

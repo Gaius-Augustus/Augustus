@@ -140,8 +140,30 @@ public:
     static map<vector<string>, pair<vector<double>, int> > computedCumValues;
 
     void printSingleOrthoExon(OrthoExon &oe, bool files = true);
-  void collect_features(int species, list<OrthoExon> *hects, SpeciesGraph *speciesgraph);
+    void collect_features(int species, list<OrthoExon> *hects, SpeciesGraph *speciesgraph);
 
+    /**
+     * getAllOEMsas obtains and prints multiple sequence alignments (MSAs) and their label y=0,1, whether
+     * it constitutes a real CDS or not in the reference species.
+     *
+     * @param[in] species is the reference species index
+     * @param[in] hects ortho exons to get alignments from
+     * @param[in] ref_class assignment of CDS keys as 1 (= in reference anno) or 0.
+     * @param[in] seqRanges the aligned sequences
+     */
+    void getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_class,
+                         vector<AnnoSequence*> const &seqRanges);
+
+    /**
+     * getMsa obtains the alignment in string format, including
+     * unaligned insertions that are not part of any fragment.
+     *
+     * @return msa vector of alignment rows
+     * @param[in] oe the OrthoExon whose alignment is sought
+     * @param[in] seqRanges contains the alignment of the larger region tuple
+     * @param[in] flanking allows to add padding on both sides, e.g. for sequence signals
+     */
+    StringAlignment getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, size_t flanking = 0);
 private:
   vector<string> getCodonAlignment(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, const vector<vector<fragment>::const_iterator > &froms, map<unsigned, vector<int> > *alignedCodons = NULL, bool generateString=true, vector<vector<int> > *posStoredCodons = NULL, ofstream *codonAli = NULL);
     void cutIncompleteCodons(OrthoExon &oe);

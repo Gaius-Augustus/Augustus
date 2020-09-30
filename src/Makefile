@@ -14,7 +14,7 @@ CXX?=g++
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 -std=c++11 ${CXXFLAGS} #-DDEBUG -g -ggdb -pg -DDEBUG_STATES
+CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 -std=c++11 ${CXXFLAGS}#-DDEBUG -g -ggdb -pg -DDEBUG_STATES
 
 ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))  # if ZIPINPUT is not defined or is something else than 0, false, False or FALSE
 	CPPFLAGS += -DZIPINPUT
