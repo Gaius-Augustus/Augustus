@@ -31,21 +31,28 @@ jobs:
     - name: Install python wget
       run: pip3 install wget
 
+    - name: Install gitpython
+      run: pip3 install gitpython
+
     - name: Build AUGUSTUS
       run: make all
 
     - name: Execute single genome test cases
-      run: ./test_single.sh -e /data/eval/
+      run: ./execute_test.py --pathToGitRepo ../../../.git --evalDir /data/eval/
       working-directory: tests/longrunning/single_genome/
 
     - name: Extract desired accuracy values (single genome test case)
       run: ./extract_accuracy_values.py --path single_genome/output/eval
       working-directory: tests/longrunning/
 
+    # TODO: write single genome output to database
+
     - name: Execute cgp test case
-      run: ./executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval --augustusDir ../../../ --dataDir data --evalDir /data/eval --jobs 8
+      run: ./executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval --augustusDir ../../../ --dataDir data --evalDir /data/eval --jobs 8 --pathToGitRepo ../../../.git
       working-directory: tests/longrunning/cgp/
 
     - name: Extract desired accuracy values (cgp test case)
       run: ./extract_accuracy_values.py --path cgp/data/cgp12way/ACCURACY
       working-directory: tests/longrunning/
+
+    # TODO: write cgp output to database
