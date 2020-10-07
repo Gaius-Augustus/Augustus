@@ -6,8 +6,12 @@ import argparse
 import sys
 import wget
 import tarfile
+import datetime
 from concurrent.futures import ThreadPoolExecutor
 
+# import util script from parent directory 
+sys.path.append('..')
+import lr_util as util
 
 # Minimal execution script for longrunning cgp test cases
 # based on scripts/executeTestCGP.py by Giovanna Migliorelli.
@@ -27,7 +31,9 @@ parser.add_argument('-l', '--evalDir',
 parser.add_argument('-d', '--dataDir',
                     help='path to the folder where the test data should be extracted.')
 parser.add_argument('-j', '--jobs',
-                    help='to set the maximum number of jobs executed in parallel. (default value 2)')                    
+                    help='to set the maximum number of jobs executed in parallel. (default value 2)')
+parser.add_argument('-r', '--pathToGitRepo',
+                    help='path to the Augustus Git repository.')                                      
 args = parser.parse_args()
 
 
@@ -86,7 +92,7 @@ def port_test(paths_shared, paths, chunks):
 # parallel execution : acknowldgement Daniel Honsel (revisited code from test_case.py)
 def run_test_parallel(paths_shared, paths, chunks, jobs=2):
 
-    proc_list = []
+    start = datetime.datetime.now()
 
     # create a command for each chunk
     args = []
@@ -107,6 +113,10 @@ def run_test_parallel(paths_shared, paths, chunks, jobs=2):
         for cmd, output, chunk in args:
             print('Adding thread for chunk: ' + str(chunk) + '...')
             executor.submit(execute_test, cmd, output, chunk)
+
+    end = datetime.datetime.now()
+
+    return (end - start).total_seconds() / 60.0
 
 
 def execute(cmd, output, mode='w'):
@@ -168,6 +178,8 @@ def run_evaluate_parallel(paths, chunks):
     for p in proc_list:
         error = p.stderr.read()
         p.stderr.close()
+        if error:
+            print(error)        
 
 
 # currently in use (returns accuracy after merging the contributes from all chunks) - parallelized
@@ -268,6 +280,10 @@ if __name__ == '__main__':
         sys.exit()
     dataDir = str(expand_dir(args.dataDir))
 
+    if args.pathToGitRepo is None:
+        print('The path to the Augustus Git repository is required, please make use of --pathToGitRepo to pass the path...')
+        sys.exit()
+
     # set working directory according to test data stored on the webserver
     workingDir = dataDir + 'cgp12way/'
 
@@ -286,10 +302,15 @@ if __name__ == '__main__':
     make_dirs(paths_shared, paths, chunks)
 
     port_test(paths_shared, paths, chunks)
+    exec_minutes = 0
     if args.jobs:
-        run_test_parallel(paths_shared, paths, chunks, jobs=args.jobs)
+        exec_minutes = run_test_parallel(paths_shared, paths, chunks, jobs=args.jobs)
     else:
-        run_test_parallel(paths_shared, paths, chunks)
+        exec_minutes = run_test_parallel(paths_shared, paths, chunks)
 
     if args.eval:
         run_evaluate_global(paths_shared, paths, chunks)
+
+    # collect commit information for database storage
+    info = util.commit_info(args.pathToGitRepo)
+    util.store_additional_data(info[1], info[0], exec_minutes, workingDir + 'test_version_data.json')
