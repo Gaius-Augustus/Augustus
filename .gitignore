@@ -79,3 +79,7 @@ tests/longrunning/cgp/data/cgp12way.tar.gz
 config/species/test_aug_dev_species/
 config/species/human_longrunningtest_crf/
 config/species/human_longrunningtest_hmm/
+
+# ignore python bytecode
+__pycache__
+*.pyc
