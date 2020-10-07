@@ -144,6 +144,10 @@ def analyze_folder(folder):
 
 
 if __name__ == '__main__':
+    if args.path is None:
+        print('Path to data folder containing eval files required, please make use of --path to pass the path...')
+        sys.exit()
+
     if os.path.isdir(args.path):
         analyze_folder(args.path)
     else:
