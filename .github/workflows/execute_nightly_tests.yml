@@ -15,6 +15,8 @@ on:
 env:
   TOOLDIR: /data/tools
   PERL5LIB: /data/eval
+  DB_USER: ${{ secrets.TEST_DB_USER }}
+  DB_PASSWD: ${{ secrets.TEST_DB_PASSWD }}
 
 jobs:
   longrunning_test:
@@ -45,7 +47,9 @@ jobs:
       run: ./extract_accuracy_values.py --path single_genome/output/eval
       working-directory: tests/longrunning/
 
-    # TODO: write single genome output to database
+    - name: Write to influxdb (single genome test case)
+      run: ./write_to_influx.py --dbname testresults --dbhost localhost --dbport 8086 --dbuser $DB_USER --dbpasswd $DB_PASSWD --pathToDataDir single_genome/output/ --mode single
+      working-directory: tests/longrunning/
 
     - name: Execute cgp test case
       run: ./executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval --augustusDir ../../../ --dataDir data --evalDir /data/eval --jobs 8 --pathToGitRepo ../../../.git
@@ -55,4 +59,6 @@ jobs:
       run: ./extract_accuracy_values.py --path cgp/data/cgp12way/ACCURACY
       working-directory: tests/longrunning/
 
-    # TODO: write cgp output to database
+    - name: Write to influxdb (cgp test case)
+      run: ./write_to_influx.py --dbname testresults --dbhost localhost --dbport 8086 --dbuser $DB_USER --dbpasswd $DB_PASSWD --pathToDataDir cgp/data/cgp12way/ --mode cgp
+      working-directory: tests/longrunning/
