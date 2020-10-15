@@ -382,10 +382,11 @@ sub train{
 		   "$configDir/$metaName"], ["$workDir/training/optimize.out", "$configDir/$paraName"])){
 	chdir "$workDir/training/" or die ("Can not chdir to $workDir/training/.\n");
 	$string=find("optimize_augustus.pl");
+	my $optcpus = ($cpus > 8) ? 8 : $cpus;
 	if($t_b_o==0){
-	    $cmdString="perl $string --cpus=$cpus --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --metapars=$configDir/$metaName > optimize.out";
+	    $cmdString="perl $string --cpus=$optcpus --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --metapars=$configDir/$metaName > optimize.out";
 	} else{
-	    $cmdString="perl $string --cpus=$cpus --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --onlytrain=$workDir/training/training.gb.onlytrain --metapars=$configDir/$metaName > optimize.out";
+	    $cmdString="perl $string --cpus=$optcpus --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --onlytrain=$workDir/training/training.gb.onlytrain --metapars=$configDir/$metaName > optimize.out";
 	}
 	print "1 Optimizing meta parameters of AUGUSTUS\n" if ($verbose>=1);
 	print "2 Executing \"$cmdString\" ".(scalar localtime())." ..." if ($verbose>=2);
@@ -726,7 +727,8 @@ sub trainWithUTR{
     if (!uptodate(["train.gb", "onlytrain.gb"], ["optimize.utr.out"])){
 	$string=find("optimize_augustus.pl");
 	print "3 Found script $string.\n" if ($verbose>=3);
-	$perlCmdString="perl $string --cpus=$cpus --rounds=$optrounds --species=$species --trainOnlyUtr=1 --onlytrain=onlytrain.gb  --metapars=$configDir/$metaUtrName train.gb --UTR=on > optimize.utr.out";
+	my $optcpus = ($cpus > 8) ? 8 : $cpus;
+	$perlCmdString="perl $string --cpus=$optcpus --rounds=$optrounds --species=$species --trainOnlyUtr=1 --onlytrain=onlytrain.gb  --metapars=$configDir/$metaUtrName train.gb --UTR=on > optimize.utr.out";
 	print "1 Now optimizing meta parameters of AUGUSTUS for the UTR model." .
 	    " This will likely run for a long time..\n" if ($verbose>=1 && $optrounds > 0);
 	print "1 Running \"$perlCmdString\" ".(scalar localtime())." ..." if ($verbose>=1);
