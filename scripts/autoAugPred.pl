@@ -166,12 +166,14 @@ if($noninteractive){
     if (@dopreds){
 	if ($singleCPU){
 	    chdir "$workDir/shells/";
+        my $sumStatus = 0;
         if ($cpus<=1){
             print "1 running augustus jobs aug" . join(" aug", @dopreds) . " sequentially now\n" if ($verbose >= 1);
             for (my $i=1; $i <= $splitN; $i++){
                 print "2 running aug$i ".(scalar localtime())." ..." if ($verbose >= 2);
-                system ("./aug$i");
-                print " Finished! ".(scalar localtime())."\n" if ($verbose >= 2);
+                my $status = system ("./aug$i");
+                $sumStatus = $sumStatus + $status;
+                print " Finished! status=$status ".(scalar localtime())."\n" if ($verbose >= 2);
             }
         }
         else {
@@ -187,8 +189,9 @@ if($noninteractive){
                 for (my $i=1; $i <= $splitN; $i++){
                     my $pid = $pm->start and next; # fork and return the pid for the child:
                     print "2 running aug$i parallel ".(scalar localtime())." ...\n" if ($verbose >= 2);
-                    system ("./aug$i");
-                    print "2 finished aug$i ".(scalar localtime())."\n" if ($verbose >= 2);
+                    my $status = system ("./aug$i");
+                    $sumStatus = $sumStatus + $status;
+                    print "2 finished aug$i status=$status ".(scalar localtime())."\n" if ($verbose >= 2);
                     $pm->finish; # terminate the child process
                 }
                 $pm->wait_all_children;
@@ -202,11 +205,13 @@ if($noninteractive){
                     }
                     $cmdString .= "wait ";
                     print "2 running $cmdString ".(scalar localtime())." ..." if ($verbose >= 2);
-                    system ($cmdString);
-                    print " Finished! ".(scalar localtime())."\n" if ($verbose >= 2);
+                    my $status = system ($cmdString);
+                    $sumStatus = $sumStatus + $status;
+                    print " Finished! status=$status ".(scalar localtime())."\n" if ($verbose >= 2);
                 }
             }
       }
+      die("Failed to run all augustus jobs.\n") if ($sumStatus > 0);
 	    print "1 done with augustus jobs\n" if ($verbose >= 1);
 	} else {
 	    print "\nPlease start the augustus jobs $workDir/shells/aug* manually now.\n";
