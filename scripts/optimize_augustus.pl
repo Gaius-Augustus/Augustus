@@ -467,8 +467,7 @@ if ( !$cgp ) {
     # create training sets for cross-validation (parallel version)
     if ( $cmdpars{'cpus'} > 1 ) {
         if ( $cmdpars{'cpus'} > $cmdpars{"kfold"} ) {
-            print STDERR
-                "WARNING: parameter --cpus has value $cmdpars{'cpus'} but parameter --kfold has value $cmdpars{'kfold'}. --kfold limits the number of --cpus that can be used. Will not use only $cmdpars{'kfold'} CPUs. Please abort and restart with --kfold=$cmdpars{'cpus'} to really use that number of CPUs!\n";
+            print "WARNING: parameter --cpus has value $cmdpars{'cpus'} but parameter --kfold has value $cmdpars{'kfold'}. --kfold limits the number of --cpus that can be used. Will use only $cmdpars{'kfold'} CPUs. Please abort and restart with --kfold=$cmdpars{'cpus'} to really use that number of CPUs!\n";
         }
         for ( my $k = 1; $k <= $cmdpars{"kfold"}; $k++ ) {
 
