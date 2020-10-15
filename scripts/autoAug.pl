@@ -549,9 +549,10 @@ sub construct_training_set{
     if (!uptodate(["$pasaDBname.assemblies.fasta.transdecoder.genome.gff3"], ["trainingSetComplete.gff"])){
 	print "3 cd ../training\n" if ($verbose>=3);
 	chdir "../training" or die ("Could not change directory to training!\n");
-	$cmdString = "grep complete ../pasa/$pasaDBname.assemblies.fasta.transdecoder.cds | perl -pe ".'\'s/>(\S+).*/$1\$/\'';
-	print "3 $cmdString 1> pasa.complete.lst\n" if ($verbose>=3);
-	system("$cmdString 1> pasa.complete.lst")==0 or die("\nfailed to execute $cmdString\n");
+	$cmdString = "grep complete ../pasa/$pasaDBname.assemblies.fasta.transdecoder.cds | perl -pe ".'\'s/>(\S+).*/$1\$/\' | perl -pe \'s#\\.#\\\\.#g\' 1> pasa.complete.lst';
+	# lines in file pasa.complete.lst are later used as regex in grep - so all metacharachters have to be escaped (currently only for done for dots as PASA uses no other metacharachters)
+	print "3 $cmdString\n" if ($verbose>=3);
+	system("$cmdString")==0 or die("\nfailed to execute $cmdString\n");
 	if (! -e "pasa.complete.lst" || -z "pasa.complete.lst"){
             die ("PASA has not constructed any complete training gene. Training aborted because of insufficient data.\n");
         }
