@@ -262,8 +262,8 @@ sub train{
 	die("Number of training genes is with $counter_gen too low (at least 100 genes required)! Training aborted.\n");
     }
 
-    # stop Pipeline if the number of sequences is lower than 3 (training.gb will be spĺitted in 3 parts)
-    if ($counter_seq < 3) {
+    # stop Pipeline if the number of sequences is lower than 100
+    if ($counter_seq < 100) {
         my $trainingsetName = basename($trainingset);
         die("AUGUSTUS training expects a GenBank training gene structure file with one gene per locus.\n"
             ."$trainingsetName has $counter_gen genes and only $counter_seq loci. Training aborted.\n"
