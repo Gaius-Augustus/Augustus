@@ -262,8 +262,8 @@ sub train{
 	die("Number of training genes is with $counter_gen too low (at least 100 genes required)! Training aborted.\n");
     }
 
-    # stop Pipeline if the number of sequences is lower than 3 (training.gb will be spĺitted in 3 parts)
-    if ($counter_seq < 3) {
+    # stop Pipeline if the number of sequences is lower than 100
+    if ($counter_seq < 100) {
         my $trainingsetName = basename($trainingset);
         die("AUGUSTUS training expects a GenBank training gene structure file with one gene per locus.\n"
             ."$trainingsetName has $counter_gen genes and only $counter_seq loci. Training aborted.\n"
@@ -382,10 +382,11 @@ sub train{
 		   "$configDir/$metaName"], ["$workDir/training/optimize.out", "$configDir/$paraName"])){
 	chdir "$workDir/training/" or die ("Can not chdir to $workDir/training/.\n");
 	$string=find("optimize_augustus.pl");
+	my $optcpus = ($cpus > 8) ? 8 : $cpus;
 	if($t_b_o==0){
-	    $cmdString="perl $string --cpus=$cpus --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --metapars=$configDir/$metaName > optimize.out";
+	    $cmdString="perl $string --cpus=$optcpus --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --metapars=$configDir/$metaName > optimize.out";
 	} else{
-	    $cmdString="perl $string --cpus=$cpus --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --onlytrain=$workDir/training/training.gb.onlytrain --metapars=$configDir/$metaName > optimize.out";
+	    $cmdString="perl $string --cpus=$optcpus --rounds=$optrounds --species=$species $workDir/training/training.gb.train.test --onlytrain=$workDir/training/training.gb.onlytrain --metapars=$configDir/$metaName > optimize.out";
 	}
 	print "1 Optimizing meta parameters of AUGUSTUS\n" if ($verbose>=1);
 	print "2 Executing \"$cmdString\" ".(scalar localtime())." ..." if ($verbose>=2);
@@ -614,6 +615,7 @@ sub trainWithUTR{
 	close(TEMP1);
 	if($count>=150){$m=150}  else {$m=$count};
 	if($count<50){
+		print STDERR "\n";
 		die( "ERROR: Number of UTR training examples is smaller than 50. Abort UTR training. If this is the only error message, the AUGUSTUS parameters for your species were optimized ok, but you are lacking UTR parameters. Do not attempt to predict genes with UTRs for this species using the current parameter set!\n");
 		exit;
 	}
@@ -726,7 +728,8 @@ sub trainWithUTR{
     if (!uptodate(["train.gb", "onlytrain.gb"], ["optimize.utr.out"])){
 	$string=find("optimize_augustus.pl");
 	print "3 Found script $string.\n" if ($verbose>=3);
-	$perlCmdString="perl $string --cpus=$cpus --rounds=$optrounds --species=$species --trainOnlyUtr=1 --onlytrain=onlytrain.gb  --metapars=$configDir/$metaUtrName train.gb --UTR=on > optimize.utr.out";
+	my $optcpus = ($cpus > 8) ? 8 : $cpus;
+	$perlCmdString="perl $string --cpus=$optcpus --rounds=$optrounds --species=$species --trainOnlyUtr=1 --onlytrain=onlytrain.gb  --metapars=$configDir/$metaUtrName train.gb --UTR=on > optimize.utr.out";
 	print "1 Now optimizing meta parameters of AUGUSTUS for the UTR model." .
 	    " This will likely run for a long time..\n" if ($verbose>=1 && $optrounds > 0);
 	print "1 Running \"$perlCmdString\" ".(scalar localtime())." ..." if ($verbose>=1);
