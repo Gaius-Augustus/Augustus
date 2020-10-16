@@ -21,12 +21,9 @@ parser.add_argument('-m', '--mode', help='the testcase mode: single or cgp.')
 args = parser.parse_args()
 
 
-def write(datadir, mode, drop=False):
+def write(datadir, mode):
     client = InfluxDBClient(host=args.dbhost, port=args.dbport,
                             username=args.dbuser, password=args.dbpasswd, database=args.dbname)
-
-    if drop:
-        client.drop_measurement('qualitymetrics')
 
     with open(datadir + 'test_version_data.json') as json_file:
         version_data = json.load(json_file)
@@ -73,9 +70,6 @@ def expand_dir(path):
 
 
 if __name__ == '__main__':
-    # drops the mesurement 'qualitymetrics' before writing
-    # write(drop=True) # requires privilege to drop mesurement
-
     if args.dbname is None:
         print('The database to use is required, please make use of --dbname to pass the name of the database...')
         sys.exit()
