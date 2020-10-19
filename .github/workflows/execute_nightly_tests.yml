@@ -2,9 +2,10 @@
 # longrunning test cases
 name: Execute AUGUSTUS longrunning test cases
 
-schedule:
-  # execute workflow daily at 23:30
-  - cron:  '30 23 * * *'
+on:
+  schedule:
+    # execute workflow daily at 23:30
+    - cron:  '30 23 * * *'
 
 env:
   TOOLDIR: /data/tools
