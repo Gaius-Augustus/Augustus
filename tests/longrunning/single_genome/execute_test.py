@@ -5,7 +5,7 @@ import argparse
 import datetime
 import sys
 
-# import util script from parent directory 
+# import util script from parent directory
 sys.path.append('..')
 import lr_util as util
 
@@ -31,7 +31,8 @@ def execute_test():
 def analyze_commit():
     info = util.commit_info(args.pathToGitRepo)
     exec_minutes = execute_test()
-    util.store_additional_data(info[1], info[0], exec_minutes, 'output/test_version_data.json')
+    util.store_additional_data(
+        info[1], info[0], exec_minutes, 'output/test_version_data.json')
 
 
 if __name__ == '__main__':

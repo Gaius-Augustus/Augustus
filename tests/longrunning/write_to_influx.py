@@ -17,7 +17,7 @@ parser.add_argument('-w', '--dbpasswd',
                     help='password of the given database user.')
 parser.add_argument('-a', '--pathToDataDir',
                     help='path to the data directory.')
-parser.add_argument('-m', '--mode', help='the testcase mode: single or cgp.')                                    
+parser.add_argument('-m', '--mode', help='the testcase mode: single or cgp.')
 args = parser.parse_args()
 
 
@@ -39,7 +39,7 @@ def write(datadir, mode):
 
             # do not save the execution time as tag
             metric_data['execution_time'] = version_data['execution_time']
-            
+
             if mode == 'single':
                 testcase = os.path.basename(metric_file).replace('.json', '')
             else:
@@ -64,7 +64,7 @@ def write(datadir, mode):
 
 def expand_dir(path):
     tmp = path
-    if len(path)>0 and path[len(path)-1] != '/':
+    if len(path) > 0 and path[len(path)-1] != '/':
         tmp += '/'
     return tmp
 
@@ -98,10 +98,10 @@ if __name__ == '__main__':
     if args.pathToDataDir is None:
         print('The path to the data directory is required, please make use of --pathToDataDir to pass the path...')
         sys.exit()
-    
+
     datadir = expand_dir(args.pathToDataDir)
     if not os.path.isdir(args.pathToDataDir):
-        print('Given data folder ' +  datadir + ' not found!')
+        print('Given data folder ' + datadir + ' not found!')
         sys.exit()
 
     if not (args.mode == 'single' or args.mode == 'cgp'):
