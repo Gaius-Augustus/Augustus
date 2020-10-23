@@ -11,6 +11,8 @@ For the WSL 2 a Windows 10, updated to version 2004, Build 19041 or higher, is r
 
 To use the WSL 2 on your Windows machine the optional Windows features "Windows Subsystem for Linux" and  "Virtual Machine Platform" have to be enabled. To do this open PowerShell as Administrator and run the following commands.
 
+To run PowerShell with administrative privileges click **Start**, type **PowerShell**, right-click **Windows PowerShell**, and then click **Run as administrator**.
+
     dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
     dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
 
