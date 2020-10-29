@@ -16,6 +16,7 @@ import aug_comparator as comp
 # folder and compares the current results with reference results
 # if the option --compare is set. It is expected that both results
 # are identical for a successful test.
+# This script must be called from "tests/examples_test"!
 # Python version 3.6 or higher is required for execution.
 
 parser = argparse.ArgumentParser(description='Execute Augustus test cases.')
@@ -31,12 +32,6 @@ parser.add_argument('--html',
 parser.add_argument('--clean',
                     action='store_true',
                     help='Remove all files created during the tests.')
-parser.add_argument(
-    '--set_default_wd',
-    action='store_true',
-    help=
-    'Set the working directory to examples_test (if called from AUGUSTUS root).'
-)
 args = parser.parse_args()
 
 # only import mysql connector if testcases using mysql should be executed
@@ -784,15 +779,12 @@ def print_tc_header(tc_name):
 
 
 if __name__ == '__main__':
-    if args.set_default_wd:
-        os.chdir('tests/examples_test/')
-
     check_working_dir()
     default_wd = os.getcwd()
 
     if args.clean:
         clean()
-        if (sys.argv == 2 or (len(sys.argv) == 3 and '--set_default_wd' in sys.argv)) :
+        if (sys.argv == 2 or (len(sys.argv) == 3)) :
             # nothing else to do
             sys.exit()
 

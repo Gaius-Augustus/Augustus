@@ -40,7 +40,7 @@ release:
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
 
 test:
-	./tests/examples_test/testcases.py --compare --html --set_default_wd
+	cd tests/examples_test && ./testcases.py --compare --html
 
 unit_test:
 	cd src && ${MAKE} unittest
