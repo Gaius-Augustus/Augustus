@@ -15,11 +15,11 @@ def compare_folder(reffolder, currentfolder, html=False, outputfolder='output_ht
 
     for subdir, dirs, files in os.walk(reffolder):
         for file in files:
-            if not subdir.endswith('/'):
-                subdir += '/'
             currentdir = subdir.replace(reffolder, currentfolder)
 
-            diff = compare_files(subdir + file, currentdir + file, html=html, outputfolder=outputfolder)
+            diff = compare_files(os.path.join(subdir, file),
+                                 os.path.join(currentdir, file),
+                                 html=html, outputfolder=outputfolder)
             res += diff
 
     return res
@@ -41,7 +41,8 @@ def compare_files(reffile, currentfile, html=False, outputfolder='output_html/')
                              n=0))
 
     if html and diff:
-        generate_html(reflines, currentlines, reffile, currentfile, outputfolder)
+        generate_html(reflines, currentlines, reffile,
+                      currentfile, outputfolder)
 
     return diff
 
@@ -54,7 +55,7 @@ def generate_html(reflines, currentlines, reffile, currentfile, outputfolder):
                                         currentfile)
 
     filename = create_html_filename(reffile)
-    with open(outputfolder + filename, 'w') as html:
+    with open(os.path.join(outputfolder, filename), 'w') as html:
         html.write(diff)
 
 
@@ -76,5 +77,5 @@ def create_html_filename(name):
 
 if __name__ == '__main__':
     reference = sys.argv[1]
-    curent = sys.argv[2]
-    print(compare_files(reference, curent))
+    current = sys.argv[2]
+    print(compare_files(reference, current))
