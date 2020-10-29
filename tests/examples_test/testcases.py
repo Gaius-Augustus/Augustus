@@ -31,7 +31,7 @@ parser.add_argument('--html',
                     help='Save diff results in html file.')
 parser.add_argument('--clean',
                     action='store_true',
-                    help='Remove all files created during the tests.')
+                    help='Remove all files created during the tests. If this option is set, no tests are executed.')
 args = parser.parse_args()
 
 # only import mysql connector if testcases using mysql should be executed
@@ -53,6 +53,7 @@ def create_initial_resultdir():
     os.mkdir(os.path.join('..', resultdir))
 
 def clean(withtmpdir=True):
+    print('Removing generated test files...')
     if os.path.exists(htmldir):
         shutil.rmtree(htmldir)
 
@@ -62,13 +63,13 @@ def clean(withtmpdir=True):
     if withtmpdir and os.path.exists(tmpdir):
         shutil.rmtree(tmpdir)
 
-def check_working_dir():
+def check_working_dir(clean):
     wd = os.getcwd()
     if not (wd.endswith('tests/examples_test')):
         errstr = 'Wrong working directory!' + '\n'
         errstr += 'This script must be called from "tests/examples_test"!'
         sys.exit(errstr)
-    if not (os.path.exists(augustusbin)):
+    if not clean and not (os.path.exists(augustusbin)):
         errstr = 'Missing augustus binaries!' + '\n'
         errstr += f'The augustus binaries must be accessible in this path: "{bindir}"!'
         sys.exit(errstr)
@@ -779,14 +780,14 @@ def print_tc_header(tc_name):
 
 
 if __name__ == '__main__':
-    check_working_dir()
+    check_working_dir(args.clean)
     default_wd = os.getcwd()
 
+    # Remove only generated test files and do not execute test
+    # cases if option --clean is set.
     if args.clean:
         clean()
-        if (sys.argv == 2 or (len(sys.argv) == 3)) :
-            # nothing else to do
-            sys.exit()
+        sys.exit()
 
     create_initial_resultdir()
     TestAugustus.opt_compare = args.compare
@@ -795,7 +796,6 @@ if __name__ == '__main__':
     runner = unittest.TextTestRunner(verbosity=2)
     #print_tc_header('default test suite')
     #result = runner.run(default_test_suite())
-    #clean(False)
     print_tc_header('small test suite')
     result = runner.run(small_test_suite())
 

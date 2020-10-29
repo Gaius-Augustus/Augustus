@@ -11,6 +11,7 @@ all:
 clean:
 	cd src && ${MAKE} clean
 	cd auxprogs && ${MAKE} clean
+	cd tests/examples_test && ./testcases.py --clean
 
 INSTALLDIR = /opt/augustus-$(AUGVERSION)
 
