@@ -12,6 +12,12 @@ import gzip
 import aug_out_filter as afilter
 import aug_comparator as comp
 
+# This script executes AUGUSTUS test cases based on the examples
+# folder and compares the current results with reference results
+# if the option --compare is set. It is expected that both results
+# are identical for a successful test.
+# Python version 3.6 or higher is required for execution.
+
 parser = argparse.ArgumentParser(description='Execute Augustus test cases.')
 parser.add_argument('--mysql',
                     action='store_true',
