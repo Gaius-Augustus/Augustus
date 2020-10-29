@@ -48,9 +48,11 @@ bindir = '../../bin/'
 augustusbin = f'{bindir}augustus'
 default_wd = os.getcwd()
 
+
 def create_initial_resultdir():
     clean(False)
     os.mkdir(os.path.join('..', resultdir))
+
 
 def clean(withtmpdir=True):
     print('Removing generated test files...')
@@ -62,6 +64,7 @@ def clean(withtmpdir=True):
 
     if withtmpdir and os.path.exists(tmpdir):
         shutil.rmtree(tmpdir)
+
 
 def check_working_dir(clean):
     wd = os.getcwd()
@@ -104,7 +107,8 @@ class TestAugustus(unittest.TestCase):
 
         inputfile = os.path.join(tmpdir, 'chr2L.sm.fa.gz')
         testfile = os.path.join(tmpdir, 'chr2L.sm.fa')
-        shutil.copyfile('../../docs/tutorial2015/data/chr2L.sm.fa.gz', inputfile)
+        shutil.copyfile(
+            '../../docs/tutorial2015/data/chr2L.sm.fa.gz', inputfile)
 
         with gzip.open(inputfile, 'rb') as f_in:
             with open(testfile, 'wb') as f_out:
@@ -122,35 +126,35 @@ class TestAugustus(unittest.TestCase):
             f'--dbaccess={tmpdir}vertebrates.db', '--clean',
             f'{exampledir}cgp/human.fa'
         ],
-                    [
-                        f'{bindir}load2sqlitedb', '--species=mm9',
-                        f'--dbaccess={tmpdir}vertebrates.db', '--clean',
-                        f'{exampledir}cgp/mouse.fa'
-                    ],
-                    [
-                        f'{bindir}load2sqlitedb', '--species=bosTau4',
-                        f'--dbaccess={tmpdir}vertebrates.db', '--clean',
-                        f'{exampledir}cgp/cow.fa'
-                    ],
-                    [
-                        f'{bindir}load2sqlitedb', '--species=galGal3',
-                        f'--dbaccess={tmpdir}vertebrates.db', '--clean',
-                        f'{exampledir}cgp/chicken.fa'
-                    ],
-                    [
-                        f'{bindir}load2sqlitedb', '--noIdx', '--species=hg19',
-                        f'--dbaccess={tmpdir}vertebrates.db', '--clean',
-                        f'{exampledir}cgp/human.hints.gff'
-                    ],
-                    [
-                        f'{bindir}load2sqlitedb', '--noIdx', '--species=mm9',
-                        f'--dbaccess={tmpdir}vertebrates.db', '--clean',
-                        f'{exampledir}cgp/mouse.hints.gff'
-                    ],
-                    [
-                        f'{bindir}load2sqlitedb', '--makeIdx',
-                        f'--dbaccess={tmpdir}vertebrates.db', '--clean'
-                    ]]
+            [
+            f'{bindir}load2sqlitedb', '--species=mm9',
+            f'--dbaccess={tmpdir}vertebrates.db', '--clean',
+            f'{exampledir}cgp/mouse.fa'
+        ],
+            [
+            f'{bindir}load2sqlitedb', '--species=bosTau4',
+            f'--dbaccess={tmpdir}vertebrates.db', '--clean',
+            f'{exampledir}cgp/cow.fa'
+        ],
+            [
+            f'{bindir}load2sqlitedb', '--species=galGal3',
+            f'--dbaccess={tmpdir}vertebrates.db', '--clean',
+            f'{exampledir}cgp/chicken.fa'
+        ],
+            [
+            f'{bindir}load2sqlitedb', '--noIdx', '--species=hg19',
+            f'--dbaccess={tmpdir}vertebrates.db', '--clean',
+            f'{exampledir}cgp/human.hints.gff'
+        ],
+            [
+            f'{bindir}load2sqlitedb', '--noIdx', '--species=mm9',
+            f'--dbaccess={tmpdir}vertebrates.db', '--clean',
+            f'{exampledir}cgp/mouse.hints.gff'
+        ],
+            [
+            f'{bindir}load2sqlitedb', '--makeIdx',
+            f'--dbaccess={tmpdir}vertebrates.db', '--clean'
+        ]]
 
         print('Creating SQLite database for cgp test cases...')
 
@@ -163,36 +167,36 @@ class TestAugustus(unittest.TestCase):
             ',' + cls.dbhost + ',' + cls.dbuser + ',' + cls.dbpasswd,
             f'{exampledir}cgp/human.fa'
         ],
-                    [
-                        f'{bindir}load2db', '--species=mm9',
-                        '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' +
-                        cls.dbuser + ',' + cls.dbpasswd,
-                        f'{exampledir}cgp/mouse.fa'
-                    ],
-                    [
-                        f'{bindir}load2db', '--species=bosTau4',
-                        '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' +
-                        cls.dbuser + ',' + cls.dbpasswd,
-                        f'{exampledir}cgp/cow.fa'
-                    ],
-                    [
-                        f'{bindir}load2db', '--species=galGal3',
-                        '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' +
-                        cls.dbuser + ',' + cls.dbpasswd,
-                        f'{exampledir}cgp/chicken.fa'
-                    ],
-                    [
-                        f'{bindir}load2db', '--species=hg19',
-                        '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' +
-                        cls.dbuser + ',' + cls.dbpasswd,
-                        f'{exampledir}cgp/human.hints.gff'
-                    ],
-                    [
-                        f'{bindir}load2db', '--species=mm9',
-                        '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' +
-                        cls.dbuser + ',' + cls.dbpasswd,
-                        f'{exampledir}cgp/mouse.hints.gff'
-                    ]]
+            [
+            f'{bindir}load2db', '--species=mm9',
+            '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' +
+            cls.dbuser + ',' + cls.dbpasswd,
+            f'{exampledir}cgp/mouse.fa'
+        ],
+            [
+            f'{bindir}load2db', '--species=bosTau4',
+            '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' +
+            cls.dbuser + ',' + cls.dbpasswd,
+            f'{exampledir}cgp/cow.fa'
+        ],
+            [
+            f'{bindir}load2db', '--species=galGal3',
+            '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' +
+            cls.dbuser + ',' + cls.dbpasswd,
+            f'{exampledir}cgp/chicken.fa'
+        ],
+            [
+            f'{bindir}load2db', '--species=hg19',
+            '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' +
+            cls.dbuser + ',' + cls.dbpasswd,
+            f'{exampledir}cgp/human.hints.gff'
+        ],
+            [
+            f'{bindir}load2db', '--species=mm9',
+            '--dbaccess=' + cls.dbname + ',' + cls.dbhost + ',' +
+            cls.dbuser + ',' + cls.dbpasswd,
+            f'{exampledir}cgp/mouse.hints.gff'
+        ]]
 
         print('  -' +
               'Inserting data into MySQL database for testing purposes...')
@@ -203,7 +207,7 @@ class TestAugustus(unittest.TestCase):
     def init_db(cls, cmd_list):
         for cmd in cmd_list:
             output = TestAugustus().process(cmd)
-            #print(output)
+            # print(output)
 
     @classmethod
     def cleanup(cls):
@@ -280,7 +284,6 @@ class TestAugustus(unittest.TestCase):
                                            outputfolder=outputfolder)
             self.assertEqual(diff, '', diff)
 
-
     def get_ref_folder(self, folder_name=None, path_to_wd=None):
         if folder_name is None:
             folder_name = self._testMethodName
@@ -297,8 +300,6 @@ class TestAugustus(unittest.TestCase):
         else:
             return os.path.join(path_to_wd, resultdir, folder_name)
 
-
-
     def process(self, cmd_list, out=subprocess.PIPE):
         isFile = isinstance(out, str)
 
@@ -314,11 +315,11 @@ class TestAugustus(unittest.TestCase):
         error = p.stderr.read()
         p.stderr.close()
         self.assertEqual(error, '', error)
-        self.assertEqual(rc, 0, f'Returncode not 0! Error: {error}' )
+        self.assertEqual(rc, 0, f'Returncode not 0! Error: {error}')
 
         if isFile:
             self.assertTrue(os.path.isfile(out),
-                           'Output file was not created as expected!')
+                            'Output file was not created as expected!')
         else:
             stdout = p.stdout.read()
             p.stdout.close()
@@ -335,9 +336,9 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
 
         self.process([
-                augustusbin, '--species=human', '--UTR=on', '--softmasking=0',
-                f'{exampledir}example.fa'
-            ], testtmpfile)
+            augustusbin, '--species=human', '--UTR=on', '--softmasking=0',
+            f'{exampledir}example.fa'
+        ], testtmpfile)
 
         # filter output file
         afilter.pred(testtmpfile, testfile)
@@ -356,12 +357,13 @@ class TestAugustus(unittest.TestCase):
 
         # run augustus several times with different parameter sets
         for species in species_list:
-            testtmpfile = os.path.join(resfolder, 'aug.' + species + '.1-1M_tmp.gff')
+            testtmpfile = os.path.join(
+                resfolder, 'aug.' + species + '.1-1M_tmp.gff')
             self.process([
-                    augustusbin, '--species=' + species,
-                    f'{tmpdir}chr2L.sm.fa', '--softmasking=on',
-                    '--predictionEnd=1000000'
-                ], testtmpfile)
+                augustusbin, '--species=' + species,
+                f'{tmpdir}chr2L.sm.fa', '--softmasking=on',
+                '--predictionEnd=1000000'
+            ], testtmpfile)
 
             # filter output
             testfile = os.path.join(resfolder, 'aug.' + species + '.1-1M.gff')
@@ -381,18 +383,20 @@ class TestAugustus(unittest.TestCase):
             TestAugustus.init_test_data()
 
         for i in range(0, 3):
-            testtmpfile = os.path.join(resfolder, f'aug.nasonia.hints.{str(i)}_tmp.gff')
+            testtmpfile = os.path.join(
+                resfolder, f'aug.nasonia.hints.{str(i)}_tmp.gff')
             self.process([
-                    augustusbin, '--species=nasonia',
-                    f'{tmpdir}chr2L.sm.fa', '--softmasking=on',
-                    '--predictionStart=' + str(i * 2000000),
-                    '--predictionEnd=' + str((i + 1) * 2000000 + 50000),
-                    '--hintsfile=../../docs/tutorial2015/results/hints.gff',
-                    '--extrinsicCfgFile=extrinsic.M.RM.E.W.cfg'
-                ], testtmpfile)
+                augustusbin, '--species=nasonia',
+                f'{tmpdir}chr2L.sm.fa', '--softmasking=on',
+                '--predictionStart=' + str(i * 2000000),
+                '--predictionEnd=' + str((i + 1) * 2000000 + 50000),
+                '--hintsfile=../../docs/tutorial2015/results/hints.gff',
+                '--extrinsicCfgFile=extrinsic.M.RM.E.W.cfg'
+            ], testtmpfile)
 
             # filter output
-            testfile = os.path.join(resfolder, f'aug.nasonia.hints.{str(i)}.gff')
+            testfile = os.path.join(
+                resfolder, f'aug.nasonia.hints.{str(i)}.gff')
             afilter.pred(testtmpfile, testfile)
             os.remove(testtmpfile)
 
@@ -422,15 +426,15 @@ class TestAugustus(unittest.TestCase):
 
         # call script to initialize new species
         self.process([
-                'perl', '../../scripts/new_species.pl', '--species=' + speciesname,
-                '--AUGUSTUS_CONFIG_PATH=../../config'
-            ])
+            'perl', '../../scripts/new_species.pl', '--species=' + speciesname,
+            '--AUGUSTUS_CONFIG_PATH=../../config'
+        ])
 
         # training
         self.process([
-                f'{bindir}etraining', '../../docs/tutorial2015/results/genes.gb.train',
-                '--species=' + speciesname
-            ])
+            f'{bindir}etraining', '../../docs/tutorial2015/results/genes.gb.train',
+            '--species=' + speciesname
+        ])
 
         # test
         cmd = [
@@ -464,9 +468,9 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
 
         self.process([
-                augustusbin, f'{exampledir}autoAug/genome.fa', '--softmasking=1',
-                '--species=caenorhabditis'
-            ], testtmpfile)
+            augustusbin, f'{exampledir}autoAug/genome.fa', '--softmasking=1',
+            '--species=caenorhabditis'
+        ], testtmpfile)
 
         # filter output file
         afilter.pred(testtmpfile, testfile)
@@ -651,7 +655,6 @@ class TestAugustus(unittest.TestCase):
 
         self.cgp_with_db_execution(resfolder, reffolder, *args)
 
-
     def test_cgp_denovo_tutorial(self):
         os.chdir(default_wd)
         os.chdir('../../docs/tutorial-cgp/results/mafs')
@@ -677,7 +680,6 @@ class TestAugustus(unittest.TestCase):
             ])
 
         self.cgp_with_db_execution(resfolder, reffolder, *args)
-
 
     def test_cgp_rna_hint_tutorial(self):
         os.chdir(default_wd)
@@ -718,10 +720,10 @@ class TestAugustus(unittest.TestCase):
         os.chdir(default_wd)
         os.mkdir(resfolder)
         self.process([
-                augustusbin, '--species=human', f'--hintsfile={exampledir}hints.gff',
-                '--extrinsicCfgFile=../../config/extrinsic/extrinsic.MPE.cfg',
-                f'{exampledir}example.fa'
-            ], testtmpfile)
+            augustusbin, '--species=human', f'--hintsfile={exampledir}hints.gff',
+            '--extrinsicCfgFile=../../config/extrinsic/extrinsic.MPE.cfg',
+            f'{exampledir}example.fa'
+        ], testtmpfile)
 
         # filter output file
         afilter.pred(testtmpfile, testfile)
@@ -755,7 +757,7 @@ def small_test_suite():
     suite.addTest(TestAugustus('test_training_new_species'))
     suite.addTest(TestAugustus('test_ab_initio_prediction'))
     suite.addTest(TestAugustus('test_format_and_error_out'))
-    #suite.addTest(TestAugustus('test_alternatives_from_sampling'))
+    # suite.addTest(TestAugustus('test_alternatives_from_sampling'))
     suite.addTest(TestAugustus('test_cgp'))
     suite.addTest(TestAugustus('test_cgp_sqlite'))
     suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
