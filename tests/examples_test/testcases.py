@@ -351,7 +351,6 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
 
         species_list = ['nasonia', 'zebrafish', 'tomato']
-        proc_list = []
 
         # run augustus several times with different parameter sets
         for species in species_list:
@@ -376,7 +375,6 @@ class TestAugustus(unittest.TestCase):
         resfolder = self.get_res_folder()
         os.mkdir(resfolder)
 
-        proc_list = []
         if not os.path.isfile('data/tmp/chr2L.sm.fa'):
             TestAugustus.init_test_data()
 
@@ -421,13 +419,13 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
 
         # call script to initialize new species
-        stdout = self.process([
+        self.process([
                 'perl', '../../scripts/new_species.pl', '--species=' + speciesname,
                 '--AUGUSTUS_CONFIG_PATH=../../config'
             ])
 
         # training
-        stdout = self.process([
+        self.process([
                 f'{bindir}etraining', '../../docs/tutorial2015/results/genes.gb.train',
                 '--species=' + speciesname
             ])
@@ -489,7 +487,7 @@ class TestAugustus(unittest.TestCase):
             '--outfile=' + testtmpfile,
             '--errfile=' + resfolder + '/augustus.err'
         ]
-        stdout = self.process(cmd)
+        self.process(cmd)
 
         # filter output file
         self.assertTrue(os.path.isfile(testtmpfile),
