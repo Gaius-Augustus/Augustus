@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/Gaius-Augustus/Augustus.svg?branch=master)](https://travis-ci.org/Gaius-Augustus/Augustus)
+![Test examples](https://github.com/Gaius-Augustus/Augustus/workflows/Test%20examples/badge.svg)
 
 # Gene Prediction with AUGUSTUS
 
