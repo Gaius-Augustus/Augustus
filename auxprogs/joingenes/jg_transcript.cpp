@@ -1514,7 +1514,7 @@ void selection(list<Transcript*> &overlap, Properties &properties){
     }
   }
 
-  // delete uncomplete transcripts from gene, if there is a complete one
+  // delete incomplete transcripts from gene, if there is a complete one
   for (list<Gene*>::iterator it = genes.begin(); it != genes.end(); it++){
     bool completeExists = false;
     for (list<Transcript*>::iterator tit = (*it)->children.begin(); tit != (*it)->children.end(); tit++){
@@ -1524,18 +1524,22 @@ void selection(list<Transcript*> &overlap, Properties &properties){
       }
     }
     if (completeExists){
-      for (list<Transcript*>::iterator tit = (*it)->children.begin(); tit != (*it)->children.end(); tit++){
-	if ( !( (*tit)->tl_complete.first && (*tit)->tl_complete.second ) ){
-	  for (list<Transcript*>::iterator oit = overlap.begin(); oit != overlap.end(); oit++){
-	    if (*tit == *oit){
-	      oit = overlap.erase(oit);
-	      oit--;
-	    }
-	  }
-	  deleteTx(*tit, properties);
-	  tit--;
-	}
-      }
+        for (list<Transcript*>::iterator tit = (*it)->children.begin(); tit != (*it)->children.end(); tit++){
+            if ( !( (*tit)->tl_complete.first && (*tit)->tl_complete.second ) ){
+                for (list<Transcript*>::iterator oit = overlap.begin(); oit != overlap.end(); oit++){
+                    if (*tit == *oit){
+                        oit = overlap.erase(oit);
+                        oit--;
+                    }
+                }
+                auto tmp_tit = tit;
+                tit--;
+                deleteTx(*tmp_tit, properties); // deletes from parents'
+                // childrens list and could
+                // render tmp_tit an
+                // invalid iterator
+            }
+        }
     }
   }
 

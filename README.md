@@ -15,6 +15,8 @@
 
 AUGUSTUS is a program to find genes and their structures in one or more genomes. [More ...](docs/ABOUT.md)
 
+If you use Windows, you can use the Windows Subsystem for Linux (WSL) to use AUGUSTUS exactly as described below for Linux. How to set up the WSL for AUGUSTUS is described [here](docs/AUGUSTUS-ON-WINDOWS.md).
+
 # INSTALLATION
 
 ## Ubuntu 18.04 or later
