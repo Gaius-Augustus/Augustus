@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - master
-      - 'test-example-improvements'
   pull_request:
     branches:
       - master
