@@ -39,8 +39,8 @@ args = parser.parse_args()
 if args.mysql:
     import mysql.connector
 
-resultdir = 'examples_test_results/'
-refdir = 'examples_results/'
+resultdir = 'results/'
+refdir = 'expected_results/'
 htmldir = 'output_html/'
 tmpdir = 'data/tmp/'
 exampledir = '../../examples/'
@@ -51,7 +51,7 @@ default_wd = os.getcwd()
 
 def create_initial_resultdir():
     clean(False)
-    os.mkdir(os.path.join('..', resultdir))
+    os.mkdir(resultdir)
 
 
 def clean(withtmpdir=True):
@@ -59,8 +59,8 @@ def clean(withtmpdir=True):
     if os.path.exists(htmldir):
         shutil.rmtree(htmldir)
 
-    if os.path.exists(os.path.join('..', resultdir)):
-        shutil.rmtree(os.path.join('..', resultdir))
+    if os.path.exists(resultdir):
+        shutil.rmtree(resultdir)
 
     if withtmpdir and os.path.exists(tmpdir):
         shutil.rmtree(tmpdir)
@@ -68,9 +68,9 @@ def clean(withtmpdir=True):
 
 def check_working_dir(clean):
     wd = os.getcwd()
-    if not (wd.endswith('tests/examples_test')):
+    if not (wd.endswith('tests/examples')):
         errstr = 'Wrong working directory!' + '\n'
-        errstr += 'This script must be called from "tests/examples_test"!'
+        errstr += 'This script must be called from "tests/examples"!'
         sys.exit(errstr)
     if not clean and not (os.path.exists(augustusbin)):
         errstr = 'Missing augustus binaries!' + '\n'
@@ -288,7 +288,7 @@ class TestAugustus(unittest.TestCase):
         if folder_name is None:
             folder_name = self._testMethodName
         if path_to_wd is None:
-            return os.path.join('..', refdir, folder_name)
+            return os.path.join(refdir, folder_name)
         else:
             return os.path.join(path_to_wd, refdir, folder_name)
 
@@ -296,7 +296,7 @@ class TestAugustus(unittest.TestCase):
         if folder_name is None:
             folder_name = self._testMethodName
         if path_to_wd is None:
-            return os.path.join('..', resultdir, folder_name)
+            return os.path.join(resultdir, folder_name)
         else:
             return os.path.join(path_to_wd, resultdir, folder_name)
 
@@ -528,8 +528,8 @@ class TestAugustus(unittest.TestCase):
         self.assertEqualFolders(reffolder, resfolder)
 
     def test_cgp(self):
-        reffolder = self.get_ref_folder(path_to_wd='../../tests')
-        resfolder = self.get_res_folder(path_to_wd='../../tests')
+        reffolder = self.get_ref_folder(path_to_wd='../../tests/examples')
+        resfolder = self.get_res_folder(path_to_wd='../../tests/examples')
         testtmpfile = os.path.join(resfolder, 'output_tmp.txt')
         testfile = os.path.join(resfolder, 'output.txt')
 
@@ -625,8 +625,8 @@ class TestAugustus(unittest.TestCase):
             testname += '_mysql'
         if hints:
             testname += '_hints'
-        resfolder = self.get_res_folder(testname, '../../tests')
-        reffolder = self.get_ref_folder(testname, '../../tests')
+        resfolder = self.get_res_folder(testname, '../../tests/examples')
+        reffolder = self.get_ref_folder(testname, '../../tests/examples')
 
         cmd = [
             augustusbin,
@@ -645,7 +645,7 @@ class TestAugustus(unittest.TestCase):
                        TestAugustus.dbpasswd)
         else:
             cmd.append(
-                '--dbaccess=../../tests/examples_test/data/tmp/vertebrates.db')
+                '--dbaccess=../../tests/examples/data/tmp/vertebrates.db')
 
         if hints:
             cmd.append('--dbhints=true')
@@ -684,8 +684,8 @@ class TestAugustus(unittest.TestCase):
     def test_cgp_rna_hint_tutorial(self):
         os.chdir(default_wd)
         os.chdir('../../docs/tutorial-cgp/results/mafs')
-        reffolder = self.get_ref_folder(path_to_wd='../../../../tests')
-        resfolder = self.get_res_folder(path_to_wd='../../../../tests')
+        reffolder = self.get_ref_folder(path_to_wd='../../../../tests/examples')
+        resfolder = self.get_res_folder(path_to_wd='../../../../tests/examples')
         args = []
 
         # create command list for all alignment files
