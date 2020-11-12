@@ -5831,4 +5831,4 @@ chrI	AUGUSTUS	transcription_end_site	999559	999559	.	+	.	Parent=g162.t1
 # end gene g162
 ###
 # command line:
-# ../../bin/augustus ../../examples/autoAug/genome.fa --species=caenorhabditis --gff3=on --softmasking=1 --outfile=../examples_test_results/test_format_and_error_out/augustus_tmp.gff3 --errfile=../examples_test_results/test_format_and_error_out/augustus.err
+# ../../bin/augustus ../../examples/autoAug/genome.fa --species=caenorhabditis --gff3=on --softmasking=1 --outfile=results/test_format_and_error_out/augustus_tmp.gff3 --errfile=results/test_format_and_error_out/augustus.err

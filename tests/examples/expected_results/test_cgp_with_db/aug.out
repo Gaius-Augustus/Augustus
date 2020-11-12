@@ -4,7 +4,7 @@ species 1	mm9
 species 2	bosTau4
 species 3	galGal3
 # assuming an SQLite database
-Trying to open database ../../tests/examples_test/data/tmp/vertebrates.db
+Trying to open database ../../tests/examples/data/tmp/vertebrates.db
 Running prediction...
 # human version. Using default transition matrix.
 # setting temperature to 3 (for sampling)
@@ -49,4 +49,4 @@ round	iter	step_size	primal	dual	#inconsistencies
 0	4	1.192093046e-07	127.1016017	127.1016093	16
 dual decomposition reduced initial duality gap of 30.67842727 to 0 (to 0%)
 # command line:
-# ../../bin/augustus --species=human --speciesfilenames=genomes.tbl --treefile=tree.nwk --alnfile=aln.maf --softmasking=0 --alternatives-from-evidence=0 --/CompPred/outdir=../../tests/examples_test_results/test_cgp_with_db/pred --dbaccess=../../tests/examples_test/data/tmp/vertebrates.db
+# ../../bin/augustus --species=human --speciesfilenames=genomes.tbl --treefile=tree.nwk --alnfile=aln.maf --softmasking=0 --alternatives-from-evidence=0 --/CompPred/outdir=../../tests/examples/results/test_cgp_with_db/pred --dbaccess=../../tests/examples/data/tmp/vertebrates.db
