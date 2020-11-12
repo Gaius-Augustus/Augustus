@@ -11,7 +11,7 @@ all:
 clean:
 	cd src && ${MAKE} clean
 	cd auxprogs && ${MAKE} clean
-	cd tests/examples_test && ./testcases.py --clean
+	cd tests/examples && ./testcases.py --clean
 
 INSTALLDIR = /opt/augustus-$(AUGVERSION)
 
@@ -41,7 +41,7 @@ release:
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
 
 test:
-	cd tests/examples_test && ./testcases.py --compare --html
+	cd tests/examples && ./testcases.py --compare --html
 
 unit_test:
 	cd src && ${MAKE} unittest
