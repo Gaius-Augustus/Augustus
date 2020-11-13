@@ -1,0 +1,64 @@
+# ----- prediction on sequence number 1 (length = 9453, name = HS04636) -----
+#
+# Predicted genes for sequence number 1 on both strands
+# start gene g1
+HS04636	AUGUSTUS	gene	836	8857	1	+	.	g1
+HS04636	AUGUSTUS	transcript	836	8857	.	+	.	g1.t1
+HS04636	AUGUSTUS	tss	836	836	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	exon	836	1017	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	start_codon	966	968	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	966	1017	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	1818	1934	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	exon	1818	1934	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	2055	2198	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	exon	2055	2198	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	2852	2995	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	exon	2852	2995	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	3426	3607	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	exon	3426	3607	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	4340	4423	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	exon	4340	4423	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	4543	4789	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	exon	4543	4789	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	5072	5358	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	exon	5072	5358	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	5860	6007	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	exon	5860	6007	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	6494	6903	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	exon	6494	8857	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	stop_codon	6901	6903	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	tts	8857	8857	.	+	.	transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MLARALLLCAVLALSHTANPCCSHPCQNRGVCMSVGFDQYKCDCTRTGFYGENCSTPEFLTRIKLFLKPTPNTVHYIL
+# THFKGFWNVVNNIPFLRNAIMSYVLTSRSHLIDSPPTYNADYGYKSWEAFSNLSYYTRALPPVPDDCPTPLGVKGKKQLPDSNEIVEKLLLRRKFIPD
+# PQGSNMMFAFFAQHFTHQFFKTDHKRGPAFTNGLGHGVDLNHIYGETLARQRKLRLFKDGKMKYQIIDGEMYPPTVKDTQAEMIYPPQVPEHLRFAVG
+# QEVFGLVPGLMMYATIWLREHNRVCDVLKQEHPEWGDEQLFQTSRLILIGETIKIVIEDYVQHLSGYHFKLKFDPELLFNKQFQYQNRIAAEFNTLYH
+# WHPLLPDTFQIHDQKYNYQQFIYNNSILLEHGITQFVESFTRQIAGRVAGGRNVPPAVQKVSQASIDQSRQMKYQSFNEYRKRFMLKPYESFEELTGE
+# KEMSAELEALYGDIDAVELYPALLVEKPRPDAIFGETMVEVGAPFSLKGLMGNVICSPAYWKPSTFGGEVGFQIINTASIQSLICNNVKGCPFTSFSV
+# PDPELIKTVTINASSSRSGLDDINPTVLLKERSTEL]
+# end gene g1
+###
+#
+# ----- prediction on sequence number 2 (length = 2344, name = HS08198) -----
+#
+# Predicted genes for sequence number 2 on both strands
+# start gene g2
+HS08198	AUGUSTUS	gene	86	2344	1	+	.	g2
+HS08198	AUGUSTUS	transcript	86	2344	.	+	.	g2.t1
+HS08198	AUGUSTUS	tss	86	86	.	+	.	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	exon	86	582	.	+	.	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	start_codon	445	447	.	+	0	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	CDS	445	582	.	+	0	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	CDS	812	894	.	+	0	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	exon	812	894	.	+	.	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	CDS	1053	1123	.	+	1	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	exon	1053	1123	.	+	.	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	CDS	1208	1315	.	+	2	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	exon	1208	1315	.	+	.	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	CDS	1587	1688	.	+	2	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	exon	1587	1688	.	+	.	transcript_id "g2.t1"; gene_id "g2";
+# protein sequence = [MLPPGTATLLTLLLAAGSLGQKPQRPRRPASPISTIQPKANFDAQQEQGHRAEATTLHVAPQGTAMAVSTFRKLDGIC
+# WQVRQLYGDTGVLGRFLLQARGARGAVHVVVAETDYQSFAVLYLERAGQLSVKLYARSLPVSDSVLSGFEQRVQEAHLTEDQIFYFPKY]
+# end gene g2
+###
+# command line:
+# ../../bin/augustus --species=human --UTR=on --softmasking=0 ../../examples/example.fa

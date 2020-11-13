@@ -1,0 +1,52 @@
+-------Speciesnames:--------
+species 0	hg19
+species 1	mm9
+species 2	bosTau4
+species 3	galGal3
+# assuming a MySQL database
+# Opening database connection using connection data "aug_vertebrates,127.0.0.1,augustus,aug_passwd"...	DB connection OK.
+Running prediction...
+# human version. Using default transition matrix.
+# setting temperature to 3 (for sampling)
+number of nodes: 1
+number of signatures=0. First 10 signatures are:
+numAli	sumCumFragLen	sumAliLen	depth	color	signature
+found 0 paths
+Have 0 collisions.
+MILP objective=0
+removing alignments
+0 geneRanges=alignments (0%) and 0 / 58758 = 0% of aligned bases and 0 / 106809 = 0% of aligment-range-covered bases were deleted because of too much redundancy.
+findGeneRanges reduced the number of aligments from 313 to 1 (to 0.319%).
+processing gene range number 1
+hg19.chr21	+	0	32084
+mm9.chr16	+	0	25967
+bosTau4.chr1	+	0	30874
+galGal3.chr1	+	0	22282
+Found 2566 ECs on species hg19
+Found 2217 ECs on species mm9
+Found 2643 ECs on species bosTau4
+Found 2088 ECs on species galGal3
+OEs in this gene range must have at least 2 ECs
+Found 141 ortho exons
+building Graph for hg19
+building Graph for mm9
+building Graph for bosTau4
+building Graph for galGal3
+computing omega for each ortho exon.
+--- processing ortho exons on forward strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+--- processing ortho exons on reverse strand ---
+generating codon alignment
+Merge processing: Traverse alignment left to right
+compute omegas done
+dual decomposition on gene Range 1
+round	iter	step_size	primal	dual	#inconsistencies
+0	0	0	96.42318205	137.9112869	4
+0	1	10.37202622	127.1016117	168.5897175	34
+0	2	1.220238405	127.1016026	149.0658933	16
+0	3	1.372767597	127.1016041	127.1016136	16
+0	4	1.192093046e-07	127.1016017	127.1016093	16
+dual decomposition reduced initial duality gap of 30.67842727 to 0 (to 0%)
+# command line:
+# ../../bin/augustus --species=human --speciesfilenames=genomes.tbl --treefile=tree.nwk --alnfile=aln.maf --softmasking=0 --alternatives-from-evidence=0 --/CompPred/outdir=../../tests/examples/results/test_cgp_with_db_mysql/pred --dbaccess=aug_vertebrates,127.0.0.1,augustus,aug_passwd

@@ -7,7 +7,9 @@ on:
   push:
     branches:
       - master
-      - 'restructure_tests'
+  pull_request:
+    branches:
+      - master
 
 env:
   TOOLDIR: '${{ github.workspace }}/required_tools'
@@ -45,11 +47,11 @@ jobs:
 
     # Install required dependencies
     - name: Install dependencies
-      run: sudo ./tests/examples_test/installDependencies
+      run: sudo ./tests/examples/installDependencies
 
     # Build tools
     - name: Clone and build tools
-      run: ./tests/examples_test/buildTools
+      run: ./tests/examples/buildTools
 
     # Build AUGUSTUS
     - name: Build AUGUSTUS
@@ -58,7 +60,7 @@ jobs:
     # Test AUGUSTUS
     - name: Test AUGUSTUS (examples folder)
       run: ./testcases.py --compare --mysql --html
-      working-directory: tests/examples_test/
+      working-directory: tests/examples/
 
     # Upload html diffs of failed test cases 
     - name: Upload HTML diffs
@@ -66,4 +68,4 @@ jobs:
       if: failure()
       with:
         name: html-diffs
-        path: tests/examples_test/output_html/
+        path: tests/examples/output_html/

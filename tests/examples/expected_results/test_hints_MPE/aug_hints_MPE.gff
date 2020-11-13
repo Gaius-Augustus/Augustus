@@ -1,0 +1,72 @@
+# ----- prediction on sequence number 1 (length = 9453, name = HS04636) -----
+#
+# Predicted genes for sequence number 1 on both strands
+# start gene g1
+HS04636	AUGUSTUS	gene	966	7633	1	+	.	g1
+HS04636	AUGUSTUS	transcript	966	7633	.	+	.	g1.t1
+HS04636	AUGUSTUS	start_codon	966	968	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	966	1017	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	1818	1934	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	2055	2198	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	2852	2995	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	3426	3607	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	4340	4423	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	4543	4789	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	5072	5358	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	5860	6007	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	6494	6554	.	+	2	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	CDS	7627	7633	.	+	1	transcript_id "g1.t1"; gene_id "g1";
+HS04636	AUGUSTUS	stop_codon	7631	7633	.	+	0	transcript_id "g1.t1"; gene_id "g1";
+# protein sequence = [MLARALLLCAVLALSHTANPCCSHPCQNRGVCMSVGFDQYKCDCTRTGFYGENCSTPEFLTRIKLFLKPTPNTVHYIL
+# THFKGFWNVVNNIPFLRNAIMSYVLTSRSHLIDSPPTYNADYGYKSWEAFSNLSYYTRALPPVPDDCPTPLGVKGKKQLPDSNEIVEKLLLRRKFIPD
+# PQGSNMMFAFFAQHFTHQFFKTDHKRGPAFTNGLGHGVDLNHIYGETLARQRKLRLFKDGKMKYQIIDGEMYPPTVKDTQAEMIYPPQVPEHLRFAVG
+# QEVFGLVPGLMMYATIWLREHNRVCDVLKQEHPEWGDEQLFQTSRLILIGETIKIVIEDYVQHLSGYHFKLKFDPELLFNKQFQYQNRIAAEFNTLYH
+# WHPLLPDTFQIHDQKYNYQQFIYNNSILLEHGITQFVESFTRQIAGRVAGGRNVPPAVQKVSQASIDQSRQMKYQSFNEYRKRFMLKPYESFEELTGE
+# KEMSAELEALYGDIDAVELV]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 4.76
+# CDS exons: 1/11
+#      P:   1
+# CDS introns: 0/10
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 2
+#      E:   1
+#      P:   1
+# incompatible hint groups: 2
+#      M:   1
+#      P:   1
+# end gene g1
+###
+#
+# ----- prediction on sequence number 2 (length = 2344, name = HS08198) -----
+#
+# Predicted genes for sequence number 2 on both strands
+# start gene g2
+HS08198	AUGUSTUS	gene	445	2344	1	+	.	g2
+HS08198	AUGUSTUS	transcript	445	2344	.	+	.	g2.t1
+HS08198	AUGUSTUS	start_codon	445	447	.	+	0	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	CDS	445	582	.	+	0	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	CDS	758	894	.	+	0	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	CDS	1053	1123	.	+	1	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	CDS	1208	1315	.	+	2	transcript_id "g2.t1"; gene_id "g2";
+HS08198	AUGUSTUS	CDS	1587	1688	.	+	2	transcript_id "g2.t1"; gene_id "g2";
+# protein sequence = [MLPPGTATLLTLLLAAGSLGQKPQRPRRPASPISTIQPKANFDAQQFAGTWLLVAVGSACRFLQEQGHRAEATTLHVA
+# PQGTAMAVSTFRKLDGICWQVRQLYGDTGVLGRFLLQARGARGAVHVVVAETDYQSFAVLYLERAGQLSVKLYARSLPVSDSVLSGFEQRVQEAHLTE
+# DQIFYFPKY]
+# Evidence for and against this transcript:
+# % of transcript supported by hints (any source): 10
+# CDS exons: 0/5
+# CDS introns: 1/5
+#      M:   1
+# 5'UTR exons and introns: 0/0
+# 3'UTR exons and introns: 0/0
+# hint groups fully obeyed: 2
+#      E:   1
+#      M:   1
+# incompatible hint groups: 1
+#      M:   1
+# end gene g2
+###
+# command line:
+# ../../bin/augustus --species=human --hintsfile=../../examples/hints.gff --extrinsicCfgFile=../../config/extrinsic/extrinsic.MPE.cfg ../../examples/example.fa

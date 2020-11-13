@@ -63,10 +63,10 @@ src/unittests/unittests
 .vscode
 
 # ignore generated test output
-tests/examples_test_results/
+tests/examples/results/
 
 # ignore tmp test case data
-tests/examples_test/data/tmp/
+tests/examples/data/tmp/
 
 # ignore longrunning test data and output files
 tests/longrunning/single_genome/data/
