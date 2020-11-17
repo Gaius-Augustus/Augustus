@@ -6,9 +6,9 @@ Convert bam files to wiggle files for usage with AUGUSTUS (exonpart hints)
 
 ### Install dependencies
     
-- HTSlib version 1.7 or higher
+- HTSlib version 1.10 or higher
   
-  - For Ubuntu 18.04 and Debian 10 or later:
+  - For Ubuntu 20.04 and Debian 11 or later:
     ```
       sudo apt install samtools libhts-dev
     ```
