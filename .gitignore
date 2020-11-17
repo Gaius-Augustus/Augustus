@@ -67,6 +67,7 @@ tests/examples/results/
 
 # ignore tmp test case data
 tests/examples/data/tmp/
+tests/auxprogs/*/tmp
 
 # ignore longrunning test data and output files
 tests/longrunning/single_genome/data/
