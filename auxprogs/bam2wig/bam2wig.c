@@ -16,8 +16,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "htslib/bgzf.h"
-#include "htslib/sam.h"
+#include "bgzf.h"
+#include "sam.h"
 
 // Auxiliary data structure
 typedef struct {     
@@ -66,8 +66,7 @@ int main(int argc, char *argv[])
 	char *filename=NULL;
 	char *trackname=NULL;
 
-	int n, tid, *n_plp;
-	hts_pos_t beg, end, pos;
+	int n, tid, *n_plp, beg, end, pos;
 	const bam_pileup1_t **plp;
 	char *reg = 0; // specified region
 	bam_hdr_t *h = 0; // BAM header of the 1st input
@@ -95,8 +94,8 @@ int main(int argc, char *argv[])
 
 	// Initializing auxiliary data structures
 	data = calloc(1, sizeof(void*)); // data[0] is array for just one BAM file
-	// set the default region to the maximum value of hts_pos_t
-	beg = 0; end = HTS_POS_MAX; tid = -1;  
+	// set the default region. left-shift "end" by appending 30 zeros (i.e. end=1073741824) 
+	beg = 0; end = 1<<30; tid = -1;
 
 	// Opening BAM file
 	char *oldTargetName = "", *newTargetName;
@@ -105,14 +104,26 @@ int main(int argc, char *argv[])
 	data[0]->fp = bgzf_open(filename, "r"); 			// file handler of BAM
 	data[0]->min_mapQ = 0;                    		// mapQ is not used by this app
 	// Reading BAM header
-	bam_hdr_t *htmp = 0;							 
+	bam_hdr_t *htmp = 0;
 	htmp = bam_hdr_read(data[0]->fp);         	
 
 
 	// parsing region
 	if (reg) 
 		{ 
-		  sam_parse_region(htmp, reg, &tid, &beg, &end, 0); 
+  		      const char *name_lim = hts_parse_reg(reg, &beg, &end);
+  		      if (name_lim) {
+  		          char *name = malloc(name_lim - reg + 1);
+  		          memcpy(name, reg, name_lim - reg);
+  		          name[name_lim - reg] = '\0';
+  		          tid = bam_name2id(htmp, name);
+  		          free(name);
+  		      }
+  		      else {
+  		          // not parsable as a region, but possibly a sequence named "foo:a"
+  		          tid = bam_name2id(htmp, reg);
+  		          beg = 0; end = INT_MAX;
+  		      }
 		}
 
 	if (tid >= 0) 
@@ -140,7 +151,7 @@ int main(int argc, char *argv[])
 	printf("track name=%s type=wiggle_0\n", trackname==NULL? filename : trackname);
 
 
-	while (bam_mplp64_auto(mplp, &tid, &pos, n_plp, plp) > 0)
+	while (bam_mplp_auto(mplp, &tid, &pos, n_plp, plp) > 0)
 	  { // come to the next covered position
 
 		// If requested region is of range, skip
@@ -171,7 +182,7 @@ int main(int argc, char *argv[])
 		// Prints position and coverage
 		if (coverage > 0) 
 		  {
-			printf("%ld %d\n", pos+1, coverage);
+			printf("%d %d\n", pos+1, coverage);
 		  }
 
 		// Update reference name
@@ -184,7 +195,7 @@ int main(int argc, char *argv[])
 	free(n_plp); 
 	free(plp);
 	bam_mplp_destroy(mplp);
-	sam_hdr_destroy(h);
+	bam_hdr_destroy(h);
 	bgzf_close(data[0]->fp);
 
 	// Iterator is used only when a region was provided
