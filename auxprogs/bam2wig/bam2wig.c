@@ -41,8 +41,6 @@ static int read_bam(void *data, bam1_t *b)
 	return ret;
 }
 
-extern hts_idx_t *bam_index_core(BGZF *fp);
-
 void usage()
 {
   printf("\n");
@@ -69,10 +67,8 @@ int main(int argc, char *argv[])
 	int n, tid, *n_plp, beg, end, pos;
 	const bam_pileup1_t **plp;
 	char *reg = 0; // specified region
-	bam_hdr_t *h = 0; // BAM header of the 1st input
 	aux_t **data;
 	bam_mplp_t mplp;
-	/* hts_idx_t *idx;  */
 
 	// Parsing the command line
 	while ((n = getopt(argc, argv, "r:t:")) >= 0) 
@@ -195,7 +191,6 @@ int main(int argc, char *argv[])
 	free(n_plp); 
 	free(plp);
 	bam_mplp_destroy(mplp);
-	bam_hdr_destroy(h);
 	bgzf_close(data[0]->fp);
 
 	// Iterator is used only when a region was provided
