@@ -1,13 +1,6 @@
 /* 
-   Creates a Wiggle file with coverage information coming from a BAM file 	
- 																			
-   NOTE: 
-   Depending on the version of the compiler,  the call to "-lcurses" might have 
-   to be replaced to "-lncurses"
- 					
-   Tonatiuh Pena-Centeno														
-   Created: 12-June-2012 													
-   Last modified:   6-November-2012												
+    Creates a Wiggle file with coverage information taken from a BAM file 	
+										
 */
 
 
@@ -127,6 +120,7 @@ int main(int argc, char *argv[])
 		  {
 		    fprintf(stderr, "Missing indexed BAM file!\n");
 		    fprintf(stderr, "See: samtools index\n");
+		    fprintf(stderr, "Do `samtools index <in.bam>` and an index file with extension \".bai\" will be generated.\n");
 		    exit(1);
 		  }
 
@@ -143,8 +137,8 @@ int main(int argc, char *argv[])
 	// Print default trackname or use the one specified by the user
 	printf("track name=%s type=wiggle_0\n", trackname==NULL? filename : trackname);
 
-
-	while (bam_mplp64_auto(mplp, &tid, &pos, n_plp, plp) > 0)
+	int exitCode = 0; // less than zero if e.g. bam file is sorted
+	while ((exitCode = bam_mplp64_auto(mplp, &tid, &pos, n_plp, plp)) > 0)
 	  { // come to the next covered position
 
 		// If requested region is of range, skip
@@ -200,5 +194,5 @@ int main(int argc, char *argv[])
 	free(data); 
 	free(reg);
 
-	return 0;
+	return exitCode == 0 ? 0 : 1;
 }

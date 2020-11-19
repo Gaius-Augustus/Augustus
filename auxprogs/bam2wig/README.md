@@ -2,6 +2,28 @@
 
 Convert bam files to wiggle files for usage with AUGUSTUS (exonpart hints)
 
+## SYNOPSIS
+
+**bam2wig** [-r region] [-t trackname] <in.bam>
+
+## OPTIONS
+
+File needs to be sorted by Reference ID (i.e. target name).  
+Use `samtools sort <in.bam>`         to such effect.  
+Use `samtools stats <in.bam> | grep 'is sorted'` to check if the file is sorted.
+
+### Parameters:
+
+**-r** 
+
+Allows to specify a target region, e.g. 'chr3L:10-250'. 
+This option can only be used if an index file exists, see: samtools index
+
+**-t** 
+
+string provided as track name
+
+
 ## INSTALLATION
 
 ### Install dependencies
@@ -42,8 +64,8 @@ Examples:
 A file tests/auxprogs/bam2wig/test_files/test.s.bam has been included.  
 You can try bam2wig by trying out the following examples:
 
-1) ``` ./bam2wig test.s.bam ```
-2) ``` ./bam2wig -t "my_specified_track" -r chr3L test.s.bam ```
+1) ` ./bam2wig test.s.bam `
+2) ` ./bam2wig -t "my_specified_track" -r chr3L test.s.bam `
 
 Example (2) can only be done if an index file for test.s.bam exists.  
-Do "samtools index test.s.bam" and a file "test.s.bam.bai" will be generated.
+Do `samtools index test.s.bam` and a file "test.s.bam.bai" will be generated.

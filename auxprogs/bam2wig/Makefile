@@ -20,11 +20,11 @@ SOURCES = $(PROGRAM)
 OBJECTS = $(SOURCES:.c=.o)
 
 ifneq ($(wildcard ${TOOLDIR}/htslib/htslib/.),) # if TOOLDIR exists and contains htslib
-	INCLUDES=-I. -I$(TOOLDIR)/htslib -I$(TOOLDIR)/htslib/htslib
+	INCLUDES=-I$(TOOLDIR)/htslib -I$(TOOLDIR)/htslib/htslib
 	HTSLIBS=-L$(TOOLDIR)/htslib -Wl,-rpath,$(TOOLDIR)/htslib -lhts -lcurses -lm -lz -lpthread -lcurl -lssl -lcrypto -lbz2 -llzma
 	HTSERRHINT="Check if the installed HTSlib is of version 1.10 or higher - see README.txt"
 else
-	INCLUDES=-I. -I/usr/include/htslib
+	INCLUDES=-I/usr/include/htslib
 	HTSLIBS=-lhts -lz -lpthread
 	ifdef DEF_TOOLDIR
 		HTSERRHINT="There is no htslib folder in directory $(TOOLDIR) \n"
@@ -32,16 +32,16 @@ else
 	HTSERRHINT:=$(HTSERRHINT)"Check if HTSlib is installed and of version 1.10 or higher - see README.txt"
 endif
 
-CFLAGS:=-Wall -O2 $(INCLUDES) $(CFLAGS)
+CFLAGS:=-Wall -O2 $(CFLAGS)
 CC?=gcc
 
 $(PROGRAM) : bam2wig.o
-	$(CC) $(LDFLAGS) $^ -o $@ $(HTSLIBS)
+	$(CC) $(CFLAGS)	$(CPPFLAGS) $(LDFLAGS) $^ -o $@ $(HTSLIBS)
 	mkdir -p ../../bin
 	cp bam2wig ../../bin/bam2wig
 
 bam2wig.o : bam2wig.c
-	-$(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@
+	-$(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(INCLUDES)
 	@if [ ! -f $@ ]; then echo $(HTSERRHINT); exit 1; fi
 
 .PHONY : clean	
