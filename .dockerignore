@@ -1,9 +1,6 @@
-**
-!Makefile
-!auxprogs
-!config
-!common.mk
-!examples/example.fa
-!include
-!scripts
-!src
+docs/tutorial*
+!docs/tutorial2015/data/chr2L.sm.fa.gz
+!docs/tutorial2015/results/hints.gff
+!docs/tutorial2015/results/genes.gb.train
+!docs/tutorial2015/results/genes.gb.test
+!docs/tutorial-cgp/results/mafs
