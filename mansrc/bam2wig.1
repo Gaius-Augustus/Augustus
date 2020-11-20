@@ -1,5 +1,5 @@
 '\" t
-.\"     Title: consensusfinder
+.\"     Title: bam2wig
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: Asciidoctor 1.5.5
 .\"      Date: 
@@ -7,7 +7,7 @@
 .\"    Source: \ \&
 .\"  Language: English
 .\"
-.TH "CONSENSUSFINDER" "1" "" "\ \&" "\ \&"
+.TH "BAM2WIG" "1" "" "\ \&" "\ \&"
 .ie \n(.g .ds Aq \(aq
 .el       .ds Aq '
 .ss \n[.ss] 0
@@ -19,55 +19,26 @@
 .if \n[.g] .mso www.tmac
 .LINKSTYLE blue R < >
 .SH "NAME"
-consensusfinder \- consensus finder
+bam2wig \- Convert bam files to wiggle files. Can be used to generate exonpart hints for AUGUSTUS.
 .SH "SYNOPSIS"
 .sp
-\fBconsensusFinder\fP input_fasta_file [options]
+\fBbam2wig\fP [\-r region] [\-t trackname] <in.bam>
 .SH "OPTIONS"
 .sp
-\fB\-l\fP
-.RS 4
-pattern length
-.RE
+File needs to be sorted by Reference ID (i.e. target name)
+Use "samtools sort <in.bam>" to such effect.
+Use "samtools stats <in.bam> | grep \(aqis sorted\(aq " to check if the file is sorted.
+.SS "Parameters:"
 .sp
-\fB\-p\fP
+\fB\-r\fP
 .RS 4
-p\-value for finding the significant strings
-.RE
-.sp
-\fB\-d\fP
-.RS 4
-delta to find the relevant strings
-.RE
-.sp
-\fB\-s\fP
-.RS 4
-starting position
-.RE
-.sp
-\fB\-e\fP
-.RS 4
-ending position
-.RE
-.sp
-\fB\-m\fP
-.RS 4
-no. of mismatches to consider while finding neighbours
-.RE
-.sp
-\fB\-c\fP
-.RS 4
-string to consider for analysis
-.RE
-.sp
-\fB\-n\fP
-.RS 4
-specify the number of consensus patterns to store
+Allows to specify a target region, e.g. \(aqchr3L:10\-250\(aq
+This option can only be used if an index file exists, see: samtools index
 .RE
 .sp
 \fB\-t\fP
 .RS 4
-print the histogram
+string provided as track name
 .RE
 .SH "AUTHORS"
 .sp

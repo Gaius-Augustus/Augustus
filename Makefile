@@ -50,4 +50,4 @@ unit_test:
 	cd src/unittests && ./unittests
 
 # remove -static from src/Makefile for MAC users
-# remove -g -gdb from CXXFLAGS
+# remove -g -ggdb from CXXFLAGS

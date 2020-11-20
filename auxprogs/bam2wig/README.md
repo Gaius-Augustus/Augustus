@@ -1,6 +1,6 @@
 # bam2wig
 
-Convert bam files to wiggle files for usage with AUGUSTUS (exonpart hints)
+Convert bam files to wiggle files. Can be used to generate exonpart hints for AUGUSTUS.
 
 ## SYNOPSIS
 
@@ -30,7 +30,7 @@ string provided as track name
     
 - HTSlib version 1.10 or higher
   
-  - For Ubuntu 20.04 and Debian 11 or later:
+  - For operating systems that provide a package libhts-dev 1.10 or later (like Ubuntu 20.04 and Debian 11):
     ```
       sudo apt install samtools libhts-dev
     ```
