@@ -26,6 +26,7 @@ trset =  os.path.join(datadir, tdir, 'train.1784.gb')
 refanno = os.path.join(datadir, 'ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf')
 hmm_species = 'human_longrunningtest_hmm'
 crf_species = 'human_longrunningtest_crf'
+jobs = 2
 
 
 ######## evaluation on long genomic regions
@@ -47,6 +48,8 @@ parser = argparse.ArgumentParser(
     description='Python wrapper to execute single genome test case.')
 parser.add_argument('-g', '--pathToGitRepo',
                     help='path to the Augustus Git repository.')
+parser.add_argument('-j', '--jobs',
+                    help='to set the maximum number of jobs executed in parallel. (default value 2)')                    
 parser.add_argument('-e', '--evalDir', help='path to Eval script.')
 args = parser.parse_args()
 
@@ -206,7 +209,7 @@ def execute_run(options, gffname, runname):
             start, end = compute_chunk_intervall(c)
             cmds.append(['../../../bin/augustus', f'--predictionStart={start}', f'--predictionEnd={end}', testseq, *options, f'--outfile={outfile}'])
 
-        with ThreadPoolExecutor(max_workers=int(6)) as executor:
+        with ThreadPoolExecutor(max_workers=int(jobs)) as executor:
             for cmd in cmds:
                 executor.submit(execute, cmd)
 
@@ -242,7 +245,6 @@ def analyze_commit():
 
 
 if __name__ == '__main__':
-    # TODO: parameter for max workers 
     # if args.pathToGitRepo is None:
     #     print('The path to the Augustus Git repository is required, please make use of --pathToGitRepo to pass the path...')
     #     sys.exit()
@@ -251,6 +253,9 @@ if __name__ == '__main__':
         print('The path eval script collection, please make use of --evalDir to pass the path...')
         sys.exit()
 
+    if args.jobs:
+        jobs = args.jobs
+    
     export_environ()
     clean()
     create_test_dirs()
