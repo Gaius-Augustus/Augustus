@@ -20,25 +20,35 @@ outdir = 'output'
 eval_out_dir = os.path.join(outdir, 'eval')
 datadir = 'data'
 tdir = os.path.join(datadir, 'training')
-aug_config_path = os.path.join( '..', '..', '..', 'config')
+aug_config_path = os.path.join('..', '..', '..', 'config')
 testseq = os.path.join(datadir, 'chr1.fa.gz')
-trset =  os.path.join(datadir, tdir, 'train.1784.gb')
-refanno = os.path.join(datadir, 'ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf')
+trset = os.path.join(datadir, tdir, 'train.1784.gb')
+refanno = os.path.join(
+    datadir, 'ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf')
 hmm_species = 'human_longrunningtest_hmm'
 crf_species = 'human_longrunningtest_crf'
 jobs = 2
 
 
-######## evaluation on long genomic regions
+# evaluation on long genomic regions
 # try and compare a few parameter sets (HMM, CRF, existing)
 # on existing human parameters, try a few prediction options
+# [0] -> options
+# [1] -> name
+# [2] -> description
 runs = [
-    [['--species=human', '--softmasking=0'], 'human-nosm', 'standard human parameters, softmasking off'],
-    [['--species=human', '--softmasking=1'], 'human-sm', 'standard human parameters, softmasking'],
-    [['--species=human', '--softmasking=1', '--UTR=1', '--alternatives-from-sampling=1', '--sample=100'], 'human-sm-UTR-alt', 'standard human parameters, softmasking, UTR, alternatives-from-sampling'],
-    [['--species=human', '--softmasking=1', '--UTR=1'], 'human-sm-UTR', 'standard human parameters, softmasking, UTR'],
-    [[f'--species={hmm_species}', '--softmasking=1', '--UTR=1'], 'HMM-sm-UTR', 'HMM-trained parameters, softmasking, UTR'],
-    [[f'--species={crf_species}', '--softmasking=1', '--UTR=1'], 'CRF-sm-UTR', 'CRF-trained parameters, softmasking, UTR']
+    [['--species=human', '--softmasking=0'], 'human-nosm',
+        'standard human parameters, softmasking off'],
+    [['--species=human', '--softmasking=1'], 'human-sm',
+        'standard human parameters, softmasking'],
+    [['--species=human', '--softmasking=1', '--UTR=1', '--alternatives-from-sampling=1', '--sample=100'],
+        'human-sm-UTR-alt', 'standard human parameters, softmasking, UTR, alternatives-from-sampling'],
+    [['--species=human', '--softmasking=1', '--UTR=1'],
+        'human-sm-UTR', 'standard human parameters, softmasking, UTR'],
+    [[f'--species={hmm_species}', '--softmasking=1', '--UTR=1'],
+        'HMM-sm-UTR', 'HMM-trained parameters, softmasking, UTR'],
+    [[f'--species={crf_species}', '--softmasking=1', '--UTR=1'],
+        'CRF-sm-UTR', 'CRF-trained parameters, softmasking, UTR']
 ]
 
 # using 9 regions on chr1, the same regions as used in multi-genome gene prediction (CGP)
@@ -49,7 +59,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-g', '--pathToGitRepo',
                     help='path to the Augustus Git repository.')
 parser.add_argument('-j', '--jobs',
-                    help='to set the maximum number of jobs executed in parallel. (default value 2)')                    
+                    help='to set the maximum number of jobs executed in parallel. (default value 2)')
 parser.add_argument('-e', '--evalDir', help='path to Eval script.')
 args = parser.parse_args()
 
@@ -71,7 +81,6 @@ def clean():
     crf_species_path = os.path.join(aug_config_path, 'species', crf_species)
     if os.path.exists(crf_species_path):
         shutil.rmtree(crf_species_path)
-    
 
 
 def create_test_dirs():
@@ -106,16 +115,19 @@ def download(url, target_dir, unzip=False, set_trset=False, set_testseq=False, s
             testseq = new_name
         if set_refanno:
             global refanno
-            refanno = new_name            
+            refanno = new_name
         os.remove(filename)
 
 
 def get_test_data():
     print('Downloading required data...')
-    download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/train.1784.gb.gz', tdir, unzip=True, set_trset=True)
-    download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/chr1.fa.gz', datadir, set_testseq=True)
+    download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/train.1784.gb.gz',
+             tdir, unzip=True, set_trset=True)
+    download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/chr1.fa.gz',
+             datadir, set_testseq=True)
     download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf', datadir)
     print('\n' + 'Download completed.')
+
 
 def execute(cmd, print_err=True, output=None, error_out=None, mode='w'):
     if output and error_out and mode:
@@ -125,14 +137,14 @@ def execute(cmd, print_err=True, output=None, error_out=None, mode='w'):
                     cmd,
                     stdout=file,
                     stderr=errfile,
-                    universal_newlines=True)  
+                    universal_newlines=True)
     elif output and mode:
         with open(output, mode) as file:
             p = subprocess.Popen(
                 cmd,
                 stdout=file,
                 stderr=subprocess.PIPE,
-                universal_newlines=True)             
+                universal_newlines=True)
     else:
         p = subprocess.Popen(
             cmd,
@@ -141,7 +153,7 @@ def execute(cmd, print_err=True, output=None, error_out=None, mode='w'):
             universal_newlines=True)
 
     p.wait()
-    if  print_err and p.stderr:
+    if print_err and p.stderr:
         error = p.stderr.read()
         p.stderr.close()
         if error:
@@ -161,8 +173,10 @@ def training_hmm():
     execute(cmd)
 
     # train parameters
-    cmd = ['../../../bin/etraining', f'--species={hmm_species}', trset, '--UTR=on']
-    execute(cmd, output=f'{outdir}/etrain_hmm.out', error_out=f'{outdir}/etrain_hmm.err', mode='w')
+    cmd = ['../../../bin/etraining',
+           f'--species={hmm_species}', trset, '--UTR=on']
+    execute(cmd, output=f'{outdir}/etrain_hmm.out',
+            error_out=f'{outdir}/etrain_hmm.err', mode='w')
 
     end = datetime.datetime.now()
     exec_minutes = (end - start).total_seconds() / 60.0
@@ -177,12 +191,15 @@ def training_crf():
     execute(cmd)
 
     # HMM-training to obtain UTR parameters
-    cmd = ['../../../bin/etraining', f'--species={crf_species}', trset, '--UTR=on']
+    cmd = ['../../../bin/etraining',
+           f'--species={crf_species}', trset, '--UTR=on']
     execute(cmd, print_err=False)
 
     # CRF training of CDS parameters (takes about 46m)
-    cmd = ['../../../bin/etraining', f'--species={crf_species}', trset, '--softmasking=0', '--CRF=on', '--UTR=off']
-    execute(cmd, output=f'{outdir}/etrain_crf.out', error_out=f'{outdir}/etrain_crf.err', mode='w')
+    cmd = ['../../../bin/etraining',
+           f'--species={crf_species}', trset, '--softmasking=0', '--CRF=on', '--UTR=off']
+    execute(cmd, output=f'{outdir}/etrain_crf.out',
+            error_out=f'{outdir}/etrain_crf.err', mode='w')
 
     end = datetime.datetime.now()
     exec_minutes = (end - start).total_seconds() / 60.0
@@ -190,8 +207,8 @@ def training_crf():
 
 
 def compute_chunk_intervall(chunk):
-    chunkstep=2000000
-    chunksize=2499999
+    chunkstep = 2000000
+    chunksize = 2499999
     start = chunkstep*(chunk-1)
     end = start+chunksize-1
 
@@ -204,10 +221,11 @@ def execute_run(options, gffname, runname):
 
     with tempfile.TemporaryDirectory(dir=outdir, prefix='.tmp_') as dir:
         for c in chunks:
-            outfile=f'{dir}/augustus_{c}.gff'
+            outfile = f'{dir}/augustus_{c}.gff'
             tmp_filenames.append(outfile)
             start, end = compute_chunk_intervall(c)
-            cmds.append(['../../../bin/augustus', f'--predictionStart={start}', f'--predictionEnd={end}', testseq, *options, f'--outfile={outfile}'])
+            cmds.append(['../../../bin/augustus',
+                         f'--predictionStart={start}', f'--predictionEnd={end}', testseq, *options, f'--outfile={outfile}'])
 
         with ThreadPoolExecutor(max_workers=int(jobs)) as executor:
             for cmd in cmds:
@@ -215,11 +233,13 @@ def execute_run(options, gffname, runname):
 
         # join output files of analyzed chunks
         input_files = ','.join(tmp_filenames)
-        join_cmd = ['../../../auxprogs/joingenes/joingenes', f'--genesets={input_files}', f'--output={gffname}']
+        join_cmd = ['../../../auxprogs/joingenes/joingenes',
+                    f'--genesets={input_files}', f'--output={gffname}']
         execute(join_cmd)
 
         # evaluate results
-        eval_cmd = [os.path.join(args.evalDir, 'evaluate_gtf.pl'), refanno, gffname]
+        eval_cmd = [os.path.join(
+            args.evalDir, 'evaluate_gtf.pl'), refanno, gffname]
         execute(eval_cmd, output=os.path.join(eval_out_dir, f'{runname}.eval'))
 
 
@@ -236,6 +256,7 @@ def execute_test():
         end = datetime.datetime.now()
         exec_minutes = (end - start).total_seconds() / 60.0
         print(f'Finished Test in {exec_minutes} minutes.')
+
 
 def analyze_commit():
     info = util.commit_info(args.pathToGitRepo)
@@ -255,7 +276,7 @@ if __name__ == '__main__':
 
     if args.jobs:
         jobs = args.jobs
-    
+
     export_environ()
     clean()
     create_test_dirs()
