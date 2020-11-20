@@ -19,7 +19,7 @@ from tests.utils import aug_path
 args = aug_argparse.getDefaultArgParser().parse_args()
 
 pathname = os.path.dirname(sys.argv[0])
-referencedir = os.path.join(pathname, 'result_files')
+referencedir = os.path.join(pathname, 'expected_results')
 resultdir = os.path.join(pathname, 'result_files')
 htmldir = os.path.join(pathname, 'output_html')
 tmpdir = os.path.join(pathname, 'tmp')
