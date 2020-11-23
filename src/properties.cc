@@ -305,7 +305,8 @@ UTR_KEY,
 "/UtrModel/utr5patternweight",
 "/UtrModel/utr3prepatternweight",
 "/UtrModel/utr5prepatternweight",
-"/UtrModel/verbosity"
+"/UtrModel/verbosity",
+"testPruning"
 #ifdef TESTING
 , "/Testing/testMode"
 , "/Testing/workingDir"
