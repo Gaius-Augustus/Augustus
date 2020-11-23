@@ -122,7 +122,69 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
     }
 }
 
+
+void CompGenePred::testPruning(){
+    NucleotideEvo ntevo(0.25,0.25,0.25,0.25,    // pi initial distribution can be passed here
+    0.2, 0.4, 0.6, 0.8, 1.2, 1);                // and coefficients for GTR model rate matrix here
+    vector<double> branchset;
+    tree.getBranchLengths(branchset);
+
+    ntevo.setBranchLengths(branchset, -1);
+    ntevo.getRateMatrices();
+    ntevo.computeLogPmatrices();
+
+    vector<string> MSA = {
+    "CTTATTGTGCGTCTCTATTGTAGGGGTGACACAAACCTATCTCAGATACTGAACGGAGCAAGCCCGGGGCCGAGCATGCTTAAAAAATATCGCACACTGT",
+    "GTTATAATGCGCAACGAGTGTGTGCGTTAAACCTAGCTATTTAGAACATGTTACGCCACCCGCCCGACTAAGATGATGTGGATAGCATAATTGACATTTC",
+    "CTTCTTACGGGCTACTACCATGTGAATGACACCGGCCTCTATAGCATATGCCGGGCGCGCCAGCTCAACAACGCTCTGATTAAAGGATACTTTAGATATA",
+    "CTTCTTAAGCAGAACTAATATGTAAATTGCACAGGCATCTCTTGGATGTGGCGGCCGCCCCGGCTAAATACCCCACTGGTGAAAGGATACCTTAGGGATA",
+    "CTCCTTAAGCAATACTAGTATGTAAATTACACCGGCCTCTCTAGCCTATGCCGGCCGCCCCGGGTAGAGACAACACTGATGATAGGATACTTGAGATGTC",
+    "CTTCTTATGCACGCCTAGTATTTGAATTACACCGCCATCTCTATCAGATGCCGGGCGCACCGGCTAAAGACAACACTGATTAAAGGATACTTTAGATTGA",
+    "CTTCTTATGCGCTAATAGTATGTGAATTGCACGGGCCTCTCTATGGTATGCCGGGCCCCCCGGGTAAAGACCACACTGATTAACGGATACTTTAGATTTA",
+    "CTTCTCTTGCGCTCCTCGAATGTACATTACAACGGGCTCTCTATCATGTCCGGGGCGCGGGTAGTAAAGACCACCATGCTTAGAGGATGCTTTACATTTG",
+    "CTTGTTTTGAACTCTTACTTTGTTAATTAAGACGCGGTCTCTATCTTTGCCCGGGTGCGCACCCCAACGCCGGCGATGATACAAAGCTCCTAAAAATTAG",
+    "CTTCTTTTAAAGTCTGACTTTTTGAATTAGGACGCGGGCTCTGTAATGTCACGGGGGCCGACCCCAAGGCCGACGGTGATACAAGGATCCTAAAAATTTG",
+    "CTTGTTATGCAATCCCACTATGTGAATTACACCGCAGTCTCTGTCATATGCAGGTCGCCCCGGCTATAGACGAGCCTAATTAAGGGGTGCTTTAGATTTG",
+    "CTTGTTATGCAATCCCACTATGTGAATTACACCGCCGTCTCTCTCATATGCAGGTCGCCCCGGCTAAAGACGAGCCTGATTAAGGGGTACTTTAGATTTG"
+    };
+
+    vector<int> labels(MSA.size(),0);
+
+    int alilen = 0;
+    for(int i=0;i<MSA.size();++i){
+        if(alilen==0)
+            alilen = MSA[i].size();
+        else if(alilen != MSA[i].size()){
+            cout << "rows in the MSA have different lengths..." << endl;
+            return;
+        }
+    }
+    
+    for(int col = 0;col<alilen;++col){
+        cout << "-------- Column " << col << " -------" << endl;
+        for(int i=0;i<MSA.size();++i){
+            if(MSA[i][col] == 'T')
+                labels[i] = 0;
+            else if(MSA[i][col] == 'C')
+                labels[i] = 1;
+            else if(MSA[i][col] == 'A')
+                labels[i] = 2;
+            else if(MSA[i][col] == 'G')
+                labels[i] = 3;
+        }
+        ntevo.scoreColumn(&tree, labels);
+    }
+}
+
 void CompGenePred::start(){
+
+    try { 
+	    if (Properties::getBoolProperty("testPruning")){
+            testPruning();
+            return;
+        }
+	} catch (...) {}
+
     // added to choose between different modes : predict or run test
     #ifdef TESTING
     string testMode; 
