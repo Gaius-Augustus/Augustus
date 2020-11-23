@@ -207,6 +207,12 @@ gsl_matrix *Evo::expQt(double t, gsl_vector *lambda, gsl_matrix *U, gsl_matrix *
 	    }
 	}
     }
+
+    if(isNucleotideMode){ // this is a temporarily kludge to avoid partial reset of rate matrix
+        cout << "NUCLEOTIDE MODE ON" << endl;
+        return P;
+    }
+
     if(states == 3 || states == 4){
 	gsl_matrix_set(P, 0, 0, gsl_matrix_get(P, 0, 0));
 	gsl_matrix_set(P, 0, 2, gsl_matrix_get(P, 0, 0));     
@@ -515,3 +521,205 @@ void Parsimony::computeLogPmatrices(){
     }
     allLogPs[0][0]=P;
 }
+
+
+// GM temporarily added the following to test nucleotide CTMC (it can be better optimizing code reusage)
+void NucleotideEvo::getRateMatrices(){
+    gsl_matrix *Q;
+    
+    if(allQs.empty()){
+        Q = gsl_matrix_alloc (states, states);
+        allQs.assign(1, Q);
+    }
+    else 
+        Q = allQs[0];
+        
+    gsl_matrix_set (Q, 0, 1, a*pi[C]);
+    gsl_matrix_set (Q, 0, 2, b*pi[A]);
+    gsl_matrix_set (Q, 0, 3, c*pi[G]);
+    gsl_matrix_set (Q, 0, 0, 0); //-a*pi[C] -b*pi[A] -c*pi[G]);
+
+    gsl_matrix_set (Q, 1, 0, a*pi[T]);
+    gsl_matrix_set (Q, 1, 2, d*pi[A]);
+    gsl_matrix_set (Q, 1, 3, e*pi[G]);
+    gsl_matrix_set (Q, 1, 1, 0); //-a*pi[T] -d*pi[A] -e*pi[G]);
+    
+    gsl_matrix_set (Q, 2, 0, b*pi[T]);
+    gsl_matrix_set (Q, 2, 1, d*pi[C]);
+    gsl_matrix_set (Q, 2, 3, f*pi[G]);
+    gsl_matrix_set (Q, 2, 2, 0); //-b*pi[T] -d*pi[C] -f*pi[G]);
+    
+    gsl_matrix_set (Q, 3, 0, c*pi[T]);
+    gsl_matrix_set (Q, 3, 1, e*pi[C]);
+    gsl_matrix_set (Q, 3, 2, f*pi[A]);
+    gsl_matrix_set (Q, 3, 3, 0); //-c*pi[T] -e*pi[C] -f*pi[A]);
+
+    // set diagonal elements to the negative sum of the other rates in the row
+    for (int i = 0; i < states; ++i){
+	    double Pii = 0;
+	    for(int j = 0 ; j < states; j++){
+	        if(i != j)
+		        Pii -= gsl_matrix_get (Q, i, j);
+	    }
+	    gsl_matrix_set (Q, i, i, Pii);
+    }
+}
+
+void NucleotideEvo::computeLogPmatrices(){
+    gsl_matrix *Q = allQs[0];
+
+    // decompose rate matrix Q = U * diag(l_1,...,l_n) * Uinv
+    int status = eigendecompose(Q);
+    if (status) {
+        stringstream s;
+        s << "Spectral decomposition of exon rate matrix for failed.";
+        throw ProjectError(s.str());
+    }
+
+    // for all branch lengths t, compute transition matrices P(t) and logP(t)
+    allPs.assign(1, m, NULL);
+    allLogPs.assign(1, m, NULL);
+    for (int v=0; v<m; v++){
+        double t = times[v]; // time
+        gsl_matrix *P = expQt(t);
+        
+        cout << "printing P for t=" << t << endl;
+        for (int i = 0; i < states; ++i){
+        for(int j = 0 ; j < states; j++){
+        cout << gsl_matrix_get (P, i, j) << " ";
+        }
+        cout << endl;
+        }
+        
+        allPs[0][v] = P;
+        allLogPs[0][v] = log(P, states);
+    }
+}
+
+int NucleotideEvo::eigendecompose(gsl_matrix *Q){
+
+    const int N = states; // dimension of matrices: N x N
+
+    // allocate memory for temporary matrices/vectors ...
+    gsl_vector_complex *l_complex = gsl_vector_complex_alloc (N);    // complex vector of eigenvalues
+    gsl_matrix_complex *U_complex = gsl_matrix_complex_alloc (N, N); // complex matrix of eigenvectors 
+    gsl_matrix *U_LU_decomp = gsl_matrix_alloc (N, N);               // LU decomposition of matrix U (required for calcuating Uinv)
+    gsl_eigen_nonsymmv_workspace * w = gsl_eigen_nonsymmv_alloc (N);
+
+    // ... and permanent stuff: Q = U * diag(l_1,...,l_n) * Uinv 
+    l = gsl_vector_alloc (N);                                        // real vector of eigenvalues
+    U = gsl_matrix_alloc (N, N);                                     // real matrix of eigenvectors
+    Uinv = gsl_matrix_alloc (N, N);                                  // inverse of U
+
+    int s; // signum for LU decomposition
+    gsl_permutation * perm = gsl_permutation_alloc (N); // permutation matrix of LU decomposition
+    
+    int status = gsl_eigen_nonsymmv (Q, l_complex, U_complex, w); // eigen decomposition
+    if (status)
+    return status;
+    
+    // check if all eigenvalues and eigenvectors have real values
+    for (int i = 0; i < N; ++i){
+    gsl_complex z = gsl_vector_complex_get (l_complex, i);
+    if(GSL_IMAG(z) != 0)
+        throw ProjectError("Matrix diagonalization: complex eigen values.");
+    gsl_vector_set (l, i, GSL_REAL(z));
+        for(int j = 0 ; j < N; j++){
+        z = gsl_matrix_complex_get(U_complex, i, j);
+        if(GSL_IMAG(z) != 0)
+        throw ProjectError("Matrix diagonalization: complex eigen vector.");
+        gsl_matrix_set (U, i, j, GSL_REAL(z)); 
+        gsl_matrix_set (U_LU_decomp, i, j, GSL_REAL(z));
+    }
+    }
+
+    status = gsl_linalg_LU_decomp (U_LU_decomp, perm, &s); // LU decomposition (required for calculating Uinv)
+    if (status) 
+        return status;
+
+    // Invert matrix U_LU_decomp
+    status = gsl_linalg_LU_invert (U_LU_decomp, perm, Uinv);
+    if (status)
+        return status;
+
+    // free memory of temporary stuff
+    gsl_permutation_free (perm);
+    gsl_vector_complex_free(l_complex);
+    gsl_matrix_complex_free(U_complex);
+    gsl_matrix_free(U_LU_decomp);
+    gsl_eigen_nonsymmv_free (w);
+
+    // WARNING Q all entries either on or below the diagonal get destroyed in Q, we need to restore its original value before validating
+    getRateMatrices();
+    validateEigenDecomp(Q,l,U,Uinv,4);
+    return 0;
+}
+
+#include "phylotree.hh"
+void NucleotideEvo::scoreColumn(PhyloTree *tree, vector<int>& labels){
+    Evo *evo_base = this;
+
+    vector<double> weights(labels.size(), 0);
+    
+    int original, best;
+    double scores[4], bestscore;
+    
+    for(int query = 0;query<labels.size();++query){
+        original = labels[query];
+
+        for(int i = 0;i<states;++i){
+            labels[query] = i;
+            // scores[i] = tree->MAP(labels, weights, evo_base, true);
+
+            scores[i] = tree->pruningAlgor(labels, evo_base);
+
+            if(i == 0){
+                best = 0;
+                bestscore = scores[i];
+            }
+            else if(scores[i] > bestscore){
+                best = i;
+                bestscore = scores[i];
+            }
+        }
+     
+        labels[query] = original;
+
+        cout << nts[original];
+        
+        for(int i=0;i<states;++i)
+            cout << setprecision(10) << "\t" << nts[i] << " = " << scores[i];
+        if(best != original)
+            cout << "\t*";
+        cout << endl;
+    }
+}
+
+void NucleotideEvo::addBranchLength(double b){
+    bool isIncluded = false;
+
+    for (int i=0; i < times.size(); i++){
+	if(times[i] == b){
+	    isIncluded = true;
+	    break;
+	}
+    }
+    if(!isIncluded){ // add branch length
+	times.push_back(b);
+	gsl_matrix *P= expQt(b);
+	vector<gsl_matrix*> row = allPs.getRow(0);
+	row.push_back(P);
+	allPs.assign(1, row.size(), NULL);
+	for (int v=0; v<row.size(); v++){
+	    allPs[0][v]=row[v];	
+	}
+    gsl_matrix *LogP=log(P,states);
+	row = allLogPs.getRow(0);
+	row.push_back(LogP);
+	allLogPs.assign(1, row.size(), NULL);
+	for (int v=0; v<row.size(); v++){
+	    allLogPs[0][v]=row[v];	
+	}
+    }    
+}
+
