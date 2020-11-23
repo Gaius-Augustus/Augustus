@@ -20,7 +20,7 @@
 
 /*
 *   added by Giovanna Migliorelli 14.05.2020 
-*   code responsible for serialization/deserialization
+*   code responsible for both serialization and deserialization
 */
 #ifdef TESTING
 #include "tokenizer.hh"
