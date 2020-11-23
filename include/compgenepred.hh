@@ -50,6 +50,9 @@ class CompGenePred {
         void postprocTest();
         bool readInterval(string filename, list<tuple<string,int,int> >& grlist);
         #endif
+
+        void testPruning(); // GM temporarily added it for the sake of testing (this is intended to be removed)
+
         
         RandSeqAccess *rsa;
         PhyloTree tree;
