@@ -30,7 +30,7 @@ using namespace std;
  */
 class Evo {
 public:
-  Evo(int s) : states(s), m(0), pi(NULL) {};
+  Evo(int s, bool _isNucleotideMode = false) : states(s), m(0), pi(NULL), isNucleotideMode(_isNucleotideMode) {};
     virtual ~Evo();
     int getNumStates(){return states;}
 
@@ -72,7 +72,7 @@ public:
 protected:
     int findClosestIndex(vector<double> &v, double val);
 
-protected:
+
     const int states; //number of states (64 in codon model and (currently) 2 in exon model)
     int m; // number of branch lengths (times) for which P's are stored
     double *pi;
@@ -80,6 +80,7 @@ protected:
     vector<gsl_matrix *> allQs; // rate matrices
     Matrix<gsl_matrix *> allPs; // Parameterized probability matrices
     Matrix<gsl_matrix *> allLogPs; // Parameterized log probability matrices
+    bool isNucleotideMode;
 
 };
 
@@ -183,4 +184,75 @@ public:
     void computeLogPmatrices();
     void addBranchLength(double b){} 
 };
+
+
+class PhyloTree;
+
+// GM temporarily added the following (Bachelor's project)
+class NucleotideEvo : public Evo{
+    // 0 = T 1 = C 2 = A 3 = G
+    public:            
+        NucleotideEvo(double piT, double piC, double piA, double piG, double _a = 0.2, double _b = 0.4, double _c = 0.6, double _d = 0.8, double _e = 1.2, double _f = 1) : Evo(4, true), T(0), C(1), A(2), G(3), U(NULL), Uinv(NULL), l(NULL)  {            
+            this->pi = new double[states];  // states = 4
+            pi[T] = piT;
+            pi[C] = piC;
+            pi[A] = piA;
+            pi[G] = piG;
+
+            nts[T] = 'T';
+            nts[C] = 'C';
+            nts[A] = 'A';
+            nts[G] = 'G';
+
+            a = _a;
+            b = _b;
+            c = _c;
+            d = _d;
+            e = _e;
+            f = _f;
+        };
+
+        ~NucleotideEvo(){
+            if (U)
+                gsl_matrix_free(U);
+            if (Uinv)
+                gsl_matrix_free(Uinv);
+            if (l)
+                gsl_vector_free(l);
+        }
+        
+        void scoreColumn(PhyloTree *tree, vector<int>& labels);
+        void getRateMatrices();
+        void computeLogPmatrices();
+        void addBranchLength(double b);
+        int eigendecompose(gsl_matrix *Q);
+        gsl_matrix *expQt(double t) {return Evo::expQt(t,l,U,Uinv);}
+
+        void print(){
+            if(allQs.empty()){
+                cout << "rate matrix Q: empty" << endl;
+                return;
+            }
+
+            cout << "rate matrix Q:" << endl;
+            gsl_matrix *Q = allQs[0];
+            for(int j, i=0;i<states;++i){
+                for(j=0;j<states;++j)
+    	            cout << gsl_matrix_get(Q, i, j) << "\t";
+                cout << endl;
+            }
+        }
+
+    protected:
+        int T, C, A, G;
+        char nts[4];
+        double a, b, c, d, e, f;
+
+        // eigen decomposition of exon rate matrix Q = U * diag(l_1,...,l_n) * Uinv
+        gsl_matrix *U;
+        gsl_matrix *Uinv;
+        gsl_vector *l;
+
+};
+
 #endif    // _CONTTIMEMC_HH
