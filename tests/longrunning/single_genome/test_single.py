@@ -6,10 +6,13 @@ import argparse
 import datetime
 from sys import stdin
 import tempfile
+from time import sleep
 import wget
 import gzip
 import sys
 import os
+import psutil
+from memory_profiler import memory_usage, profile
 from concurrent.futures import ThreadPoolExecutor
 
 # import util script from parent directory
@@ -38,17 +41,17 @@ jobs = 2
 # [2] -> description
 runs = [
     [['--species=human', '--softmasking=0'], 'human-nosm',
-        'standard human parameters, softmasking off'],
-    [['--species=human', '--softmasking=1'], 'human-sm',
-        'standard human parameters, softmasking'],
-    [['--species=human', '--softmasking=1', '--UTR=1', '--alternatives-from-sampling=1', '--sample=100'],
-        'human-sm-UTR-alt', 'standard human parameters, softmasking, UTR, alternatives-from-sampling'],
-    [['--species=human', '--softmasking=1', '--UTR=1'],
-        'human-sm-UTR', 'standard human parameters, softmasking, UTR'],
-    [[f'--species={hmm_species}', '--softmasking=1', '--UTR=1'],
-        'HMM-sm-UTR', 'HMM-trained parameters, softmasking, UTR'],
-    [[f'--species={crf_species}', '--softmasking=1', '--UTR=1'],
-        'CRF-sm-UTR', 'CRF-trained parameters, softmasking, UTR']
+        'standard human parameters, softmasking off']  # ,
+    # [['--species=human', '--softmasking=1'], 'human-sm',
+    #     'standard human parameters, softmasking'],
+    # [['--species=human', '--softmasking=1', '--UTR=1', '--alternatives-from-sampling=1', '--sample=100'],
+    #     'human-sm-UTR-alt', 'standard human parameters, softmasking, UTR, alternatives-from-sampling'],
+    # [['--species=human', '--softmasking=1', '--UTR=1'],
+    #     'human-sm-UTR', 'standard human parameters, softmasking, UTR'],
+    # [[f'--species={hmm_species}', '--softmasking=1', '--UTR=1'],
+    #     'HMM-sm-UTR', 'HMM-trained parameters, softmasking, UTR'],
+    # [[f'--species={crf_species}', '--softmasking=1', '--UTR=1'],
+    #     'CRF-sm-UTR', 'CRF-trained parameters, softmasking, UTR']
 ]
 
 # using 9 regions on chr1, the same regions as used in multi-genome gene prediction (CGP)
@@ -162,7 +165,7 @@ def execute(cmd, print_err=True, output=None, error_out=None, mode='w'):
 
 def training():
     training_hmm()
-    training_crf()
+  # training_crf()
 
 
 def training_hmm():
@@ -252,10 +255,12 @@ def execute_test():
 
         print(f'Execute Test: {descr}...')
         start = datetime.datetime.now()
-        execute_run(options, gffname, runname)
+        mem_usage = memory_usage(
+            (execute_run, (options, gffname, runname)), interval=2, include_children=True)
         end = datetime.datetime.now()
         exec_minutes = (end - start).total_seconds() / 60.0
         print(f'Finished Test in {exec_minutes} minutes.')
+        print(f'Memory usage: {max(mem_usage)/1000} GB.')
 
 
 def analyze_commit():
@@ -263,6 +268,14 @@ def analyze_commit():
     exec_minutes = execute_test()
     util.store_additional_data(
         info[1], info[0], exec_minutes, 'output/test_version_data.json')
+
+
+def check_memory():
+    # startup memory check
+    m = psutil.virtual_memory()
+    print(m)
+    print(m.total*10**(-9))
+    print(m.used*10**(-9))
 
 
 if __name__ == '__main__':
@@ -277,6 +290,7 @@ if __name__ == '__main__':
     if args.jobs:
         jobs = args.jobs
 
+    check_memory()
     export_environ()
     clean()
     create_test_dirs()
