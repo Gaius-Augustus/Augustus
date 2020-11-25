@@ -18,6 +18,8 @@ Number of generated training genes: 1213 nonredundant genes, 300 set aside for t
 Initial accuracy on test set: 0.842
 Accuracy on test set after optimize_augustus.pl: 0.858466666666667
 
+With this parameter set, BRAKER predicted 9582 genes (Augustus with hints in the target genome). For comparison, the GenBank annotation contains 8639 genes.
+
 This parameter set was generated in a fully automated fashion for supporing the POMPU project (http://www.pompu-project.de/).
 
 If using this parameter set, please cite:
