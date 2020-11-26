@@ -7,12 +7,12 @@ def commit_info(path_to_repo):
     return repo.commit().committed_datetime.isoformat(), str(repo.commit())
 
 
-def store_additional_data(rev, cdate, exec_minutes, filename):
+def store_additional_data(rev, cdate, resources, filename):
     data = {
         'revision': rev,
         'softmasking': True,
         'commit_date': cdate,
-        'execution_time': exec_minutes
+        'resources': resources
     }
 
     with open(filename, 'w') as file:

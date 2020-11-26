@@ -183,7 +183,7 @@ def training_hmm():
 
     end = datetime.datetime.now()
     exec_minutes = (end - start).total_seconds() / 60.0
-    print(f'Finished HMM-training in {exec_minutes} minutes.')
+    print(f'Finished HMM-training in {exec_minutes:.2f} minutes.')
 
 
 def training_crf():
@@ -206,7 +206,7 @@ def training_crf():
 
     end = datetime.datetime.now()
     exec_minutes = (end - start).total_seconds() / 60.0
-    print(f'Finished CRF-training in {exec_minutes} minutes.')
+    print(f'Finished CRF-training in {exec_minutes:.2f} minutes.')
 
 
 def compute_chunk_intervall(chunk):
@@ -247,6 +247,7 @@ def execute_run(options, gffname, runname):
 
 
 def execute_test():
+    used_resources = {}
     for run in runs:
         options = run[0]
         runname = run[1]
@@ -257,31 +258,33 @@ def execute_test():
         start = datetime.datetime.now()
         mem_usage = memory_usage(
             (execute_run, (options, gffname, runname)), interval=2, include_children=True)
+        max_mem_usage = max(mem_usage) / 1000.0
         end = datetime.datetime.now()
         exec_minutes = (end - start).total_seconds() / 60.0
-        print(f'Finished Test in {exec_minutes} minutes.')
-        print(f'Memory usage: {max(mem_usage)/1000} GB.')
+        print(f'Finished Test in {exec_minutes:.2f} minutes.')
+        print(f'Maximum used memory: {max_mem_usage:.2f} GB.')
+        used_resources[runname] = {
+            'execution_time': exec_minutes, 'used_memory': max_mem_usage}
+    return used_resources
 
 
-def analyze_commit():
+def manage_additional_data(used_resources):
     info = util.commit_info(args.pathToGitRepo)
-    exec_minutes = execute_test()
     util.store_additional_data(
-        info[1], info[0], exec_minutes, 'output/test_version_data.json')
+        info[1], info[0], used_resources, 'output/test_version_data.json')
 
 
 def check_memory():
     # startup memory check
     m = psutil.virtual_memory()
-    print(m)
-    print(m.total*10**(-9))
-    print(m.used*10**(-9))
+    print(f'Total memory: {m.total*10**(-9):.2f} GB')
+    print(f'Currently used memory: {m.used*10**(-9):.2f} GB')
 
 
 if __name__ == '__main__':
-    # if args.pathToGitRepo is None:
-    #     print('The path to the Augustus Git repository is required, please make use of --pathToGitRepo to pass the path...')
-    #     sys.exit()
+    if args.pathToGitRepo is None:
+        print('The path to the Augustus Git repository is required, please make use of --pathToGitRepo to pass the path...')
+        sys.exit()
 
     if args.evalDir is None:
         print('The path eval script collection, please make use of --evalDir to pass the path...')
@@ -296,4 +299,6 @@ if __name__ == '__main__':
     create_test_dirs()
     get_test_data()
     training()
-    execute_test()
+    res = execute_test()
+    manage_additional_data(res)
+    print(res)
