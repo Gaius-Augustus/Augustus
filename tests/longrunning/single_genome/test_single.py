@@ -41,17 +41,17 @@ jobs = 2
 # [2] -> description
 runs = [
     [['--species=human', '--softmasking=0'], 'human-nosm',
-        'standard human parameters, softmasking off']  # ,
-    # [['--species=human', '--softmasking=1'], 'human-sm',
-    #     'standard human parameters, softmasking'],
-    # [['--species=human', '--softmasking=1', '--UTR=1', '--alternatives-from-sampling=1', '--sample=100'],
-    #     'human-sm-UTR-alt', 'standard human parameters, softmasking, UTR, alternatives-from-sampling'],
-    # [['--species=human', '--softmasking=1', '--UTR=1'],
-    #     'human-sm-UTR', 'standard human parameters, softmasking, UTR'],
-    # [[f'--species={hmm_species}', '--softmasking=1', '--UTR=1'],
-    #     'HMM-sm-UTR', 'HMM-trained parameters, softmasking, UTR'],
-    # [[f'--species={crf_species}', '--softmasking=1', '--UTR=1'],
-    #     'CRF-sm-UTR', 'CRF-trained parameters, softmasking, UTR']
+        'standard human parameters, softmasking off'],
+    [['--species=human', '--softmasking=1'], 'human-sm',
+        'standard human parameters, softmasking'],
+    [['--species=human', '--softmasking=1', '--UTR=1', '--alternatives-from-sampling=1', '--sample=100'],
+        'human-sm-UTR-alt', 'standard human parameters, softmasking, UTR, alternatives-from-sampling'],
+    [['--species=human', '--softmasking=1', '--UTR=1'],
+        'human-sm-UTR', 'standard human parameters, softmasking, UTR'],
+    [[f'--species={hmm_species}', '--softmasking=1', '--UTR=1'],
+        'HMM-sm-UTR', 'HMM-trained parameters, softmasking, UTR'],
+    [[f'--species={crf_species}', '--softmasking=1', '--UTR=1'],
+        'CRF-sm-UTR', 'CRF-trained parameters, softmasking, UTR']
 ]
 
 # using 9 regions on chr1, the same regions as used in multi-genome gene prediction (CGP)
@@ -165,7 +165,7 @@ def execute(cmd, print_err=True, output=None, error_out=None, mode='w'):
 
 def training():
     training_hmm()
-  # training_crf()
+    training_crf()
 
 
 def training_hmm():
@@ -301,4 +301,3 @@ if __name__ == '__main__':
     training()
     res = execute_test()
     manage_additional_data(res)
-    print(res)
