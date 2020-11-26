@@ -8,6 +8,7 @@ import sys
 import wget
 import tarfile
 import datetime
+from memory_profiler import memory_usage
 from concurrent.futures import ThreadPoolExecutor
 
 # import util script from parent directory
@@ -38,6 +39,8 @@ parser.add_argument('-r', '--pathToGitRepo',
                     help='path to the Augustus Git repository.')
 args = parser.parse_args()
 
+# used jobs for parallel execution of lr test
+jobs = 2
 
 # if not already existing, create dir to collect results for the current chunk
 def make_dirs(paths_shared, paths, chunks):
@@ -94,10 +97,7 @@ def port_test(paths_shared, paths, chunks):
 
 
 # parallel execution : acknowldgement Daniel Honsel (revisited code from test_case.py)
-def run_test_parallel(paths_shared, paths, chunks, jobs=2):
-
-    start = datetime.datetime.now()
-
+def run_test_parallel(paths_shared, paths, chunks):
     # create a command for each chunk
     args = []
     for chunk in chunks:
@@ -121,10 +121,6 @@ def run_test_parallel(paths_shared, paths, chunks, jobs=2):
         for cmd, output, chunk in args:
             print('Adding thread for chunk: ' + str(chunk) + '...')
             executor.submit(execute_test, cmd, output, chunk)
-
-    end = datetime.datetime.now()
-
-    return (end - start).total_seconds() / 60.0
 
 
 def execute(cmd, output, mode='w'):
@@ -297,6 +293,16 @@ def get_test_data(dataDir):
         os.remove(filename)
 
 
+def execute_lr_test(paths_shared, paths, chunks):
+    start = datetime.datetime.now()
+    mem_usage = memory_usage(
+        (run_test_parallel, (paths_shared, paths, chunks)), interval=60, include_children=True)
+    max_mem_usage = max(mem_usage) / 1000.0
+    end = datetime.datetime.now()
+    execution_time = (end - start).total_seconds() / 60.0
+    return {'default' : {'execution_time' : execution_time, 'used_memory' : max_mem_usage}}
+
+
 if __name__ == '__main__':
     if args.chunks is None:
         print('No chunks specified, please make use of --chunks to pass a non empty list of positive integers...')
@@ -343,12 +349,11 @@ if __name__ == '__main__':
     make_dirs(paths_shared, paths, chunks)
 
     port_test(paths_shared, paths, chunks)
-    exec_minutes = 0
+
     if args.jobs:
-        exec_minutes = run_test_parallel(
-            paths_shared, paths, chunks, jobs=args.jobs)
-    else:
-        exec_minutes = run_test_parallel(paths_shared, paths, chunks)
+        jobs = args.jobs
+
+    res = execute_lr_test(paths_shared, paths, chunks)
 
     if args.eval:
         run_evaluate_global(paths_shared, paths, chunks)
@@ -356,4 +361,4 @@ if __name__ == '__main__':
     # collect commit information for database storage
     info = util.commit_info(args.pathToGitRepo)
     util.store_additional_data(
-        info[1], info[0], exec_minutes, workingDir + 'test_version_data.json')
+        info[1], info[0], res, workingDir + 'test_version_data.json')
