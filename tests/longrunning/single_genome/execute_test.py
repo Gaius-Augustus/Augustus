@@ -32,7 +32,7 @@ def analyze_commit():
     info = util.commit_info(args.pathToGitRepo)
     exec_minutes = execute_test()
     util.store_additional_data(
-        info[1], info[0], exec_minutes, 'output/test_version_data.json')
+        info[1], info[0], exec_minutes, 'output/additional_information.json')
 
 
 if __name__ == '__main__':

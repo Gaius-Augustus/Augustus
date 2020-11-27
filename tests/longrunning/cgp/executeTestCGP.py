@@ -361,4 +361,4 @@ if __name__ == '__main__':
     # collect commit information for database storage
     info = util.commit_info(args.pathToGitRepo)
     util.store_additional_data(
-        info[1], info[0], res, workingDir + 'test_version_data.json')
+        info[1], info[0], res, workingDir + 'additional_information.json')
