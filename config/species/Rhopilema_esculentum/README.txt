@@ -6,7 +6,7 @@ Augustus parameter set name: Rhopilema_esculentum
 
 Lineage: Eukaryota; Opisthokonta; Metazoa; Eumetazoa; Cnidaria; Scyphozoa; Rhizostomeae; Rhizostomatidae; Rhopilema
 
-This parameter set was created with BRAKER on the basis of genome assembly https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/013/076/305/GCA_013076305.1_ASM1307630v1/GCA_013076305.1_ASM1307630v1_genomic.fna.gz and OrthoDb proteins https://v100.orthodb.org/download/odb10_plants_fasta.tar.gz
+This parameter set was created with BRAKER on the basis of genome assembly https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/013/076/305/GCA_013076305.1_ASM1307630v1/GCA_013076305.1_ASM1307630v1_genomic.fna.gz and OrthoDb proteins https://v100.orthodb.org/download/odb10_metazoa_fasta.tar.gz
 
 Call:
 
