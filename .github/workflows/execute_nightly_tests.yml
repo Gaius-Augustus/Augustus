@@ -38,7 +38,7 @@ jobs:
       run: make all
 
     - name: Execute single genome test cases
-      run: ./execute_test.py --pathToGitRepo ../../../.git --evalDir /data/eval/
+      run: ./test_single.py --evalDir /data/eval/ --jobs 8 --pathToGitRepo ../../../.git
       working-directory: tests/longrunning/single_genome/
 
     - name: Extract desired accuracy values (single genome test case)
