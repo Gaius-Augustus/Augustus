@@ -271,7 +271,7 @@ def execute_test():
 def manage_additional_data(used_resources):
     info = util.commit_info(args.pathToGitRepo)
     util.store_additional_data(
-        info[1], info[0], used_resources, 'output/test_version_data.json')
+        info[1], info[0], used_resources, 'output/additional_information.json')
 
 
 def check_memory():
