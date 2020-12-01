@@ -4,15 +4,14 @@ import shutil
 import subprocess
 import argparse
 import datetime
-from sys import stdin
+import sys
 import tempfile
-from time import sleep
 import wget
 import gzip
 import sys
 import os
 import psutil
-from memory_profiler import memory_usage, profile
+from memory_profiler import memory_usage
 from concurrent.futures import ThreadPoolExecutor
 
 # import util script from parent directory
