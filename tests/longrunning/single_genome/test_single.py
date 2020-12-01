@@ -10,7 +10,6 @@ import wget
 import gzip
 import sys
 import os
-import psutil
 from memory_profiler import memory_usage
 from concurrent.futures import ThreadPoolExecutor
 
@@ -273,13 +272,6 @@ def manage_additional_data(used_resources):
         info[1], info[0], used_resources, 'output/additional_information.json')
 
 
-def check_memory():
-    # startup memory check
-    m = psutil.virtual_memory()
-    print(f'Total memory: {m.total*10**(-9):.2f} GB')
-    print(f'Currently used memory: {m.used*10**(-9):.2f} GB')
-
-
 if __name__ == '__main__':
     if args.pathToGitRepo is None:
         print('The path to the Augustus Git repository is required, please make use of --pathToGitRepo to pass the path...')
@@ -292,7 +284,7 @@ if __name__ == '__main__':
     if args.jobs:
         jobs = args.jobs
 
-    check_memory()
+    util.check_memory()
     export_environ()
     clean()
     create_test_dirs()

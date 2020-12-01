@@ -353,6 +353,8 @@ if __name__ == '__main__':
     if args.jobs:
         jobs = args.jobs
 
+    util.check_memory()
+
     res = execute_lr_test(paths_shared, paths, chunks)
 
     if args.eval:
