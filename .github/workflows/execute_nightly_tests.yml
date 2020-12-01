@@ -31,6 +31,9 @@ jobs:
     - name: Install gitpython
       run: pip3 install gitpython
 
+    - name: Install profiling tools
+      run: pip3 install psutil memory_profiler
+
     - name: Build AUGUSTUS
       run: make all
 
