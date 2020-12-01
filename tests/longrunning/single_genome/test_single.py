@@ -65,30 +65,38 @@ parser.add_argument('-e', '--evalDir', help='path to Eval script.')
 args = parser.parse_args()
 
 
-def clean():
-    if os.path.exists(outdir):
-        shutil.rmtree(outdir)
-    if os.path.exists(eval_out_dir):
-        shutil.rmtree(eval_out_dir)
-    if os.path.exists(datadir):
-        shutil.rmtree(datadir)
-    if os.path.exists(tdir):
-        shutil.rmtree(tdir)
+def clean(data=True, output=True, species=True):
+    if data:
+        if os.path.exists(datadir):
+            shutil.rmtree(datadir)
+        if os.path.exists(tdir):
+            shutil.rmtree(tdir)
 
-    # remove test species
-    hmm_species_path = os.path.join(aug_config_path, 'species', hmm_species)
-    if os.path.exists(hmm_species_path):
-        shutil.rmtree(hmm_species_path)
-    crf_species_path = os.path.join(aug_config_path, 'species', crf_species)
-    if os.path.exists(crf_species_path):
-        shutil.rmtree(crf_species_path)
+    if output:
+        if os.path.exists(outdir):
+            shutil.rmtree(outdir)
+        if os.path.exists(eval_out_dir):
+            shutil.rmtree(eval_out_dir)
+
+    # remove test species if desired
+    if species:
+        hmm_species_path = os.path.join(aug_config_path, 'species', hmm_species)
+        if os.path.exists(hmm_species_path):
+            shutil.rmtree(hmm_species_path)
+        crf_species_path = os.path.join(aug_config_path, 'species', crf_species)
+        if os.path.exists(crf_species_path):
+            shutil.rmtree(crf_species_path)
 
 
 def create_test_dirs():
-    os.mkdir(outdir)
-    os.mkdir(eval_out_dir)
-    os.mkdir(datadir)
-    os.mkdir(tdir)
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
+    if not os.path.exists(eval_out_dir):
+        os.mkdir(eval_out_dir)
+    if not os.path.exists(datadir):
+        os.mkdir(datadir)
+    if not os.path.exists(tdir):
+        os.mkdir(tdir)
 
 
 def export_environ():
@@ -292,3 +300,4 @@ if __name__ == '__main__':
     training()
     res = execute_test()
     manage_additional_data(res)
+    clean(output=False)
