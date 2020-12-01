@@ -43,8 +43,8 @@ def write(datadir, mode):
                 testcase = 'default'
 
             # do not save the execution time and memory usage as tag
-            metric_data['execution_time'] = additional_information[testcase]['execution_time']
-            metric_data['used_memory'] = additional_information[testcase]['used_memory']
+            metric_data['execution_time'] = additional_information['resources'][testcase]['execution_time']
+            metric_data['used_memory'] = additional_information['resources'][testcase]['used_memory']
 
             json_body = [
                 {
