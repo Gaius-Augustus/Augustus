@@ -14,6 +14,28 @@ env:
   DB_PASSWD: ${{ secrets.TEST_DB_PASSWD }}
 
 jobs:
+  check_latest_commit_in_db:
+    runs-on: [self-hosted, linux, default]
+
+    outputs:
+      commit: ${{ steps.step3.outputs.hash }}
+
+    steps:
+    - name: Check out repository
+      id: step1
+      uses: actions/checkout@v2
+
+    - name: Get latest commit in DB
+      id: step2
+      run: |
+        echo 'LATEST_COMMIT_IN_DB<<EOF' >> $GITHUB_ENV
+        ./check_latest_commit_influx.py --dbname testresults --dbhost localhost --dbport 8086 --dbuser $DB_USER --dbpasswd $DB_PASSWD >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+
+    - name: Set output
+      id: step3
+      run: echo '::set-output name=hash::${{env.LATEST_COMMIT_IN_DB}}'
+
   longrunning_test:
     runs-on: [self-hosted, linux, default]
 
