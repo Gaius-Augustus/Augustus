@@ -4,8 +4,10 @@ import sys
 import argparse
 from influxdb import InfluxDBClient
 
+# Output the hash of the last tested commit from the influxdb.
 
-parser = argparse.ArgumentParser(description='Get latest commit of InfluxDB.')
+parser = argparse.ArgumentParser(
+    description='Get latest commit stored in InfluxDB.')
 parser.add_argument('-d', '--dbname', help='name of the database to use.')
 parser.add_argument('-o', '--dbhost', help='host of influxdb.')
 parser.add_argument('-p', '--dbport', help='port of influxdb.')
@@ -15,7 +17,7 @@ parser.add_argument('-w', '--dbpasswd',
 args = parser.parse_args()
 
 
-def check():
+def check_last_commit():
     client = InfluxDBClient(host=args.dbhost, port=args.dbport,
                             username=args.dbuser, password=args.dbpasswd, database=args.dbname)
 
@@ -47,4 +49,4 @@ if __name__ == '__main__':
         print('The password of the given user is required, please make use of --dbpasswd to pass the password...')
         sys.exit()
 
-    print(check())
+    print(check_last_commit())
