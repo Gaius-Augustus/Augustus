@@ -37,6 +37,7 @@ jobs:
         echo 'LATEST_COMMIT_IN_DB<<EOF' >> $GITHUB_ENV
         ./check_latest_commit_influx.py --dbname testresults --dbhost localhost --dbport 8086 --dbuser $DB_USER --dbpasswd $DB_PASSWD >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
+      working-directory: tests/longrunning/
 
     - name: Set output
       id: step3
