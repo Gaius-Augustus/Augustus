@@ -426,11 +426,18 @@ params = list(compress(params, must_delete))
 ### Check whether more than 1 set remains
 if len(params) < 2:
     frameinfo = getframeinfo(currentframe())
-    logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+    if len(params) == 0:
+        logger.info('Error in file ' + frameinfo.filename + ' at line ' +
                 str(frameinfo.lineno) + ': ' + 
                 "Remaining number of parameter sets is <2. " +
                 "Please run augustus outside of augstify.py with" +
-                " only one parameter set (here: " + params[0] +")!")
+                "a parameter set!")
+    else:
+        logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+                   str(frameinfo.lineno) + ': ' + 
+                    "Remaining number of parameter sets is <2. " +
+                    "Please run augustus outside of augstify.py with" +
+                    " only one parameter set (here: " + params[0] +")!")
     exit(1)
 
 ### Check whether number of threads is appropriate
