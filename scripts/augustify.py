@@ -399,19 +399,22 @@ if augustus_config_path == "":
 ### Read species parameter names
 params = [];
 try:
-    with open(args.parameter_list, "r") as params_handle:    
-        params = params_handle.readlines()
+    with open(args.parameter_list, "r") as params_handle:
+        for line in params_handle:
+            params.append(line)
 except IOError:
     frameinfo = getframeinfo(currentframe())
     logger.info('Error in file ' + frameinfo.filename + ' at line ' +
                 str(frameinfo.lineno) + ': ' + "Could not open file " +
                 args.parameter_list + " for reading!")
 
+
 ### Check whether given parameter sets are valid
 must_delete = [];
 for species_set in params:
     species_set = species_set.rstrip()
     curr_spec_set_file = augustus_config_path +  "species/" + species_set + "/" + species_set + "_exon_probs.pbl"
+    print("Checking for " + curr_spec_set_file)
     if os.path.isfile(curr_spec_set_file):
         must_delete.append(True)
     else:
