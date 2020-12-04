@@ -297,7 +297,7 @@ def augustify_seq(hindex, header, seqs, tmp, params):
     if args.prediction_file and not(max_prob == 0):
         curr_call = [augustus, "--AUGUSTUS_CONFIG_PATH=" + augustus_config_path, 
                      "--species=" + max_species, 
-                     '--softmasking=0', tmp + "seq" + str(hindex) + ".fa",
+                     '--softmasking=1', tmp + "seq" + str(hindex) + ".fa",
                      '--outfile=' + tmp + "seq" + str(hindex) + "_" + max_species + "_max.gff",
                      '--errfile=' + tmp + "seq" + str(hindex) + "_" + max_species + "_max.err"]
         aug_res = subprocess.run(curr_call, stdout=subprocess.PIPE,
