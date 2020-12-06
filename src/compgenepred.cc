@@ -702,7 +702,8 @@ void CompGenePred::runPredictionOrTest(){
 		    if (!noprediction){
 		      SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
 		      sfc->prepare(as, false, rsa->withEvidence(speciesNames[s]));
-		      namgene.doViterbiPiecewise(*sfc, as, bothstrands); // sampling
+                      unsigned int num_pieces;
+		      namgene.doViterbiPiecewise(*sfc, as, bothstrands, num_pieces); // sampling
 		      transcripts = namgene.getAllTranscripts();
 		      orthograph.sfcs[s] = sfc;
 		      orthograph.ptrs_to_alltranscripts[s] = transcripts;

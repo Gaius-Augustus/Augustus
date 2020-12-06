@@ -513,7 +513,7 @@ StatePath* NAMGene::getViterbiPath(const char *dna, const char* seqname){
  * NAMGene::doViterbiPiecewise
  * Iterate the viterbi algorithm on pieces of DNA small enough so that the DP matrices fit into memory.
  */
-Transcript *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *annoseq, Strand strand){
+Transcript *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *annoseq, Strand strand, unsigned int& num_pieces){
   list<AltGene> *geneList = new list<AltGene>;
   char *dna = annoseq->sequence;
   char *curdna;
@@ -526,6 +526,7 @@ Transcript *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequ
   static int geneid = 1; // made this static so gene numbering goes across sequences and is unique
   int transcriptid;
   int curdnalen;
+  num_pieces = 0;
   
   bool singlestrand = false; // singlestrand = no shadow states
   try {
@@ -654,7 +655,7 @@ Transcript *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequ
     geneList->splice(geneList->end(), *pieceGenes);
 
     
-	
+    num_pieces++; // number of pieces on which the core algorithm ran
     delete curAnnoSeq;
     beginPos = endPos + 1;
   } while (beginPos < seqlen);
