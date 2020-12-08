@@ -115,7 +115,7 @@ int main( int argc, char* argv[] ){
 	
     }
     else if(Constant::dbaccess.find('.') != string::npos){ // assuming sqlite access
-	cerr << "assuming an SQLite database" << endl;
+	cerr << "assuming a SQLite database" << endl;
 	if(Constant::speciesfilenames.empty()){
 	    cerr << "Missing parameter speciesfilenames." << endl;
 	    exit(1);
