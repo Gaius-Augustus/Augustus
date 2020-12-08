@@ -11,6 +11,8 @@ MySQL: +
 SQLite: +
   *getSeq* [parameters] --species=SPECIES --seq=SEQUENCE --dbaccess=dbname.db --speciesfilenames=SPECIESFILENAMES
 
+## OPTIONS
+
 ### Mandatory parameters
     
 *-s*, *--species=SPECIES*::
