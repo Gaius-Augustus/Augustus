@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
 import unittest
-from pathlib import Path
 import os
 import sys
 import shutil
 
 if not (os.path.exists('tests')):
     sys.exit('Wrong working directory!\nTest files must be accessible in ./tests folder.')
-sys.path.insert(0, '.') # make modul tests.utils accessible
+sys.path.append(0, '.') # make package tests.utils accessible
 
 from tests.utils import aug_assertions
 from tests.utils import aug_process
