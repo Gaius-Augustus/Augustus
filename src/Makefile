@@ -66,10 +66,6 @@ ifneq (,$(findstring $(SQLITE),1 true True TRUE)) # if SQLITE is defined and con
 	PROGR     += load2sqlitedb getSeq
 endif
 
-ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
-    PROGR     += espoca
-endif
-
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
 .SUFFIXES:

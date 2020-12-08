@@ -24,8 +24,7 @@ install:
 	ln -sf $(INSTALLDIR)/bin/fastBlockSearch /usr/local/bin/fastBlockSearch
 	ln -sf $(INSTALLDIR)/bin/load2db /usr/local/bin/load2db
 	ln -sf $(INSTALLDIR)/bin/getSeq /usr/local/bin/getSeq
-	ln -sf $(INSTALLDIR)/bin/espoca /usr/local/bin/espoca
-
+	
 # for internal purposes:
 release:
 	find . -name "*~" | xargs rm -f
