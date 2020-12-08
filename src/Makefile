@@ -119,7 +119,7 @@ info:
 	echo "$(CXXFLAGS) $(CPPFLAGS)" > $(INFO)
 
 clean:
-	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o $(INFO)
+	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o pp_fastBlockSearcher.o $(INFO)
 	cd googletest && ${MAKE} clean
 	cd unittests && ${MAKE} clean
 
