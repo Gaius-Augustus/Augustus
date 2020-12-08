@@ -94,10 +94,6 @@ consensusFinder: consensusFinder.cc consensus.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 	cp consensusFinder ../bin/
 
-curve2hints: curve2hints.cc exon_seg.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp curve2hints ../bin/
-
 fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	types.o properties.o geneticcode.o pp_profile.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
