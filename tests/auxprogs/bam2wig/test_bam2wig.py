@@ -7,7 +7,7 @@ import shutil
 
 if not (os.path.exists('tests')):
     sys.exit('Wrong working directory!\nTest files must be accessible in ./tests folder.')
-sys.path.append(0, '.') # make package tests.utils accessible
+sys.path.insert(0, '.') # make package tests.utils accessible
 
 from tests.utils import aug_assertions
 from tests.utils import aug_process
@@ -41,8 +41,9 @@ def check_working_dir(clean):
         errstr += 'Wrong example directory!' + '\n'
         errstr += f'The example files must be accessible in this path: "{exampledir}"!'
     if not clean and not (os.path.exists(bam2wigbin)):
-        errstr += 'Wrong working directory!' + '\n'
-        errstr += f'The augustus binaries must be accessible in this path: "{bindir}"!'
+        errstr += 'bam2wig binary not yet created!' + '\n'
+        errstr += f'The augustus binaries must be accessible in this path: "{bindir}"!' + '\n'
+        errstr += 'Please run make.'
     if (errstr):
         sys.exit(errstr)
 
