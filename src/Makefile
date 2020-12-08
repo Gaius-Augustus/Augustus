@@ -119,7 +119,7 @@ info:
 	echo "$(CXXFLAGS) $(CPPFLAGS)" > $(INFO)
 
 clean:
-	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o pp_fastBlockSearcher.o $(INFO)
+	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) pp_fastBlockSearcher.o $(INFO)
 	cd googletest && ${MAKE} clean
 	cd unittests && ${MAKE} clean
 
@@ -579,12 +579,6 @@ vitmatrix.o : \
 	../include/lldouble.hh \
 	../include/types.hh \
 	vitmatrix.cc
-
-consensus.o : \
-	../include/consensus.hh \
-	../include/geneticcode.hh \
-	../include/types.hh \
-	consensus.cc
 
 commontrain.o : \
 	../include/commontrain.hh \
