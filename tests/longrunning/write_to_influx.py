@@ -25,8 +25,8 @@ def write(datadir, mode):
     client = InfluxDBClient(host=args.dbhost, port=args.dbport,
                             username=args.dbuser, password=args.dbpasswd, database=args.dbname)
 
-    with open(datadir + 'test_version_data.json') as json_file:
-        version_data = json.load(json_file)
+    with open(datadir + 'additional_information.json') as json_file:
+        additional_information = json.load(json_file)
 
     if mode == 'single':
         eval_dir = datadir + 'eval/'
@@ -37,24 +37,25 @@ def write(datadir, mode):
         with open(metric_file) as json_file:
             metric_data = json.load(json_file)
 
-            # do not save the execution time as tag
-            metric_data['execution_time'] = version_data['execution_time']
-
             if mode == 'single':
                 testcase = os.path.basename(metric_file).replace('.json', '')
             else:
                 testcase = 'default'
+
+            # do not save the execution time and memory usage as tag
+            metric_data['execution_time'] = additional_information['resources'][testcase]['execution_time']
+            metric_data['used_memory'] = additional_information['resources'][testcase]['used_memory']
 
             json_body = [
                 {
                     "measurement": "qualitymetrics",
                     "tags": {
                         'mode': mode,
-                        "hash": version_data['revision'],
-                        'softmasking': version_data['softmasking'],
+                        "hash": additional_information['revision'],
+                        'softmasking': additional_information['softmasking'],
                         'testcase': testcase
                     },
-                    "time": version_data['commit_date'],
+                    "time": additional_information['commit_date'],
                     "fields": metric_data
                 }
             ]
