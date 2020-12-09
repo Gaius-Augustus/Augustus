@@ -20,32 +20,34 @@
 .LINKSTYLE blue R < >
 .SH "NAME"
 load2sqlitedb \- load genome sequences and extrinsic evidence hints into a SQLite database
+.SH "SYNOPSIS"
+.sp
+\fBload2sqlitedb\fP [OPTIONS] \-\-species=\fISPECIES\fP \-\-dbaccess=\fIdatabase.db\fP \fIinputfilename\fP
 .SH "DESCRIPTION"
 .sp
 \fBload2sqlitedb\fP is a tool to load genome sequences and extrinsic evidence hints into a SQLite database.
+.br
 When storing genomes/hints of multiple organisms call this program repeatedly for each one.
-.SH "SYNOPSIS"
-.sp
-\fBload2sqlitedb\fP [options] \-\-species=SPECIES \-\-dbaccess==database.db inputfilename
 .SH "OPTIONS"
 .sp
-\(aqinputfilename\(aq refers to a genome file in FASTA format or a hints file in GFF format.
-.SS "Mandatory parameters"
+\fIinputfilename\fP refers to a genome file in FASTA format or a hints file in GFF format.
+.SS "Mandatory options"
 .sp
-\fB\-s\fP, \fB\-\-species=SPECIES\fP
+\fB\-s\fP, \fB\-\-species\fP=\fISPECIES\fP
 .RS 4
 SPECIES is a name for your species and the same identifier as is used in the treefile and alnfile parameters to augustus.
 .RE
 .sp
-\fB\-d\fP, \fB\-\-dbaccess=database.db\fP
+\fB\-d\fP, \fB\-\-dbaccess\fP=\fIdatabase.db\fP
 .RS 4
 The file name of the SQLite database that will be opened or created if it does not already exist.
 .RE
 .SS "Additional options"
 .sp
-\fB\-c\fP, \fB\-\-chunksize=n\fP
+\fB\-c\fP, \fB\-\-chunksize\fP=\fIsize\fP
 .RS 4
 This option is only relevant when loading a sequence file.
+.br
 The sequences in the input genome are split into chunks of this size so
 that subsequent retrievals of small sequence ranges do not require to read
 the complete \- potentially much longer \- chromosome. (\(lA 1000000). Default Value: 50000
@@ -54,6 +56,7 @@ the complete \- potentially much longer \- chromosome. (\(lA 1000000). Default V
 \fB\-i\fP, \fB\-\-noIdx\fP
 .RS 4
 Use this flag to suppress the building of indices on the database tables.
+.br
 If you are going to load several genomes and/or hint files in a row, this option
 is recommended to speed up the loading. But make sure to build indices with
 \-\-makeIdx after all genomes/hints are loaded. Otherwise, data retrieval operations
@@ -63,19 +66,21 @@ can be very slow.
 \fB\-m\fP, \fB\-\-makeIdx\fP
 .RS 4
 Use this flag to build the indices on the database tables after loading several genomes and/or hint files with \-\-noIdx.
+.br
 Only call this once for all species, e.g. load2sqlitedb \-\-makeIdx \-\-dbaccess=database.db
 .RE
 .sp
 \fB\-r\fP, \fB\-\-clean\fP
 .RS 4
-Makes a clean load deleting existing hints/genome for the species from the database.
+Makes a clean load deleting existing hints/genome for the species from the database.+
 When called with a gff file, only the hints for the species are delete, but not the genome.
+.br
 When called with a fasta file, both hints and genome for the species are deleted.
 .RE
 .sp
 \fB\-h\fP, \fB\-\-help\fP
 .RS 4
-Produce help message. Default Value: false
+Produce help message.
 .RE
 .SH "EXAMPLE"
 .sp

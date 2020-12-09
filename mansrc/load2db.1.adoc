@@ -4,40 +4,38 @@
 
 load2db - load genome sequences and extrinsic evidence hints into a MySQL database
 
-## DESCRIPTION
-
-*load2db* is a tool to load genome sequences and extrinsic evidence hints into a MySQL database.
-This database must be created before calling *load2db*.
-When storing genomes/hints of multiple organisms call this program repeatedly for each one.
-
 ## SYNOPSIS
 
-*load2db* [options] --species=SPECIES --dbaccess=dbname,host,user,passwd inputfilename
+*load2db* [OPTIONS] --species=_SPECIES_ --dbaccess=_dbname,host,user,passwd_ _inputfilename_
+
+## DESCRIPTION
+
+*load2db* is a tool to load genome sequences and extrinsic evidence hints into a MySQL database. +
+This database must be created before calling *load2db*. +
+When storing genomes/hints of multiple organisms call this program repeatedly for each one.
 
 ## OPTIONS
 
-'inputfilename' refers to a genome file in FASTA format or a hints file in GFF format.
+_inputfilename_ refers to a genome file in FASTA format or a hints file in GFF format.
 
-### Mandatory parameters
+### Mandatory options
     
-*-s*, *--species=SPECIES*::
+*-s*, *--species*=_SPECIES_::
   SPECIES is a name for your species and the same identifier as is used in the treefile and alnfile parameters to augustus.
 
-*-d*, *--dbaccess=dbname,host,user,passwd*::
+*-d*, *--dbaccess*=_dbname,host,user,passwd_::
   dbname,host,user,passwd are the name of the SQL database, the host name or IP, the database user and password
-
-
 
 ### Additional options
 
-*-c*, *--chunksize=n* (<= 1000000):: 
-  This option is only relevant when loading a sequence file.
-  The sequences in the input genome are split into chunks of this size so 
-  that subsequent retrievals of small sequence ranges do not require to read 
+*-c*, *--chunksize*=_size_ (<= 1000000):: 
+  This option is only relevant when loading a sequence file. +
+  The sequences in the input genome are split into chunks of this size so
+  that subsequent retrievals of small sequence ranges do not require to read
   the complete - potentially much longer - chromosome. Default Value: 50000
 
 *-h*, *--help*::
-   Produce help message. Default Value: false
+   Produce help message.
 
 ## EXAMPLE
 ----
