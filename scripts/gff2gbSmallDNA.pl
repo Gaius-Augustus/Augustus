@@ -203,7 +203,8 @@ while(<FASTA>) {
     my $annotatedseqname = $seqname;
     
     if (!defined($annotation)) {
-        my $shortseqname = $seqname =~ s/\s.*//r;
+        my $shortseqname = $seqname;
+        $shortseqname =~ s/\s.*//;
         $annotatedseqname = $shortseqname;
         $annotation = $annos{$annotatedseqname}; # try the short sequence name (split at first whitespace)
         my $usedshortseqname = defined($annotation);

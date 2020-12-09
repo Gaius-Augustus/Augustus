@@ -13,8 +13,6 @@ auxprogs/bam2hints/bam2hints
 auxprogs/bam2hints/bam2hints.o
 auxprogs/bam2wig/bam2wig
 auxprogs/bam2wig/bam2wig.o
-auxprogs/checkTargetSortedness/checkTargetSortedness
-auxprogs/checkTargetSortedness/checkTargetSortedness.o
 auxprogs/compileSpliceCands/compileSpliceCands
 auxprogs/compileSpliceCands/compileSpliceCands.o
 auxprogs/compileSpliceCands/list.o
@@ -67,6 +65,7 @@ tests/examples/results/
 
 # ignore tmp test case data
 tests/examples/data/tmp/
+tests/auxprogs/*/tmp
 
 # ignore longrunning test data and output files
 tests/longrunning/single_genome/data/

@@ -14,7 +14,7 @@ CXX?=g++
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 -std=c++11 ${CXXFLAGS}#-DDEBUG -g -ggdb -pg -DDEBUG_STATES
+CXXFLAGS := -Wall -Wno-sign-compare -pedantic -O3 -std=c++11 ${CXXFLAGS}#-DDEBUG -g -ggdb -pg -DDEBUG_STATES
 
 ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))  # if ZIPINPUT is not defined or is something else than 0, false, False or FALSE
 	CPPFLAGS += -DZIPINPUT
@@ -66,10 +66,6 @@ ifneq (,$(findstring $(SQLITE),1 true True TRUE)) # if SQLITE is defined and con
 	PROGR     += load2sqlitedb getSeq
 endif
 
-ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
-    PROGR     += espoca
-endif
-
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
 .SUFFIXES:
@@ -89,14 +85,6 @@ etraining: etraining.cc $(TOBJS) $(OBJS)
 
 evaluate: evaluate.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-
-consensusFinder: consensusFinder.cc consensus.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp consensusFinder ../bin/
-
-curve2hints: curve2hints.cc exon_seg.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp curve2hints ../bin/
 
 fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	types.o properties.o geneticcode.o pp_profile.o lldouble.o
@@ -131,7 +119,7 @@ info:
 	echo "$(CXXFLAGS) $(CPPFLAGS)" > $(INFO)
 
 clean:
-	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o $(INFO)
+	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) pp_fastBlockSearcher.o $(INFO)
 	cd googletest && ${MAKE} clean
 	cd unittests && ${MAKE} clean
 
@@ -591,12 +579,6 @@ vitmatrix.o : \
 	../include/lldouble.hh \
 	../include/types.hh \
 	vitmatrix.cc
-
-consensus.o : \
-	../include/consensus.hh \
-	../include/geneticcode.hh \
-	../include/types.hh \
-	consensus.cc
 
 commontrain.o : \
 	../include/commontrain.hh \

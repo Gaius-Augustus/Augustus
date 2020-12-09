@@ -387,7 +387,7 @@ int main (int argc, char **argv)
 	
 	FILE *gff_handle=NULL; 
 
-	char usage[]="\ncompileSpliceCands: Find introns parsing a set of exon candidates in gff format (output of curve2hints)  USAGE: compileSpliceCands -f <splice candidates filename> -g <genome filename>\n\nOption:\t\tArgument:\tDescription:\n\t-f\t<filename>\tThe potential splice sites in gff format\n\t-g\t<filename>\tThe genome file in fasta format)\n\t-c\t<integer>\tDefines the number of potential splice site every potential splice site itself is compared with\n";
+	char usage[]="\ncompileSpliceCands: Find introns parsing a set of exon candidates in gff format. USAGE: compileSpliceCands -f <splice candidates filename> -g <genome filename>\n\nOption:\t\tArgument:\tDescription:\n\t-f\t<filename>\tThe potential splice sites in gff format\n\t-g\t<filename>\tThe genome file in fasta format)\n\t-c\t<integer>\tDefines the number of potential splice site every potential splice site itself is compared with\n";
 	char usage1[]="\t-t\t<float>\t\thas to be between 0 and 1 and defines how much the average coverage may differ\n\t-m\t<integer>\tdefines how many bases around the splice site should be checked.\n\t-d\t<no argument>\tenables debugging output\n\t-i\t<integer>\tThe maximum length an Intron can be. Default 500000(human genome).\n";
 	
 	char buffer[FILEBUFFER];

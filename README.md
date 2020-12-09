@@ -67,7 +67,7 @@ The following dependencies are required for AUGUSTUS:
 - For compiling utrrnaseq:
   - libboost-all-dev (version must be >Boost_1_49_0)
 - For compiling bam2wig:
-  - Follow [these instructions](./auxprogs/bam2wig/README.txt). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use `bamToWig.py` to accomplish the same task.
+  - Follow [these instructions](./auxprogs/bam2wig/README.md). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use `bamToWig.py` to accomplish the same task.
 - For compiling homgenemapping
   (set BOOST = FALSE in [./auxprogs/homgenemapping/src/Makefile](./auxprogs/homgenemapping/src/Makefile) if the option --printHomologs is not required or the required libraries are not available)
   - libboost-all-dev
