@@ -1,4 +1,4 @@
-CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -O2 -ggdb ${CFLAGS}
+CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -O2 ${CFLAGS}
 CC?=gcc
 
 aln2wig : aln2wig.o

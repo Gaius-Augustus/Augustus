@@ -1,0 +1,62 @@
+# getSeq(1)
+
+## NAME
+
+getSeq - retrieve genome sequences from MySQL and SQLite Databases
+
+## SYNOPSIS
+
+MySQL: +
+  *getSeq* [parameters] --species=SPECIES --seq=SEQUENCE --dbaccess=dbname,host,user,passwd  +
+SQLite: +
+  *getSeq* [parameters] --species=SPECIES --seq=SEQUENCE --dbaccess=dbname.db --speciesfilenames=SPECIESFILENAMES
+
+## OPTIONS
+
+### Mandatory parameters
+    
+*-s*, *--species=SPECIES*::
+  SPECIES is the species identifier used when loading the sequence into the database.
+
+*-q*, *--seq=SEQUENCE*::
+  SEQUENCE is the ID of the sequence to retrieve.
+
+*-c*, *--dbaccess=database*::
+  MySQL:  dbname,host,user,passwd are the name of the SQL database, the host name or IP, the database user and password +
+  SQLite: the file name of the SQLite database (must contain a dot)
+
+*-f*, *--speciesfilenames=SPECIESFILENAMES*::
+  This parameter is only recognized for SQLite databases. +
+  SPECIESFILENAMES is the file where the species identifier and the related file names of the sequences are stored. +
+  format:
+----
+    Homo sapiens <TAB> /dir/to/genome/human.fa
+    Mus musculus <TAB> /dir/to/genome/mouse.fa
+----
+
+### Additional options
+
+*-a*, *--start=n*::
+  Retrieve subsequence starting at position N (coordinates are 1-based).
+
+*-b*, *--end=n*::
+  Retrieve subsequence ending at position N (coordinates are 1-based).
+
+*-r*, *--rc*::
+  Output the reverse complement of the sequence.
+
+*-h*, *--help*::
+   Produce help message. Default Value: false
+
+## EXAMPLE
+----
+  MySQL:
+    getSeq --species=mouse --seq=chr16 --dbaccess=vertebrates,localhost,myuser,mypasswd 
+    getSeq --species=human --seq=chr21 --start=32026 --end=32085 --rc --dbaccess=vertebrates,localhost,myuser,mypasswd 
+
+  SQLite:
+    getSeq --species=mouse --seq=chr16 --dbaccess=vertebrates.db --speciesfilenames=speciesfilenames.tsv
+----
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
