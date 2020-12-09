@@ -1,0 +1,48 @@
+'\" t
+.\"     Title: bam2wig
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: Asciidoctor 1.5.5
+.\"      Date: 
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "BAM2WIG" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.LINKSTYLE blue R < >
+.SH "NAME"
+bam2wig \- Convert bam files to wiggle files. Can be used to generate exonpart hints for AUGUSTUS.
+.SH "SYNOPSIS"
+.sp
+\fBbam2wig\fP [\-r region] [\-t trackname] <in.bam>
+.SH "OPTIONS"
+.sp
+File needs to be sorted by Reference ID (i.e. target name)
+Use "samtools sort <in.bam>" to such effect.
+Use "samtools stats <in.bam> | grep \(aqis sorted\(aq " to check if the file is sorted.
+.SS "Parameters:"
+.sp
+\fB\-r\fP
+.RS 4
+Allows to specify a target region, e.g. \(aqchr3L:10\-250\(aq
+This option can only be used if an index file exists, see: samtools index
+.RE
+.sp
+\fB\-t\fP
+.RS 4
+string provided as track name
+.RE
+.SH "AUTHORS"
+.sp
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+.SH "ADDITIONAL DOCUMENTATION"
+.sp
+An exhaustive documentation can be found in the file /usr/share/doc/augustus/README.md.gz.

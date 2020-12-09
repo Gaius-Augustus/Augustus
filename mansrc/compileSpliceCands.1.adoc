@@ -1,0 +1,42 @@
+# compileSpliceCands(1)
+
+## NAME
+
+compileSpliceCands - Find introns parsing a set of exon candidates in GFF format
+
+## SYNOPSIS
+
+*compileSpliceCands* -f <splice candidates filename> -g <genome filename>
+
+## OPTIONS
+
+###  Parameters:
+
+*-f* <filename>::
+  potential splice sites in gff format
+
+*-g* <filename>::
+  genome file in fasta format
+
+*-c* <integer>::
+	defines the number of potential splice site every potential splice site itself is compared with
+
+*-t* <float>::
+	has to be between 0 and 1 and  defines how much the average coverage may differ
+
+*-m* <integer>::
+	defines how many bases around the splice site should be checked
+
+*-d*::
+	enables debugging output
+
+*-i* <integer>::
+	maximum length an Intron can be, default 500000 (human genome)
+
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+
+## ADDITIONAL DOCUMENTATION
+
+An exhaustive documentation can be found in the file /usr/share/doc/augustus/README.md.gz.

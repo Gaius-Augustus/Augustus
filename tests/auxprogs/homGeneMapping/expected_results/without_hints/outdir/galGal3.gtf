@@ -1,0 +1,100 @@
+# 0	bosTau4
+# 1	galGal3
+# 2	hg19
+# 3	mm9
+###
+chr1	AUGUSTUS	transcript	6293	20787	.	-	.	g1.t1
+chr1	AUGUSTUS	CDS	6293	6362	0.5	-	1	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	exon	6293	6362	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	stop_codon	6293	6295	0	-	.	transcript_id "g1.t1"; gene_id "g1"; 
+chr1	AUGUSTUS	intron	6363	6804	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	CDS	6805	6953	0.63	-	0	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1,0,2,3"; 
+chr1	AUGUSTUS	exon	6805	6953	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1,0,2,3"; 
+chr1	AUGUSTUS	intron	6954	7435	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	CDS	7436	7574	0.56	-	1	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	exon	7436	7574	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	intron	7575	9095	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	CDS	9096	9327	0.19	-	2	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	exon	9096	9327	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	intron	9328	12342	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	CDS	12343	12394	0.6	-	0	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	exon	12343	12394	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	intron	12395	14178	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1"; 
+chr1	AUGUSTUS	CDS	14179	14470	0.9	-	1	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1,0,2,3"; 
+chr1	AUGUSTUS	exon	14179	14470	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1,0,2,3"; 
+chr1	AUGUSTUS	intron	14471	20605	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1,0,2,3"; 
+chr1	AUGUSTUS	CDS	20606	20787	0.6	-	0	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1,0,2,3"; 
+chr1	AUGUSTUS	exon	20606	20787	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "1,0,2,3"; 
+chr1	AUGUSTUS	start_codon	20785	20787	0	-	.	transcript_id "g1.t1"; gene_id "g1"; 
+#
+# gene feature level:
+#
+#
+# number/% of features with exact homologs in at least k other genomes:
+#
+#---------------------------------------------------------------------------------------------------
+#   k           CDS             Intr             Exon              Intr+Exon
+#---------------------------------------------------------------------------------------------------
+#
+#   0         7 100.0%         6 100.0%         7 100.0%         13 100.0% *************************
+#   1         3  42.9%         1  16.7%         3  42.9%          4  30.8% *******
+#   2         3  42.9%         1  16.7%         3  42.9%          4  30.8% *******
+#   3         3  42.9%         1  16.7%         3  42.9%          4  30.8% *******
+#
+# number/% of features supported by extrinsic evidence in at least k genomes :
+#
+#---------------------------------------------------------------------------------------------------
+#   k           CDS             Intr             Exon              Intr+Exon
+#---------------------------------------------------------------------------------------------------
+#
+#   0         7 100.0%         6 100.0%         7 100.0%         13 100.0% *************************
+#   1         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   2         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   3         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   4         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#
+# transcript level:
+#
+#   0 gene_id=g1                            tx_id=g1.t1                           3/8 CDS  1/7 Intr  3/8 exon
+#   2 gene_id=g1                            tx_id=g1.t1                           3/8 CDS  1/7 Intr  3/8 exon
+#   3 gene_id=g1                            tx_id=g1.t1                           3/8 CDS  1/7 Intr  3/8 exon
+#
+# transcript has an exact homolog in 0 other genomes.
+#
+chr1	AUGUSTUS	transcript	20923	21195	.	+	.	g2.t1
+chr1	AUGUSTUS	CDS	20923	21195	0.6	+	0	transcript_id "g2.t1"; gene_id "g2"; hgm_info "1"; 
+chr1	AUGUSTUS	exon	20923	21195	0.0	+	.	transcript_id "g2.t1"; gene_id "g2"; hgm_info "1"; 
+chr1	AUGUSTUS	start_codon	20923	20925	0.0	+	.	transcript_id "g2.t1"; gene_id "g2"; 
+chr1	AUGUSTUS	stop_codon	21193	21195	0.0	+	.	transcript_id "g2.t1"; gene_id "g2"; 
+#
+# gene feature level:
+#
+#
+# number/% of features with exact homologs in at least k other genomes:
+#
+#---------------------------------------------------------------------------------------------------
+#   k           CDS             Intr             Exon              Intr+Exon
+#---------------------------------------------------------------------------------------------------
+#
+#   0         1 100.0%         0   0.0%         1 100.0%          1 100.0% *************************
+#   1         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   2         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   3         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#
+# number/% of features supported by extrinsic evidence in at least k genomes :
+#
+#---------------------------------------------------------------------------------------------------
+#   k           CDS             Intr             Exon              Intr+Exon
+#---------------------------------------------------------------------------------------------------
+#
+#   0         1 100.0%         0   0.0%         1 100.0%          1 100.0% *************************
+#   1         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   2         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   3         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   4         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#
+# transcript level:
+#
+#
+# transcript has an exact homolog in 0 other genomes.
+#

@@ -1,0 +1,66 @@
+# 0	bosTau4
+# 1	galGal3
+# 2	hg19
+# 3	mm9
+###
+chr1	AUGUSTUS	transcript	1935	26768	.	-	.	g1.t1
+chr1	AUGUSTUS	CDS	1935	3094	0.95	-	2	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2,3M-1"; 
+chr1	AUGUSTUS	exon	1935	3094	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2,3"; 
+chr1	AUGUSTUS	stop_codon	1935	1937	0	-	.	transcript_id "g1.t1"; gene_id "g1"; 
+chr1	AUGUSTUS	intron	3095	4797	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2E-24,3M-1"; 
+chr1	AUGUSTUS	CDS	4798	5059	0.98	-	0	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2,3M-1"; 
+chr1	AUGUSTUS	exon	4798	5059	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2,3"; 
+chr1	AUGUSTUS	intron	5060	6320	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2E-17,3M-1"; 
+chr1	AUGUSTUS	CDS	6321	6424	1	-	2	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2,3M-1"; 
+chr1	AUGUSTUS	exon	6321	6424	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2,3"; 
+chr1	AUGUSTUS	intron	6425	7219	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2E-14,3M-1"; 
+chr1	AUGUSTUS	CDS	7220	7378	0.97	-	2	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2,3M-1"; 
+chr1	AUGUSTUS	exon	7220	7378	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2,3"; 
+chr1	AUGUSTUS	intron	7379	9634	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2E-9,3M-1"; 
+chr1	AUGUSTUS	CDS	9635	9684	0.87	-	1	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2,3M-1"; 
+chr1	AUGUSTUS	exon	9635	9684	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2,3"; 
+chr1	AUGUSTUS	intron	9685	11533	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2E-24,3M-1"; 
+chr1	AUGUSTUS	CDS	11534	11682	0.99	-	0	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,1,2,3M-1"; 
+chr1	AUGUSTUS	exon	11534	11682	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,1,2,3"; 
+chr1	AUGUSTUS	intron	11683	16602	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,2E-27,3M-1"; 
+chr1	AUGUSTUS	CDS	16603	16894	0.73	-	1	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,1,2,3M-1"; 
+chr1	AUGUSTUS	exon	16603	16894	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,1,2,3"; 
+chr1	AUGUSTUS	intron	16895	26586	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,1,2E-27,3M-1"; 
+chr1	AUGUSTUS	CDS	26587	26768	0.71	-	0	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,1,2,3M-1"; 
+chr1	AUGUSTUS	exon	26587	26768	0	-	.	transcript_id "g1.t1"; gene_id "g1"; hgm_info "0,1,2,3"; 
+chr1	AUGUSTUS	start_codon	26766	26768	0	-	.	transcript_id "g1.t1"; gene_id "g1"; 
+#
+# gene feature level:
+#
+#
+# number/% of features with exact homologs in at least k other genomes:
+#
+#---------------------------------------------------------------------------------------------------
+#   k           CDS             Intr             Exon              Intr+Exon
+#---------------------------------------------------------------------------------------------------
+#
+#   0         8 100.0%         7 100.0%         8 100.0%         15 100.0% *************************
+#   1         8 100.0%         7 100.0%         8 100.0%         15 100.0% *************************
+#   2         8 100.0%         7 100.0%         8 100.0%         15 100.0% *************************
+#   3         3  37.5%         1  14.3%         3  37.5%          4  26.7% ******
+#
+# number/% of features supported by extrinsic evidence in at least k genomes :
+#
+#---------------------------------------------------------------------------------------------------
+#   k           CDS             Intr             Exon              Intr+Exon
+#---------------------------------------------------------------------------------------------------
+#
+#   0         8 100.0%         7 100.0%         8 100.0%         15 100.0% *************************
+#   1         8 100.0%         7 100.0%         0   0.0%          7  46.7% ***********
+#   2         0   0.0%         7 100.0%         0   0.0%          7  46.7% ***********
+#   3         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#   4         0   0.0%         0   0.0%         0   0.0%          0   0.0% 
+#
+# transcript level:
+#
+#   1 gene_id=g1                            tx_id=g1.t1                           3/7 CDS  1/6 Intr  3/7 exon
+#   2 gene_id=g1                            tx_id=g1.t1                           8/8 CDS  7/7 Intr  8/8 exon
+#   3 gene_id=g1                            tx_id=g1.t1                           8/8 CDS  7/7 Intr  8/8 exon
+#
+# transcript has an exact homolog in 2 other genomes.
+#

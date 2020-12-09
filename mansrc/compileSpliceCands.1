@@ -1,0 +1,68 @@
+'\" t
+.\"     Title: compilesplicecands
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: Asciidoctor 1.5.5
+.\"      Date: 
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "COMPILESPLICECANDS" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.LINKSTYLE blue R < >
+.SH "NAME"
+compilesplicecands \- Find introns parsing a set of exon candidates in GFF format
+.SH "SYNOPSIS"
+.sp
+\fBcompileSpliceCands\fP \-f <splice candidates filename> \-g <genome filename>
+.SH "OPTIONS"
+.SS "Parameters:"
+.sp
+\fB\-f\fP <filename>
+.RS 4
+potential splice sites in gff format
+.RE
+.sp
+\fB\-g\fP <filename>
+.RS 4
+genome file in fasta format
+.RE
+.sp
+\fB\-c\fP <integer>
+.RS 4
+defines the number of potential splice site every potential splice site itself is compared with
+.RE
+.sp
+\fB\-t\fP <float>
+.RS 4
+has to be between 0 and 1 and  defines how much the average coverage may differ
+.RE
+.sp
+\fB\-m\fP <integer>
+.RS 4
+defines how many bases around the splice site should be checked
+.RE
+.sp
+\fB\-d\fP
+.RS 4
+enables debugging output
+.RE
+.sp
+\fB\-i\fP <integer>
+.RS 4
+maximum length an Intron can be, default 500000 (human genome)
+.RE
+.SH "AUTHORS"
+.sp
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
+.SH "ADDITIONAL DOCUMENTATION"
+.sp
+An exhaustive documentation can be found in the file /usr/share/doc/augustus/README.md.gz.

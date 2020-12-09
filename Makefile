@@ -12,6 +12,7 @@ clean:
 	cd src && ${MAKE} clean
 	cd auxprogs && ${MAKE} clean
 	cd tests/examples && ./testcases.py --clean
+	tests/auxprogs/bam2wig/test_bam2wig.py --clean
 
 INSTALLDIR = /opt/augustus-$(AUGVERSION)
 
@@ -41,10 +42,11 @@ release:
 
 test:
 	cd tests/examples && ./testcases.py --compare --html
+	tests/auxprogs/bam2wig/test_bam2wig.py --compare --html
 
 unit_test:
 	cd src && ${MAKE} unittest
 	cd src/unittests && ./unittests
 
 # remove -static from src/Makefile for MAC users
-# remove -g -gdb from CXXFLAGS
+# remove -g -ggdb from CXXFLAGS
