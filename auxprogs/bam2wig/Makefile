@@ -35,6 +35,8 @@ endif
 CFLAGS:=-Wall -O2 $(CFLAGS)
 CC?=gcc
 
+.PHONY : clean test	
+
 $(PROGRAM) : bam2wig.o
 	$(CC) $(CFLAGS)	$(CPPFLAGS) $(LDFLAGS) $^ -o $@ $(HTSLIBS)
 	mkdir -p ../../bin
@@ -44,7 +46,10 @@ bam2wig.o : bam2wig.c
 	-$(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(INCLUDES)
 	@if [ ! -f $@ ]; then echo $(HTSERRHINT); exit 1; fi
 
-.PHONY : clean	
 clean:
 	rm -f $(OBJECTS) bam2wig.o bam2wig
 	rm -f ../../bin/bam2wig
+	cd ../..; tests/auxprogs/bam2wig/test_bam2wig.py --clean
+	
+test:   $(PROGRAM)
+	cd ../..; tests/auxprogs/bam2wig/test_bam2wig.py --compare --html
