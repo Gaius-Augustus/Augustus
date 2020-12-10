@@ -19,13 +19,13 @@
 .if \n[.g] .mso www.tmac
 .LINKSTYLE blue R < >
 .SH "NAME"
-pp_simscore \- print similarity and alignments between protein profile and sequence on the standard output
+pp_simscore \- print similarity and alignments for block\-profile and protein sequence on the standard output
 .SH "SYNOPSIS"
 .sp
 \fBpp_simScore\fP [OPTIONS] \-\-fasta=\fIprotein\-sequence\-file\fP \-\-prfl=\fIprotein\-profile\-file\fP
 .SH "DESCRIPTION"
 .sp
-Algorithm for calculating the similarity score and the optimal alignments between a protein profile and a protein sequence.
+Algorithm for calculating the similarity score and the optimal alignments of a block\-profile and a protein sequence.
 The algorithm can optional take intron positions into account. Print to standard output.
 .SH "OPTIONS"
 .SS "Mandatory options"
@@ -33,12 +33,93 @@ The algorithm can optional take intron positions into account. Print to standard
 \fB\-f\fP, \fB\-\-fasta\fP=\fIfile\fP
 .RS 4
 Protein sequence file in FASTA format.
+.br
+It may contain an optional [Intron] section. This section denotes the
+intron positions in the protein sequence, which are specified as list of
+(j, f), where j is the index of the amino acid after witch the intron
+immediately occurs. The indices range from 0 to m \- 1 if the protein
+sequence has a length of m.
 .RE
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+    >protein sequence header
+    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    XXXXXXX protein sequence XXXXXXXXXXX
+    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+    [Introns]
+    # index of the position after which an intron occurs | residual nucleotides before the intron
+    2 0
+    5 1
+    30 2
+    104 1
+.fi
+.if n \{\
+.RE
+.\}
 .sp
 \fB\-p\fP, \fB\-\-prfl\fP= \fIfile\fP
 .RS 4
-Protein profile file.
+The block profile file has to have following structure:
 .RE
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+    [dist]
+    min    max
+    [block]
+    B
+    [intron profile]
+    w
+    inter\-block_profile_list
+    intra\-block_profile_list
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+This structure can be repeated in this file. The file has to end either
+in a [dist] section or a [dist] and than [intron profile] section.
+The [intron profile] sections are optional.
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+    [dist] explanation:
+    min, max denote the distance interval of an inter\-block section
+
+    [block] explanation:
+    B denotes a (20 x t) matrix for a block of t of the block\-profile
+
+    [intron profile] explanation:
+    an intron profile describes the positions and frequencies of introns in and
+    before the associated block
+    w: number of protein family members used to build the intron profile
+    inter\-block_profile_list: list of (h, v),
+    where   h denotes the number of introns which occurred within a family member,
+            v the number of family members which have this number of introns
+    intra\-block_profile_list: list (s, f, v),
+    where   s denotes the index of the position in the block after which an intron occurs,
+            f denotes the number of nucleotides which are left before the intron (0,1,2)
+            v the number of family members which have an intron at that position
+.fi
+.if n \{\
+.RE
+.\}
 .SS "Additional options"
 .sp
 \fB\-g\fP, \fB\-\-gap_inter\fP=\fIfloat\fP
