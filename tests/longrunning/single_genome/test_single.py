@@ -241,15 +241,29 @@ def execute_run(options, gffname, runname):
                 executor.submit(execute, cmd)
 
         # join output files of analyzed chunks
-        input_files = ','.join(tmp_filenames)
-        join_cmd = ['../../../auxprogs/joingenes/joingenes',
-                    f'--genesets={input_files}', f'--output={gffname}']
-        execute(join_cmd)
+        join_pred_files(tmp_filenames, gffname)
 
         # evaluate results
         eval_cmd = [os.path.join(
             args.evalDir, 'evaluate_gtf.pl'), refanno, gffname]
         execute(eval_cmd, output=os.path.join(eval_out_dir, f'{runname}.eval'))
+
+
+def join_pred_files(tmp_filenames, gffname):
+    cat_files = ''
+    for f in tmp_filenames:
+        with open(f, 'r') as file:
+            cat_files += file.read()
+
+    with open(gffname, 'w') as output:
+        p = subprocess.run(['../../../scripts/join_aug_pred.pl'], stdout=output, stderr=subprocess.PIPE,
+                           input=cat_files, universal_newlines=True)
+
+        if p.stderr:
+            error = p.stderr.read()
+            p.stderr.close()
+            if error:
+                print(error)
 
 
 def execute_test():
