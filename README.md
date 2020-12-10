@@ -137,8 +137,9 @@ For further references see [docs/REFERENCES.md](docs/REFERENCES.md)
 
 All source code, i.e.
   - the AUGUSTUS source code (src/*.cc, include/*.hh)
-  - the scripts (scripts/*.pl)
+  - the scripts (scripts/*)
   - the auxiliary programs (auxprogs/)
-  - the tree-parser (src/scanner,src/parser)
+  - the tree-parser (src/scanner, src/parser)
+  - the unit tests (src/unittests)
   
 is under the [Artistic License](src/LICENSE.TXT).
