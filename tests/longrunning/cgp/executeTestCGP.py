@@ -326,10 +326,6 @@ if __name__ == '__main__':
         sys.exit()
     dataDir = str(expand_dir(args.dataDir))
 
-    if args.pathToGitRepo is None:
-        print('The path to the Augustus Git repository is required, please make use of --pathToGitRepo to pass the path...')
-        sys.exit()
-
     # set working directory according to test data stored on the webserver
     workingDir = dataDir + 'cgp12way/'
 
@@ -361,6 +357,10 @@ if __name__ == '__main__':
         run_evaluate_global(paths_shared, paths, chunks)
 
     # collect commit information for database storage
-    info = util.commit_info(args.pathToGitRepo)
+    if args.pathToGitRepo is None:
+        info = 'NoInformation', 'NoInformation'
+    else:
+        info = util.commit_info(args.pathToGitRepo)
+
     util.store_additional_data(
         info[1], info[0], res, workingDir + 'additional_information.json')
