@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import lr_util as util
 import shutil
 import subprocess
 import argparse
@@ -15,7 +16,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 # import util script from parent directory
 sys.path.append('..')
-import lr_util as util
 
 outdir = 'output'
 eval_out_dir = os.path.join(outdir, 'eval')
@@ -23,7 +23,7 @@ datadir = 'data'
 tdir = os.path.join(datadir, 'training')
 aug_config_path = os.path.join('..', '..', '..', 'config')
 testseq = os.path.join(datadir, 'chr1.fa.gz')
-trset = os.path.join(datadir, tdir, 'train.1784.gb')
+trset = os.path.join(tdir, 'train.1784.gb')
 refanno = os.path.join(
     datadir, 'ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf')
 hmm_species = 'human_longrunningtest_hmm'
@@ -62,6 +62,8 @@ parser.add_argument('-g', '--pathToGitRepo',
 parser.add_argument('-j', '--jobs',
                     help='to set the maximum number of jobs executed in parallel. (default value 2)')
 parser.add_argument('-e', '--evalDir', help='path to Eval script.')
+parser.add_argument('-k', '--keepData', action='store_true',
+                    help='do not delete the downloaded data.')
 args = parser.parse_args()
 
 
@@ -132,11 +134,14 @@ def download(url, target_dir, unzip=False, set_trset=False, set_testseq=False, s
 
 def get_test_data():
     print('Downloading required data...')
-    download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/train.1784.gb.gz',
-             tdir, unzip=True, set_trset=True)
-    download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/chr1.fa.gz',
-             datadir, set_testseq=True)
-    download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf', datadir)
+    if not os.path.isfile(trset):
+        download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/train.1784.gb.gz',
+                 tdir, unzip=True, set_trset=True)
+    if not os.path.isfile(testseq):
+        download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/chr1.fa.gz',
+                 datadir, set_testseq=True)
+    if not os.path.isfile(refanno):
+        download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf', datadir)
     print('\n' + 'Download completed.')
 
 
@@ -310,10 +315,16 @@ if __name__ == '__main__':
 
     util.check_memory()
     export_environ()
-    clean()
+    if (args.keepData):
+        clean(data=False)
+    else:
+        clean()
     create_test_dirs()
     get_test_data()
     training()
     res = execute_test()
     manage_additional_data(res)
-    clean(output=False)
+    if (args.keepData):
+        clean(data=False, output=False)
+    else:
+        clean(output=False)
