@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import lr_util as util
 import shutil
 import subprocess
 import argparse
@@ -15,7 +16,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 # import util script from parent directory
 sys.path.append('..')
-import lr_util as util
 
 outdir = 'output'
 eval_out_dir = os.path.join(outdir, 'eval')
@@ -80,10 +80,12 @@ def clean(data=True, output=True, species=True):
 
     # remove test species if desired
     if species:
-        hmm_species_path = os.path.join(aug_config_path, 'species', hmm_species)
+        hmm_species_path = os.path.join(
+            aug_config_path, 'species', hmm_species)
         if os.path.exists(hmm_species_path):
             shutil.rmtree(hmm_species_path)
-        crf_species_path = os.path.join(aug_config_path, 'species', crf_species)
+        crf_species_path = os.path.join(
+            aug_config_path, 'species', crf_species)
         if os.path.exists(crf_species_path):
             shutil.rmtree(crf_species_path)
 
