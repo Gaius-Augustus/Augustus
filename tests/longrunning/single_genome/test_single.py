@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import lr_util as util
 import shutil
 import subprocess
 import argparse
@@ -16,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 # import util script from parent directory
 sys.path.append('..')
+import lr_util as util
 
 outdir = 'output'
 eval_out_dir = os.path.join(outdir, 'eval')
@@ -291,16 +291,16 @@ def execute_test():
 
 
 def manage_additional_data(used_resources):
-    info = util.commit_info(args.pathToGitRepo)
+    if args.pathToGitRepo is None:
+        info = 'NoInformation', 'NoInformation'
+    else:
+        info = util.commit_info(args.pathToGitRepo)
+
     util.store_additional_data(
         info[1], info[0], used_resources, 'output/additional_information.json')
 
 
 if __name__ == '__main__':
-    if args.pathToGitRepo is None:
-        print('The path to the Augustus Git repository is required, please make use of --pathToGitRepo to pass the path...')
-        sys.exit()
-
     if args.evalDir is None:
         print('The path eval script collection, please make use of --evalDir to pass the path...')
         sys.exit()
