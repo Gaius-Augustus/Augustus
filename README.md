@@ -9,7 +9,7 @@
 [WEB-SERVER](#web-server)  
 [COMPARATIVE GENE PREDICTION](docs/README-cgp.md)  
 [AUTHORS AND CONTACT](docs/CONTACT.md)  
-[REFERENCES](#references)  
+[REFERENCES](#references-and-documentation)  
 [LICENSES](#licenses)  
 
 # INTRODUCTION
