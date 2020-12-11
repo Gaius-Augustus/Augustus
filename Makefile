@@ -31,6 +31,7 @@ release:
 	find . -name "*~" | xargs rm -f
 	rm .travis.yml
 	rm -rf .git
+	rm -rf .github
 	rm -f src/makedepend.pl
 	cd docs/tutorial2015/results; ls | grep -v do.sh | grep -v README | xargs rm; cd -
 	rm -r auxprogs/utrrnaseq/input/human-chr19
