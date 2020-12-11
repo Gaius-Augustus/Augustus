@@ -9,7 +9,7 @@
 [BUILDING THE NEWICK PARSER FROM SCRATCH](CHANGE-TREE-PARSER.md)  
    (not needed unless you run into compiler errors related to 'parse.cc' or 'lex.cc')  
 [AUTHORS AND CONTACT](CONTACT.md)  
-[REFERENCES](../README.md#references)  
+[REFERENCES](../README.md#references-and-documentation)  
 [LICENSES](../README.md#licenses)  
 
 # INTRODUCTION
