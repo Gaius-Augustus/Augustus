@@ -1,6 +1,6 @@
 # About AUGUSTUS
 
-AUGUSTUS is a gene prediction program written or maintained by Mario Stanke, Oliver Keller, Stefanie König, Lizzy Gerischer, Katharina Hoff, Giovanna Migliorelli, Lars Gabriel, Anica Hoppe, Tonatiuh Peña Centeno, Henry Mehlan, Daniel Honsel and Steffen Herbold. It can be used as an ab initio program, which means it bases its prediction purely on the sequence. AUGUSTUS may also incorporate hints on the gene structure coming from extrinsic sources such as EST, MS/MS, protein alignments and syntenic genomic alignments. Since version 3.0 AUGUSTUS can also predict the genes simultaneously in several aligned genomes (see [README-cgp.md](../README-cgp.md)). Currently, AUGUSTUS has been trained for predicting genes in: 
+AUGUSTUS is a gene prediction program written or maintained by Mario Stanke, Oliver Keller, Stefanie König, Lizzy Gerischer, Katharina Hoff, Giovanna Migliorelli, Lars Gabriel, Anica Hoppe, Tonatiuh Peña Centeno, Henry Mehlan, Daniel Honsel and Steffen Herbold. It can be used as an ab initio program, which means it bases its prediction purely on the sequence. AUGUSTUS may also incorporate hints on the gene structure coming from extrinsic sources such as EST, MS/MS, protein alignments and syntenic genomic alignments. Since version 3.0 AUGUSTUS can also predict the genes simultaneously in several aligned genomes (see [README-cgp.md](README-cgp.md)). AUGUSTUS has been trained for predicting genes, among other species, in: 
 
 - Homo sapiens (human), 
 - Drosophila melanogaster (fruit fly), 

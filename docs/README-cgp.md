@@ -5,12 +5,12 @@
 
 [INTRODUCTION](#introduction)  
 [INSTALLATION](#installation)  
-[RUNNING AUGUSTUS IN CGP MODE](docs/RUNNING-AUGUSTUS-IN-CGP-MODE.md)  
-[BUILDING THE NEWICK PARSER FROM SCRATCH](docs/CHANGE-TREE-PARSER.md)  
+[RUNNING AUGUSTUS IN CGP MODE](RUNNING-AUGUSTUS-IN-CGP-MODE.md)  
+[BUILDING THE NEWICK PARSER FROM SCRATCH](CHANGE-TREE-PARSER.md)  
    (not needed unless you run into compiler errors related to 'parse.cc' or 'lex.cc')  
-[AUTHORS AND CONTACT](docs/CONTACT.md)  
-[REFERENCES](README.md#references)  
-[LICENSES](README.md#licenses)  
+[AUTHORS AND CONTACT](CONTACT.md)  
+[REFERENCES](../README.md#references)  
+[LICENSES](../README.md#licenses)  
 
 # INTRODUCTION
 
