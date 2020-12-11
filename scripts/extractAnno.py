@@ -34,7 +34,7 @@ def extractAnno(infile, outfile, mode, left, right, overlap, subset):
             if not line:
                 break
             if line.find('#')==-1 and line!='\n':
-                split = [x for x in line.split("\t") if x is not ""]
+                split = [x for x in line.split("\t") if x != ""]
 
                 if split[0] == '1':
                     trans_id = extractTransId(split[8], 'transcript_id')
@@ -58,7 +58,7 @@ def extractAnno(infile, outfile, mode, left, right, overlap, subset):
             if not line:
                 break
             if line.find('#')==-1 and line!='\n':                       # here comments and blank lines are purged, we can change it though
-                split = [x for x in line.split("\t") if x is not ""]
+                split = [x for x in line.split("\t") if x != ""]
                 trans_id = extractTransId(split[8], 'transcript_id')
                 if trans_id != '':
                     if trans_id in transcripts:
