@@ -129,7 +129,7 @@ def download(url, target_dir, unzip=False, set_trset=False, set_testseq=False, s
 
 
 def get_test_data():
-    print('Downloading required data...')
+    print('Downloading sequence and reference annotation data...')
     download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/train.1784.gb.gz',
              tdir, unzip=True, set_trset=True)
     download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/chr1.fa.gz',
