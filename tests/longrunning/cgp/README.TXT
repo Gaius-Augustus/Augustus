@@ -14,3 +14,9 @@ EVAL_DIR=/home/mario/tools/eval-2.2.8
 ### Run with
 
 ./executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval --augustusDir ../../../ --dataDir data --evalDir $EVAL_DIR --jobs 5 --pathToGitRepo ../../../.git
+
+
+### Extract desired accuracy values and save them as JSON file
+(execution from the directory tests/longrunning/)
+
+./extract_accuracy_values.py --path cgp/data/cgp12way/ACCURACY
