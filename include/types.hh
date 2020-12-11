@@ -73,7 +73,7 @@ ostream& operator<< (ostream& strm, const Strand s);
 #define MODEL_SUBDIR "model/"
 #define EXTRINSIC_SUBDIR "extrinsic/"
 
-#define VERSION "3.3.3"
+#define VERSION "3.4.0"
 
 #define PREAMBLE "# This output was generated with AUGUSTUS (version " VERSION ").\n\
 # AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),\n\
@@ -82,8 +82,8 @@ ostream& operator<< (ostream& strm, const Strand s);
 # Using native and syntenically mapped cDNA alignments to improve de novo gene finding\n\
 # Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013"
 
-#define GREETING "AUGUSTUS (" VERSION ") is a gene prediction tool\n\
-written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth."
+#define GREETING "AUGUSTUS (" VERSION ") is a gene prediction tool.\n\
+Sources and documentation at https://github.com/Gaius-Augustus/Augustus"
 
 #define SPECIES_LIST "usage:\n\
 augustus [parameters] --species=SPECIES queryfilename\n\

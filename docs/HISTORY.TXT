@@ -1,5 +1,22 @@
+List of changes from version 3.3.3 to 3.4.0 (until Dec 11th, 2020)
+     - enable making of a Debian package that includes the CGP functionality 
+     - shortruning (make test) and longrunning tests for monitoring functionality and performance
+     - drop dependency on static bam library, e.g. of bam2wig
+     - new program pp_simScore to score a protein against a protein profile (.prfl)
+     - new option --/CompPred/printExonCandsMSA=1 for CGP to produce MSAs of candidate coding regions
+     - new scripts augustify, fix_in_frame_stop_codon_genes.py
+     - new default: softmasking is assumed
      - compile with CGP and ZIPINPUT support by default
      - compile with SQLite and MySQL support for CGP (switch of by adding SQLite = false and MySQL = false to common.mk)
+     - new species Cassiopea xamachana, Ptychodera flava, Argopecten irridians, Nemopilema nomurai
+       Notospermus_geniculatus, Chrysaora chesapeakeij, Ectocarpus siliculosus, Trichoplax adhaerens,
+       Aurelia aurita, Rhopilema esculentum, Encephalitozoon cuniculi, Gonapodya prolifera, Dunaliella_salina
+       Sordaria macrospora, Sphaceloma murrayae, Vitrella brassicaformis, Monoraphidium neglectum, Raphidocelis subcapita,
+       Ostreococcus tauri, Ostreococcus sp. lucimarinus, Micromonas pusilla, Micromonas_commoda, Chlamydomonas eustigma,
+       Thalassiosira pseudonana, Pseudo-nitzschia multistriata, Phaeodactylum tricornutum, Fragilariopsis cylindrus,\
+       Fistulifera solaris, Bathycoccus prasinos, Chloropicon primus
+     - added Windows Subsystem for Linux Installation documentation
+     - fixes of bugs, compiler warnings
 List of changes from version 3.3.2 to 3.3.3 (until Sep 13th, 2019)
      - docker container
      - new script tfix_in_frame_stop_codon_genes.py that replaces genes where spliced in-frame stop codons were predicted
