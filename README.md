@@ -7,8 +7,9 @@
 [INSTALLATION](#installation)  
 [RUNNING AUGUSTUS](docs/RUNNING-AUGUSTUS.md)  
 [WEB-SERVER](#web-server)  
+[COMPARATIVE GENE PREDICTION](docs/README-cgp.md)  
 [AUTHORS AND CONTACT](docs/CONTACT.md)  
-[REFERENCES](#references)  
+[REFERENCES](#references-and-documentation)  
 [LICENSES](#licenses)  
 
 # INTRODUCTION
@@ -54,7 +55,7 @@ The following dependencies are required for AUGUSTUS:
  (set ZIPINPUT = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available)
   - libboost-iostreams-dev
   - zlib1g-dev
-- For comparative AUGUSTUS (multi-species, CGP):
+- For [comparative AUGUSTUS](docs/README-cgp.md) (multi-species, CGP):
   (set COMPGENEPRED = false in [common.mk](common.mk) if the libraries required by the CGP version are not available. Augustus can then only be run in single-genome mode, which is what most users need.)
   - libgsl-dev
   - libboost-all-dev
