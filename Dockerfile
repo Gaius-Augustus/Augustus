@@ -23,6 +23,10 @@ RUN apt-get install -y samtools libhts-dev
 # Install additional dependencies for homGeneMapping and utrrnaseq
 RUN apt-get install -y libboost-all-dev
 
+# Install additional dependencies for scripts
+RUN apt-get install -y cdbfasta diamond-aligner libfile-which-perl libparallel-forkmanager-perl libyaml-perl libdbd-mysql-perl
+RUN apt-get install -y --no-install-recommends python3-biopython
+
 # Install hal - required by homGeneMapping 
 # execute the commented out code if you want to use this program - see auxprogs/homGeneMapping/Dockerfile
 #RUN apt-get install -y libhdf5-dev
@@ -44,7 +48,7 @@ WORKDIR "/root/augustus"
 RUN make clean
 RUN make
 RUN make install
-ENV PATH="/root/augustus/bin:${PATH}"
+ENV PATH="/root/augustus/bin:/root/augustus/scripts:${PATH}"
 
 # Test AUGUSTUS
 RUN make unit_test
