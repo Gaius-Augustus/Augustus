@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import lr_util as util
 import shutil
 import subprocess
 import argparse
@@ -16,6 +15,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 # import util script from parent directory
 sys.path.append('..')
+import lr_util as util
+
 
 outdir = 'output'
 eval_out_dir = os.path.join(outdir, 'eval')
