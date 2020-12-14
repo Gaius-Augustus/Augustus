@@ -1,10 +1,9 @@
 # Test of comparative gene prediction on large realistic dataset that allows a monitoring of the accuracy.
 
-Requirements:
+### Requirements:
 
-1) Python wget gitpython. Install with
-
-pip3 install wget gitpython
+1) Install required python packages
+pip3 install wget gitpython psutil memory-profiler
 
 2) eval (Evan Keibler)
 Copy perl sources to a dir $EVAL_DIR of your choosing, e.g.
