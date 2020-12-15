@@ -1,6 +1,6 @@
 # Definitions common to all Makefiles
 # This file is included from other Makefiles in the augustus project.
-AUGVERSION = 3.3.3
+AUGVERSION = 3.4.0
 
 # set ZIPINPUT to false if you do not require input gzipped input genome files,
 # get compilation errors about the boost iostreams library or
