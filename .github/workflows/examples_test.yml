@@ -56,6 +56,10 @@ jobs:
       run: ./testcases.py --compare --mysql --html
       working-directory: tests/examples/
 
+    # Test bam2wig
+    - name: Test bam2wig
+      run: tests/auxprogs/bam2wig/test_bam2wig.py --compare --html
+
     # Upload html diffs of failed test cases 
     - name: Upload HTML diffs
       uses: actions/upload-artifact@v2
