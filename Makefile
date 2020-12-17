@@ -11,8 +11,8 @@ all:
 clean:
 	cd src && ${MAKE} clean
 	cd auxprogs && ${MAKE} clean
-	cd tests/examples && ./testcases.py --clean
-	tests/auxprogs/bam2wig/test_bam2wig.py --clean
+	if [ ! -z $(shell which python3) ] ; then cd tests/examples && ./testcases.py --clean ; fi
+	if [ ! -z $(shell which python3) ] ; then tests/auxprogs/bam2wig/test_bam2wig.py --clean ; fi
 
 INSTALLDIR = /opt/augustus-$(AUGVERSION)
 
