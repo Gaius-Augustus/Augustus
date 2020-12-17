@@ -11,9 +11,6 @@ on:
   pull_request:
     branches:
       - master
-
-env:
-  TOOLDIR: '${{ github.workspace }}/required_tools'
   
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -49,10 +46,6 @@ jobs:
     # Install required dependencies
     - name: Install dependencies
       run: sudo ./tests/examples/installDependencies
-
-    # Build tools
-    - name: Clone and build tools
-      run: ./tests/examples/buildTools
 
     # Build AUGUSTUS
     - name: Build AUGUSTUS
