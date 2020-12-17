@@ -51,6 +51,10 @@ jobs:
     - name: Build AUGUSTUS
       run: make all
 
+    # Execute unit tests
+    - name: Execute unit tests
+      run: make unit_test
+
     # Test AUGUSTUS
     - name: Test AUGUSTUS (examples folder)
       run: ./testcases.py --compare --mysql --html
