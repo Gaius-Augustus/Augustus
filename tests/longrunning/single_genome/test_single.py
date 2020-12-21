@@ -17,13 +17,14 @@ from concurrent.futures import ThreadPoolExecutor
 sys.path.append('..')
 import lr_util as util
 
+
 outdir = 'output'
 eval_out_dir = os.path.join(outdir, 'eval')
 datadir = 'data'
 tdir = os.path.join(datadir, 'training')
 aug_config_path = os.path.join('..', '..', '..', 'config')
 testseq = os.path.join(datadir, 'chr1.fa.gz')
-trset = os.path.join(datadir, tdir, 'train.1784.gb')
+trset = os.path.join(tdir, 'train.1784.gb')
 refanno = os.path.join(
     datadir, 'ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf')
 hmm_species = 'human_longrunningtest_hmm'
@@ -62,6 +63,8 @@ parser.add_argument('-g', '--pathToGitRepo',
 parser.add_argument('-j', '--jobs',
                     help='to set the maximum number of jobs executed in parallel. (default value 2)')
 parser.add_argument('-e', '--evalDir', help='path to Eval script.')
+parser.add_argument('-k', '--keepData', action='store_true',
+                    help='do not delete the downloaded data.')
 args = parser.parse_args()
 
 
@@ -80,10 +83,12 @@ def clean(data=True, output=True, species=True):
 
     # remove test species if desired
     if species:
-        hmm_species_path = os.path.join(aug_config_path, 'species', hmm_species)
+        hmm_species_path = os.path.join(
+            aug_config_path, 'species', hmm_species)
         if os.path.exists(hmm_species_path):
             shutil.rmtree(hmm_species_path)
-        crf_species_path = os.path.join(aug_config_path, 'species', crf_species)
+        crf_species_path = os.path.join(
+            aug_config_path, 'species', crf_species)
         if os.path.exists(crf_species_path):
             shutil.rmtree(crf_species_path)
 
@@ -130,11 +135,14 @@ def download(url, target_dir, unzip=False, set_trset=False, set_testseq=False, s
 
 def get_test_data():
     print('Downloading sequence and reference annotation data...')
-    download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/train.1784.gb.gz',
-             tdir, unzip=True, set_trset=True)
-    download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/chr1.fa.gz',
-             datadir, set_testseq=True)
-    download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf', datadir)
+    if not os.path.isfile(trset):
+        download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/train.1784.gb.gz',
+                 tdir, unzip=True, set_trset=True)
+    if not os.path.isfile(testseq):
+        download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/chr1.fa.gz',
+                 datadir, set_testseq=True)
+    if not os.path.isfile(refanno):
+        download('http://bioinf.uni-greifswald.de/bioinf/downloads/data/aug-test/ensembl.ensembl_and_ensembl_havana.chr1.CDS.gtf.dupClean.FILTERED.gtf', datadir)
     print('\n' + 'Download completed.')
 
 
@@ -289,16 +297,16 @@ def execute_test():
 
 
 def manage_additional_data(used_resources):
-    info = util.commit_info(args.pathToGitRepo)
+    if args.pathToGitRepo is None:
+        info = 'NoInformation', 'NoInformation'
+    else:
+        info = util.commit_info(args.pathToGitRepo)
+
     util.store_additional_data(
         info[1], info[0], used_resources, 'output/additional_information.json')
 
 
 if __name__ == '__main__':
-    if args.pathToGitRepo is None:
-        print('The path to the Augustus Git repository is required, please make use of --pathToGitRepo to pass the path...')
-        sys.exit()
-
     if args.evalDir is None:
         print('The path eval script collection, please make use of --evalDir to pass the path...')
         sys.exit()
@@ -308,10 +316,16 @@ if __name__ == '__main__':
 
     util.check_memory()
     export_environ()
-    clean()
+    if (args.keepData):
+        clean(data=False)
+    else:
+        clean()
     create_test_dirs()
     get_test_data()
     training()
     res = execute_test()
     manage_additional_data(res)
-    clean(output=False)
+    if (args.keepData):
+        clean(data=False, output=False)
+    else:
+        clean(output=False)
