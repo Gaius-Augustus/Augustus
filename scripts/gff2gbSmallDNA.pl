@@ -14,6 +14,7 @@
 # Last modified by Katharina J. Hoff on Feb 21st 2018
 
 use strict;
+use warnings;
 use Getopt::Long;
 
 my $usage .= "$0 -- convert GFF file and sequence fasta file to minimal genbank format\n";
