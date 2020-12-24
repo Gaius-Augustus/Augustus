@@ -56,8 +56,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
   ifstream infile(filename.c_str());
 
   if(!infile){loadError("Could not open file "+filename+".\n");}
-  char buff[1024]; 
-  char copybuff[1024];
+  char buff[1024], copybuff[1024];
   char *temp;
   char *temp_inside;
   pair<int,int> pred_range;
@@ -76,7 +75,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
       Transcript* transcript = new Transcript;
       transcript->inputFile = filename;
       (*transcript).priority = priority;
-      strncpy(copybuff, buff, 1014);
+      strcpy(copybuff, buff);
       if (strstr(buff, "\t")==NULL) {
 	loadError("Line not tab separated in file "+filename+":\nProblemLine: "+lineStr);
       }
@@ -145,8 +144,9 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
       temp = strtok(NULL, "\t");
       if (temp){
 	char attribute[300];
-	strncpy(attribute, temp, 300);
-	string gene_id;
+	strncpy(attribute, temp, 300-1);
+        attribute[300-1] = '\0';
+        string gene_id;
 	string transcript_id;
 	temp_inside = strtok(attribute, "\"");
 	Gene* gene = new Gene;
@@ -248,7 +248,7 @@ void load(unordered_map<string,Gene*> &geneMap, string &filename, int &priority,
 	loadError("Can not read last column.");
       //}else{}	// cerr << "A line without gene_id and/or transcript_id." << endl;
     }else {			// if line starts with '#'
-      strncpy(copybuff, buff, 1014);
+      strcpy(copybuff, buff);
       if (strstr(buff, "sequence range")!=NULL) {
 	int cnt=count(lineStr.begin(),lineStr.end(),':'); 
 	temp = strtok(buff, ":");
