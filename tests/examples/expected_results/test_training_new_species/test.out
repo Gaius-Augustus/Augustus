@@ -4212,4 +4212,4 @@ UTR base level |          0 |              0 |       -nan |       -nan |
 ------------------------------------------------------------------------/
 nucUTP= 0 nucUFP=0 nucUFPinside= 0 nucUFN=0
 # command line:
-# ../../bin/augustus ../../docs/tutorial2015/results/genes.gb.test --species=test_aug_dev_species --softmasking=0 --AUGUSTUS_CONFIG_PATH=../../config
+# ../../bin/augustus ../../examples/chr2L/genes.gb.test --species=test_aug_dev_species --softmasking=0 --AUGUSTUS_CONFIG_PATH=../../config
