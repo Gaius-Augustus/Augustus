@@ -46,6 +46,7 @@ tmpdir = 'data/tmp/'
 exampledir = '../../examples/'
 bindir = '../../bin/'
 augustusbin = f'{bindir}augustus'
+datadir =  exampledir + 'chr2L/'
 default_wd = os.getcwd()
 
 
@@ -107,8 +108,8 @@ class TestAugustus(unittest.TestCase):
 
         inputfile = os.path.join(tmpdir, 'chr2L.sm.fa.gz')
         testfile = os.path.join(tmpdir, 'chr2L.sm.fa')
-        shutil.copyfile(
-            '../../docs/tutorial2015/data/chr2L.sm.fa.gz', inputfile)
+        shutil.copyfile(os.path.join(datadir, 'chr2L.sm.fa.gz'), inputfile)
+#            '../../docs/tutorial2015/data/chr2L.sm.fa.gz', inputfile)
 
         with gzip.open(inputfile, 'rb') as f_in:
             with open(testfile, 'wb') as f_out:
@@ -390,7 +391,7 @@ class TestAugustus(unittest.TestCase):
                 f'{tmpdir}chr2L.sm.fa', '--softmasking=on',
                 '--predictionStart=' + str(i * 2000000),
                 '--predictionEnd=' + str((i + 1) * 2000000 + 50000),
-                '--hintsfile=../../docs/tutorial2015/results/hints.gff',
+                f'--hintsfile={datadir}/hints.gff',
                 '--extrinsicCfgFile=extrinsic.M.RM.E.W.cfg'
             ], testtmpfile)
 
@@ -432,13 +433,13 @@ class TestAugustus(unittest.TestCase):
 
         # training
         self.process([
-            f'{bindir}etraining', '../../docs/tutorial2015/results/genes.gb.train',
+            f'{bindir}etraining', os.path.join(datadir, 'genes.gb.train'),
             '--species=' + speciesname
         ])
 
         # test
         cmd = [
-            augustusbin, '../../docs/tutorial2015/results/genes.gb.test',
+            augustusbin, os.path.join(datadir, 'genes.gb.test'),
             '--species=' + speciesname, '--softmasking=0',
             '--AUGUSTUS_CONFIG_PATH=../../config'
         ]
