@@ -56,7 +56,6 @@ jobs:
     # Upload generated doxygen files (test)
     - name: Upload HTML doxygen
       uses: actions/upload-artifact@v2
-      if: failure()
       with:
         name: doxygen
         path: doxygen/html/
