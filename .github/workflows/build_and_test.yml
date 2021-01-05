@@ -1,8 +1,5 @@
-# This is a workflow to build AUGUSTUS and test the examples directory
-name: Test examples
+name: Build and test
 
-# Controls when the action will run. Triggers the workflow on push 
-# events but only for the master and the 'testing' branch
 on:
   push:
     branches:
@@ -11,10 +8,8 @@ on:
     branches:
       - master
   
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build_and_test"
-  build_and_test:
+  build-n-test:
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
 
