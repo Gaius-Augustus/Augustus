@@ -47,27 +47,41 @@ jobs:
     - name: Install dependencies
       run: sudo ./tests/examples/installDependencies
 
-    # Build AUGUSTUS
-    - name: Build AUGUSTUS
-      run: make all
+    # Doxygen
+    - name: Doxygen
+      uses: mattnotmitt/doxygen-action@v1
+      with:
+        doxyfile-path: '.'
 
-    # Execute unit tests
-    - name: Execute unit tests
-      run: make unit_test
-
-    # Test AUGUSTUS
-    - name: Test AUGUSTUS (examples folder)
-      run: ./testcases.py --compare --mysql --html
-      working-directory: tests/examples/
-
-    # Test bam2wig
-    - name: Test bam2wig
-      run: tests/auxprogs/bam2wig/test_bam2wig.py --compare --html
-
-    # Upload html diffs of failed test cases 
-    - name: Upload HTML diffs
+    # Upload generated doxygen files (test)
+    - name: Upload HTML doxygen
       uses: actions/upload-artifact@v2
       if: failure()
       with:
-        name: html-diffs
-        path: tests/examples/output_html/
+        name: doxygen
+        path: doxygen/html/
+
+    # # Build AUGUSTUS
+    # - name: Build AUGUSTUS
+    #   run: make all
+
+    # # Execute unit tests
+    # - name: Execute unit tests
+    #   run: make unit_test
+
+    # # Test AUGUSTUS
+    # - name: Test AUGUSTUS (examples folder)
+    #   run: ./testcases.py --compare --mysql --html
+    #   working-directory: tests/examples/
+
+    # # Test bam2wig
+    # - name: Test bam2wig
+    #   run: tests/auxprogs/bam2wig/test_bam2wig.py --compare --html
+
+    # # Upload html diffs of failed test cases
+    # - name: Upload HTML diffs
+    #   uses: actions/upload-artifact@v2
+    #   if: failure()
+    #   with:
+    #     name: html-diffs
+    #     path: tests/examples/output_html/
