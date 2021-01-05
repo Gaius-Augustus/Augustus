@@ -68,13 +68,13 @@ jobs:
 
     # Build and publich doxygen documentation (only on push)
     - name: Build documentation
-      if: ${{ github.event.push }}
+      if: ${{ github.event_name == 'push' }}
       uses: mattnotmitt/doxygen-action@v1
       with:
         doxyfile-path: 'doxygen.conf'
 
     - name: Publish documentation of master on gh-pages
-      if: ${{ github.event.push }}
+      if: ${{ github.event_name == 'push' }}
       uses: peaceiris/actions-gh-pages@v3
       env:
         ACTIONS_DEPLOY_KEY: ${{ secrets.GITHUB_TOKEN }}
