@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - master
-      - 'travis-replacement-preparation'
   pull_request:
     branches:
       - master
@@ -47,40 +46,41 @@ jobs:
     - name: Install dependencies
       run: sudo ./tests/examples/installDependencies
 
-    # Doxygen
-    - name: Doxygen
+    # Build AUGUSTUS
+    - name: Build AUGUSTUS
+      run: make all
+
+    # Execute unit tests
+    - name: Execute unit tests
+      run: make unit_test
+
+    # Test AUGUSTUS
+    - name: Test AUGUSTUS (examples folder)
+      run: ./testcases.py --compare --mysql --html
+      working-directory: tests/examples/
+
+    # Test bam2wig
+    - name: Test bam2wig
+      run: tests/auxprogs/bam2wig/test_bam2wig.py --compare --html
+
+    # Upload html diffs of failed test cases
+    - name: Upload HTML diffs
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: html-diffs
+        path: tests/examples/output_html/
+
+    # Build and publich doxygen documentation (only on push)
+    - name: Build documentation
+      if: ${{ github.event.push }}
       uses: mattnotmitt/doxygen-action@v1
       with:
         doxyfile-path: 'doxygen.conf'
 
-    # Upload generated doxygen files (test)
-    - name: Upload HTML doxygen
-      uses: actions/upload-artifact@v2
-      with:
-        name: doxygen
-        path: doxygen/html/
-
-    # # Build AUGUSTUS
-    # - name: Build AUGUSTUS
-    #   run: make all
-
-    # # Execute unit tests
-    # - name: Execute unit tests
-    #   run: make unit_test
-
-    # # Test AUGUSTUS
-    # - name: Test AUGUSTUS (examples folder)
-    #   run: ./testcases.py --compare --mysql --html
-    #   working-directory: tests/examples/
-
-    # # Test bam2wig
-    # - name: Test bam2wig
-    #   run: tests/auxprogs/bam2wig/test_bam2wig.py --compare --html
-
-    # # Upload html diffs of failed test cases
-    # - name: Upload HTML diffs
-    #   uses: actions/upload-artifact@v2
-    #   if: failure()
-    #   with:
-    #     name: html-diffs
-    #     path: tests/examples/output_html/
+    - name: Publish documentation of master on gh-pages
+      if: ${{ github.event.push }}
+      uses: peaceiris/actions-gh-pages@v3
+      env:
+        ACTIONS_DEPLOY_KEY: ${{ secrets.GITHUB_TOKEN }}
+        PUBLISH_DIR: doxygen/html/
