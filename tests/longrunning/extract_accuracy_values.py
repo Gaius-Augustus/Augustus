@@ -133,7 +133,7 @@ def init_dict():
 
 
 def analyze_folder(folder):
-    if not os.path.isdir(args.path):
+    if not os.path.isdir(folder):
         print('Folder not found: ' + folder)
         sys.exit()
 

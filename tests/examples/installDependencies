@@ -17,11 +17,8 @@ apt install -y zlib1g-dev
 # Install dependencies for bam2hints and filterBam 
 apt install -y libbamtools-dev
 
-# Install additional dependencies for htslib and samtools
-apt install -y libbz2-dev liblzma-dev libncurses5-dev
-
 # Install additional dependencies for bam2wig
-apt install -y libssl-dev libcurl3-dev
+apt install -y samtools libhts-dev
 
 # Install additional dependencies for homgenemapping and utrrnaseq
 apt install -y libboost-all-dev

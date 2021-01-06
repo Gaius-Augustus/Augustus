@@ -11,8 +11,9 @@ all:
 clean:
 	cd src && ${MAKE} clean
 	cd auxprogs && ${MAKE} clean
-	cd tests/examples && ./testcases.py --clean
-	tests/auxprogs/bam2wig/test_bam2wig.py --clean
+	if [ ! -z $(shell which python3) ] ; then cd tests/examples && ./testcases.py --clean ; fi
+	if [ ! -z $(shell which python3) ] ; then tests/auxprogs/bam2wig/test_bam2wig.py --clean ; fi
+	cd tests && ./pyclean
 
 INSTALLDIR = /opt/augustus-$(AUGVERSION)
 
@@ -42,8 +43,9 @@ release:
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
 
 test:
-	cd tests/examples && ./testcases.py --compare --html
-	tests/auxprogs/bam2wig/test_bam2wig.py --compare --html
+	if [ -z $(shell which python3) ] ; then echo To run the tests Python3 is required. ; fi
+	if [ ! -z $(shell which python3) ] ; then cd tests/examples && ./testcases.py --compare --html ; fi
+	if [ ! -z $(shell which python3) ] ; then tests/auxprogs/bam2wig/test_bam2wig.py --compare --html ; fi
 
 unit_test:
 	cd src && ${MAKE} unittest

@@ -1,8 +1,5 @@
-# This is a workflow to build AUGUSTUS and test the examples directory
-name: Test examples
+name: Build and test
 
-# Controls when the action will run. Triggers the workflow on push 
-# events but only for the master and the 'testing' branch
 on:
   push:
     branches:
@@ -10,14 +7,9 @@ on:
   pull_request:
     branches:
       - master
-
-env:
-  TOOLDIR: '${{ github.workspace }}/required_tools'
   
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build_and_test"
-  build_and_test:
+  build-n-test:
     # The type of runner that the job will run on
     runs-on: ubuntu-20.04
 
@@ -49,23 +41,41 @@ jobs:
     - name: Install dependencies
       run: sudo ./tests/examples/installDependencies
 
-    # Build tools
-    - name: Clone and build tools
-      run: ./tests/examples/buildTools
-
     # Build AUGUSTUS
     - name: Build AUGUSTUS
       run: make all
+
+    # Execute unit tests
+    - name: Execute unit tests
+      run: make unit_test
 
     # Test AUGUSTUS
     - name: Test AUGUSTUS (examples folder)
       run: ./testcases.py --compare --mysql --html
       working-directory: tests/examples/
 
-    # Upload html diffs of failed test cases 
+    # Test bam2wig
+    - name: Test bam2wig
+      run: tests/auxprogs/bam2wig/test_bam2wig.py --compare --html
+
+    # Upload html diffs of failed test cases
     - name: Upload HTML diffs
       uses: actions/upload-artifact@v2
       if: failure()
       with:
         name: html-diffs
         path: tests/examples/output_html/
+
+    # Build and publich doxygen documentation (only on push)
+    - name: Build documentation
+      if: ${{ github.event_name == 'push' }}
+      uses: mattnotmitt/doxygen-action@v1
+      with:
+        doxyfile-path: 'doxygen.conf'
+
+    - name: Publish documentation of master on gh-pages
+      if: ${{ github.event_name == 'push' }}
+      uses: peaceiris/actions-gh-pages@v3
+      env:
+        ACTIONS_DEPLOY_KEY: ${{ secrets.GITHUB_TOKEN }}
+        PUBLISH_DIR: doxygen/html/
