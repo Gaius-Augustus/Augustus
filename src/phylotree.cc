@@ -107,8 +107,8 @@ PhyloTree::PhyloTree(string filename){
 	    ifstream ifstrm(only_species.c_str());
 	    if (ifstrm.is_open()){
 		vector<string> keep; // the subset of species to be kept
-		char buf[256];
-		while(ifstrm.getline(buf,255)){
+		char buf[8192];
+		while(ifstrm.getline(buf, sizeof(buf)-1)){
 		    stringstream stm(buf);
 		    string s;
 		    if(stm >> s)
@@ -128,8 +128,11 @@ PhyloTree::PhyloTree(string filename){
 		    }
 		}
 		if(numSp < 2 || numSp < keep.size())
-		    throw ProjectError(only_species + " has the wrong format. correct format:\n\n" + 
-				       "hg19\n" + "mm9\n" + "galGal3\n" + "...\n" + 
+		    throw ProjectError(only_species + " has the wrong format or doesn't match tree. Correct format:\n\n" + 
+				       "hg19	/dir/to/genome/human.fa\n" +
+                                       "mm9	/dir/to/genome/mouse.fa\n" +
+                                       "galGal3	/dir/to/genome/chicken.fa\n" +
+                                       "...\n" + 
 				       "The species identifiers must be the same as in the phylogenetic tree. At least two species identifiers must be given.");
 	    }
 	    else
