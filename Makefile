@@ -13,7 +13,7 @@ clean:
 	cd auxprogs && ${MAKE} clean
 	if [ ! -z $(shell which python3) ] ; then cd tests/examples && ./testcases.py --clean ; fi
 	if [ ! -z $(shell which python3) ] ; then tests/auxprogs/bam2wig/test_bam2wig.py --clean ; fi
-	cd tests && ./pyclean
+	cd tests && ./pyclean.sh
 
 INSTALLDIR = /opt/augustus-$(AUGVERSION)
 
