@@ -123,11 +123,11 @@ PhyloTree::PhyloTree(string filename){
 			    break;
 			}
 		    }
-		    if(!found){ //if species name ist not in list, remove leaf
+		    if(!found){ //if species name is not in list, remove leaf
 			drop(species[i]);
 		    }
 		}
-		if(species.size() < 2 || species.size() < keep.size())
+		if(numSp < 2 || numSp < keep.size())
 		    throw ProjectError(only_species + " has the wrong format. correct format:\n\n" + 
 				       "hg19\n" + "mm9\n" + "galGal3\n" + "...\n" + 
 				       "The species identifiers must be the same as in the phylogenetic tree. At least two species identifiers must be given.");
