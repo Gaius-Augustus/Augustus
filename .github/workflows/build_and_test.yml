@@ -39,7 +39,7 @@ jobs:
 
     # Install required dependencies
     - name: Install dependencies
-      run: sudo ./tests/examples/installDependencies
+      run: sudo ./tests/examples/installDependencies.sh
 
     # Build AUGUSTUS
     - name: Build AUGUSTUS
