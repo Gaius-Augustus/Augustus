@@ -77,11 +77,11 @@ all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
 augustus: augustus.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp augustus ../bin/
+	cp -f augustus ../bin/
 
 etraining: etraining.cc $(TOBJS) $(OBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp etraining ../bin/
+	cp -f etraining ../bin/
 
 evaluate: evaluate.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
@@ -89,31 +89,31 @@ evaluate: evaluate.cc $(OBJS) $(DUMOBJS)
 fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	types.o properties.o geneticcode.o pp_profile.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp fastBlockSearch ../bin/
+	cp -f fastBlockSearch ../bin/
 
 pp_simScore: pp_simscore.cc fasta.o types.o properties.o geneticcode.o pp_profile.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp pp_simScore ../bin/
+	cp -f pp_simScore ../bin/
 
 prepareAlign: pp_prepare_align.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
-	cp prepareAlign ../bin/
+	cp -f prepareAlign ../bin/
 
 load2db: load2db.cc fasta.o hints.o types.o properties.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp load2db ../bin/
+	cp -f load2db ../bin/
 
 load2sqlitedb: load2sqlitedb.cc fasta.o hints.o types.o properties.o lldouble.o sqliteDB.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp load2sqlitedb ../bin/
+	cp -f load2sqlitedb ../bin/
 
 getSeq: getSeq.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp getSeq ../bin/
+	cp -f getSeq ../bin/
 
 espoca: espoca.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp espoca ../bin/
+	cp -f espoca ../bin/
 
 info:
 	echo "$(CXXFLAGS) $(CPPFLAGS)" > $(INFO)
