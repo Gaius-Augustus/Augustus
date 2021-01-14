@@ -43,10 +43,12 @@ resultdir = 'results/'
 refdir = 'expected_results/'
 htmldir = 'output_html/'
 tmpdir = 'data/tmp/'
-exampledir = '../../examples/'
-bindir = '../../bin/'
+exampledir = '../../../examples/'
+bindir = '../../../bin/'
 augustusbin = f'{bindir}augustus'
 datadir =  exampledir + 'chr2L/'
+configdir = '../../../config/'
+scriptdir = '../../../scripts/'
 default_wd = os.getcwd()
 
 
@@ -69,9 +71,9 @@ def clean(withtmpdir=True):
 
 def check_working_dir(clean):
     wd = os.getcwd()
-    if not (wd.endswith('tests/examples')):
+    if not (wd.endswith('tests/short/examples')):
         errstr = 'Wrong working directory!' + '\n'
-        errstr += 'This script must be called from "tests/examples"!'
+        errstr += 'This script must be called from "tests/short/examples"!'
         sys.exit(errstr)
     if not clean and not (os.path.exists(augustusbin)):
         errstr = 'Missing augustus binaries!' + '\n'
@@ -416,8 +418,8 @@ class TestAugustus(unittest.TestCase):
 
         # Remove test species folder.
         # Just in case the deletion fails for whatever reason.
-        if os.path.exists('../../config/species/' + speciesname):
-            shutil.rmtree('../../config/species/' + speciesname)
+        if os.path.exists(f'{configdir}species/{speciesname}'):
+            shutil.rmtree(f'{configdir}species/{speciesname}')
 
         resfolder = self.get_res_folder()
         reffolder = self.get_ref_folder()
@@ -427,8 +429,8 @@ class TestAugustus(unittest.TestCase):
 
         # call script to initialize new species
         self.process([
-            'perl', '../../scripts/new_species.pl', '--species=' + speciesname,
-            '--AUGUSTUS_CONFIG_PATH=../../config'
+            'perl', f'{scriptdir}new_species.pl', '--species=' + speciesname,
+            f'--AUGUSTUS_CONFIG_PATH={configdir}'
         ])
 
         # training
@@ -441,7 +443,7 @@ class TestAugustus(unittest.TestCase):
         cmd = [
             augustusbin, os.path.join(datadir, 'genes.gb.test'),
             '--species=' + speciesname, '--softmasking=0',
-            '--AUGUSTUS_CONFIG_PATH=../../config'
+            f'--AUGUSTUS_CONFIG_PATH={configdir}'
         ]
         if (crf):
             cmd.append('--CRF=on')
@@ -455,7 +457,7 @@ class TestAugustus(unittest.TestCase):
         os.remove(testtmpfile)
 
         # move new species to result folder
-        shutil.move('../../config/species/' + speciesname, resfolder)
+        shutil.move(f'{configdir}species/{speciesname}', resfolder)
 
         # compare results
         self.assertEqualFolders(reffolder, resfolder)
@@ -529,8 +531,8 @@ class TestAugustus(unittest.TestCase):
         self.assertEqualFolders(reffolder, resfolder)
 
     def test_cgp(self):
-        reffolder = self.get_ref_folder(path_to_wd='../../tests/examples')
-        resfolder = self.get_res_folder(path_to_wd='../../tests/examples')
+        reffolder = self.get_ref_folder(path_to_wd='../../tests/short/examples')
+        resfolder = self.get_res_folder(path_to_wd='../../tests/short/examples')
         testtmpfile = os.path.join(resfolder, 'output_tmp.txt')
         testfile = os.path.join(resfolder, 'output.txt')
 
@@ -538,7 +540,7 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
 
         cmd = [
-            augustusbin,
+            '../../bin/augustus',
             '--species=human',
             '--speciesfilenames=genomes.tbl',
             '--treefile=tree.nwk',
@@ -626,11 +628,11 @@ class TestAugustus(unittest.TestCase):
             testname += '_mysql'
         if hints:
             testname += '_hints'
-        resfolder = self.get_res_folder(testname, '../../tests/examples')
-        reffolder = self.get_ref_folder(testname, '../../tests/examples')
+        resfolder = self.get_res_folder(testname, '../../tests/short/examples')
+        reffolder = self.get_ref_folder(testname, '../../tests/short/examples')
 
         cmd = [
-            augustusbin,
+            '../../bin/augustus',
             '--species=human',
             '--speciesfilenames=genomes.tbl',
             '--treefile=tree.nwk',
@@ -646,7 +648,7 @@ class TestAugustus(unittest.TestCase):
                        TestAugustus.dbpasswd)
         else:
             cmd.append(
-                '--dbaccess=../../tests/examples/data/tmp/vertebrates.db')
+                '--dbaccess=../../tests/short/examples/data/tmp/vertebrates.db')
 
         if hints:
             cmd.append('--dbhints=true')
@@ -658,7 +660,7 @@ class TestAugustus(unittest.TestCase):
 
     def test_cgp_denovo_tutorial(self):
         os.chdir(default_wd)
-        os.chdir('../../docs/tutorial-cgp/results/mafs')
+        os.chdir('../../../docs/tutorial-cgp/results/mafs')
         resfolder = self.get_res_folder('test_cgp_with_db')
         reffolder = self.get_ref_folder('test_cgp_with_db')
         args = []
@@ -670,7 +672,7 @@ class TestAugustus(unittest.TestCase):
                     '../../../' + augustusbin,
                     '--species=human',
                     '--softmasking=1',
-                    '--speciesfilenames=../../../../examples_test/data/cgp_genomes.tbl',
+                    '--speciesfilenames=../../../../tests/short/examples/data/cgp_genomes.tbl',
                     '--treefile=../../data/tree.nwk',
                     '--alnfile=' + alin.__str__(),
                     '--alternatives-from-evidence=0',  # removes warning
@@ -684,9 +686,9 @@ class TestAugustus(unittest.TestCase):
 
     def test_cgp_rna_hint_tutorial(self):
         os.chdir(default_wd)
-        os.chdir('../../docs/tutorial-cgp/results/mafs')
-        reffolder = self.get_ref_folder(path_to_wd='../../../../tests/examples')
-        resfolder = self.get_res_folder(path_to_wd='../../../../tests/examples')
+        os.chdir('../../../docs/tutorial-cgp/results/mafs')
+        reffolder = self.get_ref_folder(path_to_wd='../../../../tests/short/examples')
+        resfolder = self.get_res_folder(path_to_wd='../../../../tests/short/examples')
         args = []
 
         # create command list for all alignment files
@@ -722,7 +724,7 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
         self.process([
             augustusbin, '--species=human', f'--hintsfile={exampledir}hints.gff',
-            '--extrinsicCfgFile=../../config/extrinsic/extrinsic.MPE.cfg',
+            f'--extrinsicCfgFile={configdir}extrinsic/extrinsic.MPE.cfg',
             f'{exampledir}example.fa'
         ], testtmpfile)
 
