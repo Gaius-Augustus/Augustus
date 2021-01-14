@@ -8,8 +8,8 @@ import os
 import sys
 import shutil
 import gzip
-from . import aug_out_filter as afilter #TODO: move to util
-from . import aug_comparator as comp    #TODO: move to util
+from utils import aug_out_filter as afilter
+from utils import aug_comparator as comp
   
 # This script executes AUGUSTUS test cases based on the examples
 # folder and compares the current results with reference results
