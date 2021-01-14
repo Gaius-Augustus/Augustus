@@ -6795,4 +6795,4 @@ chrI	AUGUSTUS	tts	999559	999559	.	+	.	transcript_id "g162.t1"; gene_id "g162";
 # end gene g162
 ###
 # command line:
-# ../../../bin/augustus ../../../examples/autoAug/genome.fa --softmasking=1 --species=caenorhabditis
+# ../../bin/augustus ../../examples/autoAug/genome.fa --softmasking=1 --species=caenorhabditis
