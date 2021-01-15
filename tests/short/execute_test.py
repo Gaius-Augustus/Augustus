@@ -50,12 +50,18 @@ def check_working_dir(clean):
 
 if __name__ == '__main__':
     check_working_dir(args.clean)
-    
+
     # Remove only generated test files and do not execute test
     # cases if option --clean is set.
     if args.clean:
         clean_examples()
         sys.exit()
 
+    test_was_successful = True
     if args.testcase == 'examples':
-        execute_examples(args.compare, args.html, args.mysql)
+        test_was_successful = execute_examples(args.compare, args.html, args.mysql)
+    
+    if test_was_successful:
+        sys.exit(0)
+    else:
+        sys.exit(1)

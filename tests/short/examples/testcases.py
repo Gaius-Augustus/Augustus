@@ -766,8 +766,7 @@ def execute_examples(compare, html, mysql):
         result_mysql = runner.run(mysql_test_suite())
         mysql_was_successful = result_mysql.wasSuccessful()
 
-    # TODO: return value
     if result.wasSuccessful() and mysql_was_successful:
-        sys.exit()
+        return True
     else:
-        sys.exit(1)
+        return False
