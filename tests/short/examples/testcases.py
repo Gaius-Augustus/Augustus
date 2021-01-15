@@ -11,15 +11,9 @@ import gzip
 from utils import aug_out_filter as afilter
 from utils import aug_comparator as comp
   
-# This script executes AUGUSTUS test cases based on the examples
-# folder and compares the current results with reference results
-# if the option --compare is set. It is expected that both results
-# are identical for a successful test.
-# This script must be called from "tests/examples_test"!
-# Python version 3.6 or higher is required for execution.
-
 
 __all__ = [ 'execute_examples', 'clean_examples' ]
+
 
 resultdir = 'examples/results/'
 refdir = 'examples/expected_results/'
@@ -727,14 +721,14 @@ def default_test_suite():
 def small_test_suite():
     suite = unittest.TestSuite()
     suite.addTest(TestAugustus('test_utr_on'))
-    # suite.addTest(TestAugustus('test_hints_MPE'))
-    # suite.addTest(TestAugustus('test_training_new_species'))
-    # suite.addTest(TestAugustus('test_ab_initio_prediction'))
-    # suite.addTest(TestAugustus('test_format_and_error_out'))
-    # # suite.addTest(TestAugustus('test_alternatives_from_sampling'))
-    # suite.addTest(TestAugustus('test_cgp'))
-    # suite.addTest(TestAugustus('test_cgp_sqlite'))
-    # suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
+    suite.addTest(TestAugustus('test_hints_MPE'))
+    suite.addTest(TestAugustus('test_training_new_species'))
+    suite.addTest(TestAugustus('test_ab_initio_prediction'))
+    suite.addTest(TestAugustus('test_format_and_error_out'))
+    # suite.addTest(TestAugustus('test_alternatives_from_sampling'))
+    suite.addTest(TestAugustus('test_cgp'))
+    suite.addTest(TestAugustus('test_cgp_sqlite'))
+    suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
     return suite
 
 
@@ -777,35 +771,3 @@ def execute_examples(compare, html, mysql):
         sys.exit()
     else:
         sys.exit(1)
-
-# if __name__ == '__main__':
-#     check_working_dir(args.clean)
-#     default_wd = os.getcwd()
-
-#     # Remove only generated test files and do not execute test
-#     # cases if option --clean is set.
-#     if args.clean:
-#         clean()
-#         sys.exit()
-
-#     create_initial_resultdir()
-#     TestAugustus.opt_compare = args.compare
-#     TestAugustus.opt_html = args.html
-#     TestAugustus.opt_mysql = args.mysql
-#     runner = unittest.TextTestRunner(verbosity=2)
-#     #print_tc_header('default test suite')
-#     #result = runner.run(default_test_suite())
-#     print_tc_header('small test suite')
-#     result = runner.run(small_test_suite())
-
-#     mysql_was_successful = True
-#     if args.mysql:
-#         os.chdir(default_wd)
-#         print_tc_header('MySQL test suite')
-#         result_mysql = runner.run(mysql_test_suite())
-#         mysql_was_successful = result_mysql.wasSuccessful()
-
-#     if result.wasSuccessful() and mysql_was_successful:
-#         sys.exit()
-#     else:
-#         sys.exit(1)
