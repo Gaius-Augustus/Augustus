@@ -6,6 +6,7 @@ import os
 
 from examples import *
 from auxprogs.bam2wig import *
+from auxprogs.homGeneMapping import *
 
 
 # This script executes AUGUSTUS test cases based on the examples
@@ -15,7 +16,7 @@ from auxprogs.bam2wig import *
 # This script must be called from "tests/short"!
 # Python version 3.6 or higher is required for execution.
 
-testcases = [ 'examples', 'bam2wig', 'homeGeneMapping' ]
+testcases = [ 'examples', 'bam2wig', 'homGeneMapping' ]
 
 parser = argparse.ArgumentParser(description='Execute AUGUSTUS test cases.')
 parser.add_argument('testcase',
@@ -65,8 +66,14 @@ if __name__ == '__main__':
             clean_bam2wig()
             sys.exit()
         else:     
-            test_was_successful = execute_bam2wig(args.compare, args.html)        
-    
+            test_was_successful = execute_bam2wig(args.compare, args.html)
+    elif args.testcase == 'homGeneMapping':
+        if args.clean:
+            clean_homgenemapping()
+            sys.exit()
+        else:
+            test_was_successful = execute_homgenemapping(args.compare, args.html)
+
     if test_was_successful:
         sys.exit(0)
     else:

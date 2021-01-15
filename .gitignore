@@ -68,6 +68,7 @@ tests/short/output_html/
 tests/short/examples/data/tmp/
 tests/short/auxprogs/*/tmp
 tests/short/auxprogs/bam2wig/result_files/
+tests/short/auxprogs/homGeneMapping/result_files/
 
 # ignore longrunning test data and output files
 tests/longrunning/single_genome/data/
