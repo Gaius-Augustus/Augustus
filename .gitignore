@@ -67,6 +67,7 @@ tests/short/output_html/
 # ignore tmp test case data
 tests/short/examples/data/tmp/
 tests/short/auxprogs/*/tmp
+tests/short/auxprogs/bam2wig/result_files/
 
 # ignore longrunning test data and output files
 tests/longrunning/single_genome/data/
