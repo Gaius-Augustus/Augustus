@@ -2,7 +2,7 @@
 
 import os
 
-from tests.examples import aug_comparator as comp
+from . import aug_comparator as comp
 
 def assertEqualDirectory(testcase, refdir, resdir, html=False, htmloutputfolder=None):
     """

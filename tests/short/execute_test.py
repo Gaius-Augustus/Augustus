@@ -5,6 +5,8 @@ import sys
 import os
 
 from examples import *
+from auxprogs.bam2wig import *
+
 
 # This script executes AUGUSTUS test cases based on the examples
 # folder and compares the current results with reference results
@@ -51,15 +53,19 @@ def check_working_dir(clean):
 if __name__ == '__main__':
     check_working_dir(args.clean)
 
-    # Remove only generated test files and do not execute test
-    # cases if option --clean is set.
-    if args.clean:
-        clean_examples()
-        sys.exit()
-
     test_was_successful = True
     if args.testcase == 'examples':
-        test_was_successful = execute_examples(args.compare, args.html, args.mysql)
+        if args.clean:
+            clean_examples()
+            sys.exit()
+        else:     
+            test_was_successful = execute_examples(args.compare, args.html, args.mysql)
+    elif args.testcase == 'bam2wig':
+        if args.clean:
+            clean_bam2wig()
+            sys.exit()
+        else:     
+            test_was_successful = execute_bam2wig(args.compare, args.html)        
     
     if test_was_successful:
         sys.exit(0)
