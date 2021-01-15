@@ -19,7 +19,7 @@ from utils import aug_comparator as comp
 # Python version 3.6 or higher is required for execution.
 
 
-__all__ = [ 'execute_examples' ]
+__all__ = [ 'execute_examples', 'clean_examples' ]
 
 resultdir = 'examples/results/'
 refdir = 'examples/expected_results/'
@@ -35,11 +35,11 @@ default_wd = os.getcwd()
 
 
 def create_initial_resultdir():
-    clean(False)
+    clean_examples(False)
     os.mkdir(resultdir)
 
 
-def clean(withtmpdir=True):
+def clean_examples(withtmpdir=True):
     print('Removing generated test files...')
     if os.path.exists(htmldir):
         shutil.rmtree(htmldir)
@@ -49,18 +49,6 @@ def clean(withtmpdir=True):
 
     if withtmpdir and os.path.exists(tmpdir):
         shutil.rmtree(tmpdir)
-
-
-def check_working_dir(clean):
-    wd = os.getcwd()
-    if not (wd.endswith('tests/short')):
-        errstr = 'Wrong working directory!' + '\n'
-        errstr += 'This script must be called from "tests/short"!'
-        sys.exit(errstr)
-    if not clean and not (os.path.exists(augustusbin)):
-        errstr = 'Missing augustus binaries!' + '\n'
-        errstr += f'The augustus binaries must be accessible in this path: "{bindir}"!'
-        sys.exit(errstr)
 
 
 class TestAugustus(unittest.TestCase):
@@ -767,15 +755,7 @@ def print_tc_header(tc_name):
     )
 
 def execute_examples(compare, html, mysql):
-    check_working_dir(False) #TODO: clean
     default_wd = os.getcwd()
-
-    # TODO: clean
-    # Remove only generated test files and do not execute test
-    # cases if option --clean is set.
-    # if args.clean:
-    #     clean()
-    #     sys.exit()
 
     create_initial_resultdir()
     TestAugustus.opt_compare = compare

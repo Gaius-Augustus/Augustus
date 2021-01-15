@@ -35,8 +35,27 @@ parser.add_argument('--clean',
 args = parser.parse_args()
 
 
+def check_working_dir(clean):
+    bindir = '../../bin/'
+    wd = os.getcwd()
+    if not (wd.endswith('tests/short')):
+        errstr = 'Wrong working directory!' + '\n'
+        errstr += 'This script must be called from "tests/short"!'
+        sys.exit(errstr)
+    if not clean and not (os.path.exists(f'{bindir}augustus')):
+        errstr = 'Missing augustus binaries!' + '\n'
+        errstr += f'The augustus binaries must be accessible in this path: "{bindir}"!'
+        sys.exit(errstr)
+
+
 if __name__ == '__main__':
-    #TODO: clean
+    check_working_dir(args.clean)
+    
+    # Remove only generated test files and do not execute test
+    # cases if option --clean is set.
+    if args.clean:
+        clean_examples()
+        sys.exit()
 
     if args.testcase == 'examples':
         execute_examples(args.compare, args.html, args.mysql)
