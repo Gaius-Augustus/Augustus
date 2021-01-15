@@ -62,6 +62,7 @@ src/unittests/unittests
 
 # ignore generated test output
 tests/short/examples/results/
+tests/short/output_html/
 
 # ignore tmp test case data
 tests/short/examples/data/tmp/
