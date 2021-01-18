@@ -73,11 +73,11 @@ ostream& operator<<(ostream&out, Feature& feature){
 }
 
 istream& operator>>( istream& in, Feature& feature ){
-    char buff[1024], copybuff[1024];
+    char buff[8192], copybuff[8192];
     char *temp;
     const char *spos;
     try {
-	in.getline(buff, 1024);
+	in.getline(buff, sizeof(buff));
 	strcpy(copybuff, buff);
 
 	if (strstr(buff, "\t")==NULL) {

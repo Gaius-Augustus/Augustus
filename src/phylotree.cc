@@ -107,9 +107,9 @@ PhyloTree::PhyloTree(string filename){
 	    ifstream ifstrm(only_species.c_str());
 	    if (ifstrm.is_open()){
 		vector<string> keep; // the subset of species to be kept
-		char buf[8192];
-		while(ifstrm.getline(buf, sizeof(buf)-1)){
-		    stringstream stm(buf);
+		string line;
+		while(getline(ifstrm, line)){
+		    stringstream stm(line);
 		    string s;
 		    if(stm >> s)
 			keep.push_back(s);
