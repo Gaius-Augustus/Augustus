@@ -42,7 +42,7 @@ def clean(withtmpdir=True):
         shutil.rmtree(tmpdir)
 
 
-class TestAugustus(unittest.TestCase):
+class TestExamples(unittest.TestCase):
     dbname = None
     dbhost = None
     dbuser = None
@@ -170,7 +170,7 @@ class TestAugustus(unittest.TestCase):
     @classmethod
     def init_db(cls, cmd_list):
         for cmd in cmd_list:
-            output = TestAugustus().process(cmd)
+            output = TestExamples().process(cmd)
             # print(output)
 
     @classmethod
@@ -207,16 +207,16 @@ class TestAugustus(unittest.TestCase):
         # check config
         missing_arguments = False
         if (cls.opt_mysql):
-            if TestAugustus.dbname is None:
+            if TestExamples.dbname is None:
                 print('The database name is missing!')
                 missing_arguments = True
-            if TestAugustus.dbhost is None:
+            if TestExamples.dbhost is None:
                 print('The host name is missing!')
                 missing_arguments = True
-            if TestAugustus.dbuser is None:
+            if TestExamples.dbuser is None:
                 print('The db user name is missing!')
                 missing_arguments = True
-            if TestAugustus.dbpasswd is None:
+            if TestExamples.dbpasswd is None:
                 print('The db user passwd is missing!')
                 missing_arguments = True
         if missing_arguments:
@@ -235,7 +235,7 @@ class TestAugustus(unittest.TestCase):
             cls.cleanup_mysqldb()
 
     def assertEqualFolders(self, reffolder, resfolder, html=None, outputfolder=None):
-        if TestAugustus.opt_compare:
+        if TestExamples.opt_compare:
             if html is None:
                 html = self.opt_html
             if outputfolder is None:
@@ -345,7 +345,7 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
 
         if not os.path.isfile('data/tmp/chr2L.sm.fa'):
-            TestAugustus.init_test_data()
+            TestExamples.init_test_data()
 
         for i in range(0, 3):
             testtmpfile = os.path.join(
@@ -544,7 +544,7 @@ class TestAugustus(unittest.TestCase):
         proc_list = []
 
         # create groups according to the configured number of cpus
-        grouped_args = [iter(args)] * TestAugustus.cpuno
+        grouped_args = [iter(args)] * TestExamples.cpuno
 
         # parallel execution of the commands of each group
         for arg_list in itertools.zip_longest(*grouped_args):
@@ -605,9 +605,9 @@ class TestAugustus(unittest.TestCase):
         ]
 
         if mysql:
-            cmd.append('--dbaccess=' + TestAugustus.dbname + ',' +
-                       TestAugustus.dbhost + ',' + TestAugustus.dbuser + ',' +
-                       TestAugustus.dbpasswd)
+            cmd.append('--dbaccess=' + TestExamples.dbname + ',' +
+                       TestExamples.dbhost + ',' + TestExamples.dbuser + ',' +
+                       TestExamples.dbpasswd)
         else:
             cmd.append(
                 '--dbaccess=../../tests/short/examples/data/tmp/vertebrates.db')
@@ -700,39 +700,39 @@ class TestAugustus(unittest.TestCase):
 
 def default_test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(TestAugustus('test_utr_on'))
-    suite.addTest(TestAugustus('test_hints_MPE'))
-    suite.addTest(TestAugustus('test_iterative_prediction'))
-    suite.addTest(TestAugustus('test_iterative_prediction_with_hints'))
-    suite.addTest(TestAugustus('test_training_new_species'))
-    suite.addTest(TestAugustus('test_training_new_species_crf'))
-    suite.addTest(TestAugustus('test_ab_initio_prediction'))
-    suite.addTest(TestAugustus('test_format_and_error_out'))
-    suite.addTest(TestAugustus('test_alternatives_from_sampling'))
-    suite.addTest(TestAugustus('test_cgp'))
-    suite.addTest(TestAugustus('test_cgp_sqlite'))
-    suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
+    suite.addTest(TestExamples('test_utr_on'))
+    suite.addTest(TestExamples('test_hints_MPE'))
+    suite.addTest(TestExamples('test_iterative_prediction'))
+    suite.addTest(TestExamples('test_iterative_prediction_with_hints'))
+    suite.addTest(TestExamples('test_training_new_species'))
+    suite.addTest(TestExamples('test_training_new_species_crf'))
+    suite.addTest(TestExamples('test_ab_initio_prediction'))
+    suite.addTest(TestExamples('test_format_and_error_out'))
+    suite.addTest(TestExamples('test_alternatives_from_sampling'))
+    suite.addTest(TestExamples('test_cgp'))
+    suite.addTest(TestExamples('test_cgp_sqlite'))
+    suite.addTest(TestExamples('test_cgp_sqlite_hints'))
     return suite
 
 
 def small_test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(TestAugustus('test_utr_on'))
-    suite.addTest(TestAugustus('test_hints_MPE'))
-    suite.addTest(TestAugustus('test_training_new_species'))
-    suite.addTest(TestAugustus('test_ab_initio_prediction'))
-    suite.addTest(TestAugustus('test_format_and_error_out'))
-    # suite.addTest(TestAugustus('test_alternatives_from_sampling'))
-    suite.addTest(TestAugustus('test_cgp'))
-    suite.addTest(TestAugustus('test_cgp_sqlite'))
-    suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
+    suite.addTest(TestExamples('test_utr_on'))
+    suite.addTest(TestExamples('test_hints_MPE'))
+    suite.addTest(TestExamples('test_training_new_species'))
+    suite.addTest(TestExamples('test_ab_initio_prediction'))
+    suite.addTest(TestExamples('test_format_and_error_out'))
+    # suite.addTest(TestExamples('test_alternatives_from_sampling'))
+    suite.addTest(TestExamples('test_cgp'))
+    suite.addTest(TestExamples('test_cgp_sqlite'))
+    suite.addTest(TestExamples('test_cgp_sqlite_hints'))
     return suite
 
 
 def mysql_test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(TestAugustus('test_cgp_mysql'))
-    suite.addTest(TestAugustus('test_cgp_mysql_hints'))
+    suite.addTest(TestExamples('test_cgp_mysql'))
+    suite.addTest(TestExamples('test_cgp_mysql_hints'))
     return suite
 
 
@@ -749,9 +749,9 @@ def execute(compare, html, mysql):
     default_wd = os.getcwd()
 
     create_initial_resultdir()
-    TestAugustus.opt_compare = compare
-    TestAugustus.opt_html = html
-    TestAugustus.opt_mysql = mysql	
+    TestExamples.opt_compare = compare
+    TestExamples.opt_html = html
+    TestExamples.opt_mysql = mysql	
     runner = unittest.TextTestRunner(verbosity=2)
     print_tc_header('small test suite')
     result = runner.run(small_test_suite())

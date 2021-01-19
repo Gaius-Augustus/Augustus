@@ -4,9 +4,9 @@ import argparse
 import sys
 import os
 
-from examples import testcases
+from examples import test_examples
 from auxprogs.bam2wig import test_bam2wig
-from auxprogs.homGeneMapping import test_homGeneMapping
+from auxprogs.hom_gene_mapping import test_hom_gene_mapping
 
 
 # This script executes AUGUSTUS test cases based on the examples
@@ -16,12 +16,12 @@ from auxprogs.homGeneMapping import test_homGeneMapping
 # This script must be called from "tests/short"!
 # Python version 3.6 or higher is required for execution.
 
-available_tests = [ 'examples', 'bam2wig', 'homGeneMapping' ]
+testcases = [ 'examples', 'bam2wig', 'homGeneMapping' ]
 
 parser = argparse.ArgumentParser(description='Execute AUGUSTUS test cases.')
 parser.add_argument('testcase',
                     action='store',
-                    choices=available_tests,
+                    choices=testcases,
                     help='Testcase to execute.')
 parser.add_argument('--mysql',
                     action='store_true',
@@ -57,10 +57,10 @@ if __name__ == '__main__':
     test_was_successful = True
     if args.testcase == 'examples':
         if args.clean:
-            testcases.clean()
+            test_examples.clean()
             sys.exit()
         else:     
-            test_was_successful = testcases.execute(args.compare, args.html, args.mysql)
+            test_was_successful = test_examples.execute(args.compare, args.html, args.mysql)
     elif args.testcase == 'bam2wig':
         if args.clean:
             test_bam2wig.clean()
@@ -69,10 +69,10 @@ if __name__ == '__main__':
             test_was_successful = test_bam2wig.execute(args.compare, args.html)
     elif args.testcase == 'homGeneMapping':
         if args.clean:
-            test_homGeneMapping.clean()
+            test_hom_gene_mapping.clean()
             sys.exit()
         else:
-            test_was_successful = test_homGeneMapping.execute(args.compare, args.html)
+            test_was_successful = test_hom_gene_mapping.execute(args.compare, args.html)
 
     if test_was_successful:
         sys.exit(0)
