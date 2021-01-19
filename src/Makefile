@@ -7,21 +7,26 @@ include ../common.mk
 # the required libraries 
 # libboost-serialization-dev 
 # are not available
-TESTING = false
+TESTING = true
 
 CXX?=g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CXXFLAGS := -Wall -Wno-sign-compare -pedantic -g -ggdb -O3 ${CXXFLAGS} #-DDEBUG -g -ggdb -pg -DDEBUG_STATES
+# for debugging set
+#    OPT = -g
+#    CXXFLAGS = -DDEBUG -g -ggdb -pg -DDEBUG_STATES
+#  in common.mk or the environment
+OPT ?=  -O3
+CXXFLAGS += -Wall -Wno-sign-compare -pedantic ${OPT} -std=c++11
 
 ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))  # if ZIPINPUT is not defined or is something else than 0, false, False or FALSE
 	CPPFLAGS += -DZIPINPUT
-	LIBS    = -lboost_iostreams
+	LIBS    += -lboost_iostreams
 endif
 
-INCLS	= -I../include
+INCLS	+= -I../include
 
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
@@ -30,9 +35,8 @@ OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o
 ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is not defined or is something else than 0, false, False or FALSE
 	SQLITE   ?= true
 	MYSQL    ?= true
-	CXXFLAGS += -std=c++11
 	CPPFLAGS += -DCOMPGENEPRED
-	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o tokenizer.o
+	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o codonevo.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o tokenizer.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
 	INCLS += -I/usr/include/lpsolve
@@ -67,10 +71,6 @@ ifneq (,$(findstring $(SQLITE),1 true True TRUE)) # if SQLITE is defined and con
 	PROGR     += load2sqlitedb getSeq
 endif
 
-ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
-    PROGR     += espoca
-endif
-
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
 .SUFFIXES:
@@ -82,57 +82,49 @@ all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
 augustus: augustus.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp augustus ../bin/
+	cp -f augustus ../bin/
 
 etraining: etraining.cc $(TOBJS) $(OBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp etraining ../bin/
+	cp -f etraining ../bin/
 
 evaluate: evaluate.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
 
-consensusFinder: consensusFinder.cc consensus.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp consensusFinder ../bin/
-
-curve2hints: curve2hints.cc exon_seg.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp curve2hints ../bin/
-
 fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	types.o properties.o geneticcode.o pp_profile.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp fastBlockSearch ../bin/
+	cp -f fastBlockSearch ../bin/
 
 pp_simScore: pp_simscore.cc fasta.o types.o properties.o geneticcode.o pp_profile.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp pp_simScore ../bin/
+	cp -f pp_simScore ../bin/
 
 prepareAlign: pp_prepare_align.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
-	cp prepareAlign ../bin/
+	cp -f prepareAlign ../bin/
 
 load2db: load2db.cc fasta.o hints.o types.o properties.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp load2db ../bin/
+	cp -f load2db ../bin/
 
 load2sqlitedb: load2sqlitedb.cc fasta.o hints.o types.o properties.o lldouble.o sqliteDB.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp load2sqlitedb ../bin/
+	cp -f load2sqlitedb ../bin/
 
 getSeq: getSeq.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp getSeq ../bin/
+	cp -f getSeq ../bin/
 
 espoca: espoca.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp espoca ../bin/
+	cp -f espoca ../bin/
 
 info:
 	echo "$(CXXFLAGS) $(CPPFLAGS)" > $(INFO)
 
 clean:
-	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o $(INFO)
+	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) pp_fastBlockSearcher.o $(INFO)
 	cd googletest && ${MAKE} clean
 	cd unittests && ${MAKE} clean
 
@@ -593,12 +585,6 @@ vitmatrix.o : \
 	../include/types.hh \
 	vitmatrix.cc
 
-consensus.o : \
-	../include/consensus.hh \
-	../include/geneticcode.hh \
-	../include/types.hh \
-	consensus.cc
-
 commontrain.o : \
 	../include/commontrain.hh \
 	../include/lldouble.hh \
@@ -628,6 +614,7 @@ exoncand.o : \
 
 compgenepred.o : \
 	../include/compgenepred.hh \
+	../include/contTimeMC.hh \
 	../include/orthograph.hh \
 	../include/mea.hh \
         ../include/genomicMSA.hh \
@@ -713,6 +700,11 @@ fasta.o: \
 contTimeMC.o: \
 	../include/contTimeMC.hh \
 	contTimeMC.cc
+
+codonevo.o: \
+	../include/codonevo.hh \
+	../include/contTimeMC.hh \
+	codonevo.cc
 
 alignment.o: \
 	../include/alignment.hh \

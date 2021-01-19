@@ -1,5 +1,5 @@
 CXX?=g++
-CXXFLAGS+=-Wall -std=gnu++0x
+CXXFLAGS+=-Wall -std=gnu++0x -O2
 
 all: joingenes
 

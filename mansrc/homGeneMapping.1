@@ -1,7 +1,7 @@
 '\" t
 .\"     Title: homgenemapping
 .\"    Author: [see the "AUTHORS" section]
-.\" Generator: Asciidoctor 1.5.5.dev
+.\" Generator: Asciidoctor 1.5.5
 .\"      Date: 
 .\"    Manual: \ \&
 .\"    Source: \ \&
@@ -96,7 +96,12 @@ N is the number of CPUs to use (default: 1)
 .sp
 \fB\-\-noDupes\fP
 .RS 4
-do not map between duplications in hal graph. (default: off)
+do not map between duplications in hal graph (default: off)
+.RE
+.sp
+\fB\-\-details\fP
+.RS 4
+print detailed output (default: off)
 .RE
 .sp
 \fB\-\-halLiftover_exec_dir=DIR\fP
@@ -105,14 +110,20 @@ Directory that contains the executable halLiftover
 If not specified it must be in $PATH environment variable.
 .RE
 .sp
+\fB\-\-unmapped\fP
+.RS 4
+print a GTF attribute with a list of all genomes, that are not aligned to the
+corresponding gene feature, e.g. hgm_unmapped \(rs"1,4,5\(rs"; (default; off)
+.RE
+.sp
 \fB\-\-tmpdir=DIR\fP
 .RS 4
-a temporary file directory that stores lifted over files. (default \(aqtmp/\(aq in current directory)
+a temporary file directory that stores lifted over files (default \(aqtmp/\(aq in current directory)
 .RE
 .sp
 \fB\-\-outdir=DIR\fP
 .RS 4
-file directory that stores output gene files. (default: current directory)
+file directory that stores output gene files (default: current directory)
 .RE
 .sp
 \fB\-\-printHomologs=FILE\fP
@@ -140,12 +151,21 @@ This option requires the Boost C++ Library
 .RE
 .\}
 .RE
+.sp
+\fB\-\-dbaccess=db\fP
+.RS 4
+retrieve hints from an SQLite database. In order to set up a database and populate it with hints
+a separate tool \(aqload2sqlitedb\(aq is provided. For more information, see the documentation in
+docs/RUNNING\-AUGUSTUS\-IN\-CGP\-MODE.md (DATABASE ACCESS / SQLite) in the Augustus package. If both a database and hint files in \(aqgtffilenames.tbl\(aq
+are specified, hints are retrieved from both sources.
+.RE
 .SH "EXAMPLE"
 .sp
 homGeneMapping \-\-noDupes \-\-halLiftover_exec_dir=~/tools/progressiveCactus/submodules/hal/bin \-\-gtfs=gtffilenames.tbl \-\-halfile=msca.hal
+homGeneMapping \-\-gtfs=gtffilenames.tbl \-\-halfile=aln.hal \-\-outdir=outdir \-\-cpus=4
 .SH "AUTHORS"
 .sp
 AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
 .SH "ADDITIONAL DOCUMENTATION"
 .sp
-An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.
+An exhaustive documentation can be found in the file /usr/share/doc/augustus/README.md.gz.

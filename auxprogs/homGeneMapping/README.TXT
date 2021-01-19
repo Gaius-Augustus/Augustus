@@ -18,6 +18,10 @@ alignment of the genomes and prints a summary for each gene, e.g.
 ### Requirements ###
 * gcc 4.6 or newer
 * HAL Tools (available at https://github.com/ComparativeGenomicsToolkit/hal)
+  with this dependencies:
+    * package libhdf5-dev or hdf5 from http://www.hdfgroup.org (version 1.10)
+    * sonLib from https://github.com/benedictpaten/sonLib
+  install: https://github.com/ComparativeGenomicsToolkit/hal#installing-dependencies or see Dockerfile for an example
 * Boost graph library for option --printHomologs that clusters transcripts into groups of homologs
   Install the package libboost-all-dev with your package manager
   (optional: add BOOST = false to common.mk if the Boost library is unavailable and option --printHomologs is not required)
@@ -85,5 +89,6 @@ OPTIONS:
                               README-cgp.txt (section 8a+b) in the Augustus package. If both a database and hint files in 'gtffilenames.tbl'
                               are specified, hints are retrieved from both sources.
 
-example:
+examples:
 homGeneMapping --noDupes --halLiftOver_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal
+homGeneMapping --gtfs=gtffilenames.tbl --halfile=aln.hal --outdir=outdir --cpus=4

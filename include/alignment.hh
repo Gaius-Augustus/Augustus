@@ -13,6 +13,8 @@
 #include <vector>
 #include <list>
 #include <iostream>
+#include <exception>
+#include <climits>
 
 class MsaSignature; // forward declaration
 
@@ -110,7 +112,7 @@ private:
     /*
     *   added by Giovanna Migliorelli 14.05.2020 
     *   code responsible for serialization
-    *   aknowledgement : https://www.boost.org/doc/libs/1_70_0/libs/serialization/doc/tutorial.html
+    *   Acknowledegment : https://www.boost.org/doc/libs/1_70_0/libs/serialization/doc/tutorial.html
     */
 
     #ifdef TESTING
@@ -159,7 +161,7 @@ class Alignment {
 public:
     Alignment(size_t k) : aliLen(0), rows(k, NULL) {} // initialize with NULL, which stand for missing AlignmentRows
     ~Alignment(){
-	for (int i=0; i<rows.size(); i++) 
+	for (unsigned i=0; i<rows.size(); i++) 
 	    delete rows[i];	
     }
     friend bool mergeable (Alignment *a1, Alignment *a2, int maxGapLen, float mergeableFrac, bool strong);
@@ -274,7 +276,7 @@ class MsaSignature {
 public:
     string sigstr() const{
 	string str;
-	for (int s = 0; s < sigrows.size(); ++s)
+	for (unsigned s = 0; s < sigrows.size(); ++s)
 	    if (sigrows[s] != "")
 		str += itoa(s) + ":" + sigrows[s];
 	return str;
@@ -310,5 +312,103 @@ public:
 	return bf1.second > bf2.second; // => sort by increasing chromosomal position
     }
 };
+
+
+/**
+ * MsaInsertion, specifies a string to be inserted into a StringAlignment
+ */
+class MsaInsertion {
+public:
+    MsaInsertion(size_t s, size_t insertpos, string insert): s(s), insertpos(insertpos), insert(insert){ }
+    MsaInsertion() { }
+    /**
+     * Insertion sorting criterion: Do them right-to-left.
+     * Do insertions at the same position from long to short.
+     */
+    bool operator<(const MsaInsertion& other) const {
+        if (insertpos > other.insertpos)
+            return true;
+        if (insertpos < other.insertpos)
+            return false;
+        if (insert.length() > other.insert.length())
+            return true;
+        if (insert.length() < other.insert.length())
+            return false;
+        if (s < other.s)
+            return true;
+        return false;
+    }
+    size_t s; //! index of species
+    size_t insertpos; //! at which position to insert
+    string insert; //! what to insert
+};
+
+
+/**
+ * @brief global multiple sequence alignment in (standard) string representation
+ * @author Mario Stanke
+ */
+class StringAlignment {
+public:
+    StringAlignment(size_t numrows) : rows(numrows, ""), k(numrows), len(0) {} // initialize with empty strings
+    ~StringAlignment(){len = 0;}
+
+    /**
+     * Insert unaligned sequences into an alignment.
+     * The insertion positions all refer to the MSA before insertions.
+     * Example:
+     *
+     * a-tt-g   insert((0, 0, "ggg"), (2, 4, "gaga"),    ggga-tt-----g
+     * --ctgg          (1, 4, "ttt"))                    -----ctttt-gg
+     * a-ttgc   ===================================>     ---a-ttgagagc
+     *
+     * @param[in] insList a list of inserts at certain positions
+     */
+    void insert(std::list<MsaInsertion> &insList, int maxInsertLen = INT_MAX);
+
+    /**
+     * Remove all columns which in which each row that is
+     * present has a gap. Example
+     * 
+     * ggga-tt-----g           gggatt-----g
+     * -----ctttt-gg   ====>   ----ctttt-gg
+     * ---a-ttgagagc           ---attgagagc
+     *
+     * @param[in] insList a list of inserts at certain positions
+     */
+    size_t removeGapOnlyCols();
+
+    bool isGapOnlyCol(size_t col){
+        for (size_t s = 0; s < k; ++s)
+            if (!rows[s].empty() && rows[s].at(col) != '-')
+                return false;
+        return true;
+    }
+
+    /**
+     * Ensure all rows have the same length and compute and set this length.
+     */
+    void computeLen(){
+        size_t m = 0, rowlen;
+        for (size_t s = 0; s < k; ++s){
+            rowlen = rows[s].length();
+            if (rowlen > 0){
+                if (m == 0)
+                    m = rowlen;
+                else if (m != rowlen)
+                    throw length_error("StringAlignment with rows of differing lengths");
+            }
+        }
+        len = m;
+    }
+
+    friend ostream& operator<< (ostream& strm, const StringAlignment &msa);
+
+// data members
+    vector<string> rows;
+    size_t k;
+    size_t len;
+};
+
 
 #endif  // _ALIGNMENT

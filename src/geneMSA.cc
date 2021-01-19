@@ -528,23 +528,32 @@ void GeneMSA::printOrthoExons(list<OrthoExon> &orthoExonsList) {
 void GeneMSA::printSingleOrthoExon(OrthoExon &oe, bool files) {
     bool GBrowseStyle = false; // for viewing in GBrowse use this style
     streambuf *stdout = cout.rdbuf();
+    int beginStopOffset, endStopOffset; // to account for excluded stop codons
     for (int s=0; s < numSpecies(); s++) {
 	ExonCandidate *ec = oe.orthoex.at(s);
 	if (files)
 	    cout.rdbuf(orthoExons_outfiles[s]->rdbuf()); // write to 'orthoExons.speciesname[s].gff3'
         if (ec != NULL) {
+            // the gff strand of the exon is the "strand product" of the alignment strand and exon type strand
+            // e.g. "-" x "-" = "+"
+            string gffStrand = ((isPlusExon(ec->type) == (getStrand(s) == plusstrand))? "+" : "-");
+            beginStopOffset = endStopOffset = 0;
+            if (hasStopCodon(ec->type) && Gene::stopCodonExcludedFromCDS){
+                if (gffStrand == "+"){
+                    endStopOffset = -3;
+                } else {
+                    beginStopOffset = 3;
+                }
+            }
 	    cout << getSeqID(s) << "\tOE1\t" << "exon" << "\t";
             if (getStrand(s) == plusstrand){ // strand of alignment
-		cout << ec->begin + offsets[s]+1 << "\t" << ec->end + offsets[s]+1;
+		cout << ec->begin + offsets[s]+1 + beginStopOffset << "\t" << ec->end + offsets[s]+1 + endStopOffset;
             } else {
 		int chrLen = rsa->getChrLen(s, getSeqID(s));
-                cout << chrLen - (ec->end + offsets[s]) << "\t" << chrLen - (ec->begin + offsets[s]);
+                cout << chrLen - (ec->end + offsets[s]) + beginStopOffset << "\t" << chrLen - (ec->begin + offsets[s]) + endStopOffset;
             }
-	    cout << "\t" << ec->score << "\t" 
-		// the gff strand of the exon is the "strand product" of the alignment strand and exon type strand
-		// e.g. "-" x "-" = "+"
-		 << ((isPlusExon(ec->type) == (getStrand(s) == plusstrand))? '+' : '-');
-            cout << "\t" << ec->gff3Frame() << "\t" << "ID=" << oe.ID << ";Name=" << oe.ID << ";Note=" 
+	    cout << "\t" << ec->score << "\t" << gffStrand << "\t" << ec->gff3Frame() << "\t"
+                 << "ID=" << oe.ID << ";Name=" << oe.ID << ";Note=" 
 		 << stateExonTypeIdentifiers[ec->type]; // TODO: reverse type if alignment strand is "-"
 	    if (GBrowseStyle)
 		cout << "|" << oe.numExons();
@@ -714,6 +723,114 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
   }
 }
 
+/*
+ * 
+ * This function obtains multiple sequence alignments (MSAs) and their label y=0,1, whether
+ * it constitutes a real CDS or not in the reference species.
+ */
+void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<string,int> *ref_class, vector<AnnoSequence*> const &seqRanges){
+    StringAlignment msa(0);
+   
+    for(list<OrthoExon>::iterator oeit = hects->begin(); oeit != hects->end(); ++oeit){
+	ExonCandidate *ec = oeit->orthoex.at(species);
+	if (ec == NULL)
+	    continue; // can not consider alignments where the reference species has no exon candidate
+	stringstream key;
+	int beginStopOffset=0, endStopOffset=0; // to account for excluded stop codons
+	if (hasStopCodon(ec->type) && Gene::stopCodonExcludedFromCDS){
+	    if (isPlusExon(ec->type))
+	        endStopOffset = -3;
+	    else
+                beginStopOffset = 3;
+	}
+	
+	key << "CDS\t" << getSeqID(species) << "\t" << ec->begin + offsets[species] + 1 + beginStopOffset
+	    << "\t" << ec->end + offsets[species] + 1 + endStopOffset << "\t";
+	if (isPlusExon(ec->type))
+	    key << "+";
+	else
+	    key << "-";
+	key << "\t" << ec->gff3Frame();
+	unordered_map<string, int>::iterator got = ref_class->find(key.str());
+	bool y=0;
+	if (got != ref_class->end())
+	    y=1;
+
+	try {
+	    msa = getMsa(*oeit, seqRanges);
+	    cout << "\ny=" << y << "\tOE" << oeit->ID << ": " << key.str() << endl
+		 << msa << endl;
+	} catch (...) {}
+    }
+}
+
+StringAlignment GeneMSA::getMsa(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges, size_t flanking) {
+    int k = alignment->numRows();
+    int aliStart = oe.getAliStart() - flanking;
+    int aliEnd = oe.getAliEnd() + flanking;
+    int aliLen = aliEnd - aliStart + 1;
+    int gaplen, matchlen, loverhang, prevAliEnd, insertlen;
+    StringAlignment msa(k);
+    MsaInsertion msains;
+    list<MsaInsertion> insList;
+
+    for (size_t s=0; s<k; s++){
+	if (alignment->rows[s] == NULL || oe.orthoex[s] == NULL)
+	    continue;
+	AlignmentRow *row = alignment->rows[s];
+	vector<fragment>::const_iterator prev = row->frags.end(),
+            from = row->frags.begin(); // this could be more efficient exploiting sortedness
+
+	// search first fragment that is not strictly to the left of the alignment start
+	while (from != row->frags.end() && from->aliPos + from->len < aliStart)
+	    from++;
+        
+	prevAliEnd = aliStart - 1;
+	while (from != row->frags.end() && from->aliPos <= aliEnd){
+            // are there unaligned insertions?
+            if (prev != row->frags.end() && from->chrPos > prev->chrPos + prev->len){ // insertion
+                msains.s = s;
+                msains.insertpos = msa.rows[s].length();
+                insertlen = from->chrPos - prev->chrPos - prev->len;
+                msains.insert = string(seqRanges[s]->sequence + prev->chrPos + prev->len - offsets[s], insertlen);
+                /*
+                  cout << "insert of length " << insertlen << " found at "
+                     << "s= " << s << " pos " << msains.insertpos << " i.e. "
+                     << msains.insert << " inserted after " <<
+                     msa.rows[s] << endl;
+                */
+                insList.push_back(msains);
+            }
+            // insert gap characters between previous and this fragment
+            gaplen = from->aliPos - prevAliEnd - 1;
+            if (gaplen > 0)
+                msa.rows[s] += string(gaplen, '-');
+	    
+            loverhang = (from->aliPos < aliStart)? aliStart - from->aliPos : 0;
+            matchlen = from->len - loverhang;
+            if (matchlen > aliEnd - from->aliPos - loverhang + 1)
+                matchlen = aliEnd - from->aliPos - loverhang + 1;
+            msa.rows[s] += string(seqRanges[s]->sequence + from->chrPos + loverhang - offsets[s], matchlen);
+            prevAliEnd = from->aliPos + loverhang + matchlen - 1;
+            prev = from++;
+	}
+	if (msa.rows[s].size() < aliLen)
+            msa.rows[s] += string(aliLen - msa.rows[s].size(), '-');
+    }
+    if (!insList.empty()){
+        // cout << "msa before insertions:\n" << msa << endl;
+        // inserts could be long, limit their length to 9
+        msa.insert(insList, 9);
+        // cout << "msa after  insertions:\n" << msa << endl;
+    }
+    try {
+	msa.computeLen();
+    } catch (length_error &e){
+	cerr << e.what() << endl << msa << endl;
+    }
+    msa.removeGapOnlyCols();
+    return msa;
+}
 
 
 /** 
@@ -728,7 +845,7 @@ void GeneMSA::collect_features(int species, list<OrthoExon> *hects, SpeciesGraph
  *                 a|c g - t|t g a|t g t|t g a|- a a
  *                   ^                       ^
  * firstCodonBase    |                       | lastCodonBase (for last species)
- * example output: (stop codons are excluded for singe and terminal exons)
+ * example output: (stop codons are excluded for single and terminal exons)
  *                 - - -|c t t|- - -|g t c|- - -|g a t
  *                 - - -|c c t|- - -|- - -|- - -|a n c
  *                 c g t|- - -|t g a|g t c|- - -|g a c
@@ -1575,17 +1692,25 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
 		}
 	    }
 	}
-	consScore.push_back(calcColumnScore(a,c,t,g));
+	double sc = calcColumnScore(a,c,t,g);
+	consScore.push_back(sc);
     }
+    // DEBUGGING Mario
+    if (consScore.size() != alignment->aliLen)
+	cerr << "consScore.size() != alignment->aliLen: " <<  consScore.size() << " != " << alignment->aliLen << endl;
     // calcluate conservation score for each HECT
     for (list<OrthoExon>::iterator oe = orthoExonsList.begin(); oe != orthoExonsList.end(); ++oe){
 	double oeConsScore=0.0;
 	int oeAliStart = oe->getAliStart();
-	int oeAliEnd = oeAliStart + oe->getAliLen();
+	int oeAliEnd = oeAliStart + oe->getAliLen(); // the actual end, as oe->getAliLen  = end - start
 	for(int pos = oeAliStart; pos <= oeAliEnd; pos++){
 	    if (pos > alignment->aliLen || pos < 0)
 		throw ProjectError("Internal error in printConsScore: alignment positions of HECTs and geneRanges are inconsistent.");
-	    oeConsScore+=consScore[pos];
+	    if (pos >= consScore.size()){
+		cerr << "invalid access at " << pos << "\t" << consScore.size() <<  endl;
+	    }
+	    if (pos < consScore.size())
+		oeConsScore += consScore[pos];
 	}
 	oeConsScore/=(oeAliEnd-oeAliStart+1); // average over all alignment columns within a HECT
 	oe->setConsScore(oeConsScore);
@@ -1602,6 +1727,7 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
         oe->setLeftConsScore(oeConsScore);
 	// conservation score for right boundary feature
 	oeConsScore=0.0;
+
         int oeRightBoundAliStart = min(oeAliEnd + 1, alignment->aliLen);
         int oeRightBoundAliEnd = min(oeAliEnd + 1 + Constant::oeExtensionWidth, alignment->aliLen - 1);
         for(int pos = oeRightBoundAliStart; pos <= oeRightBoundAliEnd; pos++){
@@ -1609,7 +1735,9 @@ void GeneMSA::calcConsScore(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
                 throw ProjectError("Internal error in printConsScore: alignment positions of HECTs and geneRanges are inconsistent.");
             oeConsScore += consScore[pos];
         }
-        oeConsScore/=(oeRightBoundAliEnd-oeRightBoundAliStart+1); // average over all alignment columns within a HECT                   
+	
+        oeConsScore/=(oeRightBoundAliEnd-oeRightBoundAliStart+1); // average over all alignment columns within a HECT
+
         oe->setRightConsScore(oeConsScore);
 
     }

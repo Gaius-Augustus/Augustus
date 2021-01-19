@@ -1,0 +1,73 @@
+# getSeq(1)
+
+## NAME
+
+getSeq - print genome sequences from databases on the standard output
+
+## SYNOPSIS
+
+MySQL: ::
+  *getSeq* [OPTIONS] --species=_SPECIES_ --seq=_SEQUENCE_ --dbaccess=_dbname,host,user,passwd_
+SQLite: ::
+  *getSeq* [OPTIONS] --species=_SPECIES_ --seq=_SEQUENCE_ --dbaccess=_dbname.db_ --speciesfilenames=_SPECIESFILENAMES_
+
+## DESCRIPTION
+
+Retrieve a genome sequence from a MySQL and SQLite database or a part of it. 
+Optionally the reverse complement is printed. Print to standard output.
+
+## OPTIONS
+
+### Mandatory options
+    
+*-s*, *--species*=_SPECIES_::
+  SPECIES is the species identifier used when loading the sequence into the database.
+
+*-q*, *--seq*=_SEQUENCE_::
+  SEQUENCE is the ID of the sequence to retrieve.
+
+*-c*, *--dbaccess*=_database_::
+  MySQL:  :::
+    a string containing dbname, host, user, passwd joined with a comma
+    dbname :::: the name of the SQL database
+    host :::: the host name or IP
+    user :::: the database user
+    passwd :::: users and password
+  SQLite: :::
+    the file name of the SQLite database (must contain a dot)
+
+*-f*, *--speciesfilenames=SPECIESFILENAMES*::
+  This parameter is only recognized for SQLite databases. +
+  SPECIESFILENAMES is the file where the species identifier and the related file names of the sequences are stored. +
+  Format:
+----
+    Homo sapiens <TAB> /dir/to/genome/human.fa
+    Mus musculus <TAB> /dir/to/genome/mouse.fa
+----
+
+### Additional options
+
+*-a*, *--start*=_number_::
+  Retrieve subsequence starting at this position (coordinates are 1-based).
+
+*-b*, *--end*=_number_::
+  Retrieve subsequence ending at this position(coordinates are 1-based).
+
+*-r*, *--rc*::
+  Output the reverse complement of the sequence.
+
+*-h*, *--help*::
+   Produce help message.
+
+## EXAMPLE
+----
+  MySQL:
+    getSeq --species=mouse --seq=chr16 --dbaccess=vertebrates,localhost,myuser,mypasswd 
+    getSeq --species=human --seq=chr21 --start=32026 --end=32085 --rc --dbaccess=vertebrates,localhost,myuser,mypasswd 
+
+  SQLite:
+    getSeq --species=mouse --seq=chr16 --dbaccess=vertebrates.db --speciesfilenames=speciesfilenames.tsv
+----
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.

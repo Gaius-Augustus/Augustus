@@ -14,6 +14,7 @@
 # Last modified by Katharina J. Hoff on Feb 21st 2018
 
 use strict;
+use warnings;
 use Getopt::Long;
 
 my $usage .= "$0 -- convert GFF file and sequence fasta file to minimal genbank format\n";
@@ -175,6 +176,13 @@ sub insertExon {
     }
 }
 
+# escape characters according GFF3 Format restrictions for Column 1: "seqid"  
+# see http://gmod.org/wiki/GFF3
+sub escape_seqid {
+    my ($seqID) = @_;
+    $seqID =~ s/([^a-zA-Z0-9\.:\^\*\$@!\+_\?\-\|])/sprintf("%%%02X",ord($1))/ge;
+    return $seqID;
+}
 
 #
 # Now write the data
@@ -193,20 +201,37 @@ while(<FASTA>) {
     
     $length = length $seq;
     $annotation = $annos{$seqname};
-    my $shortseqname = $seqname;
-    $shortseqname =~ s/\s.*//;
-
-    if (!defined($annotation) && defined($annos{$shortseqname})){
-	$seqnameerrcount++;
-	if ($seqnameerrcount <= 10){
-	    print STDERR "Sequence $seqname has no annotation but $shortseqname has. ";
-	    print STDERR "Assuming that space truncates name.\n";
-	}
-	if ($seqnameerrcount == 10){
-	    print STDERR "Supressing this error message from now on.\n";
-	}
-	$seqname = $shortseqname;
-	$annotation = $annos{$shortseqname};
+    my $annotatedseqname = $seqname;
+    
+    if (!defined($annotation)) {
+        my $shortseqname = $seqname;
+        $shortseqname =~ s/\s.*//;
+        $annotatedseqname = $shortseqname;
+        $annotation = $annos{$annotatedseqname}; # try the short sequence name (split at first whitespace)
+        my $usedshortseqname = defined($annotation);
+        
+        if (!defined($annotation)) { # check if seq id in gff-file contains escaped characters
+            $annotatedseqname = escape_seqid($seqname);
+            $annotation = $annos{$annotatedseqname}; # try the escaped sequence name (as demanded by GFF3 format)
+            
+            if (!defined($annotation)) {
+                $annotatedseqname = escape_seqid($shortseqname);
+                $annotation = $annos{$annotatedseqname}; # try the escaped short sequence name
+                $usedshortseqname = defined($annotation);
+            }
+        }
+        
+        if ($usedshortseqname) {
+            $seqnameerrcount++;
+            if ($seqnameerrcount <= 10) {
+                print STDERR "Sequence $seqname has no annotation but $shortseqname has. ";
+                print STDERR "Assuming that space truncates name.\n";
+                if ($seqnameerrcount == 10) {
+                    print STDERR "Supressing this error message from now on.\n";
+                }
+            }
+            $seqname = $shortseqname;
+        }
     }
     # For each UTR annotation check whether there is a CDS annoation with the same name and matching boundaries.
     # If yes, make an mRNA from the UTR and discard the UTR annotation.
@@ -276,7 +301,7 @@ while(<FASTA>) {
 	}
     }
 
-    my @nr_sort_fkeyarray = nrsort(values %{$annos{$seqname}});
+    my @nr_sort_fkeyarray = nrsort(values %{$annos{$annotatedseqname}});
 
     # extract only the cds annotations
     my @cdsfkeys = ();

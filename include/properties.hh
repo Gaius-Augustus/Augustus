@@ -21,9 +21,9 @@
 #endif
 
 #ifdef TESTING
-#define NUMPARNAMES 276   // testMode command line option added
+#define NUMPARNAMES 279   // +testMode, workingDir command line options
 #else
-#define NUMPARNAMES 275
+#define NUMPARNAMES 277
 #endif
 
 #define GENEMODEL_KEY "genemodel"
@@ -244,40 +244,47 @@ class Properties{
     }
 
     // assign value only if key is present
-    static void assignProperty(string name, Integer& target) {
+    static bool assignProperty(string name, Integer& target) {
 	try {
 	    target = getIntProperty(name);
- 	} catch (KeyNotFoundError &e) {}
+ 	} catch (KeyNotFoundError &e) { return false; }
+        return true;
     }
-    static void assignProperty(string name, unsigned& target) {
+    static bool assignProperty(string name, unsigned& target) {
 	try {
 	    target = (unsigned) getIntProperty(name);
- 	} catch (KeyNotFoundError &e) {}
+ 	} catch (KeyNotFoundError &e) { return false; }
+        return true;
     }
-    static void assignProperty(string name, Double& target) {
+    static bool assignProperty(string name, Double& target) {
 	try {
 	    target = getDoubleProperty(name);
- 	} catch (KeyNotFoundError &e) {}
+ 	} catch (KeyNotFoundError &e) { return false; }
+        return true;
     }
-    static void assignProperty(string name, double& target) {
+    static bool assignProperty(string name, double& target) {
 	try {
 	    target = getdoubleProperty(name);
-	} catch (KeyNotFoundError &e) {}
+	} catch (KeyNotFoundError &e) { return false; }
+        return true;
     }
-    static void assignProperty(string name, Boolean& target) {
+    static bool assignProperty(string name, Boolean& target) {
 	try {
 	    target = getBoolProperty(name);
-	} catch (KeyNotFoundError &e) {}
+	} catch (KeyNotFoundError &e) { return false; }
+        return true;
     }
-    static void assignProperty(string name, string& target) {
+    static bool assignProperty(string name, string& target) {
 	try {
 	    target = getProperty(name);
-	} catch (KeyNotFoundError &e) {}
+	} catch (KeyNotFoundError &e) { return false; }
+        return true;
     }
-    static void assignProperty(string name, const char*& target) {
+    static bool assignProperty(string name, const char*& target) {
 	try {
 	    target = getProperty(name);
-	} catch (KeyNotFoundError &e) {}
+	} catch (KeyNotFoundError &e) { return false; }
+        return true;
     }
     
 
@@ -299,4 +306,3 @@ class Properties{
 string findLocationOfSelfBinary();
 
 #endif  //  _PROPERTIES_HH
-

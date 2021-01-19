@@ -98,7 +98,8 @@ void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
 			    }
 			    else{
 				if(find(speciesNames.begin(), speciesNames.end(), skey) == speciesNames.end()) {
-				    throw ProjectError(skey + " is not a valid species identifier.");
+				    throw ProjectError("species identifier '" + skey + "' referenced in extrinsicCfgFile '"
+                                                       +  filename + "' not found in defined set of species");
 				}
 				addSpeciesToGroup(skey,groupCount);
 				cout <<" "<<skey;
@@ -752,7 +753,7 @@ int MysqlAccess::get_region_coord(int seq_region_id,int start,int end,vector<T> 
 AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start, int end, Strand strand){
     int seq_start, seq_end;
     streampos file_start;
-    streamsize n=0; // number of characters that are read
+    streamsize n = 0; // number of characters that are read
     
     AnnoSequence* annoseq = new AnnoSequence();
     annoseq->seqname = newstrcpy(chrName);
@@ -789,7 +790,7 @@ AnnoSequence* SQLiteAccess::getSeq(string speciesname, string chrName, int start
 	    if(it == filenames.end()){
 		throw ProjectError("no genome file specified for " + speciesname + " in speciesfilenames");
 	    }
-	    string file =it->second;
+	    string file = it->second;
 	    ifstream ifstrm(file.c_str());
 	    if (ifstrm.is_open()){
 		ifstrm.seekg(file_start);

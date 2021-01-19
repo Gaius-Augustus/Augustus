@@ -2478,13 +2478,14 @@ void filterGenePrediction(list<Transcript*> &gl, list<Transcript*> &filteredTran
 	// filter criteria that apply to coding genes only
 	// delete gene if the combined CDS is too short, unless a CDS exon is truncated
 	Gene *g = dynamic_cast<Gene *>(*git);
-        bool inFrameStop = g->hasInFrameStop(annoseq);
-        hasInFrameStop |= inFrameStop;
-	if (g && ((g->clength < Constant::min_coding_len && g->completeCDS())
-		  || (inFrameStop && noInFrameStop)
-		  || (g->clength < 4 && g->clength < Constant::min_coding_len && !g->completeCDS())))
-	    keep = false;
-
+        if (g){ // coding gene
+            bool inFrameStop = g->hasInFrameStop(annoseq);
+            hasInFrameStop |= inFrameStop;
+            if (g && ((g->clength < Constant::min_coding_len && g->completeCDS())
+                      || (inFrameStop && noInFrameStop)
+                      || (g->clength < 4 && g->clength < Constant::min_coding_len && !g->completeCDS())))
+                keep = false;
+        }
 	if (keep && (*git)->hasProbs) {
 	    /* 
 	     * filter by a posteriori probability
@@ -3092,7 +3093,7 @@ void printGeneList(list<AltGene> *genelist, AnnoSequence *annoseq, bool withCS, 
 		    (*trit)->printBlockSequences(annoseq);
 		}
 	    }
-	    if (withEvidence){
+	    if (withEvidence && Constant::printEvidence){
 		Gene *g = dynamic_cast<Gene*> (*trit);
 		if (g)
 		    g->printEvidence();

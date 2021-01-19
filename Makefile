@@ -11,6 +11,9 @@ all:
 clean:
 	cd src && ${MAKE} clean
 	cd auxprogs && ${MAKE} clean
+	if [ ! -z $(shell which python3) ] ; then cd tests/examples && ./testcases.py --clean ; fi
+	if [ ! -z $(shell which python3) ] ; then tests/auxprogs/bam2wig/test_bam2wig.py --clean ; fi
+	cd tests && ./pyclean
 
 INSTALLDIR = /opt/augustus-$(AUGVERSION)
 
@@ -21,15 +24,15 @@ install:
 	ln -sf $(INSTALLDIR)/bin/etraining /usr/local/bin/etraining
 	ln -sf $(INSTALLDIR)/bin/prepareAlign /usr/local/bin/prepareAlign
 	ln -sf $(INSTALLDIR)/bin/fastBlockSearch /usr/local/bin/fastBlockSearch
-	ln -sf $(INSTALLDIR)/bin/load2db /usr/local/bin/load2db
-	ln -sf $(INSTALLDIR)/bin/getSeq /usr/local/bin/getSeq
-	ln -sf $(INSTALLDIR)/bin/espoca /usr/local/bin/espoca
+	if [ -f $(INSTALLDIR)/bin/load2db ] ; then ln -sf $(INSTALLDIR)/bin/load2db /usr/local/bin/load2db ; fi	
+	if [ -f $(INSTALLDIR)/bin/getSeq ] ; then ln -sf $(INSTALLDIR)/bin/getSeq /usr/local/bin/getSeq ; fi
 
 # for internal purposes:
 release:
 	find . -name "*~" | xargs rm -f
 	rm .travis.yml
 	rm -rf .git
+	rm -rf .github
 	rm -f src/makedepend.pl
 	cd docs/tutorial2015/results; ls | grep -v do.sh | grep -v README | xargs rm; cd -
 	rm -r auxprogs/utrrnaseq/input/human-chr19
@@ -40,11 +43,13 @@ release:
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
 
 test:
-	./examples_test/testcases.py --compare --html --set_default_wd
+	if [ -z $(shell which python3) ] ; then echo To run the tests Python3 is required. ; fi
+	if [ ! -z $(shell which python3) ] ; then cd tests/examples && ./testcases.py --compare --html ; fi
+	if [ ! -z $(shell which python3) ] ; then tests/auxprogs/bam2wig/test_bam2wig.py --compare --html ; fi
 
 unit_test:
 	cd src && ${MAKE} unittest
 	cd src/unittests && ./unittests
 
 # remove -static from src/Makefile for MAC users
-# remove -g -gdb from CXXFLAGS
+# remove -g -ggdb from CXXFLAGS

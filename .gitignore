@@ -13,8 +13,6 @@ auxprogs/bam2hints/bam2hints
 auxprogs/bam2hints/bam2hints.o
 auxprogs/bam2wig/bam2wig
 auxprogs/bam2wig/bam2wig.o
-auxprogs/checkTargetSortedness/checkTargetSortedness
-auxprogs/checkTargetSortedness/checkTargetSortedness.o
 auxprogs/compileSpliceCands/compileSpliceCands
 auxprogs/compileSpliceCands/compileSpliceCands.o
 auxprogs/compileSpliceCands/list.o
@@ -54,20 +52,36 @@ src/prepareAlign
 src/scanner/lex.o
 src/unittests/fasta_unittest.o
 src/unittests/lldouble_unittest.o
+src/unittests/alignment_unittest.o
+src/unittests/codonevo_unittest.o
+src/unittests/evo_unittest.o
 src/unittests/unittests
 
 # ignore VS Code configuration files
 .vscode
 
 # ignore generated test output
-examples_test_results/
+tests/examples/results/
 
 # ignore tmp test case data
-examples_test/data/tmp/
+tests/examples/data/tmp/
+tests/auxprogs/*/tmp
 
-# ignore generated longrunning test files
-longrunning_examples/tmp/
-longrunning_examples/output/
+# ignore longrunning test data and output files
+tests/longrunning/single_genome/data/
+tests/longrunning/single_genome/output/
+tests/longrunning/single_genome/tmp.*/
+tests/longrunning/cgp/data/cgp12way/
+tests/longrunning/cgp/data/cgp12way.tar.gz
 
 # ignore test species
 config/species/test_aug_dev_species/
+config/species/human_longrunningtest_crf/
+config/species/human_longrunningtest_hmm/
+
+# ignore python bytecode
+__pycache__
+*.pyc
+
+# documentation
+doxygen/

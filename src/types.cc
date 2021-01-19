@@ -79,6 +79,8 @@ string Constant::dbaccess; // comma separated string with database access (datab
 string Constant::alnfile; // name of file that contains MSA of genomes
 string Constant::codonalnfile; // name of file that contains MSA of codon sequences
 bool Constant::overlapmode = false;
+Boolean Constant::printEvidence = true; // output "evidence for and against" after each gene
+Boolean Constant::printExonCandsMSA = false; // only print OE nucleotide multiple seq alignments
 Boolean Constant::printOEs = false; // output ortho exons
 Boolean Constant::printHints = false; // output hint lines at start of prediction GFF
 Boolean Constant::printMEA = false; // output .mea files (base genes) during CGP
@@ -91,6 +93,7 @@ vector<Double> Constant::head2head_ovlp;
 vector<Double> Constant::tail2tail_ovlp;
 unsigned Constant::temperature = 0; // heating the distribution for sampling, 0=cold, 7=hottest
 bool Constant::softmasking = true; // true became default on June 5th, 2020
+bool Constant::softmasking_explicitly_requested = false; // to reverse default for .gb input
 bool inCRFTraining = false;
 bool Constant::dbhints = false;
 // scores from logistic regression                                                                                                  
@@ -428,6 +431,8 @@ void Constant::init(){
     Properties::assignProperty("contentmodels", contentmodels);
     Properties::assignProperty("exoncands", exoncands);
     Properties::assignProperty("min_intron_len", min_intron_len);
+    Properties::assignProperty("printEvidence", printEvidence);
+    Properties::assignProperty("/CompPred/printExonCandsMSA", printExonCandsMSA);
     Properties::assignProperty("printOEs", printOEs);
     Properties::assignProperty("printHints", printHints);
     Properties::assignProperty("printMEA", printMEA);

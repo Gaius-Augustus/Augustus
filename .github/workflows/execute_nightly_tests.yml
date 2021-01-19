@@ -1,0 +1,89 @@
+# This workflow builds AUGUSTUS and executes the 
+# longrunning test cases
+name: Execute AUGUSTUS longrunning test cases
+
+on:
+  schedule:
+    # execute workflow daily at 23:30
+    - cron:  '30 23 * * *'
+
+env:
+  TOOLDIR: /data/tools
+  PERL5LIB: /data/eval
+  DB_USER: ${{ secrets.TEST_DB_USER }}
+  DB_PASSWD: ${{ secrets.TEST_DB_PASSWD }}
+
+jobs:
+  check_latest_commit_in_db:
+    runs-on: [self-hosted, linux, default]
+
+    outputs:
+      commit: ${{ steps.step3.outputs.hash }}
+
+    steps:
+    - name: Check out repository
+      id: step1
+      uses: actions/checkout@v2
+
+    - name: Get latest commit in DB
+      id: step2
+      run: |
+        echo 'LATEST_COMMIT_IN_DB<<EOF' >> $GITHUB_ENV
+        ./check_latest_commit_influx.py --dbname testresults --dbhost localhost --dbport 8086 --dbuser $DB_USER --dbpasswd $DB_PASSWD >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+      working-directory: tests/longrunning/
+
+    - name: Set output
+      id: step3
+      run: echo '::set-output name=hash::${{ env.LATEST_COMMIT_IN_DB }}'
+
+  longrunning_test:
+    runs-on: [self-hosted, linux, default]
+    needs: check_latest_commit_in_db
+
+    # Only execute test cases if the last commit in db is different from the last commit on default branch
+    if: ${{ needs.check_latest_commit_in_db.outputs.commit != github.sha }}
+
+    # Maximum number of minutes to let a job run before GitHub automatically cancels it. Default: 360
+    timeout-minutes: 600
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    # Install required python packages
+    - name: Install python wget
+      run: pip3 install wget
+
+    - name: Install gitpython
+      run: pip3 install gitpython
+
+    - name: Install profiling tools
+      run: pip3 install psutil memory_profiler
+
+    - name: Build AUGUSTUS
+      run: make all
+
+    - name: Execute single genome test cases
+      run: ./test_single.py --evalDir /data/eval/ --jobs 8 --pathToGitRepo ../../../.git
+      working-directory: tests/longrunning/single_genome/
+
+    - name: Extract desired accuracy values (single genome test case)
+      run: ./extract_accuracy_values.py --path single_genome/output/eval
+      working-directory: tests/longrunning/
+
+    - name: Write to influxdb (single genome test case)
+      run: ./write_to_influx.py --dbname testresults --dbhost localhost --dbport 8086 --dbuser $DB_USER --dbpasswd $DB_PASSWD --pathToDataDir single_genome/output/ --mode single
+      working-directory: tests/longrunning/
+
+    - name: Execute cgp test case
+      run: ./executeTestCGP.py --chunks 27 30 47 54 57 80 86 101 118 --eval --augustusDir ../../../ --dataDir data --evalDir /data/eval --jobs 8 --pathToGitRepo ../../../.git
+      working-directory: tests/longrunning/cgp/
+
+    - name: Extract desired accuracy values (cgp test case)
+      run: ./extract_accuracy_values.py --path cgp/data/cgp12way/ACCURACY
+      working-directory: tests/longrunning/
+
+    - name: Write to influxdb (cgp test case)
+      run: ./write_to_influx.py --dbname testresults --dbhost localhost --dbport 8086 --dbuser $DB_USER --dbpasswd $DB_PASSWD --pathToDataDir cgp/data/cgp12way/ --mode cgp
+      working-directory: tests/longrunning/

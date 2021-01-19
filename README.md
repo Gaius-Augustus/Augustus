@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Gaius-Augustus/Augustus.svg?branch=master)](https://travis-ci.org/Gaius-Augustus/Augustus)
+[![Build and test](https://github.com/Gaius-Augustus/Augustus/workflows/Build%20and%20test/badge.svg)](https://github.com/Gaius-Augustus/Augustus/actions?query=workflow%3A"Build+and+test")
 
 # Gene Prediction with AUGUSTUS
 
@@ -6,8 +6,9 @@
 [INSTALLATION](#installation)  
 [RUNNING AUGUSTUS](docs/RUNNING-AUGUSTUS.md)  
 [WEB-SERVER](#web-server)  
+[COMPARATIVE GENE PREDICTION](docs/README-cgp.md)  
 [AUTHORS AND CONTACT](docs/CONTACT.md)  
-[REFERENCES](#references)  
+[REFERENCES](#references-and-documentation)  
 [LICENSES](#licenses)  
 
 # INTRODUCTION
@@ -15,6 +16,9 @@
 AUGUSTUS is a program to find genes and their structures in one or more genomes. [More ...](docs/ABOUT.md)
 
 # INSTALLATION
+
+## Windows
+Windows users can use the Windows Subsystem for Linux (WSL) to install AUGUSTUS exactly as described below for Linux. How to set up the WSL for AUGUSTUS is described [here](docs/AUGUSTUS-ON-WINDOWS.md).
 
 ## Ubuntu 18.04 or later
 This currently installs only a single-genome version without comparative gene prediction capability:
@@ -50,7 +54,7 @@ The following dependencies are required for AUGUSTUS:
  (set ZIPINPUT = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available)
   - libboost-iostreams-dev
   - zlib1g-dev
-- For comparative AUGUSTUS (multi-species, CGP):
+- For [comparative AUGUSTUS](docs/README-cgp.md) (multi-species, CGP):
   (set COMPGENEPRED = false in [common.mk](common.mk) if the libraries required by the CGP version are not available. Augustus can then only be run in single-genome mode, which is what most users need.)
   - libgsl-dev
   - libboost-all-dev
@@ -63,7 +67,7 @@ The following dependencies are required for AUGUSTUS:
 - For compiling utrrnaseq:
   - libboost-all-dev (version must be >Boost_1_49_0)
 - For compiling bam2wig:
-  - Follow [these instructions](./auxprogs/bam2wig/README.txt). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use `bamToWig.py` to accomplish the same task.
+  - Follow [these instructions](./auxprogs/bam2wig/README.md). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use `bamToWig.py` to accomplish the same task.
 - For compiling homgenemapping
   (set BOOST = FALSE in [./auxprogs/homgenemapping/src/Makefile](./auxprogs/homgenemapping/src/Makefile) if the option --printHomologs is not required or the required libraries are not available)
   - libboost-all-dev
@@ -133,8 +137,9 @@ For further references see [docs/REFERENCES.md](docs/REFERENCES.md)
 
 All source code, i.e.
   - the AUGUSTUS source code (src/*.cc, include/*.hh)
-  - the scripts (scripts/*.pl)
+  - the scripts (scripts/*)
   - the auxiliary programs (auxprogs/)
-  - the tree-parser (src/scanner,src/parser)
+  - the tree-parser (src/scanner, src/parser)
+  - the unit tests (src/unittests)
   
 is under the [Artistic License](src/LICENSE.TXT).

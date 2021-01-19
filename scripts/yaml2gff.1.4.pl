@@ -71,11 +71,22 @@ sub nu_to_aa {
     return ($arg-$residue)/3;
 }
 
-sub escape {
+# escape according to GFF3 Format restrictions for Column 1: "seqid"  
+# see http://gmod.org/wiki/GFF3
+sub escape_seqid {
     foreach(@_) {
-	s/([^a-zA-Z0-9.:^*$@!+_?-|])/sprintf("%%%02X",ord($1))/ge;
+        s/([^a-zA-Z0-9\.:\^\*\$@!\+_\?\-\|])/sprintf("%%%02X",ord($1))/ge;
     }
 }
+
+# escape according to GFF3 Format restrictions for Column 9: "attributes"   
+# see http://gmod.org/wiki/GFF3
+sub escape_attribute {
+    foreach(@_) {
+        s/([\t,=;])/sprintf("%%%02X",ord($1))/ge;
+    }
+}
+
 
 sub with_number {
     my ($n, $s, $alt) = @_;
@@ -116,7 +127,7 @@ sub get_gapstr {
 sub output {
     my ($queryname, $hitlist) = @_;
     next if ($filterStatus && $hitlist->[0]{"status"} eq $filterStatus);
-    escape($queryname);
+    escape_attribute($queryname);
     print "##query\t$queryname 1 ".$hitlist->[0]{"${QPFX}_len"};
     my ($pstart, $pend, $plen) = ($hitlist->[0]{"${QPFX}_start"}, @{$hitlist->[-1]}{"${QPFX}_end", "${QPFX}_len"});
     my $prev_end = 0;
@@ -130,7 +141,7 @@ sub output {
 		     "gaps", "stopcodon", "status", "${QPFX}_seq",
 		     "${QPFX}_start", "${QPFX}_end", "${QPFX}_len"};
 	$targetname =~ s/\s.*//;
-	escape($targetname);
+	escape_seqid($targetname);
 	$gapcount = 0 unless (defined $gapcount);
 	$stopcodon = "" unless (defined $stopcodon);
 	

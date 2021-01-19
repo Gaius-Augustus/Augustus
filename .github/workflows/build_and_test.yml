@@ -1,0 +1,81 @@
+name: Build and test
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  
+jobs:
+  build-n-test:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-20.04
+
+    services:
+      # Label used to access the service container
+      mysql:
+        # Docker Hub image
+        image: mysql:5.7
+        # Provide the config for MySQL
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: aug_vertebrates
+          MYSQL_USER: augustus
+          MYSQL_PASSWORD: aug_passwd
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+    - uses: actions/checkout@v2
+
+    # Install python-mysql-connector
+    - name: Install python-mysql-connector
+      run: pip3 install mysql-connector-python
+
+    # Install required dependencies
+    - name: Install dependencies
+      run: sudo ./tests/examples/installDependencies
+
+    # Build AUGUSTUS
+    - name: Build AUGUSTUS
+      run: make all
+
+    # Execute unit tests
+    - name: Execute unit tests
+      run: make unit_test
+
+    # Test AUGUSTUS
+    - name: Test AUGUSTUS (examples folder)
+      run: ./testcases.py --compare --mysql --html
+      working-directory: tests/examples/
+
+    # Test bam2wig
+    - name: Test bam2wig
+      run: tests/auxprogs/bam2wig/test_bam2wig.py --compare --html
+
+    # Upload html diffs of failed test cases
+    - name: Upload HTML diffs
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: html-diffs
+        path: tests/examples/output_html/
+
+    # Build and publich doxygen documentation (only on push)
+    - name: Build documentation
+      if: ${{ github.event_name == 'push' }}
+      uses: mattnotmitt/doxygen-action@v1
+      with:
+        doxyfile-path: 'doxygen.conf'
+
+    - name: Publish documentation of master on gh-pages
+      if: ${{ github.event_name == 'push' }}
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./doxygen/html/

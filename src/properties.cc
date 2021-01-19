@@ -74,7 +74,8 @@ const char* Properties::parameternames[NUMPARNAMES]=
 "/CompPred/only_species",
 "/CompPred/outdir_orthoexons",
 "/CompPred/outdir",
-"/CompPred/printOrthoExonAli",
+"/CompPred/printOrthoExonAli", // codon alignment (Gerischer)
+"/CompPred/printExonCandsMSA", // nucleotide alignment (Mertsch)
 "/CompPred/printConservationWig",
 "/CompPred/phylo_factor",
 "/CompPred/phylo_model",
@@ -222,6 +223,7 @@ HINTSFILE_KEY,
 "noInFrameStop",
 "noprediction",
 EXTERNAL_KEY, // optCfgFile
+"printEvidence",
 "printHints",
 "printMEA",
 "printOEs",
@@ -306,6 +308,7 @@ UTR_KEY,
 "/UtrModel/verbosity"
 #ifdef TESTING
 , "/Testing/testMode"
+, "/Testing/workingDir"
 #endif
 };
 
@@ -601,7 +604,7 @@ void Properties::init( int argc, char* argv[] ){
     if (hasProperty(EXTRFILE_KEY))
 	properties[EXTRFILE_KEY] = expandHome(properties[EXTRFILE_KEY]);
 
-    Properties::assignProperty("softmasking", Constant::softmasking);
+    Constant::softmasking_explicitly_requested = Properties::assignProperty("softmasking", Constant::softmasking);
     Properties::assignProperty("dbhints", Constant::dbhints);
     if(!Constant::MultSpeciesMode && Constant::dbhints){
 	Constant::dbhints=false;

@@ -157,64 +157,64 @@ void IGenicModel::readAllParameters(){
 	char zusString[6];
 	
 	// loop over GC content classes
-	for (int idx = 0; idx < Constant::decomp_num_steps; idx++) {
-	  GCemiprobs[idx].setName(string("igenic emiprob gc") + itoa(idx+1));
-	  sprintf(zusString, "[%d]", idx+1);
-	  istrm >> goto_line_after(zusString);
-	  istrm >> comment >> k;
-	  if (istrm.eof())
-	    throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename + ". Truncated?");
+	for (unsigned char idx = 0; idx < Constant::decomp_num_steps; idx++) {
+            GCemiprobs[idx].setName(string("igenic emiprob gc") + itoa(idx+1));
+            sprintf(zusString, "[%d]", idx+1);
+            istrm >> goto_line_after(zusString);
+            istrm >> comment >> k;
+            if (istrm.eof())
+                throw ProjectError("IgenicModel::readAllParameters: Error reading file " + filename + ". Truncated?");
 	  
-	  GCPls[idx].resize( k+1 );
-	  nucProbs.resize(k+1);
-	  istrm >> goto_line_after( "[P_ls]" );
-	  for( int i = 0; i <= k; i++ ){
-            istrm >> comment >> l >> comment;
-	    int size = POWER4TOTHE(l+1);
-            GCPls[idx][i].assign( size, 0.0 );
-	    if(idx == 0)
-	      nucProbs[i].assign( size, 0.0 );
-	    Seq2Int s2i(i+1);
-	    for( int j = 0; j < size; j++ ) {
-	      istrm >> comment;
-	      int pn = s2i.read(istrm);
-	      if (pn != j)
-		throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
-				   " at P_ls, pattern " + s2i.INV(pn));
-	      if(idx == 0){
-		istrm >> nucProbs[i][j];
-		GCPls[0][i][j] = nucProbs[i][j];
-	      }else
-		istrm >> GCPls[idx][i][j];
+            GCPls[idx].resize( k+1 );
+            nucProbs.resize(k+1);
+            istrm >> goto_line_after( "[P_ls]" );
+            for( int i = 0; i <= k; i++ ){
+                istrm >> comment >> l >> comment;
+                int size = POWER4TOTHE(l+1);
+                GCPls[idx][i].assign( size, 0.0 );
+                if(idx == 0)
+                    nucProbs[i].assign( size, 0.0 );
+                Seq2Int s2i(i+1);
+                for( int j = 0; j < size; j++ ) {
+                    istrm >> comment;
+                    int pn = s2i.read(istrm);
+                    if (pn != j)
+                        throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
+                                           " at P_ls, pattern " + s2i.INV(pn));
+                    if(idx == 0){
+                        istrm >> nucProbs[i][j];
+                        GCPls[0][i][j] = nucProbs[i][j];
+                    }else
+                        istrm >> GCPls[idx][i][j];
 	      
-	      if (!Constant::contentmodels)
-		  GCPls[idx][i][j] = 1.0/size; // use uniform distribution
+                    if (!Constant::contentmodels)
+                        GCPls[idx][i][j] = 1.0/size; // use uniform distribution
+                }
             }
-	  }
 	
-	  GCemiprobs[idx].probs.resize(GCPls[idx][k].size() );
-	  GCemiprobs[idx].order = k;
-	  Seq2Int s2i(k+1);
-	  streampos spos = istrm.tellg();
-	  istrm >> goto_line_after( "[EMISSION]" );
-	  if (!istrm){ // for backward compatibility with old HMM-parameter files
-	    istrm.clear();
-	    istrm.seekg(spos); // go back to where you were
-	    computeEmiFromPat(GCPls[idx][k], GCemiprobs[idx].probs, k);
-	  } else {
-	    int size;
-	    istrm >> comment >> size;
-	    for( int j = 0; j < GCemiprobs[idx].probs.size(); j++ ) {
-		istrm >> comment;
-		int pn = s2i.read(istrm);
-		if (pn != j)
-		    throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
-				       " at EMISSION, pattern " + s2i.INV(pn));
-		istrm >> GCemiprobs[idx].probs[j];
-		if (!Constant::contentmodels)
-		    GCemiprobs[idx].probs[j] = 0.25; // use uniform distribution
-	    }
-	  }
+            GCemiprobs[idx].probs.resize(GCPls[idx][k].size() );
+            GCemiprobs[idx].order = k;
+            Seq2Int s2i(k+1);
+            streampos spos = istrm.tellg();
+            istrm >> goto_line_after( "[EMISSION]" );
+            if (!istrm){ // for backward compatibility with old HMM-parameter files
+                istrm.clear();
+                istrm.seekg(spos); // go back to where you were
+                computeEmiFromPat(GCPls[idx][k], GCemiprobs[idx].probs, k);
+            } else {
+                int size;
+                istrm >> comment >> size;
+                for( int j = 0; j < GCemiprobs[idx].probs.size(); j++ ) {
+                    istrm >> comment;
+                    int pn = s2i.read(istrm);
+                    if (pn != j)
+                        throw ProjectError("IgenicModel::readProbabilities: Error reading file " + filename +
+                                           " at EMISSION, pattern " + s2i.INV(pn));
+                    istrm >> GCemiprobs[idx].probs[j];
+                    if (!Constant::contentmodels)
+                        GCemiprobs[idx].probs[j] = 0.25; // use uniform distribution
+                }
+            }
 	}// end for idx loop
 	istrm.close();
     } else {

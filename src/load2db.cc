@@ -196,7 +196,7 @@ int main( int argc, char* argv[] ){
 			insertHint(f,species);
 			hintCount[f.seqname]++;
 		    }
-		} catch (ProjectError e){}
+		} catch (ProjectError &e){}
 	    }
 	    if(!hintCount.empty()){
 		cout << "inserted" << endl; 

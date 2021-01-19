@@ -606,190 +606,188 @@ void ExonModel::readAllParameters(){
   ifstream istrm; 
   istrm.open(filename.c_str(), ifstream::in);
   if (istrm) {
-    int size;
-    Seq2Int s2i_e(k+1);
-    int dummyl, dummyi, dummyk;
-    Double dbl;
+      int size;
+      Seq2Int s2i_e(k+1);
+      int dummyl, dummyi, dummyk;
+      Double dbl;
     
-    // for backward compatibility, check whether STARTCODON parameters exist at all
-    streampos spos = istrm.tellg();
-    istrm >> goto_line_after( "[STARTCODONS]" );
-    if (!istrm){
-	istrm.clear();
-	istrm.seekg(spos); // go back to where you were and use default start codons
-    } else {
-	GeneticCode::readStart(istrm);
-    }
-
-    if (!hasLenDist) {
-      // read length distributions
-      istrm >> goto_line_after( "[LENGTH]");
-      istrm >> comment >> exonLenD;
-      istrm >> comment >> slope_of_bandwidth;
-      istrm >> comment >> minwindowcount;
-      istrm >> comment >> numSingle >> numInitial >> numInternal >> numTerminal;
-      istrm >> comment >> numHugeSingle >> numHugeInitial >> numHugeInternal >> numHugeTerminal;
-      istrm >> comment;
-      lenDistSingle.assign(Constant::max_exon_len+1, 0);
-      lenDistInitial.assign(Constant::max_exon_len+1, 0);
-      lenDistInternal.assign(Constant::max_exon_len+1, 0);
-      lenDistTerminal.assign(Constant::max_exon_len+1, 0);
-      
-      for( int i = 0; i <= exonLenD; i++ ){
-	istrm >> dummyi;
-	istrm >> dbl;
-	lenDistSingle[i] = dbl / 1000;
-	istrm >> dbl; 
-	lenDistInitial[i]= dbl / 1000; 
-	istrm >> dbl; 
-	lenDistInternal[i] = dbl / 1000;
-	istrm >> dbl;
-	lenDistTerminal[i] = dbl / 1000;
+      // for backward compatibility, check whether STARTCODON parameters exist at all
+      streampos spos = istrm.tellg();
+      istrm >> goto_line_after( "[STARTCODONS]" );
+      if (!istrm){
+          istrm.clear();
+          istrm.seekg(spos); // go back to where you were and use default start codons
+      } else {
+          GeneticCode::readStart(istrm);
       }
-      // single exon can't be shorter than min_coding_len
-      for ( int i = 0; i < Constant::min_coding_len; i++) 
-	  lenDistSingle[i] = 0;
-      fillTailsOfLengthDistributions();
-      hasLenDist = true;
-    }
 
-    // if requested (e.g. on bacteria), boost the probabilities of lengths > L by (1+E)^{i-L}
-    Double boostfactor = 1;
-    for (int i = lenboostL+1; i< lenDistSingle.size(); i++){
-	boostfactor *= 1 + lenboostE;
-	lenDistSingle[i] *= boostfactor;
-    }
+      if (!hasLenDist) {
+          // read length distributions
+          istrm >> goto_line_after( "[LENGTH]");
+          istrm >> comment >> exonLenD;
+          istrm >> comment >> slope_of_bandwidth;
+          istrm >> comment >> minwindowcount;
+          istrm >> comment >> numSingle >> numInitial >> numInternal >> numTerminal;
+          istrm >> comment >> numHugeSingle >> numHugeInitial >> numHugeInternal >> numHugeTerminal;
+          istrm >> comment;
+          lenDistSingle.assign(Constant::max_exon_len+1, 0);
+          lenDistInitial.assign(Constant::max_exon_len+1, 0);
+          lenDistInternal.assign(Constant::max_exon_len+1, 0);
+          lenDistTerminal.assign(Constant::max_exon_len+1, 0);
+      
+          for( int i = 0; i <= exonLenD; i++ ){
+              istrm >> dummyi;
+              istrm >> dbl;
+              lenDistSingle[i] = dbl / 1000;
+              istrm >> dbl; 
+              lenDistInitial[i]= dbl / 1000; 
+              istrm >> dbl; 
+              lenDistInternal[i] = dbl / 1000;
+              istrm >> dbl;
+              lenDistTerminal[i] = dbl / 1000;
+          }
+          // single exon can't be shorter than min_coding_len
+          for ( int i = 0; i < Constant::min_coding_len; i++) 
+              lenDistSingle[i] = 0;
+          fillTailsOfLengthDistributions();
+          hasLenDist = true;
+      }
 
-    /*
-     * begin of GC content dependent part
-     */
-    char zusString[6];
-   
-    // loop over GC content classes and read in all remaining data
-    for (int idx = 0; idx < Constant::decomp_num_steps; idx++) {
-	  
-      sprintf(zusString, "[%d]", idx+1);
-      istrm >> goto_line_after(zusString);
+      // if requested (e.g. on bacteria), boost the probabilities of lengths > L by (1+E)^{i-L}
+      Double boostfactor = 1;
+      for (int i = lenboostL+1; i< lenDistSingle.size(); i++){
+          boostfactor *= 1 + lenboostE;
+          lenDistSingle[i] *= boostfactor;
+      }
 
       /*
-       * content model
+       * begin of GC content dependent part
        */
+      char zusString[6];
+
+      // loop over GC content classes and read in all remaining data
+      for (unsigned char idx = 0; idx < Constant::decomp_num_steps; idx++) {	  
+          sprintf(zusString, "[%d]", idx+1);
+          istrm >> goto_line_after(zusString);
+
+          /*
+           * content model
+           */
 	  
-      istrm >> goto_line_after( "[P_ls]" );
-      istrm >> comment;      // dummy k 
-      GCPls[idx].assign(k+1, 3);
-      for( int l = 0; l <= k; l++ ){
-	string checkBase;
-	istrm >> comment >> dummyl;
-	int size = POWER4TOTHE(l+1);
-	Seq2Int s2i(l+1);
-	GCPls[idx][l][0].resize( size );
-	GCPls[idx][l][2] = GCPls[idx][l][1] = GCPls[idx][l][0];
-	for( int j = 0; j < size; j++ ){
-	  istrm >> comment;
-	  int pn = s2i.read(istrm);
-	  if (pn != j)
-	    throw ProjectError("ExonModel::readProbabilities: Error reading file " + filename +
-			       " at P_ls, pattern " + s2i.INV(pn));
-	  istrm >> GCPls[idx][l][0][j]
-		>> GCPls[idx][l][1][j]
-		>> GCPls[idx][l][2][j];
-	  if (!Constant::contentmodels)
-	      GCPls[idx][l][0][j] = GCPls[idx][l][1][j] = GCPls[idx][l][2][j] = 1.0/size; // use uniform distribution
-	}
-      }
+          istrm >> goto_line_after( "[P_ls]" );
+          istrm >> comment;      // dummy k 
+          GCPls[idx].assign(k+1, 3);
+          for( int l = 0; l <= k; l++ ){
+              string checkBase;
+              istrm >> comment >> dummyl;
+              int size = POWER4TOTHE(l+1);
+              Seq2Int s2i(l+1);
+              GCPls[idx][l][0].resize( size );
+              GCPls[idx][l][2] = GCPls[idx][l][1] = GCPls[idx][l][0];
+              for( int j = 0; j < size; j++ ){
+                  istrm >> comment;
+                  int pn = s2i.read(istrm);
+                  if (pn != j)
+                      throw ProjectError("ExonModel::readProbabilities: Error reading file " + filename +
+                                         " at P_ls, pattern " + s2i.INV(pn));
+                  istrm >> GCPls[idx][l][0][j]
+                        >> GCPls[idx][l][1][j]
+                        >> GCPls[idx][l][2][j];
+                  if (!Constant::contentmodels)
+                      GCPls[idx][l][0][j] = GCPls[idx][l][1][j] = GCPls[idx][l][2][j] = 1.0/size; // use uniform distribution
+              }
+          }
 
-      istrm >> goto_line_after( "[TRANSINIT]" );
-      GCtransInitMotif[idx].read(istrm);
-      spos = istrm.tellg();
-      istrm >> goto_line_after( "[TRANSINITBIN]" );
-      if (!istrm) {
-	istrm.clear();
-	istrm.seekg(spos); // go back to where you were
-	Constant::tis_maxbinsize = 0; // no binning at all
-      } else {
-	GCtransInitBinProbs[idx].read(istrm);
-	GCtransInitBinProbs[idx].setName(string("tis bin gc") + itoa(idx+1));
-	//cout << "tis number of bins: " << GCtransInitBinProbs[idx].nbins << endl;
-	//GCtransInitBinProbs[idx].write(cout);
-      }
-      istrm >> goto_line_after( "[ETMOTIF0]" );
-      GCetMotif[idx][0]->read(istrm);
-      istrm >> goto_line_after( "[ETMOTIF1]" );
-      GCetMotif[idx][1]->read(istrm);
-      istrm >> goto_line_after( "[ETMOTIF2]" );
-      GCetMotif[idx][2]->read(istrm);
+          istrm >> goto_line_after( "[TRANSINIT]" );
+          GCtransInitMotif[idx].read(istrm);
+          spos = istrm.tellg();
+          istrm >> goto_line_after( "[TRANSINITBIN]" );
+          if (!istrm) {
+              istrm.clear();
+              istrm.seekg(spos); // go back to where you were
+              Constant::tis_maxbinsize = 0; // no binning at all
+          } else {
+              GCtransInitBinProbs[idx].read(istrm);
+              GCtransInitBinProbs[idx].setName(string("tis bin gc") + itoa(idx+1));
+              //cout << "tis number of bins: " << GCtransInitBinProbs[idx].nbins << endl;
+              //GCtransInitBinProbs[idx].write(cout);
+          }
+          istrm >> goto_line_after( "[ETMOTIF0]" );
+          GCetMotif[idx][0]->read(istrm);
+          istrm >> goto_line_after( "[ETMOTIF1]" );
+          GCetMotif[idx][1]->read(istrm);
+          istrm >> goto_line_after( "[ETMOTIF2]" );
+          GCetMotif[idx][2]->read(istrm);
 
-      // EMISSION
-      // make the emission probabilities
-      GCemiprobs[idx].setName(string("exon emiprob gc") + itoa(idx+1));
-      for (int f=0; f<3; f++) {
-	GCemiprobs[idx].probs[f].resize( GCPls[idx][k][f].size() );
-	GCemiprobs[idx].order = k;
-      }
-      // for backward compatibility, check whether EMISSION parameters exist at all, if not compute them from the Psl (old version)
-      spos = istrm.tellg();
-      istrm >> goto_line_after( "[EMISSION]" );
-      if (!istrm){
-	istrm.clear();
-	istrm.seekg(spos); // go back to where you were
-	for (int f=0; f<3; f++)
-	  computeEmiFromPat(GCPls[idx][k][f], GCemiprobs[idx].probs[f], k);
-      } else {
-	istrm >> comment >> size;
-	istrm >> comment >> dummyk;
-	istrm >> comment >> dbl;
-	for( int i = 0; i < GCemiprobs[idx].probs[0].size(); i++ ){
-	  istrm >> comment;
-	  int pn = s2i_e.read(istrm);
-	  if (pn != i)
-	    throw ProjectError("ExonModel::readProbabilities: Error reading file " + filename +
-			       " at EMISSION, pattern " + s2i_e.INV(pn));
-	  istrm >> GCemiprobs[idx].probs[0][i]
-		>> GCemiprobs[idx].probs[1][i]
-		>> GCemiprobs[idx].probs[2][i];
-	  if (!Constant::contentmodels)
-	      GCemiprobs[idx].probs[0][i] = GCemiprobs[idx].probs[1][i] = GCemiprobs[idx].probs[2][i] = .25;
-	}
-      }
+          // EMISSION
+          // make the emission probabilities
+          GCemiprobs[idx].setName(string("exon emiprob gc") + itoa(idx+1));
+          for (int f=0; f<3; f++) {
+              GCemiprobs[idx].probs[f].resize( GCPls[idx][k][f].size() );
+              GCemiprobs[idx].order = k;
+          }
+          // for backward compatibility, check whether EMISSION parameters exist at all, if not compute them from the Psl (old version)
+          spos = istrm.tellg();
+          istrm >> goto_line_after( "[EMISSION]" );
+          if (!istrm){
+              istrm.clear();
+              istrm.seekg(spos); // go back to where you were
+              for (int f=0; f<3; f++)
+                  computeEmiFromPat(GCPls[idx][k][f], GCemiprobs[idx].probs[f], k);
+          } else {
+              istrm >> comment >> size;
+              istrm >> comment >> dummyk;
+              istrm >> comment >> dbl;
+              for( int i = 0; i < GCemiprobs[idx].probs[0].size(); i++ ){
+                  istrm >> comment;
+                  int pn = s2i_e.read(istrm);
+                  if (pn != i)
+                      throw ProjectError("ExonModel::readProbabilities: Error reading file " + filename +
+                                         " at EMISSION, pattern " + s2i_e.INV(pn));
+                  istrm >> GCemiprobs[idx].probs[0][i]
+                        >> GCemiprobs[idx].probs[1][i]
+                        >> GCemiprobs[idx].probs[2][i];
+                  if (!Constant::contentmodels)
+                      GCemiprobs[idx].probs[0][i] = GCemiprobs[idx].probs[1][i] = GCemiprobs[idx].probs[2][i] = .25;
+              }
+          }
 	
-      istrm >> goto_line_after( "[INITEMISSION]" );
-      istrm >> comment >> size;
-      istrm >> comment >> dummyk;
-      if (dummyk != k)
-	throw ProjectError("ExonModel::readProbabilities: Mismatch in order of exon INITEMISSION Markov chain.");
-      istrm >> comment >> patpseudo;
-      GCinitemiprobs[idx][0].resize(size);
-      GCinitemiprobs[idx][1].resize(size);
-      GCinitemiprobs[idx][2].resize(size);
-      while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
-	int pn = s2i_e.read(istrm);
-	istrm >> GCinitemiprobs[idx][0][pn]
-	      >> GCinitemiprobs[idx][1][pn]
-	      >> GCinitemiprobs[idx][2][pn];
-      }
+          istrm >> goto_line_after( "[INITEMISSION]" );
+          istrm >> comment >> size;
+          istrm >> comment >> dummyk;
+          if (dummyk != k)
+              throw ProjectError("ExonModel::readProbabilities: Mismatch in order of exon INITEMISSION Markov chain.");
+          istrm >> comment >> patpseudo;
+          GCinitemiprobs[idx][0].resize(size);
+          GCinitemiprobs[idx][1].resize(size);
+          GCinitemiprobs[idx][2].resize(size);
+          while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
+              int pn = s2i_e.read(istrm);
+              istrm >> GCinitemiprobs[idx][0][pn]
+                    >> GCinitemiprobs[idx][1][pn]
+                    >> GCinitemiprobs[idx][2][pn];
+          }
 
 
-      istrm >> goto_line_after( "[ETEMISSION]" );
-      istrm >> comment >> size;
-      istrm >> comment >> k;
-      istrm >> comment >> patpseudo;
-      GCetemiprobs[idx][0].resize(size);
-      GCetemiprobs[idx][1].resize(size);
-      GCetemiprobs[idx][2].resize(size);
-      while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
-	int pn = s2i_e.read(istrm);
-	istrm >> GCetemiprobs[idx][0][pn]
-	      >> GCetemiprobs[idx][1][pn]
-	      >> GCetemiprobs[idx][2][pn];
-      }
-    } // loop over gc content classes ([1],[2], etc)
-    istrm.close();
+          istrm >> goto_line_after( "[ETEMISSION]" );
+          istrm >> comment >> size;
+          istrm >> comment >> k;
+          istrm >> comment >> patpseudo;
+          GCetemiprobs[idx][0].resize(size);
+          GCetemiprobs[idx][1].resize(size);
+          GCetemiprobs[idx][2].resize(size);
+          while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
+              int pn = s2i_e.read(istrm);
+              istrm >> GCetemiprobs[idx][0][pn]
+                    >> GCetemiprobs[idx][1][pn]
+                    >> GCetemiprobs[idx][2][pn];
+          }
+      } // loop over gc content classes ([1],[2], etc)
+      istrm.close();
   } else {
-    string msg("ExonModel: Couldn't open file ");
-    msg += filename;
-    throw ProjectError(msg);
-
+      string msg("ExonModel: Couldn't open file ");
+      msg += filename;
+      throw ProjectError(msg);
   }
 }
 

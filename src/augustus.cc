@@ -224,6 +224,8 @@ int main( int argc, char* argv[] ){
                     cout << "# Looks like " << filename << " is in genbank format. " 
                          << "Augustus uses the annotation for evaluation of accuracy." << endl;
                 AnnoSequence *annoseq = gbank.getAnnoSequenceList();
+                if (!Constant::softmasking_explicitly_requested)
+                    Constant::softmasking = false; // default is false only for .gb files
                 warnAllLowerCase(annoseq);
                 cutRelevantPiece(annoseq);
                 if (!checkExAcc)

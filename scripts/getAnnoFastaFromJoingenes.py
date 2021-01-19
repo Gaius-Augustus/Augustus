@@ -32,7 +32,6 @@ except ImportError:
 
 try:
     from Bio.Seq import Seq
-    from Bio.Alphabet import generic_dna, generic_protein
     from Bio import SeqIO
     from Bio.SeqRecord import SeqRecord
 except ImportError:
@@ -98,9 +97,9 @@ if args.gtf:
         with open(args.gtf, "r") as gtf_handle:
             for line in gtf_handle:
                 if re.match(
-                        r"\S+\t\S+\tCDS\t\d+\t\d+\t\S+\t\S+\t\d\t.*transcript_id (\S+)", line):
+                        r"\S+\t[^\t]+\tCDS\t\d+\t\d+\t\S+\t\S+\t\d\t.*transcript_id (\S+)", line):
                     seq_id, st, en, stx, fr, tx_id = re.match(
-                        r"(\S+)\t\S+\tCDS\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\d)\t.*transcript_id (\S+)", line).groups()
+                        r"(\S+)\t[^\t]+\tCDS\t(\d+)\t(\d+)\t\S+\t(\S+)\t(\d)\t.*transcript_id (\S+)", line).groups()
                     tx_id = re.sub(r'\"(\S+)\"', r'\1', tx_id)
                     tx_id = re.sub(r';', r'', tx_id)
                     if seq_id not in cds:
@@ -152,29 +151,27 @@ try:
                 for tx in cds[record.id]:
                     if tx not in codingseq:
                         codingseq[tx] = SeqRecord(
-                            Seq("", generic_dna), id=tx, description=tx)
+                            Seq(""), id=tx, description=tx)
                     nCDS = len(cds[record.id][tx])
                     for i in range(0, nCDS):
                         cds_line = cds[record.id][tx][i]
                         if i == 0 and cds_line['strand'] == '+' and cds_line['frame'] != 0:
                             codingseq[tx].seq += Seq((3 - cds_line['frame'])
-                                                     * 'N', generic_dna)
+                                                     * 'N')
                         codingseq[tx].seq += record.seq[cds_line['start'] -
                                                         1:cds_line['end']]
                         if i == (nCDS - 1):
                             if cds_line['strand'] == '+':
                                 if (len(codingseq[tx].seq) % 3) != 0:
                                     codingseq[tx].seq += Seq(
-                                        (3 - (len(codingseq[tx]) % 3)) * 'N',
-                                        generic_dna)
+                                        (3 - (len(codingseq[tx]) % 3)) * 'N')
                         if i == (nCDS - 1) and cds_line['strand'] == '-':
                             if cds_line['frame'] != 0:
                                 codingseq[tx].seq += Seq((3 - cds_line['frame'])
-                                                         * 'N', generic_dna)
+                                                         * 'N')
                             if(len(codingseq[tx].seq) % 3) != 0:
                                 codingseq[tx].seq = Seq(
-                                    (3 - (len(codingseq[tx].seq) % 3)) * 'N',
-                                    generic_dna) + codingseq[tx].seq
+                                    (3 - (len(codingseq[tx].seq) % 3)) * 'N') + codingseq[tx].seq
                             codingseq[tx].seq = codingseq[
                                 tx].seq.reverse_complement()
 except IOError:

@@ -539,87 +539,142 @@ void sgd(vector<pair<int, vector<double> > > *samples, gsl_vector *theta, int n)
 
 void trainFeature_from_file(){
 
-  ifstream trainfile;
-  string buffer;
-  string filename = Properties::getProperty("trainFeatureFile");
-  trainfile.open(filename, ifstream::in);
-  if(!trainfile){
+    ifstream trainfile;
+    string buffer;
+    string filename = Properties::getProperty("trainFeatureFile");
+    trainfile.open(filename, ifstream::in);
+    if(!trainfile){
     string errmsg = "Could not open the train feature file " + filename + ".";
     throw PropertiesError(errmsg);
-  }
-  while(getline(trainfile,buffer)){
-    if(buffer[0] == '#')
-      continue;
-    stringstream linestream(buffer);
-    string chr;
-    string type;
-    int startPos;
-    int endPos;
-    char strand;
-    char frame;
-    string attributes;
-    linestream >> chr >> buffer >> type >> startPos >> endPos >> buffer >> strand >> frame >> attributes;
-
-    if(type == "exon")
-      type = "CDS";
-    if(type == "intron" || type == "CDS"){
-      stringstream str;
-      str << type << "\t" << chr << "\t" << startPos<< "\t" << endPos << "\t" << strand << "\t" << frame;
-      string key = str.str();
-      
-      unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(key);
-      if ( got == Constant::logReg_feature.end() ){
-	vector<double> feature(14,0);
-	feature[0] = endPos - startPos + 1;   // exon length	
-	pair<int, vector<double> > p;
-	p = make_pair(-1, feature);
-	pair<string, pair<int, vector<double> > > entry;
-	entry = make_pair(key, p);
-	got = Constant::logReg_feature.insert(entry).first;
-      }
-
-      stringstream s(attributes);
-      string ap;
-      vector<string> attr;
-      while(std::getline(s, ap, ';')){
-	attr.push_back(ap);
-      }
-      for(int i=0; i<attr.size(); i++){
-	vector<string> attr_pair;
-	stringstream ss(attr[i]);
-	while(std::getline(ss, ap, '=')){
-	  attr_pair.push_back(ap);
-	}
-	
-	if (attr_pair[0] == "postProb")
-	  got->second.second[1] = stod(attr_pair[1]); 
-	else if (attr_pair[0] == "avgBaseProb" || attr_pair[0] == "mbp")
-	  got->second.second[2] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "Eomega" || attr_pair[0] == "PMomega")
-	  got->second.second[3] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "VarOmega" || attr_pair[0] == "varOmega")
-	  got->second.second[4] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "cons")
-          got->second.second[5] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "div")
-          got->second.second[6] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "containment" || attr_pair[0] == "contain")
-          got->second.second[7] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "n" || attr_pair[0] == "numSpecies")
-          got->second.second[8] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "oescore")
-	  got->second.second[9] = 1;
-	else if (attr_pair[0] == "leftBoundaryExtOmega")
-	  got->second.second[10] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "leftBoundaryIntOmega")
-          got->second.second[11] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "rightBoundaryIntOmega")
-	  got->second.second[12] = stod(attr_pair[1]);
-	else if (attr_pair[0] == "rightBoundaryExtOmega")
-	  got->second.second[13] = stod(attr_pair[1]);
-      }
     }
-  }
+    while(getline(trainfile,buffer)){
+        if(buffer[0] == '#')
+            continue;
+        stringstream linestream(buffer);
+        string chr;
+        string type;
+        int startPos;
+        int endPos;
+        char strand;
+        char frame;
+        string attributes;
+        linestream >> chr >> buffer >> type >> startPos >> endPos >> buffer >> strand >> frame >> attributes;
+
+        if(type == "exon")
+            type = "CDS";
+        if(type == "intron" || type == "CDS"){
+            stringstream str;
+            str << type << "\t" << chr << "\t" << startPos<< "\t" << endPos << "\t" << strand << "\t" << frame;
+            string key = str.str();
+            
+            unordered_map<string, pair<int, vector<double> > >::iterator got = Constant::logReg_feature.find(key);
+            if ( got == Constant::logReg_feature.end() ){
+                vector<double> feature(14,0);
+                feature[0] = endPos - startPos + 1;   // exon length	
+                pair<int, vector<double> > p;
+                p = make_pair(-1, feature);
+                pair<string, pair<int, vector<double> > > entry;
+                entry = make_pair(key, p);
+                got = Constant::logReg_feature.insert(entry).first;
+            }
+
+            stringstream s(attributes);
+            string ap;
+            vector<string> attr;
+            while(std::getline(s, ap, ';')){
+                attr.push_back(ap);
+            }
+            for(int i=0; i<attr.size(); i++){
+                vector<string> attr_pair;
+                stringstream ss(attr[i]);
+                while(std::getline(ss, ap, '=')){
+                    attr_pair.push_back(ap);
+                }
+
+                if (attr_pair[0] == "postProb"){
+                    try {
+                        got->second.second[1] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }     
+                else if (attr_pair[0] == "avgBaseProb" || attr_pair[0] == "mbp"){
+                    try {
+                        got->second.second[2] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "Eomega" || attr_pair[0] == "PMomega"){
+                    try {
+                        got->second.second[3] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "VarOmega" || attr_pair[0] == "varOmega"){
+                    try {
+                        got->second.second[4] = stod(attr_pair[1]);
+                    }
+                    catch (...) {                        
+                    }
+                }
+                else if (attr_pair[0] == "cons"){
+                    try {
+                        got->second.second[5] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "div"){
+                    try {
+                        got->second.second[6] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "containment" || attr_pair[0] == "contain"){
+                    try {
+                        got->second.second[7] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "n" || attr_pair[0] == "numSpecies")
+                    got->second.second[8] = stod(attr_pair[1]);
+                else if (attr_pair[0] == "oescore")
+                    got->second.second[9] = 1;
+                else if (attr_pair[0] == "leftBoundaryExtOmega"){
+                    try {
+                        got->second.second[10] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "leftBoundaryIntOmega"){
+                    try {
+                        got->second.second[11] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "rightBoundaryIntOmega"){
+                    try {
+                        got->second.second[12] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+                else if (attr_pair[0] == "rightBoundaryExtOmega"){
+                    try {
+                        got->second.second[13] = stod(attr_pair[1]);
+                    }
+                    catch (...) {
+                    }
+                }
+            }
+        }        
+    }
 }
 
 

@@ -73,7 +73,7 @@ ostream& operator<< (ostream& strm, const Strand s);
 #define MODEL_SUBDIR "model/"
 #define EXTRINSIC_SUBDIR "extrinsic/"
 
-#define VERSION "3.3.3"
+#define VERSION "3.4.0"
 
 #define PREAMBLE "# This output was generated with AUGUSTUS (version " VERSION ").\n\
 # AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),\n\
@@ -82,8 +82,8 @@ ostream& operator<< (ostream& strm, const Strand s);
 # Using native and syntenically mapped cDNA alignments to improve de novo gene finding\n\
 # Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013"
 
-#define GREETING "AUGUSTUS (" VERSION ") is a gene prediction tool\n\
-written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth."
+#define GREETING "AUGUSTUS (" VERSION ") is a gene prediction tool.\n\
+Sources and documentation at https://github.com/Gaius-Augustus/Augustus"
 
 #define SPECIES_LIST "usage:\n\
 augustus [parameters] --species=SPECIES queryfilename\n\
@@ -376,6 +376,8 @@ public:
     static string alnfile; // name of file that contains MSA of genomes
     static string codonalnfile; // name of file that contains MSA of codon sequences
     static bool overlapmode; // whether overlapping exons are allowed in Viterbi algorithm
+    static Boolean printEvidence; // "evidence for and against"
+    static Boolean printExonCandsMSA; // print the OE nucleotide alignments
     static Boolean printOEs; // output ortho exons to file
     static Boolean printHints;
     static Boolean printMEA; // output .mea files (base genes) during CGP
@@ -387,7 +389,10 @@ public:
     static vector<Double> head2head_ovlp;
     static vector<Double> tail2tail_ovlp;
     static unsigned temperature; // heating the distribution for sampling, 0=cold, 7=hottest, take probs to the power of (8-temperature)/8
-    static bool softmasking; // if true, lower-case character regions give rise to nonexonpart hints
+    static bool softmasking; // if true, lower-case character regions
+                             // give rise to nonexonpart hints
+    static bool softmasking_explicitly_requested; // i.e. it was not
+                                                 // left at default value
     static bool dbhints;
     // scores from logistic regression  
     static bool logreg;
