@@ -14,14 +14,19 @@ CXX?=g++
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CXXFLAGS := -Wall -Wno-sign-compare -pedantic -O3 -std=c++11 ${CXXFLAGS}#-DDEBUG -g -ggdb -pg -DDEBUG_STATES
+# for debugging set
+#    OPT = -g
+#    CXXFLAGS = -DDEBUG -g -ggdb -pg -DDEBUG_STATES
+#  in common.mk or the environment
+OPT ?=  -O3
+CXXFLAGS += -Wall -Wno-sign-compare -pedantic ${OPT} -std=c++11
 
 ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))  # if ZIPINPUT is not defined or is something else than 0, false, False or FALSE
 	CPPFLAGS += -DZIPINPUT
-	LIBS    = -lboost_iostreams
+	LIBS    += -lboost_iostreams
 endif
 
-INCLS	= -I../include
+INCLS	+= -I../include
 
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
@@ -77,11 +82,11 @@ all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
 augustus: augustus.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp augustus ../bin/
+	cp -f augustus ../bin/
 
 etraining: etraining.cc $(TOBJS) $(OBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp etraining ../bin/
+	cp -f etraining ../bin/
 
 evaluate: evaluate.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
@@ -89,31 +94,31 @@ evaluate: evaluate.cc $(OBJS) $(DUMOBJS)
 fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	types.o properties.o geneticcode.o pp_profile.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp fastBlockSearch ../bin/
+	cp -f fastBlockSearch ../bin/
 
 pp_simScore: pp_simscore.cc fasta.o types.o properties.o geneticcode.o pp_profile.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp pp_simScore ../bin/
+	cp -f pp_simScore ../bin/
 
 prepareAlign: pp_prepare_align.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
-	cp prepareAlign ../bin/
+	cp -f prepareAlign ../bin/
 
 load2db: load2db.cc fasta.o hints.o types.o properties.o lldouble.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp load2db ../bin/
+	cp -f load2db ../bin/
 
 load2sqlitedb: load2sqlitedb.cc fasta.o hints.o types.o properties.o lldouble.o sqliteDB.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp load2sqlitedb ../bin/
+	cp -f load2sqlitedb ../bin/
 
 getSeq: getSeq.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp getSeq ../bin/
+	cp -f getSeq ../bin/
 
 espoca: espoca.cc $(OBJS) $(DUMOBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp espoca ../bin/
+	cp -f espoca ../bin/
 
 info:
 	echo "$(CXXFLAGS) $(CPPFLAGS)" > $(INFO)
