@@ -12,7 +12,8 @@ def pred(sourcepath, targetpath):
 
 
 def cgp(sourcepath, targetpath):
-    startwith = '#----- prediction on'  # this case could be removed by a small change in augustus
+    # this case could be removed by a small change in augustus
+    startwith = '#----- prediction on'
     ignores = []
     ignoredlines = search_for_lines_to_ignore(sourcepath, startwith, ignores)
     filter(sourcepath, targetpath, ignoredlines)
@@ -28,7 +29,8 @@ def eval(sourcepath, targetpath):
 def cgp_out(sourcepath, targetpath):
     startwith = ''
     ignores = ['# total time:']
-    ignoredlines = search_for_lines_to_ignore(sourcepath, startwith, ignores, startblock=False)
+    ignoredlines = search_for_lines_to_ignore(
+        sourcepath, startwith, ignores, startblock=False)
     filter(sourcepath, targetpath, ignoredlines)
 
 
@@ -82,4 +84,4 @@ if __name__ == '__main__':
     target = sys.argv[2]
     pred(source, target)
 
-#TODO: add option to remove source after target is created??
+# TODO: add option to remove source after target is created??

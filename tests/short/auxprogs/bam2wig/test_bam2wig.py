@@ -2,7 +2,6 @@
 
 import unittest
 import os
-import sys
 import shutil
 
 from utils import aug_assertions
@@ -61,11 +60,13 @@ class TestBam2Wig(unittest.TestCase):
         reffile = os.path.join(referencedir, 'test.s.wig')
         resfile = os.path.join(resultdir, 'test.s.wig')
 
-        aug_process.execute(self, f'{bam2wigbin} {testfile} | grep -v track',  resfile)
+        aug_process.execute(
+            self, f'{bam2wigbin} {testfile} | grep -v track',  resfile)
 
         # compare results
         if TestBam2Wig.opt_compare:
-            aug_assertions.assertEqualFiles(self, reffile, resfile, TestBam2Wig.opt_html, htmldir)
+            aug_assertions.assertEqualFiles(
+                self, reffile, resfile, TestBam2Wig.opt_html, htmldir)
             os.remove(resfile)
 
     def test_bam2wig_region(self):
@@ -75,13 +76,15 @@ class TestBam2Wig(unittest.TestCase):
         resfile = os.path.join(resultdir, 'test.s.chr3L.wig')
 
         aug_process.execute(self,
-                      f'{bam2wigbin} -t "my_specified_track" -r chr3L {testfile} | grep -v track',
-                      resfile)
+                            f'{bam2wigbin} -t "my_specified_track" -r chr3L {testfile} | grep -v track',
+                            resfile)
 
         # compare results
         if TestBam2Wig.opt_compare:
-            aug_assertions.assertEqualFiles(self, reffile, resfile, TestBam2Wig.opt_html, htmldir)
+            aug_assertions.assertEqualFiles(
+                self, reffile, resfile, TestBam2Wig.opt_html, htmldir)
             os.remove(resfile)
+
 
 def test_suite():
     suite = unittest.TestSuite()
@@ -99,22 +102,3 @@ def execute(compare, html):
     result = runner.run(test_suite())
 
     return result.wasSuccessful()
-
-
-# if __name__ == '__main__':
-#     check_working_dir(args.clean)
-
-#     if args.clean:
-#         clean()
-#         sys.exit()
-
-#     TestBam2Wig.opt_compare = args.compare
-#     TestBam2Wig.opt_html = args.html
-
-#     runner = unittest.TextTestRunner(verbosity=2)
-#     result = runner.run(test_suite())
-
-#     if result.wasSuccessful():
-#         sys.exit()
-#     else:
-#         sys.exit(1)

@@ -16,7 +16,7 @@ from auxprogs.hom_gene_mapping import test_hom_gene_mapping
 # This script must be called from "tests/short"!
 # Python version 3.6 or higher is required for execution.
 
-testcases = [ 'examples', 'bam2wig', 'homGeneMapping' ]
+testcases = ['examples', 'bam2wig', 'homGeneMapping']
 
 parser = argparse.ArgumentParser(description='Execute AUGUSTUS test cases.')
 parser.add_argument('testcase',
@@ -34,7 +34,7 @@ parser.add_argument('--html',
                     help='Save diff results in html file.')
 parser.add_argument('--clean',
                     action='store_true',
-                    help='Remove all files created during the tests. If this option is set, no tests are executed.')              
+                    help='Remove all files created during the tests. If this option is set, no tests are executed.')
 args = parser.parse_args()
 
 
@@ -59,20 +59,22 @@ if __name__ == '__main__':
         if args.clean:
             test_examples.clean()
             sys.exit()
-        else:     
-            test_was_successful = test_examples.execute(args.compare, args.html, args.mysql)
+        else:
+            test_was_successful = test_examples.execute(
+                args.compare, args.html, args.mysql)
     elif args.testcase == 'bam2wig':
         if args.clean:
             test_bam2wig.clean()
             sys.exit()
-        else:     
+        else:
             test_was_successful = test_bam2wig.execute(args.compare, args.html)
     elif args.testcase == 'homGeneMapping':
         if args.clean:
             test_hom_gene_mapping.clean()
             sys.exit()
         else:
-            test_was_successful = test_hom_gene_mapping.execute(args.compare, args.html)
+            test_was_successful = test_hom_gene_mapping.execute(
+                args.compare, args.html)
 
     if test_was_successful:
         sys.exit(0)

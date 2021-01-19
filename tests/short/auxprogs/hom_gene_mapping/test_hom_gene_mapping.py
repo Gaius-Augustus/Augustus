@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
 import unittest
-from pathlib import Path
 import os
-import sys
-import shutil
 
 from utils import aug_assertions
 from utils import aug_process
@@ -28,6 +25,7 @@ gtffilenames_with_hints = os.path.join(
 gtffilenames_without_hints = os.path.join(
     tmpdir, 'gtffilenames_without_hints.tbl')
 sqlitedb = os.path.join(tmpdir, 'homGeneMapping_hints.db')
+
 
 def clean(force_tmp_dir=True, force_html_dir=True, force_result_dir=True):
     """Remove empty directories or if forced"""
@@ -128,7 +126,8 @@ class TestHomGeneMapping(unittest.TestCase):
 
         # compare results
         if TestHomGeneMapping.opt_compare:
-            aug_assertions.assertEqualDirectory(self, refdir, outputdir, TestHomGeneMapping.opt_html, htmldir)
+            aug_assertions.assertEqualDirectory(
+                self, refdir, outputdir, TestHomGeneMapping.opt_html, htmldir)
 
     def test_homGeneMapping_with_sql_hints(self):
         '''
@@ -154,7 +153,8 @@ class TestHomGeneMapping(unittest.TestCase):
 
         # compare results
         if TestHomGeneMapping.opt_compare:
-            aug_assertions.assertEqualDirectory(self, refdir, outputdir, TestHomGeneMapping.opt_html, htmldir)
+            aug_assertions.assertEqualDirectory(
+                self, refdir, outputdir, TestHomGeneMapping.opt_html, htmldir)
 
 
 def test_suite():
@@ -166,6 +166,7 @@ def test_suite():
 
     return suite
 
+
 def execute(compare, html):
     TestHomGeneMapping.opt_compare = compare
     TestHomGeneMapping.opt_html = html
@@ -174,4 +175,3 @@ def execute(compare, html):
     result = runner.run(test_suite())
 
     return result.wasSuccessful()
-

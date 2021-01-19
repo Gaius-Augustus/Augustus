@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-import os
-
 from . import aug_comparator as comp
+
 
 def assertEqualDirectory(testcase, refdir, resdir, html=False, htmloutputfolder=None):
     """
@@ -16,9 +15,9 @@ def assertEqualDirectory(testcase, refdir, resdir, html=False, htmloutputfolder=
        :return:
        """
     diff = comp.compare_folder(refdir,
-                              resdir,
-                              html=html or htmloutputfolder is not None,
-                              outputfolder=htmloutputfolder)
+                               resdir,
+                               html=html or htmloutputfolder is not None,
+                               outputfolder=htmloutputfolder)
     testcase.assertEqual(diff, '')
 
 

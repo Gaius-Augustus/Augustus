@@ -5,12 +5,12 @@ import itertools
 import json
 import subprocess
 import os
-import sys
 import shutil
 import gzip
+
 from utils import aug_out_filter as afilter
 from utils import aug_comparator as comp
-  
+
 
 resultdir = 'examples/results/'
 refdir = 'examples/expected_results/'
@@ -19,7 +19,7 @@ tmpdir = 'examples/data/tmp/'
 exampledir = '../../examples/'
 bindir = '../../bin/'
 augustusbin = f'{bindir}augustus'
-datadir =  exampledir + 'chr2L/'
+datadir = exampledir + 'chr2L/'
 configdir = '../../config/'
 scriptdir = '../../scripts/'
 default_wd = os.getcwd()
@@ -186,7 +186,7 @@ class TestExamples(unittest.TestCase):
 
     @classmethod
     def cleanup_mysqldb(cls):
-        import mysql.connector        
+        import mysql.connector
         mysqldb = mysql.connector.connect(host=cls.dbhost,
                                           user=cls.dbuser,
                                           passwd=cls.dbpasswd,
@@ -525,7 +525,7 @@ class TestExamples(unittest.TestCase):
 
         # compare results
         self.assertEqualFolders(reffolder, resfolder,
-                                outputfolder= os.path.join(default_wd, htmldir))
+                                outputfolder=os.path.join(default_wd, htmldir))
 
     def test_cgp_sqlite(self):
         self.cgp_with_db_preparation(False, False)
@@ -745,13 +745,14 @@ def print_tc_header(tc_name):
         '----------------------------------------------------------------------'
     )
 
+
 def execute(compare, html, mysql):
     default_wd = os.getcwd()
 
     create_initial_resultdir()
     TestExamples.opt_compare = compare
     TestExamples.opt_html = html
-    TestExamples.opt_mysql = mysql	
+    TestExamples.opt_mysql = mysql
     runner = unittest.TextTestRunner(verbosity=2)
     print_tc_header('small test suite')
     result = runner.run(small_test_suite())
