@@ -8,18 +8,16 @@ on:
     branches:
       - 'test_gh_shr'
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+env:
+  TOOLDIR: /data/tools
+
 jobs:
-  # This workflow contains a single job called "hello"
-  hello:
-    # The type of runner that the job will run on
-    runs-on: [self-hosted, linux]
+  build:
+    runs-on: [self-hosted, linux, default]
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+    - name: Check out repository
+      uses: actions/checkout@v2
 
-    # Say hello
-    - name: Say Hello
-      run: echo "Hello World!"
+    - name: Build AUGUSTUS
+      run: make all          
