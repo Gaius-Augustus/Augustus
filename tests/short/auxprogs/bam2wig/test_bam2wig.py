@@ -9,8 +9,6 @@ from utils import aug_assertions
 from utils import aug_process
 from utils import aug_path
 
-__all__ = [ 'execute_bam2wig', 'clean_bam2wig' ]
-
 pathname = 'auxprogs/bam2wig/'
 referencedir = os.path.join(pathname, 'expected_results')
 resultdir = os.path.join(pathname, 'result_files')
@@ -23,7 +21,7 @@ bam2wigbin = f'{bindir}bam2wig'
 default_wd = os.getcwd()
 
 
-def clean_bam2wig(force_tmp_dir=True, force_html_dir=True, force_result_dir=True):
+def clean(force_tmp_dir=True, force_html_dir=True, force_result_dir=True):
     """Remove empty directories or if forced"""
     aug_path.rmtree_if_exists(resultdir, force_result_dir)
     aug_path.rmtree_if_exists(tmpdir, force_tmp_dir)
@@ -38,7 +36,7 @@ class TestBam2Wig(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         os.chdir(default_wd)
-        clean_bam2wig(force_tmp_dir=False, force_html_dir=True, force_result_dir=True)
+        clean(force_tmp_dir=False, force_html_dir=True, force_result_dir=True)
         aug_path.mkdir_if_not_exists(resultdir)
         aug_path.mkdir_if_not_exists(tmpdir)
 
@@ -55,7 +53,7 @@ class TestBam2Wig(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         os.chdir(default_wd)
-        clean_bam2wig(force_tmp_dir=False, force_html_dir=False, force_result_dir=False)
+        clean(force_tmp_dir=False, force_html_dir=False, force_result_dir=False)
 
     def test_bam2wig(self):
         os.chdir(default_wd)
@@ -93,7 +91,7 @@ def test_suite():
     return suite
 
 
-def execute_bam2wig(compare, html):
+def execute(compare, html):
     TestBam2Wig.opt_compare = compare
     TestBam2Wig.opt_html = html
 

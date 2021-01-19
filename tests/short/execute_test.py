@@ -4,9 +4,9 @@ import argparse
 import sys
 import os
 
-from examples import *
-from auxprogs.bam2wig import *
-from auxprogs.homGeneMapping import *
+from examples import testcases
+from auxprogs.bam2wig import test_bam2wig
+from auxprogs.homGeneMapping import test_homGeneMapping
 
 
 # This script executes AUGUSTUS test cases based on the examples
@@ -16,12 +16,12 @@ from auxprogs.homGeneMapping import *
 # This script must be called from "tests/short"!
 # Python version 3.6 or higher is required for execution.
 
-testcases = [ 'examples', 'bam2wig', 'homGeneMapping' ]
+available_tests = [ 'examples', 'bam2wig', 'homGeneMapping' ]
 
 parser = argparse.ArgumentParser(description='Execute AUGUSTUS test cases.')
 parser.add_argument('testcase',
                     action='store',
-                    choices=testcases,
+                    choices=available_tests,
                     help='Testcase to execute.')
 parser.add_argument('--mysql',
                     action='store_true',
@@ -57,22 +57,22 @@ if __name__ == '__main__':
     test_was_successful = True
     if args.testcase == 'examples':
         if args.clean:
-            clean_examples()
+            testcases.clean()
             sys.exit()
         else:     
-            test_was_successful = execute_examples(args.compare, args.html, args.mysql)
+            test_was_successful = testcases.execute(args.compare, args.html, args.mysql)
     elif args.testcase == 'bam2wig':
         if args.clean:
-            clean_bam2wig()
+            test_bam2wig.clean()
             sys.exit()
         else:     
-            test_was_successful = execute_bam2wig(args.compare, args.html)
+            test_was_successful = test_bam2wig.execute(args.compare, args.html)
     elif args.testcase == 'homGeneMapping':
         if args.clean:
-            clean_homgenemapping()
+            test_homGeneMapping.clean()
             sys.exit()
         else:
-            test_was_successful = execute_homgenemapping(args.compare, args.html)
+            test_was_successful = test_homGeneMapping.execute(args.compare, args.html)
 
     if test_was_successful:
         sys.exit(0)

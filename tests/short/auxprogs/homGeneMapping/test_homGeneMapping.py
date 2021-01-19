@@ -11,8 +11,6 @@ from utils import aug_process
 from utils import aug_path
 
 
-__all__ = [ 'execute_homgenemapping', 'clean_homgenemapping' ]
-
 default_wd = os.getcwd()
 pathname = os.path.join(default_wd, 'auxprogs/homGeneMapping')
 referencedir = os.path.join(pathname, 'expected_results')
@@ -31,7 +29,7 @@ gtffilenames_without_hints = os.path.join(
     tmpdir, 'gtffilenames_without_hints.tbl')
 sqlitedb = os.path.join(tmpdir, 'homGeneMapping_hints.db')
 
-def clean_homgenemapping(force_tmp_dir=True, force_html_dir=True, force_result_dir=True):
+def clean(force_tmp_dir=True, force_html_dir=True, force_result_dir=True):
     """Remove empty directories or if forced"""
     aug_path.rmtree_if_exists(resultdir, force_result_dir)
     aug_path.rmtree_if_exists(tmpdir, force_tmp_dir)
@@ -46,7 +44,7 @@ class TestHomGeneMapping(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         os.chdir(default_wd)
-        clean_homgenemapping(force_tmp_dir=False, force_html_dir=True, force_result_dir=True)
+        clean(force_tmp_dir=False, force_html_dir=True, force_result_dir=True)
         aug_path.mkdir_if_not_exists(resultdir)
         aug_path.mkdir_if_not_exists(tmpdir)
 
@@ -79,7 +77,7 @@ class TestHomGeneMapping(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         os.chdir(default_wd)
-        clean_homgenemapping(force_tmp_dir=False, force_html_dir=False, force_result_dir=False)
+        clean(force_tmp_dir=False, force_html_dir=False, force_result_dir=False)
 
     def test_homGeneMapping_without_hints(self):
         '''
@@ -168,7 +166,7 @@ def test_suite():
 
     return suite
 
-def execute_homgenemapping(compare, html):
+def execute(compare, html):
     TestHomGeneMapping.opt_compare = compare
     TestHomGeneMapping.opt_html = html
 

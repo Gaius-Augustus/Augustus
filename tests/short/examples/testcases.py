@@ -12,9 +12,6 @@ from utils import aug_out_filter as afilter
 from utils import aug_comparator as comp
   
 
-__all__ = [ 'execute_examples', 'clean_examples' ]
-
-
 resultdir = 'examples/results/'
 refdir = 'examples/expected_results/'
 htmldir = 'output_html/'
@@ -29,11 +26,11 @@ default_wd = os.getcwd()
 
 
 def create_initial_resultdir():
-    clean_examples(False)
+    clean(False)
     os.mkdir(resultdir)
 
 
-def clean_examples(withtmpdir=True):
+def clean(withtmpdir=True):
     print('Removing generated test files...')
     if os.path.exists(htmldir):
         shutil.rmtree(htmldir)
@@ -748,7 +745,7 @@ def print_tc_header(tc_name):
         '----------------------------------------------------------------------'
     )
 
-def execute_examples(compare, html, mysql):
+def execute(compare, html, mysql):
     default_wd = os.getcwd()
 
     create_initial_resultdir()
