@@ -51,7 +51,7 @@ void SpeciesCollection::addSpeciesToGroup(string skey, int groupID){
 
 void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
     string filename,skey;
-    char buf[1024];
+    string line;
     ifstream datei;
 
     try {
@@ -77,8 +77,8 @@ void SpeciesCollection::readExtrinsicCFGFile(vector<string> &speciesNames){
 		getline(datei,skey);
 		if (skey.find("[GROUP]") != std::string::npos) {
 		    cout << "extrinsic group " << groupCount << ":";	    
-		    datei.getline(buf, 1024); // reading in the set of species that belongs to the group
-		    stringstream stm(buf);
+		    getline(datei, line); // reading in the set of species that belongs to the group
+		    stringstream stm(line);
 		    if(stm >> skey){ 
 			do{
 			    if(skey == "none" || skey == "None"){
@@ -358,16 +358,16 @@ map<string,string> getFileNames (string listfile){
     map<string,string> filenames;
     ifstream ifstrm(listfile.c_str());
     if (ifstrm.is_open()){
-	char buf[256];
-	while(ifstrm.getline(buf,255)){
-	    stringstream stm(buf);
+	string line;
+        while(getline(ifstrm, line)){
+	    stringstream stm(line);
 	    string species, dir;
 	    if(stm >> species >> dir){
 		dir = expandHome(dir);
 		filenames[species] = dir;
 	    }
 	    else
-		throw ProjectError(listfile + " has wrong format in line " + buf + ". correct format:\n\n" + 
+		throw ProjectError(listfile + " has wrong format in line " + line + ". correct format:\n\n" + 
 				   "Homo sapiens <TAB> /dir/to/genome/human.fa\n" + 
 				   "Mus musculus <TAB> /dir/to/genome/mouse.fa\n" + 
 				   "...\n");
