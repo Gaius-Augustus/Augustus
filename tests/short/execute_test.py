@@ -6,7 +6,7 @@ import os
 
 from examples import test_examples
 from auxprogs.bam2wig import test_bam2wig
-from auxprogs.hom_gene_mapping import test_hom_gene_mapping
+from auxprogs.homgenemapping import test_homgenemapping
 
 
 # This script executes AUGUSTUS test cases based on the examples
@@ -70,10 +70,10 @@ if __name__ == '__main__':
             test_was_successful = test_bam2wig.execute(args.compare, args.html)
     elif args.testcase == 'homGeneMapping':
         if args.clean:
-            test_hom_gene_mapping.clean()
+            test_homgenemapping.clean()
             sys.exit()
         else:
-            test_was_successful = test_hom_gene_mapping.execute(
+            test_was_successful = test_homgenemapping.execute(
                 args.compare, args.html)
 
     if test_was_successful:

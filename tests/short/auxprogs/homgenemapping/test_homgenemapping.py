@@ -9,7 +9,7 @@ from utils import aug_path
 
 
 default_wd = os.getcwd()
-pathname = os.path.join(default_wd, 'auxprogs/hom_gene_mapping')
+pathname = os.path.join(default_wd, 'auxprogs/homgenemapping')
 referencedir = os.path.join(pathname, 'expected_results')
 resultdir = os.path.join(pathname, 'result_files')
 examplesdir = os.path.join('../../', 'examples')
