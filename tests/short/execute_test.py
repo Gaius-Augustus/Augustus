@@ -3,10 +3,7 @@
 import argparse
 import sys
 import os
-
-from examples import test_examples
-from auxprogs.bam2wig import test_bam2wig
-from auxprogs.homgenemapping import test_homgenemapping
+import importlib
 
 
 # This script executes AUGUSTUS test cases based on the examples
@@ -16,12 +13,19 @@ from auxprogs.homgenemapping import test_homgenemapping
 # This script must be called from "tests/short"!
 # Python version 3.6 or higher is required for execution.
 
-testcases = ['examples', 'bam2wig', 'homGeneMapping']
+# Dict of available test modules.
+# [0]: Argument to select the test case to be executed.
+# [1]: Modulename of the selected test case.
+testcases = {
+    'examples' : 'examples.test_examples',
+    'bam2wig' : 'auxprogs.bam2wig.test_bam2wig',
+    'homGeneMapping' : 'auxprogs.homgenemapping.test_homgenemapping'
+}
 
 parser = argparse.ArgumentParser(description='Execute AUGUSTUS test cases.')
 parser.add_argument('testcase',
                     action='store',
-                    choices=testcases,
+                    choices=list(testcases.keys()),
                     help='Testcase to execute.')
 parser.add_argument('--mysql',
                     action='store_true',
@@ -54,27 +58,14 @@ def check_working_dir(clean):
 if __name__ == '__main__':
     check_working_dir(args.clean)
 
+    test_module = importlib.import_module(testcases[args.testcase])
     test_was_successful = True
-    if args.testcase == 'examples':
-        if args.clean:
-            test_examples.clean()
-            sys.exit()
-        else:
-            test_was_successful = test_examples.execute(
-                args.compare, args.html, args.mysql)
-    elif args.testcase == 'bam2wig':
-        if args.clean:
-            test_bam2wig.clean()
-            sys.exit()
-        else:
-            test_was_successful = test_bam2wig.execute(args.compare, args.html)
-    elif args.testcase == 'homGeneMapping':
-        if args.clean:
-            test_homgenemapping.clean()
-            sys.exit()
-        else:
-            test_was_successful = test_homgenemapping.execute(
-                args.compare, args.html)
+
+    if args.clean:
+        test_module.clean()
+        sys.exit()
+    else:
+        test_was_successful = test_module.execute(args.compare, args.html, args.mysql)
 
     if test_was_successful:
         sys.exit(0)

@@ -94,7 +94,7 @@ def test_suite():
     return suite
 
 
-def execute(compare, html):
+def execute(compare, html, mysql):
     TestBam2Wig.opt_compare = compare
     TestBam2Wig.opt_html = html
 

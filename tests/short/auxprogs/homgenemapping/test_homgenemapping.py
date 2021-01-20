@@ -167,7 +167,7 @@ def test_suite():
     return suite
 
 
-def execute(compare, html):
+def execute(compare, html, mysql):
     TestHomGeneMapping.opt_compare = compare
     TestHomGeneMapping.opt_html = html
 
