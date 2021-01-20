@@ -49,7 +49,7 @@ bam2wig.o : bam2wig.c
 clean:
 	rm -f $(OBJECTS) bam2wig.o bam2wig
 	rm -f ../../bin/bam2wig
-	cd ../..; tests/auxprogs/bam2wig/test_bam2wig.py --clean
+	if [ ! -z $(shell which python3) ] ; then cd ../../tests/short && ./execute_test.py --clean bam2wig ; fi
 	
 test:   $(PROGRAM)
-	cd ../..; tests/auxprogs/bam2wig/test_bam2wig.py --compare --html
+	d ../../tests/short && ./execute_test.py --compare --html bam2wig
