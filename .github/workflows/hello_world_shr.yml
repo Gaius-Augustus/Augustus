@@ -1,8 +1,7 @@
 # This is a basic workflow to test a self hosted runner
 name: GH-SHR Hello World
 
-# Controls when the action will run. Triggers the workflow on push or pull request 
-# events but only for the master branch
+# Triggers the workflow on push or pull request events but only for the master branch
 on:
   push:
     branches:
