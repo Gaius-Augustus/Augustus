@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - 'refactor_test'
   pull_request:
     branches:
       - master
@@ -19,6 +20,8 @@ jobs:
         # Docker Hub image
         image: mysql:5.7
         # Provide the config for MySQL
+        # The database credentials correspond to the config file
+        # tests\short\examples\testconfig.json
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: aug_vertebrates
@@ -39,7 +42,7 @@ jobs:
 
     # Install required dependencies
     - name: Install dependencies
-      run: sudo ./tests/examples/installDependencies.sh
+      run: sudo ./tests/short/utils/installDependencies.sh
 
     # Build AUGUSTUS
     - name: Build AUGUSTUS
@@ -51,12 +54,13 @@ jobs:
 
     # Test AUGUSTUS
     - name: Test AUGUSTUS (examples folder)
-      run: ./testcases.py --compare --mysql --html
-      working-directory: tests/examples/
+      run: ./execute_test.py --compare --html --mysql examples
+      working-directory: tests/short/
 
     # Test bam2wig
     - name: Test bam2wig
-      run: tests/auxprogs/bam2wig/test_bam2wig.py --compare --html
+      run: ./execute_test.py --compare --html bam2wig
+      working-directory: tests/short/
 
     # Upload html diffs of failed test cases
     - name: Upload HTML diffs
@@ -64,17 +68,17 @@ jobs:
       if: failure()
       with:
         name: html-diffs
-        path: tests/examples/output_html/
+        path: tests/short/output_html/
 
-    # Build and publich doxygen documentation (only on push)
+    # Build and publich doxygen documentation (only on push in master)
     - name: Build documentation
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
       uses: mattnotmitt/doxygen-action@v1
       with:
         doxyfile-path: 'doxygen.conf'
 
     - name: Publish documentation of master on gh-pages
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
