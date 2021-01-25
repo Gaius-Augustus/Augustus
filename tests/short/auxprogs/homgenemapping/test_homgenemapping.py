@@ -1,34 +1,24 @@
 #!/usr/bin/env python3
 
 import unittest
-from pathlib import Path
 import os
-import sys
-import shutil
 
-if not (os.path.exists('tests')):
-    sys.exit('Wrong working directory!\nTest files must be accessible in ./tests folder.')
-sys.path.insert(0, '.') # make modul tests.utils accessible
+from utils import aug_assertions
+from utils import aug_process
+from utils import aug_path
 
-from tests.utils import aug_assertions
-from tests.utils import aug_process
-from tests.utils import aug_argparse
-from tests.utils import aug_path
-
-
-args = aug_argparse.getDefaultArgParser().parse_args()
 
 default_wd = os.getcwd()
-pathname = os.path.join(default_wd, os.path.dirname(sys.argv[0]))
+pathname = os.path.join(default_wd, 'auxprogs/homgenemapping')
 referencedir = os.path.join(pathname, 'expected_results')
 resultdir = os.path.join(pathname, 'result_files')
-examplesdir = os.path.join(default_wd, 'examples')
-htmldir = os.path.join(pathname, 'output_html')
+examplesdir = os.path.join('../../', 'examples')
+htmldir = os.path.join(default_wd, 'output_html')
 tmpdir = os.path.join(pathname, 'tmp')
 testdir = os.path.join(pathname, 'test_files')
-bindir = os.path.join(default_wd, 'bin/')
+bindir = os.path.join('../../../../../', 'bin/')
 hgmbin = f'{bindir}homGeneMapping'
-load2sqlbin = f'{bindir}load2sqlitedb'
+load2sqlbin = '../../bin/load2sqlitedb'
 
 gtffilenames_with_hints = os.path.join(
     os.path.join(default_wd, testdir), 'gtffilenames.tbl')
@@ -36,22 +26,12 @@ gtffilenames_without_hints = os.path.join(
     tmpdir, 'gtffilenames_without_hints.tbl')
 sqlitedb = os.path.join(tmpdir, 'homGeneMapping_hints.db')
 
+
 def clean(force_tmp_dir=True, force_html_dir=True, force_result_dir=True):
     """Remove empty directories or if forced"""
     aug_path.rmtree_if_exists(resultdir, force_result_dir)
     aug_path.rmtree_if_exists(tmpdir, force_tmp_dir)
     aug_path.rmtree_if_exists(htmldir, force_html_dir)
-
-def check_working_dir(clean):
-    errstr = ''
-    if not (os.path.exists(testdir)):
-        errstr += 'Wrong example directory!' + '\n'
-        errstr += f'The example files must be accessible in this path: "{testdir}"!'
-    if not clean and not (os.path.exists(hgmbin)):
-        errstr += 'Wrong working directory!' + '\n'
-        errstr += f'The augustus binaries must be accessible in this path: "{bindir}"!'
-    if (errstr):
-        sys.exit(errstr)
 
 
 class TestHomGeneMapping(unittest.TestCase):
@@ -146,7 +126,8 @@ class TestHomGeneMapping(unittest.TestCase):
 
         # compare results
         if TestHomGeneMapping.opt_compare:
-            aug_assertions.assertEqualDirectory(self, refdir, outputdir, TestHomGeneMapping.opt_html, htmldir)
+            aug_assertions.assertEqualDirectory(
+                self, refdir, outputdir, TestHomGeneMapping.opt_html, htmldir)
 
     def test_homGeneMapping_with_sql_hints(self):
         '''
@@ -172,10 +153,12 @@ class TestHomGeneMapping(unittest.TestCase):
 
         # compare results
         if TestHomGeneMapping.opt_compare:
-            aug_assertions.assertEqualDirectory(self, refdir, outputdir, TestHomGeneMapping.opt_html, htmldir)
+            aug_assertions.assertEqualDirectory(
+                self, refdir, outputdir, TestHomGeneMapping.opt_html, htmldir)
 
 
 def test_suite():
+    print('Start Test...')
     suite = unittest.TestSuite()
     suite.addTest(TestHomGeneMapping('test_homGeneMapping_without_hints'))
     suite.addTest(TestHomGeneMapping('test_homGeneMapping_with_file_hints'))
@@ -184,20 +167,11 @@ def test_suite():
     return suite
 
 
-if __name__ == '__main__':
-    check_working_dir(args.clean)
-
-    if args.clean:
-        clean()
-        sys.exit()
-
-    TestHomGeneMapping.opt_compare = args.compare
-    TestHomGeneMapping.opt_html = args.html
+def execute(compare, html, mysql):
+    TestHomGeneMapping.opt_compare = compare
+    TestHomGeneMapping.opt_html = html
 
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(test_suite())
 
-    if result.wasSuccessful():
-        sys.exit()
-    else:
-        sys.exit(1)
+    return result.wasSuccessful()

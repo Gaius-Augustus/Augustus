@@ -7,7 +7,7 @@ all:
 
 clean:
 	cd src; make clean
-	cd ../..; tests/auxprogs/homGeneMapping/test_homGeneMapping.py --clean
+	if [ ! -z $(shell which python3) ] ; then cd ../../tests/short && ./execute_test.py --clean homGeneMapping ; fi
 
 test:   all
-	cd ../..; tests/auxprogs/homGeneMapping/test_homGeneMapping.py --compare --html
+	cd ../../tests/short && ./execute_test.py --compare --html homGeneMapping

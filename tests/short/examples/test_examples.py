@@ -1,52 +1,27 @@
 #!/usr/bin/env python3
 
-import argparse
 import unittest
 import itertools
 import json
 import subprocess
 import os
-import sys
 import shutil
 import gzip
-import aug_out_filter as afilter
-import aug_comparator as comp
 
-# This script executes AUGUSTUS test cases based on the examples
-# folder and compares the current results with reference results
-# if the option --compare is set. It is expected that both results
-# are identical for a successful test.
-# This script must be called from "tests/examples_test"!
-# Python version 3.6 or higher is required for execution.
+from utils import aug_out_filter as afilter
+from utils import aug_comparator as comp
 
-parser = argparse.ArgumentParser(description='Execute Augustus test cases.')
-parser.add_argument('--mysql',
-                    action='store_true',
-                    help='cgp test cases are also executed with a MySQL database.')
-parser.add_argument('--compare',
-                    action='store_true',
-                    help='Compare generated results with reference results.')
-parser.add_argument('--html',
-                    action='store_true',
-                    help='Save diff results in html file.')
-parser.add_argument('--clean',
-                    action='store_true',
-                    help='Remove all files created during the tests. If this option is set, no tests are executed.')
-args = parser.parse_args()
 
-# only import mysql connector if testcases using mysql should be executed
-# MySQL Connector must be installed in this case
-if args.mysql:
-    import mysql.connector
-
-resultdir = 'results/'
-refdir = 'expected_results/'
+resultdir = 'examples/results/'
+refdir = 'examples/expected_results/'
 htmldir = 'output_html/'
-tmpdir = 'data/tmp/'
+tmpdir = 'examples/data/tmp/'
 exampledir = '../../examples/'
 bindir = '../../bin/'
 augustusbin = f'{bindir}augustus'
-datadir =  exampledir + 'chr2L/'
+datadir = exampledir + 'chr2L/'
+configdir = '../../config/'
+scriptdir = '../../scripts/'
 default_wd = os.getcwd()
 
 
@@ -67,19 +42,7 @@ def clean(withtmpdir=True):
         shutil.rmtree(tmpdir)
 
 
-def check_working_dir(clean):
-    wd = os.getcwd()
-    if not (wd.endswith('tests/examples')):
-        errstr = 'Wrong working directory!' + '\n'
-        errstr += 'This script must be called from "tests/examples"!'
-        sys.exit(errstr)
-    if not clean and not (os.path.exists(augustusbin)):
-        errstr = 'Missing augustus binaries!' + '\n'
-        errstr += f'The augustus binaries must be accessible in this path: "{bindir}"!'
-        sys.exit(errstr)
-
-
-class TestAugustus(unittest.TestCase):
+class TestExamples(unittest.TestCase):
     dbname = None
     dbhost = None
     dbuser = None
@@ -92,7 +55,7 @@ class TestAugustus(unittest.TestCase):
 
     @classmethod
     def read_config(cls):
-        with open('testconfig.json', 'r') as file:
+        with open('examples/testconfig.json', 'r') as file:
             config = json.load(file)
 
         cls.dbname = config['dbname']
@@ -207,7 +170,7 @@ class TestAugustus(unittest.TestCase):
     @classmethod
     def init_db(cls, cmd_list):
         for cmd in cmd_list:
-            output = TestAugustus().process(cmd)
+            output = TestExamples().process(cmd)
             # print(output)
 
     @classmethod
@@ -223,6 +186,7 @@ class TestAugustus(unittest.TestCase):
 
     @classmethod
     def cleanup_mysqldb(cls):
+        import mysql.connector
         mysqldb = mysql.connector.connect(host=cls.dbhost,
                                           user=cls.dbuser,
                                           passwd=cls.dbpasswd,
@@ -243,16 +207,16 @@ class TestAugustus(unittest.TestCase):
         # check config
         missing_arguments = False
         if (cls.opt_mysql):
-            if TestAugustus.dbname is None:
+            if TestExamples.dbname is None:
                 print('The database name is missing!')
                 missing_arguments = True
-            if TestAugustus.dbhost is None:
+            if TestExamples.dbhost is None:
                 print('The host name is missing!')
                 missing_arguments = True
-            if TestAugustus.dbuser is None:
+            if TestExamples.dbuser is None:
                 print('The db user name is missing!')
                 missing_arguments = True
-            if TestAugustus.dbpasswd is None:
+            if TestExamples.dbpasswd is None:
                 print('The db user passwd is missing!')
                 missing_arguments = True
         if missing_arguments:
@@ -271,7 +235,7 @@ class TestAugustus(unittest.TestCase):
             cls.cleanup_mysqldb()
 
     def assertEqualFolders(self, reffolder, resfolder, html=None, outputfolder=None):
-        if TestAugustus.opt_compare:
+        if TestExamples.opt_compare:
             if html is None:
                 html = self.opt_html
             if outputfolder is None:
@@ -346,7 +310,7 @@ class TestAugustus(unittest.TestCase):
         os.remove(testtmpfile)
 
         # compare results
-        self.assertEqualFolders(reffolder, resfolder)
+        self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
 
     def test_iterative_prediction(self):
         os.chdir(default_wd)
@@ -372,7 +336,7 @@ class TestAugustus(unittest.TestCase):
             os.remove(testtmpfile)
 
         # compare results
-        self.assertEqualFolders(reffolder, resfolder)
+        self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
 
     def test_iterative_prediction_with_hints(self):
         os.chdir(default_wd)
@@ -381,7 +345,7 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
 
         if not os.path.isfile('data/tmp/chr2L.sm.fa'):
-            TestAugustus.init_test_data()
+            TestExamples.init_test_data()
 
         for i in range(0, 3):
             testtmpfile = os.path.join(
@@ -402,7 +366,7 @@ class TestAugustus(unittest.TestCase):
             os.remove(testtmpfile)
 
         # compare results
-        self.assertEqualFolders(reffolder, resfolder)
+        self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
 
     def test_training_new_species(self):
         self.training_new_species(False)
@@ -416,8 +380,8 @@ class TestAugustus(unittest.TestCase):
 
         # Remove test species folder.
         # Just in case the deletion fails for whatever reason.
-        if os.path.exists('../../config/species/' + speciesname):
-            shutil.rmtree('../../config/species/' + speciesname)
+        if os.path.exists(f'{configdir}species/{speciesname}'):
+            shutil.rmtree(f'{configdir}species/{speciesname}')
 
         resfolder = self.get_res_folder()
         reffolder = self.get_ref_folder()
@@ -427,8 +391,8 @@ class TestAugustus(unittest.TestCase):
 
         # call script to initialize new species
         self.process([
-            'perl', '../../scripts/new_species.pl', '--species=' + speciesname,
-            '--AUGUSTUS_CONFIG_PATH=../../config'
+            'perl', f'{scriptdir}new_species.pl', '--species=' + speciesname,
+            f'--AUGUSTUS_CONFIG_PATH={configdir}'
         ])
 
         # training
@@ -441,7 +405,7 @@ class TestAugustus(unittest.TestCase):
         cmd = [
             augustusbin, os.path.join(datadir, 'genes.gb.test'),
             '--species=' + speciesname, '--softmasking=0',
-            '--AUGUSTUS_CONFIG_PATH=../../config'
+            f'--AUGUSTUS_CONFIG_PATH={configdir}'
         ]
         if (crf):
             cmd.append('--CRF=on')
@@ -455,10 +419,10 @@ class TestAugustus(unittest.TestCase):
         os.remove(testtmpfile)
 
         # move new species to result folder
-        shutil.move('../../config/species/' + speciesname, resfolder)
+        shutil.move(f'{configdir}species/{speciesname}', resfolder)
 
         # compare results
-        self.assertEqualFolders(reffolder, resfolder)
+        self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
 
     def test_ab_initio_prediction(self):
         os.chdir(default_wd)
@@ -478,7 +442,7 @@ class TestAugustus(unittest.TestCase):
         os.remove(testtmpfile)
 
         # compare results
-        self.assertEqualFolders(reffolder, resfolder)
+        self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
 
     def test_format_and_error_out(self):
         os.chdir(default_wd)
@@ -503,7 +467,7 @@ class TestAugustus(unittest.TestCase):
         os.remove(testtmpfile)
 
         # compare results
-        self.assertEqualFolders(reffolder, resfolder)
+        self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
 
     def test_alternatives_from_sampling(self):
         os.chdir(default_wd)
@@ -526,11 +490,11 @@ class TestAugustus(unittest.TestCase):
         os.remove(testtmpfile)
 
         # compare results
-        self.assertEqualFolders(reffolder, resfolder)
+        self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
 
     def test_cgp(self):
-        reffolder = self.get_ref_folder(path_to_wd='../../tests/examples')
-        resfolder = self.get_res_folder(path_to_wd='../../tests/examples')
+        reffolder = self.get_ref_folder(path_to_wd='../../tests/short')
+        resfolder = self.get_res_folder(path_to_wd='../../tests/short')
         testtmpfile = os.path.join(resfolder, 'output_tmp.txt')
         testfile = os.path.join(resfolder, 'output.txt')
 
@@ -561,7 +525,7 @@ class TestAugustus(unittest.TestCase):
 
         # compare results
         self.assertEqualFolders(reffolder, resfolder,
-                                outputfolder=default_wd + '/output_html/')
+                                outputfolder=os.path.join(default_wd, htmldir))
 
     def test_cgp_sqlite(self):
         self.cgp_with_db_preparation(False, False)
@@ -580,7 +544,7 @@ class TestAugustus(unittest.TestCase):
         proc_list = []
 
         # create groups according to the configured number of cpus
-        grouped_args = [iter(args)] * TestAugustus.cpuno
+        grouped_args = [iter(args)] * TestExamples.cpuno
 
         # parallel execution of the commands of each group
         for arg_list in itertools.zip_longest(*grouped_args):
@@ -616,7 +580,7 @@ class TestAugustus(unittest.TestCase):
 
         # compare results
         self.assertEqualFolders(reffolder, resfolder,
-                                outputfolder=default_wd + '/output_html/')
+                                outputfolder=os.path.join(default_wd, '/output_html/'))
 
     def cgp_with_db_preparation(self, hints, mysql):
         os.chdir(os.path.join(default_wd, f'{exampledir}cgp'))
@@ -626,8 +590,8 @@ class TestAugustus(unittest.TestCase):
             testname += '_mysql'
         if hints:
             testname += '_hints'
-        resfolder = self.get_res_folder(testname, '../../tests/examples')
-        reffolder = self.get_ref_folder(testname, '../../tests/examples')
+        resfolder = self.get_res_folder(testname, '../../tests/short')
+        reffolder = self.get_ref_folder(testname, '../../tests/short')
 
         cmd = [
             augustusbin,
@@ -641,12 +605,12 @@ class TestAugustus(unittest.TestCase):
         ]
 
         if mysql:
-            cmd.append('--dbaccess=' + TestAugustus.dbname + ',' +
-                       TestAugustus.dbhost + ',' + TestAugustus.dbuser + ',' +
-                       TestAugustus.dbpasswd)
+            cmd.append('--dbaccess=' + TestExamples.dbname + ',' +
+                       TestExamples.dbhost + ',' + TestExamples.dbuser + ',' +
+                       TestExamples.dbpasswd)
         else:
             cmd.append(
-                '--dbaccess=../../tests/examples/data/tmp/vertebrates.db')
+                '--dbaccess=../../tests/short/examples/data/tmp/vertebrates.db')
 
         if hints:
             cmd.append('--dbhints=true')
@@ -658,7 +622,7 @@ class TestAugustus(unittest.TestCase):
 
     def test_cgp_denovo_tutorial(self):
         os.chdir(default_wd)
-        os.chdir('../../docs/tutorial-cgp/results/mafs')
+        os.chdir('../../../docs/tutorial-cgp/results/mafs')
         resfolder = self.get_res_folder('test_cgp_with_db')
         reffolder = self.get_ref_folder('test_cgp_with_db')
         args = []
@@ -670,7 +634,7 @@ class TestAugustus(unittest.TestCase):
                     '../../../' + augustusbin,
                     '--species=human',
                     '--softmasking=1',
-                    '--speciesfilenames=../../../../examples_test/data/cgp_genomes.tbl',
+                    '--speciesfilenames=../../../../tests/short/examples/data/cgp_genomes.tbl',
                     '--treefile=../../data/tree.nwk',
                     '--alnfile=' + alin.__str__(),
                     '--alternatives-from-evidence=0',  # removes warning
@@ -684,9 +648,9 @@ class TestAugustus(unittest.TestCase):
 
     def test_cgp_rna_hint_tutorial(self):
         os.chdir(default_wd)
-        os.chdir('../../docs/tutorial-cgp/results/mafs')
-        reffolder = self.get_ref_folder(path_to_wd='../../../../tests/examples')
-        resfolder = self.get_res_folder(path_to_wd='../../../../tests/examples')
+        os.chdir('../../../docs/tutorial-cgp/results/mafs')
+        reffolder = self.get_ref_folder(path_to_wd='../../../../tests/short')
+        resfolder = self.get_res_folder(path_to_wd='../../../../tests/short')
         args = []
 
         # create command list for all alignment files
@@ -696,7 +660,7 @@ class TestAugustus(unittest.TestCase):
                     '../../../' + augustusbin,
                     '--species=human',
                     '--softmasking=1',
-                    '--speciesfilenames=../../../../tests/examples_test/data/cgp_genomes.tbl',
+                    '--speciesfilenames=../../../../tests/short/examples/data/cgp_genomes.tbl',
                     '--treefile=../../data/tree.nwk',
                     '--alnfile=' + alin.__str__(),
                     '--alternatives-from-evidence=0',  # removes warning
@@ -722,7 +686,7 @@ class TestAugustus(unittest.TestCase):
         os.mkdir(resfolder)
         self.process([
             augustusbin, '--species=human', f'--hintsfile={exampledir}hints.gff',
-            '--extrinsicCfgFile=../../config/extrinsic/extrinsic.MPE.cfg',
+            f'--extrinsicCfgFile={configdir}extrinsic/extrinsic.MPE.cfg',
             f'{exampledir}example.fa'
         ], testtmpfile)
 
@@ -731,44 +695,44 @@ class TestAugustus(unittest.TestCase):
         os.remove(testtmpfile)
 
         # compare results
-        self.assertEqualFolders(reffolder, resfolder)
+        self.assertEqualFolders(reffolder, resfolder, outputfolder=htmldir)
 
 
 def default_test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(TestAugustus('test_utr_on'))
-    suite.addTest(TestAugustus('test_hints_MPE'))
-    suite.addTest(TestAugustus('test_iterative_prediction'))
-    suite.addTest(TestAugustus('test_iterative_prediction_with_hints'))
-    suite.addTest(TestAugustus('test_training_new_species'))
-    suite.addTest(TestAugustus('test_training_new_species_crf'))
-    suite.addTest(TestAugustus('test_ab_initio_prediction'))
-    suite.addTest(TestAugustus('test_format_and_error_out'))
-    suite.addTest(TestAugustus('test_alternatives_from_sampling'))
-    suite.addTest(TestAugustus('test_cgp'))
-    suite.addTest(TestAugustus('test_cgp_sqlite'))
-    suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
+    suite.addTest(TestExamples('test_utr_on'))
+    suite.addTest(TestExamples('test_hints_MPE'))
+    suite.addTest(TestExamples('test_iterative_prediction'))
+    suite.addTest(TestExamples('test_iterative_prediction_with_hints'))
+    suite.addTest(TestExamples('test_training_new_species'))
+    suite.addTest(TestExamples('test_training_new_species_crf'))
+    suite.addTest(TestExamples('test_ab_initio_prediction'))
+    suite.addTest(TestExamples('test_format_and_error_out'))
+    suite.addTest(TestExamples('test_alternatives_from_sampling'))
+    suite.addTest(TestExamples('test_cgp'))
+    suite.addTest(TestExamples('test_cgp_sqlite'))
+    suite.addTest(TestExamples('test_cgp_sqlite_hints'))
     return suite
 
 
 def small_test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(TestAugustus('test_utr_on'))
-    suite.addTest(TestAugustus('test_hints_MPE'))
-    suite.addTest(TestAugustus('test_training_new_species'))
-    suite.addTest(TestAugustus('test_ab_initio_prediction'))
-    suite.addTest(TestAugustus('test_format_and_error_out'))
-    # suite.addTest(TestAugustus('test_alternatives_from_sampling'))
-    suite.addTest(TestAugustus('test_cgp'))
-    suite.addTest(TestAugustus('test_cgp_sqlite'))
-    suite.addTest(TestAugustus('test_cgp_sqlite_hints'))
+    suite.addTest(TestExamples('test_utr_on'))
+    suite.addTest(TestExamples('test_hints_MPE'))
+    suite.addTest(TestExamples('test_training_new_species'))
+    suite.addTest(TestExamples('test_ab_initio_prediction'))
+    suite.addTest(TestExamples('test_format_and_error_out'))
+    # suite.addTest(TestExamples('test_alternatives_from_sampling'))
+    suite.addTest(TestExamples('test_cgp'))
+    suite.addTest(TestExamples('test_cgp_sqlite'))
+    suite.addTest(TestExamples('test_cgp_sqlite_hints'))
     return suite
 
 
 def mysql_test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(TestAugustus('test_cgp_mysql'))
-    suite.addTest(TestAugustus('test_cgp_mysql_hints'))
+    suite.addTest(TestExamples('test_cgp_mysql'))
+    suite.addTest(TestExamples('test_cgp_mysql_hints'))
     return suite
 
 
@@ -782,34 +746,25 @@ def print_tc_header(tc_name):
     )
 
 
-if __name__ == '__main__':
-    check_working_dir(args.clean)
+def execute(compare, html, mysql):
     default_wd = os.getcwd()
 
-    # Remove only generated test files and do not execute test
-    # cases if option --clean is set.
-    if args.clean:
-        clean()
-        sys.exit()
-
     create_initial_resultdir()
-    TestAugustus.opt_compare = args.compare
-    TestAugustus.opt_html = args.html
-    TestAugustus.opt_mysql = args.mysql
+    TestExamples.opt_compare = compare
+    TestExamples.opt_html = html
+    TestExamples.opt_mysql = mysql
     runner = unittest.TextTestRunner(verbosity=2)
-    #print_tc_header('default test suite')
-    #result = runner.run(default_test_suite())
     print_tc_header('small test suite')
     result = runner.run(small_test_suite())
 
     mysql_was_successful = True
-    if args.mysql:
+    if mysql:
         os.chdir(default_wd)
         print_tc_header('MySQL test suite')
         result_mysql = runner.run(mysql_test_suite())
         mysql_was_successful = result_mysql.wasSuccessful()
 
     if result.wasSuccessful() and mysql_was_successful:
-        sys.exit()
+        return True
     else:
-        sys.exit(1)
+        return False

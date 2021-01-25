@@ -3,6 +3,7 @@
 import os
 import shutil
 
+
 def rmtree_if_exists(dir, even_none_empty=False):
     if os.path.exists(dir):
         if even_none_empty or len(os.listdir(dir)) == 0:

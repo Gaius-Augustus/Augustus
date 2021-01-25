@@ -33,7 +33,7 @@ def execute(testcase, cmd, out=subprocess.PIPE):
     if error:
         print("error " + error)
     # testcase.assertEqual(error, '', error)
-    testcase.assertEqual(rc, 0, f'Return code not 0! Error: {error}' )
+    testcase.assertEqual(rc, 0, f'Return code not 0! Error: {error}')
 
     if isFile:
         testcase.assertTrue(os.path.isfile(out),

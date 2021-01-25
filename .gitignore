@@ -61,11 +61,14 @@ src/unittests/unittests
 .vscode
 
 # ignore generated test output
-tests/examples/results/
+tests/short/examples/results/
+tests/short/output_html/
 
 # ignore tmp test case data
-tests/examples/data/tmp/
-tests/auxprogs/*/tmp
+tests/short/examples/data/tmp/
+tests/short/auxprogs/*/tmp
+tests/short/auxprogs/bam2wig/result_files/
+tests/short/auxprogs/homgenemapping/result_files/
 
 # ignore longrunning test data and output files
 tests/longrunning/single_genome/data/
