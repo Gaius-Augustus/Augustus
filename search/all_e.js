@@ -13,7 +13,7 @@ var searchData=
   ['prflalignment_170',['PrflAlignment',['../structSS_1_1PrflAlignment.html',1,'SS']]],
   ['print_171',['print',['../classStatePath.html#ae859a8710117bfa05c1cfc8a45d1dad5',1,'StatePath']]],
   ['print_5fstart_172',['print_start',['../classGene.html#ad5cc82b366373b5f39ec626f88553d6d',1,'Gene']]],
-  ['printprobabilities_173',['printProbabilities',['../classIntronModel.html#ae7e6da8de3e44818b8c989b91eda11a7',1,'IntronModel::printProbabilities()'],['../classUtrModel.html#a0abaae18170e9c05f52013f6d65273bf',1,'UtrModel::printProbabilities()']]],
+  ['printprobabilities_173',['printProbabilities',['../classUtrModel.html#a0abaae18170e9c05f52013f6d65273bf',1,'UtrModel::printProbabilities()'],['../classIntronModel.html#ae7e6da8de3e44818b8c989b91eda11a7',1,'IntronModel::printProbabilities()']]],
   ['profile_174',['Profile',['../classPP_1_1Profile.html',1,'PP']]],
   ['profileinsigerror_175',['ProfileInsigError',['../structPP_1_1ProfileInsigError.html',1,'PP']]],
   ['profilemap_176',['ProfileMap',['../structProfileMap.html',1,'']]],

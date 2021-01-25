@@ -8,7 +8,7 @@ var searchData=
   ['insertpos_115',['insertpos',['../classMsaInsertion.html#aae8741d2f2bc22fb237f8dcba61e8482',1,'MsaInsertion']]],
   ['intronmodel_116',['IntronModel',['../classIntronModel.html',1,'']]],
   ['intronmodelerror_117',['IntronModelError',['../classIntronModelError.html',1,'']]],
-  ['intronprofile_118',['IntronProfile',['../classPP_1_1IntronProfile.html',1,'PP::IntronProfile'],['../classPP_1_1IntronProfile.html#aae4cd85a136a4f8ec26aeb894632461b',1,'PP::IntronProfile::IntronProfile()']]],
+  ['intronprofile_118',['IntronProfile',['../classPP_1_1IntronProfile.html#aae4cd85a136a4f8ec26aeb894632461b',1,'PP::IntronProfile::IntronProfile()'],['../classPP_1_1IntronProfile.html',1,'PP::IntronProfile']]],
   ['invalidnucleotideerror_119',['InvalidNucleotideError',['../classInvalidNucleotideError.html',1,'']]],
   ['iterator_120',['iterator',['../classPP_1_1HitSequenceNode_1_1iterator.html',1,'PP::HitSequenceNode']]]
 ];
