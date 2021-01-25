@@ -1009,7 +1009,7 @@ if ( $cmdpars{'noTrainPars'} eq '' ) {
         $cmd .= "nice ";
     }
     $cmd
-        .= "etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $be_silent $optdir/curtrain $pars $modelrestrict";
+        .= "$cmdpars{'aug_exec_dir'}etraining --species=$cmdpars{'species'} --AUGUSTUS_CONFIG_PATH=$configdir $be_silent $optdir/curtrain $pars $modelrestrict";
     print "$cmd\n";
     systemordie($cmd);
     systemordie("rm -f $optdir/curtrain");
