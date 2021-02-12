@@ -44,16 +44,21 @@ release:
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
 
 test:
-	#if [ -z $(shell which python3) ] ; then echo To run the tests Python3 is required.; exit 1; fi
-ifeq ($(shell uname -s), Linux)
-ifeq ($(shell uname -m),x86_64)
-	cd tests/short && ./execute_test.py --compare --html examples
-	cd tests/short && ./execute_test.py --compare --html bam2wig
+ifeq ($(shell which python3),)
+	$(warning Python3 is required for the execution of the test cases!)
 else
-	$(warning When running test on a non-AMD64 architecture, the tests are executed without the --compare option!)
-	cd tests/short && ./execute_test.py examples
-	cd tests/short && ./execute_test.py bam2wig
-endif
+    ifeq ($(shell uname -s), Linux)
+        ifeq ($(shell uname -m),x86_64)
+			cd tests/short && ./execute_test.py --compare --html examples
+			cd tests/short && ./execute_test.py --compare --html bam2wig
+        else
+			$(info When running make test on a non-AMD64 architecture, the tests are executed without the --compare option!)
+			cd tests/short && ./execute_test.py examples
+			cd tests/short && ./execute_test.py bam2wig
+        endif
+    else
+		$(info The execution of test cases is currently only possible with Linux on an AMD64 architecture!)
+    endif
 endif
 
 unit_test:
