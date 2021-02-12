@@ -9,7 +9,7 @@ List of changes from version 3.3.3 to 3.4.0 (until Dec 11th, 2020)
      - compile with CGP and ZIPINPUT support by default
      - compile with SQLite and MySQL support for CGP (switch of by adding SQLite = false and MySQL = false to common.mk)
      - new species Cassiopea xamachana, Ptychodera flava, Argopecten irridians, Nemopilema nomurai
-       Notospermus_geniculatus, Chrysaora chesapeakeij, Ectocarpus siliculosus, Trichoplax adhaerens,
+       Notospermus_geniculatus, Chrysaora chesapeakei, Ectocarpus siliculosus, Trichoplax adhaerens,
        Aurelia aurita, Rhopilema esculentum, Encephalitozoon cuniculi, Gonapodya prolifera, Dunaliella_salina
        Sordaria macrospora, Sphaceloma murrayae, Vitrella brassicaformis, Monoraphidium neglectum, Raphidocelis subcapita,
        Ostreococcus tauri, Ostreococcus sp. lucimarinus, Micromonas pusilla, Micromonas_commoda, Chlamydomonas eustigma,
