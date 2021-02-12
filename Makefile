@@ -57,6 +57,7 @@ else
 			cd tests/short && ./execute_test.py bam2wig
         endif
     else
+		#TODO: MAC?
 		$(info The execution of test cases is currently only possible with Linux on an AMD64 architecture!)
     endif
 endif
