@@ -499,12 +499,14 @@ int main(int argc, char* argv[])
   {
     cout << "bam2hints -- Convert mRNA-to-genome alignments in BAM format into a hint file for AUGUSTUS in gff format.\n"
 	 << "\n"
-	 << "Usage:   bam2hints --in=example.bam --out=hints.gff\n"
+	 << "Usage:   bam2hints [--in=example.bam] [--out=hints.gff]\n"
 	 << "  PREREQUISITE: input BAM file must be sorted by target (=genome) sequence names\n"
          << "                and within the sequences by begin coordinates\n"
       // TODO: add example of sorting on command line
          << "\n"
          << "  Options:\n"
+         << "  --in=s             -i   input BAM file (default: stdin)\n"
+         << "  --out=s            -o   output GFF hints file (default: stdout)\n"
          << "  --priority=n       -p   priority of hint group (set to " << Pri << ")\n"
          << "  --maxgaplen=n      -g   gaps at most this length are simply closed (set to " << MaxGapLen << ")\n"
          << "  --minintronlen=n   -m   alignments with gaps shorter than this and longer than maxgaplen are discarded (set to " << MinIntLen << ")\n"
@@ -552,9 +554,9 @@ int main(int argc, char* argv[])
   // open the input BAM file
   BamReader BAM;
 
-  if( InFileName == NULL || !BAM.Open(InFileName) )
+  if( !BAM.Open(InFileName == NULL ? "/dev/stdin" : InFileName) )
 	{
-	  cerr << "Could not open input BAM file: " << (InFileName ? InFileName : "No input file") << endl;
+	  cerr << "Could not open input BAM file: " << (InFileName ? InFileName : "/dev/stdin") << endl;
 	  return -1;
 	}
 
@@ -568,11 +570,11 @@ int main(int argc, char* argv[])
 
 
   // open the output gff file
-  FILE* GFF = fopen(OutFileName, "w");
+  FILE* GFF = fopen(OutFileName == NULL ? "/dev/stdout" : OutFileName, "w");
 
   if( GFF == NULL )
   {
-    cerr << "Could not open output file: " << (OutFileName ? OutFileName : "No output file") << endl;
+    cerr << "Could not open output file: " << (OutFileName ? OutFileName : "/dev/stdout") << endl;
     return -1;
   }
 
