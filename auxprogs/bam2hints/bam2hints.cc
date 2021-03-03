@@ -558,31 +558,6 @@ int main(int argc, char* argv[])
 	  return -1;
 	}
 
-  // Estimating the right value of the arrays:  PSLb;  PSLq;  PSLt; BlockBegins; BlockEnds and FolOK;
-  // This is done by sweeping through all the alignments and calculating the maxBlock size.
-  // cout << "Wait a moment, calculating maximum block size that needs to be allocated... ";
-  int alignmentBlock, maxBlock=0;
-  while (BAM.GetNextAlignment(*pal)) 
-	{ 	
-	  alignmentBlock=0;
-	  // Retrieving maximum number of "blocks" in the BAM file
-	  for( vector<CigarOp>::iterator tempIter = pal->CigarData.begin(); tempIter != pal->CigarData.end(); tempIter++ )
-		{
-		  if(tempIter->Type == 'M' || tempIter->Type == 'X' || tempIter->Type == '=')
-			{
-			  alignmentBlock++;
-			}
-		} 
-
-	  if (alignmentBlock >= maxBlock) maxBlock = alignmentBlock;
-	} // end while
-  // cout << ".. done" << endl;
-
-  // closing and opening handle of BAM file
-  BAM.Close();
-  BAM.Open(InFileName);
- 
-
   // check sortedness according to BAM
   SamHeader header = BAM.GetHeader();
   if(header.HasSortOrder() && header.SortOrder == "unsorted" && IntOnly && Mult)
@@ -648,15 +623,15 @@ int main(int argc, char* argv[])
   // PSL-like alignment data
   // TODO: ensure sufficient array length / throw overflow warning
   int block;    // index of next matching block, holds the element count of the "PSL?" arrays
-  int PSLb[maxBlock];
-  int PSLq[maxBlock];
-  int PSLt[maxBlock]; // may need to be 'long int' if refseq longer than 400 Mbp
+  vector<int> PSLb;
+  vector<int> PSLq;
+  vector<int> PSLt;  // may need to be 'long int' if refseq longer than 400 Mbp
 
   // filtered block data
   int blockNew;        // index of next filtered block, holds the element count of the following arrays
-  int BlockBegins[maxBlock]; // 1-based start coordinates of filtered alignment blocks
-  int BlockEnds[maxBlock];   // 1-based end coordinates of filtered alignment blocks
-  bool FolIntOK[maxBlock];   // whether the gap following a block is considered an intron
+  vector<int> BlockBegins;  // 1-based start coordinates of filtered alignment blocks
+  vector<int> BlockEnds;    // 1-based end coordinates of filtered alignment blocks
+  vector<int> FolIntOK;     // whether the gap following a block is considered an intron
 
   set<char*> seenRefSet; // list of already encountered reference sequences to check sortedness
   bool badAlignment;     // alignment quality flag
@@ -704,6 +679,9 @@ int main(int argc, char* argv[])
 
     badAlignment = false; // whether this alignment should be dropped
     block = 0; // reset PSL block count
+    PSLb.resize(0);
+    PSLq.resize(0);
+    PSLt.resize(0);
     QOffset = 1; // refers to the first base in the alignment, not necessary the first base of the read itself!
     TOffset = pal->Position + 1; // transform 0-based alignment start to 1-based coordinate
 
@@ -745,9 +723,9 @@ int main(int argc, char* argv[])
   	else
   	{
   	  // create a new block
-  	  PSLb[block] = CIGARiter->Length;
-  	  PSLq[block] = QOffset;
-  	  PSLt[block] = TOffset;
+  	  PSLb.push_back(CIGARiter->Length);
+  	  PSLq.push_back(QOffset);
+  	  PSLt.push_back(TOffset);
   	  block++;
   	}
 
@@ -898,6 +876,9 @@ int main(int argc, char* argv[])
     // filter the blocks as in "blat2hints.pl"
 
     blockNew = 0;
+    BlockBegins.resize(0);
+    BlockEnds.resize(0);
+    FolIntOK.resize(0);
 
     for(BlockIter = 0; BlockIter < block; BlockIter++)
     {
@@ -917,15 +898,15 @@ int main(int argc, char* argv[])
       if(MinIntLen <= GapLen && GapLen <= MaxIntLen)
       {
   	// gap represents an intron, add new block
-  	BlockBegins[blockNew] = PSLt[BlockIter];
-        BlockEnds[blockNew] = PSLt[BlockIter] + PSLb[BlockIter] - 1;
+  	BlockBegins.push_back(PSLt[BlockIter]);
+        BlockEnds.push_back(PSLt[BlockIter] + PSLb[BlockIter] - 1);
   	if(BlockIter < block - 1 && PSLq[BlockIter+1] - PSLq[BlockIter] - PSLb[BlockIter] <= MaxQGapLen)
   	{
-  	  FolIntOK[blockNew] = true;
+  	  FolIntOK.push_back(true);
   	}
   	else
   	{
-  	  FolIntOK[blockNew] = false;
+  	  FolIntOK.push_back(false);
   	}
   	blockNew++;
       }
