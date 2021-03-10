@@ -32,6 +32,8 @@ def execute(testcase, cmd, out=subprocess.PIPE):
     testcase = unittest.TestCase() if testcase is None else testcase
     if error:
         print("error " + error)
+    else:
+        error = ''
     # testcase.assertEqual(error, '', error)
     testcase.assertEqual(rc, 0, f'Return code not 0! Error: {error}')
 
