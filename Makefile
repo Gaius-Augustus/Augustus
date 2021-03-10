@@ -3,6 +3,8 @@
 #
 include common.mk
 
+.PHONY: all clean install release test unit_test
+
 all:
 	mkdir -p bin
 	cd src && ${MAKE}
@@ -16,17 +18,18 @@ clean:
 		cd short && ./execute_test.py --clean examples; \
 	fi
 
+PREFIX = /usr/local
 INSTALLDIR = /opt/augustus-$(AUGVERSION)
 
 install:
 	install -d $(INSTALLDIR)
 	cp -a config bin scripts $(INSTALLDIR)
-	ln -sf $(INSTALLDIR)/bin/augustus /usr/local/bin/augustus
-	ln -sf $(INSTALLDIR)/bin/etraining /usr/local/bin/etraining
-	ln -sf $(INSTALLDIR)/bin/prepareAlign /usr/local/bin/prepareAlign
-	ln -sf $(INSTALLDIR)/bin/fastBlockSearch /usr/local/bin/fastBlockSearch
-	if [ -f $(INSTALLDIR)/bin/load2db ] ; then ln -sf $(INSTALLDIR)/bin/load2db /usr/local/bin/load2db ; fi	
-	if [ -f $(INSTALLDIR)/bin/getSeq ] ; then ln -sf $(INSTALLDIR)/bin/getSeq /usr/local/bin/getSeq ; fi
+	ln -sf $(INSTALLDIR)/bin/augustus $(PREFIX)/bin/augustus
+	ln -sf $(INSTALLDIR)/bin/etraining $(PREFIX)/bin/etraining
+	ln -sf $(INSTALLDIR)/bin/prepareAlign $(PREFIX)/bin/prepareAlign
+	ln -sf $(INSTALLDIR)/bin/fastBlockSearch $(PREFIX)/bin/fastBlockSearch
+	if [ -f $(INSTALLDIR)/bin/load2db ] ; then ln -sf $(INSTALLDIR)/bin/load2db $(PREFIX)/bin/load2db ; fi	
+	if [ -f $(INSTALLDIR)/bin/getSeq ] ; then ln -sf $(INSTALLDIR)/bin/getSeq $(PREFIX)/bin/getSeq ; fi
 
 # for internal purposes:
 release:
