@@ -505,7 +505,7 @@ int main(int argc, char* argv[])
       // TODO: add example of sorting on command line
          << "\n"
          << "  Options:\n"
-         << "  --in=s             -i   input BAM file (default: stdin)\n"
+         << "  --in=s             -i   input BAM file (default: stdin on UNIX platforms only)\n"
          << "  --out=s            -o   output GFF hints file (default: stdout)\n"
          << "  --priority=n       -p   priority of hint group (set to " << Pri << ")\n"
          << "  --maxgaplen=n      -g   gaps at most this length are simply closed (set to " << MaxGapLen << ")\n"
@@ -556,7 +556,7 @@ int main(int argc, char* argv[])
 
   if( !BAM.Open(InFileName == NULL ? "/dev/stdin" : InFileName) )
 	{
-	  cerr << "Could not open input BAM file: " << (InFileName ? InFileName : "/dev/stdin") << endl;
+	  cerr << "Could not open input BAM file: " << (InFileName == NULL ? InFileName : "/dev/stdin") << endl;
 	  return -1;
 	}
 
@@ -570,11 +570,11 @@ int main(int argc, char* argv[])
 
 
   // open the output gff file
-  FILE* GFF = fopen(OutFileName == NULL ? "/dev/stdout" : OutFileName, "w");
+  FILE* GFF = OutFileName == NULL ? stdout : fopen(OutFileName, "w");
 
   if( GFF == NULL )
   {
-    cerr << "Could not open output file: " << (OutFileName ? OutFileName : "/dev/stdout") << endl;
+    cerr << "Could not open output file: " << (OutFileName == NULL ? OutFileName : "stdout") << endl;
     return -1;
   }
 
@@ -595,7 +595,7 @@ int main(int argc, char* argv[])
   int maxCovBins = ceil(maxRefLen/10+1.5);
   // printf("\nmaxCovBins=%d\n", maxCovBins);
 
-  // initialize the labelling of hint lists
+  // initialize the labeling of hint lists
   hintList.push_back(hintListLabel_t(eplist, "exonpart"));
   hintList.push_back(hintListLabel_t(intronlist, "intron"));
   hintList.push_back(hintListLabel_t(exonlist, "exon"));
@@ -633,7 +633,7 @@ int main(int argc, char* argv[])
   int blockNew;        // index of next filtered block, holds the element count of the following arrays
   vector<int> BlockBegins;  // 1-based start coordinates of filtered alignment blocks
   vector<int> BlockEnds;    // 1-based end coordinates of filtered alignment blocks
-  vector<int> FolIntOK;     // whether the gap following a block is considered an intron
+  vector<bool> FolIntOK;    // whether the gap following a block is considered an intron
 
   set<char*> seenRefSet; // list of already encountered reference sequences to check sortedness
   bool badAlignment;     // alignment quality flag
@@ -681,9 +681,9 @@ int main(int argc, char* argv[])
 
     badAlignment = false; // whether this alignment should be dropped
     block = 0; // reset PSL block count
-    PSLb.resize(0);
-    PSLq.resize(0);
-    PSLt.resize(0);
+    PSLb.clear();
+    PSLq.clear();
+    PSLt.clear();
     QOffset = 1; // refers to the first base in the alignment, not necessary the first base of the read itself!
     TOffset = pal->Position + 1; // transform 0-based alignment start to 1-based coordinate
 
@@ -878,9 +878,9 @@ int main(int argc, char* argv[])
     // filter the blocks as in "blat2hints.pl"
 
     blockNew = 0;
-    BlockBegins.resize(0);
-    BlockEnds.resize(0);
-    FolIntOK.resize(0);
+    BlockBegins.clear();
+    BlockEnds.clear();
+    FolIntOK.clear();
 
     for(BlockIter = 0; BlockIter < block; BlockIter++)
     {
@@ -901,7 +901,7 @@ int main(int argc, char* argv[])
       {
   	// gap represents an intron, add new block
   	BlockBegins.push_back(PSLt[BlockIter]);
-        BlockEnds.push_back(PSLt[BlockIter] + PSLb[BlockIter] - 1);
+  	BlockEnds.push_back(PSLt[BlockIter] + PSLb[BlockIter] - 1);
   	if(BlockIter < block - 1 && PSLq[BlockIter+1] - PSLq[BlockIter] - PSLb[BlockIter] <= MaxQGapLen)
   	{
   	  FolIntOK.push_back(true);
