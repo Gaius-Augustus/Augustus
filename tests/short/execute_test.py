@@ -18,6 +18,7 @@ import importlib
 # [1]: Modulename of the selected test case.
 testcases = {
     'examples' : 'examples.test_examples',
+    'bam2hints' : 'auxprogs.bam2hints.test_bam2hints',
     'bam2wig' : 'auxprogs.bam2wig.test_bam2wig',
     'homGeneMapping' : 'auxprogs.homgenemapping.test_homgenemapping'
 }
