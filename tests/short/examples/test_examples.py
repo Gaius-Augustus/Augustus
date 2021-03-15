@@ -580,7 +580,7 @@ class TestExamples(unittest.TestCase):
 
         # compare results
         self.assertEqualFolders(reffolder, resfolder,
-                                outputfolder=os.path.join(default_wd, '/output_html/'))
+                                outputfolder=os.path.join(default_wd, htmldir))
 
     def cgp_with_db_preparation(self, hints, mysql):
         os.chdir(os.path.join(default_wd, f'{exampledir}cgp'))
