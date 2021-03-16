@@ -8,8 +8,11 @@
 #	Last modified:  09-October-2015 by Katharina J. Hoff
 
 # Variable definition
-#INCLUDES = -I/usr/include/bamtools
-INCLUDES = -I/usr/local/opt/bamtools/include/bamtools
+ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of bamtools
+	INCLUDES = -I/usr/local/opt/bamtools/include/bamtools
+else
+	INCLUDES = -I/usr/include/bamtools
+endif
 LIBS = -lbamtools -lz
 SOURCES = bam2hints.cc 
 OBJECTS = $(SOURCES:.cc=.o)

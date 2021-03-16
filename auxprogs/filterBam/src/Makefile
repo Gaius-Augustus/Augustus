@@ -8,8 +8,11 @@ SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAli
 			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
-#BAMTOOLS = /usr/include/bamtools
-BAMTOOLS = /usr/local/opt/bamtools/include/bamtools
+ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of bamtools
+	BAMTOOLS = /usr/local/opt/bamtools/include/bamtools
+else
+	BAMTOOLS = /usr/include/bamtools
+endif
 INCLUDES = -I$(BAMTOOLS) -Iheaders -I./bamtools
 LIBS = -lbamtools -lz
 CXXFLAGS := -std=c++0x ${CXXFLAGS}
