@@ -34,21 +34,21 @@ jobs:
     - name: Build AUGUSTUS
       run: make all
 
-    # # Execute unit tests
-    # - name: Execute unit tests
-    #   run: make unit_test
+    # Execute unit tests
+    - name: Execute unit tests
+      run: make unit_test
 
-    # # Test AUGUSTUS
-    # - name: Test AUGUSTUS (examples folder)
-    #   run: ./execute_test.py --compare --html --mysql examples
-    #   working-directory: tests/short/
+    # Test AUGUSTUS
+    - name: Test AUGUSTUS (examples folder)
+      run: ./execute_test.py examples
+      working-directory: tests/short/
 
-    # # Test bam2wig
-    # - name: Test bam2wig
-    #   run: ./execute_test.py --compare --html bam2wig
-    #   working-directory: tests/short/
+    # Test bam2wig
+    - name: Test bam2wig
+      run: ./execute_test.py --compare --html bam2wig
+      working-directory: tests/short/
 
-    # # Test bam2hints
-    # - name: Test bam2hints
-    #   run: ./execute_test.py --compare --html bam2hints
-    #   working-directory: tests/short/
+    # Test bam2hints
+    - name: Test bam2hints
+      run: ./execute_test.py --compare --html bam2hints
+      working-directory: tests/short/
