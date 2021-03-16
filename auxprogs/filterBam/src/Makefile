@@ -8,7 +8,8 @@ SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAli
 			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
-BAMTOOLS = /usr/include/bamtools
+#BAMTOOLS = /usr/include/bamtools
+BAMTOOLS = /usr/local/opt/bamtools/include/bamtools
 INCLUDES = -I$(BAMTOOLS) -Iheaders -I./bamtools
 LIBS = -lbamtools -lz
 CXXFLAGS := -std=c++0x ${CXXFLAGS}

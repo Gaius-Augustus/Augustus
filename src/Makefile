@@ -39,7 +39,8 @@ ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is 
 	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o codonevo.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o tokenizer.o
 	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
-	INCLS += -I/usr/include/lpsolve
+#	INCLS += -I/usr/include/lpsolve
+	INCLS += -I/usr/local/opt/lp_solve/include
 endif
 
 ifeq (,$(findstring $(TESTING),0 false False FALSE))  # if TESTING is not defined or is something else than 0, false, False or FALSE
@@ -57,7 +58,8 @@ ifneq (,$(findstring $(MYSQL),1 true True TRUE)) # if MYSQL is defined and conta
 	# replace RUNTIME_LIBPATH with your own run-time libpath if mysql++ is not installed system-wide, e.g.
 	# RUNTIME_LIBPATH = -Wl,-rpath=~/augustus/trunks/mysql++/mysql++-3.1.0/lib
 	RUNTIME_LIBPATH =
-	INCLS    += -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
+#	INCLS    += -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
+	INCLS    += -I/usr/local/opt/mysql/include/mysql -I/usr/local/opt/mysql++/include/mysql++
 	LIBS     += -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
 	CPPFLAGS += -DM_MYSQL
 	PROGR    += load2db getSeq
