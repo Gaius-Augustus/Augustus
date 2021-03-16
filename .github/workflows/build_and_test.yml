@@ -10,11 +10,8 @@ on:
       - master
   
 jobs:
-  build-n-test:
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, macos-latest]
-    runs-on: ${{ matrix.os }}
+  build-n-test-ubuntu:
+    runs-on: ubuntu-20.04
 
     services:
       # Label used to access the service container
@@ -43,13 +40,65 @@ jobs:
       run: pip3 install mysql-connector-python
 
     # Install required dependencies
-    - name: Install dependencies (Linux)
-      if: ${{ matrix.os == 'ubuntu-20.04' }}
+    - name: Install dependencies
       run: sudo ./tests/short/utils/installDependencies.sh
 
+    # Build AUGUSTUS
+    - name: Build AUGUSTUS
+      run: make all
+
+    # Execute unit tests
+    - name: Execute unit tests
+      run: make unit_test
+
+    # Test AUGUSTUS
+    - name: Test AUGUSTUS (examples folder with comparison)
+      run: ./execute_test.py --compare --html --mysql examples
+      working-directory: tests/short/
+
+    # Test bam2wig
+    - name: Test bam2wig
+      run: ./execute_test.py --compare --html bam2wig
+      working-directory: tests/short/
+
+    # Test bam2hints
+    - name: Test bam2hints
+      run: ./execute_test.py --compare --html bam2hints
+      working-directory: tests/short/
+
+    # Upload html diffs of failed test cases
+    - name: Upload HTML diffs
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: html-diffs
+        path: tests/short/output_html/
+
+    # Build and publich doxygen documentation (only on push in master)
+    - name: Build documentation
+      if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
+      uses: mattnotmitt/doxygen-action@v1
+      with:
+        doxyfile-path: 'doxygen.conf'
+
+    - name: Publish documentation of master on gh-pages
+      if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./doxygen/html/
+
+jobs:
+  build-n-test-macos:
+    runs-on: macos-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+    - uses: actions/checkout@v2
+
     # Install required dependencies
-    - name: Install dependencies (Mac)
-      if: ${{ matrix.os == 'macos-latest' }}
+    - name: Install dependencies
       run: |
         brew install boost
         brew install zlib
@@ -68,20 +117,14 @@ jobs:
       run: make all
 
     # Execute unit tests
-    - name: Execute unit tests
-      if: ${{ matrix.os == 'ubuntu-20.04' }}  #TODO: make working on mac
-      run: make unit_test
+    #TODO: make working on mac
+    # - name: Execute unit tests
+    #   run: make unit_test
 
     # Test AUGUSTUS
-    - name: Test AUGUSTUS (examples folder with comparison)
-      if: ${{ matrix.os == 'ubuntu-20.04' }}
-      run: ./execute_test.py --compare --html --mysql examples
+    - name: Test AUGUSTUS (examples folder without mysql and comparison on mac)
+      run: ./execute_test.py examples
       working-directory: tests/short/
-
-    - name: Test AUGUSTUS (examples folder without comparison on mac)
-      if: ${{ matrix.os == 'macos-latest' }}
-      run: ./execute_test.py --mysql examples
-      working-directory: tests/short/      
 
     # Test bam2wig
     - name: Test bam2wig
@@ -92,25 +135,3 @@ jobs:
     - name: Test bam2hints
       run: ./execute_test.py --compare --html bam2hints
       working-directory: tests/short/
-
-    # Upload html diffs of failed test cases
-    - name: Upload HTML diffs
-      uses: actions/upload-artifact@v2
-      if: ${{ failure() && matrix.os == 'ubuntu-20.04' }}
-      with:
-        name: html-diffs
-        path: tests/short/output_html/
-
-    # Build and publich doxygen documentation (only on push in master)
-    - name: Build documentation
-      if: ${{ matrix.os == 'ubuntu-20.04' && github.ref == 'refs/heads/master' && github.event_name == 'push' }}
-      uses: mattnotmitt/doxygen-action@v1
-      with:
-        doxyfile-path: 'doxygen.conf'
-
-    - name: Publish documentation of master on gh-pages
-      if: ${{ matrix.os == 'ubuntu-20.04' && github.ref == 'refs/heads/master' && github.event_name == 'push' }}
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./doxygen/html/
