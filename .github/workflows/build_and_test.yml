@@ -4,14 +4,17 @@ on:
   push:
     branches:
       - master
+      - 'test_mac'
   pull_request:
     branches:
       - master
   
 jobs:
   build-n-test:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macos-latest]
+    runs-on: ${{ matrix.os }}
 
     services:
       # Label used to access the service container
@@ -40,8 +43,25 @@ jobs:
       run: pip3 install mysql-connector-python
 
     # Install required dependencies
-    - name: Install dependencies
+    - name: Install dependencies (Linux)
+      if: ${{ matrix.os == 'ubuntu-20.04' }}
       run: sudo ./tests/short/utils/installDependencies.sh
+
+    # Install required dependencies
+    - name: Install dependencies (Mac)
+      if: ${{ matrix.os == 'macos-latest' }}
+      run: |
+        brew install boost
+        brew install zlib
+        brew install gsl
+        brew install suite-sparse
+        brew install lp_solve
+        brew install sqlite
+        brew install mysql
+        brew install mysql++
+        brew install bamtools
+        brew install samtools
+        brew install htslib
 
     # Build AUGUSTUS
     - name: Build AUGUSTUS
@@ -49,12 +69,19 @@ jobs:
 
     # Execute unit tests
     - name: Execute unit tests
+      if: ${{ matrix.os == 'ubuntu-20.04' }}  #TODO: make working on mac
       run: make unit_test
 
     # Test AUGUSTUS
-    - name: Test AUGUSTUS (examples folder)
+    - name: Test AUGUSTUS (examples folder with comparison)
+      if: ${{ matrix.os == 'ubuntu-20.04' }}
       run: ./execute_test.py --compare --html --mysql examples
       working-directory: tests/short/
+
+    - name: Test AUGUSTUS (examples folder without comparison on mac)
+      if: ${{ matrix.os == 'macos-latest' }}
+      run: ./execute_test.py --mysql examples
+      working-directory: tests/short/      
 
     # Test bam2wig
     - name: Test bam2wig
@@ -69,20 +96,20 @@ jobs:
     # Upload html diffs of failed test cases
     - name: Upload HTML diffs
       uses: actions/upload-artifact@v2
-      if: failure()
+      if: ${{ failure() && matrix.os == 'ubuntu-20.04' }}
       with:
         name: html-diffs
         path: tests/short/output_html/
 
     # Build and publich doxygen documentation (only on push in master)
     - name: Build documentation
-      if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
+      if: ${{ matrix.os == 'ubuntu-20.04' && github.ref == 'refs/heads/master' && github.event_name == 'push' }}
       uses: mattnotmitt/doxygen-action@v1
       with:
         doxyfile-path: 'doxygen.conf'
 
     - name: Publish documentation of master on gh-pages
-      if: ${{ github.ref == 'refs/heads/master' && github.event_name == 'push' }}
+      if: ${{ matrix.os == 'ubuntu-20.04' && github.ref == 'refs/heads/master' && github.event_name == 'push' }}
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
