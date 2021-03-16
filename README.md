@@ -3,7 +3,6 @@
 # Gene Prediction with AUGUSTUS
 
 [INTRODUCTION](#introduction)  
-[USER SURVEY](#user-survey)  
 [INSTALLATION](#installation)  
 [RUNNING AUGUSTUS](docs/RUNNING-AUGUSTUS.md)  
 [WEB-SERVER](#web-server)  
@@ -15,14 +14,6 @@
 # INTRODUCTION
 
 AUGUSTUS is a program to find genes and their structures in one or more genomes. [More ...](docs/ABOUT.md)
-
-# USER SURVEY
-
-Please take about 2 minutes to let us know your opinion on how to improve AUGUSTUS and a potential workshop in 2021 and [do our survey](https://docs.google.com/forms/d/e/1FAIpQLSeDYIcMB2NE_VuJMNnOGwXQ6EDNn6DfFaF7NYeRX6Tjikhsgw/viewform?usp=sf_link).
-<div style="padding: 0 0 12px 100px;">
-  <a style="color: white; background-color: #E64545; padding: 0.6em" 
-     target="_blank" rel="noopener noreferrer"
-     href="https://docs.google.com/forms/d/e/1FAIpQLSeDYIcMB2NE_VuJMNnOGwXQ6EDNn6DfFaF7NYeRX6Tjikhsgw/viewform?usp=sf_link">START THE SURVEY</a></div>
 
 # INSTALLATION
 
@@ -122,7 +113,7 @@ If this environment variable is not set, then the programs will look in the path
 
 # WEB-SERVER
 
-AUGUSTUS can also be run through a web-interface at http://bioinf.uni-greifswald.de/augustus/ and a web service at http://bioinf.uni-greifswald.de/webaugustus/index.gsp.
+AUGUSTUS can also be run through a web-interface at http://bioinf.uni-greifswald.de/augustus/ and a web service at http://bioinf.uni-greifswald.de/webaugustus/.
 
 # Scripts
 
