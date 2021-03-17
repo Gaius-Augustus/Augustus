@@ -50,10 +50,29 @@ release:
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
 
 test:
-	if [ -z $(shell which python3) ] ; then echo To run the tests Python3 is required.; exit 1; fi
-	cd tests/short && ./execute_test.py --compare --html examples
-	cd tests/short && ./execute_test.py --compare --html bam2hints
-	cd tests/short && ./execute_test.py --compare --html bam2wig
+ifeq ($(shell which python3),)
+	$(warning Python3 is required for the execution of the test cases!)
+else
+    ifeq ($(shell uname -s), Linux)
+        ifeq ($(shell uname -m),x86_64)
+			cd tests/short && ./execute_test.py --compare --html examples
+			cd tests/short && ./execute_test.py --compare --html bam2hints
+			cd tests/short && ./execute_test.py --compare --html bam2wig
+        else
+			$(info When running make test on a non-AMD64 architecture, most tests are executed without the --compare option!)
+			cd tests/short && ./execute_test.py examples
+			cd tests/short && ./execute_test.py --compare --html bam2hints
+			cd tests/short && ./execute_test.py --compare --html bam2wig
+        endif
+    else
+        ifeq ($(shell uname -s), Darwin)
+			$(info When running make test on MacOS system, most tests are executed without the --compare option!)
+			cd tests/short && ./execute_test.py examples
+			cd tests/short && ./execute_test.py --compare --html bam2hints
+			cd tests/short && ./execute_test.py --compare --html bam2wig
+        endif
+    endif
+endif
 
 unit_test:
 	cd src && ${MAKE} unittest
