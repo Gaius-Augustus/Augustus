@@ -415,7 +415,7 @@ void GenomicMSA::findGeneRanges(){
 	    while (out_degree(u, aliG) >0 && merged){
 		//cout << "checking " << uid << endl;
 		merged = false;
-		for (tie(ei, ei_end) = out_edges(u, aliG); ei != ei_end && !merged; ++ei){
+		for (tie(ei, ei_end) = out_edges(u, aliG); ei != ei_end; ++ei){
 		    v = target(*ei, aliG);
 		    vid = index[v];
 		    va = aliG[v].a;
@@ -473,6 +473,7 @@ void GenomicMSA::findGeneRanges(){
 				aliG[v].a = NULL; // deactivate node
 				//remove_vertex(v, aliG);
 				merged = true;
+				break;
 			    }
 			}
 		    }
