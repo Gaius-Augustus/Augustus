@@ -80,7 +80,7 @@ After compilation has finished, the command bin/augustus should be executable an
 
 As a normal user, add the directory of the executables to the PATH environment variable, for example:
 
-    export PATH=$PATH:~/augustus/bin:~/augustus/scripts
+    export PATH=~/augustus/bin:~/augustus/scripts:$PATH
 
 ## Install globally
 
