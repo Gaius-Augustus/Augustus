@@ -76,6 +76,10 @@ Once all dependencies are available, you can compile AUGUSTUS using make.
 
 After compilation has finished, the command bin/augustus should be executable and print a usage message.
 
+If you have built the Boost libraries yourself, specify the search path for the linker in `LDFLAGS`.
+
+    make LDFLAGS="-L/your/boost_1_75_0/stage/lib"
+
 ## Install locally
 
 As a normal user, add the directory of the executables to the PATH environment variable, for example:
