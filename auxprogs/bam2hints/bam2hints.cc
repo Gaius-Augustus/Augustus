@@ -591,9 +591,14 @@ int main(int argc, char* argv[])
   RefLengthByID.resize(RefSeq.size());
 
   // Obtaining the maximum reference sequence length
-  int maxRefLen = *max_element(RefLengthByID.begin(),RefLengthByID.end());
-  int maxCovBins = ceil(maxRefLen/10+1.5);
+  int maxCovBins = 0;
+  if (MaxCov > 0) {
+      int maxRefLen = 0;
+      for (RefVector::iterator refiter = RefSeq.begin(); refiter != RefSeq.end(); refiter++)
+          maxRefLen = refiter->RefLength > maxRefLen ? refiter->RefLength : maxRefLen;
+      maxCovBins = ceil(maxRefLen/10+1.5);
   // printf("\nmaxCovBins=%d\n", maxCovBins);
+  }
 
   // initialize the labeling of hint lists
   hintList.push_back(hintListLabel_t(eplist, "exonpart"));
@@ -638,7 +643,8 @@ int main(int argc, char* argv[])
   set<char*> seenRefSet; // list of already encountered reference sequences to check sortedness
   bool badAlignment;     // alignment quality flag
   int BlockIter;         // index of current block
-  unsigned short int * alnCoverage = new unsigned short int [maxCovBins]; // alignment coverage data of the current reference sequence
+  unsigned short int * alnCoverage;
+  alnCoverage = new unsigned short int [maxCovBins]; // alignment coverage data of the current reference sequence
     // as alternative use STL container vector<unsigned short int>
   int CovIter;           // index of current bin of alignment coverage
   int GapLen;            // length of the gap preceding the current block on the target sequence
@@ -821,57 +827,48 @@ int main(int argc, char* argv[])
       {
 		TargetName = strdup(RefSeq.at(TargetID).RefName.c_str()); // update target name
 
-  	// free the alignment coverage array
-  	delete [] alnCoverage;
+        if (MaxCov > 0) {
+          int CovBinCount = RefSeq.at(TargetID).RefLength/10 + 1; // needed number of entries
 
-  	int CovBinCount = RefSeq.at(TargetID).RefLength/10 + 1; // needed number of entries
-  	// cout << "CovBinCount=" << CovBinCount << endl;
-  	// allocate alignment coverage array
-  	alnCoverage = new(nothrow) unsigned short int [CovBinCount]; // disable exceptions for failures
-  	// handle failed allocation
-  	if(alnCoverage == NULL)
-  	{
-  	  cout << "Could not allocate memory for " << TargetName << "\n"
-  	       << "Aborting!\n";
-  	  return -1;
-  	}
-
-  	// initialize the coverage with zeros
-  	for(CovIter = 0; CovIter < CovBinCount; CovIter++)
-  	{
-  	  alnCoverage[CovIter] = 0;
-  	}
+          // initialize the coverage with zeros
+          for(CovIter = 0; CovIter < CovBinCount; CovIter++)
+          {
+            alnCoverage[CovIter] = 0;
+          }
+        }
       }
     }
 
 
-    // apply a coverage threshold
-    // check each 10bp bin for too high abundance of alignments
-    for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
+    if (MaxCov > 0)
     {
-      if(MaxCov > 0 && alnCoverage[CovIter] >= MaxCov)
+      // apply a coverage threshold
+      // check each 10bp bin for too high abundance of alignments
+      for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
       {
-  	// stop scanning and ...
-  	badAlignment = true;
-  	break;
+        if(alnCoverage[CovIter] >= MaxCov)
+        {
+          // stop scanning and ...
+          badAlignment = true;
+          break;
+        }
       }
-    }
-  	// cout << "CovIter=" << CovIter << endl;
+          // cout << "CovIter=" << CovIter << endl;
 
-    if(badAlignment)
-    {
-      //cerr<<"reached coverage at "<<TargetName<<", position "<<CovIter*10<<"\n";
-      // ... drop the alignment
-      continue;
-    }
+      if(badAlignment)
+      {
+        //cerr<<"reached coverage at "<<TargetName<<", position "<<CovIter*10<<"\n";
+        // ... drop the alignment
+        continue;
+      }
 
-    // update the coverage data with the accepted alignment
-    for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
-    {
-       if (CovIter < maxCovBins)
-	  alnCoverage[CovIter]++;
-       // there is a bug here because above range check is not always satisfied
-       // however, this maxCov filtering is not active by default since May25th, 2015
+      // update the coverage data with the accepted alignment
+      for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
+      {
+            alnCoverage[CovIter]++;
+         // there is a bug here because above range check is not always satisfied
+         // however, this MaxCov filtering is not active by default since May25th, 2015
+      }
     }
 
 
