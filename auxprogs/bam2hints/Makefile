@@ -12,7 +12,7 @@ INCLUDES = -I/usr/include/bamtools
 LIBS = -lbamtools -lz
 SOURCES = bam2hints.cc 
 OBJECTS = $(SOURCES:.cc=.o)
-CXXFLAGS += -Wall -O2 # -g -p -g -ggdb 
+CXXFLAGS += -Wall -O3 # -g -p -g -ggdb 
 
 LINK.cc ?= g++
 
