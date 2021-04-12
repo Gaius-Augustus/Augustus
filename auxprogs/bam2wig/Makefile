@@ -1,8 +1,8 @@
 # Makefile of bam2wig
 #
 # NOTE: install libhts-dev >= 1.10 or modify the variable TOOLDIR according to where your htslib software has been installed
-# 
-# License: Artistic License, see file LICENSE.TXT or 
+#
+# License: Artistic License, see file LICENSE.TXT or
 #          https://opensource.org/licenses/artistic-license-1.0
 #
 
@@ -35,7 +35,7 @@ endif
 CFLAGS:=-Wall -O2 $(CFLAGS)
 CC?=gcc
 
-.PHONY : clean test	
+.PHONY : clean test
 
 $(PROGRAM) : bam2wig.o
 	$(CC) $(CFLAGS)	$(CPPFLAGS) $(LDFLAGS) $^ -o $@ $(HTSLIBS)
@@ -50,6 +50,6 @@ clean:
 	rm -f $(OBJECTS) bam2wig.o bam2wig
 	rm -f ../../bin/bam2wig
 	if [ ! -z $(shell which python3) ] ; then cd ../../tests/short && ./execute_test.py --clean bam2wig ; fi
-	
+
 test:   $(PROGRAM)
 	d ../../tests/short && ./execute_test.py --compare --html bam2wig
