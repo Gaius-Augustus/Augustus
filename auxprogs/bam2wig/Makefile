@@ -19,9 +19,9 @@ PROGRAM = bam2wig
 SOURCES = $(PROGRAM)
 OBJECTS = $(SOURCES:.c=.o)
 
-ifneq ($(wildcard ${TOOLDIR}/htslib/htslib/.),) # if TOOLDIR exists and contains htslib
-	INCLUDES=-I$(TOOLDIR)/htslib -I$(TOOLDIR)/htslib/htslib
-	HTSLIBS=-L$(TOOLDIR)/htslib -Wl,-rpath,$(TOOLDIR)/htslib -lhts -lcurses -lm -lz -lpthread -lcurl -lssl -lcrypto -lbz2 -llzma
+ifneq ($(wildcard ${TOOLDIR}/include/htslib/.),) # if TOOLDIR exists and contains htslib
+	INCLUDES=-I$(TOOLDIR)/includes/htslib
+	HTSLIBS=-L$(TOOLDIR)/lib -Wl,-rpath,$(TOOLDIR)/lib -lhts -lcurses -lm -lz -lpthread -lcurl -lssl -lcrypto -lbz2 -llzma
 	HTSERRHINT="Check if the installed HTSlib is of version 1.10 or higher - see README.txt"
 else
 	INCLUDES=-I/usr/include/htslib
