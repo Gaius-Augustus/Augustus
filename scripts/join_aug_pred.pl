@@ -100,7 +100,7 @@ sub getNextRun {
 		$numSeps++;
 	    }
 	    if ($numSeps == 1) {
-		if ($line =~ /^\#\#\# gene g/ || $line =~ /^\# start gene g/ ) { # the first option for back compatibility with a previous AUGUSTUS version
+		if ($line =~ /^\#\#\# gene/ || $line =~ /^\# start gene/ ) { # the first option for back compatibility with a previous AUGUSTUS version
 		    if ($line =~ /gene (g\d+)/ && $drop{$1}){
 			print STDERR "dropping $1\n";
 		    }  else {
