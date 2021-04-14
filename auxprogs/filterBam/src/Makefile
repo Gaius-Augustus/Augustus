@@ -20,11 +20,11 @@ BIN : $(PROGRAM) CHECKBAM
 	mv filterBam ../../../bin/filterBam
 
 CHECKBAM:
-	@if [ -z "${BAMTOOLS}" ]; then \
-		echo '[Makefile]: $${BAMTOOLS} has not been set.'; \
+	@if [ -z "${BAMTOOLS_INSTALL_DIR}" ]; then \
+		echo '[Makefile]: $${BAMTOOLS_INSTALL_DIR} has not been set.'; \
 		exit 101; \
-	elif [ "${BAMTOOLS}" ]; then \
-		echo "filterBam compiled with BAMTOOLS=${BAMTOOLS}"; \
+	elif [ "${BAMTOOLS_INSTALL_DIR}" ]; then \
+		echo "filterBam compiled with BAMTOOLS=${BAMTOOLS_INSTALL_DIR}/include/bamtools"; \
 	fi
 
 $(PROGRAM) : $(OBJECTS)
