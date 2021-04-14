@@ -1,14 +1,12 @@
 #	Makefile corresponding to BAM2HINTS
 #	
-# 	NOTE:
+#	NOTE:
 #	a) "-g" option allows for debugging
 #	b) libbamtools.a and lz library are used during the linking process
 #
-# 	Created: 14-December-2011
-#	Last modified:  09-October-2015 by Katharina J. Hoff
-
 # Variable definition
-INCLUDES = -I/usr/include/bamtools
+BAMTOOLS_INSTALL_DIR = /usr
+INCLUDES = -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools
 LIBS = -lbamtools -lz
 SOURCES = bam2hints.cc 
 OBJECTS = $(SOURCES:.cc=.o)

@@ -1,15 +1,13 @@
 #	Makefile for filterBam
 #
-# 	Created: 11-November-2011
-#	Last modified: 09-May-2018
 
 
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
 			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
-BAMTOOLS = /usr/include/bamtools
-INCLUDES = -I$(BAMTOOLS) -Iheaders -I./bamtools
+BAMTOOLS_INSTALL_DIR = /usr
+INCLUDES = -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools -Iheaders -I./bamtools
 LIBS = -lbamtools -lz
 CXXFLAGS := -std=c++0x ${CXXFLAGS}
 VPATH = functions
