@@ -20,7 +20,7 @@ SOURCES = $(PROGRAM)
 OBJECTS = $(SOURCES:.c=.o)
 
 ifneq ($(wildcard ${TOOLDIR}/include/htslib/.),) # if TOOLDIR exists and contains htslib
-	INCLUDES=-I$(TOOLDIR)/includes/htslib
+	INCLUDES=-I$(TOOLDIR)/include/htslib
 	HTSLIBS=-L$(TOOLDIR)/lib -Wl,-rpath,$(TOOLDIR)/lib -lhts -lcurses -lm -lz -lpthread -lcurl -lssl -lcrypto -lbz2 -llzma
 	HTSERRHINT="Check if the installed HTSlib is of version 1.10 or higher - see README.txt"
 else
@@ -52,4 +52,4 @@ clean:
 	if [ ! -z $(shell which python3) ] ; then cd ../../tests/short && ./execute_test.py --clean bam2wig ; fi
 
 test:   $(PROGRAM)
-	d ../../tests/short && ./execute_test.py --compare --html bam2wig
+	cd ../../tests/short && ./execute_test.py --compare --html bam2wig
