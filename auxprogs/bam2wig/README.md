@@ -40,14 +40,15 @@ string provided as track name
     ```
       apt install -y samtools libbz2-dev liblzma-dev libncurses5-dev libssl-dev libcurl3-dev
 
-      git clone https://github.com/samtools/htslib.git /path/where/HTSlib/reside/htslib
-      cd /path/where/HTSlib/reside/htslib
-      autoheader
-      autoconf
-      ./configure
+      git clone https://github.com/samtools/htslib.git /path/where/HTSlib/reside
+      cd /path/where/HTSlib/reside
+      git submodule update --init --recursive
+      autoreconf -i
+      ./configure --prefix=/path/where/HTSlib/installed
       make
-    
-      export TOOLDIR=/path/where/HTSlib/reside
+      make install
+
+      export TOOLDIR=/path/where/HTSlib/installed
 
     ```
 
