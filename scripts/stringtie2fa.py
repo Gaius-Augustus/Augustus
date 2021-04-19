@@ -71,7 +71,7 @@ mrnaFile = args.out + ".mrna"
 # Read GTF file exon entries for transcripts
 tx2seq = {}
 tx2str = {}
-cds = {}
+mrna = {}
 
 if args.gtf:
     try:
