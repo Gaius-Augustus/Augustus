@@ -108,8 +108,12 @@ try:
             if record.id in mrna:
                 for tx in mrna[record.id]:
                     if tx not in mrnaseq:
+                        if mrna[record.id][tx][0]['strand'] == '.':
+                            descr = tx + ' strand_unknown'
+                        else:
+                            descr = tx
                         mrnaseq[tx] = SeqRecord(
-                            Seq(""), id=tx, description=tx)
+                            Seq(""), id=tx, description=descr)
                     nExons = len(mrna[record.id][tx])
                     for i in range(0, nExons):
                         mrna_line = mrna[record.id][tx][i]
