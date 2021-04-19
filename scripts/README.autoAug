@@ -261,7 +261,7 @@ autoAugTrain.pl [OPTIONS] --species=sname --genome=genome.fa --species=sname --u
 
 --trainingset=genes.gb      
   genes.gb is a file with training genes a Genbank format. For examples for the exact format look at 
-  the files in http://bioinf.uni-greifswald.de/webaugustus/datasets.gsp
+  the files in http://bioinf.uni-greifswald.de/webaugustus/datasets
 
 --trainingset=genes.gff     
   genes.gff is a file with training genes in GFF format

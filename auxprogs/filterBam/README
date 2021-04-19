@@ -9,8 +9,6 @@
 # Germany
 # tonatiuh.pena.centeno@gmail.com
 #
-# File created on: 4-March-2012
-# Last modified on: 16-October-2015 by Katharina Hoff (katharina.hoff@gmail.com)
 ##########################################################################################
 
 
@@ -34,25 +32,27 @@ filter, please check the accompanying PDF file, located under the 'doc' director
 
 1. Bamtools' API is required for compilation. 
 
-*** On Ubunutu ***
+*** On Ubunutu or Debian ***
 ------------------
-Make sure that the repository universe is in your '/etc/apt/sources.list'. It should contain a line like:
-
-     deb http://us.archive.ubuntu.com/ubuntu vivid main universe
-
-In case you had to add that line, run (otherwise skip):
-
-   sudo apt-get update
 
 Install bamtools and libbamtools-dev:
 
+   sudo apt-get update
    sudo apt-get install bamtools libbamtools-dev
 
-*** If you dont' have Ubuntu ***
+For older versions of Ubuntu than xenial like vivid, make sure the repository "universe" is in your '/etc/apt/sources.list'. 
+It should contain a line like:
+
+     deb http://us.archive.ubuntu.com/ubuntu vivid main universe
+
+*** If you dont' have Ubuntu or Debian ***
 --------------------------------
 
-Go to the web-page: https://github.com/pezmaster31/bamtools/wiki , and more specifically to the section 'Building and installing' for instructions on how to get and compile 
-the latest version of Bamtools. The softwares 'git' and 'cmake' will probably be required as well. Once with Bamtools, filterBam can be compiled (see Section 3).
+Go to the web-page: https://github.com/pezmaster31/bamtools/wiki , and more specifically to the section 'Building and installing' 
+for instructions on how to get and compile the latest version of Bamtools. 
+The softwares 'git' and 'cmake' will probably be required as well. 
+See auxprogs/bam2hints/README for details.
+Once with Bamtools, filterBam can be compiled (see Section 3).
 
 After compilation of Bamtools, a binary 'bamtools' is created. This so-called utility-kit allows the: 
 sorting, sampling, filtering, among other things, of of BAM files. It is recommended to practice a bit with 
@@ -68,19 +68,21 @@ the installation instructions contained in the distribution package of Samtools.
 NOTE: Some examples on how to use Samtools and Bamtools utility kits are provided in the user manual of 
 filterBam.
 
- 		3. INSTALLING
+		3. INSTALLING
 		----------------
 
 1. Download and extract the latest version of filterBam from the AUGUSTUS repository. 
 
-2. If you use Ubuntu and installed bamtools and bamtools-dev via apt-get, you don't need to modify the Makefile. However, if you installed a bamtools version from github, you need to adapt the following line the src/Makefile:
-Change
+2. If you use Ubuntu and installed bamtools and bamtools-dev via apt-get, you don't need to modify the Makefile. However, if you installed a bamtools version from github, you need to adapt the following lines the src/Makefile:
+Replace:
+   BAMTOOLS_INSTALL_DIR = /usr
+By:
+   BAMTOOLS_INSTALL_DIR = /your/path/to/bamtools_install_dir
 
-   BAMTOOLS = /usr/include/bamtools
-
-to
-
-   BAMTOOLS = /your/bamtools/from/github
+Replace:
+   LIBS = -lbamtools -lz
+By:
+   LIBS = $(BAMTOOLS_INSTALL_DIR)/lib/libbamtools.a -lz
 .
 
 2. Compile filterBam by typing 

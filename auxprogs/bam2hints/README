@@ -1,69 +1,60 @@
 === README ===
 
-This file was last modified by Katharina J. Hoff on October 9th 2015.
-
 Prior to compiling "bam2hints" you need to have BAMTools on your system.
 
---- If you have Ubuntu ---
+--- If you have Ubuntu or Debian ---
 
-Make sure that the repository universe is in your '/etc/apt/sources.list'. It should contain a line like:
+Install bamtools and libbamtools-dev:
+   
+   sudo apt-get update
+   sudo apt-get install bamtools libbamtools-dev
+
+For older versions of Ubuntu than xenial like vivid, make sure the repository "universe" is in your '/etc/apt/sources.list'. 
+It should contain a line like:
 
      deb http://us.archive.ubuntu.com/ubuntu vivid main universe
 
-In case you had to add that line, run (otherwise skip):
-
-   sudo apt-get update
-
-Install bamtools and libbamtools-dev:
-
-   sudo apt-get install bamtools libbamtools-dev
 
 Afterwards, go to the auxprogs/bam2hints directory and run 
 
-   make clean
+   make
 
 This produces a bam2hints binary that is located in auxprogs/bam2hints.
 
 --- If for some reason you want to install BAMTools manually ---
 
-Get the latest version of BAMTools directly from GitHub (https://github.com/pezmaster31/bamtools).
-The download link is:
-  https://github.com/pezmaster31/bamtools/zipball/master .
-Unpack this , for example, into your home directory:
-  unzip pezmaster31-bamtools-466bc50.zip
+Install cmake (or see https://cmake.org)
+   sudo apt-get install cmake
+
+Get the latest version of BAMTools from GitHub:
+   git clone git://github.com/pezmaster31/bamtools.git
+or download the zipped version from:
+   https://github.com/pezmaster31/bamtools/zipball/master
+and unpack:
+   unzip pezmaster31-bamtools-v2.5.1-23-g2391b1a.zip -d bamtools
 Then follow the instructions under https://github.com/pezmaster31/bamtools/wiki , which are basically:
-
-# installation of "cmake"
-# use a package manager, e.g.
-sudo apt-get install cmake
-# or see http://www.cmake.org/cmake/resources/software.html
-
-# do installation
-cd pezmaster31-bamtools-466bc50
-mkdir build
-cd build
-cmake ..
-
-make
-
+   cd bamtools
+   mkdir build
+   cd build
+   cmake -DCMAKE_INSTALL_PREFIX=/your/path/to/bamtools_install_dir ..
+   make
+   make install
+   
 
 --- Installing bam2hints after manual BAMtools installation ---
 
-For this step, you only need to adjust three lines in the Makefile.
-
-Add:
-   BAMTOOLS = /your/path/to/bamtools
+For this step, you only need to adjust two lines in the Makefile.
 
 Replace:
-   INCLUDES = /usr/include/bamtools
+   BAMTOOLS_INSTALL_DIR = /usr
 By:
-   INCLUDES = $(BAMTOOLS)/include
+   BAMTOOLS_INSTALL_DIR = /your/path/to/bamtools_install_dir
 
 Replace:
    LIBS = -lbamtools -lz
 By:
-   LIBS = $(BAMTOOLS)/lib/libbamtools.a -lz
+   LIBS = $(BAMTOOLS_INSTALL_DIR)/lib/libbamtools.a -lz
 
-Save and exit the Makefile. Then, running the command:
-  make clean
+Save and exit the Makefile. Then, running in auxprogs/bam2hints directory the command:
+  make
 should result in a executable named "bam2hints" that is located in auxprogs/bam2hints.

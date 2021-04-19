@@ -1,22 +1,20 @@
 #	Makefile corresponding to BAM2HINTS
 #	
-# 	NOTE:
+#	NOTE:
 #	a) "-g" option allows for debugging
 #	b) libbamtools.a and lz library are used during the linking process
 #
-# 	Created: 14-December-2011
-#	Last modified:  09-October-2015 by Katharina J. Hoff
-
 # Variable definition
 ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of bamtools
-	INCLUDES = -I/usr/local/opt/bamtools/include/bamtools
+	BAMTOOLS_INSTALL_DIR = /usr/local/opt/bamtools
 else
-	INCLUDES = -I/usr/include/bamtools
+	BAMTOOLS_INSTALL_DIR = /usr
 endif
+INCLUDES = -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools
 LIBS = -lbamtools -lz
 SOURCES = bam2hints.cc 
 OBJECTS = $(SOURCES:.cc=.o)
-CXXFLAGS += -Wall -O2 # -g -p -g -ggdb 
+CXXFLAGS += -Wall -O3 # -g -p -g -ggdb 
 
 LINK.cc ?= g++
 

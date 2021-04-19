@@ -1,7 +1,5 @@
 #	Makefile for filterBam
 #
-# 	Created: 11-November-2011
-#	Last modified: 09-May-2018
 
 
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
@@ -9,11 +7,11 @@ SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAli
 PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
 ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of bamtools
-	BAMTOOLS = /usr/local/opt/bamtools/include/bamtools
+	BAMTOOLS_INSTALL_DIR = /usr/local/opt/bamtools
 else
-	BAMTOOLS = /usr/include/bamtools
+	BAMTOOLS_INSTALL_DIR = /usr
 endif
-INCLUDES = -I$(BAMTOOLS) -Iheaders -I./bamtools
+INCLUDES = -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools -Iheaders -I./bamtools
 LIBS = -lbamtools -lz
 CXXFLAGS := -std=c++0x ${CXXFLAGS}
 VPATH = functions
@@ -26,11 +24,11 @@ BIN : $(PROGRAM) CHECKBAM
 	mv filterBam ../../../bin/filterBam
 
 CHECKBAM:
-	@if [ -z "${BAMTOOLS}" ]; then \
-		echo '[Makefile]: $${BAMTOOLS} has not been set.'; \
+	@if [ -z "${BAMTOOLS_INSTALL_DIR}" ]; then \
+		echo '[Makefile]: $${BAMTOOLS_INSTALL_DIR} has not been set.'; \
 		exit 101; \
-	elif [ "${BAMTOOLS}" ]; then \
-		echo "filterBam compiled with BAMTOOLS=${BAMTOOLS}"; \
+	elif [ "${BAMTOOLS_INSTALL_DIR}" ]; then \
+		echo "filterBam compiled with BAMTOOLS=${BAMTOOLS_INSTALL_DIR}/include/bamtools"; \
 	fi
 
 $(PROGRAM) : $(OBJECTS)
