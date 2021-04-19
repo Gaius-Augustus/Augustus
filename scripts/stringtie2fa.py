@@ -78,9 +78,9 @@ if args.gtf:
         with open(args.gtf, "r") as gtf_handle:
             for line in gtf_handle:
                 if re.match(
-                        r"\S+\t[^\t]+\texon\t\d+\t\d+\t\S+\t\S+\t\d\t.*transcript_id \"(\S+)\"", line):
+                        r"\S+\t[^\t]+\texon\t\d+\t\d+\t\d+\t\S\t\.\t.*transcript_id \"(\S+)\"", line):
                     seq_id, st, en, stx, tx_id = re.match(
-                        r"(\S+)\t[^\t]+\texon\t(\d+)\t(\d+)\t\S+\t(\S+)\t\d\t.*transcript_id \"(\S+)\"", line).groups()
+                        r"(\S+)\t[^\t]+\texon\t(\d+)\t(\d+)\t\d+\t(\S)\t\.\t.*transcript_id \"(\S+)\"", line).groups()
                     if seq_id not in mrna:
                         mrna[seq_id] = {}
                     if tx_id not in mrna[seq_id]:
@@ -112,16 +112,13 @@ try:
                             descr = tx + ' strand_unknown'
                         else:
                             descr = tx
-                        mrnaseq[tx] = SeqRecord(
-                            Seq(""), id=tx, description=descr)
+                        mrnaseq[tx] = SeqRecord(Seq(""), id=tx, description=descr)
                     nExons = len(mrna[record.id][tx])
                     for i in range(0, nExons):
                         mrna_line = mrna[record.id][tx][i]
-                        mrnaseq[tx].seq += record.seq[mrna_line['start'] -
-                                                        1:mrna_line['end']]
+                        mrnaseq[tx].seq += record.seq[mrna_line['start'] - 1:mrna_line['end']]
                         if i == (nExons - 1) and mrna_line['strand'] == '-':
-                            mrnaseq[tx].seq = mrnaseq[
-                                tx].seq.reverse_complement()
+                            mrnaseq[tx].seq = mrnaseq[tx].seq.reverse_complement()
 except IOError:
     print("Error: Failed to open file " + args.genome + "!")
     exit(1)
