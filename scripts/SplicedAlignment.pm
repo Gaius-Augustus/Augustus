@@ -9,11 +9,11 @@ use locale;
 # constants/thresholds
 #
 
-my $min_alilen      = 300;   # minimum total length of the aligned regions
-my $min_cdslen      = 300;   # minimum total length of the inferred coding region
-my $min_exonquality = 0.80;  # minimum percentage identity for each aligned region
-my $min_avrgquality = 0.90;  # minimum percentage identity of complete aligned regions
-my $min_intron_len  = 30;    # minimum length of all introns
+my $min_alilen      = 100;   # minimum total length of the aligned regions 300
+my $min_cdslen      = 100;   # minimum total length of the inferred coding region 300
+my $min_exonquality = 0;  # minimum percentage identity for each aligned region 0.8
+my $min_avrgquality = 0;  # minimum percentage identity of complete aligned regions 0.9
+my $min_intron_len  = 0;    # minimum length of all introns 30
 
 #
 # class SplicedAlignment
@@ -318,10 +318,10 @@ sub findLongestORF {
     my $strand = shift;
     my $n = length $mrna;
     my ($begin, $end, $complete5prime, $start, $complete3prime) = findLongestORFOnPlusstrand($mrna);
-    # print "plus  longest orf $begin, $end\n";
+    print "plus  longest orf $begin, $end\n";
     my $rcmrna = reverseComplement($mrna);
     my ($b, $e, $c5p, $s, $c3p) = findLongestORFOnPlusstrand($rcmrna);
-    # print "minus longest orf $b, $e\n";
+    print "minus longest orf $b, $e\n";
     if (($strand eq '-' || ($strand eq '.' && $e-$b > $end-$begin))) {
         $begin = $n-1 - $b;
         $end = $n-1 - $e;
