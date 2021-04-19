@@ -129,7 +129,7 @@ except IOError:
 # Print mRNA sequences to file
 try:
     with open(mrnaFile, "w") as mrna_handle:
-        for tx_id, seq_rec in mrna.items():
+        for tx_id, seq_rec in mrnaseq.items():
             SeqIO.write(seq_rec, mrna_handle, "fasta")
 except IOError:
     print("Error: Failed to open file " + mrnaFile + "!")
