@@ -156,7 +156,7 @@ volvox                                   | Volvox carteri
 - --maxtracks=n
   For a description of these parameters see section 4 below.
 - --proteinprofile=filename
-  Read a protein profile from file filename. See section 7 below.
+  Read a protein profile from file filename. See [section on PPX](#ppx) below.
 - --predictionStart=A, --predictionEnd=B
   A and B define the range of the sequence for which predictions should be found. 
   Quicker if you need predictions only for a small part.
