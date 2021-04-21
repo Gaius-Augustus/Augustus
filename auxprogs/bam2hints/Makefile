@@ -5,7 +5,11 @@
 #	b) libbamtools.a and lz library are used during the linking process
 #
 # Variable definition
-BAMTOOLS_INSTALL_DIR = /usr
+ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of bamtools
+	BAMTOOLS_INSTALL_DIR = /usr/local/opt/bamtools
+else
+	BAMTOOLS_INSTALL_DIR = /usr
+endif
 INCLUDES = -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools
 LIBS = -lbamtools -lz
 SOURCES = bam2hints.cc 

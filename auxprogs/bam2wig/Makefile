@@ -24,7 +24,11 @@ ifneq ($(wildcard ${TOOLDIR}/include/htslib/.),) # if TOOLDIR exists and contain
 	HTSLIBS=-L$(TOOLDIR)/lib -Wl,-rpath,$(TOOLDIR)/lib -lhts -lcurses -lm -lz -lpthread -lcurl -lssl -lcrypto -lbz2 -llzma
 	HTSERRHINT="Check if the installed HTSlib is of version 1.10 or higher - see README.md"
 else
-	INCLUDES=-I/usr/include/htslib
+    ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of htslib
+		INCLUDES=-I/usr/local/opt/htslib/include/htslib
+    else
+		INCLUDES=-I/usr/include/htslib
+    endif
 	HTSLIBS=-lhts -lz -lpthread
 	ifdef DEF_TOOLDIR
 		HTSERRHINT="There is no htslib folder in directory $(TOOLDIR)/include \n"

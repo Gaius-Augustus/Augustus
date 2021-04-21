@@ -87,3 +87,7 @@ __pycache__
 
 # documentation
 doxygen/
+
+# mac
+*.DS_Store
+*.dSYM

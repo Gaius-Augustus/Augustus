@@ -58,6 +58,7 @@ def check_working_dir(clean):
 
 if __name__ == '__main__':
     check_working_dir(args.clean)
+    os.environ['AUGUSTUS_CONFIG_PATH'] = '../../config'
 
     test_module = importlib.import_module(testcases[args.testcase])
     test_was_successful = True
