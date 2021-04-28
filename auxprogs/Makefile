@@ -7,7 +7,7 @@ all:
 	cd filterBam; make;
 	cd homGeneMapping; make;
 	cd joingenes; make;
-	cd utrrnaseq/Debug; make all;
+	cd utrrnaseq; make;
 	cd bam2wig; make;
 
 clean:
@@ -17,5 +17,5 @@ clean:
 	cd filterBam; make clean;
 	cd homGeneMapping; make clean;
 	cd joingenes; make clean;
-	cd utrrnaseq/Debug; make clean;
+	cd utrrnaseq; make clean;
 	cd bam2wig; make clean;

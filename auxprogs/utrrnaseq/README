@@ -11,15 +11,11 @@ program can be compiled without -l boost_unit_test_framework.
 
 * Compile:
 
-In Debug folder
-
-make -B all 
+make
 
 * execute/run the tool:
 
-In Debug folder
-
-./main 
+./utrrnaseq 
 
 * Boost Library:
 
@@ -29,7 +25,7 @@ A version of the boost library (e.g. Boost_1_49_0) must be installed or at least
 
 This folder contains the following folders:
 
-* Debug - This folder contains the makefile and includes the executable main (if compiled the way described in INSTALL).
+* Debug - This folder contains the object and dependency files.
 
 * doc - The file ./doc/utrrnaseq.doxyfile serves as a configuration file for Doxygen.
         The folder ./doc/html and ./doc/latex contain the automatically by Doxygen created files.		
