@@ -1,35 +1,33 @@
 #	Makefile corresponding to BAM2HINTS
-#	
+#
 #	NOTE:
 #	a) "-g" option allows for debugging
 #	b) libbamtools.a and lz library are used during the linking process
 #
+CXX ?= g++
+CXXFLAGS := -Wall -O3  ${CXXFLAGS} # -g -p -g -ggdb
+
 # Variable definition
 ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of bamtools
 	BAMTOOLS_INSTALL_DIR = /usr/local/opt/bamtools
 else
 	BAMTOOLS_INSTALL_DIR = /usr
 endif
-INCLUDES = -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools
-LIBS = -lbamtools -lz
-SOURCES = bam2hints.cc 
-OBJECTS = $(SOURCES:.cc=.o)
-CXXFLAGS += -Wall -O3 # -g -p -g -ggdb 
 
-LINK.cc ?= g++
+INCLS += -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools
+LDLIBS += -lbamtools -lz
 
-# Recipe(s)
-# $@: full target name of current target. 
-# $<: .c file of target. 
-bam2hints : $(OBJECTS) 
-	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBS)
+.PHONY: all clean
+
+all: bam2hints
+
+bam2hints: bam2hints.o
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 	mkdir -p ../../bin
-	cp bam2hints ../../bin
+	cp -f bam2hints ../../bin
 
-all:$(OBJECTS) # Compiles each foo.cc into foo.o
-
-bam2hints.o : $(SOURCES)
-	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@ $(INCLUDES) 
+bam2hints.o: bam2hints.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c $^
 
 clean:
 	rm -f bam2hints.o bam2hints ../../bin/bam2hints

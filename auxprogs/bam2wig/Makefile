@@ -6,6 +6,9 @@
 #          https://opensource.org/licenses/artistic-license-1.0
 #
 
+CC ?= gcc
+CFLAGS := -Wall -O2 $(CFLAGS)
+
 ifdef TOOLDIR
 	DEF_TOOLDIR=1
 else
@@ -15,45 +18,40 @@ else
 	# and libhts-dev is not installed
 endif
 
-PROGRAM = bam2wig
-SOURCES = $(PROGRAM)
-OBJECTS = $(SOURCES:.c=.o)
-
 ifneq ($(wildcard ${TOOLDIR}/include/htslib/.),) # if TOOLDIR exists and contains htslib
-	INCLUDES=-I$(TOOLDIR)/include/htslib
-	HTSLIBS=-L$(TOOLDIR)/lib -Wl,-rpath,$(TOOLDIR)/lib -lhts -lcurses -lm -lz -lpthread -lcurl -lssl -lcrypto -lbz2 -llzma
+	INCLS += -I$(TOOLDIR)/include/htslib
+	LDLIBS += -L$(TOOLDIR)/lib -Wl,-rpath,$(TOOLDIR)/lib -lhts -lcurses -lm -lz -lpthread -lcurl -lssl -lcrypto -lbz2 -llzma
 	HTSERRHINT="Check if the installed HTSlib is of version 1.10 or higher - see README.md"
 else
     ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of htslib
-		INCLUDES=-I/usr/local/opt/htslib/include/htslib
+		INCLS += -I/usr/local/opt/htslib/include/htslib
     else
-		INCLUDES=-I/usr/include/htslib
+		INCLS += -I/usr/include/htslib
     endif
-	HTSLIBS=-lhts -lz -lpthread
+	LDLIBS += -lhts -lz -lpthread
 	ifdef DEF_TOOLDIR
 		HTSERRHINT="There is no htslib folder in directory $(TOOLDIR)/include \n"
 	endif
 	HTSERRHINT:=$(HTSERRHINT)"Check if HTSlib is installed and of version 1.10 or higher - see README.md"
 endif
 
-CFLAGS:=-Wall -O2 $(CFLAGS)
-CC?=gcc
+.PHONY: all clean test
 
-.PHONY : clean test
+all: bam2wig
 
-$(PROGRAM) : bam2wig.o
-	$(CC) $(CFLAGS)	$(CPPFLAGS) $(LDFLAGS) $^ -o $@ $(HTSLIBS)
+bam2wig: bam2wig.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 	mkdir -p ../../bin
-	cp bam2wig ../../bin/bam2wig
+	cp -f bam2wig ../../bin/bam2wig
 
-bam2wig.o : bam2wig.c
-	-$(CC) $(CFLAGS) $(CPPFLAGS) -c $^ -o $@ $(INCLUDES)
+bam2wig.o: bam2wig.c
+	-$(CC) $(CPPFLAGS) $(CFLAGS) $(INCLS) -c $^
 	@if [ ! -f $@ ]; then echo $(HTSERRHINT); exit 1; fi
 
 clean:
-	rm -f $(OBJECTS) bam2wig.o bam2wig
+	rm -f bam2wig.o bam2wig
 	rm -f ../../bin/bam2wig
 	if [ ! -z $(shell which python3) ] ; then cd ../../tests/short && ./execute_test.py --clean bam2wig ; fi
 
-test:   $(PROGRAM)
+test:   bam2wig
 	cd ../../tests/short && ./execute_test.py --compare --html bam2wig

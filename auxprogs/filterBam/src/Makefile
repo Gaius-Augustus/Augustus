@@ -1,44 +1,44 @@
 #	Makefile for filterBam
-#
 
+CXX ?= g++
+CXXFLAGS := -std=c++0x ${CXXFLAGS}
 
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
-			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
-PROGRAM = filterBam
-OBJECTS = $(SOURCES:.cc=.o)
+          printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
+OBJS = $(SOURCES:.cc=.o)
 ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of bamtools
 	BAMTOOLS_INSTALL_DIR = /usr/local/opt/bamtools
 else
 	BAMTOOLS_INSTALL_DIR = /usr
 endif
-INCLUDES = -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools -Iheaders -I./bamtools
-LIBS = -lbamtools -lz
-CXXFLAGS := -std=c++0x ${CXXFLAGS}
+INCLS += -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools -I./headers -I./bamtools
+LDLIBS += -lbamtools -lz
 VPATH = functions
-LINK.cc ?= g++
 
-all : $(PROGRAM) $(OBJECTS) CHECKBAM BIN
+.PHONY: all BIN CHECKBAM clean
 
-BIN : $(PROGRAM) CHECKBAM
+all: CHECKBAM filterBam $(OBJS) BIN
+
+BIN: CHECKBAM filterBam
 	mkdir -p ../../../bin
 	mv filterBam ../../../bin/filterBam
 
 CHECKBAM:
 	@if [ -z "${BAMTOOLS_INSTALL_DIR}" ]; then \
-		echo '[Makefile]: $${BAMTOOLS_INSTALL_DIR} has not been set.'; \
+		echo '[Makefile]: $$(BAMTOOLS_INSTALL_DIR) has not been set.'; \
 		exit 101; \
 	elif [ "${BAMTOOLS_INSTALL_DIR}" ]; then \
-		echo "filterBam compiled with BAMTOOLS=${BAMTOOLS_INSTALL_DIR}/include/bamtools"; \
+		echo "filterBam compiled with BAMTOOLS=$(BAMTOOLS_INSTALL_DIR)/include/bamtools"; \
 	fi
 
-$(PROGRAM) : $(OBJECTS)
-	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
+filterBam: $(OBJS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@  $^ $(LDLIBS)
 
-$(OBJECTS) : %.o:%.cc
-	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) -c $^ -o $@ $(INCLUDES)
+$(OBJS): %.o: %.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c $^
 
 
 clean:
-	rm -f *~ $(OBJECTS)
+	rm -f *~ $(OBJS)
 	rm -f filterBam
 	rm -f ../../../bin/filterBam

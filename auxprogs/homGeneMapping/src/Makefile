@@ -1,4 +1,3 @@
-#
 # Makefile for homGeneMapping
 
 include ../../../common.mk
@@ -12,15 +11,14 @@ ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE)) # if COMPGENEPRED is n
 	SQLITE ?= true
 endif
 
-CXX   ?= g++
+CXX ?= g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
 CXXFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -std=c++0x -pthread -O2 ${CXXFLAGS}
 
-INCLS	= -I../include
-LIBS	=
+INCLS	+= -I../include
 OBJS	= gene.o genome.o
 
 ifeq (,$(findstring $(BOOST),0 false False FALSE)) # if BOOST is not defined or not contains 0, false, False or FALSE
@@ -29,23 +27,22 @@ ifeq (,$(findstring $(BOOST),0 false False FALSE)) # if BOOST is not defined or 
 endif
 
 ifneq (,$(findstring $(SQLITE),1 true True TRUE)) # if SQLITE is defined and contains 1, true, True or TRUE
-	LIBS    += -lsqlite3 # add the sqlite library path here, if sqlite is not install system-wide
+	CPPFLAGS += -DM_SQLITE
+	LDLIBS  += -lsqlite3 # add the sqlite library path here, if sqlite is not install system-wide
 	OBJS    += sqliteDB.o
-	CPPFLAGS  += -DM_SQLITE
 endif
+
+.PHONY: all clean
 
 all: homGeneMapping
 
-.SUFFIXES:
-.SUFFIXES: .cc .o .so
-
-.cc.o:
-	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $< $(INCLS)
-
 homGeneMapping: main.cc $(OBJS)
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(INCLS) -o $@ $^ $(LDLIBS)
 	mkdir -p ../../../bin/
-	cp homGeneMapping ../../../bin/homGeneMapping
+	cp -f homGeneMapping ../../../bin/homGeneMapping
+
+$(OBJS): %.o: %.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c $<
 
 clean:
 	rm -f homGeneMapping $(OBJS)
@@ -68,5 +65,5 @@ genome.o : \
 	genome.cc
 
 sqliteDB.o: \
-        ../include/sqliteDB.hh \
-        sqliteDB.cc
+	../include/sqliteDB.hh \
+	sqliteDB.cc

@@ -1,38 +1,54 @@
 # Makefile for utrrnaseq
 
 CXX ?= g++
-CXXFLAGS := -O0 -g3 -pedantic -Wall -fmessage-length=0 ${CXXFLAGS}
+CXXFLAGS := -Wall -O0 -pedantic -fmessage-length=0 ${CXXFLAGS}
 
-SRC_DIR := src
-OBJ_DIR := Debug/src
-SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
-OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
-DEP_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.d,$(SRC_FILES))
+SRC_DIR  := src
+OBJ_DIR  := build
+TEST_DIR := build/test
+SOURCES  := $(wildcard $(SRC_DIR)/*.cpp)
+OBJS     := $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+DEPS     := $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.d)
 
-.PHONY: all clean test
+.PHONY: all prep clean prep_test test clean_test
 
 # All Target
-all: utrrnaseq
+all: prep utrrnaseq
+
+prep:
+	mkdir -p $(OBJ_DIR)
 
 # Tool invocations
-utrrnaseq: $(OBJ_FILES)
+utrrnaseq: $(OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) -o $@ $(OBJ_FILES)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 	@echo 'Finished building target: $@'
 	@echo ' '
-	
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+
+$(OBJS): $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler: $(CXX)'
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(INCLUDES) -c  -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-test: CPPFLAGS += -DTEST_MODE # Target-specific Variable
-test: utrrnaseq
-	@./utrrnaseq
+test: CPPFLAGS += -DTEST_MODE # see Target-specific Variable in make
+test: CXXFLAGS += -g3
+test: clean utrrnaseq prep_test
+	mv $(OBJ_DIR)/*.o $(TEST_DIR)/
+	mv $(OBJ_DIR)/*.d $(TEST_DIR)/
+	mv utrrnaseq $(TEST_DIR)/utrrnaseq_selftest
+	@$(TEST_DIR)/utrrnaseq_selftest
 
-clean:
-	rm -rf $(OBJ_FILES) $(DEP_FILES) utrrnaseq
+prep_test:
+	mkdir -p $(TEST_DIR)
+
+clean_test:
+	rm -rf $(TEST_DIR) *.gff
+
+clean: clean_test
+	rm -rf $(OBJS) $(DEPS) $(OBJ_DIR) utrrnaseq
 	@echo ' '
+
+-include $(DEPS)
