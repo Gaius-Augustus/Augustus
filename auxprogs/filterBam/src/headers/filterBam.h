@@ -1,11 +1,10 @@
 /* 	Function definitions
  
 	Created: 20-September-2011	
-	Last modified: 8-February-2012
 */
 
-#include <api/BamReader.h>  
-#include <api/BamAlignment.h>
+#include <SeqLib/BamReader.h>  
+#include <htslib/hts.h>
 #include <iostream> 
 #include <vector>
 #include <string>
@@ -19,17 +18,8 @@
 #include<list> 
 
 using namespace std;  
-using namespace BamTools;    
+using namespace SeqLib;    
  
-// For debugging
-string printCigarOperations(vector<CigarOp> cigar);
-/* string getReferenceName(vector<RefData> refData, int RefID); */
-string getReferenceName(const RefVector &refData, int RefID);
-string getReferenceLength(vector<RefData> refData, int RefID);
-
-// For computing Coverage and Insertions
-uint32_t sumMandIOperations(vector<CigarOp> cigar, string printFlag);
-uint32_t sumDandIOperations(vector<CigarOp> cigar, string printFlag);
 int printElapsedTime(int tEnd, int tStart); 
 
 // For option initialization
@@ -64,7 +54,7 @@ class SingleRead
    friend ostream &operator<<(ostream &, const SingleRead &);
 
    public:
-  	  BamAlignment al;
+  	  BamRecord al;
   	  float coverage;
   	  float percId;
   	  float score;
@@ -73,9 +63,9 @@ class SingleRead
 
       SingleRead();
       SingleRead(const SingleRead &);
-  	  SingleRead(BamAlignment al, float coverage, float percId);
+  	  SingleRead(BamRecord al, float coverage, float percId);
       ~SingleRead(){};
- 	  void setValues(BamAlignment al, float coverage, float percId);
+ 	  void setValues(BamRecord al, float coverage, float percId);
       SingleRead &operator=(const SingleRead &rhs);
       int operator==(const SingleRead &rhs) const;
       int operator<(const SingleRead &rhs) const;
@@ -106,7 +96,7 @@ class MatePairs
 };
 #endif
 
-void printMatePairs(vector<MatePairs> someList, vector<BamAlignment> &qali);
+void printMatePairs(vector<MatePairs> someList, vector<BamRecord> &qali);
 vector<int> flattenMateIndices(vector<MatePairs> matepairs);
 vector<int> uniqueIndices(vector<MatePairs> matepairs);
 bool locateIt(int alIt, vector<MatePairs> matepairs);
@@ -162,4 +152,4 @@ struct ModelType {
     // constants
     static const uint16_t DUMMY_ID;
 };
-uint16_t CalculateModelType(const BamAlignment& al);
+uint16_t CalculateModelType(const BamRecord& al);

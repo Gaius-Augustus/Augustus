@@ -2,18 +2,16 @@
 #
 
 
-SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
-			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
+SOURCES = filterBam.cc MatePairs.cc initOptions.cc \
+			printElapsedTime.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
-ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of bamtools
-	BAMTOOLS_INSTALL_DIR = /usr/local/opt/bamtools
-else
-	BAMTOOLS_INSTALL_DIR = /usr
-endif
-INCLUDES = -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools -Iheaders -I./bamtools
-LIBS = -lbamtools -lz
-CXXFLAGS := -std=c++0x ${CXXFLAGS}
+SEQLIB_INSTALL_DIR = /builds/nweeks/repos/SeqLib
+HTSLIB_INSTALL_DIR = /builds/nweeks/repos/SeqLib/htslib
+INCLUDES = -I$(SEQLIB_INSTALL_DIR)/ -I${HTSLIB_INSTALL_DIR}/ -Iheaders
+LDFLAGS=-L${SEQLIB_INSTALL_DIR}/src -L${HTSLIB_INSTALL_DIR}
+LIBS = -lseqlib -lz -lhts
+CXXFLAGS := -std=c++11 ${CXXFLAGS}
 VPATH = functions
 LINK.cc ?= g++
 
@@ -24,11 +22,11 @@ BIN : $(PROGRAM) CHECKBAM
 	mv filterBam ../../../bin/filterBam
 
 CHECKBAM:
-	@if [ -z "${BAMTOOLS_INSTALL_DIR}" ]; then \
-		echo '[Makefile]: $${BAMTOOLS_INSTALL_DIR} has not been set.'; \
+	@if [ -z "${SEQLIB_INSTALL_DIR}" ]; then \
+		echo '[Makefile]: $${SEQLIB_INSTALL_DIR} has not been set.'; \
 		exit 101; \
-	elif [ "${BAMTOOLS_INSTALL_DIR}" ]; then \
-		echo "filterBam compiled with BAMTOOLS=${BAMTOOLS_INSTALL_DIR}/include/bamtools"; \
+	elif [ "${SEQLIB_INSTALL_DIR}" ]; then \
+		echo "filterBam compiled with SEQLIB=${SEQLIB_INSTALL_DIR}"; \
 	fi
 
 $(PROGRAM) : $(OBJECTS)
