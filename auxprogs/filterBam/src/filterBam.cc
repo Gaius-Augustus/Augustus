@@ -988,7 +988,7 @@ void processQuery(vector<BamRecord> &qali, const BamHeader &refData, globalOptio
 	  if (qali.size() > 1)
 		{
 		  // Sorting by $tname and then by $tstart (chek BAM format specification within SAM specs)
-		  std::stable_sort( qali.begin(), qali.end(), [](const BamRecord& lx, const BamRecord& rx) { return lx.Qname() <= rx.Qname(); } );
+		  std::stable_sort( qali.begin(), qali.end(), [](const BamRecord& lx, const BamRecord& rx) { return lx.Qname() < rx.Qname(); } );
           BamRecordSort::ByReadPosition sorter;
 		  std::stable_sort( qali.begin(), qali.end(), sorter );
 		}
@@ -1475,7 +1475,7 @@ void processQuery(vector<BamRecord> &qali, const BamHeader &refData, globalOptio
                              [](const BamRecord& lx, const BamRecord& rx) {
                                  std::string left, right;
                                  lx.GetZTag("sc", left); rx.GetZTag("sc", right);
-                                 return std::stof(left) >= std::stof(right);
+                                 return std::stof(left) > std::stof(right);
                              });
 
 			if (verbose)
