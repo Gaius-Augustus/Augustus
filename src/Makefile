@@ -3,12 +3,6 @@
 #
 include ../common.mk
 
-# set TESTING to false if you don't need testing for the comparative gene prediction mode (CGP) or
-# the required libraries
-# libboost-serialization-dev
-# are not available
-TESTING = true
-
 CXX ?= g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
@@ -20,55 +14,53 @@ CXX ?= g++
 #  in common.mk or the environment
 OPT ?=  -O3
 CXXFLAGS := -Wall -Wno-sign-compare -pedantic ${OPT} -std=c++11 ${CXXFLAGS}
-
-ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))  # if ZIPINPUT is not defined or is something else than 0, false, False or FALSE
-	CPPFLAGS += -DZIPINPUT
-	LDLIBS   += -lboost_iostreams
-endif
-
-INCLS	+= -I../include
-
+INCLS    += -I../include
+	
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
  meaPath.o exoncand.o randseqaccess.o fasta.o ncmodel.o
+DUMOBJS = dummy.o
+TOBJS   = commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
+PROGR   = augustus etraining prepareAlign fastBlockSearch pp_simScore
+INFO    = cxxflags
+
+
+ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))  # if ZIPINPUT is not defined or is something else than 0, false, False or FALSE
+	CPPFLAGS += -DZIPINPUT
+	LDLIBS   += -lboost_iostreams
+	USE_BOOST = true
+endif
+
 ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is not defined or is something else than 0, false, False or FALSE
 	SQLITE   ?= true
 	MYSQL    ?= true
+	USE_BOOST = true
 	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o codonevo.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o tokenizer.o
 	CPPFLAGS += -DCOMPGENEPRED
+	INCLUDE_PATH_LPSOLVE ?= -I/usr/include/lpsolve # sets the default (ubuntu/debian) location if it has not already been set in common.mk
+	INCLS   += $(INCLUDE_PATH_LPSOLVE) $(INCLUDE_PATH_GSL) $(INCLUDE_PATH_SUITESPARSE)
+	LDFLAGS += $(LIBRARY_PATH_LPSOLVE) $(LIBRARY_PATH_GSL) $(LIBRARY_PATH_SUITESPARSE)
 	LDLIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
 	LDLIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
-    ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of lp_solve
-		INCLS += -I/usr/local/opt/lp_solve/include
-    else
-		INCLS += -I/usr/include/lpsolve
-    endif
-endif
-
-ifeq (,$(findstring $(TESTING),0 false False FALSE))  # if TESTING is not defined or is something else than 0, false, False or FALSE
+	# set TESTING to false if you don't need testing for the comparative gene prediction mode (CGP) or the required library
+	# libboost-serialization-dev
+	# is not available
+	TESTING  ?= true
+  ifeq (,$(findstring $(TESTING),0 false False FALSE))  # if TESTING is not defined or is something else than 0, false, False or FALSE
 	CPPFLAGS += -DTESTING
 	LDLIBS += -lboost_serialization # for serialization/deserialization
+  endif
 endif
-
-DUMOBJS = dummy.o
-TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
-PROGR	= augustus etraining prepareAlign fastBlockSearch pp_simScore
-INFO    = cxxflags
 
 ifneq (,$(findstring $(MYSQL),1 true True TRUE)) # if MYSQL is defined and contains 1, true, True or TRUE
 	# MySQL support
-	# replace RUNTIME_LIBPATH with your own run-time libpath if mysql++ is not installed system-wide, e.g.
-	# RUNTIME_LIBPATH = -Wl,-rpath=~/augustus/trunks/mysql++/mysql++-3.1.0/lib
-	RUNTIME_LIBPATH =
 	PROGR    += load2db getSeq
 	CPPFLAGS += -DM_MYSQL
-	LDLIBS   += -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
-ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of mysql
-		INCLS    += -I/usr/local/opt/mysql/include/mysql -I/usr/local/opt/mysql++/include/mysql++
-    else
-		INCLS    += -I/usr/include/mysql
-    endif
+	INCLUDE_PATH_MYSQL ?= -I/usr/include/mysql # set the default (ubuntu/debian) location if it has not already been set in common.mk
+	INCLS    += $(INCLUDE_PATH_MYSQL)
+	LDFLAGS  += $(LIBRARY_PATH_MYSQL)
+	LDLIBS   += -lmysqlclient -lmysqlpp
 endif
 
 ifneq (,$(findstring $(SQLITE),1 true True TRUE)) # if SQLITE is defined and contains 1, true, True or TRUE
@@ -76,7 +68,14 @@ ifneq (,$(findstring $(SQLITE),1 true True TRUE)) # if SQLITE is defined and con
 	PROGR     += load2sqlitedb getSeq
 	OBJS      += sqliteDB.o
 	CPPFLAGS  += -DM_SQLITE
+	INCLS    += $(INCLUDE_PATH_SQLITE)
+	LDFLAGS  += $(LIBRARY_PATH_SQLITE)
 	LDLIBS    += -lsqlite3
+endif
+
+ifdef USE_BOOST
+	INCLS   += $(INCLUDE_PATH_BOOST) # set boost include path variable INCLUDE_PATH_BOOST, if boost is not installed system-wide
+	LDFLAGS += $(LIBRARY_PATH_BOOST) # set boost library path variable LIBRARY_PATH_BOOST, if boost is not installed system-wide
 endif
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info

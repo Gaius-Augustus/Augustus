@@ -2,15 +2,6 @@
 
 include ../../../common.mk
 
-# set SQLITE = false in common.mk to disable the usage of the SQLite library, option --dbaccess will not be available
-# set BOOST = false in common.mk to disable the usage of the Boost graph library, the option --printHomologs will not be available
-BOOST ?= true
-
-ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE)) # if COMPGENEPRED is not defined or not contains 0, false, False or FALSE
-# comment this flag to disable database access for retrieval of hints, the option --dbaccess will not be available
-	SQLITE ?= true
-endif
-
 CXX ?= g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
@@ -21,13 +12,25 @@ CXXFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -std=c++0x -pthread -O2 ${CX
 INCLS	+= -I../include
 OBJS	= gene.o genome.o
 
+# set SQLITE = false in common.mk to disable the usage of the SQLite library, option --dbaccess will not be available
+# set BOOST = false in common.mk to disable the usage of the Boost graph library, the option --printHomologs will not be available
+BOOST ?= true
+
+ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE)) # if COMPGENEPRED is not defined or not contains 0, false, False or FALSE
+# comment this flag to disable database access for retrieval of hints, the option --dbaccess will not be available
+	SQLITE ?= true
+endif
+
 ifeq (,$(findstring $(BOOST),0 false False FALSE)) # if BOOST is not defined or not contains 0, false, False or FALSE
 	CPPFLAGS += -DBOOST
-	INCLS +=  # add the boost include path here, if boost ist not installed system-wide
+	INCLS   += $(INCLUDE_PATH_BOOST) # set boost include path in INCLUDE_PATH_BOOST, if boost is not installed system-wide
+	LDFLAGS += $(LIBRARY_PATH_BOOST) # set boost library path in LIBRARY_PATH_BOOST, if boost is not installed system-wide
 endif
 
 ifneq (,$(findstring $(SQLITE),1 true True TRUE)) # if SQLITE is defined and contains 1, true, True or TRUE
 	CPPFLAGS += -DM_SQLITE
+	INCLS    += $(INCLUDE_PATH_SQLITE)
+	LDFLAGS  += $(LIBRARY_PATH_SQLITE)
 	LDLIBS  += -lsqlite3 # add the sqlite library path here, if sqlite is not install system-wide
 	OBJS    += sqliteDB.o
 endif

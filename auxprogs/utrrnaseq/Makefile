@@ -1,7 +1,11 @@
 # Makefile for utrrnaseq
 
+include ../../common.mk
+
 CXX ?= g++
 CXXFLAGS := -Wall -O0 -pedantic -fmessage-length=0 ${CXXFLAGS}
+INCLS   += $(INCLUDE_PATH_BOOST) # set boost include path in INCLUDE_PATH_BOOST, if boost is not installed system-wide
+LDFLAGS += $(LIBRARY_PATH_BOOST) # set boost library path in LIBRARY_PATH_BOOST, if boost is not installed system-wide
 
 SRC_DIR  := src
 OBJ_DIR  := build
@@ -22,7 +26,7 @@ prep:
 utrrnaseq: $(OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -35,7 +39,8 @@ $(OBJS): $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 test: CPPFLAGS += -DTEST_MODE # see Target-specific Variable in make
 test: CXXFLAGS += -g3
-test: clean utrrnaseq prep_test
+test: LIBS += -lboost_unit_test_framework
+test: clean prep utrrnaseq prep_test
 	mv $(OBJ_DIR)/*.o $(TEST_DIR)/
 	mv $(OBJ_DIR)/*.d $(TEST_DIR)/
 	mv utrrnaseq $(TEST_DIR)/utrrnaseq_selftest

@@ -1,35 +1,35 @@
 #	Makefile for filterBam
 
+include ../../../common.mk
+
 CXX ?= g++
 CXXFLAGS := -std=c++0x ${CXXFLAGS}
 
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
           printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 OBJS = $(SOURCES:.cc=.o)
-ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of bamtools
-	BAMTOOLS_INSTALL_DIR = /usr/local/opt/bamtools
-else
-	BAMTOOLS_INSTALL_DIR = /usr
-endif
-INCLS += -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools -I./headers -I./bamtools
-LDLIBS += -lbamtools -lz
+
+# keep compatibility with old versions still using BAMTOOLS_INSTALL_DIR
+BAMTOOLS_INSTALL_DIR ?= /usr
+
+# sets the default locations if it has not already been set in common.mk
+INCLUDE_PATH_BAMTOOLS ?= -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools
+LIBRARY_PATH_BAMTOOLS ?= -L$(BAMTOOLS_INSTALL_DIR)/lib -Wl,-rpath,$(BAMTOOLS_INSTALL_DIR)/lib
+
+INCLS += -I./headers -I./bamtools
+INCLS += $(INCLUDE_PATH_BAMTOOLS)
+LDFLAGS += $(LIBRARY_PATH_BAMTOOLS)
+LDLIBS += -lbamtools
+INCLS += $(INCLUDE_PATH_ZLIB)
+LDFLAGS += $(LIBRARY_PATH_ZLIB)
+LDLIBS += -lz
 VPATH = functions
 
-.PHONY: all BIN CHECKBAM clean
+.PHONY: all clean
 
-all: CHECKBAM filterBam $(OBJS) BIN
-
-BIN: CHECKBAM filterBam
+all: filterBam
 	mkdir -p ../../../bin
 	mv filterBam ../../../bin/filterBam
-
-CHECKBAM:
-	@if [ -z "${BAMTOOLS_INSTALL_DIR}" ]; then \
-		echo '[Makefile]: $$(BAMTOOLS_INSTALL_DIR) has not been set.'; \
-		exit 101; \
-	elif [ "${BAMTOOLS_INSTALL_DIR}" ]; then \
-		echo "filterBam compiled with BAMTOOLS=$(BAMTOOLS_INSTALL_DIR)/include/bamtools"; \
-	fi
 
 filterBam: $(OBJS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@  $^ $(LDLIBS)
