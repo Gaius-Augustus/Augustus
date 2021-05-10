@@ -14,12 +14,12 @@ Use `samtools stats <in.bam> | grep 'is sorted'` to check if the file is sorted.
 
 ### Parameters:
 
-**-r** 
+**-r**
 
-Allows to specify a target region, e.g. 'chr3L:10-250'. 
+Allows to specify a target region, e.g. 'chr3L:10-250'.
 This option can only be used if an index file exists, see: samtools index
 
-**-t** 
+**-t**
 
 string provided as track name
 
@@ -27,12 +27,12 @@ string provided as track name
 ## INSTALLATION
 
 ### Install dependencies
-    
+
 - HTSlib version 1.10 or higher
-  
+
   - For operating systems that provide a package libhts-dev 1.10 or later (like Ubuntu 20.04 and Debian 11):
     ```
-      sudo apt install samtools libhts-dev
+      sudo apt-get install samtools libhts-dev
     ```
 
   - **OR** install HTSlib from https://github.com/samtools

@@ -6,7 +6,7 @@ Date: 31 May 2013
 ************************************************
 
 * Installation:
-As long as the preprocessor directive TEST_MODE is not set, boost_unit_test_framework is not needed. I.e. under this condition, the 
+As long as the preprocessor directive TEST_MODE is not set, boost_unit_test_framework is not needed. I.e. under this condition, the
 program can be compiled without -l boost_unit_test_framework.
 
 * Compile:
@@ -15,7 +15,7 @@ make
 
 * execute/run the tool:
 
-./utrrnaseq 
+./utrrnaseq
 
 * Boost Library:
 
@@ -33,8 +33,8 @@ This folder contains the following folders:
 
 * evaluation - This folder contains files used for test, training and evaluation purposes.
 
-* for-test-cases - This folder contains files used as input for the test cases in the BOOST_TEST_SUITEs and some for 
-									 comparison purposes.
+* for-test-cases - This folder contains files used as input for the test cases in the BOOST_TEST_SUITEs and some for
+                   comparison purposes.
 
 * input - This folder contains all the used input files and additional data files.
 

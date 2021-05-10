@@ -14,7 +14,7 @@ RUN apt-get install -y libsqlite3-dev libmysql++-dev
 # Install dependencies for the optional support of gzip compressed input files
 RUN apt-get install -y libboost-iostreams-dev zlib1g-dev
 
-# Install dependencies for bam2hints and filterBam 
+# Install dependencies for bam2hints and filterBam
 RUN apt-get install -y libbamtools-dev
 
 # Install additional dependencies for bam2wig
@@ -27,7 +27,7 @@ RUN apt-get install -y libboost-all-dev
 RUN apt-get install -y cdbfasta diamond-aligner libfile-which-perl libparallel-forkmanager-perl libyaml-perl libdbd-mysql-perl
 RUN apt-get install -y --no-install-recommends python3-biopython
 
-# Install hal - required by homGeneMapping 
+# Install hal - required by homGeneMapping
 # execute the commented out code if you want to use this program - see auxprogs/homGeneMapping/Dockerfile
 #RUN apt-get install -y libhdf5-dev
 #RUN git clone https://github.com/benedictpaten/sonLib.git

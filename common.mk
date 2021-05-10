@@ -8,7 +8,7 @@ AUGVERSION = 3.4.0
 ZIPINPUT = true
 
 # set COMPGENEPRED to false if you do not require the comparative gene prediction mode (CGP) or
-# the required libraries 
-# libgsl-dev, libboost-all-dev, libsuitesparse-dev, liblpsolve55-dev, libmysql++-dev and libsqlite3-dev 
+# the required libraries
+# libgsl-dev, libboost-all-dev, libsuitesparse-dev, liblpsolve55-dev, libmysql++-dev and libsqlite3-dev
 # are not available
 COMPGENEPRED = true

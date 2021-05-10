@@ -88,11 +88,11 @@ As a normal user, add the directory of the executables to the PATH environment v
 
 ## Install globally
 
-You can install AUGUSTUS globally, if you have root privileges, for example: 
+You can install AUGUSTUS globally, if you have root privileges, for example:
 
     sudo make install
 
-Alternatively, you can exectue similar commands to those in the "install" section of the top-level Makefile to customize the global installation. 
+Alternatively, you can exectue similar commands to those in the "install" section of the top-level Makefile to customize the global installation.
 
 ## Optional: set environment variable AUGUSTUS_CONFIG_PATH
 
@@ -133,5 +133,5 @@ All source code, i.e.
   - the auxiliary programs (`auxprogs/`)
   - the tree-parser (`src/scanner`, `src/parser`)
   - the unit tests (`src/unittests`)
-  
+
 is under the [Artistic License](src/LICENSE.TXT).

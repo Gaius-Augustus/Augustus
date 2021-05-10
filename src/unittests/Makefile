@@ -34,7 +34,7 @@ fasta_unittest.o: fasta_unittest.cc $(AINC)/fasta.hh
 evo_unittest.o: evo_unittest.cc $(AINC)/contTimeMC.hh
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c evo_unittest.cc
 
-codonevo_unittest.o: codonevo_unittest.cc $(AINC)/contTimeMC.hh $(AINC)/codonevo.hh 
+codonevo_unittest.o: codonevo_unittest.cc $(AINC)/contTimeMC.hh $(AINC)/codonevo.hh
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c codonevo_unittest.cc
 
 alignment_unittest.o: alignment_unittest.cc $(AINC)/alignment.hh

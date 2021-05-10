@@ -15,7 +15,7 @@ It should contain a line like:
      deb http://us.archive.ubuntu.com/ubuntu vivid main universe
 
 
-Afterwards, go to the auxprogs/bam2hints directory and run 
+Afterwards, go to the auxprogs/bam2hints directory and run
 
    make
 
@@ -57,4 +57,4 @@ By:
 
 Save and exit the Makefile. Then, running in auxprogs/bam2hints directory the command:
   make
-should result in a executable named "bam2hints" that is located in auxprogs/bam2hints.
+should result in an executable named "bam2hints" that is located in auxprogs/bam2hints.

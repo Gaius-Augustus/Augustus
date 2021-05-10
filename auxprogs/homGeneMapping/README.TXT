@@ -40,7 +40,7 @@ alignment of the genomes and prints a summary for each gene, e.g.
 
    > ./configure --disable-dynamic-extensions --enable-static --disable-shared
   (optional: add SQLITE = false to common.mk if the SQLite library is unavailable and option --dbaccess is not required)
-  
+
 From within the auxprogs/homGeneMapping directory, type "make"
 
 
