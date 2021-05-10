@@ -67,7 +67,7 @@ ifneq (,$(findstring $(MYSQL),1 true True TRUE)) # if MYSQL is defined and conta
 ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of mysql
 		INCLS    += -I/usr/local/opt/mysql/include/mysql -I/usr/local/opt/mysql++/include/mysql++
     else
-		INCLS    += -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
+		INCLS    += -I/usr/include/mysql
     endif
 endif
 

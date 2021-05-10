@@ -4,7 +4,7 @@ CXX ?= g++
 CXXFLAGS := -std=c++11 -Wall -pedantic -pthread ${CXXFLAGS}
 LDFLAGS = -L../googletest -lgtest -lgtest_main -lgsl -lgslcblas -lmysqlclient -lmysqlpp \
 	-lsqlite3 -llpsolve55 -lcolamd -ldl -lsqlite3 -lboost_iostreams
-INCLS	+= -I$(AINC) -isystem ../googletest/include/ -I/usr/include/mysql -I/usr/include/mysql++
+INCLS	+= -I$(AINC) -isystem ../googletest/include/ -I/usr/include/mysql
 OBJS    = ../lldouble.o ../fasta.o ../contTimeMC.o ../codonevo.o \
 	../properties.o ../types.o \
 	../geneticcode.o ../phylotree.o ../geneMSA.o ../alignment.o \
