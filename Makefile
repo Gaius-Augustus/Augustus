@@ -3,11 +3,16 @@
 #
 include common.mk
 
-.PHONY: all clean install release test unit_test
+.PHONY: all augustus auxprogs clean install release test unit_test
 
-all:
+all: augustus auxprogs
+
+augustus:
 	mkdir -p bin
 	cd src && ${MAKE}
+
+auxprogs:
+	mkdir -p bin
 	cd auxprogs && ${MAKE}
 
 clean:
