@@ -37,6 +37,7 @@ struct globalOptions_t {
 	int minCover;
 	int minId;
 	int minIntronLen;
+	int numThreads;
 	float uniqThresh;
 	const char* commonGeneFile;
   	const char* inputFile;

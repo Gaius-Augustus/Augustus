@@ -11,7 +11,7 @@ HTSLIB_INSTALL_DIR = /builds/nweeks/repos/SeqLib/htslib
 INCLUDES = -I$(SEQLIB_INSTALL_DIR)/ -I${HTSLIB_INSTALL_DIR}/ -Iheaders
 LDFLAGS=-L${SEQLIB_INSTALL_DIR}/src -L${HTSLIB_INSTALL_DIR}
 LIBS = -lseqlib -lz -lhts
-CXXFLAGS := -std=c++11 ${CXXFLAGS}
+CXXFLAGS := -std=c++11 -O2 ${CXXFLAGS}
 VPATH = functions
 LINK.cc ?= g++
 

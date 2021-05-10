@@ -192,6 +192,10 @@ int main(int argc, char *argv[])
 	  cout << "------------------------------------------------" << endl;
 	}
 
+  ThreadPool threadpool(globalOptions.numThreads);
+  reader.SetThreadPool(threadpool);
+  writer.SetThreadPool(threadpool);
+
   // Starting timer
   tStart = time(NULL);    
 
