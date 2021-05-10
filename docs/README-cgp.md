@@ -35,7 +35,7 @@
 
 ## Install dependencies
 
-   See [these instructions](../README.md#install-dependencies) for a complete overview.
+   See [these instructions](INSTALL.md#install-dependencies) for a complete overview.
    
 ## Compile from sources
 
