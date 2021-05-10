@@ -45,13 +45,9 @@ It should contain a line like:
 
      deb http://us.archive.ubuntu.com/ubuntu vivid main universe
 
-*** If you dont' have Ubuntu or Debian ***
---------------------------------
+See docs/INSTALL.md (Bamtools section) for further details, especially for manual installation from sources
+or installation without root rights.
 
-Go to the web-page: https://github.com/pezmaster31/bamtools/wiki , and more specifically to the section 'Building and installing' 
-for instructions on how to get and compile the latest version of Bamtools. 
-The softwares 'git' and 'cmake' will probably be required as well. 
-See auxprogs/bam2hints/README for details.
 Once with Bamtools, filterBam can be compiled (see Section 3).
 
 After compilation of Bamtools, a binary 'bamtools' is created. This so-called utility-kit allows the:
@@ -62,8 +58,7 @@ such features given that filterBam only accepts as input BAM files that have bee
 ********************************
 
 2. Although not required by filterBam, it may also be convenient to have a copy of the software Samtools.
-This software is available via subversion (svn) on the web page: http://samtools.sourceforge.net/ . Follow 
-the installation instructions contained in the distribution package of Samtools.
+See docs/INSTALL.md (SAMtools section) for further details.
 
 NOTE: Some examples on how to use Samtools and Bamtools utility kits are provided in the user manual of
 filterBam.
@@ -72,18 +67,6 @@ filterBam.
 		----------------
 
 1. Download and extract the latest version of filterBam from the AUGUSTUS repository.
-
-2. If you use Ubuntu and installed bamtools and bamtools-dev via apt-get, you don't need to modify the Makefile. However, if you installed a bamtools version from github, you need to adapt the following lines the src/Makefile:
-Replace:
-   BAMTOOLS_INSTALL_DIR = /usr
-By:
-   BAMTOOLS_INSTALL_DIR = /your/path/to/bamtools_install_dir
-
-Replace:
-   LIBS = -lbamtools -lz
-By:
-   LIBS = $(BAMTOOLS_INSTALL_DIR)/lib/libbamtools.a -lz
-.
 
 2. Compile filterBam by typing
 

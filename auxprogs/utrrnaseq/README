@@ -20,6 +20,8 @@ make
 * Boost Library:
 
 A version of the boost library (e.g. Boost_1_49_0) must be installed or at least downloaded, for Ubuntu e.g. type "sudo apt-get install libboost-all-dev"
+See docs/INSTALL.md (Boost section) for further details, especially for manual installation from sources or installation
+without root rights.
 
 *************************************************
 

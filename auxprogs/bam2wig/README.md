@@ -35,22 +35,7 @@ string provided as track name
       sudo apt-get install samtools libhts-dev
     ```
 
-  - **OR** install HTSlib from https://github.com/samtools
-    
-    ```
-      apt install -y samtools libbz2-dev liblzma-dev libncurses5-dev libssl-dev libcurl3-dev
-
-      git clone https://github.com/samtools/htslib.git /path/where/HTSlib/reside
-      cd /path/where/HTSlib/reside
-      git submodule update --init --recursive
-      autoreconf -i
-      ./configure --prefix=/path/where/HTSlib/installed
-      make
-      make install
-
-      export TOOLDIR=/path/where/HTSlib/installed
-
-    ```
+  See [INSTALL.md](../../docs/INSTALL.md#HTSlib) for further details, especially for manual installation from sources or installation without root rights.
 
 ### Compile
 Once all dependencies are available, you can compile bam2wig using make.
