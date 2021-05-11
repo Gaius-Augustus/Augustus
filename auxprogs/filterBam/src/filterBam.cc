@@ -192,10 +192,6 @@ int main(int argc, char *argv[])
 	  cout << "------------------------------------------------" << endl;
 	}
 
-  ThreadPool threadpool(globalOptions.numThreads);
-  reader.SetThreadPool(threadpool);
-  writer.SetThreadPool(threadpool);
-
   // Starting timer
   tStart = time(NULL);    
 
@@ -215,6 +211,10 @@ int main(int argc, char *argv[])
 	cerr << "Could not open output BAM file" << endl;
 	return 0;
 	}
+
+  ThreadPool threadpool(globalOptions.numThreads);
+  reader.SetThreadPool(threadpool);
+  writer.SetThreadPool(threadpool);
 
   writer.SetHeader(refData);
   writer.WriteHeader();
