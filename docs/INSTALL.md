@@ -91,7 +91,8 @@ For AUGUSTUS and utilities use
 
 ## Troubleshooting
 
-The proposed solutions have been tested with Ubuntu 20.04. For other systems/architectures, the paths and commands given may have to be adapted.
+The proposed solutions have been tested with Ubuntu 20.04. For other systems/architectures, the paths and commands given may have to be adapted.  
+With root rights, you can install the libraries in the default folders. To do this, please remove the prefix argument in the configure, cmake and bootstrap commands and INSTALL from the make call.
 
 ### [zlib](https://zlib.net) - library for compression methods
 

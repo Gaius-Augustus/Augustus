@@ -12,7 +12,7 @@ include ../../common.mk
 
 CC ?= gcc
 CFLAGS := -Wall -O2 $(CFLAGS)
-	
+
 HTSERRHINT=""
 ifndef INCLUDE_PATH_HTSLIB
 	# set INCLUDE_PATH_HTSLIB and LIBRARY_PATH_HTSLIB
@@ -46,7 +46,9 @@ LDLIBS += -lhts
 INCLS += $(INCLUDE_PATH_ZLIB)
 LDFLAGS += $(LIBRARY_PATH_ZLIB)
 LDLIBS += -lz -lpthread
-# still needed? : LDLIBS +=  -lm -lcurses -lcurl -lssl -lcrypto -lbz2 -llzma
+
+# when using a static hts library, these additional libraries may be required : 
+# LDLIBS += -lcurl -lcrypto -llzma -lbz2 -lm -lcurses -lssl
 
 .PHONY: all clean test
 
