@@ -39,7 +39,7 @@ ifeq ($(shell uname -s), Darwin)
 	# path for default homebrew installation of lp_solve
 	INCLUDE_PATH_LPSOLVE = -I/usr/local/opt/lp_solve/include
 	# path for default homebrew installation of mysql and mysql++
-	INCLUDE_PATH_MYSQL = -I/usr/local/opt/mysql/include -I/usr/local/opt/mysql++/include/mysql
+	INCLUDE_PATH_MYSQL = -I/usr/local/opt/mysql/include/mysql -I/usr/local/opt/mysql++/include/mysql
 	# path for default homebrew installation of bamtools
 	INCLUDE_PATH_BAMTOOLS = -I/usr/local/opt/bamtools/include/bamtools
 	# path for default homebrew installation of htslib
