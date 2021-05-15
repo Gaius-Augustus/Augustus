@@ -8,10 +8,10 @@ List of changes from version 3.3.3 to 3.4.0 (until Dec 11th, 2020)
      - new default: softmasking is assumed
      - compile with CGP and ZIPINPUT support by default
      - compile with SQLite and MySQL support for CGP (switch of by adding SQLite = false and MySQL = false to common.mk)
-     - new species Cassiopea xamachana, Ptychodera flava, Argopecten irridians, Nemopilema nomurai
+     - new species Cassiopea xamachana, Ptychodera flava, Argopecten irradians, Nemopilema nomurai
        Notospermus_geniculatus, Chrysaora chesapeakei, Ectocarpus siliculosus, Trichoplax adhaerens,
        Aurelia aurita, Rhopilema esculentum, Encephalitozoon cuniculi, Gonapodya prolifera, Dunaliella_salina
-       Sordaria macrospora, Sphaceloma murrayae, Vitrella brassicaformis, Monoraphidium neglectum, Raphidocelis subcapita,
+       Sordaria macrospora, Sphaceloma murrayae, Vitrella brassicaformis, Monoraphidium neglectum, Raphidocelis subcapitata,
        Ostreococcus tauri, Ostreococcus sp. lucimarinus, Micromonas pusilla, Micromonas_commoda, Chlamydomonas eustigma,
        Thalassiosira pseudonana, Pseudo-nitzschia multistriata, Phaeodactylum tricornutum, Fragilariopsis cylindrus,\
        Fistulifera solaris, Bathycoccus prasinos, Chloropicon primus
@@ -282,7 +282,7 @@ List of changes from version 1.8 to version 1.8.2 (until March 10th, 2006):
      - Species parameters contributed by Jason Stajich: Caenorhabditis
        elegans, Saccharomyces cerevisiae, Ustilago maydis, Phanerochaete
        chrysosporium, Neurospora crassa, Histoplasma capsulatum, Fusarium
-       graminearium, Cryptococcus neoformans, Aspergillus nidulans
+       graminearum, Cryptococcus neoformans, Aspergillus nidulans
 
 List of changes from version 1.7 to version 1.8 (until January 18th, 2006):
 
