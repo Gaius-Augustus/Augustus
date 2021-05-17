@@ -6,28 +6,23 @@ SOURCES = filterBam.cc MatePairs.cc initOptions.cc \
 			printElapsedTime.cc sumDandIOperations.cc PairednessCoverage.cc
 PROGRAM = filterBam
 OBJECTS = $(SOURCES:.cc=.o)
-SEQLIB_INSTALL_DIR = /builds/nweeks/repos/SeqLib
-HTSLIB_INSTALL_DIR = /builds/nweeks/repos/SeqLib/htslib
-INCLUDES = -I$(SEQLIB_INSTALL_DIR)/ -I${HTSLIB_INSTALL_DIR}/ -Iheaders
-LDFLAGS=-L${SEQLIB_INSTALL_DIR}/src -L${HTSLIB_INSTALL_DIR}
-LIBS = -lseqlib -lz -lhts
-CXXFLAGS := -std=c++11 -O2 ${CXXFLAGS}
+PKG_CONFIG=$(shell command -v pkg-config 2>/dev/null)
+ifneq ($(PKG_CONFIG),)
+CXXFLAGS += -Iheaders $(shell pkg-config --cflags  jsoncpp htslib libseqlib)
+LIBS += -lpthread $(shell pkg-config --libs jsoncpp htslib libseqlib)
+else
+CXXFLAGS += -Iheaders
+LIBS += -ljsoncpp -lhts -lseqlib -lpthread
+endif
+CXXFLAGS += -std=c++11 -O2
 VPATH = functions
 LINK.cc ?= g++
 
-all : $(PROGRAM) $(OBJECTS) CHECKBAM BIN
+all : $(PROGRAM) $(OBJECTS) BIN
 
-BIN : $(PROGRAM) CHECKBAM
+BIN : $(PROGRAM)
 	mkdir -p ../../../bin
 	mv filterBam ../../../bin/filterBam
-
-CHECKBAM:
-	@if [ -z "${SEQLIB_INSTALL_DIR}" ]; then \
-		echo '[Makefile]: $${SEQLIB_INSTALL_DIR} has not been set.'; \
-		exit 101; \
-	elif [ "${SEQLIB_INSTALL_DIR}" ]; then \
-		echo "filterBam compiled with SEQLIB=${SEQLIB_INSTALL_DIR}"; \
-	fi
 
 $(PROGRAM) : $(OBJECTS)
 	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)

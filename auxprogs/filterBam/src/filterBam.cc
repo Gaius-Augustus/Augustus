@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 {
 
   // Variable definition
-  BamReader reader;
+  SeqLib::BamReader reader;
   BamWriter writer;
   BamRecord al;
   vector<BamRecord> qali;
