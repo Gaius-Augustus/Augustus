@@ -175,7 +175,7 @@ With root rights, you can install the libraries in the default folders. To do th
   - switch off MySQL usage by setting `MYSQL = false` in [common.mk](../common.mk)
   - or install package `libmysql++-dev`
   - or as non-root user install package archives into a specified directory (beware of further recursive dependencies at link and runtime)
-    - execute (replace the archives mentioned here with the ones for your system/architecture)
+    - execute (replace the archives mentioned here with the ones necessary for your system/architecture)
 
             mkdir /your/path/to/mysql
             cd /your/path/to/mysql
@@ -401,7 +401,8 @@ With root rights, you can install the libraries in the default folders. To do th
   - do not make auxiliary program **bam2wig**
   - or install packages `samtools libhts-dev`
   - or install from source
-    - execute (don't set ZLIB variables if zlib is installed on standard locations, set variables for bz2 and lzma if available and used)
+    - execute (don't set ZLIB variables if zlib is installed on standard locations, set variables for bz2 and lzma if available and used
+++      or don't set the disable options if bz2 and lzma are installed on standard locations)and used)
 
             git clone https://github.com/samtools/htslib.git /your/path/to/htslib/htslib_build
             cd /your/path/to/htslib/htslib_build
@@ -436,7 +437,8 @@ With root rights, you can install the libraries in the default folders. To do th
 - solutions
   - install package `apt-get install samtools`
   - or install from source
-    - execute (don't set ZLIB and htslib variables and flags if both are installed on standard locations)
+    - execute (don't set ZLIB and htslib variables and flags if both are installed on standard locations, remove the --without-curses 
+++      if this library is installed on standard locations)
 
 
             git clone https://github.com/samtools/samtools.git /your/path/to/samtools/samtools_build

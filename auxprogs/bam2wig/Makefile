@@ -66,7 +66,7 @@ bam2wig.o: bam2wig.c
 clean:
 	rm -f bam2wig.o bam2wig
 	rm -f ../../bin/bam2wig
-	if [ ! -z $(shell which python3) ] ; then cd ../../tests/short && ./execute_test.py --clean bam2wig ; fi
+	if [ -n $(shell which python3) ] ; then cd ../../tests/short && ./execute_test.py --clean bam2wig ; fi
 
 test:   bam2wig
 	cd ../../tests/short && ./execute_test.py --compare --html bam2wig

@@ -33,7 +33,7 @@ COMPGENEPRED = true
 #INCLUDE_PATH_HTSLIB      := -I/usr/include/htslib
 #LIBRARY_PATH_HTSLIB      := -L/usr/lib/x86_64-linux-gnu -Wl,-rpath,/usr/lib/x86_64-linux-gnu
 
-# alternatively add paths with header files to INCLS and paths with library files go LDFLAGS
+# alternatively add paths with header files to INCLS and paths with library files to LDFLAGS
 
 ifeq ($(shell uname -s), Darwin)
 	# path for default homebrew installation of lp_solve

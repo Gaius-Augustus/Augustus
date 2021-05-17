@@ -21,4 +21,3 @@ Afterwards, go to the auxprogs/bam2hints directory and run
    make
 
 This produces a bam2hints binary that is located in auxprogs/bam2hints.
-
