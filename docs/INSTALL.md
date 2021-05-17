@@ -402,7 +402,7 @@ With root rights, you can install the libraries in the default folders. To do th
   - or install packages `samtools libhts-dev`
   - or install from source
     - execute (don't set ZLIB variables if zlib is installed on standard locations, set variables for bz2 and lzma if available and used
-++      or don't set the disable options if bz2 and lzma are installed on standard locations)and used)
+      or don't set the disable options if bz2 and lzma are installed on standard locations)
 
             git clone https://github.com/samtools/htslib.git /your/path/to/htslib/htslib_build
             cd /your/path/to/htslib/htslib_build
