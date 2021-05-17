@@ -437,8 +437,7 @@ With root rights, you can install the libraries in the default folders. To do th
 - solutions
   - install package `apt-get install samtools`
   - or install from source
-    - execute (don't set ZLIB and htslib variables and flags if both are installed on standard locations, remove the --without-curses 
-++      if this library is installed on standard locations)
+    - execute (don't set ZLIB and htslib variables and flags if both are installed on standard locations, remove the --without-curses if this library is installed on standard locations)
 
 
             git clone https://github.com/samtools/samtools.git /your/path/to/samtools/samtools_build
