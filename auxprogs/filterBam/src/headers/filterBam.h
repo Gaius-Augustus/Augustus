@@ -154,3 +154,9 @@ struct ModelType {
     static const uint16_t DUMMY_ID;
 };
 uint16_t CalculateModelType(const BamRecord& al);
+
+// https://github.com/walaj/SeqLib/pull/65
+#if true
+#include <htslib/sam.h>
+inline bool LastFlag(const BamRecord &b) { return (b.AlignmentFlag()&BAM_FREAD2); }
+#endif

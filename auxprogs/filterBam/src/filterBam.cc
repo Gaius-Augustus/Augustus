@@ -268,12 +268,11 @@ int main(int argc, char *argv[])
 
 			  } else {//No signs to separate reads
 			  	  qNameStem = qName.substr(0, qName.length());
-                    // Need LastFlag() to test https://github.com/walaj/SeqLib/pull/65
-				  	if (al.FirstFlag() /* && !al.LastFlag() */) {
+				  	if (al.FirstFlag() && !LastFlag(al)) {
 							qSuffix = "1";
-					} else /* if (!al.FirstFlag() && al.LastFlag()) */ {
+					} else if (!al.FirstFlag() && LastFlag(al)) {
 							qSuffix = "2";
-					} /* else { if(verbose){cout << "Multiple fragments" << endl;}} */
+					} else { if(verbose){cout << "Multiple fragments" << endl;}}
 				  if (verbose) {cout << "qNameStem=" << qNameStem << " and qSuffix=" << qSuffix << endl;}
 
 			}
@@ -620,12 +619,11 @@ void printQali(vector<BamRecord> &qali, const BamHeader &refData, bool pairwiseA
 	  qName = (*it).Qname(); 
 	  if (!pairwiseAlignments) {
 		  qSuffix = qName.substr(qName.find("/")+1, qName.length()); 
-	  } else { // https://github.com/walaj/SeqLib/pull/65
-		if ((*it).FirstFlag() /* && !(*it).LastFlag() */) {
+		if ((*it).FirstFlag() && !LastFlag(*it)) {
 					qSuffix = "1";
-		} else /*if (!(*it).FirstFlag() && (*it).LastFlag())*/ { 
+		} else if (!(*it).FirstFlag() && LastFlag(*it)) { 
 					qSuffix = "2";
-				} /* else { cout << "Multiple fragments" << endl;} */
+				} else { cout << "Multiple fragments" << endl;}
 	  }
 	  strand = (*it).ReverseFlag();
 	  ss_rstart << (*it).Position(); 
@@ -1019,7 +1017,7 @@ void processQuery(vector<BamRecord> &qali, const BamHeader &refData, globalOptio
 		  } else {
 				  	if (qali.at(it).FirstFlag()) {
 							itQsuffix = "1";
-					} else /* if (qali.at(it).LastFlag()) */ { // https://github.com/walaj/SeqLib/pull/65
+					} else if (LastFlag(qali.at(it))) {
 							itQsuffix = "2";
 					}
 		  }
@@ -1035,7 +1033,7 @@ void processQuery(vector<BamRecord> &qali, const BamHeader &refData, globalOptio
 				jitQsuffix = jitQname.substr(jitQname.find("/")+1, jitQname.length()); } else {	
 				  	if (qali.at(jit).FirstFlag()) {
 							jitQsuffix = "1";
-					} else /*if (qali.at(jit).LastFlag())*/ { // https://github.com/walaj/SeqLib/pull/65
+					} else if (LastFlag(qali.at(jit))) {
 							jitQsuffix = "2";
 					}
 			  }
