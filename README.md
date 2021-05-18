@@ -58,8 +58,10 @@ The following dependencies are required for AUGUSTUS:
   - liblpsolve55-dev
   - libsqlite3-dev (add SQLITE = false to [common.mk](common.mk) if this feature is not required or the required library is not available)
   - libmysql++-dev (add MYSQL = false to [common.mk](common.mk) if this feature is not required or the required library is not available)
-- For compiling bam2hints and filterBam:
+- For compiling bam2hints:
   - libbamtools-dev
+- For compiling filterBam:
+  - libseqlib-dev (version must be >= 1.2.0)
 - For compiling utrrnaseq:
   - libboost-all-dev (version must be >Boost_1_49_0)
 - For compiling bam2wig:
