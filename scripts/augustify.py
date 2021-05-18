@@ -131,7 +131,7 @@ def find_tool(toolname):
                 str(frameinfo.lineno) + ': '
                 + "Unable to locate binary of " + toolname + "!")
         exit(1)
-    return(toolbinary)
+    return toolbinary
 
 
 def check_tool_in_given_path(given_path, toolname):
@@ -170,7 +170,7 @@ def run_process(args_lst, prc_out, prc_err):
         frameinfo = getframeinfo(currentframe())
         print('Error in file ' + frameinfo.filename + ' at line ' +
               str(frameinfo.lineno) + ': ' + 'Failed executing: ',
-              " ".join(grepexec.args))
+              " ".join(grepexc.args))
         print("Error code: ", grepexc.returncode, grepexc.output)
         quit(1)
 
@@ -193,7 +193,7 @@ def run_process_stdinput(args_lst, prc_in):
         frameinfo = getframeinfo(currentframe())
         print('Error in file ' + frameinfo.filename + ' at line ' +
               str(frameinfo.lineno) + ': ' + 'Failed executing: ',
-              " ".join(grepexec.args))
+              " ".join(grepexc.args))
         print("Error code: ", grepexc.returncode, grepexc.output)
         quit(1)
 
@@ -368,12 +368,13 @@ if args.augustus_bin_path:
 else:
     augustus = find_tool("augustus")
 
-## Find join_aug_preds.pl
-perl = find_tool("perl")
-if args.augustus_bin_path:
-    join_aug_pred = check_tool_in_given_path(args.augustus_bin_path + "../scripts/", "join_aug_pred.pl")
-else:
-    join_aug_pred = find_tool("join_aug_pred.pl")
+if args.prediction_file:
+    ### Find join_aug_preds.pl - used only if option prediction_file is set
+    perl = find_tool("perl")
+    if args.augustus_bin_path:
+        join_aug_pred = check_tool_in_given_path(args.augustus_bin_path + "../scripts/", "join_aug_pred.pl")
+    else:
+        join_aug_pred = find_tool("join_aug_pred.pl")
 
 
 ### Find augustus_config_path ###
@@ -481,14 +482,18 @@ try:
             if re.match(r'^>', line):
                 hindex = hindex + 1
                 if len(curr_seq) > 0:
-                    augustify_seq(hindex, curr_header, curr_seq, tmp, params)
+                    fitting_species = augustify_seq(hindex, curr_header, curr_seq, tmp, params)
+                    seq_to_spec[curr_header] = fitting_species
                 curr_header = line;
                 curr_seq = "";
             else:
                 curr_seq += line
         # process the last sequence
-        fitting_species = augustify_seq(hindex, curr_header, curr_seq, tmp, params)
-        seq_to_spec[curr_header] = fitting_species
+        if hindex > 0 and len(curr_seq) > 0:
+            fitting_species = augustify_seq(hindex, curr_header, curr_seq, tmp, params)
+            seq_to_spec[curr_header] = fitting_species
+        else:
+            logger.info('Wrong formatted genome fasta file ' + args.genome + ' !')
 
 except IOError:
     frameinfo = getframeinfo(currentframe())
@@ -503,7 +508,7 @@ if(args.species):
         if seq_to_spec[seq] not in count_specs:
             count_specs[seq_to_spec[seq]] = 1
         else:
-            count_specs[seq_to_spec[seq]] = count_speces[seq_to_spec[seq]] + 1
+            count_specs[seq_to_spec[seq]] = count_specs[seq_to_spec[seq]] + 1
 
     max_setcount = 0
     max_name = ""
