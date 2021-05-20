@@ -36,7 +36,7 @@ or, alternatively, [download](http://bioinf.uni-greifswald.de/augustus/binaries/
     - libboost-all-dev (version must be >Boost_1_49_0)
   - for compiling utility bam2wig:
     - Follow [these instructions](../auxprogs/bam2wig/README.md). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use `bamToWig.py` to accomplish the same task.
-    - For compiling homgenemapping
+  - For compiling homgenemapping
       (set BOOST = FALSE in [auxprogs/homgenemapping/src/Makefile](../auxprogs/homgenemapping/src/Makefile) if the option --printHomologs is not required or the required libraries are not available)
     - libboost-all-dev
   - for scripts:
@@ -103,7 +103,7 @@ With root rights, you can install the libraries in the default folders. To do th
         genbank.cc: ... undefined reference to boost::iostreams::detail::zlib_base::reset(bool, bool)'
 
 - solutions
-  - switch off zlib usage by setting `ZIPINPUT = false` in [common.mk](../common.mk) and do not make auxiliary programs **bam2wig**, **bam2hints** and **filterbam**
+  - switch off zlib usage by setting `ZIPINPUT = false` in [common.mk](../common.mk) and do not make utility programs **bam2wig**, **bam2hints** and **filterbam**
   - or install package `zlib1g-dev`
   - or install from source
     - execute
@@ -137,7 +137,7 @@ With root rights, you can install the libraries in the default folders. To do th
         /usr/bin/ld: cannot find -lboost_serialization
 
 - solutions
-  - switch off boost usage by setting `BOOST = false`, `COMPGENEPRED = false` and `ZIPINPUT = false` in [common.mk](../common.mk) do not make auxiliary program **utrrnaseq**
+  - switch off boost usage by setting `BOOST = false`, `COMPGENEPRED = false` and `ZIPINPUT = false` in [common.mk](../common.mk) do not make utility program **utrrnaseq**
   - or install package `libboost-all-dev`
   - or install from source
     - execute (don't set ZLIB variables if zlib is installed on standard locations)
@@ -215,7 +215,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
 - solutions
   - switch off SQLite usage by setting `SQLITE = false` in [common.mk](../common.mk)
-  - or install package `libsqlite3-devv`
+  - or install package `libsqlite3-dev`
   - or install from source
     - execute
 
@@ -348,10 +348,10 @@ With root rights, you can install the libraries in the default folders. To do th
         /usr/bin/ld: cannot find -lbamtools
 
 - solutions
-  - do not make auxiliary programs **bam2hints** and **filterbam**
+  - do not make utility programs **bam2hints** and **filterbam**
   - or install package `libbamtools-dev`
   - or install from source
-    - cmake or cmake3 must be installed (use the installed one in next step)
+    - cmake or cmake3 must be installed (use the installed one in next steps)
 
                apt-get install cmake
 
@@ -398,7 +398,7 @@ With root rights, you can install the libraries in the default folders. To do th
         /usr/bin/ld: cannot find -lhts
 
 - solutions
-  - do not make auxiliary program **bam2wig**
+  - do not make utility program **bam2wig**
   - or install packages `samtools libhts-dev`
   - or install from source
     - execute (don't set ZLIB variables if zlib is installed on standard locations, set variables for bz2 and lzma if available and used
