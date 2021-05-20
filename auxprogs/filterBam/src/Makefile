@@ -1,44 +1,44 @@
 #	Makefile for filterBam
-#
 
+include ../../../common.mk
+
+CXX ?= g++
+CXXFLAGS := -std=c++0x ${CXXFLAGS}
 
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
-			printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
-PROGRAM = filterBam
-OBJECTS = $(SOURCES:.cc=.o)
-ifeq ($(shell uname -s), Darwin) #path for default homebrew installation of bamtools
-	BAMTOOLS_INSTALL_DIR = /usr/local/opt/bamtools
-else
-	BAMTOOLS_INSTALL_DIR = /usr
-endif
-INCLUDES = -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools -Iheaders -I./bamtools
-LIBS = -lbamtools -lz
-CXXFLAGS := -std=c++0x ${CXXFLAGS}
+          printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
+OBJS = $(SOURCES:.cc=.o)
+
+# keep compatibility with old versions still using BAMTOOLS_INSTALL_DIR
+BAMTOOLS_INSTALL_DIR ?= /usr
+
+# sets the default locations if it has not already been set in common.mk
+INCLUDE_PATH_BAMTOOLS ?= -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools
+LIBRARY_PATH_BAMTOOLS ?= -L$(BAMTOOLS_INSTALL_DIR)/lib -Wl,-rpath,$(BAMTOOLS_INSTALL_DIR)/lib
+
+INCLS += -I./headers -I./bamtools
+INCLS += $(INCLUDE_PATH_BAMTOOLS)
+LDFLAGS += $(LIBRARY_PATH_BAMTOOLS)
+LDLIBS += -lbamtools
+INCLS += $(INCLUDE_PATH_ZLIB)
+LDFLAGS += $(LIBRARY_PATH_ZLIB)
+LDLIBS += -lz
 VPATH = functions
-LINK.cc ?= g++
 
-all : $(PROGRAM) $(OBJECTS) CHECKBAM BIN
+.PHONY: all clean
 
-BIN : $(PROGRAM) CHECKBAM
+all: filterBam
 	mkdir -p ../../../bin
 	mv filterBam ../../../bin/filterBam
 
-CHECKBAM:
-	@if [ -z "${BAMTOOLS_INSTALL_DIR}" ]; then \
-		echo '[Makefile]: $${BAMTOOLS_INSTALL_DIR} has not been set.'; \
-		exit 101; \
-	elif [ "${BAMTOOLS_INSTALL_DIR}" ]; then \
-		echo "filterBam compiled with BAMTOOLS=${BAMTOOLS_INSTALL_DIR}/include/bamtools"; \
-	fi
+filterBam: $(OBJS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@  $^ $(LDLIBS)
 
-$(PROGRAM) : $(OBJECTS)
-	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
-
-$(OBJECTS) : %.o:%.cc
-	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) -c $^ -o $@ $(INCLUDES)
+$(OBJS): %.o: %.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c $^
 
 
 clean:
-	rm -f *~ $(OBJECTS)
+	rm -f *~ $(OBJS)
 	rm -f filterBam
 	rm -f ../../../bin/filterBam

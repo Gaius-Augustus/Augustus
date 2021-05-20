@@ -8,8 +8,8 @@
 #ifndef _TABLE_STRUCTURE
 #define _TABLE_STRUCTURE
 
-#include <mysql++.h>
-#include <ssqls.h>
+#include <mysql++/mysql++.h>
+#include <mysql++/ssqls.h>
 #include <string>
 #include <cstring>
 #include <stdlib.h>

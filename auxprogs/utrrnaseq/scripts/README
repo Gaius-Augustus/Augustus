@@ -12,7 +12,7 @@ This folder contains the following files:
                for identification of UTRs from RNA-seq data to a list for evaluation 
                the identified UTRs with the overlapStat.pl script (not included on this CD)
 
-* test_utr_wrapper - This perl-script was written by Katharina Hoff
-                     This script runs Maria Hartmann's UTR finding tool with a set of given 
-                     parameters (aim: find optimal parameters)
+* test_utr_wrapper.pl - This perl-script was written by Katharina Hoff
+                        This script runs Maria Hartmann's UTR finding tool with a set of given 
+                        parameters (aim: find optimal parameters)
 

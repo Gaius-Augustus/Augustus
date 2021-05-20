@@ -21,7 +21,7 @@
 #include <stack>
 
 
-// addeded for inetrval merging of generanges belonging to the same species 
+// added for interval merging of gene ranges belonging to the same species 
 #ifdef TESTING
 void mergeInterval(list<tuple<string,int,int> >& interval);
 void mergeIntervals(vector<string>& speciesNames, vector<list<tuple<string,int,int> > >& intervals);

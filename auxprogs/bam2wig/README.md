@@ -14,12 +14,12 @@ Use `samtools stats <in.bam> | grep 'is sorted'` to check if the file is sorted.
 
 ### Parameters:
 
-**-r** 
+**-r**
 
-Allows to specify a target region, e.g. 'chr3L:10-250'. 
+Allows to specify a target region, e.g. 'chr3L:10-250'.
 This option can only be used if an index file exists, see: samtools index
 
-**-t** 
+**-t**
 
 string provided as track name
 
@@ -27,30 +27,15 @@ string provided as track name
 ## INSTALLATION
 
 ### Install dependencies
-    
+
 - HTSlib version 1.10 or higher
-  
+
   - For operating systems that provide a package libhts-dev 1.10 or later (like Ubuntu 20.04 and Debian 11):
     ```
-      sudo apt install samtools libhts-dev
+      sudo apt-get install samtools libhts-dev
     ```
 
-  - **OR** install HTSlib from https://github.com/samtools
-    
-    ```
-      apt install -y samtools libbz2-dev liblzma-dev libncurses5-dev libssl-dev libcurl3-dev
-
-      git clone https://github.com/samtools/htslib.git /path/where/HTSlib/reside
-      cd /path/where/HTSlib/reside
-      git submodule update --init --recursive
-      autoreconf -i
-      ./configure --prefix=/path/where/HTSlib/installed
-      make
-      make install
-
-      export TOOLDIR=/path/where/HTSlib/installed
-
-    ```
+  See [INSTALL.md](../../docs/INSTALL.md#HTSlib) for further details, especially for manual installation from sources or installation without root rights.
 
 ### Compile
 Once all dependencies are available, you can compile bam2wig using make.
