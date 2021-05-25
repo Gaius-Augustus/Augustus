@@ -9,7 +9,7 @@ OBJECTS = $(SOURCES:.cc=.o)
 PKG_CONFIG=$(shell command -v pkg-config 2>/dev/null)
 ifneq ($(PKG_CONFIG),)
 CXXFLAGS += -Iheaders $(shell pkg-config --cflags  jsoncpp htslib libseqlib)
-LIBS += -lpthread $(shell pkg-config --libs jsoncpp htslib libseqlib)
+LIBS += -lpthread $(shell pkg-config --libs jsoncpp htslib libseqlib) -lz
 else
 CXXFLAGS += -Iheaders
 LIBS += -ljsoncpp -lhts -lseqlib -lpthread

@@ -212,9 +212,11 @@ int main(int argc, char *argv[])
 	return 0;
 	}
 
+#ifdef SEQLIB_THREAD_POOL_H
   ThreadPool threadpool(globalOptions.numThreads);
   reader.SetThreadPool(threadpool);
   writer.SetThreadPool(threadpool);
+#endif
 
   writer.SetHeader(refData);
   writer.WriteHeader();

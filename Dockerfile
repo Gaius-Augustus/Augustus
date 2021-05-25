@@ -1,4 +1,4 @@
-FROM ubuntu:21.04
+FROM ubuntu:20.04
 
 # Set timezone in tzdata
 ENV DEBIAN_FRONTEND="noninteractive" TZ="Europe/Berlin"
