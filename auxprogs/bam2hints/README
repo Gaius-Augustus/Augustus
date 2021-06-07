@@ -14,47 +14,10 @@ It should contain a line like:
 
      deb http://us.archive.ubuntu.com/ubuntu vivid main universe
 
+See docs/INSTALL.md (Bamtools section) for further details, especially for manual installation from sources or installation without root rights.
 
-Afterwards, go to the auxprogs/bam2hints directory and run 
+Afterwards, go to the auxprogs/bam2hints directory and run
 
    make
 
 This produces a bam2hints binary that is located in auxprogs/bam2hints.
-
---- If for some reason you want to install BAMTools manually ---
-
-Install cmake (or see https://cmake.org)
-   sudo apt-get install cmake
-
-Get the latest version of BAMTools from GitHub:
-   git clone git://github.com/pezmaster31/bamtools.git
-or download the zipped version from:
-   https://github.com/pezmaster31/bamtools/zipball/master
-and unpack:
-   unzip pezmaster31-bamtools-v2.5.1-23-g2391b1a.zip -d bamtools
-Then follow the instructions under https://github.com/pezmaster31/bamtools/wiki , which are basically:
-   cd bamtools
-   mkdir build
-   cd build
-   cmake -DCMAKE_INSTALL_PREFIX=/your/path/to/bamtools_install_dir ..
-   make
-   make install
-   
-
---- Installing bam2hints after manual BAMtools installation ---
-
-For this step, you only need to adjust two lines in the Makefile.
-
-Replace:
-   BAMTOOLS_INSTALL_DIR = /usr
-By:
-   BAMTOOLS_INSTALL_DIR = /your/path/to/bamtools_install_dir
-
-Replace:
-   LIBS = -lbamtools -lz
-By:
-   LIBS = $(BAMTOOLS_INSTALL_DIR)/lib/libbamtools.a -lz
-
-Save and exit the Makefile. Then, running in auxprogs/bam2hints directory the command:
-  make
-should result in a executable named "bam2hints" that is located in auxprogs/bam2hints.

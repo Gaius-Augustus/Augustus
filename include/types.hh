@@ -141,8 +141,8 @@ fly                                      | Drosophila melanogaster\n\
 encephalitozoon_cuniculi_GB              | Encephalitozoon cuniculi\n\
 eremothecium_gossypii                    | Eremothecium gossypii\n\
 E_coli_K12                               | Escherichia coli K12\n\
-fusarium_graminearum                     | Fusarium graminearium\n\
-(fusarium)                               | Fusarium graminearium\n\
+fusarium_graminearum                     | Fusarium graminearum\n\
+(fusarium)                               | Fusarium graminearum\n\
 galdieria                                | Galdieria sulphuraria\n\
 chicken                                  | Gallus gallus domesticus\n\
 heliconius_melpomene1                    | Heliconius melpomene\n\
@@ -197,7 +197,7 @@ ustilago_maydis                          | Ustilago maydis\n\
 verticillium_albo_atrum1                 | Verticillium albo atrum\n\
 verticillium_longisporum1                | Verticillium longisporum\n\
 volvox                                   | Volvox sp.\n\
-Xipophorus_maculatus                     | Xipophorus maculatus\n\
+Xiphophorus_maculatus                    | Xiphophorus maculatus\n\
 yarrowia_lipolytica                      | Yarrowia lipolytica\n\
 maize                                    | Zea mays\n\
 (maize5)                                 | Zea mays\n\

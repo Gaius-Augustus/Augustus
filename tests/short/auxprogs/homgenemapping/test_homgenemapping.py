@@ -131,7 +131,7 @@ class TestHomGeneMapping(unittest.TestCase):
 
     def test_homGeneMapping_with_sql_hints(self):
         '''
-        test with hints provided by SQLite databaseX
+        test with hints provided by SQLite database
         .../bin/homGeneMapping --noDupes --gtfs=.../gtffilenames_without_hints.tbl
             --dbaccess=.../homGeneMapping_hints.db --halfile=aln.hal
             --tmpdir=.../tmp --outdir=.../outdir

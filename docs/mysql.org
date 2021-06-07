@@ -61,14 +61,8 @@
 * mysql++ API
   In current,we use a third-part mysql API:mysql++ to handle sequence from database.I choose it because of its lightweight
   and it supports STL perfectly.
-** configuration
-   'mysqlpplib' is added to in trunk base directory and 'mysql' 'mysqlppheader' are added in include directory.'mysql' is
-   set of header files comes with mysql.
-** run-time libpath
-   Copy mysqlpplib to a path that is registered in '/etc/ld.so.cache '.In most Unix-like OS,they
-   are '/usr/lib/','/lib/','/usr/share/lib/'.If you you want indicate your own lib-path but have no
-   authority to run 'ldconfig',copy 'mysqlpplib' to '/your/run-time lib/path/',compile Augustus
-   with '-Wl,rpath= /your/run-time lib/path/'.
+** install
+   install package 'apt-get install libmysql++-dev' or see docs/INSTALL.md for a complete overview.
 ** use SSQLS
    mysqlpp allows user defined 'Specialized SQL Structure'.At the most superficial level,and SSQLS has a member variable 
    corresponding to each field in the SQL table.

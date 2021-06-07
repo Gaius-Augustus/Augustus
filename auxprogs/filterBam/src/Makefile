@@ -1,37 +1,34 @@
 #	Makefile for filterBam
-#
 
+include ../../../common.mk
+
+CXX ?= g++
+CXXFLAGS := -std=c++0x ${CXXFLAGS}
 
 SOURCES = filterBam.cc MatePairs.cc initOptions.cc \
-			printElapsedTime.cc sumDandIOperations.cc PairednessCoverage.cc
-PROGRAM = filterBam
-OBJECTS = $(SOURCES:.cc=.o)
-PKG_CONFIG=$(shell command -v pkg-config 2>/dev/null)
-ifneq ($(PKG_CONFIG),)
-CXXFLAGS += -Iheaders $(shell pkg-config --cflags  jsoncpp htslib libseqlib)
-LIBS += -lpthread $(shell pkg-config --libs jsoncpp htslib libseqlib) -lz
-else
-CXXFLAGS += -Iheaders
-LIBS += -ljsoncpp -lhts -lseqlib -lpthread
-endif
-CXXFLAGS += -std=c++11 -O2
+          printElapsedTime.cc sumDandIOperations.cc PairednessCoverage.cc
+OBJS = $(SOURCES:.cc=.o)
+
+INCLS += -I./headers
+INCLS += $(shell pkg-config --cflags  jsoncpp htslib libseqlib)
+LDFLAGS += $(shell pkg-config --ldflags  jsoncpp htslib libseqlib)
+LDLIBS += -lpthread $(shell pkg-config --libs jsoncpp htslib libseqlib) -lz
 VPATH = functions
-LINK.cc ?= g++
 
-all : $(PROGRAM) $(OBJECTS) BIN
+.PHONY: all clean
 
-BIN : $(PROGRAM)
+all: filterBam
 	mkdir -p ../../../bin
 	mv filterBam ../../../bin/filterBam
 
-$(PROGRAM) : $(OBJECTS)
-	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
+filterBam: $(OBJS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@  $^ $(LDLIBS)
 
-$(OBJECTS) : %.o:%.cc
-	$(LINK.cc) $(CXXFLAGS) $(CPPFLAGS) -c $^ -o $@ $(INCLUDES)
+$(OBJS): %.o: %.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c $^
 
 
 clean:
-	rm -f *~ $(OBJECTS)
+	rm -f *~ $(OBJS)
 	rm -f filterBam
 	rm -f ../../../bin/filterBam

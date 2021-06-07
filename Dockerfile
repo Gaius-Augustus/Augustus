@@ -27,18 +27,17 @@ RUN apt-get install -y libboost-all-dev
 RUN apt-get install -y cdbfasta diamond-aligner libfile-which-perl libparallel-forkmanager-perl libyaml-perl libdbd-mysql-perl
 RUN apt-get install -y --no-install-recommends python3-biopython
 
-# Install hal - required by homGeneMapping 
+# Install hal - required by homGeneMapping
 # execute the commented out code if you want to use this program - see auxprogs/homGeneMapping/Dockerfile
 #RUN apt-get install -y libhdf5-dev
-#RUN git clone https://github.com/benedictpaten/sonLib.git
-#WORKDIR /root/sonLib
+#RUN git clone https://github.com/benedictpaten/sonLib.git /opt/sonLib
+#WORKDIR /opt/sonLib
 #RUN make
-#WORKDIR /root
-#RUN git clone https://github.com/ComparativeGenomicsToolkit/hal.git
-#WORKDIR /root/hal
+#RUN git clone https://github.com/ComparativeGenomicsToolkit/hal.git /opt/hal
+#WORKDIR /opt/hal
 #ENV RANLIB=ranlib
 #RUN make
-#ENV PATH="${PATH}:/root/hal/bin"
+#ENV PATH="${PATH}:/opt/hal/bin"
 
 # Clone AUGUSTUS repository
 ADD / /root/augustus

@@ -3,8 +3,15 @@ AINC = ../../include
 CXX ?= g++
 CXXFLAGS := -std=c++11 -Wall -pedantic -pthread ${CXXFLAGS}
 LDFLAGS = -L../googletest -lgtest -lgtest_main -lgsl -lgslcblas -lmysqlclient -lmysqlpp \
-	-lsqlite3 -llpsolve55 -lcolamd -ldl -lsqlite3 -lboost_iostreams
-INCLS	+= -I$(AINC) -isystem ../googletest/include/ -I/usr/include/mysql -I/usr/include/mysql++
+	-lsqlite3 -llpsolve55 -lcolamd -ldl -lboost_iostreams
+LDFLAGS += $(LIBRARY_PATH_LPSOLVE) $(LIBRARY_PATH_GSL) $(LIBRARY_PATH_SUITESPARSE)
+LDFLAGS += $(LIBRARY_PATH_MYSQL)
+LDFLAGS += $(LIBRARY_PATH_SQLITE)
+LDFLAGS += $(LIBRARY_PATH_BOOST)
+INCLS	+= -I$(AINC) -isystem ../googletest/include
+INCLUDE_PATH_MYSQL ?= -I/usr/include/mysql # set the default (ubuntu/debian) location if it has not already been set in common.mk
+INCLS   += $(INCLUDE_PATH_MYSQL)
+INCLS   += $(INCLUDE_PATH_GSL)
 OBJS    = ../lldouble.o ../fasta.o ../contTimeMC.o ../codonevo.o \
 	../properties.o ../types.o \
 	../geneticcode.o ../phylotree.o ../geneMSA.o ../alignment.o \
@@ -34,7 +41,7 @@ fasta_unittest.o: fasta_unittest.cc $(AINC)/fasta.hh
 evo_unittest.o: evo_unittest.cc $(AINC)/contTimeMC.hh
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c evo_unittest.cc
 
-codonevo_unittest.o: codonevo_unittest.cc $(AINC)/contTimeMC.hh $(AINC)/codonevo.hh 
+codonevo_unittest.o: codonevo_unittest.cc $(AINC)/contTimeMC.hh $(AINC)/codonevo.hh
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c codonevo_unittest.cc
 
 alignment_unittest.o: alignment_unittest.cc $(AINC)/alignment.hh

@@ -4,7 +4,7 @@
 # 19 Jan 2018
 
 oneTimeSetUp() { 
-	prog=../Debug/utrrnaseq
+	prog=../utrrnaseq
 	test_data_dir=../for-test-cases 
 }
 
@@ -18,8 +18,8 @@ oneTimeTearDown() {
 testStandard() {
 	dir=${test_data_dir}/standard-test-set
 	eval $prog --in-scaffold-file $dir/test.fa \
-    	       --in-coding-region-file $dir/test-start-stop.gtf \
-    	       --in-intron-file $dir/test-introns.hints \
+               --in-coding-region-file $dir/test-start-stop.gtf \
+               --in-intron-file $dir/test-introns.hints \
                --in-repeat-file $dir/test-repeat.hints \
                --in-wiggle-file $dir/test.wig
 	assertEquals $? 0
@@ -29,8 +29,8 @@ testStandard() {
 testSoftmasing() {
 	dir=${test_data_dir}/softmasking-test-set
 	eval $prog --in-scaffold-file $dir/test.fa \
-    	       --in-coding-region-file $dir/test-start-stop.gtf \
-    	       --in-intron-file $dir/test-introns.hints \
+               --in-coding-region-file $dir/test-start-stop.gtf \
+               --in-intron-file $dir/test-introns.hints \
                --in-wiggle-file $dir/test.wig
 	assertEquals $? 0
 }
@@ -39,8 +39,8 @@ testSoftmasing() {
 testInvalidFilename() {
 	dir=${test_data_dir}/standard-test-set
 	eval $prog --in-scaffold-file $dir/test.fa \
-    	       --in-coding-region-file $dir/test-start-stop.gtf \
-    	       --in-intron-file $dir/test-introns.hints \
+               --in-coding-region-file $dir/test-start-stop.gtf \
+               --in-intron-file $dir/test-introns.hints \
                --in-repeat-file $dir/test-repeat.hints \
                --in-wiggle-file $dir/file_does_not_exist.wig
 	assertNotEquals $? 0

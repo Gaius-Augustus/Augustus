@@ -18,7 +18,7 @@
 
 #ifdef M_MYSQL
 #include <table_structure.h>
-#include <query.h>
+#include <mysql++/query.h>
 #endif
 
 int SpeciesCollection::groupCount = 1;
