@@ -135,14 +135,13 @@ volvox                                   | Volvox carteri
   This is why this value should not be set very large, even if you have plenty of memory. 
 
 - --protein=on/off
+- --codingseq=on/off
 - --introns=on/off
 - --start=on/off
 - --stop=on/off
 - --cds=on/off
-- --codingseq=on/off
-  Output options. Output predicted protein sequence, introns, start
-  codons, stop codons. Or use 'cds' in addition to 'initial', 'internal',
-  'terminal' and 'single' exon. The CDS excludes the stop codon (unless stopCodonExcludedFromCDS=false)
+- --exonnames=on/off  
+  Output options. Output predicted amino acid sequences or coding sequences. Or toggle the display of the GFF features/lines of type intron, start codon, stop codon, CDS or 'initial', 'internal', 'terminal' and 'single' exon type names. The CDS excludes the stop codon (unless stopCodonExcludedFromCDS=false)
   whereas the terminal and single exon include the stop codon.
 - --AUGUSTUS_CONFIG_PATH=path
   path to config directory (if not specified as environment variable)
