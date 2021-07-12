@@ -25,6 +25,7 @@ int maxSortesTest = 100000;
 int minCover = 80;
 int minId = 92;
 int minIntronLen = 35;
+int numThreads = 1;
 float uniqThresh = 0.96;
 const char* commonGeneFile;
 const char* inputFile;
@@ -54,6 +55,7 @@ struct globalOptions_t {
 	int minCover;
 	int minId;
 	int minIntronLen;
+	int numThreads;
 	float uniqThresh;
 	const char* commonGeneFile;
   	const char* inputFile;
@@ -78,6 +80,7 @@ static const struct option longOpts[] = {
     { "minCover", required_argument, NULL, 'j' },
   	{ "minId", required_argument, NULL, 'k' },
 	{ "minIntronLen", required_argument, NULL, 'l' },
+	{ "numThreads", required_argument, NULL, 't' },
     { "uniqThresh", required_argument, NULL, 'm' }, 	 
     { "commonGeneFile", required_argument, NULL, 'n' }, 
     { "in", required_argument, NULL, 'o' }, 
@@ -143,6 +146,7 @@ void displayUsage(int argc, char *argv[])
 	cout <<  "  \t\t\t or between the reads" << endl;
 	cout <<  "  --pairwiseAlignments             use in case alignments were done in pairwise fashion (default:  " << 
 					pairwiseAlignments << ")" << endl;
+	cout <<  "  --numThreads n    use n threads for compression/decompression (default 1)" << endl;
 }
 
 
@@ -173,6 +177,7 @@ globalOptions_t initOptions(int argc, char *argv[])
 	globalOptions.minCover = minCover;
 	globalOptions.minId = minId;
 	globalOptions.minIntronLen = minIntronLen;
+	globalOptions.numThreads = numThreads;
 	globalOptions.uniqThresh = uniqThresh; 
 	globalOptions.commonGeneFile = "";
 	globalOptions.inputFile = "";
@@ -196,6 +201,7 @@ globalOptions_t initOptions(int argc, char *argv[])
 			case 'j'	:	globalOptions.minCover = atoi(optarg);		break;
 			case 'k'	:	globalOptions.minId = atoi(optarg);			break;
             case 'l'	:	globalOptions.minIntronLen = atoi(optarg);	break;
+            case 't'	:	globalOptions.numThreads = atoi(optarg);	break;
 			case 'm'	:	globalOptions.uniqThresh = atof(optarg);	break;
 			case 'n'	:	globalOptions.commonGeneFile = optarg;		break;
 			case 'o'	:	globalOptions.inputFile = optarg;			break;

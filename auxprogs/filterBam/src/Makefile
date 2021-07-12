@@ -5,24 +5,14 @@ include ../../../common.mk
 CXX ?= g++
 CXXFLAGS := -std=c++0x ${CXXFLAGS}
 
-SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
-          printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
+SOURCES = filterBam.cc MatePairs.cc initOptions.cc \
+          printElapsedTime.cc sumDandIOperations.cc PairednessCoverage.cc
 OBJS = $(SOURCES:.cc=.o)
 
-# keep compatibility with old versions still using BAMTOOLS_INSTALL_DIR
-BAMTOOLS_INSTALL_DIR ?= /usr
-
-# sets the default locations if it has not already been set in common.mk
-INCLUDE_PATH_BAMTOOLS ?= -I$(BAMTOOLS_INSTALL_DIR)/include/bamtools
-LIBRARY_PATH_BAMTOOLS ?= -L$(BAMTOOLS_INSTALL_DIR)/lib -Wl,-rpath,$(BAMTOOLS_INSTALL_DIR)/lib
-
-INCLS += -I./headers -I./bamtools
-INCLS += $(INCLUDE_PATH_BAMTOOLS)
-LDFLAGS += $(LIBRARY_PATH_BAMTOOLS)
-LDLIBS += -lbamtools
-INCLS += $(INCLUDE_PATH_ZLIB)
-LDFLAGS += $(LIBRARY_PATH_ZLIB)
-LDLIBS += -lz
+INCLS += -I./headers
+INCLS += $(shell pkg-config --cflags  jsoncpp htslib libseqlib)
+LDFLAGS += $(shell pkg-config --ldflags  jsoncpp htslib libseqlib)
+LDLIBS += -lpthread $(shell pkg-config --libs jsoncpp htslib libseqlib) -lz
 VPATH = functions
 
 .PHONY: all clean

@@ -8,14 +8,14 @@
 #include <list>
 #include <string>
 #include <vector>
-#include <api/BamAlignment.h>
+#include <SeqLib/BamRecord.h>
 #include <cassert>
 #include <algorithm>
 #include <functional>
 #include <map>
 
 using namespace std;
-using namespace BamTools;
+using namespace SeqLib;
 
 
 
@@ -104,7 +104,7 @@ int MatePairs::operator<(const MatePairs &rhs) const
 }
 
 
-void printMatePairs(vector<MatePairs> matepairs, vector<BamAlignment> &qali)
+void printMatePairs(vector<MatePairs> matepairs, vector<BamRecord> &qali)
 {
   int it, jit;
   float score;
@@ -115,7 +115,7 @@ void printMatePairs(vector<MatePairs> matepairs, vector<BamAlignment> &qali)
 	  jit = matepairs.at(iter).alJit;
 	  score = matepairs.at(iter).score;
 	  cout << "(" << it << "," << jit << ") = (" 
-		   << qali.at(it).Name << "," << qali.at(jit).Name << "),"			 	
+		   << qali.at(it).Qname() << "," << qali.at(jit).Qname() << "),"			 	
 		   << " scoreMate=" << score << endl;
 	}
 }

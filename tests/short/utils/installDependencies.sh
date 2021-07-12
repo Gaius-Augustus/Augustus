@@ -15,7 +15,7 @@ apt install -y libgsl-dev libsuitesparse-dev liblpsolve55-dev
 apt install -y zlib1g-dev
 
 # Install dependencies for bam2hints and filterBam 
-apt install -y libbamtools-dev
+apt install -y libbamtools-dev libseqlib-dev
 
 # Install additional dependencies for bam2wig
 apt install -y samtools libhts-dev
