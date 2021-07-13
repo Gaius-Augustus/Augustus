@@ -27,6 +27,7 @@ void downcase(string& s) {
 
 
 map<string, string> Properties::properties;
+json Properties::allowedParameters;
 const char* Properties::parameternames[NUMPARNAMES]= 
 {
 "allow_hinted_splicesites",
@@ -366,22 +367,10 @@ void Properties::init( int argc, char* argv[] ){
 	if (argstr.substr(0,2) == "--") {
 	    string::size_type pos = argstr.find('=');
 	    name = argstr.substr(0,pos).substr(2);
-	    if( name == GENEMODEL_KEY ||
-		name == NONCODING_KEY ||
-		name == SINGLESTRAND_KEY ||
-		name == SPECIES_KEY ||
-		name == EXTERNAL_KEY ||
-		name == CFGPATH_KEY ||
-		name == ALN_KEY ||
-		name == TREE_KEY ||
-		name == DB_KEY ||
-		name == SEQ_KEY ||
-		name == CODONALN_KEY ||
-		name == REF_EXON_KEY)
-	    {
-		if (pos >= argstr.length()-1)
-		    throw ProjectError(string("Wrong argument format for ") +  name + ". Use: --argument=value");
-		properties[name] = argstr.substr(pos+1);
+	    if( name == CFGPATH_KEY) {
+			if (pos >= argstr.length()-1)
+				throw ProjectError(string("Wrong argument format for ") +  name + ". Use: --argument=value");
+			properties[name] = argstr.substr(pos+1);
 	    }
 	} else if (!hasProperty(INPUTFILE_KEY))
 	    properties[INPUTFILE_KEY] = argv[arg];
@@ -389,6 +378,80 @@ void Properties::init( int argc, char* argv[] ){
 	    throw ProjectError(string("Error: 2 query files given: ") + properties[INPUTFILE_KEY] + " and " + argv[arg] +"."
 			       + "\nparameter names must start with '--'");
     }
+
+    // set configPath variable
+    string& configPath = properties[CFGPATH_KEY]; // first priority: command line
+    if (configPath == "") {
+	char *dir = getenv(CFGPATH_KEY); // second priority: environment variable
+	if (dir){
+	    configPath = string(dir);
+	} else { // third priority: relative to the path of the executable
+	    configPath = findLocationOfSelfBinary();
+	}
+    }
+    if (configPath[configPath.size()-1] != '/')
+	configPath += '/';  // append slash if necessary
+
+    // does the directory actually exist?
+    struct stat buffer;
+    if( stat(configPath.c_str(), &buffer) == -1 || !S_ISDIR(buffer.st_mode))
+	throw ProjectError(configPath + " is not a directory. Could not locate directory " CFGPATH_KEY ".");
+    properties[CFGPATH_KEY] = configPath;
+
+    // read in the other parameters, command line parameters have higher priority
+    // than those in the config files
+    string paramsFilePath = configPath + "parameters/aug_cmdln_parameters.json";
+    std::cout << "Path to JSON config: " << paramsFilePath << std::endl;
+    ifstream ifile;
+    ifile.open(paramsFilePath);
+    if (!ifile)
+        throw ProjectError("Could not locate command line parameters file: " + paramsFilePath + ".");
+    std::ifstream i(paramsFilePath);
+    i >> allowedParameters;
+    std::cout << "Number of Params: " << allowedParameters.size() << std::endl;
+
+    arg = argc;
+    bool miss = false;
+    while (arg > 1 && !miss)
+    {
+        arg--;
+        string argstr(argv[arg]);
+        if (argstr.substr(0, 2) != "--")
+            continue;
+        argstr.erase(0, 2);
+        string::size_type pos = argstr.find('=');
+        name = argstr.substr(0, pos);
+        if (name == CFGPATH_KEY)
+            continue;
+        if (pos == string::npos)
+            throw PropertiesError(string("'=' missing for parameter: ") + name);
+
+        // check that name is actually the name of a parameter
+        // TODO: optimize?
+        bool found = false;
+        for (auto &el : allowedParameters.items())
+        {
+            if (el.value()["name"] == name)
+            {
+                properties[name] = argstr.substr(pos + 1);
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+            miss = true;
+
+        /*
+		for (int i=0; i<NUMPARNAMES; i++) {
+			if (name == parameternames[i]) {
+				properties[name] = argstr.substr(pos+1);
+				miss = true;
+			}
+		}
+		*/
+    }
+    if (miss)
+        throw PropertiesError("Unknown parameter: \"" + name + "\". Type \"augustus\" for help.");
 
     // check whether multi-species mode is turned on
     Properties::assignProperty(TREE_KEY, Constant::treefile);
@@ -408,24 +471,6 @@ void Properties::init( int argc, char* argv[] ){
         In single species mode specify none of these parameters.\n");
       }
     }
-    // set configPath variable
-    string& configPath = properties[CFGPATH_KEY]; // first priority: command line
-    if (configPath == "") {
-	char *dir = getenv(CFGPATH_KEY); // second priority: environment variable
-	if (dir){
-	    configPath = string(dir);
-	} else { // third priority: relative to the path of the executable
-	    configPath = findLocationOfSelfBinary();
-	}
-    }
-    if (configPath[configPath.size()-1] != '/')
-	configPath += '/';  // append slash if necessary
-
-    // does the directory actually exist?
-    struct stat buffer;
-    if( stat(configPath.c_str(), &buffer) == -1 || !S_ISDIR(buffer.st_mode))
-	throw ProjectError(configPath + " is not a directory. Could not locate directory " CFGPATH_KEY ".");
-    properties[CFGPATH_KEY] = configPath;
 
     // determine species
     string optCfgFile = "";
@@ -484,35 +529,6 @@ void Properties::init( int argc, char* argv[] ){
 	string savedSpecies = speciesValue;
 	readFile(optCfgFile);
 	speciesValue = savedSpecies;
-    }
-
-    // read in the other parameters, command line parameters have higher priority
-    // than those in the config files
-    arg = argc;
-    while ( arg > 1 ){
-        arg--;
- 	string argstr(argv[arg]);
-	if (argstr.substr(0,2) != "--")
-	    continue;
-	argstr.erase(0,2);
-	string::size_type pos = argstr.find('=');
-	name = argstr.substr(0,pos);
-	if (name == GENEMODEL_KEY || name == NONCODING_KEY || name == SINGLESTRAND_KEY ||
-	    name == SPECIES_KEY || name == CFGPATH_KEY ||
-	    name == EXTERNAL_KEY || name == ALN_KEY ||
-	    name == TREE_KEY || name == DB_KEY || name == SEQ_KEY || name == CODONALN_KEY || name == REF_EXON_KEY)
-	    continue;
-	if (pos == string::npos)
-	    throw PropertiesError(string("'=' missing for parameter: ") + name);
-	
-	// check that name is actually the name of a parameter
-	for (int i=0; i<NUMPARNAMES; i++)
-	    if (name == parameternames[i]) {
-		properties[name] = argstr.substr(pos+1);
-		goto ENDWHILE;
-	    }
-	throw PropertiesError("Unknown parameter: \"" + name + "\". Type \"augustus\" for help.");
-      ENDWHILE: {}
     }
 
     // singlestrand mode or not?
@@ -584,6 +600,8 @@ void Properties::init( int argc, char* argv[] ){
     // read in config file with states
     readFile(configPath + MODEL_SUBDIR + stateCFGfilename);
 
+
+	// TODO: check!!!
     // reread a few command-line parameters that can override parameters in the model files
     arg = argc;
     while( arg > 1 ){
@@ -599,6 +617,8 @@ void Properties::init( int argc, char* argv[] ){
 	    properties[name] = argstr.substr(pos+1);
 	}
     }
+
+
 
     // expand the extrinsicCfgFile filename in case it is specified
     if (hasProperty(EXTRFILE_KEY))

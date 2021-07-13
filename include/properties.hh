@@ -13,6 +13,9 @@
 // project includes
 #include "types.hh"
 
+// json support include
+#include "json.hpp"
+
 // standard C/C++ includes
 #include <map>
 
@@ -47,6 +50,8 @@
 #define REF_EXON_KEY "referenceFile"
 
 #define OVLPLENFILE "ovlp_len.pbl"
+
+using json = nlohmann::json;
 
 /**
  * @brief The base exception class for Properties
@@ -297,6 +302,7 @@ class Properties{
     private:
 	static map<string, string> properties;
 	static const char* parameternames[NUMPARNAMES];
+    static json allowedParameters;
 };
 
 /*
