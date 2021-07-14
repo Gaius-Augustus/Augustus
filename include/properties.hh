@@ -23,11 +23,6 @@
 #include <mach-o/dyld.h>   // for _NSGetExecutablePath
 #endif
 
-#ifdef TESTING
-#define NUMPARNAMES 279   // +testMode, workingDir command line options
-#else
-#define NUMPARNAMES 277
-#endif
 
 #define GENEMODEL_KEY "genemodel"
 #define NONCODING_KEY "nc"
@@ -299,9 +294,9 @@ class Properties{
          *
          */
 	static void            readLine    (istream& strm );
+    static bool hasValue(const json& list, const string value);
     private:
 	static map<string, string> properties;
-	static const char* parameternames[NUMPARNAMES];
     static json allowedParameters;
 };
 
