@@ -71,6 +71,12 @@ struct KeyNotFoundError : public PropertiesError{
     {}
 };
 
+struct SpecifiedTypeError : public PropertiesError
+{
+    SpecifiedTypeError(string name, string type) : PropertiesError("Properties::getProperty(): property \"" + name + "\" is not defined as \"" + type + "\".")
+    {}
+};
+
 /**
  * @author Emmanouil Stafilarakis
  */
@@ -295,6 +301,8 @@ class Properties{
          */
 	static void            readLine    (istream& strm );
     static bool hasValue(const json& list, const string value);
+    static bool isDefinedJSONType(const string typeName, const string paramName);
+
     private:
 	static map<string, string> properties;
     static json allowedParameters;

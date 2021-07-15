@@ -378,6 +378,9 @@ void Properties::addProperty( string name, string value ) {
 
 Integer Properties::getIntProperty( string name ) {
     Integer val;
+    if (!isDefinedJSONType("int", name)) {
+        throw SpecifiedTypeError(name, "int");
+    }
     istringstream strm(getProperty(name));
     if( !(strm >> val) )
         throw ValueFormatError(name, strm.str(), "Integer");
@@ -386,6 +389,9 @@ Integer Properties::getIntProperty( string name ) {
 
 Double Properties::getDoubleProperty( string name ){
     Double val;
+    if (!isDefinedJSONType("float", name)) {
+        throw SpecifiedTypeError(name, "float");
+    }
     istringstream strm(getProperty(name));
     if ( !(strm >> val) )
         throw ValueFormatError(name, strm.str(), "LLDouble");
@@ -394,6 +400,9 @@ Double Properties::getDoubleProperty( string name ){
 
 double Properties::getdoubleProperty( string name ) {
     double val;
+    if (!isDefinedJSONType("float", name)) {
+        throw SpecifiedTypeError(name, "float");
+    }
     istringstream strm(getProperty(name));
     if ( !(strm >> val) )
         throw ValueFormatError(name, strm.str(), "double");
@@ -402,6 +411,9 @@ double Properties::getdoubleProperty( string name ) {
 
 Boolean Properties::getBoolProperty( string name ) {
     string str(getProperty(name));
+    if (!isDefinedJSONType("bool", name)) {
+        throw SpecifiedTypeError(name, "bool");
+    }
     downcase(str);
     if( str == "true" || str=="1" || str == "t"  || str=="on" || str == "yes" || str == "y")
         return true;
@@ -441,6 +453,30 @@ void Properties::readLine( istream& strm ) {
 
 bool Properties::hasValue(const json &list, const string value) {
     return std::find(list.begin(), list.end(), value) != list.end();
+}
+
+/*
+ * Checks if the given parameter has been defined with the given type.
+ * Possible types are: 'string', 'int', 'float', 'bool', 'list<string>'
+ */
+bool Properties::isDefinedJSONType(const string typeName, const string paramName) {
+    for (auto &el : allowedParameters.items())
+    {
+        if (el.value()["name"] == paramName)
+        {
+            if (el.value()["type"].is_null()) {
+                //TODO: treat not defined types
+                //cerr << "Warning: The parameter " << paramName << " has no specified type in config file." << endl;
+                return true;
+            }
+            if (!el.value()["type"].is_null() && el.value()["type"] != typeName)
+                return false;
+            if (!el.value()["type"].is_null() && el.value()["type"] == typeName)
+                return true;
+        }
+    }
+    cerr << "Warning: The parameter " << paramName << " is not specified in config file." << endl;
+    return true;
 }
 
 static char* get_self(void){
