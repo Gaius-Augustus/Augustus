@@ -934,10 +934,6 @@
         "development": false,
         "type": "bool",
         "usage": "--alternatives-from-evidence=true/false",
-        "possible_values": [
-            true,
-            false
-        ],
         "description": "Report alternative transcripts when they are suggested by hints. AUGUSTUS can then find alternative splice forms when the extrinsic evidence is not reconcilable with constitutive splicing only (1 tx per gene) and no overlaps.",
         "exclude_apps": [
             "etraining"
@@ -948,10 +944,6 @@
         "development": false,
         "type": "bool",
         "usage": "--alternatives-from-sampling=true/false",
-        "possible_values": [
-            true,
-            false
-        ],
         "description": "Report alternative transcripts generated through probabilistic sampling. This can be useful to produce suboptimal but still plausible alternative gene structures.",
         "exclude_apps": [
             "etraining"
@@ -1158,10 +1150,6 @@
         "type": "bool",
         "usage": "--gff3=true/false",
         "default_value": false,
-        "possible_values": [
-            true,
-            false
-        ],
         "description": "Output in gff3 format.",
         "exclude_apps": [
             "etraining"
@@ -1311,10 +1299,6 @@
         "development": false,
         "type": "bool",
         "usage": "--noInFrameStop=true/false",
-        "possible_values": [
-            true,
-            false
-        ],
         "default_value": false,
         "description": "Do not report transcripts with in-frame stop codons. Otherwise, intron-spanning stop codons could occur. Such transcripts are then removed from the output.",
         "exclude_apps": [
@@ -1326,10 +1310,6 @@
         "development": false,
         "type": "bool",
         "usage": "--noprediction=true/false",
-        "possible_values": [
-            true,
-            false
-        ],
         "description": "No gene predition is performed. Useful for getting the annotated protein sequences if the input is in Genbank format.",
         "exclude_apps": [
             "etraining"
@@ -1467,10 +1447,6 @@
         "development": false,
         "type": "bool",
         "usage": "--progress=true",
-        "possible_values": [
-            true,
-            false
-        ],
         "default_value": false,
         "description": "Show a progressmeter.",
         "exclude_apps": [
@@ -1533,10 +1509,6 @@
         "development": false,
         "type": "bool",
         "usage": "--singlestrand=true/false",
-        "possible_values": [
-            true,
-            false
-        ],
         "default_value": false,
         "description": "Predict genes independently on each strand, allow overlapping genes on opposite strands. This is less accurate on average.",
         "exclude_apps": [
@@ -1548,10 +1520,6 @@
         "development": false,
         "type": "bool",
         "usage": "--softmasking=True/False",
-        "possible_values": [
-            true,
-            false
-        ],
         "default_value": true,
         "description": "Softmasked regions are treated as nonexonpart hints. As a consequence, exon overlapping the masked regions are discouraged. If the bases in repeat regions are lower case (a,c,g,t instead of A,C,G,T) in the input, then softmasking should be turned on. Softmasking is on average more accurate then hard-masking with Ns."
     },
@@ -1648,10 +1616,6 @@
         "development": false,
         "type": "bool",
         "usage": "--uniqueGeneId=true/false",
-        "possible_values": [
-            true,
-            false
-        ],
         "default_value": false,
         "description": "If true, output gene identifyers like this: seqname.gN. This can be useful to avoid gene name conflicts when parallelizing.",
         "exclude_apps": [
@@ -1683,10 +1647,6 @@
         "development": false,
         "type": "bool",
         "usage": "--UTR=true/false",
-        "possible_values": [
-            true,
-            false
-        ],
         "default_value": false,
         "description": "Predict the untranslated regions in addition to the coding sequence. This works only for a subset of species for which an UTR model was trained."
     }
