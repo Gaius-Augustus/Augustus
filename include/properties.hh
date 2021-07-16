@@ -73,7 +73,8 @@ struct KeyNotFoundError : public PropertiesError{
 
 struct SpecifiedTypeError : public PropertiesError
 {
-    SpecifiedTypeError(string name, string type) : PropertiesError("Properties::getProperty(): property \"" + name + "\" is not defined as \"" + type + "\".")
+    SpecifiedTypeError(string name, string type) :
+        PropertiesError("Properties::getProperty(): property \"" + name + "\" is not defined as \"" + type + "\" in config file.")
     {}
 };
 
