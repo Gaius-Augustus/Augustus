@@ -378,7 +378,7 @@ void Properties::addProperty( string name, string value ) {
 
 Integer Properties::getIntProperty( string name ) {
     Integer val;
-    if (!isDefinedJSONType("int", name)) {
+    if (!isDefinedType("int", name)) {
         throw SpecifiedTypeError(name, "int");
     }
     istringstream strm(getProperty(name));
@@ -389,7 +389,7 @@ Integer Properties::getIntProperty( string name ) {
 
 Double Properties::getDoubleProperty( string name ){
     Double val;
-    if (!isDefinedJSONType("float", name)) {
+    if (!isDefinedType("float", name)) {
         throw SpecifiedTypeError(name, "float");
     }
     istringstream strm(getProperty(name));
@@ -400,7 +400,7 @@ Double Properties::getDoubleProperty( string name ){
 
 double Properties::getdoubleProperty( string name ) {
     double val;
-    if (!isDefinedJSONType("float", name)) {
+    if (!isDefinedType("float", name)) {
         throw SpecifiedTypeError(name, "float");
     }
     istringstream strm(getProperty(name));
@@ -411,7 +411,7 @@ double Properties::getdoubleProperty( string name ) {
 
 Boolean Properties::getBoolProperty( string name ) {
     string str(getProperty(name));
-    if (!isDefinedJSONType("bool", name)) {
+    if (!isDefinedType("bool", name)) {
         throw SpecifiedTypeError(name, "bool");
     }
     downcase(str);
@@ -422,10 +422,16 @@ Boolean Properties::getBoolProperty( string name ) {
     throw ValueFormatError(name, str, "Boolean");
 }
 
-const char* Properties::getProperty( string name ) {
+const char *Properties::getProperty(string name) {
     if (!hasProperty(name))
-	throw KeyNotFoundError(name);
-    return properties[name].c_str();
+        throw KeyNotFoundError(name);
+
+    // check value according to json config file
+    const string& value = properties[name];
+    if (!isPossibleValue(value, name)) {
+        throw ValueError(name, value);
+    }
+    return value.c_str();
 }
 
 const char* Properties::getProperty(string name, int index) {
@@ -456,16 +462,17 @@ bool Properties::hasValue(const json &list, const string value) {
 }
 
 /*
- * Checks if the given parameter has been defined with the given type.
+ * Checks if the given parameter has been defined with the given type
+ * in configuration file.
  * Possible types are: 'string', 'int', 'float', 'bool', 'list<string>'
  */
-bool Properties::isDefinedJSONType(const string typeName, const string paramName) {
+bool Properties::isDefinedType(const string typeName, const string paramName) {
     for (auto &el : allowedParameters.items())
     {
         if (el.value()["name"] == paramName)
         {
             if (el.value()["type"].is_null()) {
-                //TODO: treat not defined types
+                //TODO: treat not specified types?
                 //cerr << "Warning: The parameter " << paramName << " has no specified type in config file." << endl;
                 return true;
             }
@@ -476,6 +483,23 @@ bool Properties::isDefinedJSONType(const string typeName, const string paramName
         }
     }
     cerr << "Warning: The parameter " << paramName << " is not specified in config file." << endl;
+    return true;
+}
+
+/*
+ * Checks if the passed value is included in the list of specified possible values.
+ * For this the value 'possible_values' must be set in the json configuration date.
+ */
+bool Properties::isPossibleValue(const string value, const string paramName) {
+    for (auto &el : allowedParameters.items())
+    {
+        if (el.value()["name"] == paramName)
+        {
+            if (el.value()["possible_values"].is_array()) {
+                return hasValue(el.value()["possible_values"], value);
+            }
+        }
+    }
     return true;
 }
 

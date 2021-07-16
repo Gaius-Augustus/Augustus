@@ -74,7 +74,14 @@ struct KeyNotFoundError : public PropertiesError{
 struct SpecifiedTypeError : public PropertiesError
 {
     SpecifiedTypeError(string name, string type) :
-        PropertiesError("Properties::getProperty(): property \"" + name + "\" is not defined as \"" + type + "\" in config file.")
+        PropertiesError("Properties::getProperty(): property \"" + name + "\" is not defined as \"" + type + "\" in configuration file.")
+    {}
+};
+
+struct ValueError : public PropertiesError
+{
+    ValueError(string name, string value) :
+        PropertiesError("Properties::getProperty(): the given value \"" + value + "\" of property \"" + name + "\" is not one of the possible values according to the configuration file.")
     {}
 };
 
@@ -302,7 +309,8 @@ class Properties{
          */
 	static void            readLine    (istream& strm );
     static bool hasValue(const json& list, const string value);
-    static bool isDefinedJSONType(const string typeName, const string paramName);
+    static bool isDefinedType(const string typeName, const string paramName);
+    static bool isPossibleValue(const string value, const string paramName);
 
     private:
 	static map<string, string> properties;
