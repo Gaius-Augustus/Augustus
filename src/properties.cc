@@ -135,7 +135,18 @@ void Properties::init( int argc, char* argv[] ){
                 // exclude marked parameters
                 if (!el.value()["exclude_apps"].is_array()
                         || (el.value()["exclude_apps"].is_array() && !hasValue(el.value()["exclude_apps"], "augustus"))) {
-                    strm << el.value()["name"].get<std::string>() << endl;
+                    strm << el.value()["name"].get<string>() << endl;
+                    if (!el.value()["type"].is_null())
+                        strm  << "  Type: " << el.value()["type"].get<string>() << endl;
+                    if (!el.value()["default_value"].is_null())
+                        strm << "  Default value: " << el.value()["default_value"].dump() << endl;
+                    if (el.value()["possible_values"].is_array())
+                        strm << "  Possible value(s): " << el.value()["possible_values"].dump() << endl;
+                    if (!el.value()["usage"].is_null())
+                        strm << "  Usage: " << el.value()["usage"].get<string>() << endl;
+                    if (!el.value()["description"].is_null())
+                        strm << "  Description: " << el.value()["description"].dump() << endl;
+                    strm << endl;
                 }
             }
             throw HelpException(strm.str());
