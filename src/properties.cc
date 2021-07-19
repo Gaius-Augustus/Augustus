@@ -384,6 +384,9 @@ void Properties::init( int argc, char* argv[] ){
 #endif
 	}
     }
+
+    // set default value if property is not set
+    setDefaultValues();
 }
 
 Boolean Properties::hasProperty( string name) {
@@ -521,6 +524,21 @@ bool Properties::isPossibleValue(const string value, const string paramName) {
         }
     }
     return true;
+}
+
+void Properties::setDefaultValues()
+{
+    for (auto &el : allowedParameters.items())
+    {
+        // exclude marked parameters
+        if (!el.value()["exclude_apps"].is_array() || (el.value()["exclude_apps"].is_array() && !hasValue(el.value()["exclude_apps"], "augustus")))
+        {
+            if (!el.value()["default_value"].is_null() && !hasProperty(el.value()["name"].get<string>()))
+            {
+                properties[el.value()["name"].get<string>(), el.value()["default_value"].get<string>()];
+            }
+        }
+    }
 }
 
 static char* get_self(void){

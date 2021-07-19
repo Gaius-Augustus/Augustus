@@ -311,6 +311,7 @@ class Properties{
     static bool hasValue(const json& list, const string value);
     static bool isDefinedType(const string typeName, const string paramName);
     static bool isPossibleValue(const string value, const string paramName);
+    static void setDefaultValues();
 
     private:
 	static map<string, string> properties;
