@@ -4,7 +4,7 @@
         "development": false,
         "type": "int",
         "usage": "--/augustus/verbosity=n",
-        "default_value": 1,
+        "default_value": "1",
         "description": "Value of 0, 1, 2 or 3 produce increasingly verbose output."
     },
     {
@@ -986,7 +986,7 @@
         "development": false,
         "type": "int",
         "usage": "chunksize=n",
-        "default_value": 2500000,
+        "default_value": "2500000",
         "description": "If this option is set and jobs > 1, each AUGUSTUS instance is executed on sequence segments of the maximum size n.",
         "exclude_apps": [
             "augustus",
@@ -1073,7 +1073,7 @@
         "development": false,
         "type": "string",
         "usage": "debugOutputDir=path/to/dir",
-        "default_value": null,
+        "default_value": "None",
         "description": "If the directory is specified, all generated files, i.e. the split of the input file and intermediate results, as well as the generated AUGUSTUS command lines are stored there. This option works only for the parallelization, i. e. jobs > 1 is set.",
         "exclude_apps": [
             "augustus",
@@ -1149,7 +1149,7 @@
         "development": false,
         "type": "bool",
         "usage": "--gff3=true/false",
-        "default_value": false,
+        "default_value": "False",
         "description": "Output in gff3 format.",
         "exclude_apps": [
             "etraining"
@@ -1175,7 +1175,7 @@
         "development": false,
         "type": "int",
         "usage": "jobs=n",
-        "default_value": 1,
+        "default_value": "1",
         "description": "If this option is set, AUGUSTUS is executed in parallel on sequence segments or split input files using n jobs. After the execution of all jobs, the output files are merged.",
         "exclude_apps": [
             "augustus",
@@ -1227,7 +1227,7 @@
         "development": false,
         "type": "int",
         "usage": "maxSeqSize=n",
-        "default_value": 3500000,
+        "default_value": "3500000",
         "description": "The maximum length of a sequence from which the sequence is started to be partitioned.",
         "exclude_apps": [
             "augustus",
@@ -1239,7 +1239,7 @@
         "development": false,
         "type": "int",
         "usage": "--maxtracks=n",
-        "default_value": -1,
+        "default_value": "-1",
         "description": "The maximum number of tracks when displayed in a genome browser is \"maxtracks\" (unless maxtracks=-1, then it is unbounded). In cases where all transcripts of a gene overlap at some position this is also the maximal number of transcripts for that gene. We recommend increasing the parameter \"maxtracks\" for improving sensitivity and setting \"maxtracks\" to 1 and increasing  minmeanexonintronprob and/or minexonintronprob in order to improve specificity. (default -1)",
         "exclude_apps": [
             "etraining"
@@ -1265,7 +1265,7 @@
         "development": false,
         "type": "float",
         "usage": "--minexonintronprob=p",
-        "default_value": 0.0,
+        "default_value": "0.0",
         "description": "The posterior probability of every exon and every intron in a transcript must be at least \"minexonintronprob\", otherwise the transcript is not reported. Value between 0 and 1 (default 0.0).",
         "exclude_apps": [
             "etraining"
@@ -1276,7 +1276,7 @@
         "development": false,
         "type": "float",
         "usage": "--minmeanexonintronprob=p",
-        "default_value": 0.0,
+        "default_value": "0.0",
         "description": "The geometric mean of the probabilities of all exons and introns must be at least \"minmeanexonintronprob\". A value of 0.4 is reasonable if a restriction of results is desired at all. Value between 0 and 1 (default 0.0).",
         "exclude_apps": [
             "etraining"
@@ -1287,7 +1287,7 @@
         "development": false,
         "type": "int",
         "usage": "minSplitSize=n",
-        "default_value": 0,
+        "default_value": "0",
         "description": "The input fasta file is spilt to at least n base pairs. Set this to 0 to split the input in single sequence files.",
         "exclude_apps": [
             "augustus",
@@ -1299,7 +1299,7 @@
         "development": false,
         "type": "bool",
         "usage": "--noInFrameStop=true/false",
-        "default_value": false,
+        "default_value": "False",
         "description": "Do not report transcripts with in-frame stop codons. Otherwise, intron-spanning stop codons could occur. Such transcripts are then removed from the output.",
         "exclude_apps": [
             "etraining"
@@ -1330,7 +1330,7 @@
         "development": false,
         "type": "int",
         "usage": "overlap=n",
-        "default_value": 500000,
+        "default_value": "500000",
         "description": "If this option is set and jobs > 1, each AUGUSTUS instance is executed on sequence segments and the segments overlap by n.",
         "exclude_apps": [
             "augustus",
@@ -1347,7 +1347,7 @@
         "development": false,
         "type": "bool",
         "usage": "partitionHints=True/False",
-        "default_value": false,
+        "default_value": "False",
         "description": "If this option is set to True, a hints file is given and jobs > 1, then the hints file is split into appropriate pieces for the respective AUGUSTUS jobs.",
         "exclude_apps": [
             "augustus",
@@ -1359,7 +1359,7 @@
         "development": false,
         "type": "bool",
         "usage": "partitionLargeSeqeunces=True/False",
-        "default_value": false,
+        "default_value": "False",
         "description": "Parallelize large sequences by automatically setting the AUGUSTUS parameters predictionStart and predictionEnd based on the given values for chunksize and overlap.",
         "exclude_apps": [
             "augustus",
@@ -1447,7 +1447,7 @@
         "development": false,
         "type": "bool",
         "usage": "--progress=true",
-        "default_value": false,
+        "default_value": "False",
         "description": "Show a progressmeter.",
         "exclude_apps": [
             "etraining"
@@ -1493,7 +1493,7 @@
         "development": false,
         "type": "int",
         "usage": "--sample=n",
-        "default_value": 100,
+        "default_value": "100",
         "description": "The number of sampling iterations. The higher \"n\" is the more accurate is the estimation of probabilities (=scores output in 6th GFF column) but it usually is not important that the posterior probability is very accurate.",
         "exclude_apps": [
             "etraining"
@@ -1509,7 +1509,7 @@
         "development": false,
         "type": "bool",
         "usage": "--singlestrand=true/false",
-        "default_value": false,
+        "default_value": "False",
         "description": "Predict genes independently on each strand, allow overlapping genes on opposite strands. This is less accurate on average.",
         "exclude_apps": [
             "etraining"
@@ -1520,7 +1520,7 @@
         "development": false,
         "type": "bool",
         "usage": "--softmasking=True/False",
-        "default_value": true,
+        "default_value": "True",
         "description": "Softmasked regions are treated as nonexonpart hints. As a consequence, exon overlapping the masked regions are discouraged. If the bases in repeat regions are lower case (a,c,g,t instead of A,C,G,T) in the input, then softmasking should be turned on. Softmasking is on average more accurate then hard-masking with Ns."
     },
     {
@@ -1616,7 +1616,7 @@
         "development": false,
         "type": "bool",
         "usage": "--uniqueGeneId=true/false",
-        "default_value": false,
+        "default_value": "False",
         "description": "If true, output gene identifyers like this: seqname.gN. This can be useful to avoid gene name conflicts when parallelizing.",
         "exclude_apps": [
             "etraining"
@@ -1647,7 +1647,7 @@
         "development": false,
         "type": "bool",
         "usage": "--UTR=true/false",
-        "default_value": false,
+        "default_value": "False",
         "description": "Predict the untranslated regions in addition to the coding sequence. This works only for a subset of species for which an UTR model was trained."
     }
 ]
