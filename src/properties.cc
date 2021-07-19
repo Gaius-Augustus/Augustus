@@ -125,7 +125,6 @@ void Properties::init( int argc, char* argv[] ){
     {
         arg--;
         string argstr(argv[arg]);
-        // TODO: output more information
         if (argstr == "--paramlist")
         {
             ostringstream strm;
@@ -133,19 +132,29 @@ void Properties::init( int argc, char* argv[] ){
             for (auto &el : allowedParameters.items())
             {
                 // exclude marked parameters
-                if (!el.value()["exclude_apps"].is_array()
-                        || (el.value()["exclude_apps"].is_array() && !hasValue(el.value()["exclude_apps"], "augustus"))) {
+                if (!el.value()["exclude_apps"].is_array() || (el.value()["exclude_apps"].is_array() && !hasValue(el.value()["exclude_apps"], "augustus")))
+                {
                     strm << el.value()["name"].get<string>() << endl;
                     if (!el.value()["type"].is_null())
-                        strm  << "  Type: " << el.value()["type"].get<string>() << endl;
+                        strm << "  Type: " << el.value()["type"].get<string>() << endl;
                     if (!el.value()["default_value"].is_null())
                         strm << "  Default value: " << el.value()["default_value"].dump() << endl;
                     if (el.value()["possible_values"].is_array())
                         strm << "  Possible value(s): " << el.value()["possible_values"].dump() << endl;
                     if (!el.value()["usage"].is_null())
                         strm << "  Usage: " << el.value()["usage"].get<string>() << endl;
-                    if (!el.value()["description"].is_null())
-                        strm << "  Description: " << el.value()["description"].dump() << endl;
+                    if (el.value()["description"].is_object())
+                    {
+                        strm << "  Description: " << endl;
+                        for (auto &desc : el.value()["description"].items())
+                        {
+                            strm << "    " << desc.key() << ": " << desc.value().get<string>() << endl;
+                        }
+                    }
+                    else if (!el.value()["description"].is_null() && el.value()["description"].dump() != "\"\"")
+                    {
+                        strm << "  Description: " << el.value()["description"].get<string>() << endl;
+                    }
                     strm << endl;
                 }
             }
