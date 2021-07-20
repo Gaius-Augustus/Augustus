@@ -116,7 +116,6 @@ void Properties::init( int argc, char* argv[] ){
         throw ProjectError("Could not locate command line parameters file: " + paramsFilePath + ".");
     std::ifstream i(paramsFilePath);
     i >> allowedParameters;
-    std::cout << "Number of Params: " << allowedParameters.size() << std::endl;
 
     arg = argc;
     bool miss = false;
@@ -489,13 +488,16 @@ bool Properties::hasValue(const json &list, const string value) {
  * Possible types are: 'string', 'int', 'float', 'bool', 'list<string>'
  */
 bool Properties::isDefinedType(const string typeName, const string paramName) {
+    bool found = false;
     for (auto &el : allowedParameters.items())
     {
         if (el.value()["name"] == paramName)
         {
-            if (el.value()["type"].is_null()) {
-                //TODO: treat not specified types?
-                //cerr << "Warning: The parameter " << paramName << " has no specified type in config file." << endl;
+            found = true;
+            if (el.value()["type"].is_null() && !el.value()["development"].is_null() && !el.value()["development"].get<bool>())
+            {
+                // Output warning if productive parameter has no type
+                cerr << "Warning: The parameter " << paramName << " has no specified type in config file." << endl;
                 return true;
             }
             if (!el.value()["type"].is_null() && el.value()["type"] != typeName)
@@ -504,7 +506,12 @@ bool Properties::isDefinedType(const string typeName, const string paramName) {
                 return true;
         }
     }
-    cerr << "Warning: The parameter " << paramName << " is not specified in config file." << endl;
+
+    if (!found)
+    {
+        // Parmeter is not specified in json config file
+        cerr << "Warning: The parameter " << paramName << " is not specified in config file." << endl;
+    }
     return true;
 }
 
