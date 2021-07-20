@@ -108,12 +108,217 @@
         "description": ""
     },
     {
+        "name": "/CompPred/exon_score0",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score1",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score10",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score11",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score12",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score13",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score14",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score15",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score16",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score17",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score18",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score19",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score2",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score20",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score21",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score22",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score23",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score24",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score25",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score26",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score27",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score28",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score29",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score3",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score30",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score31",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score32",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score33",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score34",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score35",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score36",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score4",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score5",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score6",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score7",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score8",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/exon_score9",
+        "development": true,
+        "description": ""
+    },
+    {
         "name": "/CompPred/genesWithoutUTRs",
         "development": true,
         "description": ""
     },
     {
         "name": "/CompPred/ic_thold",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/intron_score0",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/intron_score1",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/intron_score2",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/CompPred/intron_score3",
         "development": true,
         "description": ""
     },
@@ -713,6 +918,16 @@
         "description": ""
     },
     {
+        "name": "/NAMGene/statecount",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "/NAMGene/SynchState",
+        "development": true,
+        "description": ""
+    },
+    {
         "name": "/ProteinModel/absolute_malus_threshold",
         "development": true,
         "description": ""
@@ -1194,6 +1409,26 @@
     },
     {
         "name": "learning_rate",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "lg_exon_score0",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "lg_exon_score1",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "lg_exon_score2",
+        "development": true,
+        "description": ""
+    },
+    {
+        "name": "lg_exon_score3",
         "development": true,
         "description": ""
     },
