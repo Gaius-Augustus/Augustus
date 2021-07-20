@@ -110,7 +110,6 @@ void Properties::init( int argc, char* argv[] ){
     // read in the other parameters, command line parameters have higher priority
     // than those in the config files
     string paramsFilePath = configPath + "parameters/aug_cmdln_parameters.json";
-    std::cout << "Path to JSON config: " << paramsFilePath << std::endl;
     ifstream ifile;
     ifile.open(paramsFilePath);
     if (!ifile)
