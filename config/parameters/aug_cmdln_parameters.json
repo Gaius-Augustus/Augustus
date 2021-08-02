@@ -1449,12 +1449,12 @@
     },
     {
         "name": "maxDNAPieceSize",
-        "development": true,
+        "development": false,
         "description": ""
     },
     {
         "name": "maxOvlp",
-        "development": true,
+        "development": false,
         "description": ""
     },
     {
@@ -1482,7 +1482,7 @@
     },
     {
         "name": "mea",
-        "development": true,
+        "development": false,
         "description": ""
     },
     {
