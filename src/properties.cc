@@ -138,34 +138,45 @@ void Properties::init( int argc, char* argv[] )
         string argstr(argv[arg]);
         if (argstr == "--paramlist") {
             ostringstream strm;
+            ostringstream strmNamesOnly;
             strm << "Possible parameter names are:" << endl;
+            strmNamesOnly << "Parameters without any information:" << endl;
             for (auto &el : allowedParameters.items()) {
                 // exclude marked parameters
-                if (el.value()["name"].is_string() && (!el.value()["exclude_apps"].is_array() || (el.value()["exclude_apps"].is_array() && !hasValue(el.value()["exclude_apps"], "augustus")))) {
-                    strm << el.value()["name"].get<string>() << endl;
-                    if (!el.value()["type"].is_null()) {
-                        strm << "  Type: " << el.value()["type"].get<string>() << endl;
-                    }
-                    if (!el.value()["default_value"].is_null()) {
-                        strm << "  Default value: " << el.value()["default_value"].dump() << endl;
-                    }
-                    if (el.value()["possible_values"].is_array()) {
-                        strm << "  Possible value(s): " << el.value()["possible_values"].dump() << endl;
-                    }
-                    if (!el.value()["usage"].is_null()) {
-                        strm << "  Usage: " << el.value()["usage"].get<string>() << endl;
-                    }
-                    if (el.value()["description"].is_object()) {
-                        strm << "  Description: " << endl;
-                        for (auto &desc : el.value()["description"].items()) {
-                            strm << "    " << desc.key() << ": " << desc.value().get<string>() << endl;
+                if (el.value()["name"].is_string()
+                        && !el.value()["development"].is_null() && !el.value()["development"].get<bool>()
+                        && (!el.value()["exclude_apps"].is_array() || (el.value()["exclude_apps"].is_array() && !hasValue(el.value()["exclude_apps"], "augustus")))) {
+                    if (!el.value()["type"].is_null() || !el.value()["default_value"].is_null()
+                            || el.value()["possible_values"].is_array() || !el.value()["usage"].is_null()
+                            || (!el.value()["description"].is_null() && el.value()["description"].dump() != "\"\"")) {
+                        strm << el.value()["name"].get<string>() << endl;
+                        if (!el.value()["type"].is_null()) {
+                            strm << "  Type: " << el.value()["type"].get<string>() << endl;
                         }
-                    } else if (!el.value()["description"].is_null() && el.value()["description"].dump() != "\"\"") {
-                        strm << "  Description: " << el.value()["description"].get<string>() << endl;
+                        if (!el.value()["default_value"].is_null()) {
+                            strm << "  Default value: " << el.value()["default_value"].dump() << endl;
+                        }
+                        if (el.value()["possible_values"].is_array()) {
+                            strm << "  Possible value(s): " << el.value()["possible_values"].dump() << endl;
+                        }
+                        if (!el.value()["usage"].is_null()) {
+                            strm << "  Usage: " << el.value()["usage"].get<string>() << endl;
+                        }
+                        if (el.value()["description"].is_object()) {
+                            strm << "  Description: " << endl;
+                            for (auto &desc : el.value()["description"].items()) {
+                                strm << "    " << desc.key() << ": " << desc.value().get<string>() << endl;
+                            }
+                        } else if (!el.value()["description"].is_null() && el.value()["description"].dump() != "\"\"") {
+                            strm << "  Description: " << el.value()["description"].get<string>() << endl;
+                        }
+                        strm << endl;
+                    } else {
+                        strmNamesOnly << el.value()["name"].get<string>() << endl;
                     }
-                    strm << endl;
                 }
             }
+            strm << strmNamesOnly.str();
             throw HelpException(strm.str());
         }
         if (argstr.substr(0, 2) != "--") {
