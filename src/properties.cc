@@ -546,8 +546,8 @@ bool Properties::isDefinedType(const string typeName, const string paramName)
         if (el.value()["name"].is_string() && el.value()["name"] == paramName) {
             found = true;
             if (el.value()["type"].is_null() && !el.value()["development"].is_null() && !el.value()["development"].get<bool>()) {
-                // Output warning if productive parameter has no type
-                cerr << "Warning: The parameter " << paramName << " has no specified type in config file." << endl;
+                // TODO: Output warning if productive parameter has no type?
+                // cerr << "Warning: The parameter " << paramName << " has no specified type in config file." << endl;
                 return true;
             }
             if (!el.value()["type"].is_null() && el.value()["type"] != typeName) {
@@ -561,7 +561,7 @@ bool Properties::isDefinedType(const string typeName, const string paramName)
 
     if (!found) {
         // Parmeter is not specified in json config file
-        cerr << "Warning: The parameter " << paramName << " is not specified in config file." << endl;
+        cerr << "Error: The parameter " << paramName << " is not specified in config file." << endl;
     }
     return true;
 }
