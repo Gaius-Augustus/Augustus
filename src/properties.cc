@@ -141,7 +141,7 @@ void Properties::init( int argc, char* argv[] )
             strm << "Possible parameter names are:" << endl;
             for (auto &el : allowedParameters.items()) {
                 // exclude marked parameters
-                if (!el.value()["exclude_apps"].is_array() || (el.value()["exclude_apps"].is_array() && !hasValue(el.value()["exclude_apps"], "augustus"))) {
+                if (el.value()["name"].is_string() && (!el.value()["exclude_apps"].is_array() || (el.value()["exclude_apps"].is_array() && !hasValue(el.value()["exclude_apps"], "augustus")))) {
                     strm << el.value()["name"].get<string>() << endl;
                     if (!el.value()["type"].is_null()) {
                         strm << "  Type: " << el.value()["type"].get<string>() << endl;
@@ -184,7 +184,7 @@ void Properties::init( int argc, char* argv[] )
         // check that name is actually the name of a parameter
         bool found = false;
         for (auto &el : allowedParameters.items()) {
-            if (el.value()["name"] == name) {
+            if (el.value()["name"].is_string() && el.value()["name"] == name) {
                 if (!el.value()["exclude_apps"].is_array()
                         || (el.value()["exclude_apps"].is_array() && !hasValue(el.value()["exclude_apps"], "augustus"))) {
                     properties[name] = argstr.substr(pos + 1);
@@ -532,7 +532,7 @@ bool Properties::isDefinedType(const string typeName, const string paramName)
 {
     bool found = false;
     for (auto &el : allowedParameters.items()) {
-        if (el.value()["name"] == paramName) {
+        if (el.value()["name"].is_string() && el.value()["name"] == paramName) {
             found = true;
             if (el.value()["type"].is_null() && !el.value()["development"].is_null() && !el.value()["development"].get<bool>()) {
                 // Output warning if productive parameter has no type
@@ -562,7 +562,7 @@ bool Properties::isDefinedType(const string typeName, const string paramName)
 bool Properties::isPossibleValue(const string value, const string paramName)
 {
     for (auto &el : allowedParameters.items()) {
-        if (el.value()["name"] == paramName) {
+        if (el.value()["name"].is_string() && el.value()["name"] == paramName) {
             if (el.value()["possible_values"].is_array()) {
                 return hasValue(el.value()["possible_values"], value);
             }
@@ -576,7 +576,7 @@ void Properties::setDefaultValues()
     for (auto &el : allowedParameters.items()) {
         // exclude marked parameters
         if (!el.value()["exclude_apps"].is_array() || (el.value()["exclude_apps"].is_array() && !hasValue(el.value()["exclude_apps"], "augustus"))) {
-            if (!el.value()["default_value"].is_null() && !hasProperty(el.value()["name"].get<string>())) {
+            if (el.value()["name"].is_string() && !el.value()["default_value"].is_null() && !hasProperty(el.value()["name"].get<string>())) {
                 properties[el.value()["name"].get<string>(), el.value()["default_value"].get<string>()];
             }
         }
