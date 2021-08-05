@@ -5,7 +5,7 @@
         "type": "int",
         "usage": "--/augustus/verbosity=n",
         "default_value": "1",
-        "description": "Value of 0, 1, 2 or 3 produce increasingly verbose output."
+        "description": "Values of 0, 1, 2 or 3 produce increasingly verbose output."
     },
     {
         "name": "/BaseCount/weighingType",
@@ -435,7 +435,7 @@
     {
         "name": "/Constant/amberprob",
         "development": true,
-        "description": ""
+        "description": "Probability that a stop codon is TAG"
     },
     {
         "name": "/Constant/ass_end",
@@ -520,17 +520,19 @@
     {
         "name": "/Constant/ochreprob",
         "development": true,
-        "description": ""
+        "description": "Probability that a stop codon is TAA"
     },
     {
         "name": "/Constant/opalprob",
         "development": true,
-        "description": ""
+        "description": "Probability that a stop codon is TGA"
     },
     {
         "name": "/Constant/probNinCoding",
-        "development": true,
-        "description": ""
+	"type": "float",
+        "development": false,
+	"default_value": "0.23",
+        "description": "The probability of character N in a coding region"
     },
     {
         "name": "/Constant/subopt_transcript_threshold",
@@ -545,7 +547,7 @@
     {
         "name": "/Constant/trans_init_window",
         "development": true,
-        "description": ""
+        "description": "Length of translation initiation window immediately downstream from the start codon."
     },
     {
         "name": "/Constant/tss_upwindow_size",
@@ -604,8 +606,9 @@
     },
     {
         "name": "/ExonModel/k",
-        "development": true,
-        "description": ""
+	"type": "int",
+        "development": false,
+        "description": "Order of the Markov chain coding conting content model (chosen during training)"
     },
     {
         "name": "/ExonModel/lenboostE",
@@ -619,8 +622,10 @@
     },
     {
         "name": "/ExonModel/maxexonlength",
-        "development": true,
-        "description": ""
+	"type" : "int",
+	"default" : "10000",
+        "development": false,
+        "description": "Maximal exon length"
     },
     {
         "name": "/ExonModel/minexonlength",
@@ -729,8 +734,9 @@
     },
     {
         "name": "/IntronModel/d",
+	"type" : "int",
         "development": true,
-        "description": ""
+        "description": "Up to this length the intron length distribution is modeled explicitly, beyond geometrically."
     },
     {
         "name": "/IntronModel/dssneighborfactor",
@@ -1060,7 +1066,7 @@
     {
         "name": "/UtrModel/prob_polya",
         "development": true,
-        "description": ""
+        "description": "Probability, that a specificy poly-adenylation signal is present at the transcription end of a gene."
     },
     {
         "name": "/UtrModel/slope_of_bandwidth",
@@ -1141,8 +1147,8 @@
     },
     {
         "name": "alnfile",
-        "development": true,
-        "description": ""
+        "development": false,
+        "description": "CGP mode: File with multiple alignment of genomes."
     },
     {
         "name": "alternatives-from-evidence",
@@ -1189,7 +1195,7 @@
     {
         "name": "cds",
         "development": true,
-        "description": ""
+        "description": "Whether CDS lines are printed in GFF output."
     },
     {
         "name": "checkExAcc",
@@ -1230,13 +1236,17 @@
     },
     {
         "name": "CRF",
-        "development": true,
-        "description": ""
+	"type": "bool",
+        "development": false,
+        "description": "Train a conditional random field discriminately, rather than a HMM generatively. This is better, takes much longer and is less robust towards errors in the training set.",
+	 "exclude_apps": [
+            "etraining"
+        ]
     },
     {
         "name": "CRF_N",
         "development": true,
-        "description": ""
+        "description": "Number of training rounds."
     },
     {
         "name": "CRF_TRAIN",
@@ -1246,12 +1256,12 @@
     {
         "name": "CRFtrainCDS",
         "development": true,
-        "description": ""
+        "description": "Train coding model discriminately during CRF training."
     },
     {
         "name": "CRFtrainIgenic",
         "development": true,
-        "description": ""
+        "description": "Train intergenic model discriminately during CRF training."
     },
     {
         "name": "CRFtrainIntron",
@@ -1261,7 +1271,7 @@
     {
         "name": "CRFtrainSS",
         "development": true,
-        "description": ""
+        "description": "Train splice site models discriminately during CRF training."
     },
     {
         "name": "CRFtrainTIS",
@@ -1271,12 +1281,12 @@
     {
         "name": "CRFtrainUTR",
         "development": true,
-        "description": ""
+        "description": "Train utr models discriminately during CRF training."
     },
     {
         "name": "dbaccess",
-        "development": true,
-        "description": ""
+        "development": false,
+        "description": "How to access the genome and hints in CGP mode. Specify either the name of an SQLite3 database file like vertebrates.db or use the following format when using a MySQL database: vertebrates,localhost,cgp,db_passwd human.fa"
     },
     {
         "name": "dbhints",
@@ -1302,8 +1312,8 @@
     },
     {
         "name": "errfile",
-        "development": true,
-        "description": ""
+        "development": false,
+        "description": "Output errors to this file rather than to STDERR."
     },
     {
         "name": "evalset",
@@ -1318,7 +1328,7 @@
     {
         "name": "exonnames",
         "development": true,
-        "description": ""
+        "description": "Output single, initial, internal or terminal in the third GFF column of exons."
     },
     {
         "name": "extrinsicCfgFile",
@@ -1382,8 +1392,8 @@
     },
     {
         "name": "introns",
-        "development": true,
-        "description": ""
+        "development": false,
+        "description": "Output intron lines in GFF."
     },
     {
         "name": "jobs",
@@ -1449,13 +1459,17 @@
     },
     {
         "name": "maxDNAPieceSize",
+	"type" : "int",
+	"default_value" : "1000000",
         "development": false,
-        "description": ""
+        "description": "Long sequences are internally broken in shorter ones at most this size. This influences memory usage."
     },
     {
         "name": "maxOvlp",
+	"type" : "int",
+	"default" : "60",
         "development": false,
-        "description": ""
+        "description": "Maximum overlap of coding regions of two different prokaryotic genes."
     },
     {
         "name": "maxSeqSize",
@@ -1483,7 +1497,7 @@
     {
         "name": "mea",
         "development": false,
-        "description": ""
+        "description": "Use the Maximum Expected Accuracy decoding algorithm instead of the Viterbi algorithm."
     },
     {
         "name": "mea_evaluation",
@@ -1492,8 +1506,10 @@
     },
     {
         "name": "min_intron_len",
+	"type" : "int",
+	"default" : "39",
         "development": true,
-        "description": ""
+        "description": "Minimal intron length. On exceptional species with shorter introns, reduce this for TRAINING and prediction."
     },
     {
         "name": "minexonintronprob",
@@ -1553,12 +1569,12 @@
     {
         "name": "optCfgFile",
         "development": true,
-        "description": ""
+        "description": "Optional config file, used for example for the PPX extension."
     },
     {
         "name": "outfile",
-        "development": true,
-        "description": ""
+        "development": false,
+        "description": "Output predictions to this file rather than standard output."
     },
     {
         "name": "overlap",
@@ -1645,7 +1661,7 @@
     {
         "name": "printEvidence",
         "development": true,
-        "description": ""
+        "description": "Print evidence for and against each transcript, when used with hints."
     },
     {
         "name": "printGeneRangesBED",
@@ -1660,7 +1676,7 @@
     {
         "name": "printHints",
         "development": true,
-        "description": ""
+        "description": "Print the hints as processed by AUGUSTUS."
     },
     {
         "name": "printMEA",
@@ -1690,8 +1706,8 @@
     },
     {
         "name": "protein",
-        "development": true,
-        "description": ""
+        "development": false,
+        "description": "Output protein sequences."
     },
     {
         "name": "proteinprofile",
@@ -1767,23 +1783,23 @@
     },
     {
         "name": "speciesfilenames",
-        "development": true,
-        "description": ""
+        "development": false,
+        "description": "CGP mode: A text file with a table of species names and paths to genomes."
     },
     {
         "name": "start",
-        "development": true,
-        "description": ""
+        "development": false,
+        "description": "Output start codons."
     },
     {
         "name": "stop",
-        "development": true,
-        "description": ""
+        "development": false,
+        "description": "Output stop codons."
     },
     {
         "name": "stopCodonExcludedFromCDS",
         "development": true,
-        "description": ""
+        "description": "When outputing coordinates, do not consider the stop codon a part of the coding sequence."
     },
     {
         "name": "strand",
@@ -1834,12 +1850,12 @@
     {
         "name": "tss",
         "development": true,
-        "description": ""
+        "description": "Output transcription start sites."
     },
     {
         "name": "tts",
         "development": true,
-        "description": ""
+        "description": "Output transcription termination sites."
     },
     {
         "name": "uniqueCDS",
