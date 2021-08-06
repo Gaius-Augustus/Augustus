@@ -141,6 +141,7 @@ void Properties::init( int argc, char* argv[] )
             ostringstream strmNamesOnly;
             strm << "Possible parameter names are:" << endl;
             strmNamesOnly << "Parameters without any information:" << endl;
+            bool hasParamsWithoutInfo = false;
             for (auto &el : allowedParameters.items()) {
                 // exclude marked parameters
                 if (el.value()["name"].is_string()
@@ -173,10 +174,13 @@ void Properties::init( int argc, char* argv[] )
                         strm << endl;
                     } else {
                         strmNamesOnly << el.value()["name"].get<string>() << endl;
+                        hasParamsWithoutInfo = true;
                     }
                 }
             }
-            strm << strmNamesOnly.str();
+            if (hasParamsWithoutInfo) {
+                strm << strmNamesOnly.str();
+            }
             throw HelpException(strm.str());
         }
         if (argstr.substr(0, 2) != "--") {
