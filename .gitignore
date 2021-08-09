@@ -1,9 +1,5 @@
-auxprogs/utrrnaseq/.cproject
-auxprogs/utrrnaseq/.project
-auxprogs/utrrnaseq/.settings/
-auxprogs/utrrnaseq/Debug/src/*.d
-auxprogs/utrrnaseq/Debug/src/*.o
-auxprogs/utrrnaseq/Debug/utrrnaseq
+auxprogs/utrrnaseq/build
+auxprogs/utrrnaseq/utrrnaseq
 auxprogs/utrrnaseq/*.gff
 src/*.o
 src/googletest/*.o
@@ -19,6 +15,7 @@ auxprogs/compileSpliceCands/list.o
 auxprogs/filterBam/src/MatePairs.o
 auxprogs/filterBam/src/PairednessCoverage.o
 auxprogs/filterBam/src/SingleAlignment.o
+auxprogs/filterBam/src/filterBam
 auxprogs/filterBam/src/filterBam.o
 auxprogs/filterBam/src/getReferenceName.o
 auxprogs/filterBam/src/initOptions.o
@@ -87,3 +84,7 @@ __pycache__
 
 # documentation
 doxygen/
+
+# mac
+*.DS_Store
+*.dSYM

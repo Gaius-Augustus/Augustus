@@ -9,8 +9,7 @@ on:
       - master
   
 jobs:
-  build-n-test:
-    # The type of runner that the job will run on
+  build-n-test-ubuntu:
     runs-on: ubuntu-20.04
 
     services:
@@ -52,7 +51,7 @@ jobs:
       run: make unit_test
 
     # Test AUGUSTUS
-    - name: Test AUGUSTUS (examples folder)
+    - name: Test AUGUSTUS (examples folder with comparison)
       run: ./execute_test.py --compare --html --mysql examples
       working-directory: tests/short/
 
@@ -87,3 +86,50 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./doxygen/html/
+
+  build-n-test-macos:
+    runs-on: macos-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
+    - uses: actions/checkout@v2
+
+    # Install required dependencies
+    - name: Install dependencies
+      run: |
+        brew install boost
+        brew install zlib
+        brew install gsl
+        brew install suite-sparse
+        brew install lp_solve
+        brew install sqlite
+        brew install mysql
+        brew install mysql++
+        brew install bamtools
+        brew install samtools
+        brew install htslib
+
+    # Build AUGUSTUS
+    - name: Build AUGUSTUS
+      run: make all
+
+    # Execute unit tests
+    #TODO: make working on mac
+    # - name: Execute unit tests
+    #   run: make unit_test
+
+    # Test AUGUSTUS
+    - name: Test AUGUSTUS (examples folder without mysql and comparison on mac)
+      run: ./execute_test.py examples
+      working-directory: tests/short/
+
+    # Test bam2wig
+    - name: Test bam2wig
+      run: ./execute_test.py --compare --html bam2wig
+      working-directory: tests/short/
+
+    # Test bam2hints
+    - name: Test bam2hints
+      run: ./execute_test.py --compare --html bam2hints
+      working-directory: tests/short/

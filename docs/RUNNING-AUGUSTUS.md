@@ -70,7 +70,7 @@ debaryomyces_hansenii                    | Debaryomyces hansenii
 encephalitozoon_cuniculi_GB              | Encephalitozoon cuniculi
 eremothecium_gossypii                    | Eremothecium gossypii
 fusarium_graminearum                     | Fusarium graminearum
-(fusarium)                               | Fusarium graminearium
+(fusarium)                               | Fusarium graminearum
 histoplasma_capsulatum                   | Histoplasma capsulatum
 (histoplasma)                            | Histoplasma capsulatum
 kluyveromyces_lactis                     | Kluyveromyces lactis
@@ -135,14 +135,13 @@ volvox                                   | Volvox carteri
   This is why this value should not be set very large, even if you have plenty of memory. 
 
 - --protein=on/off
+- --codingseq=on/off
 - --introns=on/off
 - --start=on/off
 - --stop=on/off
 - --cds=on/off
-- --codingseq=on/off
-  Output options. Output predicted protein sequence, introns, start
-  codons, stop codons. Or use 'cds' in addition to 'initial', 'internal',
-  'terminal' and 'single' exon. The CDS excludes the stop codon (unless stopCodonExcludedFromCDS=false)
+- --exonnames=on/off  
+  Output options. Output predicted amino acid sequences or coding sequences. Or toggle the display of the GFF features/lines of type intron, start codon, stop codon, CDS or 'initial', 'internal', 'terminal' and 'single' exon type names. The CDS excludes the stop codon (unless stopCodonExcludedFromCDS=false)
   whereas the terminal and single exon include the stop codon.
 - --AUGUSTUS_CONFIG_PATH=path
   path to config directory (if not specified as environment variable)
@@ -156,7 +155,7 @@ volvox                                   | Volvox carteri
 - --maxtracks=n
   For a description of these parameters see section 4 below.
 - --proteinprofile=filename
-  Read a protein profile from file filename. See section 7 below.
+  Read a protein profile from file filename. See [section on PPX](#ppx) below.
 - --predictionStart=A, --predictionEnd=B
   A and B define the range of the sequence for which predictions should be found. 
   Quicker if you need predictions only for a small part.

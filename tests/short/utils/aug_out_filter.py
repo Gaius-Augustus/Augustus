@@ -39,7 +39,7 @@ def search_for_lines_to_ignore(sourcepath, startwith, ignores, startblock=True):
 
     # startblock
     if startblock:
-        with open(sourcepath) as fp:
+        with open(sourcepath, encoding="utf-8") as fp:
             line = fp.readline()
             lno = 1
             while line:
@@ -51,7 +51,7 @@ def search_for_lines_to_ignore(sourcepath, startwith, ignores, startblock=True):
 
     # other lines to ignore
     if len(ignores) > 0:
-        with open(sourcepath) as fp:
+        with open(sourcepath, encoding="utf-8") as fp:
             line = fp.readline()
             lno = 1
             while line:
@@ -69,7 +69,7 @@ def filter(sourcepath, targetpath, ignoredlines):
         os.remove(targetpath)
 
     with open(targetpath, "w") as file_out:
-        with open(sourcepath) as fp:
+        with open(sourcepath, encoding="utf-8") as fp:
             line = fp.readline()
             lno = 1
             while line:

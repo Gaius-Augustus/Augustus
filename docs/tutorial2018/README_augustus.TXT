@@ -269,7 +269,7 @@ debaryomyces_hansenii                    | Debaryomyces hansenii
 encephalitozoon_cuniculi_GB              | Encephalitozoon cuniculi
 eremothecium_gossypii                    | Eremothecium gossypii
 fusarium_graminearum                     | Fusarium graminearum
-(fusarium)                               | Fusarium graminearium
+(fusarium)                               | Fusarium graminearum
 histoplasma_capsulatum                   | Histoplasma capsulatum
 (histoplasma)                            | Histoplasma capsulatum
 kluyveromyces_lactis                     | Kluyveromyces lactis

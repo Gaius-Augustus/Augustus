@@ -1,14 +1,19 @@
-CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -O2 ${CFLAGS}
-CC?=gcc
+# Makefile of aln2wig
 
-aln2wig : aln2wig.o
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o aln2wig aln2wig.o
+CC ?= gcc
+CFLAGS := -Wall -Wno-sign-compare -ansi -pedantic -O2 $(CFLAGS)
+
+.PHONY: all clean
+
+aln2wig: aln2wig.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o aln2wig $^
 	mkdir -p ../../bin
-	cp aln2wig ../../bin
-aln2wig.o : aln2wig.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c aln2wig.c
+	cp -f aln2wig ../../bin
 
-all : aln2wig
+aln2wig.o: aln2wig.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $^
 
-clean :
-	rm -f aln2wig aln2wig.o; rm -f ../../bin/aln2wig 
+all: aln2wig
+
+clean:
+	rm -f aln2wig aln2wig.o ../../bin/aln2wig
