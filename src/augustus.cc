@@ -315,7 +315,7 @@ void evaluateOnTestSet(AnnoSequence *annoseq, NAMGene &namgene, FeatureCollectio
 	
 	bool singlestrand = false; // use not the shadow states
 	try {
-            singlestrand = (Properties::getIntProperty("singlestrand") == 1);
+            singlestrand = Properties::getBoolProperty("singlestrand");
 	} catch (...) {}
 
 	cout << "# Predicted genes for sequence number " << dnaproben <<  " on ";
@@ -412,7 +412,7 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
 	    sfc.prepare(curseq, Constant::printHints && !(Gene::gff3));
 	    bool singlestrand = false; // use not the shadow states
 	    try {
-		singlestrand = (Properties::getIntProperty("singlestrand") == 1);
+		singlestrand = Properties::getBoolProperty("singlestrand");
 	    } catch (...) {}
 	
 	    cout << "# Predicted genes for sequence number " << dnaproben <<  " on ";
