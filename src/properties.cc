@@ -67,6 +67,7 @@ void Properties::init( int argc, char* argv[] )
 {
     string name;
     int arg;
+    bool showParamList=false;
 
     /*
      * The rightmost parameter without '--' is the input file, unless
@@ -83,10 +84,24 @@ void Properties::init( int argc, char* argv[] )
         if (argstr == "--help") {
             throw HelpException(HELP_USAGE);
         }
+        if (argstr == "--paramlist") {
+            showParamList = true;
+        }
         if (argstr.substr(0,2) == "--") {
             string::size_type pos = argstr.find('=');
             name = argstr.substr(0,pos).substr(2);
-            if( name == CFGPATH_KEY) {
+            if( name == GENEMODEL_KEY ||
+                    name == NONCODING_KEY ||
+                    name == SINGLESTRAND_KEY ||
+                    name == SPECIES_KEY ||
+                    name == EXTERNAL_KEY ||
+                    name == CFGPATH_KEY ||
+                    name == ALN_KEY ||
+                    name == TREE_KEY ||
+                    name == DB_KEY ||
+                    name == SEQ_KEY ||
+                    name == CODONALN_KEY ||
+                    name == REF_EXON_KEY) {
                 if (pos >= argstr.length()-1) {
                     throw ProjectError(string("Wrong argument format for ") +  name + ". Use: --argument=value");
                 }
@@ -119,6 +134,91 @@ void Properties::init( int argc, char* argv[] )
         throw ProjectError(configPath + " is not a directory. Could not locate directory " CFGPATH_KEY ".");
     }
     properties[CFGPATH_KEY] = configPath;
+
+    if (!showParamList) {
+        // check whether multi-species mode is turned on
+        Properties::assignProperty(TREE_KEY, Constant::treefile);
+        Properties::assignProperty(SEQ_KEY, Constant::speciesfilenames);
+        Properties::assignProperty(DB_KEY, Constant::dbaccess);
+        Properties::assignProperty(ALN_KEY, Constant::alnfile);
+        Properties::assignProperty(REF_EXON_KEY, Constant::referenceFile);
+        if(Constant::codonalnfile.empty()) {
+            if (!Constant::alnfile.empty() && !Constant::treefile.empty() && (!Constant::speciesfilenames.empty() || !Constant::dbaccess.empty())) {
+                Constant::MultSpeciesMode = true;
+            } else if (!(Constant::alnfile.empty() && Constant::speciesfilenames.empty() && Constant::dbaccess.empty()) ) {
+                throw ProjectError("In comparative gene prediction mode you must specify parameters alnfile, treefile\n\
+        and one of the following combinations of parameters\n\n		\
+        - dbaccess (retrieving genomes from a MySQL db)\n		\
+        - speciesfilenames and dbaccess (retrieving genomes from an SQLite db)\n \
+        - speciesfilenames (retrieving genomes from flat files)\n\n	\
+        In single species mode specify none of these parameters.\n");
+            }
+        }
+
+        // determine species
+        string optCfgFile = "";
+        if (hasProperty(EXTERNAL_KEY)) {
+            optCfgFile = expandHome(properties[EXTERNAL_KEY]);
+            if (!hasProperty(SPECIES_KEY))
+                // read in species and logReg parameters from extra config file
+            {
+                readFile(optCfgFile);
+            }
+        } else if (Constant::MultSpeciesMode) {
+            optCfgFile = expandHome(configPath + "cgp/log_reg_parameters_default.cfg");
+            try {
+                readFile(optCfgFile);
+            } catch (PropertiesError &e) {
+                throw ProjectError("Default configuration file with parameters from logistic regression " + optCfgFile + " not found!");
+            }
+        }
+
+        if (!hasProperty(SPECIES_KEY)) {
+            throw ProjectError("No species specified. Type \"augustus --species=help\" to see available species.");
+        }
+        string& speciesValue = properties[SPECIES_KEY];
+        string speciesParFileName = speciesValue + "_parameters.cfg";
+
+        if (speciesValue == "help") {
+            throw HelpException(SPECIES_LIST);
+        }
+
+        // check query filename
+        if (hasProperty(INPUTFILE_KEY)) { // expand the ~ if existent
+            string filename =  properties[INPUTFILE_KEY];
+            filename = expandHome(filename);
+            properties[INPUTFILE_KEY] = filename;
+        }
+
+        // read in file with species specific parameters
+        string& speciesDir = properties[SPECIESDIR_KEY];
+        speciesDir = SPECIES_SUBDIR + speciesValue + "/";
+        try {
+            readFile(configPath + speciesDir + speciesParFileName);
+        } catch (PropertiesError &e) {
+            throw ProjectError("Species-specific configuration files not found in " + configPath + SPECIES_SUBDIR + ". Type \"augustus --species=help\" to see available species.");
+        }
+
+        // if mult-species mode is turned on, try to read cgp config file (not needed anymore)
+        /*if(Constant::MultSpeciesMode){
+        string cgpParFileName = speciesValue + "_parameters.cgp.cfg";
+        string savedSpecies = speciesValue;
+        try {
+            readFile(configPath + speciesDir + cgpParFileName);
+        } catch (PropertiesError e){
+            cerr <<"Resuming without "<< cgpParFileName << endl;
+        }
+        speciesValue = savedSpecies;
+        }*/
+
+        // read in extra config file (again), but do not change species
+        if (optCfgFile != "") {
+            string savedSpecies = speciesValue;
+            readFile(optCfgFile);
+            speciesValue = savedSpecies;
+        }
+    }
+
 
     // read in the other parameters, command line parameters have higher priority
     // than those in the config files
@@ -189,7 +289,10 @@ void Properties::init( int argc, char* argv[] )
         argstr.erase(0, 2);
         string::size_type pos = argstr.find('=');
         name = argstr.substr(0, pos);
-        if (name == CFGPATH_KEY) {
+        if (name == GENEMODEL_KEY || name == NONCODING_KEY || name == SINGLESTRAND_KEY ||
+                name == SPECIES_KEY || name == CFGPATH_KEY || name == EXTERNAL_KEY ||
+                name == ALN_KEY || name == TREE_KEY || name == DB_KEY ||
+                name == SEQ_KEY || name == CODONALN_KEY || name == REF_EXON_KEY) {
             continue;
         }
         if (pos == string::npos) {
@@ -214,88 +317,6 @@ void Properties::init( int argc, char* argv[] )
     }
     if (miss) {
         throw PropertiesError("Unknown parameter: \"" + name + "\". Type \"augustus\" for help.");
-    }
-
-    // check whether multi-species mode is turned on
-    Properties::assignProperty(TREE_KEY, Constant::treefile);
-    Properties::assignProperty(SEQ_KEY, Constant::speciesfilenames);
-    Properties::assignProperty(DB_KEY, Constant::dbaccess);
-    Properties::assignProperty(ALN_KEY, Constant::alnfile);
-    Properties::assignProperty(REF_EXON_KEY, Constant::referenceFile);
-    if(Constant::codonalnfile.empty()) {
-        if (!Constant::alnfile.empty() && !Constant::treefile.empty() && (!Constant::speciesfilenames.empty() || !Constant::dbaccess.empty())) {
-            Constant::MultSpeciesMode = true;
-        } else if (!(Constant::alnfile.empty() && Constant::speciesfilenames.empty() && Constant::dbaccess.empty()) ) {
-            throw ProjectError("In comparative gene prediction mode you must specify parameters alnfile, treefile\n\
-        and one of the following combinations of parameters\n\n		\
-        - dbaccess (retrieving genomes from a MySQL db)\n		\
-        - speciesfilenames and dbaccess (retrieving genomes from an SQLite db)\n \
-        - speciesfilenames (retrieving genomes from flat files)\n\n	\
-        In single species mode specify none of these parameters.\n");
-        }
-    }
-
-    // determine species
-    string optCfgFile = "";
-    if (hasProperty(EXTERNAL_KEY)) {
-        optCfgFile = expandHome(properties[EXTERNAL_KEY]);
-        if (!hasProperty(SPECIES_KEY))
-            // read in species and logReg parameters from extra config file
-        {
-            readFile(optCfgFile);
-        }
-    } else if (Constant::MultSpeciesMode) {
-        optCfgFile = expandHome(configPath + "cgp/log_reg_parameters_default.cfg");
-        try {
-            readFile(optCfgFile);
-        } catch (PropertiesError &e) {
-            throw ProjectError("Default configuration file with parameters from logistic regression " + optCfgFile + " not found!");
-        }
-    }
-
-    if (!hasProperty(SPECIES_KEY)) {
-        throw ProjectError("No species specified. Type \"augustus --species=help\" to see available species.");
-    }
-    string& speciesValue = properties[SPECIES_KEY];
-    string speciesParFileName = speciesValue + "_parameters.cfg";
-
-    if (speciesValue == "help") {
-        throw HelpException(SPECIES_LIST);
-    }
-
-    // check query filename
-    if (hasProperty(INPUTFILE_KEY)) { // expand the ~ if existent
-        string filename =  properties[INPUTFILE_KEY];
-        filename = expandHome(filename);
-        properties[INPUTFILE_KEY] = filename;
-    }
-
-    // read in file with species specific parameters
-    string& speciesDir = properties[SPECIESDIR_KEY];
-    speciesDir = SPECIES_SUBDIR + speciesValue + "/";
-    try {
-        readFile(configPath + speciesDir + speciesParFileName);
-    } catch (PropertiesError &e) {
-        throw ProjectError("Species-specific configuration files not found in " + configPath + SPECIES_SUBDIR + ". Type \"augustus --species=help\" to see available species.");
-    }
-
-    // if mult-species mode is turned on, try to read cgp config file (not needed anymore)
-    /*if(Constant::MultSpeciesMode){
-    string cgpParFileName = speciesValue + "_parameters.cgp.cfg";
-    string savedSpecies = speciesValue;
-    try {
-        readFile(configPath + speciesDir + cgpParFileName);
-    } catch (PropertiesError e){
-        cerr <<"Resuming without "<< cgpParFileName << endl;
-    }
-    speciesValue = savedSpecies;
-    }*/
-
-    // read in extra config file (again), but do not change species
-    if (optCfgFile != "") {
-        string savedSpecies = speciesValue;
-        readFile(optCfgFile);
-        speciesValue = savedSpecies;
     }
 
     // singlestrand mode or not?
