@@ -1,21 +1,14 @@
 var searchData=
 [
-  ['gberror_440',['GBError',['../classGBError.html#ab822d4a52410cb7670238a0e33620dbc',1,'GBError']]],
-  ['gbprocessor_441',['GBProcessor',['../classGBProcessor.html#ad459d52fe4d8221591ee68dfc0c3f196',1,'GBProcessor']]],
-  ['genemsa_442',['GeneMSA',['../classGeneMSA.html#ada79b45bf3f2605773220304968d5993',1,'GeneMSA']]],
-  ['get_5fnumseq_443',['get_numSeq',['../classPP_1_1IntronProfile.html#ace18004a37014874586e076901671694',1,'PP::IntronProfile']]],
-  ['getalipos_444',['getAliPos',['../classAlignmentRow.html#a726cf588e3d7bfb938e53410ad104ae8',1,'AlignmentRow']]],
-  ['getalloemsas_445',['getAllOEMsas',['../classGeneMSA.html#ae023b0e02bb2a77a2b87db9126384f91',1,'GeneMSA']]],
-  ['getforwardvariables_446',['getForwardVariables',['../classNAMGene.html#a445e0bf99b16d2b26a912d6faca9e784',1,'NAMGene']]],
-  ['getgene_447',['getGene',['../classGBProcessor.html#a518272996d0fb18b0a9abe1d06fc7cf1',1,'GBProcessor']]],
-  ['getinterfreq_448',['getInterFreq',['../classPP_1_1IntronProfile.html#a3d410ff6e9e9be1e19ca94bec34d09ff',1,'PP::IntronProfile']]],
-  ['getintrafreq_449',['getIntraFreq',['../classPP_1_1IntronProfile.html#a12d0c6f6cb4bc998187824fd472f5364',1,'PP::IntronProfile']]],
-  ['getintroninterfreq_450',['getIntronInterFreq',['../classPP_1_1Profile.html#aa0d3d606bc7f3811c2ca370c70f99fe4',1,'PP::Profile']]],
-  ['getintronintrafreq_451',['getIntronIntraFreq',['../classPP_1_1Profile.html#a329af037aef1f1d1120b46e906e17662',1,'PP::Profile']]],
-  ['getintronintrafreqatcol_452',['getIntronIntraFreqAtCol',['../classPP_1_1Profile.html#a55640b3f7f8db3dd20c41ac136fd5632',1,'PP::Profile']]],
-  ['getintronnumseq_453',['getIntronNumSeq',['../classPP_1_1Profile.html#afb349eb3d408e9a530fa24e06db36ff0',1,'PP::Profile']]],
-  ['getmessage_454',['getMessage',['../classProjectError.html#a936d04aa8cc8291f13e83d693716d779',1,'ProjectError']]],
-  ['getmsa_455',['getMsa',['../classGeneMSA.html#abd42e0ecb942aceb3d0b7d7f4c104dce',1,'GeneMSA']]],
-  ['getrow_456',['getRow',['../classMatrix.html#a08ab25ee49e2d12ee0f6e511def5fd4b',1,'Matrix']]],
-  ['getviterbivariables_457',['getViterbiVariables',['../classNAMGene.html#a587bd938b5a4fa62a36b0066baf2d510',1,'NAMGene']]]
+  ['find_959',['find',['../classnlohmann_1_1basic__json.html#a17a516671c29a69bb2e11ca12030316b',1,'nlohmann::basic_json::find(KeyT &amp;&amp;key) const'],['../classnlohmann_1_1basic__json.html#acdf9b3aab82dcf443dd91ca5ec06b80c',1,'nlohmann::basic_json::find(KeyT &amp;&amp;key)']]],
+  ['find_5flargest_5fpow10_960',['find_largest_pow10',['../namespacenlohmann_1_1detail_1_1dtoa__impl.html#a36ded358763b5dbcea9867660fbe4e28',1,'nlohmann::detail::dtoa_impl']]],
+  ['findgeneranges_961',['findGeneRanges',['../classGenomicMSA.html#a9d9dd2462bab8bbb61c8e4746e6b30f0',1,'GenomicMSA']]],
+  ['flatten_962',['flatten',['../classnlohmann_1_1basic__json.html#ab7aa6e048e659481a036f2d872c7cba6',1,'nlohmann::basic_json']]],
+  ['format_5fbuffer_963',['format_buffer',['../namespacenlohmann_1_1detail_1_1dtoa__impl.html#ab441f2761e33839ca48bc2225e14a2a9',1,'nlohmann::detail::dtoa_impl']]],
+  ['from_5fbson_964',['from_bson',['../classnlohmann_1_1basic__json.html#a4118d0ec23d9eeafc236b9524d220e94',1,'nlohmann::basic_json::from_bson(IteratorType first, IteratorType last, const bool strict=true, const bool allow_exceptions=true)'],['../classnlohmann_1_1basic__json.html#a4e02793f2691aa29ab7cb69fddafbf5c',1,'nlohmann::basic_json::from_bson(InputType &amp;&amp;i, const bool strict=true, const bool allow_exceptions=true)']]],
+  ['from_5fcbor_965',['from_cbor',['../classnlohmann_1_1basic__json.html#a44dd5635fb2da4710f6cd6e42b72773f',1,'nlohmann::basic_json::from_cbor(InputType &amp;&amp;i, const bool strict=true, const bool allow_exceptions=true, const cbor_tag_handler_t tag_handler=cbor_tag_handler_t::error)'],['../classnlohmann_1_1basic__json.html#aba4f6fc79cc405fb212ea3d992334e71',1,'nlohmann::basic_json::from_cbor(IteratorType first, IteratorType last, const bool strict=true, const bool allow_exceptions=true, const cbor_tag_handler_t tag_handler=cbor_tag_handler_t::error)']]],
+  ['from_5fjson_966',['from_json',['../structnlohmann_1_1adl__serializer.html#a2c544585b8b1828a0f1eecd831d0496e',1,'nlohmann::adl_serializer']]],
+  ['from_5fmsgpack_967',['from_msgpack',['../classnlohmann_1_1basic__json.html#adbcab52fca1e25b3311ef14e71a57590',1,'nlohmann::basic_json::from_msgpack(InputType &amp;&amp;i, const bool strict=true, const bool allow_exceptions=true)'],['../classnlohmann_1_1basic__json.html#a94dbeb08bcd13821512957dcbf3f00bd',1,'nlohmann::basic_json::from_msgpack(IteratorType first, IteratorType last, const bool strict=true, const bool allow_exceptions=true)']]],
+  ['from_5fubjson_968',['from_ubjson',['../classnlohmann_1_1basic__json.html#aa81f62db69978b90ff701f05c72e03a7',1,'nlohmann::basic_json::from_ubjson(InputType &amp;&amp;i, const bool strict=true, const bool allow_exceptions=true)'],['../classnlohmann_1_1basic__json.html#a9dbb422350fed520ce8c1ca8762c0251',1,'nlohmann::basic_json::from_ubjson(IteratorType first, IteratorType last, const bool strict=true, const bool allow_exceptions=true)']]],
+  ['front_969',['front',['../classnlohmann_1_1basic__json.html#a5417ca43ae5e7a3a2f82eee2d915c6ed',1,'nlohmann::basic_json::front()'],['../classnlohmann_1_1basic__json.html#a5ac8f974c178cf9326b6765e22f50eb6',1,'nlohmann::basic_json::front() const']]]
 ];

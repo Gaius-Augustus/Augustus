@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['cdsentry_478',['CDSentry',['../structGBPositions.html#aa7b7b8dbce781af6d7580b875e622535',1,'GBPositions']]],
-  ['chrlen_479',['chrLen',['../classGenomicMSA.html#a742213dbea567fe1b792aa1ce1d82e33',1,'GenomicMSA']]],
-  ['clength_480',['clength',['../classGene.html#ac69c523e8684f988b8b85aea7e9e4359',1,'Gene']]]
+  ['begin_1121',['begin',['../classState.html#a61327f8ddf0f22d5fdd0a1170cc253cc',1,'State']]],
+  ['buffer_1122',['buffer',['../structGBPositions.html#a8a8f858d0ff5cf4cbbf7011b4458a854',1,'GBPositions']]],
+  ['byte_1123',['byte',['../classnlohmann_1_1detail_1_1parse__error.html#a9505aaa1ca943be927eec7cc579592ff',1,'nlohmann::detail::parse_error']]]
 ];
