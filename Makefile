@@ -72,6 +72,7 @@ endif
 	cd tests/short && ./execute_test.py $(TEST_COMPARE) $(TEST_HTML) examples
 	cd tests/short && ./execute_test.py --compare --html bam2hints
 	cd tests/short && ./execute_test.py --compare --html bam2wig
+	cd tests/short && ./execute_test.py --compare --html filterbam
 
 unit_test:
 	cd src && ${MAKE} unittest

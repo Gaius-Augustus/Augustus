@@ -1,0 +1,8 @@
+@HD	VN:1.0	SO:unsorted
+@SQ	SN:chr1	LN:1182
+@PG	ID:Bowtie	CL:"bowtie -f -S /home/tonatiuh/web-home/bowtie-0.12.7.indexes/NM_172369.3.C1QC -1 /home/tonatiuh/web-home/rnaseq/rs60255495.NM_172369_1.fa -2 /home/tonatiuh/web-home/rnaseq/rs60255495.NM_172369_2.fa /home/tonatiuh/web-home/alignments/bowtie-0.12.7/NM_172369.3.C1QC/rs60255495.paired.sam	VN:0.12.7
+@CO	Replaced gi|166235904|ref|NM_172369.3| by chr1
+rs.1/1	99	chr1	71	255	10M	=	202	139	CAGAAACCGC	IIIIIIIIII	XA:i:0	MD:Z:10	NM:i:0
+rs.1/1	99	chr1	72	255	8M	=	139	77	GGAACCCG	IIIIIIII	XA:i:2	MD:Z:0A3A3	NM:i:2
+rs.1/2	147	chr1	139	255	10M	=	72	-77	GTTGAATCTG	IIIIIIIIII	XA:i:2	MD:Z:1C4G3	NM:i:2
+rs.1/2	147	chr1	202	255	8M	=	71	-139	CGGGTTCC	IIIIIIII	XA:i:1	MD:Z:4A3	NM:i:1

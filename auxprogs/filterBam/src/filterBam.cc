@@ -31,6 +31,7 @@
 #include <unordered_map> 
 #include <fstream>  
 #include <map>
+#include <set>
 #include <math.h>  
 #include "filterBam.h"
 
@@ -1387,9 +1388,9 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					cout << "bestTnames.size()=" << bestTnames.size() << endl;
 				  }
 
-				  if (bestTnames.size()>1)
+				if (bestTnames.size() > 1 && commonGeneFile)
 					{
-					  unordered_map<string,int> geneNames;
+					  std::set<std::string> geneNames;
 					  string tName;
 
 					  for (int it=0; it<bestTnames.size(); it++)
@@ -1397,21 +1398,20 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						// Replace suffixes of the type chrX.t123
 						  tName = bestTnames.at(it);
 						  tName = tName.substr(0, tName.find(".t")); 
-						  geneNames[tName]=1;
+						  geneNames.insert(tName);
 						  if (verbose) {cout << "tName= " << tName << endl;}
 						}
 					
-					  if (geneNames.size() > 1 && commonGeneFile)
+					if (geneNames.size() > 1)
 						{
 						  geneFile.open(commonGeneFile);
-						  unordered_map<string, int>::iterator itGn = geneNames.begin();
-						  for (itGn; itGn != geneNames.end(); itGn++)
+						  for (auto tName : geneNames)
 							{
 							  if (verbose)
 								{
-								  cout << oldQnameStem << "\t"<< (*itGn).first << "\t" << (*itGn).second << endl;
+								  cout << oldQnameStem << "\t"<< tName << endl;
 								}
-							  geneFile << oldQnameStem <<"\t"<< (*itGn).first;
+							  geneFile << oldQnameStem <<"\t"<< tName;
 							}
 						  geneFile << endl;
 						  geneFile.close();  
@@ -1639,9 +1639,9 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					cout << "bestTnames.size()=" << bestTnames.size() << endl;
 				  }
 
-				if (bestTnames.size()>1)
+				if (bestTnames.size() > 1 && commonGeneFile)
 				  {
-					unordered_map<string,int> geneNames;
+					std::set<std::string> geneNames;
 					string tName;
 
 					for (int it=0; it<bestTnames.size(); it++)
@@ -1649,28 +1649,26 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						// Replace suffixes of the type chrX.t123
 						tName = bestTnames.at(it);
 						tName = tName.substr(0, tName.find(".t")); 
-						geneNames[tName]=1;
+						geneNames.insert(tName);
 						if (verbose) {cout << "tName= " << tName << endl;}
 					  }
 					
 					if (verbose) {cout << "Size of geneNames=" << geneNames.size() << endl;}
-					if (geneNames.size() > 1 && commonGeneFile)
+					if (geneNames.size() > 1)
 					  {
 						geneFile.open(commonGeneFile);
-						unordered_map<string,int>::iterator itGn = geneNames.begin();
-
+						
 						// Writing name of query first..
 						geneFile << oldQnameStem;
 
 						// Then writing the common genes for such query
-						for (itGn; itGn != geneNames.end(); itGn++)
+						for (auto tName : geneNames)
 						  {
 							if (verbose) 
 							  {
-								cout << "commonGeneFile:" << oldQnameStem << "\t"<< (*itGn).first << "\t" 
-									<< (*itGn).second << endl;
+								cout << "commonGeneFile:" << oldQnameStem << "\t"<< tName<< endl;
 							  }
-							 geneFile << "\t"<< (*itGn).first;
+							 geneFile << "\t"<< tName;
 						  }
 						geneFile << endl;
 						geneFile.close();
