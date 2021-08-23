@@ -3,7 +3,7 @@
 include ../../../common.mk
 
 CXX ?= g++
-CXXFLAGS := -std=c++0x ${CXXFLAGS}
+CXXFLAGS := -Wall -Wextra -Wpedantic -std=c++11 ${CXXFLAGS}
 
 SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc \
           printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc

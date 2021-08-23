@@ -202,12 +202,12 @@ int main(int argc, char *argv[])
 			  {
 				if (verbose) {cout << "qName=" << qName << endl;}
 				// Taking out suffix: {f,r} or {1,2}
-				if (qName.find("/") != -1)
+				if (qName.find('/') != std::string::npos)
 				  {
 					qNameStem = qName.substr(0, qName.find("/"));
 					qSuffix = qName.substr(qName.find("/")+1, qName.length());	
 				  } else {
-				  	if (qName.find_last_of("-") != -1) 
+				  	if (qName.find_last_of('-') != std::string::npos) 
 						{
 					  		if (verbose) {cout << "Found slash as indicator of pairedness" << endl;}
 					  		qNameStem = qName.substr(0, qName.find_last_of("-"));
@@ -302,12 +302,12 @@ int main(int argc, char *argv[])
 		alignedBases = al.AlignedBases; // 'aligned' seq, includes: indels, padding, clipping
 		
 		// Percentage Identity filter; compute with equal signs 
-		if (alignedBases.find("=")!=-1) // Equal signs present indicate "camld" was run
+		if (alignedBases.find('=') != std::string::npos) // Equal signs present indicate "camld" was run
 		  {
 			// cout << "BAM file seems to have been pre-processed with calmd." << endl;
 			// cout << "Computing percentage identity by counting number of (=) signs in SEQ field." << endl;
 			int numEquals = 0;
-			for (int i = 0; i < alignedBases.size(); i++)
+			for (unsigned int i = 0; i < alignedBases.size(); i++)
 			  {
 				if (alignedBases[i] == '=') 
 				  numEquals++;
@@ -417,14 +417,14 @@ int main(int argc, char *argv[])
 
 		  cout << "Number of chromosomes is " << chrNames.size() << endl;
 	  nextChromosome:
-		  for (int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) // display chromosomes in alph order
+		  for (unsigned int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) // display chromosomes in alph order
 			{
 			  chr = chrNames.at(chrIt);
 			  if (chr.size() ==0) goto nextChromosome; 
 
 			  // Sweep through each chromosome and stuff their position values into a vector 
-			  int it=0;
-			  for (it; it<compactPairCovSteps.size(); it++)
+			  unsigned int it=0;
+			  for (; it<compactPairCovSteps.size(); it++)
 				{
 				  if (compactPairCovSteps.at(it).chr == chr)
 					pairCovStepsOfChr.push_back(compactPairCovSteps.at(it)); 
@@ -433,7 +433,7 @@ int main(int argc, char *argv[])
 			  int cov = 0;
 			  int pos = 0;
 			  PairednessCoverage step;
-			  for (int jit=0; jit<pairCovStepsOfChr.size(); jit++)
+			  for (unsigned int jit=0; jit<pairCovStepsOfChr.size(); jit++)
 				{
 				  step = pairCovStepsOfChr.at(jit); 
 				  if (pos < step.coord && cov > 0)
@@ -564,7 +564,7 @@ void printQali(vector<BamAlignment> &qali, const RefVector &refData, bool pairwi
   bool strand;
   string percId, coverage, score;
 
-  for (it; it != qali.end(); it++)
+  for (; it != qali.end(); it++)
 	{
 	  rName = getReferenceName(refData, (*it).RefID); 
 	  qName = (*it).Name; 
@@ -605,7 +605,7 @@ vector<BamAlignment> scoreAli(vector<BamAlignment>& qali)
   std::stringstream ss_score;
   vector<BamAlignment>::iterator it = qali.begin();
 
-  for (it; it!=qali.end(); it++)
+  for (; it!=qali.end(); it++)
 	{
 	  	(*it).GetTag("pi", s_percId);
   		(*it).GetTag("co", s_coverage);
@@ -700,7 +700,7 @@ void printMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs)
 
   string qName1, qName2;
   cout << "Printing Mate-pairs info: [matepairs.size()=" << matepairs.size() << "]" << endl;
-  for (itMp; itMp != matepairs.end(); itMp++)
+  for (; itMp != matepairs.end(); itMp++)
 	{
 	  int it = (*itMp).alIt;
 	  int jit = (*itMp).alJit;
@@ -716,7 +716,7 @@ void printMatedMap(map<int,int> mated)
 {
   map<int,int>::iterator itMated = mated.begin();
   cout << "Printing mated summary:" << endl;
-  for (itMated; itMated!=mated.end(); itMated++)
+  for (; itMated!=mated.end(); itMated++)
 	{
 	  cout << "mate:" << (*itMated).first << ", mated:" << (*itMated).second << " times" << endl;
 	}
@@ -730,13 +730,13 @@ void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps)
 
   cout << "Printing pairCovSteps contents: key=>[value(s)]" << endl;
   // Sweep through each chromosome and print only values associated to a chromosome name
-    for (int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) 
+    for (unsigned int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) 
   	  {
 
 		chr = chrNames.at(chrIt);
 		cout << chr << "=>" << endl;
-		int it=0;
-		for (it; it<pairCovSteps.size(); it++)
+		unsigned int it=0;
+		for (; it<pairCovSteps.size(); it++)
 		  {
 			if (pairCovSteps.at(it).chr == chr)
 			  cout << "\t[" << pairCovSteps.at(it).coord << "," << pairCovSteps.at(it).label << "]" << endl; 
@@ -751,8 +751,8 @@ void printChrOfPairCovSteps(vector<PairednessCoverage> &pairCovSteps, string chr
   cout << "Printing coverage of chr=" << chr << endl;
   // Print only values of pairCovSteps that coincide with given chr name
   cout << chr << "=>" << endl;
-  int it=0;
-  for (it; it<pairCovSteps.size(); it++)
+  unsigned int it=0;
+  for (; it<pairCovSteps.size(); it++)
 	{
 	  if (pairCovSteps.at(it).chr == chr)
 		cout << "\t[" << pairCovSteps.at(it).coord << "," << pairCovSteps.at(it).label << "]" << endl; 
@@ -766,12 +766,12 @@ void printSizeOfCoverInfo(vector<PairednessCoverage> &pairCovSteps)
   string chr;
 
   // Sweep through each chromosome and print only values associated to a chromosome name
-    for (int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) 
+    for (unsigned int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) 
   	  {
 		chr = chrNames.at(chrIt);
-		int it=0;
+		unsigned int it=0;
 		int keySize = 0;
-		for (it; it<pairCovSteps.size(); it++)
+		for (; it<pairCovSteps.size(); it++)
 		  {
 			if (pairCovSteps.at(it).chr == chr)
 			  keySize++;
@@ -797,14 +797,14 @@ vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSte
   // Now sweep through each chromosome and stuff into a vector all the position values corresponding to 
   // that vector
   nextChromosome:
-    for (int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) // display chromosomes in alph order
+    for (unsigned int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) // display chromosomes in alph order
   	  {
 		chr = chrNames.at(chrIt);
 		if (chr.size() ==0) goto nextChromosome; 
 
  		// Sweep through each chromosome and stuff their position values into a vector 
-		int it=0;
-		for (it; it<pairCovSteps.size(); it++)
+		unsigned int it=0;
+		for (; it<pairCovSteps.size(); it++)
 		  {
 			if (pairCovSteps.at(it).chr == chr)
 			  pairCovStepsOfChr.push_back(pairCovSteps.at(it)); 
@@ -836,7 +836,7 @@ vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSte
 
 
 
-		int jit=0;
+		unsigned int jit=0;
 		while(jit < pairCovStepsOfChr.size()-1)
 		  {
 			if (pairCovStepsOfChr.at(jit).coord == pairCovStepsOfChr.at(jit+1).coord)
@@ -900,7 +900,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
   map<int,int> mated;
   int32_t inslen, dist;
   // unsigned int inslen, dist;
-  int it, jit;
+  unsigned int it, jit;
   uint32_t jitTstart;
   uint32_t jitTend;
   uint32_t itTstart;
@@ -917,7 +917,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 	}
 
   // Defines whether to treat reads as single- or pair-ended ones
-  if (paired & qali.size()>0) 
+  if (paired && qali.size()>0) 
 	{
  
 	  // cout << "The size of qali is: " << qali.size() << endl;
@@ -1121,7 +1121,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 			// Selection of Uniq-ue mate-pairs takes precedence over selecting Best mate-pairs
 	  	  	if (uniq)
 	  		  {// let pass only one mate pair, and only if second is significantly worse
-			  	int second; float score_topPair, score_2ndPair, ratio;
+			  	unsigned int second; float score_topPair, score_2ndPair, ratio;
 				string mate_1_topPair, mate_1_2ndPair, mate_2_topPair, mate_2_2ndPair;
 				second = 1;
 
@@ -1201,7 +1201,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 							  cout << "because:";
 							  cout << "\nThey are similar and have score ratio=" << ratio 
 								   << ">uniqThresh=" << uniqThresh << endl;
-							  for (int it=0; it<matepairs.size(); it++)
+							  for (unsigned int it=0; it<matepairs.size(); it++)
 								{
 								  cout << qali.at(matepairs.at(it).alIt).Name << ", " 
 									   << qali.at(matepairs.at(it).alJit).Name << ") filtered out by "; 
@@ -1254,7 +1254,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				  vector<string> bestTnames; 
 				  optScore = matepairs.at(0).score;
 				  tempScore = optScore;
-				  int numBest = 0;
+				  unsigned int numBest = 0;
 
 				  // Taking provisions for repeated indices
 				  map<int,int> writtenIndices;
@@ -1329,7 +1329,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					  std::set<std::string> geneNames;
 					  string tName;
 
-					  for (int it=0; it<bestTnames.size(); it++)
+					  for (unsigned int it=0; it<bestTnames.size(); it++)
 						{
 						// Replace suffixes of the type chrX.t123
 						  tName = bestTnames.at(it);
@@ -1427,7 +1427,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 			// Selection of Uniq-ue alignments takes precedence over selecting the Best alignments
 			if (uniq) 
 			  { // let pass only one alignment, and only if second is significantly worse
-			  	int second; float scoreFirst, scoreSecond, ratio;
+			  	unsigned int second; float scoreFirst, scoreSecond, ratio;
 				string s_scoreFirst, s_scoreSecond;
 				second = 1;
 
@@ -1482,7 +1482,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						if (verbose)
 						  {	cout << "(" << outUniq << "/" << qali.size() << ") alignments filtered out " 
 								 << " by uniqueness " << endl;
-							for (int it=1; it<qali.size(); it++)
+							for (unsigned int it=1; it<qali.size(); it++)
 							  {cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
 						  }
 					  } else { // dropping all alignments belonging to the same query				  	
@@ -1492,7 +1492,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 							cout << "(" << qali.size() << ") alignments filtered out by uniqueness because:";
 							cout << "\nratio=" << ratio << ">uniqThresh=" << uniqThresh 
 								 << " between top and lowest-scored similar alignments." << endl;
-							for (int it=0; it<qali.size(); it++)
+							for (unsigned int it=0; it<qali.size(); it++)
 							  {cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
 						  }					  	
 					  	  outUniq += qali.size();//Filtered out alignments by uniq. increases by size of Qali
@@ -1509,7 +1509,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 				  	 	  cout << "Letting pass only top-scored alignment: " << qali.at(0).Name 
 							   << ", score=" << scoreFirst << endl;
 						  cout << "(" << qali.size()-1 << ") alignments filtered out by uniqueness" << endl;
-						  for (int it=1; it<qali.size(); it++)
+						  for (unsigned int it=1; it<qali.size(); it++)
 						 	{cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
 						  cout << "------------------------------------------------------------------------" 
 							<< endl;
@@ -1580,7 +1580,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					std::set<std::string> geneNames;
 					string tName;
 
-					for (int it=0; it<bestTnames.size(); it++)
+					for (unsigned int it=0; it<bestTnames.size(); it++)
 					  {
 						// Replace suffixes of the type chrX.t123
 						tName = bestTnames.at(it);
@@ -1620,7 +1620,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		  		cout << "Letting pass alignments, i.e. a total of: " << qali.size() << endl;
 			}
 
-			for(int it=0; it<qali.size(); it++)
+			for(unsigned int it=0; it<qali.size(); it++)
 				{
 				  // Removing percId and coverage Tags before writing into file
 				  qali.at(it).RemoveTag("pi"); qali.at(it).RemoveTag("co");

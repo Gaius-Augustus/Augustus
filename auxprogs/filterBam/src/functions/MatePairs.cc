@@ -80,7 +80,7 @@ void printMatePairs(vector<MatePairs> matepairs, vector<BamAlignment> &qali)
   int it, jit;
   float score;
 
-  for (int iter=0; iter < matepairs.size(); iter++)
+  for (unsigned int iter=0; iter < matepairs.size(); iter++)
 	{
 	  it = matepairs.at(iter).alIt;
 	  jit = matepairs.at(iter).alJit;
