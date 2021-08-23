@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
   float percId;
   uint32_t baseInsert;  // baseInsert = qBaseInsert+tBaseInsert, in some cases
   string alignedBases;
+  bool is_NM_WarningPrinted = false;
   // Counters
   int line = 0;
   int outMap = 0;
@@ -306,8 +307,16 @@ int main(int argc, char *argv[])
 			  }
   			percId = (float)100*numEquals/qLength;  
 
-		  } else { // No equal signs present indicates no "calmd"
+		  } else if (al.GetTag("NM", editDistance)) { // No equal signs present indicates no "calmd"
+			// "NM" - Edit distance tag, which records the Levenshtein distance between the read and the reference.
 			percId = (float)100*(qLength-editDistance)/qLength;  
+		  } else {
+			percId = 100.0f;
+			if (!is_NM_WarningPrinted) {
+				std::cout << "WARNING: z alignments (x%) were missing the NM tag, and could therefore "
+				          << "not be filtered based on edit distance." << std::endl;
+				is_NM_WarningPrinted = true;
+			}
 		  }
 
   		if (percId < minId)
