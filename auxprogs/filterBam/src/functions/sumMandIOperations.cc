@@ -1,7 +1,6 @@
 /** Sums the total length of the M and I cigar operations.
 */
 
-#include <api/BamReader.h>
 #include <api/BamAlignment.h>
 #include <iostream>
 #include <vector>
@@ -12,27 +11,19 @@ using namespace std;
 using namespace BamTools;
 
 // In SAM, sumMandIOperations = $qEnd-$qStart in PSL
-uint32_t sumMandIOperations(vector<CigarOp> cigar)
+uint32_t sumMandIOperations(const vector<CigarOp> &cigar)
 {
-	int cigarSize = cigar.size();
-	uint32_t sumMandI = 0;
- 	uint32_t cigarLength;
-  	char cigarType;
+    uint32_t sumMandI = 0;
 
-	// Scanning through all CIGAR operations
-	for (int it=0; it<cigarSize; it++)
-		{
-		// Length is number of bases
-		cigarLength = cigar.at(it).Length;	
-		// Type means operations, i.e. MINDSHP 
-		cigarType = cigar.at(it).Type;  
-
-		if (cigarType == 'M' || cigarType == 'I')
-			{
-		  	// Sum operations
-			sumMandI = cigarLength + sumMandI;	
-			}	
-		} // end for
-
-	return sumMandI;
+    // Scanning through all CIGAR operations
+    for (auto it : cigar)
+    {   // Length is number of bases
+        // Type means operations, i.e. MINDSHP 
+        if (it.Type == 'M' || it.Type == 'I')
+        {
+            sumMandI += it.Length;
+        }
+    } // end for
+    
+    return sumMandI;
 }

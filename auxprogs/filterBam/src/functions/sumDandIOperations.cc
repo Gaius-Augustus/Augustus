@@ -5,7 +5,6 @@
 	Last modified: 11-November-2011
 */
 
-#include <api/BamReader.h>
 #include <api/BamAlignment.h>
 #include <iostream>
 #include <vector>
@@ -16,27 +15,19 @@ using namespace std;
 using namespace BamTools;
 
 // In SAM, sumDandIOperations = $qBaseInsert+$tBaseInsert
-uint32_t sumDandIOperations(vector<CigarOp> cigar)
+uint32_t sumDandIOperations(const vector<CigarOp> &cigar)
 {
-	int cigarSize = cigar.size();
-	uint32_t sumDandI = 0;
- 	uint32_t cigarLength;
-  	char cigarType;
+    uint32_t sumDandI = 0;
 
-	// Scanning through all CIGAR operations
-	for (int it=0; it<cigarSize; it++)
-		{
-		// Length is number of bases
-		cigarLength = cigar.at(it).Length;	
-		// Type means operations, i.e. MINDSHP 
-		cigarType = cigar.at(it).Type;  
+    // Scanning through all CIGAR operations
+    for (auto it : cigar)
+    {   // Length is number of bases
+        // Type means operations, i.e. MINDSHP 
+        if (it.Type == 'D' || it.Type == 'I')
+        {
+            sumDandI += it.Length;
+        }
+    } // end for
 
-		if (cigarType == 'D' || cigarType == 'I')
-			{
-		  	// Sum operations
-			sumDandI = cigarLength + sumDandI;	
-			}	
-		} // end for
-
-	return sumDandI;
+    return sumDandI;
 }

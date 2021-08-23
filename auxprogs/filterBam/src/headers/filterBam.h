@@ -4,6 +4,9 @@
 	Last modified: 8-February-2012
 */
 
+#ifndef _FILTERBAM_HH
+#define _FILTERBAM_HH
+
 #include <api/BamReader.h>  
 #include <api/BamAlignment.h>
 #include <iostream> 
@@ -24,9 +27,9 @@ using namespace BamTools;
 string getReferenceName(const RefVector &refData, int RefID);
 
 // For computing Coverage and Insertions
-uint32_t sumMandIOperations(vector<CigarOp> cigar);
-uint32_t sumDandIOperations(vector<CigarOp> cigar);
-int printElapsedTime(int tEnd, int tStart); 
+uint32_t sumMandIOperations(const vector<CigarOp> &cigar);
+uint32_t sumDandIOperations(const vector<CigarOp> &cigar);
+void printElapsedTime(int tEnd, int tStart); 
 
 // For option initialization
 struct globalOptions_t {
@@ -52,8 +55,6 @@ struct globalOptions_t {
 globalOptions_t initOptions(int argc, char *argv[]);
 
 
-#ifndef MATEPAIRS_H
-#define MATEPAIRS_H
 // Class definition 
 class MatePairs
 {
@@ -70,13 +71,10 @@ class MatePairs
       int operator==(const MatePairs &rhs) const;
       int operator<(const MatePairs &rhs) const;
 };
-#endif
 
 void printMatePairs(vector<MatePairs> matepairs, vector<BamAlignment> &qali);
 
 
-#ifndef PAIREDNESSCOVERAGE_H
-#define PAIREDNESSCOVERAGE_H
 // Class definition 
 class PairednessCoverage
 {

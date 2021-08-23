@@ -44,20 +44,22 @@ using namespace BamTools;
 using namespace BamTools::Algorithms; 
 using namespace std;
 
-void printQali(vector<BamAlignment> &qali, const RefVector &refData, bool pairwiseAlignments);
-float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions);
+void printQali(const vector<BamAlignment> &qali, const RefVector &refData, bool pairwiseAlignments);
+float scoreMate(const BamAlignment &al1, const BamAlignment &al2, int &dist, const globalOptions_t &globalOptions);
 void printMatedMap(map<int,int> mated);
-void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps, vector<int> &insertlen, map<string, multimap<int,int>> & pairCovSteps2);
-void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps);
+void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t &globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps, vector<int> &insertlen, map<string, multimap<int,int>> &pairCovSteps2);
+void printPairCovSteps(const vector<PairednessCoverage> &pairCovSteps);
 void printChrOfPairCovSteps(vector<PairednessCoverage> &pairCovSteps, string chr);
-vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> &pairCovSteps, globalOptions_t globalOptions);
-void printSizeOfCoverInfo(vector<PairednessCoverage> &pairCovSteps);
+vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> &pairCovSteps, const globalOptions_t &globalOptions);
+void printSizeOfCoverInfo(const vector<PairednessCoverage> &pairCovSteps);
 string bool_cast(const bool b);
 vector<string> uniqueKeys(const vector<PairednessCoverage> &m);
 
 
 int main(int argc, char *argv[])
 {
+    struct globalOptions_t globalOptions;
+    globalOptions = initOptions(argc, argv);
 
   // Variable definition
   BamReader reader;
@@ -68,17 +70,16 @@ int main(int argc, char *argv[])
   time_t tStart, tEnd;
   vector<CigarOp> cigar;
   uint32_t qLength;
-  uint32_t RefID;
   uint32_t editDistance;
   string qName;
   string qNameStem = ""; 
   string oldQnameStem = "";
   // Alignment
   string qSuffix;
-  int sumMandI;
+  uint32_t sumMandI;
   float coverage;
   float percId;
-  int32_t baseInsert;  // baseInsert = qBaseInsert+tBaseInsert, in some cases
+  uint32_t baseInsert;  // baseInsert = qBaseInsert+tBaseInsert, in some cases
   string alignedBases;
   // Counters
   int line = 0;
@@ -86,9 +87,6 @@ int main(int argc, char *argv[])
   int outMinId = 0;
   int outMinCover = 0;
   int outIntrons = 0;
-  int outPaired = 0;
-  int outUniq = 0;
-  int outBest = 0;
   int singleton = 0, notMateMapped = 0, notPaired = 0, notOnSameTarget = 0;
   bool isSingleton; 
   optionalCounters_t optionalCounters;
@@ -97,12 +95,10 @@ int main(int argc, char *argv[])
   vector<PairednessCoverage> pairCovSteps;
   vector<PairednessCoverage> compactPairCovSteps;  
   // Optional counters
-  optionalCounters.outPaired = outPaired;
-  optionalCounters.outUniq = outUniq;
-  optionalCounters.outBest = outBest;
+  optionalCounters.outPaired = 0;
+  optionalCounters.outUniq = 0;
+  optionalCounters.outBest = 0;
   // Initializing options
-  struct globalOptions_t globalOptions;
-  globalOptions = initOptions(argc, argv);
   bool best = globalOptions.best;
   bool help = globalOptions.help;
   bool noIntrons = globalOptions.noIntrons;
@@ -110,7 +106,7 @@ int main(int argc, char *argv[])
   bool uniq = globalOptions.uniq;
   bool verbose = globalOptions.verbose;
   bool pairwiseAlignments = globalOptions.pairwiseAlignments;
-  int insertLimit = globalOptions.insertLimit;
+  uint32_t insertLimit = (unsigned) globalOptions.insertLimit;
   int maxIntronLen = globalOptions.maxIntronLen;
   int maxSortesTest = globalOptions.maxSortesTest;
   int minCover = globalOptions.minCover;
@@ -120,7 +116,6 @@ int main(int argc, char *argv[])
   const char* inputFile = globalOptions.inputFile;
   const char* outputFile = globalOptions.outputFile;	
   const char* pairBedFile = globalOptions.pairBedFile;
-  ofstream geneFile;
   ofstream bedFile;
   vector<int> insertlen;
 
@@ -169,7 +164,6 @@ int main(int argc, char *argv[])
 	}
 
   // Sweeping through alignments
-  nextAlignment:
   	while (reader.GetNextAlignment(al)) 
 	  {
 		line++;
@@ -193,7 +187,6 @@ int main(int argc, char *argv[])
 		// suffixes of mate pairs;
 		qName = al.Name;
 		qNameStem = qName; 
-		RefID = al.RefID;
 
 		if (paired)
 		  {	
@@ -237,7 +230,7 @@ int main(int argc, char *argv[])
 				cout << qName << " filtered out because: unmapped " << endl;
 			  }
 			outMap++;
-			goto nextAlignment;
+			continue; // go to next alignment
 		  }
 
 
@@ -246,10 +239,10 @@ int main(int argc, char *argv[])
 		  {
 			isSingleton = al.IsPaired() && al.IsMapped() && !al.IsMateMapped();
 			if( isSingleton ) {singleton++;}
-			if ( !al.IsPaired() ) {notPaired++; goto nextAlignment;}
-			if ( !al.IsMateMapped() ) {notMateMapped++; goto nextAlignment;}
+			if ( !al.IsPaired() ) {notPaired++; continue;} // go to next alignment
+			if ( !al.IsMateMapped() ) {notMateMapped++; continue;} // go to next alignment
 	        // skip if alignment & mate not on same reference sequence
-	        if ( al.RefID != al.MateRefID ) {notOnSameTarget++; goto nextAlignment;}
+			if ( al.RefID != al.MateRefID ) {notOnSameTarget++; continue;} // go to next alignment
 		}
 
 	
@@ -261,7 +254,7 @@ int main(int argc, char *argv[])
 			// Checking whether file is sorted by query name
 			if (line <= maxSortesTest && qNameStems[qNameStem])   
 			  {
-				cerr << "\nInput file not sorted by query name!\n" << qNameStem.c_str() << 
+				cerr << "\nInput file " << inputFile << " not sorted by query name!\n" << qNameStem.c_str() << 
 				  " occurred previously. " << endl;
 				cerr << "Do either of the following: " << endl;
 				cerr << "1) Convert the file into SAM with e.g. the 'bamtools' software. \n" << 
@@ -296,7 +289,6 @@ int main(int argc, char *argv[])
   		cigar = al.CigarData;
   		qName = al.Name; // query name
   		qLength = al.Length; // query length (TODO: consider situations where qLength=0,undefined)
-  		RefID = al.RefID; // ID of reference seq. (later used)
   		sumMandI = 0; // Equiv to $qEnd-$qStart in PSL
   		baseInsert = 0;
   		al.GetTag("NM", editDistance); // edit distance (see SAM spec)
@@ -326,7 +318,7 @@ int main(int argc, char *argv[])
 			  {
 				cout << qName << " filtered out by percid=" << percId << " < minId=" << minId << endl;
 			  }
-  			goto nextAlignment;
+			continue; // go to next alignment
   	  	}
 
 
@@ -340,7 +332,7 @@ int main(int argc, char *argv[])
 			  {
 				cout << qName << " filtered out by coverage= " << coverage << " < minCover=" <<minCover << endl;
 			  }
-  			goto nextAlignment;
+			continue; // go to next alignment
   		  }	
 
 
@@ -355,7 +347,7 @@ int main(int argc, char *argv[])
 				cout << qName << " filtered out by intron criterion= " << baseInsert << " > insertLimit=" << 
 					insertLimit << endl;
 			  }
-  			goto nextAlignment;
+			continue; // go to next alignment
   		  }
 
 	
@@ -395,9 +387,6 @@ int main(int argc, char *argv[])
 	  {
 		processQuery(qali,refData, globalOptions, &writer, oldQnameStem, optionalCounters, pairCovSteps, insertlen, pairCovSteps2);
 
-		outPaired = optionalCounters.outPaired;
-		outUniq = optionalCounters.outUniq;
-		outBest = optionalCounters.outBest;
 		if (verbose) {printPairCovSteps(pairCovSteps);}
 	  }
 
@@ -424,8 +413,7 @@ int main(int argc, char *argv[])
 			  if (chr.size() ==0) goto nextChromosome; 
 
 			  // Sweep through each chromosome and stuff their position values into a vector 
-			  unsigned int it=0;
-			  for (; it<compactPairCovSteps.size(); it++)
+			  for (unsigned int it=0; it<compactPairCovSteps.size(); it++)
 				{
 				  if (compactPairCovSteps.at(it).chr == chr)
 					pairCovStepsOfChr.push_back(compactPairCovSteps.at(it)); 
@@ -470,7 +458,7 @@ int main(int argc, char *argv[])
 	if (noIntrons) {cout <<  "nointrons       : " << outIntrons << endl;}
 	if (paired) 
 	  {
-		cout << "not paired (our criterion)	: " << outPaired << endl;
+		cout << "not paired (our criterion)	: " << optionalCounters.outPaired << endl;
       	cout << "quantiles of unspliced insert lengths:" << endl;
 		try { // catches: instance of 'std::out_of_range'
 		  	  for (int it=1; it<10; it++)
@@ -480,8 +468,8 @@ int main(int argc, char *argv[])
 			}
 		cout << endl;
  	  } 
-	if (uniq) {cout << "not unique	: " << outUniq << endl;}
-	if (best) {cout << "not best	: " << outBest << endl;}
+	if (uniq) {cout << "not unique	: " << optionalCounters.outUniq << endl;}
+	if (best) {cout << "not best	: " << optionalCounters.outBest << endl;}
 	if (pairwiseAlignments)
  	  {
 		cout << "singleton	: " << singleton << endl;
@@ -555,9 +543,9 @@ vector<string> uniqueKeys(const vector<PairednessCoverage> &m)
 }
 
 
-void printQali(vector<BamAlignment> &qali, const RefVector &refData, bool pairwiseAlignments)
+void printQali(const vector<BamAlignment> &qali, const RefVector &refData, bool pairwiseAlignments)
 {
-  vector<BamAlignment>::iterator it = qali.begin();
+  vector<BamAlignment>::const_iterator it = qali.begin();
   std::stringstream ss_rstart, ss_rend, ss_percId, ss_coverage, ss_score;
   string rName;
   string qName;
@@ -600,7 +588,7 @@ void printQali(vector<BamAlignment> &qali, const RefVector &refData, bool pairwi
 }
 
 // parameter later used for comparing quality between alignments
-vector<BamAlignment> scoreAli(vector<BamAlignment>& qali)
+void scoreAli(vector<BamAlignment> &qali)
 {
   string s_percId, s_coverage;
   std::stringstream ss_score;
@@ -615,19 +603,15 @@ vector<BamAlignment> scoreAli(vector<BamAlignment>& qali)
 		(*it).AddTag("sc", "Z", ss_score.str());
 		ss_score.str("");
 	}
-
-  return qali;
-
 }
 
 
 // for comparing quality of two mate-pair read alignments (it, jit)
-float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions)
+float scoreMate(const BamAlignment &al1, const BamAlignment &al2, int &dist, const globalOptions_t &globalOptions)
 {
   int maxIntronLen = globalOptions.maxIntronLen;
   bool best = globalOptions.best;
   string percId1, coverage1, percId2, coverage2;
-  string rf1, rf2;
 
   // Retrieving percent identity
   al1.GetTag("pi", percId1);
@@ -713,9 +697,9 @@ void printMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs)
 }
 
 
-void printMatedMap(map<int,int> mated)
+void printMatedMap(const map<int,int> mated)
 {
-  map<int,int>::iterator itMated = mated.begin();
+  map<int,int>::const_iterator itMated = mated.begin();
   cout << "Printing mated summary:" << endl;
   for (; itMated!=mated.end(); itMated++)
 	{
@@ -724,7 +708,7 @@ void printMatedMap(map<int,int> mated)
 }
 
 
-void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps)
+void printPairCovSteps(const vector<PairednessCoverage> &pairCovSteps)
 {
   vector<string> chrNames = uniqueKeys(pairCovSteps);
   string chr;
@@ -736,8 +720,7 @@ void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps)
 
 		chr = chrNames.at(chrIt);
 		cout << chr << "=>" << endl;
-		unsigned int it=0;
-		for (; it<pairCovSteps.size(); it++)
+		for (unsigned int it = 0; it<pairCovSteps.size(); it++)
 		  {
 			if (pairCovSteps.at(it).chr == chr)
 			  cout << "\t[" << pairCovSteps.at(it).coord << "," << pairCovSteps.at(it).label << "]" << endl; 
@@ -752,8 +735,7 @@ void printChrOfPairCovSteps(vector<PairednessCoverage> &pairCovSteps, string chr
   cout << "Printing coverage of chr=" << chr << endl;
   // Print only values of pairCovSteps that coincide with given chr name
   cout << chr << "=>" << endl;
-  unsigned int it=0;
-  for (; it<pairCovSteps.size(); it++)
+  for (unsigned int it=0; it<pairCovSteps.size(); it++)
 	{
 	  if (pairCovSteps.at(it).chr == chr)
 		cout << "\t[" << pairCovSteps.at(it).coord << "," << pairCovSteps.at(it).label << "]" << endl; 
@@ -761,7 +743,7 @@ void printChrOfPairCovSteps(vector<PairednessCoverage> &pairCovSteps, string chr
 }
 
 
-void printSizeOfCoverInfo(vector<PairednessCoverage> &pairCovSteps)
+void printSizeOfCoverInfo(const vector<PairednessCoverage> &pairCovSteps)
 {
   vector<string> chrNames = uniqueKeys(pairCovSteps);
   string chr;
@@ -770,9 +752,8 @@ void printSizeOfCoverInfo(vector<PairednessCoverage> &pairCovSteps)
     for (unsigned int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) 
   	  {
 		chr = chrNames.at(chrIt);
-		unsigned int it=0;
 		int keySize = 0;
-		for (; it<pairCovSteps.size(); it++)
+		for (unsigned int it=0; it<pairCovSteps.size(); it++)
 		  {
 			if (pairCovSteps.at(it).chr == chr)
 			  keySize++;
@@ -785,7 +766,7 @@ void printSizeOfCoverInfo(vector<PairednessCoverage> &pairCovSteps)
 // If several steps coincide then summarize them equivalently by one step in order to 
 // 1) Save memory or 
 // 2) output a bed file
-vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSteps, globalOptions_t globalOptions)
+vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> &pairCovSteps, const globalOptions_t &globalOptions)
 {
   bool verbose = globalOptions.verbose;
   vector<string> chrNames = uniqueKeys(pairCovSteps);
@@ -804,8 +785,7 @@ vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSte
 		if (chr.size() ==0) goto nextChromosome; 
 
  		// Sweep through each chromosome and stuff their position values into a vector 
-		unsigned int it=0;
-		for (; it<pairCovSteps.size(); it++)
+		for (unsigned int it=0; it<pairCovSteps.size(); it++)
 		  {
 			if (pairCovSteps.at(it).chr == chr)
 			  pairCovStepsOfChr.push_back(pairCovSteps.at(it)); 
@@ -869,13 +849,8 @@ vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSte
 
 
 
-void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps, vector<int> &insertlen, map<string, multimap<int,int>> & pairCovSteps2)
+void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t &globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps, vector<int> &insertlen, map<string, multimap<int,int>> &pairCovSteps2)
 {
-  // Optional counters
-  int outPaired = optionalCounters.outPaired;
-  int outUniq = optionalCounters.outUniq;
-  int outBest = optionalCounters.outBest;
-
   // Expanding options
   bool best = globalOptions.best;
   bool paired = globalOptions.paired;
@@ -918,7 +893,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 	}
 
   // Defines whether to treat reads as single- or pair-ended ones
-  if (paired && qali.size()>0) 
+  if (paired && !qali.empty())
 	{
  
 	  // cout << "The size of qali is: " << qali.size() << endl;
@@ -1072,7 +1047,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		}
 
 	  // Counting all alignments that were not paired
-	  outPaired += (int)qali.size() - (int)mated.size();
+	  optionalCounters.outPaired += (int)qali.size() - (int)mated.size();
 
 	  if ((!uniq && !best) || matepairs.size()<2)
 	  	{ // (uniq,best= (0,0) or size of mated pairs=1, let pass all mate-paired alignments
@@ -1193,7 +1168,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						qali.at(matepairs.at(0).alJit).RemoveTag("co");
 						(*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
 						(*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
-						outUniq += mated.size()-2; // Drop all mated-pairs except the optimal two
+						optionalCounters.outUniq += mated.size()-2; // Drop all mated-pairs except the optimal two
 					  } else {// dropping all mate-pairs belonging to this query
 
 					  	  if (verbose)
@@ -1211,7 +1186,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 							  cout << "Clearing contents of matepairs" << endl;				   	
 							}
 
-						  outUniq += mated.size(); // Drop all mated alignments
+						  optionalCounters.outUniq += mated.size(); // Drop all mated alignments
 						  matepairs.clear();
 					  }
 
@@ -1235,7 +1210,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					  qali.at(matepairs.at(0).alJit).RemoveTag("co");
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alIt)); 
 					  (*ptrWriter).SaveAlignment(qali.at(matepairs.at(0).alJit)); 
-					  outUniq += mated.size()-2; // Drop all alignments except the first pair of alignments
+					  optionalCounters.outUniq += mated.size()-2; // Drop all alignments except the first pair of alignments
 				}
 
 				// keep only the best pair (if any)
@@ -1311,7 +1286,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 
 					}
 
-				  outBest += mated.size()-writtenIndices.size(); 
+				  optionalCounters.outBest += mated.size()-writtenIndices.size(); 
 				  // Retaining only mate-pairs with optimal score
 				  matepairs.resize(numBest);
 
@@ -1403,7 +1378,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 		  {
 
 			// Computing scores for each alignment, score=percId+coverage;
-			qali = scoreAli(qali);
+			scoreAli(qali);
 			if (verbose)
 			  {
 				cout << "Scoring alignments and sorting them according to such score." << endl;
@@ -1448,7 +1423,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					scoreFirst = atof(s_scoreFirst.c_str());
 					qali.at(second).GetTag("sc", s_scoreSecond);
 					scoreSecond = atof(s_scoreSecond.c_str());
-					// Computing ratio between frist and second alignments
+					// Computing ratio between first and second alignments
 					ratio = scoreSecond/scoreFirst;
 
 					if (verbose)
@@ -1479,9 +1454,9 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						// Removing percId and coverage Tags before writing into file
 						qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
 						(*ptrWriter).SaveAlignment(qali.at(0)); // Prints alignment line into file
-						outUniq += qali.size()-1;
+						optionalCounters.outUniq += qali.size()-1;
 						if (verbose)
-						  {	cout << "(" << outUniq << "/" << qali.size() << ") alignments filtered out " 
+						  {	cout << "(" << optionalCounters.outUniq << "/" << qali.size() << ") alignments filtered out " 
 								 << " by uniqueness " << endl;
 							for (unsigned int it=1; it<qali.size(); it++)
 							  {cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
@@ -1496,7 +1471,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 							for (unsigned int it=0; it<qali.size(); it++)
 							  {cout << qali.at(it).Name << " filtered out by uniqueness criterion." << endl;}
 						  }					  	
-					  	  outUniq += qali.size();//Filtered out alignments by uniq. increases by size of Qali
+					  	  optionalCounters.outUniq += qali.size();//Filtered out alignments by uniq. increases by size of Qali
 
 					  }
 				  } else {// '(second == qali.size()' => all alignments in "qali" are similar
@@ -1518,7 +1493,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 					  // Removing percId and coverage Tags before writing into file
 					  qali.at(0).RemoveTag("pi"); qali.at(0).RemoveTag("co");
 				  	  (*ptrWriter).SaveAlignment(qali.at(0)); // Letting pass only best
-				  	  outUniq += qali.size()-1;
+					  optionalCounters.outUniq += qali.size()-1;
 				  }
 
 			  } else { // (uniq, best) = (0, 1); let pass only (best) alignments that share maximum score
@@ -1565,7 +1540,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						
 				  } 
 
-				outBest += qali.size();
+				optionalCounters.outBest += qali.size();
 				if (verbose)
 				  {
 					cout << "------------------------------------------------------------------------" << endl;
@@ -1636,10 +1611,5 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 
   // Clearing contents of qali
   qali.clear();
-
-  // Updating filter counters	
-  optionalCounters.outPaired = outPaired;
-  optionalCounters.outUniq = outUniq;
-  optionalCounters.outBest = outBest;
 
 } // end processQuery()

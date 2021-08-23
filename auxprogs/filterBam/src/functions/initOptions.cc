@@ -35,7 +35,6 @@ using namespace std;
 
 // Definition of global variables
 static const char *optString = "b:c:d:e:g:h?:i:l:n:o:p:q:s:u:v:w:x";
-extern int opterr; // Display error if opterr=0
 
 #ifndef GLOBALOPTIONS_T
 #define GLOBALOPTIONS_T
