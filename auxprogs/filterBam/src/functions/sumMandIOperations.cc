@@ -1,8 +1,4 @@
-/*	Sums and (if desired), prints the total length of the M and I
-	cigar operations
-
-	Created: Friday, September 16, 2011
-	Last modified: 11-November-2011
+/** Sums the total length of the M and I cigar operations.
 */
 
 #include <api/BamReader.h>
@@ -16,7 +12,7 @@ using namespace std;
 using namespace BamTools;
 
 // In SAM, sumMandIOperations = $qEnd-$qStart in PSL
-uint32_t sumMandIOperations(vector<CigarOp> cigar, string printFlag)
+uint32_t sumMandIOperations(vector<CigarOp> cigar)
 {
 	int cigarSize = cigar.size();
 	uint32_t sumMandI = 0;
@@ -33,10 +29,8 @@ uint32_t sumMandIOperations(vector<CigarOp> cigar, string printFlag)
 
 		if (cigarType == 'M' || cigarType == 'I')
 			{
-		  	// Sum and print operations
+		  	// Sum operations
 			sumMandI = cigarLength + sumMandI;	
-			if (!printFlag.compare("print"))
-			  {cout << cigarLength << ";" << cigarType << ",";}
 			}	
 		} // end for
 

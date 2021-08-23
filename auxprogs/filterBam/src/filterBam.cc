@@ -15,7 +15,6 @@
 #include <api/BamWriter.h>   
 #include <api/BamAlignment.h> 
 #include <api/algorithms/Sort.h> 
-#include "bamtools_sort.h" 
 #include <iostream> 
 #include <vector> 
 #include <string> 
@@ -35,48 +34,6 @@
 #include <math.h>  
 #include "filterBam.h"
 
-const uint16_t ModelType::DUMMY_ID = 100;
-
-
-uint16_t CalculateModelType(const BamAlignment& al) {
-
-    // localize alignment's mate positions & orientations for convenience
-    const int32_t m1_begin = ( al.IsFirstMate() ? al.Position : al.MatePosition );
-    const int32_t m2_begin = ( al.IsFirstMate() ? al.MatePosition : al.Position );
-    const bool m1_isReverseStrand = ( al.IsFirstMate() ? al.IsReverseStrand() : al.IsMateReverseStrand() );
-    const bool m2_isReverseStrand = ( al.IsFirstMate() ? al.IsMateReverseStrand() : al.IsReverseStrand() );
-
-	cout << "--------------------------------" << endl;	
-		  cout << "m1_isReverseStrand: " << m1_isReverseStrand << al.IsFirstMate() << al.IsReverseStrand() << al.IsMateReverseStrand() << endl;
-		  cout << "m2_isReverseStrand: " << m2_isReverseStrand << al.IsFirstMate() << al.IsMateReverseStrand() << al.IsReverseStrand() << endl;
-
-    // determine 'model type'
-    if ( m1_begin < m2_begin ) {
-        if ( !m1_isReverseStrand && !m2_isReverseStrand ) return 0; // ID: 1
-        if ( !m1_isReverseStrand &&  m2_isReverseStrand ) 
-		{
-			cout << "CurrentModelType:" << 2 << endl; 
-			return 1;
-		} // ID: 2 //Lizzy
-        if (  m1_isReverseStrand && !m2_isReverseStrand ) return 2; // ID: 3
-        if (  m1_isReverseStrand &&  m2_isReverseStrand ) return 3; // ID: 4
-    } else {
-        if ( !m2_isReverseStrand && !m1_isReverseStrand ) return 4; // ID: 5
-        if ( !m2_isReverseStrand &&  m1_isReverseStrand ) 
-		{
-			cout << "CurrentModelType:" << 6 << endl; 
-			return 5;
-		} // ID: 6 //Lizzy
-        if (  m2_isReverseStrand && !m1_isReverseStrand ) return 6; // ID: 7
-        if (  m2_isReverseStrand &&  m1_isReverseStrand ) return 7; // ID: 8
-    }
-	cout << "--------------------------------" << endl;	
-
-    // unknown model
-    return ModelType::DUMMY_ID;
-}
-
- 
 struct optionalCounters_t { 
   int outPaired;
   int outUniq;
@@ -89,7 +46,6 @@ using namespace std;
 
 void printQali(vector<BamAlignment> &qali, const RefVector &refData, bool pairwiseAlignments);
 float scoreMate(BamAlignment al1, BamAlignment al2, int dist, globalOptions_t globalOptions);
-void prinMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs);
 void printMatedMap(map<int,int> mated);
 void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOptions_t globalOptions, BamWriter* ptrWriter, string oldQnameStem, optionalCounters_t &optionalCounters, vector<PairednessCoverage> &pairCovSteps, vector<int> &insertlen, map<string, multimap<int,int>> & pairCovSteps2);
 void printPairCovSteps(vector<PairednessCoverage> &pairCovSteps);
@@ -109,22 +65,16 @@ int main(int argc, char *argv[])
   BamAlignment al;
   vector<BamAlignment> qali;
   unordered_map<string,int> qNameStems;
-  time_t tStart, tEnd, tElapsed; 
+  time_t tStart, tEnd;
   vector<CigarOp> cigar;
-  char cigarType;
-  uint32_t cigarLength;
   uint32_t qLength;
   uint32_t RefID;
   uint32_t editDistance;
-  string rName;
   string qName;
   string qNameStem = ""; 
   string oldQnameStem = "";
   // Alignment
   string qSuffix;
-  bool strand;
-  int rstart, rend;
-  int cigarSize;
   int sumMandI;
   float coverage;
   float percId;
@@ -165,7 +115,6 @@ int main(int argc, char *argv[])
   int maxSortesTest = globalOptions.maxSortesTest;
   int minCover = globalOptions.minCover;
   int minId = globalOptions.minId;
-  int minIntronLen = globalOptions.minIntronLen;
   float uniqThresh = globalOptions.uniqThresh;
   const char* commonGeneFile = globalOptions.commonGeneFile;
   const char* inputFile = globalOptions.inputFile;
@@ -192,7 +141,6 @@ int main(int argc, char *argv[])
 	  cout << "maxIntronLen=" <<  maxIntronLen << endl;
 	  cout << "minCover=" <<  minCover << endl;
 	  cout << "minId=" <<  minId << endl;
-	  cout << "minIntronLen=" << minIntronLen << endl;
 	  cout << "uniqThresh=" << uniqThresh << endl;
 	  cout << "commonGeneFile=" << commonGeneFile << endl;
 	  cout << "pairBedFile=" << pairBedFile << endl;
@@ -282,7 +230,6 @@ int main(int argc, char *argv[])
 
 		// Filter for data whose Reference seq ID is not defined; i.e. RNAME= * in SAM format;
 		// i.e. unmapped fragment without coordinate 
-		rName = getReferenceName(refData, RefID);
 		if (!al.IsMapped())
 		  {	  
 			if (verbose)
@@ -346,7 +293,6 @@ int main(int argc, char *argv[])
 
   		// Fetching alignment information
   		cigar = al.CigarData;
-  		cigarSize = cigar.size();
   		qName = al.Name; // query name
   		qLength = al.Length; // query length (TODO: consider situations where qLength=0,undefined)
   		RefID = al.RefID; // ID of reference seq. (later used)
@@ -384,7 +330,7 @@ int main(int argc, char *argv[])
 
 
   		// Coverage filter
-  		sumMandI = sumMandIOperations(cigar, "no");
+  		sumMandI = sumMandIOperations(cigar);
    		coverage = (float)100*sumMandI/qLength; 
   		if (coverage < minCover)
   		  {	
@@ -398,7 +344,7 @@ int main(int argc, char *argv[])
 
 
   		// Intron gap filter
-  		baseInsert = sumDandIOperations(cigar, "no");
+  		baseInsert = sumDandIOperations(cigar);
   		// Save if complying with insertLimit
   		if (noIntrons && baseInsert > insertLimit)
   		  {
@@ -566,7 +512,7 @@ int main(int argc, char *argv[])
 
 	// Ending timer and printing elapsed time
 	tEnd = time(NULL);    
-	tElapsed = printElapsedTime(tEnd, tStart);     
+	printElapsedTime(tEnd, tStart);
 
 
 } // end main
@@ -656,7 +602,6 @@ void printQali(vector<BamAlignment> &qali, const RefVector &refData, bool pairwi
 vector<BamAlignment> scoreAli(vector<BamAlignment>& qali)
 {
   string s_percId, s_coverage;
-  float percId, coverage, score;
   std::stringstream ss_score;
   vector<BamAlignment>::iterator it = qali.begin();
 
@@ -753,7 +698,6 @@ void printMatedPairsInfo(vector<BamAlignment> qali, vector<MatePairs> matepairs)
 {
   vector<MatePairs>::iterator itMp = matepairs.begin();
 
-  int counter = 0;
   string qName1, qName2;
   cout << "Printing Mate-pairs info: [matepairs.size()=" << matepairs.size() << "]" << endl;
   for (itMp; itMp != matepairs.end(); itMp++)
@@ -937,17 +881,11 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
   bool uniq = globalOptions.uniq;
   bool verbose = globalOptions.verbose;
   bool pairwiseAlignments = globalOptions.pairwiseAlignments;
-  int insertLimit = globalOptions.insertLimit;
   int maxIntronLen = globalOptions.maxIntronLen;
-  int maxSortesTest = globalOptions.maxSortesTest;
-  int minCover = globalOptions.minCover;
-  int minId = globalOptions.minId;
-  int minIntronLen = globalOptions.minIntronLen;
   float uniqThresh = globalOptions.uniqThresh;
   const char* commonGeneFile = globalOptions.commonGeneFile;
   const char* pairBedFile = globalOptions.pairBedFile;
   ofstream geneFile;
-  ofstream bedFile;
   // Pairedness 
   multimap<int,int> pairCoord;
 
@@ -967,7 +905,6 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
   uint32_t jitTend;
   uint32_t itTstart;
   uint32_t itTend;
-  string reservedField;
 
   if (verbose)
 	{
@@ -1313,7 +1250,6 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						   << ")" << endl;
 					}
 
-				  string s_optScore, s_tempScore;
 				  float optScore, tempScore; 
 				  vector<string> bestTnames; 
 				  optScore = matepairs.at(0).score;

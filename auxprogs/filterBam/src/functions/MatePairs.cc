@@ -4,6 +4,7 @@
 	Last modified: 10-February-2012
 */
 
+#include "filterBam.h"
 #include <iostream>
 #include <list>
 #include <string>
@@ -16,28 +17,6 @@
 
 using namespace std;
 using namespace BamTools;
-
-
-
-// Class definition 
-class MatePairs
-{
-   friend ostream &operator<<(ostream &, const MatePairs &);
-
-   public:
-  	  int alIt;
-  	  int alJit;
-  	  float score;
-      MatePairs();
-      MatePairs(const MatePairs &);
-  	  MatePairs(int it, int jit, float score);
-      ~MatePairs(){};
- 	  void setValues(int it, int jit, float score);
-      MatePairs &operator=(const MatePairs &rhs);
-      int operator==(const MatePairs &rhs) const;
-      int operator<(const MatePairs &rhs) const;
-  	  bool operator() (const MatePairs &lhs, const MatePairs &rhs) const;
-};
 
 // Constructor
 MatePairs::MatePairs()   // Constructor
@@ -69,14 +48,6 @@ void MatePairs::setValues(int it, int jit, float score)
 	this->alIt = it;
 	this->alJit = jit;
 	this->score = score;
-}
-
-// Ostream operator
-ostream &operator<<(ostream &output, const MatePairs &aaa)
-{
-  output << aaa.alIt << ' ' << aaa.alJit << aaa.score;
-  // output << endl;
-  return output;
 }
 
 // Assignment operator

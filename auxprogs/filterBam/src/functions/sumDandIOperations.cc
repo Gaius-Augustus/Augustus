@@ -16,7 +16,7 @@ using namespace std;
 using namespace BamTools;
 
 // In SAM, sumDandIOperations = $qBaseInsert+$tBaseInsert
-uint32_t sumDandIOperations(vector<CigarOp> cigar, string printFlag)
+uint32_t sumDandIOperations(vector<CigarOp> cigar)
 {
 	int cigarSize = cigar.size();
 	uint32_t sumDandI = 0;
@@ -33,10 +33,8 @@ uint32_t sumDandIOperations(vector<CigarOp> cigar, string printFlag)
 
 		if (cigarType == 'D' || cigarType == 'I')
 			{
-		  	// Sum and print operations
+		  	// Sum operations
 			sumDandI = cigarLength + sumDandI;	
-			if (!printFlag.compare("print"))
-			  {cout << cigarLength << ";" << cigarType << ",";}
 			}	
 		} // end for
 

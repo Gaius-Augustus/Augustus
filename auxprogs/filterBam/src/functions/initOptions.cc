@@ -24,7 +24,6 @@ int maxIntronLen = 500000;
 int maxSortesTest = 100000;
 int minCover = 80;
 int minId = 92;
-int minIntronLen = 35;
 float uniqThresh = 0.96;
 const char* commonGeneFile;
 const char* inputFile;
@@ -35,7 +34,7 @@ const char* pairBedFile;
 using namespace std;
 
 // Definition of global variables
-static const char *optString = "a:b:c:d:e:f:g:i:j:k:l:m:n:o:p:q:w:h?";
+static const char *optString = "a:b:c:d:e:f:g:i:j:k:m:n:o:p:q:w:h?";
 extern int opterr; // Display error if opterr=0
 
 #ifndef GLOBALOPTIONS_T
@@ -53,7 +52,6 @@ struct globalOptions_t {
 	int maxSortesTest; 
 	int minCover;
 	int minId;
-	int minIntronLen;
 	float uniqThresh;
 	const char* commonGeneFile;
   	const char* inputFile;
@@ -77,7 +75,6 @@ static const struct option longOpts[] = {
 	{ "maxSortesTest", required_argument, NULL, 'i' },
     { "minCover", required_argument, NULL, 'j' },
   	{ "minId", required_argument, NULL, 'k' },
-	{ "minIntronLen", required_argument, NULL, 'l' },
     { "uniqThresh", required_argument, NULL, 'm' }, 	 
     { "commonGeneFile", required_argument, NULL, 'n' }, 
     { "in", required_argument, NULL, 'o' }, 
@@ -89,7 +86,7 @@ static const struct option longOpts[] = {
 
 
 // Display usage when --help
-void displayUsage(int argc, char *argv[])
+void displayUsage(char *argv[])
 {
 	cout <<  " Usage: " << argv[0] << " --in in.bam --out out.bam [options]\n";
   	cout <<  "--------------------------------------------------" << endl;
@@ -130,8 +127,6 @@ void displayUsage(int argc, char *argv[])
 	cout <<  "  --minCover n       minimal percentage of coverage of the query read (default " << 
 			 		minCover << ")" << endl;
 	cout <<  "  --minId n          minimal percentage of identity (default " << minId << ")" << endl;
-	cout <<  "  --minIntronLen n   minimal     ''     ''   ''    ''   (default " << minIntronLen << 
-					")" << endl;
 	cout <<  "  --uniqThresh n     threshold % for uniq, second best must be at most this" << endl;
 	cout <<  "                     fraction of best (default " << uniqThresh << ") " << endl;
 	cout <<  "  --commonGeneFile s file name in which to write cases where one read maps to \n" <<
@@ -155,7 +150,7 @@ globalOptions_t initOptions(int argc, char *argv[])
 	// Display usage if only ./program is provided
 	if (argc==1)
 	  {
-		displayUsage(argc, argv);    
+		displayUsage(argv);
 		exit(EXIT_FAILURE);
 	  }
 
@@ -172,7 +167,6 @@ globalOptions_t initOptions(int argc, char *argv[])
 	globalOptions.maxSortesTest = maxSortesTest; 
 	globalOptions.minCover = minCover;
 	globalOptions.minId = minId;
-	globalOptions.minIntronLen = minIntronLen;
 	globalOptions.uniqThresh = uniqThresh; 
 	globalOptions.commonGeneFile = "";
 	globalOptions.inputFile = "";
@@ -195,7 +189,6 @@ globalOptions_t initOptions(int argc, char *argv[])
             case 'i'	:	globalOptions.maxSortesTest = atoi(optarg);	break;
 			case 'j'	:	globalOptions.minCover = atoi(optarg);		break;
 			case 'k'	:	globalOptions.minId = atoi(optarg);			break;
-            case 'l'	:	globalOptions.minIntronLen = atoi(optarg);	break;
 			case 'm'	:	globalOptions.uniqThresh = atof(optarg);	break;
 			case 'n'	:	globalOptions.commonGeneFile = optarg;		break;
 			case 'o'	:	globalOptions.inputFile = optarg;			break;
@@ -204,7 +197,7 @@ globalOptions_t initOptions(int argc, char *argv[])
 			case 'h':   // HELP: fall-through is intentional
             case '?':
 				globalOptions.help = true;	
-			  	displayUsage(argc, argv);
+			  	displayUsage(argv);
     			exit(EXIT_FAILURE);
                 // break;              
             default:

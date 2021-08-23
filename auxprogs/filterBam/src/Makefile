@@ -5,7 +5,7 @@ include ../../../common.mk
 CXX ?= g++
 CXXFLAGS := -std=c++0x ${CXXFLAGS}
 
-SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc SingleAlignment.cc \
+SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc \
           printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
 OBJS = $(SOURCES:.cc=.o)
 
