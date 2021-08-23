@@ -291,7 +291,6 @@ int main(int argc, char *argv[])
   		qLength = al.Length; // query length (TODO: consider situations where qLength=0,undefined)
   		sumMandI = 0; // Equiv to $qEnd-$qStart in PSL
   		baseInsert = 0;
-  		al.GetTag("NM", editDistance); // edit distance (see SAM spec)
 		alignedBases = al.AlignedBases; // 'aligned' seq, includes: indels, padding, clipping
 		
 		// Percentage Identity filter; compute with equal signs 
@@ -406,11 +405,10 @@ int main(int argc, char *argv[])
 		  string chr;
 
 		  cout << "Number of chromosomes is " << chrNames.size() << endl;
-	  nextChromosome:
 		  for (unsigned int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) // display chromosomes in alph order
 			{
 			  chr = chrNames.at(chrIt);
-			  if (chr.size() ==0) goto nextChromosome; 
+			  if (chr.empty()) continue;
 
 			  // Sweep through each chromosome and stuff their position values into a vector 
 			  for (unsigned int it=0; it<compactPairCovSteps.size(); it++)
@@ -778,11 +776,10 @@ vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> &pairCovStep
 
   // Now sweep through each chromosome and stuff into a vector all the position values corresponding to 
   // that vector
-  nextChromosome:
     for (unsigned int chrIt = 0; chrIt < chrNames.size(); chrIt++ ) // display chromosomes in alph order
   	  {
 		chr = chrNames.at(chrIt);
-		if (chr.size() ==0) goto nextChromosome; 
+		if (chr.empty()) continue; 
 
  		// Sweep through each chromosome and stuff their position values into a vector 
 		for (unsigned int it=0; it<pairCovSteps.size(); it++)
