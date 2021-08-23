@@ -35,7 +35,13 @@ The input file must be sorted lexicographically by \(aqqueryname\(aq, with e.g.
 .sp -1
 .IP \(bu 2.3
 .\}
-\fBsort \-k 1,1\fP [be aware: \(aqexport LC_ALL=C\(aq might be used  because sort ignores characters like \(aq:\(aq]
+Convert the file into SAM format, sort lexicographically by queryname and convert back again into BAM format.
+E.g.
+\fBexport LC_ALL=C\fP
+\fBsamtools view \-H file.bam > file_sorted.sam\fP
+\fBsamtools view file.bam | sort \-k 1 >> file_sorted.sam\fP
+\fBsamtools view \-bS file_sorted.sam > file_sorted.bam\fP
+[be aware: \(aqexport LC_ALL=C\(aq might be used because sort ignores characters like \(aq:\(aq]
 Also, please bear in mind that this will require converting your BAM file into SAM.
 .RE
 .sp
@@ -59,9 +65,8 @@ but they are not guaranteed to work because of the problem mentioned above.
 .sp -1
 .IP \(bu 2.3
 .\}
-In the case of \fBsamtools\fP, the command is: \(aqsamtools sort [\-n] file.bam\(aq.
-The option [\-n] should sort by query name, just as \(aqsort \-k 10,10\(aq would do in a PSL file.
-Without options, the sorting will be done by reference name and target coordinate, just as a  \(aqsort \-n \-k 16,16 | sort \-k 14,14\(aq would do with PSL.
+In the case of \fBsamtools\fP, the command to sort by \(aqqueryname\(aq is:
+\fBsamtools sort \-n \-o file_sorted.bam file.bam\fP
 For more information check the man page included in samtools distribution.
 .RE
 .sp
@@ -73,89 +78,99 @@ For more information check the man page included in samtools distribution.
 .sp -1
 .IP \(bu 2.3
 .\}
-bamtools can also sort bam files: \fBbamtools sort \-queryname \-in file.bam\fP,
+bamtools can also sort bam files:
+\fBbamtools sort \-byname \-in file.bam \-out file_sorted.bam\fP,
 but only provides the option to do it by queryname.
 .RE
-.sp
-If the option \(aqpaired\(aq is used, then alignment names must include suffixes /1,/2 or /f,/r.
 .SH "OPTIONS"
+.SS "Mandatory options"
 .sp
-\fB\-\-best\fP
+\fB\-i\fP, \fB\-\-in=in.bam\fP
 .RS 4
-output all best matches that satisfy minId and minCover (default 0)
+input file in BAM format
 .RE
 .sp
-\fB\-\-noIntrons\fP
+\fB\-o\fP, \fB\-\-out=out.bam\fP
 .RS 4
-do not allow longer gaps \-for RNA\-RNA alignments\- (default 0)
+output file in BAM format
+.RE
+.SS "Optional options"
+.sp
+\fB\-u\fP, \fB\-\-uniq\fP
+.RS 4
+keep only the best match, remove all matches, if the second best is not much worse
 .RE
 .sp
-\fB\-\-paired\fP
+\fB\-q f\fP, \fB\-\-uniqThresh=f\fP
 .RS 4
-require that paired reads are on opposite strands of same target
-(default 0). NOTE: see prerequisite section above.
+threshold % for uniq, second best must be lower than this fraction of best to keep the best match (default 0.96)
 .RE
 .sp
-\fB\-\-uniq\fP
+\fB\-b\fP, \fB\-\-best\fP
 .RS 4
-take only best match, iff, second best is much worse  (default 0)
+output all best matches that satisfy minId and minCover
 .RE
 .sp
-\fB\-\-verbose\fP
-.RS 4
-output debugging info (default 0)
-.RE
-.sp
-\fB\-\-insertLimit n\fP
-.RS 4
-maximum assumed size of inserts (default 10)
-.RE
-.sp
-\fB\-\-maxIntronLen n\fP
-.RS 4
-maximal separation of paired reads (default 500000)
-.RE
-.sp
-\fB\-\-maxSortesTest n\fP
-.RS 4
-maximal sortedness (default 100000)
-.RE
-.sp
-\fB\-\-minCover n\fP
-.RS 4
-minimal percentage of coverage of the query read (default 80)
-.RE
-.sp
-\fB\-\-minId n\fP
+\fB\-e n\fP, \fB\-\-minId=n\fP
 .RS 4
 minimal percentage of identity (default 92)
 .RE
 .sp
-\fB\-\-minIntronLen n\fP
+\fB\-c n\fP, \fB\-\-minCover=n\fP
 .RS 4
-minimal intron length  (default 35)
+minimal percentage of coverage of the query read (default 80)
 .RE
 .sp
-\fB\-\-uniqThresh n\fP
+\fB\-n\fP, \fB\-\-noIntrons\fP
 .RS 4
-threshold % for uniq, second best must be at most this fraction of best (default 0.96)
+do not allow longer gaps \-for RNA\-RNA alignments\-
 .RE
 .sp
-\fB\-\-commonGeneFile s\fP
+\fB\-l n\fP, \fB\-\-insertLimit=n\fP
+.RS 4
+maximum assumed size of inserts (default 10)
+.RE
+.sp
+\fB\-s n\fP, \fB\-\-maxSortesTest=n\fP
+.RS 4
+test if input file is sorted by query name for this number of alignments (default 100000)
+.RE
+.sp
+\fB\-p\fP, \fB\-\-paired\fP
+.RS 4
+require that paired reads are on opposite strands of same target.
+Requires alignment names to contain the suffixes /1,/2 or /f,/r.
+.RE
+.sp
+\fB\-w\fP, \fB\-\-pairwiseAlignments\fP
+.RS 4
+use in case alignments were done in pairwise fashion
+.RE
+.sp
+\fB\-x n\fP, \fB\-\-maxIntronLen=n\fP
+.RS 4
+maximal separation of paired reads (default 500000)
+.RE
+.sp
+\fB\-d file\fP, \fB\-\-pairBedFile=file\fP
+.RS 4
+file name of pairedness coverage: a BED format file in which for each position the number of
+filtered read pairs is reported that contain the position in or between the reads
+.RE
+.sp
+\fB\-g file\fP, \fB\-\-commonGeneFile=file\fP
 .RS 4
 file name in which to write cases where one read maps several different genes
 .RE
 .sp
-\fB\-\-pairBedFile s\fP
+\fB\-v\fP, \fB\-\-verbose\fP
 .RS 4
-file name of pairedness coverage: a BED format file in which for each position the number of
-filtered read pairs is reported that contain the position in
-or between the reads
+output debugging info
 .RE
 .sp
-\fB\-\-pairwiseAlignments\fP
+\fB\-h\fP, \fB\-\-help\fP
 .RS 4
-use in case alignments were done in pairwise fashion (default:  0)
+produce help message.
 .RE
 .SH "AUTHORS"
 .sp

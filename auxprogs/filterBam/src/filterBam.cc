@@ -128,22 +128,22 @@ int main(int argc, char *argv[])
 	{
 	  cout << "------------------------------------------------" << endl;
 	  cout << "Selected options are: " << endl;
-	  cout << "best=" << best << endl;
-	  cout << "help=" << help << endl;
-	  cout << "noIntrons=" << noIntrons << endl;
-	  cout << "paired=" << paired << endl;
-	  cout << "uniq=" << uniq << endl;
-	  cout << "verbose=" << verbose << endl;
-	  cout << "pairwiseAlignments=" << pairwiseAlignments << endl;
 	  cout << "Input file: " << inputFile << endl;
 	  cout << "Output file: " << outputFile << endl;
-	  cout << "insertLimit=" << insertLimit << endl;
-	  cout << "maxIntronLen=" <<  maxIntronLen << endl;
-	  cout << "minCover=" <<  minCover << endl;
-	  cout << "minId=" <<  minId << endl;
+	  cout << "uniq=" << uniq << endl;
 	  cout << "uniqThresh=" << uniqThresh << endl;
-	  cout << "commonGeneFile=" << commonGeneFile << endl;
+	  cout << "best=" << best << endl;
+	  cout << "minId=" <<  minId << endl;
+	  cout << "minCover=" <<  minCover << endl;
+	  cout << "noIntrons=" << noIntrons << endl;
+	  cout << "maxIntronLen=" <<  maxIntronLen << endl;
+	  cout << "insertLimit=" << insertLimit << endl;
+	  cout << "paired=" << paired << endl;
+	  cout << "pairwiseAlignments=" << pairwiseAlignments << endl;
 	  cout << "pairBedFile=" << pairBedFile << endl;
+	  cout << "commonGeneFile=" << commonGeneFile << endl;
+	  cout << "verbose=" << verbose << endl;
+	  cout << "help=" << help << endl;
 	  cout << "------------------------------------------------" << endl;
 	}
 
@@ -275,7 +275,8 @@ int main(int argc, char *argv[])
 				  "   [-n] should sort by query name, just as 'sort -k 10,10' would do in a PSL file." << endl;
 				cerr << "   Without options, the sorting will be done by reference name and target coordinate," << endl;  	
 				cerr << "   just as a 'sort -n -k 16,16 | sort -k 14,14' would do with PSL." << endl;  	
-				cerr << "   For more information check the man page included in samtools distribution." << endl;  			cerr << "4) bamtools can also sort bam files 'bamtools sort -queryname -in file.bam'," << endl;	
+				cerr << "   For more information check the man page included in samtools distribution." << endl;
+				cerr << "4) bamtools can also sort bam files 'bamtools sort -queryname -in file.bam'," << endl;
 				cerr << "   but only provides the option to do it by queryname." << endl;	
 
 				exit(1);
