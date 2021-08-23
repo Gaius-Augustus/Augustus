@@ -72,7 +72,7 @@ class MatePairs
 };
 #endif
 
-void printMatePairs(vector<MatePairs> someList, vector<BamAlignment> &qali);
+void printMatePairs(vector<MatePairs> matepairs, vector<BamAlignment> &qali);
 
 
 #ifndef PAIREDNESSCOVERAGE_H

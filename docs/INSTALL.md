@@ -103,7 +103,7 @@ With root rights, you can install the libraries in the default folders. To do th
         genbank.cc: ... undefined reference to boost::iostreams::detail::zlib_base::reset(bool, bool)'
 
 - solutions
-  - switch off zlib usage by setting `ZIPINPUT = false` in [common.mk](../common.mk) and do not make utility programs **bam2wig**, **bam2hints** and **filterbam**
+  - switch off zlib usage by setting `ZIPINPUT = false` in [common.mk](../common.mk) and do not make utility programs **bam2wig**, **bam2hints** and **filterBam**
   - or install package `zlib1g-dev`
   - or install from source
     - execute
@@ -348,7 +348,7 @@ With root rights, you can install the libraries in the default folders. To do th
         /usr/bin/ld: cannot find -lbamtools
 
 - solutions
-  - do not make utility programs **bam2hints** and **filterbam**
+  - do not make utility programs **bam2hints** and **filterBam**
   - or install package `libbamtools-dev`
   - or install from source
     - cmake or cmake3 must be installed (use the installed one in next steps)

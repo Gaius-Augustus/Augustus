@@ -302,7 +302,7 @@ int main(int argc, char *argv[])
 		alignedBases = al.AlignedBases; // 'aligned' seq, includes: indels, padding, clipping
 		
 		// Percentage Identity filter; compute with equal signs 
-		if (alignedBases.find('=') != std::string::npos) // Equal signs present indicate "camld" was run
+		if (alignedBases.find('=') != std::string::npos) // Equal signs present indicate "samtools calmd -e" was run
 		  {
 			// cout << "BAM file seems to have been pre-processed with calmd." << endl;
 			// cout << "Computing percentage identity by counting number of (=) signs in SEQ field." << endl;
@@ -781,7 +781,7 @@ void printSizeOfCoverInfo(vector<PairednessCoverage> &pairCovSteps)
 }
 
 
-// If several steps coincide then summarise them equivalently by one step in order to 
+// If several steps coincide then summarize them equivalently by one step in order to 
 // 1) Save memory or 
 // 2) output a bed file
 vector<PairednessCoverage> compactifyBed(vector<PairednessCoverage> & pairCovSteps, globalOptions_t globalOptions)
@@ -1173,7 +1173,7 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 						cout << "------------------------------------------------------------------------\n"; 
 					  }
 
-					//... siginificantly worse in terms of "scoreMate"
+					//... significantly worse in terms of "scoreMate"
 					if (ratio < uniqThresh)
 					  {
 						if (verbose)
