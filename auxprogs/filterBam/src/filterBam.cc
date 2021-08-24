@@ -1395,7 +1395,20 @@ void processQuery(vector<BamAlignment> &qali, const RefVector &refData, globalOp
 			  }
 
 			// Sorting alignments by score
-			std::stable_sort(qali.begin(), qali.end(), Sort::ByTag<std::string>("sc",Sort::DescendingOrder));
+			    // don't use this sorter:
+			    // static BamTools::Algorithms::Sort::ByTag<std::string> tagscSorter("sc", BamTools::Algorithms::Sort::DescendingOrder);
+			    // it will compare the score values as strings (which mostly is ok as the scores have similar digit counts)
+			    // the use of template <float> is neither an option, as the GetTag function returns false for float values
+			
+			static std::function<bool(const BamAlignment, const BamAlignment)> descScoreSorterFunc = [](const BamAlignment lx, const BamAlignment rx) {
+			    std::string lhsTagValue, rhsTagValue;
+			    if ( !lx.GetTag("sc", lhsTagValue) ) return true;
+			    if ( !rx.GetTag("sc", rhsTagValue) ) return false;
+			
+			    return std::stof(lhsTagValue) > std::stof(rhsTagValue); // desc
+			};
+			
+			std::stable_sort(qali.begin(), qali.end(), descScoreSorterFunc);
 
 			if (verbose)
 			  {
