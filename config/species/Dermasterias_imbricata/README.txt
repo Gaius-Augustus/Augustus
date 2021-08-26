@@ -13,7 +13,7 @@ Call:
 braker.pl --genome=genome.fa --bam=rnaseq.bam --softmasking --cores=20 --species=Dermasterias_imbricata
 
 Flanking region size: 4213
-Number of generated training genes:  nonredundant genes, 300 set aside for testing, 300 set aside for optimize_augustus.pl time consuming steps
+Number of generated training genes: 4474 nonredundant genes, 300 set aside for testing, 300 set aside for optimize_augustus.pl time consuming steps
 
 Initial accuracy on test set: 0.864066666666667
 Accuracy on test set after optimize_augustus.pl: 0.8778
