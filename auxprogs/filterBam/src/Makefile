@@ -5,8 +5,8 @@ include ../../../common.mk
 CXX ?= g++
 CXXFLAGS := -Wall -Wextra -Wpedantic -std=c++11 ${CXXFLAGS}
 
-SOURCES = filterBam.cc MatePairs.cc getReferenceName.cc initOptions.cc \
-          printElapsedTime.cc sumMandIOperations.cc sumDandIOperations.cc PairednessCoverage.cc
+SOURCES = filterBam.cc initOptions.cc printElapsedTime.cc MatePairs.cc PairednessCoverage.cc
+	SOURCES += BamToolsAccess.cc
 OBJS = $(SOURCES:.cc=.o)
 
 # keep compatibility with old versions still using BAMTOOLS_INSTALL_DIR

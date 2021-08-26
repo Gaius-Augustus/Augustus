@@ -7,8 +7,7 @@
 #ifndef _FILTERBAM_HH
 #define _FILTERBAM_HH
 
-#include <api/BamReader.h>  
-#include <api/BamAlignment.h>
+#include "bamaccess.hh"
 #include <iostream> 
 #include <vector>
 #include <string>
@@ -22,13 +21,7 @@
 #include<list> 
 
 using namespace std;  
-using namespace BamTools;    
- 
-string getReferenceName(const RefVector &refData, int RefID);
 
-// For computing Coverage and Insertions
-uint32_t sumMandIOperations(const vector<CigarOp> &cigar);
-uint32_t sumDandIOperations(const vector<CigarOp> &cigar);
 void printElapsedTime(int tEnd, int tStart); 
 
 // For option initialization
@@ -72,7 +65,7 @@ class MatePairs
       int operator<(const MatePairs &rhs) const;
 };
 
-void printMatePairs(vector<MatePairs> matepairs, vector<BamAlignment> &qali);
+void printMatePairs(vector<MatePairs> &matepairs, vector<BamAlignmentRecord_> &qali);
 
 
 // Class definition 
