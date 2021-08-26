@@ -10,7 +10,7 @@ This parameter set was created with BRAKER on the basis of genome assembly https
 
 Call:
 
-braker.pl --genome=genome.fa --prot_seq=proteins.fasta --softmasking --cores=8 --species=Sclerotinia_sclerotiorum --epmode
+braker.pl --genome=genome.fa --prot_seq=proteins.fasta --softmasking --cores=8 --species=Cyclotella_cryptica --epmode
 
 Flanking region size: 988
 Number of generated training genes: 2258 nonredundant genes, 200 set aside for testing, 200 set aside for optimize_augustus.pl time consuming steps
