@@ -31,7 +31,7 @@ or, alternatively, [download](http://bioinf.uni-greifswald.de/augustus/binaries/
     - libsqlite3-dev (add SQLITE = false to [common.mk](../common.mk) if this feature is not required or the required library is not available)
     - libmysql++-dev (add MYSQL = false to [common.mk](../common.mk) if this feature is not required or the required library is not available)
   - for compiling utilities bam2hints and filterBam:
-    - libbamtools-dev
+    - libbamtools-dev zlib1g-dev
   - for compiling utility utrrnaseq:
     - libboost-all-dev (version must be >Boost_1_49_0)
   - for compiling utility bam2wig:
@@ -57,7 +57,7 @@ or, alternatively, [download](http://bioinf.uni-greifswald.de/augustus/binaries/
         apt-get install libboost-iostreams-dev zlib1g-dev
 
         # Install dependencies for bam2hints and filterBam
-        apt-get install libbamtools-dev
+        apt-get install libbamtools-dev zlib1g-dev
 
         # Install additional dependencies for bam2wig
         apt-get install samtools libhts-dev
@@ -498,3 +498,41 @@ With root rights, you can install the libraries in the default folders. To do th
 
             export PATH="$PATH:/your/path/to/hdf5/hdf5_install/bin"
             export PATH="$PATH:/your/path/to/hal/bin/"
+
+### [SeqLib](https://github.com/walaj/SeqLib) - handling BAM files
+
+- possible error messages
+
+        ./headers/bamseqlibaccess.hh:8:10: fatal error: SeqLib/BamRecord.h: No such file or directory
+        /usr/bin/ld: cannot find -lseqlib
+
+- solutions
+  - do not make utility program **filterBam**
+  - use Bamtools instead of SeqLib for processing BAM files in filterBam 
+  - or install package `libseqlib-dev` (and maybe also necessary `libssw-dev` and `libjsoncpp-dev`)
+  - or install from source
+    - install dependencies to zlib, bz2 and lzma
+        
+       apt-get install zlib1g-dev liblzma-dev libbz2-dev
+
+    - download sources
+
+            git clone --recursive https://github.com/walaj/SeqLib.git /your/path/to/SeqLib
+
+    - execute
+
+            cd /your/path/to/SeqLib
+            ./configure
+            make
+            make install
+
+    - add to common.mk
+
+
+            INCLUDE_PATH_SEQLIB := -I/your/path/to/SeqLib -I/your/path/to/SeqLib/htslib
+            LIBRARY_PATH_SEQLIB := -L/your/path/to/SeqLib/lib  -Wl,-rpath,/your/path/to/SeqLib/lib
+
+    - check: the missing files should be here
+
+           /your/path/to/SeqLib/SeqLib/BamRecord.h
+           /your/path/to/SeqLib/lib/libseqlib.a

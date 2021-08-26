@@ -32,6 +32,8 @@ COMPGENEPRED = true
 #LIBRARY_PATH_BAMTOOLS    := -L/usr/lib/x86_64-linux-gnu -Wl,-rpath,/usr/lib/x86_64-linux-gnu
 #INCLUDE_PATH_HTSLIB      := -I/usr/include/htslib
 #LIBRARY_PATH_HTSLIB      := -L/usr/lib/x86_64-linux-gnu -Wl,-rpath,/usr/lib/x86_64-linux-gnu
+#INCLUDE_PATH_SEQLIB      := -I /usr/include/SeqLib -I/usr/include/htslib -I/usr/include/jsoncpp
+#LIBRARY_PATH_SEQLIB      := -L/usr/lib/x86_64-linux-gnu -Wl,-rpath,/usr/lib/x86_64-linux-gnu
 
 # alternatively add paths with header files to INCLS and paths with library files to LDFLAGS
 

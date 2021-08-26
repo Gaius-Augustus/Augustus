@@ -30,7 +30,12 @@
 #include <math.h>  
 #include "filterBam.h"
 #include "bamaccess.hh"
+
+#ifdef USE_SEQLIB
+#include "bamseqlibaccess.hh"
+#else
 #include "bamtoolsaccess.hh"
+#endif
 
 
 struct optionalCounters_t { 
@@ -62,10 +67,15 @@ int main(int argc, char *argv[])
   std::shared_ptr<BamUtils> bamUtils;
   std::shared_ptr<BamFileReader> reader;
   std::shared_ptr<BamFileWriter> writer;
-
+#ifdef USE_SEQLIB
+  bamUtils = std::make_shared<BamSeqLibUtils>();
+  reader = std::make_shared<BamSeqLibReader>();
+  writer= std::make_shared<BamSeqLibWriter>();
+#else  
   bamUtils = std::make_shared<BamToolsUtils>();
   reader = std::make_shared<BamToolsReader>();
   writer = std::make_shared<BamToolsWriter>();
+#endif
 
   BamAlignmentRecord_ al;
   vector<BamAlignmentRecord_> qali;

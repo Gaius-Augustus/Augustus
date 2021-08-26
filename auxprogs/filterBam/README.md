@@ -16,14 +16,22 @@ filterBam only accepts as input BAM files that have been previously sorted by 'q
 
 # DEPENDENCIES
 
-1. Bamtools' API is required for compilation. Bamtools allows the sorting, sampling, filtering, among other things, of BAM files. 
+1. Bamtools' API **OR** SeqLib API  is required for compilation. 
 
-  * On Ubunutu or Debian
+    Both allows the sorting, sampling, filtering, among other things, of BAM files.  
+    While SeqLib is generally faster, precompiled packages for Bamtools are available for more systems/architectures.
+
+  * Bamtools on Ubunutu or Debian
 
         apt-get install bamtools libbamtools-dev
 
-     See [docs/INSTALL.md](../../docs/INSTALL.md#Bamtools) (Bamtools section) for further details, especially for manual 
+  * SeqLib on Ubunutu or Debian
+
+        apt-get install libseqlib-dev libssw-dev libjsoncpp-dev
+
+     See [docs/INSTALL.md](../../docs/INSTALL.md) (Bamtools or SeqLib section) for further details, especially for manual 
      installation from sources or installation without root rights.
+
 
 2. Although not required by filterBam, it may also be convenient to have a copy of the software Samtools.
    See [docs/INSTALL.md](../../docs/INSTALL.md#SAMtools) (SAMtools section) for further details.
@@ -34,11 +42,17 @@ filterBam only accepts as input BAM files that have been previously sorted by 'q
 
   1. Download and extract the latest version of filterBam from the AUGUSTUS repository.
 
-  2. Compile filterBam by typing
+  2. If SeqLib is to be used to access BAM files:  
+     set `USE_SEQLIB = true` in [common.mk](../common.mk) or in [auxprogs/filterbam/src/Makefile](src/Makefile)  
+     If the SeqLib packages are from a version before 1.2 this must be set additionally:
+      * `SEQLIB_1_1_1 = true` for version 1.1.1 (ubuntu 18.04)
+      * `SEQLIB_1_1_2 = true` for version 1.1.2 (ubuntu 20, debian 9 and 10)
+
+  3. Compile filterBam by typing
 
         make
 
-  3. A binary file 'filterBam' should be stored in the folder 'bin'
+  4. A binary file 'filterBam' should be stored in the folder 'bin'
 
 # RUNNING
 
