@@ -65,6 +65,11 @@ jobs:
       run: ./execute_test.py --compare --html bam2hints
       working-directory: tests/short/
 
+    # Test filterbam
+    - name: Test filterbam
+      run: ./execute_test.py --compare --html filterbam
+      working-directory: tests/short/
+
     # Upload html diffs of failed test cases
     - name: Upload HTML diffs
       uses: actions/upload-artifact@v2
