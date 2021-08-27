@@ -68,11 +68,11 @@ int main(int argc, char *argv[])
   std::shared_ptr<BamFileReader> reader;
   std::shared_ptr<BamFileWriter> writer;
 #ifdef USE_SEQLIB
-  bamUtils = std::make_shared<BamSeqLibUtils>();
+  bamUtils = std::make_shared<BamSeqLibUtils>(globalOptions);
   reader = std::make_shared<BamSeqLibReader>();
   writer= std::make_shared<BamSeqLibWriter>();
 #else  
-  bamUtils = std::make_shared<BamToolsUtils>();
+  bamUtils = std::make_shared<BamToolsUtils>(globalOptions);
   reader = std::make_shared<BamToolsReader>();
   writer = std::make_shared<BamToolsWriter>();
 #endif
@@ -150,6 +150,7 @@ int main(int argc, char *argv[])
 	  cout << "pairwiseAlignments=" << pairwiseAlignments << endl;
 	  cout << "pairBedFile=" << pairBedFile << endl;
 	  cout << "commonGeneFile=" << commonGeneFile << endl;
+	  cout << "threads=" << globalOptions.threads << endl;
 	  cout << "verbose=" << verbose << endl;
 	  cout << "help=" << help << endl;
 	  cout << "------------------------------------------------" << endl;

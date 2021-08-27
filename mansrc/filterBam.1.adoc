@@ -85,6 +85,9 @@ The input file must be sorted lexicographically by 'queryname', with e.g.
 *-g file*, *--commonGeneFile=file*::
     file name in which to write cases where one read maps several different genes
 
+*-t n*, *--threads=n*::
+   use n threads for compression/decompression (default 1); available only if library SeqLib >= 1.2 is used
+
 *-v*, *--verbose*::
    output debugging info
 

@@ -29,12 +29,13 @@ const char* commonGeneFile;
 const char* inputFile;
 const char* outputFile;
 const char* pairBedFile;
+int threads = 1;
 
 
 using namespace std;
 
 // Definition of global variables
-static const char *optString = "b:c:d:e:g:h?:i:l:n:o:p:q:s:u:v:w:x";
+static const char *optString = "b:c:d:e:g:h?:i:l:n:o:p:q:s:t:u:v:w:x";
 
 #ifndef GLOBALOPTIONS_T
 #define GLOBALOPTIONS_T
@@ -56,6 +57,7 @@ struct globalOptions_t {
   	const char* inputFile;
   	const char* outputFile;
 	const char* pairBedFile;
+	int threads;
 };
 #endif
 
@@ -80,6 +82,7 @@ static const struct option longOpts[] = {
     { "out", required_argument, NULL, 'o' }, 
     { "pairBedFile", required_argument, NULL, 'd' },
     { "pairwiseAlignments", no_argument, NULL, 'w' },
+    { "threads", required_argument, NULL, 't' },
     { NULL, no_argument, NULL, 0 }
 };
 
@@ -125,6 +128,7 @@ void displayUsage(char *argv[])
     cout <<  "                         or between the reads" << endl;
     cout <<  "  --commonGeneFile s   file name in which to write cases where one read maps to" << endl;
     cout <<  "                       several different genes" << endl;
+    cout <<  "  --threads n          use n threads for compression/decompression (default 1); available only if library SeqLib >= 1.2 is used" << endl;
     cout <<  "  --verbose            output debugging info" << endl;
     cout <<  "  --help               display this menu" << endl;
 }
@@ -161,6 +165,7 @@ globalOptions_t initOptions(int argc, char *argv[])
 	globalOptions.inputFile = "";
 	globalOptions.outputFile = "";
 	globalOptions.pairBedFile = "";
+	globalOptions.threads = threads;
 
 	// Capturing options
 	opt = getopt_long_only(argc, argv, optString, longOpts, &longIndex);
@@ -183,6 +188,7 @@ globalOptions_t initOptions(int argc, char *argv[])
             case 'i'	:	globalOptions.inputFile = optarg;           break;
             case 'o'	:	globalOptions.outputFile = optarg;          break;
             case 'd'	:	globalOptions.pairBedFile = optarg;         break;
+            case 't'	:	globalOptions.threads = atoi(optarg);       break;
             case 'h':   // HELP: fall-through is intentional
             case '?':
 				globalOptions.help = true;	

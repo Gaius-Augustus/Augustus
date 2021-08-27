@@ -43,6 +43,7 @@ struct globalOptions_t {
   	const char* inputFile;
   	const char* outputFile;
 	const char* pairBedFile;
+	int threads;
 };
 
 globalOptions_t initOptions(int argc, char *argv[]);

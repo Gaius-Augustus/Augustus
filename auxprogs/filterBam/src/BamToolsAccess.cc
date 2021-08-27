@@ -280,6 +280,17 @@ void BamToolsWriter::close() {
 }
 
 /**
+ * BamToolsReader constructor
+ */
+BamToolsUtils::BamToolsUtils(globalOptions_t &globalOptions) {
+    if (globalOptions.threads > 1) {
+        cout << "WARNING: The option \"threads=" << globalOptions.threads
+                << "\" is only valid if SeqLib>=1.2 is used. "
+                << "This option is ignored because BamTools is used!" << std::endl;
+    }
+}
+
+/**
  * Sort alignments by QueryName in ascending order.
  *
  * @param alignments

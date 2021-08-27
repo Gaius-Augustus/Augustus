@@ -158,8 +158,7 @@ public:
 class BamToolsUtils : public BamUtils {
 public:
 
-    BamToolsUtils() {
-    }
+    BamToolsUtils(globalOptions_t &globalOptions);
 
     /**
      * Sort alignments by QueryName in ascending order.

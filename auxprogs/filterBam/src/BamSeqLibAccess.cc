@@ -224,6 +224,11 @@ std::string BamSeqLibAlignmentRecord::getReferenceName() const {
 bool BamSeqLibReader::openReader(const std::string &filename) {
     bool opened = reader.Open(filename);
     if (opened) {
+#ifdef SEQLIB_1_2
+        if (BamSeqLibUtils::threadpool) {
+           reader.SetThreadPool(*BamSeqLibUtils::threadpool);
+        }
+#endif
         bamHeader = std::make_shared<SeqLib::BamHeader>(reader.Header());
     }
     return opened;
@@ -251,6 +256,11 @@ bool BamSeqLibWriter::openWriter(const std::string &filename, const BamFileReade
     const BamSeqLibReader& bslr = dynamic_cast<const BamSeqLibReader&> (reader);
     bool opened = writer.Open(filename);
     if (opened) {
+#ifdef SEQLIB_1_2
+        if (BamSeqLibUtils::threadpool) {
+            writer.SetThreadPool(*BamSeqLibUtils::threadpool);
+        }
+#endif
         writer.SetHeader(*(bslr.bamHeader));
         writer.WriteHeader();
     }
@@ -268,6 +278,27 @@ bool BamSeqLibWriter::saveAlignment(const BamAlignmentRecord_ &alignment) {
  */
 void BamSeqLibWriter::close() {
     writer.Close();
+}
+
+#ifdef SEQLIB_1_2
+ThreadPool_ BamSeqLibUtils::threadpool;
+#endif
+
+/**
+ * BamSeqLibUtils constructor
+ */
+BamSeqLibUtils::BamSeqLibUtils(globalOptions_t &globalOptions) {
+#ifdef SEQLIB_1_2
+    if (globalOptions.threads > 1 && !BamSeqLibUtils::threadpool) {
+        BamSeqLibUtils::threadpool = std::make_shared<SeqLib::ThreadPool>(globalOptions.threads);
+    }
+#else
+    if (globalOptions.threads > 1) {
+        cout << "The \"threads=" <<  globalOptions.threads 
+             << "\" is only valid if SeqLib>=1.2 is used. "
+             << "This option is ignored because an older SeqLib version is used!" << std::endl;
+    }
+#endif
 }
 
 /**

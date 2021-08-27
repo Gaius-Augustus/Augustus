@@ -170,7 +170,7 @@ private:
 
 public:
 
-    BamSeqLibUtils() {}
+    BamSeqLibUtils(globalOptions_t &globalOptions);
 
     /**
      * Sort alignments by QueryName in ascending order.
