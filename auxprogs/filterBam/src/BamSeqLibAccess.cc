@@ -15,14 +15,6 @@ inline bool LastFlagImpl(const SeqLib::BamRecord &b) {
     return (b.AlignmentFlag() & BAM_FREAD2);
 }
 
-/**
- * BamToolsAlignmentRecord constructor
- */
-BamSeqLibAlignmentRecord::BamSeqLibAlignmentRecord(std::shared_ptr<SeqLib::BamRecord> alignment, std::shared_ptr<SeqLib::BamHeader> &bamHeader) {
-    this->alignment = alignment;
-    this->bamHeader = bamHeader;
-}
-
 /** returns the wrapped BamRecord
  */
 std::shared_ptr<SeqLib::BamRecord> BamSeqLibAlignmentRecord::getAlignment() const {
@@ -222,14 +214,14 @@ std::string BamSeqLibAlignmentRecord::getReferenceName() const {
 /** opens a BAM file
  */
 bool BamSeqLibReader::openReader(const std::string &filename) {
+#ifdef SEQLIB_1_2
+    if (threadpool) {
+       reader.SetThreadPool(*threadpool);
+    }
+#endif
     bool opened = reader.Open(filename);
     if (opened) {
-#ifdef SEQLIB_1_2
-        if (BamSeqLibUtils::threadpool) {
-           reader.SetThreadPool(*BamSeqLibUtils::threadpool);
-        }
-#endif
-        bamHeader = std::make_shared<SeqLib::BamHeader>(reader.Header());
+        bamHeader = std::make_shared<const SeqLib::BamHeader>(reader.Header());
     }
     return opened;
 }
@@ -254,13 +246,13 @@ bool BamSeqLibReader::close() {
  */
 bool BamSeqLibWriter::openWriter(const std::string &filename, const BamFileReader &reader) {
     const BamSeqLibReader& bslr = dynamic_cast<const BamSeqLibReader&> (reader);
+#ifdef SEQLIB_1_2
+    if (bslr.threadpool) {
+        writer.SetThreadPool(*(bslr.threadpool));
+    }
+#endif
     bool opened = writer.Open(filename);
     if (opened) {
-#ifdef SEQLIB_1_2
-        if (BamSeqLibUtils::threadpool) {
-            writer.SetThreadPool(*BamSeqLibUtils::threadpool);
-        }
-#endif
         writer.SetHeader(*(bslr.bamHeader));
         writer.WriteHeader();
     }
@@ -278,78 +270,4 @@ bool BamSeqLibWriter::saveAlignment(const BamAlignmentRecord_ &alignment) {
  */
 void BamSeqLibWriter::close() {
     writer.Close();
-}
-
-#ifdef SEQLIB_1_2
-ThreadPool_ BamSeqLibUtils::threadpool;
-#endif
-
-/**
- * BamSeqLibUtils constructor
- */
-BamSeqLibUtils::BamSeqLibUtils(globalOptions_t &globalOptions) {
-#ifdef SEQLIB_1_2
-    if (globalOptions.threads > 1 && !BamSeqLibUtils::threadpool) {
-        BamSeqLibUtils::threadpool = std::make_shared<SeqLib::ThreadPool>(globalOptions.threads);
-    }
-#else
-    if (globalOptions.threads > 1) {
-        cout << "The \"threads=" <<  globalOptions.threads 
-             << "\" is only valid if SeqLib>=1.2 is used. "
-             << "This option is ignored because an older SeqLib version is used!" << std::endl;
-    }
-#endif
-}
-
-/**
- * Sort alignments by QueryName in ascending order.
- * 
- * @param alignments
- */
-void BamSeqLibUtils::sortByQueryNameAscending(std::vector<BamAlignmentRecord_> &alignments) const {
-    static BamAlignmentRecordSorter ascNameSorterFunc = [](const BamAlignmentRecord_ lx, const BamAlignmentRecord_ rx) {
-        const BamSeqLibAlignmentRecord& barl = dynamic_cast<const BamSeqLibAlignmentRecord&> (*lx);
-        const BamSeqLibAlignmentRecord& barr = dynamic_cast<const BamSeqLibAlignmentRecord&> (*rx);
-        std::less<std::string> comp;
-        return comp(barl.getQueryName(), barr.getQueryName());
-    };
-
-    std::stable_sort(alignments.begin(), alignments.end(), ascNameSorterFunc);
-}
-
-/**
- * Sort alignments by Position in ascending order.
- * 
- * @param alignments
- */
-void BamSeqLibUtils::sortByPositionAscending(std::vector<BamAlignmentRecord_> &alignments) const {
-    static SeqLib::BamRecordSort::ByReadPosition ascPositionSorter;
-    static BamAlignmentRecordSorter ascPositionSorterFunc = [](const BamAlignmentRecord_ lx, const BamAlignmentRecord_ rx) {
-        const BamSeqLibAlignmentRecord& barl = dynamic_cast<const BamSeqLibAlignmentRecord&> (*lx);
-        const BamSeqLibAlignmentRecord& barr = dynamic_cast<const BamSeqLibAlignmentRecord&> (*rx);
-        return ascPositionSorter(*(barl.getAlignment()), *(barr.getAlignment()));
-    };
-
-    std::stable_sort(alignments.begin(), alignments.end(), ascPositionSorterFunc);
-}
-
-/**
- * Sort alignments by tag name "sc" in descending order.
- *
- * @param alignments
- */
-void BamSeqLibUtils::sortByscTagDescending(std::vector<BamAlignmentRecord_> &alignments) const {
-    static std::string SCORE_TAG = "sc";
-    static BamAlignmentRecordSorter descScoreSorterFunc = [](const BamAlignmentRecord_ lx, const BamAlignmentRecord_ rx) {
-        const BamSeqLibAlignmentRecord& barl = dynamic_cast<const BamSeqLibAlignmentRecord&> (*lx);
-        const BamSeqLibAlignmentRecord& barr = dynamic_cast<const BamSeqLibAlignmentRecord&> (*rx);
-        std::string lhsTagValue, rhsTagValue;
-        if (!barl.getTagData(SCORE_TAG, lhsTagValue)) return true;
-        if (!barr.getTagData(SCORE_TAG, rhsTagValue)) return false;
-
-        return std::stof(lhsTagValue) > std::stof(rhsTagValue); // desc
-
-    };
-
-    std::stable_sort(alignments.begin(), alignments.end(), descScoreSorterFunc);
 }

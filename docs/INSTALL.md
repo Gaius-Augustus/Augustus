@@ -509,7 +509,7 @@ With root rights, you can install the libraries in the default folders. To do th
 - solutions
   - do not make utility program **filterBam**
   - use Bamtools instead of SeqLib for processing BAM files in filterBam 
-  - or install package `libseqlib-dev` (and maybe also necessary `libssw-dev` and `libjsoncpp-dev`)
+  - or install package `apt-get install libseqlib-dev` (and maybe also necessary `apt-get install libssw-dev libjsoncpp-dev`)
   - or install from source
     - install dependencies to zlib, bz2 and lzma
         

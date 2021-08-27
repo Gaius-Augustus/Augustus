@@ -2,6 +2,7 @@
 #ifndef _BAMACCESS_HH
 #define _BAMACCESS_HH
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
 #include <vector>
@@ -15,6 +16,9 @@ class BamAlignmentRecord {
 protected:
 
     BamAlignmentRecord() {} // do not create BamAlignmentRecord object
+    float coverage;
+    float percId;
+    float score;
 public:
 
     virtual ~BamAlignmentRecord() {}; // ensure the destructor of derived classes is invoked
@@ -106,6 +110,30 @@ public:
     /** Returns string with name of the reference of an alignment sequence.
      */
     virtual std::string getReferenceName() const = 0;
+
+    void setCoverage(float coverage) {
+        this->coverage = coverage;
+    }
+
+    float getCoverage() const {
+        return coverage;
+    }
+
+    void setPercId(float percId) {
+        this->percId = percId;
+    }
+
+    float getPercId() const {
+        return percId;
+    }
+
+    void setScore(float score) {
+        this->score = score;
+    }
+
+    float getScore() const {
+        return score;
+    }
 };
 
 class BamFileReader {
@@ -148,36 +176,6 @@ public:
     /** closes the current BAM file
      */
     virtual void close() = 0;
-};
-
-class BamUtils {
-protected:
-
-    BamUtils() {} // do not create BamUtils object
-public:
-
-    virtual ~BamUtils() {}; // ensure the destructor of derived classes is invoked
-
-    /**
-     * Sort alignments by QueryName in ascending order.
-     *
-     * @param alignments
-     */
-    virtual void sortByQueryNameAscending(std::vector<BamAlignmentRecord_> &alignments) const = 0;
-
-    /**
-     * Sort alignments by Position in ascending order.
-     *
-     * @param alignments
-     */
-    virtual void sortByPositionAscending(std::vector<BamAlignmentRecord_> &alignments) const = 0;
-
-    /**
-     * Sort alignments by tag name "sc" in descending order.
-     *
-     * @param alignments
-     */
-    virtual void sortByscTagDescending(std::vector<BamAlignmentRecord_> &alignments) const = 0;
 };
 
 #endif

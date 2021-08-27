@@ -29,63 +29,63 @@ public:
 
     /** returns the Query template NAME of the alignment, i.e the QNAME Field
      */
-    std::string getQueryName() const override;
+    std::string getQueryName() const override final;
 
     /** returns the length of the query sequence of the alignment, i.e the length of the SEQ Field
      */
-    int32_t getQuerySequenceLength() const override;
+    int32_t getQuerySequenceLength() const override final;
 
     /** returns position (0-based) where alignment starts
      */
-    int32_t getStartPosition() const override;
+    int32_t getStartPosition() const override final;
 
     /** returns alignment end position
      */
-    int32_t getEndPosition() const override;
+    int32_t getEndPosition() const override final;
 
     /** returns true if alignment mapped to reverse strand
      */
-    bool isReverseStrand() const override;
+    bool isReverseStrand() const override final;
 
     /** returns true if alignment part of paired-end read
      */
-    bool isPaired() const override;
+    bool isPaired() const override final;
 
     /** returns true if alignment is mapped
      */
-    bool isMapped() const override;
+    bool isMapped() const override final;
 
     /** returns true if alignment's mate is mapped
      */
-    bool isMateMapped() const override;
+    bool isMateMapped() const override final;
 
     /** returns true if alignment is first mate on read
      */
-    bool isFirstMate() const override;
+    bool isFirstMate() const override final;
 
     /** returns true if alignment is second mate on read
      */
-    bool isSecondMate() const override;
+    bool isSecondMate() const override final;
 
     /** returns ID number for reference sequence
      */
-    int32_t getRefID() const override;
+    int32_t getRefID() const override final;
 
     /** returns ID number for reference sequence where alignment's mate was aligned
      */
-    int32_t getMateRefID() const override;
+    int32_t getMateRefID() const override final;
 
     /** returns the number of equal signs in the query sequence - occur after "samtools calmd -e" was run
      */
-    uint32_t countEqualSignsInQuerySequence() const override;
+    inline uint32_t countEqualSignsInQuerySequence() const override final;
 
     /** returns the sum of the total length of the M and I cigar operations.
      */
-    uint32_t sumMandIOperations() const override;
+    inline uint32_t sumMandIOperations() const override final;
 
     /** returns number of insertions wrt Query and Reference through the summation of operations D and I in the CIGAR string
      */
-    uint32_t sumDandIOperations() const override;
+    inline uint32_t sumDandIOperations() const override final;
 
     /** returns tag data
      *
@@ -93,7 +93,7 @@ public:
      * @param value return the tags value
      * @return true if tag exists and contains a valid value of values type
      */
-    bool getTagData(const std::string &tag_name, int32_t &value) const override;
+    bool getTagData(const std::string &tag_name, int32_t &value) const override final;
 
     /** returns tag data
      *
@@ -101,19 +101,19 @@ public:
      * @param value return the tags value
      * @return true if tag exists and contains a valid value of values type
      */
-    bool getTagData(const std::string &tag_name, std::string &value) const override;
+    bool getTagData(const std::string &tag_name, std::string &value) const override final;
 
     /** add a new tag of type "Z"
      */
-    void addZTag(const std::string &tag_name, const std::string &value) override;
+    void addZTag(const std::string &tag_name, const std::string &value) override final;
 
     /** removes a tag
      */
-    void removeTag(const std::string &tag_name) override;
+    void removeTag(const std::string &tag_name) override final;
 
     /** Returns string with name of the reference of an alignment sequence.
      */
-    std::string getReferenceName() const override;
+    std::string getReferenceName() const override final;
 };
 
 class BamToolsWriter : public BamFileWriter {
@@ -122,15 +122,15 @@ private:
 public:
     /** opens a BAM file for writing and copy headers from the specified reader
      */
-    bool openWriter(const std::string &filename, const BamFileReader &reader) override;
+    bool openWriter(const std::string &filename, const BamFileReader &reader) override final;
 
     /** saves the alignment to the alignment archive
      */
-    bool saveAlignment(const BamAlignmentRecord_ &alignment) override;
+    bool saveAlignment(const BamAlignmentRecord_ &alignment) override final;
 
     /** closes the current BAM file
      */
-    void close() override;
+    void close() override final;
 };
 
 class BamToolsReader : public BamFileReader {
@@ -142,44 +142,29 @@ private:
     friend bool BamToolsWriter::openWriter(const std::string &, const BamFileReader &);
 
 public:
+
+    /**
+     * BamToolsReader constructor
+     */
+    BamToolsReader(const globalOptions_t &globalOptions) {
+        if (globalOptions.threads > 1) {
+        cout << "WARNING: The option \"threads=" << globalOptions.threads
+                << "\" is only valid if SeqLib>=1.2 is used. "
+                << "This option is ignored because BamTools is used!" << std::endl;
+        }
+    }
+    
     /** opens a BAM file
      */
-    bool openReader(const std::string &filename) override;
+    bool openReader(const std::string &filename) override final;
 
     /** retrieves next available alignment
      */
-    bool getNextAlignmentRecord(BamAlignmentRecord_ &alignment) override;
+    bool getNextAlignmentRecord(BamAlignmentRecord_ &alignment) override final;
 
     /** closes the current BAM file
      */
-    bool close() override;
-};
-
-class BamToolsUtils : public BamUtils {
-public:
-
-    BamToolsUtils(globalOptions_t &globalOptions);
-
-    /**
-     * Sort alignments by QueryName in ascending order.
-     *
-     * @param alignments
-     */
-    void sortByQueryNameAscending(std::vector<BamAlignmentRecord_> &alignments) const override;
-
-    /**
-     * Sort alignments by Position in ascending order.
-     *
-     * @param alignments
-     */
-    void sortByPositionAscending(std::vector<BamAlignmentRecord_> &alignments) const override;
-
-    /**
-     * Sort alignments by tag name "sc" in descending order.
-     *
-     * @param alignments
-     */
-    void sortByscTagDescending(std::vector<BamAlignmentRecord_> &alignments) const override;
+    bool close() override final;
 };
 
 #endif

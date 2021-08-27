@@ -10,7 +10,7 @@ include ../../../common.mk
 #SEQLIB_1_1_2 ?= true
 
 CXX ?= g++
-CXXFLAGS := -Wall -Wextra -Wpedantic -std=c++11 ${CXXFLAGS}
+CXXFLAGS := -Wall -Wextra -Wpedantic -std=c++11 -O3 ${CXXFLAGS}
 
 SOURCES = filterBam.cc initOptions.cc printElapsedTime.cc MatePairs.cc PairednessCoverage.cc
 INCLS += -I./headers
