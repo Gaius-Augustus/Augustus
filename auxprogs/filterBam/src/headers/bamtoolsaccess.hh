@@ -95,22 +95,6 @@ public:
      */
     bool getTagData(const std::string &tag_name, int32_t &value) const override final;
 
-    /** returns tag data
-     *
-     * @param tag_name
-     * @param value return the tags value
-     * @return true if tag exists and contains a valid value of values type
-     */
-    bool getTagData(const std::string &tag_name, std::string &value) const override final;
-
-    /** add a new tag of type "Z"
-     */
-    void addZTag(const std::string &tag_name, const std::string &value) override final;
-
-    /** removes a tag
-     */
-    void removeTag(const std::string &tag_name) override final;
-
     /** Returns string with name of the reference of an alignment sequence.
      */
     std::string getReferenceName() const override final;
@@ -148,7 +132,7 @@ public:
      */
     BamToolsReader(const globalOptions_t &globalOptions) {
         if (globalOptions.threads > 1) {
-        cout << "WARNING: The option \"threads=" << globalOptions.threads
+        cout << "WARNING: The option \"--threads=" << globalOptions.threads
                 << "\" is only valid if SeqLib>=1.2 is used. "
                 << "This option is ignored because BamTools is used!" << std::endl;
         }

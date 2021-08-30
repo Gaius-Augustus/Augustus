@@ -193,29 +193,6 @@ bool BamToolsAlignmentRecord::getTagData(const std::string &tag_name, int32_t &v
     return false;
 }
 
-/** returns tag data
- *
- * @param tag_name
- * @param value return the tags value
- * @return true if tag exists and contains a valid value of values type
- */
-bool BamToolsAlignmentRecord::getTagData(const std::string &tag_name, std::string &value) const {
-    return alignment->GetTag(tag_name, value);
-}
-
-/** add a new tag of type "Z"
- */
-void BamToolsAlignmentRecord::addZTag(const std::string &tag_name, const std::string &value) {
-    static std::string ztype = "Z";
-    alignment->AddTag(tag_name, ztype, value);
-}
-
-/** removes a tag
- */
-void BamToolsAlignmentRecord::removeTag(const std::string &tag_name) {
-    alignment->RemoveTag(tag_name);
-}
-
 /** Returns string with name of the reference of an alignment sequence.
  */
 std::string BamToolsAlignmentRecord::getReferenceName() const {

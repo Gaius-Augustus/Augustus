@@ -91,22 +91,6 @@ public:
      */
     virtual bool getTagData(const std::string &tag_name, int32_t &value) const = 0;
 
-    /** returns tag data
-     *
-     * @param tag_name
-     * @param value return the tags value
-     * @return true if tag exists and contains a valid value of values type
-     */
-    virtual bool getTagData(const std::string &tag_name, std::string &value) const = 0;
-
-    /** add a new tag of type "Z"
-     */
-    virtual void addZTag(const std::string &tag_name, const std::string &value) = 0;
-
-    /** removes a tag
-     */
-    virtual void removeTag(const std::string &tag_name) = 0;
-
     /** Returns string with name of the reference of an alignment sequence.
      */
     virtual std::string getReferenceName() const = 0;

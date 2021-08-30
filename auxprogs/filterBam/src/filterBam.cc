@@ -585,24 +585,6 @@ void printQali(const vector<BamAlignmentRecord_> &qali, bool pairwiseAlignments)
 	}
 }
 
-// parameter later used for comparing quality between alignments
-void scoreAli(vector<BamAlignmentRecord_> &qali)
-{
-  float percId, coverage;
-  std::stringstream ss_score;
-  
-  for (BamAlignmentRecord_& bar : qali)
-	{
-		percId = bar->getPercId();
-		coverage = bar->getCoverage();
-		bar->setScore(coverage + percId);
-		ss_score << (coverage + percId);
-		bar->addZTag("sc", ss_score.str());
-		ss_score.str("");
-	}
-}
-
-
 // for comparing quality of two mate-pair read alignments (it, jit)
 float scoreMate(const BamAlignmentRecord_ &al1, const BamAlignmentRecord_ &al2, int &dist, const globalOptions_t &globalOptions)
 {
@@ -1370,7 +1352,11 @@ void processQuery(vector<BamAlignmentRecord_> &qali, const globalOptions_t &glob
 		  {
 
 			// Computing scores for each alignment, score=percId+coverage;
-			scoreAli(qali);
+			for (BamAlignmentRecord_& bar : qali)
+			{
+			    bar->setScore(bar->getCoverage() + bar->getPercId());
+			}
+
 			if (verbose)
 			  {
 				cout << "Scoring alignments and sorting them according to such score." << endl;
@@ -1433,7 +1419,7 @@ void processQuery(vector<BamAlignmentRecord_> &qali, const globalOptions_t &glob
 						cout << "------------------------------------------------------------------------\n"; 
 					  }
 	
-					// ... significantly worse in terms of "scoreAli"
+					// ... significantly worse in terms of score
 					if (ratio < uniqThresh) 
 					  {		
 						if (verbose)

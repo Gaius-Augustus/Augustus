@@ -168,33 +168,6 @@ bool BamSeqLibAlignmentRecord::getTagData(const std::string &tag_name, int32_t &
 #endif
 }
 
-/** returns tag data
- *
- * @param tag_name
- * @param value return the tags value
- * @return true if tag exists and contains a valid value of values type
- */
-bool BamSeqLibAlignmentRecord::getTagData(const std::string &tag_name, std::string &value) const {
-#ifdef SEQLIB_1_1_1
-    value = alignment->GetZTag(tag_name);
-    return !value.empty();
-#else
-    return alignment->GetZTag(tag_name, value);
-#endif
-}
-
-/** add a new tag of type "Z"
- */
-void BamSeqLibAlignmentRecord::addZTag(const std::string &tag_name, const std::string &value) {
-    alignment->AddZTag(tag_name, value);
-}
-
-/** removes a tag
- */
-void BamSeqLibAlignmentRecord::removeTag(const std::string &tag_name) {
-    alignment->RemoveTag(tag_name.c_str());
-}
-
 /** Returns string with name of the reference of an alignment sequence.
  */
 std::string BamSeqLibAlignmentRecord::getReferenceName() const {
