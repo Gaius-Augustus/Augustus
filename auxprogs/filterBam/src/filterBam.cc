@@ -6,11 +6,8 @@
 	3. Intron gaps (noIntrons, baseInsert)
 	4. Uniqueness (determined by percId and coverage)
 
-  
-	Created: 4-November-2011    
-	Last modified: 13-April-2012  
-*/         
-         
+*/
+
 #include <iostream> 
 #include <vector> 
 #include <string> 

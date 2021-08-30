@@ -2,9 +2,9 @@
 # filterBam: a tool for cleaning alignment files in BAM format
 
 [INTRODUCTION](#introduction)  
-[DEPENDENCIES](#dependencies)
+[DEPENDENCIES](#dependencies)  
 [INSTALLATION](#installation)  
-[RUNNING](running)
+[RUNNING](running)  
 
 # INTRODUCTION
 
@@ -16,7 +16,7 @@ filterBam only accepts as input BAM files that have been previously sorted by 'q
 
 # DEPENDENCIES
 
-1. Bamtools' API **OR** SeqLib API  is required for compilation. 
+1. Bamtools' API **OR** SeqLib API is required for compilation.
 
     Both allows the sorting, sampling, filtering, among other things, of BAM files.  
     While SeqLib is generally faster, precompiled packages for Bamtools are available for more systems/architectures.

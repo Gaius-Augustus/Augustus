@@ -12,24 +12,24 @@ filterBam - filter BAM file for use with AUGUSTUS tools
 
 The input file must be sorted lexicographically by 'queryname', with e.g.
 
-  - Convert the file into SAM format, sort lexicographically by queryname and convert back again into BAM format. 
-    E.g.
-    *export LC_ALL=C*
-    *samtools view -H file.bam > file_sorted.sam*
-    *samtools view file.bam | sort -k 1 >> file_sorted.sam*
-    *samtools view -bS file_sorted.sam > file_sorted.bam*
-    [be aware: 'export LC_ALL=C' might be used because sort ignores characters like ':']
+  - Convert the file into SAM format, sort lexicographically by queryname and convert back again into BAM format. +
+    E.g. +
+    *export LC_ALL=C* +
+    *samtools view -H file.bam > file_sorted.sam* +
+    *samtools view file.bam | sort -k 1 >> file_sorted.sam* +
+    *samtools view -bS file_sorted.sam > file_sorted.bam* +
+    [be aware: 'export LC_ALL=C' might be used because sort ignores characters like ':'] +
     Also, please bear in mind that this will require converting your BAM file into SAM.
 
   - *samtools* and *bamtools* provide facilities to do the sorting,
       but they are not guaranteed to work because of the problem mentioned above.
 
-  - In the case of *samtools*, the command to sort by 'queryname' is: 
-    *samtools sort -n -o file_sorted.bam file.bam*
+  - In the case of *samtools*, the command to sort by 'queryname' is: +
+    *samtools sort -n -o file_sorted.bam file.bam* +
     For more information check the man page included in samtools distribution.
 
-  - bamtools can also sort bam files: 
-    *bamtools sort -byname -in file.bam -out file_sorted.bam*,
+  - bamtools can also sort bam files: +
+    *bamtools sort -byname -in file.bam -out file_sorted.bam* +
     but only provides the option to do it by queryname.
 
 ## OPTIONS

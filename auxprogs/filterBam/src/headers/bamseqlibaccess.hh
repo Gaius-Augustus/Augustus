@@ -1,4 +1,4 @@
-/**	read, write and access BAM files through bamtools library */
+/**	read, write and access BAM files through SeqLib library */
 
 #ifndef _BAMSEQLIBSACCESS_HH
 #define _BAMSEQLIBACCESS_HH

@@ -36,12 +36,19 @@ The input file must be sorted lexicographically by \(aqqueryname\(aq, with e.g.
 .IP \(bu 2.3
 .\}
 Convert the file into SAM format, sort lexicographically by queryname and convert back again into BAM format.
+\&.br
 E.g.
+\&.br
 \fBexport LC_ALL=C\fP
+\&.br
 \fBsamtools view \-H file.bam > file_sorted.sam\fP
+\&.br
 \fBsamtools view file.bam | sort \-k 1 >> file_sorted.sam\fP
+\&.br
 \fBsamtools view \-bS file_sorted.sam > file_sorted.bam\fP
+\&.br
 [be aware: \(aqexport LC_ALL=C\(aq might be used because sort ignores characters like \(aq:\(aq]
+\&.br
 Also, please bear in mind that this will require converting your BAM file into SAM.
 .RE
 .sp
@@ -66,7 +73,9 @@ but they are not guaranteed to work because of the problem mentioned above.
 .IP \(bu 2.3
 .\}
 In the case of \fBsamtools\fP, the command to sort by \(aqqueryname\(aq is:
+\&.br
 \fBsamtools sort \-n \-o file_sorted.bam file.bam\fP
+\&.br
 For more information check the man page included in samtools distribution.
 .RE
 .sp
@@ -79,7 +88,9 @@ For more information check the man page included in samtools distribution.
 .IP \(bu 2.3
 .\}
 bamtools can also sort bam files:
-\fBbamtools sort \-byname \-in file.bam \-out file_sorted.bam\fP,
+\&.br
+\fBbamtools sort \-byname \-in file.bam \-out file_sorted.bam\fP
+\&.br
 but only provides the option to do it by queryname.
 .RE
 .SH "OPTIONS"

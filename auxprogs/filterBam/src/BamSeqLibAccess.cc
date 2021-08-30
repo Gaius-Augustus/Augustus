@@ -1,4 +1,4 @@
-/**	read, write and access BAM files through bamtools library */
+/**	read, write and access BAM files through SeqLib library */
 
 #include <iostream>
 #include <vector>
