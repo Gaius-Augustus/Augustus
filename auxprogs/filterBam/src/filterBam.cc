@@ -80,10 +80,11 @@ int main(int argc, char *argv[])
   string oldQnameStem = "";
   // Alignment
   string qSuffix;
-  uint32_t sumMandI;
   float coverage;
   float percId;
   uint32_t baseInsert;  // baseInsert = qBaseInsert+tBaseInsert, in some cases
+  bool useEqualSigns = false;
+  bool checkForEqualSigns = true;
   uint32_t numEquals;
   bool is_NM_WarningPrinted = false;
   // Counters
@@ -289,17 +290,27 @@ int main(int argc, char *argv[])
   		// Fetching alignment information
   		qName = al->getQueryName(); // query name
   		qLength = al->getQuerySequenceLength(); // query length (TODO: consider situations where qLength=0,undefined)
-  		sumMandI = 0; // Equiv to $qEnd-$qStart in PSL
-  		baseInsert = 0;
 		
-		// Percentage Identity filter; compute with equal signs 
-		if ((numEquals = al->countEqualSignsInQuerySequence()) != 0) // Equal signs present indicate "samtools calmd -e" was run
-		  {
-			// cout << "BAM file seems to have been pre-processed with calmd." << endl;
-			// cout << "Computing percentage identity by counting number of (=) signs in SEQ field." << endl;
-  			percId = (float)100*numEquals/qLength;  
+		if (checkForEqualSigns) {
+		    if ((line - outMap - notPaired - notMateMapped - notOnSameTarget) > 100) {
+		        // check first 100 (valid) lines for equal signs in aligned sequence
+		        // equal signs present indicates "samtools calmd -e" was applied on bam file
+		        checkForEqualSigns = false;
+		    }
+		}
 
-		  } else if (al->getTagData("NM", editDistance)) { // No equal signs present indicates no "samtools calmd -e"
+		if (useEqualSigns) {
+		    // Percentage Identity filter; compute equal sign count
+		    percId = (float) 100 * al->countEqualSignsInQuerySequence() / qLength;
+		}
+		else if (checkForEqualSigns && (numEquals = al->countEqualSignsInQuerySequence()) != 0) {
+		    // cout << "BAM file seems to have been pre-processed with calmd." << endl;
+		    // cout << "Computing percentage identity by counting number of (=) signs in SEQ field." << endl;
+		    percId = (float) 100 * numEquals / qLength;
+		    useEqualSigns = true;
+		    checkForEqualSigns = false;
+		}
+		else if (al->getTagData("NM", editDistance)) {
 			// "NM" - Edit distance tag, which records the Levenshtein distance between the read and the reference.
 			percId = (float)100*(qLength-editDistance)/qLength;  
 		  } else {
@@ -323,8 +334,7 @@ int main(int argc, char *argv[])
 
 
   		// Coverage filter
-  		sumMandI = al->sumMandIOperations();
-   		coverage = (float)100*sumMandI/qLength; 
+		coverage = (float) 100 * al->sumMandIOperations() / qLength; // sumMandIOperations() - Equiv to $qEnd-$qStart in PSL
   		if (coverage < minCover)
   		  {	
   			outMinCover++;
