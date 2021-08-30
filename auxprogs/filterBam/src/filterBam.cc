@@ -459,8 +459,14 @@ int main(int argc, char *argv[])
 		cout << "not paired (our criterion)	: " << optionalCounters.outPaired << endl;
       	cout << "quantiles of unspliced insert lengths:" << endl;
 		try { // catches: instance of 'std::out_of_range'
-		  	  for (int it=1; it<10; it++)
-				{cout << "q[" << 10*it << "%]=" << insertlen.at(ceil(it*insertlen.size()/10)) << ",";}
+			for (unsigned int it=1; it<10; it++) {
+			    unsigned int pos = ceil(it*insertlen.size()/10);
+			    unsigned int quantile = 0;
+			    if (pos < insertlen.size()) {
+			        quantile = insertlen.at(pos);
+			    }
+			    cout << "q[" << 10*it << "%]=" << quantile << ",";
+			}
 			} catch (out_of_range& oor) { 
 		  		  cerr << "[Quantiles]:" << oor.what() << "; insertlen.size()=" << insertlen.size() << endl; 
 			}
