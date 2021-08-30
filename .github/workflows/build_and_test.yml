@@ -138,3 +138,8 @@ jobs:
     - name: Test bam2hints
       run: ./execute_test.py --compare --html bam2hints
       working-directory: tests/short/
+
+    # Test filterbam
+    - name: Test filterbam
+      run: ./execute_test.py --compare --html filterbam
+      working-directory: tests/short/
