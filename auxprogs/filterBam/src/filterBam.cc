@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
 		  } else {
 			percId = 100.0f;
 			if (!is_NM_WarningPrinted) {
-				std::cout << "WARNING: z alignments (x%) were missing the NM tag, and could therefore "
+				std::cout << "WARNING: Some alignments were missing the NM tag, and could therefore "
 				          << "not be filtered based on edit distance." << std::endl;
 				is_NM_WarningPrinted = true;
 			}
