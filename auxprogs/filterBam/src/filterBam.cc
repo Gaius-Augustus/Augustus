@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
   uint32_t numEquals;
   bool is_NM_WarningPrinted = false;
   // Counters
-  int line = 0;
+  unsigned long long line = 0;
   int outMap = 0;
   int outMinId = 0;
   int outMinCover = 0;
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
   bool pairwiseAlignments = globalOptions.pairwiseAlignments;
   uint32_t insertLimit = (unsigned) globalOptions.insertLimit;
   int maxIntronLen = globalOptions.maxIntronLen;
-  int maxSortesTest = globalOptions.maxSortesTest;
+  unsigned int maxSortesTest = globalOptions.maxSortesTest;
   int minCover = globalOptions.minCover;
   int minId = globalOptions.minId;
   float uniqThresh = globalOptions.uniqThresh;
@@ -170,10 +170,9 @@ int main(int argc, char *argv[])
 	  {
 		line++;
 	   
-       if (line%100000==1)
-	   { 
-	   	 printf("\r processed line %d", line);
-       }		
+                if (line%100000==1) {
+                    printf("\r processed line %llu", line);
+                }
 
 		 // Call to compactify bed
 	   if ((unsigned)strlen(pairBedFile) > 0 && line%10000000 == 0)
