@@ -311,11 +311,12 @@ int main(int argc, char *argv[])
 		}
 		else if (al->getTagData("NM", editDistance)) {
 			// "NM" - Edit distance tag, which records the Levenshtein distance between the read and the reference.
-			percId = (float) 100 * (qLength - editDistance - al->sumSOperations()) / qLength;
+		    percId = (float) 100 * (qLength - editDistance - al->sumSOperations()) / qLength;
 		  } else {
 			percId = 100.0f;
 			if (!is_NM_WarningPrinted) {
-				std::cout << "WARNING: Some alignments were missing the NM tag, and could therefore "
+				std::cout << std::endl 
+				          << "WARNING: Some alignments were missing the NM tag, and could therefore "
 				          << "not be filtered based on edit distance." << std::endl;
 				is_NM_WarningPrinted = true;
 			}

@@ -98,9 +98,9 @@ int32_t BamSeqLibAlignmentRecord::getMateRefID() const {
 uint32_t BamSeqLibAlignmentRecord::countEqualSignsInQuerySequence() const {
     uint32_t numEquals = 0;
 
-    bam1_t* myraw = alignment->raw();
-    uint8_t * p = bam_get_seq(myraw);
-    int32_t len = myraw->core.l_qseq;
+    const bam1_t* myraw = alignment->raw();
+    const uint8_t * p = bam_get_seq(myraw);
+    const int32_t len = myraw->core.l_qseq;
     for (int32_t i = 0; i < len; ++i) {
         if (bam_seqi(p, i) == 0) {
             // zero is defined as '=' - see file hts.c in library htslib: seq_nt16_str[] = "=ACMGRSVTWYHKDBN";
@@ -120,12 +120,12 @@ uint32_t BamSeqLibAlignmentRecord::countEqualSignsInQuerySequence() const {
 /** returns the sum of the total length of the M and I cigar operations.
  */
 uint32_t BamSeqLibAlignmentRecord::sumMandIOperations() const {
-    SeqLib::Cigar cigar = alignment->GetCigar();
+    const SeqLib::Cigar cigar = alignment->GetCigar();
 
     uint32_t sumMandI = 0;
 
     // Scanning through all CIGAR operations
-    for (auto it : cigar) { // Length is number of bases
+    for (const auto& it : cigar) {
         // Type means operations, i.e. [MIDNSHPX=]
         if (it.Type() == 'M' || it.Type() == 'I') {
             sumMandI += it.Length();
@@ -138,12 +138,12 @@ uint32_t BamSeqLibAlignmentRecord::sumMandIOperations() const {
 /** returns number of insertions wrt Query and Reference through the summation of operations D and I in the CIGAR string
  */
 uint32_t BamSeqLibAlignmentRecord::sumDandIOperations() const {
-    SeqLib::Cigar cigar = alignment->GetCigar();
+    const SeqLib::Cigar cigar = alignment->GetCigar();
 
     uint32_t sumDandI = 0;
 
     // Scanning through all CIGAR operations
-    for (auto it : cigar) { // Length is number of bases
+    for (const auto& it : cigar) {
         // Type means operations, i.e. [MIDNSHPX=]
         if (it.Type() == 'D' || it.Type() == 'I') {
             sumDandI += it.Length();

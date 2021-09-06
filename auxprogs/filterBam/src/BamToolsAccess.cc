@@ -5,17 +5,9 @@
 #include <api/BamAlignment.h>
 #include <api/BamReader.h>
 #include <api/BamWriter.h>
-#include <api/algorithms/Sort.h>
 #include "bamtoolsaccess.hh"
 #include "filterBam.h"
 
-/**
- * BamToolsAlignmentRecord constructor
- */
-BamToolsAlignmentRecord::BamToolsAlignmentRecord(std::shared_ptr<BamTools::BamAlignment> alignment, std::shared_ptr<BamTools::RefVector> &refData) {
-    this->alignment = alignment;
-    this->refData = refData;
-}
 
 /** returns the wrapped BamAlignment
  */
@@ -105,12 +97,12 @@ uint32_t BamToolsAlignmentRecord::countEqualSignsInQuerySequence() const {
 /** returns the sum of the total length of the M and I cigar operations.
  */
 uint32_t BamToolsAlignmentRecord::sumMandIOperations() const {
-    std::vector<BamTools::CigarOp> cigar = alignment->CigarData;
+    const std::vector<BamTools::CigarOp> cigar = alignment->CigarData;
 
     uint32_t sumMandI = 0;
 
     // Scanning through all CIGAR operations
-    for (auto it : cigar) { // Length is number of bases
+    for (const auto& it : cigar) { // Length is number of bases
         // Type means operations, i.e. [MIDNSHPX=]
         if (it.Type == 'M' || it.Type == 'I') {
             sumMandI += it.Length;
@@ -123,12 +115,12 @@ uint32_t BamToolsAlignmentRecord::sumMandIOperations() const {
 /** returns number of insertions wrt Query and Reference through the summation of operations D and I in the CIGAR string
  */
 uint32_t BamToolsAlignmentRecord::sumDandIOperations() const {
-    std::vector<BamTools::CigarOp> cigar = alignment->CigarData;
+    const std::vector<BamTools::CigarOp> cigar = alignment->CigarData;
 
     uint32_t sumDandI = 0;
 
     // Scanning through all CIGAR operations
-    for (auto it : cigar) { // Length is number of bases
+    for (const auto& it : cigar) {
         // Type means operations, i.e. [MIDNSHPX=]
         if (it.Type == 'D' || it.Type == 'I') {
             sumDandI += it.Length;
@@ -233,8 +225,9 @@ bool BamToolsAlignmentRecord::getTagData(const std::string &tag_name, int32_t &v
  */
 std::string BamToolsAlignmentRecord::getReferenceName() const {
     int32_t refid = getRefID();
-    if (refid >= 0 && refid < int32_t((*refData).size())) {
-        return (*refData).at(refid).RefName;
+    int32_t reflen = int32_t(refData->size());
+    if (refid >= 0 && refid < reflen) {
+        return refData->at(refid).RefName;
     }
     // BAM spec: refID=-1 for a read without a mapping position
     return "[printReferenceName: invalid]";
