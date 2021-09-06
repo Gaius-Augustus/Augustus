@@ -300,18 +300,18 @@ int main(int argc, char *argv[])
 
 		if (useEqualSigns) {
 		    // Percentage Identity filter; compute equal sign count
-		    percId = (float) 100 * al->countEqualSignsInQuerySequence() / qLength;
+		    percId = (float) 100 * (al->countEqualSignsInQuerySequence() - al->sumDOperations()) / qLength;
 		}
 		else if (checkForEqualSigns && (numEquals = al->countEqualSignsInQuerySequence()) != 0) {
 		    // cout << "BAM file seems to have been pre-processed with calmd." << endl;
 		    // cout << "Computing percentage identity by counting number of (=) signs in SEQ field." << endl;
-		    percId = (float) 100 * numEquals / qLength;
+		    percId = (float) 100 * (numEquals - al->sumDOperations()) / qLength;
 		    useEqualSigns = true;
 		    checkForEqualSigns = false;
 		}
 		else if (al->getTagData("NM", editDistance)) {
 			// "NM" - Edit distance tag, which records the Levenshtein distance between the read and the reference.
-			percId = (float)100*(qLength-editDistance)/qLength;  
+			percId = (float) 100 * (qLength - editDistance - al->sumSOperations()) / qLength;
 		  } else {
 			percId = 100.0f;
 			if (!is_NM_WarningPrinted) {

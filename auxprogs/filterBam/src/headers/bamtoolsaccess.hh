@@ -87,6 +87,14 @@ public:
      */
     inline uint32_t sumDandIOperations() const override final;
 
+    /** returns number of soft clippings through the summation of operations S in the CIGAR string
+     */
+    inline uint32_t sumSOperations() const override final;
+
+    /** returns number of deletions through the summation of operations D in the CIGAR string
+     */
+    inline uint32_t sumDOperations() const override final;
+
     /** returns tag data
      *
      * @param tag_name

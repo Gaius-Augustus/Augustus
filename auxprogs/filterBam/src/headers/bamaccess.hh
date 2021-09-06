@@ -82,6 +82,14 @@ public:
     /** returns number of insertions wrt Query and Reference through the summation of operations D and I in the CIGAR string
      */
     virtual uint32_t sumDandIOperations() const = 0;
+    
+    /** returns number of soft clippings through the summation of operations S in the CIGAR string
+     */
+    virtual uint32_t sumSOperations() const = 0;
+
+    /** returns number of deletions through the summation of operations D in the CIGAR string
+     */
+    virtual uint32_t sumDOperations() const = 0;
 
     /** returns tag data
      *

@@ -153,6 +153,42 @@ uint32_t BamSeqLibAlignmentRecord::sumDandIOperations() const {
     return sumDandI;
 }
 
+/** returns number of soft clippings through the summation of operations S in the CIGAR string
+ */
+uint32_t BamSeqLibAlignmentRecord::sumSOperations() const {
+    const SeqLib::Cigar cigar = alignment->GetCigar();
+
+    uint32_t sumS = 0;
+
+    // Scanning through all CIGAR operations
+    for (const auto& it : cigar) {
+        // Type means operations, i.e. [MIDNSHPX=]
+        if (it.Type() == 'S') {
+            sumS += it.Length();
+        }
+    }
+
+    return sumS;
+}
+
+/** returns number of deletions through the summation of operations D in the CIGAR string
+ */
+uint32_t BamSeqLibAlignmentRecord::sumDOperations() const {
+    const SeqLib::Cigar cigar = alignment->GetCigar();
+
+    uint32_t sumD = 0;
+
+    // Scanning through all CIGAR operations
+    for (const auto& it : cigar) {
+        // Type means operations, i.e. [MIDNSHPX=]
+        if (it.Type() == 'D') {
+            sumD += it.Length();
+        }
+    }
+
+    return sumD;
+}
+
 /** returns tag data
  *
  * @param tag_name
