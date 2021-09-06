@@ -117,76 +117,24 @@ uint32_t BamSeqLibAlignmentRecord::countEqualSignsInQuerySequence() const {
     return numEquals;
 }
 
-/** returns the sum of the total length of the M and I cigar operations.
- */
-uint32_t BamSeqLibAlignmentRecord::sumMandIOperations() const {
-    const SeqLib::Cigar cigar = alignment->GetCigar();
-
-    uint32_t sumMandI = 0;
-
-    // Scanning through all CIGAR operations
-    for (const auto& it : cigar) {
-        // Type means operations, i.e. [MIDNSHPX=]
-        if (it.Type() == 'M' || it.Type() == 'I') {
-            sumMandI += it.Length();
-        }
-    } // end for
-
-    return sumMandI;
-}
-
-/** returns number of insertions wrt Query and Reference through the summation of operations D and I in the CIGAR string
- */
-uint32_t BamSeqLibAlignmentRecord::sumDandIOperations() const {
-    const SeqLib::Cigar cigar = alignment->GetCigar();
-
-    uint32_t sumDandI = 0;
+/**
+ * Count all CIGAR operation of the specified type.
+ * 
+ * @param type [MIDNSHPX=]
+ * @return summ of all operations
+*/
+uint32_t BamSeqLibAlignmentRecord::countCigarOperations(const char& type) const {
+    uint32_t count = 0;
 
     // Scanning through all CIGAR operations
-    for (const auto& it : cigar) {
+    for (const auto& it : alignment->GetCigar()) {
         // Type means operations, i.e. [MIDNSHPX=]
-        if (it.Type() == 'D' || it.Type() == 'I') {
-            sumDandI += it.Length();
-        }
-    } // end for
-
-    return sumDandI;
-}
-
-/** returns number of soft clippings through the summation of operations S in the CIGAR string
- */
-uint32_t BamSeqLibAlignmentRecord::sumSOperations() const {
-    const SeqLib::Cigar cigar = alignment->GetCigar();
-
-    uint32_t sumS = 0;
-
-    // Scanning through all CIGAR operations
-    for (const auto& it : cigar) {
-        // Type means operations, i.e. [MIDNSHPX=]
-        if (it.Type() == 'S') {
-            sumS += it.Length();
+        if (it.Type() == type) {
+            count += it.Length();
         }
     }
 
-    return sumS;
-}
-
-/** returns number of deletions through the summation of operations D in the CIGAR string
- */
-uint32_t BamSeqLibAlignmentRecord::sumDOperations() const {
-    const SeqLib::Cigar cigar = alignment->GetCigar();
-
-    uint32_t sumD = 0;
-
-    // Scanning through all CIGAR operations
-    for (const auto& it : cigar) {
-        // Type means operations, i.e. [MIDNSHPX=]
-        if (it.Type() == 'D') {
-            sumD += it.Length();
-        }
-    }
-
-    return sumD;
+    return count;
 }
 
 /** returns tag data

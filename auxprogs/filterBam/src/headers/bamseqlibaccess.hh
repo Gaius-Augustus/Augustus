@@ -81,21 +81,13 @@ public:
      */
     inline uint32_t countEqualSignsInQuerySequence() const override final;
 
-    /** returns the sum of the total length of the M and I cigar operations.
+    /**
+     * Count all CIGAR operation of the specified type.
+     * 
+     * @param type [MIDNSHPX=]
+     * @return sum of all operations of the specified type
      */
-    inline uint32_t sumMandIOperations() const override final;
-
-    /** returns number of insertions wrt Query and Reference through the summation of operations D and I in the CIGAR string
-     */
-    inline uint32_t sumDandIOperations() const override final;
-
-    /** returns number of soft clippings through the summation of operations S in the CIGAR string
-     */
-    inline uint32_t sumSOperations() const override final;
-
-    /** returns number of deletions through the summation of operations D in the CIGAR string
-     */
-    inline uint32_t sumDOperations() const override final;
+    inline uint32_t countCigarOperations(const char& type) const override final;
 
     /** returns tag data
      *

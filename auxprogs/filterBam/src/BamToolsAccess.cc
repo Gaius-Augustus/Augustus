@@ -94,76 +94,24 @@ uint32_t BamToolsAlignmentRecord::countEqualSignsInQuerySequence() const {
     return std::count(alignedBases.begin(), alignedBases.end(), '=');
 }
 
-/** returns the sum of the total length of the M and I cigar operations.
+/**
+ * Count all CIGAR operation of the specified type.
+ * 
+ * @param type [MIDNSHPX=]
+ * @return summ of all operations
  */
-uint32_t BamToolsAlignmentRecord::sumMandIOperations() const {
-    const std::vector<BamTools::CigarOp> cigar = alignment->CigarData;
-
-    uint32_t sumMandI = 0;
-
+uint32_t BamToolsAlignmentRecord::countCigarOperations(const char& type) const {
+    uint32_t count = 0;
+    
     // Scanning through all CIGAR operations
-    for (const auto& it : cigar) { // Length is number of bases
+    for (const auto& it : alignment->CigarData) {
         // Type means operations, i.e. [MIDNSHPX=]
-        if (it.Type == 'M' || it.Type == 'I') {
-            sumMandI += it.Length;
-        }
-    } // end for
-
-    return sumMandI;
-}
-
-/** returns number of insertions wrt Query and Reference through the summation of operations D and I in the CIGAR string
- */
-uint32_t BamToolsAlignmentRecord::sumDandIOperations() const {
-    const std::vector<BamTools::CigarOp> cigar = alignment->CigarData;
-
-    uint32_t sumDandI = 0;
-
-    // Scanning through all CIGAR operations
-    for (const auto& it : cigar) {
-        // Type means operations, i.e. [MIDNSHPX=]
-        if (it.Type == 'D' || it.Type == 'I') {
-            sumDandI += it.Length;
-        }
-    } // end for
-
-    return sumDandI;
-}
-
-/** returns number of soft clippings through the summation of operations S in the CIGAR string
- */
-uint32_t BamToolsAlignmentRecord::sumSOperations() const {
-    const std::vector<BamTools::CigarOp> cigar = alignment->CigarData;
-
-    uint32_t sumS = 0;
-
-    // Scanning through all CIGAR operations
-    for (const auto& it : cigar) {
-        // Type means operations, i.e. [MIDNSHPX=]
-        if (it.Type == 'S') {
-            sumS += it.Length;
+        if (it.Type == type) {
+            count += it.Length;
         }
     }
 
-    return sumS;
-}
-
-/** returns number of deletions through the summation of operations D in the CIGAR string
- */
-uint32_t BamToolsAlignmentRecord::sumDOperations() const {
-    const std::vector<BamTools::CigarOp> cigar = alignment->CigarData;
-
-    uint32_t sumD = 0;
-
-    // Scanning through all CIGAR operations
-    for (const auto& it : cigar) {
-        // Type means operations, i.e. [MIDNSHPX=]
-        if (it.Type == 'D') {
-            sumD += it.Length;
-        }
-    }
-
-    return sumD;
+    return count;
 }
 
 /** returns tag data
