@@ -75,13 +75,13 @@ public:
      */
     virtual uint32_t countEqualSignsInQuerySequence() const = 0;
 
-    /** returns the sum of the total length of the M and I cigar operations.
+    /**
+     * Count all CIGAR operation of the specified type.
+     * 
+     * @param type [MIDNSHPX=]
+     * @return sum of all operations of the specified type
      */
-    virtual uint32_t sumMandIOperations() const = 0;
-
-    /** returns number of insertions wrt Query and Reference through the summation of operations D and I in the CIGAR string
-     */
-    virtual uint32_t sumDandIOperations() const = 0;
+    virtual uint32_t countCigarOperations(const char& type) const = 0;
 
     /** returns tag data
      *

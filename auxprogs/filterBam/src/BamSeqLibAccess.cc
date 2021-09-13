@@ -98,9 +98,9 @@ int32_t BamSeqLibAlignmentRecord::getMateRefID() const {
 uint32_t BamSeqLibAlignmentRecord::countEqualSignsInQuerySequence() const {
     uint32_t numEquals = 0;
 
-    bam1_t* myraw = alignment->raw();
-    uint8_t * p = bam_get_seq(myraw);
-    int32_t len = myraw->core.l_qseq;
+    const bam1_t* myraw = alignment->raw();
+    const uint8_t * p = bam_get_seq(myraw);
+    const int32_t len = myraw->core.l_qseq;
     for (int32_t i = 0; i < len; ++i) {
         if (bam_seqi(p, i) == 0) {
             // zero is defined as '=' - see file hts.c in library htslib: seq_nt16_str[] = "=ACMGRSVTWYHKDBN";
@@ -117,40 +117,24 @@ uint32_t BamSeqLibAlignmentRecord::countEqualSignsInQuerySequence() const {
     return numEquals;
 }
 
-/** returns the sum of the total length of the M and I cigar operations.
- */
-uint32_t BamSeqLibAlignmentRecord::sumMandIOperations() const {
-    SeqLib::Cigar cigar = alignment->GetCigar();
-
-    uint32_t sumMandI = 0;
-
-    // Scanning through all CIGAR operations
-    for (auto it : cigar) { // Length is number of bases
-        // Type means operations, i.e. [MIDNSHPX=]
-        if (it.Type() == 'M' || it.Type() == 'I') {
-            sumMandI += it.Length();
-        }
-    } // end for
-
-    return sumMandI;
-}
-
-/** returns number of insertions wrt Query and Reference through the summation of operations D and I in the CIGAR string
- */
-uint32_t BamSeqLibAlignmentRecord::sumDandIOperations() const {
-    SeqLib::Cigar cigar = alignment->GetCigar();
-
-    uint32_t sumDandI = 0;
+/**
+ * Count all CIGAR operation of the specified type.
+ * 
+ * @param type [MIDNSHPX=]
+ * @return summ of all operations
+*/
+uint32_t BamSeqLibAlignmentRecord::countCigarOperations(const char& type) const {
+    uint32_t count = 0;
 
     // Scanning through all CIGAR operations
-    for (auto it : cigar) { // Length is number of bases
+    for (const auto& it : alignment->GetCigar()) {
         // Type means operations, i.e. [MIDNSHPX=]
-        if (it.Type() == 'D' || it.Type() == 'I') {
-            sumDandI += it.Length();
+        if (it.Type() == type) {
+            count += it.Length();
         }
-    } // end for
+    }
 
-    return sumDandI;
+    return count;
 }
 
 /** returns tag data

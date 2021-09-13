@@ -9,19 +9,20 @@
 #include <api/BamAlignment.h>
 #include <api/BamReader.h>
 #include <api/BamWriter.h>
-#include <api/algorithms/Sort.h>
 #include "bamaccess.hh"
 #include "filterBam.h"
 
 class BamToolsAlignmentRecord : public BamAlignmentRecord {
 private:
     std::shared_ptr<BamTools::BamAlignment> alignment;
-    std::shared_ptr<BamTools::RefVector> refData;
+    const std::shared_ptr<const BamTools::RefVector> refData;
 public:
     /**
      * BamToolsAlignmentRecord constructor
      */
-    BamToolsAlignmentRecord(std::shared_ptr<BamTools::BamAlignment> alignment, std::shared_ptr<BamTools::RefVector> &refData);
+    BamToolsAlignmentRecord(std::shared_ptr<BamTools::BamAlignment> alignment, const std::shared_ptr<const BamTools::RefVector> refData)
+    : alignment(alignment), refData(std::move(refData)) {
+    }
 
     /** returns the wrapped BamAlignment
      */
@@ -79,13 +80,13 @@ public:
      */
     inline uint32_t countEqualSignsInQuerySequence() const override final;
 
-    /** returns the sum of the total length of the M and I cigar operations.
+    /**
+     * Count all CIGAR operation of the specified type.
+     * 
+     * @param type [MIDNSHPX=]
+     * @return sum of all operations of the specified type
      */
-    inline uint32_t sumMandIOperations() const override final;
-
-    /** returns number of insertions wrt Query and Reference through the summation of operations D and I in the CIGAR string
-     */
-    inline uint32_t sumDandIOperations() const override final;
+    inline uint32_t countCigarOperations(const char& type) const override final;
 
     /** returns tag data
      *
@@ -93,11 +94,11 @@ public:
      * @param value return the tags value
      * @return true if tag exists and contains a valid value of values type
      */
-    bool getTagData(const std::string &tag_name, int32_t &value) const override final;
+    inline bool getTagData(const std::string &tag_name, int32_t &value) const override final;
 
     /** Returns string with name of the reference of an alignment sequence.
      */
-    std::string getReferenceName() const override final;
+    inline std::string getReferenceName() const override final;
 };
 
 class BamToolsWriter : public BamFileWriter {
@@ -121,7 +122,7 @@ class BamToolsReader : public BamFileReader {
 private:
     BamTools::BamReader reader;
     BamTools::BamAlignment bamAlignment;
-    std::shared_ptr<BamTools::RefVector> refData;
+    std::shared_ptr<const BamTools::RefVector> refData;
 
     friend bool BamToolsWriter::openWriter(const std::string &, const BamFileReader &);
 

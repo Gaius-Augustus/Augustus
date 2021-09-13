@@ -22,7 +22,7 @@ public:
      * BamToolsAlignmentRecord constructor
      */
     explicit BamSeqLibAlignmentRecord(std::shared_ptr<SeqLib::BamRecord> alignment, std::shared_ptr<const SeqLib::BamHeader> bamHeader)
-    : alignment(move(alignment)), bamHeader(move(bamHeader)) {
+    : alignment(std::move(alignment)), bamHeader(std::move(bamHeader)) {
     }
 
     /** returns the wrapped BamRecord
@@ -79,15 +79,15 @@ public:
 
     /** returns the number of equal signs in the query sequence - occur after "samtools calmd -e" was run
      */
-    uint32_t countEqualSignsInQuerySequence() const override final;
+    inline uint32_t countEqualSignsInQuerySequence() const override final;
 
-    /** returns the sum of the total length of the M and I cigar operations.
+    /**
+     * Count all CIGAR operation of the specified type.
+     * 
+     * @param type [MIDNSHPX=]
+     * @return sum of all operations of the specified type
      */
-    uint32_t sumMandIOperations() const override final;
-
-    /** returns number of insertions wrt Query and Reference through the summation of operations D and I in the CIGAR string
-     */
-    uint32_t sumDandIOperations() const override final;
+    inline uint32_t countCigarOperations(const char& type) const override final;
 
     /** returns tag data
      *
@@ -95,11 +95,11 @@ public:
      * @param value return the tags value
      * @return true if tag exists and contains a valid value of values type
      */
-    bool getTagData(const std::string &tag_name, int32_t &value) const override final;
+    inline bool getTagData(const std::string &tag_name, int32_t &value) const override final;
 
     /** Returns string with name of the reference of an alignment sequence.
      */
-    std::string getReferenceName() const override final;
+    inline std::string getReferenceName() const override final;
 };
 
 class BamSeqLibWriter final : public BamFileWriter {
@@ -135,7 +135,7 @@ public:
      */
     explicit BamSeqLibReader(const globalOptions_t &globalOptions) 
 #ifdef SEQLIB_1_2
-    : threadpool(move(std::make_shared<const SeqLib::ThreadPool>(std::max(1, globalOptions.threads))))
+    : threadpool(std::move(std::make_shared<const SeqLib::ThreadPool>(std::max(1, globalOptions.threads))))
 #endif
     {
 #ifndef SEQLIB_1_2

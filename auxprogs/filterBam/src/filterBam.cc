@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
   string qSuffix;
   float coverage;
   float percId;
+  uint32_t countIOperations;
   uint32_t baseInsert;  // baseInsert = qBaseInsert+tBaseInsert, in some cases
   bool useEqualSigns = false;
   bool checkForEqualSigns = true;
@@ -300,22 +301,23 @@ int main(int argc, char *argv[])
 
 		if (useEqualSigns) {
 		    // Percentage Identity filter; compute equal sign count
-		    percId = (float) 100 * al->countEqualSignsInQuerySequence() / qLength;
+		    percId = (float) 100 * (al->countEqualSignsInQuerySequence() - al->countCigarOperations('D')) / qLength;
 		}
 		else if (checkForEqualSigns && (numEquals = al->countEqualSignsInQuerySequence()) != 0) {
 		    // cout << "BAM file seems to have been pre-processed with calmd." << endl;
 		    // cout << "Computing percentage identity by counting number of (=) signs in SEQ field." << endl;
-		    percId = (float) 100 * numEquals / qLength;
+		    percId = (float) 100 * (numEquals - al->countCigarOperations('D')) / qLength;
 		    useEqualSigns = true;
 		    checkForEqualSigns = false;
 		}
 		else if (al->getTagData("NM", editDistance)) {
 			// "NM" - Edit distance tag, which records the Levenshtein distance between the read and the reference.
-			percId = (float)100*(qLength-editDistance)/qLength;  
+		    percId = (float) 100 * (qLength - editDistance - al->countCigarOperations('S')) / qLength;
 		  } else {
 			percId = 100.0f;
 			if (!is_NM_WarningPrinted) {
-				std::cout << "WARNING: Some alignments were missing the NM tag, and could therefore "
+				std::cout << std::endl 
+				          << "WARNING: Some alignments were missing the NM tag, and could therefore "
 				          << "not be filtered based on edit distance." << std::endl;
 				is_NM_WarningPrinted = true;
 			}
@@ -333,7 +335,8 @@ int main(int argc, char *argv[])
 
 
   		// Coverage filter
-		coverage = (float) 100 * al->sumMandIOperations() / qLength; // sumMandIOperations() - Equiv to $qEnd-$qStart in PSL
+		countIOperations = al->countCigarOperations('I');
+		coverage = (float) 100 * (al->countCigarOperations('M') + countIOperations) / qLength; // sumMandIOperations() - Equiv to $qEnd-$qStart in PSL
   		if (coverage < minCover)
   		  {	
   			outMinCover++;
@@ -346,7 +349,7 @@ int main(int argc, char *argv[])
 
 
   		// Intron gap filter
-  		baseInsert = al->sumDandIOperations();
+  		baseInsert = al->countCigarOperations('D') + countIOperations;
   		// Save if complying with insertLimit
   		if (noIntrons && baseInsert > insertLimit)
   		  {
