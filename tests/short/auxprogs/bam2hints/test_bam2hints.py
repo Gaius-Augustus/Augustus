@@ -18,7 +18,7 @@ testfilename = 'test.s.sorted.bam'
 reffilename = 'test.intron.gff'
 
 bindir = '../../bin/'
-bam2hintsbin = f'{bindir}bam2hints'
+bam2hintsbin = bindir + 'bam2hints'
 default_wd = os.getcwd()
 
 
@@ -58,7 +58,7 @@ class TestBam2Hints(unittest.TestCase):
         resfile = os.path.join(resultdir, reffilename)
 
         aug_process.execute(
-            self, f'{bam2hintsbin} --in={testfile} --out={resfile}')
+            self, bam2hintsbin + ' --in=' + testfile + ' --out=' + resfile)
 
         # compare results
         if TestBam2Hints.opt_compare:
@@ -73,7 +73,7 @@ class TestBam2Hints(unittest.TestCase):
         resfile = os.path.join(resultdir, reffilename)
 
         aug_process.execute(
-            self, f'cat {testfile} | {bam2hintsbin}', resfile)
+            self, 'cat ' + testfile + ' | ' + bam2hintsbin, resfile)
         
         # compare results
         if TestBam2Hints.opt_compare:
