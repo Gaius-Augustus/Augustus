@@ -15,7 +15,7 @@ htmldir = os.path.join('output_html/')
 tmpdir = os.path.join(pathname, 'tmp')
 exampledir = os.path.join(pathname, 'test_files')
 bindir = '../../bin/'
-binfilterbam = f'{bindir}filterBam'
+binfilterbam = bindir + 'filterBam'
 default_wd = os.getcwd()
 
 
@@ -57,15 +57,15 @@ class TestFilterBam(unittest.TestCase):
         os.chdir(default_wd)
         testfile = os.path.join(exampledir, testfilename)
         refsamfile = os.path.join(referencedir, refsamfilename)
-        resbamfile = os.path.join(resultdir, f'{refsamfilename}.bam')
+        resbamfile = os.path.join(resultdir, refsamfilename + '.bam')
         ressamfile = os.path.join(resultdir, refsamfilename)
         
-        aug_process.execute(self, f'{binfilterbam} --in {testfile} --out {resbamfile} {filterbamoptions} ')
+        aug_process.execute(self, binfilterbam + ' --in ' + testfile + ' --out ' + resbamfile + ' ' + filterbamoptions)
         
         if "--no-PG" in aug_process.execute(None, 'samtools view -?'):
-            aug_process.execute(None, f'samtools view -h --no-PG {resbamfile} -o {ressamfile} ')
+            aug_process.execute(None, 'samtools view -h --no-PG ' + resbamfile + ' -o ' + ressamfile)
         else: 
-            aug_process.execute(None, f'samtools view -h {resbamfile} -o {ressamfile} ')
+            aug_process.execute(None, 'samtools view -h ' + resbamfile + ' -o ' + ressamfile)
         
         self.test_compare(refsamfile, resbamfile, ressamfile)
 
@@ -123,7 +123,7 @@ class TestFilterBam(unittest.TestCase):
     def test_paired_pairBedFile(self):
         refbedfile = os.path.join(referencedir, 'pairBedFile.bed')
         resbedfile = os.path.join(resultdir, 'pairBedFile.bed')
-        self.test_case('example_paired.bam', 'example_paired.paired.sam', f'--paired --minId=0 --minCover=0 --pairBedFile={resbedfile}')
+        self.test_case('example_paired.bam', 'example_paired.paired.sam', '--paired --minId=0 --minCover=0 --pairBedFile=' + resbedfile)
         if TestFilterBam.opt_compare:
             aug_assertions.assertEqualFiles(self, refbedfile, resbedfile, TestFilterBam.opt_html, htmldir)
             os.remove(resbedfile)
@@ -131,7 +131,7 @@ class TestFilterBam(unittest.TestCase):
     def test_commonGeneFile(self):
         reffile = os.path.join(referencedir, 'commonGeneFile.txt')
         resfile = os.path.join(resultdir, 'commonGeneFile.txt')
-        self.test_case('example_single.bam', 'example_single.best.sam', f'--best --commonGeneFile={resfile}')
+        self.test_case('example_single.bam', 'example_single.best.sam', '--best --commonGeneFile=' +resfile)
         if TestFilterBam.opt_compare:
             aug_assertions.assertEqualFiles(
                 self, reffile, resfile, TestFilterBam.opt_html, htmldir)
