@@ -41,6 +41,10 @@ Create a Singularity image from the [Singularity definition file](Singularity.de
     cd Augustus
     singularity build augustus.sif Singularity.def
 
+Running the example (from the `Augustus` directory) with Singularity:
+
+    singularity run augustus.sif augustus --species=human --UTR=on examples/example.fa
+
 ## Building AUGUSTUS from source
 
 See [INSTALL.md](docs/INSTALL.md) for details.
