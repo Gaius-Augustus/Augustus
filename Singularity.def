@@ -3,7 +3,7 @@ From: ubuntu:20.04
 Stage: spython-base
 
 %files
-/ifs/opt/src/Augustus /root/augustus
+. /root/augustus
 %post
 
 # Set timezone in tzdata
