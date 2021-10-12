@@ -54,7 +54,6 @@ cd "/root/augustus"
 make clean
 make
 make install
-PATH="/root/augustus/bin:/root/augustus/scripts:${PATH}"
 
 # Test AUGUSTUS
 make unit_test
@@ -62,10 +61,7 @@ make unit_test
 export DEBIAN_FRONTEND="noninteractive"
 export DEBCONF_NONINTERACTIVE_SEEN=true
 export TZ="America/New_York"
-export PATH="/root/augustus/bin:/root/augustus/scripts:${PATH}"
+export PATH="/opt/augustus-3.4.0/bin:/opt/augustus-3.4.0/scripts:/usr/local/bin:${PATH}"
 %runscript
-cd "/root/augustus"
-exec /bin/bash "$@"
-%startscript
-cd "/root/augustus"
-exec /bin/bash "$@"
+export PATH="/opt/augustus-3.4.0/bin:/opt/augustus-3.4.0/scripts:/usr/local/bin:${PATH}"
+exec "$@"
