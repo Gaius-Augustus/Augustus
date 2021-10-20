@@ -18,16 +18,14 @@ RUN apt-get install -y libhdf5-dev
     #RUN ./configure --enable-cxx
     #RUN make && make install
     #ENV PATH="${PATH}:/root/hdf5-1.10.1/hdf5/bin"
-WORKDIR /root
-RUN git clone https://github.com/benedictpaten/sonLib.git
-WORKDIR /root/sonLib
+RUN git clone https://github.com/benedictpaten/sonLib.git /opt/sonLib
+WORKDIR /opt/sonLib
 RUN make
-WORKDIR /root
-RUN git clone https://github.com/ComparativeGenomicsToolkit/hal.git
-WORKDIR /root/hal
+RUN git clone https://github.com/ComparativeGenomicsToolkit/hal.git /opt/hal
+WORKDIR /opt/hal
 ENV RANLIB=ranlib
 RUN make
-ENV PATH="${PATH}:/root/hal/bin"
+ENV PATH="${PATH}:/opt/hal/bin"
 
 # Install dependencies for homGeneMapping
 RUN apt-get update

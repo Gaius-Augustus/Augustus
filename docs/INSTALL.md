@@ -35,13 +35,17 @@ or, alternatively, [download](http://bioinf.uni-greifswald.de/augustus/binaries/
   - for compiling utility utrrnaseq:
     - libboost-all-dev (version must be >Boost_1_49_0)
   - for compiling utility bam2wig:
-    - Follow [these instructions](../auxprogs/bam2wig/README.md). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use `bamToWig.py` to accomplish the same task.
+    - Follow [these instructions](../auxprogs/bam2wig/README.md). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use [`bamToWig.py`](../scripts/bamToWig.py) to accomplish the same task.
   - For compiling homgenemapping
       (set BOOST = FALSE in [auxprogs/homgenemapping/src/Makefile](../auxprogs/homgenemapping/src/Makefile) if the option --printHomologs is not required or the required libraries are not available)
     - libboost-all-dev
   - for scripts:
     - Perl
     - Python3
+  - for the python3 script [bamToWig.py](../scripts/bamToWig.py):
+     - twoBitInfo and faToTwoBit from http://hgdownload.soe.ucsc.edu/admin/exe . bamToWig.py will automatically download these tools to the working directory during execution if they are not in your $PATH.
+     - SAMtools (available e.g. via package managers or [here](https://github.com/samtools/samtools) - see notes below)
+
 
 - Install dependencies
   - as root use your package manager to install the desired dependencies
@@ -104,7 +108,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
 - solutions
   - switch off zlib usage by setting `ZIPINPUT = false` in [common.mk](../common.mk) and do not make utility programs **bam2wig**, **bam2hints** and **filterBam**
-  - or install package `zlib1g-dev`
+  - or install package `apt-get install zlib1g-dev`
   - or install from source
     - execute
 
@@ -138,7 +142,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
 - solutions
   - switch off boost usage by setting `BOOST = false`, `COMPGENEPRED = false` and `ZIPINPUT = false` in [common.mk](../common.mk) do not make utility program **utrrnaseq**
-  - or install package `libboost-all-dev`
+  - or install package `apt-get install libboost-all-dev`
   - or install from source
     - execute (don't set ZLIB variables if zlib is installed on standard locations)
 
@@ -173,7 +177,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
 - solutions
   - switch off MySQL usage by setting `MYSQL = false` in [common.mk](../common.mk)
-  - or install package `libmysql++-dev`
+  - or install package `apt-get install libmysql++-dev`
   - or as non-root user install package archives into a specified directory (beware of further recursive dependencies at link and runtime)
     - execute (replace the archives mentioned here with the ones necessary for your system/architecture)
 
@@ -215,7 +219,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
 - solutions
   - switch off SQLite usage by setting `SQLITE = false` in [common.mk](../common.mk)
-  - or install package `libsqlite3-dev`
+  - or install package `apt-get install libsqlite3-dev`
   - or install from source
     - execute
 
@@ -249,7 +253,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
 - solutions
   - switch off gsl usage by setting `COMPGENEPRED = false` in [common.mk](../common.mk)
-  - or install package `libgsl-dev`
+  - or install package `apt-get install libgsl-dev`
   - or install from source
     - execute
 
@@ -282,7 +286,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
 - solutions
   - switch off lp_solve usage by setting `COMPGENEPRED = false` in [common.mk](../common.mk)
-  - or install package `liblpsolve55-dev`
+  - or install package `apt-get install liblpsolve55-dev`
   - or install from source
     - execute
 
@@ -320,7 +324,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
 - solutions
   - switch off SuiteSparse usage by setting `COMPGENEPRED = false` in [common.mk](../common.mk)
-  - or install package `libsuitesparse-dev`
+  - or install package `apt-get install libsuitesparse-dev`
   - or install from source
     - execute
 
@@ -349,7 +353,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
 - solutions
   - do not make utility programs **bam2hints** and **filterBam**
-  - or install package `libbamtools-dev`
+  - or install package `apt-get install libbamtools-dev`
   - or install from source
     - cmake or cmake3 must be installed (use the installed one in next steps)
 
@@ -399,7 +403,7 @@ With root rights, you can install the libraries in the default folders. To do th
 
 - solutions
   - do not make utility program **bam2wig**
-  - or install packages `samtools libhts-dev`
+  - or install packages `apt-get install samtools libhts-dev`
   - or install from source
     - execute (don't set ZLIB variables if zlib is installed on standard locations, set variables for bz2 and lzma if available and used
       or don't set the disable options if bz2 and lzma are installed on standard locations)

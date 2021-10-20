@@ -35,15 +35,11 @@ Create a docker image from [Dockerfile](Dockerfile) using:
 
 ## Singularity
 
-Create a Singularity image from the [Singularity definition file](Singularity.def) using
+Create a Singularity Image File from the [Singularity Definition File](Singularity.def) using
 
     git clone https://github.com/Gaius-Augustus/Augustus.git
     cd Augustus
     singularity build augustus.sif Singularity.def
-
-Running the example (from the `Augustus` directory) with Singularity:
-
-    singularity run augustus.sif augustus --species=human --UTR=on examples/example.fa
 
 ## Building AUGUSTUS from source
 
@@ -88,15 +84,6 @@ If this environment variable is not set, then the programs will look in the path
 # WEB-SERVER
 
 AUGUSTUS can also be run through a web-interface at http://bioinf.uni-greifswald.de/augustus/ and a web service at http://bioinf.uni-greifswald.de/webaugustus/.
-
-# Scripts
-
-Many scripts require Perl.
-
-Running the python3 script bamToWig.py has the following software dependencies:
-  - Python3
-  - twoBitInfo and faToTwoBit from http://hgdownload.soe.ucsc.edu/admin/exe . bamToWig.py will automatically download these tools to the working directory during execution	if they	are not	in your	$PATH.
-  - samtools (available e.g. at https://github.com/samtools/samtools or via package managers)
 
 # REFERENCES AND DOCUMENTATION
 

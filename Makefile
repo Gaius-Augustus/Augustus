@@ -30,8 +30,10 @@ PREFIX = /usr/local
 INSTALLDIR = /opt/augustus-$(AUGVERSION)
 
 install:
-	install -d $(INSTALLDIR)
-	cp -a config bin scripts $(INSTALLDIR)
+	if [ ! $(PWD) -ef $(INSTALLDIR) ] ; then \
+		install -d $(INSTALLDIR) && \
+		cp -a config bin scripts $(INSTALLDIR) ; \
+	fi
 	ln -sf $(INSTALLDIR)/bin/augustus $(PREFIX)/bin/augustus
 	ln -sf $(INSTALLDIR)/bin/etraining $(PREFIX)/bin/etraining
 	ln -sf $(INSTALLDIR)/bin/prepareAlign $(PREFIX)/bin/prepareAlign
