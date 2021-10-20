@@ -33,6 +33,18 @@ Create a docker image from [Dockerfile](Dockerfile) using:
     cd Augustus
     docker build -t augustus .
 
+## Singularity
+
+Create a Singularity image from the [Singularity definition file](Singularity.def) using
+
+    git clone https://github.com/Gaius-Augustus/Augustus.git
+    cd Augustus
+    singularity build augustus.sif Singularity.def
+
+Running the example (from the `Augustus` directory) with Singularity:
+
+    singularity run augustus.sif augustus --species=human --UTR=on examples/example.fa
+
 ## Building AUGUSTUS from source
 
 See [INSTALL.md](docs/INSTALL.md) for details.
