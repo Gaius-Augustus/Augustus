@@ -743,10 +743,19 @@ void GeneMSA::getAllOEMsas(int species, list<OrthoExon> *hects, unordered_map<st
 	    else
                 beginStopOffset = 3;
 	}
+
+	int refStart = ec->begin + offsets[species] + 1 + beginStopOffset;
+	int refEnd = ec->end + offsets[species] + 1 + endStopOffset;
+
+	if (getStrand(species) == minusstrand) {
+	    int chrLen = rsa->getChrLen(species, getSeqID(species));
+	    refStart = chrLen - (ec->end + endStopOffset + offsets[species]);
+	    refEnd = chrLen - (ec->begin + beginStopOffset + offsets[species]) ;
+	}
+
+	key << "CDS\t" << getSeqID(species) << "\t" << refStart << "\t" << refEnd << "\t";
 	
-	key << "CDS\t" << getSeqID(species) << "\t" << ec->begin + offsets[species] + 1 + beginStopOffset
-	    << "\t" << ec->end + offsets[species] + 1 + endStopOffset << "\t";
-	if (isPlusExon(ec->type))
+	if (isPlusExon(ec->type) != (getStrand(species) == minusstrand)) // 'multiplication' of geneRange and ec strands
 	    key << "+";
 	else
 	    key << "-";

@@ -1,0 +1,75 @@
+Bootstrap: docker
+From: ubuntu:20.04
+
+%post
+
+	# Set timezone in tzdata
+	export DEBIAN_FRONTEND="noninteractive"
+	export DEBCONF_NONINTERACTIVE_SEEN=true
+	export TZ="Europe/Berlin"
+	
+	# Install required packages
+	apt-get update
+	apt-get install -y build-essential wget git autoconf
+	
+	# Install dependencies for AUGUSTUS comparative gene prediction mode (CGP)
+	apt-get install -y libgsl-dev libboost-all-dev libsuitesparse-dev liblpsolve55-dev
+	apt-get install -y libsqlite3-dev libmysql++-dev
+	
+	# Install dependencies for the optional support of gzip compressed input files
+	apt-get install -y libboost-iostreams-dev zlib1g-dev
+	
+	# Install dependencies for bam2hints and filterBam
+	apt-get install -y libbamtools-dev
+	
+	# Install additional dependencies for bam2wig
+	apt-get install -y samtools libhts-dev
+	
+	# Install additional dependencies for homGeneMapping and utrrnaseq
+	apt-get install -y libboost-all-dev
+	
+	# Install additional dependencies for scripts
+	apt-get install -y cdbfasta diamond-aligner libfile-which-perl libparallel-forkmanager-perl libyaml-perl libdbd-mysql-perl
+	apt-get install -y --no-install-recommends python3-biopython
+	
+	# Install hal - required by homGeneMapping
+	# execute the commented out code if you want to use homGeneMapping
+#	apt-get install -y libhdf5-dev
+#	git clone https://github.com/benedictpaten/sonLib.git /opt/sonLib
+#	cd /opt/sonLib
+#	make
+#	git clone https://github.com/ComparativeGenomicsToolkit/hal.git /opt/hal
+#	cd /opt/hal
+#	export RANLIB=ranlib
+#	make
+#%environment
+#	export PATH="${PATH}:/opt/hal/bin"
+
+%files
+	# Clone AUGUSTUS repository
+	. /opt/augustus
+
+%post
+	# Build AUGUSTUS
+	cd /opt/augustus
+	make clean
+	make
+	make install INSTALLDIR=/opt/augustus
+
+%environment
+	export LC_ALL=C
+	export PATH="/opt/augustus/bin:/opt/augustus/scripts:${PATH}"
+
+%test
+	# Test AUGUSTUS
+	cd /opt/augustus
+	make unit_test
+
+%help
+Create a Singularity Image File from this Singularity Definition File using
+	$ git clone https://github.com/Gaius-Augustus/Augustus.git
+	$ cd Augustus
+	$ singularity build augustus.sif Singularity.def
+
+Running an example (from the Augustus directory) with Singularity:
+	$ singularity exec augustus.sif augustus --species=human --UTR=on examples/example.fa
