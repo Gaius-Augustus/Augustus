@@ -141,12 +141,15 @@ else:
 
 # Read genome file (single FASTA entries are held in memory, only), extract
 # CDS sequence windows, add N when frame information states missing nucleotides
+# Replace all unusual nucleotides in genome by N
 seq_len = {}
 codingseq = {}
+regex = re.compile("[^ATCGatcgNn]");
 try:
     with open(args.genome, "r") as genome_handle:
         for record in SeqIO.parse(genome_handle, "fasta"):
             seq_len[record.id] = len(record.seq)
+            record.seq = re.sub(regex, r'N', str(record.seq))
             if record.id in cds:
                 for tx in cds[record.id]:
                     if tx not in codingseq:
