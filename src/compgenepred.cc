@@ -79,7 +79,9 @@ CompGenePred::CompGenePred() : tree(Constant::treefile) {
     for(int j=0; j<speciesNames.size(); j++){
       cout<<"species "<<j<<"\t"<<speciesNames[j]<<endl;
     }
-
+    if (speciesNames.size() < 2) {
+        throw ProjectError("must have at least two species for CompGenePred");
+    }
 
     if (Properties::hasProperty("trainFeatureFile")) {
       trainFeature_from_file();

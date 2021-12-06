@@ -1,7 +1,7 @@
 '\" t
 .\"     Title: bam2hints
 .\"    Author: [see the "AUTHORS" section]
-.\" Generator: Asciidoctor 1.5.5.dev
+.\" Generator: Asciidoctor 1.5.5
 .\"      Date: 
 .\"    Manual: \ \&
 .\"    Source: \ \&
@@ -22,11 +22,21 @@
 bam2hints \- convert mRNA\-to\-genome alignments in BAM format into a hint file for AUGUSTUS
 .SH "SYNOPSIS"
 .sp
-\fBbam2hints\fP [parameters] \-\-in=example.bam \-\-out=hints.gff
+\fBbam2hints\fP [parameters] [\-\-in=example.bam] [\-\-out=hints.gff]
 .SH "OPTIONS"
 .sp
 The input BAM file must be sorted by target (=genome) sequence names and within the sequences by begin coordinates.
 .SS "Parameters:"
+.sp
+\fB\-\-in=example.bam\fP
+.RS 4
+Input BAM file. This option can be omitted only on UNIX platforms. Then bam2hints reads from the standard input stream.
+.RE
+.sp
+\fB\-\-out=hints.gff\fP
+.RS 4
+Output hints gff file. If this option is omitted, then bam2hints will write to the standard output stream.
+.RE
 .sp
 \fB\-\-priority=n\fP/\fB\-p\fP
 .RS 4
@@ -117,4 +127,4 @@ alignments of the same clone are considered to be of the same gene if not separa
 AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.
 .SH "ADDITIONAL DOCUMENTATION"
 .sp
-An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.
+An exhaustive documentation can be found in the file /usr/share/doc/augustus/README.md.gz.

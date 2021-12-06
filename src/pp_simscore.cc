@@ -66,7 +66,7 @@ using namespace SS;
             +  itoa(n) + " < 0)");
     }
 
-    //add a Row to the simialrity matrix
+    //add a Row to the similarity matrix
     void SimilarityMatrix::addRow (int l, int p) {
         Row r(l,p);
         matrix.push_back(r);
@@ -157,7 +157,7 @@ using namespace SS;
         return num_prev_introns[end]-num_prev_introns[start];
     }
 
-    //intiates parameter
+    //initiates parameter
     SimilarityScore::SimilarityScore (double g, double b, double g_i, double iw1,\
         double iw2, double e_i, double e_n) {
         gap_cost_inter = g;
@@ -219,7 +219,7 @@ using namespace SS;
         //col holds the current block column that is represented by the
         //current row of the similarity matrix
         PP::Column col;
-        //d holds the inter-block distnace interval that is located before
+        //d holds the inter-block distance interval that is located before
         //the current block of the profile
         PP::DistanceType d;
 
@@ -488,7 +488,7 @@ using namespace SS;
     //after which an intron occurs or -1 if there no intron is in P located
     double SimilarityScore::intraBlock_iscore (int k, int s, int f, int intron_frame) {
         double prfl_freq;
-        //relative frequency of introns in B at this intron positon
+        //relative frequency of introns in B at this intron position
         prfl_freq = prfl->getIntronIntraFreq(k, s, f);
         if (intron_frame == f)
             return intron_weight_intra * (log10((prfl_freq + epsi_intron)/ \
@@ -541,7 +541,7 @@ using namespace SS;
             new_bt.col_posStart = new_bt.col_count;
             new_bt.align_element.length = 0;
 
-            //initial case for the recursion: start a new alignemnt for every
+            //initial case for the recursion: start a new alignment for every
             //predecessor of the final similarity score
             k_max = (number_Alignments < S[new_bt.i][new_bt.j].prev.size()) ? \
                 number_Alignments : S[new_bt.i][new_bt.j].prev.size();
@@ -618,7 +618,7 @@ using namespace SS;
                             }
                         }
                         //create new alignments, if there is more than one predecessor
-                        //in the similarty matrix
+                        //in the similarity matrix
                         else if (k > 0)
                             bt.push_back(new_bt);
                         //update current alignment
@@ -642,7 +642,7 @@ using namespace SS;
         }
     }
 
-    //translation from block indices of data strucure to block position in file
+    //translation from block indices of data structure to block position in file
     void SimilarityScore::printBlockPos () {
         for (int i = 0; i < prfl->blockCount(); i++) {
                 cout << i << '\t' << prfl[0][i].blockNumbInFile << endl;
@@ -815,7 +815,7 @@ USAGE: ./pp_simScore [OPTIONS] --fasta protein_sequence_file --prfl protein_prof
                                 default setting: -5\n\n \
     --gap_intra:                gap costs for an alignment column that is a gap in a block \n\
                                 default setting: -50\n\n\
-    --gap_intra:                gap costs for an gap in intron positions\n\
+    --gap_intron:               gap costs for a gap in intron positions\n\
                                 default setting: -5\n\n\
     --epsilon_intron:           pseudocount parameter epsilon1, the pseudocount is added to a relative intron frequency v/w with (v+epsilon1)/(w+epsilon1+epsilon2)\n\
                                 default setting: 0.0000001\n\n\
@@ -826,14 +826,14 @@ USAGE: ./pp_simScore [OPTIONS] --fasta protein_sequence_file --prfl protein_prof
     --intron_weight_inter:      value that is added to an intron score for a match of intron positions in an inter-block\n\
                                 default setting: 5\n\n\
     --alignment:                number of optimal alignments that are computed\n\
-                                default setting: 5\n\n\
+                                default setting: 1\n\n\
     --help:                     print USAGE\n\n\
     --out:                      denotes the output format, the following output options, between \" \", are implemented:\n\n\
-                                       \"score\" : output is the simialrity score\n\
+                                       \"score\" : output is the similarity score\n\
                                        \"matrix\" : output are similarity matrix and similarity score\n\
                                        \"alignment\" : output are the computed alignments to the console as\n\n\
                                Alignment representation of P as symbols of {AminoAcid, gap symbol or number of amino acids in inter-block}\n\
-                               Alignemnt representation of argmax of B as symbols of {argmax AminoAcid for aligned block column, gap symbol or inter-block length}\n\
+                               Alignment representation of argmax of B as symbols of {argmax AminoAcid for aligned block column, gap symbol or inter-block length}\n\
                                Frequency of amino acid of P in aligned block column of B, if alignment type is a match\n\n\
                                         \"matrix+alignment\": output are similarity matrix, \n\
                                                             similarity score and the computed \n\
@@ -843,14 +843,14 @@ USAGE: ./pp_simScore [OPTIONS] --fasta protein_sequence_file --prfl protein_prof
                                                an element of the list consists of:\n\n\
                                - starting position of the first amino acid of the protein sequence that is included in the alignment frame\n\
                                - block number in which the alignment frame is located\n\
-                               - indice of the first block column that is included in the alignment frame\n\
+                               - index of the first block column that is included in the alignment frame\n\
                                - length of the frame (number of alignment columns)\n\
                                - alignment type: 'm', 's'. 'p' or '-'\n\n\
-                                        \"bp\" : output is a list of translations from the indice of a block \n\
+                                        \"bp\" : output is a list of translations from the index of a block \n\
                                                to the number of the block in the .prfl file\n\
                                         \"consents\" : output is the average of the argmax \n\
                                                      of the block columns for the complete profile\n\
-                                        \"interblock\" : output is a list of all inter-block distnace intervals\n\
+                                        \"interblock\" : output is a list of all inter-block distance intervals\n\
                                 default setting: \"score\" \n";
 }
 

@@ -102,7 +102,7 @@ int main( int argc, char* argv[] ){
       exit(1);
     }
     if(Constant::treefile.empty()){
-      cerr << "Warning: No treefile specified. Using startree with branchlength of one." << endl;
+      cerr << "Warning: No treefile specified. Using startree with branchlength of 0.2." << endl;
     }
 
     try{
@@ -161,7 +161,7 @@ void printUsage(){
 
 void printIntro(){
 
-  cout << "#\n# ESPOCA - Estimate Selective Preassure on Codon Alignments.\n#\n";
+  cout << "#\n# ESPOCA - Estimate Selective Pressure on Codon Alignments.\n#\n";
   cout << "# Description of the table columns:\n# ali_pos   ref_pos   AS_ref    Pr(w>1)   post_mean +-  SE_for_w  num_subst\n";
   cout << "# 1. ali_pos     position of codon site in the alignment\n";
   cout << "# 2. ref_pos     position of codon in reference species (first species in the alignment file), -1 if gap in reference\n";

@@ -102,6 +102,10 @@ int main( int argc, char* argv[] ){
 	exit(1);
     }
 
+    // redirect stdout from helper classes to stderr to avoid conflicts with the sequence data printed on stdout
+    streambuf* origCoutStreamBuf = cout.rdbuf();
+    cout.rdbuf( cerr.rdbuf() );
+
     DbSeqAccess *rsa=NULL;
 
     if (Constant::dbaccess.find(',') != string::npos){ // assuming mysql access
@@ -115,7 +119,7 @@ int main( int argc, char* argv[] ){
 	
     }
     else if(Constant::dbaccess.find('.') != string::npos){ // assuming sqlite access
-	cerr << "assuming an SQLite database" << endl;
+	cerr << "assuming a SQLite database" << endl;
 	if(Constant::speciesfilenames.empty()){
 	    cerr << "Missing parameter speciesfilenames." << endl;
 	    exit(1);
@@ -127,7 +131,10 @@ int main( int argc, char* argv[] ){
 	exit(1);
 #endif
     }
-
+    
+    // remove redirect and let cout print on stdout again
+    cout.rdbuf( origCoutStreamBuf );
+    
     try{
 	AnnoSequence *annoseq = rsa->getSeq(species, seqname, start-1, end-1, strand);
 	if(annoseq){
@@ -154,7 +161,7 @@ int main( int argc, char* argv[] ){
 	cerr << e.getMessage() << endl;
 	exit(1);
     }
-    exit(1);
+    exit(0);
 }
 
 void printUsage(){

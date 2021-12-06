@@ -18,9 +18,9 @@
 #include <fstream>
 #include <getopt.h>     /* for getopt_long; standard getopt is in unistd.h */
 #include <stdlib.h>     /* for exit() */
-#include <mysql++.h>
+#include <mysql++/mysql++.h>
 #include <exception>
-#include <ssqls.h>
+#include <mysql++/ssqls.h>
 
 //#include <boost/iostreams/filtering_stream.hpp>
 //#include <boost/iostreams/filter/gzip.hpp>

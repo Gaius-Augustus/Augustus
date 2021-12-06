@@ -3,135 +3,132 @@
 #
 include ../common.mk
 
-# set TESTING to false if you don't need testing for the comparative gene prediction mode (CGP) or
-# the required libraries 
-# libboost-serialization-dev 
-# are not available
-TESTING = true
-
-CXX?=g++
+CXX ?= g++
 
 # Notes: - "-Wno-sign-compare" eliminates a high number of warnings (see footnote below). Please adopt
 #          a strict signed-only usage strategy to avoid mistakes since we are not warned about this.
 #        - The order of object files in $(OBJS) IS IMPORTANT (see lldouble.hh)
-CXXFLAGS := -Wall -Wno-sign-compare -pedantic -O3 -std=c++11 ${CXXFLAGS}#-DDEBUG -g -ggdb -pg -DDEBUG_STATES
-
-ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))  # if ZIPINPUT is not defined or is something else than 0, false, False or FALSE
-	CPPFLAGS += -DZIPINPUT
-	LIBS    = -lboost_iostreams
-endif
-
-INCLS	= -I../include
-
+# for debugging set
+#    OPT = -g
+#    CXXFLAGS = -DDEBUG -g -ggdb -pg -DDEBUG_STATES
+#  in common.mk or the environment
+OPT ?=  -O3
+CXXFLAGS := -Wall -Wno-sign-compare -pedantic ${OPT} -std=c++11 ${CXXFLAGS}
+INCLS    += -I../include
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \
  intronmodel.o exonmodel.o igenicmodel.o utrmodel.o merkmal.o vitmatrix.o lldouble.o mea.o graph.o \
  meaPath.o exoncand.o randseqaccess.o fasta.o ncmodel.o
+DUMOBJS = dummy.o
+TOBJS   = commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
+PROGR   = augustus etraining prepareAlign fastBlockSearch pp_simScore
+INFO    = cxxflags
+
+
+ifeq (,$(findstring $(ZIPINPUT),0 false False FALSE))  # if ZIPINPUT is not defined or is something else than 0, false, False or FALSE
+	CPPFLAGS += -DZIPINPUT
+	LDLIBS   += -lboost_iostreams
+	USE_BOOST = true
+endif
+
 ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is not defined or is something else than 0, false, False or FALSE
 	SQLITE   ?= true
 	MYSQL    ?= true
-	CPPFLAGS += -DCOMPGENEPRED
+	USE_BOOST = true
 	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o codonevo.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o tokenizer.o
-	LIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
-	LIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
-	INCLS += -I/usr/include/lpsolve
-endif
-
-ifeq (,$(findstring $(TESTING),0 false False FALSE))  # if TESTING is not defined or is something else than 0, false, False or FALSE
+	CPPFLAGS += -DCOMPGENEPRED
+	INCLUDE_PATH_LPSOLVE ?= -I/usr/include/lpsolve # sets the default (ubuntu/debian) location if it has not already been set in common.mk
+	INCLS   += $(INCLUDE_PATH_LPSOLVE) $(INCLUDE_PATH_GSL) $(INCLUDE_PATH_SUITESPARSE)
+	LDFLAGS += $(LIBRARY_PATH_LPSOLVE) $(LIBRARY_PATH_GSL) $(LIBRARY_PATH_SUITESPARSE)
+	LDLIBS += -lgsl -lgslcblas # for matrix exponentiation that is required in comparative gene finding
+	LDLIBS += -llpsolve55 -lcolamd -ldl # for mixed integer linear programming (alignment.cc)
+	# set TESTING to false if you don't need testing for the comparative gene prediction mode (CGP) or the required library
+	# libboost-serialization-dev
+	# is not available
+	TESTING  ?= true
+  ifeq (,$(findstring $(TESTING),0 false False FALSE))  # if TESTING is not defined or is something else than 0, false, False or FALSE
 	CPPFLAGS += -DTESTING
-	LIBS += -lboost_serialization # for serialization/deserialization
+	LDLIBS += -lboost_serialization # for serialization/deserialization
+  endif
 endif
-
-DUMOBJS = dummy.o
-TOBJS	= commontrain.o igenictrain.o introntrain.o exontrain.o utrtrain.o # contentmodel.o baumwelch.o
-PROGR	= augustus etraining prepareAlign fastBlockSearch pp_simScore
-INFO    = cxxflags
 
 ifneq (,$(findstring $(MYSQL),1 true True TRUE)) # if MYSQL is defined and contains 1, true, True or TRUE
 	# MySQL support
-	# replace RUNTIME_LIBPATH with your own run-time libpath if mysql++ is not installed system-wide, e.g.
-	# RUNTIME_LIBPATH = -Wl,-rpath=~/augustus/trunks/mysql++/mysql++-3.1.0/lib
-	RUNTIME_LIBPATH =
-	INCLS    += -I/usr/include/mysql -I/usr/include/mysql++ # the path to mysql++ may have to be adjusted
-	LIBS     += -lmysqlclient -lmysqlpp ${RUNTIME_LIBPATH} # -L/usr/local/lib/libmysqlpp.so.3.1.0
-	CPPFLAGS += -DM_MYSQL
 	PROGR    += load2db getSeq
+	CPPFLAGS += -DM_MYSQL
+	INCLUDE_PATH_MYSQL ?= -I/usr/include/mysql # set the default (ubuntu/debian) location if it has not already been set in common.mk
+	INCLS    += $(INCLUDE_PATH_MYSQL)
+	LDFLAGS  += $(LIBRARY_PATH_MYSQL)
+	LDLIBS   += -lmysqlclient -lmysqlpp
 endif
 
 ifneq (,$(findstring $(SQLITE),1 true True TRUE)) # if SQLITE is defined and contains 1, true, True or TRUE
 	# SQLite support
-	LIBS      += -lsqlite3
+	PROGR     += load2sqlitedb getSeq
 	OBJS      += sqliteDB.o
 	CPPFLAGS  += -DM_SQLITE
-	PROGR     += load2sqlitedb getSeq
+	INCLS    += $(INCLUDE_PATH_SQLITE)
+	LDFLAGS  += $(LIBRARY_PATH_SQLITE)
+	LDLIBS    += -lsqlite3
 endif
 
-ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))
-    PROGR     += espoca
+ifdef USE_BOOST
+	INCLS   += $(INCLUDE_PATH_BOOST) # set boost include path variable INCLUDE_PATH_BOOST, if boost is not installed system-wide
+	LDFLAGS += $(LIBRARY_PATH_BOOST) # set boost library path variable LIBRARY_PATH_BOOST, if boost is not installed system-wide
 endif
 
 all: $(OBJS) $(TOBJS) $(DUMOBJS) $(PROGR) info
 
-.SUFFIXES:
-.SUFFIXES: .cc .o .so
-.PHONY: googletest
+.PHONY: all info clean googletest unittest
 
-.cc.o:
-	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $< $(INCLS)
+%.o: %.cc
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(INCLS) -c -o $@ $<
 
 augustus: augustus.cc $(OBJS) $(DUMOBJS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp augustus ../bin/
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(INCLS) -o $@ $^ $(LDLIBS)
+	cp -f augustus ../bin/
 
 etraining: etraining.cc $(TOBJS) $(OBJS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp etraining ../bin/
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(INCLS) -o $@ $^ $(LDLIBS)
+	cp -f etraining ../bin/
 
 evaluate: evaluate.cc $(OBJS) $(DUMOBJS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-
-consensusFinder: consensusFinder.cc consensus.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp consensusFinder ../bin/
-
-curve2hints: curve2hints.cc exon_seg.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp curve2hints ../bin/
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(INCLS) -o $@ $^ $(LDLIBS)
 
 fastBlockSearch: fastBlockSearch.cc pp_fastBlockSearcher.o \
 	types.o properties.o geneticcode.o pp_profile.o lldouble.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp fastBlockSearch ../bin/
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(INCLS) -o $@ $^ $(LDLIBS)
+	cp -f fastBlockSearch ../bin/
 
 pp_simScore: pp_simscore.cc fasta.o types.o properties.o geneticcode.o pp_profile.o lldouble.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp pp_simScore ../bin/
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(INCLS) -o $@ $^ $(LDLIBS)
+	cp -f pp_simScore ../bin/
 
 prepareAlign: pp_prepare_align.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
-	cp prepareAlign ../bin/
+	cp -f prepareAlign ../bin/
 
 load2db: load2db.cc fasta.o hints.o types.o properties.o lldouble.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp load2db ../bin/
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(INCLS) -o $@ $^ $(LDLIBS)
+	cp -f load2db ../bin/
 
 load2sqlitedb: load2sqlitedb.cc fasta.o hints.o types.o properties.o lldouble.o sqliteDB.o
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp load2sqlitedb ../bin/
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(INCLS) -o $@ $^ $(LDLIBS)
+	cp -f load2sqlitedb ../bin/
 
 getSeq: getSeq.cc $(OBJS) $(DUMOBJS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp getSeq ../bin/
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(INCLS) -o $@ $^ $(LDLIBS)
+	cp -f getSeq ../bin/
 
 espoca: espoca.cc $(OBJS) $(DUMOBJS)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^ $(INCLS) $(LIBS)
-	cp espoca ../bin/
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(INCLS) -o $@ $^ $(LDLIBS)
+	cp -f espoca ../bin/
 
 info:
 	echo "$(CXXFLAGS) $(CPPFLAGS)" > $(INFO)
 
 clean:
-	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) consensus.o exon_seg.o pp_fastBlockSearcher.o $(INFO)
+	rm -f ../bin/* $(PROGR) $(OBJS) $(DUMOBJS) $(TOBJS) pp_fastBlockSearcher.o $(INFO)
 	cd googletest && ${MAKE} clean
 	cd unittests && ${MAKE} clean
 
@@ -592,12 +589,6 @@ vitmatrix.o : \
 	../include/types.hh \
 	vitmatrix.cc
 
-consensus.o : \
-	../include/consensus.hh \
-	../include/geneticcode.hh \
-	../include/types.hh \
-	consensus.cc
-
 commontrain.o : \
 	../include/commontrain.hh \
 	../include/lldouble.hh \
@@ -619,32 +610,32 @@ meaPath.o : \
 	../include/meaPath.hh \
 
 exoncand.o : \
-       ../include/exoncand.hh \
-       ../include/intronmodel.hh \
-       ../include/types.hh \
-       ../include/exonmodel.hh \
-       exoncand.cc
+	../include/exoncand.hh \
+	../include/intronmodel.hh \
+	../include/types.hh \
+	../include/exonmodel.hh \
+	exoncand.cc
 
 compgenepred.o : \
 	../include/compgenepred.hh \
 	../include/contTimeMC.hh \
 	../include/orthograph.hh \
 	../include/mea.hh \
-        ../include/genomicMSA.hh \
-        ../include/geneMSA.hh \
+	../include/genomicMSA.hh \
+	../include/geneMSA.hh \
 	../include/orthoexon.hh \
 	../include/namgene.hh \
 	../include/randseqaccess.hh \
 	../include/liftover.hh \
 	../include/train_logReg_param.hh \
 	../include/tokenizer.hh \
-       compgenepred.cc
+	compgenepred.cc
 
 randseqaccess.o : \
-       ../include/randseqaccess.hh \
-       ../include/genbank.hh \
-       ../include/table_structure.h \
-       randseqaccess.cc
+	../include/randseqaccess.hh \
+	../include/genbank.hh \
+	../include/table_structure.h \
+	randseqaccess.cc
 
 orthoexon.o : \
 	../include/orthoexon.hh \

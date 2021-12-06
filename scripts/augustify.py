@@ -206,6 +206,7 @@ def work(cmd):
 def augustify_seq(hindex, header, seqs, tmp, params):
     ''' Function that runs a subprocess with arguments and specified STDOUT and STDERR '''
     logger.info("Processing sequence: " + header)
+    # sequence files for prediction
     try:
         with open(tmp + "seq" + str(hindex) + ".fa", "w") as seq_handle:
             seq_handle.write(header)
@@ -215,13 +216,26 @@ def augustify_seq(hindex, header, seqs, tmp, params):
         logger.info('Error in file ' + frameinfo.filename + ' at line ' +
                     str(frameinfo.lineno) + ': ' + "Could not open file " +
                     tmp + "seq" + str(hindex) + ".fa" + " for writing!")
+    # sequence file for parameter set identification (as long as augustus emiprobs is buggy)
+    try:
+        with open(tmp + "seq" + str(hindex) + "_test.fa", "w") as seq_handle2:
+            seq_handle2.write(header)
+            if len(seqs) > 4000:
+                seq_handle2.write(seqs[0:3999])
+            else:
+                seq_handle2.write(seqs)
+    except IOError:
+        frameinfo = getframeinfo(currentframe())
+        logger.info('Error in file ' + frameinfo.filename + ' at line ' +
+                    str(frameinfo.lineno) + ': ' + "Could not open file " +
+                    tmp + "seq" + str(hindex) + "_test.fa" + " for writing!")
     # construct augustus calls
     calls = []
     for species in params:
         curr_call = [augustus, "--AUGUSTUS_CONFIG_PATH=" + augustus_config_path, 
                      "--species=" + species.rstrip(), "--genemodel=complete", 
                      '--emiprobs=on',
-                     '--softmasking=0', tmp + "seq" + str(hindex) + ".fa",
+                     '--softmasking=0', tmp + "seq" + str(hindex) + "_test.fa",
                      '--outfile=' + tmp + "seq" + str(hindex) + "_" + species.rstrip() + ".gff",
                      '--errfile=' + tmp + "seq" + str(hindex) + "_" + species.rstrip() + ".err"]
         calls.append(curr_call)

@@ -137,7 +137,7 @@ while (<SEQ>) {
             $localHints = "$outputdir/$seqnr.$chunkid.${name}.$predStart..$pE.hints";
             my $locus = ${name};
             $locus =~ s/(.*)\..*/$1/;
-            $wholecommand .= "grep ^$locus $hints | awk ' {if (\$4 >= $predStart ) print \$0 } ' | awk ' {if (\$5 <= $pE) print \$0 } ' > $localHints\n";
+            $wholecommand .= "grep \"^$locus\" $hints | awk ' {if (\$4 >= $predStart ) print \$0 } ' | awk ' {if (\$5 <= $pE) print \$0 } ' > $localHints\n";
         } else {
             $localHints = $hints;
         }

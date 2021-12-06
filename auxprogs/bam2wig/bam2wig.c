@@ -1,27 +1,22 @@
 /* 
-   Creates a Wiggle file with coverage information coming from a BAM file 	
- 																			
-   NOTE: 
-   Depending on the version of the compiler,  the call to "-lcurses" might have 
-   to be replaced to "-lncurses"
- 					
-   Tonatiuh Pena-Centeno														
-   Created: 12-June-2012 													
-   Last modified:   6-November-2012												
+    Creates a Wiggle file with coverage information taken from a BAM file 	
+										
 */
 
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "bgzf.h"
 #include "sam.h"
-#include "bam.h"
 
 // Auxiliary data structure
-typedef struct {     
-	bamFile fp;      // the file handler
-	bam_iter_t iter; // NULL if a region not specified
+typedef struct {
+	htsFile *hts_fp; // the file handler
+	BGZF *bgzf_fp;   // the file handler
+	hts_itr_t *iter; // NULL if a region not specified
 	int min_mapQ;    // mapQ (for filtering purposes but not used in this app)
 } aux_t;
 
@@ -35,12 +30,10 @@ static int read_bam(void *data, bam1_t *b)
 
 	// Compute coverage according to the specified region, if one has been provided (i.e. bam_iter_read)
 	// or compute coverage of the complete alignment otherwise (bam_read1)
-	int ret = aux->iter? bam_iter_read(aux->fp, aux->iter, b) : bam_read1(aux->fp, b);
+	int ret = aux->iter? hts_itr_next(aux->bgzf_fp, aux->iter, b, aux->hts_fp) : bam_read1(aux->bgzf_fp, b);
 
 	return ret;
 }
-
-extern bam_index_t *bam_index_core(bamFile fp);
 
 void usage()
 {
@@ -65,13 +58,12 @@ int main(int argc, char *argv[])
 	char *filename=NULL;
 	char *trackname=NULL;
 
-	int n, tid, beg, end, pos, *n_plp;
+	int n, tid, *n_plp;
+	hts_pos_t beg, end, pos;
 	const bam_pileup1_t **plp;
 	char *reg = 0; // specified region
-	bam_header_t *h = 0; // BAM header of the 1st input
 	aux_t **data;
 	bam_mplp_t mplp;
-	/* bam_index_t *idx;  */
 
 	// Parsing the command line
 	while ((n = getopt(argc, argv, "r:t:")) >= 0) 
@@ -93,39 +85,47 @@ int main(int argc, char *argv[])
 
 	// Initializing auxiliary data structures
 	data = calloc(1, sizeof(void*)); // data[0] is array for just one BAM file
-	// set the default region. left-shift "end" by appending 30 zeros (i.e. end=1073741824) 
-	beg = 0; end = 1<<30; tid = -1;  
+	// set the default region to the maximum value of hts_pos_t
+	beg = 0; end = HTS_POS_MAX; tid = -1;
 
 	// Opening BAM file
 	char *oldTargetName = "", *newTargetName;
 	filename = argv[optind];
 	data[0] = calloc(1, sizeof(aux_t));
-	data[0]->fp = bam_open(filename, "r"); 			// file handler of BAM
+	data[0]->hts_fp = hts_open(filename, "r");              // file handler of BAM
+	if (data[0]->hts_fp == NULL) {
+		fprintf(stderr, "Failed to open file \"%s\" : No such file or directory or not a bam file.\n", filename);
+		exit(1);
+	}
+	if (data[0]->hts_fp->format.format != bam) {
+		fprintf(stderr, "File \"%s\" is not in bam file format.\n", filename);
+		exit(1);
+	}
+	data[0]->bgzf_fp = data[0]->hts_fp->fp.bgzf;            // file handler of BAM
 	data[0]->min_mapQ = 0;                    		// mapQ is not used by this app
 	// Reading BAM header
-	bam_header_t *htmp = 0;							 
-	htmp = bam_header_read(data[0]->fp);         	
-
+	sam_hdr_t *htmp = bam_hdr_read(data[0]->bgzf_fp);
 
 	// parsing region
 	if (reg) 
 		{ 
-		  bam_parse_region(htmp, reg, &tid, &beg, &end); 
+			hts_parse_region(reg, &tid, &beg, &end, (hts_name2id_f)bam_name2id, htmp, 0);
 		}
 
 	if (tid >= 0) 
 	  { // if a region is specified and parsed successfully
-		bam_index_t *idx = bam_index_load(argv[optind]);  // load the index
+		hts_idx_t *idx = hts_idx_load(argv[optind], HTS_FMT_BAI);  // load the index
 
 		if (idx == NULL)
 		  {
 		    fprintf(stderr, "Missing indexed BAM file!\n");
 		    fprintf(stderr, "See: samtools index\n");
+		    fprintf(stderr, "Do `samtools index <in.bam>` and an index file with extension \".bai\" will be generated.\n");
 		    exit(1);
 		  }
 
-		data[0]->iter = bam_iter_query(idx, tid, beg, end); // set the iterator
-		bam_index_destroy(idx); // the index is not needed any more; phase out of the memory
+		data[0]->iter = sam_itr_queryi(idx, tid, beg, end); // set the iterator
+		hts_idx_destroy(idx); // the index is not needed any more; phase out of the memory
 	  }
 
 
@@ -137,8 +137,8 @@ int main(int argc, char *argv[])
 	// Print default trackname or use the one specified by the user
 	printf("track name=%s type=wiggle_0\n", trackname==NULL? filename : trackname);
 
-
-	while (bam_mplp_auto(mplp, &tid, &pos, n_plp, plp) > 0)
+	int exitCode = 0; // less than zero if e.g. bam file is sorted
+	while ((exitCode = bam_mplp64_auto(mplp, &tid, &pos, n_plp, plp)) > 0)
 	  { // come to the next covered position
 
 		// If requested region is of range, skip
@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
 		// Prints position and coverage
 		if (coverage > 0) 
 		  {
-			printf("%d %d\n", pos+1, coverage);
+			printf("%ld %d\n", pos+1, coverage);
 		  }
 
 		// Update reference name
@@ -182,17 +182,17 @@ int main(int argc, char *argv[])
 	free(n_plp); 
 	free(plp);
 	bam_mplp_destroy(mplp);
-	bam_header_destroy(h);
-	bam_close(data[0]->fp);
+	sam_hdr_destroy(htmp);
+	hts_close(data[0]->hts_fp);
 
 	// Iterator is used only when a region was provided
 	if (data[0]->iter) 
 	  { 
-		bam_iter_destroy(data[0]->iter); 
+		hts_itr_destroy(data[0]->iter); 
 	  }
 	free(data[0]); 
 	free(data); 
 	free(reg);
 
-	return 0;
+	return exitCode == 0 ? 0 : 1;
 }

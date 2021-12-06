@@ -40,17 +40,24 @@ alignment of the genomes and prints a summary for each gene, e.g.
   N is the number of CPUs to use (default: 1)
 
 *--noDupes*::
-  do not map between duplications in hal graph. (default: off)
+  do not map between duplications in hal graph (default: off)
+
+*--details*::
+  print detailed output (default: off)
 
 *--halLiftover_exec_dir=DIR*::
   Directory that contains the executable halLiftover
   If not specified it must be in $PATH environment variable.
 
+*--unmapped*::
+  print a GTF attribute with a list of all genomes, that are not aligned to the
+  corresponding gene feature, e.g. hgm_unmapped \"1,4,5\"; (default; off)
+
 *--tmpdir=DIR*::
-  a temporary file directory that stores lifted over files. (default 'tmp/' in current directory)
+  a temporary file directory that stores lifted over files (default 'tmp/' in current directory)
 
 *--outdir=DIR*::
-  file directory that stores output gene files. (default: current directory)
+  file directory that stores output gene files (default: current directory)
 
 *--printHomologs=FILE*::
   prints disjunct sets of homologous transcripts to FILE, e.g.
@@ -68,9 +75,18 @@ alignment of the genomes and prints a summary for each gene, e.g.
      no additional exons/introns.
      This option requires the Boost C++ Library
 
+*--dbaccess=db*::
+  retrieve hints from an SQLite database. In order to set up a database and populate it with hints
+  a separate tool 'load2sqlitedb' is provided. For more information, see the documentation in
+  docs/RUNNING-AUGUSTUS-IN-CGP-MODE.md (DATABASE ACCESS / SQLite) in the Augustus package. If both a database and hint files in 'gtffilenames.tbl'
+  are specified, hints are retrieved from both sources.
+
+
 ## EXAMPLE
 
 homGeneMapping --noDupes --halLiftover_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal
+homGeneMapping --gtfs=gtffilenames.tbl --halfile=aln.hal --outdir=outdir --cpus=4
+
 
 ## AUTHORS
 
@@ -78,4 +94,4 @@ AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Rom
 
 ## ADDITIONAL DOCUMENTATION
 
-An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.
+An exhaustive documentation can be found in the file /usr/share/doc/augustus/README.md.gz.

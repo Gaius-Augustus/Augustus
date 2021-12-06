@@ -17,26 +17,22 @@ alignment of the genomes and prints a summary for each gene, e.g.
 
 ### Requirements ###
 * gcc 4.6 or newer
-* HAL Tools (available at https://github.com/ComparativeGenomicsToolkit/hal)
+* HAL Tools - see docs/INSTALL.md (HAL section) for further details.
 * Boost graph library for option --printHomologs that clusters transcripts into groups of homologs
   Install the package libboost-all-dev with your package manager
   (optional: add BOOST = false to common.mk if the Boost library is unavailable and option --printHomologs is not required)
+  See docs/INSTALL.md (Boost section) for further details, especially for manual installation from sources or installation
+  without root rights.
 * SQLite library for option --dbaccess that enables the retrieval hints from a database:
-  Install the package libsqlite3-dev with your package manager or 
-  download the SQLite source code from http://www.sqlite.org/download.html 
-  (tested with  SQLite 3.8.5 ) and install as follows:
+  Install the package libsqlite3-dev with your package manager.
+  See docs/INSTALL.md (SQLite section) for further details, especially for manual installation from sources or installation
+  without root rights.
 
-   > tar zxvf sqlite-autoconf-3080500.tar.gz
-   > cd sqlite-autoconf-3080500
-   > ./configure
-   > sudo make
-   > sudo make install
-
-   If you encounter an "SQLite header and source version mismatch" error, try
+  If you encounter an "SQLite header and source version mismatch" error, try
 
    > ./configure --disable-dynamic-extensions --enable-static --disable-shared
   (optional: add SQLITE = false to common.mk if the SQLite library is unavailable and option --dbaccess is not required)
-  
+
 From within the auxprogs/homGeneMapping directory, type "make"
 
 
@@ -85,5 +81,6 @@ OPTIONS:
                               README-cgp.txt (section 8a+b) in the Augustus package. If both a database and hint files in 'gtffilenames.tbl'
                               are specified, hints are retrieved from both sources.
 
-example:
+examples:
 homGeneMapping --noDupes --halLiftOver_exec_dir=~/tools/progressiveCactus/submodules/hal/bin --gtfs=gtffilenames.tbl --halfile=msca.hal
+homGeneMapping --gtfs=gtffilenames.tbl --halfile=aln.hal --outdir=outdir --cpus=4

@@ -73,7 +73,7 @@ ostream& operator<< (ostream& strm, const Strand s);
 #define MODEL_SUBDIR "model/"
 #define EXTRINSIC_SUBDIR "extrinsic/"
 
-#define VERSION "3.3.3"
+#define VERSION "3.4.0"
 
 #define PREAMBLE "# This output was generated with AUGUSTUS (version " VERSION ").\n\
 # AUGUSTUS is a gene prediction tool written by M. Stanke (mario.stanke@uni-greifswald.de),\n\
@@ -82,8 +82,8 @@ ostream& operator<< (ostream& strm, const Strand s);
 # Using native and syntenically mapped cDNA alignments to improve de novo gene finding\n\
 # Bioinformatics 24: 637-644, doi 10.1093/bioinformatics/btn013"
 
-#define GREETING "AUGUSTUS (" VERSION ") is a gene prediction tool\n\
-written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth."
+#define GREETING "AUGUSTUS (" VERSION ") is a gene prediction tool.\n\
+Sources and documentation at https://github.com/Gaius-Augustus/Augustus"
 
 #define SPECIES_LIST "usage:\n\
 augustus [parameters] --species=SPECIES queryfilename\n\
@@ -141,8 +141,8 @@ fly                                      | Drosophila melanogaster\n\
 encephalitozoon_cuniculi_GB              | Encephalitozoon cuniculi\n\
 eremothecium_gossypii                    | Eremothecium gossypii\n\
 E_coli_K12                               | Escherichia coli K12\n\
-fusarium_graminearum                     | Fusarium graminearium\n\
-(fusarium)                               | Fusarium graminearium\n\
+fusarium_graminearum                     | Fusarium graminearum\n\
+(fusarium)                               | Fusarium graminearum\n\
 galdieria                                | Galdieria sulphuraria\n\
 chicken                                  | Gallus gallus domesticus\n\
 heliconius_melpomene1                    | Heliconius melpomene\n\
@@ -197,7 +197,7 @@ ustilago_maydis                          | Ustilago maydis\n\
 verticillium_albo_atrum1                 | Verticillium albo atrum\n\
 verticillium_longisporum1                | Verticillium longisporum\n\
 volvox                                   | Volvox sp.\n\
-Xipophorus_maculatus                     | Xipophorus maculatus\n\
+Xiphophorus_maculatus                    | Xiphophorus maculatus\n\
 yarrowia_lipolytica                      | Yarrowia lipolytica\n\
 maize                                    | Zea mays\n\
 (maize5)                                 | Zea mays\n\
@@ -235,10 +235,10 @@ parameters:\n\
 --minexonintronprob=p\n\
 --minmeanexonintronprob=p\n\
 --maxtracks=n\n\
-  For a description of these parameters see section 4 of README.TXT.\n\
+  For a description of these parameters see section 2 of RUNNING-AUGUSTUS.md.\n\
 --proteinprofile=filename\n\
   When this option is used the prediction will consider the protein profile provided as parameter.\n\
-  The protein profile extension is described in section 7 of README.TXT.\n\
+  The protein profile extension is described in section 5 of RUNNING-AUGUSTUS.md.\n\
 --progress=true\n\
   show a progressmeter\n\
 --gff3=on/off\n\
@@ -258,7 +258,7 @@ parameters:\n\
   intronless   : run prediction over some given minimal data set\n\
   (*) a minimal data set is one retaining only the information need in prediction, usually very small (order of Mb) compared to full sequence data sets (ordet of Gb)\n\
 \n\
-For a complete list of parameters, type \"augustus --paramlist\".\nAn exhaustive description can be found in the file README.TXT.\n"
+For a complete list of parameters, type \"augustus --paramlist\". A description of the important ones can be found in the file RUNNING-AUGUSTUS.md.\n"
 
 #define HELP_USAGE_ETRAINING "usage:\n\
 etraining --species=SPECIES trainfilename\n\

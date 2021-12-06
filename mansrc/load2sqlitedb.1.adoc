@@ -1,0 +1,64 @@
+# load2sqlitedb(1)
+
+## NAME
+
+load2sqlitedb - load genome sequences and extrinsic evidence hints into a SQLite database
+
+## SYNOPSIS
+
+*load2sqlitedb* [OPTIONS] --species=_SPECIES_ --dbaccess=_database.db_ _inputfilename_
+
+## DESCRIPTION
+
+*load2sqlitedb* is a tool to load genome sequences and extrinsic evidence hints into a SQLite database. +
+When storing genomes/hints of multiple organisms call this program repeatedly for each one.
+
+## OPTIONS
+
+_inputfilename_ refers to a genome file in FASTA format or a hints file in GFF format.
+
+### Mandatory options
+    
+*-s*, *--species*=_SPECIES_::
+  SPECIES is a name for your species and the same identifier as is used in the treefile and alnfile parameters to augustus.
+
+*-d*, *--dbaccess*=_database.db_::
+  The file name of the SQLite database that will be opened or created if it does not already exist.
+
+### Additional options
+
+*-c*, *--chunksize*=_size_::
+  This option is only relevant when loading a sequence file. +
+  The sequences in the input genome are split into chunks of this size so
+  that subsequent retrievals of small sequence ranges do not require to read
+  the complete - potentially much longer - chromosome. (<= 1000000). Default Value: 50000
+
+*-i*, *--noIdx*::
+  Use this flag to suppress the building of indices on the database tables. +
+  If you are going to load several genomes and/or hint files in a row, this option
+  is recommended to speed up the loading. But make sure to build indices with
+  --makeIdx after all genomes/hints are loaded. Otherwise, data retrieval operations
+  can be very slow.
+
+*-m*, *--makeIdx*::
+  Use this flag to build the indices on the database tables after loading several genomes and/or hint files with --noIdx. +
+  Only call this once for all species, e.g. load2sqlitedb --makeIdx --dbaccess=database.db
+
+*-r*, *--clean*::
+  Makes a clean load deleting existing hints/genome for the species from the database.+
+  When called with a gff file, only the hints for the species are delete, but not the genome. +
+  When called with a fasta file, both hints and genome for the species are deleted.
+
+*-h*, *--help*::
+   Produce help message.
+
+## EXAMPLE
+----
+  load2sqlitedb --species=mouse --dbaccess=vertebrates.db mouse.fa
+  load2sqlitedb --species=mouse --dbaccess=vertebrates.db mouse.hints.gff
+  load2sqlitedb --species=human --dbaccess=vertebrates.db human.fa
+  load2sqlitedb --species=human --dbaccess=vertebrates.db human.hints.gff
+----
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.

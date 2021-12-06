@@ -1,21 +1,25 @@
-CXX?=g++
-CXXFLAGS+=-Wall -std=gnu++0x
+# Makefile for joingenes
+
+CXX ?= g++
+CXXFLAGS := -Wall -std=gnu++0x -O2 ${CXXFLAGS}
+
+.PHONY: all clean
 
 all: joingenes
 
-joingenes: joingenes.o jg_transcript.o jg_ios.o jg_transcript.h jg_ios.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) $(LDFLAGS) joingenes.o jg_transcript.o jg_ios.o -o joingenes
+joingenes: joingenes.o jg_transcript.o jg_ios.o
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 	mkdir -p ../../bin/
-	cp joingenes ../../bin/
+	cp -f joingenes ../../bin/
 
 joingenes.o: joingenes.cpp jg_transcript.h jg_ios.h
-	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) joingenes.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c joingenes.cpp
 
 jg_transcript.o: jg_transcript.cpp jg_transcript.h
-	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) jg_transcript.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c jg_transcript.cpp
 
 jg_ios.o: jg_ios.cpp jg_ios.h jg_transcript.h
-	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) jg_ios.cpp
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c jg_ios.cpp
 
 clean:
-	rm -rf *.o joingenes; rm -rf ../../bin/joingenes
+	rm -f *.o joingenes ../../bin/joingenes

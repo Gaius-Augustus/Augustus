@@ -1,0 +1,143 @@
+'\" t
+.\"     Title: getseq
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: Asciidoctor 1.5.5
+.\"      Date: 
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "GETSEQ" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.LINKSTYLE blue R < >
+.SH "NAME"
+getseq \- print genome sequences from databases on the standard output
+.SH "SYNOPSIS"
+.sp
+MySQL:
+.RS 4
+\fBgetSeq\fP [OPTIONS] \-\-species=\fISPECIES\fP \-\-seq=\fISEQUENCE\fP \-\-dbaccess=\fIdbname,host,user,passwd\fP
+.RE
+.sp
+SQLite:
+.RS 4
+\fBgetSeq\fP [OPTIONS] \-\-species=\fISPECIES\fP \-\-seq=\fISEQUENCE\fP \-\-dbaccess=\fIdbname.db\fP \-\-speciesfilenames=\fISPECIESFILENAMES\fP
+.RE
+.SH "DESCRIPTION"
+.sp
+Retrieve a genome sequence from a MySQL and SQLite database or a part of it.
+Optionally the reverse complement is printed. Print to standard output.
+.SH "OPTIONS"
+.SS "Mandatory options"
+.sp
+\fB\-s\fP, \fB\-\-species\fP=\fISPECIES\fP
+.RS 4
+SPECIES is the species identifier used when loading the sequence into the database.
+.RE
+.sp
+\fB\-q\fP, \fB\-\-seq\fP=\fISEQUENCE\fP
+.RS 4
+SEQUENCE is the ID of the sequence to retrieve.
+.RE
+.sp
+\fB\-c\fP, \fB\-\-dbaccess\fP=\fIdatabase\fP
+.RS 4
+.sp
+MySQL:
+.RS 4
+a string containing dbname, host, user, passwd joined with a comma
+.sp
+dbname
+.RS 4
+the name of the SQL database
+.RE
+.sp
+host
+.RS 4
+the host name or IP
+.RE
+.sp
+user
+.RS 4
+the database user
+.RE
+.sp
+passwd
+.RS 4
+users and password
+.RE
+.RE
+.sp
+SQLite:
+.RS 4
+the file name of the SQLite database (must contain a dot)
+.RE
+.RE
+.sp
+\fB\-f\fP, \fB\-\-speciesfilenames=SPECIESFILENAMES\fP
+.RS 4
+This parameter is only recognized for SQLite databases.
+.br
+SPECIESFILENAMES is the file where the species identifier and the related file names of the sequences are stored.
+.br
+Format:
+.RE
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+    Homo sapiens <TAB> /dir/to/genome/human.fa
+    Mus musculus <TAB> /dir/to/genome/mouse.fa
+.fi
+.if n \{\
+.RE
+.\}
+.SS "Additional options"
+.sp
+\fB\-a\fP, \fB\-\-start\fP=\fInumber\fP
+.RS 4
+Retrieve subsequence starting at this position (coordinates are 1\-based).
+.RE
+.sp
+\fB\-b\fP, \fB\-\-end\fP=\fInumber\fP
+.RS 4
+Retrieve subsequence ending at this position(coordinates are 1\-based).
+.RE
+.sp
+\fB\-r\fP, \fB\-\-rc\fP
+.RS 4
+Output the reverse complement of the sequence.
+.RE
+.sp
+\fB\-h\fP, \fB\-\-help\fP
+.RS 4
+Produce help message.
+.RE
+.SH "EXAMPLE"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+  MySQL:
+    getSeq \-\-species=mouse \-\-seq=chr16 \-\-dbaccess=vertebrates,localhost,myuser,mypasswd
+    getSeq \-\-species=human \-\-seq=chr21 \-\-start=32026 \-\-end=32085 \-\-rc \-\-dbaccess=vertebrates,localhost,myuser,mypasswd
+
+  SQLite:
+    getSeq \-\-species=mouse \-\-seq=chr16 \-\-dbaccess=vertebrates.db \-\-speciesfilenames=speciesfilenames.tsv
+.fi
+.if n \{\
+.RE
+.\}
+.SH "AUTHORS"
+.sp
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.

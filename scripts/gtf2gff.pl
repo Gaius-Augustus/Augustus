@@ -8,7 +8,7 @@
 # In case of doubt, contact katharina.hoff@uni-greifswald.de 
 #
 # Mario Stanke, 1.2.2010, mario.stanke@uni-greifswald.de
-# last modification on August 20th 2019 by Katharina J. Hoff
+# last modification on December 11th 2020 by Katharina J. Hoff
 
 use strict;
 use Getopt::Long;

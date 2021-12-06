@@ -4,6 +4,7 @@
 	Last modified: 29-January-2012
 */
 
+#include "filterBam.h"
 #include <iostream>
 #include <list>
 #include <string>
@@ -13,27 +14,6 @@
 #include <functional>
 
 using namespace std;
-
-
-// Class definition 
-class PairednessCoverage
-{
-   friend ostream &operator<<(ostream &, const PairednessCoverage &);
-
-   public:
-	  int coord; // pStart or pEnd coordinates
-  	  int label; // {-1} for pEnd and {1} for pStart
-  	  string chr; // chromosome name
-      PairednessCoverage();
-      PairednessCoverage(const PairednessCoverage &);
-  	  PairednessCoverage(int coord, int label, string chr);
-      ~PairednessCoverage(){};
-   	  void setValues(int coord, int label, string chr);
-      PairednessCoverage &operator=(const PairednessCoverage &rhs);
-      int operator==(const PairednessCoverage &rhs) const;
-      int operator<(const PairednessCoverage &rhs) const;
-  	  bool operator() (const PairednessCoverage &lhs, const PairednessCoverage &rhs) const;
-};
 
 // Constructor
 PairednessCoverage::PairednessCoverage()   // Constructor
@@ -66,14 +46,6 @@ void PairednessCoverage::setValues(int coord, int label, string chr)
 	this->coord = coord;
 	this->label = label;
 	this->chr = chr;
-}
-
-// Ostream operator
-ostream &operator<<(ostream &output, const PairednessCoverage &aaa)
-{
-  output << aaa.chr << ' '<< aaa.coord << ' ' << aaa.label;
-  // output << endl;
-  return output;
 }
 
 // Assignment operator

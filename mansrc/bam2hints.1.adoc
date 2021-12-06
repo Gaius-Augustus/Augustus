@@ -6,7 +6,7 @@ bam2hints - convert mRNA-to-genome alignments in BAM format into a hint file for
 
 ## SYNOPSIS
 
-*bam2hints* [parameters] --in=example.bam --out=hints.gff
+*bam2hints* [parameters] [--in=example.bam] [--out=hints.gff]
 
 ## OPTIONS
 
@@ -14,6 +14,12 @@ The input BAM file must be sorted by target (=genome) sequence names and within 
 
 ###  Parameters:
 
+*--in=example.bam*::
+  Input BAM file. This option can be omitted only on UNIX platforms. Then bam2hints reads from the standard input stream.
+
+*--out=hints.gff*::
+  Output hints gff file. If this option is omitted, then bam2hints will write to the standard output stream.
+  
 *--priority=n*/*-p*::
   priority of hint group (set to 4)
 
@@ -71,5 +77,5 @@ AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Rom
 
 ## ADDITIONAL DOCUMENTATION
 
-An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.
+An exhaustive documentation can be found in the file /usr/share/doc/augustus/README.md.gz.
 

@@ -1,9 +1,9 @@
 /*
  * properties.hh
  *
- * License: Artistic License, see file LICENSE.TXT or 
+ * License: Artistic License, see file LICENSE.TXT or
  *          https://opensource.org/licenses/artistic-license-1.0
- * 
+ *
   * Description: Declaration of the Properties class.
  */
 
@@ -13,6 +13,9 @@
 // project includes
 #include "types.hh"
 
+// json support include
+#include "json.hpp"
+
 // standard C/C++ includes
 #include <map>
 
@@ -20,11 +23,6 @@
 #include <mach-o/dyld.h>   // for _NSGetExecutablePath
 #endif
 
-#ifdef TESTING
-#define NUMPARNAMES 279   // +testMode, workingDir command line options
-#else
-#define NUMPARNAMES 277
-#endif
 
 #define GENEMODEL_KEY "genemodel"
 #define NONCODING_KEY "nc"
@@ -48,12 +46,14 @@
 
 #define OVLPLENFILE "ovlp_len.pbl"
 
+using json = nlohmann::json;
+
 /**
  * @brief The base exception class for Properties
  *
  * @author Emmanouil Stafilarakis
  */
-struct PropertiesError : public ProjectError{
+struct PropertiesError : public ProjectError {
     /**
      * Constructor
      *
@@ -65,19 +65,31 @@ struct PropertiesError : public ProjectError{
 /**
  * @author Emmanouil Stafilarakis
  */
-struct KeyNotFoundError : public PropertiesError{
+struct KeyNotFoundError : public PropertiesError {
     KeyNotFoundError( string key ) :
-	PropertiesError("Properties::getProperty(): no such key \"" + key + "\".") 
+        PropertiesError("Properties::getProperty(): no such key \"" + key + "\".")
+    {}
+};
+
+struct SpecifiedTypeError : public PropertiesError {
+    SpecifiedTypeError(string name, string type) :
+        PropertiesError("Properties::getProperty(): property \"" + name + "\" is not defined as \"" + type + "\" in configuration file.")
+    {}
+};
+
+struct ValueError : public PropertiesError {
+    ValueError(string name, string value) :
+        PropertiesError("Properties::getProperty(): the given value \"" + value + "\" of property \"" + name + "\" is not one of the possible values according to the configuration file.")
     {}
 };
 
 /**
  * @author Emmanouil Stafilarakis
  */
-struct ValueFormatError : public PropertiesError{
+struct ValueFormatError : public PropertiesError {
     ValueFormatError( string key, string value, string type ) :
-	PropertiesError( "Properties::getProperty(): cannot convert value \"" 
-			 + value + "\" of key \"" + key + "\" into " + type + "." )
+        PropertiesError( "Properties::getProperty(): cannot convert value \""
+                         + value + "\" of key \"" + key + "\" into " + type + "." )
     {}
 };
 
@@ -167,136 +179,165 @@ struct HelpException {
  *
  * @author Emmanouil Stafilarakis
  */
-class Properties{
-    public:
-        /**
-         *
-         *
-         * @author Emmanouil Stafilarakis
-         * @version 0.1
-         */
+class Properties
+{
+public:
+    /**
+     *
+     *
+     * @author Emmanouil Stafilarakis
+     * @version 0.1
+     */
 
-        /**
-         * Read all properties from the given file.
-         *
-         * @param   file The file with the programm properties
-         * @exception PropertiesError
-         */
-        static void        readFile    ( string file );
-        /**
-         * @memo    Parse the commandline arguments.
-         *
-         * @doc     The format of the commandline arguments should be
-         *          <b>--/CLASS/PROPERTY=VALUE</b>.<br>So, the class CLASS
-         *          can set the value VALUE to its property PROPERTY.
-         *
-         * @param   argc    The count of the arguments.
-         * @param   argv    A NULL terminated field with the arguments.
-         */
-        static void        init        ( int argc, char* argv[] );
-        /**
-         *
-         */
-        static Boolean hasProperty( string name);
-    
-        /**
-         * @doc     Add a new property to the Properties object.
-         *
-         * @param   name    The name of the property.
-         * @param   value   The string value of the property.
-         */
-        static void        addProperty         ( string name, string value );
-        /**
-         *
-         */
-        static Integer     getIntProperty      ( string name );
- 	
-        /**
-         *
-         */
-        static Double      getDoubleProperty   ( string name );
-        /**
-         *
-         */
-        static double      getdoubleProperty   ( string name );
-        /**
-         *
-         */
-        static Boolean     getBoolProperty     ( string name );
-       /**
-         *
-         */
-        static const char* getProperty   ( string name );
-        /**
-         *
-         */
-        static const char* getProperty(string name, int index);
-        /**
-         *
-         */
+    /**
+     * Read all properties from the given file.
+     *
+     * @param   file The file with the programm properties
+     * @exception PropertiesError
+     */
+    static void        readFile    ( string file );
+    /**
+     * @memo    Parse the commandline arguments.
+     *
+     * @doc     The format of the commandline arguments should be
+     *          <b>--/CLASS/PROPERTY=VALUE</b>.<br>So, the class CLASS
+     *          can set the value VALUE to its property PROPERTY.
+     *
+     * @param   argc    The count of the arguments.
+     * @param   argv    A NULL terminated field with the arguments.
+     */
+    static void        init        ( int argc, char* argv[] );
+    /**
+     *
+     */
+    static Boolean hasProperty( string name);
 
-    
-    static string getConfigFilename(string name) {
-	if (name != "")
-	    return properties[CFGPATH_KEY] + getProperty(name);
-	else
-	    return properties[CFGPATH_KEY];
+    /**
+     * @doc     Add a new property to the Properties object.
+     *
+     * @param   name    The name of the property.
+     * @param   value   The string value of the property.
+     */
+    static void        addProperty         ( string name, string value );
+    /**
+     *
+     */
+    static Integer     getIntProperty      ( string name );
+
+    /**
+     *
+     */
+    static Double      getDoubleProperty   ( string name );
+    /**
+     *
+     */
+    static double      getdoubleProperty   ( string name );
+    /**
+     *
+     */
+    static Boolean     getBoolProperty     ( string name );
+    /**
+      *
+      */
+    static const char* getProperty   ( string name );
+    /**
+     *
+     */
+    static const char* getProperty(string name, int index);
+    /**
+     *
+     */
+
+
+    static string getConfigFilename(string name)
+    {
+        if (name != "") {
+            return properties[CFGPATH_KEY] + getProperty(name);
+        } else {
+            return properties[CFGPATH_KEY];
+        }
     }
 
     // assign value only if key is present
-    static bool assignProperty(string name, Integer& target) {
-	try {
-	    target = getIntProperty(name);
- 	} catch (KeyNotFoundError &e) { return false; }
+    static bool assignProperty(string name, Integer& target)
+    {
+        try {
+            target = getIntProperty(name);
+        } catch (KeyNotFoundError &e) {
+            return false;
+        }
         return true;
     }
-    static bool assignProperty(string name, unsigned& target) {
-	try {
-	    target = (unsigned) getIntProperty(name);
- 	} catch (KeyNotFoundError &e) { return false; }
+    static bool assignProperty(string name, unsigned& target)
+    {
+        try {
+            target = (unsigned) getIntProperty(name);
+        } catch (KeyNotFoundError &e) {
+            return false;
+        }
         return true;
     }
-    static bool assignProperty(string name, Double& target) {
-	try {
-	    target = getDoubleProperty(name);
- 	} catch (KeyNotFoundError &e) { return false; }
+    static bool assignProperty(string name, Double& target)
+    {
+        try {
+            target = getDoubleProperty(name);
+        } catch (KeyNotFoundError &e) {
+            return false;
+        }
         return true;
     }
-    static bool assignProperty(string name, double& target) {
-	try {
-	    target = getdoubleProperty(name);
-	} catch (KeyNotFoundError &e) { return false; }
+    static bool assignProperty(string name, double& target)
+    {
+        try {
+            target = getdoubleProperty(name);
+        } catch (KeyNotFoundError &e) {
+            return false;
+        }
         return true;
     }
-    static bool assignProperty(string name, Boolean& target) {
-	try {
-	    target = getBoolProperty(name);
-	} catch (KeyNotFoundError &e) { return false; }
+    static bool assignProperty(string name, Boolean& target)
+    {
+        try {
+            target = getBoolProperty(name);
+        } catch (KeyNotFoundError &e) {
+            return false;
+        }
         return true;
     }
-    static bool assignProperty(string name, string& target) {
-	try {
-	    target = getProperty(name);
-	} catch (KeyNotFoundError &e) { return false; }
+    static bool assignProperty(string name, string& target)
+    {
+        try {
+            target = getProperty(name);
+        } catch (KeyNotFoundError &e) {
+            return false;
+        }
         return true;
     }
-    static bool assignProperty(string name, const char*& target) {
-	try {
-	    target = getProperty(name);
-	} catch (KeyNotFoundError &e) { return false; }
+    static bool assignProperty(string name, const char*& target)
+    {
+        try {
+            target = getProperty(name);
+        } catch (KeyNotFoundError &e) {
+            return false;
+        }
         return true;
     }
-    
 
-    private:
-	Properties() {}  // do not construct objects!
-        /**
-         *
-         */
-	static void            readLine    (istream& strm );
-    private:
-	static map<string, string> properties;
-	static const char* parameternames[NUMPARNAMES];
+
+private:
+    Properties() {}  // do not construct objects!
+    /**
+     *
+     */
+    static void readLine(istream& strm );
+    static bool hasValue(const json& list, const string value);
+    static bool isDefinedType(const string typeName, const string paramName);
+    static bool isPossibleValue(const string value, const string paramName);
+    static void setDefaultValues();
+
+private:
+    static map<string, string> properties;
+    static json allowedParameters;
 };
 
 /*

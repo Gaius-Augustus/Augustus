@@ -12,71 +12,87 @@ filterBam - filter BAM file for use with AUGUSTUS tools
 
 The input file must be sorted lexicographically by 'queryname', with e.g.
 
-  - *sort -k 1,1* [be aware: 'export LC_ALL=C' might be used  because sort ignores characters like ':']
-      Also, please bear in mind that this will require converting your BAM file into SAM.
+  - Convert the file into SAM format, sort lexicographically by queryname and convert back again into BAM format. +
+    E.g. +
+    *export LC_ALL=C* +
+    *samtools view -H file.bam > file_sorted.sam* +
+    *samtools view file.bam | sort -k 1 >> file_sorted.sam* +
+    *samtools view -bS file_sorted.sam > file_sorted.bam* +
+    [be aware: 'export LC_ALL=C' might be used because sort ignores characters like ':'] +
+    Also, please bear in mind that this will require converting your BAM file into SAM.
 
   - *samtools* and *bamtools* provide facilities to do the sorting,
       but they are not guaranteed to work because of the problem mentioned above.
 
-  - In the case of *samtools*, the command is: 'samtools sort [-n] file.bam'.
-    The option [-n] should sort by query name, just as 'sort -k 10,10' would do in a PSL file.
-    Without options, the sorting will be done by reference name and target coordinate, just as a  'sort -n -k 16,16 | sort -k 14,14' would do with PSL.
+  - In the case of *samtools*, the command to sort by 'queryname' is: +
+    *samtools sort -n -o file_sorted.bam file.bam* +
     For more information check the man page included in samtools distribution.
 
-  - bamtools can also sort bam files: *bamtools sort -queryname -in file.bam*,
+  - bamtools can also sort bam files: +
+    *bamtools sort -byname -in file.bam -out file_sorted.bam* +
     but only provides the option to do it by queryname.
 
-If the option 'paired' is used, then alignment names must include suffixes /1,/2 or /f,/r.
-
 ## OPTIONS
-  
-*--best*::
-   output all best matches that satisfy minId and minCover (default 0)
 
-*--noIntrons*::
-   do not allow longer gaps -for RNA-RNA alignments- (default 0)
+### Mandatory options
 
-*--paired*::
-   require that paired reads are on opposite strands of same target
-   (default 0). NOTE: see prerequisite section above.
+*-i*, *--in=in.bam*::
+	input file in BAM format
 
-*--uniq*::
-   take only best match, iff, second best is much worse  (default 0)
+*-o*, *--out=out.bam*::
+	output file in BAM format
 
-*--verbose*::
-   output debugging info (default 0)
+### Optional options
 
-*--insertLimit n*::
-   maximum assumed size of inserts (default 10)
+*-u*, *--uniq*::
+   keep only the best match, remove all matches, if the second best is not much worse
 
-*--maxIntronLen n*::
-   maximal separation of paired reads (default 500000)
+*-q f*, *--uniqThresh=f*::
+   threshold % for uniq, second best must be lower than this fraction of best to keep the best match (default 0.96)
 
-*--maxSortesTest n*::
-   maximal sortedness (default 100000)
+*-b*, *--best*::
+   output all best matches that satisfy minId and minCover
 
-*--minCover n*::
-   minimal percentage of coverage of the query read (default 80)
-
-*--minId n*::
+*-e n*, *--minId=n*::
    minimal percentage of identity (default 92)
 
-*--minIntronLen n*::
-   minimal intron length  (default 35)
+*-c n*, *--minCover=n*::
+   minimal percentage of coverage of the query read (default 80)
 
-*--uniqThresh n*::
-   threshold % for uniq, second best must be at most this fraction of best (default 0.96)
+*-n*, *--noIntrons*::
+   do not allow longer gaps -for RNA-RNA alignments-
 
-*--commonGeneFile s*::
+*-l n*, *--insertLimit=n*::
+   maximum assumed size of inserts (default 10)
+
+*-s n*, *--maxSortesTest=n*::
+   test if input file is sorted by query name for this number of alignments (default 100000)
+
+*-p*, *--paired*::
+   require that paired reads are on opposite strands of same target.
+   Requires alignment names to contain the suffixes /1,/2 or /f,/r.
+
+*-w*, *--pairwiseAlignments*::
+    use in case alignments were done in pairwise fashion
+
+*-x n*, *--maxIntronLen=n*::
+   maximal separation of paired reads (default 500000)
+
+*-d file*, *--pairBedFile=file*::
+    file name of pairedness coverage: a BED format file in which for each position the number of
+    filtered read pairs is reported that contain the position in or between the reads
+
+*-g file*, *--commonGeneFile=file*::
     file name in which to write cases where one read maps several different genes
 
-*--pairBedFile s*::
-    file name of pairedness coverage: a BED format file in which for each position the number of
-    filtered read pairs is reported that contain the position in
-    or between the reads
+*-t n*, *--threads=n*::
+   use n threads for compression/decompression (default 1); available only if library SeqLib >= 1.2 is used
 
-*--pairwiseAlignments*::
-    use in case alignments were done in pairwise fashion (default:  0)
+*-v*, *--verbose*::
+   output debugging info
+
+*-h*, *--help*::
+   produce help message.
 
 ## AUTHORS
 
@@ -84,4 +100,4 @@ AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Rom
 
 ## ADDITIONAL DOCUMENTATION
 
-An exhaustive documentation can be found in the file /usr/share/augustus/README.TXT.
+An exhaustive documentation can be found in the file /usr/share/doc/augustus/README.md.gz.

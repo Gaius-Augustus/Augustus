@@ -1,0 +1,4 @@
+track type=bedGraph name="pairedness coverage" description="pairedness coverage" visibility=full color=200,100,0 altColor=200,100,0
+chr1	70	71	2
+chr1	71	148	4
+chr1	148	209	2

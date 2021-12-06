@@ -9,22 +9,22 @@ if(scalar(@ARGV) != 0){
 }
 
 # specify executables
-my $findUtr = "/home/katharina/SVN/utrrnaseq/trunks/Debug/main";
-my $gff2lst = "/home/katharina/SVN/utrrnaseq/trunks/scripts/gff2lst.pl";
+my $findUtr = "../utrrnaseq";
+my $gff2lst = "./gff2lst.pl";
 my $overlapStat = "/usr/local/bin/overlapStat.pl";
 
 # specify input files
-my $genomeFile = "/home/katharina/SVN/utrrnaseq/trunks/input/chr19.fa";
-my $startStopFile = "/home/katharina/SVN/utrrnaseq/trunks/input/final.start_stop.gff";
-my $intronFile = "/home/katharina/SVN/utrrnaseq/trunks/input/lib1.introns.ff.gff";
-my $repeatFile = "/home/katharina/SVN/utrrnaseq/trunks/input/repeats.gff";
-my $wiggleFile = "/home/katharina/SVN/utrrnaseq/trunks/input/trimmed05.blat.sf.wig";
+my $genomeFile = "../input/human-chr19/chr19.fa";
+my $startStopFile = "../evaluation/final-start-stop/final.start_stop.gff";
+my $intronFile = "../input/human-chr19/lib1.introns.ff.gff";
+my $repeatFile = "../input/human-chr19/repeats.gff";
+my $wiggleFile = "../input/human-chr19/trimmed05.blat.sf.wig";
 
 # specify reference file
-my $utrRef = "/home/katharina/SVN/utrrnaseq/trunks/input/final.ref.utrs.lst";
+my $utrRef = "../evaluation/final-ref-utrs/final.ref.utrs.lst";
 
 # specify output file
-my $output = "/home/katharina/utrrnaseq.out";
+my $output = "utrrnaseq.out";
 
 # specify parameters that are to be tested:
 my @w = (1, 20, 40, 60, 80);

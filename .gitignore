@@ -1,9 +1,5 @@
-auxprogs/utrrnaseq/.cproject
-auxprogs/utrrnaseq/.project
-auxprogs/utrrnaseq/.settings/
-auxprogs/utrrnaseq/Debug/src/*.d
-auxprogs/utrrnaseq/Debug/src/*.o
-auxprogs/utrrnaseq/Debug/utrrnaseq
+auxprogs/utrrnaseq/build
+auxprogs/utrrnaseq/utrrnaseq
 auxprogs/utrrnaseq/*.gff
 src/*.o
 src/googletest/*.o
@@ -13,20 +9,11 @@ auxprogs/bam2hints/bam2hints
 auxprogs/bam2hints/bam2hints.o
 auxprogs/bam2wig/bam2wig
 auxprogs/bam2wig/bam2wig.o
-auxprogs/checkTargetSortedness/checkTargetSortedness
-auxprogs/checkTargetSortedness/checkTargetSortedness.o
 auxprogs/compileSpliceCands/compileSpliceCands
 auxprogs/compileSpliceCands/compileSpliceCands.o
 auxprogs/compileSpliceCands/list.o
-auxprogs/filterBam/src/MatePairs.o
-auxprogs/filterBam/src/PairednessCoverage.o
-auxprogs/filterBam/src/SingleAlignment.o
-auxprogs/filterBam/src/filterBam.o
-auxprogs/filterBam/src/getReferenceName.o
-auxprogs/filterBam/src/initOptions.o
-auxprogs/filterBam/src/printElapsedTime.o
-auxprogs/filterBam/src/sumDandIOperations.o
-auxprogs/filterBam/src/sumMandIOperations.o
+auxprogs/filterBam/src/*.o
+auxprogs/filterBam/src/filterBam
 auxprogs/homGeneMapping/src/gene.o
 auxprogs/homGeneMapping/src/genome.o
 auxprogs/homGeneMapping/src/sqliteDB.o
@@ -63,10 +50,13 @@ src/unittests/unittests
 .vscode
 
 # ignore generated test output
-tests/examples/results/
+tests/short/examples/results/
+tests/short/output_html/
 
 # ignore tmp test case data
-tests/examples/data/tmp/
+tests/short/examples/data/tmp/
+tests/short/auxprogs/*/tmp/
+tests/short/auxprogs/*/result_files/
 
 # ignore longrunning test data and output files
 tests/longrunning/single_genome/data/
@@ -83,3 +73,10 @@ config/species/human_longrunningtest_hmm/
 # ignore python bytecode
 __pycache__
 *.pyc
+
+# documentation
+doxygen/
+
+# mac
+*.DS_Store
+*.dSYM

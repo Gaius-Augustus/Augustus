@@ -499,12 +499,14 @@ int main(int argc, char* argv[])
   {
     cout << "bam2hints -- Convert mRNA-to-genome alignments in BAM format into a hint file for AUGUSTUS in gff format.\n"
 	 << "\n"
-	 << "Usage:   bam2hints --in=example.bam --out=hints.gff\n"
+	 << "Usage:   bam2hints [--in=example.bam] [--out=hints.gff]\n"
 	 << "  PREREQUISITE: input BAM file must be sorted by target (=genome) sequence names\n"
          << "                and within the sequences by begin coordinates\n"
       // TODO: add example of sorting on command line
          << "\n"
          << "  Options:\n"
+         << "  --in=s             -i   input BAM file (default: stdin on UNIX platforms only)\n"
+         << "  --out=s            -o   output GFF hints file (default: stdout)\n"
          << "  --priority=n       -p   priority of hint group (set to " << Pri << ")\n"
          << "  --maxgaplen=n      -g   gaps at most this length are simply closed (set to " << MaxGapLen << ")\n"
          << "  --minintronlen=n   -m   alignments with gaps shorter than this and longer than maxgaplen are discarded (set to " << MinIntLen << ")\n"
@@ -552,36 +554,11 @@ int main(int argc, char* argv[])
   // open the input BAM file
   BamReader BAM;
 
-  if( InFileName == NULL || !BAM.Open(InFileName) )
+  if( !BAM.Open(InFileName == NULL ? "/dev/stdin" : InFileName) )
 	{
-	  cerr << "Could not open input BAM file: " << (InFileName ? InFileName : "No input file") << endl;
+	  cerr << "Could not open input BAM file: " << (InFileName == NULL ? InFileName : "/dev/stdin") << endl;
 	  return -1;
 	}
-
-  // Estimating the right value of the arrays:  PSLb;  PSLq;  PSLt; BlockBegins; BlockEnds and FolOK;
-  // This is done by sweeping through all the alignments and calculating the maxBlock size.
-  // cout << "Wait a moment, calculating maximum block size that needs to be allocated... ";
-  int alignmentBlock, maxBlock=0;
-  while (BAM.GetNextAlignment(*pal)) 
-	{ 	
-	  alignmentBlock=0;
-	  // Retrieving maximum number of "blocks" in the BAM file
-	  for( vector<CigarOp>::iterator tempIter = pal->CigarData.begin(); tempIter != pal->CigarData.end(); tempIter++ )
-		{
-		  if(tempIter->Type == 'M' || tempIter->Type == 'X' || tempIter->Type == '=')
-			{
-			  alignmentBlock++;
-			}
-		} 
-
-	  if (alignmentBlock >= maxBlock) maxBlock = alignmentBlock;
-	} // end while
-  // cout << ".. done" << endl;
-
-  // closing and opening handle of BAM file
-  BAM.Close();
-  BAM.Open(InFileName);
- 
 
   // check sortedness according to BAM
   SamHeader header = BAM.GetHeader();
@@ -593,11 +570,11 @@ int main(int argc, char* argv[])
 
 
   // open the output gff file
-  FILE* GFF = fopen(OutFileName, "w");
+  FILE* GFF = OutFileName == NULL ? stdout : fopen(OutFileName, "w");
 
   if( GFF == NULL )
   {
-    cerr << "Could not open output file: " << (OutFileName ? OutFileName : "No output file") << endl;
+    cerr << "Could not open output file: " << (OutFileName == NULL ? OutFileName : "stdout") << endl;
     return -1;
   }
 
@@ -614,11 +591,16 @@ int main(int argc, char* argv[])
   RefLengthByID.resize(RefSeq.size());
 
   // Obtaining the maximum reference sequence length
-  int maxRefLen = *max_element(RefLengthByID.begin(),RefLengthByID.end());
-  int maxCovBins = ceil(maxRefLen/10+1.5);
+  int maxCovBins = 0;
+  if (MaxCov > 0) {
+      int maxRefLen = 0;
+      for (RefVector::iterator refiter = RefSeq.begin(); refiter != RefSeq.end(); refiter++)
+          maxRefLen = refiter->RefLength > maxRefLen ? refiter->RefLength : maxRefLen;
+      maxCovBins = ceil(maxRefLen/10+1.5);
   // printf("\nmaxCovBins=%d\n", maxCovBins);
+  }
 
-  // initialize the labelling of hint lists
+  // initialize the labeling of hint lists
   hintList.push_back(hintListLabel_t(eplist, "exonpart"));
   hintList.push_back(hintListLabel_t(intronlist, "intron"));
   hintList.push_back(hintListLabel_t(exonlist, "exon"));
@@ -648,20 +630,21 @@ int main(int argc, char* argv[])
   // PSL-like alignment data
   // TODO: ensure sufficient array length / throw overflow warning
   int block;    // index of next matching block, holds the element count of the "PSL?" arrays
-  int PSLb[maxBlock];
-  int PSLq[maxBlock];
-  int PSLt[maxBlock]; // may need to be 'long int' if refseq longer than 400 Mbp
+  vector<int> PSLb;
+  vector<int> PSLq;
+  vector<int> PSLt;  // may need to be 'long int' if refseq longer than 400 Mbp
 
   // filtered block data
   int blockNew;        // index of next filtered block, holds the element count of the following arrays
-  int BlockBegins[maxBlock]; // 1-based start coordinates of filtered alignment blocks
-  int BlockEnds[maxBlock];   // 1-based end coordinates of filtered alignment blocks
-  bool FolIntOK[maxBlock];   // whether the gap following a block is considered an intron
+  vector<int> BlockBegins;  // 1-based start coordinates of filtered alignment blocks
+  vector<int> BlockEnds;    // 1-based end coordinates of filtered alignment blocks
+  vector<bool> FolIntOK;    // whether the gap following a block is considered an intron
 
   set<char*> seenRefSet; // list of already encountered reference sequences to check sortedness
   bool badAlignment;     // alignment quality flag
   int BlockIter;         // index of current block
-  unsigned short int * alnCoverage = new unsigned short int [maxCovBins]; // alignment coverage data of the current reference sequence
+  unsigned short int * alnCoverage;
+  alnCoverage = new unsigned short int [maxCovBins]; // alignment coverage data of the current reference sequence
     // as alternative use STL container vector<unsigned short int>
   int CovIter;           // index of current bin of alignment coverage
   int GapLen;            // length of the gap preceding the current block on the target sequence
@@ -704,6 +687,9 @@ int main(int argc, char* argv[])
 
     badAlignment = false; // whether this alignment should be dropped
     block = 0; // reset PSL block count
+    PSLb.clear();
+    PSLq.clear();
+    PSLt.clear();
     QOffset = 1; // refers to the first base in the alignment, not necessary the first base of the read itself!
     TOffset = pal->Position + 1; // transform 0-based alignment start to 1-based coordinate
 
@@ -745,9 +731,9 @@ int main(int argc, char* argv[])
   	else
   	{
   	  // create a new block
-  	  PSLb[block] = CIGARiter->Length;
-  	  PSLq[block] = QOffset;
-  	  PSLt[block] = TOffset;
+  	  PSLb.push_back(CIGARiter->Length);
+  	  PSLq.push_back(QOffset);
+  	  PSLt.push_back(TOffset);
   	  block++;
   	}
 
@@ -841,63 +827,57 @@ int main(int argc, char* argv[])
       {
 		TargetName = strdup(RefSeq.at(TargetID).RefName.c_str()); // update target name
 
-  	// free the alignment coverage array
-  	delete [] alnCoverage;
+        if (MaxCov > 0) {
+          int CovBinCount = RefSeq.at(TargetID).RefLength/10 + 1; // needed number of entries
 
-  	int CovBinCount = RefSeq.at(TargetID).RefLength/10 + 1; // needed number of entries
-  	// cout << "CovBinCount=" << CovBinCount << endl;
-  	// allocate alignment coverage array
-  	alnCoverage = new(nothrow) unsigned short int [CovBinCount]; // disable exceptions for failures
-  	// handle failed allocation
-  	if(alnCoverage == NULL)
-  	{
-  	  cout << "Could not allocate memory for " << TargetName << "\n"
-  	       << "Aborting!\n";
-  	  return -1;
-  	}
-
-  	// initialize the coverage with zeros
-  	for(CovIter = 0; CovIter < CovBinCount; CovIter++)
-  	{
-  	  alnCoverage[CovIter] = 0;
-  	}
+          // initialize the coverage with zeros
+          for(CovIter = 0; CovIter < CovBinCount; CovIter++)
+          {
+            alnCoverage[CovIter] = 0;
+          }
+        }
       }
     }
 
 
-    // apply a coverage threshold
-    // check each 10bp bin for too high abundance of alignments
-    for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
+    if (MaxCov > 0)
     {
-      if(MaxCov > 0 && alnCoverage[CovIter] >= MaxCov)
+      // apply a coverage threshold
+      // check each 10bp bin for too high abundance of alignments
+      for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
       {
-  	// stop scanning and ...
-  	badAlignment = true;
-  	break;
+        if(alnCoverage[CovIter] >= MaxCov)
+        {
+          // stop scanning and ...
+          badAlignment = true;
+          break;
+        }
       }
-    }
-  	// cout << "CovIter=" << CovIter << endl;
+          // cout << "CovIter=" << CovIter << endl;
 
-    if(badAlignment)
-    {
-      //cerr<<"reached coverage at "<<TargetName<<", position "<<CovIter*10<<"\n";
-      // ... drop the alignment
-      continue;
-    }
+      if(badAlignment)
+      {
+        //cerr<<"reached coverage at "<<TargetName<<", position "<<CovIter*10<<"\n";
+        // ... drop the alignment
+        continue;
+      }
 
-    // update the coverage data with the accepted alignment
-    for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
-    {
-       if (CovIter < maxCovBins)
-	  alnCoverage[CovIter]++;
-       // there is a bug here because above range check is not always satisfied
-       // however, this maxCov filtering is not active by default since May25th, 2015
+      // update the coverage data with the accepted alignment
+      for(CovIter = PSLt[0]/10; CovIter <= (PSLt[block-1] + PSLb[block-1] - 1)/10 - 1; CovIter++)
+      {
+            alnCoverage[CovIter]++;
+         // there is a bug here because above range check is not always satisfied
+         // however, this MaxCov filtering is not active by default since May25th, 2015
+      }
     }
 
 
     // filter the blocks as in "blat2hints.pl"
 
     blockNew = 0;
+    BlockBegins.clear();
+    BlockEnds.clear();
+    FolIntOK.clear();
 
     for(BlockIter = 0; BlockIter < block; BlockIter++)
     {
@@ -917,15 +897,15 @@ int main(int argc, char* argv[])
       if(MinIntLen <= GapLen && GapLen <= MaxIntLen)
       {
   	// gap represents an intron, add new block
-  	BlockBegins[blockNew] = PSLt[BlockIter];
-        BlockEnds[blockNew] = PSLt[BlockIter] + PSLb[BlockIter] - 1;
+  	BlockBegins.push_back(PSLt[BlockIter]);
+  	BlockEnds.push_back(PSLt[BlockIter] + PSLb[BlockIter] - 1);
   	if(BlockIter < block - 1 && PSLq[BlockIter+1] - PSLq[BlockIter] - PSLb[BlockIter] <= MaxQGapLen)
   	{
-  	  FolIntOK[blockNew] = true;
+  	  FolIntOK.push_back(true);
   	}
   	else
   	{
-  	  FolIntOK[blockNew] = false;
+  	  FolIntOK.push_back(false);
   	}
   	blockNew++;
       }

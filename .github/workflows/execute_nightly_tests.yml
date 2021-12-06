@@ -14,8 +14,35 @@ env:
   DB_PASSWD: ${{ secrets.TEST_DB_PASSWD }}
 
 jobs:
+  check_latest_commit_in_db:
+    runs-on: [self-hosted, linux, default]
+
+    outputs:
+      commit: ${{ steps.step3.outputs.hash }}
+
+    steps:
+    - name: Check out repository
+      id: step1
+      uses: actions/checkout@v2
+
+    - name: Get latest commit in DB
+      id: step2
+      run: |
+        echo 'LATEST_COMMIT_IN_DB<<EOF' >> $GITHUB_ENV
+        ./check_latest_commit_influx.py --dbname testresults --dbhost localhost --dbport 8086 --dbuser $DB_USER --dbpasswd $DB_PASSWD >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+      working-directory: tests/longrunning/
+
+    - name: Set output
+      id: step3
+      run: echo '::set-output name=hash::${{ env.LATEST_COMMIT_IN_DB }}'
+
   longrunning_test:
     runs-on: [self-hosted, linux, default]
+    needs: check_latest_commit_in_db
+
+    # Only execute test cases if the last commit in db is different from the last commit on default branch
+    if: ${{ needs.check_latest_commit_in_db.outputs.commit != github.sha }}
 
     # Maximum number of minutes to let a job run before GitHub automatically cancels it. Default: 360
     timeout-minutes: 600
@@ -31,11 +58,14 @@ jobs:
     - name: Install gitpython
       run: pip3 install gitpython
 
+    - name: Install profiling tools
+      run: pip3 install psutil memory_profiler
+
     - name: Build AUGUSTUS
       run: make all
 
     - name: Execute single genome test cases
-      run: ./execute_test.py --pathToGitRepo ../../../.git --evalDir /data/eval/
+      run: ./test_single.py --evalDir /data/eval/ --jobs 8 --pathToGitRepo ../../../.git
       working-directory: tests/longrunning/single_genome/
 
     - name: Extract desired accuracy values (single genome test case)
