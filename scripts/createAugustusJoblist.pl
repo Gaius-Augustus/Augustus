@@ -8,7 +8,7 @@
 # pipeline may fail upon custom modification of this script.
 # In case of doubt, contact katharina.hoff@uni-greifswald.de 
 #
-# Mario Stanke & Katharina J. Hoff, last changes on Feb 17th 2018
+# Mario Stanke & Katharina J. Hoff, last changes on Dec 6 2021
 #
 #
 
@@ -125,7 +125,13 @@ while (<SEQ>) {
         }
         $chunkid = sprintf( "%03d", $chunknr );
         my $gfffilename = "$outputdir/$seqnr.$chunkid.${name}.$predStart..$pE.gff";
+        if($gfffilename=~m/\;/){
+            $gfffilename=s/\;/\\\;/;
+        }
         my $errorfilename;
+        if($errorfilename=~m/\;/){
+            $errorfilename=~s/\;/\\\;/;
+        }
         if ( defined $errordir ) {
             $errorfilename = "$errordir/$seqnr.$chunkid.${name}.$predStart..$pE.err";
         }
@@ -135,6 +141,9 @@ while (<SEQ>) {
         $wholecommand = "";
         if( $partitionHints ) {
             $localHints = "$outputdir/$seqnr.$chunkid.${name}.$predStart..$pE.hints";
+            if($localHints=~m/\;/){
+                $localHints=~s/\;/\\\;/;
+            }
             my $locus = ${name};
             $locus =~ s/(.*)\..*/$1/;
             $wholecommand .= "grep \"^$locus\" $hints | awk ' {if (\$4 >= $predStart ) print \$0 } ' | awk ' {if (\$5 <= $pE) print \$0 } ' > $localHints\n";
