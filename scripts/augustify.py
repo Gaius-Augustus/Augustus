@@ -19,7 +19,7 @@ __author__ = "Katharina J. Hoff"
 __copyright__ = "Copyright 2021. All rights reserved."
 __credits__ = "Mario Stanke, Anica Hoppe, Marnix Medema"
 __license__ = "Artistic License"
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __email__ = "katharina.hoff@uni-greifswald.de"
 __status__ = "development"
 
@@ -290,6 +290,17 @@ def augustify_seq(hindex, header, seqs, tmp, params):
             logger.info('Error in file ' + frameinfo.filename + ' at line ' +
                     str(frameinfo.lineno) + ': ' + "Could not open file " +
                     tmp + "seq" + str(hindex) + ".fa" + " for reading!")
+
+        try:
+            os.remove(tmp + "seq" + str(hindex) + "_" + species.rstrip() + ".gff")
+        except OSError:
+            pass
+
+        try:
+            os.remove(tmp + "seq" + str(hindex) + "_" + species.rstrip() + ".err")
+        except OSError:
+            pass
+
     # determine maximum exponent
     max_exp = float('-inf')
     for species in results:
@@ -322,6 +333,7 @@ def augustify_seq(hindex, header, seqs, tmp, params):
             logger.info('Error in file ' + frameinfo.filename + ' at line ' +
                         str(frameinfo.lineno) + ': ' + "Could not open file " +
                         args.metagenomic_classification_outfile + " for writing!")
+
     # run augustus with all gene models for the selected species
     if args.prediction_file and not(max_prob == 0):
         curr_call = [augustus, "--AUGUSTUS_CONFIG_PATH=" + augustus_config_path, 
@@ -348,6 +360,22 @@ def augustify_seq(hindex, header, seqs, tmp, params):
                         str(frameinfo.lineno) + ': ' + "Could not open file " +
                         tmp + "seq" + str(hindex) + "_" + max_species + 
                         "_max.gff" + " for reading!")
+
+        try:
+            os.remove(tmp + "seq" + str(hindex) + "_" + max_species + "_max.gff")
+        except OSError:
+            pass
+
+        try:
+            os.remove(tmp + "seq" + str(hindex) + "_" + max_species + "_max.err")
+        except OSError:
+            pass
+
+        try:
+            os.remove(tmp + "seq" + str(hindex) + ".fa")
+        except OSError:
+            pass
+
     if max_prob == 0:
         return "undef"
     else:
@@ -496,7 +524,8 @@ try:
             if re.match(r'^>', line):
                 hindex = hindex + 1
                 if len(curr_seq) > 0:
-                    augustify_seq(hindex, curr_header, curr_seq, tmp, params)
+                    fitting_species = augustify_seq(hindex, curr_header, curr_seq, tmp, params)
+                    seq_to_spec[curr_header]  = fitting_species
                 curr_header = line;
                 curr_seq = "";
             else:
@@ -550,4 +579,4 @@ if args.prediction_file:
                     tmp+ "all_preds.gff" + " for reading!")
 
 ### Cleanup
-shutil.rmtree(tmp)
+#shutil.rmtree(tmp)
