@@ -16,10 +16,10 @@ from itertools import compress
 import multiprocessing
 
 __author__ = "Katharina J. Hoff"
-__copyright__ = "Copyright 2020. All rights reserved."
+__copyright__ = "Copyright 2021. All rights reserved."
 __credits__ = "Mario Stanke, Anica Hoppe, Marnix Medema"
 __license__ = "Artistic License"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __email__ = "katharina.hoff@uni-greifswald.de"
 __status__ = "development"
 
@@ -197,15 +197,42 @@ def run_process_stdinput(args_lst, prc_in):
         print("Error code: ", grepexc.returncode, grepexc.output)
         quit(1)
 
-
-def work(cmd):
-    return subprocess.run(cmd, stdout=subprocess.PIPE,
-           stderr=subprocess.PIPE, shell=False)
-
+def work_augustus(cmd_ext_lst):
+    ''' Function that keeps running AUGUSTUS to compute emiprobs until it 
+    returns a result or until the entire sequence has been tried; walk 
+    the input in steps 4000 nt windows, overlapping 200 nt, if possible; 
+    we do this because AUGUSTUS sometimes crashes when computing the desired
+    probability; problem should ultimately be fixed in AUGUSTUS '''
+    segmlen = 15000 # These parameters need to be evaluated, later!
+    stepwidth = 7500 # These parameters need to be evaluated, later!
+    cmd1 = cmd_ext_lst[0:7]
+    cmd2 = cmd_ext_lst[7:9]
+    seqlen = cmd_ext_lst[-1]
+    if seqlen<=segmlen:
+        cmd = cmd1 + cmd2
+        return subprocess.run(cmd, stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE, shell=False)
+    else:
+        curr_start = 1
+        curr_end = segmlen
+        returncode = 1
+        while (curr_start < curr_end) and (curr_end - curr_start + 1 >= segmlen) and not(returncode == 0):
+            cmd = cmd1 + ["--predictionStart=" + str(curr_start), "--predictionEnd=" + str(curr_end)] + cmd2
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, 
+                stderr=subprocess.PIPE, shell=False)
+            returncode = result.returncode
+            curr_start = curr_start + stepwidth
+            if (curr_end + stepwidth) <= seqlen:
+                curr_end = curr_end+stepwidth
+            else:
+                curr_end = seqlen
+        return result
 
 def augustify_seq(hindex, header, seqs, tmp, params):
     ''' Function that runs a subprocess with arguments and specified STDOUT and STDERR '''
     logger.info("Processing sequence: " + header)
+    # store length for loop (emiprobs bug)
+    currlen = len(seqs)
     # sequence files for prediction
     try:
         with open(tmp + "seq" + str(hindex) + ".fa", "w") as seq_handle:
@@ -216,28 +243,16 @@ def augustify_seq(hindex, header, seqs, tmp, params):
         logger.info('Error in file ' + frameinfo.filename + ' at line ' +
                     str(frameinfo.lineno) + ': ' + "Could not open file " +
                     tmp + "seq" + str(hindex) + ".fa" + " for writing!")
-    # sequence file for parameter set identification (as long as augustus emiprobs is buggy)
-    try:
-        with open(tmp + "seq" + str(hindex) + "_test.fa", "w") as seq_handle2:
-            seq_handle2.write(header)
-            if len(seqs) > 4000:
-                seq_handle2.write(seqs[0:3999])
-            else:
-                seq_handle2.write(seqs)
-    except IOError:
-        frameinfo = getframeinfo(currentframe())
-        logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                    str(frameinfo.lineno) + ': ' + "Could not open file " +
-                    tmp + "seq" + str(hindex) + "_test.fa" + " for writing!")
+
     # construct augustus calls
     calls = []
     for species in params:
-        curr_call = [augustus, "--AUGUSTUS_CONFIG_PATH=" + augustus_config_path, 
+        curr_call =  [augustus, "--AUGUSTUS_CONFIG_PATH=" + augustus_config_path, 
                      "--species=" + species.rstrip(), "--genemodel=complete", 
                      '--emiprobs=on',
-                     '--softmasking=0', tmp + "seq" + str(hindex) + "_test.fa",
+                     '--softmasking=0', tmp + "seq" + str(hindex) + ".fa",
                      '--outfile=' + tmp + "seq" + str(hindex) + "_" + species.rstrip() + ".gff",
-                     '--errfile=' + tmp + "seq" + str(hindex) + "_" + species.rstrip() + ".err"]
+                     '--errfile=' + tmp + "seq" + str(hindex) + "_" + species.rstrip() + ".err", currlen]
         calls.append(curr_call)
 
     # execute processes in parallel
@@ -245,7 +260,7 @@ def augustify_seq(hindex, header, seqs, tmp, params):
     logger.info(calls)
     if __name__ == '__main__':
         with multiprocessing.Pool(processes=args.threads) as pool:
-            results = pool.map(work, calls)
+            results = pool.map(work_augustus, calls)
     logger.info("Finished parallel execution!")
     # parse results and find max prob for this sequence
     results = {}
@@ -427,8 +442,8 @@ except IOError:
 must_delete = [];
 for species_set in params:
     species_set = species_set.rstrip()
-    curr_spec_set_file = augustus_config_path +  "species/" + species_set + "/" + species_set + "_exon_probs.pbl"
-    print("Checking for " + curr_spec_set_file)
+    curr_spec_set_file = augustus_config_path +  "/species/" + species_set + "/" + species_set + "_exon_probs.pbl"
+    # print("Checking for " + curr_spec_set_file)
     if os.path.isfile(curr_spec_set_file):
         must_delete.append(True)
     else:
