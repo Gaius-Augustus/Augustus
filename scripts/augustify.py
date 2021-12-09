@@ -579,4 +579,4 @@ if args.prediction_file:
                     tmp+ "all_preds.gff" + " for reading!")
 
 ### Cleanup
-#shutil.rmtree(tmp)
+shutil.rmtree(tmp)
