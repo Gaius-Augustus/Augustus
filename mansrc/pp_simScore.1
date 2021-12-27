@@ -1,0 +1,331 @@
+'\" t
+.\"     Title: pp_simscore
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: Asciidoctor 1.5.5
+.\"      Date: 
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "PP_SIMSCORE" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.LINKSTYLE blue R < >
+.SH "NAME"
+pp_simscore \- print similarity and alignments for block\-profile and protein sequence on the standard output
+.SH "SYNOPSIS"
+.sp
+\fBpp_simScore\fP [OPTIONS] \-\-fasta=\fIprotein\-sequence\-file\fP \-\-prfl=\fIprotein\-profile\-file\fP
+.SH "DESCRIPTION"
+.sp
+Algorithm for calculating the similarity score and the optimal alignments of a block\-profile and a protein sequence.
+The algorithm can optional take intron positions into account. Print to standard output.
+.SH "OPTIONS"
+.SS "Mandatory options"
+.sp
+\fB\-f\fP, \fB\-\-fasta\fP=\fIfile\fP
+.RS 4
+Protein sequence file in FASTA format.
+.br
+It may contain an optional [Intron] section. This section denotes the
+intron positions in the protein sequence, which are specified as list of
+(j, f), where j is the index of the amino acid after witch the intron
+immediately occurs. The indices range from 0 to m \- 1 if the protein
+sequence has a length of m.
+.RE
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+    >protein sequence header
+    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    XXXXXXX protein sequence XXXXXXXXXXX
+    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+    [Introns]
+    # index of the position after which an intron occurs | residual nucleotides before the intron
+    2 0
+    5 1
+    30 2
+    104 1
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+\fB\-p\fP, \fB\-\-prfl\fP= \fIfile\fP
+.RS 4
+The block profile file has to have following structure:
+.RE
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+    [dist]
+    min    max
+    [block]
+    B
+    [intron profile]
+    w
+    inter\-block_profile_list
+    intra\-block_profile_list
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+This structure can be repeated in this file. The file has to end either
+in a [dist] section or a [dist] and than [intron profile] section.
+The [intron profile] sections are optional.
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+    [dist] explanation:
+    min, max denote the distance interval of an inter\-block section
+
+    [block] explanation:
+    B denotes a (20 x t) matrix for a block of t of the block\-profile
+
+    [intron profile] explanation:
+    an intron profile describes the positions and frequencies of introns in and
+    before the associated block
+    w: number of protein family members used to build the intron profile
+    inter\-block_profile_list: list of (h, v),
+    where   h denotes the number of introns which occurred within a family member,
+            v the number of family members which have this number of introns
+    intra\-block_profile_list: list (s, f, v),
+    where   s denotes the index of the position in the block after which an intron occurs,
+            f denotes the number of nucleotides which are left before the intron (0,1,2)
+            v the number of family members which have an intron at that position
+.fi
+.if n \{\
+.RE
+.\}
+.SS "Additional options"
+.sp
+\fB\-g\fP, \fB\-\-gap_inter\fP=\fIfloat\fP
+.RS 4
+Gap costs for an alignment column that is a gap in an inter\-block section. Default Value: \-5.0
+.RE
+.sp
+\fB\-b\fP, \fB\-\-gap_intra\fP=\fIfloat\fP
+.RS 4
+Gap costs for an alignment column that is a gap in a block. Default Value: \-50.0
+.RE
+.sp
+\fB\-r\fP, \fB\-\-gap_intron\fP=\fIfloat\fP
+.RS 4
+Gap costs for an gap in intron positions. Default Value: \-5.0
+.RE
+.sp
+\fB\-e\fP, \fB\-\-epsilon_intron\fP=\fIfloat\fP
+.RS 4
+Pseudocount parameter epsilon1, the pseudocount is added to a relative intron frequency v/w with (v+epsilon1)/(w+epsilon1+epsilon2). Default Value: 0.0000001
+.RE
+.sp
+\fB\-n\fP, \fB\-\-epsilon_noIntron\fP=\fIfloat\fP
+.RS 4
+Pseudocount parameter epsilon2, the pseudocount is added to a relative intron frequency v/w with (v+epsilon1)/(w+epsilon1+epsilon2). Default Value: 0.1
+.RE
+.sp
+\fB\-i\fP, \fB\-\-intron_weight_intra\fP=\fIfloat\fP
+.RS 4
+Value that is added to an intron score for a match of intron positions in a block. Default Value: 5.0
+.RE
+.sp
+\fB\-t\fP, \fB\-\-intron_weight_inter\fP=\fIfloat\fP
+.RS 4
+Value that is added to an intron score for a match of intron positions in an inter\-block. Default Value: 5.0
+.RE
+.sp
+\fB\-a\fP, \fB\-\-alignment\fP=\fInumber\fP
+.RS 4
+Number of optimal alignments that are computed. Default Value: 1
+.RE
+.sp
+\fB\-o\fP, \fB\-\-out\fP=\fIformat\fP
+.RS 4
+.sp
+Denotes the output format, the following output options are implemented:
+.RS 4
+.sp
+\fBscore\fP
+.RS 4
+output is the similarity score
+.RE
+.sp
+\fBmatrix\fP
+.RS 4
+output are similarity matrix and similarity score
+.RE
+.sp
+\fBalignment\fP
+.RS 4
+output are the computed alignments as
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Alignment representation of P as symbols of
+{AminoAcid, gap symbol or number of amino acids in inter\-block}
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Alignment representation of argmax of B as symbols of
+{argmax AminoAcid for aligned block column, gap symbol or inter\-block length}
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Frequency of amino acid of P in aligned block column of B, if alignment type is a match
+.RE
+.RE
+.sp
+\fBmatrix+alignment\fP
+.RS 4
+output are similarity matrix,
+similarity score and the computed
+alignments in the format described above
+.RE
+.sp
+\fBdb\fP
+.RS 4
+output are the computed alignment
+as list of alignment frames,
+an element of the list consists of:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+starting position of the first amino acid of the protein sequence that is included in the alignment frame
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+block number in which the alignment frame is located
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+index of the first block column that is included in the alignment frame
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+length of the frame (number of alignment columns)
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+alignment type: \(aqm\(aq, \(aqs\(aq. \(aqp\(aq or \(aq\-\(aq
+.RE
+.RE
+.sp
+\fBbp\fP
+.RS 4
+output is a list of translations from the index of a block
+to the number of the block in the .prfl file
+.RE
+.sp
+\fBconsents\fP
+.RS 4
+output is the average of the argmax
+of the block columns for the complete profile
+.RE
+.sp
+\fBinterblock\fP
+.RS 4
+output is a list of all inter\-block distance intervals
+.RE
+.RE
+.sp
+
+.RS 4
+Default Value: \fBscore\fP
+.RE
+.RE
+.sp
+\fB\-h\fP, \fB\-\-help\fP
+.RS 4
+Produce help message.
+.RE
+.SH "EXAMPLE"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+pp_simScore \-\-fasta=EDW03868.1.fa \-\-prfl=EOG09150290.prfl \-\-out=alignment
+.fi
+.if n \{\
+.RE
+.\}
+.SH "AUTHORS"
+.sp
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer, L. Romoth and L.Gabriel.

@@ -3,34 +3,50 @@
 #
 include common.mk
 
-all:
+.PHONY: all augustus auxprogs clean install release test unit_test
+
+all: augustus auxprogs
+
+augustus:
 	mkdir -p bin
 	cd src && ${MAKE}
+
+auxprogs:
+	mkdir -p bin
 	cd auxprogs && ${MAKE}
 
 clean:
 	cd src && ${MAKE} clean
 	cd auxprogs && ${MAKE} clean
-	cd tests/examples && ./testcases.py --clean
+	@if [ -n $(shell which python3) ] ; then \
+		cd tests/short && \
+		./execute_test.py --clean examples && \
+		./execute_test.py --clean bam2hints && \
+		./execute_test.py --clean bam2wig; \
+		cd .. && ./pyclean.sh; \
+	fi
 
+PREFIX = /usr/local
 INSTALLDIR = /opt/augustus-$(AUGVERSION)
 
 install:
-	install -d $(INSTALLDIR)
-	cp -a config bin scripts $(INSTALLDIR)
-	ln -sf $(INSTALLDIR)/bin/augustus /usr/local/bin/augustus
-	ln -sf $(INSTALLDIR)/bin/etraining /usr/local/bin/etraining
-	ln -sf $(INSTALLDIR)/bin/prepareAlign /usr/local/bin/prepareAlign
-	ln -sf $(INSTALLDIR)/bin/fastBlockSearch /usr/local/bin/fastBlockSearch
-	ln -sf $(INSTALLDIR)/bin/load2db /usr/local/bin/load2db
-	ln -sf $(INSTALLDIR)/bin/getSeq /usr/local/bin/getSeq
-	ln -sf $(INSTALLDIR)/bin/espoca /usr/local/bin/espoca
+	if [ ! $(PWD) -ef $(INSTALLDIR) ] ; then \
+		install -d $(INSTALLDIR) && \
+		cp -a config bin scripts $(INSTALLDIR) ; \
+	fi
+	ln -sf $(INSTALLDIR)/bin/augustus $(PREFIX)/bin/augustus
+	ln -sf $(INSTALLDIR)/bin/etraining $(PREFIX)/bin/etraining
+	ln -sf $(INSTALLDIR)/bin/prepareAlign $(PREFIX)/bin/prepareAlign
+	ln -sf $(INSTALLDIR)/bin/fastBlockSearch $(PREFIX)/bin/fastBlockSearch
+	if [ -f $(INSTALLDIR)/bin/load2db ] ; then ln -sf $(INSTALLDIR)/bin/load2db $(PREFIX)/bin/load2db ; fi
+	if [ -f $(INSTALLDIR)/bin/getSeq ] ; then ln -sf $(INSTALLDIR)/bin/getSeq $(PREFIX)/bin/getSeq ; fi
 
 # for internal purposes:
 release:
 	find . -name "*~" | xargs rm -f
 	rm .travis.yml
 	rm -rf .git
+	rm -rf .github
 	rm -f src/makedepend.pl
 	cd docs/tutorial2015/results; ls | grep -v do.sh | grep -v README | xargs rm; cd -
 	rm -r auxprogs/utrrnaseq/input/human-chr19
@@ -40,12 +56,26 @@ release:
 	cd src/parser; rm Makefile; cd -
 	cd ..; tar -czf augustus-$(AUGVERSION).tar.gz augustus-$(AUGVERSION)
 
-test:
-	cd tests/examples && ./testcases.py --compare --html
+check-python3:
+	@if [ -z $(shell which python3) ] ; then \
+		echo "warning: Python3 is required for the execution of the test cases!"; \
+		exit 1; \
+	fi
+
+test: check-python3 all
+ifeq ("$(shell uname -s -m)","Linux x86_64")
+	$(eval TEST_COMPARE := --compare)
+	$(eval TEST_HTML := --html)
+else
+	$(info If you run make test on a non-AMD64 architecture or a non-Linux system (like macOS), most tests will run without the --compare option!)
+	$(eval TEST_COMPARE := )
+	$(eval TEST_HTML := )
+endif
+	cd tests/short && ./execute_test.py $(TEST_COMPARE) $(TEST_HTML) examples
+	cd tests/short && ./execute_test.py --compare --html bam2hints
+	cd tests/short && ./execute_test.py --compare --html bam2wig
+	cd tests/short && ./execute_test.py --compare --html filterbam
 
 unit_test:
 	cd src && ${MAKE} unittest
 	cd src/unittests && ./unittests
-
-# remove -static from src/Makefile for MAC users
-# remove -g -gdb from CXXFLAGS

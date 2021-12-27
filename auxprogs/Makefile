@@ -1,22 +1,21 @@
 # Makefile for auxprogs
-#
-# Created on: 16-October-2016
-# Last modified on: 16-October-2016 by Katharina Hoff (katharina.hoff@gmail.com)
 
 all:
+	cd aln2wig; make;
 	cd bam2hints; make;
 	cd compileSpliceCands; make;
 	cd filterBam; make;
 	cd homGeneMapping; make;
 	cd joingenes; make;
-	cd utrrnaseq/Debug; make all;
+	cd utrrnaseq; make;
 	cd bam2wig; make;
 
 clean:
+	cd aln2wig; make clean;
 	cd bam2hints; make clean;
 	cd compileSpliceCands; make clean;
 	cd filterBam; make clean;
 	cd homGeneMapping; make clean;
 	cd joingenes; make clean;
-	cd utrrnaseq/Debug; make clean;
+	cd utrrnaseq; make clean;
 	cd bam2wig; make clean;

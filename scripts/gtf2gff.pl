@@ -8,7 +8,7 @@
 # In case of doubt, contact katharina.hoff@uni-greifswald.de 
 #
 # Mario Stanke, 1.2.2010, mario.stanke@uni-greifswald.de
-# last modification on August 20th 2019 by Katharina J. Hoff
+# last modification on December 11th 2020 by Katharina J. Hoff
 
 use strict;
 use Getopt::Long;
@@ -79,7 +79,7 @@ sub parseAndStoreGTF{
 	    $txid = $1;
 	    $txs{$txid} = {"strand"=>$strand, "chr"=>$chr, "source"=>$source, "CDS"=>[], "UTR"=>[], "exon"=>[], "intron"=>[], "rest"=>[]} if (!exists($txs{$txid}));
 	    $txs{$txid}{"txline"} = \@f;
-	    if($f[8] =~ /Parent=([^;]+)/ || $f[8] =~ /gene_id."?([^";]+)"?/ || $f[8] =~ /(g\d+)\.t\d+/){
+	    if($f[8] =~ /Parent=([^;]+)/ || $f[8] =~ /gene_id."?([^";]+)"?/ || $f[8] =~ /(\w+\d+)\.t\d+/){
 		$geneOf{$txid} = $1;
 	    }
 	    next;
@@ -116,7 +116,7 @@ sub parseAndStoreGTF{
 	    $seen{$txid} = 1;
 	}
 	# assign parental gene id to tx id
-	die ("transcript $txid has conflicting gene parents: and $geneid. Remember: In GTF txids need to be overall unique.")
+	die ("transcript $txid has conflicting gene parents: $geneOf{$txid} and $geneid. Remember: In GTF txids need to be overall unique.")
 	    if (defined($geneOf{$txid}) && $geneOf{$txid} ne $geneid);
 	
 	if ($feature eq "CDS" || $feature eq "coding_exon" || $feature eq "exon" || $feature =~ /UTR/i){

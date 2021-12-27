@@ -2120,21 +2120,20 @@ void FeatureCollection::readTypeInfo(istream& datei){
  
 
 void FeatureCollection::readSourceRelatedCFG(istream& datei){
-    char buf[256];
     int sourcenum;
-    string skey;
+    string line, skey;
     datei >> goto_line_after("[SOURCES]") >> comment;
-    datei.getline( buf, 2048 );
+    getline(datei, line);
     // numSources is the number of non-white space characters first
     numSources=0;
     int i=0;
-    while (i< (int) strlen(buf)){
-	while(!isalpha(buf[i]) && i < (int) strlen(buf)){
+    while (i< (int) line.size()){
+	while(!isalpha(line[i]) && i < (int) line.size()){
 	    i++;
 	}
-	if (i < (int) strlen(buf)){
+	if (i < (int) line.size()){
 	    numSources++;
-	    while(isalpha(buf[i])){
+	    while(isalpha(line[i])){
 		i++;
 	    }
 	}
@@ -2149,14 +2148,14 @@ void FeatureCollection::readSourceRelatedCFG(istream& datei){
     numSources=0;
     // construct sourceKey array
     i=0;
-    while (i< (int) strlen(buf)){
-	while(!isalpha(buf[i]) && i < (int) strlen(buf)){
+    while (i< (int) line.size()){
+	while(!isalpha(line[i]) && i < (int) line.size()){
 	    i++;
 	}
-	if (i < (int) strlen(buf)){
+	if (i < (int) line.size()){
 	    sourceKey[numSources] = "";
-	    while(isalpha(buf[i])){
-		sourceKey[numSources] += buf[i]; 
+	    while(isalpha(line[i])){
+		sourceKey[numSources] += line[i]; 
 		i++;
 	    }
 	    numSources++;
@@ -2181,8 +2180,8 @@ void FeatureCollection::readSourceRelatedCFG(istream& datei){
 	bool done = false;
 	while (!done){
 	    bufpos = datei.tellg();
-	    datei.getline(buf, 255);
-	    stringstream stm(buf);
+	    getline(datei, line);
+	    stringstream stm(line);
 	    stm >> skey;
 	    if (stm) {
 		if (!skeyExists(skey)) {

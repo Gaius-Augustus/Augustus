@@ -13,7 +13,7 @@ struct Node
 int FatalError (char* ErrorMessage) 
 {
 	printf ("%s\n", ErrorMessage);
-	exit;
+	exit(1);
 }
 
 List MakeEmpty(List L) 

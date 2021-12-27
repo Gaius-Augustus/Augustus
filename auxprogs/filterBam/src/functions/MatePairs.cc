@@ -4,40 +4,18 @@
 	Last modified: 10-February-2012
 */
 
+#include "filterBam.h"
+#include "bamaccess.hh"
 #include <iostream>
 #include <list>
 #include <string>
 #include <vector>
-#include <api/BamAlignment.h>
 #include <cassert>
 #include <algorithm>
 #include <functional>
 #include <map>
 
 using namespace std;
-using namespace BamTools;
-
-
-
-// Class definition 
-class MatePairs
-{
-   friend ostream &operator<<(ostream &, const MatePairs &);
-
-   public:
-  	  int alIt;
-  	  int alJit;
-  	  float score;
-      MatePairs();
-      MatePairs(const MatePairs &);
-  	  MatePairs(int it, int jit, float score);
-      ~MatePairs(){};
- 	  void setValues(int it, int jit, float score);
-      MatePairs &operator=(const MatePairs &rhs);
-      int operator==(const MatePairs &rhs) const;
-      int operator<(const MatePairs &rhs) const;
-  	  bool operator() (const MatePairs &lhs, const MatePairs &rhs) const;
-};
 
 // Constructor
 MatePairs::MatePairs()   // Constructor
@@ -71,14 +49,6 @@ void MatePairs::setValues(int it, int jit, float score)
 	this->score = score;
 }
 
-// Ostream operator
-ostream &operator<<(ostream &output, const MatePairs &aaa)
-{
-  output << aaa.alIt << ' ' << aaa.alJit << aaa.score;
-  // output << endl;
-  return output;
-}
-
 // Assignment operator
 MatePairs& MatePairs::operator=(const MatePairs &rhs)
 {  
@@ -103,19 +73,18 @@ int MatePairs::operator<(const MatePairs &rhs) const
    return 0;
 }
 
-
-void printMatePairs(vector<MatePairs> matepairs, vector<BamAlignment> &qali)
+void printMatePairs(vector<MatePairs> &matepairs, vector<BamAlignmentRecord_> &qali)
 {
   int it, jit;
   float score;
 
-  for (int iter=0; iter < matepairs.size(); iter++)
+  for (unsigned int iter=0; iter < matepairs.size(); iter++)
 	{
 	  it = matepairs.at(iter).alIt;
 	  jit = matepairs.at(iter).alJit;
 	  score = matepairs.at(iter).score;
 	  cout << "(" << it << "," << jit << ") = (" 
-		   << qali.at(it).Name << "," << qali.at(jit).Name << "),"			 	
+		   << qali.at(it)->getQueryName()  << "," << qali.at(jit)->getQueryName()  << "),"			 	
 		   << " scoreMate=" << score << endl;
 	}
 }

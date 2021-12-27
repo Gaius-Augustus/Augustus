@@ -35,11 +35,12 @@ class Transcript;
 class Gene;
 
 /**
- * @brief AltGene is a gene in the original sense. It can contain several transcripts (coding or not).
+ * @brief AltGene is a gene in the biological sense. It can contain several transcripts (coding or not).
  * 
  * @author Mario Stanke
  */
 class AltGene;
+
 /**
  * @author Mario Stanke
  */

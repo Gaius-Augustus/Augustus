@@ -6,6 +6,7 @@
 # November 22nd 2019
 
 use strict;
+use warnings;
 use Getopt::Long;
 
 

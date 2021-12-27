@@ -134,7 +134,7 @@ int main( int argc, char* argv[] ){
 	exit(1);
     }
     if (chunksize < 2){
-	cerr << "Chunksize too small (" << chunksize << "). Should be roughly in the oder of a gene's length." << endl;
+	cerr << "Chunksize too small (" << chunksize << "). Should be roughly in the order of a gene's length." << endl;
 	printUsage();
 	exit(1);
     }

@@ -1,0 +1,84 @@
+'\" t
+.\"     Title: load2db
+.\"    Author: [see the "AUTHORS" section]
+.\" Generator: Asciidoctor 1.5.5
+.\"      Date: 
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "LOAD2DB" "1" "" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.if \n[.g] .mso www.tmac
+.LINKSTYLE blue R < >
+.SH "NAME"
+load2db \- load genome sequences and extrinsic evidence hints into a MySQL database
+.SH "SYNOPSIS"
+.sp
+\fBload2db\fP [OPTIONS] \-\-species=\fISPECIES\fP \-\-dbaccess=\fIdbname,host,user,passwd\fP \fIinputfilename\fP
+.SH "DESCRIPTION"
+.sp
+\fBload2db\fP is a tool to load genome sequences and extrinsic evidence hints into a MySQL database.
+.br
+This database must be created before calling \fBload2db\fP.
+.br
+When storing genomes/hints of multiple organisms call this program repeatedly for each one.
+.SH "OPTIONS"
+.sp
+\fIinputfilename\fP refers to a genome file in FASTA format or a hints file in GFF format.
+.SS "Mandatory options"
+.sp
+\fB\-s\fP, \fB\-\-species\fP=\fISPECIES\fP
+.RS 4
+SPECIES is a name for your species and the same identifier as is used in the treefile and alnfile parameters to augustus.
+.RE
+.sp
+\fB\-d\fP, \fB\-\-dbaccess\fP=\fIdbname,host,user,passwd\fP
+.RS 4
+dbname,host,user,passwd are the name of the SQL database, the host name or IP, the database user and password
+.RE
+.SS "Additional options"
+.sp
+\fB\-c\fP, \fB\-\-chunksize\fP=\fIsize\fP (\(lA 1000000)
+.RS 4
+This option is only relevant when loading a sequence file.
+.br
+The sequences in the input genome are split into chunks of this size so
+that subsequent retrievals of small sequence ranges do not require to read
+the complete \- potentially much longer \- chromosome. Default Value: 50000
+.RE
+.sp
+\fB\-h\fP, \fB\-\-help\fP
+.RS 4
+Produce help message.
+.RE
+.SH "EXAMPLE"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+  create database before calling load2db:
+   $ mysql \-u root \-p
+   > CREATE DATABASE vertebrates;
+   > CREATE USER \(aqmyuser\(aq@\(aq%\(aq IDENTIFIED BY \(aqmypasswd\(aq; /* or whatever the password code is*/
+   > GRANT ALL ON vertebrates.* TO \(aqmyuser\(aq@\(aq%\(aq IDENTIFIED BY \(aqmypasswd\(aq;
+
+  load2db \-\-species=mouse \-\-dbaccess=vertebrates,localhost,myuser,mypasswd mouse.fa
+  load2db \-\-species=mouse \-\-dbaccess=vertebrates,localhost,myuser,mypasswd mouse.hints.gff
+  load2db \-\-species=human \-\-dbaccess=vertebrates,localhost,myuser,mypasswd human.fa
+  load2db \-\-species=human \-\-dbaccess=vertebrates,localhost,myuser,mypasswd human.hints.gff
+.fi
+.if n \{\
+.RE
+.\}
+.SH "AUTHORS"
+.sp
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.

@@ -1,0 +1,55 @@
+# load2db(1)
+
+## NAME
+
+load2db - load genome sequences and extrinsic evidence hints into a MySQL database
+
+## SYNOPSIS
+
+*load2db* [OPTIONS] --species=_SPECIES_ --dbaccess=_dbname,host,user,passwd_ _inputfilename_
+
+## DESCRIPTION
+
+*load2db* is a tool to load genome sequences and extrinsic evidence hints into a MySQL database. +
+This database must be created before calling *load2db*. +
+When storing genomes/hints of multiple organisms call this program repeatedly for each one.
+
+## OPTIONS
+
+_inputfilename_ refers to a genome file in FASTA format or a hints file in GFF format.
+
+### Mandatory options
+    
+*-s*, *--species*=_SPECIES_::
+  SPECIES is a name for your species and the same identifier as is used in the treefile and alnfile parameters to augustus.
+
+*-d*, *--dbaccess*=_dbname,host,user,passwd_::
+  dbname,host,user,passwd are the name of the SQL database, the host name or IP, the database user and password
+
+### Additional options
+
+*-c*, *--chunksize*=_size_ (<= 1000000):: 
+  This option is only relevant when loading a sequence file. +
+  The sequences in the input genome are split into chunks of this size so
+  that subsequent retrievals of small sequence ranges do not require to read
+  the complete - potentially much longer - chromosome. Default Value: 50000
+
+*-h*, *--help*::
+   Produce help message.
+
+## EXAMPLE
+----
+  create database before calling load2db:
+   $ mysql -u root -p
+   > CREATE DATABASE vertebrates;
+   > CREATE USER 'myuser'@'%' IDENTIFIED BY 'mypasswd'; /* or whatever the password code is*/
+   > GRANT ALL ON vertebrates.* TO 'myuser'@'%' IDENTIFIED BY 'mypasswd';
+
+  load2db --species=mouse --dbaccess=vertebrates,localhost,myuser,mypasswd mouse.fa
+  load2db --species=mouse --dbaccess=vertebrates,localhost,myuser,mypasswd mouse.hints.gff
+  load2db --species=human --dbaccess=vertebrates,localhost,myuser,mypasswd human.fa
+  load2db --species=human --dbaccess=vertebrates,localhost,myuser,mypasswd human.hints.gff
+----
+## AUTHORS
+
+AUGUSTUS was written by M. Stanke, O. Keller, S. König, L. Gerischer and L. Romoth.

@@ -25,7 +25,7 @@ bool Transcript::print_tts=false;
 bool Gene::print_start=false;
 bool Gene::print_stop=false;
 bool Gene::print_introns=false;
-bool Gene::print_cds=false;
+bool Gene::print_cds=true;
 bool Gene::print_exonnames=false;
 bool Gene::stopCodonExcludedFromCDS=false;
 bool Gene::print_utr=false;
@@ -2478,13 +2478,14 @@ void filterGenePrediction(list<Transcript*> &gl, list<Transcript*> &filteredTran
 	// filter criteria that apply to coding genes only
 	// delete gene if the combined CDS is too short, unless a CDS exon is truncated
 	Gene *g = dynamic_cast<Gene *>(*git);
-        bool inFrameStop = g->hasInFrameStop(annoseq);
-        hasInFrameStop |= inFrameStop;
-	if (g && ((g->clength < Constant::min_coding_len && g->completeCDS())
-		  || (inFrameStop && noInFrameStop)
-		  || (g->clength < 4 && g->clength < Constant::min_coding_len && !g->completeCDS())))
-	    keep = false;
-
+        if (g){ // coding gene
+            bool inFrameStop = g->hasInFrameStop(annoseq);
+            hasInFrameStop |= inFrameStop;
+            if (g && ((g->clength < Constant::min_coding_len && g->completeCDS())
+                      || (inFrameStop && noInFrameStop)
+                      || (g->clength < 4 && g->clength < Constant::min_coding_len && !g->completeCDS())))
+                keep = false;
+        }
 	if (keep && (*git)->hasProbs) {
 	    /* 
 	     * filter by a posteriori probability

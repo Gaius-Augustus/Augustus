@@ -62,7 +62,7 @@ The program can be run with following command line from the directory src/
          intra-block_profile_list
 
     This structure can be repeated in this file. The file has to end either
-    in a [dist] section or a  [dist] and than [intron profile] section.
+    in a [dist] section or a [dist] and than [intron profile] section.
     The [intron profile] sections are optional.
 
     [dist] explanation:
@@ -92,7 +92,7 @@ The program can be run with following command line from the directory src/
     --gap_intra:                gap costs for an alignment column that is a gap in a block
                                 default setting: -50
 
-    --gap_intra:                gap costs for an gap in intron positions
+    --gap_intron:               gap costs for an gap in intron positions
                                 default setting: -5
 
     --epsilon_intron:           pseudocount parameter epsilon1, the pseudocount
@@ -114,7 +114,7 @@ The program can be run with following command line from the directory src/
                                 default setting: 5
 
     --alignment:                number of optimal alignments that are computed
-                                default setting: 5
+                                default setting: 1
 
     --help:                     print USAGE
 
@@ -127,7 +127,7 @@ The program can be run with following command line from the directory src/
 
                                 Alignment representation of P as symbols of
                                 {AminoAcid, gap symbol or number of amino acids in inter-block}
-                                Alignemnt representation of argmax of B as symbols of
+                                Alignment representation of argmax of B as symbols of
                                 {argmax AminoAcid for aligned block column, gap symbol or inter-block length}
                                 Frequency of amino acid of P in aligned block column of B,
                                 if alignment type is a match
