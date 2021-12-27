@@ -956,40 +956,49 @@ Double IntronModel::emiProbUnderModel (int begin, int end) const {
 		   return 0;
 		 }
 	      }
-	    int intronLength = endOfBioIntron - beginOfBioIntron + 1;
+              /* (Re)compute endOfBioIntron:
+               * If emiProbUnderModel is called directly from
+               * NAMGene::getPathEmiProb, it would otherwise be undefined.
+               */
+              if (isOnFStrand(itype))
+                  endOfBioIntron = end + ass_upwindow_size + Constant::ass_start + ASS_MIDDLE;
+              else
+                  endOfBioIntron = end + Constant::dss_end + DSS_MIDDLE;
+
+              int intronLength = endOfBioIntron - beginOfBioIntron + 1;
 	    
-	    if (intronLength <= d){
-	       restSeqProb = seqProb(begin, end);
-	       lenPartProb = lenDist[intronLength];
-	    } else {
-	       // this case applies only for long introns supported by hints as other long introns
-	       // are handled by a geometric state
-	       // Use gc index as in the normal case
-	       // |---- d ------|-----------------geo---------------------
-	       //    use this:  ^    use local gc index here
-	       lenPartProb = lenDist[d] * pow(1.0 - 1.0/mal.doubleValue(), (int) (intronLength-d));
-	       restSeqProb = 1;
-	       Seq2Int s2i(k+1);
-	       int idx = getGCIdx((begin+d < dnalen)? begin+d : dnalen-1);
-	       for (int a=begin; a < begin+d; a++)
-		  try {
-		     restSeqProb *= (a >= k && a < dnalen - 1)? GCemiprobs[idx].probs[s2i(sequence + a - k)] : 0.25;
-		  } catch(...) {
-		     restSeqProb *= .25;
-		  }
-	       for (int a=begin+d; a <=end; a++){
-		  if (idx != getGCIdx(a))
-		     idx = getGCIdx(a);
-		  try {
-		     restSeqProb *= (a >= k && a < dnalen - 1)? GCemiprobs[idx].probs[s2i(sequence + a - k)] : 0.25;
-		  } catch(...) {
-		     restSeqProb *= (float) .25;
-		  }
-	       }
-	    }
-	    returnProb = lenPartProb * restSeqProb;
-	    break;
-	}
+              if (intronLength <= d){
+                  restSeqProb = seqProb(begin, end);
+                  lenPartProb = lenDist[intronLength];
+              } else {
+                  // this case applies only for long introns supported by hints as other long introns
+                  // are handled by a geometric state
+                  // Use gc index as in the normal case
+                  // |---- d ------|-----------------geo---------------------
+                  //    use this:  ^    use local gc index here
+                  lenPartProb = lenDist[d] * pow(1.0 - 1.0/mal.doubleValue(), (int) (intronLength-d));
+                  restSeqProb = 1;
+                  Seq2Int s2i(k+1);
+                  int idx = getGCIdx((begin+d < dnalen)? begin+d : dnalen-1);
+                  for (int a=begin; a < begin+d; a++)
+                      try {
+                          restSeqProb *= (a >= k && a < dnalen - 1)? GCemiprobs[idx].probs[s2i(sequence + a - k)] : 0.25;
+                      } catch(...) {
+                          restSeqProb *= .25;
+                      }
+                  for (int a=begin+d; a <=end; a++){
+                      if (idx != getGCIdx(a))
+                          idx = getGCIdx(a);
+                      try {
+                          restSeqProb *= (a >= k && a < dnalen - 1)? GCemiprobs[idx].probs[s2i(sequence + a - k)] : 0.25;
+                      } catch(...) {
+                          restSeqProb *= (float) .25;
+                      }
+                  }
+              }
+              returnProb = lenPartProb * restSeqProb;
+              break;
+           }
 	default: 
 	    throw IntronModelError("Unknown intron type.");
     }
