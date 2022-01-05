@@ -14,10 +14,10 @@ namespace {
     TEST(EvoTest, ExonEvoRateMatrix) 
     {
         int states = 2;
-        ExonEvo evo(states);
-        evo.setLambda(0.06); // exon gain rate
-        evo.setMu(0.02); // exon loss rate
-        evo.setPi();
+        double lambda = 0.06;
+        double mu = 0.02;
+        double ali_error = 0.1;
+        ExonEvo evo(states, lambda, mu, ali_error);
         gsl_matrix *Q = evo.getExonRateMatrix();
        
         EXPECT_DOUBLE_EQ(gsl_matrix_get (Q, 0, 0), -0.06);
@@ -28,14 +28,16 @@ namespace {
     }
     TEST(EvoTest, ExonEvo2StatesTransitionProbs) 
     {
-        ExonEvo evo(2);
+        int states = 2;
+        double lambda = 0.06;
+        double mu = 0.02;
+        double ali_error = 0.1;
+        ExonEvo evo(states, lambda, mu, ali_error);
         EXPECT_EQ(evo.getNumStates(), 2) << "Wrong number of states.";
         vector<double> branchset {0.3, 4.};
         evo.setBranchLengths(branchset);
-        evo.setLambda(0.06); // exon gain rate
-        evo.setMu(0.02); // exon loss rate
         evo.setPi();
-        EXPECT_DOUBLE_EQ(evo.getPi(1), 0.75); // = lambda / (lambda+mu)
+        EXPECT_DOUBLE_EQ(evo.getPi(1), lambda/(lambda+mu));
 
         evo.getRateMatrices();
         evo.computeLogPmatrices();
