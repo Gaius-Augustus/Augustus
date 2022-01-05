@@ -123,6 +123,14 @@ public:
 	// mu, lambda and ali_error have to be set before calculating equilibrium frequencies Pi
 	setPi();
     };
+    ExonEvo(int num_states, double lambda, double mu, double ali_error)
+        : Evo(num_states), U(NULL), Uinv(NULL), l(NULL)  {
+	setLambda(lambda, false);
+	setMu(mu, false);
+	setAliErr(ali_error, false);
+	// mu, lambda and ali_error have to be set before calculating equilibrium frequencies Pi
+	setPi();
+    };
     ~ExonEvo(){
         if (U)
             gsl_matrix_free(U);
@@ -132,9 +140,9 @@ public:
             gsl_vector_free(l);
     }
     void setPi();
-    void setLambda(double lambda = 0.0001);
-    void setMu(double mu = 0.0001);
-    void setAliErr(double ali_error = 0.1);
+    void setLambda(double lambda = 0.0001, bool propsOverride = true);
+    void setMu(double mu = 0.0001, bool propsOverride = true);
+    void setAliErr(double ali_error = 0.1, bool propsOverride = true);
     double getLambda() const{return lambda;}
     double getMu() const{return mu;}
     double getAliErr() const{return ali_error;}
