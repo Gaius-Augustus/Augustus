@@ -382,6 +382,7 @@ while(<FASTA>) {
 		    $shiftedfeatures[$j] -= $offset if (!$connected);
 		}
 		$newseq = substr($seq, $currentSeqBegin - 1, $currentSeqEnd - $currentSeqBegin + 1 );
+		$newlength = length $newseq;
 		&printdata(@shiftedfeatures);
 		&printseq($newseq, $newlength) if (!$connected);
 	    }
