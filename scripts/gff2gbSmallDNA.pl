@@ -382,6 +382,7 @@ while(<FASTA>) {
 		    $shiftedfeatures[$j] -= $offset if (!$connected);
 		}
 		$newseq = substr($seq, $currentSeqBegin - 1, $currentSeqEnd - $currentSeqBegin + 1 );
+		$newlength = length $newseq;
 		&printdata(@shiftedfeatures);
 		&printseq($newseq, $newlength) if (!$connected);
 	    }
@@ -586,17 +587,15 @@ sub printseq {
     print OUTPUT "\nORIGIN\n";
     $i = 1;
     $pos = 0;
-    while ($pos <= length $seq) {
+    while ($pos < length $seq) {
         $zahlzeile = "";
         for ($j=0; $j < 9-length "$i"; $j=$j+1) {
             print OUTPUT " ";
         }
         print OUTPUT "$i";
-        for ($j=0; $j < 6; $j=$j+1) {
+        for ($j=0; $j < 6 && $pos < length $seq; $j=$j+1) {
              $ten = substr $seq, $pos, 10;
-             if (length $ten > 0) {
-                 print OUTPUT " $ten";
-             }
+             print OUTPUT " $ten";
              $pos = $pos + 10; #$seq = substr $seq, 10;
         }
         print OUTPUT "\n";
