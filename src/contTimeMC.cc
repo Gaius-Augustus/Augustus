@@ -267,33 +267,36 @@ gsl_matrix *log(gsl_matrix *P, int states){
     return LogP;
 }
 
-void ExonEvo::setLambda(double lambda){
-    try {
-	this->lambda = Properties::getdoubleProperty("/CompPred/exon_gain");
-    } catch (...) {
-        this->lambda = lambda;
+void ExonEvo::setLambda(double lambda, bool propsOverride){
+    this->lambda = lambda;
+    if (propsOverride) {
+        try {
+            this->lambda = Properties::getdoubleProperty("/CompPred/exon_gain");
+        } catch (...) { }
     }
     
     if (this->lambda <= 0.0)
 	throw ProjectError("the rates for exon loss/gain have to be positive");
 }
 
-void ExonEvo::setMu(double mu){
-    try {
-	this->mu  = Properties::getdoubleProperty("/CompPred/exon_loss");
-    } catch (...) {
-        this->mu = mu;
+void ExonEvo::setMu(double mu, bool propsOverride){
+    this->mu = mu;
+    if (propsOverride){
+        try {
+            this->mu  = Properties::getdoubleProperty("/CompPred/exon_loss");
+        } catch (...) { }
     }
 
     if (this->mu <= 0.0)
 	throw ProjectError("the rates for exon loss/gain have to be positive");
 }
 
-void ExonEvo::setAliErr(double ali_error){
-    try {
-	this->ali_error = Properties::getdoubleProperty("/CompPred/ali_error");
-    } catch (...) {
-        this->ali_error = ali_error;
+void ExonEvo::setAliErr(double ali_error, bool propsOverride){
+    this->ali_error = ali_error;
+    if (propsOverride) {
+        try {
+            this->ali_error = Properties::getdoubleProperty("/CompPred/ali_error");
+        } catch (...) { }
     }
 
     if (this->ali_error <= 0.0)

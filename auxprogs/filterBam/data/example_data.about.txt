@@ -19,7 +19,7 @@
 # with alignments that have a feature that will be filtered 
 # out by "filterBam". 
 # E.g. "$COVERAGE/Example.coverage.bam" is a file with alignments
-# that will be filtered out by the deafault value of "coverage" 
+# that will be filtered out by the default value of "coverage" 
 # the coverage criterion of filterBam. 
 #
 ########################################################

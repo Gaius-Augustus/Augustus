@@ -18,7 +18,7 @@
 #include <cstring>
 
 #ifdef M_MYSQL
-#include <mysql++.h>
+#include <mysql++/mysql++.h>
 #endif
 
 #ifdef M_SQLITE

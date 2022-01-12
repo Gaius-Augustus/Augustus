@@ -1,13 +1,18 @@
-CC?=gcc
+# Makefile of compileSpliceCands
 
-compileSpliceCands : compileSpliceCands.o list.h list.o
-	$(CC) $(CFLAGS)	$(CPPFLAGS) $(LDFLAGS) -o compileSpliceCands compileSpliceCands.o list.o
-	cp compileSpliceCands ../../bin/compileSpliceCands
+CC ?= gcc
+CFLAGS := -Wall -pedantic -ansi ${CFLAGS}
 
-compileSpliceCands.o : compileSpliceCands.c 
-	$(CC) -Wall -pedantic -ansi $(CFLAGS) $(CPPFLAGS) -c compileSpliceCands.c
+.PHONY: all clean
 
-all : compileSpliceCands
+all: compileSpliceCands
 
-clean : 
-	rm -f compileSpliceCands compileSpliceCands.o ../../bin/compileSpliceCands list.o
+compileSpliceCands: compileSpliceCands.o list.h list.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o compileSpliceCands $(filter %.o,$^)
+	cp -f compileSpliceCands ../../bin/compileSpliceCands
+
+compileSpliceCands.o: compileSpliceCands.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $^
+
+clean:
+	rm -f compileSpliceCands *.o ../../bin/compileSpliceCands

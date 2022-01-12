@@ -2,7 +2,7 @@
 
 # Author: Katharina J. Hoff
 # E-Mail: katharina.hoff@uni-greifswald.de
-# Last modified on April 19th 2021
+# Last modified on November 8th 2021
 #
 # This Python script extracts exon features from a GTF file, excises
 # corresponding sequence windows from a genome FASTA file, stitches the
@@ -11,6 +11,7 @@
 # Output file is:
 #    * file with mRNA squences in FASTA format
 # Beware: the script assumes that the gtf input file is sorted by coordinates!
+# This script is also compatible with cupcake gtf format
 
 try:
     import argparse
@@ -78,9 +79,10 @@ if args.gtf:
         with open(args.gtf, "r") as gtf_handle:
             for line in gtf_handle:
                 if re.match(
-                        r"\S+\t[^\t]+\texon\t\d+\t\d+\t\d+\t\S\t\.\t.*transcript_id \"(\S+)\"", line):
+                        r"\S+\t[^\t]+\texon\t\d+\t\d+\t\S+\t\S\t\.\t.*transcript_id \"(\S+)\"", line):
+                    #print("I attempt to store exon info")
                     seq_id, st, en, stx, tx_id = re.match(
-                        r"(\S+)\t[^\t]+\texon\t(\d+)\t(\d+)\t\d+\t(\S)\t\.\t.*transcript_id \"(\S+)\"", line).groups()
+                        r"(\S+)\t[^\t]+\texon\t(\d+)\t(\d+)\t\S+\t(\S)\t\.\t.*transcript_id \"(\S+)\"", line).groups()
                     if seq_id not in mrna:
                         mrna[seq_id] = {}
                     if tx_id not in mrna[seq_id]:
@@ -107,6 +109,7 @@ try:
             seq_len[record.id] = len(record.seq)
             if record.id in mrna:
                 for tx in mrna[record.id]:
+                    #print("I do something for tx")
                     if tx not in mrnaseq:
                         if mrna[record.id][tx][0]['strand'] == '.':
                             descr = tx + ' strand_unknown'

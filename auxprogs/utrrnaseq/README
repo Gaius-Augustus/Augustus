@@ -6,30 +6,28 @@ Date: 31 May 2013
 ************************************************
 
 * Installation:
-As long as the preprocessor directive TEST_MODE is not set, boost_unit_test_framework is not needed. I.e. under this condition, the 
+As long as the preprocessor directive TEST_MODE is not set, boost_unit_test_framework is not needed. I.e. under this condition, the
 program can be compiled without -l boost_unit_test_framework.
 
 * Compile:
 
-In Debug folder
-
-make -B all 
+make
 
 * execute/run the tool:
 
-In Debug folder
-
-./main 
+./utrrnaseq
 
 * Boost Library:
 
 A version of the boost library (e.g. Boost_1_49_0) must be installed or at least downloaded, for Ubuntu e.g. type "sudo apt-get install libboost-all-dev"
+See docs/INSTALL.md (Boost section) for further details, especially for manual installation from sources or installation
+without root rights.
 
 *************************************************
 
 This folder contains the following folders:
 
-* Debug - This folder contains the makefile and includes the executable main (if compiled the way described in INSTALL).
+* Debug - This folder contains the object and dependency files.
 
 * doc - The file ./doc/utrrnaseq.doxyfile serves as a configuration file for Doxygen.
         The folder ./doc/html and ./doc/latex contain the automatically by Doxygen created files.		
@@ -37,8 +35,8 @@ This folder contains the following folders:
 
 * evaluation - This folder contains files used for test, training and evaluation purposes.
 
-* for-test-cases - This folder contains files used as input for the test cases in the BOOST_TEST_SUITEs and some for 
-									 comparison purposes.
+* for-test-cases - This folder contains files used as input for the test cases in the BOOST_TEST_SUITEs and some for
+                   comparison purposes.
 
 * input - This folder contains all the used input files and additional data files.
 

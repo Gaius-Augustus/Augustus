@@ -20,6 +20,7 @@ testcases = {
     'examples' : 'examples.test_examples',
     'bam2hints' : 'auxprogs.bam2hints.test_bam2hints',
     'bam2wig' : 'auxprogs.bam2wig.test_bam2wig',
+    'filterbam' : 'auxprogs.filterbam.test_filterbam',
     'homGeneMapping' : 'auxprogs.homgenemapping.test_homgenemapping'
 }
 
@@ -50,9 +51,9 @@ def check_working_dir(clean):
         errstr = 'Wrong working directory!' + '\n'
         errstr += 'This script must be called from "tests/short"!'
         sys.exit(errstr)
-    if not clean and not (os.path.exists(f'{bindir}augustus')):
+    if not clean and not (os.path.exists(bindir + 'augustus')):
         errstr = 'Missing augustus binaries!' + '\n'
-        errstr += f'The augustus binaries must be accessible in this path: "{bindir}"!'
+        errstr += 'The augustus binaries must be accessible in this path: "' + bindir + '"!'
         sys.exit(errstr)
 
 

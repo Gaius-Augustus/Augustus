@@ -20,81 +20,59 @@ AUGUSTUS is a program to find genes and their structures in one or more genomes.
 ## Windows
 Windows users can use the Windows Subsystem for Linux (WSL) to install AUGUSTUS exactly as described below for Linux. How to set up the WSL for AUGUSTUS is described [here](docs/AUGUSTUS-ON-WINDOWS.md).
 
-## Ubuntu 18.04 or later
-This currently installs only a single-genome version without comparative gene prediction capability:
+## Ubuntu 18.04, Debian 9 or later
+Until Ubuntu 21.04 and Debian 11 only as single-genome version, since then with capability for comparative gene prediction.
 
     sudo apt install augustus augustus-data augustus-doc
 
-
-## Clone from GitHUB
-
-To obtain the most recent complete version, first, clone the repository
-
-    git clone https://github.com/Gaius-Augustus/Augustus.git
-
-or, alternatively, [download](http://bioinf.uni-greifswald.de/augustus/binaries/augustus.current.tar.gz) and unpack the AUGUSTUS source package with
-
-    tar -xzf augustus.current.tar.gz
-
 ## Docker
 
-After retrieving Augustus change into the main directory containing the 
-[Dockerfile](Dockerfile) and issue
+Create a docker image from [Dockerfile](Dockerfile) using:
 
+    git clone https://github.com/Gaius-Augustus/Augustus.git
+    cd Augustus
     docker build -t augustus .
 
-## Install dependencies
+## Singularity
 
-The following dependencies are required for AUGUSTUS:
-- For gzip compressed input:
- (set ZIPINPUT = false in [common.mk](common.mk) if this feature is not required or the required libraries are not available)
-  - libboost-iostreams-dev
-  - zlib1g-dev
-- For [comparative AUGUSTUS](docs/README-cgp.md) (multi-species, CGP):
-  (set COMPGENEPRED = false in [common.mk](common.mk) if the libraries required by the CGP version are not available. Augustus can then only be run in single-genome mode, which is what most users need.)
-  - libgsl-dev
-  - libboost-all-dev
-  - libsuitesparse-dev
-  - liblpsolve55-dev
-  - libsqlite3-dev (add SQLITE = false to [common.mk](common.mk) if this feature is not required or the required library is not available)
-  - libmysql++-dev (add MYSQL = false to [common.mk](common.mk) if this feature is not required or the required library is not available)
-- For compiling bam2hints and filterBam:
-  - libbamtools-dev
-- For compiling utrrnaseq:
-  - libboost-all-dev (version must be >Boost_1_49_0)
-- For compiling bam2wig:
-  - Follow [these instructions](./auxprogs/bam2wig/README.md). Note that it shouldn't be a problem to compile AUGUSTUS without bam2wig. In practice, you can simply use `bamToWig.py` to accomplish the same task.
-- For compiling homgenemapping
-  (set BOOST = FALSE in [./auxprogs/homgenemapping/src/Makefile](./auxprogs/homgenemapping/src/Makefile) if the option --printHomologs is not required or the required libraries are not available)
-  - libboost-all-dev
+Create a Singularity Image File from the [Singularity Definition File](Singularity.def) using
 
-## Compile from sources
+    git clone https://github.com/Gaius-Augustus/Augustus.git
+    cd Augustus
+    singularity build augustus.sif Singularity.def
 
-Once all dependencies are available, you can compile AUGUSTUS using make.
+## Building AUGUSTUS from source
 
-    make
+See [INSTALL.md](docs/INSTALL.md) for details.
+
+Download source code from github and compile:
+
+    git clone https://github.com/Gaius-Augustus/Augustus.git
+    cd Augustus
+    make augustus
 
 After compilation has finished, the command bin/augustus should be executable and print a usage message.
 
-If you have built the Boost libraries yourself, specify the search path for the linker in `LDFLAGS`.
+For utilities use
 
-    make LDFLAGS="-L/your/boost_1_75_0/stage/lib"
+    make auxprogs
 
-## Install locally
+
+### Install locally
 
 As a normal user, add the directory of the executables to the PATH environment variable, for example:
 
     export PATH=~/augustus/bin:~/augustus/scripts:$PATH
 
-## Install globally
+### Install globally
 
-You can install AUGUSTUS globally, if you have root privileges, for example: 
+You can install AUGUSTUS globally, if you have root privileges, for example:
 
     sudo make install
 
-Alternatively, you can exectue similar commands to those in the "install" section of the top-level Makefile to customize the global installation. 
+Alternatively, you can exectue similar commands to those in the "install" section of the top-level Makefile to customize the global installation.
 
-## Optional: set environment variable AUGUSTUS_CONFIG_PATH
+### Optional: set environment variable AUGUSTUS_CONFIG_PATH
 
 If the environment variable AUGUSTUS_CONFIG_PATH is set, augustus and etraining will look there for the config directory that contains the configuration and parameter files, e.g. '~/augustus/config'. You may want to add this line to a startup script (like ~/.bashrc).
 
@@ -106,15 +84,6 @@ If this environment variable is not set, then the programs will look in the path
 # WEB-SERVER
 
 AUGUSTUS can also be run through a web-interface at http://bioinf.uni-greifswald.de/augustus/ and a web service at http://bioinf.uni-greifswald.de/webaugustus/.
-
-# Scripts
-
-Many scripts require Perl.
-
-Running the python3 script bamToWig.py has the following software dependencies:
-  - Python3
-  - twoBitInfo and faToTwoBit from http://hgdownload.soe.ucsc.edu/admin/exe . bamToWig.py will automatically download these tools to the working directory during execution	if they	are not	in your	$PATH.
-  - samtools (available e.g. at https://github.com/samtools/samtools or via package managers)
 
 # REFERENCES AND DOCUMENTATION
 
@@ -133,5 +102,5 @@ All source code, i.e.
   - the auxiliary programs (`auxprogs/`)
   - the tree-parser (`src/scanner`, `src/parser`)
   - the unit tests (`src/unittests`)
-  
+
 is under the [Artistic License](src/LICENSE.TXT).

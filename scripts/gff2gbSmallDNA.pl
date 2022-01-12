@@ -382,6 +382,7 @@ while(<FASTA>) {
 		    $shiftedfeatures[$j] -= $offset if (!$connected);
 		}
 		$newseq = substr($seq, $currentSeqBegin - 1, $currentSeqEnd - $currentSeqBegin + 1 );
+		$newlength = length $newseq;
 		&printdata(@shiftedfeatures);
 		&printseq($newseq, $newlength) if (!$connected);
 	    }
@@ -498,43 +499,48 @@ sub printdata {
     $genename = shift @gbfkey;
     $strand = shift @gbfkey;
     if ($strand eq "-") {
-	$join = "complement(";
+		$join = "complement(";
     } else {
-	$join = "";
+		$join = "";
     }
     if (@gbfkey>2) {
-	$join .= "join(";
+		$join .= "join(";
     }
     for ($i=0; $i<@gbfkey; $i+=2) {
-	if ($i != 0) {
-	    $join .= ",";
-	}
-	$join .= "$gbfkey[$i]..$gbfkey[$i+1]";
+		if ($i != 0) {
+	    	$join .= ",";
+		}
+		$join .= "$gbfkey[$i]..$gbfkey[$i+1]";
     }
     if (@gbfkey>2) {
-	$join .= ")";
+		$join .= ")";
     }
     if ($strand eq "-") {
-	$join .= ")";
+		$join .= ")";
     }
     if ($fkey eq "mRNA"){
-	$genename = $genename;
-	$genename =~ s/^mRNA//;
-	print OUTPUT "     mRNA            ";
+		$genename = $genename;
+		$genename =~ s/^mRNA//;
+		print OUTPUT "     mRNA            ";
     } else {
-	$genename = $genename;
-	$genename =~ s/^CDS//;
-	print OUTPUT "     CDS             ";
+		$genename = $genename;
+		$genename =~ s/^CDS//;
+		print OUTPUT "     CDS             ";
     }
-    while (length $join > 0) {
-	print OUTPUT substr $join,0,59;
-	$join = substr $join, 59; 
-	if (length $join > 0) {
-	    print OUTPUT "\n                     ";
-	}
+    while (length($join) > 0) {
+    	if(length($join) >= 60){
+			print OUTPUT substr $join,0,59; # 59 seems to be about line length? 60?
+			$join = substr $join, 59; 
+		}else{
+			print OUTPUT substr $join,0,length($join);
+			$join = ""
+		}
+		if (length $join > 0) {
+	    	print OUTPUT "\n                     ";
+		}
     }
     if (length $genename > 0){
-	print OUTPUT "\n                     /gene=\"$genename\"";
+		print OUTPUT "\n                     /gene=\"$genename\"";
     }
     print OUTPUT "\n";
 }
@@ -581,17 +587,15 @@ sub printseq {
     print OUTPUT "\nORIGIN\n";
     $i = 1;
     $pos = 0;
-    while ($pos <= length $seq) {
+    while ($pos < length $seq) {
         $zahlzeile = "";
         for ($j=0; $j < 9-length "$i"; $j=$j+1) {
             print OUTPUT " ";
         }
         print OUTPUT "$i";
-        for ($j=0; $j < 6; $j=$j+1) {
+        for ($j=0; $j < 6 && $pos < length $seq; $j=$j+1) {
              $ten = substr $seq, $pos, 10;
-             if (length $ten > 0) {
-                 print OUTPUT " $ten";
-             }
+             print OUTPUT " $ten";
              $pos = $pos + 10; #$seq = substr $seq, 10;
         }
         print OUTPUT "\n";

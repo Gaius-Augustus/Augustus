@@ -16,7 +16,7 @@ tmpdir = os.path.join(pathname, 'tmp')
 exampledir = os.path.join(pathname, 'test_files')
 exampletestfile = 'test.s.bam'
 bindir = '../../bin/'
-bam2wigbin = f'{bindir}bam2wig'
+bam2wigbin = bindir + 'bam2wig'
 default_wd = os.getcwd()
 
 
@@ -46,7 +46,7 @@ class TestBam2Wig(unittest.TestCase):
         os.chdir(tmpdir)
         aug_process.execute(None, 'samtools index ' + exampletestfile)
 
-        if os.path.isfile(os.path.join(tmpdir, f'{exampletestfile}.bai')):
+        if os.path.isfile(os.path.join(tmpdir, exampletestfile+'.bai')):
             assert False, 'Test file not indexed.'
 
     @classmethod
@@ -61,7 +61,7 @@ class TestBam2Wig(unittest.TestCase):
         resfile = os.path.join(resultdir, 'test.s.wig')
 
         aug_process.execute(
-            self, f'{bam2wigbin} {testfile} | grep -v track',  resfile)
+            self, bam2wigbin + " " + testfile + ' | grep -v track',  resfile)
 
         # compare results
         if TestBam2Wig.opt_compare:
@@ -76,7 +76,7 @@ class TestBam2Wig(unittest.TestCase):
         resfile = os.path.join(resultdir, 'test.s.chr3L.wig')
 
         aug_process.execute(self,
-                            f'{bam2wigbin} -t "my_specified_track" -r chr3L {testfile} | grep -v track',
+                            bam2wigbin + ' -t "my_specified_track" -r chr3L ' + testfile + ' | grep -v track',
                             resfile)
 
         # compare results

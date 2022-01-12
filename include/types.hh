@@ -235,10 +235,10 @@ parameters:\n\
 --minexonintronprob=p\n\
 --minmeanexonintronprob=p\n\
 --maxtracks=n\n\
-  For a description of these parameters see section 4 of README.TXT.\n\
+  For a description of these parameters see section 2 of RUNNING-AUGUSTUS.md.\n\
 --proteinprofile=filename\n\
   When this option is used the prediction will consider the protein profile provided as parameter.\n\
-  The protein profile extension is described in section 7 of README.TXT.\n\
+  The protein profile extension is described in section 5 of RUNNING-AUGUSTUS.md.\n\
 --progress=true\n\
   show a progressmeter\n\
 --gff3=on/off\n\
@@ -258,7 +258,7 @@ parameters:\n\
   intronless   : run prediction over some given minimal data set\n\
   (*) a minimal data set is one retaining only the information need in prediction, usually very small (order of Mb) compared to full sequence data sets (ordet of Gb)\n\
 \n\
-For a complete list of parameters, type \"augustus --paramlist\".\nAn exhaustive description can be found in the file README.TXT.\n"
+For a complete list of parameters, type \"augustus --paramlist\". A description of the important ones can be found in the file RUNNING-AUGUSTUS.md.\n"
 
 #define HELP_USAGE_ETRAINING "usage:\n\
 etraining --species=SPECIES trainfilename\n\

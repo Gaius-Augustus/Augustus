@@ -17,7 +17,7 @@ htmldir = os.path.join(default_wd, 'output_html')
 tmpdir = os.path.join(pathname, 'tmp')
 testdir = os.path.join(pathname, 'test_files')
 bindir = os.path.join('../../../../../', 'bin/')
-hgmbin = f'{bindir}homGeneMapping'
+hgmbin = bindir+ 'homGeneMapping'
 load2sqlbin = '../../bin/load2sqlitedb'
 
 gtffilenames_with_hints = os.path.join(
@@ -48,7 +48,7 @@ class TestHomGeneMapping(unittest.TestCase):
 
         # create file with gtf filenames without hint file references
         aug_process.execute(None,
-                            f'cat {gtffilenames_with_hints} | sed "s/gtf\\t.*/gtf/g"',
+                            'cat ' + gtffilenames_with_hints + ' | sed "s/gtf\\t.*/gtf/g"',
                             gtffilenames_without_hints)
 
         # create sqllite database
@@ -57,19 +57,19 @@ class TestHomGeneMapping(unittest.TestCase):
             os.remove(sqlitedb)
 
         aug_process.execute(None,
-                            f'{load2sqlbin} --species=hg19 --dbaccess={sqlitedb} {examplesdir}/cgp/human.fa',
+                            load2sqlbin +' --species=hg19 --dbaccess=' + sqlitedb + ' ' + examplesdir + '/cgp/human.fa',
                             out_load2sqlitedb)
         aug_process.execute(None,
-                            f'{load2sqlbin} --species=mm9 --dbaccess={sqlitedb} {examplesdir}/cgp/mouse.fa',
+                            load2sqlbin + ' --species=mm9 --dbaccess=' +sqlitedb +' '+examplesdir+'/cgp/mouse.fa',
                             out_load2sqlitedb)
         aug_process.execute(None,
-                            f'{load2sqlbin} --noIdx --species=hg19 --dbaccess={sqlitedb} {testdir}/gtfs/human.hints.gff',
+                            load2sqlbin +' --noIdx --species=hg19 --dbaccess=' + sqlitedb + ' ' + testdir + '/gtfs/human.hints.gff',
                             out_load2sqlitedb)
         aug_process.execute(None,
-                            f'{load2sqlbin} --noIdx --species=mm9 --dbaccess={sqlitedb} {testdir}/gtfs/mouse.hints.gff',
+                            load2sqlbin + ' --noIdx --species=mm9 --dbaccess=' + sqlitedb + ' ' + testdir + '/gtfs/mouse.hints.gff',
                             out_load2sqlitedb)
         aug_process.execute(None,
-                            f'{load2sqlbin} --makeIdx --dbaccess={sqlitedb}',
+                            load2sqlbin + ' --makeIdx --dbaccess=' + sqlitedb,
                             out_load2sqlitedb)
 
     @classmethod
@@ -92,11 +92,11 @@ class TestHomGeneMapping(unittest.TestCase):
         aug_path.mkdir_if_not_exists(outputdir)
         resfile = os.path.join(outputdir, 'homGeneMapping.out')
 
-        args = f'--noDupes --gtfs={gtffilenames_without_hints} --halfile=aln.hal \
-            --tmpdir={outputdir}/tmp --outdir={outputdir}/outdir \
-            --printHomologs={outputdir}/homologs.txt'
+        args = '--noDupes --gtfs=' + gtffilenames_without_hints + ' --halfile=aln.hal \
+            --tmpdir=' + outputdir +'/tmp --outdir=' + outputdir + '/outdir \
+            --printHomologs=' + outputdir + '/homologs.txt'
 
-        aug_process.execute(self, f'{hgmbin} {args}', resfile)
+        aug_process.execute(self, hgmbin + ' ' +args, resfile)
 
         # compare results
         if TestHomGeneMapping.opt_compare:
@@ -118,11 +118,11 @@ class TestHomGeneMapping(unittest.TestCase):
         aug_path.mkdir_if_not_exists(refdir)
         aug_path.mkdir_if_not_exists(outputdir)
         resfile = os.path.join(outputdir, 'homGeneMapping.out')
-        args = f'--noDupes --gtfs={gtffilenames_with_hints} --halfile=aln.hal \
-            --tmpdir={outputdir}/tmp --outdir={outputdir}/outdir \
-            --printHomologs={outputdir}/homologs.txt'
+        args = '--noDupes --gtfs=' + gtffilenames_with_hints + ' --halfile=aln.hal \
+            --tmpdir=' + outputdir + '/tmp --outdir=' + outputdir + '/outdir \
+            --printHomologs=' + outputdir + '/homologs.txt'
 
-        aug_process.execute(self, f'{hgmbin} {args}',  resfile)
+        aug_process.execute(self, hgmbin + ' ' + args,  resfile)
 
         # compare results
         if TestHomGeneMapping.opt_compare:
@@ -131,7 +131,7 @@ class TestHomGeneMapping(unittest.TestCase):
 
     def test_homGeneMapping_with_sql_hints(self):
         '''
-        test with hints provided by SQLite databaseX
+        test with hints provided by SQLite database
         .../bin/homGeneMapping --noDupes --gtfs=.../gtffilenames_without_hints.tbl
             --dbaccess=.../homGeneMapping_hints.db --halfile=aln.hal
             --tmpdir=.../tmp --outdir=.../outdir
@@ -144,12 +144,12 @@ class TestHomGeneMapping(unittest.TestCase):
         aug_path.mkdir_if_not_exists(outputdir)
         resfile = os.path.join(outputdir, 'homGeneMapping.out')
 
-        args = f'--noDupes --gtfs={gtffilenames_without_hints} \
-            --dbaccess={sqlitedb} --halfile=aln.hal \
-            --tmpdir={outputdir}/tmp --outdir={outputdir}/outdir \
-            --printHomologs={outputdir}/homologs.txt'
+        args = '--noDupes --gtfs=' + gtffilenames_without_hints + \
+               ' --dbaccess=' + sqlitedb + ' --halfile=aln.hal \
+            --tmpdir=' + outputdir + '/tmp --outdir=' + outputdir + '/outdir \
+            --printHomologs=' + outputdir + '/homologs.txt'
 
-        aug_process.execute(self, f'{hgmbin} {args}',  resfile)
+        aug_process.execute(self, hgmbin + ' ' + args,  resfile)
 
         # compare results
         if TestHomGeneMapping.opt_compare:
