@@ -43,9 +43,9 @@ while(<INPUT>){
 		    $dna++;
 		}
 	    }
-	    if($_=!m/[AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx]/){
+	    if($_=!m/[AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjOoUuXx]/){
 		if($prot==0){
-		    print STDOUT "Assuming that this is not a protein fasta file because other characters than AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjXx were contained. If this is supposed to be DNA fasta file, please ignore this message.\n";
+		    print STDOUT "Assuming that this is not a protein fasta file because other characters than AaRrNnDdCcEeQqGgHhIiLlKkMmFfPpSsTtWwYyVvBbZzJjOoUuXx were contained. If this is supposed to be DNA fasta file, please ignore this message.\n";
 		    $prot++;
 		}
 	    }
