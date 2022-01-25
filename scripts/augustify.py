@@ -289,7 +289,7 @@ def augustify_seq(hindex, header, seqs, tmp, params):
             frameinfo = getframeinfo(currentframe())
             logger.info('Error in file ' + frameinfo.filename + ' at line ' +
                     str(frameinfo.lineno) + ': ' + "Could not open file " +
-                    tmp + "seq" + str(hindex) + ".fa" + " for reading!")
+                    tmp + "seq" + str(hindex) + "_" + species.rstrip() + ".gff" + " for reading!")
 
         try:
             os.remove(tmp + "seq" + str(hindex) + "_" + species.rstrip() + ".gff")
