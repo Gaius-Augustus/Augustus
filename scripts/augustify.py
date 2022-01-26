@@ -91,6 +91,16 @@ if args.prediction_file:
 
 ''' ******************* BEGIN FUNCTIONS *************************************'''
 
+def normalize_float(manti, expo):
+    """ Function that normalizes a float consisting of mantisse and exponent
+        to a mantisse that has one digit in front of comma. Assumption is 
+        that input manisse is either 0.xxxx or 1.xxx, i.e. the number of 
+        digits in front of comma is already one in all cases."""
+    if manti < 1:
+        manti = manti*10
+        expo = expo + 1
+    return manti,expo
+
 
 def create_random_string():
     """ Function that creates a random string added to the logfile name
@@ -274,20 +284,23 @@ def augustify_seq(hindex, header, seqs, tmp, params):
                     thismatch4 = re.search(r'\# joint probability of gene structure and sequence in \S+ model: (\d+)e(-\d+)', line)
                     
                     if thismatch1:
-                        results[species.rstrip()] = {'mantisse' : float(thismatch1.group(1)),
-                                                     'exponent' : 0,
+                        mantisse,exponent = normalize_float(float(thismatch1.group(1)), int(0))
+                        results[species.rstrip()] = {'mantisse' : mantisse,
+                                                     'exponent' : exponent,
                                                      'original' : thismatch1.group(1)}
                     elif thismatch2:
-                        results[species.rstrip()] = {'mantisse' : float(thismatch2.group(1)),
-                                                     'exponent' : int(thismatch2.group(2)),
+                        mantisse,exponent = normalize_float(float(thismatch2.group(1)), int(thismatch2.group(2)))
+                        results[species.rstrip()] = {'mantisse' : mantisse,
+                                                     'exponent' : exponent,
                                                      'original' : thismatch2.group(1) + 'e' + thismatch2.group(2)}
                     elif thismatch3:
                         results[species.rstrip()] = {'mantisse' : float(0),
                                                      'exponent' : int(0),
                                                      'original' : 0}
                     elif thismatch4:
-                        results[species.rstrip()] = {'mantisse' : float(thismatch4.group(1)),
-                                                     'exponent' : int(thismatch4.group(2)),
+                        mantisse,exponent = normalize_float(float(thismatch4.group(1)), int(thismatch4.group(2)))
+                        results[species.rstrip()] = {'mantisse' : mantisse,
+                                                     'exponent' : exponent,
                                                      'original' : thismatch4.group(1) + 'e' + thismatch4.group(2)}
             
                 if species.rstrip() not in results:
@@ -334,7 +347,7 @@ def augustify_seq(hindex, header, seqs, tmp, params):
                 if not (max_mant == 0):
                     classify_handle.write(thismatch.group(1) + "\t" + max_species +
                                         "\t" + results[max_species]['original'] + "\n")
-                else:
+                else: # this case should not occur anymore unless you use only completely unfitting parameter sets
                     classify_handle.write(thismatch.group(1) + "\t" + "undef" +
                                         "\t" + str(0) + "\n")
         except IOError:
