@@ -326,8 +326,9 @@ void evaluateOnTestSet(AnnoSequence *annoseq, NAMGene &namgene, FeatureCollectio
 	else 
 	    cout << "both strands" << endl;
 	if (singlestrand)
-	    cout << "# Overlapping genes on opposite strand were allowed." << endl;	    
-	genes = namgene.doViterbiPiecewise(sfc, annoseq, strand); 
+	    cout << "# Overlapping genes on opposite strand were allowed." << endl;
+        unsigned int num_pieces;
+        genes = namgene.doViterbiPiecewise(sfc, annoseq, strand, num_pieces);
 	ende = clock();
 	total += (double) (ende-anfang) / CLOCKS_PER_SEC;
 	//cout << "time " << (double) (ende-anfang) / CLOCKS_PER_SEC << ", seqlen=" << annoseq->length << endl;
@@ -424,24 +425,30 @@ void predictOnInputSequences(AnnoSequence *seq, NAMGene &namgene, FeatureCollect
 		cout << "both strands" << endl;
 	    if (singlestrand)
 		cout << "# Overlapping genes on opposite strand are allowed." << endl;
-
-	    genes = namgene.doViterbiPiecewise(sfc, curseq, strand);
+            unsigned int num_pieces;
+            genes = namgene.doViterbiPiecewise(sfc, curseq, strand, num_pieces);
 
 	    try {
 		if (Properties::getBoolProperty("emiprobs")){ // get emission probs (special request from Ingo Ebersberger)
-		    try {
-			Annotation *a = new Annotation(), *olda = curseq->anno;
-			a->genes = genes;
-			curseq->anno = a;
-			namgene.setPathAndProb(curseq, extrinsicFeatures); 
-			cout << "# joint probability of gene structure and sequence in " << 
-			    Properties::getProperty(SPECIES_KEY) << " model: " << curseq->anno->emiProb << endl;
-			curseq->anno = olda;
-		    } catch (ProjectError &e){
-			cerr << e.getMessage() << endl << "Error: Could not compute the emission probabilities (--emiprobs)" << endl;
-		    }
-		}
-	    } catch (...) {}
+                    try {
+                        if (num_pieces > 1){
+                            int maxDNAPieceSize = Properties::getIntProperty( "maxDNAPieceSize" );
+                            cerr << "Error: --emiprobs option works only for input sequences of length at most maxDNAPieceSize (currently set to " <<
+                                maxDNAPieceSize << "). Use --maxDNAPieceSize to readjust." << endl;
+                        } else {
+                            Annotation *a = new Annotation(), *olda = curseq->anno;
+                            a->genes = genes;
+                            curseq->anno = a;
+                            namgene.setPathAndProb(curseq, extrinsicFeatures);
+                            cout << "# joint probability of gene structure and sequence in " <<
+                                Properties::getProperty(SPECIES_KEY) << " model: " << curseq->anno->emiProb << endl;
+                            curseq->anno = olda;
+                        }
+                    } catch (ProjectError &e){
+                        cerr << e.getMessage() << endl << "Error: Could not compute the emission probabilities (--emiprobs)" << endl;
+                    }
+                }
+            } catch (...) {}
 
 	    Transcript::destroyGeneSequence(genes); // don't need them anymore after they are printed
 	    successfull++;

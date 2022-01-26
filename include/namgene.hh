@@ -44,7 +44,7 @@ public:
      * Predict the path through the HMM and compute the predicted genes.
      * strand: plusstrand, minusstrand or bothstrands
      */
-    Transcript* doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *annoseq, Strand strand);
+    Transcript* doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequence *annoseq, Strand strand, unsigned int& num_pieces);
 
     Double getEmissionProbability();
 

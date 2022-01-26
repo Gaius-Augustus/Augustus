@@ -702,12 +702,13 @@ void CompGenePred::runPredictionOrTest(){
 		    list<Transcript*> *transcripts = NULL;
 
 		    if (!noprediction){
-		      SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
-		      sfc->prepare(as, false, rsa->withEvidence(speciesNames[s]));
-		      namgene.doViterbiPiecewise(*sfc, as, bothstrands); // sampling
-		      transcripts = namgene.getAllTranscripts();
-		      orthograph.sfcs[s] = sfc;
-		      orthograph.ptrs_to_alltranscripts[s] = transcripts;
+                        SequenceFeatureCollection* sfc = rsa->getFeatures(speciesNames[s],seqID,start,end,geneRange->getStrand(s));
+                        sfc->prepare(as, false, rsa->withEvidence(speciesNames[s]));
+                        unsigned int num_pieces;
+                        namgene.doViterbiPiecewise(*sfc, as, bothstrands, num_pieces); // sampling
+                        transcripts = namgene.getAllTranscripts();
+                        orthograph.sfcs[s] = sfc;
+                        orthograph.ptrs_to_alltranscripts[s] = transcripts;
 		    } else {
 		      // turn whole sequence to lowercase characters
 		      for (unsigned pos = 0; pos < as->length; pos++)

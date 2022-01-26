@@ -270,6 +270,9 @@ def augustify_seq(hindex, header, seqs, tmp, params):
                 for line in spec_result_handle:
                     thismatch1 = re.search(r'\# joint probability of gene structure and sequence in \S+ model: (\d+\.\d+)$', line)
                     thismatch2 = re.search(r'\# joint probability of gene structure and sequence in \S+ model: (\d+\.\d+)e(-\d+)', line)
+                    thismatch3 = re.search(r'\# joint probability of gene structure and sequence in \S+ model: 0$', line)
+                    thismatch4 = re.search(r'\# joint probability of gene structure and sequence in \S+ model: (\d+)e(-\d+)', line)
+                    
                     if thismatch1:
                         results[species.rstrip()] = {'mantisse' : float(thismatch1.group(1)),
                                                      'exponent' : 0,
@@ -278,6 +281,16 @@ def augustify_seq(hindex, header, seqs, tmp, params):
                         results[species.rstrip()] = {'mantisse' : float(thismatch2.group(1)),
                                                      'exponent' : int(thismatch2.group(2)),
                                                      'original' : thismatch2.group(1) + 'e' + thismatch2.group(2)}
+                    elif thismatch3:
+                        results[species.rstrip()] = {'mantisse' : float(0),
+                                                     'exponent' : int(0),
+                                                     'original' : 0}
+                    elif thismatch4:
+                        results[species.rstrip()] = {'mantisse' : float(thismatch4.group(1)),
+                                                     'exponent' : int(thismatch4.group(2)),
+                                                     'original' : thismatch4.group(1) + 'e' + thismatch4.group(2)}
+
+                        
             # Augustus currently shows a segmentation fault in some sequences, therefore assign probability 0 for failures
             if species.rstrip() not in results:
                 results[species.rstrip()] = {'mantisse' : float(0),
@@ -286,8 +299,8 @@ def augustify_seq(hindex, header, seqs, tmp, params):
         except IOError:
             frameinfo = getframeinfo(currentframe())
             logger.info('Error in file ' + frameinfo.filename + ' at line ' +
-                    str(frameinfo.lineno) + ': ' + 'Could not open file ' +
-                    tmp + 'seq' + str(hindex) + '.fa' + ' for reading!')
+                    str(frameinfo.lineno) + ': ' + "Could not open file " +
+                    tmp + "seq" + str(hindex) + "_" + species.rstrip() + ".gff" + " for reading!")
 
         try:
             os.remove(tmp + "seq" + str(hindex) + '_' + species.rstrip() + '.gff')
