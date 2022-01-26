@@ -16,10 +16,10 @@ from itertools import compress
 import multiprocessing
 
 __author__ = "Katharina J. Hoff"
-__copyright__ = "Copyright 2021. All rights reserved."
+__copyright__ = "Copyright 2022. All rights reserved."
 __credits__ = "Mario Stanke, Anica Hoppe, Marnix Medema"
 __license__ = "Artistic License"
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __email__ = "katharina.hoff@uni-greifswald.de"
 __status__ = "development"
 
@@ -289,13 +289,13 @@ def augustify_seq(hindex, header, seqs, tmp, params):
                         results[species.rstrip()] = {'mantisse' : float(thismatch4.group(1)),
                                                      'exponent' : int(thismatch4.group(2)),
                                                      'original' : thismatch4.group(1) + 'e' + thismatch4.group(2)}
+            
+                if species.rstrip() not in results:
+                    # AUGUSTUS may not predict any gene at all, hence no probability available
+                    results[species.rstrip()] = {'mantisse' : float(0),
+                                                 'exponent' : int(0),
+                                                 'original' : 0}
 
-                        
-            # Augustus currently shows a segmentation fault in some sequences, therefore assign probability 0 for failures
-            if species.rstrip() not in results:
-                results[species.rstrip()] = {'mantisse' : float(0),
-                                             'exponent' : int(0),
-                                             'original' : 0}
         except IOError:
             frameinfo = getframeinfo(currentframe())
             logger.info('Error in file ' + frameinfo.filename + ' at line ' +
@@ -314,26 +314,24 @@ def augustify_seq(hindex, header, seqs, tmp, params):
 
     # determine maximum exponent
     max_exp = float('-inf')
-    for species in results:
-        if results[species]['exponent'] > max_exp:
-            max_exp = results[species]['exponent']
-    # subtract max_exp from all exponents
-    for species in results:
-        results[species]['exponent'] = results[species]['exponent'] - max_exp
-        results[species]['local_value'] = results[species]['mantisse'] * 10**(results[species]['exponent'])
-    # determine parameter set with maximal probability
-    max_prob = float('-inf')
+    max_mant = 0.0
     max_species = "undef"
     for species in results:
-        if results[species]['local_value'] > max_prob:
-            max_prob = results[species]['local_value']
-            max_species = species
+        if not(results[species]['mantisse'] == 0):
+            if (results[species]['exponent'] == max_exp) and (results[species]['mantisse'] > max_mant):
+                max_mant = results[species]['mantisse']
+                max_species = species
+            elif results[species]['exponent'] > max_exp:
+                max_exp = results[species]['exponent']
+                max_mant = results[species]['mantisse']
+                max_species = species
+
     thismatch = re.search(r'>(\S+)', header.rstrip())
     # write result if appropriate
     if args.metagenomic_classification_outfile:
         try:
             with open(args.metagenomic_classification_outfile, "a+") as classify_handle:
-                if not (max_prob == 0):
+                if not (max_mant == 0):
                     classify_handle.write(thismatch.group(1) + "\t" + max_species +
                                         "\t" + results[max_species]['original'] + "\n")
                 else:
@@ -346,7 +344,7 @@ def augustify_seq(hindex, header, seqs, tmp, params):
                         args.metagenomic_classification_outfile + ' for writing!')
             
     # run augustus with all gene models for the selected species
-    if args.prediction_file and not(max_prob == 0):
+    if args.prediction_file and not(max_mant == 0):
         curr_call = [augustus, '--AUGUSTUS_CONFIG_PATH=' + augustus_config_path,
                      '--species=' + max_species,
                      '--softmasking=1', tmp + 'seq' + str(hindex) + '.fa',
@@ -387,7 +385,7 @@ def augustify_seq(hindex, header, seqs, tmp, params):
         except OSError:
             pass
 
-    if max_prob == 0:
+    if max_mant == 0:
         return "undef"
     else:
         return max_species
