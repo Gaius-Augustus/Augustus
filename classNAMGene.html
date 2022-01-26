@@ -89,8 +89,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>readModelProbabilitie
 <tr class="memitem:aad0af6ed192d39f0c3551b2ede76a1f5"><td class="memItemLeft" align="right" valign="top"><a id="aad0af6ed192d39f0c3551b2ede76a1f5"></a>
 <a class="el" href="classStatePath.html">StatePath</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>getTrainViterbiPath</b> (const char *dna, <a class="el" href="classSequenceFeatureCollection.html">SequenceFeatureCollection</a> *sfc)</td></tr>
 <tr class="separator:aad0af6ed192d39f0c3551b2ede76a1f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8d8f8b98f2deec81c4f64dd5a89591b2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTranscript.html">Transcript</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNAMGene.html#a8d8f8b98f2deec81c4f64dd5a89591b2">doViterbiPiecewise</a> (<a class="el" href="classSequenceFeatureCollection.html">SequenceFeatureCollection</a> &amp;sfc, <a class="el" href="classAnnoSequence.html">AnnoSequence</a> *annoseq, Strand strand)</td></tr>
-<tr class="separator:a8d8f8b98f2deec81c4f64dd5a89591b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abde088c5f99383495140f2664319a3ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTranscript.html">Transcript</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNAMGene.html#abde088c5f99383495140f2664319a3ad">doViterbiPiecewise</a> (<a class="el" href="classSequenceFeatureCollection.html">SequenceFeatureCollection</a> &amp;sfc, <a class="el" href="classAnnoSequence.html">AnnoSequence</a> *annoseq, Strand strand, unsigned int &amp;num_pieces)</td></tr>
+<tr class="separator:abde088c5f99383495140f2664319a3ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c1f9196fa0342d3815a2bb42efe9746"><td class="memItemLeft" align="right" valign="top"><a id="a5c1f9196fa0342d3815a2bb42efe9746"></a>
 <a class="el" href="classLLDouble.html">Double</a>&#160;</td><td class="memItemRight" valign="bottom"><b>getEmissionProbability</b> ()</td></tr>
 <tr class="separator:a5c1f9196fa0342d3815a2bb42efe9746"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -129,8 +129,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>getPrepareModels</b> 
 <dd>
 Emmanouil Stafilarakis </dd></dl>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a8d8f8b98f2deec81c4f64dd5a89591b2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8d8f8b98f2deec81c4f64dd5a89591b2">&#9670;&nbsp;</a></span>doViterbiPiecewise()</h2>
+<a id="abde088c5f99383495140f2664319a3ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abde088c5f99383495140f2664319a3ad">&#9670;&nbsp;</a></span>doViterbiPiecewise()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -151,7 +151,13 @@ Emmanouil Stafilarakis </dd></dl>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">Strand&#160;</td>
-          <td class="paramname"><em>strand</em>&#160;</td>
+          <td class="paramname"><em>strand</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int &amp;&#160;</td>
+          <td class="paramname"><em>num_pieces</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
