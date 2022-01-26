@@ -1349,13 +1349,14 @@
         "name": "genemodel",
         "development": false,
         "type": "string",
-        "usage": "--genemodel=partial/intronless/complete/atleastone/exactlyone",
+        "usage": "--genemodel=partial/intronless/complete/atleastone/exactlyone/bacterium",
         "possible_values": [
             "partial",
             "intronless",
             "complete",
             "atleastone",
-            "exactlyone"
+            "exactlyone",
+            "bacterium"
         ],
         "default_value": "partial",
         "description": {
