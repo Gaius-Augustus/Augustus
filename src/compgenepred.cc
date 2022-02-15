@@ -519,54 +519,52 @@ void CompGenePred::runPredictionOrTest(){
     GeneMSA::setCodonEvo(&codonevo);
 
     // clamsa related code
-    CodonEvoDiscr codonevodiscr;
-    codonevodiscr.setBranchLengths(ct_branchset, 25);
-    if(use_clamsa){
-        int clamsa_k; // number of clamsa models
+    if (use_clamsa){
+        CodonEvoDiscr codonevodiscr;
+        codonevodiscr.setBranchLengths(ct_branchset, 25);
+        cout << "CodonEvoDiscr branch lengths" << endl;
+        codonevodiscr.printBranchLengths();
+        int clamsa_M = 3; // number of clamsa models
         try {
-        clamsa_k = Properties::getIntProperty("/CompPred/clamsa_numModels");
-        } catch(...){
-        clamsa_k = 3;
-        }
+            clamsa_M = Properties::getIntProperty("/CompPred/clamsa_numModels");
+        } catch(...){}
 
         string clamsa_Q, clamsa_pi;
         try {
             clamsa_Q = Properties::getProperty("/CompPred/clamsa_Q");
         } catch (...) {
-            clamsa_Q = "/home/giovanna/Desktop/augEVO/claMSA/rates-Q.txt";
+            clamsa_Q = "rates-Q.txt";
         }
 
         try {
             clamsa_pi = Properties::getProperty("/CompPred/clamsa_pi");
         } catch (...) {
-            clamsa_pi = "/home/giovanna/Desktop/augEVO/claMSA/rates-pi.txt";
+            clamsa_pi = "rates-pi.txt";
         }
 
-        codonevodiscr.setK(clamsa_k);
+        codonevodiscr.setK(clamsa_M);
         codonevodiscr.readMatrices(clamsa_Q, clamsa_pi);
-        codonevodiscr.computeLogPmatrices();
+        codonevodiscr.computeLogPmatrices(); // TODO: needed?
+        GeneMSA::setCodonEvoDiscr(&codonevodiscr);
     }
-
-    GeneMSA::setCodonEvoDiscr(&codonevodiscr);
-    // <-- Clamsa
     
     GenomicMSA msa(rsa);
 
     #ifdef TESTING
-    if(testMode!="run")
+    if (testMode != "run")
         msa.readAlignment(Constant::alnfile);  // reads the alignment only if testMode != "run"
     #else
         msa.readAlignment(Constant::alnfile);  // reads the alignment
     #endif
     
     // msa.printAlignment("");    
-    // rsa->printStats();
+    rsa->printStats();
     // msa.compactify(); // Mario: commented out as this excludes paths through the alignment graph 
                          //(trivial mergers of neighboring alignments)
 
     #ifdef TESTING
-    if(testMode=="run"){        
-	    string dbdir;
+    if (testMode == "run"){        
+        string dbdir;
         try {
             dbdir = Properties::getProperty("/Testing/workingDir");
             expandDir(dbdir);
@@ -574,7 +572,7 @@ void CompGenePred::runPredictionOrTest(){
             if(outdir.empty())
             throw ProjectError("Missing parameter /Testing/workingDir.");
         }
-
+        
         dbdir += "names/";
         
         msa.readNameDB(dbdir); // default was ../examples/cgp12way/names/ but currently an exception is raised if this parameter is not passed, temporarily added to solve a problem with string serialization 
@@ -596,10 +594,10 @@ void CompGenePred::runPredictionOrTest(){
     #endif
     
     #ifdef TESTING
-    if(testMode=="run"){        
-        while(true){
+    if (testMode == "run"){        
+        while (true){
             filename = outdirPrepare + "generange_" + to_string(1+n) + ".bed";   // interspecies
-            if(stat(filename.c_str(), &buffer) != 0)
+            if (stat(filename.c_str(), &buffer) != 0)
                 break;
             ++n;
         }

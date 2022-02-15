@@ -23,7 +23,7 @@ using namespace std;
 
 PhyloTree *GeneMSA::tree = NULL;
 CodonEvo *GeneMSA::codonevo = NULL;
-CodonEvoDiscr *GeneMSA::codonevodiscr = NULL; // clamsa related code
+CodonEvoDiscr *GeneMSA::codonevodiscr = NULL;
 int GeneMSA::padding = 1000; // added to seqRange after last alignment block
 int GeneMSA::orthoExonID = 1;
 int GeneMSA::geneRangeID = 1;
