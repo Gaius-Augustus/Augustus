@@ -15,7 +15,7 @@
 
 const char* phyleticPatternIdentifiers[6]={"0", "1", "-", "_", "g", "l"};
 
-OrthoExon::OrthoExon(int_fast64_t k, size_t n) : key(k), omega(-1.0), Eomega(-1.0), VarOmega(-1.0), leftBoundaryExtOmega(-1.0), rightBoundaryExtOmega(-1.0), leftBoundaryIntOmega(-1.0), rightBoundaryIntOmega(-1.0), intervalCount(0), subst(-1), cons(-1.0), leftCons(-1.0), rightCons(-1.0), diversity(-1.0) {
+OrthoExon::OrthoExon(int_fast64_t k, size_t n) : key(k), omega(-1.0), Eomega(-1.0), VarOmega(-1.0), leftBoundaryExtOmega(-1.0), rightBoundaryExtOmega(-1.0), leftBoundaryIntOmega(-1.0), rightBoundaryIntOmega(-1.0), intervalCount(0), intervalCountClamsa(0), subst(-1), cons(-1.0), leftCons(-1.0), rightCons(-1.0), diversity(-1.0) {
     orthoex.resize(n);
     orthonode.resize(n);
     weights.resize(n,0);
@@ -232,6 +232,109 @@ void OrthoExon::storeOmega(double currOmega, double currVarOmega){
     break;
   }
   intervalCount++;
+}
+
+// clamsa related code
+// TODO: Mario
+void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* codonevodiscr , bool oeStart){
+    if (oeStart){
+    	loglikClamsaStarts.push_back(*llo);
+    	numCodonsClamsaStarts.push_back(numCodons);
+      	//cout<<"set Clamsa at oeStart: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\ga, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<endl;
+    } else {
+      	vector<double> loglikClamsa;
+        int numCodonsClamsa;
+
+      	if (!loglikClamsaStarts.empty()){
+            loglikClamsa = loglikClamsaStarts.front();
+            loglikClamsaStarts.pop_front();
+
+            numCodonsClamsa = numCodonsClamsaStarts.front();
+            numCodonsClamsaStarts.pop_front();
+      	} else {
+            if (!llo->empty()){
+                loglikClamsa = *llo;
+                numCodonsClamsa = numCodons;
+            }
+    	}
+		
+        //calculate mean of likelihood over all codons
+        int k = llo->size();
+
+        if (*llo == loglikClamsa)
+            k = 0;
+
+        double currClamsa;
+
+        if (k == 0){ // no likelihood was calculated
+            currClamsa = -1;
+            // omega = -1; no equivalent for clamsa 
+            storeClamsa(currClamsa);
+            //cerr<<"ortho exon "<<this->ID<<" has no omega"<<endl;
+            return;
+        }
+        //cout<<"number of omegas: "<<k<<endl;
+        if (loglikClamsa.size() != k)
+            loglikClamsa.resize(k,0.0);
+        //cout<<"log likelihood of omega"<<endl;
+        for (int u=0; u < k; u++){
+            // sum of likelihoods in intervall OE start and OE end
+            loglikClamsa[u] = (*llo)[u] - loglikClamsa[u];
+            // cout<<"omega "<<codonevo->getOmega(u)<<"\t"<<loglikOmegas[u]<<endl;
+        }
+
+        numCodonsClamsa = numCodons - numCodonsClamsa;
+
+        // assign the mean of loglikClamsa computed for each model in clamsa
+        for (int u=0; u < k; u++){
+            loglikClamsa[u] /= numCodonsClamsa;
+        }
+
+        /* compute probability
+           double THETA[3][2], theta[2], w[4], z;
+           THETA[0][0] = 0.26820281;
+           THETA[0][1] = -0.21659515;
+           THETA[1][0] = -0.51381232;
+           THETA[1][1] = 0.56243472;
+           THETA[2][0] = 0.19619327;
+           THETA[2][1] = -0.3344318;
+
+           theta[0] = 1.64427646;
+           theta[1] = -1.64427646;
+
+           w[0] = theta[1] - theta[0];
+           for(int i=0;i<k;++i){
+           w[i+1] = THETA[i][1] - THETA[i][0];
+           }
+           z = w[0];
+           for(int i=0;i<k;++i)
+           z += w[i+1]*loglikClamsa[i];
+		
+           // cout << "Prob = " << z << " " << exp(-z) << " " << 1.0/(1.0 + exp(-z)) << endl;
+           currClamsa = 1.0/(1.0 + exp(-z));
+
+           storeClamsa(currClamsa);
+           loglikClamsa.clear();
+        */
+    }
+}
+
+void OrthoExon::storeClamsa(double currClamsa){  
+    switch(intervalCountClamsa){
+    case 0: leftBoundaryExtClamsa = currClamsa;
+        break;
+    case 1: leftBoundaryIntClamsa = currClamsa;
+        break;
+    case 2: probClamsa = currClamsa;
+        break;
+    case 3:rightBoundaryIntClamsa = currClamsa;
+        break;
+    case 4: rightBoundaryExtClamsa = currClamsa;
+        break;
+    default: throw ProjectError("Error in setClamsa(): too many intervals were calculated.");
+        break;
+    }
+    intervalCountClamsa++;
 }
 
 void OrthoExon::setSubst(int subs, bool oeStart){

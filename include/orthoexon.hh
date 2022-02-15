@@ -14,6 +14,7 @@
 #include "phylotree.hh"
 #include "contTimeMC.hh"
 #include "codonevo.hh"
+#include "codonevodiscr.hh"
 
 #include <vector>
 #include <string>
@@ -74,6 +75,8 @@ public:
     void setOmega(double o){omega=o;}
     void setOmega(vector<double>* llo, CodonEvo* codonevo, bool oeStart);
     void storeOmega(double currOmega, double currVarOmega);
+    void setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* codonevo, bool oeStart);
+    void storeClamsa(double currClamsa);
     void setSubst(int s){ subst=s;}
     void setSubst(int subs, bool oeStart);
     void setConsScore(double c){cons=c;}
@@ -112,8 +115,18 @@ private:
     double rightBoundaryExtOmega;
     double leftBoundaryIntOmega;
     double rightBoundaryIntOmega;
+    
+    double probClamsa;
+    double leftBoundaryExtClamsa;
+    double rightBoundaryExtClamsa;
+    double leftBoundaryIntClamsa;
+    double rightBoundaryIntClamsa;
+    
     list<vector<double> > loglikOmegaStarts;
+    list<vector<double> > loglikClamsaStarts;
+    list<int> numCodonsClamsaStarts;
     int intervalCount;
+    int intervalCountClamsa;
     int subst;
     double cons; // conservation score
     double leftCons; // conservation score of left boundary feature

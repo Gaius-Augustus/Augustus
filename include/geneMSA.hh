@@ -32,24 +32,27 @@ string printRFC(vector<int>);
  * we create an object of cumValues for each bit_vector and reading frame combination  
  */
 struct cumValues{
-  vector<double> logliks;
-  int numSubs;
-  int id;
-  cumValues(int i, int s=-1):numSubs(s), id(i){};
-  void addLogliks(vector<double>* ll){
-    if(logliks.size() == 0){
-      logliks.resize(ll->size(),0.0);
-      if(logliks.size() == 0){
-	cerr<<"logliks still empty!"<<endl;
-      }
+    vector<double> logliks;
+    int numSubs;
+    int id;
+    int numCodons;
+    
+    cumValues(int i, int s=-1):numSubs(s), id(i), numCodons(0){};
+    void addLogliks(vector<double>* ll){
+        if(logliks.size() == 0){
+            logliks.resize(ll->size(),0.0);
+            if(logliks.size() == 0){
+                cerr<<"logliks still empty!"<<endl;
+            }
+        }
+        for(int u = 0; u < ll->size(); u++){
+            logliks[u] += (*ll)[u];
+        }
+        ++numCodons;
     }
-    for(int u = 0; u < ll->size(); u++){
-      logliks[u] += (*ll)[u];
+    void addNumSubs(int subs){
+        numSubs += subs;
     }
-  }
-  void addNumSubs(int subs){
-    numSubs += subs;
-   }
 };
 
 /**
@@ -107,6 +110,7 @@ public:
     void printOrthoExons(list<OrthoExon> &orthoExonsList);
     void computeOmegas(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
     void computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli);
+    void computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree);
     vector<string> pruneToBV(vector<string> *cs, bit_vector bv); // prune codon strings to bit_vector
     vector<int> pruneToBV(vector<int> *rfc, bit_vector bv); // prune RFC to bit_vector
     double omegaForCodonTuple(vector<double> *loglik);
@@ -124,6 +128,7 @@ public:
     // static functions
     static void setTree(PhyloTree *t){tree = t;}
     static void setCodonEvo(CodonEvo *c){ codonevo = c; }
+    static void setCodonEvoDiscr(CodonEvoDiscr *c){ codonevodiscr = c; }
     static int numSpecies(){ return tree->numSpecies(); }
     static void openOutputFiles(string outdir);
     static void closeOutputFiles();
@@ -171,6 +176,7 @@ private:
     static PhyloTree *tree;
     LocusTree *ltree;
     static CodonEvo *codonevo;
+    static CodonEvoDiscr *codonevodiscr;
     vector<int> starts, ends; // gene ranges for each species
     vector<int> offsets; // this many bases are upstream from the region
     RandSeqAccess *rsa;
