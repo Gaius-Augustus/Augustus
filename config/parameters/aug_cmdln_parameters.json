@@ -1901,5 +1901,47 @@
         "usage": "--UTR=true/false",
         "default_value": "False",
         "description": "Predict the untranslated regions in addition to the coding sequence. This works only for a subset of species for which an UTR model was trained."
+    },
+    {
+        "name": "/CompPred/clamsa",
+        "development": true,
+        "type": "bool",
+        "usage": "--/CompPred/clamsa=true/false",
+        "description": "Whether ClaMSA is used to comparatively score HECTs rather than dN/dS.",
+	"default_value": "3",
+        "exclude_apps": [
+            "etraining"
+        ]
+    },
+    {
+        "name": "/CompPred/clamsa_numModels",
+        "development": true,
+        "type": "int",
+        "usage": "--/CompPred/clamsa_numModels=k",
+	"default_value": "3",
+        "description": "The number of codon rate matrices for ClaMSA.",
+        "exclude_apps": [
+            "etraining"
+        ]
+    },
+    {
+        "name": "/CompPred/clamsa_Q",
+        "development": true,
+        "type": "string",
+        "usage": "--/CompPred/clamsa_Q=rates-Q.txt",
+        "description": "The path to the file that includes the rate matrices for ClaMSA.",
+        "exclude_apps": [
+            "etraining"
+        ]
+    },
+    {
+        "name": "/CompPred/clamsa_pi",
+        "development": true,
+        "type": "string",
+        "usage": "--/CompPred/clamsa_pi=rates-pi.txt",
+        "description": "The path to the file that includes the codon equilibrium distribution for ClaMSA.",
+        "exclude_apps": [
+            "etraining"
+        ]
     }
 ]

@@ -36,19 +36,18 @@ struct cumValues{
     int numSubs;
     int id;
     int numCodons;
-    
+
     cumValues(int i, int s=-1):numSubs(s), id(i), numCodons(0){};
     void addLogliks(vector<double>* ll){
-        if(logliks.size() == 0){
-            logliks.resize(ll->size(),0.0);
-            if(logliks.size() == 0){
-                cerr<<"logliks still empty!"<<endl;
+        if (logliks.size() == 0){
+            logliks.resize(ll->size(), 0.0);
+            if (logliks.size() == 0){
+                cerr << "logliks still empty!" << endl;
             }
         }
-        for(int u = 0; u < ll->size(); u++){
+        for (int u = 0; u < ll->size(); u++){
             logliks[u] += (*ll)[u];
         }
-        ++numCodons;
     }
     void addNumSubs(int subs){
         numSubs += subs;

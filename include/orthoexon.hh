@@ -115,13 +115,13 @@ private:
     double rightBoundaryExtOmega;
     double leftBoundaryIntOmega;
     double rightBoundaryIntOmega;
-    
+
     double probClamsa;
     double leftBoundaryExtClamsa;
     double rightBoundaryExtClamsa;
     double leftBoundaryIntClamsa;
     double rightBoundaryIntClamsa;
-    
+
     list<vector<double> > loglikOmegaStarts;
     list<vector<double> > loglikClamsaStarts;
     list<int> numCodonsClamsaStarts;

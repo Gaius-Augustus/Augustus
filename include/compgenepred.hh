@@ -38,24 +38,22 @@ bool shiftGFF(string filename);
  * @author Stefanie Koenig
  */
 class CompGenePred {
-    public:
-        CompGenePred();
-        ~CompGenePred() { delete rsa;}
+public:
+    CompGenePred();
+    ~CompGenePred() { delete rsa;}
 
-        void start();    
-        void runPredictionOrTest();
+    void start();
+    void runPredictionOrTest();
 
-        #ifdef TESTING
-        // helpers for testing
-        void postprocTest();
-        bool readInterval(string filename, list<tuple<string,int,int> >& grlist);
-        #endif
-        
-        RandSeqAccess *rsa;
-        PhyloTree tree;
+#ifdef TESTING
+    // helpers for testing
+    void postprocTest();
+    bool readInterval(string filename, list<tuple<string,int,int> >& grlist);
+#endif
 
- 
-
+    RandSeqAccess *rsa;
+    PhyloTree tree;
+    void test_2(double ctree_scaling_factor);
 };
 
 #endif  // _COMPGENEPRED_HH

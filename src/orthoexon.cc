@@ -234,8 +234,8 @@ void OrthoExon::storeOmega(double currOmega, double currVarOmega){
   intervalCount++;
 }
 
+
 // clamsa related code
-// TODO: Mario
 void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* codonevodiscr , bool oeStart){
     if (oeStart){
     	loglikClamsaStarts.push_back(*llo);
@@ -245,7 +245,7 @@ void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* cod
       	vector<double> loglikClamsa;
         int numCodonsClamsa;
 
-      	if (!loglikClamsaStarts.empty()){
+      	if(!loglikClamsaStarts.empty()){
             loglikClamsa = loglikClamsaStarts.front();
             loglikClamsaStarts.pop_front();
 
@@ -309,7 +309,7 @@ void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* cod
            z = w[0];
            for(int i=0;i<k;++i)
            z += w[i+1]*loglikClamsa[i];
-		
+
            // cout << "Prob = " << z << " " << exp(-z) << " " << 1.0/(1.0 + exp(-z)) << endl;
            currClamsa = 1.0/(1.0 + exp(-z));
 
@@ -319,7 +319,7 @@ void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* cod
     }
 }
 
-void OrthoExon::storeClamsa(double currClamsa){  
+void OrthoExon::storeClamsa(double currClamsa){
     switch(intervalCountClamsa){
     case 0: leftBoundaryExtClamsa = currClamsa;
         break;
@@ -336,6 +336,7 @@ void OrthoExon::storeClamsa(double currClamsa){
     }
     intervalCountClamsa++;
 }
+
 
 void OrthoExon::setSubst(int subs, bool oeStart){
   if(oeStart){

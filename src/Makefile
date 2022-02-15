@@ -35,7 +35,7 @@ ifeq (,$(findstring $(COMPGENEPRED),0 false False FALSE))  # if COMPGENEPRED is 
 	SQLITE   ?= true
 	MYSQL    ?= true
 	USE_BOOST = true
-	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o codonevo.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o tokenizer.o
+	OBJS += parser/parse.o scanner/lex.o genomicMSA.o geneMSA.o contTimeMC.o codonevo.o codonevodiscr.o compgenepred.o phylotree.o orthograph.o orthoexon.o alignment.o speciesgraph.o codonMSA.o train_logReg_param.o tokenizer.o
 	CPPFLAGS += -DCOMPGENEPRED
 	INCLUDE_PATH_LPSOLVE ?= -I/usr/include/lpsolve # sets the default (ubuntu/debian) location if it has not already been set in common.mk
 	INCLS   += $(INCLUDE_PATH_LPSOLVE) $(INCLUDE_PATH_GSL) $(INCLUDE_PATH_SUITESPARSE)
@@ -629,6 +629,8 @@ compgenepred.o : \
 	../include/liftover.hh \
 	../include/train_logReg_param.hh \
 	../include/tokenizer.hh \
+	../include/codonevo.hh \
+	../include/codonevodiscr.hh \
 	compgenepred.cc
 
 randseqaccess.o : \
@@ -709,6 +711,11 @@ codonevo.o: \
 	../include/codonevo.hh \
 	../include/contTimeMC.hh \
 	codonevo.cc
+
+codonevodiscr.o: \
+	../include/codonevodiscr.hh \
+	../include/contTimeMC.hh \
+	codonevodiscr.cc
 
 alignment.o: \
 	../include/alignment.hh \

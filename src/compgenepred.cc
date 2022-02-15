@@ -13,6 +13,8 @@
 #include "liftover.hh"
 #include "intronmodel.hh"
 #include "train_logReg_param.hh"
+#include "codonevo.hh"
+#include "codonevodiscr.hh"
 
 #include <gsl/gsl_matrix.h>
 #include <ctime>
@@ -450,6 +452,12 @@ void CompGenePred::runPredictionOrTest(){
 	use_omega = false;
     }
 
+    // clamsa related code
+    bool use_clamsa = false;
+    try {
+      use_clamsa = Properties::getBoolProperty("/CompPred/clamsa");
+    } catch (...){}
+
     //initialize output files of initial gene prediction and optimized gene prediction
     vector<ofstream*> baseGenes, optGenes, sampledGFs;
     if (Constant::printMEA)
@@ -509,6 +517,39 @@ void CompGenePred::runPredictionOrTest(){
     // gsl_matrix *P = codonevo.getSubMatrixLogP(0.3, 0.25);
     // printCodonMatrix(P);
     GeneMSA::setCodonEvo(&codonevo);
+
+    // clamsa related code
+    CodonEvoDiscr codonevodiscr;
+    codonevodiscr.setBranchLengths(ct_branchset, 25);
+    if(use_clamsa){
+        int clamsa_k; // number of clamsa models
+        try {
+        clamsa_k = Properties::getIntProperty("/CompPred/clamsa_numModels");
+        } catch(...){
+        clamsa_k = 3;
+        }
+
+        string clamsa_Q, clamsa_pi;
+        try {
+            clamsa_Q = Properties::getProperty("/CompPred/clamsa_Q");
+        } catch (...) {
+            clamsa_Q = "/home/giovanna/Desktop/augEVO/claMSA/rates-Q.txt";
+        }
+
+        try {
+            clamsa_pi = Properties::getProperty("/CompPred/clamsa_pi");
+        } catch (...) {
+            clamsa_pi = "/home/giovanna/Desktop/augEVO/claMSA/rates-pi.txt";
+        }
+
+        codonevodiscr.setK(clamsa_k);
+        codonevodiscr.readMatrices(clamsa_Q, clamsa_pi);
+        codonevodiscr.computeLogPmatrices();
+    }
+
+    GeneMSA::setCodonEvoDiscr(&codonevodiscr);
+    // <-- Clamsa
+    
     GenomicMSA msa(rsa);
 
     #ifdef TESTING
@@ -830,6 +871,13 @@ void CompGenePred::runPredictionOrTest(){
 	    //inefficient omega calculation, only use for debugging purpose 
 	    //geneRange->computeOmegas(hects, seqRanges, &ctree);
 	}
+
+        // clamsa related code
+        if (use_clamsa) {    // likelihoods are stored as OrthoExon attribute
+	    geneRange->computeClamsaEff(hects, seqRanges, &ctree);
+	}
+        // <-- clamsa
+
 	if (conservation)
 	    geneRange->calcConsScore(hects, seqRanges, outdir);
 
@@ -1153,4 +1201,52 @@ void CompGenePred::postprocTest(){
     }
 }
 
+/*
+// clamsa related code
+// applies to codons using Q matrices from ClaMSA
+void CompGenePred::test_2(double ctree_scaling_factor){
+    PhyloTree ctree(tree); // codon tree
+    ctree.scaleTree(ctree_scaling_factor); // scale branch lengths to codon substitutions
+    vector<double> ct_branchset;
+    ctree.getBranchLengths(ct_branchset);
+
+    // info about the tree
+    //cout << "tree info..."<< endl;
+    //ctree.printInfo();
+
+    CodonEvoDiscr codonevodiscr;
+    codonevodiscr.setBranchLengths(ct_branchset, 25);
+    codonevodiscr.setK(3);
+    codonevodiscr.readMatrices("/home/giovanna/Desktop/augEVO/claMSA/rates-Q.txt", "/home/giovanna/Desktop/augEVO/claMSA/rates-pi.txt");
+    codonevodiscr.computeLogPmatrices();
+    GeneMSA::setCodonEvoDiscr(&codonevodiscr);
+
+    // start of TEST
+    // GM added the following for testing
+    vector<string> MSA(OrthoGraph::numSpecies, "");
+    MSA[0] = MSA[2] = "AAA";
+    MSA[1] = MSA[3] = MSA[4] = "CCC";
+
+    int numcodons = MSA[0].size()/3;
+    vector<vector<string> > codons(numcodons);
+    for(int j, kkk=0,i=0;i<numcodons;++i,kkk+=3){
+        codons[i].resize(OrthoGraph::numSpecies);
+        for(j=0;j<OrthoGraph::numSpecies;++j)
+            codons[i][j] = MSA[j].substr(kkk, 3);
+    }
+
+    cout << "--------- NEW LOGLIKELIHOOD start Eff2 ---------" << endl;
+    vector<double> loglik;
+
+    // compute log likelyhood
+    for(int i=0;i<codons.size();++i){
+        loglik = codonevodiscr.loglikForCodonTuple(codons[i], &ctree);
+
+        cout << "column " << i << endl;
+        for(int s=0;s<loglik.size();++s){
+            cout << s << "\t" << loglik[s] << endl;
+        }
+    }
+}
+*/
 #endif
