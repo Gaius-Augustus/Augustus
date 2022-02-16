@@ -264,7 +264,7 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
 		    gsl_matrix *P = evo->getSubMatrixP(u,(*it)->getDist());
 		    //cout<<"---------- Transition Matrix for omega nr "<<u<<" and branch lenght = "<<(*it)->getDist()<<"---------"<<endl;
 		    //printCodonMatrix(P);
-		    for(int j=0; j<states; j++){
+		    for (int j=0; j<states; j++){
 		      sum += gsl_matrix_get(P, i, j) * (*it)->getTable(j);
 		      //cout<<gsl_matrix_get(P, i, j)<<"\t";
 		    }
@@ -279,7 +279,7 @@ double PhyloTree::pruningAlgor(vector<int> &tuple, Evo *evo, int u){
 
     //in the root, we take the weighted average over all states
     double tree_score = 0;
-    for(int i=0; i<states; i++){
+    for (int i=0; i<states; i++){
 	double ts = (evo->getPi(i) * treenodes.back()->getTable(i));
 	tree_score += ts;
     }
@@ -531,9 +531,8 @@ void PhyloTree::prune(bit_vector &bv, Evo *evo){
 }
 
 int PhyloTree::fitch(vector<int> &labels, int states){
-    
-    for(list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
-	if((*node)->isLeaf()){
+    for (list<Treenode*>::iterator node = treenodes.begin(); node != treenodes.end(); node++){
+	if ((*node)->isLeaf()){
 	    // initialization
 	    int idx = (*node)->getIdx();
 	    int c = labels[idx];
@@ -546,39 +545,39 @@ int PhyloTree::fitch(vector<int> &labels, int states){
 	    (*node)->bestAssign.resize(states);
 	}
 	else{
-	    //recursion for the interior nodes
+	    // recursion for the interior nodes
 	    (*node)->resizeTable(states);
 	    (*node)->bestAssign.clear();
 	    (*node)->bestAssign.resize(states);
-	    for(int i=0; i<states; i++){
+	    for (int i=0; i<states; i++){
 		double score = 0.0;
-		for(list<Treenode*>::iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
+		for (list<Treenode*>::iterator it = (*node)->children.begin(); it != (*node)->children.end(); it++){
 		    double min = std::numeric_limits<double>::max();
 		    int bestAssign = -1;
-		    for(int j=0; j<states; j++){
+		    for (int j=0; j<states; j++){
 			double branch_score = (*it)->getTable(j);
-			if(i != j)
+			if (i != j)
 			    branch_score++; // count one substitution
-			if(min > branch_score){
+			if (min > branch_score){
 			    min = branch_score;
 			    bestAssign=j;
 			}
 		    }
-		    score+=min;
-		    (*it)->bestAssign[i]=bestAssign;
+		    score += min;
+		    (*it)->bestAssign[i] = bestAssign;
 		}
 		(*node)->setTable(i,score);
 	    }
 	}
     }
     double min = std::numeric_limits<double>::max();
-    if(!treenodes.empty()){
+    if (!treenodes.empty()){
 	Treenode* root = treenodes.back();	
-	for(int i=0; i<states; i++){
-	    if(min > root->getTable(i))
+	for (int i=0; i<states; i++){
+	    if (min > root->getTable(i))
 		min = root->getTable(i);
 	}
-    }else{
+    } else {
       min = -1;
     }
     return min;

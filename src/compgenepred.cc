@@ -474,9 +474,9 @@ void CompGenePred::runPredictionOrTest(){
     } catch(...){
       printCodons = 0;
     }
-    ofstream codonAli;   // prints codon alignments of all orthoexons in maf format
-    if(printCodons){
-      codonAli.open(outdir + "orthoexons_codonAlignment.maf");
+    ofstream codonAliStrm;   // prints codon alignments of all orthoexons in maf format
+    if (printCodons){
+        codonAliStrm.open(outdir + "orthoexons_codonAlignment.maf");
     }
 
     BaseCount::init();
@@ -862,8 +862,8 @@ void CompGenePred::runPredictionOrTest(){
 		geneRange->comparativeSignalScoring(hects); 
 	} catch (...) {}
        
-	if(use_omega){
-	    geneRange->computeOmegasEff(hects, seqRanges, &ctree, &codonAli); // omega and number of substitutions is stored as OrthoExon attribute
+	if (use_omega){
+	    geneRange->computeOmegasEff(hects, seqRanges, &ctree, &codonAliStrm); // omega and number of substitutions is stored as OrthoExon attribute
 	    // calculates an omega for every single codon alignment and prints wiggle trac for ever reading frame and species combination that exists in an ortho exon
 	    //geneRange->printOmegaForCodon(outdir);
 	    //inefficient omega calculation, only use for debugging purpose 
@@ -872,29 +872,27 @@ void CompGenePred::runPredictionOrTest(){
 
         // clamsa related code
         if (use_clamsa) {    // likelihoods are stored as OrthoExon attribute
-	    geneRange->computeClamsaEff(hects, seqRanges, &ctree);
+	    geneRange->computeClamsaEff(hects, seqRanges, &ctree, &codonAliStrm);
 	}
-        // <-- clamsa
 
 	if (conservation)
 	    geneRange->calcConsScore(hects, seqRanges, outdir);
 
-	if(!noprediction && !onlySampling){
+	if (!noprediction && !onlySampling){
 	    orthograph.linkToOEs(hects); // link ECs in HECTs to nodes in orthograph	    
 	    orthograph.globalPathSearch();
 	    if (Constant::printMEA)
 		orthograph.outputGenes(baseGenes,base_geneid);
 	    	    
-	    if(!hects.empty()){
+	    if (!hects.empty()){
 	    	// optimization via dual decomposition
 		vector< list<Transcript*> *> genelist(OrthoGraph::numSpecies);
-		orthograph.dualdecomp(hects,evo,genelist,GeneMSA::geneRangeID-1,maxIterations, dd_factors);
-		orthograph.filterGeneList(genelist,opt_geneid);
+		orthograph.dualdecomp(hects, evo, genelist, GeneMSA::geneRangeID-1, maxIterations, dd_factors);
+		orthograph.filterGeneList(genelist, opt_geneid);
 		orthograph.createOrthoGenes(geneRange);
 		orthograph.printOrthoGenes();
 		orthograph.printGenelist(optGenes);
-
-	    }else{
+	    } else {
 		orthograph.outputGenes(optGenes, opt_geneid);
 	    }
 	}
@@ -922,7 +920,7 @@ void CompGenePred::runPredictionOrTest(){
 	}
 	// delete geneRange
 	delete geneRange;
-    ++numGeneRange;
+        ++numGeneRange;
     }
 
     GeneMSA::closeOutputFiles();
@@ -931,9 +929,10 @@ void CompGenePred::runPredictionOrTest(){
     closeOutputFiles(optGenes);
     if (Constant::printSampled)
 	closeOutputFiles(sampledGFs);
-
+    if (codonAliStrm.is_open())
+        codonAliStrm.close();
     // delete all trees                                           
-    for(unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>>::iterator topit = GeneMSA::topologies.begin(); topit !=GeneMSA::topologies.end(); topit++){
+    for (unordered_map< bit_vector, PhyloTree*, boost::hash<bit_vector>>::iterator topit = GeneMSA::topologies.begin(); topit !=GeneMSA::topologies.end(); topit++){
 	delete topit->second;
     }                                                                                                                                                              
     GeneMSA::topologies.clear(); 
@@ -1091,13 +1090,13 @@ bool shiftGFF(string filenameIn, string filenameOut){
 *   functions for merging/reading/writing intervals for all generanges within the current chunk (BED format)  
 */
 bool sortInterval(const tuple<string,int,int>& a, const tuple<string,int,int>& b){
-    if(get<0>(a) == get<0>(b))
+    if (get<0>(a) == get<0>(b))
         return get<1>(a) <= get<1>(b);
     return get<0>(a)<=get<0>(b);
 }
 
 void mergeInterval(list<tuple<string,int,int> >& intervals){
-    if(intervals.empty())
+    if (intervals.empty())
         return;
     
     stack<tuple<string,int,int> > s;
@@ -1107,7 +1106,7 @@ void mergeInterval(list<tuple<string,int,int> >& intervals){
     intervals.pop_front();
     
     s.push(intv);
-    while(!intervals.empty()){
+    while (!intervals.empty()){
         intv = intervals.front();
         intervals.pop_front();
 
@@ -1128,7 +1127,7 @@ void mergeInterval(list<tuple<string,int,int> >& intervals){
 }
 
 void mergeIntervals(vector<string>& speciesNames, vector<list<tuple<string,int,int> > >& intervals){
-    for(int s=0;s<speciesNames.size();++s){
+    for (int s=0;s<speciesNames.size();++s){
         intervals[s].sort();
         intervals[s].unique();
         mergeInterval(intervals[s]);
@@ -1137,12 +1136,12 @@ void mergeIntervals(vector<string>& speciesNames, vector<list<tuple<string,int,i
 
 void writeIntervals(string dirname, vector<string>& speciesNames, vector<list<tuple<string,int,int> > >& intervals){
     string filename;
-    for(int s=0;s<speciesNames.size();++s){
+    for (int s=0;s<speciesNames.size();++s){
         filename = dirname + speciesNames[s] + ".bed";
         ofstream ofs(filename);
-        if(!ofs.is_open())
+        if (!ofs.is_open())
             continue;
-        for(list<tuple<string,int,int> >::iterator it=intervals[s].begin();it!=intervals[s].end();++it)
+        for (list<tuple<string,int,int> >::iterator it=intervals[s].begin();it!=intervals[s].end();++it)
             ofs << get<0>(*it) << "\t" << get<1>(*it) << "\t" << get<2>(*it) << endl;
         ofs.close();
     }

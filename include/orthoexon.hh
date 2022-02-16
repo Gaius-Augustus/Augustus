@@ -89,7 +89,7 @@ public:
     string getPhyleticPattern() const; // phyletic pattern: for an explanation, see .cc file
     void setPhyleticPattern(map<int, list<int> > &pp_init, map<int, list<int> > &pp_opt);
     vector<int> getRFC(vector<int> offsets);
-    double getLogRegScore();
+    double getLogRegScore() const;
 
     vector<ExonCandidate*> orthoex;
     vector<Node*> orthonode; //corresponding nodes in the graph

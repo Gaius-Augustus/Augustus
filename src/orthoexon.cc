@@ -357,170 +357,50 @@ void OrthoExon::setSubst(int subs, bool oeStart){
 }
 
 
-double OrthoExon::getLogRegScore(){
-    
-  // pre-definitions for the boundary feature
-  double b_l;
-  double b_r;
-  if(getLeftIntOmega() > 0 && getLeftExtOmega() > 0 && getRightIntOmega() > 0 && getRightExtOmega() > 0){
-    b_l = log(getLeftIntOmega()) - log(getLeftExtOmega());
-    b_r = log(getRightIntOmega()) - log(getRightExtOmega());
-  }else{
-    b_l = 0;
-    b_r = 0;
-  }
-
-  	// GM added the following to include up to 21 features
-	double addScore = 0.0;
-	#if TESTING
-		addScore = 
-
-
-						
-			Constant::ex_sc[31]*hasOmega()*getLeftExtOmega()	
-			//'leftBoundaryExtOmega', 	14
-         	+ Constant::ex_sc[32]*hasOmega()*getRightExtOmega()	
-			//'rightBoundaryExtOmega'		15
-			+ Constant::ex_sc[33]*hasOmega()*getLeftIntOmega()	
-			// 'leftBoundaryIntOmega'		16
-			+ Constant::ex_sc[34]*hasOmega()*getRightIntOmega()	
-			// 'rightBoundaryIntOmega'		17
-			+ Constant::ex_sc[35]*hasConservation()*getLeftConsScore()
-			//	'leftBoundaryCons'			18
-			+ Constant::ex_sc[36]*hasConservation()*getRightConsScore();
-			//	'rightBoundaryCons'			19
-
-    #endif
-
-  return ( addScore + Constant::ex_sc[6]  * Eomega * hasOmega()
-	    + Constant::ex_sc[7]  * VarOmega * hasVarOmega()
-	    + Constant::ex_sc[8]  * cons * hasConservation()
-	    + Constant::ex_sc[9]  * containment * hasContainment()
-            + Constant::ex_sc[10] * diversity * hasDiversity()
-	    + Constant::ex_sc[11] * numExons()
-	    + Constant::ex_sc[15] * numExons() / orthoex.size()
-	    + Constant::ex_sc[13] * cons * diversity * hasConservation() * hasDiversity() 
-	    + Constant::ex_sc[14] * Eomega * hasOmega() * diversity * hasDiversity()
-	    - Constant::ex_sc[1]  * hasOmega()
-	    + Constant::ex_sc[16] * ( b_l * exp(Constant::lambda*b_l) + b_r * exp(Constant::lambda*b_r) ) / ( exp(Constant::lambda*b_l) + exp(Constant::lambda*b_r) )
-	    - Constant::ex_sc[2] ); // for being a HECT
-
-
-  /*
-    if (string("fly") == Properties::getProperty("species")){
-
-	Eomega = (Eomega != Eomega)? -1 : Eomega; // temporary bugfix: if omega is not a number, set it to the default value
-	VarOmega = (VarOmega != VarOmega)? -1 : VarOmega;
-
-	return  (- 0.2558400 * Eomega * hasOmega()
-		 - 4.4260235 * VarOmega * hasOmega()
-		 - 7.8187760 * cons
-		 - 0.0039834 * containment
-		 + 0.2847667 * diversity
-		 + 0.7911388 * numExons()
-		 + 1.5578776 * hasOmega() 
-		 + 1.9190608 ); // for being a HECT
-    } else if (string("arabidopsis") == Properties::getProperty("species")){
-      
-      Eomega = (Eomega != Eomega)? -1 : Eomega; // temporary bugfix: if omega is not a number, set it to the default value
-      VarOmega = (VarOmega != VarOmega)? -1 : VarOmega;
-      
-      return  (- 3.4717 * Eomega * hasOmega()
-	       - 5.6222 * cons
-	       - 8.1274 * diversity
-	       + 4.1816 * numExons()
-	       + 5.1385 * hasOmega() 
-	       ); // for being a HECT
-      
-    } else if (string("human") == Properties::getProperty("species") && orthoex.size() == 12){ // 12 way alignment from CONTRAST paper
-        Eomega = (Eomega != Eomega)? -1 : Eomega; // temporary bugfix: if omega is not a number, set it to the default value
-        VarOmega = (VarOmega != VarOmega)? -1 : VarOmega;
-        return  (- 4.0198 * Eomega * hasOmega()
-                 - 10.6047 * cons
-                 + 3.0542 * diversity
-                 + 0.5781 * numExons()
-                 + 4.8556 * hasOmega() // for being a HECT
-                 ); 
+double OrthoExon::getLogRegScore() const{
+    // pre-definitions for the boundary feature
+    double b_l;
+    double b_r;
+    if (getLeftIntOmega() > 0 && getLeftExtOmega() > 0 && getRightIntOmega() > 0 && getRightExtOmega() > 0){
+        b_l = log(getLeftIntOmega()) - log(getLeftExtOmega());
+        b_r = log(getRightIntOmega()) - log(getRightExtOmega());
     } else {
-      return (- 3.0756863 * Eomega * hasOmega()
-	      - 1.9089841 * VarOmega * hasOmega()
-	      + 1.1666486 * cons
-	      - 0.0046283 * containment
-	      + 1.3124238 * diversity
-	      + 0.0137427 * numExons()
-	      + 3.6918148 * hasOmega()
-	      + 0.3606701 ); // for being a HECT
+        b_l = 0;
+        b_r = 0;
     }
-    return 0.0;
-  */
 
+    // GM added the following to include up to 21 features
+    double addScore = 0.0;
+#if TESTING
+    addScore = 
+        Constant::ex_sc[31]*hasOmega()*getLeftExtOmega()	
+        //'leftBoundaryExtOmega', 	14
+        + Constant::ex_sc[32]*hasOmega()*getRightExtOmega()	
+        //'rightBoundaryExtOmega'		15
+        + Constant::ex_sc[33]*hasOmega()*getLeftIntOmega()	
+        // 'leftBoundaryIntOmega'		16
+        + Constant::ex_sc[34]*hasOmega()*getRightIntOmega()	
+        // 'rightBoundaryIntOmega'		17
+        + Constant::ex_sc[35]*hasConservation()*getLeftConsScore()
+        //	'leftBoundaryCons'			18
+        + Constant::ex_sc[36]*hasConservation()*getRightConsScore();
+    //	'rightBoundaryCons'			19
+#endif
+
+    return ( addScore + Constant::ex_sc[6]  * Eomega * hasOmega()
+             + Constant::ex_sc[7]  * VarOmega * hasVarOmega()
+             + Constant::ex_sc[8]  * cons * hasConservation()
+             + Constant::ex_sc[9]  * containment * hasContainment()
+             + Constant::ex_sc[10] * diversity * hasDiversity()
+             + Constant::ex_sc[11] * numExons()
+             + Constant::ex_sc[15] * numExons() / orthoex.size()
+             + Constant::ex_sc[13] * cons * diversity * hasConservation() * hasDiversity() 
+             + Constant::ex_sc[14] * Eomega * hasOmega() * diversity * hasDiversity()
+             - Constant::ex_sc[1]  * hasOmega()
+             + Constant::ex_sc[16] * ( b_l * exp(Constant::lambda*b_l) + b_r * exp(Constant::lambda*b_r) ) / ( exp(Constant::lambda*b_l) + exp(Constant::lambda*b_r) )
+             - Constant::ex_sc[2] ); // for being a HECT
 }
 
-// old code:
-/*list<OrthoExon> readOrthoExons(string filename){
-
-    list<OrthoExon> all_orthoex;
-
-    ifstream istrm; 
-    istrm.open(filename.c_str(), ifstream::in);
-    if (istrm) {
-	int nspecies;
-	string species;
-	vector<size_t> permutation;
-	istrm >> goto_line_after( "[SPECIES]");
-	istrm >> comment >> nspecies;
-	if (nspecies != OrthoGraph::numSpecies){
-	    throw ProjectError("readOrthoExons: number of species in " + filename + 
-			       " is " + itoa(nspecies) + ". Number of species in treefile is " + itoa(OrthoGraph::numSpecies));
-	}
-	istrm >> comment;
-	for (int i = 0; i < nspecies; i++){
-	    istrm >> species;
-	    int pos = OrthoGraph::tree->findIndex(species);
-	    if (pos == OrthoGraph::numSpecies){
-		throw ProjectError("readOrthoExons: species name in " + filename + 
-				   " is not a species name in treefile.");
-	    }
-	    permutation.push_back(pos);
-	}
-	vector<string> chr(nspecies);
-	while(istrm){
-	    istrm >> goto_line_after( "[CHR]") >> comment;
-	    for (int i = 0; i < nspecies; i++){
-		istrm >> chr[permutation[i]];
-	    } 
-	    cout << endl;
-	    istrm >> goto_line_after( "[ORTHOEX]");
-	    istrm >> comment;
-	    while( istrm >> comment >> ws, istrm && istrm.peek() != '[' ){
-		OrthoExon ex_tuple;
-		istrm >> ex_tuple;
-		all_orthoex.push_back(OrthoExon(ex_tuple, permutation));
-	    }
-	} 
-    }
-    else
-	throw ProjectError("readOrthoExons: Could not open this file!");
-
-    return all_orthoex;
-    }
-
-void writeOrthoExons(const list<OrthoExon> &all_orthoex){
-    cout << "# orthologous exons\n" << "#\n" <<"[SPECIES]\n" << "# number of species" << endl;
-    cout << OrthoGraph::numSpecies << endl;
-    vector<string> species;
-    OrthoGraph::tree->getSpeciesNames(species);
-    cout << "# species names" << endl;
-    for (size_t i = 0; i < OrthoGraph::numSpecies; i++){
-	cout << species[i] << "\t";
-    }
-    cout << endl;
-    cout << "#[ORTHOEX]" << endl;
-    for(list<OrthoExon>::const_iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
-	cout << *it << endl;
-    }
-}
-*/
 ostream& operator<<(ostream& ostrm, const OrthoExon &oe){
     ostrm << stateTypeIdentifiers[oe.getStateType()];
     for (int s = 0; s < oe.orthoex.size(); s++){
