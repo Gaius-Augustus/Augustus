@@ -577,11 +577,13 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 vector<double> CodonEvo::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *ctree, PhyloTree *tree, int &subs){
     if (seqtuple.size() != ctree->numSpecies())
         throw ProjectError("CodonEvo::logLikForCodonTuple: inconsistent number of species.");
-    for(int i=1; i<seqtuple.size();i++){
-        if(seqtuple[0].length() != 3 || seqtuple[i].length() != 3){
+
+    // make sure that all codons are present (strings of length 3, "---" is allowed)
+    for (const string &codon : seqtuple) {
+        if (codon.length() != 3)
             throw ProjectError("CodonEvo::loglikForCodonTuple: codon tuple has not length 3");
-        }
     }
+    
     int numCodons;
     vector<double> logliks(k, 0.0);
     Seq2Int s2i(3);

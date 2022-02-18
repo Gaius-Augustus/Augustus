@@ -117,19 +117,18 @@ void OrthoExon::setTree(PhyloTree* t) {
     tree = t;
     setDiversity(tree->getDiversity());
 }
-
- 
+/*
 vector<int> OrthoExon::getRFC(vector<int> offsets) const{
     vector<int> rfc;
     for (size_t s = 0; s < orthoex.size(); s++){
-	if(orthoex[s] == NULL)
+	if (orthoex[s] == NULL)
 	    rfc.push_back(-1);
 	else
 	    rfc.push_back((offsets[s] + orthoex[s]->getFirstCodingBase()) % 3);
     }
     return rfc;
 }
-
+*/
 void OrthoExon::setOmega(vector<double>* llo, CodonEvo* codonevo , bool oeStart){
     if(oeStart){
       loglikOmegaStarts.push_back(*llo);
@@ -240,7 +239,8 @@ void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* cod
     if (oeStart){
     	loglikClamsaStarts.push_back(*llo);
     	numCodonsClamsaStarts.push_back(numCodons);
-      	//cout<<"set Clamsa at oeStart: "<<getAliStart()<<":"<<getAliEnd()<<":"<<getStateType()<<"\ga, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<endl;
+      	// cout << "set Clamsa at oeStart: " << getAliStart() << ":" << getAliEnd() << ":" << getStateType() 
+        // << "\ga, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<endl;
     } else {
       	vector<double> loglikClamsa;
         int numCodonsClamsa;
@@ -258,7 +258,7 @@ void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* cod
             }
     	}
 		
-        //calculate mean of likelihood over all codons
+        // calculate mean of likelihood over all codons
         int k = llo->size();
 
         if (*llo == loglikClamsa)
@@ -273,14 +273,14 @@ void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* cod
             //cerr<<"ortho exon "<<this->ID<<" has no omega"<<endl;
             return;
         }
-        //cout<<"number of omegas: "<<k<<endl;
+        cout << "number of rate matrices: " << k << endl;
         if (loglikClamsa.size() != k)
-            loglikClamsa.resize(k,0.0);
-        //cout<<"log likelihood of omega"<<endl;
+            loglikClamsa.resize(k, 0.0);
+        cout << "log likelihoods for each rate matrix:" << endl;
         for (int u=0; u < k; u++){
             // sum of likelihoods in intervall OE start and OE end
             loglikClamsa[u] = (*llo)[u] - loglikClamsa[u];
-            // cout<<"omega "<<codonevo->getOmega(u)<<"\t"<<loglikOmegas[u]<<endl;
+            cout << u << "\t" << loglikClamsa[u] << endl;
         }
 
         numCodonsClamsa = numCodons - numCodonsClamsa;

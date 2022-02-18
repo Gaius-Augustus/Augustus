@@ -1706,7 +1706,7 @@ void GeneMSA::computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 
 	cout << "Merge processing: Traverse alignment left to right" << endl;
         /* bvCount is a hash table with
-         * - keys: 
+         * - keys: bit vectors marking the presence of ECs in an OrthoExon
          * - values: 
          */
 	unordered_map<bit_vector, //
@@ -1730,7 +1730,7 @@ void GeneMSA::computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
          * 1) different OrthoExons often share the same codon alignment column
          * 2) a codon column can have different sets of alignment rows to be considered. E.g. the middle columns below
          *    have 2 rows (taxa) in OE1 and OE2, but 3 rows in OE3 and OE4.
-         *
+         * 3) the same alignment column can be in different reading frames
          * Codons with overlapping coordinates are iterated in sorting order of (first, second, third) column.
          *
          *      *** *** --- *** *** *** *** *** *** *** *** *** *** ***
@@ -1745,15 +1745,15 @@ void GeneMSA::computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
             long aliPosOf1stBase = codonIt->first >> 8; // the first alignment column of the codon column triple
             // update bit_vector constellation
             // OrthoExon starts or ends before current alignment position
-            while ((unsigned)aliPosIt->first <= aliPosOf1stBase){
+            while (aliPosIt != aliPos.end() && (unsigned) aliPosIt->first <= aliPosOf1stBase){
                 unordered_map<bit_vector, int, boost::hash<bit_vector>>::iterator bvit;
                 unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> >::iterator coit;
-                // process all OrthoExons that start
-                for (int i=0; i < aliPosIt->second.oeStart.size(); i++){
-                    bit_vector ECpresence = aliPosIt->second.oeStart[i]->getBV();
-                    cout << "---bv of ortho exon:  " << printBV(ECpresence) << endl
-                         << "---rfc of ortho exon: " << printRFC(static_cast<const OrthoExon*>(aliPosIt->second.oeStart[i])->getRFC(offsets)) << endl;
-                    if (aliPosIt->second.oeStart[i] == NULL)
+                // process all OrthoExons that start at or before current codon alignment pos aliPosOf1stBase
+                for (OrthoExon *startingOE : aliPosIt->second.oeStart) {
+                    bit_vector ECpresence = startingOE->getBV();
+                    vector<int> rfc = const_cast<const OrthoExon*> (startingOE)->getRFC(offsets);
+                    cout << "---bv of ortho exon:  " << printBV(ECpresence) << "---rfc of ortho exon: " << printRFC(rfc) << endl;
+                    if (startingOE == NULL)
                         throw ProjectError("Error in posElement.oestart: Pointer to orthoExon is NULL!");
                     bvit = bvCount.find(ECpresence);
                     coit = cumOmega.find(ECpresence);
@@ -1769,17 +1769,17 @@ void GeneMSA::computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 
                     if (coit == cumOmega.end()){
                         vector<pair<vector<int>, cumValues> > vecPair;
-                        // pair<unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> >::iterator, bool>
-                        auto result = cumOmega.insert(pair<bit_vector, vector<pair<vector<int>, cumValues> > >(aliPosIt->second.oeStart[i]->getBV(), vecPair));
+                        auto result = cumOmega.insert(pair<bit_vector, vector<pair<vector<int>, cumValues> > >(ECpresence, vecPair));
                         coit = result.first;
                     }
                     bool rfcIncluded = false;
                     // add new cumValue
                     cumValues cum(cvID);
                     cvID++;
-                    cout << "created cv " << cvID-1 << " with RFC " << printRFC(static_cast<const OrthoExon*>(aliPosIt->second.oeStart[i])->getRFC(offsets)) << endl;
-                    pair<vector<int>, cumValues> oeRFC = make_pair(const_cast<const OrthoExon*>(aliPosIt->second.oeStart[i])->getRFC(offsets),cum);
-                    for(int rf = 0; rf < coit->second.size(); rf++){
+                    cout << "created cv " << cvID-1 << " with RFC " << printRFC(rfc) << endl;
+
+                    pair<vector<int>, cumValues> oeRFC = make_pair(rfc, cum);
+                    for (int rf = 0; rf < coit->second.size(); rf++){
                         if (oeRFC.first == coit->second[rf].first){
                             currRFnum = rf;
                             rfcIncluded = true;
@@ -1793,30 +1793,21 @@ void GeneMSA::computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 
                     // store cumulative values at the beginning of an OrthoExon
                     cumValues cv = coit->second[currRFnum].second;
-                    aliPosIt->second.oeStart[i]->setClamsa(&cv.logliks, cv.numCodons, codonevodiscr, true);
+                    startingOE->setClamsa(&cv.logliks, cv.numCodons, codonevodiscr, true);
                 }
+
                 // process all ortho exons that end
-                for (int i=0; i<aliPosIt->second.oeEnd.size(); i++){
-                    if (false){
-                        cout<<"chromosomal position of each exon:"<<endl;
-                        for (int j=0; j<aliPosIt->second.oeEnd[i]->orthoex.size(); j++){
-                            if (aliPosIt->second.oeEnd[i]->orthoex[j])
-                                cout << "species " << j << "\t" << aliPosIt->second.oeEnd[i]->orthoex[j]->begin << "\toffset: "
-                                     << offsets[j] << "\t" << aliPosIt->second.oeEnd[i]->orthoex[j]->end << "\toffset: " << offsets[j]
-                                     << "\t" << aliPosIt->second.oeEnd[i]->orthoex[j]->getStateType() << endl;
-                            else
-                                cout << "species " << j << endl;
-                        }
-                    }
-                    bvit = bvCount.find(aliPosIt->second.oeEnd[i]->getBV());
-                    if(bvit == bvCount.end())
+                //for (int i=0; i<aliPosIt->second.oeEnd.size(); i++)
+                for (OrthoExon *endingOE : aliPosIt->second.oeEnd) {
+                    bvit = bvCount.find(endingOE->getBV());
+                    if (bvit == bvCount.end())
                         throw ProjectError("Error in computeClamsaEff(): bit_vector ends that has never started!");
                     // calculate omega of ortho exon from cumulative sum
-                    cumValues *cv = findCumValues(aliPosIt->second.oeEnd[i]->getBV(), const_cast<const OrthoExon*>(aliPosIt->second.oeEnd[i])->getRFC(offsets));
-                    if(cv == NULL){
+                    cumValues *cv = findCumValues(endingOE->getBV(), const_cast<const OrthoExon*>(endingOE)->getRFC(offsets));
+                    if (cv == NULL)
                         cerr << "cum Values has NULL pointer" << endl;
-                    }
-                    aliPosIt->second.oeEnd[i]->setClamsa(&cv->logliks, cv->numCodons, codonevodiscr, false);
+                    //
+                    endingOE->setClamsa(&cv->logliks, cv->numCodons, codonevodiscr, false);
                     bvit->second--;
                 }
                 aliPosIt++;
@@ -1848,23 +1839,27 @@ void GeneMSA::computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
                         reverseComplementString(codonStrings[s]); 
                 }
 	  
-                // for one alignment position compute loglik for all active bit_vectors in the correct reading frame combination
-                for (unordered_map<bit_vector, int, boost::hash<bit_vector>>::iterator bvit = bvCount.begin(); bvit != bvCount.end(); bvit++){
-                    if (bvit->second == 0)
+                /* For one alignment position compute loglik for all active bit_vectors in the correct reading frame
+                 * combination. Respect that codon column at the same alignment position can differ in the set of active
+                 * rows.
+                 */
+                for (const auto& bv : bvCount){
+                    if (bv.second == 0)
                         continue;
-                    cumValues *cv = findCumValues(bvit->first, rfc);
+                    cumValues *cv = findCumValues(bv.first, rfc);
                     if (cv != NULL){
-                        // call pruning algo only once for every codonStrings and store loglika in map
+                        // call pruning algo only once for every codonStrings and store loglik in map
                         int subs = 0; // store number of substitutions
                         vector<double> loglik;
-                        vector<string> cs = pruneToBV(&codonStrings, bvit->first);
-                        // scipt the next step if cs only consists of "---" entries
+                        vector<string> cs = pruneToBV(&codonStrings, bv.first);
+                        // skip the next step if cs only consists of "---" entries
                         if (cs[0] == "---" && adjacent_find(cs.begin(), cs.end(), not_equal_to<string>()) == cs.end())
                             continue;
 
-                        map<vector<string>, pair<vector<double>, int> >::iterator oit = computedCumValues.find(cs);
+                        auto oit = computedCumValues.find(cs);
                         if (oit == computedCumValues.end()){
                             loglik = codonevodiscr->loglikForCodonTuple(cs, ctree);
+                            cout << "loglik has size " << loglik.size() << endl; 
                             pair<vector<double>, int> store_cv = make_pair(loglik, subs);
                             computedCumValues.insert(pair<vector<string>, pair<vector<double>, int> >(cs, store_cv));
                         } else {
@@ -1872,6 +1867,7 @@ void GeneMSA::computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
                             subs = oit->second.second;
                         }
                         // calculate columnwise omega and store in appropriate data structure
+                        cout << "adding logliks of size " << loglik.size() << endl; 
                         cv->addLogliks(&loglik);
                     }
                 }

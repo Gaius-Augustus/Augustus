@@ -60,7 +60,22 @@ public:
     bool hasContainment() const {return containment >= 0;}
     bool hasDiversity() const {return diversity >= 0;}
     bit_vector getBV() const {return bv;}
-    vector<int> getRFC(vector<int> offsets) const;
+
+    /* getRFC
+     * @param[in] offsets integers to add to genome positions to obtain 0-based coordinates
+     * @return vector of reading frames
+     */
+    vector<int> getRFC(vector<int> offsets) const {
+        vector<int> rfc;
+        for (size_t s = 0; s < orthoex.size(); s++){
+            if (orthoex[s] == NULL)
+                rfc.push_back(-1);
+            else
+                rfc.push_back((offsets[s] + orthoex[s]->getFirstCodingBase()) % 3);
+        }
+        return rfc;
+    }
+    
     PhyloTree* getTree() const {return tree;}
     int getAliStart() const {return (key>>22);} // start position of HECT in alignment
     int getAliLen() const {int aliStart=getAliStart(); int n=key-(aliStart<<22); return (n>>7);} // length of HECT + 1

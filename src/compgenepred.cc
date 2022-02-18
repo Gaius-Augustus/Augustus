@@ -519,8 +519,8 @@ void CompGenePred::runPredictionOrTest(){
     GeneMSA::setCodonEvo(&codonevo);
 
     // clamsa related code
+    CodonEvoDiscr codonevodiscr;
     if (use_clamsa){
-        CodonEvoDiscr codonevodiscr;
         codonevodiscr.setBranchLengths(ct_branchset, 25);
         cout << "CodonEvoDiscr branch lengths" << endl;
         codonevodiscr.printBranchLengths();
@@ -541,8 +541,9 @@ void CompGenePred::runPredictionOrTest(){
         } catch (...) {
             clamsa_pi = "rates-pi.txt";
         }
-
+        cout << "setting codonevodiscr k:=" << clamsa_M << endl;
         codonevodiscr.setK(clamsa_M);
+        cout << "codonevodiscr k was set to " << codonevodiscr.getK() << endl;
         codonevodiscr.readMatrices(clamsa_Q, clamsa_pi);
         codonevodiscr.computeLogPmatrices(); // TODO: needed?
         GeneMSA::setCodonEvoDiscr(&codonevodiscr);
