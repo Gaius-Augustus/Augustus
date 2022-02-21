@@ -524,27 +524,9 @@ void CompGenePred::runPredictionOrTest(){
         codonevodiscr.setBranchLengths(ct_branchset, 25);
         cout << "CodonEvoDiscr branch lengths" << endl;
         codonevodiscr.printBranchLengths();
-        int clamsa_M = 3; // number of clamsa models
-        try {
-            clamsa_M = Properties::getIntProperty("/CompPred/clamsa_numModels");
-        } catch(...){}
-
-        string clamsa_Q, clamsa_pi;
-        try {
-            clamsa_Q = Properties::getProperty("/CompPred/clamsa_Q");
-        } catch (...) {
-            clamsa_Q = "rates-Q.txt";
-        }
-
-        try {
-            clamsa_pi = Properties::getProperty("/CompPred/clamsa_pi");
-        } catch (...) {
-            clamsa_pi = "rates-pi.txt";
-        }
-        cout << "setting codonevodiscr k:=" << clamsa_M << endl;
-        codonevodiscr.setK(clamsa_M);
-        cout << "codonevodiscr k was set to " << codonevodiscr.getK() << endl;
-        codonevodiscr.readMatrices(clamsa_Q, clamsa_pi);
+        codonevodiscr.setM();
+        cout << "codonevodiscr k was set to " << codonevodiscr.getM() << endl;
+        codonevodiscr.readMatrices();
         codonevodiscr.computeLogPmatrices(); // TODO: needed?
         GeneMSA::setCodonEvoDiscr(&codonevodiscr);
     }
@@ -564,7 +546,7 @@ void CompGenePred::runPredictionOrTest(){
                          //(trivial mergers of neighboring alignments)
 
     #ifdef TESTING
-    if (testMode == "run"){        
+    if (testMode == "run"){
         string dbdir;
         try {
             dbdir = Properties::getProperty("/Testing/workingDir");

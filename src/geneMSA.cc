@@ -867,8 +867,8 @@ vector<string> GeneMSA::getCodonAlignment(OrthoExon const &oe, vector<AnnoSequen
 					  const vector<vector<fragment>::const_iterator > &froms,
                                           map<unsigned, vector<int> > *alignedCodons, bool generateString, ofstream *codonAliStrm) {
     printSingleOrthoExon(oe, false);
-    cout << "generating codonAlignment for OE(" << oe.ID << ") start: " << oe.getAliStart() << " end: "
-         << oe.getAliEnd() << " RFC: " << printRFC(oe.getRFC(offsets)) << endl;
+    // cout << "generating codonAlignment for OE(" << oe.ID << ") start: " << oe.getAliStart() << " end: "
+    //     << oe.getAliEnd() << " RFC: " << printRFC(oe.getRFC(offsets)) << endl;
     int k = alignment->rows.size();
     vector<string> rowstrings(k, "");
     // consider only codon columns with a number of codons at least this fraction of the nonempty rows 
@@ -1859,7 +1859,6 @@ void GeneMSA::computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
                         auto oit = computedCumValues.find(cs);
                         if (oit == computedCumValues.end()){
                             loglik = codonevodiscr->loglikForCodonTuple(cs, ctree);
-                            cout << "loglik has size " << loglik.size() << endl; 
                             pair<vector<double>, int> store_cv = make_pair(loglik, subs);
                             computedCumValues.insert(pair<vector<string>, pair<vector<double>, int> >(cs, store_cv));
                         } else {
@@ -1867,7 +1866,6 @@ void GeneMSA::computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
                             subs = oit->second.second;
                         }
                         // calculate columnwise omega and store in appropriate data structure
-                        cout << "adding logliks of size " << loglik.size() << endl; 
                         cv->addLogliks(&loglik);
                     }
                 }

@@ -289,7 +289,10 @@ void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* cod
         for (int u=0; u < k; u++){
             loglikClamsa[u] /= numCodonsClamsa;
         }
-
+        currClamsa = codonevodiscr->getProb(loglikClamsa);
+        storeClamsa(currClamsa);
+        loglikClamsa.clear();
+        
         /* compute probability
            double THETA[3][2], theta[2], w[4], z;
            THETA[0][0] = 0.26820281;
@@ -313,28 +316,12 @@ void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* cod
            // cout << "Prob = " << z << " " << exp(-z) << " " << 1.0/(1.0 + exp(-z)) << endl;
            currClamsa = 1.0/(1.0 + exp(-z));
 
-           storeClamsa(currClamsa);
-           loglikClamsa.clear();
         */
     }
 }
 
 void OrthoExon::storeClamsa(double currClamsa){
-    switch(intervalCountClamsa){
-    case 0: leftBoundaryExtClamsa = currClamsa;
-        break;
-    case 1: leftBoundaryIntClamsa = currClamsa;
-        break;
-    case 2: probClamsa = currClamsa;
-        break;
-    case 3:rightBoundaryIntClamsa = currClamsa;
-        break;
-    case 4: rightBoundaryExtClamsa = currClamsa;
-        break;
-    default: throw ProjectError("Error in setClamsa(): too many intervals were calculated.");
-        break;
-    }
-    intervalCountClamsa++;
+    probClamsa = currClamsa;
 }
 
 
