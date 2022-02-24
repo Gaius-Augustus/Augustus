@@ -1263,6 +1263,10 @@ void GeneMSA::printCumOmega(){
     cout<<"--------------------------------------------"<<endl;
 }
 
+/* computeOmegasEff
+ * WARNING: This code computes false log likelihoods for a part of the OEs. It appears to use codons from 
+ * a longer OE that shares the same right boundary with a shorter OE for the scoring of the later.
+ */
 void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAliStrm) {
     cout << "Computing omega for each ortho exon..." << endl;
 
@@ -1714,7 +1718,8 @@ void GeneMSA::computeOmegasEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 
 /* computeClamsaEff
  * Compute for each OrthoExon the probability that it is coding according to ClaMSA rate matrices.
- *
+ * WARNING: This code computes false log likelihoods for a part of the OEs. It appears to use codons from 
+ * a longer OE that shares the same right boundary with a shorter OE for the scoring of the later.
  */
 void GeneMSA::computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges,
                                PhyloTree *ctree, ofstream *codonAliStrm) {
@@ -1983,7 +1988,8 @@ void GeneMSA::computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSeque
 
 /* computeClamsa
  * Compute for each OrthoExon the probability that it is coding according to ClaMSA rate matrices.
- *
+ * Log likelihoods are computed only once for each codon column, even if contained in multiple
+ * OrthoExons. However they are aggregated (summed up) multiply when OEs are overlapping.
  */
 void GeneMSA::computeClamsa(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges,
                                PhyloTree *ctree, ofstream *codonAliStrm) {
@@ -2071,6 +2077,8 @@ void GeneMSA::computeClamsa(list<OrthoExon> &orthoExonsList, vector<AnnoSequence
         }
         //cout << "numSites = " << cv.numSites << endl;
         if (cv.numSites > 0){
+            // perform logistic regression and compute the probability that the OrthoExon is coding
+            // according to ClaMSA
             oe->setClamsa2(cv, codonevodiscr);
 
             // write codon MSA to file if requested
