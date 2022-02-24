@@ -160,13 +160,16 @@ void CodonEvoDiscr::readMatrices(MatrixFormat fmt){
     // compute weights for logistic regression that output a single probability for being positive (class 1)
     // This is converting from multiclass logistic regression with 2 classes to scalar predictions as described
     // in external-use-of-rate-matrices.pdf of the ClaMSA package.
+    // Note that ClaMSA uses the _negative_ mean log likelihood as input to the last Dense layer.
     if (w == NULL)
         w = new double[M+1]; // index 0 is bias, 1 is class 0, ...
     cout << "w: ";
     w[0] = bias[1] - bias[0];
     cout << w[0];
     for (int u=0; u<M; u++){
-        w[1+u] = gsl_matrix_get(Theta, u, 1) - gsl_matrix_get(Theta, u, 0);
+        // weights of log-likelihoods are multiplied by -1 as -LogP is ised in ClaMSA
+        w[1+u] = gsl_matrix_get(Theta, u, 0) - gsl_matrix_get(Theta, u, 1); // intentionally the other way around as for
+                                                                            // the bias
         cout << "\t" << w[1+u];
     }
     cout << endl;
@@ -356,22 +359,19 @@ CodonEvoDiscr::~CodonEvoDiscr(){
 vector<double> CodonEvoDiscr::loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *ctree, PhyloTree *tree, int &subs){
     if (seqtuple.size() != ctree->numSpecies())
         throw ProjectError("CodonEvoDiscr::logLikForCodonTuple: inconsistent number of species.");
-    cout << "computing log likelihood of discriminative model" << endl;
+
     // make sure that all codons are present (strings of length 3, "---" is allowed)
     for (const string &codon : seqtuple) {
-        cout << "codon " << codon << endl;
         if (codon.length() != 3)
             throw ProjectError("CodonEvoDiscr::loglikForCodonTuple: codon tuple has not length 3");
     }
     
-    int numCodons;
     vector<double> logliks(M, 0.0), test_logliks(M, 0.0);
-
     Seq2Int s2i(3);
     vector<int> codontuple(ctree->numSpecies(), 64); // 64 = missing codon                                                     
     bit_vector bv(ctree->numSpecies(), 0);
-    numCodons = 0;
-    cout << "ctree size = " << ctree->numSpecies() << "\tcodontuple(int): ";
+    int numCodons = 0;
+    // cout << "ctree size = " << ctree->numSpecies() << "\tcodontuple(int): ";
     for (size_t s=0; s < ctree->numSpecies(); s++){
         if (seqtuple[s].size() > 0)
             try {
@@ -379,12 +379,12 @@ vector<double> CodonEvoDiscr::loglikForCodonTuple(vector<string> &seqtuple, Phyl
                 numCodons++;
                 bv[s] = 1;
             } catch(...){} // gap or n character                                                                              
-        cout << codontuple[s] << "|";
+        // cout << codontuple[s] << "|";
     }
-    cout << endl << "numCodons=" << numCodons << "\tM=" << M << endl;
-    if (numCodons >= 2){
+
+    if (numCodons >= 2){ // no computation if nothing can be compared
         if (tree){
-            cout << "### original species tree = ";
+            // cout << "### original species tree = ";
             tree->printTree();
             // calculate number of substitutions by fitch algorithm
             PhyloTree *tr;       
@@ -401,37 +401,26 @@ vector<double> CodonEvoDiscr::loglikForCodonTuple(vector<string> &seqtuple, Phyl
         for (int u=0; u < M; u++){ // loop over rate matrices
             pi = piArr[u];
 	    logliks[u] = ctree->pruningAlgor(codontuple, this, u);
-            cout << "loglik " << u << " = " << setprecision(6) << logliks[u] << endl;
+            // cout << "loglik " << u << " = " << setprecision(6) << logliks[u] << endl;
         }
+        //for (const string &codon : seqtuple)
+        //    cout << "codon " << codon << endl;
+        //double p = getProb(logliks);
+        // cout << "clamsaProb = " << p << endl;
     }
     return logliks;
 }
 
 
 double CodonEvoDiscr::getProb(const vector<double> &lls){
-    /* compute probability
-       double THETA[3][2], theta[2], w[4], z;
-       THETA[0][0] = 0.26820281;
-       THETA[0][1] = -0.21659515;
-       THETA[1][0] = -0.51381232;
-       THETA[1][1] = 0.56243472;
-       THETA[2][0] = 0.19619327;
-       THETA[2][1] = -0.3344318;
-
-       theta[0] = 1.64427646;
-       theta[1] = -1.64427646;
-
-       w[0] = theta[1] - theta[0];
-       for(int i=0;i<k;++i){
-       w[i+1] = THETA[i][1] - THETA[i][0];
-       }
-       z = w[0];
-       for(int i=0;i<k;++i)
-       z += w[i+1]*loglikClamsa[i];
-
-       // cout << "Prob = " << z << " " << exp(-z) << " " << 1.0/(1.0 + exp(-z)) << endl;
-       currClamsa = 1.0/(1.0 + exp(-z));
-
-    */
-    return 0.5;
+    assert(lls.size() == M);
+    double z = w[0];
+    for (int i=0; i<M; ++i){
+       z += w[i+1] * lls[i];
+       //cout << "ll[" << i << "]=" << setprecision(5) << lls[i] << "\t";
+    }
+    //cout << " logit=" << z << endl;
+    // apply sigmoid function
+    z = 1.0/(1.0 + exp(-z));
+    return z;
 }

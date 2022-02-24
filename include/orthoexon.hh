@@ -41,13 +41,14 @@ public:
     // get and and set functions
     StateType getStateType() const; // all exon candidates agree in type
     int numExons() const;
-    double getOmega() const { return omega; }
-    double getEomega() const { return Eomega; }
-    double getVarOmega() const { return VarOmega; }
+    double getOmega() const { return omega;}
+    double getEomega() const { return Eomega;}
+    double getVarOmega() const { return VarOmega;}
     double getLeftExtOmega() const { return leftBoundaryExtOmega;}
     double getRightExtOmega() const { return rightBoundaryExtOmega;}
     double getLeftIntOmega() const { return leftBoundaryIntOmega;}
-    double getRightIntOmega() const { return rightBoundaryIntOmega;}   
+    double getRightIntOmega() const { return rightBoundaryIntOmega;}
+    double getClamsaProb() const { return probClamsa;}
     double getSubst() const { return subst; }
     double getConsScore() const {return cons;}
     double getLeftConsScore() const {return leftCons;}
@@ -90,7 +91,8 @@ public:
     void setOmega(double o){omega=o;}
     void setOmega(vector<double>* llo, CodonEvo* codonevo, bool oeStart);
     void storeOmega(double currOmega, double currVarOmega);
-    void setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* codonevo, bool oeStart);
+    void setClamsa(const cumValues &cv, CodonEvoDiscr* codonevo, bool oeStart);
+    void setClamsa2(const cumValues &cv, CodonEvoDiscr* codonevo);
     void storeClamsa(double currClamsa);
     void setSubst(int s){ subst=s;}
     void setSubst(int subs, bool oeStart);
@@ -139,7 +141,7 @@ private:
 
     list<vector<double> > loglikOmegaStarts;
     list<vector<double> > loglikClamsaStarts;
-    list<int> numCodonsClamsaStarts;
+
     int intervalCount;
     int intervalCountClamsa;
     int subst;

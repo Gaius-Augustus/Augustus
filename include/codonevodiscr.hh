@@ -70,8 +70,8 @@ public:
   
     // store log likeliehoods for all omegas for one codon tuple
     vector<double> loglikForCodonTuple(vector<string> &seqtuple, PhyloTree *ctree){
-        int i = 0;
-        return loglikForCodonTuple(seqtuple, ctree, NULL, i);
+        int dummysubs = 0;
+        return loglikForCodonTuple(seqtuple, ctree, NULL, dummysubs);
     }
     
     /* loglikForCodonTuple

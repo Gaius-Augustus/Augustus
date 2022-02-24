@@ -28,34 +28,6 @@
 class OrthoGraph;
 string printRFC(vector<int>);
 
-/* store cumulative sums of log likelihoods for each rate matrix (e.g. for each omega)
- * (optional: cumulative sum of number of substitutions) 
- * we create an object of cumValues for each bit_vector and reading frame combination
- */
-struct cumValues{
-    vector<double> logliks;
-    int numSubs;
-    int id;
-    int numCodons;
-
-    cumValues(int i, int s=-1):numSubs(s), id(i), numCodons(0){};
-    
-    void addLogliks(vector<double>* ll){
-        if (logliks.size() == 0){
-            logliks.resize(ll->size(), 0.0);
-            if (logliks.size() == 0){
-                cerr << "logliks still empty!" << endl;
-            }
-        }
-        for (int u = 0; u < ll->size(); u++){
-            logliks[u] += (*ll)[u];
-        }
-    }
-    void addNumSubs(int subs){
-        numSubs += subs;
-    }
-};
-
 /**
  * @brief multiple sequence alignment of genomes for comparative gene prediction
  * 
@@ -119,6 +91,7 @@ public:
      * @see computeOmegasEff
      */
     void computeClamsaEff(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli);
+    void computeClamsa(list<OrthoExon> &orthoExonsList, vector<AnnoSequence*> const &seqRanges, PhyloTree *ctree, ofstream *codonAli);
     vector<string> pruneToBV(vector<string> *cs, bit_vector bv); // prune codon strings to bit_vector
     vector<int> pruneToBV(vector<int> *rfc, bit_vector bv); // prune RFC to bit_vector
     double omegaForCodonTuple(vector<double> *loglik);
@@ -202,6 +175,27 @@ private:
                                      map<unsigned, vector<int> > *alignedCodons = NULL,
                                      bool generateString = true,
                                      ofstream *codonAli = NULL);
+     /**
+     * getCodonAlignment2
+     * Retreive from a genomic (partial) MSA the columns of aligned
+     * codons. Codons are specified by the exon candidates and if the
+     * thee bases of a codon are mapped to the same the alignment
+     * columns as the based of a codon in another species, the codons
+     * are aligned.
+     *
+     * @return a vector of alignment row strings
+     * @param[in] oe the OrthoExon whose codon alignment is sought
+     * @param[in] seqRanges contains the alignment of the larger region tuple
+     * @param[in] froms iterators to the alignment fragments, the
+     * aligned regions must be to their rights
+     * @param[out,in] alignedCodons: key identifies triples of
+     * alignment columsn, values are genome positions of the first
+     * codon bases. This can be used to manage when aligned codons are
+     * shared between different OrthoExons.
+     * @see The .cc file contains a definition by example. 
+     */
+    vector<string> getCodonAlignment2(OrthoExon const &oe, vector<AnnoSequence*> const &seqRanges,
+                                     const vector<vector<fragment>::const_iterator > &froms);
     void cutIncompleteCodons(OrthoExon &oe);
     cumValues* findCumValues(bit_vector bv, vector<int> rfc);
     static PhyloTree *tree;
@@ -213,8 +207,9 @@ private:
     RandSeqAccess *rsa;
     Alignment* alignment;            // alignment of regions which possibly belong to a gene
     vector< list<ExonCandidate*>* > exoncands;  // exon candidates found in the different species in a gene segment
-    unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> > cumOmega; // stores cumulative omega values for every reading frame combination and every bitvector that exist 
-    map<bit_vector, map<vector<int>, vector<double> > > codonOmega;
+    // store cumulative omega values for every reading frame combination and every bitvector that exist 
+    unordered_map<bit_vector, vector<pair<vector<int>, cumValues> >, boost::hash<bit_vector> > cumOmega; 
+    map<bit_vector, map<vector<int>, vector<double> > > codonOmega; // deprecated
 
     #ifdef TESTING
     /*

@@ -899,6 +899,42 @@ int quantile(const vector<int> &v, float q);
  */
 map<string, size_t> *getMap (vector<string> names);
 
+/* Structure to store and accumulate a vector of doubles.
+ * Used for storing cumulative sums of log likelihoods for each rate matrix (e.g. for each omega)
+ * (optional: cumulative sum of number of substitutions) 
+ * we create an object of cumValues for each bit_vector and reading frame combination
+ */
+struct cumValues{
+    vector<double> logliks;
+    int numSubs;
+    int id;
+    int numSites; // number of codon alignment columns
+    vector<string> rows; // for debugging, temporary
+    
+    cumValues(int i=0, int s=-1):
+        numSubs(s), id(i), numSites(0) {};
+    
+    void addLogliks(vector<double>* ll){
+        if (logliks.size() == 0){
+            logliks.resize(ll->size(), 0.0);
+        }
+        for (int u = 0; u < ll->size(); u++){
+            logliks[u] += (*ll)[u];
+        }
+        numSites++;
+    }
+    void addNumSubs(int subs){
+        numSubs += subs;
+    }
+    void addRows(vector<string> &cs) {
+        if (rows.size() == 0)
+            rows.assign(cs.size(), "");
+        for (int i=0; i < cs.size(); i++){
+            rows[i].append(cs[i]);
+        }
+    }
+};
+
 /*
  * functions used in earlier versions
 

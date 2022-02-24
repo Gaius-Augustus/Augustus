@@ -527,7 +527,7 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 	for (int i=0; i<n; i++){
 	    vector<int> codontuple(tree->numSpecies(), 64); // 64 = missing codon
 	    int numCodons = 0;
-	    for(size_t s=0; s < tree->numSpecies(); s++){
+	    for (size_t s=0; s < tree->numSpecies(); s++){
 		if (seqtuple[s].size()>0)
 		    try {
 			codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
@@ -538,7 +538,7 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
 		loglik += tree->pruningAlgor(codontuple, evo, u);
 	    }
 	}
-	//	cout << "loglikelihood(omega=" << omegas[u] << ")= " << setPrecision(4) << loglik << endl;
+	// cout << "loglikelihood(omega=" << omegas[u] << ")= " << setPrecision(4) << loglik << endl;
 	if (loglik > ML){
 	    ML = loglik;
 	    maxU = u;
@@ -557,14 +557,14 @@ double CodonEvo::estOmegaOnSeqTuple(vector<string> &seqtuple, PhyloTree *tree,
     for (int i=0; i<n; i++){
 	vector<int> codontuple(tree->numSpecies(),64);
 	int numCodons=0;
-	for(size_t s=0; s < tree->numSpecies(); s++){
+	for (size_t s=0; s < tree->numSpecies(); s++){
 	    if (seqtuple[s].size() > 0)
 		try {
 		    codontuple[s] = s2i(seqtuple[s].c_str() + 3*i);
 		    numCodons++;
 		} catch(...){} // gap or n character
 	}
-	if(numCodons >= 2){
+	if (numCodons >= 2){
 	    PhyloTree temp(*tree); // only use a copy of the tree !!!
 	    subst += -temp.MAP(codontuple, weights, parsi_base, true); // Fitch Algorithm 
 	}

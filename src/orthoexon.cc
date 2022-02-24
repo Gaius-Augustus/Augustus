@@ -15,7 +15,11 @@
 
 const char* phyleticPatternIdentifiers[6]={"0", "1", "-", "_", "g", "l"};
 
-OrthoExon::OrthoExon(int_fast64_t k, size_t n) : key(k), omega(-1.0), Eomega(-1.0), VarOmega(-1.0), leftBoundaryExtOmega(-1.0), rightBoundaryExtOmega(-1.0), leftBoundaryIntOmega(-1.0), rightBoundaryIntOmega(-1.0), intervalCount(0), intervalCountClamsa(0), subst(-1), cons(-1.0), leftCons(-1.0), rightCons(-1.0), diversity(-1.0) {
+OrthoExon::OrthoExon(int_fast64_t k, size_t n)
+    : key(k), omega(-1.0), Eomega(-1.0), VarOmega(-1.0), leftBoundaryExtOmega(-1.0),
+      rightBoundaryExtOmega(-1.0), leftBoundaryIntOmega(-1.0), rightBoundaryIntOmega(-1.0),
+      probClamsa(-1.0), intervalCount(0), intervalCountClamsa(0), subst(-1), cons(-1.0),
+      leftCons(-1.0), rightCons(-1.0), diversity(-1.0) {
     orthoex.resize(n);
     orthonode.resize(n);
     weights.resize(n,0);
@@ -235,26 +239,21 @@ void OrthoExon::storeOmega(double currOmega, double currVarOmega){
 
 
 // clamsa related code
-void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* codonevodiscr , bool oeStart){
+void OrthoExon::setClamsa(const cumValues &cv, CodonEvoDiscr* codonevodiscr , bool oeStart){
+    const vector<double>* llo = &cv.logliks;
+    
     if (oeStart){
     	loglikClamsaStarts.push_back(*llo);
-    	numCodonsClamsaStarts.push_back(numCodons);
-      	// cout << "set Clamsa at oeStart: " << getAliStart() << ":" << getAliEnd() << ":" << getStateType() 
-        // << "\ga, omega squared, count) = "<<"("<<omega<<", "<<omegaSquared<<", "<<omegaCount<<")"<<endl;
     } else {
+        // at right boundary finish aggregating computations
       	vector<double> loglikClamsa;
-        int numCodonsClamsa;
 
-      	if(!loglikClamsaStarts.empty()){
+      	if (!loglikClamsaStarts.empty()){
             loglikClamsa = loglikClamsaStarts.front();
             loglikClamsaStarts.pop_front();
-
-            numCodonsClamsa = numCodonsClamsaStarts.front();
-            numCodonsClamsaStarts.pop_front();
       	} else {
             if (!llo->empty()){
-                loglikClamsa = *llo;
-                numCodonsClamsa = numCodons;
+                loglikClamsa = cv.logliks;
             }
     	}
 		
@@ -264,12 +263,12 @@ void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* cod
         if (*llo == loglikClamsa)
             k = 0;
 
-        double currClamsa;
+        double clamsaProb;
 
         if (k == 0){ // no likelihood was calculated
-            currClamsa = -1;
+            clamsaProb = -1;
             // omega = -1; no equivalent for clamsa 
-            storeClamsa(currClamsa);
+            storeClamsa(clamsaProb);
             //cerr<<"ortho exon "<<this->ID<<" has no omega"<<endl;
             return;
         }
@@ -283,42 +282,47 @@ void OrthoExon::setClamsa(vector<double>* llo, int numCodons, CodonEvoDiscr* cod
             cout << u << "\t" << loglikClamsa[u] << endl;
         }
 
-        numCodonsClamsa = numCodons - numCodonsClamsa;
-
+        cout << "OrthoExon::setClamsa, numSites=" << cv.numSites << endl;
         // assign the mean of loglikClamsa computed for each model in clamsa
         for (int u=0; u < k; u++){
-            loglikClamsa[u] /= numCodonsClamsa;
+            loglikClamsa[u] /= cv.numSites;
+            cout << "loglikClamsa[" << u << "]=\t" << loglikClamsa[u] << "\t";
         }
-        currClamsa = codonevodiscr->getProb(loglikClamsa);
-        storeClamsa(currClamsa);
+        cout << endl;
+        cout << "cumValues alignment:" << endl;
+        for (int i=0; i < cv.rows.size(); i++)
+            cout << cv.rows[i] << endl;
+        cout << "len ID=" << ID << "\t" << cv.rows[0].size() << endl;
+        clamsaProb = codonevodiscr->getProb(loglikClamsa);
+        storeClamsa(clamsaProb);
+        // cout << "---- stored clamsa for OE" << ID << "\t" << getClamsaProb() << endl;
         loglikClamsa.clear();
-        
-        /* compute probability
-           double THETA[3][2], theta[2], w[4], z;
-           THETA[0][0] = 0.26820281;
-           THETA[0][1] = -0.21659515;
-           THETA[1][0] = -0.51381232;
-           THETA[1][1] = 0.56243472;
-           THETA[2][0] = 0.19619327;
-           THETA[2][1] = -0.3344318;
-
-           theta[0] = 1.64427646;
-           theta[1] = -1.64427646;
-
-           w[0] = theta[1] - theta[0];
-           for(int i=0;i<k;++i){
-           w[i+1] = THETA[i][1] - THETA[i][0];
-           }
-           z = w[0];
-           for(int i=0;i<k;++i)
-           z += w[i+1]*loglikClamsa[i];
-
-           // cout << "Prob = " << z << " " << exp(-z) << " " << 1.0/(1.0 + exp(-z)) << endl;
-           currClamsa = 1.0/(1.0 + exp(-z));
-
-        */
     }
 }
+
+
+// clamsa related code
+void OrthoExon::setClamsa2(const cumValues &cv, CodonEvoDiscr* codonevodiscr){
+    const vector<double> &llo = cv.logliks;		
+    // calculate mean of likelihood over all codons
+    int k = llo.size();
+    double clamsaProb;
+
+    if (k == 0){ // no likelihood was calculated
+        clamsaProb = -1;
+    } else {
+        vector<double> loglikClamsa(k, 0.0);
+        // cout << "OrthoExon::setClamsa2, numSites=" << cv.numSites << endl;
+        for (int u=0; u < k; u++){
+            loglikClamsa[u] = llo[u] / cv.numSites;       
+            //cout << u << "\t" << loglikClamsa[u] << endl;
+        }
+        clamsaProb = codonevodiscr->getProb(loglikClamsa);
+    }
+    storeClamsa(clamsaProb);
+    // cout << "---- stored clamsa for OE" << ID << "\t" << getClamsaProb() << endl;
+}
+
 
 void OrthoExon::storeClamsa(double currClamsa){
     probClamsa = currClamsa;

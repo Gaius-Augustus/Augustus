@@ -19,6 +19,8 @@
 #include <gsl/gsl_matrix.h>
 #include <ctime>
 #include <sys/stat.h>
+#include <chrono> // to measure time
+
 
 /*
 *   added by Giovanna Migliorelli 14.05.2020 
@@ -854,8 +856,12 @@ void CompGenePred::runPredictionOrTest(){
 	}
 
         // clamsa related code
-        if (use_clamsa) {    // likelihoods are stored as OrthoExon attribute
-	    geneRange->computeClamsaEff(hects, seqRanges, &ctree, &codonAliStrm);
+        if (use_clamsa) {    // likelihoods are stored as OrthoExon attribute            
+            auto beginTime = std::chrono::steady_clock::now();
+	    //geneRange->computeClamsaEff(hects, seqRanges, &ctree, &codonAliStrm);
+            geneRange->computeClamsa(hects, seqRanges, &ctree, &codonAliStrm);
+            auto endTime = std::chrono::steady_clock::now();
+            cout << "Time clamsa = " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - beginTime).count() << "[ms]" << endl;
 	}
 
 	if (conservation)
@@ -1181,52 +1187,4 @@ void CompGenePred::postprocTest(){
     }
 }
 
-/*
-// clamsa related code
-// applies to codons using Q matrices from ClaMSA
-void CompGenePred::test_2(double ctree_scaling_factor){
-    PhyloTree ctree(tree); // codon tree
-    ctree.scaleTree(ctree_scaling_factor); // scale branch lengths to codon substitutions
-    vector<double> ct_branchset;
-    ctree.getBranchLengths(ct_branchset);
-
-    // info about the tree
-    //cout << "tree info..."<< endl;
-    //ctree.printInfo();
-
-    CodonEvoDiscr codonevodiscr;
-    codonevodiscr.setBranchLengths(ct_branchset, 25);
-    codonevodiscr.setK(3);
-    codonevodiscr.readMatrices("/home/giovanna/Desktop/augEVO/claMSA/rates-Q.txt", "/home/giovanna/Desktop/augEVO/claMSA/rates-pi.txt");
-    codonevodiscr.computeLogPmatrices();
-    GeneMSA::setCodonEvoDiscr(&codonevodiscr);
-
-    // start of TEST
-    // GM added the following for testing
-    vector<string> MSA(OrthoGraph::numSpecies, "");
-    MSA[0] = MSA[2] = "AAA";
-    MSA[1] = MSA[3] = MSA[4] = "CCC";
-
-    int numcodons = MSA[0].size()/3;
-    vector<vector<string> > codons(numcodons);
-    for(int j, kkk=0,i=0;i<numcodons;++i,kkk+=3){
-        codons[i].resize(OrthoGraph::numSpecies);
-        for(j=0;j<OrthoGraph::numSpecies;++j)
-            codons[i][j] = MSA[j].substr(kkk, 3);
-    }
-
-    cout << "--------- NEW LOGLIKELIHOOD start Eff2 ---------" << endl;
-    vector<double> loglik;
-
-    // compute log likelyhood
-    for(int i=0;i<codons.size();++i){
-        loglik = codonevodiscr.loglikForCodonTuple(codons[i], &ctree);
-
-        cout << "column " << i << endl;
-        for(int s=0;s<loglik.size();++s){
-            cout << s << "\t" << loglik[s] << endl;
-        }
-    }
-}
-*/
 #endif
