@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['keynotfounderror_779',['KeyNotFoundError',['../structKeyNotFoundError.html',1,'']]]
+  ['keynotfounderror_0',['KeyNotFoundError',['../structKeyNotFoundError.html',1,'']]]
 ];
