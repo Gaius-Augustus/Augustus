@@ -21,11 +21,11 @@ filterBam only accepts as input BAM files that have been previously sorted by 'q
     Both allows the sorting, sampling, filtering, among other things, of BAM files.  
     While SeqLib is generally faster, precompiled packages for Bamtools are available for more systems/architectures.
 
-  * Bamtools on Ubunutu or Debian
+  * Bamtools on Ubuntu or Debian
 
         apt-get install bamtools libbamtools-dev
 
-  * SeqLib on Ubunutu or Debian
+  * SeqLib on Ubuntu or Debian
 
         apt-get install libseqlib-dev libssw-dev libjsoncpp-dev
 
