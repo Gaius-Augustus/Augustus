@@ -532,18 +532,17 @@ double OrthoGraph::makeConsistent(list<OrthoExon> &all_orthoex, ExonEvo &evo){
 }	
 
 void OrthoGraph::linkToOEs(list<OrthoExon> &all_orthoex){
-
-    for(list<OrthoExon>::iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
+    for (list<OrthoExon>::iterator it = all_orthoex.begin(); it != all_orthoex.end(); it++){
 	double oe_score = it->getLogRegScore();
-	for(size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){ 
-	    if(it->exonExists(pos)){
-		if(!graphs[pos])
+	for (size_t pos = 0; pos < OrthoGraph::numSpecies; pos++){ 
+	    if (it->exonExists(pos)){
+		if (!graphs[pos])
 		    throw ProjectError("Internal error OrthoGraph::linkToOEs: graph does not exist.");
 		Node* node = graphs[pos]->getNode(it->orthoex[pos]);
-		if(!node){
+		if (!node){
 		    throw ProjectError("Internal error OrthoGraph::linkToOEs: EC has no corrpesonding node in OrthoGraph.");
 		}
-		it->orthonode[pos]=node;
+		it->orthonode[pos] = node;
 		node->addWeight(oe_score); // add OE score to all outgoing edges
 	    }
 	}

@@ -22,12 +22,10 @@ vector<double> se;
 
 
 void train_OEscore_params(int numSpecies){
-
-  unordered_map<string,int> ref_class;
-  reference_from_file(&ref_class);
-  train_data data(&Constant::logReg_feature, &ref_class, numSpecies);
-  optimize_parameters(&data);
-
+    unordered_map<string,int> ref_class;
+    reference_from_file(&ref_class);
+    train_data data(&Constant::logReg_feature, &ref_class, numSpecies);
+    optimize_parameters(&data);
 }
 
 
@@ -414,8 +412,6 @@ void optimize_parameters(train_data *data){
   paramfile << "/CompPred/intron_score" << 3 << "\t" << ( gsl_vector_get (theta, 3) / se[3] ) << endl;
   
   paramfile.close();
-
-  
 }
 
 void gsl_minimizer(vector<pair<int, vector<double> > > *samples, gsl_vector *theta, int n){
