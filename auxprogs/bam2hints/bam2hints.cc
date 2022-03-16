@@ -782,7 +782,7 @@ int main(int argc, char* argv[])
 
     // drop the alignment if its length on the target exceeds the theoretical maximum length of a gene
 
-    if(badAlignment || PSLt[block-1] + PSLb[block-1] - PSLt[0] > MaxGeneLen)
+    if(badAlignment || (block > 0 && PSLt[block-1] + PSLb[block-1] - PSLt[0] > MaxGeneLen))
     {
       /*
       printf("Alignment dropped: exceeding max length: ");
