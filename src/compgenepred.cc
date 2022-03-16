@@ -527,11 +527,12 @@ void CompGenePred::runPredictionOrTest(){
         cout << "CodonEvoDiscr branch lengths" << endl;
         codonevodiscr.printBranchLengths();
         codonevodiscr.setM();
-        cout << "codonevodiscr k was set to " << codonevodiscr.getM() << endl;
         codonevodiscr.readMatrices();
         codonevodiscr.computeLogPmatrices(); // TODO: needed?
         GeneMSA::setCodonEvoDiscr(&codonevodiscr);
     }
+    SpeciesGraph::printWeights();
+
     
     GenomicMSA msa(rsa);
 
@@ -576,9 +577,7 @@ void CompGenePred::runPredictionOrTest(){
     int n = 0;
     struct stat buffer;  
     string filename;
-    #endif
-    
-    #ifdef TESTING
+
     if (testMode == "run"){        
         while (true){
             filename = outdirPrepare + "generange_" + to_string(1+n) + ".bed";   // interspecies
@@ -587,15 +586,11 @@ void CompGenePred::runPredictionOrTest(){
             ++n;
         }
     }
-    #endif
 
-    #ifdef TESTING
     Alignment* ali = NULL;
     vector<list<tuple<string,int,int> > > grlist(n);        // contains intervals for all generanges within the current chunk (the file has been created by prepareTest)
     vector<list<tuple<string,int,int> > > mergedlist(speciesNames.size());    // contains what remains of intervals for all generange within the current chunk after having merged original ones (the file has been created after prepareTest outside Augustus) 
-    #endif
-    
-    #ifdef TESTING
+
     if(testMode=="run"){        
         // read bed containing original intervals for each gene range and bed containing the same inervals after merging by species  : required for conversion of alignment
         while(true){

@@ -21,7 +21,6 @@ void CodonEvoDiscr::setM(){
         M = Properties::getIntProperty("/CompPred/clamsa_numModels");
     } catch(...){}
     
-    cout << "CodonEvoDiscr::setM = " << M << endl;
     for (int u=0; u<piArr.size(); ++u)
         delete[] piArr[u];
     piArr.clear();
@@ -290,7 +289,7 @@ void CodonEvoDiscr::computeLogPmatrices(){
             allPs[u][v] = P;
             allLogPs[u][v] = log(P, states);
             //#ifdef DEBUG
-            cout << "codon rate matrix log P(t=" << t << ", model=" << u << ")" << endl;
+            //cout << "codon rate matrix log P(t=" << t << ", model=" << u << ")" << endl;
             //printCodonMatrix(allLogPs[u][v]);
             //#endif
 
@@ -405,7 +404,7 @@ vector<double> CodonEvoDiscr::loglikForCodonTuple(vector<string> &seqtuple, Phyl
         }
         //for (const string &codon : seqtuple)
         //    cout << "codon " << codon << endl;
-        //double p = getProb(logliks);
+        // double p = getProb(logliks);
         // cout << "clamsaProb = " << p << endl;
     }
     return logliks;

@@ -49,6 +49,17 @@ public:
     double getLeftIntOmega() const { return leftBoundaryIntOmega;}
     double getRightIntOmega() const { return rightBoundaryIntOmega;}
     double getClamsaProb() const { return probClamsa;}
+    double getClamsaScore() const {
+        if (probClamsa < 0.0 || probClamsa > 1.0)
+            return 0.0;
+        else if (probClamsa == 0.0) {
+            return -10.0;
+        } else if (probClamsa == 1.0) {
+            return 10.0;
+        } else {
+            return log(probClamsa/(1.0-probClamsa)); // logit value
+        }
+    }
     double getSubst() const { return subst; }
     double getConsScore() const {return cons;}
     double getLeftConsScore() const {return leftCons;}

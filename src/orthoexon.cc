@@ -378,6 +378,7 @@ double OrthoExon::getLogRegScore() const{
     //	'rightBoundaryCons'			19
 #endif
 
+    double clamsaScore = getClamsaScore();
     return ( addScore + Constant::ex_sc[6]  * Eomega * hasOmega()
              + Constant::ex_sc[7]  * VarOmega * hasVarOmega()
              + Constant::ex_sc[8]  * cons * hasConservation()
@@ -389,7 +390,8 @@ double OrthoExon::getLogRegScore() const{
              + Constant::ex_sc[14] * Eomega * hasOmega() * diversity * hasDiversity()
              - Constant::ex_sc[1]  * hasOmega()
              + Constant::ex_sc[16] * ( b_l * exp(Constant::lambda*b_l) + b_r * exp(Constant::lambda*b_r) ) / ( exp(Constant::lambda*b_l) + exp(Constant::lambda*b_r) )
-             - Constant::ex_sc[2] ); // for being a HECT
+             - Constant::ex_sc[2] // for being a HECT
+             + Constant::ex_sc[17] * clamsaScore);
 }
 
 ostream& operator<<(ostream& ostrm, const OrthoExon &oe){
