@@ -103,7 +103,7 @@ my $utrNumber = 0;
 #
 
 while (<GFFFILE>) {
-    s/#.*//;
+    s/^#.*//;
     next unless /\S/;
     
     my @f = split /\t/, $_, 9;
