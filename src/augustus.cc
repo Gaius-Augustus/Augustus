@@ -3,7 +3,7 @@
  * license: Artistic License, see file LICENSE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  *
- * authors: Mario Stanke, mario@gobics.de
+ * authors: Mario Stanke, mario.stanke@uni-greifswald.de
  *
  * date    |   author      |  changes
  * --------|---------------|------------------------------------------
@@ -559,8 +559,9 @@ void checkExtrinsicAccuracy(AnnoSequence *annoseq, NAMGene &namgene, FeatureColl
  * in memory when we actually need only a small part.
  */
 void cutRelevantPiece(AnnoSequence *annoseq){
-    int predictionStart, predictionEnd;
-    int seqlen = annoseq->length;
+    long predictionStart, predictionEnd;
+    long seqlen = annoseq->length;
+    
     try {
 	predictionStart = Properties::getIntProperty( "predictionStart" ) - 1;
     } catch (...) {
