@@ -37,9 +37,11 @@ parser.add_argument('-j', '--jobs',
                     help='to set the maximum number of jobs executed in parallel. (default value 2)')
 parser.add_argument('-r', '--pathToGitRepo',
                     help='path to the Augustus Git repository.')
+parser.add_argument('-a', '--augauxargs',
+                    help='a string with auxiliary arguments to augustus, e.g. "--/CompPred/clamsa=1 --verbose=2"')
 args = parser.parse_args()
 
-# used jobs for parallel execution of lr test
+# used jobs for parallel execution of lr test 
 jobs = 2
 
 # if not already existing, create dir to collect results for the current chunk
@@ -99,9 +101,11 @@ def port_test(paths_shared, paths, chunks):
 # parallel execution : acknowldgement Daniel Honsel (revisited code from test_case.py)
 def run_test_parallel(paths_shared, paths, chunks):
     # create a command for each chunk
-    args = []
+    augargs = []
     for chunk in chunks:
-        cmd = [paths_shared['augustus_bin'], '--species=human', '--treefile=' + paths_shared['tree_file'],
+        cmd = [paths_shared['augustus_bin'],
+               args.augauxargs if args.augauxargs is not None else '',
+               '--species=human', '--treefile=' + paths_shared['tree_file'],
                '--alnfile=' + 'nofilegiven',
                '--speciesfilenames=' +
                paths[chunk]['tbl_test_file'], '--softmasking=1', '--alternatives-from-evidence=0', '--dbaccess=' +
@@ -114,11 +118,11 @@ def run_test_parallel(paths_shared, paths, chunks):
 
         output = paths[chunk]['result_dir'] + 'out.runTest'
 
-        args.append([cmd, output, chunk])
+        augargs.append([cmd, output, chunk])
 
     with ThreadPoolExecutor(max_workers=int(jobs)) as executor:
         print('Executing ' + jobs + ' jobs in parallel.')
-        for cmd, output, chunk in args:
+        for cmd, output, chunk in augargs:
             print('Adding thread for chunk: ' + str(chunk) + '...')
             executor.submit(execute_test, cmd, output, chunk)
 

@@ -1943,5 +1943,25 @@
         "exclude_apps": [
             "etraining"
         ]
+    },
+    {
+        "name": "/CompPred/clamsa_Theta",
+        "development": true,
+        "type": "string",
+        "usage": "--/CompPred/clamsa_Theta=Theta.txt",
+        "description": "The path to the file that includes the logistic regression weight matrix for ClaMSA.",
+        "exclude_apps": [
+            "etraining"
+        ]
+    },
+    {
+        "name": "/CompPred/clamsa_biases",
+        "development": true,
+        "type": "string",
+        "usage": "--/CompPred/clamsa_biases=biases.txt",
+        "description": "The path to the file that includes the logistic regression biases for ClaMSA.",
+        "exclude_apps": [
+            "etraining"
+        ]
     }
 ]
