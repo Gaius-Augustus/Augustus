@@ -27,7 +27,7 @@ using boost::iostreams::filtering_istream;
  * its name and length in the arguments. Memory for sequence and name are allocated here.
  * 
  */
-void readOneFastaSeq(filtering_istream &ifstrm, char* &sequence, char* &name, int &length){
+void readOneFastaSeq(filtering_istream &ifstrm, char* &sequence, char* &name, long &length){
     string line;
     string seq("");
     char   c;
@@ -60,8 +60,8 @@ void readOneFastaSeq(filtering_istream &ifstrm, char* &sequence, char* &name, in
     sequence = new char[seq.length()+1];
      
     // now filter out any characters that are not letters
-    int pos = 0;
-    for (int i=0; i < seq.length(); i++) 
+    long pos = 0;
+    for (long i=0; i < seq.length(); i++) 
 	if (isalpha( seq[i] ))
 	    sequence[pos++] = seq[i]; // tolower now postponed to after softmasking detection
     sequence[pos] = '\0';
@@ -78,7 +78,7 @@ void readOneFastaSeq(filtering_istream &ifstrm, char* &sequence, char* &name, in
  * For some reason a template solution does not work (because of boost class structure?).
  * However, filtering_istream is supposed to generalize basic_istream.
  */
-void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, int &length){
+void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, long &length){
     string line;
     string seq("");
     char   c;
@@ -111,8 +111,8 @@ void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, in
     sequence = new char[seq.length()+1];
      
     // now filter out any characters that are not letters
-    int pos = 0;
-    for (int i=0; i < seq.length(); i++) 
+    long pos = 0;
+    for (long i=0; i < seq.length(); i++) 
 	if (isalpha( seq[i] ))
 	    sequence[pos++] = seq[i]; // tolower now postponed to after softmasking detection
     sequence[pos] = '\0';
@@ -123,7 +123,13 @@ void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, in
     }
 }
 
-void readOneFastaSeq(ifstream &ifstrm, char* &sequence, char* &name, int &length){
+void readOneFastaSeq(std::stringstream &ifstrm, char* &sequence, char* &name, int &length){
+    long llen;
+    readOneFastaSeq(ifstrm, sequence, name, llen);
+    length = (int) llen; // this function should be used for short sequences only, e.g. protein seqs
+}
+
+void readOneFastaSeq(ifstream &ifstrm, char* &sequence, char* &name, long &length){
     string line;
     string seq("");
     readFastaHeader(ifstrm,name);
@@ -136,8 +142,8 @@ void readOneFastaSeq(ifstream &ifstrm, char* &sequence, char* &name, int &length
     sequence = new char[seq.length()+1];
      
     // now filter out any characters that are not letters
-    int pos = 0;
-    for (int i=0; i < seq.length(); i++) 
+    long pos = 0;
+    for (long i=0; i < seq.length(); i++) 
         if (isalpha( seq[i] ))
             sequence[pos++] = seq[i];// tolower now postponed to after softmasking detection
     sequence[pos] = '\0';

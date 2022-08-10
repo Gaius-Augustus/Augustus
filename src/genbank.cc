@@ -644,7 +644,7 @@ GBPositions* GBSplitter::nextData( ){
 
 AnnoSequence *GBSplitter::getNextFASTASequence( ){
     char *sequence = NULL, *name = NULL;
-    int length;
+    long length;
     readOneFastaSeq(sin, sequence, name, length);
     if (sequence == NULL || length == 0)
 	return NULL;

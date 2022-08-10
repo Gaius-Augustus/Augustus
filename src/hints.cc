@@ -231,7 +231,7 @@ istream& operator>>( istream& in, Feature& feature ){
     return in;
 }
 
-int Feature::offset = 0;
+long Feature::offset = 0;
 
 FeatureType Feature::getFeatureType(string typestring){
     FeatureType type;

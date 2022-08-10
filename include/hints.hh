@@ -106,7 +106,7 @@ public:
     string feature;
     string groupname;
     int priority; // >=0 higher priority -> more important. -1 reserved for not specified
-    int start, end;
+    long start, end;
     double score;
     double bonus;
     double malus;
@@ -128,7 +128,7 @@ public:
     Feature *next;  // used for making a partial list in SequenceFeatureCollections
     float numContradicting; // fractional number of other hints that contradict this one
     int numSupporting;
-    static int offset;
+    static long offset;
     int mult; // multiplicity for summarizing several identical hints
 };
 
@@ -200,10 +200,10 @@ private:
     list<HintGroup*> *strongerGroups; // groups that are properly stronger
     string name;
     int priority;
-    int begin;
-    int end;
-    int geneBegin;
-    int geneEnd;
+    long begin;
+    long end;
+    long geneBegin;
+    long geneEnd;
     int copynumber;
     bool trashy;
 };
