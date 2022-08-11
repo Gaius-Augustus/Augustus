@@ -112,7 +112,7 @@ private:
      */
     void prepareModels(const char*dna, int len);
 
-    int tryFindCutEndPoint(StatePath *condensedExamPath, int examIntervalStart, int examIntervalEnd, list<Feature> *groupGaps, bool onlyInternalIR);
+    long tryFindCutEndPoint(StatePath *condensedExamPath, int examIntervalStart, int examIntervalEnd, list<Feature> *groupGaps, bool onlyInternalIR);
 private:
     /// @doc The forward variables matrix.
     ViterbiMatrixType      forward;

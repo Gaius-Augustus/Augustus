@@ -602,6 +602,7 @@ void GBSplitter::determineFileType(){
 	csin.seekg(0, ios::beg);
 	string line;
 	bool haveWrongChar=false;
+
 	while (csin && !haveWrongChar) {
 	    getline(csin, line);
 	    if (line[0]!='>') {
@@ -617,7 +618,7 @@ void GBSplitter::determineFileType(){
 	}
 	if (!haveWrongChar)
 	    ftype = fasta;
-	
+
 	csin.clear();
 	csin.seekg(0, ios::beg);
     }
