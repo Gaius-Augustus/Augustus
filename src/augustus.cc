@@ -121,12 +121,14 @@ int main( int argc, char* argv[] ){
     }
     try{
 	Properties::init( argc, argv );
+        cout << "Mario: have initialized properties" << endl;
 	Constant::init();
 	Gene::init();
 	GeneticCode::init();
 	setParameters(); // NOTE: need Constant and GeneticCode to be initialized first
 	StateModel::init();   // set global parameters of state models	  
 
+        cout << "Mario: have initialized StateModel" << endl;
 	if(Properties::hasProperty("trainFeatureFile"))
             Constant::MultSpeciesMode = true;
 
@@ -146,8 +148,9 @@ int main( int argc, char* argv[] ){
                 throw ProjectError("No query file specified. Type \"augustus\" for help.");
             }
             string filename =  Properties::getProperty(INPUTFILE_KEY);
-
+            cout << "Mario: before reading seq" << endl;
             GBProcessor gbank(filename);
+            cout << "Mario: after reading seq" << endl;
             if (Gene::gff3)
                 cout << "##gff-version 3" << endl;
 	  
@@ -198,7 +201,7 @@ int main( int argc, char* argv[] ){
                     cerr << "# Unknown option for strand: " << strandstr << endl;
             } catch (...){} // take default strand
 	
-            if(mea_prediction)
+            if (mea_prediction)
                 cout <<"# Using MEA approach (Maximizing expected accuracy)."<<endl;
 
             if (gbank.fileType() == fasta) {
@@ -559,8 +562,9 @@ void checkExtrinsicAccuracy(AnnoSequence *annoseq, NAMGene &namgene, FeatureColl
  * in memory when we actually need only a small part.
  */
 void cutRelevantPiece(AnnoSequence *annoseq){
-    int predictionStart, predictionEnd;
-    int seqlen = annoseq->length;
+    long predictionStart, predictionEnd;
+    long seqlen = annoseq->length;
+    cout << "Mario: seqlen=" << seqlen << endl;
     try {
 	predictionStart = Properties::getIntProperty( "predictionStart" ) - 1;
     } catch (...) {

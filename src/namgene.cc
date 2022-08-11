@@ -175,6 +175,8 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
    * and form the forward matrix
    */
   int dnalen = strlen( dna );
+  cout << "dnalen=" << dnalen << endl;
+  
   viterbi.assign(dnalen, statecount);
   if (needForwardTable) 
       forward.assign(dnalen, statecount);
