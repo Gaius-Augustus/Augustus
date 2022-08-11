@@ -3,7 +3,7 @@
  * license: Artistic License, see file LICENSE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  *
- * authors: Mario Stanke, mario@gobics.de
+ * authors: Mario Stanke, mario.stanke@uni-greifswald.de
  *
  * date    |   author      |  changes
  * --------|---------------|------------------------------------------

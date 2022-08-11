@@ -103,11 +103,11 @@ public:
   /**
    * The beginning position of the current state.
    */
-  int     begin;
+  long     begin;
   /**
    * The ending position of the current state.
    */
-  int     end;
+  long     end;
   /**
    * The next state.
    */
@@ -121,7 +121,7 @@ public:
   char truncated; // truncated left, truncated right?
   int framemod; // reading frame modifier, frame = frame given by type + framemod (for truncation)
     
-  State(int first, int last, StateType t) :
+  State(long first, long last, StateType t) :
       begin(first), end(last),
       next(NULL),
       type(t),
@@ -181,11 +181,11 @@ public:
   bool operator< (const State &other) const;
   bool operator== (const State &other) const;
   int length() {
-    return end - begin + 1;
+      return (int) (end - begin + 1);
   }
   Strand strand() {return isOnFStrand(type)? plusstrand : minusstrand;}
   State *getBiologicalState();
-  void setTruncFlag(int end, int predEnd, int dnalen);
+  void setTruncFlag(long end, long predEnd, long dnalen);
   void includeFrameModIntoType();
 };
 
@@ -229,12 +229,12 @@ public:
     void print();
     static StatePath* condenseStatePath(StatePath *oldpath);
     Transcript* projectOntoGeneSequence(const char *genenames);
-    static StatePath* getInducedStatePath(Transcript *genelist, int dnalen, bool printErrors=true);
+    static StatePath* getInducedStatePath(Transcript *genelist, long dnalen, bool printErrors=true);
     void reverse();
     bool operator== (const StatePath &other) const;
     bool operator< (const StatePath &other) const;
 private:
-    void pushIntron(int begin, int end, int frame, bool onFStrand);
+    void pushIntron(long begin, long end, int frame, bool onFStrand);
 
 public:
     string seqname;
@@ -296,8 +296,8 @@ public:
     void setStatePostProbs(float p);
     void addSampleCount(int k);
     void setSampleCount(int k);
-    virtual int geneBegin() const { return transstart;}
-    virtual int geneEnd() const { return transend;}
+    virtual long geneBegin() const { return transstart;}
+    virtual long geneEnd() const { return transend;}
     virtual bool isCoding() const { return false; }
     bool operator< (const Transcript &other) const;
     bool operator== (const Transcript &other) const;
@@ -313,7 +313,7 @@ public:
     double meanStateProb();
     char* getExonicSequence(AnnoSequence *annoseq = NULL,
 			    bool noOffset = false) const; // CDS or whole RNA, respectively
-    virtual void shiftCoordinates(int d);
+    virtual void shiftCoordinates(long d);
     virtual bool almostIdenticalTo(Transcript *other);
     virtual void printCodingSeq(AnnoSequence *annoseq) const {}; // print nothing
     virtual void printProteinSeq(AnnoSequence *annoseq) const {};// for noncoding
@@ -327,7 +327,7 @@ public:
 public:
     State*      exons; // the exons (not UTR)
     State*      introns; // the introns between 'exons'
-    int         transstart, transend; // transcription boundaries, -1 if not known
+    long        transstart, transend; // transcription boundaries, -1 if not known
     Transcript* next;
     string  id;       // transcript id
     string  seqname;
@@ -385,16 +385,16 @@ public:
     bool identicalCDS(Gene *other);
     using Transcript::almostIdenticalTo; // not really, but to prevent the compiler warning on MAC
     virtual bool almostIdenticalTo(Gene *other);
-    void shiftCoordinates(int d);
-    int geneBegin() const { return (transstart>=0)? transstart : codingstart;}
-    int geneEnd() const { return (transend>=0)? transend : codingend;}
+    void shiftCoordinates(long d);
+    long geneBegin() const { return (transstart>=0)? transstart : codingstart;}
+    long geneEnd() const { return (transend>=0)? transend : codingend;}
     virtual bool isCoding() const { return true; }
     void addUTR(State *mrnaRanges, bool complete_l=true, bool complete_r=true);
     void compileExtrinsicEvidence(list<HintGroup>  *groupList);
     double supportingFraction(HintGroup *group);
     void addSupportedStates(HintGroup *group);
     double getPercentSupported() const;
-    int getCDSCoord(int loc, bool comp) const;  
+    long getCDSCoord(long loc, bool comp) const;  
     bool completeCDS() const;
     void print();
     void printGFF() const;
@@ -411,7 +411,7 @@ public:
     State*  utr3exons;
     State*  utr5introns;
     State*  utr3introns;
-    int     codingstart, codingend; // transstart <= codingstart <= codingend <= transend, if not -1
+    long    codingstart, codingend; // transstart <= codingstart <= codingend <= transend, if not -1
     bool    complete5utr;
     bool    complete3utr;
   
@@ -447,8 +447,8 @@ public:
 class AltGene {
 public:
     list<Transcript*> transcripts;
-    int mincodstart; // leftmost position of any start codon (if coding)
-    int maxcodend; //
+    long mincodstart; // leftmost position of any start codon (if coding)
+    long maxcodend; //
     Strand strand;
     string id;
     string seqname;
@@ -464,11 +464,11 @@ public:
     bool operator< (const AltGene &other) const;
     void addGene(Transcript* tx);
     bool overlaps(Transcript *tx);
-    void shiftCoordinates(int d);
+    void shiftCoordinates(long d);
     void sortTranscripts(int numkeep=-1);
     void deleteSuboptimalTranscripts(bool uniqueCDS);
-    int minTransBegin();
-    int maxTransEnd();
+    long minTransBegin();
+    long  maxTransEnd();
     bool isCoding(){ return transcripts.empty() || dynamic_cast<Gene*> (transcripts.front());}
 };
 
@@ -478,10 +478,10 @@ void printGeneList(list<AltGene> *genelist, AnnoSequence *annoseq, bool withCS, 
 void printGeneList(Transcript* seq, AnnoSequence *annoseq, bool withCS, bool withAA);
 void printGeneSequence(Transcript* seq, AnnoSequence *annoseq = NULL, bool withCS=false, bool withAA=true);
 list<Gene*>* sortGenePtrList(list<Gene*>);
-list<AltGene> *reverseGeneList(list<AltGene> *altGeneList, int endpos);
+list<AltGene> *reverseGeneList(list<AltGene> *altGeneList, long endpos);
 list<AltGene>* groupTranscriptsToGenes(list<Transcript*> &transcripts);
  
-void reverseGeneSequence(Transcript* &seq, int endpos);
+void reverseGeneSequence(Transcript* &seq, long endpos);
 void postProcessGenes(list<AltGene> *genes, AnnoSequence *annoseq);
 Gene* promoteToCoding(Transcript* tx, AnnoSequence *as); // make a coding gene from a non-coding if it contains a good ORF
 
@@ -590,8 +590,8 @@ public:
     void printGFF();
 
     char*        seqname;
-    int          length;
-    int          offset; // if >0 this is the number of bases that have been cut out in the front of the original input sequence
+    long         length;
+    long         offset; // if >0 this is the number of bases that have been cut out in the front of the original input sequence
     char*        sequence;
     BaseCount    bc;
     AnnoSequence *next;
@@ -681,55 +681,17 @@ private:
 
 void examineBaseCountOfGeneSeq(AnnoSequence  *as);
 
-/* class CodonUsage: not used right now
-class CodonUsage {
-public:
-  CodonUsage(){
-    init();
-  }
-  CodonUsage(char *seq, int len, int frame=0){
-    init();
-    addCUofSeq(seq, len, frame);
-  }
-  CodonUsage(char *seq, int frame=0){
-    init();
-    addCUofSeq(seq, strlen(seq), frame=0);
-  }
-
-  CodonUsage(TrainingData *genedata){	
-    init();
-    while (genedata) {
-      addCUofSeq(genedata->seq, genedata->seqLen, 0);
-      genedata = genedata->next;
-    }
-    computeUsage();
-  }
-
-  double meanLogProb(char *seq, int len, int frame=0);
-  void addCUofSeq(char *seq, int len, int frame=0);
-  void init();
-  void computeUsage();
-  void print(ostream &out);
-private:
-  //GeneticCode code;
-  int codoncount[64];
-  double codonusage[64];
-  double logcodonusage[64];
-  double aaFrequencies[20];
-};
- //class CodonUsage
-*/
 
 /**
  * @author Mario Stanke
  */
 class FreqSegment{
 public:
-    FreqSegment(int s, int f){
+    FreqSegment(long s, int f){
 	start = s;
 	freq = f;
     }
-    int start;
+    long start;
     int freq;
 };
 
