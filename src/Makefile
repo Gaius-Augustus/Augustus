@@ -13,7 +13,7 @@ CXX ?= g++
 #    CXXFLAGS = -DDEBUG -g -ggdb -pg -DDEBUG_STATES
 #  in common.mk or the environment
 OPT ?=  -O3
-CXXFLAGS := -Wall -Wno-sign-compare -pedantic ${OPT} -std=c++11  -g -ggdb -DDEBUG ${CXXFLAGS}
+CXXFLAGS := -Wall -Wno-sign-compare -pedantic ${OPT} -std=c++11 ${CXXFLAGS}
 INCLS    += -I../include
 OBJS	= genbank.o properties.o pp_profile.o pp_hitseq.o pp_scoring.o statemodel.o namgene.o \
  types.o gene.o evaluation.o motif.o geneticcode.o hints.o extrinsicinfo.o projectio.o \

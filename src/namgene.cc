@@ -175,8 +175,6 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
    * and form the forward matrix
    */
   int dnalen = strlen( dna );
-  cout << "dnalen=" << dnalen << endl;
-  
   viterbi.assign(dnalen, statecount);
   if (needForwardTable) 
       forward.assign(dnalen, statecount);
@@ -527,7 +525,7 @@ Transcript *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequ
 //  SequenceFeatureCollection *partSFC;
   static int geneid = 1; // made this static so gene numbering goes across sequences and is unique
   int transcriptid;
-  int curdnalen;
+  long curdnalen;
   num_pieces = 0;
   
   bool singlestrand = false; // singlestrand = no shadow states
@@ -536,8 +534,8 @@ Transcript *NAMGene::doViterbiPiecewise(SequenceFeatureCollection& sfc, AnnoSequ
   } catch (...) {}
   
   int maxstep = 1000000;
-  int endPos, beginPos;
-  int seqlen = strlen(dna);
+  long endPos, beginPos;
+  long seqlen = strlen(dna);
   try {
     maxstep = Properties::getIntProperty( "maxDNAPieceSize" );
   } catch (...) {}
@@ -685,8 +683,8 @@ list<AltGene> *NAMGene::getStepGenes(AnnoSequence *annoseq, SequenceFeatureColle
     list<list<AltGene> *> *results;
     const char *dna = annoseq->sequence;
     char *curdna;
-    int curdnalen;
-    int n = strlen(dna);
+    long curdnalen;
+    long n = strlen(dna);
     bool uniqueCDS; 
     try {
 	uniqueCDS = Properties::getBoolProperty("uniqueCDS");
@@ -806,7 +804,7 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
   // to access the values so it won't cause errors; since in sampling
   // mode the values are ignored, we can assume from now on that they
   // are all 0).
-  int dnalen = viterbi.size();
+  long dnalen = viterbi.size();
   viterbi.assign(dnalen, statecount); 
 #ifdef DEBUG
   cerr << "Now we deleted the viterbi matrix.\n";
@@ -973,11 +971,11 @@ list<AltGene> *NAMGene::findGenes(const char *dna, Strand strand, bool onlyViter
  * but also likely to be in the intergenic region (synch state). 
  */ 
 int NAMGene::getNextCutEndPoint(const char *dna, int beginPos, int maxstep, SequenceFeatureCollection& sfc){
-  int restlen = strlen(dna+beginPos);
+  long restlen = strlen(dna+beginPos);
   char *curdna; 
-  int cutendpoint=0;
+  long cutendpoint=0;
   int examChunkSize=50000;
-  int examIntervalStart, examIntervalEnd;
+  long examIntervalStart, examIntervalEnd;
   SequenceFeatureCollection *partSFC;
   list<Feature> *groupGaps;
   list<Feature>::iterator lastirit;
@@ -1010,7 +1008,7 @@ int NAMGene::getNextCutEndPoint(const char *dna, int beginPos, int maxstep, Sequ
 	  groupGaps->push_back(Feature(1, strlen(dna)-1, irpartF, bothstrands, -1, "groups"));
       }
 
-      int centerLastGap;
+      long centerLastGap;
       if (!groupGaps->empty()) {
 	  lastirit = groupGaps->begin();
 	  while (lastirit != groupGaps->end() && lastirit->start < beginPos + maxstep)
@@ -1144,7 +1142,7 @@ int NAMGene::getNextCutEndPoint(const char *dna, int beginPos, int maxstep, Sequ
  * irsize is the size of the likely intergenic region
  */ 
 
-int NAMGene::tryFindCutEndPoint(StatePath *condensedExamPath, int examIntervalStart, int examIntervalEnd, list<Feature> *groupGaps, bool onlyInternalIR){
+long NAMGene::tryFindCutEndPoint(StatePath *condensedExamPath, int examIntervalStart, int examIntervalEnd, list<Feature> *groupGaps, bool onlyInternalIR){
     // determine the internal intergenic region that has largest overlap with a groupGap (if any)
     int irbegin, irend;
     int maxirbegin = -1, maxirend = -1;

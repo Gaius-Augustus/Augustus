@@ -572,7 +572,6 @@ GBSplitter::GBSplitter( string fname ) : ftype(unknown) {
     // only normal file input available
     sin << ifstrm.rdbuf();
 #endif
-    cout << "Mario: determining file type" << endl;
     determineFileType();
 }
 
@@ -603,7 +602,7 @@ void GBSplitter::determineFileType(){
 	csin.seekg(0, ios::beg);
 	string line;
 	bool haveWrongChar=false;
-        cout << "Mario: checking whether fasta" << endl;
+
 	while (csin && !haveWrongChar) {
 	    getline(csin, line);
 	    if (line[0]!='>') {
@@ -619,7 +618,7 @@ void GBSplitter::determineFileType(){
 	}
 	if (!haveWrongChar)
 	    ftype = fasta;
-	cout << "Mario: ftype is fasta" << endl;
+
 	csin.clear();
 	csin.seekg(0, ios::beg);
     }
