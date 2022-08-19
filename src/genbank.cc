@@ -675,7 +675,7 @@ Boolean GBSplitter::gotoEnd( ){
 
 
 Boolean GBSplitter::findPositions( GBPositions& pos ){
-    int fposb, fpose;
+    long fposb, fpose;
     fposb = sin.tellg();
     if( !gotoEnd( ) )
         return false;
@@ -698,12 +698,12 @@ Boolean GBSplitter::findPositions( GBPositions& pos ){
     istringstream isstrm( pos.buffer );
     char buf[GBMAXLINELEN];
     while( isstrm ){
-        int curpos = isstrm.tellg();
+        long curpos = isstrm.tellg();
         isstrm >> ws;
         isstrm.getline( buf, GBMAXLINELEN-1 );
 	if ((!sin.eof() && (sin.rdstate() & ios_base::failbit)) || strlen(buf) >= GBMAXLINELEN-2){
 	    throw GBError(string("Could not read the following line in Genbank file.\n") + buf 
-			  + "\nMaximum line length is \n" + itoa(GBMAXLINELEN-2) + ".\n");
+			  + "\nPossible reasons: line too long or file too large. Maximum line length is \n" + itoa(GBMAXLINELEN-2) + ".\n");
 	}
         char *src;
         char *rna;
