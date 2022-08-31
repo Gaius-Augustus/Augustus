@@ -3,7 +3,7 @@
  * license: Artistic License, see file LICENSE.TXT or 
  *          http://www.opensource.org/licenses/artistic-license.php
  *
- * authors: Mario Stanke, mario@gobics.de
+ * authors: Mario Stanke, mario.stanke@uni-greifswald.de
  *
  * date    |   author      |  changes
  * --------|---------------|------------------------------------------
@@ -146,7 +146,6 @@ int main( int argc, char* argv[] ){
                 throw ProjectError("No query file specified. Type \"augustus\" for help.");
             }
             string filename =  Properties::getProperty(INPUTFILE_KEY);
-
             GBProcessor gbank(filename);
             if (Gene::gff3)
                 cout << "##gff-version 3" << endl;
@@ -198,7 +197,7 @@ int main( int argc, char* argv[] ){
                     cerr << "# Unknown option for strand: " << strandstr << endl;
             } catch (...){} // take default strand
 	
-            if(mea_prediction)
+            if (mea_prediction)
                 cout <<"# Using MEA approach (Maximizing expected accuracy)."<<endl;
 
             if (gbank.fileType() == fasta) {
@@ -559,8 +558,9 @@ void checkExtrinsicAccuracy(AnnoSequence *annoseq, NAMGene &namgene, FeatureColl
  * in memory when we actually need only a small part.
  */
 void cutRelevantPiece(AnnoSequence *annoseq){
-    int predictionStart, predictionEnd;
-    int seqlen = annoseq->length;
+    long predictionStart, predictionEnd;
+    long seqlen = annoseq->length;
+
     try {
 	predictionStart = Properties::getIntProperty( "predictionStart" ) - 1;
     } catch (...) {
