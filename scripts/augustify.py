@@ -418,7 +418,7 @@ logger.addHandler(fh)
 tmp = create_tmp_dir(rString)
 
 ### Check whether provided threads are available
-count = multiprocessing.cpu_count()
+count = len(os.sched_getaffinity(0))
 if args.threads > count:
     frameinfo = getframeinfo(currentframe())
     logger.info('Warning in file ' + frameinfo.filename + ' at line ' +
