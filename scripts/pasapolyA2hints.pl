@@ -1,4 +1,4 @@
-#!/usr/bin/bin env
+#!/usr/bin env
 use strict;
 use warnings;
 use Getopt::Long;
