@@ -19,38 +19,6 @@ using namespace std;
  */
 bool sorting_intron(Genomic_Data::Intron i, Genomic_Data::Intron j) { return i.start < j.start; }
 
-/**
- * @brief Find intron with start position greater than j.
- */
-template <class Intron> struct finding_intron_greater_s : binary_function<Genomic_Data::Intron,unsigned,bool> {
-	bool operator() (const Genomic_Data::Intron& i, const unsigned j) const
-	{ return i.start >= j; }
-};
-
-/**
- * @brief Find intron with start position lesser than j.
- */
-template <class Intron> struct finding_intron_lesser_s : binary_function<Genomic_Data::Intron,unsigned,bool> {
-	bool operator() (const Genomic_Data::Intron& i, const unsigned j) const
-	{ return i.start < j; }
-};
-
-/**
- * @brief Find intron with end position greater than j.
- */
-template <class Intron> struct finding_intron_greater_e : binary_function<Genomic_Data::Intron,unsigned,bool> {
-	bool operator() (const Genomic_Data::Intron& i, const unsigned j) const
-	{ return i.end > j; }
-};
-
-/**
- * @brief Find intron with end position lesser than j.
- */
-template <class Intron> struct finding_intron_lesser_e : binary_function<Genomic_Data::Intron,unsigned,bool> {
-	bool operator() (const Genomic_Data::Intron& i, const unsigned j) const
-	{ return i.end < j; }
-};
-
 
 
 Coord_Transform::Coord_Transform(unsigned comp_start, int dir, unsigned limit, unsigned max_pos, unsigned W,
@@ -73,24 +41,24 @@ Coord_Transform::Coord_Transform(unsigned comp_start, int dir, unsigned limit, u
 		//find first intron after comp_start
 		if (dir == 1) { //left -> right
 			if ((*curr_introns->begin()).strand == "+") {
-				it = find_if(curr_introns->begin(), curr_introns->end(),
-						bind2nd(finding_intron_greater_s<Genomic_Data::Intron>(), i));
+			  it = find_if(curr_introns->begin(), curr_introns->end(),
+				       [i](auto const& intron){return (int) intron.start >= i;});
 			}
 			else {
-				it = find_if(curr_introns->begin(), curr_introns->end(),
-						bind2nd(finding_intron_greater_e<Genomic_Data::Intron>(), i));
+			  it = find_if(curr_introns->begin(), curr_introns->end(),
+				       [i](auto const& intron){return (int) intron.end > i;});
 			}
 		}
 		else { //right -> left
 			reverse(curr_introns->begin(),curr_introns->end());
 
 			if ((*curr_introns->begin()).strand == "+") {
-				it = find_if( curr_introns->begin(), curr_introns->end(),
-						bind2nd(finding_intron_lesser_e<Genomic_Data::Intron>(), i));
+			  it = find_if( curr_introns->begin(), curr_introns->end(),
+					[i](auto const& intron){return (int) intron.end < i;});
 			}
 			else {
-				it = find_if( curr_introns->begin(), curr_introns->end(),
-						bind2nd(finding_intron_lesser_s<Genomic_Data::Intron>(), i));
+			  it = find_if( curr_introns->begin(), curr_introns->end(),
+					[i](auto const& intron){return (int) intron.start < i;});
 			}
 		}
 

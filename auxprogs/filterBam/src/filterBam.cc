@@ -536,22 +536,18 @@ vector<string> uniqueKeys(const vector<PairednessCoverage> &m)
   if (m.empty()) {return unKeys;}
 
   // find the number of different keys
-  size_t nKeys = 1;
   vector<PairednessCoverage>::const_iterator it = m.begin();
   string lastkey = it->chr;
   unKeys.push_back(it->chr);
   ++it;
 
-  while (it != m.end()) 
-	{
-      if (lastkey < it->chr) 
-		{
-		  ++nKeys;
-		  lastkey = it->chr;
-		  unKeys.push_back(it->chr);
-		}
-	  ++it;
-	}
+  while (it != m.end()) {
+      if (lastkey < it->chr) {
+	  lastkey = it->chr;
+	  unKeys.push_back(it->chr);
+      }
+      ++it;
+  }
   return unKeys;
 }
 

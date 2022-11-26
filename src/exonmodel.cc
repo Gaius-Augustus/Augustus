@@ -1992,22 +1992,22 @@ Double ExonModel::eTermSeqProb(int left, int right, int frameOfRight) const {
 	//seqProb = etMotif[mod3(frameOfRight-Constant::et_coding_len + 1)]->seqProb(
 	//    sequence + left);
 // old method: Markov Model
-	Double seqProb = 1; 
-	Seq2Int s2i(k+1);
-	for (int curpos = right; curpos >= left; curpos--) {
-	    try {
-		int f = reverse? mod3(frameOfRight+right-curpos) : mod3(frameOfRight-right+curpos);
-		int pn = reverse? s2i.rc(sequence+curpos) : s2i(sequence+curpos-k);
-		seqProb *= etemiprobs[f][pn];
-	    } catch (InvalidNucleotideError &e) {
-		seqProb *= Constant::probNinCoding; // 0.25, 1/4
-	    }
+    Double seqProb = 1; 
+    Seq2Int s2i(k+1);
+    for (int curpos = right; curpos >= left; curpos--) {
+        try {
+	    int f = reverse? mod3(frameOfRight+right-curpos) : mod3(frameOfRight-right+curpos);
+	    int pn = reverse? s2i.rc(sequence+curpos) : s2i(sequence+curpos-k);
+	    seqProb *= etemiprobs[f][pn];
+	} catch (InvalidNucleotideError &e) {
+	    seqProb *= Constant::probNinCoding; // 0.25, 1/4
 	}
+    }
 // 	oldleft = left;
 // 	oldright = right;
 // 	oldframe = frame;
 // 	oldtype = etype;
-	return seqProb;
+    return seqProb;
 //     }
 }
 

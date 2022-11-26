@@ -75,68 +75,6 @@ bool sort_strand_coding_region(Genomic_Data::CRB i) { return i.strand == "-"; }
 bool sorting_repeat(Genomic_Data::Repeat i, Genomic_Data::Repeat j) { return i.start < j.start; }
 
 
-
-/**
- * @brief Finds first start or stop codon with codon position greater than j.
- */
-template <class Coding_Region_Boundary> struct finding_coding_region_greater :
-	binary_function<Genomic_Data::CRB,unsigned,bool> {
-		bool operator() (const Genomic_Data::CRB& i, const unsigned j) const
-		{ return i.codon_pos > j; }
-};
-
-/**
- * @brief Finds first start or stop codon with codon position smaller than j.
- */
-template <class Coding_Region_Boundary> struct finding_coding_region_lesser :
-	binary_function<Genomic_Data::CRB,unsigned,bool> {
-		bool operator() (const Genomic_Data::CRB& i, const unsigned j) const
-		{ return i.codon_pos < j; }
-};
-
-/**
- * @brief Finds first intron with a start position greater than j.
- */
-template <class Intron> struct finding_intron_greater_s : binary_function<Genomic_Data::Intron,unsigned,bool> {
-	bool operator() (const Genomic_Data::Intron& i, const unsigned j) const
-	{ return i.start > j; }
-};
-
-/**
- * @brief Finds first intron with a start position smaller than j.
- */
-template <class Intron> struct finding_intron_lesser_s : binary_function<Genomic_Data::Intron,unsigned,bool> {
-	bool operator() (const Genomic_Data::Intron& i, const unsigned j) const
-	{ return i.start < j; }
-};
-
-/**
- * @brief Finds first intron with end position greater than j.
- */
-template <class Intron> struct finding_intron_greater_e : binary_function<Genomic_Data::Intron,unsigned,bool> {
-	bool operator() (const Genomic_Data::Intron& i, const unsigned j) const
-	{ return i.end > j; }
-};
-
-/**
- * @brief Finds first intron with end position smaller than j.
- */
-template <class Intron> struct finding_intron_lesser_e : binary_function<Genomic_Data::Intron,unsigned,bool> {
-	bool operator() (const Genomic_Data::Intron& i, const unsigned j) const
-	{
-	  return i.end < j; }
-};
-
-/**
- * @brief Finds first repeat with a start position greater than j.
- */
-template <class Repeat> struct finding_repeat : binary_function<Genomic_Data::Repeat,unsigned,bool> {
-	bool operator() (const Genomic_Data::Repeat& i, const unsigned j) const
-	{ return i.start > j; }
-};
-
-
-
 void UTRs::clear() {
 	s_all_UTRs.clear();
 }
@@ -176,14 +114,14 @@ void UTRs::remove_overlapping_introns(vector<Genomic_Data::Intron>* introns) {
 unsigned UTRs::get_max_pos(unsigned pos, int dir, unsigned scaffold_size, unsigned read_length,
 		vector<Genomic_Data::CRB>* orfs) {
 	vector<Genomic_Data::CRB>::iterator it;
-	it =
-		(dir == 1) ? find_if(orfs->begin(), orfs->end(),
-							bind2nd(finding_coding_region_greater<Genomic_Data::CRB>(), pos)) :
-					 find_if(orfs->begin(), orfs->end(),
-							 bind2nd(finding_coding_region_lesser<Genomic_Data::CRB>(), pos));
+	it = (dir == 1) ?
+            find_if(orfs->begin(), orfs->end(), // find first start or stop codon with codon position greater than pos
+                    [pos](auto const& cr){return cr.codon_pos > pos;}) :
+            find_if(orfs->begin(), orfs->end(), // find first start or stop codon with codon position smaller than pos.
+                    [pos](auto const& cr){return cr.codon_pos < pos;});
 
 	if (it == orfs->end()) {
-		return (dir == 1) ? scaffold_size - read_length : read_length + 1; //END
+            return (dir == 1) ? scaffold_size - read_length : read_length + 1; //END
 	}
 
 	return (unsigned)((*it).codon_pos - dir); //cannot be negative, because gene found after POS
@@ -192,84 +130,94 @@ unsigned UTRs::get_max_pos(unsigned pos, int dir, unsigned scaffold_size, unsign
 
 
 bool UTRs::repeat_in_UTR(unsigned start, unsigned end, vector<Genomic_Data::Repeat>* repeats) {
-	vector<Genomic_Data::Repeat>::iterator it, it_pre;
-	it = find_if(repeats->begin(), repeats->end(), bind2nd(finding_repeat<Genomic_Data::Repeat>(), start));
-	it_pre = it - 1 ; //predecessor of it
+    vector<Genomic_Data::Repeat>::iterator it, it_pre;
+    it = find_if(repeats->begin(), repeats->end(), // find first repeat with a start position greater than start
+                 [start](auto const& repeat){return repeat.start > start;});
 
-	if (repeats->empty()) {
-		return false; //if no repeats, then no repeat in interval
-	}
+    it_pre = it - 1 ; //predecessor of it
 
-	if ( it == repeats->end()) { 	//no repeat with start greater than START found,
-		                            //but the repeat before could be in the interval
-		 return (*it_pre).end >= start; //it_pre exists, because repeats not empty an it == repeats->end
-	}									//end of it_pre is greater than START -> repeat in interval
+    if (repeats->empty()) {
+        return false; //if no repeats, then no repeat in interval
+    }
 
-	if ( ((*it).start <= end)) { //start of repeat it is greater than START and end is smaller than END
-		                         //-> repeat in interval
-		return true;
-	}
+    if ( it == repeats->end()) { 	//no repeat with start greater than START found,
+        //but the repeat before could be in the interval
+        return (*it_pre).end >= start; //it_pre exists, because repeats not empty an it == repeats->end
+    }									//end of it_pre is greater than START -> repeat in interval
 
-	if ( it != repeats->begin()) { //if it == repeats->begin(), than it_pre is not defined
-		return (*it_pre).end >= start; //end of it_pre is greater than START -> repeat in interval
-	}
+    if ( ((*it).start <= end)) { //start of repeat it is greater than START and end is smaller than END
+        //-> repeat in interval
+        return true;
+    }
 
-	return false;
+    if ( it != repeats->begin()) { //if it == repeats->begin(), than it_pre is not defined
+        return (*it_pre).end >= start; //end of it_pre is greater than START -> repeat in interval
+    }
+
+    return false;
 
 }
 
 
 
 vector<int> UTRs::find_introns_in_range(unsigned start, unsigned end, int dir, vector<Genomic_Data::Intron>* introns) {
-	vector<int> indices;
+    vector<int> indices;
 
-	if (introns->empty()) {
-		return indices;
-	}
+    if (introns->empty()) {
+        return indices;
+    }
 
-	vector<Genomic_Data::Intron>::iterator it;
-	if (dir == 1 ) { //left -> right
-		if ((*introns->begin()).strand == "+") {
-			it = find_if(introns->begin(), introns->end(), bind2nd(finding_intron_greater_s<Genomic_Data::Intron>(), start));
-			while ( it != introns->end() && (*it).start < end) {
-				indices += it - introns->begin();
-				++it;
-			}
-		}
-		else {
-			it = find_if(introns->begin(), introns->end(), bind2nd(finding_intron_greater_e<Genomic_Data::Intron>(), start));
-			while ( it != introns->end() && (*it).end < end) {
-				indices += it - introns->begin();
-				++it;
-			}
-		}
-	}
-	else { //right -> left
-		vector<Genomic_Data::Intron> reverse_introns = *introns;
-		reverse(reverse_introns.begin(), reverse_introns.end()); //done this in COORD Transform
+    vector<Genomic_Data::Intron>::iterator it;
+    if (dir == 1 ) { //left -> right
+        if ((*introns->begin()).strand == "+") {
+            it = find_if(introns->begin(), introns->end(), // finds first intron with a start position greater than start
+                         [start](auto const&  intron){return intron.start > start;});
+            while ( it != introns->end() && (*it).start < end) {
+                indices += it - introns->begin();
+                ++it;
+            }
+        }
+        else {
+            it = find_if(introns->begin(), introns->end(), // finds first intron with an end position greater than start
+                         [start](auto const& intron){return intron.end > start;});
 
-		if ((*reverse_introns.begin()).strand == "+") {
-			it = find_if(reverse_introns.begin(), reverse_introns.end(), bind2nd(finding_intron_lesser_e<Genomic_Data::Intron>(), start));
-			while ( it != reverse_introns.end() && (*it).end > end) {
-				indices += it - reverse_introns.begin();
-				++it;
-			}
-		}
-		else {
-			it = find_if(reverse_introns.begin(), reverse_introns.end(), bind2nd(finding_intron_lesser_s<Genomic_Data::Intron>(), start));
-			while ( it != reverse_introns.end() && (*it).start > end) {
-				indices += it - reverse_introns.begin();
-				++it;
-			}
-		}
-		// reverse indices (because they refer to reverse_introns, but later, the indices are used to access unreversed introns
-		vector<int> reversed_indices;
-		for(unsigned w=0; w<indices.size(); ++w){
-		  reversed_indices += reverse_introns.size()-indices[w]-1;
-		}
-		indices = reversed_indices;
-	}
-	return indices;
+            while ( it != introns->end() && (*it).end < end) {
+                indices += it - introns->begin();
+                ++it;
+            }
+        }
+    }
+    else { //right -> left
+        vector<Genomic_Data::Intron> reverse_introns = *introns;
+        reverse(reverse_introns.begin(), reverse_introns.end()); //done this in COORD Transform
+
+        if ((*reverse_introns.begin()).strand == "+") {
+            it = find_if(reverse_introns.begin(), reverse_introns.end(), // finds first intron with end position smaller than start
+                         [start](auto const& intron){return intron.end < start;});
+
+            while ( it != reverse_introns.end() && (*it).end > end) {
+                indices += it - reverse_introns.begin();
+                ++it;
+            }
+        }
+        else {
+            it = find_if(reverse_introns.begin(), reverse_introns.end(), // finds first intron with a start
+                         // position smaller than start
+                         [start](auto const& intron){return intron.start < start;});
+
+            while ( it != reverse_introns.end() && (*it).start > end) {
+                indices += it - reverse_introns.begin();
+                ++it;
+            }
+        }
+        // reverse indices (because they refer to reverse_introns, but later, the indices are used to access unreversed introns
+        vector<int> reversed_indices;
+        for(unsigned w=0; w<indices.size(); ++w){
+            reversed_indices += reverse_introns.size()-indices[w]-1;
+        }
+        indices = reversed_indices;
+    }
+    return indices;
 }
 
 

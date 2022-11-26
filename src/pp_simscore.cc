@@ -867,7 +867,6 @@ int main(int argc, char* argv[])
     double epsilon_noIntron = 0.1;
     int alignmentNo = 1;
     const char* const short_opts = "g:b:r:e:n:o:f:p:i:t:a:h";
-    pair <int, int> count_miss;
 
     const option long_opts[] = {
         {"gap_inter", required_argument, nullptr, 'g'},
