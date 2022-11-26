@@ -52,8 +52,10 @@ void SequenceFeatureCollection::initHintedSplicesites(string ssList) {
 
 void SequenceFeatureCollection::addFeature(Feature f){
     FeatureType type = f.type;
-    featureLists[(int) type].push_back(f);	
-    sorted = false;
+    if (type != UNKNOWN_FEATURE){
+        featureLists[(int) type].push_back(f);	
+        sorted = false;
+    }
 }
 
 void SequenceFeatureCollection::printFeatures(ostream& out){

@@ -28,7 +28,7 @@ using namespace std;
  * 
  * @author Mario Stanke
  */
-enum FeatureType {startF = 0, stopF, assF, dssF, tssF, ttsF, exonpartF, exonF, intronpartF, intronF, irpartF, CDSF, CDSpartF, UTRF, UTRpartF, nonexonpartF, nonirpartF};
+enum FeatureType {UNKNOWN_FEATURE = -1, startF, stopF, assF, dssF, tssF, ttsF, exonpartF, exonF, intronpartF, intronF, irpartF, CDSF, CDSpartF, UTRF, UTRpartF, nonexonpartF, nonirpartF};
 extern const char* featureTypeNames[NUM_FEATURE_TYPES];
 
 // start:       begin and end position of a start codon

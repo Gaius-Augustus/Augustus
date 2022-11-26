@@ -1332,8 +1332,8 @@
     },
     {
         "name": "extrinsicCfgFile",
-        "development": true,
-        "description": ""
+        "development": false,
+        "description": "A file with meta parameters on the reliability of hints as well as penalties for the prediction of gene structure parts that are unsupported by hints. Either a path to a file or the name of a file below config/extrinsic."
     },
     {
         "name": "GCwinsize",

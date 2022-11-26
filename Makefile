@@ -26,20 +26,21 @@ clean:
 		cd .. && ./pyclean.sh; \
 	fi
 
-PREFIX = /usr/local
-INSTALLDIR = /opt/augustus-$(AUGVERSION)
+prefix ?= /usr/local
+bindir = $(prefix)/bin
+INSTALLDIR = $(DESTDIR)/opt/augustus-$(AUGVERSION)
 
 install:
 	if [ ! $(PWD) -ef $(INSTALLDIR) ] ; then \
 		install -d $(INSTALLDIR) && \
 		cp -a config bin scripts $(INSTALLDIR) ; \
 	fi
-	ln -sf $(INSTALLDIR)/bin/augustus $(PREFIX)/bin/augustus
-	ln -sf $(INSTALLDIR)/bin/etraining $(PREFIX)/bin/etraining
-	ln -sf $(INSTALLDIR)/bin/prepareAlign $(PREFIX)/bin/prepareAlign
-	ln -sf $(INSTALLDIR)/bin/fastBlockSearch $(PREFIX)/bin/fastBlockSearch
-	if [ -f $(INSTALLDIR)/bin/load2db ] ; then ln -sf $(INSTALLDIR)/bin/load2db $(PREFIX)/bin/load2db ; fi
-	if [ -f $(INSTALLDIR)/bin/getSeq ] ; then ln -sf $(INSTALLDIR)/bin/getSeq $(PREFIX)/bin/getSeq ; fi
+	ln -sf $(INSTALLDIR)/bin/augustus $(bindir)/augustus
+	ln -sf $(INSTALLDIR)/bin/etraining $(bindir)/etraining
+	ln -sf $(INSTALLDIR)/bin/prepareAlign $(bindir)/prepareAlign
+	ln -sf $(INSTALLDIR)/bin/fastBlockSearch $(bindir)/fastBlockSearch
+	if [ -f $(INSTALLDIR)/bin/load2db ] ; then ln -sf $(INSTALLDIR)/bin/load2db $(bindir)/load2db ; fi
+	if [ -f $(INSTALLDIR)/bin/getSeq ] ; then ln -sf $(INSTALLDIR)/bin/getSeq $(bindir)/getSeq ; fi
 
 # for internal purposes:
 release:
