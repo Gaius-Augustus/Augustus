@@ -116,9 +116,9 @@ unsigned UTRs::get_max_pos(unsigned pos, int dir, unsigned scaffold_size, unsign
 	vector<Genomic_Data::CRB>::iterator it;
 	it = (dir == 1) ?
             find_if(orfs->begin(), orfs->end(), // find first start or stop codon with codon position greater than pos
-                    [pos](auto const& cr){return cr.codon_pos > pos;}) :
+                    [pos](Genomic_Data::CRB const& cr){return cr.codon_pos > pos;}) :
             find_if(orfs->begin(), orfs->end(), // find first start or stop codon with codon position smaller than pos.
-                    [pos](auto const& cr){return cr.codon_pos < pos;});
+                    [pos](Genomic_Data::CRB const& cr){return cr.codon_pos < pos;});
 
 	if (it == orfs->end()) {
             return (dir == 1) ? scaffold_size - read_length : read_length + 1; //END
@@ -132,7 +132,7 @@ unsigned UTRs::get_max_pos(unsigned pos, int dir, unsigned scaffold_size, unsign
 bool UTRs::repeat_in_UTR(unsigned start, unsigned end, vector<Genomic_Data::Repeat>* repeats) {
     vector<Genomic_Data::Repeat>::iterator it, it_pre;
     it = find_if(repeats->begin(), repeats->end(), // find first repeat with a start position greater than start
-                 [start](auto const& repeat){return repeat.start > start;});
+                 [start](Genomic_Data::Repeat const& repeat){return repeat.start > start;});
 
     it_pre = it - 1 ; //predecessor of it
 
@@ -171,7 +171,7 @@ vector<int> UTRs::find_introns_in_range(unsigned start, unsigned end, int dir, v
     if (dir == 1 ) { //left -> right
         if ((*introns->begin()).strand == "+") {
             it = find_if(introns->begin(), introns->end(), // finds first intron with a start position greater than start
-                         [start](auto const&  intron){return intron.start > start;});
+                         [start](Genomic_Data::Intron  const&  intron){return intron.start > start;});
             while ( it != introns->end() && (*it).start < end) {
                 indices += it - introns->begin();
                 ++it;
@@ -179,7 +179,7 @@ vector<int> UTRs::find_introns_in_range(unsigned start, unsigned end, int dir, v
         }
         else {
             it = find_if(introns->begin(), introns->end(), // finds first intron with an end position greater than start
-                         [start](auto const& intron){return intron.end > start;});
+                         [start](Genomic_Data::Intron const& intron){return intron.end > start;});
 
             while ( it != introns->end() && (*it).end < end) {
                 indices += it - introns->begin();
@@ -193,7 +193,7 @@ vector<int> UTRs::find_introns_in_range(unsigned start, unsigned end, int dir, v
 
         if ((*reverse_introns.begin()).strand == "+") {
             it = find_if(reverse_introns.begin(), reverse_introns.end(), // finds first intron with end position smaller than start
-                         [start](auto const& intron){return intron.end < start;});
+                         [start](Genomic_Data::Intron const& intron){return intron.end < start;});
 
             while ( it != reverse_introns.end() && (*it).end > end) {
                 indices += it - reverse_introns.begin();
@@ -203,7 +203,7 @@ vector<int> UTRs::find_introns_in_range(unsigned start, unsigned end, int dir, v
         else {
             it = find_if(reverse_introns.begin(), reverse_introns.end(), // finds first intron with a start
                          // position smaller than start
-                         [start](auto const& intron){return intron.start < start;});
+                         [start](Genomic_Data::Intron const& intron){return intron.start < start;});
 
             while ( it != reverse_introns.end() && (*it).start > end) {
                 indices += it - reverse_introns.begin();
