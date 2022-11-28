@@ -35,7 +35,7 @@ install:
 	@echo Installing augustus executables into $(bindir)
 # two main ways:
 # 1) make install is executed from anywhere but in INSTALLDIR. Then INSTALLDIR is created if it does not exist and config data is copied.
-# 1) make install is executed in INSTALLDIR. This is done by the singularity file.
+# 2) make install is executed in INSTALLDIR. This is done by the singularity file.
 	if [ ! $(CURDIR) -ef $(INSTALLDIR) ] ; then \
 		install -d $(INSTALLDIR) && \
 		cp -a config bin scripts $(INSTALLDIR) ; \
