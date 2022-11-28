@@ -26,12 +26,17 @@ clean:
 		cd .. && ./pyclean.sh; \
 	fi
 
+# DESTDIR is usually the empty string but can be set for staging
 prefix ?= /usr/local
-bindir = $(prefix)/bin
-INSTALLDIR = $(DESTDIR)/opt/augustus-$(AUGVERSION)
+bindir = $(DESTDIR)$(prefix)/bin
+INSTALLDIR = /opt/augustus-$(AUGVERSION)
 
 install:
-	if [ ! $(PWD) -ef $(INSTALLDIR) ] ; then \
+	@echo Installing augustus executables into $(bindir)
+# two main ways:
+# 1) make install is executed from anywhere but in INSTALLDIR. Then INSTALLDIR is created if it does not exist and config data is copied.
+# 1) make install is executed in INSTALLDIR. This is done by the singularity file.
+	if [ ! $(CURDIR) -ef $(INSTALLDIR) ] ; then \
 		install -d $(INSTALLDIR) && \
 		cp -a config bin scripts $(INSTALLDIR) ; \
 	fi
