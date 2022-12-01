@@ -3,7 +3,7 @@
 include ../../common.mk
 
 CXX ?= g++
-CXXFLAGS := -Wall -O0 -pedantic -fmessage-length=0 ${CXXFLAGS}
+CXXFLAGS := -Wall -O2 -pedantic -fmessage-length=0 -std=c++11 ${CXXFLAGS}
 INCLS   += $(INCLUDE_PATH_BOOST) # set boost include path in INCLUDE_PATH_BOOST, if boost is not installed system-wide
 LDFLAGS += $(LIBRARY_PATH_BOOST) # set boost library path in LIBRARY_PATH_BOOST, if boost is not installed system-wide
 

@@ -35,34 +35,34 @@ using namespace boost::assign;
 
 // Determine the start and end positions of runs (i.e. stretches) of lower case letters
 vector< pair<unsigned, unsigned> > lower_case_runs(string str) {
-	// Iterate through the string, storing runs on the fly
-	vector< pair<unsigned, unsigned> > ret;
-	unsigned i = 0;
-	bool prev_lc = false;   // Was the previous character lower case?
-	unsigned start;
-	while (i < str.length()) {
-		bool curr_lc = islower( char( str[i] ) );   // Is the current character lower case
-		if (prev_lc) {
-			if (!curr_lc) {
-				unsigned end = i - 1;
-				ret += make_pair(start, end);
-				prev_lc = false;
-			}
-		}
-		else {
-			if (curr_lc) {
-				start = i;
-				prev_lc = true;
-			}
-		}
-		++i;
-	}
-	if (prev_lc) {   // Is the last character of the string  lower case?
-		unsigned end = i - 1;
-		ret += make_pair(start, end);
-	}
+    // Iterate through the string, storing runs on the fly
+    vector< pair<unsigned, unsigned> > ret;
+    unsigned i = 0;
+    bool prev_lc = false;   // Was the previous character lower case?
+    unsigned start = 0;
+    while (i < str.length()) {
+        bool curr_lc = islower( char( str[i] ) );   // Is the current character lower case
+        if (prev_lc) {
+            if (!curr_lc) {
+                unsigned end = i - 1;
+                ret += make_pair(start, end);
+                prev_lc = false;
+            }
+        }
+        else {
+            if (curr_lc) {
+                start = i;
+                prev_lc = true;
+            }
+        }
+        ++i;
+    }
+    if (prev_lc) {   // Is the last character of the string  lower case?
+        unsigned end = i - 1;
+        ret += make_pair(start, end);
+    }
 
-	return ret;
+    return ret;
 }
 
 

@@ -267,10 +267,10 @@ void NAMGene::viterbiAndForward( const char* dna, bool useProfile){
 #ifdef DEBUG 
 	  cerr << "[" << j;
 #endif
-	  int deletedSubmaps=0;
+	  //int deletedSubmaps=0;
 	  int newDeletionEnd = StateModel::getActiveWindowStart(j);
 	  while (deletionEnd < newDeletionEnd) {
-	      deletedSubmaps += viterbi[++deletionEnd].eraseUnneededSubstates();
+              viterbi[++deletionEnd].eraseUnneededSubstates(); //deletedSubmaps += return value
 #ifdef DEBUG
 	      // viterbi[deletionEnd].checkAfterWindow();
 #endif
@@ -1507,7 +1507,6 @@ void NAMGene::checkProbsConsistency( ){
 
 void NAMGene::computeReachableStates( ){
     bool expanded = true;
-    bool allReachable;
     for (int i=0; i < statecount; i++)
 	stateReachable[i] = (initProbs[i] > 0.0);
 
@@ -1521,10 +1520,10 @@ void NAMGene::computeReachableStates( ){
 	    }
 	}
     }
-    allReachable = true;
+#ifdef DEBUG
+    bool allReachable = true;
     for (int i=0; i < statecount; i++)
 	allReachable &= stateReachable[i];
-#ifdef DEBUG
     if (!allReachable) {
 	cerr << "The following states are not reachable: ";
 	for (int i=0; i < statecount; i++)

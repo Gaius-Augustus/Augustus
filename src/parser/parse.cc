@@ -62,7 +62,6 @@
 
 namespace // anonymous
 {
-    char const author[] = "Frank B. Brokken (f.b.brokken@rug.nl)";
 
     enum 
     {
@@ -820,7 +819,7 @@ int Parser::lookup(bool recovery)
         // $insert debug
         if (d_debug__)
             s_out__ <<  "): default reduction by rule " << -elementPtr->d_action << "\n" << dflush__;
-            return elementPtr->d_action;                
+        return elementPtr->d_action;
         }
         // $insert debug
         if (d_debug__)

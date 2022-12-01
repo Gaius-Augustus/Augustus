@@ -25,6 +25,11 @@ using boost::vertex_index_t;
 using boost::vertex_index;
 using boost::graph_traits;
 
+/* gcc version 12.2.0 warns that edge weights may be used uninitialized
+ * Turn this warning off with the following line.
+ */
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+
 void eraseListRange(list<int> L, list<int>::reverse_iterator from, list<int>::reverse_iterator to){
     L.erase(to.base(), from.base());
 }
