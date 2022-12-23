@@ -49,7 +49,7 @@ with open(args.gtf, "r") as gtf_file:
       gene_data[gene_id][transcript_id].append(row)
 
 for tx in transcripts_to_remove:
-  match = re.match(r'([^g]*g\d+)\.t\d+', tx)
+  match = re.match(r'([^"]*g\d+)\.t\d+', tx)
   gid = match.group(1)
   del gene_data[gid][tx]
   if len(gene_data[gid]) == 1:
