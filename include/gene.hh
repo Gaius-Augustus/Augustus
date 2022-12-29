@@ -602,6 +602,15 @@ public:
 bool isAllLC(AnnoSequence *seqs);
 
 
+/*
+ * Print a warning if --softmasking=1 (default) and all sequences are
+ * completely in lowercase characters. This can happen in particular
+ * if the input is from GenBank.
+ */
+void warnAllLowerCase(AnnoSequence *annoseq);
+
+
+
 /**
  * 
  * @author Mario Stanke

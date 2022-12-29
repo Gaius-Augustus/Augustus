@@ -93,6 +93,10 @@ int main( int argc, char* argv[] ){
 	  verbosity = Properties::getIntProperty("/augustus/verbosity");
 	} catch (...) {}
 	trainannoseq = traingbank.getAnnoSequenceList();
+	if (!Constant::softmasking_explicitly_requested){
+            Constant::softmasking = false; // default is false only for .gb files
+	}
+	warnAllLowerCase(trainannoseq);
 	singletrainannoseq = EHMMTraining::split2SingleGeneSeqs(trainannoseq);
 
 	if (!singletrainannoseq){
@@ -104,7 +108,9 @@ int main( int argc, char* argv[] ){
 	
 	// TODO: read in the hints for training
 	FeatureCollection extrinsicFeatures;
-	
+	if (Constant::softmasking) {
+	    extrinsicFeatures.readExtrinsicCFGFile();
+	}
 
 	BaseCount *bc = new BaseCount();
 	ContentDecomposition cd;
