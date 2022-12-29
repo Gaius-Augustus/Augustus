@@ -89,14 +89,6 @@ void cutRelevantPiece(AnnoSequence *annoseq);
 
 
 /*
- * Print a warning if --softmasking=1 (default) and all sequences are
- * completely in lowercase characters. This can happen in particular
- * if the input is from GenBank.
- */
-void warnAllLowerCase(AnnoSequence *annoseq);
-
-
-/*
  * main
  */
 int main( int argc, char* argv[] ){
@@ -604,21 +596,3 @@ void cutRelevantPiece(AnnoSequence *annoseq){
         annoseq->offset = -predictionStart - 1;
     }
 }
-
-
-
-/*
- * Print a warning if --softmasking=1 (default) and all sequences are
- * completely in lowercase characters. This can happen in particular
- * if the input is from GenBank.
- */
-void warnAllLowerCase(AnnoSequence *annoseq){
-    if (Constant::softmasking && isAllLC(annoseq)){
-        cerr << "#########################################################################" << endl
-             << "# WARNING: --softmasking=1 and all sequences are completely in lower case." << endl
-             << "# They will be treated as repeatmasked everywhere and genes could be severely underpredicted." << endl
-             << "# If this is not intended, rerun with --softmasking=0" << endl
-             << "#########################################################################" << endl;
-    }
-}
-
