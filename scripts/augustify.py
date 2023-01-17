@@ -17,6 +17,9 @@ from inspect import currentframe, getframeinfo
 from itertools import compress
 import multiprocessing
 from datetime import datetime
+import uuid
+import ast
+import glob
 
 
 
@@ -66,8 +69,8 @@ parser.add_argument('-t', '--threads', required=False, type=int, default=1,
                     'of threads should not be greater than the number of ' +
                     'species parameter sets.')
 # parser.add_argument('-c', '--use_coordinates', required=False, type=str, default=False,
-#                   help='This is the file with the selected coordinates for contigs, that Augustify will use for predictions.' +
-#                   'Augustify currently takes the n nucleotides of a contig randomly to pick a parameter set.' +
+#                   help='This is the file with the selected coordinates for contigs. that Augustify will use for predictions.' +
+#                   'Augustify currently takes the n nucleotides of a contig RANDOMLY to pick a parameter set.' +
 #                   'Prediction is performed on the full set of sequence after picking.')
 args = parser.parse_args()
 
@@ -224,6 +227,8 @@ def work_augustus(cmd_ext_lst):
     we do this because AUGUSTUS sometimes crashes when computing the desired
     probability; problem should ultimately be fixed in AUGUSTUS '''
 
+    #global seqs, starts
+
     segmlen = 15000  # These parameters need to be evaluated, later!
     stepwidth = 7500  # These parameters need to be evaluated, later!
     cmd1 = cmd_ext_lst[0:7]
@@ -231,6 +236,7 @@ def work_augustus(cmd_ext_lst):
     sub = re.search(r"seq(.+?)\.", str(cmd2[0]))[0][:-1]
     seqlen = cmd_ext_lst[-1]
 
+    ###   Why do not exclude small contigs at all?
     if seqlen <= segmlen:
         cmd = cmd1 + cmd2
         #starts.appens(np.NaN)
@@ -250,7 +256,6 @@ def work_augustus(cmd_ext_lst):
         returncode = 1
         while (curr_start < curr_end) and (curr_end - curr_start + 1 >= segmlen) and not (returncode == 0):
             cmd = cmd1 + ["--predictionStart=" + str(curr_start), "--predictionEnd=" + str(curr_end)] + cmd2
-            #            print("CMD is: ", cmd)
             result = subprocess.run(cmd, stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE, shell=False)
             returncode = result.returncode
@@ -259,12 +264,10 @@ def work_augustus(cmd_ext_lst):
                 curr_end = curr_end + stepwidth
             else:
                 curr_end = seqlen
-        # print("func: work_augustus")
+        print("run work_augustus for long seq")
         return result, sub, start
 
-
-
-def augustify_seq(hindex, header, seqs, tmp, params):
+def augustify_seq(hindex, header, seqs, tmp, params, id):
     ''' Function that runs a subprocess with arguments and specified STDOUT and STDERR '''
     logger.info("Processing sequence: " + header)
     # store length for loop (emiprobs bug)
@@ -294,8 +297,11 @@ def augustify_seq(hindex, header, seqs, tmp, params):
 # execute processes in parallel
 
     if __name__ == '__main__':
-        date = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        filename = f'selected_coordinates_{date}.txt'
+
+        time = datetime.now().strftime("%H%M%S")
+        #id = str(uuid.uuid4().hex)[:10]
+        filename = f'selected_coordinates_{id}_{time}.txt'
+
         with open(filename, 'w') as file:
             with multiprocessing.Pool(processes=args.threads) as pool:
                 print("multiprocessing")
@@ -307,18 +313,10 @@ def augustify_seq(hindex, header, seqs, tmp, params):
                     results_dict[result[1]] = result[2]
                 print(res)
                 print("Get all_results list")
-                # results = [x[0] for x in collect_all_results]
-                # seqs = [x[1] for x in collect_all_results]
-                # starts = [x[2] for x in collect_all_results]
-                #
-                # print("Got seq_start dictionary")
-                #
-                # seq_start = dict(zip(seqs, starts))
-                # seq_starts = seq_starts | seq_start
-
-            #print("Dict :", seq_starts)        
-
             file.write(json.dumps(results_dict))
+
+        #list_of_files = glob.glob(filename)
+
 
     logger.info("Saved randomly selected coordinates for contigs to file.")
 
@@ -592,6 +590,8 @@ if args.threads > len(params):
 seq_to_spec = {}
 try:
     with open(args.genome, "r") as genome_handle:
+        id = str(uuid.uuid4().hex)[:10]
+
         curr_seq = ""
         curr_header = ""
         hindex = 0;
@@ -599,7 +599,7 @@ try:
             if re.match(r'^>', line):
                 hindex = hindex + 1
                 if len(curr_seq) > 0:
-                    fitting_species = augustify_seq(hindex, curr_header, curr_seq, tmp, params)
+                    fitting_species = augustify_seq(hindex, curr_header, curr_seq, tmp, params, id)
                     seq_to_spec[curr_header] = fitting_species
                 curr_header = line;
                 curr_seq = "";
@@ -607,10 +607,25 @@ try:
                 curr_seq += line
         # process the last sequence
         if hindex > 0 and len(curr_seq) > 0:
-            fitting_species = augustify_seq(hindex, curr_header, curr_seq, tmp, params)
+            fitting_species = augustify_seq(hindex, curr_header, curr_seq, tmp, params, id)
             seq_to_spec[curr_header] = fitting_species
         else:
             logger.info('Wrong formatted genome fasta file ' + args.genome + ' !')
+
+        filename = f'selected_coordinates_{id}_*.txt'
+        list_of_files = glob.glob(filename)
+
+        with open("selected_coordinates.txt", "w") as fout:
+            results_dict = {}
+            for fileName in list_of_files:
+                with open(fileName, 'r') as finp:
+                    data = finp.read()
+                    dict_i = ast.literal_eval(data)
+                    results_dict = results_dict | dict_i
+            fout.write(json.dumps(results_dict))
+
+        with multiprocessing.Pool(processes=args.threads) as pool:
+            list(pool.map(os.remove, glob.glob(filename)))
 
 except IOError:
     frameinfo = getframeinfo(currentframe())
