@@ -10,10 +10,15 @@ import subprocess
 import logging
 import random
 import string
+import json
+import numpy as np
 from difflib import SequenceMatcher
 from inspect import currentframe, getframeinfo
 from itertools import compress
 import multiprocessing
+from datetime import datetime
+
+
 
 __author__ = "Katharina J. Hoff"
 __copyright__ = "Copyright 2022. All rights reserved."
@@ -60,6 +65,10 @@ parser.add_argument('-t', '--threads', required=False, type=int, default=1,
                     help='Number of threads for running augustus. The number ' +
                     'of threads should not be greater than the number of ' +
                     'species parameter sets.')
+# parser.add_argument('-c', '--use_coordinates', required=False, type=str, default=False,
+#                   help='This is the file with the selected coordinates for contigs, that Augustify will use for predictions.' +
+#                   'Augustify currently takes the n nucleotides of a contig randomly to pick a parameter set.' +
+#                   'Prediction is performed on the full set of sequence after picking.')
 args = parser.parse_args()
 
 if ( (args.metagenomic_classification_outfile) and (args.species) ):
@@ -207,36 +216,56 @@ def run_process_stdinput(args_lst, prc_in):
         print("Error code: ", grepexc.returncode, grepexc.output)
         quit(1)
 
+
 def work_augustus(cmd_ext_lst):
-    ''' Function that keeps running AUGUSTUS to compute emiprobs until it 
-    returns a result or until the entire sequence has been tried; walk 
-    the input in steps 4000 nt windows, overlapping 200 nt, if possible; 
+    ''' Function that keeps running AUGUSTUS to compute emiprobs until it
+    returns a result or until the entire sequence has been tried; walk
+    the input in steps 4000 nt windows, overlapping 200 nt, if possible;
     we do this because AUGUSTUS sometimes crashes when computing the desired
     probability; problem should ultimately be fixed in AUGUSTUS '''
-    segmlen = 15000 # These parameters need to be evaluated, later!
-    stepwidth = 7500 # These parameters need to be evaluated, later!
+
+    #global seqs, starts
+
+    segmlen = 15000  # These parameters need to be evaluated, later!
+    stepwidth = 7500  # These parameters need to be evaluated, later!
     cmd1 = cmd_ext_lst[0:7]
     cmd2 = cmd_ext_lst[7:9]
+    sub = re.search(r"seq(.+?)\.", str(cmd2[0]))[0][:-1]
     seqlen = cmd_ext_lst[-1]
-    if seqlen<=segmlen:
+
+    ###   Why do not exclude small contigs at all?
+    if seqlen <= segmlen:
         cmd = cmd1 + cmd2
-        return subprocess.run(cmd, stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE, shell=False)
+        #starts.appens(np.NaN)
+        #seqs.append(sub)
+        print("short sequence")
+        return subprocess.run(cmd, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE, shell=False), sub, np.NaN
     else:
-        curr_start = 1
-        curr_end = segmlen
+        curr_start = random.randint(0, seqlen - segmlen)
+        start = curr_start
+        #starts.append(curr_start)
+        #seqs.append(sub)
+        #print("CMD1 is: ", cmd1)
+        print("Randomly selected start coordinate for ", sub, "is: ", curr_start)
+        #curr_end = segmlen
+        curr_end = segmlen + curr_start
         returncode = 1
-        while (curr_start < curr_end) and (curr_end - curr_start + 1 >= segmlen) and not(returncode == 0):
+        while (curr_start < curr_end) and (curr_end - curr_start + 1 >= segmlen) and not (returncode == 0):
             cmd = cmd1 + ["--predictionStart=" + str(curr_start), "--predictionEnd=" + str(curr_end)] + cmd2
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, 
-                stderr=subprocess.PIPE, shell=False)
+            #            print("CMD is: ", cmd)
+            result = subprocess.run(cmd, stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, shell=False)
             returncode = result.returncode
             curr_start = curr_start + stepwidth
             if (curr_end + stepwidth) <= seqlen:
-                curr_end = curr_end+stepwidth
+                curr_end = curr_end + stepwidth
             else:
                 curr_end = seqlen
-        return result
+        print("Hello work_augustus")
+        return result, sub, start
+
+
 
 def augustify_seq(hindex, header, seqs, tmp, params):
     ''' Function that runs a subprocess with arguments and specified STDOUT and STDERR '''
@@ -265,15 +294,41 @@ def augustify_seq(hindex, header, seqs, tmp, params):
                      '--errfile=' + tmp + "seq" + str(hindex) + "_" + species.rstrip() + ".err", currlen]
         calls.append(curr_call)
 
-    # execute processes in parallel
-    logger.info("Executing the following commands: ")
-    logger.info(calls)
+# execute processes in parallel
+
     if __name__ == '__main__':
-        with multiprocessing.Pool(processes=args.threads) as pool:
-            results = pool.map(work_augustus, calls)
+        date = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        filename = f'selected_coordinates_{date}.txt'
+        with open(filename, 'w') as file:
+            with multiprocessing.Pool(processes=args.threads) as pool:
+                print("multiprocessing")
+                res = pool.map_async(work_augustus, calls)
+                res.wait()
+                results_dict = {}
+                for result in res.get():
+                    print(f'Got result: {result}', flush=True)
+                    results_dict[result[1]] = result[2]
+                print(res)
+                print("Get all_results list")
+                # results = [x[0] for x in collect_all_results]
+                # seqs = [x[1] for x in collect_all_results]
+                # starts = [x[2] for x in collect_all_results]
+                #
+                # print("Got seq_start dictionary")
+                #
+                # seq_start = dict(zip(seqs, starts))
+                # seq_starts = seq_starts | seq_start
+
+            #print("Dict :", seq_starts)        
+
+            file.write(json.dumps(results_dict))
+
+    logger.info("Saved randomly selected coordinates for contigs to file.")
+
     logger.info("Finished parallel execution!")
     # parse results and find max prob for this sequence
     results = {}
+
     for species in params:
         try:
             with open(tmp + "seq" + str(hindex) + "_" + species.rstrip() + ".gff", "r") as spec_result_handle:
