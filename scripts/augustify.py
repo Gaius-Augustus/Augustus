@@ -224,8 +224,6 @@ def work_augustus(cmd_ext_lst):
     we do this because AUGUSTUS sometimes crashes when computing the desired
     probability; problem should ultimately be fixed in AUGUSTUS '''
 
-    #global seqs, starts
-
     segmlen = 15000  # These parameters need to be evaluated, later!
     stepwidth = 7500  # These parameters need to be evaluated, later!
     cmd1 = cmd_ext_lst[0:7]
@@ -233,7 +231,6 @@ def work_augustus(cmd_ext_lst):
     sub = re.search(r"seq(.+?)\.", str(cmd2[0]))[0][:-1]
     seqlen = cmd_ext_lst[-1]
 
-    ###   Why do not exclude small contigs at all?
     if seqlen <= segmlen:
         cmd = cmd1 + cmd2
         #starts.appens(np.NaN)
@@ -262,7 +259,7 @@ def work_augustus(cmd_ext_lst):
                 curr_end = curr_end + stepwidth
             else:
                 curr_end = seqlen
-        print("Hello work_augustus")
+        # print("func: work_augustus")
         return result, sub, start
 
 
