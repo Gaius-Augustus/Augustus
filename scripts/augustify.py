@@ -622,20 +622,21 @@ try:
         else:
             logger.info('Wrong formatted genome fasta file ' + args.genome + ' !')
 
-        filename = f'selected_coordinates_{id}_*.txt'
-        list_of_files = glob.glob(filename)
+        if not args.use_coordinates:
+            filename = f'selected_coordinates_{id}_*.txt'
+            list_of_files = glob.glob(filename)
 
-        with open("selected_coordinates.txt", "w") as fout:
-            results_dict = {}
-            for fileName in list_of_files:
-                with open(fileName, 'r') as finp:
-                    data = finp.read()
-                    dict_i = ast.literal_eval(data)
-                    results_dict = results_dict | dict_i
-            fout.write(json.dumps(results_dict))
+            with open("selected_coordinates.txt", "w") as fout:
+                results_dict = {}
+                for fileName in list_of_files:
+                    with open(fileName, 'r') as finp:
+                        data = finp.read()
+                        dict_i = ast.literal_eval(data)
+                        results_dict = results_dict | dict_i
+                fout.write(json.dumps(results_dict))
 
-        with multiprocessing.Pool(processes=args.threads) as pool:
-            list(pool.map(os.remove, glob.glob(filename)))
+            with multiprocessing.Pool(processes=args.threads) as pool:
+                list(pool.map(os.remove, glob.glob(filename)))
 
 except IOError:
     frameinfo = getframeinfo(currentframe())
