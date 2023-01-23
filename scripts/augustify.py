@@ -68,10 +68,10 @@ parser.add_argument('-t', '--threads', required=False, type=int, default=1,
                     help='Number of threads for running augustus. The number ' +
                     'of threads should not be greater than the number of ' +
                     'species parameter sets.')
-# parser.add_argument('-c', '--use_coordinates', required=False, type=str, default=False,
-#                   help='This is the file with the selected coordinates for contigs. that Augustify will use for predictions.' +
-#                   'Augustify currently takes the n nucleotides of a contig RANDOMLY to pick a parameter set.' +
-#                   'Prediction is performed on the full set of sequence after picking.')
+parser.add_argument('-c', '--use_coordinates', required=False, type=str, #default='selected_coordinates.txt',
+                  help='This is the file with the selected coordinates for contigs. that Augustify will use for predictions.' +
+                  'Augustify currently takes the n nucleotides of a contig RANDOMLY to pick a parameter set.' +
+                  'Prediction is performed on the full set of sequence after picking.')
 args = parser.parse_args()
 
 if ( (args.metagenomic_classification_outfile) and (args.species) ):
@@ -99,6 +99,12 @@ if args.prediction_file:
     if os.path.isfile(args.prediction_file):
         print('File ' + args.prediction_file +
             ' already exists. Please specify different file or delete file.')
+        exit(1)
+
+if args.use_coordinates:
+    if not os.path.isfile(args.use_coordinates):
+        print('File ' + args.use_coordinates +
+            ' does not exists. Please specify different file correctly.')
         exit(1)
 
 ''' ******************* BEGIN FUNCTIONS *************************************'''
@@ -236,22 +242,24 @@ def work_augustus(cmd_ext_lst):
     sub = re.search(r"seq(.+?)\.", str(cmd2[0]))[0][:-1]
     seqlen = cmd_ext_lst[-1]
 
-    ###   Why do not exclude small contigs at all?
     if seqlen <= segmlen:
         cmd = cmd1 + cmd2
-        #starts.appens(np.NaN)
-        #seqs.append(sub)
         print("short sequence")
         return subprocess.run(cmd, stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE, shell=False), sub, np.NaN
     else:
-        curr_start = random.randint(0, seqlen - segmlen)
+        if args.use_coordinates:
+            with open(args.use_coordinates) as f:
+                data = f.read()
+                dict = ast.literal_eval(data)
+                curr_start = dict.get(sub)
+        else:
+            # if the selected_coordinates.txt wasn't provided
+            curr_start = random.randint(0, seqlen - segmlen)
         start = curr_start
-        #starts.append(curr_start)
-        #seqs.append(sub)
-        #print("CMD1 is: ", cmd1)
+
         print("Randomly selected start coordinate for ", sub, "is: ", curr_start)
-        #curr_end = segmlen
+
         curr_end = segmlen + curr_start
         returncode = 1
         while (curr_start < curr_end) and (curr_end - curr_start + 1 >= segmlen) and not (returncode == 0):
@@ -298,29 +306,31 @@ def augustify_seq(hindex, header, seqs, tmp, params, id):
 
     if __name__ == '__main__':
 
-        time = datetime.now().strftime("%H%M%S")
-        #id = str(uuid.uuid4().hex)[:10]
-        filename = f'selected_coordinates_{id}_{time}.txt'
+        if args.use_coordinates:
 
-        with open(filename, 'w') as file:
             with multiprocessing.Pool(processes=args.threads) as pool:
-                print("multiprocessing")
-                res = pool.map_async(work_augustus, calls)
-                res.wait()
-                results_dict = {}
-                for result in res.get():
-                    print(f'Got result: {result}', flush=True)
-                    results_dict[result[1]] = result[2]
-                print(res)
-                print("Get all_results list")
-            file.write(json.dumps(results_dict))
+                results = pool.map(work_augustus, calls)
 
-        #list_of_files = glob.glob(filename)
+        else:
+            time = datetime.now().strftime("%H%M%S")
+            filename = f'selected_coordinates_{id}_{time}.txt'
 
-
-    logger.info("Saved randomly selected coordinates for contigs to file.")
+            with open(filename, 'w') as file:
+                with multiprocessing.Pool(processes=args.threads) as pool:
+                    print("multiprocessing")
+                    res = pool.map_async(work_augustus, calls)
+                    res.wait()
+                    results_dict = {}
+                    for result in res.get():
+                        print(f'Got result: {result}', flush=True)
+                        results_dict[result[1]] = result[2]
+                    print(res)
+                    print("Get all_results list")
+                file.write(json.dumps(results_dict))
+            logger.info("Saved randomly selected coordinates for contigs to file.")
 
     logger.info("Finished parallel execution!")
+
     # parse results and find max prob for this sequence
     results = {}
 
