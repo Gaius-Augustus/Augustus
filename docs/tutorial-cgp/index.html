@@ -1,329 +1,435 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
-<html><head><title></title>
-<link rel="stylesheet" type="text/css" href="augustus.css">
-<script src="tutorial.js" type="text/javascript"></script>
-</head><body>
-<font size=-1>
-Navigate to 
-<a href="cactus.html">Cactus alignments and assembly Hubs</a>.
-<a href="de_novo.html">AugCGP de novo</a>.
-<a href="rnaseq.html">AugCGP with RNA-Seq</a>.
-<a href="liftover.html">Annotation transfer with AugCGP</a>.
-<a href="rnaseq+liftover.html">Combining RNA-Seq and annotation evidence</a>.
-<a href="hgm.html">Cross-species consistency of gene sets</a>.
-</font>
-<h1>Tutorial on comparative gene finding  with <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS-CGP</a></h1>
-<table width=100% height=auto><tr><td width=50%>
-CGP (comparative gene prediction) is a recent extension of <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS</a> for clade annotation. It takes two or more genomes of related species and predicts all genes (only protein-coding and one isoform per gene) in all input genomes at the same time. AUGUSTUS-CGP can integrate the same types of evidence as in single-species mode for either a subset or all genomes. A genome alignment of the species is used to transfer evidence across genomes and to exploit evolution evidence for genes, e.g. by looking for conserved regions and regions that are under negative selection. For further reading, see  <a href="http://bioinformatics.oxfordjournals.org/content/early/2016/08/24/bioinformatics.btw494">K&oumlnig et al. (2016)</a> <br><br>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Predicting Genes with AUGUSTUS</title>
+    <link rel="stylesheet" type="text/css" href="augustus.css">
+    <script src="tutorial.js"></script>
+  </head>
+  <body>
+    <span class="navigation">
+      Navigate to
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/cactus.html">Cactus alignments and assembly Hubs</a>.
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/de_novo.html">AugCGP <i>de novo</i></a>.
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq.html">AugCGP with RNA-Seq</a>.
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/liftover.html">Annotation transfer with AugCGP</a>.
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq+liftover.html">Combining RNA-Seq and annotation evidence</a>.
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/hgm.html">Cross-species consistency of gene sets</a>.
+    </span>
 
-In this tutorial we practice the most common applications of AUGUSTUS-CGP: de novo gene finding (i.e. only the raw genomes are used and no extrinsic evidence), integration of RNA-Seq evidence and lifting over annotations from one (or more) species to the other species in the clade. AUGUSTUS-CGP has three mandatory inputs: the set of genomes, each in Multi-FASTA format, an alignment of the genomes and a phylogenetic tree in NEWICK format. You don't have a whole-genome alignment for your clade? No problem - the tutorial covers how a whole-genome alignment can be created with progressiveCactus. The output alignment of progressiveCactus is in HAL format, which can be displayed as Assembly Hubs in the Genome Browser. In one of the exercise, we will set up such an Assembly Hub and show how gene tracks can be uploaded for visualization. If the phylogeny of the species is not known, we recommend using a star-like tree with uniform branch lengths.
-</td><td width=50%>
-<img src="figs/screenshot.png" width="98%" height=auto/>
-</td></tr></table>
+    <h1>Tutorial on comparative gene finding  with <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS-CGP</a></h1>
+    <table class="table">
+      <tbody>
+        <tr>
+          <td class="table-data">
+            CGP (comparative gene prediction) is a recent extension of
+            <a href="http://bioinf.uni-greifswald.de/augustus/">AUGUSTUS</a>
+            for clade annotation. It takes two or more genomes of related
+            species and predicts all genes (only protein-coding genes and one
+            isoform per gene) in all input genomes at the same time.
+            AUGUSTUS-CGP can integrate the same types of evidence as in
+            single-species mode for either a subset or all genomes. A genome
+            alignment of the species is used to transfer evidence across
+            genomes and to exploit evolution evidence for genes, e.g. by
+            looking for conserved regions and regions that are under negative
+            selection. For further reading, see
+            <a href="http://bioinformatics.oxfordjournals.org/content/early/2016/08/24/bioinformatics.btw494">König et al. (2016)</a>
+            <br><br>
+            In this tutorial, we practice the most common applications of
+            AUGUSTUS-CGP: <i>de novo</i> gene finding (i.e. only the raw
+            genomes are used and no extrinsic evidence), integration of RNA-Seq
+            evidence and lifting over annotations from one (or more) species to
+            the other species in the clade. AUGUSTUS-CGP has three mandatory
+            inputs: the set of genomes, each in Multi-FASTA format, an
+            alignment of the genomes and a phylogenetic tree in NEWICK format.
+            You don't have a whole-genome alignment for your clade? No problem
+            - the tutorial covers how a whole-genome alignment can be created
+            with Progressive Cactus. The output alignment of Progressive Cactus
+            is in HAL format, which can be displayed as Assembly Hubs in the
+            Genome Browser. In one of the exercises, we will set up such an
+            Assembly Hub and show how gene tracks can be uploaded for
+            visualization. If the phylogeny of the species is not known, we
+            recommend using a star-like tree with uniform branch lengths.
+          </td>
+          <td class="table-data">
+            <img src="figs/screenshot.png" alt="Alignment of vertebrate genomes in the UCSC Genome Browser" width=800>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
+    <h4>Styles</h4>
+    <p>
+      <span class="assignment">Assignments are in this color</span>. The lazy
+      ones may go very fast through this tutorial by just reading these
+      assignments and cutting and pasting the commands that follow them (more
+      or less).
+    </p>
+    <p>
+      <span class="result">Results are in this color</span>.
+      <br>
+    </p>
+    <p>
+      <a href="javascript:onoff('explain')" class="dlink">
+        <span id="explain" title="explaind" class="dcross">[+]</span>
+        <span class="dtitle">Details are hidden...</span>
+      </a>
+      <br>
+    </p>
+    <div id="explaind" class="details" style="display:none;">
+      You don't have to read this. If you get bored with the speed of the
+      tutorial, then you can read these details boxes.
+    </div>
+    <p>
+    </p>
 
-<h4>Styles</h4>
-<p><span class="assignment">Assignments are in this color</span>. The lazy ones may go through very
-fast through this tutorial by just reading these assignments and cutting and pasting the commands
-that follow them (more or less).</p>
-<p>
-<span class="result">Results are in this color</span>.<br></p>
-<p>
-<a href="javascript:onoff('explain')" class="dlink"><span id="explain" title="explaind" class="dcross">[+]</span>
-<span class="dtitle">Details are hidden...</span></a> <br>
-<div id="explaind" class="details" style="display:none;">
-You don't have to read this. If you get bored with the speed of the tutorial then you can read these details boxes.
-</div></p>
+    <h3>Software Requirements</h3>
+    <p>
+      It is most convenient to use AUGUSTUS and Progressive Cactus (including
+      the HAL package) from the
+      <a href="docker://katharinahoff/cactus-notebook:v1.0.3">Docker container</a>
+      containing all needed binaries. If the tutorial commands are run from
+      Singularity, e.g. on a HPC cluster, build the container by
+      <span class="teletype">singularity build -B $PWD &lt;name&gt; &lt;source&gt;</span>
+      and replace all calls of programs in the container with
+      <span class="teletype">singularity exec -B $PWD &lt;name&gt; &lt;cmd&gt;</span>.
+      Hereby, <span class="teletype">name</span> is the desired container name,
+      <span class="teletype">source</span> its source (e.g. the Docker Hub) and
+      <span class="teletype">cmd</span> the command to be executed.
+    </p>
+    <ul>
+      <li>
+        <a href="http://bioinf.uni-greifswald.de/augustus/binaries/">AUGUSTUS</a>
+        <br>
+        <br>
+        Before starting with the tutorial, make sure that the following
+        executables/scripts from the AUGUSTUS package are in the your global
+        <span class="teletype">$PATH</span>
+        <br>
+        <br>
+        <ul>
+          <li>augustus</li>
+          <li>homGeneMapping</li>
+          <li>load2sqlitedb</li>
+          <li>joingenes</li>
+          <li>gtf2bed.pl</li>
+          <li>gtf2gff.pl</li>
+          <li>hal2maf_split.pl</li>
+        </ul>
+      </li>
+      <li>
+        <a href="https://github.com/ComparativeGenomicsToolkit/cactus">Progressive Cactus</a>
+        <br>
+        <br>
+        Before starting with the tutorial, make sure that the following
+        executables/scripts from the Progressive Cactus / HAL package are in
+        your global <span class="teletype">$PATH</span>
+        <br>
+        <br>
+        <ul>
+          <li>cactus</li>
+          <li>hal2assemblyHub.py</li>
+          <li>halLiftover</li>
+          <li>hal2maf</li>
+          <li>bedSort</li>
+        </ul>
+      </li>
+    </ul>
 
-<h3>Software Requirements</h3>
-<p>
-<ul>
-<li><a href="http://bioinf.uni-greifswald.de/augustus/binaries/">Augustus</a><br><br>
+    <h3>Example Data</h3>
+    Our example data set covers a 2 Megabase syntenic region in 8 vertebrates.
+    <br>
+    <table style="text-align: left; padding: 15px; table-layout: fixed; width: 800px;">
+      <tbody>
+        <tr>
+          <th>species</th>
+          <th>assembly</th>
+          <th>genomic region</th>
+        </tr>
+        <tr>
+          <td>human</td>
+          <td>hg38</td>
+          <td>chr16:186964-397118</td>
+        </tr>
+        <tr>
+          <td>mouse</td>
+          <td>mm10</td>
+          <td>chr17:26104939-26283331</td>
+        </tr>
+        <tr>
+          <td>rat</td>
+          <td>rn6</td>
+          <td>chr10:15470071-15570014</td>
+        </tr>
+        <tr>
+          <td>cow</td>
+          <td>bosTau8</td>
+          <td>chr25:224163-380253</td>
+        </tr>
+        <tr>
+          <td>dog</td>
+          <td>canFam3</td>
+          <td>chr6:40126702-40311429</td>
+        </tr>
+        <tr>
+          <td>rhesus</td>
+          <td>rheMac3</td>
+          <td>chr20:149129-369768</td>
+        </tr>
+        <tr>
+          <td>rabbit</td>
+          <td>monDom5</td>
+          <td>chr6:149454308-149994826</td>
+        </tr>
+        <tr>
+          <td>chicken</td>
+          <td>galGal4</td>
+          <td>chr14:12108253-12258251</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    All files are in the <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/data/" target="_blank">data directory</a>.
+    We recommend you work directly in this directory.
+    <ul>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/data/genomes/"><span class="teletype">genomes/</span></a>:
+        directory with the fasta files
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/data/tree.nwk"><span class="teletype">tree.nwk</span></a>:
+        phylogenetic tree of the 8 vertebrates
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/data/hints/"><span class="teletype">hints/</span></a>:
+        directory with hints files for human, mouse, dog and chicken, each
+        containing 'intron' and 'exonpart' hints from RNA-Seq alignments
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/data/refseq/refseq.hg38.gtf"><span class="teletype">refseq/refseq.hg38.gtf</span></a>:
+        hg38 RefSeq annotation in chr16:186964-397118
+      </li>
+    </ul>
 
-<a href="javascript:onoff('cgp')" class="dlink"><span id="cgp" title="cgpd" class="dcross">[+]</span>
-<span class="dtitle">Augustus-CGP dependencies ...</span></a> <br>
-<div id="cgpd" class="details" style="display:none;">
-<a href="javascript:onoff('do')" class="dlink"><span id="do" title="dod" class="dcross">[+]</span>
-<span class="dtitle">dependencies</span></a> <br><br>
-<div id="dod" class="details" style="display:none;">
-<ul>
-<li><a href="http://www.gnu.org/software/gsl/">GSL</a> (GNU Scientific Library)</br>
-<span class="assignment">Install</span> via package manager, on UBUNTU/Debian linux</span>
-<pre class="code">
-sudo apt-get install libgsl-dev
-</pre>
-</li>
-<li><a href="http://www.gnu.org/software/gsl/">Boost C++ Libraries</a> (>= V1_46_1)<br>
-<span class="assignment">Install</span> via package manager, on UBUNTU/Debian linux</span>
-<pre class="code">
-sudo apt-get install libboost-all-dev
-</pre>
-</li>
-<li><a href="http://www.gnu.org/software/gsl/">g++ compiler</a> (with C++0X support, e.g. >= V4.4)<br>
-<span class="assignment">Install</span> via package manager, on UBUNTU/Debian linux</span>
-<pre class="code">
-sudo apt-get install build-essential
-</pre>
-<li><a href="http://www.gnu.org/software/gsl/">lpsolve</a> (mixed linear integer programming)<br>
-<span class="assignment">Install</span> via package manager, on UBUNTU/Debian linux</span>
-<pre class="code">
-sudo apt-get install libsuitesparse-dev liblpsolve55-dev
-</pre>
-</li>
-<li><a href="https://www.mysql.com">MySQL</a> (open-source relational database management system (RDBMS))<br>
-<span class="assignment">Install</span> via package manager, on UBUNTU/Debian linux</span>
-<pre class="code">
-sudo apt-get install libmysql++-dev
-</pre>
-</li>
-<li><a href="https://www.sqlite.org">SQLite</a> (relational database management system (RDBMS))<br>
-<span class="assignment">Install</span> via package manager, on UBUNTU/Debian linux</span>
-<pre class="code">
-sudo apt-get install libsqlite3-dev
-</pre>
-</li>
-</ul>
-</div>
-For convenience, you may want to , <span class="assignment">run</span> or <span class="assignment">add</span> this to your .bashrc file
-<pre class="code">
-export AUGUSTUS_CONFIG_PATH=&ltinstallation path&gt/augustus/config/
-PATH=&ltinstallation path&gt/augustus/bin:&ltinstallation path&gt/augustus/scripts:$PATH 
-</pre>
-</div><br>
-Before starting with the tutorial make sure that following executables/scripts from the Augustus package are in the your global path<br><br>
-<ul>
-<li>augustus</li>
-<li>homGeneMapping</li>
-<li>load2sqlitedb</li>
-<li>joingenes</li>
-<li>gtf2bed.pl</li>
-<li>gtf2gff.pl</li>
-<li>hal2maf_split.pl</li>
-</ul>
-</li><br>
-<li><a href="https://github.com/glennhickey/progressiveCactus">progressiveCactus</a><br><br>
+    <h3>For Cheaters: <span class="result">Result Files</span></h3>
+    You can use the
+    <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/results/" target="_blank">files in the results directory</a>
+    to catch on if you are behind or to compare your results.
+    <br>
 
-<a href="javascript:onoff('dco')" class="dlink"><span id="dco" title="dcod" class="dcross">[+]</span>
-<span class="dtitle">Installing progressiveCactus...</span></a> <br>
-<div id="dcod" class="details" style="display:none;">
-<span class="assignment">Download and install</span> progressiveCactus via gitHub
-<br>
-<pre class="code">
-git clone git://github.com/glennhickey/progressiveCactus.git
-cd progressiveCactus
-git pull
-git submodule update --init
-make
-</pre>
-For convenience, you may want to <span class="assignment">run or add</span> this to your .bashrc file
-<pre class="code">
-export PATH=&ltinstallation path&gt/progressiveCactus/bin:&ltinstallation path&gt/progressiveCactus/submodules/kentToolBinaries:&ltinstallation path&gt/progressiveCactus/submodules/hal/bin:$PATH
-export PYTHONPATH=&ltinstallation path&gt/progressiveCactus/submodules:$PYTHONPATH
-</pre>
-<a href="javascript:onoff('ts')" class="dlink"><span id="ts" title="tsd" class="dcross">[+]</span>
-<span class="dtitle">Troubleshooting...</span></a> <br>
-<div id="tsd" class="details" style="display:none;">
-If you run into following error<br>
-<pre class="code">
-ImportError: No module named _sysconfigdata_nd
-</pre>
-<span class="assignment">find</span> the location of the module <tt>_sysconfigdata_nd.py</tt> and <span class="assignment">create</span> a soft link to the directory of the local python installation in the progressiveCactus folder 
-<pre class="code">
-find / -name "*_sysconfigdata_nd.py"
-ln -s /path/to/_sysconfigdata_nd.py /path/to/progressiveCactus/python/lib/python2.7/
-</pre>
-If you get something like "ImportError: No module named Bio", when running the <tt>hal2assemblyHub</tt> tool, the biopython package is most likely missing.<br>
-<span class="assignment">Install</span> the Biopython package with <br>
-<pre class="code">sudo apt install python-biopython</pre>
-or
-<span class="assignment">download</span> the biopython source code from the <a href="https://github.com/biopython/biopython">git repository</a> and <span class="assignment">install</span> it locally:
-<pre class="code">
-unzip biopython-master.zip
-cd biopython-master/
-python setup.py build
-python setup.py test
-</pre>
-<span class="assignment">Make</span> soft links to the directory of the local python installation in the <tt>progressiveCactus</tt> folder 
-<pre class="code">
-ln -s /path/to/biopython-master/Bio/ /path/to/progressiveCactus/python/lib/python2.7/site-packages/
-ln -s /path/to/biopython-master/BioSQL/ /path/to/progressiveCactus/python/lib/python2.7/site-packages/
-</pre>
-</div>
-</br>
-</div><br>
-Before starting with the tutorial make sure that following executables/scripts from the progressiveCactus package are in your global path<br><br>
-<ul>
-<li>runProgressiveCactus.sh</li>
-<li>hal2assemblyHub.py</li>
-<li>halLiftover</li>
-<li>hal2maf</li>
-</ul>
+    <h3>Exercise 1: Creating a whole-genome alignment</h3>
+    <ol>
+      <li>
+        <span class="assignment">Create a HAL alignment</span>
+        with Progressive Cactus as described in
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/cactus.html#runCactus">1. Running Progressive Cactus</a>
+      </li>
+      <li>
+        <span class="assignment">Export HAL alignment to MAF</span> and
+        <span class="assignment">split</span> alignment into overlapping chunks
+        for parallel computing as described in
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/cactus.html#hal2maf">2. Export HAL alignment as MAF</a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/cactus.html#makeHub"> <span class="assignment">Build a comparative assembly hub</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/cactus.html#loadHub"> <span class="assignment">Load the hub and browse the alignment</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/cactus.html#loadAnno"> <span class="assignment">Load a reference annotation to the hub</span></a>
+      </li>
+    </ol>
 
-</li>
-</ul>
-</p>
+    <h3>Exercise 2: <i>De novo</i> comparative gene finding with AUGUSTUS-CGP</h3>
+    <a href="javascript:onoff('ex2')" class="dlink">
+      <span id="ex2" title="ex2d" class="dcross">[+]</span>
+      <span class="dtitle">Prerequisites</span>
+    </a>
+    <br>
+    <div id="ex2d" class="details" style="display:none;">
+      <ul>
+        <li>
+          Alignment generation can be skipped by copying the folder
+          <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/results/mafs/"><span class="teletype">mafs/</span></a>
+          from the results into the data directory.
+        </li>
+      </ul>
+    </div>
+    <ol>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/de_novo.html#loadFa"><span class="assignment">Load genomes into an SQLite database</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/de_novo.html#runAug"><span class="assignment">Run AUGUSTUS in CGP mode</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/de_novo.html#merge"><span class="assignment">Merge gene predictions from parallel runs</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/de_novo.html#makeBeds"><span class="assignment"> Upload gene predictions into the assembly hub</span></a>
+      </li>
+    </ol>
 
-<h3>Example Data</h3>
+    <h3>Exercise 3: RNA-Seq-based comparative gene finding with AUGUSTUS-CGP</h3>
+    <a href="javascript:onoff('ex3')" class="dlink">
+      <span id="ex3" title="ex3d" class="dcross">[+]</span>
+      <span class="dtitle">Prerequisites</span>
+    </a>
+    <br>
+    <div id="ex3d" class="details" style="display:none;">
+      <ul>
+        <li>
+          Exercise 1.1-2 (may be skipped by copying the folder
+          <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/results/mafs/"><span class="teletype">mafs/</span></a>
+          from the results into the data directory)
+        </li>
+        <li>
+          Exercise 2.1 (may be skipped by copying the file
+          <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/results/vertebrates.db"><span class="teletype">vertebrates.db</span></a>
+          from the results into the data directory)
+        </li>
+      </ul>
+    </div>
+    <ol>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq.html#rnaseq2hints"><span class="assignment">Generate hints from RNA-Seq data</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq.html#loadRNASeq"><span class="assignment">Load RNA-Seq hints into the database</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq.html#extrinsic"><span class="assignment">Prepare an extrinsic config file</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq.html#runAug"><span class="assignment">Run AUGUSTUS-CGP with RNA-Seq hints</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/de_novo.html#merge"><span class="assignment">Merge gene predictions from parallel runs</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq.html#makeBeds"><span class="assignment"> Upload gene predictions into the assembly hub</span></a>
+      </li>
+    </ol>
 
-Our example data set covers a 2 Megabase syntentic region in 8 vertebrates<br>
+    <h3>Exercise 4: Transferring annotations with AUGUSTUS-CGP</h3>
+    <a href="javascript:onoff('ex4')" class="dlink">
+      <span id="ex4" title="ex4d" class="dcross">[+]</span>
+      <span class="dtitle">Prerequisites</span>
+    </a>
+    <br>
+    <div id="ex4d" class="details" style="display:none;">
+      <ul>
+        <li>
+          Exercise 1.1-2 (may be skipped by copying the folder
+          <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/results/mafs/"><span class="teletype">mafs/</span></a>
+          from the results into the data directory)
+        </li>
+        <li>
+          Exercise 2.1 (may be skipped by copying the file
+          <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/results/vertebrates.db"><span class="teletype">vertebrates.db</span></a>
+          from the results into the data directory)
+        </li>
+      </ul>
+    </div>
+    <ol>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/liftover.html#refseq2hints"><span class="assignment">Generate 'CDS' and 'intron' hints from annotations</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/liftover.html#loadAnno"><span class="assignment">Load annotation hints into the database</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/liftover.html#extrinsic"><span class="assignment">Prepare an extrinsic config file</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/liftover.html#runAug"><span class="assignment">Run AUGUSTUS-CGP with annotation hints</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/de_novo.html#merge"><span class="assignment">Merge gene predictions from parallel runs</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/liftover.html#makeBeds"><span class="assignment"> Upload gene predictions into the assembly hub</span></a>
+      </li>
+    </ol>
 
-<table style="text-align: left; padding: 15px; table-layout: fixed; width: 800px;">
-  <tr>
-    <th>species</th>
-    <th>assembly</th>
-    <th>genomic region</th>
-  </tr>
-  <tr>
-    <td>human</td>
-    <td>hg38</td>
-    <td>chr16:186964-397118</td>
-  </tr>
-  <tr>
-    <td>mouse</td>
-    <td>mm10</td>
-    <td>chr17:26104939-26283331</td>
-  </tr>
-  <tr>
-    <td>rat</td>
-    <td>rn6</td>
-    <td>chr10:15470071-15570014</td>
-  </tr>
-  <tr>
-    <td>cow</td>
-    <td>bosTau8</td>
-    <td>chr25:224163-380253</td>
-  </tr>
-  <tr>
-    <td>dog</td>
-    <td>canFam3</td>
-    <td>chr6:40126702-40311429</td>
-  </tr>
-  <tr>
-    <td>rhesus</td>
-    <td>rheMac3</td>
-    <td>chr20:149129-369768</td>
-  </tr>
-  <tr>
-    <td>rabbit</td>
-    <td>monDom5</td>
-    <td>chr6:149454308-149994826</td>
-  </tr>
-  <tr>
-    <td>chicken</td>
-    <td>galGal4</td>
-    <td>chr14:12108253-12258251</td>
-  </tr>
-</table><br>
-
-All files are in the <a href="data/" target="_blank">data directory</a>. We recommend
-you work directly in this directory.
-
-<ul>
-<li> <a href="data/genomes/"><tt>genomes/</tt></a>: directory with the fasta files</li>
-<li><a href="data/tree.nwk"><tt>tree.nwk</tt></a>: phylogenetic tree of the 8 vertebrates.</li>
-<li><a href="data/hints/"><tt>hints/</tt></a>: directory with hints files for human, mouse, dog and chicken, each containing 'intron' and 'exonpart' hints from RNA-Seq alignments</li>
-<li><a href="data/refseq/refseq.hg38.gtf"><tt>refseq/refseq.hg38.gtf</tt></a>: hg38 RefSeq annotation in chr16:186964-397118</li>
-</ul>
-
-<h3>For Cheaters: <span class="result">Result Files</span></h3>
-You can use the <a href="results/" target="_blank">files in the results directory</a> to catch on if you are behind or to compare your results.
-
-<br>
-
-<h3>Exercise 1: Creating a whole-genome alignment</h3>
-<ol>
-<li> <span class="assignment">Create a HAL alignment</span> with <tt>progressiveCactus</tt> as described in <a href="cactus.html#runCactus">1. Running progressive Cactus</a>
-<li> <span class="assignment">Export HAL alignment to MAF</span> and <span class="assignment">split</span> alignment into overlapping chunks for parallel computing as described in <a href="cactus.html#hal2maf">2. Export HAL alignment as MAF</a>
-<li> <a href="cactus.html#makeHub"> <span class="assignment">Build a comparative assembly hub</span></a>
-<li> <a href="cactus.html#loadHub"> <span class="assignment">Load the hub and browser the alignment</span></a>
-<li> <a href="cactus.html#loadAnno"> <span class="assignment">Load a reference annotation to the hub</span></a>
-</ol>
-
-<h3>Exercise 2: <i>De novo</i> comparative gene finding with AUGUSTUS-CGP</h3>
-<a href="javascript:onoff('ex2')" class="dlink"><span id="ex2" title="ex2d" class="dcross">[+]</span>
-<span class="dtitle">Prerequisites</span></a> <br>
-<div id="ex2d" class="details" style="display:none;">
-<ul>
-<li>Alignment generation can be skipped by copying the folder <a href="results/mafs/"><tt>mafs/</tt></a> from the results into the data directory.</li>
-</ul>
-</div>
-<ol>
-<li><a href="de_novo.html#loadFa"><span class="assignment">Load genomes into an SQLite database</span></a>
-<li><a href="de_novo.html#runAug"><span class="assignment">Run AUGUSTUS in CGP mode</span></a>
-<li><a href="de_novo.html#merge"><span class="assignment">Merge gene predictions from parallel runs</span></a>
-<li><a href="de_novo.html#makeBeds"><span class="assignment"> Upload gene predictions into the assembly hub</span></a>
-</ol>
-
-<h3>Exercise 3: RNA-Seq-based comparative gene finding with AUGUSTUS-CGP</h3>
-<a href="javascript:onoff('ex3')" class="dlink"><span id="ex3" title="ex3d" class="dcross">[+]</span>
-<span class="dtitle">Prerequisites</span></a> <br>
-<div id="ex3d" class="details" style="display:none;">
-<ul>
-<li>Exercise 1.1-2 (may be skipped by copying the folder <a href="results/mafs/"><tt>mafs/</tt></a> from the results into the data directory)</li>
-<li>Exercise 2.1 (may be skipped by copying the file <a href="results/vertebrates.db"><tt>vertebrates.db</tt></a> from the results into the data directory)</li>
-</ul>
-</div>
-<ol>
-<li><a href="rnaseq.html#rnaseq2hints"><span class="assignment">Generate hints from RNA-Seq data</span></a>
-<li><a href="rnaseq.html#loadRNASeq"><span class="assignment">Load RNA-Seq hints into the database</span></a>
-<li><a href="rnaseq.html#extrinsic"><span class="assignment">Prepare an extrinsic config file</span></a>
-<li><a href="rnaseq.html#runAug"><span class="assignment">Run AUGUSTUS-CGP with RNA-Seq hints</span></a>
-<li><a href="de_novo.html#merge"><span class="assignment">Merge gene predictions from parallel runs</span></a>
-<li><a href="rnaseq.html#makeBeds"><span class="assignment"> Upload gene predictions into the assembly hub</span></a>
-
-</ol>
-
-<h3>Exercise 4: Transferring annotations with AUGUSTUS-CGP</h3>
-<a href="javascript:onoff('ex4')" class="dlink"><span id="ex4" title="ex4d" class="dcross">[+]</span>
-<span class="dtitle">Prerequisites</span></a> <br>
-<div id="ex4d" class="details" style="display:none;">
-<ul>
-<li>Exercise 1.1-2 (may be skipped by copying the folder <a href="results/mafs/"><tt>mafs/</tt></a> from the results into the data directory)</li>
-<li>Exercise 2.1 (may be skipped by copying the file <a href="results/vertebrates.db"><tt>vertebrates.db</tt></a> from the results into the data directory)</li>
-</ul>
-</div>
-<ol>
-<li><a href="liftover.html#refseq2hints"><span class="assignment">Generate 'CDS' and 'intron' hints from annotations</span></a>
-<li><a href="liftover.html#loadAnno"><span class="assignment">Load annotation hints into the database</span></a>
-<li><a href="liftover.html#extrinsic"><span class="assignment">Prepare an extrinsic config file</span></a>
-<li><a href="liftover.html#runAug"><span class="assignment">Run AUGUSTUS-CGP with annotation hints</span></a>
-<li><a href="de_novo.html#merge"><span class="assignment">Merge gene predictions from parallel runs</span></a>
-<li><a href="liftover.html#makeBeds"><span class="assignment"> Upload gene predictions into the assembly hub</span></a>
-</ol>
-
-<h3>Exercise 5: Combining Annotation transfer and RNA-Seq-based prediction</h3>
-<a href="javascript:onoff('ex5')" class="dlink"><span id="ex5" title="ex5d" class="dcross">[+]</span>
-<span class="dtitle">Prerequisites</span></a> <br>
-<div id="ex5d" class="details" style="display:none;">
-<ul>
-<li>Exercise 1.1-2 (may be skipped by copying the folder <a href="results/mafs/"><tt>mafs/</tt></a> from the results into the data directory)</li>
-<li>Exercise 1-3.1 (may be skipped by copying the file <a href="results/vertebrates_rnaseq.db"><tt>vertebrates_rnaseq.db</tt></a> from the results into the data directory)</li>
-<li>Exercise 4.1 (may be skipped by copying the file <a href="results/refseq/refseq.hg38.gff"><tt>refseq/refseq.hg38.gff</tt></a> from the results into the data directory)</li>
-</ul>
-</div>
-<ol>
-<li><a href="rnaseq+liftover.html#loadAnno"><span class="assignment">Create a database with RNA-Seq and annotation hints</span></a>
-<li><a href="rnaseq+liftover.html#extrinsic"><span class="assignment">Prepare an extrinsic config file</span></a>
-<li><a href="rnaseq+liftover.html#runAug"><span class="assignment">Run AUGUSTUS with RNA-Seq and annotation hints</span></a>
-<li><a href="de_novo.html#merge"><span class="assignment">Merge gene predictions from parallel runs</span></a>
-<li><a href="rnaseq+liftover.html#makeBeds"><span class="assignment"> Upload gene predictions into the assembly hub</span></a>
-</ol>
-
-<h3>Exercise 6: Cross-species comparison of gene sets</h3>
-For demonstration purposes, we use the output gene sets from Exercise 5.
-But you may as well use any other gene set from exercise 2, 3 or 4.<br><br>
-<a href="javascript:onoff('ex6')" class="dlink"><span id="ex6" title="ex6d" class="dcross">[+]</span>
-<span class="dtitle">Prerequisites</span></a> <br>
-<div id="ex6d" class="details" style="display:none;">
-<ul>
-<li>Exercise 1.1 (may be skipped by copying the file <a href="results/vertebrates.hal"><tt>vertebrates.hal</tt></a> from the results into the data directory)</li>
-<li>Exercise 5 (may be skipped by copying the file <a href="results/vertebrates_rnaseq+anno.db"><tt>vertebrates_rnaseq+anno.db</tt></a> and the directory 
- <a href="results/augCGP_rnaseq+liftover/joined_pred/"><tt>rnaseq+liftover/joined_pred/</tt></a>
- from the results into the data directory)</li>
-</ul>
-</div>
-<ol>
-<li><a href="hgm.html#runHgm"><span class="assignment">Run HomGeneMapping to map coordinates between genomes</span></a>
-<li>Get familiar with the homGeneMapping output format by reading <a href="hgm.html#explainHgm"><span class="assignment">2. homGeneMapping output explained</span></a>
-</ol>
-</body></html>
+    <h3>Exercise 5: Combining Annotation transfer and RNA-Seq-based prediction</h3>
+    <a href="javascript:onoff('ex5')" class="dlink">
+      <span id="ex5" title="ex5d" class="dcross">[+]</span>
+      <span class="dtitle">Prerequisites</span>
+    </a>
+    <br>
+    <div id="ex5d" class="details" style="display:none;">
+      <ul>
+        <li>
+          Exercise 1.1-2 (may be skipped by copying the folder
+          <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/results/mafs/"><span class="teletype">mafs/</span></a>
+          from the results into the data directory)
+        </li>
+        <li>
+          Exercise 1-3.1 (may be skipped by copying the file
+          <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/results/vertebrates_rnaseq.db"><span class="teletype">vertebrates_rnaseq.db</span></a>
+          from the results into the data directory)
+        </li>
+        <li>
+          Exercise 4.1 (may be skipped by copying the file
+          <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/results/refseq/refseq.hg38.gff"><span class="teletype">refseq/refseq.hg38.gff</span></a>
+          from the results into the data directory)
+        </li>
+      </ul>
+    </div>
+    <ol>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq+liftover.html#loadAnno"><span class="assignment">Create a database with RNA-Seq and annotation hints</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq+liftover.html#extrinsic"><span class="assignment">Prepare an extrinsic config file</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq+liftover.html#runAug"><span class="assignment">Run AUGUSTUS with RNA-Seq and annotation hints</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/de_novo.html#merge"><span class="assignment">Merge gene predictions from parallel runs</span></a>
+      </li>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq+liftover.html#makeBeds"><span class="assignment"> Upload gene predictions into the assembly hub</span></a>
+      </li>
+    </ol>
+    
+    <h3>Exercise 6: Cross-species comparison of gene sets</h3>
+    For demonstration purposes, we use the output gene sets from Exercise 5.
+    But you may as well use any other gene set from exercise 2, 3 or 4.
+    <br>
+    <br>
+    <a href="javascript:onoff('ex6')" class="dlink">
+      <span id="ex6" title="ex6d" class="dcross">[+]</span>
+      <span class="dtitle">Prerequisites</span>
+    </a>
+    <br>
+    <div id="ex6d" class="details" style="display:none;">
+      <ul>
+        <li>
+          Exercise 1.1 (may be skipped by copying the file
+          <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/results/vertebrates.hal"><span class="teletype">vertebrates.hal</span></a>
+          from the results into the data directory)
+        </li>
+        <li>
+          Exercise 5 (may be skipped by copying the file
+          <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/results/vertebrates_rnaseq+anno.db"><span class="teletype">vertebrates_rnaseq+anno.db</span></a>
+          and the directory 
+          <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/results/augCGP_rnaseq+liftover/joined_pred/"><span class="teletype">rnaseq+liftover/joined_pred/</span></a>
+          from the results into the data directory)
+        </li>
+      </ul>
+    </div>
+    <ol>
+      <li>
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/hgm.html#runHgm"><span class="assignment">Run homGeneMapping to map coordinates between genomes</span></a>
+      </li>
+      <li>
+        Get familiar with the homGeneMapping output format by reading
+        <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/hgm.html#explainHgm"><span class="assignment">2. homGeneMapping output explained</span></a>
+      </li>
+    </ol>
+  </body>
+</html>

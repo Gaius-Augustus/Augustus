@@ -1,31 +1,45 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
-<html><head><title>Predicting Genes with AUGUSTUS</title>
-<link rel="stylesheet" type="text/css" href="augustus.css">
-<script src="tutorial.js" type="text/javascript"></script>
-</head><body>
-<font size=-1>
-Navigate to <a href="index.html">Lab Session on AUGUSTUS</a>. 
-<a href="scipio.html">Using Scipio</a>.
-<a href="training.html">Training AUGUSTUS</a>.
-<a href="ppx.html">AUGUSTUS-PPX</a>.
-</font>
-<div align="right">Show <a href="javascript:allOn()">all</a> / <a href="javascript:allOff()">no</a> details.</div>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Predicting Genes with AUGUSTUS</title>
+    <link rel="stylesheet" type="text/css" href="augustus.css">
+    <script src="tutorial.js"></script>
+  </head>
+  <body>
+    <span class="navigation">
+      Navigate to
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/index.html">main AugCGP tutorial</a>. 
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/de_novo.html">AugCGP <i>de novo</i></a>.
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq.html">AugCGP with RNA-Seq</a>.
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/liftover.html">Annotation transfer with AugCGP</a>.
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/rnaseq+liftover.html">Combining RNA-Seq and annotation evidence</a>.
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/hgm.html">Cross-species consistency of gene sets</a>.
+    </span>
+    <div class="right">
+      Show <a href="javascript:allOn()">all</a> /
+      <a href="javascript:allOff()">no</a> details.
+    </div>
 
-<h1>Creating a Whole-Genome-Alignment with progressiveCactus</h1>
+    <h1>Creating a Whole-Genome-Alignment with Progressive Cactus</h1>
+    This tutorial describes how a whole-genome alignment of multiple genomes
+    can be created with the Cactus aligner.
+    <br>
+    The output alignment is a compressed file in HAL format that can be
+    exported as MAF.
 
-
-This tutorial describes how a whole-genome alignment of multiple genomes can be created with the Cactus aligner.<br>
-The output alignment is a compressed file in HAL format that can be exported as MAF.
-
-
-<h2 id="runCactus">1. Running progressive Cactus</h2>
-
-<span class="assignment">Prepare</span> a text file with the species tree followed by a space-separated list of species names and location of
-the corresponding genome fasta files (absolute path names required!).<br><br>
-
-<a href="javascript:onoff('cft')" class="dlink"><span id="cft" title="cftd" class="dcross">[+]</span>
-<span class="dtitle">file format...</span></a> <br>
-<div id="cftd" class="details" style="display:none;">
+    <h2 id="runCactus">1. Running Progressive Cactus</h2>
+    <span class="assignment">Prepare</span> a text file with the species tree
+    followed by a space-separated list of species names and locations of the
+    corresponding genome fasta files (absolute path names required!).
+    <br>
+    <br>
+    <a href="javascript:onoff('cft')" class="dlink">
+      <span id="cft" title="cftd" class="dcross">[+]</span>
+      <span class="dtitle">file format...</span>
+    </a>
+    <br>
+    <div id="cftd" class="details" style="display:none;">
 <pre class="code">
 tree in Newick format
 name_of_genome_1  absolute/path/to/genome_1
@@ -33,19 +47,22 @@ name_of_genome_2  absolute/path/to/genome_2
 ...
 name_of_genome_N  absolute/path/to/genome_N
 </pre>
-For furter information and optional parameters, read the <a href="https://github.com/glennhickey/progressiveCactus">progressiveCactus manual</a>
-</div>
-</br>
-
+      For further information and optional parameters, read the
+      <a href="https://github.com/ComparativeGenomicsToolkit/cactus">Progressive Cactus manual</a>
+    </div>
+    <br>
 <pre class="code">
 cp tree.nwk vertebrates.txt
-for f in $PWD/genomes/*.fa; do echo -ne "$(basename $f .fa)\t$f\n"; done >>vertebrates.txt
+for f in $PWD/genomes/*.fa; do
+    echo -ne "$(basename $f .fa)\t$f\n"
+done &gt;&gt; vertebrates.txt
 </pre>
-
-The file  <span class="result"><tt>vertebrates.txt</tt></span> will now look like this (except for the parent directory)<br>
+    The file <span class="result">vertebrates.txt</span> will now look like
+    this (except for the parent directory)
+    <br>
 <pre class="code">
-((monDom5:0.340786,(((hg38:0.035974,rheMac3:0.043601):0.109934,(mm10:0.084509,rn6:0.091589):0.271974):0.020593,(bosTau8:0.18908,canFam3:0
-.13303):0.032898):0.258392):0.181168,galGal4:0.559442);
+((monDom5:0.340786,(((hg38:0.035974,rheMac3:0.043601):0.109934,(mm10:0.084509,rn6:0.091589):0.271974):
+    0.020593,(bosTau8:0.18908,canFam3:0.13303):0.032898):0.258392):0.181168,galGal4:0.559442);
 bosTau8 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/genomes/bosTau8.fa
 canFam3 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/genomes/canFam3.fa
 galGal4 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/genomes/galGal4.fa
@@ -55,35 +72,57 @@ monDom5 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/genomes/monDom5.fa
 rheMac3 /var/www/augustus/htdocs/binaries/tutorial-cgp/data/genomes/rheMac3.fa
 rn6     /var/www/augustus/htdocs/binaries/tutorial-cgp/data/genomes/rn6.fa
 </pre>
-
-<span class="assignment">Run</span> progressiveCactus, e.g. using 8 threads (~12min): 
+    <span class="assignment">Run</span> Progressive Cactus (~12min):
 <pre class="code">
-runProgressiveCactus.sh vertebrates.txt cactusout vertebrates.hal --maxThreads=8 2>&1 > cactus.out
+cactus \
+    cactusout \
+    vertebrates.txt \
+    vertebrates.hal
 </pre>
+    This creates a .hal binary indexed alignment file
+    <span class="result">vertebrates.hal</span>. The folder
+    <span class="result">cactusout/</span> will contain all temporary files
+    from logging and will be deleted after successful jobs. If you don't need
+    the logging output from Toil (which is used by Cactus), set the option
+    <span class="teletype">--logOff</span> before the
+    <span class="teletype">cactusout</span> argument.
+    <br>
+    <br>
 
-This creates a .hal binary indexed alignment file <span class="result"><tt>vertebrates.hal</tt></span><br><br>
-
-
-<h2 id="hal2maf">2. Export HAL alignment as MAF</h2>
-
-Next, we will export the HAL alignment as MAF. Observe, that the MAF format is reference-based, i.e. alignments
-can only be represented with respect to some reference species. Generally any species can be chosen as reference.
-We recommend, however, to choose a reference species that 1.) has a high-quality genome assembly and 2.) is placed somewhere
-in the middle of the clade, e.g. in our case human (hg38). For parallelization of the gene prediction step,
-we recommend to split the global alignmnent into several overlapping alignment chunks. This can be achieved with <tt>hal2maf_split.pl</tt> using
-the parameters <tt>--chunksize</tt> that specifies the maximum chunk size (number of bases covered in the reference genome) and 
-<tt>--overlap</tt> that specifies the amount of overlap (number of bases) between two consecutive chunks.
-Observe that  <tt>hal2maf_split.pl</tt> works on top of the HAL tools toolbox, which is also part of the progressiveCactus package.
-If the <tt>progressiveCactus/submodules/hal/bin</tt> directory in is not in your global PATH, use the parameter <tt>--hal_exec_dir</tt> to point to the directory<br><br>
-
-<span class="assignment">Export</span> <span class="result"><tt>vertebrates.hal</tt></span> as MAF
-
+    <h2 id="hal2maf">2. Export HAL alignment as MAF</h2>
+    Next, we will export the HAL alignment as MAF. Observe that the MAF format
+    is reference-based, i.e. alignments can only be represented with respect to
+    some reference species. Generally any species can be chosen as reference.
+    We recommend, however, to choose a reference species that 1.) has a
+    high-quality genome assembly and 2.) is placed somewhere in the middle of
+    the clade, e.g. in our case human (hg38). For parallelization of the gene
+    prediction step,  we recommend to split the global alignment into several
+    overlapping alignment chunks. This can be achieved with
+    <span class="teletype">hal2maf_split.pl</span> using the parameters
+    <span class="teletype">--chunksize</span> that specifies the maximum chunk
+    size (number of bases covered in the reference genome) and
+    <span class="teletype">--overlap</span> that specifies the amount of
+    overlap (number of bases) between two consecutive chunks. Observe that
+    <span class="teletype">hal2maf_split.pl</span> works on top of the HAL
+    tools toolbox, which is also part of the Progressive Cactus package. If the
+    <span class="teletype">/opt/cactus/hal_lib</span> directory in is not in
+    your global <span class="teletype">$PYTHONPATH</span>, use the parameter
+    <span class="teletype">--hal_exec_dir</span> to point to the directory.
+    <br>
+    <br>
+    <span class="assignment">Export</span>
+    <span class="result">vertebrates.hal</span> as MAF
 <pre class="code">
-hal2maf_split.pl --halfile vertebrates.hal --refGenome hg38 --cpus 8 --chunksize 50000 --overlap 25000 --outdir mafs
+hal2maf_split.pl \
+    --halfile vertebrates.hal \
+    --refGenome hg38 \
+    --cpus 8 \
+    --chunksize 50000 \
+    --overlap 25000 \
+    --outdir mafs
 </pre>
-
-This will generate the directory <span class="result"><tt>mafs/</tt></span> that
-contains the output alignment chunks in MAF format
+    This will generate the directory <span class="result">mafs/</span> that
+    contains the output alignment chunks in MAF format
 <pre class="code">
 -rw-r--r-- 1 stefanie bioinf 392K May 24 19:43 chr16.0-49999.maf
 -rw-r--r-- 1 stefanie bioinf 307K May 24 19:43 chr16.100000-149999.maf
@@ -94,131 +133,214 @@ contains the output alignment chunks in MAF format
 -rw-r--r-- 1 stefanie bioinf 408K May 24 19:43 chr16.50000-99999.maf
 -rw-r--r-- 1 stefanie bioinf 418K May 24 19:43 chr16.75000-124999.maf
 </pre>
-For demonstration purposes, we chose very small values for the chunk size and overlap.
-In a more realistic setting, i.e. when working with whole-genome alignments,
-we recommend a chunk size in the megabase order, e.g. <tt>--chunksize=2500000</tt> and <tt>--overlap=500000</tt> (default values).<br><br>
-
-<a href="javascript:onoff('nsl')" class="dlink"><span id="nsl" title="nsld" class="dcross">[+]</span>
-<span class="dtitle">avoid splitting within genes...</span></a> <br>
-<div id="nsld" class="details" style="display:none;">
-Gene prediction errors may occur from splitting of the alignment within genes. The smaller the chunk size
-is chosen, the more likely genes are truncated at alignment boundaries. To avoid this,
-a list of genic regions/intervals may be passed to <tt>hal2maf_split.pl</tt>. In this case, the splitting is
-restricted to intergenic regions, e.g. position outside of the given intervals. The genic intervals can be obtained
-from existing annotations for the reference species, if available.<br><br>
-
-<span class="assignment">Use</span> the hg38 RefSeq annotation <a href="data/refseq/refseq.hg38.gtf"><tt>refseq/refseq.hg38.gtf</tt></a> to create a text file with a list of genic intervals, in which the splitting is forbidden.
-Each genic interval is specified as follows: <tt>seqname &lttab> start &lttab> end &ltnewline></tt><br><br>
+    For demonstration purposes, we chose very small values for the chunk size
+    and overlap. In a more realistic setting, i.e. when working with
+    whole-genome alignments, we recommend a chunk size in the megabase order,
+    e.g. <span class="teletype">--chunksize=2500000</span> and
+    <span class="teletype">--overlap=500000</span> (default values).
+    <br>
+    <br>
+    <a href="javascript:onoff('nsl')" class="dlink">
+      <span id="nsl" title="nsld" class="dcross">[+]</span>
+      <span class="dtitle">avoid splitting within genes...</span>
+    </a>
+    <br>
+    <div id="nsld" class="details" style="display:none;">
+      Gene prediction errors may occur from splitting of the alignment within
+      genes. The smaller the chunk size is chosen, the more likely genes are
+      truncated at alignment boundaries. To avoid this, a list of genic
+      regions/intervals may be passed to
+      <span class="teletype">hal2maf_split.pl</span>. In this case, the
+      splitting is restricted to intergenic regions, e.g. position outside of
+      the given intervals. The genic intervals can be obtained from existing
+      annotations for the reference species, if available.
+      <br>
+      <br>
+      <span class="assignment">Use</span> the hg38 RefSeq annotation
+      <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/data/refseq/refseq.hg38.gtf"><span class="teletype">refseq/refseq.hg38.gtf</span></a>
+      to create a text file with a list of genic intervals, in which the
+      splitting is forbidden. Each genic interval is specified as follows:
+      <span class="teletype">seqname &lt;tab&gt; start &lt;tab&gt; end &lt;newline&gt;</span>
+      <br>
+      <br>
 <pre class="code">
-gtf2gff.pl --printIntron &ltrefseq/refseq.hg38.gtf --out=/dev/stdout | cut -f 1,4,5 >no_split_list.txt
+gtf2gff.pl \
+    --printIntron &lt; refseq/refseq.hg38.gtf \
+    --out=/dev/stdout | cut -f 1,4,5 &gt; no_split_list.txt
 </pre>
-If your annotation is in gtf format as in the example, don't forget to include the intron lines!<br><br>
-<span class="assignment">Rerun</span> <tt>hal2maf_split.pl</tt> using the parameter <tt>--no_split_list</tt> to pass  <span class="result"><tt>no_split_list.txt</tt></span>
+      If your annotation is in gtf format as in the example, don't forget to
+      include the intron lines!
+      <br>
+      <br>
+      <span class="assignment">Rerun</span>
+      <span class="teletype">hal2maf_split.pl</span>
+      using the parameter <span class="teletype">--no_split_list</span> to pass
+      <span class="result">no_split_list.txt</span>
 <pre class="code">
-hal2maf_split.pl --halfile vertebrates.hal --refGenome hg38 --cpus 8 \
---chunksize 50000 --overlap 25000 --no_split_list no_split_list.txt --outdir mafs_good_split
+hal2maf_split.pl \
+    --halfile vertebrates.hal \
+    --refGenome hg38 \
+    --cpus 8 \
+    --chunksize 50000 \
+    --overlap 25000 \
+    --no_split_list no_split_list.txt \
+    --outdir mafs_good_split
 </pre>
-This will generate the directory <span class="result"><tt>mafs_good_split/</tt></span> that
-contains the following MAF alignments
+      This will generate the directory
+      <span class="result">mafs_good_split/</span> that contains the following
+      MAF alignments
 <pre class="code">
 -rw-r--r-- 1 stefanie bioinf  707K May 25 18:17 chr16.0-91311.maf
 -rw-r--r-- 1 stefanie bioinf  442K May 25 18:17 chr16.173067-210154.maf
 -rw-r--r-- 1 stefanie bioinf  913K May 25 18:17 chr16.45035-173067.maf
 -rw-r--r-- 1 stefanie bioinf 1013K May 25 18:17 chr16.91311-207894.maf
 </pre>
-Observe that when using the <tt>--no_split_list</tt> option, the maximum chunk size is not always respected.
-</div>
-
-<a href="javascript:onoff('msl')" class="dlink"><span id="msl" title="msld" class="dcross">[+]</span>
-<span class="dtitle">splitting MAF alignments...</span></a> <br>
-<div id="msld" class="details" style="display:none;">
-Let's assume you already have a vetted whole-genome alignment in MAF format. 
-You can split it similarily to HAL alignments into overlapping alignment chunks.
-Let <tt>hg38</tt> be the reference genome in <tt>aln.maf</tt>.
+      Observe that when using the <span class="teletype">--no_split_list</span>
+      option, the maximum chunk size is not always respected.
+    </div>
+    <a href="javascript:onoff('msl')" class="dlink">
+      <span id="msl" title="msld" class="dcross">[+]</span>
+      <span class="dtitle">splitting MAF alignments...</span>
+    </a>
+    <br>
+    <div id="msld" class="details" style="display:none;">
+      Let's assume you already have a vetted whole-genome alignment in MAF
+      format. You can split it similarily to HAL alignments into overlapping
+      alignment chunks. Let <span class="teletype">hg38</span> be the reference
+      genome in <span class="teletype">aln.maf</span>.
 <pre class="code">
 REF="hg38"
 </pre>
-<span class="assignment">Create</span> a tab-separated list of reference chromosomes/scaffolds of and their lengths
+      <span class="assignment">Create</span> a tab-separated list of reference
+      chromosomes/scaffolds of and their lengths
 <pre class="code">
-grep "^s $REF" aln.maf | perl -ne '@a=split(/\s+/,$_); $a[1]=~s/.*\.//; print "$a[1]\t$a[5]\n";' | sort -u &gtseqlist
+grep "^s $REF" aln.maf \
+    | perl -ne '@a=split(/\s+/,$_); $a[1]=~s/.*\.//; print "$a[1]\t$a[5]\n";' \
+    | sort -u &gt; seqlist
 </pre>
-<span class="assignment">Cut</span> <tt>aln.maf</tt> into overlapping pieces with the auxiliary tool <tt>filterMaf.pl</tt> from the <tt>scripts/</tt> folder in the Augustus package.
+      <span class="assignment">Cut</span> <span class="teletype">aln.maf</span>
+      into overlapping pieces with the auxiliary tool
+      <span class="teletype">filterMaf.pl</span> from the
+      <span class="teletype">scripts/</span> folder in the AUGUSTUS package.
 <pre class="code">
 mkdir mafs
 
 CHUNKSIZE=2500000
 OVERLAP=500000
-cat seqlist | while read line
-do
-SEQ=$(echo "$line" | cut -f 1)
-CHRLEN=$(echo "$line" | cut -f 2)
-for ((start=0; start&ltCHRLEN; start+=(CHUNKSIZE-OVERLAP))); do 
-   end=$((start+CHUNKSIZE))
-   if [ $end -ge $CHRLEN ]; then
-      end=$CHRLEN
-   fi
-   filterMaf.pl --interval=${REF}.${SEQ}:$start-$end &ltaln.maf  &gtmafs/${SEQ}:$start-$end.maf
-done
+cat seqlist | while read line; do
+    SEQ=$(echo "$line" | cut -f 1)
+    CHRLEN=$(echo "$line" | cut -f 2)
+    for ((start=0; start&lt;CHRLEN; start+=(CHUNKSIZE-OVERLAP))); do 
+        end=$((start+CHUNKSIZE))
+        if [[ $end -ge $CHRLEN ]]; then
+            end=$CHRLEN
+        fi
+        filterMaf.pl --interval=${REF}.${SEQ}:$start-$end &lt; aln.maf &gt; mafs/${SEQ}:$start-$end.maf
+    done
 done
 </pre>
-</div>
-</br>
+    </div>
+    <br>
 
-<h2 id="makeHub">3. Build a comparative assembly hub</h2>
+    <h2 id="makeHub">3. Build a comparative assembly hub</h2>
 <pre class="code">
-hal2assemblyHub.py vertebrates.hal vertHub --lod \
---alignability --gcContent \
---hub vertCompHub --shortLabel VertebratesCompHub \
---maxThreads=10 --longLabel "Vertebrates Comparative Assembly Hub"
+hal2assemblyHub.py \
+    --lod \
+    --alignability \
+    --hub vertCompHub \
+    --shortLabel VertebratesCompHub \
+    --longLabel "Vertebrates Comparative Assembly Hub" \
+    assemblyhubout \
+    vertebrates.hal \
+    vertHub
 </pre>
-Manually <span class="assignment">edit</span> the .html files in the <span class="result"><tt>vertHub/</tt></span> directory, if desired.
+    Manually <span class="assignment">edit</span> the .html files in the
+    <span class="result">vertHub/</span> directory, if desired. The folder
+    <span class="result">assemblyhubout/</span> will contain all temporary
+    files from logging and will be deleted after successful jobs. If you don't
+    need the logging output from Toil (which is used by HAL), set the option
+    <span class="teletype">--logOff</span> before the
+    <span class="teletype">assemblyhubout</span> argument.
 
-<h2 id="loadHub">4. Load the hub and browse the alignment</h2>
-<span class="assignment">Copy</span> the <span class="result"><tt>vertHub/</tt></span> directory to a web directory: 
+    <h2 id="loadHub">4. Load the hub and browse the alignment</h2>
+    <span class="assignment">Copy</span> the
+    <span class="result">vertHub/</span> directory to a web directory: 
 <pre class="code">
 scp -r vertHub/ stefanie@greifweb1:/var/www/bioinf/htdocs/stefanie/cgp-tutorial/
 </pre>
-
-<span class="assignment">Go</span> to the UCSC Genome Browser <a href="http://genome-euro.ucsc.edu/cgi-bin/hgHubConnect">Track Data Hubs</a> page and paste your <a href="http://bioinf.uni-greifswald.de/bioinf/stefanie/cgp-tutorial/vertHub/hub.txt"><tt>hub.txt</tt></a> url into the "My Hubs" tab.
-Select a species as reference (e.g. hg38) and click "Go".<br><br>
-
-<img src="figs/hub.png" width="40%" height="40%"/>
-
-<h2 id="loadAnno">5. Upload a reference annotation to the hub</h2>
-
-<span class="assignment">Convert</span> the <a href="data/refseq/refseq.hg38.gtf">hg38 RefSeq annotation</a> to BED format and place it in a folder with the name of the genome
+    <span class="assignment">Go</span> to the UCSC Genome Browser
+    <a href="http://genome.ucsc.edu/cgi-bin/hgHubConnect">Track Data Hubs</a>
+    page and paste your
+    <a href="http://bioinf.uni-greifswald.de/bioinf/stefanie/cgp-tutorial/vertHub/hub.txt"><span class="teletype">hub.txt</span></a>
+    url into the "My Hubs" tab. Select a species as reference (e.g. hg38) and
+    click "Go".
+    <br>
+    <br>
+    <img src="figs/hub.png" alt="Track data hubs in the UCSC Genome Browser" width=700>
+    
+    <h2 id="loadAnno">5. Upload a reference annotation to the hub</h2>
+    <span class="assignment">Convert</span> the
+    <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/data/refseq/refseq.hg38.gtf">hg38 RefSeq annotation</a>
+    to BED format and place it in a folder with the name of the genome:
 <pre class="code">
 mkdir refseq/hg38
-gtf2bed.pl &ltrefseq/refseq.hg38.gtf &gtrefseq/hg38/refseq.bed --itemRgb=25,25,112
+gtf2bed.pl &lt; refseq/refseq.hg38.gtf &gt; refseq/hg38/refseq.bed --itemRgb=25,25,112
 </pre>
-Specify any RGB color you like for the track with option <tt>--itemRgb</tt>, e.g. <span style="color:rgb(25,25,112);">25,25,112.</span><br>
-<span class="assignment">Rerun</span> the hal2assemblyHub.py script. Include gene tracks with option --bedDirs.
+    Specify any RGB color you like for the track with option
+    <span class="teletype">--itemRgb</span>, e.g.
+    <span style="color:rgb(25,25,112);">25,25,112.</span>
+    <br>
+    <span class="assignment">Rerun</span> the
+    <span class="teletype">hal2assemblyHub.py</span> script. Include gene
+    tracks with option <span class="teletype">--bedDirs</span>.
 <pre class="code">
-rm -r jobTree # delete job data from previous run
-hal2assemblyHub.py vertebrates.hal vertHub --lod \
---alignability --gcContent \
---hub vertCompHub --shortLabel VertebratesCompHub \
---bedDirs refseq \
---tabBed \
---maxThreads=10 --longLabel "Vertebrates Comparative Assembly Hub"
+rm -rf assemblyhubout # delete job data from previous run
+hal2assemblyHub.py \
+    --lod \
+    --alignability \
+    --hub vertCompHub \
+    --shortLabel VertebratesCompHub \
+    --longLabel "Vertebrates Comparative Assembly Hub" \
+    --bedDirs $PWD/refseq \
+    --tabBed \
+    assemblyhubout \
+    vertebrates.hal \
+    vertHub
 </pre>
-For further information on the specification of parameter <tt>--bedDirs</tt>, read section <a href="https://github.com/glennhickey/hal/tree/master/assemblyHub#annotations-provided-by-users">'Annotations provided by users'</a> in the assemblyHub manual.<br><br>
-<a href="javascript:onoff('tah')" class="dlink"><span id="tah" title="tahd" class="dcross">[+]</span>
-<span class="dtitle">hal2assemblyHub troubleshooting...</span></a> <br>
-<div id="tahd" class="details" style="display:none;">
-If the <tt>hal2assemblyHub.py</tt> script returns immediately without error message. Delete the jobTree folder and rerun it again.
+    For further information on the specification of parameter
+    <span class="teletype">--bedDirs</span>, read section
+    <a href="https://github.com/ComparativeGenomicsToolkit/hal/tree/master/assemblyHub#annotations-provided-by-users">'Annotations provided by users'</a>
+    in the assemblyHub manual.
+    <br>
+    <br>
+    <a href="javascript:onoff('tah')" class="dlink">
+      <span id="tah" title="tahd" class="dcross">[+]</span>
+      <span class="dtitle">hal2assemblyHub troubleshooting...</span>
+    </a>
+    <br>
+    <div id="tahd" class="details" style="display:none;">
+      If the <span class="teletype">hal2assemblyHub.py</span> script returns
+      immediately without error message, delete the
+      <span class="result">assemblyhubout/</span> folder and rerun it again.
 <pre class="code">
-rm -r jobtree
+rm -r assemblyhubout
 </pre>
-Make sure that all auxiliary tools, e.g <tt>hgGcPercent</tt>, are in the global path. If not export
+      Make sure that all auxiliary tools, e.g
+      <span class="teletype">hgGcPercent</span>, are in the global
+      <span class="teletype">$PATH</span>>. If not export
 <pre class="code">
-export PATH=/home/stefanie/tools/progressiveCactus/bin:/home/stefanie/tools/progressiveCactus/submodules/kentToolBinaries:$PATH
-export PYTHONPATH=/home/stefanie/tools/progressiveCactus/submodules:$PYTHONPATH
+export PATH=/opt/cactus/bin:opt/cactus/submodules/kentToolBinaries:$PATH
+export PYTHONPATH=/opt/cactus/submodules:$PYTHONPATH
 </pre>
-</div><br>
-<span class="assignment">Repeat</span> <a href="cactus.html#loadHub">4. Load the hub and browser the alignment</a>.<br>
-The new track, should be visible in the 'VertebratesCompHub Track Settings' menu, enable it if necessary.<br><br>
-
-<img src="figs/menu.png" width="40%" height="40%"/>
-</body>
+    </div>
+    <br>
+    <span class="assignment">Repeat</span>
+    <a href="https://bioinf.uni-greifswald.de/augustus/binaries/tutorial-cgp/cactus.html#loadHub">4. Load the hub and browse the alignment</a>.
+    <br>
+    The new track should be visible in the 'VertebratesCompHub Track Settings'
+    menu, enable it if necessary.
+    <br>
+    <br>
+    <img src="figs/menu.png" alt="Hub menu in the UCSC Genome Browser" width=700>
+  </body>
 </html>
