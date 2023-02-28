@@ -1607,10 +1607,10 @@
         ]
     },
     {
-        "name": "partitionLargeSeqeunces",
+        "name": "partitionLargeSequences",
         "development": false,
         "type": "bool",
-        "usage": "partitionLargeSeqeunces=True/False",
+        "usage": "partitionLargeSequences=True/False",
         "default_value": "False",
         "description": "Parallelize large sequences by automatically setting the AUGUSTUS parameters predictionStart and predictionEnd based on the given values for chunksize and overlap.",
         "exclude_apps": [
