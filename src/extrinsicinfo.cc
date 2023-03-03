@@ -564,7 +564,9 @@ void SequenceFeatureCollection::checkGroupConsistency(AnnoSequence *seq){
 	    }
 	    if (!groupOK){
 		git->setDiscardFlag(true);
-		numDeleted++; 
+		numDeleted++;
+		if (!collection->getIndividualLiabilitySetting((*hints->begin())->esource))
+			collection->setGroupLiable((*hints->begin())->esource); 
 		if (Constant::augustus_verbosity>2) {
 		    messages << "# Delete group ";
 		    git->print(messages, false);
@@ -2003,11 +2005,11 @@ FeatureCollection::FeatureCollection(const FeatureCollection& other){
     numSeqsWithInfo=other.numSeqsWithInfo;
     numSources=other.numSources;
     sourceKey = new string[numSources];
-    individual_liability = new bool[numSources];
+    individual_liability_setting = new bool[numSources];
     oneGroupOneGene = new bool[numSources];
     for (int i=0; i<numSources; i++) {
 	sourceKey[i] = other.sourceKey[i];
-	individual_liability[i] = other.individual_liability[i];
+	individual_liability_setting[i] = other.individual_liability_setting[i];
 	oneGroupOneGene[i] = other.oneGroupOneGene[i];
     }
     for(int i=0; i < NUM_FEATURE_TYPES; i++){
@@ -2152,10 +2154,12 @@ void FeatureCollection::readSourceRelatedCFG(istream& datei){
 	}
     }
     sourceKey = new string[numSources];
-    individual_liability = new bool[numSources];
+    individual_liability_setting = new bool[numSources];
+	individual_liability = new bool[numSources];
     oneGroupOneGene = new bool[numSources];
     for (int i=0; i<numSources; i++) {
-	individual_liability[i] = false;
+	individual_liability_setting[i] = false;
+	individual_liability[i] = true;
 	oneGroupOneGene[i] = false;
     }
     numSources=0;
@@ -2207,7 +2211,7 @@ void FeatureCollection::readSourceRelatedCFG(istream& datei){
 			if (eqpos == string::npos){ // single string option
 			    if (option == "individual_liability"){ // an unsatisfyable hint doesn't touch the other hints of the group
 				cout << "# Setting " << option << " for " << skey << "." << endl;
-				individual_liability[sourcenum] = true;
+				individual_liability_setting[sourcenum] = true;
 			    } else if (option == "1group1gene"){ // try not to predict igenic region in intra-group gaps
 				cout << "# Setting " << option << " for " << skey << "." << endl;
 				oneGroupOneGene[sourcenum] = true;

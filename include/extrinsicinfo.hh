@@ -392,6 +392,8 @@ public:
     bool skeyExists(string skey);
     int esource(string skey);
     bool getIndividualLiability(string skey){return individual_liability[esource(skey)];}
+    bool getIndividualLiabilitySetting(string skey){return individual_liability_setting[esource(skey)];}
+    void setGroupLiable(string skey){individual_liability[esource(skey)] = false;}
     bool get1group1gene(string skey){return oneGroupOneGene[esource(skey)];}
     double malus(FeatureType type){
 	return typeInfo[type].malus;
@@ -410,7 +412,8 @@ private:
 
     int numSources;              // number of different sources of hints
     string *sourceKey;           // for each source the key string
-    bool *individual_liability;  // for each source the flag individual_liability
+    bool *individual_liability_setting;  // for each source the flag individual_liability_setting
+    bool *individual_liability;
     bool *oneGroupOneGene;       // for each source the flag 1group1gene
     FeatureTypeInfo typeInfo[NUM_FEATURE_TYPES]; // the type-specific information
     map<string, SequenceFeatureCollection*> collections;
