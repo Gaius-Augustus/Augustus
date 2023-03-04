@@ -538,7 +538,7 @@ void SequenceFeatureCollection::checkGroupConsistency(AnnoSequence *seq){
 	    /*
 	     * Now make changes to strand or discard group.
 	     */
-	    if (!plusPossible && !minusPossible) { // no strand possible
+		if (!plusPossible && !minusPossible) { // no strand possible
 		if (!plusPossible || !minusPossible) { // only one stand possible, set that strand for all hints
 		for (fit = hints->begin(); fit != hints->end(); fit++) {
 		    if (!minusPossible && (*fit)->strand != plusstrand){
@@ -563,8 +563,9 @@ void SequenceFeatureCollection::checkGroupConsistency(AnnoSequence *seq){
 	    if (!groupOK){
 		git->setDiscardFlag(true);
 		numDeleted++;
-		if (!collection->getIndividualLiabilitySetting((*hints->begin())->esource))
+		if (!collection->getIndividualLiabilitySetting((*hints->begin())->esource)) {
 			collection->setGroupLiable((*hints->begin())->esource); 
+		}
 		if (Constant::augustus_verbosity>2) {
 		    messages << "# Delete group ";
 		    git->print(messages, false);
@@ -2168,7 +2169,7 @@ void FeatureCollection::readSourceRelatedCFG(istream& datei){
     }
     sourceKey = new string[numSources];
     individual_liability_setting = new bool[numSources];
-	individual_liability = new bool[numSources];
+    individual_liability = new bool[numSources];
     oneGroupOneGene = new bool[numSources];
     for (int i=0; i<numSources; i++) {
 	individual_liability_setting[i] = false;
