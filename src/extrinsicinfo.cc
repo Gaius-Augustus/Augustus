@@ -539,9 +539,7 @@ void SequenceFeatureCollection::checkGroupConsistency(AnnoSequence *seq){
 	     * Now make changes to strand or discard group.
 	     */
 	    if (!plusPossible && !minusPossible) { // no strand possible
-		if (!collection->getIndividualLiability((*(hints->begin()))->esource))
-		    groupOK = false; // let the whole group suffer if one hints is unsatisfyable
-	    } else if (!plusPossible || !minusPossible) { // only one stand possible, set that strand for all hints
+		if (!plusPossible || !minusPossible) { // only one stand possible, set that strand for all hints
 		for (fit = hints->begin(); fit != hints->end(); fit++) {
 		    if (!minusPossible && (*fit)->strand != plusstrand){
 			(*fit)->strand = plusstrand;
@@ -579,6 +577,21 @@ void SequenceFeatureCollection::checkGroupConsistency(AnnoSequence *seq){
 	    git++;
 	}
     }
+	}
+	for (git = groupList->begin(); git != groupList->end(); ) {
+	if (!collection->getIndividualLiability((*(git->getHints()->begin()))->esource)) {
+		// let the whole group suffer if one hints is unsatisfyable
+		git->setDiscardFlag(true);
+		numDeleted++;
+		if (Constant::augustus_verbosity>2) {
+		    messages << "# Delete group because of unreliable source: ";
+		    git->print(messages, false);
+		}
+		git=groupList->erase(git);
+	} else {
+		git++;
+	}
+	} 
     if (numForcedStrand > 0)
 	messages << "# Forced unstranded hint group to the only possible strand for " << numForcedStrand << " groups." << endl;
     if (numDeleted)
